@@ -6805,7 +6805,7 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
    have a trailing array reference that gives the size of the array.  */
 
 static bool
-resolve_allocate_expr (gfc_expr *e, gfc_code *code)
+resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 {
   int i, pointer, allocatable, dimension, is_abstract;
   int codimension;
@@ -7104,13 +7104,24 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   if (!ref2 || ref2->type != REF_ARRAY || ref2->u.ar.type == AR_FULL
       || (dimension && ref2->u.ar.dimen == 0))
     {
-      gfc_error ("Array specification required in ALLOCATE statement "
-		 "at %L", &e->where);
-      goto failure;
+      /* F08:C633.  */
+      if (code->expr3)
+	{
+	  if (!gfc_notify_std (GFC_STD_F2008, "Array specification required "
+			       "in ALLOCATE statement at %L", &e->where))
+	    goto failure;
+	  *array_alloc_wo_spec = true;
+	}
+      else
+	{
+	  gfc_error ("Array specification required in ALLOCATE statement "
+		     "at %L", &e->where);
+	  goto failure;
+	}
     }
 
   /* Make sure that the array section reference makes sense in the
-    context of an ALLOCATE specification.  */
+     context of an ALLOCATE specification.  */
 
   ar = &ref2->u.ar;
 
@@ -7125,7 +7136,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
   for (i = 0; i < ar->dimen; i++)
     {
-      if (ref2->u.ar.type == AR_ELEMENT)
+      if (ar->type == AR_ELEMENT || ar->type == AR_FULL)
 	goto check_symbols;
 
       switch (ar->dimen_type[i])
@@ -7201,6 +7212,7 @@ success:
 failure:
   return false;
 }
+
 
 static void
 resolve_allocate_deallocate (gfc_code *code, const char *fcn)
@@ -7376,8 +7388,16 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 
   if (strcmp (fcn, "ALLOCATE") == 0)
     {
+      bool arr_alloc_wo_spec = false;
       for (a = code->ext.alloc.list; a; a = a->next)
-	resolve_allocate_expr (a->expr, code);
+	resolve_allocate_expr (a->expr, code, &arr_alloc_wo_spec);
+
+      if (arr_alloc_wo_spec && code->expr3)
+	{
+	  /* Mark the allocate to have to take the array specification
+	     from the expr3.  */
+	  code->ext.alloc.arr_spec_from_expr3 = 1;
+	}
     }
   else
     {

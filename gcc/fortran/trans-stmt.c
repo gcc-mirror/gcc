@@ -5098,6 +5098,8 @@ gfc_trans_allocate (gfc_code * code)
      the trees may be the NULL_TREE indicating that this is not
      available for expr3's type.  */
   tree expr3, expr3_vptr, expr3_len, expr3_esize;
+  /* Classify what expr3 stores.  */
+  enum { E3_UNSET = 0, E3_SOURCE, E3_MOLD, E3_DESC } e3_is;
   stmtblock_t block;
   stmtblock_t post;
   tree nelems;
@@ -5110,6 +5112,7 @@ gfc_trans_allocate (gfc_code * code)
   stat = tmp = memsz = al_vptr = al_len = NULL_TREE;
   expr3 = expr3_vptr = expr3_len = expr3_esize = NULL_TREE;
   label_errmsg = label_finish = errmsg = errlen = NULL_TREE;
+  e3_is = E3_UNSET;
 
   gfc_init_block (&block);
   gfc_init_block (&post);
@@ -5149,16 +5152,14 @@ gfc_trans_allocate (gfc_code * code)
      expression.  */
   if (code->expr3)
     {
-      bool vtab_needed = false;
-      /* expr3_tmp gets the tree when code->expr3.mold is set, i.e.,
-	 the expression is only needed to get the _vptr, _len a.s.o.  */
-      tree expr3_tmp = NULL_TREE;
+      bool vtab_needed = false, temp_var_needed = false;
 
       /* Figure whether we need the vtab from expr3.  */
       for (al = code->ext.alloc.list; !vtab_needed && al != NULL;
 	   al = al->next)
 	vtab_needed = (al->expr->ts.type == BT_CLASS);
 
+      gfc_init_se (&se, NULL);
       /* When expr3 is a variable, i.e., a very simple expression,
 	     then convert it once here.  */
       if (code->expr3->expr_type == EXPR_VARIABLE
@@ -5167,31 +5168,25 @@ gfc_trans_allocate (gfc_code * code)
 	{
 	  if (!code->expr3->mold
 	      || code->expr3->ts.type == BT_CHARACTER
-	      || vtab_needed)
+	      || vtab_needed
+	      || code->ext.alloc.arr_spec_from_expr3)
 	    {
-	      /* Convert expr3 to a tree.  */
-	      gfc_init_se (&se, NULL);
-	      /* For all "simple" expression just get the descriptor or the
-		 reference, respectively, depending on the rank of the expr.  */
-	      if (code->expr3->rank != 0)
+	      /* Convert expr3 to a tree.  For all "simple" expression just
+		 get the descriptor or the reference, respectively, depending
+		 on the rank of the expr.  */
+	      if (code->ext.alloc.arr_spec_from_expr3 || code->expr3->rank != 0)
 		gfc_conv_expr_descriptor (&se, code->expr3);
 	      else
 		gfc_conv_expr_reference (&se, code->expr3);
-	      if (!code->expr3->mold)
-		expr3 = se.expr;
-	      else
-		expr3_tmp = se.expr;
-	      expr3_len = se.string_length;
-	      gfc_add_block_to_block (&block, &se.pre);
-	      gfc_add_block_to_block (&post, &se.post);
+	      /* Create a temp variable only for component refs to prevent
+		 having to go through the full deref-chain each time and to
+		 simplfy computation of array properties.  */
+	      temp_var_needed = TREE_CODE (se.expr) == COMPONENT_REF;
 	    }
-	  /* else expr3 = NULL_TREE set above.  */
 	}
       else
 	{
-	  /* In all other cases evaluate the expr3 and create a
-		 temporary.  */
-	  gfc_init_se (&se, NULL);
+	  /* In all other cases evaluate the expr3.  */
 	  symbol_attribute attr;
 	  /* Get the descriptor for all arrays, that are not allocatable or
 	     pointer, because the latter are descriptors already.  */
@@ -5205,45 +5200,55 @@ gfc_trans_allocate (gfc_code * code)
 				     code->expr3->ts,
 				     false, true,
 				     false, false);
-	  gfc_add_block_to_block (&block, &se.pre);
-	  gfc_add_block_to_block (&post, &se.post);
-
-	  /* Prevent aliasing, i.e., se.expr may be already a
-		 variable declaration.  */
-	  if (!VAR_P (se.expr))
+	  temp_var_needed = !VAR_P (se.expr);
+	}
+      gfc_add_block_to_block (&block, &se.pre);
+      gfc_add_block_to_block (&post, &se.post);
+      /* Prevent aliasing, i.e., se.expr may be already a
+	     variable declaration.  */
+      if (se.expr != NULL_TREE && temp_var_needed)
+	{
+	  tree var;
+	  tmp = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)) ?
+		se.expr
+	      : build_fold_indirect_ref_loc (input_location, se.expr);
+	  /* We need a regular (non-UID) symbol here, therefore give a
+	     prefix.  */
+	  var = gfc_create_var (TREE_TYPE (tmp), "source");
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
 	    {
-	      tree var;
-	      tmp = build_fold_indirect_ref_loc (input_location,
-						 se.expr);
-	      /* We need a regular (non-UID) symbol here, therefore give a
-		 prefix.  */
-	      var = gfc_create_var (TREE_TYPE (tmp), "source");
-	      gfc_add_modify_loc (input_location, &block, var, tmp);
-
-	      /* Deallocate any allocatable components after all the allocations
-		 and assignments of expr3 have been completed.  */
-	      if (code->expr3->ts.type == BT_DERIVED
-		  && code->expr3->rank == 0
-		  && code->expr3->ts.u.derived->attr.alloc_comp)
-		{
-		  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
-						   var, 0);
-		  gfc_add_expr_to_block (&post, tmp);
-		}
-
-	      tmp = var;
+	      gfc_allocate_lang_decl (var);
+	      GFC_DECL_SAVED_DESCRIPTOR (var) = se.expr;
 	    }
-	  else
-	    tmp = se.expr;
-	  if (!code->expr3->mold)
-	    expr3 = tmp;
-	  else
-	    expr3_tmp = tmp;
-	  /* When he length of a char array is easily available
-		 here, fix it for future use.  */
+	  gfc_add_modify_loc (input_location, &block, var, tmp);
+
+	  /* Deallocate any allocatable components after all the allocations
+	     and assignments of expr3 have been completed.  */
+	  if (code->expr3->ts.type == BT_DERIVED
+	      && code->expr3->rank == 0
+	      && code->expr3->ts.u.derived->attr.alloc_comp)
+	    {
+	      tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
+					       var, 0);
+	      gfc_add_expr_to_block (&post, tmp);
+	    }
+
+	  expr3 = var;
 	  if (se.string_length)
+	    /* Evaluate it assuming that it also is complicated like expr3.  */
 	    expr3_len = gfc_evaluate_now (se.string_length, &block);
 	}
+      else
+	{
+	  expr3 = se.expr;
+	  expr3_len = se.string_length;
+	}
+      /* Store what the expr3 is to be used for.  */
+      e3_is = expr3 != NULL_TREE ?
+	    (code->ext.alloc.arr_spec_from_expr3 ?
+	       E3_DESC
+	     : (code->expr3->mold ? E3_MOLD : E3_SOURCE))
+	  : E3_UNSET;
 
       /* Figure how to get the _vtab entry.  This also obtains the tree
 	 expression for accessing the _len component, because only
@@ -5258,10 +5263,6 @@ gfc_trans_allocate (gfc_code * code)
 	  if (expr3 != NULL_TREE && GFC_CLASS_TYPE_P (TREE_TYPE (expr3))
 	      && (VAR_P (expr3) || !code->expr3->ref))
 	    tmp = gfc_class_vptr_get (expr3);
-	  else if (expr3_tmp != NULL_TREE
-		   && GFC_CLASS_TYPE_P (TREE_TYPE (expr3_tmp))
-		   && (VAR_P (expr3_tmp) || !code->expr3->ref))
-	    tmp = gfc_class_vptr_get (expr3_tmp);
 	  else
 	    {
 	      rhs = gfc_find_and_cut_at_last_class_ref (code->expr3);
@@ -5281,9 +5282,7 @@ gfc_trans_allocate (gfc_code * code)
 	    {
 	      /* Same like for retrieving the _vptr.  */
 	      if (expr3 != NULL_TREE && !code->expr3->ref)
-		expr3_len  = gfc_class_len_get (expr3);
-	      else if (expr3_tmp != NULL_TREE && !code->expr3->ref)
-		expr3_len  = gfc_class_len_get (expr3_tmp);
+		expr3_len = gfc_class_len_get (expr3);
 	      else
 		{
 		  rhs = gfc_find_and_cut_at_last_class_ref (code->expr3);
@@ -5344,8 +5343,11 @@ gfc_trans_allocate (gfc_code * code)
 	     advantage is, that we get scalarizer support for free,
 	     don't have to take care about scalar to array treatment and
 	     will benefit of every enhancements gfc_trans_assignment ()
-	     gets.  */
-	  if (expr3 != NULL_TREE && DECL_P (expr3) && DECL_ARTIFICIAL (expr3))
+	     gets.
+	     No need to check whether e3_is is E3_UNSET, because that is
+	     done by expr3 != NULL_TREE.  */
+	  if (e3_is != E3_MOLD && expr3 != NULL_TREE
+	      && DECL_P (expr3) && DECL_ARTIFICIAL (expr3))
 	    {
 	      /* Build a temporary symtree and symbol.  Do not add it to
 		 the current namespace to prevent accidently modifying
@@ -5397,6 +5399,12 @@ gfc_trans_allocate (gfc_code * code)
 	}
       gcc_assert (expr3_esize);
       expr3_esize = fold_convert (sizetype, expr3_esize);
+      if (e3_is == E3_MOLD)
+	{
+	  /* The expr3 is no longer valid after this point.  */
+	  expr3 = NULL_TREE;
+	  e3_is = E3_UNSET;
+	}
     }
   else if (code->ext.alloc.ts.type != BT_UNKNOWN)
     {
@@ -5496,7 +5504,11 @@ gfc_trans_allocate (gfc_code * code)
       else
 	tmp = expr3_esize;
       if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen,
-			       label_finish, tmp, &nelems, code->expr3))
+			       label_finish, tmp, &nelems,
+			       e3rhs ? e3rhs : code->expr3,
+			       e3_is == E3_DESC ? expr3 : NULL_TREE,
+			       code->expr3 != NULL && e3_is == E3_DESC
+			       && code->expr3->expr_type == EXPR_ARRAY))
 	{
 	  /* A scalar or derived type.  First compute the size to
 	     allocate.
@@ -5702,11 +5714,15 @@ gfc_trans_allocate (gfc_code * code)
 	  if (expr3 != NULL_TREE
 	      && ((POINTER_TYPE_P (TREE_TYPE (expr3))
 		   && TREE_CODE (expr3) != POINTER_PLUS_EXPR)
-		  || (VAR_P (expr3) && GFC_CLASS_TYPE_P (TREE_TYPE (expr3))))
+		  || (VAR_P (expr3) && GFC_CLASS_TYPE_P (
+			TREE_TYPE (expr3))))
 	      && code->expr3->ts.type == BT_CLASS
 	      && (expr->ts.type == BT_CLASS
 		  || expr->ts.type == BT_DERIVED))
 	    {
+	      /* copy_class_to_class can be used for class arrays, too.
+		 It just needs to be ensured, that the decl_saved_descriptor
+		 has a way to get to the vptr.  */
 	      tree to;
 	      to = VAR_P (se.expr) ? se.expr : TREE_OPERAND (se.expr, 0);
 	      tmp = gfc_copy_class_to_class (expr3, to,
@@ -5740,30 +5756,14 @@ gfc_trans_allocate (gfc_code * code)
 
 	      if (dataref && dataref->u.c.component->as)
 		{
-		  int dim;
-		  gfc_expr *temp;
-		  gfc_ref *ref = dataref->next;
-		  ref->u.ar.type = AR_SECTION;
-		  /* We have to set up the array reference to give ranges
-		     in all dimensions and ensure that the end and stride
-		     are set so that the copy can be scalarized.  */
-		  dim = 0;
-		  for (; dim < dataref->u.c.component->as->rank; dim++)
-		    {
-		      ref->u.ar.dimen_type[dim] = DIMEN_RANGE;
-		      if (ref->u.ar.end[dim] == NULL)
-			{
-			  ref->u.ar.end[dim] = ref->u.ar.start[dim];
-			  temp = gfc_get_int_expr (gfc_default_integer_kind,
-						   &al->expr->where, 1);
-			  ref->u.ar.start[dim] = temp;
-			}
-		      temp = gfc_subtract (gfc_copy_expr (ref->u.ar.end[dim]),
-					   gfc_copy_expr (ref->u.ar.start[dim]));
-		      temp = gfc_add (gfc_get_int_expr (gfc_default_integer_kind,
-							&al->expr->where, 1),
-				      temp);
-		    }
+		  gfc_array_spec *as = dataref->u.c.component->as;
+		  gfc_free_ref_list (dataref->next);
+		  dataref->next = NULL;
+		  gfc_add_full_array_ref (last_arg->expr, as);
+		  gfc_resolve_expr (last_arg->expr);
+		  gcc_assert (last_arg->expr->ts.type == BT_CLASS
+			      || last_arg->expr->ts.type == BT_DERIVED);
+		  last_arg->expr->ts.type = BT_CLASS;
 		}
 	      if (rhs->ts.type == BT_CLASS)
 		{
@@ -5845,7 +5845,7 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
      else if (code->expr3 && code->expr3->mold
-	    && code->expr3->ts.type == BT_CLASS)
+	      && code->expr3->ts.type == BT_CLASS)
 	{
 	  /* Since the _vptr has already been assigned to the allocate
 	     object, we can use gfc_copy_class_to_class in its
