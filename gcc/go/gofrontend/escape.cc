@@ -453,6 +453,11 @@ class Build_connection_graphs : public Traverse
   void
   handle_composite_literal(Named_object* object, Expression* expr);
 
+  // Handle analysis of the left and right operands of a binary expression
+  // with respect to OBJECT.
+  void
+  handle_binary(Named_object* object, Expression* expr);
+
   // Resolve the outermost named object of EXPR if there is one.
   Named_object*
   resolve_var_reference(Expression* expr);
@@ -931,6 +936,31 @@ Build_connection_graphs::handle_composite_literal(Named_object* object,
     }
 }
 
+// Given an OBJECT reference in a binary expression E, analyze the left and
+// right operands for possible edges.
+
+void
+Build_connection_graphs::handle_binary(Named_object* object, Expression* e)
+{
+  Binary_expression* be = e->binary_expression();
+  go_assert(be != NULL);
+  Expression* left = be->left();
+  Expression* right = be->right();
+
+  if (left->call_result_expression() != NULL)
+    left = left->call_result_expression()->call();
+  if (left->call_expression() != NULL)
+    this->handle_call(object, left);
+  else if (left->binary_expression() != NULL)
+    this->handle_binary(object, left);
+  if (right->call_result_expression() != NULL)
+    right = right->call_result_expression()->call();
+  if (right->call_expression() != NULL)
+    this->handle_call(object, right);
+  else if (right->binary_expression() != NULL)
+    this->handle_binary(object, right);
+}
+
 // Create connection nodes for each variable in a called function.
 
 int
@@ -1024,8 +1054,6 @@ Build_connection_graphs::variable(Named_object* var)
 		 || rhs_no != var)
 		break;
 
-	      var_node->connection_node()->set_escape_state(Node::ESCAPE_ARG);
-
 	      Node* def_node = this->gogo_->add_connection_node(lhs_no);
 	      def_node->add_edge(var_node);
 	    }
@@ -1075,20 +1103,7 @@ Build_connection_graphs::variable(Named_object* var)
 	      if (cond->call_expression() != NULL)
 		this->handle_call(var, cond);
 	      else if (cond->binary_expression() != NULL)
-		{
-		  Binary_expression* comp = cond->binary_expression();
-		  Expression* left = comp->left();
-		  Expression* right = comp->right();
-
-		  if (left->call_result_expression() != NULL)
-		    left = left->call_result_expression()->call();
-		  if (left->call_expression() != NULL)
-		    this->handle_call(var, left);
-		  if (right->call_result_expression() != NULL)
-		    right = right->call_result_expression()->call();
-		  if (right->call_expression() != NULL)
-		    this->handle_call(var, right);
-		}
+		this->handle_binary(var, cond);
 	    }
 	    break;
 
@@ -1117,6 +1132,8 @@ Build_connection_graphs::variable(Named_object* var)
 		init = init->call_result_expression()->call();
 	      if (init->call_expression() != NULL)
 		this->handle_call(var, init);
+	      else if (init->binary_expression() != NULL)
+		this->handle_binary(var, init);
 	    }
 	    break;
 
