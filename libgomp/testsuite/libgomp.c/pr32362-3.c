@@ -1,6 +1,5 @@
 /* PR middle-end/32362 */
 /* { dg-do run } */
-/* { dg-options "-O2" } */
 
 #include <omp.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mcx16" { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
+/* { dg-additional-options "-mcx16" { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 
 #ifdef __x86_64__
 #include "cpuid.h"
