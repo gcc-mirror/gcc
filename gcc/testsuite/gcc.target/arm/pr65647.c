@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v6m_ok } */
+/* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } {"-mfloat-abi=soft" } } */
 /* { dg-options "-march=armv6-m -mthumb -O3 -w -mfloat-abi=soft" } */
 
 a, b, c, e, g = &e, h, i = 7, l = 1, m, n, o, q = &m, r, s = &r, u, w = 9, x,
