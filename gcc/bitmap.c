@@ -2074,7 +2074,7 @@ bitmap_print (FILE *file, const_bitmap head, const char *prefix,
 void
 dump_bitmap_statistics (void)
 {
-  if (! GATHER_STATISTICS)
+  if (!GATHER_STATISTICS)
     return;
 
   bitmap_mem_desc.dump (BITMAP_ORIGIN);

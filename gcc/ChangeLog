@@ -1,3 +1,9 @@
+2015-06-16  Martin Liska  <mliska@suse.cz>
+
+	* bitmap.c (dump_bitmap_statistics): Fix GNU coding style.
+	* hash-table.c (void dump_hash_table_loc_statistics): Add missing
+	guard.
+
 2015-06-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_store): Adjust.
