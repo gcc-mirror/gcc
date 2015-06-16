@@ -3021,6 +3021,63 @@ recording::rvalue::access_as_rvalue (reproducer &r)
   return r.get_identifier (this);
 }
 
+/* Return a debug string for the given rvalue, wrapping it in parentheses
+   if needed to mimic C's precedence rules, i.e. if OUTER_PREC is of
+   stronger precedence that this rvalue's precedence.
+
+   For example, given:
+
+           MULT
+          /    \
+       PLUS     MINUS
+      /    \   /     \
+     A      B C       D
+
+   we want to emit:
+
+     (A + B) * (C - D)
+
+   since MULT has strong precedence than PLUS and MINUS, whereas for:
+
+           PLUS
+          /    \
+       MULT     DIVIDE
+      /    \   /      \
+     A      B C        D
+
+   we can simply emit:
+
+     A * B + C / D
+
+   since PLUS has weaker precedence than MULT and DIVIDE.  */
+
+const char *
+recording::rvalue::get_debug_string_parens (enum precedence outer_prec)
+{
+  enum precedence this_prec = get_precedence ();
+
+  /* If this_prec has stronger precedence than outer_prec, we don't
+     need to wrap this in parens within the outer debug string.
+     Stronger precedences occur earlier than weaker within the enum,
+     so this is a less than test.  Equal precedences don't need
+     parentheses.  */
+  if (this_prec <= outer_prec)
+    return get_debug_string();
+
+  /* Otherwise, we need parentheses.  */
+
+  /* Lazily-build and cache m_parenthesized_string.  */
+  if (!m_parenthesized_string)
+    {
+      const char *debug_string = get_debug_string ();
+      m_parenthesized_string = string::from_printf (get_context (),
+						    "(%s)",
+						    debug_string);
+    }
+  gcc_assert (m_parenthesized_string);
+  return m_parenthesized_string->c_str ();
+}
+
 
 /* The implementation of class gcc::jit::recording::lvalue.  */
 
@@ -4251,11 +4308,12 @@ static const char * const binary_op_strings[] = {
 recording::string *
 recording::binary_op::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s %s %s",
-			      m_a->get_debug_string (),
+			      m_a->get_debug_string_parens (prec),
 			      binary_op_strings[m_op],
-			      m_b->get_debug_string ());
+			      m_b->get_debug_string_parens (prec));
 }
 
 static const char * const binary_op_reproducer_strings[] = {
@@ -4295,6 +4353,31 @@ recording::binary_op::write_reproducer (reproducer &r)
 	   r.get_identifier_as_rvalue (m_b));
 }
 
+namespace recording {
+static const enum precedence binary_op_precedence[] = {
+  PRECEDENCE_ADDITIVE, /* GCC_JIT_BINARY_OP_PLUS */
+  PRECEDENCE_ADDITIVE, /* GCC_JIT_BINARY_OP_MINUS */
+
+  PRECEDENCE_MULTIPLICATIVE, /* GCC_JIT_BINARY_OP_MULT */
+  PRECEDENCE_MULTIPLICATIVE, /* GCC_JIT_BINARY_OP_DIVIDE */
+  PRECEDENCE_MULTIPLICATIVE, /* GCC_JIT_BINARY_OP_MODULO */
+
+  PRECEDENCE_BITWISE_AND, /* GCC_JIT_BINARY_OP_BITWISE_AND */
+  PRECEDENCE_BITWISE_XOR, /* GCC_JIT_BINARY_OP_BITWISE_XOR */
+  PRECEDENCE_BITWISE_IOR, /* GCC_JIT_BINARY_OP_BITWISE_OR */
+  PRECEDENCE_LOGICAL_AND, /* GCC_JIT_BINARY_OP_LOGICAL_AND */
+  PRECEDENCE_LOGICAL_OR, /* GCC_JIT_BINARY_OP_LOGICAL_OR */
+  PRECEDENCE_SHIFT, /* GCC_JIT_BINARY_OP_LSHIFT */
+  PRECEDENCE_SHIFT, /* GCC_JIT_BINARY_OP_RSHIFT */
+};
+} /* namespace recording */
+
+enum recording::precedence
+recording::binary_op::get_precedence () const
+{
+  return binary_op_precedence[m_op];
+}
+
 /* The implementation of class gcc::jit::recording::comparison.  */
 
 /* Implementation of recording::memento::make_debug_string for
@@ -4313,11 +4396,12 @@ static const char * const comparison_strings[] =
 recording::string *
 recording::comparison::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s %s %s",
-			      m_a->get_debug_string (),
+			      m_a->get_debug_string_parens (prec),
 			      comparison_strings[m_op],
-			      m_b->get_debug_string ());
+			      m_b->get_debug_string_parens (prec));
 }
 
 /* A table of enum gcc_jit_comparison values expressed in string
@@ -4375,6 +4459,25 @@ recording::comparison::visit_children (rvalue_visitor *v)
   v->visit (m_b);
 }
 
+namespace recording {
+static const enum precedence comparison_precedence[] =
+{
+  PRECEDENCE_EQUALITY, /* GCC_JIT_COMPARISON_EQ */
+  PRECEDENCE_EQUALITY, /* GCC_JIT_COMPARISON_NE */
+
+  PRECEDENCE_RELATIONAL,  /* GCC_JIT_COMPARISON_LT */
+  PRECEDENCE_RELATIONAL, /* GCC_JIT_COMPARISON_LE */
+  PRECEDENCE_RELATIONAL,  /* GCC_JIT_COMPARISON_GT */
+  PRECEDENCE_RELATIONAL, /* GCC_JIT_COMPARISON_GE */
+};
+} /* namespace recording */
+
+enum recording::precedence
+recording::comparison::get_precedence () const
+{
+  return comparison_precedence[m_op];
+}
+
 /* Implementation of pure virtual hook recording::memento::replay_into
    for recording::cast.  */
 
@@ -4400,10 +4503,11 @@ recording::cast::visit_children (rvalue_visitor *v)
 recording::string *
 recording::cast::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "(%s)%s",
 			      get_type ()->get_debug_string (),
-			      m_rvalue->get_debug_string ());
+			      m_rvalue->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for casts.  */
@@ -4473,12 +4577,13 @@ recording::call::visit_children (rvalue_visitor *v)
 recording::string *
 recording::call::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   /* First, build a buffer for the arguments.  */
   /* Calculate length of said buffer.  */
   size_t sz = 1; /* nil terminator */
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      sz += strlen (m_args[i]->get_debug_string ());
+      sz += strlen (m_args[i]->get_debug_string_parens (prec));
       sz += 2; /* ", " separator */
     }
 
@@ -4488,8 +4593,8 @@ recording::call::make_debug_string ()
 
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      strcpy (argbuf + len, m_args[i]->get_debug_string ());
-      len += strlen (m_args[i]->get_debug_string ());
+      strcpy (argbuf + len, m_args[i]->get_debug_string_parens (prec));
+      len += strlen (m_args[i]->get_debug_string_parens (prec));
       if (i + 1 < m_args.length ())
 	{
 	  strcpy (argbuf + len, ", ");
@@ -4586,12 +4691,13 @@ recording::call_through_ptr::visit_children (rvalue_visitor *v)
 recording::string *
 recording::call_through_ptr::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   /* First, build a buffer for the arguments.  */
   /* Calculate length of said buffer.  */
   size_t sz = 1; /* nil terminator */
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      sz += strlen (m_args[i]->get_debug_string ());
+      sz += strlen (m_args[i]->get_debug_string_parens (prec));
       sz += 2; /* ", " separator */
     }
 
@@ -4601,8 +4707,8 @@ recording::call_through_ptr::make_debug_string ()
 
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      strcpy (argbuf + len, m_args[i]->get_debug_string ());
-      len += strlen (m_args[i]->get_debug_string ());
+      strcpy (argbuf + len, m_args[i]->get_debug_string_parens (prec));
+      len += strlen (m_args[i]->get_debug_string_parens (prec));
       if (i + 1 < m_args.length ())
 	{
 	  strcpy (argbuf + len, ", ");
@@ -4614,7 +4720,7 @@ recording::call_through_ptr::make_debug_string ()
   /* ...and use it to get the string for the call as a whole.  */
   string *result = string::from_printf (m_ctxt,
 					"%s (%s)",
-					m_fn_ptr->get_debug_string (),
+					m_fn_ptr->get_debug_string_parens (prec),
 					argbuf);
 
   delete[] argbuf;
@@ -4680,10 +4786,11 @@ recording::array_access::visit_children (rvalue_visitor *v)
 recording::string *
 recording::array_access::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s[%s]",
-			      m_ptr->get_debug_string (),
-			      m_index->get_debug_string ());
+			      m_ptr->get_debug_string_parens (prec),
+			      m_index->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for
@@ -4735,9 +4842,10 @@ recording::access_field_of_lvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::access_field_of_lvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s.%s",
-			      m_lvalue->get_debug_string (),
+			      m_lvalue->get_debug_string_parens (prec),
 			      m_field->get_debug_string ());
 }
 
@@ -4787,9 +4895,10 @@ recording::access_field_rvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::access_field_rvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s.%s",
-			      m_rvalue->get_debug_string (),
+			      m_rvalue->get_debug_string_parens (prec),
 			      m_field->get_debug_string ());
 }
 
@@ -4840,9 +4949,10 @@ recording::dereference_field_rvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::dereference_field_rvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s->%s",
-			      m_rvalue->get_debug_string (),
+			      m_rvalue->get_debug_string_parens (prec),
 			      m_field->get_debug_string ());
 }
 
@@ -4891,9 +5001,10 @@ recording::dereference_rvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::dereference_rvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "*%s",
-			      m_rvalue->get_debug_string ());
+			      m_rvalue->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for
@@ -4939,9 +5050,10 @@ recording::get_address_of_lvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::get_address_of_lvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "&%s",
-			      m_lvalue->get_debug_string ());
+			      m_lvalue->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for

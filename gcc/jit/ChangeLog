@@ -1,3 +1,49 @@
+2015-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66539
+	* jit-recording.c: Within namespace gcc::jit::recording::
+	(rvalue::get_debug_string_parens): New function.
+	(binary_op::make_debug_string): Update to mimic C precedence
+	rules.
+	(binary_op_precedence): New array.
+	(binary_op::get_precedence): New function.
+	(comparison::make_debug_string): Update to mimic C precedence
+	rules.
+	(comparison_precedence): New array.
+	(comparison::get_precedence): New function.
+	(cast::make_debug_string): Update to mimic C precedence rules.
+	(call::make_debug_string): Likewise.
+	(call_through_ptr::make_debug_string): Likewise.
+	(array_access::make_debug_string): Likewise.
+	(access_field_of_lvalue::make_debug_string): Likewise.
+	(access_field_rvalue::make_debug_string): Likewise.
+	(dereference_field_rvalue::make_debug_string): Likewise.
+	(dereference_rvalue::make_debug_string): Likewise.
+	(get_address_of_lvalue::make_debug_string): Likewise.
+	* jit-recording.h: Within namespace gcc::jit::recording::
+	(precedence): New enum.
+	(rvalue::rvalue): Initialize field "m_parenthesized_string".
+	(rvalue::get_debug_string_parens): New method.
+	(rvalue::get_precedence): New pure virtual function.
+	(rvalue::m_parenthesized_string): New field.
+	(param::get_precedence): New function.
+	(global::get_precedence): New function.
+	(memento_of_new_rvalue_from_const::get_precedence): New function.
+	(memento_of_new_string_literal::get_precedence): New function.
+	(unary_op::get_precedence): New function.
+	(binary_op::get_precedence): New function.
+	(comparison::get_precedence): New function.
+	(cast::get_precedence): New function.
+	(call::get_precedence): New function.
+	(call_through_ptr::get_precedence): New function.
+	(array_access::get_precedence): New function.
+	(access_field_of_lvalue::get_precedence): New function.
+	(access_field_rvalue::get_precedence): New function.
+	(dereference_field_rvalue::get_precedence): New function.
+	(dereference_rvalue::get_precedence): New function.
+	(get_address_of_lvalue::get_precedence): New function.
+	(local::get_precedence): New function.
+
 2015-06-09  Matthias Klose  <doko@ubuntu.com>
 
 	* Make-lang.in (jit.install-common): Install headers using INSTALL_DATA.
