@@ -1,3 +1,8 @@
+2015-06-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/58583
+	* g++.dg/cpp0x/nsdmi-template14.C: New test.
+
 2015-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51048

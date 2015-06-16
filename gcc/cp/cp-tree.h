@@ -156,6 +156,7 @@ c-common.h, not after.
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
       TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
+      DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
@@ -3784,6 +3785,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    parameter, i.e, a[] rather than *a.  */
 #define DECL_ARRAY_PARAMETER_P(NODE) \
   DECL_LANG_FLAG_1 (PARM_DECL_CHECK (NODE))
+
+/* Nonzero for a FIELD_DECL who's NSMDI is currently being
+   instantiated.  */
+#define DECL_INSTANTIATING_NSDMI_P(NODE) \
+  DECL_LANG_FLAG_2 (FIELD_DECL_CHECK (NODE))
 
 /* Nonzero for FIELD_DECL node means that this field is a base class
    of the parent object, as opposed to a member field.  */
