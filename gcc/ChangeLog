@@ -1,3 +1,16 @@
+2015-06-16  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config/mips/mti-linux.h (MIPS_SYSVERSION_SPEC): New.
+	(SYSROOT_SUFFIX_SPEC): Update.
+	(SYSROOT_HEADERS_SUFFIX_SPEC): New.
+	(STARTFILE_PREFIX_SPEC): Update.
+	* config/mips/t-mti-linux (MULTILIB_EXCEPTIONS): Remove.
+	(MULTILIB_REQUIRED): New.
+	(MULTILIB_OSDIRNAMES): New.
+	* config/mips/t-img-linux (MULTILIB_EXCEPTIONS): Remove.
+	(MULTILIB_REQUIRED): New.
+	(MULTILIB_OSDIRNAMES): New.
+
 2015-06-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/aarch64-arches.def: Add "armv8.1-a".
