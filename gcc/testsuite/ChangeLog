@@ -1,3 +1,7 @@
+2015-06-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/recip-vec-sqrtf-avx.c: Disable unrolling.
+
 2015-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/arm/pr65647.c: Do not override -mfloat-abi directives

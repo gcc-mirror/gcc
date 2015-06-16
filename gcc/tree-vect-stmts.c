@@ -5572,11 +5572,12 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		   vect_permute_store_chain().  */
 		vec_oprnd = result_chain[i];
 
-	      data_ref = build2 (MEM_REF, TREE_TYPE (vec_oprnd), dataref_ptr,
-				 dataref_offset
-				 ? dataref_offset
-				 : build_int_cst (reference_alias_ptr_type
-						  (DR_REF (first_dr)), 0));
+	      data_ref = fold_build2 (MEM_REF, TREE_TYPE (vec_oprnd),
+				      dataref_ptr,
+				      dataref_offset
+				      ? dataref_offset
+				      : build_int_cst (reference_alias_ptr_type
+						       (DR_REF (first_dr)), 0));
 	      align = TYPE_ALIGN_UNIT (vectype);
 	      if (aligned_access_p (first_dr))
 		misalign = 0;
@@ -5595,7 +5596,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 					  TYPE_ALIGN (elem_type));
 		  misalign = DR_MISALIGNMENT (first_dr);
 		}
-	      if (dataref_offset == NULL_TREE)
+	      if (dataref_offset == NULL_TREE
+		  && TREE_CODE (dataref_ptr) == SSA_NAME)
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
 					misalign);
 
@@ -6643,11 +6645,11 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		    unsigned int align, misalign;
 
 		    data_ref
-		      = build2 (MEM_REF, vectype, dataref_ptr,
-				dataref_offset
-				? dataref_offset
-				: build_int_cst (reference_alias_ptr_type
-						 (DR_REF (first_dr)), 0));
+		      = fold_build2 (MEM_REF, vectype, dataref_ptr,
+				     dataref_offset
+				     ? dataref_offset
+				     : build_int_cst (reference_alias_ptr_type
+						      (DR_REF (first_dr)), 0));
 		    align = TYPE_ALIGN_UNIT (vectype);
 		    if (alignment_support_scheme == dr_aligned)
 		      {
@@ -6669,7 +6671,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 						TYPE_ALIGN (elem_type));
 			misalign = DR_MISALIGNMENT (first_dr);
 		      }
-		    if (dataref_offset == NULL_TREE)
+		    if (dataref_offset == NULL_TREE
+			&& TREE_CODE (dataref_ptr) == SSA_NAME)
 		      set_ptr_info_alignment (get_ptr_info (dataref_ptr),
 					      align, misalign);
 		    break;
@@ -6686,7 +6689,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 						    dr_explicit_realign,
 						    dataref_ptr, NULL);
 
-		    ptr = copy_ssa_name (dataref_ptr);
+		    if (TREE_CODE (dataref_ptr) == SSA_NAME)
+		      ptr = copy_ssa_name (dataref_ptr);
+		    else
+		      ptr = make_ssa_name (TREE_TYPE (dataref_ptr));
 		    new_stmt = gimple_build_assign
 				 (ptr, BIT_AND_EXPR, dataref_ptr,
 				  build_int_cst
@@ -6716,7 +6722,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 				  build_int_cst
 				  (TREE_TYPE (ptr),
 				   -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
-		    ptr = copy_ssa_name (dataref_ptr, new_stmt);
+		    ptr = copy_ssa_name (ptr, new_stmt);
 		    gimple_assign_set_lhs (new_stmt, ptr);
 		    vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		    data_ref
@@ -6726,7 +6732,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		    break;
 		  }
 		case dr_explicit_realign_optimized:
-		  new_temp = copy_ssa_name (dataref_ptr);
+		  if (TREE_CODE (dataref_ptr) == SSA_NAME)
+		    new_temp = copy_ssa_name (dataref_ptr);
+		  else
+		    new_temp = make_ssa_name (TREE_TYPE (dataref_ptr));
 		  new_stmt = gimple_build_assign
 			       (new_temp, BIT_AND_EXPR, dataref_ptr,
 				build_int_cst
