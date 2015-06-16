@@ -1,3 +1,15 @@
+2015-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56776
+	* config/i386/sse.md (*avx_addsubv4df3_1): New insn pattern.
+	(*avx_addsubv4df3_1s): Ditto.
+	(*sse3_addsubv2df3_1): Ditto.
+	(*sse3_addsubv2df3_1s): Ditto.
+	(*avx_addsubv8sf3_1): Ditto.
+	(*avx_addsubv8sf3_1s): Ditto.
+	(*sse3_addsubv4sf3_1): Ditto.
+	(*sse3_addsubv4sf3_1s): Ditto.
+
 2015-06-16  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config/mips/mti-linux.h (MIPS_SYSVERSION_SPEC): New.
