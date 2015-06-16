@@ -153,6 +153,9 @@ esac
 # Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
+  aarch64*)
+    atomic_word_dir=cpu/aarch64
+    ;;
   alpha*)
     atomic_word_dir=cpu/alpha
     ;;

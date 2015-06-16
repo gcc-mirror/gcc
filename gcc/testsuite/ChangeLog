@@ -1,3 +1,8 @@
+2015-06-16  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/66200
+	* g++.dg/abi/aarch64_guard1.C: Adjust.
+
 2015-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/63608
