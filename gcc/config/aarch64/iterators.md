@@ -284,6 +284,9 @@
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
 
+;; Attribute to describe constants acceptable in atomic logical operations
+(define_mode_attr lconst_atomic [(QI "K") (HI "K") (SI "K") (DI "L")])
+
 ;; Map a mode to a specific constraint character.
 (define_mode_attr cmode [(QI "q") (HI "h") (SI "s") (DI "d")])
 
