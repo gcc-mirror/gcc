@@ -1,3 +1,17 @@
+2015-06-16  Jim Wilson  <jim.wilson@linaro.org>
+
+	Backport from mainline
+	2015-06-02  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR target/66258
+	* config/aarch64/aarch64.c (aarch64_function_value_regno_p): Change
+	!TARGET_GENERAL_REGS_ONLY to TARGET_FLOAT.
+	(aarch64_secondary_reload): Likewise
+	(aarch64_expand_builtin_va_start): Change TARGET_GENERAL_REGS_ONLY
+	to !TARGET_FLOAT.
+	(aarch64_gimplify_va_arg_expr, aarch64_setup_incoming_varargs):
+	Likewise.
+
 2015-06-16  Richard Biener  <rguenther@suse.de>
 
 	Revert
