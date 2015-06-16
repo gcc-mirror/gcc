@@ -16101,14 +16101,8 @@
 
 2015-01-12  Martin Liska  <mliska@suse.cz>
 
-	* ipa-icf.c (sem_function::equals_wpa): Add indirect_calls as indication
-	that a function is not leaf.
-	(sem_function::compare_polymorphic_p): Likewise.
-
-2015-01-12  Martin Liska  <mliska@suse.cz>
-
-	* ipa-icf.c (sem_function::equals_wpa): Add indirect_calls as indication
-	that a function is not leaf.
+	* ipa-icf.c (sem_function::equals_wpa): Add indirect_calls as
+	indication that a function is not leaf.
 	(sem_function::compare_polymorphic_p): Likewise.
 
 2015-01-12  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
