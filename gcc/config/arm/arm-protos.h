@@ -284,9 +284,10 @@ struct tune_params
   /* The preference for non short cirtcuit operation when optimizing for
      performance. The first element covers Thumb state and the second one
      is for ARM state.  */
-  enum log_op_non_sc {LOG_OP_NON_SC_FALSE, LOG_OP_NON_SC_TRUE};
-  log_op_non_sc logical_op_non_short_circuit_thumb: 1;
-  log_op_non_sc logical_op_non_short_circuit_arm: 1;
+  enum log_op_non_short_circuit {LOG_OP_NON_SHORT_CIRCUIT_FALSE,
+				 LOG_OP_NON_SHORT_CIRCUIT_TRUE};
+  log_op_non_short_circuit logical_op_non_short_circuit_thumb: 1;
+  log_op_non_short_circuit logical_op_non_short_circuit_arm: 1;
   /* Prefer 32-bit encoding instead of flag-setting 16-bit encoding.  */
   enum {DISPARAGE_FLAGS_NEITHER, DISPARAGE_FLAGS_PARTIAL, DISPARAGE_FLAGS_ALL}
     disparage_flag_setting_t16_encodings: 2;
