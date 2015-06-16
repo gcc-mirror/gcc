@@ -1,3 +1,16 @@
+2015-06-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64-arches.def: Add "armv8.1-a".
+	* config/aarch64/aarch64-options-extensions.def: Update "fP",
+	"simd" and "crypto".  Add "lse", "pan", "lor" and "rdma".
+	* gcc/config/aarch64/aarch64.h (AARCH64_FL_LSE): New.
+	(AARCH64_FL_PAN): New.
+	(AARCH64_FL_LOR): New.
+	(AARCH64_FL_RDMA): New.
+	(AARCH64_FL_FOR_ARCH8_1): New.
+	* doc/invoke.texi (AArch64 Options): Add "armv8.1-a" to
+	-march. Add "lse", "pan", "lor", "rdma" to feature modifiers.
+
 2015-06-16  Martin Liska  <mliska@suse.cz>
 
 	* bitmap.c (dump_bitmap_statistics): Fix GNU coding style.
