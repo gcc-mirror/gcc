@@ -92,7 +92,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	  std::terminate();
 	}
 
-      return 0;
+      return nullptr;
     }
   }
 
@@ -137,18 +137,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __throw_system_error(int(errc::operation_not_permitted));
 #endif
 
-    _M_start_thread(__b, nullptr);
+    _M_start_thread(std::move(__b), nullptr);
   }
 
   void
   thread::_M_start_thread(__shared_base_type __b, void (*)())
   {
-    __b->_M_this_ptr = __b;
+    auto ptr = __b.get();
+    ptr->_M_this_ptr = std::move(__b);
     int __e = __gthread_create(&_M_id._M_thread,
-			       &execute_native_thread_routine, __b.get());
+			       &execute_native_thread_routine, ptr);
     if (__e)
     {
-      __b->_M_this_ptr.reset();
+      ptr->_M_this_ptr.reset();
       __throw_system_error(__e);
     }
   }
