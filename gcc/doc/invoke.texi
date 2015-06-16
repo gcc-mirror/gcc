@@ -12427,7 +12427,7 @@ corresponding flag to the linker.
 Specify the name of the target architecture, optionally suffixed by one or
 more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-only permissible value for @var{arch} is @samp{armv8-a}.
+permissible values for @var{arch} are @samp{armv8-a} or @samp{armv8.1-a}.
 The permissible values for @var{feature} are documented in the sub-section
 below.  Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} is available.  This option causes the compiler to pick the
@@ -12512,6 +12512,14 @@ Enable floating-point instructions.
 Enable Advanced SIMD instructions.  This implies floating-point instructions
 are enabled.  This is the default for all current possible values for options
 @option{-march} and @option{-mcpu=}.
+@item lse
+Enable Large System Extension instructions.
+@item pan
+Enable Privileged Access Never support.
+@item lor
+Enable Limited Ordering Regions support.
+@item rdma
+Enable ARMv8.1 Advanced SIMD instructions.
 @end table
 
 @node Adapteva Epiphany Options
