@@ -6247,13 +6247,19 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       gcc_assert (!nested_in_vect_loop);
 
+      if (grouped_load)
+	first_dr = STMT_VINFO_DATA_REF
+	    (vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info)));
+      else
+	first_dr = dr;
+
       stride_base
 	= fold_build_pointer_plus
-	    (unshare_expr (DR_BASE_ADDRESS (dr)),
+	    (DR_BASE_ADDRESS (first_dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (unshare_expr (DR_OFFSET (dr))),
-			 convert_to_ptrofftype (DR_INIT (dr))));
-      stride_step = fold_convert (sizetype, unshare_expr (DR_STEP (dr)));
+			 convert_to_ptrofftype (DR_OFFSET (first_dr)),
+			 convert_to_ptrofftype (DR_INIT (first_dr))));
+      stride_step = fold_convert (sizetype, DR_STEP (first_dr));
 
       /* For a load with loop-invariant (but other than power-of-2)
          stride (i.e. not a grouped access) like so:
@@ -6271,25 +6277,25 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	     vectemp = {tmp1, tmp2, ...}
          */
 
-      ivstep = stride_step;
-      ivstep = fold_build2 (MULT_EXPR, TREE_TYPE (ivstep), ivstep,
-			    build_int_cst (TREE_TYPE (ivstep), vf));
+      ivstep = fold_build2 (MULT_EXPR, TREE_TYPE (stride_step), stride_step,
+			    build_int_cst (TREE_TYPE (stride_step), vf));
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
-      create_iv (stride_base, ivstep, NULL,
+      create_iv (unshare_expr (stride_base), unshare_expr (ivstep), NULL,
 		 loop, &incr_gsi, insert_after,
 		 &offvar, NULL);
       incr = gsi_stmt (incr_gsi);
       set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo, NULL));
 
-      stride_step = force_gimple_operand (stride_step, &stmts, true, NULL_TREE);
+      stride_step = force_gimple_operand (unshare_expr (stride_step),
+					  &stmts, true, NULL_TREE);
       if (stmts)
 	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
 
       prev_stmt_info = NULL;
       running_off = offvar;
-      alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (dr)), 0);
+      alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (first_dr)), 0);
       int nloads = nunits;
       tree ltype = TREE_TYPE (vectype);
       auto_vec<tree> dr_chain;
