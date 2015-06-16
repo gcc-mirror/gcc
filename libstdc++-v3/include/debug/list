@@ -524,7 +524,7 @@ namespace __debug
       splice(iterator __position, list& __x)
 #endif
       {
-	_GLIBCXX_DEBUG_VERIFY(&__x != this,
+	_GLIBCXX_DEBUG_VERIFY(std::__addressof(__x) != this,
 			      _M_message(__gnu_debug::__msg_self_splice)
 			      ._M_sequence(*this, "this"));
 	this->_M_transfer_from_if(__x, _Not_equal(__x._M_base().end()));
@@ -552,7 +552,7 @@ namespace __debug
 	_GLIBCXX_DEBUG_VERIFY(__i._M_dereferenceable(),
 			      _M_message(__gnu_debug::__msg_splice_bad)
 			      ._M_iterator(__i, "__i"));
-	_GLIBCXX_DEBUG_VERIFY(__i._M_attached_to(&__x),
+	_GLIBCXX_DEBUG_VERIFY(__i._M_attached_to(std::__addressof(__x)),
 			      _M_message(__gnu_debug::__msg_splice_other)
 			     ._M_iterator(__i, "__i")._M_sequence(__x, "__x"));
 
@@ -580,7 +580,7 @@ namespace __debug
       {
 	__glibcxx_check_insert(__position);
 	__glibcxx_check_valid_range(__first, __last);
-	_GLIBCXX_DEBUG_VERIFY(__first._M_attached_to(&__x),
+	_GLIBCXX_DEBUG_VERIFY(__first._M_attached_to(std::__addressof(__x)),
 			      _M_message(__gnu_debug::__msg_splice_other)
 			      ._M_sequence(__x, "x")
 			      ._M_iterator(__first, "first"));
@@ -595,7 +595,8 @@ namespace __debug
 				  _M_message(__gnu_debug::__msg_valid_range)
 				  ._M_iterator(__first, "first")
 				  ._M_iterator(__last, "last"));
-	    _GLIBCXX_DEBUG_VERIFY(&__x != this || __tmp != __position.base(),
+	    _GLIBCXX_DEBUG_VERIFY(std::__addressof(__x) != this
+				  || __tmp != __position.base(),
 				_M_message(__gnu_debug::__msg_splice_overlap)
 				  ._M_iterator(__tmp, "position")
 				  ._M_iterator(__first, "first")
@@ -685,7 +686,7 @@ namespace __debug
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 300. list::merge() specification incomplete
-	if (this != &__x)
+	if (this != std::__addressof(__x))
 	  {
 	    __glibcxx_check_sorted(_Base::begin(), _Base::end());
 	    __glibcxx_check_sorted(__x.begin().base(), __x.end().base());
@@ -710,7 +711,7 @@ namespace __debug
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 300. list::merge() specification incomplete
-	  if (this != &__x)
+	  if (this != std::__addressof(__x))
 	    {
 	      __glibcxx_check_sorted_pred(_Base::begin(), _Base::end(),
 					  __comp);

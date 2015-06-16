@@ -1438,7 +1438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	if (__position == __i || __position == __j)
 	  return;
 
-	if (this != &__x)
+	if (this != std::__addressof(__x))
 	  _M_check_equal_allocators(__x);
 
 	this->_M_transfer(__position._M_const_cast(),
@@ -1501,7 +1501,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	if (__first != __last)
 	  {
-	    if (this != &__x)
+	    if (this != std::__addressof(__x))
 	      _M_check_equal_allocators(__x);
 
 	    size_t __n = this->_M_distance(__first._M_node, __last._M_node);

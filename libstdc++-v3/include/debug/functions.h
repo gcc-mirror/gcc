@@ -64,7 +64,7 @@ namespace __gnu_debug
   template<typename _Iterator>
     inline bool
     __check_singular(const _Iterator& __x)
-    { return __check_singular_aux(&__x); }
+    { return __check_singular_aux(std::__addressof(__x)); }
 
   /** Non-NULL pointers are nonsingular. */
   template<typename _Tp>

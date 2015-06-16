@@ -265,7 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     list<_Tp, _Alloc>::
     operator=(const list& __x)
     {
-      if (this != &__x)
+      if (this != std::__addressof(__x))
 	{
 	  iterator __first1 = begin();
 	  iterator __last1 = end();
@@ -373,7 +373,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 300. list::merge() specification incomplete
-      if (this != &__x)
+      if (this != std::__addressof(__x))
 	{
 	  _M_check_equal_allocators(__x); 
 
@@ -410,7 +410,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 300. list::merge() specification incomplete
-	if (this != &__x)
+	if (this != std::__addressof(__x))
 	  {
 	    _M_check_equal_allocators(__x);
 
@@ -446,14 +446,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
         list __carry;
         list __tmp[64];
-        list * __fill = &__tmp[0];
+        list * __fill = __tmp;
         list * __counter;
 
         do
 	  {
 	    __carry.splice(__carry.begin(), *this, begin());
 
-	    for(__counter = &__tmp[0];
+	    for(__counter = __tmp;
 		__counter != __fill && !__counter->empty();
 		++__counter)
 	      {
@@ -466,7 +466,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
 	while ( !empty() );
 
-        for (__counter = &__tmp[1]; __counter != __fill; ++__counter)
+        for (__counter = __tmp + 1; __counter != __fill; ++__counter)
           __counter->merge(*(__counter - 1));
         swap( *(__fill - 1) );
       }
@@ -523,14 +523,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  {
 	    list __carry;
 	    list __tmp[64];
-	    list * __fill = &__tmp[0];
+	    list * __fill = __tmp;
 	    list * __counter;
 
 	    do
 	      {
 		__carry.splice(__carry.begin(), *this, begin());
 
-		for(__counter = &__tmp[0];
+		for(__counter = __tmp;
 		    __counter != __fill && !__counter->empty();
 		    ++__counter)
 		  {
@@ -543,7 +543,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      }
 	    while ( !empty() );
 
-	    for (__counter = &__tmp[1]; __counter != __fill; ++__counter)
+	    for (__counter = __tmp + 1; __counter != __fill; ++__counter)
 	      __counter->merge(*(__counter - 1), __comp);
 	    swap(*(__fill - 1));
 	  }
