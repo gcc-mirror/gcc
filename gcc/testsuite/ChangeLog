@@ -1,5 +1,10 @@
 2015-06-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/all-non-failing-tests.h: Add test-compound-assignment.c.
+	* jit.dg/test-compound-assignment.c: New testcase.
+
+2015-06-16  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/66539
 	* jit.dg/all-non-failing-tests.h: Add test-debug-strings.c
 	to "testcases" array.
