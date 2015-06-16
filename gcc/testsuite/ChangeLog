@@ -1,3 +1,7 @@
+2015-06-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-perm-11.c: New testcase.
+
 2015-06-16  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/thumb-ifcvt.c: Add -mno-restrict-it to

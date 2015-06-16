@@ -1,3 +1,8 @@
+2015-06-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_load): Properly start loads
+	with the first element if this is grouped loads.
+
 2015-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm-protos.h (struct tune_params): Rename
