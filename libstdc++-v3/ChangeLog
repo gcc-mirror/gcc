@@ -1,5 +1,16 @@
 2015-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/list.tcc (list::operator=(const list&), list::merge):
+	Use __addressof instead of operator&.
+	(list::sort): Use array-to-pointer decay instead of operator&.
+	* include/bits/stl_list.h (list::splice): Use __addressof instead of
+	operator&.
+	* include/debug/formatter.h (_Error_formatter::_Parameter::_Parameter):
+	Likewise.
+	* include/debug/functions.h (__check_singular): Likewise.
+	* include/debug/list (list::splice, list::merge): Likewise.
+	* testsuite/23_containers/list/modifiers/addressof.cc: New.
+
 	PR libstdc++/65393
 	* src/c++11/thread.cc (thread::_M_make_thread): Replace shared_ptr
 	copies with moves.

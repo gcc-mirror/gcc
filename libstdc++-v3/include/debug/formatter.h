@@ -241,7 +241,7 @@ namespace __gnu_debug
 	: _M_kind(__iterator),  _M_variant()
 	{
 	  _M_variant._M_iterator._M_name = __name;
-	  _M_variant._M_iterator._M_address = &__it;
+	  _M_variant._M_iterator._M_address = std::__addressof(__it);
 	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
 	  _M_variant._M_iterator._M_constness =
 	    std::__are_same<_Safe_iterator<_Iterator, _Sequence>,
@@ -271,7 +271,7 @@ namespace __gnu_debug
 	: _M_kind(__iterator),  _M_variant()
 	{
 	  _M_variant._M_iterator._M_name = __name;
-	  _M_variant._M_iterator._M_address = &__it;
+	  _M_variant._M_iterator._M_address = std::__addressof(__it);
 	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
 	  _M_variant._M_iterator._M_constness =
 	    std::__are_same<_Safe_local_iterator<_Iterator, _Sequence>,
@@ -298,7 +298,7 @@ namespace __gnu_debug
 	: _M_kind(__iterator), _M_variant()
 	{
 	  _M_variant._M_iterator._M_name = __name;
-	  _M_variant._M_iterator._M_address = &__it;
+	  _M_variant._M_iterator._M_address = std::__addressof(__it);
 	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
 	  _M_variant._M_iterator._M_constness = __const_iterator;
 	  _M_variant._M_iterator._M_state = __it ? __unknown_state : __singular;
@@ -311,7 +311,7 @@ namespace __gnu_debug
 	: _M_kind(__iterator), _M_variant()
 	{
 	  _M_variant._M_iterator._M_name = __name;
-	  _M_variant._M_iterator._M_address = &__it;
+	  _M_variant._M_iterator._M_address = std::__addressof(__it);
 	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
 	  _M_variant._M_iterator._M_constness = __mutable_iterator;
 	  _M_variant._M_iterator._M_state = __it ? __unknown_state : __singular;
@@ -324,7 +324,7 @@ namespace __gnu_debug
 	: _M_kind(__iterator), _M_variant()
 	{
 	  _M_variant._M_iterator._M_name = __name;
-	  _M_variant._M_iterator._M_address = &__it;
+	  _M_variant._M_iterator._M_address = std::__addressof(__it);
 	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
 	  _M_variant._M_iterator._M_constness = __unknown_constness;
 	  _M_variant._M_iterator._M_state =
@@ -340,7 +340,7 @@ namespace __gnu_debug
 	{
 	  _M_variant._M_sequence._M_name = __name;
 	  _M_variant._M_sequence._M_address =
-	    static_cast<const _Sequence*>(&__seq);
+	    static_cast<const _Sequence*>(std::__addressof(__seq));
 	  _M_variant._M_sequence._M_type = _GLIBCXX_TYPEID(_Sequence);
 	}
 
@@ -349,7 +349,7 @@ namespace __gnu_debug
 	: _M_kind(__sequence), _M_variant()
 	{
 	  _M_variant._M_sequence._M_name = __name;
-	  _M_variant._M_sequence._M_address = &__seq;
+	  _M_variant._M_sequence._M_address = std::__addressof(__seq);
 	  _M_variant._M_sequence._M_type = _GLIBCXX_TYPEID(_Sequence);
 	}
 
