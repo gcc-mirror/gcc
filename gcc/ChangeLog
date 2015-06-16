@@ -1,6 +1,6 @@
 2015-06-16  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/56776
+	PR target/56766
 	* config/i386/sse.md (*avx_addsubv4df3_1): New insn pattern.
 	(*avx_addsubv4df3_1s): Ditto.
 	(*sse3_addsubv2df3_1): Ditto.
