@@ -1,3 +1,10 @@
+2015-06-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/58583
+	* cp-tree.h (DECL_INSTANTIATING_NSDMI_P): New.
+	* init.c (get_nsdmi): Check for DEFAULT_ARG in template case and
+	protect it from recursive instantiation.
+
 2015-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51048
