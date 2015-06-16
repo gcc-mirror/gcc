@@ -49,6 +49,7 @@ if {[istarget arm*-*-*]} then {
     set dg-do-what-default run
 }
 
+torture-init
 set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 # Make sure Neon flags are provided, if necessary.
@@ -60,4 +61,5 @@ gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
 
 # All done.
 set dg-do-what-default ${save-dg-do-what-default}
+torture-finish
 dg-finish
