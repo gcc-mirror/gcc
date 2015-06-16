@@ -3956,13 +3956,13 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
     }
 
   vect_ptr_type = build_pointer_type (STMT_VINFO_VECTYPE (stmt_info));
-  addr_base = fold_convert (vect_ptr_type, addr_base);
   dest = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var, base_name);
-  addr_base = force_gimple_operand (addr_base, &seq, false, dest);
+  addr_base = force_gimple_operand (addr_base, &seq, true, dest);
   gimple_seq_add_seq (new_stmt_list, seq);
 
   if (DR_PTR_INFO (dr)
-      && TREE_CODE (addr_base) == SSA_NAME)
+      && TREE_CODE (addr_base) == SSA_NAME
+      && !SSA_NAME_PTR_INFO (addr_base))
     {
       vect_duplicate_ssa_name_ptr_info (addr_base, dr, stmt_info);
       if (offset || byte_offset)
@@ -4048,7 +4048,6 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
   tree aggr_ptr_type;
   tree aggr_ptr;
   tree new_temp;
-  gimple vec_stmt;
   gimple_seq new_stmt_list = NULL;
   edge pe = NULL;
   basic_block new_bb;
@@ -4196,28 +4195,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
     }
 
   *initial_address = new_temp;
-
-  /* Create: p = (aggr_type *) initial_base  */
-  if (TREE_CODE (new_temp) != SSA_NAME
-      || !useless_type_conversion_p (aggr_ptr_type, TREE_TYPE (new_temp)))
-    {
-      vec_stmt = gimple_build_assign (aggr_ptr,
-				      fold_convert (aggr_ptr_type, new_temp));
-      aggr_ptr_init = make_ssa_name (aggr_ptr, vec_stmt);
-      /* Copy the points-to information if it exists. */
-      if (DR_PTR_INFO (dr))
-	vect_duplicate_ssa_name_ptr_info (aggr_ptr_init, dr, stmt_info);
-      gimple_assign_set_lhs (vec_stmt, aggr_ptr_init);
-      if (pe)
-	{
-	  new_bb = gsi_insert_on_edge_immediate (pe, vec_stmt);
-	  gcc_assert (!new_bb);
-	}
-      else
-	gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
-    }
-  else
-    aggr_ptr_init = new_temp;
+  aggr_ptr_init = new_temp;
 
   /* (3) Handle the updating of the aggregate-pointer inside the loop.
      This is needed when ONLY_INIT is false, and also when AT_LOOP is the
@@ -4342,7 +4320,10 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   if (bump)
     update = bump;
 
-  new_dataref_ptr = copy_ssa_name (dataref_ptr);
+  if (TREE_CODE (dataref_ptr) == SSA_NAME)
+    new_dataref_ptr = copy_ssa_name (dataref_ptr);
+  else
+    new_dataref_ptr = make_ssa_name (TREE_TYPE (dataref_ptr));
   incr_stmt = gimple_build_assign (new_dataref_ptr, POINTER_PLUS_EXPR,
 				   dataref_ptr, update);
   vect_finish_stmt_generation (stmt, incr_stmt, gsi);
