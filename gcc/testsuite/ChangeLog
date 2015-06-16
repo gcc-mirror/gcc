@@ -1,3 +1,9 @@
+2015-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56776
+	* gcc.target/i386/pr56776-1.c: New test.
+	* gcc.target/i386/pr56776-2.c: Ditto.
+
 2015-06-16  Steve Ellcey  <sellcey@imgtec.com>
 
 	* gcc.target/mips/loongson-shift-count-truncated-1.c:
