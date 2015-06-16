@@ -1,3 +1,7 @@
+2015-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/attr_thumb.c: Add -mno-restrict-it to dg-options.
+
 2015-06-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/58583

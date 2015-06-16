@@ -1,7 +1,7 @@
 /* Check that attribute target thumb is recognized. */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb2_ok } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-restrict-it" } */
 /* { dg-final { scan-assembler ".thumb" } } */
 /* { dg-final { scan-assembler "ite" } } */
 
