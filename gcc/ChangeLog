@@ -1,3 +1,31 @@
+2015-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm-protos.h (struct tune_params): Rename
+	log_op_non_sc to log_op_non_short_circuit, and rename enum
+	values to expand SC to SHORT_CIRCUIT.
+	* config/arm/arm.c (arm_slowmul_tune): Expand LOG_OP_NON_SC
+	to LOG_OP_NON_SHORT_CIRCUIT.
+	(arm_fastmul_tune):Likewise
+	(arm_strongarm_tune): Likewise.
+	(arm_xscale_tune): Likewise.
+	(arm_9e_tune): Likewise.
+	(arm_marvell_pj4_tune): Likewise.
+	(arm_v6t2_tune): Likewise.
+	(arm_cortex_tune): Likewise.
+	(arm_cortex_a8_tune): Likewise.
+	(arm_cortex_a7_tune): Likewise.
+	(arm_cortex_a15_tune): Likewise.
+	(arm_cortex_a53_tune): Likewise.
+	(arm_cortex_a57_tune): Likewise.
+	(arm_xgene1_tune): Likewise.
+	(arm_cortex_a5_tune): Likewise.
+	(arm_cortex_a9_tune): Likewise.
+	(arm_cortex_a12_tune): Likewise.
+	(arm_v7m_tune): Likewise.
+	(arm_cortex_m7_tune): Likewise.
+	(arm_v6m_tune): Likewise.
+	(arm_fa726te_tune): Likewise.
+
 2015-06-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* altivec.md: Delete UNSPEC_VMLADDUHM.
