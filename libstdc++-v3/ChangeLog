@@ -1,5 +1,7 @@
 2015-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocated_ptr.h (__allocated_ptr): Use __addressof.
+
 	* include/bits/list.tcc (list::operator=(const list&), list::merge):
 	Use __addressof instead of operator&.
 	(list::sort): Use array-to-pointer decay instead of operator&.
