@@ -1,3 +1,8 @@
+2015-06-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59682
+	* g++.dg/parse/new-placement1.C: New.
+
 2015-06-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/all-non-failing-tests.h: Add test-compound-assignment.c.

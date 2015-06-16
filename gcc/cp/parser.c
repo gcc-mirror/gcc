@@ -7560,6 +7560,9 @@ cp_parser_new_placement (cp_parser* parser)
 		      /*allow_expansion_p=*/true,
 		      /*non_constant_p=*/NULL));
 
+  if (expression_list && expression_list->is_empty ())
+    error ("expected expression-list or type-id");
+
   return expression_list;
 }
 

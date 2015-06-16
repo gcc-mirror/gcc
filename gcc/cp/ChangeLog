@@ -1,3 +1,8 @@
+2015-06-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59682
+	* parser.c (cp_parser_new_placement): Reject an empty expression-list.
+
 2015-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66536
