@@ -1,3 +1,9 @@
+2015-06-16  Steve Ellcey  <sellcey@imgtec.com>
+
+	* gcc.target/mips/loongson-shift-count-truncated-1.c:
+	Skip on mips*-mti-linux* and mips*-img-linux* targets.
+	* gcc.target/mips/loongson-simd.c: Ditto.
+
 2015-06-16  Richard Biener  <rguenther@suse.de>
 
 	* gcc.target/i386/recip-vec-sqrtf-avx.c: Disable unrolling.
