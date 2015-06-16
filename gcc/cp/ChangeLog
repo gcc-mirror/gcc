@@ -1,3 +1,8 @@
+2015-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66387
+	* pt.c (tsubst_copy) [VAR_DECL]: Use process_outer_var_ref.
+
 2015-06-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/58583
