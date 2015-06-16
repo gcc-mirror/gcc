@@ -23,8 +23,16 @@ MULTILIB_OPTIONS = mips64r6 mabi=64 EL
 MULTILIB_DIRNAMES = mips64r6 64 el
 MULTILIB_MATCHES = EL=mel EB=meb
 
-# The 64 bit ABI is not supported on the mips32r6 architecture.
-# Because mips32r6 is the default we can't use that flag to trigger
-# the exception so we check for mabi=64 with no specific mips
-# architecture flag instead.
-MULTILIB_EXCEPTIONS += mabi=64*
+MULTILIB_REQUIRED =
+MULTILIB_OSDIRNAMES = .=mips-r6-hard/lib
+MULTILIB_REQUIRED += mips64r6
+MULTILIB_OSDIRNAMES += mips64r6=!mips-r6-hard/lib32
+MULTILIB_REQUIRED += mips64r6/mabi=64
+MULTILIB_OSDIRNAMES += mips64r6/mabi.64=!mips-r6-hard/lib64
+
+MULTILIB_REQUIRED += EL
+MULTILIB_OSDIRNAMES += EL=!mipsel-r6-hard/lib
+MULTILIB_REQUIRED += mips64r6/EL
+MULTILIB_OSDIRNAMES += mips64r6/EL=!mipsel-r6-hard/lib32
+MULTILIB_REQUIRED += mips64r6/mabi=64/EL
+MULTILIB_OSDIRNAMES += mips64r6/mabi.64/EL=!mipsel-r6-hard/lib64
