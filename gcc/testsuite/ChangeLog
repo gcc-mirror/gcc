@@ -1,3 +1,8 @@
+2015-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
+	Reinstate calls to torture-init and torture-finalize.
+
 2015-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/attr_thumb.c: Add -mno-restrict-it to dg-options.
