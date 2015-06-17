@@ -1,3 +1,24 @@
+2015-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66429
+	* omp-low.c (expand_omp_taskreg, expand_omp_target): Use child_cfun
+	instead of DECL_STRUCT_FUNCTION (child_fn).  Or in has_simduid_loops
+	and has_force_vectorize_loops flags from cfun into
+	child_cfun.
+	(expand_omp_simd): For broken loop, set cfun->has_simduid_loops
+	if simduid is non-NULL.
+	* tree-pass.h (make_pass_simduid_cleanup): New prototype.
+	* passes.def (pass_simduid_cleanup): Add new pass after loop
+	passes.
+	* tree-vectorizer.c (adjust_simduid_builtins): Remove one unnecessary
+	indirection from htab argument's type.
+	(shrink_simd_arrays): New function.
+	(vectorize_loops): Use it.  Adjust adjust_simduid_builtins caller.
+	Don't call adjust_simduid_builtins if there are no loops.
+	(pass_data_simduid_cleanup, pass_simduid_cleanup): New variables.
+	(pass_simduid_cleanup::execute): New method.
+	(make_pass_simduid_cleanup): New function.
+
 2015-06-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	Backport from mainline r223929.

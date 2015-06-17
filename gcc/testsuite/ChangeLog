@@ -1,3 +1,8 @@
+2015-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66429
+	* c-c++-common/gomp/pr66429.c: New test.
+
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/65944
