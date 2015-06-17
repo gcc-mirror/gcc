@@ -529,6 +529,71 @@ chkp_insert_retbnd_call (tree bndval, tree retval,
   return bndval;
 }
 
+/* Build a GIMPLE_CALL identical to CALL but skipping bounds
+   arguments.  */
+
+gcall *
+chkp_copy_call_skip_bounds (gcall *call)
+{
+  bitmap bounds;
+  unsigned i;
+
+  bitmap_obstack_initialize (NULL);
+  bounds = BITMAP_ALLOC (NULL);
+
+  for (i = 0; i < gimple_call_num_args (call); i++)
+    if (POINTER_BOUNDS_P (gimple_call_arg (call, i)))
+      bitmap_set_bit (bounds, i);
+
+  if (!bitmap_empty_p (bounds))
+    call = gimple_call_copy_skip_args (call, bounds);
+  gimple_call_set_with_bounds (call, false);
+
+  BITMAP_FREE (bounds);
+  bitmap_obstack_release (NULL);
+
+  return call;
+}
+
+/* Redirect edge E to the correct node according to call_stmt.
+   Return 1 if bounds removal from call_stmt should be done
+   instead of redirection.  */
+
+bool
+chkp_redirect_edge (cgraph_edge *e)
+{
+  bool instrumented = false;
+  tree decl = e->callee->decl;
+
+  if (e->callee->instrumentation_clone
+      || chkp_function_instrumented_p (decl))
+    instrumented = true;
+
+  if (instrumented
+      && !gimple_call_with_bounds_p (e->call_stmt))
+    e->redirect_callee (cgraph_node::get_create (e->callee->orig_decl));
+  else if (!instrumented
+	   && gimple_call_with_bounds_p (e->call_stmt)
+	   && !chkp_gimple_call_builtin_p (e->call_stmt, BUILT_IN_CHKP_BNDCL)
+	   && !chkp_gimple_call_builtin_p (e->call_stmt, BUILT_IN_CHKP_BNDCU)
+	   && !chkp_gimple_call_builtin_p (e->call_stmt, BUILT_IN_CHKP_BNDSTX))
+    {
+      if (e->callee->instrumented_version)
+	e->redirect_callee (e->callee->instrumented_version);
+      else
+	{
+	  tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	  /* Avoid bounds removal if all args will be removed.  */
+	  if (!args || TREE_VALUE (args) != void_type_node)
+	    return true;
+	  else
+	    gimple_call_set_with_bounds (e->call_stmt, false);
+	}
+    }
+
+  return false;
+}
+
 /* Mark statement S to not be instrumented.  */
 static void
 chkp_mark_stmt (gimple s)

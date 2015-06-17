@@ -1281,6 +1281,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   tree lhs = gimple_call_lhs (e->call_stmt);
   gcall *new_stmt;
   gimple_stmt_iterator gsi;
+  bool skip_bounds = false;
 #ifdef ENABLE_CHECKING
   cgraph_node *node;
 #endif
@@ -1389,8 +1390,16 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	}
     }
 
+  /* We might propagate instrumented function pointer into
+     not instrumented function and vice versa.  In such a
+     case we need to either fix function declaration or
+     remove bounds from call statement.  */
+  if (flag_check_pointer_bounds && e->callee)
+    skip_bounds = chkp_redirect_edge (e);
+
   if (e->indirect_unknown_callee
-      || decl == e->callee->decl)
+      || (decl == e->callee->decl
+	  && !skip_bounds))
     return e->call_stmt;
 
 #ifdef ENABLE_CHECKING
@@ -1415,13 +1424,19 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	}
     }
 
-  if (e->callee->clone.combined_args_to_skip)
+  if (e->callee->clone.combined_args_to_skip
+      || skip_bounds)
     {
       int lp_nr;
 
-      new_stmt
-	= gimple_call_copy_skip_args (e->call_stmt,
-				      e->callee->clone.combined_args_to_skip);
+      new_stmt = e->call_stmt;
+      if (e->callee->clone.combined_args_to_skip)
+	new_stmt
+	  = gimple_call_copy_skip_args (new_stmt,
+					e->callee->clone.combined_args_to_skip);
+      if (skip_bounds)
+	new_stmt = chkp_copy_call_skip_bounds (new_stmt);
+
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       gimple_call_set_fntype (new_stmt, gimple_call_fntype (e->call_stmt));
 

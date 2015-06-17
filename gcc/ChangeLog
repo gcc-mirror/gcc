@@ -1,5 +1,20 @@
 2015-06-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	Backport from mainline r223929.
+	2015-06-01  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65527
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Add
+	redirection for instrumented calls.
+	* lto-wrapper.c (merge_and_complain): Merge -fcheck-pointer-bounds.
+	(append_compiler_options): Append -fcheck-pointer-bounds.
+	* tree-chkp.h (chkp_copy_call_skip_bounds): New.
+	(chkp_redirect_edge): New.
+	* tree-chkp.c (chkp_copy_call_skip_bounds): New.
+	(chkp_redirect_edge): New.
+
+2015-06-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	Backport from mainline r224063.
 	2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 

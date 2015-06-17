@@ -1,5 +1,16 @@
 2015-06-17  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	Backport from mainline r223929.
+	2015-06-01  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65527
+	* gcc.target/i386/mpx/chkp-fix-calls-1.c: New.
+	* gcc.target/i386/mpx/chkp-fix-calls-2.c: New.
+	* gcc.target/i386/mpx/chkp-fix-calls-3.c: New.
+	* gcc.target/i386/mpx/chkp-fix-calls-4.c: New.
+
+2015-06-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	Backport from mainline r224063.
 	2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 
