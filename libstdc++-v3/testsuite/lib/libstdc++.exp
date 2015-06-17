@@ -99,6 +99,10 @@ proc libstdc++_init { testfile } {
     setenv LC_ALL C
     setenv LANG C
 
+    # LANGUAGE changes the behavior of GNU gettext(3) and causes
+    # std::messages tests to fail.
+    array unset env LANGUAGE
+
     # Many hosts now default to a non-ASCII C locale, however, so
     # they can set a charset encoding here if they need.
     if { [ishost "*-*-cygwin*"] } {
