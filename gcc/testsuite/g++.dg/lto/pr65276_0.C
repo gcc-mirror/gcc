@@ -59,3 +59,5 @@ namespace std2
   };
   static ios_base::Init __ioinit;
 }
+
+std2::exception::~exception() noexcept { }
