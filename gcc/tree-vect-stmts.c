@@ -3370,13 +3370,15 @@ vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
 	     (or in STMT_VINFO_RELATED_STMT chain).  */
 	  if (slp_node)
 	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
-
-	  if (!*prev_stmt_info)
-	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
 	  else
-	    STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
+	    {
+	      if (!*prev_stmt_info)
+		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+	      else
+		STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
 
-	  *prev_stmt_info = vinfo_for_stmt (new_stmt);
+	      *prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    }
 	}
     }
 
@@ -3955,12 +3957,14 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
 	      if (slp_node)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
-
-	      if (!prev_stmt_info)
-		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
 	      else
-		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	      prev_stmt_info = vinfo_for_stmt (new_stmt);
+		{
+		  if (!prev_stmt_info)
+		    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+		  else
+		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+		  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		}
 	    }
 	}
 
@@ -5327,9 +5331,23 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  /* We've set op and dt above, from gimple_assign_rhs1(stmt),
 	     and first_stmt == stmt.  */
 	  if (j == 0)
-	    vec_oprnd = vect_get_vec_def_for_operand (op, first_stmt, NULL);
+	    {
+	      if (slp)
+		{
+		  vect_get_vec_defs (op, NULL_TREE, stmt, &vec_oprnds, NULL,
+				     slp_node, -1);
+		  vec_oprnd = vec_oprnds[0];
+		}
+	      else
+		vec_oprnd = vect_get_vec_def_for_operand (op, first_stmt, NULL);
+	    }
 	  else
-	    vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+	    {
+	      if (slp)
+		vec_oprnd = vec_oprnds[j];
+	      else
+		vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+	    }
 
 	  for (i = 0; i < nstores; i++)
 	    {
@@ -5359,7 +5377,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      vect_finish_stmt_generation (stmt, incr, gsi);
 
 	      running_off = newoff;
-	      if (j == 0 && i == i)
+	      if (j == 0 && i == 0)
 		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = assign;
 	      else
 		STMT_VINFO_RELATED_STMT (prev_stmt_info) = assign;
