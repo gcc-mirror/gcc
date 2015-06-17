@@ -1,7 +1,6 @@
 /* PR target/53759 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx" } */
-/* { dg-require-effective-target avx } */
 
 #include <xmmintrin.h>
 

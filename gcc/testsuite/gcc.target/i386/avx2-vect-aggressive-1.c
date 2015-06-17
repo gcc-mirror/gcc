@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target avx2 } */
 /* { dg-options "-mavx2 -O3 -fopenmp-simd -fdump-tree-vect-details" } */
 
 #define N 256

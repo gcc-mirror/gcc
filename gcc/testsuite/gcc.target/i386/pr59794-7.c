@@ -1,4 +1,5 @@
 /* PR target/59794 */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mno-avx" } */
 /* { dg-skip-if "no AVX vector" { *-*-mingw* } } */
 

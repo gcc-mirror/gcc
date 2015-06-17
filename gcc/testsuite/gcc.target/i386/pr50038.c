@@ -1,4 +1,5 @@
 /* PR target/50038 */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 
 void

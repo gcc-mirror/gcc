@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fno-tree-dse -fno-dce -msse4" } */
-/* { dg-require-effective-target sse4 } */
 
 typedef char __v16qi __attribute__ ((__vector_size__ (16)));
 
