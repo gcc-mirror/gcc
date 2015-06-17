@@ -1,5 +1,9 @@
 2015-06-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66450
+	* constexpr.c (cxx_eval_store_expression): Avoid messing up outer
+	ctx->ctor.
+
 	PR c++/66289
 	* cp-tree.h (TEMPLATE_DECL_COMPLEX_ALIAS_P): New.
 	* pt.c (push_template_decl_real): Set it.
