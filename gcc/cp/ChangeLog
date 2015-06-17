@@ -1,5 +1,9 @@
 2015-06-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66536
+	* tree.c (replace_placeholders_r) [CONSTRUCTOR]: Handle type
+	mismatch.
+
 	PR c++/58063
 	* tree.c (bot_manip): Remap SAVE_EXPR.
 
