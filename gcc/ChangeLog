@@ -1,3 +1,10 @@
+2015-06-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*cmp<mode>_internal1): Rename to...
+	(*cmp<mode>_signed): ... this.
+	(*cmpsi_internal2, *cmpdi_internal2): Merge, rename to...
+	(*cmp<mode>_unsigned): ... this.  Remove %b.
+
 2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* coretypes.h: Include input.h and as-a.h.
