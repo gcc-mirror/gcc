@@ -36,28 +36,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
-    _Fwd_list_base(_Fwd_list_base&& __lst, const _Node_alloc_type& __a)
-    : _M_impl(__a)
+    _Fwd_list_base(_Fwd_list_base&& __lst, _Node_alloc_type&& __a)
+    : _M_impl(std::move(__a))
     {
-      if (__lst._M_get_Node_allocator() == __a)
+      if (__lst._M_get_Node_allocator() == _M_get_Node_allocator())
 	{
 	  this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
 	  __lst._M_impl._M_head._M_next = 0;
 	}
       else
-        {
-          this->_M_impl._M_head._M_next = 0;
-          _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-          _Node* __curr = static_cast<_Node*>(__lst._M_impl._M_head._M_next);
-
-          while (__curr)
-            {
-              __to->_M_next =
-                _M_create_node(std::move_if_noexcept(*__curr->_M_valptr()));
-              __to = __to->_M_next;
-              __curr = static_cast<_Node*>(__curr->_M_next);
-            }
-        }
+	this->_M_impl._M_head._M_next = 0;
     }
 
   template<typename _Tp, typename _Alloc>

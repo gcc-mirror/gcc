@@ -51,8 +51,11 @@ namespace __profile
       typedef typename _Base::const_iterator	const_iterator;
 
       // 23.2.3.1 construct/copy/destroy:
+
+      forward_list() = default;
+
       explicit
-      forward_list(const _Alloc& __al = _Alloc())
+      forward_list(const _Alloc& __al) noexcept
       : _Base(__al) { }
 
       forward_list(const forward_list& __list, const _Alloc& __al)
