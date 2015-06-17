@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic-core.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"

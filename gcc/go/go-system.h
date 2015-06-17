@@ -130,7 +130,6 @@ struct hash<T*>
 #include "coretypes.h"
 
 #include "diagnostic-core.h"	/* For error_at and friends.  */
-#include "input.h"		/* For source_location.  */
 #include "intl.h"		/* For _().  */
 
 // When using gcc, go_assert is just gcc_assert.

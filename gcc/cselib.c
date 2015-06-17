@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"/* FIXME: For hashing DEBUG_EXPR & friends.  */
@@ -32,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
-#include "input.h"
 #include "function.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"

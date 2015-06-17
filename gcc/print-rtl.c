@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 /* These headers all define things which are not available in
    generator programs.  */
 #ifndef GENERATOR_FILE
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"
@@ -41,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "hard-reg-set.h"
 #include "predict.h"
-#include "input.h"
 #include "function.h"
 #include "basic-block.h"
 #include "diagnostic.h"

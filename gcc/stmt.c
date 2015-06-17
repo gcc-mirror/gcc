@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rtl.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"
@@ -62,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
 #include "regs.h"
 #include "alloc-pool.h"

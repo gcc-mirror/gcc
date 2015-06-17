@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "insn-config.h"
 #include "conditions.h"
-#include "input.h"
 #include "function.h"
 #include "output.h"
 #include "insn-attr.h"

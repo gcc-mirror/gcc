@@ -97,7 +97,6 @@ a register with any other reload.  */
 #include "insn-config.h"
 #include "symtab.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "rtl.h"
 #include "flags.h"

@@ -383,7 +383,6 @@ are write-only operations.
 #include "insn-config.h"
 #include "recog.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "regs.h"
 #include "alloc-pool.h"

@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "insn-config.h"
 #include "flags.h"
-#include "input.h"
 #include "function.h"
 #include "symtab.h"
 #include "alias.h"

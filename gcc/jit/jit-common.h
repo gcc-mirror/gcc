@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "libgccjit.h"
 
-#include "input.h"
 #include "vec.h"
 #include "alias.h"
 #include "flags.h"

@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_CORE_H
 #define GCC_DIAGNOSTIC_CORE_H
 
-#include "input.h"
 #include "bversion.h"
 
 /* Constants used to discriminate diagnostics.  */

@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "parse.h"
 #include "flags.h"
 #include "constructor.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

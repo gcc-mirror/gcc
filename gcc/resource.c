@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "regs.h"
 #include "flags.h"

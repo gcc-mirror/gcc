@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "valtrack.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "regs.h"
 #include "emit-rtl.h"

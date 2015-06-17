@@ -23,7 +23,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

@@ -29,7 +29,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "vec.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "inchash.h"

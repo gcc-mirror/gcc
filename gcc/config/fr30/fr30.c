@@ -32,7 +32,6 @@
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

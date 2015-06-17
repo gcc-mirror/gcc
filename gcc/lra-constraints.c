@@ -120,7 +120,6 @@
 #include "output.h"
 #include "addresses.h"
 #include "target.h"
-#include "input.h"
 #include "function.h"
 #include "symtab.h"
 #include "flags.h"

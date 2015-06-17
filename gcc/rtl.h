@@ -34,12 +34,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "hash-table.h"
 #include "hash-set.h"
+#include "input.h"
+#include "is-a.h"
 #endif  /* GENERATOR_FILE */
 
-#include "input.h"
 #include "alias.h"
 #include "flags.h"
-#include "is-a.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */

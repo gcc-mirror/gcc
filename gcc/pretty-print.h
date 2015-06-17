@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_H
 
 #include "obstack.h"
-#include "input.h"
 #include "wide-int-print.h"
 
 /* Maximum number of format string arguments.  */

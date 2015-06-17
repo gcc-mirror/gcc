@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "flags.h"
 #include "regs.h"
-#include "input.h"
 #include "function.h"
 #include "predict.h"
 #include "basic-block.h"

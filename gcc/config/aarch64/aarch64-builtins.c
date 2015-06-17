@@ -23,7 +23,6 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"
@@ -62,7 +61,6 @@
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 

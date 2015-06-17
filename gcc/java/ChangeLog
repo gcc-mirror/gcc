@@ -1,3 +1,25 @@
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* boehm.c: Do not include input.h, line-map.h or is-a.h.
+	* builtins.c: Likewise.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* java-gimplify.c: Likewise.
+	* jcf-dump.c: Likewise.
+	* jcf-io.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jvgenmain.c: Likewise.
+	* lang.c: Likewise.
+	* mangle.c: Likewise.
+	* mangle_name.c: Likewise.
+	* resource.c: Likewise.
+	* typeck.c: Likewise.
+	* verify-glue.c: Likewise.
+	* verify-impl.c: Likewise.
+
 2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* boehm.c : Adjust include files.

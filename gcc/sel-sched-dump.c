@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "hard-reg-set.h"
 #include "regs.h"
-#include "input.h"
 #include "function.h"
 #include "predict.h"
 #include "dominance.h"

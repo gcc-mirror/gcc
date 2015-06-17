@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 
 /* In order for the format checking to accept the C++ front end

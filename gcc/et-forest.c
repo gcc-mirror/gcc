@@ -34,7 +34,6 @@ License along with libiberty; see the file COPYING3.  If not see
 #ifdef DEBUG_ET
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "basic-block.h"
 #endif

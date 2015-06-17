@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "hwint.h"
 #include "vec.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "inchash.h"

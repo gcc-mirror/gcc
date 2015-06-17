@@ -25,7 +25,6 @@
 #include <gmp.h>
 
 #include "vec.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
@@ -37,11 +36,9 @@
 #include "varasm.h"
 #include "tree-iterator.h"
 #include "hash-map.h"
-#include "is-a.h"
 #include "plugin-api.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
