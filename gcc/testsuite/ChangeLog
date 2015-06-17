@@ -1,3 +1,10 @@
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/noplt-1.c (dg-do): Fix target selector.
+	* gcc.target/i386/noplt-2.c (dg-do): Ditto.
+	* gcc.target/i386/noplt-3.c (dg-do): Ditto.
+	* gcc.target/i386/noplt-4.c (dg-do): ditto.
+
 2015-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/66571
