@@ -1,3 +1,14 @@
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree.h (merge_dllimport_decl_attributes, handle_dll_attribute):
+	Remove conditional exposure of prototypes.
+	(ANON_AGGRNAME_FORMAT, ANON_AGGRNAME_P): Delete.
+	* tree.c (anon_aggrname_format, anon_aggrname_p): New.  Replace macro
+	definitions in tree.h with functions.
+	* lto-streamer-out.c (DFS_write_tree_body, hash_tree): Use
+	anon_aggrname_p.
+	* tree-streamer-out.c (write_ts_decl_minimal_tree_pointers): Likewise.
+
 2015-06-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*cmp<mode>_internal1): Rename to...

@@ -2096,7 +2096,7 @@ make_anon_name (void)
 {
   char buf[32];
 
-  sprintf (buf, ANON_AGGRNAME_FORMAT, anon_cnt++);
+  sprintf (buf, anon_aggrname_format (), anon_cnt++);
   return get_identifier (buf);
 }
 
