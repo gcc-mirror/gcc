@@ -105,7 +105,7 @@ namespace __gnu_debug
 	      __bbegin_its = __victim_base;
 	    }
 	  else
-	    __victim_base->_M_sequence = &__lhs;
+	    __victim_base->_M_sequence = std::__addressof(__lhs);
 	}
 
       if (__bbegin_its)
@@ -523,7 +523,7 @@ namespace __debug
       splice_after(const_iterator __pos, forward_list&& __list)
       {
 	__glibcxx_check_insert_after(__pos);
-	_GLIBCXX_DEBUG_VERIFY(&__list != this,
+	_GLIBCXX_DEBUG_VERIFY(std::__addressof(__list) != this,
 			      _M_message(__gnu_debug::__msg_self_splice)
 			      ._M_sequence(*this, "this"));
 	_GLIBCXX_DEBUG_VERIFY(__list.get_allocator() == this->get_allocator(),
@@ -550,7 +550,7 @@ namespace __debug
 	_GLIBCXX_DEBUG_VERIFY(__i._M_before_dereferenceable(),
 			      _M_message(__gnu_debug::__msg_splice_bad)
 			      ._M_iterator(__i, "__i"));
-	_GLIBCXX_DEBUG_VERIFY(__i._M_attached_to(&__list),
+	_GLIBCXX_DEBUG_VERIFY(__i._M_attached_to(std::__addressof(__list)),
 			      _M_message(__gnu_debug::__msg_splice_other)
 			      ._M_iterator(__i, "__i")
 			      ._M_sequence(__list, "__list"));
@@ -577,9 +577,10 @@ namespace __debug
       splice_after(const_iterator __pos, forward_list&& __list,
 		   const_iterator __before, const_iterator __last)
       {
+	auto __listptr = std::__addressof(__list);
 	__glibcxx_check_insert_after(__pos);
 	__glibcxx_check_valid_range(__before, __last);
-	_GLIBCXX_DEBUG_VERIFY(__before._M_attached_to(&__list),
+	_GLIBCXX_DEBUG_VERIFY(__before._M_attached_to(__listptr),
 			      _M_message(__gnu_debug::__msg_splice_other)
 			      ._M_sequence(__list, "list")
 			      ._M_iterator(__before, "before"));
@@ -607,7 +608,7 @@ namespace __debug
 				  ._M_sequence(__list, "list")
 				  ._M_iterator(__before, "before")
 				  ._M_iterator(__last, "last"));
-	    _GLIBCXX_DEBUG_VERIFY(&__list != this || __tmp != __pos.base(),
+	    _GLIBCXX_DEBUG_VERIFY(__listptr != this || __tmp != __pos.base(),
 				  _M_message(__gnu_debug::__msg_splice_overlap)
 				  ._M_iterator(__tmp, "position")
 				  ._M_iterator(__before, "before")
@@ -694,7 +695,7 @@ namespace __debug
       void
       merge(forward_list&& __list)
       {
-	if (this != &__list)
+	if (this != std::__addressof(__list))
 	{
 	  __glibcxx_check_sorted(_Base::begin(), _Base::end());
 	  __glibcxx_check_sorted(__list._M_base().begin(),
@@ -716,7 +717,7 @@ namespace __debug
 	void
 	merge(forward_list&& __list, _Comp __comp)
 	{
-	  if (this != &__list)
+	  if (this != std::__addressof(__list))
 	  {
 	    __glibcxx_check_sorted_pred(_Base::begin(), _Base::end(), __comp);
 	    __glibcxx_check_sorted_pred(__list._M_base().begin(),
