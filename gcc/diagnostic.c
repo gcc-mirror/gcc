@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "version.h"
 #include "demangle.h"
-#include "input.h"
 #include "intl.h"
 #include "backtrace.h"
 #include "diagnostic.h"

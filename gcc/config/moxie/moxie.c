@@ -35,7 +35,6 @@
 #include "reload.h"
 #include "diagnostic-core.h"
 #include "obstack.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

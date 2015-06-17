@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "context.h"
 #include "pass_manager.h"

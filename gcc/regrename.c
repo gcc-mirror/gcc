@@ -28,7 +28,6 @@
 #include "addresses.h"
 #include "hard-reg-set.h"
 #include "predict.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"

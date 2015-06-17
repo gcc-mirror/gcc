@@ -15,7 +15,6 @@ details.  */
 #include "system.h"
 #include "coretypes.h"
 
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"

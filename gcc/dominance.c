@@ -40,7 +40,6 @@
 #include "hard-reg-set.h"
 #include "obstack.h"
 #include "predict.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"

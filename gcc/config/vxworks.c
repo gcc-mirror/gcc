@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "output.h"
 #include "tm.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

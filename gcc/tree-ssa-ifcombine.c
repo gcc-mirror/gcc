@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
    BRANCH_COST.  */
 #include "rtl.h"
 #include "tm_p.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"
@@ -34,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "predict.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -45,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"

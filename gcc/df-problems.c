@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "regs.h"
 #include "alloc-pool.h"

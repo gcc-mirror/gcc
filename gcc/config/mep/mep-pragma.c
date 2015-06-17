@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"
@@ -32,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "output.h" /* for decode_reg_name */
 #include "mep-protos.h"
-#include "input.h"
 #include "function.h"
 #define MAX_RECOG_OPERANDS 10
 #include "reload.h"

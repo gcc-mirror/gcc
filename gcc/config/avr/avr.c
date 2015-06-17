@@ -31,7 +31,6 @@
 #include "insn-codes.h"
 #include "flags.h"
 #include "reload.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

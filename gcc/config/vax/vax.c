@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "basic-block.h"
 #include "df.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

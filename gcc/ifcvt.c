@@ -25,7 +25,6 @@
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "flags.h"
 #include "insn-config.h"

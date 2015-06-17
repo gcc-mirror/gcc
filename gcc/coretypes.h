@@ -309,6 +309,8 @@ typedef unsigned char uchar;
 #include "fixed-value.h"
 #include "hash-table.h"
 #include "hash-set.h"
+#include "input.h"
+#include "is-a.h"
 #endif /* GENERATOR_FILE && !USED_FOR_TARGET */
 
 #endif /* coretypes.h */

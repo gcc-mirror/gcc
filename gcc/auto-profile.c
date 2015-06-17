@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <set>
 
 #include "coretypes.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
@@ -37,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -55,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-operands.h"
 #include "tree-into-ssa.h"
 #include "internal-fn.h"
-#include "is-a.h"
 #include "gimple-expr.h"
 #include "gimple.h"
 #include "gimple-iterator.h"

@@ -44,7 +44,6 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "coretypes.h"
 #include "tm.h"
 #include "debug.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

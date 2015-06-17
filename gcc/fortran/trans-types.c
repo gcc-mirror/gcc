@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 			   LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE,
 			   FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE and
 			   LONG_DOUBLE_TYPE_SIZE.  */
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

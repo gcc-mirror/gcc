@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "cfgloopmanip.h"
 

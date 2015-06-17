@@ -65,7 +65,6 @@ along with GCC; see the file COPYING3.	If not see
 #include "recog.h"
 #include "output.h"
 #include "regs.h"
-#include "input.h"
 #include "function.h"
 #include "symtab.h"
 #include "flags.h"

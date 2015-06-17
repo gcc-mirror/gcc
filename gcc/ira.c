@@ -368,7 +368,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "regs.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"

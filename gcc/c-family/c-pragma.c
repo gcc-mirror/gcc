@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
@@ -30,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "varasm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"		/* For cfun.  FIXME: Does the parser know
 				   when it is inside a function, so that
 				   we don't have to look at cfun?  */
@@ -44,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "opts.h"
 #include "plugin.h"
-#include "is-a.h"
 #include "plugin-api.h"
 #include "ipa-ref.h"
 #include "cgraph.h"

@@ -27,7 +27,6 @@
 #include "symtab.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "rtl.h"
 #include "flags.h"

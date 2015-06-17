@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"

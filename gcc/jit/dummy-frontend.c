@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "hash-map.h"
-#include "is-a.h"
 #include "plugin-api.h"
 #include "vec.h"
 #include "hashtab.h"

@@ -21,7 +21,6 @@
 #include "coretypes.h"
 #include "cpplib.h"
 #include "../libcpp/internal.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"

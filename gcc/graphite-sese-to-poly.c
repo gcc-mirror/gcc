@@ -40,7 +40,6 @@ extern "C" {
 
 #include "system.h"
 #include "coretypes.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
@@ -56,7 +55,6 @@ extern "C" {
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify.h"

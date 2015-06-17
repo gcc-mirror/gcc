@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
    is properly defined.  */
 #include "insn-config.h"
 #include "rtl.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"
