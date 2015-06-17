@@ -1,3 +1,9 @@
+2015-06-17  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.c (mips_ira_change_pseudo_allocno_class): New
+	function.
+	(TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): Define macro.
+
 2015-06-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66251

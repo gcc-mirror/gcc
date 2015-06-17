@@ -19402,6 +19402,33 @@ mips_lra_p (void)
 {
   return mips_lra_flag;
 }
+
+/* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.  */
+
+static reg_class_t
+mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
+{
+  /* LRA will allocate an FPR for an integer mode pseudo instead of spilling
+     to memory if an FPR is present in the allocno class.  It is rare that
+     we actually need to place an integer mode value in an FPR so where
+     possible limit the allocation to GR_REGS.  This will slightly pessimize
+     code that involves integer to/from float conversions as these will have
+     to reload into FPRs in LRA.  Such reloads are sometimes eliminated and
+     sometimes only partially eliminated.  We choose to take this penalty
+     in order to eliminate usage of FPRs in code that does not use floating
+     point data.
+
+     This change has a similar effect to increasing the cost of FPR->GPR
+     register moves for integer modes so that they are higher than the cost
+     of memory but changing the allocno class is more reliable.
+
+     This is also similar to forbidding integer mode values in FPRs entirely
+     but this would lead to an inconsistency in the integer to/from float
+     instructions that say integer mode values must be placed in FPRs.  */
+  if (INTEGRAL_MODE_P (PSEUDO_REGNO_MODE (regno)) && allocno_class == ALL_REGS)
+    return GR_REGS;
+  return allocno_class;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -19658,6 +19685,8 @@ mips_lra_p (void)
 #define TARGET_SPILL_CLASS mips_spill_class
 #undef TARGET_LRA_P
 #define TARGET_LRA_P mips_lra_p
+#undef TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
+#define TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS mips_ira_change_pseudo_allocno_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

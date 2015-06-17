@@ -1,3 +1,8 @@
+2015-06-17  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/pr65862-1.c: New test.
+	* gcc.target/mips/pr65862-2.c: Likewise.
+
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr54592.c: Remove dg-require-effective-target.
