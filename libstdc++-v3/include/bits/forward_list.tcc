@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     forward_list<_Tp, _Alloc>::
     operator=(const forward_list& __list)
     {
-      if (&__list != this)
+      if (std::__addressof(__list) != this)
         {
 	  if (_Node_alloc_traits::_S_propagate_on_copy_assign())
 	    {
@@ -299,8 +299,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     forward_list<_Tp, _Alloc>::
     remove(const _Tp& __val)
     {
-      _Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
-      _Node* __extra = 0;
+      _Node_base* __curr = &this->_M_impl._M_head;
+      _Node_base* __extra = nullptr;
 
       while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
         {
@@ -314,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      else
 		__extra = __curr;
 	    }
-	  __curr = static_cast<_Node*>(__curr->_M_next);
+	  __curr = __curr->_M_next;
         }
 
       if (__extra)
@@ -327,13 +327,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       forward_list<_Tp, _Alloc>::
       remove_if(_Pred __pred)
       {
-	_Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
+	_Node_base* __curr = &this->_M_impl._M_head;
         while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
           {
             if (__pred(*__tmp->_M_valptr()))
               this->_M_erase_after(__curr);
             else
-              __curr = static_cast<_Node*>(__curr->_M_next);
+              __curr = __curr->_M_next;
           }
       }
 

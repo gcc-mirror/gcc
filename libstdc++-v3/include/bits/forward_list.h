@@ -305,11 +305,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _Node_alloc_type&
       _M_get_Node_allocator() noexcept
-      { return *static_cast<_Node_alloc_type*>(&this->_M_impl); }
+      { return this->_M_impl; }
 
       const _Node_alloc_type&
       _M_get_Node_allocator() const noexcept
-      { return *static_cast<const _Node_alloc_type*>(&this->_M_impl); }
+      { return this->_M_impl; }
 
       _Fwd_list_base()
       : _M_impl() { }

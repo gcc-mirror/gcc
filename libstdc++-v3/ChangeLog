@@ -1,5 +1,15 @@
 2015-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/forward_list.h (forward_list::_M_get_Node_allocator):
+	Remove unnecessary uses of operator& and static_cast.
+	* include/bits/forward_list.tcc
+	(forward_list::operator=(const forward_list&)): Use __addressof
+	instead of operator&.
+	(forward_list::remove(const _Tp&), forward_list::remove(_Pred)):
+	Remove invalid static_casts.
+	* include/debug/forward_list: Use __addressof instead of operator&.
+	* testsuite/23_containers/forward_list/modifiers/addressof.cc: New.
+
 	* include/ext/alloc_traits.h (__alloc_traits::_S_nothrow_swap()): Use
 	__is_nothrow_swappable.
 
