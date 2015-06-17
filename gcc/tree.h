@@ -2839,7 +2839,7 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 extern tree build_optimization_node (struct gcc_options *opts);
 
 #define TREE_TARGET_OPTION(NODE) \
-  (&TARGET_OPTION_NODE_CHECK (NODE)->target_option.opts)
+  (TARGET_OPTION_NODE_CHECK (NODE)->target_option.opts)
 
 #define TREE_TARGET_GLOBALS(NODE) \
   (TARGET_OPTION_NODE_CHECK (NODE)->target_option.globals)
