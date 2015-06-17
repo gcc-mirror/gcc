@@ -1,3 +1,9 @@
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_function_arg): Nest TARGET_64BIT code.
+	(ix86_function_arg_advance): Ditto.
+	(ix86_pass_by_reference): Ditto.  Rewrite MS_ABI part.
+
 2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* function.h (struct rtl_data): Remove struct and accessor macros.
@@ -37,11 +43,11 @@
 
 2017-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-core.h (tree_target_option): Make opts field a pointer to a 
+	* tree-core.h (tree_target_option): Make opts field a pointer to a
 	cl_target_option instead of an instance of the struct.
 	* tree.h (TREE_TARGET_OPTION): Return the pointer, not an address of
 	the structure.
-	* tree.c (make_node_stat ): Allocate a cl_target_option struct for 
+	* tree.c (make_node_stat ): Allocate a cl_target_option struct for
 	TARGET_OPTION_NODE.
 	(copy_node_stat): Allocate and copy struct cl_target_option.
 
