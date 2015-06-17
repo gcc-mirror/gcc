@@ -128,6 +128,22 @@ class UniquePointerPrinter:
         return ('std::unique_ptr<%s> containing %s' % (str(v.type.target()),
                                                        str(v)))
 
+def get_value_from_list_node(node):
+    """Returns the value held in an _List_node<_Val>"""
+    try:
+        member = node.type.fields()[1].name
+        if member == '_M_data':
+            # C++03 implementation, node contains the value as a member
+            return node['_M_data']
+        elif member == '_M_storage':
+            # C++11 implementation, node stores value in __aligned_membuf
+            p = node['_M_storage']['_M_storage'].address
+            p = p.cast(node.type.template_argument(0).pointer())
+            return p.dereference()
+    except:
+        pass
+    raise ValueError("Unsupported implementation for %s" % str(node.type))
+
 class StdListPrinter:
     "Print a std::list"
 
@@ -148,7 +164,8 @@ class StdListPrinter:
             self.base = elt['_M_next']
             count = self.count
             self.count = self.count + 1
-            return ('[%d]' % count, elt['_M_data'])
+            val = get_value_from_list_node(elt)
+            return ('[%d]' % count, val)
 
     def __init__(self, typename, val):
         self.typename = typename
@@ -174,7 +191,8 @@ class StdListIteratorPrinter:
     def to_string(self):
         nodetype = find_type(self.val.type, '_Node')
         nodetype = nodetype.strip_typedefs().pointer()
-        return self.val['_M_node'].cast(nodetype).dereference()['_M_data']
+        node = self.val['_M_node'].cast(nodetype).dereference()
+        return get_value_from_list_node(node)
 
 class StdSlistPrinter:
     "Print a __gnu_cxx::slist"
@@ -440,7 +458,7 @@ def get_value_from_Rb_tree_node(node):
             # C++03 implementation, node contains the value as a member
             return node['_M_value_field']
         elif member == '_M_storage':
-            # C++11 implementation, node stores value in __aligned_buffer
+            # C++11 implementation, node stores value in __aligned_membuf
             p = node['_M_storage']['_M_storage'].address
             p = p.cast(node.type.template_argument(0).pointer())
             return p.dereference()

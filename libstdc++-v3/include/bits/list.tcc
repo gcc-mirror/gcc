@@ -71,10 +71,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  _Node* __tmp = static_cast<_Node*>(__cur);
 	  __cur = __tmp->_M_next;
+	  _Tp* __val = __tmp->_M_valptr();
 #if __cplusplus >= 201103L
-	  _M_get_Node_allocator().destroy(__tmp);
+	  _Node_alloc_traits::destroy(_M_get_Node_allocator(), __val);
 #else
-	  _M_get_Tp_allocator().destroy(std::__addressof(__tmp->_M_data));
+	  _Tp_alloc_type(_M_get_Node_allocator()).destroy(__val);
 #endif
 	  _M_put_node(__tmp);
 	}
@@ -267,17 +268,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (this != std::__addressof(__x))
 	{
-	  iterator __first1 = begin();
-	  iterator __last1 = end();
-	  const_iterator __first2 = __x.begin();
-	  const_iterator __last2 = __x.end();
-	  for (; __first1 != __last1 && __first2 != __last2;
-	       ++__first1, ++__first2)
-	    *__first1 = *__first2;
-	  if (__first2 == __last2)
-	    erase(__first1, __last1);
-	  else
-	    insert(__last1, __first2, __last2);
+#if __cplusplus >= 201103L
+	  if (_Node_alloc_traits::_S_propagate_on_copy_assign())
+	    {
+              auto& __this_alloc = this->_M_get_Node_allocator();
+              auto& __that_alloc = __x._M_get_Node_allocator();
+              if (!_Node_alloc_traits::_S_always_equal()
+	          && __this_alloc != __that_alloc)
+	        {
+		  // replacement allocator cannot free existing storage
+		  clear();
+		}
+	      std::__alloc_on_copy(__this_alloc, __that_alloc);
+            }
+#endif
+	  _M_assign_dispatch(__x.begin(), __x.end(), __false_type());
 	}
       return *this;
     }

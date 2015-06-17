@@ -94,6 +94,12 @@ namespace __debug
       : _Base(__l, __a) { }
 
       ~list() = default;
+
+      list(const list& __x, const allocator_type& __a)
+      : _Base(__x, __a) { }
+
+      list(list&& __x, const allocator_type& __a)
+      : _Base(std::move(__x), __a) { }
 #endif
 
       explicit
@@ -102,8 +108,8 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       explicit
-      list(size_type __n)
-      : _Base(__n) { }
+      list(size_type __n, const allocator_type& __a = allocator_type())
+      : _Base(__n, __a) { }
 
       list(size_type __n, const _Tp& __value,
 	   const _Allocator& __a = _Allocator())
