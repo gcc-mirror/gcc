@@ -398,6 +398,7 @@ are write-only operations.
 #include "tree-pass.h"
 #include "params.h"
 #include "cfgloop.h"
+#include "emit-rtl.h"
 
 static void *df_get_bb_info (struct dataflow *, unsigned int);
 static void df_set_bb_info (struct dataflow *, unsigned int, void *);

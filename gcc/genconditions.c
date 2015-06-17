@@ -73,6 +73,7 @@ write_header (void)
 #include \"tm_p.h\"\n\
 #include \"hard-reg-set.h\"\n\
 #include \"function.h\"\n\
+#include \"emit-rtl.h\"\n\
 \n\
 /* Fake - insn-config.h doesn't exist yet.  */\n\
 #define MAX_RECOG_OPERANDS 10\n\

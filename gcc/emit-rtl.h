@@ -20,6 +20,264 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_EMIT_RTL_H
 #define GCC_EMIT_RTL_H
 
+struct temp_slot;
+typedef struct temp_slot *temp_slot_p;
+
+/* Datastructures maintained for currently processed function in RTL form.  */
+struct GTY(()) rtl_data {
+  struct expr_status expr;
+  struct emit_status emit;
+  struct varasm_status varasm;
+  struct incoming_args args;
+  struct function_subsections subsections;
+  struct rtl_eh eh;
+
+  /* For function.c  */
+
+  /* # of bytes of outgoing arguments.  If ACCUMULATE_OUTGOING_ARGS is
+     defined, the needed space is pushed by the prologue.  */
+  int outgoing_args_size;
+
+  /* If nonzero, an RTL expression for the location at which the current
+     function returns its result.  If the current function returns its
+     result in a register, current_function_return_rtx will always be
+     the hard register containing the result.  */
+  rtx return_rtx;
+  /* If nonxero, an RTL expression for the lcoation at which the current
+     function returns bounds for its result.  */
+  rtx return_bnd;
+
+  /* Vector of initial-value pairs.  Each pair consists of a pseudo
+     register of approprite mode that stores the initial value a hard
+     register REGNO, and that hard register itself.  */
+  /* ??? This could be a VEC but there is currently no way to define an
+	 opaque VEC type.  */
+  struct initial_value_struct *hard_reg_initial_vals;
+
+  /* A variable living at the top of the frame that holds a known value.
+     Used for detecting stack clobbers.  */
+  tree stack_protect_guard;
+
+  /* List (chain of INSN_LIST) of labels heading the current handlers for
+     nonlocal gotos.  */
+  rtx_insn_list *x_nonlocal_goto_handler_labels;
+
+  /* Label that will go on function epilogue.
+     Jumping to this label serves as a "return" instruction
+     on machines which require execution of the epilogue on all returns.  */
+  rtx_code_label *x_return_label;
+
+  /* Label that will go on the end of function epilogue.
+     Jumping to this label serves as a "naked return" instruction
+     on machines which require execution of the epilogue on all returns.  */
+  rtx_code_label *x_naked_return_label;
+
+  /* List (chain of EXPR_LISTs) of all stack slots in this function.
+     Made for the sake of unshare_all_rtl.  */
+  rtx_expr_list *x_stack_slot_list;
+
+  /* List of empty areas in the stack frame.  */
+  struct frame_space *frame_space_list;
+
+  /* Place after which to insert the tail_recursion_label if we need one.  */
+  rtx_note *x_stack_check_probe_note;
+
+  /* Location at which to save the argument pointer if it will need to be
+     referenced.  There are two cases where this is done: if nonlocal gotos
+     exist, or if vars stored at an offset from the argument pointer will be
+     needed by inner routines.  */
+  rtx x_arg_pointer_save_area;
+
+  /* Dynamic Realign Argument Pointer used for realigning stack.  */
+  rtx drap_reg;
+
+  /* Offset to end of allocated area of stack frame.
+     If stack grows down, this is the address of the last stack slot allocated.
+     If stack grows up, this is the address for the next slot.  */
+  HOST_WIDE_INT x_frame_offset;
+
+  /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
+  rtx_insn *x_parm_birth_insn;
+
+  /* List of all used temporaries allocated, by level.  */
+  vec<temp_slot_p, va_gc> *x_used_temp_slots;
+
+  /* List of available temp slots.  */
+  struct temp_slot *x_avail_temp_slots;
+
+  /* Current nesting level for temporaries.  */
+  int x_temp_slot_level;
+
+  /* The largest alignment needed on the stack, including requirement
+     for outgoing stack alignment.  */
+  unsigned int stack_alignment_needed;
+
+  /* Preferred alignment of the end of stack frame, which is preferred
+     to call other functions.  */
+  unsigned int preferred_stack_boundary;
+
+  /* The minimum alignment of parameter stack.  */
+  unsigned int parm_stack_boundary;
+
+  /* The largest alignment of slot allocated on the stack.  */
+  unsigned int max_used_stack_slot_alignment;
+
+  /* The stack alignment estimated before reload, with consideration of
+     following factors:
+     1. Alignment of local stack variables (max_used_stack_slot_alignment)
+     2. Alignment requirement to call other functions
+        (preferred_stack_boundary)
+     3. Alignment of non-local stack variables but might be spilled in
+        local stack.  */
+  unsigned int stack_alignment_estimated;
+
+  /* For reorg.  */
+
+  /* Nonzero if function being compiled called builtin_return_addr or
+     builtin_frame_address with nonzero count.  */
+  bool accesses_prior_frames;
+
+  /* Nonzero if the function calls __builtin_eh_return.  */
+  bool calls_eh_return;
+
+  /* Nonzero if function saves all registers, e.g. if it has a nonlocal
+     label that can reach the exit block via non-exceptional paths. */
+  bool saves_all_registers;
+
+  /* Nonzero if function being compiled has nonlocal gotos to parent
+     function.  */
+  bool has_nonlocal_goto;
+
+  /* Nonzero if function being compiled has an asm statement.  */
+  bool has_asm_statement;
+
+  /* This bit is used by the exception handling logic.  It is set if all
+     calls (if any) are sibling calls.  Such functions do not have to
+     have EH tables generated, as they cannot throw.  A call to such a
+     function, however, should be treated as throwing if any of its callees
+     can throw.  */
+  bool all_throwers_are_sibcalls;
+
+  /* Nonzero if stack limit checking should be enabled in the current
+     function.  */
+  bool limit_stack;
+
+  /* Nonzero if profiling code should be generated.  */
+  bool profile;
+
+  /* Nonzero if the current function uses the constant pool.  */
+  bool uses_const_pool;
+
+  /* Nonzero if the current function uses pic_offset_table_rtx.  */
+  bool uses_pic_offset_table;
+
+  /* Nonzero if the current function needs an lsda for exception handling.  */
+  bool uses_eh_lsda;
+
+  /* Set when the tail call has been produced.  */
+  bool tail_call_emit;
+
+  /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
+  bool arg_pointer_save_area_init;
+
+  /* Nonzero if current function must be given a frame pointer.
+     Set in reload1.c or lra-eliminations.c if anything is allocated
+     on the stack there.  */
+  bool frame_pointer_needed;
+
+  /* When set, expand should optimize for speed.  */
+  bool maybe_hot_insn_p;
+
+  /* Nonzero if function stack realignment is needed.  This flag may be
+     set twice: before and after reload.  It is set before reload wrt
+     stack alignment estimation before reload.  It will be changed after
+     reload if by then criteria of stack realignment is different.
+     The value set after reload is the accurate one and is finalized.  */
+  bool stack_realign_needed;
+
+  /* Nonzero if function stack realignment is tried.  This flag is set
+     only once before reload.  It affects register elimination.  This
+     is used to generate DWARF debug info for stack variables.  */
+  bool stack_realign_tried;
+
+  /* Nonzero if function being compiled needs dynamic realigned
+     argument pointer (drap) if stack needs realigning.  */
+  bool need_drap;
+
+  /* Nonzero if function stack realignment estimation is done, namely
+     stack_realign_needed flag has been set before reload wrt estimated
+     stack alignment info.  */
+  bool stack_realign_processed;
+
+  /* Nonzero if function stack realignment has been finalized, namely
+     stack_realign_needed flag has been set and finalized after reload.  */
+  bool stack_realign_finalized;
+
+  /* True if dbr_schedule has already been called for this function.  */
+  bool dbr_scheduled_p;
+
+  /* True if current function can not throw.  Unlike
+     TREE_NOTHROW (current_function_decl) it is set even for overwritable
+     function where currently compiled version of it is nothrow.  */
+  bool nothrow;
+
+  /* True if we performed shrink-wrapping for the current function.  */
+  bool shrink_wrapped;
+
+  /* Nonzero if function being compiled doesn't modify the stack pointer
+     (ignoring the prologue and epilogue).  This is only valid after
+     pass_stack_ptr_mod has run.  */
+  bool sp_is_unchanging;
+
+  /* Nonzero if function being compiled doesn't contain any calls
+     (ignoring the prologue and epilogue).  This is set prior to
+     local register allocation and is valid for the remaining
+     compiler passes.  */
+  bool is_leaf;
+
+  /* Nonzero if the function being compiled is a leaf function which only
+     uses leaf registers.  This is valid after reload (specifically after
+     sched2) and is useful only if the port defines LEAF_REGISTERS.  */
+  bool uses_only_leaf_regs;
+
+  /* Nonzero if the function being compiled has undergone hot/cold partitioning
+     (under flag_reorder_blocks_and_partition) and has at least one cold
+     block.  */
+  bool has_bb_partition;
+
+  /* Nonzero if the function being compiled has completed the bb reordering
+     pass.  */
+  bool bb_reorder_complete;
+
+  /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
+     asm.  Unlike regs_ever_live, elements of this array corresponding
+     to eliminable regs (like the frame pointer) are set if an asm
+     sets them.  */
+  HARD_REG_SET asm_clobbers;
+};
+
+#define return_label (crtl->x_return_label)
+#define naked_return_label (crtl->x_naked_return_label)
+#define stack_slot_list (crtl->x_stack_slot_list)
+#define parm_birth_insn (crtl->x_parm_birth_insn)
+#define frame_offset (crtl->x_frame_offset)
+#define stack_check_probe_note (crtl->x_stack_check_probe_note)
+#define arg_pointer_save_area (crtl->x_arg_pointer_save_area)
+#define used_temp_slots (crtl->x_used_temp_slots)
+#define avail_temp_slots (crtl->x_avail_temp_slots)
+#define temp_slot_level (crtl->x_temp_slot_level)
+#define nonlocal_goto_handler_labels (crtl->x_nonlocal_goto_handler_labels)
+#define frame_pointer_needed (crtl->frame_pointer_needed)
+#define stack_realign_fp (crtl->stack_realign_needed && !crtl->need_drap)
+#define stack_realign_drap (crtl->stack_realign_needed && crtl->need_drap)
+
+extern GTY(()) struct rtl_data x_rtl;
+
+/* Accessor to RTL datastructures.  We keep them statically allocated now since
+   we never keep multiple functions.  For threaded compiler we might however
+   want to do differently.  */
+#define crtl (&x_rtl)
+
 /* Return whether two MEM_ATTRs are equal.  */
 bool mem_attrs_eq_p (const struct mem_attrs *, const struct mem_attrs *);
 

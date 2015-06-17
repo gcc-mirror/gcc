@@ -38,6 +38,7 @@
 #include "df.h"
 #include "target.h"
 #include "rtl.h"
+#include "emit-rtl.h"
 #include "context.h"
 #include "tree-pass.h"
 #include "regrename.h"

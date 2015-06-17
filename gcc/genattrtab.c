@@ -5127,6 +5127,7 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"toplev.h\"\n");
   fprintf (outf, "#include \"flags.h\"\n");
   fprintf (outf, "#include \"function.h\"\n");
+  fprintf (outf, "#include \"emit-rtl.h\"\n");
   fprintf (outf, "#include \"predict.h\"\n");
   fprintf (outf, "\n");
   fprintf (outf, "#define operands recog_data.operand\n\n");
