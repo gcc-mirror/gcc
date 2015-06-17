@@ -159,9 +159,8 @@ template<typename _Alloc>
 
     static constexpr bool _S_nothrow_swap()
     {
-      using std::swap;
       return !_S_propagate_on_swap()
-       	|| noexcept(swap(std::declval<_Alloc&>(), std::declval<_Alloc&>()));
+	|| std::__is_nothrow_swappable<_Alloc>::value;
     }
 
     template<typename _Tp>
