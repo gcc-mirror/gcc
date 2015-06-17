@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -msse4.2 -mtune=corei7" } */
 
 #include <math.h>

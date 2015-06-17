@@ -1,6 +1,6 @@
 /* PR middle-end/28915 */
+/* { dg-do compile } */
 /* { dg-options "-msse -O2 -ftree-vectorize -fdump-tree-vect" } */
-/* { dg-require-effective-target sse } */
 
 extern char lanip[3][40];
 typedef struct

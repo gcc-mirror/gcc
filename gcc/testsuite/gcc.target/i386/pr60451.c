@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-options "-O2 -ftree-vectorize -msse2" } */
 
 void

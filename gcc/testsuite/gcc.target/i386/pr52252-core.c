@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ssse3 } */
 /* { dg-options "-O2 -ftree-vectorize -mssse3 -mtune=corei7" } */
 #define byte unsigned char
 

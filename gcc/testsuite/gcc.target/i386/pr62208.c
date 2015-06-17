@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-options "-O3 -fwhole-program -march=x86-64" } */
 
 int *a;

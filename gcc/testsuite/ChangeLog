@@ -1,3 +1,41 @@
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr54592.c: Remove dg-require-effective-target.
+	* gcc.target/i386/pr52252-atom.c: Ditto.
+	* gcc.target/i386/vect-div-1.c: Ditto.
+	* gcc.target/i386/rotate-5.c: Ditto.
+	* gcc.target/i386/pr50202.c: Ditto.
+	* gcc.target/i386/pr37843-3.c: Ditto.
+	* gcc.target/i386/avx2-vect-aggressive-1.c: Ditto.
+	* gcc.target/i386/pr53397-1.c: Ditto.
+	* gcc.target/i386/pr55934.c: Ditto.
+	* gcc.target/i386/pr37843-4.c: Ditto.
+	* gcc.target/i386/pr60451.c: Ditto.
+	* gcc.target/i386/pr53397-2.c: Ditto.
+	* gcc.target/i386/vectorize1.c: Ditto.
+	* gcc.target/i386/extract-insert-combining.c: Ditto.
+	* gcc.target/i386/pr53759.c: Ditto.
+	* gcc.target/i386/pr52252-core.c: Ditto.
+	* gcc.target/i386/rotate-3.c: Ditto.
+	* gcc.target/i386/sse-20.c: Ditto.
+	* gcc.target/i386/rotate-4.c: Ditto.
+	* gcc.target/i386/pr61403.c: Ditto.
+	* gcc.target/i386/pr60205-2.c: Add dg-do compile directive.
+	* gcc.target/i386/pr60901.c: Ditto.
+	* gcc.target/i386/pr59794-7.c: Ditto.
+	* gcc.target/i386/pr62208.c: Ditto.
+	* gcc.target/i386/pr53416.c: Ditto.
+	* gcc.target/i386/asm-dialect-1.c: Ditto.
+	* gcc.target/i386/pr50038.c: Ditto.
+	* gcc.target/i386/47698.c: Ditto.
+	* gcc.target/i386/avx512vl-vpmuludq-1.c: Ditto.
+	* gcc.target/i386/pr59794-2.c: Ditto.
+	* gcc.target/i386/pr59794-3.c: Ditto.
+	* gcc.target/i386/pr39058.c: Ditto.
+	* gcc.target/i386/pr60205-1.c: Ditto.
+	* gcc.target/i386/fma4-256-nmsubXX.c: Add dg-do run directive.
+	* gcc.target/i386/sse2-movq-2.c: Ditto.
+
 2015-06-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66251

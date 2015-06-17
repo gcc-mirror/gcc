@@ -1,4 +1,5 @@
 /* PR inline-asm/39058 */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 
 double
