@@ -1,3 +1,19 @@
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* function.h (struct rtl_data): Remove struct and accessor macros.
+	* emit-rtl.h (struct rtl_data): Relocate to here.
+	* Makefile.in (GTFILES): Add emit-rtl.h.
+	* df-core.c: Include emit-rtl.h.
+	* genattrtab.c: Likewise.
+	* genconditions.c: Likewise.
+	* genpreds.c: Likewise.
+	* genrecog.c: Likewise.
+	* regcprop.c: Likewise.
+	* resource.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* config/aarch64/cortex-a57-fma-steering.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+
 2015-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66429

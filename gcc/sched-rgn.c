@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "emit-rtl.h"
 
 #ifdef INSN_SCHEDULING
 

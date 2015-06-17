@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "predict.h"
 #include "function.h"
+#include "emit-rtl.h"
 #include "dominance.h"
 #include "cfg.h"
 #include "cfgrtl.h"

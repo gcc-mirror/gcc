@@ -4191,6 +4191,7 @@ write_header (void)
 #include \"hard-reg-set.h\"\n\
 #include \"input.h\"\n\
 #include \"function.h\"\n\
+#include \"emit-rtl.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
 #include \"output.h\"\n\

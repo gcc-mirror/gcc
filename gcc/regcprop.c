@@ -40,6 +40,7 @@
 #include "tree-pass.h"
 #include "df.h"
 #include "rtl-iter.h"
+#include "emit-rtl.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
