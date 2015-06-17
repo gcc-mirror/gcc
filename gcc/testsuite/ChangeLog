@@ -1,3 +1,8 @@
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/65944
+	* g++.dg/lto/pr65276_0.C: Add std2::exception::~exception() function.
+
 2015-06-17  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* gcc.target/mips/pr65862-1.c: New test.
