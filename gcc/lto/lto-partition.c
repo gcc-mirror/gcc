@@ -877,7 +877,36 @@ validize_symbol_for_target (symtab_node *node)
     }
 }
 
-/* Mangle NODE symbol name into a local name.  
+/* Helper for privatize_symbol_name.  Mangle NODE symbol name
+   represented by DECL.  */
+
+static bool
+privatize_symbol_name_1 (symtab_node *node, tree decl)
+{
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  if (must_not_rename (node, name))
+    return false;
+
+  name = maybe_rewrite_identifier (name);
+  symtab->change_decl_assembler_name (decl,
+				      clone_function_name_1 (name,
+							     "lto_priv"));
+
+  if (node->lto_file_data)
+    lto_record_renamed_decl (node->lto_file_data, name,
+			     IDENTIFIER_POINTER
+			     (DECL_ASSEMBLER_NAME (decl)));
+
+  if (symtab->dump_file)
+    fprintf (symtab->dump_file,
+	     "Privatizing symbol name: %s -> %s\n",
+	     name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+
+  return true;
+}
+
+/* Mangle NODE symbol name into a local name.
    This is necessary to do
    1) if two or more static vars of same assembler name
       are merged into single ltrans unit.
@@ -887,50 +916,33 @@ validize_symbol_for_target (symtab_node *node)
 static bool
 privatize_symbol_name (symtab_node *node)
 {
-  tree decl = node->decl;
-  const char *name;
-  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
-
-  /* If we want to privatize instrumentation clone
-     then we need to change original function name
-     which is used via transparent alias chain.  */
-  if (cnode && cnode->instrumentation_clone)
-    decl = cnode->orig_decl;
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-  if (must_not_rename (node, name))
+  if (!privatize_symbol_name_1 (node, node->decl))
     return false;
 
-  name = maybe_rewrite_identifier (name);
-  symtab->change_decl_assembler_name (decl,
-				      clone_function_name_1 (name,
-							     "lto_priv"));
-  if (node->lto_file_data)
-    lto_record_renamed_decl (node->lto_file_data, name,
-			     IDENTIFIER_POINTER
-			     (DECL_ASSEMBLER_NAME (decl)));
   /* We could change name which is a target of transparent alias
      chain of instrumented function name.  Fix alias chain if so  .*/
-  if (cnode)
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     {
       tree iname = NULL_TREE;
       if (cnode->instrumentation_clone)
-	iname = DECL_ASSEMBLER_NAME (cnode->decl);
-      else if (cnode->instrumented_version
-	       && cnode->instrumented_version->orig_decl == decl)
-	iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
-
-      if (iname)
 	{
-	  gcc_assert (IDENTIFIER_TRANSPARENT_ALIAS (iname));
-	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (decl);
+	  /* If we want to privatize instrumentation clone
+	     then we also need to privatize original function.  */
+	  if (cnode->instrumented_version)
+	    privatize_symbol_name (cnode->instrumented_version);
+	  else
+	    privatize_symbol_name_1 (cnode, cnode->orig_decl);
+	  iname = DECL_ASSEMBLER_NAME (cnode->decl);
+	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (cnode->orig_decl);
+	}
+      else if (cnode->instrumented_version
+	       && cnode->instrumented_version->orig_decl == cnode->decl)
+	{
+	  iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
+	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (cnode->decl);
 	}
     }
-  if (symtab->dump_file)
-    fprintf (symtab->dump_file,
-	    "Privatizing symbol name: %s -> %s\n",
-	    name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+
   return true;
 }
 

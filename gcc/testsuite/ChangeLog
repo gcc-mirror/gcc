@@ -1,3 +1,13 @@
+2015-06-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r224063.
+	2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/lto/chkp-privatize-1_0.c: New.
+	* gcc.dg/lto/chkp-privatize-1_1.c: New.
+	* gcc.dg/lto/chkp-privatize-2_0.c: New.
+	* gcc.dg/lto/chkp-privatize-2_1.c: New.
+
 2015-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66385

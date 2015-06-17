@@ -805,8 +805,33 @@ output_refs (lto_symtab_encoder_t encoder)
     {
       symtab_node *node = lto_symtab_encoder_deref (encoder, i);
 
+      /* IPA_REF_ALIAS and IPA_REF_CHKP references are always preserved
+	 in the boundary.  Alias node can't have other references and
+	 can be always handled as if it's not in the boundary.  */
       if (!node->alias && !lto_symtab_encoder_in_partition_p (encoder, node))
-	continue;
+	{
+	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+	  /* Output IPA_REF_CHKP reference.  */
+	  if (cnode
+	      && cnode->instrumented_version
+	      && !cnode->instrumentation_clone)
+	    {
+	      for (int i = 0; node->iterate_reference (i, ref); i++)
+		if (ref->use == IPA_REF_CHKP)
+		  {
+		    if (lto_symtab_encoder_lookup (encoder, ref->referred)
+			!= LCC_NOT_FOUND)
+		      {
+			int nref = lto_symtab_encoder_lookup (encoder, node);
+			streamer_write_gcov_count_stream (ob->main_stream, 1);
+			streamer_write_uhwi_stream (ob->main_stream, nref);
+			lto_output_ref (ob, ref, encoder);
+		      }
+		    break;
+		  }
+	    }
+	  continue;
+	}
 
       count = node->ref_list.nreferences ();
       if (count)

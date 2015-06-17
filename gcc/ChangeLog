@@ -1,3 +1,17 @@
+2015-06-17  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r224063.
+	2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa.c (symbol_table::remove_unreachable_nodes): Don't
+	remove instumentation thunks calling reachable functions.
+	* lto-cgraph.c (output_refs): Always output IPA_REF_CHKP.
+	* lto/lto-partition.c (privatize_symbol_name_1): New.
+	(privatize_symbol_name): Privatize both decl and orig_decl
+	names for instrumented functions.
+	* cgraph.c (cgraph_node::verify_node): Add transparent
+	transparent alias chain check for instrumented node.
+
 2015-06-16  Jim Wilson  <jim.wilson@linaro.org>
 
 	Backport from mainline
