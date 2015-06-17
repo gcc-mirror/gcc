@@ -1,5 +1,23 @@
 2015-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/forward_list.h
+	(_Fwd_list_base(const _Node_alloc_type&)): Change parameter to
+	rvalue-reference.
+	(_Fwd_list_base(_Fwd_list_base&&, const _Node_alloc_type&)): Likewise.
+	(forward_list(const _Alloc&)): Split default constructor out to
+	separate function.
+	(forward_list(forward_list&&, const _Alloc&)): Move elements if base
+	class didn't do so.
+	(forward_list::_M_move_assign(forward_list&&, true_type)): Replace
+	swap call with two assignments.
+	* include/bits/forward_list.tcc
+	(_Fwd_list_base(_Fwd_list_base&&, const _Node_alloc_type&)): Don't
+	move elements when allocators are not equal.
+	* include/debug/forward_list (forward_list(const allocator_type&)):
+	Split default constructor out to separate function.
+	* include/profile/forward_list (forward_list(const _Alloc&)):
+	Likewise.
+
 	* include/bits/forward_list.h (forward_list::_M_get_Node_allocator):
 	Remove unnecessary uses of operator& and static_cast.
 	* include/bits/forward_list.tcc

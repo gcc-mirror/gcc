@@ -204,8 +204,11 @@ namespace __debug
       typedef typename _Base::const_pointer	const_pointer;
 
       // 23.2.3.1 construct/copy/destroy:
+
+      forward_list() = default;
+
       explicit
-      forward_list(const allocator_type& __al = allocator_type())
+      forward_list(const allocator_type& __al) noexcept
       : _Base(__al) { }
 
       forward_list(const forward_list& __list, const allocator_type& __al)

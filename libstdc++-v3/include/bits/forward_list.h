@@ -314,10 +314,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Fwd_list_base()
       : _M_impl() { }
 
-      _Fwd_list_base(const _Node_alloc_type& __a)
-      : _M_impl(__a) { }
+      _Fwd_list_base(_Node_alloc_type&& __a)
+      : _M_impl(std::move(__a)) { }
 
-      _Fwd_list_base(_Fwd_list_base&& __lst, const _Node_alloc_type& __a);
+      _Fwd_list_base(_Fwd_list_base&& __lst, _Node_alloc_type&& __a);
 
       _Fwd_list_base(_Fwd_list_base&& __lst)
       : _M_impl(std::move(__lst._M_get_Node_allocator()))
@@ -435,12 +435,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Creates a %forward_list with no elements.
+       */
+      forward_list()
+      noexcept(is_nothrow_default_constructible<_Node_alloc_type>::value)
+      : _Base()
+      { }
+
+      /**
+       *  @brief  Creates a %forward_list with no elements.
        *  @param  __al  An allocator object.
        */
       explicit
-      forward_list(const _Alloc& __al = _Alloc())
+      forward_list(const _Alloc& __al) noexcept
       : _Base(_Node_alloc_type(__al))
       { }
+
 
       /**
        *  @brief  Copy constructor with allocator argument.
@@ -459,7 +468,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       forward_list(forward_list&& __list, const _Alloc& __al)
       noexcept(_Node_alloc_traits::_S_always_equal())
       : _Base(std::move(__list), _Node_alloc_type(__al))
-      { }
+      {
+	// If __list is not empty it means its allocator is not equal to __a,
+	// so we need to move from each element individually.
+	insert_after(cbefore_begin(),
+		     std::__make_move_if_noexcept_iterator(__list.begin()),
+		     std::__make_move_if_noexcept_iterator(__list.end()));
+      }
 
       /**
        *  @brief  Creates a %forward_list with default constructed elements.
@@ -1248,8 +1263,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_move_assign(forward_list&& __list, std::true_type) noexcept
       {
         clear();
-        std::swap(this->_M_impl._M_head._M_next,
-                  __list._M_impl._M_head._M_next);
+        this->_M_impl._M_head._M_next = __list._M_impl._M_head._M_next;
+        __list._M_impl._M_head._M_next = nullptr;
         std::__alloc_on_move(this->_M_get_Node_allocator(),
                              __list._M_get_Node_allocator());
       }
