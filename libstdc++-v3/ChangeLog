@@ -1,3 +1,8 @@
+2015-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/alloc_traits.h (__alloc_traits::_S_nothrow_swap()): Use
+	__is_nothrow_swappable.
+
 2015-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/allocated_ptr.h (__allocated_ptr): Use __addressof.
