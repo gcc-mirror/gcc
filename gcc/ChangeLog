@@ -1,8 +1,8 @@
 2015-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66429
-	* omp-low.c (expand_omp_taskreg): Use child_cfun instead of
-	DECL_STRUCT_FUNCTION (child_fn).  Or in has_simduid_loops
+	* omp-low.c (expand_omp_taskreg, expand_omp_target): Use child_cfun
+	instead of DECL_STRUCT_FUNCTION (child_fn).  Or in has_simduid_loops
 	and has_force_vectorize_loops flags from cfun into
 	child_cfun.
 	(expand_omp_simd): For broken loop, set cfun->has_simduid_loops
