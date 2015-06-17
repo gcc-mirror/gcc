@@ -1,3 +1,13 @@
+2017-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-core.h (tree_target_option): Make opts field a pointer to a 
+	cl_target_option instead of an instance of the struct.
+	* tree.h (TREE_TARGET_OPTION): Return the pointer, not an address of
+	the structure.
+	* tree.c (make_node_stat ): Allocate a cl_target_option struct for 
+	TARGET_OPTION_NODE.
+	(copy_node_stat): Allocate and copy struct cl_target_option.
+
 2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree.h (merge_dllimport_decl_attributes, handle_dll_attribute):

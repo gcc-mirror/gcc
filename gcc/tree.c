@@ -1094,6 +1094,13 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	}
       break;
 
+    case tcc_exceptional:
+      if (code == TARGET_OPTION_NODE)
+	{
+	  TREE_TARGET_OPTION(t) = ggc_cleared_alloc<struct cl_target_option> ();
+	}
+      break;
+
     default:
       /* Other classes need no special treatment.  */
       break;
@@ -1175,6 +1182,12 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	  TYPE_CACHED_VALUES (t) = NULL_TREE;
 	}
     }
+    else if (code == TARGET_OPTION_NODE)
+      {
+	TREE_TARGET_OPTION (t) = ggc_alloc<struct cl_target_option>();
+	memcpy (TREE_TARGET_OPTION (t), TREE_TARGET_OPTION (node),
+		sizeof (struct cl_target_option));
+      }
 
   return t;
 }
