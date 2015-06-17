@@ -5587,7 +5587,9 @@ expand_omp_taskreg (struct omp_region *region)
 	vec_safe_truncate (child_cfun->local_decls, dstidx);
 
       /* Inform the callgraph about the new function.  */
-      DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
+      child_cfun->curr_properties = cfun->curr_properties;
+      child_cfun->has_simduid_loops |= cfun->has_simduid_loops;
+      child_cfun->has_force_vectorize_loops |= cfun->has_force_vectorize_loops;
       cgraph_node *node = cgraph_node::get_create (child_fn);
       node->parallelized_function = 1;
       cgraph_node::add_new_function (child_fn, true);
@@ -7836,6 +7838,8 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  cfun->has_force_vectorize_loops = true;
 	}
     }
+  else if (simduid)
+    cfun->has_simduid_loops = true;
 }
 
 

@@ -1,3 +1,8 @@
+2015-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66429
+	* c-c++-common/gomp/pr66429.c: New test.
+
 2015-06-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-error-accessing-field-in-other-struct.c: Rename to...
