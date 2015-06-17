@@ -1,5 +1,45 @@
 2015-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/55409
+	* include/bits/list.tcc (_List_base::_M_clear()): Use allocator traits.
+	(list::list(const list&)): Use allocator propagation trait. Use
+	_M_assign_dispatch to copy elements.
+	* include/bits/stl_list.h (_List_node): Use __aligned_membuf in C++11.
+	(_List_node::_M_valptr()): Add accessor for stored value.
+	(_List_iterator, _List_const_iterator, _List_base): Use _M_valptr().
+	(_List_base, list): Use allocator traits.
+	(_List_base::_M_get_Tp_allocator, _List_base::get_allocator): Remove.
+	(_List_base::_M_move_nodes): New function.
+	(_List_base(_List_base&&)): Use _M_move_nodes.
+	(_List_base(_List_base&&, _Node_alloc_type&&)): New constructor.
+	(list::_M_create_node, list::_M_erase, list::max_size): Use allocator
+	traits.
+	(list(size_type)): Add allocator parameter.
+	(list(const list&)): Use allocator propagation trait.
+	(list(const list&, const allocator_type&)): New constructor.
+	(list(list&&, const allocator_type&)): Likewise.
+	(list::operator=(list&&), list::swap(list&)): Use allocator
+	propagation traits.
+	(list::_M_move_assign): New functions.
+	* include/debug/list: Add allocator-extended constructors.
+	* include/profile/list: Likewise.
+	* python/libstdcxx/v6/printers.py (get_value_from_list_node): New
+	function to get value from _List_node.
+	(StdListPrinter): Use get_value_from_list_node.
+	* testsuite/23_containers/list/allocator/copy.cc: New.
+	* testsuite/23_containers/list/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/list/allocator/minimal.cc: New.
+	* testsuite/23_containers/list/allocator/move.cc: New.
+	* testsuite/23_containers/list/allocator/move_assign.cc: New.
+	* testsuite/23_containers/list/allocator/noexcept.cc: New.
+	* testsuite/23_containers/list/allocator/swap.cc: New.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-prune-output line number.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 	* include/bits/forward_list.h
 	(_Fwd_list_base(const _Node_alloc_type&)): Change parameter to
 	rvalue-reference.

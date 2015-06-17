@@ -57,8 +57,11 @@
 #define _STL_LIST_H 1
 
 #include <bits/concept_check.h>
+#include <ext/alloc_traits.h>
 #if __cplusplus >= 201103L
 #include <initializer_list>
+#include <bits/allocated_ptr.h>
+#include <ext/aligned_buffer.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -105,14 +108,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp>
     struct _List_node : public __detail::_List_node_base
     {
-      ///< User's data.
-      _Tp _M_data;
-
 #if __cplusplus >= 201103L
-      template<typename... _Args>
-        _List_node(_Args&&... __args)
-	: __detail::_List_node_base(), _M_data(std::forward<_Args>(__args)...) 
-        { }
+      __gnu_cxx::__aligned_membuf<_Tp> _M_storage;
+      _Tp*       _M_valptr()       { return _M_storage._M_ptr(); }
+      _Tp const* _M_valptr() const { return _M_storage._M_ptr(); }
+#else
+      _Tp _M_data;
+      _Tp*       _M_valptr()       { return std::__addressof(_M_data); }
+      _Tp const* _M_valptr() const { return std::__addressof(_M_data); }
 #endif
     };
 
@@ -144,14 +147,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_const_cast() const _GLIBCXX_NOEXCEPT
       { return *this; }
 
-      // Must downcast from _List_node_base to _List_node to get to _M_data.
+      // Must downcast from _List_node_base to _List_node to get to value.
       reference
       operator*() const _GLIBCXX_NOEXCEPT
-      { return static_cast<_Node*>(_M_node)->_M_data; }
+      { return *static_cast<_Node*>(_M_node)->_M_valptr(); }
 
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
-      { return std::__addressof(static_cast<_Node*>(_M_node)->_M_data); }
+      { return static_cast<_Node*>(_M_node)->_M_valptr(); }
 
       _Self&
       operator++() _GLIBCXX_NOEXCEPT
@@ -228,15 +231,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_const_cast() const _GLIBCXX_NOEXCEPT
       { return iterator(const_cast<__detail::_List_node_base*>(_M_node)); }
 
-      // Must downcast from List_node_base to _List_node to get to
-      // _M_data.
+      // Must downcast from List_node_base to _List_node to get to value.
       reference
       operator*() const _GLIBCXX_NOEXCEPT
-      { return static_cast<_Node*>(_M_node)->_M_data; }
+      { return *static_cast<_Node*>(_M_node)->_M_valptr(); }
 
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
-      { return std::__addressof(static_cast<_Node*>(_M_node)->_M_data); }
+      { return static_cast<_Node*>(_M_node)->_M_valptr(); }
 
       _Self&
       operator++() _GLIBCXX_NOEXCEPT
@@ -298,23 +300,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     class _List_base
     {
     protected:
-      // NOTA BENE
-      // The stored instance is not actually of "allocator_type"'s
-      // type.  Instead we rebind the type to
-      // Allocator<List_node<Tp>>, which according to [20.1.5]/4
-      // should probably be the same.  List_node<Tp> is not the same
-      // size as Tp (it's two pointers larger), and specializations on
-      // Tp may go unused because List_node<Tp> is being bound
-      // instead.
-      //
-      // We put this to the test in the constructors and in
-      // get_allocator, where we use conversions between
-      // allocator_type and _Node_alloc_type. The conversion is
-      // required by table 32 in [20.1.5].
-      typedef typename _Alloc::template rebind<_List_node<_Tp> >::other
-        _Node_alloc_type;
-
-      typedef typename _Alloc::template rebind<_Tp>::other _Tp_alloc_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<_Tp>::other				_Tp_alloc_type;
+      typedef __gnu_cxx::__alloc_traits<_Tp_alloc_type>	_Tp_alloc_traits;
+      typedef typename _Tp_alloc_traits::template
+	rebind<_List_node<_Tp> >::other _Node_alloc_type;
+      typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
 
       static size_t
       _S_distance(const __detail::_List_node_base* __first,
@@ -338,7 +329,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::_List_node_base _M_node;
 #endif
 
-	_List_impl()
+	_List_impl() _GLIBCXX_NOEXCEPT
 	: _Node_alloc_type(), _M_node()
 	{ }
 
@@ -347,7 +338,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{ }
 
 #if __cplusplus >= 201103L
-	_List_impl(_Node_alloc_type&& __a) _GLIBCXX_NOEXCEPT
+	_List_impl(_Node_alloc_type&& __a) noexcept
 	: _Node_alloc_type(std::move(__a)), _M_node()
 	{ }
 #endif
@@ -356,13 +347,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _List_impl _M_impl;
 
 #if _GLIBCXX_USE_CXX11_ABI
-      size_t _M_get_size() const { return _M_impl._M_node._M_data; }
+      size_t _M_get_size() const { return *_M_impl._M_node._M_valptr(); }
 
-      void _M_set_size(size_t __n) { _M_impl._M_node._M_data = __n; }
+      void _M_set_size(size_t __n) { *_M_impl._M_node._M_valptr() = __n; }
 
-      void _M_inc_size(size_t __n) { _M_impl._M_node._M_data += __n; }
+      void _M_inc_size(size_t __n) { *_M_impl._M_node._M_valptr() += __n; }
 
-      void _M_dec_size(size_t __n) { _M_impl._M_node._M_data -= __n; }
+      void _M_dec_size(size_t __n) { *_M_impl._M_node._M_valptr() -= __n; }
 
       size_t
       _M_distance(const __detail::_List_node_base* __first,
@@ -370,7 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return _S_distance(__first, __last); }
 
       // return the stored size
-      size_t _M_node_count() const { return _M_impl._M_node._M_data; }
+      size_t _M_node_count() const { return *_M_impl._M_node._M_valptr(); }
 #else
       // dummy implementations used when the size is not stored
       size_t _M_get_size() const { return 0; }
@@ -387,32 +378,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #endif
 
-      _List_node<_Tp>*
+      typename _Node_alloc_traits::pointer
       _M_get_node()
-      { return _M_impl._Node_alloc_type::allocate(1); }
+      { return _Node_alloc_traits::allocate(_M_impl, 1); }
 
       void
-      _M_put_node(_List_node<_Tp>* __p) _GLIBCXX_NOEXCEPT
-      { _M_impl._Node_alloc_type::deallocate(__p, 1); }
+      _M_put_node(typename _Node_alloc_traits::pointer __p) _GLIBCXX_NOEXCEPT
+      { _Node_alloc_traits::deallocate(_M_impl, __p, 1); }
 
   public:
       typedef _Alloc allocator_type;
 
       _Node_alloc_type&
       _M_get_Node_allocator() _GLIBCXX_NOEXCEPT
-      { return *static_cast<_Node_alloc_type*>(&_M_impl); }
+      { return _M_impl; }
 
       const _Node_alloc_type&
       _M_get_Node_allocator() const _GLIBCXX_NOEXCEPT
-      { return *static_cast<const _Node_alloc_type*>(&_M_impl); }
-
-      _Tp_alloc_type
-      _M_get_Tp_allocator() const _GLIBCXX_NOEXCEPT
-      { return _Tp_alloc_type(_M_get_Node_allocator()); }
-
-      allocator_type
-      get_allocator() const _GLIBCXX_NOEXCEPT
-      { return allocator_type(_M_get_Node_allocator()); }
+      { return _M_impl; }
 
       _List_base()
       : _M_impl()
@@ -425,6 +408,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus >= 201103L
       _List_base(_List_base&& __x) noexcept
       : _M_impl(std::move(__x._M_get_Node_allocator()))
+      { _M_move_nodes(std::move(__x)); }
+
+      _List_base(_List_base&& __x, _Node_alloc_type&& __a)
+      : _M_impl(std::move(__a))
+      {
+	if (__x._M_get_Node_allocator() == _M_get_Node_allocator())
+	  _M_move_nodes(std::move(__x));
+	else
+	  _M_init(); // Caller must move individual elements.
+      }
+
+      void
+      _M_move_nodes(_List_base&& __x)
       {
 	auto* const __xnode = std::__addressof(__x._M_impl._M_node);
 	if (__xnode->_M_next == __xnode)
@@ -513,16 +509,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       typedef _List_base<_Tp, _Alloc>                    _Base;
       typedef typename _Base::_Tp_alloc_type		 _Tp_alloc_type;
+      typedef typename _Base::_Tp_alloc_traits		 _Tp_alloc_traits;
       typedef typename _Base::_Node_alloc_type		 _Node_alloc_type;
+      typedef typename _Base::_Node_alloc_traits	 _Node_alloc_traits;
 
     public:
       typedef _Tp                                        value_type;
-      typedef typename _Tp_alloc_type::pointer           pointer;
-      typedef typename _Tp_alloc_type::const_pointer     const_pointer;
-      typedef typename _Tp_alloc_type::reference         reference;
-      typedef typename _Tp_alloc_type::const_reference   const_reference;
-      typedef _List_iterator<_Tp>                        iterator;
-      typedef _List_const_iterator<_Tp>                  const_iterator;
+      typedef typename _Tp_alloc_traits::pointer	 pointer;
+      typedef typename _Tp_alloc_traits::const_pointer	 const_pointer;
+      typedef typename _Tp_alloc_traits::reference	 reference;
+      typedef typename _Tp_alloc_traits::const_reference const_reference;
+      typedef _List_iterator<_Tp>			 iterator;
+      typedef _List_const_iterator<_Tp>			 const_iterator;
       typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
       typedef std::reverse_iterator<iterator>            reverse_iterator;
       typedef size_t                                     size_type;
@@ -537,7 +535,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       using _Base::_M_impl;
       using _Base::_M_put_node;
       using _Base::_M_get_node;
-      using _Base::_M_get_Tp_allocator;
       using _Base::_M_get_Node_allocator;
 
       /**
@@ -553,8 +550,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_Node* __p = this->_M_get_node();
 	__try
 	  {
-	    _M_get_Tp_allocator().construct
-	      (std::__addressof(__p->_M_data), __x);
+	    _Tp_alloc_type __alloc(_M_get_Node_allocator());
+	    __alloc.construct(__p->_M_valptr(), __x);
 	  }
 	__catch(...)
 	  {
@@ -568,17 +565,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         _Node*
         _M_create_node(_Args&&... __args)
 	{
-	  _Node* __p = this->_M_get_node();
-	  __try
-	    {
-	      _M_get_Node_allocator().construct(__p,
-						std::forward<_Args>(__args)...);
-	    }
-	  __catch(...)
-	    {
-	      _M_put_node(__p);
-	      __throw_exception_again;
-	    }
+	  auto __p = this->_M_get_node();
+	  auto& __alloc = _M_get_Node_allocator();
+	  __allocated_ptr<_Node_alloc_type> __guard{__alloc, __p};
+	  _Node_alloc_traits::construct(__alloc, __p->_M_valptr(),
+					std::forward<_Args>(__args)...);
+	  __guard = nullptr;
 	  return __p;
 	}
 #endif
@@ -608,13 +600,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        *  @brief  Creates a %list with default constructed elements.
        *  @param  __n  The number of elements to initially create.
+       *  @param  __a  An allocator object.
        *
        *  This constructor fills the %list with @a __n default
        *  constructed elements.
        */
       explicit
-      list(size_type __n)
-      : _Base()
+      list(size_type __n, const allocator_type& __a = allocator_type())
+      : _Base(_Node_alloc_type(__a))
       { _M_default_initialize(__n); }
 
       /**
@@ -653,7 +646,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  by @a __x.
        */
       list(const list& __x)
-      : _Base(__x._M_get_Node_allocator())
+      : _Base(_Node_alloc_traits::
+	      _S_select_on_copy(__x._M_get_Node_allocator()))
       { _M_initialize_dispatch(__x.begin(), __x.end(), __false_type()); }
 
 #if __cplusplus >= 201103L
@@ -679,6 +673,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
            const allocator_type& __a = allocator_type())
       : _Base(_Node_alloc_type(__a))
       { _M_initialize_dispatch(__l.begin(), __l.end(), __false_type()); }
+
+      list(const list& __x, const allocator_type& __a)
+      : _Base(_Node_alloc_type(__a))
+      { _M_initialize_dispatch(__x.begin(), __x.end(), __false_type()); }
+
+      list(list&& __x, const allocator_type& __a)
+      noexcept(_Node_alloc_traits::_S_always_equal())
+      : _Base(std::move(__x), _Node_alloc_type(__a))
+      {
+	// If __x is not empty it means its allocator is not equal to __a,
+	// so we need to move from each element individually.
+	insert(begin(), std::__make_move_if_noexcept_iterator(__x.begin()),
+			std::__make_move_if_noexcept_iterator(__x.end()));
+      }
 #endif
 
       /**
@@ -738,11 +746,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       list&
       operator=(list&& __x)
+      noexcept(_Node_alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
+	constexpr bool __move_storage =
+          _Node_alloc_traits::_S_propagate_on_move_assign()
+          || _Node_alloc_traits::_S_always_equal();
+        _M_move_assign(std::move(__x),
+                       integral_constant<bool, __move_storage>());
 	return *this;
       }
 
@@ -820,7 +830,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /// Get a copy of the memory allocation object.
       allocator_type
       get_allocator() const _GLIBCXX_NOEXCEPT
-      { return _Base::get_allocator(); }
+      { return allocator_type(_Base::_M_get_Node_allocator()); }
 
       // iterators
       /**
@@ -949,7 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**  Returns the size() of the largest possible %list.  */
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
-      { return _M_get_Node_allocator().max_size(); }
+      { return _Node_alloc_traits::max_size(_M_get_Node_allocator()); }
 
 #if __cplusplus >= 201103L
       /**
@@ -1342,18 +1352,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       void
       swap(list& __x)
+#if __cplusplus >= 201103L
+      noexcept(_Node_alloc_traits::_S_nothrow_swap())
+#endif
       {
-	__detail::_List_node_base::swap(this->_M_impl._M_node, 
-					__x._M_impl._M_node);
+	__detail::_List_node_base::swap(this->_M_impl._M_node,
+				        __x._M_impl._M_node);
 
 	size_t __xsize = __x._M_get_size();
 	__x._M_set_size(this->_M_get_size());
 	this->_M_set_size(__xsize);
 
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 431. Swapping containers with unequal allocators.
-	std::__alloc_swap<typename _Base::_Node_alloc_type>::
-	  _S_do_it(_M_get_Node_allocator(), __x._M_get_Node_allocator());
+	_Node_alloc_traits::_S_on_swap(this->_M_get_Node_allocator(),
+                                       __x._M_get_Node_allocator());
       }
 
       /**
@@ -1774,10 +1785,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         __position._M_node->_M_unhook();
         _Node* __n = static_cast<_Node*>(__position._M_node);
 #if __cplusplus >= 201103L
-        _M_get_Node_allocator().destroy(__n);
+	_Node_alloc_traits::destroy(_M_get_Node_allocator(), __n->_M_valptr());
 #else
-	_M_get_Tp_allocator().destroy(std::__addressof(__n->_M_data));
+	_Tp_alloc_type(_M_get_Node_allocator()).destroy(__n->_M_valptr());
 #endif
+
         _M_put_node(__n);
       }
 
@@ -1793,6 +1805,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // Used to implement resize.
       const_iterator
       _M_resize_pos(size_type& __new_size) const;
+
+#if __cplusplus >= 201103L
+      void
+      _M_move_assign(list&& __x, true_type) noexcept
+      {
+	this->_M_clear();
+	if (__x.empty())
+	  this->_M_init();
+	else
+	  {
+	    this->_M_impl._M_node._M_next = __x._M_impl._M_node._M_next;
+	    this->_M_impl._M_node._M_next->_M_prev = &this->_M_impl._M_node;
+	    this->_M_impl._M_node._M_prev = __x._M_impl._M_node._M_prev;
+	    this->_M_impl._M_node._M_prev->_M_next = &this->_M_impl._M_node;
+	    this->_M_set_size(__x._M_get_size());
+	    __x._M_init();
+	  }
+        std::__alloc_on_move(this->_M_get_Node_allocator(),
+                             __x._M_get_Node_allocator());
+      }
+
+      void
+      _M_move_assign(list&& __x, false_type)
+      {
+	if (__x._M_get_Node_allocator() == this->_M_get_Node_allocator())
+          _M_move_assign(std::move(__x), true_type{});
+        else
+	  // The rvalue's allocator cannot be moved, or is not equal,
+	  // so we need to individually move each element.
+	  _M_assign_dispatch(std::__make_move_if_noexcept_iterator(__x.begin()),
+			     std::__make_move_if_noexcept_iterator(__x.end()),
+			     __false_type{});
+      }
+#endif
     };
 _GLIBCXX_END_NAMESPACE_CXX11
 
@@ -1903,7 +1949,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ++__beyond;
       bool __whole = __first == __beyond;
       if (__builtin_constant_p (__whole) && __whole)
-	return static_cast<const _Sentinel*>(__last._M_node)->_M_data;
+	return *static_cast<const _Sentinel*>(__last._M_node)->_M_valptr();
 
       ptrdiff_t __n = 0;
       while (__first != __last)
