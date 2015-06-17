@@ -1,3 +1,10 @@
+2015-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/66571
+	* pt.c (tsubst_omp_clause_decl): New function.
+	(tsubst_omp_clauses): Use it or tsubst_copy instead of
+	tsubst_expr on OMP_CLAUSE_DECL.
+
 2015-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66536
