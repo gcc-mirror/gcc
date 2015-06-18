@@ -2475,6 +2475,13 @@
 
 ;; Floating point multiply accumulate instructions.
 
+;; The various multiply accumulate instructions can be used even when
+;; HONOR_NANS is true because while IEEE 754-2008 requires the negate
+;; operation to negate the sign of a NAN and the MIPS neg instruction does
+;; not do this, the multiply and add (or minus) parts of these instructions
+;; have no requirement on how the sign of a NAN is handled and so the final
+;; sign bit of the entire operation is undefined.
+
 (define_insn "*madd4<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(plus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
@@ -2533,8 +2540,7 @@
 		   (match_operand:ANYF 3 "register_operand" "f"))))]
   "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmadd.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -2547,8 +2553,7 @@
 		   (match_operand:ANYF 3 "register_operand" "0"))))]
   "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmadd.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -2561,8 +2566,7 @@
 	 (match_operand:ANYF 3 "register_operand" "f")))]
   "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmadd.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -2575,8 +2579,7 @@
 	 (match_operand:ANYF 3 "register_operand" "0")))]
   "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmadd.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -2589,8 +2592,7 @@
 		   (match_operand:ANYF 1 "register_operand" "f"))))]
   "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmsub.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -2603,8 +2605,7 @@
 		   (match_operand:ANYF 1 "register_operand" "0"))))]
   "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmsub.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -2617,8 +2618,7 @@
 		    (match_operand:ANYF 3 "register_operand" "f"))))]
   "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmsub.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -2631,8 +2631,7 @@
 		    (match_operand:ANYF 3 "register_operand" "0"))))]
   "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmsub.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])

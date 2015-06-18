@@ -4069,7 +4069,6 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       if (float_mode_p
 	  && (ISA_HAS_NMADD4_NMSUB4 || ISA_HAS_NMADD3_NMSUB3)
 	  && TARGET_FUSED_MADD
-	  && !HONOR_NANS (mode)
 	  && !HONOR_SIGNED_ZEROS (mode))
 	{
 	  /* See if we can use NMADD or NMSUB.  See mips.md for the
@@ -4137,7 +4136,6 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       if (float_mode_p
 	  && (ISA_HAS_NMADD4_NMSUB4 || ISA_HAS_NMADD3_NMSUB3)
 	  && TARGET_FUSED_MADD
-	  && !HONOR_NANS (mode)
 	  && HONOR_SIGNED_ZEROS (mode))
 	{
 	  /* See if we can use NMADD or NMSUB.  See mips.md for the
