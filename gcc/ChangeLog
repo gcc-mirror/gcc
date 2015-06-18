@@ -1,3 +1,9 @@
+2015-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movsicc_noc_zext): New insn.
+	(zero-extended cmove with mem peephole2): New pattern.
+	(cmove with mem peephole2): Merge patterns.
+
 2015-06-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.h (WORD_REGISTER_OPERATIONS): Delete.
