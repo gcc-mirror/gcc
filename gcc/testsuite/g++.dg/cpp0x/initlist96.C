@@ -1,14 +1,7 @@
 // PR c++/66515
 // { dg-do compile { target c++11 } }
 
-namespace std
-{
-  template <class _E> class initializer_list
-  {
-    const _E *_M_array;
-    unsigned long _M_len;
-  };
-}
+#include <initializer_list>
 
 struct type_t { };
 
