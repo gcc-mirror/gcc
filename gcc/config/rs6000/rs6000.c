@@ -21176,9 +21176,9 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  return true;
 	}
       else if ((outer_code == PLUS
-		&& reg_or_add_cint_operand (x, VOIDmode))
+		&& reg_or_add_cint_operand (x, mode))
 	       || (outer_code == MINUS
-		   && reg_or_sub_cint_operand (x, VOIDmode))
+		   && reg_or_sub_cint_operand (x, mode))
 	       || ((outer_code == SET
 		    || outer_code == IOR
 		    || outer_code == XOR)
