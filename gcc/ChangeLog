@@ -1,3 +1,12 @@
+2015-06-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66375
+	* tree-scalar-evolution.c (follow_ssa_edge_binary): First
+	add to the evolution before following SSA edges.
+
 2015-06-18  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	Backport from mainline r224414.
