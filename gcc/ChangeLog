@@ -1,5 +1,13 @@
 2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	PR middle-end/66568
+	* cfgexpand.c (expand_return): Handle missing bounds.
+	(expand_gimple_stmt_1): Likewise.
+	* tree-chkp.c (chkp_expand_zero_bounds): New.
+	* tree-chkp.h (chkp_expand_zero_bounds): New.
+
+2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	PR middle-end/66567
 	* ipa-chkp.c (chkp_maybe_create_clone): Require
 	functions to be instrumentable.
