@@ -1,3 +1,15 @@
+2015-06-18  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config/mips/mips.c (mips_rtx_costs): Remove HONOR_NAN check.
+	* config/mips/mips.md (*madd4<mode>): Ditto.
+	(*nmadd3<mode>) Ditto.
+	(*nmadd4<mode>_fastmath): Ditto.
+	(*nmadd3<mode>_fastmath): Ditto.
+	(*nmsub4<mode>): Ditto.
+	(*nmsub3<mode>): Ditto.
+	(*nmsub4<mode>_fastmath): Ditto.
+	(*nmsub3<mode>_fastmath): Ditto.
+
 2015-06-18  Michael Matz  <matz@suse.de>
 
 	PR middle-end/66253
