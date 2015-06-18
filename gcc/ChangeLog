@@ -1,3 +1,11 @@
+2015-06-18  Michael Matz  <matz@suse.de>
+
+	PR middle-end/66253
+	* tree-vect-stmts.c (vectorizable_store): Implement non-SLP
+	grouped strided stores.
+	(vectorizable_load): Don't use the DR from first_stmt in
+	the non-SLP grouped strided case.
+
 2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/66569

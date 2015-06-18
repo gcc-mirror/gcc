@@ -1,3 +1,8 @@
+2015-06-18  Michael Matz  <matz@suse.de>
+
+	PR middle-end/66253
+	* gcc.dg/vect/pr66253.c: New testcase.
+
 2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/66569
