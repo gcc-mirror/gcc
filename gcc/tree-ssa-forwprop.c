@@ -2474,16 +2474,12 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	 (for integers).  Avoid this if the final type is a pointer since
 	 then we sometimes need the middle conversion.  Likewise if the
 	 final type has a precision not equal to the size of its mode.  */
-      if (((inter_int && inside_int)
-	   || (inter_float && inside_float)
-	   || (inter_vec && inside_vec))
+      if (((inter_int && inside_int) || (inter_float && inside_float))
+	  && (final_int || final_float)
 	  && inter_prec >= inside_prec
-	  && (inter_float || inter_vec
-	      || inter_unsignedp == inside_unsignedp)
+	  && (inter_float || inter_unsignedp == inside_unsignedp)
 	  && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
-		&& TYPE_MODE (type) == TYPE_MODE (inter_type))
-	  && ! final_ptr
-	  && (! final_vec || inter_prec == inside_prec))
+		&& TYPE_MODE (type) == TYPE_MODE (inter_type)))
 	{
 	  gimple_assign_set_rhs1 (stmt, defop0);
 	  update_stmt (stmt);

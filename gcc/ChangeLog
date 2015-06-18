@@ -1,3 +1,10 @@
+2015-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66233
+	* fold-const.c (fold_unary_loc): Don't handle vector types.
+	Simplify.
+	* tree-ssa-forwprop.c (combine_conversions): Likewise.
+
 2015-06-16  Richard Biener  <rguenther@suse.de>
 
 	Revert
