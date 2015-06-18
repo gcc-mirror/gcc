@@ -1,3 +1,22 @@
+2015-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66510
+	* tree-vect-stmts.c (vectorizable_load): Properly compute the
+	number of vector loads for SLP permuted loads.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Also
+	check the stride for loop vectorization.
+	(vect_enhance_data_refs_alignment): Deal with SLP adjusted
+	vectorization factor.
+	(vect_analyze_group_access): If the group size is not a power
+	of two require a epilogue loop.
+	* tree-vect-loop.c (vect_analyze_loop_2): Move alignment
+	compute and optimizing and alias test pruning after final
+	vectorization factor computation.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Remove check on
+	vector alignment.
+	(vect_transform_slp_perm_load): Properly compute the original
+	number of vector load stmts.
+
 2015-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (-fsanitize-sections): Split @var to avoid

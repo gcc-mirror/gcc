@@ -1791,6 +1791,22 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
       return false;
     }
 
+  /* Check the SLP opportunities in the loop, analyze and build SLP trees.  */
+  ok = vect_analyze_slp (loop_vinfo, NULL, n_stmts);
+  if (!ok)
+    return false;
+
+  /* If there are any SLP instances mark them as pure_slp.  */
+  bool slp = vect_make_slp_decision (loop_vinfo);
+  if (slp)
+    {
+      /* Find stmts that need to be both vectorized and SLPed.  */
+      vect_detect_hybrid_slp (loop_vinfo);
+
+      /* Update the vectorization factor based on the SLP decision.  */
+      vect_update_vf_for_slp (loop_vinfo);
+    }
+
   /* Analyze the alignment of the data-refs in the loop.
      Fail if a data reference is found that cannot be vectorized.  */
 
@@ -1830,31 +1846,17 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
       return false;
     }
 
-  /* Check the SLP opportunities in the loop, analyze and build SLP trees.  */
-  ok = vect_analyze_slp (loop_vinfo, NULL, n_stmts);
-  if (ok)
+  if (slp)
     {
-      /* If there are any SLP instances mark them as pure_slp.  */
-      if (vect_make_slp_decision (loop_vinfo))
-	{
-	  /* Find stmts that need to be both vectorized and SLPed.  */
-	  vect_detect_hybrid_slp (loop_vinfo);
-
-	  /* Update the vectorization factor based on the SLP decision.  */
-	  vect_update_vf_for_slp (loop_vinfo);
-
-	  /* Analyze operations in the SLP instances.  Note this may
-	     remove unsupported SLP instances which makes the above
-	     SLP kind detection invalid.  */
-	  unsigned old_size = LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length ();
-	  vect_slp_analyze_operations (LOOP_VINFO_SLP_INSTANCES (loop_vinfo),
-				       LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
-	  if (LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length () != old_size)
-	    return false;
-	}
+      /* Analyze operations in the SLP instances.  Note this may
+	 remove unsupported SLP instances which makes the above
+	 SLP kind detection invalid.  */
+      unsigned old_size = LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length ();
+      vect_slp_analyze_operations (LOOP_VINFO_SLP_INSTANCES (loop_vinfo),
+				   LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
+      if (LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length () != old_size)
+	return false;
     }
-  else
-    return false;
 
   /* Scan all the remaining operations in the loop that are not subject
      to SLP and make sure they are vectorizable.  */

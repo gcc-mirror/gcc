@@ -6422,7 +6422,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       if (slp)
 	{
 	  grouped_load = false;
-	  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	  /* For SLP permutation support we need to load the whole group,
+	     not only the number of vector stmts the permutation result
+	     fits in.  */
+	  if (slp_perm)
+	    vec_num = (group_size * vf + nunits - 1) / nunits;
+	  else
+	    vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  group_gap_adj = vf * group_size - nunits * vec_num;
     	}
       else

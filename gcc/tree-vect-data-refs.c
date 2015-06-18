@@ -691,21 +691,22 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	}
     }
 
-  /* Similarly, if we're doing basic-block vectorization, we can only use
-     base and misalignment information relative to an innermost loop if the
-     misalignment stays the same throughout the execution of the loop.
-     As above, this is the case if the stride of the dataref evenly divides
-     by the vector size.  */
-  if (!loop)
+  /* Similarly we can only use base and misalignment information relative to
+     an innermost loop if the misalignment stays the same throughout the
+     execution of the loop.  As above, this is the case if the stride of
+     the dataref evenly divides by the vector size.  */
+  else
     {
       tree step = DR_STEP (dr);
+      unsigned vf = loop ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) : 1;
 
       if (tree_fits_shwi_p (step)
-	  && tree_to_shwi (step) % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0)
+	  && ((tree_to_shwi (step) * vf)
+	      % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                     "SLP: step doesn't divide the vector-size.\n");
+	                     "step doesn't divide the vector-size.\n");
 	  misalign = NULL_TREE;
 	}
     }
@@ -1440,7 +1441,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  We do this automtically for cost model, since we calculate cost
                  for every peeling option.  */
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
-                possible_npeel_number = vf /nelements;
+		{
+		  if (STMT_SLP_TYPE (stmt_info))
+		    possible_npeel_number
+		      = (vf * GROUP_SIZE (stmt_info)) / nelements;
+		  else
+		    possible_npeel_number = vf / nelements;
+		}
 
               /* Handle the aligned case. We may decide to align some other
                  access, making DR unaligned.  */
@@ -1453,7 +1460,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
               for (j = 0; j < possible_npeel_number; j++)
                 {
-                  gcc_assert (npeel_tmp <= vf);
                   vect_peeling_hash_insert (loop_vinfo, dr, npeel_tmp);
                   npeel_tmp += nelements;
                 }
@@ -2230,8 +2236,13 @@ vect_analyze_group_access (struct data_reference *dr)
             BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt);
         }
 
-      /* There is a gap in the end of the group.  */
-      if (groupsize - last_accessed_element > 0 && loop_vinfo)
+      /* If there is a gap in the end of the group or the group size cannot
+         be made a multiple of the vector element count then we access excess
+	 elements in the last iteration and thus need to peel that off.  */
+      if (loop_vinfo
+	  && (groupsize - last_accessed_element > 0
+	      || exact_log2 (groupsize) == -1))
+
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
