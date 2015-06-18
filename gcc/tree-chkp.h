@@ -53,6 +53,7 @@ extern void chkp_copy_bounds_for_assign (gimple assign,
 					 struct cgraph_edge *edge);
 extern bool chkp_gimple_call_builtin_p (gimple call,
 					enum built_in_function code);
+extern rtx chkp_expand_zero_bounds (void);
 extern void chkp_expand_bounds_reset_for_mem (tree mem, tree ptr);
 extern tree chkp_insert_retbnd_call (tree bndval, tree retval,
 				     gimple_stmt_iterator *gsi);
