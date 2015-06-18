@@ -1,3 +1,7 @@
+2015-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/cmov9.c: New test.
+
 2015-06-18  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/other/const4.C: New testcase.
@@ -32,7 +36,7 @@
 	* gcc.target/i386/noplt-1.c (dg-do): Fix target selector.
 	* gcc.target/i386/noplt-2.c (dg-do): Ditto.
 	* gcc.target/i386/noplt-3.c (dg-do): Ditto.
-	* gcc.target/i386/noplt-4.c (dg-do): ditto.
+	* gcc.target/i386/noplt-4.c (dg-do): Ditto.
 
 2015-06-17  Jakub Jelinek  <jakub@redhat.com>
 
