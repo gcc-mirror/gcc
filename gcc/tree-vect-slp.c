@@ -485,9 +485,8 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   int icode;
   machine_mode optab_op2_mode;
   machine_mode vec_mode;
-  struct data_reference *first_dr;
   HOST_WIDE_INT dummy;
-  gimple first_load = NULL, prev_first_load = NULL, old_first_load = NULL;
+  gimple first_load = NULL, prev_first_load = NULL;
   tree cond;
 
   /* For every stmt in NODE find its def stmt/s.  */
@@ -785,7 +784,6 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
                   return false;
                 }
 
-	      old_first_load = first_load;
               first_load = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
               if (prev_first_load)
                 {
@@ -809,30 +807,6 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
                 }
               else
                 prev_first_load = first_load;
-
-	      /* In some cases a group of loads is just the same load
-		 repeated N times.  Only analyze its cost once.  */
-              if (first_load == stmt && old_first_load != first_load)
-                {
-                  first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
-                  if (vect_supportable_dr_alignment (first_dr, false)
-                      == dr_unaligned_unsupported)
-                    {
-                      if (dump_enabled_p ())
-                        {
-                          dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-					   vect_location, 
-					   "Build SLP failed: unsupported "
-					   "unaligned load ");
-                          dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-					    stmt, 0);
-                          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-                        }
-		      /* Fatal mismatch.  */
-		      matches[0] = false;
-                      return false;
-                    }
-                }
            }
         } /* Grouped access.  */
       else
@@ -3201,6 +3175,11 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   bool needs_first_vector = false;
   machine_mode mode;
 
+  if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    return false;
+
+  stmt_info = vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info));
+
   mode = TYPE_MODE (vectype);
 
   if (!can_vec_perm_p (mode, false, NULL))
@@ -3226,19 +3205,16 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 
   /* The number of vector stmts to generate based only on SLP_NODE_INSTANCE
      unrolling factor.  */
-  orig_vec_stmts_num = group_size *
-                SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance) / nunits;
+  orig_vec_stmts_num
+    = (STMT_VINFO_GROUP_SIZE (stmt_info)
+       * SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance)
+       + nunits - 1) / nunits;
   if (orig_vec_stmts_num == 1)
     only_one_vec = true;
 
   /* Number of copies is determined by the final vectorization factor
      relatively to SLP_NODE_INSTANCE unrolling factor.  */
   ncopies = vf / SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
-
-  if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    return false;
-
-  stmt_info = vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info));
 
   /* Generate permutation masks for every NODE. Number of masks for each NODE
      is equal to GROUP_SIZE.

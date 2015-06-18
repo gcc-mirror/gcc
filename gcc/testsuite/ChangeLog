@@ -1,3 +1,8 @@
+2015-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66510
+	* gcc.dg/vect/slp-perm-12.c: New testcase.
+
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/noplt-1.c (dg-do): Fix target selector.
