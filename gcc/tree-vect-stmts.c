@@ -5262,16 +5262,17 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       gimple_seq stmts = NULL;
       tree stride_base, stride_step, alias_off;
       tree vec_oprnd;
+      unsigned int g;
 
       gcc_assert (!nested_in_vect_loop_p (loop, stmt));
 
       stride_base
 	= fold_build_pointer_plus
-	    (unshare_expr (DR_BASE_ADDRESS (dr)),
+	    (unshare_expr (DR_BASE_ADDRESS (first_dr)),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (unshare_expr (DR_OFFSET (dr))),
-			 convert_to_ptrofftype (DR_INIT(dr))));
-      stride_step = fold_convert (sizetype, unshare_expr (DR_STEP (dr)));
+			 convert_to_ptrofftype (unshare_expr (DR_OFFSET (first_dr))),
+			 convert_to_ptrofftype (DR_INIT(first_dr))));
+      stride_step = fold_convert (sizetype, unshare_expr (DR_STEP (first_dr)));
 
       /* For a store with loop-invariant (but other than power-of-2)
          stride (i.e. not a grouped access) like so:
@@ -5302,6 +5303,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    ltype = vectype;
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (elem_type));
 	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	  group_size = 1;
 	}
 
       ivstep = stride_step;
@@ -5322,65 +5324,89 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
 
       prev_stmt_info = NULL;
-      running_off = offvar;
-      alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (dr)), 0);
-      for (j = 0; j < ncopies; j++)
+      alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (first_dr)), 0);
+      next_stmt = first_stmt;
+      for (g = 0; g < group_size; g++)
 	{
-	  /* We've set op and dt above, from gimple_assign_rhs1(stmt),
-	     and first_stmt == stmt.  */
-	  if (j == 0)
+	  running_off = offvar;
+	  if (g)
 	    {
-	      if (slp)
+	      tree size = TYPE_SIZE_UNIT (ltype);
+	      tree pos = fold_build2 (MULT_EXPR, sizetype, size_int (g),
+				      size);
+	      tree newoff = copy_ssa_name (running_off, NULL);
+	      incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
+					  running_off, pos);
+	      vect_finish_stmt_generation (stmt, incr, gsi);
+	      running_off = newoff;
+	    }
+	  for (j = 0; j < ncopies; j++)
+	    {
+	      /* We've set op and dt above, from gimple_assign_rhs1(stmt),
+		 and first_stmt == stmt.  */
+	      if (j == 0)
 		{
-		  vect_get_vec_defs (op, NULL_TREE, stmt, &vec_oprnds, NULL,
-				     slp_node, -1);
-		  vec_oprnd = vec_oprnds[0];
+		  if (slp)
+		    {
+		      vect_get_vec_defs (op, NULL_TREE, stmt, &vec_oprnds, NULL,
+					 slp_node, -1);
+		      vec_oprnd = vec_oprnds[0];
+		    }
+		  else
+		    {
+		      gcc_assert (gimple_assign_single_p (next_stmt));
+		      op = gimple_assign_rhs1 (next_stmt);
+		      vec_oprnd = vect_get_vec_def_for_operand (op, next_stmt,
+								NULL);
+		    }
 		}
 	      else
-		vec_oprnd = vect_get_vec_def_for_operand (op, first_stmt, NULL);
+		{
+		  if (slp)
+		    vec_oprnd = vec_oprnds[j];
+		  else
+		    vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+		}
+
+	      for (i = 0; i < nstores; i++)
+		{
+		  tree newref, newoff;
+		  gimple incr, assign;
+		  tree size = TYPE_SIZE (ltype);
+		  /* Extract the i'th component.  */
+		  tree pos = fold_build2 (MULT_EXPR, bitsizetype,
+					  bitsize_int (i), size);
+		  tree elem = fold_build3 (BIT_FIELD_REF, ltype, vec_oprnd,
+					   size, pos);
+
+		  elem = force_gimple_operand_gsi (gsi, elem, true,
+						   NULL_TREE, true,
+						   GSI_SAME_STMT);
+
+		  newref = build2 (MEM_REF, ltype,
+				   running_off, alias_off);
+
+		  /* And store it to *running_off.  */
+		  assign = gimple_build_assign (newref, elem);
+		  vect_finish_stmt_generation (stmt, assign, gsi);
+
+		  newoff = copy_ssa_name (running_off, NULL);
+		  incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
+					      running_off, stride_step);
+		  vect_finish_stmt_generation (stmt, incr, gsi);
+
+		  running_off = newoff;
+		  if (g == group_size - 1)
+		    {
+		      if (j == 0 && i == 0)
+			STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = assign;
+		      else
+			STMT_VINFO_RELATED_STMT (prev_stmt_info) = assign;
+		      prev_stmt_info = vinfo_for_stmt (assign);
+		    }
+		}
 	    }
-	  else
-	    {
-	      if (slp)
-		vec_oprnd = vec_oprnds[j];
-	      else
-		vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
-	    }
-
-	  for (i = 0; i < nstores; i++)
-	    {
-	      tree newref, newoff;
-	      gimple incr, assign;
-	      tree size = TYPE_SIZE (ltype);
-	      /* Extract the i'th component.  */
-	      tree pos = fold_build2 (MULT_EXPR, bitsizetype, bitsize_int (i),
-				      size);
-	      tree elem = fold_build3 (BIT_FIELD_REF, ltype, vec_oprnd,
-				       size, pos);
-
-	      elem = force_gimple_operand_gsi (gsi, elem, true,
-					       NULL_TREE, true,
-					       GSI_SAME_STMT);
-
-	      newref = build2 (MEM_REF, ltype,
-			       running_off, alias_off);
-
-	      /* And store it to *running_off.  */
-	      assign = gimple_build_assign (newref, elem);
-	      vect_finish_stmt_generation (stmt, assign, gsi);
-
-	      newoff = copy_ssa_name (running_off, NULL);
-	      incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
-					  running_off, stride_step);
-	      vect_finish_stmt_generation (stmt, incr, gsi);
-
-	      running_off = newoff;
-	      if (j == 0 && i == 0)
-		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = assign;
-	      else
-		STMT_VINFO_RELATED_STMT (prev_stmt_info) = assign;
-	      prev_stmt_info = vinfo_for_stmt (assign);
-	    }
+	  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
 	}
       return true;
     }
@@ -6265,7 +6291,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       gcc_assert (!nested_in_vect_loop);
 
-      if (grouped_load)
+      if (slp && grouped_load)
 	first_dr = STMT_VINFO_DATA_REF
 	    (vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info)));
       else
