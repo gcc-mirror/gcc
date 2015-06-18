@@ -1,5 +1,10 @@
 2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	PR target/66569
+	* gcc.target/i386/mpx/chkp-vararg.c: New test.
+
+2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	PR middle-end/66568
 	* gcc.target/i386/mpx/pr66568.c: New test.
 
