@@ -1,3 +1,8 @@
+2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/66567
+	* gcc.target/i386/mpx/pr66567.c: New test.
+
 2015-06-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66510

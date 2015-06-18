@@ -1,3 +1,11 @@
+2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/66567
+	* ipa-chkp.c (chkp_maybe_create_clone): Require
+	functions to be instrumentable.
+	* tree-chkp.c (chkp_replace_function_pointer): Use
+	chkp_instrumentable_p instead of attribute check.
+
 2015-06-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66510
