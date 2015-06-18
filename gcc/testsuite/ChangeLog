@@ -1,3 +1,17 @@
+2015-06-18  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	Backport from mainline r224414.
+	2015-06-12  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* gcc.target/i386/monitorx.c: New.
+	* gcc.target/i386/sse-12.c: Add -mmwaitx.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2015-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/66571

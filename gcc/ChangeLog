@@ -1,3 +1,38 @@
+2015-06-18  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	Backport from mainline r224414.
+	2015-06-12  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_MWAITX_SET): New.
+	(ix86_handle_option): Handle mwaitx.
+	* config.gcc (i[34567]86-*-*): Add mwaitxintrin.h,
+	(x86_64-*-*): Likewise.
+	* config/i386/mwaitxintrin.h: New header.
+	* config/i386/cpuid.h (bit_MWAITX):  Define.
+	 * config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	MWAITX support.
+	 * config/i386/i386.opt (mwaitx): New.
+	* config/i386/i386-builtin-types.def
+	(VOID_FTYPE_UNSIGNED_ UNSIGNED_UNSIGNED): New function type.
+	* config/i386/i386-c.c: Define __MWAITX__ if needed.
+	* config/i386/i386.c (ix86_target_string): Define -mmwaitx option.
+	(PTA_MWAITX): New.
+	(ix86_option_override_internal): Handle new option.
+	(processor_alias_table): Added PTA_MWAITX.
+	(ix86_valid_target_attribute_inner_p): Add OPT_mmwaitx.
+	(ix86_builtins): Add IX86_BUILTIN_MWAITX, IX86_BUILTIN_MONITORX.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_MWAITX and
+	IX86_BUILTIN_MONITORX  built-ins.
+	* config/i386/i386.h (TARGET_MWAITX): New.
+	* config/i386/i386.md (unspecv): Add UNSPEC_MWAITX and
+	UNSPEC_MONITORX.
+	(mwaitx):  New pattern.
+	(monitorx_<mode>): New pattern.
+	* config/i386/x86intrin.h: Include mwaitxintrin.h.
+	* doc/extend.texi: Document monitorx and mwaitx builtins.
+	* doc/invoke.texi: Document -mmwaitx option.
+
 2015-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66429
