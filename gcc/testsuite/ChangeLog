@@ -1,3 +1,11 @@
+2015-06-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/56917
+	* g++.dg/other/const4.C: New testcase.
+
 2015-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66233
