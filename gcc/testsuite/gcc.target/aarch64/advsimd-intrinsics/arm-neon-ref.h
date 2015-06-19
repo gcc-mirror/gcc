@@ -235,7 +235,8 @@ extern ARRAY(expected, hfloat, 64, 2);
 
 typedef union {
   struct {
-    int _xxx:25;
+    int _xxx:24;
+    unsigned int FZ:1;
     unsigned int DN:1;
     unsigned int AHP:1;
     unsigned int QC:1;
@@ -258,7 +259,8 @@ typedef union {
     unsigned int QC:1;
     unsigned int AHP:1;
     unsigned int DN:1;
-    int _dnm:25;
+    unsigned int FZ:1;
+    int _dnm:24;
   } b;
   unsigned int word;
 } _ARM_FPSCR;
@@ -395,10 +397,15 @@ static void clean_results (void)
 #if defined(__aarch64__)
   /* On AArch64, make sure to return DefaultNaN to have the same
      results as on AArch32.  */
-  _ARM_FPSCR _afpscr_for_dn;
-  asm volatile ("mrs %0,fpcr" : "=r" (_afpscr_for_dn));
-  _afpscr_for_dn.b.DN = 1;
-  asm volatile ("msr fpcr,%0" : : "r" (_afpscr_for_dn));
+  _ARM_FPSCR _afpscr;
+  asm volatile ("mrs %0,fpcr" : "=r" (_afpscr));
+  _afpscr.b.DN = 1;
+
+  /* On AArch64, make sure to flush to zero by default, as on
+     AArch32. */
+  _afpscr.b.FZ = 1;
+
+  asm volatile ("msr fpcr,%0" : : "r" (_afpscr));
 #endif
 }
 
