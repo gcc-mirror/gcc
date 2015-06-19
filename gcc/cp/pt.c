@@ -9260,12 +9260,20 @@ instantiate_class_template_1 (tree type)
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
+  int saved_unevaluated_operand = cp_unevaluated_operand;
+  int saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
+
   fn_context = decl_function_context (TYPE_MAIN_DECL (type));
   /* Also avoid push_to_top_level for a lambda in an NSDMI.  */
   if (!fn_context && LAMBDA_TYPE_P (type) && TYPE_CLASS_SCOPE_P (type))
     fn_context = error_mark_node;
   if (!fn_context)
     push_to_top_level ();
+  else
+    {
+      cp_unevaluated_operand = 0;
+      c_inhibit_evaluation_warnings = 0;
+    }
   /* Use #pragma pack from the template context.  */
   saved_maximum_field_alignment = maximum_field_alignment;
   maximum_field_alignment = TYPE_PRECISION (pattern);
@@ -9679,6 +9687,14 @@ instantiate_class_template_1 (tree type)
 		}
 	    }
 	}
+    }
+
+  if (fn_context)
+    {
+      /* Restore these before substituting into the lambda capture
+	 initializers.  */
+      cp_unevaluated_operand = saved_unevaluated_operand;
+      c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
     }
 
   if (tree expr = CLASSTYPE_LAMBDA_EXPR (type))
