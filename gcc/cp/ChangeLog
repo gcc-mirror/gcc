@@ -1,5 +1,9 @@
 2015-06-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66515
+	* call.c (implicit_conversion): Call reshape_init here, early.
+	(build_aggr_conv): Not here.
+
 	PR c++/66585
 	* pt.c (instantiate_class_template_1): Clear
 	cp_unevaluated_operand and c_inhibit_evaluation_warnings.
