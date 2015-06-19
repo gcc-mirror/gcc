@@ -1,3 +1,9 @@
+2015-06-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/66518
+	* testsuite/libgomp.oacc-c-c++-common/lib-3.c: XFAIL.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
+
 2015-06-15  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.c/atomic-1.c: Remove dg-options "-O2".  Use
