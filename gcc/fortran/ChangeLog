@@ -1,3 +1,10 @@
+2015-06-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/66549
+	* resolve.c (resolve_global_procedure): Don't save and restore
+	OpenMP state around the call to gfc_resolve.
+	(gfc_resolve): Save OpenMP state on entry and restore it on return.
+
 2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* convert.c: Do not include input.h, line-map.h or is-a.h.
