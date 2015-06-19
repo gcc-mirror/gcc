@@ -1775,10 +1775,14 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	 target/55212.
 	 We split possible load/store to two move insns via r0 so as to
 	 shorten R0 live range.  It will make some codes worse but will
-	 win on avarage for LRA.  */
+	 win on average for LRA.
+	 Also when base+index addressing is used and the index term is
+	 a subreg, LRA assumes that more hard registers can be available
+	 in some situation.  It isn't the case for SH in the problematic
+	 case.  We can pre-allocate R0 for that index term to avoid
+	 the issue.  See PR target/66591.  */
       else if (sh_lra_p ()
 	       && TARGET_SH1 && ! TARGET_SH2A
-	       && (mode == QImode || mode == HImode)
 	       && ((REG_P (operands[0]) && MEM_P (operands[1]))
 		   || (REG_P (operands[1]) && MEM_P (operands[0]))))
 	{
@@ -1786,7 +1790,8 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	  rtx reg = operands[load_p ? 0 : 1];
 	  rtx adr = XEXP (operands[load_p ? 1 : 0], 0);
 
-	  if (REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	  if ((mode == QImode || mode == HImode)
+	      && REGNO (reg) >= FIRST_PSEUDO_REGISTER
 	      && GET_CODE (adr) == PLUS
 	      && REG_P (XEXP (adr, 0))
 	      && (REGNO (XEXP (adr, 0)) >= FIRST_PSEUDO_REGISTER)
@@ -1797,6 +1802,17 @@ prepare_move_operands (rtx operands[], machine_mode mode)
 	      rtx r0_rtx = gen_rtx_REG (mode, R0_REG);
 	      emit_move_insn (r0_rtx, operands[1]);
 	      operands[1] = r0_rtx;
+	    }
+	  if (REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	      && GET_CODE (adr) == PLUS
+	      && REG_P (XEXP (adr, 0))
+	      && (REGNO (XEXP (adr, 0)) >= FIRST_PSEUDO_REGISTER)
+	      && SUBREG_P (XEXP (adr, 1))
+	      && REG_P (SUBREG_REG (XEXP (adr, 1))))
+	    {
+	      rtx r0_rtx = gen_rtx_REG (GET_MODE (XEXP (adr, 1)), R0_REG);
+	      emit_move_insn (r0_rtx, XEXP (adr, 1));
+	      XEXP (adr, 1) = r0_rtx;
 	    }
 	}
     }
