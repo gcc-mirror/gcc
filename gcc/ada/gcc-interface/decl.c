@@ -4242,12 +4242,23 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_return_type)))
 	      {
 		tree orig_type = gnu_return_type;
+		tree max_return_size
+		  = max_size (TYPE_SIZE (gnu_return_type), true);
+
+		/* If the size overflows to 0, set it to an arbitrary positive
+		   value so that assignments in the type are preserved.  Their
+		   actual size is independent of this positive value.  */
+		if (TREE_CODE (max_return_size) == INTEGER_CST
+		    && TREE_OVERFLOW (max_return_size)
+		    && integer_zerop (max_return_size))
+		  {
+		    max_return_size = copy_node (bitsize_unit_node);
+		    TREE_OVERFLOW (max_return_size) = 1;
+		  }
 
 		gnu_return_type
-		  = maybe_pad_type (gnu_return_type,
-				    max_size (TYPE_SIZE (gnu_return_type),
-					      true),
-				    0, gnat_entity, false, false, definition,
+		  = maybe_pad_type (gnu_return_type, max_return_size, 0,
+				    gnat_entity, false, false, definition,
 				    true);
 
 		/* Declare it now since it will never be declared otherwise.

@@ -1,3 +1,10 @@
+2015-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Function>: Make sure
+	the size of a padding type built around the return type is positive.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Simple_Return_Statement>:
+	Use INIT_EXPR instead of MODIFY_EXPR to assign to the return object.
+
 2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/cuintp.c: Do not include input.h, line-map.h or is-a.h.

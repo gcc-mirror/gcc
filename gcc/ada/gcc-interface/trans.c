@@ -6861,7 +6861,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		tree gnu_ret_deref
 		  = build_unary_op (INDIRECT_REF, TREE_TYPE (gnu_ret_val),
 				    gnu_ret_obj);
-		gnu_result = build2 (MODIFY_EXPR, void_type_node,
+		gnu_result = build2 (INIT_EXPR, void_type_node,
 				     gnu_ret_deref, gnu_ret_val);
 		add_stmt_with_node (gnu_result, gnat_node);
 		gnu_ret_val = NULL_TREE;
