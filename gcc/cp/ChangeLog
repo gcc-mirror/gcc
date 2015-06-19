@@ -1,5 +1,9 @@
 2015-06-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65880
+	* decl.c (build_ptrmemfunc_type): Check TYPE_GET_PTRMEMFUNC_TYPE after
+	cv-qualifiers.
+
 	PR c++/65973
 	* constexpr.c (build_constexpr_constructor_member_initializers):
 	Handle an empty STATEMENT_LIST.
