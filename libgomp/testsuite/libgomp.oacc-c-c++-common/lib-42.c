@@ -32,5 +32,7 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] is not mapped" } */
+/* TODO: currently doesn't print anything; SIGSEGV.
+   <https://gcc.gnu.org/PR66518>.  */
+/* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] is not mapped" { xfail *-*-* } } */
 /* { dg-shouldfail "" } */

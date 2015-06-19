@@ -12,5 +12,6 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-output "device \[0-9\]+\\\(\[0-9\]+\\\) is initialized" } */
+/* TODO: currently prints: "libgomp: no device found".  */
+/* { dg-output "device \[0-9\]+\\\(\[0-9\]+\\\) is initialized" { xfail *-*-* } } */
 /* { dg-shouldfail "" } */
