@@ -1,10 +1,8 @@
-2015-06-18  Jason Merrill  <jason@redhat.com>
+2015-06-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66585
 	* pt.c (instantiate_class_template_1): Clear
 	cp_unevaluated_operand and c_inhibit_evaluation_warnings.
-
-2015-06-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65880
 	* decl.c (build_ptrmemfunc_type): Check TYPE_GET_PTRMEMFUNC_TYPE after
