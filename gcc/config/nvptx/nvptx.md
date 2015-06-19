@@ -1203,10 +1203,22 @@
   sorry ("target cannot support nonlocal goto.");
 })
 
-(define_insn "allocate_stack"
-  [(set (match_operand 0 "nvptx_register_operand" "=R")
-	(unspec [(match_operand 1 "nvptx_register_operand" "R")]
-		  UNSPEC_ALLOCA))]
+(define_expand "allocate_stack"
+  [(match_operand 0 "nvptx_register_operand")
+   (match_operand 1 "nvptx_register_operand")]
+  ""
+{
+  if (TARGET_ABI64)
+    emit_insn (gen_allocate_stack_di (operands[0], operands[1]));
+  else
+    emit_insn (gen_allocate_stack_si (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "allocate_stack_<mode>"
+  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
+        (unspec:P [(match_operand:P 1 "nvptx_register_operand" "R")]
+                   UNSPEC_ALLOCA))]
   ""
   "%.\\tcall (%0), %%alloca, (%1);")
 
