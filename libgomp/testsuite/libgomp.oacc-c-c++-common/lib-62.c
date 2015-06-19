@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <string.h>
 #include <stdlib.h>
@@ -11,8 +11,6 @@ main (int argc, char **argv)
   int i;
   unsigned char *h;
   void *d;
-
-  acc_init (acc_device_nvidia);
 
   h = (unsigned char *) malloc (N);
 
@@ -40,8 +38,6 @@ main (int argc, char **argv)
   acc_free (d);
 
   free (h);
-
-  acc_shutdown (acc_device_nvidia);
 
   return 0;
 }

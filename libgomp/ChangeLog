@@ -1,5 +1,8 @@
 2015-06-19  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/lib-62.c: Only consider for
+	acc_device_nvidia.
+
 	PR libgomp/66518
 	* testsuite/libgomp.oacc-c-c++-common/lib-3.c: XFAIL.
 	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
