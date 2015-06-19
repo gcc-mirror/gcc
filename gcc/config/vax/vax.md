@@ -780,7 +780,7 @@
 	(match_operand:SI 3 "general_operand" "g"))]
    "(INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
    && INTVAL (operands[2]) % INTVAL (operands[1]) == 0
-   && (REG_P (operands[0])
+   && (!MEM_P (operands[0])
        || ! mode_dependent_address_p (XEXP (operands[0], 0),
 				       MEM_ADDR_SPACE (operands[0])))"
   "*
@@ -809,7 +809,7 @@
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
-   && (REG_P (operands[1])
+   && (!MEM_P (operands[1])
        || ! mode_dependent_address_p (XEXP (operands[1], 0),
 				      MEM_ADDR_SPACE (operands[1])))"
   "*
@@ -837,7 +837,7 @@
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
-   && (REG_P (operands[1])
+   && (!MEM_P (operands[1])
        || ! mode_dependent_address_p (XEXP (operands[1], 0),
 				      MEM_ADDR_SPACE (operands[1])))"
   "*

@@ -1,3 +1,8 @@
+2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/vax/vax.md: Adjust sign/zero extend patterns to
+	handle SUBREGs in operands[1].
+
 2015-06-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/i386/i386.c (ix86_function_versions): Use std::swap instead

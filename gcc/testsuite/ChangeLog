@@ -1,3 +1,7 @@
+2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/vax/bswapdi-1.c: New.
+
 2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vtst.c: New file.
