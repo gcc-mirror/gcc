@@ -1,3 +1,8 @@
+2015-06-19  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-chkp.c (chkp_compute_bounds_for_assignment): Don't
+	reuse bounds created for abnormal ssa names.
+
 2015-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/nvptx/nvptx.md (allocate_stack): Rename to...
