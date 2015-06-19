@@ -1,3 +1,7 @@
+2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/pr62308.c: New test.
+
 2015-06-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66549
