@@ -1,5 +1,9 @@
 2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vrecps.c: New file.
+
+2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
 	(_ARM_FPSCR): Add FZ field.
 	(clean_results): Force FZ=1 on AArch64.
