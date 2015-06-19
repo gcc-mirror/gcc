@@ -1,5 +1,9 @@
 2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vtst.c: New file.
+
+2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vtbX.c: New file.
 
 2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
