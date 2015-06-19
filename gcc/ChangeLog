@@ -1,3 +1,10 @@
+2015-06-19  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/66541
+	PR target/52144
+	* config/arm/arm.c (arm_set_current_function): Handle
+	explicit default options.
+
 2015-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movsicc_noc_zext): New insn.
