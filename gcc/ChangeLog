@@ -1,3 +1,10 @@
+2015-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/nvptx.md (allocate_stack): Rename to...
+	(allocate_stack_<mode>): ... this, and add :P on both
+	match_operand and unspec.
+	(allocate_stack): New expander.
+
 2015-06-19  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/66541
