@@ -34971,9 +34971,7 @@ ix86_function_versions (tree fn1, tree fn2)
 	{
 	  if (attr2 != NULL_TREE)
 	    {
-	      tree tem = fn1;
-	      fn1 = fn2;
-	      fn2 = tem;
+	      std::swap (fn1, fn2);
 	      attr1 = attr2;
 	    }
 	  error_at (DECL_SOURCE_LOCATION (fn2),
@@ -47990,9 +47988,7 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
 	    {
 	      /* Attempt to increase the likelihood that dfinal
 		 shuffle will be intra-lane.  */
-	      char tmph = nonzero_halves[0];
-	      nonzero_halves[0] = nonzero_halves[1];
-	      nonzero_halves[1] = tmph;
+	      std::swap (nonzero_halves[0], nonzero_halves[1]);
 	    }
 
 	  /* vperm2f128 or vperm2i128.  */
