@@ -543,8 +543,17 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
       || TREE_CODE (body) == EH_SPEC_BLOCK)
     body = TREE_OPERAND (body, 0);
   if (TREE_CODE (body) == STATEMENT_LIST)
-    body = STATEMENT_LIST_HEAD (body)->stmt;
-  body = BIND_EXPR_BODY (body);
+    {
+      for (tree_stmt_iterator i = tsi_start (body);
+	   !tsi_end_p (i); tsi_next (&i))
+	{
+	  body = tsi_stmt (i);
+	  if (TREE_CODE (body) == BIND_EXPR)
+	    break;
+	}
+    }
+  if (TREE_CODE (body) == BIND_EXPR)
+    body = BIND_EXPR_BODY (body);
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     {
       body = TREE_OPERAND (body, 0);
