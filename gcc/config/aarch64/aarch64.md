@@ -986,7 +986,9 @@
 	FAIL;
      }
 
-    if (GET_CODE (operands[0]) == MEM)
+    if (GET_CODE (operands[0]) == MEM
+        && ! (GET_CODE (operands[1]) == CONST_DOUBLE
+	      && aarch64_float_const_zero_rtx_p (operands[1])))
       operands[1] = force_reg (<MODE>mode, operands[1]);
   "
 )
@@ -995,7 +997,7 @@
   [(set (match_operand:SF 0 "nonimmediate_operand" "=w, ?r,w,w  ,w,m,r,m ,r")
 	(match_operand:SF 1 "general_operand"      "?rY, w,w,Ufc,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], SFmode)
-    || register_operand (operands[1], SFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], SFmode))"
   "@
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
@@ -1007,14 +1009,14 @@
    str\\t%w1, %0
    mov\\t%w0, %w1"
   [(set_attr "type" "f_mcr,f_mrc,fmov,fconsts,\
-                     f_loads,f_stores,f_loads,f_stores,mov_reg")]
+                     f_loads,f_stores,load1,store1,mov_reg")]
 )
 
 (define_insn "*movdf_aarch64"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=w, ?r,w,w  ,w,m,r,m ,r")
 	(match_operand:DF 1 "general_operand"      "?rY, w,w,Ufc,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], DFmode)
-    || register_operand (operands[1], DFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], DFmode))"
   "@
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
@@ -1026,7 +1028,7 @@
    str\\t%x1, %0
    mov\\t%x0, %x1"
   [(set_attr "type" "f_mcr,f_mrc,fmov,fconstd,\
-                     f_loadd,f_stored,f_loadd,f_stored,mov_reg")]
+                     f_loadd,f_stored,load1,store1,mov_reg")]
 )
 
 (define_expand "movtf"

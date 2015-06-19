@@ -7,4 +7,4 @@ foo (float *output)
   *output = 0.0;
 }
 
-/* { dg-final { scan-assembler "fmov\\ts\[0-9\]+, wzr" } } */
+/* { dg-final { scan-assembler "str\\twzr, \\\[x0\\\]" } } */
