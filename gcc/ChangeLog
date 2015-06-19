@@ -1,3 +1,9 @@
+2015-06-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/66591
+	* config/sh/sh.c (prepare_move_operands): Replace subreg
+	index term with R0 for base and index addressing.
+
 2015-06-19  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/aarch64/aarch64.md (mov<mode>:GPF): Don't call force_reg if
