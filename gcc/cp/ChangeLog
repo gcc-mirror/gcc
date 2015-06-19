@@ -1,5 +1,9 @@
 2015-06-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65973
+	* constexpr.c (build_constexpr_constructor_member_initializers):
+	Handle an empty STATEMENT_LIST.
+
 	PR c++/65843
 	* pt.c (tsubst_copy_and_build): Register a capture proxy in
 	local_specializations.

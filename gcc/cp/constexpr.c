@@ -537,16 +537,16 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
     body = TREE_OPERAND (body, 0);
   if (TREE_CODE (body) == STATEMENT_LIST)
     {
-      tree_stmt_iterator i = tsi_start (body);
-      while (true)
+      for (tree_stmt_iterator i = tsi_start (body);
+	   !tsi_end_p (i); tsi_next (&i))
 	{
 	  body = tsi_stmt (i);
 	  if (TREE_CODE (body) == BIND_EXPR)
 	    break;
-	  tsi_next (&i);
 	}
     }
-  body = BIND_EXPR_BODY (body);
+  if (TREE_CODE (body) == BIND_EXPR)
+    body = BIND_EXPR_BODY (body);
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     {
       body = TREE_OPERAND (body, 0);
