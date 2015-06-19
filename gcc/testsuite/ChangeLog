@@ -1,3 +1,14 @@
+2015-06-19  Jim Wilson  <jim.wilson@linaro.org>
+
+	* gcc.target/aarch64/fmovd-zero-mem.c: New.
+	* gcc.target/aarch64/fmovd-zero-reg.c: New.
+	* gcc.target/aarch64/fmovf-zero-mem.c: New.
+	* gcc.target/aarch64/fmovf-zero-reg.c: New.
+	* gcc.target/aarch64/fmovld-zero-mem.c: New.
+	* gcc.target/aarch64/fmovld-zero-mem.c: New.
+	* gcc.target/aarch64/fmovd-zero.c: Delete.
+	* gcc.target/aarch64/fmovf-zero.c: Delete.
+
 2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/vax/bswapdi-1.c: New.

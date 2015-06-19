@@ -1,3 +1,12 @@
+2015-06-19  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64.md (mov<mode>:GPF): Don't call force_reg if
+	op1 is an fp zero.
+	(movsf_aarch64): Change condition from register_operand to
+	aarch64_reg_or_fp_zero for op1.  Change type for alternative 6 to
+	load1.  Change type for alternative 7 to store1.
+	(movdf_aarch64): Likewise.
+
 2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/vax/vax.md: Adjust sign/zero extend patterns to
