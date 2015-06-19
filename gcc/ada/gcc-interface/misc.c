@@ -1002,6 +1002,8 @@ gnat_init_ts (void)
 #define LANG_HOOKS_DEEP_UNSHARING	true
 #undef  LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS		gnat_init_ts
+#undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
+#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL hook_bool_const_tree_false
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
