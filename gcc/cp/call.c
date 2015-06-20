@@ -5640,8 +5640,9 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      warn_logical_operator (loc, code, boolean_type_node,
-			     code_orig_arg1, arg1, code_orig_arg2, arg2);
+      if (complain & tf_warning)
+	warn_logical_operator (loc, code, boolean_type_node,
+			       code_orig_arg1, arg1, code_orig_arg2, arg2);
       /* Fall through.  */
     case GT_EXPR:
     case LT_EXPR:
@@ -5649,8 +5650,9 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case LE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
-      if ((code_orig_arg1 == BOOLEAN_TYPE)
-	  ^ (code_orig_arg2 == BOOLEAN_TYPE))
+      if ((complain & tf_warning)
+	  && ((code_orig_arg1 == BOOLEAN_TYPE)
+	      ^ (code_orig_arg2 == BOOLEAN_TYPE)))
 	maybe_warn_bool_compare (loc, code, arg1, arg2);
       /* Fall through.  */
     case PLUS_EXPR:
