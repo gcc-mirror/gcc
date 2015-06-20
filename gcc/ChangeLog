@@ -1,3 +1,7 @@
+2015-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* common.opt (fsanitize-undefined-trap-on-error): Add Driver.
+
 2015-06-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/66591
