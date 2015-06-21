@@ -1,3 +1,10 @@
+2015-06-21  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* common.opt (fsanitize-undefined-trap-on-error): Add Driver.
+
 2015-06-18  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
