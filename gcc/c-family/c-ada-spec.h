@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 /* In c-ada-spec.c  */
 
 typedef enum {
+  HAS_DEPENDENT_TEMPLATE_ARGS,
   IS_ABSTRACT,
   IS_CONSTRUCTOR,
   IS_DESTRUCTOR,
