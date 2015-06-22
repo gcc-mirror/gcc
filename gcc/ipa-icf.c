@@ -259,7 +259,6 @@ sem_item::target_supports_symbol_aliases_p (void)
 sem_function::sem_function (bitmap_obstack *stack): sem_item (FUNC, stack),
   m_checker (NULL), m_compared_func (NULL)
 {
-  arg_types.create (0);
   bb_sizes.create (0);
   bb_sorted.create (0);
 }
@@ -271,7 +270,6 @@ sem_function::sem_function (cgraph_node *node, hashval_t hash,
   sem_item (FUNC, node, hash, stack),
   m_checker (NULL), m_compared_func (NULL)
 {
-  arg_types.create (0);
   bb_sizes.create (0);
   bb_sorted.create (0);
 }
@@ -281,7 +279,6 @@ sem_function::~sem_function ()
   for (unsigned i = 0; i < bb_sorted.length (); i++)
     delete (bb_sorted[i]);
 
-  arg_types.release ();
   bb_sizes.release ();
   bb_sorted.release ();
 }
@@ -581,6 +578,30 @@ sem_function::param_used_p (unsigned int i)
   return ipa_is_param_used (IPA_NODE_REF (get_node ()), i);
 }
 
+/* Perform additional check needed to match types function parameters that are
+   used.  Unlike for normal decls it matters if type is TYPE_RESTRICT and we
+   make an assumption that REFERENCE_TYPE parameters are always non-NULL.  */
+
+bool
+sem_function::compatible_parm_types_p (tree parm1, tree parm2)
+{
+  /* Be sure that parameters are TBAA compatible.  */
+  if (!func_checker::compatible_types_p (parm1, parm2))
+    return return_false_with_msg ("parameter type is not compatible");
+
+  if (POINTER_TYPE_P (parm1)
+      && (TYPE_RESTRICT (parm1) != TYPE_RESTRICT (parm2)))
+    return return_false_with_msg ("argument restrict flag mismatch");
+
+  /* nonnull_arg_p implies non-zero range to REFERENCE types.  */
+  if (POINTER_TYPE_P (parm1)
+      && TREE_CODE (parm1) != TREE_CODE (parm2)
+      && opt_for_fn (decl, flag_delete_null_pointer_checks))
+    return return_false_with_msg ("pointer wrt reference mismatch");
+
+  return true;
+}
+
 /* Fast equality function based on knowledge known in WPA.  */
 
 bool
@@ -592,9 +613,6 @@ sem_function::equals_wpa (sem_item *item,
   cgraph_node *cnode2 = dyn_cast <cgraph_node *> (item->node);
 
   m_compared_func = static_cast<sem_function *> (item);
-
-  if (arg_types.length () != m_compared_func->arg_types.length ())
-    return return_false_with_msg ("different number of arguments");
 
   if (cnode->thunk.thunk_p != cnode2->thunk.thunk_p)
     return return_false_with_msg ("thunk_p mismatch");
@@ -684,37 +702,39 @@ sem_function::equals_wpa (sem_item *item,
     }
 
   /* Result type checking.  */
-  if (!func_checker::compatible_types_p (result_type,
-					 m_compared_func->result_type))
+  if (!func_checker::compatible_types_p
+	 (TREE_TYPE (TREE_TYPE (decl)),
+	  TREE_TYPE (TREE_TYPE (m_compared_func->decl))))
     return return_false_with_msg ("result types are different");
 
   /* Checking types of arguments.  */
-  for (unsigned i = 0; i < arg_types.length (); i++)
+  tree list1 = TYPE_ARG_TYPES (TREE_TYPE (decl)),
+       list2 = TYPE_ARG_TYPES (TREE_TYPE (m_compared_func->decl));
+  for (unsigned i = 0; list1 && list2;
+       list1 = TREE_CHAIN (list1), list2 = TREE_CHAIN (list2), i++)
     {
+      tree parm1 = TREE_VALUE (list1);
+      tree parm2 = TREE_VALUE (list2);
+
       /* This guard is here for function pointer with attributes (pr59927.c).  */
-      if (!arg_types[i] || !m_compared_func->arg_types[i])
+      if (!parm1 || !parm2)
 	return return_false_with_msg ("NULL argument type");
 
-      /* We always need to match types so we are sure the callin conventions
-	 are compatible.  */
-      if (!func_checker::compatible_types_p (arg_types[i],
-					     m_compared_func->arg_types[i]))
-	return return_false_with_msg ("argument type is different");
+      /* Verify that types are compatible to ensure that both functions
+	 have same calling conventions.  */
+      if (!types_compatible_p (parm1, parm2))
+	return return_false_with_msg ("parameter types are not compatible");
 
-      /* On used arguments we need to do a bit more of work.  */
       if (!param_used_p (i))
 	continue;
-      if (POINTER_TYPE_P (arg_types[i])
-	  && (TYPE_RESTRICT (arg_types[i])
-	      != TYPE_RESTRICT (m_compared_func->arg_types[i])))
-	return return_false_with_msg ("argument restrict flag mismatch");
-      /* nonnull_arg_p implies non-zero range to REFERENCE types.  */
-      if (POINTER_TYPE_P (arg_types[i])
-	  && TREE_CODE (arg_types[i])
-	     != TREE_CODE (m_compared_func->arg_types[i])
-	  && opt_for_fn (decl, flag_delete_null_pointer_checks))
-	return return_false_with_msg ("pointer wrt reference mismatch");
+
+      /* Perform additional checks for used parameters.  */
+      if (!compatible_parm_types_p (parm1, parm2))
+	return false;
     }
+
+  if (list1 || list2)
+    return return_false_with_msg ("Mismatched number of parameters");
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");
@@ -922,11 +942,23 @@ sem_function::equals_private (sem_item *item)
 				false,
 				&refs_set,
 				&m_compared_func->refs_set);
-  for (arg1 = DECL_ARGUMENTS (decl),
-       arg2 = DECL_ARGUMENTS (m_compared_func->decl);
-       arg1; arg1 = DECL_CHAIN (arg1), arg2 = DECL_CHAIN (arg2))
-    if (!m_checker->compare_decl (arg1, arg2))
-      return return_false ();
+  arg1 = DECL_ARGUMENTS (decl);
+  arg2 = DECL_ARGUMENTS (m_compared_func->decl);
+  for (unsigned i = 0;
+       arg1 && arg2; arg1 = DECL_CHAIN (arg1), arg2 = DECL_CHAIN (arg2), i++)
+    {
+      if (!types_compatible_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
+	return return_false_with_msg ("argument types are not compatible");
+      if (!param_used_p (i))
+	continue;
+      /* Perform additional checks for used parameters.  */
+      if (!compatible_parm_types_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
+	return false;
+      if (!m_checker->compare_decl (arg1, arg2))
+        return return_false ();
+    }
+  if (arg1 || arg2)
+    return return_false_with_msg ("Mismatched number of arguments");
 
   if (!dyn_cast <cgraph_node *> (node)->has_gimple_body_p ())
     return true;
@@ -1439,8 +1471,6 @@ sem_function::init (void)
       hstate.add_flag (cnode->thunk.add_pointer_bounds_args);
       gcode_hash = hstate.end ();
     }
-
-  parse_tree_args ();
 }
 
 /* Accumulate to HSTATE a hash of expression EXP.
@@ -1689,37 +1719,6 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
   f->init ();
 
   return f;
-}
-
-/* Parses function arguments and result type.  */
-
-void
-sem_function::parse_tree_args (void)
-{
-  tree result;
-
-  if (arg_types.exists ())
-    arg_types.release ();
-
-  arg_types.create (4);
-  tree fnargs = DECL_ARGUMENTS (decl);
-
-  for (tree parm = fnargs; parm; parm = DECL_CHAIN (parm))
-    arg_types.safe_push (DECL_ARG_TYPE (parm));
-
-  /* Function result type.  */
-  result = DECL_RESULT (decl);
-  result_type = result ? TREE_TYPE (result) : NULL;
-
-  /* During WPA, we can get arguments by following method.  */
-  if (!fnargs)
-    {
-      tree type = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      for (tree parm = type; parm; parm = TREE_CHAIN (parm))
-	arg_types.safe_push (TYPE_CANONICAL (TREE_VALUE (parm)));
-
-      result_type = TREE_TYPE (TREE_TYPE (decl));
-    }
 }
 
 /* For given basic blocks BB1 and BB2 (from functions FUNC1 and FUNC),
