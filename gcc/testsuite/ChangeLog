@@ -1,3 +1,9 @@
+2015-06-22  Richard Biener  <rguenther@suse.de>
+
+	* lib/c-torture.exp: Set LTO_TORTURE_OPTIONS conditional on
+	not existing TORTURE_OPTIONS only.
+	* lib/gcc-dg.exp: Likewise.
+
 2015-06-22  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144
