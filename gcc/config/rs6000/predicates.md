@@ -41,7 +41,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) > LAST_VIRTUAL_REGISTER)
+  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
     return 1;
 
   return ALTIVEC_REGNO_P (REGNO (op));
@@ -57,7 +57,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) > LAST_VIRTUAL_REGISTER)
+  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
     return 1;
 
   return VSX_REGNO_P (REGNO (op));
@@ -74,7 +74,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) > LAST_VIRTUAL_REGISTER)
+  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
     return 1;
 
   return VFLOAT_REGNO_P (REGNO (op));
@@ -91,7 +91,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) > LAST_VIRTUAL_REGISTER)
+  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
     return 1;
 
   return VINT_REGNO_P (REGNO (op));
@@ -108,7 +108,7 @@
   if (!REG_P (op))
     return 0;
 
-  if (REGNO (op) > LAST_VIRTUAL_REGISTER)
+  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
     return 1;
 
   return VLOGICAL_REGNO_P (REGNO (op));

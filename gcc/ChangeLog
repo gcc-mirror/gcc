@@ -1,3 +1,13 @@
+2015-06-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65914
+	* config/rs6000/predicates.md (altivec_register_operand): Permit
+	virtual stack registers.
+	(vsx_register_operand): Likewise.
+	(vfloat_operand): Likewise.
+	(vint_operand): Likewise.
+	(vlogical_operand): Likewise.
+
 2015-06-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (_loop_vec_info): Add scalar_cost_vec
