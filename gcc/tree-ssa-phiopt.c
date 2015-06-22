@@ -237,12 +237,8 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
         ;
       else if (EDGE_SUCC (bb2, 0)->dest == bb1)
         {
-	  basic_block bb_tmp = bb1;
-	  edge e_tmp = e1;
-	  bb1 = bb2;
-	  bb2 = bb_tmp;
-	  e1 = e2;
-	  e2 = e_tmp;
+	  std::swap (bb1, bb2);
+	  std::swap (e1, e2);
 	}
       else if (do_store_elim
 	       && EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)

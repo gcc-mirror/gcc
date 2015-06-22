@@ -2006,9 +2006,7 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
      node close to its successors.  */
   if (pss_not_empty && count_succs >= count_preds)
     {
-      int tmp = end;
-      end = start;
-      start = tmp;
+      std::swap (start, end);
       step = -1;
     }
 

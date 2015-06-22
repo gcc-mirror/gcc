@@ -4414,51 +4414,17 @@ free_data_sets (basic_block bb)
   free_av_set (bb);
 }
 
-/* Exchange lv sets of TO and FROM.  */
-static void
-exchange_lv_sets (basic_block to, basic_block from)
-{
-  {
-    regset to_lv_set = BB_LV_SET (to);
-
-    BB_LV_SET (to) = BB_LV_SET (from);
-    BB_LV_SET (from) = to_lv_set;
-  }
-
-  {
-    bool to_lv_set_valid_p = BB_LV_SET_VALID_P (to);
-
-    BB_LV_SET_VALID_P (to) = BB_LV_SET_VALID_P (from);
-    BB_LV_SET_VALID_P (from) = to_lv_set_valid_p;
-  }
-}
-
-
-/* Exchange av sets of TO and FROM.  */
-static void
-exchange_av_sets (basic_block to, basic_block from)
-{
-  {
-    av_set_t to_av_set = BB_AV_SET (to);
-
-    BB_AV_SET (to) = BB_AV_SET (from);
-    BB_AV_SET (from) = to_av_set;
-  }
-
-  {
-    int to_av_level = BB_AV_LEVEL (to);
-
-    BB_AV_LEVEL (to) = BB_AV_LEVEL (from);
-    BB_AV_LEVEL (from) = to_av_level;
-  }
-}
-
 /* Exchange data sets of TO and FROM.  */
 void
 exchange_data_sets (basic_block to, basic_block from)
 {
-  exchange_lv_sets (to, from);
-  exchange_av_sets (to, from);
+  /* Exchange lv sets of TO and FROM.  */
+  std::swap (BB_LV_SET (from), BB_LV_SET (to));
+  std::swap (BB_LV_SET_VALID_P (from), BB_LV_SET_VALID_P (to));
+
+  /* Exchange av sets of TO and FROM.  */
+  std::swap (BB_AV_SET (from), BB_AV_SET (to));
+  std::swap (BB_AV_LEVEL (from), BB_AV_LEVEL (to));
 }
 
 /* Copy data sets of FROM to TO.  */

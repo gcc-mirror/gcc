@@ -15664,9 +15664,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 
   if (code == LE_EXPR || code == GT_EXPR)
     {
-      tree tem = op0;
-      op0 = op1;
-      op1 = tem;
+      std::swap (op0, op1);
       code = swap_tree_comparison (code);
     }
 

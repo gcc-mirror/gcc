@@ -2914,33 +2914,17 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	     prod3.  */
 	  /* min0min1 > max0max1 */
 	  if (wi::gts_p (prod0, prod3))
-	    {
-	      vrp_int tmp = prod3;
-	      prod3 = prod0;
-	      prod0 = tmp;
-	    }
+	    std::swap (prod0, prod3);
 
 	  /* min0max1 > max0min1 */
 	  if (wi::gts_p (prod1, prod2))
-	    {
-	      vrp_int tmp = prod2;
-	      prod2 = prod1;
-	      prod1 = tmp;
-	    }
+	    std::swap (prod1, prod2);
 
 	  if (wi::gts_p (prod0, prod1))
-	    {
-	      vrp_int tmp = prod1;
-	      prod1 = prod0;
-	      prod0 = tmp;
-	    }
+	    std::swap (prod0, prod1);
 
 	  if (wi::gts_p (prod2, prod3))
-	    {
-	      vrp_int tmp = prod3;
-	      prod3 = prod2;
-	      prod2 = tmp;
-	    }
+	    std::swap (prod2, prod3);
 
 	  /* diff = max - min.  */
 	  prod2 = prod3 - prod0;
@@ -3723,11 +3707,7 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	{
           /* If the range was reversed, swap MIN and MAX.  */
 	  if (cmp == 1)
-	    {
-	      tree t = min;
-	      min = max;
-	      max = t;
-	    }
+	    std::swap (min, max);
 	}
 
       cmp = compare_values (min, max);

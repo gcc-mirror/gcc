@@ -2065,7 +2065,7 @@ noce_try_abs (struct noce_if_info *if_info)
     negate = 0;
   else if (GET_CODE (b) == NEG && rtx_equal_p (XEXP (b, 0), a))
     {
-      c = a; a = b; b = c;
+      std::swap (a, b);
       negate = 1;
     }
   else if (GET_CODE (a) == NOT && rtx_equal_p (XEXP (a, 0), b))
@@ -2075,7 +2075,7 @@ noce_try_abs (struct noce_if_info *if_info)
     }
   else if (GET_CODE (b) == NOT && rtx_equal_p (XEXP (b, 0), a))
     {
-      c = a; a = b; b = c;
+      std::swap (a, b);
       negate = 1;
       one_cmpl = true;
     }
@@ -3390,11 +3390,7 @@ find_if_header (basic_block test_bb, int pass)
   if (then_edge->flags & EDGE_FALLTHRU)
     ;
   else if (else_edge->flags & EDGE_FALLTHRU)
-    {
-      edge e = else_edge;
-      else_edge = then_edge;
-      then_edge = e;
-    }
+    std::swap (then_edge, else_edge);
   else
     /* Otherwise this must be a multiway branch of some sort.  */
     return NULL;

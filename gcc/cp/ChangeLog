@@ -1,3 +1,10 @@
+2015-06-22  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* pt.c (maybe_adjust_types_for_deduction): Use std::swap instead of
+	manually swapping.
+	* semantics.c (finish_omp_atomic): Likewise.
+	* typeck.c (cp_build_array_ref): Likewise.
+
 2015-06-20  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR c++/65882

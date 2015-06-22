@@ -944,10 +944,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  in2 = simplify_gen_unary (NOT, op_mode, in2, op_mode);
 
 	  if (GET_CODE (in2) == NOT && GET_CODE (in1) != NOT)
-	    {
-	      rtx tem = in2;
-	      in2 = in1; in1 = tem;
-	    }
+	    std::swap (in1, in2);
 
 	  return gen_rtx_fmt_ee (GET_CODE (op) == IOR ? AND : IOR,
 				 mode, in1, in2);

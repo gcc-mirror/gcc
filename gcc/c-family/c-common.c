@@ -12605,11 +12605,9 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
       /* What about UNLT_EXPR?  */
 	if (TREE_CODE (type0) == VECTOR_TYPE)
 	  {
-	    tree tmp;
 	    ret = stv_secondarg;
-	    /* Swap TYPE0 with TYPE1 and OP0 with OP1  */
-	    tmp = type0; type0 = type1; type1 = tmp;
-	    tmp = op0; op0 = op1; op1 = tmp;
+	    std::swap (type0, type1);
+	    std::swap (op0, op1);
 	  }
 
 	if (TREE_CODE (type0) == INTEGER_TYPE

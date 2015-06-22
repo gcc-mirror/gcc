@@ -1,3 +1,8 @@
+2015-06-22  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* c-common.c (scalar_to_vector): Use std::swap instead of manually
+	swapping.
+
 2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* array-notation-common.c: Do not include input.h, line-map.h or is-a.h.

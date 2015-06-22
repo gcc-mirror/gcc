@@ -1,3 +1,52 @@
+2015-06-22  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* auto-inc-dec.c (reverse_mem, reverse_inc): Remove.
+	(parse_add_or_inc): Use std::swap instead of reverse_{mem,inc}.
+	(find_inc): Likewise.
+	* combine.c (combine_simplify_rtx): Use std::swap instead of manually
+	swapping.
+	* df-core.c (df_worklist_dataflow_doublequeue): Likewise.
+	* df-scan.c (df_swap_refs): Remove.
+	(df_sort_and_compress_refs): Use std::swap instead of df_swap_refs.
+	* dominance.c (link_roots): Use std::swap instead of manually swapping.
+	* expr.c (expand_expr_real_2, do_store_flag): Likewise.
+	* fold-const.c (fold_relational_const): Likewise.
+	* genattrtab.c (simplify_test_exp): Likewise.
+	* gimple-match-head.c (gimple_resimplify2, gimple_resimplify3,
+	gimple_simplify): Likewise.
+	* ifcvt.c (noce_try_abs, find_if_header): Likewise.
+	* internal-fn.c (expand_addsub_overflow, expand_mul_overflow): Likewise.
+	* ipa-devirt.c (add_type_duplicate): Likewise.
+	* loop-iv.c (get_biv_step_1, iv_number_of_iterations): Likewise.
+	* lra-lives.c (lra_setup_reload_pseudo_preferenced_hard_reg): Likewise.
+	* lra.c (lra_create_copy): Likewise.
+	* lto-streamer-out.c (DFS::DFS): Likewise.
+	* modulo-sched.c (get_sched_window): Likewise.
+	* omega.c (omega_pretty_print_problem): Likewise.
+	* optabs.c (prepare_float_lib_cmp, expand_mult_highpart): Likewise.
+	* reload1.c (reloads_unique_chain_p): Likewise.
+	* sel-sched-ir.c (exchange_lv_sets, exchange_av_sets): Remove.
+	(exchange_data_sets): Move logic from exchange_{av,lv}_sets here and
+	use std::swap.
+	* simplify-rtx.c (simplify_unary_operation_1): Use std::swap instead of
+	manually swapping.
+	* tree-if-conv.c (is_cond_scalar_reduction, predicate_scalar_phi,
+	predicate_mem_writes): Likewise.
+	* tree-loop-distribution.c (pg_add_dependence_edges): Likewise.
+	* tree-predcom.c (combine_chains): Likewise.
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p,
+	refs_may_alias_p_1): Likewise.
+	* tree-ssa-ifcombine.c (recognize_if_then_else): Likewise.
+	* tree-ssa-loop-ivopts.c (extract_cond_operands): Likewise.
+	* tree-ssa-loop-niter.c (refine_bounds_using_guard,
+	number_of_iterations_cond): Likewise.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_compute_hash): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree): Likewise.
+	* tree-vect-stmts.c (supportable_widening_operation): Likewise.
+	* tree-vrp.c (extract_range_from_binary_expr_1,
+	extract_range_from_unary_expr_1): Likewise.
+
 2015-06-20  Marek Polacek  <polacek@redhat.com>
 
 	* common.opt (fsanitize-undefined-trap-on-error): Add Driver.

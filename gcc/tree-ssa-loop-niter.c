@@ -73,8 +73,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int-print.h"
 
 
-#define SWAP(X, Y) do { affine_iv *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
-
 /* The maximum number of dominator BBs we search for conditions
    of loop header copies we use for simplifying a conditional
    expression.  */
@@ -301,7 +299,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
 			   tree c0, enum tree_code cmp, tree c1,
 			   bounds *bnds)
 {
-  tree varc0, varc1, tmp, ctype;
+  tree varc0, varc1, ctype;
   mpz_t offc0, offc1, loffx, loffy, bnd;
   bool lbound = false;
   bool no_wrap = nowrap_type_p (type);
@@ -371,7 +369,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
 
   if (operand_equal_p (varx, varc1, 0))
     {
-      tmp = varc0; varc0 = varc1; varc1 = tmp;
+      std::swap (varc0, varc1);
       mpz_swap (offc0, offc1);
       cmp = swap_tree_comparison (cmp);
     }
@@ -385,7 +383,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
 
   if (cmp == GT_EXPR || cmp == GE_EXPR)
     {
-      tmp = varx; varx = vary; vary = tmp;
+      std::swap (varx, vary);
       mpz_swap (offc0, offc1);
       mpz_swap (loffx, loffy);
       cmp = swap_tree_comparison (cmp);
@@ -1365,7 +1363,7 @@ number_of_iterations_cond (struct loop *loop,
   if (code == GE_EXPR || code == GT_EXPR
       || (code == NE_EXPR && integer_zerop (iv0->step)))
     {
-      SWAP (iv0, iv1);
+      std::swap (iv0, iv1);
       code = swap_tree_comparison (code);
     }
 

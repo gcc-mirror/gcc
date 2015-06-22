@@ -16545,15 +16545,11 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
       break;
 
     case DEDUCE_CONV:
-      {
-	/* Swap PARM and ARG throughout the remainder of this
-	   function; the handling is precisely symmetric since PARM
-	   will initialize ARG rather than vice versa.  */
-	tree* temp = parm;
-	parm = arg;
-	arg = temp;
-	break;
-      }
+      /* Swap PARM and ARG throughout the remainder of this
+	 function; the handling is precisely symmetric since PARM
+	 will initialize ARG rather than vice versa.  */
+      std::swap (parm, arg);
+      break;
 
     case DEDUCE_EXACT:
       /* Core issue #873: Do the DR606 thing (see below) for these cases,
