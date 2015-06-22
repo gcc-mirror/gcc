@@ -325,6 +325,34 @@ along with GCC; see the file COPYING3.  If not see
  (bit_xor:c (bit_and @0 @1) (bit_ior @0 @1))
  (bit_xor @0 @1))
 
+/* (x ^ y) ^ (x | y) -> x & y */
+(simplify
+ (bit_xor:c (bit_xor @0 @1) (bit_ior @0 @1))
+ (bit_and @0 @1))
+
+/* (x & y) + (x ^ y) -> x | y */
+/* (x & y) | (x ^ y) -> x | y */
+/* (x & y) ^ (x ^ y) -> x | y */
+(for op (plus bit_ior bit_xor)
+ (simplify
+  (op:c (bit_and @0 @1) (bit_xor @0 @1))
+  (bit_ior @0 @1)))
+
+/* (x & y) + (x | y) -> x + y */
+(simplify
+ (plus:c (bit_and @0 @1) (bit_ior @0 @1))
+ (plus @0 @1))
+
+/* (x | y) - (x ^ y) -> x & y */
+(simplify
+ (minus (bit_ior @0 @1) (bit_xor @0 @1))
+ (bit_and @0 @1))
+
+/* (x | y) - (x & y) -> x ^ y */
+(simplify
+ (minus (bit_ior @0 @1) (bit_and @0 @1))
+ (bit_xor @0 @1))
+
 (simplify
  (abs (negate @0))
  (abs @0))
