@@ -42531,6 +42531,12 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 		    + rtx_cost (const1_rtx, outer_code, opno, speed));
 	  return true;
 	}
+
+      /* The embedded comparison operand is completely free.  */
+      if (!general_operand (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
+	  && XEXP (x, 1) == const0_rtx)
+	*total = 0;
+
       return false;
 
     case FLOAT_EXTEND:
