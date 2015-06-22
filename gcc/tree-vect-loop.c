@@ -1095,9 +1095,79 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   LOOP_VINFO_PEELING_HTAB (loop_vinfo) = NULL;
 
   destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
+  loop_vinfo->scalar_cost_vec.release ();
 
   free (loop_vinfo);
   loop->aux = NULL;
+}
+
+
+/* Calculate the cost of one scalar iteration of the loop.  */
+static void
+vect_get_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
+  int nbbs = loop->num_nodes, factor, scalar_single_iter_cost = 0;
+  int innerloop_iters, i;
+
+  /* Count statements in scalar loop.  Using this as scalar cost for a single
+     iteration for now.
+
+     TODO: Add outer loop support.
+
+     TODO: Consider assigning different costs to different scalar
+     statements.  */
+
+  /* FORNOW.  */
+  innerloop_iters = 1;
+  if (loop->inner)
+    innerloop_iters = 50; /* FIXME */
+
+  for (i = 0; i < nbbs; i++)
+    {
+      gimple_stmt_iterator si;
+      basic_block bb = bbs[i];
+
+      if (bb->loop_father == loop->inner)
+        factor = innerloop_iters;
+      else
+        factor = 1;
+
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+        {
+          gimple stmt = gsi_stmt (si);
+          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+          if (!is_gimple_assign (stmt) && !is_gimple_call (stmt))
+            continue;
+
+          /* Skip stmts that are not vectorized inside the loop.  */
+          if (stmt_info
+              && !STMT_VINFO_RELEVANT_P (stmt_info)
+              && (!STMT_VINFO_LIVE_P (stmt_info)
+                  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))
+            continue;
+
+	  vect_cost_for_stmt kind;
+          if (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
+            {
+              if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))))
+               kind = scalar_load;
+             else
+               kind = scalar_store;
+            }
+          else
+            kind = scalar_stmt;
+
+	  scalar_single_iter_cost
+	    += record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+				 factor, kind, NULL, 0, vect_prologue);
+        }
+    }
+  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
+    = scalar_single_iter_cost;
 }
 
 
@@ -1833,6 +1903,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
 			 PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
       return false;
     }
+
+  /* Compute the scalar iteration cost.  */
+  vect_get_single_scalar_iteration_cost (loop_vinfo);
 
   /* This pass will decide on using loop versioning and/or loop peeling in
      order to enhance the alignment of data references in the loop.  */
@@ -2706,74 +2779,6 @@ vect_force_simple_reduction (loop_vec_info loop_info, gimple phi,
 				     double_reduc, true);
 }
 
-/* Calculate the cost of one scalar iteration of the loop.  */
-int
-vect_get_single_scalar_iteration_cost (loop_vec_info loop_vinfo,
-				       stmt_vector_for_cost *scalar_cost_vec)
-{
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
-  int nbbs = loop->num_nodes, factor, scalar_single_iter_cost = 0;
-  int innerloop_iters, i;
-
-  /* Count statements in scalar loop.  Using this as scalar cost for a single
-     iteration for now.
-
-     TODO: Add outer loop support.
-
-     TODO: Consider assigning different costs to different scalar
-     statements.  */
-
-  /* FORNOW.  */
-  innerloop_iters = 1;
-  if (loop->inner)
-    innerloop_iters = 50; /* FIXME */
-
-  for (i = 0; i < nbbs; i++)
-    {
-      gimple_stmt_iterator si;
-      basic_block bb = bbs[i];
-
-      if (bb->loop_father == loop->inner)
-        factor = innerloop_iters;
-      else
-        factor = 1;
-
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-        {
-          gimple stmt = gsi_stmt (si);
-          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-          if (!is_gimple_assign (stmt) && !is_gimple_call (stmt))
-            continue;
-
-          /* Skip stmts that are not vectorized inside the loop.  */
-          if (stmt_info
-              && !STMT_VINFO_RELEVANT_P (stmt_info)
-              && (!STMT_VINFO_LIVE_P (stmt_info)
-                  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
-	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))
-            continue;
-
-	  vect_cost_for_stmt kind;
-          if (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
-            {
-              if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))))
-               kind = scalar_load;
-             else
-               kind = scalar_store;
-            }
-          else
-            kind = scalar_stmt;
-
-	  scalar_single_iter_cost
-	    += record_stmt_cost (scalar_cost_vec, factor, kind,
-				 NULL, 0, vect_prologue);
-        }
-    }
-  return scalar_single_iter_cost;
-}
-
 /* Calculate cost of peeling the loop PEEL_ITERS_PROLOGUE times.  */
 int
 vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
@@ -2901,9 +2906,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      TODO: Consider assigning different costs to different scalar
      statements.  */
 
-  auto_vec<stmt_info_for_cost> scalar_cost_vec;
   scalar_single_iter_cost
-     = vect_get_single_scalar_iteration_cost (loop_vinfo, &scalar_cost_vec);
+    = LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo);
 
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.
@@ -2941,7 +2945,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 			    NULL, 0, vect_epilogue);
       stmt_info_for_cost *si;
       int j;
-      FOR_EACH_VEC_ELT (scalar_cost_vec, j, si)
+      FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
 	{
 	  struct _stmt_vec_info *stmt_info
 	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
@@ -2968,7 +2972,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
       (void) vect_get_known_peeling_cost (loop_vinfo, peel_iters_prologue,
 					  &peel_iters_epilogue,
-					  &scalar_cost_vec,
+					  &LOOP_VINFO_SCALAR_ITERATION_COST
+					    (loop_vinfo),
 					  &prologue_cost_vec,
 					  &epilogue_cost_vec);
 

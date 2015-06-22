@@ -1165,11 +1165,10 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
       SET_DR_MISALIGNMENT (dr, save_misalignment);
     }
 
-  auto_vec<stmt_info_for_cost> scalar_cost_vec;
-  vect_get_single_scalar_iteration_cost (loop_vinfo, &scalar_cost_vec);
   outside_cost += vect_get_known_peeling_cost
     (loop_vinfo, elem->npeel, &dummy,
-     &scalar_cost_vec, &prologue_cost_vec, &epilogue_cost_vec);
+     &LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+     &prologue_cost_vec, &epilogue_cost_vec);
 
   /* Prologue and epilogue costs are added to the target model later.
      These costs depend only on the scalar iteration cost, the
