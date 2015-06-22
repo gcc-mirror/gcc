@@ -2301,11 +2301,7 @@ combine_chains (chain_p ch1, chain_p ch2)
     }
 
   if (swap)
-    {
-      chain_p tmp = ch1;
-      ch1 = ch2;
-      ch2 = tmp;
-    }
+    std::swap (ch1, ch2);
 
   new_chain = XCNEW (struct chain);
   new_chain->type = CT_COMBINATION;

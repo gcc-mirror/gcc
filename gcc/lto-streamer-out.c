@@ -608,11 +608,8 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 		    }
 		}
 	      for (unsigned i = 0; i < scc_entry_len; ++i)
-		{
-		  scc_entry tem = sccstack[first + i];
-		  sccstack[first + i] = sccstack[first + entry_start + i];
-		  sccstack[first + entry_start + i] = tem;
-		}
+		std::swap (sccstack[first + i],
+			   sccstack[first + entry_start + i]);
 
 	      if (scc_entry_len == 1)
 		; /* We already sorted SCC deterministically in hash_scc.  */

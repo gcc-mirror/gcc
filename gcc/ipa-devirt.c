@@ -1846,12 +1846,7 @@ add_type_duplicate (odr_type val, tree type)
     }
 
   if (prevail)
-    {
-      tree tmp = type;
-
-      type = val->type;
-      val->type = tmp;
-    }
+    std::swap (val->type, type);
 
   val->types_set->add (type);
 

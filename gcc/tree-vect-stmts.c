@@ -8259,11 +8259,7 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
     }
 
   if (BYTES_BIG_ENDIAN && c1 != VEC_WIDEN_MULT_EVEN_EXPR)
-    {
-      enum tree_code ctmp = c1;
-      c1 = c2;
-      c2 = ctmp;
-    }
+    std::swap (c1, c2);
 
   if (code == FIX_TRUNC_EXPR)
     {

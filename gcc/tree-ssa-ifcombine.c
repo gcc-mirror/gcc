@@ -98,11 +98,7 @@ recognize_if_then_else (basic_block cond_bb,
   t = EDGE_SUCC (cond_bb, 0);
   e = EDGE_SUCC (cond_bb, 1);
   if (!(t->flags & EDGE_TRUE_VALUE))
-    {
-      edge tmp = t;
-      t = e;
-      e = tmp;
-    }
+    std::swap (t, e);
   if (!(t->flags & EDGE_TRUE_VALUE)
       || !(e->flags & EDGE_FALSE_VALUE))
     return false;

@@ -6870,9 +6870,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
       bool swapped = false;
       if (rhs1 && cp_tree_equal (lhs, rhs))
 	{
-	  tree tem = rhs;
-	  rhs = rhs1;
-	  rhs1 = tem;
+	  std::swap (rhs, rhs1);
 	  swapped = !commutative_tree_code (opcode);
 	}
       if (rhs1 && !cp_tree_equal (lhs, rhs1))

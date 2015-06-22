@@ -664,7 +664,7 @@ get_biv_step_1 (df_ref def, rtx reg,
 		rtx *outer_step)
 {
   rtx set, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
-  rtx next, nextr, tmp;
+  rtx next, nextr;
   enum rtx_code code;
   rtx_insn *insn = DF_REF_INSN (def);
   df_ref next_def;
@@ -694,9 +694,7 @@ get_biv_step_1 (df_ref def, rtx reg,
       op1 = XEXP (rhs, 1);
 
       if (code == PLUS && CONSTANT_P (op0))
-	{
-	  tmp = op0; op0 = op1; op1 = tmp;
-	}
+	std::swap (op0, op1);
 
       if (!simple_reg_p (op0)
 	  || !CONSTANT_P (op1))
@@ -2347,7 +2345,7 @@ iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
 			 struct niter_desc *desc)
 {
   rtx op0, op1, delta, step, bound, may_xform, tmp, tmp0, tmp1;
-  struct rtx_iv iv0, iv1, tmp_iv;
+  struct rtx_iv iv0, iv1;
   rtx assumption, may_not_xform;
   enum rtx_code cond;
   machine_mode mode, comp_mode;
@@ -2410,7 +2408,7 @@ iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
       case GT:
       case GEU:
       case GTU:
-	tmp_iv = iv0; iv0 = iv1; iv1 = tmp_iv;
+	std::swap (iv0, iv1);
 	cond = swap_condition (cond);
 	break;
       case NE:

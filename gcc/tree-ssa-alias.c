@@ -953,11 +953,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   if (fieldsx.length () == 2)
     {
       if (ncr_compar (&fieldsx[0], &fieldsx[1]) == 1)
-	{
-	  const_tree tem = fieldsx[0];
-	  fieldsx[0] = fieldsx[1];
-	  fieldsx[1] = tem;
-	}
+	std::swap (fieldsx[0], fieldsx[1]);
     }
   else
     fieldsx.qsort (ncr_compar);
@@ -965,11 +961,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   if (fieldsy.length () == 2)
     {
       if (ncr_compar (&fieldsy[0], &fieldsy[1]) == 1)
-	{
-	  const_tree tem = fieldsy[0];
-	  fieldsy[0] = fieldsy[1];
-	  fieldsy[1] = tem;
-	}
+	std::swap (fieldsy[0], fieldsy[1]);
     }
   else
     fieldsy.qsort (ncr_compar);
@@ -1426,13 +1418,10 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   /* Canonicalize the pointer-vs-decl case.  */
   if (ind1_p && var2_p)
     {
-      HOST_WIDE_INT tmp1;
-      tree tmp2;
-      ao_ref *tmp3;
-      tmp1 = offset1; offset1 = offset2; offset2 = tmp1;
-      tmp1 = max_size1; max_size1 = max_size2; max_size2 = tmp1;
-      tmp2 = base1; base1 = base2; base2 = tmp2;
-      tmp3 = ref1; ref1 = ref2; ref2 = tmp3;
+      std::swap (offset1, offset2);
+      std::swap (max_size1, max_size2);
+      std::swap (base1, base2);
+      std::swap (ref1, ref2);
       var1_p = true;
       ind1_p = false;
       var2_p = false;

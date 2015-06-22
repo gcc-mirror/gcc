@@ -4383,8 +4383,7 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
       if (code_to_optab (swapped)
 	  && (libfunc = optab_libfunc (code_to_optab (swapped), mode)))
 	{
-	  rtx tmp;
-	  tmp = x; x = y; y = tmp;
+	  std::swap (x, y);
 	  comparison = swapped;
 	  break;
 	}
@@ -6967,11 +6966,7 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
       tab1 = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
       tab2 = uns_p ? vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
       if (BYTES_BIG_ENDIAN)
-	{
-	  optab t = tab1;
-	  tab1 = tab2;
-	  tab2 = t;
-	}
+	std::swap (tab1, tab2);
       break;
     default:
       gcc_unreachable ();

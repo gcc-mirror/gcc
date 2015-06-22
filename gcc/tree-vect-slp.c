@@ -1124,9 +1124,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  for (j = 0; j < group_size; ++j)
 	    if (!matches[j])
 	      {
-		gimple tem = oprnds_info[0]->def_stmts[j];
-		oprnds_info[0]->def_stmts[j] = oprnds_info[1]->def_stmts[j];
-		oprnds_info[1]->def_stmts[j] = tem;
+		std::swap (oprnds_info[0]->def_stmts[j],
+			   oprnds_info[1]->def_stmts[j]);
 		dump_printf (MSG_NOTE, "%d ", j);
 	      }
 	  dump_printf (MSG_NOTE, "\n");

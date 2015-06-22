@@ -2389,11 +2389,7 @@ vn_nary_op_compute_hash (const vn_nary_op_t vno1)
   if (vno1->length == 2
       && commutative_tree_code (vno1->opcode)
       && tree_swap_operands_p (vno1->op[0], vno1->op[1], false))
-    {
-      tree temp = vno1->op[0];
-      vno1->op[0] = vno1->op[1];
-      vno1->op[1] = temp;
-    }
+    std::swap (vno1->op[0], vno1->op[1]);
 
   hstate.add_int (vno1->opcode);
   for (i = 0; i < vno1->length; ++i)

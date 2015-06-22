@@ -3179,11 +3179,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 
     /* Put the integer in IND to simplify error checking.  */
     if (TREE_CODE (TREE_TYPE (ar)) == INTEGER_TYPE)
-      {
-	tree temp = ar;
-	ar = ind;
-	ind = temp;
-      }
+      std::swap (ar, ind);
 
     if (ar == error_mark_node || ind == error_mark_node)
       return error_mark_node;

@@ -5684,11 +5684,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	  /* Make sure we pass the constant operand if any as the second
 	     one if this is a commutative operation.  */
 	  if (CONSTANT_P (inner_op0) && COMMUTATIVE_ARITH_P (x))
-	    {
-	      rtx tem = inner_op0;
-	      inner_op0 = inner_op1;
-	      inner_op1 = tem;
-	    }
+	    std::swap (inner_op0, inner_op1);
 	  inner = simplify_binary_operation (code == MINUS ? PLUS
 					     : code == DIV ? MULT
 					     : code,
