@@ -1,3 +1,13 @@
+2015-06-22  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-ior-1.c: New test.
+	* gcc.dg/fold-minus-2.c: New test.
+	* gcc.dg/fold-minus-3.c: New test.
+	* gcc.dg/fold-plus-1.c: New test.
+	* gcc.dg/fold-plus-2.c: New test.
+	* gcc.dg/fold-xor-4.c: New test.
+	* gcc.dg/fold-xor-5.c: New test.
+
 2015-06-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/65914
