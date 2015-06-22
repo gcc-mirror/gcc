@@ -565,7 +565,15 @@ process_bb_lives (basic_block bb, int &curr_point)
 	  dst_regno = REGNO (SET_DEST (set));
 	  if (dst_regno >= lra_constraint_new_regno_start
 	      && src_regno >= lra_constraint_new_regno_start)
-	    lra_create_copy (dst_regno, src_regno, freq);
+	    {
+	      /* It might be still an original (non-reload) insn with
+		 one unused output and a constraint requiring to use
+		 the same reg for input/output operands. In this case
+		 dst_regno and src_regno have the same value, we don't
+		 need a misleading copy for this case.  */
+	      if (dst_regno != src_regno)
+		lra_create_copy (dst_regno, src_regno, freq);
+	    }
 	  else if (dst_regno >= lra_constraint_new_regno_start)
 	    {
 	      if ((hard_regno = src_regno) >= FIRST_PSEUDO_REGISTER)
