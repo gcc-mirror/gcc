@@ -1,3 +1,11 @@
+2015-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66351
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::get_dynamic_type): Fix thinko when
+	initializing alias oracle; fix formating; set base_alias_set if it
+	is known.
+
 2015-06-22  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* auto-inc-dec.c (reverse_mem, reverse_inc): Remove.
