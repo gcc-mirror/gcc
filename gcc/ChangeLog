@@ -1,5 +1,10 @@
 2015-06-22  Tom de Vries  <tom@codesourcery.com>
 
+	* tree-parloops.c (transform_to_exit_first_loop_alt): Add update_stmt
+	for cond_stmt.
+
+2015-06-22  Tom de Vries  <tom@codesourcery.com>
+
 	* builtins.def (DEF_GOMP_BUILTIN): Test
 	'flag_tree_parallelize_loops > 1' instead of
 	'flag_tree_parallelize_loops'.  Test flag_cilkplus.

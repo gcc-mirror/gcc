@@ -1675,6 +1675,7 @@ transform_to_exit_first_loop_alt (struct loop *loop,
 
   /* Set the new loop bound.  */
   gimple_cond_set_rhs (cond_stmt, bound);
+  update_stmt (cond_stmt);
 
   /* Repair the ssa.  */
   vec<edge_var_map> *v = redirect_edge_var_map_vector (post_inc_edge);
