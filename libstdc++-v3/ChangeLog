@@ -1,6 +1,13 @@
 2015-06-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2015-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65393
+	* src/c++11/thread.cc (thread::_M_make_thread): Replace shared_ptr
+	copies with moves.
+
+	Backport from mainline
 	2015-05-17  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/unordered_map.h (unordered_map, unordered_multimap): Add
