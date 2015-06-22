@@ -1,3 +1,8 @@
+2015-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66515
+	* call.c (implicit_conversion): Only reshape for classes.
+
 2015-06-22  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* pt.c (maybe_adjust_types_for_deduction): Use std::swap instead of
