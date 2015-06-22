@@ -1175,12 +1175,14 @@ static const struct compiler default_compilers[] =
 		%(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\
 		    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
 			%(cc1_options)\
-                        %{!fdump-ada-spec*:-o %g.s %{!o*:--output-pch=%i.gch}\
-                        %W{o*:--output-pch=%*}}%V}\
+			%{!fsyntax-only:-o %g.s \
+			    %{!fdump-ada-spec*:%{!o*:--output-pch=%i.gch}\
+					       %W{o*:--output-pch=%*}}%V}}\
 	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)\
-                    %{!fdump-ada-spec*:-o %g.s %{!o*:--output-pch=%i.gch}\
-                    %W{o*:--output-pch=%*}}%V}}}}}}", 0, 0, 0},
+		    %{!fsyntax-only:-o %g.s \
+		        %{!fdump-ada-spec*:%{!o*:--output-pch=%i.gch}\
+					   %W{o*:--output-pch=%*}}%V}}}}}}}", 0, 0, 0},
   {".i", "@cpp-output", 0, 0, 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

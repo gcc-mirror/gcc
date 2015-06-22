@@ -1,3 +1,8 @@
+2015-06-04  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* lang-specs.h: Pass "-o %g.s" to cc1plus for headers even if
+	-fdump-ada-spec is passed.
+
 2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* decl2.c (cpp_check): Deal with HAS_DEPENDENT_TEMPLATE_ARGS.

@@ -47,8 +47,9 @@ along with GCC; see the file COPYING3.  If not see
       cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}\
 	      %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}\
 	%(cc1_options) %2\
-	%{!fsyntax-only:%{!fdump-ada-spec*:-o %g.s %{!o*:--output-pch=%i.gch}\
-        %W{o*:--output-pch=%*}}%V}}}}",
+	%{!fsyntax-only:-o %g.s \
+	    %{!fdump-ada-spec*:%{!o*:--output-pch=%i.gch}\
+			       %W{o*:--output-pch=%*}}%V}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
     "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}\
