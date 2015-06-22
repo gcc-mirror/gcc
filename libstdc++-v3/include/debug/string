@@ -42,12 +42,13 @@ namespace __gnu_debug
     class basic_string
     : public __gnu_debug::_Safe_container<
 	basic_string<_CharT, _Traits, _Allocator>,
-	_Allocator, _Safe_sequence, false>,
+	_Allocator, _Safe_sequence, bool(_GLIBCXX_USE_CXX11_ABI)>,
       public std::basic_string<_CharT, _Traits, _Allocator>
     {
       typedef std::basic_string<_CharT, _Traits, _Allocator>	_Base;
       typedef __gnu_debug::_Safe_container<
-	basic_string, _Allocator, _Safe_sequence, false>	_Safe;
+	basic_string, _Allocator, _Safe_sequence, bool(_GLIBCXX_USE_CXX11_ABI)>
+	_Safe;
 
   public:
     // types:
