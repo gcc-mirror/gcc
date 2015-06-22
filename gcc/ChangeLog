@@ -1,3 +1,10 @@
+2015-06-22  Christian Bruel  <christian.bruel@st.com>
+
+	* config/arm/arm.c (add_attribute, arm_insert_attributes): New functions
+	(TARGET_INSERT_ATTRIBUTES): Define.
+	(thumb_flipper): New var.
+	* config/arm/arm.opt (-mflip-thumb): New switch.
+
 2015-06-22  Jan Hubicka  <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 
