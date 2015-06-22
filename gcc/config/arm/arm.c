@@ -84,6 +84,7 @@
 #include "tm-constrs.h"
 #include "rtl-iter.h"
 #include "sched-int.h"
+#include "tree.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -218,6 +219,7 @@ static void arm_encode_section_info (tree, rtx, int);
 
 static void arm_file_end (void);
 static void arm_file_start (void);
+static void arm_insert_attributes (tree, tree *);
 
 static void arm_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					tree, int *, int);
@@ -375,6 +377,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE arm_attribute_table
+
+#undef  TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES arm_insert_attributes
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START arm_file_start
@@ -2792,6 +2797,10 @@ arm_option_params_internal (struct gcc_options *opts)
          ? 1 : current_tune->max_insns_skipped;
 }
 
+/* True if -mflip-thumb should next add an attribute for the default
+   mode, false if it should next add an attribute for the opposite mode.  */
+static GTY(()) bool thumb_flipper;
+
 /* Options after initial target override.  */
 static GTY(()) tree init_optimize;
 
@@ -3369,6 +3378,9 @@ arm_option_override (void)
      options.  */
   target_option_default_node = target_option_current_node
     = build_target_option_node (&global_options);
+
+  /* Init initial mode for testing.  */
+  thumb_flipper = TARGET_THUMB;
 }
 
 static void
@@ -29457,6 +29469,52 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
   arm_option_override_internal (opts, opts_set);
 
   return build_target_option_node (opts);
+}
+
+static void 
+add_attribute  (const char * mode, tree *attributes)
+{
+  size_t len = strlen (mode);
+  tree value = build_string (len, mode);
+
+  TREE_TYPE (value) = build_array_type (char_type_node,
+					build_index_type (size_int (len)));
+
+  *attributes = tree_cons (get_identifier ("target"),
+			   build_tree_list (NULL_TREE, value),
+			   *attributes);
+}
+
+/* For testing. Insert thumb or arm modes alternatively on functions.  */
+
+static void
+arm_insert_attributes (tree fndecl, tree * attributes)
+{
+  const char *mode;
+
+  if (! TARGET_FLIP_THUMB)
+    return;
+
+  if (TREE_CODE (fndecl) != FUNCTION_DECL || DECL_EXTERNAL(fndecl)
+      || DECL_BUILT_IN (fndecl) || DECL_ARTIFICIAL (fndecl))
+   return;
+
+  /* Nested definitions must inherit mode.  */
+  if (current_function_decl)
+   {
+     mode = TARGET_THUMB ? "thumb" : "arm";      
+     add_attribute (mode, attributes);
+     return;
+   }
+
+  /* If there is already a setting don't change it.  */
+  if (lookup_attribute ("target", *attributes) != NULL)
+    return;
+
+  mode = thumb_flipper ? "thumb" : "arm";
+  add_attribute (mode, attributes);
+
+  thumb_flipper = !thumb_flipper;
 }
 
 /* Hook to validate attribute((target("string"))).  */
