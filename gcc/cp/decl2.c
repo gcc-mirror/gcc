@@ -4057,6 +4057,16 @@ cpp_check (tree t, cpp_operation op)
 {
   switch (op)
     {
+      case HAS_DEPENDENT_TEMPLATE_ARGS:
+	{
+	  tree ti = CLASSTYPE_TEMPLATE_INFO (t);
+	  if (!ti)
+	    return 0;
+	  ++processing_template_decl;
+	  const bool dep = any_dependent_template_arguments_p (TI_ARGS (ti));
+	  --processing_template_decl;
+	  return dep;
+	}
       case IS_ABSTRACT:
 	return DECL_PURE_VIRTUAL_P (t);
       case IS_CONSTRUCTOR:

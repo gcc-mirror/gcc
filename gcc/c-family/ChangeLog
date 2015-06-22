@@ -1,3 +1,9 @@
+2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* c-ada-spec.h (cpp_operation): Add HAS_DEPENDENT_TEMPLATE_ARGS.
+	* c-ada-spec.c (collect_ada_nodes): Skip NAMESPACE_DECL
+	(dump_ada_template): Skip partially specialized types.
+
 2015-06-22  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* c-common.c (scalar_to_vector): Use std::swap instead of manually

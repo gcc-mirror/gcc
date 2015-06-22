@@ -1,3 +1,7 @@
+2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* decl2.c (cpp_check): Deal with HAS_DEPENDENT_TEMPLATE_ARGS.
+
 2015-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use declspecs->locations[ds_virtual].
