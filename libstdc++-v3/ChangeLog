@@ -1,3 +1,19 @@
+2015-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-05-14  Nathan Myers  <ncm@cantrip.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66055
+	* include/std/unordered_map (unordered_map, unordered_multimap): Add
+	missing constructors.
+	* include/std/unordered_set (unordered_set, unordered_multiset):
+	Likewise.
+	* testsuite/23_containers/unordered_map/cons/66055.cc: New.
+	* testsuite/23_containers/unordered_multimap/cons/66055.cc: New.
+	* testsuite/23_containers/unordered_multiset/cons/66055.cc: New.
+	* testsuite/23_containers/unordered_set/cons/66055.cc: New.
+
 2015-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
