@@ -1,3 +1,9 @@
+2015-06-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/63740
+	* lra-lives.c (process_bb_lives): Check insn copying the same
+	reload pseudo and don't create a copy for it.
+
 2015-06-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
