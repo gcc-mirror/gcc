@@ -1,3 +1,9 @@
+2015-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64657
+	* include/bits/stl_uninitialized.h
+	(__uninitialized_copy::__uninit_copy): Cast expression to void.
+
 2015-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/55409
