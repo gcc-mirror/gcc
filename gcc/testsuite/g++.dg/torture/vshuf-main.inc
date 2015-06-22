@@ -1,6 +1,7 @@
 /* Driver fragment for __builtin_shuffle of any vector shape.  */
 
-// { dg-do run { target c++11 } }
+// { dg-options "-std=c++11" }
+// { dg-do run }
 
 extern "C" void abort(void);
 
