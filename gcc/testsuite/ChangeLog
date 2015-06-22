@@ -1,3 +1,11 @@
+2015-06-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66422
+	* gcc.dg/Warray-bounds-16.c: New testcase.
+
 2015-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline r224649.

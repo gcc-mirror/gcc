@@ -1,3 +1,12 @@
+2015-06-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66422
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Split
+	block after inserted gcc_unreachable.
+
 2015-06-21  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

@@ -523,9 +523,9 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	  gimple_stmt_iterator gsi = gsi_for_stmt (elt->stmt);
 	  gcall *stmt = gimple_build_call
 	      (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
-
 	  gimple_set_location (stmt, gimple_location (elt->stmt));
 	  gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
+	  split_block (gimple_bb (stmt), stmt);
 	  changed = true;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
