@@ -3,8 +3,8 @@
 // { dg-do compile }
 
 void foo0() = 0;                   // { dg-error "like a variable" }
-virtual void foo1() = 0;           // { dg-error "outside class|variable" }
-
+virtual void foo1() = 0;           // { dg-error "1:'virtual' outside class" }
+// { dg-error "like a variable" "" { target *-*-* } 6 }
 struct A
 {
   void foo2() = 0;                 // { dg-error "non-virtual" }
