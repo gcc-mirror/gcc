@@ -1,3 +1,8 @@
+2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc.c (default_compilers): Pass "-o %g.s" to cc1 for headers even if
+	-fdump-ada-spec is passed but not if -fsyntax-only is.
+
 2015-06-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/63740
