@@ -1,3 +1,8 @@
+2015-06-22  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself.
+	(Various Maintainers): Remove myself from libffi testsuite.
+
 2015-06-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* MAINTAINERS (gen* on machine desc): Add self.
