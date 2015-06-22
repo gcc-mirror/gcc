@@ -1,4 +1,23 @@
 2015-06-22  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65908
+	* ipa-icf.c (sem_item::target_supports_symbol_aliases): Remove
+	construction of arg_types.
+	(sem_function::sem_function): Likewise.
+	(sem_function::~sem_function): Remove destruction of arg_types.
+	(sem_function::compatible_parm_types_p): New function.
+	(sem_function::equals_wpa): Reorg matching of return values
+	and parameter types.
+	(sem_function::equals_private): Reorg mathcing of argument types.
+	(sem_function::parse_tree_args): Remove.
+	* ipa-icf.h (init_wpa): Do not call it.
+	(parse_tree_args): Remove.
+	(compatible_parm_types_p): Declare.
+	(result_type): Remove.
+	(arg_types): Remove.
+
+2015-06-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/66351
 	* ipa-polymorphic-call.c
