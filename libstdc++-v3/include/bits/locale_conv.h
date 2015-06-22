@@ -58,6 +58,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     _OutStr& __outstr, const _Codecvt& __cvt, _State& __state,
 		     size_t& __count, _Fn __fn)
     {
+      if (__first == __last)
+	{
+	  __outstr.clear();
+	  return true;
+	}
+
       size_t __outchars = 0;
       auto __next = __first;
       const auto __maxlen = __cvt.max_length() + 1;
@@ -149,6 +155,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t __n;
       return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n);
     }
+
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// String conversions
   template<typename _Codecvt, typename _Elem = wchar_t,
@@ -301,6 +309,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool			_M_with_strings = false;
     };
 
+_GLIBCXX_END_NAMESPACE_CXX11
+
   /// Buffer conversions
   template<typename _Codecvt, typename _Elem = wchar_t,
 	   typename _Tr = char_traits<_Elem>>
@@ -325,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_buf(__bytebuf), _M_cvt(__pcvt), _M_state(__state)
       {
 	if (!_M_cvt)
-	  __throw_logic_error("wstring_convert");
+	  __throw_logic_error("wbuffer_convert");
 
 	_M_always_noconv = _M_cvt->always_noconv();
 
