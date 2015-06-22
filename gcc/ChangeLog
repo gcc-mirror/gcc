@@ -1,3 +1,9 @@
+2015-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/65871
+	* config/i386/i386.c (ix86_rtx_costs) <case COMPARE>: Ignore the
+	cost of embedded comparison.
+
 2015-06-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/65914
