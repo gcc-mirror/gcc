@@ -71,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _ForwardIterator __cur = __result;
 	  __try
 	    {
-	      for (; __first != __last; ++__first, ++__cur)
+	      for (; __first != __last; ++__first, (void)++__cur)
 		std::_Construct(std::__addressof(*__cur), *__first);
 	      return __cur;
 	    }
