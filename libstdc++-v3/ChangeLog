@@ -1,5 +1,8 @@
 2015-06-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/26_numerics/complex/value_operations/1.cc: Use
+	non-negative rho argument.
+
 	* include/debug/list (__gnu_debug::list): Use allocator-aware
 	_Safe_container base.
 	* include/debug/string (__gnu_debug::basic_string): Use
