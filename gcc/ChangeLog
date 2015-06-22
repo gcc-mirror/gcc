@@ -1,5 +1,11 @@
 2015-06-22  Tom de Vries  <tom@codesourcery.com>
 
+	* builtins.def (DEF_GOMP_BUILTIN): Test
+	'flag_tree_parallelize_loops > 1' instead of
+	'flag_tree_parallelize_loops'.  Test flag_cilkplus.
+
+2015-06-22  Tom de Vries  <tom@codesourcery.com>
+
 	* dominance.c (calculate_dominance_info): Verify dominators if
 	early-out.
 
