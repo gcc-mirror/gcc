@@ -1,3 +1,7 @@
+2015-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/inherit/pure1.C: Test location too.
+
 2015-06-22  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-ior-1.c: New test.

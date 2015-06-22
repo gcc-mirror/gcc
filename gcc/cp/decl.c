@@ -9529,7 +9529,8 @@ grokdeclarator (const cp_declarator *declarator,
   if (virtualp
       && (current_class_name == NULL_TREE || decl_context != FIELD))
     {
-      error ("%<virtual%> outside class declaration");
+      error_at (declspecs->locations[ds_virtual],
+		"%<virtual%> outside class declaration");
       virtualp = 0;
     }
 
@@ -10476,19 +10477,11 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (decl_context == TYPENAME)
     {
-      /* Note that the grammar rejects storage classes
-	 in typenames, fields or parameters.  */
-      if (type_quals != TYPE_UNQUALIFIED)
-	type_quals = TYPE_UNQUALIFIED;
+      /* Note that here we don't care about type_quals.  */
 
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
       if (friendp)
 	{
-	  if (type_quals != TYPE_UNQUALIFIED)
-	    {
-	      error ("type qualifiers specified for friend class declaration");
-	      type_quals = TYPE_UNQUALIFIED;
-	    }
 	  if (inlinep)
 	    {
 	      error ("%<inline%> specified for friend class declaration");
