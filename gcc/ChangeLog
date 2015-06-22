@@ -1,3 +1,9 @@
+2015-06-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/63740
+	* lra-lives.c (process_bb_lives): Check insn copying the same
+	reload pseudo and don't create a copy for it.
+
 2015-06-22  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (transform_to_exit_first_loop_alt): Add update_stmt
