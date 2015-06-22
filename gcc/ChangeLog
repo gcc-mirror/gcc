@@ -1,5 +1,6 @@
 2015-06-22  Christian Bruel  <christian.bruel@st.com>
 
+	PR target/52144
 	* config/arm/arm.c (add_attribute, arm_insert_attributes): New functions
 	(TARGET_INSERT_ATTRIBUTES): Define.
 	(thumb_flipper): New var.
