@@ -1,3 +1,7 @@
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	* gfortranspec.c: Update displayed copyright years.
+
 2015-04-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/56674

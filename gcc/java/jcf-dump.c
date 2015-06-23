@@ -1227,7 +1227,7 @@ static void
 version (void)
 {
   printf ("jcf-dump %s%s\n\n", pkgversion_string, version_string);
-  printf ("Copyright %s 2013 Free Software Foundation, Inc.\n", _("(C)"));
+  printf ("Copyright %s 2015 Free Software Foundation, Inc.\n", _("(C)"));
   printf (_("This is free software; see the source for copying conditions.  There is NO\n"
 	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
   exit (0);

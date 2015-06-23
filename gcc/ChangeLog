@@ -1,3 +1,16 @@
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	* cpp.texi: Update displayed copyright years.
+	* cppinternals.texi: Likewise.
+	* gcc.texi: Likewise.
+	* gccint.texi: Likewise.
+	* gcov.texi: Likewise.
+	* install.texi: Likewise.
+	* invoke.texi: Likewise.
+	* gcc.c: Likewise.
+	* gcov-dump.c: Likewise.
+	* gcov.c: Likewise.
+
 2015-06-18  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
