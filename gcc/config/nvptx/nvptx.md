@@ -869,35 +869,71 @@
   ""
   "%.\\tselp%t0 %0,-1,0,%1;")
 
+(define_insn "sel_true<mode>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+        (if_then_else:HSDIM
+	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
+	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tselp%t0\\t%0, %2, %3, %1;")
+
+(define_insn "sel_true<mode>"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+        (if_then_else:SDFM
+	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
+	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
+  ""
+  "%.\\tselp%t0\\t%0, %2, %3, %1;")
+
+(define_insn "sel_false<mode>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+        (if_then_else:HSDIM
+	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
+	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tselp%t0\\t%0, %3, %2, %1;")
+
+(define_insn "sel_false<mode>"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+        (if_then_else:SDFM
+	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
+	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
+  ""
+  "%.\\tselp%t0\\t%0, %3, %2, %1;")
+
 (define_insn "setcc_int<mode>"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(match_operator:SI 1 "nvptx_comparison_operator"
-			   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
-			    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
+	  [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
+	   (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
   "%.\\tset%t0%c1 %0,%2,%3;")
 
 (define_insn "setcc_int<mode>"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(match_operator:SI 1 "nvptx_float_comparison_operator"
-			   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
-			    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
+	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
+	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
   "%.\\tset%t0%c1 %0,%2,%3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
 	(match_operator:SF 1 "nvptx_comparison_operator"
-			   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
-			    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
+	   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
+	    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
   "%.\\tset%t0%c1 %0,%2,%3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
 	(match_operator:SF 1 "nvptx_float_comparison_operator"
-			   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
-			    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
+	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
+	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
   "%.\\tset%t0%c1 %0,%2,%3;")
 
