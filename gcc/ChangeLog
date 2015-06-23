@@ -1,3 +1,9 @@
+2015-06-23  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/66449
+	* tree-ssa-loop-niter.c (loop_exits_before_overflow): Use
+	POINTER_PLUS_EXPR for pointers.
+
 2015-06-23  Alan Modra  <amodra@gmail.com>
 
 	* rtlanal.c (commutative_operand_precedence): Correct comments.
