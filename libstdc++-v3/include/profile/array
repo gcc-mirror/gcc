@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <array>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
@@ -253,20 +255,27 @@ namespace __profile
     }
 } // namespace __profile
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Tuple interface to class template array.
 
   /// tuple_size
   template<typename _Tp, std::size_t _Nm>
-    struct tuple_size<__profile::array<_Tp, _Nm>>
+    struct tuple_size<std::__profile::array<_Tp, _Nm>>
     : public integral_constant<std::size_t, _Nm> { };
 
   /// tuple_element
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    struct tuple_element<_Int, __profile::array<_Tp, _Nm>>
+    struct tuple_element<_Int, std::__profile::array<_Tp, _Nm>>
     {
       static_assert(_Int < _Nm, "index is out of bounds");
       typedef _Tp type;
     };
+
+  template<typename _Tp, std::size_t _Nm>
+    struct __is_tuple_like_impl<std::__profile::array<_Tp, _Nm>> : true_type
+    { };
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _GLIBCXX_PROFILE_ARRAY
