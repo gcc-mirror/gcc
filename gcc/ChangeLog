@@ -1,3 +1,18 @@
+2015-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66560
+	* config/i386/predicates.md (addsub_vm_operator): New predicate.
+	(addsub_vs_operator): Ditto.
+	(addsub_vs_parallel): Ditto.
+	* config/i386/sse.md (ssedoublemode): Add V4SF and V2DF modes.
+	(avx_addsubv4df3, avx_addsubv8sf3, sse3_addsubv2df3, sse3_addsubv4sf3):
+	Put minus RTX before plus and adjust vec_merge selector.
+	(*avx_addsubv4df3_1, *avx_addsubv4df3_1s, *sse3_addsubv2df3_1)
+	(*sse_addsubv2df3_1s, *avx_addsubv8sf3_1, *avx_addsubv8sf3_1s)
+	(*sse3_addsubv4sf3_1, *sse_addsubv4sf3_1s): Remove insn patterns.
+	(addsub vec_merge splitters): New combiner splitters.
+	(addsub vec_select/vec_concat splitters): Ditto.
+
 2015-06-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/66449
