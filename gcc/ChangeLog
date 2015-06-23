@@ -1,3 +1,13 @@
+2015-06-23  Alan Modra  <amodra@gmail.com>
+
+	* rtlanal.c (commutative_operand_precedence): Correct comments.
+	* simplify-rtx.c (simplify_plus_minus_op_data_cmp): Delete forward
+	declaration.  Return an int.  Distinguish REG,REG return from
+	others.
+	(struct simplify_plus_minus_op_data): Make local to function.
+	(simplify_plus_minus): Don't set canonicalized if merely sorting
+	registers.  Avoid packing ops if nothing changes.  White space fixes.
+
 2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc.c (default_compilers): Pass "-o %g.s" to cc1 for headers even if
