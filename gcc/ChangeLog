@@ -1,3 +1,11 @@
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66413
+	* tree-inline.c (insert_init_debug_bind): Unshare value.
+
 2015-06-23  Ludovic Courtès  <ludo@gnu.org>
 
 	PR 65711

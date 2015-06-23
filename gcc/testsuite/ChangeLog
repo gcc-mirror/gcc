@@ -1,3 +1,11 @@
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66413
+	* gcc.dg/torture/pr66413.c: New testcase.
+
 2015-06-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
