@@ -343,6 +343,20 @@ along with GCC; see the file COPYING3.  If not see
  (plus:c (bit_and @0 @1) (bit_ior @0 @1))
  (plus @0 @1))
 
+/* (x + y) - (x | y) -> x & y */
+(simplify
+ (minus (plus @0 @1) (bit_ior @0 @1))
+ (if (!TYPE_OVERFLOW_SANITIZED (type) && !TYPE_OVERFLOW_TRAPS (type)
+      && !TYPE_SATURATING (type))
+  (bit_and @0 @1)))
+
+/* (x + y) - (x & y) -> x | y */
+(simplify
+ (minus (plus @0 @1) (bit_and @0 @1))
+ (if (!TYPE_OVERFLOW_SANITIZED (type) && !TYPE_OVERFLOW_TRAPS (type)
+      && !TYPE_SATURATING (type))
+  (bit_ior @0 @1)))
+
 /* (x | y) - (x ^ y) -> x & y */
 (simplify
  (minus (bit_ior @0 @1) (bit_xor @0 @1))
