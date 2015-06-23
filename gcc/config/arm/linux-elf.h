@@ -70,7 +70,7 @@
    %{symbolic:-Bsymbolic} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
-     -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
+     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
    -X \
    %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
    SUBTARGET_EXTRA_LINK_SPEC

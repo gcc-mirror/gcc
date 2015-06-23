@@ -1,3 +1,9 @@
+2015-06-23  Ludovic Courtès  <ludo@gnu.org>
+
+	PR 65711
+	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Move
+	'-dynamic-linker' within %{!shared: ...}.
+
 2015-06-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/63740
