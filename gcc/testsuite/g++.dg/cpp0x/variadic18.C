@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 template<typename...> class tuple { };
 
-template<typename T, template<typename T> class... Metafunctions>
+template<typename T, template<typename U> class... Metafunctions>
 struct apply_all
 {
   typedef tuple<typename Metafunctions<T>::type...> type;

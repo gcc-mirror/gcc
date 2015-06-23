@@ -11,7 +11,7 @@ struct S1
 {
 };
 
-template<class T, template<class T>  class A, template<class T>  class B = A>
+template<class T, template<class U>  class A, template<class U>  class B = A>
 struct C
 {
   B<T> m;

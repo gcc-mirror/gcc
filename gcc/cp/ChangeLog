@@ -1,3 +1,14 @@
+2015-06-23  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* parser.c (cp_parser_template_parameter_list): Update
+	current_template_parms right after processing a paramater.
+	* pt.c (template_parms_to_args): Remove obsolete hack for
+	giving template template arguments the proper level.
+	(check_default_tmpl_args): Account for tested template
+	parameter_lists.
+	(splite_late_return_type): Remove obsolete hack for giving
+	template template arguments the proper level.
+
 2015-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65879
