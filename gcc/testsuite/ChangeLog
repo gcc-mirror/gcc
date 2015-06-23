@@ -1,3 +1,8 @@
+2015-06-23  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/64674
+	* gfortran.dg/associate_18.f08: New test.
+
 2015-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66560
