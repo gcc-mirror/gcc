@@ -1,3 +1,18 @@
+2015-06-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* df-scan.c: Don't include target-def.h.
+	* targhooks.c: Likewise.
+	* config/arm/arm-c.c: Likewise.
+	* config/i386/i386-c.c: Likewise.
+	* config/nds32/nds32-cost.c: Likewise.
+	* config/nds32/nds32-fp-as-gp.c: Likewise.
+	* config/nds32/nds32-intrinsic.c: Likewise.
+	* config/nds32/nds32-isr.c: Likewise.
+	* config/nds32/nds32-md-auxiliary.c: Likewise.
+	* config/nds32/nds32-memory-manipulation.c: Likewise.
+	* config/nds32/nds32-pipelines-auxiliary.c: Likewise.
+	* config/nds32/nds32-predicates.c: Likewise.
+
 2015-06-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66636

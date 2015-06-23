@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree.h"
 #include "target.h"
-#include "target-def.h"
 #include "df.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
