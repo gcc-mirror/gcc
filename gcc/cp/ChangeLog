@@ -1,5 +1,11 @@
 2015-06-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66501
+	* class.c (type_has_nontrivial_assignment): New.
+	* init.c (build_vec_init): Use it.
+	* cp-tree.h: Declare it.
+	* method.c (trivial_fn_p): Templates aren't trivial.
+
 	PR c++/66542
 	* decl.c (expand_static_init): Make sure the destructor is callable
 	here even if we have an initializer.
