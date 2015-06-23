@@ -2237,14 +2237,14 @@ no_linkage_check (tree t, bool relaxed_p)
       return no_linkage_check (TYPE_PTRMEM_CLASS_TYPE (t), relaxed_p);
 
     case METHOD_TYPE:
-      r = no_linkage_check (TYPE_METHOD_BASETYPE (t), relaxed_p);
-      if (r)
-	return r;
-      /* Fall through.  */
     case FUNCTION_TYPE:
       {
-	tree parm;
-	for (parm = TYPE_ARG_TYPES (t);
+	tree parm = TYPE_ARG_TYPES (t);
+	if (TREE_CODE (t) == METHOD_TYPE)
+	  /* The 'this' pointer isn't interesting; a method has the same
+	     linkage (or lack thereof) as its enclosing class.  */
+	  parm = TREE_CHAIN (parm);
+	for (;
 	     parm && parm != void_list_node;
 	     parm = TREE_CHAIN (parm))
 	  {
