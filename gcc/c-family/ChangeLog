@@ -1,3 +1,7 @@
+2015-06-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c: Don't include target-def.h.
+
 2015-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (warn_logical_operator): Use tree_int_cst_equal

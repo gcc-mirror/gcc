@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
-#include "target-def.h"
 #include "gimplify.h"
 #include "wide-int-print.h"
 #include "gimple-expr.h"
