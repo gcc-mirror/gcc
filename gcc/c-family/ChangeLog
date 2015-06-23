@@ -1,3 +1,8 @@
+2015-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (warn_logical_operator): Use tree_int_cst_equal
+	when comparing INTEGER_CSTs.
+
 2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* c-ada-spec.h (cpp_operation): Add HAS_DEPENDENT_TEMPLATE_ARGS.
