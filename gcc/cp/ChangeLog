@@ -1,5 +1,10 @@
 2015-06-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65879
+	* decl.c (grokfndecl): Check the linkage of ctype, not just
+	TYPE_ANONYMOUS_P.
+	* tree.c (no_linkage_check): Skip the 'this' pointer.
+
 	PR c++/66501
 	* class.c (type_has_nontrivial_assignment): New.
 	* init.c (build_vec_init): Use it.
