@@ -7163,12 +7163,12 @@ expand_static_init (tree decl, tree init)
   gcc_assert (TREE_STATIC (decl));
 
   /* Some variables require no dynamic initialization.  */
-  if (!init
-      && TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     {
       /* Make sure the destructor is callable.  */
       cxx_maybe_build_cleanup (decl, tf_warning_or_error);
-      return;
+      if (!init)
+	return;
     }
 
   if (DECL_THREAD_LOCAL_P (decl) && DECL_GNU_TLS_P (decl)

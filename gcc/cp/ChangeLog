@@ -1,3 +1,9 @@
+2015-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66542
+	* decl.c (expand_static_init): Make sure the destructor is callable
+	here even if we have an initializer.
+
 2015-06-04  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* lang-specs.h: Pass "-o %g.s" to cc1plus for headers even if
