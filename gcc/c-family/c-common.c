@@ -1838,7 +1838,8 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 	}
       /* Or warn if the operands have exactly the same range, e.g.
 	 A > 0 && A > 0.  */
-      else if (low0 == low1 && high0 == high1)
+      else if (tree_int_cst_equal (low0, low1)
+	       && tree_int_cst_equal (high0, high1))
 	{
 	  if (or_op)
 	    warning_at (location, OPT_Wlogical_op,
