@@ -1,3 +1,9 @@
+2015-06-23  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c (main): Use
+	abort.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-4.c (main): Same.
+
 2015-06-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/lib-62.c: Only consider for

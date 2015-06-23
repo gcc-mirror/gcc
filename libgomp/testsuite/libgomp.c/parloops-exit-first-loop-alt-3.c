@@ -3,6 +3,8 @@
 
 /* Variable bound, reduction.  */
 
+#include <stdlib.h>
+
 #define N 4000
 
 unsigned int *a;
@@ -25,9 +27,14 @@ main (void)
   unsigned int res;
   unsigned int array[N];
   int i;
+
   for (i = 0; i < N; ++i)
     array[i] = i % 7;
   a = &array[0];
+
   res = f (N);
-  return !(res == 11995);
+  if (res != 11995)
+    abort ();
+
+  return 0;
 }
