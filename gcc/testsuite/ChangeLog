@@ -1,3 +1,10 @@
+2015-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Add missing testcase from r224672.
+	2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/vax/bswapdi-1.c: New.
+
 2015-06-23  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/64674
