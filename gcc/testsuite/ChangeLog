@@ -1,3 +1,14 @@
+2015-06-23  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* g++.dg/cpp0x/auto45.C: New test.
+	* g++.dg/template/pr30044.C: New test.
+	* g++.dg/template/crash83.C: Accept any error string.
+	* g++.dg/cpp0x/variadic18.C: Adjust to not shadow template
+	parameters.
+	* g++.dg/cpp0x/variadic18.C: Likewise
+	* g++.dg/template/canon-type-13.C: Likewise.
+	* g++.old-deja/g++.pt/ttp42.C: Likewise.
+
 2015-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/Wlogical-op-3.c: New test.

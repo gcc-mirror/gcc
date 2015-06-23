@@ -89,7 +89,7 @@ namespace __gnu_test {
         SharedInfo->first=ptr;
       }
     };
-    template <class T, template<class T> class ItType>   struct test_container   {
+    template <class T, template<class U> class ItType>   struct test_container   {
       typename ItType<T>::ContainerType bounds;
       test_container(T* _first, T* _last):bounds(_first, _last)     {
   }

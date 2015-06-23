@@ -3989,21 +3989,6 @@ template_parms_to_args (tree parms)
 	args = a;
     }
 
-    if (length > 1 && TREE_VEC_ELT (args, 0) == NULL_TREE)
-      /* This can happen for template parms of a template template
-	 parameter, e.g:
-
-	 template<template<class T, class U> class TT> struct S;
-
-	 Consider the level of the parms of TT; T and U both have
-	 level 2; TT has no template parm of level 1. So in this case
-	 the first element of full_template_args is NULL_TREE. If we
-	 leave it like this TMPL_ARGS_DEPTH on args returns 1 instead
-	 of 2. This will make tsubst wrongly consider that T and U
-	 have level 1. Instead, let's create a dummy vector as the
-	 first element of full_template_args so that TMPL_ARGS_DEPTH
-	 returns the correct depth for args.  */
-      TREE_VEC_ELT (args, 0) = make_tree_vec (1);
   return args;
 }
 
@@ -4646,6 +4631,9 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
   else
     msg = G_("default argument for template parameter for class enclosing %qD");
 
+  /* By default check everything.  */
+  last_level_to_check = 1;
+
   if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
     /* If we're inside a class definition, there's no need to
        examine the parameters to the class itself.  On the one
@@ -4655,10 +4643,12 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
 	 struct S { template <class U> void f(U); };
        Here the default argument for `S' has no bearing on the
        declaration of `f'.  */
-    last_level_to_check = template_class_depth (current_class_type) + 1;
-  else
-    /* Check everything.  */
-    last_level_to_check = 0;
+    last_level_to_check += template_class_depth (current_class_type);
+
+  if (processing_template_parmlist)
+    /* Likewise for parameters outside of the nested parameter list we have
+       just finished defining.  */
+    last_level_to_check += processing_template_parmlist;
 
   for (parm_level = parms;
        parm_level && TMPL_PARMS_DEPTH (parm_level) >= last_level_to_check;
@@ -22392,11 +22382,6 @@ splice_late_return_type (tree type, tree late_return_type)
     return type;
   argvec = make_tree_vec (1);
   TREE_VEC_ELT (argvec, 0) = late_return_type;
-  if (processing_template_parmlist)
-    /* For a late-specified return type in a template type-parameter, we
-       need to add a dummy argument level for its parmlist.  */
-    argvec = add_to_template_args
-      (make_tree_vec (processing_template_parmlist), argvec);
   if (current_template_parms)
     argvec = add_to_template_args (current_template_args (), argvec);
   return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
