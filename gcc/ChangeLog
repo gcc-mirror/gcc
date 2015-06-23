@@ -1,3 +1,10 @@
+2015-06-23  Tristan Gingold  <gingold@adacore.com>
+
+	* collect-utils.c (collect_wait): Unlink the response file here
+	instead of...
+	(do_wait): ...here.
+	(utils_cleanup): ...and here.
+
 2015-06-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* df-scan.c: Don't include target-def.h.
