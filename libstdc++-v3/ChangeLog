@@ -1,3 +1,19 @@
+2015-06-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/array: Include <array>. Add version namespace when
+	specializing tuple interface to array. Add specialization for
+	__is_tuple_like_impl.
+	* include/profile/array: Likewise.
+	* include/std/array: Include <utility>. Add specialization for
+	__is_tuple_like_impl.
+	* include/std/tuple
+	(__is_tuple_like_impl<>, __is_tuple_like_impl<pair>): Move...
+	* include/std/utility: ... here. Include <type_traits>.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
 2015-06-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/complex/value_operations/1.cc: Use
