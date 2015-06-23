@@ -3888,7 +3888,12 @@ loop_exits_before_overflow (tree base, tree step,
 
 	   by proving the reverse conditions are false using loop's initial
 	   condition.  */
-	stepped = fold_build2 (PLUS_EXPR, TREE_TYPE (base), base, step);
+	if (POINTER_TYPE_P (TREE_TYPE (base)))
+	  code = POINTER_PLUS_EXPR;
+	else
+	  code = PLUS_EXPR;
+
+	stepped = fold_build2 (code, TREE_TYPE (base), base, step);
 	if (operand_equal_p (stepped, civ->base, 0))
 	  {
 	    if (tree_int_cst_sign_bit (step))

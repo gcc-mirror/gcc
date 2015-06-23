@@ -1,3 +1,8 @@
+2015-06-23  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/66449
+	* gcc.dg/vect/pr66449.c: New test.
+
 2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* g++.dg/other/dump-ada-spec-5.C: New test.
