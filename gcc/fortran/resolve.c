@@ -4969,6 +4969,30 @@ resolve_variable (gfc_expr *e)
       return false;
     }
 
+  /* For variables that are used in an associate (target => object) where
+     the object's basetype is array valued while the target is scalar,
+     the ts' type of the component refs is still array valued, which
+     can't be translated that way.  */
+  if (sym->assoc && e->rank == 0 && e->ref && sym->ts.type == BT_CLASS
+      && sym->assoc->target->ts.type == BT_CLASS
+      && CLASS_DATA (sym->assoc->target)->as)
+    {
+      gfc_ref *ref = e->ref;
+      while (ref)
+	{
+	  switch (ref->type)
+	    {
+	    case REF_COMPONENT:
+	      ref->u.c.sym = sym->ts.u.derived;
+	      /* Stop the loop.  */
+	      ref = NULL;
+	      break;
+	    default:
+	      ref = ref->next;
+	      break;
+	    }
+	}
+    }
 
   /* If this is an associate-name, it may be parsed with an array reference
      in error even though the target is scalar.  Fail directly in this case.
@@ -4992,6 +5016,49 @@ resolve_variable (gfc_expr *e)
       e->ref->type = REF_ARRAY;
       e->ref->u.ar.type = AR_FULL;
       e->ref->u.ar.dimen = 0;
+    }
+
+  /* Like above, but for class types, where the checking whether an array
+     ref is present is more complicated.  Furthermore make sure not to add
+     the full array ref to _vptr or _len refs.  */
+  if (sym->assoc && sym->ts.type == BT_CLASS
+      && CLASS_DATA (sym)->attr.dimension
+      && (e->ts.type != BT_DERIVED || !e->ts.u.derived->attr.vtype))
+    {
+      gfc_ref *ref, *newref;
+
+      newref = gfc_get_ref ();
+      newref->type = REF_ARRAY;
+      newref->u.ar.type = AR_FULL;
+      newref->u.ar.dimen = 0;
+      /* Because this is an associate var and the first ref either is a ref to
+	 the _data component or not, no traversal of the ref chain is
+	 needed.  The array ref needs to be inserted after the _data ref,
+	 or when that is not present, which may happend for polymorphic
+	 types, then at the first position.  */
+      ref = e->ref;
+      if (!ref)
+	e->ref = newref;
+      else if (ref->type == REF_COMPONENT
+	       && strcmp ("_data", ref->u.c.component->name) == 0)
+	{
+	  if (!ref->next || ref->next->type != REF_ARRAY)
+	    {
+	      newref->next = ref->next;
+	      ref->next = newref;
+	    }
+	  else
+	    /* Array ref present already.  */
+	    gfc_free_ref_list (newref);
+	}
+      else if (ref->type == REF_ARRAY)
+	/* Array ref present already.  */
+	gfc_free_ref_list (newref);
+      else
+	{
+	  newref->next = ref;
+	  e->ref = newref;
+	}
     }
 
   if (e->ref && !resolve_ref (e))
@@ -7960,6 +8027,9 @@ gfc_type_is_extensible (gfc_symbol *sym)
 }
 
 
+static void
+resolve_types (gfc_namespace *ns);
+
 /* Resolve an associate-name:  Resolve target and ensure the type-spec is
    correct as well as possibly the array-spec.  */
 
@@ -8022,6 +8092,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       return;
     }
 
+
   /* We cannot deal with class selectors that need temporaries.  */
   if (target->ts.type == BT_CLASS
 	&& gfc_ref_needs_temporary_p (target->ref))
@@ -8031,22 +8102,81 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       return;
     }
 
-  if (target->ts.type != BT_CLASS && target->rank > 0)
-    sym->attr.dimension = 1;
-  else if (target->ts.type == BT_CLASS)
+  if (target->ts.type == BT_CLASS)
     gfc_fix_class_refs (target);
 
-  /* The associate-name will have a correct type by now. Make absolutely
-     sure that it has not picked up a dimension attribute.  */
-  if (sym->ts.type == BT_CLASS)
-    sym->attr.dimension = 0;
-
-  if (sym->attr.dimension)
+  if (target->rank != 0)
     {
-      sym->as = gfc_get_array_spec ();
-      sym->as->rank = target->rank;
-      sym->as->type = AS_DEFERRED;
-      sym->as->corank = gfc_get_corank (target);
+      gfc_array_spec *as;
+      if (sym->ts.type != BT_CLASS && !sym->as)
+	{
+	  as = gfc_get_array_spec ();
+	  as->rank = target->rank;
+	  as->type = AS_DEFERRED;
+	  as->corank = gfc_get_corank (target);
+	  sym->attr.dimension = 1;
+	  if (as->corank != 0)
+	    sym->attr.codimension = 1;
+	  sym->as = as;
+	}
+    }
+  else
+    {
+      /* target's rank is 0, but the type of the sym is still array valued,
+	 which has to be corrected.  */
+      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
+	{
+	  gfc_array_spec *as;
+	  symbol_attribute attr;
+	  /* The associated variable's type is still the array type
+	     correct this now.  */
+	  gfc_typespec *ts = &target->ts;
+	  gfc_ref *ref;
+	  gfc_component *c;
+	  for (ref = target->ref; ref != NULL; ref = ref->next)
+	    {
+	      switch (ref->type)
+		{
+		case REF_COMPONENT:
+		  ts = &ref->u.c.component->ts;
+		  break;
+		case REF_ARRAY:
+		  if (ts->type == BT_CLASS)
+		    ts = &ts->u.derived->components->ts;
+		  break;
+		default:
+		  break;
+		}
+	    }
+	  /* Create a scalar instance of the current class type.  Because the
+	     rank of a class array goes into its name, the type has to be
+	     rebuild.  The alternative of (re-)setting just the attributes
+	     and as in the current type, destroys the type also in other
+	     places.  */
+	  as = NULL;
+	  sym->ts = *ts;
+	  sym->ts.type = BT_CLASS;
+	  attr = CLASS_DATA (sym)->attr;
+	  attr.class_ok = 0;
+	  attr.associate_var = 1;
+	  attr.dimension = attr.codimension = 0;
+	  attr.class_pointer = 1;
+	  if (!gfc_build_class_symbol (&sym->ts, &attr, &as))
+	    gcc_unreachable ();
+	  /* Make sure the _vptr is set.  */
+	  c = gfc_find_component (sym->ts.u.derived, "_vptr", true, true);
+	  if (c->ts.u.derived == NULL)
+	    c->ts.u.derived = gfc_find_derived_vtab (sym->ts.u.derived);
+	  CLASS_DATA (sym)->attr.pointer = 1;
+	  CLASS_DATA (sym)->attr.class_pointer = 1;
+	  gfc_set_sym_referenced (sym->ts.u.derived);
+	  gfc_commit_symbol (sym->ts.u.derived);
+	  /* _vptr now has the _vtab in it, change it to the _vtype.  */
+	  if (c->ts.u.derived->attr.vtab)
+	    c->ts.u.derived = c->ts.u.derived->ts.u.derived;
+	  c->ts.u.derived->ns->types_resolved = 0;
+	  resolve_types (c->ts.u.derived->ns);
+	}
     }
 
   /* Mark this as an associate variable.  */

@@ -1,3 +1,18 @@
+2015-06-23  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/64674
+	* parse.c (parse_associate): Figure the rank and as of a
+	class array in an associate early.
+	* primary.c (gfc_match_varspec): Prevent setting the
+	dimension attribute on the sym for classes.
+	* resolve.c (resolve_variable): Correct the component
+	ref's type for associated variables.  Add a full array ref
+	when class array's are associated.
+	(resolve_assoc_var): Correct the type of the symbol,
+	when in the associate the expression's rank becomes scalar.
+	* trans-expr.c (gfc_conv_variable): Indirect ref needed for
+	allocatable associated objects.
+
 2015-06-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66549
