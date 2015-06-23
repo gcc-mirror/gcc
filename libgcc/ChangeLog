@@ -1,3 +1,8 @@
+2015-06-23  James Lemke  <jwlemke@codesourcery.com>
+
+	libgcc/config/arm/
+	* lib1funcs.S (aeabi_idiv0, aeabi_ldiv0): Add CFI entries.
+
 2015-05-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (CRTSTUFF_CFLAGS): Add $(NO_PIE_CFLAGS).
