@@ -1,3 +1,12 @@
+2015-06-23  Matthias Klose  <doko@ubuntu.com>
+
+	PR target/66483
+	Backport from mainline r212178.
+	2014-06-30  Joseph Myers  <joseph@codesourcery.com>
+
+        * var-tracking.c (add_stores): Return instead of asserting if old
+        and new values for conditional store are the same.
+
 2015-06-23  Ludovic Courtès  <ludo@gnu.org>
 
 	PR 65711
