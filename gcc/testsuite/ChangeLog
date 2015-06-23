@@ -1,3 +1,9 @@
+2015-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-minus-4.c: New test.
+	* gcc.dg/fold-minus-5.c: New test.
+	* c-c++-common/ubsan/overflow-add-5.c: New test.
+
 2015-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Add missing testcase from r224672.

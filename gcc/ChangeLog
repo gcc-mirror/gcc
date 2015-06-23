@@ -1,3 +1,8 @@
+2015-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* match.pd ((x + y) - (x | y) -> x & y,
+	(x + y) - (x & y) -> x | y): New patterns.
+
 2015-06-23  Ludovic Courtès  <ludo@gnu.org>
 
 	PR 65711
