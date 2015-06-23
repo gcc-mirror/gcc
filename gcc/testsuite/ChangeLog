@@ -1,3 +1,8 @@
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66636
+	* gcc.dg/vect/pr66636.c: New testcase.
+
 2015-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-minus-4.c: New test.
