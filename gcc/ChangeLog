@@ -1,3 +1,9 @@
+2015-06-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.md (sel_true<mode>, sel_false<mode>): New
+	conditional selects.
+	(setcc_int<mode>, setcc_float<mode>): Reformat.
+
 2015-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* match.pd ((x + y) - (x | y) -> x & y,
