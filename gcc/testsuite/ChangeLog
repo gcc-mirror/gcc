@@ -1,3 +1,7 @@
+2015-06-23  Release Manager
+
+	* GCC 4.8.5 released.
+
 2015-06-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vect/vect-33.c: Don't exclude "Vectorizing an unaligned
