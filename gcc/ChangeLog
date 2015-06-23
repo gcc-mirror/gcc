@@ -1,3 +1,9 @@
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66636
+	* tree-vect-stmts.c (vectorizable_store): Properly compute the
+	def type for further defs for strided stores.
+
 2015-06-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.md (sel_true<mode>, sel_false<mode>): New

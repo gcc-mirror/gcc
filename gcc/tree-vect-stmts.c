@@ -5365,7 +5365,11 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  if (slp)
 		    vec_oprnd = vec_oprnds[j];
 		  else
-		    vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+		    {
+		      vect_is_simple_use (vec_oprnd, NULL, loop_vinfo,
+					  bb_vinfo, &def_stmt, &def, &dt);
+		      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+		    }
 		}
 
 	      for (i = 0; i < nstores; i++)
