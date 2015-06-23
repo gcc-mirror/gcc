@@ -5136,6 +5136,24 @@ type_has_non_user_provided_default_constructor (tree t)
   return false;
 }
 
+/* Return true if TYPE has some non-trivial assignment operator.  */
+
+bool
+type_has_nontrivial_assignment (tree type)
+{
+  gcc_assert (TREE_CODE (type) != ARRAY_TYPE);
+  if (CLASS_TYPE_P (type))
+    for (tree fns
+	   = lookup_fnfields_slot_nolazy (type, ansi_assopname (NOP_EXPR));
+	 fns; fns = OVL_NEXT (fns))
+      {
+	tree fn = OVL_CURRENT (fns);
+	if (!trivial_fn_p (fn))
+	  return true;
+      }
+  return false;
+}
+
 /* TYPE is being used as a virtual base, and has a non-trivial move
    assignment.  Return true if this is due to there being a user-provided
    move assignment in TYPE or one of its subobjects; if there isn't, then

@@ -476,6 +476,8 @@ type_set_nontrivial_flag (tree ctype, special_function_kind sfk)
 bool
 trivial_fn_p (tree fn)
 {
+  if (TREE_CODE (fn) == TEMPLATE_DECL)
+    return false;
   if (!DECL_DEFAULTED_FN (fn))
     return false;
 
