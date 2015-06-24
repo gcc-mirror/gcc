@@ -1,3 +1,11 @@
+2015-06-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3928 - Extending static_assert
+	* parser.c (cp_parser_static_assert): Support static_assert with
+	no message string.  Supply an empty string in this case.
+	* semantics.c (finish_static_assert): Don't try to print a message if
+	the message strnig is empty.
+
 2015-06-24  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/65750
