@@ -1,3 +1,8 @@
+2015-06-24  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/aarch64/arm_align_max_pwr.c: New.
+	* gcc.target/aarch64/arm_align_max_stack_pwr.c: New.
+
 2015-06-24  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	Revert:

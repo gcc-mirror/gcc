@@ -29,6 +29,10 @@
       builtin_define ("__aarch64__");                   \
       builtin_define ("__ARM_64BIT_STATE");             \
       builtin_define_with_int_value                     \
+        ("__ARM_ALIGN_MAX_PWR", 28);                    \
+      builtin_define_with_int_value                     \
+        ("__ARM_ALIGN_MAX_STACK_PWR", 16);              \
+      builtin_define_with_int_value                     \
         ("__ARM_ARCH", aarch64_architecture_version);   \
       cpp_define_formatted                                              \
         (parse_in, "__ARM_ARCH_%dA", aarch64_architecture_version);     \

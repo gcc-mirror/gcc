@@ -1,3 +1,8 @@
+2015-06-24 Renlin Li <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.h(TARGET_CPU_CPP_BUILTINS): Add
+	__ARM_ALIGN_MAX_PWR, __ARM_ALIGN_MAX_STACK_PWR.
+
 2015-06-24  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (enum tree_code): Add VIEW_CONVERT[012].
