@@ -3775,7 +3775,9 @@ hwloop_optimize (hwloop_info loop)
 	}
       else
 	{
-	  emit_jump_insn (gen_jump (label));
+	  rtx_insn *ret = emit_jump_insn (gen_jump (label));
+	  JUMP_LABEL (ret) = label;
+	  LABEL_NUSES (label)++;
 	  seq_end = emit_barrier ();
 	}
     }

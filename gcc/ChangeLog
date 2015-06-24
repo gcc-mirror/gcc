@@ -1,3 +1,9 @@
+2015-06-23  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	PR target/65803
+	* config/bfin/bfin.c (hwloop_optimize): Initialize
+	JUMP_LABEL for newly created jump.
+
 2015-06-23  Tristan Gingold  <gingold@adacore.com>
 
 	* collect-utils.c (collect_wait): Unlink the response file here
