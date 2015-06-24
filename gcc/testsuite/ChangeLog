@@ -1,3 +1,7 @@
+2015-06-08  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/torture/pr66345.c: Fix assumption about size_t type.
+
 2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/mgeneral-regs_3.c: New.
