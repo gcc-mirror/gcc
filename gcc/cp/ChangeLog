@@ -1,3 +1,11 @@
+2015-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66501
+	* class.c (type_has_nontrivial_assignment): Remove.
+	* cp-tree.h: Remove declaration.
+	* init.c (vec_copy_assign_is_trivial): New.
+	(build_vec_init): Use it.
+
 2015-06-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N3928 - Extending static_assert
