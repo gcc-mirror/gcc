@@ -2106,6 +2106,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   TREE_STATIC (olddecl) = TREE_STATIC (newdecl) |= TREE_STATIC (olddecl);
   if (! DECL_EXTERNAL (olddecl))
     DECL_EXTERNAL (newdecl) = 0;
+  if (! DECL_COMDAT (olddecl))
+    DECL_COMDAT (newdecl) = 0;
 
   new_template_info = NULL_TREE;
   if (DECL_LANG_SPECIFIC (newdecl) && DECL_LANG_SPECIFIC (olddecl))
