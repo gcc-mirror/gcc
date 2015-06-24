@@ -1,3 +1,8 @@
+2015-06-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/66482
+	* dwarf2out.c (gen_formal_parameter_die): Remove assert.
+
 2015-06-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-slp.c (vect_build_slp_tree_1): Init vectype.

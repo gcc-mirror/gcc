@@ -18021,18 +18021,14 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 	    {
 	      /* FIXME: Reuse DIE even with a differing context.
 
-		 This happens when called through
-		 dwarf2out_abstract_function for formal parameter
-		 packs.  The issue is that we're calling
+		 This can happen when calling
 		 dwarf2out_abstract_function to build debug info for
 		 the abstract instance of a function for which we have
 		 already generated a DIE in
 		 dwarf2out_early_global_decl.
 
-	         Once we remove dwarf2out_abstract_function, this
-	         gcc_assert should be a gcc_unreachable.  */
-	      gcc_assert (parm_die->die_parent->die_tag
-			  == DW_TAG_GNU_formal_parameter_pack);
+	         Once we remove dwarf2out_abstract_function, we should
+	         have a call to gcc_unreachable here.  */
 	    }
 	}
 
