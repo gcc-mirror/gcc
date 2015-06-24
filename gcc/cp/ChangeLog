@@ -1,5 +1,9 @@
 2015-06-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66647
+	* pt.c (dependent_type_p_r): Check for dependent alias template
+	specialization sooner.
+
 	PR c++/66501
 	* class.c (type_has_nontrivial_assignment): Remove.
 	* cp-tree.h: Remove declaration.
