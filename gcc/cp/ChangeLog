@@ -1,5 +1,6 @@
 2015-06-23  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/30044
 	* parser.c (cp_parser_template_parameter_list): Update
 	current_template_parms right after processing a paramater.
 	* pt.c (template_parms_to_args): Remove obsolete hack for

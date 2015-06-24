@@ -1,5 +1,6 @@
 2015-06-23  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/30044
 	* g++.dg/cpp0x/auto45.C: New test.
 	* g++.dg/template/pr30044.C: New test.
 	* g++.dg/template/crash83.C: Accept any error string.
