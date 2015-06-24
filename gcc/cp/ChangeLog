@@ -1,3 +1,11 @@
+2015-06-24  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	Backport from mainline:
+	2015-06-20  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR c++/65882
+	* call.c (build_new_op_1): Check tf_warning flag in all cases.
+
 2015-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65879
