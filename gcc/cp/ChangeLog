@@ -1,3 +1,9 @@
+2015-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66501
+	* init.c (vec_copy_assign_is_trivial): New.
+	(build_vec_init): Use it.
+
 2015-06-24  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	Backport from mainline:
