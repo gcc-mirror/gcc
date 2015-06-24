@@ -13719,7 +13719,11 @@ s390_support_vector_misalignment (machine_mode mode ATTRIBUTE_UNUSED,
 				  int misalignment ATTRIBUTE_UNUSED,
 				  bool is_packed ATTRIBUTE_UNUSED)
 {
-  return true;
+  if (TARGET_VX)
+    return true;
+
+  return default_builtin_support_vector_misalignment (mode, type, misalignment,
+						      is_packed);
 }
 
 /* The vector ABI requires vector types to be aligned on an 8 byte
