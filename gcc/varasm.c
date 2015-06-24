@@ -1934,12 +1934,12 @@ emit_local (tree decl ATTRIBUTE_UNUSED,
 	    unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED)
 {
 #if defined ASM_OUTPUT_ALIGNED_DECL_LOCAL
-  int align = symtab_node::get (decl)->definition_alignment ();
+  unsigned int align = symtab_node::get (decl)->definition_alignment ();
   ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name,
 				 size, align);
   return true;
 #elif defined ASM_OUTPUT_ALIGNED_LOCAL
-  int align = symtab_node::get (decl)->definition_alignment ();
+  unsigned int align = symtab_node::get (decl)->definition_alignment ();
   ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, align);
   return true;
 #else

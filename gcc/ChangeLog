@@ -1,3 +1,10 @@
+2015-06-24  Renlin Li  <renlin.li@arm.com>
+
+	Backport from mainline
+	2015-06-24  Renlin Li  <renlin.li@arm.com>
+
+	* varasm.c (emit_local): Use unsigned int for align variable.
+
 2015-06-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
