@@ -1774,19 +1774,19 @@ OB_DEF_VAR (s390_vec_or_dbl_c,          s390_vo,            0,                  
 B_DEF      (s390_vo,                    iorv16qi3,          0,                  B_VX,               0,                  BT_FN_UV16QI_UV16QI_UV16QI)
 
 OB_DEF     (s390_vec_popcnt,            s390_vec_popcnt_s8, s390_vec_popcnt_u64,B_VX,               BT_FN_OV4SI_OV4SI)
-OB_DEF_VAR (s390_vec_popcnt_s8,         s390_vpopctb,       0,                  BT_OV_UV16QI_V16QI)
-OB_DEF_VAR (s390_vec_popcnt_u8,         s390_vpopctb,       0,                  BT_OV_UV16QI_UV16QI)
-OB_DEF_VAR (s390_vec_popcnt_s16,        s390_vpopcth,       0,                  BT_OV_UV8HI_V8HI)
-OB_DEF_VAR (s390_vec_popcnt_u16,        s390_vpopcth,       0,                  BT_OV_UV8HI_UV8HI)
-OB_DEF_VAR (s390_vec_popcnt_s32,        s390_vpopctf,       0,                  BT_OV_UV4SI_V4SI)
-OB_DEF_VAR (s390_vec_popcnt_u32,        s390_vpopctf,       0,                  BT_OV_UV4SI_UV4SI)
-OB_DEF_VAR (s390_vec_popcnt_s64,        s390_vpopctg,       0,                  BT_OV_UV2DI_V2DI)
-OB_DEF_VAR (s390_vec_popcnt_u64,        s390_vpopctg,       0,                  BT_OV_UV2DI_UV2DI)
+OB_DEF_VAR (s390_vec_popcnt_s8,         s390_vpopctb,       0,                  BT_OV_UV16QI_V16QI)  /* vpopct */
+OB_DEF_VAR (s390_vec_popcnt_u8,         s390_vpopctb,       0,                  BT_OV_UV16QI_UV16QI) /* vpopct */
+OB_DEF_VAR (s390_vec_popcnt_s16,        s390_vpopcth,       0,                  BT_OV_UV8HI_V8HI)    /* vpopct */
+OB_DEF_VAR (s390_vec_popcnt_u16,        s390_vpopcth,       0,                  BT_OV_UV8HI_UV8HI)   /* vpopct */
+OB_DEF_VAR (s390_vec_popcnt_s32,        s390_vpopctf,       0,                  BT_OV_UV4SI_V4SI)    /* vpopct vsumb */
+OB_DEF_VAR (s390_vec_popcnt_u32,        s390_vpopctf,       0,                  BT_OV_UV4SI_UV4SI)   /* vpopct vsumb */
+OB_DEF_VAR (s390_vec_popcnt_s64,        s390_vpopctg,       0,                  BT_OV_UV2DI_V2DI)    /* vpopct vsumb vsumgf */
+OB_DEF_VAR (s390_vec_popcnt_u64,        s390_vpopctg,       0,                  BT_OV_UV2DI_UV2DI)   /* vpopct vsumb vsumgf */
 
-B_DEF      (s390_vpopctb,               popcountv16qi2,     0,                  B_VX,               0,                  BT_FN_UV16QI_UV16QI)
-B_DEF      (s390_vpopcth,               popcountv8hi2,      0,                  B_VX,               0,                  BT_FN_UV8HI_UV8HI)
-B_DEF      (s390_vpopctf,               popcountv4si2,      0,                  B_VX,               0,                  BT_FN_UV4SI_UV4SI)
-B_DEF      (s390_vpopctg,               popcountv2di2,      0,                  B_VX,               0,                  BT_FN_UV2DI_UV2DI)
+B_DEF      (s390_vpopctb,               popcountv16qi2,     0,                  B_VX,               0,                  BT_FN_UV16QI_UV16QI) /* vpopct */
+B_DEF      (s390_vpopcth,               popcountv8hi2,      0,                  B_VX,               0,                  BT_FN_UV8HI_UV8HI)   /* vpopct */
+B_DEF      (s390_vpopctf,               popcountv4si2,      0,                  B_VX,               0,                  BT_FN_UV4SI_UV4SI)   /* vpopct vsumb */
+B_DEF      (s390_vpopctg,               popcountv2di2,      0,                  B_VX,               0,                  BT_FN_UV2DI_UV2DI)   /* vpopct vsumb vsumgf */
 
 OB_DEF     (s390_vec_rl,                s390_vec_rl_u8,     s390_vec_rl_s64,    B_VX,               BT_FN_OV4SI_OV4SI_OV4SI)
 OB_DEF_VAR (s390_vec_rl_u8,             s390_verllvb,       0,                  BT_OV_UV16QI_UV16QI_UV16QI)

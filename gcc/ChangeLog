@@ -1,5 +1,9 @@
 2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-builtins.def: Fix vpopct instruction comments.
+
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390-builtin-types.def: Add flag to indicate the
 	options under which the function type is needed.
 	* config/s390/s390-builtins.def: Add flag to indicate the options
