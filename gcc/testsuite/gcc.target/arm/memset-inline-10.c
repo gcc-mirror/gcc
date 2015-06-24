@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=armv7-a -mfloat-abi=hard -mfpu=neon -O2" } */
+/* { dg-skip-if "need SIMD instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
+/* { dg-skip-if "need SIMD instructions" { *-*-* } { "-mfpu=vfp*" } { "" } } */
 
 #define BUF 100
 long a[BUF];

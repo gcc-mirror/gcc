@@ -1,3 +1,12 @@
+2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/arm/fixed_float_conversion.c: Skip for inappropriate
+          multilibs.
+	* gcc.target/arm/memset-inline-10.c: Likewise.
+	* gcc.target/arm/pr58784.c: Likewise.
+	* gcc.target/arm/pr59985.C: Likewise.
+	* gcc.target/arm/vfp-1.c: Likewise and test only for the non fma cases.
+
 2015-06-24  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.target/aarch64/arm_align_max_pwr.c: New.
