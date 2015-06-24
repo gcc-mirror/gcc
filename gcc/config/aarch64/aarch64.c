@@ -520,6 +520,16 @@ static const char * const aarch64_condition_codes[] =
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
 };
 
+void
+aarch64_err_no_fpadvsimd (machine_mode mode, const char *msg)
+{
+  const char *mc = FLOAT_MODE_P (mode) ? "floating-point" : "vector";
+  if (TARGET_GENERAL_REGS_ONLY)
+    error ("%qs is incompatible with %s %s", "-mgeneral-regs-only", mc, msg);
+  else
+    error ("%qs feature modifier is incompatible with %s %s", "+nofp", mc, msg);
+}
+
 static unsigned int
 aarch64_min_divisions_for_recip_mul (enum machine_mode mode)
 {
@@ -1770,6 +1780,9 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
      and homogenous short-vector aggregates (HVA).  */
   if (allocate_nvrn)
     {
+      if (!TARGET_FLOAT)
+	aarch64_err_no_fpadvsimd (mode, "argument");
+
       if (nvrn + nregs <= NUM_FP_ARG_REGS)
 	{
 	  pcum->aapcs_nextnvrn = nvrn + nregs;
@@ -1896,6 +1909,17 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
   pcum->aapcs_stack_words = 0;
   pcum->aapcs_stack_size = 0;
 
+  if (!TARGET_FLOAT
+      && fndecl && TREE_PUBLIC (fndecl)
+      && fntype && fntype != error_mark_node)
+    {
+      const_tree type = TREE_TYPE (fntype);
+      machine_mode mode ATTRIBUTE_UNUSED; /* To pass pointer as argument.  */
+      int nregs ATTRIBUTE_UNUSED; /* Likewise.  */
+      if (aarch64_vfp_is_call_or_return_candidate (TYPE_MODE (type), type,
+						   &mode, &nregs, NULL))
+	aarch64_err_no_fpadvsimd (TYPE_MODE (type), "return type");
+    }
   return;
 }
 
@@ -7555,9 +7579,7 @@ aarch64_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   if (!TARGET_FLOAT)
     {
-      if (cum->aapcs_nvrn > 0)
-	sorry ("%qs and floating point or vector arguments",
-	       "-mgeneral-regs-only");
+      gcc_assert (cum->aapcs_nvrn == 0);
       vr_save_area_size = 0;
     }
 
@@ -7664,8 +7686,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     {
       /* TYPE passed in fp/simd registers.  */
       if (!TARGET_FLOAT)
-	sorry ("%qs and floating point or vector arguments",
-	       "-mgeneral-regs-only");
+	aarch64_err_no_fpadvsimd (mode, "varargs");
 
       f_top = build3 (COMPONENT_REF, TREE_TYPE (f_vrtop),
 		      unshare_expr (valist), f_vrtop, NULL_TREE);
@@ -7902,9 +7923,7 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 
   if (!TARGET_FLOAT)
     {
-      if (local_cum.aapcs_nvrn > 0)
-	sorry ("%qs and floating point or vector arguments",
-	       "-mgeneral-regs-only");
+      gcc_assert (local_cum.aapcs_nvrn == 0);
       vr_saved = 0;
     }
 
