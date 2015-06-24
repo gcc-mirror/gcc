@@ -1,3 +1,8 @@
+2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/63408
+	* gcc.target/arm/pr63408.c: New test.
+
 2015-06-24  James Greenhalgh  <james.greenhalgh@arm.com>
 
         * lib/c-torture.exp: Don't call check_effective_target_lto
