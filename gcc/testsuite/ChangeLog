@@ -1,3 +1,8 @@
+2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/66200
+	* g++.dg/abi/aarch64_guard1.C: Adjust.
+
 2015-06-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66549

@@ -11462,6 +11462,9 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 #undef TARGET_SCHED_FUSION_PRIORITY
 #define TARGET_SCHED_FUSION_PRIORITY aarch64_sched_fusion_priority
 
+#undef TARGET_RELAXED_ORDERING
+#define TARGET_RELAXED_ORDERING true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-aarch64.h"

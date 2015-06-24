@@ -1,3 +1,9 @@
+2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/66200
+	* configure.host (host_cpu): Add aarch64 case.
+	* config/cpu/aarch64/atomic_word.h: New file.
+
 2015-06-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
