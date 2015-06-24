@@ -1,3 +1,14 @@
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_vector_abi): New variable definition.
+	(s390_check_type_for_vector_abi): New function.
+	(TARGET_ASM_FILE_END): New macro definition.
+	(s390_asm_file_end): New function.
+	(s390_function_arg): Call s390_check_type_for_vector_abi.
+	(s390_gimplify_va_arg): Likewise.
+	* configure: Regenerate.
+	* configure.ac: Check for .gnu_attribute Binutils feature.
+
 2015-06-23  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	PR target/65803
