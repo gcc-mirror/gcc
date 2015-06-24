@@ -1,3 +1,18 @@
+2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_err_no_fpadvsimd): New.
+
+	* config/aarch64/aarch64.md (mov<mode>/GPF, movtf): Use
+	aarch64_err_no_fpadvsimd.
+
+	* config/aarch64/aarch64.c (aarch64_err_no_fpadvsimd): New.
+	(aarch64_layout_arg, aarch64_init_cumulative_args): Use
+	aarch64_err_no_fpadvsimd if !TARGET_FLOAT and we need FP regs.
+	(aarch64_expand_builtin_va_start, aarch64_setup_incoming_varargs):
+	Turn error into assert, test TARGET_FLOAT.
+	(aarch64_gimplify_va_arg_expr): Use aarch64_err_no_fpadvsimd, test
+	TARGET_FLOAT.
+
 2015-06-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR debug/66482

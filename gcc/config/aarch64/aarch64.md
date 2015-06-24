@@ -979,18 +979,18 @@
   [(set (match_operand:GPF 0 "nonimmediate_operand" "")
 	(match_operand:GPF 1 "general_operand" ""))]
   ""
-  "
+  {
     if (!TARGET_FLOAT)
-     {
-	sorry (\"%qs and floating point code\", \"-mgeneral-regs-only\");
+      {
+	aarch64_err_no_fpadvsimd (<MODE>mode, "code");
 	FAIL;
-     }
+      }
 
     if (GET_CODE (operands[0]) == MEM
         && ! (GET_CODE (operands[1]) == CONST_DOUBLE
 	      && aarch64_float_const_zero_rtx_p (operands[1])))
       operands[1] = force_reg (<MODE>mode, operands[1]);
-  "
+  }
 )
 
 (define_insn "*movsf_aarch64"
@@ -1035,18 +1035,18 @@
   [(set (match_operand:TF 0 "nonimmediate_operand" "")
 	(match_operand:TF 1 "general_operand" ""))]
   ""
-  "
+  {
     if (!TARGET_FLOAT)
-     {
-	sorry (\"%qs and floating point code\", \"-mgeneral-regs-only\");
+      {
+	aarch64_err_no_fpadvsimd (TFmode, "code");
 	FAIL;
-     }
+      }
 
     if (GET_CODE (operands[0]) == MEM
         && ! (GET_CODE (operands[1]) == CONST_DOUBLE
 	      && aarch64_float_const_zero_rtx_p (operands[1])))
       operands[1] = force_reg (TFmode, operands[1]);
-  "
+  }
 )
 
 (define_insn "*movtf_aarch64"
