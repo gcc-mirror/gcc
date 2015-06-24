@@ -1,5 +1,10 @@
 2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	PR rtl-optimization/66306
+	* gcc.target/s390/pr66306.c: New test.
+
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/vector/vec-abi-1.c: Add gnu attribute check.
 	* gcc.target/s390/vector/vec-abi-attr-1.c: New test.
 	* gcc.target/s390/vector/vec-abi-attr-2.c: New test.
