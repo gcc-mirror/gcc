@@ -1,3 +1,8 @@
+2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/66200
+	* config/aarch64/aarch64.c (TARGET_RELAXED_ORDERING): Define.
+
 2015-06-24  Renlin Li  <renlin.li@arm.com>
 
 	Backport from mainline
