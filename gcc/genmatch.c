@@ -161,6 +161,9 @@ enum tree_code {
 CONVERT0,
 CONVERT1,
 CONVERT2,
+VIEW_CONVERT0,
+VIEW_CONVERT1,
+VIEW_CONVERT2,
 MAX_TREE_CODES
 };
 #undef DEFTREECODE
@@ -749,12 +752,14 @@ lower_commutative (simplify *s, vec<simplify *>& simplifiers)
    children if STRIP, else replace them with an unconditional convert.  */
 
 operand *
-lower_opt_convert (operand *o, enum tree_code oper, bool strip)
+lower_opt_convert (operand *o, enum tree_code oper,
+		   enum tree_code to_oper, bool strip)
 {
   if (capture *c = dyn_cast<capture *> (o))
     {
       if (c->what)
-	return new capture (c->where, lower_opt_convert (c->what, oper, strip));
+	return new capture (c->where,
+			    lower_opt_convert (c->what, oper, to_oper, strip));
       else
 	return c;
     }
@@ -766,16 +771,18 @@ lower_opt_convert (operand *o, enum tree_code oper, bool strip)
   if (*e->operation == oper)
     {
       if (strip)
-	return lower_opt_convert (e->ops[0], oper, strip);
+	return lower_opt_convert (e->ops[0], oper, to_oper, strip);
 
-      expr *ne = new expr (get_operator ("CONVERT_EXPR"));
-      ne->append_op (lower_opt_convert (e->ops[0], oper, strip));
+      expr *ne = new expr (to_oper == CONVERT_EXPR
+			   ? get_operator ("CONVERT_EXPR")
+			   : get_operator ("VIEW_CONVERT_EXPR"));
+      ne->append_op (lower_opt_convert (e->ops[0], oper, to_oper, strip));
       return ne;
     }
 
   expr *ne = new expr (e->operation, e->is_commutative);
   for (unsigned i = 0; i < e->ops.length (); ++i)
-    ne->append_op (lower_opt_convert (e->ops[i], oper, strip));
+    ne->append_op (lower_opt_convert (e->ops[i], oper, to_oper, strip));
 
   return ne;
 }
@@ -818,20 +825,28 @@ lower_opt_convert (operand *o)
 
   v1.safe_push (o);
 
-  enum tree_code opers[] = { CONVERT0, CONVERT1, CONVERT2 };
+  enum tree_code opers[]
+    = { CONVERT0, CONVERT_EXPR,
+	CONVERT1, CONVERT_EXPR,
+	CONVERT2, CONVERT_EXPR,
+	VIEW_CONVERT0, VIEW_CONVERT_EXPR,
+	VIEW_CONVERT1, VIEW_CONVERT_EXPR,
+	VIEW_CONVERT2, VIEW_CONVERT_EXPR };
 
   /* Conditional converts are lowered to a pattern with the
      conversion and one without.  The three different conditional
      convert codes are lowered separately.  */
 
-  for (unsigned i = 0; i < 3; ++i)
+  for (unsigned i = 0; i < sizeof (opers) / sizeof (enum tree_code); i += 2)
     {
       v2 = vNULL;
       for (unsigned j = 0; j < v1.length (); ++j)
 	if (has_opt_convert (v1[j], opers[i]))
 	  {
-	    v2.safe_push (lower_opt_convert (v1[j], opers[i], false));
-	    v2.safe_push (lower_opt_convert (v1[j], opers[i], true));
+	    v2.safe_push (lower_opt_convert (v1[j],
+					     opers[i], opers[i+1], false));
+	    v2.safe_push (lower_opt_convert (v1[j],
+					     opers[i], opers[i+1], true));
 	  }
 
       if (v2 != vNULL)
@@ -2890,14 +2905,22 @@ parser::parse_operation ()
   const cpp_token *token = peek ();
   if (strcmp (id, "convert0") == 0)
     fatal_at (id_tok, "use 'convert?' here");
+  else if (strcmp (id, "view_convert0") == 0)
+    fatal_at (id_tok, "use 'view_convert?' here");
   if (token->type == CPP_QUERY
       && !(token->flags & PREV_WHITE))
     {
       if (strcmp (id, "convert") == 0)
 	id = "convert0";
-      else if (strcmp  (id, "convert1") == 0)
+      else if (strcmp (id, "convert1") == 0)
 	;
-      else if (strcmp  (id, "convert2") == 0)
+      else if (strcmp (id, "convert2") == 0)
+	;
+      else if (strcmp (id, "view_convert") == 0)
+	id = "view_convert0";
+      else if (strcmp (id, "view_convert1") == 0)
+	;
+      else if (strcmp (id, "view_convert2") == 0)
 	;
       else
 	fatal_at (id_tok, "non-convert operator conditionalized");
@@ -2907,8 +2930,10 @@ parser::parse_operation ()
 		  "match expression");
       eat_token (CPP_QUERY);
     }
-  else if (strcmp  (id, "convert1") == 0
-	   || strcmp  (id, "convert2") == 0)
+  else if (strcmp (id, "convert1") == 0
+	   || strcmp (id, "convert2") == 0
+	   || strcmp (id, "view_convert1") == 0
+	   || strcmp (id, "view_convert2") == 0)
     fatal_at (id_tok, "expected '?' after conditional operator");
   id_base *op = get_operator (id);
   if (!op)
@@ -3325,7 +3350,9 @@ parser::parse_for (source_location)
 	  id_base *idb = get_operator (oper);
 	  if (idb == NULL)
 	    fatal_at (token, "no such operator '%s'", oper);
-	  if (*idb == CONVERT0 || *idb == CONVERT1 || *idb == CONVERT2)
+	  if (*idb == CONVERT0 || *idb == CONVERT1 || *idb == CONVERT2
+	      || *idb == VIEW_CONVERT0 || *idb == VIEW_CONVERT1
+	      || *idb == VIEW_CONVERT2)
 	    fatal_at (token, "conditional operators cannot be used inside for");
 
 	  if (arity == -1)
@@ -3661,6 +3688,9 @@ main (int argc, char **argv)
 add_operator (CONVERT0, "CONVERT0", "tcc_unary", 1);
 add_operator (CONVERT1, "CONVERT1", "tcc_unary", 1);
 add_operator (CONVERT2, "CONVERT2", "tcc_unary", 1);
+add_operator (VIEW_CONVERT0, "VIEW_CONVERT0", "tcc_unary", 1);
+add_operator (VIEW_CONVERT1, "VIEW_CONVERT1", "tcc_unary", 1);
+add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
 #undef END_OF_BASE_TREE_CODES
 #undef DEFTREECODE
 
