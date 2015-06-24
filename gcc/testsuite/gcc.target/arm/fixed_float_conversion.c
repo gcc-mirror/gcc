@@ -3,6 +3,7 @@
 /* { dg-require-effective-target arm_vfp3_ok } */
 /* { dg-options "-O1" } */
 /* { dg-add-options arm_vfp3 } */
+/* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
 
 float
 fixed_to_float (int i)
