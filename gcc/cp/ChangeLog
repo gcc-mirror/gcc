@@ -1,4 +1,4 @@
-2015-06-03  Jason Merrill  <jason@redhat.com>
+2015-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65919
 	* mangle.c (mangle_decl): Always SET_IDENTIFIER_GLOBAL_VALUE.
