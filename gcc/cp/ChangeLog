@@ -1,4 +1,9 @@
-2015-06-24  Jason Merrill  <jason@redhat.com>
+2015-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65919
+	* mangle.c (mangle_decl): Always SET_IDENTIFIER_GLOBAL_VALUE.
+	(decl_implicit_alias_p): Split out from maybe_remove_implicit_alias.
+	* cp-tree.h (DECL_REALLY_EXTERN): Handle null DECL_LANG_SPECIFIC.
 
 	PR c++/66647
 	* pt.c (dependent_type_p_r): Check for dependent alias template

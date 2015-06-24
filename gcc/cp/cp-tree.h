@@ -4106,7 +4106,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (NODE)->u.base.not_really_extern)
 
 #define DECL_REALLY_EXTERN(NODE) \
-  (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
+  (DECL_EXTERNAL (NODE)				\
+   && (!DECL_LANG_SPECIFIC (NODE) || !DECL_NOT_REALLY_EXTERN (NODE)))
 
 /* A thunk is a stub function.
 
