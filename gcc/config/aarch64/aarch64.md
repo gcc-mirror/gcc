@@ -4117,7 +4117,7 @@
 (define_insn "<optab><fcvt_target><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w,w")
         (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,r")))]
-  ""
+  "TARGET_FLOAT"
   "@
    <su_optab>cvtf\t%<GPF:s>0, %<s>1
    <su_optab>cvtf\t%<GPF:s>0, %<w1>1"

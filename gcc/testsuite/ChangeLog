@@ -1,5 +1,9 @@
 2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/mgeneral-regs_3.c: New.
+
+2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/mgeneral-regs_1.c: New file.
 	* gcc.target/aarch64/mgeneral-regs_2.c: New file.
 	* gcc.target/aarch64/nofp_1.c: New file.
