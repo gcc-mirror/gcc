@@ -1,5 +1,10 @@
 2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.md (<optab><fcvt_target><GPF:mode>2):
+	Condition on TARGET_FLOAT.
+
+2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* doc/invoke.texi: Clarify AArch64 feature modifiers (no)fp, (no)simd
 	and (no)crypto.
 
