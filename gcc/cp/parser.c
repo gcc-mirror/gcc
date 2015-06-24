@@ -13273,11 +13273,6 @@ cp_parser_template_parameter_list (cp_parser* parser)
 
   begin_template_parm_list ();
 
-  current_template_parms
-    = tree_cons (size_int (processing_template_decl),
-		 make_tree_vec (0),
-		 current_template_parms);
-
   /* The loop below parses the template parms.  We first need to know
      the total number of template parms to be able to compute proper
      canonical types of each dependent type. So after the loop, when
@@ -13290,7 +13285,6 @@ cp_parser_template_parameter_list (cp_parser* parser)
       bool is_non_type;
       bool is_parameter_pack;
       location_t parm_loc;
-      tree parameter_vec;
 
       /* Parse the template-parameter.  */
       parm_loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -13315,26 +13309,7 @@ cp_parser_template_parameter_list (cp_parser* parser)
 	break;
       /* Otherwise, consume the `,' token.  */
       cp_lexer_consume_token (parser->lexer);
-
-      /* Add the parameter we just processed to current_template_parms.  */
-
-      parameter_vec = make_tree_vec
-	(TREE_VEC_LENGTH (TREE_VALUE (current_template_parms)) + 1);
-
-      for (int i = 0; i < TREE_VEC_LENGTH (parameter_vec) - 1; i++)
-	TREE_VEC_ELT (parameter_vec, i)
-	  = TREE_VEC_ELT (TREE_VALUE (current_template_parms), i);
-
-      TREE_VEC_ELT (parameter_vec, TREE_VEC_LENGTH (parameter_vec) - 1)
-	= tree_last (parameter_list);
-
-      current_template_parms
-	= tree_cons (TREE_PURPOSE (current_template_parms),
-		     parameter_vec,
-		     TREE_CHAIN (current_template_parms));
     }
-
-  current_template_parms = TREE_CHAIN (current_template_parms);
 
   return end_template_parm_list (parameter_list);
 }
