@@ -12359,7 +12359,10 @@ Generate big-endian code.  This is the default when GCC is configured for an
 
 @item -mgeneral-regs-only
 @opindex mgeneral-regs-only
-Generate code which uses only the general registers.
+Generate code which uses only the general-purpose registers.  This is equivalent
+to feature modifier @option{nofp} of @option{-march} or @option{-mcpu}, except
+that @option{-mgeneral-regs-only} takes precedence over any conflicting feature
+modifier regardless of sequence.
 
 @item -mlittle-endian
 @opindex mlittle-endian
@@ -12498,20 +12501,22 @@ over the appropriate part of this option.
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
 @cindex @option{-march} feature modifiers
 @cindex @option{-mcpu} feature modifiers
-Feature modifiers used with @option{-march} and @option{-mcpu} can be one
-the following:
+Feature modifiers used with @option{-march} and @option{-mcpu} can be any of
+the following and their inverses @option{no@var{feature}}:
 
 @table @samp
 @item crc
 Enable CRC extension.
 @item crypto
-Enable Crypto extension.  This implies Advanced SIMD is enabled.
+Enable Crypto extension.  This also enables Advanced SIMD and floating-point
+instructions.
 @item fp
-Enable floating-point instructions.
+Enable floating-point instructions.  This is on by default for all possible
+values for options @option{-march} and @option{-mcpu}.
 @item simd
-Enable Advanced SIMD instructions.  This implies floating-point instructions
-are enabled.  This is the default for all current possible values for options
-@option{-march} and @option{-mcpu=}.
+Enable Advanced SIMD instructions.  This also enables floating-point
+instructions.  This is on by default for all possible values for options
+@option{-march} and @option{-mcpu}.
 @item lse
 Enable Large System Extension instructions.
 @item pan
@@ -12521,6 +12526,10 @@ Enable Limited Ordering Regions support.
 @item rdma
 Enable ARMv8.1 Advanced SIMD instructions.
 @end table
+
+That is, @option{crypto} implies @option{simd} implies @option{fp}.
+Conversely, @option{nofp} (or equivalently, @option{-mgeneral-regs-only})
+implies @option{nosimd} implies @option{nocrypto}.
 
 @node Adapteva Epiphany Options
 @subsection Adapteva Epiphany Options

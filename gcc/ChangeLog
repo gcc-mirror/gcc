@@ -1,5 +1,10 @@
 2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* doc/invoke.texi: Clarify AArch64 feature modifiers (no)fp, (no)simd
+	and (no)crypto.
+
+2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_err_no_fpadvsimd): New.
 
 	* config/aarch64/aarch64.md (mov<mode>/GPF, movtf): Use
