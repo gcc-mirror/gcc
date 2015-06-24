@@ -1,3 +1,7 @@
+2015-06-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-vect-slp.c (vect_build_slp_tree_1): Init vectype.
+
 2015-06-24 Renlin Li <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.h(TARGET_CPU_CPP_BUILTINS): Add
