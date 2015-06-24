@@ -1,3 +1,8 @@
+2015-06-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66528
+	* gfortran.dg/maxerrors.f90: New test.
+
 2015-06-08  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/torture/pr66345.c: Fix assumption about size_t type.
