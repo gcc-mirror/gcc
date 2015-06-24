@@ -1,3 +1,13 @@
+2015-06-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3928 - Extending static_assert
+	* g++.dg/cpp0x/static_assert8.C: Adjust.
+	* g++.dg/cpp0x/static_assert12.C: New.
+	* g++.dg/cpp0x/static_assert13.C: New.
+	* g++.dg/cpp1y/static_assert1.C: New.
+	* g++.dg/cpp1y/static_assert2.C: New.
+	* g++.dg/cpp1z/static_assert-nomsg.C: New.
+
 2015-06-24  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/65750

@@ -7174,8 +7174,17 @@ finish_static_assert (tree condition, tree message, location_t location,
       input_location = location;
       if (TREE_CODE (condition) == INTEGER_CST 
           && integer_zerop (condition))
-        /* Report the error. */
-        error ("static assertion failed: %s", TREE_STRING_POINTER (message));
+	{
+	  int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT
+				     (TREE_TYPE (TREE_TYPE (message))));
+	  int len = TREE_STRING_LENGTH (message) / sz - 1;
+          /* Report the error. */
+	  if (len == 0)
+            error ("static assertion failed");
+	  else
+            error ("static assertion failed: %s",
+		   TREE_STRING_POINTER (message));
+	}
       else if (condition && condition != error_mark_node)
 	{
 	  error ("non-constant condition for static assertion");
