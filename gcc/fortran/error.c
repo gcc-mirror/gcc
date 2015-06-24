@@ -1249,7 +1249,6 @@ gfc_clear_warning (void)
 void
 gfc_warning_check (void)
 {
-  /* This is for the new diagnostics machinery.  */
   if (! gfc_output_buffer_empty_p (pp_warning_buffer))
     {
       pretty_printer *pp = global_dc->printer;
@@ -1259,10 +1258,10 @@ gfc_warning_check (void)
       warningcount += warningcount_buffered;
       werrorcount += werrorcount_buffered;
       gcc_assert (warningcount_buffered + werrorcount_buffered == 1);
+      pp->buffer = tmp_buffer;
       diagnostic_action_after_output (global_dc, 
 				      warningcount_buffered 
 				      ? DK_WARNING : DK_ERROR);
-      pp->buffer = tmp_buffer;
     }
 }
 
@@ -1381,8 +1380,8 @@ gfc_error_check (void)
       pp_really_flush (pp);
       ++errorcount;
       gcc_assert (gfc_output_buffer_empty_p (pp_error_buffer));
-      diagnostic_action_after_output (global_dc, DK_ERROR);
       pp->buffer = tmp_buffer;
+      diagnostic_action_after_output (global_dc, DK_ERROR);
       return true;
     }
 
@@ -1472,6 +1471,8 @@ gfc_diagnostics_init (void)
   global_dc->caret_chars[1] = '2';
   pp_warning_buffer = new (XNEW (output_buffer)) output_buffer ();
   pp_warning_buffer->flush_p = false;
+  /* pp_error_buffer is statically allocated.  This simplifies memory
+     management when using gfc_push/pop_error. */
   pp_error_buffer = &(error_buffer.buffer);
   pp_error_buffer->flush_p = false;
 }

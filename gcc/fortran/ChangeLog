@@ -1,3 +1,11 @@
+2015-06-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66528
+	* error.c (gfc_warning_check): Restore the default output_buffer
+	before calling diagnostic_action_after_output.
+	(gfc_error_check): Likewise.
+	(gfc_diagnostics_init): Add comment.
+
 2015-06-23  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/64674
