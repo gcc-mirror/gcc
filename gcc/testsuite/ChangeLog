@@ -1,3 +1,8 @@
+2015-06-24  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/66549
+	* gfortran.dg/gomp/omp_parallel_1.f90: New file.
+
 2015-06-24  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	Backport from mainline:
