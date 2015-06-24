@@ -452,6 +452,97 @@ struct GTY(()) machine_function
 #define PREDICT_DISTANCE (TARGET_Z10 ? 384 : 2048)
 
 
+/* Indicate which ABI has been used for passing vector args.
+   0 - no vector type arguments have been passed where the ABI is relevant
+   1 - the old ABI has been used
+   2 - a vector type argument has been passed either in a vector register
+       or on the stack by value  */
+static int s390_vector_abi = 0;
+
+/* Set the vector ABI marker if TYPE is subject to the vector ABI
+   switch.  The vector ABI affects only vector data types.  There are
+   two aspects of the vector ABI relevant here:
+
+   1. vectors >= 16 bytes have an alignment of 8 bytes with the new
+   ABI and natural alignment with the old.
+
+   2. vector <= 16 bytes are passed in VRs or by value on the stack
+   with the new ABI but by reference on the stack with the old.
+
+   If ARG_P is true TYPE is used for a function argument or return
+   value.  The ABI marker then is set for all vector data types.  If
+   ARG_P is false only type 1 vectors are being checked.  */
+
+static void
+s390_check_type_for_vector_abi (const_tree type, bool arg_p, bool in_struct_p)
+{
+  static hash_set<const_tree> visited_types_hash;
+
+  if (s390_vector_abi)
+    return;
+
+  if (type == NULL_TREE || TREE_CODE (type) == ERROR_MARK)
+    return;
+
+  if (visited_types_hash.contains (type))
+    return;
+
+  visited_types_hash.add (type);
+
+  if (VECTOR_TYPE_P (type))
+    {
+      int type_size = int_size_in_bytes (type);
+
+      /* Outside arguments only the alignment is changing and this
+	 only happens for vector types >= 16 bytes.  */
+      if (!arg_p && type_size < 16)
+	return;
+
+      /* In arguments vector types > 16 are passed as before (GCC
+	 never enforced the bigger alignment for arguments which was
+	 required by the old vector ABI).  However, it might still be
+	 ABI relevant due to the changed alignment if it is a struct
+	 member.  */
+      if (arg_p && type_size > 16 && !in_struct_p)
+	return;
+
+      s390_vector_abi = TARGET_VX_ABI ? 2 : 1;
+    }
+  else if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
+    {
+      /* ARRAY_TYPE: Since with neither of the ABIs we have more than
+	 natural alignment there will never be ABI dependent padding
+	 in an array type.  That's why we do not set in_struct_p to
+	 true here.  */
+      s390_check_type_for_vector_abi (TREE_TYPE (type), arg_p, in_struct_p);
+    }
+  else if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+    {
+      tree arg_chain;
+
+      /* Check the return type.  */
+      s390_check_type_for_vector_abi (TREE_TYPE (type), true, false);
+
+      for (arg_chain = TYPE_ARG_TYPES (type);
+	   arg_chain;
+	   arg_chain = TREE_CHAIN (arg_chain))
+	s390_check_type_for_vector_abi (TREE_VALUE (arg_chain), true, false);
+    }
+  else if (RECORD_OR_UNION_TYPE_P (type))
+    {
+      tree field;
+
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+	{
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+
+	  s390_check_type_for_vector_abi (TREE_TYPE (field), arg_p, true);
+	}
+    }
+}
+
+
 /* System z builtins.  */
 
 #include "s390-builtins.h"
@@ -10889,6 +10980,8 @@ s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
+  if (!named)
+    s390_check_type_for_vector_abi (type, true, false);
 
   if (s390_function_arg_vector (mode, type))
     {
@@ -11279,6 +11372,8 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
 
   size = int_size_in_bytes (type);
+
+  s390_check_type_for_vector_abi (type, true, false);
 
   if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
     {
@@ -13642,6 +13737,29 @@ s390_vector_alignment (const_tree type)
   return MIN (64, tree_to_shwi (TYPE_SIZE (type)));
 }
 
+/* Implement TARGET_ASM_FILE_END.  */
+static void
+s390_asm_file_end (void)
+{
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+  varpool_node *vnode;
+  cgraph_node *cnode;
+
+  FOR_EACH_VARIABLE (vnode)
+    if (TREE_PUBLIC (vnode->decl))
+      s390_check_type_for_vector_abi (TREE_TYPE (vnode->decl), false, false);
+
+  FOR_EACH_FUNCTION (cnode)
+    if (TREE_PUBLIC (cnode->decl))
+      s390_check_type_for_vector_abi (TREE_TYPE (cnode->decl), false, false);
+
+
+  if (s390_vector_abi != 0)
+    fprintf (asm_out_file, "\t.gnu_attribute 8, %d\n",
+	     s390_vector_abi);
+#endif
+  file_end_indicate_exec_stack ();
+}
 
 /* Return true if TYPE is a vector bool type.  */
 static inline bool
@@ -13917,6 +14035,9 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
 
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP s390_invalid_binary_op
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END s390_asm_file_end
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
