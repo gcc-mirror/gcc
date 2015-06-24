@@ -20975,6 +20975,12 @@ dependent_type_p_r (tree type)
 	names a dependent type.  */
   if (TREE_CODE (type) == TYPENAME_TYPE)
     return true;
+
+  /* An alias template specialization can be dependent even if the
+     resulting type is not.  */
+  if (dependent_alias_template_spec_p (type))
+    return true;
+
   /* -- a cv-qualified type where the cv-unqualified type is
 	dependent.
      No code is necessary for this bullet; the code below handles
@@ -21025,10 +21031,6 @@ dependent_type_p_r (tree type)
   else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
 	   && (any_dependent_template_arguments_p
 	       (INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type)))))
-    return true;
-  /* For an alias template specialization, check the arguments both to the
-     class template and the alias template.  */
-  else if (dependent_alias_template_spec_p (type))
     return true;
 
   /* All TYPEOF_TYPEs, DECLTYPE_TYPEs, and UNDERLYING_TYPEs are

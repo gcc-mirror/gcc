@@ -1,5 +1,9 @@
 2015-06-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66647
+	* pt.c (dependent_type_p_r): Check for dependent alias template
+	specialization sooner.
+
 	PR c++/66501
 	* init.c (vec_copy_assign_is_trivial): New.
 	(build_vec_init): Use it.
