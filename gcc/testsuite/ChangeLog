@@ -1,3 +1,10 @@
+2015-06-24  James Greenhalgh  <james.greenhalgh@arm.com>
+
+        * lib/c-torture.exp: Don't call check_effective_target_lto
+	before setting up environment correctly.
+        * lib/gcc-dg.exp: Likewise, and protect
+	gcc_force_conventional_output.
+
 2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR rtl-optimization/66306
