@@ -4036,7 +4036,7 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       if (MEM_P (x)
 	  && s390_loadrelative_operand_p (XEXP (x, 0), NULL, NULL)
 	  && (mode == QImode
-	      || !reg_classes_intersect_p (GENERAL_REGS, rclass)
+	      || !reg_class_subset_p (rclass, GENERAL_REGS)
 	      || GET_MODE_SIZE (mode) > UNITS_PER_WORD
 	      || !s390_check_symref_alignment (XEXP (x, 0),
 					       GET_MODE_SIZE (mode))))
