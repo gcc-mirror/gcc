@@ -1,5 +1,10 @@
 2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_legitimate_constant_p): Add
+	TARGET_VX check.
+
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_vector_abi): New variable definition.
 	(s390_check_type_for_vector_abi): New function.
 	(TARGET_ASM_FILE_END): New macro definition.

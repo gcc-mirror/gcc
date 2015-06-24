@@ -3602,7 +3602,7 @@ legitimate_pic_operand_p (rtx op)
 static bool
 s390_legitimate_constant_p (machine_mode mode, rtx op)
 {
-  if (VECTOR_MODE_P (mode) && GET_CODE (op) == CONST_VECTOR)
+  if (TARGET_VX && VECTOR_MODE_P (mode) && GET_CODE (op) == CONST_VECTOR)
     {
       if (GET_MODE_SIZE (mode) != 16)
 	return 0;
