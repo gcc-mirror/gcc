@@ -46,6 +46,19 @@ if ![info exists GCC_UNDER_TEST] {
     set GCC_UNDER_TEST "[find_gcc]"
 }
 
+# This file may be sourced, so don't override environment settings
+# that have been previously setup.
+if { $orig_environment_saved == 0 } {
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+}
+
+# Some torture-options cause intermediate code output, unusable for
+# testing using e.g. scan-assembler.  In this variable are the options
+# how to force it, when needed.
+global gcc_force_conventional_output
+set gcc_force_conventional_output ""
+
 set LTO_TORTURE_OPTIONS ""
 if [info exists TORTURE_OPTIONS] {
     set DG_TORTURE_OPTIONS $TORTURE_OPTIONS
@@ -91,19 +104,6 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 }
 
 global orig_environment_saved
-
-# This file may be sourced, so don't override environment settings
-# that have been previously setup.
-if { $orig_environment_saved == 0 } {
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
-}
-
-# Some torture-options cause intermediate code output, unusable for
-# testing using e.g. scan-assembler.  In this variable are the options
-# how to force it, when needed.
-global gcc_force_conventional_output
-set gcc_force_conventional_output ""
 
 # Deduce generated files from tool flags, return finalcode string
 proc schedule-cleanups { opts } {
