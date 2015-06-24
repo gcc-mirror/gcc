@@ -35,11 +35,11 @@ enum s390_builtin_type_index
 #undef DEF_OPAQUE_VECTOR_TYPE
 #undef DEF_FN_TYPE
 #undef DEF_OV_TYPE
-#define DEF_TYPE(INDEX, NODE, CONST_P) INDEX,
-#define DEF_POINTER_TYPE(INDEX, INDEX2) INDEX,
-#define DEF_DISTINCT_TYPE(INDEX, INDEX2) INDEX,
-#define DEF_VECTOR_TYPE(INDEX, INDEX2, ELEMENTS) INDEX,
-#define DEF_OPAQUE_VECTOR_TYPE(INDEX, INDEX2, ELEMENTS) INDEX,
+#define DEF_TYPE(INDEX, ...) INDEX,
+#define DEF_POINTER_TYPE(INDEX, ...) INDEX,
+#define DEF_DISTINCT_TYPE(INDEX, ...) INDEX,
+#define DEF_VECTOR_TYPE(INDEX, ...) INDEX,
+#define DEF_OPAQUE_VECTOR_TYPE(INDEX, ...) INDEX,
 #define DEF_FN_TYPE(...)
 #define DEF_OV_TYPE(...)
 #include "s390-builtin-types.def"
@@ -139,20 +139,35 @@ S390_OVERLOADED_BUILTIN_VAR_MAX
   (S390_BUILTIN_MAX + S390_OVERLOADED_BUILTIN_MAX +	\
    S390_OVERLOADED_BUILTIN_VAR_MAX)
 
-extern const unsigned int flags_builtin[S390_BUILTIN_MAX + 1];
+extern const unsigned int bflags_builtin[S390_BUILTIN_MAX + 1];
+extern const unsigned int opflags_builtin[S390_BUILTIN_MAX + 1];
+
 extern const unsigned int
-  flags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1];
+  bflags_overloaded_builtin[S390_OVERLOADED_BUILTIN_MAX + 1];
+extern const unsigned int
+  opflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1];
 
 static inline unsigned int
-flags_for_builtin (int fcode)
+bflags_for_builtin (int fcode)
 {
   if (fcode >= S390_OVERLOADED_BUILTIN_VAR_OFFSET)
-    return flags_overloaded_builtin_var[fcode -
-					S390_OVERLOADED_BUILTIN_VAR_OFFSET];
+    gcc_unreachable ();
+  else if (fcode >= S390_OVERLOADED_BUILTIN_OFFSET)
+    return bflags_overloaded_builtin[fcode - S390_BUILTIN_MAX];
+  else
+    return bflags_builtin[fcode];
+}
+
+static inline unsigned int
+opflags_for_builtin (int fcode)
+{
+  if (fcode >= S390_OVERLOADED_BUILTIN_VAR_OFFSET)
+    return opflags_overloaded_builtin_var[fcode -
+					  S390_OVERLOADED_BUILTIN_VAR_OFFSET];
   else if (fcode >= S390_OVERLOADED_BUILTIN_OFFSET)
     gcc_unreachable ();
   else
-    return flags_builtin[fcode];
+    return opflags_builtin[fcode];
 }
 
 extern tree s390_builtin_decls[S390_BUILTIN_MAX +
