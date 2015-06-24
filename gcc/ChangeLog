@@ -1,5 +1,28 @@
 2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-builtin-types.def: Add flag to indicate the
+	options under which the function type is needed.
+	* config/s390/s390-builtins.def: Add flag to indicate the options
+	under which the builtin is enabled.
+	* config/s390/s390-builtins.h: Add flags parameter to macro
+	definitions.
+	(bflags_for_builtin): New function.
+	(flags_for_builtin): Renamed to ...
+	(opflags_for_builtin): ... this.
+	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Rename
+	flags_for_builtin to bflags_for_builtin and
+	flags_overloaded_builtin_var to opflags_overloaded_builtin_var.
+	* config/s390/s390.c: Add initialization of bflags_builtin and
+	opflags_builtin arrays.
+	Remove code for flags_builtin.
+	(s390_init_builtins): Only create builtin function types if one of
+	their flags is active.
+	Only create builtins if all of their flags are active.
+	(s390_expand_builtin): Rename flags_for_builtin to
+	opflags_for_builtin.
+
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vecintrin.h: Remove internal builtins.
 
 2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>

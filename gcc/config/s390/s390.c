@@ -547,19 +547,44 @@ s390_check_type_for_vector_abi (const_tree type, bool arg_p, bool in_struct_p)
 
 #include "s390-builtins.h"
 
-const unsigned int flags_builtin[S390_BUILTIN_MAX + 1] =
+const unsigned int bflags_builtin[S390_BUILTIN_MAX + 1] =
   {
 #undef B_DEF
 #undef OB_DEF
 #undef OB_DEF_VAR
-#define B_DEF(NAME, PATTERN, ATTRS, FLAGS, FNTYPE) FLAGS,
+#define B_DEF(NAME, PATTERN, ATTRS, BFLAGS, ...) BFLAGS,
 #define OB_DEF(...)
 #define OB_DEF_VAR(...)
 #include "s390-builtins.def"
     0
   };
 
-const unsigned int flags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
+const unsigned int opflags_builtin[S390_BUILTIN_MAX + 1] =
+  {
+#undef B_DEF
+#undef OB_DEF
+#undef OB_DEF_VAR
+#define B_DEF(NAME, PATTERN, ATTRS, BFLAGS, OPFLAGS, ...) OPFLAGS,
+#define OB_DEF(...)
+#define OB_DEF_VAR(...)
+#include "s390-builtins.def"
+    0
+  };
+
+const unsigned int bflags_overloaded_builtin[S390_OVERLOADED_BUILTIN_MAX + 1] =
+  {
+#undef B_DEF
+#undef OB_DEF
+#undef OB_DEF_VAR
+#define B_DEF(...)
+#define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, BFLAGS, ...) BFLAGS,
+#define OB_DEF_VAR(...)
+#include "s390-builtins.def"
+    0
+  };
+
+const unsigned int
+opflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
   {
 #undef B_DEF
 #undef OB_DEF
@@ -597,6 +622,10 @@ s390_init_builtins (void)
 				       NULL, NULL);
   tree noreturn_attr = tree_cons (get_identifier ("noreturn"), NULL, NULL);
   tree c_uint64_type_node;
+  unsigned int bflags_mask = (BFLAGS_MASK_INIT);
+
+  bflags_mask |= (TARGET_VX)  ? B_VX  : 0;
+  bflags_mask |= (TARGET_HTM) ? B_HTM : 0;
 
   /* The uint64_type_node from tree.c is not compatible to the C99
      uint64_t data type.  What we want is c_uint64_type_node from
@@ -608,56 +637,64 @@ s390_init_builtins (void)
     c_uint64_type_node = long_long_unsigned_type_node;
 
 #undef DEF_TYPE
-#define DEF_TYPE(INDEX, NODE, CONST_P)			\
-  s390_builtin_types[INDEX] = (!CONST_P) ?		\
-    (NODE) : build_type_variant ((NODE), 1, 0);
+#define DEF_TYPE(INDEX, BFLAGS, NODE, CONST_P)		\
+  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))	\
+    s390_builtin_types[INDEX] = (!CONST_P) ?		\
+      (NODE) : build_type_variant ((NODE), 1, 0);
 
 #undef DEF_POINTER_TYPE
-#define DEF_POINTER_TYPE(INDEX, INDEX_BASE)				\
-  s390_builtin_types[INDEX] =						\
-    build_pointer_type (s390_builtin_types[INDEX_BASE]);
+#define DEF_POINTER_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
+  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+    s390_builtin_types[INDEX] =						\
+      build_pointer_type (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_DISTINCT_TYPE
-#define DEF_DISTINCT_TYPE(INDEX, INDEX_BASE)				\
-  s390_builtin_types[INDEX] =						\
-    build_distinct_type_copy (s390_builtin_types[INDEX_BASE]);
+#define DEF_DISTINCT_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
+  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+    s390_builtin_types[INDEX] =						\
+      build_distinct_type_copy (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_VECTOR_TYPE
-#define DEF_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)			\
-  s390_builtin_types[INDEX] =						\
-    build_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
+#define DEF_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)		\
+  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+    s390_builtin_types[INDEX] =						\
+      build_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_OPAQUE_VECTOR_TYPE
-#define DEF_OPAQUE_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)		\
-  s390_builtin_types[INDEX] =						\
-    build_opaque_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
+#define DEF_OPAQUE_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)	\
+  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+    s390_builtin_types[INDEX] =						\
+      build_opaque_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_FN_TYPE
-#define DEF_FN_TYPE(INDEX, args...)				\
-  s390_builtin_fn_types[INDEX] =				\
+#define DEF_FN_TYPE(INDEX, BFLAGS, args...)			\
+  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))		\
+    s390_builtin_fn_types[INDEX] =				\
     build_function_type_list (args, NULL_TREE);
 #undef DEF_OV_TYPE
 #define DEF_OV_TYPE(...)
 #include "s390-builtin-types.def"
 
 #undef B_DEF
-#define B_DEF(NAME, PATTERN, ATTRS, FLAGS, FNTYPE)			\
-  s390_builtin_decls[S390_BUILTIN_##NAME] =				\
-  add_builtin_function ("__builtin_" #NAME,				\
-			s390_builtin_fn_types[FNTYPE],			\
-			S390_BUILTIN_##NAME,				\
-			BUILT_IN_MD,					\
-			NULL,						\
-			ATTRS);
+#define B_DEF(NAME, PATTERN, ATTRS, BFLAGS, OPFLAGS, FNTYPE)		\
+  if (((BFLAGS) & ~bflags_mask) == 0)					\
+    s390_builtin_decls[S390_BUILTIN_##NAME] =				\
+      add_builtin_function ("__builtin_" #NAME,				\
+			    s390_builtin_fn_types[FNTYPE],		\
+			    S390_BUILTIN_##NAME,			\
+			    BUILT_IN_MD,				\
+			    NULL,					\
+			    ATTRS);
 #undef OB_DEF
-#define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, FNTYPE)		\
-  s390_builtin_decls[S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX] = \
-  add_builtin_function ("__builtin_" #NAME,				\
-			s390_builtin_fn_types[FNTYPE],			\
-			S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX, \
-			BUILT_IN_MD,					\
-			NULL,						\
-			0);
+#define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, BFLAGS, FNTYPE)	\
+  if (((BFLAGS) & ~bflags_mask) == 0)					\
+    s390_builtin_decls[S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX] = \
+      add_builtin_function ("__builtin_" #NAME,				\
+			    s390_builtin_fn_types[FNTYPE],		\
+			    S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX, \
+			    BUILT_IN_MD,				\
+			    NULL,					\
+			    0);
 #undef OB_DEF_VAR
 #define OB_DEF_VAR(...)
 #include "s390-builtins.def"
@@ -728,7 +765,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   bool nonvoid;
   tree arg;
   call_expr_arg_iterator iter;
-  unsigned int all_op_flags = flags_for_builtin (fcode);
+  unsigned int all_op_flags = opflags_for_builtin (fcode);
   machine_mode last_vec_mode = VOIDmode;
 
   if (TARGET_DEBUG_ARG)
@@ -737,7 +774,6 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       "s390_expand_builtin, code = %4d, %s\n",
 	       (int)fcode, IDENTIFIER_POINTER (DECL_NAME (fndecl)));
     }
-
 
   if (fcode >= S390_OVERLOADED_BUILTIN_VAR_OFFSET
       && fcode < S390_ALL_BUILTIN_MAX)
