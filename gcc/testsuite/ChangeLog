@@ -1,3 +1,8 @@
+2015-06-24  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/65750
+	* g++.dg/cpp0x/trailing11.C: New.
+
 2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* gcc.target/arm/fixed_float_conversion.c: Skip for inappropriate
