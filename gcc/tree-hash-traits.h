@@ -39,4 +39,18 @@ tree_operand_hash::equal_keys (const_tree t1, const_tree t2)
   return operand_equal_p (t1, t2, 0);
 }
 
+/* Hasher for tree decls.  Pointer equality is enough here, but the DECL_UID
+   is a better hash than the pointer value and gives a predictable traversal
+   order.  */
+struct tree_decl_hash : ggc_ptr_hash <tree_node>
+{
+  static inline hashval_t hash (tree);
+};
+
+inline hashval_t
+tree_decl_hash::hash (tree t)
+{
+  return DECL_UID (t);
+}
+
 #endif
