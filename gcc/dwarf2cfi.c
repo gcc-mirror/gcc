@@ -167,10 +167,8 @@ typedef dw_trace_info *dw_trace_info_ref;
 
 /* Hashtable helpers.  */
 
-struct trace_info_hasher : typed_noop_remove <dw_trace_info>
+struct trace_info_hasher : nofree_ptr_hash <dw_trace_info>
 {
-  typedef dw_trace_info *value_type;
-  typedef dw_trace_info *compare_type;
   static inline hashval_t hash (const dw_trace_info *);
   static inline bool equal (const dw_trace_info *, const dw_trace_info *);
 };

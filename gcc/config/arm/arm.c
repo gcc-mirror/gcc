@@ -5038,10 +5038,8 @@ arm_function_value(const_tree type, const_tree func,
 
 /* libcall hashtable helpers.  */
 
-struct libcall_hasher : typed_noop_remove <rtx_def>
+struct libcall_hasher : nofree_ptr_hash <const rtx_def>
 {
-  typedef const rtx_def *value_type;
-  typedef const rtx_def *compare_type;
   static inline hashval_t hash (const rtx_def *);
   static inline bool equal (const rtx_def *, const rtx_def *);
   static inline void remove (rtx_def *);

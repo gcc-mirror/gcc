@@ -178,7 +178,7 @@ END_BUILTINS
 
 /* Base class for all identifiers the parser knows.  */
 
-struct id_base : typed_noop_remove<id_base>
+struct id_base : nofree_ptr_hash<id_base>
 {
   enum id_kind { CODE, FN, PREDICATE, USER } kind;
 
@@ -189,8 +189,6 @@ struct id_base : typed_noop_remove<id_base>
   const char *id;
 
   /* hash_table support.  */
-  typedef id_base *value_type;
-  typedef id_base *compare_type;
   static inline hashval_t hash (const id_base *);
   static inline int equal (const id_base *, const id_base *);
 };

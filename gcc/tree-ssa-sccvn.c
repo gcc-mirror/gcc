@@ -137,9 +137,8 @@ static vn_lookup_kind default_vn_walk_kind;
 
 /* vn_nary_op hashtable helpers.  */
 
-struct vn_nary_op_hasher : typed_noop_remove <vn_nary_op_s>
+struct vn_nary_op_hasher : nofree_ptr_hash <vn_nary_op_s>
 {
-  typedef vn_nary_op_s *value_type;
   typedef vn_nary_op_s *compare_type;
   static inline hashval_t hash (const vn_nary_op_s *);
   static inline bool equal (const vn_nary_op_s *, const vn_nary_op_s *);

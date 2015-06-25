@@ -13868,7 +13868,7 @@ fold (tree expr)
 #undef fold
 
 static void fold_checksum_tree (const_tree, struct md5_ctx *,
-				hash_table<pointer_hash<const tree_node> > *);
+				hash_table<nofree_ptr_hash<const tree_node> > *);
 static void fold_check_failed (const_tree, const_tree);
 void print_fold_checksum (const_tree);
 
@@ -13882,7 +13882,7 @@ fold (tree expr)
   tree ret;
   struct md5_ctx ctx;
   unsigned char checksum_before[16], checksum_after[16];
-  hash_table<pointer_hash<const tree_node> > ht (32);
+  hash_table<nofree_ptr_hash<const tree_node> > ht (32);
 
   md5_init_ctx (&ctx);
   fold_checksum_tree (expr, &ctx, &ht);
@@ -13906,7 +13906,7 @@ print_fold_checksum (const_tree expr)
 {
   struct md5_ctx ctx;
   unsigned char checksum[16], cnt;
-  hash_table<pointer_hash<const tree_node> > ht (32);
+  hash_table<nofree_ptr_hash<const tree_node> > ht (32);
 
   md5_init_ctx (&ctx);
   fold_checksum_tree (expr, &ctx, &ht);
@@ -13924,7 +13924,7 @@ fold_check_failed (const_tree expr ATTRIBUTE_UNUSED, const_tree ret ATTRIBUTE_UN
 
 static void
 fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
-		    hash_table<pointer_hash <const tree_node> > *ht)
+		    hash_table<nofree_ptr_hash <const tree_node> > *ht)
 {
   const tree_node **slot;
   enum tree_code code;
@@ -14085,7 +14085,7 @@ debug_fold_checksum (const_tree t)
   int i;
   unsigned char checksum[16];
   struct md5_ctx ctx;
-  hash_table<pointer_hash<const tree_node> > ht (32);
+  hash_table<nofree_ptr_hash<const tree_node> > ht (32);
 
   md5_init_ctx (&ctx);
   fold_checksum_tree (t, &ctx, &ht);
@@ -14113,7 +14113,7 @@ fold_build1_stat_loc (location_t loc,
 #ifdef ENABLE_FOLD_CHECKING
   unsigned char checksum_before[16], checksum_after[16];
   struct md5_ctx ctx;
-  hash_table<pointer_hash<const tree_node> > ht (32);
+  hash_table<nofree_ptr_hash<const tree_node> > ht (32);
 
   md5_init_ctx (&ctx);
   fold_checksum_tree (op0, &ctx, &ht);
@@ -14154,7 +14154,7 @@ fold_build2_stat_loc (location_t loc,
 		checksum_after_op0[16],
 		checksum_after_op1[16];
   struct md5_ctx ctx;
-  hash_table<pointer_hash<const tree_node> > ht (32);
+  hash_table<nofree_ptr_hash<const tree_node> > ht (32);
 
   md5_init_ctx (&ctx);
   fold_checksum_tree (op0, &ctx, &ht);
@@ -14208,7 +14208,7 @@ fold_build3_stat_loc (location_t loc, enum tree_code code, tree type,
 		checksum_after_op1[16],
 		checksum_after_op2[16];
   struct md5_ctx ctx;
-  hash_table<pointer_hash<const tree_node> > ht (32);
+  hash_table<nofree_ptr_hash<const tree_node> > ht (32);
 
   md5_init_ctx (&ctx);
   fold_checksum_tree (op0, &ctx, &ht);
@@ -14274,7 +14274,7 @@ fold_build_call_array_loc (location_t loc, tree type, tree fn,
 		checksum_after_fn[16],
 		checksum_after_arglist[16];
   struct md5_ctx ctx;
-  hash_table<pointer_hash<const tree_node> > ht (32);
+  hash_table<nofree_ptr_hash<const tree_node> > ht (32);
   int i;
 
   md5_init_ctx (&ctx);

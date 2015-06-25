@@ -652,10 +652,8 @@ struct string_slot
 
 /* Hashtable helpers.  */
 
-struct string_slot_hasher : typed_noop_remove <string_slot>
+struct string_slot_hasher : nofree_ptr_hash <string_slot>
 {
-  typedef string_slot *value_type;
-  typedef string_slot *compare_type;
   static inline hashval_t hash (const string_slot *);
   static inline bool equal (const string_slot *, const string_slot *);
 };

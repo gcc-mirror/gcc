@@ -69,10 +69,8 @@ typedef const struct coalesce_pair *const_coalesce_pair_p;
 
 /* Coalesce pair hashtable helpers.  */
 
-struct coalesce_pair_hasher : typed_noop_remove <coalesce_pair>
+struct coalesce_pair_hasher : nofree_ptr_hash <coalesce_pair>
 {
-  typedef coalesce_pair *value_type;
-  typedef coalesce_pair *compare_type;
   static inline hashval_t hash (const coalesce_pair *);
   static inline bool equal (const coalesce_pair *, const coalesce_pair *);
 };
@@ -1239,10 +1237,8 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
 
 /* Hashtable support for storing SSA names hashed by their SSA_NAME_VAR.  */
 
-struct ssa_name_var_hash : typed_noop_remove <tree_node>
+struct ssa_name_var_hash : nofree_ptr_hash <tree_node>
 {
-  typedef union tree_node *value_type;
-  typedef union tree_node *compare_type;
   static inline hashval_t hash (const tree_node *);
   static inline int equal (const tree_node *, const tree_node *);
 };

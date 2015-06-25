@@ -439,11 +439,8 @@ struct congruence_class_group
 };
 
 /* Congruence class set structure.  */
-struct congruence_class_group_hash: typed_noop_remove <congruence_class_group>
+struct congruence_class_group_hash : nofree_ptr_hash <congruence_class_group>
 {
-  typedef congruence_class_group *value_type;
-  typedef congruence_class_group *compare_type;
-
   static inline hashval_t hash (const congruence_class_group *item)
   {
     return item->hash;

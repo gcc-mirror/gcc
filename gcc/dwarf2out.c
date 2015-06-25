@@ -22779,10 +22779,8 @@ dwarf2out_undef (unsigned int lineno ATTRIBUTE_UNUSED,
 
 /* Helpers to manipulate hash table of CUs.  */
 
-struct macinfo_entry_hasher : typed_noop_remove <macinfo_entry>
+struct macinfo_entry_hasher : nofree_ptr_hash <macinfo_entry>
 {
-  typedef macinfo_entry *value_type;
-  typedef macinfo_entry *compare_type;
   static inline hashval_t hash (const macinfo_entry *);
   static inline bool equal (const macinfo_entry *, const macinfo_entry *);
 };
@@ -23871,10 +23869,8 @@ file_table_relative_p (dwarf_file_data **slot, bool *p)
 
 /* Helpers to manipulate hash table of comdat type units.  */
 
-struct comdat_type_hasher : typed_noop_remove <comdat_type_node>
+struct comdat_type_hasher : nofree_ptr_hash <comdat_type_node>
 {
-  typedef comdat_type_node *value_type;
-  typedef comdat_type_node *compare_type;
   static inline hashval_t hash (const comdat_type_node *);
   static inline bool equal (const comdat_type_node *, const comdat_type_node *);
 };
@@ -24984,10 +24980,8 @@ compare_locs (dw_loc_descr_ref x, dw_loc_descr_ref y)
 
 /* Hashtable helpers.  */
 
-struct loc_list_hasher : typed_noop_remove <dw_loc_list_struct>
+struct loc_list_hasher : nofree_ptr_hash <dw_loc_list_struct>
 {
-  typedef dw_loc_list_struct *value_type;
-  typedef dw_loc_list_struct *compare_type;
   static inline hashval_t hash (const dw_loc_list_struct *);
   static inline bool equal (const dw_loc_list_struct *,
 			    const dw_loc_list_struct *);

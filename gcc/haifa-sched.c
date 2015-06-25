@@ -613,9 +613,8 @@ struct delay_pair
 
 /* Helpers for delay hashing.  */
 
-struct delay_i1_hasher : typed_noop_remove <delay_pair>
+struct delay_i1_hasher : nofree_ptr_hash <delay_pair>
 {
-  typedef delay_pair *value_type;
   typedef void *compare_type;
   static inline hashval_t hash (const delay_pair *);
   static inline bool equal (const delay_pair *, const void *);

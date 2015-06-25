@@ -2197,8 +2197,8 @@ static tree
 verify_stmt_tree_r (tree* tp, int * /*walk_subtrees*/, void* data)
 {
   tree t = *tp;
-  hash_table<pointer_hash <tree_node> > *statements
-      = static_cast <hash_table<pointer_hash <tree_node> > *> (data);
+  hash_table<nofree_ptr_hash <tree_node> > *statements
+      = static_cast <hash_table<nofree_ptr_hash <tree_node> > *> (data);
   tree_node **slot;
 
   if (!STATEMENT_CODE_P (TREE_CODE (t)))
@@ -2221,7 +2221,7 @@ verify_stmt_tree_r (tree* tp, int * /*walk_subtrees*/, void* data)
 void
 verify_stmt_tree (tree t)
 {
-  hash_table<pointer_hash <tree_node> > statements (37);
+  hash_table<nofree_ptr_hash <tree_node> > statements (37);
   cp_walk_tree (&t, verify_stmt_tree_r, &statements, NULL);
 }
 

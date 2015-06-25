@@ -374,9 +374,8 @@ struct ls_expr
 /* Head of the list of load/store memory refs.  */
 static struct ls_expr * pre_ldst_mems = NULL;
 
-struct pre_ldst_expr_hasher : typed_noop_remove <ls_expr>
+struct pre_ldst_expr_hasher : nofree_ptr_hash <ls_expr>
 {
-  typedef ls_expr *value_type;
   typedef value_type compare_type;
   static inline hashval_t hash (const ls_expr *);
   static inline bool equal (const ls_expr *, const ls_expr *);

@@ -57,10 +57,12 @@ typed_noop_remove <Type>::remove (Type *p ATTRIBUTE_UNUSED)
 }
 
 
-/* Pointer hash with a no-op remove method.  */
+/* Pointer hasher based on pointer equality.  Other types of pointer hash
+   can inherit this and override the hash and equal functions with some
+   other form of equality (such as string equality).  */
 
 template <typename Type>
-struct pointer_hash : typed_noop_remove <Type>
+struct pointer_hash
 {
   typedef Type *value_type;
   typedef Type *compare_type;
@@ -164,5 +166,11 @@ struct ggc_cache_hasher : ggc_hasher<T>
     return ggc_marked_p (e) ? -1 : 0;
   }
 };
+
+/* Traits for pointer elements that should not be freed when an element
+   is deleted.  */
+
+template <typename T>
+struct nofree_ptr_hash : pointer_hash <T>, typed_noop_remove <T> {};
 
 #endif

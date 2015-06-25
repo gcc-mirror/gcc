@@ -207,15 +207,13 @@ typedef union pre_expr_union_d
   vn_reference_t reference;
 } pre_expr_union;
 
-typedef struct pre_expr_d : typed_noop_remove <pre_expr_d>
+typedef struct pre_expr_d : nofree_ptr_hash <pre_expr_d>
 {
   enum pre_expr_kind kind;
   unsigned int id;
   pre_expr_union u;
 
   /* hash_table support.  */
-  typedef pre_expr_d *value_type;
-  typedef pre_expr_d *compare_type;
   static inline hashval_t hash (const pre_expr_d *);
   static inline int equal (const pre_expr_d *, const pre_expr_d *);
 } *pre_expr;

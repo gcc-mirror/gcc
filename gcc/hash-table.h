@@ -118,12 +118,10 @@ along with GCC; see the file COPYING3.  If not see
    Suppose you want to put some_type into the hash table.  You could define
    the descriptor type as follows.
 
-      struct some_type_hasher : typed_noop_remove <some_type>
-      // Deriving from typed_noop_remove means that we get a 'remove' that does
+      struct some_type_hasher : nofree_ptr_hash <some_type>
+      // Deriving from nofree_ptr_hash means that we get a 'remove' that does
       // nothing.  This choice is good for raw values.
       {
-        typedef some_type value_type;
-        typedef some_type compare_type;
         static inline hashval_t hash (const value_type *);
         static inline bool equal (const value_type *, const compare_type *);
       };
