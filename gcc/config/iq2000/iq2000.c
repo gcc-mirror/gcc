@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -65,6 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order

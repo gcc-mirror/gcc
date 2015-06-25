@@ -69,7 +69,6 @@
 #include "tm_p.h"
 #include "target.h"
 #include "sched-int.h"
-#include "target-def.h"
 #include "debug.h"
 #include "langhooks.h"
 #include "df.h"
@@ -85,6 +84,8 @@
 #include "rtl-iter.h"
 #include "sched-int.h"
 #include "tree.h"
+
+#include "target-def.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;

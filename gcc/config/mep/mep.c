@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "diagnostic-core.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -78,6 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+#include "target-def.h"
 
 /* Structure of this file:
 

@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tm-constrs.h"
 #include "target.h"
-#include "target-def.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "dominance.h"
@@ -70,6 +69,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */

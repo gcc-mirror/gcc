@@ -58,7 +58,6 @@
 #include "reload.h"
 #include "toplev.h"
 #include "target.h"
-#include "target-def.h"
 #include "targhooks.h"
 #include "tm_p.h"
 #include "recog.h"
@@ -82,6 +81,8 @@
 #include "tm-constrs.h"
 #include "sched-int.h"
 #include "cortex-a57-fma-steering.h"
+
+#include "target-def.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)

@@ -62,8 +62,9 @@
 #include "diagnostic-core.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /*}}}*/
 /*{{{  Function Prologues & Epilogues */ 

@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
-#include "target-def.h"
 #include "common/common-target.h"
 #include "predict.h"
 #include "dominance.h"
@@ -82,6 +81,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+#include "target-def.h"
 
 /* Processor costs */
 

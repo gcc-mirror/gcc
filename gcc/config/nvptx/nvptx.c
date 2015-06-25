@@ -53,7 +53,6 @@
 #include "langhooks.h"
 #include "dbxout.h"
 #include "target.h"
-#include "target-def.h"
 #include "diagnostic.h"
 #include "predict.h"
 #include "basic-block.h"
@@ -61,6 +60,8 @@
 #include "stor-layout.h"
 #include "df.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Record the function decls we've written, and the libfuncs and function
    decls corresponding to them.  */

@@ -70,7 +70,6 @@
 #include "cgraph.h"
 #include "langhooks.h"
 #include "target.h"
-#include "target-def.h"
 #include "sel-sched.h"
 #include "debug.h"
 #include "opts.h"
@@ -79,6 +78,8 @@
 #include "dumpfile.h"
 #include "gimple-expr.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Table of supported architecture variants.  */
 typedef struct

@@ -1,5 +1,25 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c, config/alpha/alpha.c, config/arm/arm.c,
+	config/avr/avr.c, config/bfin/bfin.c, config/c6x/c6x.c,
+	config/cr16/cr16.c, config/cris/cris.c, config/fr30/fr30.c,
+	config/frv/frv.c, config/ft32/ft32.c, config/h8300/h8300.c,
+	config/i386/i386.c, config/ia64/ia64.c, config/iq2000/iq2000.c,
+	config/lm32/lm32.c, config/m32c/m32c.c, config/m32r/m32r.c,
+	config/m68k/m68k.c, config/mcore/mcore.c, config/mep/mep.c,
+	config/microblaze/microblaze.c, config/mips/mips.c, config/mmix/mmix.c,
+	config/mn10300/mn10300.c, config/moxie/moxie.c, config/msp430/msp430.c,
+	config/nds32/nds32.c, config/nios2/nios2.c, config/nvptx/nvptx.c,
+	config/pa/pa.c, config/pdp11/pdp11.c, config/rl78/rl78.c,
+	config/rs6000/rs6000.c, config/rx/rx.c, config/s390/s390.c,
+	config/sh/sh.c, config/sparc/sparc.c, config/spu/spu.c,
+	config/stormy16/stormy16.c, config/tilegx/tilegx.c,
+	config/tilepro/tilepro.c, config/v850/v850.c, config/vax/vax.c,
+	config/visium/visium.c, config/xtensa/xtensa.c: Move target-def.h
+	includes to end.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-map-traits.h (simple_hashmap_traits::key_type): New typedef.
 	(unbounded_int_hashmap_traits::key_type): Likewise.
 	* hash-map.h (hash_map): Get the key type from the traits.

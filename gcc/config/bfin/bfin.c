@@ -41,7 +41,6 @@
 #include "except.h"
 #include "function.h"
 #include "target.h"
-#include "target-def.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -76,6 +75,8 @@
 #include "opts.h"
 #include "dumpfile.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */

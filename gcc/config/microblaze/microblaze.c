@@ -48,7 +48,6 @@
 #include "reload.h"
 #include "output.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "gstab.h"
 #include "dominance.h"
@@ -69,6 +68,8 @@
 #include "cgraph.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+#include "target-def.h"
 
 #define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
 

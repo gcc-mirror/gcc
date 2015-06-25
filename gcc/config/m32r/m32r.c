@@ -58,10 +58,11 @@
 #include "df.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm-constrs.h"
 #include "opts.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Array of valid operand punctuation characters.  */
 static char m32r_punct_chars[256];

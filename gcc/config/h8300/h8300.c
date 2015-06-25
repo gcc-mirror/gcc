@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "tm-constrs.h"
 #include "target.h"
-#include "target-def.h"
 #include "dominance.h"
 #include "cfg.h"
 #include "cfgrtl.h"
@@ -65,6 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Classifies a h8300_src_operand or h8300_dst_operand.
 

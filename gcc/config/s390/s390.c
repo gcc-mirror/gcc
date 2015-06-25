@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "basic-block.h"
 #include "target.h"
-#include "target-def.h"
 #include "debug.h"
 #include "langhooks.h"
 #include "insn-codes.h"
@@ -87,6 +86,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
+
+#include "target-def.h"
 
 /* Define the specific costs for a given cpu.  */
 
