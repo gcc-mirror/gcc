@@ -323,122 +323,6 @@ hash_table_mod2 (hashval_t hash, unsigned int index)
   return 1 + mul_mod (hash, p->prime - 2, p->inv_m2, p->shift);
 }
 
- template<typename Traits>
- struct has_is_deleted
-{
-  template<typename U, bool (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::is_deleted> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct is_deleted_helper
-{
-  static inline bool
-  call (Type &v)
-  {
-    return Traits::is_deleted (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct is_deleted_helper<Type *, Traits, false>
-{
-  static inline bool
-  call (Type *v)
-  {
-    return v == HTAB_DELETED_ENTRY;
-  }
-};
-
- template<typename Traits>
- struct has_is_empty
-{
-  template<typename U, bool (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::is_empty> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct is_empty_helper
-{
-  static inline bool
-  call (Type &v)
-  {
-    return Traits::is_empty (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct is_empty_helper<Type *, Traits, false>
-{
-  static inline bool
-  call (Type *v)
-  {
-    return v == HTAB_EMPTY_ENTRY;
-  }
-};
-
- template<typename Traits>
- struct has_mark_deleted
-{
-  template<typename U, void (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::mark_deleted> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct mark_deleted_helper
-{
-  static inline void
-  call (Type &v)
-  {
-    Traits::mark_deleted (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct mark_deleted_helper<Type *, Traits, false>
-{
-  static inline void
-  call (Type *&v)
-  {
-    v = static_cast<Type *> (HTAB_DELETED_ENTRY);
-  }
-};
-
- template<typename Traits>
- struct has_mark_empty
-{
-  template<typename U, void (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::mark_empty> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct mark_empty_helper
-{
-  static inline void
-  call (Type &v)
-  {
-    Traits::mark_empty (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct mark_empty_helper<Type *, Traits, false>
-{
-  static inline void
-  call (Type *&v)
-  {
-    v = static_cast<Type *> (HTAB_EMPTY_ENTRY);
-  }
-};
-
 class mem_usage;
 
 /* User-facing hash table type.
@@ -610,23 +494,24 @@ private:
   value_type *find_empty_slot_for_expand (hashval_t);
   void expand ();
   static bool is_deleted (value_type &v)
-    {
-      return is_deleted_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    return Descriptor::is_deleted (v);
+  }
+
   static bool is_empty (value_type &v)
-    {
-      return is_empty_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    return Descriptor::is_empty (v);
+  }
 
   static void mark_deleted (value_type &v)
-    {
-      return mark_deleted_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    Descriptor::mark_deleted (v);
+  }
 
   static void mark_empty (value_type &v)
-    {
-      return mark_empty_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    Descriptor::mark_empty (v);
+  }
 
   /* Table itself.  */
   typename Descriptor::value_type *m_entries;

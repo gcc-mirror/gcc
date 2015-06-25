@@ -1,5 +1,16 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-table.h (has_is_deleted, is_deleted_helper): Delete.
+	(has_is_empty, is_empty_helper): Delete.
+	(has_mark_deleted, mark_deleted_helper): Delete.
+	(has_mark_empty, mark_empty_helper): Delete.
+	(hash_table::is_deleted): Call the Descriptor unconditionally.
+	(hash_table::is_empty): Likewise.
+	(hash_table::mark_deleted): Likewise.
+	(hash_table::mark_empty): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* cgraph.h (asmname_hasher): Inherit from ggc_ptr_hash.  Remove
 	redundant typedefs and members.
 	* coverage.c (counts_entry): Inherit from pointer_hash.  Remove
