@@ -1,3 +1,15 @@
+2015-06-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2015-05-18  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/freebsd-spec.h (FBSD_STARTFILE_SPEC): Add the bits to build
+	pie executables.
+	(FBSD_ENDFILE_SPEC): Likewise.
+	* config/i386/freebsd.h (STARTFILE_SPEC): Remove and use the one from
+	config/freebsd-spec.h.
+	(ENDFILE_SPEC): Likewise.
+
 2015-06-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline
