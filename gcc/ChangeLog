@@ -1,5 +1,10 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (pointer_hash::mark_deleted, pointer_hash::mark_empty)
+	(pointer_hash::is_deleted, pointer_hash::is_empty): New functions.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (ggc_hasher::remove): Take a reference parameter.
 	(ggc_hasher::ggc_mx): Likewise.
 	(ggc_cache_hasher): Inherit from ggc_hasher.  Remove definitions

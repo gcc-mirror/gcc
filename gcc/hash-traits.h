@@ -66,9 +66,12 @@ struct pointer_hash : typed_noop_remove <Type>
   typedef Type *compare_type;
 
   static inline hashval_t hash (const value_type &);
-
   static inline bool equal (const value_type &existing,
 			    const compare_type &candidate);
+  static inline void mark_deleted (Type *&);
+  static inline void mark_empty (Type *&);
+  static inline bool is_deleted (Type *);
+  static inline bool is_empty (Type *);
 };
 
 template <typename Type>
@@ -86,6 +89,34 @@ pointer_hash <Type>::equal (const value_type &existing,
 			   const compare_type &candidate)
 {
   return existing == candidate;
+}
+
+template <typename Type>
+inline void
+pointer_hash <Type>::mark_deleted (Type *&e)
+{
+  e = reinterpret_cast<Type *> (1);
+}
+
+template <typename Type>
+inline void
+pointer_hash <Type>::mark_empty (Type *&e)
+{
+  e = NULL;
+}
+
+template <typename Type>
+inline bool
+pointer_hash <Type>::is_deleted (Type *e)
+{
+  return e == reinterpret_cast<Type *> (1);
+}
+
+template <typename Type>
+inline bool
+pointer_hash <Type>::is_empty (Type *e)
+{
+  return e == NULL;
 }
 
 /* Hasher for entry in gc memory.  */
