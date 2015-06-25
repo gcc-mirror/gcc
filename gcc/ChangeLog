@@ -1,5 +1,28 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* Makefile.in (TARGET_DEF): Add target-insns.def.
+	(.PRECIOUS, simple_rtl_generated_h): Add insn-target-def.h.
+	(build/gentarget-def.o): New rule.
+	(genprogrtl): Add target-def.
+	* target-insns.def, gentarget-def.c: New files.
+	* target.def: Add targetm.have_* and targetm.gen_* hooks,
+	based on the contents of target-insns.def.
+	* defaults.h (HAVE_simple_return, gen_simple_return): Delete.
+	(HAVE_return, gen_return): Delete.
+	* target-def.h: Include insn-target-def.h.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Use targetm interface
+	instead of direct calls.  Rely on them to do the appropriate assertions.
+	* function.c (gen_return_pattern): Likewise.  Return an rtx_insn *.
+	(convert_jumps_to_returns): Use targetm interface instead of
+	direct calls.
+	(thread_prologue_and_epilogue_insns): Likewise.
+	* reorg.c (find_end_label, dbr_schedule): Likewise.
+	* shrink-wrap.h (SHRINK_WRAPPING_ENABLED): Likewise.
+	* shrink-wrap.c (convert_to_simple_return): Likewise.
+	(try_shrink_wrapping): Use SHRINK_WRAPPING_ENABLED.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c, config/alpha/alpha.c, config/arm/arm.c,
 	config/avr/avr.c, config/bfin/bfin.c, config/c6x/c6x.c,
 	config/cr16/cr16.c, config/cris/cris.c, config/fr30/fr30.c,
