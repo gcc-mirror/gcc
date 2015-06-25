@@ -107,8 +107,11 @@ struct sanopt_tree_triplet
 
 /* Traits class for tree triplet hash maps below.  */
 
-struct sanopt_tree_triplet_map_traits : default_hashmap_traits
+struct sanopt_tree_triplet_hash : typed_noop_remove <sanopt_tree_triplet>
 {
+  typedef sanopt_tree_triplet value_type;
+  typedef sanopt_tree_triplet compare_type;
+
   static inline hashval_t
   hash (const sanopt_tree_triplet &ref)
   {
@@ -120,41 +123,39 @@ struct sanopt_tree_triplet_map_traits : default_hashmap_traits
   }
 
   static inline bool
-  equal_keys (const sanopt_tree_triplet &ref1, const sanopt_tree_triplet &ref2)
+  equal (const sanopt_tree_triplet &ref1, const sanopt_tree_triplet &ref2)
   {
     return operand_equal_p (ref1.t1, ref2.t1, 0)
 	   && operand_equal_p (ref1.t2, ref2.t2, 0)
 	   && operand_equal_p (ref1.t3, ref2.t3, 0);
   }
 
-  template<typename T>
   static inline void
-  mark_deleted (T &e)
+  mark_deleted (sanopt_tree_triplet &ref)
   {
-    e.m_key.t1 = reinterpret_cast<T *> (1);
+    ref.t1 = reinterpret_cast<tree> (1);
   }
 
-  template<typename T>
   static inline void
-  mark_empty (T &e)
+  mark_empty (sanopt_tree_triplet &ref)
   {
-    e.m_key.t1 = NULL;
+    ref.t1 = NULL;
   }
 
-  template<typename T>
   static inline bool
-  is_deleted (T &e)
+  is_deleted (const sanopt_tree_triplet &ref)
   {
-    return e.m_key.t1 == (void *) 1;
+    return ref.t1 == (void *) 1;
   }
 
-  template<typename T>
   static inline bool
-  is_empty (T &e)
+  is_empty (const sanopt_tree_triplet &ref)
   {
-    return e.m_key.t1 == NULL;
+    return ref.t1 == NULL;
   }
 };
+typedef simple_hashmap_traits <sanopt_tree_triplet_hash>
+  sanopt_tree_triplet_map_traits;
 
 /* This is used to carry various hash maps and variables used
    in sanopt_optimize_walker.  */

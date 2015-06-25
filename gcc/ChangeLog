@@ -1,5 +1,16 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ipa-icf.h (symbol_compare_hash): New class.
+	(symbol_compare_hashmap_traits): Use it.
+	* mem-stats.h (mem_alloc_description::mem_location_hash): New class.
+	(mem_alloc_description::mem_alloc_hashmap_traits): Use it.
+	(mem_alloc_description::reverse_mem_map_t): Remove redundant
+	default_hashmap_traits.
+	* sanopt.c (sanopt_tree_triplet_hash): New class.
+	(sanopt_tree_triplet_map_traits): Use it.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gengtype-parse.c (require_template_declaration): Allow '+' in
 	template parameters.  Consolidate cases.
 	* hash-traits.h (int_hash): New class.
