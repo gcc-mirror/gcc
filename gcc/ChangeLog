@@ -1,3 +1,7 @@
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Add patterns for vec_conds between 1 and 0.
+
 2015-06-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_conversion): Do not set
