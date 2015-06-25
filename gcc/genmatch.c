@@ -395,26 +395,7 @@ get_operator (const char *id)
   return 0;
 }
 
-
-/* Helper for the capture-id map.  */
-
-struct capture_id_map_hasher : default_hashmap_traits
-{
-  static inline hashval_t hash (const char *);
-  static inline bool equal_keys (const char *, const char *);
-};
-
-inline hashval_t
-capture_id_map_hasher::hash (const char *id)
-{
-  return htab_hash_string (id);
-}
-
-inline bool
-capture_id_map_hasher::equal_keys (const char *id1, const char *id2)
-{
-  return strcmp (id1, id2) == 0;
-}
+typedef simple_hashmap_traits<nofree_string_hash> capture_id_map_hasher;
 
 typedef hash_map<const char *, unsigned, capture_id_map_hasher> cid_map_t;
 

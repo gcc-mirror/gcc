@@ -1,5 +1,15 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (string_hash, nofree_string_hash): New classes.
+	* genmatch.c (capture_id_map_hasher): Use nofree_string_hash.
+	* passes.c (pass_registry_hasher): Likewise.
+	* config/alpha/alpha.c (string_traits): Likewise.
+	* config/i386/winnt.c (i386_find_on_wrapper_list): Likewise.
+	* config/m32c/m32c.c (pragma_traits): Likewise.
+	* config/mep/mep.c (pragma_traits): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-hash-traits.h (tree_hash): New class.
 	* except.c: Include tree-hash-traits.h.
 	(tree_hash_traits): Use tree_hash.

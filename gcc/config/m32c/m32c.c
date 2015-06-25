@@ -3053,16 +3053,7 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
     }	
 }
 
-
-struct pragma_traits : default_hashmap_traits
-{
-  static hashval_t hash (const char *str) { return htab_hash_string (str); }
-  static bool
-  equal_keys (const char *a, const char *b)
-  {
-    return !strcmp (a, b);
-  }
-};
+typedef simple_hashmap_traits<nofree_string_hash> pragma_traits;
 
 /* Hash table of pragma info.  */
 static GTY(()) hash_map<const char *, unsigned, pragma_traits> *pragma_htab;

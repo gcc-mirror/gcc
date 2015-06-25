@@ -1,5 +1,10 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* jcf-io.c (memoized_class_lookups): Use nofree_string_hash.
+	(find_class): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* java-tree.h (treetreehasher): Inherit from ggc_ptr_hash
 	rather than ggc_hasher.
 	(ict_hasher, type_assertion_hasher): Likewise.
