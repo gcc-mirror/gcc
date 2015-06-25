@@ -1,3 +1,14 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cgraph.h (cgraph_rtl_info): Move to rtl.h
+	(cgraph_node): Maintain pointer to struct cgraph_rtl_info instead of
+	and instance.
+	* rtl.h (struct cgraph_rtl_info): Define when HARD_REG_SET available.
+	* cgraph.c (cgraph_node::rtl_info): Allocate cgraph_rtl_info if one
+	doesn't exist.
+	* calls.c: Include hard-reg-set.h before rtl.h.
+	* ira.c: Likewise.
+
 2015-06-25  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 

@@ -613,20 +613,6 @@ struct GTY(()) cgraph_global_info {
   cgraph_node *inlined_to;
 };
 
-/* Information about the function that is propagated by the RTL backend.
-   Available only for functions that has been already assembled.  */
-
-struct GTY(()) cgraph_rtl_info {
-   unsigned int preferred_incoming_stack_boundary;
-
-  /* Call unsaved hard registers really used by the corresponding
-     function (including ones used by functions called by the
-     function).  */
-  HARD_REG_SET function_used_regs;
-  /* Set if function_used_regs is valid.  */
-  unsigned function_used_regs_valid: 1;
-};
-
 /* Represent which DECL tree (or reference to such tree)
    will be replaced by another tree while versioning.  */
 struct GTY(()) ipa_replace_map
@@ -1194,7 +1180,7 @@ public:
   static cgraph_local_info *local_info (tree decl);
 
   /* Return local info for the compiled function.  */
-  static cgraph_rtl_info *rtl_info (tree);
+  static struct cgraph_rtl_info *rtl_info (tree);
 
   /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
      Return NULL if there's no such node.  */
@@ -1263,7 +1249,7 @@ public:
 
   cgraph_local_info local;
   cgraph_global_info global;
-  cgraph_rtl_info rtl;
+  struct cgraph_rtl_info *rtl;
   cgraph_clone_info clone;
   cgraph_thunk_info thunk;
 
