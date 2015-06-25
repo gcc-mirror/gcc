@@ -1,5 +1,12 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/mips/mips.c (mips16_flip_traits): Use it.
+	(local_alias_traits, mips16_local_aliases): Convert from a map of
+	rtxes to a map of symbol names.
+	(mips16_local_alias): Update accordingly.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (string_hash, nofree_string_hash): New classes.
 	* genmatch.c (capture_id_map_hasher): Use nofree_string_hash.
 	* passes.c (pass_registry_hasher): Likewise.
