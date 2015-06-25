@@ -44,7 +44,7 @@ typed_free_remove <Type>::remove (Type *p)
 template <typename Type>
 struct typed_noop_remove
 {
-  static inline void remove (Type *p);
+  static inline void remove (Type &);
 };
 
 
@@ -52,7 +52,7 @@ struct typed_noop_remove
 
 template <typename Type>
 inline void
-typed_noop_remove <Type>::remove (Type *p ATTRIBUTE_UNUSED)
+typed_noop_remove <Type>::remove (Type &)
 {
 }
 
@@ -169,7 +169,7 @@ struct ggc_cache_remove : ggc_remove<T>
    is deleted.  */
 
 template <typename T>
-struct nofree_ptr_hash : pointer_hash <T>, typed_noop_remove <T> {};
+struct nofree_ptr_hash : pointer_hash <T>, typed_noop_remove <T *> {};
 
 /* Traits for pointer elements that should be freed via free() when an
    element is deleted.  */

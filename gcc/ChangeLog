@@ -1,5 +1,9 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (typed_noop_remove): Don't require a pointer type.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-table.h (has_is_deleted, is_deleted_helper): Delete.
 	(has_is_empty, is_empty_helper): Delete.
 	(has_mark_deleted, mark_deleted_helper): Delete.
