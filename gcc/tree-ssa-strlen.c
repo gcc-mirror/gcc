@@ -154,12 +154,9 @@ struct decl_stridxlist_map
   struct stridxlist list;
 };
 
-typedef simple_hashmap_traits <tree_decl_hash> stridxlist_hash_traits;
-
 /* Hash table for mapping decls to a chained list of offset -> idx
    mappings.  */
-static hash_map<tree, stridxlist, stridxlist_hash_traits>
-  *decl_to_stridxlist_htab;
+static hash_map<tree_decl_hash, stridxlist> *decl_to_stridxlist_htab;
 
 /* Obstack for struct stridxlist and struct decl_stridxlist_map.  */
 static struct obstack stridx_obstack;
@@ -325,7 +322,7 @@ addr_stridxptr (tree exp)
   if (!decl_to_stridxlist_htab)
     {
       decl_to_stridxlist_htab
-       	= new hash_map<tree, stridxlist, stridxlist_hash_traits> (64);
+       	= new hash_map<tree_decl_hash, stridxlist> (64);
       gcc_obstack_init (&stridx_obstack);
     }
 

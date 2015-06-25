@@ -4806,8 +4806,6 @@ alpha_multipass_dfa_lookahead (void)
 
 struct GTY(()) alpha_links;
 
-typedef simple_hashmap_traits <nofree_string_hash> string_traits;
-
 struct GTY(()) machine_function
 {
   /* For flag_reorder_blocks_and_partition.  */
@@ -4817,7 +4815,7 @@ struct GTY(()) machine_function
   bool uses_condition_handler;
 
   /* Linkage entries.  */
-  hash_map<const char *, alpha_links *, string_traits> *links;
+  hash_map<nofree_string_hash, alpha_links *> *links;
 };
 
 /* How to allocate a 'struct machine_function'.  */
@@ -9544,7 +9542,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
     }
   else
     cfun->machine->links
-      = hash_map<const char *, alpha_links *, string_traits>::create_ggc (64);
+      = hash_map<nofree_string_hash, alpha_links *>::create_ggc (64);
 
   if (al == NULL)
     {
@@ -9635,7 +9633,7 @@ alpha_write_linkage (FILE *stream, const char *funname)
 
   if (cfun->machine->links)
     {
-      hash_map<const char *, alpha_links *, string_traits>::iterator iter
+      hash_map<nofree_string_hash, alpha_links *>::iterator iter
 	= cfun->machine->links->begin ();
       for (; iter != cfun->machine->links->end (); ++iter)
 	alpha_write_one_linkage ((*iter).first, (*iter).second, stream);

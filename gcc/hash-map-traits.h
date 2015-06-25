@@ -31,9 +31,9 @@ along with GCC; see the file COPYING3.  If not see
 template <typename H>
 struct simple_hashmap_traits
 {
-  static inline hashval_t hash (const typename H::value_type &);
-  static inline bool equal_keys (const typename H::value_type &,
-				 const typename H::value_type &);
+  typedef typename H::value_type key_type;
+  static inline hashval_t hash (const key_type &);
+  static inline bool equal_keys (const key_type &, const key_type &);
   template <typename T> static inline void remove (T &);
   template <typename T> static inline bool is_empty (const T &);
   template <typename T> static inline bool is_deleted (const T &);
@@ -43,15 +43,14 @@ struct simple_hashmap_traits
 
 template <typename H>
 inline hashval_t
-simple_hashmap_traits <H>::hash (const typename H::value_type &h)
+simple_hashmap_traits <H>::hash (const key_type &h)
 {
   return H::hash (h);
 }
 
 template <typename H>
 inline bool
-simple_hashmap_traits <H>::equal_keys (const typename H::value_type &k1,
-				       const typename H::value_type &k2)
+simple_hashmap_traits <H>::equal_keys (const key_type &k1, const key_type &k2)
 {
   return H::equal (k1, k2);
 }
@@ -158,6 +157,7 @@ unbounded_hashmap_traits <Value>::mark_deleted (T &entry)
 template <typename Key, typename Value>
 struct unbounded_int_hashmap_traits : unbounded_hashmap_traits <Value>
 {
+  typedef Key key_type;
   static inline hashval_t hash (Key);
   static inline bool equal_keys (Key, Key);
 };

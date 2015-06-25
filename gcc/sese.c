@@ -76,8 +76,7 @@ debug_rename_map_1 (tree_node *const &old_name, tree_node *const &expr,
   return true;
 }
 
-typedef simple_hashmap_traits<tree_ssa_name_hash> rename_map_hasher;
-typedef hash_map<tree, tree, rename_map_hasher> rename_map_type;
+typedef hash_map<tree_ssa_name_hash, tree> rename_map_type;
 
 
 /* Print to stderr all the elements of RENAME_MAP.  */

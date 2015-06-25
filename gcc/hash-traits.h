@@ -278,7 +278,7 @@ struct ggc_cache_ptr_hash : pointer_hash <T>, ggc_cache_remove <T *> {};
 
 struct nofree_string_hash : string_hash, typed_noop_remove <const char *> {};
 
-template <typename T> struct default_hash_traits;
+template <typename T> struct default_hash_traits : T {};
 
 template <typename T>
 struct default_hash_traits <T *> : ggc_ptr_hash <T> {};

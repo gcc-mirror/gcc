@@ -260,10 +260,9 @@ public:
 	&& l1->m_line == l2->m_line;
     }
   };
-  typedef simple_hashmap_traits<mem_location_hash> mem_alloc_hashmap_traits;
 
   /* Internal class type definitions.  */
-  typedef hash_map <mem_location *, T *, mem_alloc_hashmap_traits> mem_map_t;
+  typedef hash_map <mem_location_hash, T *> mem_map_t;
   typedef hash_map <const void *, mem_usage_pair<T> > reverse_mem_map_t;
   typedef hash_map <const void *, std::pair<T *, size_t> > reverse_object_map_t;
   typedef std::pair <mem_location *, T *> mem_list_t;

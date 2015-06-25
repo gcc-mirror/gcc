@@ -4071,18 +4071,14 @@ struct GTY(()) pragma_entry {
   int flag;
 };
 
-typedef simple_hashmap_traits<nofree_string_hash> pragma_traits;
-
 /* Hash table of farcall-tagged sections.  */
-static GTY(()) hash_map<const char *, pragma_entry, pragma_traits> *
-  pragma_htab;
+static GTY(()) hash_map<nofree_string_hash, pragma_entry> *pragma_htab;
 
 static void
 mep_note_pragma_flag (const char *funcname, int flag)
 {
   if (!pragma_htab)
-    pragma_htab
-      = hash_map<const char *, pragma_entry, pragma_traits>::create_ggc (31);
+    pragma_htab = hash_map<nofree_string_hash, pragma_entry>::create_ggc (31);
 
   bool existed;
   const char *name = ggc_strdup (funcname);

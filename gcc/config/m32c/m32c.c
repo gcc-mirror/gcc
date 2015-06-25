@@ -3053,17 +3053,14 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
     }	
 }
 
-typedef simple_hashmap_traits<nofree_string_hash> pragma_traits;
-
 /* Hash table of pragma info.  */
-static GTY(()) hash_map<const char *, unsigned, pragma_traits> *pragma_htab;
+static GTY(()) hash_map<nofree_string_hash, unsigned> *pragma_htab;
 
 void
 m32c_note_pragma_address (const char *varname, unsigned address)
 {
   if (!pragma_htab)
-    pragma_htab
-      = hash_map<const char *, unsigned, pragma_traits>::create_ggc (31);
+    pragma_htab = hash_map<nofree_string_hash, unsigned>::create_ggc (31);
 
   const char *name = ggc_strdup (varname);
   unsigned int *slot = &pragma_htab->get_or_insert (name);

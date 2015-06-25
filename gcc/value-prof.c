@@ -1249,10 +1249,8 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
 }
 
 typedef int_hash <unsigned int, 0, UINT_MAX> profile_id_hash;
-typedef simple_hashmap_traits <profile_id_hash> profile_id_traits;
 
-static hash_map<unsigned int, cgraph_node *, profile_id_traits> *
-cgraph_node_map = 0;
+static hash_map<profile_id_hash, cgraph_node *> *cgraph_node_map = 0;
 
 /* Returns true if node graph is initialized. This
    is used to test if profile_id has been created
@@ -1272,8 +1270,7 @@ void
 init_node_map (bool local)
 {
   struct cgraph_node *n;
-  cgraph_node_map
-    = new hash_map<unsigned int, cgraph_node *, profile_id_traits>;
+  cgraph_node_map = new hash_map<profile_id_hash, cgraph_node *>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
     if (n->has_gimple_body_p ())
