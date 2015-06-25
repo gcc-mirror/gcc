@@ -1,3 +1,8 @@
+2015-06-25  Tom de Vries  <tom@codesourcery.com>
+
+	* dominance.c (calculate_dominance_info): Fix verify_dominators call
+	argument.  Call verify_dominator when reusing dominator info.
+
 2015-06-24  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/66563
