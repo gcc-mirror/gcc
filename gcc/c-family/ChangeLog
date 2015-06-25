@@ -1,3 +1,7 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cilk.c: Move calls.h after tm.h in the include chain.
+
 2015-06-25  Marek Polacek  <polacek@redhat.com>
 
 	* array-notation-common.c: Use VAR_P throughout.
