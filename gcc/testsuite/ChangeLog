@@ -1,3 +1,11 @@
+2015-06-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2015-05-12  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_effective_target_pie): Add *-*-freebsd*
+	to the family of pie capable targets.
+
 2015-06-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline.
