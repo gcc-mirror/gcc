@@ -3710,4 +3710,21 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 /* reginfo.c */
 extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
 
+#ifdef HARD_CONST
+/* Information about the function that is propagated by the RTL backend.
+   Available only for functions that has been already assembled.  */
+
+struct GTY(()) cgraph_rtl_info {
+   unsigned int preferred_incoming_stack_boundary;
+
+  /* Call unsaved hard registers really used by the corresponding
+     function (including ones used by functions called by the
+     function).  */
+  HARD_REG_SET function_used_regs;
+  /* Set if function_used_regs is valid.  */
+  unsigned function_used_regs_valid: 1;
+};
+#endif
+
+
 #endif /* ! GCC_RTL_H */

@@ -1892,7 +1892,10 @@ cgraph_node::rtl_info (tree decl)
   if (node->decl != current_function_decl
       && !TREE_ASM_WRITTEN (node->decl))
     return NULL;
-  return &node->ultimate_alias_target ()->rtl;
+  /* Allocate if it doesnt exist.  */
+  if (node->ultimate_alias_target ()->rtl == NULL)
+    node->ultimate_alias_target ()->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+  return node->ultimate_alias_target ()->rtl;
 }
 
 /* Return a string describing the failure REASON.  */
