@@ -648,7 +648,7 @@ calculate_dominance_info (enum cdi_direction dir)
   if (dom_computed[dir_index] == DOM_OK)
     {
 #if ENABLE_CHECKING
-      verify_dominators (CDI_DOMINATORS);
+      verify_dominators (dir);
 #endif
       return;
     }
@@ -678,6 +678,12 @@ calculate_dominance_info (enum cdi_direction dir)
 
       free_dom_info (&di);
       dom_computed[dir_index] = DOM_NO_FAST_QUERY;
+    }
+  else
+    {
+#if ENABLE_CHECKING
+      verify_dominators (dir);
+#endif
     }
 
   compute_dom_fast_query (dir);
