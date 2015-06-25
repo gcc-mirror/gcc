@@ -1,3 +1,7 @@
+2015-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__do_str_codecvt): Set __count.
+
 2015-06-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/basic_string.h (basic_string<>::front()): Add !empty

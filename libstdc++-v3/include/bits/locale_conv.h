@@ -61,6 +61,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__first == __last)
 	{
 	  __outstr.clear();
+	  __count = 0;
 	  return true;
 	}
 
