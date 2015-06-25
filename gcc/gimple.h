@@ -1296,6 +1296,7 @@ extern gimple currently_expanding_gimple_stmt;
 #define gimple_alloc(c, n) gimple_alloc_stat (c, n MEM_STAT_INFO)
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 greturn *gimple_build_return (tree);
+void gimple_call_set_fndecl (gimple, tree);
 void gimple_call_reset_alias_info (gcall *);
 gcall *gimple_build_call_vec (tree, vec<tree> );
 gcall *gimple_build_call (tree, unsigned, ...);
@@ -2756,17 +2757,6 @@ gimple_call_set_fn (gcall *gs, tree fn)
 {
   gcc_gimple_checking_assert (!gimple_call_internal_p (gs));
   gimple_set_op (gs, 1, fn);
-}
-
-
-/* Set FNDECL to be the function called by call statement GS.  */
-
-static inline void
-gimple_call_set_fndecl (gimple gs, tree decl)
-{
-  GIMPLE_CHECK (gs, GIMPLE_CALL);
-  gcc_gimple_checking_assert (!gimple_call_internal_p (gs));
-  gimple_set_op (gs, 1, build_fold_addr_expr_loc (gimple_location (gs), decl));
 }
 
 

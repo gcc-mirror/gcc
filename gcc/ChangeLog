@@ -1,3 +1,8 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple.h (gimple_call_set_fn): Move inline function.
+	* gimple.c (gimple_call_set_fn): Relocate here.
+
 2015-06-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/65979
