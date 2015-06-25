@@ -1,5 +1,11 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-map-traits.h (unbounded_hashmap_traits): New class.
+	(unbounded_int_hashmap_traits): Likewise.
+	* cfgexpand.c (part_traits): Use unbounded_int_hashmap_traits.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ipa-icf.h (symbol_compare_hash): New class.
 	(symbol_compare_hashmap_traits): Use it.
 	* mem-stats.h (mem_alloc_description::mem_location_hash): New class.
