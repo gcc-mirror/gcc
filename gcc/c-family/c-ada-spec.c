@@ -2826,7 +2826,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
     }
   else
     {
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && decl_name
 	  && *IDENTIFIER_POINTER (decl_name) == '_')
 	return 0;

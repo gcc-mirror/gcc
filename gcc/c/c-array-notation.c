@@ -87,7 +87,7 @@ make_triplet_val_inv (location_t loc, tree *value)
   tree var, new_exp;
   if (TREE_CODE (*value) != INTEGER_CST
       && TREE_CODE (*value) != PARM_DECL
-      && TREE_CODE (*value) != VAR_DECL)
+      && !VAR_P (*value))
     {
       var = build_decl (loc, VAR_DECL, NULL_TREE, integer_type_node);
       new_exp = build_modify_expr (loc, var, TREE_TYPE (var), NOP_EXPR, loc,

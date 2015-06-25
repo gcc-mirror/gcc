@@ -382,7 +382,7 @@ create_parm_list (struct wrapper_data *wd, tree *val0, tree arg)
 	 argument list.  Because register variables are
 	 worker-local we don't need to work hard to support
 	 them in code that spawns.  */
-      if ((TREE_CODE (arg) == VAR_DECL) && DECL_HARD_REGISTER (arg))
+      if (VAR_P (arg) && DECL_HARD_REGISTER (arg))
 	{
 	  error_at (EXPR_LOCATION (arg),
 		    "explicit register variable %qD may not be modified in "
@@ -955,7 +955,7 @@ add_variable (struct wrapper_data *wd, tree var, enum add_variable_type how)
 	 work anyway.  Warn here.  This misses one case: if the
 	 register variable is used as the loop bound or increment it
 	 has already been added to the map.  */
-      if ((how != ADD_BIND) && (TREE_CODE (var) == VAR_DECL)
+      if ((how != ADD_BIND) && VAR_P (var)
 	  && !DECL_EXTERNAL (var) && DECL_HARD_REGISTER (var))
 	warning (0, "register assignment ignored for %qD used in Cilk block",
 		 var);
