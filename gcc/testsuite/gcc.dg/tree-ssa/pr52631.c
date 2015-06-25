@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fre1-details" } */
+/* { dg-options "-O2 -fno-tree-forwprop -fdump-tree-fre1-details" } */
 
 unsigned f(unsigned a)
 {
