@@ -1,5 +1,20 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gengtype-parse.c (require_template_declaration): Allow '+' in
+	template parameters.  Consolidate cases.
+	* hash-traits.h (int_hash): New class.
+	* alias.c (alias_set_hash): New structure.
+	(alias_set_traits): Use it.
+	* symbol-summary.h (function_summary::map_hash): New class.
+	(function_summary::summary_hashmap_traits): Use it.
+	* tree-inline.h (dependence_hash): New class.
+	(dependence_hasher): Use it.
+	* tree-ssa-reassoc.c (oecount_hasher): Use int_hash.
+	* value-prof.c (profile_id_hash): New class.
+	(profile_id_traits): Use it.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (mips16_flip_traits): Use it.
 	(local_alias_traits, mips16_local_aliases): Convert from a map of
 	rtxes to a map of symbol names.

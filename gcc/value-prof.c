@@ -1248,19 +1248,8 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   return true;
 }
 
-struct profile_id_traits : default_hashmap_traits
-{
-  template<typename T>
-  static bool
-  is_deleted (T &e)
-    {
-      return e.m_key == UINT_MAX;
-    }
-
-  template<typename T> static bool is_empty (T &e) { return e.m_key == 0; }
-  template<typename T> static void mark_deleted (T &e) { e.m_key = UINT_MAX; }
-  template<typename T> static void mark_empty (T &e) { e.m_key = 0; }
-};
+typedef int_hash <unsigned int, 0, UINT_MAX> profile_id_hash;
+typedef simple_hashmap_traits <profile_id_hash> profile_id_traits;
 
 static hash_map<unsigned int, cgraph_node *, profile_id_traits> *
 cgraph_node_map = 0;

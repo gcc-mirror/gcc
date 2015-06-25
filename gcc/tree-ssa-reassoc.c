@@ -1017,23 +1017,16 @@ static vec<oecount> cvec;
 
 /* Oecount hashtable helpers.  */
 
-struct oecount_hasher
+struct oecount_hasher : int_hash <int, 0, 1>
 {
-  typedef int value_type;
-  typedef int compare_type;
-  static inline hashval_t hash (const value_type &);
-  static inline bool equal (const value_type &, const compare_type &);
-  static bool is_deleted (int &v) { return v == 1; }
-  static void mark_deleted (int &e) { e = 1; }
-  static bool is_empty (int &v) { return v == 0; }
-  static void mark_empty (int &e) { e = 0; }
-  static void remove (int &) {}
+  static inline hashval_t hash (int);
+  static inline bool equal (int, int);
 };
 
 /* Hash function for oecount.  */
 
 inline hashval_t
-oecount_hasher::hash (const value_type &p)
+oecount_hasher::hash (int p)
 {
   const oecount *c = &cvec[p - 42];
   return htab_hash_pointer (c->op) ^ (hashval_t)c->oecode;
@@ -1042,7 +1035,7 @@ oecount_hasher::hash (const value_type &p)
 /* Comparison function for oecount.  */
 
 inline bool
-oecount_hasher::equal (const value_type &p1, const compare_type &p2)
+oecount_hasher::equal (int p1, int p2)
 {
   const oecount *c1 = &cvec[p1 - 42];
   const oecount *c2 = &cvec[p2 - 42];
