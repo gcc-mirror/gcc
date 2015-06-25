@@ -79,6 +79,7 @@
 #include "gimple-expr.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Table of supported architecture variants.  */

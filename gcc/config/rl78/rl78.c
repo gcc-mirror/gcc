@@ -74,6 +74,7 @@
 #include "builtins.h"
 #include "stringpool.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 static inline bool is_interrupt_func (const_tree decl);

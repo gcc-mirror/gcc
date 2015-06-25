@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ifcvt.h"
 #include "rtl-iter.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 #ifndef FRV_INLINE

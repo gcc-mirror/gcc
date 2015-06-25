@@ -76,6 +76,7 @@
 #include "diagnostic.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* SYMBOL_REF for GOT */

@@ -68,6 +68,7 @@
 #include "stor-layout.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Forward function declarations.  */

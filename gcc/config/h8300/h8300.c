@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Classifies a h8300_src_operand or h8300_dst_operand.

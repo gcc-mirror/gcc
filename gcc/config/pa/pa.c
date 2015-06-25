@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Return nonzero if there is a bypass for the output of 

@@ -66,6 +66,7 @@
 #include "df.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 #define LOSE_AND_RETURN(msgid, x)		\

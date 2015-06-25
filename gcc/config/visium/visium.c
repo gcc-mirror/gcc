@@ -67,6 +67,7 @@
 #include "context.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Machine specific function data. */

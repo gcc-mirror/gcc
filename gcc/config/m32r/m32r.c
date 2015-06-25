@@ -62,6 +62,7 @@
 #include "opts.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Array of valid operand punctuation characters.  */
