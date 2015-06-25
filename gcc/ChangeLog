@@ -1,5 +1,24 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* cgraph.h (asmname_hasher): Inherit from ggc_ptr_hash.  Remove
+	redundant typedefs and members.
+	* coverage.c (counts_entry): Inherit from pointer_hash.  Remove
+	redundant typedefs.
+	* dwarf2out.c (cu_hash_table_entry_hasher): Likewise.
+	* ipa-devirt.c (odr_name_hasher): Likewise.
+	(polymorphic_call_target_hasher): Likewise.
+	* ira-costs.c (cost_classes_hasher): Likewise.
+	* statistics.c (stats_counter_hasher): Likewise.
+	* trans-mem.c (log_entry_hasher): Likewise.
+	* tree-ssa-dom.c (expr_elt_hasher): Likewise.
+	* tree-ssa-sccvn.c (vn_phi_hasher, vn_reference_hasher): Likewise.
+	* tree-ssa-tail-merge.c (same_succ_def): Likewise.
+	* var-tracking.c (variable_hasher): Likewise.
+	* valtrack.h (dead_debug_hash_descr): Inherit from free_ptr_hash.
+	Remove redundant typedefs and members.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (ggc_cache_hasher): Rename to...
 	(ggc_cache_remove): ...this and remove typedefs.
 	(ggc_cache_ptr_hash): New class.

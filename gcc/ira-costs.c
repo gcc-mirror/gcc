@@ -147,10 +147,8 @@ static cost_classes_t *regno_cost_classes;
 
 /* Helper for cost_classes hashing.  */
 
-struct cost_classes_hasher
+struct cost_classes_hasher : pointer_hash <cost_classes>
 {
-  typedef cost_classes *value_type;
-  typedef cost_classes *compare_type;
   static inline hashval_t hash (const cost_classes *);
   static inline bool equal (const cost_classes *, const cost_classes *);
   static inline void remove (cost_classes *);

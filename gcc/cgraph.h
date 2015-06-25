@@ -1854,17 +1854,12 @@ enum symtab_state
   FINISHED
 };
 
-struct asmname_hasher
+struct asmname_hasher : ggc_ptr_hash <symtab_node>
 {
-  typedef symtab_node *value_type;
   typedef const_tree compare_type;
 
   static hashval_t hash (symtab_node *n);
   static bool equal (symtab_node *n, const_tree t);
-  static void ggc_mx (symtab_node *n);
-  static void pch_nx (symtab_node *&);
-  static void pch_nx (symtab_node *&, gt_pointer_operator, void *);
-  static void remove (symtab_node *) {}
 };
 
 class GTY((tag ("SYMTAB"))) symbol_table
@@ -2172,28 +2167,6 @@ inline bool
 asmname_hasher::equal (symtab_node *n, const_tree t)
 {
   return symbol_table::decl_assembler_name_equal (n->decl, t);
-}
-
-extern void gt_ggc_mx (symtab_node *&);
-
-inline void
-asmname_hasher::ggc_mx (symtab_node *n)
-{
-  gt_ggc_mx (n);
-}
-
-extern void gt_pch_nx (symtab_node *&);
-
-inline void
-asmname_hasher::pch_nx (symtab_node *&n)
-{
-  gt_pch_nx (n);
-}
-
-inline void
-asmname_hasher::pch_nx (symtab_node *&n, gt_pointer_operator op, void *cookie)
-{
-  op (&n, cookie);
 }
 
 /* In cgraph.c  */
