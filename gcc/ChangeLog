@@ -1,3 +1,11 @@
+2015-06-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Improve debug
+	dumping.
+	(vect_create_mask_and_perm): Do not set STMT_VINFO_VEC_STMT and
+	cleanup resulting dead code and parameters.
+	(vect_transform_slp_perm_load): Adjust.
+
 2015-06-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/bfin/bfin.c (bfin_expand_prologue): Set
