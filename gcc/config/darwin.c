@@ -477,7 +477,7 @@ typedef struct GTY ((for_user)) machopic_indirection
   bool used;
 } machopic_indirection;
 
-struct indirection_hasher : ggc_hasher<machopic_indirection *>
+struct indirection_hasher : ggc_ptr_hash<machopic_indirection>
 {
   typedef const char *compare_type;
   static hashval_t hash (machopic_indirection *);
@@ -3271,7 +3271,7 @@ typedef struct GTY ((for_user)) cfstring_descriptor {
   tree constructor;
 } cfstring_descriptor;
 
-struct cfstring_hasher : ggc_hasher<cfstring_descriptor *>
+struct cfstring_hasher : ggc_ptr_hash<cfstring_descriptor>
 {
   static hashval_t hash (cfstring_descriptor *);
   static bool equal (cfstring_descriptor *, cfstring_descriptor *);

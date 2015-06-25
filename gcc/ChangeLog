@@ -1,5 +1,32 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (ggc_hasher): Rename to...
+	(ggc_remover): ...this and remove typedefs.
+	(ggc_cache_hasher): Update accordingly.  Add typedefs.
+	(ggc_ptr_hash): New class.
+	* hash-table.h: Update comment.
+	* cfgloop.h (loop_exit_hasher): Inherit from ggc_ptr_hash rather than
+	ggc_hasher.
+	* cgraph.h (section_name_hasher, cgraph_edge_hasher): Likewise.
+	(tree_descriptor_hasher): Likewise.
+	* cgraph.c (function_version_hasher): Likewise.
+	* dwarf2out.c (indirect_string_hasher, dwarf_file_hasher): Likewise.
+	(decl_die_hasher, block_die_hasher, decl_loc_hasher): Likewise.
+	(dw_loc_list_hasher, addr_hasher): Likewise.
+	* function.h (used_type_hasher): Likewise.
+	* function.c (temp_address_hasher): Likewise.
+	* gimple-ssa.h (tm_restart_hasher, ssa_name_hasher): Likewise.
+	* libfuncs.h (libfunc_hasher): Likewise.
+	* lto-streamer.h (decl_state_hasher): Likewise.
+	* optabs.c (libfunc_decl_hasher): Likewise.
+	* tree-scalar-evolution.c (scev_info_hasher): Likewise.
+	* varasm.c (section_hasher, object_block_hasher): Likewise.
+	(const_rtx_desc_hasher): Likewise.
+	* config/darwin.c (indirection_hasher, cfstring_hasher): Likewise.
+	* config/rs6000/rs6000.c (toc_hasher, builtin_hasher): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (free_ptr_hash): New class.
 	* dwarf2out.c (decl_table_entry_hasher): Inherit from free_ptr_hash
 	rather than typed_free_remove.  Remove redudant typedefs.

@@ -44,7 +44,7 @@ struct GTY((for_user)) section_hash_entry_d
 
 typedef struct section_hash_entry_d section_hash_entry;
 
-struct section_name_hasher : ggc_hasher<section_hash_entry *>
+struct section_name_hasher : ggc_ptr_hash<section_hash_entry>
 {
   typedef const char *compare_type;
 
@@ -769,7 +769,7 @@ enum cgraph_inline_failed_type_t
 
 struct cgraph_edge;
 
-struct cgraph_edge_hasher : ggc_hasher<cgraph_edge *>
+struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 {
   typedef gimple compare_type;
 
@@ -2801,7 +2801,7 @@ varpool_node::all_refs_explicit_p ()
 	  && !force_output);
 }
 
-struct tree_descriptor_hasher : ggc_hasher<constant_descriptor_tree *>
+struct tree_descriptor_hasher : ggc_ptr_hash<constant_descriptor_tree>
 {
   static hashval_t hash (constant_descriptor_tree *);
   static bool equal (constant_descriptor_tree *, constant_descriptor_tree *);

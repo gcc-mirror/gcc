@@ -6051,7 +6051,7 @@ gen_satfractuns_conv_libfunc (convert_optab tab,
 
 /* Hashtable callbacks for libfunc_decls.  */
 
-struct libfunc_decl_hasher : ggc_hasher<tree>
+struct libfunc_decl_hasher : ggc_ptr_hash<tree_node>
 {
   static hashval_t
   hash (tree entry)

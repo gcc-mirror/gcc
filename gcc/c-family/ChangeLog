@@ -1,3 +1,8 @@
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c (c_type_hasher): Inherit from ggc_ptr_hash rather than
+	ggc_hasher.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* cilk.c: Move calls.h after tm.h in the include chain.

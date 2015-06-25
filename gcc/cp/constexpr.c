@@ -123,7 +123,7 @@ struct GTY((for_user)) constexpr_fundef {
   tree body;
 };
 
-struct constexpr_fundef_hasher : ggc_hasher<constexpr_fundef *>
+struct constexpr_fundef_hasher : ggc_ptr_hash<constexpr_fundef>
 {
   static hashval_t hash (constexpr_fundef *);
   static bool equal (constexpr_fundef *, constexpr_fundef *);
@@ -872,7 +872,7 @@ struct GTY((for_user)) constexpr_call {
   hashval_t hash;
 };
 
-struct constexpr_call_hasher : ggc_hasher<constexpr_call *>
+struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
 {
   static hashval_t hash (constexpr_call *);
   static bool equal (constexpr_call *, constexpr_call *);

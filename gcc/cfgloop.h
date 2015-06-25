@@ -85,7 +85,7 @@ struct GTY ((for_user)) loop_exit {
   struct loop_exit *next_e;
 };
 
-struct loop_exit_hasher : ggc_hasher<loop_exit *>
+struct loop_exit_hasher : ggc_ptr_hash<loop_exit>
 {
   typedef edge compare_type;
 

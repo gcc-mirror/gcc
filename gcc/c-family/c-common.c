@@ -5089,7 +5089,7 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
     }
 }
 
-struct c_type_hasher : ggc_hasher<tree>
+struct c_type_hasher : ggc_ptr_hash<tree_node>
 {
   static hashval_t hash (tree);
   static bool equal (tree, tree);

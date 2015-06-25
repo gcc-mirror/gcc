@@ -220,7 +220,7 @@ struct GTY((for_user)) indirect_string_node {
   unsigned int index;
 };
 
-struct indirect_string_hasher : ggc_hasher<indirect_string_node *>
+struct indirect_string_hasher : ggc_ptr_hash<indirect_string_node>
 {
   typedef const char *compare_type;
 
@@ -2796,7 +2796,7 @@ static GTY(()) limbo_die_node *limbo_die_list;
    DW_AT_{,MIPS_}linkage_name once their DECL_ASSEMBLER_NAMEs are set.  */
 static GTY(()) limbo_die_node *deferred_asm_name;
 
-struct dwarf_file_hasher : ggc_hasher<dwarf_file_data *>
+struct dwarf_file_hasher : ggc_ptr_hash<dwarf_file_data>
 {
   typedef const char *compare_type;
 
@@ -2807,7 +2807,7 @@ struct dwarf_file_hasher : ggc_hasher<dwarf_file_data *>
 /* Filenames referenced by this compilation unit.  */
 static GTY(()) hash_table<dwarf_file_hasher> *file_table;
 
-struct decl_die_hasher : ggc_hasher<die_node *>
+struct decl_die_hasher : ggc_ptr_hash<die_node>
 {
   typedef tree compare_type;
 
@@ -2818,7 +2818,7 @@ struct decl_die_hasher : ggc_hasher<die_node *>
    The key is a DECL_UID() which is a unique number identifying each decl.  */
 static GTY (()) hash_table<decl_die_hasher> *decl_die_table;
 
-struct block_die_hasher : ggc_hasher<die_struct *>
+struct block_die_hasher : ggc_ptr_hash<die_struct>
 {
   static hashval_t hash (die_struct *);
   static bool equal (die_struct *, die_struct *);
@@ -2882,7 +2882,7 @@ struct GTY ((chain_next ("%h.next"))) call_arg_loc_node {
 };
 
 
-struct decl_loc_hasher : ggc_hasher<var_loc_list *>
+struct decl_loc_hasher : ggc_ptr_hash<var_loc_list>
 {
   typedef const_tree compare_type;
 
@@ -2912,7 +2912,7 @@ struct GTY ((for_user)) cached_dw_loc_list_def {
 };
 typedef struct cached_dw_loc_list_def cached_dw_loc_list;
 
-struct dw_loc_list_hasher : ggc_hasher<cached_dw_loc_list *>
+struct dw_loc_list_hasher : ggc_ptr_hash<cached_dw_loc_list>
 {
 
   typedef const_tree compare_type;
@@ -4238,7 +4238,7 @@ AT_loc_list_ptr (dw_attr_ref a)
   return &a->dw_attr_val.v.val_loc_list;
 }
 
-struct addr_hasher : ggc_hasher<addr_table_entry *>
+struct addr_hasher : ggc_ptr_hash<addr_table_entry>
 {
   static hashval_t hash (addr_table_entry *);
   static bool equal (addr_table_entry *, addr_table_entry *);

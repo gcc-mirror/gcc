@@ -415,7 +415,7 @@ struct GTY((for_user)) types_used_by_vars_entry {
   tree var_decl;
 };
 
-struct used_type_hasher : ggc_hasher<types_used_by_vars_entry *>
+struct used_type_hasher : ggc_ptr_hash<types_used_by_vars_entry>
 {
   static hashval_t hash (types_used_by_vars_entry *);
   static bool equal (types_used_by_vars_entry *, types_used_by_vars_entry *);

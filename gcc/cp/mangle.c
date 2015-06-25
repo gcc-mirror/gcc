@@ -3841,7 +3841,7 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
   return result;
 }
 
-struct conv_type_hasher : ggc_hasher<tree>
+struct conv_type_hasher : ggc_ptr_hash<tree_node>
 {
   static hashval_t hash (tree);
   static bool equal (tree, tree);

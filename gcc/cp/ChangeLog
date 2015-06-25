@@ -1,5 +1,17 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* constexpr.c (constexpr_fundef_hasher): Inherit from ggc_ptr_hash
+	rather than ggc_hasher.
+	(constexpr_call_hasher): Likewise.
+	* cp-tree.h (cxx_int_tree_map_hasher, named_label_hasher): Likewise.
+	* decl.c (typename_hasher): Likewise.
+	* mangle.c (conv_type_hasher): Likewise.
+	* pt.c (spec_hasher): Likewise.
+	* tree.c (cplus_array_hasher, list_hasher): Likewise.
+	* typeck2.c (abstract_type_hasher): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* class.c (fixed_type_or_null_ref_ht): Inherit from nofree_ptr_hash
 	rather than pointer_hash.
 	(fixed_type_or_null): Use nofree_ptr_hash instead of pointer_hash.

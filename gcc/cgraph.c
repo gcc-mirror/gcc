@@ -126,7 +126,7 @@ struct cgraph_2node_hook_list {
 
 /* Hash descriptor for cgraph_function_version_info.  */
 
-struct function_version_hasher : ggc_hasher<cgraph_function_version_info *>
+struct function_version_hasher : ggc_ptr_hash<cgraph_function_version_info>
 {
   static hashval_t hash (cgraph_function_version_info *);
   static bool equal (cgraph_function_version_info *,

@@ -508,7 +508,7 @@ struct GTY((for_user)) lto_in_decl_state
 
 typedef struct lto_in_decl_state *lto_in_decl_state_ptr;
 
-struct decl_state_hasher : ggc_hasher<lto_in_decl_state *>
+struct decl_state_hasher : ggc_ptr_hash<lto_in_decl_state>
 {
   static hashval_t
   hash (lto_in_decl_state *s)
