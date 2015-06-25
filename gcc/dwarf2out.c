@@ -6957,9 +6957,8 @@ struct cu_hash_table_entry
 
 /* Helpers to manipulate hash table of CUs.  */
 
-struct cu_hash_table_entry_hasher
+struct cu_hash_table_entry_hasher : pointer_hash <cu_hash_table_entry>
 {
-  typedef cu_hash_table_entry *value_type;
   typedef die_struct *compare_type;
   static inline hashval_t hash (const cu_hash_table_entry *);
   static inline bool equal (const cu_hash_table_entry *, const die_struct *);

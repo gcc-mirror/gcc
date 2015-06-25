@@ -46,10 +46,8 @@ typedef struct statistics_counter_s {
 
 /* Hashtable helpers.  */
 
-struct stats_counter_hasher
+struct stats_counter_hasher : pointer_hash <statistics_counter_t>
 {
-  typedef statistics_counter_t *value_type;
-  typedef statistics_counter_t *compare_type;
   static inline hashval_t hash (const statistics_counter_t *);
   static inline bool equal (const statistics_counter_t *,
 			    const statistics_counter_t *);

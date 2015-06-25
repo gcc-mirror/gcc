@@ -170,10 +170,8 @@ typedef vn_nary_op_table_type::iterator vn_nary_op_iterator_type;
 static int
 vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2);
 
-struct vn_phi_hasher
+struct vn_phi_hasher : pointer_hash <vn_phi_s>
 { 
-  typedef vn_phi_s *value_type;
-  typedef vn_phi_s *compare_type;
   static inline hashval_t hash (const vn_phi_s *);
   static inline bool equal (const vn_phi_s *, const vn_phi_s *);
   static inline void remove (vn_phi_s *);
@@ -238,10 +236,8 @@ free_reference (vn_reference_s *vr)
 
 /* vn_reference hashtable helpers.  */
 
-struct vn_reference_hasher
+struct vn_reference_hasher : pointer_hash <vn_reference_s>
 {
-  typedef vn_reference_s *value_type;
-  typedef vn_reference_s *compare_type;
   static inline hashval_t hash (const vn_reference_s *);
   static inline bool equal (const vn_reference_s *, const vn_reference_s *);
   static inline void remove (vn_reference_s *);

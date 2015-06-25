@@ -166,10 +166,8 @@ static bool hashable_expr_equal_p (const struct hashable_expr *,
 				   const struct hashable_expr *);
 static void free_expr_hash_elt (void *);
 
-struct expr_elt_hasher
+struct expr_elt_hasher : pointer_hash <expr_hash_elt>
 {
-  typedef expr_hash_elt *value_type;
-  typedef expr_hash_elt *compare_type;
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
   static inline void remove (value_type &);

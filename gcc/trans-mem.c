@@ -955,10 +955,8 @@ typedef struct tm_log_entry
 
 /* Log entry hashtable helpers.  */
 
-struct log_entry_hasher
+struct log_entry_hasher : pointer_hash <tm_log_entry>
 {
-  typedef tm_log_entry *value_type;
-  typedef tm_log_entry *compare_type;
   static inline hashval_t hash (const tm_log_entry *);
   static inline bool equal (const tm_log_entry *, const tm_log_entry *);
   static inline void remove (tm_log_entry *);

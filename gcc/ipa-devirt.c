@@ -383,9 +383,8 @@ type_possibly_instantiated_p (tree t)
 /* Hash used to unify ODR types based on their mangled name and for anonymous
    namespace types.  */
 
-struct odr_name_hasher
+struct odr_name_hasher : pointer_hash <odr_type_d>
 {
-  typedef odr_type_d *value_type;
   typedef union tree_node *compare_type;
   static inline hashval_t hash (const odr_type_d *);
   static inline bool equal (const odr_type_d *, const tree_node *);
@@ -2724,10 +2723,9 @@ struct polymorphic_call_target_d
 
 /* Polymorphic call target cache helpers.  */
 
-struct polymorphic_call_target_hasher 
+struct polymorphic_call_target_hasher
+  : pointer_hash <polymorphic_call_target_d>
 {
-  typedef polymorphic_call_target_d *value_type;
-  typedef polymorphic_call_target_d *compare_type;
   static inline hashval_t hash (const polymorphic_call_target_d *);
   static inline bool equal (const polymorphic_call_target_d *,
 			    const polymorphic_call_target_d *);
