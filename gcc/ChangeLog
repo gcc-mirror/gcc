@@ -1,3 +1,9 @@
+2015-06-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/29693
+	* config/arm/arm.c (arm_dbx_register_number): Return
+	DWARF_FRAME_REGISTERS by default.
+
 2015-06-25  Tom de Vries  <tom@codesourcery.com>
 
 	* dominance.c (calculate_dominance_info): Fix verify_dominators call
