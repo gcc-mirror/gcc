@@ -199,6 +199,16 @@ gimple_build_return (tree retval)
   return s;
 }
 
+/* Set FNDECL to be the function called by call statement GS.  */
+
+void
+gimple_call_set_fndecl (gimple gs, tree decl)
+{
+  GIMPLE_CHECK (gs, GIMPLE_CALL);
+  gcc_gimple_checking_assert (!gimple_call_internal_p (gs));
+  gimple_set_op (gs, 1, build_fold_addr_expr_loc (gimple_location (gs), decl));
+}
+
 /* Reset alias information on call S.  */
 
 void
