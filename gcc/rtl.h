@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #endif  /* GENERATOR_FILE */
 
-#include "alias.h"
 #include "flags.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
