@@ -1,3 +1,12 @@
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/decl.c (value_annotation_hasher::handle_cache_entry):
+	Delete.
+	(value_annotation_hasher::keep_cache_entry): New function.
+	* gcc-interface/utils.c (pad_type_hasher::handle_cache_entry):
+	Delete.
+	(pad_type_hasher::keep_cache_entry): New function.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/misc.c: Include calls.h not function.h.

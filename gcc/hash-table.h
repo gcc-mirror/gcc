@@ -52,6 +52,16 @@ along with GCC; see the file COPYING3.  If not see
          individual elements of the table need to be disposed of (e.g.,
          when deleting a hash table, removing elements from the table, etc).
 
+	 - An optional static function named 'keep_cache_entry'.  This
+	 function is provided only for garbage-collected elements that
+	 are not marked by the normal gc mark pass.  It describes what
+	 what should happen to the element at the end of the gc mark phase.
+	 The return value should be:
+	   - 0 if the element should be deleted
+	   - 1 if the element should be kept and needs to be marked
+	   - -1 if the element should be kept and is already marked.
+	 Returning -1 rather than 1 is purely an optimization.
+
       3. The type of the hash table itself.  (More later.)
 
    In very special circumstances, users may need to know about a fourth type.
@@ -583,6 +593,8 @@ private:
 							  void *);
   template<typename T> friend void gt_pch_nx (hash_table<T> *,
 					      gt_pointer_operator, void *);
+
+  template<typename T> friend void gt_cleare_cache (hash_table<T> *);
 
   value_type *alloc_entries (size_t n CXX_MEM_STAT_INFO) const;
   value_type *find_empty_slot_for_expand (hashval_t);
@@ -1131,12 +1143,20 @@ template<typename H>
 inline void
 gt_cleare_cache (hash_table<H> *h)
 {
+  extern void gt_ggc_mx (typename H::value_type &t);
+  typedef hash_table<H> table;
   if (!h)
     return;
 
-  for (typename hash_table<H>::iterator iter = h->begin (); iter != h->end ();
-       ++iter)
-    H::handle_cache_entry (*iter);
+  for (typename table::iterator iter = h->begin (); iter != h->end (); ++iter)
+    if (!table::is_empty (*iter) && !table::is_deleted (*iter))
+      {
+	int res = H::keep_cache_entry (*iter);
+	if (res == 0)
+	  h->clear_slot (&*iter);
+	else if (res != -1)
+	  gt_ggc_mx (*iter);
+      }
 }
 
 #endif /* TYPED_HASHTAB_H */

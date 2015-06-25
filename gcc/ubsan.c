@@ -97,16 +97,10 @@ struct tree_type_map_cache_hasher : ggc_cache_hasher<tree_type_map *>
     return a->type.from == b->type.from;
   }
 
-  static void
-  handle_cache_entry (tree_type_map *&m)
+  static int
+  keep_cache_entry (tree_type_map *&m)
   {
-    extern void gt_ggc_mx (tree_type_map *&);
-    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
-      return;
-    else if (ggc_marked_p (m->type.from))
-      gt_ggc_mx (m);
-    else
-      m = static_cast<tree_type_map *> (HTAB_DELETED_ENTRY);
+    return ggc_marked_p (m->type.from);
   }
 };
 
