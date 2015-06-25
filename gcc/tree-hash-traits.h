@@ -67,4 +67,16 @@ tree_ssa_name_hash::hash (tree t)
   return SSA_NAME_VERSION (t);
 }
 
+/* Hasher for general trees, based on their TREE_HASH.  */
+struct tree_hash : ggc_ptr_hash <tree_node>
+{
+  static hashval_t hash (tree);
+};
+
+inline hashval_t
+tree_hash::hash (tree t)
+{
+  return TREE_HASH (t);
+}
+
 #endif
