@@ -471,7 +471,7 @@ build_tm_abort_call (location_t loc, bool is_outer)
 /* Map for aribtrary function replacement under TM, as created
    by the tm_wrap attribute.  */
 
-struct tm_wrapper_hasher : ggc_cache_hasher<tree_map *>
+struct tm_wrapper_hasher : ggc_cache_ptr_hash<tree_map>
 {
   static inline hashval_t hash (tree_map *m) { return m->hash; }
   static inline bool

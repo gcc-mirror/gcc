@@ -196,7 +196,7 @@ struct GTY((for_user)) type_hash {
 /* Initial size of the hash table (rounded to next prime).  */
 #define TYPE_HASH_INITIAL_SIZE 1000
 
-struct type_cache_hasher : ggc_cache_hasher<type_hash *>
+struct type_cache_hasher : ggc_cache_ptr_hash<type_hash>
 {
   static hashval_t hash (type_hash *t) { return t->hash; }
   static bool equal (type_hash *a, type_hash *b);
@@ -220,7 +220,7 @@ static GTY ((cache)) hash_table<type_cache_hasher> *type_hash_table;
 /* Hash table and temporary node for larger integer const values.  */
 static GTY (()) tree int_cst_node;
 
-struct int_cst_hasher : ggc_cache_hasher<tree>
+struct int_cst_hasher : ggc_cache_ptr_hash<tree_node>
 {
   static hashval_t hash (tree t);
   static bool equal (tree x, tree y);
@@ -236,7 +236,7 @@ static GTY ((cache)) hash_table<int_cst_hasher> *int_cst_hash_table;
 static GTY (()) tree cl_optimization_node;
 static GTY (()) tree cl_target_option_node;
 
-struct cl_option_hasher : ggc_cache_hasher<tree>
+struct cl_option_hasher : ggc_cache_ptr_hash<tree_node>
 {
   static hashval_t hash (tree t);
   static bool equal (tree x, tree y);
@@ -253,7 +253,7 @@ static GTY ((cache))
 static GTY ((cache))
      hash_table<tree_decl_map_cache_hasher> *value_expr_for_decl;
 
-struct tree_vec_map_cache_hasher : ggc_cache_hasher<tree_vec_map *>
+struct tree_vec_map_cache_hasher : ggc_cache_ptr_hash<tree_vec_map>
 {
   static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
 

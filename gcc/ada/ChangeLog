@@ -1,5 +1,11 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc-interface/decl.c (value_annotation_hasher): Inherit from
+	ggc_cache_ptr_hash rather than ggc_cache_hasher.
+	* gcc-interface/utils.c (pad_type_hasher): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc-interface/decl.c (value_annotation_hasher::handle_cache_entry):
 	Delete.
 	(value_annotation_hasher::keep_cache_entry): New function.

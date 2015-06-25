@@ -134,7 +134,7 @@ typedef struct variant_desc_d {
 
 /* A hash table used to cache the result of annotate_value.  */
 
-struct value_annotation_hasher : ggc_cache_hasher<tree_int_map *>
+struct value_annotation_hasher : ggc_cache_ptr_hash<tree_int_map>
 {
   static inline hashval_t
   hash (tree_int_map *m)

@@ -149,14 +149,12 @@ struct ggc_remove
   }
 };
 
-/* Hasher for cache entry in gc memory.  */
+/* Remover and marker for "cache" entries in gc memory.  These entries can
+   be deleted if there are no non-cache references to the data.  */
 
 template<typename T>
-struct ggc_cache_hasher : ggc_remove<T>
+struct ggc_cache_remove : ggc_remove<T>
 {
-  typedef T value_type;
-  typedef T compare_type;
-
   /* Entries are weakly held because this is for caches.  */
   static void ggc_mx (T &) {}
 
@@ -184,5 +182,12 @@ struct free_ptr_hash : pointer_hash <T>, typed_free_remove <T> {};
 
 template <typename T>
 struct ggc_ptr_hash : pointer_hash <T>, ggc_remove <T *> {};
+
+/* Traits for elements that point to gc memory.  The elements don't
+   in themselves keep the pointed-to data alive and they can be deleted
+   if the pointed-to data is going to be collected.  */
+
+template <typename T>
+struct ggc_cache_ptr_hash : pointer_hash <T>, ggc_cache_remove <T *> {};
 
 #endif

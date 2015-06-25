@@ -4626,7 +4626,7 @@ extern unsigned int tree_map_hash (const void *);
 extern unsigned int tree_decl_map_hash (const void *);
 #define tree_decl_map_marked_p tree_map_base_marked_p
 
-struct tree_decl_map_cache_hasher : ggc_cache_hasher<tree_decl_map *>
+struct tree_decl_map_cache_hasher : ggc_cache_ptr_hash<tree_decl_map>
 {
   static hashval_t hash (tree_decl_map *m) { return tree_decl_map_hash (m); }
   static bool

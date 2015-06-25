@@ -14212,7 +14212,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
    to symbol DECL if BEIMPORT is true.  Otherwise create or return the
    unique refptr-DECL symbol corresponding to symbol DECL.  */
 
-struct dllimport_hasher : ggc_cache_hasher<tree_map *>
+struct dllimport_hasher : ggc_cache_ptr_hash<tree_map>
 {
   static inline hashval_t hash (tree_map *m) { return m->hash; }
   static inline bool
