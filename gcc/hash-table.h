@@ -37,15 +37,16 @@ along with GCC; see the file COPYING3.  If not see
          - A typedef named 'value_type' to the value type (from above).
 
          - A static member function named 'hash' that takes a value_type
-         pointer and returns a hashval_t value.
+         (or 'const value_type &') and returns a hashval_t value.
 
-         - A typedef named 'compare_type' that is used to test when an value
+         - A typedef named 'compare_type' that is used to test when a value
          is found.  This type is the comparison type.  Usually, it will be the
          same as value_type.  If it is not the same type, you must generally
          explicitly compute hash values and pass them to the hash table.
 
          - A static member function named 'equal' that takes a value_type
-         pointer and a compare_type pointer, and returns a bool.
+         and a compare_type, and returns a bool.  Both arguments can be
+         const references.
 
          - A static function named 'remove' that takes an value_type pointer
          and frees the memory allocated by it.  This function is used when
@@ -68,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 
       4. The template type used to describe how hash table memory
       is allocated.  This type is called the allocator type.  It is
-      parameterized on the value type.  It provides four functions.
+      parameterized on the value type.  It provides two functions:
 
          - A static member function named 'data_alloc'.  This function
          allocates the data elements in the table.
@@ -120,10 +121,16 @@ along with GCC; see the file COPYING3.  If not see
 
       2. Choose a hash function.  Write the static 'hash' member function.
 
-      3. Choose an equality testing function.  In most cases, its two
-      arguments will be value_type pointers.  If not, the first argument must
-      be a value_type pointer, and the second argument a compare_type pointer.
+      3. Decide whether the lookup function should take as input an object
+	 of type value_type or something more restricted.  Define compare_type
+	 accordingly.
 
+      4. Choose an equality testing function 'equal' that compares a value_type
+	 and a compare_type.
+
+   If your elements are pointers, it is usually easiest to start with one
+   of the generic pointer descriptors described below and override the bits
+   you need to change.
 
    AN EXAMPLE DESCRIPTOR TYPE
 
@@ -163,11 +170,19 @@ along with GCC; see the file COPYING3.  If not see
 
    EASY DESCRIPTORS FOR POINTERS
 
-   The class template pointer_hash provides everything you need to hash
-   pointers (as opposed to what they point to).  So, to instantiate a hash
-   table over pointers to whatever_type,
+   There are four descriptors for pointer elements, one for each of
+   the removal policies above:
 
-      hash_table <pointer_hash <whatever_type>> whatever_type_hash_table;
+   * nofree_ptr_hash (based on typed_noop_remove)
+   * free_ptr_hash (based on typed_free_remove)
+   * ggc_ptr_hash (based on ggc_remove)
+   * ggc_cache_ptr_hash (based on ggc_cache_remove)
+
+   These descriptors hash and compare elements by their pointer value,
+   rather than what they point to.  So, to instantiate a hash table over
+   pointers to whatever_type, without freeing the whatever_types, use:
+
+      hash_table <nofree_ptr_hash <whatever_type> > whatever_type_hash_table;
 
 
    HASH TABLE ITERATORS
@@ -327,20 +342,9 @@ class mem_usage;
 
 /* User-facing hash table type.
 
-   The table stores elements of type Descriptor::value_type.
-
-   It hashes values with the hash member function.
-     The table currently works with relatively weak hash functions.
-     Use typed_pointer_hash <Value> when hashing pointers instead of objects.
-
-   It compares elements with the equal member function.
-     Two elements with the same hash may not be equal.
-     Use typed_pointer_equal <Value> when hashing pointers instead of objects.
-
-   It removes elements with the remove member function.
-     This feature is useful for freeing memory.
-     Derive from typed_null_remove <Value> when not freeing objects.
-     Derive from typed_free_remove <Value> when doing a simple object free.
+   The table stores elements of type Descriptor::value_type and uses
+   the static descriptor functions described at the top of the file
+   to hash, compare and remove elements.
 
    Specify the template Allocator to allocate and free memory.
      The default is xcallocator.
@@ -363,7 +367,6 @@ public:
   ~hash_table ();
 
   /* Create a hash_table in gc memory.  */
-
   static hash_table *
   create_ggc (size_t n CXX_MEM_STAT_INFO)
   {
@@ -387,7 +390,6 @@ public:
   /* This function clears a specified SLOT in a hash table.  It is
      useful when you've already done the lookup and don't want to do it
      again. */
-
   void clear_slot (value_type *);
 
   /* This function searches for a hash table entry equal to the given
@@ -395,7 +397,7 @@ public:
      be used to insert or delete an element. */
   value_type &find_with_hash (const compare_type &, hashval_t);
 
-/* Like find_slot_with_hash, but compute the hash value from the element.  */
+  /* Like find_slot_with_hash, but compute the hash value from the element.  */
   value_type &find (const value_type &value)
     {
       return find_with_hash (value, Descriptor::hash (value));
@@ -421,7 +423,8 @@ public:
      matching element in the hash table, this function does nothing. */
   void remove_elt_with_hash (const compare_type &, hashval_t);
 
-/* Like remove_elt_with_hash, but compute the hash value from the element.  */
+  /* Like remove_elt_with_hash, but compute the hash value from the
+     element.  */
   void remove_elt (const value_type &value)
     {
       remove_elt_with_hash (value, Descriptor::hash (value));
@@ -662,7 +665,7 @@ hash_table<Descriptor, Allocator>::find_empty_slot_for_expand (hashval_t hash)
    table entries is changed.  If memory allocation fails, this function
    will abort.  */
 
-	  template<typename Descriptor, template<typename Type> class Allocator>
+template<typename Descriptor, template<typename Type> class Allocator>
 void
 hash_table<Descriptor, Allocator>::expand ()
 {

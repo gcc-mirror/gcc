@@ -1,5 +1,9 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-table.h: Update comments.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (default_hash_traits): New structure.
 	* hash-set.h (default_hashset_traits): Delete.
 	(hash_set): Use default_hash_traits<Key> instead of
