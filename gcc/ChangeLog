@@ -1,3 +1,10 @@
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hash-table.h: Include hash-traits.h.
+	(typed_free_remove, typed_noop_remove, pointer_hash, ggc_hasher)
+	(ggc_cache_hasher): Move to...
+	* hash-traits.h: ...this new file.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-core.h (struct tree_optimization_option): Make opts a pointer to
