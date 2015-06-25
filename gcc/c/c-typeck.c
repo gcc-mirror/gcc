@@ -4380,7 +4380,7 @@ c_mark_addressable (tree exp)
 	if (C_DECL_REGISTER (x)
 	    && DECL_NONLOCAL (x))
 	  {
-	    if (TREE_PUBLIC (x) || TREE_STATIC (x) || DECL_EXTERNAL (x))
+	    if (TREE_PUBLIC (x) || is_global_var (x))
 	      {
 		error
 		  ("global register variable %qD used in nested function", x);
@@ -4390,7 +4390,7 @@ c_mark_addressable (tree exp)
 	  }
 	else if (C_DECL_REGISTER (x))
 	  {
-	    if (TREE_PUBLIC (x) || TREE_STATIC (x) || DECL_EXTERNAL (x))
+	    if (TREE_PUBLIC (x) || is_global_var (x))
 	      error ("address of global register variable %qD requested", x);
 	    else
 	      error ("address of register variable %qD requested", x);

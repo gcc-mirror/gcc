@@ -14769,7 +14769,7 @@ c_parser_omp_threadprivate (c_parser *parser)
 	error_at (loc, "%qD is not a variable", v);
       else if (TREE_USED (v) && !C_DECL_THREADPRIVATE_P (v))
 	error_at (loc, "%qE declared %<threadprivate%> after first use", v);
-      else if (! TREE_STATIC (v) && ! DECL_EXTERNAL (v))
+      else if (! is_global_var (v))
 	error_at (loc, "automatic variable %qE cannot be %<threadprivate%>", v);
       else if (TREE_TYPE (v) == error_mark_node)
 	;

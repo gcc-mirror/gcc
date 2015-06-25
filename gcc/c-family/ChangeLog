@@ -1,3 +1,7 @@
+2015-06-25  Marek Polacek  <polacek@redhat.com>
+
+	* cilk.c (extract_free_variables): Use is_global_var.
+
 2015-06-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.c: Don't include target-def.h.
