@@ -4395,7 +4395,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
   /* Add implicit "omp declare target" attribute if requested.  */
   if (current_omp_declare_target_attribute
       && ((TREE_CODE (*node) == VAR_DECL
-	   && (TREE_STATIC (*node) || DECL_EXTERNAL (*node)))
+	   && is_global_var (*node))
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
       if (TREE_CODE (*node) == VAR_DECL
@@ -4794,8 +4794,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	   TREE_TYPE (decl) = error_mark_node;
 	 }
 
-      if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
-	  && DECL_SIZE (decl) != 0)
+      if (is_global_var (decl) && DECL_SIZE (decl) != 0)
 	{
 	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
 	    constant_expression_warning (DECL_SIZE (decl));
@@ -4911,8 +4910,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	{
 	  /* Recompute the RTL of a local array now
 	     if it used to be an incomplete type.  */
-	  if (was_incomplete
-	      && !TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+	  if (was_incomplete && !is_global_var (decl))
 	    {
 	      /* If we used it already as memory, it must stay in memory.  */
 	      TREE_ADDRESSABLE (decl) = TREE_USED (decl);

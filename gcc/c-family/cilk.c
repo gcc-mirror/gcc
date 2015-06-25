@@ -1063,7 +1063,7 @@ extract_free_variables (tree t, struct wrapper_data *wd,
 	TREE_ADDRESSABLE (t) = 1;
     case VAR_DECL:
     case PARM_DECL:
-      if (!TREE_STATIC (t) && !DECL_EXTERNAL (t))
+      if (!is_global_var (t))
 	add_variable (wd, t, how);
       return;
 
