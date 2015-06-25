@@ -87,10 +87,10 @@ public:
 
 /* Hash traits for symbol_compare_collection map.  */
 
-struct symbol_compare_hashmap_traits: default_hashmap_traits
+struct symbol_compare_hash : nofree_ptr_hash <symbol_compare_collection>
 {
   static hashval_t
-  hash (const symbol_compare_collection *v)
+  hash (value_type v)
   {
     inchash::hash hstate;
     hstate.add_int (v->m_references.length ());
@@ -107,8 +107,7 @@ struct symbol_compare_hashmap_traits: default_hashmap_traits
   }
 
   static bool
-  equal_keys (const symbol_compare_collection *a,
-	      const symbol_compare_collection *b)
+  equal (value_type a, value_type b)
   {
     if (a->m_references.length () != b->m_references.length ()
 	|| a->m_interposables.length () != b->m_interposables.length ())
@@ -126,6 +125,8 @@ struct symbol_compare_hashmap_traits: default_hashmap_traits
     return true;
   }
 };
+typedef simple_hashmap_traits <symbol_compare_hash>
+  symbol_compare_hashmap_traits;
 
 
 /* Semantic item usage pair.  */
