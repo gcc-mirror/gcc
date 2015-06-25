@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
 #include "common/common-target.h"
 #include "debug.h"
 #include "langhooks.h"
@@ -89,6 +88,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+#include "target-def.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;

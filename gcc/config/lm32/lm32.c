@@ -62,11 +62,12 @@
 #include "optabs.h"
 #include "libfuncs.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "tm-constrs.h"
 #include "df.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 struct lm32_frame_info
 {

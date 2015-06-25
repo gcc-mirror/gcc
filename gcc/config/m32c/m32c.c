@@ -53,7 +53,6 @@
 #include "optabs.h"
 #include "except.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "predict.h"
@@ -74,6 +73,8 @@
 #include "df.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Prototypes */
 

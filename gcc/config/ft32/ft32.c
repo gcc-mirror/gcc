@@ -45,7 +45,6 @@
 #include "except.h"
 #include "function.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "dominance.h"
@@ -370,6 +369,8 @@ ft32_init_machine_status (void)
 {
   return ggc_cleared_alloc < machine_function > ();
 }
+
+#include "target-def.h"
 
 
 /* The TARGET_OPTION_OVERRIDE worker.

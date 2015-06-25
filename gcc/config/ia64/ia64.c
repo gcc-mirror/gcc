@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "timevar.h"
 #include "target.h"
-#include "target-def.h"
 #include "common/common-target.h"
 #include "tm_p.h"
 #include "langhooks.h"
@@ -86,6 +85,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "dumpfile.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */

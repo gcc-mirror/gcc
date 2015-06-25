@@ -60,9 +60,10 @@
 #include "cfgcleanup.h"
 #include "basic-block.h"
 #include "target.h"
-#include "target-def.h"
 #include "df.h"
 #include "builtins.h"
+
+#include "target-def.h"
 
 /* Definitions.  */
 

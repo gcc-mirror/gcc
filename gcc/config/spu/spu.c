@@ -58,7 +58,6 @@
 #include "diagnostic-core.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "reload.h"
 #include "sched-int.h"
@@ -79,6 +78,8 @@
 #include "cfgloop.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+#include "target-def.h"
 
 /* Builtin types, data and prototypes. */
 

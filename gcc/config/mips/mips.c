@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gstab.h"
 #include "debug.h"
 #include "target.h"
-#include "target-def.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "dominance.h"
@@ -88,6 +87,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+#include "target-def.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
