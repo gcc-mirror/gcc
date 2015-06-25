@@ -85,6 +85,7 @@
 #include "sched-int.h"
 #include "tree.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Forward definitions of types.  */

@@ -100,6 +100,7 @@
 #include "gstab.h"  /* for N_SLINE */
 #endif
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 #ifndef TARGET_NO_PROTOTYPE

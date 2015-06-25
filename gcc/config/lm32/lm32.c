@@ -67,6 +67,7 @@
 #include "df.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 struct lm32_frame_info

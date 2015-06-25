@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* First some local helper definitions.  */

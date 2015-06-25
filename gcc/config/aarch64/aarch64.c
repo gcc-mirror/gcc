@@ -82,6 +82,7 @@
 #include "sched-int.h"
 #include "cortex-a57-fma-steering.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Defined for convenience.  */

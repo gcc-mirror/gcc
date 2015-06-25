@@ -71,6 +71,7 @@
 #include "context.h"
 #include "tree-pass.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Maximal allowed offset for an address in the LD command */

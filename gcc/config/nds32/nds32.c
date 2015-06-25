@@ -67,6 +67,7 @@
 #include "langhooks.h"		/* For add_builtin_function().  */
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* ------------------------------------------------------------------------ */

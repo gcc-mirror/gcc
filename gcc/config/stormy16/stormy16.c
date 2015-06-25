@@ -75,6 +75,7 @@
 #include "reload.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);

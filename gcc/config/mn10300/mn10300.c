@@ -67,6 +67,7 @@
 #include "dumpfile.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* This is used in the am33_2.0-linux-gnu port, in which global symbol

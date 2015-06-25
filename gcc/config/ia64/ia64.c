@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and

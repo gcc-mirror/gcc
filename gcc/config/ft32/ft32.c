@@ -60,6 +60,9 @@
 #include "builtins.h"
 #include "emit-rtl.h"
 
+/* This file should be included last.  */
+#include "target-def.h"
+
 #include <stdint.h>
 
 #define LOSE_AND_RETURN(msgid, x)               \
@@ -369,8 +372,6 @@ ft32_init_machine_status (void)
 {
   return ggc_cleared_alloc < machine_function > ();
 }
-
-#include "target-def.h"
 
 
 /* The TARGET_OPTION_OVERRIDE worker.

@@ -100,6 +100,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);

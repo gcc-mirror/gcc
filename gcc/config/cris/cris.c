@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* Usable when we have an amount to add or subtract, and want the

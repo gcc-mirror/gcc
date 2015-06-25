@@ -76,6 +76,7 @@
 #include "dumpfile.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 /* A C structure for machine-specific, per-function data.

@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 static void vax_option_override (void);

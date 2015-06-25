@@ -74,6 +74,7 @@
 #include "cgraph.h"
 #include "builtins.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 static unsigned int rx_gp_base_regnum_val = INVALID_REGNUM;

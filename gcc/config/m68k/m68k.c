@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "rtl-iter.h"
 
+/* This file should be included last.  */
 #include "target-def.h"
 
 enum reg_class regno_reg_class[] =
