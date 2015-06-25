@@ -1,5 +1,12 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (ggc_hasher::remove): Take a reference parameter.
+	(ggc_hasher::ggc_mx): Likewise.
+	(ggc_cache_hasher): Inherit from ggc_hasher.  Remove definitions
+	that duplicate ggc_hasher ones.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-table.h (hash_table): Add gt_cleare_cache as a friend.
 	(gt_cleare_cache): Check here for deleted and empty entries.
 	Replace handle_cache_entry with a call to keep_cache_entry.

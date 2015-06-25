@@ -96,10 +96,10 @@ struct ggc_hasher
   typedef T value_type;
   typedef T compare_type;
 
-  static void remove (T) {}
+  static void remove (T &) {}
 
   static void
-  ggc_mx (T p)
+  ggc_mx (T &p)
   {
     extern void gt_ggc_mx (T &);
     gt_ggc_mx (p);
@@ -122,29 +122,10 @@ struct ggc_hasher
 /* Hasher for cache entry in gc memory.  */
 
 template<typename T>
-struct ggc_cache_hasher
+struct ggc_cache_hasher : ggc_hasher<T>
 {
-  typedef T value_type;
-  typedef T compare_type;
-
-  static void remove (T &) {}
-
   /* Entries are weakly held because this is for caches.  */
-
   static void ggc_mx (T &) {}
-
-  static void
-  pch_nx (T &p)
-  {
-    extern void gt_pch_nx (T &);
-    gt_pch_nx (p);
-  }
-
-  static void
-  pch_nx (T &p, gt_pointer_operator op, void *cookie)
-  {
-    op (&p, cookie);
-  }
 
   static int
   keep_cache_entry (T &e)
