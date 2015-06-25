@@ -3893,6 +3893,11 @@ driver_handle_option (struct gcc_options *opts,
       save_switch ("-o", 1, &arg, validated, true);
       return true;
 
+#ifdef ENABLE_DEFAULT_PIE
+    case OPT_pie:
+      /* -pie is turned on by default.  */
+#endif
+
     case OPT_static_libgcc:
     case OPT_shared_libgcc:
     case OPT_static_libgfortran:

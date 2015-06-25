@@ -1,3 +1,8 @@
+2015-06-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c (driver_handle_option): Validate -pie if PIE is enabled
+	by default.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* function.h (ipa_opt_pass, ipa_opt_pass_d): Move forward declarations.
