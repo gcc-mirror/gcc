@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "params.h"
 #include "tree-ssa-operands.h"
+#include "tree-hash-traits.h"
 
 
 /* This is used to carry information about basic blocks.  It is
@@ -96,20 +97,7 @@ maybe_get_single_definition (tree t)
   return NULL_TREE;
 }
 
-/* Traits class for tree hash maps below.  */
-
-struct sanopt_tree_map_traits : default_hashmap_traits
-{
-  static inline hashval_t hash (const_tree ref)
-  {
-    return iterative_hash_expr (ref, 0);
-  }
-
-  static inline bool equal_keys (const_tree ref1, const_tree ref2)
-  {
-    return operand_equal_p (ref1, ref2, 0);
-  }
-}; 
+typedef simple_hashmap_traits <tree_operand_hash> sanopt_tree_map_traits;
 
 /* Tree triplet for vptr_check_map.  */
 struct sanopt_tree_triplet

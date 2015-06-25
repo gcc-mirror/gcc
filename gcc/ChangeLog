@@ -1,5 +1,16 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-hash-traits.h: New file.
+	(tree_operand_hash): New class.
+	* sanopt.c: Include tree-hash-traits.h.
+	(sanopt_tree_map_traits): Use tree_operand_hash.
+	* tree-if-conv.c: Include tree-hash-traits.h.
+	(phi_args_hash_traits): Use tree_operand_hash.
+	* tree-ssa-uncprop.c: Include tree-hash-traits.h.
+	(val_ssa_equiv_hash_traits): Use tree_operand_hash.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-map-traits.h: Include hash-traits.h.
 	(simple_hashmap_traits): New class.
 	* mem-stats.h (hash_map): Change the default traits to

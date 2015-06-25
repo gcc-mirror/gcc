@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "tree-hash-traits.h"
 
 /* The basic structure describing an equivalency created by traversing
    an edge.  Traversing the edge effectively means that we can assume
@@ -291,24 +292,10 @@ struct equiv_hash_elt
 
 /* Value to ssa name equivalence hashtable helpers.  */
 
-struct val_ssa_equiv_hash_traits : default_hashmap_traits
+struct val_ssa_equiv_hash_traits : simple_hashmap_traits <tree_operand_hash>
 {
-  static inline hashval_t hash (tree);
-  static inline bool equal_keys (tree, tree);
   template<typename T> static inline void remove (T &);
 };
-
-inline hashval_t
-val_ssa_equiv_hash_traits::hash (tree value)
-{
-  return iterative_hash_expr (value, 0);
-}
-
-inline bool
-val_ssa_equiv_hash_traits::equal_keys (tree value1, tree value2)
-{
-  return operand_equal_p (value1, value2, 0);
-}
 
 /* Free an instance of equiv_hash_elt.  */
 
