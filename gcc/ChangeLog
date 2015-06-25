@@ -3,7 +3,6 @@
 	* alias.h (alias_set_type): Move typedef.
 	* coretypes.h (alias_set_type): Relocate typedef here.
 	* rtl.h: Don't include alias.h.
-	* jit/jit-common.h: Likewise
 
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
