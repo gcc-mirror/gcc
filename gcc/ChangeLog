@@ -1,5 +1,13 @@
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
+	* tree-core.h (struct tree_optimization_option): Make opts a pointer to
+	struct cl_optimization.
+	* tree.h (TREE_OPTIMIZATION): Return the pointer, not the address of it.
+	* tree.c (make_node_stat): Allocate cl_optimization struct.
+	(copy_node_stat): Allocate and copy cl_optimization struct.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
 	* function.h (struct incoming_args): Move struct.
 	(pass_by_reference, reference_callee_copied): Remove prototypes.
 	* emit-rtl.h (struct incoming_args): Relocate struct here.

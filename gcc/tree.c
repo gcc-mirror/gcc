@@ -1095,9 +1095,20 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       break;
 
     case tcc_exceptional:
-      if (code == TARGET_OPTION_NODE)
-	{
-	  TREE_TARGET_OPTION(t) = ggc_cleared_alloc<struct cl_target_option> ();
+      switch (code)
+        {
+	case TARGET_OPTION_NODE:
+	  TREE_TARGET_OPTION(t)
+			    = ggc_cleared_alloc<struct cl_target_option> ();
+	  break;
+
+	case OPTIMIZATION_NODE:
+	  TREE_OPTIMIZATION (t)
+			    = ggc_cleared_alloc<struct cl_optimization> ();
+	  break;
+
+	default:
+	  break;
 	}
       break;
 
@@ -1187,6 +1198,12 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	TREE_TARGET_OPTION (t) = ggc_alloc<struct cl_target_option>();
 	memcpy (TREE_TARGET_OPTION (t), TREE_TARGET_OPTION (node),
 		sizeof (struct cl_target_option));
+      }
+    else if (code == OPTIMIZATION_NODE)
+      {
+	TREE_OPTIMIZATION (t) = ggc_alloc<struct cl_optimization>();
+	memcpy (TREE_OPTIMIZATION (t), TREE_OPTIMIZATION (node),
+		sizeof (struct cl_optimization));
       }
 
   return t;

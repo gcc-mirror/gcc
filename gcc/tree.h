@@ -2827,7 +2827,7 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
   (STATEMENT_LIST_CHECK (NODE)->stmt_list.tail)
 
 #define TREE_OPTIMIZATION(NODE) \
-  (&OPTIMIZATION_NODE_CHECK (NODE)->optimization.opts)
+  (OPTIMIZATION_NODE_CHECK (NODE)->optimization.opts)
 
 #define TREE_OPTIMIZATION_OPTABS(NODE) \
   (OPTIMIZATION_NODE_CHECK (NODE)->optimization.optabs)
