@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "ipa-chkp.h"
+#include "tree-hash-traits.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -153,20 +154,7 @@ struct decl_stridxlist_map
   struct stridxlist list;
 };
 
-/* stridxlist hashtable helpers.  */
-
-struct stridxlist_hash_traits : default_hashmap_traits
-{
-  static inline hashval_t hash (tree);
-};
-
-/* Hash a from tree in a decl_stridxlist_map.  */
-
-inline hashval_t
-stridxlist_hash_traits::hash (tree item)
-{
-  return DECL_UID (item);
-}
+typedef simple_hashmap_traits <tree_decl_hash> stridxlist_hash_traits;
 
 /* Hash table for mapping decls to a chained list of offset -> idx
    mappings.  */

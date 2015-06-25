@@ -1,5 +1,11 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-hash-traits.h (tree_decl_hash): New class.
+	* tree-ssa-strlen.c: Include tree-hash-traits.h.
+	(stridxlist_hash_traits): Use tree_decl_hash.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-hash-traits.h: New file.
 	(tree_operand_hash): New class.
 	* sanopt.c: Include tree-hash-traits.h.
