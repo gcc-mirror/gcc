@@ -858,10 +858,7 @@ pass_manager::register_dump_files (opt_pass *pass)
   while (pass);
 }
 
-typedef simple_hashmap_traits<nofree_string_hash> pass_registry_hasher;
-
-static hash_map<const char *, opt_pass *, pass_registry_hasher>
-  *name_to_pass_map;
+static hash_map<nofree_string_hash, opt_pass *> *name_to_pass_map;
 
 /* Register PASS with NAME.  */
 
@@ -869,8 +866,7 @@ static void
 register_pass_name (opt_pass *pass, const char *name)
 {
   if (!name_to_pass_map)
-    name_to_pass_map
-      = new hash_map<const char *, opt_pass *, pass_registry_hasher> (256);
+    name_to_pass_map = new hash_map<nofree_string_hash, opt_pass *> (256);
 
   if (name_to_pass_map->get (name))
     return; /* Ignore plugin passes.  */

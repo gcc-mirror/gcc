@@ -1,5 +1,79 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-map-traits.h (simple_hashmap_traits::key_type): New typedef.
+	(unbounded_int_hashmap_traits::key_type): Likewise.
+	* hash-map.h (hash_map): Get the key type from the traits.
+	* hash-traits.h (default_hash_traits): By default, inherit from the
+	template parameter.
+	* alias.c (alias_set_traits): Delete.
+	(alias_set_entry_d::children): Use alias_set_hash as the first
+	template parameter.
+	(record_alias_subset): Update accordingly.
+	* except.c (tree_hash_traits): Delete.
+	(type_to_runtime_map): Use tree_hash as the first template parameter.
+	(init_eh): Update accordingly.
+	* genmatch.c (capture_id_map_hasher): Delete.
+	(cid_map_t): Use nofree_string_hash as first template parameter.
+	* ipa-icf.h (symbol_compare_hashmap_traits): Delete.
+	* ipa-icf.c (sem_item_optimizer::subdivide_classes_by_sensitive_refs):
+	Use symbol_compare_hash as the first template parameter in
+	subdivide_hash_map.
+	* mem-stats.h (mem_usage_pair::mem_alloc_hashmap_traits): Delete.
+	(mem_usage_pair::mem_map_t): Use mem_location_hash as the first
+	template parameter.
+	* passes.c (pass_registry_hasher): Delete.
+	(name_to_pass_map): Use nofree_string_hash as the first template
+	parameter.
+	(register_pass_name): Update accordingly.
+	* sanopt.c (sanopt_tree_map_traits): Delete.
+	(sanopt_tree_triplet_map_traits): Delete.
+	(sanopt_ctx::asan_check_map): Use tree_operand_hash as the first
+	template parameter.
+	(sanopt_ctx::vptr_check_map): Use sanopt_tree_triplet_hash as
+	the first template parameter.
+	* sese.c (rename_map_hasher): Delete.
+	(rename_map_type): Use tree_ssa_name_hash as the first template
+	parameter.
+	* symbol-summary.h (function_summary::summary_hashmap_traits): Delete.
+	(function_summary::m_map): Use map_hash as the first template
+	parameter.
+	(function_summary::release): Update accordingly.
+	* tree-if-conv.c (phi_args_hash_traits): Delete.
+	(predicate_scalar_phi): Use tree_operand_hash as the first template
+	parameter to phi_arg_map.
+	* tree-inline.h (dependence_hasher): Delete.
+	(copy_body_data::dependence_map): Use dependence_hash as the first
+	template parameter.
+	* tree-inline.c (remap_dependence_clique): Update accordingly.
+	* tree-ssa-strlen.c (stridxlist_hash_traits): Delete.
+	(decl_to_stridxlist_htab): Use tree_decl_hash as the first template
+	parameter.
+	(addr_stridxptr): Update accordingly.
+	* value-prof.c (profile_id_traits): Delete.
+	(cgraph_node_map): Use profile_id_hash as the first template
+	parameter.
+	(init_node_map): Update accordingly.
+	* config/alpha/alpha.c (string_traits): Delete.
+	(machine_function::links): Use nofree_string_hash as the first
+	template parameter.
+	(alpha_use_linkage, alpha_write_linkage): Update accordingly.
+	* config/m32c/m32c.c (pragma_traits): Delete.
+	(pragma_htab): Use nofree_string_hash as the first template parameter.
+	(m32c_note_pragma_address): Update accordingly.
+	* config/mep/mep.c (pragma_traits): Delete.
+	(pragma_htab): Use nofree_string_hash as the first template parameter.
+	(mep_note_pragma_flag): Update accordingly.
+	* config/mips/mips.c (mips16_flip_traits): Delete.
+	(mflip_mips16_htab): Use nofree_string_hash as the first template
+	parameter.
+	(mflip_mips16_use_mips16_p): Update accordingly.
+	(local_alias_traits): Delete.
+	(mips16_local_aliases): Use nofree_string_hash as the first template
+	parameter.
+	(mips16_local_alias): Update accordingly.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-map-traits.h (default_hashmap_traits): Delete.
 
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>

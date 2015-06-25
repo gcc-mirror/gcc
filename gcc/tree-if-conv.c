@@ -1589,8 +1589,6 @@ convert_scalar_cond_reduction (gimple reduc, gimple_stmt_iterator *gsi,
   return rhs;
 }
 
-typedef simple_hashmap_traits <tree_operand_hash> phi_args_hash_traits;
-
 /* Produce condition for all occurrences of ARG in PHI node.  */
 
 static tree
@@ -1737,7 +1735,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
   /* Create hashmap for PHI node which contain vector of argument indexes
      having the same value.  */
   bool swap = false;
-  hash_map<tree, auto_vec<int>, phi_args_hash_traits> phi_arg_map;
+  hash_map<tree_operand_hash, auto_vec<int> > phi_arg_map;
   unsigned int num_args = gimple_phi_num_args (phi);
   int max_ind = -1;
   /* Vector of different PHI argument values.  */

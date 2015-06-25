@@ -97,8 +97,6 @@ maybe_get_single_definition (tree t)
   return NULL_TREE;
 }
 
-typedef simple_hashmap_traits <tree_operand_hash> sanopt_tree_map_traits;
-
 /* Tree triplet for vptr_check_map.  */
 struct sanopt_tree_triplet
 {
@@ -154,8 +152,6 @@ struct sanopt_tree_triplet_hash : typed_noop_remove <sanopt_tree_triplet>
     return ref.t1 == NULL;
   }
 };
-typedef simple_hashmap_traits <sanopt_tree_triplet_hash>
-  sanopt_tree_triplet_map_traits;
 
 /* This is used to carry various hash maps and variables used
    in sanopt_optimize_walker.  */
@@ -168,13 +164,12 @@ struct sanopt_ctx
 
   /* This map maps a pointer (the second argument of ASAN_CHECK) to
      a vector of ASAN_CHECK call statements that check the access.  */
-  hash_map<tree, auto_vec<gimple>, sanopt_tree_map_traits> asan_check_map;
+  hash_map<tree_operand_hash, auto_vec<gimple> > asan_check_map;
 
   /* This map maps a tree triplet (the first, second and fourth argument
      of UBSAN_VPTR) to a vector of UBSAN_VPTR call statements that check
      that virtual table pointer.  */
-  hash_map<sanopt_tree_triplet, auto_vec<gimple>,
-	   sanopt_tree_triplet_map_traits> vptr_check_map;
+  hash_map<sanopt_tree_triplet_hash, auto_vec<gimple> > vptr_check_map;
 
   /* Number of IFN_ASAN_CHECK statements.  */
   int asan_num_accesses;

@@ -142,7 +142,6 @@ along with GCC; see the file COPYING3.  If not see
    error to attempt to explicitly construct a subset of zero.  */
 
 struct alias_set_hash : int_hash <int, INT_MIN, INT_MIN + 1> {};
-struct alias_set_traits : simple_hashmap_traits <alias_set_hash> {};
 
 struct GTY(()) alias_set_entry_d {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
@@ -155,7 +154,7 @@ struct GTY(()) alias_set_entry_d {
 
      continuing our example above, the children here will be all of
      `int', `double', `float', and `struct S'.  */
-  hash_map<int, int, alias_set_traits> *children;
+  hash_map<alias_set_hash, int> *children;
 
   /* Nonzero if would have a child of zero: this effectively makes this
      alias set the same as alias set zero.  */
@@ -1134,7 +1133,7 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
       subset_entry = get_alias_set_entry (subset);
       if (!superset_entry->children)
 	superset_entry->children
-	  = hash_map<int, int, alias_set_traits>::create_ggc (64);
+	  = hash_map<alias_set_hash, int>::create_ggc (64);
       /* If there is an entry for the subset, enter all of its children
 	 (if they are not already present) as children of the SUPERSET.  */
       if (subset_entry)
@@ -1146,7 +1145,7 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
 
 	  if (subset_entry->children)
 	    {
-	      hash_map<int, int, alias_set_traits>::iterator iter
+	      hash_map<alias_set_hash, int>::iterator iter
 		= subset_entry->children->begin ();
 	      for (; iter != subset_entry->children->end (); ++iter)
 		superset_entry->children->put ((*iter).first, (*iter).second);

@@ -163,8 +163,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static GTY(()) int call_site_base;
 
-struct tree_hash_traits : simple_hashmap_traits <tree_hash> {};
-static GTY (()) hash_map<tree, tree, tree_hash_traits> *type_to_runtime_map;
+static GTY (()) hash_map<tree_hash, tree> *type_to_runtime_map;
 
 /* Describe the SjLj_Function_Context structure.  */
 static GTY(()) tree sjlj_fc_type_node;
@@ -247,8 +246,7 @@ init_eh (void)
   if (! flag_exceptions)
     return;
 
-  type_to_runtime_map
-    = hash_map<tree, tree, tree_hash_traits>::create_ggc (31);
+  type_to_runtime_map = hash_map<tree_hash, tree>::create_ggc (31);
 
   /* Create the SjLj_Function_Context structure.  This should match
      the definition in unwind-sjlj.c.  */

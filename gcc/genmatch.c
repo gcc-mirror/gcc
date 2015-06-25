@@ -395,9 +395,7 @@ get_operator (const char *id)
   return 0;
 }
 
-typedef simple_hashmap_traits<nofree_string_hash> capture_id_map_hasher;
-
-typedef hash_map<const char *, unsigned, capture_id_map_hasher> cid_map_t;
+typedef hash_map<nofree_string_hash, unsigned> cid_map_t;
 
 
 /* The AST produced by parsing of the pattern definitions.  */

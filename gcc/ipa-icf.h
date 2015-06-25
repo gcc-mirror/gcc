@@ -125,8 +125,6 @@ struct symbol_compare_hash : nofree_ptr_hash <symbol_compare_collection>
     return true;
   }
 };
-typedef simple_hashmap_traits <symbol_compare_hash>
-  symbol_compare_hashmap_traits;
 
 
 /* Semantic item usage pair.  */

@@ -83,7 +83,7 @@ public:
     m_symtab_duplication_hook = NULL;
 
     /* Release all summaries.  */
-    typedef typename hash_map <int, T *, summary_hashmap_traits>::iterator map_iterator;
+    typedef typename hash_map <map_hash, T *>::iterator map_iterator;
     for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
       release ((*it).second);
   }
@@ -201,7 +201,6 @@ protected:
 
 private:
   typedef int_hash <int, 0, -1> map_hash;
-  typedef simple_hashmap_traits <map_hash> summary_hashmap_traits;
 
   /* Getter for summary callgraph ID.  */
   T* get (int uid)
@@ -215,7 +214,7 @@ private:
   }
 
   /* Main summary store, where summary ID is used as key.  */
-  hash_map <int, T *, summary_hashmap_traits> m_map;
+  hash_map <map_hash, T *> m_map;
   /* Internal summary insertion hook pointer.  */
   cgraph_node_hook_list *m_symtab_insertion_hook;
   /* Internal summary removal hook pointer.  */

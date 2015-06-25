@@ -21,10 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_map_h
 #define hash_map_h
 
-template<typename Key, typename Value,
+template<typename KeyId, typename Value,
 	 typename Traits>
 class GTY((user)) hash_map
 {
+  typedef typename Traits::key_type Key;
   struct hash_entry
   {
     Key m_key;

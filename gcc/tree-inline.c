@@ -862,8 +862,7 @@ remap_dependence_clique (copy_body_data *id, unsigned short clique)
   if (clique == 0)
     return 0;
   if (!id->dependence_map)
-    id->dependence_map
-      = new hash_map<unsigned short, unsigned short, dependence_hasher>;
+    id->dependence_map = new hash_map<dependence_hash, unsigned short>;
   bool existed;
   unsigned short &newc = id->dependence_map->get_or_insert (clique, &existed);
   if (!existed)

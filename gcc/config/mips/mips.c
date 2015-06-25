@@ -1263,12 +1263,9 @@ static int mips_register_move_cost (machine_mode, reg_class_t,
 static unsigned int mips_function_arg_boundary (machine_mode, const_tree);
 static machine_mode mips_get_reg_raw_mode (int regno);
 
-struct mips16_flip_traits : simple_hashmap_traits <nofree_string_hash> {};
-
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
    for -mflip_mips16.  It maps decl names onto a boolean mode setting.  */
-static GTY (()) hash_map<const char *, bool, mips16_flip_traits> *
-  mflip_mips16_htab;
+static GTY (()) hash_map<nofree_string_hash, bool> *mflip_mips16_htab;
 
 /* True if -mflip-mips16 should next add an attribute for the default MIPS16
    mode, false if it should next add an attribute for the opposite mode.  */
@@ -1289,8 +1286,7 @@ mflip_mips16_use_mips16_p (tree decl)
     return !base_is_mips16;
 
   if (!mflip_mips16_htab)
-    mflip_mips16_htab
-      = hash_map<const char *, bool, mips16_flip_traits>::create_ggc (37);
+    mflip_mips16_htab = hash_map<nofree_string_hash, bool>::create_ggc (37);
 
   name = IDENTIFIER_POINTER (DECL_NAME (decl));
 
@@ -6589,13 +6585,10 @@ mips_load_call_address (enum mips_call_type type, rtx dest, rtx addr)
     }
 }
 
-struct local_alias_traits : simple_hashmap_traits <nofree_string_hash> {};
-
 /* Each locally-defined hard-float MIPS16 function has a local symbol
    associated with it.  This hash table maps the function symbol (FUNC)
    to the local symbol (LOCAL). */
-static GTY (()) hash_map<const char *, rtx, local_alias_traits>
-  *mips16_local_aliases;
+static GTY (()) hash_map<nofree_string_hash, rtx> *mips16_local_aliases;
 
 /* FUNC is the symbol for a locally-defined hard-float MIPS16 function.
    Return a local alias for it, creating a new one if necessary.  */
@@ -6605,8 +6598,7 @@ mips16_local_alias (rtx func)
 {
   /* Create the hash table if this is the first call.  */
   if (mips16_local_aliases == NULL)
-    mips16_local_aliases
-      = hash_map<const char *, rtx, local_alias_traits>::create_ggc (37);
+    mips16_local_aliases = hash_map<nofree_string_hash, rtx>::create_ggc (37);
 
   /* Look up the function symbol, creating a new entry if need be.  */
   bool existed;
