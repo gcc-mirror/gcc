@@ -1426,26 +1426,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_VTABLE_USES_DESCRIPTORS 0
 #endif
 
-#ifndef HAVE_simple_return
-#define HAVE_simple_return 0
-static inline rtx
-gen_simple_return ()
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
-#ifndef HAVE_return
-#define HAVE_return 0
-static inline rtx
-gen_return ()
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
 #ifndef HAVE_epilogue
 #define HAVE_epilogue 0
 static inline rtx

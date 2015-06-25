@@ -5614,13 +5614,12 @@ emit_use_return_register_into_block (basic_block bb)
 /* Create a return pattern, either simple_return or return, depending on
    simple_p.  */
 
-static rtx
+static rtx_insn *
 gen_return_pattern (bool simple_p)
 {
-  if (!HAVE_simple_return)
-    gcc_assert (!simple_p);
-
-  return simple_p ? gen_simple_return () : gen_return ();
+  return (simple_p
+	  ? targetm.gen_simple_return ()
+	  : targetm.gen_return ());
 }
 
 /* Insert an appropriate return pattern at the end of block BB.  This
@@ -5726,7 +5725,7 @@ convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 	    dest = ret_rtx;
 	  if (!redirect_jump (as_a <rtx_jump_insn *> (jump), dest, 0))
 	    {
-	      if (HAVE_simple_return && simple_p)
+	      if (targetm.have_simple_return () && simple_p)
 		{
 		  if (dump_file)
 		    fprintf (dump_file,
@@ -5747,7 +5746,7 @@ convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 	}
       else
 	{
-	  if (HAVE_simple_return && simple_p)
+	  if (targetm.have_simple_return () && simple_p)
 	    {
 	      if (dump_file)
 		fprintf (dump_file,
@@ -5938,12 +5937,12 @@ thread_prologue_and_epilogue_insns (void)
 
   exit_fallthru_edge = find_fallthru_edge (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
 
-  if (HAVE_simple_return && entry_edge != orig_entry_edge)
+  if (targetm.have_simple_return () && entry_edge != orig_entry_edge)
     exit_fallthru_edge
 	= get_unconverted_simple_return (exit_fallthru_edge, bb_flags,
 					 &unconverted_simple_returns,
 					 &returnjump);
-  if (HAVE_return)
+  if (targetm.have_return ())
     {
       if (exit_fallthru_edge == NULL)
 	goto epilogue_done;
@@ -5964,7 +5963,8 @@ thread_prologue_and_epilogue_insns (void)
 
 	      /* Emitting the return may add a basic block.
 		 Fix bb_flags for the added block.  */
-	      if (HAVE_simple_return && last_bb != exit_fallthru_edge->src)
+	      if (targetm.have_simple_return ()
+		  && last_bb != exit_fallthru_edge->src)
 		bitmap_set_bit (&bb_flags, last_bb->index);
 
 	      goto epilogue_done;
@@ -6080,7 +6080,7 @@ epilogue_done:
 	}
     }
 
-  if (HAVE_simple_return)
+  if (targetm.have_simple_return ())
     convert_to_simple_return (entry_edge, orig_entry_edge, bb_flags,
 			      returnjump, unconverted_simple_returns);
 
@@ -6096,8 +6096,9 @@ epilogue_done:
 
       if (!CALL_P (insn)
 	  || ! SIBLING_CALL_P (insn)
-	  || (HAVE_simple_return && (entry_edge != orig_entry_edge
-				     && !bitmap_bit_p (&bb_flags, bb->index))))
+	  || (targetm.have_simple_return ()
+	      && entry_edge != orig_entry_edge
+	      && !bitmap_bit_p (&bb_flags, bb->index)))
 	{
 	  ei_next (&ei);
 	  continue;
