@@ -274,6 +274,11 @@ proc gcj_jni_get_cxxflags_invocation {} {
     eval lappend cxxflags "-shared-libgcc -lgcj $libiconv"
   }
 
+  # FreeBSD needs -liconv linked, otherwise we get some unresolved.
+  if { [istarget "*-*-freebsd*"] } {
+    eval lappend cxxflags "$libiconv"
+  }
+
   # Make sure libgcc unwinder is used on 64-bit Solaris 10+/x86 rather than
   # the libc one.
   if { [istarget "*-*-solaris*"] } {
