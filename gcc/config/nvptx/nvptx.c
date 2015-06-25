@@ -66,7 +66,7 @@
    decls corresponding to them.  */
 static std::stringstream func_decls;
 
-struct declared_libfunc_hasher : ggc_cache_hasher<rtx>
+struct declared_libfunc_hasher : ggc_cache_ptr_hash<rtx_def>
 {
   static hashval_t hash (rtx x) { return htab_hash_pointer (x); }
   static bool equal (rtx a, rtx b) { return a == b; }
@@ -75,7 +75,7 @@ struct declared_libfunc_hasher : ggc_cache_hasher<rtx>
 static GTY((cache))
   hash_table<declared_libfunc_hasher> *declared_libfuncs_htab;
 
-  struct tree_hasher : ggc_cache_hasher<tree>
+struct tree_hasher : ggc_cache_ptr_hash<tree_node>
 {
   static hashval_t hash (tree t) { return htab_hash_pointer (t); }
   static bool equal (tree a, tree b) { return a == b; }

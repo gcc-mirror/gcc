@@ -122,7 +122,7 @@ struct function *cfun = 0;
 
 /* These hashes record the prologue and epilogue insns.  */
 
-struct insn_cache_hasher : ggc_cache_hasher<rtx>
+struct insn_cache_hasher : ggc_cache_ptr_hash<rtx_def>
 {
   static hashval_t hash (rtx x) { return htab_hash_pointer (x); }
   static bool equal (rtx a, rtx b) { return a == b; }

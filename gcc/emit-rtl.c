@@ -140,7 +140,7 @@ rtx_insn *invalid_insn_rtx;
 /* A hash table storing CONST_INTs whose absolute value is greater
    than MAX_SAVED_CONST_INT.  */
 
-struct const_int_hasher : ggc_cache_hasher<rtx>
+struct const_int_hasher : ggc_cache_ptr_hash<rtx_def>
 {
   typedef HOST_WIDE_INT compare_type;
 
@@ -150,7 +150,7 @@ struct const_int_hasher : ggc_cache_hasher<rtx>
 
 static GTY ((cache)) hash_table<const_int_hasher> *const_int_htab;
 
-struct const_wide_int_hasher : ggc_cache_hasher<rtx>
+struct const_wide_int_hasher : ggc_cache_ptr_hash<rtx_def>
 {
   static hashval_t hash (rtx x);
   static bool equal (rtx x, rtx y);
@@ -159,7 +159,7 @@ struct const_wide_int_hasher : ggc_cache_hasher<rtx>
 static GTY ((cache)) hash_table<const_wide_int_hasher> *const_wide_int_htab;
 
 /* A hash table storing register attribute structures.  */
-struct reg_attr_hasher : ggc_cache_hasher<reg_attrs *>
+struct reg_attr_hasher : ggc_cache_ptr_hash<reg_attrs>
 {
   static hashval_t hash (reg_attrs *x);
   static bool equal (reg_attrs *a, reg_attrs *b);
@@ -168,7 +168,7 @@ struct reg_attr_hasher : ggc_cache_hasher<reg_attrs *>
 static GTY ((cache)) hash_table<reg_attr_hasher> *reg_attrs_htab;
 
 /* A hash table storing all CONST_DOUBLEs.  */
-struct const_double_hasher : ggc_cache_hasher<rtx>
+struct const_double_hasher : ggc_cache_ptr_hash<rtx_def>
 {
   static hashval_t hash (rtx x);
   static bool equal (rtx x, rtx y);
@@ -177,7 +177,7 @@ struct const_double_hasher : ggc_cache_hasher<rtx>
 static GTY ((cache)) hash_table<const_double_hasher> *const_double_htab;
 
 /* A hash table storing all CONST_FIXEDs.  */
-struct const_fixed_hasher : ggc_cache_hasher<rtx>
+struct const_fixed_hasher : ggc_cache_ptr_hash<rtx_def>
 {
   static hashval_t hash (rtx x);
   static bool equal (rtx x, rtx y);

@@ -5790,7 +5790,7 @@ assemble_alias (tree decl, tree target)
    to its transaction aware clone.  Note that tm_pure functions are
    considered to be their own clone.  */
 
-struct tm_clone_hasher : ggc_cache_hasher<tree_map *>
+struct tm_clone_hasher : ggc_cache_ptr_hash<tree_map>
 {
   static hashval_t hash (tree_map *m) { return tree_map_hash (m); }
   static bool equal (tree_map *a, tree_map *b) { return tree_map_eq (a, b); }

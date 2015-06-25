@@ -91,7 +91,7 @@ along with GCC; see the file COPYING3.  If not see
    We compose this into a few steps.
 
       1. Decide on a removal policy for values stored in the table.
-         hash-traits.h provides class templates for the three most common
+         hash-traits.h provides class templates for the four most common
          policies:
 
          * typed_free_remove implements the static 'remove' member function
@@ -104,6 +104,13 @@ along with GCC; see the file COPYING3.  If not see
          but instead provides routines for gc marking and for PCH streaming.
          Use this for garbage-collected data that needs to be preserved across
          collections.
+
+         * ggc_cache_remove is like ggc_remove, except that it does not
+         mark the entries during the normal gc mark phase.  Instead it
+         uses 'keep_cache_entry' (described above) to keep elements that
+         were not collected and delete those that were.  Use this for
+         garbage-collected caches that should not in themselves stop
+         the data from being collected.
 
          You can use these policies by simply deriving the descriptor type
          from one of those class template, with the appropriate argument.

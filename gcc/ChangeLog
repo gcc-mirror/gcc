@@ -1,5 +1,26 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (ggc_cache_hasher): Rename to...
+	(ggc_cache_remove): ...this and remove typedefs.
+	(ggc_cache_ptr_hash): New class.
+	* hash-table.h: Update commentary.
+	* emit-rtl.c (const_int_hasher): Inherit from ggc_cache_ptr_hash
+	rather than ggc_cache_hasher.
+	(const_wide_int_hasher, reg_attr_hasher): Likewise.
+	(const_double_hasher, const_fixed_hasher): Likewise.
+	* function.c (insn_cache_hasher): Likewise.
+	* trans-mem.c (tm_wrapper_hasher): Likewise.
+	* tree.h (tree_decl_map_cache_hasher): Likewise.
+	* tree.c (type_cache_hasher, int_cst_hasher): Likewise.
+	(cl_option_hasher, tree_vec_map_cache_hasher): Likewise.
+	* ubsan.c (tree_type_map_cache_hasher): Likewise.
+	* varasm.c (tm_clone_hasher): Likewise.
+	* config/i386/i386.c (dllimport_hasher): Likewise.
+	* config/nvptx/nvptx.c (declared_libfunc_hasher): Likewise.
+	(tree_hasher): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (ggc_hasher): Rename to...
 	(ggc_remover): ...this and remove typedefs.
 	(ggc_cache_hasher): Update accordingly.  Add typedefs.

@@ -83,7 +83,7 @@ struct GTY((for_user)) tree_type_map {
   tree decl;
 };
 
-struct tree_type_map_cache_hasher : ggc_cache_hasher<tree_type_map *>
+struct tree_type_map_cache_hasher : ggc_cache_ptr_hash<tree_type_map>
 {
   static inline hashval_t
   hash (tree_type_map *t)

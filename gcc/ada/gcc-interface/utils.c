@@ -237,7 +237,7 @@ struct GTY((for_user)) pad_type_hash {
   tree type;
 };
 
-struct pad_type_hasher : ggc_cache_hasher<pad_type_hash *>
+struct pad_type_hasher : ggc_cache_ptr_hash<pad_type_hash>
 {
   static inline hashval_t hash (pad_type_hash *t) { return t->hash; }
   static bool equal (pad_type_hash *a, pad_type_hash *b);
