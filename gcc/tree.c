@@ -201,16 +201,10 @@ struct type_cache_hasher : ggc_cache_hasher<type_hash *>
   static hashval_t hash (type_hash *t) { return t->hash; }
   static bool equal (type_hash *a, type_hash *b);
 
-  static void
-  handle_cache_entry (type_hash *&t)
+  static int
+  keep_cache_entry (type_hash *&t)
   {
-    extern void gt_ggc_mx (type_hash *&);
-    if (t == HTAB_DELETED_ENTRY || t == HTAB_EMPTY_ENTRY)
-      return;
-    else if (ggc_marked_p (t->type))
-      gt_ggc_mx (t);
-    else
-      t = static_cast<type_hash *> (HTAB_DELETED_ENTRY);
+    return ggc_marked_p (t->type);
   }
 };
 
@@ -259,7 +253,7 @@ static GTY ((cache))
 static GTY ((cache))
      hash_table<tree_decl_map_cache_hasher> *value_expr_for_decl;
 
-     struct tree_vec_map_cache_hasher : ggc_cache_hasher<tree_vec_map *>
+struct tree_vec_map_cache_hasher : ggc_cache_hasher<tree_vec_map *>
 {
   static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
 
@@ -269,16 +263,10 @@ static GTY ((cache))
     return a->base.from == b->base.from;
   }
 
-  static void
-  handle_cache_entry (tree_vec_map *&m)
+  static int
+  keep_cache_entry (tree_vec_map *&m)
   {
-    extern void gt_ggc_mx (tree_vec_map *&);
-    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
-      return;
-    else if (ggc_marked_p (m->base.from))
-      gt_ggc_mx (m);
-    else
-      m = static_cast<tree_vec_map *> (HTAB_DELETED_ENTRY);
+    return ggc_marked_p (m->base.from);
   }
 };
 

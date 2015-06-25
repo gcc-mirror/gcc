@@ -146,13 +146,10 @@ struct ggc_cache_hasher
     op (&p, cookie);
   }
 
-  /* Clear out entries if they are about to be gc'd.  */
-
-  static void
-  handle_cache_entry (T &e)
+  static int
+  keep_cache_entry (T &e)
   {
-    if (e != HTAB_EMPTY_ENTRY && e != HTAB_DELETED_ENTRY && !ggc_marked_p (e))
-      e = static_cast<T> (HTAB_DELETED_ENTRY);
+    return ggc_marked_p (e) ? -1 : 0;
   }
 };
 

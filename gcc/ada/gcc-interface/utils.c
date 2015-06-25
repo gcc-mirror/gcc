@@ -241,7 +241,7 @@ struct pad_type_hasher : ggc_cache_hasher<pad_type_hash *>
 {
   static inline hashval_t hash (pad_type_hash *t) { return t->hash; }
   static bool equal (pad_type_hash *a, pad_type_hash *b);
-  static void handle_cache_entry (pad_type_hash *&);
+  static int keep_cache_entry (pad_type_hash *&);
 };
 
 static GTY ((cache))
@@ -1168,16 +1168,10 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
 /* See if the data pointed to by the hash table slot is marked.  */
 
-void
-pad_type_hasher::handle_cache_entry (pad_type_hash *&t)
+int
+pad_type_hasher::keep_cache_entry (pad_type_hash *&t)
 {
-  extern void gt_ggc_mx (pad_type_hash *&);
-  if (t == HTAB_EMPTY_ENTRY || t == HTAB_DELETED_ENTRY)
-    return;
-  else if (ggc_marked_p (t->type))
-    gt_ggc_mx (t);
-  else
-    t = static_cast<pad_type_hash *> (HTAB_DELETED_ENTRY);
+  return ggc_marked_p (t->type);
 }
 
 /* Return true iff the padded types are equivalent.  */

@@ -1,5 +1,27 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-table.h (hash_table): Add gt_cleare_cache as a friend.
+	(gt_cleare_cache): Check here for deleted and empty entries.
+	Replace handle_cache_entry with a call to keep_cache_entry.
+	* hash-traits.h (ggc_cache_hasher::handle_cache_entry): Delete.
+	(ggc_cache_hasher::keep_cache_entry): New function.
+	* trans-mem.c (tm_wrapper_hasher::handle_cache_entry): Delete.
+	(tm_wrapper_hasher::keep_cache_entry): New function.
+	* tree.h (tree_decl_map_cache_hasher::handle_cache_entry): Delete.
+	(tree_vec_map_cache_hasher::keep_cache_entry): New function.
+	* tree.c (type_cache_hasher::handle_cache_entry): Delete.
+	(type_cache_hasher::keep_cache_entry): New function.
+	(tree_vec_map_cache_hasher::handle_cache_entry): Delete.
+	(tree_vec_map_cache_hasher::keep_cache_entry): New function.
+	* ubsan.c (tree_type_map_cache_hasher::handle_cache_entry): Delete.
+	(tree_type_map_cache_hasher::keep_cache_entry): New function.
+	* varasm.c (tm_clone_hasher::handle_cache_entry): Delete.
+	(tm_clone_hasher::keep_cache_entry): New function.
+	* config/i386/i386.c (dllimport_hasher::handle_cache_entry): Delete.
+	(dllimport_hasher::keep_cache_entry): New function.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-table.h: Include hash-traits.h.
 	(typed_free_remove, typed_noop_remove, pointer_hash, ggc_hasher)
 	(ggc_cache_hasher): Move to...
