@@ -1,3 +1,11 @@
+2015-06-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+	2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	PR target/63408
+	* config/arm/arm.c (vfp3_const_double_for_fract_bits): Disable
+	for negative numbers.
+
 2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/66200

@@ -27508,7 +27508,8 @@ vfp3_const_double_for_fract_bits (rtx operand)
     return 0;
   
   REAL_VALUE_FROM_CONST_DOUBLE (r0, operand);
-  if (exact_real_inverse (DFmode, &r0))
+  if (exact_real_inverse (DFmode, &r0)
+      && !REAL_VALUE_NEGATIVE (r0))
     {
       if (exact_real_truncate (DFmode, &r0))
 	{

@@ -1,3 +1,10 @@
+2015-06-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+	2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	PR target/63408
+	* gcc.target/arm/pr63408.c: New test.
+
 2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/66200
