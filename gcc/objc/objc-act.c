@@ -265,7 +265,7 @@ struct GTY((for_user)) string_descriptor {
   tree constructor;
 };
 
-struct objc_string_hasher : ggc_hasher<string_descriptor *>
+struct objc_string_hasher : ggc_ptr_hash<string_descriptor>
 {
   static hashval_t hash (string_descriptor *);
   static bool equal (string_descriptor *, string_descriptor *);

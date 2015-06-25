@@ -156,7 +156,7 @@ struct GTY((chain_next ("%h.next"), for_user)) pending_abstract_type {
   struct pending_abstract_type* next;
 };
 
-struct abstract_type_hasher : ggc_hasher<pending_abstract_type *>
+struct abstract_type_hasher : ggc_ptr_hash<pending_abstract_type>
 {
   typedef tree compare_type;
   static hashval_t hash (pending_abstract_type *);

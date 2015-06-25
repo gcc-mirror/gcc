@@ -121,14 +121,11 @@ pointer_hash <Type>::is_empty (Type *e)
   return e == NULL;
 }
 
-/* Hasher for entry in gc memory.  */
+/* Remover and marker for entries in gc memory.  */
 
 template<typename T>
-struct ggc_hasher
+struct ggc_remove
 {
-  typedef T value_type;
-  typedef T compare_type;
-
   static void remove (T &) {}
 
   static void
@@ -155,8 +152,11 @@ struct ggc_hasher
 /* Hasher for cache entry in gc memory.  */
 
 template<typename T>
-struct ggc_cache_hasher : ggc_hasher<T>
+struct ggc_cache_hasher : ggc_remove<T>
 {
+  typedef T value_type;
+  typedef T compare_type;
+
   /* Entries are weakly held because this is for caches.  */
   static void ggc_mx (T &) {}
 
@@ -178,5 +178,11 @@ struct nofree_ptr_hash : pointer_hash <T>, typed_noop_remove <T> {};
 
 template <typename T>
 struct free_ptr_hash : pointer_hash <T>, typed_free_remove <T> {};
+
+/* Traits for elements that point to gc memory.  The pointed-to data
+   must be kept across collections.  */
+
+template <typename T>
+struct ggc_ptr_hash : pointer_hash <T>, ggc_remove <T *> {};
 
 #endif

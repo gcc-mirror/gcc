@@ -89,7 +89,7 @@ struct GTY((for_user)) spec_entry
   tree spec;
 };
 
-struct spec_hasher : ggc_hasher<spec_entry *>
+struct spec_hasher : ggc_ptr_hash<spec_entry>
 {
   static hashval_t hash (spec_entry *);
   static bool equal (spec_entry *, spec_entry *);

@@ -1181,7 +1181,7 @@ struct GTY((for_user)) cxx_int_tree_map {
   tree to;
 };
 
-struct cxx_int_tree_map_hasher : ggc_hasher<cxx_int_tree_map *>
+struct cxx_int_tree_map_hasher : ggc_ptr_hash<cxx_int_tree_map>
 {
   static hashval_t hash (cxx_int_tree_map *);
   static bool equal (cxx_int_tree_map *, cxx_int_tree_map *);
@@ -1189,7 +1189,7 @@ struct cxx_int_tree_map_hasher : ggc_hasher<cxx_int_tree_map *>
 
 struct named_label_entry;
 
-struct named_label_hasher : ggc_hasher<named_label_entry *>
+struct named_label_hasher : ggc_ptr_hash<named_label_entry>
 {
   static hashval_t hash (named_label_entry *);
   static bool equal (named_label_entry *, named_label_entry *);

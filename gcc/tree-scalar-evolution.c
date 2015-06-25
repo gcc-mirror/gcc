@@ -339,7 +339,7 @@ tree chrec_dont_know;
    happen, then it qualifies it with chrec_known.  */
 tree chrec_known;
 
-struct scev_info_hasher : ggc_hasher<scev_info_str *>
+struct scev_info_hasher : ggc_ptr_hash<scev_info_str>
 {
   static hashval_t hash (scev_info_str *i);
   static bool equal (const scev_info_str *a, const scev_info_str *b);

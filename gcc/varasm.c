@@ -188,7 +188,7 @@ static GTY(()) section *unnamed_sections;
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL)
 
-struct section_hasher : ggc_hasher<section *>
+struct section_hasher : ggc_ptr_hash<section>
 {
   typedef const char *compare_type;
 
@@ -199,7 +199,7 @@ struct section_hasher : ggc_hasher<section *>
 /* Hash table of named sections.  */
 static GTY(()) hash_table<section_hasher> *section_htab;
 
-struct object_block_hasher : ggc_hasher<object_block *>
+struct object_block_hasher : ggc_ptr_hash<object_block>
 {
   typedef const section *compare_type;
 
@@ -3539,7 +3539,7 @@ struct GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
   int mark;
 };
 
-struct const_rtx_desc_hasher : ggc_hasher<constant_descriptor_rtx *>
+struct const_rtx_desc_hasher : ggc_ptr_hash<constant_descriptor_rtx>
 {
   static hashval_t hash (constant_descriptor_rtx *);
   static bool equal (constant_descriptor_rtx *, constant_descriptor_rtx *);

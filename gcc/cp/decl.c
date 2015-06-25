@@ -3331,7 +3331,7 @@ struct typename_info {
   bool class_p;
 };
 
-struct typename_hasher : ggc_hasher<tree>
+struct typename_hasher : ggc_ptr_hash<tree_node>
 {
   typedef typename_info *compare_type;
 

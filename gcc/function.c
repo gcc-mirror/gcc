@@ -574,7 +574,7 @@ struct GTY((for_user)) temp_slot_address_entry {
   struct temp_slot *temp_slot;
 };
 
-struct temp_address_hasher : ggc_hasher<temp_slot_address_entry *>
+struct temp_address_hasher : ggc_ptr_hash<temp_slot_address_entry>
 {
   static hashval_t hash (temp_slot_address_entry *);
   static bool equal (temp_slot_address_entry *, temp_slot_address_entry *);

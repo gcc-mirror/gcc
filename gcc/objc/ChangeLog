@@ -1,5 +1,10 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* objc-act.c (objc_string_hasher): Inherit from ggc_ptr_hash
+	rather than ggc_hasher.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* objc-act.c (decl_name_hash): Inherit from nofree_ptr_hash rather
 	than typed_noop_remove.  Remove redudant typedefs.
 
