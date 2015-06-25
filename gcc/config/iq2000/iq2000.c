@@ -2072,6 +2072,9 @@ iq2000_expand_prologue (void)
 	}
     }
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = cfun->machine->total_size;
+
   emit_insn (gen_blockage ());
 }
 

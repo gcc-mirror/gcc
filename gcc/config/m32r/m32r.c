@@ -1665,6 +1665,9 @@ m32r_expand_prologue (void)
   if (! current_frame_info.initialized)
     m32r_compute_frame_size (get_frame_size ());
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = current_frame_info.total_size;
+
   gmask = current_frame_info.gmask;
 
   /* These cases shouldn't happen.  Catch them now.  */

@@ -1090,6 +1090,9 @@ bfin_expand_prologue (void)
   tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
   bool all = lookup_attribute ("saveall", attrs) != NULL_TREE;
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = frame_size;
+
   if (fkind != SUBROUTINE)
     {
       expand_interrupt_handler_prologue (spreg, fkind, all);
