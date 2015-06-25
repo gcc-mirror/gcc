@@ -53,4 +53,18 @@ tree_decl_hash::hash (tree t)
   return DECL_UID (t);
 }
 
+/* Hash for SSA_NAMEs in the same function.  Pointer equality is enough
+   here, but the SSA_NAME_VERSION is a better hash than the pointer
+   value and gives a predictable traversal order.  */
+struct tree_ssa_name_hash : ggc_ptr_hash <tree_node>
+{
+  static inline hashval_t hash (tree);
+};
+
+inline hashval_t
+tree_ssa_name_hash::hash (tree t)
+{
+  return SSA_NAME_VERSION (t);
+}
+
 #endif

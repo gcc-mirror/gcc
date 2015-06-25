@@ -1,5 +1,11 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-hash-traits.h (tree_ssa_name_hasher): New class.
+	* sese.c: Include tree-hash-traits.h.
+	(rename_map_hasher): Use tree_ssa_name_hasher.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-hash-traits.h (tree_decl_hash): New class.
 	* tree-ssa-strlen.c: Include tree-hash-traits.h.
 	(stridxlist_hash_traits): Use tree_decl_hash.
