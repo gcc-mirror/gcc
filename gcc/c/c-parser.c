@@ -10365,7 +10365,7 @@ c_parser_oacc_data_clause_deviceptr (c_parser *parser, tree list)
 	 c_parser_omp_var_list_parens() should construct a list of
 	 locations to go along with the var list.  */
 
-      if (TREE_CODE (v) != VAR_DECL)
+      if (!VAR_P (v))
 	error_at (loc, "%qD is not a variable", v);
       else if (TREE_TYPE (v) == error_mark_node)
 	;
@@ -14765,7 +14765,7 @@ c_parser_omp_threadprivate (c_parser *parser)
 
       /* If V had already been marked threadprivate, it doesn't matter
 	 whether it had been used prior to this point.  */
-      if (TREE_CODE (v) != VAR_DECL)
+      if (!VAR_P (v))
 	error_at (loc, "%qD is not a variable", v);
       else if (TREE_USED (v) && !C_DECL_THREADPRIVATE_P (v))
 	error_at (loc, "%qE declared %<threadprivate%> after first use", v);

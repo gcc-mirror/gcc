@@ -231,7 +231,7 @@ find_rank (location_t loc, tree orig_expr, tree expr, bool ignore_builtin_fn,
 		   || TREE_CODE (ii_tree) == INDIRECT_REF)
 	    ii_tree = TREE_OPERAND (ii_tree, 0);
 	  else if (TREE_CODE (ii_tree) == PARM_DECL
-		   || TREE_CODE (ii_tree) == VAR_DECL)
+		   || VAR_P (ii_tree))
 	    break;
 	  else
 	    gcc_unreachable ();

@@ -1,5 +1,17 @@
 2015-06-25  Marek Polacek  <polacek@redhat.com>
 
+	* array-notation-common.c: Use VAR_P throughout.
+	* c-ada-spec.c: Likewise.
+	* c-common.c: Likewise.
+	* c-format.c: Likewise.
+	* c-gimplify.c: Likewise.
+	* c-omp.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pretty-print.c: Likewise.
+	* cilk.c: Likewise.
+
+2015-06-25  Marek Polacek  <polacek@redhat.com>
+
 	* cilk.c (extract_free_variables): Use is_global_var.
 
 2015-06-23  Richard Sandiford  <richard.sandiford@arm.com>

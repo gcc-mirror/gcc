@@ -219,8 +219,7 @@ c_incomplete_type_error (const_tree value, const_tree type)
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
-  if (value != 0 && (TREE_CODE (value) == VAR_DECL
-		     || TREE_CODE (value) == PARM_DECL))
+  if (value != 0 && (VAR_P (value) || TREE_CODE (value) == PARM_DECL))
     error ("%qD has an incomplete type %qT", value, type);
   else
     {
@@ -2531,7 +2530,7 @@ build_array_ref (location_t loc, tree array, tree index)
 	  tree foo = array;
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
-	  if (TREE_CODE (foo) == VAR_DECL && C_DECL_REGISTER (foo))
+	  if (VAR_P (foo) && C_DECL_REGISTER (foo))
 	    pedwarn (loc, OPT_Wpedantic,
 		     "ISO C forbids subscripting %<register%> array");
 	  else if (!lvalue_p (foo))
@@ -2673,7 +2672,7 @@ build_external_ref (location_t loc, tree id, int fun, tree *type)
 	   && DECL_DECLARED_INLINE_P (current_function_decl)
 	   && DECL_EXTERNAL (current_function_decl)
 	   && VAR_OR_FUNCTION_DECL_P (ref)
-	   && (TREE_CODE (ref) != VAR_DECL || TREE_STATIC (ref))
+	   && (!VAR_P (ref) || TREE_STATIC (ref))
 	   && ! TREE_PUBLIC (ref)
 	   && DECL_CONTEXT (ref) != current_function_decl)
     record_inline_static (loc, current_function_decl, ref,
@@ -11589,7 +11588,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     {
       if (error_operand_p (t))
 	return error_mark_node;
-      if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+      if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
 	  if (DECL_P (t))
 	    error_at (OMP_CLAUSE_LOCATION (c),
@@ -11602,7 +11601,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	       && TREE_CODE (t) == VAR_DECL && DECL_THREAD_LOCAL_P (t))
+	       && VAR_P (t) && DECL_THREAD_LOCAL_P (t))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "%qD is threadprivate variable in %qs clause", t,
@@ -12198,7 +12197,7 @@ c_finish_omp_clauses (tree clauses)
 
 	case OMP_CLAUSE_COPYIN:
 	  t = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (t) != VAR_DECL || !DECL_THREAD_LOCAL_P (t))
+	  if (!VAR_P (t) || !DECL_THREAD_LOCAL_P (t))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE must be %<threadprivate%> for %<copyin%>", t);
@@ -12236,7 +12235,7 @@ c_finish_omp_clauses (tree clauses)
 
 	check_dup_generic:
 	  t = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE is not a variable in clause %qs", t,
@@ -12259,7 +12258,7 @@ c_finish_omp_clauses (tree clauses)
 	  t = OMP_CLAUSE_DECL (c);
 	  need_complete = true;
 	  need_implicitly_determined = true;
-	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE is not a variable in clause %<firstprivate%>", t);
@@ -12280,7 +12279,7 @@ c_finish_omp_clauses (tree clauses)
 	  t = OMP_CLAUSE_DECL (c);
 	  need_complete = true;
 	  need_implicitly_determined = true;
-	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE is not a variable in clause %<lastprivate%>", t);
@@ -12299,7 +12298,7 @@ c_finish_omp_clauses (tree clauses)
 
 	case OMP_CLAUSE_ALIGNED:
 	  t = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE is not a variable in %<aligned%> clause", t);
@@ -12334,7 +12333,7 @@ c_finish_omp_clauses (tree clauses)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE is not a variable in %<depend%> clause", t);
@@ -12369,14 +12368,14 @@ c_finish_omp_clauses (tree clauses)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE is not a variable in %qs clause", t,
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (TREE_CODE (t) == VAR_DECL && DECL_THREAD_LOCAL_P (t))
+	  else if (VAR_P (t) && DECL_THREAD_LOCAL_P (t))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD is threadprivate variable in %qs clause", t,
@@ -12503,7 +12502,7 @@ c_finish_omp_clauses (tree clauses)
 	    {
 	      const char *share_name = NULL;
 
-	      if (TREE_CODE (t) == VAR_DECL && DECL_THREAD_LOCAL_P (t))
+	      if (VAR_P (t) && DECL_THREAD_LOCAL_P (t))
 		share_name = "threadprivate";
 	      else switch (c_omp_predetermined_sharing (t))
 		{
@@ -12752,10 +12751,10 @@ c_tree_equal (tree t1, tree t2)
 	   it means that it's going to be unified with whatever the
 	   TARGET_EXPR is really supposed to initialize, so treat it
 	   as being equivalent to anything.  */
-	if (TREE_CODE (o1) == VAR_DECL && DECL_NAME (o1) == NULL_TREE
+	if (VAR_P (o1) && DECL_NAME (o1) == NULL_TREE
 	    && !DECL_RTL_SET_P (o1))
 	  /*Nop*/;
-	else if (TREE_CODE (o2) == VAR_DECL && DECL_NAME (o2) == NULL_TREE
+	else if (VAR_P (o2) && DECL_NAME (o2) == NULL_TREE
 		 && !DECL_RTL_SET_P (o2))
 	  /*Nop*/;
 	else if (!c_tree_equal (o1, o2))

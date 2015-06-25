@@ -1620,7 +1620,7 @@ decl_constant_value_for_optimization (tree exp)
     gcc_unreachable ();
 
   if (!optimize
-      || TREE_CODE (exp) != VAR_DECL
+      || !VAR_P (exp)
       || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
       || DECL_MODE (exp) == BLKmode)
     return exp;
@@ -6952,7 +6952,7 @@ handle_nocommon_attribute (tree *node, tree name,
 			   tree ARG_UNUSED (args),
 			   int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  if (TREE_CODE (*node) == VAR_DECL)
+  if (VAR_P (*node))
     DECL_COMMON (*node) = 0;
   else
     {
@@ -6970,7 +6970,7 @@ static tree
 handle_common_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			 int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  if (TREE_CODE (*node) == VAR_DECL)
+  if (VAR_P (*node))
     DECL_COMMON (*node) = 1;
   else
     {
@@ -7349,12 +7349,12 @@ handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
   tree node = *pnode;
 
   if (TREE_CODE (node) == FUNCTION_DECL
-      || (TREE_CODE (node) == VAR_DECL && TREE_STATIC (node))
+      || (VAR_P (node) && TREE_STATIC (node))
       || (TREE_CODE (node) == TYPE_DECL))
     {
       TREE_USED (node) = 1;
       DECL_PRESERVE_P (node) = 1;
-      if (TREE_CODE (node) == VAR_DECL)
+      if (VAR_P (node))
 	DECL_READ_P (node) = 1;
     }
   else
@@ -7378,14 +7378,13 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       tree decl = *node;
 
       if (TREE_CODE (decl) == PARM_DECL
-	  || TREE_CODE (decl) == VAR_DECL
+	  || VAR_P (decl)
 	  || TREE_CODE (decl) == FUNCTION_DECL
 	  || TREE_CODE (decl) == LABEL_DECL
 	  || TREE_CODE (decl) == TYPE_DECL)
 	{
 	  TREE_USED (decl) = 1;
-	  if (TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == PARM_DECL)
+	  if (VAR_P (decl) || TREE_CODE (decl) == PARM_DECL)
 	    DECL_READ_P (decl) = 1;
 	}
       else
@@ -7914,7 +7913,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && current_function_decl != NULL_TREE
       && !TREE_STATIC (decl))
     {
@@ -7933,7 +7932,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && !targetm.have_tls && targetm.emutls.tmpl_section
       && DECL_THREAD_LOCAL_P (decl))
     {
@@ -8224,7 +8223,7 @@ handle_alias_ifunc_attribute (bool is_alias, tree *node, tree name, tree args,
   tree decl = *node;
 
   if (TREE_CODE (decl) != FUNCTION_DECL
-      && (!is_alias || TREE_CODE (decl) != VAR_DECL))
+      && (!is_alias || !VAR_P (decl)))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
@@ -8519,7 +8518,7 @@ c_determine_visibility (tree decl)
 	  DECL_VISIBILITY_SPECIFIED (decl) = visibility_options.inpragma;
 	  /* If visibility changed and DECL already has DECL_RTL, ensure
 	     symbol flags are updated.  */
-	  if (((TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	  if (((VAR_P (decl) && TREE_STATIC (decl))
 	       || TREE_CODE (decl) == FUNCTION_DECL)
 	      && DECL_RTL_SET_P (decl))
 	    make_decl_rtl (decl);
@@ -8541,7 +8540,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
 
   *no_add_attrs = true;
 
-  if (TREE_CODE (decl) != VAR_DECL || !DECL_THREAD_LOCAL_P (decl))
+  if (!VAR_P (decl) || !DECL_THREAD_LOCAL_P (decl))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       return NULL_TREE;
@@ -9507,7 +9506,7 @@ handle_cleanup_attribute (tree *node, tree name, tree args,
      for global destructors in C++.  This requires infrastructure that
      we don't have generically at the moment.  It's also not a feature
      we'd be missing too much, since we do have attribute constructor.  */
-  if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl))
+  if (!VAR_P (decl) || TREE_STATIC (decl))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
@@ -10492,7 +10491,7 @@ fold_offsetof_1 (tree expr)
     case COMPOUND_EXPR:
       /* Handle static members of volatile structs.  */
       t = TREE_OPERAND (expr, 1);
-      gcc_assert (TREE_CODE (t) == VAR_DECL);
+      gcc_assert (VAR_P (t));
       return fold_offsetof_1 (t);
 
     default:
@@ -10555,7 +10554,7 @@ readonly_error (location_t loc, tree arg, enum lvalue_use use)
 				     G_("read-only member %qD used as %<asm%> output")),
 		  TREE_OPERAND (arg, 1));
     }
-  else if (TREE_CODE (arg) == VAR_DECL)
+  else if (VAR_P (arg))
     error_at (loc, READONLY_MSG (G_("assignment of read-only variable %qD"),
 				 G_("increment of read-only variable %qD"),
 				 G_("decrement of read-only variable %qD"),
@@ -10815,7 +10814,7 @@ c_common_mark_addressable_vec (tree t)
 {   
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
-  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
     return;
   TREE_ADDRESSABLE (t) = 1;
 }

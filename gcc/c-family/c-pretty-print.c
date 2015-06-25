@@ -650,7 +650,7 @@ c_pretty_printer::storage_class_specifier (tree t)
     {
       if (DECL_REGISTER (t))
 	pp_c_ws_string (this, "register");
-      else if (TREE_STATIC (t) && TREE_CODE (t) == VAR_DECL)
+      else if (TREE_STATIC (t) && VAR_P (t))
 	pp_c_ws_string (this, "static");
     }
 }
