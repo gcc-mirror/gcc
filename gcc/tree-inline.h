@@ -35,25 +35,8 @@ enum copy_body_cge_which
   CB_CGE_MOVE_CLONES
 };
 
-struct dependence_hasher : default_hashmap_traits
-{
-  template<typename T>
-  static void
-  mark_deleted (T &e)
-    { gcc_unreachable (); }
-
-  template<typename T>
-  static void
-  mark_empty (T &e)
-    { e.m_key = 0; }
-
-  template<typename T>
-  static bool
-  is_deleted (T &)
-    { return false; }
-
-  template<typename T> static bool is_empty (T &e) { return e.m_key == 0; }
-};
+typedef int_hash <unsigned short, 0> dependence_hash;
+typedef simple_hashmap_traits <dependence_hash> dependence_hasher;
 
 /* Data required for function body duplication.  */
 

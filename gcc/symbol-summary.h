@@ -200,45 +200,8 @@ protected:
   bool m_ggc;
 
 private:
-  struct summary_hashmap_traits: default_hashmap_traits
-  {
-    static const int deleted_value = -1;
-    static const int empty_value = 0;
-
-    static hashval_t
-    hash (const int v)
-    {
-      return (hashval_t)v;
-    }
-
-    template<typename Type>
-    static bool
-    is_deleted (Type &e)
-    {
-      return e.m_key == deleted_value;
-    }
-
-    template<typename Type>
-    static bool
-    is_empty (Type &e)
-    {
-      return e.m_key == empty_value;
-    }
-
-    template<typename Type>
-    static void
-    mark_deleted (Type &e)
-    {
-      e.m_key = deleted_value;
-    }
-
-    template<typename Type>
-    static void
-    mark_empty (Type &e)
-    {
-      e.m_key = empty_value;
-    }
-  };
+  typedef int_hash <int, 0, -1> map_hash;
+  typedef simple_hashmap_traits <map_hash> summary_hashmap_traits;
 
   /* Getter for summary callgraph ID.  */
   T* get (int uid)

@@ -57,6 +57,68 @@ typed_noop_remove <Type>::remove (Type &)
 }
 
 
+/* Hasher for integer type Type in which Empty is a spare value that can be
+   used to mark empty slots.  If Deleted != Empty then Deleted is another
+   spare value that can be used for deleted slots; if Deleted == Empty then
+   hash table entries cannot be deleted.  */
+
+template <typename Type, Type Empty, Type Deleted = Empty>
+struct int_hash : typed_noop_remove <Type>
+{
+  typedef Type value_type;
+  typedef Type compare_type;
+
+  static inline hashval_t hash (value_type);
+  static inline bool equal (value_type existing, value_type candidate);
+  static inline void mark_deleted (Type &);
+  static inline void mark_empty (Type &);
+  static inline bool is_deleted (Type);
+  static inline bool is_empty (Type);
+};
+
+template <typename Type, Type Empty, Type Deleted>
+inline hashval_t
+int_hash <Type, Empty, Deleted>::hash (value_type x)
+{
+  return x;
+}
+
+template <typename Type, Type Empty, Type Deleted>
+inline bool
+int_hash <Type, Empty, Deleted>::equal (value_type x, value_type y)
+{
+  return x == y;
+}
+
+template <typename Type, Type Empty, Type Deleted>
+inline void
+int_hash <Type, Empty, Deleted>::mark_deleted (Type &x)
+{
+  gcc_assert (Empty != Deleted);
+  x = Deleted;
+}
+
+template <typename Type, Type Empty, Type Deleted>
+inline void
+int_hash <Type, Empty, Deleted>::mark_empty (Type &x)
+{
+  x = Empty;
+}
+
+template <typename Type, Type Empty, Type Deleted>
+inline bool
+int_hash <Type, Empty, Deleted>::is_deleted (Type x)
+{
+  return Empty != Deleted && x == Deleted;
+}
+
+template <typename Type, Type Empty, Type Deleted>
+inline bool
+int_hash <Type, Empty, Deleted>::is_empty (Type x)
+{
+  return x == Empty;
+}
+
 /* Pointer hasher based on pointer equality.  Other types of pointer hash
    can inherit this and override the hash and equal functions with some
    other form of equality (such as string equality).  */

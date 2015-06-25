@@ -141,31 +141,8 @@ along with GCC; see the file COPYING3.  If not see
    However, this is no actual entry for alias set zero.  It is an
    error to attempt to explicitly construct a subset of zero.  */
 
-struct alias_set_traits : default_hashmap_traits
-{
-  template<typename T>
-  static bool
-  is_empty (T &e)
-  {
-    return e.m_key == INT_MIN;
-  }
-
-  template<typename  T>
-  static bool
-  is_deleted (T &e)
-  {
-    return e.m_key == (INT_MIN + 1);
-  }
-
-  template<typename T> static void mark_empty (T &e) { e.m_key = INT_MIN; }
-
-  template<typename T>
-  static void
-  mark_deleted (T &e)
-  {
-    e.m_key = INT_MIN + 1;
-  }
-};
+struct alias_set_hash : int_hash <int, INT_MIN, INT_MIN + 1> {};
+struct alias_set_traits : simple_hashmap_traits <alias_set_hash> {};
 
 struct GTY(()) alias_set_entry_d {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
