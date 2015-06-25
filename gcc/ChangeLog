@@ -1,3 +1,7 @@
+2015-06-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-streamer-out.c (DFS::hash_scc): Fix typos & formatting glitches.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* match.pd: Add patterns for vec_conds between 1 and 0.

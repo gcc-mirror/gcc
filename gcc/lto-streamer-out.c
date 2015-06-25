@@ -1364,54 +1364,51 @@ DFS::scc_entry_compare (const void *p1_, const void *p2_)
   return 0;
 }
 
-/* Return a hash value for the SCC on the SCC stack from FIRST with
-   size SIZE.  */
+/* Return a hash value for the SCC on the SCC stack from FIRST with SIZE.  */
 
 hashval_t
-DFS::hash_scc (struct output_block *ob,
-	       unsigned first, unsigned size)
+DFS::hash_scc (struct output_block *ob, unsigned first, unsigned size)
 {
   unsigned int last_classes = 0, iterations = 0;
 
   /* Compute hash values for the SCC members.  */
   for (unsigned i = 0; i < size; ++i)
-    sccstack[first+i].hash = hash_tree (ob->writer_cache, NULL,
-					sccstack[first+i].t);
+    sccstack[first+i].hash
+      = hash_tree (ob->writer_cache, NULL, sccstack[first+i].t);
 
   if (size == 1)
     return sccstack[first].hash;
 
   /* We aim to get unique hash for every tree within SCC and compute hash value
-     of the whole SCC by combing all values together in an stable (entry point
+     of the whole SCC by combining all values together in a stable (entry-point
      independent) order.  This guarantees that the same SCC regions within
      different translation units will get the same hash values and therefore
      will be merged at WPA time.
 
-     Often the hashes are already unique.  In that case we compute scc hash
+     Often the hashes are already unique.  In that case we compute the SCC hash
      by combining individual hash values in an increasing order.
 
-     If thre are duplicates we seek at least one tree with unique hash (and
-     pick one with minimal hash and this property).  Then we obtain stable
-     order by DFS walk starting from this unique tree and then use index
+     If there are duplicates, we seek at least one tree with unique hash (and
+     pick one with minimal hash and this property).  Then we obtain a stable
+     order by DFS walk starting from this unique tree and then use the index
      within this order to make individual hash values unique.
 
      If there is no tree with unique hash, we iteratively propagate the hash
      values across the internal edges of SCC.  This usually quickly leads
      to unique hashes.  Consider, for example, an SCC containing two pointers
-     that are identical except for type they point and assume that these
-     types are also part of the SCC.
-     The propagation will add the points-to type information into their hash
-     values.  */
+     that are identical except for the types they point to and assume that
+     these types are also part of the SCC.  The propagation will add the
+     points-to type information into their hash values.  */
   do
     {
-      /* Sort the SCC so we can easily see check for uniqueness.  */
+      /* Sort the SCC so we can easily check for uniqueness.  */
       qsort (&sccstack[first], size, sizeof (scc_entry), scc_entry_compare);
 
       unsigned int classes = 1;
       int firstunique = -1;
 
-      /* Find tree with lowest unique hash (if it exists) and compute
-	 number of equivalence classes.  */
+      /* Find the tree with lowest unique hash (if it exists) and compute
+	 the number of equivalence classes.  */
       if (sccstack[first].hash != sccstack[first+1].hash)
 	firstunique = 0;
       for (unsigned i = 1; i < size; ++i)
@@ -1424,7 +1421,7 @@ DFS::hash_scc (struct output_block *ob,
 	      firstunique = i;
 	  }
 
-      /* If we found tree with unique hash; stop the iteration.  */
+      /* If we found a tree with unique hash, stop the iteration.  */
       if (firstunique != -1
 	  /* Also terminate if we run out of iterations or if the number of
 	     equivalence classes is no longer increasing.
@@ -1436,13 +1433,13 @@ DFS::hash_scc (struct output_block *ob,
           hashval_t scc_hash;
 
 	  /* If some hashes are not unique (CLASSES != SIZE), use the DFS walk
-	     starting from FIRSTUNIQUE to obstain stable order.  */
+	     starting from FIRSTUNIQUE to obtain a stable order.  */
 	  if (classes != size && firstunique != -1)
 	    {
 	      hash_map <tree, hashval_t> map(size*2);
 
 	      /* Store hash values into a map, so we can associate them with
-		 reordered SCC.  */
+		 the reordered SCC.  */
 	      for (unsigned i = 0; i < size; ++i)
 		map.put (sccstack[first+i].t, sccstack[first+i].hash);
 
@@ -1455,8 +1452,8 @@ DFS::hash_scc (struct output_block *ob,
 
 	      /* Update hash values of individual members by hashing in the
 		 index within the stable order.  This ensures uniqueness.
-		 Also compute the scc_hash by mixing in all hash values in the
-		 stable order we obtained.  */
+		 Also compute the SCC hash by mixing in all hash values in
+		 the stable order we obtained.  */
 	      sccstack[first].hash = *map.get (sccstack[first].t);
 	      scc_hash = sccstack[first].hash;
 	      for (unsigned i = 1; i < size; ++i)
@@ -1464,31 +1461,33 @@ DFS::hash_scc (struct output_block *ob,
 		  sccstack[first+i].hash
 		    = iterative_hash_hashval_t (i,
 						*map.get (sccstack[first+i].t));
-		  scc_hash = iterative_hash_hashval_t (scc_hash,
-						       sccstack[first+i].hash);
+		  scc_hash
+		    = iterative_hash_hashval_t (scc_hash,
+						sccstack[first+i].hash);
 		}
 	    }
-	  /* If we got unique hash values for each tree, then sort already
-	     ensured entry point independent order.  Only compute the final
-	     scc hash.
+	  /* If we got a unique hash value for each tree, then sort already
+	     ensured entry-point independent order.  Only compute the final
+	     SCC hash.
 
 	     If we failed to find the unique entry point, we go by the same
-	     route. We will eventually introduce unwanted hash conflicts.  */
+	     route.  We will eventually introduce unwanted hash conflicts.  */
 	  else
 	    {
 	      scc_hash = sccstack[first].hash;
 	      for (unsigned i = 1; i < size; ++i)
-		scc_hash = iterative_hash_hashval_t (scc_hash,
-						     sccstack[first+i].hash);
-	      /* We can not 100% guarantee that the hash will not conflict in
-		 in a way so the unique hash is not found.  This however
-		 should be extremely rare situation.  ICE for now so possible
-		 issues are found and evaulated.  */
+		scc_hash
+		  = iterative_hash_hashval_t (scc_hash, sccstack[first+i].hash);
+
+	      /* We cannot 100% guarantee that the hash won't conflict so as
+		 to make it impossible to find a unique hash.  This however
+		 should be an extremely rare case.  ICE for now so possible
+		 issues are found and evaluated.  */
 	      gcc_checking_assert (classes == size);
 	    }
 
-	  /* To avoid conflicts across SCCs iteratively hash the whole SCC
-	     hash into the hash of each of the elements.  */
+	  /* To avoid conflicts across SCCs, iteratively hash the whole SCC
+	     hash into the hash of each element.  */
 	  for (unsigned i = 0; i < size; ++i)
 	    sccstack[first+i].hash
 	      = iterative_hash_hashval_t (sccstack[first+i].hash, scc_hash);
@@ -1500,15 +1499,14 @@ DFS::hash_scc (struct output_block *ob,
 
       /* We failed to identify the entry point; propagate hash values across
 	 the edges.  */
-      {
-	hash_map <tree, hashval_t> map(size*2);
-	for (unsigned i = 0; i < size; ++i)
-	  map.put (sccstack[first+i].t, sccstack[first+i].hash);
+      hash_map <tree, hashval_t> map(size*2);
 
-	for (unsigned i = 0; i < size; i++)
-	  sccstack[first+i].hash = hash_tree (ob->writer_cache, &map,
-					      sccstack[first+i].t);
-      }
+      for (unsigned i = 0; i < size; ++i)
+	map.put (sccstack[first+i].t, sccstack[first+i].hash);
+
+      for (unsigned i = 0; i < size; i++)
+	sccstack[first+i].hash
+	  = hash_tree (ob->writer_cache, &map, sccstack[first+i].t);
     }
   while (true);
 }
