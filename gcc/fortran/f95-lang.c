@@ -44,8 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "diagnostic.h" /* For errorcount/warningcount */
 #include "dumpfile.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "cpp.h"
 #include "trans.h"

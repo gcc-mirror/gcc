@@ -48,8 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "dumpfile.h"
 #include "c-pretty-print.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "cilk.h"
 #include "c-ubsan.h"

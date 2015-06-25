@@ -72,8 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hosthooks.h"
 #include "predict.h"
 #include "basic-block.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "opts.h"
 #include "opts-diagnostic.h"

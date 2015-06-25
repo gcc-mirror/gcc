@@ -43,8 +43,6 @@
 #include "gimple-walk.h"
 #include "tree-iterator.h"
 #include "bitmap.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "rtl.h"

@@ -1,3 +1,10 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* decl.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* resource.c: Likewise.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* jcf-io.c (memoized_class_lookups): Use nofree_string_hash.

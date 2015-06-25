@@ -69,8 +69,6 @@
 #include "target.h"
 #include "langhooks.h"
 #include "opts.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "builtins.h"
 

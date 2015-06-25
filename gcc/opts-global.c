@@ -41,8 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "dbgcnt.h"
 #include "debug.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
 #include "output.h"

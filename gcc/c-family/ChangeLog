@@ -1,3 +1,11 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* c-gimplify.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-ubsan.c: Likewise.
+	* cilk.c: Likewise.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.c (c_type_hasher): Inherit from ggc_ptr_hash rather than

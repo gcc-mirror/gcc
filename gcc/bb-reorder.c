@@ -118,8 +118,6 @@
 #include "basic-block.h"
 #include "df.h"
 #include "bb-reorder.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "except.h"
 #include "fibonacci_heap.h"

@@ -69,8 +69,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-cfg.h"
 #include "domwalk.h"
-#include "ipa-ref.h"
-#include "plugin-api.h"
 #include "cgraph.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
