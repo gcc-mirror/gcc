@@ -426,12 +426,8 @@ asan_mem_ref_get_end (const asan_mem_ref *ref, tree len)
   return asan_mem_ref_get_end (ref->start, len);
 }
 
-struct asan_mem_ref_hasher
-  : typed_noop_remove <asan_mem_ref>
+struct asan_mem_ref_hasher : nofree_ptr_hash <asan_mem_ref>
 {
-  typedef asan_mem_ref *value_type;
-  typedef asan_mem_ref *compare_type;
-
   static inline hashval_t hash (const asan_mem_ref *);
   static inline bool equal (const asan_mem_ref *, const asan_mem_ref *);
 };

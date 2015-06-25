@@ -281,10 +281,8 @@ struct tree_hash_entry
   intptr_t value;
 };
 
-struct tree_entry_hasher : typed_noop_remove <tree_hash_entry>
+struct tree_entry_hasher : nofree_ptr_hash <tree_hash_entry>
 {
-  typedef tree_hash_entry value_type;
-  typedef tree_hash_entry compare_type;
   static inline hashval_t hash (const value_type *);
   static inline bool equal (const value_type *, const compare_type *);
 };

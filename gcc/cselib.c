@@ -106,9 +106,8 @@ static rtx cselib_expand_value_rtx_1 (rtx, struct expand_value_data *, int);
      this involves walking the table entries for a given value and comparing
      the locations of the entries with the rtx we are looking up.  */
 
-struct cselib_hasher : typed_noop_remove <cselib_val>
+struct cselib_hasher : nofree_ptr_hash <cselib_val>
 {
-  typedef cselib_val *value_type;
   struct key {
     /* The rtx value and its mode (needed separately for constant
        integers).  */

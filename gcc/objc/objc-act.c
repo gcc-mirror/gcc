@@ -3856,10 +3856,8 @@ objc_get_class_ivars (tree class_name)
    more like a set).  So, we store the DECLs, but define equality as
    DECLs having the same name, and hash as the hash of the name.  */
 
-struct decl_name_hash : typed_noop_remove <tree_node>
+struct decl_name_hash : nofree_ptr_hash <tree_node>
 {
-  typedef tree_node *value_type;
-  typedef tree_node *compare_type;
   static inline hashval_t hash (const tree_node *);
   static inline bool equal (const tree_node *, const tree_node *);
 };

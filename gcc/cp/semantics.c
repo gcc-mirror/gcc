@@ -4126,7 +4126,7 @@ struct nrv_data
 
   tree var;
   tree result;
-  hash_table<pointer_hash <tree_node> > visited;
+  hash_table<nofree_ptr_hash <tree_node> > visited;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */

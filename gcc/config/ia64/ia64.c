@@ -8579,10 +8579,8 @@ finish_bundle_states (void)
 
 /* Hashtable helpers.  */
 
-struct bundle_state_hasher : typed_noop_remove <bundle_state>
+struct bundle_state_hasher : nofree_ptr_hash <bundle_state>
 {
-  typedef bundle_state *value_type;
-  typedef bundle_state *compare_type;
   static inline hashval_t hash (const bundle_state *);
   static inline bool equal (const bundle_state *, const bundle_state *);
 };

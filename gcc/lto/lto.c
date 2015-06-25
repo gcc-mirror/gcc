@@ -937,10 +937,8 @@ struct tree_scc
   tree entries[1];
 };
 
-struct tree_scc_hasher : typed_noop_remove <tree_scc>
+struct tree_scc_hasher : nofree_ptr_hash <tree_scc>
 {
-  typedef tree_scc *value_type;
-  typedef tree_scc *compare_type;
   static inline hashval_t hash (const tree_scc *);
   static inline bool equal (const tree_scc *, const tree_scc *);
 };

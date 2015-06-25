@@ -275,10 +275,8 @@ find_classfile (char *filename, JCF *jcf, const char *dep_name)
 
 /* Hash table helper.  */
 
-struct charstar_hash : typed_noop_remove <char>
+struct charstar_hash : nofree_ptr_hash <const char>
 {
-  typedef const char *value_type;
-  typedef const char *compare_type;
   static inline hashval_t hash (const char *candidate);
   static inline bool equal (const char *existing, const char *candidate);
 };

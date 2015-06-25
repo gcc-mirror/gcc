@@ -1,5 +1,55 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-table.h: Update comments.
+	* hash-traits.h (pointer_hash): Don't inherit from typed_noop_remove.
+	(nofree_ptr_hash): New class.
+	* asan.c (asan_mem_ref_hasher): Inherit from nofree_ptr_hash rather
+	than typed_noop_remove.  Remove redudant typedefs.
+	* attribs.c (attribute_hasher): Likewise.
+	* cfg.c (bb_copy_hasher): Likewise.
+	* cselib.c (cselib_hasher): Likewise.
+	* dse.c (invariant_group_base_hasher): Likewise.
+	* dwarf2cfi.c (trace_info_hasher): Likewise.
+	* dwarf2out.c (macinfo_entry_hasher): Likewise.
+	(comdat_type_hasher, loc_list_hasher): Likewise.
+	* gcse.c (pre_ldst_expr_hasher): Likewise.
+	* genmatch.c (id_base): Likewise.
+	* genrecog.c (test_pattern_hasher): Likewise.
+	* gimple-ssa-strength-reduction.c (cand_chain_hasher): Likewise.
+	* haifa-sched.c (delay_i1_hasher): Likewise.
+	* hard-reg-set.h (simplifiable_subregs_hasher): Likewise.
+	* ipa-icf.h (congruence_class_group_hash): Likewise.
+	* ipa-profile.c (histogram_hash): Likewise.
+	* ira-color.c (allocno_hard_regs_hasher): Likewise.
+	* lto-streamer.h (string_slot_hasher): Likewise.
+	* lto-streamer.c (tree_entry_hasher): Likewise.
+	* plugin.c (event_hasher): Likewise.
+	* postreload-gcse.c (expr_hasher): Likewise.
+	* store-motion.c (st_expr_hasher): Likewise.
+	* tree-sra.c (uid_decl_hasher): Likewise.
+	* tree-ssa-coalesce.c (coalesce_pair_hasher): Likewise.
+	(ssa_name_var_hash): Likewise.
+	* tree-ssa-live.c (tree_int_map_hasher): Likewise.
+	* tree-ssa-loop-im.c (mem_ref_hasher): Likewise.
+	* tree-ssa-pre.c (pre_expr_d): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_hasher): Likewise.
+	* vtable-verify.h (registration_hasher): Likewise.
+	* vtable-verify.c (vtbl_map_hasher): Likewise.
+	* config/arm/arm.c (libcall_hasher): Likewise.
+	* config/i386/winnt.c (wrapped_symbol_hasher): Likewise.
+	* config/ia64/ia64.c (bundle_state_hasher): Likewise.
+	* config/sol2.c (comdat_entry_hasher): Likewise.
+	* fold-const.c (fold): Use nofree_ptr_hash instead of pointer_hash.
+	(print_fold_checksum, fold_checksum_tree): Likewise.
+	(debug_fold_checksum, fold_build1_stat_loc): Likewise.
+	(fold_build2_stat_loc, fold_build3_stat_loc): Likewise.
+	(fold_build_call_array_loc): Likewise.
+	* tree-ssa-ccp.c (gimple_htab): Likewise.
+	* tree-browser.c (tree_upper_hasher): Inherit from nofree_ptr_hash
+	rather than pointer_type.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (pointer_hash::mark_deleted, pointer_hash::mark_empty)
 	(pointer_hash::is_deleted, pointer_hash::is_empty): New functions.
 

@@ -104,7 +104,7 @@ static tree TB_history_prev (void);
 void browse_tree (tree);
 
 /* Hashtable helpers.  */
-struct tree_upper_hasher : pointer_hash<tree_node>
+struct tree_upper_hasher : nofree_ptr_hash<tree_node>
 {
   static inline bool equal (const value_type &, const compare_type &);
 };

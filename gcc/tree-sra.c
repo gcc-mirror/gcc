@@ -341,10 +341,8 @@ static hash_map<tree, auto_vec<access_p> > *base_access_vec;
 
 /* Candidate hash table helpers.  */
 
-struct uid_decl_hasher : typed_noop_remove <tree_node>
+struct uid_decl_hasher : nofree_ptr_hash <tree_node>
 {
-  typedef tree_node *value_type;
-  typedef tree_node *compare_type;
   static inline hashval_t hash (const tree_node *);
   static inline bool equal (const tree_node *, const tree_node *);
 };

@@ -709,10 +709,8 @@ i386_pe_record_stub (const char *name)
 
 /* Hashtable helpers.  */
 
-struct wrapped_symbol_hasher : typed_noop_remove <char>
+struct wrapped_symbol_hasher : nofree_ptr_hash <const char>
 {
-  typedef const char *value_type;
-  typedef const char *compare_type;
   static inline hashval_t hash (const char *);
   static inline bool equal (const char *, const char *);
   static inline void remove (const char *);
