@@ -1,3 +1,7 @@
+2015-06-25  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr52631.c: Disable forwprop.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/vect-add-sub-cond.c: New test.

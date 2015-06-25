@@ -738,6 +738,97 @@ along with GCC; see the file COPYING3.  If not see
 	&& wi::eq_p (wi::lshift (@0, cand), @2))
     (cmp @1 { build_int_cst (TREE_TYPE (@1), cand); })))))
 
+/* Fold (X << C1) & C2 into (X << C1) & (C2 | ((1 << C1) - 1))
+        (X >> C1) & C2 into (X >> C1) & (C2 | ~((type) -1 >> C1))
+   if the new mask might be further optimized.  */
+(for shift (lshift rshift)
+ (simplify
+  (bit_and (convert?@4 (shift@5 (convert1?@3 @0) INTEGER_CST@1)) INTEGER_CST@2)
+   (if (tree_nop_conversion_p (TREE_TYPE (@4), TREE_TYPE (@5))
+	&& TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
+	&& tree_fits_uhwi_p (@1)
+	&& tree_to_uhwi (@1) > 0
+	&& tree_to_uhwi (@1) < TYPE_PRECISION (type))
+    (with
+     {
+       unsigned int shiftc = tree_to_uhwi (@1);
+       unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (@2);
+       unsigned HOST_WIDE_INT newmask, zerobits = 0;
+       tree shift_type = TREE_TYPE (@3);
+       unsigned int prec;
+
+       if (shift == LSHIFT_EXPR)
+	 zerobits = ((((unsigned HOST_WIDE_INT) 1) << shiftc) - 1);
+       else if (shift == RSHIFT_EXPR
+		&& (TYPE_PRECISION (shift_type)
+		    == GET_MODE_PRECISION (TYPE_MODE (shift_type))))
+	 {
+	   prec = TYPE_PRECISION (TREE_TYPE (@3));
+	   tree arg00 = @0;
+	   /* See if more bits can be proven as zero because of
+	      zero extension.  */
+	   if (@3 != @0
+	       && TYPE_UNSIGNED (TREE_TYPE (@0)))
+	     {
+	       tree inner_type = TREE_TYPE (@0);
+	       if ((TYPE_PRECISION (inner_type)
+		    == GET_MODE_PRECISION (TYPE_MODE (inner_type)))
+		   && TYPE_PRECISION (inner_type) < prec)
+		 {
+		   prec = TYPE_PRECISION (inner_type);
+		   /* See if we can shorten the right shift.  */
+		   if (shiftc < prec)
+		     shift_type = inner_type;
+		   /* Otherwise X >> C1 is all zeros, so we'll optimize
+		      it into (X, 0) later on by making sure zerobits
+		      is all ones.  */
+		 }
+	     }
+	   zerobits = ~(unsigned HOST_WIDE_INT) 0;
+	   if (shiftc < prec)
+	     {
+	       zerobits >>= HOST_BITS_PER_WIDE_INT - shiftc;
+	       zerobits <<= prec - shiftc;
+	     }
+	   /* For arithmetic shift if sign bit could be set, zerobits
+	      can contain actually sign bits, so no transformation is
+	      possible, unless MASK masks them all away.  In that
+	      case the shift needs to be converted into logical shift.  */
+	   if (!TYPE_UNSIGNED (TREE_TYPE (@3))
+	       && prec == TYPE_PRECISION (TREE_TYPE (@3)))
+	     {
+	       if ((mask & zerobits) == 0)
+		 shift_type = unsigned_type_for (TREE_TYPE (@3));
+	       else
+		 zerobits = 0;
+	     }
+	 }
+     }
+     /* ((X << 16) & 0xff00) is (X, 0).  */
+     (if ((mask & zerobits) == mask)
+      { build_int_cst (type, 0); })
+     (with { newmask = mask | zerobits; }
+      (if (newmask != mask && (newmask & (newmask + 1)) == 0)
+       (with
+	{
+	  /* Only do the transformation if NEWMASK is some integer
+	     mode's mask.  */
+	  for (prec = BITS_PER_UNIT;
+	       prec < HOST_BITS_PER_WIDE_INT; prec <<= 1)
+	    if (newmask == (((unsigned HOST_WIDE_INT) 1) << prec) - 1)
+	      break;
+	}
+	(if (prec < HOST_BITS_PER_WIDE_INT
+	     || newmask == ~(unsigned HOST_WIDE_INT) 0)
+	 (with
+	  { tree newmaskt = build_int_cst_type (TREE_TYPE (@2), newmask); }
+	  (if (!tree_int_cst_equal (newmaskt, @2))
+	   (if (shift_type != TREE_TYPE (@3)
+		&& single_use (@4) && single_use (@5))
+	    (bit_and (convert (shift:shift_type (convert @3) @1)) { newmaskt; }))
+	   (if (shift_type == TREE_TYPE (@3))
+	    (bit_and @4 { newmaskt; }))))))))))))
+
 /* Simplifications of conversions.  */
 
 /* Basic strip-useless-type-conversions / strip_nops.  */
