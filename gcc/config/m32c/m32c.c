@@ -4123,6 +4123,9 @@ m32c_emit_prologue (void)
       && !m32c_function_needs_enter ())
     cfun->machine->use_rts = 1;
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = frame_size;
+  
   if (frame_size > 254)
     {
       extra_frame_size = frame_size - 254;
