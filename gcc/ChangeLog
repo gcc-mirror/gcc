@@ -1,3 +1,15 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* function.h (struct incoming_args): Move struct.
+	(pass_by_reference, reference_callee_copied): Remove prototypes.
+	* emit-rtl.h (struct incoming_args): Relocate struct here.
+	* calls.h (pass_by_reference, reference_callee_copied): Relocate
+	prototypes here.
+	* function.c (pass_by_reference, reference_callee_copied): Move.
+	* calls.c (pass_by_reference, reference_callee_copied): Relocate here.
+	* cfgloop.h: Don't include tm.h or hard-reg-set.h.
+	* ipa-chkp.c: Include calls.h.
+
 2015-06-25  Andrew Macleod  <amacleod@redhat.com>
 
 	* alias.h (alias_set_type): Move typedef.

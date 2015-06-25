@@ -48,7 +48,7 @@
 #include "plugin.h"
 #include "hashtab.h"
 #include "hard-reg-set.h"
-#include "function.h"	/* For pass_by_reference.  */
+#include "calls.h"	/* For pass_by_reference.  */
 #include "dwarf2out.h"
 
 #include "ada.h"
