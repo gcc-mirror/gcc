@@ -159,14 +159,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "builtins.h"
+#include "tree-hash-traits.h"
 
 static GTY(()) int call_site_base;
 
-struct tree_hash_traits : default_hashmap_traits
-{
-  static hashval_t hash (tree t) { return TREE_HASH (t); }
-};
-
+struct tree_hash_traits : simple_hashmap_traits <tree_hash> {};
 static GTY (()) hash_map<tree, tree, tree_hash_traits> *type_to_runtime_map;
 
 /* Describe the SjLj_Function_Context structure.  */
