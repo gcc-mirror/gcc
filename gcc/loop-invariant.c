@@ -441,10 +441,8 @@ invariant_expr_equal_p (rtx_insn *insn1, rtx e1, rtx_insn *insn2, rtx e2)
   return true;
 }
 
-struct invariant_expr_hasher : typed_free_remove <invariant_expr_entry>
+struct invariant_expr_hasher : free_ptr_hash <invariant_expr_entry>
 {
-  typedef invariant_expr_entry *value_type;
-  typedef invariant_expr_entry *compare_type;
   static inline hashval_t hash (const invariant_expr_entry *);
   static inline bool equal (const invariant_expr_entry *,
 			    const invariant_expr_entry *);

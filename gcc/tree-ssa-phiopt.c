@@ -1309,10 +1309,8 @@ struct name_to_bb
 
 /* Hashtable helpers.  */
 
-struct ssa_names_hasher : typed_free_remove <name_to_bb>
+struct ssa_names_hasher : free_ptr_hash <name_to_bb>
 {
-  typedef name_to_bb *value_type;
-  typedef name_to_bb *compare_type;
   static inline hashval_t hash (const name_to_bb *);
   static inline bool equal (const name_to_bb *, const name_to_bb *);
 };

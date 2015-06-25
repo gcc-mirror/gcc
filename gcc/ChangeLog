@@ -1,5 +1,35 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (free_ptr_hash): New class.
+	* dwarf2out.c (decl_table_entry_hasher): Inherit from free_ptr_hash
+	rather than typed_free_remove.  Remove redudant typedefs.
+	(external_ref_hasher): Likewise.
+	* except.c (action_record_hasher, ttypes_filter_hasher): Likewise.
+	(ehspec_hasher): Likewise.
+	* ggc-common.c (saving_hasher): Likewise.
+	* gimplify.c (gimplify_hasher): Likewise.
+	* haifa-sched.c (delay_i2_hasher): Likewise.
+	* loop-invariant.c (invariant_expr_hasher): Likewise.
+	* loop-iv.c (biv_entry_hasher): Likewise.
+	* loop-unroll.c (iv_split_hasher, var_expand_hasher): Likewise.
+	* trans-mem.c (tm_mem_map_hasher, tm_memop_hasher): Likewise.
+	* tree-cfg.c (locus_discrim_hasher): Likewise.
+	* tree-eh.c (finally_tree_hasher): Likewise.
+	* tree-into-ssa.c (var_info_hasher): Likewise.
+	* tree-parloops.c (reduction_hasher, name_to_copy_hasher): Likewise.
+	* tree-ssa-loop-ivopts.c (iv_inv_expr_hasher): Likewise.
+	* tree-ssa-phiopt.c (ssa_names_hasher): Likewise.
+	* tree-ssa-pre.c (expr_pred_trans_d): Likewise.
+	* tree-ssa-sccvn.c (vn_constant_hasher): Likewise.
+	* tree-ssa-structalias.c (equiv_class_hasher): Likewise.
+	(shared_bitmap_hasher): Likewise.
+	* tree-ssa-threadupdate.c (redirection_data): Likewise.
+	* tree-vectorizer.h (peel_info_hasher): Likewise.
+	* tree-vectorizer.c (simduid_to_vf, simd_array_to_simduid): Likewise.
+	* config/mips/mips.c (mips_lo_sum_offset_hasher): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-table.h: Update comments.
 	* hash-traits.h (pointer_hash): Don't inherit from typed_noop_remove.
 	(nofree_ptr_hash): New class.

@@ -124,9 +124,8 @@ static struct loop *current_loop;
 
 /* Hashtable helper.  */
 
-struct biv_entry_hasher : typed_free_remove <biv_entry>
+struct biv_entry_hasher : free_ptr_hash <biv_entry>
 {
-  typedef biv_entry *value_type;
   typedef rtx_def *compare_type;
   static inline hashval_t hash (const biv_entry *);
   static inline bool equal (const biv_entry *, const rtx_def *);

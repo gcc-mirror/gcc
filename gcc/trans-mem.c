@@ -1030,10 +1030,8 @@ typedef struct tm_new_mem_map
 
 /* Hashtable helpers.  */
 
-struct tm_mem_map_hasher : typed_free_remove <tm_new_mem_map_t>
+struct tm_mem_map_hasher : free_ptr_hash <tm_new_mem_map_t>
 {
-  typedef tm_new_mem_map_t *value_type;
-  typedef tm_new_mem_map_t *compare_type;
   static inline hashval_t hash (const tm_new_mem_map_t *);
   static inline bool equal (const tm_new_mem_map_t *, const tm_new_mem_map_t *);
 };
@@ -3331,10 +3329,8 @@ typedef struct tm_memop
 
 /* TM memory operation hashtable helpers.  */
 
-struct tm_memop_hasher : typed_free_remove <tm_memop>
+struct tm_memop_hasher : free_ptr_hash <tm_memop>
 {
-  typedef tm_memop *value_type;
-  typedef tm_memop *compare_type;
   static inline hashval_t hash (const tm_memop *);
   static inline bool equal (const tm_memop *, const tm_memop *);
 };

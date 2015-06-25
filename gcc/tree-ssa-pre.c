@@ -515,7 +515,7 @@ static bitmap need_ab_cleanup;
 /* A three tuple {e, pred, v} used to cache phi translations in the
    phi_translate_table.  */
 
-typedef struct expr_pred_trans_d : typed_free_remove<expr_pred_trans_d>
+typedef struct expr_pred_trans_d : free_ptr_hash<expr_pred_trans_d>
 {
   /* The expression.  */
   pre_expr e;
@@ -531,8 +531,6 @@ typedef struct expr_pred_trans_d : typed_free_remove<expr_pred_trans_d>
   hashval_t hashcode;
 
   /* hash_table support.  */
-  typedef expr_pred_trans_d *value_type;
-  typedef expr_pred_trans_d *compare_type;
   static inline hashval_t hash (const expr_pred_trans_d *);
   static inline int equal (const expr_pred_trans_d *, const expr_pred_trans_d *);
 } *expr_pred_trans_t;

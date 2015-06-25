@@ -215,10 +215,8 @@ typedef struct var_info_d *var_info_p;
 
 /* VAR_INFOS hashtable helpers.  */
 
-struct var_info_hasher : typed_free_remove <var_info_d>
+struct var_info_hasher : free_ptr_hash <var_info_d>
 {
-  typedef var_info_d *value_type;
-  typedef var_info_d *compare_type;
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
 };

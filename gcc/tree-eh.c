@@ -198,10 +198,8 @@ struct finally_tree_node
 
 /* Hashtable helpers.  */
 
-struct finally_tree_hasher : typed_free_remove <finally_tree_node>
+struct finally_tree_hasher : free_ptr_hash <finally_tree_node>
 {
-  typedef finally_tree_node *value_type;
-  typedef finally_tree_node *compare_type;
   static inline hashval_t hash (const finally_tree_node *);
   static inline bool equal (const finally_tree_node *,
 			    const finally_tree_node *);

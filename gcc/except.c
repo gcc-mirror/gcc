@@ -205,10 +205,8 @@ struct action_record
 
 /* Hashtable helpers.  */
 
-struct action_record_hasher : typed_free_remove <action_record>
+struct action_record_hasher : free_ptr_hash <action_record>
 {
-  typedef action_record *value_type;
-  typedef action_record *compare_type;
   static inline hashval_t hash (const action_record *);
   static inline bool equal (const action_record *, const action_record *);
 };
@@ -721,9 +719,8 @@ struct ttypes_filter {
 
 /* Helper for ttypes_filter hashing.  */
 
-struct ttypes_filter_hasher : typed_free_remove <ttypes_filter>
+struct ttypes_filter_hasher : free_ptr_hash <ttypes_filter>
 {
-  typedef ttypes_filter *value_type;
   typedef tree_node *compare_type;
   static inline hashval_t hash (const ttypes_filter *);
   static inline bool equal (const ttypes_filter *, const tree_node *);
@@ -749,10 +746,8 @@ typedef hash_table<ttypes_filter_hasher> ttypes_hash_type;
 
 /* Helper for ehspec hashing.  */
 
-struct ehspec_hasher : typed_free_remove <ttypes_filter>
+struct ehspec_hasher : free_ptr_hash <ttypes_filter>
 {
-  typedef ttypes_filter *value_type;
-  typedef ttypes_filter *compare_type;
   static inline hashval_t hash (const ttypes_filter *);
   static inline bool equal (const ttypes_filter *, const ttypes_filter *);
 };

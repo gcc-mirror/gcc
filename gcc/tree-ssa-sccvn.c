@@ -286,10 +286,8 @@ typedef struct vn_tables_s
 
 /* vn_constant hashtable helpers.  */
 
-struct vn_constant_hasher : typed_free_remove <vn_constant_s>
+struct vn_constant_hasher : free_ptr_hash <vn_constant_s>
 { 
-  typedef vn_constant_s *value_type;
-  typedef vn_constant_s *compare_type;
   static inline hashval_t hash (const vn_constant_s *);
   static inline bool equal (const vn_constant_s *, const vn_constant_s *);
 };

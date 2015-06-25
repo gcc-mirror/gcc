@@ -283,10 +283,8 @@ typedef struct iv_cand *iv_cand_p;
 
 /* Hashtable helpers.  */
 
-struct iv_inv_expr_hasher : typed_free_remove <iv_inv_expr_ent>
+struct iv_inv_expr_hasher : free_ptr_hash <iv_inv_expr_ent>
 {
-  typedef iv_inv_expr_ent *value_type;
-  typedef iv_inv_expr_ent *compare_type;
   static inline hashval_t hash (const iv_inv_expr_ent *);
   static inline bool equal (const iv_inv_expr_ent *, const iv_inv_expr_ent *);
 };

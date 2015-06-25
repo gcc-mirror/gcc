@@ -132,10 +132,8 @@ struct locus_discrim_map
 
 /* Hashtable helpers.  */
 
-struct locus_discrim_hasher : typed_free_remove <locus_discrim_map>
+struct locus_discrim_hasher : free_ptr_hash <locus_discrim_map>
 {
-  typedef locus_discrim_map *value_type;
-  typedef locus_discrim_map *compare_type;
   static inline hashval_t hash (const locus_discrim_map *);
   static inline bool equal (const locus_discrim_map *,
 			    const locus_discrim_map *);

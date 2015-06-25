@@ -1925,10 +1925,8 @@ typedef const struct equiv_class_label *const_equiv_class_label_t;
 
 /* Equiv_class_label hashtable helpers.  */
 
-struct equiv_class_hasher : typed_free_remove <equiv_class_label>
+struct equiv_class_hasher : free_ptr_hash <equiv_class_label>
 {
-  typedef equiv_class_label *value_type;
-  typedef equiv_class_label *compare_type;
   static inline hashval_t hash (const equiv_class_label *);
   static inline bool equal (const equiv_class_label *,
 			    const equiv_class_label *);
@@ -5950,10 +5948,8 @@ typedef const struct shared_bitmap_info *const_shared_bitmap_info_t;
 
 /* Shared_bitmap hashtable helpers.  */
 
-struct shared_bitmap_hasher : typed_free_remove <shared_bitmap_info>
+struct shared_bitmap_hasher : free_ptr_hash <shared_bitmap_info>
 {
-  typedef shared_bitmap_info *value_type;
-  typedef shared_bitmap_info *compare_type;
   static inline hashval_t hash (const shared_bitmap_info *);
   static inline bool equal (const shared_bitmap_info *,
 			    const shared_bitmap_info *);
