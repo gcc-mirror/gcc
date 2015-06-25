@@ -121,6 +121,27 @@ pointer_hash <Type>::is_empty (Type *e)
   return e == NULL;
 }
 
+/* Hasher for "const char *" strings, using string rather than pointer
+   equality.  */
+
+struct string_hash : pointer_hash <const char>
+{
+  static inline hashval_t hash (const char *);
+  static inline bool equal (const char *, const char *);
+};
+
+inline hashval_t
+string_hash::hash (const char *id)
+{
+  return htab_hash_string (id);
+}
+
+inline bool
+string_hash::equal (const char *id1, const char *id2)
+{
+  return strcmp (id1, id2) == 0;
+}
+
 /* Remover and marker for entries in gc memory.  */
 
 template<typename T>
@@ -189,6 +210,11 @@ struct ggc_ptr_hash : pointer_hash <T>, ggc_remove <T *> {};
 
 template <typename T>
 struct ggc_cache_ptr_hash : pointer_hash <T>, ggc_cache_remove <T *> {};
+
+/* Traits for string elements that should not be freed when an element
+   is deleted.  */
+
+struct nofree_string_hash : string_hash, typed_noop_remove <const char *> {};
 
 template <typename T> struct default_hash_traits;
 

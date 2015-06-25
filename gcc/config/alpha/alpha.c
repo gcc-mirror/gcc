@@ -4806,13 +4806,7 @@ alpha_multipass_dfa_lookahead (void)
 
 struct GTY(()) alpha_links;
 
-struct string_traits : default_hashmap_traits
-{
-  static bool equal_keys (const char *const &a, const char *const &b)
-  {
-    return strcmp (a, b) == 0;
-  }
-};
+typedef simple_hashmap_traits <nofree_string_hash> string_traits;
 
 struct GTY(()) machine_function
 {

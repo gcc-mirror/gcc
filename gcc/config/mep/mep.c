@@ -4071,15 +4071,7 @@ struct GTY(()) pragma_entry {
   int flag;
 };
 
-struct pragma_traits : default_hashmap_traits
-{
-  static hashval_t hash (const char *s) { return htab_hash_string (s); }
-  static bool
-  equal_keys (const char *a, const char *b)
-  {
-    return strcmp (a, b) == 0;
-  }
-};
+typedef simple_hashmap_traits<nofree_string_hash> pragma_traits;
 
 /* Hash table of farcall-tagged sections.  */
 static GTY(()) hash_map<const char *, pragma_entry, pragma_traits> *
