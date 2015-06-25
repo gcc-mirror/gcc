@@ -3,7 +3,7 @@
 
 /* Forward declaration.  */
 template<typename Key, typename Value,
-	 typename Traits = default_hashmap_traits>
+	 typename Traits = simple_hashmap_traits<default_hash_traits<Key> > >
 class hash_map;
 
 #define LOCATION_LINE_EXTRA_SPACE 30

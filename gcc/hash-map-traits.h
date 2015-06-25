@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Bacause mem-stats.h uses default hashmap traits, we have to
    put the class to this separate header file.  */
 
+#include "hash-traits.h"
+
 /* implement default behavior for traits when types allow it.  */
 
 struct default_hashmap_traits
@@ -100,5 +102,76 @@ private:
       k = static_cast<T *> (0);
     }
 };
+
+/* Implement hash_map traits for a key with hash traits H.  Empty and
+   deleted map entries are represented as empty and deleted keys.  */
+
+template <typename H>
+struct simple_hashmap_traits
+{
+  static inline hashval_t hash (const typename H::value_type &);
+  static inline bool equal_keys (const typename H::value_type &,
+				 const typename H::value_type &);
+  template <typename T> static inline void remove (T &);
+  template <typename T> static inline bool is_empty (const T &);
+  template <typename T> static inline bool is_deleted (const T &);
+  template <typename T> static inline void mark_empty (T &);
+  template <typename T> static inline void mark_deleted (T &);
+};
+
+template <typename H>
+inline hashval_t
+simple_hashmap_traits <H>::hash (const typename H::value_type &h)
+{
+  return H::hash (h);
+}
+
+template <typename H>
+inline bool
+simple_hashmap_traits <H>::equal_keys (const typename H::value_type &k1,
+				       const typename H::value_type &k2)
+{
+  return H::equal (k1, k2);
+}
+
+template <typename H>
+template <typename T>
+inline void
+simple_hashmap_traits <H>::remove (T &entry)
+{
+  H::remove (entry.m_key);
+}
+
+template <typename H>
+template <typename T>
+inline bool
+simple_hashmap_traits <H>::is_empty (const T &entry)
+{
+  return H::is_empty (entry.m_key);
+}
+
+template <typename H>
+template <typename T>
+inline bool
+simple_hashmap_traits <H>::is_deleted (const T &entry)
+{
+  return H::is_deleted (entry.m_key);
+}
+
+template <typename H>
+template <typename T>
+inline void
+simple_hashmap_traits <H>::mark_empty (T &entry)
+{
+  H::mark_empty (entry.m_key);
+}
+
+template <typename H>
+template <typename T>
+inline void
+simple_hashmap_traits <H>::mark_deleted (T &entry)
+{
+  H::mark_deleted (entry.m_key);
+}
 
 #endif // HASH_MAP_TRAITS_H

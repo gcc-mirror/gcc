@@ -1,5 +1,12 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-map-traits.h: Include hash-traits.h.
+	(simple_hashmap_traits): New class.
+	* mem-stats.h (hash_map): Change the default traits to
+	simple_hashmap_traits<default_hash_traits<Key> >.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-table.h: Update comments.
 
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
