@@ -162,8 +162,11 @@ typedef struct
   tree second;
 } type_pair;
 
-struct pair_traits : default_hashset_traits
+template <>
+struct default_hash_traits <type_pair> : typed_noop_remove <type_pair>
 {
+  typedef type_pair value_type;
+  typedef type_pair compare_type;
   static hashval_t
   hash (type_pair p)
   {
@@ -192,7 +195,7 @@ struct pair_traits : default_hashset_traits
 };
 
 static bool odr_types_equivalent_p (tree, tree, bool, bool *,
-				    hash_set<type_pair,pair_traits> *,
+				    hash_set<type_pair> *,
 				    location_t, location_t);
 
 static bool odr_violation_reported = false;
@@ -769,7 +772,7 @@ set_type_binfo (tree type, tree binfo)
 
 static bool
 odr_subtypes_equivalent_p (tree t1, tree t2,
-			   hash_set<type_pair,pair_traits> *visited,
+			   hash_set<type_pair> *visited,
 			   location_t loc1, location_t loc2)
 {
 
@@ -1335,7 +1338,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 
 static bool
 odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
-			hash_set<type_pair,pair_traits> *visited,
+			hash_set<type_pair> *visited,
 			location_t loc1, location_t loc2)
 {
   /* Check first for the obvious case of pointer identity.  */
@@ -1785,7 +1788,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 bool
 odr_types_equivalent_p (tree type1, tree type2)
 {
-  hash_set<type_pair,pair_traits> visited;
+  hash_set<type_pair> visited;
 
 #ifdef ENABLE_CHECKING
   gcc_assert (odr_or_derived_type_p (type1) && odr_or_derived_type_p (type2));
@@ -1860,7 +1863,7 @@ add_type_duplicate (odr_type val, tree type)
   bool base_mismatch = false;
   unsigned int i;
   bool warned = false;
-  hash_set<type_pair,pair_traits> visited;
+  hash_set<type_pair> visited;
 
   gcc_assert (in_lto_p);
   vec_safe_push (val->types, type);

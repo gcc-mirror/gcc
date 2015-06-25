@@ -190,4 +190,9 @@ struct ggc_ptr_hash : pointer_hash <T>, ggc_remove <T *> {};
 template <typename T>
 struct ggc_cache_ptr_hash : pointer_hash <T>, ggc_cache_remove <T *> {};
 
+template <typename T> struct default_hash_traits;
+
+template <typename T>
+struct default_hash_traits <T *> : ggc_ptr_hash <T> {};
+
 #endif

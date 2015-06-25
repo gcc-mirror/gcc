@@ -1,5 +1,16 @@
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-traits.h (default_hash_traits): New structure.
+	* hash-set.h (default_hashset_traits): Delete.
+	(hash_set): Use default_hash_traits<Key> instead of
+	default_hashset_traits.  Delete hash_entry type and use Key directly.
+	* ipa-devirt.c (pair_traits): Delete.
+	(default_hash_traits <type_pair>): Override.
+	(odr_subtypes_equivalent_p): Remove pair_types template parameter.
+	(odr_types_equivalent_p, add_type_duplicate): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hash-traits.h (typed_noop_remove): Don't require a pointer type.
 
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
