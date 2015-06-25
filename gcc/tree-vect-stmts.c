@@ -3841,13 +3841,15 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      if (slp_node)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	      else
+		{
+		  if (!prev_stmt_info)
+		    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+		  else
+		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+		  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		}
 	    }
-
-	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
-	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
       break;
 
@@ -5400,10 +5402,12 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  vect_finish_stmt_generation (stmt, incr, gsi);
 
 		  running_off = newoff;
-		  if (g == group_size - 1)
+		  if (g == group_size - 1
+		      && !slp)
 		    {
 		      if (j == 0 && i == 0)
-			STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = assign;
+			STMT_VINFO_VEC_STMT (stmt_info)
+			    = *vec_stmt = assign;
 		      else
 			STMT_VINFO_RELATED_STMT (prev_stmt_info) = assign;
 		      prev_stmt_info = vinfo_for_stmt (assign);
@@ -6409,11 +6413,14 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      if (slp_perm)
 		dr_chain.quick_push (gimple_assign_lhs (new_stmt));
 	    }
-	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
 	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    {
+	      if (j == 0)
+		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	      else
+		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    }
 	}
       if (slp_perm)
 	vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
@@ -7523,6 +7530,8 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   bool done;
 
+  gimple old_vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+
   switch (STMT_VINFO_TYPE (stmt_info))
     {
     case type_demotion_vec_info_type:
@@ -7608,6 +7617,18 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
                              "stmt not supported.\n");
 	  gcc_unreachable ();
 	}
+    }
+
+  /* Verify SLP vectorization doesn't mess with STMT_VINFO_VEC_STMT.
+     This would break hybrid SLP vectorization.  */
+  if (slp_node)
+    {
+      if (PURE_SLP_STMT (stmt_info))
+	gcc_assert (!old_vec_stmt && !vec_stmt
+		    && !STMT_VINFO_VEC_STMT (stmt_info));
+      else if (HYBRID_SLP_STMT (stmt_info))
+	gcc_assert (!vec_stmt
+		    && STMT_VINFO_VEC_STMT (stmt_info) == old_vec_stmt);
     }
 
   /* Handle inner-loop stmts whose DEF is used in the loop-nest that

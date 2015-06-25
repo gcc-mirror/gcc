@@ -1,5 +1,14 @@
 2015-06-25  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vectorizable_conversion): Do not set
+	STMT_VINFO_VEC_STMT for SLP.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_transform_stmt): Catch SLP vectorization clobbering
+	STMT_VINFO_VEC_STMT.
+
+2015-06-25  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Improve debug
 	dumping.
 	(vect_create_mask_and_perm): Do not set STMT_VINFO_VEC_STMT and
