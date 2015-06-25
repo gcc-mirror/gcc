@@ -65,8 +65,6 @@
 #include "tm-constrs.h"
 #include "df.h"
 #include "diagnostic-core.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "target.h"

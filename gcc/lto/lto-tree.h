@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_LTO_TREE_H
 #define GCC_LTO_TREE_H
 
-#include "plugin-api.h"
-
 struct GTY(()) lang_identifier
 {
   struct tree_identifier base;

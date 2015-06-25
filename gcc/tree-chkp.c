@@ -75,7 +75,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "rtl.h" /* For MEM_P, assign_temp.  */
 #include "tree-dfa.h"
-#include "ipa-ref.h"
 #include "lto-streamer.h"
 #include "cgraph.h"
 #include "ipa-chkp.h"

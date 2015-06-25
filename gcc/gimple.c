@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
-#include "ipa-ref.h"
 #include "lto-streamer.h"
 #include "cgraph.h"
 #include "gimple-ssa.h"

@@ -1,3 +1,19 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* call.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* class.c: Likewise.
+	* cp-ubsan.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* lambda.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* optimize.c: Likewise.
+	* parser.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* vtable-class-hierarchy.c: Likewise.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* constexpr.c (constexpr_fundef_hasher): Inherit from ggc_ptr_hash

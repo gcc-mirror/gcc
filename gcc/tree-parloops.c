@@ -66,8 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-parloops.h"
 #include "omp-low.h"
 #include "tree-nested.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-ssa.h"
 

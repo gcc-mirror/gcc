@@ -40,8 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-inline.h"
 #include "langhooks.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "timevar.h"

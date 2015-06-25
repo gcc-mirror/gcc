@@ -61,8 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "tree-pass.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "diagnostic-core.h"

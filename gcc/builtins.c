@@ -67,7 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "asan.h"
 #include "cilk.h"
-#include "ipa-ref.h"
 #include "lto-streamer.h"
 #include "cgraph.h"
 #include "tree-chkp.h"

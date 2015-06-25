@@ -21,6 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
+#include "ipa-ref.h"
+#include "plugin-api.h"
+
+class ipa_opt_pass_d;
+typedef ipa_opt_pass_d *ipa_opt_pass;
 
 /* Symbol table consists of functions and variables.
    TODO: add labels and CONST_DECLs.  */
@@ -3003,29 +3008,6 @@ varpool_node::call_for_symbol_and_aliases (bool (*callback) (varpool_node *,
   if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
   return false;
-}
-
-/* Return true if NODE's address can be compared.  */
-
-inline bool
-symtab_node::address_can_be_compared_p ()
-{
-  /* Address of virtual tables and functions is never compared.  */
-  if (DECL_VIRTUAL_P (decl))
-    return false;
-  /* Address of C++ cdtors is never compared.  */
-  if (is_a <cgraph_node *> (this)
-      && (DECL_CXX_CONSTRUCTOR_P (decl)
-	  || DECL_CXX_DESTRUCTOR_P (decl)))
-    return false;
-  /* Constant pool symbols addresses are never compared.
-     flag_merge_constants permits us to assume the same on readonly vars.  */
-  if (is_a <varpool_node *> (this)
-      && (DECL_IN_CONSTANT_POOL (decl)
-	  || (flag_merge_constants >= 2
-	      && TREE_READONLY (decl) && !TREE_THIS_VOLATILE (decl))))
-    return false;
-  return true;
 }
 
 /* Return true if refernece may be used in address compare.  */

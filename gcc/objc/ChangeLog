@@ -1,3 +1,7 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c: Remove ipa-ref.h and plugin-api.h from include list.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* objc-act.c (objc_string_hasher): Inherit from ggc_ptr_hash

@@ -59,8 +59,6 @@
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
 #include "basic-block.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "bfin-protos.h"

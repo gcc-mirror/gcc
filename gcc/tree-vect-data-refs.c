@@ -59,8 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "diagnostic-core.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "rtl.h"

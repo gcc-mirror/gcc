@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "tree-ssa.h"
 #include "lto-streamer.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "ipa-utils.h"
 

@@ -57,8 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "langhooks.h"
 #include "target.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"

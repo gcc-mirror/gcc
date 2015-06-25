@@ -40,8 +40,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "hard-reg-set.h"
 #include "function.h"
 #include "tree-iterator.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 
 /* A list of all the resources files.  */

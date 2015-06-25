@@ -63,8 +63,6 @@
 #include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "builtins.h"
 #include "rtl-iter.h"

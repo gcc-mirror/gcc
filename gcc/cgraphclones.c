@@ -95,8 +95,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "params.h"
 #include "intl.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"

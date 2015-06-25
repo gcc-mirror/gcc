@@ -38,8 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "gimple.h"
 #include "streamer-hooks.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-streamer.h"
 

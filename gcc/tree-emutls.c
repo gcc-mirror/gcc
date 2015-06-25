@@ -42,8 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "tree-pass.h"
 #include "gimple-ssa.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"

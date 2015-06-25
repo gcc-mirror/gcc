@@ -1,3 +1,9 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/trans.c: Remove ipa-ref.h and plugin-api.h from include
+	list.
+	* gcc-interface/utils.c: Likewise.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc-interface/decl.c (value_annotation_hasher): Inherit from
