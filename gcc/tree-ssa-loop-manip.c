@@ -1319,15 +1319,14 @@ rewrite_all_phi_nodes_with_iv (loop_p loop, tree main_iv)
   free (bbs);
 }
 
-/* Bases all the induction variables in LOOP on a single induction
-   variable (unsigned with base 0 and step 1), whose final value is
-   compared with *NIT.  When the IV type precision has to be larger
-   than *NIT type precision, *NIT is converted to the larger type, the
-   conversion code is inserted before the loop, and *NIT is updated to
-   the new definition.  When BUMP_IN_LATCH is true, the induction
-   variable is incremented in the loop latch, otherwise it is
-   incremented in the loop header.  Return the induction variable that
-   was created.  */
+/* Bases all the induction variables in LOOP on a single induction variable
+   (with base 0 and step 1), whose final value is compared with *NIT.  When the
+   IV type precision has to be larger than *NIT type precision, *NIT is
+   converted to the larger type, the conversion code is inserted before the
+   loop, and *NIT is updated to the new definition.  When BUMP_IN_LATCH is true,
+   the induction variable is incremented in the loop latch, otherwise it is
+   incremented in the loop header.  Return the induction variable that was
+   created.  */
 
 tree
 canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
