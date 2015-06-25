@@ -16346,9 +16346,8 @@ mips_hash_base (rtx base)
 
 /* Hashtable helpers.  */
 
-struct mips_lo_sum_offset_hasher : typed_free_remove <mips_lo_sum_offset>
+struct mips_lo_sum_offset_hasher : free_ptr_hash <mips_lo_sum_offset>
 {
-  typedef mips_lo_sum_offset *value_type;
   typedef rtx_def *compare_type;
   static inline hashval_t hash (const mips_lo_sum_offset *);
   static inline bool equal (const mips_lo_sum_offset *, const rtx_def *);

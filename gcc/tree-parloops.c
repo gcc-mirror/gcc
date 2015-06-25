@@ -218,10 +218,8 @@ struct reduction_info
 
 /* Reduction info hashtable helpers.  */
 
-struct reduction_hasher : typed_free_remove <reduction_info>
+struct reduction_hasher : free_ptr_hash <reduction_info>
 {
-  typedef reduction_info *value_type;
-  typedef reduction_info *compare_type;
   static inline hashval_t hash (const reduction_info *);
   static inline bool equal (const reduction_info *, const reduction_info *);
 };
@@ -270,10 +268,8 @@ struct name_to_copy_elt
 
 /* Name copies hashtable helpers.  */
 
-struct name_to_copy_hasher : typed_free_remove <name_to_copy_elt>
+struct name_to_copy_hasher : free_ptr_hash <name_to_copy_elt>
 {
-  typedef name_to_copy_elt *value_type;
-  typedef name_to_copy_elt *compare_type;
   static inline hashval_t hash (const name_to_copy_elt *);
   static inline bool equal (const name_to_copy_elt *, const name_to_copy_elt *);
 };

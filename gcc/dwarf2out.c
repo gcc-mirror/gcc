@@ -7294,9 +7294,8 @@ struct decl_table_entry
 
 /* Hashtable helpers.  */
 
-struct decl_table_entry_hasher : typed_free_remove <decl_table_entry>
+struct decl_table_entry_hasher : free_ptr_hash <decl_table_entry>
 {
-  typedef decl_table_entry *value_type;
   typedef die_struct *compare_type;
   static inline hashval_t hash (const decl_table_entry *);
   static inline bool equal (const decl_table_entry *, const die_struct *);
@@ -7836,10 +7835,8 @@ struct external_ref
 
 /* Hashtable helpers.  */
 
-struct external_ref_hasher : typed_free_remove <external_ref>
+struct external_ref_hasher : free_ptr_hash <external_ref>
 {
-  typedef external_ref *value_type;
-  typedef external_ref *compare_type;
   static inline hashval_t hash (const external_ref *);
   static inline bool equal (const external_ref *, const external_ref *);
 };

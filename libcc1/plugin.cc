@@ -111,11 +111,8 @@ struct decl_addr_value
   tree address;
 };
 
-struct decl_addr_hasher : typed_free_remove<decl_addr_value>
+struct decl_addr_hasher : free_ptr_hash<decl_addr_value>
 {
-  typedef decl_addr_value *value_type;
-  typedef decl_addr_value *compare_type;
-
   static inline hashval_t hash (const decl_addr_value *);
   static inline bool equal (const decl_addr_value *, const decl_addr_value *);
 };

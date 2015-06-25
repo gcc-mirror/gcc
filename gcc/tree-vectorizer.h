@@ -212,10 +212,8 @@ typedef struct _vect_peel_extended_info
 
 /* Peeling hashtable helpers.  */
 
-struct peel_info_hasher : typed_free_remove <_vect_peel_info>
+struct peel_info_hasher : free_ptr_hash <_vect_peel_info>
 {
-  typedef _vect_peel_info *value_type;
-  typedef _vect_peel_info *compare_type;
   static inline hashval_t hash (const _vect_peel_info *);
   static inline bool equal (const _vect_peel_info *, const _vect_peel_info *);
 };

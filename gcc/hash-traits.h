@@ -173,4 +173,10 @@ struct ggc_cache_hasher : ggc_hasher<T>
 template <typename T>
 struct nofree_ptr_hash : pointer_hash <T>, typed_noop_remove <T> {};
 
+/* Traits for pointer elements that should be freed via free() when an
+   element is deleted.  */
+
+template <typename T>
+struct free_ptr_hash : pointer_hash <T>, typed_free_remove <T> {};
+
 #endif
