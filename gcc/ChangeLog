@@ -1,3 +1,9 @@
+2015-06-25  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-color.c (assign_hard_reg): Remove unecessary bitmap check.
+	Add assert.
+
 2015-06-25  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Move simplification of

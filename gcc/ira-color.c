@@ -1733,15 +1733,22 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	  /* Reload can give another class so we need to check all
 	     allocnos.  */
 	  if (!retry_p
-	      && (!bitmap_bit_p (consideration_allocno_bitmap,
-				 ALLOCNO_NUM (conflict_a))
-		  || ((!ALLOCNO_ASSIGNED_P (conflict_a)
-		       || ALLOCNO_HARD_REGNO (conflict_a) < 0)
-		      && !(hard_reg_set_intersect_p
-			   (profitable_hard_regs,
-			    ALLOCNO_COLOR_DATA
-			    (conflict_a)->profitable_hard_regs)))))
-	    continue;
+	      && ((!ALLOCNO_ASSIGNED_P (conflict_a)
+		   || ALLOCNO_HARD_REGNO (conflict_a) < 0)
+		  && !(hard_reg_set_intersect_p
+		       (profitable_hard_regs,
+			ALLOCNO_COLOR_DATA
+			(conflict_a)->profitable_hard_regs))))
+	    {
+	      /* All conflict allocnos are in consideration bitmap
+		 when retry_p is false.  It might change in future and
+		 if it happens the assert will be broken.  It means
+		 the code should be modified for the new
+		 assumptions.  */
+	      ira_assert (bitmap_bit_p (consideration_allocno_bitmap,
+					ALLOCNO_NUM (conflict_a)));
+	      continue;
+	    }
 	  conflict_aclass = ALLOCNO_CLASS (conflict_a);
 	  ira_assert (ira_reg_classes_intersect_p
 		      [aclass][conflict_aclass]);
