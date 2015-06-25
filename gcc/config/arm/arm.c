@@ -26389,7 +26389,7 @@ arm_dbx_register_number (unsigned int regno)
   if (IS_IWMMXT_REGNUM (regno))
     return 112 + regno - FIRST_IWMMXT_REGNUM;
 
-  gcc_unreachable ();
+  return DWARF_FRAME_REGISTERS;
 }
 
 /* Dwarf models VFPv3 registers as 32 64-bit registers.
