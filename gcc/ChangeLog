@@ -1,3 +1,9 @@
+2015-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/66301
+	* tree-ssa-pre.c (before_dom_children): Check that dump_file is not
+	NULL instead of calling dump_enabled_p.
+
 2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.opt: (override): New.
