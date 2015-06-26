@@ -2571,7 +2571,7 @@ write_template_args (tree args)
   if (args)
     length = TREE_VEC_LENGTH (args);
 
-  if (args && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+  if (args && length && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
     {
       /* We have nested template args.  We want the innermost template
 	 argument list.  */
