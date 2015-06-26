@@ -1,3 +1,13 @@
+2015-06-26  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Remove -A CMP -B -> A CMP B
+	and -A CMP CST -> A CMP -CST which is redundant with a pattern
+	in match.pd.
+	Move (A | C) == D where C & ~D != 0 -> 0, (X ^ Y) ==/!= 0 -> X ==/!= Y,
+	(X ^ Y) ==/!= {Y,X} -> {X,Y} ==/!= 0 and
+	(X ^ C1) op C2 -> X op (C1 ^ C2) to ...
+	* match.pd: ... patterns here.
+
 2015-06-26  Marek Polacek  <polacek@redhat.com>
 
 	* match.pd ((x | y) & ~(x & y) -> x ^ y,
