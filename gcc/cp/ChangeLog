@@ -1,5 +1,8 @@
 2015-06-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66216
+	* class.c (finish_struct): Call fixup_attribute_variants.
+
 	PR c++/66684
 	* typeck2.c (merge_exception_specifiers): Allow different
 	noexcept-specifiers if we've had errors.
