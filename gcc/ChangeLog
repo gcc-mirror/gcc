@@ -1,3 +1,8 @@
+2015-06-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gentarget-def.c (def_target_insn): Cast return of strtol to
+	unsigned int.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple.h (gimple_call_set_fn): Move inline function.
