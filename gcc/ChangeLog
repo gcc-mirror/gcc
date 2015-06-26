@@ -1,5 +1,34 @@
 2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-protos.h (tune_params): Remove
+	const from members.
+	(aarch64_tune_params): Remove const, change to no longer be
+	a pointer.
+	* config/aarch64/aarch64.c (aarch64_tune_params): Remove const,
+	change to no longer be a pointer, initialize to generic_tunings.
+	(aarch64_min_divisions_for_recip_mul): Change dereference of
+	aarch64_tune_params to member access.
+	(aarch64_reassociation_width): Likewise.
+	(aarch64_rtx_mult_cost): Likewise.
+	(aarch64_address_cost): Likewise.
+	(aarch64_branch_cost): Likewise.
+	(aarch64_rtx_costs): Likewise.
+	(aarch64_register_move_cost): Likewise.
+	(aarch64_memory_move_cost): Likewise.
+	(aarch64_sched_issue_rate): Likewise.
+	(aarch64_builtin_vectorization_cost): Likewise.
+	(aarch64_override_options): Take a copy of the selected tuning
+	struct in to aarch64_tune_params, rather than just setting
+	a pointer, change dereferences of aarch64_tune_params to member
+	accesses.
+	(aarch64_override_options_after_change): Change dereferences of
+	aarch64_tune_params to member access.
+	(aarch64_macro_fusion_p): Likewise.
+	(aarch_macro_fusion_pair_p): Likewise.
+	* config/aarch64/cortex-a57-fma-steering.c (gate): Likewise.
+
+2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.h (AARCH64_FL_USE_FMA_STEERING_PASS): Delete.
 	(aarch64_tune_flags): Likewise.
 	(AARCH64_TUNE_FMA_STEERING): Likewise.

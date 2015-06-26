@@ -166,9 +166,6 @@ unsigned aarch64_architecture_version;
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
 
-/* The current tuning set.  */
-const struct tune_params *aarch64_tune_params;
-
 /* Mask to specify which instructions we are allowed to generate.  */
 unsigned long aarch64_isa_flags = 0;
 
@@ -495,6 +492,9 @@ static const struct processor *selected_arch;
 static const struct processor *selected_cpu;
 static const struct processor *selected_tune;
 
+/* The current tuning set.  */
+struct tune_params aarch64_tune_params = generic_tunings;
+
 #define AARCH64_CPU_DEFAULT_FLAGS ((selected_cpu) ? selected_cpu->flags : 0)
 
 /* An ISA extension in the co-processor and main instruction set space.  */
@@ -556,8 +556,8 @@ static unsigned int
 aarch64_min_divisions_for_recip_mul (enum machine_mode mode)
 {
   if (GET_MODE_UNIT_SIZE (mode) == 4)
-    return aarch64_tune_params->min_div_recip_mul_sf;
-  return aarch64_tune_params->min_div_recip_mul_df;
+    return aarch64_tune_params.min_div_recip_mul_sf;
+  return aarch64_tune_params.min_div_recip_mul_df;
 }
 
 static int
@@ -565,11 +565,11 @@ aarch64_reassociation_width (unsigned opc ATTRIBUTE_UNUSED,
 			     enum machine_mode mode)
 {
   if (VECTOR_MODE_P (mode))
-    return aarch64_tune_params->vec_reassoc_width;
+    return aarch64_tune_params.vec_reassoc_width;
   if (INTEGRAL_MODE_P (mode))
-    return aarch64_tune_params->int_reassoc_width;
+    return aarch64_tune_params.int_reassoc_width;
   if (FLOAT_MODE_P (mode))
-    return aarch64_tune_params->fp_reassoc_width;
+    return aarch64_tune_params.fp_reassoc_width;
   return 1;
 }
 
@@ -5230,7 +5230,7 @@ aarch64_rtx_mult_cost (rtx x, int code, int outer, bool speed)
 {
   rtx op0, op1;
   const struct cpu_cost_table *extra_cost
-    = aarch64_tune_params->insn_extra_cost;
+    = aarch64_tune_params.insn_extra_cost;
   int cost = 0;
   bool compound_p = (outer == PLUS || outer == MINUS);
   machine_mode mode = GET_MODE (x);
@@ -5362,7 +5362,7 @@ aarch64_address_cost (rtx x,
 		      bool speed)
 {
   enum rtx_code c = GET_CODE (x);
-  const struct cpu_addrcost_table *addr_cost = aarch64_tune_params->addr_cost;
+  const struct cpu_addrcost_table *addr_cost = aarch64_tune_params.addr_cost;
   struct aarch64_address_info info;
   int cost = 0;
   info.shift = 0;
@@ -5459,7 +5459,7 @@ aarch64_branch_cost (bool speed_p, bool predictable_p)
 {
   /* When optimizing for speed, use the cost of unpredictable branches.  */
   const struct cpu_branch_cost *branch_costs =
-    aarch64_tune_params->branch_costs;
+    aarch64_tune_params.branch_costs;
 
   if (!speed_p || predictable_p)
     return branch_costs->predictable;
@@ -5642,7 +5642,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 {
   rtx op0, op1, op2;
   const struct cpu_cost_table *extra_cost
-    = aarch64_tune_params->insn_extra_cost;
+    = aarch64_tune_params.insn_extra_cost;
   machine_mode mode = GET_MODE (x);
 
   /* By default, assume that everything has equivalent cost to the
@@ -6802,7 +6802,7 @@ aarch64_register_move_cost (machine_mode mode,
   enum reg_class from = (enum reg_class) from_i;
   enum reg_class to = (enum reg_class) to_i;
   const struct cpu_regmove_cost *regmove_cost
-    = aarch64_tune_params->regmove_cost;
+    = aarch64_tune_params.regmove_cost;
 
   /* Caller save and pointer regs are equivalent to GENERAL_REGS.  */
   if (to == CALLER_SAVE_REGS || to == POINTER_REGS)
@@ -6857,14 +6857,14 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t rclass ATTRIBUTE_UNUSED,
 			  bool in ATTRIBUTE_UNUSED)
 {
-  return aarch64_tune_params->memmov_cost;
+  return aarch64_tune_params.memmov_cost;
 }
 
 /* Return the number of instructions that can be issued per cycle.  */
 static int
 aarch64_sched_issue_rate (void)
 {
-  return aarch64_tune_params->issue_rate;
+  return aarch64_tune_params.issue_rate;
 }
 
 static int
@@ -6888,44 +6888,44 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
   switch (type_of_cost)
     {
       case scalar_stmt:
-	return aarch64_tune_params->vec_costs->scalar_stmt_cost;
+	return aarch64_tune_params.vec_costs->scalar_stmt_cost;
 
       case scalar_load:
-	return aarch64_tune_params->vec_costs->scalar_load_cost;
+	return aarch64_tune_params.vec_costs->scalar_load_cost;
 
       case scalar_store:
-	return aarch64_tune_params->vec_costs->scalar_store_cost;
+	return aarch64_tune_params.vec_costs->scalar_store_cost;
 
       case vector_stmt:
-	return aarch64_tune_params->vec_costs->vec_stmt_cost;
+	return aarch64_tune_params.vec_costs->vec_stmt_cost;
 
       case vector_load:
-	return aarch64_tune_params->vec_costs->vec_align_load_cost;
+	return aarch64_tune_params.vec_costs->vec_align_load_cost;
 
       case vector_store:
-	return aarch64_tune_params->vec_costs->vec_store_cost;
+	return aarch64_tune_params.vec_costs->vec_store_cost;
 
       case vec_to_scalar:
-	return aarch64_tune_params->vec_costs->vec_to_scalar_cost;
+	return aarch64_tune_params.vec_costs->vec_to_scalar_cost;
 
       case scalar_to_vec:
-	return aarch64_tune_params->vec_costs->scalar_to_vec_cost;
+	return aarch64_tune_params.vec_costs->scalar_to_vec_cost;
 
       case unaligned_load:
-	return aarch64_tune_params->vec_costs->vec_unalign_load_cost;
+	return aarch64_tune_params.vec_costs->vec_unalign_load_cost;
 
       case unaligned_store:
-	return aarch64_tune_params->vec_costs->vec_unalign_store_cost;
+	return aarch64_tune_params.vec_costs->vec_unalign_store_cost;
 
       case cond_branch_taken:
-	return aarch64_tune_params->vec_costs->cond_taken_branch_cost;
+	return aarch64_tune_params.vec_costs->cond_taken_branch_cost;
 
       case cond_branch_not_taken:
-	return aarch64_tune_params->vec_costs->cond_not_taken_branch_cost;
+	return aarch64_tune_params.vec_costs->cond_not_taken_branch_cost;
 
       case vec_perm:
       case vec_promote_demote:
-	return aarch64_tune_params->vec_costs->vec_stmt_cost;
+	return aarch64_tune_params.vec_costs->vec_stmt_cost;
 
       case vec_construct:
         elements = TYPE_VECTOR_SUBPARTS (vectype);
@@ -7227,7 +7227,9 @@ aarch64_override_options (void)
 
   aarch64_tune_flags = selected_tune->flags;
   aarch64_tune = selected_tune->core;
-  aarch64_tune_params = selected_tune->tune;
+  /* Make a copy of the tuning parameters attached to the core, which
+     we may later overwrite.  */
+  aarch64_tune_params = *(selected_tune->tune);
   aarch64_architecture_version = selected_cpu->architecture_version;
 
   if (aarch64_fix_a53_err835769 == 2)
@@ -7259,11 +7261,11 @@ aarch64_override_options_after_change (void)
   if (!optimize_size)
     {
       if (align_loops <= 0)
-	align_loops = aarch64_tune_params->loop_align;
+	align_loops = aarch64_tune_params.loop_align;
       if (align_jumps <= 0)
-	align_jumps = aarch64_tune_params->jump_align;
+	align_jumps = aarch64_tune_params.jump_align;
       if (align_functions <= 0)
-	align_functions = aarch64_tune_params->function_align;
+	align_functions = aarch64_tune_params.function_align;
     }
 }
 
@@ -10958,7 +10960,7 @@ aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
 static bool
 aarch64_macro_fusion_p (void)
 {
-  return aarch64_tune_params->fusible_ops != AARCH64_FUSE_NOTHING;
+  return aarch64_tune_params.fusible_ops != AARCH64_FUSE_NOTHING;
 }
 
 
@@ -10978,7 +10980,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     return false;
 
   if (simple_sets_p
-      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_MOV_MOVK))
+      && (aarch64_tune_params.fusible_ops & AARCH64_FUSE_MOV_MOVK))
     {
       /* We are trying to match:
          prev (mov)  == (set (reg r0) (const_int imm16))
@@ -11003,7 +11005,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     }
 
   if (simple_sets_p
-      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_ADRP_ADD))
+      && (aarch64_tune_params.fusible_ops & AARCH64_FUSE_ADRP_ADD))
     {
 
       /*  We're trying to match:
@@ -11029,7 +11031,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     }
 
   if (simple_sets_p
-      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_MOVK_MOVK))
+      && (aarch64_tune_params.fusible_ops & AARCH64_FUSE_MOVK_MOVK))
     {
 
       /* We're trying to match:
@@ -11058,7 +11060,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 
     }
   if (simple_sets_p
-      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_ADRP_LDR))
+      && (aarch64_tune_params.fusible_ops & AARCH64_FUSE_ADRP_LDR))
     {
       /* We're trying to match:
           prev (adrp) == (set (reg r0)
@@ -11089,7 +11091,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
         }
     }
 
-  if ((aarch64_tune_params->fusible_ops & AARCH64_FUSE_CMP_BRANCH)
+  if ((aarch64_tune_params.fusible_ops & AARCH64_FUSE_CMP_BRANCH)
       && any_condjump_p (curr))
     {
       enum attr_type prev_type = get_attr_type (prev);
