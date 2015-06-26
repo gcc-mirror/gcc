@@ -503,7 +503,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
 (simplify
   (pointer_plus (pointer_plus@2 @0 @1) @3)
-  (if (single_use (@2))
+  (if (single_use (@2)
+       || (TREE_CODE (@1) == INTEGER_CST && TREE_CODE (@3) == INTEGER_CST))
    (pointer_plus @0 (plus @1 @3))))
 
 /* Pattern match
@@ -561,9 +562,10 @@ along with GCC; see the file COPYING3.  If not see
        && !TYPE_OVERFLOW_SANITIZED (type))
    (convert @1)))
 
- /* We can't reassociate floating-point or fixed-point plus or minus
-    because of saturation to +-Inf.  */
- (if (!FLOAT_TYPE_P (type) && !FIXED_POINT_TYPE_P (type))
+ /* We can't reassociate floating-point unless -fassociative-math
+    or fixed-point plus or minus because of saturation to +-Inf.  */
+ (if ((!FLOAT_TYPE_P (type) || flag_associative_math)
+      && !FIXED_POINT_TYPE_P (type))
 
   /* Match patterns that allow contracting a plus-minus pair
      irrespective of overflow issues.  */

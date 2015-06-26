@@ -1,3 +1,7 @@
+2015-06-26  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/reassoc_3.f90: Adjust.
+
 2015-06-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66412

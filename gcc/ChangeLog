@@ -1,3 +1,13 @@
+2015-06-26  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Allow associating FLOAT_TYPE_P when flag_associative_math.
+
+2015-06-26  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Allow (p +p off1) +p off2 to (p +p (off1 + off2))
+	irrespective on whether the inner operation has a single use
+	of both off are constant.
+
 2015-06-26  Uros Bizjak  <ubizjak@gmail.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>
 
