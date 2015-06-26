@@ -1,3 +1,9 @@
+2015-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66654
+	* typeck2.c (digest_init_r): Only expect reshaping if the class is
+	aggregate.
+
 2015-06-26  Marek Polacek  <polacek@redhat.com>
 
 	* cp-array-notation.c (expand_sec_reduce_builtin): Use INDIRECT_REF_P.
