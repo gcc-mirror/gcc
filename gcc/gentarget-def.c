@@ -245,7 +245,7 @@ main (int argc, char **argv)
   printf ("  if (rtx_insn *insn = dyn_cast <rtx_insn *> (x))\n");
   printf ("    return insn;\n");
   printf ("  start_sequence ();\n");
-  printf ("  emit (x);\n");
+  printf ("  emit (x, false);\n");
   printf ("  rtx_insn *res = get_insns ();\n");
   printf ("  end_sequence ();\n");
   printf ("  return res;\n");

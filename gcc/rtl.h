@@ -3494,7 +3494,7 @@ extern void add_insn (rtx_insn *);
 extern void add_insn_before (rtx, rtx, basic_block);
 extern void add_insn_after (rtx, rtx, basic_block);
 extern void remove_insn (rtx);
-extern rtx_insn *emit (rtx);
+extern rtx_insn *emit (rtx, bool = true);
 extern void emit_insn_at_entry (rtx);
 extern rtx gen_lowpart_SUBREG (machine_mode, rtx);
 extern rtx gen_const_mem (machine_mode, rtx);
