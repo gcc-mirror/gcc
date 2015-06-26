@@ -197,20 +197,17 @@
 (define_predicate "call_operation"
   (match_code "parallel")
 {
-  unsigned i;
+  int i;
 
   for (i = 1; i < XVECLEN (op, 0); i++)
     {
       rtx elt = XVECEXP (op, 0, i);
-      enum machine_mode mode;
-      unsigned regno;
 
       if (GET_CODE (elt) != USE
           || GET_CODE (XEXP (elt, 0)) != REG
           || XEXP (elt, 0) == frame_pointer_rtx
           || XEXP (elt, 0) == arg_pointer_rtx
           || XEXP (elt, 0) == stack_pointer_rtx)
-
         return false;
     }
   return true;
