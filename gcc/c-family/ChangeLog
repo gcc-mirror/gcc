@@ -1,3 +1,9 @@
+2015-06-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (check_main_parameter_types): Use VECTOR_TYPE_P
+	or VECTOR_INTEGER_TYPE_P throughout.
+	* c-gimplify.c: Likewise.
+
 2015-06-26  Marek Polacek  <polacek@redhat.com>
 
 	* array-notation-common.c (find_rank): Use INDIRECT_REF_P.
