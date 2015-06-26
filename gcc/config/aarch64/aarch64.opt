@@ -111,6 +111,10 @@ mabi=
 Target RejectNegative Joined Enum(aarch64_abi) Var(aarch64_abi) Init(AARCH64_ABI_DEFAULT)
 -mabi=ABI	Generate code that conforms to the specified ABI
 
+moverride=
+Target RejectNegative ToLower Joined Var(aarch64_override_tune_string)
+-moverride=STRING	Power users only! Override CPU optimization parameters
+
 Enum
 Name(aarch64_abi) Type(int)
 Known AArch64 ABIs (for use with the -mabi= option):

@@ -1,5 +1,23 @@
 2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.opt: (override): New.
+	* doc/invoke.texi (override): Document.
+	* config/aarch64/aarch64.c (aarch64_flag_desc): New
+	(aarch64_fusible_pairs): Likewise.
+	(aarch64_tuning_flags): Likewise.
+	(aarch64_tuning_override_function): Likewise.
+	(aarch64_tuning_override_functions): Likewise.
+	(aarch64_parse_one_option_token): Likewise.
+	(aarch64_parse_boolean_options): Likewise.
+	(aarch64_parse_fuse_string): Likewise.
+	(aarch64_parse_tune_string): Likewise.
+	(aarch64_parse_one_override_token): Likewise.
+	(aarch64_parse_override_string): Likewise.
+	(aarch64_override_options): Parse the -override string if it
+	is present.
+
+2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-protos.h (tune_params): Remove
 	const from members.
 	(aarch64_tune_params): Remove const, change to no longer be

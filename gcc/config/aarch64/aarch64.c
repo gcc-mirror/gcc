@@ -172,6 +172,36 @@ unsigned long aarch64_isa_flags = 0;
 /* Mask to specify which instruction scheduling options should be used.  */
 unsigned long aarch64_tune_flags = 0;
 
+/* Support for command line parsing of boolean flags in the tuning
+   structures.  */
+struct aarch64_flag_desc
+{
+  const char* name;
+  unsigned int flag;
+};
+
+#define AARCH64_FUSION_PAIR(name, internal_name, y) \
+  { name, AARCH64_FUSE_##internal_name },
+static const struct aarch64_flag_desc aarch64_fusible_pairs[] =
+{
+  { "none", AARCH64_FUSE_NOTHING },
+#include "aarch64-fusion-pairs.def"
+  { "all", AARCH64_FUSE_ALL },
+  { NULL, AARCH64_FUSE_NOTHING }
+};
+#undef AARCH64_FUION_PAIR
+
+#define AARCH64_EXTRA_TUNING_OPTION(name, internal_name, y) \
+  { name, AARCH64_EXTRA_TUNE_##internal_name },
+static const struct aarch64_flag_desc aarch64_tuning_flags[] =
+{
+  { "none", AARCH64_EXTRA_TUNE_NONE },
+#include "aarch64-tuning-flags.def"
+  { "all", AARCH64_EXTRA_TUNE_ALL },
+  { NULL, AARCH64_EXTRA_TUNE_NONE }
+};
+#undef AARCH64_EXTRA_TUNING_OPTION
+
 /* Tuning parameters.  */
 
 static const struct cpu_addrcost_table generic_addrcost_table =
@@ -452,6 +482,24 @@ static const struct tune_params xgene1_tunings =
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
+};
+
+/* Support for fine-grained override of the tuning structures.  */
+struct aarch64_tuning_override_function
+{
+  const char* name;
+  void (*parse_override)(const char*, struct tune_params*);
+};
+
+static void aarch64_parse_fuse_string (const char*, struct tune_params*);
+static void aarch64_parse_tune_string (const char*, struct tune_params*);
+
+static const struct aarch64_tuning_override_function
+aarch64_tuning_override_functions[] =
+{
+  { "fuse", aarch64_parse_fuse_string },
+  { "tune", aarch64_parse_tune_string },
+  { NULL, NULL }
 };
 
 /* A processor implementing AArch64.  */
@@ -7230,6 +7278,178 @@ aarch64_parse_tune (void)
   return;
 }
 
+/* Parse TOKEN, which has length LENGTH to see if it is an option
+   described in FLAG.  If it is, return the index bit for that fusion type.
+   If not, error (printing OPTION_NAME) and return zero.  */
+
+static unsigned int
+aarch64_parse_one_option_token (const char *token,
+				size_t length,
+				const struct aarch64_flag_desc *flag,
+				const char *option_name)
+{
+  for (; flag->name != NULL; flag++)
+    {
+      if (length == strlen (flag->name)
+	  && !strncmp (flag->name, token, length))
+	return flag->flag;
+    }
+
+  error ("unknown flag passed in -moverride=%s (%s)", option_name, token);
+  return 0;
+}
+
+/* Parse OPTION which is a comma-separated list of flags to enable.
+   FLAGS gives the list of flags we understand, INITIAL_STATE gives any
+   default state we inherit from the CPU tuning structures.  OPTION_NAME
+   gives the top-level option we are parsing in the -moverride string,
+   for use in error messages.  */
+
+static unsigned int
+aarch64_parse_boolean_options (const char *option,
+			       const struct aarch64_flag_desc *flags,
+			       unsigned int initial_state,
+			       const char *option_name)
+{
+  const char separator = '.';
+  const char* specs = option;
+  const char* ntoken = option;
+  unsigned int found_flags = initial_state;
+
+  while ((ntoken = strchr (specs, separator)))
+    {
+      size_t token_length = ntoken - specs;
+      unsigned token_ops = aarch64_parse_one_option_token (specs,
+							   token_length,
+							   flags,
+							   option_name);
+      /* If we find "none" (or, for simplicity's sake, an error) anywhere
+	 in the token stream, reset the supported operations.  So:
+
+	   adrp+add.cmp+branch.none.adrp+add
+
+	   would have the result of turning on only adrp+add fusion.  */
+      if (!token_ops)
+	found_flags = 0;
+
+      found_flags |= token_ops;
+      specs = ++ntoken;
+    }
+
+  /* We ended with a comma, print something.  */
+  if (!(*specs))
+    {
+      error ("%s string ill-formed\n", option_name);
+      return 0;
+    }
+
+  /* We still have one more token to parse.  */
+  size_t token_length = strlen (specs);
+  unsigned token_ops = aarch64_parse_one_option_token (specs,
+						       token_length,
+						       flags,
+						       option_name);
+   if (!token_ops)
+     found_flags = 0;
+
+  found_flags |= token_ops;
+  return found_flags;
+}
+
+/* Support for overriding instruction fusion.  */
+
+static void
+aarch64_parse_fuse_string (const char *fuse_string,
+			    struct tune_params *tune)
+{
+  tune->fusible_ops = aarch64_parse_boolean_options (fuse_string,
+						     aarch64_fusible_pairs,
+						     tune->fusible_ops,
+						     "fuse=");
+}
+
+/* Support for overriding other tuning flags.  */
+
+static void
+aarch64_parse_tune_string (const char *tune_string,
+			    struct tune_params *tune)
+{
+  tune->extra_tuning_flags
+    = aarch64_parse_boolean_options (tune_string,
+				     aarch64_tuning_flags,
+				     tune->extra_tuning_flags,
+				     "tune=");
+}
+
+/* Parse TOKEN, which has length LENGTH to see if it is a tuning option
+   we understand.  If it is, extract the option string and handoff to
+   the appropriate function.  */
+
+void
+aarch64_parse_one_override_token (const char* token,
+				  size_t length,
+				  struct tune_params *tune)
+{
+  const struct aarch64_tuning_override_function *fn
+    = aarch64_tuning_override_functions;
+
+  const char *option_part = strchr (token, '=');
+  if (!option_part)
+    {
+      error ("tuning string missing in option (%s)", token);
+      return;
+    }
+
+  /* Get the length of the option name.  */
+  length = option_part - token;
+  /* Skip the '=' to get to the option string.  */
+  option_part++;
+
+  for (; fn->name != NULL; fn++)
+    {
+      if (!strncmp (fn->name, token, length))
+	{
+	  fn->parse_override (option_part, tune);
+	  return;
+	}
+    }
+
+  error ("unknown tuning option (%s)",token);
+  return;
+}
+
+/* Parse STRING looking for options in the format:
+     string	:: option:string
+     option	:: name=substring
+     name	:: {a-z}
+     substring	:: defined by option.  */
+
+static void
+aarch64_parse_override_string (const char* input_string,
+			       struct tune_params* tune)
+{
+  const char separator = ':';
+  size_t string_length = strlen (input_string) + 1;
+  char *string_root = (char *) xmalloc (sizeof (*string_root) * string_length);
+  char *string = string_root;
+  strncpy (string, input_string, string_length);
+  string[string_length - 1] = '\0';
+
+  char* ntoken = string;
+
+  while ((ntoken = strchr (string, separator)))
+    {
+      size_t token_length = ntoken - string;
+      /* Make this substring look like a string.  */
+      *ntoken = '\0';
+      aarch64_parse_one_override_token (string, token_length, tune);
+      string = ++ntoken;
+    }
+
+  /* One last option to parse.  */
+  aarch64_parse_one_override_token (string, strlen (string), tune);
+  free (string_root);
+}
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
@@ -7293,6 +7513,10 @@ aarch64_override_options (void)
      we may later overwrite.  */
   aarch64_tune_params = *(selected_tune->tune);
   aarch64_architecture_version = selected_cpu->architecture_version;
+
+  if (aarch64_override_tune_string)
+    aarch64_parse_override_string (aarch64_override_tune_string,
+				   &aarch64_tune_params);
 
   if (aarch64_fix_a53_err835769 == 2)
     {
