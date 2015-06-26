@@ -1,5 +1,11 @@
 2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): When
+	not optimizing the CFG, clear the DECL_DECLARED_INLINE_P flag on the
+	at-end procedures.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (note_types_used_by_globals): Delete.
 	(gnat_write_global_declarations): New prototype.
 	* gcc-interface/utils.c (type_decls): Rename back to...

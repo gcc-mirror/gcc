@@ -4880,8 +4880,14 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      to the binding level we made above.  Note that add_cleanup is FIFO
      so we must register this cleanup after the EH cleanup just above.  */
   if (at_end)
-    add_cleanup (build_call_n_expr (gnat_to_gnu (At_End_Proc (gnat_node)), 0),
-		 gnat_cleanup_loc_node);
+    {
+      tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
+      /* When not optimizing, disable inlining of finalizers as this can
+	 create a more complex CFG in the parent function.  */
+      if (!optimize)
+	DECL_DECLARED_INLINE_P (proc_decl) = 0;
+      add_cleanup (build_call_n_expr (proc_decl, 0), gnat_cleanup_loc_node);
+    }
 
   /* Now build the tree for the declarations and statements inside this block.
      If this is SJLJ, set our jmp_buf as the current buffer.  */
