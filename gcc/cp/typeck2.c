@@ -1095,7 +1095,8 @@ digest_init_r (tree type, tree init, bool nested, int flags,
   if (cxx_dialect >= cxx11
       && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CONSTRUCTOR_NELTS (init) == 1
-      && (CLASS_TYPE_P (type) || VECTOR_TYPE_P (type)))
+      && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
+	  || VECTOR_TYPE_P (type)))
     {
       tree elt = CONSTRUCTOR_ELT (init, 0)->value;
       if (reference_related_p (type, TREE_TYPE (elt)))
