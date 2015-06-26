@@ -1,3 +1,7 @@
+2015-06-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c: Use VECTOR_TYPE_P throughout.
+
 2015-06-26  Marek Polacek  <polacek@redhat.com>
 
 	* c-array-notation.c (fix_builtin_array_notation_fn): Use

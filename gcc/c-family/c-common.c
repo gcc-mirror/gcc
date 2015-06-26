@@ -2412,7 +2412,7 @@ check_main_parameter_types (tree decl)
 bool
 vector_targets_convertible_p (const_tree t1, const_tree t2)
 {
-  if (TREE_CODE (t1) == VECTOR_TYPE && TREE_CODE (t2) == VECTOR_TYPE
+  if (VECTOR_TYPE_P (t1) && VECTOR_TYPE_P (t2)
       && (TYPE_VECTOR_OPAQUE (t1) || TYPE_VECTOR_OPAQUE (t2))
       && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
     return true;
@@ -2500,8 +2500,7 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       || mask == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (TREE_TYPE (mask)) != VECTOR_TYPE
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (mask))) != INTEGER_TYPE)
+  if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (mask)))
     {
       if (complain)
 	error_at (loc, "__builtin_shuffle last argument must "
@@ -2509,8 +2508,8 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       return error_mark_node;
     }
 
-  if (TREE_CODE (TREE_TYPE (v0)) != VECTOR_TYPE
-      || TREE_CODE (TREE_TYPE (v1)) != VECTOR_TYPE)
+  if (!VECTOR_TYPE_P (TREE_TYPE (v0))
+      || !VECTOR_TYPE_P (TREE_TYPE (v1)))
     {
       if (complain)
 	error_at (loc, "__builtin_shuffle arguments must be vectors");
@@ -12482,7 +12481,7 @@ convert_vector_to_pointer_for_subscript (location_t loc,
 					 tree *vecp, tree index)
 {
   bool ret = false;
-  if (TREE_CODE (TREE_TYPE (*vecp)) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (*vecp)))
     {
       tree type = TREE_TYPE (*vecp);
       tree type1;
@@ -12548,8 +12547,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
   bool integer_only_op = false;
   enum stv_conv ret = stv_firstarg;
 
-  gcc_assert (TREE_CODE (type0) == VECTOR_TYPE
-	      || TREE_CODE (type1) == VECTOR_TYPE);
+  gcc_assert (VECTOR_TYPE_P (type0) || VECTOR_TYPE_P (type1));
   switch (code)
     {
       /* Most GENERIC binary expressions require homogeneous arguments.
@@ -12599,7 +12597,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
       case LT_EXPR:
       case GT_EXPR:
       /* What about UNLT_EXPR?  */
-	if (TREE_CODE (type0) == VECTOR_TYPE)
+	if (VECTOR_TYPE_P (type0))
 	  {
 	    ret = stv_secondarg;
 	    std::swap (type0, type1);
