@@ -451,13 +451,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Hashtable&
       operator=(_Hashtable&& __ht)
-      noexcept(__node_alloc_traits::_S_nothrow_move())
+      noexcept(__node_alloc_traits::_S_nothrow_move()
+	       && is_nothrow_move_assignable<_H1>::value
+	       && is_nothrow_move_assignable<_Equal>::value)
       {
         constexpr bool __move_storage =
-          __node_alloc_traits::_S_propagate_on_move_assign()
-          || __node_alloc_traits::_S_always_equal();
-        _M_move_assign(std::move(__ht),
-                       integral_constant<bool, __move_storage>());
+	  __node_alloc_traits::_S_propagate_on_move_assign()
+	  || __node_alloc_traits::_S_always_equal();
+	_M_move_assign(std::move(__ht), __bool_constant<__move_storage>());
 	return *this;
       }
 
@@ -475,7 +476,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(_Hashtable&)
-      noexcept(__node_alloc_traits::_S_nothrow_swap());
+      noexcept(__node_alloc_traits::_S_nothrow_swap()
+	       && __is_nothrow_swappable<_H1>::value
+	       && __is_nothrow_swappable<_Equal>::value);
 
       // Basic container operations
       iterator
@@ -1234,7 +1237,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     swap(_Hashtable& __x)
-    noexcept(__node_alloc_traits::_S_nothrow_swap())
+    noexcept(__node_alloc_traits::_S_nothrow_swap()
+	     && __is_nothrow_swappable<_H1>::value
+	     && __is_nothrow_swappable<_Equal>::value)
     {
       // The only base class with member variables is hash_code_base.
       // We define _Hash_code_base::_M_swap because different

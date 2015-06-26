@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-prune-output 1881 }
+// { dg-prune-output 1879 }
 
 #include <deque>
 

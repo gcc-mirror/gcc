@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-prune-output 1326 }
+// { dg-prune-output 1325 }
 
 #include <vector>
 

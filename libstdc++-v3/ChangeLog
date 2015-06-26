@@ -1,5 +1,89 @@
 2015-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2108 status.
+	* include/bits/alloc_traits.h (allocator_traits::is_always_equal):
+	Define.
+	* include/bits/allocator.h (allocator::is_always_equal): Likewise.
+	* include/bits/forward_list.h
+	(forward_list::operator=(forward_list&&)): Use __bool_constant.
+	(forward_list::swap(forward_list&)): Add noexcept.
+	* include/bits/hashtable.h (_Hashtable::operator=(_Hashtable&&)):
+	Likewise.
+	(_Hashtable::swap(_Hashtable&)): Likewise.
+	* include/bits/stl_deque.h (_Deque_base::_Deque_base(_Deque_base&&)):
+	Use _Alloc_traits::is_always_equal.
+	(deque::operator=(deque&&)): Likewise.
+	(deque::_M_move_assign1(deque&&, false_type)): Add comment and use
+	__bool_constant.
+	(swap(deque&, deque&)): Add noexcept.
+	* include/bits/stl_list.h (list::operator=(list&&)): Use
+	__bool_constant.
+	(swap(list&, list&)): Add noexcept.
+	* include/bits/stl_map.h (map::swap(map&)): Include _Compare in
+	noexcept.
+	(swap(map&, map&)): Add noexcept.
+	* include/bits/stl_multimap.h (multimap::swap(multimap&)): Include
+	_Compare in noexcept.
+	(swap(multimap&, multimap&)): Add noexcept.
+	* include/bits/stl_multiset.h (multiset::swap(multiset&)): Include
+	_Compare in noexcept.
+	(swap(multiset&, multiset&)): Add noexcept.
+	* include/bits/stl_set.h (set::swap(set&)): Include _Compare in
+	noexcept.
+	(swap(set&, set&)): Add noexcept.
+	* include/bits/stl_tree.h (_Rb_tree::operator=(_Rb_tree&&)): Include
+	_Compare in noexcept.
+	(_Rb_tree::_Rb_tree(_Rb_tree&&, _Node_alloc_type&&)): Use
+	is_always_equal.
+	* include/bits/stl_vector.h (vector::operator=(vector&&)): Use
+	__bool_constant.
+	(swap(vector&, vector&)): Add noexcept.
+	* include/bits/unordered_map.h (swap(unordered_map&, unordered_map&),
+	swap(unordered_multimap& unordered_multimap&)): Add noexcept.
+	* include/bits/unordered_set.h (swap(unordered_set&, unordered_set&),
+	swap(unordered_multiset& unordered_multiset&)): Add noexcept.
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal):
+	Remove.
+	(__alloc_traits::_S_always_equal()): Use is_always_equal instead of
+	__allocator_always_compares_equal.
+	* include/ext/array_allocator.h (array_allocator::is_always_equal):
+	Define.
+	* include/std/scoped_allocator (__any_of, __propagate_on_copy,
+	__propagate_on_move, __propagate_on_swap): Remove.
+	(scoped_allocator_adaptor::propagate_on_container_copy_assignment,
+	scoped_allocator_adaptor::propagate_on_container_move_assignment,
+	scoped_allocator_adaptor::propagate_on_container_swap): Define with
+	__and_ instead of __any_of.
+	(scoped_allocator_adaptor::is_always_equal): Define.
+	* testsuite/20_util/allocator_traits/members/is_always_equal.cc: New.
+	* testsuite/20_util/scoped_allocator/propagation.cc: Make traits
+	derive from true_type or false_type.
+	* testsuite/23_containers/deque/allocator/move_assign-2.cc: Add
+	is_always_equal member and remove the trait specialization.
+	* testsuite/23_containers/vector/52591.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 	* include/bits/stl_bvector.h (vector<bool>::vector()): Add noexcept.
 	* include/bits/stl_map.h (map::map()): Likewise.
 	* include/bits/stl_multimap.h (multimap::multimap()): Likewise.

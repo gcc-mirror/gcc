@@ -868,6 +868,12 @@ requirements of the license of GCC.
     <listitem><para>Change the <code>reference</code> type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2108">2108</link>:
+	<emphasis>No way to identify allocator types that always compare equal</emphasis>
+    </term>
+    <listitem><para>Define and use <code>is_always_equal</code> even for C++11.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2118">2118</link>:
 	<emphasis><code>unique_ptr</code> for array does not support cv qualification conversion of actual argument</emphasis>
     </term>
