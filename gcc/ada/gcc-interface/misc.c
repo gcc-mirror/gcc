@@ -113,7 +113,8 @@ gnat_parse_file (void)
   /* Call the front end.  */
   _ada_gnat1drv ();
 
-  note_types_used_by_globals ();
+  /* Write the global declarations.  */
+  gnat_write_global_declarations ();
 }
 
 /* Return language mask for option processing.  */

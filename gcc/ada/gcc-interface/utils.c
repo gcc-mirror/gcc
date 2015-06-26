@@ -218,8 +218,8 @@ static GTY((deletable)) struct gnat_binding_level *free_binding_level;
 /* The context to be used for global declarations.  */
 static GTY(()) tree global_context;
 
-/* An array of global type declarations.  */
-static GTY(()) vec<tree, va_gc> *type_decls;
+/* An array of global declarations.  */
+static GTY(()) vec<tree, va_gc> *global_decls;
 
 /* An array of builtin function declarations.  */
 static GTY(()) vec<tree, va_gc> *builtin_decls;
@@ -753,10 +753,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	    vec_safe_push (builtin_decls, decl);
 	}
       else if (global_bindings_p ())
-	{
-	  if (TREE_CODE (decl) == TYPE_DECL)
-	    vec_safe_push (type_decls, decl);
-	}
+	vec_safe_push (global_decls, decl);
       else
 	{
 	  DECL_CHAIN (decl) = BLOCK_VARS (current_binding_level->block);
@@ -2439,19 +2436,13 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (var_decl, gnat_node);
 
-  if (TREE_CODE (var_decl) == VAR_DECL)
+  if (TREE_CODE (var_decl) == VAR_DECL && asm_name)
     {
-      if (asm_name)
-	{
-	  /* Let the target mangle the name if this isn't a verbatim asm.  */
-	  if (*IDENTIFIER_POINTER (asm_name) != '*')
-	    asm_name = targetm.mangle_decl_assembler_name (var_decl, asm_name);
+      /* Let the target mangle the name if this isn't a verbatim asm.  */
+      if (*IDENTIFIER_POINTER (asm_name) != '*')
+	asm_name = targetm.mangle_decl_assembler_name (var_decl, asm_name);
 
-	  SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
-	}
-
-      if (global_bindings_p ())
-	rest_of_decl_compilation (var_decl, true, 0);
+      SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
     }
 
   return var_decl;
@@ -5200,13 +5191,12 @@ smaller_form_type_p (tree type, tree orig_type)
   return tree_int_cst_lt (size, osize) != 0;
 }
 
-/* Keep track of types used at the global level and emit debug info
-   for all global types.  */
+/* Perform final processing on global declarations.  */
 
 static GTY (()) tree dummy_global;
 
 void
-note_types_used_by_globals (void)
+gnat_write_global_declarations (void)
 {
   unsigned int i;
   tree iter;
@@ -5235,13 +5225,20 @@ note_types_used_by_globals (void)
 	}
     }
 
-  /* Output debug information for all global type declarations.  This ensures
-     that global types whose compilation cannot been finalized earlier, e.g.
-     pointers to Taft amendment types, have their compilation finalized in
-     the right context.  */
-  FOR_EACH_VEC_SAFE_ELT (type_decls, i, iter)
-    if (!DECL_IGNORED_P (iter))
+  /* Output debug information for all global type declarations first.  This
+     ensures that global types whose compilation hasn't been finalized yet,
+     for example pointers to Taft amendment types, have their compilation
+     finalized in the right context.  */
+  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
+    if (TREE_CODE (iter) == TYPE_DECL && !DECL_IGNORED_P (iter))
       debug_hooks->type_decl (iter, false);
+
+  /* Then output the global variables.  We need to do that after the debug
+     information is emitted above so that "forward" type declarations are
+     properly merged with their definition in the debug information.  */
+  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
+    if (TREE_CODE (iter) == VAR_DECL)
+      rest_of_decl_compilation (iter, true, 0);
 }
 
 /* ************************************************************************
