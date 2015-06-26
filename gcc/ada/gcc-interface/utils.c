@@ -5234,8 +5234,7 @@ gnat_write_global_declarations (void)
       debug_hooks->type_decl (iter, false);
 
   /* Then output the global variables.  We need to do that after the debug
-     information is emitted above so that "forward" type declarations are
-     properly merged with their definition in the debug information.  */
+     information for global types is emitted so that they are finalized.  */
   FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
     if (TREE_CODE (iter) == VAR_DECL)
       rest_of_decl_compilation (iter, true, 0);
