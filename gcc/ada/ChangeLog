@@ -1,5 +1,27 @@
 2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (create_var_decl_1): Rename into...
+	(create_var_decl): ...this.  Add default value for last parameter.
+	(create_type_stub_decl): Adjust.
+	(create_type_decl): Likewise.
+	(create_field_decl): Likewise.
+	(create_param_decl): Likewise.
+	(create_label_decl): Likewise.
+	(create_subprog_decl): Likewise.
+	* gcc-interface/utils.c (create_var_decl_1): Rename into...
+	(create_var_decl): ...this.  Rename var_name into name and var_init
+	into init, move const_decl_allowed_p last and adjust accordingly.
+	(create_type_stub_decl): Rename type_name into name and adjust.
+	(create_type_decl): Likewise.
+	(create_field_decl): Likewise for field_name and field_type.
+	(create_param_decl): Likewise for param_name and param_type.
+	(create_label_decl): Likewise for label_name.
+	(create_subprog_decl): Likewise for subprog_name and subprog_type.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust couple of calls
+	to create_var_decl_1.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (loop_info_d): Add low_bound, high_bound,
 	artificial, has_checks and warned_aggressive_loop_optimizations.
 	(gigi): Set warn_aggressive_loop_optimizations to 0.
