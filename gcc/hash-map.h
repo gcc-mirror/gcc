@@ -169,7 +169,8 @@ public:
   /* Call the call back on each pair of key and value with the passed in
      arg.  */
 
-  template<typename Arg, bool (*f)(const Key &, const Value &, Arg)>
+  template<typename Arg, bool (*f)(const typename Traits::key_type &,
+				   const Value &, Arg)>
   void traverse (Arg a) const
     {
       for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();
@@ -177,7 +178,8 @@ public:
 	f ((*iter).m_key, (*iter).m_value, a);
     }
 
-  template<typename Arg, bool (*f)(const Key &, Value *, Arg)>
+  template<typename Arg, bool (*f)(const typename Traits::key_type &,
+				   Value *, Arg)>
   void traverse (Arg a) const
     {
       for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();
