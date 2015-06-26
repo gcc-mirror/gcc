@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Warn11 is
