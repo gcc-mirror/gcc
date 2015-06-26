@@ -324,7 +324,7 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
     array_ind_value = build_decl (location, VAR_DECL, NULL_TREE, 
 				  TREE_TYPE (func_parm));
   array_op0 = (*array_operand)[0];
-  if (TREE_CODE (array_op0) == INDIRECT_REF)
+  if (INDIRECT_REF_P (array_op0))
     array_op0 = TREE_OPERAND (array_op0, 0);
   switch (an_type)
     {
