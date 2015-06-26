@@ -1,5 +1,9 @@
 2015-06-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66684
+	* typeck2.c (merge_exception_specifiers): Allow different
+	noexcept-specifiers if we've had errors.
+
 	PR c++/66255
 	* pt.c (check_unstripped_args): Split out from...
 	(retrieve_specialization): ...here.  Allow typedefs in the type of
