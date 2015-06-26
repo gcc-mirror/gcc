@@ -3955,7 +3955,21 @@ loop_exits_before_overflow (tree base, tree step,
 	if (!CONVERT_EXPR_P (e) || !operand_equal_p (e, unsigned_base, 0))
 	  continue;
 	e = TREE_OPERAND (e, 0);
-	gcc_assert (operand_equal_p (e, base, 0));
+	/* It may still be possible to prove no overflow even if condition
+	   "operand_equal_p (e, base, 0)" isn't satisfied here, like below
+	   example:
+
+	     e             : ssa_var                 ; unsigned long type
+	     base          : (int) ssa_var
+	     unsigned_base : (unsigned int) ssa_var
+
+	   Unfortunately this is a rare case observed during GCC profiled
+	   bootstrap.  See PR66638 for more information.
+
+	   For now, we just skip the possibility.  */
+	if (!operand_equal_p (e, base, 0))
+	  continue;
+
 	if (tree_int_cst_sign_bit (step))
 	  {
 	    code = LT_EXPR;

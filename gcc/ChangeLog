@@ -1,3 +1,9 @@
+2015-06-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR bootstrap/66638
+	* tree-ssa-loop-niter.c (loop_exits_before_overflow): Skip if
+	assertion failed.  Remove assertion itself.
+
 2015-06-26  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Remove -A CMP -B -> A CMP B
