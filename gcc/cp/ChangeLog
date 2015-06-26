@@ -1,5 +1,10 @@
 2015-06-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66255
+	* pt.c (check_unstripped_args): Split out from...
+	(retrieve_specialization): ...here.  Allow typedefs in the type of
+	a non-type argument.
+
 	PR c++/66067
 	* mangle.c (write_nested_name): Limit TYPENAME_TYPE handling to
 	TYPE_DECLs.
