@@ -1,3 +1,16 @@
+2015-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/cpp.texi: Update displayed copyright years.
+	* doc/cppinternals.texi: Likewise.
+	* doc/gcc.texi: Likewise.
+	* doc/gccint.texi: Likewise.
+	* doc/gcov.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* gcc.c: Likewise.
+	* gcov-dump.c: Likewise.
+	* gcov.c: Likewise.
+
 2015-06-23  Matthias Klose  <doko@ubuntu.com>
 
 	PR target/66483

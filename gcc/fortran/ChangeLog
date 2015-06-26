@@ -1,3 +1,7 @@
+2015-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.c: Update displayed copyright years.
+
 2015-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
