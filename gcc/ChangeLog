@@ -1,3 +1,7 @@
+2015-06-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.md (call_operation): Remove unused variables.
+
 2015-06-26  Bin Cheng  <bin.cheng@arm.com>
 
 	PR bootstrap/66638
