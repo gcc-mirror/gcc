@@ -188,6 +188,7 @@ struct tune_params
   const int vec_reassoc_width;
   const int min_div_recip_mul_sf;
   const int min_div_recip_mul_df;
+  const unsigned int extra_tuning_flags;
 };
 
 #define AARCH64_FUSION_PAIR(x, name, index) \
@@ -209,6 +210,26 @@ enum aarch64_fusion_pairs
 #include "aarch64-fusion-pairs.def"
 };
 #undef AARCH64_FUSION_PAIR
+
+#define AARCH64_EXTRA_TUNING_OPTION(x, name, index) \
+  AARCH64_EXTRA_TUNE_##name = (1 << index),
+/* Supported tuning flags.  */
+enum aarch64_extra_tuning_flags
+{
+  AARCH64_EXTRA_TUNE_NONE = 0,
+#include "aarch64-tuning-flags.def"
+
+/* Hacky macro to build the "all" flag mask.
+   Expands to 0 | AARCH64_TUNE_index0 | AARCH64_TUNE_index1 , etc.  */
+#undef AARCH64_EXTRA_TUNING_OPTION
+#define AARCH64_EXTRA_TUNING_OPTION(x, name, y) \
+  | AARCH64_EXTRA_TUNE_##name
+  AARCH64_EXTRA_TUNE_ALL = 0
+#include "aarch64-tuning-flags.def"
+};
+#undef AARCH64_EXTRA_TUNING_OPTION
+
+extern const struct tune_params *aarch64_tune_params;
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);

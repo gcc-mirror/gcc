@@ -345,7 +345,8 @@ static const struct tune_params generic_tunings =
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
-  2	/* min_div_recip_mul_df.  */
+  2,	/* min_div_recip_mul_df.  */
+  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
 static const struct tune_params cortexa53_tunings =
@@ -366,7 +367,8 @@ static const struct tune_params cortexa53_tunings =
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
-  2	/* min_div_recip_mul_df.  */
+  2,	/* min_div_recip_mul_df.  */
+  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
 static const struct tune_params cortexa57_tunings =
@@ -387,7 +389,30 @@ static const struct tune_params cortexa57_tunings =
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
-  2	/* min_div_recip_mul_df.  */
+  2,	/* min_div_recip_mul_df.  */
+  (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS)	/* tune_flags.  */
+};
+
+static const struct tune_params cortexa72_tunings =
+{
+  &cortexa57_extra_costs,
+  &cortexa57_addrcost_table,
+  &cortexa57_regmove_cost,
+  &cortexa57_vector_cost,
+  &generic_branch_cost,
+  4, /* memmov_cost  */
+  3, /* issue_rate  */
+  (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
+   | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
+  16,	/* function_align.  */
+  8,	/* jump_align.  */
+  4,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
 static const struct tune_params thunderx_tunings =
@@ -407,7 +432,8 @@ static const struct tune_params thunderx_tunings =
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
-  2	/* min_div_recip_mul_df.  */
+  2,	/* min_div_recip_mul_df.  */
+  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
 static const struct tune_params xgene1_tunings =
@@ -427,7 +453,8 @@ static const struct tune_params xgene1_tunings =
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
-  2	/* min_div_recip_mul_df.  */
+  2,	/* min_div_recip_mul_df.  */
+  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
 /* A processor implementing AArch64.  */
