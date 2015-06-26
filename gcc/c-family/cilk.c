@@ -392,7 +392,7 @@ create_parm_list (struct wrapper_data *wd, tree *val0, tree arg)
 
       val = TREE_OPERAND (val, 0);
       *val0 = val;
-      gcc_assert (TREE_CODE (val) == INDIRECT_REF);
+      gcc_assert (INDIRECT_REF_P (val));
       parm = TREE_OPERAND (val, 0);
       STRIP_NOPS (parm);
     }

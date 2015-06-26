@@ -1826,7 +1826,7 @@ array_to_pointer_conversion (location_t loc, tree exp)
 
   ptrtype = build_pointer_type (restype);
 
-  if (TREE_CODE (exp) == INDIRECT_REF)
+  if (INDIRECT_REF_P (exp))
     return convert (ptrtype, TREE_OPERAND (exp, 0));
 
   /* In C++ array compound literals are temporary objects unless they are
@@ -4146,12 +4146,11 @@ build_unary_op (location_t location,
 	 unary '*' operator.  */
       if (VOID_TYPE_P (TREE_TYPE (arg))
 	  && TYPE_QUALS (TREE_TYPE (arg)) == TYPE_UNQUALIFIED
-	  && (TREE_CODE (arg) != INDIRECT_REF
-	      || !flag_isoc99))
+	  && (!INDIRECT_REF_P (arg) || !flag_isoc99))
 	pedwarn (location, 0, "taking address of expression of type %<void%>");
 
       /* Let &* cancel out to simplify resulting code.  */
-      if (TREE_CODE (arg) == INDIRECT_REF)
+      if (INDIRECT_REF_P (arg))
 	{
 	  /* Don't let this be an lvalue.  */
 	  if (lvalue_p (TREE_OPERAND (arg, 0)))
@@ -4220,7 +4219,7 @@ build_unary_op (location_t location,
       /* ??? Cope with user tricks that amount to offsetof.  Delete this
 	 when we have proper support for integer constant expressions.  */
       val = get_base_address (arg);
-      if (val && TREE_CODE (val) == INDIRECT_REF
+      if (val && INDIRECT_REF_P (val)
           && TREE_CONSTANT (TREE_OPERAND (val, 0)))
 	{
 	  ret = fold_convert_loc (location, argtype, fold_offsetof_1 (arg));
@@ -9465,7 +9464,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	      inner = TREE_OPERAND (inner, 0);
 
 	      while (REFERENCE_CLASS_P (inner)
-		     && TREE_CODE (inner) != INDIRECT_REF)
+		     && !INDIRECT_REF_P (inner))
 		inner = TREE_OPERAND (inner, 0);
 
 	      if (DECL_P (inner)

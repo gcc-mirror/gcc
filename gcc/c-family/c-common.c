@@ -1436,7 +1436,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       if (op0 != orig_op0
 	  && code == ADDR_EXPR
 	  && (op1 = get_base_address (op0)) != NULL_TREE
-	  && TREE_CODE (op1) == INDIRECT_REF
+	  && INDIRECT_REF_P (op1)
 	  && TREE_CONSTANT (TREE_OPERAND (op1, 0)))
 	ret = fold_convert_loc (loc, TREE_TYPE (expr), fold_offsetof_1 (op0));
       else if (op0 != orig_op0 || in_init)
@@ -1447,7 +1447,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	ret = fold (expr);
       if (code == INDIRECT_REF
 	  && ret != expr
-	  && TREE_CODE (ret) == INDIRECT_REF)
+	  && INDIRECT_REF_P (ret))
 	{
 	  TREE_READONLY (ret) = TREE_READONLY (expr);
 	  TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (expr);
@@ -5377,7 +5377,7 @@ c_alignof_expr (location_t loc, tree expr)
 	   && TREE_CODE (TREE_OPERAND (expr, 1)) == FIELD_DECL)
     t = size_int (DECL_ALIGN_UNIT (TREE_OPERAND (expr, 1)));
 
-  else if (TREE_CODE (expr) == INDIRECT_REF)
+  else if (INDIRECT_REF_P (expr))
     {
       tree t = TREE_OPERAND (expr, 0);
       tree best = t;

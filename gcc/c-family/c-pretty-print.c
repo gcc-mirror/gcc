@@ -1607,7 +1607,7 @@ c_pretty_printer::postfix_expression (tree e)
     case COMPONENT_REF:
       {
 	tree object = TREE_OPERAND (e, 0);
-	if (TREE_CODE (object) == INDIRECT_REF)
+	if (INDIRECT_REF_P (object))
 	  {
 	    postfix_expression (TREE_OPERAND (object, 0));
 	    pp_c_arrow (this);
