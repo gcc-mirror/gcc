@@ -826,7 +826,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       emit_insn (gen_rtx_SET (dest, imm));
       return;
 
-    case SYMBOL_SMALL_GOT:
+    case SYMBOL_SMALL_GOT_4G:
       {
 	/* In ILP32, the mode of dest can be either SImode or DImode,
 	   while the got entry is always of SImode size.  The mode of
@@ -1478,7 +1478,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
         case SYMBOL_SMALL_TLSGD:
         case SYMBOL_SMALL_TLSDESC:
         case SYMBOL_SMALL_GOTTPREL:
-	case SYMBOL_SMALL_GOT:
+	case SYMBOL_SMALL_GOT_4G:
 	case SYMBOL_TINY_GOT:
 	  if (offset != const0_rtx)
 	    {
@@ -4359,7 +4359,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
       switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
 	{
-	case SYMBOL_SMALL_GOT:
+	case SYMBOL_SMALL_GOT_4G:
 	  asm_fprintf (asm_out_file, ":got:");
 	  break;
 
@@ -4392,7 +4392,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
     case 'L':
       switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
 	{
-	case SYMBOL_SMALL_GOT:
+	case SYMBOL_SMALL_GOT_4G:
 	  asm_fprintf (asm_out_file, ":lo12:");
 	  break;
 
@@ -7403,7 +7403,7 @@ aarch64_classify_symbol (rtx x, rtx offset,
 
 	case AARCH64_CMODEL_SMALL_PIC:
 	  if (!aarch64_symbol_binds_local_p (x))
-	    return SYMBOL_SMALL_GOT;
+	    return SYMBOL_SMALL_GOT_4G;
 	  return SYMBOL_SMALL_ABSOLUTE;
 
 	default:
