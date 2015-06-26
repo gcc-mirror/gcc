@@ -87,6 +87,7 @@
     UNSPEC_FRINTX
     UNSPEC_FRINTZ
     UNSPEC_GOTSMALLPIC
+    UNSPEC_GOTSMALLPIC28K
     UNSPEC_GOTSMALLTLS
     UNSPEC_GOTTINYPIC
     UNSPEC_LD1
@@ -4357,6 +4358,29 @@
 		    UNSPEC_GOTSMALLPIC)))]
   "TARGET_ILP32"
   "ldr\\t%w0, [%1, #:got_lo12:%a2]"
+  [(set_attr "type" "load1")]
+)
+
+(define_insn "ldr_got_small_28k_<mode>"
+  [(set (match_operand:PTR 0 "register_operand" "=r")
+	(unspec:PTR [(mem:PTR (lo_sum:PTR
+			      (match_operand:PTR 1 "register_operand" "r")
+			      (match_operand:PTR 2 "aarch64_valid_symref" "S")))]
+		    UNSPEC_GOTSMALLPIC28K))]
+  ""
+  "ldr\\t%<w>0, [%1, #:<got_modifier>:%a2]"
+  [(set_attr "type" "load1")]
+)
+
+(define_insn "ldr_got_small_28k_sidi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (unspec:SI [(mem:SI (lo_sum:DI
+			     (match_operand:DI 1 "register_operand" "r")
+			     (match_operand:DI 2 "aarch64_valid_symref" "S")))]
+		    UNSPEC_GOTSMALLPIC28K)))]
+  "TARGET_ILP32"
+  "ldr\\t%w0, [%1, #:gotpage_lo14:%a2]"
   [(set_attr "type" "load1")]
 )
 

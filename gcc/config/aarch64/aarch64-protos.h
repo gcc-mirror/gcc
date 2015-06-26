@@ -62,6 +62,13 @@ enum aarch64_symbol_context
 
    This corresponds to the small PIC model of the compiler.
 
+   SYMBOL_SMALL_GOT_28K: Similar to SYMBOL_SMALL_GOT_4G, but used for symbol
+   restricted within 28K GOT table size.
+
+   ldr reg, [gp, #:gotpage_lo15:sym]
+
+   This corresponds to -fpic model for small memory model of the compiler.
+
    SYMBOL_SMALL_TLSGD
    SYMBOL_SMALL_TLSDESC
    SYMBOL_SMALL_GOTTPREL
@@ -95,6 +102,7 @@ enum aarch64_symbol_context
 enum aarch64_symbol_type
 {
   SYMBOL_SMALL_ABSOLUTE,
+  SYMBOL_SMALL_GOT_28K,
   SYMBOL_SMALL_GOT_4G,
   SYMBOL_SMALL_TLSGD,
   SYMBOL_SMALL_TLSDESC,
