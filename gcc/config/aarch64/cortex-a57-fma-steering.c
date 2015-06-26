@@ -43,6 +43,7 @@
 #include "tree-pass.h"
 #include "regrename.h"
 #include "cortex-a57-fma-steering.h"
+#include "aarch64-protos.h"
 
 #include <list>
 
@@ -1051,7 +1052,9 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return AARCH64_TUNE_FMA_STEERING && optimize >= 2;
+      return (aarch64_tune_params->extra_tuning_flags
+	      & AARCH64_EXTRA_TUNE_RENAME_FMA_REGS)
+	      && optimize >= 2;
     }
 
   virtual unsigned int execute (function *)

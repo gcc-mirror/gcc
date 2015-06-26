@@ -1,5 +1,33 @@
 2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.h (AARCH64_FL_USE_FMA_STEERING_PASS): Delete.
+	(aarch64_tune_flags): Likewise.
+	(AARCH64_TUNE_FMA_STEERING): Likewise.
+	* config/aarch64/aarch64-cores.def (cortex-a57): Remove reference
+	to AARCH64_FL_USE_FMA_STEERING_PASS.
+	(cortex-a57.cortex-a53): Likewise.
+	(cortex-a72): Use cortexa72_tunings.
+	(cortex-a72.cortex-a53): Likewise.
+	(exynos-m1): Likewise.
+	* config/aarch64/aarch64-protos.h (tune_params): Add
+	a field: extra_tuning_flags.
+	* config/aarch64/aarch64-tuning-flags.def: New.
+	* config/aarch64/aarch64-protos.h (AARCH64_EXTRA_TUNING_OPTION): New.
+	(aarch64_extra_tuning_flags): Likewise.
+	(aarch64_tune_params): Declare here.
+	* config/aarch64/aarch64.c (generic_tunings): Set extra_tuning_flags.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+	(xgene1_tunings): Likewise.
+	(cortexa72_tunings): New.
+	* config/aarch64/cortex-a57-fma-steering.c: Include aarch64-protos.h.
+	 (gate): Check against aarch64_tune_params.
+	* config/aarch64/t-aarch64 (cortex-a57-fma-steering.o): Depend on
+	aarch64-protos.h.
+
+2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-fusion-pairs.def: New.
 	* config/aarch64/aarch64-protos.h (aarch64_fusion_pairs): New.
 	* config/aarch64/aarch64.c (AARCH64_FUSE_NOTHING): Move to
