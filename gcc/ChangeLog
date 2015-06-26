@@ -1,3 +1,9 @@
+2015-06-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple.c (gimple_call_set_fndecl): Remove.
+	* gimple.h (gimple_call_set_fndecl): Relocate to gimple.h and call
+	build1_loc directly instead of build_fold_addr_expr_loc.
+
 2015-06-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* hash-map.h (hash_map::traverse): Use the definition of the
