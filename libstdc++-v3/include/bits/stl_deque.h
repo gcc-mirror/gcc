@@ -515,8 +515,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       _Deque_base(_Deque_base&& __x)
-      : _Deque_base(std::move(__x),
-		    __gnu_cxx::__allocator_always_compares_equal<_Alloc>{})
+      : _Deque_base(std::move(__x), typename _Alloc_traits::is_always_equal{})
       { }
 
       _Deque_base(_Deque_base&& __x, const allocator_type& __a, size_type __n)
@@ -1059,9 +1058,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       deque&
       operator=(deque&& __x) noexcept(_Alloc_traits::_S_always_equal())
       {
-	constexpr bool __always_equal = _Alloc_traits::_S_always_equal();
-	_M_move_assign1(std::move(__x),
-		        integral_constant<bool, __always_equal>());
+	using __always_equal = typename _Alloc_traits::is_always_equal;
+	_M_move_assign1(std::move(__x), __always_equal{});
 	return *this;
       }
 
@@ -2140,13 +2138,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	std::__alloc_on_move(_M_get_Tp_allocator(), __x._M_get_Tp_allocator());
       }
 
+      // When the allocators are not equal the operation could throw, because
+      // we might need to allocate a new map for __x after moving from it
+      // or we might need to allocate new elements for *this.
       void
       _M_move_assign1(deque&& __x, /* always equal: */ false_type)
       {
 	constexpr bool __move_storage =
 	  _Alloc_traits::_S_propagate_on_move_assign();
-	_M_move_assign2(std::move(__x),
-			integral_constant<bool, __move_storage>());
+	_M_move_assign2(std::move(__x), __bool_constant<__move_storage>());
       }
 
       // Destroy all elements and deallocate all memory, then replace
@@ -2271,6 +2271,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     inline void
     swap(deque<_Tp,_Alloc>& __x, deque<_Tp,_Alloc>& __y)
+#if __cplusplus >= 201103L
+    noexcept(noexcept(__x.swap(__y)))
+#endif
     { __x.swap(__y); }
 
 #undef _GLIBCXX_DEQUE_BUF_SIZE

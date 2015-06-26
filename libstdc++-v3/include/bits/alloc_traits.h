@@ -89,9 +89,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define _GLIBCXX_ALLOC_TR_NESTED_TYPE(_NTYPE, _ALT) \
   private: \
-  template<typename _Tp> \
-    static typename _Tp::_NTYPE _S_##_NTYPE##_helper(_Tp*); \
-  static _ALT _S_##_NTYPE##_helper(...); \
+    template<typename _Tp> \
+      static typename _Tp::_NTYPE _S_##_NTYPE##_helper(_Tp*); \
+    static _ALT _S_##_NTYPE##_helper(...); \
     typedef decltype(_S_##_NTYPE##_helper((_Alloc*)0)) __##_NTYPE; \
   public:
 
@@ -193,6 +193,17 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
        * otherwise @c false_type
       */
       typedef __propagate_on_container_swap propagate_on_container_swap;
+
+_GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
+			      typename is_empty<_Alloc>::type)
+
+      /**
+       * @brief   Whether all instances of the allocator type compare equal.
+       *
+       * @c Alloc::is_always_equal if that type exists,
+       * otherwise @c is_empty<Alloc>::type
+      */
+      typedef __is_always_equal is_always_equal;
 
 #undef _GLIBCXX_ALLOC_TR_NESTED_TYPE
 

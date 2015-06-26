@@ -43,37 +43,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template<template<typename> class _Pred, typename... _Allocs>
-    struct __any_of;
-
-  template<template<typename> class _Pred, typename _Alloc, typename... _Allocs>
-    struct __any_of<_Pred, _Alloc, _Allocs...>
-    : __or_<_Pred<_Alloc>, __any_of<_Pred, _Allocs...>>
-    { };
-
-  template<template<typename> class _Pred, typename _Alloc>
-    struct __any_of<_Pred, _Alloc>
-    : _Pred<_Alloc>
-    { };
-
   /**
    * @addtogroup allocators
    * @{
    */
-
-  template<typename _Alloc>
-    struct __propagate_on_copy
-    : allocator_traits<_Alloc>::propagate_on_container_copy_assignment
-    { };
-  template<typename _Alloc>
-    struct __propagate_on_move
-    : allocator_traits<_Alloc>::propagate_on_container_move_assignment
-    { };
-  template<typename _Alloc>
-    struct __propagate_on_swap
-    : allocator_traits<_Alloc>::propagate_on_container_swap
-    { };
-
 
   template<typename _Alloc>
     inline auto
@@ -263,15 +236,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits::void_pointer           void_pointer;
       typedef typename __traits::const_void_pointer     const_void_pointer;
 
-      typedef typename conditional<
-        __any_of<__propagate_on_copy, _OuterAlloc, _InnerAllocs...>::value,
-        true_type, false_type>::type propagate_on_container_copy_assignment;
-      typedef typename conditional<
-        __any_of<__propagate_on_move, _OuterAlloc, _InnerAllocs...>::value,
-        true_type, false_type>::type propagate_on_container_move_assignment;
-      typedef typename conditional<
-        __any_of<__propagate_on_swap, _OuterAlloc, _InnerAllocs...>::value,
-        true_type, false_type>::type propagate_on_container_swap;
+      typedef typename __or_<
+	typename __traits::propagate_on_container_copy_assignment,
+	typename allocator_traits<_InnerAllocs>::
+	  propagate_on_container_copy_assignment...>::type
+	  propagate_on_container_copy_assignment;
+
+      typedef typename __or_<
+	typename __traits::propagate_on_container_move_assignment,
+	typename allocator_traits<_InnerAllocs>::
+	  propagate_on_container_move_assignment...>::type
+	  propagate_on_container_move_assignment;
+
+      typedef typename __or_<
+	typename __traits::propagate_on_container_swap,
+	typename allocator_traits<_InnerAllocs>::
+	  propagate_on_container_swap...>::type
+	  propagate_on_container_swap;
+
+      typedef typename __and_<
+	typename __traits::is_always_equal,
+	typename allocator_traits<_InnerAllocs>::is_always_equal...>::type
+	  is_always_equal;
 
       template <class _Tp>
         struct rebind
