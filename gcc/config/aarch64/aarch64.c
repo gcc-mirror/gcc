@@ -321,13 +321,6 @@ static const struct cpu_vector_cost xgene1_vector_cost =
   1 /* cond_not_taken_branch_cost  */
 };
 
-#define AARCH64_FUSE_NOTHING	(0)
-#define AARCH64_FUSE_MOV_MOVK	(1 << 0)
-#define AARCH64_FUSE_ADRP_ADD	(1 << 1)
-#define AARCH64_FUSE_MOVK_MOVK	(1 << 2)
-#define AARCH64_FUSE_ADRP_LDR	(1 << 3)
-#define AARCH64_FUSE_CMP_BRANCH	(1 << 4)
-
 /* Generic costs for branch instructions.  */
 static const struct cpu_branch_cost generic_branch_cost =
 {
