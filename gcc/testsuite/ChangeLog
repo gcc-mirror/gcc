@@ -1,3 +1,7 @@
+2015-06-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-25.c: Adjust.
+
 2015-06-26  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-and-1.c: New test.

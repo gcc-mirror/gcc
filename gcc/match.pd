@@ -1209,6 +1209,35 @@ along with GCC; see the file COPYING3.  If not see
     (if (tem && !TREE_OVERFLOW (tem))
      (scmp @0 { tem; }))))))
 
+
+/* Equality compare simplifications from fold_binary  */
+(for cmp (eq ne)
+
+ /* If we have (A | C) == D where C & ~D != 0, convert this into 0.
+    Similarly for NE_EXPR.  */
+ (simplify
+  (cmp (convert?@3 (bit_ior @0 INTEGER_CST@1)) INTEGER_CST@2)
+  (if (tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@0))
+       && wi::bit_and_not (@1, @2) != 0)
+   { constant_boolean_node (cmp == NE_EXPR, type); }))
+
+ /* (X ^ Y) == 0 becomes X == Y, and (X ^ Y) != 0 becomes X != Y.  */
+ (simplify
+  (cmp (bit_xor @0 @1) integer_zerop)
+  (cmp @0 @1))
+
+ /* (X ^ Y) == Y becomes X == 0.
+    Likewise (X ^ Y) == X becomes Y == 0.  */
+ (simplify
+  (cmp (bit_xor:c @0 @1) @0)
+  (cmp @1 { build_zero_cst (TREE_TYPE (@1)); }))
+
+ /* (X ^ C1) op C2 can be rewritten as X op (C1 ^ C2).  */
+ (simplify
+  (cmp (convert?@3 (bit_xor @0 INTEGER_CST@1)) INTEGER_CST@2)
+  (if (tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@0)))
+   (cmp @0 (bit_xor @1 (convert @2))))))
+
 /* Simplification of math builtins.  */
 
 (define_operator_list LOG BUILT_IN_LOGF BUILT_IN_LOG BUILT_IN_LOGL)
