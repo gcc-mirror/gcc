@@ -1,3 +1,7 @@
+2015-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (handle_unused_attribute): Use VAR_OR_FUNCTION_DECL_P.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-common.c: Remove ipa-ref.h and plugin-api.h from include list.
