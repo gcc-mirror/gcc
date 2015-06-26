@@ -1,3 +1,9 @@
+2015-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/66301
+	* tree-ssa-pre.c (before_dom_children): Check that dump_file is not
+	NULL instead of calling dump_enabled_p.
+
 2015-06-26  Uros Bizjak  <ubizjak@gmail.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>
 

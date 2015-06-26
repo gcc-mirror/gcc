@@ -4386,7 +4386,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 						       (OBJ_TYPE_REF_TOKEN (fn)),
 						     context,
 						     &final);
-	      if (dump_enabled_p ())
+	      if (dump_file)
 		dump_possible_polymorphic_call_targets (dump_file, 
 							obj_type_ref_class (fn),
 							tree_to_uhwi
