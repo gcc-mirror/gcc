@@ -1,3 +1,8 @@
+2015-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* match.pd ((x | y) & ~(x & y) -> x ^ y,
+	(x | y) & (~x ^ y) -> x & y): New patterns.
+
 2015-06-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtl.h (emit): Add an optional boolean parameter to control
