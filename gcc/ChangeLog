@@ -1,3 +1,11 @@
+2015-06-26  Uros Bizjak  <ubizjak@gmail.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/66412
+	* config/i386/i386.md (various splitters): Use shallow_copy_rtx
+	before doing PUT_MODE or PUT_CODE on operands to avoid
+	in-place RTX modification.
+
 2015-06-25  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline

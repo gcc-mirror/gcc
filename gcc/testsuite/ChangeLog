@@ -1,3 +1,8 @@
+2015-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66412
+	* gcc.target/i386/pr66412.c: New test.
+
 2015-06-25  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
