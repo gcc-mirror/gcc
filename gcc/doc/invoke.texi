@@ -12525,6 +12525,15 @@ Enable Privileged Access Never support.
 Enable Limited Ordering Regions support.
 @item rdma
 Enable ARMv8.1 Advanced SIMD instructions.
+
+@item -moverride=@var{string}
+@opindex master
+Override tuning decisions made by the back-end in response to a
+@option{-mtune=} switch.  The syntax, semantics, and accepted values
+for @var{string} in this option are not guaranteed to be consistent
+across releases.
+
+This option is only intended to be useful when developing GCC.
 @end table
 
 That is, @option{crypto} implies @option{simd} implies @option{fp}.
