@@ -1,3 +1,13 @@
+2015-06-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (emit): Add an optional boolean parameter to control
+	whether barriers are emitted.
+	* emit-rtl.c (emit): Likewise.
+	* gensupport.c (get_emit_function): Return null rather than "emit".
+	* genemit.c (gen_emit_seq): Handle the null return value.
+	Don't emit barriers after the final instruction in the sequence.
+	* gentarget-def.c (main): Don't emit barriers after the instruction.
+
 2015-06-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (arm_output_multireg_pop): Fix use of

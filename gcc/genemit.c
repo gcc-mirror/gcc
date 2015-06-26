@@ -277,12 +277,22 @@ gen_emit_seq (rtvec vec, char *used)
 {
   for (int i = 0, len = GET_NUM_ELEM (vec); i < len; ++i)
     {
+      bool last_p = (i == len - 1);
       rtx next = RTVEC_ELT (vec, i);
-      printf ("  %s (", get_emit_function (next));
-      gen_exp (next, DEFINE_EXPAND, used);
-      printf (");\n");
-      if (needs_barrier_p (next))
-	printf ("  emit_barrier ();");
+      if (const char *name = get_emit_function (next))
+	{
+	  printf ("  %s (", name);
+	  gen_exp (next, DEFINE_EXPAND, used);
+	  printf (");\n");
+	  if (!last_p && needs_barrier_p (next))
+	    printf ("  emit_barrier ();");
+	}
+      else
+	{
+	  printf ("  emit (");
+	  gen_exp (next, DEFINE_EXPAND, used);
+	  printf (", %s);\n", last_p ? "false" : "true");
+	}
     }
 }
 

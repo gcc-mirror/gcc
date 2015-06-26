@@ -5303,11 +5303,14 @@ set_dst_reg_note (rtx insn, enum reg_note kind, rtx datum, rtx dst)
   return NULL_RTX;
 }
 
-/* Emit the rtl pattern X as an appropriate kind of insn.
+/* Emit the rtl pattern X as an appropriate kind of insn.  Also emit a
+   following barrier if the instruction needs one and if ALLOW_BARRIER_P
+   is true.
+
    If X is a label, it is simply added into the insn chain.  */
 
 rtx_insn *
-emit (rtx x)
+emit (rtx x, bool allow_barrier_p)
 {
   enum rtx_code code = classify_insn (x);
 
@@ -5320,7 +5323,8 @@ emit (rtx x)
     case  JUMP_INSN:
       {
 	rtx_insn *insn = emit_jump_insn (x);
-	if (any_uncondjump_p (insn) || GET_CODE (x) == RETURN)
+	if (allow_barrier_p
+	    && (any_uncondjump_p (insn) || GET_CODE (x) == RETURN))
 	  return emit_barrier ();
 	return insn;
       }
