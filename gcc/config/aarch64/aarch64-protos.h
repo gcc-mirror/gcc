@@ -49,12 +49,13 @@ enum aarch64_symbol_context
 
    This corresponds to the small code model of the compiler.
 
-   SYMBOL_SMALL_GOT: Similar to the one above but this
+   SYMBOL_SMALL_GOT_4G: Similar to the one above but this
    gives us the GOT entry of the symbol being referred to :
    Thus calculating the GOT entry for foo is done using the
    following sequence of instructions.  The ADRP instruction
    gets us to the page containing the GOT entry of the symbol
-   and the got_lo12 gets us the actual offset in it.
+   and the got_lo12 gets us the actual offset in it, together
+   the base and offset, we can address 4G size GOT table.
 
    adrp  x0, :got:foo
    ldr   x0, [x0, :gotoff_lo12:foo]
@@ -94,7 +95,7 @@ enum aarch64_symbol_context
 enum aarch64_symbol_type
 {
   SYMBOL_SMALL_ABSOLUTE,
-  SYMBOL_SMALL_GOT,
+  SYMBOL_SMALL_GOT_4G,
   SYMBOL_SMALL_TLSGD,
   SYMBOL_SMALL_TLSDESC,
   SYMBOL_SMALL_GOTTPREL,
