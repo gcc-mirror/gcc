@@ -573,6 +573,9 @@ template<typename _Alloc>
 
   public:
     vector()
+#if __cplusplus >= 201103L
+      noexcept(is_nothrow_default_constructible<allocator_type>::value)
+#endif
     : _Base() { }
 
     explicit
