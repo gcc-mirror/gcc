@@ -17589,7 +17589,7 @@ arm_output_multireg_pop (rtx *operands, bool return_pc, rtx cond, bool reverse,
     }
 
   conditional = reverse ? "%?%D0" : "%?%d0";
-  if ((regno_base == SP_REGNUM) && TARGET_UNIFIED_ASM)
+  if ((regno_base == SP_REGNUM) && TARGET_THUMB)
     {
       /* Output pop (not stmfd) because it has a shorter encoding.  */
       gcc_assert (update);
