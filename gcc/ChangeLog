@@ -69,6 +69,28 @@
 
 2015-06-26  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_symbol_type): New type
+	SYMBOL_SMALL_GOT_28K.
+	* config/aarch64/aarch64.md: (ldr_got_small_<mode>): Support new GOT
+	relocation modifiers.
+	(unspec): New enum "UNSPEC_GOTMALLPIC28K.
+	(ldr_got_small_28k_<mode>): New.
+	(ldr_got_small_28k_sidi): New.
+	* config/aarch64/iterators.md (got_modifier): New mode iterator.
+	* config/aarch64/aarch64-otps.h (aarch64_code_model): New model.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Support
+	SYMBOL_SMALL_GOT_28K.
+	(aarch64_rtx_costs): Add costs for new instruction sequences.
+	(initialize_aarch64_code_model): Initialize new model.
+	(aarch64_classify_symbol): Recognize new model and new symbol classification.
+	(aarch64_asm_preferred_eh_data_format): Support new model.
+	(aarch64_load_symref_appropriately): Generate new instruction
+	sequences for -fpic.
+	(TARGET_USE_PSEUDO_PIC_REG): New definition.
+	(aarch64_use_pseudo_pic_reg): New function.
+
+2015-06-26  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_symbol_type): Rename
 	SYMBOL_SMALL_GOT to SYMBOL_SMALL_GOT_4G.
 	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Ditto.

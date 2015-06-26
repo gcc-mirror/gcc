@@ -657,6 +657,10 @@
 
 (define_mode_attr insn_count [(OI "8") (CI "12") (XI "16")])
 
+;; -fpic small model GOT reloc modifers: gotpage_lo15/lo14 for ILP64/32.
+;; No need of iterator for -fPIC as it use got_lo12 for both modes.
+(define_mode_attr got_modifier [(SI "gotpage_lo14") (DI "gotpage_lo15")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
