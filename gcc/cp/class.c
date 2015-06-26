@@ -6825,6 +6825,7 @@ finish_struct (tree t, tree attributes)
   unreverse_member_declarations (t);
 
   cplus_decl_attributes (&t, attributes, (int) ATTR_FLAG_TYPE_IN_PLACE);
+  fixup_attribute_variants (t);
 
   /* Nadger the current location so that diagnostics point to the start of
      the struct, not the end.  */
