@@ -1,5 +1,10 @@
 2015-06-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66067
+	* mangle.c (write_nested_name): Limit TYPENAME_TYPE handling to
+	TYPE_DECLs.
+	* mangle.c (write_template_args): Handle 0 length TREE_VEC.
+
 	PR c++/66654
 	* typeck2.c (digest_init_r): Only expect reshaping if the class is
 	aggregate.
