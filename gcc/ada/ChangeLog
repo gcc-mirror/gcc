@@ -1,5 +1,18 @@
 2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (note_types_used_by_globals): Delete.
+	(gnat_write_global_declarations): New prototype.
+	* gcc-interface/utils.c (type_decls): Rename back to...
+	(global_decls): ...this.
+	(gnat_pushdecls): Revert previous change.
+	(create_var_decl): Do not output global variables.
+	(note_types_used_by_globals): Rename back to...
+	(gnat_write_global_declarations): ...this.  Output variables on the
+	global_decls vector.
+	* gcc-interface/misc.c (gnat_parse_file): Adjust to above renaming.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_var_decl_1): Rename into...
 	(create_var_decl): ...this.  Add default value for last parameter.
 	(create_type_stub_decl): Adjust.
