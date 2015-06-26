@@ -85,7 +85,7 @@ def_target_insn (const char *name, const char *prototype)
 	   That doesn't contribute to the suffix, so skip ahead and
 	   process the following character.  */
 	char *endptr;
-	if (strtol (p + 1, &endptr, 10) != opno
+	if ((unsigned int) strtol (p + 1, &endptr, 10) != opno
 	    || (*endptr != ',' && *endptr != ')'))
 	  {
 	    error ("invalid prototype for '%s'", name);
