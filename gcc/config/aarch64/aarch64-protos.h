@@ -190,6 +190,26 @@ struct tune_params
   const int min_div_recip_mul_df;
 };
 
+#define AARCH64_FUSION_PAIR(x, name, index) \
+  AARCH64_FUSE_##name = (1 << index),
+/* Supported fusion operations.  */
+enum aarch64_fusion_pairs
+{
+  AARCH64_FUSE_NOTHING = 0,
+#include "aarch64-fusion-pairs.def"
+
+/* Hacky macro to build AARCH64_FUSE_ALL.  The sequence below expands
+   to:
+   AARCH64_FUSE_ALL = 0 | AARCH64_FUSE_index1 | AARCH64_FUSE_index2 ...  */
+#undef AARCH64_FUSION_PAIR
+#define AARCH64_FUSION_PAIR(x, name, y) \
+  | AARCH64_FUSE_##name
+
+  AARCH64_FUSE_ALL = 0
+#include "aarch64-fusion-pairs.def"
+};
+#undef AARCH64_FUSION_PAIR
+
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);

@@ -1,3 +1,15 @@
+2015-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-fusion-pairs.def: New.
+	* config/aarch64/aarch64-protos.h (aarch64_fusion_pairs): New.
+	* config/aarch64/aarch64.c (AARCH64_FUSE_NOTHING): Move to
+	aarch64_fusion_pairs.
+	(AARCH64_FUSE_MOV_MOVK): Likewise.
+	(AARCH64_FUSE_ADRP_ADD): Likewise.
+	(AARCH64_FUSE_MOVK_MOVK): Likewise.
+	(AARCH64_FUSE_ADRP_LDR): Likewise.
+	(AARCH64_FUSE_CMP_BRANCH): Likewise.
+
 2015-06-26  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_symbol_type): Rename
