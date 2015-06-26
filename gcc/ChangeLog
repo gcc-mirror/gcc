@@ -1,3 +1,8 @@
+2015-06-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hash-map.h (hash_map::traverse): Use the definition of the
+	Key typedef rather than the typedef itself.
+
 2015-06-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR debug/66301
