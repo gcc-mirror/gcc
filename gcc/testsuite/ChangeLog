@@ -1,3 +1,9 @@
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn11.adb: Add missing dg directive.
+	* gnat.dg/warn12.adb: New test.
+	* gnat.dg/warn12_pkg.ads: New helper.
+
 2015-06-26  Richard Biener  <rguenther@suse.de>
 
 	* gfortran.dg/reassoc_3.f90: Adjust.

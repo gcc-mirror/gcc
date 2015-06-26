@@ -1,3 +1,18 @@
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (loop_info_d): Add low_bound, high_bound,
+	artificial, has_checks and warned_aggressive_loop_optimizations.
+	(gigi): Set warn_aggressive_loop_optimizations to 0.
+	(inside_loop_p): New inline predicate.
+	(push_range_check_info): Rename into...
+	(find_loop_for): ...this and do not push range_check_info_d object.
+	(Loop_Statement_to_gnu): Set artificial, low_bound and high_bound
+	fields of gnu_loop_info.  Adjust detection of checks enabled by
+	-funswitch-loops and adds one for -faggressive-loop-optimizations.
+	(gnat_to_gnu) <N_Indexed_Component>: If aggressive loop optimizations
+	are enabled, warn for loops overrunning an array of size 1 not at the
+	end of a record.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/trans.c: Remove ipa-ref.h and plugin-api.h from include
