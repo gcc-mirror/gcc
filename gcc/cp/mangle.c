@@ -3530,8 +3530,7 @@ decl_implicit_alias_p (tree decl)
   if (DECL_P (decl) && DECL_ARTIFICIAL (decl)
       && DECL_IGNORED_P (decl)
       && (TREE_CODE (decl) == FUNCTION_DECL
-	  || (TREE_CODE (decl) == VAR_DECL
-	      && TREE_STATIC (decl))))
+	  || (VAR_P (decl) && TREE_STATIC (decl))))
     {
       symtab_node *n = symtab_node::get (decl);
       if (n && n->cpp_implicit_alias)

@@ -557,11 +557,11 @@ register_construction_vtables (tree base_class, tree record_type,
                   if (TREE_OPERAND (value, 0))
                     val_vtbl_decl = TREE_OPERAND (value, 0);
 
-                  while (TREE_CODE (val_vtbl_decl) != VAR_DECL
+                  while (!VAR_P (val_vtbl_decl)
                          && TREE_OPERAND (val_vtbl_decl, 0))
                     val_vtbl_decl = TREE_OPERAND (val_vtbl_decl, 0);
 
-                  gcc_assert (TREE_CODE (val_vtbl_decl) == VAR_DECL);
+		  gcc_assert (VAR_P (val_vtbl_decl));
 
                   /* Check to see if we already have this vtable pointer in
                      our valid set for this base class.  */
@@ -876,7 +876,7 @@ output_set_info (tree record_type, vec<tree> vtbl_ptr_array)
           if (TREE_CODE (arg0) == ADDR_EXPR)
             arg0 = TREE_OPERAND (arg0, 0);
 
-          if (TREE_CODE (arg0) == VAR_DECL)
+	  if (VAR_P (arg0))
             vptr_name = IDENTIFIER_POINTER (DECL_NAME (arg0));
 
           if (TREE_CODE (arg1) == INTEGER_CST)

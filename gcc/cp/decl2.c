@@ -1005,7 +1005,7 @@ grokfield (const cp_declarator *declarator,
     return value;
 
   /* Need to set this before push_template_decl.  */
-  if (TREE_CODE (value) == VAR_DECL)
+  if (VAR_P (value))
     DECL_CONTEXT (value) = current_class_type;
 
   if (processing_template_decl && VAR_OR_FUNCTION_DECL_P (value))
@@ -1417,7 +1417,7 @@ cp_omp_mappable_type (tree type)
     {
       tree field;
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-	if (TREE_CODE (field) == VAR_DECL)
+	if (VAR_P (field))
 	  return false;
 	/* All fields must have mappable types.  */
 	else if (TREE_CODE (field) == FIELD_DECL
@@ -1438,21 +1438,21 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 
   /* Add implicit "omp declare target" attribute if requested.  */
   if (scope_chain->omp_declare_target_attribute
-      && ((TREE_CODE (*decl) == VAR_DECL
+      && ((VAR_P (*decl)
 	   && (TREE_STATIC (*decl) || DECL_EXTERNAL (*decl)))
 	  || TREE_CODE (*decl) == FUNCTION_DECL))
     {
-      if (TREE_CODE (*decl) == VAR_DECL
+      if (VAR_P (*decl)
 	  && DECL_CLASS_SCOPE_P (*decl))
 	error ("%q+D static data member inside of declare target directive",
 	       *decl);
-      else if (TREE_CODE (*decl) == VAR_DECL
+      else if (VAR_P (*decl)
 	       && (DECL_FUNCTION_SCOPE_P (*decl)
 		   || (current_function_decl && !DECL_EXTERNAL (*decl))))
 	error ("%q+D in block scope inside of declare target directive",
 	       *decl);
       else if (!processing_template_decl
-	       && TREE_CODE (*decl) == VAR_DECL
+	       && VAR_P (*decl)
 	       && !cp_omp_mappable_type (TREE_TYPE (*decl)))
 	error ("%q+D in declare target directive does not have mappable type",
 	       *decl);
@@ -1980,7 +1980,7 @@ mark_needed (tree decl)
       FOR_EACH_CLONE (clone, decl)
 	mark_needed (clone);
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       varpool_node *node = varpool_node::get_create (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
@@ -2179,8 +2179,7 @@ constrain_visibility (tree decl, int visibility, bool tmpl)
 	  DECL_WEAK (decl) = 0;
 	  DECL_COMMON (decl) = 0;
 	  DECL_COMDAT (decl) = false;
-	  if (TREE_CODE (decl) == FUNCTION_DECL
-	      || TREE_CODE (decl) == VAR_DECL)
+	  if (VAR_OR_FUNCTION_DECL_P (decl))
 	    {
 	      struct symtab_node *snode = symtab_node::get (decl);
 
@@ -2643,7 +2642,7 @@ reset_type_linkage_2 (tree type)
 	  reset_decl_linkage (ti);
 	}
       for (tree m = TYPE_FIELDS (type); m; m = DECL_CHAIN (m))
-	if (TREE_CODE (m) == VAR_DECL)
+	if (VAR_P (m))
 	  reset_decl_linkage (m);
       for (tree m = TYPE_METHODS (type); m; m = DECL_CHAIN (m))
 	{
@@ -2701,7 +2700,7 @@ tentative_decl_linkage (tree decl)
 	      DECL_INTERFACE_KNOWN (decl) = 1;
 	    }
 	}
-      else if (TREE_CODE (decl) == VAR_DECL)
+      else if (VAR_P (decl))
 	maybe_commonize_var (decl);
     }
 }
@@ -4208,7 +4207,7 @@ no_linkage_error (tree decl)
 		       "anonymous type, is used but never defined", decl);
       else if (DECL_EXTERN_C_P (decl))
 	/* Allow this; it's pretty common in C.  */;
-      else if (TREE_CODE (decl) == VAR_DECL)
+      else if (VAR_P (decl))
 	/* DRs 132, 319 and 389 seem to indicate types with
 	   no linkage can only be used to declare extern "C"
 	   entities.  Since it's not always an error in the
@@ -4227,12 +4226,12 @@ no_linkage_error (tree decl)
     }
   else if (cxx_dialect >= cxx11)
     {
-      if (TREE_CODE (decl) == VAR_DECL || !DECL_PURE_VIRTUAL_P (decl))
+      if (VAR_P (decl) || !DECL_PURE_VIRTUAL_P (decl))
 	permerror (DECL_SOURCE_LOCATION (decl),
 		   "%q#D, declared using local type "
 		   "%qT, is used but never defined", decl, t);
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     warning_at (DECL_SOURCE_LOCATION (decl), 0, "type %qT with no linkage "
 		"used to declare variable %q#D with linkage", t, decl);
   else
