@@ -1023,7 +1023,7 @@ optimize_specialization_lookup_p (tree tmpl)
    gone through coerce_template_parms by now.  */
 
 static void
-check_unstripped_args (tree args)
+check_unstripped_args (tree args ATTRIBUTE_UNUSED)
 {
 #ifdef ENABLE_CHECKING
   ++processing_template_decl;

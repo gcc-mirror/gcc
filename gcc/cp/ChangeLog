@@ -1,3 +1,7 @@
+2015-06-27  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* pt.c (check_unstripped_args): Mark parameter as unused.
+
 2015-06-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66216
