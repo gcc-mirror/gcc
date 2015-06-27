@@ -14692,8 +14692,19 @@ label:
   if (REGNO (operands[1]) == REGNO (operands[2]))
       operands[2] = gen_rtx_REG (SImode, REGNO (operands[0]));
 
-  sh_check_add_incdec_notes (emit_insn (gen_rtx_SET (SImode, operands[2],
-						     operands[3])));
+  // We don't know what the new set insn will be in detail.  Just make sure
+  // that it still can be recognized and the constraints are satisfied.
+  rtx_insn* i = emit_insn (gen_rtx_SET (VOIDmode, operands[2], operands[3]));
+						     
+  recog_data_d prev_recog_data = recog_data;
+  bool i_invalid = insn_invalid_p (i, false); 
+  recog_data = prev_recog_data;
+  
+  if (i_invalid)
+    FAIL;
+    
+  sh_check_add_incdec_notes (i);
+
   emit_insn (gen_tstsi_t (operands[2],
 			  gen_rtx_REG (SImode, (REGNO (operands[1])))));
 })
@@ -14720,8 +14731,19 @@ label:
        || REGNO (operands[2]) == REGNO (operands[5]))"
   [(const_int 0)]
 {
-  sh_check_add_incdec_notes (emit_insn (gen_rtx_SET (SImode, operands[2],
-						     operands[3])));
+  // We don't know what the new set insn will be in detail.  Just make sure
+  // that it still can be recognized and the constraints are satisfied.
+  rtx_insn* i = emit_insn (gen_rtx_SET (VOIDmode, operands[2], operands[3]));
+
+  recog_data_d prev_recog_data = recog_data;
+  bool i_invalid = insn_invalid_p (i, false); 
+  recog_data = prev_recog_data;
+  
+  if (i_invalid)
+    FAIL;
+    
+  sh_check_add_incdec_notes (i);
+  
   emit_insn (gen_tstsi_t (operands[2],
 			  gen_rtx_REG (SImode, (REGNO (operands[1])))));
 })

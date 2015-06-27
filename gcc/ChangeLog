@@ -1,3 +1,13 @@
+2015-06-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-06-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65979
+	PR target/66611
+	* config/sh/sh.md (tstsi_t peephole2): Use insn_invalid_p to check if
+	the replacement insn will work.
+
 2015-06-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR debug/66301
