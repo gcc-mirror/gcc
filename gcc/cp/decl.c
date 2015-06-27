@@ -5392,7 +5392,7 @@ reshape_init_vector (tree type, reshape_iter *d, tsubst_flags_t complain)
 {
   tree max_index = NULL_TREE;
 
-  gcc_assert (TREE_CODE (type) == VECTOR_TYPE);
+  gcc_assert (VECTOR_TYPE_P (type));
 
   if (COMPOUND_LITERAL_P (d->cur->value))
     {
@@ -5409,7 +5409,7 @@ reshape_init_vector (tree type, reshape_iter *d, tsubst_flags_t complain)
     }
 
   /* For a vector, we initialize it as an array of the appropriate size.  */
-  if (TREE_CODE (type) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (type))
     max_index = size_int (TYPE_VECTOR_SUBPARTS (type) - 1);
 
   return reshape_init_array_1 (TREE_TYPE (type), max_index, d, complain);
@@ -5717,7 +5717,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
     return reshape_init_class (type, d, first_initializer_p, complain);
   else if (TREE_CODE (type) == ARRAY_TYPE)
     return reshape_init_array (type, d, complain);
-  else if (TREE_CODE (type) == VECTOR_TYPE)
+  else if (VECTOR_TYPE_P (type))
     return reshape_init_vector (type, d, complain);
   else
     gcc_unreachable();
@@ -5919,7 +5919,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 		       "not by %<{...}%>",
 		       decl);
 	    }
-	  else if (TREE_CODE (type) == VECTOR_TYPE && TYPE_VECTOR_OPAQUE (type))
+	  else if (VECTOR_TYPE_P (type) && TYPE_VECTOR_OPAQUE (type))
 	    {
 	      error ("opaque vector types cannot be initialized");
 	      init = error_mark_node;

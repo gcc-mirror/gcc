@@ -293,10 +293,10 @@ cp_common_type (tree t1, tree t2)
 
   /* FIXME: Attributes.  */
   gcc_assert (ARITHMETIC_TYPE_P (t1)
-	      || TREE_CODE (t1) == VECTOR_TYPE
+	      || VECTOR_TYPE_P (t1)
 	      || UNSCOPED_ENUM_P (t1));
   gcc_assert (ARITHMETIC_TYPE_P (t2)
-	      || TREE_CODE (t2) == VECTOR_TYPE
+	      || VECTOR_TYPE_P (t2)
 	      || UNSCOPED_ENUM_P (t2));
 
   /* If one type is complex, form the common type of the non-complex
@@ -441,10 +441,10 @@ tree
 type_after_usual_arithmetic_conversions (tree t1, tree t2)
 {
   gcc_assert (ARITHMETIC_TYPE_P (t1)
-	      || TREE_CODE (t1) == VECTOR_TYPE
+	      || VECTOR_TYPE_P (t1)
 	      || UNSCOPED_ENUM_P (t1));
   gcc_assert (ARITHMETIC_TYPE_P (t2)
-	      || TREE_CODE (t2) == VECTOR_TYPE
+	      || VECTOR_TYPE_P (t2)
 	      || UNSCOPED_ENUM_P (t2));
 
   /* Perform the integral promotions.  We do not promote real types here.  */
@@ -6979,9 +6979,9 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 		 "is conditionally-supported");
       return fold_if_not_in_template (build_nop (type, expr));
     }
-  else if (TREE_CODE (type) == VECTOR_TYPE)
+  else if (VECTOR_TYPE_P (type))
     return fold_if_not_in_template (convert_to_vector (type, expr));
-  else if (TREE_CODE (intype) == VECTOR_TYPE
+  else if (VECTOR_TYPE_P (intype)
 	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     return fold_if_not_in_template (convert_to_integer (type, expr));
   else
@@ -8115,7 +8115,7 @@ convert_for_assignment (tree type, tree rhs,
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
 
-  if (TREE_CODE (type) == VECTOR_TYPE && coder == VECTOR_TYPE
+  if (VECTOR_TYPE_P (type) && coder == VECTOR_TYPE
       && vector_types_convertible_p (type, rhstype, true))
     {
       rhs = mark_rvalue_use (rhs);
@@ -8819,7 +8819,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	    constp &= TYPE_READONLY (to);
 	}
 
-      if (TREE_CODE (to) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (to))
 	is_opaque_pointer = vector_targets_convertible_p (to, from);
 
       if (!TYPE_PTR_P (to) && !TYPE_PTRDATAMEM_P (to))
@@ -8900,7 +8900,7 @@ ptr_reasonably_similar (const_tree to, const_tree from)
 			COMPARE_BASE | COMPARE_DERIVED))
 	continue;
 
-      if (TREE_CODE (to) == VECTOR_TYPE
+      if (VECTOR_TYPE_P (to)
 	  && vector_types_convertible_p (to, from, false))
 	return true;
 
@@ -8942,7 +8942,7 @@ comp_ptr_ttypes_const (tree to, tree from)
 			  TYPE_OFFSET_BASETYPE (to)))
 	  continue;
 
-      if (TREE_CODE (to) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (to))
 	is_opaque_pointer = vector_targets_convertible_p (to, from);
 
       if (!TYPE_PTR_P (to))

@@ -1,5 +1,18 @@
 2015-06-27  Marek Polacek  <polacek@redhat.com>
 
+	* call.c: Use VECTOR_TYPE_P.
+	* constexpr.c: Likewise.
+	* cvt.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* init.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
+2015-06-27  Marek Polacek  <polacek@redhat.com>
+
 	* call.c (set_up_extended_ref_temp): Use VAR_P.
 	* class.c: Use VAR_P throughout.
 	* constexpr.c (cxx_eval_constant_expression): Use VAR_P.

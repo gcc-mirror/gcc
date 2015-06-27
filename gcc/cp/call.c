@@ -4559,8 +4559,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       arg2_type = TREE_TYPE (arg2);
       arg3_type = TREE_TYPE (arg3);
 
-      if (TREE_CODE (arg2_type) != VECTOR_TYPE
-	  && TREE_CODE (arg3_type) != VECTOR_TYPE)
+      if (!VECTOR_TYPE_P (arg2_type)
+	  && !VECTOR_TYPE_P (arg3_type))
 	{
 	  /* Rely on the error messages of the scalar version.  */
 	  tree scal = build_conditional_expr_1 (loc, integer_one_node,
@@ -4612,8 +4612,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  arg3_type = vtype;
 	}
 
-      if ((TREE_CODE (arg2_type) == VECTOR_TYPE)
-	  != (TREE_CODE (arg3_type) == VECTOR_TYPE))
+      if (VECTOR_TYPE_P (arg2_type) != VECTOR_TYPE_P (arg3_type))
 	{
 	  enum stv_conv convert_flag =
 	    scalar_to_vector (loc, VEC_COND_EXPR, arg2, arg3,
