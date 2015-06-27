@@ -1083,7 +1083,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
   /* Come here only for aggregates: records, arrays, unions, complex numbers
      and vectors.  */
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE
-	      || TREE_CODE (type) == VECTOR_TYPE
+	      || VECTOR_TYPE_P (type)
 	      || TREE_CODE (type) == RECORD_TYPE
 	      || TREE_CODE (type) == UNION_TYPE
 	      || TREE_CODE (type) == COMPLEX_TYPE);
@@ -1236,7 +1236,7 @@ process_init_constructor_array (tree type, tree init,
   vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (init);
 
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE
-	      || TREE_CODE (type) == VECTOR_TYPE);
+	      || VECTOR_TYPE_P (type));
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -1572,7 +1572,7 @@ process_init_constructor (tree type, tree init, tsubst_flags_t complain)
 
   gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
 
-  if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
+  if (TREE_CODE (type) == ARRAY_TYPE || VECTOR_TYPE_P (type))
     flags = process_init_constructor_array (type, init, complain);
   else if (TREE_CODE (type) == RECORD_TYPE)
     flags = process_init_constructor_record (type, init, complain);

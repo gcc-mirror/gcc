@@ -280,7 +280,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
       /* Build a constructor to contain the initializations.  */
       init = build_constructor (type, v);
     }
-  else if (TREE_CODE (type) == VECTOR_TYPE)
+  else if (VECTOR_TYPE_P (type))
     init = build_zero_cst (type);
   else
     gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);

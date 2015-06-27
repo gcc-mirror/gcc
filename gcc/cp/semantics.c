@@ -7357,7 +7357,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	  gcc_assert (TREE_CODE (type) != REFERENCE_TYPE);
 
 	  /* For vector types, pick a non-opaque variant.  */
-	  if (TREE_CODE (type) == VECTOR_TYPE)
+	  if (VECTOR_TYPE_P (type))
 	    type = strip_typedefs (type);
 
 	  if (clk != clk_none && !(clk & clk_class))

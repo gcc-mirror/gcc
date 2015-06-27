@@ -3239,8 +3239,7 @@ scalarish_type_p (const_tree t)
   if (t == error_mark_node)
     return 1;
 
-  return (SCALAR_TYPE_P (t)
-	  || TREE_CODE (t) == VECTOR_TYPE);
+  return (SCALAR_TYPE_P (t) || VECTOR_TYPE_P (t));
 }
 
 /* Returns true iff T requires non-trivial default initialization.  */

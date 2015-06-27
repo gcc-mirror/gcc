@@ -61,7 +61,7 @@ bool
 literal_type_p (tree t)
 {
   if (SCALAR_TYPE_P (t)
-      || TREE_CODE (t) == VECTOR_TYPE
+      || VECTOR_TYPE_P (t)
       || TREE_CODE (t) == REFERENCE_TYPE
       || (VOID_TYPE_P (t) && cxx_dialect >= cxx14))
     return true;
@@ -2101,7 +2101,7 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   /* We're done building this CONSTRUCTOR, so now we can interpret an
      element without an explicit initializer as value-initialized.  */
   CONSTRUCTOR_NO_IMPLICIT_ZERO (t) = false;
-  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (t)))
     t = fold (t);
   return t;
 }
@@ -2289,7 +2289,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 		   (type, TREE_TYPE (optype))))
 	return fold_build1_loc (loc, REALPART_EXPR, type, op);
       /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
-      else if (TREE_CODE (optype) == VECTOR_TYPE
+      else if (VECTOR_TYPE_P (optype)
 	       && (same_type_ignoring_top_level_qualifiers_p
 		   (type, TREE_TYPE (optype))))
 	{
@@ -2335,7 +2335,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	  op00type = TREE_TYPE (op00);
 
 	  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
-	  if (TREE_CODE (op00type) == VECTOR_TYPE
+	  if (VECTOR_TYPE_P (op00type)
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (type, TREE_TYPE (op00type))))
 	    {
