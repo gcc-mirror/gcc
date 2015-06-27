@@ -26,11 +26,11 @@ class D
 {
   template <class Expr>
   typename A<F<typename C<Expr>::type>::value || B::value>::type
-  operator=(Expr); // { dg-message "declared" }
+  operator=(Expr); // { dg-message "private" }
 };
 
 void fn1()
 {
   D opt;
-  opt = 0; // { dg-error "private" }
+  opt = 0; // { dg-error "this context" }
 }

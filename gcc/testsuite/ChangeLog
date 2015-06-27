@@ -1,3 +1,9 @@
+2015-06-27  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/66667
+	* g++.dg/diagnostic/inhibit-warn-2.C: Fix test directives to match
+	diagnostic messages of GCC 5.x.
+
 2015-06-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66412
