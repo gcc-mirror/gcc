@@ -87,7 +87,7 @@ make_triplet_val_inv (tree *value)
 {
   if (TREE_CODE (*value) != INTEGER_CST
       && TREE_CODE (*value) != PARM_DECL
-      && TREE_CODE (*value) != VAR_DECL)
+      && !VAR_P (*value))
     *value = get_temp_regvar (ptrdiff_type_node, *value);
 }
 

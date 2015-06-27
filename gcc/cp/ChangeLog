@@ -1,3 +1,20 @@
+2015-06-27  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (set_up_extended_ref_temp): Use VAR_P.
+	* class.c: Use VAR_P throughout.
+	* constexpr.c (cxx_eval_constant_expression): Use VAR_P.
+	* cp-array-notation.c (make_triplet_val_inv): Likewise.
+	* decl.c: Use VAR_OR_FUNCTION_DECL_P or VAR_P
+	throughout.
+	* decl2.c: Likewise.
+	* error.c (dump_decl): Use VAR_P.
+	* mangle.c (decl_implicit_alias_p): Likewise.
+	* parser.c: Use VAR_P throughout.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+	* vtable-class-hierarchy.c: Likewise.
+	* tree.c (handle_abi_tag_attribute): Use VAR_OR_FUNCTION_DECL_P.
+
 2015-06-27  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* pt.c (check_unstripped_args): Mark parameter as unused.

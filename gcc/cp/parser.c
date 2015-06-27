@@ -10571,7 +10571,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
     {
       tree range_temp;
 
-      if (TREE_CODE (range_expr) == VAR_DECL
+      if (VAR_P (range_expr)
 	  && array_of_runtime_bound_p (TREE_TYPE (range_expr)))
 	/* Can't bind a reference to an array of runtime bound.  */
 	range_temp = range_expr;
@@ -28091,7 +28091,7 @@ cp_parser_oacc_data_clause_deviceptr (cp_parser *parser, tree list)
 	 c_parser_omp_var_list_parens should construct a list of
 	 locations to go along with the var list.  */
 
-      if (TREE_CODE (v) != VAR_DECL)
+      if (!VAR_P (v))
 	error_at (loc, "%qD is not a variable", v);
       else if (TREE_TYPE (v) == error_mark_node)
 	;

@@ -1065,7 +1065,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       dump_simple_decl (pp, t, TREE_TYPE (t), flags);
 
       /* Handle variable template specializations.  */
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && DECL_LANG_SPECIFIC (t)
 	  && DECL_TEMPLATE_INFO (t)
 	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t)))

@@ -9697,7 +9697,7 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
     }
   /* Avoid -Wunused-variable warning (c++/38958).  */
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
-      && TREE_CODE (decl) == VAR_DECL)
+      && VAR_P (decl))
     TREE_USED (decl) = DECL_READ_P (decl) = true;
 
   *initp = init;

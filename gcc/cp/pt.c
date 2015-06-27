@@ -2455,7 +2455,7 @@ check_explicit_specialization (tree declarator,
   switch (tsk)
     {
     case tsk_none:
-      if (processing_specialization && TREE_CODE (decl) != VAR_DECL)
+      if (processing_specialization && !VAR_P (decl))
 	{
 	  specialization = 1;
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
@@ -2888,7 +2888,7 @@ check_explicit_specialization (tree declarator,
 	    /* A specialization is not necessarily COMDAT.  */
 	    DECL_COMDAT (decl) = (TREE_PUBLIC (decl)
 				  && DECL_DECLARED_INLINE_P (decl));
-	  else if (TREE_CODE (decl) == VAR_DECL)
+	  else if (VAR_P (decl))
 	    DECL_COMDAT (decl) = false;
 
 	  /* Register this specialization so that we can find it
@@ -4771,7 +4771,7 @@ push_template_decl_real (tree decl, bool is_friend)
   is_partial = ((DECL_IMPLICIT_TYPEDEF_P (decl)
 		 && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
 		 && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
-		|| (TREE_CODE (decl) == VAR_DECL
+		|| (VAR_P (decl)
 		    && DECL_LANG_SPECIFIC (decl)
 		    && DECL_TEMPLATE_SPECIALIZATION (decl)
 		    && TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (decl))));
@@ -10792,7 +10792,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (PRIMARY_TEMPLATE_P (t))
 	  DECL_PRIMARY_TEMPLATE (r) = r;
 
-	if (TREE_CODE (decl) != TYPE_DECL && TREE_CODE (decl) != VAR_DECL)
+	if (TREE_CODE (decl) != TYPE_DECL && !VAR_P (decl))
 	  /* Record this non-type partial instantiation.  */
 	  register_specialization (r, t,
 				   DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),

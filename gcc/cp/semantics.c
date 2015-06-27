@@ -3161,7 +3161,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
 	  = decl_function_context (containing_function);
       }
 
-  if (lambda_expr && TREE_CODE (decl) == VAR_DECL
+  if (lambda_expr && VAR_P (decl)
       && DECL_ANON_UNION_VAR_P (decl))
     {
       if (complain & tf_error)
@@ -4281,7 +4281,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	return error_mark_node;
       if (type_dependent_expression_p (t))
 	return NULL_TREE;
-      if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+      if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
 	  if (processing_template_decl)
 	    return NULL_TREE;
@@ -4296,7 +4296,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	       && TREE_CODE (t) == VAR_DECL && DECL_THREAD_LOCAL_P (t))
+	       && VAR_P (t) && DECL_THREAD_LOCAL_P (t))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "%qD is threadprivate variable in %qs clause", t,
@@ -5662,7 +5662,7 @@ finish_omp_clauses (tree clauses)
 
 	case OMP_CLAUSE_ALIGNED:
 	  t = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      if (processing_template_decl)
 		break;
@@ -5732,7 +5732,7 @@ finish_omp_clauses (tree clauses)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      if (processing_template_decl)
 		break;
@@ -5774,7 +5774,7 @@ finish_omp_clauses (tree clauses)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      if (processing_template_decl)
 		break;
@@ -5789,7 +5789,7 @@ finish_omp_clauses (tree clauses)
 		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (TREE_CODE (t) == VAR_DECL && DECL_THREAD_LOCAL_P (t))
+	  else if (VAR_P (t) && DECL_THREAD_LOCAL_P (t))
 	    {
 	      error ("%qD is threadprivate variable in %qs clause", t,
 		     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
