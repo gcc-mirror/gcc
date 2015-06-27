@@ -807,6 +807,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
 	case TREE_VEC:
 	  len = TREE_VEC_LENGTH (node);
+	  fprintf (file, " length %d", len);
 	  for (i = 0; i < len; i++)
 	    if (TREE_VEC_ELT (node, i))
 	      {

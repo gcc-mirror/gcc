@@ -1,3 +1,7 @@
+2015-06-27  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* print-tree.c (print_node) [TREE_VEC]: Print its length.
+
 2015-06-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple.c (gimple_call_set_fndecl): Remove.
