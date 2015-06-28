@@ -11,6 +11,16 @@
 	* config/c6x/c6x.c (try_rename_operands): Assert that
 	regrename_do_replace returns true.
 
+2015-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (<mode>_ldx): Do not zero-extend non-Pmode
+	operand 2 here.  Use copy_addr_to_reg to copy non-index
+	register operand 2 to a temporary.
+	(<mode>_stx): Ditto for operand 1.
+	(*<mode>_ldx, *<mode>_stx): Remove enclosing parallel.
+	* config/i386/i386.c (ix86_load_bounds): Zero-extend non-Pmode ptr here.
+	(ix86_store_bounds): Ditto.
+
 2015-06-27  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* print-tree.c (print_node) [TREE_VEC]: Print its length.
