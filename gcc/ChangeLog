@@ -1,3 +1,16 @@
+2015-06-28  Chung-Lin Tang <cltang@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* regrename.h (regrename_do_replace): Change to return bool.
+	* regrename.c (rename_chains): Check return value of
+	regname_do_replace.
+	(regrename_do_replace): Re-validate the modified insns and
+	return bool status.
+	* config/aarch64/cortex-a57-fma-steering.c (rename_single_chain):
+	Update to match rename_chains changes.
+	* config/c6x/c6x.c (try_rename_operands): Assert that
+	regrename_do_replace returns true.
+
 2015-06-27  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* print-tree.c (print_node) [TREE_VEC]: Print its length.
