@@ -9999,12 +9999,18 @@ label:
   [(set_attr "in_delay_slot" "no")
    (set_attr "type" "arith")])
 
+;; Loads of the GOTPC relocation values must not be optimized away
+;; by e.g. any kind of CSE and must stay as they are.  Although there
+;; are other various ways to ensure this, we use an artificial counter
+;; operand to generate unique symbols.
 (define_expand "GOTaddr2picreg"
   [(set (reg:SI R0_REG)
-	(unspec:SI [(const:SI (unspec:SI [(match_dup 1)] UNSPEC_PIC))]
-		   UNSPEC_MOVA))
-   (set (match_dup 0) (const:SI (unspec:SI [(match_dup 1)] UNSPEC_PIC)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI R0_REG)))]
+	(unspec:SI [(const:SI (unspec:SI [(match_dup 2)
+					  (match_operand:SI 0 "" "")]
+					 UNSPEC_PIC))] UNSPEC_MOVA))
+   (set (match_dup 1)
+	(const:SI (unspec:SI [(match_dup 2) (match_dup 0)] UNSPEC_PIC)))
+   (set (match_dup 1) (plus:SI (match_dup 1) (reg:SI R0_REG)))]
   ""
 {
   if (TARGET_VXWORKS_RTP)
@@ -10015,8 +10021,8 @@ label:
       DONE;
     }
 
-  operands[0] = gen_rtx_REG (Pmode, PIC_REG);
-  operands[1] = gen_rtx_SYMBOL_REF (VOIDmode, GOT_SYMBOL_NAME);
+  operands[1] = gen_rtx_REG (Pmode, PIC_REG);
+  operands[2] = gen_rtx_SYMBOL_REF (VOIDmode, GOT_SYMBOL_NAME);
 
   if (TARGET_SHMEDIA)
     {
@@ -10025,23 +10031,23 @@ label:
       rtx lab = PATTERN (gen_call_site ());
       rtx insn, equiv;
 
-      equiv = operands[1];
-      operands[1] = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, operands[1], lab),
+      equiv = operands[2];
+      operands[2] = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, operands[2], lab),
 				    UNSPEC_PCREL_SYMOFF);
-      operands[1] = gen_rtx_CONST (Pmode, operands[1]);
+      operands[2] = gen_rtx_CONST (Pmode, operands[2]);
 
       if (Pmode == SImode)
 	{
-	  emit_insn (gen_movsi_const (pic, operands[1]));
+	  emit_insn (gen_movsi_const (pic, operands[2]));
 	  emit_insn (gen_ptrel_si (tr, pic, copy_rtx (lab)));
 	}
       else
 	{
-	  emit_insn (gen_movdi_const (pic, operands[1]));
+	  emit_insn (gen_movdi_const (pic, operands[2]));
 	  emit_insn (gen_ptrel_di (tr, pic, copy_rtx (lab)));
 	}
 
-      insn = emit_move_insn (operands[0], tr);
+      insn = emit_move_insn (operands[1], tr);
 
       set_unique_reg_note (insn, REG_EQUAL, equiv);
 
@@ -10095,7 +10101,7 @@ label:
   [(match_operand 0 "" "")]
   "flag_pic"
 {
-  emit_insn (gen_GOTaddr2picreg ());
+  emit_insn (gen_GOTaddr2picreg (const0_rtx));
   DONE;
 })
 
