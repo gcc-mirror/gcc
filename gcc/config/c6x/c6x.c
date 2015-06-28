@@ -3516,7 +3516,7 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
   best_reg =
     find_rename_reg (this_head, super_class, &unavailable, old_reg, true);
 
-  regrename_do_replace (this_head, best_reg);
+  gcc_assert (regrename_do_replace (this_head, best_reg));
 
   count_unit_reqs (new_reqs, head, PREV_INSN (tail));
   merge_unit_reqs (new_reqs);
@@ -3529,7 +3529,7 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
 	       unit_req_imbalance (reqs), unit_req_imbalance (new_reqs));
     }
   if (unit_req_imbalance (new_reqs) > unit_req_imbalance (reqs))
-    regrename_do_replace (this_head, old_reg);
+    gcc_assert (regrename_do_replace (this_head, old_reg));
   else
     memcpy (reqs, new_reqs, sizeof (unit_req_table));
 
