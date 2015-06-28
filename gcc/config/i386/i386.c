@@ -8886,9 +8886,8 @@ ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
     for (i = cum->regno; i < max; i++)
       {
 	rtx addr = plus_constant (Pmode, save_area, i * UNITS_PER_WORD);
-	rtx reg = gen_rtx_REG (DImode,
+	rtx ptr = gen_rtx_REG (Pmode,
 			       x86_64_int_parameter_registers[i]);
-	rtx ptr = reg;
 	rtx bounds;
 
 	if (bnd_reg <= LAST_BND_REG)
@@ -40344,6 +40343,9 @@ ix86_load_bounds (rtx slot, rtx ptr, rtx slot_no)
       ptr = copy_addr_to_reg (slot);
     }
 
+  if (!register_operand (ptr, Pmode))
+    ptr = ix86_zero_extend_to_Pmode (ptr);
+
   emit_insn (BNDmode == BND64mode
 	     ? gen_bnd64_ldx (reg, addr, ptr)
 	     : gen_bnd32_ldx (reg, addr, ptr));
@@ -40377,6 +40379,9 @@ ix86_store_bounds (rtx ptr, rtx slot, rtx bounds, rtx slot_no)
       gcc_assert (MEM_P (slot));
       ptr = copy_addr_to_reg (slot);
     }
+
+  if (!register_operand (ptr, Pmode))
+    ptr = ix86_zero_extend_to_Pmode (ptr);
 
   gcc_assert (POINTER_BOUNDS_MODE_P (GET_MODE (bounds)));
   if (!register_operand (bounds, BNDmode))
