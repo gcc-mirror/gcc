@@ -324,6 +324,9 @@ add_operator (enum tree_code code, const char *id,
       /* And allow CONSTRUCTOR for vector initializers.  */
       && !(code == CONSTRUCTOR))
     return;
+  /* Treat ADDR_EXPR as atom, thus don't allow matching its operand.  */
+  if (code == ADDR_EXPR)
+    nargs = 0;
   operator_id *op = new operator_id (code, id, nargs, tcc);
   id_base **slot = operators->find_slot_with_hash (op, op->hashval, INSERT);
   if (*slot)
