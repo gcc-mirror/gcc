@@ -117,6 +117,7 @@
     UNSPEC_ST4_LANE
     UNSPEC_TLS
     UNSPEC_TLSDESC
+    UNSPEC_TLSLE
     UNSPEC_USHL_2S
     UNSPEC_VSTRUCTDUMMY
     UNSPEC_SP_SET
@@ -4446,27 +4447,25 @@
    (set_attr "length" "8")]
 )
 
-(define_expand "tlsle_small"
+(define_expand "tlsle"
   [(set (match_operand 0 "register_operand" "=r")
         (unspec [(match_operand 1 "register_operand" "r")
                    (match_operand 2 "aarch64_tls_le_symref" "S")]
-                   UNSPEC_GOTSMALLTLS))]
+                   UNSPEC_TLSLE))]
   ""
 {
   machine_mode mode = GET_MODE (operands[0]);
   emit_insn ((mode == DImode
-	      ? gen_tlsle_small_di
-	      : gen_tlsle_small_si) (operands[0],
-				     operands[1],
-				     operands[2]));
+	      ? gen_tlsle_di
+	      : gen_tlsle_si) (operands[0], operands[1], operands[2]));
   DONE;
 })
 
-(define_insn "tlsle_small_<mode>"
+(define_insn "tlsle_<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
         (unspec:P [(match_operand:P 1 "register_operand" "r")
                    (match_operand 2 "aarch64_tls_le_symref" "S")]
-		   UNSPEC_GOTSMALLTLS))]
+		   UNSPEC_TLSLE))]
   ""
   "add\\t%<w>0, %<w>1, #%G2, lsl #12\;add\\t%<w>0, %<w>0, #%L2"
   [(set_attr "type" "alu_sreg")

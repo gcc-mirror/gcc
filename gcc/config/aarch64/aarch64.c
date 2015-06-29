@@ -1059,14 +1059,14 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	return;
       }
 
-    case SYMBOL_SMALL_TPREL:
+    case SYMBOL_TLSLE:
       {
 	rtx tp = aarch64_load_tp (NULL);
 
 	if (GET_MODE (dest) != Pmode)
 	  tp = gen_lowpart (GET_MODE (dest), tp);
 
-	emit_insn (gen_tlsle_small (dest, tp, imm));
+	emit_insn (gen_tlsle (dest, tp, imm));
 	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
 	return;
       }
@@ -1619,9 +1619,9 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	    }
 	  /* FALLTHRU */
 
-        case SYMBOL_SMALL_TPREL:
 	case SYMBOL_SMALL_ABSOLUTE:
 	case SYMBOL_TINY_ABSOLUTE:
+	case SYMBOL_TLSLE:
 	  aarch64_load_symref_appropriately (dest, imm, sty);
 	  return;
 
@@ -4504,7 +4504,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  asm_fprintf (asm_out_file, ":gottprel:");
 	  break;
 
-	case SYMBOL_SMALL_TPREL:
+	case SYMBOL_TLSLE:
 	  asm_fprintf (asm_out_file, ":tprel:");
 	  break;
 
@@ -4537,7 +4537,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  asm_fprintf (asm_out_file, ":gottprel_lo12:");
 	  break;
 
-	case SYMBOL_SMALL_TPREL:
+	case SYMBOL_TLSLE:
 	  asm_fprintf (asm_out_file, ":tprel_lo12_nc:");
 	  break;
 
@@ -4555,7 +4555,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
       switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
 	{
-	case SYMBOL_SMALL_TPREL:
+	case SYMBOL_TLSLE:
 	  asm_fprintf (asm_out_file, ":tprel_hi12:");
 	  break;
 	default:
@@ -7635,7 +7635,7 @@ aarch64_classify_tls_symbol (rtx x)
       return SYMBOL_SMALL_GOTTPREL;
 
     case TLS_MODEL_LOCAL_EXEC:
-      return SYMBOL_SMALL_TPREL;
+      return SYMBOL_TLSLE;
 
     case TLS_MODEL_EMULATED:
     case TLS_MODEL_NONE:
