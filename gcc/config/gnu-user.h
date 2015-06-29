@@ -67,11 +67,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    object constructed before entering `main', followed by a normal
    GNU userspace "finalizer" file, `crtn.o'.  */
 
+#if defined HAVE_LD_PIE
+#define GNU_USER_TARGET_ENDFILE_SPEC \
+  "%{fvtable-verify=none:%s; \
+     fvtable-verify=preinit:vtv_end_preinit.o%s; \
+     fvtable-verify=std:vtv_end.o%s} \
+   %{shared:crtendS.o%s;: %{" PIE_SPEC ":crtendS.o%s} \
+   %{" NO_PIE_SPEC ":crtend.o%s}} crtn.o%s"
+#else
 #define GNU_USER_TARGET_ENDFILE_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s} \
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+#endif
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC GNU_USER_TARGET_ENDFILE_SPEC
 
