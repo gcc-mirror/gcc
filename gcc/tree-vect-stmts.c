@@ -7620,14 +7620,8 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
   /* Verify SLP vectorization doesn't mess with STMT_VINFO_VEC_STMT.
      This would break hybrid SLP vectorization.  */
   if (slp_node)
-    {
-      if (PURE_SLP_STMT (stmt_info))
-	gcc_assert (!old_vec_stmt && !vec_stmt
-		    && !STMT_VINFO_VEC_STMT (stmt_info));
-      else if (HYBRID_SLP_STMT (stmt_info))
-	gcc_assert (!vec_stmt
-		    && STMT_VINFO_VEC_STMT (stmt_info) == old_vec_stmt);
-    }
+    gcc_assert (!vec_stmt
+		&& STMT_VINFO_VEC_STMT (stmt_info) == old_vec_stmt);
 
   /* Handle inner-loop stmts whose DEF is used in the loop-nest that
      is being vectorized, but outside the immediately enclosing loop.  */
