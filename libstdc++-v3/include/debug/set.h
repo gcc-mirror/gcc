@@ -280,9 +280,14 @@ namespace __debug
 	void
 	insert(_InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::insert(__gnu_debug::__base(__first),
-			__gnu_debug::__base(__last));
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_valid_range2(__first, __last, __dist);
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::insert(__gnu_debug::__unsafe(__first),
+			  __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::insert(__first, __last);
 	}
 
 #if __cplusplus >= 201103L

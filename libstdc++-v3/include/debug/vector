@@ -244,9 +244,15 @@ namespace __debug
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::assign(__gnu_debug::__base(__first),
-			__gnu_debug::__base(__last));
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_valid_range2(__first, __last, __dist);
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::assign(__gnu_debug::__unsafe(__first),
+			  __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::assign(__first, __last);
+
 	  this->_M_invalidate_all();
 	  this->_M_update_guaranteed_capacity();
 	}
@@ -574,16 +580,21 @@ namespace __debug
 	insert(const_iterator __position,
 	       _InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_insert_range(__position, __first, __last);
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
 
 	  /* Hard to guess if invalidation will occur, because __last
 	     - __first can't be calculated in all cases, so we just
 	     punt here by checking if it did occur. */
 	  _Base_iterator __old_begin = _M_base().begin();
 	  difference_type __offset = __position.base() - _Base::cbegin();
-	  _Base_iterator __res = _Base::insert(__position.base(),
-					       __gnu_debug::__base(__first),
-					       __gnu_debug::__base(__last));
+	  _Base_iterator __res;
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    __res = _Base::insert(__position.base(),
+				  __gnu_debug::__unsafe(__first),
+				  __gnu_debug::__unsafe(__last));
+	  else
+	    __res = _Base::insert(__position.base(), __first, __last);
 
 	  if (_M_base().begin() != __old_begin)
 	    this->_M_invalidate_all();
@@ -598,15 +609,19 @@ namespace __debug
 	insert(iterator __position,
 	       _InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_insert_range(__position, __first, __last);
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
 
 	  /* Hard to guess if invalidation will occur, because __last
 	     - __first can't be calculated in all cases, so we just
 	     punt here by checking if it did occur. */
 	  _Base_iterator __old_begin = _M_base().begin();
 	  difference_type __offset = __position.base() - _Base::begin();
-	  _Base::insert(__position.base(), __gnu_debug::__base(__first),
-					   __gnu_debug::__base(__last));
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::insert(__position.base(), __gnu_debug::__unsafe(__first),
+					     __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::insert(__position.base(), __first, __last);
 
 	  if (_M_base().begin() != __old_begin)
 	    this->_M_invalidate_all();

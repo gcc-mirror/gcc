@@ -322,7 +322,9 @@ namespace __gnu_debug
 
       // Is the iterator range [*this, __rhs) valid?
       bool
-      _M_valid_range(const _Safe_local_iterator& __rhs) const;
+      _M_valid_range(const _Safe_local_iterator& __rhs,
+		     std::pair<difference_type,
+			       _Distance_precision>& __dist_info) const;
 
       // The sequence this iterator references.
       typename
@@ -440,8 +442,66 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence>
     inline bool
     __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
-		  const _Safe_local_iterator<_Iterator, _Sequence>& __last)
-    { return __first._M_valid_range(__last); }
+		  const _Safe_local_iterator<_Iterator, _Sequence>& __last,
+		  typename _Distance_traits<_Iterator>::__type& __dist_info)
+    { return __first._M_valid_range(__last, __dist_info); }
+
+  /** Safe local iterators need a special method to get distance between each
+      other. */
+  template<typename _Iterator, typename _Sequence>
+    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
+		     _Distance_precision>
+    __get_distance(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
+		   const _Safe_local_iterator<_Iterator, _Sequence>& __last,
+		   std::input_iterator_tag)
+    {
+      if (__first.base() == __last.base())
+	return { 0, __dp_exact };
+
+      if (__first._M_is_begin())
+	{
+	  if (__last._M_is_end())
+	    return
+	      {
+		__first._M_get_sequence()->bucket_size(__first.bucket()),
+		__dp_exact
+	      };
+
+	  return { 1, __dp_sign };
+	}
+
+      if (__first._M_is_end())
+	{
+	  if (__last._M_is_begin())
+	    return
+	      {
+		-__first._M_get_sequence()->bucket_size(__first.bucket()),
+		__dp_exact
+	      };
+
+	  return { -1, __dp_sign };
+	}
+
+      if (__last._M_is_begin())
+	return { -1, __dp_sign };
+
+      if (__last._M_is_end())
+	return { 1, __dp_sign };
+
+      return { 1, __dp_equality };
+    }
+
+#if __cplusplus < 201103L
+  template<typename _Iterator, typename _Sequence>
+    struct _Unsafe_type<_Safe_local_iterator<_Iterator, _Sequence> >
+    { typedef _Iterator _Type; };
+#endif
+
+  template<typename _Iterator, typename _Sequence>
+    inline _Iterator
+    __unsafe(const _Safe_local_iterator<_Iterator, _Sequence>& __it)
+    { return __it.base(); }
+
 } // namespace __gnu_debug
 
 #include <debug/safe_local_iterator.tcc>

@@ -1,3 +1,63 @@
+2015-06-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_iterator_base_types.h (_Iter_base): Limit definition
+	to pre-C++11 mode.
+	* include/debug/functions.h
+	(__gnu_debug::__valid_range, __gnu_debug::__base): Move...
+	* include/debug/safe_iterator.h
+	(__gnu_debug::_Sequence_traits): New.
+	(__gnu_debug::__get_distance_from_begin): New.
+	(__gnu_debug::__get_distance_to_end): New.
+	(__gnu_debug::_Safe_iterator<>::_M_valid_range): Expose iterator range
+	distance information. Add optional check_dereferenceable parameter,
+	default true.
+	(__gnu_debug::_Distance_precision, __gnu_debug::__get_distance): Move
+	default definition...
+	(__gnu_debug::__get_distance): New overload for _Safe_iterator.
+	(__gnu_debug::__unsafe): Likewise.
+	* include/debug/helper_functions.h: ...here. New.
+	(__gnu_debug::__unsafe): New helper function to remove safe iterator
+	layer.
+	* include/debug/stl_iterator.h: New. Include latter.
+	* include/bits/stl_iterator.h: Include latter in debug mode.
+	* include/debug/stl_iterator.tcc: Adapt.
+	* include/debug/safe_local_iterator.h (__gnu_debug::__get_distance): Add
+	overload for _Safe_local_iterator.
+	(__gnu_debug::__unsafe): Likewise.
+	* include/debug/safe_local_iterator.tcc: Adapt.
+	* include/debug/macros.h (__glibcxx_check_valid_range2): New.
+	(__glibcxx_check_insert_range): Add _Dist parameter.
+	(__glibcxx_check_insert_range_after): Likewise.
+	(__glibcxx_check_string, __glibcxx_check_string_len): Implement using
+	_GLIBCXX_DEBUG_PEDASSERT.
+	* include/debug/deque (deque<>::assign): Remove iterator debug layer
+	when possible.
+	(deque<>::insert): Likewise.
+	* include/debug/forward_list (__glibcxx_check_valid_fl_range): New.
+	(forward_list<>::splice_after): Use latter.
+	(forward_list<>::assign): Remove iterator debug layer when possible.
+	(forward_list<>::insert_after): Likewise.
+	(__gnu_debug::_Sequence_traits<>): Partial specialization.
+	* include/debug/list (list<>::assign): Remove iterator debug layer when
+	possible.
+	(list<>::insert): Likewise.
+	[__gnu_debug::_Sequence_traits<>]: Partial specialization pre C++11 ABI.
+	* include/debug/map.h (map<>::insert): Remove iterator debug layer when
+	possible.
+	* include/debug/multimap.h (multimap<>::insert): Likewise.
+	* include/debug/set.h (set<>::insert): Likewise.
+	* include/debug/multiset.h (multiset<>::insert): Likewise.
+	* include/debug/string (basic_string<>::append, basic_string<>::assign,
+	basic_string<>::insert, basic_string<>::replace): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::insert, unordered_multimap<>::insert): Likewise.
+	* include/debug/unordered_set
+	(unordered_set<>::insert, unordered_multiset<>insert): Likewise.
+	* include/debug/vector
+	(vector<>::assign, vector<>::insert): Likewise.
+	* include/Makefile.am: Add new debug headers.
+	* include/Makefile.in: Regenerate.
+
 2015-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/intro.xml: Document LWG 2108 status.
