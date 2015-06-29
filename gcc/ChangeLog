@@ -1,3 +1,8 @@
+2015-06-29  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_delegitimize_address): Make
+	assert less restrictive.
+
 2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/66605
