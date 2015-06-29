@@ -1,3 +1,8 @@
+2015-06-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.md (nvptx_reorg_subreg): New fn, broken out of ...
+	(nvptx_reorg): Here.  Keep the non-subreg pieces.
+
 2015-06-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/gnu-user.h (GNU_USER_TARGET_ENDFILE_SPEC): Use
