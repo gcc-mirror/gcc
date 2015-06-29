@@ -1,3 +1,12 @@
+2015-06-29  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* doc/invoke.texi (Aarch64 Options, -march): Split out arch and
+	feature description, split out the native option, add a link to
+	the feature documentation, rearrange and slightly rewrite text.
+	(Aarch64 options, -mcpu): Likewise.
+	(Aarch64 options, Feature Modifiers): Add an anchor.  Mention
+	+rdma implies Adv. SIMD.
+
 2015-06-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66322

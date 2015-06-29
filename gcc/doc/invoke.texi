@@ -12430,24 +12430,26 @@ corresponding flag to the linker.
 @opindex march
 Specify the name of the target architecture, optionally suffixed by one or
 more feature modifiers.  This option has the form
-@option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-permissible values for @var{arch} are @samp{armv8-a} or @samp{armv8.1-a}.
-The permissible values for @var{feature} are documented in the sub-section
-below.  Additionally on native AArch64 GNU/Linux systems the value
+@option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
+
+The permissible values for @var{arch} are @samp{armv8-a} or
+@samp{armv8.1-a}.
+
+For the permissible values for @var{feature}, see the sub-section on
+@ref{aarch64-feature-modifiers,,@option{-march} and @option{-mcpu}
+Feature Modifiers}.  Where conflicting feature modifiers are
+specified, the right-most feature is used.
+
+Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} is available.  This option causes the compiler to pick the
 architecture of the host system.  If the compiler is unable to recognize the
 architecture of the host system this option has no effect.
 
-Where conflicting feature modifiers are specified, the right-most feature is
-used.
-
-GCC uses this name to determine what kind of instructions it can emit when
-generating assembly code.
-
-Where @option{-march} is specified without either of @option{-mtune}
-or @option{-mcpu} also being specified, the code is tuned to perform
-well across a range of target processors implementing the target
-architecture.
+GCC uses @var{name} to determine what kind of instructions it can emit
+when generating assembly code.  If @option{-march} is specified
+without either of @option{-mtune} or @option{-mcpu} also being
+specified, the code is tuned to perform well across a range of target
+processors implementing the target architecture.
 
 @item -mtune=@var{name}
 @opindex mtune
@@ -12460,12 +12462,11 @@ Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible values for this
 option are: @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}.
 
-Additionally on native AArch64 GNU/Linux systems the value @samp{native}
-is available.
-This option causes the compiler to pick the architecture of and tune the
-performance of the code for the processor of the host system.
-If the compiler is unable to recognize the processor of the host system
-this option has no effect.
+Additionally on native AArch64 GNU/Linux systems the value
+@samp{native} is available.  This option causes the compiler to pick
+the architecture of and tune the performance of the code for the
+processor of the host system.  If the compiler is unable to recognize
+the processor of the host system this option has no effect.
 
 Where none of @option{-mtune=}, @option{-mcpu=} or @option{-march=}
 are specified, the code is tuned to perform well across a range
@@ -12475,23 +12476,23 @@ This option cannot be suffixed by feature modifiers.
 
 @item -mcpu=@var{name}
 @opindex mcpu
-Specify the name of the target processor, optionally suffixed by one or more
-feature modifiers.  This option has the form
-@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-permissible values for @var{cpu} are the same as those available for
-@option{-mtune}.  Additionally on native AArch64 GNU/Linux systems the
-value @samp{native} is available.
-This option causes the compiler to tune the performance of the code for the
-processor of the host system.  If the compiler is unable to recognize the
-processor of the host system this option has no effect.
+Specify the name of the target processor, optionally suffixed by one
+or more feature modifiers.  This option has the form
+@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where
+the permissible values for @var{cpu} are the same as those available
+for @option{-mtune}.  The permissible values for @var{feature} are
+documented in the sub-section on
+@ref{aarch64-feature-modifiers,,@option{-march} and @option{-mcpu}
+Feature Modifiers}.  Where conflicting feature modifiers are
+specified, the right-most feature is used.
 
-The permissible values for @var{feature} are documented in the sub-section
-below.
+Additionally on native AArch64 GNU/Linux systems the value
+@samp{native} is available.  This option causes the compiler to tune
+the performance of the code for the processor of the host system.  If
+the compiler is unable to recognize the processor of the host system
+this option has no effect.
 
-Where conflicting feature modifiers are specified, the right-most feature is
-used.
-
-GCC uses this name to determine what kind of instructions it can emit when
+GCC uses @var{name} to determine what kind of instructions it can emit when
 generating assembly code (as if by @option{-march}) and to determine
 the target processor for which to tune for performance (as if
 by @option{-mtune}).  Where this option is used in conjunction
@@ -12500,6 +12501,7 @@ over the appropriate part of this option.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
+@anchor{aarch64-feature-modifiers}
 @cindex @option{-march} feature modifiers
 @cindex @option{-mcpu} feature modifiers
 Feature modifiers used with @option{-march} and @option{-mcpu} can be any of
@@ -12525,7 +12527,8 @@ Enable Privileged Access Never support.
 @item lor
 Enable Limited Ordering Regions support.
 @item rdma
-Enable ARMv8.1 Advanced SIMD instructions.
+Enable ARMv8.1 Advanced SIMD instructions.  This implies Advanced SIMD
+is enabled.
 
 @item -moverride=@var{string}
 @opindex master
