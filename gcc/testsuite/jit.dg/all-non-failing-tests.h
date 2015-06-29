@@ -64,6 +64,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-debug-strings.c */
+#define create_code create_code_debug_strings
+#define verify_code verify_code_debug_strings
+#include "test-debug-strings.c"
+#undef create_code
+#undef verify_code
+
 /* test-dot-product.c */
 #define create_code create_code_dot_product
 #define verify_code verify_code_dot_product
@@ -215,6 +222,9 @@ const struct testcase testcases[] = {
   {"constants",
    create_code_constants,
    verify_code_constants},
+  {"debug_strings",
+   create_code_debug_strings,
+   verify_code_debug_strings},
   {"dot_product",
    create_code_dot_product,
    verify_code_dot_product},

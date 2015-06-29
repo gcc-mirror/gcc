@@ -1,5 +1,16 @@
 2015-06-29  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport from mainline r224531
+	2015-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66539
+	* jit.dg/all-non-failing-tests.h: Add test-debug-strings.c.
+	* jit.dg/test-debug-strings.c: New test case.
+	* jit.dg/test-quadratic.c (make_calc_discriminant): Verify that
+	the discriminant has a sane debug string.
+
+2015-06-29  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport from mainline
 	2015-05-06  David Malcolm  <dmalcolm@redhat.com>
 

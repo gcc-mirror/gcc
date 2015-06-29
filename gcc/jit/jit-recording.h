@@ -858,6 +858,27 @@ class rvalue_visitor
   virtual void visit (rvalue *rvalue) = 0;
 };
 
+/* When generating debug strings for rvalues we mimic C, so we need to
+   mimic C's precedence levels when handling compound expressions.
+   These are in order from strongest precedence to weakest.  */
+enum precedence
+{
+  PRECEDENCE_PRIMARY,
+  PRECEDENCE_POSTFIX,
+  PRECEDENCE_UNARY,
+  PRECEDENCE_CAST,
+  PRECEDENCE_MULTIPLICATIVE,
+  PRECEDENCE_ADDITIVE,
+  PRECEDENCE_SHIFT,
+  PRECEDENCE_RELATIONAL,
+  PRECEDENCE_EQUALITY,
+  PRECEDENCE_BITWISE_AND,
+  PRECEDENCE_BITWISE_XOR,
+  PRECEDENCE_BITWISE_IOR,
+  PRECEDENCE_LOGICAL_AND,
+  PRECEDENCE_LOGICAL_OR
+};
+
 class rvalue : public memento
 {
 public:
@@ -867,7 +888,8 @@ public:
   : memento (ctxt),
     m_loc (loc),
     m_type (type_),
-    m_scope (NULL)
+    m_scope (NULL),
+    m_parenthesized_string (NULL)
   {
     gcc_assert (type_);
   }
@@ -909,12 +931,20 @@ public:
 
   virtual const char *access_as_rvalue (reproducer &r);
 
+  /* Get the debug string, wrapped in parentheses.  */
+  const char *
+  get_debug_string_parens (enum precedence outer_prec);
+
+private:
+  virtual enum precedence get_precedence () const = 0;
+
 protected:
   location *m_loc;
   type *m_type;
 
  private:
   function *m_scope; /* NULL for globals, non-NULL for locals/params */
+  string *m_parenthesized_string;
 };
 
 class lvalue : public rvalue
@@ -977,6 +1007,7 @@ public:
 private:
   string * make_debug_string () { return m_name; }
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   string *m_name;
@@ -1161,6 +1192,7 @@ public:
 private:
   string * make_debug_string () { return m_name; }
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   enum gcc_jit_global_kind m_kind;
@@ -1185,6 +1217,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   HOST_TYPE m_value;
@@ -1206,6 +1239,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   string *m_value;
@@ -1231,6 +1265,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const {return PRECEDENCE_UNARY;}
 
 private:
   enum gcc_jit_unary_op m_op;
@@ -1257,6 +1292,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const;
 
 private:
   enum gcc_jit_binary_op m_op;
@@ -1284,6 +1320,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const;
 
 private:
   enum gcc_jit_comparison m_op;
@@ -1309,6 +1346,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_CAST; }
 
 private:
   rvalue *m_rvalue;
@@ -1330,6 +1368,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   function *m_func;
@@ -1352,6 +1391,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_fn_ptr;
@@ -1377,6 +1417,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_ptr;
@@ -1402,6 +1443,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   lvalue *m_lvalue;
@@ -1427,6 +1469,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_rvalue;
@@ -1452,6 +1495,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_rvalue;
@@ -1474,6 +1518,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_UNARY; }
 
 private:
   rvalue *m_rvalue;
@@ -1496,6 +1541,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_UNARY; }
 
 private:
   lvalue *m_lvalue;
@@ -1521,6 +1567,7 @@ public:
 private:
   string * make_debug_string () { return m_name; }
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   function *m_func;
