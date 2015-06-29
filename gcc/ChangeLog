@@ -1,6 +1,14 @@
 2015-06-29  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/65697
+	* gcc.target/arm/armv-sync-comp-swap.c: New.
+	* gcc.target/arm/armv-sync-op-acquire.c: New.
+	* gcc.target/arm/armv-sync-op-full.c: New.
+	* gcc.target/arm/armv-sync-op-release.c: New.
+
+2015-06-29  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/65697
 	* config/armc/arm.c (arm_split_compare_and_swap): For ARMv8, replace an
 	initial acquire barrier with final barrier.
 
