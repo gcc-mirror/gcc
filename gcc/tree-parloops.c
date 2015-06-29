@@ -1788,60 +1788,31 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
 				       nit, build_one_cst (nit_type));
 
 	  gcc_assert (TREE_CODE (alt_bound) == INTEGER_CST);
+	  transform_to_exit_first_loop_alt (loop, reduction_list, alt_bound);
+	  return true;
 	}
       else
 	{
 	  /* Todo: Figure out if we can trigger this, if it's worth to handle
 	     optimally, and if we can handle it optimally.  */
+	  return false;
 	}
     }
-  else
+
+  gcc_assert (TREE_CODE (nit) == SSA_NAME);
+
+  gimple def = SSA_NAME_DEF_STMT (nit);
+
+  if (def
+      && is_gimple_assign (def)
+      && gimple_assign_rhs_code (def) == PLUS_EXPR)
     {
-      gcc_assert (TREE_CODE (nit) == SSA_NAME);
-
-      gimple def = SSA_NAME_DEF_STMT (nit);
-
-      if (def
-	  && is_gimple_assign (def)
-	  && gimple_assign_rhs_code (def) == PLUS_EXPR)
-	{
-	  tree op1 = gimple_assign_rhs1 (def);
-	  tree op2 = gimple_assign_rhs2 (def);
-	  if (integer_minus_onep (op1))
-	    alt_bound = op2;
-	  else if (integer_minus_onep (op2))
-	    alt_bound = op1;
-	}
-
-      /* There is a number of test-cases for which we don't get an alt_bound
-	 here: they're listed here, with the lhs of the last stmt as the nit:
-
-	 libgomp.graphite/force-parallel-1.c:
-	 _21 = (signed long) N_6(D);
-	 _19 = _21 + -1;
-	 _7 = (unsigned long) _19;
-
-	 libgomp.graphite/force-parallel-2.c:
-	 _33 = (signed long) N_9(D);
-	 _16 = _33 + -1;
-	 _37 = (unsigned long) _16;
-
-	 libgomp.graphite/force-parallel-5.c:
-	 <bb 6>:
-	 # graphite_IV.5_46 = PHI <0(5), graphite_IV.5_47(11)>
-	 <bb 7>:
-	 _33 = (unsigned long) graphite_IV.5_46;
-
-	 g++.dg/tree-ssa/pr34355.C:
-	 _2 = (unsigned int) i_9;
-	 _3 = 4 - _2;
-
-	 gcc.dg/pr53849.c:
-	 _5 = d.0_11 + -2;
-	 _18 = (unsigned int) _5;
-
-	 We will be able to handle some of these cases, if we can determine when
-	 it's safe to look past casts.  */
+      tree op1 = gimple_assign_rhs1 (def);
+      tree op2 = gimple_assign_rhs2 (def);
+      if (integer_minus_onep (op1))
+	alt_bound = op2;
+      else if (integer_minus_onep (op2))
+	alt_bound = op1;
     }
 
   if (alt_bound == NULL_TREE)

@@ -1,3 +1,8 @@
+2015-06-29  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Simplify
+	function structure.
+
 2015-06-29  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* doc/invoke.texi (Aarch64 Options, -march): Split out arch and
