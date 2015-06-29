@@ -10618,16 +10618,6 @@ fold_binary_loc (location_t loc,
 			    fold_convert_loc (loc, type,
 					      negate_expr (arg1)));
 
-      /* Try folding difference of addresses.  */
-      {
-	HOST_WIDE_INT diff;
-
-	if ((TREE_CODE (arg0) == ADDR_EXPR
-	     || TREE_CODE (arg1) == ADDR_EXPR)
-	    && ptr_difference_const (arg0, arg1, &diff))
-	  return build_int_cst_type (type, diff);
-      }
-
       /* Fold &a[i] - &a[j] to i-j.  */
       if (TREE_CODE (arg0) == ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF

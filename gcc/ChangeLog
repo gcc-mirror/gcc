@@ -1,5 +1,13 @@
 2015-06-29  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (add_operator): Treat ADDR_EXPR as atom.
+	* fold-const.c (fold_binary_loc): Move &A - &B simplification
+	via ptr_difference_const ...
+	* match.pd: ... here.
+	When matching (X ^ Y) == Y also match with swapped operands.
+
+2015-06-29  Richard Biener  <rguenther@suse.de>
+
 	* lto-streamer.h (LTO_major_version): Bump to 5.
 
 2015-06-29  Richard Biener  <rguenther@suse.de>
