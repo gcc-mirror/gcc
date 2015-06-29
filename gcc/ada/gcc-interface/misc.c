@@ -262,9 +262,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     sorry ("-fexcess-precision=standard for Ada");
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
 
-  /* ??? The warning machinery is outsmarted by Ada.  */
-  warn_unused_parameter = 0;
-
   /* No psABI change warnings for Ada.  */
   warn_psabi = 0;
 

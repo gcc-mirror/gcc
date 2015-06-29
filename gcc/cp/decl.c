@@ -14323,6 +14323,12 @@ finish_function (int flags)
      function.  */
   maybe_warn_unused_local_typedefs ();
 
+  /* Possibly warn about unused parameters.  */
+  if (warn_unused_parameter
+      && !processing_template_decl 
+      && !DECL_CLONED_FUNCTION_P (fndecl))
+    do_warn_unused_parameter (fndecl);
+
   /* Genericize before inlining.  */
   if (!processing_template_decl)
     {

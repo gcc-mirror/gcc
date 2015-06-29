@@ -1045,6 +1045,7 @@ extern void warn_for_sign_compare (location_t,
 				   tree op0, tree op1,
 				   tree result_type,
 				   enum tree_code resultcode);
+extern void do_warn_unused_parameter (tree);
 extern void do_warn_double_promotion (tree, tree, tree, const char *, 
 				      location_t);
 extern void set_underlying_type (tree);

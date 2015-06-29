@@ -472,10 +472,6 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
   if (!TREE_ASM_WRITTEN (decl))
     (*debug_hooks->deferred_inline_function) (decl);
 
-  /* Possibly warn about unused parameters.  */
-  if (warn_unused_parameter)
-    do_warn_unused_parameter (decl);
-
   if (!no_collect)
     ggc_collect ();
 
