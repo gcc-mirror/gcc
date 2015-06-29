@@ -7738,15 +7738,12 @@ grokfndecl (tree ctype,
 	    }
 
 	  if (inlinep & 1)
-	    error ("%<inline%> is not allowed in declaration of friend "
-		   "template specialization %qD",
-		   decl);
-	  if (inlinep & 2)
-	    error ("%<constexpr%> is not allowed in declaration of friend "
-		   "template specialization %qD",
-		   decl);
-	  if (inlinep)
-	    return NULL_TREE;
+	    {
+	      error ("%<inline%> is not allowed in declaration of friend "
+		     "template specialization %qD",
+		     decl);
+	      return NULL_TREE;
+	    }
 	}
     }
 
