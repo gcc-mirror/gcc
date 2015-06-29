@@ -1,3 +1,12 @@
+2015-06-29  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/constraints.md (Bf): New constraint.
+	* config/i386/i386-c.c (ix86_target_macros): Define
+	__GCC_ASM_FLAG_OUTPUTS__.
+	* config/i386/i386.c (ix86_md_asm_adjust): Handle =@cc* constraints
+	as flags outputs.
+	* doc/extend.texi (FlagOutputOperands): Document them.
+
 2015-06-29  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/arch64/aarch64.md (UNSPEC_TLSLE): New enumeration.

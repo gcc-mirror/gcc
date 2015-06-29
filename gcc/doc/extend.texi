@@ -7683,6 +7683,84 @@ pointed to by @code{e}
 in a register, you can enable it to choose the best location
 for @code{d} by specifying both constraints.
 
+@anchor{FlagOutputOperands}
+@subsection Flag Output Operands
+@cindex @code{asm} flag output operands
+
+Some targets have a special register that holds the ``flags'' for the
+result of an operation or comparison.  Normally, the contents of that
+register are either unmodifed by the asm, or the asm is considered to
+clobber the contents.
+
+On some targets, a special form of output operand exists by which
+conditions in the flags register may be outputs of the asm.  The set of
+conditions supported are target specific, but the general rule is that
+the output variable must be a scalar integer, and the value will be boolean.
+When supported, the target will define the preprocessor symbol
+@code{__GCC_ASM_FLAG_OUTPUTS__}.
+
+Because of the special nature of the flag output operands, the constraint
+may not include alternatives.
+
+Most often, the target has only one flags register, and thus is an implied
+operand of many instructions.  In this case, the operand should not be
+referenced within the assembler template via @code{%0} etc, as there's
+no corresponding text in the assembly language.
+
+@table @asis
+@item x86 family
+The flag output constraints for the x86 family are of the form
+@samp{=@@cc@var{cond}} where @var{cond} is one of the standard
+conditions defined in the ISA manual for @code{j@var{cc}} or
+@code{set@var{cc}}.
+
+@table @code
+@item a
+``above'' or unsigned greater than
+@item ae
+``above or equal'' or unsigned greater than or equal
+@item b
+``below'' or unsigned less than
+@item be
+``below or equal'' or unsigned less than or equal
+@item c
+carry flag set
+@item e
+@itemx z
+``equal'' or zero flag set
+@item g
+signed greater than
+@item ge
+signed greater than or equal
+@item l
+signed less than
+@item le
+signed less than or equal
+@item o
+overflow flag set
+@item p
+parity flag set
+@item s
+sign flag set
+@item na
+@itemx nae
+@itemx nb
+@itemx nbe
+@itemx nc
+@itemx ne
+@itemx ng
+@itemx nge
+@itemx nl
+@itemx nle
+@itemx no
+@itemx np
+@itemx ns
+@itemx nz
+``not'' @var{flag}, or inverted versions of those above
+@end table
+
+@end table
+
 @anchor{InputOperands}
 @subsubsection Input Operands
 @cindex @code{asm} input operands
