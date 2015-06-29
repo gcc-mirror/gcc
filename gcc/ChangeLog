@@ -1,3 +1,10 @@
+2015-06-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/64130
+	* tree-vrp.c (extract_range_from_binary_expr_1): For unsigned
+	division, compute max and min when value ranges for dividend and
+	divisor are available.
+
 2015-06-28  Chung-Lin Tang <cltang@codesourcery.com>
 	    Sandra Loosemore <sandra@codesourcery.com>
 

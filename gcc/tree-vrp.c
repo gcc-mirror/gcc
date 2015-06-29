@@ -3133,14 +3133,33 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		 and all numbers from min to 0 for negative min.  */
 	      cmp = compare_values (vr0.max, zero);
 	      if (cmp == -1)
-		max = zero;
+		{
+		  /* When vr0.max < 0, vr1.min != 0 and value
+		     ranges for dividend and divisor are available.  */
+		  if (vr1.type == VR_RANGE
+		      && !symbolic_range_p (&vr0)
+		      && !symbolic_range_p (&vr1)
+		      && !compare_values (vr1.min, zero))
+		    max = int_const_binop (code, vr0.max, vr1.min);
+		  else
+		    max = zero;
+		}
 	      else if (cmp == 0 || cmp == 1)
 		max = vr0.max;
 	      else
 		type = VR_VARYING;
 	      cmp = compare_values (vr0.min, zero);
 	      if (cmp == 1)
-		min = zero;
+		{
+		  /* For unsigned division when value ranges for dividend
+		     and divisor are available.  */
+		  if (vr1.type == VR_RANGE
+		      && !symbolic_range_p (&vr0)
+		      && !symbolic_range_p (&vr1))
+		    min = int_const_binop (code, vr0.min, vr1.max);
+		  else
+		    min = zero;
+		}
 	      else if (cmp == 0 || cmp == -1)
 		min = vr0.min;
 	      else
