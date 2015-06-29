@@ -1,3 +1,9 @@
+2015-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66677
+	* tree-vect-stmts.c (vect_transform_stmt): Make assert about
+	STMT_VINFO_VEC_STMT clobbering less strict.
+
 2015-06-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/64130
