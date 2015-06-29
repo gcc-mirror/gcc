@@ -1,3 +1,14 @@
+2015-06-29  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline
+	2015-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h (set_options): Wrap with
+	#ifndef TEST_ESCHEWS_SET_OPTIONS.
+	* jit.dg/jit.exp (is_testcase_meant_to_generate_a_reproducer):
+	Special-case test-benchmark.c as a negative.
+	* jit.dg/test-benchmark.c: New file.
+
 2015-06-29  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/65750

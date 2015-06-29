@@ -308,10 +308,14 @@ verbose "tests: $tests"
 proc is_testcase_meant_to_generate_a_reproducer {name} {
     # We expect most testcases to generate a reproducer.
     # The exceptions are the tutorials (which don't have a "test-"
-    # prefix), and test-threads.c (which is unique).
+    # prefix), and test-threads.c and test-benchmark.c (which are each
+    # unique).
     verbose "is_testcase_meant_to_generate_a_reproducer: $name"
     if { [string match "*test-*" $name] } {
 	if { [string match "*test-threads.c" $name] } {
+	    return 0
+	}
+	if { [string match "*test-benchmark.c" $name] } {
 	    return 0
 	}
 	return 1
