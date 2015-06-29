@@ -1,3 +1,8 @@
+2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66605
+	* gfortran.dg/wunused-parameter.f90: New test.
+
 2015-06-29  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/asm-flag-1.c: New.

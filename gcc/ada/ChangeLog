@@ -1,3 +1,9 @@
+2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66605
+	* gcc-interface/misc.c (gnat_post_options): No need to disable
+	warn_unused_parameter anymore.
+
 2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): When

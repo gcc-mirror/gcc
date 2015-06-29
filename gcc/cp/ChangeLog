@@ -1,3 +1,8 @@
+2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66605
+	* decl.c (finish_function): Call do_warn_unused_parameter.
+
 2015-06-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66322

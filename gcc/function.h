@@ -614,7 +614,6 @@ extern void expand_dummy_function_end (void);
 extern void thread_prologue_and_epilogue_insns (void);
 extern void diddle_return_value (void (*)(rtx, void*), void*);
 extern void clobber_return_register (void);
-extern void do_warn_unused_parameter (tree);
 extern void expand_function_end (void);
 extern rtx get_arg_pointer_save_area (void);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
