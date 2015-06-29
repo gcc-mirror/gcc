@@ -1,3 +1,8 @@
+2015-06-29  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/65750
+	* g++.dg/cpp0x/trailing11.C: New.
+
 2015-06-27  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR testsuite/66667
