@@ -380,9 +380,15 @@ namespace __gnu_debug
       basic_string&
       append(_InputIterator __first, _InputIterator __last)
       {
-	__glibcxx_check_valid_range(__first, __last);
-	_Base::append(__gnu_debug::__base(__first),
-		      __gnu_debug::__base(__last));
+	typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	__glibcxx_check_valid_range2(__first, __last, __dist);
+
+	if (__dist.second >= __dp_sign)
+	  _Base::append(__gnu_debug::__unsafe(__first),
+			__gnu_debug::__unsafe(__last));
+	else
+	  _Base::append(__first, __last);
+
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -452,9 +458,15 @@ namespace __gnu_debug
       basic_string&
       assign(_InputIterator __first, _InputIterator __last)
       {
-	__glibcxx_check_valid_range(__first, __last);
-	_Base::assign(__gnu_debug::__base(__first),
-		      __gnu_debug::__base(__last));
+	typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	__glibcxx_check_valid_range2(__first, __last, __dist);
+
+	if (__dist.second >= __dp_sign)
+	  _Base::assign(__gnu_debug::__unsafe(__first),
+			__gnu_debug::__unsafe(__last));
+	else
+	  _Base::assign(__first, __last);
+
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -533,9 +545,15 @@ namespace __gnu_debug
       void
       insert(iterator __p, _InputIterator __first, _InputIterator __last)
       {
-	__glibcxx_check_insert_range(__p, __first, __last);
-	_Base::insert(__p.base(), __gnu_debug::__base(__first),
-				  __gnu_debug::__base(__last));
+	typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	__glibcxx_check_insert_range2(__p, __first, __last, __dist);
+
+	if (__dist.second >= __dp_sign)
+	  _Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
+				    __gnu_debug::__unsafe(__last));
+	else
+	  _Base::insert(__p.base(), __first, __last);
+
 	this->_M_invalidate_all();
       }
 
@@ -676,8 +694,17 @@ namespace __gnu_debug
 	      _InputIterator __j1, _InputIterator __j2)
       {
 	__glibcxx_check_erase_range(__i1, __i2);
-	__glibcxx_check_valid_range(__j1, __j2);
-	_Base::replace(__i1.base(), __i2.base(), __j1, __j2);
+
+	typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	__glibcxx_check_valid_range2(__j1, __j2, __dist);
+
+	if (__dist.second >= __dp_sign)
+	  _Base::replace(__i1.base(), __i2.base(),
+			 __gnu_debug::__unsafe(__j1),
+			 __gnu_debug::__unsafe(__j2));
+	else
+	  _Base::replace(__i1.base(), __i2.base(), __j1, __j2);
+
 	this->_M_invalidate_all();
 	return *this;
       }

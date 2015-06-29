@@ -29,11 +29,6 @@
 #ifndef _GLIBCXX_DEBUG_FUNCTIONS_H
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
-#include <bits/c++config.h>
-#include <bits/stl_iterator_base_types.h>	// for iterator_traits,
-						// categories and _Iter_base
-#include <bits/cpp_type_traits.h>		// for __is_integer
-
 #include <bits/move.h>				// for __addressof
 #include <bits/stl_function.h>			// for less
 #if __cplusplus >= 201103L
@@ -41,6 +36,7 @@
 						// conditional.
 #endif
 
+#include <debug/helper_functions.h>
 #include <debug/formatter.h>
 
 namespace __gnu_debug
@@ -84,58 +80,6 @@ namespace __gnu_debug
     inline bool
     __check_dereferenceable(const _Tp* __ptr)
     { return __ptr; }
-
-  /** If the distance between two random access iterators is
-   *  nonnegative, assume the range is valid.
-  */
-  template<typename _RandomAccessIterator>
-    inline bool
-    __valid_range_aux2(const _RandomAccessIterator& __first,
-		       const _RandomAccessIterator& __last,
-		       std::random_access_iterator_tag)
-    { return __last - __first >= 0; }
-
-  /** Can't test for a valid range with input iterators, because
-   *  iteration may be destructive. So we just assume that the range
-   *  is valid.
-  */
-  template<typename _InputIterator>
-    inline bool
-    __valid_range_aux2(const _InputIterator&, const _InputIterator&,
-		       std::input_iterator_tag)
-    { return true; }
-
-  /** We say that integral types for a valid range, and defer to other
-   *  routines to realize what to do with integral types instead of
-   *  iterators.
-  */
-  template<typename _Integral>
-    inline bool
-    __valid_range_aux(const _Integral&, const _Integral&, std::__true_type)
-    { return true; }
-
-  /** We have iterators, so figure out what kind of iterators that are
-   *  to see if we can check the range ahead of time.
-  */
-  template<typename _InputIterator>
-    inline bool
-    __valid_range_aux(const _InputIterator& __first,
-		      const _InputIterator& __last, std::__false_type)
-    { return __valid_range_aux2(__first, __last,
-				std::__iterator_category(__first)); }
-
-  /** Don't know what these iterators are, or if they are even
-   *  iterators (we may get an integral type for InputIterator), so
-   *  see if they are integral and pass them on to the next phase
-   *  otherwise.
-  */
-  template<typename _InputIterator>
-    inline bool
-    __valid_range(const _InputIterator& __first, const _InputIterator& __last)
-    {
-      typedef typename std::__is_integer<_InputIterator>::__type _Integral;
-      return __valid_range_aux(__first, __last, _Integral());
-    }
 
   /* Checks that [first, last) is a valid range, and then returns
    * __first. This routine is useful when we can't use a separate
@@ -500,29 +444,6 @@ namespace __gnu_debug
       return __first == __last;
     }
 
-  // Helper struct to detect random access safe iterators.
-  template<typename _Iterator>
-    struct __is_safe_random_iterator
-    {
-      enum { __value = 0 };
-      typedef std::__false_type __type;
-    };
-
-  template<typename _Iterator>
-    struct _Siter_base
-    : std::_Iter_base<_Iterator, __is_safe_random_iterator<_Iterator>::__value>
-    { };
-
-  /** Helper function to extract base iterator of random access safe iterator
-      in order to reduce performance impact of debug mode.  Limited to random
-      access iterator because it is the only category for which it is possible
-      to check for correct iterators order in the __valid_range function
-      thanks to the < operator.
-  */
-  template<typename _Iterator>
-    inline typename _Siter_base<_Iterator>::iterator_type
-    __base(_Iterator __it)
-    { return _Siter_base<_Iterator>::_S_base(__it); }
 } // namespace __gnu_debug
 
 #endif

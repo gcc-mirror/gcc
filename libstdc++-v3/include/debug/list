@@ -177,9 +177,15 @@ namespace __debug
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::assign(__gnu_debug::__base(__first),
-			__gnu_debug::__base(__last));
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_valid_range2(__first, __last, __dist);
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::assign(__gnu_debug::__unsafe(__first),
+			  __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::assign(__first, __last);
+
 	  this->_M_invalidate_all();
 	}
 
@@ -441,11 +447,18 @@ namespace __debug
 	insert(const_iterator __position, _InputIterator __first,
 	       _InputIterator __last)
 	{
-	  __glibcxx_check_insert_range(__position, __first, __last);
-	  return iterator(_Base::insert(__position.base(),
-					__gnu_debug::__base(__first),
-					__gnu_debug::__base(__last)),
-			  this);
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    return
+	      {
+		_Base::insert(__position.base(),
+			      __gnu_debug::__unsafe(__first),
+			      __gnu_debug::__unsafe(__last)),
+		  this
+	      };
+	  else
+	    return { _Base::insert(__position.base(), __first, __last), this };
 	}
 #else
       template<class _InputIterator>
@@ -453,9 +466,14 @@ namespace __debug
 	insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
 	{
-	  __glibcxx_check_insert_range(__position, __first, __last);
-	  _Base::insert(__position.base(), __gnu_debug::__base(__first),
-					   __gnu_debug::__base(__last));
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::insert(__position.base(), __gnu_debug::__unsafe(__first),
+					     __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::insert(__position.base(), __first, __last);
 	}
 #endif
 
@@ -795,13 +813,29 @@ namespace __debug
 } // namespace __debug
 } // namespace std
 
-#ifndef _GLIBCXX_DEBUG_PEDANTIC
 namespace __gnu_debug
 {
+#ifndef _GLIBCXX_USE_CXX11_ABI
+  // If not using C++11 list::size() is not in O(1) so we do not use it.
+  template<typename _Tp, typename _Alloc>
+    struct _Sequence_traits<std::__debug::list<_Tp, _Alloc> >
+    {
+      typedef typename std::__debug::list<_Tp, _Alloc>::iterator _It;
+
+      static typename _Distance_traits<_It>::__type
+      _S_size(const std::__debug::list<_Tp, _Alloc>& __seq)
+      {
+	return __seq.empty()
+	  ? std::make_pair(0, __dp_exact) : std::make_pair(1, __dp_equality);
+      }
+    };
+#endif
+
+#ifndef _GLIBCXX_DEBUG_PEDANTIC
   template<class _Tp, class _Alloc>
     struct _Insert_range_from_self_is_safe<std::__debug::list<_Tp, _Alloc> >
     { enum { __value = 1 }; };
-}
 #endif
+}
 
 #endif
