@@ -10509,19 +10509,6 @@ fold_binary_loc (location_t loc,
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg0, 0)));
 
-      /* X - (X / Y) * Y is X % Y.  */
-      if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
-	  && TREE_CODE (arg1) == MULT_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == TRUNC_DIV_EXPR
-	  && operand_equal_p (arg0,
-			      TREE_OPERAND (TREE_OPERAND (arg1, 0), 0), 0)
-	  && operand_equal_p (TREE_OPERAND (TREE_OPERAND (arg1, 0), 1),
-			      TREE_OPERAND (arg1, 1), 0))
-	return
-	  fold_convert_loc (loc, type,
-			    fold_build2_loc (loc, TRUNC_MOD_EXPR, TREE_TYPE (arg0),
-					 arg0, TREE_OPERAND (arg1, 1)));
-
       if (! FLOAT_TYPE_P (type))
 	{
 	  /* Fold A - (A & B) into ~B & A.  */

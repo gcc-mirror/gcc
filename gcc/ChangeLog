@@ -1,3 +1,9 @@
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_binary_loc): Move X - (X / Y) * Y -> X % Y to ...
+	* match.pd: ... pattern here.
+
 2015-06-29  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Simplify
