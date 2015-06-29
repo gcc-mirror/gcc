@@ -1,3 +1,10 @@
+2015-06-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline r224832.
+	2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/vax/bswapdi-1.c: New.
+
 2015-06-29  David Malcolm  <dmalcolm@redhat.com>
 
 	Backport from mainline r224536

@@ -1,3 +1,11 @@
+2015-06-27  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline r224672.
+	2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/vax/vax.md: Adjust sign/zero extend patterns to
+	handle SUBREGs in operands[1].
+
 2015-06-27  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
