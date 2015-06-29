@@ -1,3 +1,18 @@
+2015-06-29  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arch64/aarch64.md (UNSPEC_TLSLE): New enumeration.
+	* config/arch64/aarch64.md (tlsle_small): Rename to tlsle and use new
+	unspec name.
+	(tlsle_small_<mode>): Rename to tlsle_<mode> and use new unspec name.
+	* config/arch64/aarch64-protos.h (arch64_symbol_type): Rename
+	SYMBOL_SMALL_TPREL to SYMBOL_TLSLE.
+	(aarch64_symbol_context): Ditto.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Ditto
+	and use new pattern name.
+	(aarch64_expand_mov_immediate): Ditto.
+	(aarch64_print_operand): Ditto.
+	(aarch64_classify_tls_symbol): Ditto.
+
 2015-06-29  Marek Polacek  <polacek@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
