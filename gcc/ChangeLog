@@ -1,3 +1,11 @@
+2015-06-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*jcc_1): Use %! in asm template.
+	Set attribute "length_nobnd" instead of "length".
+	(*jcc_2): Ditto.
+	(jump): Ditto.
+	(*jcc_1_bnd, *jcc_2_bnd, jump_bnd): Remove insn patterns.
+
 2015-06-29  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.c (nios2_delegitimize_address): Make
