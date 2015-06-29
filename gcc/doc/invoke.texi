@@ -4012,7 +4012,8 @@ warning about an omitted enumeration code even if there is a
 @item -Wswitch-bool
 @opindex Wswitch-bool
 @opindex Wno-switch-bool
-Warn whenever a @code{switch} statement has an index of boolean type.
+Warn whenever a @code{switch} statement has an index of boolean type
+and the case values are outside the range of a boolean type.
 It is possible to suppress this warning by casting the controlling
 expression to a type other than @code{bool}.  For example:
 @smallexample

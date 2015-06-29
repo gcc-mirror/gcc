@@ -1,3 +1,12 @@
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66322
+	* c-typeck.c (struct c_switch): Add BOOL_COND_P and OUTSIDE_RANGE_P.
+	(c_start_case): Set BOOL_COND_P and OUTSIDE_RANGE_P.  Don't warn
+	about -Wswitch-bool here.
+	(do_case): Update c_add_case_label call.
+	(c_finish_case): Update c_do_switch_warnings call.
+
 2015-06-27  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c: Use VECTOR_TYPE_P throughout.

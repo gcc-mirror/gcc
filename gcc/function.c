@@ -4891,7 +4891,7 @@ stack_protect_epilogue (void)
 
   /* Allow the target to compare Y with X without leaking either into
      a register.  */
-  switch ((int) (HAVE_stack_protect_test != 0))
+  switch (HAVE_stack_protect_test != 0)
     {
     case 1:
       tmp = gen_stack_protect_test (x, y, label);

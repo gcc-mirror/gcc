@@ -1,3 +1,10 @@
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66322
+	* c-c++-common/pr60439.c: Add dg-prune-output and add switch cases.
+	* c-c++-common/pr66322.c: New test.
+	* g++.dg/eh/scope1.C: Remove dg-warning.
+
 2015-06-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66677

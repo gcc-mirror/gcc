@@ -3208,6 +3208,9 @@ struct cp_switch
      label.  We need a tree, rather than simply a hash table, because
      of the GNU case range extension.  */
   splay_tree cases;
+  /* Remember whether there was a case value that is outside the
+     range of the original type of the controlling expression.  */
+  bool outside_range_p;
 };
 
 /* A stack of the currently active switch statements.  The innermost
@@ -3229,6 +3232,7 @@ push_switch (tree switch_stmt)
   p->next = switch_stack;
   p->switch_stmt = switch_stmt;
   p->cases = splay_tree_new (case_compare, NULL, NULL);
+  p->outside_range_p = false;
   switch_stack = p;
 }
 
@@ -3240,10 +3244,14 @@ pop_switch (void)
 
   /* Emit warnings as needed.  */
   switch_location = EXPR_LOC_OR_LOC (cs->switch_stmt, input_location);
+  const bool bool_cond_p
+    = (SWITCH_STMT_TYPE (cs->switch_stmt)
+       && TREE_CODE (SWITCH_STMT_TYPE (cs->switch_stmt)) == BOOLEAN_TYPE);
   if (!processing_template_decl)
     c_do_switch_warnings (cs->cases, switch_location,
 			  SWITCH_STMT_TYPE (cs->switch_stmt),
-			  SWITCH_STMT_COND (cs->switch_stmt));
+			  SWITCH_STMT_COND (cs->switch_stmt),
+			  bool_cond_p, cs->outside_range_p);
 
   splay_tree_delete (cs->cases);
   switch_stack = switch_stack->next;
@@ -3308,7 +3316,8 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
   high_value = case_conversion (type, high_value);
 
   r = c_add_case_label (loc, switch_stack->cases, cond, type,
-			low_value, high_value);
+			low_value, high_value,
+			&switch_stack->outside_range_p);
 
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */

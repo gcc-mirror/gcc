@@ -1,3 +1,9 @@
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66322
+	* function.c (stack_protect_epilogue): Remove a cast to int.
+	* doc/invoke.texi: Update -Wswitch-bool description.
+
 2015-06-29  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (add_operator): Treat ADDR_EXPR as atom.
