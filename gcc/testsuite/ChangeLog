@@ -1,3 +1,9 @@
+2015-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65977
+	* g++.dg/cpp0x/constexpr-friend-3.C: New.
+	* g++.dg/cpp0x/constexpr-friend-2.C: Adjust.
+
 2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/66605
