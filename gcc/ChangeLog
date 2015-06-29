@@ -1,3 +1,8 @@
+2015-06-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/gnu-user.h (GNU_USER_TARGET_ENDFILE_SPEC): Use
+	PIE_SPEC and NO_PIE_SPEC if HAVE_LD_PIE is defined.
+
 2015-06-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*jcc_1): Use %! in asm template.
