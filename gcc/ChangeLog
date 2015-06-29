@@ -1,5 +1,9 @@
 2015-06-29  Richard Biener  <rguenther@suse.de>
 
+	* lto-streamer.h (LTO_major_version): Bump to 5.
+
+2015-06-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66677
 	* tree-vect-stmts.c (vect_transform_stmt): Make assert about
 	STMT_VINFO_VEC_STMT clobbering less strict.
