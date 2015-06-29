@@ -5202,8 +5202,9 @@ gnat_write_global_declarations (void)
   tree iter;
 
   /* If we have declared types as used at the global level, insert them in
-     the global hash table.  We use a dummy variable for this purpose.  */
-  if (types_used_by_cur_var_decl && !types_used_by_cur_var_decl->is_empty ())
+     the global hash table.  We use a dummy variable for this purpose, but
+     we need to build it unconditionally to avoid -fcompare-debug issues.  */
+  if (first_global_object_name)
     {
       struct varpool_node *node;
       char *label;
@@ -5218,11 +5219,12 @@ gnat_write_global_declarations (void)
       node->definition = 1;
       node->force_output = 1;
 
-      while (!types_used_by_cur_var_decl->is_empty ())
-	{
-	  tree t = types_used_by_cur_var_decl->pop ();
-	  types_used_by_var_decl_insert (t, dummy_global);
-	}
+      if (types_used_by_cur_var_decl)
+	while (!types_used_by_cur_var_decl->is_empty ())
+	  {
+	    tree t = types_used_by_cur_var_decl->pop ();
+	    types_used_by_var_decl_insert (t, dummy_global);
+	  }
     }
 
   /* Output debug information for all global type declarations first.  This

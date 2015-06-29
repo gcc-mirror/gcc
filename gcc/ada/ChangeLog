@@ -1,3 +1,9 @@
+2015-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/63310
+	* gcc-interface/utils.c (gnat_write_global_declarations): Always
+	build the dummy global variable if code was generated.
+
 2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/66605
