@@ -57,6 +57,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-compound-assignment.c */
+#define create_code create_code_compound_assignment
+#define verify_code verify_code_compound_assignment
+#include "test-compound-assignment.c"
+#undef create_code
+#undef verify_code
+
 /* test-constants.c */
 #define create_code create_code_constants
 #define verify_code verify_code_constants
@@ -219,6 +226,9 @@ const struct testcase testcases[] = {
   {"calling_function_ptr",
    create_code_calling_function_ptr,
    verify_code_calling_function_ptr},
+  {"compound_assignment",
+   create_code_compound_assignment,
+   verify_code_compound_assignment},
   {"constants",
    create_code_constants,
    verify_code_constants},

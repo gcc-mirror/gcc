@@ -1,5 +1,13 @@
 2015-06-29  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport from mainline r224536
+	2015-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-compound-assignment.c.
+	* jit.dg/test-compound-assignment.c: New testcase.
+
+2015-06-29  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport from mainline r224531
 	2015-06-16  David Malcolm  <dmalcolm@redhat.com>
 
