@@ -1,3 +1,15 @@
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66322
+	* c-common.c (check_case_bounds): Add bool * parameter.  Set
+	OUTSIDE_RANGE_P.
+	(c_add_case_label): Add bool * parameter.  Pass it down to
+	check_case_bounds.
+	(c_do_switch_warnings): Add bool parameters.  Implement -Wswitch-bool
+	warning here.
+	* c-common.h (c_add_case_label, c_do_switch_warnings): Update
+	declarations.
+
 2015-06-27  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (check_main_parameter_types): Use VECTOR_TYPE_P

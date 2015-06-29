@@ -1,3 +1,13 @@
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66322
+	* decl.c (struct cp_switch): Add OUTSIDE_RANGE_P.
+	(push_switch): Set OUTSIDE_RANGE_P.
+	(pop_switch): Update c_do_switch_warnings call.
+	(finish_case_label): Update c_add_case_label call.
+	* semantics.c (finish_switch_cond): Don't warn about -Wswitch-bool
+	here.
+
 2015-06-27  Marek Polacek  <polacek@redhat.com>
 
 	* call.c: Use VECTOR_TYPE_P.
