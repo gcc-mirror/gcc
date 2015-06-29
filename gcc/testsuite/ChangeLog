@@ -1,3 +1,11 @@
+2015-06-29  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/asm-flag-1.c: New.
+	* gcc.target/i386/asm-flag-2.c: New.
+	* gcc.target/i386/asm-flag-3.c: New.
+	* gcc.target/i386/asm-flag-4.c: New.
+	* gcc.target/i386/asm-flag-5.c: New.
+
 2015-06-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66322

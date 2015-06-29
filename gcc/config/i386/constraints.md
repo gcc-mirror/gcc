@@ -146,10 +146,15 @@
  "@internal Lower SSE register when avoiding REX prefix and all SSE registers otherwise.")
 
 ;; We use the B prefix to denote any number of internal operands:
+;;  f  FLAGS_REG
 ;;  g  GOT memory operand.
 ;;  s  Sibcall memory operand, not valid for TARGET_X32
 ;;  w  Call memory operand, not valid for TARGET_X32
 ;;  z  Constant call address operand.
+
+(define_constraint "Bf"
+  "@internal Flags register operand."
+  (match_operand 0 "flags_reg_operand"))
 
 (define_constraint "Bg"
   "@internal GOT memory operand."
