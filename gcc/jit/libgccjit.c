@@ -1671,6 +1671,15 @@ gcc_jit_lvalue_access_field (gcc_jit_lvalue *struct_,
   RETURN_NULL_IF_FAIL_PRINTF1 (field->get_container (), field->m_ctxt, loc,
 			       "field %s has not been placed in a struct",
 			       field->get_debug_string ());
+  gcc::jit::recording::type *underlying_type =
+    struct_->get_type ();
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    (field->get_container ()->unqualified ()
+     == underlying_type->unqualified ()),
+    struct_->m_ctxt, loc,
+    "%s is not a field of %s",
+    field->get_debug_string (),
+    underlying_type->get_debug_string ());
 
   return (gcc_jit_lvalue *)struct_->access_field (loc, field);
 }
@@ -1694,6 +1703,15 @@ gcc_jit_rvalue_access_field (gcc_jit_rvalue *struct_,
   RETURN_NULL_IF_FAIL_PRINTF1 (field->get_container (), field->m_ctxt, loc,
 			       "field %s has not been placed in a struct",
 			       field->get_debug_string ());
+  gcc::jit::recording::type *underlying_type =
+    struct_->get_type ();
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    (field->get_container ()->unqualified ()
+     == underlying_type->unqualified ()),
+    struct_->m_ctxt, loc,
+    "%s is not a field of %s",
+    field->get_debug_string (),
+    underlying_type->get_debug_string ());
 
   return (gcc_jit_rvalue *)struct_->access_field (loc, field);
 }

@@ -1,3 +1,16 @@
+2015-06-29  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r224565
+	2015-06-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-accessing-field-in-other-struct.c: Rename to...
+	* jit.dg/test-error-gcc_jit_rvalue_dereference_field-wrong-struct.c:
+	...this.
+	* jit.dg/test-error-gcc_jit_lvalue_access_field-wrong-struct.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_rvalue_access_field-wrong-struct.c:
+	New testcase.
+
 2015-06-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline r224832.

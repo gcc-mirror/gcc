@@ -1,5 +1,14 @@
 2015-06-29  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport from mainline r224565
+	2015-06-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_lvalue_access_field): Verify that the field
+	is for the correct struct.
+	(gcc_jit_rvalue_access_field): Likewise.
+
+2015-06-29  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport from mainline r224531
 	2015-06-16  David Malcolm  <dmalcolm@redhat.com>
 
