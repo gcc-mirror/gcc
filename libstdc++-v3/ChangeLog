@@ -1,3 +1,34 @@
+2015-06-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement N4387, "Improving pair and tuple", and LWG 2367.
+
+	* include/bits/stl_pair.h (_ConstructiblePair,
+	_ImplicitlyConvertiblePair, _MoveConstructiblePair,
+	_ImplicitlyMoveConvertiblePair): New.
+	(pair()): Constrain it.
+	(pair(const _T1&, const _T2&), pair(const pair<_U1, _U2>&),
+	pair(_U1&&, const _T2&), pair(const _T1&, _U2&&), pair(_U1&&, _U2&&),
+	pair(pair<_U1, _U2>&&)): Make conditionally explicit.
+	* include/std/tuple (_TC, tuple::_TC2, tuple::TCC, tuple::TMC): New.
+	(tuple()): Constrain it.
+	(tuple(const _UElements&...), tuple(_UElements&&...),
+	tuple(const tuple<_UElements...>&), tuple(tuple<_UElements...>&&),
+	tuple(allocator_arg_t, const _Alloc&, const _UElements&...),
+	tuple(allocator_arg_t, const _Alloc&, _UElements&&...),
+	tuple(allocator_arg_t, const _Alloc&, const tuple<_UElements...>&),
+	tuple(allocator_arg_t, const _Alloc&, tuple<_UElements...>&&),
+	tuple(const pair<_U1, _U2>&), tuple(pair<_U1, _U2>&&),
+	tuple(allocator_arg_t, const _Alloc&, const pair<_U1, _U2>&),
+	tuple(allocator_arg_t, const _Alloc&, pair<_U1, _U2>&&)): Make
+	conditionally explicit.
+	* include/experimental/functional (__boyer_moore_array_base): Name
+	array type explicitly instead of using an empty braced-init-list.
+	* testsuite/20_util/pair/cons/explicit_construct.cc: New.
+	* testsuite/20_util/pair/piecewise.cc: Use piecewise_construct.
+	* testsuite/20_util/pair/requirements/dr2367.cc: New.
+	* testsuite/20_util/tuple/cons/explicit_construct.cc: New.
+	* testsuite/20_util/tuple/requirements/dr2367.cc: New.
+
 2015-06-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure: Regenerate.

@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _RAIter, typename _Unused>
 	__boyer_moore_array_base(_RAIter __pat, size_t __patlen,
 				 _Unused&&, _Pred&& __pred)
-	: _M_bad_char{ {}, std::move(__pred) }
+	: _M_bad_char{ std::array<_Tp, _Len>{}, std::move(__pred) }
 	{
 	  std::get<0>(_M_bad_char).fill(__patlen);
 	  if (__patlen > 0)
