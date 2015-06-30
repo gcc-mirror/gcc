@@ -1,3 +1,9 @@
+2015-06-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66652
+	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Use
+	max_loop_iterations to determine if nit + 1 overflows.
+
 2015-06-30  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (register_edge_assert_for_2): Also register

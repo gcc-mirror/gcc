@@ -1801,8 +1801,39 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
 
   gcc_assert (TREE_CODE (nit) == SSA_NAME);
 
+  /* Variable nit is the loop bound as returned by canonicalize_loop_ivs, for an
+     iv with base 0 and step 1 that is incremented in the latch, like this:
+
+     <bb header>:
+     # iv_1 = PHI <0 (preheader), iv_2 (latch)>
+     ...
+     if (iv_1 < nit)
+       goto <bb latch>;
+     else
+       goto <bb exit>;
+
+     <bb latch>:
+     iv_2 = iv_1 + 1;
+     goto <bb header>;
+
+     The range of iv_1 is [0, nit].  The latch edge is taken for
+     iv_1 == [0, nit - 1] and the exit edge is taken for iv_1 == nit.  So the
+     number of latch executions is equal to nit.
+
+     The function max_loop_iterations gives us the maximum number of latch
+     executions, so it gives us the maximum value of nit.  */
+  widest_int nit_max;
+  if (!max_loop_iterations (loop, &nit_max))
+    return false;
+
+  /* Check if nit + 1 overflows.  */
+  widest_int type_max = wi::to_widest (TYPE_MAXVAL (nit_type));
+  if (!wi::lts_p (nit_max, type_max))
+    return false;
+
   gimple def = SSA_NAME_DEF_STMT (nit);
 
+  /* Try to find nit + 1, in the form of n in an assignment nit = n - 1.  */
   if (def
       && is_gimple_assign (def)
       && gimple_assign_rhs_code (def) == PLUS_EXPR)

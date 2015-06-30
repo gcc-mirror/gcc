@@ -1,3 +1,11 @@
+2015-06-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66652
+	* gcc.dg/parloops-exit-first-loop-alt-pr66652.c: New test.
+	* gcc.dg/parloops-exit-first-loop-alt-3.c (f):  Rewrite using restrict
+	pointers.
+	* gcc.dg/parloops-exit-first-loop-alt.c: Same.
+
 2015-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65977

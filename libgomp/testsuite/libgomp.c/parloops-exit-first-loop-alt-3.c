@@ -10,7 +10,7 @@
 unsigned int *a;
 
 unsigned int __attribute__((noclone,noinline))
-f (unsigned int n)
+f (unsigned int n, unsigned int *__restrict__ a)
 {
   int i;
   unsigned int sum = 1;
@@ -32,7 +32,7 @@ main (void)
     array[i] = i % 7;
   a = &array[0];
 
-  res = f (N);
+  res = f (N, a);
   if (res != 11995)
     abort ();
 
