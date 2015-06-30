@@ -1,3 +1,11 @@
+2015-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/leon.md (leon_load): Enable for all LEON variants if
+	-mfix-ut699 is not specified.
+	(leon3_load): Rename into...
+	(ut699_load): ...this.  Enable for all LEON variants if -mfix-ut699
+	is specified.
+
 2015-06-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline:
