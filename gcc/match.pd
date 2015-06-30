@@ -240,9 +240,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* X - (X / Y) * Y is the same as X % Y.  */
 (simplify
- (minus (convert? @0) (convert? (mult (trunc_div @0 @1) @1)))
+ (minus (convert1? @0) (convert2? (mult (trunc_div @0 @1) @1)))
  (if (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
-  (convert (trunc_mod @0 @1))))
+  (trunc_mod (convert @0) (convert @1))))
 
 /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
    i.e. "X % C" into "X & (C - 1)", if X and C are positive.
