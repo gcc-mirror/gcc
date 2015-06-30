@@ -1,3 +1,9 @@
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/expressions.rst: Remove stray semicolon.
+	* docs/cp/topics/functions.rst: Remove stray backslash.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* dummy-frontend.c: Remove ipa-ref.h and plugin-api.h from include list.

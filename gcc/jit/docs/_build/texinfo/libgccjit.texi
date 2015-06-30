@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 5.0.0 (experimental 20150409), April 09, 2015
+libgccjit 6.0.0 (experimental 20150630), June 30, 2015
 
 David Malcolm
 
@@ -12623,8 +12623,9 @@ Parameter "loc" is optional.
 If you don't need to specify the location, this can also be expressed using
 an overloaded operator:
 
-
-@deffn {C++ Function} gccjit::lvalue            gccjit::rvalue::operator* ();
+@geindex gccjit;;rvalue;;operator* (C++ function)
+@anchor{cp/topics/expressions gccjit rvalue mul-operator}@anchor{175}
+@deffn {C++ Function} gccjit::lvalue gccjit::rvalue::operator* ()
 
 @example
 gccjit::lvalue content = *ptr;
@@ -12636,7 +12637,7 @@ gccjit::lvalue content = *ptr;
 Field access is provided separately for both lvalues and rvalues:
 
 @geindex gccjit;;lvalue;;access_field (C++ function)
-@anchor{cp/topics/expressions gccjit lvalue access_field__gccjit field gccjit location}@anchor{175}
+@anchor{cp/topics/expressions gccjit lvalue access_field__gccjit field gccjit location}@anchor{176}
 @deffn {C++ Function} gccjit::lvalue gccjit::lvalue::access_field (gccjit::field field, gccjit::location loc)
 
 Given an lvalue of struct or union type, access the given field,
@@ -12652,7 +12653,7 @@ in C.
 @end deffn
 
 @geindex gccjit;;rvalue;;access_field (C++ function)
-@anchor{cp/topics/expressions gccjit rvalue access_field__gccjit field gccjit location}@anchor{176}
+@anchor{cp/topics/expressions gccjit rvalue access_field__gccjit field gccjit location}@anchor{177}
 @deffn {C++ Function} gccjit::rvalue gccjit::rvalue::access_field (gccjit::field field, gccjit::location loc)
 
 Given an rvalue of struct or union type, access the given field
@@ -12668,7 +12669,7 @@ in C.
 @end deffn
 
 @geindex gccjit;;rvalue;;dereference_field (C++ function)
-@anchor{cp/topics/expressions gccjit rvalue dereference_field__gccjit field gccjit location}@anchor{177}
+@anchor{cp/topics/expressions gccjit rvalue dereference_field__gccjit field gccjit location}@anchor{178}
 @deffn {C++ Function} gccjit::lvalue gccjit::rvalue::dereference_field (gccjit::field field, gccjit::location loc)
 
 Given an rvalue of pointer type @code{T *} where T is of struct or union
@@ -12684,7 +12685,7 @@ in C, itself equivalent to @code{(*EXPR).FIELD}.
 @end deffn
 
 @geindex gccjit;;context;;new_array_access (C++ function)
-@anchor{cp/topics/expressions gccjit context new_array_access__gccjit rvalue gccjit rvalue gccjit location}@anchor{178}
+@anchor{cp/topics/expressions gccjit context new_array_access__gccjit rvalue gccjit rvalue gccjit location}@anchor{179}
 @deffn {C++ Function} gccjit::lvalue gccjit::context::new_array_access (gccjit::rvalue ptr, gccjit::rvalue index, gccjit::location loc)
 
 Given an rvalue of pointer type @code{T *}, get at the element @cite{T} at
@@ -12743,7 +12744,7 @@ gccjit::lvalue element = array[0];
 @c <http://www.gnu.org/licenses/>.
 
 @node Creating and using functions<2>,Source Locations<2>,Expressions<2>,Topic Reference<2>
-@anchor{cp/topics/functions doc}@anchor{179}@anchor{cp/topics/functions creating-and-using-functions}@anchor{17a}
+@anchor{cp/topics/functions doc}@anchor{17a}@anchor{cp/topics/functions creating-and-using-functions}@anchor{17b}
 @subsection Creating and using functions
 
 
@@ -12756,12 +12757,12 @@ gccjit::lvalue element = array[0];
 @end menu
 
 @node Params<2>,Functions<2>,,Creating and using functions<2>
-@anchor{cp/topics/functions params}@anchor{17b}
+@anchor{cp/topics/functions params}@anchor{17c}
 @subsubsection Params
 
 
 @geindex gccjit;;param (C++ class)
-@anchor{cp/topics/functions gccjit param}@anchor{17c}
+@anchor{cp/topics/functions gccjit param}@anchor{17d}
 @deffn {C++ Class} gccjit::param
 
 A @cite{gccjit::param} represents a parameter to a function.
@@ -12775,25 +12776,26 @@ In preparation for creating a function, create a new parameter of the
 given type and name.
 @end deffn
 
-@pxref{17c,,gccjit;;param} is a subclass of @pxref{16f,,gccjit;;lvalue} (and thus
+@pxref{17d,,gccjit;;param} is a subclass of @pxref{16f,,gccjit;;lvalue} (and thus
 of @pxref{137,,gccjit;;rvalue} and @pxref{121,,gccjit;;object}).  It is a thin
 wrapper around the C API's @pxref{25,,gcc_jit_param *}.
 
 @node Functions<2>,Blocks<2>,Params<2>,Creating and using functions<2>
-@anchor{cp/topics/functions functions}@anchor{17d}
+@anchor{cp/topics/functions functions}@anchor{17e}
 @subsubsection Functions
 
 
 @geindex gccjit;;function (C++ class)
-@anchor{cp/topics/functions gccjit function}@anchor{17e}
+@anchor{cp/topics/functions gccjit function}@anchor{17f}
 @deffn {C++ Class} gccjit::function
 
 A @cite{gccjit::function} represents a function - either one that we're
 creating ourselves, or one that we're referencing.
 @end deffn
 
-
-@deffn {C++ Function} gccjit::function             gccjit::context::new_function (enum gcc_jit_function_kind,                                           gccjit::type return_type,                                            const char *name,                                            std::vector<param> &params,                                            int is_variadic,                                            gccjit::location loc) \
+@geindex gccjit;;context;;new_function (C++ function)
+@anchor{cp/topics/functions gccjit context new_function__enum gccjit type cCP std vector param R i gccjit location}@anchor{180}
+@deffn {C++ Function} gccjit::function gccjit::context::new_function (enum gcc_jit_function_kind, gccjit::type return_type, const char* name, std::vector<param>& params, int is_variadic, gccjit::location loc)
 
 Create a gcc_jit_function with the given name and parameters.
 
@@ -12803,7 +12805,7 @@ This is a wrapper around the C API's @pxref{11,,gcc_jit_context_new_function()}.
 @end deffn
 
 @geindex gccjit;;context;;get_builtin_function (C++ function)
-@anchor{cp/topics/functions gccjit context get_builtin_function__cCP}@anchor{17f}
+@anchor{cp/topics/functions gccjit context get_builtin_function__cCP}@anchor{181}
 @deffn {C++ Function} gccjit::function gccjit::context::get_builtin_function (const char* name)
 
 This is a wrapper around the C API's
@@ -12811,7 +12813,7 @@ This is a wrapper around the C API's
 @end deffn
 
 @geindex gccjit;;function;;get_param (C++ function)
-@anchor{cp/topics/functions gccjit function get_param__iC}@anchor{180}
+@anchor{cp/topics/functions gccjit function get_param__iC}@anchor{182}
 @deffn {C++ Function} gccjit::param gccjit::function::get_param (int index) const
 
 Get the param of the given index (0-based).
@@ -12833,19 +12835,19 @@ name.
 @end deffn
 
 @node Blocks<2>,Statements<2>,Functions<2>,Creating and using functions<2>
-@anchor{cp/topics/functions blocks}@anchor{181}
+@anchor{cp/topics/functions blocks}@anchor{183}
 @subsubsection Blocks
 
 
 @geindex gccjit;;block (C++ class)
-@anchor{cp/topics/functions gccjit block}@anchor{182}
+@anchor{cp/topics/functions gccjit block}@anchor{184}
 @deffn {C++ Class} gccjit::block
 
 A @cite{gccjit::block} represents a basic block within a function  i.e. a
 sequence of statements with a single entry point and a single exit
 point.
 
-@pxref{182,,gccjit;;block} is a subclass of @pxref{121,,gccjit;;object}.
+@pxref{184,,gccjit;;block} is a subclass of @pxref{121,,gccjit;;object}.
 
 The first basic block that you create within a function will
 be the entrypoint.
@@ -12858,7 +12860,7 @@ one function.
 @end deffn
 
 @geindex gccjit;;function;;new_block (C++ function)
-@anchor{cp/topics/functions gccjit function new_block__cCP}@anchor{183}
+@anchor{cp/topics/functions gccjit function new_block__cCP}@anchor{185}
 @deffn {C++ Function} gccjit::block gccjit::function::new_block (const char* name)
 
 Create a basic block of the given name.  The name may be NULL, but
@@ -12868,7 +12870,7 @@ messages.
 @end deffn
 
 @node Statements<2>,,Blocks<2>,Creating and using functions<2>
-@anchor{cp/topics/functions statements}@anchor{184}
+@anchor{cp/topics/functions statements}@anchor{186}
 @subsubsection Statements
 
 
@@ -12970,7 +12972,7 @@ block, boolval, on_true, and on_false must be non-NULL.
 @end deffn
 
 @geindex gccjit;;block;;end_with_jump (C++ function)
-@anchor{cp/topics/functions gccjit block end_with_jump__gccjit block gccjit location}@anchor{185}
+@anchor{cp/topics/functions gccjit block end_with_jump__gccjit block gccjit location}@anchor{187}
 @deffn {C++ Function} void gccjit::block::end_with_jump (gccjit::block target, gccjit::location loc)
 
 Terminate a block by adding a jump to the given target block.
@@ -12985,7 +12987,7 @@ goto target;
 @end deffn
 
 @geindex gccjit;;block;;end_with_return (C++ function)
-@anchor{cp/topics/functions gccjit block end_with_return__gccjit rvalue gccjit location}@anchor{186}
+@anchor{cp/topics/functions gccjit block end_with_return__gccjit rvalue gccjit location}@anchor{188}
 @deffn {C++ Function} void gccjit::block::end_with_return (gccjit::rvalue rvalue, gccjit::location loc)
 
 Terminate a block.
@@ -13036,7 +13038,7 @@ return;
 @c <http://www.gnu.org/licenses/>.
 
 @node Source Locations<2>,Compiling a context<2>,Creating and using functions<2>,Topic Reference<2>
-@anchor{cp/topics/locations source-locations}@anchor{187}@anchor{cp/topics/locations doc}@anchor{188}
+@anchor{cp/topics/locations source-locations}@anchor{189}@anchor{cp/topics/locations doc}@anchor{18a}
 @subsection Source Locations
 
 
@@ -13079,7 +13081,7 @@ location.
 @end menu
 
 @node Faking it<2>,,,Source Locations<2>
-@anchor{cp/topics/locations faking-it}@anchor{189}
+@anchor{cp/topics/locations faking-it}@anchor{18b}
 @subsubsection Faking it
 
 
@@ -13117,13 +13119,13 @@ file, giving you @emph{something} you can step through in the debugger.
 @c <http://www.gnu.org/licenses/>.
 
 @node Compiling a context<2>,,Source Locations<2>,Topic Reference<2>
-@anchor{cp/topics/compilation compiling-a-context}@anchor{18a}@anchor{cp/topics/compilation doc}@anchor{18b}
+@anchor{cp/topics/compilation compiling-a-context}@anchor{18c}@anchor{cp/topics/compilation doc}@anchor{18d}
 @subsection Compiling a context
 
 
 Once populated, a @pxref{110,,gccjit;;context} can be compiled to
 machine code, either in-memory via @pxref{e9,,gccjit;;context;;compile()} or
-to disk via @pxref{18c,,gccjit;;context;;compile_to_file()}.
+to disk via @pxref{18e,,gccjit;;context;;compile_to_file()}.
 
 You can compile a context multiple times (using either form of
 compilation), although any errors that occur on the context will
@@ -13136,7 +13138,7 @@ prevent any future compilation of that context.
 @end menu
 
 @node In-memory compilation<2>,Ahead-of-time compilation<2>,,Compiling a context<2>
-@anchor{cp/topics/compilation in-memory-compilation}@anchor{18d}
+@anchor{cp/topics/compilation in-memory-compilation}@anchor{18f}
 @subsubsection In-memory compilation
 
 
@@ -13152,16 +13154,16 @@ This is a thin wrapper around the
 @end deffn
 
 @node Ahead-of-time compilation<2>,,In-memory compilation<2>,Compiling a context<2>
-@anchor{cp/topics/compilation ahead-of-time-compilation}@anchor{18e}
+@anchor{cp/topics/compilation ahead-of-time-compilation}@anchor{190}
 @subsubsection Ahead-of-time compilation
 
 
 Although libgccjit is primarily aimed at just-in-time compilation, it
 can also be used for implementing more traditional ahead-of-time
-compilers, via the @pxref{18c,,gccjit;;context;;compile_to_file()} method.
+compilers, via the @pxref{18e,,gccjit;;context;;compile_to_file()} method.
 
 @geindex gccjit;;context;;compile_to_file (C++ function)
-@anchor{cp/topics/compilation gccjit context compile_to_file__enum cCP}@anchor{18c}
+@anchor{cp/topics/compilation gccjit context compile_to_file__enum cCP}@anchor{18e}
 @deffn {C++ Function} void gccjit::context::compile_to_file (enum gcc_jit_output_kind, const char* output_path)
 
 Compile the @pxref{110,,gccjit;;context} to a file of the given
@@ -13189,7 +13191,7 @@ This is a thin wrapper around the
 @c <http://www.gnu.org/licenses/>.
 
 @node Internals,Indices and tables,C++ bindings for libgccjit,Top
-@anchor{internals/index internals}@anchor{18f}@anchor{internals/index doc}@anchor{190}
+@anchor{internals/index internals}@anchor{191}@anchor{internals/index doc}@anchor{192}
 @chapter Internals
 
 
@@ -13204,7 +13206,7 @@ This is a thin wrapper around the
 @end menu
 
 @node Working on the JIT library,Running the test suite,,Internals
-@anchor{internals/index working-on-the-jit-library}@anchor{191}
+@anchor{internals/index working-on-the-jit-library}@anchor{193}
 @section Working on the JIT library
 
 
@@ -13241,7 +13243,7 @@ gcc/libgccjit.so.0.0.1: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), 
 Here's what those configuration options mean:
 
 @geindex command line option; --enable-host-shared
-@anchor{internals/index cmdoption--enable-host-shared}@anchor{192}
+@anchor{internals/index cmdoption--enable-host-shared}@anchor{194}
 @deffn {Option} --enable-host-shared
 
 Configuring with this option means that the compiler is built as
@@ -13250,7 +13252,7 @@ but it necessary for a shared library.
 @end deffn
 
 @geindex command line option; --enable-languages=jit@comma{}c++
-@anchor{internals/index cmdoption--enable-languages}@anchor{193}
+@anchor{internals/index cmdoption--enable-languages}@anchor{195}
 @deffn {Option} --enable-languages=jit,c++
 
 This specifies which frontends to build.  The JIT library looks like
@@ -13269,7 +13271,7 @@ c++: error trying to exec 'cc1plus': execvp: No such file or directory
 @end deffn
 
 @geindex command line option; --disable-bootstrap
-@anchor{internals/index cmdoption--disable-bootstrap}@anchor{194}
+@anchor{internals/index cmdoption--disable-bootstrap}@anchor{196}
 @deffn {Option} --disable-bootstrap
 
 For hacking on the "jit" subdirectory, performing a full
@@ -13279,7 +13281,7 @@ the compiler can still bootstrap itself.
 @end deffn
 
 @geindex command line option; --enable-checking=release
-@anchor{internals/index cmdoption--enable-checking}@anchor{195}
+@anchor{internals/index cmdoption--enable-checking}@anchor{197}
 @deffn {Option} --enable-checking=release
 
 The compile can perform extensive self-checking as it runs, useful when
@@ -13290,7 +13292,7 @@ disable this self-checking.
 @end deffn
 
 @node Running the test suite,Environment variables,Working on the JIT library,Internals
-@anchor{internals/index running-the-test-suite}@anchor{196}
+@anchor{internals/index running-the-test-suite}@anchor{198}
 @section Running the test suite
 
 
@@ -13353,7 +13355,7 @@ and once a test has been compiled, you can debug it directly:
 @end menu
 
 @node Running under valgrind,,,Running the test suite
-@anchor{internals/index running-under-valgrind}@anchor{197}
+@anchor{internals/index running-under-valgrind}@anchor{199}
 @subsection Running under valgrind
 
 
@@ -13401,7 +13403,7 @@ When running under valgrind, it's best to have configured gcc with
 various known false positives.
 
 @node Environment variables,Packaging notes,Running the test suite,Internals
-@anchor{internals/index environment-variables}@anchor{198}
+@anchor{internals/index environment-variables}@anchor{19a}
 @section Environment variables
 
 
@@ -13409,7 +13411,7 @@ When running client code against a locally-built libgccjit, three
 environment variables need to be set up:
 
 @geindex environment variable; LD_LIBRARY_PATH
-@anchor{internals/index envvar-LD_LIBRARY_PATH}@anchor{199}
+@anchor{internals/index envvar-LD_LIBRARY_PATH}@anchor{19b}
 @deffn {Environment Variable} LD_LIBRARY_PATH
 
 @quotation
@@ -13431,7 +13433,7 @@ libgccjit.so.0.0.1: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux),
 @end deffn
 
 @geindex environment variable; PATH
-@anchor{internals/index envvar-PATH}@anchor{19a}
+@anchor{internals/index envvar-PATH}@anchor{19c}
 @deffn {Environment Variable} PATH
 
 The library uses a driver executable for converting from .s assembler
@@ -13450,7 +13452,7 @@ of development.
 @end deffn
 
 @geindex environment variable; LIBRARY_PATH
-@anchor{internals/index envvar-LIBRARY_PATH}@anchor{19b}
+@anchor{internals/index envvar-LIBRARY_PATH}@anchor{19d}
 @deffn {Environment Variable} LIBRARY_PATH
 
 The driver executable invokes the linker, and the latter needs to locate
@@ -13486,11 +13488,11 @@ hello world
 @noindent
 
 @node Packaging notes,Overview of code structure,Environment variables,Internals
-@anchor{internals/index packaging-notes}@anchor{19c}
+@anchor{internals/index packaging-notes}@anchor{19e}
 @section Packaging notes
 
 
-The configure-time option @pxref{192,,--enable-host-shared} is needed when
+The configure-time option @pxref{194,,--enable-host-shared} is needed when
 building the jit in order to get position-independent code.  This will
 slow down the regular compiler by a few percent.  Hence when packaging gcc
 with libgccjit, please configure and build twice:
@@ -13501,10 +13503,10 @@ with libgccjit, please configure and build twice:
 @itemize *
 
 @item 
-once without @pxref{192,,--enable-host-shared} for most languages, and
+once without @pxref{194,,--enable-host-shared} for most languages, and
 
 @item 
-once with @pxref{192,,--enable-host-shared} for the jit
+once with @pxref{194,,--enable-host-shared} for the jit
 @end itemize
 @end quotation
 
@@ -13548,7 +13550,7 @@ popd
 @noindent
 
 @node Overview of code structure,Design notes,Packaging notes,Internals
-@anchor{internals/index overview-of-code-structure}@anchor{19d}
+@anchor{internals/index overview-of-code-structure}@anchor{19f}
 @section Overview of code structure
 
 
@@ -14012,7 +14014,7 @@ JIT: gcc::jit::logger::~logger()
 @noindent
 
 @node Design notes,,Overview of code structure,Internals
-@anchor{internals/index design-notes}@anchor{19e}
+@anchor{internals/index design-notes}@anchor{1a0}
 @section Design notes
 
 
@@ -14025,7 +14027,7 @@ close as possible to the error; failing that, a good place is within
 @code{recording::context::validate ()} in jit-recording.c.
 
 @node Indices and tables,Index,Internals,Top
-@anchor{index indices-and-tables}@anchor{19f}
+@anchor{index indices-and-tables}@anchor{1a1}
 @unnumbered Indices and tables
 
 

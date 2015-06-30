@@ -52,7 +52,7 @@ Functions
                                               const char *name, \
                                               std::vector<param> &params, \
                                               int is_variadic, \
-                                              gccjit::location loc) \
+                                              gccjit::location loc)
 
    Create a gcc_jit_function with the given name and parameters.
 
