@@ -79216,7 +79216,7 @@ $as_echo_n "checking for sendfile that can copy files... " >&6; }
   $as_echo_n "(cached) " >&6
 else
       case "${target_os}" in
-      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu | solaris*)
+      gnu* | linux* | solaris*)
         if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
