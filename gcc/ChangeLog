@@ -1,3 +1,11 @@
+2015-06-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline:
+	2015-06-02  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/66136
+	* config/aarch64/geniterators.sh: Rewrite in awk.
+
 2015-06-27  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline r224672.
