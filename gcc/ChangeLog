@@ -1,3 +1,8 @@
+2015-06-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (register_edge_assert_for_2): Also register
+	asserts for dominating conversion results.
+
 2015-06-30  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (record_sub_use): Don't reset ssa_name
