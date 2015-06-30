@@ -1,3 +1,7 @@
+2015-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure: Regenerate.
+
 2015-06-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_iterator_base_types.h (_Iter_base): Limit definition
