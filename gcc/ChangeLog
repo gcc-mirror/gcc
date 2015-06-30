@@ -1,5 +1,9 @@
 2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* configure: Regenerated.
+
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config.gcc: Support i[34567]86-*-elfiamcu target.
 	* config/i386/iamcu.h: New.
 	* config/i386/i386.opt: Add -miamcu.

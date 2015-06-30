@@ -1,3 +1,10 @@
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.host: Support i[34567]86-*-elfiamcu target.
+	* config/t-softfp-sfdftf: New file.
+	* config/i386/32/t-iamcu: Likewise.
+	* configure: Regenerated.
+
 2015-06-23  James Lemke  <jwlemke@codesourcery.com>
 
 	libgcc/config/arm/
