@@ -7,7 +7,7 @@
 unsigned int *a;
 
 unsigned int
-f (unsigned int n)
+f (unsigned int n, unsigned int *__restrict__ a)
 {
   int i;
   unsigned int sum = 1;

@@ -1,3 +1,11 @@
+2015-06-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66652
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c (f): Rewrite
+	using restrict pointers.
+	(main): Add arguments to calls to f.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt.c: Same.
+
 2015-06-23  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* configure.ac: Fix check for header <sys/sysctl.h>.
