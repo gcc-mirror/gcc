@@ -283,6 +283,12 @@ along with GCC; see the file COPYING3.  If not see
   (bit_and @0 integer_zerop@1)
   @1)
 
+/* ~x | x -> -1 */
+(simplify
+ (bit_ior:c (convert? @0) (convert? (bit_not @0)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  { build_all_ones_cst (type); }))
+
 /* x ^ x -> 0 */
 (simplify
   (bit_xor @0 @0)

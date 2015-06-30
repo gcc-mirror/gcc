@@ -1,3 +1,7 @@
+2015-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-ior-2.c: New test.
+
 2015-06-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/66652
