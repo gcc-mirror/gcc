@@ -1,3 +1,9 @@
+2015-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66702
+	* testsuite/libgomp.c++/pr66702-1.C: New test.
+	* testsuite/libgomp.c++/pr66702-2.C: New test.
+
 2015-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
