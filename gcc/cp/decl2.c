@@ -1164,6 +1164,10 @@ is_late_template_attribute (tree attr, tree decl)
   if (is_attribute_p ("unused", name))
     return false;
 
+  /* Attribute tls_model wants to modify the symtab.  */
+  if (is_attribute_p ("tls_model", name))
+    return true;
+
   /* #pragma omp declare simd attribute needs to be always deferred.  */
   if (flag_openmp
       && is_attribute_p ("omp declare simd", name))

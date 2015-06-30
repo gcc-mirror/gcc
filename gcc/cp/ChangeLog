@@ -1,6 +1,9 @@
 2015-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR debug/66653
+	* decl2.c (is_late_template_attribute): True for tls_model.
+
+	PR debug/66653
 	* cp-tree.h (CP_DECL_THREAD_LOCAL_P): New.
 	(DECL_GNU_TLS_P): Use DECL_LANG_SPECIFIC field.
 	(SET_DECL_GNU_TLS_P): New.
