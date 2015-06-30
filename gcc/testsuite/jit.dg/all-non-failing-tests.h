@@ -95,6 +95,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-extra-options.c: We don't use this one, since the extra options
+   affect the whole context.  */
+
 /* test-factorial.c */
 #define create_code create_code_factorial
 #define verify_code verify_code_factorial
