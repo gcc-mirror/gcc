@@ -10922,24 +10922,6 @@ fold_binary_loc (location_t loc,
 
     case BIT_IOR_EXPR:
     bit_ior:
-      /* ~X | X is -1.  */
-      if (TREE_CODE (arg0) == BIT_NOT_EXPR
-	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
-	{
-	  t1 = build_zero_cst (type);
-	  t1 = fold_unary_loc (loc, BIT_NOT_EXPR, type, t1);
-	  return omit_one_operand_loc (loc, type, t1, arg1);
-	}
-
-      /* X | ~X is -1.  */
-      if (TREE_CODE (arg1) == BIT_NOT_EXPR
-	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
-	{
-	  t1 = build_zero_cst (type);
-	  t1 = fold_unary_loc (loc, BIT_NOT_EXPR, type, t1);
-	  return omit_one_operand_loc (loc, type, t1, arg0);
-	}
-
       /* Canonicalize (X & C1) | C2.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
 	  && TREE_CODE (arg1) == INTEGER_CST
