@@ -1,3 +1,8 @@
+2015-06-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lex.c (search_line_sse42) [__GCC_ASM_FLAG_OUTPUTS__]: New main
+	loop using asm flag outputs.
+
 2015-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66415
