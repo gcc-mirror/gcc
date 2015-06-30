@@ -411,9 +411,9 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_zero (ob);
 }
 
-/* Emit the physical representation of tree node EXPR to output block
-   OB.  If THIS_REF_P is true, the leaves of EXPR are emitted as references
-   via lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
+/* Emit the physical representation of tree node EXPR to output block OB,
+   If THIS_REF_P is true, the leaves of EXPR are emitted as references via
+   lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
 
 static void
 lto_output_tree_1 (struct output_block *ob, tree expr, hashval_t hash,
@@ -490,12 +490,19 @@ private:
 		       tree expr, bool ref_p, bool this_ref_p);
 
   hashval_t
-  hash_scc (struct output_block *ob, unsigned first, unsigned size);
+  hash_scc (struct output_block *ob, unsigned first, unsigned size,
+	    bool ref_p, bool this_ref_p);
 
   hash_map<tree, sccs *> sccstate;
   vec<worklist> worklist_vec;
   struct obstack sccstate_obstack;
 };
+
+/* Emit the physical representation of tree node EXPR to output block OB,
+   using depth-first search on the subgraph.  If THIS_REF_P is true, the
+   leaves of EXPR are emitted as references via lto_output_tree_ref.
+   REF_P is used for streaming siblings of EXPR.  If SINGLE_P is true,
+   this is for a rewalk of a single leaf SCC.  */
 
 DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  bool single_p)
@@ -564,7 +571,7 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  unsigned first, size;
 	  tree x;
 
-	  /* If we are re-walking a single leaf-SCC just pop it,
+	  /* If we are re-walking a single leaf SCC just pop it,
 	     let earlier worklist item access the sccstack.  */
 	  if (single_p)
 	    {
@@ -587,7 +594,7 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  unsigned scc_entry_len = 0;
 	  if (!flag_wpa)
 	    {
-	      scc_hash = hash_scc (ob, first, size);
+	      scc_hash = hash_scc (ob, first, size, ref_p, this_ref_p);
 
 	      /* Put the entries with the least number of collisions first.  */
 	      unsigned entry_start = 0;
@@ -1362,10 +1369,12 @@ DFS::scc_entry_compare (const void *p1_, const void *p2_)
   return 0;
 }
 
-/* Return a hash value for the SCC on the SCC stack from FIRST with SIZE.  */
+/* Return a hash value for the SCC on the SCC stack from FIRST with SIZE.
+   THIS_REF_P and REF_P are as passed to lto_output_tree for FIRST.  */
 
 hashval_t
-DFS::hash_scc (struct output_block *ob, unsigned first, unsigned size)
+DFS::hash_scc (struct output_block *ob, unsigned first, unsigned size,
+	       bool ref_p, bool this_ref_p)
 {
   unsigned int last_classes = 0, iterations = 0;
 
@@ -1441,7 +1450,8 @@ DFS::hash_scc (struct output_block *ob, unsigned first, unsigned size)
 	      for (unsigned i = 0; i < size; ++i)
 		map.put (sccstack[first+i].t, sccstack[first+i].hash);
 
-	      DFS again (ob, sccstack[first+firstunique].t, false, false, true);
+	      DFS again (ob, sccstack[first+firstunique].t, ref_p, this_ref_p,
+			 true);
 	      gcc_assert (again.sccstack.length () == size);
 
 	      memcpy (sccstack.address () + first,
@@ -1539,9 +1549,9 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
 }
 
 
-/* Emit the physical representation of tree node EXPR to output block
-   OB.  If THIS_REF_P is true, the leaves of EXPR are emitted as references
-   via lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
+/* Emit the physical representation of tree node EXPR to output block OB.
+   If THIS_REF_P is true, the leaves of EXPR are emitted as references via
+   lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
 
 void
 lto_output_tree (struct output_block *ob, tree expr,
