@@ -3553,7 +3553,7 @@ finish_id_expression (tree id_expression,
 	  && !cp_unevaluated_operand
 	  && !processing_template_decl
 	  && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
-	  && DECL_THREAD_LOCAL_P (decl)
+	  && CP_DECL_THREAD_LOCAL_P (decl)
 	  && (wrap = get_tls_wrapper_fn (decl)))
 	{
 	  /* Replace an evaluated use of the thread_local variable with
@@ -4291,7 +4291,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	       && VAR_P (t) && DECL_THREAD_LOCAL_P (t))
+	       && VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "%qD is threadprivate variable in %qs clause", t,
@@ -5784,7 +5784,7 @@ finish_omp_clauses (tree clauses)
 		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (VAR_P (t) && DECL_THREAD_LOCAL_P (t))
+	  else if (VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	    {
 	      error ("%qD is threadprivate variable in %qs clause", t,
 		     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
@@ -5954,7 +5954,7 @@ finish_omp_clauses (tree clauses)
 	  break;
 
 	case OMP_CLAUSE_COPYIN:
-	  if (!VAR_P (t) || !DECL_THREAD_LOCAL_P (t))
+	  if (!VAR_P (t) || !CP_DECL_THREAD_LOCAL_P (t))
 	    {
 	      error ("%qE must be %<threadprivate%> for %<copyin%>", t);
 	      remove = true;
@@ -5982,7 +5982,7 @@ finish_omp_clauses (tree clauses)
 	{
 	  const char *share_name = NULL;
 
-	  if (VAR_P (t) && DECL_THREAD_LOCAL_P (t))
+	  if (VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	    share_name = "threadprivate";
 	  else switch (cxx_omp_predetermined_sharing (t))
 	    {
@@ -6085,8 +6085,9 @@ finish_omp_threadprivate (tree vars)
 		DECL_LANG_SPECIFIC (v)->u.base.u2sel = 1;
 	    }
 
-	  if (! DECL_THREAD_LOCAL_P (v))
+	  if (! CP_DECL_THREAD_LOCAL_P (v))
 	    {
+	      CP_DECL_THREAD_LOCAL_P (v) = true;
 	      set_decl_tls_model (v, decl_default_tls_model (v));
 	      /* If rtl has been already set for this var, call
 		 make_decl_rtl once again, so that encode_section_info

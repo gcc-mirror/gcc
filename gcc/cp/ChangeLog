@@ -1,3 +1,27 @@
+2015-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR debug/66653
+	* cp-tree.h (CP_DECL_THREAD_LOCAL_P): New.
+	(DECL_GNU_TLS_P): Use DECL_LANG_SPECIFIC field.
+	(SET_DECL_GNU_TLS_P): New.
+	* call.c (make_temporary_var_for_ref_to_temp): Use
+	CP_DECL_THREAD_LOCAL_P.
+	(set_up_extended_ref_temp): Likewise.
+	* decl.c (duplicate_decls, expand_static_init): Likewise.
+	(redeclaration_error_message, grokvardecl): Likewise.
+	(start_decl, register_dtor_fn, grokdeclarator): Likewise.
+	* decl2.c (get_guard, var_needs_tls_wrapper): Likewise.
+	(handle_tls_init): Likewise.
+	* pt.c (tsubst_decl, tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_id_expression): Likewise.
+	(handle_omp_array_sections_1, finish_omp_clauses): Likewise.
+	(finish_omp_threadprivate): Likewise.
+	* tree.c (decl_storage_duration): Likewise.
+	* cp-gimplify.c (omp_var_to_track): Likewise.
+	(cp_genericize_r): Check that it matches DECL_THREAD_LOCAL_P.
+	* lex.c (retrofit_lang_decl): Return if DECL_LANG_SPECIFIC is
+	already set.
+
 2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N4197 - Adding u8 character literals

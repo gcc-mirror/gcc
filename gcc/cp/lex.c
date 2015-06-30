@@ -553,6 +553,9 @@ retrofit_lang_decl (tree t)
   size_t size;
   int sel;
 
+  if (DECL_LANG_SPECIFIC (t))
+    return;
+
   if (TREE_CODE (t) == FUNCTION_DECL)
     sel = 1, size = sizeof (struct lang_decl_fn);
   else if (TREE_CODE (t) == NAMESPACE_DECL)

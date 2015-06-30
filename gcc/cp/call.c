@@ -9556,13 +9556,14 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
 
   /* Register the variable.  */
   if (VAR_P (decl)
-      && (TREE_STATIC (decl) || DECL_THREAD_LOCAL_P (decl)))
+      && (TREE_STATIC (decl) || CP_DECL_THREAD_LOCAL_P (decl)))
     {
       /* Namespace-scope or local static; give it a mangled name.  */
       /* FIXME share comdat with decl?  */
       tree name;
 
       TREE_STATIC (var) = TREE_STATIC (decl);
+      CP_DECL_THREAD_LOCAL_P (var) = CP_DECL_THREAD_LOCAL_P (decl);
       set_decl_tls_model (var, DECL_TLS_MODEL (decl));
       name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;
@@ -9683,7 +9684,7 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
       rest_of_decl_compilation (var, /*toplev=*/1, at_eof);
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	{
-	  if (DECL_THREAD_LOCAL_P (var))
+	  if (CP_DECL_THREAD_LOCAL_P (var))
 	    tls_aggregates = tree_cons (NULL_TREE, var,
 					tls_aggregates);
 	  else
