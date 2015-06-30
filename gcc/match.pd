@@ -390,11 +390,32 @@ along with GCC; see the file COPYING3.  If not see
  (bit_and @0 @1))
 
 (simplify
+ (abs (abs@1 @0))
+ @1)
+(simplify
  (abs (negate @0))
  (abs @0))
 (simplify
  (abs tree_expr_nonnegative_p@0)
  @0)
+
+/* A - B -> A + (-B) if B is easily negatable.  This just covers
+   very few cases of "easily negatable", effectively inlining negate_expr_p.  */
+(simplify
+ (minus @0 INTEGER_CST@1)
+ (if ((INTEGRAL_TYPE_P (type)
+       && TYPE_OVERFLOW_WRAPS (type))
+      || (!TYPE_OVERFLOW_SANITIZED (type)
+	  && may_negate_without_overflow_p (@1)))
+  (plus @0 (negate @1))))
+(simplify
+ (minus @0 REAL_CST@1)
+ (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
+  (plus @0 (negate @1))))
+(simplify
+ (minus @0 VECTOR_CST@1)
+ (if (FLOAT_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
+  (plus @0 (negate @1))))
 
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
@@ -426,6 +447,19 @@ along with GCC; see the file COPYING3.  If not see
 	      of its mode.  */
 	   || TYPE_PRECISION (type) != GET_MODE_PRECISION (TYPE_MODE (type))))
    (convert (bitop @0 (convert @1))))))
+
+(for bitop (bit_and bit_ior)
+     rbitop (bit_ior bit_and)
+  /* (x | y) & x -> x */
+  /* (x & y) | x -> x */
+ (simplify
+  (bitop:c (rbitop:c @0 @1) @0)
+  @0)
+ /* (~x | y) & x -> x & y */
+ /* (~x & y) | x -> x | y */
+ (simplify
+  (bitop:c (rbitop:c (bit_not @0) @1) @0)
+  (bitop @0 @1)))
 
 /* Simplify (A & B) OP0 (C & B) to (A OP0 C) & B. */
 (for bitop (bit_and bit_ior bit_xor)
@@ -474,19 +508,6 @@ along with GCC; see the file COPYING3.  If not see
   (op:c truth_valued_p@0 (logical_inverted_value @0))
   { constant_boolean_node (true, type); }))
 
-(for bitop (bit_and bit_ior)
-     rbitop (bit_ior bit_and)
-  /* (x | y) & x -> x */
-  /* (x & y) | x -> x */
- (simplify
-  (bitop:c (rbitop:c @0 @1) @0)
-  @0)
- /* (~x | y) & x -> x & y */
- /* (~x & y) | x -> x | y */
- (simplify
-  (bitop:c (rbitop:c (bit_not @0) @1) @0)
-  (bitop @0 @1)))
-
 /* If arg1 and arg2 are booleans (or any single bit type)
    then try to simplify:
 
@@ -514,6 +535,32 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
   (bit_not (bit_not @0))
   @0)
+
+/* Convert ~ (-A) to A - 1.  */
+(simplify
+ (bit_not (convert? (negate @0)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (convert (minus @0 { build_one_cst (TREE_TYPE (@0)); }))))
+
+/* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
+(simplify
+ (bit_not (convert? (minus @0 integer_onep)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (convert (negate @0))))
+(simplify
+ (bit_not (convert? (plus @0 integer_all_onesp)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (convert (negate @0))))
+
+/* Part of convert ~(X ^ Y) to ~X ^ Y or X ^ ~Y if ~X or ~Y simplify.  */
+(simplify
+ (bit_not (convert? (bit_xor @0 INTEGER_CST@1)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (convert (bit_xor @0 (bit_not @1)))))
+(simplify
+ (bit_not (convert? (bit_xor:c (bit_not @0) @1)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (convert (bit_xor @0 @1))))
 
 /* (x & ~m) | (y & m) -> ((x ^ y) & m) ^ x */
 (simplify
