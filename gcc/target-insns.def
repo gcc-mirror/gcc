@@ -32,6 +32,9 @@
    Instructions should be documented in md.texi rather than here.  */
 DEF_TARGET_INSN (canonicalize_funcptr_for_compare, (rtx x0, rtx x1))
 DEF_TARGET_INSN (epilogue, (void))
+DEF_TARGET_INSN (mem_signal_fence, (rtx x0))
+DEF_TARGET_INSN (mem_thread_fence, (rtx x0))
+DEF_TARGET_INSN (memory_barrier, (void))
 DEF_TARGET_INSN (prologue, (void))
 DEF_TARGET_INSN (return, (void))
 DEF_TARGET_INSN (sibcall_epilogue, (void))
