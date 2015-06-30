@@ -1,5 +1,14 @@
 2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* defaults.h (HAVE_load_multiple, gen_load_multiple)
+	(HAVE_store_multiple, gen_store_multiple): Delete.
+	* target-insns.def (load_multiple, store_multiple): New targetm
+	instruction patterns.
+	* expr.c (move_block_to_reg, move_block_from_reg): Use them instead
+	of HAVE_*/gen_* interface.
+
+2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* defaults.h (HAVE_mem_thread_fence, gen_mem_thread_fence)
 	(HAVE_memory_barrier, gen_memory_barrier, HAVE_mem_signal_fence)
 	(gen_mem_signal_fence): Delete.
