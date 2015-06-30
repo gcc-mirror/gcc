@@ -119,6 +119,7 @@ struct _cpp_file;
   TK(WCHAR,		LITERAL) /* L'char' */				\
   TK(CHAR16,		LITERAL) /* u'char' */				\
   TK(CHAR32,		LITERAL) /* U'char' */				\
+  TK(UTF8CHAR,		LITERAL) /* u8'char' */				\
   TK(OTHER,		LITERAL) /* stray punctuation */		\
 									\
   TK(STRING,		LITERAL) /* "string" */				\
@@ -133,6 +134,7 @@ struct _cpp_file;
   TK(WCHAR_USERDEF,	LITERAL) /* L'char'_suffix - C++-0x */		\
   TK(CHAR16_USERDEF,	LITERAL) /* u'char'_suffix - C++-0x */		\
   TK(CHAR32_USERDEF,	LITERAL) /* U'char'_suffix - C++-0x */		\
+  TK(UTF8CHAR_USERDEF,	LITERAL) /* u8'char'_suffix - C++-0x */		\
   TK(STRING_USERDEF,	LITERAL) /* "string"_suffix - C++-0x */		\
   TK(WSTRING_USERDEF,	LITERAL) /* L"string"_suffix - C++-0x */	\
   TK(STRING16_USERDEF,	LITERAL) /* u"string"_suffix - C++-0x */	\
@@ -338,6 +340,9 @@ struct cpp_options
 
   /* Nonzero means process u/U prefix literals (UTF-16/32).  */
   unsigned char uliterals;
+
+  /* Nonzero means process u8 prefixed character literals (UTF-8).  */
+  unsigned char utf8_char_literals;
 
   /* Nonzero means process r/R raw strings.  If this is set, uliterals
      must be set as well.  */
