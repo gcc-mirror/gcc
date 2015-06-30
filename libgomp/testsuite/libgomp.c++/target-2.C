@@ -1,4 +1,3 @@
-// { dg-options "-O2 -fopenmp" }
 // { dg-additional-sources "target-2-aux.cc" }
 
 extern "C" void abort (void);
