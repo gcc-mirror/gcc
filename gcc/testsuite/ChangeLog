@@ -1,3 +1,28 @@
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/iamcu/abi-iamcu.exp: New file.
+	* gcc.target/i386/iamcu/args.h: Likewise.
+	* gcc.target/i386/iamcu/asm-support.S: Likewise.
+	* gcc.target/i386/iamcu/defines.h: Likewise.
+	* gcc.target/i386/iamcu/macros.h: Likewise.
+	* gcc.target/i386/iamcu/test_3_element_struct_and_unions.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_64bit_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_alignment.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_array_size_and_align.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_sizes.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_struct_size_and_align.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_union_size_and_align.c: Likewise.
+	* gcc.target/i386/iamcu/test_bitfields.c: Likewise.
+	* gcc.target/i386/iamcu/test_complex_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_floats.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_integers.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_structs.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_structs_and_unions.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_unions.c: Likewise.
+	* gcc.target/i386/iamcu/test_struct_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_varargs.c: Likewise.
+
 2015-06-30  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-minus-6.c: New test.
