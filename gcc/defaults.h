@@ -1426,26 +1426,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_VTABLE_USES_DESCRIPTORS 0
 #endif
 
-#ifndef HAVE_load_multiple
-#define HAVE_load_multiple 0
-static inline rtx
-gen_load_multiple (rtx, rtx, rtx)
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
-#ifndef HAVE_store_multiple
-#define HAVE_store_multiple 0
-static inline rtx
-gen_store_multiple (rtx, rtx, rtx)
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
 #ifndef HAVE_tablejump
 #define HAVE_tablejump 0
 static inline rtx

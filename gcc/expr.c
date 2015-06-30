@@ -1491,10 +1491,6 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
 void
 move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
 {
-  int i;
-  rtx pat;
-  rtx_insn *last;
-
   if (nregs == 0)
     return;
 
@@ -1502,12 +1498,12 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
     x = validize_mem (force_const_mem (mode, x));
 
   /* See if the machine can do this with a load multiple insn.  */
-  if (HAVE_load_multiple)
+  if (targetm.have_load_multiple ())
     {
-      last = get_last_insn ();
-      pat = gen_load_multiple (gen_rtx_REG (word_mode, regno), x,
-			       GEN_INT (nregs));
-      if (pat)
+      rtx_insn *last = get_last_insn ();
+      rtx first = gen_rtx_REG (word_mode, regno);
+      if (rtx_insn *pat = targetm.gen_load_multiple (first, x,
+						     GEN_INT (nregs)))
 	{
 	  emit_insn (pat);
 	  return;
@@ -1516,7 +1512,7 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
 	delete_insns_since (last);
     }
 
-  for (i = 0; i < nregs; i++)
+  for (int i = 0; i < nregs; i++)
     emit_move_insn (gen_rtx_REG (word_mode, regno + i),
 		    operand_subword_force (x, i, mode));
 }
@@ -1527,18 +1523,16 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
 void
 move_block_from_reg (int regno, rtx x, int nregs)
 {
-  int i;
-
   if (nregs == 0)
     return;
 
   /* See if the machine can do this with a store multiple insn.  */
-  if (HAVE_store_multiple)
+  if (targetm.have_store_multiple ())
     {
       rtx_insn *last = get_last_insn ();
-      rtx pat = gen_store_multiple (x, gen_rtx_REG (word_mode, regno),
-				    GEN_INT (nregs));
-      if (pat)
+      rtx first = gen_rtx_REG (word_mode, regno);
+      if (rtx_insn *pat = targetm.gen_store_multiple (x, first,
+						      GEN_INT (nregs)))
 	{
 	  emit_insn (pat);
 	  return;
@@ -1547,7 +1541,7 @@ move_block_from_reg (int regno, rtx x, int nregs)
 	delete_insns_since (last);
     }
 
-  for (i = 0; i < nregs; i++)
+  for (int i = 0; i < nregs; i++)
     {
       rtx tem = operand_subword (x, i, 1, BLKmode);
 
