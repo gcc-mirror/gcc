@@ -4036,7 +4036,7 @@ decl_storage_duration (tree decl)
   if (!TREE_STATIC (decl)
       && !DECL_EXTERNAL (decl))
     return dk_auto;
-  if (DECL_THREAD_LOCAL_P (decl))
+  if (CP_DECL_THREAD_LOCAL_P (decl))
     return dk_thread;
   return dk_static;
 }

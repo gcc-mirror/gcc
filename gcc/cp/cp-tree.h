@@ -51,7 +51,7 @@ c-common.h, not after.
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF, SCOPE_REF)
       PAREN_STRING_LITERAL (in STRING_CST)
-      DECL_GNU_TLS_P (in VAR_DECL)
+      CP_DECL_THREAD_LOCAL_P (in VAR_DECL)
       KOENIG_LOOKUP_P (in CALL_EXPR)
       STATEMENT_LIST_NO_SCOPE (in STATEMENT_LIST).
       EXPR_STMT_STMT_EXPR_RESULT (in EXPR_STMT)
@@ -2017,7 +2017,7 @@ struct GTY(()) lang_decl_base {
   unsigned repo_available_p : 1;	   /* var or fn */
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
   unsigned anticipated_p : 1;		   /* fn, type or template */
-  unsigned friend_attr : 1;		   /* fn, type or template */
+  unsigned friend_or_tls : 1;		   /* var, fn, type or template */
   unsigned template_conv_p : 1;		   /* var or template */
   unsigned odr_used : 1;		   /* var or fn */
   unsigned u2sel : 1;
@@ -2438,7 +2438,16 @@ struct GTY(()) lang_decl {
    and should not be added to the list of members for this class.  */
 #define DECL_FRIEND_P(NODE) \
   (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
-   ->u.base.friend_attr)
+   ->u.base.friend_or_tls)
+
+/* Nonzero if the thread-local variable was declared with __thread as
+   opposed to thread_local.  */
+#define DECL_GNU_TLS_P(NODE)				\
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))		\
+   && DECL_LANG_SPECIFIC (NODE)->u.base.friend_or_tls)
+#define SET_DECL_GNU_TLS_P(NODE)				\
+  (retrofit_lang_decl (VAR_DECL_CHECK (NODE)),			\
+   DECL_LANG_SPECIFIC (NODE)->u.base.friend_or_tls = true)
 
 /* A TREE_LIST of the types which have befriended this FUNCTION_DECL.  */
 #define DECL_BEFRIENDING_CLASSES(NODE) \
@@ -2566,9 +2575,11 @@ struct GTY(()) lang_decl {
   (DECL_NAME (NODE) \
    && !strcmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__PRETTY_FUNCTION__"))
 
-/* Nonzero if the thread-local variable was declared with __thread
-   as opposed to thread_local.  */
-#define DECL_GNU_TLS_P(NODE) \
+/* Nonzero if the variable was declared to be thread-local.
+   We need a special C++ version of this test because the middle-end
+   DECL_THREAD_LOCAL_P uses the symtab, so we can't use it for
+   templates.  */
+#define CP_DECL_THREAD_LOCAL_P(NODE) \
   (TREE_LANG_FLAG_0 (VAR_DECL_CHECK (NODE)))
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
