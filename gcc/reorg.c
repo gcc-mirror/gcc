@@ -473,7 +473,7 @@ find_end_label (rtx kind)
 	}
       else
 	{
-	  if (HAVE_epilogue && ! targetm.have_return ())
+	  if (targetm.have_epilogue () && ! targetm.have_return ())
 	    /* The RETURN insn has its delay slot filled so we cannot
 	       emit the label just before it.  Since we already have
 	       an epilogue and cannot emit a new RETURN, we cannot

@@ -1,3 +1,21 @@
+2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* defaults.h (HAVE_epilogue, gen_epilogue): Delete.
+	* target-insns.def (epilogue, prologue, sibcall_prologue): New
+	targetm instruction patterns.
+	* alias.c (init_alias_analysis): Use them instead of HAVE_*/gen_*
+	interface.
+	* calls.c (expand_call): Likewise.
+	* cfgrtl.c (cfg_layout_finalize): Likewise.
+	* df-scan.c (df_get_entry_block_def_set): Likewise.
+	(df_get_exit_block_use_set): Likewise.
+	* dwarf2cfi.c (pass_dwarf2_frame::gate): Likewise.
+	* final.c (final_start_function): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	(reposition_prologue_and_epilogue_notes): Likewise.
+	* reorg.c (find_end_label): Likewise.
+	* toplev.c (process_options): Likewise.
+
 2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* typed-splay-tree.h: New file.

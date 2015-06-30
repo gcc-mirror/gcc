@@ -1426,16 +1426,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_VTABLE_USES_DESCRIPTORS 0
 #endif
 
-#ifndef HAVE_epilogue
-#define HAVE_epilogue 0
-static inline rtx
-gen_epilogue ()
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
 #ifndef HAVE_mem_thread_fence
 #define HAVE_mem_thread_fence 0
 static inline rtx

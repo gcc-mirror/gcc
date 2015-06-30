@@ -112,10 +112,6 @@ along with GCC; see the file COPYING3.  If not see
 				   declarations for e.g. AIX 4.x.  */
 #endif
 
-#ifndef HAVE_prologue
-#define HAVE_prologue 0
-#endif
-
 #include <new>
 
 static void general_init (const char *, bool);
@@ -1660,7 +1656,7 @@ process_options (void)
 
  /* Do not use IPA optimizations for register allocation if profiler is active
     or port does not emit prologue and epilogue as RTL.  */
-  if (profile_flag || !HAVE_prologue || !HAVE_epilogue)
+  if (profile_flag || !targetm.have_prologue () || !targetm.have_epilogue ())
     flag_ipa_ra = 0;
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error

@@ -30,6 +30,9 @@
    Patterns that take no operands should have a prototype "(void)".
 
    Instructions should be documented in md.texi rather than here.  */
-DEF_TARGET_INSN (return, (void))
-DEF_TARGET_INSN (simple_return, (void))
 DEF_TARGET_INSN (canonicalize_funcptr_for_compare, (rtx x0, rtx x1))
+DEF_TARGET_INSN (epilogue, (void))
+DEF_TARGET_INSN (prologue, (void))
+DEF_TARGET_INSN (return, (void))
+DEF_TARGET_INSN (sibcall_epilogue, (void))
+DEF_TARGET_INSN (simple_return, (void))
