@@ -1,5 +1,12 @@
 2015-06-30  Tom de Vries  <tom@codesourcery.com>
 
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-5.c: New test.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-6.c: New test.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-7.c: New test.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt.c: Update comment.
+
+2015-06-30  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/66652
 	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c (f): Rewrite
 	using restrict pointers.
