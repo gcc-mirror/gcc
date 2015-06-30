@@ -1,5 +1,12 @@
 2015-06-30  Richard Biener  <rguenther@suse.de>
 
+	* fold-const.c (fold_binary_loc): Move ~x & ~y -> ~(x | y) and
+	~x | ~y -> ~(x & y), (x & CST) ^ (x & CST2) -> (x & CST) | (x & CST2),
+	(X | Y) ^ X -> Y & ~ X, ~X ^ ~Y to X ^ Y and ~X ^ C to X ^ ~C ...
+	* match.pd: ... to patterns here.
+
+2015-06-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66704
 	* tree-vect-data-refs.c (vect_setup_realignment): Use
 	make_ssa_name for non-SSA name source.
