@@ -1,5 +1,16 @@
 2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* defaults.h (HAVE_mem_thread_fence, gen_mem_thread_fence)
+	(HAVE_memory_barrier, gen_memory_barrier, HAVE_mem_signal_fence)
+	(gen_mem_signal_fence): Delete.
+	* target-insns.def (mem_signal_fence, mem_thread_fence)
+	(memory_barrier): New targetm instruction patterns.
+	* optabs.c (expand_mem_thread_fence): Use them instead of HAVE_*/gen_*
+	interface.
+	(expand_mem_signal_fence): Likewise.
+
+2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* defaults.h (HAVE_epilogue, gen_epilogue): Delete.
 	* target-insns.def (epilogue, prologue, sibcall_prologue): New
 	targetm instruction patterns.

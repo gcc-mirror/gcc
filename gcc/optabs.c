@@ -7575,12 +7575,12 @@ expand_asm_memory_barrier (void)
 void
 expand_mem_thread_fence (enum memmodel model)
 {
-  if (HAVE_mem_thread_fence)
-    emit_insn (gen_mem_thread_fence (GEN_INT (model)));
+  if (targetm.have_mem_thread_fence ())
+    emit_insn (targetm.gen_mem_thread_fence (GEN_INT (model)));
   else if (!is_mm_relaxed (model))
     {
-      if (HAVE_memory_barrier)
-	emit_insn (gen_memory_barrier ());
+      if (targetm.have_memory_barrier ())
+	emit_insn (targetm.gen_memory_barrier ());
       else if (synchronize_libfunc != NULL_RTX)
 	emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode, 0);
       else
@@ -7594,8 +7594,8 @@ expand_mem_thread_fence (enum memmodel model)
 void
 expand_mem_signal_fence (enum memmodel model)
 {
-  if (HAVE_mem_signal_fence)
-    emit_insn (gen_mem_signal_fence (GEN_INT (model)));
+  if (targetm.have_mem_signal_fence ())
+    emit_insn (targetm.gen_mem_signal_fence (GEN_INT (model)));
   else if (!is_mm_relaxed (model))
     {
       /* By default targets are coherent between a thread and the signal

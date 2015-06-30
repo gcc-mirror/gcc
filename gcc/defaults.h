@@ -1426,36 +1426,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_VTABLE_USES_DESCRIPTORS 0
 #endif
 
-#ifndef HAVE_mem_thread_fence
-#define HAVE_mem_thread_fence 0
-static inline rtx
-gen_mem_thread_fence (rtx)
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
-#ifndef HAVE_memory_barrier
-#define HAVE_memory_barrier 0
-static inline rtx
-gen_memory_barrier ()
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
-#ifndef HAVE_mem_signal_fence
-#define HAVE_mem_signal_fence 0
-static inline rtx
-gen_mem_signal_fence (rtx)
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
 #ifndef HAVE_load_multiple
 #define HAVE_load_multiple 0
 static inline rtx
