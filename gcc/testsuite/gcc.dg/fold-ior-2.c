@@ -22,7 +22,7 @@ fn3 (unsigned int x)
 unsigned int
 fn4 (unsigned int x)
 {
-  return ~x | x;
+  return x | ~x;
 }
 
 int
