@@ -562,6 +562,9 @@ x86_64-*-darwin*)
 	tm_file="$tm_file i386/darwin-lib.h"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
+i[34567]86-*-elfiamcu)
+	tmake_file="$tmake_file i386/t-crtstuff t-softfp-sfdftf i386/32/t-softfp i386/32/t-iamcu i386/t-softfp t-softfp t-dfprules"
+	;;
 i[34567]86-*-elf*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
 	;;
