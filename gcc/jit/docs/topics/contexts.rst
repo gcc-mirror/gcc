@@ -293,6 +293,15 @@ future activies on a context to the given `FILE *`.
 Options
 -------
 
+Options present in the initial release of libgccjit were handled using
+enums, whereas those added subsequently have their own per-option API
+entrypoints.
+
+Adding entrypoints for each new option means that client code that use
+the new options can be identified directly from binary metadata, which
+would not be possible if we instead extended the various
+``enum gcc_jit_*_option``.
+
 String Options
 **************
 
@@ -304,7 +313,7 @@ String Options
 
    .. type:: enum gcc_jit_str_option
 
-   There is currently just one string option:
+   There is just one string option specified this way:
 
    .. macro:: GCC_JIT_STR_OPTION_PROGNAME
 
@@ -441,6 +450,22 @@ Boolean options
      If true, the :type:`gcc_jit_context` will not clean up intermediate files
      written to the filesystem, and will display their location on stderr.
 
+.. function:: void \
+              gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt, \
+                                                                 int bool_value)
+
+   By default, libgccjit will issue an error about unreachable blocks
+   within a function.
+
+   This entrypoint can be used to disable that error.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_2`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+
 Integer options
 ***************
 
@@ -452,7 +477,7 @@ Integer options
 
   .. type:: enum gcc_jit_int_option
 
-  There is currently just one integer option:
+  There is just one integer option specified this way:
 
   .. macro:: GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL
 
