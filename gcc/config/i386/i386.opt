@@ -514,6 +514,10 @@ Clear all tune features
 mdump-tune-features
 Target RejectNegative Var(ix86_dump_tunes) Init(0)
 
+miamcu
+Target Report Mask(IAMCU)
+Generate code that conforms to Intel MCU psABI
+
 mabi=
 Target RejectNegative Joined Var(ix86_abi) Enum(calling_abi) Init(SYSV_ABI)
 Generate code that conforms to the given ABI

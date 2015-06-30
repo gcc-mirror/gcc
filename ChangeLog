@@ -1,3 +1,9 @@
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (ospace_frag): Enable for i?86*-*-elfiamcu
+	target.
+	* configure: Regenerate.
+
 2015-06-23  Ludovic Courtès  <ludo@gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
