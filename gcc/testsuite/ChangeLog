@@ -1,3 +1,10 @@
+2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N4197 - Adding u8 character literals
+	* g++.dg/cpp1z/utf8.C: New.
+	* g++.dg/cpp1z/utf8-neg.C: New.
+	* g++.dg/cpp1z/udlit-utf8char.C: New.
+
 2015-06-30  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-ior-2.c (fn4): Swap operands.

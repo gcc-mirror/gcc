@@ -531,7 +531,7 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 		   || token->type == CPP_WSTRING || token->type == CPP_WCHAR
 		   || token->type == CPP_STRING32 || token->type == CPP_CHAR32
 		   || token->type == CPP_STRING16 || token->type == CPP_CHAR16
-		   || token->type == CPP_UTF8STRING
+		   || token->type == CPP_UTF8STRING || token->type == CPP_UTF8CHAR
 		   || cpp_userdef_string_p (token->type)
 		   || cpp_userdef_char_p (token->type));
 

@@ -1,3 +1,10 @@
+2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N4197 - Adding u8 character literals
+	* parser.c (cp_parser_primary_expression()): Treat CPP_UTF8CHAR
+	and CPP_UTF8CHAR_USERDEF tokens;
+	(cp_parser_parenthesized_expression_list()): Treat CPP_UTF8CHAR token.
+
 2015-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65977

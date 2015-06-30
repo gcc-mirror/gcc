@@ -1355,6 +1355,7 @@ converter_for_type (cpp_reader *pfile, enum cpp_ttype type)
     {
     default:
 	return pfile->narrow_cset_desc;
+    case CPP_UTF8CHAR:
     case CPP_UTF8STRING:
 	return pfile->utf8_cset_desc;
     case CPP_CHAR16:
@@ -1611,11 +1612,12 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
 			 unsigned int *pchars_seen, int *unsignedp)
 {
   cpp_string str = { 0, 0 };
-  bool wide = (token->type != CPP_CHAR);
+  bool wide = (token->type != CPP_CHAR && token->type != CPP_UTF8CHAR);
+  int u8 = 2 * int(token->type == CPP_UTF8CHAR);
   cppchar_t result;
 
-  /* an empty constant will appear as L'', u'', U'' or '' */
-  if (token->val.str.len == (size_t) (2 + wide))
+  /* An empty constant will appear as L'', u'', U'', u8'', or '' */
+  if (token->val.str.len == (size_t) (2 + wide + u8))
     {
       cpp_error (pfile, CPP_DL_ERROR, "empty character constant");
       return 0;
