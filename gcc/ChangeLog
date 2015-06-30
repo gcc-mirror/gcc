@@ -1,5 +1,25 @@
 2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (jump): New targetm instruction pattern.
+	* bb-reorder.c (get_uncond_jump_length): Use targetm.gen_jump
+	instead of gen_jump.
+	(fix_up_crossing_landing_pad): Likewise.
+	(add_labels_and_missing_jumps): Likewise.
+	(fix_crossing_conditional_branches): Likewise.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Likewise.
+	(force_nonfallthru_and_redirect): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* expmed.c (expand_divmod): Likewise.
+	* expr.c (store_expr_with_bounds, expand_expr_real_2): Likewise.
+	* haifa-sched.c (init_before_recovery): Likewise.
+	(sched_create_recovery_edges): Likewise.
+	* ifcvt.c (find_cond_trap): Likewise.
+	* optabs.c (expand_doubleword_shift, expand_doubleword_clz): Likewise.
+	(expand_float, expand_fix): Likewise.
+	* stmt.c (emit_jump): Likewise.
+
+2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* defaults.h (HAVE_load_multiple, gen_load_multiple)
 	(HAVE_store_multiple, gen_store_multiple): Delete.
 	* target-insns.def (load_multiple, store_multiple): New targetm

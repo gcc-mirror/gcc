@@ -8120,7 +8120,7 @@ init_before_recovery (basic_block *before_recovery_ptr)
 			     EDGE_FALLTHRU);
 
       rtx_code_label *label = block_label (empty);
-      rtx_jump_insn *x = emit_jump_insn_after (gen_jump (label),
+      rtx_jump_insn *x = emit_jump_insn_after (targetm.gen_jump (label),
 					       BB_END (single));
       JUMP_LABEL (x) = label;
       LABEL_NUSES (label)++;
@@ -8198,7 +8198,8 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 
   make_edge (first_bb, rec, edge_flags);
   rtx_code_label *label = block_label (second_bb);
-  rtx_jump_insn *jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
+  rtx_jump_insn *jump = emit_jump_insn_after (targetm.gen_jump (label),
+					      BB_END (rec));
   JUMP_LABEL (jump) = label;
   LABEL_NUSES (label)++;
 
