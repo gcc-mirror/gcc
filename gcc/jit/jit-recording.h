@@ -196,6 +196,12 @@ public:
 		   int value);
 
   void
+  add_command_line_option (const char *optname);
+
+  void
+  append_command_line_options (vec <char *> *argvec);
+
+  void
   enable_dump (const char *dumpname,
 	       char **out_ptr);
 
@@ -281,6 +287,7 @@ private:
   char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
   int m_int_options[GCC_JIT_NUM_INT_OPTIONS];
   bool m_bool_options[GCC_JIT_NUM_BOOL_OPTIONS];
+  auto_vec <char *> m_command_line_options;
 
   /* Dumpfiles that were requested via gcc_jit_context_enable_dump.  */
   auto_vec<requested_dump> m_requested_dumps;

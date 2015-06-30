@@ -462,3 +462,39 @@ Integer options
      -O0 through -O3.
 
      The default value is 0 (unoptimized).
+
+Additional command-line options
+*******************************
+
+.. function:: void gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,\
+                                                            const char *optname)
+
+   Add an arbitrary gcc command-line option to the context, for use
+   by :func:`gcc_jit_context_compile` and
+   :func:`gcc_jit_context_compile_to_file`.
+
+   The parameter ``optname`` must be non-NULL.  The underlying buffer is
+   copied, so that it does not need to outlive the call.
+
+   Extra options added by `gcc_jit_context_add_command_line_option` are
+   applied *after* the regular options above, potentially overriding them.
+   Options from parent contexts are inherited by child contexts; options
+   from the parent are applied *before* those from the child.
+
+   For example:
+
+   .. code-block:: c
+
+      gcc_jit_context_add_command_line_option (ctxt, "-ffast-math");
+      gcc_jit_context_add_command_line_option (ctxt, "-fverbose-asm");
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   optimization and code-generation are likely to be useful.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_1`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option

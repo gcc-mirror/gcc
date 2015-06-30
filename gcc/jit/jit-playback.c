@@ -2139,6 +2139,10 @@ make_fake_args (vec <char *> *argvec,
       }
   }
 
+  /* Add any user-provided extra options, starting with any from
+     parent contexts.  */
+  m_recording_ctxt->append_command_line_options (argvec);
+
 #undef ADD_ARG
 #undef ADD_ARG_TAKE_OWNERSHIP
 }

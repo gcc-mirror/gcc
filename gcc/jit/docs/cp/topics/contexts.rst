@@ -196,3 +196,22 @@ Integer options
   This is a thin wrapper around the C API
   :c:func:`gcc_jit_context_set_int_option`; the options have the same
   meaning.
+
+Additional command-line options
+*******************************
+
+.. function:: void \
+              gccjit::context::add_command_line_option (const char *optname)
+
+   Add an arbitrary gcc command-line option to the context for use
+   when compiling.
+
+   This is a thin wrapper around the C API
+   :c:func:`gcc_jit_context_add_command_line_option`.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_1`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option

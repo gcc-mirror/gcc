@@ -243,6 +243,29 @@ gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 				 enum gcc_jit_bool_option opt,
 				 int value);
 
+/* Add an arbitrary gcc command-line option to the context.
+   The context takes a copy of the string, so the
+   (const char *) optname is not needed anymore after the call
+   returns.
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   optimization and code-generation are likely to be useful.
+
+   This entrypoint was added in LIBGCCJIT_ABI_1; you can test for
+   its presence using
+   #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
+*/
+
+extern void
+gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,
+					 const char *optname);
+
+/* Pre-canned feature-test macro for detecting the presence of
+   gcc_jit_context_add_command_line_option within libgccjit.h.  */
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
+
 /* Compile the context to in-memory machine code.
 
    This can be called more that once on a given context,

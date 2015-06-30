@@ -517,6 +517,10 @@ recording::context::~context ()
   for (i = 0; i < GCC_JIT_NUM_STR_OPTIONS; ++i)
     free (m_str_options[i]);
 
+  char *optname;
+  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+    free (optname);
+
   if (m_builtins_manager)
     delete m_builtins_manager;
 
@@ -1137,6 +1141,33 @@ recording::context::set_bool_option (enum gcc_jit_bool_option opt,
   log_bool_option (opt);
 }
 
+/* Add the given optname to this context's list of extra options.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_add_command_line_option.  */
+
+void
+recording::context::add_command_line_option (const char *optname)
+{
+  m_command_line_options.safe_push (xstrdup (optname));
+}
+
+/* Add any user-provided extra options, starting with any from
+   parent contexts.
+   Called by playback::context::make_fake_args.  */
+
+void
+recording::context::append_command_line_options (vec <char *> *argvec)
+{
+  if (m_parent_ctxt)
+    m_parent_ctxt->append_command_line_options (argvec);
+
+  int i;
+  char *optname;
+  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+    argvec->safe_push (xstrdup (optname));
+}
+
 /* Add the given dumpname/out_ptr pair to this context's list of requested
    dumps.
 
@@ -1592,6 +1623,17 @@ recording::context::dump_reproducer_to_file (const char *path)
 		 r.get_identifier (contexts[ctxt_idx]),
 		 bool_option_reproducer_strings[opt_idx],
 		 m_bool_options[opt_idx]);
+
+      if (!m_command_line_options.is_empty ())
+	{
+	  int i;
+	  char *optname;
+	  r.write ("  /* User-provided command-line options.  */\n");
+	  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+	    r.write ("  gcc_jit_context_add_command_line_option (%s, \"%s\");\n",
+		     r.get_identifier (contexts[ctxt_idx]),
+		     optname);
+	}
 
       if (m_requested_dumps.length ())
 	{

@@ -1,5 +1,40 @@
 2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/66628
+	* docs/cp/topics/contexts.rst (Additional command-line options):
+	New section.
+	* docs/topics/compatibility.rst: New file.
+	* docs/topics/contexts.rst (Additional command-line options): New
+	section.
+	* docs/topics/index.rst: Add compatibility.rst.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (make_fake_args): Add call to
+	append_command_line_options.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::~context): Free the optnames within
+	m_command_line_options.
+	(recording::context::set_bool_option): Likewise.
+	(recording::context::add_command_line_option): New method.
+	(recording::context::append_command_line_options): New method.
+	(recording::context::dump_reproducer_to_file): Add command-line
+	options.
+	* jit-recording.h: Within namespace gcc::jit...
+	(recording::context::add_command_line_option): New method.
+	(recording::context::append_command_line_options): New method.
+	(recording::context::m_command_line_options): New field.
+	* libgccjit++.h (gccjit::context::add_command_line_option): New
+	method.
+	* libgccjit.c (gcc_jit_context_add_command_line_option): New API
+	entrypoint.
+	* libgccjit.h (gcc_jit_context_add_command_line_option): New API
+	entrypoint.
+	(LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option): New
+	macro.
+	* libgccjit.map: Put existing symbols within LIBGCCJIT_ABI_0; add
+	LIBGCCJIT_ABI_1 and gcc_jit_context_add_command_line_option.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-recording.c
 	(gcc::jit::recording::context::dump_reproducer_to_file):
 	Add pragma to generated reproducers to disable -Wunused-variable.

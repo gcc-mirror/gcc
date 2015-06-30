@@ -120,6 +120,8 @@ namespace gccjit
     void set_bool_option (enum gcc_jit_bool_option opt,
 			  int value);
 
+    void add_command_line_option (const char *optname);
+
     location
     new_location (const std::string &filename,
 		  int line,
@@ -601,6 +603,12 @@ context::set_bool_option (enum gcc_jit_bool_option opt,
 {
   gcc_jit_context_set_bool_option (m_inner_ctxt, opt, value);
 
+}
+
+inline void
+context::add_command_line_option (const char *optname)
+{
+  gcc_jit_context_add_command_line_option (m_inner_ctxt, optname);
 }
 
 inline location
