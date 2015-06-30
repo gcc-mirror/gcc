@@ -5359,7 +5359,9 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
   /* In the case of post-in/decrement tests like if (i++) ... and uses
      of the in/decremented value on the edge the extra name we want to
      assert for is not on the def chain of the name compared.  Instead
-     it is in the set of use stmts.  */
+     it is in the set of use stmts.
+     Similar cases happen for conversions that were simplified through
+     fold_{sign_changed,widened}_comparison.  */
   if ((comp_code == NE_EXPR
        || comp_code == EQ_EXPR)
       && TREE_CODE (val) == INTEGER_CST)
@@ -5368,29 +5370,37 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       gimple use_stmt;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
 	{
-	  /* Cut off to use-stmts that are in the predecessor.  */
-	  if (gimple_bb (use_stmt) != e->src)
-	    continue;
-
 	  if (!is_gimple_assign (use_stmt))
 	    continue;
 
-	  enum tree_code code = gimple_assign_rhs_code (use_stmt);
-	  if (code != PLUS_EXPR
-	      && code != MINUS_EXPR)
-	    continue;
-
-	  tree cst = gimple_assign_rhs2 (use_stmt);
-	  if (TREE_CODE (cst) != INTEGER_CST)
+	  /* Cut off to use-stmts that are dominating the predecessor.  */
+	  if (!dominated_by_p (CDI_DOMINATORS, e->src, gimple_bb (use_stmt)))
 	    continue;
 
 	  tree name2 = gimple_assign_lhs (use_stmt);
-	  if (live_on_edge (e, name2))
+	  if (TREE_CODE (name2) != SSA_NAME
+	      || !live_on_edge (e, name2))
+	    continue;
+
+	  enum tree_code code = gimple_assign_rhs_code (use_stmt);
+	  tree cst;
+	  if (code == PLUS_EXPR
+	      || code == MINUS_EXPR)
 	    {
+	      cst = gimple_assign_rhs2 (use_stmt);
+	      if (TREE_CODE (cst) != INTEGER_CST)
+		continue;
 	      cst = int_const_binop (code, val, cst);
-	      register_new_assert_for (name2, name2, comp_code, cst,
-				       NULL, e, bsi);
 	    }
+	  else if (CONVERT_EXPR_CODE_P (code))
+	    cst = fold_convert (TREE_TYPE (name2), val);
+	  else
+	    continue;
+
+	  if (TREE_OVERFLOW_P (cst))
+	    cst = drop_tree_overflow (cst);
+	  register_new_assert_for (name2, name2, comp_code, cst,
+				   NULL, e, bsi);
 	}
     }
  
