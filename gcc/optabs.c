@@ -1110,7 +1110,7 @@ expand_doubleword_shift (machine_mode op1_mode, optab binoptab,
 			       unsignedp, methods))
     return false;
 
-  emit_jump_insn (gen_jump (done_label));
+  emit_jump_insn (targetm.gen_jump (done_label));
   emit_barrier ();
   emit_label (subword_label);
 
@@ -2589,7 +2589,7 @@ expand_doubleword_clz (machine_mode mode, rtx op0, rtx target)
   if (temp != result)
     convert_move (result, temp, true);
 
-  emit_jump_insn (gen_jump (after_label));
+  emit_jump_insn (targetm.gen_jump (after_label));
   emit_barrier ();
 
   /* Else clz of the full value is clz of the low word plus the number
@@ -5088,7 +5088,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 
 	      /* The sign bit is not set.  Convert as signed.  */
 	      expand_float (target, from, 0);
-	      emit_jump_insn (gen_jump (label));
+	      emit_jump_insn (targetm.gen_jump (label));
 	      emit_barrier ();
 
 	      /* The sign bit is set.
@@ -5293,7 +5293,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
 	  /* If not, do the signed "fix" and branch around fixup code.  */
 	  expand_fix (to, from, 0);
-	  emit_jump_insn (gen_jump (lab2));
+	  emit_jump_insn (targetm.gen_jump (lab2));
 	  emit_barrier ();
 
 	  /* Otherwise, subtract 2**(N-1), convert to signed number,

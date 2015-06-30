@@ -3824,10 +3824,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
     single_succ_edge (test_bb)->flags |= EDGE_FALLTHRU;
   else if (trap_bb == then_bb)
     {
-      rtx lab;
-
-      lab = JUMP_LABEL (jump);
-      rtx_jump_insn *newjump = emit_jump_insn_after (gen_jump (lab), jump);
+      rtx lab = JUMP_LABEL (jump);
+      rtx_insn *seq = targetm.gen_jump (lab);
+      rtx_jump_insn *newjump = emit_jump_insn_after (seq, jump);
       LABEL_NUSES (lab) += 1;
       JUMP_LABEL (newjump) = lab;
       emit_barrier_after (newjump);

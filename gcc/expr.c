@@ -5268,7 +5268,7 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
       jumpifnot (TREE_OPERAND (exp, 0), lab1, -1);
       store_expr_with_bounds (TREE_OPERAND (exp, 1), target, call_param_p,
 			      nontemporal, btarget);
-      emit_jump_insn (gen_jump (lab2));
+      emit_jump_insn (targetm.gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
       store_expr_with_bounds (TREE_OPERAND (exp, 2), target, call_param_p,
@@ -9200,7 +9200,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    modifier == EXPAND_STACK_PARM,
 		    false);
 
-	emit_jump_insn (gen_jump (lab1));
+	emit_jump_insn (targetm.gen_jump (lab1));
 	emit_barrier ();
 	emit_label (lab0);
 	store_expr (treeop2, temp,

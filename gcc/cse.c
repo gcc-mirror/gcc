@@ -5483,7 +5483,8 @@ cse_insn (rtx_insn *insn)
 	      rtx_jump_insn *new_rtx;
 	      rtx note;
 
-	      new_rtx = emit_jump_insn_before (gen_jump (XEXP (src, 0)), insn);
+	      rtx_insn *seq = targetm.gen_jump (XEXP (src, 0));
+	      new_rtx = emit_jump_insn_before (seq, insn);
 	      JUMP_LABEL (new_rtx) = XEXP (src, 0);
 	      LABEL_NUSES (XEXP (src, 0))++;
 
