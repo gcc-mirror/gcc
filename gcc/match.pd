@@ -286,8 +286,7 @@ along with GCC; see the file COPYING3.  If not see
 /* ~x | x -> -1 */
 (simplify
  (bit_ior:c (convert? @0) (convert? (bit_not @0)))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
-  { build_all_ones_cst (type); }))
+ (convert { build_all_ones_cst (TREE_TYPE (@0)); }))
 
 /* x ^ x -> 0 */
 (simplify

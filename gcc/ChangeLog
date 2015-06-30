@@ -3,6 +3,10 @@
 	* match.pd (X - (X / Y) * Y): Use convert1 and convert2.  Convert
 	both operands of the resulting expression.	
 
+	* match.pd (~x | x): Don't use tree_nop_conversion_p.  Build
+	the final expression with the operand's type and then convert
+	it to the type of the expression.
+
 2015-06-30  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Move ~x & ~y -> ~(x | y) and
