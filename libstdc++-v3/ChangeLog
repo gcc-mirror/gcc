@@ -1,5 +1,8 @@
 2015-06-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/Makefile.am (stamp-pdf-doxygen): Grep for LaTeX errors in log.
+	* doc/Makefile.in: Regenerate.
+
 	* include/bits/stl_pair.h: Replace class keyword with typename.
 
 2015-06-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
