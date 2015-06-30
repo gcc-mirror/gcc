@@ -1,3 +1,7 @@
+2015-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-minus-6.c: New test.
+
 2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N4197 - Adding u8 character literals
