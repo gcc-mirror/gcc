@@ -1494,6 +1494,7 @@ recording::context::dump_reproducer_to_file (const char *path)
   print_version (r.get_file (), "  ", false);
   r.write ("*/\n");
   r.write ("#include <libgccjit.h>\n\n");
+  r.write ("#pragma GCC diagnostic ignored \"-Wunused-variable\"\n\n");
   r.write ("static void\nset_options (");
   r.write_params (contexts);
   r.write (");\n\n");
@@ -1564,12 +1565,17 @@ recording::context::dump_reproducer_to_file (const char *path)
 
       r.write ("  /* String options.  */\n");
       for (int opt_idx = 0; opt_idx < GCC_JIT_NUM_STR_OPTIONS; opt_idx++)
-	r.write ("  gcc_jit_context_set_str_option (%s,\n"
-		 "                                  %s,\n"
-		 "                                  \"%s\");\n",
-		 r.get_identifier (contexts[ctxt_idx]),
-		 str_option_reproducer_strings[opt_idx],
-		 m_str_options[opt_idx] ? m_str_options[opt_idx] : "NULL");
+	{
+	  r.write ("  gcc_jit_context_set_str_option (%s,\n"
+		   "                                  %s,\n",
+		   r.get_identifier (contexts[ctxt_idx]),
+		   str_option_reproducer_strings[opt_idx]);
+	  if (m_str_options[opt_idx])
+	    r.write ("                                  \"%s\");\n",
+		     m_str_options[opt_idx]);
+	  else
+	    r.write ("                                  NULL);\n");
+	}
       r.write ("  /* Int options.  */\n");
       for (int opt_idx = 0; opt_idx < GCC_JIT_NUM_INT_OPTIONS; opt_idx++)
 	r.write ("  gcc_jit_context_set_int_option (%s,\n"

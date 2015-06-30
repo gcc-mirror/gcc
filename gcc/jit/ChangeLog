@@ -1,5 +1,12 @@
 2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-recording.c
+	(gcc::jit::recording::context::dump_reproducer_to_file):
+	Add pragma to generated reproducers to disable -Wunused-variable.
+	Fix handling of NULL string options.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* docs/cp/topics/expressions.rst: Remove stray semicolon.
 	* docs/cp/topics/functions.rst: Remove stray backslash.
 	* docs/_build/texinfo/libgccjit.texi: Regenerate.
