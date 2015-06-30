@@ -726,7 +726,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		    {
 		      insn = lra_insn_recog_data[uid]->insn;
 		      lra_substitute_pseudo_within_insn (insn, dst_regno,
-							 SET_SRC (set));
+							 SET_SRC (set), true);
 		      lra_update_insn_regno_info (insn);
 		    }
 		}

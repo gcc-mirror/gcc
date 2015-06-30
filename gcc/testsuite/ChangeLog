@@ -1,3 +1,8 @@
+2015-06-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/66691
+	* gcc.target/i386/pr66691.c: New.
+
 2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/iamcu/abi-iamcu.exp: New file.
