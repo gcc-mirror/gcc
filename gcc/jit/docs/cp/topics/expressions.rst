@@ -535,7 +535,7 @@ If you don't need to specify the location, this can also be expressed using
 an overloaded operator:
 
 .. function:: gccjit::lvalue \
-              gccjit::rvalue::operator* ();
+              gccjit::rvalue::operator* ()
 
    .. code-block:: c++
 
