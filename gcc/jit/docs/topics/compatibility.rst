@@ -88,3 +88,10 @@ continue to work, with this being handled transparently by the linker
 -------------------
 ``LIBGCCJIT_ABI_1`` covers the addition of
 :func:`gcc_jit_context_add_command_line_option`
+
+.. _LIBGCCJIT_ABI_2:
+
+``LIBGCCJIT_ABI_2``
+-------------------
+``LIBGCCJIT_ABI_2`` covers the addition of
+:func:`gcc_jit_context_set_bool_allow_unreachable_blocks`

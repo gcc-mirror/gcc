@@ -1,5 +1,12 @@
 2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/66546
+	* jit.dg/all-non-failing-tests.h: Add note about
+	test-validly-unreachable-block.c.
+	* jit.dg/test-validly-unreachable-block.c: New file.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/66628
 	* jit.dg/all-non-failing-tests.h: Add note about
 	test-extra-options.c.

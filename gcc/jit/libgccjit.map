@@ -114,3 +114,9 @@ LIBGCCJIT_ABI_1 {
   global:
     gcc_jit_context_add_command_line_option;
 } LIBGCCJIT_ABI_0;
+
+# Add support for disabling the check for unreachable blocks (PR jit/66546).
+LIBGCCJIT_ABI_2 {
+  global:
+    gcc_jit_context_set_bool_allow_unreachable_blocks;
+} LIBGCCJIT_ABI_1;

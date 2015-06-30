@@ -489,6 +489,9 @@ recording::context::context (context *parent_ctxt)
       memcpy (m_bool_options,
 	      parent_ctxt->m_bool_options,
 	      sizeof (m_bool_options));
+      memcpy (m_inner_bool_options,
+	      parent_ctxt->m_inner_bool_options,
+	      sizeof (m_inner_bool_options));
       set_logger (parent_ctxt->get_logger ());
     }
   else
@@ -496,6 +499,7 @@ recording::context::context (context *parent_ctxt)
       memset (m_str_options, 0, sizeof (m_str_options));
       memset (m_int_options, 0, sizeof (m_int_options));
       memset (m_bool_options, 0, sizeof (m_bool_options));
+      memset (m_inner_bool_options, 0, sizeof (m_inner_bool_options));
     }
 
   memset (m_basic_types, 0, sizeof (m_basic_types));
@@ -1141,6 +1145,16 @@ recording::context::set_bool_option (enum gcc_jit_bool_option opt,
   log_bool_option (opt);
 }
 
+void
+recording::context::set_inner_bool_option (enum inner_bool_option inner_opt,
+					   int value)
+{
+  gcc_assert (inner_opt >= 0 && inner_opt < NUM_INNER_BOOL_OPTIONS);
+  m_inner_bool_options[inner_opt] = value ? true : false;
+  log_inner_bool_option (inner_opt);
+}
+
+
 /* Add the given optname to this context's list of extra options.
 
    Implements the post-error-checking part of
@@ -1418,6 +1432,10 @@ static const char * const
   "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES"
 };
 
+static const char * const
+ inner_bool_option_reproducer_strings[NUM_INNER_BOOL_OPTIONS] = {
+  "gcc_jit_context_set_bool_allow_unreachable_blocks"
+};
 
 /* Write the current value of all options to the log file (if any).  */
 
@@ -1437,6 +1455,8 @@ recording::context::log_all_options () const
 
   for (opt_idx = 0; opt_idx < GCC_JIT_NUM_BOOL_OPTIONS; opt_idx++)
     log_bool_option ((enum gcc_jit_bool_option)opt_idx);
+  for (opt_idx = 0; opt_idx < NUM_INNER_BOOL_OPTIONS; opt_idx++)
+    log_inner_bool_option ((enum inner_bool_option)opt_idx);
 }
 
 /* Write the current value of the given string option to the
@@ -1482,6 +1502,19 @@ recording::context::log_bool_option (enum gcc_jit_bool_option opt) const
     log ("%s: %s",
 	 bool_option_reproducer_strings[opt],
 	 m_bool_options[opt] ? "true" : "false");
+}
+
+/* Write the current value of the given "inner" bool option to the
+   log file (if any).  */
+
+void
+recording::context::log_inner_bool_option (enum inner_bool_option opt) const
+{
+  gcc_assert (opt < NUM_INNER_BOOL_OPTIONS);
+  if (get_logger ())
+    log ("%s: %s",
+	 inner_bool_option_reproducer_strings[opt],
+	 m_inner_bool_options[opt] ? "true" : "false");
 }
 
 /* Write C source code to PATH that attempts to replay the API
@@ -1623,6 +1656,11 @@ recording::context::dump_reproducer_to_file (const char *path)
 		 r.get_identifier (contexts[ctxt_idx]),
 		 bool_option_reproducer_strings[opt_idx],
 		 m_bool_options[opt_idx]);
+      for (int opt_idx = 0; opt_idx < NUM_INNER_BOOL_OPTIONS; opt_idx++)
+	r.write ("  %s (%s, %i);\n",
+		 inner_bool_option_reproducer_strings[opt_idx],
+		 r.get_identifier (contexts[ctxt_idx]),
+		 m_inner_bool_options[opt_idx]);
 
       if (!m_command_line_options.is_empty ())
 	{
@@ -3452,7 +3490,9 @@ recording::function::validate ()
   }
 
   /* Check that all blocks are reachable.  */
-  if (m_blocks.length () > 0 && 0 == num_invalid_blocks)
+  if (!m_ctxt->get_inner_bool_option
+        (INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS)
+      && m_blocks.length () > 0 && 0 == num_invalid_blocks)
     {
       /* Iteratively walk the graph of blocks, marking their "m_is_reachable"
 	 flag, starting at the initial block.  */
