@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @tparam _T1  Type of first object.
    *  @tparam _T2  Type of second object.
    */
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     struct pair
     {
       typedef _T1 first_type;    /// @c first_type is the first bound type
@@ -170,18 +170,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /** There is also a templated copy ctor for the @c pair class itself.  */
 #if __cplusplus < 201103L
-      template<class _U1, class _U2>
+      template<typename _U1, typename _U2>
 	pair(const pair<_U1, _U2>& __p)
 	: first(__p.first), second(__p.second) { }
 #else
-      template<class _U1, class _U2, typename
+      template<typename _U1, typename _U2, typename
 	       enable_if<_ConstructiblePair<_T1, _T2, _U1, _U2>()
                          && _ImplicitlyConvertiblePair<_T1, _T2, _U1, _U2>(),
                          bool>::type=true>
         constexpr pair(const pair<_U1, _U2>& __p)
         : first(__p.first), second(__p.second) { }
 
-      template<class _U1, class _U2, typename
+      template<typename _U1, typename _U2, typename
                enable_if<_ConstructiblePair<_T1, _T2, _U1, _U2>()
                          && !_ImplicitlyConvertiblePair<_T1, _T2, _U1, _U2>(),
                          bool>::type=false>
@@ -192,7 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr pair(pair&&) = default;
 
       // DR 811.
-      template<class _U1, typename
+      template<typename _U1, typename
                enable_if<_ConstructiblePair<_T2, _T2, _T2, _T2>()
                          && _MoveConstructiblePair<_T1, _T2, _U1, _T2>()
                          && _ImplicitlyConvertiblePair<_T2, _T2, _T2, _T2>()
@@ -202,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        constexpr pair(_U1&& __x, const _T2& __y)
        : first(std::forward<_U1>(__x)), second(__y) { }
 
-      template<class _U1, typename
+      template<typename _U1, typename
                enable_if<_ConstructiblePair<_T2, _T2, _T2, _T2>()
                          && _MoveConstructiblePair<_T1, _T2, _U1, _T2>()
                          && (!_ImplicitlyConvertiblePair<_T2, _T2, _T2, _T2>()
@@ -212,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        explicit constexpr pair(_U1&& __x, const _T2& __y)
        : first(std::forward<_U1>(__x)), second(__y) { }
 
-      template<class _U2, typename
+      template<typename _U2, typename
                enable_if<_ConstructiblePair<_T1, _T1, _T1, _T1>()
                          && _MoveConstructiblePair<_T1, _T2, _T1, _U2>()
                          && _ImplicitlyConvertiblePair<_T1, _T1, _T1, _T1>()
@@ -222,7 +222,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        constexpr pair(const _T1& __x, _U2&& __y)
        : first(__x), second(std::forward<_U2>(__y)) { }
 
-      template<class _U2, typename
+      template<typename _U2, typename
                enable_if<_ConstructiblePair<_T1, _T1, _T1, _T1>()
                          && _MoveConstructiblePair<_T1, _T2, _T1, _U2>()
                          && (!_ImplicitlyConvertiblePair<_T1, _T1, _T1, _T1>()
@@ -232,7 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        explicit pair(const _T1& __x, _U2&& __y)
        : first(__x), second(std::forward<_U2>(__y)) { }
 
-      template<class _U1, class _U2, typename
+      template<typename _U1, typename _U2, typename
 	       enable_if<_MoveConstructiblePair<_T1, _T2, _U1, _U2>()
                          && _ImplicitlyMoveConvertiblePair<_T1, _T2,
 							   _U1, _U2>(),
@@ -240,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr pair(_U1&& __x, _U2&& __y)
 	: first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y)) { }
 
-      template<class _U1, class _U2, typename
+      template<typename _U1, typename _U2, typename
 	       enable_if<_MoveConstructiblePair<_T1, _T2, _U1, _U2>()
                          && !_ImplicitlyMoveConvertiblePair<_T1, _T2,
 							    _U1, _U2>(),
@@ -249,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y)) { }
 
 
-      template<class _U1, class _U2, typename
+      template<typename _U1, typename _U2, typename
 	       enable_if<_MoveConstructiblePair<_T1, _T2, _U1, _U2>()
                          && _ImplicitlyMoveConvertiblePair<_T1, _T2,
 							   _U1, _U2>(),
@@ -258,7 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: first(std::forward<_U1>(__p.first)),
 	  second(std::forward<_U2>(__p.second)) { }
 
-      template<class _U1, class _U2, typename
+      template<typename _U1, typename _U2, typename
 	       enable_if<_MoveConstructiblePair<_T1, _T2, _U1, _U2>()
                          && !_ImplicitlyMoveConvertiblePair<_T1, _T2,
 							   _U1, _U2>(),
@@ -288,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      template<class _U1, class _U2>
+      template<typename _U1, typename _U2>
 	pair&
 	operator=(const pair<_U1, _U2>& __p)
 	{
@@ -297,7 +297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      template<class _U1, class _U2>
+      template<typename _U1, typename _U2>
 	pair&
 	operator=(pair<_U1, _U2>&& __p)
 	{
@@ -325,38 +325,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// Two pairs of the same type are equal iff their members are equal.
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline _GLIBCXX_CONSTEXPR bool
     operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first == __y.first && __x.second == __y.second; }
 
   /// <http://gcc.gnu.org/onlinedocs/libstdc++/manual/utilities.html>
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline _GLIBCXX_CONSTEXPR bool
     operator<(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first < __y.first
 	     || (!(__y.first < __x.first) && __x.second < __y.second); }
 
   /// Uses @c operator== to find the result.
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline _GLIBCXX_CONSTEXPR bool
     operator!=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x == __y); }
 
   /// Uses @c operator< to find the result.
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline _GLIBCXX_CONSTEXPR bool
     operator>(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __y < __x; }
 
   /// Uses @c operator< to find the result.
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline _GLIBCXX_CONSTEXPR bool
     operator<=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__y < __x); }
 
   /// Uses @c operator< to find the result.
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline _GLIBCXX_CONSTEXPR bool
     operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x < __y); }
@@ -365,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// See std::pair::swap().
   // Note:  no std::swap overloads in C++03 mode, this has performance
   //        implications, see, eg, libstdc++/38466.
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline void
     swap(pair<_T1, _T2>& __x, pair<_T1, _T2>& __y)
     noexcept(noexcept(__x.swap(__y)))
@@ -386,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 181.  make_pair() unintended behavior
 #if __cplusplus >= 201103L
   // NB: DR 706.
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     constexpr pair<typename __decay_and_strip<_T1>::__type,
                    typename __decay_and_strip<_T2>::__type>
     make_pair(_T1&& __x, _T2&& __y)
@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __pair_type(std::forward<_T1>(__x), std::forward<_T2>(__y));
     }
 #else
-  template<class _T1, class _T2>
+  template<typename _T1, typename _T2>
     inline pair<_T1, _T2>
     make_pair(_T1 __x, _T2 __y)
     { return pair<_T1, _T2>(__x, __y); }
