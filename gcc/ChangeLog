@@ -1,3 +1,8 @@
+2015-06-30  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (record_sub_use): Don't reset ssa_name
+	field in struct iv.
+
 2015-06-29  Jack Howarth  <howarth.at.gcc@gmail.com>
 
 	PR target/66509
