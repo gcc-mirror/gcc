@@ -1,3 +1,9 @@
+2015-06-29  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	PR target/66509
+	* configure.ac: Fix filds and fildq test for 64-bit.
+	* configure: Regenerated.
+
 2015-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.md (nvptx_reorg_subreg): New fn, broken out of ...
