@@ -1,3 +1,10 @@
+2015-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-streamer-out.c (class DFS): Adjust hash_scc method.
+	(DFS::DFS): Pass this_ref_p and ref_p to hash_scc.
+	(hash_scc): Add this_ref_p and ref_p parameters and pass them
+	to the inner DFS walk.
+
 2015-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* target-insns.def (jump): New targetm instruction pattern.
