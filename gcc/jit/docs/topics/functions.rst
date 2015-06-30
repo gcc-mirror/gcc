@@ -153,7 +153,8 @@ Blocks
    be the entrypoint.
 
    Each basic block that you create within a function must be
-   terminated, either with a conditional, a jump, or a return.
+   terminated, either with a conditional, a jump, a return, or a
+   switch.
 
    It's legal to have multiple basic blocks that return within
    one function.
@@ -313,3 +314,96 @@ Statements
    .. code-block:: c
 
       return;
+
+.. function:: void\
+              gcc_jit_block_end_with_switch (gcc_jit_block *block,\
+                                             gcc_jit_location *loc,\
+                                             gcc_jit_rvalue *expr,\
+                                             gcc_jit_block *default_block,\
+                                             int num_cases,\
+                                             gcc_jit_case **cases)
+
+   Terminate a block by adding evalation of an rvalue, then performing
+   a multiway branch.
+
+   This is roughly equivalent to this C code:
+
+   .. code-block:: c
+
+     switch (expr)
+       {
+       default:
+         goto default_block;
+
+       case C0.min_value ... C0.max_value:
+         goto C0.dest_block;
+
+       case C1.min_value ... C1.max_value:
+         goto C1.dest_block;
+
+       ...etc...
+
+       case C[N - 1].min_value ... C[N - 1].max_value:
+         goto C[N - 1].dest_block;
+     }
+
+   ``block``, ``expr``, ``default_block`` and ``cases`` must all be
+   non-NULL.
+
+   ``expr`` must be of the same integer type as all of the ``min_value``
+   and ``max_value`` within the cases.
+
+   ``num_cases`` must be >= 0.
+
+   The ranges of the cases must not overlap (or have duplicate
+   values).
+
+   The API entrypoints relating to switch statements and cases:
+
+      * :c:func:`gcc_jit_block_end_with_switch`
+
+      * :c:func:`gcc_jit_case_as_object`
+
+      * :c:func:`gcc_jit_context_new_case`
+
+   were added in :ref:`LIBGCCJIT_ABI_3`; you can test for their presence
+   using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+
+   .. type:: gcc_jit_case
+
+   A `gcc_jit_case` represents a case within a switch statement, and
+   is created within a particular :c:type:`gcc_jit_context` using
+   :c:func:`gcc_jit_context_new_case`.
+
+   Each case expresses a multivalued range of integer values.  You
+   can express single-valued cases by passing in the same value for
+   both `min_value` and `max_value`.
+
+   .. function:: gcc_jit_case *\
+                 gcc_jit_context_new_case (gcc_jit_context *ctxt,\
+                                           gcc_jit_rvalue *min_value,\
+                                           gcc_jit_rvalue *max_value,\
+                                           gcc_jit_block *dest_block)
+
+      Create a new gcc_jit_case instance for use in a switch statement.
+      `min_value` and `max_value` must be constants of an integer type,
+      which must match that of the expression of the switch statement.
+
+      `dest_block` must be within the same function as the switch
+      statement.
+
+   .. function:: gcc_jit_object *\
+                 gcc_jit_case_as_object (gcc_jit_case *case_)
+
+      Upcast from a case to an object.
+
+   Here's an example of creating a switch statement:
+
+     .. literalinclude:: ../../../testsuite/jit.dg/test-switch.c
+       :start-after: /* Quote from here in docs/topics/functions.rst.  */
+       :end-before: /* Quote up to here in docs/topics/functions.rst.  */
+       :language: c

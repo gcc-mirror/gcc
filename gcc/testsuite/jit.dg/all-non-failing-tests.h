@@ -175,6 +175,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-switch.c */
+#define create_code create_code_switch
+#define verify_code verify_code_switch
+#include "test-switch.c"
+#undef create_code
+#undef verify_code
+
 /* test-types.c */
 #define create_code create_code_types
 #define verify_code verify_code_types
@@ -281,6 +288,9 @@ const struct testcase testcases[] = {
   {"sum_of_squares",
    create_code_sum_of_squares,
    verify_code_sum_of_squares},
+  {"switch",
+   create_code_switch,
+   verify_code_switch},
   {"types",
    create_code_types,
    verify_code_types},

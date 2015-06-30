@@ -1,5 +1,23 @@
 2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/all-non-failing-tests.h: Add test-switch.c.
+	* jit.dg/test-error-gcc_jit_block_end_with_switch-NULL-case.c: New
+	testcase.
+	* jit.dg/test-error-gcc_jit_block_end_with_switch-mismatching-case-type.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_block_end_with_switch-overlapping-ranges.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_case-non-const-label.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_case-non-integer-type.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_case-reversed-endpoints.c:
+	New testcase.
+	* jit.dg/test-switch.c: New testcase.
+	* jit.dg/test-switch.cc: New testcase.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/66546
 	* jit.dg/all-non-failing-tests.h: Add note about
 	test-validly-unreachable-block.c.

@@ -1084,6 +1084,22 @@ recording::context::new_array_access (recording::location *loc,
   return result;
 }
 
+/* Create a recording::case_ instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_case.  */
+
+recording::case_ *
+recording::context::new_case (recording::rvalue *min_value,
+			      recording::rvalue *max_value,
+			      recording::block *block)
+{
+  recording::case_ *result = new case_ (this, min_value, max_value, block);
+  record (result);
+  return result;
+}
+
 /* Set the given string option for this context, or add an error if
    it's not recognized.
 
@@ -3505,23 +3521,13 @@ recording::function::validate ()
 
 	  /* Add successor blocks that aren't yet marked to the worklist.  */
 	  /* We checked that each block has a terminating statement above .  */
-	  block *next1, *next2;
-	  int n = b->get_successor_blocks (&next1, &next2);
-	  switch (n)
-	    {
-	    default:
-	      gcc_unreachable ();
-	    case 2:
-	      if (!next2->m_is_reachable)
-		worklist.safe_push (next2);
-	      /* fallthrough */
-	    case 1:
-	      if (!next1->m_is_reachable)
-		worklist.safe_push (next1);
-	      break;
-	    case 0:
-	      break;
-	    }
+	  vec <block *> successors = b->get_successor_blocks ();
+	  int i;
+	  block *succ;
+	  FOR_EACH_VEC_ELT (successors, i, succ)
+	    if (!succ->m_is_reachable)
+	      worklist.safe_push (succ);
+	  successors.release ();
 	}
 
       /* Now complain about any blocks that haven't been marked.  */
@@ -3769,6 +3775,30 @@ recording::block::end_with_return (recording::location *loc,
   return result;
 }
 
+/* Create a recording::switch_ instance and add it to
+   the block's context's list of mementos, and to the block's
+   list of statements.
+
+   Implements the heart of gcc_jit_block_end_with_switch.  */
+
+recording::statement *
+recording::block::end_with_switch (recording::location *loc,
+				   recording::rvalue *expr,
+				   recording::block *default_block,
+				   int num_cases,
+				   recording::case_ **cases)
+{
+  statement *result = new switch_ (this, loc,
+				   expr,
+				   default_block,
+				   num_cases,
+				   cases);
+  m_ctxt->record (result);
+  m_statements.safe_push (result);
+  m_has_been_terminated = true;
+  return result;
+}
+
 /* Override the default implementation of
    recording::memento::write_to_dump for blocks by writing
    an unindented block name as a label, followed by the indented
@@ -3846,24 +3876,20 @@ recording::block::get_last_statement () const
     return NULL;
 }
 
-/* Assuming that this block has been terminated, get the number of
-   successor blocks, which will be 0, 1 or 2, for return, unconditional
-   jump, and conditional jump respectively.
-   NEXT1 and NEXT2 must be non-NULL.  The first successor block (if any)
-   is written to NEXT1, and the second (if any) to NEXT2.
+/* Assuming that this block has been terminated, get the successor blocks
+   as a vector.  Ownership of the vector transfers to the caller, which
+   must call its release () method.
 
    Used when validating functions, and when dumping dot representations
    of them.  */
 
-int
-recording::block::get_successor_blocks (block **next1, block **next2) const
+vec <recording::block *>
+recording::block::get_successor_blocks () const
 {
   gcc_assert (m_has_been_terminated);
-  gcc_assert (next1);
-  gcc_assert (next2);
   statement *last_statement = get_last_statement ();
   gcc_assert (last_statement);
-  return last_statement->get_successor_blocks (next1, next2);
+  return last_statement->get_successor_blocks ();
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3941,12 +3967,14 @@ recording::block::dump_to_dot (pretty_printer *pp)
 void
 recording::block::dump_edges_to_dot (pretty_printer *pp)
 {
-  block *next[2];
-  int num_succs = get_successor_blocks (&next[0], &next[1]);
-  for (int i = 0; i < num_succs; i++)
+  vec <block *> successors = get_successor_blocks ();
+  int i;
+  block *succ;
+  FOR_EACH_VEC_ELT (successors, i, succ)
     pp_printf (pp,
 	       "\tblock_%d:s -> block_%d:n;\n",
-	       m_index, next[i]->m_index);
+	       m_index, succ->m_index);
+  successors.release ();
 }
 
 /* The implementation of class gcc::jit::recording::global.  */
@@ -4091,6 +4119,16 @@ memento_of_new_rvalue_from_const <int>::make_debug_string ()
 			      m_value);
 }
 
+/* The get_wide_int specialization for <int>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <int>::get_wide_int (wide_int *out) const
+{
+  *out = wi::shwi (m_value, sizeof (m_value) * 8);
+  return true;
+}
+
 /* The write_reproducer specialization for <int>.  */
 
 template <>
@@ -4121,6 +4159,16 @@ memento_of_new_rvalue_from_const <long>::make_debug_string ()
 			      "(%s)%li",
 			      m_type->get_debug_string (),
 			      m_value);
+}
+
+/* The get_wide_int specialization for <long>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <long>::get_wide_int (wide_int *out) const
+{
+  *out = wi::shwi (m_value, sizeof (m_value) * 8);
+  return true;
 }
 
 /* The write_reproducer specialization for <long>.  */
@@ -4176,6 +4224,15 @@ memento_of_new_rvalue_from_const <double>::make_debug_string ()
 			      m_value);
 }
 
+/* The get_wide_int specialization for <double>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <double>::get_wide_int (wide_int *) const
+{
+  return false;
+}
+
 /* The write_reproducer specialization for <double>.  */
 
 template <>
@@ -4213,6 +4270,15 @@ memento_of_new_rvalue_from_const <void *>::make_debug_string ()
     return string::from_printf (m_ctxt,
 				"(%s)NULL",
 				m_type->get_debug_string ());
+}
+
+/* The get_wide_int specialization for <void *>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <void *>::get_wide_int (wide_int *) const
+{
+  return false;
 }
 
 /* Implementation of recording::memento::write_reproducer for <void *>
@@ -5213,14 +5279,15 @@ recording::local::write_reproducer (reproducer &r)
    since this vfunc must only ever be called on terminator
    statements.  */
 
-int
-recording::statement::get_successor_blocks (block **/*out_next1*/,
-					    block **/*out_next2*/) const
+vec <recording::block *>
+recording::statement::get_successor_blocks () const
 {
   /* The base class implementation is for non-terminating statements,
      and thus should never be called.  */
   gcc_unreachable ();
-  return 0;
+  vec <block *> result;
+  result.create (0);
+  return result;
 }
 
 /* Extend the default implementation of
@@ -5429,13 +5496,14 @@ recording::conditional::replay_into (replayer *r)
 
    A conditional jump has 2 successor blocks.  */
 
-int
-recording::conditional::get_successor_blocks (block **out_next1,
-					      block **out_next2) const
+vec <recording::block *>
+recording::conditional::get_successor_blocks () const
 {
-  *out_next1 = m_on_true;
-  *out_next2 = m_on_false;
-  return 2;
+  vec <block *> result;
+  result.create (2);
+  result.quick_push (m_on_true);
+  result.quick_push (m_on_false);
+  return result;
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -5493,12 +5561,13 @@ recording::jump::replay_into (replayer *r)
 
    An unconditional jump has 1 successor block.  */
 
-int
-recording::jump::get_successor_blocks (block **out_next1,
-				       block **/*out_next2*/) const
+vec <recording::block *>
+recording::jump::get_successor_blocks () const
 {
-  *out_next1 = m_target;
-  return 1;
+  vec <block *> result;
+  result.create (1);
+  result.quick_push (m_target);
+  return result;
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -5544,11 +5613,12 @@ recording::return_::replay_into (replayer *r)
 
    A return statement has no successor block.  */
 
-int
-recording::return_::get_successor_blocks (block **/*out_next1*/,
-					  block **/*out_next2*/) const
+vec <recording::block *>
+recording::return_::get_successor_blocks () const
 {
-  return 0;
+  vec <block *> result;
+  result.create (0);
+  return result;
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -5584,6 +5654,158 @@ recording::return_::write_reproducer (reproducer &r)
 	     "                                      %s); /* gcc_jit_location *loc */\n",
 	     r.get_identifier (get_block ()),
 	     r.get_identifier (get_loc ()));
+}
+
+/* The implementation of class gcc::jit::recording::case_.  */
+
+void
+recording::case_::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "case");
+  const char *fmt =
+    "  gcc_jit_case *%s = \n"
+    "    gcc_jit_context_new_case (%s, /*gcc_jit_context *ctxt */\n"
+    "                              %s, /* gcc_jit_rvalue *min_value */\n"
+    "                              %s, /* gcc_jit_rvalue *max_value */\n"
+    "                              %s); /* gcc_jit_block *dest_block */\n";
+  r.write (fmt,
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier_as_rvalue (m_min_value),
+	   r.get_identifier_as_rvalue (m_max_value),
+	   r.get_identifier (m_dest_block));
+}
+
+recording::string *
+recording::case_::make_debug_string ()
+{
+  return string::from_printf (get_context (),
+			      "case %s ... %s: goto %s;",
+			      m_min_value->get_debug_string (),
+			      m_max_value->get_debug_string (),
+			      m_dest_block->get_debug_string ());
+}
+
+/* The implementation of class gcc::jit::recording::switch_.  */
+
+/* gcc::jit::recording::switch_'s constructor.  */
+
+recording::switch_::switch_ (block *b,
+			     location *loc,
+			     rvalue *expr,
+			     block *default_block,
+			     int num_cases,
+			     case_ **cases)
+: statement (b, loc),
+  m_expr (expr),
+  m_default_block (default_block)
+{
+  m_cases.reserve_exact (num_cases);
+  for (int i = 0; i< num_cases; i++)
+    m_cases.quick_push (cases[i]);
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::switch_.  */
+
+void
+recording::switch_::replay_into (replayer *r)
+{
+  auto_vec <playback::case_> pcases;
+  int i;
+  recording::case_ *rcase;
+  pcases.reserve_exact (m_cases.length ());
+  FOR_EACH_VEC_ELT (m_cases, i, rcase)
+    {
+      playback::case_ pcase (rcase->get_min_value ()->playback_rvalue (),
+			     rcase->get_max_value ()->playback_rvalue (),
+			     rcase->get_dest_block ()->playback_block ());
+      pcases.safe_push (pcase);
+    }
+  playback_block (get_block ())
+    ->add_switch (playback_location (r),
+		  m_expr->playback_rvalue (),
+		  m_default_block->playback_block (),
+		  &pcases);
+}
+
+/* Override the poisoned default implementation of
+   gcc::jit::recording::statement::get_successor_blocks
+
+   A switch statement has (NUM_CASES + 1) successor blocks.  */
+
+vec <recording::block *>
+recording::switch_::get_successor_blocks () const
+{
+  vec <block *> result;
+  result.create (m_cases.length () + 1);
+  result.quick_push (m_default_block);
+  int i;
+  case_ *c;
+  FOR_EACH_VEC_ELT (m_cases, i, c)
+    result.quick_push (c->get_dest_block ());
+  return result;
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   a switch statement.  */
+
+recording::string *
+recording::switch_::make_debug_string ()
+{
+  auto_vec <char> cases_str;
+  int i;
+  case_ *c;
+  FOR_EACH_VEC_ELT (m_cases, i, c)
+    {
+      size_t len = strlen (c->get_debug_string ());
+      unsigned idx = cases_str.length ();
+      cases_str.safe_grow (idx + 1 + len);
+      cases_str[idx] = ' ';
+      memcpy (&(cases_str[idx + 1]),
+	      c->get_debug_string (),
+	      len);
+    }
+  cases_str.safe_push ('\0');
+
+  return string::from_printf (m_ctxt,
+			      "switch (%s) {default: goto %s;%s}",
+			      m_expr->get_debug_string (),
+			      m_default_block->get_debug_string (),
+			      &cases_str[0]);
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   switch statements.  */
+
+void
+recording::switch_::write_reproducer (reproducer &r)
+{
+  r.make_identifier (this, "switch");
+  int i;
+  case_ *c;
+  const char *cases_id =
+    r.make_tmp_identifier ("cases_for", this);
+  r.write ("  gcc_jit_case *%s[%i] = {\n",
+	   cases_id,
+	   m_cases.length ());
+  FOR_EACH_VEC_ELT (m_cases, i, c)
+    r.write ("    %s,\n", r.get_identifier (c));
+  r.write ("  };\n");
+  const char *fmt =
+    "  gcc_jit_block_end_with_switch (%s, /*gcc_jit_block *block */\n"
+    "                                 %s, /* gcc_jit_location *loc */\n"
+    "                                 %s, /* gcc_jit_rvalue *expr */\n"
+    "                                 %s, /* gcc_jit_block *default_block */\n"
+    "                                 %i, /* int num_cases */\n"
+    "                                 %s); /* gcc_jit_case **cases */\n";
+    r.write (fmt,
+	     r.get_identifier (get_block ()),
+	     r.get_identifier (get_loc ()),
+	     r.get_identifier_as_rvalue (m_expr),
+	     r.get_identifier (m_default_block),
+	     m_cases.length (),
+	     cases_id);
 }
 
 } // namespace gcc::jit
