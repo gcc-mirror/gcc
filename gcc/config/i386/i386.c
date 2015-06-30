@@ -3433,6 +3433,10 @@ ix86_option_override_internal (bool main_args_p,
 	  || TARGET_16BIT_P (opts->x_ix86_isa_flags))
 	opts->x_ix86_isa_flags &= ~OPTION_MASK_ABI_X32;
 #endif
+      if (TARGET_64BIT_P (opts->x_ix86_isa_flags)
+	  && TARGET_IAMCU_P (opts->x_target_flags))
+	sorry ("Intel MCU psABI isn%'t supported in %s mode",
+	       TARGET_X32_P (opts->x_ix86_isa_flags) ? "x32" : "64-bit");
     }
 #endif
 
@@ -3817,6 +3821,20 @@ ix86_option_override_internal (bool main_args_p,
   if (TARGET_X32 && (ix86_isa_flags & OPTION_MASK_ISA_MPX))
     error ("Intel MPX does not support x32");
 
+  if (TARGET_IAMCU_P (opts->x_target_flags))
+    {
+      /* Verify that x87/MMX/SSE/AVX is off for -miamcu.  */
+      if (TARGET_80387_P (opts->x_target_flags))
+	sorry ("X87 FPU isn%'t supported in Intel MCU psABI");
+      else if ((opts->x_ix86_isa_flags & (OPTION_MASK_ISA_MMX
+					  | OPTION_MASK_ISA_SSE
+					  | OPTION_MASK_ISA_AVX)))
+	sorry ("%s isn%'t supported in Intel MCU psABI",
+	       TARGET_MMX_P (opts->x_ix86_isa_flags)
+	       ? "MMX"
+	       : TARGET_SSE_P (opts->x_ix86_isa_flags) ? "SSE" : "AVX");
+    }
+
   if (!strcmp (opts->x_ix86_arch_string, "generic"))
     error ("generic CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
@@ -3904,7 +3922,16 @@ ix86_option_override_internal (bool main_args_p,
       if (opts->x_flag_asynchronous_unwind_tables == 2)
 	opts->x_flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
       if (opts->x_flag_pcc_struct_return == 2)
-	opts->x_flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
+	{
+	  /* Intel MCU psABI specifies that -freg-struct-return should
+	     be on.  Instead of setting DEFAULT_PCC_STRUCT_RETURN to 1,
+	     we check -miamcu so that -freg-struct-return is always
+	     turned on if -miamcu is used.  */
+	  if (TARGET_IAMCU_P (opts->x_target_flags))
+	    opts->x_flag_pcc_struct_return = 0;
+	  else
+	    opts->x_flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
+	}
     }
 
   ix86_tune_cost = processor_target_table[ix86_tune].cost;
@@ -3923,6 +3950,8 @@ ix86_option_override_internal (bool main_args_p,
     {
       if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
 	warning (0, "-mregparm is ignored in 64-bit mode");
+      else if (TARGET_IAMCU_P (opts->x_target_flags))
+	warning (0, "-mregparm is ignored for Intel MCU psABI");
       if (opts->x_ix86_regparm > REGPARM_MAX)
 	{
 	  error ("-mregparm=%d is not between 0 and %d",
@@ -3930,7 +3959,8 @@ ix86_option_override_internal (bool main_args_p,
 	  opts->x_ix86_regparm = 0;
 	}
     }
-  if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
+  if (TARGET_IAMCU_P (opts->x_target_flags)
+      || TARGET_64BIT_P (opts->x_ix86_isa_flags))
     opts->x_ix86_regparm = REGPARM_MAX;
 
   /* Default align_* from the processor table.  */
@@ -4334,8 +4364,9 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_recip_mask &= ~(RECIP_MASK_ALL & ~opts->x_recip_mask_explicit);
 
   /* Default long double to 64-bit for 32-bit Bionic and to __float128
-     for 64-bit Bionic.  */
-  if (TARGET_HAS_BIONIC
+     for 64-bit Bionic.  Also default long double to 64-bit for Intel
+     MCU psABI.  */
+  if ((TARGET_HAS_BIONIC || TARGET_IAMCU)
       && !(opts_set->x_target_flags
 	   & (MASK_LONG_DOUBLE_64 | MASK_LONG_DOUBLE_128)))
     opts->x_target_flags |= (TARGET_64BIT
@@ -7455,6 +7486,15 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, machine_mode mode,
   int res = 0;
   bool error_p = NULL;
 
+  if (TARGET_IAMCU)
+    {
+      /* Intel MCU psABI passes scalars and aggregates no larger than 8
+	 bytes in registers.  */
+      if (bytes <= 8)
+	goto pass_in_reg;
+      return res;
+    }
+
   switch (mode)
     {
     default:
@@ -7469,6 +7509,7 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, machine_mode mode,
     case SImode:
     case HImode:
     case QImode:
+pass_in_reg:
       cum->words += words;
       cum->nregs -= words;
       cum->regno += words;
@@ -7702,6 +7743,15 @@ function_arg_32 (CUMULATIVE_ARGS *cum, machine_mode mode,
   if (mode == VOIDmode)
     return constm1_rtx;
 
+  if (TARGET_IAMCU)
+    {
+      /* Intel MCU psABI passes scalars and aggregates no larger than 8
+	 bytes in registers.  */
+      if (bytes <= 8)
+	goto pass_in_reg;
+      return NULL_RTX;
+    }
+
   switch (mode)
     {
     default:
@@ -7715,6 +7765,7 @@ function_arg_32 (CUMULATIVE_ARGS *cum, machine_mode mode,
     case SImode:
     case HImode:
     case QImode:
+pass_in_reg:
       if (words <= cum->nregs)
 	{
 	  int regno = cum->regno;
@@ -8561,10 +8612,15 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
     }
   else
     {
+      size = int_size_in_bytes (type);
+
+      /* Intel MCU psABI returns scalars and aggregates no larger than 8
+	 bytes in registers.  */
+      if (TARGET_IAMCU)
+	return size > 8;
+
       if (mode == BLKmode)
 	return true;
-
-      size = int_size_in_bytes (type);
 
       if (MS_AGGREGATE_RETURN && AGGREGATE_TYPE_P (type) && size <= 8)
 	return false;
@@ -27334,6 +27390,34 @@ ix86_constant_alignment (tree exp, int align)
   return align;
 }
 
+/* Compute the alignment for a variable for Intel MCU psABI.  TYPE is
+   the data type, and ALIGN is the alignment that the object would
+   ordinarily have.  */
+
+static int
+iamcu_alignment (tree type, int align)
+{
+  enum machine_mode mode;
+
+  if (align < 32 || TYPE_USER_ALIGN (type))
+    return align;
+
+  /* Intel MCU psABI specifies scalar types > 4 bytes aligned to 4
+     bytes.  */
+  mode = TYPE_MODE (strip_array_types (type));
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_INT:
+    case MODE_COMPLEX_INT:
+    case MODE_COMPLEX_FLOAT:
+    case MODE_FLOAT:
+    case MODE_DECIMAL_FLOAT:
+      return 32;
+    default:
+      return align;
+    }
+}
+
 /* Compute the alignment for a static variable.
    TYPE is the data type, and ALIGN is the alignment that
    the object would ordinarily have.  The value of this function is used
@@ -27367,6 +27451,9 @@ ix86_data_alignment (tree type, int align, bool opt)
     case ix86_align_data_type_compat: max_align = BITS_PER_WORD; break;
     case ix86_align_data_type_cacheline: break;
     }
+
+  if (TARGET_IAMCU)
+    align = iamcu_alignment (type, align);
 
   if (opt
       && AGGREGATE_TYPE_P (type)
@@ -27476,6 +27563,10 @@ ix86_local_alignment (tree exp, machine_mode mode,
 	align = GET_MODE_ALIGNMENT (DFmode);
       return align;
     }
+
+  /* Don't increase alignment for Intel MCU psABI.  */
+  if (TARGET_IAMCU)
+    return align;
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
      to 16byte boundary.  Exact wording is:
@@ -43187,6 +43278,8 @@ x86_field_alignment (tree field, int computed)
 
   if (TARGET_64BIT || TARGET_ALIGN_DOUBLE)
     return computed;
+  if (TARGET_IAMCU)
+    return iamcu_alignment (type, computed);
   mode = TYPE_MODE (strip_array_types (type));
   if (mode == DFmode || mode == DCmode
       || GET_MODE_CLASS (mode) == MODE_INT

@@ -1096,7 +1096,7 @@ See RS/6000 and PowerPC Options.
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
--m32 -m64 -mx32 -m16 -mlarge-data-threshold=@var{num} @gol
+-m32 -m64 -mx32 -m16 -miamcu -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -malign-data=@var{type} -mstack-protector-guard=@var{guard}}
@@ -23289,10 +23289,12 @@ on x86-64 processors in 64-bit environments.
 @itemx -m64
 @itemx -mx32
 @itemx -m16
+@itemx -miamcu
 @opindex m32
 @opindex m64
 @opindex mx32
 @opindex m16
+@opindex miamcu
 Generate code for a 16-bit, 32-bit or 64-bit environment.
 The @option{-m32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
@@ -23310,6 +23312,9 @@ generates code for the x86-64 architecture.
 The @option{-m16} option is the same as @option{-m32}, except for that
 it outputs the @code{.code16gcc} assembly directive at the beginning of
 the assembly output so that the binary can run in 16-bit mode.
+
+The @option{-miamcu} option generates code which conforms to Intel MCU
+psABI.  It requires the @option{-m32} option to be turned on.
 
 @item -mno-red-zone
 @opindex mno-red-zone

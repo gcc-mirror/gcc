@@ -1,3 +1,34 @@
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Support i[34567]86-*-elfiamcu target.
+	* config/i386/iamcu.h: New.
+	* config/i386/i386.opt: Add -miamcu.
+	* doc/invoke.texi: Document -miamcu.
+	* common/config/i386/i386-common.c  (ix86_handle_option): Turn
+	off x87/MMX/SSE/AVX codegen for -miamcu.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__iamcu/__iamcu__ for -miamcu.
+	* config/i386/i386.h (PREFERRED_STACK_BOUNDARY_DEFAULT): Set
+	to MIN_STACK_BOUNDARY if TARGET_IAMCU is true.
+	(BIGGEST_ALIGNMENT): Set to 32 if TARGET_IAMCU is true.
+	* config/i386/i386.c (ix86_option_override_internal): Ignore and
+	warn -mregparm for Intel MCU.  Turn on -mregparm=3 for Intel
+	MCU by default.  Default long double to 64-bit for Intel MCU.
+	Turn on -freg-struct-return for Intel MCU.  Issue an error when
+	-miamcu is used in 64-bit or x32 mode or if x87, MMX, SSE or
+	AVX is turned on.
+	(function_arg_advance_32): Pass value whose size is no larger
+	than 8 bytes in registers for Intel MCU.
+	(function_arg_32): Likewise.
+	(ix86_return_in_memory): Return value whose size is no larger
+	than 8 bytes in registers for Intel MCU.
+	(iamcu_alignment): New function.
+	(ix86_data_alignment): Call iamcu_alignment if TARGET_IAMCU is
+	true.
+	(ix86_local_alignment): Don't increase alignment for Intel MCU.
+	(x86_field_alignment): Return iamcu_alignment if TARGET_IAMCU is
+	true.
+
 2015-06-30  Marek Polacek  <polacek@redhat.com>
 
 	* match.pd (X - (X / Y) * Y): Use convert1 and convert2.  Convert
