@@ -1386,10 +1386,6 @@ record_sub_use (struct ivopts_data *data, tree *use_p,
       pre->next = use;
     }
 
-  /* To avoid showing ssa name in the dumps, if it was not reset by the
-     caller.  */
-  iv->ssa_name = NULL_TREE;
-
   return use;
 }
 
