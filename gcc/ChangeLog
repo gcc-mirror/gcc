@@ -1,3 +1,16 @@
+2015-06-30  Richard Biener  <rguenther@suse.de>
+
+	* target-insns.def (canonicalize_funcptr_for_compare): Add.
+	* fold-const.c (build_range_check): Replace uses of
+	HAVE_canonicalize_funcptr_for_compare.
+	(fold_widened_comparison): Likewise.
+	(fold_sign_changed_comparison): Likewise.
+	* dojump.c: Include "target.h".
+	(do_compare_and_jump): Replace uses of
+	HAVE_canonicalize_funcptr_for_compare and
+	gen_canonicalize_funcptr_for_compare.
+	* expr.c (do_store_flag): Likewise.
+
 2015-06-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/66652

@@ -32,3 +32,4 @@
    Instructions should be documented in md.texi rather than here.  */
 DEF_TARGET_INSN (return, (void))
 DEF_TARGET_INSN (simple_return, (void))
+DEF_TARGET_INSN (canonicalize_funcptr_for_compare, (rtx x0, rtx x1))

@@ -4488,14 +4488,12 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
 {
   tree etype = TREE_TYPE (exp), value;
 
-#ifdef HAVE_canonicalize_funcptr_for_compare
   /* Disable this optimization for function pointer expressions
      on targets that require function pointer canonicalization.  */
-  if (HAVE_canonicalize_funcptr_for_compare
+  if (targetm.have_canonicalize_funcptr_for_compare ()
       && TREE_CODE (etype) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (etype)) == FUNCTION_TYPE)
     return NULL_TREE;
-#endif
 
   if (! in_p)
     {
@@ -6964,14 +6962,12 @@ fold_widened_comparison (location_t loc, enum tree_code code,
     return NULL_TREE;
   shorter_type = TREE_TYPE (arg0_unw);
 
-#ifdef HAVE_canonicalize_funcptr_for_compare
   /* Disable this optimization if we're casting a function pointer
      type on targets that require function pointer canonicalization.  */
-  if (HAVE_canonicalize_funcptr_for_compare
+  if (targetm.have_canonicalize_funcptr_for_compare ()
       && TREE_CODE (shorter_type) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (shorter_type)) == FUNCTION_TYPE)
     return NULL_TREE;
-#endif
 
   if (TYPE_PRECISION (TREE_TYPE (arg0)) <= TYPE_PRECISION (shorter_type))
     return NULL_TREE;
@@ -7059,14 +7055,12 @@ fold_sign_changed_comparison (location_t loc, enum tree_code code, tree type,
   arg0_inner = TREE_OPERAND (arg0, 0);
   inner_type = TREE_TYPE (arg0_inner);
 
-#ifdef HAVE_canonicalize_funcptr_for_compare
   /* Disable this optimization if we're casting a function pointer
      type on targets that require function pointer canonicalization.  */
-  if (HAVE_canonicalize_funcptr_for_compare
+  if (targetm.have_canonicalize_funcptr_for_compare ()
       && TREE_CODE (inner_type) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (inner_type)) == FUNCTION_TYPE)
     return NULL_TREE;
-#endif
 
   if (TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
     return NULL_TREE;

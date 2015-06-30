@@ -8916,7 +8916,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  return temp;
 
 	/* Use a compare and a jump for BLKmode comparisons, or for function
-	   type comparisons is HAVE_canonicalize_funcptr_for_compare.  */
+	   type comparisons is have_canonicalize_funcptr_for_compare.  */
 
 	if ((target == 0
 	     || modifier == EXPAND_STACK_PARM
@@ -10920,8 +10920,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 
   /* We won't bother with store-flag operations involving function pointers
      when function pointers must be canonicalized before comparisons.  */
-#ifdef HAVE_canonicalize_funcptr_for_compare
-  if (HAVE_canonicalize_funcptr_for_compare
+  if (targetm.have_canonicalize_funcptr_for_compare ()
       && ((TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
 	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg0)))
 	       == FUNCTION_TYPE))
@@ -10929,7 +10928,6 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg1)))
 		  == FUNCTION_TYPE))))
     return 0;
-#endif
 
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
