@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
 
 #include <string.h>
 #include <stdlib.h>
