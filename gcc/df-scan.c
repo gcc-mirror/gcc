@@ -52,13 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct df_mw_hardreg *df_mw_hardreg_ptr;
 
 
-#ifndef HAVE_prologue
-#define HAVE_prologue 0
-#endif
-#ifndef HAVE_sibcall_epilogue
-#define HAVE_sibcall_epilogue 0
-#endif
-
 /* The set of hard registers in eliminables[i].from. */
 
 static HARD_REG_SET elim_reg_set;
@@ -3523,7 +3516,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 
   /* Once the prologue has been generated, all of these registers
      should just show up in the first regular block.  */
-  if (HAVE_prologue && epilogue_completed)
+  if (targetm.have_prologue () && epilogue_completed)
     {
       /* Defs for the callee saved registers are inserted so that the
 	 pushes have some defining location.  */
@@ -3701,7 +3694,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
     if (global_regs[i] || EPILOGUE_USES (i))
       bitmap_set_bit (exit_block_uses, i);
 
-  if (HAVE_epilogue && epilogue_completed)
+  if (targetm.have_epilogue () && epilogue_completed)
     {
       /* Mark all call-saved registers that we actually used.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -3721,7 +3714,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
       }
 
 #ifdef EH_RETURN_STACKADJ_RTX
-  if ((!HAVE_epilogue || ! epilogue_completed)
+  if ((!targetm.have_epilogue () || ! epilogue_completed)
       && crtl->calls_eh_return)
     {
       rtx tmp = EH_RETURN_STACKADJ_RTX;
@@ -3731,7 +3724,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 #endif
 
 #ifdef EH_RETURN_HANDLER_RTX
-  if ((!HAVE_epilogue || ! epilogue_completed)
+  if ((!targetm.have_epilogue () || ! epilogue_completed)
       && crtl->calls_eh_return)
     {
       rtx tmp = EH_RETURN_HANDLER_RTX;

@@ -3038,6 +3038,14 @@ init_alias_analysis (void)
   rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
 
+  /* The prologue/epilogue insns are not threaded onto the
+     insn chain until after reload has completed.  Thus,
+     there is no sense wasting time checking if INSN is in
+     the prologue/epilogue until after reload has completed.  */
+  bool could_be_prologue_epilogue = ((targetm.have_prologue ()
+				      || targetm.have_epilogue ())
+				     && reload_completed);
+
   pass = 0;
   do
     {
@@ -3076,17 +3084,7 @@ init_alias_analysis (void)
 		{
 		  rtx note, set;
 
-#if defined (HAVE_prologue)
-		  static const bool prologue = true;
-#else
-		  static const bool prologue = false;
-#endif
-
-		  /* The prologue/epilogue insns are not threaded onto the
-		     insn chain until after reload has completed.  Thus,
-		     there is no sense wasting time checking if INSN is in
-		     the prologue/epilogue until after reload has completed.  */
-		  if ((prologue || HAVE_epilogue) && reload_completed
+		  if (could_be_prologue_epilogue
 		      && prologue_epilogue_contains (insn))
 		    continue;
 
