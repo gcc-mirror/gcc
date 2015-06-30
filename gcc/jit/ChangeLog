@@ -1,5 +1,96 @@
 2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/cp/topics/functions.rst (Blocks): Add switch statements to
+	list of ways to terminate a block.
+	(gccjit::block::end_with_switch): Add function description.
+	(gccjit::case_): Add class.
+	(gccjit::context::new_case): Add function description.
+	* docs/cp/topics/objects.rst: Add "case_" to class hierarchy.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_3): New.
+	* docs/topics/functions.rst (Blocks): Add switch statements to
+	list of ways to terminate a block.
+	(gcc_jit_block_end_with_switch): Add function description.
+	(gcc_jit_case): Add type.
+	(gcc_jit_context_new_case): Add function description.
+	(gcc_jit_case_as_object): Add function description.
+	* docs/topics/objects.rst: Add gcc_jit_case to class hierarchy.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::recording::case_): Add forward decl.
+	(gcc::jit::playback::case_): Add forward decl.
+	* jit-playback.c (add_case): New function.
+	(gcc::jit::playback::block::add_switch): New function.
+	* jit-playback.h (gcc::jit::playback::case_): New struct.
+	(gcc::jit::playback::block::get_function): New method.
+	(gcc::jit::playback::block::add_switch): New method.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::new_case): New method.
+	(recording::function::validate): Update for change to
+	get_successor_blocks.
+	(recording::block::end_with_switch): New method.
+	(recording::block::get_successor_blocks): Update to support an
+	arbitrary number of successor blocks.
+	(recording::block::dump_edges_to_dot): Likewise.
+	(memento_of_new_rvalue_from_const <int>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <long>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <double>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <void *>::get_wide_int): New.
+	(recording::statement::get_successor_blocks): Update to support an
+	arbitrary number of successor blocks.
+	(recording::conditional::get_successor_blocks): Likewise.
+	(recording::jump::get_successor_blocks): Likewise.
+	(recording::return_::get_successor_blocks): Likewise.
+	(recording::case_::write_reproducer): New.
+	(recording::case_::make_debug_string): New.
+	(recording::switch_::switch_): New.
+	(recording::switch_::replay_into): New.
+	(recording::switch_::get_successor_blocks): New.
+	(recording::switch_::make_debug_string): New.
+	(recording::switch_::write_reproducer): New.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(context::new_case): New.
+	(rvalue::is_constant): New.
+	(rvalue::get_wide_int): New.
+	(block::end_with_switch): New.
+	(block::get_successor_blocks): Update to support an arbitrary
+	number of successor blocks.
+	(memento_of_new_rvalue_from_const::is_constant): New.
+	(memento_of_new_rvalue_from_const::get_wide_int): New.
+	(statement::get_successor_blocks): Update to support an arbitrary
+	number of successor blocks.
+	(conditional::get_successor_blocks): Likewise.
+	(jump::get_successor_blocks): Likewise.
+	(return_::get_successor_blocks): Likewise.
+	(case_): New subclass of memento.
+	(switch_): New subclass of statement.
+	* libgccjit++.h (gccjit::case_): New subclass of gccjit::object.
+	(gccjit::context::new_case): New method.
+	(gccjit::block::end_with_switch): New method.
+	(gccjit::case_::case): New ctors.
+	(gccjit::case_::get_inner_case): New method.
+	* libgccjit.c: Include "typed-splay-tree.h"
+	(struct gcc_jit_case): New.
+	(gcc_jit_context_new_case): New function.
+	(gcc_jit_case_as_object): New function.
+	(valid_dest_for_switch): New function.
+	(valid_case_for_switch): New function.
+	(class api_call_validator): New class.
+	(class case_range_validator): New class.
+	(case_range_validator::case_range_validator): New.
+	(case_range_validator::validate): New.
+	(case_range_validator::case_compare): New.
+	(case_range_validator::get_wide_int): new.
+	(gcc_jit_block_end_with_switch): New.
+	* libgccjit.h: Add gcc_jit_case to class hierarchy comment.
+	(gcc_jit_case): New typedef.
+	(gcc_jit_context_new_case): New function.
+	(gcc_jit_case_as_object): New function.
+	(gcc_jit_block_end_with_switch): New function.
+	(LIBGCCJIT_HAVE_SWITCH_STATEMENTS): New.
+	* libgccjit.map: Add gcc_jit_block_end_with_switch,
+	gcc_jit_case_as_object and gcc_jit_context_new_case.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/66546
 	* docs/cp/topics/contexts.rst
 	(gccjit::context::set_bool_allow_unreachable_blocks): New.

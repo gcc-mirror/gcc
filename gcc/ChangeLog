@@ -1,3 +1,7 @@
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* typed-splay-tree.h: New file.
+
 2015-06-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/66691
