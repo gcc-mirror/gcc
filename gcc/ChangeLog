@@ -1,3 +1,9 @@
+2015-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66704
+	* tree-vect-data-refs.c (vect_setup_realignment): Use
+	make_ssa_name for non-SSA name source.
+
 2015-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66702
