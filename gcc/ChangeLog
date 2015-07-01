@@ -1,3 +1,9 @@
+2015-07-01  Richard Biener <rguenther@suse.de>
+
+	* genmatch.c (expr::gen_transform): Shortcut re-simplifying
+	of converts to avoid uninteresting noise from the conversion
+	simplifying patterns.
+
 2015-06-30  Sandra Loosemore <sandra@codesourcery.com>
 
 	* config/c6x/c6x.c (try_rename_operands): Do not depend on

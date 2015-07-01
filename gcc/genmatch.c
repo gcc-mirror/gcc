@@ -1740,6 +1740,10 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
 
   if (gimple)
     {
+      if (*operation == CONVERT_EXPR)
+	fprintf (f, "  if (%s != TREE_TYPE (ops%d[0])\n"
+	    "      && !useless_type_conversion_p (%s, TREE_TYPE (ops%d[0])))\n"
+	    "  {\n", type, depth, type, depth);
       /* ???  Building a stmt can fail for various reasons here, seq being
          NULL or the stmt referencing SSA names occuring in abnormal PHIs.
 	 So if we fail here we should continue matching other patterns.  */
@@ -1752,9 +1756,15 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
 	       ops.length (), type);
       fprintf (f, "  res = maybe_push_res_to_seq (tem_code, %s, tem_ops, seq);\n"
 	       "  if (!res) return false;\n", type);
+      if (*operation == CONVERT_EXPR)
+        fprintf (f, "  }\n"
+		 "  else\n"
+		 "    res = ops%d[0];\n", depth);
     }
   else
     {
+      if (*operation == CONVERT_EXPR)
+	fprintf (f, "  if (TREE_TYPE (ops%d[0]) != %s)\n", depth, type);
       if (operation->kind == id_base::CODE)
 	fprintf (f, "  res = fold_build%d_loc (loc, %s, %s",
 		 ops.length(), opr, type);
@@ -1764,6 +1774,9 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", ops%d[%u]", depth, i);
       fprintf (f, ");\n");
+      if (*operation == CONVERT_EXPR)
+	fprintf (f, "  else\n"
+		 "    res = ops%d[0];\n", depth);
     }
   fprintf (f, "%s = res;\n", dest);
   fprintf (f, "}\n");
