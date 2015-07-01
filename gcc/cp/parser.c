@@ -791,8 +791,8 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
       else
 	{
           if (warn_cxx11_compat
-              && C_RID_CODE (token->u.value) >= RID_FIRST_CXX0X
-              && C_RID_CODE (token->u.value) <= RID_LAST_CXX0X)
+              && C_RID_CODE (token->u.value) >= RID_FIRST_CXX11
+              && C_RID_CODE (token->u.value) <= RID_LAST_CXX11)
             {
               /* Warn about the C++0x keyword (but still treat it as
                  an identifier).  */

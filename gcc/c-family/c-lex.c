@@ -774,7 +774,7 @@ interpret_integer (const cpp_token *token, unsigned int flags,
 }
 
 /* Interpret TOKEN, a floating point number with FLAGS as classified
-   by cpplib.  For C++0X SUFFIX may contain a user-defined literal suffix.  */
+   by cpplib.  For C++11 SUFFIX may contain a user-defined literal suffix.  */
 static tree
 interpret_float (const cpp_token *token, unsigned int flags,
 		 const char *suffix, enum overflow_type *overflow)

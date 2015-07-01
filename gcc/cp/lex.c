@@ -174,7 +174,7 @@ init_reswords (void)
   int mask = 0;
 
   if (cxx_dialect < cxx11)
-    mask |= D_CXX0X;
+    mask |= D_CXX11;
   if (flag_no_asm)
     mask |= D_ASM | D_EXT;
   if (flag_no_gnu_keywords)
