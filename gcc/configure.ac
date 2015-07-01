@@ -3562,6 +3562,13 @@ case "$target" in
         done
       fi
     fi
+    # Check if we have binutils support for relocations types needed by -fpic
+    gcc_GAS_CHECK_FEATURE([-fpic relocs], gcc_cv_as_aarch64_picreloc,,,
+    [
+	.text
+	ldr     x0, [[x2, #:gotpage_lo15:globalsym]]
+    ],,[AC_DEFINE(HAVE_AS_SMALL_PIC_RELOCS, 1,
+	[Define if your assembler supports relocs needed by -fpic.])])
     # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
     AC_ARG_ENABLE(fix-cortex-a53-835769,
     [

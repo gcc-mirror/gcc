@@ -24228,6 +24228,40 @@ $as_echo "#define HAVE_AS_MABI_OPTION 1" >>confdefs.h
         done
       fi
     fi
+    # Check if we have binutils support for relocations types needed by -fpic
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -fpic relocs" >&5
+$as_echo_n "checking assembler for -fpic relocs... " >&6; }
+if test "${gcc_cv_as_aarch64_picreloc+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_aarch64_picreloc=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '
+	.text
+	ldr     x0, [x2, #:gotpage_lo15:globalsym]
+    ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_aarch64_picreloc=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_aarch64_picreloc" >&5
+$as_echo "$gcc_cv_as_aarch64_picreloc" >&6; }
+if test $gcc_cv_as_aarch64_picreloc = yes; then
+
+$as_echo "#define HAVE_AS_SMALL_PIC_RELOCS 1" >>confdefs.h
+
+fi
     # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
     # Check whether --enable-fix-cortex-a53-835769 was given.
 if test "${enable_fix_cortex_a53_835769+set}" = set; then :

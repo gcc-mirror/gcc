@@ -1,3 +1,12 @@
+2015-07-01  Jiong Wang  <jiong.wang@arm.com>
+
+	* configure.ac: Add check for aarch64 assembler -fpic relocation
+	modifier support.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/aarch64/aarch64.c (initialize_aarch64_code_model): Fall back
+	to -fPIC if not support of -fpic relocation modifier in assembler.
+
 2015-07-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR bootstrap/66685
