@@ -1,3 +1,9 @@
+2015-06-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/64833
+	* config/sh/sh.md (casesi_worker_1): Set length to 8 when
+	flag_pic is set.
+
 2015-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-streamer-out.c (class DFS): Adjust hash_scc method.
