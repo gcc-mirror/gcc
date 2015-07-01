@@ -11344,6 +11344,8 @@ label:
     LABEL_NUSES (operands[2])++;
 })
 
+;; This may be replaced with casesi_worker_2 in sh_reorg for PIC.
+;; The insn length is set to 8 for that case.
 (define_insn "casesi_worker_1"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI [(reg:SI R0_REG)
@@ -11375,7 +11377,9 @@ label:
       gcc_unreachable ();
     }
 }
-  [(set_attr "length" "4")])
+  [(set_attr_alternative "length"
+     [(if_then_else (match_test "flag_pic") (const_int 8) (const_int 4))
+      (if_then_else (match_test "flag_pic") (const_int 8) (const_int 4))])])
 
 (define_insn "casesi_worker_2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
