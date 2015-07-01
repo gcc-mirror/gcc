@@ -1,5 +1,12 @@
 2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/66700
+	* jit.dg/all-non-failing-tests.h: Add
+	test-pr66700-observing-write-through-ptr.c.
+	* jit.dg/test-pr66700-observing-write-through-ptr.c: New testcase.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit.dg/test-accessing-union.c: Add comments for use by
 	gcc/jit/docs/topics/types.rst.
 

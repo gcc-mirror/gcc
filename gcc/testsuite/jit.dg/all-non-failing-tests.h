@@ -154,6 +154,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-pr66700-observing-write-through-ptr.c */
+#define create_code create_code_pr66700_observing_write_through_ptr
+#define verify_code verify_code_pr66700_observing_write_through_ptr
+#include "test-pr66700-observing-write-through-ptr.c"
+#undef create_code
+#undef verify_code
+
 /* test-reading-struct.c */
 #define create_code create_code_reading_struct
 #define verify_code verify_code_reading_struct
@@ -279,6 +286,9 @@ const struct testcase testcases[] = {
   {"nested_loop",
    create_code_nested_loop,
    verify_code_nested_loop},
+  {"pr66700_observing_write_through_ptr",
+   create_code_pr66700_observing_write_through_ptr,
+   verify_code_pr66700_observing_write_through_ptr},
   {"reading_struct ",
    create_code_reading_struct ,
    verify_code_reading_struct },

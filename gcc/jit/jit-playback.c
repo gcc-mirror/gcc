@@ -1164,6 +1164,47 @@ dereference (location *loc)
   return new lvalue (get_context (), datum);
 }
 
+/* Mark EXP saying that we need to be able to take the
+   address of it; it should not be allocated in a register.
+   Compare with e.g. c/c-typeck.c: c_mark_addressable.  */
+
+static void
+jit_mark_addressable (tree exp)
+{
+  tree x = exp;
+
+  while (1)
+    switch (TREE_CODE (x))
+      {
+      case COMPONENT_REF:
+	/* (we don't yet support bitfields)  */
+	/* fallthrough */
+      case ADDR_EXPR:
+      case ARRAY_REF:
+      case REALPART_EXPR:
+      case IMAGPART_EXPR:
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case COMPOUND_LITERAL_EXPR:
+      case CONSTRUCTOR:
+	TREE_ADDRESSABLE (x) = 1;
+	return;
+
+      case VAR_DECL:
+      case CONST_DECL:
+      case PARM_DECL:
+      case RESULT_DECL:
+	/* (we don't have a concept of a "register" declaration) */
+	/* fallthrough */
+      case FUNCTION_DECL:
+	TREE_ADDRESSABLE (x) = 1;
+	/* fallthrough */
+      default:
+	return;
+      }
+}
+
 /* Construct a playback::rvalue instance (wrapping a tree) for an
    address-lookup.  */
 
@@ -1177,6 +1218,7 @@ get_address (location *loc)
   tree ptr = build1 (ADDR_EXPR, t_ptrtype, t_lvalue);
   if (loc)
     get_context ()->set_tree_location (ptr, loc);
+  jit_mark_addressable (t_lvalue);
   return new rvalue (get_context (), ptr);
 }
 
