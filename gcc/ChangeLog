@@ -1,3 +1,9 @@
+2015-07-01  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Move ~X ^ X -> -1 and
+	(X & Y) ^ Y -> ~X & Y transforms to ...
+	* match.pd: ... here.
+
 2015-07-01  Richard Biener <rguenther@suse.de>
 
 	* genmatch.c (expr::gen_transform): Shortcut re-simplifying

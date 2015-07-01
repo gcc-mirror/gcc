@@ -298,6 +298,11 @@ along with GCC; see the file COPYING3.  If not see
   (bit_xor @0 integer_all_onesp@1)
   (bit_not @0))
 
+/* ~X ^ X is -1.  */
+(simplify
+ (bit_xor:c (bit_not @0) @0)
+ { build_all_ones_cst (type); })
+
 /* x & ~0 -> x  */
 (simplify
  (bit_and @0 integer_all_onesp)
@@ -427,6 +432,11 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (bit_xor (convert? (bit_not @0)) INTEGER_CST@1)
  (bit_xor (convert @0) (bit_not @1)))
+
+/* Fold (X & Y) ^ Y as ~X & Y.  */
+(simplify
+ (bit_xor:c (bit_and:c @0 @1) @1)
+ (bit_and (bit_not @0) @1))
 
 
 (simplify
