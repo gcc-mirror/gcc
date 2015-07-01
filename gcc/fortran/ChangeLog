@@ -1,3 +1,11 @@
+2015-07-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* arith.c (gfc_arith_divide):  With -Winteger-division,
+	warn about contant integer division if there is a non-zero
+	remainder.
+	* invoke.texi:  Document -Winteger-division.
+	* lang.opt:  Add -Winteger-division.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* f95-lang.c: Remove ipa-ref.h and plugin-api.h from include list.
