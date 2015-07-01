@@ -1583,6 +1583,16 @@ ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @subsubsection AArch64-specific attributes
 
 @table @code
+@item aarch64_tiny
+AArch64 target which generates instruction sequences for tiny memory model.
+@item aarch64_small
+AArch64 target which generates instruction sequences for small memory model.
+@item aarch64_large
+AArch64 target which generates instruction sequences for large memory model.
+@item aarch64_little_endian
+AArch64 target which generates instruction sequences for little endian.
+@item aarch64_big_endian
+AArch64 target which generates instruction sequences for big endian.
 @item aarch64_small_fpic
 Binutils installed on test system supports relocation types required by -fpic
 for AArch64 small memory model.
