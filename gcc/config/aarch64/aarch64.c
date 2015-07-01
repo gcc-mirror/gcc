@@ -7581,9 +7581,13 @@ initialize_aarch64_code_model (void)
 	   aarch64_cmodel = AARCH64_CMODEL_TINY_PIC;
 	   break;
 	 case AARCH64_CMODEL_SMALL:
+#ifdef HAVE_AS_SMALL_PIC_RELOCS
 	   aarch64_cmodel = (flag_pic == 2
 			     ? AARCH64_CMODEL_SMALL_PIC
 			     : AARCH64_CMODEL_SMALL_SPIC);
+#else
+	   aarch64_cmodel = AARCH64_CMODEL_SMALL_PIC;
+#endif
 	   break;
 	 case AARCH64_CMODEL_LARGE:
 	   sorry ("code model %qs with -f%s", "large",
