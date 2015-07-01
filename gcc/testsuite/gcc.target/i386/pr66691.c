@@ -1,4 +1,4 @@
-/* PR inline-asm/39058 */
+/* PR target/66691 */
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
 /* { dg-options "-O3 -g -mtune=generic -march=i686" } */
