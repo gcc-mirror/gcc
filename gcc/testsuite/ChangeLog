@@ -1,3 +1,8 @@
+2015-07-01  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/66686
+	* g++.dg/template/pr66686.C: New test.
+
 2015-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto17.ad[sb]: New test.
