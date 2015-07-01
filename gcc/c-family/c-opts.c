@@ -889,7 +889,7 @@ c_common_post_options (const char **pfilename)
   /* Change flag_abi_version to be the actual current ABI level for the
      benefit of c_cpp_builtins.  */
   if (flag_abi_version == 0)
-    flag_abi_version = 8;
+    flag_abi_version = 9;
 
   if (cxx_dialect >= cxx11)
     {

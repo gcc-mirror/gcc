@@ -833,6 +833,9 @@ Driver Undocumented
 ; 8: The version of the ABI that corrects the substitution behavior of
 ;    function types with function-cv-qualifiers.
 ;    First selectable in G++ 4.9 and default in G++ 5
+;
+; 9: The version of the ABI that corrects the alignment of nullptr_t.
+;    First selectable and default in G++ 5.2.
 ;    (set in c_common_post_options).
 ;
 ; Additional positive integers will be assigned as new versions of

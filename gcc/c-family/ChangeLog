@@ -1,3 +1,7 @@
+2015-07-01  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Highest ABI version is 9.
+
 2015-04-28  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 
