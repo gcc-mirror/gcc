@@ -1,3 +1,9 @@
+2015-07-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR rtl-optimization/61047
+	* rtlanal.c (get_initial_register_offset): New function.
+	(rtx_addr_can_trap_p_1): Check offsets of stack references.
+
 2015-07-01  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_comparison): Move X - Y CMP 0 -> X CMP Y,
