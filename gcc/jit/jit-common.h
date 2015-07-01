@@ -133,6 +133,7 @@ namespace recording {
 	class global;
         class param;
     class statement;
+    class case_;
 
   /* End of recording types. */
 }
@@ -154,6 +155,7 @@ namespace playback {
     class source_file;
     class source_line;
     class location;
+    class case_;
 
   /* End of playback types. */
 }

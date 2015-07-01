@@ -1,3 +1,10 @@
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225207
+	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* typed-splay-tree.h: New file.
+
 2015-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/66633

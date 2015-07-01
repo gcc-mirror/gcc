@@ -47,6 +47,7 @@ looks like this::
       +- gcc_jit_rvalue
           +- gcc_jit_lvalue
              +- gcc_jit_param
+      +- gcc_jit_case
 
 There are casting methods for upcasting from subclasses to parent classes.
 For example, :c:func:`gcc_jit_type_as_object`:

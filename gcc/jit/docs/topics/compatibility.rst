@@ -47,7 +47,6 @@ from metadata by using ``objdump``:
        0x00824161 0x00 04 LIBGCCJIT_ABI_1
        0x00824160 0x00 03 LIBGCCJIT_ABI_0
      required from libc.so.6:
-       0x09691a75 0x00 02 GLIBC_2.2.5
 
 You can see the symbol tags provided by libgccjit.so using ``objdump``:
 
@@ -95,3 +94,16 @@ continue to work, with this being handled transparently by the linker
 -------------------
 ``LIBGCCJIT_ABI_2`` covers the addition of
 :func:`gcc_jit_context_set_bool_allow_unreachable_blocks`
+
+.. _LIBGCCJIT_ABI_3:
+
+``LIBGCCJIT_ABI_3``
+-------------------
+``LIBGCCJIT_ABI_3`` covers the addition of switch statements via API
+entrypoints:
+
+  * :func:`gcc_jit_block_end_with_switch`
+
+  * :func:`gcc_jit_case_as_object`
+
+  * :func:`gcc_jit_context_new_case`
