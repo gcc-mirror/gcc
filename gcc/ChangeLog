@@ -1,5 +1,11 @@
 2015-07-01  Jiong Wang  <jiong.wang@arm.com>
 
+	* doc/sourcebuild.texi (AArch64-specific attributes): Document
+	"aarch64_tiny", "aarch64_small", "aarch64_large",
+	"aarch64_little_endian", "aarch64_big_endian".
+
+2015-07-01  Jiong Wang  <jiong.wang@arm.com>
+
 	* doc/sourcebuild.texi (AArch64-specific attributes): New subsection.
 	Document "aarch64_small_fpic".
 
