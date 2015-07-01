@@ -313,6 +313,10 @@ String Options
 
    .. type:: enum gcc_jit_str_option
 
+   The parameter ``value`` can be NULL.   If non-NULL, the call takes a
+   copy of the underlying string, so it is valid to pass in a pointer to
+   an on-stack buffer.
+
    There is just one string option specified this way:
 
    .. macro:: GCC_JIT_STR_OPTION_PROGNAME

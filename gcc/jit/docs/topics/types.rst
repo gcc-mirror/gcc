@@ -180,6 +180,10 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
 
    Construct a new field, with the given type and name.
 
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
+
 .. function:: gcc_jit_object *\
               gcc_jit_field_as_object (gcc_jit_field *field)
 
@@ -194,6 +198,10 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
 
      Construct a new struct type, with the given name and fields.
 
+     The parameter ``name`` must be non-NULL.  The call takes a copy of
+     the underlying string, so it is valid to pass in a pointer to an
+     on-stack buffer.
+
 .. function:: gcc_jit_struct *\
               gcc_jit_context_new_opaque_struct (gcc_jit_context *ctxt,\
                                                  gcc_jit_location *loc,\
@@ -203,6 +211,10 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
      specifying the fields.   The fields can be omitted (in which case the
      size of the struct is not known), or later specified using
      :c:func:`gcc_jit_struct_set_fields`.
+
+     The parameter ``name`` must be non-NULL.  The call takes a copy of
+     the underlying string, so it is valid to pass in a pointer to an
+     on-stack buffer.
 
 .. function:: gcc_jit_type *\
               gcc_jit_struct_as_type (gcc_jit_struct *struct_type)
