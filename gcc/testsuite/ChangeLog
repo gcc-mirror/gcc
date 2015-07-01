@@ -1,5 +1,13 @@
 2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport from mainline r225246
+	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-accessing-union.c: Add comments for use by
+	gcc/jit/docs/topics/types.rst.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport from mainline r225207
 	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 

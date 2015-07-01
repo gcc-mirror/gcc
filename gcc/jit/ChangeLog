@@ -1,5 +1,14 @@
 2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport from mainline r225246
+	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/types.rst (gcc_jit_context_new_union_type): Add
+	documentation.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport from mainline r225245
 	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
