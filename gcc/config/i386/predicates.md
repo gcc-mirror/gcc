@@ -1426,8 +1426,105 @@
   (and (match_code "unspec_volatile")
        (match_test "XINT (op, 1) == UNSPECV_VZEROUPPER")))
 
-;; Return true if OP is a parallel for a vbroadcast permute.
+;; Return true if OP is an addsub vec_merge operation
+(define_predicate "addsub_vm_operator"
+  (match_code "vec_merge")
+{
+  rtx op0, op1;
+  int swapped;
+  HOST_WIDE_INT mask;
+  int nunits, elt;
 
+  op0 = XEXP (op, 0);
+  op1 = XEXP (op, 1);
+
+  /* Sanity check.  */
+  if (GET_CODE (op0) == MINUS && GET_CODE (op1) == PLUS)
+    swapped = 0;
+  else if (GET_CODE (op0) == PLUS && GET_CODE (op1) == MINUS)
+    swapped = 1;
+  else
+    gcc_unreachable ();
+
+  mask = INTVAL (XEXP (op, 2));
+  nunits = GET_MODE_NUNITS (mode);
+
+  for (elt = 0; elt < nunits; elt++)
+    {
+      /* bit clear: take from op0, set: take from op1  */
+      int bit = !(mask & (HOST_WIDE_INT_1U << elt));
+
+      if (bit != ((elt & 1) ^ swapped))
+	return false;
+    }
+
+  return true;
+})
+
+;; Return true if OP is an addsub vec_select/vec_concat operation
+(define_predicate "addsub_vs_operator"
+  (and (match_code "vec_select")
+       (match_code "vec_concat" "0"))
+{
+  rtx op0, op1;
+  bool swapped;
+  int nunits, elt;
+
+  op0 = XEXP (XEXP (op, 0), 0);
+  op1 = XEXP (XEXP (op, 0), 1);
+
+  /* Sanity check.  */
+  if (GET_CODE (op0) == MINUS && GET_CODE (op1) == PLUS)
+    swapped = false;
+  else if (GET_CODE (op0) == PLUS && GET_CODE (op1) == MINUS)
+    swapped = true;
+  else
+    gcc_unreachable ();
+
+  nunits = GET_MODE_NUNITS (mode);
+  if (XVECLEN (XEXP (op, 1), 0) != nunits)
+    return false;
+
+  /* We already checked that permutation is suitable for addsub,
+     so only look at the first element of the parallel.  */
+  elt = INTVAL (XVECEXP (XEXP (op, 1), 0, 0));
+
+  return elt == (swapped ? nunits : 0);
+})
+
+;; Return true if OP is a parallel for an addsub vec_select.
+(define_predicate "addsub_vs_parallel"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int nelt = XVECLEN (op, 0);
+  int elt, i;
+  
+  if (nelt < 2)
+    return false;
+
+  /* Check that the permutation is suitable for addsub.
+     For example, { 0 9 2 11 4 13 6 15 } or { 8 1 10 3 12 5 14 7 }.  */
+  elt = INTVAL (XVECEXP (op, 0, 0));
+  if (elt == 0)
+    {
+      for (i = 1; i < nelt; ++i)
+	if (INTVAL (XVECEXP (op, 0, i)) != (i + (i & 1) * nelt))
+	  return false;
+    }
+  else if (elt == nelt)
+    {
+      for (i = 1; i < nelt; ++i)
+	if (INTVAL (XVECEXP (op, 0, i)) != (elt + i - (i & 1) * nelt))
+	  return false;
+    }
+  else
+    return false;
+
+  return true;
+})
+
+;; Return true if OP is a parallel for a vbroadcast permute.
 (define_predicate "avx_vbroadcast_operand"
   (and (match_code "parallel")
        (match_code "const_int" "a"))

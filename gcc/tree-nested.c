@@ -43,8 +43,6 @@
 #include "gimple-walk.h"
 #include "tree-iterator.h"
 #include "bitmap.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "rtl.h"
@@ -1071,7 +1069,9 @@ static bool
 convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 {
   struct nesting_info *const info = (struct nesting_info *) wi->info;
-  bool need_chain = false, need_stmts = false;
+  /* If not optimizing, we will force the creation of the CHAIN object in
+     convert_all_function_calls, so we need to take it into account here.  */
+  bool need_chain = info->outer && !optimize, need_stmts = false;
   tree clause, decl;
   int dummy;
   bitmap new_suppress;
@@ -1699,7 +1699,9 @@ static bool
 convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 {
   struct nesting_info *const info = (struct nesting_info *) wi->info;
-  bool need_frame = false, need_stmts = false;
+  /* If not optimizing, we will force the creation of the FRAME object in
+     convert_all_function_calls, so we need to take it into account here.  */
+  bool need_frame = info->inner && !optimize, need_stmts = false;
   tree clause, decl;
   int dummy;
   bitmap new_suppress;

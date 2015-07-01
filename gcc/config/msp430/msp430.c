@@ -64,12 +64,14 @@
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "msp430-protos.h"
 #include "dumpfile.h"
 #include "opts.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 
 static void msp430_compute_frame_info (void);

@@ -48,8 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "dumpfile.h"
 #include "c-pretty-print.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "cilk.h"
 #include "c-ubsan.h"
@@ -250,7 +248,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	   We should get rid of this conversion when we have a proper
 	   type demotion/promotion pass.  */
 	tree *op1_p = &TREE_OPERAND (*expr_p, 1);
-	if (TREE_CODE (TREE_TYPE (*op1_p)) != VECTOR_TYPE
+	if (!VECTOR_TYPE_P (TREE_TYPE (*op1_p))
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
 				    unsigned_type_node)
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
@@ -263,7 +261,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
       /* This is handled mostly by gimplify.c, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off
 	 this warning but only if warn_init_self is zero.  */
-      if (TREE_CODE (DECL_EXPR_DECL (*expr_p)) == VAR_DECL
+      if (VAR_P (DECL_EXPR_DECL (*expr_p))
 	  && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
 	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
 	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))

@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gstab.h"
 #include "debug.h"
 #include "target.h"
-#include "target-def.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "dominance.h"
@@ -83,11 +82,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree-pass.h"
 #include "context.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -1263,20 +1263,9 @@ static int mips_register_move_cost (machine_mode, reg_class_t,
 static unsigned int mips_function_arg_boundary (machine_mode, const_tree);
 static machine_mode mips_get_reg_raw_mode (int regno);
 
-struct mips16_flip_traits : default_hashmap_traits
-{
-  static hashval_t hash (const char *s) { return htab_hash_string (s); }
-  static bool
-  equal_keys (const char *a, const char *b)
-  {
-    return !strcmp (a, b);
-  }
-};
-
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
    for -mflip_mips16.  It maps decl names onto a boolean mode setting.  */
-static GTY (()) hash_map<const char *, bool, mips16_flip_traits> *
-  mflip_mips16_htab;
+static GTY (()) hash_map<nofree_string_hash, bool> *mflip_mips16_htab;
 
 /* True if -mflip-mips16 should next add an attribute for the default MIPS16
    mode, false if it should next add an attribute for the opposite mode.  */
@@ -1297,8 +1286,7 @@ mflip_mips16_use_mips16_p (tree decl)
     return !base_is_mips16;
 
   if (!mflip_mips16_htab)
-    mflip_mips16_htab
-      = hash_map<const char *, bool, mips16_flip_traits>::create_ggc (37);
+    mflip_mips16_htab = hash_map<nofree_string_hash, bool>::create_ggc (37);
 
   name = IDENTIFIER_POINTER (DECL_NAME (decl));
 
@@ -6597,30 +6585,10 @@ mips_load_call_address (enum mips_call_type type, rtx dest, rtx addr)
     }
 }
 
-struct local_alias_traits : default_hashmap_traits
-{
-  static hashval_t hash (rtx);
-  static bool equal_keys (rtx, rtx);
-};
-
 /* Each locally-defined hard-float MIPS16 function has a local symbol
    associated with it.  This hash table maps the function symbol (FUNC)
    to the local symbol (LOCAL). */
-static GTY (()) hash_map<rtx, rtx, local_alias_traits> *mips16_local_aliases;
-
-/* Hash table callbacks for mips16_local_aliases.  */
-
-hashval_t
-local_alias_traits::hash (rtx func)
-{
-  return htab_hash_string (XSTR (func, 0));
-}
-
-bool
-local_alias_traits::equal_keys (rtx func1, rtx func2)
-{
-  return rtx_equal_p (func1, func2);
-}
+static GTY (()) hash_map<nofree_string_hash, rtx> *mips16_local_aliases;
 
 /* FUNC is the symbol for a locally-defined hard-float MIPS16 function.
    Return a local alias for it, creating a new one if necessary.  */
@@ -6630,24 +6598,23 @@ mips16_local_alias (rtx func)
 {
   /* Create the hash table if this is the first call.  */
   if (mips16_local_aliases == NULL)
-    mips16_local_aliases
-      = hash_map<rtx, rtx, local_alias_traits>::create_ggc (37);
+    mips16_local_aliases = hash_map<nofree_string_hash, rtx>::create_ggc (37);
 
   /* Look up the function symbol, creating a new entry if need be.  */
   bool existed;
-  rtx *slot = &mips16_local_aliases->get_or_insert (func, &existed);
+  const char *func_name = XSTR (func, 0);
+  rtx *slot = &mips16_local_aliases->get_or_insert (func_name, &existed);
   gcc_assert (slot != NULL);
 
   if (!existed)
     {
-      const char *func_name, *local_name;
       rtx local;
 
       /* Create a new SYMBOL_REF for the local symbol.  The choice of
 	 __fn_local_* is based on the __fn_stub_* names that we've
 	 traditionally used for the non-MIPS16 stub.  */
       func_name = targetm.strip_name_encoding (XSTR (func, 0));
-      local_name = ACONCAT (("__fn_local_", func_name, NULL));
+      const char *local_name = ACONCAT (("__fn_local_", func_name, NULL));
       local = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (local_name));
       SYMBOL_REF_FLAGS (local) = SYMBOL_REF_FLAGS (func) | SYMBOL_FLAG_LOCAL;
 
@@ -16346,9 +16313,8 @@ mips_hash_base (rtx base)
 
 /* Hashtable helpers.  */
 
-struct mips_lo_sum_offset_hasher : typed_free_remove <mips_lo_sum_offset>
+struct mips_lo_sum_offset_hasher : free_ptr_hash <mips_lo_sum_offset>
 {
-  typedef mips_lo_sum_offset *value_type;
   typedef rtx_def *compare_type;
   static inline hashval_t hash (const mips_lo_sum_offset *);
   static inline bool equal (const mips_lo_sum_offset *, const rtx_def *);

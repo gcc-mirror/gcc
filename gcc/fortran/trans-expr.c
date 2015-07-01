@@ -2529,7 +2529,8 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 		   && !sym->attr.result
 		   && (CLASS_DATA (sym)->attr.dimension
 		       || CLASS_DATA (sym)->attr.codimension)
-		   && !CLASS_DATA (sym)->attr.allocatable
+		   && (sym->assoc
+		       || !CLASS_DATA (sym)->attr.allocatable)
 		   && !CLASS_DATA (sym)->attr.class_pointer)
 	    se->expr = build_fold_indirect_ref_loc (input_location,
 						se->expr);

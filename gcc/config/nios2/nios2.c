@@ -60,7 +60,6 @@
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "df.h"
@@ -68,6 +67,9 @@
 #include "reload.h"
 #include "stor-layout.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* Forward function declarations.  */
 static bool prologue_saved_reg_p (unsigned);
@@ -1918,7 +1920,7 @@ nios2_delegitimize_address (rtx x)
 	case UNSPEC_LOAD_TLS_IE:
 	case UNSPEC_ADD_TLS_LE:
 	  x = XVECEXP (XEXP (x, 0), 0, 0);
-	  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+	  gcc_assert (CONSTANT_P (x));
 	  break;
 	}
     }

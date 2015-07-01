@@ -2519,10 +2519,8 @@ merge_relative_positions (position **roota, position *a,
 
 /* A hasher of states that treats two states as "equal" if they might be
    merged (but trying to be more discriminating than "return true").  */
-struct test_pattern_hasher : typed_noop_remove <merge_state_info>
+struct test_pattern_hasher : nofree_ptr_hash <merge_state_info>
 {
-  typedef merge_state_info *value_type;
-  typedef merge_state_info *compare_type;
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
 };

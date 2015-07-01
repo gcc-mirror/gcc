@@ -61,8 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "bitmap.h"
 #include "gimple-ssa.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-ssanames.h"
@@ -126,10 +124,8 @@ enum omp_region_type
 
 /* Gimplify hashtable helper.  */
 
-struct gimplify_hasher : typed_free_remove <elt_t>
+struct gimplify_hasher : free_ptr_hash <elt_t>
 {
-  typedef elt_t *value_type;
-  typedef elt_t *compare_type;
   static inline hashval_t hash (const elt_t *);
   static inline bool equal (const elt_t *, const elt_t *);
 };

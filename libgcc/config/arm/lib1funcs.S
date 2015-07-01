@@ -1336,23 +1336,30 @@ LSYM(Lover12):
 #define SIGFPE	8
 
 #ifdef __ARM_EABI__
+	cfi_start	__aeabi_ldiv0, LSYM(Lend_aeabi_ldiv0)
 	WEAK aeabi_idiv0
 	WEAK aeabi_ldiv0
 	ARM_FUNC_START aeabi_idiv0
 	ARM_FUNC_START aeabi_ldiv0
+	do_push	{r1, lr}
+98:	cfi_push 98b - __aeabi_ldiv0, 0xe, -0x4, 0x8
 #else
+	cfi_start	__div0, LSYM(Lend_div0)
 	ARM_FUNC_START div0
+	do_push	{r1, lr}
+98:	cfi_push 98b - __div0, 0xe, -0x4, 0x8
 #endif
 
-	do_push	{r1, lr}
 	mov	r0, #SIGFPE
 	bl	SYM(raise) __PLT__
-	RETLDM	r1
+	RETLDM	r1 unwind=98b
 
 #ifdef __ARM_EABI__
+	cfi_end	LSYM(Lend_aeabi_ldiv0)
 	FUNC_END aeabi_ldiv0
 	FUNC_END aeabi_idiv0
 #else
+	cfi_end	LSYM(Lend_div0)
 	FUNC_END div0
 #endif
 	

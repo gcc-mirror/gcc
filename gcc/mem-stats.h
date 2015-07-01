@@ -3,7 +3,7 @@
 
 /* Forward declaration.  */
 template<typename Key, typename Value,
-	 typename Traits = default_hashmap_traits>
+	 typename Traits = simple_hashmap_traits<default_hash_traits<Key> > >
 class hash_map;
 
 #define LOCATION_LINE_EXTRA_SPACE 30
@@ -238,10 +238,10 @@ template <class T>
 class mem_alloc_description
 {
 public:
-  struct mem_alloc_hashmap_traits: default_hashmap_traits
+  struct mem_location_hash : nofree_ptr_hash <mem_location>
   {
     static hashval_t
-    hash (const mem_location *l)
+    hash (value_type l)
     {
 	inchash::hash hstate;
 
@@ -253,7 +253,7 @@ public:
     }
 
     static bool
-    equal_keys (const mem_location *l1, const mem_location *l2)
+    equal (value_type l1, value_type l2)
     {
       return l1->m_filename == l2->m_filename
 	&& l1->m_function == l2->m_function
@@ -262,9 +262,8 @@ public:
   };
 
   /* Internal class type definitions.  */
-  typedef hash_map <mem_location *, T *, mem_alloc_hashmap_traits> mem_map_t;
-  typedef hash_map <const void *, mem_usage_pair<T>, default_hashmap_traits>
-    reverse_mem_map_t;
+  typedef hash_map <mem_location_hash, T *> mem_map_t;
+  typedef hash_map <const void *, mem_usage_pair<T> > reverse_mem_map_t;
   typedef hash_map <const void *, std::pair<T *, size_t> > reverse_object_map_t;
   typedef std::pair <mem_location *, T *> mem_list_t;
 

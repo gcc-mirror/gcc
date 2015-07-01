@@ -1360,9 +1360,7 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	if (rdg_vertex_for_stmt (rdg, DR_STMT (dr1))
 	    > rdg_vertex_for_stmt (rdg, DR_STMT (dr2)))
 	  {
-	    data_reference_p tem = dr1;
-	    dr1 = dr2;
-	    dr2 = tem;
+	    std::swap (dr1, dr2);
 	    this_dir = -this_dir;
 	  }
 	ddr = initialize_data_dependence_relation (dr1, dr2, loops);
@@ -1373,9 +1371,7 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	  {
 	    if (DDR_REVERSED_P (ddr))
 	      {
-		data_reference_p tem = dr1;
-		dr1 = dr2;
-		dr2 = tem;
+		std::swap (dr1, dr2);
 		this_dir = -this_dir;
 	      }
 	    /* Known dependences can still be unordered througout the

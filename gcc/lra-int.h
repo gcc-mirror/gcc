@@ -358,8 +358,8 @@ extern void lra_update_dups (lra_insn_recog_data_t, signed char *);
 extern void lra_process_new_insns (rtx_insn *, rtx_insn *, rtx_insn *,
 				   const char *);
 
-extern bool lra_substitute_pseudo (rtx *, int, rtx);
-extern bool lra_substitute_pseudo_within_insn (rtx_insn *, int, rtx);
+extern bool lra_substitute_pseudo (rtx *, int, rtx, bool);
+extern bool lra_substitute_pseudo_within_insn (rtx_insn *, int, rtx, bool);
 
 extern lra_insn_recog_data_t lra_set_insn_recog_data (rtx_insn *);
 extern lra_insn_recog_data_t lra_update_insn_recog_data (rtx_insn *);

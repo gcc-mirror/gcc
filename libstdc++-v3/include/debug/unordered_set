@@ -355,10 +355,16 @@ namespace __debug
 	void
 	insert(_InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_valid_range(__first, __last);
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_valid_range2(__first, __last, __dist);
 	  size_type __bucket_count = this->bucket_count();
-	  _Base::insert(__gnu_debug::__base(__first),
-			__gnu_debug::__base(__last));
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::insert(__gnu_debug::__unsafe(__first),
+			  __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::insert(__first, __last);
+
 	  _M_check_rehashed(__bucket_count);
 	}
 
@@ -799,10 +805,16 @@ namespace __debug
 	void
 	insert(_InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_valid_range(__first, __last);
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_valid_range2(__first, __last, __dist);
 	  size_type __bucket_count = this->bucket_count();
-	  _Base::insert(__gnu_debug::__base(__first),
-			__gnu_debug::__base(__last));
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::insert(__gnu_debug::__unsafe(__first),
+			  __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::insert(__first, __last);
+
 	  _M_check_rehashed(__bucket_count);
 	}
 

@@ -87,7 +87,7 @@ make_triplet_val_inv (tree *value)
 {
   if (TREE_CODE (*value) != INTEGER_CST
       && TREE_CODE (*value) != PARM_DECL
-      && TREE_CODE (*value) != VAR_DECL)
+      && !VAR_P (*value))
     *value = get_temp_regvar (ptrdiff_type_node, *value);
 }
 
@@ -345,7 +345,7 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
     array_ind_value = get_temp_regvar (TREE_TYPE (func_parm), func_parm);
 
   array_op0 = (*array_operand)[0];
-  if (TREE_CODE (array_op0) == INDIRECT_REF)
+  if (INDIRECT_REF_P (array_op0))
     array_op0 = TREE_OPERAND (array_op0, 0);
   switch (an_type)
     {

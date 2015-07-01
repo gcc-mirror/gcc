@@ -231,7 +231,7 @@ along with GCC; see the file COPYING3.  If not see
    Additionally, the hash value for the struct is cached in hashval, and
    in_worklist indicates whether it's currently part of worklist.  */
 
-struct same_succ_def
+struct same_succ_def : pointer_hash <same_succ_def>
 {
   /* The bbs that have the same successor bbs.  */
   bitmap bbs;
@@ -248,8 +248,6 @@ struct same_succ_def
   hashval_t hashval;
 
   /* hash_table support.  */
-  typedef same_succ_def *value_type;
-  typedef same_succ_def *compare_type;
   static inline hashval_t hash (const same_succ_def *);
   static int equal (const same_succ_def *, const same_succ_def *);
   static void remove (same_succ_def *);

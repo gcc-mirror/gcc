@@ -524,9 +524,8 @@ static void variable_htab_free (void *);
 
 /* Variable hashtable helpers.  */
 
-struct variable_hasher
+struct variable_hasher : pointer_hash <variable_def>
 {
-  typedef variable_def *value_type;
   typedef void *compare_type;
   static inline hashval_t hash (const variable_def *);
   static inline bool equal (const variable_def *, const void *);

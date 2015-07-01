@@ -41,8 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "langhooks.h"
 #include "splay-tree.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "ipa-utils.h"
 #include "bitmap.h"

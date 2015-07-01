@@ -122,6 +122,10 @@ Enum(float_abi_type) String(softfp) Value(ARM_FLOAT_ABI_SOFTFP)
 EnumValue
 Enum(float_abi_type) String(hard) Value(ARM_FLOAT_ABI_HARD)
 
+mflip-thumb
+Target Report Var(TARGET_FLIP_THUMB) Undocumented
+Switch ARM/Thumb modes on alternating functions for compiler testing
+
 mfp16-format=
 Target RejectNegative Joined Enum(arm_fp16_format_type) Var(arm_fp16_format) Init(ARM_FP16_FORMAT_NONE)
 Specify the __fp16 floating-point format

@@ -26,11 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "tree.h"
 #include "alloc-pool.h"
-#include "plugin-api.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "output.h"
 #include "toplev.h"
@@ -292,8 +290,7 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
   tree base = get_base_address (array);
   if ((flag_sanitize & SANITIZE_BOUNDS_STRICT) == 0
       && TREE_CODE (array) == COMPONENT_REF
-      && base && (TREE_CODE (base) == INDIRECT_REF
-		  || TREE_CODE (base) == MEM_REF))
+      && base && (INDIRECT_REF_P (base) || TREE_CODE (base) == MEM_REF))
     {
       tree next = NULL_TREE;
       tree cref = array;

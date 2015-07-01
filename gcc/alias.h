@@ -20,14 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ALIAS_H
 #define GCC_ALIAS_H
 
-/* The type of an alias set.  Code currently assumes that variables of
-   this type can take the values 0 (the alias set which aliases
-   everything) and -1 (sometimes indicating that the alias set is
-   unknown, sometimes indicating a memory barrier) and -2 (indicating
-   that the alias set should be set to a unique value but has not been
-   set yet).  */
-typedef int alias_set_type;
-
 extern alias_set_type new_alias_set (void);
 extern alias_set_type get_alias_set (tree);
 extern alias_set_type get_deref_alias_set (tree);

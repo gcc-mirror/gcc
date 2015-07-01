@@ -96,8 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "ira.h"
 #include "lra.h"
@@ -220,7 +218,7 @@ struct GTY((for_user)) indirect_string_node {
   unsigned int index;
 };
 
-struct indirect_string_hasher : ggc_hasher<indirect_string_node *>
+struct indirect_string_hasher : ggc_ptr_hash<indirect_string_node>
 {
   typedef const char *compare_type;
 
@@ -2796,7 +2794,7 @@ static GTY(()) limbo_die_node *limbo_die_list;
    DW_AT_{,MIPS_}linkage_name once their DECL_ASSEMBLER_NAMEs are set.  */
 static GTY(()) limbo_die_node *deferred_asm_name;
 
-struct dwarf_file_hasher : ggc_hasher<dwarf_file_data *>
+struct dwarf_file_hasher : ggc_ptr_hash<dwarf_file_data>
 {
   typedef const char *compare_type;
 
@@ -2807,7 +2805,7 @@ struct dwarf_file_hasher : ggc_hasher<dwarf_file_data *>
 /* Filenames referenced by this compilation unit.  */
 static GTY(()) hash_table<dwarf_file_hasher> *file_table;
 
-struct decl_die_hasher : ggc_hasher<die_node *>
+struct decl_die_hasher : ggc_ptr_hash<die_node>
 {
   typedef tree compare_type;
 
@@ -2818,7 +2816,7 @@ struct decl_die_hasher : ggc_hasher<die_node *>
    The key is a DECL_UID() which is a unique number identifying each decl.  */
 static GTY (()) hash_table<decl_die_hasher> *decl_die_table;
 
-struct block_die_hasher : ggc_hasher<die_struct *>
+struct block_die_hasher : ggc_ptr_hash<die_struct>
 {
   static hashval_t hash (die_struct *);
   static bool equal (die_struct *, die_struct *);
@@ -2882,7 +2880,7 @@ struct GTY ((chain_next ("%h.next"))) call_arg_loc_node {
 };
 
 
-struct decl_loc_hasher : ggc_hasher<var_loc_list *>
+struct decl_loc_hasher : ggc_ptr_hash<var_loc_list>
 {
   typedef const_tree compare_type;
 
@@ -2912,7 +2910,7 @@ struct GTY ((for_user)) cached_dw_loc_list_def {
 };
 typedef struct cached_dw_loc_list_def cached_dw_loc_list;
 
-struct dw_loc_list_hasher : ggc_hasher<cached_dw_loc_list *>
+struct dw_loc_list_hasher : ggc_ptr_hash<cached_dw_loc_list>
 {
 
   typedef const_tree compare_type;
@@ -4238,7 +4236,7 @@ AT_loc_list_ptr (dw_attr_ref a)
   return &a->dw_attr_val.v.val_loc_list;
 }
 
-struct addr_hasher : ggc_hasher<addr_table_entry *>
+struct addr_hasher : ggc_ptr_hash<addr_table_entry>
 {
   static hashval_t hash (addr_table_entry *);
   static bool equal (addr_table_entry *, addr_table_entry *);
@@ -6957,9 +6955,8 @@ struct cu_hash_table_entry
 
 /* Helpers to manipulate hash table of CUs.  */
 
-struct cu_hash_table_entry_hasher
+struct cu_hash_table_entry_hasher : pointer_hash <cu_hash_table_entry>
 {
-  typedef cu_hash_table_entry *value_type;
   typedef die_struct *compare_type;
   static inline hashval_t hash (const cu_hash_table_entry *);
   static inline bool equal (const cu_hash_table_entry *, const die_struct *);
@@ -7294,9 +7291,8 @@ struct decl_table_entry
 
 /* Hashtable helpers.  */
 
-struct decl_table_entry_hasher : typed_free_remove <decl_table_entry>
+struct decl_table_entry_hasher : free_ptr_hash <decl_table_entry>
 {
-  typedef decl_table_entry *value_type;
   typedef die_struct *compare_type;
   static inline hashval_t hash (const decl_table_entry *);
   static inline bool equal (const decl_table_entry *, const die_struct *);
@@ -7836,10 +7832,8 @@ struct external_ref
 
 /* Hashtable helpers.  */
 
-struct external_ref_hasher : typed_free_remove <external_ref>
+struct external_ref_hasher : free_ptr_hash <external_ref>
 {
-  typedef external_ref *value_type;
-  typedef external_ref *compare_type;
   static inline hashval_t hash (const external_ref *);
   static inline bool equal (const external_ref *, const external_ref *);
 };
@@ -18021,18 +18015,14 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 	    {
 	      /* FIXME: Reuse DIE even with a differing context.
 
-		 This happens when called through
-		 dwarf2out_abstract_function for formal parameter
-		 packs.  The issue is that we're calling
+		 This can happen when calling
 		 dwarf2out_abstract_function to build debug info for
 		 the abstract instance of a function for which we have
 		 already generated a DIE in
 		 dwarf2out_early_global_decl.
 
-	         Once we remove dwarf2out_abstract_function, this
-	         gcc_assert should be a gcc_unreachable.  */
-	      gcc_assert (parm_die->die_parent->die_tag
-			  == DW_TAG_GNU_formal_parameter_pack);
+	         Once we remove dwarf2out_abstract_function, we should
+	         have a call to gcc_unreachable here.  */
 	    }
 	}
 
@@ -22783,10 +22773,8 @@ dwarf2out_undef (unsigned int lineno ATTRIBUTE_UNUSED,
 
 /* Helpers to manipulate hash table of CUs.  */
 
-struct macinfo_entry_hasher : typed_noop_remove <macinfo_entry>
+struct macinfo_entry_hasher : nofree_ptr_hash <macinfo_entry>
 {
-  typedef macinfo_entry *value_type;
-  typedef macinfo_entry *compare_type;
   static inline hashval_t hash (const macinfo_entry *);
   static inline bool equal (const macinfo_entry *, const macinfo_entry *);
 };
@@ -23875,10 +23863,8 @@ file_table_relative_p (dwarf_file_data **slot, bool *p)
 
 /* Helpers to manipulate hash table of comdat type units.  */
 
-struct comdat_type_hasher : typed_noop_remove <comdat_type_node>
+struct comdat_type_hasher : nofree_ptr_hash <comdat_type_node>
 {
-  typedef comdat_type_node *value_type;
-  typedef comdat_type_node *compare_type;
   static inline hashval_t hash (const comdat_type_node *);
   static inline bool equal (const comdat_type_node *, const comdat_type_node *);
 };
@@ -24988,10 +24974,8 @@ compare_locs (dw_loc_descr_ref x, dw_loc_descr_ref y)
 
 /* Hashtable helpers.  */
 
-struct loc_list_hasher : typed_noop_remove <dw_loc_list_struct>
+struct loc_list_hasher : nofree_ptr_hash <dw_loc_list_struct>
 {
-  typedef dw_loc_list_struct *value_type;
-  typedef dw_loc_list_struct *compare_type;
   static inline hashval_t hash (const dw_loc_list_struct *);
   static inline bool equal (const dw_loc_list_struct *,
 			    const dw_loc_list_struct *);

@@ -1,0 +1,44 @@
+/* Target instruction definitions.
+   Copyright (C) 2015 Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file has one entry for each public pattern name that the target
+   can provide.  It is only used if no distinction between operand modes
+   is necessary.  If separate patterns are needed for different modes
+   (so as to distinguish addition of QImode values from addition of
+   HImode values, for example) then an optab should be used instead.
+
+   Each entry has the form:
+
+     DEF_TARGET_INSN (name, prototype)
+
+   where NAME is the name of the pattern and PROTOTYPE is its C prototype.
+   The prototype should use parameter names of the form "x0", "x1", etc.
+   Patterns that take no operands should have a prototype "(void)".
+
+   Instructions should be documented in md.texi rather than here.  */
+DEF_TARGET_INSN (canonicalize_funcptr_for_compare, (rtx x0, rtx x1))
+DEF_TARGET_INSN (epilogue, (void))
+DEF_TARGET_INSN (jump, (rtx x0))
+DEF_TARGET_INSN (load_multiple, (rtx x0, rtx x1, rtx x2))
+DEF_TARGET_INSN (mem_signal_fence, (rtx x0))
+DEF_TARGET_INSN (mem_thread_fence, (rtx x0))
+DEF_TARGET_INSN (memory_barrier, (void))
+DEF_TARGET_INSN (prologue, (void))
+DEF_TARGET_INSN (return, (void))
+DEF_TARGET_INSN (sibcall_epilogue, (void))
+DEF_TARGET_INSN (simple_return, (void))
+DEF_TARGET_INSN (store_multiple, (rtx x0, rtx x1, rtx x2))

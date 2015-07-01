@@ -61,14 +61,9 @@ struct A2 : std::allocator<T>
   template<typename U> A2(const A2<U>&) { }
 
   using propagate_on_container_move_assignment = std::false_type;
-};
 
-namespace __gnu_cxx
-{
-  template<typename T>
-    struct __allocator_always_compares_equal<A2<T>> : std::true_type
-    { };
-}
+  using is_always_equal = std::true_type;
+};
 
 void test02()
 {

@@ -37,20 +37,31 @@ along with GCC; see the file COPYING3.  If not see
          - A typedef named 'value_type' to the value type (from above).
 
          - A static member function named 'hash' that takes a value_type
-         pointer and returns a hashval_t value.
+         (or 'const value_type &') and returns a hashval_t value.
 
-         - A typedef named 'compare_type' that is used to test when an value
+         - A typedef named 'compare_type' that is used to test when a value
          is found.  This type is the comparison type.  Usually, it will be the
          same as value_type.  If it is not the same type, you must generally
          explicitly compute hash values and pass them to the hash table.
 
          - A static member function named 'equal' that takes a value_type
-         pointer and a compare_type pointer, and returns a bool.
+         and a compare_type, and returns a bool.  Both arguments can be
+         const references.
 
          - A static function named 'remove' that takes an value_type pointer
          and frees the memory allocated by it.  This function is used when
          individual elements of the table need to be disposed of (e.g.,
          when deleting a hash table, removing elements from the table, etc).
+
+	 - An optional static function named 'keep_cache_entry'.  This
+	 function is provided only for garbage-collected elements that
+	 are not marked by the normal gc mark pass.  It describes what
+	 what should happen to the element at the end of the gc mark phase.
+	 The return value should be:
+	   - 0 if the element should be deleted
+	   - 1 if the element should be kept and needs to be marked
+	   - -1 if the element should be kept and is already marked.
+	 Returning -1 rather than 1 is purely an optimization.
 
       3. The type of the hash table itself.  (More later.)
 
@@ -58,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 
       4. The template type used to describe how hash table memory
       is allocated.  This type is called the allocator type.  It is
-      parameterized on the value type.  It provides four functions.
+      parameterized on the value type.  It provides two functions:
 
          - A static member function named 'data_alloc'.  This function
          allocates the data elements in the table.
@@ -81,14 +92,26 @@ along with GCC; see the file COPYING3.  If not see
    We compose this into a few steps.
 
       1. Decide on a removal policy for values stored in the table.
-         This header provides class templates for the two most common
-         policies.
+         hash-traits.h provides class templates for the four most common
+         policies:
 
          * typed_free_remove implements the static 'remove' member function
          by calling free().
 
          * typed_noop_remove implements the static 'remove' member function
          by doing nothing.
+
+         * ggc_remove implements the static 'remove' member by doing nothing,
+         but instead provides routines for gc marking and for PCH streaming.
+         Use this for garbage-collected data that needs to be preserved across
+         collections.
+
+         * ggc_cache_remove is like ggc_remove, except that it does not
+         mark the entries during the normal gc mark phase.  Instead it
+         uses 'keep_cache_entry' (described above) to keep elements that
+         were not collected and delete those that were.  Use this for
+         garbage-collected caches that should not in themselves stop
+         the data from being collected.
 
          You can use these policies by simply deriving the descriptor type
          from one of those class template, with the appropriate argument.
@@ -98,22 +121,26 @@ along with GCC; see the file COPYING3.  If not see
 
       2. Choose a hash function.  Write the static 'hash' member function.
 
-      3. Choose an equality testing function.  In most cases, its two
-      arguments will be value_type pointers.  If not, the first argument must
-      be a value_type pointer, and the second argument a compare_type pointer.
+      3. Decide whether the lookup function should take as input an object
+	 of type value_type or something more restricted.  Define compare_type
+	 accordingly.
 
+      4. Choose an equality testing function 'equal' that compares a value_type
+	 and a compare_type.
+
+   If your elements are pointers, it is usually easiest to start with one
+   of the generic pointer descriptors described below and override the bits
+   you need to change.
 
    AN EXAMPLE DESCRIPTOR TYPE
 
    Suppose you want to put some_type into the hash table.  You could define
    the descriptor type as follows.
 
-      struct some_type_hasher : typed_noop_remove <some_type>
-      // Deriving from typed_noop_remove means that we get a 'remove' that does
+      struct some_type_hasher : nofree_ptr_hash <some_type>
+      // Deriving from nofree_ptr_hash means that we get a 'remove' that does
       // nothing.  This choice is good for raw values.
       {
-        typedef some_type value_type;
-        typedef some_type compare_type;
         static inline hashval_t hash (const value_type *);
         static inline bool equal (const value_type *, const compare_type *);
       };
@@ -143,11 +170,19 @@ along with GCC; see the file COPYING3.  If not see
 
    EASY DESCRIPTORS FOR POINTERS
 
-   The class template pointer_hash provides everything you need to hash
-   pointers (as opposed to what they point to).  So, to instantiate a hash
-   table over pointers to whatever_type,
+   There are four descriptors for pointer elements, one for each of
+   the removal policies above:
 
-      hash_table <pointer_hash <whatever_type>> whatever_type_hash_table;
+   * nofree_ptr_hash (based on typed_noop_remove)
+   * free_ptr_hash (based on typed_free_remove)
+   * ggc_ptr_hash (based on ggc_remove)
+   * ggc_cache_ptr_hash (based on ggc_cache_remove)
+
+   These descriptors hash and compare elements by their pointer value,
+   rather than what they point to.  So, to instantiate a hash table over
+   pointers to whatever_type, without freeing the whatever_types, use:
+
+      hash_table <nofree_ptr_hash <whatever_type> > whatever_type_hash_table;
 
 
    HASH TABLE ITERATORS
@@ -202,6 +237,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "inchash.h"
 #include "mem-stats-traits.h"
+#include "hash-traits.h"
 #include "hash-map-traits.h"
 
 template<typename, typename, typename> class hash_map;
@@ -236,143 +272,6 @@ xcallocator <Type>::data_free (Type *memory)
 {
   return ::free (memory);
 }
-
-
-/* Helpful type for removing with free.  */
-
-template <typename Type>
-struct typed_free_remove
-{
-  static inline void remove (Type *p);
-};
-
-
-/* Remove with free.  */
-
-template <typename Type>
-inline void
-typed_free_remove <Type>::remove (Type *p)
-{
-  free (p);
-}
-
-
-/* Helpful type for a no-op remove.  */
-
-template <typename Type>
-struct typed_noop_remove
-{
-  static inline void remove (Type *p);
-};
-
-
-/* Remove doing nothing.  */
-
-template <typename Type>
-inline void
-typed_noop_remove <Type>::remove (Type *p ATTRIBUTE_UNUSED)
-{
-}
-
-
-/* Pointer hash with a no-op remove method.  */
-
-template <typename Type>
-struct pointer_hash : typed_noop_remove <Type>
-{
-  typedef Type *value_type;
-  typedef Type *compare_type;
-
-  static inline hashval_t hash (const value_type &);
-
-  static inline bool equal (const value_type &existing,
-			    const compare_type &candidate);
-};
-
-template <typename Type>
-inline hashval_t
-pointer_hash <Type>::hash (const value_type &candidate)
-{
-  /* This is a really poor hash function, but it is what the current code uses,
-     so I am reusing it to avoid an additional axis in testing.  */
-  return (hashval_t) ((intptr_t)candidate >> 3);
-}
-
-template <typename Type>
-inline bool
-pointer_hash <Type>::equal (const value_type &existing,
-			   const compare_type &candidate)
-{
-  return existing == candidate;
-}
-
-/* Hasher for entry in gc memory.  */
-
-template<typename T>
-struct ggc_hasher
-{
-  typedef T value_type;
-  typedef T compare_type;
-
-  static void remove (T) {}
-
-  static void
-  ggc_mx (T p)
-  {
-    extern void gt_ggc_mx (T &);
-    gt_ggc_mx (p);
-  }
-
-  static void
-  pch_nx (T &p)
-  {
-  extern void gt_pch_nx (T &);
-  gt_pch_nx (p);
-  }
-
-  static void
-  pch_nx (T &p, gt_pointer_operator op, void *cookie)
-  {
-    op (&p, cookie);
-  }
-};
-
-/* Hasher for cache entry in gc memory.  */
-
-template<typename T>
-struct ggc_cache_hasher
-{
-  typedef T value_type;
-  typedef T compare_type;
-
-  static void remove (T &) {}
-
-  /* Entries are weakly held because this is for caches.  */
-
-  static void ggc_mx (T &) {}
-
-  static void
-  pch_nx (T &p)
-  {
-  extern void gt_pch_nx (T &);
-  gt_pch_nx (p);
-  }
-
-  static void
-  pch_nx (T &p, gt_pointer_operator op, void *cookie)
-  {
-    op (&p, cookie);
-  }
-
-  /* Clear out entries if they are about to be gc'd.  */
-
-  static void
-  handle_cache_entry (T &e)
-  {
-    if (e != HTAB_EMPTY_ENTRY && e != HTAB_DELETED_ENTRY && !ggc_marked_p (e))
-      e = static_cast<T> (HTAB_DELETED_ENTRY);
-  }
-};
 
 
 /* Table of primes and their inversion information.  */
@@ -439,140 +338,13 @@ hash_table_mod2 (hashval_t hash, unsigned int index)
   return 1 + mul_mod (hash, p->prime - 2, p->inv_m2, p->shift);
 }
 
- template<typename Traits>
- struct has_is_deleted
-{
-  template<typename U, bool (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::is_deleted> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct is_deleted_helper
-{
-  static inline bool
-  call (Type &v)
-  {
-    return Traits::is_deleted (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct is_deleted_helper<Type *, Traits, false>
-{
-  static inline bool
-  call (Type *v)
-  {
-    return v == HTAB_DELETED_ENTRY;
-  }
-};
-
- template<typename Traits>
- struct has_is_empty
-{
-  template<typename U, bool (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::is_empty> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct is_empty_helper
-{
-  static inline bool
-  call (Type &v)
-  {
-    return Traits::is_empty (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct is_empty_helper<Type *, Traits, false>
-{
-  static inline bool
-  call (Type *v)
-  {
-    return v == HTAB_EMPTY_ENTRY;
-  }
-};
-
- template<typename Traits>
- struct has_mark_deleted
-{
-  template<typename U, void (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::mark_deleted> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct mark_deleted_helper
-{
-  static inline void
-  call (Type &v)
-  {
-    Traits::mark_deleted (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct mark_deleted_helper<Type *, Traits, false>
-{
-  static inline void
-  call (Type *&v)
-  {
-    v = static_cast<Type *> (HTAB_DELETED_ENTRY);
-  }
-};
-
- template<typename Traits>
- struct has_mark_empty
-{
-  template<typename U, void (*)(U &)> struct helper {};
-  template<typename U> static char test (helper<U, U::mark_empty> *);
-  template<typename U> static int test (...);
-  static const bool value = sizeof (test<Traits> (0)) == sizeof (char);
-};
-
-template<typename Type, typename Traits, bool = has_is_deleted<Traits>::value>
-struct mark_empty_helper
-{
-  static inline void
-  call (Type &v)
-  {
-    Traits::mark_empty (v);
-  }
-};
-
-template<typename Type, typename Traits>
-struct mark_empty_helper<Type *, Traits, false>
-{
-  static inline void
-  call (Type *&v)
-  {
-    v = static_cast<Type *> (HTAB_EMPTY_ENTRY);
-  }
-};
-
 class mem_usage;
 
 /* User-facing hash table type.
 
-   The table stores elements of type Descriptor::value_type.
-
-   It hashes values with the hash member function.
-     The table currently works with relatively weak hash functions.
-     Use typed_pointer_hash <Value> when hashing pointers instead of objects.
-
-   It compares elements with the equal member function.
-     Two elements with the same hash may not be equal.
-     Use typed_pointer_equal <Value> when hashing pointers instead of objects.
-
-   It removes elements with the remove member function.
-     This feature is useful for freeing memory.
-     Derive from typed_null_remove <Value> when not freeing objects.
-     Derive from typed_free_remove <Value> when doing a simple object free.
+   The table stores elements of type Descriptor::value_type and uses
+   the static descriptor functions described at the top of the file
+   to hash, compare and remove elements.
 
    Specify the template Allocator to allocate and free memory.
      The default is xcallocator.
@@ -595,7 +367,6 @@ public:
   ~hash_table ();
 
   /* Create a hash_table in gc memory.  */
-
   static hash_table *
   create_ggc (size_t n CXX_MEM_STAT_INFO)
   {
@@ -619,7 +390,6 @@ public:
   /* This function clears a specified SLOT in a hash table.  It is
      useful when you've already done the lookup and don't want to do it
      again. */
-
   void clear_slot (value_type *);
 
   /* This function searches for a hash table entry equal to the given
@@ -627,7 +397,7 @@ public:
      be used to insert or delete an element. */
   value_type &find_with_hash (const compare_type &, hashval_t);
 
-/* Like find_slot_with_hash, but compute the hash value from the element.  */
+  /* Like find_slot_with_hash, but compute the hash value from the element.  */
   value_type &find (const value_type &value)
     {
       return find_with_hash (value, Descriptor::hash (value));
@@ -653,7 +423,8 @@ public:
      matching element in the hash table, this function does nothing. */
   void remove_elt_with_hash (const compare_type &, hashval_t);
 
-/* Like remove_elt_with_hash, but compute the hash value from the element.  */
+  /* Like remove_elt_with_hash, but compute the hash value from the
+     element.  */
   void remove_elt (const value_type &value)
     {
       remove_elt_with_hash (value, Descriptor::hash (value));
@@ -720,27 +491,30 @@ private:
   template<typename T> friend void gt_pch_nx (hash_table<T> *,
 					      gt_pointer_operator, void *);
 
+  template<typename T> friend void gt_cleare_cache (hash_table<T> *);
+
   value_type *alloc_entries (size_t n CXX_MEM_STAT_INFO) const;
   value_type *find_empty_slot_for_expand (hashval_t);
   void expand ();
   static bool is_deleted (value_type &v)
-    {
-      return is_deleted_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    return Descriptor::is_deleted (v);
+  }
+
   static bool is_empty (value_type &v)
-    {
-      return is_empty_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    return Descriptor::is_empty (v);
+  }
 
   static void mark_deleted (value_type &v)
-    {
-      return mark_deleted_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    Descriptor::mark_deleted (v);
+  }
 
   static void mark_empty (value_type &v)
-    {
-      return mark_empty_helper<value_type, Descriptor>::call (v);
-    }
+  {
+    Descriptor::mark_empty (v);
+  }
 
   /* Table itself.  */
   typename Descriptor::value_type *m_entries;
@@ -891,7 +665,7 @@ hash_table<Descriptor, Allocator>::find_empty_slot_for_expand (hashval_t hash)
    table entries is changed.  If memory allocation fails, this function
    will abort.  */
 
-	  template<typename Descriptor, template<typename Type> class Allocator>
+template<typename Descriptor, template<typename Type> class Allocator>
 void
 hash_table<Descriptor, Allocator>::expand ()
 {
@@ -1267,12 +1041,20 @@ template<typename H>
 inline void
 gt_cleare_cache (hash_table<H> *h)
 {
+  extern void gt_ggc_mx (typename H::value_type &t);
+  typedef hash_table<H> table;
   if (!h)
     return;
 
-  for (typename hash_table<H>::iterator iter = h->begin (); iter != h->end ();
-       ++iter)
-    H::handle_cache_entry (*iter);
+  for (typename table::iterator iter = h->begin (); iter != h->end (); ++iter)
+    if (!table::is_empty (*iter) && !table::is_deleted (*iter))
+      {
+	int res = H::keep_cache_entry (*iter);
+	if (res == 0)
+	  h->clear_slot (&*iter);
+	else if (res != -1)
+	  gt_ggc_mx (*iter);
+      }
 }
 
 #endif /* TYPED_HASHTAB_H */

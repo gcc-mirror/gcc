@@ -282,10 +282,8 @@ registration_hasher::equal (const vtable_registration *p1,
 
 /* Hashtable definition and functions for vtbl_map_hash.  */
 
-struct vtbl_map_hasher : typed_noop_remove <struct vtbl_map_node>
+struct vtbl_map_hasher : nofree_ptr_hash <struct vtbl_map_node>
 {
-  typedef struct vtbl_map_node *value_type;
-  typedef struct vtbl_map_node *compare_type;
   static inline hashval_t hash (const vtbl_map_node *);
   static inline bool equal (const vtbl_map_node *, const vtbl_map_node *);
 };

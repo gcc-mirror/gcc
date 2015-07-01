@@ -210,6 +210,13 @@ enum var_init_status
   VAR_INIT_STATUS_INITIALIZED
 };
 
+/* The type of an alias set.  Code currently assumes that variables of
+   this type can take the values 0 (the alias set which aliases
+   everything) and -1 (sometimes indicating that the alias set is
+   unknown, sometimes indicating a memory barrier) and -2 (indicating
+   that the alias set should be set to a unique value but has not been
+   set yet).  */
+typedef int alias_set_type;
 
 struct edge_def;
 typedef struct edge_def *edge;

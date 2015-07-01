@@ -71,8 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "tree-vectorizer.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "builtins.h"
 
@@ -3841,13 +3839,15 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      if (slp_node)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	      else
+		{
+		  if (!prev_stmt_info)
+		    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+		  else
+		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+		  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		}
 	    }
-
-	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
-	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
       break;
 
@@ -5365,7 +5365,11 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  if (slp)
 		    vec_oprnd = vec_oprnds[j];
 		  else
-		    vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+		    {
+		      vect_is_simple_use (vec_oprnd, NULL, loop_vinfo,
+					  bb_vinfo, &def_stmt, &def, &dt);
+		      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+		    }
 		}
 
 	      for (i = 0; i < nstores; i++)
@@ -5396,10 +5400,12 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  vect_finish_stmt_generation (stmt, incr, gsi);
 
 		  running_off = newoff;
-		  if (g == group_size - 1)
+		  if (g == group_size - 1
+		      && !slp)
 		    {
 		      if (j == 0 && i == 0)
-			STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = assign;
+			STMT_VINFO_VEC_STMT (stmt_info)
+			    = *vec_stmt = assign;
 		      else
 			STMT_VINFO_RELATED_STMT (prev_stmt_info) = assign;
 		      prev_stmt_info = vinfo_for_stmt (assign);
@@ -6405,11 +6411,14 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      if (slp_perm)
 		dr_chain.quick_push (gimple_assign_lhs (new_stmt));
 	    }
-	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
 	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    {
+	      if (j == 0)
+		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	      else
+		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    }
 	}
       if (slp_perm)
 	vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
@@ -7519,6 +7528,8 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   bool done;
 
+  gimple old_vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+
   switch (STMT_VINFO_TYPE (stmt_info))
     {
     case type_demotion_vec_info_type:
@@ -7605,6 +7616,12 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
 	  gcc_unreachable ();
 	}
     }
+
+  /* Verify SLP vectorization doesn't mess with STMT_VINFO_VEC_STMT.
+     This would break hybrid SLP vectorization.  */
+  if (slp_node)
+    gcc_assert (!vec_stmt
+		&& STMT_VINFO_VEC_STMT (stmt_info) == old_vec_stmt);
 
   /* Handle inner-loop stmts whose DEF is used in the loop-nest that
      is being vectorized, but outside the immediately enclosing loop.  */
@@ -8259,11 +8276,7 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
     }
 
   if (BYTES_BIG_ENDIAN && c1 != VEC_WIDEN_MULT_EVEN_EXPR)
-    {
-      enum tree_code ctmp = c1;
-      c1 = c2;
-      c2 = ctmp;
-    }
+    std::swap (c1, c2);
 
   if (code == FIX_TRUNC_EXPR)
     {

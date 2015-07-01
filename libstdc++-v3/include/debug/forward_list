@@ -36,6 +36,13 @@
 #include <debug/safe_container.h>
 #include <debug/safe_iterator.h>
 
+// Special validity check for forward_list ranges.
+#define __glibcxx_check_valid_fl_range(_First,_Last,_Dist)		\
+_GLIBCXX_DEBUG_VERIFY(_First._M_valid_range(_Last, _Dist, false),	\
+		      _M_message(__gnu_debug::__msg_valid_range)	\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last))
+
 namespace __gnu_debug
 {
   /// Special iterators swap and invalidation for forward_list because of the
@@ -269,9 +276,15 @@ namespace __debug
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::assign(__gnu_debug::__base(__first),
-			__gnu_debug::__base(__last));
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_valid_range2(__first, __last, __dist);
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    _Base::assign(__gnu_debug::__unsafe(__first),
+			  __gnu_debug::__unsafe(__last));
+	  else
+	    _Base::assign(__first, __last);
+
 	  this->_M_invalidate_all();
 	}
 
@@ -401,11 +414,19 @@ namespace __debug
 	insert_after(const_iterator __pos,
 		     _InputIterator __first, _InputIterator __last)
 	{
-	  __glibcxx_check_insert_range_after(__pos, __first, __last);
-	  return iterator(_Base::insert_after(__pos.base(),
-					      __gnu_debug::__base(__first),
-					      __gnu_debug::__base(__last)),
-			  this);
+	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
+	  __glibcxx_check_insert_range_after(__pos, __first, __last, __dist);
+
+	  if (__dist.second >= __gnu_debug::__dp_sign)
+	    return
+	      {
+		_Base::insert_after(__pos.base(),
+				    __gnu_debug::__unsafe(__first),
+				    __gnu_debug::__unsafe(__last)),
+		this
+	      };
+	  else
+	    return { _Base::insert_after(__pos.base(), __first, __last), this };
 	}
 
       iterator
@@ -580,9 +601,10 @@ namespace __debug
       splice_after(const_iterator __pos, forward_list&& __list,
 		   const_iterator __before, const_iterator __last)
       {
+	typename __gnu_debug::_Distance_traits<const_iterator>::__type __dist;
 	auto __listptr = std::__addressof(__list);
 	__glibcxx_check_insert_after(__pos);
-	__glibcxx_check_valid_range(__before, __last);
+	__glibcxx_check_valid_fl_range(__before, __last, __dist);
 	_GLIBCXX_DEBUG_VERIFY(__before._M_attached_to(__listptr),
 			      _M_message(__gnu_debug::__msg_splice_other)
 			      ._M_sequence(__list, "list")
@@ -801,7 +823,7 @@ namespace __debug
 
 namespace __gnu_debug
 {
-  template<class _Tp, class _Alloc>
+  template<typename _Tp, typename _Alloc>
     struct _BeforeBeginHelper<std::__debug::forward_list<_Tp, _Alloc> >
     {
       typedef std::__debug::forward_list<_Tp, _Alloc> _Sequence;
@@ -818,6 +840,19 @@ namespace __gnu_debug
 	static bool
 	_S_Is_Beginnest(const _Safe_iterator<_Iterator, _Sequence>& __it)
 	{ return _S_Is(__it); }
+    };
+
+  template<typename _Tp, typename _Alloc>
+    struct _Sequence_traits<std::__debug::forward_list<_Tp, _Alloc> >
+    {
+      typedef typename std::__debug::forward_list<_Tp, _Alloc>::iterator _It;
+
+      static typename _Distance_traits<_It>::__type
+      _S_size(const std::__debug::forward_list<_Tp, _Alloc>& __seq)
+      {
+	return __seq.empty()
+	  ? std::make_pair(0, __dp_exact) : std::make_pair(1, __dp_equality);
+      }
     };
 
 #ifndef _GLIBCXX_DEBUG_PEDANTIC

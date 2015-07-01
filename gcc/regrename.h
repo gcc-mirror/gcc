@@ -91,6 +91,6 @@ extern void regrename_analyze (bitmap);
 extern du_head_p regrename_chain_from_id (unsigned int);
 extern int find_rename_reg (du_head_p, enum reg_class, HARD_REG_SET *, int,
 			    bool);
-extern void regrename_do_replace (du_head_p, int);
+extern bool regrename_do_replace (du_head_p, int);
 
 #endif

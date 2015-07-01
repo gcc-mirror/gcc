@@ -3132,17 +3132,16 @@ regno_use_in (unsigned int regno, rtx x)
 }
 
 /* Return a value indicating whether OP, an operand of a commutative
-   operation, is preferred as the first or second operand.  The higher
-   the value, the stronger the preference for being the first operand.
-   We use negative values to indicate a preference for the first operand
-   and positive values for the second operand.  */
+   operation, is preferred as the first or second operand.  The more
+   positive the value, the stronger the preference for being the first
+   operand.  */
 
 int
 commutative_operand_precedence (rtx op)
 {
   enum rtx_code code = GET_CODE (op);
 
-  /* Constants always come the second operand.  Prefer "nice" constants.  */
+  /* Constants always become the second operand.  Prefer "nice" constants.  */
   if (code == CONST_INT)
     return -8;
   if (code == CONST_WIDE_INT)

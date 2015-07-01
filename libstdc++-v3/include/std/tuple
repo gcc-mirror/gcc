@@ -457,42 +457,184 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
+
+  // Concept utility functions, reused in conditionally-explicit
+  // constructors.
+  template<bool, typename... _Elements>
+  struct _TC
+  {
+    template<typename... _UElements>
+    static constexpr bool _ConstructibleTuple()
+    {
+      return __and_<is_constructible<_Elements, const _UElements&>...>::value;
+    }
+
+    template<typename... _UElements>
+    static constexpr bool _ImplicitlyConvertibleTuple()
+    {
+      return __and_<is_convertible<const _UElements&, _Elements>...>::value;
+    }
+
+    template<typename... _UElements>
+    static constexpr bool _MoveConstructibleTuple()
+    {
+      return __and_<is_constructible<_Elements, _UElements&&>...>::value;
+    }
+
+    template<typename... _UElements>
+    static constexpr bool _ImplicitlyMoveConvertibleTuple()
+    {
+      return __and_<is_convertible<_UElements&&, _Elements>...>::value;
+    }
+  };
+
+  template<typename... _Elements>
+  struct _TC<false, _Elements...>
+  {
+    template<typename... _UElements>
+    static constexpr bool _ConstructibleTuple()
+    {
+      return false;
+    }
+
+    template<typename... _UElements>
+    static constexpr bool _ImplicitlyConvertibleTuple()
+    {
+      return false;
+    }
+
+    template<typename... _UElements>
+    static constexpr bool _MoveConstructibleTuple()
+    {
+      return false;
+    }
+
+    template<typename... _UElements>
+    static constexpr bool _ImplicitlyMoveConvertibleTuple()
+    {
+      return false;
+    }
+  };
+
   /// Primary class template, tuple
   template<typename... _Elements> 
     class tuple : public _Tuple_impl<0, _Elements...>
     {
       typedef _Tuple_impl<0, _Elements...> _Inherited;
 
+      // Used for constraining the default constructor so
+      // that it becomes dependent on the constraints.
+      template<typename _Dummy>
+      struct _TC2
+      {
+        static constexpr bool _DefaultConstructibleTuple()
+        {
+          return __and_<is_default_constructible<_Elements>...>::value;
+        }
+      };
+
     public:
+      template<typename _Dummy = void,
+               typename enable_if<_TC2<_Dummy>::
+                                    _DefaultConstructibleTuple(),
+                                  bool>::type = true>
       constexpr tuple()
       : _Inherited() { }
 
-      explicit
-      constexpr tuple(const _Elements&... __elements)
+      // Shortcut for the cases where constructors taking _Elements...
+      // need to be constrained.
+      template<typename _Dummy> using _TCC =
+        _TC<is_same<_Dummy, void>::value,
+            _Elements...>;
+
+      template<typename _Dummy = void,
+               typename enable_if<
+                 _TCC<_Dummy>::template
+                   _ConstructibleTuple<_Elements...>()
+                 && _TCC<_Dummy>::template
+                   _ImplicitlyConvertibleTuple<_Elements...>()
+                 && (sizeof...(_Elements) >= 1),
+               bool>::type=true>
+        constexpr tuple(const _Elements&... __elements)
       : _Inherited(__elements...) { }
 
-      template<typename... _UElements, typename = typename
-        enable_if<__and_<is_convertible<_UElements,
-					_Elements>...>::value>::type>
-	explicit
+      template<typename _Dummy = void,
+               typename enable_if<
+                 _TCC<_Dummy>::template
+                   _ConstructibleTuple<_Elements...>()
+                 && !_TCC<_Dummy>::template
+                   _ImplicitlyConvertibleTuple<_Elements...>()
+                 && (sizeof...(_Elements) >= 1),
+               bool>::type=false>
+      explicit constexpr tuple(const _Elements&... __elements)
+      : _Inherited(__elements...) { }
+
+      // Shortcut for the cases where constructors taking _UElements...
+      // need to be constrained.
+      template<typename... _UElements> using _TMC =
+                  _TC<(sizeof...(_Elements) == sizeof...(_UElements)),
+                      _Elements...>;
+
+      template<typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && _TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>()
+                  && (sizeof...(_Elements) >= 1),
+        bool>::type=true>
         constexpr tuple(_UElements&&... __elements)
+        : _Inherited(std::forward<_UElements>(__elements)...) { }
+
+      template<typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && !_TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>()
+                  && (sizeof...(_Elements) >= 1),
+        bool>::type=false>
+        explicit constexpr tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
 
       constexpr tuple(const tuple&) = default;
 
       constexpr tuple(tuple&&) = default; 
 
-      template<typename... _UElements, typename = typename
-        enable_if<__and_<is_convertible<const _UElements&,
-					_Elements>...>::value>::type>
+      template<typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _ConstructibleTuple<_UElements...>()
+                  && _TMC<_UElements...>::template
+                    _ImplicitlyConvertibleTuple<_UElements...>(),
+        bool>::type=true>
         constexpr tuple(const tuple<_UElements...>& __in)
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
-      template<typename... _UElements, typename = typename
-        enable_if<__and_<is_convertible<_UElements,
-					_Elements>...>::value>::type>
+      template<typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _ConstructibleTuple<_UElements...>()
+                  && !_TMC<_UElements...>::template
+                    _ImplicitlyConvertibleTuple<_UElements...>(),
+        bool>::type=false>
+        explicit constexpr tuple(const tuple<_UElements...>& __in)
+        : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
+        { }
+
+      template<typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && _TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+        bool>::type=true>
         constexpr tuple(tuple<_UElements...>&& __in)
+        : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
+
+      template<typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && !_TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+        bool>::type=false>
+        explicit constexpr tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
       // Allocator-extended constructors.
@@ -501,18 +643,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(allocator_arg_t __tag, const _Alloc& __a)
 	: _Inherited(__tag, __a) { }
 
-      template<typename _Alloc>
+      template<typename _Alloc, typename _Dummy = void,
+               typename enable_if<
+                 _TCC<_Dummy>::template
+                   _ConstructibleTuple<_Elements...>()
+                 && _TCC<_Dummy>::template
+                   _ImplicitlyConvertibleTuple<_Elements...>(),
+               bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const _Elements&... __elements)
 	: _Inherited(__tag, __a, __elements...) { }
 
-      template<typename _Alloc, typename... _UElements, typename = typename
-	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
+      template<typename _Alloc, typename _Dummy = void,
+               typename enable_if<
+                 _TCC<_Dummy>::template
+                   _ConstructibleTuple<_Elements...>()
+                 && !_TCC<_Dummy>::template
+                   _ImplicitlyConvertibleTuple<_Elements...>(),
+               bool>::type=false>
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+                       const _Elements&... __elements)
+	: _Inherited(__tag, __a, __elements...) { }
+
+      template<typename _Alloc, typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && _TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+        bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      _UElements&&... __elements)
 	: _Inherited(__tag, __a, std::forward<_UElements>(__elements)...)
        	{ }
+
+      template<typename _Alloc, typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && !_TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+        bool>::type=false>
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      _UElements&&... __elements)
+	: _Inherited(__tag, __a, std::forward<_UElements>(__elements)...)
+        { }
 
       template<typename _Alloc>
 	tuple(allocator_arg_t __tag, const _Alloc& __a, const tuple& __in)
@@ -522,19 +695,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple&& __in)
 	: _Inherited(__tag, __a, static_cast<_Inherited&&>(__in)) { }
 
-      template<typename _Alloc, typename... _UElements, typename = typename
-	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
+      template<typename _Alloc, typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _ConstructibleTuple<_UElements...>()
+                  && _TMC<_UElements...>::template
+                    _ImplicitlyConvertibleTuple<_UElements...>(),
+        bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const tuple<_UElements...>& __in)
 	: _Inherited(__tag, __a,
 	             static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
 	{ }
 
-      template<typename _Alloc, typename... _UElements, typename = typename
-	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
+      template<typename _Alloc, typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _ConstructibleTuple<_UElements...>()
+                  && !_TMC<_UElements...>::template
+                    _ImplicitlyConvertibleTuple<_UElements...>(),
+        bool>::type=false>
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const tuple<_UElements...>& __in)
+	: _Inherited(__tag, __a,
+	             static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
+	{ }
+
+      template<typename _Alloc, typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && _TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+        bool>::type=true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      tuple<_UElements...>&& __in)
+	: _Inherited(__tag, __a,
+	             static_cast<_Tuple_impl<0, _UElements...>&&>(__in))
+	{ }
+
+      template<typename _Alloc, typename... _UElements, typename
+        enable_if<_TMC<_UElements...>::template
+                    _MoveConstructibleTuple<_UElements...>()
+                  && !_TMC<_UElements...>::template
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+        bool>::type=false>
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      tuple<_UElements...>&& __in)
 	: _Inherited(__tag, __a,
 	             static_cast<_Tuple_impl<0, _UElements...>&&>(__in))
@@ -582,7 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // Explicit specialization, zero-element tuple.
-  template<>  
+  template<>
     class tuple<>
     {
     public:
@@ -597,46 +800,136 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tuple_impl<0, _T1, _T2> _Inherited;
 
     public:
+      template <typename _U1 = _T1,
+                typename _U2 = _T2,
+                typename enable_if<__and_<
+                                     is_default_constructible<_U1>,
+                                     is_default_constructible<_U2>>
+                                   ::value, bool>::type = true>
+
       constexpr tuple()
       : _Inherited() { }
 
-      explicit
-      constexpr tuple(const _T1& __a1, const _T2& __a2)
-      : _Inherited(__a1, __a2) { }
+      // Shortcut for the cases where constructors taking _T1, _T2
+      // need to be constrained.
+      template<typename _Dummy> using _TCC =
+        _TC<is_same<_Dummy, void>::value, _T1, _T2>;
 
-      template<typename _U1, typename _U2, typename = typename
-	       enable_if<__and_<is_convertible<_U1, _T1>,
-				is_convertible<_U2, _T2>>::value>::type>
-        explicit
+      template<typename _Dummy = void, typename
+               enable_if<_TCC<_Dummy>::template
+                           _ConstructibleTuple<_T1, _T2>()
+                         && _TCC<_Dummy>::template
+                           _ImplicitlyConvertibleTuple<_T1, _T2>(),
+	bool>::type = true>
+        constexpr tuple(const _T1& __a1, const _T2& __a2)
+        : _Inherited(__a1, __a2) { }
+
+      template<typename _Dummy = void, typename
+               enable_if<_TCC<_Dummy>::template
+                           _ConstructibleTuple<_T1, _T2>()
+                         && !_TCC<_Dummy>::template
+                           _ImplicitlyConvertibleTuple<_T1, _T2>(),
+	bool>::type = false>
+        explicit constexpr tuple(const _T1& __a1, const _T2& __a2)
+        : _Inherited(__a1, __a2) { }
+
+      // Shortcut for the cases where constructors taking _U1, _U2
+      // need to be constrained.
+      using _TMC = _TC<true, _T1, _T2>;
+
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
         constexpr tuple(_U1&& __a1, _U2&& __a2)
+	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
+
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+        explicit constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
       constexpr tuple(const tuple&) = default;
 
       constexpr tuple(tuple&&) = default;
 
-      template<typename _U1, typename _U2, typename = typename
-	enable_if<__and_<is_convertible<const _U1&, _T1>,
-			 is_convertible<const _U2&, _T2>>::value>::type>
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
         constexpr tuple(const tuple<_U1, _U2>& __in)
 	: _Inherited(static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in)) { }
 
-      template<typename _U1, typename _U2, typename = typename
-	       enable_if<__and_<is_convertible<_U1, _T1>,
-				is_convertible<_U2, _T2>>::value>::type>
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+        explicit constexpr tuple(const tuple<_U1, _U2>& __in)
+	: _Inherited(static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in)) { }
+
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
         constexpr tuple(tuple<_U1, _U2>&& __in)
 	: _Inherited(static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in)) { }
 
-      template<typename _U1, typename _U2, typename = typename
-	enable_if<__and_<is_convertible<const _U1&, _T1>,
-			 is_convertible<const _U2&, _T2>>::value>::type>
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+        explicit constexpr tuple(tuple<_U1, _U2>&& __in)
+	: _Inherited(static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in)) { }
+
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
         constexpr tuple(const pair<_U1, _U2>& __in)
 	: _Inherited(__in.first, __in.second) { }
 
-      template<typename _U1, typename _U2, typename = typename
-	       enable_if<__and_<is_convertible<_U1, _T1>,
-				is_convertible<_U2, _T2>>::value>::type>
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+        explicit constexpr tuple(const pair<_U1, _U2>& __in)
+	: _Inherited(__in.first, __in.second) { }
+
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
         constexpr tuple(pair<_U1, _U2>&& __in)
+	: _Inherited(std::forward<_U1>(__in.first),
+		     std::forward<_U2>(__in.second)) { }
+
+      template<typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+        explicit constexpr tuple(pair<_U1, _U2>&& __in)
 	: _Inherited(std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
@@ -646,13 +939,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(allocator_arg_t __tag, const _Alloc& __a)
 	: _Inherited(__tag, __a) { }
 
-      template<typename _Alloc>
+      template<typename _Alloc, typename _Dummy = void,
+               typename enable_if<
+                 _TCC<_Dummy>::template
+                   _ConstructibleTuple<_T1, _T2>()
+                 && _TCC<_Dummy>::template
+                   _ImplicitlyConvertibleTuple<_T1, _T2>(),
+               bool>::type=true>
+
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const _T1& __a1, const _T2& __a2)
 	: _Inherited(__tag, __a, __a1, __a2) { }
 
-      template<typename _Alloc, typename _U1, typename _U2>
+      template<typename _Alloc, typename _Dummy = void,
+               typename enable_if<
+                 _TCC<_Dummy>::template
+                   _ConstructibleTuple<_T1, _T2>()
+                 && !_TCC<_Dummy>::template
+                   _ImplicitlyConvertibleTuple<_T1, _T2>(),
+               bool>::type=false>
+
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const _T1& __a1, const _T2& __a2)
+	: _Inherited(__tag, __a, __a1, __a2) { }
+
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a, _U1&& __a1, _U2&& __a2)
+	: _Inherited(__tag, __a, std::forward<_U1>(__a1),
+	             std::forward<_U2>(__a2)) { }
+
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+                       _U1&& __a1, _U2&& __a2)
 	: _Inherited(__tag, __a, std::forward<_U1>(__a1),
 	             std::forward<_U2>(__a2)) { }
 
@@ -664,25 +992,89 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple&& __in)
 	: _Inherited(__tag, __a, static_cast<_Inherited&&>(__in)) { }
 
-      template<typename _Alloc, typename _U1, typename _U2>
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const tuple<_U1, _U2>& __in)
 	: _Inherited(__tag, __a,
 	             static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in))
 	{ }
 
-      template<typename _Alloc, typename _U1, typename _U2>
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const tuple<_U1, _U2>& __in)
+	: _Inherited(__tag, __a,
+	             static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in))
+	{ }
+
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
 	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple<_U1, _U2>&& __in)
 	: _Inherited(__tag, __a, static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in))
 	{ }
 
-      template<typename _Alloc, typename _U1, typename _U2>
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+	explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+                       tuple<_U1, _U2>&& __in)
+	: _Inherited(__tag, __a, static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in))
+	{ }
+
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
         tuple(allocator_arg_t __tag, const _Alloc& __a,
 	      const pair<_U1, _U2>& __in)
 	: _Inherited(__tag, __a, __in.first, __in.second) { }
 
-      template<typename _Alloc, typename _U1, typename _U2>
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _ConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+        explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const pair<_U1, _U2>& __in)
+	: _Inherited(__tag, __a, __in.first, __in.second) { }
+
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && _TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = true>
         tuple(allocator_arg_t __tag, const _Alloc& __a, pair<_U1, _U2>&& __in)
+	: _Inherited(__tag, __a, std::forward<_U1>(__in.first),
+		     std::forward<_U2>(__in.second)) { }
+
+      template<typename _Alloc, typename _U1, typename _U2, typename
+        enable_if<_TMC::template
+                    _MoveConstructibleTuple<_U1, _U2>()
+                  && !_TMC::template
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+	bool>::type = false>
+        explicit tuple(allocator_arg_t __tag, const _Alloc& __a,
+                       pair<_U1, _U2>&& __in)
 	: _Inherited(__tag, __a, std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
@@ -976,20 +1368,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
-  template<typename>
-    struct __is_tuple_like_impl : false_type
-    { };
-
   template<typename... _Tps>
     struct __is_tuple_like_impl<tuple<_Tps...>> : true_type
-    { };
-
-  template<typename _T1, typename _T2>
-    struct __is_tuple_like_impl<pair<_T1, _T2>> : true_type
-    { };
-
-  template<typename _Tp, std::size_t _Nm>
-    struct __is_tuple_like_impl<_GLIBCXX_STD_C::array<_Tp, _Nm>> : true_type
     { };
 
   // Internal type trait that allows us to sfinae-protect tuple_cat.

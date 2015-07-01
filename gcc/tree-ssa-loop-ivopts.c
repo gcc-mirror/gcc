@@ -87,8 +87,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-ssa.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -283,10 +281,8 @@ typedef struct iv_cand *iv_cand_p;
 
 /* Hashtable helpers.  */
 
-struct iv_inv_expr_hasher : typed_free_remove <iv_inv_expr_ent>
+struct iv_inv_expr_hasher : free_ptr_hash <iv_inv_expr_ent>
 {
-  typedef iv_inv_expr_ent *value_type;
-  typedef iv_inv_expr_ent *compare_type;
   static inline hashval_t hash (const iv_inv_expr_ent *);
   static inline bool equal (const iv_inv_expr_ent *, const iv_inv_expr_ent *);
 };
@@ -1390,10 +1386,6 @@ record_sub_use (struct ivopts_data *data, tree *use_p,
       pre->next = use;
     }
 
-  /* To avoid showing ssa name in the dumps, if it was not reset by the
-     caller.  */
-  iv->ssa_name = NULL_TREE;
-
   return use;
 }
 
@@ -1485,8 +1477,8 @@ extract_cond_operands (struct ivopts_data *data, gimple stmt,
   /* The objects returned when COND has constant operands.  */
   static struct iv const_iv;
   static tree zero;
-  tree *op0 = &zero, *op1 = &zero, *tmp_op;
-  struct iv *iv0 = &const_iv, *iv1 = &const_iv, *tmp_iv;
+  tree *op0 = &zero, *op1 = &zero;
+  struct iv *iv0 = &const_iv, *iv1 = &const_iv;
   bool ret = false;
 
   if (gimple_code (stmt) == GIMPLE_COND)
@@ -1517,8 +1509,8 @@ extract_cond_operands (struct ivopts_data *data, gimple stmt,
   if (integer_zerop (iv0->step))
     {
       /* Control variable may be on the other side.  */
-      tmp_op = op0; op0 = op1; op1 = tmp_op;
-      tmp_iv = iv0; iv0 = iv1; iv1 = tmp_iv;
+      std::swap (op0, op1);
+      std::swap (iv0, iv1);
     }
   ret = !integer_zerop (iv0->step) && integer_zerop (iv1->step);
 

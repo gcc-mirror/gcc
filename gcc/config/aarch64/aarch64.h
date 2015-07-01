@@ -29,6 +29,10 @@
       builtin_define ("__aarch64__");                   \
       builtin_define ("__ARM_64BIT_STATE");             \
       builtin_define_with_int_value                     \
+        ("__ARM_ALIGN_MAX_PWR", 28);                    \
+      builtin_define_with_int_value                     \
+        ("__ARM_ALIGN_MAX_STACK_PWR", 16);              \
+      builtin_define_with_int_value                     \
         ("__ARM_ARCH", aarch64_architecture_version);   \
       cpp_define_formatted                                              \
         (parse_in, "__ARM_ARCH_%dA", aarch64_architecture_version);     \
@@ -199,13 +203,11 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FP         (1 << 1)	/* Has FP.  */
 #define AARCH64_FL_CRYPTO     (1 << 2)	/* Has crypto.  */
 #define AARCH64_FL_CRC        (1 << 3)	/* Has CRC.  */
-/* Has static dispatch of FMA.  */
-#define AARCH64_FL_USE_FMA_STEERING_PASS (1 << 4)
 /* ARMv8.1 architecture extensions.  */
-#define AARCH64_FL_LSE	      (1 << 5)  /* Has Large System Extensions.  */
-#define AARCH64_FL_PAN	      (1 << 6)  /* Has Privileged Access Never.  */
-#define AARCH64_FL_LOR	      (1 << 7)  /* Has Limited Ordering regions.  */
-#define AARCH64_FL_RDMA	      (1 << 8)  /* Has ARMv8.1 Adv.SIMD.  */
+#define AARCH64_FL_LSE	      (1 << 4)  /* Has Large System Extensions.  */
+#define AARCH64_FL_PAN	      (1 << 5)  /* Has Privileged Access Never.  */
+#define AARCH64_FL_LOR	      (1 << 6)  /* Has Limited Ordering regions.  */
+#define AARCH64_FL_RDMA	      (1 << 7)  /* Has ARMv8.1 Adv.SIMD.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -225,11 +227,6 @@ extern unsigned long aarch64_isa_flags;
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
-
-/* Macros to test tuning flags.  */
-extern unsigned long aarch64_tune_flags;
-#define AARCH64_TUNE_FMA_STEERING \
-  (aarch64_tune_flags & AARCH64_FL_USE_FMA_STEERING_PASS)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)

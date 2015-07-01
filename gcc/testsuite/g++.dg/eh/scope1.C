@@ -31,7 +31,7 @@ void f3 ()
 
 void f4 ()
 {
-  switch (C br = C()) /* { dg-warning "switch condition has" } */
+  switch (C br = C())
     {
     default:
       abort ();

@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #endif  /* GENERATOR_FILE */
 
-#include "alias.h"
 #include "flags.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
@@ -3495,7 +3494,7 @@ extern void add_insn (rtx_insn *);
 extern void add_insn_before (rtx, rtx, basic_block);
 extern void add_insn_after (rtx, rtx, basic_block);
 extern void remove_insn (rtx);
-extern rtx_insn *emit (rtx);
+extern rtx_insn *emit (rtx, bool = true);
 extern void emit_insn_at_entry (rtx);
 extern rtx gen_lowpart_SUBREG (machine_mode, rtx);
 extern rtx gen_const_mem (machine_mode, rtx);
@@ -3709,5 +3708,22 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 
 /* reginfo.c */
 extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
+
+#ifdef HARD_CONST
+/* Information about the function that is propagated by the RTL backend.
+   Available only for functions that has been already assembled.  */
+
+struct GTY(()) cgraph_rtl_info {
+   unsigned int preferred_incoming_stack_boundary;
+
+  /* Call unsaved hard registers really used by the corresponding
+     function (including ones used by functions called by the
+     function).  */
+  HARD_REG_SET function_used_regs;
+  /* Set if function_used_regs is valid.  */
+  unsigned function_used_regs_valid: 1;
+};
+#endif
+
 
 #endif /* ! GCC_RTL_H */

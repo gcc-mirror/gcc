@@ -1023,10 +1023,8 @@ struct htab_bb_copy_original_entry
   int index2;
 };
 
-struct bb_copy_hasher : typed_noop_remove <htab_bb_copy_original_entry>
+struct bb_copy_hasher : nofree_ptr_hash <htab_bb_copy_original_entry>
 {
-  typedef htab_bb_copy_original_entry *value_type;
-  typedef htab_bb_copy_original_entry *compare_type;
   static inline hashval_t hash (const htab_bb_copy_original_entry *);
   static inline bool equal (const htab_bb_copy_original_entry *existing,
 			    const htab_bb_copy_original_entry * candidate);

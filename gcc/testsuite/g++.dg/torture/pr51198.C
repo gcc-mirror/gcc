@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+/* { dg-options "-std=gnu++0x" } */
 
 struct A
 {

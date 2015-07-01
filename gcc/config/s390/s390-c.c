@@ -82,7 +82,7 @@ desc_start_for_overloaded_builtin[S390_OVERLOADED_BUILTIN_MAX + 1] =
 #undef OB_DEF
 #undef OB_DEF_VAR
 #define B_DEF(...)
-#define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, FNTYPE)	\
+#define OB_DEF(NAME, FIRST_VAR_NAME,...)	\
     S390_OVERLOADED_BUILTIN_VAR_##FIRST_VAR_NAME,
 #define OB_DEF_VAR(...)
     #include "s390-builtins.def"
@@ -99,7 +99,7 @@ desc_end_for_overloaded_builtin[S390_OVERLOADED_BUILTIN_MAX + 1] =
 #undef OB_DEF
 #undef OB_DEF_VAR
 #define B_DEF(...)
-#define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, FNTYPE)	\
+#define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME,...)	\
     S390_OVERLOADED_BUILTIN_VAR_##LAST_VAR_NAME,
 #define OB_DEF_VAR(...)
     #include "s390-builtins.def"
@@ -126,7 +126,8 @@ s390_builtin_ov_types[BT_OV_MAX][MAX_OV_OPERANDS] =
 #include "s390-builtin-types.def"
   };
 
-static const enum s390_builtins bt_for_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX] = {
+static const enum s390_builtins
+bt_for_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX] = {
 #undef B_DEF
 #undef OB_DEF
 #undef OB_DEF_VAR
@@ -751,7 +752,7 @@ s390_resolve_overloaded_builtin (location_t loc,
   /* 0...S390_BUILTIN_MAX-1 is for non-overloaded builtins.  */
   if (ob_fcode < S390_BUILTIN_MAX)
     {
-      if (flags_for_builtin(ob_fcode) & B_INT)
+      if (bflags_for_builtin(ob_fcode) & B_INT)
 	{
 	  error_at (loc,
 		    "Builtin %qF is for GCC internal use only.",
@@ -835,7 +836,7 @@ s390_resolve_overloaded_builtin (location_t loc,
   else
     target_builtin_decl = s390_builtin_decls[bt_for_overloaded_builtin_var[last_match_index]];
 
-  all_op_flags = flags_overloaded_builtin_var[last_match_index];
+  all_op_flags = opflags_overloaded_builtin_var[last_match_index];
   return_type = s390_builtin_types[s390_builtin_ov_types[last_match_fntype_index][0]];
 
   /* Check for the operand flags in the overloaded builtin variant.  */

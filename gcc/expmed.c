@@ -4539,11 +4539,11 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			      quotient, 0, OPTAB_LIB_WIDEN);
 	  if (tem != quotient)
 	    emit_move_insn (quotient, tem);
-	  emit_jump_insn (gen_jump (label5));
+	  emit_jump_insn (targetm.gen_jump (label5));
 	  emit_barrier ();
 	  emit_label (label1);
 	  expand_inc (adjusted_op0, const1_rtx);
-	  emit_jump_insn (gen_jump (label4));
+	  emit_jump_insn (targetm.gen_jump (label4));
 	  emit_barrier ();
 	  emit_label (label2);
 	  do_cmp_and_jump (adjusted_op0, const0_rtx, GT, compute_mode, label3);
@@ -4551,7 +4551,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			      quotient, 0, OPTAB_LIB_WIDEN);
 	  if (tem != quotient)
 	    emit_move_insn (quotient, tem);
-	  emit_jump_insn (gen_jump (label5));
+	  emit_jump_insn (targetm.gen_jump (label5));
 	  emit_barrier ();
 	  emit_label (label3);
 	  expand_dec (adjusted_op0, const1_rtx);
@@ -4645,7 +4645,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	      do_cmp_and_jump (adjusted_op0, const0_rtx, NE,
 			       compute_mode, label1);
 	      emit_move_insn  (quotient, const0_rtx);
-	      emit_jump_insn (gen_jump (label2));
+	      emit_jump_insn (targetm.gen_jump (label2));
 	      emit_barrier ();
 	      emit_label (label1);
 	      expand_dec (adjusted_op0, const1_rtx);
@@ -4753,11 +4753,11 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 				  quotient, 0, OPTAB_LIB_WIDEN);
 	      if (tem != quotient)
 		emit_move_insn (quotient, tem);
-	      emit_jump_insn (gen_jump (label5));
+	      emit_jump_insn (targetm.gen_jump (label5));
 	      emit_barrier ();
 	      emit_label (label1);
 	      expand_dec (adjusted_op0, const1_rtx);
-	      emit_jump_insn (gen_jump (label4));
+	      emit_jump_insn (targetm.gen_jump (label4));
 	      emit_barrier ();
 	      emit_label (label2);
 	      do_cmp_and_jump (adjusted_op0, const0_rtx, LT,
@@ -4766,7 +4766,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 				  quotient, 0, OPTAB_LIB_WIDEN);
 	      if (tem != quotient)
 		emit_move_insn (quotient, tem);
-	      emit_jump_insn (gen_jump (label5));
+	      emit_jump_insn (targetm.gen_jump (label5));
 	      emit_barrier ();
 	      emit_label (label3);
 	      expand_inc (adjusted_op0, const1_rtx);

@@ -249,6 +249,7 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
 		  case CPP_WCHAR:
 		  case CPP_CHAR16:
 		  case CPP_CHAR32:
+		  case CPP_UTF8CHAR:
 		  case CPP_NAME:
 		  case CPP_STRING:
 		  case CPP_NUMBER:
@@ -593,9 +594,12 @@ collect_ada_nodes (tree t, const char *source_file)
   tree n;
   int i = to_dump_count;
 
-  /* Count the likely relevant nodes.  */
+  /* Count the likely relevant nodes: do not dump builtins (they are irrelevant
+     in the context of bindings) and namespaces (we do not handle them properly
+     yet).  */
   for (n = t; n; n = TREE_CHAIN (n))
     if (!DECL_IS_BUILTIN (n)
+	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump_count++;
 
@@ -605,6 +609,7 @@ collect_ada_nodes (tree t, const char *source_file)
   /* Store the relevant nodes.  */
   for (n = t; n; n = TREE_CHAIN (n))
     if (!DECL_IS_BUILTIN (n)
+	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump[i++] = n;
 }
@@ -1745,7 +1750,7 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
       != LOCATION_FILE (decl_sloc (t, false)))
     return 0;
 
-  while (inst && inst != error_mark_node)
+  for (; inst && inst != error_mark_node; inst = TREE_CHAIN (inst))
     {
       tree types = TREE_PURPOSE (inst);
       tree instance = TREE_VALUE (inst);
@@ -1755,6 +1760,13 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
 
       if (!RECORD_OR_UNION_TYPE_P (instance) || !TYPE_METHODS (instance))
 	break;
+
+      /* We are interested in concrete template instantiations only: skip
+	 partially specialized nodes.  */
+      if ((TREE_CODE (instance) == RECORD_TYPE
+	   || TREE_CODE (instance) == UNION_TYPE)
+	  && cpp_check && cpp_check (instance, HAS_DEPENDENT_TEMPLATE_ARGS))
+	continue;
 
       num_inst++;
       INDENT (spc);
@@ -1791,8 +1803,6 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
       pp_semicolon (buffer);
       pp_newline (buffer);
       pp_newline (buffer);
-
-      inst = TREE_CHAIN (inst);
     }
 
   return num_inst > 0;
@@ -2817,7 +2827,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
     }
   else
     {
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && decl_name
 	  && *IDENTIFIER_POINTER (decl_name) == '_')
 	return 0;

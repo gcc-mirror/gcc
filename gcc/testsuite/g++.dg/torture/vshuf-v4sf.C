@@ -1,4 +1,5 @@
-// { dg-do run { target c++11 } }
+// { dg-options "-std=c++11" }
+// { dg-do run }
 
 
 #if __SIZEOF_FLOAT__ == 4

@@ -167,10 +167,8 @@ typedef dw_trace_info *dw_trace_info_ref;
 
 /* Hashtable helpers.  */
 
-struct trace_info_hasher : typed_noop_remove <dw_trace_info>
+struct trace_info_hasher : nofree_ptr_hash <dw_trace_info>
 {
-  typedef dw_trace_info *value_type;
-  typedef dw_trace_info *compare_type;
   static inline hashval_t hash (const dw_trace_info *);
   static inline bool equal (const dw_trace_info *, const dw_trace_info *);
 };
@@ -3478,11 +3476,10 @@ public:
 bool
 pass_dwarf2_frame::gate (function *)
 {
-#ifndef HAVE_prologue
   /* Targets which still implement the prologue in assembler text
      cannot use the generic dwarf2 unwinding.  */
-  return false;
-#endif
+  if (!targetm.have_prologue ())
+    return false;
 
   /* ??? What to do for UI_TARGET unwinding?  They might be able to benefit
      from the optimized shrink-wrapping annotations that we will compute.

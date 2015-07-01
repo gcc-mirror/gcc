@@ -473,7 +473,7 @@ find_end_label (rtx kind)
 	}
       else
 	{
-	  if (HAVE_epilogue && ! HAVE_return)
+	  if (targetm.have_epilogue () && ! targetm.have_return ())
 	    /* The RETURN insn has its delay slot filled so we cannot
 	       emit the label just before it.  Since we already have
 	       an epilogue and cannot emit a new RETURN, we cannot
@@ -483,10 +483,10 @@ find_end_label (rtx kind)
 	  /* Otherwise, make a new label and emit a RETURN and BARRIER,
 	     if needed.  */
 	  emit_label (label);
-	  if (HAVE_return)
+	  if (targetm.have_return ())
 	    {
 	      /* The return we make may have delay slots too.  */
-	      rtx pat = gen_return ();
+	      rtx_insn *pat = targetm.gen_return ();
 	      rtx_insn *insn = emit_jump_insn (pat);
 	      set_return_jump_label (insn);
 	      emit_barrier ();
@@ -3815,8 +3815,9 @@ dbr_schedule (rtx_insn *first)
     delete_related_insns (function_simple_return_label);
 
   need_return_insns = false;
-  need_return_insns |= HAVE_return && function_return_label != 0;
-  need_return_insns |= HAVE_simple_return && function_simple_return_label != 0;
+  need_return_insns |= targetm.have_return () && function_return_label != 0;
+  need_return_insns |= (targetm.have_simple_return ()
+			&& function_simple_return_label != 0);
   if (need_return_insns)
     make_return_insns (first);
 

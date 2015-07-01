@@ -2766,7 +2766,9 @@ gimple_call_set_fndecl (gimple gs, tree decl)
 {
   GIMPLE_CHECK (gs, GIMPLE_CALL);
   gcc_gimple_checking_assert (!gimple_call_internal_p (gs));
-  gimple_set_op (gs, 1, build_fold_addr_expr_loc (gimple_location (gs), decl));
+  gimple_set_op (gs, 1, build1_loc (gimple_location (gs), ADDR_EXPR,
+				     build_pointer_type (TREE_TYPE (decl)),
+				     decl));
 }
 
 

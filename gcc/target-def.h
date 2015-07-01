@@ -107,3 +107,4 @@
 
 #include "hooks.h"
 #include "targhooks.h"
+#include "insn-target-def.h"

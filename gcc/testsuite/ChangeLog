@@ -1,3 +1,399 @@
+2015-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gfortran.dg/gomp/pr66633.f90: New test.
+
+2015-07-01  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/66686
+	* g++.dg/template/pr66686.C: New test.
+
+2015-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto17.ad[sb]: New test.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-switch.c.
+	* jit.dg/test-error-gcc_jit_block_end_with_switch-NULL-case.c: New
+	testcase.
+	* jit.dg/test-error-gcc_jit_block_end_with_switch-mismatching-case-type.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_block_end_with_switch-overlapping-ranges.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_case-non-const-label.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_case-non-integer-type.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_case-reversed-endpoints.c:
+	New testcase.
+	* jit.dg/test-switch.c: New testcase.
+	* jit.dg/test-switch.cc: New testcase.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66546
+	* jit.dg/all-non-failing-tests.h: Add note about
+	test-validly-unreachable-block.c.
+	* jit.dg/test-validly-unreachable-block.c: New file.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66628
+	* jit.dg/all-non-failing-tests.h: Add note about
+	test-extra-options.c.
+	* jit.dg/test-extra-options.c: New testcase.
+
+2015-06-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/66691
+	* gcc.target/i386/pr66691.c: New.
+
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/iamcu/abi-iamcu.exp: New file.
+	* gcc.target/i386/iamcu/args.h: Likewise.
+	* gcc.target/i386/iamcu/asm-support.S: Likewise.
+	* gcc.target/i386/iamcu/defines.h: Likewise.
+	* gcc.target/i386/iamcu/macros.h: Likewise.
+	* gcc.target/i386/iamcu/test_3_element_struct_and_unions.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_64bit_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_alignment.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_array_size_and_align.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_sizes.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_struct_size_and_align.c: Likewise.
+	* gcc.target/i386/iamcu/test_basic_union_size_and_align.c: Likewise.
+	* gcc.target/i386/iamcu/test_bitfields.c: Likewise.
+	* gcc.target/i386/iamcu/test_complex_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_floats.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_integers.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_structs.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_structs_and_unions.c: Likewise.
+	* gcc.target/i386/iamcu/test_passing_unions.c: Likewise.
+	* gcc.target/i386/iamcu/test_struct_returning.c: Likewise.
+	* gcc.target/i386/iamcu/test_varargs.c: Likewise.
+
+2015-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-minus-6.c: New test.
+
+	* gcc.dg/fold-ior-3.c: New test.
+
+2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N4197 - Adding u8 character literals
+	* g++.dg/cpp1z/utf8.C: New.
+	* g++.dg/cpp1z/utf8-neg.C: New.
+	* g++.dg/cpp1z/udlit-utf8char.C: New.
+
+2015-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-ior-2.c (fn4): Swap operands.
+
+2015-06-30  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/parloops-exit-first-loop-alt-5.c: New test.
+	* gcc.dg/parloops-exit-first-loop-alt-6.c: New test.
+	* gcc.dg/parloops-exit-first-loop-alt-7.c: New test.
+	* gcc.dg/parloops-exit-first-loop-alt.c: Update comment.
+
+2015-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-ior-2.c: New test.
+
+2015-06-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66652
+	* gcc.dg/parloops-exit-first-loop-alt-pr66652.c: New test.
+	* gcc.dg/parloops-exit-first-loop-alt-3.c (f):  Rewrite using restrict
+	pointers.
+	* gcc.dg/parloops-exit-first-loop-alt.c: Same.
+
+2015-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65977
+	* g++.dg/cpp0x/constexpr-friend-3.C: New.
+	* g++.dg/cpp0x/constexpr-friend-2.C: Adjust.
+
+2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66605
+	* gfortran.dg/wunused-parameter.f90: New test.
+
+2015-06-29  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/asm-flag-1.c: New.
+	* gcc.target/i386/asm-flag-2.c: New.
+	* gcc.target/i386/asm-flag-3.c: New.
+	* gcc.target/i386/asm-flag-4.c: New.
+	* gcc.target/i386/asm-flag-5.c: New.
+
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66322
+	* c-c++-common/pr60439.c: Add dg-prune-output and add switch cases.
+	* c-c++-common/pr66322.c: New test.
+	* g++.dg/eh/scope1.C: Remove dg-warning.
+
+2015-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66677
+	* gcc.dg/vect/pr66677.c: New testcase.
+
+2015-06-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/64130
+	* gcc.dg/tree-ssa/pr64130.c: New test.
+
+2015-06-26  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/pic-small.c: New testcase.
+
+2015-06-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-25.c: Adjust.
+
+2015-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-and-1.c: New test.
+	* gcc.dg/fold-and-2.c: New test.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn11.adb: Add missing dg directive.
+	* gnat.dg/warn12.adb: New test.
+	* gnat.dg/warn12_pkg.ads: New helper.
+
+2015-06-26  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/reassoc_3.f90: Adjust.
+
+2015-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66412
+	* gcc.target/i386/pr66412.c: New test.
+
+2015-06-25  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr52631.c: Disable forwprop.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vect-add-sub-cond.c: New test.
+
+2015-06-25  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/vect/vect-9.f90: New testcase.
+
+2015-06-25  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/stack-usage-1.c: Add SIZE values for V850, MN10300,
+	H8300 and M32R targets.
+
+2015-06-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66528
+	* gfortran.dg/maxerrors.f90: New test.
+
+2015-06-08  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/torture/pr66345.c: Fix assumption about size_t type.
+
+2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/mgeneral-regs_3.c: New.
+
+2015-06-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/mgeneral-regs_1.c: New file.
+	* gcc.target/aarch64/mgeneral-regs_2.c: New file.
+	* gcc.target/aarch64/nofp_1.c: New file.
+
+2015-06-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3928 - Extending static_assert
+	* g++.dg/cpp0x/static_assert8.C: Adjust.
+	* g++.dg/cpp0x/static_assert12.C: New.
+	* g++.dg/cpp0x/static_assert13.C: New.
+	* g++.dg/cpp1y/static_assert1.C: New.
+	* g++.dg/cpp1y/static_assert2.C: New.
+	* g++.dg/cpp1z/static_assert-nomsg.C: New.
+
+2015-06-24  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/65750
+	* g++.dg/cpp0x/trailing11.C: New.
+
+2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/arm/fixed_float_conversion.c: Skip for inappropriate
+          multilibs.
+	* gcc.target/arm/memset-inline-10.c: Likewise.
+	* gcc.target/arm/pr58784.c: Likewise.
+	* gcc.target/arm/pr59985.C: Likewise.
+	* gcc.target/arm/vfp-1.c: Likewise and test only for the non fma cases.
+
+2015-06-24  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/aarch64/arm_align_max_pwr.c: New.
+	* gcc.target/aarch64/arm_align_max_stack_pwr.c: New.
+
+2015-06-24  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	Revert:
+	2015-06-23  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/30044
+	* g++.dg/cpp0x/auto45.C: New test.
+	* g++.dg/template/pr30044.C: New test.
+	* g++.dg/template/crash83.C: Accept any error string.
+	* g++.dg/cpp0x/variadic18.C: Adjust to not shadow template
+	parameters.
+	* g++.dg/cpp0x/variadic18.C: Likewise
+	* g++.dg/template/canon-type-13.C: Likewise.
+	* g++.old-deja/g++.pt/ttp42.C: Likewise.
+
+2015-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65811
+	* g++.dg/other/linkage2.C: New.
+
+2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/63408
+	* gcc.target/arm/pr63408.c: New test.
+
+2015-06-24  James Greenhalgh  <james.greenhalgh@arm.com>
+
+        * lib/c-torture.exp: Don't call check_effective_target_lto
+	before setting up environment correctly.
+        * lib/gcc-dg.exp: Likewise, and protect
+	gcc_force_conventional_output.
+
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR rtl-optimization/66306
+	* gcc.target/s390/pr66306.c: New test.
+
+2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/vector/vec-abi-1.c: Add gnu attribute check.
+	* gcc.target/s390/vector/vec-abi-attr-1.c: New test.
+	* gcc.target/s390/vector/vec-abi-attr-2.c: New test.
+	* gcc.target/s390/vector/vec-abi-attr-3.c: New test.
+	* gcc.target/s390/vector/vec-abi-attr-4.c: New test.
+	* gcc.target/s390/vector/vec-abi-attr-5.c: New test.
+	* gcc.target/s390/vector/vec-abi-attr-6.c: New test.
+
+2015-06-23  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+        PR target/65803
+	* gcc.c-torture/pr65803.c: New test.
+
+2015-06-23  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/30044
+	* g++.dg/cpp0x/auto45.C: New test.
+	* g++.dg/template/pr30044.C: New test.
+	* g++.dg/template/crash83.C: Accept any error string.
+	* g++.dg/cpp0x/variadic18.C: Adjust to not shadow template
+	parameters.
+	* g++.dg/cpp0x/variadic18.C: Likewise
+	* g++.dg/template/canon-type-13.C: Likewise.
+	* g++.old-deja/g++.pt/ttp42.C: Likewise.
+
+2015-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wlogical-op-3.c: New test.
+
+2015-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66254
+	* g++.dg/cpp0x/scoped_enum5.C: New.
+
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66636
+	* gcc.dg/vect/pr66636.c: New testcase.
+
+2015-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-minus-4.c: New test.
+	* gcc.dg/fold-minus-5.c: New test.
+	* c-c++-common/ubsan/overflow-add-5.c: New test.
+
+2015-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Add missing testcase from r224672.
+	2015-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/vax/bswapdi-1.c: New.
+
+2015-06-23  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/64674
+	* gfortran.dg/associate_18.f08: New test.
+
+2015-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66560
+	* gcc.target/i386/pr66560-1.c: New test.
+	* gcc.target/i386/pr66560-2.c: Ditto.
+	* gcc.target/i386/pr66560-3.c: Ditto.
+	* gcc.target/i386/pr66560-4.c: Ditto.
+
+2015-06-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.target/nvptx/nvptx.exp: New file.
+	* gcc.target/nvptx/proto-1.c: Likewise.
+
+2015-06-23  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/66449
+	* gcc.dg/vect/pr66449.c: New test.
+
+2015-06-22  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-5.C: New test.
+	* g++.dg/other/dump-ada-spec-6.C: Likewise.
+	* g++.dg/other/dump-ada-spec-7.C: Likewise.
+
+2015-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/inherit/pure1.C: Test location too.
+
+2015-06-22  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-ior-1.c: New test.
+	* gcc.dg/fold-minus-2.c: New test.
+	* gcc.dg/fold-minus-3.c: New test.
+	* gcc.dg/fold-plus-1.c: New test.
+	* gcc.dg/fold-plus-2.c: New test.
+	* gcc.dg/fold-xor-4.c: New test.
+	* gcc.dg/fold-xor-5.c: New test.
+
+2015-06-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65914
+	* g++.dg/torture/pr65914.C:  New.
+
+2015-06-22  Richard Biener  <rguenther@suse.de>
+
+	* lib/c-torture.exp: Set LTO_TORTURE_OPTIONS conditional on
+	not existing TORTURE_OPTIONS only.
+	* lib/gcc-dg.exp: Likewise.
+
+2015-06-22  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* gcc.target/arm/flip-thumb.c: New test.
+
+2015-06-22  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65908
+	* g++.dg/ipa/pr65908.C: New testcase.
+
 2015-06-20  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR c++/65882

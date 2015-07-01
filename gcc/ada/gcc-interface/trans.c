@@ -45,10 +45,8 @@
 #include "gimplify.h"
 #include "bitmap.h"
 #include "hash-map.h"
-#include "plugin-api.h"
 #include "hard-reg-set.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "opts.h"
@@ -211,7 +209,12 @@ typedef struct range_check_info_d *range_check_info;
 struct GTY(()) loop_info_d {
   tree stmt;
   tree loop_var;
+  tree low_bound;
+  tree high_bound;
   vec<range_check_info, va_gc> *checks;
+  bool artificial;
+  bool has_checks;
+  bool warned_aggressive_loop_optimizations;
 };
 
 typedef struct loop_info_d *loop_info;
@@ -672,6 +675,10 @@ gigi (Node_Id gnat_root,
 
   /* Now translate the compilation unit proper.  */
   Compilation_Unit_to_gnu (gnat_root);
+
+  /* Disable -Waggressive-loop-optimizations since we implement our own
+     version of the warning.  */
+  warn_aggressive_loop_optimizations = 0;
 
   /* Then process the N_Validate_Unchecked_Conversion nodes.  We do this at
      the very end to avoid having to second-guess the front-end when we run
@@ -2624,12 +2631,19 @@ Case_Statement_to_gnu (Node_Id gnat_node)
   return gnu_result;
 }
 
-/* Find out whether VAR is an iteration variable of an enclosing loop in the
-   current function.  If so, push a range_check_info structure onto the stack
-   of this enclosing loop and return it.  Otherwise, return NULL.  */
+/* Return true if we are in the body of a loop.  */
 
-static struct range_check_info_d *
-push_range_check_info (tree var)
+static inline bool
+inside_loop_p (void)
+{
+  return !vec_safe_is_empty (gnu_loop_stack);
+}
+
+/* Find out whether VAR is the iteration variable of an enclosing loop in the
+   current function.  If so, return the loop; otherwise, return NULL.  */
+
+static struct loop_info_d *
+find_loop_for (tree var)
 {
   struct loop_info_d *iter = NULL;
   unsigned int i;
@@ -2650,14 +2664,7 @@ push_range_check_info (tree var)
     if (var == iter->loop_var)
       break;
 
-  if (iter)
-    {
-      struct range_check_info_d *rci = ggc_alloc<range_check_info_d> ();
-      vec_safe_push (iter->checks, rci);
-      return rci;
-    }
-
-  return NULL;
+  return iter;
 }
 
 /* Return true if VAL (of type TYPE) can equal the minimum value if MAX is
@@ -2748,6 +2755,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
   /* Save the statement for later reuse.  */
   gnu_loop_info->stmt = gnu_loop_stmt;
+  gnu_loop_info->artificial = !Comes_From_Source (gnat_node);
 
   /* Set the condition under which the loop must keep going.
      For the case "LOOP .... END LOOP;" the condition is always true.  */
@@ -2943,6 +2951,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	  SET_DECL_INDUCTION_VAR (gnu_loop_var, gnu_loop_iv);
 	}
       gnu_loop_info->loop_var = gnu_loop_var;
+      gnu_loop_info->low_bound = gnu_low;
+      gnu_loop_info->high_bound = gnu_high;
 
       /* Do all the arithmetics in the base type.  */
       gnu_loop_var = convert (gnu_base_type, gnu_loop_var);
@@ -4870,8 +4880,14 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      to the binding level we made above.  Note that add_cleanup is FIFO
      so we must register this cleanup after the EH cleanup just above.  */
   if (at_end)
-    add_cleanup (build_call_n_expr (gnat_to_gnu (At_End_Proc (gnat_node)), 0),
-		 gnat_cleanup_loc_node);
+    {
+      tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
+      /* When not optimizing, disable inlining of finalizers as this can
+	 create a more complex CFG in the parent function.  */
+      if (!optimize)
+	DECL_DECLARED_INLINE_P (proc_decl) = 0;
+      add_cleanup (build_call_n_expr (proc_decl, 0), gnat_cleanup_loc_node);
+    }
 
   /* Now build the tree for the declarations and statements inside this block.
      If this is SJLJ, set our jmp_buf as the current buffer.  */
@@ -5336,7 +5352,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	{
 	  Node_Id gnat_range, gnat_index, gnat_type;
 	  tree gnu_index, gnu_low_bound, gnu_high_bound;
-	  struct range_check_info_d *rci;
+	  struct loop_info_d *loop;
 
 	  switch (Nkind (Right_Opnd (gnat_cond)))
 	    {
@@ -5384,24 +5400,36 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	     one of which has the checks eliminated and the other has
 	     the original checks reinstated, and a run time selection.
 	     The former loop will be suitable for vectorization.  */
-	  if (flag_unswitch_loops
-	      && !vec_safe_is_empty (gnu_loop_stack)
+	  if (optimize
+	      && flag_unswitch_loops
+	      && inside_loop_p ()
 	      && (!gnu_low_bound
 		  || (gnu_low_bound = gnat_invariant_expr (gnu_low_bound)))
 	      && (!gnu_high_bound
 		  || (gnu_high_bound = gnat_invariant_expr (gnu_high_bound)))
-	      && (rci = push_range_check_info (gnu_index)))
+	      && (loop = find_loop_for (gnu_index)))
 	    {
+	      struct range_check_info_d *rci = ggc_alloc<range_check_info_d> ();
 	      rci->low_bound = gnu_low_bound;
 	      rci->high_bound = gnu_high_bound;
 	      rci->type = get_unpadded_type (gnat_type);
 	      rci->invariant_cond = build1 (SAVE_EXPR, boolean_type_node,
 					    boolean_true_node);
+	      vec_safe_push (loop->checks, rci);
+	      loop->has_checks = true;
 	      gnu_cond = build_binary_op (TRUTH_ANDIF_EXPR,
 					  boolean_type_node,
 					  rci->invariant_cond,
 					  gnat_to_gnu (gnat_cond));
 	    }
+
+	  /* Or else, if aggressive loop optimizations are enabled, we just
+	     record that there are checks applied to iteration variables.  */
+	  else if (optimize
+		   && flag_aggressive_loop_optimizations
+		   && inside_loop_p ()
+		   && (loop = find_loop_for (gnu_index)))
+	    loop->has_checks = true;
 	}
       break;
 
@@ -5941,11 +5969,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnat_expr_array[i] = gnat_temp;
 
 	for (i = 0, gnu_type = TREE_TYPE (gnu_array_object);
-	     i < ndim; i++, gnu_type = TREE_TYPE (gnu_type))
+	     i < ndim;
+	     i++, gnu_type = TREE_TYPE (gnu_type))
 	  {
 	    gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
 	    gnat_temp = gnat_expr_array[i];
 	    gnu_expr = gnat_to_gnu (gnat_temp);
+	    struct loop_info_d *loop;
 
 	    if (Do_Range_Check (gnat_temp))
 	      gnu_expr
@@ -5967,6 +5997,31 @@ gnat_to_gnu (Node_Id gnat_node)
 		&& !(Nkind (gnat_temp) == N_Identifier
 		     && Ekind (Entity (gnat_temp)) == E_Constant))
 	      TREE_THIS_NOTRAP (gnu_result) = 1;
+
+	    /* If aggressive loop optimizations are enabled, we warn for loops
+	       overrunning a simple array of size 1 not at the end of a record.
+	       This is aimed to catch misuses of the trailing array idiom.  */
+	    if (optimize
+		&& flag_aggressive_loop_optimizations
+		&& inside_loop_p ()
+		&& TREE_CODE (TREE_TYPE (gnu_type)) != ARRAY_TYPE
+		&& TREE_CODE (gnu_array_object) != ARRAY_REF
+		&& tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_type)),
+				       TYPE_MAX_VALUE (TYPE_DOMAIN (gnu_type)))
+		&& !array_at_struct_end_p (gnu_result)
+		&& (loop = find_loop_for (skip_simple_arithmetic (gnu_expr)))
+		&& !loop->artificial
+		&& !loop->has_checks
+		&& tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_type)),
+				       loop->low_bound)
+		&& can_be_lower_p (loop->low_bound, loop->high_bound)
+		&& !loop->warned_aggressive_loop_optimizations
+		&& warning (OPT_Waggressive_loop_optimizations,
+			    "out-of-bounds access may be optimized away"))
+	      {
+		inform (EXPR_LOCATION (loop->stmt), "containing loop");
+		loop->warned_aggressive_loop_optimizations = true;
+	      }
 	  }
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));

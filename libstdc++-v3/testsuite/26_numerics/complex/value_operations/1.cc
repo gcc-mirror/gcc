@@ -53,7 +53,7 @@ void test01()
 
  complex_type e __attribute__((unused)) = conj(c);
  
- complex_type f = polar(c.imag(), 0.0);
+ complex_type f = polar(std::abs(c.imag()), 0.0);
  VERIFY( f.real() != 0 );
 }
 

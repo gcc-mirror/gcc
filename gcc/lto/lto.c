@@ -33,10 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "predict.h"
 #include "basic-block.h"
-#include "plugin-api.h"
 #include "hard-reg-set.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-ssa-operands.h"
 #include "tree-pass.h"
@@ -937,10 +935,8 @@ struct tree_scc
   tree entries[1];
 };
 
-struct tree_scc_hasher : typed_noop_remove <tree_scc>
+struct tree_scc_hasher : nofree_ptr_hash <tree_scc>
 {
-  typedef tree_scc *value_type;
-  typedef tree_scc *compare_type;
   static inline hashval_t hash (const tree_scc *);
   static inline bool equal (const tree_scc *, const tree_scc *);
 };

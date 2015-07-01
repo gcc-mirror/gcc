@@ -450,15 +450,33 @@ search_line_sse42 (const uchar *s, const uchar *end)
       s = (const uchar *)((si + 16) & -16);
     }
 
-  /* Main loop, processing 16 bytes at a time.  By doing the whole loop
-     in inline assembly, we can make proper use of the flags set.  */
-  __asm (      "sub $16, %1\n"
-	"	.balign 16\n"
+  /* Main loop, processing 16 bytes at a time.  */
+#ifdef __GCC_ASM_FLAG_OUTPUTS__
+  while (1)
+    {
+      char f;
+
+      /* By using inline assembly instead of the builtin,
+	 we can use the result, as well as the flags set.  */
+      __asm ("%vpcmpestri\t$0, %2, %3"
+	     : "=c"(index), "=@ccc"(f)
+	     : "m"(*s), "x"(search), "a"(4), "d"(16));
+      if (f)
+	break;
+      
+      s += 16;
+    }
+#else
+  s -= 16;
+  /* By doing the whole loop in inline assembly,
+     we can make proper use of the flags set.  */
+  __asm (      ".balign 16\n"
 	"0:	add $16, %1\n"
-	"	%vpcmpestri $0, (%1), %2\n"
+	"	%vpcmpestri\t$0, (%1), %2\n"
 	"	jnc 0b"
 	: "=&c"(index), "+r"(s)
 	: "x"(search), "a"(4), "d"(16));
+#endif
 
  found:
   return s + index;
@@ -1840,7 +1858,8 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
   else if (terminator == '\'')
     type = (*base == 'L' ? CPP_WCHAR :
 	    *base == 'U' ? CPP_CHAR32 :
-	    *base == 'u' ? CPP_CHAR16 : CPP_CHAR);
+	    *base == 'u' ? (base[1] == '8' ? CPP_UTF8CHAR : CPP_CHAR16)
+			 : CPP_CHAR);
   else
     terminator = '>', type = CPP_HEADER_NAME;
 
@@ -2385,7 +2404,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 		  && CPP_OPTION (pfile, rliterals))
 	      || (*buffer->cur == '8'
 		  && c == 'u'
-		  && (buffer->cur[1] == '"'
+		  && ((buffer->cur[1] == '"' || (buffer->cur[1] == '\''
+				&& CPP_OPTION (pfile, utf8_char_literals)))
 		      || (buffer->cur[1] == 'R' && buffer->cur[2] == '"'
 			  && CPP_OPTION (pfile, rliterals)))))
 	    {

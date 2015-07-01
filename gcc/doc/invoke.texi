@@ -1096,7 +1096,7 @@ See RS/6000 and PowerPC Options.
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
--m32 -m64 -mx32 -m16 -mlarge-data-threshold=@var{num} @gol
+-m32 -m64 -mx32 -m16 -miamcu -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -malign-data=@var{type} -mstack-protector-guard=@var{guard}}
@@ -4012,7 +4012,8 @@ warning about an omitted enumeration code even if there is a
 @item -Wswitch-bool
 @opindex Wswitch-bool
 @opindex Wno-switch-bool
-Warn whenever a @code{switch} statement has an index of boolean type.
+Warn whenever a @code{switch} statement has an index of boolean type
+and the case values are outside the range of a boolean type.
 It is possible to suppress this warning by casting the controlling
 expression to a type other than @code{bool}.  For example:
 @smallexample
@@ -12359,7 +12360,10 @@ Generate big-endian code.  This is the default when GCC is configured for an
 
 @item -mgeneral-regs-only
 @opindex mgeneral-regs-only
-Generate code which uses only the general registers.
+Generate code which uses only the general-purpose registers.  This is equivalent
+to feature modifier @option{nofp} of @option{-march} or @option{-mcpu}, except
+that @option{-mgeneral-regs-only} takes precedence over any conflicting feature
+modifier regardless of sequence.
 
 @item -mlittle-endian
 @opindex mlittle-endian
@@ -12426,24 +12430,26 @@ corresponding flag to the linker.
 @opindex march
 Specify the name of the target architecture, optionally suffixed by one or
 more feature modifiers.  This option has the form
-@option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-permissible values for @var{arch} are @samp{armv8-a} or @samp{armv8.1-a}.
-The permissible values for @var{feature} are documented in the sub-section
-below.  Additionally on native AArch64 GNU/Linux systems the value
+@option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
+
+The permissible values for @var{arch} are @samp{armv8-a} or
+@samp{armv8.1-a}.
+
+For the permissible values for @var{feature}, see the sub-section on
+@ref{aarch64-feature-modifiers,,@option{-march} and @option{-mcpu}
+Feature Modifiers}.  Where conflicting feature modifiers are
+specified, the right-most feature is used.
+
+Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} is available.  This option causes the compiler to pick the
 architecture of the host system.  If the compiler is unable to recognize the
 architecture of the host system this option has no effect.
 
-Where conflicting feature modifiers are specified, the right-most feature is
-used.
-
-GCC uses this name to determine what kind of instructions it can emit when
-generating assembly code.
-
-Where @option{-march} is specified without either of @option{-mtune}
-or @option{-mcpu} also being specified, the code is tuned to perform
-well across a range of target processors implementing the target
-architecture.
+GCC uses @var{name} to determine what kind of instructions it can emit
+when generating assembly code.  If @option{-march} is specified
+without either of @option{-mtune} or @option{-mcpu} also being
+specified, the code is tuned to perform well across a range of target
+processors implementing the target architecture.
 
 @item -mtune=@var{name}
 @opindex mtune
@@ -12456,12 +12462,11 @@ Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible values for this
 option are: @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}.
 
-Additionally on native AArch64 GNU/Linux systems the value @samp{native}
-is available.
-This option causes the compiler to pick the architecture of and tune the
-performance of the code for the processor of the host system.
-If the compiler is unable to recognize the processor of the host system
-this option has no effect.
+Additionally on native AArch64 GNU/Linux systems the value
+@samp{native} is available.  This option causes the compiler to pick
+the architecture of and tune the performance of the code for the
+processor of the host system.  If the compiler is unable to recognize
+the processor of the host system this option has no effect.
 
 Where none of @option{-mtune=}, @option{-mcpu=} or @option{-march=}
 are specified, the code is tuned to perform well across a range
@@ -12471,23 +12476,23 @@ This option cannot be suffixed by feature modifiers.
 
 @item -mcpu=@var{name}
 @opindex mcpu
-Specify the name of the target processor, optionally suffixed by one or more
-feature modifiers.  This option has the form
-@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-permissible values for @var{cpu} are the same as those available for
-@option{-mtune}.  Additionally on native AArch64 GNU/Linux systems the
-value @samp{native} is available.
-This option causes the compiler to tune the performance of the code for the
-processor of the host system.  If the compiler is unable to recognize the
-processor of the host system this option has no effect.
+Specify the name of the target processor, optionally suffixed by one
+or more feature modifiers.  This option has the form
+@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where
+the permissible values for @var{cpu} are the same as those available
+for @option{-mtune}.  The permissible values for @var{feature} are
+documented in the sub-section on
+@ref{aarch64-feature-modifiers,,@option{-march} and @option{-mcpu}
+Feature Modifiers}.  Where conflicting feature modifiers are
+specified, the right-most feature is used.
 
-The permissible values for @var{feature} are documented in the sub-section
-below.
+Additionally on native AArch64 GNU/Linux systems the value
+@samp{native} is available.  This option causes the compiler to tune
+the performance of the code for the processor of the host system.  If
+the compiler is unable to recognize the processor of the host system
+this option has no effect.
 
-Where conflicting feature modifiers are specified, the right-most feature is
-used.
-
-GCC uses this name to determine what kind of instructions it can emit when
+GCC uses @var{name} to determine what kind of instructions it can emit when
 generating assembly code (as if by @option{-march}) and to determine
 the target processor for which to tune for performance (as if
 by @option{-mtune}).  Where this option is used in conjunction
@@ -12496,22 +12501,25 @@ over the appropriate part of this option.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
+@anchor{aarch64-feature-modifiers}
 @cindex @option{-march} feature modifiers
 @cindex @option{-mcpu} feature modifiers
-Feature modifiers used with @option{-march} and @option{-mcpu} can be one
-the following:
+Feature modifiers used with @option{-march} and @option{-mcpu} can be any of
+the following and their inverses @option{no@var{feature}}:
 
 @table @samp
 @item crc
 Enable CRC extension.
 @item crypto
-Enable Crypto extension.  This implies Advanced SIMD is enabled.
+Enable Crypto extension.  This also enables Advanced SIMD and floating-point
+instructions.
 @item fp
-Enable floating-point instructions.
+Enable floating-point instructions.  This is on by default for all possible
+values for options @option{-march} and @option{-mcpu}.
 @item simd
-Enable Advanced SIMD instructions.  This implies floating-point instructions
-are enabled.  This is the default for all current possible values for options
-@option{-march} and @option{-mcpu=}.
+Enable Advanced SIMD instructions.  This also enables floating-point
+instructions.  This is on by default for all possible values for options
+@option{-march} and @option{-mcpu}.
 @item lse
 Enable Large System Extension instructions.
 @item pan
@@ -12519,8 +12527,22 @@ Enable Privileged Access Never support.
 @item lor
 Enable Limited Ordering Regions support.
 @item rdma
-Enable ARMv8.1 Advanced SIMD instructions.
+Enable ARMv8.1 Advanced SIMD instructions.  This implies Advanced SIMD
+is enabled.
+
+@item -moverride=@var{string}
+@opindex master
+Override tuning decisions made by the back-end in response to a
+@option{-mtune=} switch.  The syntax, semantics, and accepted values
+for @var{string} in this option are not guaranteed to be consistent
+across releases.
+
+This option is only intended to be useful when developing GCC.
 @end table
+
+That is, @option{crypto} implies @option{simd} implies @option{fp}.
+Conversely, @option{nofp} (or equivalently, @option{-mgeneral-regs-only})
+implies @option{nosimd} implies @option{nocrypto}.
 
 @node Adapteva Epiphany Options
 @subsection Adapteva Epiphany Options
@@ -23267,10 +23289,12 @@ on x86-64 processors in 64-bit environments.
 @itemx -m64
 @itemx -mx32
 @itemx -m16
+@itemx -miamcu
 @opindex m32
 @opindex m64
 @opindex mx32
 @opindex m16
+@opindex miamcu
 Generate code for a 16-bit, 32-bit or 64-bit environment.
 The @option{-m32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
@@ -23288,6 +23312,9 @@ generates code for the x86-64 architecture.
 The @option{-m16} option is the same as @option{-m32}, except for that
 it outputs the @code{.code16gcc} assembly directive at the beginning of
 the assembly output so that the binary can run in 16-bit mode.
+
+The @option{-miamcu} option generates code which conforms to Intel MCU
+psABI.  It requires the @option{-m32} option to be turned on.
 
 @item -mno-red-zone
 @opindex mno-red-zone

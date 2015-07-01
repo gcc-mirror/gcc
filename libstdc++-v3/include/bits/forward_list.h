@@ -587,8 +587,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         constexpr bool __move_storage =
           _Node_alloc_traits::_S_propagate_on_move_assign()
           || _Node_alloc_traits::_S_always_equal();
-        _M_move_assign(std::move(__list),
-                       integral_constant<bool, __move_storage>());
+        _M_move_assign(std::move(__list), __bool_constant<__move_storage>());
 	return *this;
       }
 
@@ -1410,6 +1409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline void
     swap(forward_list<_Tp, _Alloc>& __lx,
 	 forward_list<_Tp, _Alloc>& __ly)
+    noexcept(noexcept(__lx.swap(__ly)))
     { __lx.swap(__ly); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

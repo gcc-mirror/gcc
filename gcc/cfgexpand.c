@@ -62,8 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "gimple-ssa.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
@@ -610,25 +608,7 @@ stack_var_cmp (const void *a, const void *b)
   return 0;
 }
 
-struct part_traits : default_hashmap_traits
-{
-  template<typename T>
-    static bool
-    is_deleted (T &e)
-    { return e.m_value == reinterpret_cast<void *> (1); }
-
-  template<typename T> static bool is_empty (T &e) { return e.m_value == NULL; }
-  template<typename T>
-    static void
-    mark_deleted (T &e)
-    { e.m_value = reinterpret_cast<T> (1); }
-
-  template<typename T>
-    static void
-    mark_empty (T &e)
-      { e.m_value = NULL; }
-};
-
+struct part_traits : unbounded_int_hashmap_traits <size_t, bitmap> {};
 typedef hash_map<size_t, bitmap, part_traits> part_hashmap;
 
 /* If the points-to solution *PI points to variables that are in a partition

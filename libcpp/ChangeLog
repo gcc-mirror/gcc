@@ -1,3 +1,24 @@
+2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N4197 - Adding u8 character literals
+	* include/cpplib.h (UTF8CHAR, UTF8CHAR_USERDEF): New cpp tokens;
+	(struct cpp_options): Add utf8_char_literals.
+	* init.c (struct lang_flags): Add utf8_char_literals;
+	(struct lang_flags lang_defaults): Add column for utf8_char_literals.
+	* macro.c (stringify_arg()): Treat CPP_UTF8CHAR token; 
+	* expr.c (cpp_userdef_char_remove_type(), cpp_userdef_char_add_type()):
+	Treat CPP_UTF8CHAR_USERDEF, CPP_UTF8CHAR tokens;
+	(cpp_userdef_char_p()): Treat CPP_UTF8CHAR_USERDEF token;
+	(eval_token(), _cpp_parse_expr()): Treat CPP_UTF8CHAR token.
+	* lex.c (lex_string(), _cpp_lex_direct()): Include CPP_UTF8CHAR tokens.
+	* charset.c (converter_for_type(), cpp_interpret_charconst()):
+	Treat CPP_UTF8CHAR token.
+
+2015-06-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lex.c (search_line_sse42) [__GCC_ASM_FLAG_OUTPUTS__]: New main
+	loop using asm flag outputs.
+
 2015-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66415

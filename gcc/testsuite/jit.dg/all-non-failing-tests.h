@@ -95,6 +95,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-extra-options.c: We don't use this one, since the extra options
+   affect the whole context.  */
+
 /* test-factorial.c */
 #define create_code create_code_factorial
 #define verify_code verify_code_factorial
@@ -172,6 +175,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-switch.c */
+#define create_code create_code_switch
+#define verify_code verify_code_switch
+#include "test-switch.c"
+#undef create_code
+#undef verify_code
+
 /* test-types.c */
 #define create_code create_code_types
 #define verify_code verify_code_types
@@ -185,6 +195,10 @@
 #include "test-using-global.c"
 #undef create_code
 #undef verify_code
+
+/* test-validly-unreachable-block.c: We don't use this one, since the use
+   of gcc_jit_context_set_bool_allow_unreachable_blocks affects the whole
+   context.  */
 
 /* test-volatile.c */
 #define create_code create_code_volatile
@@ -274,6 +288,9 @@ const struct testcase testcases[] = {
   {"sum_of_squares",
    create_code_sum_of_squares,
    verify_code_sum_of_squares},
+  {"switch",
+   create_code_switch,
+   verify_code_switch},
   {"types",
    create_code_types,
    verify_code_types},

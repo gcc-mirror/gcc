@@ -69,8 +69,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-cfg.h"
 #include "domwalk.h"
-#include "ipa-ref.h"
-#include "plugin-api.h"
 #include "cgraph.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -137,9 +135,8 @@ static vn_lookup_kind default_vn_walk_kind;
 
 /* vn_nary_op hashtable helpers.  */
 
-struct vn_nary_op_hasher : typed_noop_remove <vn_nary_op_s>
+struct vn_nary_op_hasher : nofree_ptr_hash <vn_nary_op_s>
 {
-  typedef vn_nary_op_s *value_type;
   typedef vn_nary_op_s *compare_type;
   static inline hashval_t hash (const vn_nary_op_s *);
   static inline bool equal (const vn_nary_op_s *, const vn_nary_op_s *);
@@ -171,10 +168,8 @@ typedef vn_nary_op_table_type::iterator vn_nary_op_iterator_type;
 static int
 vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2);
 
-struct vn_phi_hasher
+struct vn_phi_hasher : pointer_hash <vn_phi_s>
 { 
-  typedef vn_phi_s *value_type;
-  typedef vn_phi_s *compare_type;
   static inline hashval_t hash (const vn_phi_s *);
   static inline bool equal (const vn_phi_s *, const vn_phi_s *);
   static inline void remove (vn_phi_s *);
@@ -239,10 +234,8 @@ free_reference (vn_reference_s *vr)
 
 /* vn_reference hashtable helpers.  */
 
-struct vn_reference_hasher
+struct vn_reference_hasher : pointer_hash <vn_reference_s>
 {
-  typedef vn_reference_s *value_type;
-  typedef vn_reference_s *compare_type;
   static inline hashval_t hash (const vn_reference_s *);
   static inline bool equal (const vn_reference_s *, const vn_reference_s *);
   static inline void remove (vn_reference_s *);
@@ -287,10 +280,8 @@ typedef struct vn_tables_s
 
 /* vn_constant hashtable helpers.  */
 
-struct vn_constant_hasher : typed_free_remove <vn_constant_s>
+struct vn_constant_hasher : free_ptr_hash <vn_constant_s>
 { 
-  typedef vn_constant_s *value_type;
-  typedef vn_constant_s *compare_type;
   static inline hashval_t hash (const vn_constant_s *);
   static inline bool equal (const vn_constant_s *, const vn_constant_s *);
 };
@@ -2389,11 +2380,7 @@ vn_nary_op_compute_hash (const vn_nary_op_t vno1)
   if (vno1->length == 2
       && commutative_tree_code (vno1->opcode)
       && tree_swap_operands_p (vno1->op[0], vno1->op[1], false))
-    {
-      tree temp = vno1->op[0];
-      vno1->op[0] = vno1->op[1];
-      vno1->op[1] = temp;
-    }
+    std::swap (vno1->op[0], vno1->op[1]);
 
   hstate.add_int (vno1->opcode);
   for (i = 0; i < vno1->length; ++i)

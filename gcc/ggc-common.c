@@ -237,9 +237,8 @@ struct ptr_data
 
 /* Helper for hashing saving_htab.  */
 
-struct saving_hasher : typed_free_remove <ptr_data>
+struct saving_hasher : free_ptr_hash <ptr_data>
 {
-  typedef ptr_data *value_type;
   typedef void *compare_type;
   static inline hashval_t hash (const ptr_data *);
   static inline bool equal (const ptr_data *, const void *);

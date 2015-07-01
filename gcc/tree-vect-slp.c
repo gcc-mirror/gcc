@@ -480,7 +480,7 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   enum tree_code first_cond_code = ERROR_MARK;
   tree lhs;
   bool need_same_oprnds = false;
-  tree vectype, scalar_type, first_op1 = NULL_TREE;
+  tree vectype = NULL_TREE, scalar_type, first_op1 = NULL_TREE;
   optab optab;
   int icode;
   machine_mode optab_op2_mode;
@@ -1124,9 +1124,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  for (j = 0; j < group_size; ++j)
 	    if (!matches[j])
 	      {
-		gimple tem = oprnds_info[0]->def_stmts[j];
-		oprnds_info[0]->def_stmts[j] = oprnds_info[1]->def_stmts[j];
-		oprnds_info[1]->def_stmts[j] = tem;
+		std::swap (oprnds_info[0]->def_stmts[j],
+			   oprnds_info[1]->def_stmts[j]);
 		dump_printf (MSG_NOTE, "%d ", j);
 	      }
 	  dump_printf (MSG_NOTE, "\n");
@@ -1999,11 +1998,20 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
 		    || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo)))
 		&& !(gimple_code (use_stmt) == GIMPLE_PHI
 		     && STMT_VINFO_DEF_TYPE (use_vinfo) == vect_reduction_def))
-	      stype = hybrid;
+	      {
+		if (dump_enabled_p ())
+		  {
+		    dump_printf_loc (MSG_NOTE, vect_location, "use of SLP "
+				     "def in non-SLP stmt: ");
+		    dump_gimple_stmt (MSG_NOTE, TDF_SLIM, use_stmt, 0);
+		  }
+		stype = hybrid;
+	      }
 	  }
     }
 
-  if (stype == hybrid)
+  if (stype == hybrid
+      && !HYBRID_SLP_STMT (stmt_vinfo))
     {
       if (dump_enabled_p ())
 	{
@@ -3006,7 +3014,7 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
    the created stmts must be inserted.  */
 
 static inline void
-vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
+vect_create_mask_and_perm (gimple stmt,
                            tree mask, int first_vec_indx, int second_vec_indx,
                            gimple_stmt_iterator *gsi, slp_tree node,
                            tree vectype, vec<tree> dr_chain,
@@ -3014,7 +3022,6 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
 {
   tree perm_dest;
   gimple perm_stmt = NULL;
-  stmt_vec_info next_stmt_info;
   int i, stride;
   tree first_vec, second_vec, data_ref;
 
@@ -3045,10 +3052,6 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
       first_vec_indx += stride;
       second_vec_indx += stride;
     }
-
-  /* Mark the scalar stmt as vectorized.  */
-  next_stmt_info = vinfo_for_stmt (next_scalar_stmt);
-  STMT_VINFO_VEC_STMT (next_stmt_info) = perm_stmt;
 }
 
 
@@ -3161,9 +3164,8 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   gimple stmt = SLP_TREE_SCALAR_STMTS (node)[0];
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree mask_element_type = NULL_TREE, mask_type;
-  int i, j, k, nunits, vec_index = 0, scalar_index;
+  int i, j, k, nunits, vec_index = 0;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  gimple next_scalar_stmt;
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
   int first_mask_element;
   int index, unroll_factor, current_mask_element, ncopies;
@@ -3235,7 +3237,6 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
      {c2,a3,b3,c3}.  */
 
   {
-      scalar_index = 0;
       index = 0;
       vect_stmts_counter = 0;
       vec_index = 0;
@@ -3296,10 +3297,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
                           second_vec_index = vec_index;
                         }
 
-                      next_scalar_stmt
-			  = SLP_TREE_SCALAR_STMTS (node)[scalar_index++];
-
-                      vect_create_mask_and_perm (stmt, next_scalar_stmt,
+                      vect_create_mask_and_perm (stmt,
                                mask_vec, first_vec_index, second_vec_index,
 			       gsi, node, vectype, dr_chain,
 			       ncopies, vect_stmts_counter++);

@@ -572,16 +572,10 @@ lra_setup_reload_pseudo_preferenced_hard_reg (int regno,
       && (lra_reg_info[regno].preferred_hard_regno_profit2
 	  > lra_reg_info[regno].preferred_hard_regno_profit1))
     {
-      int temp;
-
-      temp = lra_reg_info[regno].preferred_hard_regno1;
-      lra_reg_info[regno].preferred_hard_regno1
-	= lra_reg_info[regno].preferred_hard_regno2;
-      lra_reg_info[regno].preferred_hard_regno2 = temp;
-      temp = lra_reg_info[regno].preferred_hard_regno_profit1;
-      lra_reg_info[regno].preferred_hard_regno_profit1
-	= lra_reg_info[regno].preferred_hard_regno_profit2;
-      lra_reg_info[regno].preferred_hard_regno_profit2 = temp;
+      std::swap (lra_reg_info[regno].preferred_hard_regno1,
+		 lra_reg_info[regno].preferred_hard_regno2);
+      std::swap (lra_reg_info[regno].preferred_hard_regno_profit1,
+		 lra_reg_info[regno].preferred_hard_regno_profit2);
     }
   if (lra_dump_file != NULL)
     {
@@ -732,7 +726,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		    {
 		      insn = lra_insn_recog_data[uid]->insn;
 		      lra_substitute_pseudo_within_insn (insn, dst_regno,
-							 SET_SRC (set));
+							 SET_SRC (set), true);
 		      lra_update_insn_regno_info (insn);
 		    }
 		}
@@ -774,7 +768,15 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  dst_regno = REGNO (SET_DEST (set));
 	  if (dst_regno >= lra_constraint_new_regno_start
 	      && src_regno >= lra_constraint_new_regno_start)
-	    lra_create_copy (dst_regno, src_regno, freq);
+	    {
+	      /* It might be still an original (non-reload) insn with
+		 one unused output and a constraint requiring to use
+		 the same reg for input/output operands. In this case
+		 dst_regno and src_regno have the same value, we don't
+		 need a misleading copy for this case.  */
+	      if (dst_regno != src_regno)
+		lra_create_copy (dst_regno, src_regno, freq);
+	    }
 	  else if (dst_regno >= lra_constraint_new_regno_start)
 	    {
 	      if ((hard_regno = src_regno) >= FIRST_PSEUDO_REGISTER)

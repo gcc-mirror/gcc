@@ -111,11 +111,8 @@ struct decl_addr_value
   tree address;
 };
 
-struct decl_addr_hasher : typed_free_remove<decl_addr_value>
+struct decl_addr_hasher : free_ptr_hash<decl_addr_value>
 {
-  typedef decl_addr_value *value_type;
-  typedef decl_addr_value *compare_type;
-
   static inline hashval_t hash (const decl_addr_value *);
   static inline bool equal (const decl_addr_value *, const decl_addr_value *);
 };
@@ -134,11 +131,8 @@ decl_addr_hasher::equal (const decl_addr_value *p1, const decl_addr_value *p2)
 
 
 
-struct string_hasher : typed_noop_remove<const char>
+struct string_hasher : nofree_ptr_hash<const char>
 {
-  typedef const char *value_type;
-  typedef const char *compare_type;
-
   static inline hashval_t hash (const char *s)
   {
     return htab_hash_string (s);
@@ -176,7 +170,7 @@ struct plugin_context : public cc1_plugin::connection
   hash_table<decl_addr_hasher> address_map;
 
   // A collection of trees that are preserved for the GC.
-  hash_table< pointer_hash<tree_node> > preserved;
+  hash_table< nofree_ptr_hash<tree_node> > preserved;
 
   // File name cache.
   hash_table<string_hasher> file_names;
@@ -245,9 +239,8 @@ plugin_context::mark ()
       ggc_mark ((*it)->address);
     }
 
-  for (hash_table< pointer_hash<tree_node> >::iterator it = preserved.begin ();
-       it != preserved.end ();
-       ++it)
+  for (hash_table< nofree_ptr_hash<tree_node> >::iterator
+	 it = preserved.begin (); it != preserved.end (); ++it)
     ggc_mark (&*it);
 }
 

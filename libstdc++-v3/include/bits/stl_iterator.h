@@ -1246,4 +1246,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) (_Iter)
 #endif // C++11
 
+#ifdef _GLIBCXX_DEBUG
+# include <debug/stl_iterator.h>
+#endif
+
 #endif

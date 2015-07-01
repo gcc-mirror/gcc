@@ -2983,7 +2983,9 @@ get_pattern_stats (struct pattern_stats *stats, rtvec pattern)
 				       stats->max_scratch_opno)) + 1;
 }
 
-/* Return the emit_* function that should be used for pattern X.  */
+/* Return the emit_* function that should be used for pattern X, or NULL
+   if we can't pick a particular type at compile time and should instead
+   fall back to "emit".  */
 
 const char *
 get_emit_function (rtx x)
@@ -3000,7 +3002,7 @@ get_emit_function (rtx x)
       return "emit_jump_insn";
 
     case UNKNOWN:
-      return "emit";
+      return NULL;
 
     default:
       gcc_unreachable ();

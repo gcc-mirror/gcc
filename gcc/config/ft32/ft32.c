@@ -45,7 +45,6 @@
 #include "except.h"
 #include "function.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "dominance.h"
@@ -59,7 +58,10 @@
 #include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
+#include "emit-rtl.h"
 
+/* This file should be included last.  */
+#include "target-def.h"
 
 #include <stdint.h>
 
@@ -199,7 +201,7 @@ ft32_print_operand (FILE * file, rtx x, int code)
       return;
 
     case 'm':
-      fprintf (file, "%d", -INTVAL(x));
+      fprintf (file, "%ld", (long) (- INTVAL(x)));
       return;
 
     case 'd':                   // a DW spec, from an integer alignment (for BLKmode insns)
@@ -455,6 +457,9 @@ ft32_expand_prologue (void)
   rtx insn;
 
   ft32_compute_frame ();
+
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = cfun->machine->size_for_adjusting_sp;
 
   if (!must_link () && (cfun->machine->callee_saved_reg_size == 4))
     {

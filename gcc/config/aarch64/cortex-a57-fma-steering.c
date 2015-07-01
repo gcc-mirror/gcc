@@ -43,6 +43,7 @@
 #include "tree-pass.h"
 #include "regrename.h"
 #include "cortex-a57-fma-steering.h"
+#include "aarch64-protos.h"
 
 #include <list>
 
@@ -288,11 +289,19 @@ rename_single_chain (du_head_p head, HARD_REG_SET *unavailable)
       return false;
     }
 
-  if (dump_file)
-    fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
-
-  regrename_do_replace (head, best_new_reg);
-  df_set_regs_ever_live (best_new_reg, true);
+  if (regrename_do_replace (head, best_new_reg))
+    {
+      if (dump_file)
+	fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
+      df_set_regs_ever_live (best_new_reg, true);
+    }
+  else
+    {
+      if (dump_file)
+	fprintf (dump_file, ", renaming as %s failed\n",
+		 reg_names[best_new_reg]);
+      return false;
+    }
   return true;
 }
 
@@ -1051,7 +1060,9 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return AARCH64_TUNE_FMA_STEERING && optimize >= 2;
+      return (aarch64_tune_params.extra_tuning_flags
+	      & AARCH64_EXTRA_TUNE_RENAME_FMA_REGS)
+	      && optimize >= 2;
     }
 
   virtual unsigned int execute (function *)

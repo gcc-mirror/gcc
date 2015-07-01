@@ -141,31 +141,7 @@ along with GCC; see the file COPYING3.  If not see
    However, this is no actual entry for alias set zero.  It is an
    error to attempt to explicitly construct a subset of zero.  */
 
-struct alias_set_traits : default_hashmap_traits
-{
-  template<typename T>
-  static bool
-  is_empty (T &e)
-  {
-    return e.m_key == INT_MIN;
-  }
-
-  template<typename  T>
-  static bool
-  is_deleted (T &e)
-  {
-    return e.m_key == (INT_MIN + 1);
-  }
-
-  template<typename T> static void mark_empty (T &e) { e.m_key = INT_MIN; }
-
-  template<typename T>
-  static void
-  mark_deleted (T &e)
-  {
-    e.m_key = INT_MIN + 1;
-  }
-};
+struct alias_set_hash : int_hash <int, INT_MIN, INT_MIN + 1> {};
 
 struct GTY(()) alias_set_entry_d {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
@@ -178,7 +154,7 @@ struct GTY(()) alias_set_entry_d {
 
      continuing our example above, the children here will be all of
      `int', `double', `float', and `struct S'.  */
-  hash_map<int, int, alias_set_traits> *children;
+  hash_map<alias_set_hash, int> *children;
 
   /* Nonzero if would have a child of zero: this effectively makes this
      alias set the same as alias set zero.  */
@@ -1157,7 +1133,7 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
       subset_entry = get_alias_set_entry (subset);
       if (!superset_entry->children)
 	superset_entry->children
-	  = hash_map<int, int, alias_set_traits>::create_ggc (64);
+	  = hash_map<alias_set_hash, int>::create_ggc (64);
       /* If there is an entry for the subset, enter all of its children
 	 (if they are not already present) as children of the SUPERSET.  */
       if (subset_entry)
@@ -1169,7 +1145,7 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
 
 	  if (subset_entry->children)
 	    {
-	      hash_map<int, int, alias_set_traits>::iterator iter
+	      hash_map<alias_set_hash, int>::iterator iter
 		= subset_entry->children->begin ();
 	      for (; iter != subset_entry->children->end (); ++iter)
 		superset_entry->children->put ((*iter).first, (*iter).second);
@@ -3062,6 +3038,14 @@ init_alias_analysis (void)
   rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
 
+  /* The prologue/epilogue insns are not threaded onto the
+     insn chain until after reload has completed.  Thus,
+     there is no sense wasting time checking if INSN is in
+     the prologue/epilogue until after reload has completed.  */
+  bool could_be_prologue_epilogue = ((targetm.have_prologue ()
+				      || targetm.have_epilogue ())
+				     && reload_completed);
+
   pass = 0;
   do
     {
@@ -3100,17 +3084,7 @@ init_alias_analysis (void)
 		{
 		  rtx note, set;
 
-#if defined (HAVE_prologue)
-		  static const bool prologue = true;
-#else
-		  static const bool prologue = false;
-#endif
-
-		  /* The prologue/epilogue insns are not threaded onto the
-		     insn chain until after reload has completed.  Thus,
-		     there is no sense wasting time checking if INSN is in
-		     the prologue/epilogue until after reload has completed.  */
-		  if ((prologue || HAVE_epilogue) && reload_completed
+		  if (could_be_prologue_epilogue
 		      && prologue_epilogue_contains (insn))
 		    continue;
 

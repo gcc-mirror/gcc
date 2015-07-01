@@ -151,23 +151,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfg.h"
 #include "cfgrtl.h"
 #include "basic-block.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "builtins.h"
+#include "tree-hash-traits.h"
 
 static GTY(()) int call_site_base;
 
-struct tree_hash_traits : default_hashmap_traits
-{
-  static hashval_t hash (tree t) { return TREE_HASH (t); }
-};
-
-static GTY (()) hash_map<tree, tree, tree_hash_traits> *type_to_runtime_map;
+static GTY (()) hash_map<tree_hash, tree> *type_to_runtime_map;
 
 /* Describe the SjLj_Function_Context structure.  */
 static GTY(()) tree sjlj_fc_type_node;
@@ -205,10 +199,8 @@ struct action_record
 
 /* Hashtable helpers.  */
 
-struct action_record_hasher : typed_free_remove <action_record>
+struct action_record_hasher : free_ptr_hash <action_record>
 {
-  typedef action_record *value_type;
-  typedef action_record *compare_type;
   static inline hashval_t hash (const action_record *);
   static inline bool equal (const action_record *, const action_record *);
 };
@@ -252,8 +244,7 @@ init_eh (void)
   if (! flag_exceptions)
     return;
 
-  type_to_runtime_map
-    = hash_map<tree, tree, tree_hash_traits>::create_ggc (31);
+  type_to_runtime_map = hash_map<tree_hash, tree>::create_ggc (31);
 
   /* Create the SjLj_Function_Context structure.  This should match
      the definition in unwind-sjlj.c.  */
@@ -721,9 +712,8 @@ struct ttypes_filter {
 
 /* Helper for ttypes_filter hashing.  */
 
-struct ttypes_filter_hasher : typed_free_remove <ttypes_filter>
+struct ttypes_filter_hasher : free_ptr_hash <ttypes_filter>
 {
-  typedef ttypes_filter *value_type;
   typedef tree_node *compare_type;
   static inline hashval_t hash (const ttypes_filter *);
   static inline bool equal (const ttypes_filter *, const tree_node *);
@@ -749,10 +739,8 @@ typedef hash_table<ttypes_filter_hasher> ttypes_hash_type;
 
 /* Helper for ehspec hashing.  */
 
-struct ehspec_hasher : typed_free_remove <ttypes_filter>
+struct ehspec_hasher : free_ptr_hash <ttypes_filter>
 {
-  typedef ttypes_filter *value_type;
-  typedef ttypes_filter *compare_type;
   static inline hashval_t hash (const ttypes_filter *);
   static inline bool equal (const ttypes_filter *, const ttypes_filter *);
 };

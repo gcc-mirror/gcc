@@ -53,7 +53,6 @@
 #include "optabs.h"
 #include "except.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "predict.h"
@@ -75,6 +74,9 @@
 #include "df.h"
 #include "reload.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);
 static void xstormy16_asm_out_constructor (rtx, int);

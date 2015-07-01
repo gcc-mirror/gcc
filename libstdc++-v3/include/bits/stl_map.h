@@ -160,6 +160,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  Default constructor creates no elements.
        */
       map()
+#if __cplusplus >= 201103L
+      noexcept(is_nothrow_default_constructible<allocator_type>::value)
+#endif
       : _M_t() { }
 
       /**
@@ -792,7 +795,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       swap(map& __x)
 #if __cplusplus >= 201103L
-      noexcept(_Alloc_traits::_S_nothrow_swap())
+      noexcept(_Alloc_traits::_S_nothrow_swap()
+	       && __is_nothrow_swappable<_Compare>::value)
 #endif
       { _M_t.swap(__x._M_t); }
 
@@ -1121,6 +1125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline void
     swap(map<_Key, _Tp, _Compare, _Alloc>& __x,
 	 map<_Key, _Tp, _Compare, _Alloc>& __y)
+#if __cplusplus >= 201103L
+    noexcept(noexcept(__x.swap(__y)))
+#endif
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

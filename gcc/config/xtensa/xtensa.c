@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "libfuncs.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -78,6 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hw-doloop.h"
 #include "rtl-iter.h"
 
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order

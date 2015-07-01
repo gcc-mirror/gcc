@@ -159,9 +159,8 @@ typedef struct im_mem_ref
 
 /* Mem_ref hashtable helpers.  */
 
-struct mem_ref_hasher : typed_noop_remove <im_mem_ref>
+struct mem_ref_hasher : nofree_ptr_hash <im_mem_ref>
 {
-  typedef im_mem_ref *value_type;
   typedef tree_node *compare_type;
   static inline hashval_t hash (const im_mem_ref *);
   static inline bool equal (const im_mem_ref *, const tree_node *);

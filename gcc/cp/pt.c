@@ -89,7 +89,7 @@ struct GTY((for_user)) spec_entry
   tree spec;
 };
 
-struct spec_hasher : ggc_hasher<spec_entry *>
+struct spec_hasher : ggc_ptr_hash<spec_entry>
 {
   static hashval_t hash (spec_entry *);
   static bool equal (spec_entry *, spec_entry *);
@@ -1019,6 +1019,35 @@ optimize_specialization_lookup_p (tree tmpl)
 	  && !DECL_FRIEND_P (DECL_TEMPLATE_RESULT (tmpl)));
 }
 
+/* Make sure ARGS doesn't use any inappropriate typedefs; we should have
+   gone through coerce_template_parms by now.  */
+
+static void
+check_unstripped_args (tree args ATTRIBUTE_UNUSED)
+{
+#ifdef ENABLE_CHECKING
+  ++processing_template_decl;
+  if (!any_dependent_template_arguments_p (args))
+    {
+      tree inner = INNERMOST_TEMPLATE_ARGS (args);
+      for (int i = 0; i < TREE_VEC_LENGTH (inner); ++i)
+	{
+	  tree arg = TREE_VEC_ELT (inner, i);
+	  if (TREE_CODE (arg) == TEMPLATE_DECL)
+	    /* OK */;
+	  else if (TYPE_P (arg))
+	    gcc_assert (strip_typedefs (arg, NULL) == arg);
+	  else if (strip_typedefs (TREE_TYPE (arg), NULL) != TREE_TYPE (arg))
+	    /* Allow typedefs on the type of a non-type argument, since a
+	       parameter can have them.  */;
+	  else
+	    gcc_assert (strip_typedefs_expr (arg, NULL) == arg);
+	}
+    }
+  --processing_template_decl;
+#endif
+}
+
 /* Retrieve the specialization (in the sense of [temp.spec] - a
    specialization is either an instantiation or an explicit
    specialization) of TMPL for the given template ARGS.  If there is
@@ -1052,13 +1081,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 		  ? TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl))
 		  : template_class_depth (DECL_CONTEXT (tmpl))));
 
-#ifdef ENABLE_CHECKING
-  /* We should have gone through coerce_template_parms by now.  */
-  ++processing_template_decl;
-  if (!any_dependent_template_arguments_p (args))
-    gcc_assert (strip_typedefs_expr (args, NULL) == args);
-  --processing_template_decl;
-#endif
+  check_unstripped_args (args);
 
   if (optimize_specialization_lookup_p (tmpl))
     {
@@ -2432,7 +2455,7 @@ check_explicit_specialization (tree declarator,
   switch (tsk)
     {
     case tsk_none:
-      if (processing_specialization && TREE_CODE (decl) != VAR_DECL)
+      if (processing_specialization && !VAR_P (decl))
 	{
 	  specialization = 1;
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
@@ -2865,7 +2888,7 @@ check_explicit_specialization (tree declarator,
 	    /* A specialization is not necessarily COMDAT.  */
 	    DECL_COMDAT (decl) = (TREE_PUBLIC (decl)
 				  && DECL_DECLARED_INLINE_P (decl));
-	  else if (TREE_CODE (decl) == VAR_DECL)
+	  else if (VAR_P (decl))
 	    DECL_COMDAT (decl) = false;
 
 	  /* Register this specialization so that we can find it
@@ -4748,7 +4771,7 @@ push_template_decl_real (tree decl, bool is_friend)
   is_partial = ((DECL_IMPLICIT_TYPEDEF_P (decl)
 		 && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
 		 && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
-		|| (TREE_CODE (decl) == VAR_DECL
+		|| (VAR_P (decl)
 		    && DECL_LANG_SPECIFIC (decl)
 		    && DECL_TEMPLATE_SPECIALIZATION (decl)
 		    && TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (decl))));
@@ -6340,11 +6363,13 @@ coerce_template_template_parm (tree parm,
 	   D<int, C> d;
 
 	 i.e. the parameter list of TT depends on earlier parameters.  */
-      if (!uses_template_parms (TREE_TYPE (arg))
-	  && !same_type_p
-	        (tsubst (TREE_TYPE (parm), outer_args, complain, in_decl),
-		 TREE_TYPE (arg)))
-	return 0;
+      if (!uses_template_parms (TREE_TYPE (arg)))
+	{
+	  tree t = tsubst (TREE_TYPE (parm), outer_args, complain, in_decl);
+	  if (!uses_template_parms (t)
+	      && !same_type_p (t, TREE_TYPE (arg)))
+	    return 0;
+	}
       
       if (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (arg))
 	  && !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
@@ -10769,7 +10794,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (PRIMARY_TEMPLATE_P (t))
 	  DECL_PRIMARY_TEMPLATE (r) = r;
 
-	if (TREE_CODE (decl) != TYPE_DECL && TREE_CODE (decl) != VAR_DECL)
+	if (TREE_CODE (decl) != TYPE_DECL && !VAR_P (decl))
 	  /* Record this non-type partial instantiation.  */
 	  register_specialization (r, t,
 				   DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
@@ -11444,8 +11469,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		  }
 		SET_DECL_VALUE_EXPR (r, ve);
 	      }
-	    if (TREE_STATIC (r) || DECL_EXTERNAL (r))
-	      set_decl_tls_model (r, decl_tls_model (t));
+	    if (CP_DECL_THREAD_LOCAL_P (r)
+		&& !processing_template_decl)
+	      set_decl_tls_model (r, decl_default_tls_model (r));
 	  }
 	else if (DECL_SELF_REFERENCE_P (t))
 	  SET_DECL_SELF_REFERENCE_P (r);
@@ -15673,7 +15699,7 @@ tsubst_copy_and_build (tree t,
 	    && !processing_template_decl
 	    && !cp_unevaluated_operand
 	    && (TREE_STATIC (r) || DECL_EXTERNAL (r))
-	    && DECL_THREAD_LOCAL_P (r))
+	    && CP_DECL_THREAD_LOCAL_P (r))
 	  {
 	    if (tree wrap = get_tls_wrapper_fn (r))
 	      /* Replace an evaluated use of the thread_local variable with
@@ -16545,15 +16571,11 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
       break;
 
     case DEDUCE_CONV:
-      {
-	/* Swap PARM and ARG throughout the remainder of this
-	   function; the handling is precisely symmetric since PARM
-	   will initialize ARG rather than vice versa.  */
-	tree* temp = parm;
-	parm = arg;
-	arg = temp;
-	break;
-      }
+      /* Swap PARM and ARG throughout the remainder of this
+	 function; the handling is precisely symmetric since PARM
+	 will initialize ARG rather than vice versa.  */
+      std::swap (parm, arg);
+      break;
 
     case DEDUCE_EXACT:
       /* Core issue #873: Do the DR606 thing (see below) for these cases,
@@ -20996,6 +21018,12 @@ dependent_type_p_r (tree type)
 	names a dependent type.  */
   if (TREE_CODE (type) == TYPENAME_TYPE)
     return true;
+
+  /* An alias template specialization can be dependent even if the
+     resulting type is not.  */
+  if (dependent_alias_template_spec_p (type))
+    return true;
+
   /* -- a cv-qualified type where the cv-unqualified type is
 	dependent.
      No code is necessary for this bullet; the code below handles
@@ -21046,10 +21074,6 @@ dependent_type_p_r (tree type)
   else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
 	   && (any_dependent_template_arguments_p
 	       (INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type)))))
-    return true;
-  /* For an alias template specialization, check the arguments both to the
-     class template and the alias template.  */
-  else if (dependent_alias_template_spec_p (type))
     return true;
 
   /* All TYPEOF_TYPEs, DECLTYPE_TYPEs, and UNDERLYING_TYPEs are

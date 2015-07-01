@@ -1241,7 +1241,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
       _Rb_tree&
-      operator=(_Rb_tree&&) noexcept(_Alloc_traits::_S_nothrow_move());
+      operator=(_Rb_tree&&)
+      noexcept(_Alloc_traits::_S_nothrow_move()
+	       && is_nothrow_move_assignable<_Compare>::value);
 
       template<typename _Iterator>
 	void
@@ -1325,7 +1327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree(_Rb_tree&& __x, _Node_allocator&& __a)
     : _M_impl(__x._M_impl._M_key_compare, std::move(__a))
     {
-      using __eq = integral_constant<bool, _Alloc_traits::_S_always_equal()>;
+      using __eq = typename _Alloc_traits::is_always_equal;
       if (__x._M_root() != nullptr)
 	_M_move_data(__x, __eq());
     }
@@ -1378,7 +1380,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     operator=(_Rb_tree&& __x)
-    noexcept(_Alloc_traits::_S_nothrow_move())
+    noexcept(_Alloc_traits::_S_nothrow_move()
+	     && is_nothrow_move_assignable<_Compare>::value)
     {
       _M_impl._M_key_compare = __x._M_impl._M_key_compare;
       if (_Alloc_traits::_S_propagate_on_move_assign()

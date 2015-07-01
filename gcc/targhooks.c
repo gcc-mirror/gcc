@@ -72,7 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "target.h"
 #include "tm_p.h"
-#include "target-def.h"
 #include "regs.h"
 #include "reload.h"
 #include "insn-codes.h"

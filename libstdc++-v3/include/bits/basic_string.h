@@ -39,6 +39,7 @@
 #include <ext/atomicity.h>
 #include <ext/alloc_traits.h>
 #include <debug/debug.h>
+
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
@@ -903,7 +904,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       reference
       front() noexcept
-      { return operator[](0); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](0);
+      }
 
       /**
        *  Returns a read-only (constant) reference to the data at the first
@@ -911,7 +915,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_reference
       front() const noexcept
-      { return operator[](0); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](0);
+      }
 
       /**
        *  Returns a read/write reference to the data at the last
@@ -919,7 +926,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       reference
       back() noexcept
-      { return operator[](this->size() - 1); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](this->size() - 1);
+      }
 
       /**
        *  Returns a read-only (constant) reference to the data at the
@@ -927,7 +937,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_reference
       back() const noexcept
-      { return operator[](this->size() - 1); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](this->size() - 1);
+      }
 #endif
 
       // Modifiers:
@@ -1506,7 +1519,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       void
       pop_back() noexcept
-      { _M_erase(size()-1, 1); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	_M_erase(size() - 1, 1);
+      }
 #endif // C++11
 
       /**
@@ -3308,7 +3324,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       reference
       front()
-      { return operator[](0); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](0);
+      }
 
       /**
        *  Returns a read-only (constant) reference to the data at the first
@@ -3316,7 +3335,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       const_reference
       front() const _GLIBCXX_NOEXCEPT
-      { return operator[](0); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](0);
+      }
 
       /**
        *  Returns a read/write reference to the data at the last
@@ -3324,7 +3346,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       reference
       back()
-      { return operator[](this->size() - 1); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](this->size() - 1);
+      }
 
       /**
        *  Returns a read-only (constant) reference to the data at the
@@ -3332,7 +3357,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       const_reference
       back() const _GLIBCXX_NOEXCEPT
-      { return operator[](this->size() - 1); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	return operator[](this->size() - 1);
+      }
 #endif
 
       // Modifiers:
@@ -3819,7 +3847,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       void
       pop_back() // FIXME C++11: should be noexcept.
-      { erase(size()-1, 1); }
+      {
+	_GLIBCXX_DEBUG_ASSERT(!empty());
+	erase(size() - 1, 1);
+      }
 #endif // C++11
 
       /**

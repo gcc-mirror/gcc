@@ -484,11 +484,7 @@ link_roots (struct dom_info *di, TBB v, TBB w)
   di->path_min[s] = di->path_min[w];
   di->set_size[v] += di->set_size[w];
   if (di->set_size[v] < 2 * di->set_size[w])
-    {
-      TBB tmp = s;
-      s = di->set_child[v];
-      di->set_child[v] = tmp;
-    }
+    std::swap (di->set_child[v], s);
 
   /* Merge all subtrees.  */
   while (s)
@@ -650,7 +646,12 @@ calculate_dominance_info (enum cdi_direction dir)
   bool reverse = (dir == CDI_POST_DOMINATORS) ? true : false;
 
   if (dom_computed[dir_index] == DOM_OK)
-    return;
+    {
+#if ENABLE_CHECKING
+      verify_dominators (dir);
+#endif
+      return;
+    }
 
   timevar_push (TV_DOMINANCE);
   if (!dom_info_available_p (dir))
@@ -677,6 +678,12 @@ calculate_dominance_info (enum cdi_direction dir)
 
       free_dom_info (&di);
       dom_computed[dir_index] = DOM_NO_FAST_QUERY;
+    }
+  else
+    {
+#if ENABLE_CHECKING
+      verify_dominators (dir);
+#endif
     }
 
   compute_dom_fast_query (dir);

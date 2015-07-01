@@ -68,6 +68,12 @@ collect_wait (const char *prog, struct pex_obj *pex)
     fatal_error (input_location, "can't get program status: %m");
   pex_free (pex);
 
+  if (response_file && !save_temps)
+    {
+      unlink (response_file);
+      response_file = NULL;
+    }
+
   if (status)
     {
       if (WIFSIGNALED (status))
@@ -90,12 +96,6 @@ do_wait (const char *prog, struct pex_obj *pex)
   int ret = collect_wait (prog, pex);
   if (ret != 0)
     fatal_error (input_location, "%s returned %d exit status", prog, ret);
-
-  if (response_file && !save_temps)
-    {
-      unlink (response_file);
-      response_file = NULL;
-    }
 }
 
 
@@ -224,7 +224,5 @@ utils_cleanup (bool from_signal)
      calls to maybe_unlink fails. */
   cleanup_done = true;
 
-  if (response_file)
-    maybe_unlink (response_file);
   tool_cleanup (from_signal);
 }

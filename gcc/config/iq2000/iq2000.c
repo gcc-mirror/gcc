@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -65,6 +64,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -2071,6 +2073,9 @@ iq2000_expand_prologue (void)
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
+
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = cfun->machine->total_size;
 
   emit_insn (gen_blockage ());
 }

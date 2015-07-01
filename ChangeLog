@@ -1,3 +1,18 @@
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (ospace_frag): Enable for i?86*-*-elfiamcu
+	target.
+	* configure: Regenerate.
+
+2015-06-23  Ludovic Courtès  <ludo@gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-06-22  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself.
+	(Various Maintainers): Remove myself from libffi testsuite.
+
 2015-06-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* MAINTAINERS (gen* on machine desc): Add self.

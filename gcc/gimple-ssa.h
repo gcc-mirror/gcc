@@ -34,7 +34,7 @@ struct GTY((for_user)) tm_restart_node {
 
 /* Hasher for tm_restart_node.  */
 
-struct tm_restart_hasher : ggc_hasher<tm_restart_node *>
+struct tm_restart_hasher : ggc_ptr_hash<tm_restart_node>
 {
   static hashval_t hash (tm_restart_node *n) { return htab_hash_pointer (n); }
 
@@ -45,7 +45,7 @@ struct tm_restart_hasher : ggc_hasher<tm_restart_node *>
   }
 };
 
-struct ssa_name_hasher : ggc_hasher<tree>
+struct ssa_name_hasher : ggc_ptr_hash<tree_node>
 {
   /* Hash a tree in a uid_decl_map.  */
 

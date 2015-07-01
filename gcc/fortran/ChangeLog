@@ -1,3 +1,36 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* f95-lang.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* trans-decl.c: Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* trans-decl.c (module_hasher): Likewise.
+	* trans.h (module_decl_hasher): Likewise.
+
+2015-06-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66528
+	* error.c (gfc_warning_check): Restore the default output_buffer
+	before calling diagnostic_action_after_output.
+	(gfc_error_check): Likewise.
+	(gfc_diagnostics_init): Add comment.
+
+2015-06-23  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/64674
+	* parse.c (parse_associate): Figure the rank and as of a
+	class array in an associate early.
+	* primary.c (gfc_match_varspec): Prevent setting the
+	dimension attribute on the sym for classes.
+	* resolve.c (resolve_variable): Correct the component
+	ref's type for associated variables.  Add a full array ref
+	when class array's are associated.
+	(resolve_assoc_var): Correct the type of the symbol,
+	when in the associate the expression's rank becomes scalar.
+	* trans-expr.c (gfc_conv_variable): Indirect ref needed for
+	allocatable associated objects.
+
 2015-06-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66549

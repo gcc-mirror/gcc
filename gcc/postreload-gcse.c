@@ -120,10 +120,8 @@ struct expr
 
 /* Hashtable helpers.  */
 
-struct expr_hasher : typed_noop_remove <expr>
+struct expr_hasher : nofree_ptr_hash <expr>
 {
-  typedef expr *value_type;
-  typedef expr *compare_type;
   static inline hashval_t hash (const expr *);
   static inline bool equal (const expr *, const expr *);
 };

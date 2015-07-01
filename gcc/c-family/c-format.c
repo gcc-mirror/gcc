@@ -1514,7 +1514,7 @@ check_format_arg (void *ctx, tree format_tree,
   tree array_size = 0;
   tree array_init;
 
-  if (TREE_CODE (format_tree) == VAR_DECL)
+  if (VAR_P (format_tree))
     {
       /* Pull out a constant value if the front end didn't.  */
       format_tree = decl_constant_value (format_tree);
@@ -1618,7 +1618,7 @@ check_format_arg (void *ctx, tree format_tree,
       res->number_non_literal++;
       return;
     }
-  if (TREE_CODE (format_tree) == VAR_DECL
+  if (VAR_P (format_tree)
       && TREE_CODE (TREE_TYPE (format_tree)) == ARRAY_TYPE
       && (array_init = decl_constant_value (format_tree)) != format_tree
       && TREE_CODE (array_init) == STRING_CST)

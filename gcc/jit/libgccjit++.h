@@ -45,6 +45,7 @@ namespace gccjit
     class rvalue;
      class lvalue;
        class param;
+    class case_;
 
   /* Errors within the API become C++ exceptions of this class.  */
   class error
@@ -119,6 +120,10 @@ namespace gccjit
 
     void set_bool_option (enum gcc_jit_bool_option opt,
 			  int value);
+
+    void set_bool_allow_unreachable_blocks (int bool_value);
+
+    void add_command_line_option (const char *optname);
 
     location
     new_location (const std::string &filename,
@@ -293,6 +298,10 @@ namespace gccjit
 			     rvalue index,
 			     location loc = location ());
 
+    case_ new_case (rvalue min_value,
+		    rvalue max_value,
+		    block dest_block);
+
   private:
     gcc_jit_context *m_inner_ctxt;
   };
@@ -417,6 +426,10 @@ namespace gccjit
 			  location loc = location ());
     void end_with_return (location loc = location ());
 
+    void end_with_switch (rvalue expr,
+			  block default_block,
+			  std::vector <case_> cases,
+			  location loc = location ());
   };
 
   class rvalue : public object
@@ -467,6 +480,14 @@ namespace gccjit
     gcc_jit_param *get_inner_param () const;
   };
 
+  class case_ : public object
+  {
+  public:
+    case_ ();
+    case_ (gcc_jit_case *inner);
+
+    gcc_jit_case *get_inner_case () const;
+  };
 
   /* Overloaded operators, for those who want the most terse API
      (at the possible risk of being a little too magical).
@@ -600,7 +621,19 @@ context::set_bool_option (enum gcc_jit_bool_option opt,
 			  int value)
 {
   gcc_jit_context_set_bool_option (m_inner_ctxt, opt, value);
+}
 
+inline void
+context::set_bool_allow_unreachable_blocks (int bool_value)
+{
+  gcc_jit_context_set_bool_allow_unreachable_blocks (m_inner_ctxt,
+						     bool_value);
+}
+
+inline void
+context::add_command_line_option (const char *optname)
+{
+  gcc_jit_context_add_command_line_option (m_inner_ctxt, optname);
 }
 
 inline location
@@ -1108,6 +1141,17 @@ context::new_array_access (rvalue ptr,
 						   index.get_inner_rvalue ()));
 }
 
+inline case_
+context::new_case (rvalue min_value,
+		   rvalue max_value,
+		   block dest_block)
+{
+  return case_ (gcc_jit_context_new_case (m_inner_ctxt,
+					  min_value.get_inner_rvalue (),
+					  max_value.get_inner_rvalue (),
+					  dest_block.get_inner_block ()));
+}
+
 // class object
 inline context
 object::get_context () const
@@ -1355,6 +1399,27 @@ block::end_with_return (location loc)
 				      loc.get_inner_location ());
 }
 
+inline void
+block::end_with_switch (rvalue expr,
+			block default_block,
+			std::vector <case_> cases,
+			location loc)
+{
+  /* Treat std::vector as an array, relying on it not being resized: */
+  case_ *as_array_of_wrappers = &cases[0];
+
+  /* Treat the array as being of the underlying pointers, relying on
+     the wrapper type being such a pointer internally.	*/
+  gcc_jit_case **as_array_of_ptrs =
+    reinterpret_cast<gcc_jit_case **> (as_array_of_wrappers);
+  gcc_jit_block_end_with_switch (get_inner_block (),
+				 loc.get_inner_location (),
+				 expr.get_inner_rvalue (),
+				 default_block.get_inner_block (),
+				 cases.size (),
+				 as_array_of_ptrs);
+}
+
 inline rvalue
 block::add_call (function other,
 		 location loc)
@@ -1544,6 +1609,20 @@ inline param::param () : lvalue () {}
 inline param::param (gcc_jit_param *inner)
   : lvalue (gcc_jit_param_as_lvalue (inner))
 {}
+
+// class case_ : public object
+inline case_::case_ () : object () {}
+inline case_::case_ (gcc_jit_case *inner)
+  : object (gcc_jit_case_as_object (inner))
+{
+}
+
+inline gcc_jit_case *
+case_::get_inner_case () const
+{
+  /* Manual downcast: */
+  return reinterpret_cast<gcc_jit_case *> (get_inner_object ());
+}
 
 /* Overloaded operators.  */
 // Unary operators

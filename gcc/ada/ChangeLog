@@ -1,3 +1,96 @@
+2015-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/63310
+	* gcc-interface/utils.c (gnat_write_global_declarations): Always
+	build the dummy global variable if code was generated.
+
+2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66605
+	* gcc-interface/misc.c (gnat_post_options): No need to disable
+	warn_unused_parameter anymore.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): When
+	not optimizing the CFG, clear the DECL_DECLARED_INLINE_P flag on the
+	at-end procedures.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (note_types_used_by_globals): Delete.
+	(gnat_write_global_declarations): New prototype.
+	* gcc-interface/utils.c (type_decls): Rename back to...
+	(global_decls): ...this.
+	(gnat_pushdecls): Revert previous change.
+	(create_var_decl): Do not output global variables.
+	(note_types_used_by_globals): Rename back to...
+	(gnat_write_global_declarations): ...this.  Output variables on the
+	global_decls vector.
+	* gcc-interface/misc.c (gnat_parse_file): Adjust to above renaming.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (create_var_decl_1): Rename into...
+	(create_var_decl): ...this.  Add default value for last parameter.
+	(create_type_stub_decl): Adjust.
+	(create_type_decl): Likewise.
+	(create_field_decl): Likewise.
+	(create_param_decl): Likewise.
+	(create_label_decl): Likewise.
+	(create_subprog_decl): Likewise.
+	* gcc-interface/utils.c (create_var_decl_1): Rename into...
+	(create_var_decl): ...this.  Rename var_name into name and var_init
+	into init, move const_decl_allowed_p last and adjust accordingly.
+	(create_type_stub_decl): Rename type_name into name and adjust.
+	(create_type_decl): Likewise.
+	(create_field_decl): Likewise for field_name and field_type.
+	(create_param_decl): Likewise for param_name and param_type.
+	(create_label_decl): Likewise for label_name.
+	(create_subprog_decl): Likewise for subprog_name and subprog_type.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust couple of calls
+	to create_var_decl_1.
+
+2015-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (loop_info_d): Add low_bound, high_bound,
+	artificial, has_checks and warned_aggressive_loop_optimizations.
+	(gigi): Set warn_aggressive_loop_optimizations to 0.
+	(inside_loop_p): New inline predicate.
+	(push_range_check_info): Rename into...
+	(find_loop_for): ...this and do not push range_check_info_d object.
+	(Loop_Statement_to_gnu): Set artificial, low_bound and high_bound
+	fields of gnu_loop_info.  Adjust detection of checks enabled by
+	-funswitch-loops and adds one for -faggressive-loop-optimizations.
+	(gnat_to_gnu) <N_Indexed_Component>: If aggressive loop optimizations
+	are enabled, warn for loops overrunning an array of size 1 not at the
+	end of a record.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/trans.c: Remove ipa-ref.h and plugin-api.h from include
+	list.
+	* gcc-interface/utils.c: Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/decl.c (value_annotation_hasher): Inherit from
+	ggc_cache_ptr_hash rather than ggc_cache_hasher.
+	* gcc-interface/utils.c (pad_type_hasher): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/decl.c (value_annotation_hasher::handle_cache_entry):
+	Delete.
+	(value_annotation_hasher::keep_cache_entry): New function.
+	* gcc-interface/utils.c (pad_type_hasher::handle_cache_entry):
+	Delete.
+	(pad_type_hasher::keep_cache_entry): New function.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/misc.c: Include calls.h not function.h.
+
 2015-06-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (record_builtin_type): Adjust comment.

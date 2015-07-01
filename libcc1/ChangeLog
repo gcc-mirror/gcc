@@ -1,3 +1,15 @@
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* plugin.cc (decl_addr_hasher): Inherit from free_ptr_hash
+	rather than typed_free_remove.  Remove redudant typedefs.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* plugin.cc (string_hasher): Inherit from nofree_ptr_hash rather
+	than typed_noop_remove.  Remove redudant typedefs.
+	(plugin_context): Use nofree_ptr_hash rather than pointer_hash.
+	(plugin_context::mark): Likewise.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.

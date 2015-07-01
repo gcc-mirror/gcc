@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "timevar.h"
 #include "target.h"
-#include "target-def.h"
 #include "common/common-target.h"
 #include "tm_p.h"
 #include "langhooks.h"
@@ -86,6 +85,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "dumpfile.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -8579,10 +8581,8 @@ finish_bundle_states (void)
 
 /* Hashtable helpers.  */
 
-struct bundle_state_hasher : typed_noop_remove <bundle_state>
+struct bundle_state_hasher : nofree_ptr_hash <bundle_state>
 {
-  typedef bundle_state *value_type;
-  typedef bundle_state *compare_type;
   static inline hashval_t hash (const bundle_state *);
   static inline bool equal (const bundle_state *, const bundle_state *);
 };

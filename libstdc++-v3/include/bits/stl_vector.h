@@ -450,8 +450,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         constexpr bool __move_storage =
           _Alloc_traits::_S_propagate_on_move_assign()
           || _Alloc_traits::_S_always_equal();
-        _M_move_assign(std::move(__x),
-                       integral_constant<bool, __move_storage>());
+        _M_move_assign(std::move(__x), __bool_constant<__move_storage>());
 	return *this;
       }
 
@@ -1557,6 +1556,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     inline void
     swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
+#if __cplusplus >= 201103L
+    noexcept(noexcept(__x.swap(__y)))
+#endif
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

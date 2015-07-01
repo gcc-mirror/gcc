@@ -23,9 +23,9 @@ namespace N2 {
     typedef struct { } B;
     struct C {
       // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N23._31C3fn1ENS0_1BE" { target c++11 } } }
-      static void fn1 (B) { } // { dg-error "no linkage" "" { target { ! c++11 } } }
+      static void fn1 (B) { }
       // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N23._31C3fn2ES1_" { target c++11 } } }
-      static void fn2 (C) { } // { dg-error "no linkage" "" { target { ! c++11 } } }
+      static void fn2 (C) { }
     };
   } const D;
 

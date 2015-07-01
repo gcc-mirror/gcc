@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
 #include "targhooks.h"
 #include "langhooks.h"
 #include "df.h"
@@ -71,6 +70,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "ifcvt.h"
 #include "rtl-iter.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline

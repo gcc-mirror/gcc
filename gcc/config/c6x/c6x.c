@@ -65,12 +65,9 @@
 #include "tm-constrs.h"
 #include "df.h"
 #include "diagnostic-core.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "target.h"
-#include "target-def.h"
 #include "sel-sched.h"
 #include "debug.h"
 #include "opts.h"
@@ -79,6 +76,9 @@
 #include "dumpfile.h"
 #include "gimple-expr.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* Table of supported architecture variants.  */
 typedef struct
@@ -3450,6 +3450,7 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
   int best_reg, old_reg;
   vec<du_head_p> involved_chains = vNULL;
   unit_req_table new_reqs;
+  bool ok;
 
   for (i = 0, tmp_mask = op_mask; tmp_mask; i++)
     {
@@ -3516,7 +3517,8 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
   best_reg =
     find_rename_reg (this_head, super_class, &unavailable, old_reg, true);
 
-  regrename_do_replace (this_head, best_reg);
+  ok = regrename_do_replace (this_head, best_reg);
+  gcc_assert (ok);
 
   count_unit_reqs (new_reqs, head, PREV_INSN (tail));
   merge_unit_reqs (new_reqs);
@@ -3529,7 +3531,10 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
 	       unit_req_imbalance (reqs), unit_req_imbalance (new_reqs));
     }
   if (unit_req_imbalance (new_reqs) > unit_req_imbalance (reqs))
-    regrename_do_replace (this_head, old_reg);
+    {
+      ok = regrename_do_replace (this_head, old_reg);
+      gcc_assert (ok);
+    }
   else
     memcpy (reqs, new_reqs, sizeof (unit_req_table));
 

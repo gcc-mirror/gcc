@@ -57,9 +57,8 @@ substring_hash (const char *str, int l)
 
 /* Used for attribute_hash.  */
 
-struct attribute_hasher : typed_noop_remove <attribute_spec>
+struct attribute_hasher : nofree_ptr_hash <attribute_spec>
 {
-  typedef attribute_spec *value_type;
   typedef substring *compare_type;
   static inline hashval_t hash (const attribute_spec *);
   static inline bool equal (const attribute_spec *, const substring *);

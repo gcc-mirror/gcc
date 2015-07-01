@@ -59,7 +59,6 @@
 #include "tm_p.h"
 #include "tm-constrs.h"
 #include "target.h"
-#include "target-def.h"
 #include "dwarf2.h"
 #include "timevar.h"
 #include "fold-const.h"
@@ -77,6 +76,9 @@
 #include "tilepro-multiply.h"
 #include "diagnostic.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* SYMBOL_REF for GOT */
 static GTY(()) rtx g_got_symbol = NULL;

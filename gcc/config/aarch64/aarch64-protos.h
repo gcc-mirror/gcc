@@ -49,22 +49,30 @@ enum aarch64_symbol_context
 
    This corresponds to the small code model of the compiler.
 
-   SYMBOL_SMALL_GOT: Similar to the one above but this
+   SYMBOL_SMALL_GOT_4G: Similar to the one above but this
    gives us the GOT entry of the symbol being referred to :
    Thus calculating the GOT entry for foo is done using the
    following sequence of instructions.  The ADRP instruction
    gets us to the page containing the GOT entry of the symbol
-   and the got_lo12 gets us the actual offset in it.
+   and the got_lo12 gets us the actual offset in it, together
+   the base and offset, we can address 4G size GOT table.
 
    adrp  x0, :got:foo
    ldr   x0, [x0, :gotoff_lo12:foo]
 
    This corresponds to the small PIC model of the compiler.
 
+   SYMBOL_SMALL_GOT_28K: Similar to SYMBOL_SMALL_GOT_4G, but used for symbol
+   restricted within 28K GOT table size.
+
+   ldr reg, [gp, #:gotpage_lo15:sym]
+
+   This corresponds to -fpic model for small memory model of the compiler.
+
    SYMBOL_SMALL_TLSGD
    SYMBOL_SMALL_TLSDESC
    SYMBOL_SMALL_GOTTPREL
-   SYMBOL_SMALL_TPREL
+   SYMBOL_TLSLE
    Each of of these represents a thread-local symbol, and corresponds to the
    thread local storage relocation operator for the symbol being referred to.
 
@@ -94,13 +102,14 @@ enum aarch64_symbol_context
 enum aarch64_symbol_type
 {
   SYMBOL_SMALL_ABSOLUTE,
-  SYMBOL_SMALL_GOT,
+  SYMBOL_SMALL_GOT_28K,
+  SYMBOL_SMALL_GOT_4G,
   SYMBOL_SMALL_TLSGD,
   SYMBOL_SMALL_TLSDESC,
   SYMBOL_SMALL_GOTTPREL,
-  SYMBOL_SMALL_TPREL,
   SYMBOL_TINY_ABSOLUTE,
   SYMBOL_TINY_GOT,
+  SYMBOL_TLSLE,
   SYMBOL_FORCE_TO_MEM
 };
 
@@ -171,23 +180,64 @@ struct cpu_branch_cost
 
 struct tune_params
 {
-  const struct cpu_cost_table *const insn_extra_cost;
-  const struct cpu_addrcost_table *const addr_cost;
-  const struct cpu_regmove_cost *const regmove_cost;
-  const struct cpu_vector_cost *const vec_costs;
-  const struct cpu_branch_cost *const branch_costs;
-  const int memmov_cost;
-  const int issue_rate;
-  const unsigned int fusible_ops;
-  const int function_align;
-  const int jump_align;
-  const int loop_align;
-  const int int_reassoc_width;
-  const int fp_reassoc_width;
-  const int vec_reassoc_width;
-  const int min_div_recip_mul_sf;
-  const int min_div_recip_mul_df;
+  const struct cpu_cost_table *insn_extra_cost;
+  const struct cpu_addrcost_table *addr_cost;
+  const struct cpu_regmove_cost *regmove_cost;
+  const struct cpu_vector_cost *vec_costs;
+  const struct cpu_branch_cost *branch_costs;
+  int memmov_cost;
+  int issue_rate;
+  unsigned int fusible_ops;
+  int function_align;
+  int jump_align;
+  int loop_align;
+  int int_reassoc_width;
+  int fp_reassoc_width;
+  int vec_reassoc_width;
+  int min_div_recip_mul_sf;
+  int min_div_recip_mul_df;
+  unsigned int extra_tuning_flags;
 };
+
+#define AARCH64_FUSION_PAIR(x, name, index) \
+  AARCH64_FUSE_##name = (1 << index),
+/* Supported fusion operations.  */
+enum aarch64_fusion_pairs
+{
+  AARCH64_FUSE_NOTHING = 0,
+#include "aarch64-fusion-pairs.def"
+
+/* Hacky macro to build AARCH64_FUSE_ALL.  The sequence below expands
+   to:
+   AARCH64_FUSE_ALL = 0 | AARCH64_FUSE_index1 | AARCH64_FUSE_index2 ...  */
+#undef AARCH64_FUSION_PAIR
+#define AARCH64_FUSION_PAIR(x, name, y) \
+  | AARCH64_FUSE_##name
+
+  AARCH64_FUSE_ALL = 0
+#include "aarch64-fusion-pairs.def"
+};
+#undef AARCH64_FUSION_PAIR
+
+#define AARCH64_EXTRA_TUNING_OPTION(x, name, index) \
+  AARCH64_EXTRA_TUNE_##name = (1 << index),
+/* Supported tuning flags.  */
+enum aarch64_extra_tuning_flags
+{
+  AARCH64_EXTRA_TUNE_NONE = 0,
+#include "aarch64-tuning-flags.def"
+
+/* Hacky macro to build the "all" flag mask.
+   Expands to 0 | AARCH64_TUNE_index0 | AARCH64_TUNE_index1 , etc.  */
+#undef AARCH64_EXTRA_TUNING_OPTION
+#define AARCH64_EXTRA_TUNING_OPTION(x, name, y) \
+  | AARCH64_EXTRA_TUNE_##name
+  AARCH64_EXTRA_TUNE_ALL = 0
+#include "aarch64-tuning-flags.def"
+};
+#undef AARCH64_EXTRA_TUNING_OPTION
+
+extern struct tune_params aarch64_tune_params;
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
@@ -259,6 +309,7 @@ unsigned aarch64_dbx_register_number (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
 void aarch64_elf_asm_named_section (const char *, unsigned, tree);
+void aarch64_err_no_fpadvsimd (machine_mode, const char *);
 void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx);
 void aarch64_expand_prologue (void);

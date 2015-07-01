@@ -56,7 +56,6 @@
 #include "langhooks.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
 #include "params.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -71,6 +70,9 @@
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))

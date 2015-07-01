@@ -67,6 +67,7 @@ typedef struct gcc_jit_result gcc_jit_result;
 	 +- gcc_jit_rvalue
 	     +- gcc_jit_lvalue
 		 +- gcc_jit_param
+	 +- gcc_jit_case
 */
 typedef struct gcc_jit_object gcc_jit_object;
 
@@ -131,6 +132,12 @@ typedef struct gcc_jit_lvalue gcc_jit_lvalue;
    rvalue); use gcc_jit_param_as_lvalue to convert.  */
 typedef struct gcc_jit_param gcc_jit_param;
 
+/* A gcc_jit_case is for use when building multiway branches via
+   gcc_jit_block_end_with_switch and represents a range of integer
+   values (or an individual integer value) together with an associated
+   destination block.  */
+typedef struct gcc_jit_case gcc_jit_case;
+
 /* Acquire a JIT-compilation context.  */
 extern gcc_jit_context *
 gcc_jit_context_acquire (void);
@@ -139,6 +146,9 @@ gcc_jit_context_acquire (void);
    the ctxt.  */
 extern void
 gcc_jit_context_release (gcc_jit_context *ctxt);
+
+/* Options present in the initial release of libgccjit.
+   These were handled using enums.  */
 
 /* Options taking string values. */
 enum gcc_jit_str_option
@@ -242,6 +252,54 @@ extern void
 gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 				 enum gcc_jit_bool_option opt,
 				 int value);
+
+/* Options added after the initial release of libgccjit.
+   These are handled by providing an entrypoint per option,
+   rather than by extending the enum gcc_jit_*_option,
+   so that client code that use these new options can be identified
+   from binary metadata.  */
+
+/* By default, libgccjit will issue an error about unreachable blocks
+   within a function.
+
+   This option can be used to disable that error.
+
+   This entrypoint was added in LIBGCCJIT_ABI_2; you can test for
+   its presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+*/
+
+extern void
+gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
+						   int bool_value);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_context_set_bool_allow_unreachable_blocks.  This can be
+   tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+
+/* Add an arbitrary gcc command-line option to the context.
+   The context takes a copy of the string, so the
+   (const char *) optname is not needed anymore after the call
+   returns.
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   optimization and code-generation are likely to be useful.
+
+   This entrypoint was added in LIBGCCJIT_ABI_1; you can test for
+   its presence using
+   #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
+*/
+
+extern void
+gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,
+					 const char *optname);
+
+/* Pre-canned feature-test macro for detecting the presence of
+   gcc_jit_context_add_command_line_option within libgccjit.h.  */
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
 
 /* Compile the context to in-memory machine code.
 
@@ -1045,6 +1103,81 @@ gcc_jit_block_end_with_return (gcc_jit_block *block,
 extern void
 gcc_jit_block_end_with_void_return (gcc_jit_block *block,
 				    gcc_jit_location *loc);
+
+/* Create a new gcc_jit_case instance for use in a switch statement.
+   min_value and max_value must be constants of integer type.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_3; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+*/
+extern gcc_jit_case *
+gcc_jit_context_new_case (gcc_jit_context *ctxt,
+			  gcc_jit_rvalue *min_value,
+			  gcc_jit_rvalue *max_value,
+			  gcc_jit_block *dest_block);
+
+/* Upcasting from case to object.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_3; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+*/
+
+extern gcc_jit_object *
+gcc_jit_case_as_object (gcc_jit_case *case_);
+
+/* Terminate a block by adding evalation of an rvalue, then performing
+   a multiway branch.
+
+   This is roughly equivalent to this C code:
+
+     switch (expr)
+       {
+       default:
+	 goto default_block;
+
+       case C0.min_value ... C0.max_value:
+	 goto C0.dest_block;
+
+       case C1.min_value ... C1.max_value:
+	 goto C1.dest_block;
+
+       ...etc...
+
+       case C[N - 1].min_value ... C[N - 1].max_value:
+	 goto C[N - 1].dest_block;
+     }
+
+   block, expr, default_block and cases must all be non-NULL.
+
+   expr must be of the same integer type as all of the min_value
+   and max_value within the cases.
+
+   num_cases must be >= 0.
+
+   The ranges of the cases must not overlap (or have duplicate
+   values).
+
+   This API entrypoint was added in LIBGCCJIT_ABI_3; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+*/
+
+extern void
+gcc_jit_block_end_with_switch (gcc_jit_block *block,
+			       gcc_jit_location *loc,
+			       gcc_jit_rvalue *expr,
+			       gcc_jit_block *default_block,
+			       int num_cases,
+			       gcc_jit_case **cases);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_block_end_with_switch, gcc_jit_case_as_object, and
+   gcc_jit_context_new_case.
+
+   This can be tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_SWITCH_STATEMENTS
 
 /**********************************************************************
  Nested contexts.

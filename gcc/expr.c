@@ -65,8 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "gimple.h"
 #include "gimple-ssa.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-ssanames.h"
 #include "target.h"
@@ -1493,10 +1491,6 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
 void
 move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
 {
-  int i;
-  rtx pat;
-  rtx_insn *last;
-
   if (nregs == 0)
     return;
 
@@ -1504,12 +1498,12 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
     x = validize_mem (force_const_mem (mode, x));
 
   /* See if the machine can do this with a load multiple insn.  */
-  if (HAVE_load_multiple)
+  if (targetm.have_load_multiple ())
     {
-      last = get_last_insn ();
-      pat = gen_load_multiple (gen_rtx_REG (word_mode, regno), x,
-			       GEN_INT (nregs));
-      if (pat)
+      rtx_insn *last = get_last_insn ();
+      rtx first = gen_rtx_REG (word_mode, regno);
+      if (rtx_insn *pat = targetm.gen_load_multiple (first, x,
+						     GEN_INT (nregs)))
 	{
 	  emit_insn (pat);
 	  return;
@@ -1518,7 +1512,7 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
 	delete_insns_since (last);
     }
 
-  for (i = 0; i < nregs; i++)
+  for (int i = 0; i < nregs; i++)
     emit_move_insn (gen_rtx_REG (word_mode, regno + i),
 		    operand_subword_force (x, i, mode));
 }
@@ -1529,18 +1523,16 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
 void
 move_block_from_reg (int regno, rtx x, int nregs)
 {
-  int i;
-
   if (nregs == 0)
     return;
 
   /* See if the machine can do this with a store multiple insn.  */
-  if (HAVE_store_multiple)
+  if (targetm.have_store_multiple ())
     {
       rtx_insn *last = get_last_insn ();
-      rtx pat = gen_store_multiple (x, gen_rtx_REG (word_mode, regno),
-				    GEN_INT (nregs));
-      if (pat)
+      rtx first = gen_rtx_REG (word_mode, regno);
+      if (rtx_insn *pat = targetm.gen_store_multiple (x, first,
+						      GEN_INT (nregs)))
 	{
 	  emit_insn (pat);
 	  return;
@@ -1549,7 +1541,7 @@ move_block_from_reg (int regno, rtx x, int nregs)
 	delete_insns_since (last);
     }
 
-  for (i = 0; i < nregs; i++)
+  for (int i = 0; i < nregs; i++)
     {
       rtx tem = operand_subword (x, i, 1, BLKmode);
 
@@ -5276,7 +5268,7 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
       jumpifnot (TREE_OPERAND (exp, 0), lab1, -1);
       store_expr_with_bounds (TREE_OPERAND (exp, 1), target, call_param_p,
 			      nontemporal, btarget);
-      emit_jump_insn (gen_jump (lab2));
+      emit_jump_insn (targetm.gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
       store_expr_with_bounds (TREE_OPERAND (exp, 2), target, call_param_p,
@@ -8426,11 +8418,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 Thus the following special case checks need only
 	 check the second operand.  */
       if (TREE_CODE (treeop0) == INTEGER_CST)
-	{
-	  tree t1 = treeop0;
-	  treeop0 = treeop1;
-	  treeop1 = t1;
-	}
+	std::swap (treeop0, treeop1);
 
       /* First, check if we have a multiplication of one signed and one
 	 unsigned operand.  */
@@ -8555,11 +8543,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    def0 = get_def_for_expr (treeop1, NEGATE_EXPR);
 	    /* Swap operands if the 2nd operand is fed by a negate.  */
 	    if (def0)
-	      {
-		tree tem = treeop0;
-		treeop0 = treeop1;
-		treeop1 = tem;
-	      }
+	      std::swap (treeop0, treeop1);
 	  }
 	def2 = get_def_for_expr (treeop2, NEGATE_EXPR);
 
@@ -8606,11 +8590,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 Thus the following special case checks need only
 	 check the second operand.  */
       if (TREE_CODE (treeop0) == INTEGER_CST)
-	{
-	  tree t1 = treeop0;
-	  treeop0 = treeop1;
-	  treeop1 = t1;
-	}
+	std::swap (treeop0, treeop1);
 
       /* Attempt to return something suitable for generating an
 	 indexed address, for machines that support that.  */
@@ -8930,7 +8910,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  return temp;
 
 	/* Use a compare and a jump for BLKmode comparisons, or for function
-	   type comparisons is HAVE_canonicalize_funcptr_for_compare.  */
+	   type comparisons is have_canonicalize_funcptr_for_compare.  */
 
 	if ((target == 0
 	     || modifier == EXPAND_STACK_PARM
@@ -9220,7 +9200,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    modifier == EXPAND_STACK_PARM,
 		    false);
 
-	emit_jump_insn (gen_jump (lab1));
+	emit_jump_insn (targetm.gen_jump (lab1));
 	emit_barrier ();
 	emit_label (lab0);
 	store_expr (treeop2, temp,
@@ -10910,7 +10890,6 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 {
   enum rtx_code code;
   tree arg0, arg1, type;
-  tree tem;
   machine_mode operand_mode;
   int unsignedp;
   rtx op0, op1;
@@ -10935,8 +10914,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 
   /* We won't bother with store-flag operations involving function pointers
      when function pointers must be canonicalized before comparisons.  */
-#ifdef HAVE_canonicalize_funcptr_for_compare
-  if (HAVE_canonicalize_funcptr_for_compare
+  if (targetm.have_canonicalize_funcptr_for_compare ()
       && ((TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
 	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg0)))
 	       == FUNCTION_TYPE))
@@ -10944,7 +10922,6 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg1)))
 		  == FUNCTION_TYPE))))
     return 0;
-#endif
 
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
@@ -11033,7 +11010,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   if (TREE_CODE (arg0) == REAL_CST || TREE_CODE (arg0) == INTEGER_CST
       || TREE_CODE (arg0) == FIXED_CST)
     {
-      tem = arg0; arg0 = arg1; arg1 = tem;
+      std::swap (arg0, arg1);
       code = swap_condition (code);
     }
 

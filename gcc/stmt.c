@@ -172,7 +172,7 @@ void
 emit_jump (rtx label)
 {
   do_pending_stack_adjust ();
-  emit_jump_insn (gen_jump (label));
+  emit_jump_insn (targetm.gen_jump (label));
   emit_barrier ();
 }
 

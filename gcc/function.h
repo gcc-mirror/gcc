@@ -156,10 +156,6 @@ struct gimple_df;
 struct call_site_record_d;
 struct dw_fde_node;
 
-class ipa_opt_pass_d;
-typedef ipa_opt_pass_d *ipa_opt_pass;
-
-
 struct GTY(()) varasm_status {
   /* If we're using a per-function constant pool, this is it.  */
   struct rtx_constant_pool *pool;
@@ -169,34 +165,6 @@ struct GTY(()) varasm_status {
   unsigned int deferred_constants;
 };
 
-/* Information mainlined about RTL representation of incoming arguments.  */
-struct GTY(()) incoming_args {
-  /* Number of bytes of args popped by function being compiled on its return.
-     Zero if no bytes are to be popped.
-     May affect compilation of return insn or of function epilogue.  */
-  int pops_args;
-
-  /* If function's args have a fixed size, this is that size, in bytes.
-     Otherwise, it is -1.
-     May affect compilation of return insn or of function epilogue.  */
-  int size;
-
-  /* # bytes the prologue should push and pretend that the caller pushed them.
-     The prologue must do this, but only if parms can be passed in
-     registers.  */
-  int pretend_args_size;
-
-  /* This is the offset from the arg pointer to the place where the first
-     anonymous arg can be found, if there is one.  */
-  rtx arg_offset_rtx;
-
-  /* Quantities of various kinds of registers
-     used for the current function's args.  */
-  CUMULATIVE_ARGS info;
-
-  /* The arg pointer hard register, or the pseudo into which it was copied.  */
-  rtx internal_arg_pointer;
-};
 
 /* Data for function partitioning.  */
 struct GTY(()) function_subsections {
@@ -443,7 +411,7 @@ struct GTY((for_user)) types_used_by_vars_entry {
   tree var_decl;
 };
 
-struct used_type_hasher : ggc_hasher<types_used_by_vars_entry *>
+struct used_type_hasher : ggc_ptr_hash<types_used_by_vars_entry>
 {
   static hashval_t hash (types_used_by_vars_entry *);
   static bool equal (types_used_by_vars_entry *, types_used_by_vars_entry *);
@@ -610,10 +578,6 @@ extern bool initial_value_entry (int i, rtx *, rtx *);
 extern void instantiate_decl_rtl (rtx x);
 extern int aggregate_value_p (const_tree, const_tree);
 extern bool use_register_for_decl (const_tree);
-extern bool pass_by_reference (CUMULATIVE_ARGS *, machine_mode,
-			       tree, bool);
-extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
-				     tree, bool);
 extern gimple_seq gimplify_parameters (void);
 extern void locate_and_pad_parm (machine_mode, tree, int, int, int,
 				 tree, struct args_size *,
@@ -650,7 +614,6 @@ extern void expand_dummy_function_end (void);
 extern void thread_prologue_and_epilogue_insns (void);
 extern void diddle_return_value (void (*)(rtx, void*), void*);
 extern void clobber_return_register (void);
-extern void do_warn_unused_parameter (tree);
 extern void expand_function_end (void);
 extern rtx get_arg_pointer_save_area (void);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);

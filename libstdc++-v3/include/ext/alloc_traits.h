@@ -42,53 +42,8 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus >= 201103L
-  template<typename _Alloc>
-    struct __allocator_always_compares_equal : std::false_type { };
-
-  template<typename _Tp>
-    struct __allocator_always_compares_equal<std::allocator<_Tp>>
-    : std::true_type { };
-
-  template<typename, typename> struct array_allocator;
-
-  template<typename _Tp, typename _Array>
-    struct __allocator_always_compares_equal<array_allocator<_Tp, _Array>>
-    : std::true_type { };
-
-  template<typename> struct bitmap_allocator;
-
-  template<typename _Tp>
-    struct __allocator_always_compares_equal<bitmap_allocator<_Tp>>
-    : std::true_type { };
-
-  template<typename> struct malloc_allocator;
-
-  template<typename _Tp>
-    struct __allocator_always_compares_equal<malloc_allocator<_Tp>>
-    : std::true_type { };
-
-  template<typename> struct mt_allocator;
-
-  template<typename _Tp>
-    struct __allocator_always_compares_equal<mt_allocator<_Tp>>
-    : std::true_type { };
-
-  template<typename> struct new_allocator;
-
-  template<typename _Tp>
-    struct __allocator_always_compares_equal<new_allocator<_Tp>>
-    : std::true_type { };
-
-  template<typename> struct pool_allocator;
-
-  template<typename _Tp>
-    struct __allocator_always_compares_equal<pool_allocator<_Tp>>
-    : std::true_type { };
-#endif
-
 /**
- * @brief  Uniform interface to C++98 and C++0x allocators.
+ * @brief  Uniform interface to C++98 and C++11 allocators.
  * @ingroup allocators
 */
 template<typename _Alloc>
@@ -152,7 +107,7 @@ template<typename _Alloc>
     { return _Base_type::propagate_on_container_swap::value; }
 
     static constexpr bool _S_always_equal()
-    { return __allocator_always_compares_equal<_Alloc>::value; }
+    { return _Base_type::is_always_equal::value; }
 
     static constexpr bool _S_nothrow_move()
     { return _S_propagate_on_move_assign() || _S_always_equal(); }

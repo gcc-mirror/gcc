@@ -81,6 +81,14 @@
 #  define SIZE 254
 #elif defined (__nios2__)
 #  define SIZE 252
+#elif defined (__v850__)
+#define SIZE 260
+#elif defined (__mn10300__)
+#define SIZE 252
+#elif defined (__H8300SX__) || defined (__H8300S__) || defined (__H8300H__) || defined (__H8300__) 
+#define SIZE 252
+#elif defined (__M32R__)
+#define SIZE 252
 #else
 #  define SIZE 256
 #endif

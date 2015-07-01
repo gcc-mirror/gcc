@@ -3,6 +3,8 @@
 
 /* Constant bound, reduction.  */
 
+#include <stdlib.h>
+
 #define N 4000
 
 unsigned int *a;
@@ -29,5 +31,7 @@ main (void)
     array[i] = i % 7;
   a = &array[0];
   res = f ();
-  return !(res == 11995);
+  if (res != 11995)
+    abort ();
+  return 0;
 }

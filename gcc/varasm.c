@@ -61,8 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dominance.h"
 #include "cfg.h"
 #include "basic-block.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "asan.h"
 #include "rtl-iter.h"
@@ -188,7 +186,7 @@ static GTY(()) section *unnamed_sections;
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL)
 
-struct section_hasher : ggc_hasher<section *>
+struct section_hasher : ggc_ptr_hash<section>
 {
   typedef const char *compare_type;
 
@@ -199,7 +197,7 @@ struct section_hasher : ggc_hasher<section *>
 /* Hash table of named sections.  */
 static GTY(()) hash_table<section_hasher> *section_htab;
 
-struct object_block_hasher : ggc_hasher<object_block *>
+struct object_block_hasher : ggc_ptr_hash<object_block>
 {
   typedef const section *compare_type;
 
@@ -1946,12 +1944,12 @@ emit_local (tree decl ATTRIBUTE_UNUSED,
 	    unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED)
 {
 #if defined ASM_OUTPUT_ALIGNED_DECL_LOCAL
-  int align = symtab_node::get (decl)->definition_alignment ();
+  unsigned int align = symtab_node::get (decl)->definition_alignment ();
   ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name,
 				 size, align);
   return true;
 #elif defined ASM_OUTPUT_ALIGNED_LOCAL
-  int align = symtab_node::get (decl)->definition_alignment ();
+  unsigned int align = symtab_node::get (decl)->definition_alignment ();
   ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, align);
   return true;
 #else
@@ -3539,7 +3537,7 @@ struct GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
   int mark;
 };
 
-struct const_rtx_desc_hasher : ggc_hasher<constant_descriptor_rtx *>
+struct const_rtx_desc_hasher : ggc_ptr_hash<constant_descriptor_rtx>
 {
   static hashval_t hash (constant_descriptor_rtx *);
   static bool equal (constant_descriptor_rtx *, constant_descriptor_rtx *);
@@ -5790,21 +5788,15 @@ assemble_alias (tree decl, tree target)
    to its transaction aware clone.  Note that tm_pure functions are
    considered to be their own clone.  */
 
-struct tm_clone_hasher : ggc_cache_hasher<tree_map *>
+struct tm_clone_hasher : ggc_cache_ptr_hash<tree_map>
 {
   static hashval_t hash (tree_map *m) { return tree_map_hash (m); }
   static bool equal (tree_map *a, tree_map *b) { return tree_map_eq (a, b); }
 
-  static void
-  handle_cache_entry (tree_map *&e)
+  static int
+  keep_cache_entry (tree_map *&e)
   {
-    extern void gt_ggc_mx (tree_map *&);
-    if (e == HTAB_EMPTY_ENTRY || e == HTAB_DELETED_ENTRY)
-      return;
-    else if (ggc_marked_p (e->base.from))
-      gt_ggc_mx (e);
-    else
-      e = static_cast<tree_map *> (HTAB_DELETED_ENTRY);
+    return ggc_marked_p (e->base.from);
   }
 };
 

@@ -1,3 +1,26 @@
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* decl.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* resource.c: Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* jcf-io.c (memoized_class_lookups): Use nofree_string_hash.
+	(find_class): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* java-tree.h (treetreehasher): Inherit from ggc_ptr_hash
+	rather than ggc_hasher.
+	(ict_hasher, type_assertion_hasher): Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* jcf-io.c (charstar_hash): Inherit from nofree_ptr_hash rather
+	than typed_noop_remove.  Remove redudant typedefs.
+
 2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* boehm.c: Do not include input.h, line-map.h or is-a.h.

@@ -66,8 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-parloops.h"
 #include "omp-low.h"
 #include "tree-nested.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-ssa.h"
 
@@ -218,10 +216,8 @@ struct reduction_info
 
 /* Reduction info hashtable helpers.  */
 
-struct reduction_hasher : typed_free_remove <reduction_info>
+struct reduction_hasher : free_ptr_hash <reduction_info>
 {
-  typedef reduction_info *value_type;
-  typedef reduction_info *compare_type;
   static inline hashval_t hash (const reduction_info *);
   static inline bool equal (const reduction_info *, const reduction_info *);
 };
@@ -270,10 +266,8 @@ struct name_to_copy_elt
 
 /* Name copies hashtable helpers.  */
 
-struct name_to_copy_hasher : typed_free_remove <name_to_copy_elt>
+struct name_to_copy_hasher : free_ptr_hash <name_to_copy_elt>
 {
-  typedef name_to_copy_elt *value_type;
-  typedef name_to_copy_elt *compare_type;
   static inline hashval_t hash (const name_to_copy_elt *);
   static inline bool equal (const name_to_copy_elt *, const name_to_copy_elt *);
 };
@@ -1675,6 +1669,7 @@ transform_to_exit_first_loop_alt (struct loop *loop,
 
   /* Set the new loop bound.  */
   gimple_cond_set_rhs (cond_stmt, bound);
+  update_stmt (cond_stmt);
 
   /* Repair the ssa.  */
   vec<edge_var_map> *v = redirect_edge_var_map_vector (post_inc_edge);
@@ -1793,60 +1788,62 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
 				       nit, build_one_cst (nit_type));
 
 	  gcc_assert (TREE_CODE (alt_bound) == INTEGER_CST);
+	  transform_to_exit_first_loop_alt (loop, reduction_list, alt_bound);
+	  return true;
 	}
       else
 	{
 	  /* Todo: Figure out if we can trigger this, if it's worth to handle
 	     optimally, and if we can handle it optimally.  */
+	  return false;
 	}
     }
-  else
+
+  gcc_assert (TREE_CODE (nit) == SSA_NAME);
+
+  /* Variable nit is the loop bound as returned by canonicalize_loop_ivs, for an
+     iv with base 0 and step 1 that is incremented in the latch, like this:
+
+     <bb header>:
+     # iv_1 = PHI <0 (preheader), iv_2 (latch)>
+     ...
+     if (iv_1 < nit)
+       goto <bb latch>;
+     else
+       goto <bb exit>;
+
+     <bb latch>:
+     iv_2 = iv_1 + 1;
+     goto <bb header>;
+
+     The range of iv_1 is [0, nit].  The latch edge is taken for
+     iv_1 == [0, nit - 1] and the exit edge is taken for iv_1 == nit.  So the
+     number of latch executions is equal to nit.
+
+     The function max_loop_iterations gives us the maximum number of latch
+     executions, so it gives us the maximum value of nit.  */
+  widest_int nit_max;
+  if (!max_loop_iterations (loop, &nit_max))
+    return false;
+
+  /* Check if nit + 1 overflows.  */
+  widest_int type_max = wi::to_widest (TYPE_MAXVAL (nit_type));
+  if (!wi::lts_p (nit_max, type_max))
+    return false;
+
+  gimple def = SSA_NAME_DEF_STMT (nit);
+
+  /* Try to find nit + 1, in the form of n in an assignment nit = n - 1.  */
+  if (def
+      && is_gimple_assign (def)
+      && gimple_assign_rhs_code (def) == PLUS_EXPR)
     {
-      gcc_assert (TREE_CODE (nit) == SSA_NAME);
-
-      gimple def = SSA_NAME_DEF_STMT (nit);
-
-      if (def
-	  && is_gimple_assign (def)
-	  && gimple_assign_rhs_code (def) == PLUS_EXPR)
-	{
-	  tree op1 = gimple_assign_rhs1 (def);
-	  tree op2 = gimple_assign_rhs2 (def);
-	  if (integer_minus_onep (op1))
-	    alt_bound = op2;
-	  else if (integer_minus_onep (op2))
-	    alt_bound = op1;
-	}
-
-      /* There is a number of test-cases for which we don't get an alt_bound
-	 here: they're listed here, with the lhs of the last stmt as the nit:
-
-	 libgomp.graphite/force-parallel-1.c:
-	 _21 = (signed long) N_6(D);
-	 _19 = _21 + -1;
-	 _7 = (unsigned long) _19;
-
-	 libgomp.graphite/force-parallel-2.c:
-	 _33 = (signed long) N_9(D);
-	 _16 = _33 + -1;
-	 _37 = (unsigned long) _16;
-
-	 libgomp.graphite/force-parallel-5.c:
-	 <bb 6>:
-	 # graphite_IV.5_46 = PHI <0(5), graphite_IV.5_47(11)>
-	 <bb 7>:
-	 _33 = (unsigned long) graphite_IV.5_46;
-
-	 g++.dg/tree-ssa/pr34355.C:
-	 _2 = (unsigned int) i_9;
-	 _3 = 4 - _2;
-
-	 gcc.dg/pr53849.c:
-	 _5 = d.0_11 + -2;
-	 _18 = (unsigned int) _5;
-
-	 We will be able to handle some of these cases, if we can determine when
-	 it's safe to look past casts.  */
+      tree op1 = gimple_assign_rhs1 (def);
+      tree op2 = gimple_assign_rhs2 (def);
+      if (integer_minus_onep (op1))
+	alt_bound = op2;
+      else if (integer_minus_onep (op2))
+	alt_bound = op1;
     }
 
   if (alt_bound == NULL_TREE)

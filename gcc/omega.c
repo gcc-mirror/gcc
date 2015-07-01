@@ -547,11 +547,7 @@ omega_pretty_print_problem (FILE *file, omega_pb pb)
 		else
 		  {
 		    if (pb->geqs[e].coef[v1] == 1)
-		      {
-			v3 = v2;
-			v2 = v1;
-			v1 = v3;
-		      }
+		      std::swap (v1, v2);
 
 		    /* Relation is v1 <= v2 or v1 < v2.  */
 		    po[v1][v2] = ((pb->geqs[e].coef[0] == 0) ? le : lt);

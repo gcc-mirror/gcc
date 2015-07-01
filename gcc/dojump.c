@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "basic-block.h"
 #include "tm_p.h"
+#include "target.h"
 
 static bool prefer_and_bit_test (machine_mode, int);
 static void do_jump_by_parts_greater (tree, tree, int,
@@ -1204,13 +1205,12 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
   unsignedp = TYPE_UNSIGNED (type);
   code = unsignedp ? unsigned_code : signed_code;
 
-#ifdef HAVE_canonicalize_funcptr_for_compare
   /* If function pointers need to be "canonicalized" before they can
      be reliably compared, then canonicalize them.
      Only do this if *both* sides of the comparison are function pointers.
      If one side isn't, we want a noncanonicalized comparison.  See PR
      middle-end/17564.  */
-  if (HAVE_canonicalize_funcptr_for_compare
+  if (targetm.have_canonicalize_funcptr_for_compare ()
       && TREE_CODE (TREE_TYPE (treeop0)) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (TREE_TYPE (treeop0)))
           == FUNCTION_TYPE
@@ -1221,13 +1221,12 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
       rtx new_op0 = gen_reg_rtx (mode);
       rtx new_op1 = gen_reg_rtx (mode);
 
-      emit_insn (gen_canonicalize_funcptr_for_compare (new_op0, op0));
+      emit_insn (targetm.gen_canonicalize_funcptr_for_compare (new_op0, op0));
       op0 = new_op0;
 
-      emit_insn (gen_canonicalize_funcptr_for_compare (new_op1, op1));
+      emit_insn (targetm.gen_canonicalize_funcptr_for_compare (new_op1, op1));
       op1 = new_op1;
     }
-#endif
 
   do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode,
                            ((mode == BLKmode)

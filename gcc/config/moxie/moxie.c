@@ -52,7 +52,6 @@
 #include "optabs.h"
 #include "except.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "dominance.h"
@@ -66,6 +65,9 @@
 #include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 #define LOSE_AND_RETURN(msgid, x)		\
   do						\

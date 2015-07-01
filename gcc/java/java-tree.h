@@ -714,7 +714,7 @@ struct GTY((for_user)) treetreehash_entry {
   tree value;
 };
 
-struct treetreehasher : ggc_hasher<treetreehash_entry *>
+struct treetreehasher : ggc_ptr_hash<treetreehash_entry>
 {
   typedef tree compare_type;
 
@@ -722,7 +722,7 @@ struct treetreehasher : ggc_hasher<treetreehash_entry *>
   static bool equal (treetreehash_entry *, tree);
 };
 
-struct ict_hasher : ggc_hasher<tree_node *>
+struct ict_hasher : ggc_ptr_hash<tree_node>
 {
   static hashval_t hash (tree t) { return htab_hash_pointer (t); }
   static bool equal (tree a, tree b) { return a == b; }
@@ -797,7 +797,7 @@ typedef struct GTY((for_user)) type_assertion {
   tree op2;           /* Second operand. */
 } type_assertion;
 
-struct type_assertion_hasher : ggc_hasher<type_assertion *>
+struct type_assertion_hasher : ggc_ptr_hash<type_assertion>
 {
   static hashval_t hash (type_assertion *);
   static bool equal (type_assertion *, type_assertion *);

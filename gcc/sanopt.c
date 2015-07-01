@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
-#include "plugin-api.h"
 #include "tree-pass.h"
 #include "asan.h"
 #include "gimple-pretty-print.h"
@@ -48,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "params.h"
 #include "tree-ssa-operands.h"
+#include "tree-hash-traits.h"
 
 
 /* This is used to carry information about basic blocks.  It is
@@ -96,21 +96,6 @@ maybe_get_single_definition (tree t)
   return NULL_TREE;
 }
 
-/* Traits class for tree hash maps below.  */
-
-struct sanopt_tree_map_traits : default_hashmap_traits
-{
-  static inline hashval_t hash (const_tree ref)
-  {
-    return iterative_hash_expr (ref, 0);
-  }
-
-  static inline bool equal_keys (const_tree ref1, const_tree ref2)
-  {
-    return operand_equal_p (ref1, ref2, 0);
-  }
-}; 
-
 /* Tree triplet for vptr_check_map.  */
 struct sanopt_tree_triplet
 {
@@ -119,8 +104,11 @@ struct sanopt_tree_triplet
 
 /* Traits class for tree triplet hash maps below.  */
 
-struct sanopt_tree_triplet_map_traits : default_hashmap_traits
+struct sanopt_tree_triplet_hash : typed_noop_remove <sanopt_tree_triplet>
 {
+  typedef sanopt_tree_triplet value_type;
+  typedef sanopt_tree_triplet compare_type;
+
   static inline hashval_t
   hash (const sanopt_tree_triplet &ref)
   {
@@ -132,39 +120,35 @@ struct sanopt_tree_triplet_map_traits : default_hashmap_traits
   }
 
   static inline bool
-  equal_keys (const sanopt_tree_triplet &ref1, const sanopt_tree_triplet &ref2)
+  equal (const sanopt_tree_triplet &ref1, const sanopt_tree_triplet &ref2)
   {
     return operand_equal_p (ref1.t1, ref2.t1, 0)
 	   && operand_equal_p (ref1.t2, ref2.t2, 0)
 	   && operand_equal_p (ref1.t3, ref2.t3, 0);
   }
 
-  template<typename T>
   static inline void
-  mark_deleted (T &e)
+  mark_deleted (sanopt_tree_triplet &ref)
   {
-    e.m_key.t1 = reinterpret_cast<T *> (1);
+    ref.t1 = reinterpret_cast<tree> (1);
   }
 
-  template<typename T>
   static inline void
-  mark_empty (T &e)
+  mark_empty (sanopt_tree_triplet &ref)
   {
-    e.m_key.t1 = NULL;
+    ref.t1 = NULL;
   }
 
-  template<typename T>
   static inline bool
-  is_deleted (T &e)
+  is_deleted (const sanopt_tree_triplet &ref)
   {
-    return e.m_key.t1 == (void *) 1;
+    return ref.t1 == (void *) 1;
   }
 
-  template<typename T>
   static inline bool
-  is_empty (T &e)
+  is_empty (const sanopt_tree_triplet &ref)
   {
-    return e.m_key.t1 == NULL;
+    return ref.t1 == NULL;
   }
 };
 
@@ -179,13 +163,12 @@ struct sanopt_ctx
 
   /* This map maps a pointer (the second argument of ASAN_CHECK) to
      a vector of ASAN_CHECK call statements that check the access.  */
-  hash_map<tree, auto_vec<gimple>, sanopt_tree_map_traits> asan_check_map;
+  hash_map<tree_operand_hash, auto_vec<gimple> > asan_check_map;
 
   /* This map maps a tree triplet (the first, second and fourth argument
      of UBSAN_VPTR) to a vector of UBSAN_VPTR call statements that check
      that virtual table pointer.  */
-  hash_map<sanopt_tree_triplet, auto_vec<gimple>,
-	   sanopt_tree_triplet_map_traits> vptr_check_map;
+  hash_map<sanopt_tree_triplet_hash, auto_vec<gimple> > vptr_check_map;
 
   /* Number of IFN_ASAN_CHECK statements.  */
   int asan_num_accesses;

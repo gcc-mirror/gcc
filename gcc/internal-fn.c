@@ -526,14 +526,10 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
       /* PLUS_EXPR is commutative, if operand signedness differs,
 	 canonicalize to the first operand being signed and second
 	 unsigned to simplify following code.  */
-      rtx tem = op1;
-      op1 = op0;
-      op0 = tem;
-      tree t = arg1;
-      arg1 = arg0;
-      arg0 = t;
-      uns0_p = 0;
-      uns1_p = 1;
+      std::swap (op0, op1);
+      std::swap (arg0, arg1);
+      uns0_p = false;
+      uns1_p = true;
     }
 
   /* u1 +- u2 -> ur  */
@@ -674,9 +670,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 	  int pos_neg0 = get_range_pos_neg (arg0);
 	  if (pos_neg0 != 3 && pos_neg == 3)
 	    {
-	      rtx tem = op1;
-	      op1 = op0;
-	      op0 = tem;
+	      std::swap (op0, op1);
 	      pos_neg = pos_neg0;
 	    }
 	}
@@ -781,22 +775,14 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 	 do_compare_rtx_and_jump will be just folded.  Otherwise try
 	 to use range info if available.  */
       if (code == PLUS_EXPR && CONST_INT_P (op0))
-	{
-	  rtx tem = op0;
-	  op0 = op1;
-	  op1 = tem;
-	}
+	std::swap (op0, op1);
       else if (CONST_INT_P (op1))
 	;
       else if (code == PLUS_EXPR && TREE_CODE (arg0) == SSA_NAME)
 	{
 	  pos_neg = get_range_pos_neg (arg0);
 	  if (pos_neg != 3)
-	    {
-	      rtx tem = op0;
-	      op0 = op1;
-	      op1 = tem;
-	    }
+	    std::swap (op0, op1);
 	}
       if (pos_neg == 3 && !CONST_INT_P (op1) && TREE_CODE (arg1) == SSA_NAME)
 	pos_neg = get_range_pos_neg (arg1);
@@ -1023,14 +1009,10 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       /* Multiplication is commutative, if operand signedness differs,
 	 canonicalize to the first operand being signed and second
 	 unsigned to simplify following code.  */
-      rtx tem = op1;
-      op1 = op0;
-      op0 = tem;
-      tree t = arg1;
-      arg1 = arg0;
-      arg0 = t;
-      uns0_p = 0;
-      uns1_p = 1;
+      std::swap (op0, op1);
+      std::swap (arg0, arg1);
+      uns0_p = false;
+      uns1_p = true;
     }
 
   int pos_neg0 = get_range_pos_neg (arg0);

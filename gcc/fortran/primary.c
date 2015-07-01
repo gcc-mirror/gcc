@@ -1911,7 +1911,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   if (sym->assoc && gfc_peek_ascii_char () == '('
       && !(sym->assoc->dangling && sym->assoc->st
 	   && sym->assoc->st->n.sym
-	   && sym->assoc->st->n.sym->attr.dimension == 0))
+	   && sym->assoc->st->n.sym->attr.dimension == 0)
+      && sym->ts.type != BT_CLASS)
     sym->attr.dimension = 1;
 
   if ((equiv_flag && gfc_peek_ascii_char () == '(')

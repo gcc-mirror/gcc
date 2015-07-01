@@ -35,6 +35,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#include <utility>
 #include <stdexcept>
 #include <bits/stl_algobase.h>
 #include <bits/range_access.h>
@@ -330,6 +331,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(_Int < _Nm, "index is out of bounds");
       typedef _Tp type;
     };
+
+  template<typename _Tp, std::size_t _Nm>
+    struct __is_tuple_like_impl<_GLIBCXX_STD_C::array<_Tp, _Nm>> : true_type
+    { };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

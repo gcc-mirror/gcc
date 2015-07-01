@@ -122,10 +122,8 @@ static struct edge_list *edge_list;
 
 /* Hashtable helpers.  */
 
-struct st_expr_hasher : typed_noop_remove <st_expr>
+struct st_expr_hasher : nofree_ptr_hash <st_expr>
 {
-  typedef st_expr *value_type;
-  typedef st_expr *compare_type;
   static inline hashval_t hash (const st_expr *);
   static inline bool equal (const st_expr *, const st_expr *);
 };

@@ -134,7 +134,7 @@ typedef struct variant_desc_d {
 
 /* A hash table used to cache the result of annotate_value.  */
 
-struct value_annotation_hasher : ggc_cache_hasher<tree_int_map *>
+struct value_annotation_hasher : ggc_cache_ptr_hash<tree_int_map>
 {
   static inline hashval_t
   hash (tree_int_map *m)
@@ -148,16 +148,10 @@ struct value_annotation_hasher : ggc_cache_hasher<tree_int_map *>
     return a->base.from == b->base.from;
   }
 
-  static void
-  handle_cache_entry (tree_int_map *&m)
+  static int
+  keep_cache_entry (tree_int_map *&m)
   {
-    extern void gt_ggc_mx (tree_int_map *&);
-    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
-      return;
-    else if (ggc_marked_p (m->base.from))
-      gt_ggc_mx (m);
-    else
-      m = static_cast<tree_int_map *> (HTAB_DELETED_ENTRY);
+    return ggc_marked_p (m->base.from);
   }
 };
 
@@ -1450,11 +1444,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Now create the variable or the constant and set various flags.  */
 	gnu_decl
-	  = create_var_decl_1 (gnu_entity_name, gnu_ext_name, gnu_type,
-			       gnu_expr, const_flag, Is_Public (gnat_entity),
-			       imported_p || !definition, static_p,
-			       artificial_p, debug_info_p, !renamed_obj,
-			       attr_list, gnat_entity);
+	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
+			     gnu_expr, const_flag, Is_Public (gnat_entity),
+			     imported_p || !definition, static_p,
+			     artificial_p, debug_info_p, attr_list,
+			     gnat_entity, !renamed_obj);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
 	DECL_POINTS_TO_READONLY_P (gnu_decl) = used_by_ref && inner_const_flag;
 	DECL_CAN_NEVER_BE_NULL_P (gnu_decl) = Can_Never_Be_Null (gnat_entity);
@@ -1503,11 +1497,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		|| Is_Aliased (Etype (gnat_entity))))
 	  {
 	    tree gnu_corr_var
-	      = create_var_decl_1 (gnu_entity_name, gnu_ext_name, gnu_type,
-				   gnu_expr, true, Is_Public (gnat_entity),
-				   !definition, static_p, artificial_p,
-				   debug_info_p, false, attr_list,
-				   gnat_entity);
+	      = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
+				 gnu_expr, true, Is_Public (gnat_entity),
+				 !definition, static_p, artificial_p,
+				 debug_info_p, attr_list, gnat_entity,
+				 false);
 
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
 	  }

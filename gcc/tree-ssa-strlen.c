@@ -67,10 +67,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
 #include "params.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "ipa-chkp.h"
+#include "tree-hash-traits.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -153,25 +152,9 @@ struct decl_stridxlist_map
   struct stridxlist list;
 };
 
-/* stridxlist hashtable helpers.  */
-
-struct stridxlist_hash_traits : default_hashmap_traits
-{
-  static inline hashval_t hash (tree);
-};
-
-/* Hash a from tree in a decl_stridxlist_map.  */
-
-inline hashval_t
-stridxlist_hash_traits::hash (tree item)
-{
-  return DECL_UID (item);
-}
-
 /* Hash table for mapping decls to a chained list of offset -> idx
    mappings.  */
-static hash_map<tree, stridxlist, stridxlist_hash_traits>
-  *decl_to_stridxlist_htab;
+static hash_map<tree_decl_hash, stridxlist> *decl_to_stridxlist_htab;
 
 /* Obstack for struct stridxlist and struct decl_stridxlist_map.  */
 static struct obstack stridx_obstack;
@@ -337,7 +320,7 @@ addr_stridxptr (tree exp)
   if (!decl_to_stridxlist_htab)
     {
       decl_to_stridxlist_htab
-       	= new hash_map<tree, stridxlist, stridxlist_hash_traits> (64);
+       	= new hash_map<tree_decl_hash, stridxlist> (64);
       gcc_obstack_init (&stridx_obstack);
     }
 

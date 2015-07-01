@@ -424,10 +424,8 @@ lookup_cand (cand_idx idx)
 
 /* Helper for hashing a candidate chain header.  */
 
-struct cand_chain_hasher : typed_noop_remove <cand_chain>
+struct cand_chain_hasher : nofree_ptr_hash <cand_chain>
 {
-  typedef cand_chain *value_type;
-  typedef cand_chain *compare_type;
   static inline hashval_t hash (const cand_chain *);
   static inline bool equal (const cand_chain *, const cand_chain *);
 };
