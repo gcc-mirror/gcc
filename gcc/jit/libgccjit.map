@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.  */
+
+# The initial release of the library.
+LIBGCCJIT_ABI_0
 {
   global:
     # Keep this list sorted alphabetically:
@@ -105,3 +108,9 @@
 
   local: *;
 };
+
+# Add support for adding arbitrary command-line options (PR jit/66628).
+LIBGCCJIT_ABI_1 {
+  global:
+    gcc_jit_context_add_command_line_option;
+} LIBGCCJIT_ABI_0;
