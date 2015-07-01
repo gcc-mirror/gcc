@@ -122,6 +122,9 @@ Simple expressions
    Generate an rvalue for the given NIL-terminated string, of type
    :c:data:`GCC_JIT_TYPE_CONST_CHAR_PTR`.
 
+   The parameter ``value`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
 
 Unary Operations
 ****************
@@ -465,6 +468,10 @@ Global variables
                                           const char *name)
 
    Add a new global variable of the given type and name to the context.
+
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
 
    The "kind" parameter determines the visibility of the "global" outside
    of the :c:type:`gcc_jit_result`:

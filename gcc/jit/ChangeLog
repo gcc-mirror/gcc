@@ -1,3 +1,20 @@
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/contexts.rst (gcc_jit_context_set_bool_option):
+	Clarify lack of lifetime requirements on (const char *) parameter.
+	* docs/topics/expressions.rst
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_global): Likewise.
+	* docs/topics/functions.rst (gcc_jit_context_new_param): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_function_new_block): Likewise.
+	(gcc_jit_block_add_comment): Likewise.
+	* docs/topics/locations.rst (gcc_jit_context_new_location):
+	Likewise.
+	* docs/topics/types.rst (gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/functions.rst (Blocks): Add switch statements to

@@ -52,6 +52,10 @@ Source Locations
    Create a `gcc_jit_location` instance representing the given source
    location.
 
+   The parameter ``filename`` must be non-NULL.  The call takes a copy of
+   the underlying string, so it is valid to pass in a pointer to an
+   on-stack buffer.
+
 Faking it
 ---------
 If you don't have source code for your internal representation, but need

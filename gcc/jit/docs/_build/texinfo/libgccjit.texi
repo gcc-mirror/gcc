@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 6.0.0 (experimental 20150630), June 30, 2015
+libgccjit 6.0.0 (experimental 20150701), July 01, 2015
 
 David Malcolm
 
@@ -5287,6 +5287,10 @@ Set a string option of the context.
 @deffn {C Type} enum gcc_jit_str_option
 @end deffn
 
+The parameter @code{value} can be NULL.   If non-NULL, the call takes a
+copy of the underlying string, so it is valid to pass in a pointer to
+an on-stack buffer.
+
 There is just one string option specified this way:
 
 @geindex GCC_JIT_STR_OPTION_PROGNAME (C macro)
@@ -6077,6 +6081,10 @@ gcc_jit_struct_set_fields (node, NULL, 2, fields);
 @deffn {C Function} gcc_jit_field *           gcc_jit_context_new_field (gcc_jit_context@w{ }*ctxt, gcc_jit_location@w{ }*loc, gcc_jit_type@w{ }*type, const char@w{ }*name)
 
 Construct a new field, with the given type and name.
+
+The parameter @code{name} must be non-NULL.  The call takes a copy of the
+underlying string, so it is valid to pass in a pointer to an on-stack
+buffer.
 @end deffn
 
 @geindex gcc_jit_field_as_object (C function)
@@ -6093,6 +6101,10 @@ Upcast from field to object.
 @quotation
 
 Construct a new struct type, with the given name and fields.
+
+The parameter @code{name} must be non-NULL.  The call takes a copy of
+the underlying string, so it is valid to pass in a pointer to an
+on-stack buffer.
 @end quotation
 @end deffn
 
@@ -6104,6 +6116,10 @@ Construct a new struct type, with the given name, but without
 specifying the fields.   The fields can be omitted (in which case the
 size of the struct is not known), or later specified using
 @pxref{85,,gcc_jit_struct_set_fields()}.
+
+The parameter @code{name} must be non-NULL.  The call takes a copy of
+the underlying string, so it is valid to pass in a pointer to an
+on-stack buffer.
 @end deffn
 
 @geindex gcc_jit_struct_as_type (C function)
@@ -6327,6 +6343,10 @@ gcc_jit_context_new_rvalue_from_ptr (ctxt, pointer_type, NULL)
 
 Generate an rvalue for the given NIL-terminated string, of type
 @code{GCC_JIT_TYPE_CONST_CHAR_PTR}.
+
+The parameter @code{value} must be non-NULL.  The call takes a copy of the
+underlying string, so it is valid to pass in a pointer to an on-stack
+buffer.
 @end deffn
 
 @node Unary Operations,Binary Operations,Simple expressions,Rvalues
@@ -6975,6 +6995,10 @@ in C.
 
 Add a new global variable of the given type and name to the context.
 
+The parameter @code{name} must be non-NULL.  The call takes a copy of the
+underlying string, so it is valid to pass in a pointer to an on-stack
+buffer.
+
 The "kind" parameter determines the visibility of the "global" outside
 of the @pxref{16,,gcc_jit_result}:
 
@@ -7150,6 +7174,10 @@ A @cite{gcc_jit_param} represents a parameter to a function.
 
 In preparation for creating a function, create a new parameter of the
 given type and name.
+
+The parameter @code{name} must be non-NULL.  The call takes a copy of the
+underlying string, so it is valid to pass in a pointer to an on-stack
+buffer.
 @end deffn
 
 Parameters are lvalues, and thus are also rvalues (and objects), so the
@@ -7249,6 +7277,10 @@ above 0; when optimization is off, this is essentially the
 same as GCC_JIT_FUNCTION_INTERNAL.
 @end deffn
 @end quotation
+
+The parameter @code{name} must be non-NULL.  The call takes a copy of the
+underlying string, so it is valid to pass in a pointer to an on-stack
+buffer.
 @end deffn
 
 @geindex gcc_jit_context_get_builtin_function (C function)
@@ -7283,6 +7315,10 @@ Emit the function in graphviz format to the given path.
 
 Create a new local variable within the function, of the given type and
 name.
+
+The parameter @code{name} must be non-NULL.  The call takes a copy of the
+underlying string, so it is valid to pass in a pointer to an on-stack
+buffer.
 @end deffn
 
 @node Blocks,Statements,Functions,Creating and using functions
@@ -7316,7 +7352,19 @@ one function.
 Create a basic block of the given name.  The name may be NULL, but
 providing meaningful names is often helpful when debugging: it may
 show up in dumps of the internal representation, and in error
-messages.
+messages.  It is copied, so the input buffer does not need to outlive
+the call; you can pass in a pointer to an on-stack buffer, e.g.:
+
+@example
+for (pc = 0; pc < fn->fn_num_ops; pc++)
+ @{
+   char buf[16];
+   sprintf (buf, "instr%i", pc);
+   state.op_blocks[pc] = gcc_jit_function_new_block (state.fn, buf);
+ @}
+@end example
+
+@noindent
 @end deffn
 
 @geindex gcc_jit_block_as_object (C function)
@@ -7411,6 +7459,19 @@ seen via @pxref{66,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE}
 and @pxref{1c,,GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE},
 and thus may be of use when debugging how your project's internal
 representation gets converted to the libgccjit IR.
+
+The parameter @code{text} must be non-NULL.  It is copied, so the input
+buffer does not need to outlive the call.  For example:
+
+@example
+char buf[100];
+snprintf (buf, sizeof (buf),
+          "op%i: %s",
+          pc, opcode_names[op->op_opcode]);
+gcc_jit_block_add_comment (block, loc, buf);
+@end example
+
+@noindent
 @end deffn
 
 @geindex gcc_jit_block_end_with_conditional (C function)
@@ -7747,6 +7808,10 @@ gcc_jit_context_set_bool_option (
 
 Create a @cite{gcc_jit_location} instance representing the given source
 location.
+
+The parameter @code{filename} must be non-NULL.  The call takes a copy of
+the underlying string, so it is valid to pass in a pointer to an
+on-stack buffer.
 @end deffn
 
 @menu
