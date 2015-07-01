@@ -1,3 +1,10 @@
+2015-07-01  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_comparison): Move X - Y CMP 0 -> X CMP Y,
+	X * C1 CMP 0 -> X CMP 0, X CMP X, ~X CMP ~Y -> Y CMP X and
+	~X CMP C -> X CMP' ~C to ...
+	* match.pd: ... patterns here.
+
 2015-07-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.md (zero_extendhipsi2): Use MOVX.A to store
