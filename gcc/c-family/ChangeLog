@@ -1,12 +1,13 @@
 2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N4197 - Adding u8 character literals
-	* c-family/c-ada-spec.c (print_ada_macros()): Treat CPP_UTF8CHAR
-	like CPP_CHAR.
-	* c-family/c-common.c (c_parse_error()): print CPP_UTF8CHAR
-	and CPP_UTF8CHAR_USERDEF tokens.
-	* c-family/c-lex.c (c_lex_with_flags()): Treat CPP_UTF8CHAR_USERDEF
-	and CPP_UTF8CHAR tokens; (lex_charconst()): Treat CPP_UTF8CHAR token.
+	* c-family/c-ada-spec.c (print_ada_macros): Treat CPP_UTF8CHAR like
+	CPP_CHAR.
+	* c-family/c-common.c (c_parse_error): Print CPP_UTF8CHAR and
+	CPP_UTF8CHAR_USERDEF tokens.
+	* c-family/c-lex.c (c_lex_with_flags): Treat CPP_UTF8CHAR_USERDEF
+	and CPP_UTF8CHAR tokens.
+	(lex_charconst): Treat CPP_UTF8CHAR token.
 
 2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
