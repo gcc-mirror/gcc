@@ -1,5 +1,8 @@
 2015-07-01  Jason Merrill  <jason@redhat.com>
 
+	* mangle.c (write_CV_qualifiers_for_type, write_nested_name):
+	Attribute mangling is now -fabi-version=10.
+
 	PR c++/65945
 	* decl.c (cxx_init_decl_processing): Set TYPE_ALIGN of nullptr_t.
 	* class.c (layout_nonempty_base_or_field): Warn if that affects

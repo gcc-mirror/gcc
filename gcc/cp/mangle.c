@@ -984,7 +984,7 @@ write_nested_name (const tree decl)
       write_template_prefix (decl);
       write_template_args (TI_ARGS (template_info));
     }
-  else if ((!abi_version_at_least (9) || TREE_CODE (decl) == TYPE_DECL)
+  else if ((!abi_version_at_least (10) || TREE_CODE (decl) == TYPE_DECL)
 	   && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
     {
       tree name = TYPENAME_TYPE_FULLNAME (TREE_TYPE (decl));
@@ -2196,7 +2196,7 @@ write_CV_qualifiers_for_type (const tree type)
      We don't do this with classes and enums because their attributes
      are part of their definitions, not something added on.  */
 
-  if (abi_version_at_least (9) && !OVERLOAD_TYPE_P (type))
+  if (abi_version_at_least (10) && !OVERLOAD_TYPE_P (type))
     {
       auto_vec<tree> vec;
       for (tree a = TYPE_ATTRIBUTES (type); a; a = TREE_CHAIN (a))
@@ -2230,7 +2230,7 @@ write_CV_qualifiers_for_type (const tree type)
 	    }
 
 	  ++num_qualifiers;
-	  if (abi_version_crosses (9))
+	  if (abi_version_crosses (10))
 	    G.need_abi_warning = true;
 	}
     }
