@@ -686,6 +686,8 @@ classify_insn (rtx x)
       for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
 	if (GET_CODE (XVECEXP (x, 0, j)) == CALL)
 	  return CALL_INSN;
+	else if (ANY_RETURN_P (XVECEXP (x, 0, j)))
+	  return JUMP_INSN;
 	else if (GET_CODE (XVECEXP (x, 0, j)) == SET
 		 && GET_CODE (SET_DEST (XVECEXP (x, 0, j))) == PC)
 	  return JUMP_INSN;
