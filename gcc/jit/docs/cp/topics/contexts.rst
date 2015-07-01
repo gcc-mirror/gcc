@@ -184,6 +184,23 @@ Boolean options
   :c:func:`gcc_jit_context_set_bool_option`; the options have the same
   meaning.
 
+.. function:: void \
+              gccjit::context::set_bool_allow_unreachable_blocks (int bool_value)
+
+   By default, libgccjit will issue an error about unreachable blocks
+   within a function.
+
+   This entrypoint can be used to disable that error; it is a thin wrapper
+   around the C API
+   :c:func:`gcc_jit_context_set_bool_allow_unreachable_blocks`.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_2`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+
 Integer options
 ***************
 

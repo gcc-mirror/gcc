@@ -140,6 +140,9 @@ gcc_jit_context_acquire (void);
 extern void
 gcc_jit_context_release (gcc_jit_context *ctxt);
 
+/* Options present in the initial release of libgccjit.
+   These were handled using enums.  */
+
 /* Options taking string values. */
 enum gcc_jit_str_option
 {
@@ -242,6 +245,31 @@ extern void
 gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 				 enum gcc_jit_bool_option opt,
 				 int value);
+
+/* Options added after the initial release of libgccjit.
+   These are handled by providing an entrypoint per option,
+   rather than by extending the enum gcc_jit_*_option,
+   so that client code that use these new options can be identified
+   from binary metadata.  */
+
+/* By default, libgccjit will issue an error about unreachable blocks
+   within a function.
+
+   This option can be used to disable that error.
+
+   This entrypoint was added in LIBGCCJIT_ABI_2; you can test for
+   its presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+*/
+
+extern void
+gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
+						   int bool_value);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_context_set_bool_allow_unreachable_blocks.  This can be
+   tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
 
 /* Add an arbitrary gcc command-line option to the context.
    The context takes a copy of the string, so the

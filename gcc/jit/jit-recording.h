@@ -196,6 +196,10 @@ public:
 		   int value);
 
   void
+  set_inner_bool_option (enum inner_bool_option inner_opt,
+			 int value);
+
+  void
   add_command_line_option (const char *optname);
 
   void
@@ -221,6 +225,12 @@ public:
   get_bool_option (enum gcc_jit_bool_option opt) const
   {
     return m_bool_options[opt];
+  }
+
+  int
+  get_inner_bool_option (enum inner_bool_option opt) const
+  {
+    return m_inner_bool_options[opt];
   }
 
   result *
@@ -266,6 +276,7 @@ private:
   void log_str_option (enum gcc_jit_str_option opt) const;
   void log_int_option (enum gcc_jit_int_option opt) const;
   void log_bool_option (enum gcc_jit_bool_option opt) const;
+  void log_inner_bool_option (enum inner_bool_option opt) const;
 
   void validate ();
 
@@ -287,6 +298,7 @@ private:
   char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
   int m_int_options[GCC_JIT_NUM_INT_OPTIONS];
   bool m_bool_options[GCC_JIT_NUM_BOOL_OPTIONS];
+  bool m_inner_bool_options[NUM_INNER_BOOL_OPTIONS];
   auto_vec <char *> m_command_line_options;
 
   /* Dumpfiles that were requested via gcc_jit_context_enable_dump.  */

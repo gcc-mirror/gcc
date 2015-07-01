@@ -2185,6 +2185,23 @@ gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::set_inner_bool_option method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
+						   int bool_value)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  ctxt->set_inner_bool_option (
+    gcc::jit::INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS,
+    bool_value);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::add_command_line_option method in
    jit-recording.c.  */
 

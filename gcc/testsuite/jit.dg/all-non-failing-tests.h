@@ -189,6 +189,10 @@
 #undef create_code
 #undef verify_code
 
+/* test-validly-unreachable-block.c: We don't use this one, since the use
+   of gcc_jit_context_set_bool_allow_unreachable_blocks affects the whole
+   context.  */
+
 /* test-volatile.c */
 #define create_code create_code_volatile
 #define verify_code verify_code_volatile
