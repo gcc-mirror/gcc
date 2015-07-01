@@ -22535,6 +22535,28 @@ cp_parser_std_attribute (cp_parser *parser)
   return attribute;
 }
 
+/* Check that the attribute ATTRIBUTE appears at most once in the
+   attribute-list ATTRIBUTES.  This is enforced for noreturn (7.6.3)
+   and deprecated (7.6.5).  Note that carries_dependency (7.6.4)
+   isn't implemented yet in GCC.  */
+
+static void
+cp_parser_check_std_attribute (tree attributes, tree attribute)
+{
+  if (attributes)
+    {
+      tree name = get_attribute_name (attribute);
+      if (is_attribute_p ("noreturn", name)
+	  && lookup_attribute ("noreturn", attributes))
+	error ("attribute noreturn can appear at most once "
+	       "in an attribute-list");
+      else if (is_attribute_p ("deprecated", name)
+	       && lookup_attribute ("deprecated", attributes))
+	error ("attribute deprecated can appear at most once "
+	       "in an attribute-list");
+    }
+}
+
 /* Parse a list of standard C++-11 attributes.
 
    attribute-list:
@@ -22557,6 +22579,7 @@ cp_parser_std_attribute_list (cp_parser *parser)
 	break;
       if (attribute != NULL_TREE)
 	{
+	  cp_parser_check_std_attribute (attributes, attribute);
 	  TREE_CHAIN (attribute) = attributes;
 	  attributes = attribute;
 	}
