@@ -1,5 +1,17 @@
 2015-07-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/alloc_traits.h (__alloctr_rebind): Remove.
+	(__allocator_traits_base): New base class.
+	(__alloc_rebind): Reimplement in terms of detection idiom.
+	(allocator_traits): Derive from __allocator_traits_base. Reimplement
+	nested types in terms of detection idiom. Simplify SFINAE constraints
+	on overloaded static member functions.
+	* include/bits/hashtable.h (_Hashtable): Use __alloc_rebind instead
+	of __alloctr_rebind.
+	* testsuite/20_util/scoped_allocator/propagation.cc: Define rebind.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+
 	* include/bits/ptr_traits.h (__ptrtr_elt_type, __ptrtr_diff_type,
 	__ptrtr_rebind, __ptrtr_not_void): Remove
 	(__get_first_arg, __replace_first_arg, __make_not_void): Define new

@@ -40,72 +40,57 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template<typename _Alloc, typename _Tp>
-    class __alloctr_rebind_helper
-    {
-      template<typename _Alloc2, typename _Tp2>
-	static constexpr true_type
-	_S_chk(typename _Alloc2::template rebind<_Tp2>::other*);
+  struct __allocator_traits_base
+  {
+    template<typename _Alloc, typename _Up>
+      using __rebind = typename _Alloc::template rebind<_Up>::other;
 
-      template<typename, typename>
-	static constexpr false_type
-	_S_chk(...);
+  protected:
+    template<typename _Tp>
+      using __pointer = typename _Tp::pointer;
+    template<typename _Tp>
+      using __c_pointer = typename _Tp::const_pointer;
+    template<typename _Tp>
+      using __v_pointer = typename _Tp::void_pointer;
+    template<typename _Tp>
+      using __cv_pointer = typename _Tp::const_void_pointer;
+    template<typename _Tp>
+      using __diff_type = typename _Tp::difference_type;
+    template<typename _Tp>
+      using __size_type = typename _Tp::size_type;
+    template<typename _Tp>
+      using __pocca = typename _Tp::propagate_on_container_copy_assignment;
+    template<typename _Tp>
+      using __pocma = typename _Tp::propagate_on_container_move_assignment;
+    template<typename _Tp>
+      using __pocs = typename _Tp::propagate_on_container_swap;
+    template<typename _Tp>
+      using __equal = typename _Tp::is_always_equal;
+  };
 
-    public:
-      using __type = decltype(_S_chk<_Alloc, _Tp>(nullptr));
-    };
-
-  template<typename _Alloc, typename _Tp,
-	   bool = __alloctr_rebind_helper<_Alloc, _Tp>::__type::value>
-    struct __alloctr_rebind;
-
-  template<typename _Alloc, typename _Tp>
-    struct __alloctr_rebind<_Alloc, _Tp, true>
-    {
-      typedef typename _Alloc::template rebind<_Tp>::other __type;
-    };
-
-  template<template<typename, typename...> class _Alloc, typename _Tp,
-	   typename _Up, typename... _Args>
-    struct __alloctr_rebind<_Alloc<_Up, _Args...>, _Tp, false>
-    {
-      typedef _Alloc<_Tp, _Args...> __type;
-    };
-
-  template<typename _Alloc, typename _Tp>
-    using __alloc_rebind = typename __alloctr_rebind<_Alloc, _Tp>::__type;
+  template<typename _Alloc, typename _Up>
+    using __alloc_rebind = __detected_or_t_<__replace_first_arg_t,
+					    __allocator_traits_base::__rebind,
+					    _Alloc, _Up>;
 
   /**
    * @brief  Uniform interface to all allocator types.
    * @ingroup allocators
   */
   template<typename _Alloc>
-    struct allocator_traits
+    struct allocator_traits : __allocator_traits_base
     {
       /// The allocator type
       typedef _Alloc allocator_type;
       /// The allocated type
       typedef typename _Alloc::value_type value_type;
 
-#define _GLIBCXX_ALLOC_TR_NESTED_TYPE(_NTYPE, _ALT) \
-  private: \
-    template<typename _Tp> \
-      static typename _Tp::_NTYPE _S_##_NTYPE##_helper(_Tp*); \
-    static _ALT _S_##_NTYPE##_helper(...); \
-    typedef decltype(_S_##_NTYPE##_helper((_Alloc*)0)) __##_NTYPE; \
-  public:
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(pointer, value_type*)
-
       /**
        * @brief   The allocator's pointer type.
        *
        * @c Alloc::pointer if that type exists, otherwise @c value_type*
       */
-      typedef __pointer pointer;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(const_pointer,
-  typename pointer_traits<pointer>::template rebind<const value_type>)
+      using pointer = __detected_or_t<value_type*, __pointer, _Alloc>;
 
       /**
        * @brief   The allocator's const pointer type.
@@ -113,10 +98,9 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(const_pointer,
        * @c Alloc::const_pointer if that type exists, otherwise
        * <tt> pointer_traits<pointer>::rebind<const value_type> </tt>
       */
-      typedef __const_pointer const_pointer;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(void_pointer,
-  typename pointer_traits<pointer>::template rebind<void>)
+      using const_pointer
+	= __detected_or_t<__ptr_rebind<pointer, const value_type>,
+			  __c_pointer, _Alloc>;
 
       /**
        * @brief   The allocator's void pointer type.
@@ -124,10 +108,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(void_pointer,
        * @c Alloc::void_pointer if that type exists, otherwise
        * <tt> pointer_traits<pointer>::rebind<void> </tt>
       */
-      typedef __void_pointer void_pointer;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(const_void_pointer,
-  typename pointer_traits<pointer>::template rebind<const void>)
+      using void_pointer
+	= __detected_or_t<__ptr_rebind<pointer, void>, __v_pointer, _Alloc>;
 
       /**
        * @brief   The allocator's const void pointer type.
@@ -135,10 +117,9 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(const_void_pointer,
        * @c Alloc::const_void_pointer if that type exists, otherwise
        * <tt> pointer_traits<pointer>::rebind<const void> </tt>
       */
-      typedef __const_void_pointer const_void_pointer;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(difference_type,
-			      typename pointer_traits<pointer>::difference_type)
+      using const_void_pointer
+	= __detected_or_t<__ptr_rebind<pointer, const void>, __cv_pointer,
+			  _Alloc>;
 
       /**
        * @brief   The allocator's difference type
@@ -146,10 +127,9 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(difference_type,
        * @c Alloc::difference_type if that type exists, otherwise
        * <tt> pointer_traits<pointer>::difference_type </tt>
       */
-      typedef __difference_type difference_type;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(size_type,
-			      typename make_unsigned<difference_type>::type)
+      using difference_type
+	= __detected_or_t<typename pointer_traits<pointer>::difference_type,
+			  __diff_type, _Alloc>;
 
       /**
        * @brief   The allocator's size type
@@ -157,10 +137,9 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(size_type,
        * @c Alloc::size_type if that type exists, otherwise
        * <tt> make_unsigned<difference_type>::type </tt>
       */
-      typedef __size_type size_type;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_copy_assignment,
-			      false_type)
+      using size_type
+	= __detected_or_t<typename make_unsigned<difference_type>::type,
+			  __size_type, _Alloc>;
 
       /**
        * @brief   How the allocator is propagated on copy assignment
@@ -168,11 +147,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_copy_assignment,
        * @c Alloc::propagate_on_container_copy_assignment if that type exists,
        * otherwise @c false_type
       */
-      typedef __propagate_on_container_copy_assignment
-	propagate_on_container_copy_assignment;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_move_assignment,
-			      false_type)
+      using propagate_on_container_copy_assignment
+	= __detected_or_t<false_type, __pocca, _Alloc>;
 
       /**
        * @brief   How the allocator is propagated on move assignment
@@ -180,11 +156,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_move_assignment,
        * @c Alloc::propagate_on_container_move_assignment if that type exists,
        * otherwise @c false_type
       */
-      typedef __propagate_on_container_move_assignment
-	propagate_on_container_move_assignment;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
-			      false_type)
+      using propagate_on_container_move_assignment
+	= __detected_or_t<false_type, __pocma, _Alloc>;
 
       /**
        * @brief   How the allocator is propagated on swap
@@ -192,10 +165,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
        * @c Alloc::propagate_on_container_swap if that type exists,
        * otherwise @c false_type
       */
-      typedef __propagate_on_container_swap propagate_on_container_swap;
-
-_GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
-			      typename is_empty<_Alloc>::type)
+      using propagate_on_container_swap
+	= __detected_or_t<false_type, __pocs, _Alloc>;
 
       /**
        * @brief   Whether all instances of the allocator type compare equal.
@@ -203,44 +174,27 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
        * @c Alloc::is_always_equal if that type exists,
        * otherwise @c is_empty<Alloc>::type
       */
-      typedef __is_always_equal is_always_equal;
-
-#undef _GLIBCXX_ALLOC_TR_NESTED_TYPE
+      using is_always_equal
+	= __detected_or_t<typename is_empty<_Alloc>::type, __equal, _Alloc>;
 
       template<typename _Tp>
-	using rebind_alloc = typename __alloctr_rebind<_Alloc, _Tp>::__type;
+	using rebind_alloc = __alloc_rebind<_Alloc, _Tp>;
       template<typename _Tp>
 	using rebind_traits = allocator_traits<rebind_alloc<_Tp>>;
 
+      static_assert(!is_same<rebind_alloc<value_type>, __undefined>::value,
+	  "allocator defines rebind or is like Alloc<T, Args>");
+
     private:
       template<typename _Alloc2>
-	struct __allocate_helper
-	{
-	  template<typename _Alloc3,
-	    typename = decltype(std::declval<_Alloc3*>()->allocate(
-		  std::declval<size_type>(),
-		  std::declval<const_void_pointer>()))>
-	    static true_type __test(int);
-
-	  template<typename>
-	    static false_type __test(...);
-
-	  using type = decltype(__test<_Alloc>(0));
-	};
-
-      template<typename _Alloc2>
-	using __has_allocate = typename __allocate_helper<_Alloc2>::type;
-
-      template<typename _Alloc2,
-	       typename = _Require<__has_allocate<_Alloc2>>>
-	static pointer
-	_S_allocate(_Alloc2& __a, size_type __n, const_void_pointer __hint)
+	static auto
+	_S_allocate(_Alloc2& __a, size_type __n, const_void_pointer __hint, int)
+	-> decltype(__a.allocate(__n, __hint))
 	{ return __a.allocate(__n, __hint); }
 
-      template<typename _Alloc2, typename _UnusedHint,
-	       typename = _Require<__not_<__has_allocate<_Alloc2>>>>
+      template<typename _Alloc2>
 	static pointer
-	_S_allocate(_Alloc2& __a, size_type __n, _UnusedHint)
+	_S_allocate(_Alloc2& __a, size_type __n, const_void_pointer, ...)
 	{ return __a.allocate(__n); }
 
       template<typename _Tp, typename... _Args>
@@ -273,57 +227,24 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
 	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
 	{ ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
 
-      template<typename _Tp>
-	struct __destroy_helper
-	{
-	  template<typename _Alloc2,
-	    typename = decltype(std::declval<_Alloc2*>()->destroy(
-		  std::declval<_Tp*>()))>
-	    static true_type __test(int);
-
-	  template<typename>
-	    static false_type __test(...);
-
-	  using type = decltype(__test<_Alloc>(0));
-	};
-
-      template<typename _Tp>
-	using __has_destroy = typename __destroy_helper<_Tp>::type;
-
-      template<typename _Tp>
-	static _Require<__has_destroy<_Tp>>
-	_S_destroy(_Alloc& __a, _Tp* __p)
+      template<typename _Alloc2, typename _Tp>
+	static auto
+	_S_destroy(_Alloc2& __a, _Tp* __p, int)
+	-> decltype(__a.destroy(__p))
 	{ __a.destroy(__p); }
 
-      template<typename _Tp>
-	static _Require<__not_<__has_destroy<_Tp>>>
-	_S_destroy(_Alloc&, _Tp* __p)
+      template<typename _Alloc2, typename _Tp>
+	static void
+	_S_destroy(_Alloc2&, _Tp* __p, ...)
 	{ __p->~_Tp(); }
 
       template<typename _Alloc2>
-	struct __maxsize_helper
-	{
-	  template<typename _Alloc3,
-	    typename = decltype(std::declval<_Alloc3*>()->max_size())>
-	    static true_type __test(int);
-
-	  template<typename>
-	    static false_type __test(...);
-
-	  using type = decltype(__test<_Alloc2>(0));
-	};
-
-      template<typename _Alloc2>
-	using __has_max_size = typename __maxsize_helper<_Alloc2>::type;
-
-      template<typename _Alloc2,
-	       typename = _Require<__has_max_size<_Alloc2>>>
-	static size_type
+	static auto
 	_S_max_size(_Alloc2& __a, int)
+	-> decltype(__a.max_size())
 	{ return __a.max_size(); }
 
-      template<typename _Alloc2,
-	       typename = _Require<__not_<__has_max_size<_Alloc2>>>>
+      template<typename _Alloc2>
 	static size_type
 	_S_max_size(_Alloc2&, ...)
 	{
@@ -334,30 +255,12 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
 	}
 
       template<typename _Alloc2>
-	struct __select_helper
-	{
-	  template<typename _Alloc3, typename
-	    = decltype(std::declval<_Alloc3*>()
-		->select_on_container_copy_construction())>
-	    static true_type __test(int);
-
-	  template<typename>
-	    static false_type __test(...);
-
-	  using type = decltype(__test<_Alloc2>(0));
-	};
-
-      template<typename _Alloc2>
-	using __has_soccc = typename __select_helper<_Alloc2>::type;
-
-      template<typename _Alloc2,
-	       typename = _Require<__has_soccc<_Alloc2>>>
-	static _Alloc2
+	static auto
 	_S_select(_Alloc2& __a, int)
+	-> decltype(__a.select_on_container_copy_construction())
 	{ return __a.select_on_container_copy_construction(); }
 
-      template<typename _Alloc2,
-	       typename = _Require<__not_<__has_soccc<_Alloc2>>>>
+      template<typename _Alloc2>
 	static _Alloc2
 	_S_select(_Alloc2& __a, ...)
 	{ return __a; }
@@ -388,7 +291,7 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
       */
       static pointer
       allocate(_Alloc& __a, size_type __n, const_void_pointer __hint)
-      { return _S_allocate(__a, __n, __hint); }
+      { return _S_allocate(__a, __n, __hint, 0); }
 
       /**
        *  @brief  Deallocate memory.
@@ -398,7 +301,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
        *
        *  Calls <tt> a.deallocate(p, n) </tt>
       */
-      static void deallocate(_Alloc& __a, pointer __p, size_type __n)
+      static void
+      deallocate(_Alloc& __a, pointer __p, size_type __n)
       { __a.deallocate(__p, __n); }
 
       /**
@@ -427,7 +331,7 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(is_always_equal,
       */
       template <class _Tp>
 	static void destroy(_Alloc& __a, _Tp* __p)
-	{ _S_destroy(__a, __p); }
+	{ _S_destroy(__a, __p, 0); }
 
       /**
        *  @brief  The maximum supported allocation size
