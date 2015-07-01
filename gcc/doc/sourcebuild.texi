@@ -1580,6 +1580,15 @@ ARM target prefers @code{LDRD} and @code{STRD} instructions over
 
 @end table
 
+@subsubsection AArch64-specific attributes
+
+@table @code
+@item aarch64_small_fpic
+Binutils installed on test system supports relocation types required by -fpic
+for AArch64 small memory model.
+
+@end table
+
 @subsubsection MIPS-specific attributes
 
 @table @code

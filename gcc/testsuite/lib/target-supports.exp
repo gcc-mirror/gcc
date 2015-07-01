@@ -937,6 +937,26 @@ proc check_effective_target_fpic { } {
     return 0
 }
 
+# On AArch64, if -fpic is not supported, then we will fall back to -fPIC
+# silently.  So, we can't rely on above "check_effective_target_fpic" as it
+# assumes compiler will give warning if -fpic not supported.  Here we check
+# whether binutils supports those new -fpic relocation modifiers, and assume
+# -fpic is supported if there is binutils support.  GCC configuration will
+# enable -fpic for AArch64 in this case.
+#
+# "check_effective_target_aarch64_small_fpic" is dedicated for checking small
+# memory model -fpic relocation types.
+
+proc check_effective_target_aarch64_small_fpic { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_small_fpic object {
+	    void foo (void) { asm ("ldr	x0, [x2, #:gotpage_lo15:globalsym]"); }
+	}]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if -shared is supported, as in no warnings or errors
 # emitted, 0 otherwise.
 

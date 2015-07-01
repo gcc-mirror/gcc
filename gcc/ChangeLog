@@ -1,5 +1,10 @@
 2015-07-01  Jiong Wang  <jiong.wang@arm.com>
 
+	* doc/sourcebuild.texi (AArch64-specific attributes): New subsection.
+	Document "aarch64_small_fpic".
+
+2015-07-01  Jiong Wang  <jiong.wang@arm.com>
+
 	* configure.ac: Add check for aarch64 assembler -fpic relocation
 	modifier support.
 	* configure: Regenerate.
