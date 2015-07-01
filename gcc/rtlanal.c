@@ -345,6 +345,145 @@ rtx_varies_p (const_rtx x, bool for_alias)
   return 0;
 }
 
+/* Compute an approximation for the offset between the register
+   FROM and TO for the current function, as it was at the start
+   of the routine.  */
+
+static HOST_WIDE_INT
+get_initial_register_offset (int from, int to)
+{
+#ifdef ELIMINABLE_REGS
+  static const struct elim_table_t
+  {
+    const int from;
+    const int to;
+  } table[] = ELIMINABLE_REGS;
+  HOST_WIDE_INT offset1, offset2;
+  unsigned int i, j;
+
+  if (to == from)
+    return 0;
+
+  /* It is not safe to call INITIAL_ELIMINATION_OFFSET
+     before the reload pass.  We need to give at least
+     an estimation for the resulting frame size.  */
+  if (! reload_completed)
+    {
+      offset1 = crtl->outgoing_args_size + get_frame_size ();
+#if !STACK_GROWS_DOWNWARD
+      offset1 = - offset1;
+#endif
+      if (to == STACK_POINTER_REGNUM)
+	return offset1;
+      else if (from == STACK_POINTER_REGNUM)
+	return - offset1;
+      else
+	return 0;
+     }
+
+  for (i = 0; i < ARRAY_SIZE (table); i++)
+      if (table[i].from == from)
+	{
+	  if (table[i].to == to)
+	    {
+	      INITIAL_ELIMINATION_OFFSET (table[i].from, table[i].to,
+					  offset1);
+	      return offset1;
+	    }
+	  for (j = 0; j < ARRAY_SIZE (table); j++)
+	    {
+	      if (table[j].to == to
+		  && table[j].from == table[i].to)
+		{
+		  INITIAL_ELIMINATION_OFFSET (table[i].from, table[i].to,
+					      offset1);
+		  INITIAL_ELIMINATION_OFFSET (table[j].from, table[j].to,
+					      offset2);
+		  return offset1 + offset2;
+		}
+	      if (table[j].from == to
+		  && table[j].to == table[i].to)
+		{
+		  INITIAL_ELIMINATION_OFFSET (table[i].from, table[i].to,
+					      offset1);
+		  INITIAL_ELIMINATION_OFFSET (table[j].from, table[j].to,
+					      offset2);
+		  return offset1 - offset2;
+		}
+	    }
+	}
+      else if (table[i].to == from)
+	{
+	  if (table[i].from == to)
+	    {
+	      INITIAL_ELIMINATION_OFFSET (table[i].from, table[i].to,
+					  offset1);
+	      return - offset1;
+	    }
+	  for (j = 0; j < ARRAY_SIZE (table); j++)
+	    {
+	      if (table[j].to == to
+		  && table[j].from == table[i].from)
+		{
+		  INITIAL_ELIMINATION_OFFSET (table[i].from, table[i].to,
+					      offset1);
+		  INITIAL_ELIMINATION_OFFSET (table[j].from, table[j].to,
+					      offset2);
+		  return - offset1 + offset2;
+		}
+	      if (table[j].from == to
+		  && table[j].to == table[i].from)
+		{
+		  INITIAL_ELIMINATION_OFFSET (table[i].from, table[i].to,
+					      offset1);
+		  INITIAL_ELIMINATION_OFFSET (table[j].from, table[j].to,
+					      offset2);
+		  return - offset1 - offset2;
+		}
+	    }
+	}
+
+  /* If the requested register combination was not found,
+     try a different more simple combination.  */
+  if (from == ARG_POINTER_REGNUM)
+    return get_initial_register_offset (HARD_FRAME_POINTER_REGNUM, to);
+  else if (to == ARG_POINTER_REGNUM)
+    return get_initial_register_offset (from, HARD_FRAME_POINTER_REGNUM);
+  else if (from == HARD_FRAME_POINTER_REGNUM)
+    return get_initial_register_offset (FRAME_POINTER_REGNUM, to);
+  else if (to == HARD_FRAME_POINTER_REGNUM)
+    return get_initial_register_offset (from, FRAME_POINTER_REGNUM);
+  else
+    return 0;
+
+#else
+  HOST_WIDE_INT offset;
+
+  if (to == from)
+    return 0;
+
+  if (reload_completed)
+    {
+      INITIAL_FRAME_POINTER_OFFSET (offset);
+    }
+  else
+    {
+      offset = crtl->outgoing_args_size + get_frame_size ();
+#if !STACK_GROWS_DOWNWARD
+      offset = - offset;
+#endif
+    }
+
+  if (to == STACK_POINTER_REGNUM)
+    return offset;
+  else if (from == STACK_POINTER_REGNUM)
+    return - offset;
+  else
+    return 0;
+
+#endif
+}
+
 /* Return nonzero if the use of X+OFFSET as an address in a MEM with SIZE
    bytes can cause a trap.  MODE is the mode of the MEM (not that of X) and
    UNALIGNED_MEMS controls whether nonzero is returned for unaligned memory
@@ -422,29 +561,109 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
     case REG:
       /* Stack references are assumed not to trap, but we need to deal with
 	 nonsensical offsets.  */
-      if (x == frame_pointer_rtx)
+      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+	 || x == stack_pointer_rtx
+	 /* The arg pointer varies if it is not a fixed register.  */
+	 || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
 	{
-	  HOST_WIDE_INT adj_offset = offset - STARTING_FRAME_OFFSET;
+#ifdef RED_ZONE_SIZE
+	  HOST_WIDE_INT red_zone_size = RED_ZONE_SIZE;
+#else
+	  HOST_WIDE_INT red_zone_size = 0;
+#endif
+	  HOST_WIDE_INT stack_boundary = PREFERRED_STACK_BOUNDARY
+					 / BITS_PER_UNIT;
+	  HOST_WIDE_INT low_bound, high_bound;
+
 	  if (size == 0)
 	    size = GET_MODE_SIZE (mode);
-	  if (FRAME_GROWS_DOWNWARD)
+
+	  if (x == frame_pointer_rtx)
 	    {
-	      if (adj_offset < frame_offset || adj_offset + size - 1 >= 0)
-		return 1;
+	      if (FRAME_GROWS_DOWNWARD)
+		{
+		  high_bound = STARTING_FRAME_OFFSET;
+		  low_bound  = high_bound - get_frame_size ();
+		}
+	      else
+		{
+		  low_bound  = STARTING_FRAME_OFFSET;
+		  high_bound = low_bound + get_frame_size ();
+		}
+	    }
+	  else if (x == hard_frame_pointer_rtx)
+	    {
+	      HOST_WIDE_INT sp_offset
+		= get_initial_register_offset (STACK_POINTER_REGNUM,
+					       HARD_FRAME_POINTER_REGNUM);
+	      HOST_WIDE_INT ap_offset
+		= get_initial_register_offset (ARG_POINTER_REGNUM,
+					       HARD_FRAME_POINTER_REGNUM);
+
+#if STACK_GROWS_DOWNWARD
+	      low_bound  = sp_offset - red_zone_size - stack_boundary;
+	      high_bound = ap_offset
+			   + FIRST_PARM_OFFSET (current_function_decl)
+#if !ARGS_GROW_DOWNWARD
+			   + crtl->args.size
+#endif
+			   + stack_boundary;
+#else
+	      high_bound = sp_offset + red_zone_size + stack_boundary;
+	      low_bound  = ap_offset
+			   + FIRST_PARM_OFFSET (current_function_decl)
+#if ARGS_GROW_DOWNWARD
+			   - crtl->args.size
+#endif
+			   - stack_boundary;
+#endif
+	    }
+	  else if (x == stack_pointer_rtx)
+	    {
+	      HOST_WIDE_INT ap_offset
+		= get_initial_register_offset (ARG_POINTER_REGNUM,
+					       STACK_POINTER_REGNUM);
+
+#if STACK_GROWS_DOWNWARD
+	      low_bound  = - red_zone_size - stack_boundary;
+	      high_bound = ap_offset
+			   + FIRST_PARM_OFFSET (current_function_decl)
+#if !ARGS_GROW_DOWNWARD
+			   + crtl->args.size
+#endif
+			   + stack_boundary;
+#else
+	      high_bound = red_zone_size + stack_boundary;
+	      low_bound  = ap_offset
+			   + FIRST_PARM_OFFSET (current_function_decl)
+#if ARGS_GROW_DOWNWARD
+			   - crtl->args.size
+#endif
+			   - stack_boundary;
+#endif
 	    }
 	  else
 	    {
-	      if (adj_offset < 0 || adj_offset + size - 1 >= frame_offset)
-		return 1;
+	      /* We assume that accesses are safe to at least the
+		 next stack boundary.
+		 Examples are varargs and __builtin_return_address.  */
+#if ARGS_GROW_DOWNWARD
+	      high_bound = FIRST_PARM_OFFSET (current_function_decl)
+			   + stack_boundary;
+	      low_bound  = FIRST_PARM_OFFSET (current_function_decl)
+			   - crtl->args.size - stack_boundary;
+#else
+	      low_bound  = FIRST_PARM_OFFSET (current_function_decl)
+			   - stack_boundary;
+	      high_bound = FIRST_PARM_OFFSET (current_function_decl)
+			   + crtl->args.size + stack_boundary;
+#endif
 	    }
-	  return 0;
+
+	  if (offset >= low_bound && offset <= high_bound - size)
+	    return 0;
+	  return 1;
 	}
-      /* ??? Need to add a similar guard for nonsensical offsets.  */
-      if (x == hard_frame_pointer_rtx
-	  || x == stack_pointer_rtx
-	  /* The arg pointer varies if it is not a fixed register.  */
-	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
-	return 0;
       /* All of the virtual frame registers are stack references.  */
       if (REGNO (x) >= FIRST_VIRTUAL_REGISTER
 	  && REGNO (x) <= LAST_VIRTUAL_REGISTER)
