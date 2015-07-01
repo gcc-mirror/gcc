@@ -32,114 +32,86 @@
 
 #if __cplusplus >= 201103L
 
-#include <type_traits> // For _GLIBCXX_HAS_NESTED_TYPE
+#include <type_traits>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-_GLIBCXX_HAS_NESTED_TYPE(element_type)
-_GLIBCXX_HAS_NESTED_TYPE(difference_type)
+  class __undefined;
 
-  template<typename _Tp, bool = __has_element_type<_Tp>::value>
-    struct __ptrtr_elt_type;
+  // Given Template<T, ...> return T, otherwise invalid.
+  template<typename _Tp>
+    struct __get_first_arg
+    { using type = __undefined; };
+
+  template<template<typename, typename...> class _Template, typename _Tp,
+           typename... _Types>
+    struct __get_first_arg<_Template<_Tp, _Types...>>
+    { using type = _Tp; };
 
   template<typename _Tp>
-    struct __ptrtr_elt_type<_Tp, true>
-    {
-      typedef typename _Tp::element_type __type;
-    };
+    using __get_first_arg_t = typename __get_first_arg<_Tp>::type;
 
-  template<template<typename, typename...> class _SomePtr, typename _Tp,
-            typename... _Args>
-    struct __ptrtr_elt_type<_SomePtr<_Tp, _Args...>, false>
-    {
-      typedef _Tp __type;
-    };
+  // Given Template<T, ...> and U return Template<U, ...>, otherwise invalid.
+  template<typename _Tp, typename _Up>
+    struct __replace_first_arg
+    { using type = __undefined; };
 
-  template<typename _Tp, bool = __has_difference_type<_Tp>::value>
-    struct __ptrtr_diff_type
-    {
-      typedef typename _Tp::difference_type __type;
-    };
-
-  template<typename _Tp>
-    struct __ptrtr_diff_type<_Tp, false>
-    {
-      typedef ptrdiff_t __type;
-    };
-
-  template<typename _Ptr, typename _Up>
-    class __ptrtr_rebind_helper
-    {
-      template<typename _Ptr2, typename _Up2>
-	static constexpr true_type
-	_S_chk(typename _Ptr2::template rebind<_Up2>*);
-
-      template<typename, typename>
-	static constexpr false_type
-	_S_chk(...);
-
-    public:
-      using __type = decltype(_S_chk<_Ptr, _Up>(nullptr));
-    };
-
-  template<typename _Tp, typename _Up,
-           bool = __ptrtr_rebind_helper<_Tp, _Up>::__type::value>
-    struct __ptrtr_rebind;
+  template<template<typename, typename...> class _Template, typename _Up,
+           typename _Tp, typename... _Types>
+    struct __replace_first_arg<_Template<_Tp, _Types...>, _Up>
+    { using type = _Template<_Up, _Types...>; };
 
   template<typename _Tp, typename _Up>
-    struct __ptrtr_rebind<_Tp, _Up, true>
-    {
-      typedef typename _Tp::template rebind<_Up> __type;
-    };
-
-  template<template<typename, typename...> class _SomePtr, typename _Up,
-            typename _Tp, typename... _Args>
-    struct __ptrtr_rebind<_SomePtr<_Tp, _Args...>, _Up, false>
-    {
-      typedef _SomePtr<_Up, _Args...> __type;
-    };
-
-  template<typename _Tp, typename = typename remove_cv<_Tp>::type>
-    struct __ptrtr_not_void
-    {
-      typedef _Tp __type;
-    };
+    using __replace_first_arg_t = typename __replace_first_arg<_Tp, _Up>::type;
 
   template<typename _Tp>
-    struct __ptrtr_not_void<_Tp, void>
-    {
-      struct __type { };
-    };
-
-  template<typename _Ptr>
-    class __ptrtr_pointer_to
-    {
-      typedef typename __ptrtr_elt_type<_Ptr>::__type   __orig_type;
-      typedef typename __ptrtr_not_void<__orig_type>::__type __element_type;
-
-    public:
-      static _Ptr pointer_to(__element_type& __e)
-      { return _Ptr::pointer_to(__e); }
-    };
+    using __make_not_void
+      = typename conditional<is_void<_Tp>::value, __undefined, _Tp>::type;
 
   /**
    * @brief  Uniform interface to all pointer-like types
    * @ingroup pointer_abstractions
   */
   template<typename _Ptr>
-    struct pointer_traits : __ptrtr_pointer_to<_Ptr>
+    struct pointer_traits
     {
-      /// The pointer type
-      typedef _Ptr                                      pointer;
-      /// The type pointed to
-      typedef typename __ptrtr_elt_type<_Ptr>::__type   element_type;
-      /// Type used to represent the difference between two pointers
-      typedef typename __ptrtr_diff_type<_Ptr>::__type  difference_type;
+    private:
+      template<typename _Tp>
+	using __element_type = typename _Tp::element_type;
 
+      template<typename _Tp>
+	using __difference_type = typename _Tp::difference_type;
+
+      template<typename _Tp, typename _Up>
+	using __rebind = typename _Tp::template rebind<_Up>;
+
+    public:
+      /// The pointer type.
+      using pointer = _Ptr;
+
+      /// The type pointed to.
+      using element_type
+	= __detected_or_t_<__get_first_arg_t, __element_type, _Ptr>;
+
+      /// The type used to represent the difference between two pointers.
+      using difference_type
+	= __detected_or_t<ptrdiff_t, __difference_type, _Ptr>;
+
+      /// A pointer to a different type.
       template<typename _Up>
-        using rebind = typename __ptrtr_rebind<_Ptr, _Up>::__type;
+        using rebind
+	  = __detected_or_t_<__replace_first_arg_t, __rebind, _Ptr, _Up>;
+
+      static _Ptr
+      pointer_to(__make_not_void<element_type>& __e)
+      { return _Ptr::pointer_to(__e); }
+
+      static_assert(!is_same<element_type, __undefined>::value,
+	  "pointer type defines element_type or is like SomePointer<T, Args>");
+      static_assert(!is_same<rebind<element_type>, __undefined>::value,
+	  "pointer type defines rebind<U> or is like SomePointer<T, Args>");
     };
 
   /**
@@ -165,9 +137,13 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
        *  @return @c addressof(__r)
       */
       static pointer
-      pointer_to(typename __ptrtr_not_void<element_type>::__type& __r) noexcept
+      pointer_to(__make_not_void<element_type>& __r) noexcept
       { return std::addressof(__r); }
     };
+
+  /// Convenience alias for rebinding pointers.
+  template<typename _Ptr, typename _Tp>
+    using __ptr_rebind = typename pointer_traits<_Ptr>::template rebind<_Tp>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -1,5 +1,15 @@
 2015-07-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/ptr_traits.h (__ptrtr_elt_type, __ptrtr_diff_type,
+	__ptrtr_rebind, __ptrtr_not_void): Remove
+	(__get_first_arg, __replace_first_arg, __make_not_void): Define new
+	transformations.
+	(__detected_or_): New detection trait.
+	(pointer_traits): Use new traits.
+	* testsuite/20_util/pointer_traits/pointer_to.cc: Add rebind member.
+	* testsuite/20_util/pointer_traits/requirements/
+	explicit_instantiation.cc: Use valid arguments to pointer_traits.
+
 	* doc/xml/manual/status_cxx2017.xml: Update status table.
 	* include/experimental/type_traits (void_t, is_detected,
 	is_detected_v, detected_t, detected_or, detected_or_t,
