@@ -1,5 +1,15 @@
 2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport from mainline r225248
+	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66700
+	* jit-playback.c (jit_mark_addressable): New function.
+	(gcc::jit::playback::lvalue::get_address): Call
+	jit_mark_addressable on the underlying tree.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport from mainline r225246
 	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
