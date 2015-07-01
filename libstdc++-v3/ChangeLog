@@ -1,3 +1,14 @@
+2015-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* include/experimental/type_traits (void_t, is_detected,
+	is_detected_v, detected_t, detected_or, detected_or_t,
+	is_detected_exact, is_detected_exact_v, is_detected_convertible,
+	is_detected_convertible_v): Define.
+	* include/std/type_traits (__detector, __detected_or, __detected_or_t,
+	__detected_or_t_): Define.
+	* testsuite/experimental/type_traits/detection.cc: New.
+
 2015-06-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/Makefile.am (stamp-pdf-doxygen): Grep for LaTeX errors in log.
