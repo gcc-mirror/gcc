@@ -35,6 +35,10 @@ Params
    In preparation for creating a function, create a new parameter of the
    given type and name.
 
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
+
 Parameters are lvalues, and thus are also rvalues (and objects), so the
 following upcasts are available:
 
@@ -111,6 +115,10 @@ Functions
          above 0; when optimization is off, this is essentially the
          same as GCC_JIT_FUNCTION_INTERNAL.
 
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
+
 .. function::  gcc_jit_function *\
                gcc_jit_context_get_builtin_function (gcc_jit_context *ctxt,\
                                                      const char *name)
@@ -140,6 +148,9 @@ Functions
    Create a new local variable within the function, of the given type and
    name.
 
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
 
 Blocks
 ------
@@ -166,7 +177,17 @@ Blocks
    Create a basic block of the given name.  The name may be NULL, but
    providing meaningful names is often helpful when debugging: it may
    show up in dumps of the internal representation, and in error
-   messages.
+   messages.  It is copied, so the input buffer does not need to outlive
+   the call; you can pass in a pointer to an on-stack buffer, e.g.:
+
+   .. code-block:: c
+
+     for (pc = 0; pc < fn->fn_num_ops; pc++)
+      {
+        char buf[16];
+        sprintf (buf, "instr%i", pc);
+        state.op_blocks[pc] = gcc_jit_function_new_block (state.fn, buf);
+      }
 
 .. function::  gcc_jit_object *\
                gcc_jit_block_as_object (gcc_jit_block *block)
@@ -251,6 +272,17 @@ Statements
    and :macro:`GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE`,
    and thus may be of use when debugging how your project's internal
    representation gets converted to the libgccjit IR.
+
+   The parameter ``text`` must be non-NULL.  It is copied, so the input
+   buffer does not need to outlive the call.  For example:
+
+   .. code-block:: c
+
+     char buf[100];
+     snprintf (buf, sizeof (buf),
+               "op%i: %s",
+               pc, opcode_names[op->op_opcode]);
+     gcc_jit_block_add_comment (block, loc, buf);
 
 .. function:: void\
               gcc_jit_block_end_with_conditional (gcc_jit_block *block,\
