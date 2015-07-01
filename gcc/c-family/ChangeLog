@@ -1,5 +1,9 @@
 2015-07-01  Jason Merrill  <jason@redhat.com>
 
+	* c-common.h (D_CXX11): Rename from D_CXX0X.
+	(RID_FIRST_CXX11, RID_LAST_CXX11): Rename from *_CXX0X.
+	* c-common.c: Adjust.
+
 	* c-opts.c (c_common_post_options): Default to C++14.
 
 	* c-opts.c (c_common_post_options): Highest ABI level is now 10.
