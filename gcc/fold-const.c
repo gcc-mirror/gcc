@@ -8783,23 +8783,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	}
     }
 
-  /* Transform comparisons of the form X - Y CMP 0 to X CMP Y.  */
-  if (TREE_CODE (arg0) == MINUS_EXPR
-      && equality_code
-      && integer_zerop (arg1))
-    {
-      /* ??? The transformation is valid for the other operators if overflow
-	 is undefined for the type, but performing it here badly interacts
-	 with the transformation in fold_cond_expr_with_comparison which
-	 attempts to synthetize ABS_EXPR.  */
-      if (!equality_code)
-	fold_overflow_warning ("assuming signed overflow does not occur "
-			       "when changing X - Y cmp 0 to X cmp Y",
-			       WARN_STRICT_OVERFLOW_COMPARISON);
-      return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0),
-			      TREE_OPERAND (arg0, 1));
-    }
-
   /* For comparisons of pointers we can decompose it to a compile time
      comparison of the base objects and the offsets into the object.
      This requires at least one operand being an ADDR_EXPR or a
@@ -9088,38 +9071,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	}
     }
 
-  /* Transform comparisons of the form X * C1 CMP 0 to X CMP 0 in the
-     signed arithmetic case.  That form is created by the compiler
-     often enough for folding it to be of value.  One example is in
-     computing loop trip counts after Operator Strength Reduction.  */
-  if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
-      && TREE_CODE (arg0) == MULT_EXPR
-      && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-          && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1)))
-      && integer_zerop (arg1))
-    {
-      tree const1 = TREE_OPERAND (arg0, 1);
-      tree const2 = arg1;                       /* zero */
-      tree variable1 = TREE_OPERAND (arg0, 0);
-      enum tree_code cmp_code = code;
-
-      /* Handle unfolded multiplication by zero.  */
-      if (integer_zerop (const1))
-	return fold_build2_loc (loc, cmp_code, type, const1, const2);
-
-      fold_overflow_warning (("assuming signed overflow does not occur when "
-			      "eliminating multiplication in comparison "
-			      "with zero"),
-			     WARN_STRICT_OVERFLOW_COMPARISON);
-
-      /* If const1 is negative we swap the sense of the comparison.  */
-      if (tree_int_cst_sgn (const1) < 0)
-        cmp_code = swap_tree_comparison (cmp_code);
-
-      return fold_build2_loc (loc, cmp_code, type, variable1, const2);
-    }
-
   tem = maybe_canonicalize_comparison (loc, code, type, arg0, arg1);
   if (tem)
     return tem;
@@ -9241,40 +9192,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	return tem;
     }
 
-  /* Simplify comparison of something with itself.  (For IEEE
-     floating-point, we can only do some of these simplifications.)  */
-  if (operand_equal_p (arg0, arg1, 0))
-    {
-      switch (code)
-	{
-	case EQ_EXPR:
-	  if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      || ! HONOR_NANS (arg0))
-	    return constant_boolean_node (1, type);
-	  break;
-
-	case GE_EXPR:
-	case LE_EXPR:
-	  if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      || ! HONOR_NANS (arg0))
-	    return constant_boolean_node (1, type);
-	  return fold_build2_loc (loc, EQ_EXPR, type, arg0, arg1);
-
-	case NE_EXPR:
-	  /* For NE, we can only do this simplification if integer
-	     or we don't honor IEEE floating point NaNs.  */
-	  if (FLOAT_TYPE_P (TREE_TYPE (arg0))
-	      && HONOR_NANS (arg0))
-	    break;
-	  /* ... fall through ...  */
-	case GT_EXPR:
-	case LT_EXPR:
-	  return constant_boolean_node (0, type);
-	default:
-	  gcc_unreachable ();
-	}
-    }
-
   /* If we are comparing an expression that just has comparisons
      of two integer values, arithmetic expressions of those comparisons,
      and constants, we can simplify it.  There are only three cases
@@ -9390,28 +9307,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       tem = fold_div_compare (loc, code, type, arg0, arg1);
       if (tem != NULL_TREE)
 	return tem;
-    }
-
-  /* Fold ~X op ~Y as Y op X.  */
-  if (TREE_CODE (arg0) == BIT_NOT_EXPR
-      && TREE_CODE (arg1) == BIT_NOT_EXPR)
-    {
-      tree cmp_type = TREE_TYPE (TREE_OPERAND (arg0, 0));
-      return fold_build2_loc (loc, code, type,
-			  fold_convert_loc (loc, cmp_type,
-					    TREE_OPERAND (arg1, 0)),
-			  TREE_OPERAND (arg0, 0));
-    }
-
-  /* Fold ~X op C as X op' ~C, where op' is the swapped comparison.  */
-  if (TREE_CODE (arg0) == BIT_NOT_EXPR
-      && (TREE_CODE (arg1) == INTEGER_CST || TREE_CODE (arg1) == VECTOR_CST))
-    {
-      tree cmp_type = TREE_TYPE (TREE_OPERAND (arg0, 0));
-      return fold_build2_loc (loc, swap_tree_comparison (code), type,
-			  TREE_OPERAND (arg0, 0),
-			  fold_build1_loc (loc, BIT_NOT_EXPR, cmp_type,
-				       fold_convert_loc (loc, cmp_type, arg1)));
     }
 
   return NULL_TREE;
