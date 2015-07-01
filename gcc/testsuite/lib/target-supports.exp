@@ -5935,7 +5935,7 @@ proc check_effective_target_c++ { } {
  return 0
 }
 
-set cxx_default "c++98"
+set cxx_default "c++14"
 # Check whether the current active language standard supports the features
 # of C++11/C++14 by checking for the presence of one of the -std flags.
 # This assumes that the default for the compiler is $cxx_default, and that

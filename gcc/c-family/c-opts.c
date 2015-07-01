@@ -889,9 +889,9 @@ c_common_post_options (const char **pfilename)
   if (flag_abi_version == 0)
     flag_abi_version = 10;
 
-  /* Set C++ standard to C++98 if not specified on the command line.  */
+  /* Set C++ standard to C++14 if not specified on the command line.  */
   if (c_dialect_cxx () && cxx_dialect == cxx_unset)
-    set_std_cxx98 (/*ISO*/false);
+    set_std_cxx14 (/*ISO*/false);
 
   if (cxx_dialect >= cxx11)
     {

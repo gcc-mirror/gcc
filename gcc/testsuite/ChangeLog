@@ -1,3 +1,7 @@
+2015-07-01  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (cxx_default): Set to C++14.
+
 2015-07-01  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/66723
