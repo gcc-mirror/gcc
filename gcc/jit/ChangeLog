@@ -1,5 +1,15 @@
 2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
+	Backport from mainline r225204
+	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c
+	(gcc::jit::recording::context::dump_reproducer_to_file):
+	Add pragma to generated reproducers to disable -Wunused-variable.
+	Fix handling of NULL string options.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
 	Backport from mainline r225203
 	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
 
