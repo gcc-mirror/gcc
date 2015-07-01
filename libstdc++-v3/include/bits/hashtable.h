@@ -179,15 +179,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __detail::_Equality<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 				 _H1, _H2, _Hash, _RehashPolicy, _Traits>,
       private __detail::_Hashtable_alloc<
-	typename __alloctr_rebind<_Alloc,
-	  __detail::_Hash_node<_Value,
-			       _Traits::__hash_cached::value> >::__type>
+	__alloc_rebind<_Alloc,
+		       __detail::_Hash_node<_Value,
+					    _Traits::__hash_cached::value>>>
     {
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
       using __node_type = __detail::_Hash_node<_Value, __hash_cached::value>;
-      using __node_alloc_type =
-	typename __alloctr_rebind<_Alloc, __node_type>::__type;
+      using __node_alloc_type = __alloc_rebind<_Alloc, __node_type>;
 
       using __hashtable_alloc = __detail::_Hashtable_alloc<__node_alloc_type>;
 

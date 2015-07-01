@@ -41,6 +41,10 @@ template<typename T>
 template<typename T, bool copy, bool move, bool swap>
   struct test_allocator : minimal_allocator<T>
   {
+    template<typename U>
+      struct rebind
+      { using other = test_allocator<U, copy, move, swap>; };
+
     struct propagate_on_container_copy_assignment
     : std::integral_constant<bool, copy> { };
 
