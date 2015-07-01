@@ -1,3 +1,11 @@
+2015-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/66633
+	* tree-nested.c (convert_nonlocal_omp_clauses): Initialize need_chain
+	to true if the function is nested and if not optimizing.
+	(convert_local_omp_clauses): Initialize need_frame to true if the
+	function contains nested functions and if not optimizing.
+
 2015-07-01  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Move ~X ^ X -> -1 and
