@@ -683,17 +683,20 @@ classify_insn (rtx x)
   if (GET_CODE (x) == PARALLEL)
     {
       int j;
+      bool has_return_p = false;
       for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
 	if (GET_CODE (XVECEXP (x, 0, j)) == CALL)
 	  return CALL_INSN;
 	else if (ANY_RETURN_P (XVECEXP (x, 0, j)))
-	  return JUMP_INSN;
+	  has_return_p = true;
 	else if (GET_CODE (XVECEXP (x, 0, j)) == SET
 		 && GET_CODE (SET_DEST (XVECEXP (x, 0, j))) == PC)
 	  return JUMP_INSN;
 	else if (GET_CODE (XVECEXP (x, 0, j)) == SET
 		 && GET_CODE (SET_SRC (XVECEXP (x, 0, j))) == CALL)
 	  return CALL_INSN;
+      if (has_return_p)
+	return JUMP_INSN;
     }
 #ifdef GENERATOR_FILE
   if (GET_CODE (x) == MATCH_OPERAND
