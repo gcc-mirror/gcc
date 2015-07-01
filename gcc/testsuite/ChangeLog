@@ -1,3 +1,8 @@
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-accessing-union.c: Add comments for use by
+	gcc/jit/docs/topics/types.rst.
+
 2015-07-01  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/arm/armv8-sync-comp-swap.c: Replace

@@ -230,3 +230,22 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
    Populate the fields of a formerly-opaque struct type.
 
    This can only be called once on a given struct type.
+
+.. function:: gcc_jit_type *\
+              gcc_jit_context_new_union_type (gcc_jit_context *ctxt,\
+                                              gcc_jit_location *loc,\
+                                              const char *name,\
+                                              int num_fields,\
+                                              gcc_jit_field **fields)
+
+     Construct a new union type, with the given name and fields.
+
+     The parameter ``name`` must be non-NULL.  It is copied, so the input
+     buffer does not need to outlive the call.
+
+     Example of use:
+
+     .. literalinclude:: ../../../testsuite/jit.dg/test-accessing-union.c
+       :start-after: /* Quote from here in docs/topics/types.rst.  */
+       :end-before: /* Quote up to here in docs/topics/types.rst.  */
+       :language: c
