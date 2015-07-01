@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-g -O0" } */
+/* { dg-options "-g -O0 -fdump-rtl-final" } */
 
 #include <stdarg.h>
 
@@ -22,6 +22,6 @@ f (int a, ...)			/* 8.  */
   return sum;
 }
 
-/* { dg-final { scan-assembler-not "\\.loc 1 \[6789\] 0" } } */
-/* { dg-final { scan-assembler-times "\\.loc 1 18 0" 1 } } */
-/* { dg-final { scan-assembler-times "\\.loc 1 20 0" 1 } } */
+/* { dg-final { scan-rtl-dump-not "vararg-loc\\.c:\[6789\] " "final" } } */
+/* { dg-final { scan-rtl-dump "vararg-loc\\.c:18 " "final" } } */
+/* { dg-final { scan-rtl-dump "vararg-loc\\.c:20 " "final" } } */
