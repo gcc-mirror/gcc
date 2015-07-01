@@ -1,3 +1,9 @@
+2015-07-01  DJ Delorie  <dj@redhat.com>
+
+	* config/s390/tpf.h (LIBSTDCXX): Change to CPP1.
+	(LIB_SPEC): Add.
+	(SUPPORTS_DISCRIMINATOR): Define.
+
 2015-07-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR bootstrap/66685
