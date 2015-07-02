@@ -9350,83 +9350,6 @@ fold_mult_zconjz (location_t loc, tree type, tree expr)
 }
 
 
-/* Subroutine of fold_binary.  If P is the value of EXPR, computes
-   power-of-two M and (arbitrary) N such that M divides (P-N).  This condition
-   guarantees that P and N have the same least significant log2(M) bits.
-   N is not otherwise constrained.  In particular, N is not normalized to
-   0 <= N < M as is common.  In general, the precise value of P is unknown.
-   M is chosen as large as possible such that constant N can be determined.
-
-   Returns M and sets *RESIDUE to N.
-
-   If ALLOW_FUNC_ALIGN is true, do take functions' DECL_ALIGN_UNIT into
-   account.  This is not always possible due to PR 35705.
- */
-
-static unsigned HOST_WIDE_INT
-get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
-				 bool allow_func_align)
-{
-  enum tree_code code;
-
-  *residue = 0;
-
-  code = TREE_CODE (expr);
-  if (code == ADDR_EXPR)
-    {
-      unsigned int bitalign;
-      get_object_alignment_1 (TREE_OPERAND (expr, 0), &bitalign, residue);
-      *residue /= BITS_PER_UNIT;
-      return bitalign / BITS_PER_UNIT;
-    }
-  else if (code == POINTER_PLUS_EXPR)
-    {
-      tree op0, op1;
-      unsigned HOST_WIDE_INT modulus;
-      enum tree_code inner_code;
-
-      op0 = TREE_OPERAND (expr, 0);
-      STRIP_NOPS (op0);
-      modulus = get_pointer_modulus_and_residue (op0, residue,
-						 allow_func_align);
-
-      op1 = TREE_OPERAND (expr, 1);
-      STRIP_NOPS (op1);
-      inner_code = TREE_CODE (op1);
-      if (inner_code == INTEGER_CST)
-	{
-	  *residue += TREE_INT_CST_LOW (op1);
-	  return modulus;
-	}
-      else if (inner_code == MULT_EXPR)
-	{
-	  op1 = TREE_OPERAND (op1, 1);
-	  if (TREE_CODE (op1) == INTEGER_CST)
-	    {
-	      unsigned HOST_WIDE_INT align;
-
-	      /* Compute the greatest power-of-2 divisor of op1.  */
-	      align = TREE_INT_CST_LOW (op1);
-	      align &= -align;
-
-	      /* If align is non-zero and less than *modulus, replace
-		 *modulus with align., If align is 0, then either op1 is 0
-		 or the greatest power-of-2 divisor of op1 doesn't fit in an
-		 unsigned HOST_WIDE_INT.  In either case, no additional
-		 constraint is imposed.  */
-	      if (align)
-		modulus = MIN (modulus, align);
-
-	      return modulus;
-	    }
-	}
-    }
-
-  /* If we get here, we were unable to determine anything useful about the
-     expression.  */
-  return 1;
-}
-
 /* Helper function for fold_vec_perm.  Store elements of VECTOR_CST or
    CONSTRUCTOR ARG into array ELTS and return true if successful.  */
 
@@ -11149,19 +11072,20 @@ fold_binary_loc (location_t loc,
       /* If arg0 is derived from the address of an object or function, we may
 	 be able to fold this expression using the object or function's
 	 alignment.  */
-      if (POINTER_TYPE_P (TREE_TYPE (arg0)) && tree_fits_uhwi_p (arg1))
+      if (POINTER_TYPE_P (TREE_TYPE (arg0)) && TREE_CODE (arg1) == INTEGER_CST)
 	{
-	  unsigned HOST_WIDE_INT modulus, residue;
-	  unsigned HOST_WIDE_INT low = tree_to_uhwi (arg1);
+	  unsigned int align;
+	  unsigned HOST_WIDE_INT bitpos;
 
-	  modulus = get_pointer_modulus_and_residue (arg0, &residue,
-						     integer_onep (arg1));
+	  get_pointer_alignment_1 (arg0, &align, &bitpos);
 
 	  /* This works because modulus is a power of 2.  If this weren't the
 	     case, we'd have to replace it by its greatest power-of-2
 	     divisor: modulus & -modulus.  */
-	  if (low < modulus)
-	    return build_int_cst (type, residue & low);
+	  if (wi::ltu_p (arg1, align / BITS_PER_UNIT))
+	    return wide_int_to_tree (type,
+				     wi::bit_and (arg1,
+						  bitpos / BITS_PER_UNIT));
 	}
 
       goto associate;
