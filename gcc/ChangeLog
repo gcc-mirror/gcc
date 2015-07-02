@@ -3,6 +3,15 @@
 	Backport from mainline
 	2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_vector_bool_type_p): New function.
+	(s390_invalid_binary_op): New function.
+	(TARGET_INVALID_BINARY_OP): Define macro.
+
+2015-07-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config.gcc: Add vecintrin.h to extra_headers.  Add s390-c.o to
 	c_target_objs and cxx_target_objs.  Add t-s390 to tmake_file.
 	* config/s390/s390-builtin-types.def: New file.
