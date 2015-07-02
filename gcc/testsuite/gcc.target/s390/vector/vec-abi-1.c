@@ -6,6 +6,7 @@
 /* Make sure the last argument is fetched from the argument overflow area.  */
 /* { dg-final { scan-assembler "vl\t%v\[0-9\]*,160\\(%r15\\)" { target lp64 } } } */
 /* { dg-final { scan-assembler "vl\t%v\[0-9\]*,96\\(%r15\\)" { target ilp32 } } } */
+/* { dg-final { scan-assembler "gnu_attribute 8, 2" } } */
 
 typedef double v2df __attribute__((vector_size(16)));
 
