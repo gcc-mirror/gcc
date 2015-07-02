@@ -1,3 +1,8 @@
+2015-07-02  Andrew Sutton  <andrew.n.sutton@gmail.com>
+
+	* pt.c (type_dependent_expression_p): Handle expressions
+	that refer to variable templates.
+
 2015-07-01  Jason Merrill  <jason@redhat.com>
 
 	* lex.c (init_reswords): s/CXX0X/CXX11/.
