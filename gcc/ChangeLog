@@ -1,3 +1,13 @@
+2015-07-02  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (get_pointer_alignment_1): Handle POINTER_PLUS_EXPR.
+	* fold-const.c (get_pointer_modulus_and_residue): Remove.
+	(fold_binary_loc): Implement (T)ptr & CST in terms of
+	get_pointer_alignment_1.
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop):
+	Make sure to build the alignment test on a SSA name without
+	final alignment info valid only after the prologue.
+
 2015-07-02  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md ("epilogue"): Remove condition.
