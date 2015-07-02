@@ -1,3 +1,10 @@
+2015-07-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libsupc++/guard.cc (__test_and_acquire): Use __p after __atomic_load
+	to avoid unused variable warning.
+	(__set_and_release): Use __p after __atomic_store to avoid unused
+	variable warning.
+
 2015-07-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h (__alloctr_rebind): Remove.
