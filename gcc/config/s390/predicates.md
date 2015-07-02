@@ -24,16 +24,20 @@
 
 ;; operands --------------------------------------------------------------
 
-;; Return true if OP a (const_int 0) operand.
-
+;; Return true if OP a const 0 operand (int/float/vector).
 (define_predicate "const0_operand"
-  (and (match_code "const_int, const_double")
+  (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
+
+;; Return true if OP an all ones operand (int/float/vector).
+(define_predicate "constm1_operand"
+  (and (match_code "const_int, const_double,const_vector")
+       (match_test "op == CONSTM1_RTX (mode)")))
 
 ;; Return true if OP is constant.
 
 (define_special_predicate "consttable_operand"
-  (and (match_code "symbol_ref, label_ref, const, const_int, const_double")
+  (and (match_code "symbol_ref, label_ref, const, const_int, const_double, const_vector")
        (match_test "CONSTANT_P (op)")))
 
 ;; Return true if OP is a valid S-type operand.
