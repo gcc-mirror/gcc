@@ -3,6 +3,14 @@
 	Backport from mainline
 	2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* lib/target-supports.exp: Vector do not always have natural
+	alignment on s390*.
+
+2015-07-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.dg/tree-ssa/gen-vect-11b.c: Disable vector
 	instructions on s390*.
 	* gcc.dg/tree-ssa/gen-vect-11c.c: Likewise.

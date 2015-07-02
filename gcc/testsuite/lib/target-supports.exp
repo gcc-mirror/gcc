@@ -4348,7 +4348,8 @@ proc check_effective_target_vect_natural_alignment { } {
     } else {
         set et_vect_natural_alignment_saved 1
         if { [check_effective_target_arm_eabi]
-	     || [istarget nvptx-*-*] } {
+	     || [istarget nvptx-*-*]
+	     || [istarget s390*-*-*] } {
             set et_vect_natural_alignment_saved 0
         }
     }
