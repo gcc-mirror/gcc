@@ -716,6 +716,67 @@ cleanup:
 }
 
 
+/* Match a SUBMODULE statement.  */
+
+match
+gfc_match_submodule (void)
+{
+  match m;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_use_list *use_list;
+
+  if (!gfc_notify_std (GFC_STD_F2008, "SUBMODULE declaration at %C"))
+    return MATCH_ERROR;
+
+  gfc_new_block = NULL;
+  gcc_assert (module_list == NULL);
+
+  if (gfc_match_char ('(') != MATCH_YES)
+    goto syntax;
+
+  while (1)
+    {
+      m = gfc_match (" %n", name);
+      if (m != MATCH_YES)
+	goto syntax;
+
+      use_list = gfc_get_use_list ();
+      use_list->module_name = gfc_get_string (name);
+      use_list->where = gfc_current_locus;
+
+      if (module_list)
+	{
+	  gfc_use_list *last = module_list;
+	  while (last->next)
+	    last = last->next;
+	  last->next = use_list;
+	}
+      else
+	module_list = use_list;
+
+      if (gfc_match_char (')') == MATCH_YES)
+	break;
+
+      if (gfc_match_char (':') != MATCH_YES)
+	goto syntax;
+    }
+
+  m = gfc_match (" %s%t", &gfc_new_block);
+  if (m != MATCH_YES)
+    goto syntax;
+
+  if (!gfc_add_flavor (&gfc_new_block->attr, FL_MODULE,
+		       gfc_new_block->name, NULL))
+    return MATCH_ERROR;
+
+  return MATCH_YES;
+
+syntax:
+  gfc_error ("Syntax error in SUBMODULE statement at %C");
+  return MATCH_ERROR;
+}
+
+
 /* Given a name and a number, inst, return the inst name
    under which to load this symbol. Returns NULL if this
    symbol shouldn't be loaded. If inst is zero, returns
@@ -1887,7 +1948,7 @@ typedef enum
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
   AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY, AB_OMP_DECLARE_TARGET,
-  AB_ARRAY_OUTER_DEPENDENCY
+  AB_ARRAY_OUTER_DEPENDENCY, AB_MODULE_PROCEDURE
 }
 ab_attribute;
 
@@ -1944,6 +2005,7 @@ static const mstring attr_bits[] =
     minit ("UNLIMITED_POLY", AB_UNLIMITED_POLY),
     minit ("OMP_DECLARE_TARGET", AB_OMP_DECLARE_TARGET),
     minit ("ARRAY_OUTER_DEPENDENCY", AB_ARRAY_OUTER_DEPENDENCY),
+    minit ("MODULE_PROCEDURE", AB_MODULE_PROCEDURE),
     minit (NULL, -1)
 };
 
@@ -2126,6 +2188,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_TARGET, attr_bits);
       if (attr->array_outer_dependency)
 	MIO_NAME (ab_attribute) (AB_ARRAY_OUTER_DEPENDENCY, attr_bits);
+      if (attr->module_procedure)
+	MIO_NAME (ab_attribute) (AB_MODULE_PROCEDURE, attr_bits);
 
       mio_rparen ();
 
@@ -2294,6 +2358,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_ARRAY_OUTER_DEPENDENCY:
 	      attr->array_outer_dependency =1;
+	      break;
+	    case AB_MODULE_PROCEDURE:
+	      attr->module_procedure =1;
 	      break;
 	    }
 	}
@@ -6757,8 +6824,10 @@ gfc_use_module (gfc_use_list *module)
 
   /* Make sure we're not reading the same module that we may be building.  */
   for (p = gfc_state_stack; p; p = p->previous)
-    if (p->state == COMP_MODULE && strcmp (p->sym->name, module_name) == 0)
-      gfc_fatal_error ("Can't USE the same module we're building!");
+    if ((p->state == COMP_MODULE || p->state == COMP_SUBMODULE)
+	 && strcmp (p->sym->name, module_name) == 0)
+      gfc_fatal_error ("Can't USE the same %smodule we're building!",
+		       p->state == COMP_SUBMODULE ? "sub" : "");
 
   init_pi_tree ();
   init_true_name_tree ();

@@ -1,3 +1,84 @@
+2015-07-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52846
+	* decl.c (get_proc_name): Make a partially populated interface
+	symbol to carry the characteristics of a module procedure and
+	its result.
+	(variable_decl): Declarations of dummies or results in the
+	abreviated form of module procedure is an error.
+	(gfc_match_import): IMPORT is not permitted in the interface
+	declaration of module procedures.
+	(match_attr_spec): Submodule variables have implicit save
+	attribute for F2008 onwards.
+	(gfc_match_prefix): Add 'module' as the a prefix and set the
+	module_procedure attribute.
+	(gfc_match_formal_arglist): For a module procedure keep the
+	interface formal_arglist from the interface, match new the
+	formal arguments and then compare the number and names of each.
+	(gfc_match_procedure): Add case COMP_SUBMODULE.
+	(gfc_match_function_decl, gfc_match_subroutine_decl): Set the
+	module_procedure attribute.
+	(gfc_match_entry, gfc_match_end):  Add case COMP_SUBMODULE. If
+	attr abr_modproc_decl is set, switch the message accordingly
+	for subroutines and functions.
+	(gfc_match_submod_proc): New function to match the abbreviated
+	style of submodule declaration.
+	* gfortran.h : Add ST_SUBMODULE and ST_END_SUBMODULE. Add the
+	attribute bits 'used_in_submodule' and 'module_procedure'. Add
+	the bit field 'abr_modproc_decl' to gfc_symbol. Add prototypes
+	for 'gfc_copy_dummy_sym', 'gfc_check_dummy_characteristics' and
+	'gfc_check_result_characteristics'.
+	* interface.c : Add the prefix 'gfc_' to the names of functions
+	'check_dummy(result)_characteristics' and all their references.
+	* match.h : Add prototype for 'gfc_match_submod_proc' and
+	'gfc_match_submodule'.
+	(check_sym_interfaces): A module procedure is not an error in
+	a module procedure statment in a generic interface.
+	* module.c (gfc_match_submodule): New function. Add handling
+	for the 'module_procedure' attribute bit.
+	(gfc_use_module): Make sure that a submodule cannot use itself.
+	* parse.c (decode_statement): Set attr has_'import_set' for
+	the interface declaration of module procedures. Handle a match
+	occurring in 'gfc_match_submod_proc' and a match for
+	'submodule'.
+	(gfc_enclosing_unit): Include the state COMP_SUBMODULE.
+	(gfc_ascii_statement): Add END SUBMODULE.
+	(accept_statement): Add ST_SUBMODULE.
+	(parse_spec): Disallow statement functions in a submodule
+	specification part.
+	(parse_contained): Add ST_END_SUBMODULE and COMP_SUBMODULE
+	twice each.
+	(get_modproc_result): Copy the result symbol of the interface.
+	(parse_progunit): Call it.
+	(set_syms_host_assoc): Make symbols from the ancestor module
+	and submodules use associated, as required by the standard and
+	set all private components public. Module procedures 'external'
+	attribute bit is reset and the 'used_in_submodule' bit is set.
+	(parse_module): If this is a submodule, use the ancestor module
+	and submodules. Traverse the namespace, calling
+	'set_syms_host_assoc'. Add ST_END_SUBMODULE and COMP_SUBMODULE.
+	* parse.h : Add COMP_SUBMODULE.
+	* primary.c (match_variable): Add COMP_SUBMODULE.
+	* resolve.c (compare_fsyms): New function to compare the dummy
+	characteristics of a module procedure with its interface.
+	(resolve_fl_procedure): Compare the procedure, result and dummy
+	characteristics of a module_procedure with its interface, using
+	'compare_fsyms' for the dummy arguments.
+	* symbol.c (gfc_add_procedure): Suppress the check for existing
+	procedures in the case of a module procedure.
+	(gfc_add_explicit_interface): Skip checks that must fail for
+	module procedures.
+	(gfc_add_type): Allow a new type to be added to module
+	procedures, their results or their dummy arguments.
+	(gfc_copy_dummy_sym): New function to generate new dummy args
+	and copy the characteristics from the interface.
+	* trans-decl.c (gfc_sym_mangled_function_id): Module procedures
+	must always have their names mangled as if they are symbols
+	coming from a declaration in a module.
+	(gfc_get_symbol_decl): Add 'used_in_submodule' to the assert.
+	(gfc_finish_var_decl): Symbols with the 'used_in_submodule' bit
+	set are set DECL_EXTERNAL as if they were use associated.
+
 2015-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/56520
@@ -98,7 +179,7 @@
 	the source expression is an array-constructor which is
 	fixed to be one-based.
 	(retrieve_last_ref): Extracted from gfc_array_allocate().
-	(gfc_array_allocate): Enable allocate(array, source= 
+	(gfc_array_allocate): Enable allocate(array, source=
 	array_expression) as specified by F2008:C633.
 	(gfc_conv_expr_descriptor): Add class tree expression
 	into the saved descriptor for class arrays.

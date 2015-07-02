@@ -11431,6 +11431,32 @@ no_init_error:
 }
 
 
+/* Compare the dummy characteristics of a module procedure interface
+   declaration with the corresponding declaration in a submodule.  */
+static gfc_formal_arglist *new_formal;
+static char errmsg[200];
+
+static void
+compare_fsyms (gfc_symbol *sym)
+{
+  gfc_symbol *fsym;
+
+  if (sym == NULL || new_formal == NULL)
+    return;
+
+  fsym = new_formal->sym;
+
+  if (sym == fsym)
+    return;
+
+  if (strcmp (sym->name, fsym->name) == 0)
+    {
+      if (!gfc_check_dummy_characteristics (fsym, sym, true, errmsg, 200))
+	gfc_error ("%s at %L", errmsg, &fsym->declared_at);
+    }
+}
+
+
 /* Resolve a procedure.  */
 
 static bool
@@ -11695,6 +11721,71 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
   if (sym->attr.if_source != IFSRC_DECL)
     sym->attr.array_outer_dependency = 1;
 
+  /* Compare the characteristics of a module procedure with the
+     interface declaration. Ideally this would be done with
+     gfc_compare_interfaces but, at present, the formal interface
+     cannot be copied to the ts.interface.  */
+  if (sym->attr.module_procedure
+      && sym->attr.if_source == IFSRC_DECL)
+    {
+      gfc_symbol *iface;
+
+      /* Stop the dummy characteristics test from using the interface
+	 symbol instead of 'sym'.  */
+      iface = sym->ts.interface;
+      sym->ts.interface = NULL;
+
+      if (iface == NULL)
+	goto check_formal;
+
+      /* Check the procedure characteristics.  */
+      if (sym->attr.pure != iface->attr.pure)
+	{
+	  gfc_error ("Mismatch in PURE attribute between MODULE "
+		     "PROCEDURE at %L and its interface in %s",
+		     &sym->declared_at, iface->module);
+	  return false;
+	}
+
+      if (sym->attr.elemental != iface->attr.elemental)
+	{
+	  gfc_error ("Mismatch in ELEMENTAL attribute between MODULE "
+		     "PROCEDURE at %L and its interface in %s",
+		     &sym->declared_at, iface->module);
+	  return false;
+	}
+
+      if (sym->attr.recursive != iface->attr.recursive)
+	{
+	  gfc_error ("Mismatch in RECURSIVE attribute between MODULE "
+		     "PROCEDURE at %L and its interface in %s",
+		     &sym->declared_at, iface->module);
+	  return false;
+	}
+
+      /* Check the result characteristics.  */
+      if (!gfc_check_result_characteristics (sym, iface, errmsg, 200))
+	{
+	  gfc_error ("%s between the MODULE PROCEDURE declaration "
+		     "in module %s and the declaration at %L in "
+		     "SUBMODULE %s", errmsg, iface->module,
+		     &sym->declared_at, sym->ns->proc_name->name);
+	  return false;
+	}
+
+check_formal:
+      /* Check the charcateristics of the formal arguments.  */
+      if (sym->formal && sym->formal_ns)
+	{
+	  for (arg = sym->formal; arg && arg->sym; arg = arg->next)
+	    {
+	      new_formal = arg;
+	      gfc_traverse_ns (sym->formal_ns, compare_fsyms);
+	    }
+	}
+
+      sym->ts.interface = iface;
+    }
   return true;
 }
 
