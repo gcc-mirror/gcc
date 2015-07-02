@@ -3518,14 +3518,12 @@
 
 (define_expand "prologue"
   [(const_int 0)]
-  "TARGET_PROLOGUE_EPILOGUE"
+  ""
   "cris_expand_prologue (); DONE;")
 
-;; Note that the (return) from the expander itself is always the last
-;; insn in the epilogue.
 (define_expand "epilogue"
   [(const_int 0)]
-  "TARGET_PROLOGUE_EPILOGUE"
+  ""
   "cris_expand_epilogue (); DONE;")
 
 ;; Conditional branches.

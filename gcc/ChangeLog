@@ -1,3 +1,8 @@
+2015-07-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("epilogue"): Remove condition.
+	("prologue"): Ditto.
+
 2015-07-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-dom.c (build_and_record_new_cond): Add optional
