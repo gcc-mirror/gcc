@@ -1,3 +1,8 @@
+2015-07-02  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/vect/vect-strided-a-u16-i4.c (main1): Narrow scope of x,y,z,w.
+	* gcc.dg/vect/vect-ifcvt-11.c: New testcase.
+
 2015-07-02  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/66719
