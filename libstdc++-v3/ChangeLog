@@ -1,3 +1,9 @@
+2015-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wstring_convert): Use __cxx11 inline
+	namespace in new ABI.
+	(wstring_convert::_M_conv): Handle empty range.
+
 2015-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_bvector.h (vector<bool>::vector()): Add noexcept.
