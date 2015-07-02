@@ -903,7 +903,35 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 
   sym = *result;
 
-  if (sym && !sym->gfc_new && gfc_current_state () != COMP_INTERFACE)
+  if (sym->attr.module_procedure
+      && sym->attr.if_source == IFSRC_IFBODY)
+    {
+      /* Create a partially populated interface symbol to carry the
+	 characteristics of the procedure and the result.  */
+      sym->ts.interface = gfc_new_symbol (name, sym->ns);
+      gfc_add_type (sym->ts.interface, &(sym->ts),
+		    &gfc_current_locus);
+      gfc_copy_attr (&sym->ts.interface->attr, &sym->attr, NULL);
+      if (sym->attr.dimension)
+	sym->ts.interface->as = gfc_copy_array_spec (sym->as);
+
+      /* Ideally, at this point, a copy would be made of the formal
+	 arguments and their namespace. However, this does not appear
+	 to be necessary, albeit at the expense of not being able to
+	 use gfc_compare_interfaces directly.  */
+
+      if (sym->result && sym->result != sym)
+	{
+	  sym->ts.interface->result = sym->result;
+	  sym->result = NULL;
+	}
+      else if (sym->result)
+	{
+	  sym->ts.interface->result = sym->ts.interface;
+	}
+    }
+  else if (sym && !sym->gfc_new
+	   && gfc_current_state () != COMP_INTERFACE)
     {
       /* Trap another encompassed procedure with the same name.  All
 	 these conditions are necessary to avoid picking up an entry
@@ -1914,6 +1942,23 @@ variable_decl (int elem)
 	  break;
 
 	case MATCH_ERROR:
+	  goto cleanup;
+	}
+    }
+
+  /* The dummy arguments and result of the abreviated form of MODULE
+     PROCEDUREs, used in SUBMODULES should not be redefined.  */
+  if (gfc_current_ns->proc_name
+      && gfc_current_ns->proc_name->abr_modproc_decl)
+    {
+      gfc_find_symbol (name, gfc_current_ns, 1, &sym);
+      if (sym != NULL && (sym->attr.dummy || sym->attr.result))
+	{
+	  m = MATCH_ERROR;
+	  gfc_error ("'%s' at %C is a redefinition of the declaration "
+		     "in the corresponding interface for MODULE "
+		     "PROCEDURE '%s'", sym->name,
+		     gfc_current_ns->proc_name->name);
 	  goto cleanup;
 	}
     }
@@ -3262,6 +3307,13 @@ gfc_match_import (void)
       return MATCH_ERROR;
     }
 
+  if (gfc_current_ns->proc_name->attr.module_procedure)
+    {
+      gfc_error ("F2008: C1210 IMPORT statement at %C is not permitted "
+		 "in a module procedure interface body");
+      return MATCH_ERROR;
+    }
+
   if (!gfc_notify_std (GFC_STD_F2003, "IMPORT statement at %C"))
     return MATCH_ERROR;
 
@@ -3925,7 +3977,9 @@ match_attr_spec (void)
     }
 
   /* Since Fortran 2008 module variables implicitly have the SAVE attribute.  */
-  if (gfc_current_state () == COMP_MODULE && !current_attr.save
+  if ((gfc_current_state () == COMP_MODULE
+       || gfc_current_state () == COMP_SUBMODULE)
+      && !current_attr.save
       && (gfc_option.allow_std & GFC_STD_F2008) != 0)
     current_attr.save = SAVE_IMPLICIT;
 
@@ -4513,6 +4567,22 @@ gfc_match_prefix (gfc_typespec *ts)
 
   /* At this point, the next item is not a prefix.  */
   gcc_assert (gfc_matching_prefix);
+
+  /* MODULE should be the last prefix before FUNCTION or SUBROUTINE.
+     Since this is a prefix like PURE, ELEMENTAL, etc., having a
+     corresponding attribute seems natural and distinguishes these
+     procedures from procedure types of PROC_MODULE, which these are
+     as well.  */
+  if ((gfc_current_state () == COMP_INTERFACE
+       || gfc_current_state () == COMP_CONTAINS)
+      && gfc_match ("module% ") == MATCH_YES)
+    {
+      if (!gfc_notify_std (GFC_STD_F2008, "MODULE prefix at %C"))
+	goto error;
+      else
+	current_attr.module_procedure = 1;
+    }
+
   gfc_matching_prefix = false;
   return MATCH_YES;
 
@@ -4550,8 +4620,23 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag, int null_flag)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
   match m;
+  gfc_formal_arglist *formal = NULL;
 
   head = tail = NULL;
+
+  /* Keep the interface formal argument list and null it so that the
+     matching for the new declaration can be done.  The numbers and
+     names of the arguments are checked here. The interface formal
+     arguments are retained in formal_arglist and the characteristics
+     are compared in resolve.c(resolve_fl_procedure).  See the remark
+     in get_proc_name about the eventual need to copy the formal_arglist
+     and populate the formal namespace of the interface symbol.  */
+  if (progname->attr.module_procedure
+      && progname->attr.host_assoc)
+    {
+      formal = progname->formal;
+      progname->formal = NULL;
+    }
 
   if (gfc_match_char ('(') != MATCH_YES)
     {
@@ -4656,6 +4741,24 @@ ok:
     {
       m = MATCH_ERROR;
       goto cleanup;
+    }
+
+  if (formal)
+    {
+      for (p = formal, q = head; p && q; p = p->next, q = q->next)
+	{
+	  if ((p->next != NULL && q->next == NULL)
+	      || (p->next == NULL && q->next != NULL))
+	    gfc_error_now ("Mismatch in number of MODULE PROCEDURE "
+		           "formal arguments at %C");
+	  else if ((p->sym == NULL && q->sym == NULL)
+		    || strcmp (p->sym->name, q->sym->name) == 0)
+	    continue;
+	  else
+	    gfc_error_now ("Mismatch in MODULE PROCEDURE formal "
+			   "argument names (%s/%s) at %C",
+			   p->sym->name, q->sym->name);
+	}
     }
 
   return MATCH_YES;
@@ -5271,6 +5374,7 @@ gfc_match_procedure (void)
     case COMP_NONE:
     case COMP_PROGRAM:
     case COMP_MODULE:
+    case COMP_SUBMODULE:
     case COMP_SUBROUTINE:
     case COMP_FUNCTION:
     case COMP_BLOCK:
@@ -5309,7 +5413,8 @@ do_warn_intrinsic_shadow (const gfc_symbol* sym, bool func)
   bool in_module;
 
   in_module = (gfc_state_stack->previous
-	       && gfc_state_stack->previous->state == COMP_MODULE);
+	       && (gfc_state_stack->previous->state == COMP_MODULE
+		   || gfc_state_stack->previous->state == COMP_SUBMODULE));
 
   gfc_warn_intrinsic_shadow (sym, in_module, func);
 }
@@ -5348,11 +5453,15 @@ gfc_match_function_decl (void)
       gfc_current_locus = old_loc;
       return MATCH_NO;
     }
+
   if (get_proc_name (name, &sym, false))
     return MATCH_ERROR;
 
   if (add_hidden_procptr_result (sym))
     sym = sym->result;
+
+  if (current_attr.module_procedure)
+    sym->attr.module_procedure = 1;
 
   gfc_new_block = sym;
 
@@ -5546,6 +5655,9 @@ gfc_match_entry (void)
 	    break;
 	  case COMP_MODULE:
 	    gfc_error ("ENTRY statement at %C cannot appear within a MODULE");
+	    break;
+	  case COMP_SUBMODULE:
+	    gfc_error ("ENTRY statement at %C cannot appear within a SUBMODULE");
 	    break;
 	  case COMP_BLOCK_DATA:
 	    gfc_error ("ENTRY statement at %C cannot appear within "
@@ -5790,6 +5902,9 @@ gfc_match_subroutine (void)
   /* Set declared_at as it might point to, e.g., a PUBLIC statement, if
      the symbol existed before.  */
   sym->declared_at = gfc_current_locus;
+
+  if (current_attr.module_procedure)
+    sym->attr.module_procedure = 1;
 
   if (add_hidden_procptr_result (sym))
     sym = sym->result;
@@ -6114,6 +6229,7 @@ gfc_match_end (gfc_statement *st)
   match m;
   gfc_namespace *parent_ns, *ns, *prev_ns;
   gfc_namespace **nsp;
+  bool abreviated_modproc_decl;
 
   old_loc = gfc_current_locus;
   if (gfc_match ("end") != MATCH_YES)
@@ -6142,6 +6258,10 @@ gfc_match_end (gfc_statement *st)
       break;
     }
 
+  abreviated_modproc_decl
+	= gfc_current_block ()
+	  && gfc_current_block ()->abr_modproc_decl;
+
   switch (state)
     {
     case COMP_NONE:
@@ -6153,13 +6273,19 @@ gfc_match_end (gfc_statement *st)
 
     case COMP_SUBROUTINE:
       *st = ST_END_SUBROUTINE;
+      if (!abreviated_modproc_decl)
       target = " subroutine";
+      else
+	target = " procedure";
       eos_ok = !contained_procedure ();
       break;
 
     case COMP_FUNCTION:
       *st = ST_END_FUNCTION;
+      if (!abreviated_modproc_decl)
       target = " function";
+      else
+	target = " procedure";
       eos_ok = !contained_procedure ();
       break;
 
@@ -6172,6 +6298,12 @@ gfc_match_end (gfc_statement *st)
     case COMP_MODULE:
       *st = ST_END_MODULE;
       target = " module";
+      eos_ok = 1;
+      break;
+
+    case COMP_SUBMODULE:
+      *st = ST_END_SUBMODULE;
+      target = " submodule";
       eos_ok = 1;
       break;
 
@@ -6259,7 +6391,8 @@ gfc_match_end (gfc_statement *st)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2008, "END statement "
 			       "instead of %s statement at %L", 
-			       gfc_ascii_statement(*st), &old_loc))
+			       abreviated_modproc_decl ? "END PROCEDURE"
+			       : gfc_ascii_statement(*st), &old_loc))
 	    goto cleanup;
 	}
       else if (!eos_ok)
@@ -6276,8 +6409,8 @@ gfc_match_end (gfc_statement *st)
   /* Verify that we've got the sort of end-block that we're expecting.  */
   if (gfc_match (target) != MATCH_YES)
     {
-      gfc_error ("Expecting %s statement at %L", gfc_ascii_statement (*st),
-		 &old_loc);
+      gfc_error ("Expecting %s statement at %L", abreviated_modproc_decl
+		 ? "END PROCEDURE" : gfc_ascii_statement(*st), &old_loc);
       goto cleanup;
     }
 
@@ -7413,6 +7546,99 @@ gfc_match_asynchronous (void)
 
 syntax:
   gfc_error ("Syntax error in ASYNCHRONOUS statement at %C");
+  return MATCH_ERROR;
+}
+
+
+/* Match a module procedure statement in a submodule.  */
+
+match
+gfc_match_submod_proc (void)
+{
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symbol *sym, *fsym;
+  match m;
+  gfc_formal_arglist *formal, *head, *tail;
+
+  if (gfc_current_state () != COMP_CONTAINS
+      || !(gfc_state_stack->previous
+	   && gfc_state_stack->previous->state == COMP_SUBMODULE))
+    return MATCH_NO;
+
+  m = gfc_match (" module% procedure% %n", name);
+  if (m != MATCH_YES)
+    return m;
+
+  if (!gfc_notify_std (GFC_STD_F2008, "MODULE PROCEDURE declaration "
+				      "at %C"))
+    return MATCH_ERROR;
+
+  if (get_proc_name (name, &sym, false))
+    return MATCH_ERROR;
+
+  /* Make sure that the result field is appropriately filled, even though
+     the result symbol will be replaced later on.  */
+  if (sym->ts.interface->attr.function)
+    {
+      if (sym->ts.interface->result
+	  && sym->ts.interface->result != sym->ts.interface)
+	sym->result= sym->ts.interface->result;
+      else
+	sym->result = sym;
+    }
+
+  /* Set declared_at as it might point to, e.g., a PUBLIC statement, if
+     the symbol existed before.  */
+  sym->declared_at = gfc_current_locus;
+
+  if (!sym->attr.module_procedure)
+    return MATCH_ERROR;
+
+  /* Signal match_end to expect "end procedure".  */
+  sym->abr_modproc_decl = 1;
+
+  /* Change from IFSRC_IFBODY coming from the interface declaration.  */
+  sym->attr.if_source = IFSRC_DECL;
+
+  gfc_new_block = sym;
+
+  /* Make a new formal arglist with the symbols in the procedure
+      namespace.  */
+  head = tail = NULL;
+  for (formal = sym->formal; formal && formal->sym; formal = formal->next)
+    {
+      if (formal == sym->formal)
+	head = tail = gfc_get_formal_arglist ();
+      else
+	{
+	  tail->next = gfc_get_formal_arglist ();
+	  tail = tail->next;
+	}
+
+      if (gfc_copy_dummy_sym (&fsym, formal->sym, 0))
+	goto cleanup;
+
+      tail->sym = fsym;
+      gfc_set_sym_referenced (fsym);
+    }
+
+  /* The dummy symbols get cleaned up, when the formal_namespace of the
+     interface declaration is cleared.  This allows us to add the
+     explicit interface as is done for other type of procedure.  */
+  if (!gfc_add_explicit_interface (sym, IFSRC_DECL, head,
+				   &gfc_current_locus))
+    return MATCH_ERROR;
+
+  if (gfc_match_eos () != MATCH_YES)
+    {
+      gfc_syntax_error (ST_MODULE_PROC);
+      return MATCH_ERROR;
+    }
+
+  return MATCH_YES;
+
+cleanup:
+  gfc_free_formal_arglist (head);
   return MATCH_ERROR;
 }
 

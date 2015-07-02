@@ -377,9 +377,10 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
     /* use the binding label rather than the mangled name */
     return get_identifier (sym->binding_label);
 
-  if (sym->module == NULL || sym->attr.proc == PROC_EXTERNAL
+  if ((sym->module == NULL || sym->attr.proc == PROC_EXTERNAL
       || (sym->module != NULL && (sym->attr.external
 	    || sym->attr.if_source == IFSRC_IFBODY)))
+      && !sym->attr.module_procedure)
     {
       /* Main program is mangled into MAIN__.  */
       if (sym->attr.is_main_program)
@@ -599,7 +600,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
     }
 
   /* If a variable is USE associated, it's always external.  */
-  if (sym->attr.use_assoc)
+  if (sym->attr.use_assoc || sym->attr.used_in_submodule)
     {
       DECL_EXTERNAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;
@@ -1319,6 +1320,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   gcc_assert (sym->attr.referenced
 	      || sym->attr.flavor == FL_PROCEDURE
 	      || sym->attr.use_assoc
+	      || sym->attr.used_in_submodule
 	      || sym->ns->proc_name->attr.if_source == IFSRC_IFBODY
 	      || (sym->module && sym->attr.if_source != IFSRC_DECL
 		  && sym->backend_decl));

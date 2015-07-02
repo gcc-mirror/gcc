@@ -1066,9 +1066,10 @@ symbol_rank (gfc_symbol *sym)
 /* Check if the characteristics of two dummy arguments match,
    cf. F08:12.3.2.  */
 
-static bool
-check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
-			     bool type_must_agree, char *errmsg, int err_len)
+bool
+gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
+				 bool type_must_agree, char *errmsg,
+				 int err_len)
 {
   if (s1 == NULL || s2 == NULL)
     return s1 == s2 ? true : false;
@@ -1275,8 +1276,8 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 /* Check if the characteristics of two function results match,
    cf. F08:12.3.3.  */
 
-static bool
-check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
+bool
+gfc_check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 			      char *errmsg, int err_len)
 {
   gfc_symbol *r1, *r2;
@@ -1472,8 +1473,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
       if (s1->attr.function && s2->attr.function)
 	{
 	  /* If both are functions, check result characteristics.  */
-	  if (!check_result_characteristics (s1, s2, errmsg, err_len)
-	      || !check_result_characteristics (s2, s1, errmsg, err_len))
+	  if (!gfc_check_result_characteristics (s1, s2, errmsg, err_len)
+	      || !gfc_check_result_characteristics (s2, s1, errmsg, err_len))
 	    return 0;
 	}
 
@@ -1533,7 +1534,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	if (strict_flag)
 	  {
 	    /* Check all characteristics.  */
-	    if (!check_dummy_characteristics (f1->sym, f2->sym, true, 
+	    if (!gfc_check_dummy_characteristics (f1->sym, f2->sym, true,
 					      errmsg, err_len))
 	      return 0;
 	  }
@@ -1710,6 +1711,7 @@ check_sym_interfaces (gfc_symbol *sym)
       for (p = sym->generic; p; p = p->next)
 	{
 	  if (p->sym->attr.mod_proc
+	      && !p->sym->attr.module_procedure
 	      && (p->sym->attr.if_source != IFSRC_DECL
 		  || p->sym->attr.procedure))
 	    {
@@ -4241,8 +4243,8 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 	  return false;
 	}
 
-      if (!check_result_characteristics (proc_target, old_target, err, 
-					 sizeof(err)))
+      if (!gfc_check_result_characteristics (proc_target, old_target,
+					     err, sizeof(err)))
 	{
 	  gfc_error ("Result mismatch for the overriding procedure "
 		     "%qs at %L: %s", proc->name, &where, err);
@@ -4293,7 +4295,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 	}
 
       check_type = proc_pass_arg != argpos && old_pass_arg != argpos;
-      if (!check_dummy_characteristics (proc_formal->sym, old_formal->sym, 
+      if (!gfc_check_dummy_characteristics (proc_formal->sym, old_formal->sym,
 					check_type, err, sizeof(err)))
 	{
 	  gfc_error ("Argument mismatch for the overriding procedure "

@@ -203,6 +203,7 @@ match gfc_match_generic (void);
 match gfc_match_function_decl (void);
 match gfc_match_entry (void);
 match gfc_match_subroutine (void);
+match gfc_match_submod_proc (void);
 match gfc_match_derived_decl (void);
 match gfc_match_final_decl (void);
 
@@ -291,6 +292,7 @@ match gfc_match_expr (gfc_expr **);
 
 /* module.c.  */
 match gfc_match_use (void);
+match gfc_match_submodule (void);
 void gfc_use_modules (void);
 
 #endif  /* GFC_MATCH_H  */

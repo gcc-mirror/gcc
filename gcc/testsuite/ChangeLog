@@ -1,3 +1,14 @@
+2015-07-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52846
+	* gfortran.dg/submodule_1.f90: New test
+	* gfortran.dg/submodule_2.f90: New test
+	* gfortran.dg/submodule_3.f90: New test
+	* gfortran.dg/submodule_4.f90: New test
+	* gfortran.dg/submodule_5.f90: New test
+	* gfortran.dg/submodule_6.f90: New test
+	* gfortran.dg/submodule_7.f90: New test
+
 2015-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53690

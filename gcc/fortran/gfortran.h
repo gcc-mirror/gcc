@@ -201,19 +201,19 @@ typedef enum
   ST_CALL, ST_CASE, ST_CLOSE, ST_COMMON, ST_CONTINUE, ST_CONTAINS, ST_CYCLE,
   ST_DATA, ST_DATA_DECL, ST_DEALLOCATE, ST_DO, ST_ELSE, ST_ELSEIF,
   ST_ELSEWHERE, ST_END_ASSOCIATE, ST_END_BLOCK, ST_END_BLOCK_DATA,
-  ST_ENDDO, ST_IMPLIED_ENDDO,
-  ST_END_FILE, ST_FINAL, ST_FLUSH, ST_END_FORALL, ST_END_FUNCTION, ST_ENDIF,
-  ST_END_INTERFACE, ST_END_MODULE, ST_END_PROGRAM, ST_END_SELECT,
-  ST_END_SUBROUTINE, ST_END_WHERE, ST_END_TYPE, ST_ENTRY, ST_EQUIVALENCE,
-  ST_ERROR_STOP, ST_EXIT, ST_FORALL, ST_FORALL_BLOCK, ST_FORMAT, ST_FUNCTION,
-  ST_GOTO, ST_IF_BLOCK, ST_IMPLICIT, ST_IMPLICIT_NONE, ST_IMPORT,
-  ST_INQUIRE, ST_INTERFACE, ST_SYNC_ALL, ST_SYNC_MEMORY, ST_SYNC_IMAGES,
-  ST_PARAMETER, ST_MODULE, ST_MODULE_PROC, ST_NAMELIST, ST_NULLIFY, ST_OPEN,
-  ST_PAUSE, ST_PRIVATE, ST_PROGRAM, ST_PUBLIC, ST_READ, ST_RETURN, ST_REWIND,
-  ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WAIT,
-  ST_WRITE, ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
-  ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
-  ST_ENUM, ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
+  ST_ENDDO, ST_IMPLIED_ENDDO, ST_END_FILE, ST_FINAL, ST_FLUSH, ST_END_FORALL,
+  ST_END_FUNCTION, ST_ENDIF, ST_END_INTERFACE, ST_END_MODULE, ST_END_SUBMODULE,
+  ST_END_PROGRAM, ST_END_SELECT, ST_END_SUBROUTINE, ST_END_WHERE, ST_END_TYPE,
+  ST_ENTRY, ST_EQUIVALENCE, ST_ERROR_STOP, ST_EXIT, ST_FORALL, ST_FORALL_BLOCK,
+  ST_FORMAT, ST_FUNCTION, ST_GOTO, ST_IF_BLOCK, ST_IMPLICIT, ST_IMPLICIT_NONE,
+  ST_IMPORT, ST_INQUIRE, ST_INTERFACE, ST_SYNC_ALL, ST_SYNC_MEMORY,
+  ST_SYNC_IMAGES, ST_PARAMETER, ST_MODULE, ST_SUBMODULE, ST_MODULE_PROC,
+  ST_NAMELIST, ST_NULLIFY, ST_OPEN, ST_PAUSE, ST_PRIVATE, ST_PROGRAM, ST_PUBLIC,
+  ST_READ, ST_RETURN, ST_REWIND, ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE,
+  ST_WHERE_BLOCK, ST_WHERE, ST_WAIT, ST_WRITE, ST_ASSIGNMENT,
+  ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE, ST_SIMPLE_IF,
+  ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT, ST_ENUM,
+  ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
   ST_OACC_PARALLEL_LOOP, ST_OACC_END_PARALLEL_LOOP, ST_OACC_PARALLEL,
   ST_OACC_END_PARALLEL, ST_OACC_KERNELS, ST_OACC_END_KERNELS, ST_OACC_DATA,
   ST_OACC_END_DATA, ST_OACC_HOST_DATA, ST_OACC_END_HOST_DATA, ST_OACC_LOOP,
@@ -751,6 +751,9 @@ typedef struct
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     is_protected:1,		/* Symbol has been marked as protected.  */
     use_assoc:1,		/* Symbol has been use-associated.  */
+    used_in_submodule:1,	/* Symbol has been use-associated in a
+				   submodule. Needed since these entities must
+				   be set host associated to be compliant.  */
     use_only:1,			/* Symbol has been use-associated, with ONLY.  */
     use_rename:1,		/* Symbol has been use-associated and renamed.  */
     imported:1,			/* Symbol has been associated by IMPORT.  */
@@ -778,6 +781,11 @@ typedef struct
   /* Function/subroutine attributes */
   unsigned sequence:1, elemental:1, pure:1, recursive:1;
   unsigned unmaskable:1, masked:1, contained:1, mod_proc:1, abstract:1;
+
+  /* Set if this is a module function or subroutine. Note that it is an
+     attribute because it appears as a prefix in the declaration like
+     PURE, etc..  */
+  unsigned module_procedure:1;
 
   /* Set if a (public) symbol [e.g. generic name] exposes this symbol,
      which is relevant for private module procedures.  */
@@ -1459,6 +1467,9 @@ typedef struct gfc_symbol
   unsigned forall_index:1;
   /* Used to avoid multiple resolutions of a single symbol.  */
   unsigned resolved:1;
+  /* Set if this is a module function or subroutine with the
+     abreviated declaration in a submodule.  */
+  unsigned abr_modproc_decl:1;
 
   int refs;
   struct gfc_namespace *ns;	/* namespace containing this symbol */
@@ -2786,7 +2797,7 @@ bool gfc_add_type (gfc_symbol *, gfc_typespec *, locus *);
 void gfc_clear_attr (symbol_attribute *);
 bool gfc_missing_attr (symbol_attribute *, locus *);
 bool gfc_copy_attr (symbol_attribute *, symbol_attribute *, locus *);
-
+int gfc_copy_dummy_sym (gfc_symbol **, gfc_symbol *, int);
 bool gfc_add_component (gfc_symbol *, const char *, gfc_component **);
 gfc_symbol *gfc_use_derived (gfc_symbol *);
 gfc_symtree *gfc_use_derived_tree (gfc_symtree *);
@@ -3087,6 +3098,10 @@ bool gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 void gfc_free_interface (gfc_interface *);
 int gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
 int gfc_compare_types (gfc_typespec *, gfc_typespec *);
+bool gfc_check_dummy_characteristics (gfc_symbol *, gfc_symbol *,
+				      bool, char *, int);
+bool gfc_check_result_characteristics (gfc_symbol *, gfc_symbol *,
+				       char *, int);
 int gfc_compare_interfaces (gfc_symbol*, gfc_symbol*, const char *, int, int,
 			    char *, int, const char *, const char *);
 void gfc_check_interfaces (gfc_namespace *);
