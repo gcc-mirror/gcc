@@ -117,6 +117,7 @@ __test_and_acquire (__cxxabiv1::__guard *g)
   unsigned char __c;
   unsigned char *__p = reinterpret_cast<unsigned char *>(g);
   __atomic_load (__p, &__c,  __ATOMIC_ACQUIRE);
+  (void) __p;
   return _GLIBCXX_GUARD_TEST(&__c);
 }
 #  define _GLIBCXX_GUARD_TEST_AND_ACQUIRE(G) __test_and_acquire (G)
@@ -132,6 +133,7 @@ __set_and_release (__cxxabiv1::__guard *g)
   unsigned char *__p = reinterpret_cast<unsigned char *>(g);
   unsigned char val = 1;
   __atomic_store (__p, &val, __ATOMIC_RELEASE);
+  (void) __p;
 }
 #  define _GLIBCXX_GUARD_SET_AND_RELEASE(G) __set_and_release (G)
 # endif
