@@ -1,3 +1,32 @@
+2015-07-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (CMPGE_16QI): New built-in
+	definition.
+	(CMPGE_8HI): Likewise.
+	(CMPGE_4SI): Likewise.
+	(CMPGE_2DI): Likewise.
+	(CMPGE_U16QI): Likewise.
+	(CMPGE_U8HI): Likewise.
+	(CMPGE_U4SI): Likewise.
+	(CMPGE_U2DI): Likewise.
+	(CMPLE_16QI): Likewise.
+	(CMPLE_8HI): Likewise.
+	(CMPLE_4SI): Likewise.
+	(CMPLE_2DI): Likewise.
+	(CMPLE_U16QI): Likewise.
+	(CMPLE_U8HI): Likewise.
+	(CMPLE_U4SI): Likewise.
+	(CMPLE_U2DI): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	overloads for ALTIVEC_BUILTIN_VEC_CMPGE and
+	ALTIVEC_BUILTIN_VEC_CMPLE.
+	* config/rs6000/vector.md (vector_ge<mode>): Restrict to
+	floating-point vector modes.
+	(vector_nlt<mode>): New define_expand.
+	(vector_nltu<mode>): Likewise.
+	(vector_ngt<mode>): Likewise.
+	(vector_ngtu<mode>): Likewise.
+
 2015-07-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/66706
