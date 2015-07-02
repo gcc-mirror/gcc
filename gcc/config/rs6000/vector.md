@@ -446,11 +446,24 @@
   "")
 
 (define_expand "vector_ge<mode>"
-  [(set (match_operand:VEC_C 0 "vlogical_operand" "")
-	(ge:VEC_C (match_operand:VEC_C 1 "vlogical_operand" "")
-		  (match_operand:VEC_C 2 "vlogical_operand" "")))]
+  [(set (match_operand:VEC_F 0 "vlogical_operand" "")
+	(ge:VEC_F (match_operand:VEC_F 1 "vlogical_operand" "")
+		  (match_operand:VEC_F 2 "vlogical_operand" "")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
+
+; >= for integer vectors: swap operands and apply not-greater-than
+(define_expand "vector_nlt<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gt:VEC_I (match_operand:VEC_I 2 "vlogical_operand" "")
+		  (match_operand:VEC_I 1 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
 
 (define_expand "vector_gtu<mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
@@ -459,12 +472,50 @@
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
+; >= for integer vectors: swap operands and apply not-greater-than
+(define_expand "vector_nltu<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gtu:VEC_I (match_operand:VEC_I 2 "vlogical_operand" "")
+	 	   (match_operand:VEC_I 1 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
+
 (define_expand "vector_geu<mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(geu:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 		   (match_operand:VEC_I 2 "vint_operand" "")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
+
+; <= for integer vectors: apply not-greater-than
+(define_expand "vector_ngt<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gt:VEC_I (match_operand:VEC_I 1 "vlogical_operand" "")
+		  (match_operand:VEC_I 2 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
+
+(define_expand "vector_ngtu<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gtu:VEC_I (match_operand:VEC_I 1 "vlogical_operand" "")
+	 	   (match_operand:VEC_I 2 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
 
 (define_insn_and_split "*vector_uneq<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
