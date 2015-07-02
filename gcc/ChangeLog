@@ -1,3 +1,10 @@
+2015-07-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (build_and_record_new_cond): Add optional
+	parameter to record a condition that is false.
+	(record_conditions): When recording an extra NE_EXPR that is
+	true also record a EQ_EXPR that is false.
+
 2015-07-02  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field iv_obstack.
