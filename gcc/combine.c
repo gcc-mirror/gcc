@@ -7893,6 +7893,15 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	  new_rtx = make_extraction (GET_MODE (SUBREG_REG (XEXP (x, 0))), new_rtx, 0,
 				 XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
 				 0, in_code == COMPARE);
+
+	  /* If that didn't give anything, see if the AND simplifies on
+	     its own.  */
+	  if (!new_rtx && i >= 0)
+	    {
+	      new_rtx = make_compound_operation (XEXP (x, 0), next_code);
+	      new_rtx = make_extraction (mode, new_rtx, 0, NULL_RTX, i, 1,
+					 0, in_code == COMPARE);
+	    }
 	}
       /* Same as previous, but for (xor/ior (lshiftrt...) (lshiftrt...)).  */
       else if ((GET_CODE (XEXP (x, 0)) == XOR
