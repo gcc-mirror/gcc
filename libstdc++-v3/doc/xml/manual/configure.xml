@@ -389,9 +389,10 @@
    <para>
      Set the default value for the <symbol>_GLIBCXX_USE_CXX11_ABI</symbol>
      macro (see <xref linkend="manual.intro.using.macros"/>).
-     The default is <option>OPTION=c++11</option> which sets the macro to
+     The default is <option>OPTION=new</option> which sets the macro to
      <literal>1</literal>,
-     use <option>OPTION=c++98</option> to set it to <literal>0</literal>.
+     use <option>OPTION=gcc4-compatible</option> to set it to
+     <literal>0</literal>.
      This option does not change the library ABI.
    </para>
  </listitem></varlistentry>
