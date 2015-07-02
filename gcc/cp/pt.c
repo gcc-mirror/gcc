@@ -21606,6 +21606,10 @@ type_dependent_expression_p (tree expression)
 	    return true;
 	  expression = TREE_OPERAND (expression, 0);
 	}
+
+      if (variable_template_p (expression))
+        return dependent_type_p (TREE_TYPE (expression));
+
       gcc_assert (TREE_CODE (expression) == OVERLOAD
 		  || TREE_CODE (expression) == FUNCTION_DECL);
 
