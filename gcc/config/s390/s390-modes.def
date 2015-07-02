@@ -84,7 +84,12 @@ Requested mode            -> Destination CC register mode
 CCS, CCU, CCT, CCSR, CCUR -> CCZ
 CCA                       -> CCAP, CCAN
 
+Vector comparison modes
 
+CCVEQ  	  EQ	  - 	       - 	   NE	      (VCEQ)
+
+CCVFH	  GT	  -   	       -   	   UNLE	      (VFCH)
+CCVFHE	  GE	  -   	       -   	   UNLT	      (VFCHE)
 *** Comments ***
 
 CCAP, CCAN
@@ -181,6 +186,11 @@ CC_MODE (CCT1);
 CC_MODE (CCT2);
 CC_MODE (CCT3);
 CC_MODE (CCRAW);
+
+CC_MODE (CCVEQ);
+CC_MODE (CCVFH);
+CC_MODE (CCVFHE);
+
 
 /* Vector modes.  */
 
