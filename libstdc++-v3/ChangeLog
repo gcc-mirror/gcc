@@ -1,5 +1,10 @@
 2015-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_DEFAULT_ABI): Change valid arguments for
+	--with-default-libstdcxx-abi
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml: Document valid arguments.
+
 	* include/bits/locale_conv.h (wstring_convert): Use __cxx11 inline
 	namespace in new ABI.
 	(wstring_convert::_M_conv): Handle empty range.

@@ -78265,7 +78265,7 @@ fi
   if test x"$enable_libstdcxx_dual_abi" != xyes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: dual ABI is disabled" >&5
 $as_echo "$as_me: dual ABI is disabled" >&6;}
-    default_libstdcxx_abi="c++98"
+    default_libstdcxx_abi="gcc4-compatible"
   fi
 
 
@@ -78277,18 +78277,20 @@ $as_echo_n "checking for default std::string ABI to use... " >&6; }
 # Check whether --with-default-libstdcxx-abi was given.
 if test "${with_default_libstdcxx_abi+set}" = set; then :
   withval=$with_default_libstdcxx_abi; case "$withval" in
-      c++98|gnu++98|c++03|gnu++03)  default_libstdcxx_abi="c++98" ;;
-      c++1?|gnu++1?)  default_libstdcxx_abi="c++11" ;;
-      *)  as_fn_error "Invalid argument for --with-default-libstdcxx-abi" "$LINENO" 5 ;;
+      gcc4-compatible)  default_libstdcxx_abi="gcc4-compatible" ;;
+      new|cxx11)  default_libstdcxx_abi="new" ;;
+      c++*|gnu++*) as_fn_error "Supported arguments for --with-default-libstdcxx-abi have changed, use \"new\" or \"gcc4-compatible\"" "$LINENO" 5 ;;
+      *) as_fn_error "Invalid argument for --with-default-libstdcxx-abi" "$LINENO" 5 ;;
      esac
+
 else
-  default_libstdcxx_abi="c++11"
+  default_libstdcxx_abi="new"
 fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${default_libstdcxx_abi}" >&5
 $as_echo "${default_libstdcxx_abi}" >&6; }
   fi
-  if test $default_libstdcxx_abi = "c++11"; then
+  if test $default_libstdcxx_abi = "new"; then
     glibcxx_cxx11_abi=1
     glibcxx_cxx98_abi=0
   else

@@ -3865,7 +3865,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_DUAL_ABI], [
   fi
   if test x"$enable_libstdcxx_dual_abi" != xyes; then
     AC_MSG_NOTICE([dual ABI is disabled])
-    default_libstdcxx_abi="c++98"
+    default_libstdcxx_abi="gcc4-compatible"
   fi
   GLIBCXX_CONDITIONAL(ENABLE_DUAL_ABI, test $enable_libstdcxx_dual_abi = yes)
 ])
@@ -3873,7 +3873,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_DUAL_ABI], [
 dnl
 dnl Check to see which ABI should be enabled by default.
 dnl
-dnl --with-default-libstdcxx-abi={c++98,c++11}
+dnl --with-default-libstdcxx-abi={gcc4-compatible,new}
 dnl
 dnl Defines:
 dnl  _GLIBCXX_USE_CXX11_ABI (always defined, either to 1 or 0)
@@ -3885,14 +3885,16 @@ AC_DEFUN([GLIBCXX_DEFAULT_ABI], [
     AS_HELP_STRING([--with-default-libstdcxx-abi],
                    [set the std::string ABI to use by default]),
     [case "$withval" in
-      c++98|gnu++98|c++03|gnu++03)  default_libstdcxx_abi="c++98" ;;
-      c++1?|gnu++1?)  default_libstdcxx_abi="c++11" ;;
-      *)  AC_MSG_ERROR([Invalid argument for --with-default-libstdcxx-abi]) ;;
-     esac],
-    [default_libstdcxx_abi="c++11"])
+      gcc4-compatible)  default_libstdcxx_abi="gcc4-compatible" ;;
+      new|cxx11)  default_libstdcxx_abi="new" ;;
+      c++*|gnu++*) AC_MSG_ERROR([Supported arguments for --with-default-libstdcxx-abi have changed, use "new" or "gcc4-compatible"]) ;;
+      *) AC_MSG_ERROR([Invalid argument for --with-default-libstdcxx-abi]) ;;
+     esac
+     ],
+    [default_libstdcxx_abi="new"])
   AC_MSG_RESULT(${default_libstdcxx_abi})
   fi
-  if test $default_libstdcxx_abi = "c++11"; then
+  if test $default_libstdcxx_abi = "new"; then
     glibcxx_cxx11_abi=1
     glibcxx_cxx98_abi=0
   else
