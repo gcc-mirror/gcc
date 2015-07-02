@@ -1,3 +1,15 @@
+2015-07-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field iv_obstack.
+	(tree_ssa_iv_optimize_init): Initialize iv_obstack.
+	(alloc_iv): New parameter.  Allocate struct iv using obstack_alloc.
+	(set_iv, find_interesting_uses_address, add_candidate_1): New
+	argument to alloc_iv.
+	(find_interesting_uses_op, find_interesting_uses_cond): Don't
+	duplicate struct iv.
+	(free_loop_data): Don't free struct iv explicitly.
+	(tree_ssa_iv_optimize_finalize): Free iv_obstack.
+
 2015-07-01  DJ Delorie  <dj@redhat.com>
 
 	* config/s390/tpf.h (LIBSTDCXX): Change to CPP1.
