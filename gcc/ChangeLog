@@ -1,3 +1,9 @@
+2015-07-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/66706
+	* combine.c (make_compound_operation): If an AND of SUBREG of
+	LSHIFTRT does not simplify, see if just the AND of SUBREG does.
+
 2015-07-02  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* tree-pass.h (make_pass_ch_vect): New.
