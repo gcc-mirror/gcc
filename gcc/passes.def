@@ -247,6 +247,7 @@ along with GCC; see the file COPYING3.  If not see
 	  PUSH_INSERT_PASSES_WITHIN (pass_parallelize_loops)
 	      NEXT_PASS (pass_expand_omp_ssa);
 	  POP_INSERT_PASSES ()
+	  NEXT_PASS (pass_ch_vect);
 	  NEXT_PASS (pass_if_conversion);
 	  /* pass_vectorize must immediately follow pass_if_conversion.
 	     Please do not add any other passes in between.  */

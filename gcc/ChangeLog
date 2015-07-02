@@ -1,3 +1,16 @@
+2015-07-02  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* tree-pass.h (make_pass_ch_vect): New.
+	* passes.def: Add pass_ch_vect just before pass_if_conversion.
+
+	* tree-ssa-loop-ch.c (ch_base, pass_ch_vect, pass_data_ch_vect,
+	pass_ch::process_loop_p, pass_ch_vect::process_loop_p,
+	make_pass_ch_vect): New.
+	(pass_ch): Extend ch_base.
+
+	(pass_ch::execute): Move all but loop_optimizer_init/finalize to...
+	(ch_base::copy_headers): ...here.
+
 2015-07-02  Richard Biener  <rguenther@suse.de>
 
 	* builtins.c (get_pointer_alignment_1): Handle POINTER_PLUS_EXPR.
