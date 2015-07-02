@@ -972,21 +972,20 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
    or 0060 (`), nor one in the range D800 through DFFF inclusive.
 
    *PSTR must be preceded by "\u" or "\U"; it is assumed that the
-   buffer end is delimited by a non-hex digit.  Returns zero if the
-   UCN has not been consumed.
+   buffer end is delimited by a non-hex digit.  Returns false if the
+   UCN has not been consumed, true otherwise.
 
-   Otherwise the nonzero value of the UCN, whether valid or invalid,
-   is returned.  Diagnostics are emitted for invalid values.  PSTR
-   is updated to point one beyond the UCN, or to the syntactically
-   invalid character.
+   The value of the UCN, whether valid or invalid, is returned in *CP.
+   Diagnostics are emitted for invalid values.  PSTR is updated to point
+   one beyond the UCN, or to the syntactically invalid character.
 
    IDENTIFIER_POS is 0 when not in an identifier, 1 for the start of
    an identifier, or 2 otherwise.  */
 
-cppchar_t
+bool
 _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		const uchar *limit, int identifier_pos,
-		struct normalize_state *nst)
+		struct normalize_state *nst, cppchar_t *cp)
 {
   cppchar_t result, c;
   unsigned int length;
@@ -1030,8 +1029,11 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
      multiple tokens in identifiers, so we can't give a helpful
      error message in that case.  */
   if (length && identifier_pos)
-    return 0;
-  
+    {
+      *cp = 0;
+      return false;
+    }
+
   *pstr = str;
   if (length)
     {
@@ -1079,10 +1081,8 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		   (int) (str - base), base);
     }
 
-  if (result == 0)
-    result = 1;
-
-  return result;
+  *cp = result;
+  return true;
 }
 
 /* Convert an UCN, pointed to by FROM, to UTF-8 encoding, then translate
@@ -1100,7 +1100,7 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
   struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 
   from++;  /* Skip u/U.  */
-  ucn = _cpp_valid_ucn (pfile, &from, limit, 0, &nst);
+  _cpp_valid_ucn (pfile, &from, limit, 0, &nst, &ucn);
 
   rval = one_cppchar_to_utf8 (ucn, &bufp, &bytesleft);
   if (rval)

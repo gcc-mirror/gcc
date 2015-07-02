@@ -744,9 +744,10 @@ struct normalize_state
 #define NORMALIZE_STATE_UPDATE_IDNUM(st, c)	\
   ((st)->previous = (c), (st)->prev_class = 0)
 
-extern cppchar_t _cpp_valid_ucn (cpp_reader *, const unsigned char **,
-				 const unsigned char *, int,
-				 struct normalize_state *state);
+extern bool _cpp_valid_ucn (cpp_reader *, const unsigned char **,
+			    const unsigned char *, int,
+			    struct normalize_state *state,
+			    cppchar_t *);
 extern void _cpp_destroy_iconv (cpp_reader *);
 extern unsigned char *_cpp_convert_input (cpp_reader *, const char *,
 					  unsigned char *, size_t, size_t,

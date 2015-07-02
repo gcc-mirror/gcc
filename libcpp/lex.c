@@ -1244,9 +1244,10 @@ forms_identifier_p (cpp_reader *pfile, int first,
       && *buffer->cur == '\\'
       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
     {
+      cppchar_t s;
       buffer->cur += 2;
       if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
-			  state))
+			  state, &s))
 	return true;
       buffer->cur -= 2;
     }
