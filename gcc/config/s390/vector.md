@@ -133,6 +133,8 @@
    (VSTRING_FLAG_ZS         2)   ; zero search
    (VSTRING_FLAG_CS         1)]) ; condition code set
 
+(include "vx-builtins.md")
+
 ; Full HW vector size moves
 (define_insn "mov<mode>"
   [(set (match_operand:V_128 0 "nonimmediate_operand" "=v, v,QR,  v,  v,  v,  v,v,d")
