@@ -1,3 +1,9 @@
+2015-07-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS.
+	* configure: Regenerate.
+	* config.h.in: Ditto.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.am: Drop 'by automake version' from top-level comment.
