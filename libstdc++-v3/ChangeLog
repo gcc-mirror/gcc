@@ -1,3 +1,10 @@
+2015-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_DEFAULT_ABI): Change valid arguments for
+	--with-default-libstdcxx-abi
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml: Document valid arguments.
+
 2015-07-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* libsupc++/guard.cc (__test_and_acquire): Use __p after __atomic_load
