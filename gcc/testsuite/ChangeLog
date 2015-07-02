@@ -1,3 +1,9 @@
+2015-07-02  Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR fortran/66545
+	* gfortran.dg/pr66545_1.f90: New test.
+	* gfortran.dg/pr66545_2.f90: New test.
+
 2015-07-02  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.dg/vect/vect-strided-a-u16-i4.c (main1): Narrow scope of x,y,z,w.
