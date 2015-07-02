@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Random number that should be large enough for all purposes.  Also define
    a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
    bit giving an invalid value that can be used to mean "uninitialized".  */
-#define MAX_RECOG_ALTERNATIVES 30
-typedef unsigned int alternative_mask;
+#define MAX_RECOG_ALTERNATIVES 35
+typedef uint64_t alternative_mask;
 
 /* A mask of all alternatives.  */
 #define ALL_ALTERNATIVES ((alternative_mask) -1)
