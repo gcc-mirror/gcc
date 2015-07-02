@@ -1,5 +1,11 @@
 2015-07-02  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/66719
+	* gcc.dg/vect/bb-slp-32.c: Re-add XFAIL for targets not supporting
+	unaligned loads.
+
+2015-07-02  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/ssa-dom-cse-4.c: New testcase.
 
 2015-07-01  H.J. Lu  <hongjiu.lu@intel.com>
