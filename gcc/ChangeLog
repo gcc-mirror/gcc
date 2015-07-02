@@ -3,6 +3,13 @@
 	Backport from mainline
 	2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* optabs.c (expand_vec_perm): Don't re-use SEL as target operand.
+
+2015-07-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* recog.h: Increase MAX_RECOG_ALTERNATIVES.  Change type of
 	alternative_mask to uint64_t.
 

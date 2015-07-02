@@ -6786,11 +6786,11 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
       machine_mode selmode = GET_MODE (sel);
       if (u == 2)
 	sel = expand_simple_binop (selmode, PLUS, sel, sel,
-				   sel, 0, OPTAB_DIRECT);
+				   NULL, 0, OPTAB_DIRECT);
       else
 	sel = expand_simple_binop (selmode, ASHIFT, sel,
 				   GEN_INT (exact_log2 (u)),
-				   sel, 0, OPTAB_DIRECT);
+				   NULL, 0, OPTAB_DIRECT);
       gcc_assert (sel != NULL);
 
       /* Broadcast the low byte each element into each of its bytes.  */
