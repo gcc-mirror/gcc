@@ -1,3 +1,9 @@
+2015-07-03  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	PR target/66509
+	* configure.ac: Fix filds and fildq test for 64-bit.
+	* configure: Regenerated.
+
 2015-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline.
