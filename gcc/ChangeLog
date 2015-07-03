@@ -1,3 +1,12 @@
+2015-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR tree-optimization/66119
+	* toplev.c (process_options): Don't set up default values for
+	the sra_max_scalarization_size_{speed,size} parameters.
+	* tree-sra (analyze_all_variable_accesses): If no values
+	have been set for the sra_max_scalarization_size_{speed,size}
+	parameters, call get_move_ratio to get target defaults.
+
 2015-07-03  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Move (T)ptr & CST folding...
