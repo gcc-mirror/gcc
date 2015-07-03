@@ -1,3 +1,9 @@
+2015-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66743
+	* pt.c (for_each_template_parm_r) [UNDERLYING_TYPE]: Use
+	TYPE_VALUES_RAW rather than TYPE_FIELDS.
+
 2015-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65945
