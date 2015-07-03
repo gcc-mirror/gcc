@@ -1,3 +1,8 @@
+2015-07-03  Jason Merrill  <jason@redhat.com>
+
+	* gcc.dg/plugin/wide-int_plugin.c (test_double_int_round_udiv):
+	Avoid narrowing error.
+
 2015-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/66706

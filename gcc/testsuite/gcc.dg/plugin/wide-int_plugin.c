@@ -10,8 +10,8 @@ static void
 test_double_int_round_udiv (void)
 {
   double_int dmin = { 0, HOST_WIDE_INT_MIN };
-  double_int dmax = { -1, HOST_WIDE_INT_MAX };
-  double_int dnegone = { -1, -1 };
+  double_int dmax = { (unsigned HOST_WIDE_INT)-1, HOST_WIDE_INT_MAX };
+  double_int dnegone = { (unsigned HOST_WIDE_INT)-1, -1 };
   double_int mod, div;
   div = dmin.udivmod (dnegone, ROUND_DIV_EXPR, &mod);
   if (div.low != 1 || div.high != 0
