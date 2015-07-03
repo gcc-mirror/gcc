@@ -1,3 +1,7 @@
+2015-07-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vget_lane.c: New testcase.
+
 2015-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR tree-optimization/66119
