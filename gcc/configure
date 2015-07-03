@@ -24810,7 +24810,7 @@ if test "${gcc_cv_as_ix86_filds+set}" = set; then :
 else
   gcc_cv_as_ix86_filds=no
   if test x$gcc_cv_as != x; then
-    $as_echo 'filds mem; fists mem' > conftest.s
+    $as_echo 'filds (%ebp); fists (%ebp)' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
@@ -24841,7 +24841,7 @@ if test "${gcc_cv_as_ix86_fildq+set}" = set; then :
 else
   gcc_cv_as_ix86_fildq=no
   if test x$gcc_cv_as != x; then
-    $as_echo 'fildq mem; fistpq mem' > conftest.s
+    $as_echo 'fildq (%ebp); fistpq (%ebp)' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
