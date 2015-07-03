@@ -16,7 +16,7 @@
 
 2015-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR c++/53690
+	PR preprocessor/53690
 	* g++.dg/cpp/pr53690.C: New.
 
 2015-07-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>

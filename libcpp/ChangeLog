@@ -1,6 +1,6 @@
 2015-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR c++/53690
+	PR preprocessor/53690
 	* charset.c (_cpp_valid_ucn): Add cppchar_t * parameter and change
 	return type to bool.  Fix encoding of \u0000 and \U00000000 in C++.
 	(convert_ucn): Adjust call.
