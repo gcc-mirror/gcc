@@ -12498,6 +12498,15 @@ the target processor for which to tune for performance (as if
 by @option{-mtune}).  Where this option is used in conjunction
 with @option{-march} or @option{-mtune}, those options take precedence
 over the appropriate part of this option.
+
+@item -moverride=@var{string}
+@opindex moverride
+Override tuning decisions made by the back-end in response to a
+@option{-mtune=} switch.  The syntax, semantics, and accepted values
+for @var{string} in this option are not guaranteed to be consistent
+across releases.
+
+This option is only intended to be useful when developing GCC.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
@@ -12530,14 +12539,6 @@ Enable Limited Ordering Regions support.
 Enable ARMv8.1 Advanced SIMD instructions.  This implies Advanced SIMD
 is enabled.
 
-@item -moverride=@var{string}
-@opindex master
-Override tuning decisions made by the back-end in response to a
-@option{-mtune=} switch.  The syntax, semantics, and accepted values
-for @var{string} in this option are not guaranteed to be consistent
-across releases.
-
-This option is only intended to be useful when developing GCC.
 @end table
 
 That is, @option{crypto} implies @option{simd} implies @option{fp}.
