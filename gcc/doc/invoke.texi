@@ -22570,7 +22570,7 @@ in ordinary CPU registers instead.
 @opindex mno-fancy-math-387
 Some 387 emulators do not support the @code{sin}, @code{cos} and
 @code{sqrt} instructions for the 387.  Specify this option to avoid
-generating those instructions.  This option is the default on FreeBSD,
+generating those instructions.  This option is the default on
 OpenBSD and NetBSD@.  This option is overridden when @option{-march}
 indicates that the target CPU always has an FPU and so the
 instruction does not need emulation.  These
