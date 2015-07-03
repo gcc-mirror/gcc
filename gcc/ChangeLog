@@ -1,3 +1,8 @@
+2015-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* attribs.c (decl_attributes): Guard inform with the return value
+	of the preceding warning.
+
 2015-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/invoke.texi (moverride): Move to correct section.
