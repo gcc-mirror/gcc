@@ -40,6 +40,19 @@ along with GCC; see the file COPYING3.  If not see
   unge ungt ne eq unlt unle ordered   unordered ge   gt   le   lt   ltgt uneq)
 (define_operator_list swapped_tcc_comparison
   gt   ge   eq ne le   lt   unordered ordered   ungt unge unlt unle uneq ltgt)
+(define_operator_list simple_comparison         lt   le   eq ne ge   gt)
+(define_operator_list swapped_simple_comparison gt   ge   eq ne le   lt)
+
+(define_operator_list LOG BUILT_IN_LOGF BUILT_IN_LOG BUILT_IN_LOGL)
+(define_operator_list EXP BUILT_IN_EXPF BUILT_IN_EXP BUILT_IN_EXPL)
+(define_operator_list LOG2 BUILT_IN_LOG2F BUILT_IN_LOG2 BUILT_IN_LOG2L)
+(define_operator_list EXP2 BUILT_IN_EXP2F BUILT_IN_EXP2 BUILT_IN_EXP2L)
+(define_operator_list LOG10 BUILT_IN_LOG10F BUILT_IN_LOG10 BUILT_IN_LOG10L)
+(define_operator_list EXP10 BUILT_IN_EXP10F BUILT_IN_EXP10 BUILT_IN_EXP10L)
+(define_operator_list POW BUILT_IN_POWF BUILT_IN_POW BUILT_IN_POWL)
+(define_operator_list POW10 BUILT_IN_POW10F BUILT_IN_POW10 BUILT_IN_POW10L)
+(define_operator_list SQRT BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
+(define_operator_list CBRT BUILT_IN_CBRTF BUILT_IN_CBRT BUILT_IN_CBRTL)
 
 
 /* Simplifications of operations with one constant operand and
@@ -1329,8 +1342,8 @@ along with GCC; see the file COPYING3.  If not see
    signed arithmetic case.  That form is created by the compiler
    often enough for folding it to be of value.  One example is in
    computing loop trip counts after Operator Strength Reduction.  */
-(for cmp (tcc_comparison)
-     scmp (swapped_tcc_comparison)
+(for cmp (simple_comparison)
+     scmp (swapped_simple_comparison)
  (simplify
   (cmp (mult @0 INTEGER_CST@1) integer_zerop@2)
   /* Handle unfolded multiplication by zero.  */
@@ -1363,19 +1376,196 @@ along with GCC; see the file COPYING3.  If not see
    { constant_boolean_node (false, type); })))
 
 /* Fold ~X op ~Y as Y op X.  */
-(for cmp (tcc_comparison)
+(for cmp (simple_comparison)
  (simplify
   (cmp (bit_not @0) (bit_not @1))
   (cmp @1 @0)))
 
 /* Fold ~X op C as X op' ~C, where op' is the swapped comparison.  */
-(for cmp (tcc_comparison)
-     scmp (swapped_tcc_comparison)
+(for cmp (simple_comparison)
+     scmp (swapped_simple_comparison)
  (simplify
   (cmp (bit_not @0) CONSTANT_CLASS_P@1)
   (if (TREE_CODE (@1) == INTEGER_CST || TREE_CODE (@1) == VECTOR_CST)
    (scmp @0 (bit_not @1)))))
 
+(for cmp (simple_comparison)
+ /* Fold (double)float1 CMP (double)float2 into float1 CMP float2.  */
+ (simplify
+  (cmp (convert@2 @0) (convert? @1))
+  (if (FLOAT_TYPE_P (TREE_TYPE (@0))
+       && (DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@2))
+	   == DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@0)))
+       && (DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@2))
+	   == DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@1))))
+   (with
+    {
+      tree type1 = TREE_TYPE (@1);
+      if (TREE_CODE (@1) == REAL_CST && !DECIMAL_FLOAT_TYPE_P (type1))
+        {
+	  REAL_VALUE_TYPE orig = TREE_REAL_CST (@1);
+	  if (TYPE_PRECISION (type1) > TYPE_PRECISION (float_type_node)
+	      && exact_real_truncate (TYPE_MODE (float_type_node), &orig))
+	    type1 = float_type_node;
+	  if (TYPE_PRECISION (type1) > TYPE_PRECISION (double_type_node)
+	      && exact_real_truncate (TYPE_MODE (double_type_node), &orig))
+	    type1 = double_type_node;
+        }
+      tree newtype
+        = (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type1)
+	   ? TREE_TYPE (@0) : type1); 
+    }
+    (if (TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (newtype))
+     (cmp (convert:newtype @0) (convert:newtype @1))))))
+ 
+ (simplify
+  (cmp @0 REAL_CST@1)
+  /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
+  /* a CMP (-0) -> a CMP 0  */
+  (if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@1)))
+   (cmp @0 { build_real (TREE_TYPE (@1), dconst0); }))
+  /* x != NaN is always true, other ops are always false.  */
+  (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@1))
+       && ! HONOR_SNANS (@1))
+   { constant_boolean_node (cmp == NE_EXPR, type); })
+  /* Fold comparisons against infinity.  */
+  (if (REAL_VALUE_ISINF (TREE_REAL_CST (@1))
+       && MODE_HAS_INFINITIES (TYPE_MODE (TREE_TYPE (@1))))
+   (with
+    {
+      REAL_VALUE_TYPE max;
+      enum tree_code code = cmp;
+      bool neg = REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1));
+      if (neg)
+        code = swap_tree_comparison (code);
+    }
+    /* x > +Inf is always false, if with ignore sNANs.  */
+    (if (code == GT_EXPR
+    	 && ! HONOR_SNANS (@0))
+     { constant_boolean_node (false, type); })
+    (if (code == LE_EXPR)
+     /* x <= +Inf is always true, if we don't case about NaNs.  */
+     (if (! HONOR_NANS (@0))
+      { constant_boolean_node (true, type); })
+     /* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
+     (eq @0 @0))
+    /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
+    (if (code == EQ_EXPR || code == GE_EXPR)
+     (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
+      (if (neg)
+       (lt @0 { build_real (TREE_TYPE (@0), max); }))
+      (gt @0 { build_real (TREE_TYPE (@0), max); })))
+    /* x < +Inf is always equal to x <= DBL_MAX.  */
+    (if (code == LT_EXPR)
+     (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
+      (if (neg)
+       (ge @0 { build_real (TREE_TYPE (@0), max); }))
+      (le @0 { build_real (TREE_TYPE (@0), max); })))
+    /* x != +Inf is always equal to !(x > DBL_MAX).  */
+    (if (code == NE_EXPR)
+     (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
+      (if (! HONOR_NANS (@0))
+       (if (neg)
+        (ge @0 { build_real (TREE_TYPE (@0), max); }))
+       (le @0 { build_real (TREE_TYPE (@0), max); }))
+      (if (neg)
+       (bit_xor (lt @0 { build_real (TREE_TYPE (@0), max); })
+	        { build_one_cst (type); }))
+      (bit_xor (gt @0 { build_real (TREE_TYPE (@0), max); })
+       { build_one_cst (type); }))))))
+
+ /* If this is a comparison of a real constant with a PLUS_EXPR
+    or a MINUS_EXPR of a real constant, we can convert it into a
+    comparison with a revised real constant as long as no overflow
+    occurs when unsafe_math_optimizations are enabled.  */
+ (if (flag_unsafe_math_optimizations)
+  (for op (plus minus)
+   (simplify
+    (cmp (op @0 REAL_CST@1) REAL_CST@2)
+    (with
+     {
+       tree tem = const_binop (op == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR,
+			       TREE_TYPE (@1), @2, @1);
+     }
+     (if (!TREE_OVERFLOW (tem))
+      (cmp @0 { tem; }))))))
+
+ /* Likewise, we can simplify a comparison of a real constant with
+    a MINUS_EXPR whose first operand is also a real constant, i.e.
+    (c1 - x) < c2 becomes x > c1-c2.  Reordering is allowed on
+    floating-point types only if -fassociative-math is set.  */
+ (if (flag_associative_math)
+  (simplify
+   (cmp (minus REAL_CST@0 @1) @2)
+   (with { tree tem = const_binop (MINUS_EXPR, TREE_TYPE (@1), @0, @2); }
+    (if (!TREE_OVERFLOW (tem))
+     (cmp { tem; } @1)))))
+
+ /* Fold comparisons against built-in math functions.  */
+ (if (flag_unsafe_math_optimizations
+      && ! flag_errno_math)
+  (for sq (SQRT)
+   (simplify
+    (cmp (sq @0) REAL_CST@1)
+    (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
+     /* sqrt(x) < y is always false, if y is negative.  */
+     (if (cmp == EQ_EXPR || cmp == LT_EXPR || cmp == LE_EXPR)
+      { constant_boolean_node (false, type); })
+     /* sqrt(x) > y is always true, if y is negative and we
+	don't care about NaNs, i.e. negative values of x.  */
+     (if (cmp == NE_EXPR || !HONOR_NANS (@0))
+      { constant_boolean_node (true, type); })
+     /* sqrt(x) > y is the same as x >= 0, if y is negative.  */
+     (ge @0 { build_real (TREE_TYPE (@0), dconst0); }))
+    (if (cmp == GT_EXPR || cmp == GE_EXPR)
+     (with
+      {
+       	REAL_VALUE_TYPE c2;
+	REAL_ARITHMETIC (c2, MULT_EXPR, TREE_REAL_CST (@1), TREE_REAL_CST (@1));
+	real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
+      }
+      (if (REAL_VALUE_ISINF (c2))
+       /* sqrt(x) > y is x == +Inf, when y is very large.  */
+       (if (HONOR_INFINITIES (@0))
+        (eq @0 { build_real (TREE_TYPE (@0), c2); }))
+       { constant_boolean_node (false, type); })
+      /* sqrt(x) > c is the same as x > c*c.  */
+      (cmp @0 { build_real (TREE_TYPE (@0), c2); })))
+    (if (cmp == LT_EXPR || cmp == LE_EXPR)
+     (with
+      {
+       	REAL_VALUE_TYPE c2;
+	REAL_ARITHMETIC (c2, MULT_EXPR, TREE_REAL_CST (@1), TREE_REAL_CST (@1));
+	real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
+      }
+      (if (REAL_VALUE_ISINF (c2))
+       /* sqrt(x) < y is always true, when y is a very large
+	  value and we don't care about NaNs or Infinities.  */
+       (if (! HONOR_NANS (@0) && ! HONOR_INFINITIES (@0))
+        { constant_boolean_node (true, type); })
+       /* sqrt(x) < y is x != +Inf when y is very large and we
+	  don't care about NaNs.  */
+       (if (! HONOR_NANS (@0))
+        (ne @0 { build_real (TREE_TYPE (@0), c2); }))
+       /* sqrt(x) < y is x >= 0 when y is very large and we
+	  don't care about Infinities.  */
+       (if (! HONOR_INFINITIES (@0))
+        (ge @0 { build_real (TREE_TYPE (@0), dconst0); }))
+       /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
+       (if (GENERIC)
+        (truth_andif
+	 (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
+	 (ne @0 { build_real (TREE_TYPE (@0), c2); }))))
+      /* sqrt(x) < c is the same as x < c*c, if we ignore NaNs.  */
+      (if (! REAL_VALUE_ISINF (c2)
+           && ! HONOR_NANS (@0))
+       (cmp @0 { build_real (TREE_TYPE (@0), c2); }))
+      /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
+      (if (! REAL_VALUE_ISINF (c2)
+           && GENERIC)
+       (truth_andif
+        (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
+	(cmp @0 { build_real (TREE_TYPE (@0), c2); })))))))))
 
 /* Unordered tests if either argument is a NaN.  */
 (simplify
@@ -1441,18 +1631,6 @@ along with GCC; see the file COPYING3.  If not see
    (cmp @0 (bit_xor @1 (convert @2))))))
 
 /* Simplification of math builtins.  */
-
-(define_operator_list LOG BUILT_IN_LOGF BUILT_IN_LOG BUILT_IN_LOGL)
-(define_operator_list EXP BUILT_IN_EXPF BUILT_IN_EXP BUILT_IN_EXPL)
-(define_operator_list LOG2 BUILT_IN_LOG2F BUILT_IN_LOG2 BUILT_IN_LOG2L)
-(define_operator_list EXP2 BUILT_IN_EXP2F BUILT_IN_EXP2 BUILT_IN_EXP2L)
-(define_operator_list LOG10 BUILT_IN_LOG10F BUILT_IN_LOG10 BUILT_IN_LOG10L)
-(define_operator_list EXP10 BUILT_IN_EXP10F BUILT_IN_EXP10 BUILT_IN_EXP10L)
-(define_operator_list POW BUILT_IN_POWF BUILT_IN_POW BUILT_IN_POWL)
-(define_operator_list POW10 BUILT_IN_POW10F BUILT_IN_POW10 BUILT_IN_POW10L)
-(define_operator_list SQRT BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
-(define_operator_list CBRT BUILT_IN_CBRTF BUILT_IN_CBRT BUILT_IN_CBRTL)
-
 
 /* fold_builtin_logarithm */
 (if (flag_unsafe_math_optimizations)

@@ -1,3 +1,11 @@
+2015-07-03  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_mathfn_compare): Remove.
+	(fold_inf_compare): Likewise.
+	(fold_comparison): Move floating point comparison simplifications...
+	* match.pd: ... to patterns here.  Introduce simple_comparisons
+	operator list and use it for patterns formerly in fold_comparison.
+
 2015-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR tree-optimization/66119
