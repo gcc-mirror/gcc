@@ -1,3 +1,10 @@
+2015-07-03  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (commutative_tree_code, commutative_ternary_tree_code):
+	Copy from tree.c
+	(dt_operand::gen_gimple_expr): After valueizing operands
+	re-canonicalize operand order for commutative tree codes.
+
 2015-07-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66746.
