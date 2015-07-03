@@ -83,16 +83,16 @@
 	bl	\name
 .endm
 #elif defined(_CALL_DARWIN)
-.macro FUNC name
+.macro FUNC
 	.globl	_$0
 _$0:
 .endmacro
-.macro END name
+.macro END
 .endmacro
-.macro HIDDEN name
+.macro HIDDEN
 	.private_extern _$0
 .endmacro
-.macro CALL name
+.macro CALL
 	bl	_$0
 .endmacro
 # ifdef __ppc64__
