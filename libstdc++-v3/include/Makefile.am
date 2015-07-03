@@ -657,6 +657,7 @@ experimental_headers = \
 	${experimental_srcdir}/memory \
 	${experimental_srcdir}/numeric \
 	${experimental_srcdir}/optional \
+	${experimental_srcdir}/propagate_const \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/set \
 	${experimental_srcdir}/string \
