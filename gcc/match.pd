@@ -668,6 +668,21 @@ along with GCC; see the file COPYING3.  If not see
    (if (ptr_difference_const (@0, @1, &diff))
     { build_int_cst_type (type, diff); }))))
 
+/* If arg0 is derived from the address of an object or function, we may
+   be able to fold this expression using the object or function's
+   alignment.  */
+(simplify
+ (bit_and (convert? @0) INTEGER_CST@1)
+ (if (POINTER_TYPE_P (TREE_TYPE (@0))
+      && tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (with
+   {
+     unsigned int align;
+     unsigned HOST_WIDE_INT bitpos;
+     get_pointer_alignment_1 (@0, &align, &bitpos);
+   }
+   (if (wi::ltu_p (@1, align / BITS_PER_UNIT))
+    { wide_int_to_tree (type, wi::bit_and (@1, bitpos / BITS_PER_UNIT)); }))))
 
 
 /* We can't reassociate at all for saturating types.  */

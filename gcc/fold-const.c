@@ -11069,25 +11069,6 @@ fold_binary_loc (location_t loc,
 	      fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
 	}
 
-      /* If arg0 is derived from the address of an object or function, we may
-	 be able to fold this expression using the object or function's
-	 alignment.  */
-      if (POINTER_TYPE_P (TREE_TYPE (arg0)) && TREE_CODE (arg1) == INTEGER_CST)
-	{
-	  unsigned int align;
-	  unsigned HOST_WIDE_INT bitpos;
-
-	  get_pointer_alignment_1 (arg0, &align, &bitpos);
-
-	  /* This works because modulus is a power of 2.  If this weren't the
-	     case, we'd have to replace it by its greatest power-of-2
-	     divisor: modulus & -modulus.  */
-	  if (wi::ltu_p (arg1, align / BITS_PER_UNIT))
-	    return wide_int_to_tree (type,
-				     wi::bit_and (arg1,
-						  bitpos / BITS_PER_UNIT));
-	}
-
       goto associate;
 
     case RDIV_EXPR:
