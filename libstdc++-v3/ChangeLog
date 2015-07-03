@@ -1,3 +1,28 @@
+2015-07-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement std::experimental::fundamentals_v2::propagate_const.
+	* include/Makefile.am: Add propagate_const.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/propagate_const: New.
+	* testsuite/experimental/propagate_const/assignment/copy.cc: Likewise.
+	* testsuite/experimental/propagate_const/assignment/move.cc: Likewise.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Likewise.
+	* testsuite/experimental/propagate_const/cons/copy.cc: Likewise.
+	* testsuite/experimental/propagate_const/cons/default.cc: Likewise.
+	* testsuite/experimental/propagate_const/cons/move.cc: Likewise.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/hash/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/observers/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/relops/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements1.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+	* testsuite/experimental/propagate_const/swap/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/typedefs.cc: Likewise.
+
 2015-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_DEFAULT_ABI): Change valid arguments for
