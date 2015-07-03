@@ -1,3 +1,9 @@
+2015-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66743
+	* pt.c (for_each_template_parm_r) [UNDERLYING_TYPE]: Use
+	TYPE_VALUES_RAW rather than TYPE_FIELDS.
+
 2015-07-02  Andrew Sutton  <andrew.n.sutton@gmail.com>
 
 	* pt.c (type_dependent_expression_p): Handle expressions
