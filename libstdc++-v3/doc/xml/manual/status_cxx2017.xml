@@ -112,7 +112,7 @@ not in any particular release.
       </entry>
       <entry>Cleaning-up noexcept in the Library</entry>
       <entry>Partial</entry>
-      <entry/>
+      <entry>Changes to basic_string not complete.</entry>
     </row>
 
     <row>
@@ -177,14 +177,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4387.html">
 	  N4387
 	</link>
       </entry>
       <entry> Improving pair and tuple, revision 3 </entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
 
@@ -304,14 +303,13 @@ not in any particular release.
 
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4388.html">
 	  N4388
 	</link>
       </entry>
       <entry>Const-Propagating Wrapper</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 

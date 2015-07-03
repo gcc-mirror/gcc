@@ -1,3 +1,8 @@
+2015-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* doc/html/manual/*: Regenerate.
+
 2015-07-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement std::experimental::fundamentals_v2::propagate_const.
