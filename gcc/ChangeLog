@@ -1,3 +1,17 @@
+2015-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66746.
+	* config/i386/ia32intrin.h (__crc32b): Don't define if __iamcu__
+	is defined.
+	(__crc32w): Likewise.
+	(__crc32d): Likewise.
+	(__rdpmc): Likewise.
+	(__rdtscp): Likewise.
+	(_rdpmc): Likewise.
+	(_rdtscp): Likewise.
+	* config/i386/x86intrin.h: Only include ia32intrin.h if __iamcu__
+	is defined.
+
 2015-07-03  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_mathfn_compare): Remove.

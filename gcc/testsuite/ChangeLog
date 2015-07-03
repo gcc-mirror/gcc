@@ -1,3 +1,8 @@
+2015-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66746.
+	* gcc.target/i386/pr66746.c: New file.
+
 2015-07-03  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vget_lane.c: New testcase.
