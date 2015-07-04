@@ -1,3 +1,8 @@
+2015-07-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-cfg.c (verify_gimple_assign_ternary) <VEC_COND_EXPR>: Check
+	the first argument.
+
 2015-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* attribs.c (decl_attributes): Guard inform with the return value

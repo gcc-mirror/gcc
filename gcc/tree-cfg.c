@@ -4001,8 +4001,22 @@ verify_gimple_assign_ternary (gassign *stmt)
 	}
       break;
 
-    case COND_EXPR:
     case VEC_COND_EXPR:
+      if (!VECTOR_INTEGER_TYPE_P (rhs1_type)
+	  || TYPE_SIGN (rhs1_type) != SIGNED
+	  || TYPE_SIZE (rhs1_type) != TYPE_SIZE (lhs_type)
+	  || TYPE_VECTOR_SUBPARTS (rhs1_type)
+	     != TYPE_VECTOR_SUBPARTS (lhs_type))
+	{
+	  error ("the first argument of a VEC_COND_EXPR must be of a signed "
+		 "integral vector type of the same size and number of "
+		 "elements as the result");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      /* Fallthrough.  */
+    case COND_EXPR:
       if (!useless_type_conversion_p (lhs_type, rhs2_type)
 	  || !useless_type_conversion_p (lhs_type, rhs3_type))
 	{
