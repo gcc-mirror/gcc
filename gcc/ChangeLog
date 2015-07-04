@@ -1,3 +1,9 @@
+2015-07-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/66114
+	* config/pa/pa.md (indirect_jump): Use pmode_register_operand instead
+	of register_operand.  Remove constraint.
+
 2015-07-04  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-cfg.c (verify_gimple_assign_ternary) <VEC_COND_EXPR>: Check
