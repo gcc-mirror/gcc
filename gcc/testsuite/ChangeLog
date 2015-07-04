@@ -1,3 +1,8 @@
+2015-07-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66725
+	* gfortran.dg/pr66725.f90: New test.
+
 2015-07-03  Jason Merrill  <jason@redhat.com>
 
 	* gcc.dg/plugin/wide-int_plugin.c (test_double_int_round_udiv):
