@@ -9790,17 +9790,18 @@ mips16_cfun_returns_in_fpr_p (void)
 static bool
 mips_find_gp_ref (bool *cache, bool (*pred) (rtx_insn *))
 {
-  rtx_insn *insn;
+  rtx_insn *insn, *subinsn;
 
   if (!*cache)
     {
       push_topmost_sequence ();
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (USEFUL_INSN_P (insn) && pred (insn))
-	  {
-	    *cache = true;
-	    break;
-	  }
+	FOR_EACH_SUBINSN (subinsn, insn)
+	  if (USEFUL_INSN_P (subinsn) && pred (subinsn))
+	    {
+	      *cache = true;
+	      break;
+	    }
       pop_topmost_sequence ();
     }
   return *cache;
