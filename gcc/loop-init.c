@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "loop-unroll.h"
 #include "tree-scalar-evolution.h"
+#include "target.h"
 
 
 /* Apply FLAGS to the loop state.  */
@@ -377,10 +378,8 @@ pass_loop2::gate (function *fun)
       && (flag_move_loop_invariants
 	  || flag_unswitch_loops
 	  || flag_unroll_loops
-#ifdef HAVE_doloop_end
-	  || (flag_branch_on_count_reg && HAVE_doloop_end)
-#endif
-      ))
+	  || (flag_branch_on_count_reg
+	      && targetm.have_doloop_end ())))
     return true;
   else
     {
@@ -644,20 +643,14 @@ public:
 bool
 pass_rtl_doloop::gate (function *)
 {
-#ifdef HAVE_doloop_end
-  return (flag_branch_on_count_reg && HAVE_doloop_end);
-#else
-  return false;
-#endif
+  return (flag_branch_on_count_reg && targetm.have_doloop_end ());
 }
 
 unsigned int
-pass_rtl_doloop::execute (function *fun ATTRIBUTE_UNUSED)
+pass_rtl_doloop::execute (function *fun)
 {
-#ifdef HAVE_doloop_end
   if (number_of_loops (fun) > 1)
     doloop_optimize_loops ();
-#endif
   return 0;
 }
 
