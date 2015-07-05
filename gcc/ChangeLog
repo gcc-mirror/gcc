@@ -1,5 +1,16 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (allocate_stack, check_stack, probe_stack)
+	(probe_stack_address, split_stack_prologue, split_stack_space_check):
+	New targetm instruction patterns.
+	* explow.c (allocate_dynamic_stack_space): Use them instead of
+	HAVE_*/gen_* interface.
+	(emit_stack_probe): Likewise.
+	(probe_stack_range): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (stack_protect_set, stack_protect_test): New
 	targetm instruction patterns.
 	* cfgexpand.c (stack_protect_prologue): Use them instead of
