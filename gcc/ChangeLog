@@ -1,5 +1,21 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (doloop_begin, doloop_end): New targetm
+	instruction patterns.
+	* loop-init.c: Include target.h.
+	(pass_loop2::gate): Use the new targetm patterns instead of
+	HAVE_*/gen_* interface.
+	(pass_rtl_doloop::gate): Likewise.
+	(pass_rtl_doloop::execute): Remove preprocessor condition.
+	* hw-doloop.c: Build unconditionally.
+	* loop-doloop.c: Likewise.
+	(doloop_optimize): Use the new targetm patterns instead of
+	HAVE_*/gen_* interface.
+	(doloop_modify): Likewise. Change type of doloop_seq to rtx_insn *.
+	* modulo-sched.c (doloop_register_get): Likewise.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (clear_cache): New targetm instruction pattern.
 	* builtins.c (expand_builtin___clear_cache): Use it instead of
 	HAVE_*/gen_* interface.

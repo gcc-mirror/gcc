@@ -80,8 +80,6 @@ along with GCC; see the file COPYING3.  If not see
    register cannot be used for anything else but doloop -- ??? detect these
    cases).  */
 
-#ifdef HAVE_doloop_end
-
 /* Return the loop termination condition for PATTERN or zero
    if it is not a decrement and branch jump insn.  */
 
@@ -414,7 +412,7 @@ add_test (rtx cond, edge *e, basic_block dest)
 
 static void
 doloop_modify (struct loop *loop, struct niter_desc *desc,
-	       rtx doloop_seq, rtx condition, rtx count)
+	       rtx_insn *doloop_seq, rtx condition, rtx count)
 {
   rtx counter_reg;
   rtx tmp, noloop = NULL_RTX;
@@ -562,21 +560,9 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 
   /* Some targets (eg, C4x) need to initialize special looping
      registers.  */
-#ifdef HAVE_doloop_begin
-  {
-    rtx init;
-
-    init = gen_doloop_begin (counter_reg, doloop_seq);
-    if (init)
-      {
-	start_sequence ();
-	emit_insn (init);
-	sequence = get_insns ();
-	end_sequence ();
-	emit_insn_after (sequence, BB_END (loop_preheader_edge (loop)->src));
-      }
-  }
-#endif
+  if (targetm.have_doloop_begin ())
+    if (rtx_insn *seq = targetm.gen_doloop_begin (counter_reg, doloop_seq))
+      emit_insn_after (seq, BB_END (loop_preheader_edge (loop)->src));
 
   /* Insert the new low-overhead looping insn.  */
   emit_jump_insn_after (doloop_seq, BB_END (loop_end));
@@ -612,7 +598,7 @@ static bool
 doloop_optimize (struct loop *loop)
 {
   machine_mode mode;
-  rtx doloop_seq, doloop_pat, doloop_reg;
+  rtx doloop_reg;
   rtx count;
   widest_int iterations, iterations_max;
   rtx_code_label *start_label;
@@ -695,7 +681,7 @@ doloop_optimize (struct loop *loop)
   count = copy_rtx (desc->niter_expr);
   start_label = block_label (desc->in_edge->dest);
   doloop_reg = gen_reg_rtx (mode);
-  doloop_seq = gen_doloop_end (doloop_reg, start_label);
+  rtx_insn *doloop_seq = targetm.gen_doloop_end (doloop_reg, start_label);
 
   word_mode_size = GET_MODE_PRECISION (word_mode);
   word_mode_max
@@ -713,7 +699,7 @@ doloop_optimize (struct loop *loop)
       else
 	count = lowpart_subreg (word_mode, count, mode);
       PUT_MODE (doloop_reg, word_mode);
-      doloop_seq = gen_doloop_end (doloop_reg, start_label);
+      doloop_seq = targetm.gen_doloop_end (doloop_reg, start_label);
     }
   if (! doloop_seq)
     {
@@ -724,21 +710,12 @@ doloop_optimize (struct loop *loop)
     }
 
   /* If multiple instructions were created, the last must be the
-     jump instruction.  Also, a raw define_insn may yield a plain
-     pattern.  */
-  doloop_pat = doloop_seq;
-  if (INSN_P (doloop_pat))
-    {
-      rtx_insn *doloop_insn = as_a <rtx_insn *> (doloop_pat);
-      while (NEXT_INSN (doloop_insn) != NULL_RTX)
-	doloop_insn = NEXT_INSN (doloop_insn);
-      if (!JUMP_P (doloop_insn))
-	doloop_insn = NULL;
-      doloop_pat = doloop_insn;
-    }
-
-  if (! doloop_pat
-      || ! (condition = doloop_condition_get (doloop_pat)))
+     jump instruction.  */
+  rtx_insn *doloop_insn = doloop_seq;
+  while (NEXT_INSN (doloop_insn) != NULL_RTX)
+    doloop_insn = NEXT_INSN (doloop_insn);
+  if (!JUMP_P (doloop_insn)
+      || !(condition = doloop_condition_get (doloop_insn)))
     {
       if (dump_file)
 	fprintf (dump_file, "Doloop: Unrecognizable doloop pattern!\n");
@@ -767,5 +744,3 @@ doloop_optimize_loops (void)
   verify_loop_structure ();
 #endif
 }
-#endif /* HAVE_doloop_end */
-
