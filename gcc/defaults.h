@@ -1426,16 +1426,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_VTABLE_USES_DESCRIPTORS 0
 #endif
 
-#ifndef HAVE_tablejump
-#define HAVE_tablejump 0
-static inline rtx
-gen_tablejump (rtx, rtx)
-{
-  gcc_unreachable ();
-  return NULL;
-}
-#endif
-
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */

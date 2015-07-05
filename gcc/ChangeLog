@@ -1,3 +1,16 @@
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def: Add code_for_* hooks.
+	* gentarget-def.c (def_target_insn): Add TARGET_CODE_FOR_* macros.
+	* defaults.h (HAVE_tablejump, gen_tablejump): Delete.
+	* target-insns.def (casesi, tablejump): New targetm instruction
+	patterns.
+	* expr.c (try_casesi): Use them instead of HAVE_*/gen_* interface.
+	(do_tablejump): Likewise.
+	* stmt.c (expand_switch_as_decision_tree_p): Likewise.
+	(expand_sjlj_dispatch_table): Likewise.
+	* targhooks.c (default_case_values_threshold): Likewise.
+
 2015-07-04  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.c (save_reg, restore_reg): Use plus_constant.

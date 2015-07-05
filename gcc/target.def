@@ -5877,6 +5877,11 @@ HOOK_VECTOR_END (mode_switching)
 #include "target-insns.def"
 #undef DEF_TARGET_INSN
 
+#define DEF_TARGET_INSN(NAME, PROTO) \
+  DEFHOOKPOD (code_for_##NAME, "*", enum insn_code, CODE_FOR_nothing)
+#include "target-insns.def"
+#undef DEF_TARGET_INSN
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 

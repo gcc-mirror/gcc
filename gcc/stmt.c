@@ -780,10 +780,6 @@ dump_case_nodes (FILE *f, struct case_node *root,
   dump_case_nodes (f, root->right, indent_step, indent_level);
 }
 
-#ifndef HAVE_casesi
-#define HAVE_casesi 0
-#endif
-
 /* Return the smallest number of different values for which it is best to use a
    jump-table instead of a tree of conditional branches.  */
 
@@ -812,7 +808,7 @@ expand_switch_as_decision_tree_p (tree range,
 
   /* If neither casesi or tablejump is available, or flag_jump_tables
      over-ruled us, we really have no choice.  */
-  if (!HAVE_casesi && !HAVE_tablejump)
+  if (!targetm.have_casesi () && !targetm.have_tablejump ())
     return true;
   if (!flag_jump_tables)
     return true;
@@ -1291,7 +1287,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
      of expanding as a decision tree or dispatch table vs. the "new
      way" with decrement chain or dispatch table.  */
   if (dispatch_table.length () <= 5
-      || (!HAVE_casesi && !HAVE_tablejump)
+      || (!targetm.have_casesi () && !targetm.have_tablejump ())
       || !flag_jump_tables)
     {
       /* Expand the dispatch as a decrement chain:
