@@ -1,5 +1,13 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (stack_protect_set, stack_protect_test): New
+	targetm instruction patterns.
+	* cfgexpand.c (stack_protect_prologue): Use them instead of
+	HAVE_*/gen_* interface.
+	* function.c (stack_protect_epilogue): Likewise.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* expr.h (gen_move_insn_uncast): Delete.
 	* expr.c (gen_move_insn_uncast): Delete.
 
