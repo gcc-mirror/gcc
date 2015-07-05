@@ -1,3 +1,10 @@
+2015-07-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (_Hashtable<>::__rehash_policy): Do not
+	rehash container.
+	* testsuite/23_containers/unordered_set/max_load_factor/robustness.cc:
+	Adapt.
+
 2015-07-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update status table.

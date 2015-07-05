@@ -594,7 +594,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_rehash_policy; }
 
       void
-      __rehash_policy(const _RehashPolicy&);
+      __rehash_policy(const _RehashPolicy& __pol)
+      { _M_rehash_policy = __pol; }
 
       // Lookup.
       iterator
@@ -1278,22 +1279,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__x._M_begin())
 	__x._M_buckets[__x._M_bucket_index(__x._M_begin())]
 	  = &__x._M_before_begin;
-    }
-
-  template<typename _Key, typename _Value,
-	   typename _Alloc, typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
-	   typename _Traits>
-    void
-    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    __rehash_policy(const _RehashPolicy& __pol)
-    {
-      auto __do_rehash =
-	__pol._M_need_rehash(_M_bucket_count, _M_element_count, 0);
-      if (__do_rehash.first)
-	_M_rehash(__do_rehash.second, _M_rehash_policy._M_state());
-      _M_rehash_policy = __pol;
     }
 
   template<typename _Key, typename _Value,
