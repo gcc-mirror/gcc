@@ -44,7 +44,7 @@ extern bool nios2_fpu_insn_enabled (enum n2fpu_code);
 extern const char * nios2_fpu_insn_asm (enum n2fpu_code);
 
 extern bool nios2_legitimate_pic_operand_p (rtx);
-extern bool nios2_symbol_ref_in_small_data_p (rtx);
+extern bool gprel_constant_p (rtx);
 extern bool nios2_regno_ok_for_base_p (int, bool);
 extern bool nios2_unspec_reloc_p (rtx);
 

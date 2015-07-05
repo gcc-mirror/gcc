@@ -1614,14 +1614,15 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
     case SYMBOL_REF:
       if (SYMBOL_REF_TLS_MODEL (operand))
 	return false;
-      
-      if (nios2_symbol_ref_in_small_data_p (operand))
+
+      /* Else, fall through.  */
+    case CONST:
+      if (gprel_constant_p (operand))
 	return true;
 
       /* Else, fall through.  */
     case LABEL_REF:
     case CONST_INT:
-    case CONST:
     case CONST_DOUBLE:
       return false;
 
@@ -1688,7 +1689,7 @@ nios2_in_small_data_p (const_tree exp)
 
 /* Return true if symbol is in small data section.  */
 
-bool
+static bool
 nios2_symbol_ref_in_small_data_p (rtx sym)
 {
   tree decl;
@@ -2110,7 +2111,7 @@ nios2_print_operand (FILE *file, rtx op, int letter)
 }
 
 /* Return true if this is a GP-relative accessible reference.  */
-static bool
+bool
 gprel_constant_p (rtx op)
 {
   if (GET_CODE (op) == SYMBOL_REF

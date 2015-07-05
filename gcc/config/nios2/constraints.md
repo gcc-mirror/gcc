@@ -84,8 +84,7 @@
 
 (define_constraint "S"
   "An immediate stored in small data, accessible by GP."
-  (and (match_code "symbol_ref")
-       (match_test "nios2_symbol_ref_in_small_data_p (op)")))
+  (match_test "gprel_constant_p (op)"))
 
 (define_constraint "T"
   "A constant unspec offset representing a relocation."
