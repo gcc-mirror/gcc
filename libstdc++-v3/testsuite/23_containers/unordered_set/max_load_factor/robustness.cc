@@ -32,41 +32,47 @@ void test01()
   int val = 0;
   for (; val != 100; ++val)
     {
-      VERIFY( us.insert(val).second) ;
+      VERIFY( us.insert(val).second );
       VERIFY( us.load_factor() <= us.max_load_factor() );
     }
 
   float cur_max_load_factor = us.max_load_factor();
   int counter = 0;
   std::size_t thrown_exceptions = 0;
+
+  // Reduce max load factor.
+  us.max_load_factor(us.max_load_factor() / 2);
+
+  // At this point load factor is higher than max_load_factor because we can't
+  // rehash in max_load_factor call.
+  VERIFY( us.load_factor() > us.max_load_factor() );
+
   while (true)
     {
       __gnu_cxx::limit_condition::set_limit(counter++);
       bool do_break = false;
       try
 	{
-	  us.max_load_factor(.5f);
+	  size_t nbkts = us.bucket_count();
+	  // Check that unordered_set will still be correctly resized when
+	  // needed.
+	  VERIFY( us.insert(val++).second );
+
+	  VERIFY( us.bucket_count() != nbkts );
+	  VERIFY( us.load_factor() <= us.max_load_factor() );
 	  do_break = true;
 	}
       catch (const __gnu_cxx::forced_error&)
 	{
-	  VERIFY( us.max_load_factor() == cur_max_load_factor );
+	  // max load factor doesn't change.
+	  VERIFY( us.max_load_factor() == .5f );
 	  ++thrown_exceptions;
 	}
-      // Lets check that unordered_set will still be correctly resized
-      // when needed
-      __gnu_cxx::limit_condition::set_limit(nl_size_t::max());
-      for (;;)
-	{
-	  VERIFY( us.load_factor() <= us.max_load_factor() );
-	  size_t nbkts = us.bucket_count();
-	  VERIFY( us.insert(val++).second );
-	  if (us.bucket_count() != nbkts)
-	    break;
-	}
+
       if (do_break)
 	break;
     }
+
   VERIFY( thrown_exceptions > 0 );
 }
 
