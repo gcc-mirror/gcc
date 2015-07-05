@@ -446,9 +446,8 @@ static void
 save_reg (int regno, unsigned offset)
 {
   rtx reg = gen_rtx_REG (SImode, regno);
-  rtx addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-			   gen_int_mode (offset, Pmode));
-  rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), reg);
+  rtx addr = plus_constant (Pmode, stack_pointer_rtx, offset, false);
+  rtx_insn *insn = emit_move_insn (gen_frame_mem (Pmode, addr), reg);
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
@@ -456,9 +455,8 @@ static void
 restore_reg (int regno, unsigned offset)
 {
   rtx reg = gen_rtx_REG (SImode, regno);
-  rtx addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-			   gen_int_mode (offset, Pmode));
-  rtx insn = emit_move_insn (reg, gen_frame_mem (Pmode, addr));
+  rtx addr = plus_constant (Pmode, stack_pointer_rtx, offset, false);
+  rtx_insn *insn = emit_move_insn (reg, gen_frame_mem (Pmode, addr));
   /* Tag epilogue unwind note.  */
   add_reg_note (insn, REG_CFA_RESTORE, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
@@ -479,10 +477,10 @@ nios2_emit_stack_limit_check (void)
 /* Temp regno used inside prologue/epilogue.  */
 #define TEMP_REG_NUM 8
 
-static rtx
+static rtx_insn *
 nios2_emit_add_constant (rtx reg, HOST_WIDE_INT immed)
 {
-  rtx insn;
+  rtx_insn *insn;
   if (SMALL_INT (immed))
     insn = emit_insn (gen_add2_insn (reg, gen_int_mode (immed, Pmode)));
   else
@@ -501,7 +499,7 @@ nios2_expand_prologue (void)
   int total_frame_size, save_offset;
   int sp_offset;      /* offset from base_reg to final stack value.  */
   int save_regs_base; /* offset from base_reg to register save area.  */
-  rtx insn;
+  rtx_insn *insn;
 
   total_frame_size = nios2_compute_frame_layout ();
 
@@ -587,7 +585,8 @@ nios2_expand_prologue (void)
 void
 nios2_expand_epilogue (bool sibcall_p)
 {
-  rtx insn, cfa_adj;
+  rtx_insn *insn;
+  rtx cfa_adj;
   int total_frame_size;
   int sp_adjust, save_offset;
   unsigned int regno;
@@ -1180,7 +1179,8 @@ nios2_call_tls_get_addr (rtx ti)
 {
   rtx arg = gen_rtx_REG (Pmode, FIRST_ARG_REGNO);
   rtx ret = gen_rtx_REG (Pmode, FIRST_RETVAL_REGNO);
-  rtx fn, insn;
+  rtx fn;
+  rtx_insn *insn;
   
   if (!nios2_tls_symbol)
     nios2_tls_symbol = init_one_libfunc ("__tls_get_addr");
@@ -1343,10 +1343,10 @@ nios2_emit_expensive_div (rtx *operands, machine_mode mode)
   rtx or_result, shift_left_result;
   rtx lookup_value;
   rtx_code_label *lab1, *lab3;
-  rtx insns;
+  rtx_insn *insns;
   rtx libfunc;
   rtx final_result;
-  rtx tmp;
+  rtx_insn *tmp;
   rtx table;
 
   /* It may look a little generic, but only SImode is supported for now.  */
@@ -1928,7 +1928,7 @@ nios2_delegitimize_address (rtx x)
 }
 
 /* Main expander function for RTL moves.  */
-int
+bool
 nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 {
   rtx to = operands[0];
@@ -1947,7 +1947,7 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 
   operands[0] = to;
   operands[1] = from;
-  return 0;
+  return false;
 }
 
 /* The function with address *ADDR is being called.  If the address
