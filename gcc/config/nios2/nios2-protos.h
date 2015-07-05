@@ -29,7 +29,7 @@ extern void nios2_expand_epilogue (bool);
 extern void nios2_function_profiler (FILE *, int);
 
 #ifdef RTX_CODE
-extern int nios2_emit_move_sequence (rtx *, machine_mode);
+extern bool nios2_emit_move_sequence (rtx *, machine_mode);
 extern void nios2_emit_expensive_div (rtx *, machine_mode);
 extern void nios2_adjust_call_address (rtx *, rtx);
 

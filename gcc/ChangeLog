@@ -1,3 +1,15 @@
+2015-07-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (save_reg, restore_reg): Use plus_constant.
+	Use rtx_insn * instead of rtx.
+	(nios2_emit_add_constant): Use rtx_insn * instead of rtx.
+	(nios2_expand_prologue, nios2_expand_epilogue): Likewise.
+	(nios2_call_tls_get_addr): Likewise.
+	(nios2_emit_expensive_div): Likewise.
+	(nios2_emit_move_sequence): Change return type to bool.
+	* config/nios2/nios2-protos.h (nios2_emit_move_sequence):
+	Change return type to bool.
+
 2015-07-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/66747
