@@ -1,6 +1,10 @@
 2015-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66718
+	* tree-vect-stmts.c (vectorizable_call): Replace uses of
+	GOMP_SIMD_LANE outside of loop with vf - 1 rather than 0.
+
+	PR tree-optimization/66718
 	* tree-vect-stmts.c (vectorizable_assignment, vectorizable_store,
 	vectorizable_load, vectorizable_condition): Move vectype,
 	nunits, ncopies computation after checking what kind of statement
