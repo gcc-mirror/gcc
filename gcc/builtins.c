@@ -1282,18 +1282,16 @@ expand_builtin_prefetch (tree exp)
       op2 = const0_rtx;
     }
 
-#ifdef HAVE_prefetch
-  if (HAVE_prefetch)
+  if (targetm.have_prefetch ())
     {
       struct expand_operand ops[3];
 
       create_address_operand (&ops[0], op0);
       create_integer_operand (&ops[1], INTVAL (op1));
       create_integer_operand (&ops[2], INTVAL (op2));
-      if (maybe_expand_insn (CODE_FOR_prefetch, 3, ops))
+      if (maybe_expand_insn (targetm.code_for_prefetch, 3, ops))
 	return;
     }
-#endif
 
   /* Don't do anything with direct references to volatile memory, but
      generate code to handle other side effects.  */
