@@ -237,7 +237,7 @@ both multilib and multiarch.  In that case, multiarch names are encoded
 in @code{MULTILIB_OSDIRNAMES} instead.
 
 More documentation about multiarch can be found at
-@uref{http://wiki.debian.org/Multiarch}.
+@uref{https://wiki.debian.org/Multiarch}.
 
 @findex SPECS
 @item SPECS

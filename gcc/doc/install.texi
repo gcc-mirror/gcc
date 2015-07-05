@@ -1058,7 +1058,7 @@ if the files are found.  The auto detection is enabled for native builds,
 and for cross builds configured with @option{--with-sysroot}, and without
 @option{--with-native-system-header-dir}.
 More documentation about multiarch can be found at
-@uref{http://wiki.debian.org/Multiarch}.
+@uref{https://wiki.debian.org/Multiarch}.
 
 @item --enable-vtable-verify
 Specify whether to enable or disable the vtable verification feature.
