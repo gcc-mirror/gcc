@@ -566,15 +566,6 @@ cancel_changes (int num)
 }
 
 /* Reduce conditional compilation elsewhere.  */
-#ifndef HAVE_extv
-#define HAVE_extv	0
-#define CODE_FOR_extv	CODE_FOR_nothing
-#endif
-#ifndef HAVE_extzv
-#define HAVE_extzv	0
-#define CODE_FOR_extzv	CODE_FOR_nothing
-#endif
-
 /* A subroutine of validate_replace_rtx_1 that tries to simplify the resulting
    rtx.  */
 
@@ -690,15 +681,15 @@ simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
 	  machine_mode is_mode = GET_MODE (XEXP (x, 0));
 	  int pos = INTVAL (XEXP (x, 2));
 
-	  if (GET_CODE (x) == ZERO_EXTRACT && HAVE_extzv)
+	  if (GET_CODE (x) == ZERO_EXTRACT && targetm.have_extzv ())
 	    {
-	      wanted_mode = insn_data[CODE_FOR_extzv].operand[1].mode;
+	      wanted_mode = insn_data[targetm.code_for_extzv].operand[1].mode;
 	      if (wanted_mode == VOIDmode)
 		wanted_mode = word_mode;
 	    }
-	  else if (GET_CODE (x) == SIGN_EXTRACT && HAVE_extv)
+	  else if (GET_CODE (x) == SIGN_EXTRACT && targetm.have_extv ())
 	    {
-	      wanted_mode = insn_data[CODE_FOR_extv].operand[1].mode;
+	      wanted_mode = insn_data[targetm.code_for_extv].operand[1].mode;
 	      if (wanted_mode == VOIDmode)
 		wanted_mode = word_mode;
 	    }

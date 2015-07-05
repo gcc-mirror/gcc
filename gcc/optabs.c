@@ -8416,18 +8416,6 @@ expand_jump_insn (enum insn_code icode, unsigned int nops,
 }
 
 /* Reduce conditional compilation elsewhere.  */
-#ifndef HAVE_insv
-#define HAVE_insv	0
-#define CODE_FOR_insv	CODE_FOR_nothing
-#endif
-#ifndef HAVE_extv
-#define HAVE_extv	0
-#define CODE_FOR_extv	CODE_FOR_nothing
-#endif
-#ifndef HAVE_extzv
-#define HAVE_extzv	0
-#define CODE_FOR_extzv	CODE_FOR_nothing
-#endif
 
 /* Enumerates the possible types of structure operand to an
    extraction_insn.  */
@@ -8512,25 +8500,25 @@ get_extraction_insn (extraction_insn *insn,
   switch (pattern)
     {
     case EP_insv:
-      if (HAVE_insv
+      if (targetm.have_insv ()
 	  && get_traditional_extraction_insn (insn, type, mode,
-					      CODE_FOR_insv, 0, 3))
+					      targetm.code_for_insv, 0, 3))
 	return true;
       return get_optab_extraction_insn (insn, type, mode, insv_optab,
 					insvmisalign_optab, 2);
 
     case EP_extv:
-      if (HAVE_extv
+      if (targetm.have_extv ()
 	  && get_traditional_extraction_insn (insn, type, mode,
-					      CODE_FOR_extv, 1, 0))
+					      targetm.code_for_extv, 1, 0))
 	return true;
       return get_optab_extraction_insn (insn, type, mode, extv_optab,
 					extvmisalign_optab, 3);
 
     case EP_extzv:
-      if (HAVE_extzv
+      if (targetm.have_extzv ()
 	  && get_traditional_extraction_insn (insn, type, mode,
-					      CODE_FOR_extzv, 1, 0))
+					      targetm.code_for_extzv, 1, 0))
 	return true;
       return get_optab_extraction_insn (insn, type, mode, extzv_optab,
 					extzvmisalign_optab, 3);
