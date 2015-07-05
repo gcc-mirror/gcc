@@ -1,5 +1,13 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (trap): New targetm instruction pattern.
+	* builtins.c (expand_builtin_trap): Use it instead of HAVE_*/gen_*
+	interface.
+	* explow.c (allocate_dynamic_stack_space): Likewise.
+	* ifcvt.c (find_if_header): Likewise.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (prefetch): New targetm instruction pattern.
 	* tree-ssa-loop-prefetch.c: Include targeth.
 	(tree_ssa_prefetch_arrays): Use prefetch targetm pattern instead
