@@ -1308,16 +1308,15 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
       available_label = NULL;
 
-#ifdef HAVE_split_stack_space_check
-      if (HAVE_split_stack_space_check)
+      if (targetm.have_split_stack_space_check ())
 	{
 	  available_label = gen_label_rtx ();
 
 	  /* This instruction will branch to AVAILABLE_LABEL if there
 	     are SIZE bytes available on the stack.  */
-	  emit_insn (gen_split_stack_space_check (size, available_label));
+	  emit_insn (targetm.gen_split_stack_space_check
+		     (size, available_label));
 	}
-#endif
 
       /* The __morestack_allocate_stack_space function will allocate
 	 memory using malloc.  If the alignment of the memory returned
@@ -1375,8 +1374,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
      stack pointer, such as acquiring the space by calling malloc().  */
-#ifdef HAVE_allocate_stack
-  if (HAVE_allocate_stack)
+  if (targetm.have_allocate_stack ())
     {
       struct expand_operand ops[2];
       /* We don't have to check against the predicate for operand 0 since
@@ -1384,10 +1382,9 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 be valid for the operand.  */
       create_fixed_operand (&ops[0], target);
       create_convert_operand_to (&ops[1], size, STACK_SIZE_MODE, true);
-      expand_insn (CODE_FOR_allocate_stack, 2, ops);
+      expand_insn (targetm.code_for_allocate_stack, 2, ops);
     }
   else
-#endif
     {
       int saved_stack_pointer_delta;
 
@@ -1491,22 +1488,18 @@ set_stack_check_libfunc (const char *libfunc_name)
 void
 emit_stack_probe (rtx address)
 {
-#ifdef HAVE_probe_stack_address
-  if (HAVE_probe_stack_address)
-    emit_insn (gen_probe_stack_address (address));
+  if (targetm.have_probe_stack_address ())
+    emit_insn (targetm.gen_probe_stack_address (address));
   else
-#endif
     {
       rtx memref = gen_rtx_MEM (word_mode, address);
 
       MEM_VOLATILE_P (memref) = 1;
 
       /* See if we have an insn to probe the stack.  */
-#ifdef HAVE_probe_stack
-      if (HAVE_probe_stack)
-        emit_insn (gen_probe_stack (memref));
+      if (targetm.have_probe_stack ())
+        emit_insn (targetm.gen_probe_stack (memref));
       else
-#endif
         emit_move_insn (memref, const0_rtx);
     }
 }
@@ -1548,8 +1541,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
     }
 
   /* Next see if we have an insn to check the stack.  */
-#ifdef HAVE_check_stack
-  else if (HAVE_check_stack)
+  else if (targetm.have_check_stack ())
     {
       struct expand_operand ops[1];
       rtx addr = memory_address (Pmode,
@@ -1559,10 +1551,9 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 								size, first)));
       bool success;
       create_input_operand (&ops[0], addr, Pmode);
-      success = maybe_expand_insn (CODE_FOR_check_stack, 1, ops);
+      success = maybe_expand_insn (targetm.code_for_check_stack, 1, ops);
       gcc_assert (success);
     }
-#endif
 
   /* Otherwise we have to generate explicit probes.  If we have a constant
      small number of them to generate, that's the easy case.  */
