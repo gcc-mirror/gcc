@@ -1422,11 +1422,9 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
 	  emit_cmp_and_jump_insns (available, size, GEU, NULL_RTX, Pmode, 1,
 				   space_available);
-#ifdef HAVE_trap
-	  if (HAVE_trap)
-	    emit_insn (gen_trap ());
+	  if (targetm.have_trap ())
+	    emit_insn (targetm.gen_trap ());
 	  else
-#endif
 	    error ("stack limits not supported on this target");
 	  emit_barrier ();
 	  emit_label (space_available);
