@@ -1,5 +1,13 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (untyped_call, untyped_return): New targetm
+	instruction patterns.
+	* builtins.c (expand_builtin_apply): Use them instead of
+	HAVE_*/gen_* interface.
+	(result_vector): Define unconditionally.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (builtin_longjmp, builtin_setjmp_receiver)
 	(builtin_setjmp_setup, exception_receiver, nonlocal_goto)
 	(nonlocal_goto_receiver): New targetm instruction patterns.
