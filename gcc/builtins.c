@@ -4807,20 +4807,22 @@ expand_builtin_copysign (tree exp, rtx target, rtx subtarget)
 /* Expand a call to __builtin___clear_cache.  */
 
 static rtx
-expand_builtin___clear_cache (tree exp ATTRIBUTE_UNUSED)
+expand_builtin___clear_cache (tree exp)
 {
-#ifndef HAVE_clear_cache
+  if (!targetm.code_for_clear_cache)
+    {
 #ifdef CLEAR_INSN_CACHE
-  /* There is no "clear_cache" insn, and __clear_cache() in libgcc
-     does something.  Just do the default expansion to a call to
-     __clear_cache().  */
-  return NULL_RTX;
+      /* There is no "clear_cache" insn, and __clear_cache() in libgcc
+	 does something.  Just do the default expansion to a call to
+	 __clear_cache().  */
+      return NULL_RTX;
 #else
-  /* There is no "clear_cache" insn, and __clear_cache() in libgcc
-     does nothing.  There is no need to call it.  Do nothing.  */
-  return const0_rtx;
+      /* There is no "clear_cache" insn, and __clear_cache() in libgcc
+	 does nothing.  There is no need to call it.  Do nothing.  */
+      return const0_rtx;
 #endif /* CLEAR_INSN_CACHE */
-#else
+    }
+
   /* We have a "clear_cache" insn, and it will handle everything.  */
   tree begin, end;
   rtx begin_rtx, end_rtx;
@@ -4834,7 +4836,7 @@ expand_builtin___clear_cache (tree exp ATTRIBUTE_UNUSED)
       return const0_rtx;
     }
 
-  if (HAVE_clear_cache)
+  if (targetm.have_clear_cache ())
     {
       struct expand_operand ops[2];
 
@@ -4846,11 +4848,10 @@ expand_builtin___clear_cache (tree exp ATTRIBUTE_UNUSED)
 
       create_address_operand (&ops[0], begin_rtx);
       create_address_operand (&ops[1], end_rtx);
-      if (maybe_expand_insn (CODE_FOR_clear_cache, 2, ops))
+      if (maybe_expand_insn (targetm.code_for_clear_cache, 2, ops))
 	return const0_rtx;
     }
   return const0_rtx;
-#endif /* HAVE_clear_cache */
 }
 
 /* Given a trampoline address, make sure it satisfies TRAMPOLINE_ALIGNMENT.  */

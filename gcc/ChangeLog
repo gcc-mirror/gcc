@@ -1,5 +1,11 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (clear_cache): New targetm instruction pattern.
+	* builtins.c (expand_builtin___clear_cache): Use it instead of
+	HAVE_*/gen_* interface.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (allocate_stack, check_stack, probe_stack)
 	(probe_stack_address, split_stack_prologue, split_stack_space_check):
 	New targetm instruction patterns.
