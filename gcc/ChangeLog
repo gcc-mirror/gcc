@@ -1,3 +1,9 @@
+2015-07-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/fragments.texi (Target Fragment): Convert debian.org
+	link to use https.
+	* doc/install.texi (Configuration): Ditto.
+
 2015-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66718
