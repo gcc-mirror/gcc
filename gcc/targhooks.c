@@ -1339,10 +1339,6 @@ default_target_can_inline_p (tree caller, tree callee)
   return ret;
 }
 
-#ifndef HAVE_casesi
-# define HAVE_casesi 0
-#endif
-
 /* If the machine does not have a case insn that compares the bounds,
    this means extra overhead for dispatch tables, which raises the
    threshold for using them.  */
@@ -1350,7 +1346,7 @@ default_target_can_inline_p (tree caller, tree callee)
 unsigned int
 default_case_values_threshold (void)
 {
-  return (HAVE_casesi ? 4 : 5);
+  return (targetm.have_casesi () ? 4 : 5);
 }
 
 bool

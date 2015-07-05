@@ -189,6 +189,13 @@ def_target_insn (const char *name, const char *prototype)
     printf ("invalid_%s\n", suffix);
   else
     printf ("target_gen_%s\n", name);
+
+  printf ("#undef TARGET_CODE_FOR_%s\n", upper_name);
+  printf ("#define TARGET_CODE_FOR_%s ", upper_name);
+  if (truth == 0)
+    printf ("CODE_FOR_nothing\n");
+  else
+    printf ("CODE_FOR_%s\n", name);
 }
 
 int
