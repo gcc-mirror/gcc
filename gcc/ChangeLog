@@ -1,3 +1,15 @@
+2015-07-05  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* config/nios2/nios2-protos.h (nios2_symbol_ref_in_small_data_p):
+	Delete extern declaration.
+	(gprel_constant_p): Add extern declaration.
+	* config/nios2/constraints.md ("S"): Use gprel_constant_p
+	instead of nios2_symbol_ref_in_small_data_p.
+	* config/nios2/nios2.c (nios2_legitimate_address_p): Likewise.
+	(nios2_symbol_ref_in_small_data_p): Make static.
+	(gprel_constant_p): Make non-static.
+
 2015-07-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/fragments.texi (Target Fragment): Convert debian.org
