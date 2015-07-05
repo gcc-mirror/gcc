@@ -1,5 +1,16 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (builtin_longjmp, builtin_setjmp_receiver)
+	(builtin_setjmp_setup, exception_receiver, nonlocal_goto)
+	(nonlocal_goto_receiver): New targetm instruction patterns.
+	* builtins.c (expand_builtin_setjmp_setup): Use them instead
+	of HAVE_*/gen_* interface.
+	(expand_builtin_setjmp_receiver): Likewise.
+	(expand_builtin_longjmp, expand_builtin_nonlocal_goto): Likewise.
+	* except.c (expand_dw2_landing_pad_for_region): Likewise.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def: Add code_for_* hooks.
 	* gentarget-def.c (def_target_insn): Add TARGET_CODE_FOR_* macros.
 	* defaults.h (HAVE_tablejump, gen_tablejump): Delete.
