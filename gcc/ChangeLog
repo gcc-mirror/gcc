@@ -1,5 +1,14 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (restore_stack_block, restore_stack_function)
+	(restore_stack_nonlocal, save_stack_block, save_stack_function)
+	(save_stack_nonlocal): New targetm instruction patterns.
+	* builtins.c (expand_builtin_apply): Use them instead of
+	HAVE_*/gen_* interface.
+	* explow.c (emit_stack_save, emit_stack_restore): Likewise.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (trap): New targetm instruction pattern.
 	* builtins.c (expand_builtin_trap): Use it instead of HAVE_*/gen_*
 	interface.

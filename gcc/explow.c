@@ -973,30 +973,24 @@ emit_stack_save (enum save_level save_level, rtx *psave)
 {
   rtx sa = *psave;
   /* The default is that we use a move insn and save in a Pmode object.  */
-  rtx (*fcn) (rtx, rtx) = gen_move_insn_uncast;
+  rtx_insn *(*fcn) (rtx, rtx) = gen_move_insn;
   machine_mode mode = STACK_SAVEAREA_MODE (save_level);
 
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
     {
-#ifdef HAVE_save_stack_block
     case SAVE_BLOCK:
-      if (HAVE_save_stack_block)
-	fcn = gen_save_stack_block;
+      if (targetm.have_save_stack_block ())
+	fcn = targetm.gen_save_stack_block;
       break;
-#endif
-#ifdef HAVE_save_stack_function
     case SAVE_FUNCTION:
-      if (HAVE_save_stack_function)
-	fcn = gen_save_stack_function;
+      if (targetm.have_save_stack_function ())
+	fcn = targetm.gen_save_stack_function;
       break;
-#endif
-#ifdef HAVE_save_stack_nonlocal
     case SAVE_NONLOCAL:
-      if (HAVE_save_stack_nonlocal)
-	fcn = gen_save_stack_nonlocal;
+      if (targetm.have_save_stack_nonlocal ())
+	fcn = targetm.gen_save_stack_nonlocal;
       break;
-#endif
     default:
       break;
     }
@@ -1028,7 +1022,7 @@ void
 emit_stack_restore (enum save_level save_level, rtx sa)
 {
   /* The default is that we use a move insn.  */
-  rtx (*fcn) (rtx, rtx) = gen_move_insn_uncast;
+  rtx_insn *(*fcn) (rtx, rtx) = gen_move_insn;
 
   /* If stack_realign_drap, the x86 backend emits a prologue that aligns both
      STACK_POINTER and HARD_FRAME_POINTER.
@@ -1047,24 +1041,18 @@ emit_stack_restore (enum save_level save_level, rtx sa)
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
     {
-#ifdef HAVE_restore_stack_block
     case SAVE_BLOCK:
-      if (HAVE_restore_stack_block)
-	fcn = gen_restore_stack_block;
+      if (targetm.have_restore_stack_block ())
+	fcn = targetm.gen_restore_stack_block;
       break;
-#endif
-#ifdef HAVE_restore_stack_function
     case SAVE_FUNCTION:
-      if (HAVE_restore_stack_function)
-	fcn = gen_restore_stack_function;
+      if (targetm.have_restore_stack_function ())
+	fcn = targetm.gen_restore_stack_function;
       break;
-#endif
-#ifdef HAVE_restore_stack_nonlocal
     case SAVE_NONLOCAL:
-      if (HAVE_restore_stack_nonlocal)
-	fcn = gen_restore_stack_nonlocal;
+      if (targetm.have_restore_stack_nonlocal ())
+	fcn = targetm.gen_restore_stack_nonlocal;
       break;
-#endif
     default:
       break;
     }
