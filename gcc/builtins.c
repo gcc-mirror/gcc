@@ -889,10 +889,8 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
   emit_stack_save (SAVE_NONLOCAL, &stack_save);
 
   /* If there is further processing to do, do it.  */
-#ifdef HAVE_builtin_setjmp_setup
-  if (HAVE_builtin_setjmp_setup)
-    emit_insn (gen_builtin_setjmp_setup (buf_addr));
-#endif
+  if (targetm.have_builtin_setjmp_setup ())
+    emit_insn (targetm.gen_builtin_setjmp_setup (buf_addr));
 
   /* We have a nonlocal label.   */
   cfun->has_nonlocal_label = 1;
@@ -903,7 +901,7 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
    If RECEIVER_LABEL is NULL, instead contruct a nonlocal goto handler.  */
 
 void
-expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
+expand_builtin_setjmp_receiver (rtx receiver_label)
 {
   rtx chain;
 
@@ -919,9 +917,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 
   /* Now put in the code to restore the frame pointer, and argument
      pointer, if needed.  */
-#ifdef HAVE_nonlocal_goto
-  if (! HAVE_nonlocal_goto)
-#endif
+  if (! targetm.have_nonlocal_goto ())
     {
       /* First adjust our frame pointer to its actual value.  It was
 	 previously set to the start of the virtual area corresponding to
@@ -972,17 +968,12 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
     }
 #endif
 
-#ifdef HAVE_builtin_setjmp_receiver
-  if (receiver_label != NULL && HAVE_builtin_setjmp_receiver)
-    emit_insn (gen_builtin_setjmp_receiver (receiver_label));
+  if (receiver_label != NULL && targetm.have_builtin_setjmp_receiver ())
+    emit_insn (targetm.gen_builtin_setjmp_receiver (receiver_label));
+  else if (targetm.have_nonlocal_goto_receiver ())
+    emit_insn (targetm.gen_nonlocal_goto_receiver ());
   else
-#endif
-#ifdef HAVE_nonlocal_goto_receiver
-    if (HAVE_nonlocal_goto_receiver)
-      emit_insn (gen_nonlocal_goto_receiver ());
-    else
-#endif
-      { /* Nothing */ }
+    { /* Nothing */ }
 
   /* We must not allow the code we just generated to be reordered by
      scheduling.  Specifically, the update of the frame pointer must
@@ -1019,11 +1010,9 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
   gcc_assert (value == const1_rtx);
 
   last = get_last_insn ();
-#ifdef HAVE_builtin_longjmp
-  if (HAVE_builtin_longjmp)
-    emit_insn (gen_builtin_longjmp (buf_addr));
+  if (targetm.have_builtin_longjmp ())
+    emit_insn (targetm.gen_builtin_longjmp (buf_addr));
   else
-#endif
     {
       fp = gen_rtx_MEM (Pmode, buf_addr);
       lab = gen_rtx_MEM (Pmode, plus_constant (Pmode, buf_addr,
@@ -1037,14 +1026,12 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 
       /* Pick up FP, label, and SP from the block and jump.  This code is
 	 from expand_goto in stmt.c; see there for detailed comments.  */
-#ifdef HAVE_nonlocal_goto
-      if (HAVE_nonlocal_goto)
+      if (targetm.have_nonlocal_goto ())
 	/* We have to pass a value to the nonlocal_goto pattern that will
 	   get copied into the static_chain pointer, but it does not matter
 	   what that value is, because builtin_setjmp does not use it.  */
-	emit_insn (gen_nonlocal_goto (value, lab, stack, fp));
+	emit_insn (targetm.gen_nonlocal_goto (value, lab, stack, fp));
       else
-#endif
 	{
 	  lab = copy_to_reg (lab);
 
@@ -1166,12 +1153,10 @@ expand_builtin_nonlocal_goto (tree exp)
 
   crtl->has_nonlocal_goto = 1;
 
-#ifdef HAVE_nonlocal_goto
   /* ??? We no longer need to pass the static chain value, afaik.  */
-  if (HAVE_nonlocal_goto)
-    emit_insn (gen_nonlocal_goto (const0_rtx, r_label, r_sp, r_fp));
+  if (targetm.have_nonlocal_goto ())
+    emit_insn (targetm.gen_nonlocal_goto (const0_rtx, r_label, r_sp, r_fp));
   else
-#endif
     {
       r_label = copy_to_reg (r_label);
 

@@ -30,14 +30,20 @@
    Patterns that take no operands should have a prototype "(void)".
 
    Instructions should be documented in md.texi rather than here.  */
+DEF_TARGET_INSN (builtin_longjmp, (rtx x0))
+DEF_TARGET_INSN (builtin_setjmp_receiver, (rtx x0))
+DEF_TARGET_INSN (builtin_setjmp_setup, (rtx x0))
 DEF_TARGET_INSN (canonicalize_funcptr_for_compare, (rtx x0, rtx x1))
 DEF_TARGET_INSN (casesi, (rtx x0, rtx x1, rtx x2, rtx x3, rtx x4))
 DEF_TARGET_INSN (epilogue, (void))
+DEF_TARGET_INSN (exception_receiver, (void))
 DEF_TARGET_INSN (jump, (rtx x0))
 DEF_TARGET_INSN (load_multiple, (rtx x0, rtx x1, rtx x2))
 DEF_TARGET_INSN (mem_signal_fence, (rtx x0))
 DEF_TARGET_INSN (mem_thread_fence, (rtx x0))
 DEF_TARGET_INSN (memory_barrier, (void))
+DEF_TARGET_INSN (nonlocal_goto, (rtx x0, rtx x1, rtx x2, rtx x3))
+DEF_TARGET_INSN (nonlocal_goto_receiver, (void))
 DEF_TARGET_INSN (prologue, (void))
 DEF_TARGET_INSN (return, (void))
 DEF_TARGET_INSN (sibcall_epilogue, (void))
