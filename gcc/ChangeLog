@@ -1,5 +1,13 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (extv, extzv, insv): New targetm instruction
+	patterns.
+	* optabs.c (get_extraction_insn): Use them instead of HAVE_*/gen_*
+	interface.
+	* recog.c (simplify_while_replacing): Likewise.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (doloop_begin, doloop_end): New targetm
 	instruction patterns.
 	* loop-init.c: Include target.h.
