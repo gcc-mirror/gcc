@@ -1,5 +1,10 @@
 2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* expr.h (gen_move_insn_uncast): Delete.
+	* expr.c (gen_move_insn_uncast): Delete.
+
+2015-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (restore_stack_block, restore_stack_function)
 	(restore_stack_nonlocal, save_stack_block, save_stack_function)
 	(save_stack_nonlocal): New targetm instruction patterns.

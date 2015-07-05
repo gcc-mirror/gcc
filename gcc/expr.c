@@ -3625,15 +3625,6 @@ gen_move_insn (rtx x, rtx y)
   return seq;
 }
 
-/* Same as above, but return rtx (used as a callback, which must have
-   prototype compatible with other functions returning rtx).  */
-
-rtx
-gen_move_insn_uncast (rtx x, rtx y)
-{
-  return gen_move_insn (x, y);
-}
-
 /* If Y is representable exactly in a narrower mode, and the target can
    perform the extension directly from constant or memory, then emit the
    move as an extension.  */
