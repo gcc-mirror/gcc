@@ -458,6 +458,9 @@ struct gomp_thread_pool
   struct gomp_thread **threads;
   unsigned threads_size;
   unsigned threads_used;
+  /* The last team is used for non-nested teams to delay their destruction to
+     make sure all the threads in the team move on to the pool's barrier before
+     the team's barrier is destroyed.  */
   struct gomp_team *last_team;
   /* Number of threads running in this contention group.  */
   unsigned long threads_busy;
