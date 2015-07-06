@@ -1,3 +1,7 @@
+2015-07-06  John Marino  <gnugcc@marino.st>
+
+	* s-oscons-tmplt.c: Add support for DragonFly alongside FreeBSD.
+
 2015-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/63310
