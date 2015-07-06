@@ -1,3 +1,9 @@
+2015-07-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* io.c (check_char_variable): New function.
+	(match_open_element, match_close_element, match_file_element,
+	match_dt_element, match_inquire_element, match_wait_element): Use it.
+
 2015-07-06  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/58586
