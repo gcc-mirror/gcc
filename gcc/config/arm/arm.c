@@ -6020,8 +6020,23 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
 static bool
 arm_needs_doubleword_align (machine_mode mode, const_tree type)
 {
-  return (GET_MODE_ALIGNMENT (mode) > PARM_BOUNDARY
-	  || (type && TYPE_ALIGN (type) > PARM_BOUNDARY));
+  if (!type)
+    return PARM_BOUNDARY < GET_MODE_ALIGNMENT (mode);
+
+  /* Scalar and vector types: Use natural alignment, i.e. of base type.  */
+  if (!AGGREGATE_TYPE_P (type))
+    return TYPE_ALIGN (TYPE_MAIN_VARIANT (type)) > PARM_BOUNDARY;
+
+  /* Array types: Use member alignment of element type.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return TYPE_ALIGN (TREE_TYPE (type)) > PARM_BOUNDARY;
+
+  /* Record/aggregate types: Use greatest member alignment of any member.  */ 
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    if (DECL_ALIGN (field) > PARM_BOUNDARY)
+      return true;
+
+  return false;
 }
 
 
