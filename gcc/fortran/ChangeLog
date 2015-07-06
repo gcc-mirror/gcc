@@ -1,3 +1,22 @@
+2015-07-06  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/58586
+	* resolve.c (resolve_symbol): Non-private functions in modules
+	with allocatable or pointer components are marked referenced
+	now. Furthermore is the default init especially for those
+	components now done in gfc_conf_procedure_call preventing
+	duplicate code.
+	* trans-decl.c (gfc_generate_function_code): Generate a fake
+	result decl for	functions returning an object with allocatable
+	components and initialize them.
+	* trans-expr.c (gfc_conv_procedure_call): For value typed trees
+	use the tree without indirect ref. And for non-decl trees
+	add a temporary variable to prevent evaluating the tree
+	multiple times (prevent multiple function evaluations).
+	* trans.h: Made gfc_trans_structure_assign () protoype
+	available, which is now needed by trans-decl.c:gfc_generate_
+	function_code(), too.
+
 2015-07-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66725
