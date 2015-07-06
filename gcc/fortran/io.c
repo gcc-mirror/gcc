@@ -1181,7 +1181,7 @@ check_format_string (gfc_expr *e, bool is_input)
 }
 
 
-/************ Fortran 95 I/O statement matchers *************/
+/************ Fortran I/O statement matchers *************/
 
 /* Match a FORMAT statement.  This amounts to actually parsing the
    format descriptors in order to correctly locate the end of the
@@ -1239,6 +1239,21 @@ gfc_match_format (void)
   gfc_match_eos ();		/* Guaranteed to succeed */
 
   return MATCH_YES;
+}
+
+
+/* Check for a CHARACTER variable.  The check for scalar is done in
+   resolve_tag.  */
+
+static bool
+check_char_variable (gfc_expr *e)
+{
+  if (e->expr_type != EXPR_VARIABLE || e->ts.type != BT_CHARACTER)
+    {
+      gfc_error("IOMSG must be a scalar-default-char-variable at %L", &e->where);
+      return false;
+    }
+  return true;
 }
 
 
@@ -1570,7 +1585,9 @@ match_open_element (gfc_open *open)
   m = match_etag (&tag_unit, &open->unit);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &open->iomsg);
+  m = match_etag (&tag_iomsg, &open->iomsg);
+  if (m == MATCH_YES && !check_char_variable (open->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &open->iostat);
@@ -2234,7 +2251,9 @@ match_close_element (gfc_close *close)
   m = match_etag (&tag_status, &close->status);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &close->iomsg);
+  m = match_etag (&tag_iomsg, &close->iomsg);
+  if (m == MATCH_YES && !check_char_variable (close->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &close->iostat);
@@ -2395,7 +2414,9 @@ match_file_element (gfc_filepos *fp)
   m = match_etag (&tag_unit, &fp->unit);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &fp->iomsg);
+  m = match_etag (&tag_iomsg, &fp->iomsg);
+  if (m == MATCH_YES && !check_char_variable (fp->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &fp->iostat);
@@ -2760,7 +2781,9 @@ match_dt_element (io_kind k, gfc_dt *dt)
   m = match_etag (&tag_spos, &dt->pos);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &dt->iomsg);
+  m = match_etag (&tag_iomsg, &dt->iomsg);
+  if (m == MATCH_YES && !check_char_variable (dt->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
 
@@ -3939,7 +3962,9 @@ match_inquire_element (gfc_inquire *inquire)
   m = match_etag (&tag_unit, &inquire->unit);
   RETM m = match_etag (&tag_file, &inquire->file);
   RETM m = match_ltag (&tag_err, &inquire->err);
-  RETM m = match_out_tag (&tag_iomsg, &inquire->iomsg);
+  RETM m = match_etag (&tag_iomsg, &inquire->iomsg);
+  if (m == MATCH_YES && !check_char_variable (inquire->iomsg))
+    return MATCH_ERROR;
   RETM m = match_out_tag (&tag_iostat, &inquire->iostat);
   RETM m = match_vtag (&tag_exist, &inquire->exist);
   RETM m = match_vtag (&tag_opened, &inquire->opened);
@@ -4222,7 +4247,9 @@ match_wait_element (gfc_wait *wait)
   RETM m = match_ltag (&tag_err, &wait->err);
   RETM m = match_ltag (&tag_end, &wait->eor);
   RETM m = match_ltag (&tag_eor, &wait->end);
-  RETM m = match_out_tag (&tag_iomsg, &wait->iomsg);
+  RETM m = match_etag (&tag_iomsg, &wait->iomsg);
+  if (m == MATCH_YES && !check_char_variable (wait->iomsg))
+    return MATCH_ERROR;
   RETM m = match_out_tag (&tag_iostat, &wait->iostat);
   RETM m = match_etag (&tag_id, &wait->id);
   RETM return MATCH_NO;
