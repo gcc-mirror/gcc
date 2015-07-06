@@ -175,10 +175,9 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
-	"$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"
-LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(myexeclib_LTLIBRARIES) \
-	$(toolexeclib_LTLIBRARIES)
+	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(fincludedir)"
+LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libcaf_single_la_LIBADD =
 am_libcaf_single_la_OBJECTS = single.lo
 libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
@@ -394,9 +393,6 @@ am__objects_54 = $(am__objects_3) $(am__objects_42) $(am__objects_44) \
 @onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_54)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
-libgfortranbegin_la_LIBADD =
-am_libgfortranbegin_la_OBJECTS = fmain.lo
-libgfortranbegin_la_OBJECTS = $(am_libgfortranbegin_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -422,8 +418,7 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LTFCCOMPILE = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES) \
-	$(libgfortranbegin_la_SOURCES)
+SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -607,11 +602,6 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 	$(version_arg) -Wc,-shared-libgcc
 
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
-myexeclib_LTLIBRARIES = libgfortranbegin.la
-myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
-libgfortranbegin_la_SOURCES = fmain.c
-libgfortranbegin_la_LDFLAGS = -static
-libgfortranbegin_la_LINK = $(LINK) $(libgfortranbegin_la_LDFLAGS)
 cafexeclib_LTLIBRARIES = libcaf_single.la
 cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_single_la_SOURCES = caf/single.c
@@ -1399,38 +1389,6 @@ clean-cafexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-install-myexeclibLTLIBRARIES: $(myexeclib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	@list='$(myexeclib_LTLIBRARIES)'; test -n "$(myexeclibdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(myexeclibdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(myexeclibdir)" || exit 1; \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(myexeclibdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(myexeclibdir)"; \
-	}
-
-uninstall-myexeclibLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(myexeclib_LTLIBRARIES)'; test -n "$(myexeclibdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(myexeclibdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(myexeclibdir)/$$f"; \
-	done
-
-clean-myexeclibLTLIBRARIES:
-	-test -z "$(myexeclib_LTLIBRARIES)" || rm -f $(myexeclib_LTLIBRARIES)
-	@list='$(myexeclib_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
@@ -1467,8 +1425,6 @@ libcaf_single.la: $(libcaf_single_la_OBJECTS) $(libcaf_single_la_DEPENDENCIES) $
 	$(libcaf_single_la_LINK) -rpath $(cafexeclibdir) $(libcaf_single_la_OBJECTS) $(libcaf_single_la_LIBADD) $(LIBS)
 libgfortran.la: $(libgfortran_la_OBJECTS) $(libgfortran_la_DEPENDENCIES) $(EXTRA_libgfortran_la_DEPENDENCIES) 
 	$(libgfortran_la_LINK) -rpath $(toolexeclibdir) $(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD) $(LIBS)
-libgfortranbegin.la: $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_DEPENDENCIES) $(EXTRA_libgfortranbegin_la_DEPENDENCIES) 
-	$(libgfortranbegin_la_LINK) -rpath $(myexeclibdir) $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1552,7 +1508,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/extends_type_of.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fbuf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_pos.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fmain.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fnum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/format.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fpu.Plo@am__quote@
@@ -5831,7 +5786,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) all-multi $(DATA) $(HEADERS) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"; do \
+	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -5869,8 +5824,7 @@ maintainer-clean-generic:
 clean: clean-am clean-multi
 
 clean-am: clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
-	clean-myexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am distclean-multi
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -5898,8 +5852,7 @@ install-dvi: install-dvi-am
 install-dvi-am:
 
 install-exec-am: install-cafexeclibLTLIBRARIES install-multi \
-	install-myexeclibLTLIBRARIES install-toolexeclibDATA \
-	install-toolexeclibLTLIBRARIES
+	install-toolexeclibDATA install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -5942,7 +5895,6 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-cafexeclibLTLIBRARIES \
-	uninstall-myexeclibLTLIBRARIES \
 	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
@@ -5952,15 +5904,14 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES \
 
 .PHONY: CTAGS GTAGS all all-am all-multi am--refresh check check-am \
 	clean clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
-	clean-multi clean-myexeclibLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-hdr distclean-libtool \
-	distclean-multi distclean-tags dvi dvi-am html html-am info \
-	info-am install install-am install-cafexeclibLTLIBRARIES \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-multi \
-	install-myexeclibLTLIBRARIES install-nodist_fincludeHEADERS \
+	clean-multi clean-toolexeclibLTLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-multi distclean-tags dvi dvi-am \
+	html html-am info info-am install install-am \
+	install-cafexeclibLTLIBRARIES install-data install-data-am \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-multi install-nodist_fincludeHEADERS \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
@@ -5968,7 +5919,7 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES \
 	maintainer-clean-multi mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
 	pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-cafexeclibLTLIBRARIES uninstall-myexeclibLTLIBRARIES \
+	uninstall-cafexeclibLTLIBRARIES \
 	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
