@@ -418,7 +418,7 @@ microblaze*-*-*)
 mips*-*-*)
 	cpu_type=mips
 	extra_headers="loongson.h"
-	extra_options="${extra_options} g.opt mips/mips-tables.opt"
+	extra_options="${extra_options} g.opt fused-madd.opt mips/mips-tables.opt"
 	;;
 nds32*)
 	cpu_type=nds32

@@ -4054,13 +4054,11 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case MINUS:
-      if (float_mode_p
-	  && (ISA_HAS_NMADD4_NMSUB4 || ISA_HAS_NMADD3_NMSUB3)
-	  && TARGET_FUSED_MADD
-	  && !HONOR_SIGNED_ZEROS (mode))
+      if (float_mode_p && ISA_HAS_UNFUSED_MADD4 && !HONOR_SIGNED_ZEROS (mode))
 	{
-	  /* See if we can use NMADD or NMSUB.  See mips.md for the
-	     associated patterns.  */
+	  /* See if we can use NMADD or NMSUB via the *nmadd4<mode>_fastmath
+	     or *nmsub4<mode>_fastmath patterns.  These patterns check for
+	     HONOR_SIGNED_ZEROS so we check here too.  */
 	  rtx op0 = XEXP (x, 0);
 	  rtx op1 = XEXP (x, 1);
 	  if (GET_CODE (op0) == MULT && GET_CODE (XEXP (op0, 0)) == NEG)
@@ -4087,9 +4085,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	{
 	  /* If this is part of a MADD or MSUB, treat the PLUS as
 	     being free.  */
-	  if ((ISA_HAS_FP_MADD4_MSUB4 || ISA_HAS_FP_MADD3_MSUB3)
-	      && TARGET_FUSED_MADD
-	      && GET_CODE (XEXP (x, 0)) == MULT)
+	  if (ISA_HAS_UNFUSED_MADD4 && GET_CODE (XEXP (x, 0)) == MULT)
 	    *total = 0;
 	  else
 	    *total = mips_cost->fp_add;
@@ -4121,13 +4117,10 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case NEG:
-      if (float_mode_p
-	  && (ISA_HAS_NMADD4_NMSUB4 || ISA_HAS_NMADD3_NMSUB3)
-	  && TARGET_FUSED_MADD
-	  && HONOR_SIGNED_ZEROS (mode))
+      if (float_mode_p && ISA_HAS_UNFUSED_MADD4)
 	{
-	  /* See if we can use NMADD or NMSUB.  See mips.md for the
-	     associated patterns.  */
+	  /* See if we can use NMADD or NMSUB via the *nmadd4<mode> or
+	     *nmsub4<mode> patterns.  */
 	  rtx op = XEXP (x, 0);
 	  if ((GET_CODE (op) == PLUS || GET_CODE (op) == MINUS)
 	      && GET_CODE (XEXP (op, 0)) == MULT)
@@ -4147,8 +4140,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return false;
 
     case FMA:
-      if (ISA_HAS_FP_MADDF_MSUBF)
-	*total = mips_fp_mult_cost (mode);
+      *total = mips_fp_mult_cost (mode);
       return false;
 
     case MULT:

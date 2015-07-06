@@ -2475,40 +2475,161 @@
 
 ;; Floating point multiply accumulate instructions.
 
-;; The various multiply accumulate instructions can be used even when
-;; HONOR_NANS is true because while IEEE 754-2008 requires the negate
-;; operation to negate the sign of a NAN and the MIPS neg instruction does
-;; not do this, the multiply and add (or minus) parts of these instructions
-;; have no requirement on how the sign of a NAN is handled and so the final
-;; sign bit of the entire operation is undefined.
+(define_expand "fma<mode>4"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand")
+		  (match_operand:ANYF 2 "register_operand")
+		  (match_operand:ANYF 3 "register_operand")))]
+  "ISA_HAS_FUSED_MADDF || ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4")
+
+(define_insn "*fma<mode>4_madd3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (match_operand:ANYF 3 "register_operand" "0")))]
+  "ISA_HAS_FUSED_MADD3"
+  "madd.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*fma<mode>4_madd4"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (match_operand:ANYF 3 "register_operand" "f")))]
+  "ISA_HAS_FUSED_MADD4"
+  "madd.<fmt>\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*fma<mode>4_maddf"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (match_operand:ANYF 3 "register_operand" "0")))]
+  "ISA_HAS_FUSED_MADDF"
+  "maddf.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+;; The fms, fnma, and fnms instructions can be used even when HONOR_NANS
+;; is true because while IEEE 754-2008 requires the negate operation to
+;; negate the sign of a NAN and the MIPS neg instruction does not do this,
+;; the fma part of the instruction has no requirement on how the sign of
+;; a NAN is handled and so the final sign bit of the entire operation is
+;; undefined.
+
+(define_expand "fms<mode>4"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand")
+		  (match_operand:ANYF 2 "register_operand")
+		  (neg:ANYF (match_operand:ANYF 3 "register_operand"))))]
+  "(ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4)")
+
+(define_insn "*fms<mode>4_msub3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (neg:ANYF (match_operand:ANYF 3 "register_operand" "0"))))]
+  "ISA_HAS_FUSED_MADD3"
+  "msub.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*fms<mode>4_msub4"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (neg:ANYF (match_operand:ANYF 3 "register_operand" "f"))))]
+  "ISA_HAS_FUSED_MADD4"
+  "msub.<fmt>\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+;; fnma is defined in GCC as (fma (neg op1) op2 op3)
+;; (-op1 * op2) + op3 ==> -(op1 * op2) + op3 ==> -((op1 * op2) - op3)
+;; The mips nmsub instructions implement -((op1 * op2) - op3)
+;; This transformation means we may return the wrong signed zero
+;; so we check HONOR_SIGNED_ZEROS.
+
+(define_expand "fnma<mode>4"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand"))
+		  (match_operand:ANYF 2 "register_operand")
+		  (match_operand:ANYF 3 "register_operand")))]
+  "(ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4)
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)")
+
+(define_insn "*fnma<mode>4_nmsub3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (match_operand:ANYF 3 "register_operand" "0")))]
+  "ISA_HAS_FUSED_MADD3 && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "nmsub.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*fnma<mode>4_nmsub4"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (match_operand:ANYF 3 "register_operand" "f")))]
+  "ISA_HAS_FUSED_MADD4 && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "nmsub.<fmt>\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+;; fnms is defined as: (fma (neg op1) op2 (neg op3))
+;; ((-op1) * op2) - op3 ==> -(op1 * op2) - op3 ==> -((op1 * op2) + op3)
+;; The mips nmadd instructions implement -((op1 * op2) + op3)
+;; This transformation means we may return the wrong signed zero
+;; so we check HONOR_SIGNED_ZEROS.
+
+(define_expand "fnms<mode>4"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(fma:ANYF
+	  (neg:ANYF (match_operand:ANYF 1 "register_operand"))
+	  (match_operand:ANYF 2 "register_operand")
+	  (neg:ANYF (match_operand:ANYF 3 "register_operand"))))]
+  "(ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4)
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)")
+
+(define_insn "*fnms<mode>4_nmadd3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF
+	  (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+	  (match_operand:ANYF 2 "register_operand" "f")
+	  (neg:ANYF (match_operand:ANYF 3 "register_operand" "0"))))]
+  "ISA_HAS_FUSED_MADD3 && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "nmadd.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*fnms<mode>4_nmadd4"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF
+	  (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+	  (match_operand:ANYF 2 "register_operand" "f")
+	  (neg:ANYF (match_operand:ANYF 3 "register_operand" "f"))))]
+  "ISA_HAS_FUSED_MADD4 && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "nmadd.<fmt>\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+;; Non-fused Floating point multiply accumulate instructions.
+
+;; These instructions are not fused and round in between the multiply
+;; and the add (or subtract) so they are equivalent to the separate
+;; multiply and add/sub instructions.
 
 (define_insn "*madd4<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(plus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
 			      (match_operand:ANYF 2 "register_operand" "f"))
 		   (match_operand:ANYF 3 "register_operand" "f")))]
-  "ISA_HAS_FP_MADD4_MSUB4 && TARGET_FUSED_MADD"
+  "ISA_HAS_UNFUSED_MADD4"
   "madd.<fmt>\t%0,%3,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "fma<mode>4"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		  (match_operand:ANYF 2 "register_operand" "f")
-		  (match_operand:ANYF 3 "register_operand" "0")))]
-  "ISA_HAS_FP_MADDF_MSUBF"
-  "maddf.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*madd3<mode>"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(plus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
-			      (match_operand:ANYF 2 "register_operand" "f"))
-		   (match_operand:ANYF 3 "register_operand" "0")))]
-  "ISA_HAS_FP_MADD3_MSUB3 && TARGET_FUSED_MADD"
-  "madd.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
@@ -2517,20 +2638,18 @@
 	(minus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
 			       (match_operand:ANYF 2 "register_operand" "f"))
 		    (match_operand:ANYF 3 "register_operand" "f")))]
-  "ISA_HAS_FP_MADD4_MSUB4 && TARGET_FUSED_MADD"
+  "ISA_HAS_UNFUSED_MADD4"
   "msub.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "*msub3<mode>"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(minus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
-			       (match_operand:ANYF 2 "register_operand" "f"))
-		    (match_operand:ANYF 3 "register_operand" "0")))]
-  "ISA_HAS_FP_MADD3_MSUB3 && TARGET_FUSED_MADD"
-  "msub.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
+;; Like with the fused fms, fnma, and fnms instructions, these unfused
+;; instructions can be used even if HONOR_NANS is set because while
+;; IEEE 754-2008 requires the negate operation to negate the sign of a
+;; NAN and the MIPS neg instruction does not do this, the multiply and
+;; add (or subtract) part of the instruction has no requirement on how
+;; the sign of a NAN is handled and so the final sign bit of the entire
+;; operation is undefined.
 
 (define_insn "*nmadd4<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -2538,101 +2657,57 @@
 		   (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
 			      (match_operand:ANYF 2 "register_operand" "f"))
 		   (match_operand:ANYF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4
-   && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "ISA_HAS_UNFUSED_MADD4"
   "nmadd.<fmt>\t%0,%3,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*nmadd3<mode>"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(neg:ANYF (plus:ANYF
-		   (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
-			      (match_operand:ANYF 2 "register_operand" "f"))
-		   (match_operand:ANYF 3 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3
-   && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)"
-  "nmadd.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*nmadd4<mode>_fastmath"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(minus:ANYF
-	 (mult:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
-		    (match_operand:ANYF 2 "register_operand" "f"))
-	 (match_operand:ANYF 3 "register_operand" "f")))]
-  "ISA_HAS_NMADD4_NMSUB4
-   && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
-  "nmadd.<fmt>\t%0,%3,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*nmadd3<mode>_fastmath"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(minus:ANYF
-	 (mult:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
-		    (match_operand:ANYF 2 "register_operand" "f"))
-	 (match_operand:ANYF 3 "register_operand" "0")))]
-  "ISA_HAS_NMADD3_NMSUB3
-   && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
-  "nmadd.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "*nmsub4<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(neg:ANYF (minus:ANYF
-		   (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
-			      (match_operand:ANYF 3 "register_operand" "f"))
-		   (match_operand:ANYF 1 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4
-   && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)"
-  "nmsub.<fmt>\t%0,%1,%2,%3"
+		   (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
+			      (match_operand:ANYF 2 "register_operand" "f"))
+		   (match_operand:ANYF 3 "register_operand" "f"))))]
+  "ISA_HAS_UNFUSED_MADD4"
+  "nmsub.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "*nmsub3<mode>"
+;; Fast-math Non-fused Floating point multiply accumulate instructions.
+
+;; These instructions are not fused but the expressions they match are
+;; not exactly what the instruction implements in the sense that they
+;; may not generate the properly signed zeros.
+
+;; This instruction recognizes  ((-op1) * op2) - op3 and generates an
+;; nmadd which is really -((op1 * op2) + op3).  They are equivalent
+;; except for the sign bit when the result is zero or NaN.
+
+(define_insn "*nmadd4<mode>_fastmath"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(neg:ANYF (minus:ANYF
-		   (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
-			      (match_operand:ANYF 3 "register_operand" "f"))
-		   (match_operand:ANYF 1 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3
-   && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (<MODE>mode)"
-  "nmsub.<fmt>\t%0,%1,%2"
+	(minus:ANYF
+	  (mult:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+		     (match_operand:ANYF 2 "register_operand" "f"))
+	  (match_operand:ANYF 3 "register_operand" "f")))]
+  "ISA_HAS_UNFUSED_MADD4
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "nmadd.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
+
+;; This instruction recognizes (op1 - (op2 * op3) and generates an
+;; nmsub which is really -((op2 * op3) - op1).  They are equivalent
+;; except for the sign bit when the result is zero or NaN.
 
 (define_insn "*nmsub4<mode>_fastmath"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(minus:ANYF
-	 (match_operand:ANYF 1 "register_operand" "f")
-	 (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
-		    (match_operand:ANYF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4
-   && TARGET_FUSED_MADD
+	  (match_operand:ANYF 1 "register_operand" "f")
+	  (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
+		     (match_operand:ANYF 3 "register_operand" "f"))))]
+  "ISA_HAS_UNFUSED_MADD4
    && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmsub.<fmt>\t%0,%1,%2,%3"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*nmsub3<mode>_fastmath"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(minus:ANYF
-	 (match_operand:ANYF 1 "register_operand" "f")
-	 (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
-		    (match_operand:ANYF 3 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3
-   && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)"
-  "nmsub.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
