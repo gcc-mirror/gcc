@@ -1,3 +1,32 @@
+2015-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (extv<mode>): Rename from extv.  Use SWI24
+	modes for operands 0 and 1.  Use SImode for operands 2 and 3.
+	Copy operand 1 to a temporary if !ext_register_operand.  Remove
+	ancient extract_bit_field workaround.
+	(*extv<mode>): Rename from *mov<mode>_extv_1.
+	(*extvqi): Rename from *movqi_extv_q.
+	(extzv<mode>): Rename from extzv.  Use SWI248 modes for
+	operands 0 and 1.  Use SImode for operands 2 and 3. Copy operand 1
+	to a temporary if !ext_register_operand.  Remove ancient
+	extract_bit_field workaround.
+	(*extzv<mode>): Rename from *mov<mode>_extzv_1.
+	(*extzvqi): Rename from *movqi_extzv_1.
+	(*testqi_ext_3): Remove modes from const_int_operand predicated
+	operands.  Add "n" constraint.
+	(*btsq, *btrq, *btcq): Remove mode from const_0_to_63 predicated
+	operand.  Add "J" constraint.
+	(*btsq, *btrq, *btcq peephole2s): Remove mode from
+	const_0_to_63 predicated operand.
+	(regmode): New insn attribute.
+	(*bt<mode>): Use SImode for operand 1.  Change operand 1 predicate
+	to nonmemory_operand.  Use regmode insn attribute.
+	(*jcc_bt<mode>_1): Convert operand 2 to SImode.
+	(*jcc_bt<mode>_mask): Remove mode from operand 3.
+	(*jcc_btsi_1, *jcc_btsi_mask_1): Remove patterns.
+	(tbm_bextri_<mode>): Remove modes from const_0_to_255 predicated
+	operands.  Use "N" constraint instead of "n".
+
 2015-07-06  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/arm.md (movdi): Avoid odd-number ldrd/strd in ARM state.
