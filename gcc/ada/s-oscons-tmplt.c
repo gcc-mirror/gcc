@@ -402,7 +402,7 @@ CND(FNDELAY, "Nonblocking")
 
 /* ioctl(2) requests are "int" in UNIX, but "unsigned long" on FreeBSD */
 
-#ifdef __FreeBSD__
+#if defined (__FreeBSD__) || defined (__DragonFly__)
 # define CNI CNU
 # define IOCTL_Req_T "unsigned"
 #else
@@ -1014,7 +1014,7 @@ CNU(RTS_CONTROL_ENABLE, "Enable RTS flow ctrl")
 
 */
 
-#if defined (__FreeBSD__) || defined (__linux__)
+#if defined (__FreeBSD__) || defined (__linux__) || defined (__DragonFly__)
 # define PTY_Library "-lutil"
 #else
 # define PTY_Library ""
@@ -1435,7 +1435,8 @@ CND(CLOCK_FASTEST, "Fastest clock")
 #endif
 CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
-#if defined(__FreeBSD__) || (defined(_AIX) && defined(_AIXVERSION_530))
+#if defined(__FreeBSD__) || (defined(_AIX) && defined(_AIXVERSION_530)) \
+ || defined(__DragonFly__)
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes
  ** appropriately (see thread.c).
