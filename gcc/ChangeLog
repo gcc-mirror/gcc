@@ -1,3 +1,9 @@
+2015-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53383
+	* config/i386/i386.c (ix86_option_override_internal): Allow
+	-mincoming-stack-boundary=3 for 64-bit if SSE is disabled.
+
 2015-07-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* read-md.c (decimal_string): Rename to ...
