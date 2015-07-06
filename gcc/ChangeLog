@@ -1,3 +1,11 @@
+2015-07-06  Jim Wilson  <jim.wilson@linaro.org>
+
+	* graphite-blocking.c (HAVE_isl): Include <stddef.h>.
+	* graphite-dependencies.c, graphite-interchange.c,
+	graphite-isl-ast-to-gimple.c, graphite-optimize-isl.c, graphite-poly.c,
+	graphite-scop-detection.c, graphite-sese-to-poly.c, graphite.c:
+	Likewise.
+
 2015-07-06  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd: Remove element_mode inside HONOR_*.
