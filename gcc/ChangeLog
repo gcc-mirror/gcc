@@ -1,3 +1,8 @@
+2015-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_reorg): Remove unused vars.  Fix
+	call to nvptx_reorg_subreg.
+
 2015-07-06  Jim Wilson  <jim.wilson@linaro.org>
 
 	* graphite-blocking.c (HAVE_isl): Include <stddef.h>.

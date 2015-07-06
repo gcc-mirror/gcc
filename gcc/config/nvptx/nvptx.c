@@ -1969,9 +1969,6 @@ nvptx_reorg_subreg (void)
 static void
 nvptx_reorg (void)
 {
-  struct reg_replace qiregs, hiregs, siregs, diregs;
-  rtx_insn *insn, *next;
-
   /* We are freeing block_for_insn in the toplev to keep compatibility
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
@@ -1991,7 +1988,7 @@ nvptx_reorg (void)
       regno_reg_rtx[i] = const0_rtx;
 
   /* Replace subregs.  */
-  nvptx_reorg_subreg (max_regs);
+  nvptx_reorg_subreg ();
 
   regstat_free_n_sets_and_refs ();
 
