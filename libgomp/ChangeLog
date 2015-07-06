@@ -1,3 +1,7 @@
+2015-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgomp.h (gomp_thread_pool): Comment last_team field.
+
 2015-07-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libgomp.c++/pr66702-1.C: Require
