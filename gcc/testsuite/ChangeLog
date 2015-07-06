@@ -1,3 +1,16 @@
+2015-07-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/aapcs/align1.c: New.
+	* gcc.target/arm/aapcs/align_rec1.c: New.
+	* gcc.target/arm/aapcs/align2.c: New.
+	* gcc.target/arm/aapcs/align_rec2.c: New.
+	* gcc.target/arm/aapcs/align3.c: New.
+	* gcc.target/arm/aapcs/align_rec3.c: New.
+	* gcc.target/arm/aapcs/align4.c: New.
+	* gcc.target/arm/aapcs/align_rec4.c: New.
+	* gcc.target/arm/aapcs/align_vararg1.c: New.
+	* gcc.target/arm/aapcs/align_vararg2.c: New.
+
 2015-07-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/iomsg_2.f90: New test.
