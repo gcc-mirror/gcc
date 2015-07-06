@@ -1968,6 +1968,21 @@ build_complex (tree type, tree real, tree imag)
   return t;
 }
 
+/* Return the constant 1 in type TYPE.  If TYPE has several elements, each
+   element is set to 1.  In particular, this is 1 + i for complex types.  */
+
+tree
+build_each_one_cst (tree type)
+{
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      tree scalar = build_one_cst (TREE_TYPE (type));
+      return build_complex (type, scalar, scalar);
+    }
+  else
+    return build_one_cst (type);
+}
+
 /* Return a constant of arithmetic type TYPE which is the
    multiplicative identity of the set TYPE.  */
 
