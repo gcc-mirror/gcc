@@ -1,3 +1,9 @@
+2015-07-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/65956
+	* config/arm/arm.c (arm_needs_doubleword_align): Drop any outer
+	alignment attribute, exploring one level down for records and arrays.
+
 2015-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (extv<mode>): Rename from extv.  Use SWI24
