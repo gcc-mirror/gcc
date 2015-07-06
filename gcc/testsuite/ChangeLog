@@ -1,3 +1,9 @@
+2015-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66772
+	* gcc.dg/torture/pr66772-1.c: New testcase.
+	* gcc.dg/torture/pr66772-2.c: Likewise.
+
 2015-07-06  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* gcc.target/mips/near-far-3.c: Allow the call to near_func to use
