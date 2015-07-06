@@ -426,6 +426,74 @@ struct processor_costs pentium_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
+static const
+struct processor_costs iamcu_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
+  COSTS_N_INSNS (4),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (11),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (11),			/*				 HI */
+   COSTS_N_INSNS (11),			/*				 SI */
+   COSTS_N_INSNS (11),			/*				 DI */
+   COSTS_N_INSNS (11)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (25),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (25),			/*			    HI */
+   COSTS_N_INSNS (25),			/*			    SI */
+   COSTS_N_INSNS (25),			/*			    DI */
+   COSTS_N_INSNS (25)},			/*			    other */
+  COSTS_N_INSNS (3),			/* cost of movsx */
+  COSTS_N_INSNS (2),			/* cost of movzx */
+  8,					/* "large" insn */
+  6,					/* MOVE_RATIO */
+  6,				     /* cost for loading QImode using movzbl */
+  {2, 4, 2},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {2, 4, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {2, 2, 6},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {4, 4, 6},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
+  8,					/* cost of moving MMX register */
+  {8, 8},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {8, 8},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 8, 16},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 8, 16},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3,					/* MMX or SSE register to integer */
+  8,					/* size of l1 cache.  */
+  8,					/* size of l2 cache  */
+  0,					/* size of prefetch block */
+  0,					/* number of parallel prefetches */
+  2,					/* Branch cost */
+  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (3),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (39),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
+  pentium_memcpy,
+  pentium_memset,
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
+};
+
 /* PentiumPro has optimized rep instructions for blocks aligned by 8 bytes
    (we ensure the alignment).  For small blocks inline loop is still a
    noticeable win, for bigger blocks either rep movsl or rep movsb is
@@ -2027,6 +2095,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_386 (1<<PROCESSOR_I386)
 #define m_486 (1<<PROCESSOR_I486)
 #define m_PENT (1<<PROCESSOR_PENTIUM)
+#define m_IAMCU (1<<PROCESSOR_IAMCU)
 #define m_PPRO (1<<PROCESSOR_PENTIUMPRO)
 #define m_PENT4 (1<<PROCESSOR_PENTIUM4)
 #define m_NOCONA (1<<PROCESSOR_NOCONA)
@@ -2086,7 +2155,7 @@ unsigned char ix86_arch_features[X86_ARCH_LAST];
    ix86_arch_features based on the processor mask.  */
 static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
   /* X86_ARCH_CMOV: Conditional move was added for pentiumpro.  */
-  ~(m_386 | m_486 | m_PENT | m_K6),
+  ~(m_386 | m_486 | m_PENT | m_IAMCU | m_K6),
 
   /* X86_ARCH_CMPXCHG: Compare and exchange was added for 80486.  */
   ~m_386,
@@ -2497,6 +2566,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"i386", &i386_cost, 4, 3, 4, 3, 4},
   {"i486", &i486_cost, 16, 15, 16, 15, 16},
   {"pentium", &pentium_cost, 16, 7, 16, 7, 16},
+  {"iamcu", &iamcu_cost, 16, 7, 16, 7, 16},
   {"pentiumpro", &pentiumpro_cost, 16, 15, 16, 10, 16},
   {"pentium4", &pentium4_cost, 0, 0, 0, 0, 0},
   {"nocona", &nocona_cost, 0, 0, 0, 0, 0},
@@ -3246,6 +3316,7 @@ ix86_option_override_internal (bool main_args_p,
       {"i486", PROCESSOR_I486, CPU_NONE, 0},
       {"i586", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
       {"pentium", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
+      {"iamcu", PROCESSOR_IAMCU, CPU_PENTIUM, 0},
       {"pentium-mmx", PROCESSOR_PENTIUM, CPU_PENTIUM, PTA_MMX},
       {"winchip-c6", PROCESSOR_I486, CPU_NONE, PTA_MMX},
       {"winchip2", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW | PTA_PRFCHW},
@@ -26139,6 +26210,7 @@ ix86_issue_rate (void)
   switch (ix86_tune)
     {
     case PROCESSOR_PENTIUM:
+    case PROCESSOR_IAMCU:
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
     case PROCESSOR_KNL:
@@ -26325,6 +26397,7 @@ ix86_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
   switch (ix86_tune)
     {
     case PROCESSOR_PENTIUM:
+    case PROCESSOR_IAMCU:
       /* Address Generation Interlock adds a cycle of latency.  */
       if (insn_type == TYPE_LEA)
 	{
@@ -26534,6 +26607,7 @@ ia32_multipass_dfa_lookahead (void)
   switch (ix86_tune)
     {
     case PROCESSOR_PENTIUM:
+    case PROCESSOR_IAMCU:
       return 2;
 
     case PROCESSOR_PENTIUMPRO:
