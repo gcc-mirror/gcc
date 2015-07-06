@@ -1,3 +1,10 @@
+2015-07-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/40267
+	* Makefile.am: Remove libgfortranbegin targets.
+	* Makefile.in: Regenerate.
+	* fmain.c: Remove.
+
 2015-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* acinclude.m4 (GTHREAD_USE_WEAK): Define as 0 for *-*-musl*.

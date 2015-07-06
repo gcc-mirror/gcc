@@ -41,12 +41,6 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 	$(version_arg) -Wc,-shared-libgcc
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 
-myexeclib_LTLIBRARIES = libgfortranbegin.la
-myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
-libgfortranbegin_la_SOURCES = fmain.c
-libgfortranbegin_la_LDFLAGS = -static
-libgfortranbegin_la_LINK = $(LINK) $(libgfortranbegin_la_LDFLAGS)
-
 cafexeclib_LTLIBRARIES = libcaf_single.la
 cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_single_la_SOURCES = caf/single.c
