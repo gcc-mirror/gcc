@@ -1,3 +1,8 @@
+2015-07-06  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (argument_pack_element_is_expansion_p): A decl pack is an
+	expansion.
+
 2015-07-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66743

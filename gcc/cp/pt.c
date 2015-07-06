@@ -9838,6 +9838,9 @@ argument_pack_element_is_expansion_p (tree arg_pack, int i)
   if (i >= TREE_VEC_LENGTH (vec))
     return 0;
   tree elt = TREE_VEC_ELT (vec, i);
+  if (DECL_P (elt))
+    /* A decl pack is itself an expansion.  */
+    elt = TREE_TYPE (elt);
   if (!PACK_EXPANSION_P (elt))
     return 0;
   if (PACK_EXPANSION_EXTRA_ARGS (elt))
