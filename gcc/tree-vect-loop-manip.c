@@ -2143,7 +2143,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       bool negative = tree_int_cst_compare
 	(DR_STEP (STMT_VINFO_DATA_REF (stmt_vinfo)), size_zero_node) < 0;
       tree offset = negative
-	? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : NULL_TREE;
+	? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
 
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
