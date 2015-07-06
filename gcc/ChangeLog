@@ -1,5 +1,12 @@
 2015-07-06  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66772
+	* tree-ssa-ccp.c (ccp_visit_phi_node): Make sure that copy
+	values are available in the PHI node BB when there are
+	still unexecutable edges.
+
+2015-07-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66767
 	* tree-vect-loop-manip.c (vect_create_cond_for_align_checks):
 	Make sure to build the alignment test on a SSA name without

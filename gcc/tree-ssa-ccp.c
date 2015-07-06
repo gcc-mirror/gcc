@@ -1081,6 +1081,7 @@ ccp_visit_phi_node (gphi *phi)
   new_val.mask = 0;
 
   bool first = true;
+  bool non_exec_edge = false;
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       /* Compute the meet operator over all the PHI arguments flowing
@@ -1121,6 +1122,22 @@ ccp_visit_phi_node (gphi *phi)
 	  if (new_val.lattice_val == VARYING)
 	    break;
 	}
+      else
+	non_exec_edge = true;
+    }
+
+  /* In case there were non-executable edges and the value is a copy
+     make sure its definition dominates the PHI node.  */
+  if (non_exec_edge
+      && new_val.lattice_val == CONSTANT
+      && TREE_CODE (new_val.value) == SSA_NAME
+      && ! SSA_NAME_IS_DEFAULT_DEF (new_val.value)
+      && ! dominated_by_p (CDI_DOMINATORS, gimple_bb (phi),
+			   gimple_bb (SSA_NAME_DEF_STMT (new_val.value))))
+    {
+      new_val.lattice_val = VARYING;
+      new_val.value = NULL_TREE;
+      new_val.mask = -1;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
