@@ -209,10 +209,6 @@ mflush-func=
 Target RejectNegative Joined Var(mips_cache_flush_func) Init(CACHE_FLUSH_FUNC)
 -mflush-func=FUNC	Use FUNC to flush the cache before calling stack trampolines
 
-mfused-madd
-Target Report Var(TARGET_FUSED_MADD) Init(1)
-Generate floating-point multiply-add instructions
-
 mabs=
 Target RejectNegative Joined Enum(mips_ieee_754_value) Var(mips_abs) Init(MIPS_IEEE_754_DEFAULT)
 -mabs=MODE	Select the IEEE 754 ABS/NEG instruction execution mode
