@@ -1,9 +1,9 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3" } */
+/* { dg-require-effective-target vect_int_mult } */
 
 int foo(int* A, int* B,  unsigned start, unsigned BS)
 {
-  int s;
+  int s = 0;
   for (unsigned k = start;  k < start + BS; k++)
     {
       s += A[k] * B[k];
@@ -14,7 +14,7 @@ int foo(int* A, int* B,  unsigned start, unsigned BS)
 
 int bar(int* A, int* B, unsigned BS)
 {
-  int s;
+  int s = 0;
   for (unsigned k = 0;  k < BS; k++)
     {
       s += A[k] * B[k];
