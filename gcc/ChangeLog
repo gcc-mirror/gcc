@@ -1,3 +1,11 @@
+2015-07-06  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd: Remove element_mode inside HONOR_*.
+	(~ (-A) -> A - 1, ~ (A - 1) -> -A): Handle complex types.
+	(~X | X -> -1, ~X ^ X -> -1): Merge.
+	* tree.c (build_each_one_cst): New function.
+	* tree.h (build_each_one_cst): Likewise.
+
 2015-07-06  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config.gcc <mips*-*-*>: Add fused-madd.opt.

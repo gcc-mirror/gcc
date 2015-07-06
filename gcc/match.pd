@@ -101,23 +101,23 @@ along with GCC; see the file COPYING3.  If not see
    negative value by 0 gives -0, not +0.  */
 (simplify
  (mult @0 real_zerop@1)
- (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (element_mode (type)))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
   @1))
 
 /* In IEEE floating point, x*1 is not equivalent to x for snans.
    Likewise for complex arithmetic with signed zeros.  */
 (simplify
  (mult @0 real_onep)
- (if (!HONOR_SNANS (element_mode (type))
-      && (!HONOR_SIGNED_ZEROS (element_mode (type))
+ (if (!HONOR_SNANS (type)
+      && (!HONOR_SIGNED_ZEROS (type)
           || !COMPLEX_FLOAT_TYPE_P (type)))
   (non_lvalue @0)))
 
 /* Transform x * -1.0 into -x.  */
 (simplify
  (mult @0 real_minus_onep)
-  (if (!HONOR_SNANS (element_mode (type))
-       && (!HONOR_SIGNED_ZEROS (element_mode (type))
+  (if (!HONOR_SNANS (type)
+       && (!HONOR_SIGNED_ZEROS (type)
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
 
@@ -165,7 +165,7 @@ along with GCC; see the file COPYING3.  If not see
  (rdiv @0 @0)
  (if (FLOAT_TYPE_P (type)
       && ! HONOR_NANS (type)
-      && ! HONOR_INFINITIES (element_mode (type)))
+      && ! HONOR_INFINITIES (type))
   { build_one_cst (type); }))
 
 /* Optimize -A / A to -1.0 if we don't care about
@@ -174,19 +174,19 @@ along with GCC; see the file COPYING3.  If not see
  (rdiv:c @0 (negate @0))
  (if (FLOAT_TYPE_P (type)
       && ! HONOR_NANS (type)
-      && ! HONOR_INFINITIES (element_mode (type)))
+      && ! HONOR_INFINITIES (type))
   { build_minus_one_cst (type); }))
 
 /* In IEEE floating point, x/1 is not equivalent to x for snans.  */
 (simplify
  (rdiv @0 real_onep)
- (if (!HONOR_SNANS (element_mode (type)))
+ (if (!HONOR_SNANS (type))
   (non_lvalue @0)))
 
 /* In IEEE floating point, x/-1 is not equivalent to -x for snans.  */
 (simplify
  (rdiv @0 real_minus_onep)
- (if (!HONOR_SNANS (element_mode (type)))
+ (if (!HONOR_SNANS (type))
   (negate @0)))
 
 /* If ARG1 is a constant, we can convert this to a multiply by the
@@ -297,9 +297,12 @@ along with GCC; see the file COPYING3.  If not see
   @1)
 
 /* ~x | x -> -1 */
-(simplify
- (bit_ior:c (convert? @0) (convert? (bit_not @0)))
- (convert { build_all_ones_cst (TREE_TYPE (@0)); }))
+/* ~x ^ x -> -1 */
+/* ~x + x -> -1 */
+(for op (bit_ior bit_xor plus)
+ (simplify
+  (op:c (convert? @0) (convert? (bit_not @0)))
+  (convert { build_all_ones_cst (TREE_TYPE (@0)); })))
 
 /* x ^ x -> 0 */
 (simplify
@@ -310,11 +313,6 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
   (bit_xor @0 integer_all_onesp@1)
   (bit_not @0))
-
-/* ~X ^ X is -1.  */
-(simplify
- (bit_xor:c (bit_not @0) @0)
- { build_all_ones_cst (type); })
 
 /* x & ~0 -> x  */
 (simplify
@@ -604,11 +602,11 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (bit_not (convert? (negate @0)))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
-  (convert (minus @0 { build_one_cst (TREE_TYPE (@0)); }))))
+  (convert (minus @0 { build_each_one_cst (TREE_TYPE (@0)); }))))
 
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
 (simplify
- (bit_not (convert? (minus @0 integer_onep)))
+ (bit_not (convert? (minus @0 integer_each_onep)))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (convert (negate @0))))
 (simplify
