@@ -1,3 +1,15 @@
+2015-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (insv<mode>): Rename from insv.  Use SWI48
+	modes for operands 0 and 3.  Use SImode for operands 2 and 3.
+	Copy operand 0 to a temporary if !ext_register_operand.  Remove
+	ancient extract_bit_field workaround.
+	(insv<mode>_1): Rename from mov<mode>_insv_1.
+	(*insvqi): Rename from *movqi_insv_2.
+	* config/i386/i386.c (emit_i386_cw_initialization): Update calls
+	for renamed insvsi_1.
+	(promote_duplicated_reg): Ditto for renamed insv<mode>_1.
+
 2015-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.c (nvptx_reorg): Remove unused vars.  Fix
@@ -73,13 +85,13 @@
 	Copy operand 1 to a temporary if !ext_register_operand.  Remove
 	ancient extract_bit_field workaround.
 	(*extv<mode>): Rename from *mov<mode>_extv_1.
-	(*extvqi): Rename from *movqi_extv_q.
+	(*extvqi): Rename from *movqi_extv_1.
 	(extzv<mode>): Rename from extzv.  Use SWI248 modes for
 	operands 0 and 1.  Use SImode for operands 2 and 3. Copy operand 1
 	to a temporary if !ext_register_operand.  Remove ancient
 	extract_bit_field workaround.
 	(*extzv<mode>): Rename from *mov<mode>_extzv_1.
-	(*extzvqi): Rename from *movqi_extzv_1.
+	(*extzvqi): Rename from *movqi_extzv_2.
 	(*testqi_ext_3): Remove modes from const_int_operand predicated
 	operands.  Add "n" constraint.
 	(*btsq, *btrq, *btcq): Remove mode from const_0_to_63 predicated
