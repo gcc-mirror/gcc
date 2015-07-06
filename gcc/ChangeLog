@@ -1,3 +1,7 @@
+2015-07-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/arm/arm.md (movdi): Avoid odd-number ldrd/strd in ARM state.
+
 2015-07-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66772
