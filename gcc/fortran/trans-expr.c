@@ -1465,7 +1465,6 @@ realloc_lhs_warning (bt type, bool array, locus *where)
 }
 
 
-static tree gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init);
 static void gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
 						 gfc_expr *);
 
@@ -5340,8 +5339,19 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    && e->expr_type != EXPR_VARIABLE && !e->rank)
         {
 	  int parm_rank;
-	  tmp = build_fold_indirect_ref_loc (input_location,
-					 parmse.expr);
+	  /* It is known the e returns a structure type with at least one
+	     allocatable component.  When e is a function, ensure that the
+	     function is called once only by using a temporary variable.  */
+	  if (!DECL_P (parmse.expr))
+	    parmse.expr = gfc_evaluate_now_loc (input_location,
+						parmse.expr, &se->pre);
+
+	  if (fsym && fsym->attr.value)
+	    tmp = parmse.expr;
+	  else
+	    tmp = build_fold_indirect_ref_loc (input_location,
+					       parmse.expr);
+
 	  parm_rank = e->rank;
 	  switch (parm_kind)
 	    {
@@ -7158,7 +7168,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
 
 /* Assign a derived type constructor to a variable.  */
 
-static tree
+tree
 gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init)
 {
   gfc_constructor *c;
@@ -7471,7 +7481,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
       if (expr->ts.type == BT_CHARACTER
 	  && expr->expr_type != EXPR_FUNCTION)
 	gfc_conv_string_parameter (se);
-      else
+     else
 	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
 
       return;

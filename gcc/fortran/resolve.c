@@ -14083,10 +14083,15 @@ resolve_symbol (gfc_symbol *sym)
 
       if ((!a->save && !a->dummy && !a->pointer
 	   && !a->in_common && !a->use_assoc
-	   && (a->referenced || a->result)
-	   && !(a->function && sym != sym->result))
+	   && !a->result && !a->function)
 	  || (a->dummy && a->intent == INTENT_OUT && !a->pointer))
 	apply_default_init (sym);
+      else if (a->function && sym->result && a->access != ACCESS_PRIVATE
+	       && (sym->ts.u.derived->attr.alloc_comp
+		   || sym->ts.u.derived->attr.pointer_comp))
+	/* Mark the result symbol to be referenced, when it has allocatable
+	   components.  */
+	sym->result->attr.referenced = 1;
     }
 
   if (sym->ts.type == BT_CLASS && sym->ns == gfc_current_ns

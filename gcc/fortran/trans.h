@@ -669,6 +669,9 @@ tree gfc_deallocate_scalar_with_status (tree, tree, bool, gfc_expr*, gfc_typespe
 /* Generate code to call realloc().  */
 tree gfc_call_realloc (stmtblock_t *, tree, tree);
 
+/* Assign a derived type constructor to a variable.  */
+tree gfc_trans_structure_assign (tree, gfc_expr *, bool);
+
 /* Generate code for an assignment, includes scalarization.  */
 tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool);
 
