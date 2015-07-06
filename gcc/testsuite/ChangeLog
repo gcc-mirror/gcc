@@ -1,3 +1,8 @@
+2015-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66759
+	* gcc.dg/torture/pr66759.c: New testcase.
+
 2015-07-06  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/58586

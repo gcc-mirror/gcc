@@ -1,3 +1,9 @@
+2015-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66759
+	* match.pd: Add missing constraint of y to REAL_CST in
+	REAL_CST - x CMP y to y - CST CMP x simplification.
+
 2015-07-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/66757
