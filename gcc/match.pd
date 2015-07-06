@@ -1497,7 +1497,7 @@ along with GCC; see the file COPYING3.  If not see
     floating-point types only if -fassociative-math is set.  */
  (if (flag_associative_math)
   (simplify
-   (cmp (minus REAL_CST@0 @1) @2)
+   (cmp (minus REAL_CST@0 @1) REAL_CST@2)
    (with { tree tem = const_binop (MINUS_EXPR, TREE_TYPE (@1), @0, @2); }
     (if (!TREE_OVERFLOW (tem))
      (cmp { tem; } @1)))))
