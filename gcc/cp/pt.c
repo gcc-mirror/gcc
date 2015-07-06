@@ -3740,9 +3740,14 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
 
 	/* Template template parameters need this.  */
       if (TREE_CODE (decl) == TEMPLATE_DECL)
-	DECL_TEMPLATE_PARMS (decl) = tsubst_template_parms
-	  (DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL (index)),
-	   args, complain);
+	{
+	  DECL_TEMPLATE_RESULT (decl)
+	    = build_decl (DECL_SOURCE_LOCATION (decl),
+			  TYPE_DECL, DECL_NAME (decl), type);
+	  DECL_ARTIFICIAL (DECL_TEMPLATE_RESULT (decl)) = true;
+	  DECL_TEMPLATE_PARMS (decl) = tsubst_template_parms
+	    (DECL_TEMPLATE_PARMS (orig_decl), args, complain);
+	}
     }
 
   return TEMPLATE_PARM_DESCENDANTS (index);
@@ -10687,22 +10692,15 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    /* Template template parameter is treated here.  */
 	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    if (new_type == error_mark_node)
-	      RETURN (error_mark_node);
+	      r = error_mark_node;
 	    /* If we get a real template back, return it.  This can happen in
 	       the context of most_specialized_partial_spec.  */
-	    if (TREE_CODE (new_type) == TEMPLATE_DECL)
-	      return new_type;
-
-	    r = copy_decl (t);
-	    DECL_CHAIN (r) = NULL_TREE;
-	    TREE_TYPE (r) = new_type;
-	    DECL_TEMPLATE_RESULT (r)
-	      = build_decl (DECL_SOURCE_LOCATION (decl),
-			    TYPE_DECL, DECL_NAME (decl), new_type);
-	    DECL_TEMPLATE_PARMS (r)
-	      = tsubst_template_parms (DECL_TEMPLATE_PARMS (t), args,
-				       complain);
-	    TYPE_NAME (new_type) = r;
+	    else if (TREE_CODE (new_type) == TEMPLATE_DECL)
+	      r = new_type;
+	    else
+	      /* The new TEMPLATE_DECL was built in
+		 reduce_template_parm_level.  */
+	      r = TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (new_type);
 	    break;
 	  }
 

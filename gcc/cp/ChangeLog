@@ -1,5 +1,10 @@
 2015-07-06  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (reduce_template_parm_level): Also build the TYPE_DECL
+	for a template template parameter.
+	(tsubst_decl) [TEMPLATE_DECL]: Use the TEMPLATE_DECL built
+	by reduce_template_parm_level.
+
 	* pt.c (argument_pack_element_is_expansion_p): A decl pack is an
 	expansion.
 
