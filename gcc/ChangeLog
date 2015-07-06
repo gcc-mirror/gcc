@@ -1,3 +1,9 @@
+2015-07-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/66620
+	* config/bfin/bfin.c (hwloop_optimize): Create new bb between jump and
+	loop start when inserting LSETUP.
+
 2015-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/53383

@@ -3796,8 +3796,19 @@ hwloop_optimize (hwloop_info loop)
 	{
 	  gcc_assert (JUMP_P (prev));
 	  prev = PREV_INSN (prev);
+	  emit_insn_after (seq, prev);
 	}
-      emit_insn_after (seq, prev);
+      else
+	{
+	  emit_insn_after (seq, prev);
+	  BB_END (loop->incoming_src) = prev;
+	  basic_block new_bb = create_basic_block (seq, seq_end,
+						   loop->head->prev_bb);
+	  edge e = loop->incoming->last ();
+	  gcc_assert (e->flags & EDGE_FALLTHRU);
+	  redirect_edge_succ (e, new_bb);
+	  make_edge (new_bb, loop->head, 0);
+	}
     }
   else
     {
