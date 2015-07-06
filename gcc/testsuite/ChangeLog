@@ -1,8 +1,11 @@
+2015-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/pr66757.c: New test.
+
 2015-07-06  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/66720
-	* gcc.dg/vect/pr48052.c: Use dg-require-effective-target
-	vect_int_mult.
+	* gcc.dg/vect/pr48052.c: Use dg-require-effective-target vect_int_mult.
 
 2015-07-05  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Sandra Loosemore <sandra@codesourcery.com>

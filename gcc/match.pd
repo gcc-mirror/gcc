@@ -444,7 +444,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Convert ~X ^ C to X ^ ~C.  */
 (simplify
  (bit_xor (convert? (bit_not @0)) INTEGER_CST@1)
- (bit_xor (convert @0) (bit_not @1)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (bit_xor (convert @0) (bit_not @1))))
 
 /* Fold (X & Y) ^ Y as ~X & Y.  */
 (simplify
