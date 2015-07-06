@@ -17063,19 +17063,19 @@ emit_i387_cw_initialization (int mode)
 	{
 	case I387_CW_TRUNC:
 	  /* round toward zero (truncate) */
-	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0xc)));
+	  emit_insn (gen_insvsi_1 (reg, GEN_INT (0xc)));
 	  slot = SLOT_CW_TRUNC;
 	  break;
 
 	case I387_CW_FLOOR:
 	  /* round down toward -oo */
-	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0x4)));
+	  emit_insn (gen_insvsi_1 (reg, GEN_INT (0x4)));
 	  slot = SLOT_CW_FLOOR;
 	  break;
 
 	case I387_CW_CEIL:
 	  /* round up toward +oo */
-	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0x8)));
+	  emit_insn (gen_insvsi_1 (reg, GEN_INT (0x8)));
 	  slot = SLOT_CW_CEIL;
 	  break;
 
@@ -24834,9 +24834,9 @@ promote_duplicated_reg (machine_mode mode, rtx val)
 
       if (!TARGET_PARTIAL_REG_STALL)
 	if (mode == SImode)
-	  emit_insn (gen_movsi_insv_1 (reg, reg));
+	  emit_insn (gen_insvsi_1 (reg, reg));
 	else
-	  emit_insn (gen_movdi_insv_1 (reg, reg));
+	  emit_insn (gen_insvdi_1 (reg, reg));
       else
 	{
 	  tmp = expand_simple_binop (mode, ASHIFT, reg, GEN_INT (8),
