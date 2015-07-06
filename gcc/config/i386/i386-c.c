@@ -64,6 +64,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__i486");
       def_or_undef (parse_in, "__i486__");
       break;
+    case PROCESSOR_IAMCU:
+      /* Intel MCU is based on Intel Pentium CPU.  */
     case PROCESSOR_PENTIUM:
       def_or_undef (parse_in, "__i586");
       def_or_undef (parse_in, "__i586__");
@@ -284,6 +286,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__tune_knl__");
+      break;
+    case PROCESSOR_IAMCU:
+      def_or_undef (parse_in, "__tune_iamcu__");
       break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
