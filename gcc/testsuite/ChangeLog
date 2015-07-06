@@ -1,3 +1,10 @@
+2015-07-06  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/fnmul-1.c: New.
+	* gcc.target/aarch64/fnmul-2.c: New.
+	* gcc.target/aarch64/fnmul-3.c: New.
+	* gcc.target/aarch64/fnmul-4.c: New.
+
 2015-07-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/66759
