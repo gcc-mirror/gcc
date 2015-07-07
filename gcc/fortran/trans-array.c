@@ -6912,9 +6912,10 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       tree from;
       tree to;
       tree base;
-      bool onebased = false;
+      bool onebased = false, rank_remap;
 
       ndim = info->ref ? info->ref->u.ar.dimen : ss->dimen;
+      rank_remap = ss->dimen < ndim;
 
       if (se->want_coarray)
 	{
@@ -6946,6 +6947,22 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       /* Set the string_length for a character array.  */
       if (expr->ts.type == BT_CHARACTER)
 	se->string_length =  gfc_get_expr_charlen (expr);
+
+      /* If we have an array section or are assigning make sure that
+	 the lower bound is 1.  References to the full
+	 array should otherwise keep the original bounds.  */
+      if ((!info->ref || info->ref->u.ar.type != AR_FULL) && !se->want_pointer)
+	for (dim = 0; dim < loop.dimen; dim++)
+	  if (!integer_onep (loop.from[dim]))
+	    {
+	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				     gfc_array_index_type, gfc_index_one_node,
+				     loop.from[dim]);
+	      loop.to[dim] = fold_build2_loc (input_location, PLUS_EXPR,
+					      gfc_array_index_type,
+					      loop.to[dim], tmp);
+	      loop.from[dim] = gfc_index_one_node;
+	    }
 
       desc = info->descriptor;
       if (se->direct_byref && !se->byref_noassign)
@@ -7040,20 +7057,6 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  from = loop.from[dim];
 	  to = loop.to[dim];
 
-	  /* If we have an array section or are assigning make sure that
-	     the lower bound is 1.  References to the full
-	     array should otherwise keep the original bounds.  */
-	  if ((!info->ref
-	          || info->ref->u.ar.type != AR_FULL)
-	      && !integer_onep (from))
-	    {
-	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     gfc_array_index_type, gfc_index_one_node,
-				     from);
-	      to = fold_build2_loc (input_location, PLUS_EXPR,
-				    gfc_array_index_type, to, tmp);
-	      from = gfc_index_one_node;
-	    }
 	  onebased = integer_onep (from);
 	  gfc_conv_descriptor_lbound_set (&loop.pre, parm,
 					  gfc_rank_cst[dim], from);
@@ -7079,7 +7082,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	    {
 	      tmp = gfc_conv_array_lbound (desc, n);
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     TREE_TYPE (base), tmp, loop.from[dim]);
+				     TREE_TYPE (base), tmp, from);
 	      tmp = fold_build2_loc (input_location, MULT_EXPR,
 				     TREE_TYPE (base), tmp,
 				     gfc_conv_array_stride (desc, n));
@@ -7114,7 +7117,19 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       /* Force the offset to be -1, when the lower bound of the highest
 	 dimension is one and the symbol is present and is not a
 	 pointer/allocatable or associated.  */
-      if (onebased && se->use_offset
+      if (((se->direct_byref || GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+	   && !se->data_not_needed)
+	  || (se->use_offset && base != NULL_TREE))
+	{
+	  /* Set the offset depending on base.  */
+	  tmp = rank_remap && !se->direct_byref ?
+		fold_build2_loc (input_location, PLUS_EXPR,
+				 gfc_array_index_type, base,
+				 offset)
+	      : base;
+	  gfc_conv_descriptor_offset_set (&loop.pre, parm, tmp);
+	}
+      else if (onebased && (!rank_remap || se->use_offset)
 	  && expr->symtree
 	  && !(expr->symtree->n.sym && expr->symtree->n.sym->ts.type == BT_CLASS
 	       && !CLASS_DATA (expr->symtree->n.sym)->attr.class_pointer)
@@ -7129,11 +7144,6 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  tmp = gfc_conv_mpz_to_tree (minus_one, gfc_index_integer_kind);
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm, tmp);
 	}
-      else if (((se->direct_byref || GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
-		&& !se->data_not_needed)
-	       || (se->use_offset && base != NULL_TREE))
-	/* Set the offset depending on base.  */
-	gfc_conv_descriptor_offset_set (&loop.pre, parm, base);
       else
 	{
 	  /* Only the callee knows what the correct offset it, so just set
