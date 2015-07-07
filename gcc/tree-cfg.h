@@ -59,6 +59,7 @@ extern bool simple_goto_p (gimple);
 extern bool stmt_ends_bb_p (gimple);
 extern bool assert_unreachable_fallthru_edge_p (edge);
 extern void delete_tree_cfg_annotations (void);
+extern gphi *get_virtual_phi (basic_block);
 extern gimple first_stmt (basic_block);
 extern gimple last_stmt (basic_block);
 extern gimple last_and_only_stmt (basic_block);

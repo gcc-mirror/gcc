@@ -25,6 +25,7 @@ typedef void (*transform_callback)(struct loop *, void *);
 extern void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *,
 		       bool, tree *, tree *);
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
+extern void rewrite_virtuals_into_loop_closed_ssa (struct loop *);
 extern void verify_loop_closed_ssa (bool);
 extern basic_block split_loop_exit_edge (edge);
 extern basic_block ip_end_pos (struct loop *);

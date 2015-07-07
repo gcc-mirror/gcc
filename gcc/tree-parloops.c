@@ -1492,25 +1492,6 @@ replace_uses_in_bb_by (tree name, tree val, basic_block bb)
     }
 }
 
-/* Replace uses of NAME by VAL in blocks BBS.  */
-
-static void
-replace_uses_in_bbs_by (tree name, tree val, bitmap bbs)
-{
-  gimple use_stmt;
-  imm_use_iterator imm_iter;
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, name)
-    {
-      if (!bitmap_bit_p (bbs, gimple_bb (use_stmt)->index))
-	continue;
-
-      use_operand_p use_p;
-      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	SET_USE (use_p, val);
-    }
-}
-
 /* Do transformation from:
 
      <bb preheader>:
@@ -1631,18 +1612,11 @@ transform_to_exit_first_loop_alt (struct loop *loop,
   tree control = gimple_cond_lhs (cond_stmt);
   edge e;
 
-  /* Gather the bbs dominated by the exit block.  */
-  bitmap exit_dominated = BITMAP_ALLOC (NULL);
-  bitmap_set_bit (exit_dominated, exit_block->index);
-  vec<basic_block> exit_dominated_vec
-    = get_dominated_by (CDI_DOMINATORS, exit_block);
-
-  int i;
-  basic_block dom_bb;
-  FOR_EACH_VEC_ELT (exit_dominated_vec, i, dom_bb)
-    bitmap_set_bit (exit_dominated, dom_bb->index);
-
-  exit_dominated_vec.release ();
+  /* Rewriting virtuals into loop-closed ssa normal form makes this
+     transformation simpler.  It also ensures that the virtuals are in
+     loop-closed ssa normal from after the transformation, which is required by
+     create_parallel_loop.  */
+  rewrite_virtuals_into_loop_closed_ssa (loop);
 
   /* Create the new_header block.  */
   basic_block new_header = split_block_before_cond_jump (exit->src);
@@ -1675,6 +1649,7 @@ transform_to_exit_first_loop_alt (struct loop *loop,
   vec<edge_var_map> *v = redirect_edge_var_map_vector (post_inc_edge);
   edge_var_map *vm;
   gphi_iterator gsi;
+  int i;
   for (gsi = gsi_start_phis (header), i = 0;
        !gsi_end_p (gsi) && v->iterate (i, &vm);
        gsi_next (&gsi), i++)
@@ -1692,10 +1667,9 @@ transform_to_exit_first_loop_alt (struct loop *loop,
       /* Replace ivtmp/sum_b with ivtmp/sum_c in header phi.  */
       add_phi_arg (phi, res_c, post_cond_edge, UNKNOWN_LOCATION);
 
-      /* Replace sum_b with sum_c in exit phi.  Loop-closed ssa does not hold
-	 for virtuals, so we cannot get away with exit_block only.  */
+      /* Replace sum_b with sum_c in exit phi.  */
       tree res_b = redirect_edge_var_map_def (vm);
-      replace_uses_in_bbs_by (res_b, res_c, exit_dominated);
+      replace_uses_in_bb_by (res_b, res_c, exit_block);
 
       struct reduction_info *red = reduction_phi (reduction_list, phi);
       gcc_assert (virtual_operand_p (res_a)
@@ -1710,7 +1684,6 @@ transform_to_exit_first_loop_alt (struct loop *loop,
 	}
     }
   gcc_assert (gsi_end_p (gsi) && !v->iterate (i, &vm));
-  BITMAP_FREE (exit_dominated);
 
   /* Set the preheader argument of the new phis to ivtmp/sum_init.  */
   flush_pending_stmts (entry);
