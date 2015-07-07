@@ -1,3 +1,9 @@
+2015-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66779
+	* jit.dg/all-non-failing-tests.h: Add test-pr66779.c.
+	* jit.dg/test-pr66779.c: New testcase.
+
 2015-07-07  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* gcc.target/mips/no-smartmips-lwxs.c: Change NOMIPS16 to

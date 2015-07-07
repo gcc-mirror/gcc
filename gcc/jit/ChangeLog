@@ -1,3 +1,9 @@
+2015-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66779
+	* dummy-frontend.c (jit_langhook_type_for_mode): Ensure that we
+	handle modes QI, HI, SI, DI, TI.
+
 2015-07-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/66700

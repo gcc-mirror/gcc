@@ -161,6 +161,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-pr66779.c */
+#define create_code create_code_pr66779
+#define verify_code verify_code_pr66779
+#include "test-pr66779.c"
+#undef create_code
+#undef verify_code
+
 /* test-reading-struct.c */
 #define create_code create_code_reading_struct
 #define verify_code verify_code_reading_struct
@@ -289,6 +296,9 @@ const struct testcase testcases[] = {
   {"pr66700_observing_write_through_ptr",
    create_code_pr66700_observing_write_through_ptr,
    verify_code_pr66700_observing_write_through_ptr},
+  {"pr66779",
+   create_code_pr66779,
+   verify_code_pr66779},
   {"reading_struct ",
    create_code_reading_struct ,
    verify_code_reading_struct },
