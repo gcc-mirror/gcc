@@ -1,3 +1,9 @@
+2015-07-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/66780
+	* config/sh/sh.md (symGOT_load): Revert a part of 2015-03-03
+	change for target/65249.
+
 2015-07-07  Paulo Matos  <pmatos@broadcom.com>
 
 	* symtab.c (address_matters_1): Fix typo in comment above.
