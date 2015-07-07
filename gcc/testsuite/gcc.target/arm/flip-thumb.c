@@ -1,8 +1,8 @@
 /* Check -mflip-thumb. */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mflip-thumb -mno-restrict-it" } */
-/* { dg-final { scan-assembler ".arm" } } */
-/* { dg-final { scan-assembler-times ".thumb_func" 1} } */
+/* { dg-final { scan-assembler "\\.arm" } } */
+/* { dg-final { scan-assembler-times "\\.thumb_func" 1} } */
 
 int 
 foo(int a)

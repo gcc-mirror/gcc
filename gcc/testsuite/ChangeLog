@@ -1,3 +1,12 @@
+2015-07-07  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* gcc.target/arm/flip-thumb.c: Fix scan.
+	* gcc.target/arm/attr_thumb.c: Test for all targets. Fix scan.
+	* gcc.target/arm/attr_arm.c: Test for all targets. Fix scan.
+	* gcc.target/arm/attr_thumb-static.c: Test for all targets.
+	Fix return value.
+
 2015-05-05  Jakub Jelinek  <jakub@redhat.com>
 
         PR target/65956
