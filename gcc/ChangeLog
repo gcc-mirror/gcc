@@ -1,3 +1,7 @@
+2015-07-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* function.c (free_after_compilation): Clear PROP_cfg in f->curr_properties.
+
 2015-07-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-propagate.c (add_ssa_edge): Dump what edge list we

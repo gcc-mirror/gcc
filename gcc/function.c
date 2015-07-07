@@ -216,6 +216,7 @@ free_after_compilation (struct function *f)
   f->eh = NULL;
   f->machine = NULL;
   f->cfg = NULL;
+  f->curr_properties &= ~PROP_cfg;
 
   regno_reg_rtx = NULL;
 }
