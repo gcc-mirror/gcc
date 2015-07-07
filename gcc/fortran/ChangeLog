@@ -1,3 +1,10 @@
+2015-07-07  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/66578
+	* trans-array.c (gfc_conv_expr_descriptor): Ensure array descriptor
+	is one-based for non-full array refs. Correct the offset when a
+	rank_remap occurs.
+
 2015-07-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* io.c (check_char_variable): New function.
