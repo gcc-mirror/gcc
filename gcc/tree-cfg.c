@@ -2623,6 +2623,23 @@ delete_tree_cfg_annotations (void)
   vec_free (label_to_block_map_for_fn (cfun));
 }
 
+/* Return the virtual phi in BB.  */
+
+gphi *
+get_virtual_phi (basic_block bb)
+{
+  for (gphi_iterator gsi = gsi_start_phis (bb);
+       !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+
+      if (virtual_operand_p (PHI_RESULT (phi)))
+	return phi;
+    }
+
+  return NULL;
+}
 
 /* Return the first statement in basic block BB.  */
 

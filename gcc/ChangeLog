@@ -1,3 +1,15 @@
+2015-07-07  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-cfg.c (get_virtual_phi): New function.
+	* tree-cfg.h (get_virtual_phi): Declare.
+	* tree-ssa-loop-manip.c (replace_uses_in_dominated_bbs)
+	(rewrite_virtuals_into_loop_closed_ssa): New function.
+	* tree-ssa-loop-manip.h (rewrite_virtuals_into_loop_closed_ssa):
+	Declare.
+	* tree-parloops.c (replace_uses_in_bbs_by): Remove.
+	(transform_to_exit_first_loop_alt): Use
+	rewrite_virtuals_into_loop_closed_ssa.
+
 2015-07-07  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Move
