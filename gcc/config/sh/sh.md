@@ -10751,12 +10751,6 @@ label:
 		 "__stack_chk_guard") == 0)
     stack_chk_guard_p = true;
 
-  /* Use R0 to avoid long R0 liveness which stack-protector tends to
-     produce.  */
-  if (! sh_lra_flag
-      && stack_chk_guard_p && ! reload_in_progress && ! reload_completed)
-    operands[2] = gen_rtx_REG (Pmode, R0_REG);
-
   if (TARGET_SHMEDIA)
     {
       rtx reg = operands[2];
