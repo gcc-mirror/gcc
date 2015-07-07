@@ -1,3 +1,7 @@
+2015-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (cpp_check): Deal with IS_MOVE_CONSTRUCTOR.
+
 2015-07-06  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (reduce_template_parm_level): Also build the TYPE_DECL
