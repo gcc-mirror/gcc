@@ -1,3 +1,14 @@
+2015-07-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*jcc_bt<mode>): Only split before reload.
+	Remove operand constraints.  Change operand 2 predicate to
+	nonmemory operand.  Limit const_int values to mode bitsize.  Only
+	allow const_int values less than 32 when optimizing for size.
+	(*jcc_bt<mode>_1, *jcc_bt<mode>_mask): Only split before reload.
+	Remove operand constraints.
+	(*bt<mode>): Use SImode for const_int values less than 32.
+	(regmode): Remove mode attribute.
+
 2015-07-07  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/moxie/moxie.h (GO_IF_LEGITIMATE_ADDRESS): Remove macros.
@@ -10,8 +21,8 @@
 	PR tree-optimization/66642
 	* tree-parloops.c (transform_to_exit_first_loop_alt): Update function
 	header comment.  Rename split_edge variable to edge_at_split.  Split
-	exit edge to create new loop exit bb.  Insert loop exit phis in new loop
-	exit bb.
+	exit edge to create new loop exit bb.  Insert loop exit phis in new
+	loop exit bb.
 
 2015-07-07  Tom de Vries  <tom@codesourcery.com>
 
@@ -46,7 +57,8 @@
 
 2015-07-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
-	* function.c (free_after_compilation): Clear PROP_cfg in f->curr_properties.
+	* function.c (free_after_compilation): Clear PROP_cfg in
+	f->curr_properties.
 
 2015-07-07  Richard Biener  <rguenther@suse.de>
 
