@@ -1876,7 +1876,7 @@ symtab_node::call_for_symbol_and_aliases_1 (bool (*callback) (symtab_node *,
   return false;
 }
 
-/* Return ture if address of N is possibly compared.  */
+/* Return true if address of N is possibly compared.  */
 
 static bool
 address_matters_1 (symtab_node *n, void *)
@@ -1904,7 +1904,7 @@ symtab_node::address_matters_p ()
   return call_for_symbol_and_aliases (address_matters_1, NULL, true);
 }
 
-/* Return ture if symbol's alignment may be increased.  */
+/* Return true if symbol's alignment may be increased.  */
 
 bool
 symtab_node::can_increase_alignment_p (void)
