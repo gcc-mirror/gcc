@@ -1,3 +1,15 @@
+2015-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-propagate.c (add_ssa_edge): Dump what edge list we
+	add which use to.
+	(add_control_edge): Remove excessive vertical space in dumping.
+	(process_ssa_edge_worklist): Simulate at most one statement and
+	return whether we did.  Do not simulate PHIs if they are in a
+	BB not yet simulated.
+	(ssa_propagate): Adjust to always drain the BB worklist whenever
+	a BB is available there, likewise the VARYING edges list before
+	the interesting edge list.
+
 2015-07-07  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144

@@ -281,9 +281,23 @@ add_ssa_edge (tree var, bool is_varying)
 	{
 	  gimple_set_plf (use_stmt, STMT_IN_SSA_EDGE_WORKLIST, true);
 	  if (is_varying)
-	    varying_ssa_edges.safe_push (use_stmt);
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "varying_ssa_edges: adding SSA use in ");
+		  print_gimple_stmt (dump_file, use_stmt, 0, TDF_SLIM);
+		}
+	      varying_ssa_edges.safe_push (use_stmt);
+	    }
 	  else
-	    interesting_ssa_edges.safe_push (use_stmt);
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "interesting_ssa_edges: adding SSA use in ");
+		  print_gimple_stmt (dump_file, use_stmt, 0, TDF_SLIM);
+		}
+	      interesting_ssa_edges.safe_push (use_stmt);
+	    }
 	}
     }
 }
@@ -311,7 +325,7 @@ add_control_edge (edge e)
   cfg_blocks_add (bb);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nAdding Destination of edge (%d -> %d) to worklist\n",
+    fprintf (dump_file, "Adding destination of edge (%d -> %d) to worklist\n",
 	e->src->index, e->dest->index);
 }
 
@@ -414,14 +428,15 @@ simulate_stmt (gimple stmt)
 
 /* Process an SSA edge worklist.  WORKLIST is the SSA edge worklist to
    drain.  This pops statements off the given WORKLIST and processes
-   them until there are no more statements on WORKLIST.
-   We take a pointer to WORKLIST because it may be reallocated when an
-   SSA edge is added to it in simulate_stmt.  */
+   them until one statement was simulated or there are no more statements
+   on WORKLIST.  We take a pointer to WORKLIST because it may be reallocated
+   when an SSA edge is added to it in simulate_stmt.  Return true if a stmt
+   was simulated.  */
 
-static void
-process_ssa_edge_worklist (vec<gimple> *worklist)
+static bool 
+process_ssa_edge_worklist (vec<gimple> *worklist, const char *edge_list_name)
 {
-  /* Drain the entire worklist.  */
+  /* Process the next entry from the worklist.  */
   while (worklist->length () > 0)
     {
       basic_block bb;
@@ -437,21 +452,35 @@ process_ssa_edge_worklist (vec<gimple> *worklist)
       /* STMT is no longer in a worklist.  */
       gimple_set_plf (stmt, STMT_IN_SSA_EDGE_WORKLIST, false);
 
+      bb = gimple_bb (stmt);
+
+      /* Visit the statement only if its block is marked executable.
+         If it is not executable then it will be visited when we simulate
+	 all statements in the block as soon as an incoming edge gets
+	 marked executable.  */
+      if (!bitmap_bit_p (executable_blocks, bb->index))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nDropping statement from SSA worklist: ");
+	      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+	    }
+	  continue;
+	}
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "\nSimulating statement (from ssa_edges): ");
+	  fprintf (dump_file, "\nSimulating statement (from %s): ",
+		   edge_list_name);
 	  print_gimple_stmt (dump_file, stmt, 0, dump_flags);
 	}
 
-      bb = gimple_bb (stmt);
+      simulate_stmt (stmt);
 
-      /* PHI nodes are always visited, regardless of whether or not
-	 the destination block is executable.  Otherwise, visit the
-	 statement only if its block is marked executable.  */
-      if (gimple_code (stmt) == GIMPLE_PHI
-	  || bitmap_bit_p (executable_blocks, bb->index))
-	simulate_stmt (stmt);
+      return true;
     }
+
+  return false;
 }
 
 
@@ -917,14 +946,17 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
 	  /* Pull the next block to simulate off the worklist.  */
 	  basic_block dest_block = cfg_blocks_get ();
 	  simulate_block (dest_block);
+	  continue;
 	}
 
       /* In order to move things to varying as quickly as
 	 possible,process the VARYING_SSA_EDGES worklist first.  */
-      process_ssa_edge_worklist (&varying_ssa_edges);
+      if (process_ssa_edge_worklist (&varying_ssa_edges, "varying_ssa_edges"))
+	continue;
 
       /* Now process the INTERESTING_SSA_EDGES worklist.  */
-      process_ssa_edge_worklist (&interesting_ssa_edges);
+      process_ssa_edge_worklist (&interesting_ssa_edges,
+				 "interesting_ssa_edges");
     }
 
   ssa_prop_fini ();
