@@ -1,5 +1,13 @@
 2015-07-07  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/66642
+	* tree-parloops.c (transform_to_exit_first_loop_alt): Update function
+	header comment.  Rename split_edge variable to edge_at_split.  Split
+	exit edge to create new loop exit bb.  Insert loop exit phis in new loop
+	exit bb.
+
+2015-07-07  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-cfg.c (get_virtual_phi): New function.
 	* tree-cfg.h (get_virtual_phi): Declare.
 	* tree-ssa-loop-manip.c (replace_uses_in_dominated_bbs)

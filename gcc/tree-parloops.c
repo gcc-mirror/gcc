@@ -1516,7 +1516,7 @@ replace_uses_in_bb_by (tree name, tree val, basic_block bb)
      goto <bb header>
 
      <bb exit>:
-     sum_z = PHI <sum_b (cond[1])>
+     sum_z = PHI <sum_b (cond[1]), ...>
 
      [1] Where <bb cond> is single_pred (bb latch); In the simplest case,
 	 that's <bb header>.
@@ -1543,14 +1543,17 @@ replace_uses_in_bb_by (tree name, tree val, basic_block bb)
      if (ivtmp_c < n + 1)
        goto <bb header>;
      else
-       goto <bb exit>;
+       goto <bb newexit>;
 
      <bb latch>:
      ivtmp_b = ivtmp_a + 1;
      goto <bb newheader>
 
+     <bb newexit>:
+     sum_y = PHI <sum_c (newheader)>
+
      <bb exit>:
-     sum_z = PHI <sum_c (newheader)>
+     sum_z = PHI <sum_y (newexit), ...>
 
 
    In unified diff format:
@@ -1587,9 +1590,12 @@ replace_uses_in_bb_by (tree name, tree val, basic_block bb)
 -     goto <bb header>
 +     goto <bb newheader>
 
++    <bb newexit>:
++    sum_y = PHI <sum_c (newheader)>
+
       <bb exit>:
--     sum_z = PHI <sum_b (cond[1])>
-+     sum_z = PHI <sum_c (newheader)>
+-     sum_z = PHI <sum_b (cond[1]), ...>
++     sum_z = PHI <sum_y (newexit), ...>
 
    Note: the example does not show any virtual phis, but these are handled more
    or less as reductions.
@@ -1620,7 +1626,7 @@ transform_to_exit_first_loop_alt (struct loop *loop,
 
   /* Create the new_header block.  */
   basic_block new_header = split_block_before_cond_jump (exit->src);
-  edge split_edge = single_pred_edge (new_header);
+  edge edge_at_split = single_pred_edge (new_header);
 
   /* Redirect entry edge to new_header.  */
   edge entry = loop_preheader_edge (loop);
@@ -1637,9 +1643,9 @@ transform_to_exit_first_loop_alt (struct loop *loop,
   e = redirect_edge_and_branch (post_cond_edge, header);
   gcc_assert (e == post_cond_edge);
 
-  /* Redirect split_edge to latch.  */
-  e = redirect_edge_and_branch (split_edge, latch);
-  gcc_assert (e == split_edge);
+  /* Redirect edge_at_split to latch.  */
+  e = redirect_edge_and_branch (edge_at_split, latch);
+  gcc_assert (e == edge_at_split);
 
   /* Set the new loop bound.  */
   gimple_cond_set_rhs (cond_stmt, bound);
@@ -1691,21 +1697,36 @@ transform_to_exit_first_loop_alt (struct loop *loop,
   /* Set the latch arguments of the new phis to ivtmp/sum_b.  */
   flush_pending_stmts (post_inc_edge);
 
-  /* Register the reduction exit phis.  */
+  /* Create a new empty exit block, inbetween the new loop header and the old
+     exit block.  The function separate_decls_in_region needs this block to
+     insert code that is active on loop exit, but not any other path.  */
+  basic_block new_exit_block = split_edge (exit);
+
+  /* Insert and register the reduction exit phis.  */
   for (gphi_iterator gsi = gsi_start_phis (exit_block);
        !gsi_end_p (gsi);
        gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
       tree res_z = PHI_RESULT (phi);
+
+      /* Now that we have a new exit block, duplicate the phi of the old exit
+	 block in the new exit block to preserve loop-closed ssa.  */
+      edge succ_new_exit_block = single_succ_edge (new_exit_block);
+      edge pred_new_exit_block = single_pred_edge (new_exit_block);
+      tree res_y = copy_ssa_name (res_z, phi);
+      gphi *nphi = create_phi_node (res_y, new_exit_block);
+      tree res_c = PHI_ARG_DEF_FROM_EDGE (phi, succ_new_exit_block);
+      add_phi_arg (nphi, res_c, pred_new_exit_block, UNKNOWN_LOCATION);
+      add_phi_arg (phi, res_y, succ_new_exit_block, UNKNOWN_LOCATION);
+
       if (virtual_operand_p (res_z))
 	continue;
 
-      tree res_c = PHI_ARG_DEF_FROM_EDGE (phi, exit);
       gimple reduc_phi = SSA_NAME_DEF_STMT (res_c);
       struct reduction_info *red = reduction_phi (reduction_list, reduc_phi);
       if (red != NULL)
-	red->keep_res = phi;
+	red->keep_res = nphi;
     }
 
   /* We're going to cancel the loop at the end of gen_parallel_loop, but until

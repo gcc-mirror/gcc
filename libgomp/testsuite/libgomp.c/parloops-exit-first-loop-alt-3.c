@@ -36,5 +36,10 @@ main (void)
   if (res != 11995)
     abort ();
 
+  /* Test low iteration count case.  */
+  res = f (10);
+  if (res != 25)
+    abort ();
+
   return 0;
 }
