@@ -2891,6 +2891,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_constructor = false;
       bool is_destructor = false;
       bool is_copy_constructor = false;
+      bool is_move_constructor = false;
 
       if (!decl_name)
 	return 0;
@@ -2901,11 +2902,12 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  is_constructor = cpp_check (t, IS_CONSTRUCTOR);
 	  is_destructor = cpp_check (t, IS_DESTRUCTOR);
 	  is_copy_constructor = cpp_check (t, IS_COPY_CONSTRUCTOR);
+	  is_move_constructor = cpp_check (t, IS_MOVE_CONSTRUCTOR);
 	}
 
-      /* Skip copy constructors: some are internal only, and those that are
-	 not cannot be called easily from Ada anyway.  */
-      if (is_copy_constructor)
+      /* Skip copy constructors and C++11 move constructors: some are internal
+	 only and those that are not cannot be called easily from Ada.  */
+      if (is_copy_constructor || is_move_constructor)
 	return 0;
 
       if (is_constructor || is_destructor)

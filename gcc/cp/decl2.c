@@ -4077,6 +4077,8 @@ cpp_check (tree t, cpp_operation op)
 	return DECL_DESTRUCTOR_P (t);
       case IS_COPY_CONSTRUCTOR:
 	return DECL_COPY_CONSTRUCTOR_P (t);
+      case IS_MOVE_CONSTRUCTOR:
+	return DECL_MOVE_CONSTRUCTOR_P (t);
       case IS_TEMPLATE:
 	return TREE_CODE (t) == TEMPLATE_DECL;
       case IS_TRIVIAL:

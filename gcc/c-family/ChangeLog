@@ -1,3 +1,8 @@
+2015-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (cpp_operation): Add IS_MOVE_CONSTRUCTOR.
+	* c-ada-spec.c (print_ada_declaration): Skip move constructors.
+
 2015-07-01  Jason Merrill  <jason@redhat.com>
 
 	* c-common.h (D_CXX11): Rename from D_CXX0X.
