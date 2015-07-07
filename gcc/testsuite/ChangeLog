@@ -1,5 +1,17 @@
 2015-07-07  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/66783
+	* jit.dg/test-error-gcc_jit_context_new_field-opaque-struct.c: New
+	test case.
+	* jit.dg/test-error-gcc_jit_context_new_global-opaque-struct.c:
+	New test case.
+	* jit.dg/test-error-gcc_jit_function_new_local-opaque-struct.c:
+	New test case.
+	* jit.dg/test-error-mismatching-types-in-call.c (create_code):
+	Avoid using an opaque struct for local "f".
+
+2015-07-07  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/66779
 	* jit.dg/all-non-failing-tests.h: Add test-pr66779.c.
 	* jit.dg/test-pr66779.c: New testcase.

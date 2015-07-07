@@ -497,6 +497,7 @@ public:
   virtual type *is_pointer () = 0;
   virtual type *is_array () = 0;
   virtual bool is_void () const { return false; }
+  virtual bool has_known_size () const { return true; }
 
   bool is_numeric () const
   {
@@ -794,6 +795,8 @@ public:
   bool is_bool () const { return false; }
   type *is_pointer () { return NULL; }
   type *is_array () { return NULL; }
+
+  bool has_known_size () const { return m_fields != NULL; }
 
   playback::compound_type *
   playback_compound_type ()

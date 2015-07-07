@@ -26,7 +26,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
   gcc_jit_type *void_type =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_VOID);
   gcc_jit_struct *struct_foo =
-    gcc_jit_context_new_opaque_struct (ctxt, NULL, "foo");
+    gcc_jit_context_new_struct_type (ctxt, NULL, "foo", 0, NULL);
   gcc_jit_type *foo_ptr =
     gcc_jit_type_get_pointer (gcc_jit_struct_as_type (struct_foo));
   gcc_jit_param *param =
