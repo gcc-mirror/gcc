@@ -1,3 +1,8 @@
+2015-07-07  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/no-smartmips-lwxs.c: Change NOMIPS16 to
+	NOCOMPRESSION.
+
 2015-07-07  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-over-widen-3-big-array.c: Adjust.
