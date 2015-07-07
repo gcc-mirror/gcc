@@ -1,3 +1,10 @@
+2015-07-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/moxie/moxie.h (GO_IF_LEGITIMATE_ADDRESS): Remove macros.
+	* config/moxie/moxie.c (moxie_reg_ok_for_base_p,
+	  moxie_legitimate_address_p): New functions.
+	  (TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Define.
+
 2015-07-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/66642

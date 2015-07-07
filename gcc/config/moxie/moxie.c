@@ -595,6 +595,45 @@ moxie_offset_address_p (rtx x)
   return 0;
 }
 
+/* Helper function for `moxie_legitimate_address_p'.  */
+
+static bool
+moxie_reg_ok_for_base_p (const_rtx reg, bool strict_p)
+{
+  int regno = REGNO (reg);
+
+  if (strict_p)
+    return HARD_REGNO_OK_FOR_BASE_P (regno)
+	   || HARD_REGNO_OK_FOR_BASE_P (reg_renumber[regno]);
+  else    
+    return !HARD_REGISTER_NUM_P (regno)
+	   || HARD_REGNO_OK_FOR_BASE_P (regno);
+}
+
+/* Worker function for TARGET_LEGITIMATE_ADDRESS_P.  */
+
+static bool
+moxie_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
+			    rtx x, bool strict_p,
+			    addr_space_t as)
+{
+  gcc_assert (ADDR_SPACE_GENERIC_P (as));
+
+  if (GET_CODE(x) == PLUS
+      && REG_P (XEXP (x, 0))
+      && moxie_reg_ok_for_base_p (XEXP (x, 0), strict_p)
+      && CONST_INT_P (XEXP (x, 1))
+      && IN_RANGE (INTVAL (XEXP (x, 1)), -32768, 32767))
+    return true;
+  if (REG_P (x) && moxie_reg_ok_for_base_p (x, strict_p))
+    return true;
+  if (GET_CODE (x) == SYMBOL_REF
+      || GET_CODE (x) == LABEL_REF
+      || GET_CODE (x) == CONST)
+    return true;
+  return false;
+}
+
 /* The Global `targetm' Variable.  */
 
 /* Initialize the GCC target structure.  */
@@ -615,6 +654,8 @@ moxie_offset_address_p (rtx x)
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE	moxie_function_arg_advance
 
+#undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P	moxie_legitimate_address_p
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS 	moxie_setup_incoming_varargs

@@ -451,30 +451,6 @@ enum reg_class
    elements of a jump-table should have.  */
 #define CASE_VECTOR_MODE SImode
 
-/* A C compound statement with a conditional `goto LABEL;' executed
-   if X (an RTX) is a legitimate memory address on the target machine
-   for a memory operand of mode MODE.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE,X,LABEL)		\
-  do {                                                  \
-    if (GET_CODE(X) == PLUS)				\
-      {							\
-	rtx op1,op2;					\
-	op1 = XEXP(X,0);				\
-	op2 = XEXP(X,1);				\
-	if (GET_CODE(op1) == REG			\
-	    && GET_CODE(op2) == CONST_INT 		\
-	    && IN_RANGE (INTVAL (op2), -32768, 32767)	\
-	    && REGNO_OK_FOR_BASE_P(REGNO(op1)))		\
-	  goto LABEL;					\
-      }							\
-    if (REG_P (X) && REGNO_OK_FOR_BASE_P (REGNO (X)))	\
-      goto LABEL;					\
-    if (GET_CODE (X) == SYMBOL_REF			\
-	|| GET_CODE (X) == LABEL_REF			\
-	|| GET_CODE (X) == CONST)			\
-      goto LABEL;					\
-  } while (0)
-
 /* Run-time Target Specification */
 
 #define TARGET_CPU_CPP_BUILTINS() \
