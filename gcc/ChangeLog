@@ -1,3 +1,11 @@
+2015-07-07  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Move
+	(X & C2) << C1 -> (X << C1) & (C2 << C1) simplification ...
+	* match.pd: ... here.
+	Add (X * C1) % C2 -> 0 simplification pattern derived from
+	extract_muldiv_1.
+
 2015-07-07  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/66780

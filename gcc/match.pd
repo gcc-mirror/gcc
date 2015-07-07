@@ -230,7 +230,14 @@ along with GCC; see the file COPYING3.  If not see
  /* (X % Y) % Y is just X % Y.  */
  (simplify
   (mod (mod@2 @0 @1) @1)
-  @2))
+  @2)
+ /* From extract_muldiv_1: (X * C1) % C2 is zero if C1 is a multiple of C2.  */
+ (simplify
+  (mod (mult @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (ANY_INTEGRAL_TYPE_P (type)
+       && TYPE_OVERFLOW_UNDEFINED (type)
+       && wi::multiple_of_p (@1, @2, TYPE_SIGN (type)))
+   { build_zero_cst (type); })))
 
 /* X % -C is the same as X % C.  */
 (simplify
@@ -991,6 +998,16 @@ along with GCC; see the file COPYING3.  If not see
 	    (bit_and (convert (shift:shift_type (convert @3) @1)) { newmaskt; }))
 	   (if (shift_type == TREE_TYPE (@3))
 	    (bit_and @4 { newmaskt; }))))))))))))
+
+/* Fold (X & C2) << C1 into (X << C1) & (C2 << C1)
+   (X & C2) >> C1 into (X >> C1) & (C2 >> C1).  */
+(for shift (lshift rshift)
+ (simplify
+  (shift (convert? (bit_and @0 INTEGER_CST@2)) INTEGER_CST@1)
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+   (with { tree mask = int_const_binop (shift, fold_convert (type, @2), @1); }
+    (bit_and (shift (convert @0) @1) { mask; })))))
+
 
 /* Simplifications of conversions.  */
 
