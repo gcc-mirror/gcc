@@ -1,3 +1,12 @@
+2015-07-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66642
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c (main): Test low
+	iteration count case.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt.c (init): New
+	function, factor out of ...
+	(main): ... here.  Test low iteration count case.
+
 2015-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* libgomp.h (gomp_thread_pool): Comment last_team field.
