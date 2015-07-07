@@ -1,3 +1,8 @@
+2015-07-07  Paulo Matos  <pmatos@broadcom.com>
+
+	* symtab.c (address_matters_1): Fix typo in comment above.
+	(can_increase_alignment_p): Likewise.
+
 2015-07-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* function.c (free_after_compilation): Clear PROP_cfg in f->curr_properties.
