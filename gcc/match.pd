@@ -1334,8 +1334,9 @@ along with GCC; see the file COPYING3.  If not see
    attempts to synthetize ABS_EXPR.  */
 (for cmp (eq ne)
  (simplify
-  (cmp (minus @0 @1) integer_zerop)
-  (cmp @0 @1)))
+  (cmp (minus@2 @0 @1) integer_zerop)
+  (if (single_use (@2))
+   (cmp @0 @1))))
 
 /* Transform comparisons of the form X * C1 CMP 0 to X CMP 0 in the
    signed arithmetic case.  That form is created by the compiler

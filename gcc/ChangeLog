@@ -1,3 +1,9 @@
+2015-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66739
+	* match.pd: Condition A - B ==/!= 0 -> A ==/!= B on single-use
+	A - B.
+
 2015-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (insv<mode>): Rename from insv.  Use SWI48
