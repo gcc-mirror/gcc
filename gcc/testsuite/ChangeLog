@@ -1,3 +1,32 @@
+2015-07-08  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/branch-2.c: Change NOMIPS16 to NOCOMPRESSION.
+	* gcc.target/mips/branch-3.c: Ditto
+	* gcc.target/mips/branch-4.c: Ditto.
+	* gcc.target/mips/branch-5.c: Ditto.
+	* gcc.target/mips/branch-6.c: Ditto.
+	* gcc.target/mips/branch-7.c: Ditto.
+	* gcc.target/mips/branch-8.c: Ditto.
+	* gcc.target/mips/branch-9.c: Ditto.
+	* gcc.target/mips/branch-10.c: Ditto.
+	* gcc.target/mips/branch-11.c: Ditto.
+	* gcc.target/mips/branch-12.c: Ditto.
+	* gcc.target/mips/branch-13.c: Ditto.
+	* gcc.target/mips/umips-branch-5.c: New file.
+	* gcc.target/mips/umips-branch-6.c: New file.
+	* gcc.target/mips/umips-branch-7.c: New file.
+	* gcc.target/mips/umips-branch-8.c: New file.
+	* gcc.target/mips/umips-branch-9.c: New file.
+	* gcc.target/mips/umips-branch-10.c: New file.
+	* gcc.target/mips/umips-branch-11.c: New file.
+	* gcc.target/mips/umips-branch-12.c: New file.
+	* gcc.target/mips/umips-branch-13.c: New file.
+	* gcc.target/mips/umips-branch-14.c: New file.
+	* gcc.target/mips/umips-branch-15.c: New file.
+	* gcc.target/mips/umips-branch-16.c: New file.
+	* gcc.target/mips/branch-helper.h (OCCUPY_0x10000): New define.  
+	(OCCUPY_0xfffc): New define.
+
 2015-07-08  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.target/arm/unsigned-float.c: Different options for hf toolchain.
