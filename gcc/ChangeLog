@@ -118,7 +118,7 @@
 
 	* tree-core.h: Include symtab.h.
 	* rtl.h: Include hard-reg-set.h but not flags.h.
-	(HARD_CONST): Remove condition compilation involving HARD_CONST since 
+	(HARD_CONST): Remove condition compilation involving HARD_CONST since
 	hard-reg-set.h is always included.
 	* regs.h: Don't include hard-reg-set.h or rtl.h.
 	* cfg.h: Include dominance.h.
@@ -1319,7 +1319,7 @@
 2015-06-30  Marek Polacek  <polacek@redhat.com>
 
 	* match.pd (X - (X / Y) * Y): Use convert1 and convert2.  Convert
-	both operands of the resulting expression.	
+	both operands of the resulting expression.
 
 	* match.pd (~x | x): Don't use tree_nop_conversion_p.  Build
 	the final expression with the operand's type and then convert
@@ -2416,8 +2416,7 @@
 2015-06-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/bfin/bfin.c (bfin_expand_prologue): Set
-	current_function_static_stack_size if flag_stack_usage_info is
-        set.
+	current_function_static_stack_size if flag_stack_usage_info is set.
 	* config/ft32/ft32.c (ft32_expand_prologue): Likewise.
 	* config/h8300/h8300.c (h8300_expand_prologue): Likewise.
 	* config/iq2000/iq2000.c (iq2000_expand_prologue): Likewise.
@@ -4168,7 +4167,7 @@
 	the include list. Remove <new>.
 	* inchash.h: Remove all includes.
 	* mem-stats.h: Likewise.
-	* vec.h: No special processing for generators or ggc.  
+	* vec.h: No special processing for generators or ggc.
 	* alias.c : Adjust include files.
 	* alloc-pool.c : Likewise.
 	* alloc-pool.h : Likewise.
@@ -7547,9 +7546,6 @@
 2015-05-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (struct rs6000_stack): Correct comments.
-	(rs6000_stack_info): Don't zero offsets when not saving registers.
-	(debug_stack_info): Adjust to omit printing unused offsets,
-	as before.
 	(direct_return): Test vrsave_size rather than vrsave_mask.
 	(rs6000_emit_prologue): Likewise.  Remove redundant altivec tests.
 	(rs6000_emit_epilogue): Likewise.
