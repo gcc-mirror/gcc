@@ -1,3 +1,9 @@
+2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefile.am (main_target_image.h): Change type of data
+	member of struct MainTargetImage to uint8_t.
+	* plugin/Makefile.in: Regenerate.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.
