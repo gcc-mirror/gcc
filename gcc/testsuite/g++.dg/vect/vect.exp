@@ -58,7 +58,7 @@ lappend VECT_SLP_CFLAGS "-fdump-tree-slp-details"
 dg-init
 
 # Main loop.
-g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.{c,cc,S} ]] \
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/{pr,simd}*.{c,cc,S} ]] \
         "" $DEFAULT_VECTCFLAGS
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/slp-pr*.{c,cc,S} ]] \
         "" $VECT_SLP_CFLAGS

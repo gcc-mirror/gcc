@@ -5,8 +5,14 @@
 # include "cpuid.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void abort (void);
 extern void exit (int);
+#ifdef __cplusplus
+}
+#endif
 
 static void
 sig_ill_handler (int sig)
@@ -26,7 +32,7 @@ check_vect (void)
   asm volatile (".long 0x10000484");
 #elif defined(__i386__) || defined(__x86_64__)
   {
-    int a, b, c, d, want_level, want_c, want_d;
+    unsigned int a, b, c, d, want_level, want_c, want_d;
 
     /* Determine what instruction set we've been compiled for, and detect
        that we're running with it.  This allows us to at least do a compile
