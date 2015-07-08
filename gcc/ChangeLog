@@ -1,3 +1,9 @@
+2015-07-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_new_rtx_costs): Initialise cost to
+	COSTS_N_INSNS (1) and increment it appropriately throughout the
+	function.
+
 2015-07-08  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_widened_comparison): Fix inverted comparison.
