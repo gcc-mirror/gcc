@@ -37,7 +37,7 @@ main (void)
     abort ();
 
   /* Test low iteration count case.  */
-  res = f (10);
+  res = f (10, a);
   if (res != 25)
     abort ();
 

@@ -1,3 +1,9 @@
+2015-07-08  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c (main): Fix
+	second call to f.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt.c: Same.
+
 2015-07-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/66642
