@@ -3,6 +3,8 @@
 
 #include <x86intrin.h>
 
+extern void abort (void);
+
 #ifdef __x86_64__
 #define EFLAGS_TYPE unsigned long long int
 #else
