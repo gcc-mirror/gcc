@@ -1,3 +1,7 @@
+2015-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (cpp_check): Deal with IS_CONSTEXPR.
+
 2015-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (grokfndecl): Handle flag_openmp_simd like flag_openmp.
