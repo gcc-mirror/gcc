@@ -95,7 +95,11 @@ get_run_time (void)
 #if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
   struct rusage rusage;
 
+#if defined __USE_GNU && !defined __cplusplus
+  getrusage (RUSAGE_SELF, &rusage);
+#else
   getrusage (0, &rusage);
+#endif
   return (rusage.ru_utime.tv_sec * 1000000 + rusage.ru_utime.tv_usec
 	  + rusage.ru_stime.tv_sec * 1000000 + rusage.ru_stime.tv_usec);
 #else /* ! HAVE_GETRUSAGE */
