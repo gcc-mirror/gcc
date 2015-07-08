@@ -59,7 +59,7 @@ main (void)
 
   init ();
 
-  f (10);
+  f (10, a, b, c);
 
   for (i = 0; i < N; i++)
     {
