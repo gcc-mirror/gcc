@@ -69,7 +69,7 @@ main_target_image.h: offload_target_main
 	@echo "struct MainTargetImage {" >> $@
 	@echo "  int64_t size;" >> $@
 	@echo "  char name[sizeof \"offload_target_main\"];" >> $@
-	@echo "  char data[image_size];" >> $@
+	@echo "  uint8_t data[image_size];" >> $@
 	@echo "};" >> $@
 	@echo "extern \"C\" const MainTargetImage main_target_image = {" >> $@
 	@echo "  image_size, \"offload_target_main\"," >> $@
