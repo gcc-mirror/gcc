@@ -75,7 +75,11 @@
 
 #include <xsaveoptintrin.h>
 
+#endif /* __iamcu__ */
+
 #include <adxintrin.h>
+
+#ifndef __iamcu__
 
 #include <clwbintrin.h>
 

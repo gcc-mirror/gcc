@@ -1,3 +1,9 @@
+2015-07-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66746
+	* config/i386/x86intrin.h: Include <adxintrin.h> even if
+	__iamcu__ is defined.
+
 2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (general_reg_operand): Use GENERAL_REGNO_P.
