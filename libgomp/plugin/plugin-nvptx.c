@@ -777,6 +777,11 @@ nvptx_get_num_devices (void)
   int n;
   CUresult r;
 
+  /* PR libgomp/65099: Currently, we only support offloading in 64-bit
+     configurations.  */
+  if (sizeof (void *) != 8)
+    return 0;
+
   /* This function will be called before the plugin has been initialized in
      order to enumerate available devices, but CUDA API routines can't be used
      until cuInit has been called.  Just call it now (but don't yet do any

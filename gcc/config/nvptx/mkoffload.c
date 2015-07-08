@@ -993,37 +993,43 @@ main (int argc, char **argv)
 	obstack_ptr_grow (&argv_obstack, argv[ix]);
     }
 
-  ptx_name = make_temp_file (".mkoffload");
-  obstack_ptr_grow (&argv_obstack, "-o");
-  obstack_ptr_grow (&argv_obstack, ptx_name);
-  obstack_ptr_grow (&argv_obstack, NULL);
-  const char **new_argv = XOBFINISH (&argv_obstack, const char **);
-
-  char *execpath = getenv ("GCC_EXEC_PREFIX");
-  char *cpath = getenv ("COMPILER_PATH");
-  char *lpath = getenv ("LIBRARY_PATH");
-  unsetenv ("GCC_EXEC_PREFIX");
-  unsetenv ("COMPILER_PATH");
-  unsetenv ("LIBRARY_PATH");
-
-  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
-  obstack_free (&argv_obstack, NULL);
-
-  xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
-  xputenv (concat ("COMPILER_PATH=", cpath, NULL));
-  xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
-
-  in = fopen (ptx_name, "r");
-  if (!in)
-    fatal_error (input_location, "cannot open intermediate ptx file");
-
   ptx_cfile_name = make_temp_file (".c");
 
   out = fopen (ptx_cfile_name, "w");
   if (!out)
     fatal_error (input_location, "cannot open '%s'", ptx_cfile_name);
 
-  process (in, out);
+  /* PR libgomp/65099: Currently, we only support offloading in 64-bit
+     configurations.  */
+  if (!target_ilp32)
+    {
+      ptx_name = make_temp_file (".mkoffload");
+      obstack_ptr_grow (&argv_obstack, "-o");
+      obstack_ptr_grow (&argv_obstack, ptx_name);
+      obstack_ptr_grow (&argv_obstack, NULL);
+      const char **new_argv = XOBFINISH (&argv_obstack, const char **);
+
+      char *execpath = getenv ("GCC_EXEC_PREFIX");
+      char *cpath = getenv ("COMPILER_PATH");
+      char *lpath = getenv ("LIBRARY_PATH");
+      unsetenv ("GCC_EXEC_PREFIX");
+      unsetenv ("COMPILER_PATH");
+      unsetenv ("LIBRARY_PATH");
+
+      fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
+      obstack_free (&argv_obstack, NULL);
+
+      xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
+      xputenv (concat ("COMPILER_PATH=", cpath, NULL));
+      xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
+
+      in = fopen (ptx_name, "r");
+      if (!in)
+	fatal_error (input_location, "cannot open intermediate ptx file");
+
+      process (in, out);
+    }
+
   fclose (out);
 
   compile_native (ptx_cfile_name, outname, collect_gcc);
