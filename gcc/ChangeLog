@@ -1,3 +1,11 @@
+2015-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66794
+	* passes.c (execute_function_todo): Assert that post-dominators
+	are not computed.
+	* gimple-ssa-isolate-paths.c (gimple_ssa_isolate_erroneous_paths):
+	Free post-dominators.
+
 2015-07-08  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_init_frame_layout): Replace assertion
