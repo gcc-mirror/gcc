@@ -1,3 +1,13 @@
+2015-07-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66783
+	* libgccjit.c (gcc_jit_context_new_field): Show name of field in
+	"unknown size" error message.
+	(gcc_jit_struct_set_fields): Show name of struct in error message.
+	(gcc_jit_context_new_global): Show name of global in
+	"unknown size" error message.
+	(gcc_jit_function_new_local): Likewise for local.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* dummy-frontend.c: Adjust includes.
