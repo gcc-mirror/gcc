@@ -1,3 +1,7 @@
+2015-07-08  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/arm/unsigned-float.c: Different options for hf toolchain.
+
 2015-07-08  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* gcc.target/mips/stack-1.c: Do not build the testcase for micromips.
