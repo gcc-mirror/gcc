@@ -1,8 +1,12 @@
+2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (general_reg_operand): Use GENERAL_REGNO_P.
+
 2015-07-08  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/66523
-	* config/darwin.c (darwin_mark_decl_preserved): Exclude 'L' label names from
-	preservation.
+	* config/darwin.c (darwin_mark_decl_preserved): Exclude 'L' label
+	names from preservation.
 
 2015-07-08  Vladimir Makarov  <vmakarov@redhat.com>
 
