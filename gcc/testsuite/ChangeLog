@@ -1,5 +1,9 @@
 2015-07-08  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/pr37870.c (dg-options): Add -mlong-double-80.
+
+2015-07-08  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/readeflags-1.c (abort): New prototype.
 	* gcc.target/i386/writeeflags-1.c (abort): Likewise.
 
