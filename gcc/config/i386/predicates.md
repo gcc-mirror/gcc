@@ -35,7 +35,7 @@
 ;; True if the operand is a GENERAL class register.
 (define_predicate "general_reg_operand"
   (and (match_code "reg")
-       (match_test "GENERAL_REG_P (op)")))
+       (match_test "GENERAL_REGNO_P (REGNO (op))")))
 
 ;; Return true if OP is a register operand other than an i387 fp register.
 (define_predicate "register_and_not_fp_reg_operand"
