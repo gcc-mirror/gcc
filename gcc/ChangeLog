@@ -1,3 +1,8 @@
+2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*jcc_bt<mode>): Only allow const_int values
+	more than or equal 8 and less than 32 when optimizing for size.
+
 2015-07-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs): Initialise cost to
