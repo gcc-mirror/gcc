@@ -1,3 +1,9 @@
+2015-07-08  Jeff Law  <law@redhat.com>
+
+	PR testsuite/66796
+	* gcc.target/hppa/shadd-1.c: Avoid the read-modify-write so as
+	to have a single memory reference.
+
 2015-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/dump-ada-spec-9.C: New test.
