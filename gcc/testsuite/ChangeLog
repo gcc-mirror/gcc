@@ -1,3 +1,8 @@
+2015-07-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66421
+	* g++.dg/cpp0x/auto45.C: New.
+
 2015-07-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/66334
