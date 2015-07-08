@@ -1,3 +1,10 @@
+2015-07-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/66334
+	* ira-lives.c (process_bb_node_lives): Make conflicts with PIC
+	hard regno live at the start of BB with incoming abnormal edges.
+	* lra-lives.c (process_bb_lives): Ditto.
+
 2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/65099
