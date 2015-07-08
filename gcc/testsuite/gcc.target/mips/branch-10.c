@@ -4,7 +4,7 @@
 
 #include "branch-helper.h"
 
-NOMIPS16 void
+NOCOMPRESSION void
 foo (int (*bar) (void), int *x)
 {
   *x = bar ();

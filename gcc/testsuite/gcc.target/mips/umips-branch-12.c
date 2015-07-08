@@ -1,4 +1,4 @@
-/* { dg-options "-mshared -mabi=32" } */
+/* { dg-options "-mshared -mabi=32 -mmicromips" } */
 /* { dg-final { scan-assembler "\t\\.cpload\t\\\$25\n" } } */
 /* { dg-final { scan-assembler "\t\\.cprestore\t16\n" } } */
 /* { dg-final { scan-assembler "\tlw\t\\\$1,16\\(\\\$(fp|sp)\\)\n" } } */
@@ -9,10 +9,10 @@
 
 #include "branch-helper.h"
 
-NOCOMPRESSION void
+NOMIPS16 void
 foo (int (*bar) (void), int *x)
 {
   *x = bar ();
   if (__builtin_expect (*x == 0, 1))
-    OCCUPY_0x1fffc;
+    OCCUPY_0x10000;
 }
