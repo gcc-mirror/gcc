@@ -26,7 +26,6 @@
 #include "tm_p.h"
 #include "cpplib.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "target.h"

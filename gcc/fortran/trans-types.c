@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 			   FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE and
 			   LONG_DOUBLE_TYPE_SIZE.  */
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"

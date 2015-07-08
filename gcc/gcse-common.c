@@ -23,11 +23,8 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
 #include "rtl.h"
-#include "predict.h"
-#include "bitmap.h"
-#include "basic-block.h"
 #include "df.h"
 #include "gcse-common.h"
 

@@ -30,10 +30,9 @@
 #include "coretypes.h"
 #include "vec.h"
 #include "alias.h"
-#include "symtab.h"
+#include "tree.h"
 #include "inchash.h"
 #include "options.h"
-#include "tree.h"
 #include "tm.h"
 #include "tm_p.h"
 

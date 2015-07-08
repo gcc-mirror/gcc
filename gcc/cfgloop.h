@@ -20,9 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CFGLOOP_H
 #define GCC_CFGLOOP_H
 
-#include "bitmap.h"
-#include "sbitmap.h"
-#include "function.h"
 #include "cfgloopmanip.h"
 
 /* Structure to hold decision about unrolling/peeling.  */

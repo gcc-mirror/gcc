@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef VMS_DEBUGGING_INFO
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "varasm.h"
 #include "version.h"
@@ -36,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vmsdbg.h"
 #include "debug.h"
 #include "langhooks.h"
-#include "hard-reg-set.h"
 #include "function.h"
 #include "target.h"
 

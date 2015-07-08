@@ -20,17 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "diagnostic-core.h"
+#include "backend.h"
 #include "rtl.h"
+#include "df.h"
+#include "diagnostic-core.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "regs.h"
-#include "function.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
@@ -40,6 +35,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 
 #ifdef INSN_SCHEDULING
+#include "regset.h"
+#include "sched-int.h"
+#include "cfgloop.h"
 #include "sel-sched-ir.h"
 #include "sel-sched-dump.h"
 

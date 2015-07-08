@@ -20,7 +20,6 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "c-family/c-common.h"

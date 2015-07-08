@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "cpplib.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-common.h"

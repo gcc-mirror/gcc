@@ -22,6 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_H
 #define GCC_GIMPLE_H
 
+#include "tree-ssa-alias.h"
+#include "gimple-expr.h"
+
 typedef gimple gimple_seq_node;
 
 enum gimple_code {

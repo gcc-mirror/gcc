@@ -26,10 +26,9 @@
 
 #include "vec.h"
 #include "alias.h"
-#include "symtab.h"
+#include "tree.h"
 #include "options.h"
 #include "inchash.h"
-#include "tree.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"

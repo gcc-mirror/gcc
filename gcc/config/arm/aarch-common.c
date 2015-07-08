@@ -28,7 +28,6 @@
 #include "tm_p.h"
 #include "rtl.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "c-family/c-common.h"
 #include "rtl.h"

@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "alias.h"
 #include "flags.h"
-#include "symtab.h"
 #include "tree.h"
 #include "fold-const.h"
 

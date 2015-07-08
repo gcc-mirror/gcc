@@ -45,7 +45,6 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "tm.h"
 #include "debug.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"

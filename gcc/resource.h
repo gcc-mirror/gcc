@@ -20,9 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RESOURCE_H
 #define GCC_RESOURCE_H
 
-#include "hard-reg-set.h"
-#include "df.h"
-
 /* Macro to clear all resources.  */
 #define CLEAR_RESOURCE(RES)	\
  do { (RES)->memory = (RES)->volatil = (RES)->cc = 0; \

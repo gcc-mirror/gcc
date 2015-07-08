@@ -25,9 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "flags.h"
-#include "symtab.h"
-#include "alias.h"
 #include "tree.h"
+#include "alias.h"
 #include "c-tree.h"
 
 enum formals_style_enum {

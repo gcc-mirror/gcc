@@ -20,9 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
@@ -31,13 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc-internal.h"
 #include "timevar.h"
 #include "params.h"
-#include "hard-reg-set.h"
-#include "function.h"
 #include "cgraph.h"
 #include "cfgloop.h"
 #include "plugin.h"
-#include "predict.h"
-#include "basic-block.h"
 
 /* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
    file open.  Prefer either to valloc.  */

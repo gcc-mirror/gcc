@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #endif  /* GENERATOR_FILE */
 
-#include "flags.h"
+#include "hard-reg-set.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */
@@ -2880,9 +2880,7 @@ extern bool val_signbit_known_clear_p (machine_mode,
 /* In reginfo.c  */
 extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 					       bool);
-#ifdef HARD_CONST
 extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
-#endif
 
 /* In emit-rtl.c  */
 extern rtx set_for_reg_notes (rtx);
@@ -2939,10 +2937,8 @@ extern int reg_overlap_mentioned_p (const_rtx, const_rtx);
 extern const_rtx set_of (const_rtx, const_rtx);
 extern void record_hard_reg_sets (rtx, const_rtx, void *);
 extern void record_hard_reg_uses (rtx *, void *);
-#ifdef HARD_CONST
 extern void find_all_hard_regs (const_rtx, HARD_REG_SET *);
 extern void find_all_hard_reg_sets (const rtx_insn *, HARD_REG_SET *, bool);
-#endif
 extern void note_stores (const_rtx, void (*) (rtx, const_rtx, void *), void *);
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
 extern int dead_or_set_p (const_rtx, const_rtx);
@@ -3572,9 +3568,7 @@ extern bool can_assign_to_reg_without_clobbers_p (rtx);
 extern rtx fis_get_condition (rtx_insn *);
 
 /* In ira.c */
-#ifdef HARD_CONST
 extern HARD_REG_SET eliminable_regset;
-#endif
 extern void mark_elimination (int, int);
 
 /* In reginfo.c */
@@ -3590,9 +3584,7 @@ extern void init_reg_sets (void);
 extern void regclass (rtx, int);
 extern void reg_scan (rtx_insn *, unsigned int);
 extern void fix_register (const char *, int, int);
-#ifdef HARD_CONST
 extern const HARD_REG_SET *valid_mode_changes_for_regno (unsigned int);
-#endif
 
 /* In reload1.c */
 extern int function_invariant_p (const_rtx);
@@ -3709,7 +3701,6 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 /* reginfo.c */
 extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
 
-#ifdef HARD_CONST
 /* Information about the function that is propagated by the RTL backend.
    Available only for functions that has been already assembled.  */
 
@@ -3723,7 +3714,6 @@ struct GTY(()) cgraph_rtl_info {
   /* Set if function_used_regs is valid.  */
   unsigned function_used_regs_valid: 1;
 };
-#endif
 
 
 #endif /* ! GCC_RTL_H */

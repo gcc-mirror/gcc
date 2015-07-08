@@ -1,3 +1,39 @@
+2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* call.c: Adjust includes.
+	* class.c: Likewise.
+	* constexpr.c: Likewise.
+	* cp-array-notation.c: Likewise.
+	* cp-gimplify.c: Likewise.
+	* cp-lang.c: Likewise.
+	* cp-objcp-common.c: Likewise.
+	* cp-ubsan.c: Likewise.
+	* cvt.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* dump.c: Likewise.
+	* error.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* friend.c: Likewise.
+	* init.c: Likewise.
+	* lambda.c: Likewise.
+	* lex.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* name-lookup.c: Likewise.
+	* optimize.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* ptree.c: Likewise.
+	* repo.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2015-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl2.c (cpp_check): Deal with IS_MOVE_CONSTRUCTOR.

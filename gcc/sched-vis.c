@@ -26,17 +26,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
 #include "rtl.h"
 #include "alias.h"
-#include "symtab.h"
-#include "tree.h"	/* FIXME: To dump INSN_VAR_LOCATION_DECL.  */
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
+#include "tree.h"
 #include "dumpfile.h"	/* for the TDF_* flags */
 #include "pretty-print.h"
 

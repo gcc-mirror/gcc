@@ -24,11 +24,9 @@
 #include "tm.h"
 #include "rtl.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "print-tree.h"
 #include "output.h"
-#include "hard-reg-set.h"
 #include "function.h"
 #include "tm_p.h"
 #include "tree-pass.h"	/* for current_pass */

@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "tm.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"

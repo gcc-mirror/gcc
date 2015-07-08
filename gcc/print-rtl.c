@@ -34,11 +34,9 @@ along with GCC; see the file COPYING3.  If not see
    generator programs.  */
 #ifndef GENERATOR_FILE
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "print-tree.h"
 #include "flags.h"
-#include "hard-reg-set.h"
 #include "predict.h"
 #include "function.h"
 #include "basic-block.h"

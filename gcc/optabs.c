@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
 #include "diagnostic-core.h"
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "rtl.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "tree-hasher.h"
 #include "stor-layout.h"
@@ -37,8 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "hard-reg-set.h"
-#include "function.h"
 #include "except.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -52,10 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "recog.h"
 #include "reload.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "target.h"
 
 struct target_optabs default_target_optabs;
