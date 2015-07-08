@@ -333,12 +333,12 @@ hook_bool_uintp_uintp_false (unsigned int *a ATTRIBUTE_UNUSED,
 }
 
 bool
-hook_bool_rtx_int_int_int_intp_bool_false (rtx a ATTRIBUTE_UNUSED,
-					   int b ATTRIBUTE_UNUSED,
-					   int c ATTRIBUTE_UNUSED,
-					   int d ATTRIBUTE_UNUSED,
-					   int *e ATTRIBUTE_UNUSED,
-					   bool speed_p ATTRIBUTE_UNUSED)
+hook_bool_rtx_mode_int_int_intp_bool_false (rtx a ATTRIBUTE_UNUSED,
+					    machine_mode b ATTRIBUTE_UNUSED,
+					    int c ATTRIBUTE_UNUSED,
+					    int d ATTRIBUTE_UNUSED,
+					    int *e ATTRIBUTE_UNUSED,
+					    bool speed_p ATTRIBUTE_UNUSED)
 {
   return false;
 }

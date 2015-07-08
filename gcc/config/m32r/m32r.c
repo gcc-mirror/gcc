@@ -98,7 +98,7 @@ static bool m32r_function_value_regno_p (const unsigned int);
 static void m32r_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
-static bool m32r_rtx_costs (rtx, int, int, int, int *, bool speed);
+static bool m32r_rtx_costs (rtx, machine_mode, int, int, int *, bool speed);
 static int m32r_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool m32r_pass_by_reference (cumulative_args_t, machine_mode,
 				    const_tree, bool);
@@ -1361,10 +1361,13 @@ m32r_memory_move_cost (machine_mode mode,
 }
 
 static bool
-m32r_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+m32r_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
+		int outer_code ATTRIBUTE_UNUSED,
 		int opno ATTRIBUTE_UNUSED, int *total,
 		bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
       /* Small integers are as cheap as registers.  4 byte values can be

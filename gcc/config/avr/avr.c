@@ -169,7 +169,7 @@ static struct machine_function * avr_init_machine_status (void);
 
 /* Prototypes for hook implementors if needed before their implementation.  */
 
-static bool avr_rtx_costs (rtx, int, int, int, int*, bool);
+static bool avr_rtx_costs (rtx, machine_mode, int, int, int*, bool);
 
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
@@ -2697,10 +2697,11 @@ avr_final_prescan_insn (rtx_insn *insn, rtx *operand ATTRIBUTE_UNUSED,
 
       if (set)
         fprintf (asm_out_file, "/* DEBUG: cost = %d.  */\n",
-                 set_src_cost (SET_SRC (set), optimize_insn_for_speed_p ()));
+                 set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)),
+			       optimize_insn_for_speed_p ()));
       else
         fprintf (asm_out_file, "/* DEBUG: pattern-cost = %d.  */\n",
-                 rtx_cost (PATTERN (insn), INSN, 0,
+                 rtx_cost (PATTERN (insn), VOIDmode, INSN, 0,
                            optimize_insn_for_speed_p()));
     }
 }
@@ -9910,7 +9911,7 @@ avr_operand_rtx_cost (rtx x, machine_mode mode, enum rtx_code outer,
     }
 
   total = 0;
-  avr_rtx_costs (x, code, outer, opno, &total, speed);
+  avr_rtx_costs (x, mode, outer, opno, &total, speed);
   return total;
 }
 
@@ -9921,11 +9922,10 @@ avr_operand_rtx_cost (rtx x, machine_mode mode, enum rtx_code outer,
    In either case, *TOTAL contains the cost result.  */
 
 static bool
-avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
+avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
                  int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
-  enum rtx_code code = (enum rtx_code) codearg;
-  machine_mode mode = GET_MODE (x);
+  enum rtx_code code = GET_CODE (x);
   HOST_WIDE_INT val;
 
   switch (code)
@@ -9986,13 +9986,15 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
     case ZERO_EXTEND:
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode)
 			      - GET_MODE_SIZE (GET_MODE (XEXP (x, 0))));
-      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+      *total += avr_operand_rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+				      code, 0, speed);
       return true;
 
     case SIGN_EXTEND:
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) + 2
 			      - GET_MODE_SIZE (GET_MODE (XEXP (x, 0))));
-      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+      *total += avr_operand_rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+				      code, 0, speed);
       return true;
 
     case PLUS:
@@ -10698,13 +10700,15 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	case QImode:
 	  *total = COSTS_N_INSNS (1);
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-	    *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+	    *total += avr_operand_rtx_cost (XEXP (x, 1), QImode, code,
+					    1, speed);
 	  break;
 
         case HImode:
 	  *total = COSTS_N_INSNS (2);
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-            *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+            *total += avr_operand_rtx_cost (XEXP (x, 1), HImode, code,
+					    1, speed);
 	  else if (INTVAL (XEXP (x, 1)) != 0)
 	    *total += COSTS_N_INSNS (1);
           break;
@@ -10718,7 +10722,8 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
         case SImode:
           *total = COSTS_N_INSNS (4);
           if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-            *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+            *total += avr_operand_rtx_cost (XEXP (x, 1), SImode, code,
+					    1, speed);
 	  else if (INTVAL (XEXP (x, 1)) != 0)
 	    *total += COSTS_N_INSNS (3);
           break;
@@ -10726,7 +10731,8 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 	default:
 	  return false;
 	}
-      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+      *total += avr_operand_rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+				      code, 0, speed);
       return true;
 
     case TRUNCATE:
@@ -10753,10 +10759,10 @@ avr_rtx_costs_1 (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED,
 /* Implement `TARGET_RTX_COSTS'.  */
 
 static bool
-avr_rtx_costs (rtx x, int codearg, int outer_code,
+avr_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	       int opno, int *total, bool speed)
 {
-  bool done = avr_rtx_costs_1 (x, codearg, outer_code,
+  bool done = avr_rtx_costs_1 (x, mode, outer_code,
                                opno, total, speed);
 
   if (avr_log.rtx_costs)

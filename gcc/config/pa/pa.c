@@ -106,7 +106,7 @@ static void fix_range (const char *);
 static int hppa_register_move_cost (machine_mode mode, reg_class_t,
 				    reg_class_t);
 static int hppa_address_cost (rtx, machine_mode mode, addr_space_t, bool);
-static bool hppa_rtx_costs (rtx, int, int, int, int *, bool);
+static bool hppa_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static inline rtx force_mode (machine_mode, rtx);
 static void pa_reorg (void);
 static void pa_combine_instructions (void);
@@ -1480,10 +1480,12 @@ hppa_address_cost (rtx X, machine_mode mode ATTRIBUTE_UNUSED,
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed ATTRIBUTE_UNUSED)
 {
   int factor;
+  int code = GET_CODE (x);
 
   switch (code)
     {
@@ -1515,14 +1517,14 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case MULT:
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
 	  *total = COSTS_N_INSNS (3);
 	  return true;
 	}
 
       /* A mode size N times larger than SImode needs O(N*N) more insns.  */
-      factor = GET_MODE_SIZE (GET_MODE (x)) / 4;
+      factor = GET_MODE_SIZE (mode) / 4;
       if (factor == 0)
 	factor = 1;
 
@@ -1533,7 +1535,7 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case DIV:
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
 	  *total = COSTS_N_INSNS (14);
 	  return true;
@@ -1544,7 +1546,7 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case MOD:
     case UMOD:
       /* A mode size N times larger than SImode needs O(N*N) more insns.  */
-      factor = GET_MODE_SIZE (GET_MODE (x)) / 4;
+      factor = GET_MODE_SIZE (mode) / 4;
       if (factor == 0)
 	factor = 1;
 
@@ -1553,7 +1555,7 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
     case PLUS: /* this includes shNadd insns */
     case MINUS:
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
 	  *total = COSTS_N_INSNS (3);
 	  return true;
@@ -1561,7 +1563,7 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
       /* A size N times larger than UNITS_PER_WORD needs N times as
 	 many insns, taking N times as long.  */
-      factor = GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD;
+      factor = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
       if (factor == 0)
 	factor = 1;
       *total = factor * COSTS_N_INSNS (1);

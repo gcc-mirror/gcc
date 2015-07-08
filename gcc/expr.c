@@ -3631,9 +3631,9 @@ compress_float_constant (rtx x, rtx y)
   REAL_VALUE_FROM_CONST_DOUBLE (r, y);
 
   if (targetm.legitimate_constant_p (dstmode, y))
-    oldcost = set_src_cost (y, speed);
+    oldcost = set_src_cost (y, orig_srcmode, speed);
   else
-    oldcost = set_src_cost (force_const_mem (dstmode, y), speed);
+    oldcost = set_src_cost (force_const_mem (dstmode, y), dstmode, speed);
 
   for (srcmode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (orig_srcmode));
        srcmode != orig_srcmode;
@@ -3662,7 +3662,7 @@ compress_float_constant (rtx x, rtx y)
 	    continue;
 	  /* This is valid, but may not be cheaper than the original. */
 	  newcost = set_src_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y),
-				  speed);
+				  dstmode, speed);
 	  if (oldcost < newcost)
 	    continue;
 	}
@@ -3671,7 +3671,7 @@ compress_float_constant (rtx x, rtx y)
 	  trunc_y = force_const_mem (srcmode, trunc_y);
 	  /* This is valid, but may not be cheaper than the original. */
 	  newcost = set_src_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y),
-				  speed);
+				  dstmode, speed);
 	  if (oldcost < newcost)
 	    continue;
 	  trunc_y = validize_mem (trunc_y);

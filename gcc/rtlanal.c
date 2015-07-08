@@ -4026,7 +4026,8 @@ label_is_jump_target_p (const_rtx label, const rtx_insn *jump_insn)
    be returned.  */
 
 int
-rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
+rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
+	  int opno, bool speed)
 {
   int i, j;
   enum rtx_code code;
@@ -4037,9 +4038,12 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
   if (x == 0)
     return 0;
 
+  if (GET_MODE (x) != VOIDmode)
+    mode = GET_MODE (x);
+
   /* A size N times larger than UNITS_PER_WORD likely needs N times as
      many insns, taking N times as long.  */
-  factor = GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD;
+  factor = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
   if (factor == 0)
     factor = 1;
 
@@ -4069,7 +4073,8 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
     case SET:
       /* A SET doesn't have a mode, so let's look at the SET_DEST to get
 	 the mode for the factor.  */
-      factor = GET_MODE_SIZE (GET_MODE (SET_DEST (x))) / UNITS_PER_WORD;
+      mode = GET_MODE (SET_DEST (x));
+      factor = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
       if (factor == 0)
 	factor = 1;
       /* Pass through.  */
@@ -4086,12 +4091,12 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
       total = 0;
       /* If we can't tie these modes, make this expensive.  The larger
 	 the mode, the more expensive it is.  */
-      if (! MODES_TIEABLE_P (GET_MODE (x), GET_MODE (SUBREG_REG (x))))
+      if (! MODES_TIEABLE_P (mode, GET_MODE (SUBREG_REG (x))))
 	return COSTS_N_INSNS (2 + factor);
       break;
 
     default:
-      if (targetm.rtx_costs (x, code, outer_code, opno, &total, speed))
+      if (targetm.rtx_costs (x, mode, outer_code, opno, &total, speed))
 	return total;
       break;
     }
@@ -4102,10 +4107,10 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      total += rtx_cost (XEXP (x, i), code, i, speed);
+      total += rtx_cost (XEXP (x, i), mode, code, i, speed);
     else if (fmt[i] == 'E')
       for (j = 0; j < XVECLEN (x, i); j++)
-	total += rtx_cost (XVECEXP (x, i, j), code, i, speed);
+	total += rtx_cost (XVECEXP (x, i, j), mode, code, i, speed);
 
   return total;
 }
@@ -4114,11 +4119,11 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
    costs for X, which is operand OPNO in an expression with code OUTER.  */
 
 void
-get_full_rtx_cost (rtx x, enum rtx_code outer, int opno,
+get_full_rtx_cost (rtx x, machine_mode mode, enum rtx_code outer, int opno,
 		   struct full_rtx_costs *c)
 {
-  c->speed = rtx_cost (x, outer, opno, true);
-  c->size = rtx_cost (x, outer, opno, false);
+  c->speed = rtx_cost (x, mode, outer, opno, true);
+  c->size = rtx_cost (x, mode, outer, opno, false);
 }
 
 
@@ -4146,7 +4151,7 @@ address_cost (rtx x, machine_mode mode, addr_space_t as, bool speed)
 int
 default_address_cost (rtx x, machine_mode, addr_space_t, bool speed)
 {
-  return rtx_cost (x, MEM, 0, speed);
+  return rtx_cost (x, Pmode, MEM, 0, speed);
 }
 
 
@@ -5153,7 +5158,7 @@ insn_rtx_cost (rtx pat, bool speed)
   else
     return 0;
 
-  cost = set_src_cost (SET_SRC (set), speed);
+  cost = set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)), speed);
   return cost > 0 ? cost : COSTS_N_INSNS (1);
 }
 

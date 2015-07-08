@@ -7040,15 +7040,16 @@ expand_compound_operation (rtx x)
 		     >> 1))
 	       == 0)))
     {
-      rtx temp = gen_rtx_ZERO_EXTEND (GET_MODE (x), XEXP (x, 0));
+      machine_mode mode = GET_MODE (x);
+      rtx temp = gen_rtx_ZERO_EXTEND (mode, XEXP (x, 0));
       rtx temp2 = expand_compound_operation (temp);
 
       /* Make sure this is a profitable operation.  */
-      if (set_src_cost (x, optimize_this_for_speed_p)
-          > set_src_cost (temp2, optimize_this_for_speed_p))
+      if (set_src_cost (x, mode, optimize_this_for_speed_p)
+          > set_src_cost (temp2, mode, optimize_this_for_speed_p))
        return temp2;
-      else if (set_src_cost (x, optimize_this_for_speed_p)
-               > set_src_cost (temp, optimize_this_for_speed_p))
+      else if (set_src_cost (x, mode, optimize_this_for_speed_p)
+               > set_src_cost (temp, mode, optimize_this_for_speed_p))
        return temp;
       else
        return x;
@@ -7474,8 +7475,8 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 
 	  /* Prefer ZERO_EXTENSION, since it gives more information to
 	     backends.  */
-	  if (set_src_cost (temp, optimize_this_for_speed_p)
-	      <= set_src_cost (temp1, optimize_this_for_speed_p))
+	  if (set_src_cost (temp, mode, optimize_this_for_speed_p)
+	      <= set_src_cost (temp1, mode, optimize_this_for_speed_p))
 	    return temp;
 	  return temp1;
 	}
@@ -7660,8 +7661,8 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 
 	  /* Prefer ZERO_EXTENSION, since it gives more information to
 	     backends.  */
-	  if (set_src_cost (temp1, optimize_this_for_speed_p)
-	      < set_src_cost (temp, optimize_this_for_speed_p))
+	  if (set_src_cost (temp1, pos_mode, optimize_this_for_speed_p)
+	      < set_src_cost (temp, pos_mode, optimize_this_for_speed_p))
 	    temp = temp1;
 	}
       pos_rtx = temp;
@@ -8442,8 +8443,8 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
 
 	      y = simplify_gen_binary (AND, GET_MODE (x), XEXP (x, 0),
 				       gen_int_mode (cval, GET_MODE (x)));
-	      if (set_src_cost (y, optimize_this_for_speed_p)
-	          < set_src_cost (x, optimize_this_for_speed_p))
+	      if (set_src_cost (y, GET_MODE (x), optimize_this_for_speed_p)
+	          < set_src_cost (x, GET_MODE (x), optimize_this_for_speed_p))
 		x = y;
 	    }
 
@@ -9636,8 +9637,8 @@ distribute_and_simplify_rtx (rtx x, int n)
   tmp = apply_distributive_law (simplify_gen_binary (inner_code, mode,
 						     new_op0, new_op1));
   if (GET_CODE (tmp) != outer_code
-      && (set_src_cost (tmp, optimize_this_for_speed_p)
-	  < set_src_cost (x, optimize_this_for_speed_p)))
+      && (set_src_cost (tmp, mode, optimize_this_for_speed_p)
+	  < set_src_cost (x, mode, optimize_this_for_speed_p)))
     return tmp;
 
   return NULL_RTX;

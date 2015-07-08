@@ -81,7 +81,7 @@ static bool lm32_in_small_data_p (const_tree);
 static void lm32_setup_incoming_varargs (cumulative_args_t cum,
 					 machine_mode mode, tree type,
 					 int *pretend_size, int no_rtl);
-static bool lm32_rtx_costs (rtx x, int code, int outer_code, int opno,
+static bool lm32_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 			    int *total, bool speed);
 static bool lm32_can_eliminate (const int, const int);
 static bool
@@ -934,10 +934,10 @@ nonpic_symbol_mentioned_p (rtx x)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-lm32_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
-		int *total, bool speed)
+lm32_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
-  machine_mode mode = GET_MODE (x);
+  int code = GET_CODE (x);
   bool small_mode;
 
   const int arithmetic_latency = 1;

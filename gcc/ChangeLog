@@ -1,3 +1,119 @@
+2015-07-08  Alan Modra  <amodra@gmail.com>
+
+	* target.def (rtx_costs): Remove "code" param, add "mode".
+	* rtl.h (rtx_cost, get_full_rtx_cost): Update prototype.
+	(set_src_cost, get_full_set_src_cost): Likewise.  Move later in file.
+	(set_rtx_cost, get_full_set_rtx_cost): Move later in file.
+	* rtlanal.c (rtx_cost): Add "mode" parameter.  Update targetm.rtx_costs
+	call.  Track mode when given in rtx.
+	(get_full_rtx_cost): Add "mode" parameter.  Update rtx_cost calls.
+	(default_address_cost): Pass Pmode to rtx_cost.
+	(insn_rtx_cost): Pass dest mode of set to set_src_cost.
+	* cprop.c (try_replace_reg): Ensure set_rtx_cost is not called
+	with NULL set.
+	* cse.c (COST, COST_IN): Add MODE param.  Update all uses.
+	(notreg_cost): Add mode param.  Use it.
+	* gcse.c (want_to_gcse_p): Delete forward declaration.  Add
+	mode param and pass to set_src_cost.  Update all calls.
+	(hash_scan_set): Formatting.
+	* hooks.c (hook_bool_rtx_int_int_int_intp_bool_false): Delete.
+	(hook_bool_rtx_mode_int_int_intp_bool_false): New function.
+	* hooks.h: Ditto.
+	* expmed.c (init_expmed_one_conv, init_expmed_one_mode,
+	init_expmed, expand_mult, mult_by_coeff_cost, expand_smod_pow2,
+	emit_store_flag): Update set_src_cost and rtx_cost calls.
+	* auto-inc-dec.c (attempt_change): Likewise.
+	* calls.c (precompute_register_parameters): Likewise.
+	* combine.c (expand_compound_operation, make_extraction,
+	force_to_mode, distribute_and_simplify_rtx): Likewise.
+	* dojump.c (prefer_and_bit_test): Likewise.
+	* dse.c (find_shift_sequence): Likewise.
+	* expr.c (compress_float_constant): Likewise.
+	* fwprop.c (should_replace_address, try_fwprop_subst): Likewise.
+	* ifcvt.c (noce_try_sign_mask): Likewise.
+	* loop-doloop.c (doloop_optimize): Likewise.
+	* loop-invariant.c (create_new_invariant): Likewise.
+	* lower-subreg.c (shift_cost, compute_costs): Likewise.
+	* optabs.c (avoid_expensive_constant, prepare_cmp_insn,
+	lshift_cheap_p): Likewise.
+	* postreload.c (reload_cse_simplify_set, reload_cse_simplify_operands,
+	try_replace_in_use, reload_cse_move2add): Likewise.
+	* reload1.c (calculate_elim_costs_all_insns, note_reg_elim_costly):
+	Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+	* tree-ssa-loop-ivopts.c (computation_cost): Likewise.
+	* tree-ssa-reassoc.c (optimize_range_tests_to_bit_test): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Delete "code" param,
+	add "mode" param.  Use "mode: in place of GET_MODE (x).  Pass mode
+	to rtx_cost calls.
+	* config/alpha/alpha.c (alpha_rtx_costs): Likewise.
+	* config/arc/arc.c (arc_rtx_costs): Likewise.
+	* config/arm/arm.c (arm_rtx_costs): Likewise.
+	* config/avr/avr.c (avr_rtx_costs, avr_rtx_costs_1): Likewise.
+	* config/bfin/bfin.c (bfin_rtx_costs): Likewise.
+	* config/c6x/c6x.c (c6x_rtx_costs): Likewise.
+	* config/cris/cris.c (cris_rtx_costs): Likewise.
+	* config/epiphany/epiphany.c (epiphany_rtx_costs): Likewise.
+	* config/frv/frv.c (frv_rtx_costs): Likewise.
+	* config/h8300/h8300.c (h8300_rtx_costs): Likewise.
+	* config/i386/i386.c (ix86_rtx_costs): Likewise.
+	* config/ia64/ia64.c (ia64_rtx_costs): Likewise.
+	* config/iq2000/iq2000.c (iq2000_rtx_costs): Likewise.
+	* config/lm32/lm32.c (lm32_rtx_costs): Likewise.
+	* config/m32c/m32c.c (m32c_rtx_costs): Likewise.
+	* config/m32r/m32r.c (m32r_rtx_costs): Likewise.
+	* config/m68k/m68k.c (m68k_rtx_costs): Likewise.
+	* config/mcore/mcore.c (mcore_rtx_costs): Likewise.
+	* config/mep/mep.c (mep_rtx_cost): Likewise.
+	* config/microblaze/microblaze.c (microblaze_rtx_costs): Likewise.
+	* config/mips/mips.c (mips_rtx_costs): Likewise.
+	* config/mmix/mmix.c (mmix_rtx_costs): Likewise.
+	* config/mn10300/mn10300.c (mn10300_rtx_costs): Likewise.
+	* config/msp430/msp430.c (msp430_rtx_costs): Likewise.
+	* config/nds32/nds32-cost.c (nds32_rtx_costs_impl): Likewise.
+	* config/nds32/nds32-protos.h (nds32_rtx_costs_impl): Likewise.
+	* config/nds32/nds32.c (nds32_rtx_costs): Likewise.
+	* config/nios2/nios2.c (nios2_rtx_costs): Likewise.
+	* config/pa/pa.c (hppa_rtx_costs): Likewise.
+	* config/pdp11/pdp11.c (pdp11_rtx_costs): Likewise.
+	* config/rl78/rl78.c (rl78_rtx_costs): Likewise.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Likewise.
+	* config/s390/s390.c (s390_rtx_costs): Likewise.
+	* config/sh/sh.c (sh_rtx_costs): Likewise.
+	* config/sparc/sparc.c (sparc_rtx_costs): Likewise.
+	* config/spu/spu.c (spu_rtx_costs): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_rtx_costs): Likewise.
+	* config/tilegx/tilegx.c (tilegx_rtx_costs): Likewise.
+	* config/tilepro/tilepro.c (tilepro_rtx_costs): Likewise.
+	* config/v850/v850.c (v850_rtx_costs): Likewise.
+	* config/vax/vax.c (vax_rtx_costs): Likewise.
+	* config/visium/visium.c (visium_rtx_costs): Likewise.
+	* config/xtensa/xtensa.c (xtensa_rtx_costs): Likewise.
+	* config/aarch64/aarch64.c (aarch64_rtx_mult_cost): Change type of
+	"code" param, and pass as outer_code to first rtx_cost call.  Pass
+	mode to rtx_cost calls.
+	(aarch64_address_cost, aarch64_if_then_else_costs): Update rtx_cost
+	calls.
+	(aarch64_rtx_costs_wrapper): Update.
+	* config/arm/arm.c (arm_rtx_costs_1, arm_size_rtx_costs,
+	arm_unspec_cost, arm_new_rtx_costs, arm_slowmul_rtx_costs): Update
+	rtx_cost calls.
+	* config/avr/avr.c (avr_final_prescan_insn): Update set_src_cost
+	and rtx_cost calls.
+	(avr_operand_rtx_cost): Similarly.
+	(avr_rtx_costs_1): Correct mode passed to avr_operand_rtx_cost
+	for subexpressions of ZERO_EXTEND, SIGN_EXTEND and COMPARE.
+	* config/mips/mips.c (mips_stack_address_p): Comment typo.
+	(mips_binary_cost): Update rtx_cost and set_src_cost calls.
+	(mips_rtx_costs): Use GET_MODE (x) to detect const_int.
+	* config/mn10300/mn10300.c (mn10300_address_cost): Pass Pmode to
+	rtx_cost.
+	(mn10300_rtx_costs): Correct mode passed to mn10300_address_cost.
+	* config/rs6000/rs6000.c (rs6000_debug_rtx_costs): Update.
+	* config/sh/sh.c (and_xor_ior_costs): Update rtx_cost call.
+	* doc/tm.texi: Regenerate.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-core.h: Include symtab.h.

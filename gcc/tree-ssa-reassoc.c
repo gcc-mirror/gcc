@@ -2527,10 +2527,10 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 						      GEN_INT (-m)), speed_p);
 	      rtx r = immed_wide_int_const (mask, word_mode);
 	      cost_diff += set_src_cost (gen_rtx_AND (word_mode, reg, r),
-					 speed_p);
+					 word_mode, speed_p);
 	      r = immed_wide_int_const (wi::lshift (mask, m), word_mode);
 	      cost_diff -= set_src_cost (gen_rtx_AND (word_mode, reg, r),
-					 speed_p);
+					 word_mode, speed_p);
 	      if (cost_diff > 0)
 		{
 		  mask = wi::lshift (mask, m);

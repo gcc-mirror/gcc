@@ -1240,9 +1240,11 @@ h8300_shift_costs (rtx x)
 /* Worker function for TARGET_RTX_COSTS.  */
 
 static bool
-h8300_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
-		 int *total, bool speed)
+h8300_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
+		 int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
+  int code = GET_CODE (x);
+
   if (TARGET_H8300SX && outer_code == MEM)
     {
       /* Estimate the number of execution states needed to calculate

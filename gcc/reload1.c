@@ -1640,7 +1640,9 @@ calculate_elim_costs_all_insns (void)
 		    {
 		      rtx t = eliminate_regs_1 (SET_SRC (set), VOIDmode, insn,
 						false, true);
-		      int cost = set_src_cost (t, optimize_bb_for_speed_p (bb));
+		      machine_mode mode = GET_MODE (SET_DEST (set));
+		      int cost = set_src_cost (t, mode,
+					       optimize_bb_for_speed_p (bb));
 		      int freq = REG_FREQ_FROM_BB (bb);
 
 		      reg_equiv_init_cost[regno] = cost * freq;
@@ -2512,7 +2514,8 @@ note_reg_elim_costly (const_rtx x, rtx insn)
 	{
 	  rtx t = reg_equiv_invariant (REGNO (x));
 	  rtx new_rtx = eliminate_regs_1 (t, Pmode, insn, true, true);
-	  int cost = set_src_cost (new_rtx, optimize_bb_for_speed_p (elim_bb));
+	  int cost = set_src_cost (new_rtx, Pmode,
+				   optimize_bb_for_speed_p (elim_bb));
 	  int freq = REG_FREQ_FROM_BB (elim_bb);
 
 	  if (cost != 0)

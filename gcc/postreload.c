@@ -292,7 +292,7 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
     old_cost = register_move_cost (GET_MODE (src),
 				   REGNO_REG_CLASS (REGNO (src)), dclass);
   else
-    old_cost = set_src_cost (src, speed);
+    old_cost = set_src_cost (src, GET_MODE (SET_DEST (set)), speed);
 
   for (l = val->locs; l; l = l->next)
     {
@@ -327,7 +327,7 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
 	      this_rtx = immed_wide_int_const (result, word_mode);
 	    }
 #endif
-	  this_cost = set_src_cost (this_rtx, speed);
+	  this_cost = set_src_cost (this_rtx, GET_MODE (SET_DEST (set)), speed);
 	}
       else if (REG_P (this_rtx))
 	{
@@ -335,7 +335,7 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
 	  if (extend_op != UNKNOWN)
 	    {
 	      this_rtx = gen_rtx_fmt_e (extend_op, word_mode, this_rtx);
-	      this_cost = set_src_cost (this_rtx, speed);
+	      this_cost = set_src_cost (this_rtx, word_mode, speed);
 	    }
 	  else
 #endif
@@ -578,10 +578,10 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 		      && TEST_BIT (preferred, j)
 		      && reg_fits_class_p (testreg, rclass, 0, mode)
 		      && (!CONST_INT_P (recog_data.operand[i])
-			  || (set_src_cost (recog_data.operand[i],
+			  || (set_src_cost (recog_data.operand[i], mode,
 					    optimize_bb_for_speed_p
 					     (BLOCK_FOR_INSN (insn)))
-			      > set_src_cost (testreg,
+			      > set_src_cost (testreg, mode,
 					      optimize_bb_for_speed_p
 					       (BLOCK_FOR_INSN (insn))))))
 		    {
@@ -914,12 +914,13 @@ try_replace_in_use (struct reg_use *use, rtx reg, rtx src)
 	  && CONSTANT_P (XEXP (SET_SRC (new_set), 1)))
 	{
 	  rtx new_src;
-	  int old_cost = set_src_cost (SET_SRC (new_set), speed);
+	  machine_mode mode = GET_MODE (SET_DEST (new_set));
+	  int old_cost = set_src_cost (SET_SRC (new_set), mode, speed);
 
 	  gcc_assert (rtx_equal_p (XEXP (SET_SRC (new_set), 0), reg));
 	  new_src = simplify_replace_rtx (SET_SRC (new_set), reg, src);
 
-	  if (set_src_cost (new_src, speed) <= old_cost
+	  if (set_src_cost (new_src, mode, speed) <= old_cost
 	      && validate_change (use_insn, &SET_SRC (new_set),
 				  new_src, 0))
 	    return true;
@@ -2017,7 +2018,7 @@ reload_cse_move2add (rtx_insn *first)
 
 			  get_full_set_rtx_cost (set, &oldcst);
 			  SET_SRC (set) = tem;
-			  get_full_set_src_cost (tem, &newcst);
+			  get_full_set_src_cost (tem, GET_MODE (reg), &newcst);
 			  SET_SRC (set) = old_src;
 			  costs_add_n_insns (&oldcst, 1);
 

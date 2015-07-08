@@ -3272,7 +3272,7 @@ computation_cost (tree expr, bool speed)
     cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type),
 			  TYPE_ADDR_SPACE (type), speed);
   else if (!REG_P (rslt))
-    cost += set_src_cost (rslt, speed);
+    cost += set_src_cost (rslt, TYPE_MODE (type), speed);
 
   return cost;
 }

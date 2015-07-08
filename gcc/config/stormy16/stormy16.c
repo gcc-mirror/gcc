@@ -77,7 +77,6 @@ static void xstormy16_asm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 
 static void xstormy16_init_builtins (void);
 static rtx xstormy16_expand_builtin (tree, rtx, rtx, machine_mode, int);
-static bool xstormy16_rtx_costs (rtx, int, int, int, int *, bool);
 static int xstormy16_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool xstormy16_return_in_memory (const_tree, const_tree);
 
@@ -88,10 +87,13 @@ static GTY(()) section *bss100_section;
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-xstormy16_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+xstormy16_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
+		     int outer_code ATTRIBUTE_UNUSED,
 		     int opno ATTRIBUTE_UNUSED, int *total,
 		     bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
     case CONST_INT:

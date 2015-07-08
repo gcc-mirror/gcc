@@ -354,13 +354,10 @@ const_costs (rtx r, enum rtx_code c)
 }
 
 static bool
-v850_rtx_costs (rtx x,
-                int codearg,
-                int outer_code ATTRIBUTE_UNUSED,
-		int opno ATTRIBUTE_UNUSED,
-                int * total, bool speed)
+v850_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
-  enum rtx_code code = (enum rtx_code) codearg;
+  enum rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -384,9 +381,7 @@ v850_rtx_costs (rtx x,
 
     case MULT:
       if (TARGET_V850E
-	  && (   GET_MODE (x) == SImode
-	      || GET_MODE (x) == HImode
-	      || GET_MODE (x) == QImode))
+	  && (mode == SImode || mode == HImode || mode == QImode))
         {
 	  if (GET_CODE (XEXP (x, 1)) == REG)
 	    *total = 4;

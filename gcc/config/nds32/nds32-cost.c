@@ -64,12 +64,14 @@
 
 bool
 nds32_rtx_costs_impl (rtx x,
-		      int code,
+		      machine_mode mode ATTRIBUTE_UNUSED,
 		      int outer_code,
 		      int opno ATTRIBUTE_UNUSED,
 		      int *total,
 		      bool speed)
 {
+  int code = GET_CODE (x);
+
   /* According to 'speed', goto suitable cost model section.  */
   if (speed)
     goto performance_cost;

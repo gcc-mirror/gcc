@@ -2415,7 +2415,7 @@ mips_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
   return mips_classify_address (&addr, x, mode, strict_p);
 }
 
-/* Return true if X is a legitimate $sp-based address for mode MDOE.  */
+/* Return true if X is a legitimate $sp-based address for mode MODE.  */
 
 bool
 mips_stack_address_p (rtx x, machine_mode mode)
@@ -3708,8 +3708,8 @@ mips_binary_cost (rtx x, int single_cost, int double_cost, bool speed)
   else
     cost = single_cost;
   return (cost
-	  + set_src_cost (XEXP (x, 0), speed)
-	  + rtx_cost (XEXP (x, 1), GET_CODE (x), 1, speed));
+	  + set_src_cost (XEXP (x, 0), GET_MODE (x), speed)
+	  + rtx_cost (XEXP (x, 1), GET_MODE (x), GET_CODE (x), 1, speed));
 }
 
 /* Return the cost of floating-point multiplications of mode MODE.  */
@@ -3810,10 +3810,10 @@ mips_set_reg_reg_cost (machine_mode mode)
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
-mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
-		int *total, bool speed)
+mips_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
-  machine_mode mode = GET_MODE (x);
+  int code = GET_CODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
   int cost;
   rtx addr;
@@ -3912,7 +3912,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	     for a word or doubleword operation, so we cannot rely on
 	     the result of mips_build_integer.  */
 	  else if (!TARGET_MIPS16
-		   && (outer_code == SET || mode == VOIDmode))
+		   && (outer_code == SET || GET_MODE (x) == VOIDmode))
 	    cost = 1;
 	  *total = COSTS_N_INSNS (cost);
 	  return true;
@@ -3958,7 +3958,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  && UINTVAL (XEXP (x, 1)) == 0xffffffff)
 	{
 	  *total = (mips_zero_extend_cost (mode, XEXP (x, 0))
-		    + set_src_cost (XEXP (x, 0), speed));
+		    + set_src_cost (XEXP (x, 0), mode, speed));
 	  return true;
 	}
       if (ISA_HAS_CINS && CONST_INT_P (XEXP (x, 1)))
@@ -3968,7 +3968,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	      && CONST_INT_P (XEXP (op, 1))
 	      && mask_low_and_shift_p (mode, XEXP (x, 1), XEXP (op, 1), 32))
 	    {
-	      *total = COSTS_N_INSNS (1) + set_src_cost (XEXP (op, 0), speed);
+	      *total = COSTS_N_INSNS (1);
+	      *total += set_src_cost (XEXP (op, 0), mode, speed);
 	      return true;
 	    }
 	}
@@ -3980,8 +3981,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	{
 	  cost = GET_MODE_SIZE (mode) > UNITS_PER_WORD ? 2 : 1;
           *total = (COSTS_N_INSNS (cost)
-		    + set_src_cost (XEXP (XEXP (x, 0), 0), speed)
-		    + set_src_cost (XEXP (XEXP (x, 1), 0), speed));
+		    + set_src_cost (XEXP (XEXP (x, 0), 0), mode, speed)
+		    + set_src_cost (XEXP (XEXP (x, 1), 0), mode, speed));
 	  return true;
 	}
 	    
@@ -4017,7 +4018,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case LO_SUM:
       /* Low-part immediates need an extended MIPS16 instruction.  */
       *total = (COSTS_N_INSNS (TARGET_MIPS16 ? 2 : 1)
-		+ set_src_cost (XEXP (x, 0), speed));
+		+ set_src_cost (XEXP (x, 0), mode, speed));
       return true;
 
     case LT:
@@ -4055,17 +4056,17 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  if (GET_CODE (op0) == MULT && GET_CODE (XEXP (op0, 0)) == NEG)
 	    {
 	      *total = (mips_fp_mult_cost (mode)
-			+ set_src_cost (XEXP (XEXP (op0, 0), 0), speed)
-			+ set_src_cost (XEXP (op0, 1), speed)
-			+ set_src_cost (op1, speed));
+			+ set_src_cost (XEXP (XEXP (op0, 0), 0), mode, speed)
+			+ set_src_cost (XEXP (op0, 1), mode, speed)
+			+ set_src_cost (op1, mode, speed));
 	      return true;
 	    }
 	  if (GET_CODE (op1) == MULT)
 	    {
 	      *total = (mips_fp_mult_cost (mode)
-			+ set_src_cost (op0, speed)
-			+ set_src_cost (XEXP (op1, 0), speed)
-			+ set_src_cost (XEXP (op1, 1), speed));
+			+ set_src_cost (op0, mode, speed)
+			+ set_src_cost (XEXP (op1, 0), mode, speed)
+			+ set_src_cost (XEXP (op1, 1), mode, speed));
 	      return true;
 	    }
 	}
@@ -4093,8 +4094,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  if (const_immlsa_operand (op2, mode))
 	    {
 	      *total = (COSTS_N_INSNS (1)
-			+ set_src_cost (XEXP (XEXP (x, 0), 0), speed)
-			+ set_src_cost (XEXP (x, 1), speed));
+			+ set_src_cost (XEXP (XEXP (x, 0), 0), mode, speed)
+			+ set_src_cost (XEXP (x, 1), mode, speed));
 	      return true;
 	    }
 	}
@@ -4117,9 +4118,9 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	      && GET_CODE (XEXP (op, 0)) == MULT)
 	    {
 	      *total = (mips_fp_mult_cost (mode)
-			+ set_src_cost (XEXP (XEXP (op, 0), 0), speed)
-			+ set_src_cost (XEXP (XEXP (op, 0), 1), speed)
-			+ set_src_cost (XEXP (op, 1), speed));
+			+ set_src_cost (XEXP (XEXP (op, 0), 0), mode, speed)
+			+ set_src_cost (XEXP (XEXP (op, 0), 1), mode, speed)
+			+ set_src_cost (XEXP (op, 1), mode, speed));
 	      return true;
 	    }
 	}
@@ -4161,10 +4162,10 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  if (outer_code == SQRT || GET_CODE (XEXP (x, 1)) == SQRT)
 	    /* An rsqrt<mode>a or rsqrt<mode>b pattern.  Count the
 	       division as being free.  */
-	    *total = set_src_cost (XEXP (x, 1), speed);
+	    *total = set_src_cost (XEXP (x, 1), mode, speed);
 	  else
 	    *total = (mips_fp_div_cost (mode)
-		      + set_src_cost (XEXP (x, 1), speed));
+		      + set_src_cost (XEXP (x, 1), mode, speed));
 	  return true;
 	}
       /* Fall through.  */
@@ -4192,7 +4193,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	      && CONST_INT_P (XEXP (x, 1))
 	      && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
 	    {
-	      *total = COSTS_N_INSNS (2) + set_src_cost (XEXP (x, 0), speed);
+	      *total = COSTS_N_INSNS (2);
+	      *total += set_src_cost (XEXP (x, 0), mode, speed);
 	      return true;
 	    }
 	  *total = COSTS_N_INSNS (mips_idiv_insns ());
@@ -4215,7 +4217,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  && GET_MODE (XEXP (x, 0)) == QImode
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS)
 	{
-	  *total = set_src_cost (XEXP (XEXP (x, 0), 0), speed);
+	  *total = set_src_cost (XEXP (XEXP (x, 0), 0), VOIDmode, speed);
 	  return true;
 	}
       *total = mips_zero_extend_cost (mode, XEXP (x, 0));
@@ -4258,9 +4260,10 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	      if (ISA_HAS_R6DMUL
 		  && GET_CODE (op) == ZERO_EXTEND
 		  && GET_MODE (op) == DImode)
-		*total += rtx_cost (op, MULT, i, speed);
+		*total += rtx_cost (op, DImode, MULT, i, speed);
 	      else
-		*total += rtx_cost (XEXP (op, 0), GET_CODE (op), 0, speed);
+		*total += rtx_cost (XEXP (op, 0), VOIDmode, GET_CODE (op),
+				    0, speed);
 	    }
 
 	  return true;

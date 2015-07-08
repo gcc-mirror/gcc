@@ -470,8 +470,10 @@ struct table_elt
    || (HARD_REGISTER_NUM_P (N)						\
        && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
-#define COST(X) (REG_P (X) ? 0 : notreg_cost (X, SET, 1))
-#define COST_IN(X, OUTER, OPNO) (REG_P (X) ? 0 : notreg_cost (X, OUTER, OPNO))
+#define COST(X, MODE)							\
+  (REG_P (X) ? 0 : notreg_cost (X, MODE, SET, 1))
+#define COST_IN(X, MODE, OUTER, OPNO)					\
+  (REG_P (X) ? 0 : notreg_cost (X, MODE, OUTER, OPNO))
 
 /* Get the number of times this register has been updated in this
    basic block.  */
@@ -547,7 +549,7 @@ static bitmap cse_ebb_live_in, cse_ebb_live_out;
 static sbitmap cse_visited_basic_blocks;
 
 static bool fixed_base_plus_p (rtx x);
-static int notreg_cost (rtx, enum rtx_code, int);
+static int notreg_cost (rtx, machine_mode, enum rtx_code, int);
 static int preferable (int, int, int, int);
 static void new_basic_block (void);
 static void make_new_qty (unsigned int, machine_mode);
@@ -724,19 +726,17 @@ preferable (int cost_a, int regcost_a, int cost_b, int regcost_b)
    from COST macro to keep it simple.  */
 
 static int
-notreg_cost (rtx x, enum rtx_code outer, int opno)
+notreg_cost (rtx x, machine_mode mode, enum rtx_code outer, int opno)
 {
   return ((GET_CODE (x) == SUBREG
 	   && REG_P (SUBREG_REG (x))
-	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
+	   && GET_MODE_CLASS (mode) == MODE_INT
 	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
-	   && (GET_MODE_SIZE (GET_MODE (x))
-	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	   && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
 	   && subreg_lowpart_p (x)
-	   && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (x),
-					     GET_MODE (SUBREG_REG (x))))
+	   && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (SUBREG_REG (x))))
 	  ? 0
-	  : rtx_cost (x, outer, opno, optimize_this_for_speed_p) * 2);
+	  : rtx_cost (x, mode, outer, opno, optimize_this_for_speed_p) * 2);
 }
 
 
@@ -1240,7 +1240,7 @@ insert_const_anchor (HOST_WIDE_INT anchor, rtx reg, HOST_WIDE_INT offs,
      don't prefer pseudos over hard regs so that we derive constants in
      argument registers from other argument registers rather than from the
      original pseudo that was used to synthesize the constant.  */
-  insert_with_costs (exp, elt, hash, mode, COST (reg), 1);
+  insert_with_costs (exp, elt, hash, mode, COST (reg, mode), 1);
 }
 
 /* The constant CST is equivalent to the register REG.  Create
@@ -1721,8 +1721,8 @@ static struct table_elt *
 insert (rtx x, struct table_elt *classp, unsigned int hash,
 	machine_mode mode)
 {
-  return
-    insert_with_costs (x, classp, hash, mode, COST (x), approx_reg_cost (x));
+  return insert_with_costs (x, classp, hash, mode,
+			    COST (x, mode), approx_reg_cost (x));
 }
 
 
@@ -3257,7 +3257,8 @@ fold_rtx (rtx x, rtx_insn *insn)
 	   argument.  */
 	if (const_arg != 0
 	    && const_arg != folded_arg
-	    && COST_IN (const_arg, code, i) <= COST_IN (folded_arg, code, i)
+	    && (COST_IN (const_arg, mode_arg, code, i)
+		<= COST_IN (folded_arg, mode_arg, code, i))
 
 	    /* It's not safe to substitute the operand of a conversion
 	       operator with a constant, as the conversion's identity
@@ -3384,7 +3385,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		  if (p != NULL)
 		    {
 		      cheapest_simplification = x;
-		      cheapest_cost = COST (x);
+		      cheapest_cost = COST (x, mode);
 
 		      for (p = p->first_same_value; p != NULL; p = p->next_same_value)
 			{
@@ -3404,7 +3405,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 			  if (simp_result == NULL)
 			    continue;
 
-			  cost = COST (simp_result);
+			  cost = COST (simp_result, mode);
 			  if (cost < cheapest_cost)
 			    {
 			      cheapest_cost = cost;
@@ -4994,7 +4995,7 @@ cse_insn (rtx_insn *insn)
 	    src_cost = src_regcost = -1;
 	  else
 	    {
-	      src_cost = COST (src);
+	      src_cost = COST (src, mode);
 	      src_regcost = approx_reg_cost (src);
 	    }
 	}
@@ -5005,7 +5006,7 @@ cse_insn (rtx_insn *insn)
 	    src_eqv_cost = src_eqv_regcost = -1;
 	  else
 	    {
-	      src_eqv_cost = COST (src_eqv_here);
+	      src_eqv_cost = COST (src_eqv_here, mode);
 	      src_eqv_regcost = approx_reg_cost (src_eqv_here);
 	    }
 	}
@@ -5016,7 +5017,7 @@ cse_insn (rtx_insn *insn)
 	    src_folded_cost = src_folded_regcost = -1;
 	  else
 	    {
-	      src_folded_cost = COST (src_folded);
+	      src_folded_cost = COST (src_folded, mode);
 	      src_folded_regcost = approx_reg_cost (src_folded);
 	    }
 	}
@@ -5027,7 +5028,7 @@ cse_insn (rtx_insn *insn)
 	    src_related_cost = src_related_regcost = -1;
 	  else
 	    {
-	      src_related_cost = COST (src_related);
+	      src_related_cost = COST (src_related, mode);
 	      src_related_regcost = approx_reg_cost (src_related);
 
 	      /* If a const-anchor is used to synthesize a constant that
@@ -5340,7 +5341,7 @@ cse_insn (rtx_insn *insn)
 		  /* If we had a constant that is cheaper than what we are now
 		     setting SRC to, use that constant.  We ignored it when we
 		     thought we could make this into a no-op.  */
-		  if (src_const && COST (src_const) < COST (src)
+		  if (src_const && COST (src_const, mode) < COST (src, mode)
 		      && validate_change (insn, &SET_SRC (sets[i].rtl),
 					  src_const, 0))
 		    src = src_const;

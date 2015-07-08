@@ -493,9 +493,11 @@ tilepro_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
 
 /* Implement TARGET_RTX_COSTS.  */
 static bool
-tilepro_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
-		   bool speed)
+tilepro_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
+		   int *total, bool speed)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
     case CONST_INT:
@@ -562,9 +564,9 @@ tilepro_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
       if (GET_CODE (XEXP (x, 0)) == MULT
 	  && cint_248_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
 	{
-	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0),
+	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0), mode,
 			      (enum rtx_code) outer_code, opno, speed)
-		    + rtx_cost (XEXP (x, 1),
+		    + rtx_cost (XEXP (x, 1), mode,
 				(enum rtx_code) outer_code, opno, speed)
 		    + COSTS_N_INSNS (1));
 	  return true;

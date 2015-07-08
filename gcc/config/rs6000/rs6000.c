@@ -1108,7 +1108,7 @@ static tree rs6000_handle_struct_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
 static void rs6000_emit_set_long_const (rtx, HOST_WIDE_INT);
 static int rs6000_memory_move_cost (machine_mode, reg_class_t, bool);
-static bool rs6000_debug_rtx_costs (rtx, int, int, int, int *, bool);
+static bool rs6000_debug_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, machine_mode, addr_space_t,
 				      bool);
 static int rs6000_debug_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
@@ -30629,10 +30629,10 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-rs6000_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
-		  int *total, bool speed)
+rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		  int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
-  machine_mode mode = GET_MODE (x);
+  int code = GET_CODE (x);
 
   switch (code)
     {
@@ -30953,16 +30953,16 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 /* Debug form of r6000_rtx_costs that is selected if -mdebug=cost.  */
 
 static bool
-rs6000_debug_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
-			bool speed)
+rs6000_debug_rtx_costs (rtx x, machine_mode mode, int outer_code,
+			int opno, int *total, bool speed)
 {
-  bool ret = rs6000_rtx_costs (x, code, outer_code, opno, total, speed);
+  bool ret = rs6000_rtx_costs (x, mode, outer_code, opno, total, speed);
 
   fprintf (stderr,
-	   "\nrs6000_rtx_costs, return = %s, code = %s, outer_code = %s, "
+	   "\nrs6000_rtx_costs, return = %s, mode = %s, outer_code = %s, "
 	   "opno = %d, total = %d, speed = %s, x:\n",
 	   ret ? "complete" : "scan inner",
-	   GET_RTX_NAME (code),
+	   GET_MODE_NAME (mode),
 	   GET_RTX_NAME (outer_code),
 	   opno,
 	   *total,

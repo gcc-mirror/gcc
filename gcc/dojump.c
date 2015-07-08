@@ -201,8 +201,8 @@ prefer_and_bit_test (machine_mode mode, int bitnum)
   XEXP (XEXP (shift_test, 0), 1) = GEN_INT (bitnum);
 
   speed_p = optimize_insn_for_speed_p ();
-  return (rtx_cost (and_test, IF_THEN_ELSE, 0, speed_p)
-	  <= rtx_cost (shift_test, IF_THEN_ELSE, 0, speed_p));
+  return (rtx_cost (and_test, mode, IF_THEN_ELSE, 0, speed_p)
+	  <= rtx_cost (shift_test, mode, IF_THEN_ELSE, 0, speed_p));
 }
 
 /* Subroutine of do_jump, dealing with exploded comparisons of the type

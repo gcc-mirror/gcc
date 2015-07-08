@@ -641,7 +641,7 @@ doloop_optimize (struct loop *loop)
 
   max_cost
     = COSTS_N_INSNS (PARAM_VALUE (PARAM_MAX_ITERATIONS_COMPUTATION_COST));
-  if (set_src_cost (desc->niter_expr, optimize_loop_for_speed_p (loop))
+  if (set_src_cost (desc->niter_expr, mode, optimize_loop_for_speed_p (loop))
       > max_cost)
     {
       if (dump_file)

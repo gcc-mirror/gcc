@@ -1360,10 +1360,10 @@ alpha_legitimize_reload_address (rtx x,
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-alpha_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
+alpha_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno, int *total,
 		 bool speed)
 {
-  machine_mode mode = GET_MODE (x);
+  int code = GET_CODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
   const struct alpha_rtx_cost_data *cost_data;
 
@@ -1428,9 +1428,9 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
       else if (GET_CODE (XEXP (x, 0)) == MULT
 	       && const48_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
 	{
-	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0),
+	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0), mode,
 			      (enum rtx_code) outer_code, opno, speed)
-		    + rtx_cost (XEXP (x, 1),
+		    + rtx_cost (XEXP (x, 1), mode,
 				(enum rtx_code) outer_code, opno, speed)
 		    + COSTS_N_INSNS (1));
 	  return true;

@@ -146,7 +146,7 @@ static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 
 static int cris_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (machine_mode, reg_class_t, bool);
-static bool cris_rtx_costs (rtx, int, int, int, int *, bool);
+static bool cris_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int cris_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool cris_pass_by_reference (cumulative_args_t, machine_mode,
 				    const_tree, bool);
@@ -2097,9 +2097,11 @@ cris_expand_return (bool on_stack)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
-		bool speed)
+cris_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
+		int *total, bool speed)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
     case CONST_INT:
@@ -2129,7 +2131,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
       return true;
 
     case CONST_DOUBLE:
-      if (x != CONST0_RTX (GET_MODE (x) == VOIDmode ? DImode : GET_MODE (x)))
+      if (x != CONST0_RTX (mode == VOIDmode ? DImode : mode))
 	*total = 12;
       else
         /* Make 0.0 cheap, else test-insns will not be used.  */
@@ -2191,9 +2193,9 @@ cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 	  && !satisfies_constraint_I (XEXP (x, 1)))
 	{
 	  *total
-	    = (rtx_cost (XEXP (x, 0), (enum rtx_code) outer_code,
+	    = (rtx_cost (XEXP (x, 0), mode, (enum rtx_code) outer_code,
 			 opno, speed) + 2
-	       + 2 * GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))));
+	       + 2 * GET_MODE_NUNITS (mode));
 	  return true;
 	}
       return false;
@@ -2204,7 +2206,8 @@ cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
       /* fall through */
 
     case ZERO_EXTEND: case SIGN_EXTEND:
-      *total = rtx_cost (XEXP (x, 0), (enum rtx_code) outer_code, opno, speed);
+      *total = rtx_cost (XEXP (x, 0), VOIDmode, (enum rtx_code) outer_code,
+			 opno, speed);
       return true;
 
     default:

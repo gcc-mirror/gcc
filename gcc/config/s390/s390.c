@@ -3301,13 +3301,14 @@ s390_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.
-   CODE contains GET_CODE (x), OUTER_CODE contains the code
-   of the superexpression of x.  */
+   OUTER_CODE contains the code of the superexpression of x.  */
 
 static bool
-s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
   switch (code)
     {
     case CONST:
@@ -3338,7 +3339,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return false;
 
     case MULT:
-      switch (GET_MODE (x))
+      switch (mode)
 	{
 	case SImode:
 	  {
@@ -3397,7 +3398,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return false;
 
     case FMA:
-      switch (GET_MODE (x))
+      switch (mode)
 	{
 	case DFmode:
 	  *total = s390_cost->madbr;
@@ -3411,18 +3412,18 @@ s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       /* Negate in the third argument is free: FMSUB.  */
       if (GET_CODE (XEXP (x, 2)) == NEG)
 	{
-	  *total += (rtx_cost (XEXP (x, 0), FMA, 0, speed)
-		     + rtx_cost (XEXP (x, 1), FMA, 1, speed)
-		     + rtx_cost (XEXP (XEXP (x, 2), 0), FMA, 2, speed));
+	  *total += (rtx_cost (XEXP (x, 0), mode, FMA, 0, speed)
+		     + rtx_cost (XEXP (x, 1), mode, FMA, 1, speed)
+		     + rtx_cost (XEXP (XEXP (x, 2), 0), mode, FMA, 2, speed));
 	  return true;
 	}
       return false;
 
     case UDIV:
     case UMOD:
-      if (GET_MODE (x) == TImode) 	       /* 128 bit division */
+      if (mode == TImode) 	       /* 128 bit division */
 	*total = s390_cost->dlgr;
-      else if (GET_MODE (x) == DImode)
+      else if (mode == DImode)
 	{
 	  rtx right = XEXP (x, 1);
 	  if (GET_CODE (right) == ZERO_EXTEND) /* 64 by 32 bit division */
@@ -3430,13 +3431,13 @@ s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  else 	                               /* 64 by 64 bit division */
 	    *total = s390_cost->dlgr;
 	}
-      else if (GET_MODE (x) == SImode)         /* 32 bit division */
+      else if (mode == SImode)         /* 32 bit division */
 	*total = s390_cost->dlr;
       return false;
 
     case DIV:
     case MOD:
-      if (GET_MODE (x) == DImode)
+      if (mode == DImode)
 	{
 	  rtx right = XEXP (x, 1);
 	  if (GET_CODE (right) == ZERO_EXTEND) /* 64 by 32 bit division */
@@ -3447,26 +3448,26 @@ s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	  else 	                               /* 64 by 64 bit division */
 	    *total = s390_cost->dsgr;
 	}
-      else if (GET_MODE (x) == SImode)         /* 32 bit division */
+      else if (mode == SImode)         /* 32 bit division */
 	*total = s390_cost->dlr;
-      else if (GET_MODE (x) == SFmode)
+      else if (mode == SFmode)
 	{
 	  *total = s390_cost->debr;
 	}
-      else if (GET_MODE (x) == DFmode)
+      else if (mode == DFmode)
 	{
 	  *total = s390_cost->ddbr;
 	}
-      else if (GET_MODE (x) == TFmode)
+      else if (mode == TFmode)
 	{
 	  *total = s390_cost->dxbr;
 	}
       return false;
 
     case SQRT:
-      if (GET_MODE (x) == SFmode)
+      if (mode == SFmode)
 	*total = s390_cost->sqebr;
-      else if (GET_MODE (x) == DFmode)
+      else if (mode == DFmode)
 	*total = s390_cost->sqdbr;
       else /* TFmode */
 	*total = s390_cost->sqxbr;
