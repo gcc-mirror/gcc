@@ -11890,6 +11890,24 @@ aarch64_use_pseudo_pic_reg (void)
   return aarch64_cmodel == AARCH64_CMODEL_SMALL_SPIC;
 }
 
+/* Implement TARGET_UNSPEC_MAY_TRAP_P.  */
+
+static int
+aarch64_unspec_may_trap_p (const_rtx x, unsigned flags)
+{
+  switch (XINT (x, 1))
+    {
+    case UNSPEC_GOTSMALLPIC:
+    case UNSPEC_GOTSMALLPIC28K:
+    case UNSPEC_GOTTINYPIC:
+      return 0;
+    default:
+      break;
+    }
+
+  return default_unspec_may_trap_p (x, flags);
+}
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -12167,6 +12185,9 @@ aarch64_use_pseudo_pic_reg (void)
 
 #undef TARGET_SCHED_FUSION_PRIORITY
 #define TARGET_SCHED_FUSION_PRIORITY aarch64_sched_fusion_priority
+
+#undef TARGET_UNSPEC_MAY_TRAP_P
+#define TARGET_UNSPEC_MAY_TRAP_P aarch64_unspec_may_trap_p
 
 #undef TARGET_USE_PSEUDO_PIC_REG
 #define TARGET_USE_PSEUDO_PIC_REG aarch64_use_pseudo_pic_reg

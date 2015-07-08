@@ -1,3 +1,8 @@
+2015-07-08  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_unspec_may_trap_p): New function.
+	(TARGET_UNSPEC_MAY_TRAP_P): Define as aarch64_unspec_may_trap_p.
+
 2015-07-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66746
