@@ -1344,7 +1344,21 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	     allocate such regs in this case.  */
 	  if (!cfun->has_nonlocal_label && bb_has_abnormal_call_pred (bb))
 	    for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
-	      if (call_used_regs[px])
+	      if (call_used_regs[px]
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
+		  /* We should create a conflict of PIC pseudo with
+		     PIC hard reg as PIC hard reg can have a wrong
+		     value after jump described by the abnormal edge.
+		     In this case we can not allocate PIC hard reg to
+		     PIC pseudo as PIC pseudo will also have a wrong
+		     value.  This code is not critical as LRA can fix
+		     it but it is better to have the right allocation
+		     earlier.  */
+		  || (px == REAL_PIC_OFFSET_TABLE_REGNUM
+		      && pic_offset_table_rtx != NULL_RTX
+		      && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
+#endif
+		  )
 		make_hard_regno_born (px);
 	}
 
