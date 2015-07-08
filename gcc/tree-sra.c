@@ -858,7 +858,7 @@ mark_parm_dereference (tree base, HOST_WIDE_INT dist, gimple stmt)
 static struct access *
 create_access_1 (tree base, HOST_WIDE_INT offset, HOST_WIDE_INT size)
 {
-  struct access *access = new struct access ();
+  struct access *access = new struct access;
 
   memset (access, 0, sizeof (struct access));
   access->base = base;
@@ -2393,7 +2393,7 @@ create_artificial_child_access (struct access *parent, struct access *model,
 
   gcc_assert (!model->grp_unscalarizable_region);
 
-  struct access *access = new struct access ();
+  struct access *access = new struct access;
   memset (access, 0, sizeof (struct access));
   if (!build_user_friendly_ref_for_offset (&expr, TREE_TYPE (expr), new_offset,
 					   model->type))
