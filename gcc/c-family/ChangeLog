@@ -1,3 +1,8 @@
+2015-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_declare_simd_clauses_to_numbers): If all clauses
+	are to be removed, return NULL rather than original clauses list.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* array-notation-common.c: Adjust includes.
