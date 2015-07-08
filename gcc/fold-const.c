@@ -6787,7 +6787,7 @@ fold_widened_comparison (location_t loc, enum tree_code code,
 
   if (TREE_CODE (arg1_unw) != INTEGER_CST
       || TREE_CODE (shorter_type) != INTEGER_TYPE
-      || !int_fits_type_p (arg1_unw, shorter_type))
+      || int_fits_type_p (arg1_unw, shorter_type))
     return NULL_TREE;
 
   /* If we are comparing with the integer that does not fit into the range

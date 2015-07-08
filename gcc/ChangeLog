@@ -1,3 +1,7 @@
+2015-07-08  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_widened_comparison): Fix inverted comparison.
+
 2015-07-08  Alan Modra  <amodra@gmail.com>
 
 	* target.def (rtx_costs): Remove "code" param, add "mode".
