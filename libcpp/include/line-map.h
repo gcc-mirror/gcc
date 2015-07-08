@@ -870,7 +870,7 @@ bool linemap_location_from_macro_expansion_p (const struct line_maps *,
 /* source_location values from 0 to RESERVED_LOCATION_COUNT-1 will
    be reserved for libcpp user as special values, no token from libcpp
    will contain any of those locations.  */
-const int RESERVED_LOCATION_COUNT = 2;
+const source_location RESERVED_LOCATION_COUNT = 2;
 
 /* Converts a map and a source_location to source line.  */
 inline linenum_type
