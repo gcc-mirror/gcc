@@ -6,25 +6,12 @@
 
 #include "harness.h"
 
+/* Try to create a switch statement with a NULL case, so that
+   we can verify that we get a sane error message.  */
+
 void
 create_code (gcc_jit_context *ctxt, void *user_data)
 {
-  /* Let's try to inject the equivalent of:
-      int
-      test_switch (int x)
-      {
-	switch (x)
-	  {
-	  case x:
-	     return 3;
-
-	  default:
-	     return 10;
-	  }
-      }
-      and verify that we get a sane error about the non-const
-      case.
-   */
   gcc_jit_type *t_int =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
   gcc_jit_type *return_type = t_int;
@@ -44,6 +31,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
   gcc_jit_block *b_default =
     gcc_jit_function_new_block (func, "default");
 
+  /* Erroneous NULL case.  */
   gcc_jit_case *cases[1] = {
     NULL
   };
