@@ -1,5 +1,10 @@
 2015-07-08  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/test-error-gcc_jit_block_end_with_switch-NULL-case.c: Fix
+	comments.
+
+2015-07-08  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/66783
 	* jit.dg/test-error-gcc_jit_context_new_field-opaque-struct.c
 	(verify_code): Update expected error message.
