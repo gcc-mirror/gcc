@@ -1,3 +1,7 @@
+2015-07-08  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/stack-1.c: Do not build the testcase for micromips.
+
 2015-07-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/bt-3.c: New test.
