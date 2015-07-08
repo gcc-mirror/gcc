@@ -1,3 +1,12 @@
+2015-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61820
+	Backport from mainline r212915
+	2014-07-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* g++.dg/ipa/pr61160-3.C (main): Return zero.
+
 2015-07-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r224725
