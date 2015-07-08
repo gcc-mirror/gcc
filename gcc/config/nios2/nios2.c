@@ -1090,10 +1090,13 @@ nios2_simple_const_p (const_rtx cst)
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
 static bool
-nios2_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+nios2_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
+		 int outer_code ATTRIBUTE_UNUSED,
 		 int opno ATTRIBUTE_UNUSED,
 		 int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
       case CONST_INT:

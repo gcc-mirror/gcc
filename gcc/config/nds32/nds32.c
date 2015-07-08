@@ -2100,13 +2100,13 @@ nds32_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
    Refer to gcc/rtlanal.c for more information.  */
 static bool
 nds32_rtx_costs (rtx x,
-		 int code,
+		 machine_mode mode,
 		 int outer_code,
 		 int opno,
 		 int *total,
 		 bool speed)
 {
-  return nds32_rtx_costs_impl (x, code, outer_code, opno, total, speed);
+  return nds32_rtx_costs_impl (x, mode, outer_code, opno, total, speed);
 }
 
 static int

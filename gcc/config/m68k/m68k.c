@@ -165,7 +165,7 @@ static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static bool m68k_ok_for_sibcall_p (tree, tree);
 static bool m68k_tls_symbol_p (rtx);
 static rtx m68k_legitimize_address (rtx, rtx, machine_mode);
-static bool m68k_rtx_costs (rtx, int, int, int, int *, bool);
+static bool m68k_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 #if M68K_HONOR_TARGET_STRICT_ALIGNMENT
 static bool m68k_return_in_memory (const_tree, const_tree);
 #endif
@@ -2787,9 +2787,12 @@ const_int_cost (HOST_WIDE_INT i)
 }
 
 static bool
-m68k_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
     case CONST_INT:
@@ -2846,7 +2849,7 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
     case PLUS:
       /* An lea costs about three times as much as a simple add.  */
-      if (GET_MODE (x) == SImode
+      if (mode == SImode
 	  && GET_CODE (XEXP (x, 1)) == REG
 	  && GET_CODE (XEXP (x, 0)) == MULT
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
@@ -2902,9 +2905,9 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case MULT:
       if ((GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
 	   || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
-	  && GET_MODE (x) == SImode)
+	  && mode == SImode)
         *total = COSTS_N_INSNS (MULW_COST);
-      else if (GET_MODE (x) == QImode || GET_MODE (x) == HImode)
+      else if (mode == QImode || mode == HImode)
         *total = COSTS_N_INSNS (MULW_COST);
       else
         *total = COSTS_N_INSNS (MULL_COST);
@@ -2914,7 +2917,7 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case UDIV:
     case MOD:
     case UMOD:
-      if (GET_MODE (x) == QImode || GET_MODE (x) == HImode)
+      if (mode == QImode || mode == HImode)
         *total = COSTS_N_INSNS (DIVW_COST);	/* div.w */
       else if (TARGET_CF_HWDIV)
         *total = COSTS_N_INSNS (18);

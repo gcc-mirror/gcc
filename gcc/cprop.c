@@ -752,11 +752,12 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
   bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
   int old_cost = set ? set_rtx_cost (set, speed) : 0;
 
-  if ((note != 0
-      && REG_NOTE_KIND (note) == REG_EQUAL
-      && (GET_CODE (XEXP (note, 0)) == CONST
-	  || CONSTANT_P (XEXP (note, 0))))
-      || (set && CONSTANT_P (SET_SRC (set))))
+  if (!set
+      || CONSTANT_P (SET_SRC (set))
+      || (note != 0
+	  && REG_NOTE_KIND (note) == REG_EQUAL
+	  && (GET_CODE (XEXP (note, 0)) == CONST
+	      || CONSTANT_P (XEXP (note, 0)))))
     check_rtx_costs = false;
 
   /* Usually we substitute easy stuff, so we won't copy everything.
@@ -772,7 +773,7 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
 
   if (check_rtx_costs
       && CONSTANT_P (to)
-      && (set_rtx_cost (set, speed) > old_cost))
+      && set_rtx_cost (set, speed) > old_cost)
     {
       cancel_changes (0);
       return false;

@@ -378,8 +378,8 @@ static void frv_setup_incoming_varargs		(cumulative_args_t,
 						 tree, int *, int);
 static rtx frv_expand_builtin_saveregs		(void);
 static void frv_expand_builtin_va_start		(tree, rtx);
-static bool frv_rtx_costs			(rtx, int, int, int, int*,
-						 bool);
+static bool frv_rtx_costs			(rtx, machine_mode, int, int,
+						 int*, bool);
 static int frv_register_move_cost		(machine_mode,
 						 reg_class_t, reg_class_t);
 static int frv_memory_move_cost			(machine_mode,
@@ -9450,12 +9450,14 @@ frv_in_small_data_p (const_tree decl)
 
 static bool
 frv_rtx_costs (rtx x,
-               int code ATTRIBUTE_UNUSED,
-               int outer_code ATTRIBUTE_UNUSED,
+               machine_mode mode,
+               int outer_code,
 	       int opno ATTRIBUTE_UNUSED,
                int *total,
 	       bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   if (outer_code == MEM)
     {
       /* Don't differentiate between memory addresses.  All the ones
@@ -9493,16 +9495,16 @@ frv_rtx_costs (rtx x,
     case NOT:
     case NEG:
     case COMPARE:
-      if (GET_MODE (x) == SImode)
+      if (mode == SImode)
 	*total = COSTS_N_INSNS (1);
-      else if (GET_MODE (x) == DImode)
+      else if (mode == DImode)
         *total = COSTS_N_INSNS (2);
       else
         *total = COSTS_N_INSNS (3);
       return true;
 
     case MULT:
-      if (GET_MODE (x) == SImode)
+      if (mode == SImode)
         *total = COSTS_N_INSNS (2);
       else
         *total = COSTS_N_INSNS (6);	/* guess */

@@ -6357,7 +6357,7 @@ Define this macro if a non-short-circuit operation produced by
 @code{BRANCH_COST} is greater than or equal to the value 2.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, int @var{code}, int @var{outer_code}, int @var{opno}, int *@var{total}, bool @var{speed})
+@deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, machine_mode @var{mode}, int @var{outer_code}, int @var{opno}, int *@var{total}, bool @var{speed})
 This target hook describes the relative costs of RTL expressions.
 
 The cost may depend on the precise form of the expression, which is
@@ -6368,8 +6368,8 @@ that @samp{GET_CODE (@var{y}) == @var{outer_code}} and such that
 either (a) @samp{XEXP (@var{y}, @var{opno}) == @var{x}} or
 (b) @samp{XVEC (@var{y}, @var{opno})} contains @var{x}.
 
-@var{code} is @var{x}'s expression code---redundant, since it can be
-obtained with @code{GET_CODE (@var{x})}.
+@var{mode} is @var{x}'s machine mode, or for cases like @code{const_int} that
+do not have a mode, the mode in which @var{x} is used.
 
 In implementing this hook, you can use the construct
 @code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast

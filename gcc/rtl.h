@@ -2148,9 +2148,9 @@ wi::max_value (machine_mode mode, signop sgn)
 }
 
 extern void init_rtlanal (void);
-extern int rtx_cost (rtx, enum rtx_code, int, bool);
+extern int rtx_cost (rtx, machine_mode, enum rtx_code, int, bool);
 extern int address_cost (rtx, machine_mode, addr_space_t, bool);
-extern void get_full_rtx_cost (rtx, enum rtx_code, int,
+extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 			       struct full_rtx_costs *);
 extern unsigned int subreg_lsb (const_rtx);
 extern unsigned int subreg_lsb_1 (machine_mode, machine_mode,
@@ -2178,43 +2178,6 @@ extern void decompose_mem_address (struct address_info *, rtx);
 extern void update_address (struct address_info *);
 extern HOST_WIDE_INT get_index_scale (const struct address_info *);
 extern enum rtx_code get_index_code (const struct address_info *);
-
-#ifndef GENERATOR_FILE
-/* Return the cost of SET X.  SPEED_P is true if optimizing for speed
-   rather than size.  */
-
-static inline int
-set_rtx_cost (rtx x, bool speed_p)
-{
-  return rtx_cost (x, INSN, 4, speed_p);
-}
-
-/* Like set_rtx_cost, but return both the speed and size costs in C.  */
-
-static inline void
-get_full_set_rtx_cost (rtx x, struct full_rtx_costs *c)
-{
-  get_full_rtx_cost (x, INSN, 4, c);
-}
-
-/* Return the cost of moving X into a register, relative to the cost
-   of a register move.  SPEED_P is true if optimizing for speed rather
-   than size.  */
-
-static inline int
-set_src_cost (rtx x, bool speed_p)
-{
-  return rtx_cost (x, SET, 1, speed_p);
-}
-
-/* Like set_src_cost, but return both the speed and size costs in C.  */
-
-static inline void
-get_full_set_src_cost (rtx x, struct full_rtx_costs *c)
-{
-  get_full_rtx_cost (x, SET, 1, c);
-}
-#endif
 
 /* 1 if RTX is a subreg containing a reg that is already known to be
    sign- or zero-extended from the mode of the subreg to the mode of
@@ -2646,6 +2609,43 @@ extern int generating_concat_p;
 extern int currently_expanding_to_rtl;
 
 /* Generally useful functions.  */
+
+#ifndef GENERATOR_FILE
+/* Return the cost of SET X.  SPEED_P is true if optimizing for speed
+   rather than size.  */
+
+static inline int
+set_rtx_cost (rtx x, bool speed_p)
+{
+  return rtx_cost (x, VOIDmode, INSN, 4, speed_p);
+}
+
+/* Like set_rtx_cost, but return both the speed and size costs in C.  */
+
+static inline void
+get_full_set_rtx_cost (rtx x, struct full_rtx_costs *c)
+{
+  get_full_rtx_cost (x, VOIDmode, INSN, 4, c);
+}
+
+/* Return the cost of moving X into a register, relative to the cost
+   of a register move.  SPEED_P is true if optimizing for speed rather
+   than size.  */
+
+static inline int
+set_src_cost (rtx x, machine_mode mode, bool speed_p)
+{
+  return rtx_cost (x, mode, SET, 1, speed_p);
+}
+
+/* Like set_src_cost, but return both the speed and size costs in C.  */
+
+static inline void
+get_full_set_src_cost (rtx x, machine_mode mode, struct full_rtx_costs *c)
+{
+  get_full_rtx_cost (x, mode, SET, 1, c);
+}
+#endif
 
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, machine_mode);

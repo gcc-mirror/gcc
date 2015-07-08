@@ -67,7 +67,7 @@ static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT, tree);
 static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx, machine_mode, addr_space_t, bool);
-static bool vax_rtx_costs (rtx, int, int, int, int *, bool);
+static bool vax_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static rtx vax_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
 static void vax_function_arg_advance (cumulative_args_t, machine_mode,
@@ -767,10 +767,11 @@ vax_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
    costs on a per cpu basis.  */
 
 static bool
-vax_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+vax_rtx_costs (rtx x, machine_mode mode, int outer_code,
+	       int opno ATTRIBUTE_UNUSED,
 	       int *total, bool speed ATTRIBUTE_UNUSED)
 {
-  machine_mode mode = GET_MODE (x);
+  int code = GET_CODE (x);
   int i = 0;				   /* may be modified in switch */
   const char *fmt = GET_RTX_FORMAT (code); /* may be modified in switch */
 
@@ -810,7 +811,7 @@ vax_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case CONST_DOUBLE:
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	*total = vax_float_literal (x) ? 5 : 8;
       else
 	*total = ((CONST_DOUBLE_HIGH (x) == 0
@@ -998,7 +999,7 @@ vax_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	{
 	case CONST_INT:
 	  if ((unsigned HOST_WIDE_INT)INTVAL (op) > 63
-	      && GET_MODE (x) != QImode)
+	      && mode != QImode)
 	    *total += 1;	/* 2 on VAX 2 */
 	  break;
 	case CONST:

@@ -1004,17 +1004,19 @@ msp430_legitimate_constant (machine_mode mode, rtx x)
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS msp430_rtx_costs
 
-static bool msp430_rtx_costs (rtx   x ATTRIBUTE_UNUSED,
-			      int   code,
-			      int   outer_code ATTRIBUTE_UNUSED,
-			      int   opno ATTRIBUTE_UNUSED,
-			      int * total,
-			      bool  speed ATTRIBUTE_UNUSED)
+static bool msp430_rtx_costs (rtx	   x ATTRIBUTE_UNUSED,
+			      machine_mode mode,
+			      int	   outer_code ATTRIBUTE_UNUSED,
+			      int	   opno ATTRIBUTE_UNUSED,
+			      int *	   total,
+			      bool	   speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
     case SIGN_EXTEND:
-      if (GET_MODE (x) == SImode && outer_code == SET)
+      if (mode == SImode && outer_code == SET)
 	{
 	  *total = COSTS_N_INSNS (4);
 	  return true;

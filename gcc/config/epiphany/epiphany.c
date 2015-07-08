@@ -765,9 +765,12 @@ epiphany_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+epiphany_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		    int opno ATTRIBUTE_UNUSED,
 		    int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
       /* Small integers in the right context are as cheap as registers.  */
@@ -808,7 +811,7 @@ epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case COMPARE:
-      switch (GET_MODE (x))
+      switch (mode)
 	{
 	/* There are a number of single-insn combiner patterns that use
 	   the flag side effects of arithmetic.  */

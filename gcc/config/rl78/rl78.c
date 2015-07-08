@@ -4153,20 +4153,22 @@ rl78_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 #define TARGET_RTX_COSTS rl78_rtx_costs
 
 static bool
-rl78_rtx_costs (rtx   x,
-		int   code,
-		int   outer_code ATTRIBUTE_UNUSED,
-		int   opno ATTRIBUTE_UNUSED,
-		int * total,
-		bool  speed ATTRIBUTE_UNUSED)
+rl78_rtx_costs (rtx          x,
+		machine_mode mode,
+		int          outer_code ATTRIBUTE_UNUSED,
+		int          opno ATTRIBUTE_UNUSED,
+		int *        total,
+		bool         speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   if (code == IF_THEN_ELSE)
     {
       *total = COSTS_N_INSNS (10);
       return true;
     }
 
-  if (GET_MODE (x) == SImode)
+  if (mode == SImode)
     {
       switch (code)
 	{

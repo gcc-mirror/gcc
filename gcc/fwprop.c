@@ -405,7 +405,8 @@ should_replace_address (rtx old_rtx, rtx new_rtx, machine_mode mode,
      eliminating the most insns without additional costs, and it
      is the same that cse.c used to do.  */
   if (gain == 0)
-    gain = set_src_cost (new_rtx, speed) - set_src_cost (old_rtx, speed);
+    gain = (set_src_cost (new_rtx, VOIDmode, speed)
+	    - set_src_cost (old_rtx, VOIDmode, speed));
 
   return (gain > 0);
 }
@@ -953,7 +954,7 @@ try_fwprop_subst (df_ref use, rtx *loc, rtx new_rtx, rtx_insn *def_insn,
      multiple sets.  If so, assume the cost of the new instruction is
      not greater than the old one.  */
   if (set)
-    old_cost = set_src_cost (SET_SRC (set), speed);
+    old_cost = set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)), speed);
   if (dump_file)
     {
       fprintf (dump_file, "\nIn insn %d, replacing\n ", INSN_UID (insn));
@@ -974,7 +975,8 @@ try_fwprop_subst (df_ref use, rtx *loc, rtx new_rtx, rtx_insn *def_insn,
 
   else if (DF_REF_TYPE (use) == DF_REF_REG_USE
 	   && set
-	   && set_src_cost (SET_SRC (set), speed) > old_cost)
+	   && (set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)), speed)
+	       > old_cost))
     {
       if (dump_file)
 	fprintf (dump_file, "Changes to insn %d not profitable\n",

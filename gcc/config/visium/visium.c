@@ -186,7 +186,7 @@ static int visium_register_move_cost (enum machine_mode, reg_class_t,
 
 static int visium_memory_move_cost (enum machine_mode, reg_class_t, bool);
 
-static bool visium_rtx_costs (rtx, int, int, int, int *, bool);
+static bool visium_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 
 static void visium_option_override (void);
 
@@ -1883,11 +1883,11 @@ visium_memory_move_cost (enum machine_mode mode,
 /* Return the relative costs of expression X.  */
 
 static bool
-visium_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+visium_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 		  int opno ATTRIBUTE_UNUSED, int *total,
 		  bool speed ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = GET_MODE (x);
+  int code = GET_CODE (x);
 
   switch (code)
     {

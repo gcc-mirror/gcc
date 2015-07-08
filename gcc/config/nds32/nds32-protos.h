@@ -144,7 +144,7 @@ extern bool nds32_isr_function_p (tree);
 
 /* Auxiliary functions for cost calculation.  */
 
-extern bool nds32_rtx_costs_impl (rtx, int, int, int, int *, bool);
+extern bool nds32_rtx_costs_impl (rtx, machine_mode, int, int, int *, bool);
 extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 
 /* ------------------------------------------------------------------------ */

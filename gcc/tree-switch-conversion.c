@@ -363,9 +363,11 @@ emit_case_bit_tests (gswitch *swtch, tree index_expr,
       for (i = 0; i < count; i++)
 	{
 	  rtx r = immed_wide_int_const (test[i].mask, word_mode);
-	  cost_diff += set_src_cost (gen_rtx_AND (word_mode, reg, r), speed_p);
+	  cost_diff += set_src_cost (gen_rtx_AND (word_mode, reg, r),
+				     word_mode, speed_p);
 	  r = immed_wide_int_const (wi::lshift (test[i].mask, m), word_mode);
-	  cost_diff -= set_src_cost (gen_rtx_AND (word_mode, reg, r), speed_p);
+	  cost_diff -= set_src_cost (gen_rtx_AND (word_mode, reg, r),
+				     word_mode, speed_p);
 	}
       if (cost_diff > 0)
 	{

@@ -149,7 +149,7 @@ static void mmix_setup_incoming_varargs
   (cumulative_args_t, machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
-static bool mmix_rtx_costs (rtx, int, int, int, int *, bool);
+static bool mmix_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int mmix_register_move_cost (machine_mode,
 				    reg_class_t, reg_class_t);
 static rtx mmix_struct_value_rtx (tree, int);
@@ -1174,7 +1174,7 @@ mmix_reversible_cc_mode (machine_mode mode)
 
 static bool
 mmix_rtx_costs (rtx x ATTRIBUTE_UNUSED,
-		int code ATTRIBUTE_UNUSED,
+		machine_mode mode ATTRIBUTE_UNUSED,
 		int outer_code ATTRIBUTE_UNUSED,
 		int opno ATTRIBUTE_UNUSED,
 		int *total ATTRIBUTE_UNUSED,

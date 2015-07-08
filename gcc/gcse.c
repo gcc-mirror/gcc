@@ -466,7 +466,6 @@ static void hash_scan_insn (rtx_insn *, struct gcse_hash_table_d *);
 static void hash_scan_set (rtx, rtx_insn *, struct gcse_hash_table_d *);
 static void hash_scan_clobber (rtx, rtx_insn *, struct gcse_hash_table_d *);
 static void hash_scan_call (rtx, rtx_insn *, struct gcse_hash_table_d *);
-static int want_to_gcse_p (rtx, int *);
 static int oprs_unchanged_p (const_rtx, const rtx_insn *, int);
 static int oprs_anticipatable_p (const_rtx, const rtx_insn *);
 static int oprs_available_p (const_rtx, const rtx_insn *);
@@ -757,7 +756,7 @@ static basic_block current_bb;
    GCSE.  */
 
 static int
-want_to_gcse_p (rtx x, int *max_distance_ptr)
+want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
 {
 #ifdef STACK_REGS
   /* On register stack architectures, don't GCSE constants from the
@@ -808,7 +807,7 @@ want_to_gcse_p (rtx x, int *max_distance_ptr)
 
 	  gcc_assert (!optimize_function_for_speed_p (cfun)
 		      && optimize_function_for_size_p (cfun));
-	  cost = set_src_cost (x, 0);
+	  cost = set_src_cost (x, mode, 0);
 
 	  if (cost < COSTS_N_INSNS (GCSE_UNRESTRICTED_COST))
 	    {
@@ -1265,7 +1264,7 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
       if (note != 0
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
-	  && want_to_gcse_p (XEXP (note, 0), NULL))
+	  && want_to_gcse_p (XEXP (note, 0), GET_MODE (dest), NULL))
 	src = XEXP (note, 0), set = gen_rtx_SET (dest, src);
 
       /* Only record sets of pseudo-regs in the hash table.  */
@@ -1279,7 +1278,7 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
 	     can't do the same thing at the rtl level.  */
 	  && !can_throw_internal (insn)
 	  /* Is SET_SRC something we want to gcse?  */
-	  && want_to_gcse_p (src, &max_distance)
+	  && want_to_gcse_p (src, GET_MODE (dest), &max_distance)
 	  /* Don't CSE a nop.  */
 	  && ! set_noop_p (set)
 	  /* Don't GCSE if it has attached REG_EQUIV note.
@@ -1311,43 +1310,42 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
      the REG stored in that memory. This makes it possible to remove
      redundant loads from due to stores to the same location.  */
   else if (flag_gcse_las && REG_P (src) && MEM_P (dest))
-      {
-        unsigned int regno = REGNO (src);
-	int max_distance = 0;
+    {
+      unsigned int regno = REGNO (src);
+      int max_distance = 0;
 
-	/* Only record sets of pseudo-regs in the hash table.  */
-        if (regno >= FIRST_PSEUDO_REGISTER
-	   /* Don't GCSE something if we can't do a reg/reg copy.  */
-	   && can_copy_p (GET_MODE (src))
-	   /* GCSE commonly inserts instruction after the insn.  We can't
-	      do that easily for EH edges so disable GCSE on these for now.  */
-	   && !can_throw_internal (insn)
-	   /* Is SET_DEST something we want to gcse?  */
-	   && want_to_gcse_p (dest, &max_distance)
-	   /* Don't CSE a nop.  */
-	   && ! set_noop_p (set)
-	   /* Don't GCSE if it has attached REG_EQUIV note.
-	      At this point this only function parameters should have
-	      REG_EQUIV notes and if the argument slot is used somewhere
-	      explicitly, it means address of parameter has been taken,
-	      so we should not extend the lifetime of the pseudo.  */
-	   && ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) == 0
-	       || ! MEM_P (XEXP (note, 0))))
-             {
-               /* Stores are never anticipatable.  */
-               int antic_p = 0;
-	       /* An expression is not available if its operands are
-	          subsequently modified, including this insn.  It's also not
-	          available if this is a branch, because we can't insert
-	          a set after the branch.  */
-               int avail_p = oprs_available_p (dest, insn)
-			     && ! JUMP_P (insn);
+      /* Only record sets of pseudo-regs in the hash table.  */
+      if (regno >= FIRST_PSEUDO_REGISTER
+	  /* Don't GCSE something if we can't do a reg/reg copy.  */
+	  && can_copy_p (GET_MODE (src))
+	  /* GCSE commonly inserts instruction after the insn.  We can't
+	     do that easily for EH edges so disable GCSE on these for now.  */
+	  && !can_throw_internal (insn)
+	  /* Is SET_DEST something we want to gcse?  */
+	  && want_to_gcse_p (dest, GET_MODE (dest), &max_distance)
+	  /* Don't CSE a nop.  */
+	  && ! set_noop_p (set)
+	  /* Don't GCSE if it has attached REG_EQUIV note.
+	     At this point this only function parameters should have
+	     REG_EQUIV notes and if the argument slot is used somewhere
+	     explicitly, it means address of parameter has been taken,
+	     so we should not extend the lifetime of the pseudo.  */
+	  && ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) == 0
+	      || ! MEM_P (XEXP (note, 0))))
+	{
+	  /* Stores are never anticipatable.  */
+	  int antic_p = 0;
+	  /* An expression is not available if its operands are
+	     subsequently modified, including this insn.  It's also not
+	     available if this is a branch, because we can't insert
+	     a set after the branch.  */
+	  int avail_p = oprs_available_p (dest, insn) && ! JUMP_P (insn);
 
-	       /* Record the memory expression (DEST) in the hash table.  */
-	       insert_expr_in_table (dest, GET_MODE (dest), insn,
-				     antic_p, avail_p, max_distance, table);
-             }
-      }
+	  /* Record the memory expression (DEST) in the hash table.  */
+	  insert_expr_in_table (dest, GET_MODE (dest), insn,
+				antic_p, avail_p, max_distance, table);
+	}
+    }
 }
 
 static void
