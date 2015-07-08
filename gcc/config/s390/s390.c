@@ -9343,7 +9343,10 @@ s390_init_frame_layout (void)
   HOST_WIDE_INT frame_size;
   int base_used;
 
-  gcc_assert (!reload_completed);
+  /* After LRA the frame layout is supposed to be read-only and should
+     not be re-computed.  */
+  if (reload_completed)
+    return;
 
   /* On S/390 machines, we may need to perform branch splitting, which
      will require both base and return address register.  We have no
