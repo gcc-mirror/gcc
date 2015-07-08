@@ -1,3 +1,7 @@
+2015-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-9.C: New test.
+
 2015-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/vect/vect.exp: Run also simd* tests.

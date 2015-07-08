@@ -1,3 +1,8 @@
+2015-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (cpp_operation): Add IS_CONSTEXPR.
+	* c-ada-spec.c (print_ada_declaration): Skip constexpr constructors.
+
 2015-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_declare_simd_clauses_to_numbers): If all clauses
