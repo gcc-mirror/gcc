@@ -12,5 +12,5 @@ __sigaddset (__sigset_t * __set, int __sig, int __stuff)
 {
   unsigned long int __word =
     (((__sig) - 1) / (8 * sizeof (unsigned long int)));
-  return __set->__val[__word] |= __stuff;
+  return __set->__val[__word] = __stuff;
 }
