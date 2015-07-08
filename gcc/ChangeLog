@@ -1,3 +1,9 @@
+2015-07-08  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/66523
+	* config/darwin.c (darwin_mark_decl_preserved): Exclude 'L' label names from
+	preservation.
+
 2015-07-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/66334
