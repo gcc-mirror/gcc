@@ -543,10 +543,11 @@ gcc_jit_context_new_field (gcc_jit_context *ctxt,
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
-  RETURN_NULL_IF_FAIL_PRINTF1 (
+  RETURN_NULL_IF_FAIL_PRINTF2 (
     type->has_known_size (),
     ctxt, loc,
-    "type has unknown size (type: %s)",
+    "unknown size for field \"%s\" (type: %s)",
+    name,
     type->get_debug_string ());
 
   return (gcc_jit_field *)ctxt->new_field (loc, type, name);
@@ -662,7 +663,12 @@ gcc_jit_struct_set_fields (gcc_jit_struct *struct_type,
     RETURN_IF_FAIL (fields, ctxt, loc, "NULL fields ptr");
   for (int i = 0; i < num_fields; i++)
     {
-      RETURN_IF_FAIL (fields[i], ctxt, loc, "NULL field ptr");
+      RETURN_IF_FAIL_PRINTF2 (
+	fields[i],
+	ctxt, loc,
+	"%s: NULL field ptr at index %i",
+	struct_type->get_debug_string (),
+	i);
       RETURN_IF_FAIL_PRINTF2 (
 	NULL == fields[i]->get_container (),
 	ctxt, loc,
@@ -1038,10 +1044,11 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
     kind);
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
-  RETURN_NULL_IF_FAIL_PRINTF1 (
+  RETURN_NULL_IF_FAIL_PRINTF2 (
     type->has_known_size (),
     ctxt, loc,
-    "type has unknown size (type: %s)",
+    "unknown size for global \"%s\" (type: %s)",
+    name,
     type->get_debug_string ());
 
   return (gcc_jit_lvalue *)ctxt->new_global (loc, kind, type, name);
@@ -1839,10 +1846,11 @@ gcc_jit_function_new_local (gcc_jit_function *func,
 		       "Cannot add locals to an imported function");
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
-  RETURN_NULL_IF_FAIL_PRINTF1 (
+  RETURN_NULL_IF_FAIL_PRINTF2 (
     type->has_known_size (),
     ctxt, loc,
-    "type has unknown size (type: %s)",
+    "unknown size for local \"%s\" (type: %s)",
+    name,
     type->get_debug_string ());
 
   return (gcc_jit_lvalue *)func->new_local (loc, type, name);

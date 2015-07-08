@@ -28,5 +28,5 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
   /* Verify that the correct error message was emitted.  */
   CHECK_STRING_VALUE (gcc_jit_context_get_first_error (ctxt),
 		      "gcc_jit_context_new_global:"
-		      " type has unknown size (type: struct opaque)");
+		      " unknown size for global \"instance_of_opaque\" (type: struct opaque)");
 }
