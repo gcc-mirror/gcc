@@ -1,5 +1,11 @@
 2015-07-08  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66793
+	* gimple-ssa-isolate-paths.c (insert_trap_and_remove_trailing_statemen):
+	Properly split the block after stmts ending it.
+
+2015-07-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66794
 	* passes.c (execute_function_todo): Assert that post-dominators
 	are not computed.
