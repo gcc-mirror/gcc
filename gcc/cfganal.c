@@ -22,16 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "predict.h"
-#include "tm.h"
+#include "backend.h"
 #include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
-#include "bitmap.h"
-#include "sbitmap.h"
 #include "timevar.h"
 
 /* Store the data structures necessary for depth-first search.  */

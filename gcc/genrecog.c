@@ -4179,30 +4179,20 @@ write_header (void)
 #include \"config.h\"\n\
 #include \"system.h\"\n\
 #include \"coretypes.h\"\n\
-#include \"tm.h\"\n\
+#include \"backend.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
-#include \"hashtab.h\"\n\
-#include \"hash-set.h\"\n\
-#include \"vec.h\"\n\
-#include \"machmode.h\"\n\
-#include \"hard-reg-set.h\"\n\
-#include \"input.h\"\n\
-#include \"function.h\"\n\
 #include \"emit-rtl.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
 #include \"output.h\"\n\
 #include \"flags.h\"\n\
-#include \"hard-reg-set.h\"\n\
-#include \"predict.h\"\n\
-#include \"basic-block.h\"\n\
+#include \"df.h\"\n\
 #include \"resource.h\"\n\
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
 #include \"tm-constrs.h\"\n\
-#include \"predict.h\"\n\
 \n");
 
   puts ("\n\

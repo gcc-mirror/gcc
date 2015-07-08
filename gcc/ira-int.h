@@ -21,10 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_IRA_INT_H
 #define GCC_IRA_INT_H
 
-#include "cfgloop.h"
-#include "ira.h"
-#include "alloc-pool.h"
-
 /* To provide consistency in naming, all IRA external variables,
    functions, common typedefs start with prefix ira_.  */
 

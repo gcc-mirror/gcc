@@ -20,9 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_REGS_H
 #define GCC_REGS_H
 
-#include "hard-reg-set.h"
-#include "rtl.h"
-
 #define REG_BYTES(R) mode_size[(int) GET_MODE (R)]
 
 /* When you only have the mode of a pseudo register before it has a hard

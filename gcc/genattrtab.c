@@ -5103,16 +5103,14 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"config.h\"\n");
   fprintf (outf, "#include \"system.h\"\n");
   fprintf (outf, "#include \"coretypes.h\"\n");
-  fprintf (outf, "#include \"tm.h\"\n");
-  fprintf (outf, "#include \"input.h\"\n");
-  fprintf (outf, "#include \"alias.h\"\n");
-  fprintf (outf, "#include \"symtab.h\"\n");
-  fprintf (outf, "#include \"options.h\"\n");
+  fprintf (outf, "#include \"backend.h\"\n");
   fprintf (outf, "#include \"tree.h\"\n");
+  fprintf (outf, "#include \"rtl.h\"\n");
+  fprintf (outf, "#include \"alias.h\"\n");
+  fprintf (outf, "#include \"options.h\"\n");
   fprintf (outf, "#include \"varasm.h\"\n");
   fprintf (outf, "#include \"stor-layout.h\"\n");
   fprintf (outf, "#include \"calls.h\"\n");
-  fprintf (outf, "#include \"rtl.h\"\n");
   fprintf (outf, "#include \"insn-attr.h\"\n");
   fprintf (outf, "#include \"tm_p.h\"\n");
   fprintf (outf, "#include \"insn-config.h\"\n");
@@ -5122,9 +5120,7 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"output.h\"\n");
   fprintf (outf, "#include \"toplev.h\"\n");
   fprintf (outf, "#include \"flags.h\"\n");
-  fprintf (outf, "#include \"function.h\"\n");
   fprintf (outf, "#include \"emit-rtl.h\"\n");
-  fprintf (outf, "#include \"predict.h\"\n");
   fprintf (outf, "\n");
   fprintf (outf, "#define operands recog_data.operand\n\n");
 }

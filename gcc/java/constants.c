@@ -26,7 +26,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tm.h"
 #include "jcf.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stringpool.h"

@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_CORE_H
 #define GCC_TREE_CORE_H
 
+#include "symtab.h"
+
 /* This file contains all the data structures that define the 'tree' type.
    There are no accessor macros nor functions in this file. Only the
    basic data structures, extern declarations and type definitions.  */

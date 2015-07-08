@@ -87,6 +87,8 @@ write_header (void)
 #include \"hard-reg-set.h\"\n\
 #include \"predict.h\"\n\
 #include \"basic-block.h\"\n\
+#include \"bitmap.h\"\n\
+#include \"df.h\"\n\
 #include \"resource.h\"\n\
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\

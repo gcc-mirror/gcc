@@ -22,10 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VALTRACK_H
 #define GCC_VALTRACK_H
 
-#include "bitmap.h"
-#include "df.h"
-#include "rtl.h"
-
 /* Debug uses of dead regs.  */
 
 /* Entry that maps a dead pseudo (REG) used in a debug insns that dies

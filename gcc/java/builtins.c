@@ -31,9 +31,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
 #include "tree.h"
+#include "options.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -45,7 +44,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
    Front ends should never have to look at that.  */
 #include "rtl.h"
 #include "insn-codes.h"
-#include "hard-reg-set.h"
 #include "function.h"
 #include "insn-config.h"
 #include "expmed.h"

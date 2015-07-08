@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "options.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "c-common.h"
 #include "c-pragma.h"

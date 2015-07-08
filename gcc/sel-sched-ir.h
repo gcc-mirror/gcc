@@ -22,13 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SEL_SCHED_IR_H
 
 /* For state_t.  */
-#include "insn-attr.h"
-#include "regset.h"
 /* For reg_note.  */
-#include "rtl.h"
-#include "bitmap.h"
-#include "sched-int.h"
-#include "cfgloop.h"
 
 /* tc_t is a short for target context.  This is a state of the target
    backend.  */

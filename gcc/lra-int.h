@@ -21,14 +21,6 @@ along with GCC; see the file COPYING3.	If not see
 #ifndef GCC_LRA_INT_H
 #define GCC_LRA_INT_H
 
-#include "lra.h"
-#include "bitmap.h"
-#include "recog.h"
-#include "insn-attr.h"
-#include "insn-codes.h"
-#include "insn-config.h"
-#include "regs.h"
-
 #define lra_assert(c) gcc_checking_assert (c)
 
 /* The parameter used to prevent infinite reloading for an insn.  Each

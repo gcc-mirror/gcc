@@ -21,9 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
 #include "tree.h"
+#include "options.h"
 #include "tm.h"
 #include "tm_p.h"
 

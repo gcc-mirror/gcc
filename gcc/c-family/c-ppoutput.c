@@ -22,9 +22,8 @@
 #include "cpplib.h"
 #include "../libcpp/internal.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
 #include "tree.h"
+#include "options.h"
 #include "c-common.h"		/* For flags.  */
 #include "c-pragma.h"		/* For parse_in.  */
 

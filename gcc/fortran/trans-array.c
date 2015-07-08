@@ -80,9 +80,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "gfortran.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
 #include "tree.h"
+#include "options.h"
 #include "fold-const.h"
 #include "gimple-expr.h"
 #include "diagnostic-core.h"	/* For internal_error/fatal_error.  */

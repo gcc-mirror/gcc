@@ -33,7 +33,6 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stringpool.h"

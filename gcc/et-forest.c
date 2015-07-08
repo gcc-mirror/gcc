@@ -32,10 +32,8 @@ License along with libiberty; see the file COPYING3.  If not see
 #undef DEBUG_ET
 
 #ifdef DEBUG_ET
-#include "tm.h"
+#include "backend.h"
 #include "hard-reg-set.h"
-#include "function.h"
-#include "basic-block.h"
 #endif
 
 /* The occurrence of a node in the et tree.  */

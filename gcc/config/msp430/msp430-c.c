@@ -23,7 +23,6 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "c-family/c-common.h"
 #include "msp430-protos.h"

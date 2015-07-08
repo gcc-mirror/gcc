@@ -1,3 +1,24 @@
+2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* boehm.c: Adjust includes.
+	* builtins.c: Likewise.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* java-gimplify.c: Likewise.
+	* jcf-dump.c: Likewise.
+	* jcf-io.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jvgenmain.c: Likewise.
+	* lang.c: Likewise.
+	* mangle.c: Likewise.
+	* mangle_name.c: Likewise.
+	* resource.c: Likewise.
+	* typeck.c: Likewise.
+	* verify-glue.c: Likewise.
+
 2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* class.c: Remove ipa-ref.h and plugin-api.h from include list.

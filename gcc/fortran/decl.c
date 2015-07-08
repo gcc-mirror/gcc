@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "constructor.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "stringpool.h"
 

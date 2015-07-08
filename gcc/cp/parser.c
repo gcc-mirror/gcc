@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "cpplib.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "print-tree.h"
 #include "stringpool.h"

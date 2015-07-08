@@ -30,9 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "ggc-internal.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
 #include "tree.h"
+#include "options.h"
 #include "cpplib.h"
 
 /* The "" allocated string.  */

@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tm.h"
 #include "alias.h"
-#include "symtab.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stringpool.h"
