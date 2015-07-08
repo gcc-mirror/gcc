@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_vfp_ok } */
-/* { dg-options "-march=armv7-a -O1 -mfloat-abi=softfp" } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
+/* { dg-options "-march=armv7-a -O1" } */
+/* { dg-additional-options "-mfloat-abi=softfp" { target { ! { arm_hf_eabi } } } } */
 
 #include <stdint.h>
 
