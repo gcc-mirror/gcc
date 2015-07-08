@@ -1,3 +1,9 @@
+2015-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66748
+	* tree.c (handle_abi_tag_attribute): Check for CLASS_TYPE_P before
+	accessing TYPE_LANG_SPECIFIC node.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* call.c: Adjust includes.

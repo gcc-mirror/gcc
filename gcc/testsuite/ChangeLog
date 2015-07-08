@@ -1,3 +1,8 @@
+2015-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66748
+	* g++.dg/abi/abi-tag15.C: New test.
+
 2015-07-08  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* gcc.target/mips/branch-2.c: Change NOMIPS16 to NOCOMPRESSION.
