@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "coretypes.h"
 #include "opts.h"
-#include "flags.h"
+#include "options.h"
 #include "diagnostic.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);

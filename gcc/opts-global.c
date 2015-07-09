@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "opts.h"
+#include "options.h"
 #include "flags.h"
 #include "alias.h"
 #include "backend.h"

@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "toplev.h"	/* For set_src_pwd.  */
 #include "debug.h"
-#include "flags.h"
+#include "options.h"
 #include "cpp.h"
 #include "scanner.h"
 

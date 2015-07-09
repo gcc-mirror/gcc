@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "statistics.h"
 #include "vec.h"
 #include "alias.h"
-#include "flags.h"
 #include "tree.h"
 #include "inchash.h"
 #include "hash-map.h"

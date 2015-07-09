@@ -1,3 +1,10 @@
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* flags.h: Don't include flag-types.h or options.h.
+	* opts-common.c: Adjust includes.
+	* opts-global.c: Likewise.
+	* common/config/epiphany/epiphany-common.c: Likewise.
+
 2015-07-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66818

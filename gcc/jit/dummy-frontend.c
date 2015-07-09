@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "opts.h"
 #include "alias.h"
-#include "flags.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "inchash.h"

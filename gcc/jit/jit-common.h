@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "libgccjit.h"
 
 #include "vec.h"
-#include "flags.h"
 #include "tree.h"
 #include "inchash.h"
 #include "tree-iterator.h"
