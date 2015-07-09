@@ -1282,6 +1282,8 @@ static void
 chkp_opt_fini (void)
 {
   chkp_fix_cfg ();
+
+  free_dominance_info (CDI_POST_DOMINATORS);
 }
 
 /* Checker optimization pass function.  */
