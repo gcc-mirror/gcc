@@ -1,3 +1,11 @@
+2015-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66633
+	* gcc.dg/gomp/pr66633-1.c: New test.
+	* gcc.dg/gomp/pr66633-2.c: New test.
+	* gcc.dg/gomp/pr66633-3.c: New test.
+	* gcc.dg/gomp/pr66633-4.c: New test.
+
 2015-07-09  John Marino  <gnugcc@marino.st>
 
 	* lib/target-supports.exp (check_effective_target_pie):
