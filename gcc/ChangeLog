@@ -1,5 +1,9 @@
 2015-07-09  Richard Biener  <rguenther@suse.de>
 
+	* toplev.c (compile_file): Reset maximum_field_alignment after parsing.
+
+2015-07-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66807
 	* tree-chkp-opt.c (chkp_opt_fini): Free post dominator info.
 
