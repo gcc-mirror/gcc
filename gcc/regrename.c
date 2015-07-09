@@ -442,12 +442,10 @@ rename_chains (void)
 	continue;
 
       if (fixed_regs[reg] || global_regs[reg]
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-	  || (frame_pointer_needed && reg == HARD_FRAME_POINTER_REGNUM)
-#else
-	  || (frame_pointer_needed && reg == FRAME_POINTER_REGNUM)
-#endif
-	  )
+	  || (!HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed
+	      && reg == HARD_FRAME_POINTER_REGNUM)
+	  || (HARD_FRAME_POINTER_REGNUM && frame_pointer_needed
+	      && reg == FRAME_POINTER_REGNUM))
 	continue;
 
       COPY_HARD_REG_SET (this_unavailable, unavailable);
