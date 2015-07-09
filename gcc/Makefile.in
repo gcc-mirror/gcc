@@ -1255,6 +1255,7 @@ OBJS = \
 	gimple-expr.o \
 	gimple-iterator.o \
 	gimple-fold.o \
+	gimple-laddress.o \
 	gimple-low.o \
 	gimple-match.o \
 	generic-match.o \

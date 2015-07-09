@@ -1,3 +1,12 @@
+2015-07-09  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/66718
+	* Makefile.in (OBJS): Add gimple-laddress.o. 
+	* passes.def: Schedule pass_laddress.
+	* timevar.def (DEFTIMEVAR): Add TV_GIMPLE_LADDRESS.
+	* tree-pass.h (make_pass_laddress): Declare.
+	* gimple-laddress.c: New file.
+
 2015-07-09  Richard Biener  <rguenther@suse.de>
 
 	* toplev.c (compile_file): Reset maximum_field_alignment after parsing.
