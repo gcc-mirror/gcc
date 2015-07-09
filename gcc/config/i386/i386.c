@@ -420,7 +420,7 @@ static const
 struct processor_costs iamcu_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (4),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (11),			/* cost of starting multiply for QI */
    COSTS_N_INSNS (11),			/*				 HI */
