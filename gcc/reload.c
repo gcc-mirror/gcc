@@ -5169,9 +5169,8 @@ find_reloads_address (machine_mode mode, rtx *memrefloc, rtx ad,
       if ((regno_ok_for_base_p (REGNO (operand), mode, as, inner_code,
 				GET_CODE (addend))
 	   || operand == frame_pointer_rtx
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-	   || operand == hard_frame_pointer_rtx
-#endif
+	   || (!HARD_FRAME_POINTER_IS_FRAME_POINTER
+	       && operand == hard_frame_pointer_rtx)
 	   || (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	       && operand == arg_pointer_rtx)
 	   || operand == stack_pointer_rtx)

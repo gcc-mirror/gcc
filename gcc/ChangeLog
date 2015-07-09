@@ -1,5 +1,15 @@
 2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* combine.c (can_combine_def_p): Don't check the value of
+	HARD_FRAME_POINTER_IS_FRAME_POINTER with the preprocessor.
+	(combinable_i3pat): Likewise.
+	(mark_used_regs_combine): Likewise.
+	* regrename.c (rename_chains): Likewise.
+	* reload.c (find_reloads_address): Likewise.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+
+2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c (update_rsp_from_reg_equal): Don't check if
 	SHORT_IMMEDIATES_SIGN_EXTEND is defined.
 	(reg_nonzero_bits_for_combine): Likewise.

@@ -1004,10 +1004,9 @@ can_combine_def_p (df_ref def)
   /* Do not combine frame pointer adjustments.  */
   if ((regno == FRAME_POINTER_REGNUM
        && (!reload_completed || frame_pointer_needed))
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-      || (regno == HARD_FRAME_POINTER_REGNUM
+      || (!HARD_FRAME_POINTER_IS_FRAME_POINTER
+	  && regno == HARD_FRAME_POINTER_REGNUM
 	  && (!reload_completed || frame_pointer_needed))
-#endif
       || (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	  && regno == ARG_POINTER_REGNUM && fixed_regs[regno]))
     return false;
@@ -2221,9 +2220,8 @@ combinable_i3pat (rtx_insn *i3, rtx *loc, rtx i2dest, rtx i1dest, rtx i0dest,
 	  && REG_P (subdest)
 	  && reg_referenced_p (subdest, PATTERN (i3))
 	  && REGNO (subdest) != FRAME_POINTER_REGNUM
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-	  && REGNO (subdest) != HARD_FRAME_POINTER_REGNUM
-#endif
+	  && (HARD_FRAME_POINTER_IS_FRAME_POINTER
+	      || REGNO (subdest) != HARD_FRAME_POINTER_REGNUM)
 	  && (FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
 	      || (REGNO (subdest) != ARG_POINTER_REGNUM
 		  || ! fixed_regs [REGNO (subdest)]))
@@ -13322,9 +13320,8 @@ mark_used_regs_combine (rtx x)
 	{
 	  /* None of this applies to the stack, frame or arg pointers.  */
 	  if (regno == STACK_POINTER_REGNUM
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-	      || regno == HARD_FRAME_POINTER_REGNUM
-#endif
+	      || (!HARD_FRAME_POINTER_IS_FRAME_POINTER
+		  && regno == HARD_FRAME_POINTER_REGNUM)
 	      || (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 		  && regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 	      || regno == FRAME_POINTER_REGNUM)
