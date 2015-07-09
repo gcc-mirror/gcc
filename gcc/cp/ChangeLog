@@ -1,3 +1,9 @@
+2015-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
+
+	* parser.c (cp_parser_default_type_template_argument)
+	(cp_parser_default_template_template_argument): Factor out from
+	cp_parser_type_parameter.
+
 2015-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (warn_args_num): Rename to error_args_num.
