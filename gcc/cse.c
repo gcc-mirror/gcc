@@ -51,6 +51,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "rtl-iter.h"
 
+#ifndef LOAD_EXTEND_OP
+#define LOAD_EXTEND_OP(M) UNKNOWN
+#endif
+
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
    have the same value at the current scan point, and replacing
@@ -4867,7 +4871,6 @@ cse_insn (rtx_insn *insn)
 	    }
 	}
 
-#ifdef LOAD_EXTEND_OP
       /* See if a MEM has already been loaded with a widening operation;
 	 if it has, we can use a subreg of that.  Many CISC machines
 	 also have such operations, but this is only likely to be
@@ -4913,7 +4916,6 @@ cse_insn (rtx_insn *insn)
 		break;
 	    }
 	}
-#endif /* LOAD_EXTEND_OP */
 
       /* Try to express the constant using a register+offset expression
 	 derived from a constant anchor.  */

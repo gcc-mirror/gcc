@@ -77,6 +77,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "generic-match.h"
 #include "optabs.h"
 
+#ifndef LOAD_EXTEND_OP
+#define LOAD_EXTEND_OP(M) UNKNOWN
+#endif
+
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
 int folding_initializer = 0;
@@ -6646,12 +6650,8 @@ fold_single_bit_test (location_t loc, enum tree_code code,
       /* If we are going to be able to omit the AND below, we must do our
 	 operations as unsigned.  If we must use the AND, we have a choice.
 	 Normally unsigned is faster, but for some machines signed is.  */
-#ifdef LOAD_EXTEND_OP
       ops_unsigned = (LOAD_EXTEND_OP (operand_mode) == SIGN_EXTEND
 		      && !flag_syntax_only) ? 0 : 1;
-#else
-      ops_unsigned = 1;
-#endif
 
       signed_type = lang_hooks.types.type_for_mode (operand_mode, 0);
       unsigned_type = lang_hooks.types.type_for_mode (operand_mode, 1);
@@ -7815,7 +7815,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      cst &= HOST_WIDE_INT_M1U
 		     << (TYPE_PRECISION (TREE_TYPE (and1)) - 1);
 	      change = (cst == 0);
-#ifdef LOAD_EXTEND_OP
 	      if (change
 		  && !flag_syntax_only
 		  && (LOAD_EXTEND_OP (TYPE_MODE (TREE_TYPE (and0)))
@@ -7825,7 +7824,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 		  and0 = fold_convert_loc (loc, uns, and0);
 		  and1 = fold_convert_loc (loc, uns, and1);
 		}
-#endif
 	    }
 	  if (change)
 	    {
