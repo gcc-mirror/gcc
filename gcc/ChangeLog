@@ -1,3 +1,16 @@
+2015-07-09  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (struct expr): Add force_single_use flag.
+	(expr::expr): Add copy constructor.
+	(capture_info::walk_match): Gather force_single_use captures.
+	(expr::gen_transform): Use possibly NULLified sequence.
+	(dt_simplify::gen): Apply single-use restrictions by NULLifying
+	seq if any constrained expr is not single-use.
+	(parser::parse_expr): Refactor to allow multiple flags.  Handle
+	's' flag to force an expression have a single-use if the pattern
+	simplifies to more than one statement.
+	* match.pd: Convert most single_use conditionals to :s flags.
+
 2015-07-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/iamcu.h (ASM_OUTPUT_ALIGNED_BSS): New.
