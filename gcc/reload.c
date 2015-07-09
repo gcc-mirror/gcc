@@ -5447,14 +5447,13 @@ static void
 update_auto_inc_notes (rtx_insn *insn ATTRIBUTE_UNUSED, int regno ATTRIBUTE_UNUSED,
 		       int reloadnum ATTRIBUTE_UNUSED)
 {
-#if AUTO_INC_DEC
-  rtx link;
+  if (!AUTO_INC_DEC)
+    return;
 
-  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+  for (rtx link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC
         && (int) REGNO (XEXP (link, 0)) == regno)
       push_replacement (&XEXP (link, 0), reloadnum, VOIDmode);
-#endif
 }
 
 /* Record the pseudo registers we must reload into hard registers in a
@@ -7168,12 +7167,14 @@ find_inc_amount (rtx x, rtx inced)
 /* Return 1 if registers from REGNO to ENDREGNO are the subjects of a
    REG_INC note in insn INSN.  REGNO must refer to a hard register.  */
 
-#if AUTO_INC_DEC
 static int
 reg_inc_found_and_valid_p (unsigned int regno, unsigned int endregno,
 			   rtx insn)
 {
   rtx link;
+
+  if (!AUTO_INC_DEC)
+    return 0;
 
   gcc_assert (insn);
 
@@ -7189,11 +7190,6 @@ reg_inc_found_and_valid_p (unsigned int regno, unsigned int endregno,
       }
   return 0;
 }
-#else
-
-#define reg_inc_found_and_valid_p(regno,endregno,insn) 0
-
-#endif
 
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.
    If SETS is 1, also consider SETs.  If SETS is 2, enable checking

@@ -54,7 +54,9 @@ static rtx
 cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
 {
   rtx x = src;
-#if AUTO_INC_DEC
+  if (!AUTO_INC_DEC)
+    return copy_rtx (x);
+
   const RTX_CODE code = GET_CODE (x);
   int i;
   const char *fmt;
@@ -136,10 +138,6 @@ cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
 	  XVECEXP (x, i, j)
 	    = cleanup_auto_inc_dec (XVECEXP (src, i, j), mem_mode);
       }
-
-#else /* !AUTO_INC_DEC */
-  x = copy_rtx (x);
-#endif /* !AUTO_INC_DEC */
 
   return x;
 }

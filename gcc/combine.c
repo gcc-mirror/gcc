@@ -1197,9 +1197,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
       FOR_BB_INSNS (this_basic_block, insn)
         if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
 	  {
-#if AUTO_INC_DEC
             rtx links;
-#endif
 
             subst_low_luid = DF_INSN_LUID (insn);
             subst_insn = insn;
@@ -1208,12 +1206,11 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		         insn);
 	    record_dead_and_set_regs (insn);
 
-#if AUTO_INC_DEC
-	    for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
-	      if (REG_NOTE_KIND (links) == REG_INC)
-	        set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX,
-						  insn);
-#endif
+	    if (AUTO_INC_DEC)
+	      for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
+		if (REG_NOTE_KIND (links) == REG_INC)
+		  set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX,
+						    insn);
 
 	    /* Record the current insn_rtx_cost of this instruction.  */
 	    if (NONJUMP_INSN_P (insn))
@@ -1792,9 +1789,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
   const_rtx set = 0;
   rtx src, dest;
   rtx_insn *p;
-#if AUTO_INC_DEC
   rtx link;
-#endif
   bool all_adjacent = true;
   int (*is_volatile_p) (const_rtx);
 
@@ -2073,22 +2068,21 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
      Also insist that I3 not be a jump; if it were one
      and the incremented register were spilled, we would lose.  */
 
-#if AUTO_INC_DEC
-  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    if (REG_NOTE_KIND (link) == REG_INC
-	&& (JUMP_P (i3)
-	    || reg_used_between_p (XEXP (link, 0), insn, i3)
-	    || (pred != NULL_RTX
-		&& reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (pred)))
-	    || (pred2 != NULL_RTX
-		&& reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (pred2)))
-	    || (succ != NULL_RTX
-		&& reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (succ)))
-	    || (succ2 != NULL_RTX
-		&& reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (succ2)))
-	    || reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i3))))
-      return 0;
-#endif
+  if (AUTO_INC_DEC)
+    for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+      if (REG_NOTE_KIND (link) == REG_INC
+	  && (JUMP_P (i3)
+	      || reg_used_between_p (XEXP (link, 0), insn, i3)
+	      || (pred != NULL_RTX
+		  && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (pred)))
+	      || (pred2 != NULL_RTX
+		  && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (pred2)))
+	      || (succ != NULL_RTX
+		  && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (succ)))
+	      || (succ2 != NULL_RTX
+		  && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (succ2)))
+	      || reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i3))))
+	return 0;
 
   /* Don't combine an insn that follows a CC0-setting insn.
      An insn that uses CC0 must not be separated from the one that sets it.
@@ -3040,20 +3034,19 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	    || GET_CODE (XEXP (SET_DEST (PATTERN (i3)), 0)) == POST_DEC)))
     /* It's not the exception.  */
 #endif
-#if AUTO_INC_DEC
-    {
-      rtx link;
-      for (link = REG_NOTES (i3); link; link = XEXP (link, 1))
-	if (REG_NOTE_KIND (link) == REG_INC
-	    && (reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i2))
-		|| (i1 != 0
-		    && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i1)))))
-	  {
-	    undo_all ();
-	    return 0;
-	  }
-    }
-#endif
+    if (AUTO_INC_DEC)
+      {
+	rtx link;
+	for (link = REG_NOTES (i3); link; link = XEXP (link, 1))
+	  if (REG_NOTE_KIND (link) == REG_INC
+	      && (reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i2))
+		  || (i1 != 0
+		      && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i1)))))
+	    {
+	      undo_all ();
+	      return 0;
+	    }
+      }
 
   /* See if the SETs in I1 or I2 need to be kept around in the merged
      instruction: whenever the value set there is still needed past I3.
