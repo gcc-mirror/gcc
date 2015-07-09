@@ -818,7 +818,6 @@ do_SUBST_MODE (rtx *into, machine_mode newval)
 
 #define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE (&(INTO), (NEWVAL))
 
-#if !HAVE_cc0
 /* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
 
 static void
@@ -844,7 +843,6 @@ do_SUBST_LINK (struct insn_link **into, struct insn_link *newval)
 }
 
 #define SUBST_LINK(oldval, newval) do_SUBST_LINK (&oldval, newval)
-#endif
 
 /* Subroutine of try_combine.  Determine whether the replacement patterns
    NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to insn_rtx_cost
@@ -1135,9 +1133,7 @@ static int
 combine_instructions (rtx_insn *f, unsigned int nregs)
 {
   rtx_insn *insn, *next;
-#if HAVE_cc0
   rtx_insn *prev;
-#endif
   struct insn_link *links, *nextlinks;
   rtx_insn *first;
   basic_block last_bb;
@@ -1312,7 +1308,6 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		    }
 	      }
 
-#if HAVE_cc0
 	  /* Try to combine a jump insn that uses CC0
 	     with a preceding insn that sets CC0, and maybe with its
 	     logical predecessor as well.
@@ -1320,7 +1315,8 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	     We need this special code because data flow connections
 	     via CC0 do not get entered in LOG_LINKS.  */
 
-	  if (JUMP_P (insn)
+	  if (HAVE_cc0
+	      && JUMP_P (insn)
 	      && (prev = prev_nonnote_insn (insn)) != 0
 	      && NONJUMP_INSN_P (prev)
 	      && sets_cc0_p (PATTERN (prev)))
@@ -1338,7 +1334,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	    }
 
 	  /* Do the same for an insn that explicitly references CC0.  */
-	  if (NONJUMP_INSN_P (insn)
+	  if (HAVE_cc0 && NONJUMP_INSN_P (insn)
 	      && (prev = prev_nonnote_insn (insn)) != 0
 	      && NONJUMP_INSN_P (prev)
 	      && sets_cc0_p (PATTERN (prev))
@@ -1360,18 +1356,20 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	  /* Finally, see if any of the insns that this insn links to
 	     explicitly references CC0.  If so, try this insn, that insn,
 	     and its predecessor if it sets CC0.  */
-	  FOR_EACH_LOG_LINK (links, insn)
-	      if (NONJUMP_INSN_P (links->insn)
-		  && GET_CODE (PATTERN (links->insn)) == SET
-		  && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (links->insn)))
-		  && (prev = prev_nonnote_insn (links->insn)) != 0
-		  && NONJUMP_INSN_P (prev)
-		  && sets_cc0_p (PATTERN (prev))
-		  && (next = try_combine (insn, links->insn,
-					  prev, NULL, &new_direct_jump_p,
-					  last_combined_insn)) != 0)
-		goto retry;
-#endif
+	  if (HAVE_cc0)
+	    {
+	      FOR_EACH_LOG_LINK (links, insn)
+		if (NONJUMP_INSN_P (links->insn)
+		    && GET_CODE (PATTERN (links->insn)) == SET
+		    && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (links->insn)))
+		    && (prev = prev_nonnote_insn (links->insn)) != 0
+		    && NONJUMP_INSN_P (prev)
+		    && sets_cc0_p (PATTERN (prev))
+		    && (next = try_combine (insn, links->insn,
+					    prev, NULL, &new_direct_jump_p,
+					    last_combined_insn)) != 0)
+		  goto retry;
+	    }
 
 	  /* Try combining an insn with two different insns whose results it
 	     uses.  */
@@ -2539,7 +2537,6 @@ is_parallel_of_n_reg_sets (rtx pat, int n)
   return true;
 }
 
-#if !HAVE_cc0
 /* Return whether INSN, a PARALLEL of N register SETs (and maybe some
    CLOBBERs), can be split into individual SETs in that order, without
    changing semantics.  */
@@ -2566,7 +2563,6 @@ can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
 
   return true;
 }
-#endif
 
 /* Try to combine the insns I0, I1 and I2 into I3.
    Here I0, I1 and I2 appear earlier than I3.
@@ -2913,7 +2909,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	}
     }
 
-#if !HAVE_cc0
   /* If we have no I1 and I2 looks like:
 	(parallel [(set (reg:CC X) (compare:CC OP (const_int 0)))
 		   (set Y OP)])
@@ -2927,7 +2922,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      This undoes a previous combination and allows us to match a branch-and-
      decrement insn.  */
 
-  if (i1 == 0
+  if (!HAVE_cc0 && i1 == 0
       && is_parallel_of_n_reg_sets (PATTERN (i2), 2)
       && (GET_MODE_CLASS (GET_MODE (SET_DEST (XVECEXP (PATTERN (i2), 0, 0))))
 	  == MODE_CC)
@@ -2959,7 +2954,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* If I2 is a PARALLEL of two SETs of REGs (and perhaps some CLOBBERs),
      make those two SETs separate I1 and I2 insns, and make an I0 that is
      the original I1.  */
-  if (i0 == 0
+  if (!HAVE_cc0 && i0 == 0
       && is_parallel_of_n_reg_sets (PATTERN (i2), 2)
       && can_split_parallel_of_n_reg_sets (i2, 2)
       && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
@@ -2980,7 +2975,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
       SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 1));
     }
-#endif
 
   /* Verify that I2 and I1 are valid for combining.  */
   if (! can_combine_p (i2, i3, i0, i1, NULL, NULL, &i2dest, &i2src)
@@ -5375,10 +5369,10 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		      && ! (code == SUBREG
 			    && MODES_TIEABLE_P (GET_MODE (x),
 						GET_MODE (SUBREG_REG (to))))
-#if HAVE_cc0
-		      && ! (code == SET && i == 1 && XEXP (x, 0) == cc0_rtx)
-#endif
-		      )
+		      && (!HAVE_cc0
+			  || (! (code == SET
+				 && i == 1
+				 && XEXP (x, 0) == cc0_rtx))))
 		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 
 		  if (code == SUBREG
@@ -13941,12 +13935,10 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 
 		      if (set != 0 && ! side_effects_p (SET_SRC (set))
 			  && rtx_equal_p (XEXP (note, 0), inner_dest)
-#if HAVE_cc0
-			  && (! reg_mentioned_p (cc0_rtx, SET_SRC (set))
-			      || ((cc0_setter = prev_cc0_setter (tem_insn)) != NULL
-				  && sets_cc0_p (PATTERN (cc0_setter)) > 0))
-#endif
-			  )
+			  && (!HAVE_cc0
+			      || (! reg_mentioned_p (cc0_rtx, SET_SRC (set))
+				  || ((cc0_setter = prev_cc0_setter (tem_insn)) != NULL
+				      && sets_cc0_p (PATTERN (cc0_setter)) > 0))))
 			{
 			  /* Move the notes and links of TEM_INSN elsewhere.
 			     This might delete other dead insns recursively.
