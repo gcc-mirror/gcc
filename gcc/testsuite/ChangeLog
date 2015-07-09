@@ -1,3 +1,8 @@
+2015-07-09  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/66718
+	* gcc.dg/vect/vect-126.c: New test.
+
 2015-07-08  Carlos Sánchez de La Lama  <csanchezdll@gmail.com>
 
 	* g++.dg/debug/dwarf2/*.C: generate dwarf-2 debug information
