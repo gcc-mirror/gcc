@@ -1,3 +1,9 @@
+2015-07-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/iamcu.h (ASM_OUTPUT_ALIGNED_BSS): New.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Likewise.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* flags.h: Don't include flag-types.h or options.h.
