@@ -1,3 +1,7 @@
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Adjust includes for flags.h changes.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-lang.c: Adjust includes.

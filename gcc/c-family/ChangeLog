@@ -1,3 +1,8 @@
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.h: Adjust includes for flags.h changes.
+	* stub-objc.c: Likewise.
+	
 2015-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.h (cpp_operation): Add IS_CONSTEXPR.

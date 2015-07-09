@@ -70,7 +70,6 @@
 #include "coretypes.h"
 #include "tree.h"
 #include "alias.h"
-#include "flags.h"
 #include "c-tree.h"
 #include "gimple-expr.h"
 #include "tree-iterator.h"

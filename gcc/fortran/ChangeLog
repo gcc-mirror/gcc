@@ -1,3 +1,25 @@
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* arith.c: Adjust includes for flags.h changes.
+	* array.c: Likewise.
+	* check.c: Likewise.
+	* decl.c: Likewise.
+	* error.c: Likewise.
+	* expr.c: Likewise.
+	* frontend-passes.c: Likewise.
+	* interface.c: Likewise.
+	* intrinsic.c: Likewise.
+	* io.c: Likewise.
+	* match.c: Likewise.
+	* openmp.c: Likewise.
+	* parse.c: Likewise.
+	* primary.c: Likewise.
+	* resolve.c: Likewise.
+	* scanner.c: Likewise.
+	* simplify.c: Likewise.
+	* symbol.c: Likewise.
+	* target-memory.c: Likewise.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* convert.c: Adjust includes.
