@@ -417,9 +417,7 @@ static void delete_output_reload (rtx_insn *, int, int, rtx);
 static void delete_address_reloads (rtx_insn *, rtx_insn *);
 static void delete_address_reloads_1 (rtx_insn *, rtx, rtx_insn *);
 static void inc_for_reload (rtx, rtx, rtx, int);
-#if AUTO_INC_DEC
 static void add_auto_inc_notes (rtx_insn *, rtx);
-#endif
 static void substitute (rtx *, const_rtx, rtx);
 static bool gen_reload_chain_without_interm_reg_p (int, int);
 static int reloads_conflict (int, int);
@@ -1250,9 +1248,8 @@ reload (rtx_insn *first, int global)
 	      pnote = &XEXP (*pnote, 1);
 	  }
 
-#if AUTO_INC_DEC
-	add_auto_inc_notes (insn, PATTERN (insn));
-#endif
+	if (AUTO_INC_DEC)
+	  add_auto_inc_notes (insn, PATTERN (insn));
 
 	/* Simplify (subreg (reg)) if it appears as an operand.  */
 	cleanup_subreg_operands (insn);
@@ -7397,10 +7394,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	     is ill-formed and we must reject this optimization.  */
 	  extract_insn (temp);
 	  if (constrain_operands (1, get_enabled_alternatives (temp))
-#if AUTO_INC_DEC
-	      && ! find_reg_note (temp, REG_INC, reloadreg)
-#endif
-	      )
+	      && (!AUTO_INC_DEC || ! find_reg_note (temp, REG_INC, reloadreg)))
 	    {
 	      /* If the previous insn is an output reload, the source is
 		 a reload register, and its spill_reg_store entry will
@@ -8870,10 +8864,10 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
 	continue;
       if (MEM_P (reg2) || reload_override_in[k])
 	reg2 = rld[k].in_reg;
-#if AUTO_INC_DEC
-      if (rld[k].out && ! rld[k].out_reg)
+
+      if (AUTO_INC_DEC && rld[k].out && ! rld[k].out_reg)
 	reg2 = XEXP (rld[k].in_reg, 0);
-#endif
+
       while (GET_CODE (reg2) == SUBREG)
 	reg2 = SUBREG_REG (reg2);
       if (rtx_equal_p (reg2, reg))
@@ -9266,7 +9260,6 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
     }
 }
 
-#if AUTO_INC_DEC
 static void
 add_auto_inc_notes (rtx_insn *insn, rtx x)
 {
@@ -9291,4 +9284,3 @@ add_auto_inc_notes (rtx_insn *insn, rtx x)
 	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
     }
 }
-#endif

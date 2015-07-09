@@ -3588,7 +3588,6 @@ prev_cc0_setter (rtx_insn *insn)
   return insn;
 }
 
-#if AUTO_INC_DEC
 /* Find a RTX_AUTOINC class rtx which matches DATA.  */
 
 static int
@@ -3604,7 +3603,6 @@ find_auto_inc (const_rtx x, const_rtx reg)
     }
   return false;
 }
-#endif
 
 /* Increment the label uses for all labels present in rtx.  */
 
@@ -3776,8 +3774,10 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	    }
 	  break;
 
-#if AUTO_INC_DEC
 	case REG_INC:
+	  if (!AUTO_INC_DEC)
+	    break;
+
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      rtx reg = XEXP (note, 0);
@@ -3786,7 +3786,6 @@ try_split (rtx pat, rtx_insn *trial, int last)
 		add_reg_note (insn, REG_INC, reg);
 	    }
 	  break;
-#endif
 
 	case REG_ARGS_SIZE:
 	  fixup_args_size_notes (NULL, insn_last, INTVAL (XEXP (note, 0)));

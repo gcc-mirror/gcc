@@ -2088,7 +2088,6 @@ has_nonexceptional_receiver (void)
   return false;
 }
 
-#if AUTO_INC_DEC
 
 /* Process recursively X of INSN and add REG_INC notes if necessary.  */
 static void
@@ -2116,7 +2115,6 @@ add_auto_inc_notes (rtx_insn *insn, rtx x)
     }
 }
 
-#endif
 
 /* Remove all REG_DEAD and REG_UNUSED notes and regenerate REG_INC.
    We change pseudos by hard registers without notification of DF and
@@ -2143,9 +2141,9 @@ update_inc_notes (void)
 	    else
 	      pnote = &XEXP (*pnote, 1);
 	  }
-#if AUTO_INC_DEC
-	add_auto_inc_notes (insn, PATTERN (insn));
-#endif
+
+	if (AUTO_INC_DEC)
+	  add_auto_inc_notes (insn, PATTERN (insn));
       }
 }
 

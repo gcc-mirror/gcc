@@ -1307,11 +1307,11 @@ scan_rtx_address (rtx_insn *insn, rtx *loc, enum reg_class cl,
     case PRE_INC:
     case PRE_DEC:
     case PRE_MODIFY:
-#if !AUTO_INC_DEC
       /* If the target doesn't claim to handle autoinc, this must be
 	 something special, like a stack push.  Kill this chain.  */
+    if (!AUTO_INC_DEC)
       action = mark_all_read;
-#endif
+
       break;
 
     case MEM:
