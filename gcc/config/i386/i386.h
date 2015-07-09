@@ -811,7 +811,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Alignment value for attribute ((aligned)).  It is a constant since
    it is the part of the ABI.  We shouldn't change it with -mavx.  */
-#define ATTRIBUTE_ALIGNED_VALUE 128
+#define ATTRIBUTE_ALIGNED_VALUE (TARGET_IAMCU ? 32 : 128)
 
 /* Decide whether a variable of mode MODE should be 128 bit aligned.  */
 #define ALIGN_MODE_128(MODE) \
