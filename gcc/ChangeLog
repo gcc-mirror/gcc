@@ -1,5 +1,15 @@
 2015-07-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/66633
+	* tree-nested.c (get_static_chain): Or in a flag into
+	info->static_chain_added.
+	(get_frame_field, get_nonlocal_debug_decl): Likewise.
+	(convert_nonlocal_omp_clauses, convert_local_omp_clauses): Revert
+	2015-07-01 changes.
+	(convert_tramp_reference_stmt): If a frame_decl or chain_decl
+	is needed newly inside of GIMPLE_OMP_{PARALLEL,TASK,TARGET} body,
+	add it to clauses.
+
 	PR tree-optimization/66718
 	* tree-vect-stmts.c (struct simd_call_arg_info): Add simd_lane_linear
 	field.
