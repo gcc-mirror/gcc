@@ -2088,7 +2088,7 @@ has_nonexceptional_receiver (void)
   return false;
 }
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 
 /* Process recursively X of INSN and add REG_INC notes if necessary.  */
 static void
@@ -2143,7 +2143,7 @@ update_inc_notes (void)
 	    else
 	      pnote = &XEXP (*pnote, 1);
 	  }
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	add_auto_inc_notes (insn, PATTERN (insn));
 #endif
       }

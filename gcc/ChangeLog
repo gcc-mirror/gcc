@@ -1,5 +1,29 @@
 2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* rtl.h: Always define AUTO_INC_DEC.
+	* auto-inc-dec.c (pass_inc_dec::execute): Adjust.
+	* combine.c (combine_instructions): Likewise.
+	(can_combine_p): Likewise.
+	(try_combine): Likewise.
+	* emit-rtl.c (try_split): Likewise.
+	* loop-invariant.c (calculate_loop_reg_pressure): Likewise.
+	* lower-subreg.c (resolve_simple_move): Likewise.
+	* lra.c (update_inc_notes): Likewise.
+	* recog.c (asm_operand_ok): Likewise.
+	(constrain_operands): Likewise.
+	* regrename.c (scan_rtx_address): Likewise.
+	* reload.c (update_auto_inc_notes): Likewise.
+	(find_equiv_reg): Likewise.
+	* reload1.c (reload): Likewise.
+	(reload_as_needed): Likewise.
+	(choose_reload_regs): Likewise.
+	(emit_input_reload_insns): Likewise.
+	(delete_output_reload): Likewise.
+	* sched-deps.c (init_insn_reg_pressure_info): Likewise.
+	* valtrack.c (cleanup_auto_inc_dec): Likewise.
+
+2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c (can_combine_def_p): Don't check the value of
 	HARD_FRAME_POINTER_IS_FRAME_POINTER with the preprocessor.
 	(combinable_i3pat): Likewise.

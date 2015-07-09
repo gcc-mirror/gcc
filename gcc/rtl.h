@@ -2518,13 +2518,15 @@ do {								        \
      || defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT) \
      || defined (HAVE_PRE_MODIFY_DISP) || defined (HAVE_POST_MODIFY_DISP) \
      || defined (HAVE_PRE_MODIFY_REG) || defined (HAVE_POST_MODIFY_REG))
-#define AUTO_INC_DEC
+#define AUTO_INC_DEC 1
+#else
+#define AUTO_INC_DEC 0
 #endif
 
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 #define FIND_REG_INC_NOTE(INSN, REG)			\
   ((REG) != NULL_RTX && REG_P ((REG))			\
    ? find_regno_note ((INSN), REG_INC, REGNO (REG))	\

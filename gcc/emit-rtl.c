@@ -3588,7 +3588,7 @@ prev_cc0_setter (rtx_insn *insn)
   return insn;
 }
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 /* Find a RTX_AUTOINC class rtx which matches DATA.  */
 
 static int
@@ -3776,7 +3776,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	    }
 	  break;
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	case REG_INC:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {

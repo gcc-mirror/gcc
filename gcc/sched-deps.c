@@ -2222,7 +2222,7 @@ init_insn_reg_pressure_info (rtx_insn *insn)
 
   note_stores (PATTERN (insn), mark_insn_reg_store, insn);
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)
       mark_insn_reg_store (XEXP (link, 0), NULL_RTX, insn);
