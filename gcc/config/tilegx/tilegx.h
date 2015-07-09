@@ -386,7 +386,7 @@ enum reg_class
 
 #define SHIFT_COUNT_TRUNCATED 0
 
-#define SHORT_IMMEDIATES_SIGN_EXTEND
+#define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
 /* We represent all SI values as sign-extended DI values in
    registers.  */

@@ -4327,14 +4327,12 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
       }
 
     case CONST_INT:
-#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
       /* If X is negative in MODE, sign-extend the value.  */
-      if (INTVAL (x) > 0
+      if (SHORT_IMMEDIATES_SIGN_EXTEND && INTVAL (x) > 0
 	  && mode_width < BITS_PER_WORD
 	  && (UINTVAL (x) & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
 	     != 0)
 	return UINTVAL (x) | (HOST_WIDE_INT_M1U << mode_width);
-#endif
 
       return UINTVAL (x);
 

@@ -10410,7 +10410,7 @@ is larger then @var{mem_mode} but still smaller than @code{word_mode}.
 @end defmac
 
 @defmac SHORT_IMMEDIATES_SIGN_EXTEND
-Define this macro if loading short immediate values into registers sign
+Define this macro to 1 if loading short immediate values into registers sign
 extends.
 @end defmac
 
