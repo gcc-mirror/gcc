@@ -1,3 +1,8 @@
+2015-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (warn_args_num): Rename to error_args_num.
+	(convert_arguments): Adjust calls.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* cp-ubsan.c: Don't include alloc-pool.h or lto-streamer.h.
