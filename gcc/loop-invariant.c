@@ -1992,7 +1992,7 @@ calculate_loop_reg_pressure (void)
 
 	  note_stores (PATTERN (insn), mark_reg_store, NULL);
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    if (REG_NOTE_KIND (link) == REG_INC)
 	      mark_reg_store (XEXP (link, 0), NULL_RTX, NULL);

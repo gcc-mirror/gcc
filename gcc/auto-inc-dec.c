@@ -116,7 +116,7 @@ along with GCC; see the file COPYING3.  If not see
   before the ref or +c if the increment was after the ref, then if we
   can do the combination but switch the pre/post bit.  */
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 
 enum form
 {
@@ -1470,7 +1470,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
       return (optimize > 0 && flag_auto_inc_dec);
 #else
       return false;
@@ -1485,7 +1485,7 @@ public:
 unsigned int
 pass_inc_dec::execute (function *fun ATTRIBUTE_UNUSED)
 {
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   basic_block bb;
   int max_reg = max_reg_num ();
 

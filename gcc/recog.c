@@ -1704,7 +1704,7 @@ int
 asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 {
   int result = 0;
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   bool incdec_ok = false;
 #endif
 
@@ -1774,7 +1774,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	    result = 1;
 	  break;
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	case '<':
 	case '>':
 	  /* ??? Before auto-inc-dec, auto inc/dec insns are not supposed
@@ -1828,7 +1828,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	return 0;
     }
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   /* For operands without < or > constraints reject side-effects.  */
   if (!incdec_ok && result && MEM_P (op))
     switch (GET_CODE (XEXP (op, 0)))
@@ -2806,7 +2806,7 @@ constrain_operands (int strict, alternative_mask alternatives)
 		    = recog_data.operand[funny_match[funny_match_index].this_op];
 		}
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	      /* For operands without < or > constraints reject side-effects.  */
 	      if (recog_data.is_asm)
 		{

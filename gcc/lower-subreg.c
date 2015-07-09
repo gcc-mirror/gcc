@@ -940,7 +940,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 
       reg = gen_reg_rtx (orig_mode);
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
       {
 	rtx move = emit_move_insn (reg, src);
 	if (MEM_P (src))
@@ -1043,7 +1043,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 	mdest = simplify_gen_subreg (orig_mode, dest, GET_MODE (dest), 0);
       minsn = emit_move_insn (real_dest, mdest);
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   if (MEM_P (real_dest)
       && !(resolve_reg_p (real_dest) || resolve_subreg_p (real_dest)))
     {

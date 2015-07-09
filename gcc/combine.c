@@ -1197,7 +1197,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
       FOR_BB_INSNS (this_basic_block, insn)
         if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
 	  {
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
             rtx links;
 #endif
 
@@ -1208,7 +1208,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		         insn);
 	    record_dead_and_set_regs (insn);
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	    for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
 	      if (REG_NOTE_KIND (links) == REG_INC)
 	        set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX,
@@ -1792,7 +1792,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
   const_rtx set = 0;
   rtx src, dest;
   rtx_insn *p;
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   rtx link;
 #endif
   bool all_adjacent = true;
@@ -2073,7 +2073,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
      Also insist that I3 not be a jump; if it were one
      and the incremented register were spilled, we would lose.  */
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC
 	&& (JUMP_P (i3)
@@ -3040,7 +3040,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	    || GET_CODE (XEXP (SET_DEST (PATTERN (i3)), 0)) == POST_DEC)))
     /* It's not the exception.  */
 #endif
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
     {
       rtx link;
       for (link = REG_NOTES (i3); link; link = XEXP (link, 1))

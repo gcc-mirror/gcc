@@ -5447,7 +5447,7 @@ static void
 update_auto_inc_notes (rtx_insn *insn ATTRIBUTE_UNUSED, int regno ATTRIBUTE_UNUSED,
 		       int reloadnum ATTRIBUTE_UNUSED)
 {
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
   rtx link;
 
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -7081,7 +7081,7 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 		}
 	    }
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	  /* If this insn auto-increments or auto-decrements
 	     either regno or valueno, return 0 now.
 	     If GOAL is a memory ref and its address is not constant,
@@ -7168,7 +7168,7 @@ find_inc_amount (rtx x, rtx inced)
 /* Return 1 if registers from REGNO to ENDREGNO are the subjects of a
    REG_INC note in insn INSN.  REGNO must refer to a hard register.  */
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 static int
 reg_inc_found_and_valid_p (unsigned int regno, unsigned int endregno,
 			   rtx insn)
