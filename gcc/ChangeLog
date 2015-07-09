@@ -1,3 +1,8 @@
+2015-07-08  Kito Cheng  <kito.cheng@gmail.com>
+
+	* function.c (stack_protect_epilogue): Use if rather than switch for
+	check targetm.have_stack_protect_test.
+
 2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* defaults.h: Provide default for WORD_REGISTER_OPERATIONS.
