@@ -1,7 +1,7 @@
-2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
+2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
-	* getruntime.c (get_run_time) [__USE_GNU]: Use RUSAGE_SELF as
-	argument 1 of getrusage call.
+	* getruntime.c (RUSAGE_SELF): Define if not already defined.
+	(get_runtime): Use RUSAGE_SELF as argument 1 of getrusage call.
 
 2015-06-01  Jason Merrill  <jason@redhat.com>
 
