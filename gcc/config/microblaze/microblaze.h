@@ -235,7 +235,7 @@ extern enum pipeline_type microblaze_pipe;
        && TYPE_MODE (TREE_TYPE (TYPE)) == QImode)			\
      && (ALIGN) < BITS_PER_WORD) ? BITS_PER_WORD : (ALIGN))
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 #define LOAD_EXTEND_OP(MODE)  ZERO_EXTEND
 

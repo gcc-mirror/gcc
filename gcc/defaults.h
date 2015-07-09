@@ -1269,6 +1269,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SHORT_IMMEDIATES_SIGN_EXTEND 0
 #endif
 
+#ifndef WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 0
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

@@ -7501,7 +7501,7 @@ is in effect.
 @hook TARGET_CASE_VALUES_THRESHOLD
 
 @defmac WORD_REGISTER_OPERATIONS
-Define this macro if operations between registers with integral mode
+Define this macro to 1 if operations between registers with integral mode
 smaller than a word are always performed on the entire register.
 Most RISC machines have this property and most CISC machines do not.
 @end defmac

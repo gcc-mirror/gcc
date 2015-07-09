@@ -4253,7 +4253,6 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
        just return the mode mask.  Those tests will then be false.  */
     return nonzero;
 
-#ifndef WORD_REGISTER_OPERATIONS
   /* If MODE is wider than X, but both are a single word for both the host
      and target machines, we can compute this from which bits of the
      object might be nonzero in its own mode, taking into account the fact
@@ -4261,7 +4260,9 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
      causes the high-order bits to become undefined.  So they are
      not known to be zero.  */
 
-  if (GET_MODE (x) != VOIDmode && GET_MODE (x) != mode
+  if (!WORD_REGISTER_OPERATIONS
+      && GET_MODE (x) != VOIDmode
+      && GET_MODE (x) != mode
       && GET_MODE_PRECISION (GET_MODE (x)) <= BITS_PER_WORD
       && GET_MODE_PRECISION (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
       && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (GET_MODE (x)))
@@ -4271,7 +4272,6 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
       nonzero |= GET_MODE_MASK (mode) & ~GET_MODE_MASK (GET_MODE (x));
       return nonzero;
     }
-#endif
 
   code = GET_CODE (x);
   switch (code)
@@ -4543,7 +4543,7 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	  nonzero &= cached_nonzero_bits (SUBREG_REG (x), mode,
 					  known_x, known_mode, known_ret);
 
-#if defined (WORD_REGISTER_OPERATIONS) && defined (LOAD_EXTEND_OP)
+#if WORD_REGISTER_OPERATIONS && defined (LOAD_EXTEND_OP)
 	  /* If this is a typical RISC machine, we only have to worry
 	     about the way loads are extended.  */
 	  if ((LOAD_EXTEND_OP (inner_mode) == SIGN_EXTEND
@@ -4763,12 +4763,12 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 
   if (GET_MODE (x) != VOIDmode && bitwidth > GET_MODE_PRECISION (GET_MODE (x)))
     {
-#ifndef WORD_REGISTER_OPERATIONS
       /* If this machine does not do all register operations on the entire
 	 register and MODE is wider than the mode of X, we can say nothing
 	 at all about the high-order bits.  */
-      return 1;
-#else
+      if (!WORD_REGISTER_OPERATIONS)
+	return 1;
+
       /* Likewise on machines that do, if the mode of the object is smaller
 	 than a word and loads of that size don't sign extend, we can say
 	 nothing about the high order bits.  */
@@ -4778,7 +4778,6 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 #endif
 	  )
 	return 1;
-#endif
     }
 
   switch (code)
@@ -4857,7 +4856,6 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 				   - bitwidth)));
 	}
 
-#ifdef WORD_REGISTER_OPERATIONS
 #ifdef LOAD_EXTEND_OP
       /* For paradoxical SUBREGs on machines where all register operations
 	 affect the entire register, just look inside.  Note that we are
@@ -4869,12 +4867,12 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 then we lose all sign bit copies that existed before the store
 	 to the stack.  */
 
-      if (paradoxical_subreg_p (x)
+      if (WORD_REGISTER_OPERATIONS
+	  && paradoxical_subreg_p (x)
 	  && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) == SIGN_EXTEND
 	  && MEM_P (SUBREG_REG (x)))
 	return cached_num_sign_bit_copies (SUBREG_REG (x), mode,
 					   known_x, known_mode, known_ret);
-#endif
 #endif
       break;
 

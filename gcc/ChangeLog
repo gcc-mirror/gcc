@@ -1,5 +1,49 @@
 2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h: Provide default for WORD_REGISTER_OPERATIONS.
+	* config/alpha/alpha.h: Define WORD_REGISTER_OPERATIONS to 1.
+	* config/arc/arc.h: Likewise.
+	* config/arm/arm.h: Likewise.
+	* config/bfin/bfin.h: Likewise.
+	* config/epiphany/epiphany.h: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/iq2000/iq2000.h: Likewise.
+	* config/lm32/lm32.h: Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/mcore/mcore.h: Likewise.
+	* config/mep/mep.h: Likewise.
+	* config/microblaze/microblaze.h: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mmix/mmix.h: Likewise.
+	* config/mn10300/mn10300.h: Likewise.
+	* config/nds32/nds32.h: Likewise.
+	* config/nios2/nios2.h: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/rl78/rl78.h: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/tilegx/tilegx.h: Likewise.
+	* config/tilepro/tilepro.h: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/xtensa/xtensa.h: Likewise.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Adjust.
+	* combine.c (simplify_set): Likewise.
+	(simplify_comparison): Likewise.
+	* expr.c (store_constructor): Likewise.
+	* internal-fn.c (expand_arith_overflow): Likewise.
+	* reload.c (push_reload): Likewise.
+	(find_reloads): Likewise.
+	(find_reloads_subreg_address): Likewise.
+	* reload1.c (eliminate_regs_1): Likewise.
+	* rtlanal.c (nonzero_bits1): Likewise.
+	(num_sign_bit_copies1): Likewise.
+	* simplify-rtx.c (simplify_truncation): Likewise.
+
+2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* auto-inc-dec.c (pass_inc_dec::execute): Don't check the value
 	of AUTO_INC_DEC with the preprocessor.
 	* combine.c (combine_instructions): Likewise.

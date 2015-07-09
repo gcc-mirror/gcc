@@ -1086,7 +1086,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
 		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != UNKNOWN)
 #endif
-#ifdef WORD_REGISTER_OPERATIONS
+#if WORD_REGISTER_OPERATIONS
 		  || ((GET_MODE_PRECISION (inmode)
 		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 		      && ((GET_MODE_SIZE (inmode) - 1) / UNITS_PER_WORD ==
@@ -1124,8 +1124,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
       inloc = &SUBREG_REG (in);
       in = *inloc;
-#if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
-      if (MEM_P (in))
+#if ! defined (LOAD_EXTEND_OP)
+      if (!WORD_REGISTER_OPERATIONS
+	  && MEM_P (in))
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
 	gcc_assert (GET_MODE_SIZE (GET_MODE (in)) <= GET_MODE_SIZE (inmode));
@@ -1186,7 +1187,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	       || MEM_P (SUBREG_REG (out)))
 	      && ((GET_MODE_PRECISION (outmode)
 		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
-#ifdef WORD_REGISTER_OPERATIONS
+#if WORD_REGISTER_OPERATIONS
 		  || ((GET_MODE_PRECISION (outmode)
 		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
 		      && ((GET_MODE_SIZE (outmode) - 1) / UNITS_PER_WORD ==
@@ -1220,11 +1221,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
       outloc = &SUBREG_REG (out);
       out = *outloc;
-#if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
-      gcc_assert (!MEM_P (out)
+      gcc_assert (WORD_REGISTER_OPERATIONS || !MEM_P (out)
 		  || GET_MODE_SIZE (GET_MODE (out))
 		     <= GET_MODE_SIZE (outmode));
-#endif
       outmode = GET_MODE (out);
     }
 
@@ -3152,7 +3151,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		      || ((MEM_P (operand)
 			   || (REG_P (operand)
 			       && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
-#ifndef WORD_REGISTER_OPERATIONS
+#if !WORD_REGISTER_OPERATIONS
 			  && (((GET_MODE_BITSIZE (GET_MODE (operand))
 				< BIGGEST_ALIGNMENT)
 			       && (GET_MODE_SIZE (operand_mode[i])
@@ -6160,12 +6159,11 @@ find_reloads_subreg_address (rtx x, int opnum, enum reload_type type,
   if (paradoxical_subreg_p (x))
     return NULL;
 
-#ifdef WORD_REGISTER_OPERATIONS
-  if (GET_MODE_SIZE (outer_mode) < GET_MODE_SIZE (inner_mode)
+  if (WORD_REGISTER_OPERATIONS
+      && GET_MODE_SIZE (outer_mode) < GET_MODE_SIZE (inner_mode)
       && ((GET_MODE_SIZE (outer_mode) - 1) / UNITS_PER_WORD
           == (GET_MODE_SIZE (inner_mode) - 1) / UNITS_PER_WORD))
     return NULL;
-#endif
 
   /* Since we don't attempt to handle paradoxical subregs, we can just
      call into simplify_subreg, which will handle all remaining checks

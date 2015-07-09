@@ -639,7 +639,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
    will either zero-extend or sign-extend.  The value of this macro should
@@ -673,7 +673,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    and another.  All register moves are cheap.  */
 #define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) 2
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Assembler output control.  */
 #define ASM_COMMENT_START "\t//"

@@ -367,7 +367,7 @@ enum reg_class
 #define CLEAR_RATIO(speed) ((speed) ? 15 : TILEGX_CALL_RATIO)
 #define SET_RATIO(speed) ((speed) ? 15 : TILEGX_CALL_RATIO)
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 #define LOAD_EXTEND_OP(MODE) ((MODE) == SImode ? SIGN_EXTEND : ZERO_EXTEND)
 

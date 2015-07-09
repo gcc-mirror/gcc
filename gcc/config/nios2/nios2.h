@@ -497,6 +497,6 @@ do {                                                                    \
 
 #define LOAD_EXTEND_OP(MODE) (ZERO_EXTEND)
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 #endif /* GCC_NIOS2_H */
