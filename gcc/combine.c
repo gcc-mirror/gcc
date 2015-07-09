@@ -113,6 +113,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "rtl-iter.h"
 
+#ifndef LOAD_EXTEND_OP
+#define LOAD_EXTEND_OP(M) UNKNOWN
+#endif
+
 /* Number of attempts to combine instructions in this function.  */
 
 static int combine_attempts;
@@ -3744,7 +3748,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	     be written as a ZERO_EXTEND.  */
 	  if (split_code == SUBREG && MEM_P (SUBREG_REG (*split)))
 	    {
-#ifdef LOAD_EXTEND_OP
 	      /* Or as a SIGN_EXTEND if LOAD_EXTEND_OP says that that's
 		 what it really is.  */
 	      if (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (*split)))
@@ -3752,7 +3755,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		SUBST (*split, gen_rtx_SIGN_EXTEND (split_mode,
 						    SUBREG_REG (*split)));
 	      else
-#endif
 		SUBST (*split, gen_rtx_ZERO_EXTEND (split_mode,
 						    SUBREG_REG (*split)));
 	    }
@@ -6772,7 +6774,6 @@ simplify_set (rtx x)
 	}
     }
 
-#ifdef LOAD_EXTEND_OP
   /* If we have (set FOO (subreg:M (mem:N BAR) 0)) with M wider than N, this
      would require a paradoxical subreg.  Replace the subreg with a
      zero_extend to avoid the reload that would otherwise be required.  */
@@ -6790,7 +6791,6 @@ simplify_set (rtx x)
 
       src = SET_SRC (x);
     }
-#endif
 
   /* If we don't have a conditional move, SET_SRC is an IF_THEN_ELSE, and we
      are comparing an item known to be 0 or -1 against 0, use a logical
