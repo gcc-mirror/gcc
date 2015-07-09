@@ -1349,8 +1349,6 @@ static cp_declarator *make_pointer_declarator
   (cp_cv_quals, cp_declarator *, tree);
 static cp_declarator *make_reference_declarator
   (cp_cv_quals, cp_declarator *, bool, tree);
-static cp_parameter_declarator *make_parameter_declarator
-  (cp_decl_specifier_seq *, cp_declarator *, tree);
 static cp_declarator *make_ptrmem_declarator
   (cp_cv_quals, tree, cp_declarator *, tree);
 
@@ -1575,6 +1573,10 @@ make_array_declarator (cp_declarator *element, tree bounds)
 static bool 
 declarator_can_be_parameter_pack (cp_declarator *declarator)
 {
+  if (declarator && declarator->parameter_pack_p)
+    /* We already saw an ellipsis.  */
+    return false;
+
   /* Search for a declarator name, or any other declarator that goes
      after the point where the ellipsis could appear in a parameter
      pack. If we find any of these, then this declarator can not be
@@ -1609,7 +1611,8 @@ cp_parameter_declarator *no_parameters;
 cp_parameter_declarator *
 make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers,
 			   cp_declarator *declarator,
-			   tree default_argument)
+			   tree default_argument,
+			   bool template_parameter_pack_p = false)
 {
   cp_parameter_declarator *parameter;
 
@@ -1622,7 +1625,7 @@ make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers,
     clear_decl_specs (&parameter->decl_specifiers);
   parameter->declarator = declarator;
   parameter->default_argument = default_argument;
-  parameter->ellipsis_p = false;
+  parameter->template_parameter_pack_p = template_parameter_pack_p;
 
   return parameter;
 }
@@ -13411,7 +13414,6 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
 {
   cp_token *token;
   cp_parameter_declarator *parameter_declarator;
-  cp_declarator *id_declarator;
   tree parm;
 
   /* Assume it is a type parameter or a template parameter.  */
@@ -13472,15 +13474,9 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
     return error_mark_node;
 
   /* If the parameter declaration is marked as a parameter pack, set
-     *IS_PARAMETER_PACK to notify the caller. Also, unmark the
-     declarator's PACK_EXPANSION_P, otherwise we'll get errors from
-     grokdeclarator. */
-  if (parameter_declarator->declarator
-      && parameter_declarator->declarator->parameter_pack_p)
-    {
-      *is_parameter_pack = true;
-      parameter_declarator->declarator->parameter_pack_p = false;
-    }
+   *IS_PARAMETER_PACK to notify the caller.  */
+  if (parameter_declarator->template_parameter_pack_p)
+    *is_parameter_pack = true;
 
   if (parameter_declarator->default_argument)
     {
@@ -13488,55 +13484,6 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
 	/* Consume the `...' for better error recovery.  */
 	cp_lexer_consume_token (parser->lexer);
-    }
-  /* If the next token is an ellipsis, and we don't already have it
-     marked as a parameter pack, then we have a parameter pack (that
-     has no declarator).  */
-  else if (!*is_parameter_pack
-	   && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)
-	   && (declarator_can_be_parameter_pack
-	       (parameter_declarator->declarator)))
-    {
-      /* Consume the `...'.  */
-      cp_lexer_consume_token (parser->lexer);
-      maybe_warn_variadic_templates ();
-      
-      *is_parameter_pack = true;
-    }
-  /* We might end up with a pack expansion as the type of the non-type
-     template parameter, in which case this is a non-type template
-     parameter pack.  */
-  else if (parameter_declarator->decl_specifiers.type
-	   && PACK_EXPANSION_P (parameter_declarator->decl_specifiers.type))
-    {
-      *is_parameter_pack = true;
-      parameter_declarator->decl_specifiers.type = 
-	PACK_EXPANSION_PATTERN (parameter_declarator->decl_specifiers.type);
-    }
-
-  if (*is_parameter_pack && cp_lexer_next_token_is (parser->lexer, CPP_EQ))
-    {
-      /* Parameter packs cannot have default arguments.  However, a
-	 user may try to do so, so we'll parse them and give an
-	 appropriate diagnostic here.  */
-
-      cp_token *start_token = cp_lexer_peek_token (parser->lexer);
-      
-      /* Find the name of the parameter pack.  */     
-      id_declarator = parameter_declarator->declarator;
-      while (id_declarator && id_declarator->kind != cdk_id)
-	id_declarator = id_declarator->declarator;
-      
-      if (id_declarator && id_declarator->kind == cdk_id)
-	error_at (start_token->location,
-		  "template parameter pack %qD cannot have a default argument",
-		  id_declarator->u.id.unqualified_name);
-      else
-	error_at (start_token->location,
-		  "template parameter pack cannot have a default argument");
-      
-      /* Parse the default argument, but throw away the result.  */
-      cp_parser_default_argument (parser, /*template_parm_p=*/true);
     }
 
   parm = grokdeclarator (parameter_declarator->declarator,
@@ -19039,6 +18986,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
   tree default_argument;
   cp_token *token = NULL, *declarator_token_start = NULL;
   const char *saved_message;
+  bool template_parameter_pack_p = false;
 
   /* In a template parameter, `>' is not an operator.
 
@@ -19124,6 +19072,15 @@ cp_parser_parameter_declaration (cp_parser *parser,
       decl_specifiers.attributes
 	= chainon (decl_specifiers.attributes,
 		   cp_parser_attributes_opt (parser));
+
+      /* If the declarator is a template parameter pack, remember that and
+	 clear the flag in the declarator itself so we don't get errors
+	 from grokdeclarator.  */
+      if (template_parm_p && declarator && declarator->parameter_pack_p)
+	{
+	  declarator->parameter_pack_p = false;
+	  template_parameter_pack_p = true;
+	}
     }
 
   /* If the next token is an ellipsis, and we have not seen a
@@ -19142,15 +19099,16 @@ cp_parser_parameter_declaration (cp_parser *parser,
       if (type
 	  && TREE_CODE (type) != TYPE_PACK_EXPANSION
 	  && declarator_can_be_parameter_pack (declarator)
-          && (!declarator || !declarator->parameter_pack_p)
-          && uses_parameter_packs (type))
+          && (template_parm_p || uses_parameter_packs (type)))
         {
 	  /* Consume the `...'. */
 	  cp_lexer_consume_token (parser->lexer);
 	  maybe_warn_variadic_templates ();
 	  
 	  /* Build a pack expansion type */
-	  if (declarator)
+	  if (template_parm_p)
+	    template_parameter_pack_p = true;
+	  else if (declarator)
 	    declarator->parameter_pack_p = true;
 	  else
 	    decl_specifiers.type = make_pack_expansion (type);
@@ -19179,17 +19137,12 @@ cp_parser_parameter_declaration (cp_parser *parser,
 
       if (!parser->default_arg_ok_p)
 	{
-	  if (flag_permissive)
-	    warning (0, "deprecated use of default argument for parameter of non-function");
-	  else
-	    {
-	      error_at (token->location,
-			"default arguments are only "
-			"permitted for function parameters");
-	      default_argument = NULL_TREE;
-	    }
+	  permerror (token->location,
+		     "default arguments are only "
+		     "permitted for function parameters");
 	}
       else if ((declarator && declarator->parameter_pack_p)
+	       || template_parameter_pack_p
 	       || (decl_specifiers.type
 		   && PACK_EXPANSION_P (decl_specifiers.type)))
 	{
@@ -19222,7 +19175,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
 
   return make_parameter_declarator (&decl_specifiers,
 				    declarator,
-				    default_argument);
+				    default_argument,
+				    template_parameter_pack_p);
 }
 
 /* Parse a default argument and return it.
