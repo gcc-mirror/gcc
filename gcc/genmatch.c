@@ -491,7 +491,11 @@ struct expr : public operand
   expr (id_base *operation_, bool is_commutative_ = false)
     : operand (OP_EXPR), operation (operation_),
       ops (vNULL), expr_type (NULL), is_commutative (is_commutative_),
-      is_generic (false) {}
+      is_generic (false), force_single_use (false) {}
+  expr (expr *e)
+    : operand (OP_EXPR), operation (e->operation),
+      ops (vNULL), expr_type (e->expr_type), is_commutative (e->is_commutative),
+      is_generic (e->is_generic), force_single_use (e->force_single_use) {}
   void append_op (operand *op) { ops.safe_push (op); }
   /* The operator and its operands.  */
   id_base *operation;
@@ -503,6 +507,9 @@ struct expr : public operand
   bool is_commutative;
   /* Whether the expression is expected to be in GENERIC form.  */
   bool is_generic;
+  /* Whether pushing any stmt to the sequence should be conditional
+     on this expression having a single-use.  */
+  bool force_single_use;
   virtual void gen_transform (FILE *f, const char *, bool, int,
 			      const char *, capture_info *,
 			      dt_operand ** = 0, bool = true);
@@ -747,7 +754,8 @@ commutate (operand *op)
 
   for (unsigned i = 0; i < result.length (); ++i)
     {
-      expr *ne = new expr (e->operation);
+      expr *ne = new expr (e);
+      ne->is_commutative = false;
       for (unsigned j = 0; j < result[i].length (); ++j)
 	ne->append_op (result[i][j]);
       ret.safe_push (ne);
@@ -758,7 +766,8 @@ commutate (operand *op)
 
   for (unsigned i = 0; i < result.length (); ++i)
     {
-      expr *ne = new expr (e->operation);
+      expr *ne = new expr (e);
+      ne->is_commutative = false;
       // result[i].length () is 2 since e->operation is binary
       for (unsigned j = result[i].length (); j; --j)
 	ne->append_op (result[i][j-1]);
@@ -809,14 +818,15 @@ lower_opt_convert (operand *o, enum tree_code oper,
       if (strip)
 	return lower_opt_convert (e->ops[0], oper, to_oper, strip);
 
-      expr *ne = new expr (to_oper == CONVERT_EXPR
-			   ? get_operator ("CONVERT_EXPR")
-			   : get_operator ("VIEW_CONVERT_EXPR"));
+      expr *ne = new expr (e);
+      ne->operation = (to_oper == CONVERT_EXPR
+		       ? get_operator ("CONVERT_EXPR")
+		       : get_operator ("VIEW_CONVERT_EXPR"));
       ne->append_op (lower_opt_convert (e->ops[0], oper, to_oper, strip));
       return ne;
     }
 
-  expr *ne = new expr (e->operation, e->is_commutative);
+  expr *ne = new expr (e);
   for (unsigned i = 0; i < e->ops.length (); ++i)
     ne->append_op (lower_opt_convert (e->ops[i], oper, to_oper, strip));
 
@@ -951,7 +961,7 @@ lower_cond (operand *o)
 
   for (unsigned i = 0; i < result.length (); ++i)
     {
-      expr *ne = new expr (e->operation);
+      expr *ne = new expr (e);
       for (unsigned j = 0; j < result[i].length (); ++j)
 	ne->append_op (result[i][j]);
       ro.safe_push (ne);
@@ -968,13 +978,13 @@ lower_cond (operand *o)
 	      || (is_a <expr *> (e->ops[0])
 		  && as_a <expr *> (e->ops[0])->ops.length () == 2)))
 	{
-	  expr *ne = new expr (e->operation);
+	  expr *ne = new expr (e);
 	  for (unsigned j = 0; j < result[i].length (); ++j)
 	    ne->append_op (result[i][j]);
 	  if (capture *c = dyn_cast <capture *> (ne->ops[0]))
 	    {
 	      expr *ocmp = as_a <expr *> (c->what);
-	      expr *cmp = new expr (ocmp->operation);
+	      expr *cmp = new expr (ocmp);
 	      for (unsigned j = 0; j < ocmp->ops.length (); ++j)
 		cmp->append_op (ocmp->ops[j]);
 	      cmp->is_generic = true;
@@ -983,7 +993,7 @@ lower_cond (operand *o)
 	  else
 	    {
 	      expr *ocmp = as_a <expr *> (ne->ops[0]);
-	      expr *cmp = new expr (ocmp->operation);
+	      expr *cmp = new expr (ocmp);
 	      for (unsigned j = 0; j < ocmp->ops.length (); ++j)
 		cmp->append_op (ocmp->ops[j]);
 	      cmp->is_generic = true;
@@ -1027,9 +1037,9 @@ replace_id (operand *o, user_id *id, id_base *with)
     }
   else if (expr *e = dyn_cast<expr *> (o))
     {
-      expr *ne = new expr (e->operation == id ? with : e->operation,
-			   e->is_commutative);
-      ne->expr_type = e->expr_type;
+      expr *ne = new expr (e);
+      if (e->operation == id)
+	ne->operation = with;
       for (unsigned i = 0; i < e->ops.length (); ++i)
 	ne->append_op (replace_id (e->ops[i], id, with));
       return ne;
@@ -1513,6 +1523,7 @@ struct capture_info
       bool expr_p;
       bool cse_p;
       bool force_no_side_effects_p;
+      bool force_single_use;
       bool cond_expr_cond_p;
       unsigned long toplevel_msk;
       int result_use_count;
@@ -1566,10 +1577,12 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
       info[c->where].force_no_side_effects_p |= conditional_p;
       info[c->where].cond_expr_cond_p |= cond_expr_cond_p;
       /* Mark expr (non-leaf) captures and recurse.  */
+      expr *e;
       if (c->what
-	  && is_a <expr *> (c->what))
+	  && (e = dyn_cast <expr *> (c->what)))
 	{
 	  info[c->where].expr_p = true;
+	  info[c->where].force_single_use |= e->force_single_use;
 	  walk_match (c->what, toplevel_arg, conditional_p, false);
 	}
     }
@@ -1808,9 +1821,9 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, "ops%d[%u]%s", depth, i,
 		 i == ops.length () - 1 ? " };\n" : ", ");
-      fprintf (f, "  gimple_resimplify%d (seq, &tem_code, %s, tem_ops, valueize);\n",
+      fprintf (f, "  gimple_resimplify%d (lseq, &tem_code, %s, tem_ops, valueize);\n",
 	       ops.length (), type);
-      fprintf (f, "  res = maybe_push_res_to_seq (tem_code, %s, tem_ops, seq);\n"
+      fprintf (f, "  res = maybe_push_res_to_seq (tem_code, %s, tem_ops, lseq);\n"
 	       "  if (!res) return false;\n", type);
       if (*operation == CONVERT_EXPR)
         fprintf (f, "  }\n"
@@ -2449,27 +2462,52 @@ dt_simplify::gen (FILE *f, bool gimple)
      that cover cases we cannot handle.  */
   capture_info cinfo (s);
   expr *e;
-  if (!gimple
-      && s->result
+  if (s->result
       && !((e = dyn_cast <expr *> (s->result))
 	   && is_a <predicate_id *> (e->operation)))
     {
-      for (unsigned i = 0; i < as_a <expr *> (s->match)->ops.length (); ++i)
-	if (cinfo.force_no_side_effects & (1 << i))
-	  fprintf (f, "if (TREE_SIDE_EFFECTS (op%d)) return NULL_TREE;\n", i);
-      for (int i = 0; i <= s->capture_max; ++i)
-	if (cinfo.info[i].cse_p)
-	  ;
-	else if (cinfo.info[i].force_no_side_effects_p
-		 && (cinfo.info[i].toplevel_msk
-		     & cinfo.force_no_side_effects) == 0)
-	  fprintf (f, "if (TREE_SIDE_EFFECTS (captures[%d])) "
-		   "return NULL_TREE;\n", i);
-	else if ((cinfo.info[i].toplevel_msk
-		  & cinfo.force_no_side_effects) != 0)
-	  /* Mark capture as having no side-effects if we had to verify
-	     that via forced toplevel operand checks.  */
-	  cinfo.info[i].force_no_side_effects_p = true;
+      if (!gimple)
+	{
+	  for (unsigned i = 0; i < as_a <expr *> (s->match)->ops.length (); ++i)
+	    if (cinfo.force_no_side_effects & (1 << i))
+	      fprintf (f, "if (TREE_SIDE_EFFECTS (op%d)) return NULL_TREE;\n", i);
+	  for (int i = 0; i <= s->capture_max; ++i)
+	    if (cinfo.info[i].cse_p)
+	      ;
+	    else if (cinfo.info[i].force_no_side_effects_p
+		     && (cinfo.info[i].toplevel_msk
+			 & cinfo.force_no_side_effects) == 0)
+	      fprintf (f, "if (TREE_SIDE_EFFECTS (captures[%d])) "
+		       "return NULL_TREE;\n", i);
+	    else if ((cinfo.info[i].toplevel_msk
+		      & cinfo.force_no_side_effects) != 0)
+	      /* Mark capture as having no side-effects if we had to verify
+		 that via forced toplevel operand checks.  */
+	      cinfo.info[i].force_no_side_effects_p = true;
+	}
+      if (gimple)
+	{
+	  /* Force single-use restriction by only allowing simple
+	     results via setting seq to NULL.  */
+	  fprintf (f, "gimple_seq *lseq = seq;\n");
+	  bool first_p = true;
+	  for (int i = 0; i <= s->capture_max; ++i)
+	    if (cinfo.info[i].force_single_use)
+	      {
+		if (first_p)
+		  {
+		    fprintf (f, "if (lseq\n"
+			     "&& (");
+		    first_p = false;
+		  }
+		else
+		  fprintf (f, "\n|| ");
+		fprintf (f, "!single_use (captures[%d])", i);
+	      }
+	  if (!first_p)
+	    fprintf (f, "))\n"
+		     "lseq = NULL;\n");
+	}
     }
 
   fprintf (f, "if (dump_file && (dump_flags & TDF_DETAILS)) "
@@ -2524,7 +2562,7 @@ dt_simplify::gen (FILE *f, bool gimple)
 	  /* Re-fold the toplevel result.  It's basically an embedded
 	     gimple_build w/o actually building the stmt.  */
 	  if (!is_predicate)
-	    fprintf (f, "gimple_resimplify%d (seq, res_code, type, "
+	    fprintf (f, "gimple_resimplify%d (lseq, res_code, type, "
 		     "res_ops, valueize);\n", e->ops.length ());
 	}
       else if (result->type == operand::OP_CAPTURE
@@ -3051,6 +3089,7 @@ parser::parse_expr ()
   const cpp_token *token = peek ();
   operand *op;
   bool is_commutative = false;
+  bool force_capture = false;
   const char *expr_type = NULL;
 
   if (token->type == CPP_COLON
@@ -3062,22 +3101,25 @@ parser::parse_expr ()
 	  && !(token->flags & PREV_WHITE))
 	{
 	  const char *s = get_ident ();
-	  if (s[0] == 'c' && !s[1])
-	    {
-	      if (!parsing_match_operand)
-		fatal_at (token,
-			  "flag 'c' can only be used in match expression");
-	      is_commutative = true;
-	    }
-	  else if (s[1] != '\0')
-	    {
-	      if (parsing_match_operand)
-		fatal_at (token, "type can only be used in result expression");
-	      expr_type = s;
-	    }
+	  if (!parsing_match_operand)
+	    expr_type = s;
 	  else
-	    fatal_at (token, "flag %s not recognized", s);
-
+	    {
+	      const char *sp = s;
+	      while (*sp)
+		{
+		  if (*sp == 'c')
+		    is_commutative = true;
+		  else if (*sp == 's')
+		    {
+		      e->force_single_use = true;
+		      force_capture = true;
+		    }
+	      	  else
+		    fatal_at (token, "flag %c not recognized", *sp);
+		  sp++;
+		}
+	    }
 	  token = peek ();
 	}
       else
@@ -3087,6 +3129,17 @@ parser::parse_expr ()
   if (token->type == CPP_ATSIGN
       && !(token->flags & PREV_WHITE))
     op = parse_capture (e);
+  else if (force_capture)
+    {
+      unsigned num = capture_ids->elements ();
+      char id[8];
+      bool existed;
+      sprintf (id, "__%u", num);
+      capture_ids->get_or_insert (xstrdup (id), &existed);
+      if (existed)
+	fatal_at (token, "reserved capture id '%s' already used", id);
+      op = new capture (num, e);
+    }
   else
     op = e;
   do
