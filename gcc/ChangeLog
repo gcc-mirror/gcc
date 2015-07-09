@@ -1,5 +1,14 @@
 2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* combine.c (do_SUBST_MODE): Don't check the value of HAVE_cc0
+	with the preprocessor.
+	(combine_instructions): Likewise.
+	(try_combine): Likewise.
+	(subst): Likewise.
+	(distribute_notes): Likewise.
+
+2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c (try_combine): Don't check if LOAD_EXTEND_OP is
 	defined.
 	(simplify_set): Likewise.
