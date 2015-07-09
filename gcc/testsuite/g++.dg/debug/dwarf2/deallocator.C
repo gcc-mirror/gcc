@@ -5,7 +5,7 @@
 // FE generated debug info, without losing generality, only x86
 // assembly is scanned in this test.
 // { dg-do compile { target { i?86-*-* x86_64-*-* } } }
-// { dg-options "-O2 -fno-exceptions -g -dA" }
+// { dg-options "-O2 -fno-exceptions -gdwarf-2 -dA" }
 
 struct t {
   t ();

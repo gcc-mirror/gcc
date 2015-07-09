@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // origin PR debug/30161
-// { dg-options "-g -dA" }
+// { dg-options "-gdwarf-2 -dA" }
 // { dg-do compile }
 // { dg-final { scan-assembler "DW_TAG_template_type_param" } }
 // { dg-final { scan-assembler "U.*DW_AT_name" } }

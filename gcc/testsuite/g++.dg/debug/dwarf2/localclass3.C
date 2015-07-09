@@ -1,6 +1,6 @@
 // Test that the A* pointer_type is also within the debug info for f.
 // Currently GCC emits it immediately before A, which is simple to test for.
-// { dg-options "-g -dA" }
+// { dg-options "-gdwarf-2 -dA" }
 
 void f()
 {

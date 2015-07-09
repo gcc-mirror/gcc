@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-g2 -dA" }
+// { dg-options "-gdwarf-2 -g2 -dA" }
 
 // Verify that line number info is output for the non-virtual
 // thunks for C::~C().

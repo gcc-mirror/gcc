@@ -1,6 +1,6 @@
 // Origin: PR 44641
 // { dg-do compile }
-// { dg-options "-g -O0 -dA" }
+// { dg-options "-gdwarf-2 -O0 -dA" }
 
 template <class A> struct MisplacedDbg;
 template<class T> struct MisplacedDbg<T*>;

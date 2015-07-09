@@ -1,6 +1,6 @@
 // Origin: PR 46527
 // { dg-do compile }
-// { dg-options "-g -O0 -dA" }
+// { dg-options "-gdwarf-2 -O0 -dA" }
 
 template <typename T> struct Struct {
   double defined_later();

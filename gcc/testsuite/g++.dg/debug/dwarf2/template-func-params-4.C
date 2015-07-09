@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/30161
 // { dg-do compile { target c++11 } }
-// { dg-options "-g -dA" }
+// { dg-options "-gdwarf-2 -dA" }
 //
 // In theory the compiler instantiates count<int, char, long>,
 // count<char, long> and count<long>. In practice, only
