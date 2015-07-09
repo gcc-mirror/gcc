@@ -1,3 +1,14 @@
+2015-07-09  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct cp_parameter_declarator): Rename ellipsis_p to
+	template_parameter_pack_p.
+	* parser.c (declarator_can_be_parameter_pack): False if
+	parameter_pack_p is set.
+	(make_parameter_declarator): Add template_parameter_pack_p parm.
+	(cp_parser_template_parameter): Remove parameter pack parsing.
+	(cp_parser_parameter_declaration): Handle all parameter packs.
+	Tweak default argument permerror.
+
 2015-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
 
 	* parser.c (cp_parser_default_type_template_argument)

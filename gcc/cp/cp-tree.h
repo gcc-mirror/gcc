@@ -5042,9 +5042,8 @@ struct cp_parameter_declarator {
   cp_declarator *declarator;
   /* The default-argument expression, or NULL_TREE, if none.  */
   tree default_argument;
-  /* True iff this is the first parameter in the list and the
-     parameter sequence ends with an ellipsis.  */
-  bool ellipsis_p;
+  /* True iff this is is a template parameter pack.  */
+  bool template_parameter_pack_p;
 };
 
 /* A declarator.  */
