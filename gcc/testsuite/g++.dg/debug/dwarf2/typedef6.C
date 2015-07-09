@@ -1,5 +1,5 @@
 // Origin PR debug/
-// { dg-options "-g -dA" }
+// { dg-options "-gdwarf-2 -dA" }
 
 class C {
 public:

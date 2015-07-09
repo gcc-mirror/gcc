@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/30161
-// { dg-options "-g -dA -fno-merge-debug-strings" }
+// { dg-options "-gdwarf-2 -dA -fno-merge-debug-strings" }
 // { dg-do compile { target c++11 } }
 
 // There must be 5 subprograms generated:

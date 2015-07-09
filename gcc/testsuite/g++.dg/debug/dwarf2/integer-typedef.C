@@ -1,5 +1,5 @@
 // Origin: PR debug/49130
-// { dg-options "-g -dA -fno-merge-debug-strings -fno-debug-types-section" }
+// { dg-options "-gdwarf-2 -dA -fno-merge-debug-strings -fno-debug-types-section" }
 
 typedef long unsigned int size_t;
 static const size_t foo = 2048;

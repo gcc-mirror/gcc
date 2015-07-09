@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-g -O0 -dA" }
+// { dg-options "-gdwarf-2 -O0 -dA" }
 
 struct C {  // { dg-function-on-line {_ZN1CC[12]Ev} }
   int i;

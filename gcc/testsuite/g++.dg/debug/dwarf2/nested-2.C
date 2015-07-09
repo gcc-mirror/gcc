@@ -1,6 +1,6 @@
 /*
   Origin: PR debug/45024
-  { dg-options "-g -dA -fno-merge-debug-strings -fno-debug-types-section" }
+  { dg-options "-gdwarf-2 -dA -fno-merge-debug-strings -fno-debug-types-section" }
   { dg-do compile }
 */
 

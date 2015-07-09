@@ -1,5 +1,5 @@
 // Origin: PR debug/45171
-// { dg-options "-g -dA -fno-eliminate-unused-debug-types -fno-debug-types-section" }
+// { dg-options "-gdwarf-2 -dA -fno-eliminate-unused-debug-types -fno-debug-types-section" }
 // { dg-do compile }
 
 // There should be 2 real instances of byte_size -- one for the

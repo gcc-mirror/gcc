@@ -1,5 +1,5 @@
 // Origin PR debug/46955
-// { dg-options "-g -dA" }
+// { dg-options "-gdwarf-2 -dA" }
 // { dg-do compile }
 
 struct S { int f; };

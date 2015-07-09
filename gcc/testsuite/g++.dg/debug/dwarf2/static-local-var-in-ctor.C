@@ -1,6 +1,6 @@
 // PR debug/39372
 // { dg-do compile }
-// { dg-options "-O0 -g -dA" }
+// { dg-options "-O0 -gdwarf-2 -dA" }
 // { dg-final { scan-assembler "DW_OP_addr\[^\n\r\]*\[\n\r\]*\[^\n\r\]*staticvar1" } }
 // { dg-final { scan-assembler "DW_OP_addr\[^\n\r\]*\[\n\r\]*\[^\n\r\]*staticvar2" } }
 
