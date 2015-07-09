@@ -1,3 +1,18 @@
+2015-07-09  Michael Matz  <matz@suse.de>
+
+	* genmatch.c (fprintf_indent): New function.
+	(operand::gen_transform): Add indent parameter.
+	(expr::gen_transform, c_expr::gen_transform,
+	capture::gen_transform): Ditto and use fprintf_indent.
+	(dt_node::gen, dt_node::gen_kids, dt_node::gen_kids_1): Ditto.
+	(dt_operand::gen, dt_operand::gen_predicate,
+	dt_operand::gen_match_op, dt_operand::gen_gimple_expr,
+	dt_operand::gen_generic_expr, dt_simplify::gen): Ditto.
+	(decision_tree::gen_gimple): Adjust calls and indent generated
+	code.
+	(decision_tree::gen_generic): Ditto.
+	(write_predicate): Ditto.
+
 2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66814
