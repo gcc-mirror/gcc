@@ -1,3 +1,8 @@
+2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66814
+	* gcc.target/i386/pr66814.c: New test.
+
 2015-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gcc.target/aarch64/fnmul-1.c: Fix whitespace.

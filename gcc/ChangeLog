@@ -1,3 +1,11 @@
+2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66814
+	* config/i386/predicates.md (nonimmediate_gr_operand): New predicate.
+	* config/i386/i386.md (not peephole2): Use nonimmediate_gr_operand.
+	(varous peephole2s): Use {GENERAL,SSE,MMX}_REGNO_P instead of
+	{GENERAL_SSE_MMX}_REG_P where appropriate.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-streamer.h: Don't include target.h and alloc-pool.h.
@@ -59,7 +67,7 @@
 2015-07-09  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/66718
-	* Makefile.in (OBJS): Add gimple-laddress.o. 
+	* Makefile.in (OBJS): Add gimple-laddress.o.
 	* passes.def: Schedule pass_laddress.
 	* timevar.def (DEFTIMEVAR): Add TV_GIMPLE_LADDRESS.
 	* tree-pass.h (make_pass_laddress): Declare.
