@@ -1,3 +1,8 @@
+2015-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66807
+	* tree-chkp-opt.c (chkp_opt_fini): Free post dominator info.
+
 2015-07-08  Kito Cheng  <kito.cheng@gmail.com>
 
 	* function.c (stack_protect_epilogue): Use if rather than switch for
