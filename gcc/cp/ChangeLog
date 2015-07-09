@@ -1,5 +1,8 @@
 2015-07-09  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (instantiation_dependent_r) [TRAIT_EXPR]: Call
+	value_dependent_expression_p.
+
 	* cp-tree.h (struct cp_parameter_declarator): Rename ellipsis_p to
 	template_parameter_pack_p.
 	* parser.c (declarator_can_be_parameter_pack): False if

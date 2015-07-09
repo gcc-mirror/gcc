@@ -20788,7 +20788,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	  decl = cp_parser_alias_declaration (parser);
 	  /* Note that if we actually see the '=' token after the
 	     identifier, cp_parser_alias_declaration commits the
-	     tentative parse.  In that case, we really expects an
+	     tentative parse.  In that case, we really expect an
 	     alias-declaration.  Otherwise, we expect a using
 	     declaration.  */
 	  alias_decl_expected =

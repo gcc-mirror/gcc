@@ -20131,7 +20131,7 @@ template_for_substitution (tree decl)
 }
 
 /* Returns true if we need to instantiate this template instance even if we
-   know we aren't going to emit it..  */
+   know we aren't going to emit it.  */
 
 bool
 always_instantiate_p (tree decl)
@@ -21684,9 +21684,7 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
       }
 
     case TRAIT_EXPR:
-      if (dependent_type_p (TRAIT_EXPR_TYPE1 (*tp))
-	  || (TRAIT_EXPR_TYPE2 (*tp)
-	      && dependent_type_p (TRAIT_EXPR_TYPE2 (*tp))))
+      if (value_dependent_expression_p (*tp))
 	return *tp;
       *walk_subtrees = false;
       return NULL_TREE;
