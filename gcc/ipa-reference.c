@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic.h"
 #include "data-streamer.h"
-#include "lto-streamer.h"
 
 static void remove_node_data (struct cgraph_node *node,
 			      void *data ATTRIBUTE_UNUSED);

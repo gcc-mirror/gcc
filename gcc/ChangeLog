@@ -1,3 +1,23 @@
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-streamer.h: Don't include target.h and alloc-pool.h.
+	* builtins.c: Adjust includes.
+	* gimple.c: Likewise.
+	* ipa-icf.c: Likewise.
+	* lto-opts.c: Likewise.
+	* ipa-reference.c: Likewise.
+	* lto-section-out.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* opts-global.c: Likewise.
+	* symtab.c: Likewise.
+	* tree-chkp.c: Likewise.
+	* tree-ssa-live.c: Likewise.
+	* tree-streamer-in.c: Likewise.
+	* tree-streamer-out.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+
 2015-07-09  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (struct expr): Add force_single_use flag.

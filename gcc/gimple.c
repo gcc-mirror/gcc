@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "demangle.h"
 #include "langhooks.h"
-#include "lto-streamer.h"
 #include "cgraph.h"
 
 

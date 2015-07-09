@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "internal-fn.h"
 #include "cgraph.h"
+#include "target.h"
 #include "tree-streamer.h"
 #include "data-streamer.h"
 #include "streamer-hooks.h"

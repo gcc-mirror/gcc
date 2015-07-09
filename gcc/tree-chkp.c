@@ -60,7 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "gimple-walk.h"
 #include "tree-dfa.h"
-#include "lto-streamer.h"
 #include "cgraph.h"
 #include "ipa-chkp.h"
 #include "params.h"

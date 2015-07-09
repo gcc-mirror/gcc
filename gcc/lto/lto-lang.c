@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "cgraph.h"
-#include "lto-streamer.h"
 #include "cilk.h"
 
 static tree lto_type_for_size (unsigned, int);

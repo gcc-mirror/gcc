@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "lto-symtab.h"
 #include "cgraph.h"
+#include "target.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "gimple-streamer.h"

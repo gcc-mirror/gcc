@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cgraph.h"
 #include "data-streamer.h"
-#include "lto-streamer.h"
 #include "lto-compress.h"
 
 static vec<lto_out_decl_state_ptr> decl_state_stack;

@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "cgraph.h"
+#include "alloc-pool.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "builtins.h"

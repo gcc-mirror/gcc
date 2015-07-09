@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gimplify.h"
 #include "cgraph.h"
+#include "alloc-pool.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
 
