@@ -5979,9 +5979,7 @@ static void
 store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 {
   tree type = TREE_TYPE (exp);
-#ifdef WORD_REGISTER_OPERATIONS
   HOST_WIDE_INT exp_size = int_size_in_bytes (type);
-#endif
 
   switch (TREE_CODE (type))
     {
@@ -6094,13 +6092,13 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 					 highest_pow2_factor (offset));
 	      }
 
-#ifdef WORD_REGISTER_OPERATIONS
 	    /* If this initializes a field that is smaller than a
 	       word, at the start of a word, try to widen it to a full
 	       word.  This special case allows us to output C++ member
 	       function initializations in a form that the optimizers
 	       can understand.  */
-	    if (REG_P (target)
+	    if (WORD_REGISTER_OPERATIONS
+		&& REG_P (target)
 		&& bitsize < BITS_PER_WORD
 		&& bitpos % BITS_PER_WORD == 0
 		&& GET_MODE_CLASS (mode) == MODE_INT
@@ -6125,7 +6123,6 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		bitsize = BITS_PER_WORD;
 		mode = word_mode;
 	      }
-#endif
 
 	    if (MEM_P (to_rtx) && !MEM_KEEP_ALIAS_SET_P (to_rtx)
 		&& DECL_NONADDRESSABLE_P (field))

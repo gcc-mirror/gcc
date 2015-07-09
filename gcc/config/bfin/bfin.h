@@ -982,7 +982,7 @@ typedef struct {
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified. 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 */
 
 /* Evaluates to true if A and B are mac flags that can be used

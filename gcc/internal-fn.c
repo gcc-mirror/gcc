@@ -1727,15 +1727,15 @@ expand_arith_overflow (enum tree_code code, gimple stmt)
 	  return;
 	}
 
-#ifdef WORD_REGISTER_OPERATIONS
       /* For sub-word operations, if target doesn't have them, start
 	 with precres widening right away, otherwise do it only
 	 if the most simple cases can't be used.  */
-      if (orig_precres == precres && precres < BITS_PER_WORD)
+      if (WORD_REGISTER_OPERATIONS
+	  && orig_precres == precres
+	  && precres < BITS_PER_WORD)
 	;
-      else
-#endif
-      if ((uns0_p && uns1_p && unsr_p && prec0 <= precres && prec1 <= precres)
+      else if ((uns0_p && uns1_p && unsr_p && prec0 <= precres
+		&& prec1 <= precres)
 	  || ((!uns0_p || !uns1_p) && !unsr_p
 	      && prec0 + uns0_p <= precres
 	      && prec1 + uns1_p <= precres))
@@ -1764,7 +1764,7 @@ expand_arith_overflow (enum tree_code code, gimple stmt)
       /* For sub-word operations, retry with a wider type first.  */
       if (orig_precres == precres && precop <= BITS_PER_WORD)
 	{
-#ifdef WORD_REGISTER_OPERATIONS
+#if WORD_REGISTER_OPERATIONS
 	  int p = BITS_PER_WORD;
 #else
 	  int p = precop;

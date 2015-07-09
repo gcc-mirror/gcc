@@ -331,7 +331,7 @@ enum reg_class
 #define CLEAR_RATIO(speed) ((speed) ? 15 : TILEPRO_CALL_RATIO)
 #define SET_RATIO(speed) ((speed) ? 15 : TILEPRO_CALL_RATIO)
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 

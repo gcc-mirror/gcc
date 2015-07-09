@@ -673,9 +673,7 @@ simplify_truncation (machine_mode mode, rtx op,
      the truncation, i.e. simplify (truncate:QI (op:SI (x:SI) (y:SI))) into
      (op:QI (truncate:QI (x:SI)) (truncate:QI (y:SI))).  */
   if (1
-#ifdef WORD_REGISTER_OPERATIONS
-      && precision >= BITS_PER_WORD
-#endif
+      && (!WORD_REGISTER_OPERATIONS || precision >= BITS_PER_WORD)
       && (GET_CODE (op) == PLUS
 	  || GET_CODE (op) == MINUS
 	  || GET_CODE (op) == MULT))

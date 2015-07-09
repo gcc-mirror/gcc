@@ -793,7 +793,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define CASE_VECTOR_MODE DImode
 #define CASE_VECTOR_PC_RELATIVE 0
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* We have a choice, which makes this yet another parameter to tweak.  The
    gut feeling is currently that SIGN_EXTEND wins; "int" is more frequent

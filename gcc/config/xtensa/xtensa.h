@@ -197,7 +197,7 @@ extern unsigned xtensa_current_frame_size;
 
 /* Operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Xtensa loads are zero-extended by default.  */
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND

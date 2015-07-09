@@ -1631,7 +1631,7 @@ do {									\
 /* Define this macro if operations between registers with integral mode smaller
    than a word are always performed on the entire register.  */
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Define this macro to be a C expression indicating when insns that read
    memory in MODE, an integral mode narrower than a word, set the bits outside

@@ -6716,10 +6716,9 @@ simplify_set (rtx x)
 	   / UNITS_PER_WORD)
 	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
 	       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-#ifndef WORD_REGISTER_OPERATIONS
-      && (GET_MODE_SIZE (GET_MODE (src))
-	< GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
-#endif
+      && (WORD_REGISTER_OPERATIONS
+	  || (GET_MODE_SIZE (GET_MODE (src))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (REG_P (dest) && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
@@ -11424,7 +11423,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
   /* Try a few ways of applying the same transformation to both operands.  */
   while (1)
     {
-#ifndef WORD_REGISTER_OPERATIONS
+#if !WORD_REGISTER_OPERATIONS
       /* The test below this one won't handle SIGN_EXTENDs on these machines,
 	 so check specially.  */
       if (code != GTU && code != GEU && code != LTU && code != LEU
@@ -12078,11 +12077,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		     However, if we commute the AND inside the SUBREG then
 		     they no longer have defined values and the meaning of
 		     the code has been changed.  */
-		  && (0
-#ifdef WORD_REGISTER_OPERATIONS
-		      || (mode_width > GET_MODE_PRECISION (tmode)
-			  && mode_width <= BITS_PER_WORD)
-#endif
+		  && ((WORD_REGISTER_OPERATIONS
+		       && mode_width > GET_MODE_PRECISION (tmode)
+		       && mode_width <= BITS_PER_WORD)
 		      || (mode_width <= GET_MODE_PRECISION (tmode)
 			  && subreg_lowpart_p (XEXP (op0, 0))))
 		  && CONST_INT_P (XEXP (op0, 1))
