@@ -40,3 +40,46 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef LIB_SPEC
 #define LIB_SPEC "--start-group -lc -lgloss --end-group"
+
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
+/* A C statement to output to the stdio stream FILE an assembler
+   command to advance the location counter to a multiple of 1<<LOG
+   bytes if it is within MAX_SKIP bytes.
+
+   This is used to align code labels according to Intel recommendations.  */
+
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
+  do {									\
+    if ((LOG) != 0) {							\
+      if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
+      else {								\
+	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
+	/* Make sure that we have at least 8 byte alignment if > 8 byte \
+	   alignment is preferred.  */					\
+	if ((LOG) > 3							\
+	    && (1 << (LOG)) > ((MAX_SKIP) + 1)				\
+	    && (MAX_SKIP) >= 7)						\
+	  fputs ("\t.p2align 3\n", (FILE));				\
+      }									\
+    }									\
+  } while (0)
+
+/* Handle special EH pointer encodings.  Absolute, pc-relative, and
+   indirect are handled automatically.  */
+#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
+  do {									\
+    if ((SIZE) == 4 && ((ENCODING) & 0x70) == DW_EH_PE_datarel)		\
+      {									\
+        fputs (ASM_LONG, FILE);						\
+        assemble_name (FILE, XSTR (ADDR, 0));				\
+	fputs (((ENCODING) & DW_EH_PE_indirect ? "@GOT" : "@GOTOFF"), FILE); \
+        goto DONE;							\
+      }									\
+  } while (0)
