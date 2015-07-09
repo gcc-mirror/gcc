@@ -1,3 +1,61 @@
+2015-07-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_secondary_reload_memory):
+	Use machine mode, not enum machine_mode in the prototype.
+
+	* config/rs6000/rs6000.h (FLOAT128_IEEE_P): New helper macros to
+	classify 128-bit floating point support.
+	(FLOAT128_IBM_P): Likewise.
+	(FLOAT128_VECTOR_P): Likewise.
+	(FLOAT128_2REG_P): Likewise.
+	(SCALAR_FLOAT_MODE_NOT_VECTOR_P): Likewise.
+	(SLOW_UNALIGNED_ACCESS): Add IEEE 128-bit floating point support.
+	(HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	(HARD_REGNO_CALL_PART_CLOBBERED): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_nregs_internal): Drop
+	tests against TFmode/TDmode, since those modes do not use VSX
+	addresses.
+	(rs6000_hard_regno_mode_ok): Add IEEE 128-bit floating point
+	support.
+	(rs6000_init_hard_regno_mode_ok): Use new helper macros instead of
+	tests against TFmode, etc.
+	(invalid_e500_subreg): Add tests against IFmode/KFmode.
+	(reg_offset_addressing_ok_p): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_legitimate_address_p): Clean up tests against TFmode and
+	TDmode to use the new helper macros, which will include IFmode and
+	KFmode.
+	(rs6000_emit_move): Likewise.
+	(rs6000_darwin64_record_arg_recurse): Likewise.
+	(print_operand): Likewise.
+	(rs6000_member_type_forces_blk): Treat IEEE 128-bit floating point
+	that uses a single vector register as a vector and not as a
+	floating point register in terms of the calling sequence.
+	(rs6000_discover_homogeneous_aggregate): Likewise.
+	(rs6000_return_in_memory): Likewise.
+	(init_cumulative_args): Likewise.
+	(rs6000_function_arg_boundary): Likewise.
+	(rs6000_function_arg_advance_1): Likewise.
+	(rs6000_function_arg): Likewise.
+	(rs6000_pass_by_reference): Likewise.
+	(rs6000_gimplify_va_arg): Likewise.
+	(rs6000_secondary_reload_memory): Use machine_mode not enum
+	machine mode.
+	(rs6000_split_multireg_move): Use new helper macros.
+	(spe_func_has_64bit_regs_p): Likewise.
+	(rs6000_output_function_epilogue): Add IFmode/KFmode support.
+	(output_toc): Use new helper macros.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_function_value): Add IEEE 128-bit floating point calling
+	sequence support.
+	(rs6000_libcall_value): Likewise.
+	(rs6000_scalar_mode_supported_p): Add support for IEEE 128-bit
+	floating point support.
+	(rs6000_vector_mode_supported_p): Likewise.
+
 2015-07-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/66782
