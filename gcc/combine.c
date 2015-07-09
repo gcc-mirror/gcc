@@ -1624,7 +1624,6 @@ setup_incoming_promotions (rtx_insn *first)
     }
 }
 
-#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
 /* If MODE has a precision lower than PREC and SRC is a non-negative constant
    that would appear negative in MODE, sign-extend SRC for use in nonzero_bits
    because some machines (maybe most) will actually do the sign-extension and
@@ -1644,7 +1643,6 @@ sign_extend_short_imm (rtx src, machine_mode mode, unsigned int prec)
 
   return src;
 }
-#endif
 
 /* Update RSP for pseudo-register X from INSN's REG_EQUAL note (if one exists)
    and SET.  */
@@ -1661,11 +1659,12 @@ update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
   if (reg_equal_note)
     reg_equal = XEXP (reg_equal_note, 0);
 
-#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
-  src = sign_extend_short_imm (src, GET_MODE (x), BITS_PER_WORD);
-  if (reg_equal)
-    reg_equal = sign_extend_short_imm (reg_equal, GET_MODE (x), BITS_PER_WORD);
-#endif
+  if (SHORT_IMMEDIATES_SIGN_EXTEND)
+    {
+      src = sign_extend_short_imm (src, GET_MODE (x), BITS_PER_WORD);
+      if (reg_equal)
+	reg_equal = sign_extend_short_imm (reg_equal, GET_MODE (x), BITS_PER_WORD);
+    }
 
   /* Don't call nonzero_bits if it cannot change anything.  */
   if (rsp->nonzero_bits != ~(unsigned HOST_WIDE_INT) 0)
@@ -9824,10 +9823,10 @@ reg_nonzero_bits_for_combine (const_rtx x, machine_mode mode,
 
   if (tem)
     {
-#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
-      tem = sign_extend_short_imm (tem, GET_MODE (x),
-				   GET_MODE_PRECISION (mode));
-#endif
+      if (SHORT_IMMEDIATES_SIGN_EXTEND)
+	tem = sign_extend_short_imm (tem, GET_MODE (x),
+				     GET_MODE_PRECISION (mode));
+
       return tem;
     }
   else if (nonzero_sign_valid && rsp->nonzero_bits)

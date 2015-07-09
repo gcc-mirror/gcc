@@ -1626,7 +1626,7 @@ FP_ASM_SPEC "\
 #define POINTERS_EXTEND_UNSIGNED false
 
 /* Define if loading short immediate values into registers sign extends.  */
-#define SHORT_IMMEDIATES_SIGN_EXTEND
+#define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
 /* The [d]clz instructions have the natural values at 0.  */
 

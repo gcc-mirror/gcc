@@ -1827,7 +1827,7 @@ struct sh_args {
   : (MODE) != SImode ? SIGN_EXTEND : UNKNOWN)
 
 /* Define if loading short immediate values into registers sign extends.  */
-#define SHORT_IMMEDIATES_SIGN_EXTEND
+#define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1

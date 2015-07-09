@@ -1,5 +1,25 @@
 2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* combine.c (update_rsp_from_reg_equal): Don't check if
+	SHORT_IMMEDIATES_SIGN_EXTEND is defined.
+	(reg_nonzero_bits_for_combine): Likewise.
+	* config/alpha/alpha.h: Define SHORT_IMMEDIATES_SIGN_EXTEND to
+	1.
+	* config/frv/frv.h: Likewise.
+	* config/lm32/lm32.h: Likewise.
+	* config/mep/mep.h: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/tilegx/tilegx.h (enum reg_class): Likewise.
+	* config/tilepro/tilepro.h: Likewise.
+	* defaults.h: Add default for SHORT_IMMEDIATES_SIGN_EXTEND.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Adjust.
+	* rtlanal.c (nonzero_bits1): Likewise.
+
+2015-07-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c (do_SUBST_MODE): Don't check the value of HAVE_cc0
 	with the preprocessor.
 	(combine_instructions): Likewise.

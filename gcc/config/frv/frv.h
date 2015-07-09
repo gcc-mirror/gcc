@@ -1899,7 +1899,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
 
 /* Define if loading short immediate values into registers sign extends.  */
-#define SHORT_IMMEDIATES_SIGN_EXTEND
+#define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */
