@@ -17,10 +17,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This target is a multilib target, specify the sysroot paths.  */
-#define MIPS_SYSVERSION_SPEC					\
-    "%{mips32:r1}%{mips64:r1}%{mips32r2:r2}%{mips64r2:r2}"	\
-    "%{mips32r6:r6}%{mips64r6:r6}%{mips16:-mips16}"
+/* This target is a multilib target, specify the sysroot paths.
+   MIPS_SYSVERSION_SPEC defaults to 'r2' (mips32r2 or mips64r2) unless
+   'r1' or 'r6' are specifically given so that mips32r3, mips32r5,
+   mips64r3, and mips64r5 will all default to 'r2'.  See MULTILIB_MATCHES
+   definition in t-mti-linux.  */
+
+#define MIPS_SYSVERSION_SPEC \
+    "%{mips32|mips64:r1;mips32r6|mips64r6:r6;:r2}%{mips16:-mips16}"
 
 #undef SYSROOT_SUFFIX_SPEC
 #define SYSROOT_SUFFIX_SPEC						\
