@@ -1,3 +1,9 @@
+2015-07-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66817
+	* config/i386/i386.c (ix86_return_in_memory): Return true
+	if int_size_in_bytes returns negative for IA MCU.
+
 2015-07-09  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/66718

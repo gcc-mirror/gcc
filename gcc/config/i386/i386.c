@@ -8682,7 +8682,7 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
       /* Intel MCU psABI returns scalars and aggregates no larger than 8
 	 bytes in registers.  */
       if (TARGET_IAMCU)
-	return VECTOR_MODE_P (mode) || size > 8;
+	return VECTOR_MODE_P (mode) || size < 0 || size > 8;
 
       if (mode == BLKmode)
 	return true;
