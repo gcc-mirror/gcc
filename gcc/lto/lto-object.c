@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "lto.h"
 #include "cgraph.h"
-#include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "simple-object.h"
 

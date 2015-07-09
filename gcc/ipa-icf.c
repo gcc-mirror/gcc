@@ -89,6 +89,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "attribs.h"
 #include "print-tree.h"
+#include "target.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "ipa-utils.h"

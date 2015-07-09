@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "cgraph.h"
 #include "ipa-utils.h"
+#include "target.h"
 #include "data-streamer.h"
 #include "gimple-streamer.h"
 #include "lto-streamer.h"

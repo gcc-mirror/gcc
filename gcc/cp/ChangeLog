@@ -1,3 +1,7 @@
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cp-ubsan.c: Don't include alloc-pool.h or lto-streamer.h.
+
 2015-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl2.c (cpp_check): Deal with IS_CONSTEXPR.

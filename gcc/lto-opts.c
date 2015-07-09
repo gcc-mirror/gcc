@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "diagnostic.h"
 #include "cgraph.h"
+#include "target.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "toplev.h"

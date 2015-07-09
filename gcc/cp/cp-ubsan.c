@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "gimple.h"
 #include "options.h"
-#include "alloc-pool.h"
 #include "output.h"
 #include "toplev.h"
 #include "ubsan.h"
@@ -40,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "fold-const.h"
 #include "stringpool.h"
-#include "lto-streamer.h"
 #include "cgraph.h"
 
 /* Test if we should instrument vptr access.  */

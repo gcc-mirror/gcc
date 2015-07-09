@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "debug.h"
 #include "tree-ssa.h"
-#include "lto-streamer.h"
 #include "cgraph.h"
 #include "ipa-utils.h"
 
