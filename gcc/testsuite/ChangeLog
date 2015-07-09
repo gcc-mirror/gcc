@@ -1,3 +1,8 @@
+2015-07-09  John Marino  <gnugcc@marino.st>
+
+	* lib/target-supports.exp (check_effective_target_pie):
+	Add *-*-dragonfly*
+
 2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66814
