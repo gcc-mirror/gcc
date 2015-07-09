@@ -1,3 +1,14 @@
+2015-07-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/66782
+	* lra-int.h (struct lra_insn_recog_data): Add comment about
+	clobbered hard regs for arg_hard_regs.
+	* lra.c (lra_set_insn_recog_data): Add clobbered hard regs.
+	* lra-lives.c (process_bb_lives): Process clobbered hard regs.
+	Add condition for processing used hard regs.
+	* lra-constraints.c (update_ebb_live_info, inherit_in_ebb):
+	Process clobbered hard regs.
+
 2015-07-09  Michael Matz  <matz@suse.de>
 
 	* genmatch.c (fprintf_indent): New function.

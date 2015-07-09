@@ -5149,6 +5149,11 @@ update_ebb_live_info (rtx_insn *head, rtx_insn *tail)
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type == OP_OUT && ! reg->subreg_p)
 	  bitmap_clear_bit (&live_regs, reg->regno);
+      if (curr_id->arg_hard_regs != NULL)
+	/* Make clobbered argument hard registers die.  */
+	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    bitmap_clear_bit (&live_regs, regno - FIRST_PSEUDO_REGISTER);
       /* Mark each used value as live.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
 	if (reg->type != OP_OUT
@@ -5159,9 +5164,10 @@ update_ebb_live_info (rtx_insn *head, rtx_insn *tail)
 	    && bitmap_bit_p (&check_only_regs, reg->regno))
 	  bitmap_set_bit (&live_regs, reg->regno);
       if (curr_id->arg_hard_regs != NULL)
-	/* Make argument hard registers live.  */
+	/* Make used argument hard registers live.  */
 	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
-	  if (bitmap_bit_p (&check_only_regs, regno))
+	  if (regno < FIRST_PSEUDO_REGISTER
+	      && bitmap_bit_p (&check_only_regs, regno))
 	    bitmap_set_bit (&live_regs, regno);
       /* It is quite important to remove dead move insns because it
 	 means removing dead store.  We don't need to process them for
@@ -5471,6 +5477,12 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 			}
 		    }
 		}
+	  /* Process clobbered call regs.  */
+	  if (curr_id->arg_hard_regs != NULL)
+	    for (i = 0; (dst_regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	      if (dst_regno >= FIRST_PSEUDO_REGISTER)
+		usage_insns[dst_regno - FIRST_PSEUDO_REGISTER].check
+		  = -(int) INSN_UID (curr_insn);
 	  if (! JUMP_P (curr_insn))
 	    for (i = 0; i < to_inherit_num; i++)
 	      if (inherit_reload_reg (true, to_inherit[i].regno,
@@ -5578,7 +5590,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		      add_next_usage_insn (src_regno, use_insn, reloads_num);
 		    }
 		}
-	  /* Process call args.  */
+	  /* Process used call regs.  */
 	  if (curr_id->arg_hard_regs != NULL)
 	    for (i = 0; (src_regno = curr_id->arg_hard_regs[i]) >= 0; i++)
 	      if (src_regno < FIRST_PSEUDO_REGISTER)
