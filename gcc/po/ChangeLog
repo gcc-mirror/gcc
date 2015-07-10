@@ -1,3 +1,8 @@
+2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	* sv.po: Update.
+	* de.po: Likewise.
+
 2015-07-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.pot: Regenerate.
