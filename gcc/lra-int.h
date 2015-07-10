@@ -229,9 +229,11 @@ struct lra_insn_recog_data
      duplication numbers: */
   rtx **operand_loc; /* The operand locations, NULL if no operands.  */
   rtx **dup_loc; /* The dup locations, NULL if no dups.	 */
-  /* Number of hard registers implicitly used in given call insn.  The
-     value can be NULL or points to array of the hard register numbers
-     ending with a negative value.  */
+  /* Number of hard registers implicitly used/clobbered in given call
+     insn.  The value can be NULL or points to array of the hard
+     register numbers ending with a negative value.  To differ
+     clobbered and used hard regs, clobbered hard regs are incremented
+     by FIRST_PSEUDO_REGISTER.  */
   int *arg_hard_regs;
   /* Cached value of get_preferred_alternatives.  */
   alternative_mask preferred_alternatives;

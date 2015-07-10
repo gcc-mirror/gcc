@@ -1088,6 +1088,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
   data->arg_hard_regs = NULL;
   if (CALL_P (insn))
     {
+      bool use_p;
       rtx link;
       int n_hard_regs, regno, arg_hard_regs[FIRST_PSEUDO_REGISTER];
 
@@ -1098,7 +1099,8 @@ lra_set_insn_recog_data (rtx_insn *insn)
       for (link = CALL_INSN_FUNCTION_USAGE (insn);
 	   link != NULL_RTX;
 	   link = XEXP (link, 1))
-	if (GET_CODE (XEXP (link, 0)) == USE
+	if (((use_p = GET_CODE (XEXP (link, 0)) == USE)
+	     || GET_CODE (XEXP (link, 0)) == CLOBBER)
 	    && REG_P (XEXP (XEXP (link, 0), 0)))
 	  {
 	    regno = REGNO (XEXP (XEXP (link, 0), 0));
@@ -1108,7 +1110,8 @@ lra_set_insn_recog_data (rtx_insn *insn)
 		      [regno][GET_MODE (XEXP (XEXP (link, 0), 0))]) - 1;
 		 i >= 0;
 		 i--)
-	      arg_hard_regs[n_hard_regs++] = regno + i;
+	      arg_hard_regs[n_hard_regs++]
+		= regno + i + (use_p ? 0 : FIRST_PSEUDO_REGISTER);
 	  }
       if (n_hard_regs != 0)
 	{
