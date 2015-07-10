@@ -1,5 +1,5 @@
 // { dg-do run  }
-template <class T, template <class T> class C>
+template <class T, template <class U> class C>
 struct X
 {};
 

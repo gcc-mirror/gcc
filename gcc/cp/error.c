@@ -1295,6 +1295,14 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  tree inner_parms = INNERMOST_TEMPLATE_PARMS (parms);
 	  int len = TREE_VEC_LENGTH (inner_parms);
 
+	  if (len == 0)
+	    {
+	      /* Skip over the dummy template levels of a template template
+		 parm.  */
+	      gcc_assert (TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TEMPLATE_PARM);
+	      continue;
+	    }
+
 	  pp_cxx_ws_string (pp, "template");
 	  pp_cxx_begin_template_argument_list (pp);
 
