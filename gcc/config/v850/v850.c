@@ -3078,6 +3078,66 @@ v850_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	       && !CONST_OK_FOR_K (INTVAL (XEXP (XEXP (x, 0), 1)))));
 }
 
+/* Helper function for `v850_legitimate_address_p'.  */
+
+static bool
+v850_reg_ok_for_base_p (const_rtx reg, bool strict_p)
+{
+  if (strict_p)
+  {
+    return REGNO_OK_FOR_BASE_P (REGNO (reg));
+  } else {
+    return true;
+  }
+}
+
+/* Accept either REG or SUBREG where a register is valid.  */
+
+static bool
+v850_rtx_ok_for_base_p (const_rtx x, bool strict_p)
+{
+  return ((REG_P (x) && v850_reg_ok_for_base_p  (x, strict_p))
+	  || (SUBREG_P (x) && REG_P (SUBREG_REG (x))
+	      && v850_reg_ok_for_base_p (SUBREG_REG (x), strict_p)));
+}
+
+/* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
+
+static bool
+v850_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+			   addr_space_t as ATTRIBUTE_UNUSED)
+{
+  gcc_assert (ADDR_SPACE_GENERIC_P (as));
+
+  if (v850_rtx_ok_for_base_p (x, strict_p))
+    return true;
+  if (CONSTANT_ADDRESS_P (x)
+      && (mode == QImode || INTVAL (x) % 2 == 0)
+      && (GET_MODE_SIZE (mode) <= 4 || INTVAL (x) % 4 == 0))
+    return true;
+  if (GET_CODE (x) == LO_SUM
+      && REG_P (XEXP (x, 0))
+      && v850_reg_ok_for_base_p (XEXP (x, 0), strict_p)
+      && CONSTANT_P (XEXP (x, 1))
+      && (!CONST_INT_P (XEXP (x, 1))
+	  || ((mode == QImode || INTVAL (XEXP (x, 1)) % 2 == 0)
+	      && constraint_satisfied_p (XEXP (x, 1), CONSTRAINT_K)))
+      && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode))
+    return true;
+  if (special_symbolref_operand (x, mode)
+      && (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)))
+    return true;
+  if (GET_CODE (x) == PLUS
+      && v850_rtx_ok_for_base_p (XEXP (x, 0), strict_p)
+      && constraint_satisfied_p (XEXP (x,1), CONSTRAINT_K)
+      && ((mode == QImode || INTVAL (XEXP (x, 1)) % 2 == 0)
+	   && CONST_OK_FOR_K (INTVAL (XEXP (x, 1))
+			      + (GET_MODE_NUNITS (mode) * UNITS_PER_WORD))))
+    return true;
+
+  return false;  
+}
+
 static int
 v850_memory_move_cost (machine_mode mode,
 		       reg_class_t reg_class ATTRIBUTE_UNUSED,
@@ -3279,6 +3339,9 @@ v850_gen_movdi (rtx * operands)
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P v850_legitimate_constant_p
+
+#undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P v850_legitimate_address_p
 
 #undef  TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
