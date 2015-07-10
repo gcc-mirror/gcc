@@ -1080,9 +1080,9 @@
       /* The DImode arrived in a pair of integral registers (e.g. %edx:%eax).
 	 Assemble the 64-bit DImode value in an xmm register.  */
       emit_insn (gen_sse2_loadld (operands[0], CONST0_RTX (V4SImode),
-				  gen_rtx_SUBREG (SImode, operands[1], 0)));
+				  gen_lowpart (SImode, operands[1])));
       emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
-				  gen_rtx_SUBREG (SImode, operands[1], 4)));
+				  gen_highpart (SImode, operands[1])));
       emit_insn (gen_vec_interleave_lowv4si (operands[0], operands[0],
 					     operands[2]));
    }
