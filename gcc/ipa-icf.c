@@ -3194,7 +3194,7 @@ sem_item_optimizer::do_congruence_step (congruence_class *cls)
   EXECUTE_IF_SET_IN_BITMAP (usage, 0, i, bi)
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
-      fprintf (dump_file, "  processing congruece step for class: %u, index: %u\n",
+      fprintf (dump_file, "  processing congruence step for class: %u, index: %u\n",
 	       cls->id, i);
 
     do_congruence_step_for_index (cls, i);
