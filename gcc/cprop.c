@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "cselib.h"
 #include "intl.h"
-#include "obstack.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "target.h"

@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rtl-error.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "insn-config.h"
 #include "flags.h"
 #include "alias.h"

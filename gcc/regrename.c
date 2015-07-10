@@ -33,7 +33,6 @@
 #include "output.h"
 #include "recog.h"
 #include "flags.h"
-#include "obstack.h"
 #include "tree-pass.h"
 #include "target.h"
 #include "emit-rtl.h"

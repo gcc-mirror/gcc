@@ -31,7 +31,6 @@
 #include "insn-attr.h"
 #include "recog.h"
 #include "output.h"
-#include "obstack.h"
 #include "target.h"
 #include "emit-rtl.h"
 #include "context.h"

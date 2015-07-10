@@ -46,7 +46,6 @@
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
-#include "obstack.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"
 #include "tm-constrs.h"

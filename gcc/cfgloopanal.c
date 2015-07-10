@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "predict.h"
 #include "rtl.h"
-#include "obstack.h"
 #include "cfgloop.h"
 #include "tree.h"
 #include "flags.h"

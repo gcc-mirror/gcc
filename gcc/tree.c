@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "varasm.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "toplev.h" /* get_random_seed */
 #include "filenames.h"
 #include "output.h"

@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "flags.h"
-#include "obstack.h"
 #include "cfgrtl.h"
 #include "cfgcleanup.h"
 #include "target.h"

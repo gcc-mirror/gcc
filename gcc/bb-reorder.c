@@ -92,7 +92,6 @@
 #include "output.h"
 #include "target.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"

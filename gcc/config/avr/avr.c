@@ -49,7 +49,6 @@
 #include "expr.h"
 #include "c-family/c-common.h"
 #include "diagnostic-core.h"
-#include "obstack.h"
 #include "recog.h"
 #include "optabs.h"
 #include "langhooks.h"

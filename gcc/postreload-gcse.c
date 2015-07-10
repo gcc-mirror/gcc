@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "except.h"
 #include "intl.h"
-#include "obstack.h"
 #include "params.h"
 #include "target.h"
 #include "tree-pass.h"

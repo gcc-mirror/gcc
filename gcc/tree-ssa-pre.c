@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "tree-iterator.h"
 #include "alloc-pool.h"
-#include "obstack.h"
 #include "tree-pass.h"
 #include "langhooks.h"
 #include "cfgloop.h"

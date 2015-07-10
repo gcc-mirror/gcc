@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "df.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "cfgrtl.h"
 #include "cfgloop.h"
 #include "flags.h"

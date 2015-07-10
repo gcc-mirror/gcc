@@ -36,7 +36,6 @@
 #include "recog.h"
 #include "reload.h"
 #include "diagnostic-core.h"
-#include "obstack.h"
 #include "alias.h"
 #include "stor-layout.h"
 #include "varasm.h"

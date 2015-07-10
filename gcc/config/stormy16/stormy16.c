@@ -36,7 +36,6 @@
 #include "flags.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "obstack.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "stringpool.h"

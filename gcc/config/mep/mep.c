@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
-#include "obstack.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"

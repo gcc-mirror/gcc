@@ -37,7 +37,6 @@
 #include "coretypes.h"
 #include "backend.h"
 #include "rtl.h"
-#include "obstack.h"
 #include "cfganal.h"
 #include "diagnostic-core.h"
 #include "alloc-pool.h"

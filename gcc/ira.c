@@ -375,7 +375,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "flags.h"
-#include "obstack.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"

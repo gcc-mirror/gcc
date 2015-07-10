@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "stmt.h"
 #include "expr.h"
-#include "obstack.h"
 #include "except.h"
 #include "insn-codes.h"
 #include "optabs.h"

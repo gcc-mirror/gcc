@@ -111,7 +111,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "valtrack.h"
 #include "cgraph.h"
-#include "obstack.h"
 #include "rtl-iter.h"
 
 #ifndef LOAD_EXTEND_OP
