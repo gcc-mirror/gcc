@@ -1,3 +1,23 @@
+2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66823
+	* tree-if-conv.c (memrefs_read_or_written_unconditionally): Fix
+	inverted predicate.
+
+	2015-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/43341
+	* toplev.c (compile_file): Reset maximum_field_alignment after parsing.
+
+	2015-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66794
+	* gimple-ssa-isolate-paths.c (gimple_ssa_isolate_erroneous_paths):
+	Free post-dominators.
+
 2015-07-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport form mainline

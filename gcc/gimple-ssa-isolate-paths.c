@@ -510,10 +510,10 @@ gimple_ssa_isolate_erroneous_paths (void)
   /* We scramble the CFG and loop structures a bit, clean up
      appropriately.  We really should incrementally update the
      loop structures, in theory it shouldn't be that hard.  */
+  free_dominance_info (CDI_POST_DOMINATORS);
   if (cfg_altered)
     {
       free_dominance_info (CDI_DOMINATORS);
-      free_dominance_info (CDI_POST_DOMINATORS);
       loops_state_set (LOOPS_NEED_FIXUP);
       return TODO_cleanup_cfg | TODO_update_ssa;
     }

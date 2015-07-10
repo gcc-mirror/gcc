@@ -601,6 +601,11 @@ compile_file (void)
 
   if (flag_syntax_only || flag_wpa)
     return;
+ 
+  /* Reset maximum_field_alignment, it can be adjusted by #pragma pack
+     and this shouldn't influence any types built by the middle-end
+     from now on (like gcov_info_type).  */
+  maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
 
   ggc_protect_identifiers = false;
 

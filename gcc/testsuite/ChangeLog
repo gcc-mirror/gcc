@@ -1,3 +1,17 @@
+2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66823
+	* gcc.dg/vect/pr61194.c: Remove -ftree-loop-if-convert-stores
+	which should not be necessary.  XFAIL.
+
+	2015-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66794
+	* gcc.dg/torture/pr66794.c: New testcase.
+
 2015-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65956
