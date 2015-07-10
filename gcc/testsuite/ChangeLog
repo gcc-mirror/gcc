@@ -1,3 +1,8 @@
+2015-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64848
+	* g++.dg/cpp0x/lambda/lambda-ice14.C: New.
+
 2015-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66633
