@@ -45842,7 +45842,17 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	{
 	  rtx destqi = gen_reg_rtx (QImode);
 	  emit_insn (gen_rtx_SET (destqi, x));
-	  x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
+
+	  if (TARGET_ZERO_EXTEND_WITH_AND
+	      && optimize_function_for_speed_p (cfun))
+	    {
+	      x = force_reg (dest_mode, const0_rtx);
+
+	      emit_insn (gen_movstrictqi
+			 (gen_lowpart (QImode, x), destqi));
+	    }
+	  else
+	    x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
 	}
       emit_insn (gen_rtx_SET (dest, x));
     }

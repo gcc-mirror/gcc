@@ -1,3 +1,9 @@
+2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66813
+	* config/i386/i386.c (ix86_md_asm_adjust): Emit movstrictqi
+	sequence for TARGET_ZERO_EXTEND_WITH_AND targets.
+
 2015-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66820
