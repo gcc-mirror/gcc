@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "tm_p.h"
-#include "predict.h"
+#include "cfghooks.h"
 #include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"

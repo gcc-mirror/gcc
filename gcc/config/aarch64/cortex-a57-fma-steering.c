@@ -22,6 +22,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "cfghooks.h"
 #include "rtl.h"
 #include "df.h"
 #include "regs.h"

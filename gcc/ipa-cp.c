@@ -111,6 +111,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "target.h"
 #include "backend.h"
+#include "predict.h"
 #include "hard-reg-set.h"
 #include "cgraph.h"
 #include "alloc-pool.h"

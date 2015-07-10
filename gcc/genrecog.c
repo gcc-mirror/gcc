@@ -4180,6 +4180,7 @@ write_header (void)
 #include \"system.h\"\n\
 #include \"coretypes.h\"\n\
 #include \"backend.h\"\n\
+#include \"predict.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"emit-rtl.h\"\n\

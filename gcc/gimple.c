@@ -1136,20 +1136,6 @@ gimple_build_transaction (gimple_seq body, tree label)
   return p;
 }
 
-/* Build a GIMPLE_PREDICT statement.  PREDICT is one of the predictors from
-   predict.def, OUTCOME is NOT_TAKEN or TAKEN.  */
-
-gimple
-gimple_build_predict (enum br_predictor predictor, enum prediction outcome)
-{
-  gimple p = gimple_alloc (GIMPLE_PREDICT, 0);
-  /* Ensure all the predictors fit into the lower bits of the subcode.  */
-  gcc_assert ((int) END_PREDICTORS <= GF_PREDICT_TAKEN);
-  gimple_predict_set_predictor (p, predictor);
-  gimple_predict_set_outcome (p, outcome);
-  return p;
-}
-
 #if defined ENABLE_GIMPLE_CHECKING
 /* Complain of a gimple type mismatch and die.  */
 

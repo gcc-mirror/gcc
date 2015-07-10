@@ -465,6 +465,7 @@ main (int argc, char **argv)
 	   "#include \"system.h\"\n"
 	   "#include \"coretypes.h\"\n"
 	   "#include \"backend.h\"\n"
+	   "#include \"predict.h\"\n"
 	   "#include \"tree.h\"\n"
 	   "#include \"rtl.h\"\n"
 	   "#include \"alias.h\"\n"

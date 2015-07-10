@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic-core.h" /* for fatal_error */
 #include "backend.h"
+#include "cfghooks.h"
 #include "hard-reg-set.h"
 #include "cfganal.h"
 #include "cfgloop.h"

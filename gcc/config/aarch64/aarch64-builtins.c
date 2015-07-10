@@ -23,7 +23,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "function.h"
-#include "predict.h"
+#include "cfghooks.h"
 #include "basic-block.h"
 #include "cfg.h"
 #include "tree.h"

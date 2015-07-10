@@ -1358,7 +1358,6 @@ gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
 gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree);
 gomp_atomic_store *gimple_build_omp_atomic_store (tree);
 gtransaction *gimple_build_transaction (gimple_seq, tree);
-gimple gimple_build_predict (enum br_predictor, enum prediction);
 extern void gimple_seq_add_stmt (gimple_seq *, gimple);
 extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple);
 void gimple_seq_add_seq (gimple_seq *, gimple_seq);
@@ -5670,50 +5669,6 @@ is_gimple_resx (const_gimple gs)
 {
   return gimple_code (gs) == GIMPLE_RESX;
 }
-
-/* Return the predictor of GIMPLE_PREDICT statement GS.  */
-
-static inline enum br_predictor
-gimple_predict_predictor (gimple gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_PREDICT);
-  return (enum br_predictor) (gs->subcode & ~GF_PREDICT_TAKEN);
-}
-
-
-/* Set the predictor of GIMPLE_PREDICT statement GS to PREDICT.  */
-
-static inline void
-gimple_predict_set_predictor (gimple gs, enum br_predictor predictor)
-{
-  GIMPLE_CHECK (gs, GIMPLE_PREDICT);
-  gs->subcode = (gs->subcode & GF_PREDICT_TAKEN)
-		       | (unsigned) predictor;
-}
-
-
-/* Return the outcome of GIMPLE_PREDICT statement GS.  */
-
-static inline enum prediction
-gimple_predict_outcome (gimple gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_PREDICT);
-  return (gs->subcode & GF_PREDICT_TAKEN) ? TAKEN : NOT_TAKEN;
-}
-
-
-/* Set the outcome of GIMPLE_PREDICT statement GS to OUTCOME.  */
-
-static inline void
-gimple_predict_set_outcome (gimple gs, enum prediction outcome)
-{
-  GIMPLE_CHECK (gs, GIMPLE_PREDICT);
-  if (outcome == TAKEN)
-    gs->subcode |= GF_PREDICT_TAKEN;
-  else
-    gs->subcode &= ~GF_PREDICT_TAKEN;
-}
-
 
 /* Return the type of the main expression computed by STMT.  Return
    void_type_node if the statement computes nothing.  */

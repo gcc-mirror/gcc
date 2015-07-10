@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "cfghooks.h"
 #include "hard-reg-set.h"
 #include "cfgrtl.h"
 #include "cfganal.h"

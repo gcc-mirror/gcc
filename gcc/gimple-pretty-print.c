@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-predict.h"
 #include "hard-reg-set.h"
 #include "ssa.h"
 #include "alias.h"

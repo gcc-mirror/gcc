@@ -89,6 +89,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "cfghooks.h"
 #include "rtl.h"
 #include "alias.h"
 #include "tree.h"
