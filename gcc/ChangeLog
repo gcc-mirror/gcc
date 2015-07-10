@@ -1,3 +1,11 @@
+2015-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66820
+	* gimplify.c (maybe_fold_stmt): Don't fold in ORT_PARALLEL
+	or ORT_TASK contexts.
+	* omp-low.c (lower_omp): Call fold_stmt even if taskreg_nesting_level
+	is non-zero.
+
 2015-07-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* expr.c (expand_cond_expr_using_cmove): Fix typos in comment
