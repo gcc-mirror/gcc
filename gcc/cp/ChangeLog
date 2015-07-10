@@ -1,3 +1,9 @@
+2015-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54521
+	* call.c (convert_like_real): Do not set LOOKUP_ONLYCONVERTING for
+	the second step of copy-initialization.
+
 2015-07-10  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (find_parameter_packs_r): Handle variable templates.
