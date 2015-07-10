@@ -1,5 +1,9 @@
 2015-07-10  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (find_parameter_packs_r): Handle variable templates.
+	(variable_template_specialization_p): New.
+	* cp-tree.h: Declare it.
+
 	* parser.c (cp_parser_template_id): SET_EXPR_LOCATION.
 
 2015-07-10  Eric Botcazou  <ebotcazou@adacore.com>
