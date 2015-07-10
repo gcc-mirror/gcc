@@ -7897,9 +7897,9 @@ expand_expr_real (tree exp, rtx target, machine_mode tmode,
 }
 
 /* Try to expand the conditional expression which is represented by
-   TREEOP0 ? TREEOP1 : TREEOP2 using conditonal moves.  If succeseds
-   return the rtl reg which repsents the result.  Otherwise return
-   NULL_RTL.  */
+   TREEOP0 ? TREEOP1 : TREEOP2 using conditonal moves.  If it succeeds
+   return the rtl reg which represents the result.  Otherwise return
+   NULL_RTX.  */
 
 static rtx
 expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
