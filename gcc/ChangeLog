@@ -1,3 +1,10 @@
+2015-07-10  Mantas Mikaitis  <Mantas.Mikaitis@arm.com>
+
+	* config/arm/arm.h (TARGET_NEON_FP): Remove conditional definition,
+	define to zero if !TARGET_NEON.
+	(TARGET_ARM_FP): Add !TARGET_SOFT_FLOAT into the conditional
+	definition.
+
 2015-07-09  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/66523
