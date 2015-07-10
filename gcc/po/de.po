@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 5.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2015-05-01 09:57+0100\n"
+"PO-Revision-Date: 2015-07-10 12:41+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.7.6\n"
+"X-Generator: Poedit 1.8.2\n"
 
 #: cfgrtl.c:2698
 msgid "flow control insn inside a basic block"
@@ -850,7 +850,7 @@ msgstr ""
 #: gcov.c:484
 #, c-format
 msgid "  -m, --demangled-names           Output demangled function names\n"
-msgstr ""
+msgstr "  -m, --demangled-names           Entmangelte Funktionsnamen ausgeben\n"
 
 #: gcov.c:485
 #, c-format
@@ -1511,7 +1511,7 @@ msgstr "Fehlzuordnung von Funktionsattributen"
 
 #: cif-code.def:129
 msgid "caller function contains cilk spawn"
-msgstr ""
+msgstr "Aufrufende Funktion enthält eine Cilk-Spawn"
 
 #: cif-code.def:133
 msgid "unreachable"
@@ -1778,7 +1778,7 @@ msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisbl
 
 #: params.def:378
 msgid "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely"
-msgstr ""
+msgstr "Der minimale Anteil von Profilingdurchläufen für einen Basisblock, um nicht als »unwahrscheinlich« gewertet zu werden"
 
 #: params.def:383
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment"
@@ -1793,9 +1793,10 @@ msgid "The maximum number of loop iterations we predict statically"
 msgstr "Die Höchstzahl der Schleifendurchläufe, die statisch vorhergesagt werden"
 
 #: params.def:417
-#, c-format
+#, fuzzy, c-format
+#| msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
 msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
-msgstr ""
+msgstr "Wahrscheinlichkeit in Prozent für das eingebaute »expect«. Vorgabewert ist 90 % Wahrscheinlichkeit."
 
 #: params.def:421
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
@@ -1995,7 +1996,7 @@ msgstr "Untere Schranke für einen für Stack-Smashing-Protection betrachteten P
 
 #: params.def:702
 msgid "The minimum size of variables taking part in stack slot sharing when not optimizing"
-msgstr ""
+msgstr "Mindestgröße von Variablen, die sich Stapelspeicher teilen, wenn nicht optimiert wird"
 
 #: params.def:721
 msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps"
@@ -6153,7 +6154,7 @@ msgstr "Warnen, wenn alle Konstruktoren und Destruktoren privat sind"
 
 #: c-family/c.opt:372
 msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage"
-msgstr ""
+msgstr "Bei Verwendung von __TIME__, __DATE__ oder __TIMESTAMP__ warnen"
 
 #: c-family/c.opt:376
 msgid "Warn when a declaration is found after a statement"
@@ -6263,7 +6264,7 @@ msgstr "Warnen, wenn Typqualifizierer ignoriert werden."
 
 #: c-family/c.opt:480
 msgid "Warn when there is a conversion between pointers that have incompatible types"
-msgstr ""
+msgstr "Bei Zeiger-Umwandlungen zwischen inkompatiblen Typen warnen"
 
 #: c-family/c.opt:484
 msgid "Warn about variables which are initialized to themselves"
@@ -6291,7 +6292,7 @@ msgstr "Bei vererbten Konstruktoren in C++11 warnen, wenn die Basisklasse variad
 
 #: c-family/c.opt:511
 msgid "Warn about incompatible integer to pointer and pointer to integer conversions"
-msgstr ""
+msgstr "Bei inkompatiblen Umwandlungen zwischen Zahlen und Zeigern (in beide Richtungen) warnen"
 
 #: c-family/c.opt:515
 msgid "Warn when there is a cast to a pointer from an integer of a different size"
@@ -6319,7 +6320,7 @@ msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »wahr«
 
 #: c-family/c.opt:539
 msgid "Warn when logical not is used on the left hand side operand of a comparison"
-msgstr ""
+msgstr "Warnen, wenn ein logisches Nicht im linken Operanden eines Vergleichs benutzt wird"
 
 #: c-family/c.opt:543
 msgid "Do not warn about using \"long long\" when -pedantic"
@@ -6331,7 +6332,7 @@ msgstr "Vor verdächtigen Deklarationen von »main« warnen"
 
 #: c-family/c.opt:555
 msgid "Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not"
-msgstr ""
+msgstr "Bei verdächtigen Aufrufen von memset warnen, wenn das dritte Argument eine Null ist, das zweite jedoch nicht"
 
 #: c-family/c.opt:559
 msgid "Warn about possibly missing braces around initializers"
@@ -6353,11 +6354,11 @@ msgstr "Bei fehlenden Feldern in struct-Initialisierungen warnen"
 
 #: c-family/c.opt:575
 msgid "Warn about suspicious length parameters to certain string functions if the argument uses sizeof"
-msgstr ""
+msgstr "Bei verdächtigen Aufrufen bestimmter Zeichenkettenfunktionen warnen, wenn im Argument sizeof vorkommt"
 
 #: c-family/c.opt:579
 msgid "Warn when sizeof is applied on a parameter declared as an array"
-msgstr ""
+msgstr "Warnen, wenn sizeof auf einen Funktionsparameter angewendet wird, der als Feld deklariert ist"
 
 #: c-family/c.opt:583
 msgid "Warn about functions which might be candidates for format attributes"
@@ -7825,11 +7826,11 @@ msgstr ""
 
 #: config/msp430/msp430.opt:19
 msgid "Select large model - 20-bit addresses/pointers"
-msgstr ""
+msgstr "Großes Speichermodell wählen – 20-Bit-Adressen/-Zeiger"
 
 #: config/msp430/msp430.opt:23
 msgid "Select small model - 16-bit addresses/pointers (default)"
-msgstr ""
+msgstr "Kleines Speichermodell wählen – 16-Bit-Adressen/-Zeiger (Voreinstellung)"
 
 #: config/msp430/msp430.opt:27
 msgid "Optimize opcode sizes at link time"
@@ -7837,7 +7838,7 @@ msgstr ""
 
 #: config/msp430/msp430.opt:34
 msgid "Use a minimum runtime (no static initializers or ctors) for memory-constrained devices."
-msgstr ""
+msgstr "Minimale Laufzeitumgebung (keine statischen Initialisierer oder Konstruktoren) für speicherarme Geräte benutzen"
 
 #: config/msp430/msp430.opt:41
 #, fuzzy
@@ -9309,7 +9310,7 @@ msgstr "-mmcu=MCU\tDie Ziel-MCU auswählen"
 
 #: config/avr/avr.opt:31
 msgid "Set the number of 64 KiB flash segments"
-msgstr ""
+msgstr "Anzahl der 64-KiB-Flash-Segmente festlegen"
 
 #: config/avr/avr.opt:35
 msgid "Indicate presence of a processor erratum"
@@ -9367,7 +9368,7 @@ msgstr ""
 
 #: config/avr/avr.opt:100
 msgid "Do not link against the device-specific library libdev.a"
-msgstr ""
+msgstr "Nicht gegen die Geräte-spezifische Bibliothek libdev.a binden"
 
 #: config/m32r/m32r.opt:34
 msgid "Compile for the m32rx"
@@ -9467,7 +9468,7 @@ msgstr "Hardware-Gleitkomma einschalten"
 
 #: config/s390/s390.opt:101
 msgid "Takes two non-negative integer numbers separated by a comma."
-msgstr ""
+msgstr "Erwartet zwei nichtnegative Ganzzahlen, durch ein Komma getrennt."
 
 #: config/s390/s390.opt:119
 #, fuzzy
@@ -10219,7 +10220,7 @@ msgstr "TOC wird im Prolog für indirekte Sprünge gespeichert, oder die Sicheru
 
 #: config/rs6000/rs6000.opt:546
 msgid "Allow 128-bit integers in VSX registers"
-msgstr ""
+msgstr "128-Bit-Ganzzahlen in VSX-Registern zulassen"
 
 #: config/rs6000/rs6000.opt:550
 msgid "Fuse certain integer operations together for better performance on power8"
@@ -10491,7 +10492,7 @@ msgstr ""
 
 #: config/nios2/elf.opt:34
 msgid "Name of the startfile"
-msgstr ""
+msgstr "Name der Startdatei"
 
 #: config/nios2/elf.opt:38
 msgid "Link with HAL BSP"
@@ -10499,7 +10500,7 @@ msgstr ""
 
 #: config/nios2/nios2.opt:35
 msgid "Enable DIV, DIVU"
-msgstr ""
+msgstr "DIV und DIVU aktivieren"
 
 #: config/nios2/nios2.opt:39
 #, fuzzy
@@ -10509,7 +10510,7 @@ msgstr "Clip-Befehle einschalten"
 
 #: config/nios2/nios2.opt:43
 msgid "Enable MULX instructions, assume fast shifter"
-msgstr ""
+msgstr "MULX-Befehle aktivieren, schnelle Bitverschiebung annehmen"
 
 #: config/nios2/nios2.opt:47
 #, fuzzy
@@ -10545,11 +10546,11 @@ msgstr ""
 
 #: config/nios2/nios2.opt:86
 msgid "Equivalent to -mgpopt=local."
-msgstr ""
+msgstr "Äquivalent zu »-mgpopt=local«."
 
 #: config/nios2/nios2.opt:90
 msgid "Equivalent to -mgpopt=none."
-msgstr ""
+msgstr "Äquivalent zu »-mgpopt=none«."
 
 #: config/nios2/nios2.opt:94 config/c6x/c6x.opt:30 config/mep/mep.opt:82
 #: config/mips/mips.opt:134
@@ -17589,10 +17590,9 @@ msgid "threadprivate variable %qE used in target region"
 msgstr "threadprivate Variable %qE in unverknüpfter Task verwendet"
 
 #: gimplify.c:5734
-#, fuzzy, gcc-internal-format
-#| msgid "enclosing task"
+#, gcc-internal-format
 msgid "enclosing target region"
-msgstr "umgebende Task"
+msgstr "umgebende Zielregion"
 
 #: gimplify.c:5746
 #, gcc-internal-format
@@ -29531,10 +29531,9 @@ msgid "%<[*]%> not in a declaration"
 msgstr "%<[*]%> nicht in einer Deklaration"
 
 #: c/c-decl.c:5959
-#, fuzzy, gcc-internal-format
-#| msgid "array type has incomplete element type"
+#, gcc-internal-format
 msgid "array type has incomplete element type %qT"
-msgstr "Feldtyp hat unvollständigen Elementtypen"
+msgstr "Feldtyp hat unvollständigen Elementtypen %qT"
 
 #: c/c-decl.c:6054
 #, gcc-internal-format
@@ -29568,10 +29567,9 @@ msgstr "Typkennzeichner an Funktions-Rückgabewert ignoriert"
 
 #: c/c-decl.c:6127 c/c-decl.c:6325 c/c-decl.c:6378 c/c-decl.c:6453
 #: c/c-decl.c:6568 c/c-parser.c:2462
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C forbids qualified function types"
+#, gcc-internal-format
 msgid "%<_Atomic%>-qualified function type"
-msgstr "ISO-C verbietet qualifizierte Funktionstypen"
+msgstr "%<_Atomic%>-qualifizierter Funktionstyp"
 
 #: c/c-decl.c:6133 c/c-decl.c:6331 c/c-decl.c:6458 c/c-decl.c:6573
 #, gcc-internal-format
@@ -29614,16 +29612,14 @@ msgid "%qs specified for structure field"
 msgstr "%qs für Strukturfeld angegeben"
 
 #: c/c-decl.c:6253
-#, fuzzy, gcc-internal-format
-#| msgid "bit-field %qs has invalid type"
+#, gcc-internal-format
 msgid "bit-field %qE has atomic type"
-msgstr "Bitfeld %qs hat ungültigen Typen"
+msgstr "Bitfeld %qE hat atomaren Typen"
 
 #: c/c-decl.c:6255
-#, fuzzy, gcc-internal-format
-#| msgid "bit-field %qs has invalid type"
+#, gcc-internal-format
 msgid "bit-field has atomic type"
-msgstr "Bitfeld %qs hat ungültigen Typen"
+msgstr "Bitfeld hat atomaren Typen"
 
 #: c/c-decl.c:6264
 #, gcc-internal-format
