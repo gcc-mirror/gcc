@@ -11,10 +11,11 @@ extern void abort (void);
 #define EFLAGS_TYPE unsigned int
 #endif
 
-static EFLAGS_TYPE
+__attribute__((noinline, noclone))
+EFLAGS_TYPE
 readeflags_test (unsigned int a, unsigned int b)
 {
-  unsigned x = (a == b);
+  volatile char x = (a == b);
   return __readeflags ();
 }
 
