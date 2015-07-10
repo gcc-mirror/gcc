@@ -1,3 +1,12 @@
+2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (movdi_to_sse): Use gen_lowpart
+	and gen_higpart instead of gen_rtx_SUBREG.
+	* config/i386/i386.md
+	(floatdi<X87MODEF:mode>2_i387_with_xmm splitter): Ditto.
+	(read-modify peephole2): Use gen_lowpart instead of
+	gen_rtx_SUBREG for operand 5.
+
 2015-07-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/tilepro/gen-mul-tables.cc (main): Change include list for
@@ -15,17 +24,17 @@
 
 2015-07-10  Jiong Wang  <jiong.wang@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Mark mem
-	as READONLY and NOTRAP for PIC symbol.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Mark mem as READONLY and NOTRAP for PIC symbol.
 
 2015-07-10  Andrew MacLeod  <amacleod@redhat.com>
 
-	* gimple-predict.h: New file. 
+	* gimple-predict.h: New file.
 	(gimple_predict_predictor, gimple_predict_set_predictor,
 	gimple_predict_outcome, gimple_predict_set_outcome,
 	gimple_build_predict): Relocate here.
 	* gimple.h (gimple_predict_predictor, gimple_predict_set_predictor,
-	gimple_predict_outcome, gimple_predict_set_outcome): Move to 
+	gimple_predict_outcome, gimple_predict_set_outcome): Move to
 	gimple-predict.h.
 	* gimple.c (gimple_build_predict): Move to gimple-predict.h
 	* basic-block.h: Don't include cfghooks.h.
@@ -253,8 +262,7 @@
 
 2015-07-10  Richard Biener  <rguenther@suse.de>
 
-	* genmatch.c (dt_node::gen_kids_1): Fix indenting of
-	case labels.
+	* genmatch.c (dt_node::gen_kids_1): Fix indenting of case labels.
 	(decision_tree::gen_gimple): Likewise.
 	(decision_tree::gen_generic): Likewise.
 
@@ -419,7 +427,7 @@
 	* config/i386/predicates.md (nonimmediate_gr_operand): New predicate.
 	* config/i386/i386.md (not peephole2): Use nonimmediate_gr_operand.
 	(varous peephole2s): Use {GENERAL,SSE,MMX}_REGNO_P instead of
-	{GENERAL_SSE_MMX}_REG_P where appropriate.
+	{GENERAL,SSE,MMX}_REG_P where appropriate.
 
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
