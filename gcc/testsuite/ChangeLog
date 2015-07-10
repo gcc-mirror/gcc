@@ -1,3 +1,8 @@
+2015-07-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/attr_thumb.c: Skip if Thumb is not supported.
+	* gcc.target/arm/flip-thumb.c: Likewise.
+
 2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66813
