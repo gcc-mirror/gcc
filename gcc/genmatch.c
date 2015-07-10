@@ -2275,7 +2275,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 
       fprintf_indent (f, indent, "switch (TREE_CODE (%s))\n", kid_opname);
       fprintf_indent (f, indent, "  {\n");
-      indent += 4;
+      indent += 2;
     }
 
   if (exprs_len || fns_len)
@@ -2305,15 +2305,15 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 	      expr *e = as_a <expr *> (gimple_exprs[i]->op);
 	      id_base *op = e->operation;
 	      if (*op == CONVERT_EXPR || *op == NOP_EXPR)
-		fprintf_indent (f, indent, "  CASE_CONVERT:\n");
+		fprintf_indent (f, indent, "CASE_CONVERT:\n");
 	      else
-		fprintf_indent (f, indent, "  case %s:\n", op->id);
-	      fprintf_indent (f, indent, "    {\n");
-	      gimple_exprs[i]->gen (f, indent + 6, true);
-	      fprintf_indent (f, indent, "      break;\n");
-	      fprintf_indent (f, indent, "    }\n");
+		fprintf_indent (f, indent, "case %s:\n", op->id);
+	      fprintf_indent (f, indent, "  {\n");
+	      gimple_exprs[i]->gen (f, indent + 4, true);
+	      fprintf_indent (f, indent, "    break;\n");
+	      fprintf_indent (f, indent, "  }\n");
 	    }
-	  fprintf_indent (f, indent, "  default:;\n");
+	  fprintf_indent (f, indent, "default:;\n");
 	  indent -= 4;
 	  fprintf_indent (f, indent, "}\n");
 	}
@@ -2386,7 +2386,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 		      "      switch (DECL_FUNCTION_CODE (fndecl))\n");
       fprintf_indent (f, indent,
 		      "        {\n");
-      indent += 10;
+      indent += 8;
 
       for (unsigned j = 0; j < generic_fns.length (); ++j)
 	{
@@ -2400,7 +2400,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 	  fprintf_indent (f, indent, "  }\n");
 	}
 
-      indent -= 10;
+      indent -= 8;
       fprintf_indent (f, indent, "          default:;\n");
       fprintf_indent (f, indent, "        }\n");
       fprintf_indent (f, indent, "    break;\n");
@@ -2849,18 +2849,18 @@ decision_tree::gen_gimple (FILE *f)
 
 	  if (*e->operation == CONVERT_EXPR
 	      || *e->operation == NOP_EXPR)
-	    fprintf (f, "      CASE_CONVERT:\n");
+	    fprintf (f, "    CASE_CONVERT:\n");
 	  else
-	    fprintf (f, "      case %s%s:\n",
+	    fprintf (f, "    case %s%s:\n",
 		     is_a <fn_id *> (e->operation) ? "-" : "",
 		     e->operation->id);
-	  fprintf (f,   "        {\n");
-	  dop->gen_kids (f, 10, true);
-	  fprintf (f,   "          break;\n");
-	  fprintf (f,   "        }\n");
+	  fprintf (f,   "      {\n");
+	  dop->gen_kids (f, 8, true);
+	  fprintf (f,   "        break;\n");
+	  fprintf (f,   "      }\n");
 	}
-      fprintf (f,       "      default:;\n"
-	                "    }\n");
+      fprintf (f,       "    default:;\n"
+	                "  }\n");
 
       fprintf (f, "  return false;\n");
       fprintf (f, "}\n");
@@ -2899,15 +2899,15 @@ decision_tree::gen_generic (FILE *f)
 
 	  operator_id *op_id = static_cast <operator_id *> (e->operation);
 	  if (op_id->code == NOP_EXPR || op_id->code == CONVERT_EXPR)
-	    fprintf (f, "      CASE_CONVERT:\n");
+	    fprintf (f, "    CASE_CONVERT:\n");
 	  else
-	    fprintf (f, "      case %s:\n", e->operation->id);
-	  fprintf (f,   "        {\n");
-	  dop->gen_kids (f, 10, false);
-	  fprintf (f,   "          break;\n"
-		        "        }\n");
+	    fprintf (f, "    case %s:\n", e->operation->id);
+	  fprintf (f,   "      {\n");
+	  dop->gen_kids (f, 8, false);
+	  fprintf (f,   "        break;\n"
+		        "      }\n");
 	}
-      fprintf (f, "      default:;\n"
+      fprintf (f, "    default:;\n"
 	          "    }\n");
 
       fprintf (f, "  return NULL_TREE;\n");
