@@ -657,6 +657,12 @@ begin_template_parm_list (void)
   ++processing_template_decl;
   ++processing_template_parmlist;
   note_template_header (0);
+
+  /* Add a dummy parameter level while we process the parameter list.  */
+  current_template_parms
+    = tree_cons (size_int (processing_template_decl),
+		 make_tree_vec (0),
+		 current_template_parms);
 }
 
 /* This routine is called when a specialization is declared.  If it is
@@ -3888,6 +3894,9 @@ end_template_parm_list (tree parms)
   tree parm, next;
   tree saved_parmlist = make_tree_vec (list_length (parms));
 
+  /* Pop the dummy parameter level and add the real one.  */
+  current_template_parms = TREE_CHAIN (current_template_parms);
+
   current_template_parms
     = tree_cons (size_int (processing_template_decl),
 		 saved_parmlist, current_template_parms);
@@ -4023,21 +4032,6 @@ template_parms_to_args (tree parms)
 	args = a;
     }
 
-    if (length > 1 && TREE_VEC_ELT (args, 0) == NULL_TREE)
-      /* This can happen for template parms of a template template
-	 parameter, e.g:
-
-	 template<template<class T, class U> class TT> struct S;
-
-	 Consider the level of the parms of TT; T and U both have
-	 level 2; TT has no template parm of level 1. So in this case
-	 the first element of full_template_args is NULL_TREE. If we
-	 leave it like this TMPL_ARGS_DEPTH on args returns 1 instead
-	 of 2. This will make tsubst wrongly consider that T and U
-	 have level 1. Instead, let's create a dummy vector as the
-	 first element of full_template_args so that TMPL_ARGS_DEPTH
-	 returns the correct depth for args.  */
-      TREE_VEC_ELT (args, 0) = make_tree_vec (1);
   return args;
 }
 
@@ -12073,7 +12067,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	template_parm_level_and_index (t, &level, &idx); 
 
 	levels = TMPL_ARGS_DEPTH (args);
-	if (level <= levels)
+	if (level <= levels
+	    && TREE_VEC_LENGTH (TMPL_ARGS_LEVEL (args, level)) > 0)
 	  {
 	    arg = TMPL_ARG (args, level, idx);
 
@@ -22440,11 +22435,6 @@ splice_late_return_type (tree type, tree late_return_type)
     return type;
   argvec = make_tree_vec (1);
   TREE_VEC_ELT (argvec, 0) = late_return_type;
-  if (processing_template_parmlist)
-    /* For a late-specified return type in a template type-parameter, we
-       need to add a dummy argument level for its parmlist.  */
-    argvec = add_to_template_args
-      (make_tree_vec (processing_template_parmlist), argvec);
   if (current_template_parms)
     argvec = add_to_template_args (current_template_args (), argvec);
   return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);

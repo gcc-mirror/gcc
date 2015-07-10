@@ -1,3 +1,19 @@
+2015-07-10  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/30044
+	* pt.c (begin_template_parm_list): Add a dummy parameter level
+	to current_template_parms.
+	(end_template_parm_list): Remove the dummy parameter level
+	before adding the real one.
+	(tsubst): Don't attempt to substitute for template parameters
+	corresponding to a dummy argument level.
+	(template_parms_to_args): Remove obsolete hack for
+	giving template template arguments the proper level.
+	(splite_late_return_type): Remove obsolete hack for giving
+	template template arguments the proper level.
+	* error.c (dump_template_decl): Don't print dummy template
+	levels.
+
 2015-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54521
