@@ -874,7 +874,7 @@ if_convertible_gimple_assign_stmt_p (gimple stmt,
       return true;
     }
 
-  if (gimple_assign_rhs_could_trap_p (stmt))
+  if (ifcvt_could_trap_p (stmt, refs))
     {
       if (ifcvt_can_use_mask_load_store (stmt))
 	{
@@ -1297,18 +1297,15 @@ if_convertible_loop_p_1 (struct loop *loop,
 	  }
     }
 
-  if (flag_tree_loop_if_convert_stores)
-    {
-      data_reference_p dr;
+  data_reference_p dr;
 
-      for (i = 0; refs->iterate (i, &dr); i++)
-	{
-	  dr->aux = XNEW (struct ifc_dr);
-	  DR_WRITTEN_AT_LEAST_ONCE (dr) = -1;
-	  DR_RW_UNCONDITIONALLY (dr) = -1;
-	}
-      predicate_bbs (loop);
+  for (i = 0; refs->iterate (i, &dr); i++)
+    {
+      dr->aux = XNEW (struct ifc_dr);
+      DR_WRITTEN_AT_LEAST_ONCE (dr) = -1;
+      DR_RW_UNCONDITIONALLY (dr) = -1;
     }
+  predicate_bbs (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -1323,9 +1320,8 @@ if_convertible_loop_p_1 (struct loop *loop,
 	    return false;
     }
 
-  if (flag_tree_loop_if_convert_stores)
-    for (i = 0; i < loop->num_nodes; i++)
-      free_bb_predicate (ifc_bbs[i]);
+  for (i = 0; i < loop->num_nodes; i++)
+    free_bb_predicate (ifc_bbs[i]);
 
   /* Checking PHIs needs to be done after stmts, as the fact whether there
      are any masked loads or stores affects the tests.  */
@@ -1399,14 +1395,10 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
   res = if_convertible_loop_p_1 (loop, &loop_nest, &refs, &ddrs,
 				 any_mask_load_store);
 
-  if (flag_tree_loop_if_convert_stores)
-    {
-      data_reference_p dr;
-      unsigned int i;
-
-      for (i = 0; refs.iterate (i, &dr); i++)
-	free (dr->aux);
-    }
+  data_reference_p dr;
+  unsigned int i;
+  for (i = 0; refs.iterate (i, &dr); i++)
+    free (dr->aux);
 
   free_data_refs (refs);
   free_dependence_relations (ddrs);
