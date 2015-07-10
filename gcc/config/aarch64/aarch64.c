@@ -890,6 +890,8 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       {
 	machine_mode mode = GET_MODE (dest);
 	rtx gp_rtx = pic_offset_table_rtx;
+	rtx insn;
+	rtx mem;
 
 	/* NOTE: pic_offset_table_rtx can be NULL_RTX, because we can reach
 	   here before rtl expand.  Tree IVOPT will generate rtl pattern to
@@ -933,16 +935,27 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	if (mode == ptr_mode)
 	  {
 	    if (mode == DImode)
-	      emit_insn (gen_ldr_got_small_28k_di (dest, gp_rtx, imm));
+	      insn = gen_ldr_got_small_28k_di (dest, gp_rtx, imm);
 	    else
-	      emit_insn (gen_ldr_got_small_28k_si (dest, gp_rtx, imm));
+	      insn = gen_ldr_got_small_28k_si (dest, gp_rtx, imm);
+
+	    mem = XVECEXP (SET_SRC (insn), 0, 0);
 	  }
 	else
 	  {
 	    gcc_assert (mode == Pmode);
-	    emit_insn (gen_ldr_got_small_28k_sidi (dest, gp_rtx, imm));
+
+	    insn = gen_ldr_got_small_28k_sidi (dest, gp_rtx, imm);
+	    mem = XVECEXP (XEXP (SET_SRC (insn), 0), 0, 0);
 	  }
 
+	/* The operand is expected to be MEM.  Whenever the related insn
+	   pattern changed, above code which calculate mem should be
+	   updated.  */
+	gcc_assert (GET_CODE (mem) == MEM);
+	MEM_READONLY_P (mem) = 1;
+	MEM_NOTRAP_P (mem) = 1;
+	emit_insn (insn);
 	return;
       }
 
@@ -955,6 +968,9 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	   DImode if dest is dereferenced to access the memeory.
 	   This is why we have to handle three different ldr_got_small
 	   patterns here (two patterns for ILP32).  */
+
+	rtx insn;
+	rtx mem;
 	rtx tmp_reg = dest;
 	machine_mode mode = GET_MODE (dest);
 
@@ -965,16 +981,24 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	if (mode == ptr_mode)
 	  {
 	    if (mode == DImode)
-	      emit_insn (gen_ldr_got_small_di (dest, tmp_reg, imm));
+	      insn = gen_ldr_got_small_di (dest, tmp_reg, imm);
 	    else
-	      emit_insn (gen_ldr_got_small_si (dest, tmp_reg, imm));
+	      insn = gen_ldr_got_small_si (dest, tmp_reg, imm);
+
+	    mem = XVECEXP (SET_SRC (insn), 0, 0);
 	  }
 	else
 	  {
 	    gcc_assert (mode == Pmode);
-	    emit_insn (gen_ldr_got_small_sidi (dest, tmp_reg, imm));
+
+	    insn = gen_ldr_got_small_sidi (dest, tmp_reg, imm);
+	    mem = XVECEXP (XEXP (SET_SRC (insn), 0), 0, 0);
 	  }
 
+	gcc_assert (GET_CODE (mem) == MEM);
+	MEM_READONLY_P (mem) = 1;
+	MEM_NOTRAP_P (mem) = 1;
+	emit_insn (insn);
 	return;
       }
 

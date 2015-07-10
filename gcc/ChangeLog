@@ -1,3 +1,8 @@
+2015-07-10  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Mark mem
+	as READONLY and NOTRAP for PIC symbol.
+
 2015-07-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-predict.h: New file. 
