@@ -1,3 +1,8 @@
+2015-07-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* expr.c (expand_cond_expr_using_cmove): Fix typos in comment
+	above function.
+
 2015-07-10  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (try_transform_to_exit_first_loop_alt): If not found,
