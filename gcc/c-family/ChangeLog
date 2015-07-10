@@ -1,3 +1,9 @@
+2015-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (cpp_operation): Revert latest change.
+	* c-ada-spec.c (print_ada_declaration): Likewise.  Skip implicit
+	constructors and destructors.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-common.h: Adjust includes for flags.h changes.

@@ -2887,7 +2887,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_method = TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE;
       tree decl_name = DECL_NAME (t);
       bool is_abstract = false;
-      bool is_constexpr = false;
       bool is_constructor = false;
       bool is_destructor = false;
       bool is_copy_constructor = false;
@@ -2899,7 +2898,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       if (cpp_check)
 	{
 	  is_abstract = cpp_check (t, IS_ABSTRACT);
-	  is_constexpr = cpp_check (t, IS_CONSTEXPR);
 	  is_constructor = cpp_check (t, IS_CONSTRUCTOR);
 	  is_destructor = cpp_check (t, IS_DESTRUCTOR);
 	  is_copy_constructor = cpp_check (t, IS_COPY_CONSTRUCTOR);
@@ -2913,8 +2911,8 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
       if (is_constructor || is_destructor)
 	{
-	  /* Skip constexpr default constructors.  */
-	  if (is_constexpr)
+	  /* ??? Skip implicit constructors/destructors for now.  */
+	  if (DECL_ARTIFICIAL (t))
 	    return 0;
 
 	  /* Only consider constructors/destructors for complete objects.  */
@@ -3050,9 +3048,12 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  if (num_fields == 1)
 	    is_interface = 1;
 
-	  /* Also check that there are only virtual methods.  */
+	  /* Also check that there are only pure virtual methods.  Since the
+	     class is empty, we can skip implicit constructors/destructors.  */
 	  for (tmp = TYPE_METHODS (TREE_TYPE (t)); tmp; tmp = TREE_CHAIN (tmp))
 	    {
+	      if (DECL_ARTIFICIAL (tmp))
+		continue;
 	      if (cpp_check (tmp, IS_ABSTRACT))
 		is_abstract_record = 1;
 	      else
