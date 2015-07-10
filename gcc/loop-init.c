@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "alias.h"
 #include "regs.h"
-#include "obstack.h"
 #include "cfgcleanup.h"
 #include "cfgloop.h"
 #include "tree-pass.h"

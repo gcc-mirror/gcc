@@ -26,7 +26,6 @@
 #include "gimple.h"
 #include "rtl.h"
 #include "ssa.h"
-#include "obstack.h"
 #include "flags.h"
 #include "alias.h"
 #include "fold-const.h"

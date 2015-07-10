@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "alias.h"
 #include "tree.h"
-#include "obstack.h"
 #include "profile.h"
 #include "cfgrtl.h"
 #include "cfgloop.h"

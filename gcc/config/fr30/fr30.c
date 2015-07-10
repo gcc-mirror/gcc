@@ -46,7 +46,6 @@
 #include "emit-rtl.h"
 #include "stmt.h"
 #include "expr.h"
-#include "obstack.h"
 #include "except.h"
 #include "cfgrtl.h"
 #include "cfganal.h"

@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "optabs.h"
 #include "reload.h"
-#include "obstack.h"
 #include "except.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"

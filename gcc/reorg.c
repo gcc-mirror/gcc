@@ -124,7 +124,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "conditions.h"
 #include "regs.h"
 #include "recog.h"
-#include "obstack.h"
 #include "insn-attr.h"
 #include "resource.h"
 #include "except.h"

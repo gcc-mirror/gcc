@@ -31,7 +31,6 @@
 #include "recog.h"
 #include "flags.h"
 #include "diagnostic-core.h"
-#include "obstack.h"
 #include "tree-pass.h"
 #include "rtl-iter.h"
 #include "emit-rtl.h"

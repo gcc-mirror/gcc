@@ -33,7 +33,6 @@
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
-#include "obstack.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "stringpool.h"

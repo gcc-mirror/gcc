@@ -37,7 +37,6 @@
 #include "recog.h"
 #include "reload.h"
 #include "diagnostic-core.h"
-#include "obstack.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"

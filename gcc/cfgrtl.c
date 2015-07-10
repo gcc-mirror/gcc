@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "rtl-error.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "insn-attr.h"
 #include "insn-config.h"
 #include "expmed.h"

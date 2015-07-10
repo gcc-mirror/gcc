@@ -34,7 +34,6 @@
 #include "stor-layout.h"
 #include "calls.h"
 #include "varasm.h"
-#include "obstack.h"
 #include "regs.h"
 #include "insn-config.h"
 #include "conditions.h"

@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
 #include "debug.h"
-#include "obstack.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"

@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "rtl.h"
 #include "df.h"
-#include "obstack.h"
 #include "cfgloop.h"
 #include "flags.h"
 #include "alias.h"
