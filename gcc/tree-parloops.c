@@ -1828,8 +1828,18 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
 	alt_bound = op1;
     }
 
+  /* If not found, insert nit + 1.  */
   if (alt_bound == NULL_TREE)
-    return false;
+    {
+      alt_bound = fold_build2 (PLUS_EXPR, nit_type, nit,
+			       build_int_cst_type (nit_type, 1));
+
+      gimple_stmt_iterator gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
+
+      alt_bound
+	= force_gimple_operand_gsi (&gsi, alt_bound, true, NULL_TREE, false,
+				    GSI_CONTINUE_LINKING);
+    }
 
   transform_to_exit_first_loop_alt (loop, reduction_list, alt_bound);
   return true;
