@@ -1,3 +1,10 @@
+2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_node::gen_kids_1): Fix indenting of
+	case labels.
+	(decision_tree::gen_gimple): Likewise.
+	(decision_tree::gen_generic): Likewise.
+
 2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66813
