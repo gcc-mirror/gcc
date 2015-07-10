@@ -13839,6 +13839,8 @@ cp_parser_template_id (cp_parser *parser,
   else if (variable_template_p (templ))
     {
       template_id = lookup_template_variable (templ, arguments);
+      if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
+	SET_EXPR_LOCATION (template_id, next_token->location);
     }
   else
     {
@@ -13849,6 +13851,8 @@ cp_parser_template_id (cp_parser *parser,
 		   || BASELINK_P (templ)));
 
       template_id = lookup_template_function (templ, arguments);
+      if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
+	SET_EXPR_LOCATION (template_id, next_token->location);
     }
 
   /* If parsing tentatively, replace the sequence of tokens that makes

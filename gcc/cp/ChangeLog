@@ -1,3 +1,7 @@
+2015-07-10  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_template_id): SET_EXPR_LOCATION.
+
 2015-07-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl2.c (cpp_check): Revert latest change.
