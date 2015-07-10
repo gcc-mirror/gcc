@@ -1,3 +1,7 @@
+2015-07-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto.c: Include cfghooks.h rather than predict.h.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-lang.c: Adjust includes of target.h, alloc-pool.h and

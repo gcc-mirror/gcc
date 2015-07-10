@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "function.h"
 #include "bitmap.h"
-#include "predict.h"
+#include "cfghooks.h"
 #include "basic-block.h"
 #include "tree.h"
 #include "gimple.h"

@@ -27,7 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "alias.h"
 #include "tm.h"
 #include "function.h"
-#include "predict.h"
+#include "cfghooks.h"
 #include "basic-block.h"
 #include "tree.h"
 #include "gimple.h"

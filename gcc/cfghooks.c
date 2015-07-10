@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "dumpfile.h"
 #include "backend.h"
+#include "cfghooks.h"
 #include "alias.h"
 #include "tree.h"
 #include "rtl.h"

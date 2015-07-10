@@ -22,6 +22,7 @@
 #include "coretypes.h"
 #include "alias.h"
 #include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
 #include "rtl.h"

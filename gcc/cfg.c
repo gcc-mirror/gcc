@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "alias.h"
 #include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
 #include "hard-reg-set.h"
 #include "df.h"

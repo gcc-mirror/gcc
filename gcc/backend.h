@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "bitmap.h"
 #include "sbitmap.h"
-#include "predict.h"
 #include "basic-block.h"
 #include "cfg.h"
 

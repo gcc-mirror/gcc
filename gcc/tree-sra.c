@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "alloc-pool.h"
 #include "backend.h"
+#include "predict.h"
 #include "tree.h"
 #include "gimple.h"
 #include "rtl.h"

@@ -1,3 +1,7 @@
+2015-07-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* java-gimplify.c: Include cfghooks.h rather than predict.h.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* boehm.c: Adjust includes.

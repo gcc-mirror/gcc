@@ -227,6 +227,7 @@ output_prologue (void)
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
   printf ("#include \"backend.h\"\n");
+  printf ("#include \"predict.h\"\n");
   printf ("#include \"tree.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"flags.h\"\n");

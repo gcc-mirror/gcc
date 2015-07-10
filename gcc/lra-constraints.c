@@ -110,6 +110,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "predict.h"
 #include "tree.h"
 #include "rtl.h"
 #include "df.h"

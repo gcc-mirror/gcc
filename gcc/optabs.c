@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "predict.h"
 #include "diagnostic-core.h"
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
