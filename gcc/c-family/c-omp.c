@@ -1048,6 +1048,8 @@ c_omp_declare_simd_clauses_to_numbers (tree parms, tree clauses)
       for (i = 0; i < len; i++)
 	OMP_CLAUSE_CHAIN (clvec[i]) = (i < len - 1) ? clvec[i + 1] : NULL_TREE;
     }
+  else
+    clauses = NULL_TREE;
   clvec.release ();
   return clauses;
 }

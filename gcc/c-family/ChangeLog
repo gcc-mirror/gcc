@@ -1,3 +1,11 @@
+2015-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_declare_simd_clauses_to_numbers): If all clauses
+	are to be removed, return NULL rather than original clauses list.
+
 2015-07-01  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.c (c_common_post_options): Highest ABI version is 9.

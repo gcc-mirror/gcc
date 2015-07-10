@@ -1,3 +1,13 @@
+2015-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/vect/vect.exp: Run also simd* tests.
+	* gcc.dg/vect/tree-vect.h (abort, exit): For C++ use extern "C".
+	(check_vect): Fix up get_cpuid call for C++.
+	* g++.dg/vect/simd-clone-1.cc: New test.
+
 2015-07-10  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
