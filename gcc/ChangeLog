@@ -1,3 +1,10 @@
+2015-07-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/tilepro/gen-mul-tables.cc (main): Change include list for
+	generated files.
+	* config/tilepro/mul-tables.c: Regenerate.
+	* config/tilegx/mul-tables.c: Regenerate.
+
 2015-07-10  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (distribute_bit_expr): Remove.
