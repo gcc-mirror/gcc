@@ -5629,12 +5629,16 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       if (!decl
 	  || (TARGET_DLLIMPORT_DECL_ATTRIBUTES && DECL_DLLIMPORT_P (decl)))
 	{
-	  if (ix86_function_regparm (type, NULL) >= 3)
-	    {
-	      /* ??? Need to count the actual number of registers to be used,
-		 not the possible number of registers.  Fix later.  */
-	      return false;
-	    }
+	  /* Check if regparm >= 3 since arg_reg_available is set to
+	     false if regparm == 0.  If regparm is 1 or 2, there is
+	     always a call-clobbered register available.
+
+	     ??? The symbol indirect call doesn't need a call-clobbered
+	     register.  But we don't know if this is a symbol indirect
+	     call or not here.  */
+	  if (ix86_function_regparm (type, NULL) >= 3
+	      && !cfun->machine->arg_reg_available)
+	    return false;
 	}
     }
 
@@ -6610,6 +6614,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
       if (stdarg_p (fntype))
 	{
 	  cum->nregs = 0;
+	  /* Since in 32-bit, variable arguments are always passed on
+	     stack, there is scratch register available for indirect
+	     sibcall.  */
+	  cfun->machine->arg_reg_available = true;
 	  cum->sse_nregs = 0;
 	  cum->mmx_nregs = 0;
 	  cum->warn_avx512f = false;
@@ -6642,6 +6650,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	 and DFmode arguments.  Warn for mismatching ABI.  */
       cum->float_in_sse = ix86_function_sseregparm (fntype, fndecl, true);
     }
+
+  cfun->machine->arg_reg_available = (cum->nregs > 0);
 }
 
 /* Return the "natural" mode for TYPE.  In most cases, this is just TYPE_MODE.
@@ -7584,6 +7594,7 @@ pass_in_reg:
       if (cum->nregs <= 0)
 	{
 	  cum->nregs = 0;
+	  cfun->machine->arg_reg_available = false;
 	  cum->regno = 0;
 	}
       break;
