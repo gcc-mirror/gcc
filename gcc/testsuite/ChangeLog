@@ -1,3 +1,9 @@
+2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66823
+	* gcc.dg/vect/pr61194.c: Remove -ftree-loop-if-convert-stores
+	which should not be necessary.  XFAIL.
+
 2015-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64848
