@@ -4,6 +4,7 @@
 	* gcc.target/i386/readeflags-1.c (readeflags_test): Declare with
 	__attribute__((noinline, noclone)).  Change "x" to "volatile char"
 	type to prevent possible flag-clobbering zero-extensions.
+	* gcc.target/i386/pr66703.c: New test.
 
 2015-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
