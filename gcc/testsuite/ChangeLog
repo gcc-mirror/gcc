@@ -1,3 +1,8 @@
+2015-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60842
+	* g++.dg/cpp0x/nsdmi-template15.C: New.
+
 2015-07-10  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/got_mem_hoist_1.c: New test.
