@@ -118,7 +118,6 @@ static enum tree_code compcode_to_comparison (enum comparison_code);
 static int operand_equal_for_comparison_p (tree, tree, tree);
 static int twoval_comparison_p (tree, tree *, tree *, int *);
 static tree eval_subst (location_t, tree, tree, tree, tree, tree);
-static tree distribute_bit_expr (location_t, enum tree_code, tree, tree, tree);
 static tree make_bit_field_ref (location_t, tree, tree,
 				HOST_WIDE_INT, HOST_WIDE_INT, int);
 static tree optimize_bit_field_compare (location_t, enum tree_code,
@@ -3548,62 +3547,6 @@ invert_truthvalue_loc (location_t loc, tree arg)
 			       ? BIT_NOT_EXPR
 			       : TRUTH_NOT_EXPR,
 			  type, arg);
-}
-
-/* Given a bit-wise operation CODE applied to ARG0 and ARG1, see if both
-   operands are another bit-wise operation with a common input.  If so,
-   distribute the bit operations to save an operation and possibly two if
-   constants are involved.  For example, convert
-	(A | B) & (A | C) into A | (B & C)
-   Further simplification will occur if B and C are constants.
-
-   If this optimization cannot be done, 0 will be returned.  */
-
-static tree
-distribute_bit_expr (location_t loc, enum tree_code code, tree type,
-		     tree arg0, tree arg1)
-{
-  tree common;
-  tree left, right;
-
-  if (TREE_CODE (arg0) != TREE_CODE (arg1)
-      || TREE_CODE (arg0) == code
-      || (TREE_CODE (arg0) != BIT_AND_EXPR
-	  && TREE_CODE (arg0) != BIT_IOR_EXPR))
-    return 0;
-
-  if (operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0), 0))
-    {
-      common = TREE_OPERAND (arg0, 0);
-      left = TREE_OPERAND (arg0, 1);
-      right = TREE_OPERAND (arg1, 1);
-    }
-  else if (operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 1), 0))
-    {
-      common = TREE_OPERAND (arg0, 0);
-      left = TREE_OPERAND (arg0, 1);
-      right = TREE_OPERAND (arg1, 0);
-    }
-  else if (operand_equal_p (TREE_OPERAND (arg0, 1), TREE_OPERAND (arg1, 0), 0))
-    {
-      common = TREE_OPERAND (arg0, 1);
-      left = TREE_OPERAND (arg0, 0);
-      right = TREE_OPERAND (arg1, 1);
-    }
-  else if (operand_equal_p (TREE_OPERAND (arg0, 1), TREE_OPERAND (arg1, 1), 0))
-    {
-      common = TREE_OPERAND (arg0, 1);
-      left = TREE_OPERAND (arg0, 0);
-      right = TREE_OPERAND (arg1, 0);
-    }
-  else
-    return 0;
-
-  common = fold_convert_loc (loc, type, common);
-  left = fold_convert_loc (loc, type, left);
-  right = fold_convert_loc (loc, type, right);
-  return fold_build2_loc (loc, TREE_CODE (arg0), type, common,
-		      fold_build2_loc (loc, code, type, left, right));
 }
 
 /* Knowing that ARG0 and ARG1 are both RDIV_EXPRs, simplify a binary operation
@@ -9575,21 +9518,6 @@ fold_binary_loc (location_t loc,
 
       if (! FLOAT_TYPE_P (type))
 	{
-	  /* If we are adding two BIT_AND_EXPR's, both of which are and'ing
-	     with a constant, and the two constants have no bits in common,
-	     we should treat this as a BIT_IOR_EXPR since this may produce more
-	     simplifications.  */
-	  if (TREE_CODE (arg0) == BIT_AND_EXPR
-	      && TREE_CODE (arg1) == BIT_AND_EXPR
-	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
-	      && wi::bit_and (TREE_OPERAND (arg0, 1),
-			      TREE_OPERAND (arg1, 1)) == 0)
-	    {
-	      code = BIT_IOR_EXPR;
-	      goto bit_ior;
-	    }
-
 	  /* Reassociate (plus (plus (mult) (foo)) (mult)) as
 	     (plus (plus (mult) (mult)) (foo)) so that we can
 	     take advantage of the factoring cases below.  */
@@ -10423,7 +10351,6 @@ fold_binary_loc (location_t loc,
       goto associate;
 
     case BIT_IOR_EXPR:
-    bit_ior:
       /* Canonicalize (X & C1) | C2.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
 	  && TREE_CODE (arg1) == INTEGER_CST
@@ -10493,10 +10420,6 @@ fold_binary_loc (location_t loc,
 		  && operand_equal_p (n1, a0, 0)))
 	    return fold_build2_loc (loc, BIT_XOR_EXPR, type, l0, n1);
 	}
-
-      t1 = distribute_bit_expr (loc, code, type, arg0, arg1);
-      if (t1 != NULL_TREE)
-	return t1;
 
       /* See if this can be simplified into a rotate first.  If that
 	 is unsuccessful continue in the association code.  */
@@ -10760,9 +10683,6 @@ fold_binary_loc (location_t loc,
 	    }
 	}
 
-      t1 = distribute_bit_expr (loc, code, type, arg0, arg1);
-      if (t1 != NULL_TREE)
-	return t1;
       /* Simplify ((int)c & 0377) into (int)c, if c is unsigned char.  */
       if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg0) == NOP_EXPR
 	  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
@@ -11110,32 +11030,6 @@ fold_binary_loc (location_t loc,
 	return NULL_TREE;
 
       prec = element_precision (type);
-
-      /* Turn (a OP c1) OP c2 into a OP (c1+c2).  */
-      if (TREE_CODE (op0) == code && tree_fits_uhwi_p (arg1)
-	  && tree_to_uhwi (arg1) < prec
-	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
-	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) < prec)
-	{
-	  unsigned int low = (tree_to_uhwi (TREE_OPERAND (arg0, 1))
-			      + tree_to_uhwi (arg1));
-
-	  /* Deal with a OP (c1 + c2) being undefined but (a OP c1) OP c2
-	     being well defined.  */
-	  if (low >= prec)
-	    {
-	      if (code == LROTATE_EXPR || code == RROTATE_EXPR)
-	        low = low % prec;
-	      else if (TYPE_UNSIGNED (type) || code == LSHIFT_EXPR)
-		return omit_one_operand_loc (loc, type, build_zero_cst (type),
-					 TREE_OPERAND (arg0, 0));
-	      else
-		low = prec - 1;
-	    }
-
-	  return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0),
-				  build_int_cst (TREE_TYPE (arg1), low));
-	}
 
       /* Transform (x >> c) << c into x & (-1<<c), or transform (x << c) >> c
          into x & ((unsigned)-1 >> c) for unsigned types.  */

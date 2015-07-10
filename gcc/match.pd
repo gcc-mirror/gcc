@@ -419,17 +419,18 @@ along with GCC; see the file COPYING3.  If not see
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (bit_not (rop (convert @0) (convert @1))))))
 
-/* If we are XORing two BIT_AND_EXPR's, both of which are and'ing
+/* If we are XORing or adding two BIT_AND_EXPR's, both of which are and'ing
    with a constant, and the two constants have no bits in common,
    we should treat this as a BIT_IOR_EXPR since this may produce more
    simplifications.  */
-(simplify
- (bit_xor (convert1? (bit_and@4 @0 INTEGER_CST@1))
-          (convert2? (bit_and@5 @2 INTEGER_CST@3)))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
-      && tree_nop_conversion_p (type, TREE_TYPE (@2))
-      && wi::bit_and (@1, @3) == 0)
-  (bit_ior (convert @4) (convert @5))))
+(for op (bit_xor plus)
+ (simplify
+  (op (convert1? (bit_and@4 @0 INTEGER_CST@1))
+      (convert2? (bit_and@5 @2 INTEGER_CST@3)))
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+       && tree_nop_conversion_p (type, TREE_TYPE (@2))
+       && wi::bit_and (@1, @3) == 0)
+   (bit_ior (convert @4) (convert @5)))))
 
 /* (X | Y) ^ X -> Y & ~ X*/
 (simplify
@@ -454,6 +455,19 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
  (bit_xor:c (bit_and:c @0 @1) @1)
  (bit_and (bit_not @0) @1))
+
+/* Given a bit-wise operation CODE applied to ARG0 and ARG1, see if both
+   operands are another bit-wise operation with a common input.  If so,
+   distribute the bit operations to save an operation and possibly two if
+   constants are involved.  For example, convert
+     (A | B) & (A | C) into A | (B & C)
+   Further simplification will occur if B and C are constants.  */
+(for op (bit_and bit_ior)
+     rop (bit_ior bit_and)
+ (simplify
+  (op (convert? (rop:c @0 @1)) (convert? (rop @0 @2)))
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+   (rop (convert @0) (op (convert @1) (convert @2))))))
 
 
 (simplify
@@ -879,6 +893,27 @@ along with GCC; see the file COPYING3.  If not see
  (rrotate @0 { fold_binary (MINUS_EXPR, TREE_TYPE (@1),
 			    build_int_cst (TREE_TYPE (@1),
 					   element_precision (type)), @1); }))
+
+/* Turn (a OP c1) OP c2 into a OP (c1+c2).  */
+(for op (lrotate rrotate rshift lshift)
+ (simplify
+  (op (op @0 INTEGER_CST@1) INTEGER_CST@2)
+  (with { unsigned int prec = element_precision (type); }
+   (if (wi::ge_p (@1, 0, TYPE_SIGN (TREE_TYPE (@1)))
+        && wi::lt_p (@1, prec, TYPE_SIGN (TREE_TYPE (@1)))
+        && wi::ge_p (@2, 0, TYPE_SIGN (TREE_TYPE (@2)))
+	&& wi::lt_p (@2, prec, TYPE_SIGN (TREE_TYPE (@2))))
+    (with { unsigned int low = wi::add (@1, @2).to_uhwi (); }
+     /* Deal with a OP (c1 + c2) being undefined but (a OP c1) OP c2
+        being well defined.  */
+     (if (low >= prec)
+      (if (op == LROTATE_EXPR || op == RROTATE_EXPR)
+       (op @0 { build_int_cst (TREE_TYPE (@1), low % prec); }))
+      (if (TYPE_UNSIGNED (type) || code == LSHIFT_EXPR)
+       { build_zero_cst (type); })
+      (op @0 { build_int_cst (TREE_TYPE (@1), prec - 1); }))
+     (op @0 { build_int_cst (TREE_TYPE (@1), low); }))))))
+
 
 /* ((1 << A) & 1) != 0 -> A == 0
    ((1 << A) & 1) == 0 -> A != 0 */
