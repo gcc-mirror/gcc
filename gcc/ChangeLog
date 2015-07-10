@@ -1,3 +1,10 @@
+2015-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-if-conv.c (if_convertible_gimple_assign_stmt_p):
+	Use ifcvt_could_trap_p also when not flag_tree_loop_if_convert_stores.
+	(if_convertible_loop_p_1): For this always compute bb predicates.
+	(if_convertible_loop_p): And free them.
+
 2015-07-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* ipa-icf.c (sem_item_optimizer::do_congruence_step): Fix typo
