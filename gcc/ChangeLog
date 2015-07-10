@@ -1,3 +1,8 @@
+2015-07-10  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (try_transform_to_exit_first_loop_alt): If not found,
+	insert nit + 1 bound.
+
 2015-07-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-if-conv.c (if_convertible_gimple_assign_stmt_p):
