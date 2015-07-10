@@ -1,3 +1,16 @@
+2015-07-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66819
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Allow
+	indirect sibcall with register arguments if register available
+	for argument passing.
+	(init_cumulative_args): Set cfun->machine->arg_reg_available
+	to (cum->nregs > 0) or to true if function has a variable
+	argument list.
+	(function_arg_advance_32): Set cfun->machine->arg_reg_available
+	to false if cum->nregs <= 0.
+	* config/i386/i386.h (machine_function): Add arg_reg_available.
+
 2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (movdi_to_sse): Use gen_lowpart
