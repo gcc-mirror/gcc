@@ -392,7 +392,7 @@ typedef struct GTY(()) cp_parser {
 
   /* The scope into which an implicit template parameter list has been
      introduced or an existing template parameter list is being extended with
-     implicit template paramaters.  In most cases this is the sk_function_parms
+     implicit template parameters.  In most cases this is the sk_function_parms
      scope containing the use of a generic type.  In the case of an out-of-line
      member definition using a generic type, it is the sk_class scope.  */
   cp_binding_level* implicit_template_scope;
