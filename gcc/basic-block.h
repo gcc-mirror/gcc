@@ -632,4 +632,21 @@ has_abnormal_or_eh_outgoing_edge_p (basic_block bb)
 
   return false;
 }
+
+/* Return true when one of the predecessor edges of BB is marked with
+   EDGE_ABNORMAL_CALL or EDGE_EH.  */
+
+static inline bool
+has_abnormal_call_or_eh_pred_edge_p (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
+      return true;
+
+  return false;
+}
+
 #endif /* GCC_BASIC_BLOCK_H */
