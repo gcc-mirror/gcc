@@ -508,22 +508,6 @@ static lra_insn_recog_data_t curr_id;
 /* The insn static data.  */
 static struct lra_static_insn_data *curr_static_id;
 
-/* Return true when one of the predecessor edges of BB is marked with
-   EDGE_ABNORMAL_CALL or EDGE_EH.  */
-static bool
-bb_has_abnormal_call_pred (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-	return true;
-    }
-  return false;
-}
-
 /* Vec containing execution frequencies of program points.  */
 static vec<int> point_freq_vec;
 
@@ -965,7 +949,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       /* No need to record conflicts for call clobbered regs if we
 	 have nonlocal labels around, as we don't ever try to
 	 allocate such regs in this case.  */
-      if (!cfun->has_nonlocal_label && bb_has_abnormal_call_pred (bb))
+      if (!cfun->has_nonlocal_label
+	  && has_abnormal_call_or_eh_pred_edge_p (bb))
 	for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
 	  if (call_used_regs[px]
 #ifdef REAL_PIC_OFFSET_TABLE_REGNUM

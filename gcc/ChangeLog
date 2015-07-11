@@ -1,3 +1,14 @@
+2015-07-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/66353
+	* basic-block.h	(has_abnormal_call_or_eh_pred_edge_p): New function.
+	* ira-lives.c (bb_has_abnormal_call_pred): Remove function.
+	(process_bb_node_lives): Call has_abnormal_call_or_eh_pred_edge_p
+	rather than bb_has_abnormal_call_pred.
+	* lra-lives.c (bb_has_abnormal_call_pred): Remove function.
+	(process_bb_lives): Call has_abnormal_call_or_eh_pred_edge_p
+	rather than bb_has_abnormal_call_pred.
+
 2015-07-10  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/v850/v850.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
