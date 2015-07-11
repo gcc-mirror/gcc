@@ -1,3 +1,8 @@
+2015-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58734
+	* g++.dg/cpp0x/variadic-ttp2.C: New.
+
 2015-07-10  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/30044
