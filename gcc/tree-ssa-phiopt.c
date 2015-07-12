@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gphi *, tree, tree);
+static bool factor_out_conditional_conversion (edge, edge, gphi *, tree, tree);
 static int value_replacement (basic_block, basic_block,
 			      edge, edge, gimple, tree, tree);
 static bool minmax_replacement (basic_block, basic_block,
@@ -323,6 +324,19 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	     node.  */
 	  gcc_assert (arg0 != NULL && arg1 != NULL);
 
+	  if (factor_out_conditional_conversion (e1, e2, phi, arg0, arg1))
+	    {
+	      /* factor_out_conditional_conversion may create a new PHI in
+		 BB2 and eliminate an existing PHI in BB2.  Recompute values
+		 that may be affected by that change.  */
+	      phis = phi_nodes (bb2);
+	      phi = single_non_singleton_phi_for_edges (phis, e1, e2);
+	      gcc_assert (phi);
+	      arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
+	      arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
+	      gcc_assert (arg0 != NULL && arg1 != NULL);
+	    }
+
 	  /* Do the replacement of conditional if it can be done.  */
 	  if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
@@ -396,6 +410,134 @@ replace_phi_edge_with_variable (basic_block cond_block,
 	      "COND_EXPR in block %d and PHI in block %d converted to straightline code.\n",
 	      cond_block->index,
 	      bb->index);
+}
+
+/* PR66726: Factor conversion out of COND_EXPR.  If the arguments of the PHI
+   stmt are CONVERT_STMT, factor out the conversion and perform the conversion
+   to the result of PHI stmt.  */
+
+static bool
+factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
+				   tree arg0, tree arg1)
+{
+  gimple arg0_def_stmt = NULL, arg1_def_stmt = NULL, new_stmt;
+  tree new_arg0 = NULL_TREE, new_arg1 = NULL_TREE;
+  tree temp, result;
+  gphi *newphi;
+  gimple_stmt_iterator gsi, gsi_for_def;
+  source_location locus = gimple_location (phi);
+  enum tree_code convert_code;
+
+  /* Handle only PHI statements with two arguments.  TODO: If all
+     other arguments to PHI are INTEGER_CST or if their defining
+     statement have the same unary operation, we can handle more
+     than two arguments too.  */
+  if (gimple_phi_num_args (phi) != 2)
+    return false;
+
+  /* First canonicalize to simplify tests.  */
+  if (TREE_CODE (arg0) != SSA_NAME)
+    {
+      std::swap (arg0, arg1);
+      std::swap (e0, e1);
+    }
+
+  if (TREE_CODE (arg0) != SSA_NAME
+      || (TREE_CODE (arg1) != SSA_NAME
+	  && TREE_CODE (arg1) != INTEGER_CST))
+    return false;
+
+  /* Check if arg0 is an SSA_NAME and the stmt which defines arg0 is
+     a conversion.  */
+  arg0_def_stmt = SSA_NAME_DEF_STMT (arg0);
+  if (!is_gimple_assign (arg0_def_stmt)
+      || !gimple_assign_cast_p (arg0_def_stmt))
+    return false;
+
+  /* Use the RHS as new_arg0.  */
+  convert_code = gimple_assign_rhs_code (arg0_def_stmt);
+  new_arg0 = gimple_assign_rhs1 (arg0_def_stmt);
+  if (convert_code == VIEW_CONVERT_EXPR)
+    new_arg0 = TREE_OPERAND (new_arg0, 0);
+
+  if (TREE_CODE (arg1) == SSA_NAME)
+    {
+      /* Check if arg1 is an SSA_NAME and the stmt which defines arg1
+	 is a conversion.  */
+      arg1_def_stmt = SSA_NAME_DEF_STMT (arg1);
+      if (!is_gimple_assign (arg1_def_stmt)
+	  || gimple_assign_rhs_code (arg1_def_stmt) != convert_code)
+	return false;
+
+      /* Use the RHS as new_arg1.  */
+      new_arg1 = gimple_assign_rhs1 (arg1_def_stmt);
+      if (convert_code == VIEW_CONVERT_EXPR)
+	new_arg1 = TREE_OPERAND (new_arg1, 0);
+    }
+  else
+    {
+      /* If arg1 is an INTEGER_CST, fold it to new type.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
+	  && int_fits_type_p (arg1, TREE_TYPE (new_arg0)))
+	{
+	  if (gimple_assign_cast_p (arg0_def_stmt))
+	    new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
+	  else
+	    return false;
+	}
+      else
+	return false;
+    }
+
+  /*  If arg0/arg1 have > 1 use, then this transformation actually increases
+      the number of expressions evaluated at runtime.  */
+  if (!has_single_use (arg0)
+      || (arg1_def_stmt && !has_single_use (arg1)))
+    return false;
+
+  /* If types of new_arg0 and new_arg1 are different bailout.  */
+  if (!types_compatible_p (TREE_TYPE (new_arg0), TREE_TYPE (new_arg1)))
+    return false;
+
+  /* Create a new PHI stmt.  */
+  result = PHI_RESULT (phi);
+  temp = make_ssa_name (TREE_TYPE (new_arg0), NULL);
+  newphi = create_phi_node (temp, gimple_bb (phi));
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "PHI ");
+      print_generic_expr (dump_file, gimple_phi_result (phi), 0);
+      fprintf (dump_file,
+	       " changed to factor conversion out from COND_EXPR.\n");
+      fprintf (dump_file, "New stmt with CAST that defines ");
+      print_generic_expr (dump_file, result, 0);
+      fprintf (dump_file, ".\n");
+    }
+
+  /* Remove the old cast(s) that has single use.  */
+  gsi_for_def = gsi_for_stmt (arg0_def_stmt);
+  gsi_remove (&gsi_for_def, true);
+  if (arg1_def_stmt)
+    {
+      gsi_for_def = gsi_for_stmt (arg1_def_stmt);
+      gsi_remove (&gsi_for_def, true);
+    }
+
+  add_phi_arg (newphi, new_arg0, e0, locus);
+  add_phi_arg (newphi, new_arg1, e1, locus);
+
+  /* Create the conversion stmt and insert it.  */
+  if (convert_code == VIEW_CONVERT_EXPR)
+    temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
+  new_stmt = gimple_build_assign (result,  convert_code, temp);
+  gsi = gsi_after_labels (gimple_bb (phi));
+  gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+
+  /* Remove he original PHI stmt.  */
+  gsi = gsi_for_stmt (phi);
+  gsi_remove (&gsi, true);
+  return true;
 }
 
 /*  The function conditional_replacement does the main work of doing the
@@ -2129,6 +2271,26 @@ gate_hoist_loads (void)
 
    This pass also performs a fifth transformation of a slightly different
    flavor.
+
+   Factor conversion in COND_EXPR
+   ------------------------------
+
+   This transformation factors the conversion out of COND_EXPR with
+   factor_out_conditional_conversion.
+
+   For example:
+   if (a <= CST) goto <bb 3>; else goto <bb 4>;
+   <bb 3>:
+   tmp = (int) a;
+   <bb 4>:
+   tmp = PHI <tmp, CST>
+
+   Into:
+   if (a <= CST) goto <bb 3>; else goto <bb 4>;
+   <bb 3>:
+   <bb 4>:
+   a = PHI <a, CST>
+   tmp = (int) a;
 
    Adjacent Load Hoisting
    ----------------------
