@@ -1,3 +1,11 @@
+2015-07-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Jeff Law  <law@redhat.com>
+
+	PR middle-end/66726
+	* g++.dg/tree-ssa/pr66726.c: New test.
+	* gcc.dg/tree-ssa/pr66726-2.c: New test.
+	* gcc.dg/tree-ssa/pr66726.c: New test.
+
 2015-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58734

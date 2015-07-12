@@ -1,5 +1,11 @@
 2015-07-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR middle-end/66726
+	* tree-ssa-phiopt.c(factor_out_conditional_conversion): New function.
+	tree_ssa_phiopt_worker): Call it.
+
+2015-07-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* cse.c (cse_insn): Calculate src_eqv for ZERO_EXTRACT.
 	* emit-rtl.c (set_for_reg_notes): Allow ZERO_EXTRACT to set
 	REG_EQUAL note.
