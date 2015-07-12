@@ -1,3 +1,9 @@
+2015-07-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* cse.c (cse_insn): Calculate src_eqv for ZERO_EXTRACT.
+	* emit-rtl.c (set_for_reg_notes): Allow ZERO_EXTRACT to set
+	REG_EQUAL note.
+
 2015-07-11  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/66353
