@@ -1,3 +1,9 @@
+2015-07-13  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/65186
+	* pt.c (invalid_nontype_parm_type_p): Accept a bound template
+	template parm type under C++11 and later.
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* call.c: Fix double word typos.

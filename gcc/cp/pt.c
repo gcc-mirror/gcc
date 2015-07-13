@@ -20996,6 +20996,11 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return 0;
   else if (TREE_CODE (type) == NULLPTR_TYPE)
     return 0;
+  /* A bound template template parm could later be instantiated to have a valid
+     nontype parm type via an alias template.  */
+  else if (cxx_dialect >= cxx11
+	   && TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    return 0;
 
   if (complain & tf_error)
     {
