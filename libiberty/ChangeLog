@@ -1,3 +1,16 @@
+2015-07-13  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* cp-demangle.c (d_dump): Fix syntax error.
+	(d_identifier): Adjust type of len to match d_source_name.
+	(d_expression_1): Fix out-of-bounds access.  Check code variable for
+	NULL before dereferencing it.
+	(d_find_pack): Do not recurse for FIXED_TYPE, DEFAULT_ARG and NUMBER.
+	(d_print_comp_inner): Add NULL pointer check.
+	* cp-demangle.h (d_peek_next_char): Define as inline function when
+	CHECK_DEMANGLER is defined.
+	(d_advance): Likewise.
+	* testsuite/demangle-expected: Add new testcases.
+
 2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* getruntime.c (RUSAGE_SELF): Define if not already defined.
