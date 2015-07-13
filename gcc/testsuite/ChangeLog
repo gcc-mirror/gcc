@@ -1,3 +1,8 @@
+2015-07-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/64589
+	* gfortran.dg/pr64589.f90: New test.
+
 2015-07-13  Renlin Li  <renlin.li@arm.com>
 
 	PR rtl/66556
