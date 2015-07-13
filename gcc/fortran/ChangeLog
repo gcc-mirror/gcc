@@ -1,3 +1,9 @@
+2015-07-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/64589
+	* class.c (find_intrinsic_vtab): Put/Search vtabs for intrinsic
+	types in the top-level namespace.
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-stmt.c: Fix double word typos.

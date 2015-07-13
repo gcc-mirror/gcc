@@ -2511,10 +2511,8 @@ find_intrinsic_vtab (gfc_typespec *ts)
 
       sprintf (name, "__vtab_%s", tname);
 
-      /* Look for the vtab symbol in various namespaces.  */
-      gfc_find_symbol (name, gfc_current_ns, 0, &vtab);
-      if (vtab == NULL)
-	gfc_find_symbol (name, ns, 0, &vtab);
+      /* Look for the vtab symbol in the top-level namespace only.  */
+      gfc_find_symbol (name, ns, 0, &vtab);
 
       if (vtab == NULL)
 	{
