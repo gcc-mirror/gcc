@@ -269,7 +269,7 @@ struct va_heap
 /* Allocator for heap memory.  Ensure there are at least RESERVE free
    slots in V.  If EXACT is true, grow exactly, else grow
    exponentially.  As a special case, if the vector had not been
-   allocated and and RESERVE is 0, no vector will be created.  */
+   allocated and RESERVE is 0, no vector will be created.  */
 
 template<typename T>
 inline void
@@ -344,7 +344,7 @@ va_gc::release (vec<T, A, vl_embed> *&v)
 /* Allocator for GC memory.  Ensure there are at least RESERVE free
    slots in V.  If EXACT is true, grow exactly, else grow
    exponentially.  As a special case, if the vector had not been
-   allocated and and RESERVE is 0, no vector will be created.  */
+   allocated and RESERVE is 0, no vector will be created.  */
 
 template<typename T, typename A>
 void

@@ -163,7 +163,7 @@ along with GCC; see the file COPYING3.  If not see
    There is no need to mention some_type directly, as the hash table will
    obtain it using some_type_hasher::value_type.
 
-   You can then used any of the functions in hash_table's public interface.
+   You can then use any of the functions in hash_table's public interface.
    See hash_table for details.  The interface is very similar to libiberty's
    htab_t.
 

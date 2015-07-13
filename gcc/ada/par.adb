@@ -967,7 +967,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  to either a WITH keyword starting an aspect specification, or an
       --  instance of what shpould be a terminator token. In the former case,
       --  the aspect specifications are scanned out including the terminator
-      --  token if it it is a semicolon, and the Has_Aspect_Specifications
+      --  token if it is a semicolon, and the Has_Aspect_Specifications
       --  flag is set in the given declaration node. A list of aspects
       --  is built and stored for this declaration node using a call to
       --  Set_Aspect_Specifications. If no WITH keyword is present, then this

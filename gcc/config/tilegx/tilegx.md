@@ -904,7 +904,7 @@
 ;; Addresses
 ;;
 
-;; The next three patterns are used to to materialize a position
+;; The next three patterns are used to materialize a position
 ;; independent address by adding the difference of two labels to a base
 ;; label in the text segment, assuming that the difference fits in 32
 ;; signed bits.
@@ -964,7 +964,7 @@
   "%1 = . + 8\n\tlnk\t%0"
   [(set_attr "type" "Y1")])
 
-;; The next three patterns are used to to materialize a position
+;; The next three patterns are used to materialize a position
 ;; independent address by adding the difference of two labels to a
 ;; base label in the text segment, assuming that the difference fits
 ;; in 32 signed bits.
@@ -997,7 +997,7 @@
   "flag_pic"
   "add<x>\t%0, %r1, %r2")
 
-;; The next three patterns are used to to materialize a position
+;; The next three patterns are used to materialize a position
 ;; independent 64-bit address by adding the difference of two labels to
 ;; a base label in the text segment, without any limitation on the size
 ;; of the difference.

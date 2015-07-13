@@ -1471,7 +1471,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	      tmp = gfc_class_len_get (target_expr);
 	      /* Get the component-ref for the temp structure's _len comp.  */
 	      charlen = gfc_class_len_get (se.expr);
-	      /* Add the assign to the beginning of the the block...  */
+	      /* Add the assign to the beginning of the block...  */
 	      gfc_add_modify (&se.pre, charlen,
 			      fold_convert (TREE_TYPE (charlen), tmp));
 	      /* and the oposite way at the end of the block, to hand changes

@@ -1136,7 +1136,7 @@ gimple_call_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
 					strict_overflow_p);
 }
 
-/* Return true if STMT is know to to compute a non-negative value.
+/* Return true if STMT is know to compute a non-negative value.
    If the return value is based on the assumption that signed overflow is
    undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.*/
@@ -3437,7 +3437,7 @@ extract_range_from_binary_expr (value_range_t *vr,
 
 /* Extract range information from a unary operation CODE based on
    the range of its operand *VR0 with type OP0_TYPE with resulting type TYPE.
-   The The resulting range is stored in *VR.  */
+   The resulting range is stored in *VR.  */
 
 static void
 extract_range_from_unary_expr_1 (value_range_t *vr,
@@ -8903,7 +8903,7 @@ vrp_visit_phi_node (gphi *phi)
 	  && (cmp_min != 0 || cmp_max != 0))
 	goto varying;
 
-      /* If the new minimum is larger than than the previous one
+      /* If the new minimum is larger than the previous one
 	 retain the old value.  If the new minimum value is smaller
 	 than the previous one and not -INF go all the way to -INF + 1.
 	 In the first case, to avoid infinite bouncing between different

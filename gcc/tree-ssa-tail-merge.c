@@ -1240,7 +1240,7 @@ find_duplicate (same_succ same_succ, basic_block bb1, basic_block bb2)
       gimple stmt1 = gsi_stmt (gsi1);
       gimple stmt2 = gsi_stmt (gsi2);
 
-      /* What could be better than to this this here is to blacklist the bb
+      /* What could be better than this here is to blacklist the bb
 	 containing the stmt, when encountering the stmt f.i. in
 	 same_succ_hash.  */
       if (is_tm_ending (stmt1)

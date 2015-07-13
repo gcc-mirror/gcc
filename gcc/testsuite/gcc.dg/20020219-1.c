@@ -1,6 +1,6 @@
 /* PR c/4389
    This testcase failed because host_integerp (x, 0) was returning
-   1 even for constants bigger than 2^31.  It fails under under hppa
+   1 even for constants bigger than 2^31.  It fails under hppa
    hpux without -mdisable-indexing because the pointer x - 1 is used
    as the base address of an indexed load.  Because the struct A is not
    actually allocated, x - 1 lies in the text segment and this causes

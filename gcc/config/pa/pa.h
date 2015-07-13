@@ -572,7 +572,7 @@ extern rtx hppa_pic_save_rtx (void);
    The INCOMING field tracks whether this is an "incoming" or
    "outgoing" argument.
    
-   The INDIRECT field indicates whether this is is an indirect
+   The INDIRECT field indicates whether this is an indirect
    call or not.
    
    The NARGS_PROTOTYPE field indicates that an argument does not

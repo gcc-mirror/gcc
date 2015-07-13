@@ -45,7 +45,7 @@
 ;;     before reload so that register allocator will pick the second
 ;;     alternative.
 
-;;   - we would like 'D' to be be NO_REGS when the frame pointer isn't
+;;   - we would like 'D' to be NO_REGS when the frame pointer isn't
 ;;     live, but we the frame pointer may turn out to be needed after
 ;;     we start reload, and then we may have already decided we don't
 ;;     have a choice, so we can't do that.  Forcing the register

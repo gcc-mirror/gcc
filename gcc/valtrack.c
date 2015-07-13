@@ -277,7 +277,7 @@ dead_debug_global_insert (struct dead_debug_global *global, rtx reg, rtx dtemp)
 }
 
 /* If UREGNO, referenced by USE, is a pseudo marked as used in GLOBAL,
-   replace it with with a USE of the debug temp recorded for it, and
+   replace it with a USE of the debug temp recorded for it, and
    return TRUE.  Otherwise, just return FALSE.
 
    If PTO_RESCAN is given, instead of rescanning modified INSNs right

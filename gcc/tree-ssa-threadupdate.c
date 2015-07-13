@@ -1366,8 +1366,8 @@ ssa_redirect_edges (struct redirection_data **slot,
   struct redirection_data *rd = *slot;
   struct el *next, *el;
 
-  /* Walk over all the incoming edges associated associated with this
-     hash table entry.  */
+  /* Walk over all the incoming edges associated with this hash table
+     entry.  */
   for (el = rd->incoming_edges; el; el = next)
     {
       edge e = el->e;

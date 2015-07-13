@@ -401,10 +401,10 @@ initialize_hash_element_from_expr (struct hashable_expr *expr,
   element->stamp = element;
 }
 
-/* Compare two hashable_expr structures for equivalence.
-   They are considered equivalent when the the expressions
-   they denote must necessarily be equal.  The logic is intended
-   to follow that of operand_equal_p in fold-const.c  */
+/* Compare two hashable_expr structures for equivalence.  They are
+   considered equivalent when the expressions they denote must
+   necessarily be equal.  The logic is intended to follow that of
+   operand_equal_p in fold-const.c */
 
 static bool
 hashable_expr_equal_p (const struct hashable_expr *expr0,

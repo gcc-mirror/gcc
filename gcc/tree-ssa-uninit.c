@@ -257,7 +257,7 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 /* Checks if the operand OPND of PHI is defined by
    another phi with one operand defined by this PHI,
    but the rest operands are all defined. If yes,
-   returns true to skip this this operand as being
+   returns true to skip this operand as being
    redundant. Can be enhanced to be more general.  */
 
 static bool

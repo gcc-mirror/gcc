@@ -850,7 +850,7 @@ recording::context::new_function_ptr_type (recording::location *, /* unused loc 
 			 param_types,
 			 is_variadic);
 
-  /* Return a pointer-type to the the function type.  */
+  /* Return a pointer-type to the function type.  */
   return fn_type->get_pointer ();
 }
 

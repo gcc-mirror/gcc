@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
    IPA_JF_ANCESTOR is a special pass-through jump function, which means that
    the result is an address of a part of the object pointed to by the formal
    parameter to which the function refers.  It is mainly intended to represent
-   getting addresses of of ancestor fields in C++
+   getting addresses of ancestor fields in C++
    (e.g. &this_1(D)->D.1766.D.1756).  Note that if the original pointer is
    NULL, ancestor jump function must behave like a simple pass-through.
 

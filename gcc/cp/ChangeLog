@@ -1,3 +1,12 @@
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* call.c: Fix double word typos.
+	* cp-array-notation.c: Same.
+	* cp-tree.h: Same.
+	* init.c: Same.
+	* name-lookup.c: Same.
+	* parser.c: Same.
+
 2015-07-10  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/30044

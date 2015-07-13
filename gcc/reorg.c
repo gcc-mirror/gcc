@@ -1397,12 +1397,12 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
 	  rtx_insn *dtrial = pat->insn (i);
 
 	  CLEAR_RESOURCE (&modified);
-	  /* Account for resources set by the the insn following NEXT_TO_MATCH
+	  /* Account for resources set by the insn following NEXT_TO_MATCH
 	     inside INSN's delay list. */
 	  for (j = 1; slot_number + j < num_slots; j++)
 	    mark_set_resources (XVECEXP (PATTERN (insn), 0, slot_number + j),
 				&modified, 0, MARK_SRC_DEST_CALL);
-	  /* Account for resources set by the the insn before DTRIAL and inside
+	  /* Account for resources set by the insn before DTRIAL and inside
 	     TRIAL's delay list. */
 	  for (j = 1; j < i; j++)
 	    mark_set_resources (XVECEXP (pat, 0, j),

@@ -5042,7 +5042,7 @@ struct cp_parameter_declarator {
   cp_declarator *declarator;
   /* The default-argument expression, or NULL_TREE, if none.  */
   tree default_argument;
-  /* True iff this is is a template parameter pack.  */
+  /* True iff this is a template parameter pack.  */
   bool template_parameter_pack_p;
 };
 

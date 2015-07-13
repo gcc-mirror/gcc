@@ -125,7 +125,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Link -lasan early on the command line.  For -static-libasan, don't link
    it for -shared link, the executable should be compiled with -static-libasan
-   in that case, and for executable link link with --{,no-}whole-archive around
+   in that case, and for executable link with --{,no-}whole-archive around
    it to force everything into the executable.  And similarly for -ltsan
    and -llsan.  */
 #if defined(HAVE_LD_STATIC_DYNAMIC)

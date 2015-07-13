@@ -1093,7 +1093,7 @@ package body Sem_Eval is
       elsif No (Ltyp) or else No (Rtyp) then
          return Unknown;
 
-      --  We do not attempt comparisons for packed arrays arrays represented as
+      --  We do not attempt comparisons for packed arrays represented as
       --  modular types, where the semantics of comparison is quite different.
 
       elsif Is_Packed_Array_Impl_Type (Ltyp)

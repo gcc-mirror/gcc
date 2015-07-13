@@ -6753,7 +6753,7 @@ package body Sem_Prag is
                Generate_Reference (E, Id, 'i');
             end if;
 
-            --  If the pragma comes from from an aspect, it only applies to the
+            --  If the pragma comes from an aspect, it only applies to the
             --  given entity, not its homonyms.
 
             if From_Aspect_Specification (N) then

@@ -484,7 +484,7 @@ public:
   /* Write IPA ICF summary for symbols.  */
   void write_summary (void);
 
-  /* Read IPA IPA ICF summary for symbols.  */
+  /* Read IPA ICF summary for symbols.  */
   void read_summary (void);
 
   /* Callgraph removal hook called for a NODE with a custom DATA.  */

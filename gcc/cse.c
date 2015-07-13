@@ -3059,7 +3059,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
       if (x == 0)
 	break;
 
-      /* If we need to reverse the comparison, make sure that that is
+      /* If we need to reverse the comparison, make sure that is
 	 possible -- we can't necessarily infer the value of GE from LT
 	 with floating-point operands.  */
       if (reverse_code)
@@ -4303,7 +4303,7 @@ find_sets_in_insn (rtx_insn *insn, struct set **psets)
 }
 
 /* Where possible, substitute every register reference in the N_SETS
-   number of SETS in INSN with the the canonical register.
+   number of SETS in INSN with the canonical register.
 
    Register canonicalization propagatest the earliest register (i.e.
    one that is set before INSN) with the same value.  This is a very

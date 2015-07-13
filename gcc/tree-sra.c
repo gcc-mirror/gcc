@@ -1011,7 +1011,7 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
 }
 
 /* Create total_scalarization accesses for all scalar type fields in VAR and
-   for VAR a a whole.  VAR must be of a RECORD_TYPE conforming to
+   for VAR as a whole.  VAR must be of a RECORD_TYPE conforming to
    type_consists_of_records_p.   */
 
 static void

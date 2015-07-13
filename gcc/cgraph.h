@@ -590,8 +590,8 @@ struct GTY(()) cgraph_thunk_info {
    Available after function is analyzed.  */
 
 struct GTY(()) cgraph_local_info {
-  /* Set when function function is visible in current compilation unit only
-     and its address is never taken.  */
+  /* Set when function is visible in current compilation unit only and
+     its address is never taken.  */
   unsigned local : 1;
 
   /* False when there is something makes versioning impossible.  */
@@ -712,7 +712,7 @@ struct GTY(()) cgraph_simd_clone {
   /* Max hardware vector size in bits for floating point vectors.  */
   unsigned int vecsize_float;
 
-  /* The mangling character for a given vector size.  This is is used
+  /* The mangling character for a given vector size.  This is used
      to determine the ISA mangling bit as specified in the Intel
      Vector ABI.  */
   unsigned char vecsize_mangle;
@@ -1905,7 +1905,7 @@ public:
   /* Once all functions from compilation unit are in memory, produce all clones
      and update all calls.  We might also do this on demand if we don't want to
      bring all functions to memory prior compilation, but current WHOPR
-     implementation does that and it is is bit easier to keep everything right
+     implementation does that and it is bit easier to keep everything right
      in this order.  */
   void materialize_all_clones (void);
 

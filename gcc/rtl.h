@@ -287,7 +287,7 @@ struct GTY((variable_size)) hwivec_def {
 /* RTL expression ("rtx").  */
 
 /* The GTY "desc" and "tag" options below are a kludge: we need a desc
-   field for for gengtype to recognize that inheritance is occurring,
+   field for gengtype to recognize that inheritance is occurring,
    so that all subclasses are redirected to the traversal hook for the
    base class.
    However, all of the fields are in the base class, and special-casing

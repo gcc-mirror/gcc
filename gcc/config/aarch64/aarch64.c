@@ -897,7 +897,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	   here before rtl expand.  Tree IVOPT will generate rtl pattern to
 	   decide rtx costs, in which case pic_offset_table_rtx is not
 	   initialized.  For that case no need to generate the first adrp
-	   instruction as the the final cost for global variable access is
+	   instruction as the final cost for global variable access is
 	   one instruction.  */
 	if (gp_rtx != NULL)
 	  {

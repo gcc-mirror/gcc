@@ -18364,7 +18364,7 @@ parsing_nsdmi (void)
 
    Returns the type indicated by the type-id.
 
-   In addition to this this parses any queued up omp declare simd
+   In addition to this, parse any queued up omp declare simd
    clauses and Cilk Plus SIMD-enabled function's vector attributes.
 
    QUALS is either a bitmask of cv_qualifiers or -1 for a non-member
@@ -22426,8 +22426,7 @@ cp_parser_std_attribute (cp_parser *parser)
   tree attribute, attr_ns = NULL_TREE, attr_id = NULL_TREE, arguments;
   cp_token *token;
 
-  /* First, parse name of the the attribute, a.k.a
-     attribute-token.  */
+  /* First, parse name of the attribute, a.k.a attribute-token.  */
 
   token = cp_lexer_peek_token (parser->lexer);
   if (token->type == CPP_NAME)

@@ -4088,7 +4088,7 @@ in an executable.
 
 @item @b{Run_Path_Origin}: single
 
-Value is the the string that may replace the path name of the executable
+Value is the string that may replace the path name of the executable
 directory in the run path options.
 
 @item @b{Separate_Run_Path_Options}: single
@@ -4186,7 +4186,7 @@ the prefix is "lib".
 
 @item @b{Shared_Library_Suffix}: single
 
-Value is the the extension of the name of shared library files. When not
+Value is the extension of the name of shared library files. When not
 declared, the extension is ".so".
 
 @item @b{Symbolic_Link_Supported}: single

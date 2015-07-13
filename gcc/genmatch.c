@@ -1645,8 +1645,7 @@ capture_info::walk_result (operand *o, bool conditional_p)
 	 expression side-effect free.  */
       if (info[c->where].expr_p)
 	force_no_side_effects |= info[c->where].toplevel_msk;
-      /* Mark CSE capture capture uses as forced to have
-         no side-effects. */
+      /* Mark CSE capture uses as forced to have no side-effects. */
       if (c->what
 	  && is_a <expr *> (c->what))
 	{
@@ -3430,7 +3429,7 @@ parser::push_simplify (vec<simplify *>& simplifiers,
 		       operand *match, source_location match_loc,
 		       operand *result, source_location result_loc)
 {
-  /* Build and push a temporary for for operator list uses in expressions.  */
+  /* Build and push a temporary for operator list uses in expressions.  */
   if (!oper_lists.is_empty ())
     active_fors.safe_push (oper_lists);
 

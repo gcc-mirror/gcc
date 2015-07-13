@@ -1045,7 +1045,7 @@ build_static_class_ref (tree type)
       DECL_CONTEXT (decl) = type;
 
       /* ??? We want to preserve the DECL_CONTEXT we set just above,
-	 that that means not calling pushdecl_top_level.  */
+	 that means not calling pushdecl_top_level.  */
       IDENTIFIER_GLOBAL_VALUE (decl_name) = decl;
     }
 

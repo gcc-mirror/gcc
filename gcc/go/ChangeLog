@@ -1,3 +1,9 @@
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gofrontend/backend.h: Fix double word typos.
+        * gofrontend/expressions.cc: Same.
+	* gospec.c: Same.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-backend.c: Adjust includes.

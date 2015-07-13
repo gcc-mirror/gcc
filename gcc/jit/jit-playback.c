@@ -2657,7 +2657,7 @@ location_comparator (const void *lhs, const void *rhs)
    linemap API requires locations to be created in ascending order
    as if we were tokenizing files.
 
-   This hook sorts all of the the locations that have been created, and
+   This hook sorts all of the locations that have been created, and
    calls into the linemap API, creating linemap entries in sorted order
    for our locations.  */
 

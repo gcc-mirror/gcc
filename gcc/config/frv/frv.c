@@ -1191,7 +1191,7 @@ frv_stack_info (void)
 	}
     }
 
-  /* Set up the sizes of each each field in the frame body, making the sizes
+  /* Set up the sizes of each field in the frame body, making the sizes
      of each be divisible by the size of a dword if dword operations might
      be used, or the size of a word otherwise.  */
   alignment = (TARGET_DWORD? 2 * UNITS_PER_WORD : UNITS_PER_WORD);
