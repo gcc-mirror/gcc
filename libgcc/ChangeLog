@@ -1,3 +1,7 @@
+2015-07-13  John Marino  <gnugcc@marino.st>
+
+	* config/i386/t-dragonfly: New.
+
 2015-07-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__kernel_cmpxchg): Reorder arguments to
