@@ -1,3 +1,13 @@
+2015-07-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/adds3.c: Adjust for more aggressive
+	if-conversion..
+	* gcc.target/aarch64/adds1.c: Likewise.
+	* gcc.target/aarch64/ands_1.c: Likewise.
+	* gcc.target/aarch64/bics_1.c: Likewise.
+	* gcc.target/aarch64/subs1.c: Likewise.
+	* gcc.target/aarch64/subs3.c: Likewise.
+
 2015-07-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/64589
