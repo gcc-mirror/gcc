@@ -185,7 +185,7 @@ namespace __debug
 
       void
       swap(unordered_map& __x)
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
+	noexcept( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Safe::_M_swap(__x);
 	_Base::swap(__x);
@@ -486,6 +486,7 @@ namespace __debug
     inline void
     swap(unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Key, typename _Tp, typename _Hash,
@@ -641,7 +642,7 @@ namespace __debug
 
       void
       swap(unordered_multimap& __x)
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
+	noexcept( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Safe::_M_swap(__x);
 	_Base::swap(__x);
@@ -938,6 +939,7 @@ namespace __debug
     inline void
     swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Key, typename _Tp, typename _Hash,

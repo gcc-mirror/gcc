@@ -364,9 +364,7 @@ namespace __profile
 
       void
       swap(multimap& __x)
-#if __cplusplus >= 201103L
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
-#endif
+      _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
 	std::swap(this->_M_map2umap_info, __x._M_map2umap_info);
 	_Base::swap(__x);
@@ -656,6 +654,7 @@ namespace __profile
     inline void
     swap(multimap<_Key, _Tp, _Compare, _Allocator>& __lhs,
 	 multimap<_Key, _Tp, _Compare, _Allocator>& __rhs)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
 } // namespace __profile

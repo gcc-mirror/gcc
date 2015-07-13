@@ -1,3 +1,75 @@
+2015-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT_IF): Define.
+	* include/bits/forward_list.h (forward_list::swap): Make noexcept
+	unconditional.
+	* include/bits/hashtable.h (_Hashtable::swap): Do not use
+	_S_nothrow_swap().
+	* include/bits/stl_bvector.h (vector<bool>::swap): Make noexcept
+	unconditional.
+	* include/bits/stl_deque.h (deque::swap): Likewise.
+	(swap(deque&, deque&)): Use _GLIBCXX_NOEXCEPT_IF.
+	* include/bits/stl_list.h (list::swap): Make noexcept unconditional.
+	(swap(list&, list&)): Use _GLIBCXX_NOEXCEPT_IF.
+	* include/bits/stl_map.h (map::swap, swap(map&, map&)): Use
+	_GLIBCXX_NOEXCEPT_IF, do not depend on _S_nothrow_swap.
+	* include/bits/stl_multimap.h (multimap::swap,
+	swap(multimap&, multimap&)): Likewise.
+	* include/bits/stl_multiset.h (multiset::swap,
+	swap(multiset&, multiset&)): Likewise.
+	* include/bits/stl_set.h (set::swap, swap(set&, set&)): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::swap,
+	swap(_Rb_tree&, _Rb_tree&)): Likewise.
+	* include/bits/stl_vector.h (vector::swap): Make noexcept
+	unconditional.
+	(swap(vector&, vector&)): Use _GLIBCXX_NOEXCEPT_IF.
+	* include/debug/deque (deque::swap, swap): Likewise.
+	* include/debug/forward_list (swap): Add noexcept.
+	* include/debug/list (list::swap, swap): Use _GLIBCXX_NOEXCEPT_IF.
+	* include/debug/map.h (map::swap, swap): Likewise.
+	* include/debug/multimap.h (multimap::swap, swap): Likewise.
+	* include/debug/multiset.h (multiset::Swap, swap): Likewise.
+	* include/debug/set.h (set::swap, swap): Likewise.
+	* include/debug/unordered_map (unordered_map::swap,
+	unordered_multimap::swap, swap): Likewise.
+	* include/debug/unordered_set (unordered_set::swap,
+	unordered_multiset::swap, swap): Likewise.
+	* include/debug/vector (vector::swap, swap): Likewise.
+	* include/ext/alloc_traits.h (__alloc_traits::_S_nothrow_swap()):
+	Remove.
+	* include/profile/deque (deque::swap, swap): Use _GLIBCXX_NOEXCEPT_IF.
+	* include/profile/forward_list (swap): Add noexcept.
+	* include/profile/list (list::swap, swap) : Use _GLIBCXX_NOEXCEPT_IF.
+	* include/profile/map.h (map::swap, swap): Likewise.
+	* include/profile/multimap.h (multimap::swap, swap): Likewise.
+	* include/profile/multiset.h (multiset::swap, swap): Likewise.
+	* include/profile/set.h (set::swap, swap): Likewise.
+	* include/profile/unordered_map (swap): Likewise.
+	* include/profile/unordered_set (swap): Likewise.
+	* include/profile/vector (vector::swap, swap): Likewise. Remove
+	overloads for swapping rvalues.
+	* testsuite/23_containers/deque/allocator/noexcept.cc: Update tests
+	for noexcept on swap.
+	* testsuite/23_containers/forward_list/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/list/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/map/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/multimap/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/multiset/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/set/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/vector/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/vector/bool/allocator/noexcept.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error line
+	number.
+
 2015-07-13  John Marino  <gnugcc@marino.st>
 
 	* config/os/bsd/dragonfly/os_defines.h (_GLIBCXX_USE_C99_CHECK,

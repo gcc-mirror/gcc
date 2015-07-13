@@ -279,6 +279,7 @@ namespace __profile
     inline void
     swap(unordered_set<_Key, _Hash, _Pred, _Alloc>& __x,
 	 unordered_set<_Key, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
@@ -534,6 +535,7 @@ namespace __profile
     inline void
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>

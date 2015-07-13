@@ -473,7 +473,7 @@ namespace __debug
 
       void
       swap(forward_list& __list)
-	noexcept( noexcept(declval<_Base>().swap(__list)) )
+	noexcept( noexcept(declval<_Base&>().swap(__list)) )
       {
 	_Safe::_M_swap(__list);
 	_Base::swap(__list);
@@ -814,8 +814,8 @@ namespace __debug
   /// See std::forward_list::swap().
   template<typename _Tp, typename _Alloc>
     inline void
-    swap(forward_list<_Tp, _Alloc>& __lx,
-	 forward_list<_Tp, _Alloc>& __ly)
+    swap(forward_list<_Tp, _Alloc>& __lx, forward_list<_Tp, _Alloc>& __ly)
+    noexcept(noexcept(__lx.swap(__ly)))
     { __lx.swap(__ly); }
 
 } // namespace __debug

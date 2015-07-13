@@ -361,9 +361,7 @@ namespace __debug
 
       void
       swap(multiset& __x)
-#if __cplusplus >= 201103L
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
-#endif
+      _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Safe::_M_swap(__x);
 	_Base::swap(__x);
@@ -550,6 +548,7 @@ namespace __debug
     void
     swap(multiset<_Key, _Compare, _Allocator>& __x,
 	 multiset<_Key, _Compare, _Allocator>& __y)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__x.swap(__y)))
     { return __x.swap(__y); }
 
 } // namespace __debug

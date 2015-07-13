@@ -920,11 +920,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _Alloc_traits::max_size(_M_get_Node_allocator()); }
 
       void
-#if __cplusplus >= 201103L
-      swap(_Rb_tree& __t) noexcept(_Alloc_traits::_S_nothrow_swap());
-#else
-      swap(_Rb_tree& __t);
-#endif
+      swap(_Rb_tree& __t)
+      _GLIBCXX_NOEXCEPT_IF(__is_nothrow_swappable<_Compare>::value);
 
       // Insert/erase.
 #if __cplusplus >= 201103L
@@ -1747,10 +1744,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            typename _Compare, typename _Alloc>
     void
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    swap(_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __t)
-#if __cplusplus >= 201103L
-    noexcept(_Alloc_traits::_S_nothrow_swap())
-#endif
+    swap(_Rb_tree& __t)
+    _GLIBCXX_NOEXCEPT_IF(__is_nothrow_swappable<_Compare>::value)
     {
       if (_M_root() == 0)
 	{

@@ -226,9 +226,7 @@ namespace __profile
 
       void
       swap(multiset& __x)
-#if __cplusplus >= 201103L
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
-#endif
+      _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -640,6 +638,7 @@ namespace __profile
     void
     swap(multiset<_Key, _Compare, _Allocator>& __x,
 	 multiset<_Key, _Compare, _Allocator>& __y)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__x.swap(__y)))
     { return __x.swap(__y); }
 
 } // namespace __profile
