@@ -1,0 +1,2 @@
+# Required for -fcilkplus support
+SHLIB_MAPFILES += $(srcdir)/config/i386/libgcc-bsd.ver
