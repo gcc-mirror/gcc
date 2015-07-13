@@ -1,3 +1,9 @@
+2015-07-13  Renlin Li  <renlin.li@arm.com>
+
+	PR rtl/66556
+	* simplify-rtx.c (simplify_const_relational_operation): Add
+	side_effects_p checks.
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* bitmap.h: Fix double word typos.
