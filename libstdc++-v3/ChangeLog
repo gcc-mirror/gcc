@@ -1,3 +1,9 @@
+2015-07-13  John Marino  <gnugcc@marino.st>
+
+	* config/os/bsd/dragonfly/os_defines.h (_GLIBCXX_USE_C99_CHECK,
+	_GLIBCXX_USE_C99_DYNAMIC, _GLIBCXX_USE_C99_LONG_LONG_CHECK,
+	_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC): Define.
+
 2015-07-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable.h (_Hashtable<>::__rehash_policy): Do not
