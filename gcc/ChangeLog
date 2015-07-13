@@ -1,3 +1,7 @@
+2015-07-13  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-low.c (build_receiver_ref): Mark *.omp_data_i as non-trapping.
+
 2015-07-13  Renlin Li  <renlin.li@arm.com>
 
 	PR rtl/66556
