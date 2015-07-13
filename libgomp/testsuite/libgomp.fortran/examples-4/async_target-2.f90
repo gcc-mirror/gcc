@@ -46,6 +46,8 @@ subroutine vec_mult (p, N)
       !$omp end target
     !$omp end task
   !$omp end target data
+
+  !$omp taskwait
   call check (p, N)
 end subroutine
 

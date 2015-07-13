@@ -19,8 +19,9 @@ void init (float *a, float *b, int n)
 }
 #pragma omp end declare target
 
-void vec_mult_ref (float *p, float *v1, float *v2, int n)
+void vec_mult_ref(float *p, int n)
 {
+  float *v1, *v2;
   int i;
 
   v1 = (float *) malloc (n * sizeof (float));
@@ -35,8 +36,9 @@ void vec_mult_ref (float *p, float *v1, float *v2, int n)
   free (v2);
 }
 
-void vec_mult (float *p, float *v1, float *v2, int n)
+void vec_mult(float *p, int n)
 {
+  float *v1, *v2;
   int i;
 
   #pragma omp task shared(v1, v2) depend(out: v1, v2)
@@ -64,6 +66,8 @@ void vec_mult (float *p, float *v1, float *v2, int n)
 	  free (v1);
 	  free (v2);
       }
+
+  #pragma omp taskwait
 }
 
 void check (float *a, float *b, int n)
@@ -81,10 +85,9 @@ int main ()
 {
   float *p1 = (float *) malloc (N * sizeof (float));
   float *p2 = (float *) malloc (N * sizeof (float));
-  float *v1, *v2;
 
-  vec_mult_ref (p1, v1, v2, N);
-  vec_mult (p2, v1, v2, N);
+  vec_mult_ref (p1, N);
+  vec_mult (p2, N);
 
   check (p1, p2, N);
 
