@@ -35,14 +35,11 @@ struct equal_to
   { return lhs.i == rhs.i; }
 };
 
-namespace __gnu_test
-{
-  template<typename U>
-    inline void
-    swap(propagating_allocator<U, true>& l, propagating_allocator<U, true>& r)
-    noexcept(false)
-    { }
-}
+// Versions of the function objects without nothrow swap.
+struct hash_t : hash { };
+void swap(hash_t&, hash_t&) noexcept(false) { }
+struct equal_to_t : equal_to { };
+void swap(equal_to_t&, equal_to_t&) noexcept(false) { }
 
 using __gnu_test::propagating_allocator;
 
@@ -59,6 +56,26 @@ void test01()
 
 void test02()
 {
+  typedef std::allocator<T> alloc_type;
+  typedef std::unordered_multiset<T, hash_t, equal_to, alloc_type> test_type;
+  test_type v1;
+  test_type v2;
+  static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
+  static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
+}
+
+void test03()
+{
+  typedef std::allocator<T> alloc_type;
+  typedef std::unordered_multiset<T, hash, equal_to_t, alloc_type> test_type;
+  test_type v1;
+  test_type v2;
+  static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
+  static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
+}
+
+void test04()
+{
   typedef propagating_allocator<T, false> alloc_type;
   typedef std::unordered_multiset<T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -67,19 +84,19 @@ void test02()
   static_assert( noexcept( v1.swap(v2) ), "Swap cannot throw" );
 }
 
-void test03()
+void test05()
 {
   typedef propagating_allocator<T, true> alloc_type;
   typedef std::unordered_multiset<T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   test_type v2(alloc_type(2));
   static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
-  static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
+  static_assert( noexcept( v1.swap(v2) ), "Swap cannot throw" );
 }
 
-void test04()
+void test06()
 {
   typedef std::unordered_multiset<int> test_type;
-  static_assert( noexcept( test_type() ), "Default constructor do not throw" );
-  static_assert( noexcept( test_type(test_type()) ), "Move constructor do not throw" );
+  static_assert( noexcept( test_type() ), "Default constructor does not throw" );
+  static_assert( noexcept( test_type(test_type()) ), "Move constructor does not throw" );
 }

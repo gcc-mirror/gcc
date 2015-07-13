@@ -927,10 +927,7 @@ template<typename _Alloc>
     }
 
     void
-    swap(vector& __x)
-#if __cplusplus >= 201103L
-      noexcept(_Bit_alloc_traits::_S_nothrow_swap())
-#endif
+    swap(vector& __x) _GLIBCXX_NOEXCEPT
     {
       std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
       std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);

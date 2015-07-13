@@ -405,9 +405,7 @@ namespace __profile
 
       void
       swap(map& __x)
-#if __cplusplus >= 201103L
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
-#endif
+      _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -698,6 +696,7 @@ namespace __profile
     inline void
     swap(map<_Key, _Tp, _Compare, _Allocator>& __lhs,
 	 map<_Key, _Tp, _Compare, _Allocator>& __rhs)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
 } // namespace __profile

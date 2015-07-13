@@ -108,7 +108,7 @@ namespace __profile
 
       void
       swap(forward_list& __fl)
-	noexcept( noexcept(declval<_Base>().swap(__fl)) )
+	noexcept( noexcept(declval<_Base&>().swap(__fl)) )
       { _Base::swap(__fl); }
 
       void
@@ -208,6 +208,7 @@ namespace __profile
     inline void
     swap(forward_list<_Tp, _Alloc>& __lx,
 	 forward_list<_Tp, _Alloc>& __ly)
+    noexcept(noexcept(__lx.swap(__ly)))
     { __lx.swap(__ly); }
 
 } // namespace __profile

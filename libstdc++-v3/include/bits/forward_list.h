@@ -992,8 +992,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  function.
        */
       void
-      swap(forward_list& __list)
-      noexcept(_Node_alloc_traits::_S_nothrow_swap())
+      swap(forward_list& __list) noexcept
       {
         std::swap(this->_M_impl._M_head._M_next,
 		  __list._M_impl._M_head._M_next);

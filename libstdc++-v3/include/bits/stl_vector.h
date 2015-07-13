@@ -1190,10 +1190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  std::swap(v1,v2) will feed to this function.
        */
       void
-      swap(vector& __x)
-#if __cplusplus >= 201103L
-      noexcept(_Alloc_traits::_S_nothrow_swap())
-#endif
+      swap(vector& __x) _GLIBCXX_NOEXCEPT
       {
 	this->_M_impl._M_swap_data(__x._M_impl);
 	_Alloc_traits::_S_on_swap(_M_get_Tp_allocator(),
@@ -1556,9 +1553,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     inline void
     swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
-#if __cplusplus >= 201103L
-    noexcept(noexcept(__x.swap(__y)))
-#endif
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

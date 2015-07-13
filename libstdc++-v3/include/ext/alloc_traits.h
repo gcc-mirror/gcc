@@ -112,12 +112,6 @@ template<typename _Alloc>
     static constexpr bool _S_nothrow_move()
     { return _S_propagate_on_move_assign() || _S_always_equal(); }
 
-    static constexpr bool _S_nothrow_swap()
-    {
-      return !_S_propagate_on_swap()
-	|| std::__is_nothrow_swappable<_Alloc>::value;
-    }
-
     template<typename _Tp>
       struct rebind
       { typedef typename _Base_type::template rebind_alloc<_Tp> other; };

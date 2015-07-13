@@ -182,7 +182,7 @@ namespace __debug
 
       void
       swap(unordered_set& __x)
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
+	noexcept( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Safe::_M_swap(__x);
 	_Base::swap(__x);
@@ -480,6 +480,7 @@ namespace __debug
     inline void
     swap(unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
@@ -634,7 +635,7 @@ namespace __debug
 
       void
       swap(unordered_multiset& __x)
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
+	noexcept( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Safe::_M_swap(__x);
 	_Base::swap(__x);
@@ -920,6 +921,7 @@ namespace __debug
     inline void
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>

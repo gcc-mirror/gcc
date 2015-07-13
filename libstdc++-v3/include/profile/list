@@ -411,9 +411,7 @@ namespace __profile
 
       void
       swap(list& __x)
-#if __cplusplus >= 201103L
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
-#endif
+      _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -643,6 +641,7 @@ namespace __profile
   template<typename _Tp, typename _Alloc>
     inline void
     swap(list<_Tp, _Alloc>& __lhs, list<_Tp, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
 } // namespace __profile

@@ -1350,10 +1350,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  function.
        */
       void
-      swap(list& __x)
-#if __cplusplus >= 201103L
-      noexcept(_Node_alloc_traits::_S_nothrow_swap())
-#endif
+      swap(list& __x) _GLIBCXX_NOEXCEPT
       {
 	__detail::_List_node_base::swap(this->_M_impl._M_node,
 				        __x._M_impl._M_node);
@@ -1919,9 +1916,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   template<typename _Tp, typename _Alloc>
     inline void
     swap(list<_Tp, _Alloc>& __x, list<_Tp, _Alloc>& __y)
-#if __cplusplus >= 201103L
-    noexcept(noexcept(__x.swap(__y)))
-#endif
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
