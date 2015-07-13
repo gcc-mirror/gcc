@@ -31,31 +31,20 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/map.h>
 #include <isl/union_map.h>
 #include <isl/constraint.h>
-#endif
 
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "options.h"
 #include "fold-const.h"
-#include "dominance.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
-#include "tree-chrec.h"
 #include "tree-data-ref.h"
-#include "sese.h"
-
-#ifdef HAVE_isl
 #include "graphite-poly.h"
-
 
 /* Strip mines with a factor STRIDE the scattering (time) dimension
    around PBB at depth TIME_DEPTH.

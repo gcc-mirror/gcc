@@ -24,11 +24,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "params.h"
 
 #ifndef GCC_OMEGA_H
 #define GCC_OMEGA_H
+
+#include "params.h"
 
 #define OMEGA_MAX_VARS PARAM_VALUE (PARAM_OMEGA_MAX_VARS)
 #define OMEGA_MAX_GEQS PARAM_VALUE (PARAM_OMEGA_MAX_GEQS)

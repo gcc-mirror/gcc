@@ -42,30 +42,21 @@ extern "C" {
 #if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
 }
 #endif
-#endif
 
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "options.h"
 #include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
-#include "tree-chrec.h"
 #include "tree-data-ref.h"
-#include "tree-scalar-evolution.h"
-#include "sese.h"
-
-#ifdef HAVE_isl
 #include "graphite-poly.h"
+
 
 /* XXX isl rewrite following comment */
 /* Builds a linear expression, of dimension DIM, representing PDR's
@@ -657,5 +648,5 @@ scop_do_interchange (scop_p scop)
 }
 
 
-#endif
+#endif /* HAVE_isl */
 

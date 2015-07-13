@@ -39,20 +39,15 @@ extern "C" {
 #if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
 }
 #endif
-#endif
 
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "backend.h"
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "rtl.h"
 #include "ssa.h"
-#include "options.h"
 #include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimplify.h"
 #include "gimplify-me.h"
@@ -63,25 +58,11 @@ extern "C" {
 #include "tree-into-ssa.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
-#include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "domwalk.h"
-#include "sese.h"
-#include "tree-ssa-propagate.h"
-
-#ifdef HAVE_isl
-#include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "graphite-poly.h"
+#include "tree-ssa-propagate.h"
 #include "graphite-sese-to-poly.h"
 
 
@@ -3187,4 +3168,4 @@ build_poly_scop (scop_p scop)
      representation.  */
   POLY_SCOP_P (scop) = true;
 }
-#endif
+#endif  /* HAVE_isl */
