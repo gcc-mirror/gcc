@@ -1,3 +1,8 @@
+2015-07-13  Renlin Li  <renlin.li@arm.com>
+
+	PR rtl/66556
+	* gcc.c-torture/execute/pr66556.c: New.
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/20020219-1.c: Fix double word typos.
