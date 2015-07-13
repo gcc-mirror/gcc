@@ -41,31 +41,20 @@ extern "C" {
 #if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
 }
 #endif
-#endif
 
 #include "system.h"
 #include "coretypes.h"
-#include "diagnostic-core.h"
-#include "alias.h"
 #include "backend.h"
+#include "diagnostic-core.h"
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
-#include "hard-reg-set.h"
-#include "options.h"
 #include "fold-const.h"
-#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop.h"
-#include "dumpfile.h"
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
-#include "tree-chrec.h"
 #include "tree-data-ref.h"
-#include "tree-scalar-evolution.h"
-#include "sese.h"
-
-#ifdef HAVE_isl
 #include "graphite-poly.h"
 
 #define OPENSCOP_MAX_STRING 256
@@ -1206,5 +1195,5 @@ reverse_loop_for_pbbs (scop_p scop, vec<poly_bb_p> pbbs, int depth)
 }
 
 
-#endif
+#endif  /* HAVE_isl */
 
