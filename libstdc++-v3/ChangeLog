@@ -1,5 +1,10 @@
 2015-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66855
+	* src/c++11/codecvt.cc (__codecvt_utf8_utf16_base::do_in): Override
+	endianness bit in mode.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/66855.cc: New.
+
 	* include/bits/c++config (_GLIBCXX_NOEXCEPT_IF): Define.
 	* include/bits/forward_list.h (forward_list::swap): Make noexcept
 	unconditional.
