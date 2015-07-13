@@ -322,7 +322,7 @@ package body Sem_Dim is
    --  string of dimension symbols. If In_Error_Msg is True (i.e. the String_Id
    --  will be used to issue an error message) then this routine has a special
    --  handling for the insertion characters * or [ which must be preceded by
-   --  a quote ' to to be placed literally into the message.
+   --  a quote ' to be placed literally into the message.
 
    function From_Dim_To_Str_Of_Unit_Symbols
      (Dims   : Dimension_Type;

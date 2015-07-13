@@ -1,3 +1,17 @@
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc-interface/utils.c: Fix double word typos.
+	* gnat_ugn.texi: Same.
+	* init.c: Same.
+	* par.adb: Same.
+	* projects.texi: Same.
+	* sem_ch4.adb: Same.
+	* sem_ch6.adb: Same.
+	* sem_dim.adb: Same.
+	* sem_eval.adb: Same.
+	* sem_prag.adb: Same.
+	* sem_warn.adb: Same.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/cuintp.c: Adjust includes.

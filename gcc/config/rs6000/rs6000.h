@@ -666,7 +666,7 @@ extern int rs6000_vector_align[];
 #define TARGET_DF_SPE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT	\
 			 && !TARGET_FPRS && TARGET_E500_DOUBLE)
 
-/* Whether SF/DF operations are supported by by the normal floating point unit
+/* Whether SF/DF operations are supported by the normal floating point unit
    (or the vector/scalar unit).  */
 #define TARGET_SF_FPR	(TARGET_HARD_FLOAT && TARGET_FPRS		\
 			 && TARGET_SINGLE_FLOAT)

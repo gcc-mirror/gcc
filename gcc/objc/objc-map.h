@@ -73,7 +73,7 @@ struct GTY(()) objc_map_private {
   /* These are the keys.  */
   tree * GTY ((length ("%h.number_of_slots"))) slots;
 
-  /* These are the values.  values[i] is the the value corresponding
+  /* These are the values.  values[i] is the value corresponding
      to slots[i].  */
   tree * GTY ((length ("%h.number_of_slots"))) values;
 };

@@ -658,7 +658,7 @@ class Backend
   
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
-  // where the the label is defined.
+  // where the label is defined.
   virtual Blabel*
   label(Bfunction*, const std::string& name, Location) = 0;
 

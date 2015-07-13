@@ -1,3 +1,8 @@
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/20020219-1.c: Fix double word typos.
+	* gcc.dg/20020919-1.c: Same.
+
 2015-07-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
 	    Jeff Law  <law@redhat.com>
 

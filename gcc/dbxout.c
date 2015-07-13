@@ -2409,8 +2409,8 @@ dbxout_type_name (tree type)
   stabstr_I (t);
 }
 
-/* Output leading leading struct or class names needed for qualifying
-   type whose scope is limited to a struct or class.  */
+/* Output leading struct or class names needed for qualifying type
+   whose scope is limited to a struct or class.  */
 
 static void
 dbxout_class_name_qualifiers (tree decl)

@@ -125,7 +125,7 @@ along with GCC; see the file COPYING3.  If not see
    information, but the info in one is not easy to obtain from the other.
 
    KILL_LIST is yet another bitmap array, this time it is indexed by partition
-   number, and represents a list of active expressions which will will no
+   number, and represents a list of active expressions which will no
    longer be valid if a definition into this partition takes place.
 
    PARTITION_IN_USE is simply a bitmap which is used to track which partitions

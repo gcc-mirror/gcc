@@ -1,3 +1,7 @@
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-stmt.c: Fix double word typos.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* arith.c: Adjust includes for flags.h changes.

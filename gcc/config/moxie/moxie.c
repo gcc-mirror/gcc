@@ -658,7 +658,7 @@ moxie_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Define this to return an RTX representing the place where a
    function returns or receives a value of data type RET_TYPE, a tree
-   node node representing a data type.  */
+   node representing a data type.  */
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE moxie_function_value
 #undef TARGET_LIBCALL_VALUE

@@ -250,7 +250,7 @@ class ipcp_param_lattices
 public:
   /* Lattice describing the value of the parameter itself.  */
   ipcp_lattice<tree> itself;
-  /* Lattice describing the the polymorphic contexts of a parameter.  */
+  /* Lattice describing the polymorphic contexts of a parameter.  */
   ipcp_lattice<ipa_polymorphic_call_context> ctxlat;
   /* Lattices describing aggregate parts.  */
   ipcp_agg_lattice *aggs;
@@ -1213,7 +1213,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
   if (values_count == PARAM_VALUE (PARAM_IPA_CP_VALUE_LIST_SIZE))
     {
       /* We can only free sources, not the values themselves, because sources
-	 of other values in this this SCC might point to them.   */
+	 of other values in this SCC might point to them.   */
       for (val = values; val; val = val->next)
 	{
 	  while (val->sources)
@@ -3959,7 +3959,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 /* Given an original NODE and a VAL for which we have already created a
    specialized clone, look whether there are incoming edges that still lead
    into the old node but now also bring the requested value and also conform to
-   all other criteria such that they can be redirected the the special node.
+   all other criteria such that they can be redirected the special node.
    This function can therefore redirect the final edge in a SCC.  */
 
 template <typename valtype>

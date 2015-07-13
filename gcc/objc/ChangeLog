@@ -1,3 +1,7 @@
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-map.h: Fix double word typos.
+
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objc-act.c: Adjust includes.

@@ -2404,7 +2404,7 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
   lto_data_in_delete (data_in);
 }
 
-/* Read IPA IPA ICF summary for symbols.  */
+/* Read IPA ICF summary for symbols.  */
 
 void
 sem_item_optimizer::read_summary (void)

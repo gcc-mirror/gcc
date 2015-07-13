@@ -1402,7 +1402,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  emit_label (one_small_one_large);
 
 	  /* lopart is the low part of the operand that is sign extended
-	     to mode, larger is the the other operand, hipart is the
+	     to mode, larger is the other operand, hipart is the
 	     high part of larger and lopart0 and lopart1 are the low parts
 	     of both operands.
 	     We perform lopart0 * lopart1 and lopart * hipart widening

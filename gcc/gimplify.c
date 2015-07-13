@@ -4627,7 +4627,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     return ret;
 
   /* In case of va_arg internal fn wrappped in a WITH_SIZE_EXPR, add the type
-     size as argument to the the call.  */
+     size as argument to the call.  */
   if (TREE_CODE (*from_p) == WITH_SIZE_EXPR)
     {
       tree call = TREE_OPERAND (*from_p, 0);

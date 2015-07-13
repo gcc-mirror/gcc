@@ -1894,7 +1894,7 @@ create_template:
 
 ;; Subroutine call instruction returning no value.
 ;;   operands[0]: It should be a mem RTX whose address is
-;;                the the address of the function.
+;;                the address of the function.
 ;;   operands[1]: It is the number of bytes of arguments pushed as a const_int.
 ;;   operands[2]: It is the number of registers used as operands.
 

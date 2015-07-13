@@ -1131,7 +1131,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 				     MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 
   /* We need the frame-pointer to be live or the equivalent
-     expression, so refer to in in the pattern.  We can't use a MEM
+     expression, so refer to it in the pattern.  We can't use a MEM
      (that may contain out-of-range offsets in the final expression)
      for fear that middle-end will legitimize it or replace the address
      using temporary registers (which are not revived at this point).  */

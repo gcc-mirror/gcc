@@ -1229,7 +1229,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	                     unsigned int acmode);
 
       /* If SS$_CONTROLC has been imported as an exception, it will take
-	 priority over a a Ctrl/C handler.  See above.  SIGINT has a
+	 priority over a Ctrl/C handler.  See above.  SIGINT has a
 	 different condition value due to it's DECCCRTL roots and it's
 	 the condition that gets raised for a "kill -INT".  */
       if ((ctrlc_match || sigint_match) && __gnat_ctrl_c_handler)

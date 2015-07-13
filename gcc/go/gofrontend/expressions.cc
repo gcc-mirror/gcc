@@ -2475,7 +2475,7 @@ Complex_expression::do_get_backend(Translate_context* context)
     }
   else
     {
-      // If we still have an abstract type here, this this is being
+      // If we still have an abstract type here, this is being
       // used in a constant expression which didn't get reduced.  We
       // just use complex128 and hope for the best.
       resolved_type = Type::lookup_complex_type("complex128");

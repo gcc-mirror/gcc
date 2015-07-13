@@ -196,7 +196,7 @@ replace_invariant_exprs (tree *node)
 
 /* Replace array notation's built-in function passed in AN_BUILTIN_FN with
    the appropriate loop and computation (all stored in variable LOOP of type
-   tree node).  The output of the function function is always a scalar and that
+   tree node).  The output of the function is always a scalar and that
    result is returned in *NEW_VAR.  *NEW_VAR is NULL_TREE if the function is
    __sec_reduce_mutating.  */
 

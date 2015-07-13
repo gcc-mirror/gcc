@@ -2417,7 +2417,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 
   /* If the destination block's stack already has a specified layout
      and contains two or more registers, use a more intelligent algorithm
-     to pop registers that minimizes the number number of fxchs below.  */
+     to pop registers that minimizes the number of fxchs below.  */
   if (new_stack->top > 0)
     {
       bool slots[REG_STACK_SIZE];

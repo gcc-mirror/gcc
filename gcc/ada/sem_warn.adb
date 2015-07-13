@@ -4366,7 +4366,7 @@ package body Sem_Warn is
                      --  Otherwise we are at the outer level. An exception
                      --  handler is significant only if it references the
                      --  variable in question, or if the entity in question
-                     --  is an OUT or IN OUT parameter, which which case
+                     --  is an OUT or IN OUT parameter, in which case
                      --  the caller can reference it after the exception
                      --  handler completes.
 

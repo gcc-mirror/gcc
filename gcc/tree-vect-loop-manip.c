@@ -355,8 +355,8 @@ adjust_phi_and_debug_stmts (gimple update_phi, edge e, tree new_def)
            next_bb
 
      The SSA names defined in the original loop have a current
-     reaching definition that that records the corresponding new
-     ssa-name used in the new duplicated loop copy.
+     reaching definition that records the corresponding new ssa-name
+     used in the new duplicated loop copy.
   */
 
 /* Function slpeel_update_phi_nodes_for_guard1

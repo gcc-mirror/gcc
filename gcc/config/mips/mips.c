@@ -3245,7 +3245,7 @@ mips_legitimize_tls_address (rtx loc)
 
   model = SYMBOL_REF_TLS_MODEL (loc);
   /* Only TARGET_ABICALLS code can have more than one module; other
-     code must be be static and should not use a GOT.  All TLS models
+     code must be static and should not use a GOT.  All TLS models
      reduce to local exec in this situation.  */
   if (!TARGET_ABICALLS)
     model = TLS_MODEL_LOCAL_EXEC;

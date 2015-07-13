@@ -22,7 +22,7 @@
    efficiently.
 
    This program should be compiled by a c++ compiler.  If it's
-   compiled with with -DTILEPRO, it generates the multiply table for
+   compiled with -DTILEPRO, it generates the multiply table for
    TILEPro; otherwise it generates the multiply table for TILE-Gx.
    Running the program produces the table in stdout.
 

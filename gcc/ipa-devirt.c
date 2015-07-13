@@ -1005,7 +1005,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 		  inform (DECL_SOURCE_LOCATION
 			   (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
 			  "the conflicting type defined in another translation "
-			  "unit has virtual table table with more entries");
+			  "unit has virtual table with more entries");
 		}
 	    }
 	  return;
@@ -1037,7 +1037,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	    inform (DECL_SOURCE_LOCATION
 		      (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
 		    "the conflicting type defined in another translation "
-		    "unit has virtual table table with different contents");
+		    "unit has virtual table with different contents");
 	  return;
 	}
     }

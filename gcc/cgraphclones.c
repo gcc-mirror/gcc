@@ -1064,7 +1064,7 @@ cgraph_materialize_clone (cgraph_node *node)
 /* Once all functions from compilation unit are in memory, produce all clones
    and update all calls.  We might also do this on demand if we don't want to
    bring all functions to memory prior compilation, but current WHOPR
-   implementation does that and it is is bit easier to keep everything right in
+   implementation does that and it is a bit easier to keep everything right in
    this order.  */
 
 void

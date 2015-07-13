@@ -673,7 +673,7 @@ param_type_may_change_p (tree function, tree arg, gimple call)
       /* Normal (non-THIS) argument.  */
       if ((SSA_NAME_VAR (arg) != DECL_ARGUMENTS (function)
 	   || TREE_CODE (TREE_TYPE (function)) != METHOD_TYPE)
-	  /* THIS pointer of an method - here we we want to watch constructors
+	  /* THIS pointer of an method - here we want to watch constructors
 	     and destructors as those definitely may change the dynamic
 	     type.  */
 	  || (TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE
@@ -2330,7 +2330,7 @@ analysis_dom_walker::before_dom_children (basic_block bb)
   ipa_compute_jump_functions_for_bb (m_fbi, bb);
 }
 
-/* Initialize the array describing properties of of formal parameters
+/* Initialize the array describing properties of formal parameters
    of NODE, analyze their uses and compute jump functions associated
    with actual arguments of calls from within NODE.  */
 

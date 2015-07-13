@@ -6136,7 +6136,7 @@ package body Sem_Ch4 is
          --  to be considered, we don't want the default inequality declared
          --  in Standard to be chosen, and the "/=" will be rewritten as a
          --  negation of "=" (see the end of Analyze_Equality_Op). This ensures
-         --  that that rewriting happens during analysis rather than being
+         --  that rewriting happens during analysis rather than being
          --  delayed until expansion (this is needed for ASIS, which only sees
          --  the unexpanded tree). Note that if the node is N_Op_Ne, but Op_Id
          --  is Name_Op_Eq then we still proceed with the interpretation,

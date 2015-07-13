@@ -380,7 +380,7 @@ mark_ptr_info_alignment_unknown (struct ptr_info_def *pi)
   pi->misalign = 0;
 }
 
-/* Store the the power-of-two byte alignment and the deviation from that
+/* Store the power-of-two byte alignment and the deviation from that
    alignment of pointer described by PI to ALIOGN and MISALIGN
    respectively.  */
 

@@ -14033,7 +14033,7 @@ If @var{device} is not a device but only a core architecture like
 The device / architecture belongs to the XMEGA family of devices.
 
 @item __AVR_HAVE_ELPM__
-The device has the the @code{ELPM} instruction.
+The device has the @code{ELPM} instruction.
 
 @item __AVR_HAVE_ELPMX__
 The device has the @code{ELPM R@var{n},Z} and @code{ELPM
