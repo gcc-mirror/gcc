@@ -1,3 +1,7 @@
+2015-07-13  Marek Polacek  <polacek@redhat.com>
+
+	* rtl.c (rtx_equal_p_cb): Fix typo.
+
 2015-07-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	* omega.h: Don't include config.h, don't include params.h again if

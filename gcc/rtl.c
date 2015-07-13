@@ -441,7 +441,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 
     case DEBUG_PARAMETER_REF:
       return DEBUG_PARAMETER_REF_DECL (x)
-	     == DEBUG_PARAMETER_REF_DECL (x);
+	     == DEBUG_PARAMETER_REF_DECL (y);
 
     case ENTRY_VALUE:
       return rtx_equal_p_cb (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y), cb);
