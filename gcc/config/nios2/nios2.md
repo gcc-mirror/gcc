@@ -62,6 +62,15 @@
   UNSPECV_CUSTOM_XNXX
   UNSPECV_LDXIO
   UNSPECV_STXIO
+  UNSPECV_RDPRS
+  UNSPECV_FLUSHD
+  UNSPECV_FLUSHDA
+  UNSPECV_WRPIE
+  UNSPECV_ENI
+  UNSPECV_LDEX
+  UNSPECV_LDSEX
+  UNSPECV_STEX
+  UNSPECV_STSEX
 ])
 
 (define_c_enum "unspec" [
@@ -1127,6 +1136,48 @@
   "wrctl\\tctl%0, %z1"
   [(set_attr "type" "control")])
 
+(define_insn "rdprs"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec_volatile:SI [(match_operand:SI 1 "rdwrctl_operand" "O")
+                             (match_operand:SI 2 "arith_operand"   "U")]
+         UNSPECV_RDPRS))]
+  ""
+  "rdprs\\t%0, %1, %2"
+  [(set_attr "type" "control")])
+
+;; Cache Instructions
+
+(define_insn "flushd"
+  [(unspec_volatile:SI [(match_operand:SI 0 "ldstio_memory_operand" "w")]
+  		        UNSPECV_FLUSHD)]
+  ""
+  "flushd\\t%0"
+  [(set_attr "type" "control")])
+
+(define_insn "flushda"
+  [(unspec_volatile:SI [(match_operand:SI 0 "ldstio_memory_operand" "w")]
+  		        UNSPECV_FLUSHDA)]
+  ""
+  "flushda\\t%0"
+  [(set_attr "type" "control")])
+
+;; R2 Instructions
+
+(define_insn "wrpie"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec_volatile:SI [(match_operand:SI 1 "register_operand" "r")]
+		 	     UNSPECV_WRPIE))]
+  "TARGET_ARCH_R2"
+  "wrpie\\t%0, %1"
+  [(set_attr "type" "control")])
+
+(define_insn "eni"
+  [(unspec:VOID [(match_operand 0 "const_int_operand" "i")]
+  		 UNSPECV_ENI)]
+  "TARGET_ARCH_R2"
+  "eni\\t%0"
+  [(set_attr "type" "control")])
+
 ;; Trap patterns
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 3))]
@@ -1172,6 +1223,10 @@
   emit_move_insn (operands[0], gen_rtx_REG (Pmode, TP_REGNO));
   DONE;
 })
+
+;; Synchronization Primitives
+(include "sync.md")
+
 ;; Include the ldwm/stwm/push.n/pop.n patterns and peepholes.
 (include "ldstwm.md")
 

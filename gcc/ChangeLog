@@ -2,6 +2,35 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* config/nios2/constraints.md (U, v): New constraints.
+	* config/nios2/predicates.md (rdprs_dcache_operand): New.
+	(ldstex_memory_operand): New.
+	* config/nios2/sync.md: New file.
+	* config/nios2/nios2.md (unspecv): Add new builtin function
+	UNSPECV codes.
+	(rdprs, flushd, flushda, wrpie, eni): New patterns.
+	(top-level): Include sync.md.
+	* config/nios2/nios2.c (N2_FTYPES): Add function types for
+	new builtins.
+	(N2_BUILTINS): Add arch field setting, add new builtins.
+	(enum nios2_builtin_code,nios2_builtins): Update N2_BUILTIN_DEF
+	for arch field.
+	(nios2_expand_ldst_builtin): Rename from nios2_expand_ldstio_builtin.
+	Also handle ldex/stex/ldsex/stsex builtins.
+	(nios2_expand_rdprs_builtin): New function.
+	(nios2_expand_cache_builtin): New function.
+	(nios2_expand_wrpie_builtin): New function.
+	(nios2_expand_eni_builtin): New function.
+	(nios2_expand_builtin): Add arch field handling and new builtin 
+        cases.
+	* doc/extend.texi (Altera Nios II Built-in Functions): Document
+	new builtins.
+	* doc/md.texi (Machine Constraints): Document U and v constraints.
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* config/nios2/nios2-protos.h (nios2_expand_return): Declare.
 	* config/nios2/nios2.c (struct GTY (()) machine_function): Add
 	callee_save_reg_size and uses_anonymous_args fields.

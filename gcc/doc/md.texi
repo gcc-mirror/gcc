@@ -2999,6 +2999,14 @@ Matches immediates which are addresses in the small
 data section and therefore can be added to @code{gp}
 as a 16-bit immediate to re-create their 32-bit value.
 
+@item U
+Matches constants suitable as an operand for the rdprs and
+cache instructions.
+
+@item v
+A memory operand suitable for Nios II R2 load/store
+exclusive instructions.
+
 @item w
 A memory operand suitable for load/store IO and cache
 instructions.

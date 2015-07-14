@@ -2,6 +2,16 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* gcc.target/nios2/nios2-flushd.c: New.
+	* gcc.target/nios2/nios2-rdprs.c: New.
+	* gcc.target/nios2/r2-atomic.c: New.
+	* gcc.target/nios2/r2-eni.c: New.
+	* gcc.target/nios2/r2-wrpie.c: New.
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* gcc.target/nios2/cdx-ldstwm-1.c: New.
 	* gcc.target/nios2/cdx-ldstwm-2.c: New.
 
