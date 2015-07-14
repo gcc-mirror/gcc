@@ -1694,7 +1694,7 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	   ++p)
 	{
 	  Variable* param = new Variable(p->type(), NULL, false, true, false,
-					 location);
+					 p->location());
 	  if (is_varargs && p + 1 == parameters->end())
 	    param->set_is_varargs_parameter();
 
