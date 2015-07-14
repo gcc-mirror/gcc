@@ -143,10 +143,10 @@ cplus_mangle_opname (const char *opname, int options);
 extern void
 set_cplus_marker_for_demangling (int ch);
 
-extern enum demangling_styles 
+extern enum demangling_styles
 cplus_demangle_set_style (enum demangling_styles style);
 
-extern enum demangling_styles 
+extern enum demangling_styles
 cplus_demangle_name_to_style (const char *name);
 
 /* Callback typedef for allocation-less demangler interfaces. */
