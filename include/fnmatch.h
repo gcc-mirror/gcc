@@ -1,4 +1,4 @@
-/* Copyright 1991, 1992, 1993, 1996 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
 
 NOTE: The canonical source of this file is maintained with the GNU C Library.
 Bugs can be reported to bug-glibc@prep.ai.mit.edu.
