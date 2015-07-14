@@ -1627,6 +1627,21 @@ nios2_regno_ok_for_base_p (int regno, bool strict_p)
 	  || regno == ARG_POINTER_REGNUM);
 }
 
+/* Return true if OFFSET is permitted in a load/store address expression.
+   Normally any 16-bit value is permitted, but on R2 if we may be emitting
+   the IO forms of these instructions we must restrict the offset to fit
+   in a 12-bit field instead.  */
+
+static bool
+nios2_valid_addr_offset_p (rtx offset)
+{
+  return (CONST_INT_P (offset)
+	  && ((TARGET_ARCH_R2 && (TARGET_BYPASS_CACHE
+				  || TARGET_BYPASS_CACHE_VOLATILE))
+	      ? SMALL_INT12 (INTVAL (offset))
+	      : SMALL_INT (INTVAL (offset))));
+}
+
 /* Return true if the address expression formed by BASE + OFFSET is
    valid.  */
 static bool
@@ -1637,7 +1652,7 @@ nios2_valid_addr_expr_p (rtx base, rtx offset, bool strict_p)
   return (REG_P (base)
 	  && nios2_regno_ok_for_base_p (REGNO (base), strict_p)
 	  && (offset == NULL_RTX
-	      || const_arith_operand (offset, Pmode)
+	      || nios2_valid_addr_offset_p (offset)
 	      || nios2_unspec_reloc_p (offset)));
 }
 
@@ -1737,6 +1752,13 @@ nios2_symbol_ref_in_small_data_p (rtx sym)
 
   /* TLS variables are not accessed through the GP.  */
   if (SYMBOL_REF_TLS_MODEL (sym) != 0)
+    return false;
+
+  /* On Nios II R2, there is no GP-relative relocation that can be
+     used with "io" instructions.  So, if we are implicitly generating
+     those instructions, we cannot emit GP-relative accesses.  */
+  if (TARGET_ARCH_R2
+      && (TARGET_BYPASS_CACHE || TARGET_BYPASS_CACHE_VOLATILE))
     return false;
 
   /* If the user has explicitly placed the symbol in a small data section

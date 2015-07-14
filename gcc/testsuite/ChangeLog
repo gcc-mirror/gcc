@@ -1,3 +1,14 @@
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gcc.target/nios2/r2-io-range.c: New.
+	* gcc.target/nios2/r2-stio-1.c: New.
+	* gcc.target/nios2/r2-stio-2.c: New.
+	* gcc.target/nios2/nios2-ldxio.c: New.
+	* gcc.target/nios2/nios2-stxio.c: Change to assemble test instead
+	of just compile.  Add more tests.
+
 2015-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	gfortran.dg/pr66864.f90: New test.
