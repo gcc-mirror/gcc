@@ -274,6 +274,7 @@ static const char *compare_debug_self_opt_spec_function (int, const char **);
 static const char *compare_debug_auxbase_opt_spec_function (int, const char **);
 static const char *pass_through_libs_spec_func (int, const char **);
 static const char *replace_extension_spec_func (int, const char **);
+static const char *greater_than_spec_func (int, const char **);
 static char *convert_white_space (char *);
 
 /* The Specs Language
@@ -881,7 +882,8 @@ proper position among the other output files.  */
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} " VTABLE_VERIFICATION_SPEC " \
     %{static:} %{L*} %(mfwrap) %(link_libgcc) " SANITIZER_EARLY_SPEC " %o\
     " CHKP_SPEC " \
-    %{fopenacc|fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
+    %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*} 1):\
+	%:include(libgomp.spec)%(link_gomp)}\
     %{fcilkplus:%:include(libcilkrts.spec)%(link_cilkrts)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
@@ -1042,7 +1044,8 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 /* Linking to libgomp implies pthreads.  This is particularly important
    for targets that use different start files and suchlike.  */
 #ifndef GOMP_SELF_SPECS
-#define GOMP_SELF_SPECS "%{fopenacc|fopenmp|ftree-parallelize-loops=*: " \
+#define GOMP_SELF_SPECS \
+  "%{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*} 1): " \
   "-pthread}"
 #endif
 
@@ -1482,6 +1485,7 @@ static const struct spec_function static_spec_functions[] =
   { "compare-debug-auxbase-opt", compare_debug_auxbase_opt_spec_function },
   { "pass-through-libs",	pass_through_libs_spec_func },
   { "replace-extension",	replace_extension_spec_func },
+  { "gt",			greater_than_spec_func },
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -9426,6 +9430,47 @@ replace_extension_spec_func (int argc, const char **argv)
 
   free (name);
   return result;
+}
+
+/* Returns "" if the n in ARGV[1] == -opt=<n> is greater than ARGV[2].
+   Otherwise, return NULL.  */
+
+static const char *
+greater_than_spec_func (int argc, const char **argv)
+{
+  char *converted;
+
+  if (argc == 1)
+    return NULL;
+
+  gcc_assert (argc == 3);
+  gcc_assert (argv[0][0] == '-');
+  gcc_assert (argv[0][1] == '\0');
+
+  /* Point p to <n> in in -opt=<n>.  */
+  const char *p = argv[1];
+  while (true)
+    {
+      char c = *p;
+      if (c == '\0')
+	gcc_unreachable ();
+
+      ++p;
+
+      if (c == '=')
+	break;
+    }
+
+  long arg = strtol (p, &converted, 10);
+  gcc_assert (converted != p);
+
+  long lim = strtol (argv[2], &converted, 10);
+  gcc_assert (converted != argv[2]);
+
+  if (arg > lim)
+    return "";
+
+  return NULL;
 }
 
 /* Insert backslash before spaces in ORIG (usually a file path), to 
