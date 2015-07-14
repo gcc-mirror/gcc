@@ -55,6 +55,16 @@
   (ior (match_operand 0 "const_logical_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "const_and_operand"
+  (and (match_code "const_int")
+       (match_test "SMALL_INT_UNSIGNED (INTVAL (op))
+                    || UPPER16_INT (INTVAL (op))
+                    || (TARGET_ARCH_R2 && ANDCLEAR_INT (INTVAL (op)))")))
+
+(define_predicate "and_operand"
+  (ior (match_operand 0 "const_and_operand")
+       (match_operand 0 "register_operand")))
+
 (define_predicate "const_shift_operand"
   (and (match_code "const_int")
        (match_test "SHIFT_INT (INTVAL (op))")))
@@ -82,6 +92,16 @@
           || nios2_validate_fpu_compare (GET_MODE (XEXP (op, 0)), &op,
                                          &XEXP (op, 0), &XEXP (op, 1),
                                          false));
+})
+
+(define_predicate "stack_memory_operand"
+  (match_code "mem")
+{
+  rtx addr = XEXP (op, 0);
+  return ((REG_P (addr) && REGNO (addr) == SP_REGNO)
+          || (GET_CODE (addr) == PLUS
+              && REG_P (XEXP (addr, 0)) && REGNO (XEXP (addr, 0)) == SP_REGNO
+              && CONST_INT_P (XEXP (addr, 1))));
 })
 
 (define_predicate "ldstio_memory_operand"

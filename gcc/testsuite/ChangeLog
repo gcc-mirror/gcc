@@ -1,3 +1,19 @@
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gcc.target/nios2/andci.c: New.
+	* gcc.target/nios2/bmx.c: New.
+	* gcc.target/nios2/cdx-add.c: New.
+	* gcc.target/nios2/cdx-branch.c: New.
+	* gcc.target/nios2/cdx-callret.c: New.
+	* gcc.target/nios2/cdx-loadstore.c: New.
+	* gcc.target/nios2/cdx-logical.c: New.
+	* gcc.target/nios2/cdx-mov.c: New.
+	* gcc.target/nios2/cdx-shift.c: New.
+	* gcc.target/nios2/cdx-sub.c: New.
+	* gcc.target/nios2/nios2-trap-insn.c: Adjust pattern.
+
 2015-07-14  Andrea Azzarone  <azzaronea@gmail.com>
 
 	PR c++/65071

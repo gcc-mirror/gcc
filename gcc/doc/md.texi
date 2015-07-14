@@ -2991,6 +2991,9 @@ instead of @code{0} in the assembly output.
 Integer that is valid as an immediate operand for
 a custom instruction opcode. Range 0 to 255.
 
+@item P
+An immediate operand for R2 andchi/andci instructions. 
+
 @item S
 Matches immediates which are addresses in the small
 data section and therefore can be added to @code{gp}

@@ -2,6 +2,81 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* config/nios2/nios2.h (LABEL_ALIGN): Define.
+	(REG_ALLOC_ORDER): Define.
+	(ADJUST_REG_ALLOC_ORDER): Define.
+	(HONOR_REG_ALLOC_ORDER): Define.
+	(CDX_REG_P): Define.
+	(ANDCLEAR_INT): Define.
+	* config/nios2/nios2-protos.h (nios2_add_insn_asm): Declare.
+	(nios2_label_align): Declare.
+	(nios2_cdx_narrow_form_p): Declare.
+	(nios2_adjust_reg_alloc_order): Declare.
+	* config/nios2/nios2.c (nios2_rtx_costs): Adjust for BMX zero-extract
+	operation.
+	(nios2_large_unspec_reloc_p): New function, split from...
+	(nios2_legitimate_pic_operand_p): ...here.
+	(nios2_emit_move_sequence): Add *high/*lo_sum constant expand code.
+	(nios2_print_operand_punct_valid_p): New.
+	(nios2_print_operand): Add %., %!, %x, %y, %A.  Remove %U.
+	(split_mem_address): New.
+	(split_alu_insn): New.
+	(cdxreg): New.
+	(cdx_add_immed, cdx_and_immed, cdx_mov_immed, cdx_shift_immed): New.
+	(enum nios2_add_insn_kind): New.
+	(nios2_add_insn_names, nios2_add_insn_narrow): New.
+	(nios2_add_insn_classify): New.
+	(nios2_add_insn_asm): New.
+	(nios2_cdx_narrow_form_p): New.
+	(label_align, min_labelno, max_labelno): New.
+	(nios2_reorg): New.
+	(nios2_label_align): New.
+	(nios2_adjust_reg_alloc_order): New.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+	(TARGET_MACHINE_DEPENDENT_REORG): Define.
+	* config/nios2/constraints.md (P): New constraint.
+	* config/nios2/predicates.md (const_and_operand): New.
+	(and_operand): New.
+	(stack_memory_operand): New.
+	* config/nios2/nios2.md (SP_REGNO): Define stack pointer regno.
+	(length): Update to use nios2_cdx_narrow_form_p().
+	(type): Add new insn type values.
+	(control, alu, st, ld, shift): Update insn reservations with
+	new insn type values.
+	(*high, *lo_sum): Define new insn patterns for constant generation.
+	(movqi_internal, movhi_internal, movsi_internal): Reduce
+	alternatives, update asm template to handle CDX variants, update
+	type attributes.
+	(zero_extendhisi2, zero_extendqi<mode>2): Add CDX variants to asm
+	template, update type attributes.
+	(extendhisi2, extendqi<mode>2): Likewise.
+	(addsi3): Change to use function for asm string.
+	(subsi3): Add CDX notation to asm template, update type attributes.
+	(negsi3, one_cmplsi3): Likewise.
+	(andsi3): New pattern, specialized from logical patterns.
+	(<code>si3): Remove and case, combine alternatives, update asm
+	template.
+	(<shift_op>si3): Add CDX notation, update type attributes.
+	(rotrsi3): Update type attribute.
+	(*merge, extzv, insv): New insn patterns.
+	(return): Change to define_expand.
+	(simple_return): Add CDX notation, update type attributes.
+	(indirect_jump): Add CDX notation.
+	(jump): Update asm cases, update length attribute expression.
+	(*call, *call_value, *sibcall, *sibcall_value): Add CDX variant.
+	(nios2_cbranch): Update asm cases and length attribute expression
+	to handle CDX variants.
+	(nios2_cmp<code>): Update asm template.
+	(nop): Add CDX notation, update type attributes.
+	(trap): Add CDX notation.
+	(ctrapsi4): Update asm cases and length attribute expression to
+	handle CDX variant.
+	* doc/md.texi (Machine Constraints): Document P constraint.
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* config/nios2/nios2.h (SMALL_INT12): New macro.
 	* config/nios2/nios2.c (nios2_valid_addr_offset_p): New function.
 	(nios2_valid_addr_expr_p): Use it.
