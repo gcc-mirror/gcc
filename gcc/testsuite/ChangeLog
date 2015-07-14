@@ -1,3 +1,9 @@
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/nios2-stack-check-1.c: Adjust patterns.
+	* gcc.target/nios2/nios2-stack-check-2.c: Likewise.
+	* gcc.target/nios2/nios2-stack-check-3.c: New test case.
+
 2015-07-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/template/crash81.C: Adjust for error + inform change.
