@@ -2,6 +2,13 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* gcc.target/nios2/cdx-ldstwm-1.c: New.
+	* gcc.target/nios2/cdx-ldstwm-2.c: New.
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* gcc.target/nios2/andci.c: New.
 	* gcc.target/nios2/bmx.c: New.
 	* gcc.target/nios2/cdx-add.c: New.

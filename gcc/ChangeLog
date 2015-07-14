@@ -2,6 +2,32 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* config/nios2/predicates.md (pop_operation): New.
+	(ldwm_operation, stwm_operation): New.
+	(nios2_hard_register_operand): New.
+	* config/nios2/nios2-protos.h (pop_operation_p): Declare.
+	(ldstwm_operation_p): Declare.
+	(gen_ldstwm_peep): Declare.
+	* config/nios2/nios2.c: (nios2_ldst_parallel): Declare.
+	(base_reg_adjustment_p): New.
+	(pop_operation_p): New.
+	(CDX_LDSTWM_VALID_REGS_0, CDX_LDSTWM_VALID_REGS_1): Define.
+	(nios2_ldstwm_regset_p): New.
+	(ldstwm_operation_p): New.
+	(gen_ldst): New.
+	(nios2_ldst_parallel): New.
+	(struct ldswm_operand): Declare.
+	(compare_ldstwm_operands): New.
+	(can_use_cdx_ldstw): New.
+	(gen_ldstwm_peep): New.
+	* config/nios2/nios2-ldstwm.sml: New.
+	* config/nios2/nios2.md: Include ldstwm.md.
+	* config/nios2/ldstwm.md: Generated.
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* config/nios2/nios2.h (LABEL_ALIGN): Define.
 	(REG_ALLOC_ORDER): Define.
 	(ADJUST_REG_ALLOC_ORDER): Define.
