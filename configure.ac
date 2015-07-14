@@ -2265,6 +2265,15 @@ for i in ${target_configdirs_all} ; do
   fi
 done
 
+# Exclude target-zlib if target-libjava isn't built.
+case ${target_configdirs} in
+*target-libjava*)
+  ;;
+*)
+  target_configdirs="`echo ${target_configdirs} | sed -e 's/target-zlib//'`"
+  ;;
+esac
+
 # libiberty-linker-plugin is special: it doesn't have its own source directory,
 # so we have to add it after the preceding checks.
 if test x"$extra_linker_plugin_flags$extra_linker_plugin_configure_flags" != x
