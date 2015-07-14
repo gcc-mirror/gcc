@@ -1,3 +1,20 @@
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/nios2.opt (march, mbmx, mcdx): New options.
+	* config/nios2/nios2-opts.h (enum nios2_arch_type): New enum for
+	Nios II architecture level.
+	* config/nios2/nios2.h (TARGET_ARCH_R2): New define.
+	(TARGET_CPU_CPP_BUILTINS): Add definition of __nios2_arch__ symbol.
+	(OPTION_DEFAULT_SPECS): Define.
+	(ASM_SPEC): Add -march= spec strings.
+	* config/nios2/nios2.c (nios2_option_override): Check for
+	conflicts involving new options.
+	* config.gcc (nios2*-*-*): Support --with-arch=.
+	* doc/invoke.texi (Option Summary, Nios II Options): Document
+	-march=, -mbmx,	and -mcdx.
+
 2015-07-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/66626

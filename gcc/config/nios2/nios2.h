@@ -23,6 +23,9 @@
 #ifndef GCC_NIOS2_H
 #define GCC_NIOS2_H
 
+/* Indicate R2 ISA level support.  */
+#define TARGET_ARCH_R2 (nios2_arch_option == ARCH_R2)
+
 /* FPU insn codes declared here.  */
 #include "config/nios2/nios2-opts.h"
 
@@ -36,7 +39,9 @@
         builtin_define_std ("nios2_big_endian");    \
       else                                          \
         builtin_define_std ("nios2_little_endian"); \
-    }                                               \
+      builtin_define_with_int_value (		    \
+        "__nios2_arch__", (int) nios2_arch_option); \
+    }						    \
   while (0)
 
 /* We're little endian, unless otherwise specified by defining
@@ -50,14 +55,17 @@
 # define TARGET_DEFAULT (MASK_HAS_MUL | TARGET_ENDIAN_DEFAULT)
 #endif
 
+#define OPTION_DEFAULT_SPECS \
+  {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }
+
 #define CC1_SPEC "%{G*}"
 
 #if TARGET_ENDIAN_DEFAULT == 0
-# define ASM_SPEC "%{!meb:-EL} %{meb:-EB}"
+# define ASM_SPEC "%{!meb:-EL} %{meb:-EB} %{march=*:-march=%*}"
 # define LINK_SPEC_ENDIAN "%{!meb:-EL} %{meb:-EB}"
 # define MULTILIB_DEFAULTS { "EL" }
 #else
-# define ASM_SPEC "%{!mel:-EB} %{mel:-EL}"
+# define ASM_SPEC "%{!mel:-EB} %{mel:-EL} %{march=*:-march=%*}"
 # define LINK_SPEC_ENDIAN "%{!mel:-EB} %{mel:-EL}"
 # define MULTILIB_DEFAULTS { "EB" }
 #endif
