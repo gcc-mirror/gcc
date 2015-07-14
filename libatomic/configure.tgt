@@ -110,7 +110,7 @@ case "${target}" in
 	;;
 
   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
-  | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* \
+  | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly* \
   | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \
   | *-*-darwin* | *-*-aix* | *-*-cygwin*)
 	# POSIX system.  The OS is supported.
