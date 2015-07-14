@@ -1,3 +1,8 @@
+2015-07-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (check_template_shadow): Emit error + inform instead of
+	two errors.
+
 2015-07-13  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/65186

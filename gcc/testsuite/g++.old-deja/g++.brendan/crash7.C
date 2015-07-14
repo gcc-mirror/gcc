@@ -13,7 +13,7 @@ public:
   int size () { return sz; }
 };
 
-template<class T>// { dg-error "" } previous definition of T
+template<class T>// { dg-message "" } previous definition of T
 struct Comparator
 {
   typedef T T;// { dg-error "" } use of template type T in typedef to T

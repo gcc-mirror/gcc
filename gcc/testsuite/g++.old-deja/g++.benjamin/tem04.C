@@ -18,7 +18,7 @@
 
 // 14 
 // declared friend template (v3, template type parameters)
-template <class T4>// { dg-error "" } .*
+template <class T4>// { dg-message "" } .*
 class Xfourteen {
 protected:
   T4 value;
@@ -31,7 +31,7 @@ public:
 
 // 15
 // nested template class (v3, template type parameters)
-template <class T6>// { dg-error "" } .*
+template <class T6>// { dg-message "" } .*
 class Xfifteen {
 protected:
   T6 value;
@@ -48,7 +48,7 @@ public:
 
 // 16
 // member templates (v3, template type parameters)
-template <class T8>// { dg-error "" } .*
+template <class T8>// { dg-message "" } .*
 class Xsixteen {
 protected:
   T8 value;
@@ -88,7 +88,7 @@ public:
 
 // 18
 // more template template redecl tests
-template <typename T14, template <typename T15> class C12>// { dg-error "" } .*
+template <typename T14, template <typename T15> class C12>// { dg-message "" } .*
 class Xeighteen {
 protected:
   C12<T14> value;
@@ -98,7 +98,7 @@ protected:
 
 // 19
 // more template template redecl tests
-template <typename T16, template <typename T17> class C14>// { dg-error "" } .*
+template <typename T16, template <typename T17> class C14>// { dg-message "" } .*
 class Xnineteen{
 protected:
   C14<T16> value;
@@ -137,7 +137,7 @@ template <class T17, int i> struct Xtwenty {
 // non-type template parameters v1: enum
 enum my_enum {my_A = 45, my_B, my_C};
 
-template <my_enum T18> class Xtwentyone {// { dg-error "" } .*
+template <my_enum T18> class Xtwentyone {// { dg-message "" } .*
   float T18; // { dg-error "" } .*
 };
 
@@ -149,34 +149,29 @@ struct base {
   int ret_gcount() {return gcount;}
 };
 
-template <class T20, base* b> class Xtwentytwo {// { dg-error "" } .*
+template <class T20, base* b> class Xtwentytwo {// { dg-message "" } .*
   float b; // { dg-error "" } .*
 };
 
 
 // 23
 // non-type template parameters v2: reference to object
-template <class T20, base& b2> class Xtwentythree {// { dg-error "" } .*
+template <class T20, base& b2> class Xtwentythree {// { dg-message "" } .*
   float b2; // { dg-error "" } .*
 };
 
 
 // 24
 // non-type template parameters v3: pointer to member
-template <class T20, int base::* b3> class Xtwentyfour {// { dg-error "" } .*
+template <class T20, int base::* b3> class Xtwentyfour {// { dg-message "" } .*
   float b3; // { dg-error "" } .*
 };
 
 
 // 25
 // non-type template parms that use push_class_level
-template <class T22> void f1() {// { dg-error "" } .*
+template <class T22> void f1() {// { dg-message "" } .*
   struct foo { 
     enum T22 { un, du, toi }; // { dg-error "" } .*
   };
 }
-
-
-
-
-
