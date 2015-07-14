@@ -18,7 +18,7 @@
 
 // 01 
 // declared friend template
-template <class T4>// { dg-error "" } .*
+template <class T4>// { dg-message "" } .*
 class Xone {
 protected:
   T4* next;
@@ -38,7 +38,7 @@ public:
 
 // 02
 // nested template class
-template <class T6>// { dg-error "" } .*
+template <class T6>// { dg-message "" } .*
 class Xtwo {
 protected:
   T6* next;
@@ -58,7 +58,7 @@ public:
 
 // 03
 // member templates
-template <class T8>// { dg-error "" } .*
+template <class T8>// { dg-message "" } .*
 class Xthree {
 protected:
   T8* next;
@@ -80,7 +80,7 @@ public:
 
 // 04
 // local names (14.6.1 p 4)
-template <class T10, int i> struct Xfour {// { dg-error "" } .*
+template <class T10, int i> struct Xfour {// { dg-message "" } .*
   int T10; // { dg-error "" } .*
   void f(){
     char T10; // { dg-error "declaration of 'char T10'" }
@@ -94,7 +94,7 @@ template <class T12, int i> struct Xfive {
   void f();
 };
 
-template <class T13, int i> void Xfive<T13,i>::f() {// { dg-error "" } .*
+template <class T13, int i> void Xfive<T13,i>::f() {// { dg-message "" } .*
   int T13; // { dg-error "" } .*
   int T12; //should be ok
 }
@@ -116,14 +116,14 @@ template <class T12> class T12; // { dg-error "" } .*
 
 // 08 
 // with multiple template params, and second (third) one is redeclared
-template <class T16, int i, class T161> class Xseven { // { dg-error "" } .*
+template <class T16, int i, class T161> class Xseven { // { dg-message "" } .*
 private:
   char T161; // { dg-error "" } .*
 public:
   template <class U>
   friend bool fooy(U u);
 
-  template <class T161> // { dg-error "declaration of 'class T161'" }
+  template <class T161> // { dg-error "declaration of template parameter 'T161'" }
   friend bool foo(T161 u)
     {
       Xseven<T161, 5, int> obj;
@@ -158,14 +158,14 @@ struct S1
 // 10 
 // check for non-type parameters, should still be able to redeclare?
 // local names (14.6.1 p 4)
-template <class T18, int i> class Xten {// { dg-error "" } .*
+template <class T18, int i> class Xten {// { dg-message "" } .*
   float i; // { dg-error "" } .*
 };
 
 
 // 11 
 // declared friend template, non-type parameters
-template <long l>// { dg-error "" } .*
+template <long l>// { dg-message "" } .*
 class Xeleven {
 public:
   template <long l> friend bool isequal (Xeleven<5> lhs, Xeleven<5> rhs);  // { dg-error "" } .*
@@ -175,7 +175,7 @@ public:
 
 // 12
 // nested template class, non-type parameters
-template <long l>// { dg-error "" } .*
+template <long l>// { dg-message "" } .*
 class Xtwelve {
 public:
   template <long l> class nested {// { dg-error "" } .
@@ -188,7 +188,7 @@ public:
 
 // 13
 // member templates, non-type parameters
-template <long l>// { dg-error "" } .*
+template <long l>// { dg-message "" } .*
 struct Xthirteen {
   template <long l> long comp_ge(long test) {// { dg-error "" } .
     long local_value;

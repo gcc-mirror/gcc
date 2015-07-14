@@ -1,3 +1,14 @@
+2015-07-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/crash81.C: Adjust for error + inform change.
+	* g++.dg/template/pr58878.C: Likewise.
+	* g++.dg/template/shadow1.C: Likewise.
+	* g++.dg/template/shadow2.C: Likewise.
+	* g++.old-deja/g++.benjamin/tem03.C: Likewise.
+	* g++.old-deja/g++.benjamin/tem04.C: Likewise.
+	* g++.old-deja/g++.brendan/crash7.C: Likewise.
+	* g++.old-deja/g++.pt/shadow2.C: Likewise.
+
 2015-07-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66863
