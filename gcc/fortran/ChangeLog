@@ -1,3 +1,8 @@
+2015-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (gfc_simplify_floor): Set precision of temporary to
+	that of arg.
+
 2015-07-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/64589
