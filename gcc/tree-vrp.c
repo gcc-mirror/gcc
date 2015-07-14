@@ -5381,7 +5381,17 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      cst = int_const_binop (code, val, cst);
 	    }
 	  else if (CONVERT_EXPR_CODE_P (code))
-	    cst = fold_convert (TREE_TYPE (name2), val);
+	    {
+	      /* For truncating conversions require that the constant
+	         fits in the truncated type if we are going to record
+		 an inequality.  */
+	      if (comp_code == NE_EXPR
+		  && (TYPE_PRECISION (TREE_TYPE (name2))
+		      < TYPE_PRECISION (TREE_TYPE (name)))
+		  && ! int_fits_type_p (val, TREE_TYPE (name2)))
+		continue;
+	      cst = fold_convert (TREE_TYPE (name2), val);
+	    }
 	  else
 	    continue;
 

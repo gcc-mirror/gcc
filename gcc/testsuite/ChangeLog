@@ -1,3 +1,8 @@
+2015-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66863
+	* gcc.dg/torture/pr66863.c: New testcase.
+
 2015-07-13  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/65186
