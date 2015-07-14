@@ -565,4 +565,24 @@ mcustom-round=
 Target Report RejectNegative Joined UInteger Var(nios2_custom_round) Init(-1)
 Integer id (N) of round custom instruction
 
+march=
+Target RejectNegative Joined Enum(nios2_arch_type) Var(nios2_arch_option) Init(ARCH_R1)
+Specify the name of the target architecture.
 
+Enum
+Name(nios2_arch_type) Type(enum nios2_arch_type)
+Valid Nios II ISA levels (for -march):
+
+EnumValue
+Enum(nios2_arch_type) String(r1) Value(ARCH_R1)
+
+EnumValue
+Enum(nios2_arch_type) String(r2) Value(ARCH_R2)
+
+mbmx
+Target Report Mask(HAS_BMX)
+Enable generation of R2 BMX instructions
+
+mcdx
+Target Report Mask(HAS_CDX)
+Enable generation of R2 CDX instructions

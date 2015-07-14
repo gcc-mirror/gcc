@@ -4052,6 +4052,19 @@ case "${target}" in
 		esac
 		;;
 
+	nios2*-*-*)
+		supported_defaults="arch"
+			case "$with_arch" in
+			"" | r1 | r2)
+				# OK
+				;;
+			*)
+				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
+				exit 1
+				;;
+			esac
+		;;
+
 	powerpc*-*-* | rs6000-*-*)
 		supported_defaults="abi cpu cpu_32 cpu_64 float tune tune_32 tune_64 advance_toolchain"
 

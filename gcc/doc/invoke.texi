@@ -857,7 +857,8 @@ Objective-C and Objective-C++ Dialects}.
 -mhw-mul -mno-hw-mul -mhw-mulx -mno-hw-mulx -mno-hw-div -mhw-div @gol
 -mcustom-@var{insn}=@var{N} -mno-custom-@var{insn} @gol
 -mcustom-fpu-cfg=@var{name} @gol
--mhal -msmallc -msys-crt0=@var{name} -msys-lib=@var{name}}
+-mhal -msmallc -msys-crt0=@var{name} -msys-lib=@var{name} @gol
+-march=@var{arch} -mbmx -mno-bmx -mcdx -mno-cdx}
 
 @emph{Nvidia PTX Options}
 @gccoptlist{-m32 -m64 -mmainkernel}
@@ -18500,6 +18501,15 @@ small data section.
 Generate little-endian (default) or big-endian (experimental) code,
 respectively.
 
+@item -march=@var{arch}
+@opindex march
+This specifies the name of the target Nios II architecture.  GCC uses this
+name to determine what kind of instructions it can emit when generating
+assembly code.  Permissible names are: @samp{r1}, @samp{r2}.
+
+The preprocessor macro @code{__nios2_arch__} is available to programs,
+with value 1 or 2, indicating the targeted ISA level.
+
 @item -mbypass-cache
 @itemx -mno-bypass-cache
 @opindex mno-bypass-cache
@@ -18537,6 +18547,15 @@ is to use the fast divide at @option{-O3} and above.
 Enable or disable emitting @code{mul}, @code{mulx} and @code{div} family of 
 instructions by the compiler. The default is to emit @code{mul}
 and not emit @code{div} and @code{mulx}.
+
+@item -mbmx
+@itemx -mno-bmx
+@itemx -mcdx
+@itemx -mno-cdx
+Enable or disable generation of Nios II R2 BMX (bit manipulation) and
+CDX (code density) instructions.  Enabling these instructions also
+requires @option{-march=r2}.  Since these instructions are optional
+extensions to the R2 architecture, the default is not to emit them.
 
 @item -mcustom-@var{insn}=@var{N}
 @itemx -mno-custom-@var{insn}

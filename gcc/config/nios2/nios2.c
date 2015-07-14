@@ -1078,6 +1078,19 @@ nios2_option_override (void)
   if (!TARGET_HAS_MUL && TARGET_HAS_MULX)
     target_flags &= ~MASK_HAS_MULX;
 
+  /* Optional BMX and CDX instructions only make sense for R2.  */
+  if (!TARGET_ARCH_R2)
+    {
+      if (TARGET_HAS_BMX)
+	error ("BMX instructions are only supported with R2 architecture");
+      if (TARGET_HAS_CDX)
+	error ("CDX instructions are only supported with R2 architecture");
+    }
+
+  /* R2 is little-endian only.  */
+  if (TARGET_ARCH_R2 && TARGET_BIG_ENDIAN)
+    error ("R2 architecture is little-endian only");
+
   /* Initialize default FPU configurations.  */
   nios2_init_fpu_configs ();
 
