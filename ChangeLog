@@ -1,6 +1,29 @@
 2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Sync with binutils-gdb:
+	2015-05-13  John David Anglin  <dave.anglin@bell.net>
+
+	* configure.ac: Disable configuration of GDB for HPUX targets.
+	* configure: Regenerate.
+
+	2015-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Add --with-system-zlib.
+	* configure: Regenerated.
+
+	2015-01-28  James Bowman  <james.bowman@ftdichip.com>
+
+	* configure.ac: Add FT32 support.
+	* configure: Regenerate.
+
+	2015-01-12  Anthony Green  <green@moxielogic.com>
+
+	* configure.ac: Don't disable gprof for moxie.
+	* configure: Rebuild.
+
+2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
 	2015-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR ld/18355
