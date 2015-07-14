@@ -1,3 +1,10 @@
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/tramp.c (MOVHI, ORI, JMP): Conditionalize
+	for __nios2_arch__ level.
+
 2015-07-13  John Marino  <gnugcc@marino.st>
 
 	* config/i386/t-dragonfly: New.
