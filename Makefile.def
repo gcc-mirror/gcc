@@ -402,6 +402,7 @@ dependencies = { module=configure-bfd; on=configure-libiberty; hard=true; };
 dependencies = { module=configure-bfd; on=configure-intl; };
 dependencies = { module=all-bfd; on=all-libiberty; };
 dependencies = { module=all-bfd; on=all-intl; };
+dependencies = { module=all-bfd; on=all-zlib; };
 dependencies = { module=configure-opcodes; on=configure-libiberty; hard=true; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
 

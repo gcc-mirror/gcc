@@ -1,3 +1,10 @@
+2015-07-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Sync with src:
+	2015-03-30  H.J. Lu  <hongjiu.lu@intel.com>
+	* Makefile.def (dependencies): Add all-zlib to all-bfd.
+	* Makefile.in: Regenerated.
+
 2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac (ospace_frag): Enable for i?86*-*-elfiamcu
