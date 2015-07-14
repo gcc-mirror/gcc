@@ -1,3 +1,8 @@
+2015-07-14  Andrea Azzarone  <azzaronea@gmail.com>
+
+	PR c++/65071
+	* g++.dg/cpp0x/vt-65071.C: New.
+
 2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>

@@ -24468,7 +24468,7 @@ cp_parser_sizeof_pack (cp_parser *parser)
   if (expr == error_mark_node)
     cp_parser_name_lookup_error (parser, name, expr, NLE_NULL,
 				 token->location);
-  if (TREE_CODE (expr) == TYPE_DECL)
+  if (TREE_CODE (expr) == TYPE_DECL || TREE_CODE (expr) == TEMPLATE_DECL)
     expr = TREE_TYPE (expr);
   else if (TREE_CODE (expr) == CONST_DECL)
     expr = DECL_INITIAL (expr);

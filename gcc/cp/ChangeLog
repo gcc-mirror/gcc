@@ -1,3 +1,9 @@
+2015-07-14  Andrea Azzarone  <azzaronea@gmail.com>
+
+	PR c++/65071
+	* parser.c (cp_parser_sizeof_pack): Also consider template template
+	parameters.
+
 2015-07-14  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_new_method_call_1): Call reshape_init.
