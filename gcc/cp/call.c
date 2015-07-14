@@ -8069,7 +8069,10 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
       /* If BASETYPE is an aggregate, we need to do aggregate
 	 initialization.  */
       else if (CP_AGGREGATE_TYPE_P (basetype))
-	init = digest_init (basetype, init_list, complain);
+	{
+	  init = reshape_init (basetype, init_list, complain);
+	  init = digest_init (basetype, init, complain);
+	}
 
       if (init)
 	{
