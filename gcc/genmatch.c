@@ -2383,8 +2383,8 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 	      fprintf_indent (f, indent, "  }\n");
 	    }
 	  fprintf_indent (f, indent, "default:;\n");
-	  indent -= 4;
 	  fprintf_indent (f, indent, "}\n");
+	  indent -= 4;
 	}
 
       if (fns_len)
@@ -2403,8 +2403,8 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 			  "    switch (DECL_FUNCTION_CODE (fndecl))\n");
 	  fprintf_indent (f, indent,
 			  "      {\n");
-	  indent += 8;
 
+	  indent += 6;
 	  for (unsigned i = 0; i < fns_len; ++i)
 	    {
 	      expr *e = as_a <expr *>(fns[i]->op);
@@ -2416,8 +2416,8 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 	    }
 
 	  fprintf_indent (f, indent, "default:;\n");
-	  indent -= 8;
-	  fprintf_indent (f, indent, "      }\n");
+	  fprintf_indent (f, indent, "}\n");
+	  indent -= 6;
 	  fprintf_indent (f, indent, "  }\n");
 	}
 
@@ -2481,7 +2481,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
     {
       indent -= 4;
       fprintf_indent (f, indent, "    default:;\n");
-      fprintf_indent (f, indent, "  }\n");
+      fprintf_indent (f, indent, "    }\n");
     }
 
   for (unsigned i = 0; i < preds.length (); ++i)
@@ -2915,7 +2915,7 @@ decision_tree::gen_gimple (FILE *f)
 	  fprintf (f,   "      }\n");
 	}
       fprintf (f,       "    default:;\n"
-	                "  }\n");
+	                "    }\n");
 
       fprintf (f, "  return false;\n");
       fprintf (f, "}\n");

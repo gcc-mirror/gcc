@@ -1,3 +1,8 @@
+2015-07-14  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_node::gen_kids_1): Fix case label indenting.
+	(decision_tree::gen_gimple): Likewise.
+
 2015-07-14  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.c (greater_than_spec_func): Declare forward.
