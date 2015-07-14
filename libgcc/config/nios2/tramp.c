@@ -33,12 +33,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define SC_REGNO 12
 
-#define MOVHI(reg,imm16) \
+/* Instruction encodings depend on the ISA level.  */
+#if __nios2_arch__ == 2
+#define MOVHI(reg,imm16)			\
+  (((reg) << 11) | ((imm16) << 16) | 0x34)
+#define ORI(reg,imm16)						\
+  (((reg) << 11) | ((reg) << 6) | ((imm16) << 16) | 0x14)
+#define JMP(reg)				\
+  (((reg) << 6) | (0x0d << 26) | 0x20)
+
+#elif __nios2_arch__ == 1
+#define MOVHI(reg,imm16)			\
   (((reg) << 22) | ((imm16) << 6) | 0x34)
-#define ORI(reg,imm16) \
+#define ORI(reg,imm16)						\
   (((reg) << 27) | ((reg) << 22) | ((imm16) << 6) | 0x14)
-#define JMP(reg) \
+#define JMP(reg)				\
   (((reg) << 27) | (0x0d << 11) | 0x3a)
+
+#else
+#error "Unknown Nios II architecture level"
+#endif
 
 void
 __trampoline_setup (unsigned int *addr, void *fnptr, void *chainptr)
