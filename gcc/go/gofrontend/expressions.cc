@@ -3391,52 +3391,7 @@ Expression::make_cast(Type* type, Expression* val, Location location)
   return new Type_conversion_expression(type, val, location);
 }
 
-// An unsafe type conversion, used to pass values to builtin functions.
-
-class Unsafe_type_conversion_expression : public Expression
-{
- public:
-  Unsafe_type_conversion_expression(Type* type, Expression* expr,
-				    Location location)
-    : Expression(EXPRESSION_UNSAFE_CONVERSION, location),
-      type_(type), expr_(expr)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse* traverse);
-
-  bool
-  do_is_immutable() const;
-
-  Type*
-  do_type()
-  { return this->type_; }
-
-  void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
-
-  Expression*
-  do_copy()
-  {
-    return new Unsafe_type_conversion_expression(this->type_,
-						 this->expr_->copy(),
-						 this->location());
-  }
-
-  Bexpression*
-  do_get_backend(Translate_context*);
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
- private:
-  // The type to convert to.
-  Type* type_;
-  // The expression to convert.
-  Expression* expr_;
-};
+// Class Unsafe_type_conversion_expression.
 
 // Traversal.
 

@@ -32,6 +32,7 @@ class Temporary_reference_expression;
 class Set_and_use_temporary_expression;
 class String_expression;
 class Type_conversion_expression;
+class Unsafe_type_conversion_expression;
 class Unary_expression;
 class Binary_expression;
 class Call_expression;
@@ -570,6 +571,15 @@ class Expression
   Type_conversion_expression*
   conversion_expression()
   { return this->convert<Type_conversion_expression, EXPRESSION_CONVERSION>(); }
+
+  // If this is an unsafe conversion expression, return the
+  // Unsafe_type_conversion_expression structure.  Otherwise, return NULL.
+  Unsafe_type_conversion_expression*
+  unsafe_conversion_expression()
+  {
+    return this->convert<Unsafe_type_conversion_expression,
+			 EXPRESSION_UNSAFE_CONVERSION>();
+  }
 
   // Return whether this is the expression nil.
   bool
@@ -1505,6 +1515,57 @@ class Type_conversion_expression : public Expression
   bool may_convert_function_types_;
 };
 
+// An unsafe type conversion, used to pass values to builtin functions.
+
+class Unsafe_type_conversion_expression : public Expression
+{
+ public:
+  Unsafe_type_conversion_expression(Type* type, Expression* expr,
+				    Location location)
+    : Expression(EXPRESSION_UNSAFE_CONVERSION, location),
+      type_(type), expr_(expr)
+  { }
+
+  Expression*
+  expr() const
+  { return this->expr_; }
+
+ protected:
+  int
+  do_traverse(Traverse* traverse);
+
+  bool
+  do_is_immutable() const;
+
+  Type*
+  do_type()
+  { return this->type_; }
+
+  void
+  do_determine_type(const Type_context*)
+  { this->expr_->determine_type_no_context(); }
+
+  Expression*
+  do_copy()
+  {
+    return new Unsafe_type_conversion_expression(this->type_,
+						 this->expr_->copy(),
+						 this->location());
+  }
+
+  Bexpression*
+  do_get_backend(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The type to convert to.
+  Type* type_;
+  // The expression to convert.
+  Expression* expr_;
+};
+
 // A Unary expression.
 
 class Unary_expression : public Expression
@@ -2023,6 +2084,10 @@ class Call_result_expression : public Expression
   Expression*
   call() const
   { return this->call_; }
+
+  unsigned int
+  index() const
+  { return this->index_; }
 
  protected:
   int
