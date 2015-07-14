@@ -4391,15 +4391,7 @@ Gogo::allocate_memory(Type* type, Location location)
   Expression* td = Expression::make_type_descriptor(type, location);
   Expression* size =
     Expression::make_type_info(type, Expression::TYPE_INFO_SIZE);
-
-  // If this package imports unsafe, then it may play games with
-  // pointers that look like integers.  We should be able to determine
-  // whether or not to use new pointers in libgo/go-new.c.  FIXME.
-  bool use_new_pointers = this->imported_unsafe_ || type->has_pointer();
-  return Runtime::make_call((use_new_pointers
-			     ? Runtime::NEW
-			     : Runtime::NEW_NOPOINTERS),
-			    location, 2, td, size);
+  return Runtime::make_call(Runtime::NEW, location, 2, td, size);
 }
 
 // Traversal class used to check for return statements.
