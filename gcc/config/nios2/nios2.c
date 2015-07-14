@@ -95,10 +95,14 @@ struct GTY (()) machine_function
   int args_size;
   /* Number of bytes needed to store registers in frame.  */
   int save_reg_size;
+  /* Number of bytes used to store callee-saved registers.  */
+  int callee_save_reg_size;
   /* Offset from new stack pointer to store registers.  */
   int save_regs_offset;
   /* Offset from save_regs_offset to store frame pointer register.  */
   int fp_save_offset;
+  /* != 0 if function has a variable argument list.  */
+  int uses_anonymous_args;
   /* != 0 if frame layout already calculated.  */
   int initialized;
 };
@@ -378,14 +382,11 @@ nios2_compute_frame_layout (void)
   int var_size;
   int out_args_size;
   int save_reg_size;
+  int callee_save_reg_size;
 
   if (cfun->machine->initialized)
     return cfun->machine->total_size;
   
-  var_size = NIOS2_STACK_ALIGN (get_frame_size ());
-  out_args_size = NIOS2_STACK_ALIGN (crtl->outgoing_args_size);
-  total_size = var_size + out_args_size;
-
   /* Calculate space needed for gp registers.  */
   save_reg_size = 0;
   for (regno = 0; regno <= LAST_GP_REG; regno++)
@@ -394,6 +395,37 @@ nios2_compute_frame_layout (void)
 	save_mask |= 1 << regno;
 	save_reg_size += 4;
       }
+
+  /* If we are saving any callee-save register, then assume
+     push.n/pop.n should be used. Make sure RA is saved, and
+     contiguous registers starting from r16-- are all saved.  */
+  if (TARGET_HAS_CDX && save_reg_size != 0)
+    {
+      if ((save_mask & (1 << RA_REGNO)) == 0)
+	{
+	  save_mask |= 1 << RA_REGNO;
+	  save_reg_size += 4;
+	}
+
+      for (regno = 23; regno >= 16; regno--)
+	if ((save_mask & (1 << regno)) != 0)
+	  {
+	    /* Starting from highest numbered callee-saved
+	       register that is used, make sure all regs down
+	       to r16 is saved, to maintain contiguous range
+	       for push.n/pop.n.  */
+	    unsigned int i;
+	    for (i = regno - 1; i >= 16; i--)
+	      if ((save_mask & (1 << i)) == 0)
+		{
+		  save_mask |= 1 << i;
+		  save_reg_size += 4;
+		}
+	    break;
+	  }
+    }
+
+  callee_save_reg_size = save_reg_size;
 
   /* If we call eh_return, we need to save the EH data registers.  */
   if (crtl->calls_eh_return)
@@ -420,6 +452,10 @@ nios2_compute_frame_layout (void)
       cfun->machine->fp_save_offset = fp_save_offset;
     }
 
+  var_size = NIOS2_STACK_ALIGN (get_frame_size ());
+  out_args_size = NIOS2_STACK_ALIGN (crtl->outgoing_args_size);
+  total_size = var_size + out_args_size;
+
   save_reg_size = NIOS2_STACK_ALIGN (save_reg_size);
   total_size += save_reg_size;
   total_size += NIOS2_STACK_ALIGN (crtl->args.pretend_args_size);
@@ -430,6 +466,7 @@ nios2_compute_frame_layout (void)
   cfun->machine->var_size = var_size;
   cfun->machine->args_size = out_args_size;
   cfun->machine->save_reg_size = save_reg_size;
+  cfun->machine->callee_save_reg_size = callee_save_reg_size;
   cfun->machine->initialized = reload_completed;
   cfun->machine->save_regs_offset = out_args_size + var_size;
 
@@ -475,6 +512,38 @@ base_reg_adjustment_p (rtx set, rtx *base_reg, rtx *offset)
       return true;
     }
   return false;
+}
+
+/* Does the CFA note work for push/pop prologue/epilogue instructions.  */
+static void
+nios2_create_cfa_notes (rtx_insn *insn, bool epilogue_p)
+{
+  int i = 0;
+  rtx base_reg, offset, elt, pat = PATTERN (insn);
+  if (epilogue_p)
+    {
+      elt = XVECEXP (pat, 0, 0);
+      if (GET_CODE (elt) == RETURN)
+	i++;
+      elt = XVECEXP (pat, 0, i);
+      if (base_reg_adjustment_p (elt, &base_reg, &offset))
+	{
+	  add_reg_note (insn, REG_CFA_ADJUST_CFA, copy_rtx (elt));
+	  i++;
+	}
+      for (; i < XVECLEN (pat, 0); i++)
+	{
+	  elt = SET_DEST (XVECEXP (pat, 0, i));
+	  gcc_assert (REG_P (elt));
+	  add_reg_note (insn, REG_CFA_RESTORE, elt);
+	}
+    }
+  else
+    {
+      /* Tag each of the prologue sets.  */
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	RTX_FRAME_RELATED_P (XVECEXP (pat, 0, i)) = 1;
+    }
 }
 
 /* Temp regno used inside prologue/epilogue.  */
@@ -534,6 +603,39 @@ nios2_emit_add_constant (rtx reg, HOST_WIDE_INT immed)
   return insn;
 }
 
+static rtx_insn *
+nios2_adjust_stack (int sp_adjust, bool epilogue_p)
+{
+  enum reg_note note_kind = REG_NOTE_MAX;
+  rtx_insn *insn = NULL;
+  if (sp_adjust)
+    {
+      if (SMALL_INT (sp_adjust))
+	insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+					 gen_int_mode (sp_adjust, Pmode)));
+      else
+	{
+	  rtx tmp = gen_rtx_REG (Pmode, TEMP_REG_NUM);
+	  emit_move_insn (tmp, gen_int_mode (sp_adjust, Pmode));
+	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, tmp));
+	  /* Attach a note indicating what happened.  */
+	  if (!epilogue_p)
+	    note_kind = REG_FRAME_RELATED_EXPR;
+	}
+      if (epilogue_p)
+	note_kind = REG_CFA_ADJUST_CFA;
+      if (note_kind != REG_NOTE_MAX)
+	{
+	  rtx cfa_adj = gen_rtx_SET (stack_pointer_rtx,
+				     plus_constant (Pmode, stack_pointer_rtx,
+						    sp_adjust));
+	  add_reg_note (insn, note_kind, cfa_adj);
+	}
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+  return insn;
+}
+
 void
 nios2_expand_prologue (void)
 {
@@ -548,15 +650,97 @@ nios2_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = total_frame_size;
 
-  /* Decrement the stack pointer.  */
-  if (!SMALL_INT (total_frame_size))
+  /* When R2 CDX push.n/stwm is available, arrange for stack frame to be built
+     using them.  */
+  if (TARGET_HAS_CDX
+      && (cfun->machine->save_reg_size != 0
+	  || cfun->machine->uses_anonymous_args))
+    {
+      unsigned int regmask = cfun->machine->save_mask;
+      unsigned int callee_save_regs = regmask & 0xffff0000;
+      unsigned int caller_save_regs = regmask & 0x0000ffff;
+      int push_immed = 0;
+      int pretend_args_size = NIOS2_STACK_ALIGN (crtl->args.pretend_args_size);
+      rtx stack_mem =
+	gen_frame_mem (SImode, plus_constant (Pmode, stack_pointer_rtx, -4));
+
+      /* Check that there is room for the entire stack frame before doing
+	 any SP adjustments or pushes.  */
+      if (crtl->limit_stack)
+	nios2_emit_stack_limit_check (total_frame_size);
+
+      if (pretend_args_size)
+	{
+	  if (cfun->machine->uses_anonymous_args)
+	    {
+	      /* Emit a stwm to push copy of argument registers onto
+	         the stack for va_arg processing.  */
+	      unsigned int r, mask = 0, n = pretend_args_size / 4;
+	      for (r = LAST_ARG_REGNO - n + 1; r <= LAST_ARG_REGNO; r++)
+		mask |= (1 << r);
+	      insn = emit_insn (nios2_ldst_parallel
+				(false, false, false, stack_mem,
+				 -pretend_args_size, mask, false));
+	      /* Tag first SP adjustment as frame-related.  */
+	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 0)) = 1;
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+	  else
+	    nios2_adjust_stack (-pretend_args_size, false);
+	}
+      if (callee_save_regs)
+	{
+	  /* Emit a push.n to save registers and optionally allocate
+	     push_immed extra bytes on the stack.  */
+	  int sp_adjust;
+	  if (caller_save_regs)
+	    /* Can't allocate extra stack space yet.  */
+	    push_immed = 0;
+	  else if (cfun->machine->save_regs_offset <= 60)
+	    /* Stack adjustment fits entirely in the push.n.  */
+	    push_immed = cfun->machine->save_regs_offset;
+	  else if (frame_pointer_needed
+		   && cfun->machine->fp_save_offset == 0)
+	    /* Deferring the entire stack adjustment until later
+	       allows us to use a mov.n instead of a 32-bit addi
+	       instruction to set the frame pointer.  */
+	    push_immed = 0;
+	  else
+	    /* Splitting the stack adjustment between the push.n
+	       and an explicit adjustment makes it more likely that
+	       we can use spdeci.n for the explicit part.  */
+	    push_immed = 60;
+	  sp_adjust = -(cfun->machine->callee_save_reg_size + push_immed);
+	  insn = emit_insn (nios2_ldst_parallel (false, false, false,
+						 stack_mem, sp_adjust,
+						 callee_save_regs, false));
+	  nios2_create_cfa_notes (insn, false);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      if (caller_save_regs)
+	{
+	  /* Emit a stwm to save the EH data regs, r4-r7.  */
+	  int caller_save_size = (cfun->machine->save_reg_size
+				  - cfun->machine->callee_save_reg_size);
+	  gcc_assert ((caller_save_regs & ~0xf0) == 0);
+	  insn = emit_insn (nios2_ldst_parallel
+			    (false, false, false, stack_mem,
+			     -caller_save_size, caller_save_regs, false));
+	  nios2_create_cfa_notes (insn, false);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      save_regs_base = push_immed;
+      sp_offset = -(cfun->machine->save_regs_offset - push_immed);
+    }
+  /* The non-CDX cases decrement the stack pointer, to prepare for individual
+     register saves to the stack.  */
+  else if (!SMALL_INT (total_frame_size))
     {
       /* We need an intermediary point, this will point at the spill block.  */
-      insn = emit_insn
-	(gen_add2_insn (stack_pointer_rtx,
-			gen_int_mode (cfun->machine->save_regs_offset
-				      - total_frame_size, Pmode)));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      nios2_adjust_stack (cfun->machine->save_regs_offset - total_frame_size,
+			  false);
       save_regs_base = 0;
       sp_offset = -cfun->machine->save_regs_offset;
       if (crtl->limit_stack)
@@ -564,10 +748,7 @@ nios2_expand_prologue (void)
     }
   else if (total_frame_size)
     {
-      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
-				       gen_int_mode (-total_frame_size,
-						     Pmode)));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      nios2_adjust_stack (-total_frame_size, false);
       save_regs_base = cfun->machine->save_regs_offset;
       sp_offset = 0;
       if (crtl->limit_stack)
@@ -576,41 +757,34 @@ nios2_expand_prologue (void)
   else
     save_regs_base = sp_offset = 0;
 
-  save_offset = save_regs_base + cfun->machine->save_reg_size;
+  /* Save the registers individually in the non-CDX case.  */
+  if (!TARGET_HAS_CDX)
+    {
+      save_offset = save_regs_base + cfun->machine->save_reg_size;
 
-  for (regno = LAST_GP_REG; regno > 0; regno--)
-    if (cfun->machine->save_mask & (1 << regno))
-      {
-	save_offset -= 4;
-	save_reg (regno, save_offset);
-      }
+      for (regno = LAST_GP_REG; regno > 0; regno--)
+	if (cfun->machine->save_mask & (1 << regno))
+	  {
+	    save_offset -= 4;
+	    save_reg (regno, save_offset);
+	  }
+    }
 
+  /* Set the hard frame pointer.  */
   if (frame_pointer_needed)
     {
       int fp_save_offset = save_regs_base + cfun->machine->fp_save_offset;
-      insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
-				       stack_pointer_rtx,
-				       gen_int_mode (fp_save_offset, Pmode)));
+      insn =
+	(fp_save_offset == 0
+	 ? emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx)
+	 : emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
+				     stack_pointer_rtx,
+				     gen_int_mode (fp_save_offset, Pmode))));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (sp_offset)
-    {
-      rtx sp_adjust
-	= gen_rtx_SET (stack_pointer_rtx,
-		       plus_constant (Pmode, stack_pointer_rtx, sp_offset));
-      if (SMALL_INT (sp_offset))
-	insn = emit_insn (sp_adjust);
-      else
-	{
-	  rtx tmp = gen_rtx_REG (Pmode, TEMP_REG_NUM);
-	  emit_move_insn (tmp, gen_int_mode (sp_offset, Pmode));
-	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, tmp));
-	  /* Attach the sp_adjust as a note indicating what happened.  */
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, sp_adjust);
-	}
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
+  /* Allocate sp_offset more bytes in the stack frame.  */
+  nios2_adjust_stack (sp_offset, false);
 
   /* Load the PIC register if needed.  */
   if (crtl->uses_pic_offset_table)
@@ -643,9 +817,12 @@ nios2_expand_epilogue (bool sibcall_p)
   if (frame_pointer_needed)
     {
       /* Recover the stack pointer.  */
-      insn = emit_insn (gen_add3_insn
-			(stack_pointer_rtx, hard_frame_pointer_rtx,
-			 gen_int_mode (-cfun->machine->fp_save_offset, Pmode)));
+      insn =
+	(cfun->machine->fp_save_offset == 0
+	 ? emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx)
+	 : emit_insn (gen_add3_insn
+		      (stack_pointer_rtx, hard_frame_pointer_rtx,
+		       gen_int_mode (-cfun->machine->fp_save_offset, Pmode))));
       cfa_adj = plus_constant (Pmode, stack_pointer_rtx,
 			       (total_frame_size
 				- cfun->machine->save_regs_offset));
@@ -657,15 +834,7 @@ nios2_expand_epilogue (bool sibcall_p)
     }
   else if (!SMALL_INT (total_frame_size))
     {
-      rtx tmp = gen_rtx_REG (Pmode, TEMP_REG_NUM);
-      emit_move_insn (tmp, gen_int_mode (cfun->machine->save_regs_offset,
-					 Pmode));
-      insn = emit_insn (gen_add2_insn (stack_pointer_rtx, tmp));
-      cfa_adj = gen_rtx_SET (stack_pointer_rtx,
-			     plus_constant (Pmode, stack_pointer_rtx,
-					    cfun->machine->save_regs_offset));
-      add_reg_note (insn, REG_CFA_ADJUST_CFA, cfa_adj);
-      RTX_FRAME_RELATED_P (insn) = 1;
+      nios2_adjust_stack (cfun->machine->save_regs_offset, true);
       save_offset = 0;
       sp_adjust = total_frame_size - cfun->machine->save_regs_offset;
     }
@@ -674,25 +843,93 @@ nios2_expand_epilogue (bool sibcall_p)
       save_offset = cfun->machine->save_regs_offset;
       sp_adjust = total_frame_size;
     }
-  
-  save_offset += cfun->machine->save_reg_size;
 
-  for (regno = LAST_GP_REG; regno > 0; regno--)
-    if (cfun->machine->save_mask & (1 << regno))
-      {
-	save_offset -= 4;
-	restore_reg (regno, save_offset);
-      }
-
-  if (sp_adjust)
+  if (!TARGET_HAS_CDX)
     {
-      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
-				       gen_int_mode (sp_adjust, Pmode)));
-      cfa_adj = gen_rtx_SET (stack_pointer_rtx,
-			     plus_constant (Pmode, stack_pointer_rtx,
-					    sp_adjust));
-      add_reg_note (insn, REG_CFA_ADJUST_CFA, cfa_adj);
-      RTX_FRAME_RELATED_P (insn) = 1;
+      /* Generate individual register restores.  */
+      save_offset += cfun->machine->save_reg_size;
+
+      for (regno = LAST_GP_REG; regno > 0; regno--)
+	if (cfun->machine->save_mask & (1 << regno))
+	  {
+	    save_offset -= 4;
+	    restore_reg (regno, save_offset);
+	  }
+      nios2_adjust_stack (sp_adjust, true);
+    }
+  else if (cfun->machine->save_reg_size == 0)
+    {
+      /* Nothing to restore, just recover the stack position.  */
+      nios2_adjust_stack (sp_adjust, true);
+    }
+  else
+    {
+      /* Emit CDX pop.n/ldwm to restore registers and optionally return.  */
+      unsigned int regmask = cfun->machine->save_mask;
+      unsigned int callee_save_regs = regmask & 0xffff0000;
+      unsigned int caller_save_regs = regmask & 0x0000ffff;
+      int callee_save_size = cfun->machine->callee_save_reg_size;
+      int caller_save_size = cfun->machine->save_reg_size - callee_save_size;
+      int pretend_args_size = NIOS2_STACK_ALIGN (crtl->args.pretend_args_size);
+      bool ret_p = (!pretend_args_size && !crtl->calls_eh_return
+		    && !sibcall_p);
+
+      if (!ret_p || caller_save_size > 0)
+	sp_adjust = save_offset;
+      else
+	sp_adjust = (save_offset > 60 ? save_offset - 60 : 0);
+
+      save_offset -= sp_adjust;
+
+      nios2_adjust_stack (sp_adjust, true);
+
+      if (caller_save_regs)
+	{
+	  /* Emit a ldwm to restore EH data regs.  */
+	  rtx stack_mem = gen_frame_mem (SImode, stack_pointer_rtx);
+	  insn = emit_insn (nios2_ldst_parallel
+			    (true, true, true, stack_mem,
+			     caller_save_size, caller_save_regs, false));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  nios2_create_cfa_notes (insn, true);
+	}
+
+      if (callee_save_regs)
+	{
+	  int sp_adjust = save_offset + callee_save_size;
+	  rtx stack_mem;
+	  if (ret_p)
+	    {
+	      /* Emit a pop.n to restore regs and return.  */
+	      stack_mem =
+		gen_frame_mem (SImode,
+			       gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					     gen_int_mode (sp_adjust - 4,
+							   Pmode)));
+	      insn =
+		emit_jump_insn (nios2_ldst_parallel (true, false, false,
+						     stack_mem, sp_adjust,
+						     callee_save_regs, ret_p));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      /* No need to attach CFA notes since we cannot step over
+		 a return.  */
+	      return;
+	    }
+	  else
+	    {
+	      /* If no return, we have to use the ldwm form.  */
+	      stack_mem = gen_frame_mem (SImode, stack_pointer_rtx);
+	      insn =
+		emit_insn (nios2_ldst_parallel (true, true, true,
+						stack_mem, sp_adjust,
+						callee_save_regs, ret_p));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      nios2_create_cfa_notes (insn, true);
+	    }
+	}
+
+      if (pretend_args_size)
+	nios2_adjust_stack (pretend_args_size, true);
     }
 
   /* Add in the __builtin_eh_return stack adjustment.  */
@@ -701,6 +938,37 @@ nios2_expand_epilogue (bool sibcall_p)
 
   if (!sibcall_p)
     emit_jump_insn (gen_simple_return ());
+}
+
+bool
+nios2_expand_return (void)
+{
+  /* If CDX is available, generate a pop.n instruction to do both
+     the stack pop and return.  */
+  if (TARGET_HAS_CDX)
+    {
+      int total_frame_size = nios2_compute_frame_layout ();
+      int sp_adjust = (cfun->machine->save_regs_offset
+		       + cfun->machine->callee_save_reg_size);
+      gcc_assert (sp_adjust == total_frame_size);
+      if (sp_adjust != 0)
+	{
+	  rtx mem =
+	    gen_frame_mem (SImode,
+			   plus_constant (Pmode, stack_pointer_rtx,
+					  sp_adjust - 4, false));
+	  rtx_insn *insn =
+	    emit_jump_insn (nios2_ldst_parallel (true, false, false,
+						 mem, sp_adjust,
+						 cfun->machine->save_mask,
+						 true));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  /* No need to create CFA notes since we can't step over
+	     a return.  */
+	  return true;
+	}
+    }
+  return false;
 }
 
 /* Implement RETURN_ADDR_RTX.  Note, we do not support moving
@@ -874,10 +1142,24 @@ nios2_initial_elimination_offset (int from, int to)
 int
 nios2_can_use_return_insn (void)
 {
+  int total_frame_size;
+
   if (!reload_completed || crtl->profile)
     return 0;
 
-  return nios2_compute_frame_layout () == 0;
+  total_frame_size = nios2_compute_frame_layout ();
+
+  /* If CDX is available, check if we can return using a
+     single pop.n instruction.  */
+  if (TARGET_HAS_CDX
+      && !frame_pointer_needed
+      && cfun->machine->save_regs_offset <= 60
+      && (cfun->machine->save_mask & 0x80000000) != 0
+      && (cfun->machine->save_mask & 0xffff) == 0
+      && crtl->args.pretend_args_size == 0)
+    return true;
+
+  return total_frame_size == 0;
 }
 
 
@@ -2785,12 +3067,15 @@ nios2_setup_incoming_varargs (cumulative_args_t cum_v,
   int regs_to_push;
   int pret_size;
 
+  cfun->machine->uses_anonymous_args = 1;
   local_cum = *cum;
-  nios2_function_arg_advance (local_cum_v, mode, type, 1);
+  nios2_function_arg_advance (local_cum_v, mode, type, true);
 
   regs_to_push = NUM_ARG_REGS - local_cum.regs_used;
 
-  if (!second_time && regs_to_push > 0)
+  /* If we can use CDX stwm to push the arguments on the stack,
+     nios2_expand_prologue will do that instead.  */
+  if (!TARGET_HAS_CDX && !second_time && regs_to_push > 0)
     {
       rtx ptr = virtual_incoming_args_rtx;
       rtx mem = gen_rtx_MEM (BLKmode, ptr);

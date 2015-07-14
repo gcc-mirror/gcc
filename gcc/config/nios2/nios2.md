@@ -746,7 +746,10 @@
 (define_expand "return"
   [(simple_return)]
   "nios2_can_use_return_insn ()"
-  "")
+{
+  if (nios2_expand_return ())
+    DONE;
+})
 
 (define_insn "simple_return"
   [(simple_return)]
