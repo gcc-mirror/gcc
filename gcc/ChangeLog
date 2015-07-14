@@ -1,3 +1,13 @@
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (TEMP_REG_NUM): Move define up in file.
+	(nios2_emit_stack_limit_check): Add size parameter.  Handle
+	-fstack-limit-symbol as well as -fstack-limit-register.
+	(nios2_expand_prologue): Emit only a single stack limit check,
+	even if multiple stack adjustments are required.
+	(nios2_option_override): Diagnose unsupported combination of -fpic
+	and -stack-limit-symbol.
+
 2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (top_srcdir): New.

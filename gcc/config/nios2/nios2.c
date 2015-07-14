@@ -456,20 +456,47 @@ restore_reg (int regno, unsigned offset)
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
-/* Emit conditional trap for checking stack limit.  */
-static void
-nios2_emit_stack_limit_check (void)
-{
-  if (REG_P (stack_limit_rtx))
-    emit_insn (gen_ctrapsi4 (gen_rtx_LTU (VOIDmode, stack_pointer_rtx,
-					  stack_limit_rtx),
-			     stack_pointer_rtx, stack_limit_rtx, GEN_INT (3)));
-  else
-    sorry ("only register based stack limit is supported");
-}
-
 /* Temp regno used inside prologue/epilogue.  */
 #define TEMP_REG_NUM 8
+
+/* Emit conditional trap for checking stack limit.  SIZE is the number of
+   additional bytes required.  
+
+   GDB prologue analysis depends on this generating a direct comparison
+   to the SP register, so the adjustment to add SIZE needs to be done on
+   the other operand to the comparison.  Use TEMP_REG_NUM as a temporary,
+   if necessary.  */
+static void
+nios2_emit_stack_limit_check (int size)
+{
+  rtx sum;
+
+  if (GET_CODE (stack_limit_rtx) == SYMBOL_REF)
+    {
+      /* This generates a %hiadj/%lo pair with the constant size
+	 add handled by the relocations.  */
+      sum = gen_rtx_REG (Pmode, TEMP_REG_NUM);
+      emit_move_insn (sum, plus_constant (Pmode, stack_limit_rtx, size));
+    }
+  else if (!REG_P (stack_limit_rtx))
+    sorry ("Unknown form for stack limit expression");
+  else if (size == 0)
+    sum = stack_limit_rtx;
+  else if (SMALL_INT (size))
+    {
+      sum = gen_rtx_REG (Pmode, TEMP_REG_NUM);
+      emit_move_insn (sum, plus_constant (Pmode, stack_limit_rtx, size));
+    }
+  else
+    {
+      sum = gen_rtx_REG (Pmode, TEMP_REG_NUM);
+      emit_move_insn (sum, gen_int_mode (size, Pmode));
+      emit_insn (gen_add2_insn (sum, stack_limit_rtx));
+    }
+
+  emit_insn (gen_ctrapsi4 (gen_rtx_LTU (VOIDmode, stack_pointer_rtx, sum),
+			   stack_pointer_rtx, sum, GEN_INT (3)));
+}
 
 static rtx_insn *
 nios2_emit_add_constant (rtx reg, HOST_WIDE_INT immed)
@@ -511,6 +538,8 @@ nios2_expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
       save_regs_base = 0;
       sp_offset = -cfun->machine->save_regs_offset;
+      if (crtl->limit_stack)
+	nios2_emit_stack_limit_check (cfun->machine->save_regs_offset);
     }
   else if (total_frame_size)
     {
@@ -520,12 +549,11 @@ nios2_expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
       save_regs_base = cfun->machine->save_regs_offset;
       sp_offset = 0;
+      if (crtl->limit_stack)
+	nios2_emit_stack_limit_check (0);
     }
   else
     save_regs_base = sp_offset = 0;
-
-  if (crtl->limit_stack)
-    nios2_emit_stack_limit_check ();
 
   save_offset = save_regs_base + cfun->machine->save_reg_size;
 
@@ -561,9 +589,6 @@ nios2_expand_prologue (void)
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, sp_adjust);
 	}
       RTX_FRAME_RELATED_P (insn) = 1;
-
-      if (crtl->limit_stack)
-	nios2_emit_stack_limit_check ();
     }
 
   /* Load the PIC register if needed.  */
@@ -1029,6 +1054,9 @@ nios2_option_override (void)
   /* Check for unsupported options.  */
   if (flag_pic && !TARGET_LINUX_ABI)
     sorry ("position-independent code requires the Linux ABI");
+  if (flag_pic && stack_limit_rtx
+      && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
+    sorry ("PIC support for -fstack-limit-symbol");
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &nios2_init_machine_status;
