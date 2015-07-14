@@ -547,6 +547,41 @@ Build_connection_graphs::resolve_var_reference(Expression* expr)
 	expr = expr->type_guard_expression()->expr();
 	break;
 
+      case Expression::EXPRESSION_UNSAFE_CONVERSION:
+	{
+	  Expression* e = expr->unsafe_conversion_expression()->expr();
+	  if (e->call_result_expression() != NULL
+	      && e->call_result_expression()->index() == 0)
+	    {
+	      // a, ok := p.(T) gets lowered into a call to one of the interface
+	      // to type conversion functions instead of a type guard expression.
+	      // We only want to make a connection between a and p, the bool
+	      // result should not escape because p escapes.
+	      e = e->call_result_expression()->call();
+
+	      Named_object* fn =
+		e->call_expression()->fn()->func_expression()->named_object();
+	      std::string fn_name = fn->name();
+	      if (fn->package() == NULL
+		  && fn->is_function_declaration()
+		  && !fn->func_declaration_value()->asm_name().empty())
+		{
+		  if (fn_name == "ifaceI2E2"
+		      || fn_name == "ifaceI2I2")
+		    e = e->call_expression()->args()->at(0);
+		  else if (fn_name == "ifaceE2I2"
+			   || fn_name == "ifaceI2I2"
+			   || fn_name == "ifaceE2T2P"
+			   || fn_name == "ifaceI2T2P"
+			   || fn_name == "ifaceE2T2"
+			   || fn_name == "ifaceI2T2")
+		    e = e->call_expression()->args()->at(1);
+		}
+	    }
+	  expr = e;
+	}
+	break;
+
       default:
 	done = true;
 	break;
