@@ -1,6 +1,15 @@
 2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Sync with binutils-gdb:
+	2015-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (target_configdirs): Exclude target-zlib if
+	target-libjava isn't built.
+	* configure: Regenerated.
+
+2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
 	2015-05-13  John David Anglin  <dave.anglin@bell.net>
 
 	* configure.ac: Disable configuration of GDB for HPUX targets.
