@@ -34,8 +34,9 @@ end module work
 program simd_8f
   use work
   implicit none
-  real :: pri, arr(1000)
+  real :: pri, arr(1000), diff
   integer :: i
+  integer, parameter :: EPS = 0.005
 
   do i = 1, 1000
      P(i)   = i
@@ -43,6 +44,9 @@ program simd_8f
      arr(i) = (i-1) * 1.8
   end do
   pri = do_work(arr)
-  if (pri .ne. 8237.25) call abort ()
+
+  diff = pri - 8237.25
+
+  if (diff > EPS .or. -diff > EPS) call abort
 
 end program

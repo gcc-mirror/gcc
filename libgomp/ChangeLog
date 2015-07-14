@@ -1,3 +1,18 @@
+2015-07-14  Maxim Blumenthal  <maxim.blumenthal@intel.com>
+
+	* testsuite/libgomp.c/examples-4/simd-3.c: (main): Change type of res
+	and ref from int to double.  Replaced their comparison with
+	an inequality of their difference and EPS.
+	* testsuite/libgomp.c/examples-4/simd-8.c: (main): Replace the
+	comparison of pri and a reference number with an inequality of their
+	difference and EPS.
+	* testsuite/libgomp.fortran/examples-4/simd-3.f90: (main): Replaced
+	the comparison of sum and sum_ref with an inequality of their
+	difference and EPS.
+	* testsuite/libgomp.fortran/examples-4/simd-8.f90: (main): Replace
+	the comparison of pri and a reference number with an inequality of
+	their difference and EPS.
+
 2015-07-13  Maxim Blumenthal  <maxim.blumenthal@intel.com>
 
 	* testsuite/libgomp.c++/examples-4/e.53.2.C: Renamed to...

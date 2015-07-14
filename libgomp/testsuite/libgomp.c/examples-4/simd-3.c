@@ -46,15 +46,16 @@ double work_ref( double *a, double *b, int n )
 
 int main ()
 {
-  double a[N], a_ref[N], b[N];
-  int res, ref;
+  double a[N], a_ref[N], b[N], res, ref, diff;
 
   init(a, a_ref, b, N);
 
   res = work(a, b, N);
   ref = work_ref(a_ref, b, N);
 
-  if (res != ref)
+  diff = res - ref;
+
+  if (diff > EPS || -diff > EPS)
     abort ();
 
   return 0;

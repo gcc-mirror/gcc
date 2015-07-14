@@ -49,11 +49,14 @@ end module
 
 program SIMD3
   use SIMD3_mod
-  double precision :: a(128), b(128), sum, sum_ref
+  double precision :: a(128), b(128), sum, sum_ref, diff
+  double precision, parameter :: EPS = 0.0000000000000001
 
   call  work(a, b, 128, sum)
   call  work_ref(a, b, 128, sum_ref)
 
-  if (sum .ne. sum_ref) call abort
+  diff = sum - sum_ref
+
+  if (diff > EPS .or. -diff > EPS) call abort
 
 end program
