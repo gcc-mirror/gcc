@@ -26,6 +26,7 @@ extern int nios2_initial_elimination_offset (int, int);
 extern int nios2_can_use_return_insn (void);
 extern void nios2_expand_prologue (void);
 extern void nios2_expand_epilogue (bool);
+extern bool nios2_expand_return (void);
 extern void nios2_function_profiler (FILE *, int);
 
 #ifdef RTX_CODE

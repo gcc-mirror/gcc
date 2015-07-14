@@ -2,6 +2,25 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* config/nios2/nios2-protos.h (nios2_expand_return): Declare.
+	* config/nios2/nios2.c (struct GTY (()) machine_function): Add
+	callee_save_reg_size and uses_anonymous_args fields.
+	(nios2_compute_frame_layout): Update for CDX push.n/pop.n usage.
+	(nios2_create_cfa_notes): New function.
+	(nios2_adjust_stack): New function for adjusting stack.
+	(nios2_expand_prologue): Update for CDX push.n/pop.n usage.
+	Use nios2_adjust_stack.
+	(nios2_expand_epilogue): Likewise.
+	(nios2_expand_return): New function.
+	(nios2_can_use_return_insn): Update for CDX pop.n usage.
+	(nios2_setup_incoming_varargs): Set uses_anonymous_args flag.
+	If TARGET_HAS_CDX, defer pushing regs to nios2_expand_prologue.
+	* config/nios2/nios2.md (return): Use nios2_expand_return.
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* config/nios2/predicates.md (pop_operation): New.
 	(ldwm_operation, stwm_operation): New.
 	(nios2_hard_register_operand): New.
