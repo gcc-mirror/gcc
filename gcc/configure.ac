@@ -5385,15 +5385,7 @@ fi
 AC_SUBST(HOST_LIBS)
 
 # Use the system's zlib library.
-zlibdir=-L../zlib
-zlibinc="-I\$(srcdir)/../zlib"
-AC_ARG_WITH(system-zlib,
-[AS_HELP_STRING([--with-system-zlib], [use installed libz])],
-zlibdir=
-zlibinc=
-)
-AC_SUBST(zlibdir)
-AC_SUBST(zlibinc)
+AM_ZLIB
 
 dnl Very limited version of automake's enable-maintainer-mode
 

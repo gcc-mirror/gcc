@@ -1,3 +1,9 @@
+2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (top_srcdir): New.
+	* configure.ac: Use AM_ZLIB.
+	* configure: Regeneated.
+
 2015-07-14  Matthias Klose  <doko@ubuntu.com>
 
 	PR target/66840

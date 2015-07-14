@@ -28108,15 +28108,20 @@ fi
 
 
 # Use the system's zlib library.
-zlibdir=-L../zlib
-zlibinc="-I\$(srcdir)/../zlib"
+
+  # Use the system's zlib library.
+  zlibdir="-L\$(top_builddir)/../zlib"
+  zlibinc="-I\$(top_srcdir)/../zlib"
 
 # Check whether --with-system-zlib was given.
 if test "${with_system_zlib+set}" = set; then :
-  withval=$with_system_zlib; zlibdir=
-zlibinc=
+  withval=$with_system_zlib; if test x$with_system_zlib = xyes ; then
+    zlibdir=
+    zlibinc=
+  fi
 
 fi
+
 
 
 

@@ -1,18 +1,19 @@
-dnl A function to check for zlib availability.  zlib is used by default
-dnl unless the user configured with --disable-nls.
+dnl A function to check if the system's zlib library should be used.  The
+dnl builtin zlib dnl is used by default unless the user configured with
+dnl --with-system-zlib.
 
 AC_DEFUN([AM_ZLIB],
 [
-  # See if the user specified whether he wants zlib support or not.
-  AC_ARG_WITH(zlib,
-    [  --with-zlib             include zlib support (auto/yes/no) [default=auto]],
-    [], [with_zlib=auto])
-
-  if test "$with_zlib" != "no"; then
-    AC_SEARCH_LIBS(zlibVersion, z, [AC_CHECK_HEADERS(zlib.h)])
-    if test "$with_zlib" = "yes" -a "$ac_cv_header_zlib_h" != "yes"; then
-      AC_MSG_ERROR([zlib (libz) library was explicitly requested but not found])
-    fi
+  # Use the system's zlib library.
+  zlibdir="-L\$(top_builddir)/../zlib"
+  zlibinc="-I\$(top_srcdir)/../zlib"
+  AC_ARG_WITH(system-zlib,
+  [AS_HELP_STRING([--with-system-zlib], [use installed libz])],
+  if test x$with_system_zlib = xyes ; then
+    zlibdir=
+    zlibinc=
   fi
+  )
+  AC_SUBST(zlibdir)
+  AC_SUBST(zlibinc)
 ])
-
