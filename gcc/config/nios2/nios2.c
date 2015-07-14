@@ -135,12 +135,16 @@ static bool custom_code_conflict = false;
   N2_FTYPE(2, (SI, SF))				\
   N2_FTYPE(3, (SI, SF, SF))			\
   N2_FTYPE(2, (SI, SI))				\
+  N2_FTYPE(3, (SI, SI, SI))			\
+  N2_FTYPE(3, (SI, VPTR, SI))			\
   N2_FTYPE(2, (UI, CVPTR))			\
   N2_FTYPE(2, (UI, DF))				\
   N2_FTYPE(2, (UI, SF))				\
   N2_FTYPE(2, (VOID, DF))			\
   N2_FTYPE(2, (VOID, SF))			\
+  N2_FTYPE(2, (VOID, SI))			\
   N2_FTYPE(3, (VOID, SI, SI))			\
+  N2_FTYPE(2, (VOID, VPTR))			\
   N2_FTYPE(3, (VOID, VPTR, SI))
 
 #define N2_FTYPE_OP1(R)         N2_FTYPE_ ## R ## _VOID
@@ -3266,33 +3270,43 @@ nios2_expand_custom_builtin (tree exp, unsigned int index, rtx target)
 struct nios2_builtin_desc
 {
   enum insn_code icode;
+  enum nios2_arch_type arch;
   enum nios2_ftcode ftype;
   const char *name;
 };
 
 #define N2_BUILTINS					\
-  N2_BUILTIN_DEF (sync,   N2_FTYPE_VOID_VOID)		\
-  N2_BUILTIN_DEF (ldbio,  N2_FTYPE_SI_CVPTR)		\
-  N2_BUILTIN_DEF (ldbuio, N2_FTYPE_UI_CVPTR)		\
-  N2_BUILTIN_DEF (ldhio,  N2_FTYPE_SI_CVPTR)		\
-  N2_BUILTIN_DEF (ldhuio, N2_FTYPE_UI_CVPTR)		\
-  N2_BUILTIN_DEF (ldwio,  N2_FTYPE_SI_CVPTR)		\
-  N2_BUILTIN_DEF (stbio,  N2_FTYPE_VOID_VPTR_SI)	\
-  N2_BUILTIN_DEF (sthio,  N2_FTYPE_VOID_VPTR_SI)	\
-  N2_BUILTIN_DEF (stwio,  N2_FTYPE_VOID_VPTR_SI)	\
-  N2_BUILTIN_DEF (rdctl,  N2_FTYPE_SI_SI)		\
-  N2_BUILTIN_DEF (wrctl,  N2_FTYPE_VOID_SI_SI)
+  N2_BUILTIN_DEF (sync,    R1, N2_FTYPE_VOID_VOID)	\
+  N2_BUILTIN_DEF (ldbio,   R1, N2_FTYPE_SI_CVPTR)	\
+  N2_BUILTIN_DEF (ldbuio,  R1, N2_FTYPE_UI_CVPTR)	\
+  N2_BUILTIN_DEF (ldhio,   R1, N2_FTYPE_SI_CVPTR)	\
+  N2_BUILTIN_DEF (ldhuio,  R1, N2_FTYPE_UI_CVPTR)	\
+  N2_BUILTIN_DEF (ldwio,   R1, N2_FTYPE_SI_CVPTR)	\
+  N2_BUILTIN_DEF (stbio,   R1, N2_FTYPE_VOID_VPTR_SI)	\
+  N2_BUILTIN_DEF (sthio,   R1, N2_FTYPE_VOID_VPTR_SI)	\
+  N2_BUILTIN_DEF (stwio,   R1, N2_FTYPE_VOID_VPTR_SI)	\
+  N2_BUILTIN_DEF (rdctl,   R1, N2_FTYPE_SI_SI)		\
+  N2_BUILTIN_DEF (wrctl,   R1, N2_FTYPE_VOID_SI_SI)	\
+  N2_BUILTIN_DEF (rdprs,   R1, N2_FTYPE_SI_SI_SI)	\
+  N2_BUILTIN_DEF (flushd,  R1, N2_FTYPE_VOID_VPTR)	\
+  N2_BUILTIN_DEF (flushda, R1, N2_FTYPE_VOID_VPTR)	\
+  N2_BUILTIN_DEF (wrpie,   R2, N2_FTYPE_SI_SI)		\
+  N2_BUILTIN_DEF (eni,     R2, N2_FTYPE_VOID_SI)	\
+  N2_BUILTIN_DEF (ldex,    R2, N2_FTYPE_SI_CVPTR)	\
+  N2_BUILTIN_DEF (ldsex,   R2, N2_FTYPE_SI_CVPTR)	\
+  N2_BUILTIN_DEF (stex,    R2, N2_FTYPE_SI_VPTR_SI)	\
+  N2_BUILTIN_DEF (stsex,   R2, N2_FTYPE_SI_VPTR_SI)
 
 enum nios2_builtin_code {
-#define N2_BUILTIN_DEF(name, ftype) NIOS2_BUILTIN_ ## name,
+#define N2_BUILTIN_DEF(name, arch, ftype) NIOS2_BUILTIN_ ## name,
   N2_BUILTINS
 #undef N2_BUILTIN_DEF
   NUM_FIXED_NIOS2_BUILTINS
 };
 
 static const struct nios2_builtin_desc nios2_builtins[] = {
-#define N2_BUILTIN_DEF(name, ftype)			\
-  { CODE_FOR_ ## name, ftype, "__builtin_" #name },
+#define N2_BUILTIN_DEF(name, arch, ftype)		\
+  { CODE_FOR_ ## name, ARCH_ ## arch, ftype, "__builtin_" #name },
   N2_BUILTINS
 #undef N2_BUILTIN_DEF
 };
@@ -3373,10 +3387,11 @@ nios2_expand_builtin_insn (const struct nios2_builtin_desc *d, int n,
     } 
 }
 
-/* Expand ldio/stio form load-store instruction builtins.  */
+/* Expand ldio/stio and ldex/ldsex/stex/stsex form load-store
+   instruction builtins.  */
 static rtx
-nios2_expand_ldstio_builtin (tree exp, rtx target,
-			     const struct nios2_builtin_desc *d)
+nios2_expand_ldst_builtin (tree exp, rtx target,
+			   const struct nios2_builtin_desc *d)
 {
   bool has_target_p;
   rtx addr, mem, val;
@@ -3388,14 +3403,21 @@ nios2_expand_ldstio_builtin (tree exp, rtx target,
 
   if (insn_data[d->icode].operand[0].allows_mem)
     {
-      /* stxio.  */
+      /* stxio/stex/stsex.  */
       val = expand_normal (CALL_EXPR_ARG (exp, 1));
       if (CONST_INT_P (val))
 	val = force_reg (mode, gen_int_mode (INTVAL (val), mode));
       val = simplify_gen_subreg (mode, val, GET_MODE (val), 0);
       create_output_operand (&ops[0], mem, mode);
       create_input_operand (&ops[1], val, mode);
-      has_target_p = false;
+      if (insn_data[d->icode].n_operands == 3)
+	{
+	  /* stex/stsex status value, returned as result of function.  */
+	  create_output_operand (&ops[2], target, mode);
+	  has_target_p = true;
+	}
+      else
+	has_target_p = false;
     }
   else
     {
@@ -3404,7 +3426,8 @@ nios2_expand_ldstio_builtin (tree exp, rtx target,
       create_input_operand (&ops[1], mem, mode);
       has_target_p = true;
     }
-  return nios2_expand_builtin_insn (d, 2, ops, has_target_p);
+  return nios2_expand_builtin_insn (d, insn_data[d->icode].n_operands, ops,
+				    has_target_p);
 }
 
 /* Expand rdctl/wrctl builtins.  */
@@ -3436,6 +3459,81 @@ nios2_expand_rdwrctl_builtin (tree exp, rtx target,
   return nios2_expand_builtin_insn (d, 2, ops, has_target_p);
 }
 
+static rtx
+nios2_expand_rdprs_builtin (tree exp, rtx target,
+			    const struct nios2_builtin_desc *d)
+{
+  rtx reg = expand_normal (CALL_EXPR_ARG (exp, 0));
+  rtx imm = expand_normal (CALL_EXPR_ARG (exp, 1));
+  struct expand_operand ops[MAX_RECOG_OPERANDS];
+
+  if (!rdwrctl_operand (reg, VOIDmode))
+    {
+      error ("Register number must be in range 0-31 for %s",
+	     d->name);
+      return gen_reg_rtx (SImode);
+    }
+
+  if (!rdprs_dcache_operand (imm, VOIDmode))
+    {
+      error ("The immediate value must fit into a %d-bit integer for %s",
+	     (TARGET_ARCH_R2) ? 12 : 16, d->name);
+      return gen_reg_rtx (SImode);
+    }
+
+  create_output_operand (&ops[0], target, SImode);
+  create_input_operand (&ops[1], reg, SImode);
+  create_integer_operand (&ops[2], INTVAL (imm));
+
+  return nios2_expand_builtin_insn (d, 3, ops, true);
+}
+
+static rtx
+nios2_expand_cache_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
+			    const struct nios2_builtin_desc *d)
+{
+  rtx mem, addr;
+  struct expand_operand ops[MAX_RECOG_OPERANDS];
+
+  addr = expand_normal (CALL_EXPR_ARG (exp, 0));
+  mem = gen_rtx_MEM (SImode, addr);
+
+  create_input_operand (&ops[0], mem, SImode);
+ 
+  return nios2_expand_builtin_insn (d, 1, ops, false);
+}
+
+static rtx
+nios2_expand_wrpie_builtin (tree exp, rtx target,
+			    const struct nios2_builtin_desc *d)
+{
+  rtx val;
+  struct expand_operand ops[MAX_RECOG_OPERANDS];
+
+  val = expand_normal (CALL_EXPR_ARG (exp, 0));
+  create_input_operand (&ops[1], val, SImode);
+  create_output_operand (&ops[0], target, SImode);
+ 
+  return nios2_expand_builtin_insn (d, 2, ops, true);
+}
+
+static rtx
+nios2_expand_eni_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
+			    const struct nios2_builtin_desc *d)
+{
+  rtx imm = expand_normal (CALL_EXPR_ARG (exp, 0));
+  struct expand_operand ops[MAX_RECOG_OPERANDS];
+
+  if (INTVAL (imm) != 0 && INTVAL (imm) != 1)
+    {
+      error ("The ENI instruction operand must be either 0 or 1");
+      return const0_rtx;      
+    }
+  create_integer_operand (&ops[0], INTVAL (imm));
+ 
+  return nios2_expand_builtin_insn (d, 1, ops, false);
+}
+
 /* Implement TARGET_EXPAND_BUILTIN.  Expand an expression EXP that calls
    a built-in function, with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -3454,6 +3552,14 @@ nios2_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     {
       const struct nios2_builtin_desc *d = &nios2_builtins[fcode];
 
+      if (d->arch > nios2_arch_option)
+	{
+	  error ("Builtin function %s requires Nios II R%d",
+		 d->name, (int) d->arch);
+	  /* Given it is invalid, just generate a normal call.  */
+	  return expand_call (exp, target, ignore);
+	}
+
       switch (fcode)
 	{
 	case NIOS2_BUILTIN_sync:
@@ -3468,11 +3574,28 @@ nios2_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	case NIOS2_BUILTIN_stbio:
 	case NIOS2_BUILTIN_sthio:
 	case NIOS2_BUILTIN_stwio:
-	  return nios2_expand_ldstio_builtin (exp, target, d);
+	case NIOS2_BUILTIN_ldex:
+	case NIOS2_BUILTIN_ldsex:
+	case NIOS2_BUILTIN_stex:
+	case NIOS2_BUILTIN_stsex:
+	  return nios2_expand_ldst_builtin (exp, target, d);
 
 	case NIOS2_BUILTIN_rdctl:
 	case NIOS2_BUILTIN_wrctl:
 	  return nios2_expand_rdwrctl_builtin (exp, target, d);
+
+	case NIOS2_BUILTIN_rdprs:
+	  return nios2_expand_rdprs_builtin (exp, target, d);
+
+	case NIOS2_BUILTIN_flushd:
+	case NIOS2_BUILTIN_flushda:
+	  return nios2_expand_cache_builtin (exp, target, d);
+
+	case NIOS2_BUILTIN_wrpie:
+	  return nios2_expand_wrpie_builtin (exp, target, d);
+
+	case NIOS2_BUILTIN_eni:
+	  return nios2_expand_eni_builtin (exp, target, d);
 
 	default:
 	  gcc_unreachable ();

@@ -81,6 +81,12 @@
   (and (match_code "const_int")
        (match_test "RDWRCTL_INT (INTVAL (op))")))
 
+(define_predicate "rdprs_dcache_operand"
+  (and (match_code "const_int")
+       (if_then_else (match_test "TARGET_ARCH_R2")
+                     (match_test "SMALL_INT12 (INTVAL (op))")
+                     (match_test "SMALL_INT (INTVAL (op))"))))
+
 (define_predicate "custom_insn_opcode"
   (and (match_code "const_int")
        (match_test "CUSTOM_INSN_OPCODE (INTVAL (op))")))
@@ -143,4 +149,11 @@
       return false;
     }
   return memory_operand (op, mode);
+})
+
+(define_predicate "ldstex_memory_operand"
+  (match_code "mem")
+{
+  /* ldex/ldsex/stex/stsex cannot handle memory addresses with offsets.  */
+  return GET_CODE (XEXP (op, 0)) == REG;
 })

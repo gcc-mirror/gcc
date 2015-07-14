@@ -28,9 +28,11 @@
 ;;  M: 0
 ;;  N: 0 to 255 (for custom instruction numbers)
 ;;  O: 0 to 31 (for control register numbers)
+;;  U: -32768 to 32767 under R1, -2048 to 2047 under R2
 ;;
 ;; We use the following constraint letters for memory constraints
 ;;
+;;  v: memory operands for R2 load/store exclusive instructions
 ;;  w: memory operands for load/store IO and cache instructions
 ;;
 ;; We use the following built-in register classes:
@@ -99,6 +101,17 @@
 (define_constraint "T"
   "A constant unspec offset representing a relocation."
   (match_test "nios2_unspec_reloc_p (op)"))
+
+(define_constraint "U"
+  "A 12-bit or 16-bit constant (for RDPRS and DCACHE)."
+  (and (match_code "const_int")
+       (if_then_else (match_test "TARGET_ARCH_R2")
+                     (match_test "SMALL_INT12 (ival)")
+                     (match_test "SMALL_INT (ival)"))))
+
+(define_memory_constraint "v"
+  "A memory operand suitable for R2 load/store exclusive instructions."
+  (match_operand 0 "ldstex_memory_operand"))
 
 (define_memory_constraint "w"
   "A memory operand suitable for load/store IO and cache instructions."
