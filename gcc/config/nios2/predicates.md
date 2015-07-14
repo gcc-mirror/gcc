@@ -83,3 +83,20 @@
                                          &XEXP (op, 0), &XEXP (op, 1),
                                          false));
 })
+
+(define_predicate "ldstio_memory_operand"
+  (match_code "mem")
+{
+  if (TARGET_ARCH_R2)
+    {
+      rtx addr = XEXP (op, 0);
+      if (REG_P (addr))
+        return true;
+      else if (GET_CODE (addr) == PLUS)
+        return (REG_P (XEXP (addr, 0))
+                && CONST_INT_P (XEXP (addr, 1))
+                && SMALL_INT12 (INTVAL (XEXP (addr, 1))));
+      return false;
+    }
+  return memory_operand (op, mode);
+})

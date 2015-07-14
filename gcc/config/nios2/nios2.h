@@ -216,6 +216,7 @@ enum reg_class
 /* Tests for various kinds of constants used in the Nios II port.  */
 
 #define SMALL_INT(X) ((unsigned HOST_WIDE_INT)(X) + 0x8000 < 0x10000)
+#define SMALL_INT12(X) ((unsigned HOST_WIDE_INT)(X) + 0x800 < 0x1000)
 #define SMALL_INT_UNSIGNED(X) ((X) >= 0 && (X) < 0x10000)
 #define UPPER16_INT(X) (((X) & 0xffff) == 0)
 #define SHIFT_INT(X) ((X) >= 0 && (X) <= 31)

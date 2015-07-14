@@ -2,6 +2,22 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
+	* config/nios2/nios2.h (SMALL_INT12): New macro.
+	* config/nios2/nios2.c (nios2_valid_addr_offset_p): New function.
+	(nios2_valid_addr_expr_p): Use it.
+	(nios2_symbol_ref_in_small_data_p): Disallow GP-relative addressing
+	with implicit "io" instructions on R2.
+	* config/nios2/constraints.md (w): New constraint.
+	* config/nios2/predicates.md (ldstio_memory_operand): New.
+	* config/nios2/nios2.md (ld<bhw_uns>io, ld<bh>io): Update memory
+	operand predicate and constraint.
+	(ld<bh>io_signed, st<bhw>io>): Likewise.
+	* doc/md.texi (Machine Constraints): Document w constraint.
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
 	* config/nios2/nios2.opt (march, mbmx, mcdx): New options.
 	* config/nios2/nios2-opts.h (enum nios2_arch_type): New enum for
 	Nios II architecture level.

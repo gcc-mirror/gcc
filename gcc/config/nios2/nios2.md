@@ -221,14 +221,14 @@
 (define_insn "ld<bhw_uns>io"
   [(set (match_operand:BHW 0 "register_operand" "=r")
         (unspec_volatile:BHW
-          [(match_operand:BHW 1 "memory_operand" "m")] UNSPECV_LDXIO))]
+          [(match_operand:BHW 1 "ldstio_memory_operand" "w")] UNSPECV_LDXIO))]
   ""
   "ld<bhw_uns>io\\t%0, %1"
   [(set_attr "type" "ld")])
 
 (define_expand "ld<bh>io"
   [(set (match_operand:BH 0 "register_operand" "=r")
-        (match_operand:BH 1 "memory_operand"    "m"))]
+        (match_operand:BH 1 "ldstio_memory_operand" "w"))]
   ""
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -241,13 +241,13 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (sign_extend:SI
           (unspec_volatile:BH
-            [(match_operand:BH 1 "memory_operand" "m")] UNSPECV_LDXIO)))]
+            [(match_operand:BH 1 "ldstio_memory_operand" "w")] UNSPECV_LDXIO)))]
   ""
   "ld<bh>io\\t%0, %1"
   [(set_attr "type" "ld")])
 
 (define_insn "st<bhw>io"
-  [(set (match_operand:BHW 0 "memory_operand" "=m")
+  [(set (match_operand:BHW 0 "ldstio_memory_operand" "=w")
         (unspec_volatile:BHW
           [(match_operand:BHW 1 "reg_or_0_operand" "rM")] UNSPECV_STXIO))]
   ""

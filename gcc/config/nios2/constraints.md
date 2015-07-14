@@ -28,6 +28,10 @@
 ;;  N: 0 to 255 (for custom instruction numbers)
 ;;  O: 0 to 31 (for control register numbers)
 ;;
+;; We use the following constraint letters for memory constraints
+;;
+;;  w: memory operands for load/store IO and cache instructions
+;;
 ;; We use the following built-in register classes:
 ;;
 ;;  r: general purpose register (r0..r31)
@@ -89,3 +93,7 @@
 (define_constraint "T"
   "A constant unspec offset representing a relocation."
   (match_test "nios2_unspec_reloc_p (op)"))
+
+(define_memory_constraint "w"
+  "A memory operand suitable for load/store IO and cache instructions."
+  (match_operand 0 "ldstio_memory_operand"))
