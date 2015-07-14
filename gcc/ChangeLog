@@ -1,5 +1,13 @@
 2015-07-14  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-dom.c (record_temporary_equivalences): Merge
+	wideing type conversion case from record_equivalences_from_incoming_edge
+	and use record_equality to record equivalences.
+	(record_equivalences_from_incoming_edge): Call
+	record_temporary_equivalences.
+
+2015-07-14  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (struct operand): Add OP_IF and OP_WITH op_types.
 	(struct if_expr): New.
 	(struct with_expr): Likewise.

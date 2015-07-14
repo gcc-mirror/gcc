@@ -1420,8 +1420,41 @@ record_temporary_equivalences (edge e)
       tree rhs = edge_info->rhs;
 
       /* If we have a simple NAME = VALUE equivalence, record it.  */
-      if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	const_and_copies->record_const_or_copy (lhs, rhs);
+      if (lhs)
+	record_equality (lhs, rhs);
+
+      /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
+	 set via a widening type conversion, then we may be able to record
+	 additional equivalences.  */
+      if (lhs
+	  && TREE_CODE (lhs) == SSA_NAME
+	  && is_gimple_constant (rhs)
+	  && TREE_CODE (rhs) == INTEGER_CST)
+	{
+	  gimple defstmt = SSA_NAME_DEF_STMT (lhs);
+
+	  if (defstmt
+	      && is_gimple_assign (defstmt)
+	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (defstmt)))
+	    {
+	      tree old_rhs = gimple_assign_rhs1 (defstmt);
+
+	      /* If the conversion widens the original value and
+		 the constant is in the range of the type of OLD_RHS,
+		 then convert the constant and record the equivalence.
+
+		 Note that int_fits_type_p does not check the precision
+		 if the upper and lower bounds are OK.  */
+	      if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
+		  && (TYPE_PRECISION (TREE_TYPE (lhs))
+		      > TYPE_PRECISION (TREE_TYPE (old_rhs)))
+		  && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
+		{
+		  tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
+		  record_equality (old_rhs, newval);
+		}
+	    }
+	}
 
       /* If we have 0 = COND or 1 = COND equivalences, record them
 	 into our expression hash tables.  */
@@ -1568,7 +1601,6 @@ record_equivalences_from_incoming_edge (basic_block bb)
 {
   edge e;
   basic_block parent;
-  struct edge_info *edge_info;
 
   /* If our parent block ended with a control statement, then we may be
      able to record some equivalences based on which outgoing edge from
@@ -1580,57 +1612,7 @@ record_equivalences_from_incoming_edge (basic_block bb)
   /* If we had a single incoming edge from our parent block, then enter
      any data associated with the edge into our tables.  */
   if (e && e->src == parent)
-    {
-      unsigned int i;
-
-      edge_info = (struct edge_info *) e->aux;
-
-      if (edge_info)
-	{
-	  tree lhs = edge_info->lhs;
-	  tree rhs = edge_info->rhs;
-	  cond_equivalence *eq;
-
-	  if (lhs)
-	    record_equality (lhs, rhs);
-
-	  /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
-	     set via a widening type conversion, then we may be able to record
-	     additional equivalences.  */
-	  if (lhs
-	      && TREE_CODE (lhs) == SSA_NAME
-	      && is_gimple_constant (rhs)
-	      && TREE_CODE (rhs) == INTEGER_CST)
-	    {
-	      gimple defstmt = SSA_NAME_DEF_STMT (lhs);
-
-	      if (defstmt
-		  && is_gimple_assign (defstmt)
-		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (defstmt)))
-		{
-		  tree old_rhs = gimple_assign_rhs1 (defstmt);
-
-		  /* If the conversion widens the original value and
-		     the constant is in the range of the type of OLD_RHS,
-		     then convert the constant and record the equivalence.
-
-		     Note that int_fits_type_p does not check the precision
-		     if the upper and lower bounds are OK.  */
-		  if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
-		      && (TYPE_PRECISION (TREE_TYPE (lhs))
-			  > TYPE_PRECISION (TREE_TYPE (old_rhs)))
-		      && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
-		    {
-		      tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
-		      record_equality (old_rhs, newval);
-		    }
-		}
-	    }
-
-	  for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-	    record_cond (eq);
-	}
-    }
+    record_temporary_equivalences (e);
 }
 
 /* Dump SSA statistics on FILE.  */
