@@ -52,6 +52,10 @@ extern bool nios2_unspec_reloc_p (rtx);
 extern int nios2_label_align (rtx);
 extern bool nios2_cdx_narrow_form_p (rtx_insn *);
 
+extern bool pop_operation_p (rtx);
+extern bool ldstwm_operation_p (rtx, bool);
+extern bool gen_ldstwm_peep (bool, int, rtx, rtx *);
+
 extern void nios2_adjust_reg_alloc_order (void);
 
 #ifdef TREE_CODE

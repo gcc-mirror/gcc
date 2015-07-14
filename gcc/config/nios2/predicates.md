@@ -94,6 +94,30 @@
                                          false));
 })
 
+(define_special_predicate "pop_operation"
+  (match_code "parallel")
+{
+  return pop_operation_p (op);
+})
+
+(define_special_predicate "ldwm_operation"
+  (match_code "parallel")
+{
+  return ldstwm_operation_p (op, /*load_p=*/true);
+})
+
+(define_special_predicate "stwm_operation"
+  (match_code "parallel")
+{
+  return ldstwm_operation_p (op, /*load_p=*/false);
+})
+
+(define_predicate "nios2_hard_register_operand"
+  (match_code "reg")
+{
+  return GP_REG_P (REGNO (op));
+})
+
 (define_predicate "stack_memory_operand"
   (match_code "mem")
 {

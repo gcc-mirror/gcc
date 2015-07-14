@@ -71,6 +71,8 @@ static void nios2_load_pic_register (void);
 static void nios2_register_custom_code (unsigned int, enum nios2_ccs_code, int);
 static const char *nios2_unspec_reloc_name (int);
 static void nios2_register_builtin_fndecl (unsigned, tree);
+static rtx nios2_ldst_parallel (bool, bool, bool, rtx, int,
+				unsigned HOST_WIDE_INT, bool);
 
 /* Threshold for data being put into the small data/bss area, instead
    of the normal data area (references to the small data/bss area take
@@ -454,6 +456,25 @@ restore_reg (int regno, unsigned offset)
   /* Tag epilogue unwind note.  */
   add_reg_note (insn, REG_CFA_RESTORE, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
+}
+
+/* This routine tests for the base register update SET in load/store
+   multiple RTL insns, used in pop_operation_p and ldstwm_operation_p.  */
+static bool
+base_reg_adjustment_p (rtx set, rtx *base_reg, rtx *offset)
+{
+  if (GET_CODE (set) == SET
+      && REG_P (SET_DEST (set))
+      && GET_CODE (SET_SRC (set)) == PLUS
+      && REG_P (XEXP (SET_SRC (set), 0))
+      && rtx_equal_p (SET_DEST (set), XEXP (SET_SRC (set), 0))
+      && CONST_INT_P (XEXP (SET_SRC (set), 1)))
+    {
+      *base_reg = XEXP (SET_SRC (set), 0);
+      *offset = XEXP (SET_SRC (set), 1);
+      return true;
+    }
+  return false;
 }
 
 /* Temp regno used inside prologue/epilogue.  */
@@ -4028,6 +4049,432 @@ nios2_cdx_narrow_form_p (rtx_insn *insn)
       break;
     }
   return false;
+}
+
+/* Main function to implement the pop_operation predicate that
+   check pop.n insn pattern integrity.  The CDX pop.n patterns mostly
+   hardcode the restored registers, so the main checking is for the
+   SP offsets.  */
+bool
+pop_operation_p (rtx op)
+{
+  int i;
+  HOST_WIDE_INT last_offset = -1, len = XVECLEN (op, 0);
+  rtx base_reg, offset;
+
+  if (len < 3 /* At least has a return, SP-update, and RA restore.  */
+      || GET_CODE (XVECEXP (op, 0, 0)) != RETURN
+      || !base_reg_adjustment_p (XVECEXP (op, 0, 1), &base_reg, &offset)
+      || !rtx_equal_p (base_reg, stack_pointer_rtx)
+      || !CONST_INT_P (offset)
+      || (INTVAL (offset) & 3) != 0)
+    return false;
+
+  for (i = len - 1; i > 1; i--)
+    {
+      rtx set = XVECEXP (op, 0, i);
+      rtx curr_base_reg, curr_offset;
+
+      if (GET_CODE (set) != SET || !MEM_P (SET_SRC (set))
+	  || !split_mem_address (XEXP (SET_SRC (set), 0),
+				 &curr_base_reg, &curr_offset)
+	  || !rtx_equal_p (base_reg, curr_base_reg)
+	  || !CONST_INT_P (curr_offset))
+	return false;
+      if (i == len - 1)
+	{
+	  last_offset = INTVAL (curr_offset);
+	  if ((last_offset & 3) != 0 || last_offset > 60)
+	    return false;
+	}
+      else
+	{
+	  last_offset += 4;
+	  if (INTVAL (curr_offset) != last_offset)
+	    return false;
+	}
+    }
+  if (last_offset < 0 || last_offset + 4 != INTVAL (offset))
+    return false;
+
+  return true;
+}
+
+
+/* Masks of registers that are valid for CDX ldwm/stwm instructions.
+   The instruction can encode subsets drawn from either R2-R13 or
+   R14-R23 + FP + RA.  */
+#define CDX_LDSTWM_VALID_REGS_0 0x00003ffc
+#define CDX_LDSTWM_VALID_REGS_1 0x90ffc000
+
+static bool
+nios2_ldstwm_regset_p (unsigned int regno, unsigned int *regset)
+{
+  if (*regset == 0)
+    {
+      if (CDX_LDSTWM_VALID_REGS_0 & (1 << regno))
+	*regset = CDX_LDSTWM_VALID_REGS_0;
+      else if (CDX_LDSTWM_VALID_REGS_1 & (1 << regno))
+	*regset = CDX_LDSTWM_VALID_REGS_1;
+      else
+	return false;
+      return true;
+    }
+  else
+    return (*regset & (1 << regno)) != 0;
+}
+
+/* Main function to implement ldwm_operation/stwm_operation
+   predicates that check ldwm/stwm insn pattern integrity.  */
+bool
+ldstwm_operation_p (rtx op, bool load_p)
+{
+  int start, i, end = XVECLEN (op, 0) - 1, last_regno = -1;
+  unsigned int regset = 0;
+  rtx base_reg, offset;  
+  rtx first_elt = XVECEXP (op, 0, 0);
+  bool inc_p = true;
+  bool wb_p = base_reg_adjustment_p (first_elt, &base_reg, &offset);
+  if (GET_CODE (XVECEXP (op, 0, end)) == RETURN)
+    end--;
+  start = wb_p ? 1 : 0;
+  for (i = start; i <= end; i++)
+    {
+      int regno;
+      rtx reg, mem, elt = XVECEXP (op, 0, i);
+      /* Return early if not a SET at all.  */
+      if (GET_CODE (elt) != SET)
+	return false;
+      reg = load_p ? SET_DEST (elt) : SET_SRC (elt);
+      mem = load_p ? SET_SRC (elt) : SET_DEST (elt);
+      if (!REG_P (reg) || !MEM_P (mem))
+	return false;
+      regno = REGNO (reg);
+      if (!nios2_ldstwm_regset_p (regno, &regset))
+	return false;
+      /* If no writeback to determine direction, use offset of first MEM.  */
+      if (wb_p)
+	inc_p = INTVAL (offset) > 0;
+      else if (i == start)
+	{
+	  rtx first_base, first_offset;
+	  if (!split_mem_address (XEXP (mem, 0),
+				  &first_base, &first_offset))
+	    return false;
+	  base_reg = first_base;
+	  inc_p = INTVAL (first_offset) >= 0;
+	}
+      /* Ensure that the base register is not loaded into.  */
+      if (load_p && regno == (int) REGNO (base_reg))
+	return false;
+      /* Check for register order inc/dec integrity.  */
+      if (last_regno >= 0)
+	{
+	  if (inc_p && last_regno >= regno)
+	    return false;
+	  if (!inc_p && last_regno <= regno)
+	    return false;
+	}
+      last_regno = regno;
+    }
+  return true;
+}
+
+/* Helper for nios2_ldst_parallel, for generating a parallel vector
+   SET element.  */
+static rtx
+gen_ldst (bool load_p, int regno, rtx base_mem, int offset)
+{
+  rtx reg = gen_rtx_REG (SImode, regno);
+  rtx mem = adjust_address_nv (base_mem, SImode, offset);
+  return gen_rtx_SET (load_p ? reg : mem,
+		      load_p ? mem : reg);
+}
+
+/* A general routine for creating the body RTL pattern of
+   ldwm/stwm/push.n/pop.n insns.
+   LOAD_P: true/false for load/store direction.
+   REG_INC_P: whether registers are incrementing/decrementing in the
+   *RTL vector* (not necessarily the order defined in the ISA specification).
+   OFFSET_INC_P: Same as REG_INC_P, but for the memory offset order.
+   BASE_MEM: starting MEM.
+   BASE_UPDATE: amount to update base register; zero means no writeback.
+   REGMASK: register mask to load/store.
+   RET_P: true if to tag a (return) element at the end.
+
+   Note that this routine does not do any checking. It's the job of the
+   caller to do the right thing, and the insn patterns to do the
+   safe-guarding.  */
+static rtx
+nios2_ldst_parallel (bool load_p, bool reg_inc_p, bool offset_inc_p,
+		     rtx base_mem, int base_update,
+		     unsigned HOST_WIDE_INT regmask, bool ret_p)
+{
+  rtvec p;
+  int regno, b = 0, i = 0, n = 0, len = popcount_hwi (regmask);
+  if (ret_p) len++, i++, b++;
+  if (base_update != 0) len++, i++;
+  p = rtvec_alloc (len);
+  for (regno = (reg_inc_p ? 0 : 31);
+       regno != (reg_inc_p ? 32 : -1);
+       regno += (reg_inc_p ? 1 : -1))
+    if ((regmask & (1 << regno)) != 0)
+      {
+	int offset = (offset_inc_p ? 4 : -4) * n++;
+	RTVEC_ELT (p, i++) = gen_ldst (load_p, regno, base_mem, offset);
+      }
+  if (ret_p)
+    RTVEC_ELT (p, 0) = ret_rtx;
+  if (base_update != 0)
+    {
+      rtx reg, offset;
+      if (!split_mem_address (XEXP (base_mem, 0), &reg, &offset))
+	gcc_unreachable ();
+      RTVEC_ELT (p, b) =
+	gen_rtx_SET (reg, plus_constant (Pmode, reg, base_update));
+    }
+  return gen_rtx_PARALLEL (VOIDmode, p);
+}
+
+/* CDX ldwm/stwm peephole optimization pattern related routines.  */
+
+/* Data structure and sorting function for ldwm/stwm peephole optimizers.  */
+struct ldstwm_operand
+{
+  int offset;	/* Offset from base register.  */
+  rtx reg;	/* Register to store at this offset.  */
+  rtx mem;	/* Original mem.  */
+  bool bad;	/* True if this load/store can't be combined.  */
+  bool rewrite; /* True if we should rewrite using scratch.  */
+};
+
+static int
+compare_ldstwm_operands (const void *arg1, const void *arg2)
+{
+  const struct ldstwm_operand *op1 = (const struct ldstwm_operand *) arg1;
+  const struct ldstwm_operand *op2 = (const struct ldstwm_operand *) arg2;
+  if (op1->bad)
+    return op2->bad ? 0 : 1;
+  else if (op2->bad)
+    return -1;
+  else
+    return op1->offset - op2->offset;
+}
+
+/* Helper function: return true if a load/store using REGNO with address
+   BASEREG and offset OFFSET meets the constraints for a 2-byte CDX ldw.n,
+   stw.n, ldwsp.n, or stwsp.n instruction.  */
+static bool
+can_use_cdx_ldstw (int regno, int basereg, int offset)
+{
+  if (CDX_REG_P (regno) && CDX_REG_P (basereg)
+      && (offset & 0x3) == 0 && 0 <= offset && offset < 0x40)
+    return true;
+  else if (basereg == SP_REGNO
+	   && offset >= 0 && offset < 0x80 && (offset & 0x3) == 0)
+    return true;
+  return false;
+}
+
+/* This function is called from peephole2 optimizers to try to merge
+   a series of individual loads and stores into a ldwm or stwm.  It
+   can also rewrite addresses inside the individual loads and stores
+   using a common base register using a scratch register and smaller
+   offsets if that allows them to use CDX ldw.n or stw.n instructions
+   instead of 4-byte loads or stores.
+   N is the number of insns we are trying to merge.  SCRATCH is non-null
+   if there is a scratch register available.  The OPERANDS array contains
+   alternating REG (even) and MEM (odd) operands.  */
+bool
+gen_ldstwm_peep (bool load_p, int n, rtx scratch, rtx *operands)
+{
+  /* CDX ldwm/stwm instructions allow a maximum of 12 registers to be
+     specified.  */
+#define MAX_LDSTWM_OPS 12
+  struct ldstwm_operand sort[MAX_LDSTWM_OPS];
+  int basereg = -1;
+  int baseoffset;
+  int i, m, lastoffset, lastreg;
+  unsigned int regmask = 0, usemask = 0, regset;
+  bool needscratch;
+  int newbasereg;
+  int nbytes;
+
+  if (!TARGET_HAS_CDX)
+    return false;
+  if (n < 2 || n > MAX_LDSTWM_OPS)
+    return false;
+
+  /* Check all the operands for validity and initialize the sort array.
+     The places where we return false here are all situations that aren't
+     expected to ever happen -- invalid patterns, invalid registers, etc.  */
+  for (i = 0; i < n; i++)
+    {
+      rtx base, offset;
+      rtx reg = operands[i];
+      rtx mem = operands[i + n];
+      int r, o, regno;
+      bool bad = false;
+
+      if (!REG_P (reg) || !MEM_P (mem))
+	return false;
+
+      regno = REGNO (reg);
+      if (regno > 31)
+	return false;
+      if (load_p && (regmask & (1 << regno)) != 0)
+	return false;
+      regmask |= 1 << regno;
+
+      if (!split_mem_address (XEXP (mem, 0), &base, &offset))
+	return false;
+      r = REGNO (base);
+      o = INTVAL (offset);
+
+      if (basereg == -1)
+	basereg = r;
+      else if (r != basereg)
+	bad = true;
+      usemask |= 1 << r;
+
+      sort[i].bad = bad;
+      sort[i].rewrite = false;
+      sort[i].offset = o;
+      sort[i].reg = reg;
+      sort[i].mem = mem;
+    }
+
+  /* If we are doing a series of register loads, we can't safely reorder
+     them if any of the regs used in addr expressions are also being set.  */
+  if (load_p && (regmask & usemask))
+    return false;
+
+  /* Sort the array by increasing mem offset order, then check that
+     offsets are valid and register order matches mem order.  At the
+     end of this loop, m is the number of loads/stores we will try to
+     combine; the rest are leftovers.  */
+  qsort (sort, n, sizeof (struct ldstwm_operand), compare_ldstwm_operands);
+
+  baseoffset = sort[0].offset;
+  needscratch = baseoffset != 0;
+  if (needscratch && !scratch)
+    return false;
+
+  lastreg = regmask = regset = 0;
+  lastoffset = baseoffset;
+  for (m = 0; m < n && !sort[m].bad; m++)
+    {
+      int thisreg = REGNO (sort[m].reg);
+      if (sort[m].offset != lastoffset
+	  || (m > 0 && lastreg >= thisreg)
+	  || !nios2_ldstwm_regset_p (thisreg, &regset))
+	break;
+      lastoffset += 4;
+      lastreg = thisreg;
+      regmask |= (1 << thisreg);
+    }
+
+  /* For loads, make sure we are not overwriting the scratch reg.
+     The peephole2 pattern isn't supposed to match unless the register is
+     unused all the way through, so this isn't supposed to happen anyway.  */
+  if (load_p
+      && needscratch
+      && ((1 << REGNO (scratch)) & regmask) != 0)
+    return false;
+  newbasereg = needscratch ? (int) REGNO (scratch) : basereg;
+
+  /* We may be able to combine only the first m of the n total loads/stores
+     into a single instruction.  If m < 2, there's no point in emitting
+     a ldwm/stwm at all, but we might be able to do further optimizations
+     if we have a scratch.  We will count the instruction lengths of the
+     old and new patterns and store the savings in nbytes.  */
+  if (m < 2)
+    {
+      if (!needscratch)
+	return false;
+      m = 0;
+      nbytes = 0;
+    }
+  else
+    nbytes = -4;  /* Size of ldwm/stwm.  */
+  if (needscratch)
+    {
+      int bo = baseoffset > 0 ? baseoffset : -baseoffset;
+      if (CDX_REG_P (newbasereg)
+	  && CDX_REG_P (basereg)
+	  && bo <= 128 && bo > 0 && (bo & (bo - 1)) == 0)
+	nbytes -= 2;  /* Size of addi.n/subi.n.  */
+      else
+	nbytes -= 4;  /* Size of non-CDX addi.  */
+    }
+
+  /* Count the size of the input load/store instructions being replaced.  */
+  for (i = 0; i < m; i++)
+    if (can_use_cdx_ldstw (REGNO (sort[i].reg), basereg, sort[i].offset))
+      nbytes += 2;
+    else
+      nbytes += 4;
+
+  /* We may also be able to save a bit if we can rewrite non-CDX
+     load/stores that can't be combined into the ldwm/stwm into CDX
+     load/stores using the scratch reg.  For example, this might happen
+     if baseoffset is large, by bringing in the offsets in the load/store
+     instructions within the range that fits in the CDX instruction.  */
+  if (needscratch && CDX_REG_P (newbasereg))
+    for (i = m; i < n && !sort[i].bad; i++)
+      if (!can_use_cdx_ldstw (REGNO (sort[i].reg), basereg, sort[i].offset)
+	  && can_use_cdx_ldstw (REGNO (sort[i].reg), newbasereg,
+				sort[i].offset - baseoffset))
+	{
+	  sort[i].rewrite = true;
+	  nbytes += 2;
+	}
+
+  /* Are we good to go?  */
+  if (nbytes <= 0)
+    return false;
+
+  /* Emit the scratch load.  */
+  if (needscratch)
+    emit_insn (gen_rtx_SET (scratch, XEXP (sort[0].mem, 0)));
+
+  /* Emit the ldwm/stwm insn.  */
+  if (m > 0)
+    {
+      rtvec p = rtvec_alloc (m);
+      for (i = 0; i < m; i++)
+	{
+	  int offset = sort[i].offset;
+	  rtx mem, reg = sort[i].reg;
+	  rtx base_reg = gen_rtx_REG (Pmode, newbasereg);
+	  if (needscratch)
+	    offset -= baseoffset;
+	  mem = gen_rtx_MEM (SImode, plus_constant (Pmode, base_reg, offset));
+	  if (load_p)
+	    RTVEC_ELT (p, i) = gen_rtx_SET (reg, mem);
+	  else
+	    RTVEC_ELT (p, i) = gen_rtx_SET (mem, reg);
+	}
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
+    }
+
+  /* Emit any leftover load/stores as individual instructions, doing
+     the previously-noted rewrites to use the scratch reg.  */
+  for (i = m; i < n; i++)
+    {
+      rtx reg = sort[i].reg;
+      rtx mem = sort[i].mem;
+      if (sort[i].rewrite)
+	{
+	  int offset = sort[i].offset - baseoffset;
+	  mem = gen_rtx_MEM (SImode, plus_constant (Pmode, scratch, offset));
+	}
+      if (load_p)
+	emit_move_insn (reg, mem);
+      else
+	emit_move_insn (mem, reg);
+    }
+  return true;
 }
 
 /* Implement TARGET_MACHINE_DEPENDENT_REORG:

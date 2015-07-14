@@ -1169,3 +1169,6 @@
   emit_move_insn (operands[0], gen_rtx_REG (Pmode, TP_REGNO));
   DONE;
 })
+;; Include the ldwm/stwm/push.n/pop.n patterns and peepholes.
+(include "ldstwm.md")
+
