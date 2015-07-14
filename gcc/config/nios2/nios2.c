@@ -1195,6 +1195,13 @@ nios2_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
           return false;
         }
 
+    case ZERO_EXTRACT:
+      if (TARGET_HAS_BMX)
+	{
+          *total = COSTS_N_INSNS (1);
+          return true;
+	}
+
       default:
         return false;
     }
@@ -1260,6 +1267,14 @@ nios2_unspec_reloc_p (rtx op)
   return (GET_CODE (op) == CONST
 	  && GET_CODE (XEXP (op, 0)) == UNSPEC
 	  && ! nios2_large_offset_p (XINT (XEXP (op, 0), 1)));
+}
+
+static bool
+nios2_large_unspec_reloc_p (rtx op)
+{
+  return (GET_CODE (op) == CONST
+	  && GET_CODE (XEXP (op, 0)) == UNSPEC
+	  && nios2_large_offset_p (XINT (XEXP (op, 0), 1)));
 }
 
 /* Helper to generate unspec constant.  */
@@ -1871,9 +1886,7 @@ nios2_load_pic_address (rtx sym, int unspec, rtx tmp)
 bool
 nios2_legitimate_pic_operand_p (rtx x)
 {
-  if (GET_CODE (x) == CONST
-      && GET_CODE (XEXP (x, 0)) == UNSPEC
-      && nios2_large_offset_p (XINT (XEXP (x, 0), 1)))
+  if (nios2_large_unspec_reloc_p (x))
     return true;
 
   return ! (GET_CODE (x) == SYMBOL_REF
@@ -2001,10 +2014,37 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
       from = copy_to_mode_reg (mode, from);
     }
 
-  if (GET_CODE (from) == SYMBOL_REF || GET_CODE (from) == LABEL_REF
-      || (GET_CODE (from) == CONST
-	  && GET_CODE (XEXP (from, 0)) != UNSPEC))
-    from = nios2_legitimize_constant_address (from);
+  if (CONSTANT_P (from))
+    {
+      if (CONST_INT_P (from))
+	{
+	  if (!SMALL_INT (INTVAL (from))
+	      && !SMALL_INT_UNSIGNED (INTVAL (from))
+	      && !UPPER16_INT (INTVAL (from)))
+	    {
+	      HOST_WIDE_INT high = (INTVAL (from) + 0x8000) & ~0xffff;
+	      HOST_WIDE_INT low = INTVAL (from) & 0xffff;
+	      emit_move_insn (to, gen_int_mode (high, SImode));
+	      emit_insn (gen_add2_insn (to, gen_int_mode (low, HImode)));
+	      set_unique_reg_note (get_last_insn (), REG_EQUAL,
+				   copy_rtx (from));
+	      return true;
+	    }
+	}
+      else if (!gprel_constant_p (from))
+	{
+	  if (!nios2_large_unspec_reloc_p (from))
+	    from = nios2_legitimize_constant_address (from);
+	  if (CONSTANT_P (from))
+	    {
+	      emit_insn (gen_rtx_SET (to, gen_rtx_HIGH (Pmode, from)));
+	      emit_insn (gen_rtx_SET (to, gen_rtx_LO_SUM (Pmode, to, from)));
+	      set_unique_reg_note (get_last_insn (), REG_EQUAL,
+				   copy_rtx (operands[1]));
+	      return true;
+	    }
+	}
+    }
 
   operands[0] = to;
   operands[1] = from;
@@ -2037,25 +2077,106 @@ nios2_adjust_call_address (rtx *call_op, rtx reg)
 
 /* Output assembly language related definitions.  */
 
+/* Implement TARGET_PRINT_OPERAND_PUNCT_VALID_P.  */
+static bool
+nios2_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '.' || code == '!');
+}
+
+
 /* Print the operand OP to file stream FILE modified by LETTER.
    LETTER can be one of:
 
-     i: print "i" if OP is an immediate, except 0
-     o: print "io" if OP is volatile
-     z: for const0_rtx print $0 instead of 0
+     i: print i/hi/ui suffixes (used for mov instruction variants),
+        when OP is the appropriate immediate operand.
+
+     u: like 'i', except without "ui" suffix case (used for cmpgeu/cmpltu)
+
+     o: print "io" if OP needs volatile access (due to TARGET_BYPASS_CACHE
+        or TARGET_BYPASS_CACHE_VOLATILE).
+
+     x: print i/hi/ci/chi suffixes for the and instruction,
+        when OP is the appropriate immediate operand.
+
+     z: prints the third register immediate operand in assembly
+        instructions.  Outputs const0_rtx as the 'zero' register
+	instead of '0'.
+	
+     y: same as 'z', but for specifically for logical instructions,
+        where the processing for immediates are slightly different.
+
      H: for %hiadj
      L: for %lo
-     U: for upper half of 32 bit value
      D: for the upper 32-bits of a 64-bit double value
      R: prints reverse condition.
+     A: prints (reg) operand for ld[s]ex and st[s]ex.
+
+     .: print .n suffix for 16-bit instructions.
+     !: print r.n suffix for 16-bit instructions.  Used for jmpr.n.
 */
 static void
 nios2_print_operand (FILE *file, rtx op, int letter)
 {
 
+  /* First take care of the format letters that just insert a string
+     into the output stream.  */
   switch (letter)
     {
+    case '.':
+      if (current_output_insn && get_attr_length (current_output_insn) == 2)
+	fprintf (file, ".n");
+      return;
+
+    case '!':
+      if (current_output_insn && get_attr_length (current_output_insn) == 2)
+	fprintf (file, "r.n");
+      return;
+
+    case 'x':
+      if (CONST_INT_P (op))
+	{
+	  HOST_WIDE_INT val = INTVAL (op);
+	  HOST_WIDE_INT low = val & 0xffff;
+	  HOST_WIDE_INT high = (val >> 16) & 0xffff;
+
+	  if (val != 0)
+	    {
+	      if (high != 0)
+		{
+		  if (low != 0)
+		    {
+		      gcc_assert (TARGET_ARCH_R2);
+		      if (high == 0xffff)
+			fprintf (file, "c");
+		      else if (low == 0xffff)
+			fprintf (file, "ch");
+		      else
+			gcc_unreachable ();
+		    }
+		  else
+		    fprintf (file, "h");
+		}
+	      fprintf (file, "i");
+	    }
+	}
+      return;
+
+    case 'u':
     case 'i':
+      if (CONST_INT_P (op))
+	{
+	  HOST_WIDE_INT val = INTVAL (op);
+	  HOST_WIDE_INT low = val & 0xffff;
+	  HOST_WIDE_INT high = (val >> 16) & 0xffff;
+	  if (val != 0)
+	    {
+	      if (low == 0 && high != 0)
+		fprintf (file, "h");
+	      else if (high == 0 && (low & 0x8000) != 0 && letter != 'u')
+		fprintf (file, "u");
+	    }
+	}
       if (CONSTANT_P (op) && op != const0_rtx)
         fprintf (file, "i");
       return;
@@ -2064,13 +2185,18 @@ nios2_print_operand (FILE *file, rtx op, int letter)
       if (GET_CODE (op) == MEM
 	  && ((MEM_VOLATILE_P (op) && TARGET_BYPASS_CACHE_VOLATILE)
 	      || TARGET_BYPASS_CACHE))
-        fprintf (file, "io");
+	{
+	  gcc_assert (current_output_insn
+		      && get_attr_length (current_output_insn) == 4);
+	  fprintf (file, "io");
+	}
       return;
 
     default:
       break;
     }
 
+  /* Handle comparison operator names.  */
   if (comparison_operator (op, VOIDmode))
     {
       enum rtx_code cond = GET_CODE (op);
@@ -2086,10 +2212,11 @@ nios2_print_operand (FILE *file, rtx op, int letter)
 	}
     }
 
+  /* Now handle the cases where we actually need to format an operand.  */
   switch (GET_CODE (op))
     {
     case REG:
-      if (letter == 0 || letter == 'z')
+      if (letter == 0 || letter == 'z' || letter == 'y')
         {
           fprintf (file, "%s", reg_names[REGNO (op)]);
           return;
@@ -2102,19 +2229,64 @@ nios2_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case CONST_INT:
-      if (INTVAL (op) == 0 && letter == 'z')
-        {
-          fprintf (file, "zero");
-          return;
-        }
+      {
+	rtx int_rtx = op;
+	HOST_WIDE_INT val = INTVAL (int_rtx);
+	HOST_WIDE_INT low = val & 0xffff;
+	HOST_WIDE_INT high = (val >> 16) & 0xffff;
 
-      if (letter == 'U')
-        {
-          HOST_WIDE_INT val = INTVAL (op);
-	  val = (val >> 16) & 0xFFFF;
-	  output_addr_const (file, gen_int_mode (val, SImode));
-          return;
-        }
+	if (letter == 'y')
+	  {
+	    if (val == 0)
+	      fprintf (file, "zero");
+	    else
+	      {
+		if (high != 0)
+		  {
+		    if (low != 0)
+		      {
+			gcc_assert (TARGET_ARCH_R2);
+			if (high == 0xffff)
+			  /* andci.  */
+			  int_rtx = gen_int_mode (low, SImode);
+			else if (low == 0xffff)
+			  /* andchi.  */
+			  int_rtx = gen_int_mode (high, SImode);
+			else
+			  gcc_unreachable ();
+		      }
+		    else
+		      /* andhi.  */
+		      int_rtx = gen_int_mode (high, SImode);
+		  }
+		else
+		  /* andi.  */
+		  int_rtx = gen_int_mode (low, SImode);
+		output_addr_const (file, int_rtx);
+	      }
+	    return;
+	  }
+	else if (letter == 'z')
+	  {
+	    if (val == 0)
+	      fprintf (file, "zero");
+	    else
+	      {
+		if (low == 0 && high != 0)
+		  int_rtx = gen_int_mode (high, SImode);
+		else if (low != 0)
+		  {
+		    gcc_assert (high == 0 || high == 0xffff);
+		    int_rtx = gen_int_mode (low, high == 0 ? SImode : HImode);
+		  }
+		else
+		  gcc_unreachable ();
+		output_addr_const (file, int_rtx);
+	      }
+	    return;
+	  }
+      }
+
       /* Else, fall through.  */
 
     case CONST:
@@ -2147,6 +2319,12 @@ nios2_print_operand (FILE *file, rtx op, int letter)
 
     case SUBREG:
     case MEM:
+      if (letter == 'A')
+	{
+	  /* Address of '(reg)' form, with no index.  */
+	  fprintf (file, "(%s)", reg_names[REGNO (XEXP (op, 0))]);
+	  return;
+	}
       if (letter == 0)
         {
           output_address (op);
@@ -3462,6 +3640,489 @@ nios2_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   reload_completed = 0;
 }
 
+
+/* Utility function to break a memory address into
+   base register + constant offset.  Return false if something
+   unexpected is seen.  */
+static bool
+split_mem_address (rtx addr, rtx *base_reg, rtx *offset)
+{
+  if (REG_P (addr))
+    {
+      *base_reg = addr;
+      *offset = const0_rtx;
+      return true;
+    }
+  else if (GET_CODE (addr) == PLUS)
+    {
+      *base_reg = XEXP (addr, 0);
+      *offset = XEXP (addr, 1);
+      return true;
+    }
+  return false;
+}
+
+/* Splits out the operands of an ALU insn, places them in *LHS, *RHS1, *RHS2.  */
+static void
+split_alu_insn (rtx_insn *insn, rtx *lhs, rtx *rhs1, rtx *rhs2)
+{
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == SET);
+  *lhs = SET_DEST (pat);
+  *rhs1 = XEXP (SET_SRC (pat), 0);
+  if (GET_RTX_CLASS (GET_CODE (SET_SRC (pat))) != RTX_UNARY)
+    *rhs2 = XEXP (SET_SRC (pat), 1);
+  return;
+}
+
+/* Returns true if OP is a REG and assigned a CDX reg.  */
+static bool
+cdxreg (rtx op)
+{
+  return REG_P (op) && (!reload_completed || CDX_REG_P (REGNO (op)));
+}
+
+/* Returns true if OP is within range of CDX addi.n immediates.  */
+static bool
+cdx_add_immed (rtx op)
+{
+  if (CONST_INT_P (op))
+    {
+      HOST_WIDE_INT ival = INTVAL (op);
+      return ival <= 128 && ival > 0 && (ival & (ival - 1)) == 0;
+    }
+  return false;
+}
+
+/* Returns true if OP is within range of CDX andi.n immediates.  */
+static bool
+cdx_and_immed (rtx op)
+{
+  if (CONST_INT_P (op))
+    {
+      HOST_WIDE_INT ival = INTVAL (op);
+      return (ival == 1 || ival == 2 || ival == 3 || ival == 4
+	      || ival == 8 || ival == 0xf || ival == 0x10
+	      || ival == 0x10 || ival == 0x1f || ival == 0x20
+	      || ival == 0x3f || ival == 0x3f || ival == 0x7f
+	      || ival == 0x80 || ival == 0xff || ival == 0x7ff
+	      || ival == 0xff00 || ival == 0xffff);
+    }
+  return false;
+}
+
+/* Returns true if OP is within range of CDX movi.n immediates.  */
+static bool
+cdx_mov_immed (rtx op)
+{
+  if (CONST_INT_P (op))
+    {
+      HOST_WIDE_INT ival = INTVAL (op);
+      return ((ival >= 0 && ival <= 124)
+	      || ival == 0xff || ival == -2 || ival == -1);
+    }
+  return false;
+}
+
+/* Returns true if OP is within range of CDX slli.n/srli.n immediates.  */
+static bool
+cdx_shift_immed (rtx op)
+{
+  if (CONST_INT_P (op))
+    {
+      HOST_WIDE_INT ival = INTVAL (op);
+      return (ival == 1 || ival == 2 || ival == 3 || ival == 8
+	      || ival == 12 || ival == 16 || ival == 24
+	      || ival == 31);
+    }
+  return false;
+}
+
+
+
+/* Classification of different kinds of add instructions.  */
+enum nios2_add_insn_kind {
+  nios2_add_n_kind,
+  nios2_addi_n_kind,
+  nios2_subi_n_kind,
+  nios2_spaddi_n_kind,
+  nios2_spinci_n_kind,
+  nios2_spdeci_n_kind,
+  nios2_add_kind,
+  nios2_addi_kind
+};
+
+static const char *nios2_add_insn_names[] = {
+  "add.n", "addi.n", "subi.n", "spaddi.n",  "spinci.n", "spdeci.n",
+  "add", "addi" };
+static bool nios2_add_insn_narrow[] = {
+  true, true, true, true, true, true,
+  false, false};
+
+/* Function to classify kinds of add instruction patterns.  */
+static enum nios2_add_insn_kind 
+nios2_add_insn_classify (rtx_insn *insn ATTRIBUTE_UNUSED,
+			 rtx lhs, rtx rhs1, rtx rhs2)
+{
+  if (TARGET_HAS_CDX)
+    {
+      if (cdxreg (lhs) && cdxreg (rhs1))
+	{
+	  if (cdxreg (rhs2))
+	    return nios2_add_n_kind;
+	  if (CONST_INT_P (rhs2))
+	    {
+	      HOST_WIDE_INT ival = INTVAL (rhs2);
+	      if (ival > 0 && cdx_add_immed (rhs2))
+		return nios2_addi_n_kind;
+	      if (ival < 0 && cdx_add_immed (GEN_INT (-ival)))
+		return nios2_subi_n_kind;
+	    }
+	}
+      else if (rhs1 == stack_pointer_rtx
+	       && CONST_INT_P (rhs2))
+	{
+	  HOST_WIDE_INT imm7 = INTVAL (rhs2) >> 2;
+	  HOST_WIDE_INT rem = INTVAL (rhs2) & 3;
+	  if (rem == 0 && (imm7 & ~0x7f) == 0)
+	    {
+	      if (cdxreg (lhs))
+		return nios2_spaddi_n_kind;
+	      if (lhs == stack_pointer_rtx)
+		return nios2_spinci_n_kind;
+	    }
+	  imm7 = -INTVAL(rhs2) >> 2;
+	  rem = -INTVAL (rhs2) & 3;
+	  if (lhs == stack_pointer_rtx
+	      && rem == 0 && (imm7 & ~0x7f) == 0)
+	    return nios2_spdeci_n_kind;
+	}
+    }
+  return ((REG_P (rhs2) || rhs2 == const0_rtx)
+	  ? nios2_add_kind : nios2_addi_kind);
+}
+
+/* Emit assembly language for the different kinds of add instructions.  */
+const char*
+nios2_add_insn_asm (rtx_insn *insn, rtx *operands)
+{
+  static char buf[256];
+  int ln = 256;
+  enum nios2_add_insn_kind kind
+    = nios2_add_insn_classify (insn, operands[0], operands[1], operands[2]);
+  if (kind == nios2_subi_n_kind)
+    snprintf (buf, ln, "subi.n\t%%0, %%1, %d", (int) -INTVAL (operands[2]));
+  else if (kind == nios2_spaddi_n_kind)
+    snprintf (buf, ln, "spaddi.n\t%%0, %%2");
+  else if (kind == nios2_spinci_n_kind)
+    snprintf (buf, ln, "spinci.n\t%%2");
+  else if (kind == nios2_spdeci_n_kind)
+    snprintf (buf, ln, "spdeci.n\t%d", (int) -INTVAL (operands[2]));
+  else
+    snprintf (buf, ln, "%s\t%%0, %%1, %%z2", nios2_add_insn_names[(int)kind]);
+  return buf;
+}
+
+/* This routine, which the default "length" attribute computation is
+   based on, encapsulates information about all the cases where CDX
+   provides a narrow 2-byte instruction form.  */
+bool
+nios2_cdx_narrow_form_p (rtx_insn *insn)
+{
+  rtx pat, lhs, rhs1, rhs2;
+  enum attr_type type;
+  if (!TARGET_HAS_CDX)
+    return false;
+  type = get_attr_type (insn);
+  pat = PATTERN (insn);
+  gcc_assert (reload_completed);
+  switch (type)
+    {
+    case TYPE_CONTROL:
+      if (GET_CODE (pat) == SIMPLE_RETURN)
+	return true;
+      if (GET_CODE (pat) == PARALLEL)
+	pat = XVECEXP (pat, 0, 0);
+      if (GET_CODE (pat) == SET)
+	pat = SET_SRC (pat);
+      if (GET_CODE (pat) == IF_THEN_ELSE)
+	{
+	  /* Conditional branch patterns; for these we
+	     only check the comparison to find beqz.n/bnez.n cases.
+	     For the 'nios2_cbranch' pattern, we cannot also check
+	     the branch range here. That will be done at the md
+	     pattern "length" attribute computation.  */
+	  rtx cmp = XEXP (pat, 0);
+	  return ((GET_CODE (cmp) == EQ || GET_CODE (cmp) == NE)
+		  && cdxreg (XEXP (cmp, 0))
+		  && XEXP (cmp, 1) == const0_rtx);
+	}
+      if (GET_CODE (pat) == TRAP_IF)
+	/* trap.n is always usable.  */
+	return true;
+      if (GET_CODE (pat) == CALL)
+	pat = XEXP (XEXP (pat, 0), 0);
+      if (REG_P (pat))
+	/* Control instructions taking a register operand are indirect
+	   jumps and calls.  The CDX instructions have a 5-bit register
+	   field so any reg is valid.  */
+	return true;
+      else
+	{
+	  gcc_assert (!insn_variable_length_p (insn));
+	  return false;
+	}
+    case TYPE_ADD:
+      {
+	enum nios2_add_insn_kind kind;
+	split_alu_insn (insn, &lhs, &rhs1, &rhs2);
+	kind = nios2_add_insn_classify (insn, lhs, rhs1, rhs2);
+	return nios2_add_insn_narrow[(int)kind];
+      }
+    case TYPE_LD:
+      {
+	bool ret;
+	HOST_WIDE_INT offset, rem = 0;
+	rtx addr, reg = SET_DEST (pat), mem = SET_SRC (pat);
+	if (GET_CODE (mem) == SIGN_EXTEND)
+	  /* No CDX form for sign-extended load.  */
+	  return false;
+	if (GET_CODE (mem) == ZERO_EXTEND)
+	  /* The load alternatives in the zero_extend* patterns.  */
+	  mem = XEXP (mem, 0);
+	if (MEM_P (mem))
+	  {
+	    /* ldxio.  */
+	    if ((MEM_VOLATILE_P (mem) && TARGET_BYPASS_CACHE_VOLATILE)
+		|| TARGET_BYPASS_CACHE)
+	      return false;
+	    addr = XEXP (mem, 0);
+	    /* GP-based references are never narrow.  */
+	    if (gprel_constant_p (addr))
+		return false;
+	    ret = split_mem_address (addr, &rhs1, &rhs2);
+	    gcc_assert (ret);
+	  }
+	else
+	  return false;
+
+	offset = INTVAL (rhs2);
+	if (GET_MODE (mem) == SImode)
+	  {
+	    rem = offset & 3;
+	    offset >>= 2;
+	    /* ldwsp.n case.  */
+	    if (rtx_equal_p (rhs1, stack_pointer_rtx)
+		&& rem == 0 && (offset & ~0x1f) == 0)
+	      return true;
+	  }
+	else if (GET_MODE (mem) == HImode)
+	  {
+	    rem = offset & 1;
+	    offset >>= 1;
+	  }
+	/* ldbu.n, ldhu.n, ldw.n cases.  */
+	return (cdxreg (reg) && cdxreg (rhs1)
+		&& rem == 0 && (offset & ~0xf) == 0);
+      }
+    case TYPE_ST:
+      if (GET_CODE (pat) == PARALLEL)
+	/* stex, stsex.  */
+	return false;
+      else
+	{
+	  bool ret;
+	  HOST_WIDE_INT offset, rem = 0;
+	  rtx addr, reg = SET_SRC (pat), mem = SET_DEST (pat);
+	  if (!MEM_P (mem))
+	    return false;
+	  /* stxio.  */
+	  if ((MEM_VOLATILE_P (mem) && TARGET_BYPASS_CACHE_VOLATILE)
+	      || TARGET_BYPASS_CACHE)
+	    return false;
+	  addr = XEXP (mem, 0);
+	  /* GP-based references are never narrow.  */
+	  if (gprel_constant_p (addr))
+	    return false;
+	  ret = split_mem_address (addr, &rhs1, &rhs2);
+	  gcc_assert (ret);
+	  offset = INTVAL (rhs2);
+	  if (GET_MODE (mem) == SImode)
+	    {
+	      rem = offset & 3;
+	      offset >>= 2;
+	      /* stwsp.n case.  */
+	      if (rtx_equal_p (rhs1, stack_pointer_rtx)
+		  && rem == 0 && (offset & ~0x1f) == 0)
+		return true;
+	      /* stwz.n case.  */
+	      else if (reg == const0_rtx && cdxreg (rhs1)
+		       && rem == 0 && (offset & ~0x3f) == 0)
+		return true;
+	    }
+	  else if (GET_MODE (mem) == HImode)
+	    {
+	      rem = offset & 1;
+	      offset >>= 1;
+	    }
+	  else
+	    {
+	      gcc_assert (GET_MODE (mem) == QImode);
+	      /* stbz.n case.  */
+	      if (reg == const0_rtx && cdxreg (rhs1)
+		  && (offset & ~0x3f) == 0)
+		return true;
+	    }
+
+	  /* stbu.n, sthu.n, stw.n cases.  */
+	  return (cdxreg (reg) && cdxreg (rhs1)
+		  && rem == 0 && (offset & ~0xf) == 0);
+	}
+    case TYPE_MOV:
+      lhs = SET_DEST (pat);
+      rhs1 = SET_SRC (pat);
+      if (CONST_INT_P (rhs1))
+	return (cdxreg (lhs) && cdx_mov_immed (rhs1));
+      gcc_assert (REG_P (lhs) && REG_P (rhs1));
+      return true;
+
+    case TYPE_AND:
+      /* Some zero_extend* alternatives are and insns.  */
+      if (GET_CODE (SET_SRC (pat)) == ZERO_EXTEND)
+	return (cdxreg (SET_DEST (pat))
+		&& cdxreg (XEXP (SET_SRC (pat), 0)));
+      split_alu_insn (insn, &lhs, &rhs1, &rhs2);
+      if (CONST_INT_P (rhs2))
+	return (cdxreg (lhs) && cdxreg (rhs1) && cdx_and_immed (rhs2));
+      return (cdxreg (lhs) && cdxreg (rhs2)
+	      && (!reload_completed || rtx_equal_p (lhs, rhs1)));
+
+    case TYPE_OR:
+    case TYPE_XOR:
+      /* Note the two-address limitation for CDX form.  */
+      split_alu_insn (insn, &lhs, &rhs1, &rhs2);
+      return (cdxreg (lhs) && cdxreg (rhs2)
+	      && (!reload_completed || rtx_equal_p (lhs, rhs1)));
+
+    case TYPE_SUB:
+      split_alu_insn (insn, &lhs, &rhs1, &rhs2);
+      return (cdxreg (lhs) && cdxreg (rhs1) && cdxreg (rhs2));
+
+    case TYPE_NEG:
+    case TYPE_NOT:
+      split_alu_insn (insn, &lhs, &rhs1, NULL);
+      return (cdxreg (lhs) && cdxreg (rhs1));
+
+    case TYPE_SLL:
+    case TYPE_SRL:
+      split_alu_insn (insn, &lhs, &rhs1, &rhs2);
+      return (cdxreg (lhs)
+	      && ((cdxreg (rhs1) && cdx_shift_immed (rhs2))
+		  || (cdxreg (rhs2)
+		      && (!reload_completed || rtx_equal_p (lhs, rhs1)))));
+    case TYPE_NOP:
+    case TYPE_PUSH:
+    case TYPE_POP:
+      return true;
+    default:
+      break;
+    }
+  return false;
+}
+
+/* Implement TARGET_MACHINE_DEPENDENT_REORG:
+   We use this hook when emitting CDX code to enforce the 4-byte
+   alignment requirement for labels that are used as the targets of
+   jmpi instructions.  CDX code can otherwise contain a mix of 16-bit
+   and 32-bit instructions aligned on any 16-bit boundary, but functions
+   and jmpi labels have to be 32-bit aligned because of the way the address
+   is encoded in the instruction.  */
+
+static unsigned char *label_align;
+static int min_labelno, max_labelno;
+
+static void
+nios2_reorg (void)
+{
+  bool changed = true;
+  rtx_insn *insn;
+
+  if (!TARGET_HAS_CDX)
+    return;
+
+  /* Initialize the data structures.  */
+  if (label_align)
+    free (label_align);
+  max_labelno = max_label_num ();
+  min_labelno = get_first_label_num ();
+  label_align = XCNEWVEC (unsigned char, max_labelno - min_labelno + 1);
+  
+  /* Iterate on inserting alignment and adjusting branch lengths until
+     no more changes.  */
+  while (changed)
+    {
+      changed = false;
+      shorten_branches (get_insns ());
+
+      for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
+	if (JUMP_P (insn) && insn_variable_length_p (insn))
+	  {
+	    rtx label = JUMP_LABEL (insn);
+	    /* We use the current fact that all cases of 'jmpi'
+	       doing the actual branch in the machine description
+	       has a computed length of 6 or 8.  Length 4 and below
+	       are all PC-relative 'br' branches without the jump-align
+	       problem.  */
+	    if (label && LABEL_P (label) && get_attr_length (insn) > 4)
+	      {
+		int index = CODE_LABEL_NUMBER (label) - min_labelno;
+		if (label_align[index] != 2)
+		  {
+		    label_align[index] = 2;
+		    changed = true;
+		  }
+	      }
+	  }
+    }
+}
+
+/* Implement LABEL_ALIGN, using the information gathered in nios2_reorg.  */
+int
+nios2_label_align (rtx label)
+{
+  int n = CODE_LABEL_NUMBER (label);
+
+  if (label_align && n >= min_labelno && n <= max_labelno)
+    return MAX (label_align[n - min_labelno], align_labels_log);
+  return align_labels_log;
+}
+
+/* Implement ADJUST_REG_ALLOC_ORDER.  We use the default ordering
+   for R1 and non-CDX R2 code; for CDX we tweak thing to prefer
+   the registers that can be used as operands to instructions that
+   have 3-bit register fields.  */
+void
+nios2_adjust_reg_alloc_order (void)
+{
+  const int cdx_reg_alloc_order[] =
+    {
+      /* Call-clobbered GPRs within CDX 3-bit encoded range.  */
+      2, 3, 4, 5, 6, 7, 
+      /* Call-saved GPRs within CDX 3-bit encoded range.  */
+      16, 17,
+      /* Other call-clobbered GPRs.  */
+      8, 9, 10, 11, 12, 13, 14, 15,
+      /* Other call-saved GPRs. RA placed first since it is always saved.  */
+      31, 18, 19, 20, 21, 22, 23, 28,
+      /* Fixed GPRs, not used by the register allocator.  */
+      0, 1, 24, 25, 26, 27, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39
+   };
+
+  if (TARGET_HAS_CDX)
+    memcpy (reg_alloc_order, cdx_reg_alloc_order,
+	    sizeof (int) * FIRST_PSEUDO_REGISTER);
+}
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -3549,6 +4210,9 @@ nios2_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL nios2_output_dwarf_dtprel
 
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P nios2_print_operand_punct_valid_p
+
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND nios2_print_operand
 
@@ -3588,6 +4252,9 @@ nios2_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
 #undef  TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK nios2_asm_output_mi_thunk
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG nios2_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

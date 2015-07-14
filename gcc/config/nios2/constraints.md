@@ -20,9 +20,10 @@
 
 ;; We use the following constraint letters for constants
 ;;
-;;  I: -32768 to -32767
+;;  I: -32768 to 32767
 ;;  J: 0 to 65535
 ;;  K: $nnnn0000 for some nnnn
+;;  P: Under R2, $nnnnffff or $ffffnnnn for some nnnn
 ;;  L: 0 to 31 (for shift counts)
 ;;  M: 0
 ;;  N: 0 to 255 (for custom instruction numbers)
@@ -85,6 +86,11 @@
   "An unsigned 5-bit constant (for control register numbers)."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 31")))
+
+(define_constraint "P"
+  "An immediate operand for R2 andchi/andci instructions."
+  (and (match_code "const_int")
+       (match_test "TARGET_ARCH_R2 && ANDCLEAR_INT (ival)")))
 
 (define_constraint "S"
   "An immediate stored in small data, accessible by GP."

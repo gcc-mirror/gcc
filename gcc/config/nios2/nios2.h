@@ -96,6 +96,8 @@
   ((TREE_CODE (EXP) == STRING_CST)                              \
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
+#define LABEL_ALIGN(LABEL) nios2_label_align (LABEL)
+
 /* Layout of source language data types.  */
 
 #define INT_TYPE_SIZE 32
@@ -175,6 +177,20 @@
 #define HARD_REGNO_NREGS(REGNO, MODE)            \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
+/* Order in which to allocate registers.  Each register must be
+   listed once.  This is the default ordering for R1 and non-CDX R2
+   code.  For CDX, we overwrite this in ADJUST_REG_ALLOC_ORDER.  */
+#define REG_ALLOC_ORDER							\
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, \
+      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, \
+      37, 38, 39 }
+
+#define ADJUST_REG_ALLOC_ORDER nios2_adjust_reg_alloc_order ()
+
+/* Caller-save costs can be less emphasized under R2 CDX, where we can
+   use push.n/pop.n.  */
+#define HONOR_REG_ALLOC_ORDER (TARGET_HAS_CDX)
+
 /* Register Classes.  */
 
 enum reg_class
@@ -213,6 +229,9 @@ enum reg_class
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
+#define CDX_REG_P(REGNO)						\
+  ((REGNO) == 16 || (REGNO) == 17 || (2 <= (REGNO) && (REGNO) <= 7))
+
 /* Tests for various kinds of constants used in the Nios II port.  */
 
 #define SMALL_INT(X) ((unsigned HOST_WIDE_INT)(X) + 0x8000 < 0x10000)
@@ -222,6 +241,8 @@ enum reg_class
 #define SHIFT_INT(X) ((X) >= 0 && (X) <= 31)
 #define RDWRCTL_INT(X) ((X) >= 0 && (X) <= 31)
 #define CUSTOM_INSN_OPCODE(X) ((X) >= 0 && (X) <= 255)
+#define ANDCLEAR_INT(X) \
+  (((X) & 0xffff) == 0xffff || (((X) >> 16) & 0xffff) == 0xffff)
 
 /* Say that the epilogue uses the return address register.  Note that
    in the case of sibcalls, the values "used by the epilogue" are

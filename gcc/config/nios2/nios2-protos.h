@@ -42,11 +42,17 @@ extern bool nios2_validate_fpu_compare (machine_mode, rtx *, rtx *, rtx *,
 
 extern bool nios2_fpu_insn_enabled (enum n2fpu_code);
 extern const char * nios2_fpu_insn_asm (enum n2fpu_code);
+extern const char * nios2_add_insn_asm (rtx_insn *, rtx *);
 
 extern bool nios2_legitimate_pic_operand_p (rtx);
 extern bool gprel_constant_p (rtx);
 extern bool nios2_regno_ok_for_base_p (int, bool);
 extern bool nios2_unspec_reloc_p (rtx);
+
+extern int nios2_label_align (rtx);
+extern bool nios2_cdx_narrow_form_p (rtx_insn *);
+
+extern void nios2_adjust_reg_alloc_order (void);
 
 #ifdef TREE_CODE
 #ifdef ARGS_SIZE_RTX
