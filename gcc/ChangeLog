@@ -1,3 +1,29 @@
+2015-07-14  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (struct operand): Add OP_IF and OP_WITH op_types.
+	(struct if_expr): New.
+	(struct with_expr): Likewise.
+	(is_a_helper): Add helpers for if_expr and with_expr.
+	(struct simplify): Add simplify_kind enum and member.  Remove
+	ifexpr_vec member.
+	(simplify::simplify): Adjust.
+	(lower_commutative): Adjust.
+	(lower_opt_convert): Likewise.
+	(lower_cond): Likewise.
+	(replace_id): Handle with_expr and if_expr.
+	(lower_for): Adjust.
+	(dt_simplify::gen_1): New recursive worker, split out from ...
+	(dt_simplify::gen): ... here.  Deal with if and with expansion
+	recursively.
+	(capture_info::capture_info): Take context argument
+	(capture_info::walk_result): Only analyze specific result.
+	(parser::parse_result): New function.
+	(parser::parse_simplify): Adjust to parse ifs with then end
+	else case.
+	(parser::parse_if): Simplify.
+	(parser::parse_pattern): Pass down simplify kind.
+	* match.pd: Convert if structure to new syntax.
+
 2015-07-13  Marek Polacek  <polacek@redhat.com>
 
 	* rtl.c (rtx_equal_p_cb): Fix typo.
