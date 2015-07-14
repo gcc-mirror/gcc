@@ -1525,7 +1525,10 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
       goto done;
     }
 # endif
-  ret = (strcmp(path, u->filename) == 0);
+  if (u->filename)
+    ret = (strcmp(path, u->filename) == 0);
+  else
+    ret = 0;
 #endif
  done:
   free (path);
@@ -1570,7 +1573,7 @@ find_file0 (gfc_unit *u, FIND_FILE0_DECL)
     }
   else
 # endif
-    if (strcmp (u->filename, path) == 0)
+    if (u->filename && strcmp (u->filename, path) == 0)
       return u;
 #endif
 
