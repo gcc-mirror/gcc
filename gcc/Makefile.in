@@ -79,6 +79,9 @@ gcc_docdir = @srcdir@/doc
 abs_srcdir = @abs_srcdir@
 abs_docdir = @abs_srcdir@/doc
 
+# Directory where sources are, relative to here.
+top_srcdir = @top_srcdir@
+
 # Top build directory for this package, relative to here.
 top_builddir = .
 
