@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define EPS 0.005
+
 int   P[1000];
 float A[1000];
 
@@ -31,7 +33,7 @@ float do_work(float *arr)
 
 int main(void)
 {
-  float pri, arr[1000];
+  float pri, arr[1000], diff;
 
   for (int i = 0; i < 1000; ++i)
   {
@@ -42,7 +44,9 @@ int main(void)
 
   pri = do_work(&arr[0]);
 
-  if (pri != 8237.25)
+  diff = pri - 8237.25;
+
+  if (diff > EPS || -diff > EPS)
     abort ();
 
   return 0;
