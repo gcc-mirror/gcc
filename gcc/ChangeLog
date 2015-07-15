@@ -1,3 +1,7 @@
+2015-07-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (*csinc2<mode>_insn): Use cinc mnemonic.
+
 2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/58066
