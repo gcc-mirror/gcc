@@ -1,3 +1,9 @@
+2015-07-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/66854
+	* config/rs6000/rs6000.c (rs6000_pass_by_reference): Move test for
+	null before IEEE 128-bit floating point support patch.
+
 2015-07-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* simplify-rtx.c (simplify_ternary_operation): Add simplification

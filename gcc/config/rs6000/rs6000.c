@@ -10832,6 +10832,9 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			  machine_mode mode, const_tree type,
 			  bool named ATTRIBUTE_UNUSED)
 {
+  if (!type)
+    return 0;
+
   if (DEFAULT_ABI == ABI_V4 && TARGET_IEEEQUAD
       && FLOAT128_IEEE_P (TYPE_MODE (type)))
     {
@@ -10839,9 +10842,6 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 	fprintf (stderr, "function_arg_pass_by_reference: V4 IEEE 128-bit\n");
       return 1;
     }
-
-  if (!type)
-    return 0;
 
   if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (type))
     {
