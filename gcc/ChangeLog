@@ -1,3 +1,10 @@
+2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/66838
+	* postreload.c (reload_cse_move2add): Also process
+	CALL_INSN_FUNCTION_USAGE when resetting information of
+	call-clobbered registers.
+
 2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
@@ -21,8 +28,8 @@
 	(nios2_expand_cache_builtin): New function.
 	(nios2_expand_wrpie_builtin): New function.
 	(nios2_expand_eni_builtin): New function.
-	(nios2_expand_builtin): Add arch field handling and new builtin 
-        cases.
+	(nios2_expand_builtin): Add arch field handling and new builtin
+	cases.
 	* doc/extend.texi (Altera Nios II Built-in Functions): Document
 	new builtins.
 	* doc/md.texi (Machine Constraints): Document U and v constraints.
@@ -271,7 +278,7 @@
 	* omega.h: Don't include config.h, don't include params.h again if
 	omega.h has already been included.
 	* graphite-poly.h: Include sese.h.
-	* graphite.c: Don't include sese.h, remove needless includes and 
+	* graphite.c: Don't include sese.h, remove needless includes and
 	minimize includes outside #ifdef HAVE_isl block.
 	* graphite-blocking.c: Don't include sese.h, remove needless includes,
 	and wrap entire file in #ifdef HAVE_isl

@@ -1,3 +1,8 @@
+2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/66838
+	* gcc.target/i386/pr66838.c: New test.
+
 2015-07-14  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/66850
@@ -356,7 +361,7 @@
 	* gcc.target/mips/umips-branch-14.c: New file.
 	* gcc.target/mips/umips-branch-15.c: New file.
 	* gcc.target/mips/umips-branch-16.c: New file.
-	* gcc.target/mips/branch-helper.h (OCCUPY_0x10000): New define.  
+	* gcc.target/mips/branch-helper.h (OCCUPY_0x10000): New define.
 	(OCCUPY_0xfffc): New define.
 
 2015-07-08  Renlin Li  <renlin.li@arm.com>
@@ -427,10 +432,10 @@
 	* gcc.target/arm/attr_thumb-static.c: Test for all targets.
 	Fix return value.
 
-2015-05-05  Jakub Jelinek  <jakub@redhat.com>
+2015-07-06  Jakub Jelinek  <jakub@redhat.com>
 
-        PR target/65956
-        * gcc.c-torture/execute/pr65956.c: New test.
+	PR target/65956
+	* gcc.c-torture/execute/pr65956.c: New test.
 
 2015-07-06  Alan Lawrence  <alan.lawrence@arm.com>
 
@@ -616,7 +621,7 @@
 	* gcc.target/arm/armv8-sync-op-full.c: Likewise.
 	* gcc.target/arm/armv8-sync-op-release.c: Likewise.
 	* gcc.target/arm/armv8-sync-op-acquire.c: Likewise.  Also, replace
-        'stlex' with 'strex' as the expected output.
+	'stlex' with 'strex' as the expected output.
 
 2015-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -860,7 +865,7 @@
 2015-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* gcc.target/arm/fixed_float_conversion.c: Skip for inappropriate
-          multilibs.
+	multilibs.
 	* gcc.target/arm/memset-inline-10.c: Likewise.
 	* gcc.target/arm/pr58784.c: Likewise.
 	* gcc.target/arm/pr59985.C: Likewise.
@@ -898,9 +903,9 @@
 
 2015-06-24  James Greenhalgh  <james.greenhalgh@arm.com>
 
-        * lib/c-torture.exp: Don't call check_effective_target_lto
+	* lib/c-torture.exp: Don't call check_effective_target_lto
 	before setting up environment correctly.
-        * lib/gcc-dg.exp: Likewise, and protect
+	* lib/gcc-dg.exp: Likewise, and protect
 	gcc_force_conventional_output.
 
 2015-06-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
@@ -920,7 +925,7 @@
 
 2015-06-23  Chen Gang  <gang.chen.5i5j@gmail.com>
 
-        PR target/65803
+	PR target/65803
 	* gcc.c-torture/pr65803.c: New test.
 
 2015-06-23  Patrick Palka  <ppalka@gcc.gnu.org>
@@ -1820,8 +1825,8 @@
 
 2015-06-01  Alex Velenko  <Alex.Velenko@arm.com>
 
-        * gcc.target/arm/thumb-ltu.c (foo): Predefined.
-        (bar): Predefined.
+	* gcc.target/arm/thumb-ltu.c (foo): Predefined.
+	(bar): Predefined.
 
 2015-06-01  Richard Biener  <rguenther@suse.de>
 
