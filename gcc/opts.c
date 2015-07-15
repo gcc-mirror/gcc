@@ -23,10 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "coretypes.h"
 #include "opts.h"
-#include "options.h"
-#include "tm.h" /* For STACK_CHECK_BUILTIN,
-		   STACK_CHECK_STATIC_BUILTIN, DEFAULT_GDB_EXTENSIONS,
-		   DWARF2_DEBUGGING_INFO and DBX_DEBUGGING_INFO.  */
+#include "tm.h"
 #include "flags.h"
 #include "params.h"
 #include "diagnostic.h"

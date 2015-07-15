@@ -24,15 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"		/* For INTMAX_TYPE, INT8_TYPE, INT16_TYPE, INT32_TYPE,
-			   INT64_TYPE, INT_LEAST8_TYPE, INT_LEAST16_TYPE,
-			   INT_LEAST32_TYPE, INT_LEAST64_TYPE, INT_FAST8_TYPE,
-			   INT_FAST16_TYPE, INT_FAST32_TYPE, INT_FAST64_TYPE,
-			   BOOL_TYPE_SIZE, BITS_PER_UNIT, POINTER_SIZE,
-			   INT_TYPE_SIZE, CHAR_TYPE_SIZE, SHORT_TYPE_SIZE,
-			   LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE,
-			   FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE and
-			   LONG_DOUBLE_TYPE_SIZE.  */
+#include "tm.h"
 #include "alias.h"
 #include "tree.h"
 #include "fold-const.h"

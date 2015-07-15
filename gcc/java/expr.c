@@ -26,12 +26,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"			/* For INT_TYPE_SIZE,
-				   TARGET_VTABLE_USES_DESCRIPTORS,
-				   BITS_PER_UNIT,
-				   MODIFY_JNI_METHOD_CALL and
-				   PARM_BOUNDARY.  */
-				   
+#include "tm.h"
 #include "alias.h"
 #include "tree.h"
 #include "fold-const.h"

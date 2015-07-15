@@ -1,3 +1,7 @@
+2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-opts.c: Remove multiline #include comment.
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-common.c: Fix double word typos.
