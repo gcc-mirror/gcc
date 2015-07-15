@@ -3144,6 +3144,13 @@ expand_call (tree exp, rtx target, int ignore)
 
       compute_argument_addresses (args, argblock, num_actuals);
 
+      /* Precompute all register parameters.  It isn't safe to compute
+	 anything once we have started filling any specific hard regs.
+	 TLS symbols sometimes need a call to resolve.  Precompute
+	 register parameters before any stack pointer manipulation
+	 to avoid unaligned stack in the called function.  */
+      precompute_register_parameters (num_actuals, args, &reg_parm_seen);
+
       /* Perform stack alignment before the first push (the last arg).  */
       if (argblock == 0
           && adjusted_args_size.constant > reg_parm_stack_space
@@ -3183,10 +3190,6 @@ expand_call (tree exp, rtx target, int ignore)
 	}
 
       funexp = rtx_for_function_call (fndecl, addr);
-
-      /* Precompute all register parameters.  It isn't safe to compute anything
-	 once we have started filling any specific hard regs.  */
-      precompute_register_parameters (num_actuals, args, &reg_parm_seen);
 
       if (CALL_EXPR_STATIC_CHAIN (exp))
 	static_chain_value = expand_normal (CALL_EXPR_STATIC_CHAIN (exp));
