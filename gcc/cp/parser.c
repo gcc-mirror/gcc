@@ -5162,8 +5162,15 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    if (processing_template_decl
 		&& ! cp_parser_parse_definitely (parser))
 	      {
-		/* We couldn't find a type with this name, so just accept
-		   it and check for a match at instantiation time.  */
+		/* We couldn't find a type with this name.  If we're parsing
+		   tentatively, fail and try something else.  */
+		if (cp_parser_uncommitted_to_tentative_parse_p (parser))
+		  {
+		    cp_parser_simulate_error (parser);
+		    return error_mark_node;
+		  }
+		/* Otherwise, accept it and check for a match at instantiation
+		   time.  */
 		type_decl = cp_parser_identifier (parser);
 		if (type_decl != error_mark_node)
 		  type_decl = build_nt (BIT_NOT_EXPR, type_decl);
