@@ -867,7 +867,13 @@ process (FILE *in, FILE *out)
 		"func_mappings\n", nvars, nfuncs);
   fprintf (out, "};\n\n");
 
-  fprintf (out, "extern void GOMP_offload_register (const void *, int, void *);\n");
+  fprintf (out, "#ifdef __cplusplus\n"
+	   "extern \"C\" {\n"
+	   "#endif\n");
+  fprintf (out, "extern void GOMP_offload_register (void *, int, void *);\n");
+  fprintf (out, "#ifdef __cplusplus\n"
+	   "}\n"
+	   "#endif\n");
 
   fprintf (out, "extern void *__OFFLOAD_TABLE__[];\n\n");
   fprintf (out, "static __attribute__((constructor)) void init (void)\n{\n");
