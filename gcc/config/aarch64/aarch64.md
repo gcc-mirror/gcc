@@ -2982,7 +2982,7 @@
         (plus:GPI (match_operand 2 "aarch64_comparison_operation" "")
                   (match_operand:GPI 1 "register_operand" "r")))]
   ""
-  "csinc\\t%<w>0, %<w>1, %<w>1, %M2"
+  "cinc\\t%<w>0, %<w>1, %m2"
   [(set_attr "type" "csel")]
 )
 
