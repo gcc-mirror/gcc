@@ -1811,6 +1811,9 @@ FP_ASM_SPEC "\
 #define SR_COP1         29
 /* Interrupt Priority Level is from bit 10 to bit 15 of the status register.  */
 #define SR_IPL		10
+/* Interrupt masks start with IM0 at bit 8 to IM7 at bit 15 of the status
+   register.  */
+#define SR_IM0		8
 /* Exception Level is at bit 1 of the status register.  */
 #define SR_EXL		1
 /* Interrupt Enable is at bit 0 of the status register.  */

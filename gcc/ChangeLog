@@ -1,3 +1,36 @@
+2015-07-15  Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.c (mips_int_mask): New enum.
+	(mips_shadow_set): Likewise.
+	(int_mask): New variable.
+	(use_shadow_register_set_p): Change type to enum mips_shadow_set.
+	(machine_function): Add int_mask and use_shadow_register_set.
+	(mips_attribute_table): Add attribute handlers for interrupt and
+	use_shadow_register_set.
+	(mips_interrupt_mask): New static function.
+	(mips_handle_interrupt_attr): Likewise.
+	(mips_handle_use_shadow_register_set_attr): Likewise.
+	(mips_use_shadow_register_set): Change return type to enum
+	mips_shadow_set.  Add argument handling for use_shadow_register_set
+	attribute.
+	(mips_interrupt_extra_called_saved_reg_p): Update the conditional to
+	compare with mips_shadow_set enum.
+	(mips_compute_frame_info): Add interrupt mask and
+	use_shadow_register_set to per-function information structure.
+	Add a stack slot for EPC unconditionally.
+	(mips_expand_prologue): Compare use_shadow_register_set value
+	with mips_shadow_set enum.  Save EPC always in K1, clobber only K1 for
+	masked interrupt register but in EIC mode use K0 and save Cause in K0.
+	EPC saved and restored unconditionally.  Use PMODE_INSN macro when
+	copying the stack pointer from the shadow register set.
+	* config/mips/mips.h (SR_IM0): New define.
+	* config/mips/mips.md (mips_rdpgpr): Rename to...
+	(mips_rdpgpr_<mode>): ...this.  Use the Pmode iterator.
+	* doc/extend.texi (Declaring Attributes of Functions): Document
+	optional arguments for interrupt and use_shadow_register_set
+	attributes.
+
 2015-07-15  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips.c (mips_compute_frame_info): Allow -mhard-float in

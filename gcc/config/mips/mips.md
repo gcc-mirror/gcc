@@ -6564,14 +6564,14 @@
    (set_attr "mode"	"none")])
 
 ;; Read GPR from previous shadow register set.
-(define_insn "mips_rdpgpr"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "d")]
-			    UNSPEC_RDPGPR))]
+(define_insn "mips_rdpgpr_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(unspec_volatile:P [(match_operand:P 1 "register_operand" "d")]
+			   UNSPEC_RDPGPR))]
   ""
   "rdpgpr\t%0,%1"
   [(set_attr "type"	"move")
-   (set_attr "mode"	"SI")])
+   (set_attr "mode"	"<MODE>")])
 
 ;; Move involving COP0 registers.
 (define_insn "cop0_move"
