@@ -1,3 +1,21 @@
+2015-07-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport trunk r223805:
+
+	2015-05-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* builtins.c (expand_builtin_acc_on_device): Mark parameters
+	with ATTRIBUTE_UNUSED.
+
+	Backport trunk r223801:
+
+	2015-05-28  Julian Brown  <julian@codesourcery.com>
+
+	PR libgomp/65742
+
+	* builtins.c (expand_builtin_acc_on_device): Don't use open-coded
+	sequence for !ACCEL_COMPILER.
+
 2015-07-14  Matthias Klose  <doko@ubuntu.com>
 
 	PR target/66840

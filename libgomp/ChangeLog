@@ -1,3 +1,23 @@
+2015-07-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport trunk r223801:
+
+	2015-05-28  Julian Brown  <julian@codesourcery.com>
+
+	PR libgomp/65742
+
+	* oacc-init.c (plugin/plugin-host.h): Include.
+	(acc_on_device): Check whether we're in an offloaded region for
+	host_nonshm
+	plugin. Don't use __builtin_acc_on_device.
+	* plugin/plugin-host.c (GOMP_OFFLOAD_openacc_parallel): Set
+	nonshm_exec flag in thread-local data.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Allocate thread-local
+	data for host_nonshm plugin.
+	(GOMP_OFFLOAD_openacc_destroy_thread_data): Free thread-local data
+	for host_nonshm plugin.
+	* plugin/plugin-host.h: New.
+
 2015-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66702
