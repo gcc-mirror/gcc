@@ -4090,10 +4090,18 @@ These function attributes are supported by the MIPS back end:
 @table @code
 @item interrupt
 @cindex @code{interrupt} function attribute, MIPS
-Use this attribute to indicate
-that the specified function is an interrupt handler.  The compiler generates
-function entry and exit sequences suitable for use in an interrupt handler
-when this attribute is present.
+Use this attribute to indicate that the specified function is an interrupt
+handler.  The compiler generates function entry and exit sequences suitable
+for use in an interrupt handler when this attribute is present.
+An optional argument is supported for the interrupt attribute which allows
+the interrupt mode to be described.  By default GCC assumes the external
+interrupt controller (EIC) mode is in use, this can be explicitly set using
+@code{eic}.  When interrupts are non-masked then the requested Interrupt
+Priority Level (IPL) is copied to the current IPL which has the effect of only
+enabling higher priority interrupts.  To use vectored interrupt mode use
+the argument @code{vector=[sw0|sw1|hw0|hw1|hw2|hw3|hw4|hw5]}, this will change
+the behaviour of the non-masked interrupt support and GCC will arrange to mask
+all interrupts from sw0 up to and including the specified interrupt vector.
 
 You can use the following attributes to modify the behavior
 of an interrupt handler:
@@ -4101,7 +4109,9 @@ of an interrupt handler:
 @item use_shadow_register_set
 @cindex @code{use_shadow_register_set} function attribute, MIPS
 Assume that the handler uses a shadow register set, instead of
-the main general-purpose registers.
+the main general-purpose registers.  An optional argument @code{intstack} is
+supported to indicate that the shadow register set contains a valid stack
+pointer.
 
 @item keep_interrupts_masked
 @cindex @code{keep_interrupts_masked} function attribute, MIPS
@@ -4129,6 +4139,8 @@ void __attribute__ ((interrupt, keep_interrupts_masked,
 void __attribute__ ((interrupt, use_shadow_register_set,
                      keep_interrupts_masked,
                      use_debug_exception_return)) v7 ();
+void __attribute__ ((interrupt("eic"))) v8 ();
+void __attribute__ ((interrupt("vector=hw3"))) v9 ();
 @end smallexample
 
 @item long_call

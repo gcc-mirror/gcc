@@ -1,3 +1,8 @@
+2015-07-15  Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/interrupt_handler-4.c: New test.
+
 2015-07-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR testsuite/66734
