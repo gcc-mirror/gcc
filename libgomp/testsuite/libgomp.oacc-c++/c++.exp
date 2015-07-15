@@ -80,6 +80,12 @@ if { $lang_test_file_found } {
 		set acc_mem_shared 0
 	    }
 	    nvidia {
+		if { ![check_effective_target_openacc_nvidia_accel_present] } {
+		    # Don't bother; execution testing is going to FAIL.
+		    untested "$subdir $offload_target_openacc offloading"
+		    continue
+		}
+
 		# Copy ptx file (TEMPORARY)
 		remote_download host $srcdir/libgomp.oacc-c-c++-common/subr.ptx
 

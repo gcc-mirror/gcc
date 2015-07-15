@@ -1,5 +1,13 @@
 2015-07-15  Thomas Schwinge  <thomas@codesourcery.com>
 
+	Backport trunk r225560:
+
+	2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65099
+	* config/nvptx/mkoffload.c (main): Create an offload image only in
+	64-bit configurations.
+
 	Backport trunk r222583:
 
 	2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>

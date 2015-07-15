@@ -1,5 +1,17 @@
 2015-07-15  Thomas Schwinge  <thomas@codesourcery.com>
 
+	Backport trunk r225560:
+
+	2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65099
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Return 0 if not
+	in a 64-bit configuration.
+	* testsuite/libgomp.oacc-c++/c++.exp: Don't attempt nvidia
+	offloading testing if no such device is available.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
 	Backport trunk r223801:
 
 	2015-05-28  Julian Brown  <julian@codesourcery.com>
