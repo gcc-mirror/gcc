@@ -89,7 +89,7 @@ cat_with_prefix ()
     if [ "$prefix" = "" ]; then
 	cat "$f"
     else
-	awk "{printf "%s%s\n", $prefix, \$0}" $f
+	awk "{printf \"%s%s\n\", \"$prefix\", \$0}" $f
     fi
 }
 
