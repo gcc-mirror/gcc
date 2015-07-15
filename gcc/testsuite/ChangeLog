@@ -1,3 +1,16 @@
+2015-07-15  Richard Biener  <rguenther@suse.de>
+
+	* lib/c-torture.exp (C_TORTURE_OPTIONS): Remove
+	{ -O3 -fomit-frame-pointer },
+	{ -O3 -fomit-frame-pointer -funroll-loops } and
+	{ -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions }
+	in favor of
+	{ -O3 -fomit-frame-pointer -funroll-loops -fpeel-loops -ftracer
+	  -finline-functions }
+	* lib/gcc-dg.exp (DG_TORTURE_OPTIONS): Likewise.
+	* gcc.c-torture/execute/builtins/builtins.exp: Add -fno-tracer
+	to additional_flags.
+
 2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/66838
