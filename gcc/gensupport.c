@@ -26,6 +26,7 @@
 #include "errors.h"
 #include "read-md.h"
 #include "gensupport.h"
+#include "vec.h"
 
 #define MAX_OPERANDS 40
 
@@ -2248,11 +2249,14 @@ process_define_subst (void)
 static void
 rtx_handle_directive (int lineno, const char *rtx_name)
 {
-  rtx queue, x;
+  auto_vec<rtx, 32> subrtxs;
+  if (!read_rtx (rtx_name, &subrtxs))
+    return;
 
-  if (read_rtx (rtx_name, &queue))
-    for (x = queue; x; x = XEXP (x, 1))
-      process_rtx (XEXP (x, 0), lineno);
+  rtx x;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (subrtxs, i, x)
+    process_rtx (x, lineno);
 }
 
 /* Comparison function for the mnemonic hash table.  */
