@@ -1,3 +1,11 @@
+2015-07-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* team.c (get_last_team): New.
+	(gomp_new_team): Recycle last non-nested team if possible.
+	(gomp_team_end): Move team work share list free lock destruction
+	to ...
+	(free_team): ... here.
+
 2015-07-14  Maxim Blumenthal  <maxim.blumenthal@intel.com>
 
 	* testsuite/libgomp.c/examples-4/simd-3.c: (main): Change type of res
