@@ -3014,13 +3014,13 @@ public:
 
 private:
   const cpp_token *next ();
-  const cpp_token *peek ();
-  const cpp_token *peek_ident (const char * = NULL);
+  const cpp_token *peek (unsigned = 1);
+  const cpp_token *peek_ident (const char * = NULL, unsigned = 1);
   const cpp_token *expect (enum cpp_ttype);
-  void eat_token (enum cpp_ttype);
+  const cpp_token *eat_token (enum cpp_ttype);
   const char *get_string ();
   const char *get_ident ();
-  void eat_ident (const char *);
+  const cpp_token *eat_ident (const char *);
   const char *get_number ();
 
   id_base *parse_operation ();
@@ -3078,7 +3078,7 @@ parser::next ()
 /* Peek at the next non-whitespace token from R.  */
 
 const cpp_token *
-parser::peek ()
+parser::peek (unsigned num)
 {
   const cpp_token *token;
   unsigned i = 0;
@@ -3086,8 +3086,9 @@ parser::peek ()
     {
       token = cpp_peek_token (r, i++);
     }
-  while (token->type == CPP_PADDING
-	 && token->type != CPP_EOF);
+  while ((token->type == CPP_PADDING
+	  && token->type != CPP_EOF)
+	 || (--num > 0));
   /* If we peek at EOF this is a fatal error as it leaves the
      cpp_reader in unusable state.  Assume we really wanted a
      token and thus this EOF is unexpected.  */
@@ -3100,9 +3101,9 @@ parser::peek ()
    token is not an identifier or equal to ID if supplied).  */
 
 const cpp_token *
-parser::peek_ident (const char *id)
+parser::peek_ident (const char *id, unsigned num)
 {
-  const cpp_token *token = peek ();
+  const cpp_token *token = peek (num);
   if (token->type != CPP_NAME)
     return 0;
 
@@ -3131,10 +3132,10 @@ parser::expect (enum cpp_ttype tk)
 
 /* Consume the next token from R and assert it is of type TK.  */
 
-void
+const cpp_token *
 parser::eat_token (enum cpp_ttype tk)
 {
-  expect (tk);
+  return expect (tk);
 }
 
 /* Read the next token from R and assert it is of type CPP_STRING and
@@ -3159,13 +3160,14 @@ parser::get_ident ()
 
 /* Eat an identifier token with value S from R.  */
 
-void
+const cpp_token *
 parser::eat_ident (const char *s)
 {
   const cpp_token *token = peek ();
   const char *t = get_ident ();
   if (strcmp (s, t) != 0)
     fatal_at (token, "expected '%s' got '%s'\n", s, t);
+  return token;
 }
 
 /* Read the next token from R and assert it is of type CPP_NUMBER and
@@ -3556,6 +3558,58 @@ parser::parse_result (operand *result, predicate_id *matcher)
       withe->subexpr = parse_result (result, matcher);
       eat_token (CPP_CLOSE_PAREN);
       return withe;
+    }
+  else if (peek_ident ("switch"))
+    {
+      token = eat_ident ("switch");
+      eat_token (CPP_OPEN_PAREN);
+      eat_ident ("if");
+      if_expr *ife = new if_expr ();
+      operand *res = ife;
+      ife->cond = parse_c_expr (CPP_OPEN_PAREN);
+      if (peek ()->type == CPP_OPEN_PAREN)
+	ife->trueexpr = parse_result (result, matcher);
+      else
+	ife->trueexpr = parse_op ();
+      eat_token (CPP_CLOSE_PAREN);
+      if (peek ()->type != CPP_OPEN_PAREN
+	  || !peek_ident ("if", 2))
+	fatal_at (token, "switch can be implemented with a single if");
+      while  (peek ()->type != CPP_CLOSE_PAREN)
+	{
+	  if (peek ()->type == CPP_OPEN_PAREN)
+	    {
+	      if (peek_ident ("if", 2))
+		{
+		  eat_token (CPP_OPEN_PAREN);
+		  eat_ident ("if");
+		  ife->falseexpr = new if_expr ();
+		  ife = as_a <if_expr *> (ife->falseexpr);
+		  ife->cond = parse_c_expr (CPP_OPEN_PAREN);
+		  if (peek ()->type == CPP_OPEN_PAREN)
+		    ife->trueexpr = parse_result (result, matcher);
+		  else
+		    ife->trueexpr = parse_op ();
+		  eat_token (CPP_CLOSE_PAREN);
+		}
+	      else
+		{
+		  /* switch default clause */
+		  ife->falseexpr = parse_result (result, matcher);
+		  eat_token (CPP_CLOSE_PAREN);
+		  return res;
+		}
+	    }
+	  else
+	    {
+	      /* switch default clause */
+	      ife->falseexpr = parse_op ();
+	      eat_token (CPP_CLOSE_PAREN);
+	      return res;
+	    }
+	}
+      eat_token (CPP_CLOSE_PAREN);
+      return res;
     }
   else
     {

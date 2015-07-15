@@ -1107,43 +1107,44 @@ along with GCC; see the file COPYING3.  If not see
       unsigned int final_prec = TYPE_PRECISION (type);
       int final_unsignedp = TYPE_UNSIGNED (type);
     }
-   /* In addition to the cases of two conversions in a row
-      handled below, if we are converting something to its own
-      type via an object of identical or wider precision, neither
-      conversion is needed.  */
-   (if (((GIMPLE && useless_type_conversion_p (type, inside_type))
-	 || (GENERIC
-	     && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (inside_type)))
-	&& (((inter_int || inter_ptr) && final_int)
-	    || (inter_float && final_float))
-	&& inter_prec >= final_prec)
-    (ocvt @0)
+   (switch
+    /* In addition to the cases of two conversions in a row
+       handled below, if we are converting something to its own
+       type via an object of identical or wider precision, neither
+       conversion is needed.  */
+    (if (((GIMPLE && useless_type_conversion_p (type, inside_type))
+	  || (GENERIC
+	      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (inside_type)))
+	 && (((inter_int || inter_ptr) && final_int)
+	     || (inter_float && final_float))
+	 && inter_prec >= final_prec)
+     (ocvt @0))
 
-   /* Likewise, if the intermediate and initial types are either both
-      float or both integer, we don't need the middle conversion if the
-      former is wider than the latter and doesn't change the signedness
-      (for integers).  Avoid this if the final type is a pointer since
-      then we sometimes need the middle conversion.  Likewise if the
-      final type has a precision not equal to the size of its mode.  */
-   (if (((inter_int && inside_int) || (inter_float && inside_float))
-	&& (final_int || final_float)
-	&& inter_prec >= inside_prec
-	&& (inter_float || inter_unsignedp == inside_unsignedp)
-	&& ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
-	      && TYPE_MODE (type) == TYPE_MODE (inter_type)))
-    (ocvt @0)
+    /* Likewise, if the intermediate and initial types are either both
+       float or both integer, we don't need the middle conversion if the
+       former is wider than the latter and doesn't change the signedness
+       (for integers).  Avoid this if the final type is a pointer since
+       then we sometimes need the middle conversion.  Likewise if the
+       final type has a precision not equal to the size of its mode.  */
+    (if (((inter_int && inside_int) || (inter_float && inside_float))
+	 && (final_int || final_float)
+	 && inter_prec >= inside_prec
+	 && (inter_float || inter_unsignedp == inside_unsignedp)
+	 && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
+	       && TYPE_MODE (type) == TYPE_MODE (inter_type)))
+     (ocvt @0))
 
-   /* If we have a sign-extension of a zero-extended value, we can
-      replace that by a single zero-extension.  Likewise if the
-      final conversion does not change precision we can drop the
-      intermediate conversion.  */
-   (if (inside_int && inter_int && final_int
-	&& ((inside_prec < inter_prec && inter_prec < final_prec
-	     && inside_unsignedp && !inter_unsignedp)
-	    || final_prec == inter_prec))
-    (ocvt @0)
+    /* If we have a sign-extension of a zero-extended value, we can
+       replace that by a single zero-extension.  Likewise if the
+       final conversion does not change precision we can drop the
+       intermediate conversion.  */
+    (if (inside_int && inter_int && final_int
+	 && ((inside_prec < inter_prec && inter_prec < final_prec
+	      && inside_unsignedp && !inter_unsignedp)
+	     || final_prec == inter_prec))
+     (ocvt @0))
 
-   /* Two conversions in a row are not needed unless:
+    /* Two conversions in a row are not needed unless:
 	- some conversion is floating-point (overstrict for now), or
 	- some conversion is a vector (overstrict for now), or
 	- the intermediate type is narrower than both initial and
@@ -1154,39 +1155,39 @@ along with GCC; see the file COPYING3.  If not see
 	  intermediate and final types differ, or
 	- the final type is a pointer type and the precisions of the
 	  initial and intermediate types differ.  */
-   (if (! inside_float && ! inter_float && ! final_float
-	&& ! inside_vec && ! inter_vec && ! final_vec
-	&& (inter_prec >= inside_prec || inter_prec >= final_prec)
-	&& ! (inside_int && inter_int
-	      && inter_unsignedp != inside_unsignedp
-	      && inter_prec < final_prec)
-	&& ((inter_unsignedp && inter_prec > inside_prec)
-	    == (final_unsignedp && final_prec > inter_prec))
-	&& ! (inside_ptr && inter_prec != final_prec)
-	&& ! (final_ptr && inside_prec != inter_prec)
-	&& ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
-	      && TYPE_MODE (type) == TYPE_MODE (inter_type)))
-    (ocvt @0)
+    (if (! inside_float && ! inter_float && ! final_float
+	 && ! inside_vec && ! inter_vec && ! final_vec
+	 && (inter_prec >= inside_prec || inter_prec >= final_prec)
+	 && ! (inside_int && inter_int
+	       && inter_unsignedp != inside_unsignedp
+	       && inter_prec < final_prec)
+	 && ((inter_unsignedp && inter_prec > inside_prec)
+	     == (final_unsignedp && final_prec > inter_prec))
+	 && ! (inside_ptr && inter_prec != final_prec)
+	 && ! (final_ptr && inside_prec != inter_prec)
+	 && ! (final_prec != GET_MODE_PRECISION (TYPE_MODE (type))
+	       && TYPE_MODE (type) == TYPE_MODE (inter_type)))
+     (ocvt @0))
 
-   /* A truncation to an unsigned type (a zero-extension) should be
-      canonicalized as bitwise and of a mask.  */
-   (if (final_int && inter_int && inside_int
-	&& final_prec == inside_prec
-	&& final_prec > inter_prec
-	&& inter_unsignedp)
-    (convert (bit_and @0 { wide_int_to_tree
-	                     (inside_type,
-			      wi::mask (inter_prec, false,
-					TYPE_PRECISION (inside_type))); }))
+    /* A truncation to an unsigned type (a zero-extension) should be
+       canonicalized as bitwise and of a mask.  */
+    (if (final_int && inter_int && inside_int
+	 && final_prec == inside_prec
+	 && final_prec > inter_prec
+	 && inter_unsignedp)
+     (convert (bit_and @0 { wide_int_to_tree
+	                      (inside_type,
+			       wi::mask (inter_prec, false,
+					 TYPE_PRECISION (inside_type))); })))
 
-   /* If we are converting an integer to a floating-point that can
-      represent it exactly and back to an integer, we can skip the
-      floating-point conversion.  */
-   (if (GIMPLE /* PR66211 */
-	&& inside_int && inter_float && final_int &&
-	(unsigned) significand_size (TYPE_MODE (inter_type))
-	>= inside_prec - !inside_unsignedp)
-    (convert @0)))))))))))
+    /* If we are converting an integer to a floating-point that can
+       represent it exactly and back to an integer, we can skip the
+       floating-point conversion.  */
+    (if (GIMPLE /* PR66211 */
+	 && inside_int && inter_float && final_int &&
+	 (unsigned) significand_size (TYPE_MODE (inter_type))
+	 >= inside_prec - !inside_unsignedp)
+     (convert @0)))))))
 
 /* If we have a narrowing conversion to an integral type that is fed by a
    BIT_AND_EXPR, we might be able to remove the BIT_AND_EXPR if it merely
@@ -1463,58 +1464,60 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (cmp @0 REAL_CST@1)
   /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
-  /* a CMP (-0) -> a CMP 0  */
-  (if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@1)))
-   (cmp @0 { build_real (TREE_TYPE (@1), dconst0); })
-  /* x != NaN is always true, other ops are always false.  */
-  (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@1))
-       && ! HONOR_SNANS (@1))
-   { constant_boolean_node (cmp == NE_EXPR, type); }
-  /* Fold comparisons against infinity.  */
-  (if (REAL_VALUE_ISINF (TREE_REAL_CST (@1))
-       && MODE_HAS_INFINITIES (TYPE_MODE (TREE_TYPE (@1))))
-   (with
-    {
-      REAL_VALUE_TYPE max;
-      enum tree_code code = cmp;
-      bool neg = REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1));
-      if (neg)
-        code = swap_tree_comparison (code);
-    }
-    /* x > +Inf is always false, if with ignore sNANs.  */
-    (if (code == GT_EXPR
-    	 && ! HONOR_SNANS (@0))
-     { constant_boolean_node (false, type); }
-    (if (code == LE_EXPR)
-     /* x <= +Inf is always true, if we don't case about NaNs.  */
-     (if (! HONOR_NANS (@0))
-      { constant_boolean_node (true, type); }
-      /* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
-      (eq @0 @0))
-    /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
-    (if (code == EQ_EXPR || code == GE_EXPR)
-     (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
-      (if (neg)
-       (lt @0 { build_real (TREE_TYPE (@0), max); })
-       (gt @0 { build_real (TREE_TYPE (@0), max); })))
-    /* x < +Inf is always equal to x <= DBL_MAX.  */
-    (if (code == LT_EXPR)
-     (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
-      (if (neg)
-       (ge @0 { build_real (TREE_TYPE (@0), max); })
-       (le @0 { build_real (TREE_TYPE (@0), max); })))
-    /* x != +Inf is always equal to !(x > DBL_MAX).  */
-    (if (code == NE_EXPR)
-     (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
-      (if (! HONOR_NANS (@0))
-       (if (neg)
-        (ge @0 { build_real (TREE_TYPE (@0), max); })
-	(le @0 { build_real (TREE_TYPE (@0), max); }))
-       (if (neg)
-	(bit_xor (lt @0 { build_real (TREE_TYPE (@0), max); })
-			{ build_one_cst (type); })
-	(bit_xor (gt @0 { build_real (TREE_TYPE (@0), max); })
-			{ build_one_cst (type); }))))))))))))))
+  (switch
+   /* a CMP (-0) -> a CMP 0  */
+   (if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@1)))
+    (cmp @0 { build_real (TREE_TYPE (@1), dconst0); }))
+   /* x != NaN is always true, other ops are always false.  */
+   (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@1))
+	&& ! HONOR_SNANS (@1))
+    { constant_boolean_node (cmp == NE_EXPR, type); })
+   /* Fold comparisons against infinity.  */
+   (if (REAL_VALUE_ISINF (TREE_REAL_CST (@1))
+	&& MODE_HAS_INFINITIES (TYPE_MODE (TREE_TYPE (@1))))
+    (with
+     {
+       REAL_VALUE_TYPE max;
+       enum tree_code code = cmp;
+       bool neg = REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1));
+       if (neg)
+         code = swap_tree_comparison (code);
+     }
+     (switch
+      /* x > +Inf is always false, if with ignore sNANs.  */
+      (if (code == GT_EXPR
+	   && ! HONOR_SNANS (@0))
+       { constant_boolean_node (false, type); })
+      (if (code == LE_EXPR)
+       /* x <= +Inf is always true, if we don't case about NaNs.  */
+       (if (! HONOR_NANS (@0))
+	{ constant_boolean_node (true, type); }
+	/* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
+	(eq @0 @0)))
+      /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
+      (if (code == EQ_EXPR || code == GE_EXPR)
+       (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
+	(if (neg)
+	 (lt @0 { build_real (TREE_TYPE (@0), max); })
+	 (gt @0 { build_real (TREE_TYPE (@0), max); }))))
+      /* x < +Inf is always equal to x <= DBL_MAX.  */
+      (if (code == LT_EXPR)
+       (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
+	(if (neg)
+	 (ge @0 { build_real (TREE_TYPE (@0), max); })
+	 (le @0 { build_real (TREE_TYPE (@0), max); }))))
+      /* x != +Inf is always equal to !(x > DBL_MAX).  */
+      (if (code == NE_EXPR)
+       (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
+	(if (! HONOR_NANS (@0))
+	 (if (neg)
+	  (ge @0 { build_real (TREE_TYPE (@0), max); })
+	  (le @0 { build_real (TREE_TYPE (@0), max); }))
+	 (if (neg)
+	  (bit_xor (lt @0 { build_real (TREE_TYPE (@0), max); })
+	   { build_one_cst (type); })
+	  (bit_xor (gt @0 { build_real (TREE_TYPE (@0), max); })
+	   { build_one_cst (type); }))))))))))
 
  /* If this is a comparison of a real constant with a PLUS_EXPR
     or a MINUS_EXPR of a real constant, we can convert it into a
@@ -1549,65 +1552,68 @@ along with GCC; see the file COPYING3.  If not see
   (for sq (SQRT)
    (simplify
     (cmp (sq @0) REAL_CST@1)
-    (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
-     /* sqrt(x) < y is always false, if y is negative.  */
-     (if (cmp == EQ_EXPR || cmp == LT_EXPR || cmp == LE_EXPR)
-      { constant_boolean_node (false, type); }
-     /* sqrt(x) > y is always true, if y is negative and we
-	don't care about NaNs, i.e. negative values of x.  */
-     (if (cmp == NE_EXPR || !HONOR_NANS (@0))
-      { constant_boolean_node (true, type); }
-     /* sqrt(x) > y is the same as x >= 0, if y is negative.  */
-     (ge @0 { build_real (TREE_TYPE (@0), dconst0); })))
-    (if (cmp == GT_EXPR || cmp == GE_EXPR)
-     (with
-      {
-       	REAL_VALUE_TYPE c2;
-	REAL_ARITHMETIC (c2, MULT_EXPR, TREE_REAL_CST (@1), TREE_REAL_CST (@1));
-	real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
-      }
-      (if (REAL_VALUE_ISINF (c2))
-       /* sqrt(x) > y is x == +Inf, when y is very large.  */
-       (if (HONOR_INFINITIES (@0))
-        (eq @0 { build_real (TREE_TYPE (@0), c2); })
+    (switch
+     (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
+      (switch
+       /* sqrt(x) < y is always false, if y is negative.  */
+       (if (cmp == EQ_EXPR || cmp == LT_EXPR || cmp == LE_EXPR)
 	{ constant_boolean_node (false, type); })
-       /* sqrt(x) > c is the same as x > c*c.  */
-       (cmp @0 { build_real (TREE_TYPE (@0), c2); })))
-    (if (cmp == LT_EXPR || cmp == LE_EXPR)
-     (with
-      {
-       	REAL_VALUE_TYPE c2;
-	REAL_ARITHMETIC (c2, MULT_EXPR, TREE_REAL_CST (@1), TREE_REAL_CST (@1));
-	real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
-      }
-      (if (REAL_VALUE_ISINF (c2))
-       /* sqrt(x) < y is always true, when y is a very large
-	  value and we don't care about NaNs or Infinities.  */
-       (if (! HONOR_NANS (@0) && ! HONOR_INFINITIES (@0))
-        { constant_boolean_node (true, type); }
-       /* sqrt(x) < y is x != +Inf when y is very large and we
-	  don't care about NaNs.  */
-       (if (! HONOR_NANS (@0))
-        (ne @0 { build_real (TREE_TYPE (@0), c2); })
-       /* sqrt(x) < y is x >= 0 when y is very large and we
-	  don't care about Infinities.  */
-       (if (! HONOR_INFINITIES (@0))
-        (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
-       /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
-       (if (GENERIC)
-        (truth_andif
-	 (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
-	 (ne @0 { build_real (TREE_TYPE (@0), c2); }))))))
-      /* sqrt(x) < c is the same as x < c*c, if we ignore NaNs.  */
-      (if (! REAL_VALUE_ISINF (c2)
-           && ! HONOR_NANS (@0))
-       (cmp @0 { build_real (TREE_TYPE (@0), c2); })
-      /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
-      (if (! REAL_VALUE_ISINF (c2)
-           && GENERIC)
-       (truth_andif
-        (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
-	(cmp @0 { build_real (TREE_TYPE (@0), c2); })))))))))))))
+       /* sqrt(x) > y is always true, if y is negative and we
+	  don't care about NaNs, i.e. negative values of x.  */
+       (if (cmp == NE_EXPR || !HONOR_NANS (@0))
+	{ constant_boolean_node (true, type); })
+       /* sqrt(x) > y is the same as x >= 0, if y is negative.  */
+       (ge @0 { build_real (TREE_TYPE (@0), dconst0); })))
+     (if (cmp == GT_EXPR || cmp == GE_EXPR)
+      (with
+       {
+         REAL_VALUE_TYPE c2;
+	 REAL_ARITHMETIC (c2, MULT_EXPR,
+			  TREE_REAL_CST (@1), TREE_REAL_CST (@1));
+	 real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
+       }
+       (if (REAL_VALUE_ISINF (c2))
+	/* sqrt(x) > y is x == +Inf, when y is very large.  */
+	(if (HONOR_INFINITIES (@0))
+	 (eq @0 { build_real (TREE_TYPE (@0), c2); })
+	 { constant_boolean_node (false, type); })
+	/* sqrt(x) > c is the same as x > c*c.  */
+	(cmp @0 { build_real (TREE_TYPE (@0), c2); }))))
+     (if (cmp == LT_EXPR || cmp == LE_EXPR)
+      (with
+       {
+       	 REAL_VALUE_TYPE c2;
+	 REAL_ARITHMETIC (c2, MULT_EXPR,
+			  TREE_REAL_CST (@1), TREE_REAL_CST (@1));
+	 real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
+       }
+       (if (REAL_VALUE_ISINF (c2))
+        (switch
+	 /* sqrt(x) < y is always true, when y is a very large
+	    value and we don't care about NaNs or Infinities.  */
+	 (if (! HONOR_NANS (@0) && ! HONOR_INFINITIES (@0))
+	  { constant_boolean_node (true, type); })
+	 /* sqrt(x) < y is x != +Inf when y is very large and we
+	    don't care about NaNs.  */
+	 (if (! HONOR_NANS (@0))
+	  (ne @0 { build_real (TREE_TYPE (@0), c2); }))
+	 /* sqrt(x) < y is x >= 0 when y is very large and we
+	    don't care about Infinities.  */
+	 (if (! HONOR_INFINITIES (@0))
+	  (ge @0 { build_real (TREE_TYPE (@0), dconst0); }))
+	 /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
+	 (if (GENERIC)
+	  (truth_andif
+	   (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
+	   (ne @0 { build_real (TREE_TYPE (@0), c2); }))))
+	/* sqrt(x) < c is the same as x < c*c, if we ignore NaNs.  */
+	(if (! HONOR_NANS (@0))
+	 (cmp @0 { build_real (TREE_TYPE (@0), c2); })
+	 /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
+	 (if (GENERIC)
+	  (truth_andif
+	   (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
+	   (cmp @0 { build_real (TREE_TYPE (@0), c2); }))))))))))))
 
 /* Unordered tests if either argument is a NaN.  */
 (simplify
