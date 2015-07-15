@@ -1,3 +1,8 @@
+2015-07-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR testsuite/66734
+	* gcc.dg/lto/lto.exp: Initialize MPX.
+
 2015-07-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/scd42-1.c: Add -mfloat-abi=softfp and appropriate
