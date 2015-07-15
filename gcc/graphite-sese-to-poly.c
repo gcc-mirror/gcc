@@ -762,6 +762,10 @@ parameter_index_in_region (tree name, sese region)
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
+  /* Cannot constrain on anything else than INTEGER_TYPE parameters.  */
+  if (TREE_CODE (TREE_TYPE (name)) != INTEGER_TYPE)
+    return -1;
+
   i = parameter_index_in_region_1 (name, region);
   if (i != -1)
     return i;
@@ -887,6 +891,9 @@ scan_tree_for_params (sese s, tree e)
 
     case INTEGER_CST:
     case ADDR_EXPR:
+    case REAL_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
       break;
 
    default:
@@ -1166,6 +1173,10 @@ add_conditions_to_domain (poly_bb_p pbb)
       {
       case GIMPLE_COND:
 	  {
+            /* Don't constrain on anything else than INTEGER_TYPE.  */
+	    if (TREE_CODE (TREE_TYPE (gimple_cond_lhs (stmt))) != INTEGER_TYPE)
+              break;
+
 	    gcond *cond_stmt = as_a <gcond *> (stmt);
 	    enum tree_code code = gimple_cond_code (cond_stmt);
 
