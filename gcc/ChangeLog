@@ -1,3 +1,10 @@
+2015-07-15  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.c (mips_compute_frame_info): Allow -mhard-float in
+	interrupt attribute.
+	(mips_expand_prologue): Disable the floating point unit in an ISR.
+	* config/mips/mips.h (SR_COP1): New define.
+
 2015-07-15  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (parser::peek, parser::peek_ident): Add argument

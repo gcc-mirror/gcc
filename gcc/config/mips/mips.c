@@ -10254,8 +10254,6 @@ mips_compute_frame_info (void)
     {
       if (mips_isa_rev < 2)
 	error ("the %<interrupt%> attribute requires a MIPS32r2 processor or greater");
-      else if (TARGET_HARD_FLOAT)
-	error ("the %<interrupt%> attribute requires %<-msoft-float%>");
       else if (TARGET_MIPS16)
 	error ("interrupt handlers cannot be MIPS16 functions");
       else
@@ -11494,6 +11492,14 @@ mips_expand_prologue (void)
 		emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
 				       GEN_INT (5),
 				       GEN_INT (SR_IE),
+				       gen_rtx_REG (SImode, GP_REG_FIRST)));
+
+	      if (TARGET_HARD_FLOAT)
+		/* Disable COP1 for hard-float.  This will lead to an exception
+		   if floating-point code is executed in an ISR.  */
+		emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
+				       GEN_INT (1),
+				       GEN_INT (SR_COP1),
 				       gen_rtx_REG (SImode, GP_REG_FIRST)));
 	    }
 	  else

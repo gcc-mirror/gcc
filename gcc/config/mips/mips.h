@@ -1807,6 +1807,8 @@ FP_ASM_SPEC "\
 /* Request Interrupt Priority Level is from bit 10 to bit 15 of
    the cause register for the EIC interrupt mode.  */
 #define CAUSE_IPL	10
+/* COP1 Enable is at bit 29 of the status register.  */
+#define SR_COP1         29
 /* Interrupt Priority Level is from bit 10 to bit 15 of the status register.  */
 #define SR_IPL		10
 /* Exception Level is at bit 1 of the status register.  */
