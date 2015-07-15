@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_STREAMER_H
 #define GCC_GIMPLE_STREAMER_H
 
-#include "lto-streamer.h"
+#include "tree-streamer.h"
 
 /* In gimple-streamer-in.c  */
 void input_bb (struct lto_input_block *, enum LTO_tags, struct data_in *,

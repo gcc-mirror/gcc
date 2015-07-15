@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_STREAMER_H
 
 #include "streamer-hooks.h"
-#include "lto-streamer.h"
 #include "data-streamer.h"
 
 /* Cache of pickled nodes.  Used to avoid writing the same node more

@@ -35,8 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "target.h"
 #include "tree-streamer.h"
-#include "data-streamer.h"
-#include "streamer-hooks.h"
 #include "builtins.h"
 #include "ipa-chkp.h"
 #include "gomp-constants.h"

@@ -34,10 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
-#include "data-streamer.h"
 #include "gimple-streamer.h"
-#include "lto-streamer.h"
-#include "tree-streamer.h"
 #include "value-prof.h"
 
 /* Output PHI function PHI to the main stream in OB.  */

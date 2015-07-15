@@ -61,8 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "diagnostic.h"
 #include "gimple-pretty-print.h"
-#include "lto-streamer.h"
-#include "data-streamer.h"
 #include "tree-streamer.h"
 #include "params.h"
 #include "ipa-utils.h"
