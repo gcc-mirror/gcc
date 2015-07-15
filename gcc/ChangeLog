@@ -1,3 +1,11 @@
+2015-07-15  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (parser::peek, parser::peek_ident): Add argument
+	to tell how many tokens to peek ahead (default 1).
+	(parser::eat_token, parser::eat_ident): Return token consumed.
+	(parser::parse_result): Parse new switch statement.
+	* match.pd: Use case statements where appropriate.
+
 2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/58066
