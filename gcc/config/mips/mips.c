@@ -11131,7 +11131,7 @@ mips_emit_save_slot_move (rtx dest, rtx src, rtx temp)
 	{
 	  mips_emit_move (temp, src);
 	  if (TARGET_64BIT)
-	    emit_insn (gen_mthisi_di (gen_rtx_REG (TImode, MD_REG_FIRST),
+	    emit_insn (gen_mthidi_ti (gen_rtx_REG (TImode, MD_REG_FIRST),
 				      temp, gen_rtx_REG (DImode, LO_REGNUM)));
 	  else
 	    emit_insn (gen_mthisi_di (gen_rtx_REG (DImode, MD_REG_FIRST),
