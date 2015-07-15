@@ -1,5 +1,15 @@
 2015-07-15  Thomas Schwinge  <thomas@codesourcery.com>
 
+	Backport trunk r222583:
+
+	2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65099
+	* config/nvptx/mkoffload.c (target_ilp32): New variable.
+	(main): Set it depending on "-foffload-abi=[...]".
+	(compile_native, main): Use it to pass "-m32" or "-m64" to the
+	compiler.
+
 	Backport trunk r223805:
 
 	2015-05-28  H.J. Lu  <hongjiu.lu@intel.com>
