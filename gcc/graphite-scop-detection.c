@@ -349,7 +349,6 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 
   switch (gimple_code (stmt))
     {
-    case GIMPLE_RETURN:
     case GIMPLE_LABEL:
       return true;
 
