@@ -36,7 +36,7 @@ program simd_8f
   implicit none
   real :: pri, arr(1000), diff
   integer :: i
-  integer, parameter :: EPS = 0.005
+  real, parameter :: EPS = 0.005
 
   do i = 1, 1000
      P(i)   = i
