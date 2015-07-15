@@ -1,3 +1,11 @@
+2015-07-15  Renlin Li  <renlin.li@arm.com>
+
+	Backport from mainline.
+	2015-07-13  Renlin Li  <renlin.li@arm.com>
+
+	PR rtl/66556
+	* gcc.c-torture/execute/pr66556.c: New.
+
 2015-07-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport trunk r224028:

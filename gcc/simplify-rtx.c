@@ -4928,7 +4928,8 @@ simplify_const_relational_operation (enum rtx_code code,
 
   /* Optimize comparisons with upper and lower bounds.  */
   if (HWI_COMPUTABLE_MODE_P (mode)
-      && CONST_INT_P (trueop1))
+      && CONST_INT_P (trueop1)
+      && !side_effects_p (trueop0))
     {
       int sign;
       unsigned HOST_WIDE_INT nonzero = nonzero_bits (trueop0, mode);
@@ -5041,7 +5042,7 @@ simplify_const_relational_operation (enum rtx_code code,
     }
 
   /* Optimize integer comparisons with zero.  */
-  if (trueop1 == const0_rtx)
+  if (trueop1 == const0_rtx && !side_effects_p (trueop0))
     {
       /* Some addresses are known to be nonzero.  We don't know
 	 their sign, but equality comparisons are known.  */
@@ -5092,7 +5093,7 @@ simplify_const_relational_operation (enum rtx_code code,
     }
 
   /* Optimize comparison of ABS with zero.  */
-  if (trueop1 == CONST0_RTX (mode)
+  if (trueop1 == CONST0_RTX (mode) && !side_effects_p (trueop0)
       && (GET_CODE (trueop0) == ABS
 	  || (GET_CODE (trueop0) == FLOAT_EXTEND
 	      && GET_CODE (XEXP (trueop0, 0)) == ABS)))
