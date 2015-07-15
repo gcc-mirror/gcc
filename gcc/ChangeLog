@@ -1,4 +1,10 @@
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+        * graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Point
+	iterator to use_stmt.
+
+2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop <s.pop@samsung.com>
 
         * graphite-scop-detection.c (build_scops_1): Discard scops for

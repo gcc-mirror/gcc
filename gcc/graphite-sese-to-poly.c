@@ -2441,10 +2441,10 @@ rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
   handle_scalar_deps_crossing_scop_limits (scop, def, stmt);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (gimple_code (use_stmt) == GIMPLE_PHI
-	&& (res = true))
+    if (gphi *phi = dyn_cast <gphi *> (use_stmt))
       {
-	gphi_iterator psi = gsi_start_phis (gimple_bb (use_stmt));
+	res = true;
+	gphi_iterator psi = gsi_for_phi (phi);
 
 	if (scalar_close_phi_node_p (gsi_stmt (psi)))
 	  rewrite_close_phi_out_of_ssa (scop, &psi);
