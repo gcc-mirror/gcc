@@ -336,6 +336,57 @@ struct ipa_node_params
   unsigned node_calling_single_call : 1;
 };
 
+/* Intermediate information that we get from alias analysis about a particular
+   parameter in a particular basic_block.  When a parameter or the memory it
+   references is marked modified, we use that information in all dominatd
+   blocks without cosulting alias analysis oracle.  */
+
+struct param_aa_status
+{
+  /* Set when this structure contains meaningful information.  If not, the
+     structure describing a dominating BB should be used instead.  */
+  bool valid;
+
+  /* Whether we have seen something which might have modified the data in
+     question.  PARM is for the parameter itself, REF is for data it points to
+     but using the alias type of individual accesses and PT is the same thing
+     but for computing aggregate pass-through functions using a very inclusive
+     ao_ref.  */
+  bool parm_modified, ref_modified, pt_modified;
+};
+
+/* Information related to a given BB that used only when looking at function
+   body.  */
+
+struct ipa_bb_info
+{
+  /* Call graph edges going out of this BB.  */
+  vec<cgraph_edge *> cg_edges;
+  /* Alias analysis statuses of each formal parameter at this bb.  */
+  vec<param_aa_status> param_aa_statuses;
+};
+
+/* Structure with global information that is only used when looking at function
+   body. */
+
+struct func_body_info
+{
+  /* The node that is being analyzed.  */
+  cgraph_node *node;
+
+  /* Its info.  */
+  struct ipa_node_params *info;
+
+  /* Information about individual BBs. */
+  vec<ipa_bb_info> bb_infos;
+
+  /* Number of parameters.  */
+  int param_count;
+
+  /* Number of statements already walked by when analyzing this function.  */
+  unsigned int aa_walked;
+};
+
 /* ipa_node_params access functions.  Please use these to access fields that
    are or will be shared among various passes.  */
 
@@ -585,8 +636,9 @@ void ipa_analyze_node (struct cgraph_node *);
 /* Aggregate jump function related functions.  */
 tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *, HOST_WIDE_INT,
 				 bool);
-bool ipa_load_from_parm_agg (struct ipa_node_params *, gimple, tree, int *,
-			     HOST_WIDE_INT *, bool *);
+bool ipa_load_from_parm_agg (struct func_body_info *,
+			     vec<ipa_param_descriptor>, gimple, tree, int *,
+			     HOST_WIDE_INT *, HOST_WIDE_INT *, bool *);
 
 /* Debugging interface.  */
 void ipa_print_node_params (FILE *, struct cgraph_node *node);
