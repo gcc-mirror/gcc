@@ -5247,6 +5247,32 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 		  && rtx_equal_p (XEXP (op0, 1), op1))))
 	return op2;
 
+      /* Convert (!c) != {0,...,0} ? a : b into
+         c != {0,...,0} ? b : a for vector modes.  */
+      if (VECTOR_MODE_P (GET_MODE (op1))
+	  && GET_CODE (op0) == NE
+	  && GET_CODE (XEXP (op0, 0)) == NOT
+	  && GET_CODE (XEXP (op0, 1)) == CONST_VECTOR)
+	{
+	  rtx cv = XEXP (op0, 1);
+	  int nunits = CONST_VECTOR_NUNITS (cv);
+	  bool ok = true;
+	  for (int i = 0; i < nunits; ++i)
+	    if (CONST_VECTOR_ELT (cv, i) != const0_rtx)
+	      {
+		ok = false;
+		break;
+	      }
+	  if (ok)
+	    {
+	      rtx new_op0 = gen_rtx_NE (GET_MODE (op0),
+					XEXP (XEXP (op0, 0), 0),
+					XEXP (op0, 1));
+	      rtx retval = gen_rtx_IF_THEN_ELSE (mode, new_op0, op2, op1);
+	      return retval;
+	    }
+	}
+
       if (COMPARISON_P (op0) && ! side_effects_p (op0))
 	{
 	  machine_mode cmp_mode = (GET_MODE (XEXP (op0, 0)) == VOIDmode
