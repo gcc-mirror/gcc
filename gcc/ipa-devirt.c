@@ -128,7 +128,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "tree-pass.h"
 #include "target.h"
-#include "tree-pretty-print.h"
 #include "ipa-utils.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
@@ -143,7 +142,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "stor-layout.h"
 #include "intl.h"
-#include "streamer-hooks.h"
 #include "lto-streamer.h"
 
 /* Hash based set of pairs of types.  */

@@ -35,8 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gimple-iterator.h"
 #include "cgraph.h"
-#include "data-streamer.h"
-#include "tree-streamer.h"
 #include "gimple-streamer.h"
 #include "value-prof.h"
 

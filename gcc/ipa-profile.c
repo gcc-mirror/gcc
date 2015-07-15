@@ -67,7 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "alloc-pool.h"
 #include "tree-inline.h"
-#include "lto-streamer.h"
 #include "data-streamer.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"

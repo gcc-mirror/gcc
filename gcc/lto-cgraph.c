@@ -48,8 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "timevar.h"
 #include "cgraph.h"
-#include "lto-streamer.h"
-#include "data-streamer.h"
 #include "tree-streamer.h"
 #include "gcov-io.h"
 #include "tree-pass.h"

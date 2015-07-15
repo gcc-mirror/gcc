@@ -1,5 +1,27 @@
 2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
 
+	* gimple-pretty-print.h: Don't include pretty-print.h.
+	* tree-streamer.h: Don't include lto-streamer.h.
+	* gimple-streamer.h: Include tree-streamer.h rather than lto-streamer.h.
+	* gimple-streamer-in.c: Remove redundant includes.
+	* gimple-streamer-out.c: Likewise.
+	* ipa-devirt.c: Likewise.
+	* ipa-icf.c: Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-polymorphic-call.c: Likewise.
+	* ipa-profile.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-pure-const.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* lto-streamer.c: Likewise.
+	* tree-streamer-in.c: Likewise.
+	* tree-streamer-out.c: Likewise.
+	* tree-streamer.c: Likewise.
+
+2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
+
 	* opth-gen.awk: Check for UNKNOWN_LOCATION rather than GCC_TM_H, don't
 	include input.h.
 	* opts.c: Remove multiline #include comment.
