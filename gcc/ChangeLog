@@ -1,3 +1,14 @@
+2015-07-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* gensupport.c (rtx_handle_directive): Adjust.
+	* read-rtl.c (apply_iterators): Take vector to add rtxs to
+	instead of expr list rtx.
+	(add_define_attr_for_define_subst): Likewise.
+	(add_define_subst_attr): Likewise.
+	(read_subst_mapping): Likewise.
+	(read_rtx): Likewise.
+	* rtl.h (read_rtx): Adjust.
+
 2015-07-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (*csinc2<mode>_insn): Use cinc mnemonic.
