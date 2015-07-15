@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "options.h"
+#include "tm.h"
 #include "alias.h"
 #include "tree.h"
 #include "c-common.h"
@@ -39,11 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"		/* For PLUGIN_INCLUDE_FILE event.  */
 #include "mkdeps.h"
 #include "c-target.h"
-#include "tm.h"			/* For BYTES_BIG_ENDIAN,
-				   DOLLARS_IN_IDENTIFIERS,
-				   STDC_0_IN_SYSTEM_HEADERS,
-				   TARGET_FLT_EVAL_METHOD_NON_DEFAULT and
-				   TARGET_OPTF.  */
 #include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
 #include "dumpfile.h"
 
