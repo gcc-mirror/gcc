@@ -479,23 +479,38 @@ along with GCC; see the file COPYING3.  If not see
  (abs tree_expr_nonnegative_p@0)
  @0)
 
-/* A - B -> A + (-B) if B is easily negatable.  This just covers
-   very few cases of "easily negatable", effectively inlining negate_expr_p.  */
-(simplify
- (minus @0 INTEGER_CST@1)
+/* A few cases of fold-const.c negate_expr_p predicate.  */
+(match negate_expr_p
+ INTEGER_CST
  (if ((INTEGRAL_TYPE_P (type)
        && TYPE_OVERFLOW_WRAPS (type))
       || (!TYPE_OVERFLOW_SANITIZED (type)
-	  && may_negate_without_overflow_p (@1)))
-  (plus @0 (negate @1))))
+	  && may_negate_without_overflow_p (t)))))
+(match negate_expr_p
+ FIXED_CST)
+(match negate_expr_p
+ (negate @0)
+ (if (!TYPE_OVERFLOW_SANITIZED (type))))
+(match negate_expr_p
+ REAL_CST
+ (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (t)))))
+/* VECTOR_CST handling of non-wrapping types would recurse in unsupported
+   ways.  */
+(match negate_expr_p
+ VECTOR_CST
+ (if (FLOAT_TYPE_P (TREE_TYPE (type)) || TYPE_OVERFLOW_WRAPS (type))))
+ 
+/* -(A + B) -> (-B) - A.  */
 (simplify
- (minus @0 REAL_CST@1)
- (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
-  (plus @0 (negate @1))))
+ (negate (plus:c @0 negate_expr_p@1))
+ (if (!HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
+      && !HONOR_SIGNED_ZEROS (element_mode (type)))
+  (minus (negate @1) @0)))
+
+/* A - B -> A + (-B) if B is easily negatable.  */
 (simplify
- (minus @0 VECTOR_CST@1)
- (if (FLOAT_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
-  (plus @0 (negate @1))))
+ (minus @0 negate_expr_p@1)
+ (plus @0 (negate @1)))
 
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
@@ -1677,6 +1692,20 @@ along with GCC; see the file COPYING3.  If not see
   (cmp (convert?@3 (bit_xor @0 INTEGER_CST@1)) INTEGER_CST@2)
   (if (tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@0)))
    (cmp @0 (bit_xor @1 (convert @2))))))
+
+/* bool_var != 0 becomes bool_var.  */
+(simplify
+ (ne @0 integer_zerop@1)
+ (if (TREE_CODE (TREE_TYPE (@0)) == BOOLEAN_TYPE
+      && types_match (type, TREE_TYPE (@0)))
+  (non_lvalue @0)))
+/* bool_var == 1 becomes bool_var.  */
+(simplify
+ (eq @0 integer_onep@1)
+ (if (TREE_CODE (TREE_TYPE (@0)) == BOOLEAN_TYPE
+      && types_match (type, TREE_TYPE (@0)))
+  (non_lvalue @0)))
+
 
 /* Simplification of math builtins.  */
 

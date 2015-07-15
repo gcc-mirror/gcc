@@ -11245,16 +11245,6 @@ fold_binary_loc (location_t loc,
       if (tem != NULL_TREE)
 	return tem;
 
-      /* bool_var != 0 becomes bool_var. */
-      if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_zerop (arg1)
-          && code == NE_EXPR)
-        return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
-      /* bool_var == 1 becomes bool_var. */
-      if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_onep (arg1)
-          && code == EQ_EXPR)
-        return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
-
       /* bool_var != 1 becomes !bool_var. */
       if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_onep (arg1)
           && code == NE_EXPR)
