@@ -1,3 +1,14 @@
+2015-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66866
+	* config/i386/i386-protos.h (ix86_expand_pextr): New prototype.
+	* config/i386/i386.c (ix86_expand_pextr): New function.
+	(ix86_expand_pinsr): Handle V1TI and TI modes.  Call ix86_expand_pextr
+	for non-lowpart subregs.
+	* config/i386/i386.md (extzv<mode>): Expand with ix86_expand_pextr.
+	(insv<mode>): Use SWI248 mode iterator.
+	(insv<mode>_1): Ditto.
+
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 

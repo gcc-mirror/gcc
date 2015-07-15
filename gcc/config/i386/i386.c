@@ -50509,6 +50509,105 @@ ix86_expand_sse2_abs (rtx target, rtx input)
     emit_move_insn (target, x);
 }
 
+/* Expand an extract from a vector register through pextr insn.
+   Return true if successful.  */
+
+bool
+ix86_expand_pextr (rtx *operands)
+{
+  rtx dst = operands[0];
+  rtx src = operands[1];
+
+  unsigned int size = INTVAL (operands[2]);
+  unsigned int pos = INTVAL (operands[3]);
+
+  if (GET_CODE (dst) == SUBREG)
+    {
+      /* Reject non-lowpart subregs.  */
+      if (SUBREG_BYTE (dst) > 0)
+	return false;
+      dst = SUBREG_REG (dst);
+    }
+	
+  if (GET_CODE (src) == SUBREG)
+    {
+      pos += SUBREG_BYTE (src) * BITS_PER_UNIT;
+      src = SUBREG_REG (src);
+    }
+
+  switch (GET_MODE (src))
+    {
+    case V16QImode:
+    case V8HImode:
+    case V4SImode:
+    case V2DImode:
+    case V1TImode:
+    case TImode:
+      {
+	machine_mode srcmode, dstmode;
+	rtx d, pat;
+
+	dstmode = mode_for_size (size, MODE_INT, 0);
+
+	switch (dstmode)
+	  {
+	  case QImode:
+	    if (!TARGET_SSE4_1)
+	      return false;
+	    srcmode = V16QImode;
+	    break;
+
+	  case HImode:
+	    if (!TARGET_SSE2)
+	      return false;
+	    srcmode = V8HImode;
+	    break;
+
+	  case SImode:
+	    if (!TARGET_SSE4_1)
+	      return false;
+	    srcmode = V4SImode;
+	    break;
+
+	  case DImode:
+	    gcc_assert (TARGET_64BIT);
+	    if (!TARGET_SSE4_1)
+	      return false;
+	    srcmode = V2DImode;
+	    break;
+
+	  default:
+	    return false;
+	  }
+
+	if (GET_MODE (dst) == dstmode)
+	  d = dst;
+	else
+	  d = gen_reg_rtx (dstmode);
+
+	/* Construct insn pattern.  */
+	pat = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, GEN_INT (pos / size)));
+	pat = gen_rtx_VEC_SELECT (dstmode, gen_lowpart (srcmode, src), pat);
+
+	/* Let the rtl optimizers know about the zero extension performed.  */
+	if (dstmode == QImode || dstmode == HImode)
+	  {
+	    pat = gen_rtx_ZERO_EXTEND (SImode, pat);
+	    d = gen_lowpart (SImode, d);
+	  }
+
+	emit_insn (gen_rtx_SET (d, pat));
+
+	if (d != dst)
+	  emit_move_insn (dst, gen_lowpart (GET_MODE (dst), d));
+	return true;
+      }
+
+    default:
+      return false;
+    }
+}
+
 /* Expand an insert into a vector register through pinsr insn.
    Return true if successful.  */
 
@@ -50527,18 +50626,18 @@ ix86_expand_pinsr (rtx *operands)
       dst = SUBREG_REG (dst);
     }
 
-  if (GET_CODE (src) == SUBREG)
-    src = SUBREG_REG (src);
-
   switch (GET_MODE (dst))
     {
     case V16QImode:
     case V8HImode:
     case V4SImode:
     case V2DImode:
+    case V1TImode:
+    case TImode:
       {
 	machine_mode srcmode, dstmode;
 	rtx (*pinsr)(rtx, rtx, rtx, rtx);
+	rtx d;
 
 	srcmode = mode_for_size (size, MODE_INT, 0);
 
@@ -50577,15 +50676,36 @@ ix86_expand_pinsr (rtx *operands)
 	    return false;
 	  }
 
-	rtx d = dst;
-	if (GET_MODE (dst) != dstmode)
+	if (GET_CODE (src) == SUBREG)
+	  {
+	    unsigned int srcpos = SUBREG_BYTE (src);
+
+	    if (srcpos > 0)
+	      {
+		rtx extr_ops[4];
+
+		extr_ops[0] = gen_reg_rtx (srcmode);
+		extr_ops[1] = gen_lowpart (srcmode, SUBREG_REG (src));
+		extr_ops[2] = GEN_INT (size);
+		extr_ops[3] = GEN_INT (srcpos * BITS_PER_UNIT);
+
+		if (!ix86_expand_pextr (extr_ops))
+		  return false;
+
+		src = extr_ops[0];
+	      }
+	    else
+	      src = gen_lowpart (srcmode, SUBREG_REG (src));
+	  }
+
+	if (GET_MODE (dst) == dstmode)
+	  d = dst;
+	else
 	  d = gen_reg_rtx (dstmode);
-	src = gen_lowpart (srcmode, src);
 
-	pos /= size;
-
-	emit_insn (pinsr (d, gen_lowpart (dstmode, dst), src,
-			  GEN_INT (1 << pos)));
+	emit_insn (pinsr (d, gen_lowpart (dstmode, dst),
+			  gen_lowpart (srcmode, src),
+			  GEN_INT (1 << (pos / size))));
 	if (d != dst)
 	  emit_move_insn (dst, gen_lowpart (GET_MODE (dst), d));
 	return true;
