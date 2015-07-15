@@ -44,7 +44,7 @@ contains
   subroutine check (N, A, B)
     integer :: N
     integer :: i, j
-    integer, parameter :: EPS = 0.000001
+    real, parameter :: EPS = 0.000001
     real, dimension(N,N) :: A, B
     real :: diff
     do i = 1, N

@@ -1,3 +1,10 @@
+2015-07-15  Maxim Blumenthal  <maxim.blumenthal@intel.com>
+
+	* testsuite/libgomp.fortran/examples-4/simd-8.f90: (main): Change type
+	of EPS parameter from integer to real.
+	* testsuite/libgomp.fortran/examples-4/task_dep-5.f90: (check): Change
+	type of EPS parameter from integer to real.
+
 2015-07-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* team.c (get_last_team): New.
