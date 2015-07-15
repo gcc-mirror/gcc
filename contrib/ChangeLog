@@ -1,3 +1,7 @@
+2015-07-15  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style.sh (cat_with_prefix): Fix quoting.
+
 2015-06-02  Steve Ellcey  <sellcey@imgtec.com>
 
 	* test_installed (--target=): New option.
