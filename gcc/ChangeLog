@@ -1,3 +1,8 @@
+2015-07-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* simplify-rtx.c (simplify_ternary_operation): Add simplification
+	for (!c) != {0,...,0} ? a : b for vector modes.
+
 2015-07-15  Paolo Bonzini  <bonzini@gnu.org>
 	    Martin Jambor  <mjambor@suse.cz>
 
