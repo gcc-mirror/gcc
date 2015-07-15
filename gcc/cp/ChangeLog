@@ -1,3 +1,12 @@
+2015-07-14  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/66850
+	* pt.c (redeclare_class_template): Set the DECL_CONTEXTs of each
+	template template parm in the redeclaration.
+	(lookup_template_class_1): Peel off irrelevant template levels
+	from current_template_parms before augmenting the argument
+	list.
+
 2015-07-14  Andrea Azzarone  <azzaronea@gmail.com>
 
 	PR c++/65071
