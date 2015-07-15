@@ -794,7 +794,14 @@ build_scops_1 (basic_block current, loop_p outermost_loop,
     {
       open_scop.exit = sinfo.exit;
       gcc_assert (open_scop.exit);
-      scops->safe_push (open_scop);
+      if (open_scop.entry != open_scop.exit)
+	scops->safe_push (open_scop);
+      else
+	{
+	  sinfo.difficult = true;
+	  sinfo.exits = false;
+	  sinfo.exit = NULL;
+	}
     }
 
   result.exit = sinfo.exit;
