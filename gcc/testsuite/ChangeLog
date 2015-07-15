@@ -1,3 +1,9 @@
+2015-07-15  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): Allow the post-arch
+	code to be run when the pre-arch code increases the isa_rev to
+	mips32r6 or greater.
+
 2015-07-15  Richard Biener  <rguenther@suse.de>
 
 	* lib/c-torture.exp (C_TORTURE_OPTIONS): Remove

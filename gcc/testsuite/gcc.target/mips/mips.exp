@@ -1045,6 +1045,7 @@ proc mips-dg-options { args } {
     set arch [mips_option options arch]
     set isa [mips_arch_info $arch isa]
     set isa_rev [mips_arch_info $arch isa_rev]
+    set orig_isa_rev $isa_rev
 
     # If the test forces a 32-bit architecture, force -mgp32.
     # Force the current -mgp setting otherwise; if we don't,
@@ -1279,8 +1280,11 @@ proc mips-dg-options { args } {
     }
 
     # Handle dependencies between the arch option and the post-arch options.
-    # This should mirror the arch and pre-arch code above.
-    if { $arch_test_option_p } {
+    # This should mirror the arch and pre-arch code above.  For pre-r6
+    # architectures this only needs to be done when we've moved down
+    # to a lower architecture and might need to turn features off,
+    # but moving up from pre-r6 to r6 can remove features too.
+    if { $arch_test_option_p || ($orig_isa_rev < 6 && $isa_rev >= 6) } {
 	if { $isa < 2 } {
 	    mips_make_test_option options "-mno-branch-likely"
 	    mips_make_test_option options "-mno-fix-r10000"
