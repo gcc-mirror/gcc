@@ -1,5 +1,10 @@
 2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/56520
+	* match.c (gfc_match_name): Special case unary minus and plus.
+
+2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* io.c (check_char_variable): New function.
 	(match_open_element, match_close_element, match_file_element,
 	match_dt_element, match_inquire_element, match_wait_element): Use it.
