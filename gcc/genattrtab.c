@@ -899,7 +899,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
 /* Given an expression, ensure that it is validly formed and that all named
    attribute values are valid for the given attribute.  Issue a fatal error
-   if not.  If no attribute is specified, assume a numeric attribute.
+   if not.
 
    Return a perhaps modified replacement expression for the value.  */
 
@@ -913,7 +913,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
   switch (GET_CODE (exp))
     {
     case CONST_INT:
-      if (attr && ! attr->is_numeric)
+      if (!attr->is_numeric)
 	{
 	  error_with_line (attr->lineno,
 			   "CONST_INT not valid for non-numeric attribute %s",
@@ -934,15 +934,15 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       if (! strcmp (XSTR (exp, 0), "*"))
 	break;
 
-      if (attr == 0 || attr->is_numeric)
+      if (attr->is_numeric)
 	{
 	  p = XSTR (exp, 0);
 	  for (; *p; p++)
 	    if (! ISDIGIT (*p))
 	      {
-		error_with_line (attr ? attr->lineno : 0,
+		error_with_line (attr->lineno,
 				 "non-numeric value for numeric attribute %s",
-				 attr ? attr->name : "internal");
+				 attr->name);
 		break;
 	      }
 	  break;
@@ -956,13 +956,12 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       if (av == NULL)
 	error_with_line (attr->lineno,
 			 "unknown value `%s' for `%s' attribute",
-			 XSTR (exp, 0), attr ? attr->name : "internal");
+			 XSTR (exp, 0), attr->name);
       break;
 
     case IF_THEN_ELSE:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0),
-				       attr ? attr->is_const : 0,
-				       attr ? attr->lineno : 0);
+      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), attr->is_const,
+				       attr->lineno);
       XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
       XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
       break;
@@ -972,7 +971,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case MULT:
     case DIV:
     case MOD:
-      if (attr && !attr->is_numeric)
+      if (!attr->is_numeric)
 	{
 	  error_with_line (attr->lineno,
 			   "invalid operation `%s' for non-numeric"
@@ -1007,8 +1006,8 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	{
 	  XVECEXP (exp, 0, i) = check_attr_test (XVECEXP (exp, 0, i),
-						 attr ? attr->is_const : 0,
-						 attr ? attr->lineno : 0);
+						 attr->is_const,
+						 attr->lineno);
 	  XVECEXP (exp, 0, i + 1)
 	    = check_attr_value (XVECEXP (exp, 0, i + 1), attr);
 	}
@@ -1020,15 +1019,13 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       {
 	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
-	  error_with_line (attr ? attr->lineno : 0,
-			   "unknown attribute `%s' in ATTR",
+	  error_with_line (attr->lineno, "unknown attribute `%s' in ATTR",
 			   XSTR (exp, 0));
-	else if (attr && attr->is_const && ! attr2->is_const)
+	else if (attr->is_const && ! attr2->is_const)
 	  error_with_line (attr->lineno,
 			   "non-constant attribute `%s' referenced from `%s'",
 			   XSTR (exp, 0), attr->name);
-	else if (attr
-		 && attr->is_numeric != attr2->is_numeric)
+	else if (attr->is_numeric != attr2->is_numeric)
 	  error_with_line (attr->lineno,
 			   "numeric attribute mismatch calling `%s' from `%s'",
 			   XSTR (exp, 0), attr->name);
@@ -1042,7 +1039,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
 
     default:
-      error_with_line (attr ? attr->lineno : 0,
+      error_with_line (attr->lineno,
 		       "invalid operation `%s' for attribute value",
 		       GET_RTX_NAME (GET_CODE (exp)));
       break;
@@ -1199,7 +1196,7 @@ make_canonical (struct attr_desc *attr, rtx exp)
     case CONST_STRING:
       if (! strcmp (XSTR (exp, 0), "*"))
 	{
-	  if (attr == 0 || attr->default_val == 0)
+	  if (attr->default_val == 0)
 	    fatal ("(attr_value \"*\") used in invalid context");
 	  exp = attr->default_val->value;
 	}
