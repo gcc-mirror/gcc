@@ -1,3 +1,10 @@
+2015-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (save_stack_nonlocal): Use adjust_address
+	instead of adjust_address_nv.
+	(restore_stack_nonlocal): Likewise.
+	(nonlocal_goto): Likewise.
+
 2015-07-16  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (create_parallel_loop): Handle case that exit phi does
