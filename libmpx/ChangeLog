@@ -1,3 +1,9 @@
+2015-07-16  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* configure.ac: Remove link_mpx.
+	* libmpx.spec.in: Likewise.
+	* configure: Regenerate.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.
