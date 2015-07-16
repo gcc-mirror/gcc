@@ -1,5 +1,44 @@
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* read-md.h (file_location): New structure.
+	(directive_handler_t): Take a file_location rather than a line number.
+	(message_at, error_at): Declare.
+	(read_skip_construct): Delete.
+	* read-md.c (message_with_line_1): Replace with...
+	(message_at_1): ...this new function.
+	(message_at, error_at): New functions.
+	(message_with_line, error_with_line): Update to use message_at_1.
+	(handle_enum): Take a file_location rather than a line number
+	and use error_at for error reporting.
+	(handle_include): Likewise.
+	(read_skip_construct): Likewise.  Make static.
+	(handle_file): Update after above changes.  Pass a file_location
+	rather than a line number to handle_directive.
+	* gensupport.c (queue_elem): Replace separate filename and lineno
+	with a file_location.
+	(queue_pattern): Replace filename and lineno arguments with a
+	file_location.  Update after change to queue_elem.
+	(process_define_predicate): Replace lineno argument with a
+	file_location and use error_at for error reporting.  Update
+	after above changes.
+	(process_rtx): Likewise.
+	(subst_pattern_match): Likewise.
+	(get_alternatives_number): Likewise.
+	(alter_predicate_for_insn): Likewise.
+	(rtx_handle_directive): Likewise.
+	(is_predicable): Update after above changes, using error_at rather
+	than error_with_line.
+	(has_subst_attribute): Likewise.
+	(identify_predicable_attribute): Likewise.
+	(alter_attrs_for_subst_insn): Likewise.
+	(process_one_cond_exec): Likewise.
+	(process_substs_on_one_elem): Likewise.
+	(process_define_subst): Likewise.
+	(check_define_attr_duplicates): Likewise.
+	(read_md_rtx): Update after change to queue_elem.
+
+2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* genoutput.c (next_index_number): Delete.
 	(data): Remove index_number.
 	(gen_insn, gen_peephole, gen_expand, gen_split): Update accordingly.
