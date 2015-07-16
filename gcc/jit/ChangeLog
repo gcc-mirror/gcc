@@ -1,3 +1,10 @@
+2015-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Overview of code structure): Add note
+	that the implementation is in C++, despite the .c extension.
+	(Submitting patches): New subsection.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* dummy-frontend.c: Adjust includes for flags.h changes.
