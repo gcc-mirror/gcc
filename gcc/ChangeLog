@@ -1,3 +1,8 @@
+2015-07-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (process): Constify mapping variables.
+	Define target data struct and initialize it.
+
 2015-07-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/66626

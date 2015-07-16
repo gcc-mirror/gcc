@@ -1,3 +1,11 @@
+2015-07-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (link_ptx): Constify string argument.
+	Workaround driver library const error.
+	(struct nvptx_tdata, nvptx_tdata_t): New.
+	(GOMP_OFFLOAD_load_image): Use struct for target_data's real
+	type.
+
 2015-07-15  Maxim Blumenthal  <maxim.blumenthal@intel.com>
 
 	* testsuite/libgomp.fortran/examples-4/simd-8.f90: (main): Change type
