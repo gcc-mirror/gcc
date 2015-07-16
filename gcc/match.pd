@@ -1664,6 +1664,62 @@ along with GCC; see the file COPYING3.  If not see
     (if (tem && !TREE_OVERFLOW (tem))
      (scmp @0 { tem; }))))))
 
+/* From fold_sign_changed_comparison and fold_widened_comparison.  */
+(for cmp (simple_comparison)
+ (simplify
+  (cmp (convert@0 @00) (convert?@1 @10))
+  (if (TREE_CODE (TREE_TYPE (@0)) == INTEGER_TYPE
+       /* Disable this optimization if we're casting a function pointer
+	  type on targets that require function pointer canonicalization.  */
+       && !(targetm.have_canonicalize_funcptr_for_compare ()
+	    && TREE_CODE (TREE_TYPE (@00)) == POINTER_TYPE
+	    && TREE_CODE (TREE_TYPE (TREE_TYPE (@00))) == FUNCTION_TYPE))
+   (if (TYPE_PRECISION (TREE_TYPE (@00)) == TYPE_PRECISION (TREE_TYPE (@0))
+	&& (TREE_CODE (@10) == INTEGER_CST
+	    || (@1 != @10 && types_match (TREE_TYPE (@10), TREE_TYPE (@00))))
+	&& (TYPE_UNSIGNED (TREE_TYPE (@00)) == TYPE_UNSIGNED (TREE_TYPE (@0))
+	    || cmp == NE_EXPR
+	    || cmp == EQ_EXPR)
+	&& (POINTER_TYPE_P (TREE_TYPE (@00)) == POINTER_TYPE_P (TREE_TYPE (@0))))
+    /* ???  The special-casing of INTEGER_CST conversion was in the original
+       code and here to avoid a spurious overflow flag on the resulting
+       constant which fold_convert produces.  */
+    (if (TREE_CODE (@1) == INTEGER_CST)
+     (cmp @00 { force_fit_type (TREE_TYPE (@00), wi::to_widest (@1), 0,
+				TREE_OVERFLOW (@1)); })
+     (cmp @00 (convert @1)))
+
+    (if (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (TREE_TYPE (@00)))
+     /* If possible, express the comparison in the shorter mode.  */
+     (if ((cmp == EQ_EXPR || cmp == NE_EXPR
+	   || TYPE_UNSIGNED (TREE_TYPE (@0)) == TYPE_UNSIGNED (TREE_TYPE (@00)))
+	  && (types_match (TREE_TYPE (@10), TREE_TYPE (@00))
+	      || ((TYPE_PRECISION (TREE_TYPE (@00))
+		   >= TYPE_PRECISION (TREE_TYPE (@10)))
+		  && (TYPE_UNSIGNED (TREE_TYPE (@00))
+		      == TYPE_UNSIGNED (TREE_TYPE (@10))))
+	      || (TREE_CODE (@10) == INTEGER_CST
+		  && (TREE_CODE (TREE_TYPE (@00)) == INTEGER_TYPE
+		      || TREE_CODE (TREE_TYPE (@00)) == BOOLEAN_TYPE)
+		  && int_fits_type_p (@10, TREE_TYPE (@00)))))
+      (cmp @00 (convert @10))
+      (if (TREE_CODE (@10) == INTEGER_CST
+	   && TREE_CODE (TREE_TYPE (@00)) == INTEGER_TYPE
+	   && !int_fits_type_p (@10, TREE_TYPE (@00)))
+       (with
+	{
+	  tree min = lower_bound_in_type (TREE_TYPE (@10), TREE_TYPE (@00));
+	  tree max = upper_bound_in_type (TREE_TYPE (@10), TREE_TYPE (@00));
+	  bool above = integer_nonzerop (const_binop (LT_EXPR, type, max, @10));
+	  bool below = integer_nonzerop (const_binop (LT_EXPR, type, @10, min));
+	}
+	(if (above || below)
+	 (if (cmp == EQ_EXPR || cmp == NE_EXPR)
+	  { constant_boolean_node (cmp == EQ_EXPR ? false : true, type); }
+	  (if (cmp == LT_EXPR || cmp == LE_EXPR)
+	   { constant_boolean_node (above ? true : false, type); }
+	   (if (cmp == GT_EXPR || cmp == GE_EXPR)
+	    { constant_boolean_node (above ? false : true, type); }))))))))))))
 
 /* Equality compare simplifications from fold_binary  */
 (for cmp (eq ne)
