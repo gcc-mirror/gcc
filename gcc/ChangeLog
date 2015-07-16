@@ -1,3 +1,9 @@
+2015-07-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/65249
+	* config/sh/sh.md (movdi): Split simple reg move to two movsi
+	when the destination is R0.
+
 2015-07-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66866
