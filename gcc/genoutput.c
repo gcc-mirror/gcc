@@ -109,11 +109,6 @@ static const char *strip_whitespace	(const char *);
 
 static int next_code_number;
 
-/* This counts all definitions in the md file,
-   for the sake of error messages.  */
-
-static int next_index_number;
-
 /* This counts all operands used in the md file.  The first is null.  */
 
 static int next_operand_number = 1;
@@ -160,7 +155,6 @@ struct data
   const char *name;
   const char *template_code;
   int code_number;
-  int index_number;
   const char *filename;
   int lineno;
   int n_generator_args;		/* Number of arguments passed to generator */
@@ -885,7 +879,6 @@ gen_insn (rtx insn, int lineno)
   int i;
 
   d->code_number = next_code_number;
-  d->index_number = next_index_number;
   d->filename = read_md_filename;
   d->lineno = lineno;
   if (XSTR (insn, 0)[0])
@@ -928,7 +921,6 @@ gen_peephole (rtx peep, int lineno)
   int i;
 
   d->code_number = next_code_number;
-  d->index_number = next_index_number;
   d->filename = read_md_filename;
   d->lineno = lineno;
   d->name = 0;
@@ -968,7 +960,6 @@ gen_expand (rtx insn, int lineno)
   int i;
 
   d->code_number = next_code_number;
-  d->index_number = next_index_number;
   d->filename = read_md_filename;
   d->lineno = lineno;
   if (XSTR (insn, 0)[0])
@@ -1014,7 +1005,6 @@ gen_split (rtx split, int lineno)
   int i;
 
   d->code_number = next_code_number;
-  d->index_number = next_index_number;
   d->filename = read_md_filename;
   d->lineno = lineno;
   d->name = 0;
@@ -1067,7 +1057,6 @@ main (int argc, char **argv)
     return (FATAL_EXIT_CODE);
 
   output_prologue ();
-  next_index_number = 0;
 
   /* Read the machine description.  */
 
@@ -1108,7 +1097,6 @@ main (int argc, char **argv)
 	default:
 	  break;
 	}
-      next_index_number++;
     }
 
   printf ("\n\n");
