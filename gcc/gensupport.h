@@ -20,13 +20,29 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GENSUPPORT_H
 #define GCC_GENSUPPORT_H
 
+#include "read-md.h"
+
 struct obstack;
 extern struct obstack *rtl_obstack;
+
+/* Information about an .md define_* rtx.  */
+struct md_rtx_info {
+  /* The rtx itself.  */
+  rtx def;
+
+  /* The location of the first line of the rtx.  */
+  file_location loc;
+
+  /* The unique number attached to the rtx.  Currently all define_insns,
+     define_expands, define_splits, define_peepholes and define_peephole2s
+     share the same insn_code index space.  */
+  int index;
+};
 
 extern rtx add_implicit_parallel (rtvec);
 extern bool init_rtx_reader_args_cb (int, char **, bool (*)(const char *));
 extern bool init_rtx_reader_args (int, char **);
-extern rtx read_md_rtx (int *, int *);
+extern bool read_md_rtx (md_rtx_info *);
 
 /* Set this to 0 to disable automatic elision of insn patterns which
    can never be used in this configuration.  See genconditions.c.

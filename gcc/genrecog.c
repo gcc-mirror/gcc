@@ -250,12 +250,6 @@ enum routine_type {
   SUBPATTERN, RECOG, SPLIT, PEEPHOLE2
 };
 
-/* Next number to use as an insn_code.  */
-static int next_insn_code;
-
-/* The line number of the start of the pattern currently being processed.  */
-static int pattern_lineno;
-
 /* The root position (x0).  */
 static struct position root_pos;
 
@@ -469,12 +463,13 @@ constraints_supported_in_insn_p (rtx insn)
 	   || GET_CODE (insn) == DEFINE_PEEPHOLE2);
 }
 
-/* Check for various errors in patterns.  SET is nonnull for a destination,
-   and is the complete set pattern.  SET_CODE is '=' for normal sets, and
-   '+' within a context that requires in-out constraints.  */
+/* Check for various errors in PATTERN, which is part of INFO.
+   SET is nonnull for a destination, and is the complete set pattern.
+   SET_CODE is '=' for normal sets, and '+' within a context that
+   requires in-out constraints.  */
 
 static void
-validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
+validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 {
   const char *fmt;
   RTX_CODE code;
@@ -488,13 +483,12 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
       {
 	const char constraints0 = XSTR (pattern, 1)[0];
 
-	if (!constraints_supported_in_insn_p (insn))
+	if (!constraints_supported_in_insn_p (info->def))
 	  {
 	    if (constraints0)
 	      {
-		error_with_line (pattern_lineno,
-				 "constraints not supported in %s",
-				 rtx_name[GET_CODE (insn)]);
+		error_at (info->loc, "constraints not supported in %s",
+			  GET_RTX_NAME (GET_CODE (info->def)));
 	      }
 	    return;
 	  }
@@ -506,19 +500,17 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	    && constraints0 != '='
 	    && constraints0 != '+')
 	  {
-	    error_with_line (pattern_lineno,
-			     "operand %d missing output reload",
-			     XINT (pattern, 0));
+	    error_at (info->loc, "operand %d missing output reload",
+		      XINT (pattern, 0));
 	  }
 	return;
       }
     case MATCH_DUP:
     case MATCH_OP_DUP:
     case MATCH_PAR_DUP:
-      if (find_operand (insn, XINT (pattern, 0), pattern) == pattern)
-	error_with_line (pattern_lineno,
-			 "operand %i duplicated before defined",
-			 XINT (pattern, 0));
+      if (find_operand (info->def, XINT (pattern, 0), pattern) == pattern)
+	error_at (info->loc, "operand %i duplicated before defined",
+		  XINT (pattern, 0));
       break;
     case MATCH_OPERAND:
     case MATCH_OPERATOR:
@@ -527,17 +519,16 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	const struct pred_data *pred;
 	const char *c_test;
 
-	if (GET_CODE (insn) == DEFINE_INSN)
-	  c_test = XSTR (insn, 2);
+	if (GET_CODE (info->def) == DEFINE_INSN)
+	  c_test = XSTR (info->def, 2);
 	else
-	  c_test = XSTR (insn, 1);
+	  c_test = XSTR (info->def, 1);
 
 	if (pred_name[0] != 0)
 	  {
 	    pred = lookup_predicate (pred_name);
 	    if (!pred)
-	      error_with_line (pattern_lineno, "unknown predicate '%s'",
-			       pred_name);
+	      error_at (info->loc, "unknown predicate '%s'", pred_name);
 	  }
 	else
 	  pred = 0;
@@ -547,13 +538,12 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	    const char *constraints = XSTR (pattern, 2);
 	    const char constraints0 = constraints[0];
 
-	    if (!constraints_supported_in_insn_p (insn))
+	    if (!constraints_supported_in_insn_p (info->def))
 	      {
 		if (constraints0)
 		  {
-		    error_with_line (pattern_lineno,
-				     "constraints not supported in %s",
-				     rtx_name[GET_CODE (insn)]);
+		    error_at (info->loc, "constraints not supported in %s",
+			      GET_RTX_NAME (GET_CODE (info->def)));
 		  }
 	      }
 
@@ -567,17 +557,16 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 		    /* If we've only got an output reload for this operand,
 		       we'd better have a matching input operand.  */
 		    else if (constraints0 == '='
-			     && find_matching_operand (insn, XINT (pattern, 0)))
+			     && find_matching_operand (info->def,
+						       XINT (pattern, 0)))
 		      ;
 		    else
-		      error_with_line (pattern_lineno,
-				       "operand %d missing in-out reload",
-				       XINT (pattern, 0));
+		      error_at (info->loc, "operand %d missing in-out reload",
+				XINT (pattern, 0));
 		  }
 		else if (constraints0 != '=' && constraints0 != '+')
-		  error_with_line (pattern_lineno,
-				   "operand %d missing output reload",
-				   XINT (pattern, 0));
+		  error_at (info->loc, "operand %d missing output reload",
+			    XINT (pattern, 0));
 	      }
 
 	    /* For matching constraint in MATCH_OPERAND, the digit must be a
@@ -597,10 +586,9 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 
 		    sscanf (constraints, "%d", &val);
 		    if (val >= XINT (pattern, 0))
-		      error_with_line (pattern_lineno,
-				       "constraint digit %d is not smaller than"
-				       " operand %d",
-				       val, XINT (pattern, 0));
+		      error_at (info->loc, "constraint digit %d is not"
+				" smaller than operand %d",
+				val, XINT (pattern, 0));
 		  }
 
 		while (constraints[0] && constraints[0] != ',')
@@ -612,9 +600,8 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	   while not likely to occur at runtime, results in less efficient
 	   code from insn-recog.c.  */
 	if (set && pred && pred->allows_non_lvalue)
-	  error_with_line (pattern_lineno,
-			   "destination operand %d allows non-lvalue",
-			   XINT (pattern, 0));
+	  error_at (info->loc, "destination operand %d allows non-lvalue",
+		    XINT (pattern, 0));
 
 	/* A modeless MATCH_OPERAND can be handy when we can check for
 	   multiple modes in the c_test.  In most other cases, it is a
@@ -626,7 +613,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 
 	if (GET_MODE (pattern) == VOIDmode
 	    && code == MATCH_OPERAND
-	    && GET_CODE (insn) == DEFINE_INSN
+	    && GET_CODE (info->def) == DEFINE_INSN
 	    && pred
 	    && !pred->special
 	    && pred->allows_non_const
@@ -634,9 +621,8 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	    && ! (set
 		  && GET_CODE (set) == SET
 		  && GET_CODE (SET_SRC (set)) == CALL))
-	  message_with_line (pattern_lineno,
-			     "warning: operand %d missing mode?",
-			     XINT (pattern, 0));
+	  message_at (info->loc, "warning: operand %d missing mode?",
+		      XINT (pattern, 0));
 	return;
       }
 
@@ -658,12 +644,12 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	if (GET_CODE (dest) == MATCH_DUP
 	    || GET_CODE (dest) == MATCH_OP_DUP
 	    || GET_CODE (dest) == MATCH_PAR_DUP)
-	  dest = find_operand (insn, XINT (dest, 0), NULL);
+	  dest = find_operand (info->def, XINT (dest, 0), NULL);
 
 	if (GET_CODE (src) == MATCH_DUP
 	    || GET_CODE (src) == MATCH_OP_DUP
 	    || GET_CODE (src) == MATCH_PAR_DUP)
-	  src = find_operand (insn, XINT (src, 0), NULL);
+	  src = find_operand (info->def, XINT (src, 0), NULL);
 
 	dmode = GET_MODE (dest);
 	smode = GET_MODE (src);
@@ -677,9 +663,8 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
         /* The operands of a SET must have the same mode unless one
 	   is VOIDmode.  */
         else if (dmode != VOIDmode && smode != VOIDmode && dmode != smode)
-	  error_with_line (pattern_lineno,
-			   "mode mismatch in set: %smode vs %smode",
-			   GET_MODE_NAME (dmode), GET_MODE_NAME (smode));
+	  error_at (info->loc, "mode mismatch in set: %smode vs %smode",
+		    GET_MODE_NAME (dmode), GET_MODE_NAME (smode));
 
 	/* If only one of the operands is VOIDmode, and PC or CC0 is
 	   not involved, it's probably a mistake.  */
@@ -694,36 +679,34 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	  {
 	    const char *which;
 	    which = (dmode == VOIDmode ? "destination" : "source");
-	    message_with_line (pattern_lineno,
-			       "warning: %s missing a mode?", which);
+	    message_at (info->loc, "warning: %s missing a mode?", which);
 	  }
 
 	if (dest != SET_DEST (pattern))
-	  validate_pattern (dest, insn, pattern, '=');
-	validate_pattern (SET_DEST (pattern), insn, pattern, '=');
-        validate_pattern (SET_SRC (pattern), insn, NULL_RTX, 0);
+	  validate_pattern (dest, info, pattern, '=');
+	validate_pattern (SET_DEST (pattern), info, pattern, '=');
+        validate_pattern (SET_SRC (pattern), info, NULL_RTX, 0);
         return;
       }
 
     case CLOBBER:
-      validate_pattern (SET_DEST (pattern), insn, pattern, '=');
+      validate_pattern (SET_DEST (pattern), info, pattern, '=');
       return;
 
     case ZERO_EXTRACT:
-      validate_pattern (XEXP (pattern, 0), insn, set, set ? '+' : 0);
-      validate_pattern (XEXP (pattern, 1), insn, NULL_RTX, 0);
-      validate_pattern (XEXP (pattern, 2), insn, NULL_RTX, 0);
+      validate_pattern (XEXP (pattern, 0), info, set, set ? '+' : 0);
+      validate_pattern (XEXP (pattern, 1), info, NULL_RTX, 0);
+      validate_pattern (XEXP (pattern, 2), info, NULL_RTX, 0);
       return;
 
     case STRICT_LOW_PART:
-      validate_pattern (XEXP (pattern, 0), insn, set, set ? '+' : 0);
+      validate_pattern (XEXP (pattern, 0), info, set, set ? '+' : 0);
       return;
 
     case LABEL_REF:
       if (GET_MODE (LABEL_REF_LABEL (pattern)) != VOIDmode)
-	error_with_line (pattern_lineno,
-			 "operand to label_ref %smode not VOIDmode",
-			 GET_MODE_NAME (GET_MODE (LABEL_REF_LABEL (pattern))));
+	error_at (info->loc, "operand to label_ref %smode not VOIDmode",
+		  GET_MODE_NAME (GET_MODE (LABEL_REF_LABEL (pattern))));
       break;
 
     default:
@@ -737,12 +720,12 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  validate_pattern (XEXP (pattern, i), insn, NULL_RTX, 0);
+	  validate_pattern (XEXP (pattern, i), info, NULL_RTX, 0);
 	  break;
 
 	case 'E':
 	  for (j = 0; j < XVECLEN (pattern, i); j++)
-	    validate_pattern (XVECEXP (pattern, i, j), insn, NULL_RTX, 0);
+	    validate_pattern (XVECEXP (pattern, i, j), info, NULL_RTX, 0);
 	  break;
 
 	case 'i': case 'r': case 'w': case '0': case 's':
@@ -3823,7 +3806,7 @@ predicate_name (rtx match_rtx)
    TOP_PATTERN is the overall pattern, as passed to match_pattern_1.  */
 
 static state *
-match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
+match_pattern_2 (state *s, md_rtx_info *info, position *pos, rtx pattern)
 {
   auto_vec <pattern_pos, 32> worklist;
   auto_vec <pattern_pos, 32> pred_and_mode_tests;
@@ -3848,7 +3831,7 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 	  dup_tests.safe_push (pattern_pos (pattern, pos));
 
 	  /* Use the same code check as the original operand.  */
-	  pattern = find_operand (top_pattern, XINT (pattern, 0), NULL_RTX);
+	  pattern = find_operand (info->def, XINT (pattern, 0), NULL_RTX);
 	  /* Fall through.  */
 
 	case MATCH_PARALLEL:
@@ -3865,16 +3848,13 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 		if (code == GET_CODE (pattern))
 		  {
 		    if (!pred)
-		      error_with_line (pattern_lineno,
-				       "unknown predicate '%s'"
-				       " in '%s' expression",
-				       pred_name, GET_RTX_NAME (code));
+		      error_at (info->loc, "unknown predicate '%s' used in %s",
+				pred_name, GET_RTX_NAME (code));
 		    else if (code == MATCH_PARALLEL
 			     && pred->singleton != PARALLEL)
-		      error_with_line (pattern_lineno,
-				       "predicate '%s' used in match_parallel"
-				       " does not allow only PARALLEL",
-				       pred->name);
+		      error_at (info->loc, "predicate '%s' used in"
+				" match_parallel does not allow only PARALLEL",
+				pred->name);
 		  }
 	      }
 
@@ -4106,7 +4086,7 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
    to match, otherwise it is a single instruction pattern.  */
 
 static void
-match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
+match_pattern_1 (state *s, md_rtx_info *info, rtx pattern, const char *c_test,
 		 acceptance_type acceptance)
 {
   if (acceptance.type == PEEPHOLE2)
@@ -4114,15 +4094,15 @@ match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
       /* Match each individual instruction.  */
       position **subpos_ptr = &peep2_insn_pos_list;
       int count = 0;
-      for (int i = 0; i < XVECLEN (top_pattern, 0); ++i)
+      for (int i = 0; i < XVECLEN (pattern, 0); ++i)
 	{
-	  rtx x = XVECEXP (top_pattern, 0, i);
+	  rtx x = XVECEXP (pattern, 0, i);
 	  position *subpos = next_position (subpos_ptr, &root_pos,
 					    POS_PEEP2_INSN, count);
 	  if (count > 0)
 	    s = add_decision (s, rtx_test::peep2_count (count + 1),
 			      true, false);
-	  s = match_pattern_2 (s, top_pattern, subpos, x);
+	  s = match_pattern_2 (s, info, subpos, x);
 	  subpos_ptr = &subpos->next;
 	  count += 1;
 	}
@@ -4131,7 +4111,7 @@ match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
   else
     {
       /* Make the rtx itself.  */
-      s = match_pattern_2 (s, top_pattern, &root_pos, top_pattern);
+      s = match_pattern_2 (s, info, &root_pos, pattern);
 
       /* If the match is only valid when extra clobbers are added,
 	 make sure we're able to pass that information to the caller.  */
@@ -4152,7 +4132,7 @@ match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
    backtracking.  */
 
 static void
-match_pattern (state *s, rtx top_pattern, const char *c_test,
+match_pattern (state *s, md_rtx_info *info, rtx pattern, const char *c_test,
 	       acceptance_type acceptance)
 {
   if (merge_states_p)
@@ -4160,11 +4140,11 @@ match_pattern (state *s, rtx top_pattern, const char *c_test,
       state root;
       /* Add the decisions to a fresh state and then merge the full tree
 	 into the existing one.  */
-      match_pattern_1 (&root, top_pattern, c_test, acceptance);
+      match_pattern_1 (&root, info, pattern, c_test, acceptance);
       merge_into_state (s, &root);
     }
   else
-    match_pattern_1 (s, top_pattern, c_test, acceptance);
+    match_pattern_1 (s, info, pattern, c_test, acceptance);
 }
 
 /* Begin the output file.  */
@@ -5178,9 +5158,10 @@ print_subroutine_group (output_state *os, routine_type type, state *root)
 /* Return the rtx pattern for the list of rtxes in a define_peephole2.  */
 
 static rtx
-get_peephole2_pattern (rtvec vec)
+get_peephole2_pattern (md_rtx_info *info)
 {
   int i, j;
+  rtvec vec = XVEC (info->def, 0);
   rtx pattern = rtx_alloc (SEQUENCE);
   XVEC (pattern, 0) = rtvec_alloc (GET_NUM_ELEM (vec));
   for (i = j = 0; i < GET_NUM_ELEM (vec); i++)
@@ -5195,7 +5176,7 @@ get_peephole2_pattern (rtvec vec)
     }
   XVECLEN (pattern, 0) = j;
   if (j == 0)
-    error_with_line (pattern_lineno, "empty define_peephole2");
+    error_at (info->loc, "empty define_peephole2");
   return pattern;
 }
 
@@ -5245,7 +5226,6 @@ remove_clobbers (acceptance_type *acceptance_ptr, rtx *pattern_ptr)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
   state insn_root, split_root, peephole2_root;
 
   progname = "genrecog";
@@ -5253,64 +5233,65 @@ main (int argc, char **argv)
   if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
-  next_insn_code = 0;
-
   write_header ();
 
   /* Read the machine description.  */
 
-  while (1)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
     {
-      desc = read_md_rtx (&pattern_lineno, &next_insn_code);
-      if (desc == NULL)
-	break;
+      rtx def = info.def;
 
       acceptance_type acceptance;
       acceptance.partial_p = false;
-      acceptance.u.full.code = next_insn_code;
+      acceptance.u.full.code = info.index;
 
       rtx pattern;
-      switch (GET_CODE (desc))
+      switch (GET_CODE (def))
 	{
 	case DEFINE_INSN:
 	  {
 	    /* Match the instruction in the original .md form.  */
 	    acceptance.type = RECOG;
 	    acceptance.u.full.u.num_clobbers = 0;
-	    pattern = add_implicit_parallel (XVEC (desc, 1));
-	    validate_pattern (pattern, desc, NULL_RTX, 0);
-	    match_pattern (&insn_root, pattern, XSTR (desc, 2), acceptance);
+	    pattern = add_implicit_parallel (XVEC (def, 1));
+	    validate_pattern (pattern, &info, NULL_RTX, 0);
+	    match_pattern (&insn_root, &info, pattern,
+			   XSTR (def, 2), acceptance);
 
 	    /* If the pattern is a PARALLEL with trailing CLOBBERs,
 	       allow recog_for_combine to match without the clobbers.  */
 	    if (GET_CODE (pattern) == PARALLEL
 		&& remove_clobbers (&acceptance, &pattern))
-	      match_pattern (&insn_root, pattern, XSTR (desc, 2), acceptance);
+	      match_pattern (&insn_root, &info, pattern,
+			     XSTR (def, 2), acceptance);
 	    break;
 	  }
 
 	case DEFINE_SPLIT:
 	  acceptance.type = SPLIT;
-	  pattern = add_implicit_parallel (XVEC (desc, 0));
-	  validate_pattern (pattern, desc, NULL_RTX, 0);
-	  match_pattern (&split_root, pattern, XSTR (desc, 1), acceptance);
+	  pattern = add_implicit_parallel (XVEC (def, 0));
+	  validate_pattern (pattern, &info, NULL_RTX, 0);
+	  match_pattern (&split_root, &info, pattern,
+			 XSTR (def, 1), acceptance);
 
 	  /* Declare the gen_split routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.c.  */
 	  printf ("extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
-		  next_insn_code);
+		  info.index);
 	  break;
 
 	case DEFINE_PEEPHOLE2:
 	  acceptance.type = PEEPHOLE2;
-	  pattern = get_peephole2_pattern (XVEC (desc, 0));
-	  validate_pattern (pattern, desc, NULL_RTX, 0);
-	  match_pattern (&peephole2_root, pattern, XSTR (desc, 1), acceptance);
+	  pattern = get_peephole2_pattern (&info);
+	  validate_pattern (pattern, &info, NULL_RTX, 0);
+	  match_pattern (&peephole2_root, &info, pattern,
+			 XSTR (def, 1), acceptance);
 
 	  /* Declare the gen_peephole2 routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.c.  */
 	  printf ("extern rtx_insn *gen_peephole2_%d (rtx_insn *, rtx *);\n",
-		  next_insn_code);
+		  info.index);
 	  break;
 
 	default:

@@ -137,8 +137,6 @@ extern void fprint_c_condition (FILE *, const char *);
 extern void message_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void error_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void fatal_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void message_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void error_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void fatal_with_file_and_line (const char *, ...)
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;

@@ -212,42 +212,36 @@ write_writer (void)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-  int pattern_lineno; /* not used */
-  int code;
-
   progname = "genconditions";
 
   if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   /* Read the machine description.  */
-  while (1)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
     {
-      desc = read_md_rtx (&pattern_lineno, &code);
-      if (desc == NULL)
-	break;
-
+      rtx def = info.def;
       /* N.B. define_insn_and_split, define_cond_exec are handled
 	 entirely within read_md_rtx; we never see them.  */
-      switch (GET_CODE (desc))
+      switch (GET_CODE (def))
 	{
-	default:
-	  break;
-
 	case DEFINE_INSN:
 	case DEFINE_EXPAND:
-	  add_c_test (XSTR (desc, 2), -1);
+	  add_c_test (XSTR (def, 2), -1);
 	  /* except.h needs to know whether there is an eh_return
 	     pattern in the machine description.  */
-	  if (!strcmp (XSTR (desc, 0), "eh_return"))
+	  if (!strcmp (XSTR (def, 0), "eh_return"))
 	    saw_eh_return = 1;
 	  break;
 
 	case DEFINE_SPLIT:
 	case DEFINE_PEEPHOLE:
 	case DEFINE_PEEPHOLE2:
-	  add_c_test (XSTR (desc, 1), -1);
+	  add_c_test (XSTR (def, 1), -1);
+	  break;
+
+	default:
 	  break;
 	}
     }

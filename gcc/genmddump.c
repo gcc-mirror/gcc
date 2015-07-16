@@ -40,22 +40,17 @@ extern int main (int, char **);
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-  int pattern_lineno;
-  int code; /* not used */
   progname = "genmddump";
 
   if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   /* Read the machine description.  */
-  while (1)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
     {
-      desc = read_md_rtx (&pattern_lineno, &code);
-      if (desc == NULL)
-	break;
-      printf (";; %s: %d\n", read_md_filename, pattern_lineno);
-      print_inline_rtx (stdout, desc, 0);
+      printf (";; %s: %d\n", info.loc.filename, info.loc.lineno);
+      print_inline_rtx (stdout, info.def, 0);
       printf ("\n\n");
     }
 

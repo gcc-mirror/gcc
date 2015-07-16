@@ -198,11 +198,27 @@ def_target_insn (const char *name, const char *prototype)
     printf ("CODE_FOR_%s\n", name);
 }
 
+/* Record the DEFINE_INSN or DEFINE_EXPAND described by INFO.  */
+
+static void
+add_insn (md_rtx_info *info)
+{
+  rtx def = info->def;
+  const char *name = XSTR (def, 0);
+  if (name[0] == 0 || name[0] == '*')
+    return;
+
+  hashval_t hash = htab_hash_string (name);
+  rtx *slot = insns->find_slot_with_hash (name, hash, INSERT);
+  if (*slot)
+    error_at (info->loc, "duplicate definition of '%s'", name);
+  else
+    *slot = def;
+}
+
 int
 main (int argc, char **argv)
 {
-  int insn_code_number = 0;
-
   progname = "gentarget-def";
 
   if (!init_rtx_reader_args (argc, argv))
@@ -212,30 +228,18 @@ main (int argc, char **argv)
   stubs = new hash_table <nofree_string_hash> (31);
   have_funcs = new hash_map <nofree_string_hash, const char *>;
 
-  while (1)
-    {
-      int line_no;
-      rtx desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+      case DEFINE_EXPAND:
+	add_insn (&info);
 	break;
-      if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	{
-	  const char *name = XSTR (desc, 0);
-	  if (name[0] != 0 && name[0] != '*')
-	    {
-	      hashval_t hash = htab_hash_string (name);
-	      rtx *slot = insns->find_slot_with_hash (name, hash, INSERT);
-	      if (*slot)
-		{
-		  message_with_line (line_no, "duplicate definition of '%s'",
-				     name);
-		  have_error = 1;
-		}
-	      else
-		*slot = desc;
-	    }
-	}
-    }
+
+      default:
+	break;
+      }
 
   printf ("/* Generated automatically by the program `gentarget-def'.  */\n");
   printf ("#ifndef GCC_INSN_TARGET_DEF_H\n");

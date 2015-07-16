@@ -243,8 +243,9 @@ match_pattern (pattern *p, const char *name, const char *pat)
 }
 
 static void
-gen_insn (rtx insn)
+gen_insn (md_rtx_info *info)
 {
+  rtx insn = info->def;
   const char *name = XSTR (insn, 0);
   pattern p;
   unsigned pindex;
@@ -346,15 +347,18 @@ main (int argc, char **argv)
   s_file = open_outfile (source_file_name);
 
   /* Read the machine description.  */
-  while (1)
-    {
-      int line_no, insn_code_number = 0;
-      rtx desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+      case DEFINE_EXPAND:
+	gen_insn (&info);
 	break;
-      if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	gen_insn (desc);
-    }
+
+      default:
+	break;
+      }
 
   /* Sort the collected patterns.  */
   patterns.qsort (pattern_cmp);

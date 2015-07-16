@@ -28,9 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gensupport.h"
 
 
-static int insn_code_number;
-static int insn_index_number;
-
 /* Data structure for recording the patterns of insns that have CLOBBERs.
    We use this to output a function that adds these CLOBBERs to a
    previously-allocated PARALLEL expression.  */
@@ -299,7 +296,7 @@ gen_emit_seq (rtvec vec, char *used)
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
 
 static void
-gen_insn (rtx insn, int lineno)
+gen_insn (md_rtx_info *info)
 {
   struct pattern_stats stats;
   int i;
@@ -308,6 +305,7 @@ gen_insn (rtx insn, int lineno)
      registers or MATCH_SCRATCHes.  If so, store away the information for
      later.  */
 
+  rtx insn = info->def;
   if (XVEC (insn, 1))
     {
       int has_hard_reg = 0;
@@ -329,7 +327,7 @@ gen_insn (rtx insn, int lineno)
 	  struct clobber_ent *link = XNEW (struct clobber_ent);
 	  int j;
 
-	  link->code_number = insn_code_number;
+	  link->code_number = info->index;
 
 	  /* See if any previous CLOBBER_LIST entry is the same as this
 	     one.  */
@@ -383,12 +381,12 @@ gen_insn (rtx insn, int lineno)
   if (XSTR (insn, 0)[0] == 0 || XSTR (insn, 0)[0] == '*')
     return;
 
-  printf ("/* %s:%d */\n", read_md_filename, lineno);
+  printf ("/* %s:%d */\n", info->loc.filename, info->loc.lineno);
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (insn, 1));
   if (stats.max_dup_opno > stats.max_opno)
-    fatal ("match_dup operand number has no match_operand");
+    fatal_at (info->loc, "match_dup operand number has no match_operand");
 
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (insn, 0));
@@ -419,16 +417,18 @@ gen_insn (rtx insn, int lineno)
 /* Generate the `gen_...' function for a DEFINE_EXPAND.  */
 
 static void
-gen_expand (rtx expand)
+gen_expand (md_rtx_info *info)
 {
   struct pattern_stats stats;
   int i;
   char *used;
 
+  rtx expand = info->def;
   if (strlen (XSTR (expand, 0)) == 0)
-    fatal ("define_expand lacks a name");
+    fatal_at (info->loc, "define_expand lacks a name");
   if (XVEC (expand, 1) == 0)
-    fatal ("define_expand for %s lacks a pattern", XSTR (expand, 0));
+    fatal_at (info->loc, "define_expand for %s lacks a pattern",
+	      XSTR (expand, 0));
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (expand, 1));
@@ -517,21 +517,22 @@ gen_expand (rtx expand)
 /* Like gen_expand, but generates insns resulting from splitting SPLIT.  */
 
 static void
-gen_split (rtx split)
+gen_split (md_rtx_info *info)
 {
   struct pattern_stats stats;
   int i;
+  rtx split = info->def;
   const char *const name =
     ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");
   const char *unused;
   char *used;
 
   if (XVEC (split, 0) == 0)
-    fatal ("define_%s (definition %d) lacks a pattern", name,
-	   insn_index_number);
+    fatal_at (info->loc, "%s lacks a pattern",
+	      GET_RTX_NAME (GET_CODE (split)));
   else if (XVEC (split, 2) == 0)
-    fatal ("define_%s (definition %d) lacks a replacement pattern", name,
-	   insn_index_number);
+    fatal_at (info->loc, "%s lacks a replacement pattern",
+	      GET_RTX_NAME (GET_CODE (split)));
 
   /* Find out how many operands this function has.  */
 
@@ -543,17 +544,18 @@ gen_split (rtx split)
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     {
       printf ("extern rtx_insn *gen_%s_%d (rtx_insn *, rtx *);\n",
-	      name, insn_code_number);
-      printf ("rtx_insn *\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
-	      name, insn_code_number, unused);
+	      name, info->index);
+      printf ("rtx_insn *\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED,"
+	      " rtx *operands%s)\n",
+	      name, info->index, unused);
     }
   else
     {
       printf ("extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
-	      insn_code_number);
+	      info->index);
       printf ("rtx_insn *\ngen_split_%d "
 	      "(rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
-	      insn_code_number, unused);
+	      info->index, unused);
     }
   printf ("{\n");
 
@@ -567,7 +569,7 @@ gen_split (rtx split)
 
   printf ("  if (dump_file)\n");
   printf ("    fprintf (dump_file, \"Splitting with gen_%s_%d\\n\");\n",
-	  name, insn_code_number);
+	  name, info->index);
 
   printf ("  start_sequence ();\n");
 
@@ -725,8 +727,6 @@ output_peephole2_scratches (rtx split)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-
   progname = "genemit";
 
   if (!init_rtx_reader_args (argc, argv))
@@ -734,9 +734,6 @@ main (int argc, char **argv)
 
   /* Assign sequential codes to all entries in the machine description
      in parallel with the tables in insn-output.c.  */
-
-  insn_code_number = 0;
-  insn_index_number = 0;
 
   printf ("/* Generated automatically by the program `genemit'\n\
 from the machine description file `md'.  */\n\n");
@@ -780,40 +777,32 @@ from the machine description file `md'.  */\n\n");
 
   /* Read the machine description.  */
 
-  while (1)
-    {
-      int line_no;
-
-      desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+	gen_insn (&info);
 	break;
 
-      switch (GET_CODE (desc))
-	{
-	case DEFINE_INSN:
-	  gen_insn (desc, line_no);
-	  break;
+      case DEFINE_EXPAND:
+	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
+	gen_expand (&info);
+	break;
 
-	case DEFINE_EXPAND:
-	  printf ("/* %s:%d */\n", read_md_filename, line_no);
-	  gen_expand (desc);
-	  break;
+      case DEFINE_SPLIT:
+	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
+	gen_split (&info);
+	break;
 
-	case DEFINE_SPLIT:
-	  printf ("/* %s:%d */\n", read_md_filename, line_no);
-	  gen_split (desc);
-	  break;
+      case DEFINE_PEEPHOLE2:
+	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
+	gen_split (&info);
+	break;
 
-	case DEFINE_PEEPHOLE2:
-	  printf ("/* %s:%d */\n", read_md_filename, line_no);
-	  gen_split (desc);
-	  break;
-
-	default:
-	  break;
-	}
-      ++insn_index_number;
-    }
+      default:
+	break;
+      }
 
   /* Write out the routines to add CLOBBERs to a pattern and say whether they
      clobber a hard reg.  */

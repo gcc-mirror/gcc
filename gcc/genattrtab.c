@@ -211,7 +211,6 @@ struct attr_value_list **insn_code_values;
 
 /* Other variables.  */
 
-static int insn_code_number;
 static int insn_index_number;
 static int got_define_asm_attributes;
 static int must_extract;
@@ -1016,7 +1015,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
 	  error_at (attr->loc, "unknown attribute `%s' in ATTR",
-			   XSTR (exp, 0));
+		    XSTR (exp, 0));
 	else if (attr->is_const && ! attr2->is_const)
 	  error_at (attr->loc,
 		    "non-constant attribute `%s' referenced from `%s'",
@@ -2950,10 +2949,11 @@ get_attr_order (struct attr_desc ***ret)
 
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
-   calls during the compilation.  */
+   calls during the compilation.  MAX_INSN_CODE is the number of unique
+   instruction codes.  */
 
 static void
-optimize_attrs (void)
+optimize_attrs (int max_insn_code)
 {
   struct attr_desc *attr;
   struct attr_value *av;
@@ -2972,7 +2972,7 @@ optimize_attrs (void)
     return;
 
   /* Make 2 extra elements, for "code" values -2 and -1.  */
-  insn_code_values = XCNEWVEC (struct attr_value_list *, insn_code_number + 2);
+  insn_code_values = XCNEWVEC (struct attr_value_list *, max_insn_code + 2);
 
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
@@ -3000,7 +3000,7 @@ optimize_attrs (void)
   gcc_assert (iv == ivbuf + num_insn_ents);
 
   /* Process one insn code at a time.  */
-  for (i = -2; i < insn_code_number; i++)
+  for (i = -2; i < max_insn_code; i++)
     {
       /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere relevant.
 	 We use it to mean "already simplified for this insn".  */
@@ -3126,63 +3126,64 @@ add_attr_value (struct attr_desc *attr, const char *name)
 /* Create table entries for DEFINE_ATTR or DEFINE_ENUM_ATTR.  */
 
 static void
-gen_attr (rtx exp, int lineno)
+gen_attr (md_rtx_info *info)
 {
   struct enum_type *et;
   struct enum_value *ev;
   struct attr_desc *attr;
   const char *name_ptr;
   char *p;
+  rtx def = info->def;
 
   /* Make a new attribute structure.  Check for duplicate by looking at
      attr->default_val, since it is initialized by this routine.  */
-  attr = find_attr (&XSTR (exp, 0), 1);
+  attr = find_attr (&XSTR (def, 0), 1);
   if (attr->default_val)
     {
-      error_with_line (lineno, "duplicate definition for attribute %s",
-		       attr->name);
+      error_at (info->loc, "duplicate definition for attribute %s",
+		attr->name);
       message_at (attr->loc, "previous definition");
       return;
     }
-  attr->loc = file_location (read_md_filename, lineno);
+  attr->loc = info->loc;
 
-  if (GET_CODE (exp) == DEFINE_ENUM_ATTR)
+  if (GET_CODE (def) == DEFINE_ENUM_ATTR)
     {
-      attr->enum_name = XSTR (exp, 1);
-      et = lookup_enum_type (XSTR (exp, 1));
+      attr->enum_name = XSTR (def, 1);
+      et = lookup_enum_type (XSTR (def, 1));
       if (!et || !et->md_p)
-	error_with_line (lineno, "No define_enum called `%s' defined",
-			 attr->name);
+	error_at (info->loc, "No define_enum called `%s' defined",
+		  attr->name);
       if (et)
 	for (ev = et->values; ev; ev = ev->next)
 	  add_attr_value (attr, ev->name);
     }
-  else if (*XSTR (exp, 1) == '\0')
+  else if (*XSTR (def, 1) == '\0')
     attr->is_numeric = 1;
   else
     {
-      name_ptr = XSTR (exp, 1);
+      name_ptr = XSTR (def, 1);
       while ((p = next_comma_elt (&name_ptr)) != NULL)
 	add_attr_value (attr, p);
     }
 
-  if (GET_CODE (XEXP (exp, 2)) == CONST)
+  if (GET_CODE (XEXP (def, 2)) == CONST)
     {
       attr->is_const = 1;
       if (attr->is_numeric)
-	error_with_line (lineno,
-			 "constant attributes may not take numeric values");
+	error_at (info->loc,
+		  "constant attributes may not take numeric values");
 
       /* Get rid of the CONST node.  It is allowed only at top-level.  */
-      XEXP (exp, 2) = XEXP (XEXP (exp, 2), 0);
+      XEXP (def, 2) = XEXP (XEXP (def, 2), 0);
     }
 
   if (! strcmp_check (attr->name, length_str) && ! attr->is_numeric)
-    error_with_line (lineno, "`length' attribute must take numeric values");
+    error_at (info->loc, "`length' attribute must take numeric values");
 
   /* Set up the default value.  */
-  XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
-  attr->default_val = get_attr_value (XEXP (exp, 2), attr, -2);
+  XEXP (def, 2) = check_attr_value (XEXP (def, 2), attr);
+  attr->default_val = get_attr_value (XEXP (def, 2), attr, -2);
 }
 
 /* Given a pattern for DEFINE_PEEPHOLE or DEFINE_INSN, return the number of
@@ -3258,31 +3259,32 @@ compares_alternatives_p (rtx exp)
 /* Process DEFINE_PEEPHOLE, DEFINE_INSN, and DEFINE_ASM_ATTRIBUTES.  */
 
 static void
-gen_insn (rtx exp, int lineno)
+gen_insn (md_rtx_info *info)
 {
   struct insn_def *id;
+  rtx def = info->def;
 
   id = oballoc (struct insn_def);
   id->next = defs;
   defs = id;
-  id->def = exp;
-  id->loc = file_location (read_md_filename, lineno);
+  id->def = def;
+  id->loc = info->loc;
 
-  switch (GET_CODE (exp))
+  switch (GET_CODE (def))
     {
     case DEFINE_INSN:
-      id->insn_code = insn_code_number;
+      id->insn_code = info->index;
       id->insn_index = insn_index_number;
-      id->num_alternatives = count_alternatives (exp);
+      id->num_alternatives = count_alternatives (def);
       if (id->num_alternatives == 0)
 	id->num_alternatives = 1;
       id->vec_idx = 4;
       break;
 
     case DEFINE_PEEPHOLE:
-      id->insn_code = insn_code_number;
+      id->insn_code = info->index;
       id->insn_index = insn_index_number;
-      id->num_alternatives = count_alternatives (exp);
+      id->num_alternatives = count_alternatives (def);
       if (id->num_alternatives == 0)
 	id->num_alternatives = 1;
       id->vec_idx = 3;
@@ -3305,16 +3307,16 @@ gen_insn (rtx exp, int lineno)
    true or annul false is specified, and make a `struct delay_desc'.  */
 
 static void
-gen_delay (rtx def, int lineno)
+gen_delay (md_rtx_info *info)
 {
   struct delay_desc *delay;
   int i;
 
+  rtx def = info->def;
   if (XVECLEN (def, 1) % 3 != 0)
     {
-      error_with_line (lineno,
-		       "number of elements in DEFINE_DELAY must"
-		       " be multiple of three");
+      error_at (info->loc, "number of elements in DEFINE_DELAY must"
+		" be multiple of three");
       return;
     }
 
@@ -3330,7 +3332,7 @@ gen_delay (rtx def, int lineno)
   delay->def = def;
   delay->num = ++num_delays;
   delay->next = delays;
-  delay->loc = file_location (read_md_filename, lineno);
+  delay->loc = info->loc;
   delays = delay;
 }
 
@@ -4723,14 +4725,14 @@ static size_t n_insn_reservs;
 /* Store information from a DEFINE_INSN_RESERVATION for future
    attribute generation.  */
 static void
-gen_insn_reserv (rtx def, int lineno)
+gen_insn_reserv (md_rtx_info *info)
 {
   struct insn_reserv *decl = oballoc (struct insn_reserv);
-  file_location loc (read_md_filename, lineno);
+  rtx def = info->def;
 
   decl->name            = DEF_ATTR_STRING (XSTR (def, 0));
   decl->default_latency = XINT (def, 1);
-  decl->condexp         = check_attr_test (XEXP (def, 2), 0, loc);
+  decl->condexp         = check_attr_test (XEXP (def, 2), 0, info->loc);
   decl->insn_num        = n_insn_reservs;
   decl->bypassed	= false;
   decl->next            = 0;
@@ -4776,10 +4778,11 @@ gen_bypass_1 (const char *s, size_t len)
 }
 
 static void
-gen_bypass (rtx def)
+gen_bypass (md_rtx_info *info)
 {
   const char *p, *base;
 
+  rtx def = info->def;
   for (p = base = XSTR (def, 1); *p; p++)
     if (*p == ',')
       {
@@ -5150,11 +5153,10 @@ handle_arg (const char *arg)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
   struct attr_desc *attr;
   struct insn_def *id;
-  rtx tem;
   int i;
+  int max_insn_code = 0;
 
   progname = "genattrtab";
 
@@ -5184,57 +5186,56 @@ main (int argc, char **argv)
 
   /* Read the machine description.  */
 
-  while (1)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
     {
-      int lineno;
-
-      desc = read_md_rtx (&lineno, &insn_code_number);
-      if (desc == NULL)
-	break;
-
-      switch (GET_CODE (desc))
+      switch (GET_CODE (info.def))
 	{
 	case DEFINE_INSN:
 	case DEFINE_PEEPHOLE:
 	case DEFINE_ASM_ATTRIBUTES:
-	  gen_insn (desc, lineno);
+	  gen_insn (&info);
 	  break;
 
 	case DEFINE_ATTR:
 	case DEFINE_ENUM_ATTR:
-	  gen_attr (desc, lineno);
+	  gen_attr (&info);
 	  break;
 
 	case DEFINE_DELAY:
-	  gen_delay (desc, lineno);
+	  gen_delay (&info);
 	  break;
 
 	case DEFINE_INSN_RESERVATION:
-	  gen_insn_reserv (desc, lineno);
+	  gen_insn_reserv (&info);
 	  break;
 
 	case DEFINE_BYPASS:
-	  gen_bypass (desc);
+	  gen_bypass (&info);
 	  break;
 
 	default:
 	  break;
 	}
-      if (GET_CODE (desc) != DEFINE_ASM_ATTRIBUTES)
+      if (GET_CODE (info.def) != DEFINE_ASM_ATTRIBUTES)
 	insn_index_number++;
+      max_insn_code = info.index;
     }
 
   if (have_error)
     return FATAL_EXIT_CODE;
 
-  insn_code_number++;
+  max_insn_code++;
 
   /* If we didn't have a DEFINE_ASM_ATTRIBUTES, make a null one.  */
   if (! got_define_asm_attributes)
     {
-      tem = rtx_alloc (DEFINE_ASM_ATTRIBUTES);
-      XVEC (tem, 0) = rtvec_alloc (0);
-      gen_insn (tem, 0);
+      md_rtx_info info;
+      info.def = rtx_alloc (DEFINE_ASM_ATTRIBUTES);
+      XVEC (info.def, 0) = rtvec_alloc (0);
+      info.loc = file_location ("<internal>", 0);
+      info.index = -1;
+      gen_insn (&info);
     }
 
   /* Expand DEFINE_DELAY information into new attribute.  */
@@ -5242,14 +5243,14 @@ main (int argc, char **argv)
     expand_delays ();
 
   /* Make `insn_alternatives'.  */
-  insn_alternatives = oballocvec (uint64_t, insn_code_number);
+  insn_alternatives = oballocvec (uint64_t, max_insn_code);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_alternatives[id->insn_code]
 	= (((uint64_t) 1) << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
-  insn_n_alternatives = oballocvec (int, insn_code_number);
+  insn_n_alternatives = oballocvec (int, max_insn_code);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_n_alternatives[id->insn_code] = id->num_alternatives;
@@ -5278,7 +5279,7 @@ main (int argc, char **argv)
   make_length_attrs ();
 
   /* Perform any possible optimizations to speed up compilation.  */
-  optimize_attrs ();
+  optimize_attrs (max_insn_code);
 
   /* Now write out all the `gen_attr_...' routines.  Do these before the
      special routines so that they get defined before they are used.  */

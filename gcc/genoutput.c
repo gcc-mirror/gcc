@@ -103,12 +103,6 @@ static char general_mem[] = { TARGET_MEM_CONSTRAINT, 0 };
 static int n_occurrences		(int, const char *);
 static const char *strip_whitespace	(const char *);
 
-/* insns in the machine description are assigned sequential code numbers
-   that are used by insn-recog.c (produced by genrecog) to communicate
-   to insn-output.c (produced by this program).  */
-
-static int next_code_number;
-
 /* This counts all operands used in the md file.  The first is null.  */
 
 static int next_operand_number = 1;
@@ -184,10 +178,6 @@ static void place_operands (struct data *);
 static void process_template (struct data *, const char *);
 static void validate_insn_alternatives (struct data *);
 static void validate_insn_operands (struct data *);
-static void gen_insn (rtx, int);
-static void gen_peephole (rtx, int);
-static void gen_expand (rtx, int);
-static void gen_split (rtx, int);
 
 struct constraint_data
 {
@@ -205,7 +195,7 @@ static struct constraint_data *
 constraints_by_letter_table[1 << CHAR_BIT];
 
 static int mdep_constraint_len (const char *, file_location, int);
-static void note_constraint (rtx, int);
+static void note_constraint (md_rtx_info *);
 
 static void
 output_prologue (void)
@@ -861,14 +851,15 @@ validate_optab_operands (struct data *d)
    a hairy output action, output a function for now.  */
 
 static void
-gen_insn (rtx insn, int lineno)
+gen_insn (md_rtx_info *info)
 {
   struct pattern_stats stats;
+  rtx insn = info->def;
   data *d = new data;
   int i;
 
-  d->code_number = next_code_number;
-  d->loc = file_location (read_md_filename, lineno);
+  d->code_number = info->index;
+  d->loc = info->loc;
   if (XSTR (insn, 0)[0])
     d->name = XSTR (insn, 0);
   else
@@ -902,14 +893,14 @@ gen_insn (rtx insn, int lineno)
    If the insn has a hairy output action, output it now.  */
 
 static void
-gen_peephole (rtx peep, int lineno)
+gen_peephole (md_rtx_info *info)
 {
   struct pattern_stats stats;
   data *d = new data;
   int i;
 
-  d->code_number = next_code_number;
-  d->loc = file_location (read_md_filename, lineno);
+  d->code_number = info->index;
+  d->loc = info->loc;
   d->name = 0;
 
   /* Build up the list in the same order as the insns are seen
@@ -923,6 +914,7 @@ gen_peephole (rtx peep, int lineno)
   /* Get the number of operands by scanning all the patterns of the
      peephole optimizer.  But ignore all the rest of the information
      thus obtained.  */
+  rtx peep = info->def;
   for (i = 0; i < XVECLEN (peep, 0); i++)
     scan_operands (d, XVECEXP (peep, 0, i), 0, 0);
 
@@ -940,14 +932,15 @@ gen_peephole (rtx peep, int lineno)
    only for the purposes of `insn_gen_function'.  */
 
 static void
-gen_expand (rtx insn, int lineno)
+gen_expand (md_rtx_info *info)
 {
   struct pattern_stats stats;
+  rtx insn = info->def;
   data *d = new data;
   int i;
 
-  d->code_number = next_code_number;
-  d->loc = file_location (read_md_filename, lineno);
+  d->code_number = info->index;
+  d->loc = info->loc;
   if (XSTR (insn, 0)[0])
     d->name = XSTR (insn, 0);
   else
@@ -984,14 +977,14 @@ gen_expand (rtx insn, int lineno)
    only for reasons of consistency and to simplify genrecog.  */
 
 static void
-gen_split (rtx split, int lineno)
+gen_split (md_rtx_info *info)
 {
   struct pattern_stats stats;
   data *d = new data;
   int i;
 
-  d->code_number = next_code_number;
-  d->loc = file_location (read_md_filename, lineno);
+  d->code_number = info->index;
+  d->loc = info->loc;
   d->name = 0;
 
   /* Build up the list in the same order as the insns are seen
@@ -1005,6 +998,7 @@ gen_split (rtx split, int lineno)
   /* Get the number of operands by scanning all the patterns of the
      split patterns.  But ignore all the rest of the information thus
      obtained.  */
+  rtx split = info->def;
   for (i = 0; i < XVECLEN (split, 0); i++)
     scan_operands (d, XVECEXP (split, 0, i), 0, 0);
 
@@ -1034,8 +1028,6 @@ extern int main (int, char **);
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-
   progname = "genoutput";
 
   init_insn_for_nothing ();
@@ -1047,44 +1039,37 @@ main (int argc, char **argv)
 
   /* Read the machine description.  */
 
-  while (1)
-    {
-      int line_no;
-
-      desc = read_md_rtx (&line_no, &next_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+	gen_insn (&info);
 	break;
 
-      switch (GET_CODE (desc))
-	{
-	case DEFINE_INSN:
-	  gen_insn (desc, line_no);
-	  break;
+      case DEFINE_PEEPHOLE:
+	gen_peephole (&info);
+	break;
 
-	case DEFINE_PEEPHOLE:
-	  gen_peephole (desc, line_no);
-	  break;
+      case DEFINE_EXPAND:
+	gen_expand (&info);
+	break;
 
-	case DEFINE_EXPAND:
-	  gen_expand (desc, line_no);
-	  break;
+      case DEFINE_SPLIT:
+      case DEFINE_PEEPHOLE2:
+	gen_split (&info);
+	break;
 
-	case DEFINE_SPLIT:
-	case DEFINE_PEEPHOLE2:
-	  gen_split (desc, line_no);
-	  break;
+      case DEFINE_CONSTRAINT:
+      case DEFINE_REGISTER_CONSTRAINT:
+      case DEFINE_ADDRESS_CONSTRAINT:
+      case DEFINE_MEMORY_CONSTRAINT:
+	note_constraint (&info);
+	break;
 
-	case DEFINE_CONSTRAINT:
-	case DEFINE_REGISTER_CONSTRAINT:
-	case DEFINE_ADDRESS_CONSTRAINT:
-	case DEFINE_MEMORY_CONSTRAINT:
-	  note_constraint (desc, line_no);
-	  break;
-
-	default:
-	  break;
-	}
-    }
+      default:
+	break;
+      }
 
   printf ("\n\n");
   output_operand_data ();
@@ -1134,15 +1119,14 @@ strip_whitespace (const char *s)
   return q;
 }
 
-/* Record just enough information about a constraint to allow checking
-   of operand constraint strings above, in validate_insn_alternatives.
-   Does not validate most properties of the constraint itself; does
-   enforce no duplicate names, no overlap with MI constraints, and no
-   prefixes.  EXP is the define_*constraint form, LINENO the line number
-   reported by the reader.  */
+/* Record just enough information about the constraint in *INFO to allow
+   checking of operand constraint strings above, in validate_insn_alternatives.
+   Does not validate most properties of the constraint itself; does enforce
+   no duplicate names, no overlap with MI constraints, and no prefixes.  */
 static void
-note_constraint (rtx exp, int lineno)
+note_constraint (md_rtx_info *info)
 {
+  rtx exp = info->def;
   const char *name = XSTR (exp, 0);
   struct constraint_data **iter, **slot, *new_cdata;
 
@@ -1153,12 +1137,12 @@ note_constraint (rtx exp, int lineno)
   if (strchr (indep_constraints, name[0]))
     {
       if (name[1] == '\0')
-	error_with_line (lineno, "constraint letter '%s' cannot be "
-			 "redefined by the machine description", name);
+	error_at (info->loc, "constraint letter '%s' cannot be "
+		  "redefined by the machine description", name);
       else
-	error_with_line (lineno, "constraint name '%s' cannot be defined by "
-			 "the machine description, as it begins with '%c'",
-			 name, name[0]);
+	error_at (info->loc, "constraint name '%s' cannot be defined by "
+		  "the machine description, as it begins with '%c'",
+		  name, name[0]);
       return;
     }
 
@@ -1175,20 +1159,20 @@ note_constraint (rtx exp, int lineno)
 
       if (!strcmp ((*iter)->name, name))
 	{
-	  error_with_line (lineno, "redefinition of constraint '%s'", name);
+	  error_at (info->loc, "redefinition of constraint '%s'", name);
 	  message_at ((*iter)->loc, "previous definition is here");
 	  return;
 	}
       else if (!strncmp ((*iter)->name, name, (*iter)->namelen))
 	{
-	  error_with_line (lineno, "defining constraint '%s' here", name);
+	  error_at (info->loc, "defining constraint '%s' here", name);
 	  message_at ((*iter)->loc, "renders constraint '%s' "
 		      "(defined here) a prefix", (*iter)->name);
 	  return;
 	}
       else if (!strncmp ((*iter)->name, name, namelen))
 	{
-	  error_with_line (lineno, "constraint '%s' is a prefix", name);
+	  error_at (info->loc, "constraint '%s' is a prefix", name);
 	  message_at ((*iter)->loc, "of constraint '%s' "
 		      "(defined here)", (*iter)->name);
 	  return;
@@ -1199,7 +1183,7 @@ note_constraint (rtx exp, int lineno)
   new (new_cdata) constraint_data ();
   strcpy (CONST_CAST (char *, new_cdata->name), name);
   new_cdata->namelen = namelen;
-  new_cdata->loc = file_location (read_md_filename, lineno);
+  new_cdata->loc = info->loc;
   new_cdata->next_this_letter = *slot;
   *slot = new_cdata;
 }

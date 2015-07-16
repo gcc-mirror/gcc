@@ -290,32 +290,6 @@ fatal_at (file_location loc, const char *msg, ...)
   exit (1);
 }
 
-/* A printf-like function for reporting an error against line LINENO
-   in the current MD file.  */
-
-void
-message_with_line (int lineno, const char *msg, ...)
-{
-  va_list ap;
-
-  va_start (ap, msg);
-  message_at_1 (file_location (read_md_filename, lineno), msg, ap);
-  va_end (ap);
-}
-
-/* Like message_with_line, but treat the condition as an error.  */
-
-void
-error_with_line (int lineno, const char *msg, ...)
-{
-  va_list ap;
-
-  va_start (ap, msg);
-  message_at_1 (file_location (read_md_filename, lineno), msg, ap);
-  va_end (ap);
-  have_error = 1;
-}
-
 /* A printf-like function for reporting an error against the current
    position in the MD file.  */
 

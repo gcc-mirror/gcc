@@ -43,7 +43,6 @@ static void max_operand_1 (rtx);
 static int num_operands (rtx);
 static void gen_proto (rtx);
 static void gen_macro (const char *, int, int);
-static void gen_insn (int, rtx);
 
 /* Count the number of match_operand's found.  */
 
@@ -187,8 +186,9 @@ gen_proto (rtx insn)
 }
 
 static void
-gen_insn (int line_no, rtx insn)
+gen_insn (md_rtx_info *info)
 {
+  rtx insn = info->def;
   const char *name = XSTR (insn, 0);
   const char *p;
   const char *lt, *gt;
@@ -198,18 +198,15 @@ gen_insn (int line_no, rtx insn)
   lt = strchr (name, '<');
   if (lt && strchr (lt + 1, '>'))
     {
-      message_with_line (line_no, "unresolved iterator");
-      have_error = 1;
+      error_at (info->loc, "unresolved iterator");
       return;
     }
 
   gt = strchr (name, '>');
   if (lt || gt)
     {
-      message_with_line (line_no,
-			 "unmatched angle brackets, likely "
-			 "an error in iterator syntax");
-      have_error = 1;
+      error_at (info->loc, "unmatched angle brackets, likely "
+		"an error in iterator syntax");
       return;
     }
 
@@ -249,7 +246,6 @@ gen_insn (int line_no, rtx insn)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
   rtx dummy;
   rtx *insns;
   rtx *insn_ptr;
@@ -271,16 +267,18 @@ main (int argc, char **argv)
 
   /* Read the machine description.  */
 
-  while (1)
-    {
-      int line_no, insn_code_number = 0;
-
-      desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+      case DEFINE_EXPAND:
+	gen_insn (&info);
 	break;
-      if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	gen_insn (line_no, desc);
-    }
+
+      default:
+	break;
+      }
 
   /* Print out the prototypes now.  */
   dummy = (rtx) 0;

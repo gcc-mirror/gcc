@@ -1243,16 +1243,18 @@ get_str_vect (const char *str, int *els_num, int sep, int paren_p)
    This gives information about a unit contained in CPU.  We fill a
    struct unit_decl with information used later by `expand_automata'.  */
 static void
-gen_cpu_unit (rtx def)
+gen_cpu_unit (md_rtx_info *info)
 {
   decl_t decl;
   char **str_cpu_units;
   int vect_length;
   int i;
 
+  rtx def = info->def;
   str_cpu_units = get_str_vect (XSTR (def, 0), &vect_length, ',', FALSE);
   if (str_cpu_units == NULL)
-    fatal ("invalid string `%s' in define_cpu_unit", XSTR (def, 0));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
   for (i = 0; i < vect_length; i++)
     {
       decl = XCREATENODE (struct decl);
@@ -1272,17 +1274,19 @@ gen_cpu_unit (rtx def)
    This gives information about a unit contained in CPU.  We fill a
    struct unit_decl with information used later by `expand_automata'.  */
 static void
-gen_query_cpu_unit (rtx def)
+gen_query_cpu_unit (md_rtx_info *info)
 {
   decl_t decl;
   char **str_cpu_units;
   int vect_length;
   int i;
 
+  rtx def = info->def;
   str_cpu_units = get_str_vect (XSTR (def, 0), &vect_length, ',',
 				FALSE);
   if (str_cpu_units == NULL)
-    fatal ("invalid string `%s' in define_query_cpu_unit", XSTR (def, 0));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
   for (i = 0; i < vect_length; i++)
     {
       decl = XCREATENODE (struct decl);
@@ -1301,7 +1305,7 @@ gen_query_cpu_unit (rtx def)
    in a struct bypass_decl with information used later by
    `expand_automata'.  */
 static void
-gen_bypass (rtx def)
+gen_bypass (md_rtx_info *info)
 {
   decl_t decl;
   char **out_patterns;
@@ -1310,12 +1314,15 @@ gen_bypass (rtx def)
   int in_length;
   int i, j;
 
+  rtx def = info->def;
   out_patterns = get_str_vect (XSTR (def, 1), &out_length, ',', FALSE);
   if (out_patterns == NULL)
-    fatal ("invalid string `%s' in define_bypass", XSTR (def, 1));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 1), GET_RTX_NAME (GET_CODE (def)));
   in_patterns = get_str_vect (XSTR (def, 2), &in_length, ',', FALSE);
   if (in_patterns == NULL)
-    fatal ("invalid string `%s' in define_bypass", XSTR (def, 2));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 2), GET_RTX_NAME (GET_CODE (def)));
   for (i = 0; i < out_length; i++)
     for (j = 0; j < in_length; j++)
       {
@@ -1336,7 +1343,7 @@ gen_bypass (rtx def)
    struct excl_rel_decl (excl) with information used later by
    `expand_automata'.  */
 static void
-gen_excl_set (rtx def)
+gen_excl_set (md_rtx_info *info)
 {
   decl_t decl;
   char **first_str_cpu_units;
@@ -1345,16 +1352,20 @@ gen_excl_set (rtx def)
   int length;
   int i;
 
+  rtx def = info->def;
   first_str_cpu_units
     = get_str_vect (XSTR (def, 0), &first_vect_length, ',', FALSE);
   if (first_str_cpu_units == NULL)
-    fatal ("invalid first string `%s' in exclusion_set", XSTR (def, 0));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
   second_str_cpu_units = get_str_vect (XSTR (def, 1), &length, ',',
 				       FALSE);
   if (second_str_cpu_units == NULL)
-    fatal ("invalid second string `%s' in exclusion_set", XSTR (def, 1));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 1), GET_RTX_NAME (GET_CODE (def)));
   length += first_vect_length;
-  decl = XCREATENODEVAR (struct decl, sizeof (struct decl) + (length - 1) * sizeof (char *));
+  decl = XCREATENODEVAR (struct decl, (sizeof (struct decl)
+				       + (length - 1) * sizeof (char *)));
   decl->mode = dm_excl;
   decl->pos = 0;
   DECL_EXCL (decl)->all_names_num = length;
@@ -1375,7 +1386,7 @@ gen_excl_set (rtx def)
    We fill a struct unit_pattern_rel_decl with information used later
    by `expand_automata'.  */
 static void
-gen_presence_absence_set (rtx def, int presence_p, int final_p)
+gen_presence_absence_set (md_rtx_info *info, int presence_p, int final_p)
 {
   decl_t decl;
   char **str_cpu_units;
@@ -1386,27 +1397,17 @@ gen_presence_absence_set (rtx def, int presence_p, int final_p)
   int patterns_length;
   int i;
 
+  rtx def = info->def;
   str_cpu_units = get_str_vect (XSTR (def, 0), &cpu_units_length, ',',
 				FALSE);
   if (str_cpu_units == NULL)
-    fatal ((presence_p
-	    ? (final_p
-	       ? "invalid first string `%s' in final_presence_set"
-	       : "invalid first string `%s' in presence_set")
-	    : (final_p
-	       ? "invalid first string `%s' in final_absence_set"
-	       : "invalid first string `%s' in absence_set")),
-	   XSTR (def, 0));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
   str_pattern_lists = get_str_vect (XSTR (def, 1),
 				    &patterns_length, ',', FALSE);
   if (str_pattern_lists == NULL)
-    fatal ((presence_p
-	    ? (final_p
-	       ? "invalid second string `%s' in final_presence_set"
-	       : "invalid second string `%s' in presence_set")
-	    : (final_p
-	       ? "invalid second string `%s' in final_absence_set"
-	       : "invalid second string `%s' in absence_set")), XSTR (def, 1));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 1), GET_RTX_NAME (GET_CODE (def)));
   str_patterns = XOBNEWVEC (&irp, char **, patterns_length);
   for (i = 0; i < patterns_length; i++)
     {
@@ -1439,13 +1440,13 @@ gen_presence_absence_set (rtx def, int presence_p, int final_p)
 
 /* Process a PRESENCE_SET.
 
-    This gives information about a cpu unit reservation requirements.
+   This gives information about a cpu unit reservation requirements.
    We fill a struct unit_pattern_rel_decl (presence) with information
    used later by `expand_automata'.  */
 static void
-gen_presence_set (rtx def)
+gen_presence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (def, TRUE, FALSE);
+  gen_presence_absence_set (info, TRUE, FALSE);
 }
 
 /* Process a FINAL_PRESENCE_SET.
@@ -1454,9 +1455,9 @@ gen_presence_set (rtx def)
    We fill a struct unit_pattern_rel_decl (presence) with information
    used later by `expand_automata'.  */
 static void
-gen_final_presence_set (rtx def)
+gen_final_presence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (def, TRUE, TRUE);
+  gen_presence_absence_set (info, TRUE, TRUE);
 }
 
 /* Process an ABSENCE_SET.
@@ -1465,9 +1466,9 @@ gen_final_presence_set (rtx def)
    We fill a struct unit_pattern_rel_decl (absence) with information
    used later by `expand_automata'.  */
 static void
-gen_absence_set (rtx def)
+gen_absence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (def, FALSE, FALSE);
+  gen_presence_absence_set (info, FALSE, FALSE);
 }
 
 /* Process a FINAL_ABSENCE_SET.
@@ -1476,9 +1477,9 @@ gen_absence_set (rtx def)
    We fill a struct unit_pattern_rel_decl (absence) with information
    used later by `expand_automata'.  */
 static void
-gen_final_absence_set (rtx def)
+gen_final_absence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (def, FALSE, TRUE);
+  gen_presence_absence_set (info, FALSE, TRUE);
 }
 
 /* Process a DEFINE_AUTOMATON.
@@ -1487,16 +1488,18 @@ gen_final_absence_set (rtx def)
    recognizing pipeline hazards.  We fill a struct automaton_decl
    with information used later by `expand_automata'.  */
 static void
-gen_automaton (rtx def)
+gen_automaton (md_rtx_info *info)
 {
   decl_t decl;
   char **str_automata;
   int vect_length;
   int i;
 
+  rtx def = info->def;
   str_automata = get_str_vect (XSTR (def, 0), &vect_length, ',', FALSE);
   if (str_automata == NULL)
-    fatal ("invalid string `%s' in define_automaton", XSTR (def, 0));
+    fatal_at (info->loc, "invalid string `%s' in %s",
+	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
   for (i = 0; i < vect_length; i++)
     {
       decl = XCREATENODE (struct decl);
@@ -1512,28 +1515,30 @@ gen_automaton (rtx def)
    This gives information how to generate finite state automaton used
    for recognizing pipeline hazards.  */
 static void
-gen_automata_option (rtx def)
+gen_automata_option (md_rtx_info *info)
 {
-  if (strcmp (XSTR (def, 0), NO_MINIMIZATION_OPTION + 1) == 0)
+  const char *option = XSTR (info->def, 0);
+  if (strcmp (option, NO_MINIMIZATION_OPTION + 1) == 0)
     no_minimization_flag = 1;
-  else if (strcmp (XSTR (def, 0), TIME_OPTION + 1) == 0)
+  else if (strcmp (option, TIME_OPTION + 1) == 0)
     time_flag = 1;
-  else if (strcmp (XSTR (def, 0), STATS_OPTION + 1) == 0)
+  else if (strcmp (option, STATS_OPTION + 1) == 0)
     stats_flag = 1;
-  else if (strcmp (XSTR (def, 0), V_OPTION + 1) == 0)
+  else if (strcmp (option, V_OPTION + 1) == 0)
     v_flag = 1;
-  else if (strcmp (XSTR (def, 0), W_OPTION + 1) == 0)
+  else if (strcmp (option, W_OPTION + 1) == 0)
     w_flag = 1;
-  else if (strcmp (XSTR (def, 0), NDFA_OPTION + 1) == 0)
+  else if (strcmp (option, NDFA_OPTION + 1) == 0)
     ndfa_flag = 1;
-  else if (strcmp (XSTR (def, 0), COLLAPSE_OPTION + 1) == 0)
+  else if (strcmp (option, COLLAPSE_OPTION + 1) == 0)
     collapse_flag = 1;
-  else if (strcmp (XSTR (def, 0), NO_COMB_OPTION + 1) == 0)
+  else if (strcmp (option, NO_COMB_OPTION + 1) == 0)
     no_comb_flag = 1;
-  else if (strcmp (XSTR (def, 0), PROGRESS_OPTION + 1) == 0)
+  else if (strcmp (option, PROGRESS_OPTION + 1) == 0)
     progress_flag = 1;
   else
-    fatal ("invalid option `%s' in automata_option", XSTR (def, 0));
+    fatal_at (info->loc, "invalid option `%s' in %s",
+	      option, GET_RTX_NAME (GET_CODE (info->def)));
 }
 
 /* Name in reservation to denote absence reservation.  */
@@ -1703,10 +1708,11 @@ gen_regexp (const char *str)
    in a struct reserv_decl with information used later by
    `expand_automata'.  */
 static void
-gen_reserv (rtx def)
+gen_reserv (md_rtx_info *info)
 {
   decl_t decl;
 
+  rtx def = info->def;
   decl = XCREATENODE (struct decl);
   decl->mode = dm_reserv;
   decl->pos = 0;
@@ -1721,10 +1727,11 @@ gen_reserv (rtx def)
    insn.  We fill a struct insn_reserv_decl with information used
    later by `expand_automata'.  */
 static void
-gen_insn_reserv (rtx def)
+gen_insn_reserv (md_rtx_info *info)
 {
   decl_t decl;
 
+  rtx def = info->def;
   decl = XCREATENODE (struct decl);
   decl->mode = dm_insn_reserv;
   decl->pos = 0;
@@ -9587,77 +9594,67 @@ write_automata (void)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-
   progname = "genautomata";
 
   if (!init_rtx_reader_args_cb (argc, argv, parse_automata_opt))
     return (FATAL_EXIT_CODE);
 
   initiate_automaton_gen (argv);
-  while (1)
-    {
-      int lineno;
-      int insn_code_number;
-
-      desc = read_md_rtx (&lineno, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_CPU_UNIT:
+	gen_cpu_unit (&info);
 	break;
 
-      switch (GET_CODE (desc))
-	{
-	case DEFINE_CPU_UNIT:
-	  gen_cpu_unit (desc);
-	  break;
+      case DEFINE_QUERY_CPU_UNIT:
+	gen_query_cpu_unit (&info);
+	break;
 
-	case DEFINE_QUERY_CPU_UNIT:
-	  gen_query_cpu_unit (desc);
-	  break;
+      case DEFINE_BYPASS:
+	gen_bypass (&info);
+	break;
 
-	case DEFINE_BYPASS:
-	  gen_bypass (desc);
-	  break;
+      case EXCLUSION_SET:
+	gen_excl_set (&info);
+	break;
 
-	case EXCLUSION_SET:
-	  gen_excl_set (desc);
-	  break;
+      case PRESENCE_SET:
+	gen_presence_set (&info);
+	break;
 
-	case PRESENCE_SET:
-	  gen_presence_set (desc);
-	  break;
+      case FINAL_PRESENCE_SET:
+	gen_final_presence_set (&info);
+	break;
 
-	case FINAL_PRESENCE_SET:
-	  gen_final_presence_set (desc);
-	  break;
+      case ABSENCE_SET:
+	gen_absence_set (&info);
+	break;
 
-	case ABSENCE_SET:
-	  gen_absence_set (desc);
-	  break;
+      case FINAL_ABSENCE_SET:
+	gen_final_absence_set (&info);
+	break;
 
-	case FINAL_ABSENCE_SET:
-	  gen_final_absence_set (desc);
-	  break;
+      case DEFINE_AUTOMATON:
+	gen_automaton (&info);
+	break;
 
-	case DEFINE_AUTOMATON:
-	  gen_automaton (desc);
-	  break;
+      case AUTOMATA_OPTION:
+	gen_automata_option (&info);
+	break;
 
-	case AUTOMATA_OPTION:
-	  gen_automata_option (desc);
-	  break;
+      case DEFINE_RESERVATION:
+	gen_reserv (&info);
+	break;
 
-	case DEFINE_RESERVATION:
-	  gen_reserv (desc);
-	  break;
+      case DEFINE_INSN_RESERVATION:
+	gen_insn_reserv (&info);
+	break;
 
-	case DEFINE_INSN_RESERVATION:
-	  gen_insn_reserv (desc);
-	  break;
-
-	default:
-	  break;
-	}
-    }
+      default:
+	break;
+      }
 
   if (have_error)
     return FATAL_EXIT_CODE;

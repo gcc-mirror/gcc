@@ -46,14 +46,14 @@ static int max_opno;
 
 static int n_operands;
 
-static void gen_peephole (rtx, int);
 static void match_rtx (rtx, struct link *, int);
 static void print_path (struct link *);
 static void print_code (RTX_CODE);
 
 static void
-gen_peephole (rtx peep, int insn_code_number)
+gen_peephole (md_rtx_info *info)
 {
+  rtx peep = info->def;
   int ninsns = XVECLEN (peep, 0);
   int i;
 
@@ -66,16 +66,14 @@ gen_peephole (rtx peep, int insn_code_number)
       if (i > 0)
 	{
 	  printf ("  do { insn = NEXT_INSN (insn);\n");
-	  printf ("       if (insn == 0) goto L%d; }\n",
-		  insn_code_number);
+	  printf ("       if (insn == 0) goto L%d; }\n", info->index);
 	  printf ("  while (NOTE_P (insn)\n");
 	  printf ("\t || (NONJUMP_INSN_P (insn)\n");
 	  printf ("\t     && (GET_CODE (PATTERN (insn)) == USE\n");
 	  printf ("\t\t || GET_CODE (PATTERN (insn)) == CLOBBER)));\n");
 
 	  printf ("  if (LABEL_P (insn)\n\
-      || BARRIER_P (insn))\n    goto L%d;\n",
-		  insn_code_number);
+      || BARRIER_P (insn))\n    goto L%d;\n", info->index);
 	}
 
       printf ("  pat = PATTERN (insn);\n");
@@ -83,7 +81,7 @@ gen_peephole (rtx peep, int insn_code_number)
       /* Walk the insn's pattern, remembering at all times the path
 	 down to the walking point.  */
 
-      match_rtx (XVECEXP (peep, 0, i), NULL, insn_code_number);
+      match_rtx (XVECEXP (peep, 0, i), NULL, info->index);
     }
 
   /* We get this far if the pattern matches.
@@ -91,7 +89,7 @@ gen_peephole (rtx peep, int insn_code_number)
 
   if (XSTR (peep, 1) && XSTR (peep, 1)[0])
     printf ("  if (! (%s)) goto L%d;\n",
-	    XSTR (peep, 1), insn_code_number);
+	    XSTR (peep, 1), info->index);
 
   /* If that matches, construct new pattern and put it in the first insn.
      This new pattern will never be matched.
@@ -103,8 +101,7 @@ gen_peephole (rtx peep, int insn_code_number)
 
   /* Record this define_peephole's insn code in the insn,
      as if it had been recognized to match this.  */
-  printf ("  INSN_CODE (ins1) = %d;\n",
-	  insn_code_number);
+  printf ("  INSN_CODE (ins1) = %d;\n", info->index);
 
   /* Delete the remaining insns.  */
   if (ninsns > 1)
@@ -114,7 +111,7 @@ gen_peephole (rtx peep, int insn_code_number)
      cannot be zero.  */
   printf ("  return NEXT_INSN (insn);\n");
 
-  printf (" L%d:\n\n", insn_code_number);
+  printf (" L%d:\n\n", info->index);
 }
 
 static void
@@ -348,8 +345,6 @@ extern int main (int, char **);
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-
   max_opno = -1;
 
   progname = "genpeep";
@@ -394,18 +389,17 @@ from the machine description file `md'.  */\n\n");
 
   /* Read the machine description.  */
 
-  while (1)
-    {
-      int line_no;
-      int insn_code_number;
-
-      desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_PEEPHOLE:
+	gen_peephole (&info);
 	break;
 
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE)
-	gen_peephole (desc, insn_code_number);
-    }
+      default:
+	break;
+      }
 
   printf ("  return 0;\n}\n\n");
 

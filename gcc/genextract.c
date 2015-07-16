@@ -75,13 +75,11 @@ struct accum_extract
   vec<char> pathstr;
 };
 
-int line_no;
-
 /* Forward declarations.  */
-static void walk_rtx (rtx, struct accum_extract *);
+static void walk_rtx (md_rtx_info *, rtx, struct accum_extract *);
 
 static void
-gen_insn (rtx insn, int insn_code_number)
+gen_insn (md_rtx_info *info)
 {
   int i;
   unsigned int op_count, dup_count, j;
@@ -97,18 +95,19 @@ gen_insn (rtx insn, int insn_code_number)
   /* Walk the insn's pattern, remembering at all times the path
      down to the walking point.  */
 
+  rtx insn = info->def;
   if (XVECLEN (insn, 1) == 1)
-    walk_rtx (XVECEXP (insn, 1, 0), &acc);
+    walk_rtx (info, XVECEXP (insn, 1, 0), &acc);
   else
     for (i = XVECLEN (insn, 1) - 1; i >= 0; i--)
       {
 	acc.pathstr.safe_push ('a' + i);
-	walk_rtx (XVECEXP (insn, 1, i), &acc);
+	walk_rtx (info, XVECEXP (insn, 1, i), &acc);
 	acc.pathstr.pop ();
       }
 
   link = XNEW (struct code_ptr);
-  link->insn_code = insn_code_number;
+  link->insn_code = info->index;
 
   /* See if we find something that already had this extraction method.  */
 
@@ -178,15 +177,17 @@ gen_insn (rtx insn, int insn_code_number)
 /* Helper subroutine of walk_rtx: given a vec<locstr>, an index, and a
    string, insert the string at the index, which should either already
    exist and be NULL, or not yet exist within the vector.  In the latter
-   case the vector is enlarged as appropriate.  */
+   case the vector is enlarged as appropriate.  INFO describes the
+   containing define_* expression.  */
 static void
-VEC_safe_set_locstr (vec<locstr> *vp, unsigned int ix, char *str)
+VEC_safe_set_locstr (md_rtx_info *info, vec<locstr> *vp,
+		     unsigned int ix, char *str)
 {
   if (ix < (*vp).length ())
     {
       if ((*vp)[ix])
 	{
-	  message_with_line (line_no, "repeated operand number %d", ix);
+	  message_at (info->loc, "repeated operand number %d", ix);
 	  have_error = 1;
 	}
       else
@@ -213,7 +214,7 @@ VEC_char_to_string (vec<char> v)
 }
 
 static void
-walk_rtx (rtx x, struct accum_extract *acc)
+walk_rtx (md_rtx_info *info, rtx x, struct accum_extract *acc)
 {
   RTX_CODE code;
   int i, len, base;
@@ -233,20 +234,20 @@ walk_rtx (rtx x, struct accum_extract *acc)
 
     case MATCH_OPERAND:
     case MATCH_SCRATCH:
-      VEC_safe_set_locstr (&acc->oplocs, XINT (x, 0),
+      VEC_safe_set_locstr (info, &acc->oplocs, XINT (x, 0),
 			   VEC_char_to_string (acc->pathstr));
       break;
 
     case MATCH_OPERATOR:
     case MATCH_PARALLEL:
-      VEC_safe_set_locstr (&acc->oplocs, XINT (x, 0),
+      VEC_safe_set_locstr (info, &acc->oplocs, XINT (x, 0),
 			   VEC_char_to_string (acc->pathstr));
 
       base = (code == MATCH_OPERATOR ? '0' : 'a');
       for (i = XVECLEN (x, 2) - 1; i >= 0; i--)
 	{
 	  acc->pathstr.safe_push (base + i);
-	  walk_rtx (XVECEXP (x, 2, i), acc);
+	  walk_rtx (info, XVECEXP (x, 2, i), acc);
 	  acc->pathstr.pop ();
         }
       return;
@@ -264,7 +265,7 @@ walk_rtx (rtx x, struct accum_extract *acc)
       for (i = XVECLEN (x, 1) - 1; i >= 0; i--)
         {
 	  acc->pathstr.safe_push (base + i);
-	  walk_rtx (XVECEXP (x, 1, i), acc);
+	  walk_rtx (info, XVECEXP (x, 1, i), acc);
 	  acc->pathstr.pop ();
         }
       return;
@@ -280,7 +281,7 @@ walk_rtx (rtx x, struct accum_extract *acc)
       if (fmt[i] == 'e' || fmt[i] == 'u')
 	{
 	  acc->pathstr.safe_push ('0' + i);
-	  walk_rtx (XEXP (x, i), acc);
+	  walk_rtx (info, XEXP (x, i), acc);
 	  acc->pathstr.pop ();
 	}
       else if (fmt[i] == 'E')
@@ -289,7 +290,7 @@ walk_rtx (rtx x, struct accum_extract *acc)
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    {
 	      acc->pathstr.safe_push ('a' + j);
-	      walk_rtx (XVECEXP (x, i, j), acc);
+	      walk_rtx (info, XVECEXP (x, i, j), acc);
 	      acc->pathstr.pop ();
 	    }
 	}
@@ -394,12 +395,10 @@ insn_extract (rtx_insn *insn)\n{\n\
 int
 main (int argc, char **argv)
 {
-  rtx desc;
   unsigned int i;
   struct extraction *p;
   struct code_ptr *link;
   const char *name;
-  int insn_code_number;
 
   progname = "genextract";
 
@@ -408,19 +407,26 @@ main (int argc, char **argv)
 
   /* Read the machine description.  */
 
-  while ((desc = read_md_rtx (&line_no, &insn_code_number)) != NULL)
-    {
-       if (GET_CODE (desc) == DEFINE_INSN)
-	 gen_insn (desc, insn_code_number);
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+	gen_insn (&info);
+	break;
 
-      else if (GET_CODE (desc) == DEFINE_PEEPHOLE)
+      case DEFINE_PEEPHOLE:
 	{
 	  struct code_ptr *link = XNEW (struct code_ptr);
 
-	  link->insn_code = insn_code_number;
+	  link->insn_code = info.index;
 	  link->next = peepholes;
 	  peepholes = link;
 	}
+	break;
+
+      default:
+	break;
     }
 
   if (have_error)
