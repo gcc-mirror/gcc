@@ -32,16 +32,16 @@ along with GCC; see the file COPYING3.  If not see
 
 static char general_mem[] = { TARGET_MEM_CONSTRAINT, 0 };
 
-/* Given a predicate expression EXP, from form NAME at line LINENO,
+/* Given a predicate expression EXP, from form NAME at location LOC,
    verify that it does not contain any RTL constructs which are not
    valid in predicate definitions.  Returns true if EXP is
    INvalid; issues error messages, caller need not.  */
 static bool
-validate_exp (rtx exp, const char *name, int lineno)
+validate_exp (rtx exp, const char *name, file_location loc)
 {
   if (exp == 0)
     {
-      message_with_line (lineno, "%s: must give a predicate expression", name);
+      message_at (loc, "%s: must give a predicate expression", name);
       return true;
     }
 
@@ -49,16 +49,16 @@ validate_exp (rtx exp, const char *name, int lineno)
     {
       /* Ternary, binary, unary expressions: recurse into subexpressions.  */
     case IF_THEN_ELSE:
-      if (validate_exp (XEXP (exp, 2), name, lineno))
+      if (validate_exp (XEXP (exp, 2), name, loc))
 	return true;
       /* else fall through */
     case AND:
     case IOR:
-      if (validate_exp (XEXP (exp, 1), name, lineno))
+      if (validate_exp (XEXP (exp, 1), name, loc))
 	return true;
       /* else fall through */
     case NOT:
-      return validate_exp (XEXP (exp, 0), name, lineno);
+      return validate_exp (XEXP (exp, 0), name, loc);
 
       /* MATCH_CODE might have a syntax error in its path expression.  */
     case MATCH_CODE:
@@ -68,8 +68,8 @@ validate_exp (rtx exp, const char *name, int lineno)
 	  {
 	    if (!ISDIGIT (*p) && !ISLOWER (*p))
 	      {
-		error_with_line (lineno, "%s: invalid character in path "
-				 "string '%s'", name, XSTR (exp, 1));
+		error_at (loc, "%s: invalid character in path "
+			  "string '%s'", name, XSTR (exp, 1));
 		return true;
 	      }
 	  }
@@ -82,9 +82,8 @@ validate_exp (rtx exp, const char *name, int lineno)
       return false;
 
     default:
-      error_with_line (lineno,
-		       "%s: cannot use '%s' in a predicate expression",
-		       name, GET_RTX_NAME (GET_CODE (exp)));
+      error_at (loc, "%s: cannot use '%s' in a predicate expression",
+		name, GET_RTX_NAME (GET_CODE (exp)));
       return true;
     }
 }
@@ -94,7 +93,8 @@ validate_exp (rtx exp, const char *name, int lineno)
 static void
 process_define_predicate (rtx defn, int lineno)
 {
-  validate_exp (XEXP (defn, 1), XSTR (defn, 0), lineno);
+  validate_exp (XEXP (defn, 1), XSTR (defn, 0),
+		file_location (read_md_filename, lineno));
 }
 
 /* Given a predicate, if it has an embedded C block, write the block
@@ -671,10 +671,10 @@ struct constraint_data
   struct constraint_data *next_textual;
   const char *name;
   const char *c_name;    /* same as .name unless mangling is necessary */
+  file_location loc;     /* location of definition */
   size_t namelen;
   const char *regclass;  /* for register constraints */
   rtx exp;               /* for other constraints */
-  unsigned int lineno;   /* line of definition */
   unsigned int is_register	: 1;
   unsigned int is_const_int	: 1;
   unsigned int is_const_dbl	: 1;
@@ -754,7 +754,8 @@ mangle (const char *name)
 /* Add one constraint, of any sort, to the tables.  NAME is its name;
    REGCLASS is the register class, if any; EXP is the expression to
    test, if any;  IS_MEMORY and IS_ADDRESS indicate memory and address
-   constraints, respectively; LINENO is the line number from the MD reader.
+   constraints, respectively; LOC is the .md file location.
+
    Not all combinations of arguments are valid; most importantly, REGCLASS
    is mutually exclusive with EXP, and IS_MEMORY/IS_ADDRESS are only
    meaningful for constraints with EXP.
@@ -765,7 +766,7 @@ mangle (const char *name)
 static void
 add_constraint (const char *name, const char *regclass,
 		rtx exp, bool is_memory, bool is_address,
-		int lineno)
+		file_location loc)
 {
   struct constraint_data *c, **iter, **slot;
   const char *p;
@@ -777,7 +778,7 @@ add_constraint (const char *name, const char *regclass,
   if (strcmp (name, "TARGET_MEM_CONSTRAINT") == 0)
     name = general_mem;
 
-  if (exp && validate_exp (exp, name, lineno))
+  if (exp && validate_exp (exp, name, loc))
     return;
 
   for (p = name; *p; p++)
@@ -787,10 +788,8 @@ add_constraint (const char *name, const char *regclass,
 	  need_mangled_name = true;
 	else
 	  {
-	    error_with_line (lineno,
-			     "constraint name '%s' must be composed of "
-			     "letters, digits, underscores, and "
-			     "angle brackets", name);
+	    error_at (loc, "constraint name '%s' must be composed of letters,"
+		      " digits, underscores, and angle brackets", name);
 	    return;
 	  }
       }
@@ -798,12 +797,11 @@ add_constraint (const char *name, const char *regclass,
   if (strchr (generic_constraint_letters, name[0]))
     {
       if (name[1] == '\0')
-	error_with_line (lineno, "constraint letter '%s' cannot be "
-			 "redefined by the machine description", name);
+	error_at (loc, "constraint letter '%s' cannot be "
+		  "redefined by the machine description", name);
       else
-	error_with_line (lineno, "constraint name '%s' cannot be defined by "
-			 "the machine description, as it begins with '%c'",
-			 name, name[0]);
+	error_at (loc, "constraint name '%s' cannot be defined by the machine"
+		  " description, as it begins with '%c'", name, name[0]);
       return;
     }
 
@@ -822,22 +820,22 @@ add_constraint (const char *name, const char *regclass,
 
       if (!strcmp ((*iter)->name, name))
 	{
-	  error_with_line (lineno, "redefinition of constraint '%s'", name);
-	  message_with_line ((*iter)->lineno, "previous definition is here");
+	  error_at (loc, "redefinition of constraint '%s'", name);
+	  message_at ((*iter)->loc, "previous definition is here");
 	  return;
 	}
       else if (!strncmp ((*iter)->name, name, (*iter)->namelen))
 	{
-	  error_with_line (lineno, "defining constraint '%s' here", name);
-	  message_with_line ((*iter)->lineno, "renders constraint '%s' "
-			     "(defined here) a prefix", (*iter)->name);
+	  error_at (loc, "defining constraint '%s' here", name);
+	  message_at ((*iter)->loc, "renders constraint '%s' "
+		      "(defined here) a prefix", (*iter)->name);
 	  return;
 	}
       else if (!strncmp ((*iter)->name, name, namelen))
 	{
-	  error_with_line (lineno, "constraint '%s' is a prefix", name);
-	  message_with_line ((*iter)->lineno, "of constraint '%s' "
-			     "(defined here)", (*iter)->name);
+	  error_at (loc, "constraint '%s' is a prefix", name);
+	  message_at ((*iter)->loc, "of constraint '%s' (defined here)",
+		      (*iter)->name);
 	  return;
 	}
     }
@@ -858,36 +856,36 @@ add_constraint (const char *name, const char *regclass,
 		     GET_RTX_NAME (appropriate_code)))
 	{
 	  if (name[1] == '\0')
-	    error_with_line (lineno, "constraint letter '%c' is reserved "
-			     "for %s constraints",
-			     name[0], GET_RTX_NAME (appropriate_code));
+	    error_at (loc, "constraint letter '%c' is reserved "
+		      "for %s constraints", name[0],
+		      GET_RTX_NAME (appropriate_code));
 	  else
-	    error_with_line (lineno, "constraint names beginning with '%c' "
-			     "(%s) are reserved for %s constraints",
-			     name[0], name, GET_RTX_NAME (appropriate_code));
+	    error_at (loc, "constraint names beginning with '%c' "
+		      "(%s) are reserved for %s constraints",
+		      name[0], name, GET_RTX_NAME (appropriate_code));
 	  return;
 	}
 
       if (is_memory)
 	{
 	  if (name[1] == '\0')
-	    error_with_line (lineno, "constraint letter '%c' cannot be a "
-			     "memory constraint", name[0]);
+	    error_at (loc, "constraint letter '%c' cannot be a "
+		      "memory constraint", name[0]);
 	  else
-	    error_with_line (lineno, "constraint name '%s' begins with '%c', "
-			     "and therefore cannot be a memory constraint",
-			     name, name[0]);
+	    error_at (loc, "constraint name '%s' begins with '%c', "
+		      "and therefore cannot be a memory constraint",
+		      name, name[0]);
 	  return;
 	}
       else if (is_address)
 	{
 	  if (name[1] == '\0')
-	    error_with_line (lineno, "constraint letter '%c' cannot be a "
-			     "memory constraint", name[0]);
+	    error_at (loc, "constraint letter '%c' cannot be an "
+		      "address constraint", name[0]);
 	  else
-	    error_with_line (lineno, "constraint name '%s' begins with '%c', "
-			     "and therefore cannot be a memory constraint",
-			     name, name[0]);
+	    error_at (loc, "constraint name '%s' begins with '%c', "
+		      "and therefore cannot be an address constraint",
+		      name, name[0]);
 	  return;
 	}
     }
@@ -896,7 +894,7 @@ add_constraint (const char *name, const char *regclass,
   c = XOBNEW (rtl_obstack, struct constraint_data);
   c->name = name;
   c->c_name = need_mangled_name ? mangle (name) : name;
-  c->lineno = lineno;
+  c->loc = loc;
   c->namelen = namelen;
   c->regclass = regclass;
   c->exp = exp;
@@ -911,7 +909,7 @@ add_constraint (const char *name, const char *regclass,
   if (exp)
     {
       char codes[NUM_RTX_CODE];
-      compute_test_codes (exp, lineno, codes);
+      compute_test_codes (exp, loc, codes);
       if (!codes[REG] && !codes[SUBREG])
 	c->maybe_allows_reg = false;
       if (!codes[MEM])
@@ -943,14 +941,15 @@ process_define_constraint (rtx c, int lineno)
   add_constraint (XSTR (c, 0), 0, XEXP (c, 2),
 		  GET_CODE (c) == DEFINE_MEMORY_CONSTRAINT,
 		  GET_CODE (c) == DEFINE_ADDRESS_CONSTRAINT,
-		  lineno);
+		  file_location (read_md_filename, lineno));
 }
 
 /* Process a DEFINE_REGISTER_CONSTRAINT expression, C.  */
 static void
 process_define_register_constraint (rtx c, int lineno)
 {
-  add_constraint (XSTR (c, 0), XSTR (c, 1), 0, false, false, lineno);
+  add_constraint (XSTR (c, 0), XSTR (c, 1), 0, false, false,
+		  file_location (read_md_filename, lineno));
 }
 
 /* Put the constraints into enum order.  We want to keep constraints

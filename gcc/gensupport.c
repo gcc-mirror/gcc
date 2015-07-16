@@ -209,11 +209,11 @@ add_implicit_parallel (rtvec vec)
 static char did_you_mean_codes[NUM_RTX_CODE];
 
 /* Recursively calculate the set of rtx codes accepted by the
-   predicate expression EXP, writing the result to CODES.  LINENO is
-   the line number on which the directive containing EXP appeared.  */
+   predicate expression EXP, writing the result to CODES.  LOC is
+   the .md file location of the directive containing EXP.  */
 
 void
-compute_test_codes (rtx exp, int lineno, char *codes)
+compute_test_codes (rtx exp, file_location loc, char *codes)
 {
   char op0_codes[NUM_RTX_CODE];
   char op1_codes[NUM_RTX_CODE];
@@ -223,29 +223,29 @@ compute_test_codes (rtx exp, int lineno, char *codes)
   switch (GET_CODE (exp))
     {
     case AND:
-      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
-      compute_test_codes (XEXP (exp, 1), lineno, op1_codes);
+      compute_test_codes (XEXP (exp, 0), loc, op0_codes);
+      compute_test_codes (XEXP (exp, 1), loc, op1_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_AND (op0_codes[i], op1_codes[i]);
       break;
 
     case IOR:
-      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
-      compute_test_codes (XEXP (exp, 1), lineno, op1_codes);
+      compute_test_codes (XEXP (exp, 0), loc, op0_codes);
+      compute_test_codes (XEXP (exp, 1), loc, op1_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_OR (op0_codes[i], op1_codes[i]);
       break;
     case NOT:
-      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_test_codes (XEXP (exp, 0), loc, op0_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_NOT (op0_codes[i]);
       break;
 
     case IF_THEN_ELSE:
       /* a ? b : c  accepts the same codes as (a & b) | (!a & c).  */
-      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
-      compute_test_codes (XEXP (exp, 1), lineno, op1_codes);
-      compute_test_codes (XEXP (exp, 2), lineno, op2_codes);
+      compute_test_codes (XEXP (exp, 0), loc, op0_codes);
+      compute_test_codes (XEXP (exp, 1), loc, op1_codes);
+      compute_test_codes (XEXP (exp, 2), loc, op2_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_OR (TRISTATE_AND (op0_codes[i], op1_codes[i]),
 				TRISTATE_AND (TRISTATE_NOT (op0_codes[i]),
@@ -269,7 +269,7 @@ compute_test_codes (rtx exp, int lineno, char *codes)
 
 	if (*next_code == '\0')
 	  {
-	    error_with_line (lineno, "empty match_code expression");
+	    error_at (loc, "empty match_code expression");
 	    break;
 	  }
 
@@ -288,17 +288,16 @@ compute_test_codes (rtx exp, int lineno, char *codes)
 		}
 	    if (!found_it)
 	      {
-		error_with_line (lineno,
-				 "match_code \"%.*s\" matches nothing",
-				 (int) n, code);
+		error_at (loc, "match_code \"%.*s\" matches nothing",
+			  (int) n, code);
 		for (i = 0; i < NUM_RTX_CODE; i++)
 		  if (!strncasecmp (code, GET_RTX_NAME (i), n)
 		      && GET_RTX_NAME (i)[n] == '\0'
 		      && !did_you_mean_codes[i])
 		    {
 		      did_you_mean_codes[i] = 1;
-		      message_with_line (lineno, "(did you mean \"%s\"?)",
-					 GET_RTX_NAME (i));
+		      message_at (loc, "(did you mean \"%s\"?)",
+				  GET_RTX_NAME (i));
 		    }
 	      }
 	  }
@@ -312,8 +311,8 @@ compute_test_codes (rtx exp, int lineno, char *codes)
 	struct pred_data *p = lookup_predicate (XSTR (exp, 1));
 	if (!p)
 	  {
-	    error_with_line (lineno, "reference to unknown predicate '%s'",
-			     XSTR (exp, 1));
+	    error_at (loc, "reference to unknown predicate '%s'",
+		      XSTR (exp, 1));
 	    break;
 	  }
 	for (i = 0; i < NUM_RTX_CODE; i++)
@@ -328,9 +327,8 @@ compute_test_codes (rtx exp, int lineno, char *codes)
       break;
 
     default:
-      error_with_line (lineno,
-		       "'%s' cannot be used in predicates or constraints",
-		       GET_RTX_NAME (GET_CODE (exp)));
+      error_at (loc, "'%s' cannot be used in predicates or constraints",
+		GET_RTX_NAME (GET_CODE (exp)));
       memset (codes, I, NUM_RTX_CODE);
       break;
     }
@@ -380,7 +378,7 @@ process_define_predicate (rtx desc, file_location loc)
   if (GET_CODE (desc) == DEFINE_SPECIAL_PREDICATE)
     pred->special = true;
 
-  compute_test_codes (XEXP (desc, 1), loc.lineno, codes);
+  compute_test_codes (XEXP (desc, 1), loc, codes);
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (codes[i] != N)
