@@ -1401,6 +1401,20 @@ simplify_stmt_for_jump_threading (gimple stmt,
   return lookup_avail_expr (stmt, false);
 }
 
+/* Valueize hook for gimple_fold_stmt_to_constant_1.  */
+
+static tree
+dom_valueize (tree t)
+{
+  if (TREE_CODE (t) == SSA_NAME)
+    {
+      tree tem = SSA_NAME_VALUE (t);
+      if (tem)
+	return tem;
+    }
+  return t;
+}
+
 /* Record into the equivalence tables any equivalences implied by
    traversing edge E (which are cached in E->aux).
 
@@ -1428,7 +1442,6 @@ record_temporary_equivalences (edge e)
 	 additional equivalences.  */
       if (lhs
 	  && TREE_CODE (lhs) == SSA_NAME
-	  && is_gimple_constant (rhs)
 	  && TREE_CODE (rhs) == INTEGER_CST)
 	{
 	  gimple defstmt = SSA_NAME_DEF_STMT (lhs);
@@ -1452,6 +1465,41 @@ record_temporary_equivalences (edge e)
 		{
 		  tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
 		  record_equality (old_rhs, newval);
+		}
+	    }
+	}
+
+      /* If LHS is an SSA_NAME with a new equivalency then try if
+         stmts with uses of that LHS that dominate the edge destination
+	 simplify and allow further equivalences to be recorded.  */
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	{
+	  use_operand_p use_p;
+	  imm_use_iterator iter;
+	  FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
+	    {
+	      gimple use_stmt = USE_STMT (use_p);
+
+	      /* Only bother to record more equivalences for lhs that
+	         can be directly used by e->dest.
+		 ???  If the code gets re-organized to a worklist to
+		 catch more indirect opportunities and it is made to
+		 handle PHIs then this should only consider use_stmts
+		 in basic-blocks we have already visited.  */
+	      if (e->dest == gimple_bb (use_stmt)
+		  || !dominated_by_p (CDI_DOMINATORS,
+				      e->dest, gimple_bb (use_stmt)))
+		continue;
+	      tree lhs2 = gimple_get_lhs (use_stmt);
+	      if (lhs2 && TREE_CODE (lhs2) == SSA_NAME)
+		{
+		  tree res
+		    = gimple_fold_stmt_to_constant_1 (use_stmt, dom_valueize,
+						      no_follow_ssa_edges);
+		  if (res
+		      && (TREE_CODE (res) == SSA_NAME
+			  || is_gimple_min_invariant (res)))
+		    record_equality (lhs2, res);
 		}
 	    }
 	}
