@@ -1,3 +1,9 @@
+2015-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66894
+	* tree-vrp.c (register_edge_assert_for_2): Fix bad assumption
+	about deriving NE_EXPR from truncated values.
+
 2015-07-16  Martin Liska  <mliska@suse.cz>
 
 	* alloc-pool.h
