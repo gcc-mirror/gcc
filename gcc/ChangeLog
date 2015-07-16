@@ -1,3 +1,8 @@
+2015-07-16  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (create_loads_for_reductions): Handle case that
+	reduction is unused.
+
 2015-07-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66894
