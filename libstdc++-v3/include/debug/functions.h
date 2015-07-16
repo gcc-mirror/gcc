@@ -198,7 +198,8 @@ namespace __gnu_debug
 			   std::__false_type)
     {
       return _Insert_range_from_self_is_safe<_Sequence>::__value
-	     || __foreign_iterator_aux2(__it, __other, __other_end);
+	|| __foreign_iterator_aux2(__it, std::__miter_base(__other),
+				   std::__miter_base(__other_end));
     }
 
   template<typename _Iterator, typename _Sequence,
