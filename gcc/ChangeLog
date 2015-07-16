@@ -1,5 +1,13 @@
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* genattrtab.c (make_canonical): Add a file_location parameter.
+	Use fatal_at rather than fatal.
+	(get_attr_value): Likewise.  Update call to make_canonical.
+	(fill_attr, make_length_attrs, optimize_attrs, gen_attr)
+	(make_internal_attr): Update calls accordingly.
+
+2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* read-md.h (message_with_line, error_with_line): Delete.
 	* read-md.c (message_with_line, error_with_line): Delete.
 	* gensupport.h: Include read-md.h.

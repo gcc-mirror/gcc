@@ -1171,10 +1171,10 @@ check_defs (void)
 /* Given a valid expression for an attribute value, remove any IF_THEN_ELSE
    expressions by converting them into a COND.  This removes cases from this
    program.  Also, replace an attribute value of "*" with the default attribute
-   value.  */
+   value.  LOC is the location to use for error reporting.  */
 
 static rtx
-make_canonical (struct attr_desc *attr, rtx exp)
+make_canonical (file_location loc, struct attr_desc *attr, rtx exp)
 {
   int i;
   rtx newexp;
@@ -1189,7 +1189,7 @@ make_canonical (struct attr_desc *attr, rtx exp)
       if (! strcmp (XSTR (exp, 0), "*"))
 	{
 	  if (attr->default_val == 0)
-	    fatal ("(attr_value \"*\") used in invalid context");
+	    fatal_at (loc, "(attr_value \"*\") used in invalid context");
 	  exp = attr->default_val->value;
 	}
       else
@@ -1225,14 +1225,14 @@ make_canonical (struct attr_desc *attr, rtx exp)
 
 	/* First, check for degenerate COND.  */
 	if (XVECLEN (exp, 0) == 0)
-	  return make_canonical (attr, XEXP (exp, 1));
-	defval = XEXP (exp, 1) = make_canonical (attr, XEXP (exp, 1));
+	  return make_canonical (loc, attr, XEXP (exp, 1));
+	defval = XEXP (exp, 1) = make_canonical (loc, attr, XEXP (exp, 1));
 
 	for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	  {
 	    XVECEXP (exp, 0, i) = copy_boolean (XVECEXP (exp, 0, i));
 	    XVECEXP (exp, 0, i + 1)
-	      = make_canonical (attr, XVECEXP (exp, 0, i + 1));
+	      = make_canonical (loc, attr, XVECEXP (exp, 0, i + 1));
 	    if (! rtx_equal_p (XVECEXP (exp, 0, i + 1), defval))
 	      allsame = 0;
 	  }
@@ -1275,19 +1275,21 @@ copy_boolean (rtx exp)
    `insn_code' is the code of an insn whose attribute has the specified
    value (-2 if not processing an insn).  We ensure that all insns for
    a given value have the same number of alternatives if the value checks
-   alternatives.  */
+   alternatives.  LOC is the location to use for error reporting.  */
 
 static struct attr_value *
-get_attr_value (rtx value, struct attr_desc *attr, int insn_code)
+get_attr_value (file_location loc, rtx value, struct attr_desc *attr,
+		int insn_code)
 {
   struct attr_value *av;
   uint64_t num_alt = 0;
 
-  value = make_canonical (attr, value);
+  value = make_canonical (loc, attr, value);
   if (compares_alternatives_p (value))
     {
       if (insn_code < 0 || insn_alternatives == NULL)
-	fatal ("(eq_attr \"alternatives\" ...) used in non-insn context");
+	fatal_at (loc, "(eq_attr \"alternatives\" ...) used in non-insn"
+		  " context");
       else
 	num_alt = insn_alternatives[insn_code];
     }
@@ -1439,7 +1441,7 @@ fill_attr (struct attr_desc *attr)
       if (value == NULL)
 	av = attr->default_val;
       else
-	av = get_attr_value (value, attr, id->insn_code);
+	av = get_attr_value (id->loc, value, attr, id->insn_code);
 
       ie = oballoc (struct insn_ent);
       ie->def = id;
@@ -1552,7 +1554,7 @@ make_length_attrs (void)
     return;
 
   if (! length_attr->is_numeric)
-    fatal ("length attribute must be numeric");
+    fatal_at (length_attr->loc, "length attribute must be numeric");
 
   length_attr->is_const = 0;
   length_attr->is_special = 1;
@@ -1568,7 +1570,8 @@ make_length_attrs (void)
       for (av = length_attr->first_value; av; av = av->next)
 	for (ie = av->first_insn; ie; ie = ie->next)
 	  {
-	    new_av = get_attr_value (substitute_address (av->value,
+	    new_av = get_attr_value (ie->def->loc,
+				     substitute_address (av->value,
 							 no_address_fn[i],
 							 address_fn[i]),
 				     new_attr, ie->def->insn_code);
@@ -3041,7 +3044,8 @@ optimize_attrs (int max_insn_code)
 	    {
 	      newexp = attr_copy_rtx (newexp);
 	      remove_insn_ent (av, ie);
-	      av = get_attr_value (newexp, attr, ie->def->insn_code);
+	      av = get_attr_value (ie->def->loc, newexp, attr,
+				   ie->def->insn_code);
 	      iv->av = av;
 	      insert_insn_ent (av, ie);
 	    }
@@ -3183,7 +3187,7 @@ gen_attr (md_rtx_info *info)
 
   /* Set up the default value.  */
   XEXP (def, 2) = check_attr_value (XEXP (def, 2), attr);
-  attr->default_val = get_attr_value (XEXP (def, 2), attr, -2);
+  attr->default_val = get_attr_value (info->loc, XEXP (def, 2), attr, -2);
 }
 
 /* Given a pattern for DEFINE_PEEPHOLE or DEFINE_INSN, return the number of
@@ -4613,7 +4617,8 @@ make_internal_attr (const char *name, rtx value, int special)
   attr->is_numeric = 1;
   attr->is_const = 0;
   attr->is_special = (special & ATTR_SPECIAL) != 0;
-  attr->default_val = get_attr_value (value, attr, -2);
+  attr->default_val = get_attr_value (file_location ("<internal>", 0),
+				      value, attr, -2);
 }
 
 /* Find the most used value of an attribute.  */
