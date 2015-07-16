@@ -139,8 +139,7 @@ struct insn_def
   rtx def;			/* The DEFINE_...  */
   int insn_code;		/* Instruction number.  */
   int insn_index;		/* Expression number in file, for errors.  */
-  const char *filename;		/* Filename.  */
-  int lineno;			/* Line number.  */
+  file_location loc;		/* Where in the .md files it occurs.  */
   int num_alternatives;		/* Number of alternatives.  */
   int vec_idx;			/* Index of attribute vector in `def'.  */
 };
@@ -177,7 +176,7 @@ struct attr_desc
   struct attr_desc *next;	/* Next attribute.  */
   struct attr_value *first_value; /* First value of this attribute.  */
   struct attr_value *default_val; /* Default value for this attribute.  */
-  int lineno : 24;		/* Line number.  */
+  file_location loc;		/* Where in the .md files it occurs.  */
   unsigned is_numeric	: 1;	/* Values of this attribute are numeric.  */
   unsigned is_const	: 1;	/* Attribute value constant for each run.  */
   unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
@@ -189,8 +188,8 @@ struct delay_desc
 {
   rtx def;			/* DEFINE_DELAY expression.  */
   struct delay_desc *next;	/* Next DEFINE_DELAY.  */
+  file_location loc;		/* Where in the .md files it occurs.  */
   int num;			/* Number of DEFINE_DELAY, starting at 1.  */
-  int lineno;			/* Line number.  */
 };
 
 struct attr_value_list
@@ -746,7 +745,7 @@ attr_copy_rtx (rtx orig)
    Return the new expression, if any.  */
 
 static rtx
-check_attr_test (rtx exp, int is_const, int lineno)
+check_attr_test (rtx exp, int is_const, file_location loc)
 {
   struct attr_desc *attr;
   struct attr_value *av;
@@ -761,7 +760,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	return check_attr_test (attr_rtx (NOT,
 					  attr_eq (XSTR (exp, 0),
 						   &XSTR (exp, 1)[1])),
-				is_const, lineno);
+				is_const, loc);
 
       else if (n_comma_elts (XSTR (exp, 1)) == 1)
 	{
@@ -771,12 +770,13 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	      if (! strcmp (XSTR (exp, 0), "alternative"))
 		return mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
 	      else
-		fatal ("unknown attribute `%s' in EQ_ATTR", XSTR (exp, 0));
+		fatal_at (loc, "unknown attribute `%s' in EQ_ATTR",
+			  XSTR (exp, 0));
 	    }
 
 	  if (is_const && ! attr->is_const)
-	    fatal ("constant expression uses insn attribute `%s' in EQ_ATTR",
-		   XSTR (exp, 0));
+	    fatal_at (loc, "constant expression uses insn attribute `%s'"
+		      " in EQ_ATTR", XSTR (exp, 0));
 
 	  /* Copy this just to make it permanent,
 	     so expressions using it can be permanent too.  */
@@ -792,8 +792,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	    {
 	      for (p = XSTR (exp, 1); *p; p++)
 		if (! ISDIGIT (*p))
-		  fatal ("attribute `%s' takes only numeric values",
-			 XSTR (exp, 0));
+		  fatal_at (loc, "attribute `%s' takes only numeric values",
+			    XSTR (exp, 0));
 	    }
 	  else
 	    {
@@ -803,8 +803,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 		  break;
 
 	      if (av == NULL)
-		fatal ("unknown value `%s' for `%s' attribute",
-		       XSTR (exp, 1), XSTR (exp, 0));
+		fatal_at (loc, "unknown value `%s' for `%s' attribute",
+			  XSTR (exp, 1), XSTR (exp, 0));
 	    }
 	}
       else
@@ -830,7 +830,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 		  orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
 		}
 
-	      return check_attr_test (orexp, is_const, lineno);
+	      return check_attr_test (orexp, is_const, loc);
 	    }
 	}
       break;
@@ -847,12 +847,12 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
     case IOR:
     case AND:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, lineno);
-      XEXP (exp, 1) = check_attr_test (XEXP (exp, 1), is_const, lineno);
+      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, loc);
+      XEXP (exp, 1) = check_attr_test (XEXP (exp, 1), is_const, loc);
       break;
 
     case NOT:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, lineno);
+      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, loc);
       break;
 
     case MATCH_TEST:
@@ -862,8 +862,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
     case MATCH_OPERAND:
       if (is_const)
-	fatal ("RTL operator \"%s\" not valid in constant attribute test",
-	       GET_RTX_NAME (GET_CODE (exp)));
+	fatal_at (loc, "RTL operator \"%s\" not valid in constant attribute"
+		  " test", GET_RTX_NAME (GET_CODE (exp)));
       /* These cases can't be simplified.  */
       ATTR_IND_SIMPLIFIED_P (exp) = 1;
       break;
@@ -890,8 +890,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	  break;
 	}
     default:
-      fatal ("RTL operator \"%s\" not valid in attribute test",
-	     GET_RTX_NAME (GET_CODE (exp)));
+      fatal_at (loc, "RTL operator \"%s\" not valid in attribute test",
+		GET_RTX_NAME (GET_CODE (exp)));
     }
 
   return exp;
@@ -915,17 +915,17 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case CONST_INT:
       if (!attr->is_numeric)
 	{
-	  error_with_line (attr->lineno,
-			   "CONST_INT not valid for non-numeric attribute %s",
-			   attr->name);
+	  error_at (attr->loc,
+		    "CONST_INT not valid for non-numeric attribute %s",
+		    attr->name);
 	  break;
 	}
 
       if (INTVAL (exp) < 0)
 	{
-	  error_with_line (attr->lineno,
-			   "negative numeric value specified for attribute %s",
-			   attr->name);
+	  error_at (attr->loc,
+		    "negative numeric value specified for attribute %s",
+		    attr->name);
 	  break;
 	}
       break;
@@ -940,9 +940,9 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  for (; *p; p++)
 	    if (! ISDIGIT (*p))
 	      {
-		error_with_line (attr->lineno,
-				 "non-numeric value for numeric attribute %s",
-				 attr->name);
+		error_at (attr->loc,
+			  "non-numeric value for numeric attribute %s",
+			  attr->name);
 		break;
 	      }
 	  break;
@@ -954,14 +954,13 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  break;
 
       if (av == NULL)
-	error_with_line (attr->lineno,
-			 "unknown value `%s' for `%s' attribute",
-			 XSTR (exp, 0), attr->name);
+	error_at (attr->loc, "unknown value `%s' for `%s' attribute",
+		  XSTR (exp, 0), attr->name);
       break;
 
     case IF_THEN_ELSE:
       XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), attr->is_const,
-				       attr->lineno);
+				       attr->loc);
       XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
       XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
       break;
@@ -973,9 +972,8 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case MOD:
       if (!attr->is_numeric)
 	{
-	  error_with_line (attr->lineno,
-			   "invalid operation `%s' for non-numeric"
-			   " attribute value", GET_RTX_NAME (GET_CODE (exp)));
+	  error_at (attr->loc, "invalid operation `%s' for non-numeric"
+		    " attribute value", GET_RTX_NAME (GET_CODE (exp)));
 	  break;
 	}
       /* Fall through.  */
@@ -998,16 +996,14 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case COND:
       if (XVECLEN (exp, 0) % 2 != 0)
 	{
-	  error_with_line (attr->lineno,
-			   "first operand of COND must have even length");
+	  error_at (attr->loc, "first operand of COND must have even length");
 	  break;
 	}
 
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	{
 	  XVECEXP (exp, 0, i) = check_attr_test (XVECEXP (exp, 0, i),
-						 attr->is_const,
-						 attr->lineno);
+						 attr->is_const, attr->loc);
 	  XVECEXP (exp, 0, i + 1)
 	    = check_attr_value (XVECEXP (exp, 0, i + 1), attr);
 	}
@@ -1019,16 +1015,16 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       {
 	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
-	  error_with_line (attr->lineno, "unknown attribute `%s' in ATTR",
+	  error_at (attr->loc, "unknown attribute `%s' in ATTR",
 			   XSTR (exp, 0));
 	else if (attr->is_const && ! attr2->is_const)
-	  error_with_line (attr->lineno,
-			   "non-constant attribute `%s' referenced from `%s'",
-			   XSTR (exp, 0), attr->name);
+	  error_at (attr->loc,
+		    "non-constant attribute `%s' referenced from `%s'",
+		    XSTR (exp, 0), attr->name);
 	else if (attr->is_numeric != attr2->is_numeric)
-	  error_with_line (attr->lineno,
-			   "numeric attribute mismatch calling `%s' from `%s'",
-			   XSTR (exp, 0), attr->name);
+	  error_at (attr->loc,
+		    "numeric attribute mismatch calling `%s' from `%s'",
+		    XSTR (exp, 0), attr->name);
       }
       break;
 
@@ -1039,9 +1035,8 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
 
     default:
-      error_with_line (attr->lineno,
-		       "invalid operation `%s' for attribute value",
-		       GET_RTX_NAME (GET_CODE (exp)));
+      error_at (attr->loc, "invalid operation `%s' for attribute value",
+		GET_RTX_NAME (GET_CODE (exp)));
       break;
     }
 
@@ -1060,9 +1055,8 @@ convert_set_attr_alternative (rtx exp, struct insn_def *id)
 
   if (XVECLEN (exp, 1) != num_alt)
     {
-      error_with_line (id->lineno,
-		       "bad number of entries in SET_ATTR_ALTERNATIVE, was %d expected %d",
-		       XVECLEN (exp, 1), num_alt);
+      error_at (id->loc, "bad number of entries in SET_ATTR_ALTERNATIVE,"
+		" was %d expected %d", XVECLEN (exp, 1), num_alt);
       return NULL_RTX;
     }
 
@@ -1133,7 +1127,6 @@ check_defs (void)
       if (XVEC (id->def, id->vec_idx) == NULL)
 	continue;
 
-      read_md_filename = id->filename;
       for (i = 0; i < XVECLEN (id->def, id->vec_idx); i++)
 	{
 	  value = XVECEXP (id->def, id->vec_idx, i);
@@ -1142,7 +1135,7 @@ check_defs (void)
 	    case SET:
 	      if (GET_CODE (XEXP (value, 0)) != ATTR)
 		{
-		  error_with_line (id->lineno, "bad attribute set");
+		  error_at (id->loc, "bad attribute set");
 		  value = NULL_RTX;
 		}
 	      break;
@@ -1156,8 +1149,8 @@ check_defs (void)
 	      break;
 
 	    default:
-	      error_with_line (id->lineno, "invalid attribute code %s",
-			       GET_RTX_NAME (GET_CODE (value)));
+	      error_at (id->loc, "invalid attribute code %s",
+			GET_RTX_NAME (GET_CODE (value)));
 	      value = NULL_RTX;
 	    }
 	  if (value == NULL_RTX)
@@ -1165,8 +1158,8 @@ check_defs (void)
 
 	  if ((attr = find_attr (&XSTR (XEXP (value, 0), 0), 0)) == NULL)
 	    {
-	      error_with_line (id->lineno, "unknown attribute %s",
-			       XSTR (XEXP (value, 0), 0));
+	      error_at (id->loc, "unknown attribute %s",
+			XSTR (XEXP (value, 0), 0));
 	      continue;
 	    }
 
@@ -3148,10 +3141,10 @@ gen_attr (rtx exp, int lineno)
     {
       error_with_line (lineno, "duplicate definition for attribute %s",
 		       attr->name);
-      message_with_line (attr->lineno, "previous definition");
+      message_at (attr->loc, "previous definition");
       return;
     }
-  attr->lineno = lineno;
+  attr->loc = file_location (read_md_filename, lineno);
 
   if (GET_CODE (exp) == DEFINE_ENUM_ATTR)
     {
@@ -3273,8 +3266,7 @@ gen_insn (rtx exp, int lineno)
   id->next = defs;
   defs = id;
   id->def = exp;
-  id->filename = read_md_filename;
-  id->lineno = lineno;
+  id->loc = file_location (read_md_filename, lineno);
 
   switch (GET_CODE (exp))
     {
@@ -3338,7 +3330,7 @@ gen_delay (rtx def, int lineno)
   delay->def = def;
   delay->num = ++num_delays;
   delay->next = delays;
-  delay->lineno = lineno;
+  delay->loc = file_location (read_md_filename, lineno);
   delays = delay;
 }
 
@@ -4236,8 +4228,9 @@ write_insn_cases (FILE *outf, struct insn_ent *ie, int indent)
       {
 	write_indent (outf, indent);
 	if (GET_CODE (ie->def->def) == DEFINE_PEEPHOLE)
-	  fprintf (outf, "case %d:  /* define_peephole, line %d */\n",
-		   ie->def->insn_code, ie->def->lineno);
+	  fprintf (outf, "case %d:  /* define_peephole, %s:%d */\n",
+		   ie->def->insn_code, ie->def->loc.filename,
+		   ie->def->loc.lineno);
 	else
 	  fprintf (outf, "case %d:  /* %s */\n",
 		   ie->def->insn_code, XSTR (ie->def->def, 0));
@@ -4730,13 +4723,14 @@ static size_t n_insn_reservs;
 /* Store information from a DEFINE_INSN_RESERVATION for future
    attribute generation.  */
 static void
-gen_insn_reserv (rtx def)
+gen_insn_reserv (rtx def, int lineno)
 {
   struct insn_reserv *decl = oballoc (struct insn_reserv);
+  file_location loc (read_md_filename, lineno);
 
   decl->name            = DEF_ATTR_STRING (XSTR (def, 0));
   decl->default_latency = XINT (def, 1);
-  decl->condexp         = check_attr_test (XEXP (def, 2), 0, 0);
+  decl->condexp         = check_attr_test (XEXP (def, 2), 0, loc);
   decl->insn_num        = n_insn_reservs;
   decl->bypassed	= false;
   decl->next            = 0;
@@ -5216,7 +5210,7 @@ main (int argc, char **argv)
 	  break;
 
 	case DEFINE_INSN_RESERVATION:
-	  gen_insn_reserv (desc);
+	  gen_insn_reserv (desc, lineno);
 	  break;
 
 	case DEFINE_BYPASS:

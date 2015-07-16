@@ -277,6 +277,19 @@ error_at (file_location loc, const char *msg, ...)
   have_error = 1;
 }
 
+/* Like message_at, but treat the condition as a fatal error.  */
+
+void
+fatal_at (file_location loc, const char *msg, ...)
+{
+  va_list ap;
+
+  va_start (ap, msg);
+  message_at_1 (loc, msg, ap);
+  va_end (ap);
+  exit (1);
+}
+
 /* A printf-like function for reporting an error against line LINENO
    in the current MD file.  */
 
