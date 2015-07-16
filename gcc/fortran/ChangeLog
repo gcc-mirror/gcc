@@ -1,3 +1,7 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
 2015-06-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66549

@@ -1,3 +1,7 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
 2015-05-03  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Match $host configured with triplets.

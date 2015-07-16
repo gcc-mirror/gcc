@@ -1,3 +1,7 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
 2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* c-decl.c (pop_scope): Register the main translation unit
