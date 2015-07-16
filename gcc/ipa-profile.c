@@ -87,7 +87,7 @@ struct histogram_entry
    duplicate entries.  */
 
 vec<histogram_entry *> histogram;
-static pool_allocator<histogram_entry> histogram_pool
+static object_allocator<histogram_entry> histogram_pool
   ("IPA histogram", 10);
 
 /* Hashtable support for storing SSA names hashed by their SSA_NAME_VAR.  */

@@ -59,7 +59,7 @@ vec<sel_region_bb_info_def>
     sel_region_bb_info = vNULL;
 
 /* A pool for allocating all lists.  */
-pool_allocator<_list_node> sched_lists_pool ("sel-sched-lists", 500);
+object_allocator<_list_node> sched_lists_pool ("sel-sched-lists", 500);
 
 /* This contains information about successors for compute_av_set.  */
 struct succs_info current_succs;

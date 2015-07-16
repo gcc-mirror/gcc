@@ -730,7 +730,8 @@ do_jump_if_equal (machine_mode mode, rtx op0, rtx op1, rtx_code_label *label,
 
 static struct case_node *
 add_case_node (struct case_node *head, tree low, tree high,
-	       tree label, int prob, pool_allocator<case_node> &case_node_pool)
+	       tree label, int prob,
+	       object_allocator<case_node> &case_node_pool)
 {
   struct case_node *r;
 
@@ -1138,7 +1139,7 @@ expand_case (gswitch *stmt)
   struct case_node *case_list = 0;
 
   /* A pool for case nodes.  */
-  pool_allocator<case_node> case_node_pool ("struct case_node pool", 100);
+  object_allocator<case_node> case_node_pool ("struct case_node pool", 100);
 
   /* An ERROR_MARK occurs for various reasons including invalid data type.
      ??? Can this still happen, with GIMPLE and all?  */
@@ -1314,7 +1315,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
     {
       /* Similar to expand_case, but much simpler.  */
       struct case_node *case_list = 0;
-      pool_allocator<case_node> case_node_pool ("struct sjlj_case pool",
+      object_allocator<case_node> case_node_pool ("struct sjlj_case pool",
 						ncases);
       tree index_expr = make_tree (index_type, dispatch_index);
       tree minval = build_int_cst (index_type, 0);

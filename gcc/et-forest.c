@@ -52,26 +52,10 @@ struct et_occ
 				   on the path to the root.  */
   struct et_occ *min_occ;	/* The occurrence in the subtree with the minimal
 				   depth.  */
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((et_occ *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<et_occ> pool;
-
 };
 
-pool_allocator<et_node> et_node::pool ("et_nodes pool", 300);
-pool_allocator<et_occ> et_occ::pool ("et_occ pool", 300);
+static object_allocator<et_node> et_nodes ("et_nodes pool", 300);
+static object_allocator<et_occ> et_occurrences ("et_occ pool", 300);
 
 /* Changes depth of OCC to D.  */
 
@@ -458,7 +442,7 @@ et_splay (struct et_occ *occ)
 static struct et_occ *
 et_new_occ (struct et_node *node)
 {
-  et_occ *nw = new et_occ;
+  et_occ *nw = et_occurrences.allocate ();
 
   nw->of = node;
   nw->parent = NULL;
@@ -477,9 +461,7 @@ et_new_occ (struct et_node *node)
 struct et_node *
 et_new_tree (void *data)
 {
-  struct et_node *nw;
-
-  nw = new et_node;
+  et_node *nw = et_nodes.allocate ();
 
   nw->data = data;
   nw->father = NULL;
@@ -504,8 +486,8 @@ et_free_tree (struct et_node *t)
   if (t->father)
     et_split (t);
 
-  delete t->rightmost_occ;
-  delete t;
+  et_occurrences.remove (t->rightmost_occ);
+  et_nodes.remove (t);
 }
 
 /* Releases et tree T without maintaining other nodes.  */
@@ -513,10 +495,10 @@ et_free_tree (struct et_node *t)
 void
 et_free_tree_force (struct et_node *t)
 {
-  delete t->rightmost_occ;
+  et_occurrences.remove (t->rightmost_occ);
   if (t->parent_occ)
-    delete t->parent_occ;
-  delete t;
+    et_occurrences.remove (t->parent_occ);
+  et_nodes.remove (t);
 }
 
 /* Release the alloc pools, if they are empty.  */
@@ -524,8 +506,8 @@ et_free_tree_force (struct et_node *t)
 void
 et_free_pools (void)
 {
-  et_occ::pool.release_if_empty ();
-  et_node::pool.release_if_empty ();
+  et_occurrences.release_if_empty ();
+  et_nodes.release_if_empty ();
 }
 
 /* Sets father of et tree T to FATHER.  */
@@ -617,7 +599,7 @@ et_split (struct et_node *t)
   rmost->depth = 0;
   rmost->min = 0;
 
-  delete p_occ;
+  et_occurrences.remove (p_occ);
 
   /* Update the tree.  */
   if (father->son == t)

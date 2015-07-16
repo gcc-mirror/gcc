@@ -204,7 +204,7 @@ static struct
 static struct occurrence *occ_head;
 
 /* Allocation pool for getting instances of "struct occurrence".  */
-static pool_allocator<occurrence> *occ_pool;
+static object_allocator<occurrence> *occ_pool;
 
 
 
@@ -547,7 +547,7 @@ pass_cse_reciprocals::execute (function *fun)
   basic_block bb;
   tree arg;
 
-  occ_pool = new pool_allocator<occurrence>
+  occ_pool = new object_allocator<occurrence>
     ("dominators for recip", n_basic_blocks_for_fn (fun) / 3 + 1);
 
   memset (&reciprocal_stats, 0, sizeof (reciprocal_stats));

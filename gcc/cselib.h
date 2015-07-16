@@ -41,21 +41,6 @@ struct cselib_val
   struct elt_list *addr_list;
 
   struct cselib_val *next_containing_mem;
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((cselib_val *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<cselib_val> pool;
 };
 
 /* A list of rtl expressions that hold the same value.  */
@@ -66,21 +51,6 @@ struct elt_loc_list {
   rtx loc;
   /* The insn that made the equivalence.  */
   rtx_insn *setting_insn;
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((elt_loc_list *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<elt_loc_list> pool;
 };
 
 /* Describe a single set that is part of an insn.  */

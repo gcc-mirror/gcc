@@ -357,7 +357,7 @@ struct _list_node
 /* _list_t functions.
    All of _*list_* functions are used through accessor macros, thus
    we can't move them in sel-sched-ir.c.  */
-extern pool_allocator<_list_node> sched_lists_pool;
+extern object_allocator<_list_node> sched_lists_pool;
 
 static inline _list_t
 _list_alloc (void)

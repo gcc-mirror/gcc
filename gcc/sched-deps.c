@@ -321,7 +321,7 @@ dep_link_is_detached_p (dep_link_t link)
 }
 
 /* Pool to hold all dependency nodes (dep_node_t).  */
-static pool_allocator<_dep_node> *dn_pool;
+static object_allocator<_dep_node> *dn_pool;
 
 /* Number of dep_nodes out there.  */
 static int dn_pool_diff = 0;
@@ -362,7 +362,7 @@ delete_dep_node (dep_node_t n)
 }
 
 /* Pool to hold dependencies lists (deps_list_t).  */
-static pool_allocator<_deps_list> *dl_pool;
+static object_allocator<_deps_list> *dl_pool;
 
 /* Number of deps_lists out there.  */
 static int dl_pool_diff = 0;
@@ -4058,10 +4058,10 @@ sched_deps_init (bool global_p)
 
   if (global_p)
     {
-      dl_pool = new pool_allocator<_deps_list> ("deps_list",
+      dl_pool = new object_allocator<_deps_list> ("deps_list",
                                    /* Allocate lists for one block at a time.  */
                                    insns_in_block);
-      dn_pool = new pool_allocator<_dep_node> ("dep_node",
+      dn_pool = new object_allocator<_dep_node> ("dep_node",
                                    /* Allocate nodes for one block at a time.
                                       We assume that average insn has
                                       5 producers.  */

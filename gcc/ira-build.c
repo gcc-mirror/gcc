@@ -421,9 +421,9 @@ rebuild_regno_allocno_maps (void)
 
 
 /* Pools for allocnos, allocno live ranges and objects.  */
-static pool_allocator<live_range> live_range_pool ("live ranges", 100);
-static pool_allocator<ira_allocno> allocno_pool ("allocnos", 100);
-static pool_allocator<ira_object> object_pool ("objects", 100);
+static object_allocator<live_range> live_range_pool ("live ranges", 100);
+static object_allocator<ira_allocno> allocno_pool ("allocnos", 100);
+static object_allocator<ira_object> object_pool ("objects", 100);
 
 /* Vec containing references to all created allocnos.  It is a
    container of array allocnos.  */
@@ -1171,7 +1171,7 @@ finish_allocnos (void)
 
 
 /* Pools for allocno preferences.  */
-static pool_allocator <ira_allocno_pref> pref_pool ("prefs", 100);
+static object_allocator <ira_allocno_pref> pref_pool ("prefs", 100);
 
 /* Vec containing references to all created preferences.  It is a
    container of array ira_prefs.  */
@@ -1358,7 +1358,7 @@ finish_prefs (void)
 
 
 /* Pools for copies.  */
-static pool_allocator<ira_allocno_copy> copy_pool ("copies", 100);
+static object_allocator<ira_allocno_copy> copy_pool ("copies", 100);
 
 /* Vec containing references to all created copies.  It is a
    container of array ira_copies.  */
@@ -1617,7 +1617,7 @@ finish_copies (void)
 
 
 /* Pools for cost vectors.  It is defined only for allocno classes.  */
-static pool_allocator<int> * cost_vector_pool[N_REG_CLASSES];
+static pool_allocator *cost_vector_pool[N_REG_CLASSES];
 
 /* The function initiates work with hard register cost vectors.  It
    creates allocation pool for each allocno class.  */
@@ -1630,9 +1630,9 @@ initiate_cost_vectors (void)
   for (i = 0; i < ira_allocno_classes_num; i++)
     {
       aclass = ira_allocno_classes[i];
-      cost_vector_pool[aclass] = new pool_allocator<int>
+      cost_vector_pool[aclass] = new pool_allocator
 	("cost vectors", 100,
-	 sizeof (int) * (ira_class_hard_regs_num[aclass] - 1));
+	 sizeof (int) * (ira_class_hard_regs_num[aclass]));
     }
 }
 
@@ -1640,7 +1640,7 @@ initiate_cost_vectors (void)
 int *
 ira_allocate_cost_vector (reg_class_t aclass)
 {
-  return cost_vector_pool[(int) aclass]->allocate ();
+  return (int*) cost_vector_pool[(int) aclass]->allocate ();
 }
 
 /* Free a cost vector VEC for ACLASS.  */

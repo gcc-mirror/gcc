@@ -94,7 +94,7 @@ struct ipa_cst_ref_desc
 
 /* Allocation pool for reference descriptions.  */
 
-static pool_allocator<ipa_cst_ref_desc> ipa_refdesc_pool
+static object_allocator<ipa_cst_ref_desc> ipa_refdesc_pool
   ("IPA-PROP ref descriptions", 32);
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated

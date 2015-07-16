@@ -25,6 +25,9 @@ extern void dump_alloc_pool_statistics (void);
 
 typedef unsigned long ALLOC_POOL_ID_TYPE;
 
+/* Last used ID.  */
+extern ALLOC_POOL_ID_TYPE last_id;
+
 /* Pool allocator memory usage.  */
 struct pool_usage: public mem_usage
 {
@@ -92,21 +95,18 @@ struct pool_usage: public mem_usage
 
 extern mem_alloc_description<pool_usage> pool_allocator_usage;
 
-/* Type based memory pool allocator.  */
-template <typename T>
+/* Generic pool allocator.  */
 class pool_allocator
 {
 public:
   /* Default constructor for pool allocator called NAME.  Each block
-     has NUM elements.  The allocator support EXTRA_SIZE and can
-     potentially IGNORE_TYPE_SIZE.  */
-  pool_allocator (const char *name, size_t num, size_t extra_size = 0,
-		  bool ignore_type_size = false CXX_MEM_STAT_INFO);
+     has NUM elements.  */
+  pool_allocator (const char *name, size_t num, size_t size CXX_MEM_STAT_INFO);
   ~pool_allocator ();
   void release ();
   void release_if_empty ();
-  T *allocate () ATTRIBUTE_MALLOC;
-  void remove (T *object);
+  void *allocate () ATTRIBUTE_MALLOC;
+  void remove (void *object);
 
 private:
   struct allocation_pool_list
@@ -117,7 +117,6 @@ private:
   /* Initialize a pool allocator.  */
   void initialize ();
 
-  template <typename U>
   struct allocation_object
   {
     /* The ID of alloc pool which the object was allocated from.  */
@@ -136,18 +135,18 @@ private:
 	int64_t align_i;
       } u;
 
-    static inline allocation_object<U> *
+    static inline allocation_object*
     get_instance (void *data_ptr)
     {
-      return (allocation_object<U> *)(((char *)(data_ptr))
-				      - offsetof (allocation_object<U>,
+      return (allocation_object *)(((char *)(data_ptr))
+				      - offsetof (allocation_object,
 						  u.data));
     }
 
-    static inline U *
+    static inline void*
     get_data (void *instance_ptr)
     {
-      return (U*)(((allocation_object<U> *) instance_ptr)->u.data);
+      return (void*)(((allocation_object *) instance_ptr)->u.data);
     }
   };
 
@@ -185,66 +184,33 @@ private:
   size_t m_block_size;
   /* Size of a pool elements in bytes.  */
   size_t m_elt_size;
-  /* Flag if we shoul ignore size of a type.  */
-  bool m_ignore_type_size;
-  /* Extra size in bytes that should be allocated for each element.  */
-  size_t m_extra_size;
+  /* Size in bytes that should be allocated for each element.  */
+  size_t m_size;
   /* Flag if a pool allocator is initialized.  */
   bool m_initialized;
   /* Memory allocation location.  */
   mem_location m_location;
 };
 
-/* Last used ID.  */
-extern ALLOC_POOL_ID_TYPE last_id;
-
-/* Store information about each particular alloc_pool.  Note that this
-   will underestimate the amount the amount of storage used by a small amount:
-   1) The overhead in a pool is not accounted for.
-   2) The unallocated elements in a block are not accounted for.  Note
-   that this can at worst case be one element smaller that the block
-   size for that pool.  */
-struct alloc_pool_descriptor
-{
-  /* Number of pools allocated.  */
-  unsigned long created;
-  /* Gross allocated storage.  */
-  unsigned long allocated;
-  /* Amount of currently active storage.  */
-  unsigned long current;
-  /* Peak amount of storage used.  */
-  unsigned long peak;
-  /* Size of element in the pool.  */
-  int elt_size;
-};
-
-
-/* Hashtable mapping alloc_pool names to descriptors.  */
-extern hash_map<const char *, alloc_pool_descriptor> *alloc_pool_hash;
-
-template <typename T>
 inline
-pool_allocator<T>::pool_allocator (const char *name, size_t num,
-				   size_t extra_size, bool ignore_type_size
-				   MEM_STAT_DECL):
+pool_allocator::pool_allocator (const char *name, size_t num,
+				size_t size MEM_STAT_DECL):
   m_name (name), m_id (0), m_elts_per_block (num), m_returned_free_list (NULL),
   m_virgin_free_list (NULL), m_virgin_elts_remaining (0), m_elts_allocated (0),
   m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL),
-  m_block_size (0), m_ignore_type_size (ignore_type_size),
-  m_extra_size (extra_size), m_initialized (false),
+  m_block_size (0), m_size (size), m_initialized (false),
   m_location (ALLOC_POOL_ORIGIN, false PASS_MEM_STAT) {}
 
 /* Initialize a pool allocator.  */
 
-template <typename T>
-void
-pool_allocator<T>::initialize ()
+inline void
+pool_allocator::initialize ()
 {
   gcc_checking_assert (!m_initialized);
   m_initialized = true;
 
   size_t header_size;
-  size_t size = (m_ignore_type_size ? 0 : sizeof (T)) + m_extra_size;
+  size_t size = m_size;
 
   gcc_checking_assert (m_name);
 
@@ -256,7 +222,7 @@ pool_allocator<T>::initialize ()
   size = align_eight (size);
 
   /* Add the aligned size of ID.  */
-  size += offsetof (allocation_object<T>, u.data);
+  size += offsetof (allocation_object, u.data);
 
   /* Um, we can't really allocate 0 elements per block.  */
   gcc_checking_assert (m_elts_per_block);
@@ -289,9 +255,8 @@ pool_allocator<T>::initialize ()
 }
 
 /* Free all memory allocated for the given memory pool.  */
-template <typename T>
 inline void
-pool_allocator<T>::release ()
+pool_allocator::release ()
 {
   if (!m_initialized)
     return;
@@ -320,24 +285,21 @@ pool_allocator<T>::release ()
   m_block_list = NULL;
 }
 
-template <typename T>
 void
-inline pool_allocator<T>::release_if_empty ()
+inline pool_allocator::release_if_empty ()
 {
   if (m_elts_free == m_elts_allocated)
     release ();
 }
 
-template <typename T>
-inline pool_allocator<T>::~pool_allocator ()
+inline pool_allocator::~pool_allocator ()
 {
   release ();
 }
 
 /* Allocates one element from the pool specified.  */
-template <typename T>
-inline T *
-pool_allocator<T>::allocate ()
+inline void*
+pool_allocator::allocate ()
 {
   if (!m_initialized)
     initialize ();
@@ -353,7 +315,7 @@ pool_allocator<T>::allocate ()
     }
 
 #ifdef ENABLE_VALGRIND_ANNOTATIONS
-  size = m_elt_size - offsetof (allocation_object<T>, u.data);
+  size = m_elt_size - offsetof (allocation_object, u.data);
 #endif
 
   /* If there are no more free elements, make some more!.  */
@@ -387,11 +349,11 @@ pool_allocator<T>::allocate ()
       /* We now know that we can take the first elt off the virgin list and
 	 put it on the returned list.  */
       block = m_virgin_free_list;
-      header = (allocation_pool_list*) allocation_object<T>::get_data (block);
+      header = (allocation_pool_list*) allocation_object::get_data (block);
       header->next = NULL;
 #ifdef ENABLE_CHECKING
       /* Mark the element to be free.  */
-      ((allocation_object<T> *) block)->id = 0;
+      ((allocation_object*) block)->id = 0;
 #endif
       VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (header,size));
       m_returned_free_list = header;
@@ -408,36 +370,34 @@ pool_allocator<T>::allocate ()
 
 #ifdef ENABLE_CHECKING
   /* Set the ID for element.  */
-  allocation_object<T>::get_instance (header)->id = m_id;
+  allocation_object::get_instance (header)->id = m_id;
 #endif
   VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (header, size));
 
-  /* Call default constructor.  */
-  return (T *)(header);
+  return (void *)(header);
 }
 
 /* Puts PTR back on POOL's free list.  */
-template <typename T>
-void
-pool_allocator<T>::remove (T *object)
+inline void
+pool_allocator::remove (void *object)
 {
   gcc_checking_assert (m_initialized);
 
   allocation_pool_list *header;
   int size ATTRIBUTE_UNUSED;
-  size = m_elt_size - offsetof (allocation_object<T>, u.data);
+  size = m_elt_size - offsetof (allocation_object, u.data);
 
 #ifdef ENABLE_CHECKING
   gcc_assert (object
 	      /* Check if we free more than we allocated, which is Bad (TM).  */
 	      && m_elts_free < m_elts_allocated
 	      /* Check whether the PTR was allocated from POOL.  */
-	      && m_id == allocation_object<T>::get_instance (object)->id);
+	      && m_id == allocation_object::get_instance (object)->id);
 
   memset (object, 0xaf, size);
 
   /* Mark the element to be free.  */
-  allocation_object<T>::get_instance (object)->id = 0;
+  allocation_object::get_instance (object)->id = 0;
 #endif
 
   header = (allocation_pool_list*) object;
@@ -451,5 +411,78 @@ pool_allocator<T>::remove (T *object)
       pool_allocator_usage.release_instance_overhead (this, m_elt_size);
     }
 }
+
+/* Type based memory pool allocator.  */
+template <typename T>
+class object_allocator
+{
+public:
+  /* Default constructor for pool allocator called NAME.  Each block
+     has NUM elements.  */
+  object_allocator (const char *name, size_t num CXX_MEM_STAT_INFO):
+    m_allocator (name, num, sizeof (T) PASS_MEM_STAT) {}
+
+  inline void
+  release ()
+  {
+    m_allocator.release ();
+  }
+
+  inline void release_if_empty ()
+  {
+    m_allocator.release_if_empty ();
+  }
+
+  inline T *
+  allocate () ATTRIBUTE_MALLOC
+  {
+    return ::new (m_allocator.allocate ()) T ();
+  }
+
+  inline void
+  remove (T *object)
+  {
+    /* Call destructor.  */
+    object->~T ();
+
+    m_allocator.remove (object);
+  }
+
+private:
+  pool_allocator m_allocator;
+};
+
+/* Store information about each particular alloc_pool.  Note that this
+   will underestimate the amount the amount of storage used by a small amount:
+   1) The overhead in a pool is not accounted for.
+   2) The unallocated elements in a block are not accounted for.  Note
+   that this can at worst case be one element smaller that the block
+   size for that pool.  */
+struct alloc_pool_descriptor
+{
+  /* Number of pools allocated.  */
+  unsigned long created;
+  /* Gross allocated storage.  */
+  unsigned long allocated;
+  /* Amount of currently active storage.  */
+  unsigned long current;
+  /* Peak amount of storage used.  */
+  unsigned long peak;
+  /* Size of element in the pool.  */
+  int elt_size;
+};
+
+/* Helper for classes that do not provide default ctor.  */
+
+template <typename T>
+inline void *
+operator new (size_t, object_allocator<T> &a)
+{
+  return a.allocate ();
+}
+
+/* Hashtable mapping alloc_pool names to descriptors.  */
+extern hash_map<const char *, alloc_pool_descriptor> *alloc_pool_hash;
+
 
 #endif

@@ -113,7 +113,8 @@ typedef struct strinfo_struct
 } *strinfo;
 
 /* Pool for allocating strinfo_struct entries.  */
-static pool_allocator<strinfo_struct> strinfo_pool ("strinfo_struct pool", 64);
+static object_allocator<strinfo_struct> strinfo_pool ("strinfo_struct pool",
+						      64);
 
 /* Vector mapping positive string indexes to strinfo, for the
    current basic block.  The first pointer in the vector is special,
