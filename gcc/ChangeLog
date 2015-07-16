@@ -1,5 +1,15 @@
 2015-07-16  Richard Biener  <rguenther@suse.de>
 
+	* fold-const.c (fold_widened_comparison): Remove.
+	(fold_sign_changed_comparison): Likewise.
+	(fold_comparison): Move widened and sign-changed comparison
+	simplification ...
+	* match.pd: ... to patterns here.
+	* generic-match-head.c: Include target.h.
+	* gimple-match-head.c: Likewise.
+
+2015-07-16  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-dom.c (dom_valueize): New function.
 	(record_temporary_equivalences): Also record equivalences
 	for dominating stmts that have uses of equivalences we are
