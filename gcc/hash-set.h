@@ -59,6 +59,11 @@ public:
       return !Traits::is_empty (e);
     }
 
+  void remove (const Key &k)
+    {
+      m_table.remove_elt_with_hash (k, Traits::hash (k));
+    }
+
   /* Call the call back on each pair of key and value with the passed in
      arg.  */
 
@@ -73,6 +78,40 @@ public:
   /* Return the number of elements in the set.  */
 
   size_t elements () const { return m_table.elements (); }
+
+  class iterator
+  {
+  public:
+    explicit iterator (const typename hash_table<Traits>::iterator &iter) :
+      m_iter (iter) {}
+
+    iterator &operator++ ()
+      {
+	++m_iter;
+	return *this;
+      }
+
+    Key
+    operator* ()
+      {
+	return *m_iter;
+      }
+
+    bool
+    operator != (const iterator &other) const
+      {
+	return m_iter != other.m_iter;
+      }
+
+  private:
+    typename hash_table<Traits>::iterator m_iter;
+  };
+
+  /* Standard iterator retrieval methods.  */
+
+  iterator begin () const { return iterator (m_table.begin ()); }
+  iterator end () const { return iterator (m_table.end ()); }
+
 
 private:
 
