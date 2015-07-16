@@ -1,3 +1,10 @@
+2015-07-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (dom_valueize): New function.
+	(record_temporary_equivalences): Also record equivalences
+	for dominating stmts that have uses of equivalences we are
+	about to record.
+
 2015-07-16  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (add_candidate): Remove call to
