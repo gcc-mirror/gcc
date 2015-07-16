@@ -1,3 +1,7 @@
+2015-07-16  Richard Biener  <rguenther@suse.de>
+
+	* BASE-VER: Set to 5.2.1.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
