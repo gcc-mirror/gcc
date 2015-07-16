@@ -245,11 +245,36 @@ print_c_condition (const char *cond)
    of the current MD file.  */
 
 static void ATTRIBUTE_PRINTF(2,0)
-message_with_line_1 (int lineno, const char *msg, va_list ap)
+message_at_1 (file_location loc, const char *msg, va_list ap)
 {
-  fprintf (stderr, "%s:%d: ", read_md_filename, lineno);
+  fprintf (stderr, "%s:%d: ", loc.filename, loc.lineno);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
+}
+
+/* A printf-like function for reporting a message against location LOC.  */
+
+void
+message_at (file_location loc, const char *msg, ...)
+{
+  va_list ap;
+
+  va_start (ap, msg);
+  message_at_1 (loc, msg, ap);
+  va_end (ap);
+}
+
+/* Like message_at, but treat the condition as an error.  */
+
+void
+error_at (file_location loc, const char *msg, ...)
+{
+  va_list ap;
+
+  va_start (ap, msg);
+  message_at_1 (loc, msg, ap);
+  va_end (ap);
+  have_error = 1;
 }
 
 /* A printf-like function for reporting an error against line LINENO
@@ -261,7 +286,7 @@ message_with_line (int lineno, const char *msg, ...)
   va_list ap;
 
   va_start (ap, msg);
-  message_with_line_1 (lineno, msg, ap);
+  message_at_1 (file_location (read_md_filename, lineno), msg, ap);
   va_end (ap);
 }
 
@@ -273,7 +298,7 @@ error_with_line (int lineno, const char *msg, ...)
   va_list ap;
 
   va_start (ap, msg);
-  message_with_line_1 (lineno, msg, ap);
+  message_at_1 (file_location (read_md_filename, lineno), msg, ap);
   va_end (ap);
   have_error = 1;
 }
@@ -593,8 +618,8 @@ read_string (int star_if_braced)
 /* Skip the rest of a construct that started at line LINENO and that
    is currently nested by DEPTH levels of parentheses.  */
 
-void
-read_skip_construct (int depth, int lineno)
+static void
+read_skip_construct (int depth, file_location loc)
 {
   struct md_name name;
   int c;
@@ -604,7 +629,7 @@ read_skip_construct (int depth, int lineno)
       c = read_skip_spaces ();
       if (c == EOF)
 	{
-	  error_with_line (lineno, "unterminated construct");
+	  error_at (loc, "unterminated construct");
 	  exit (1);
 	}
       switch (c)
@@ -794,7 +819,7 @@ md_decimal_string (int number)
    directive is a define_enum rather than a define_c_enum.  */
 
 static void
-handle_enum (int lineno, bool md_p)
+handle_enum (file_location loc, bool md_p)
 {
   char *enum_name, *value_name;
   struct md_name name;
@@ -809,8 +834,8 @@ handle_enum (int lineno, bool md_p)
     {
       def = (struct enum_type *) *slot;
       if (def->md_p != md_p)
-	error_with_line (lineno, "redefining `%s' as a different type of enum",
-			 enum_name);
+	error_at (loc, "redefining `%s' as a different type of enum",
+		  enum_name);
     }
   else
     {
@@ -831,7 +856,7 @@ handle_enum (int lineno, bool md_p)
     {
       if (c == EOF)
 	{
-	  error_with_line (lineno, "unterminated construct");
+	  error_at (loc, "unterminated construct");
 	  exit (1);
 	}
       unread_char (c);
@@ -883,7 +908,7 @@ traverse_enum_types (htab_trav callback, void *info)
    which the "include" occurred.  */
 
 static void
-handle_include (int lineno, directive_handler_t handle_directive)
+handle_include (file_location loc, directive_handler_t handle_directive)
 {
   const char *filename;
   const char *old_filename;
@@ -926,7 +951,7 @@ handle_include (int lineno, directive_handler_t handle_directive)
   if (input_file == NULL)
     {
       free (pathname);
-      error_with_line (lineno, "include file `%s' not found", filename);
+      error_at (loc, "include file `%s' not found", filename);
       return;
     }
 
@@ -961,12 +986,12 @@ static void
 handle_file (directive_handler_t handle_directive)
 {
   struct md_name directive;
-  int c, lineno;
+  int c;
 
   read_md_lineno = 1;
   while ((c = read_skip_spaces ()) != EOF)
     {
-      lineno = read_md_lineno;
+      file_location loc (read_md_filename, read_md_lineno);
       if (c != '(')
 	fatal_expected_char ('(', c);
 
@@ -974,15 +999,15 @@ handle_file (directive_handler_t handle_directive)
       if (strcmp (directive.string, "define_constants") == 0)
 	handle_constants ();
       else if (strcmp (directive.string, "define_enum") == 0)
-	handle_enum (lineno, true);
+	handle_enum (loc, true);
       else if (strcmp (directive.string, "define_c_enum") == 0)
-	handle_enum (lineno, false);
+	handle_enum (loc, false);
       else if (strcmp (directive.string, "include") == 0)
-	handle_include (lineno, handle_directive);
+	handle_include (loc, handle_directive);
       else if (handle_directive)
-	handle_directive (lineno, directive.string);
+	handle_directive (loc, directive.string);
       else
-	read_skip_construct (1, lineno);
+	read_skip_construct (1, loc);
 
       c = read_skip_spaces ();
       if (c != ')')

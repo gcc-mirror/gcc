@@ -65,8 +65,7 @@ static htab_t condition_table;
 struct queue_elem
 {
   rtx data;
-  const char *filename;
-  int lineno;
+  file_location loc;
   struct queue_elem *next;
   /* In a DEFINE_INSN that came from a DEFINE_INSN_AND_SPLIT, SPLIT
      points to the generated DEFINE_SPLIT.  */
@@ -91,17 +90,12 @@ static struct queue_elem **other_tail = &other_queue;
 static struct queue_elem *define_subst_attr_queue;
 static struct queue_elem **define_subst_attr_tail = &define_subst_attr_queue;
 
-static struct queue_elem *queue_pattern (rtx, struct queue_elem ***,
-					 const char *, int);
-
 static void remove_constraints (rtx);
-static void process_rtx (rtx, int);
 
 static int is_predicable (struct queue_elem *);
 static void identify_predicable_attribute (void);
 static int n_alternatives (const char *);
 static void collect_insn_data (rtx, int *, int *);
-static rtx alter_predicate_for_insn (rtx, int, int, int);
 static const char *alter_test_for_insn (struct queue_elem *,
 					struct queue_elem *);
 static char *shift_output_template (char *, const char *, int);
@@ -114,8 +108,6 @@ static void init_predicate_table (void);
 static void record_insn_name (int, const char *);
 
 static bool has_subst_attribute (struct queue_elem *, struct queue_elem *);
-static bool subst_pattern_match (rtx, rtx, int);
-static int get_alternatives_number (rtx, int *, int);
 static const char * alter_output_for_subst_insn (rtx, int);
 static void alter_attrs_for_subst_insn (struct queue_elem *, int);
 static void process_substs_on_one_elem (struct queue_elem *,
@@ -363,12 +355,12 @@ valid_predicate_name_p (const char *name)
   return true;
 }
 
-/* Process define_predicate directive DESC, which appears on line number
-   LINENO.  Compute the set of codes that can be matched, and record this
-   as a known predicate.  */
+/* Process define_predicate directive DESC, which appears at location LOC.
+   Compute the set of codes that can be matched, and record this as a known
+   predicate.  */
 
 static void
-process_define_predicate (rtx desc, int lineno)
+process_define_predicate (rtx desc, file_location loc)
 {
   struct pred_data *pred;
   char codes[NUM_RTX_CODE];
@@ -376,9 +368,8 @@ process_define_predicate (rtx desc, int lineno)
 
   if (!valid_predicate_name_p (XSTR (desc, 0)))
     {
-      error_with_line (lineno,
-		       "%s: predicate name must be a valid C function name",
-		       XSTR (desc, 0));
+      error_at (loc, "%s: predicate name must be a valid C function name",
+		XSTR (desc, 0));
       return;
     }
 
@@ -389,7 +380,7 @@ process_define_predicate (rtx desc, int lineno)
   if (GET_CODE (desc) == DEFINE_SPECIAL_PREDICATE)
     pred->special = true;
 
-  compute_test_codes (XEXP (desc, 1), lineno, codes);
+  compute_test_codes (XEXP (desc, 1), loc.lineno, codes);
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (codes[i] != N)
@@ -406,12 +397,11 @@ process_define_predicate (rtx desc, int lineno)
 
 static struct queue_elem *
 queue_pattern (rtx pattern, struct queue_elem ***list_tail,
-	       const char *filename, int lineno)
+	       file_location loc)
 {
   struct queue_elem *e = XNEW (struct queue_elem);
   e->data = pattern;
-  e->filename = filename;
-  e->lineno = lineno;
+  e->loc = loc;
   e->next = NULL;
   e->split = NULL;
   **list_tail = e;
@@ -452,8 +442,7 @@ add_define_attr (const char *name)
   XEXP (t1, 2) = rtx_alloc (CONST_STRING);
   XSTR (XEXP (t1, 2), 0) = "yes";
   e->data = t1;
-  e->filename = "built-in";
-  e->lineno = -1;
+  e->loc = file_location ("built-in", -1);
   e->next = define_attr_queue;
   define_attr_queue = e;
 
@@ -495,41 +484,41 @@ remove_constraints (rtx part)
 /* Process a top level rtx in some way, queuing as appropriate.  */
 
 static void
-process_rtx (rtx desc, int lineno)
+process_rtx (rtx desc, file_location loc)
 {
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
-      queue_pattern (desc, &define_insn_tail, read_md_filename, lineno);
+      queue_pattern (desc, &define_insn_tail, loc);
       break;
 
     case DEFINE_COND_EXEC:
-      queue_pattern (desc, &define_cond_exec_tail, read_md_filename, lineno);
+      queue_pattern (desc, &define_cond_exec_tail, loc);
       break;
 
     case DEFINE_SUBST:
-      queue_pattern (desc, &define_subst_tail, read_md_filename, lineno);
+      queue_pattern (desc, &define_subst_tail, loc);
       break;
 
     case DEFINE_SUBST_ATTR:
-      queue_pattern (desc, &define_subst_attr_tail, read_md_filename, lineno);
+      queue_pattern (desc, &define_subst_attr_tail, loc);
       break;
 
     case DEFINE_ATTR:
     case DEFINE_ENUM_ATTR:
-      queue_pattern (desc, &define_attr_tail, read_md_filename, lineno);
+      queue_pattern (desc, &define_attr_tail, loc);
       break;
 
     case DEFINE_PREDICATE:
     case DEFINE_SPECIAL_PREDICATE:
-      process_define_predicate (desc, lineno);
+      process_define_predicate (desc, loc);
       /* Fall through.  */
 
     case DEFINE_CONSTRAINT:
     case DEFINE_REGISTER_CONSTRAINT:
     case DEFINE_MEMORY_CONSTRAINT:
     case DEFINE_ADDRESS_CONSTRAINT:
-      queue_pattern (desc, &define_pred_tail, read_md_filename, lineno);
+      queue_pattern (desc, &define_pred_tail, loc);
       break;
 
     case DEFINE_INSN_AND_SPLIT:
@@ -570,17 +559,14 @@ process_rtx (rtx desc, int lineno)
 	XVEC (desc, 4) = attr;
 
 	/* Queue them.  */
-	insn_elem
-	  = queue_pattern (desc, &define_insn_tail, read_md_filename,
-			   lineno);
-	split_elem
-	  = queue_pattern (split, &other_tail, read_md_filename, lineno);
+	insn_elem = queue_pattern (desc, &define_insn_tail, loc);
+	split_elem = queue_pattern (split, &other_tail, loc);
 	insn_elem->split = split_elem;
 	break;
       }
 
     default:
-      queue_pattern (desc, &other_tail, read_md_filename, lineno);
+      queue_pattern (desc, &other_tail, loc);
       break;
     }
 }
@@ -614,8 +600,7 @@ is_predicable (struct queue_elem *elem)
 	case SET_ATTR_ALTERNATIVE:
 	  if (strcmp (XSTR (sub, 0), "predicable") == 0)
 	    {
-	      error_with_line (elem->lineno,
-			       "multiple alternatives for `predicable'");
+	      error_at (elem->loc, "multiple alternatives for `predicable'");
 	      return 0;
 	    }
 	  break;
@@ -634,8 +619,7 @@ is_predicable (struct queue_elem *elem)
 	  /* ??? It would be possible to handle this if we really tried.
 	     It's not easy though, and I'm not going to bother until it
 	     really proves necessary.  */
-	  error_with_line (elem->lineno,
-			   "non-constant value for `predicable'");
+	  error_at (elem->loc, "non-constant value for `predicable'");
 	  return 0;
 
 	default:
@@ -655,8 +639,7 @@ is_predicable (struct queue_elem *elem)
   if (strcmp (value, predicable_false) == 0)
     return 0;
 
-  error_with_line (elem->lineno,
-		   "unknown value `%s' for `predicable' attribute", value);
+  error_at (elem->loc, "unknown value `%s' for `predicable' attribute", value);
   return 0;
 }
 
@@ -728,15 +711,13 @@ has_subst_attribute (struct queue_elem *elem, struct queue_elem *subst_elem)
 	  /* Only (set_attr "subst" "yes/no") and
 		  (set (attr "subst" (const_string "yes/no")))
 	     are currently allowed.  */
-	  error_with_line (elem->lineno,
-			   "unsupported value for `%s'", subst_name);
+	  error_at (elem->loc, "unsupported value for `%s'", subst_name);
 	  return false;
 
 	case SET_ATTR_ALTERNATIVE:
-	  error_with_line (elem->lineno,
-			   "%s: `set_attr_alternative' is unsupported by "
-			   "`define_subst'",
-			   XSTR (elem->data, 0));
+	  error_at (elem->loc,
+		    "%s: `set_attr_alternative' is unsupported by "
+		    "`define_subst'", XSTR (elem->data, 0));
 	  return false;
 
 
@@ -753,8 +734,8 @@ has_subst_attribute (struct queue_elem *elem, struct queue_elem *subst_elem)
   if (strcmp (value, subst_false) == 0)
     return false;
 
-  error_with_line (elem->lineno,
-		   "unknown value `%s' for `%s' attribute", value, subst_name);
+  error_at (elem->loc, "unknown value `%s' for `%s' attribute",
+	    value, subst_name);
   return false;
 }
 
@@ -762,7 +743,7 @@ has_subst_attribute (struct queue_elem *elem, struct queue_elem *subst_elem)
    define_subst PT.  Return 1 if the templates match, 0 otherwise.
    During the comparison, the routine also fills global_array OPERAND_DATA.  */
 static bool
-subst_pattern_match (rtx x, rtx pt, int lineno)
+subst_pattern_match (rtx x, rtx pt, file_location loc)
 {
   RTX_CODE code, code_pt;
   int i, j, len;
@@ -837,7 +818,7 @@ subst_pattern_match (rtx x, rtx pt, int lineno)
 	    return false;
 	  for (j = 0; j < XVECLEN (pt, 2); j++)
 	    if (!subst_pattern_match (XVECEXP (x, x_vecexp_pos, j),
-				      XVECEXP (pt, 2, j), lineno))
+				      XVECEXP (pt, 2, j), loc))
 	      return false;
 	}
 
@@ -851,7 +832,7 @@ subst_pattern_match (rtx x, rtx pt, int lineno)
 	  if (GET_RTX_LENGTH (code) != XVECLEN (pt, 2))
 	    return false;
 	  for (j = 0; j < XVECLEN (pt, 2); j++)
-	    if (!subst_pattern_match (XEXP (x, j), XVECEXP (pt, 2, j), lineno))
+	    if (!subst_pattern_match (XEXP (x, j), XVECEXP (pt, 2, j), loc))
 	      return false;
 	}
 
@@ -870,8 +851,8 @@ subst_pattern_match (rtx x, rtx pt, int lineno)
       /* Currently interface for these constructions isn't defined -
 	 probably they aren't needed in input template of define_subst at all.
 	 So, for now their usage in define_subst is forbidden.  */
-      error_with_line (lineno, "%s cannot be used in define_subst",
-		       GET_RTX_NAME (code_pt));
+      error_at (loc, "%s cannot be used in define_subst",
+		GET_RTX_NAME (code_pt));
     }
 
   gcc_assert (code != MATCH_PAR_DUP
@@ -900,7 +881,7 @@ subst_pattern_match (rtx x, rtx pt, int lineno)
 	  continue;
 
 	case 'e': case 'u':
-	  if (!subst_pattern_match (XEXP (x, i), XEXP (pt, i), lineno))
+	  if (!subst_pattern_match (XEXP (x, i), XEXP (pt, i), loc))
 	    return false;
 	  break;
 	case 'E':
@@ -908,8 +889,8 @@ subst_pattern_match (rtx x, rtx pt, int lineno)
 	    if (XVECLEN (x, i) != XVECLEN (pt, i))
 	      return false;
 	    for (j = 0; j < XVECLEN (pt, i); j++)
-	      if (!subst_pattern_match (XVECEXP (x, i, j), XVECEXP (pt, i, j),
-					lineno))
+	      if (!subst_pattern_match (XVECEXP (x, i, j),
+					XVECEXP (pt, i, j), loc))
 		return false;
 	    break;
 	  }
@@ -936,8 +917,8 @@ identify_predicable_attribute (void)
     if (strcmp (XSTR (elem->data, 0), "predicable") == 0)
       goto found;
 
-  error_with_line (define_cond_exec_queue->lineno,
-		   "attribute `predicable' not defined");
+  error_at (define_cond_exec_queue->loc,
+	    "attribute `predicable' not defined");
   return;
 
  found:
@@ -946,7 +927,7 @@ identify_predicable_attribute (void)
   p_true = strchr (p_false, ',');
   if (p_true == NULL || strchr (++p_true, ',') != NULL)
     {
-      error_with_line (elem->lineno, "attribute `predicable' is not a boolean");
+      error_at (elem->loc, "attribute `predicable' is not a boolean");
       free (p_false);
       return;
     }
@@ -962,13 +943,13 @@ identify_predicable_attribute (void)
       break;
 
     case CONST:
-      error_with_line (elem->lineno, "attribute `predicable' cannot be const");
+      error_at (elem->loc, "attribute `predicable' cannot be const");
       free (p_false);
       return;
 
     default:
-      error_with_line (elem->lineno,
-		       "attribute `predicable' must have a constant default");
+      error_at (elem->loc,
+		"attribute `predicable' must have a constant default");
       free (p_false);
       return;
     }
@@ -979,8 +960,8 @@ identify_predicable_attribute (void)
     predicable_default = 0;
   else
     {
-      error_with_line (elem->lineno,
-		       "unknown value `%s' for `predicable' attribute", value);
+      error_at (elem->loc, "unknown value `%s' for `predicable' attribute",
+		value);
       free (p_false);
     }
 }
@@ -1004,9 +985,9 @@ n_alternatives (const char *s)
    with different number of alternatives, error is emitted, and the
    routine returns 0.  If all match_operands in PATTERN have the same
    number of alternatives, it's stored in N_ALT, and the routine returns 1.
-   Argument LINENO is used in when the error is emitted.  */
+   LOC is the location of PATTERN, for error reporting.  */
 static int
-get_alternatives_number (rtx pattern, int *n_alt, int lineno)
+get_alternatives_number (rtx pattern, int *n_alt, file_location loc)
 {
   const char *fmt;
   enum rtx_code code;
@@ -1029,9 +1010,8 @@ get_alternatives_number (rtx pattern, int *n_alt, int lineno)
 
       else if (i && i != *n_alt)
 	{
-	  error_with_line (lineno,
-			   "wrong number of alternatives in operand %d",
-			   XINT (pattern, 0));
+	  error_at (loc, "wrong number of alternatives in operand %d",
+		    XINT (pattern, 0));
 	  return 0;
 	}
 
@@ -1046,8 +1026,8 @@ get_alternatives_number (rtx pattern, int *n_alt, int lineno)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  if (!get_alternatives_number (XEXP (pattern, i), n_alt, lineno))
-		return 0;
+	  if (!get_alternatives_number (XEXP (pattern, i), n_alt, loc))
+	    return 0;
 	  break;
 
 	case 'V':
@@ -1056,9 +1036,8 @@ get_alternatives_number (rtx pattern, int *n_alt, int lineno)
 
 	case 'E':
 	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
-	    if (!get_alternatives_number (XVECEXP (pattern, i, j),
-					  n_alt, lineno))
-		return 0;
+	    if (!get_alternatives_number (XVECEXP (pattern, i, j), n_alt, loc))
+	      return 0;
 	  break;
 
 	case 'i': case 'r': case 'w': case '0': case 's': case 'S': case 'T':
@@ -1130,7 +1109,8 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
 }
 
 static rtx
-alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
+alter_predicate_for_insn (rtx pattern, int alt, int max_op,
+			  file_location loc)
 {
   const char *fmt;
   enum rtx_code code;
@@ -1145,8 +1125,8 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 
 	if (n_alternatives (c) != 1)
 	  {
-	    error_with_line (lineno, "too many alternatives for operand %d",
-			     XINT (pattern, 0));
+	    error_at (loc, "too many alternatives for operand %d",
+		      XINT (pattern, 0));
 	    return NULL;
 	  }
 
@@ -1188,8 +1168,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  r = alter_predicate_for_insn (XEXP (pattern, i), alt,
-					max_op, lineno);
+	  r = alter_predicate_for_insn (XEXP (pattern, i), alt, max_op, loc);
 	  if (r == NULL)
 	    return r;
 	  break;
@@ -1198,7 +1177,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
 	    {
 	      r = alter_predicate_for_insn (XVECEXP (pattern, i, j),
-					    alt, max_op, lineno);
+					    alt, max_op, loc);
 	      if (r == NULL)
 		return r;
 	    }
@@ -1449,10 +1428,10 @@ alter_attrs_for_subst_insn (struct queue_elem * elem, int n_dup)
 
 	case SET_ATTR_ALTERNATIVE:
 	case SET:
-	  error_with_line (elem->lineno,
-			   "%s: `define_subst' does not support attributes "
-			   "assigned by `set' and `set_attr_alternative'",
-			   XSTR (elem->data, 0));
+	  error_at (elem->loc,
+		    "%s: `define_subst' does not support attributes "
+		    "assigned by `set' and `set_attr_alternative'",
+		    XSTR (elem->data, 0));
 	  return;
 
 	default:
@@ -1702,13 +1681,13 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 
       if (XVECLEN (ce_elem->data, 0) != 1)
 	{
-	  error_with_line (ce_elem->lineno, "too many patterns in predicate");
+	  error_at (ce_elem->loc, "too many patterns in predicate");
 	  return;
 	}
 
       pred = copy_rtx (XVECEXP (ce_elem->data, 0, 0));
       pred = alter_predicate_for_insn (pred, alternatives, max_operand,
-				       ce_elem->lineno);
+				       ce_elem->loc);
       if (pred == NULL)
 	return;
 
@@ -1754,8 +1733,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 	 patterns into the define_insn chain just after their generator
 	 is something we'll have to experiment with.  */
 
-      queue_pattern (insn, &other_tail, insn_elem->filename,
-		     insn_elem->lineno);
+      queue_pattern (insn, &other_tail, insn_elem->loc);
 
       if (!insn_elem->split)
 	continue;
@@ -1779,8 +1757,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 	  XVECEXP (split, 2, i) = pattern;
 	}
       /* Add the new split to the queue.  */
-      queue_pattern (split, &other_tail, read_md_filename,
-		     insn_elem->split->lineno);
+      queue_pattern (split, &other_tail, insn_elem->split->loc);
     }
 }
 
@@ -1819,14 +1796,14 @@ process_substs_on_one_elem (struct queue_elem *elem,
 	{
 	  if (!subst_pattern_match (XVECEXP (elem->data, 1, j),
 				    XVECEXP (subst_elem->data, 1, j),
-				    subst_elem->lineno))
+				    subst_elem->loc))
 	    {
 	      patterns_match = 0;
 	      break;
 	    }
 
 	  if (!get_alternatives_number (XVECEXP (elem->data, 1, j),
-					&alternatives, subst_elem->lineno))
+					&alternatives, subst_elem->loc))
 	    {
 	      patterns_match = 0;
 	      break;
@@ -1839,7 +1816,7 @@ process_substs_on_one_elem (struct queue_elem *elem,
 	{
 	  if (!get_alternatives_number (XVECEXP (subst_elem->data, 3, j),
 					&alternatives_subst,
-					subst_elem->lineno))
+					subst_elem->loc))
 	    {
 	      patterns_match = 0;
 	      break;
@@ -2224,10 +2201,10 @@ process_define_subst (void)
 	if (strcmp (XSTR (elem->data, 0), XSTR (elem_attr->data, 1)) == 0)
 	    goto found;
 
-      error_with_line (elem->lineno,
-		       "%s: `define_subst' must have at least one "
-		       "corresponding `define_subst_attr'",
-		       XSTR (elem->data, 0));
+      error_at (elem->loc,
+		"%s: `define_subst' must have at least one "
+		"corresponding `define_subst_attr'",
+		XSTR (elem->data, 0));
       return;
 
       found:
@@ -2247,7 +2224,7 @@ process_define_subst (void)
 /* A read_md_files callback for reading an rtx.  */
 
 static void
-rtx_handle_directive (int lineno, const char *rtx_name)
+rtx_handle_directive (file_location loc, const char *rtx_name)
 {
   auto_vec<rtx, 32> subrtxs;
   if (!read_rtx (rtx_name, &subrtxs))
@@ -2256,7 +2233,7 @@ rtx_handle_directive (int lineno, const char *rtx_name)
   rtx x;
   unsigned int i;
   FOR_EACH_VEC_ELT (subrtxs, i, x)
-    process_rtx (x, lineno);
+    process_rtx (x, loc);
 }
 
 /* Comparison function for the mnemonic hash table.  */
@@ -2506,8 +2483,7 @@ check_define_attr_duplicates ()
       /* Duplicate.  */
       if (*slot)
 	{
-	  error_with_line (elem->lineno, "redefinition of attribute '%s'",
-			   attr_name);
+	  error_at (elem->loc, "redefinition of attribute '%s'", attr_name);
 	  htab_delete (attr_htab);
 	  return;
 	}
@@ -2588,8 +2564,8 @@ read_md_rtx (int *lineno, int *seqnr)
   elem = *queue;
   *queue = elem->next;
   desc = elem->data;
-  read_md_filename = elem->filename;
-  *lineno = elem->lineno;
+  read_md_filename = elem->loc.filename;
+  *lineno = elem->loc.lineno;
   *seqnr = sequence_num;
 
   free (elem);
