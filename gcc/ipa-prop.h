@@ -338,10 +338,10 @@ struct ipa_node_params
 
 /* Intermediate information that we get from alias analysis about a particular
    parameter in a particular basic_block.  When a parameter or the memory it
-   references is marked modified, we use that information in all dominatd
-   blocks without cosulting alias analysis oracle.  */
+   references is marked modified, we use that information in all dominated
+   blocks without consulting alias analysis oracle.  */
 
-struct param_aa_status
+struct ipa_param_aa_status
 {
   /* Set when this structure contains meaningful information.  If not, the
      structure describing a dominating BB should be used instead.  */
@@ -363,13 +363,13 @@ struct ipa_bb_info
   /* Call graph edges going out of this BB.  */
   vec<cgraph_edge *> cg_edges;
   /* Alias analysis statuses of each formal parameter at this bb.  */
-  vec<param_aa_status> param_aa_statuses;
+  vec<ipa_param_aa_status> param_aa_statuses;
 };
 
 /* Structure with global information that is only used when looking at function
    body. */
 
-struct func_body_info
+struct ipa_func_body_info
 {
   /* The node that is being analyzed.  */
   cgraph_node *node;
@@ -636,7 +636,7 @@ void ipa_analyze_node (struct cgraph_node *);
 /* Aggregate jump function related functions.  */
 tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *, HOST_WIDE_INT,
 				 bool);
-bool ipa_load_from_parm_agg (struct func_body_info *,
+bool ipa_load_from_parm_agg (struct ipa_func_body_info *,
 			     vec<ipa_param_descriptor>, gimple, tree, int *,
 			     HOST_WIDE_INT *, HOST_WIDE_INT *, bool *);
 

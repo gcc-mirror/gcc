@@ -1,3 +1,9 @@
+2015-07-16  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (param_aa_status): Rename to ipa_param_aa_status.  Adjust
+	all uses.  Fix two typos in its general comment.
+	(func_body_info): Rename to ipa_func_body_info.  Adjust all uses.
+
 2015-07-16  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* config/i386/linux-common.h (LINK_MPX): New.
