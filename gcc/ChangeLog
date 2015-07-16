@@ -1,3 +1,8 @@
+2015-07-16  Martin Liska  <mliska@suse.cz>
+
+	* hash-set.h (remove): New function.
+	(iterator): New iteration class for hash_set.
+
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* genattrtab.c (make_canonical): Add a file_location parameter.
