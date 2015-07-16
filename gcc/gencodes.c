@@ -29,10 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gensupport.h"
 
 static void
-gen_insn (rtx insn, int code)
+gen_insn (md_rtx_info *info)
 {
-  const char *name = XSTR (insn, 0);
-  int truth = maybe_eval_c_test (XSTR (insn, 2));
+  const char *name = XSTR (info->def, 0);
+  int truth = maybe_eval_c_test (XSTR (info->def, 2));
 
   /* Don't mention instructions whose names are the null string
      or begin with '*'.  They are in the machine description just
@@ -42,14 +42,13 @@ gen_insn (rtx insn, int code)
       if (truth == 0)
 	printf ("#define CODE_FOR_%s CODE_FOR_nothing\n", name);
       else
-	printf ("  CODE_FOR_%s = %d,\n", name, code);
+	printf ("  CODE_FOR_%s = %d,\n", name, info->index);
     }
 }
 
 int
 main (int argc, char **argv)
 {
-  rtx desc;
   int last = 1;
 
   progname = "gencodes";
@@ -73,20 +72,18 @@ enum insn_code {\n\
 
   /* Read the machine description.  */
 
-  while (1)
-    {
-      int line_no;
-      int insn_code_number;
-
-      desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+      case DEFINE_EXPAND:
+	gen_insn (&info);
+	last = info.index + 1;
 	break;
 
-      if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	{
-	  gen_insn (desc, insn_code_number);
-	  last = insn_code_number + 1;
-	}
+      default:
+	break;
     }
 
   printf ("  LAST_INSN_CODE = %d\n\

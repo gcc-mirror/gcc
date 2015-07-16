@@ -91,10 +91,9 @@ validate_exp (rtx exp, const char *name, file_location loc)
 /* Predicates are defined with (define_predicate) or
    (define_special_predicate) expressions in the machine description.  */
 static void
-process_define_predicate (rtx defn, int lineno)
+process_define_predicate (md_rtx_info *info)
 {
-  validate_exp (XEXP (defn, 1), XSTR (defn, 0),
-		file_location (read_md_filename, lineno));
+  validate_exp (XEXP (info->def, 1), XSTR (info->def, 0), info->loc);
 }
 
 /* Given a predicate, if it has an embedded C block, write the block
@@ -936,20 +935,20 @@ add_constraint (const char *name, const char *regclass,
 /* Process a DEFINE_CONSTRAINT, DEFINE_MEMORY_CONSTRAINT, or
    DEFINE_ADDRESS_CONSTRAINT expression, C.  */
 static void
-process_define_constraint (rtx c, int lineno)
+process_define_constraint (md_rtx_info *info)
 {
-  add_constraint (XSTR (c, 0), 0, XEXP (c, 2),
-		  GET_CODE (c) == DEFINE_MEMORY_CONSTRAINT,
-		  GET_CODE (c) == DEFINE_ADDRESS_CONSTRAINT,
-		  file_location (read_md_filename, lineno));
+  add_constraint (XSTR (info->def, 0), 0, XEXP (info->def, 2),
+		  GET_CODE (info->def) == DEFINE_MEMORY_CONSTRAINT,
+		  GET_CODE (info->def) == DEFINE_ADDRESS_CONSTRAINT,
+		  info->loc);
 }
 
 /* Process a DEFINE_REGISTER_CONSTRAINT expression, C.  */
 static void
-process_define_register_constraint (rtx c, int lineno)
+process_define_register_constraint (md_rtx_info *info)
 {
-  add_constraint (XSTR (c, 0), XSTR (c, 1), 0, false, false,
-		  file_location (read_md_filename, lineno));
+  add_constraint (XSTR (info->def, 0), XSTR (info->def, 1),
+		  0, false, false, info->loc);
 }
 
 /* Put the constraints into enum order.  We want to keep constraints
@@ -1584,31 +1583,29 @@ parse_option (const char *opt)
 int
 main (int argc, char **argv)
 {
-  rtx defn;
-  int pattern_lineno, next_insn_code = 0;
-
   progname = argv[0];
   if (argc <= 1)
     fatal ("no input file name");
   if (!init_rtx_reader_args_cb (argc, argv, parse_option))
     return FATAL_EXIT_CODE;
 
-  while ((defn = read_md_rtx (&pattern_lineno, &next_insn_code)) != 0)
-    switch (GET_CODE (defn))
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
       {
       case DEFINE_PREDICATE:
       case DEFINE_SPECIAL_PREDICATE:
-	process_define_predicate (defn, pattern_lineno);
+	process_define_predicate (&info);
 	break;
 
       case DEFINE_CONSTRAINT:
       case DEFINE_MEMORY_CONSTRAINT:
       case DEFINE_ADDRESS_CONSTRAINT:
-	process_define_constraint (defn, pattern_lineno);
+	process_define_constraint (&info);
 	break;
 
       case DEFINE_REGISTER_CONSTRAINT:
-	process_define_register_constraint (defn, pattern_lineno);
+	process_define_register_constraint (&info);
 	break;
 
       default:

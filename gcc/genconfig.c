@@ -51,11 +51,6 @@ static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
 static void walk_insn_part (rtx, int, int);
-static void gen_insn (rtx);
-static void gen_expand (rtx);
-static void gen_split (rtx);
-static void gen_peephole (rtx);
-static void gen_peephole2 (rtx);
 
 /* RECOG_P will be nonzero if this pattern was seen in a context where it will
    be used to recognize, rather than just generate an insn.
@@ -179,11 +174,12 @@ walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
 }
 
 static void
-gen_insn (rtx insn)
+gen_insn (md_rtx_info *info)
 {
   int i;
 
   /* Walk the insn pattern to gather the #define's status.  */
+  rtx insn = info->def;
   clobbers_seen_this_insn = 0;
   dup_operands_seen_this_insn = 0;
   if (XVEC (insn, 1) != 0)
@@ -199,7 +195,7 @@ gen_insn (rtx insn)
 /* Similar but scan a define_expand.  */
 
 static void
-gen_expand (rtx insn)
+gen_expand (md_rtx_info *info)
 {
   int i;
 
@@ -207,6 +203,7 @@ gen_expand (rtx insn)
 
   /* Note that we don't bother recording the number of MATCH_DUPs
      that occur in a gen_expand, because only reload cares about that.  */
+  rtx insn = info->def;
   if (XVEC (insn, 1) != 0)
     for (i = 0; i < XVECLEN (insn, 1); i++)
       {
@@ -225,12 +222,13 @@ gen_expand (rtx insn)
 /* Similar but scan a define_split.  */
 
 static void
-gen_split (rtx split)
+gen_split (md_rtx_info *info)
 {
   int i;
 
   /* Look through the patterns that are matched
      to compute the maximum operand number.  */
+  rtx split = info->def;
   for (i = 0; i < XVECLEN (split, 0); i++)
     walk_insn_part (XVECEXP (split, 0, i), 1, 0);
   /* Look at the number of insns this insn could split into.  */
@@ -239,23 +237,25 @@ gen_split (rtx split)
 }
 
 static void
-gen_peephole (rtx peep)
+gen_peephole (md_rtx_info *info)
 {
   int i;
 
   /* Look through the patterns that are matched
      to compute the maximum operand number.  */
+  rtx peep = info->def;
   for (i = 0; i < XVECLEN (peep, 0); i++)
     walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
 }
 
 static void
-gen_peephole2 (rtx peep)
+gen_peephole2 (md_rtx_info *info)
 {
   int i, n;
 
   /* Look through the patterns that are matched
      to compute the maximum operand number.  */
+  rtx peep = info->def;
   for (i = XVECLEN (peep, 0) - 1; i >= 0; --i)
     walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
 
@@ -271,8 +271,6 @@ gen_peephole2 (rtx peep)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-
   progname = "genconfig";
 
   if (!init_rtx_reader_args (argc, argv))
@@ -291,42 +289,35 @@ main (int argc, char **argv)
 
   /* Read the machine description.  */
 
-  while (1)
-    {
-      int line_no, insn_code_number = 0;
-
-      desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+	gen_insn (&info);
 	break;
 
-      switch (GET_CODE (desc))
-	{
-  	  case DEFINE_INSN:
-	    gen_insn (desc);
-	    break;
+      case DEFINE_EXPAND:
+	gen_expand (&info);
+	break;
 
-	  case DEFINE_EXPAND:
-	    gen_expand (desc);
-	    break;
+      case DEFINE_SPLIT:
+	gen_split (&info);
+	break;
 
-	  case DEFINE_SPLIT:
-	    gen_split (desc);
-	    break;
+      case DEFINE_PEEPHOLE2:
+	have_peephole2_flag = 1;
+	gen_peephole2 (&info);
+	break;
 
-	  case DEFINE_PEEPHOLE2:
-	    have_peephole2_flag = 1;
-	    gen_peephole2 (desc);
-	    break;
+      case DEFINE_PEEPHOLE:
+	have_peephole_flag = 1;
+	gen_peephole (&info);
+	break;
 
-	  case DEFINE_PEEPHOLE:
-	    have_peephole_flag = 1;
-	    gen_peephole (desc);
-	    break;
-
-	  default:
-	    break;
-	}
-    }
+      default:
+	break;
+      }
 
   printf ("#define MAX_RECOG_OPERANDS %d\n", max_recog_operands + 1);
   printf ("#define MAX_DUP_OPERANDS %d\n", max_dup_operands);

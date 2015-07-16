@@ -1,5 +1,88 @@
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* read-md.h (message_with_line, error_with_line): Delete.
+	* read-md.c (message_with_line, error_with_line): Delete.
+	* gensupport.h: Include read-md.h.
+	(md_rtx_info): New structure.
+	(read_md_rtx): Use it.  Return a bool success value.
+	* gensupport.c (read_md_rtx): Likewise.
+	* genattr-common.c (gen_attr): Take an md_rtx_info rather than an rtx.
+	(main): Update after interface changes.
+	* genattr.c (gen_attr): Take an md_rtx_info rather than an rtx.
+	(main): Update after interface changes.
+	* genattrtab.c (insn_code_number): Delete.
+	(optimize_attrs): Add a max_insn_code parameter and use it instead
+	of insn_code_number.
+	(gen_attr): Take an md_rtx_info rather than an rtx and lineno.
+	Use *_at rather than *_with_line functions.
+	(gen_insn): Likewise.
+	(gen_delay): Likewise.
+	(gen_insn_reserv): Likewise.
+	(gen_bypass): Take an md_rtx_info rather than an rtx.
+	(main): Update after interface changes.  Use a local max_insn_code
+	variable instead of insn_code_number.
+	* genautomata.c (gen_cpu_unit): Take an md_rtx_info rather than
+	an rtx.  Use fatal_at rather than fatal.
+	(gen_query_cpu_unit, gen_bypass, gen_excl_set)
+	(gen_presence_absence_set, gen_presence_set, gen_final_presence_set)
+	(gen_absence_set, gen_final_absence_set, gen_automaton)
+	(gen_automata_option, gen_reserv, gen_insn_reserv): Likewise.
+	(main): Update after interface changes.
+	* gencodes.c (gen_insn): Take an md_rtx_info rather than an rtx
+	and code number.
+	(main): Update after interface changes.
+	* genconditions.c (main): Use new read_md_rtx interface.
+	* genconfig.c (gen_insn): Take an md_rtx_info rather than an rtx.
+	(gen_expand, gen_split, gen_peephole, gen_peephole2): Likewise.
+	(main): Update after interface changes.
+	* genemit.c (insn_code_number, insn_index_number): Delete.
+	(gen_insn): Take an md_rtx_info rather than an rtx and lineno.
+	Use fatal_at rather than fatal.
+	(gen_expand): Take an md_rtx_info rather than an rtx.  Use fatal_at
+	rather than fatal.
+	(gen_split): Likewise.
+	(main): Update after interface changes.
+	* genextract.c (line_no): Delete.
+	(gen_insn): Take an md_rtx_info rather than an rtx and lineno.
+	Update call to walk_rtx.
+	(VEC_safe_set_locstr): Add an md_rtx_info argument.  Use message_at
+	rather than message_with_line.
+	(walk_rtx): Add an md_rtx_info argument.  Update call to
+	VEC_safe_set_locstr.
+	(main): Update after interface changes.
+	* genflags.c (gen_insn): Take an md_rtx_info rather than an rtx
+	and lineno.  Use error_at rather than separate message_with_line
+	calls and have_error assignments.
+	(main): Update after interface changes.
+	* genmddump.c (main): Use new read_md_rtx interface.
+	* genopinit.c (insn): Take an md_rtx_info rather than an rtx.
+	(main): Update after interface changes.
+	* genoutput.c (next_code_number): Delete.
+	(gen_insn): Take an md_rtx_info rather than an rtx and lineno.
+	(gen_peephole, gen_expand, gen_split): Likewise.
+	(note_constraint): Likewise.  Use *_at rather than *_with_line
+	functions.
+	(main): Update after interface changes.
+	* genpeep.c (gen_peephole): Take an md_rtx_info rather than an
+	rtx and lineno.
+	(main): Update after interface changes.
+	* genpreds.c (process_define_predicate): Take an md_rtx_info rather
+	than an rtx and lineno.
+	(process_define_constraint): Likewise.
+	(process_define_register_constraint): Likewise.
+	(main): Update after interface changes.
+	* genrecog.c (next_insn_code, pattern_lineno): Delete.
+	(validate_pattern): Replace top-level rtx with an md_rtx_info.
+	Use *_at rather than *_with_line functions.
+	(match_pattern_2): Likewise.
+	(match_pattern_1, match_pattern): Add an md_rtx_info parameter.
+	(get_peephole2_pattern): Take an md_rtx_info rather than an rtvec.
+	Use *_at rather than *_with_line functions.
+	* gentarget-def.c (add_insn): New function.
+	(main): Use it.  Use new read_md_rtx interface.
+
+2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gensupport.h (compute_test_codes): Take a file_location rather
 	than a line number.
 	* gensupport.c (compute_test_codes): Likewise.  Use *_at functions

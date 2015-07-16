@@ -2533,14 +2533,11 @@ init_rtx_reader_args (int argc, char **argv)
   return init_rtx_reader_args_cb (argc, argv, 0);
 }
 
-/* The entry point for reading a single rtx from an md file.  Return
-   the rtx, or NULL if the md file has been fully processed.
-   Return the line where the rtx was found in LINENO.
-   Return the number of code generating rtx'en read since the start
-   of the md file in SEQNR.  */
+/* Try to read a single rtx from the file.  Return true on success,
+   describing it in *INFO.  */
 
-rtx
-read_md_rtx (int *lineno, int *seqnr)
+bool
+read_md_rtx (md_rtx_info *info)
 {
   struct queue_elem **queue, *elem;
   rtx desc;
@@ -2557,14 +2554,13 @@ read_md_rtx (int *lineno, int *seqnr)
   else if (other_queue != NULL)
     queue = &other_queue;
   else
-    return NULL_RTX;
+    return false;
 
   elem = *queue;
   *queue = elem->next;
-  desc = elem->data;
-  read_md_filename = elem->loc.filename;
-  *lineno = elem->loc.lineno;
-  *seqnr = sequence_num;
+  info->def = elem->data;
+  info->loc = elem->loc;
+  info->index = sequence_num;
 
   free (elem);
 
@@ -2574,6 +2570,7 @@ read_md_rtx (int *lineno, int *seqnr)
      elided patterns are never counted by the sequence numbering; it
      is the caller's responsibility, when insn_elision is false, not
      to use elided pattern numbers for anything.  */
+  desc = info->def;
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
@@ -2584,9 +2581,9 @@ read_md_rtx (int *lineno, int *seqnr)
       else if (insn_elision)
 	goto discard;
 
-      /* *seqnr is used here so the name table will match caller's
+      /* info->index is used here so the name table will match caller's
 	 idea of insn numbering, whether or not elision is active.  */
-      record_insn_name (*seqnr, XSTR (desc, 0));
+      record_insn_name (info->index, XSTR (desc, 0));
       break;
 
     case DEFINE_SPLIT:
@@ -2595,14 +2592,14 @@ read_md_rtx (int *lineno, int *seqnr)
       if (maybe_eval_c_test (XSTR (desc, 1)) != 0)
 	sequence_num++;
       else if (insn_elision)
-	    goto discard;
+	goto discard;
       break;
 
     default:
       break;
     }
 
-  return desc;
+  return true;
 }
 
 /* Helper functions for insn elision.  */
