@@ -1145,6 +1145,10 @@ create_loads_for_reductions (reduction_info **slot, struct clsn_data *clsn_data)
   tree name;
   tree x;
 
+  /* If there's no exit phi, the result of the reduction is unused.  */
+  if (red->keep_res == NULL)
+    return 1;
+
   gsi = gsi_after_labels (clsn_data->load_bb);
   load_struct = build_simple_mem_ref (clsn_data->load);
   load_struct = build3 (COMPONENT_REF, type, load_struct, red->field,
