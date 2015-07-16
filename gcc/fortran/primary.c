@@ -1202,6 +1202,9 @@ match_sym_complex_part (gfc_expr **result)
       return MATCH_ERROR;
     }
 
+  if (!sym->value)
+    goto error;
+
   if (!gfc_numeric_ts (&sym->value->ts))
     {
       gfc_error ("Numeric PARAMETER required in complex constant at %C");
