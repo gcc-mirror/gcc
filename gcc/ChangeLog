@@ -1,5 +1,12 @@
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* genoutput.c (next_index_number): Delete.
+	(data): Remove index_number.
+	(gen_insn, gen_peephole, gen_expand, gen_split): Update accordingly.
+	(main): Remove manipulation of next_index_number.
+
+2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* genattrtab.c (check_attr_value): Remove handling of null attrs.
 	(make_canonical): Likewise.
 
