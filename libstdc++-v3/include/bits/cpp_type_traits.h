@@ -399,6 +399,13 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __false_type __type;
     };
 
+  // Fallback implementation of the function in bits/stl_iterator.h used to
+  // remove the move_iterator wrapper.
+  template<typename _Iterator>
+    inline _Iterator
+    __miter_base(_Iterator __it)
+    { return __it; }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

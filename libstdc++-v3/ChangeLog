@@ -1,3 +1,10 @@
+2015-07-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algobase.h (__miter_base): Move...
+	* include/bits/cpp_type_traits.h: ...here.
+	* include/debug/functions.h (__foreign_iterator_aux): Use latter.
+	* testsuite/23_containers/vector/debug/insert7_neg.cc: New.
+
 2015-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66855

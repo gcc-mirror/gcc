@@ -277,12 +277,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __niter_base(_Iterator __it)
     { return __it; }
 
-  // Likewise for move_iterator.
-  template<typename _Iterator>
-    inline _Iterator
-    __miter_base(_Iterator __it)
-    { return __it; }
-
   // All of these auxiliary structs serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
   // because the input and output ranges are permitted to overlap.)
