@@ -563,7 +563,7 @@ nios2_create_cfa_notes (rtx_insn *insn, bool epilogue_p)
 static void
 nios2_emit_stack_limit_check (int size)
 {
-  rtx sum;
+  rtx sum = NULL_RTX;
 
   if (GET_CODE (stack_limit_rtx) == SYMBOL_REF)
     {
