@@ -1,3 +1,8 @@
+2015-07-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_emit_stack_limit_check): Fix
+	uninitialized-variable warning.
+
 2015-07-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/65249
