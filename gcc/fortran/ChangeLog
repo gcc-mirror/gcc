@@ -1,3 +1,9 @@
+2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66725
+	* io.c (is_char_type): New function to test for BT_CHARACTER
+	(gfc_match_open, gfc_match_close, match_dt_element): Use it.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
