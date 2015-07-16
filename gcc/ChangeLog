@@ -1,3 +1,20 @@
+2015-07-16  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (add_candidate): Remove call to
+	add_autoinc_candidates.
+	(add_iv_candidate_for_biv): Rename to add_iv_candidate_for_biv.
+	(add_iv_candidate_for_biv): Rename from add_iv_candidate_for_biv.
+	(add_old_ivs_candidates): Rename to add_iv_candidate_for_bivs.
+	(add_iv_candidate_for_bivs): Rename from add_old_ivs_candidates.
+	Call new function.
+	(add_iv_value_candidates): Rename to add_iv_candidate_for_use.
+	(add_iv_candidate_for_use): Rename from add_iv_value_candidates.
+	Remove parameter struct iv*.  Call add_autoinc_candidates here.
+	(add_derived_ivs_candidates): Rename to add_iv_candidate_for_uses.
+	(add_iv_candidate_for_uses): Rename from add_derived_ivs_candidates.
+	Call new function.
+	(find_iv_candidates): Call new functions.
+
 2015-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.c (nios2_emit_stack_limit_check): Fix
