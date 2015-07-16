@@ -1,5 +1,25 @@
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* read-md.h (fatal_at): Declare.
+	* read-md.c (fatal_at): New function.
+	* genattrtab.c (insn_def, attr_desc, delay_desc): Use a file_location
+	to record the source position.
+	(check_attr_test): Take a file_location instead of a line number.
+	Use fatal_at instead of fatal.
+	(check_attr_value): Update after above changes, using "at"
+	rather than "with_line" reporting functions.
+	(convert_set_attr_alternative): Likewise.
+	(gen_attr): Likewise.
+	(check_defs): Likewise.  Don't assign to read_md_filename.
+	(gen_insn): Update initialization after above changes.
+	(gen_delay): Likewise.
+	(write_insn_cases): Print the filename for a define_peephole.
+	(gen_insn_reserv): Take a line number as argument and update
+	the call to check_attr_test.
+	(main): Pass a line number to gen_insn_reserv.
+
+2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* read-md.h (file_location): New structure.
 	(directive_handler_t): Take a file_location rather than a line number.
 	(message_at, error_at): Declare.
