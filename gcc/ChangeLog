@@ -1,3 +1,27 @@
+2015-07-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/66626
+	* ira.h (emit-rtl.h): Include.
+	(non_spilled_static_chain_regno_p): New.
+	* ira-color.c (setup_profitable_hard_regs): Clear profitable regs
+	unless it is non spilled static chain pseudo.
+	(assign_hard_rego): Spill memory profitable allocno unless it is
+	non spilled static chain pseudo.
+	(allocno_spill_priority_compare): Put non spilled static chain
+	pseudo at the end of sorted array.
+	(improve_allocation): Do nothing if we have static chain and
+	non-local goto.
+	(allocno__priority_compare_func): Put non spilled static chain
+	pseudo at the beginning of sorted array.
+	(move_spill_restore): Ignore non spilled static chain pseudo.
+	* ira-costs.c (find_costs_and_classes): Don't assign class NO_REGS
+	to non spilled static chain pseudo.
+	* lra-assigns.c (pseudo_compare_func): Put non spilled static chain
+	pseudo at the beginning of sorted array.
+	(spill_for): Spill non spilled static chain pseudo last.
+	* lra-constraints.c (lra_constraints): Remove static chain pseudo
+	check for equivalence.
+
 2015-07-16  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/66896.

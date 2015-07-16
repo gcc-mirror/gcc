@@ -4306,13 +4306,7 @@ lra_constraints (bool first_p)
 		    && ((CONST_POOL_OK_P (PSEUDO_REGNO_MODE (i), x)
 			 && (targetm.preferred_reload_class
 			     (x, lra_get_allocno_class (i)) == NO_REGS))
-			|| contains_symbol_ref_p (x)))
-		/* Static chain equivalence may contain eliminable
-		   regs and the result of elimination might be wrong
-		   after restoring frame pointer for a nonlocal
-		   goto.  */
-		|| (cfun->static_chain_decl && crtl->has_nonlocal_goto
-		    && REG_EXPR (reg) == cfun->static_chain_decl))
+			|| contains_symbol_ref_p (x))))
 	      ira_reg_equiv[i].defined_p = false;
 	    if (contains_reg_p (x, false, true))
 	      ira_reg_equiv[i].profitable_p = false;

@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_IRA_H
 #define GCC_IRA_H
 
+#include "emit-rtl.h"
+
 /* True when we use LRA instead of reload pass for the current
    function.  */
 extern bool ira_use_lra_p;
@@ -208,5 +210,16 @@ extern void ira_adjust_equiv_reg_cost (unsigned, int);
 
 /* ira-costs.c */
 extern void ira_costs_c_finalize (void);
+
+/* Spilling static chain pseudo may result in generation of wrong
+   non-local goto code using frame-pointer to address saved stack
+   pointer value after restoring old frame pointer value.  The
+   function returns TRUE if REGNO is such a static chain pseudo.  */
+static inline bool
+non_spilled_static_chain_regno_p (int regno)
+{
+  return (cfun->static_chain_decl && crtl->has_nonlocal_goto
+	  && REG_EXPR (regno_reg_rtx[regno]) == cfun->static_chain_decl);
+}
 
 #endif /* GCC_IRA_H */

@@ -255,6 +255,13 @@ pseudo_compare_func (const void *v1p, const void *v2p)
   int r1 = *(const int *) v1p, r2 = *(const int *) v2p;
   int diff;
 
+  /* Assign hard reg to static chain pointer first pseudo when
+     non-local goto is used.  */
+  if (non_spilled_static_chain_regno_p (r1))
+    return -1;
+  else if (non_spilled_static_chain_regno_p (r2))
+    return 1;
+
   /* Prefer to assign more frequently used registers first.  */
   if ((diff = lra_reg_info[r2].freq - lra_reg_info[r1].freq) != 0)
     return diff;
@@ -892,6 +899,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 {
   int i, j, n, p, hard_regno, best_hard_regno, cost, best_cost, rclass_size;
   int reload_hard_regno, reload_cost;
+  bool static_p, best_static_p;
   machine_mode mode;
   enum reg_class rclass;
   unsigned int spill_regno, reload_regno, uid;
@@ -914,6 +922,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
     }
   best_hard_regno = -1;
   best_cost = INT_MAX;
+  best_static_p = TRUE;
   best_insn_pseudos_num = INT_MAX;
   smallest_bad_spills_num = INT_MAX;
   rclass_size = ira_class_hard_regs_num[rclass];
@@ -936,6 +945,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 			   &try_hard_reg_pseudos[hard_regno + j]);
 	}
       /* Spill pseudos.	 */
+      static_p = false;
       EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
 	if ((pic_offset_table_rtx != NULL
 	     && spill_regno == REGNO (pic_offset_table_rtx))
@@ -945,6 +955,8 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 		&& ! bitmap_bit_p (&lra_subreg_reload_pseudos, spill_regno)
 		&& ! bitmap_bit_p (&lra_optional_reload_pseudos, spill_regno)))
 	  goto fail;
+	else if (non_spilled_static_chain_regno_p (spill_regno))
+	  static_p = true;
       insn_pseudos_num = 0;
       bad_spills_num = 0;
       if (lra_dump_file != NULL)
@@ -1024,14 +1036,19 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 		     x = x->next ())
 		  cost -= REG_FREQ_FROM_BB (BLOCK_FOR_INSN (x->insn ()));
 	    }
-	  if (best_insn_pseudos_num > insn_pseudos_num
-	      || (best_insn_pseudos_num == insn_pseudos_num
-		  && (bad_spills_num < smallest_bad_spills_num
-		      || (bad_spills_num == smallest_bad_spills_num
-			  && best_cost > cost))))
+	  /* Avoid spilling static chain pointer pseudo when non-local
+	     goto is used.  */
+	  if ((! static_p && best_static_p)
+	      || (static_p == best_static_p
+		  && (best_insn_pseudos_num > insn_pseudos_num
+		      || (best_insn_pseudos_num == insn_pseudos_num
+			  && (bad_spills_num < smallest_bad_spills_num
+			      || (bad_spills_num == smallest_bad_spills_num
+				  && best_cost > cost))))))
 	    {
 	      best_insn_pseudos_num = insn_pseudos_num;
 	      smallest_bad_spills_num = bad_spills_num;
+	      best_static_p = static_p;
 	      best_cost = cost;
 	      best_hard_regno = hard_regno;
 	      bitmap_copy (&best_spill_pseudos_bitmap, &spill_pseudos_bitmap);
