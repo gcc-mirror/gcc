@@ -1,3 +1,9 @@
+2015-07-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/66896.
+	* ipa-prop.c (update_jump_functions_after_inlining): Create properly
+	dst_ctx if it does not exist.
+
 2015-07-16  Richard Biener  <rguenther@suse.de>
 
 	* BASE-VER: Set to 5.2.1.

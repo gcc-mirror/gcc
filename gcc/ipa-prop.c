@@ -2472,11 +2472,15 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      ctx.offset_by (dst->value.ancestor.offset);
 	      if (!ctx.useless_p ())
 		{
-		  vec_safe_grow_cleared (args->polymorphic_call_contexts,
-					 count);
-		  dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
+		  if (!dst_ctx)
+		    {
+		      vec_safe_grow_cleared (args->polymorphic_call_contexts,
+					     count);
+		      dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
+		    }
+
+		  dst_ctx->combine_with (ctx);
 		}
-	      dst_ctx->combine_with (ctx);
 	    }
 
 	  if (src->agg.items
