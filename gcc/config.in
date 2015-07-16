@@ -574,6 +574,12 @@
 #endif
 
 
+/* Define if your assembler supports relocs needed by -fpic. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_SMALL_PIC_RELOCS
+#endif
+
+
 /* Define if your assembler supports SPARC4 instructions. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC4
@@ -603,12 +609,6 @@
    against hidden symbols. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
-#endif
-
-
-/* Define if your assembler supports relocs needed by -fpic. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_SMALL_PIC_RELOCS
 #endif
 
 
@@ -1366,6 +1366,12 @@
    options. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_AS_NEEDED
+#endif
+
+
+/* Define if your linker supports -z bndplt */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_BNDPLT_SUPPORT
 #endif
 
 

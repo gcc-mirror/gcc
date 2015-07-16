@@ -1,3 +1,12 @@
+2015-07-16  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* config/i386/linux-common.h (LINK_MPX): New.
+	(MPX_SPEC): Use LINK_MPX instead of %(link_mpx).
+	* configure.ac: Add HAVE_LD_BNDPLT_SUPPORT macro
+	indicating '-z bndplt' support by linker.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2015-07-16  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_widened_comparison): Remove.

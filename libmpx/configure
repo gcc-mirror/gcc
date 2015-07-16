@@ -666,7 +666,6 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
-link_mpx
 link_libmpx
 LIBMPX_SUPPORTED_FALSE
 LIBMPX_SUPPORTED_TRUE
@@ -2364,25 +2363,6 @@ fi
 
 
 link_libmpx="-lpthread"
-link_mpx=""
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ld accepts -z bndplt" >&5
-$as_echo_n "checking whether ld accepts -z bndplt... " >&6; }
-echo "int main() {};" > conftest.c
-if { ac_try='${CC} ${CFLAGS} -Wl,-z,bndplt -o conftest conftest.c 1>&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-    link_mpx="$link_mpx -z bndplt"
-else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
 
 
 am__api_version='1.11'
@@ -11250,7 +11230,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11253 "configure"
+#line 11233 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11356,7 +11336,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11359 "configure"
+#line 11339 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

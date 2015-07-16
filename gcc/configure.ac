@@ -5865,6 +5865,27 @@ if test "$gcc_cv_no_pie" = "yes"; then
 fi
 AC_SUBST([NO_PIE_FLAG])
 
+# Check linker supports '-z bndplt'
+ld_bndplt_support=no
+AC_MSG_CHECKING(linker -z bndplt option)
+if test x"$ld_is_gold" = xno; then
+  if test $in_tree_ld = yes ; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 25 -o "$gcc_cv_gld_major_version" -gt 2; then
+      ld_bndplt_support=yes
+    fi
+  elif test x$gcc_cv_ld != x; then
+    # Check if linker supports -a bndplt option
+    if $gcc_cv_ld --help 2>/dev/null | grep -- '-z bndplt' > /dev/null; then
+      ld_bndplt_support=yes
+    fi
+  fi
+fi
+if test x"$ld_bndplt_support" = xyes; then
+  AC_DEFINE(HAVE_LD_BNDPLT_SUPPORT, 1,
+	[Define if your linker supports -z bndplt])
+fi
+AC_MSG_RESULT($ld_bndplt_support)
+
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)
 
