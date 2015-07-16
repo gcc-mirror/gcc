@@ -1,5 +1,23 @@
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gensupport.h (compute_test_codes): Take a file_location rather
+	than a line number.
+	* gensupport.c (compute_test_codes): Likewise.  Use *_at functions
+	rather than *_with_line functions.
+	(process_define_predicate): Update call to compute_test_codes.
+	* genpreds.c (validate_exp): Take a file_location rather than a
+	line number.  Use *_at functions rather than *_with_line functions.
+	(process_define_predicate): Update call to validate_exp.
+	(constraint_data): Replace lineno field with a file_location.
+	(add_constraint): Take a file_location rather than a line number.
+	Use *_at functions rather than *_with_line functions.  Fix error
+	message for address constraints.  Update after changes to
+	validate_exp, constraint_data and compute_test_codes.
+	(process_define_constraint): Update accordingly.
+	(process_define_register_constraint): Likewise.
+
+2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* genoutput.c (data): Use a file_location to record the source
 	position.
 	(nothing): Delete.
