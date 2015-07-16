@@ -294,7 +294,7 @@ struct dataflow
   unsigned int block_info_size;
 
   /* The pool to allocate the block_info from. */
-  pool_allocator<df_link> *block_pool;
+  object_allocator<df_link> *block_pool;
 
   /* The lr and live problems have their transfer functions recomputed
      only if necessary.  This is possible for them because, the

@@ -51,21 +51,6 @@ struct queued_debug_insn_change
   rtx_insn *insn;
   rtx *loc;
   rtx new_rtx;
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((queued_debug_insn_change *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<queued_debug_insn_change> pool;
 };
 
 /* For each register, we have a list of registers that contain the same
@@ -89,7 +74,7 @@ struct value_data
   unsigned int n_debug_insn_changes;
 };
 
-pool_allocator<queued_debug_insn_change> queued_debug_insn_change::pool
+static object_allocator<queued_debug_insn_change> queued_debug_insn_change_pool
   ("debug insn changes pool", 256);
 
 static bool skip_debug_insn_p;
@@ -130,7 +115,7 @@ free_debug_insn_changes (struct value_data *vd, unsigned int regno)
     {
       next = cur->next;
       --vd->n_debug_insn_changes;
-      delete cur;
+      queued_debug_insn_change_pool.remove (cur);
     }
   vd->e[regno].debug_insn_changes = NULL;
 }
@@ -501,7 +486,7 @@ replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx_insn *insn,
 	    fprintf (dump_file, "debug_insn %u: queued replacing reg %u with %u\n",
 		     INSN_UID (insn), REGNO (*loc), REGNO (new_rtx));
 
-	  change = new queued_debug_insn_change;
+	  change = queued_debug_insn_change_pool.allocate ();
 	  change->next = vd->e[REGNO (new_rtx)].debug_insn_changes;
 	  change->insn = insn;
 	  change->loc = loc;
@@ -1308,7 +1293,7 @@ pass_cprop_hardreg::execute (function *fun)
 		}
 	  }
 
-      queued_debug_insn_change::pool.release ();
+      queued_debug_insn_change_pool.release ();
     }
 
   sbitmap_free (visited);

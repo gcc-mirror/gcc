@@ -1,3 +1,10 @@
+2015-07-16  Martin Liska  <mliska@suse.cz>
+
+	* c-format.c (static void check_format_info_main): Use
+	object_allocator instead of pool_allocator.
+	(check_format_arg): Likewise.
+	(check_format_info_main): Likewise.
+
 2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-opts.c: Remove multiline #include comment.

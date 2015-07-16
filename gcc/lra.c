@@ -533,7 +533,7 @@ lra_update_dups (lra_insn_recog_data_t id, signed char *nops)
    insns.  */
 
 /* Pools for insn reg info.  */
-pool_allocator<lra_insn_reg> lra_insn_reg::pool ("insn regs", 100);
+object_allocator<lra_insn_reg> lra_insn_reg_pool ("insn regs", 100);
 
 /* Create LRA insn related info about a reference to REGNO in INSN with
    TYPE (in/out/inout), biggest reference mode MODE, flag that it is
@@ -545,7 +545,7 @@ new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
 	      machine_mode mode,
 	      bool subreg_p, bool early_clobber, struct lra_insn_reg *next)
 {
-  lra_insn_reg *ir = new lra_insn_reg ();
+  lra_insn_reg *ir = lra_insn_reg_pool.allocate ();
   ir->type = type;
   ir->biggest_mode = mode;
   if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (lra_reg_info[regno].biggest_mode)
@@ -567,7 +567,7 @@ free_insn_regs (struct lra_insn_reg *ir)
   for (; ir != NULL; ir = next_ir)
     {
       next_ir = ir->next;
-      delete ir;
+      lra_insn_reg_pool.remove (ir);
     }
 }
 
@@ -575,7 +575,7 @@ free_insn_regs (struct lra_insn_reg *ir)
 static void
 finish_insn_regs (void)
 {
-  lra_insn_reg::pool.release ();
+  lra_insn_reg_pool.release ();
 }
 
 
@@ -745,6 +745,9 @@ free_insn_recog_data (lra_insn_recog_data_t data)
   free (data);
 }
 
+/* Pools for copies.  */
+static object_allocator<lra_copy> lra_copy_pool ("lra copies", 100);
+
 /* Finish LRA data about all insns.  */
 static void
 finish_insn_recog_data (void)
@@ -756,8 +759,8 @@ finish_insn_recog_data (void)
     if ((data = lra_insn_recog_data[i]) != NULL)
       free_insn_recog_data (data);
   finish_insn_regs ();
-  lra_copy::pool.release ();
-  lra_insn_reg::pool.release ();
+  lra_copy_pool.release ();
+  lra_insn_reg_pool.release ();
   free (lra_insn_recog_data);
 }
 
@@ -1279,9 +1282,6 @@ get_new_reg_value (void)
   return ++last_reg_value;
 }
 
-/* Pools for copies.  */
-pool_allocator<lra_copy> lra_copy::pool ("lra copies", 100);
-
 /* Vec referring to pseudo copies.  */
 static vec<lra_copy_t> copy_vec;
 
@@ -1360,7 +1360,7 @@ lra_free_copies (void)
     {
       cp = copy_vec.pop ();
       lra_reg_info[cp->regno1].copies = lra_reg_info[cp->regno2].copies = NULL;
-      delete cp;
+      lra_copy_pool.remove (cp);
     }
 }
 
@@ -1379,7 +1379,7 @@ lra_create_copy (int regno1, int regno2, int freq)
       std::swap (regno1, regno2);
       regno1_dest_p = false;
     }
-  cp = new lra_copy ();
+  cp = lra_copy_pool.allocate ();
   copy_vec.safe_push (cp);
   cp->regno1_dest_p = regno1_dest_p;
   cp->freq = freq;
@@ -1548,7 +1548,7 @@ invalidate_insn_data_regno_info (lra_insn_recog_data_t data, rtx_insn *insn,
     {
       i = ir->regno;
       next_ir = ir->next;
-      delete ir;
+      lra_insn_reg_pool.remove (ir);
       bitmap_clear_bit (&lra_reg_info[i].insn_bitmap, uid);
       if (i >= FIRST_PSEUDO_REGISTER && ! debug_p)
 	{

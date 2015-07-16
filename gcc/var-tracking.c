@@ -261,21 +261,6 @@ typedef struct attrs_def
 
   /* Offset from start of DECL.  */
   HOST_WIDE_INT offset;
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((attrs_def *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<attrs_def> pool;
 } *attrs;
 
 /* Structure for chaining the locations.  */
@@ -292,21 +277,6 @@ typedef struct location_chain_def
 
   /* Initialized? */
   enum var_init_status init;
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((location_chain_def *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<location_chain_def> pool;
 } *location_chain;
 
 /* A vector of loc_exp_dep holds the active dependencies of a one-part
@@ -324,21 +294,6 @@ typedef struct loc_exp_dep_s
   /* A pointer to the pointer to this entry (head or prev's next) in
      the doubly-linked list.  */
   struct loc_exp_dep_s **pprev;
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((loc_exp_dep_s *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<loc_exp_dep_s> pool;
 } loc_exp_dep;
 
 
@@ -577,21 +532,6 @@ typedef struct shared_hash_def
 
   /* Actual hash table.  */
   variable_table_type *htab;
-
-  /* Pool allocation new operator.  */
-  inline void *operator new (size_t)
-  {
-    return pool.allocate ();
-  }
-
-  /* Delete operator utilizing pool allocation.  */
-  inline void operator delete (void *ptr)
-  {
-    pool.remove ((shared_hash_def *) ptr);
-  }
-
-  /* Memory allocation pool.  */
-  static pool_allocator<shared_hash_def> pool;
 } *shared_hash;
 
 /* Structure holding the IN or OUT set for a basic block.  */
@@ -636,28 +576,28 @@ typedef struct variable_tracking_info_def
 } *variable_tracking_info;
 
 /* Alloc pool for struct attrs_def.  */
-pool_allocator<attrs_def> attrs_def::pool ("attrs_def pool", 1024);
+object_allocator<attrs_def> attrs_def_pool ("attrs_def pool", 1024);
 
 /* Alloc pool for struct variable_def with MAX_VAR_PARTS entries.  */
 
-static pool_allocator<variable_def> var_pool
-  ("variable_def pool", 64,
+static pool_allocator var_pool
+  ("variable_def pool", 64, sizeof (variable_def) +
    (MAX_VAR_PARTS - 1) * sizeof (((variable)NULL)->var_part[0]));
 
 /* Alloc pool for struct variable_def with a single var_part entry.  */
-static pool_allocator<variable_def> valvar_pool
-  ("small variable_def pool", 256);
+static pool_allocator valvar_pool
+  ("small variable_def pool", 256, sizeof (variable_def));
 
 /* Alloc pool for struct location_chain_def.  */
-pool_allocator<location_chain_def> location_chain_def::pool
+static object_allocator<location_chain_def> location_chain_def_pool
   ("location_chain_def pool", 1024);
 
 /* Alloc pool for struct shared_hash_def.  */
-pool_allocator<shared_hash_def> shared_hash_def::pool
+static object_allocator<shared_hash_def> shared_hash_def_pool
   ("shared_hash_def pool", 256);
 
 /* Alloc pool for struct loc_exp_dep_s for NOT_ONEPART variables.  */
-pool_allocator<loc_exp_dep> loc_exp_dep::pool ("loc_exp_dep pool", 64);
+object_allocator<loc_exp_dep> loc_exp_dep_pool ("loc_exp_dep pool", 64);
 
 /* Changed variables, notes will be emitted for them.  */
 static variable_table_type *changed_variables;
@@ -1418,10 +1358,17 @@ dv_onepart_p (decl_or_value dv)
 }
 
 /* Return the variable pool to be used for a dv of type ONEPART.  */
-static inline pool_allocator <variable_def> &
+static inline pool_allocator &
 onepart_pool (onepart_enum_t onepart)
 {
   return onepart ? valvar_pool : var_pool;
+}
+
+/* Allocate a variable_def from the corresponding variable pool.  */
+static inline variable_def *
+onepart_pool_allocate (onepart_enum_t onepart)
+{
+  return (variable_def*) onepart_pool (onepart).allocate ();
 }
 
 /* Build a decl_or_value out of a decl.  */
@@ -1778,7 +1725,7 @@ unshare_variable (dataflow_set *set, variable_def **slot, variable var,
   variable new_var;
   int i;
 
-  new_var = onepart_pool (var->onepart).allocate ();
+  new_var = onepart_pool_allocate (var->onepart);
   new_var->dv = var->dv;
   new_var->refcount = 1;
   var->refcount--;
@@ -4056,7 +4003,7 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
 	{
 	  if (node)
 	    {
-	      dvar = onepart_pool (onepart).allocate ();
+	      dvar = onepart_pool_allocate (onepart);
 	      dvar->dv = dv;
 	      dvar->refcount = 1;
 	      dvar->n_var_parts = 1;
@@ -4192,7 +4139,7 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
 							  INSERT);
 		  if (!*slot)
 		    {
-		      variable var = onepart_pool (ONEPART_VALUE).allocate ();
+		      variable var = onepart_pool_allocate (ONEPART_VALUE);
 		      var->dv = dv;
 		      var->refcount = 1;
 		      var->n_var_parts = 1;
@@ -7341,7 +7288,7 @@ variable_from_dropped (decl_or_value dv, enum insert_option insert)
 
   gcc_checking_assert (onepart == ONEPART_VALUE || onepart == ONEPART_DEXPR);
 
-  empty_var = onepart_pool (onepart).allocate ();
+  empty_var = onepart_pool_allocate (onepart);
   empty_var->dv = dv;
   empty_var->refcount = 1;
   empty_var->n_var_parts = 0;
@@ -7445,7 +7392,7 @@ variable_was_changed (variable var, dataflow_set *set)
 
 	  if (!empty_var)
 	    {
-	      empty_var = onepart_pool (onepart).allocate ();
+	      empty_var = onepart_pool_allocate (onepart);
 	      empty_var->dv = var->dv;
 	      empty_var->refcount = 1;
 	      empty_var->n_var_parts = 0;
@@ -7569,7 +7516,7 @@ set_slot_part (dataflow_set *set, rtx loc, variable_def **slot,
   if (!var)
     {
       /* Create new variable information.  */
-      var = onepart_pool (onepart).allocate ();
+      var = onepart_pool_allocate (onepart);
       var->dv = dv;
       var->refcount = 1;
       var->n_var_parts = 1;
@@ -9049,7 +8996,7 @@ emit_notes_for_differences_1 (variable_def **slot, variable_table_type *new_vars
 
       if (!empty_var)
 	{
-	  empty_var = onepart_pool (old_var->onepart).allocate ();
+	  empty_var = onepart_pool_allocate (old_var->onepart);
 	  empty_var->dv = old_var->dv;
 	  empty_var->refcount = 0;
 	  empty_var->n_var_parts = 0;
@@ -10266,17 +10213,17 @@ vt_finalize (void)
   empty_shared_hash->htab = NULL;
   delete changed_variables;
   changed_variables = NULL;
-  attrs_def::pool.release ();
+  attrs_def_pool.release ();
   var_pool.release ();
-  location_chain_def::pool.release ();
-  shared_hash_def::pool.release ();
+  location_chain_def_pool.release ();
+  shared_hash_def_pool.release ();
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
       if (global_get_addr_cache)
 	delete global_get_addr_cache;
       global_get_addr_cache = NULL;
-      loc_exp_dep::pool.release ();
+      loc_exp_dep_pool.release ();
       valvar_pool.release ();
       preserved_values.release ();
       cselib_finish ();

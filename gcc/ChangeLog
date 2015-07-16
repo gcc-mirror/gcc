@@ -1,3 +1,108 @@
+2015-07-16  Martin Liska  <mliska@suse.cz>
+
+	* alloc-pool.h
+	(object_allocator): Add new class.
+	(pool_allocator::initialize): Use the underlying class.
+	(pool_allocator::allocate): Likewise.
+	(pool_allocator::remove): Likewise.
+	(operator new): A new generic allocator.
+	* asan.c (struct asan_mem_ref): Remove unused members.
+	(asan_mem_ref_new): Replace new operator with
+	object_allocator::allocate.
+	(free_mem_ref_resources): Change deallocation.
+	* cfg.c (initialize_original_copy_tables): Replace pool_allocator
+	with object_allocator.
+	* config/sh/sh.c (add_constant): Replace new operator with
+	object_allocator::allocate.
+	(sh_reorg): Change call to a release method.
+	* cselib.c (struct elt_list): Remove unused members.
+	(new_elt_list): Replace new operator with
+	object_allocator::allocate.
+	(new_elt_loc_list): Likewise.
+	(new_cselib_val): Likewise.
+	(unchain_one_elt_list): Change delete operator with remove method.
+	(unchain_one_elt_loc_list): Likewise.
+	(unchain_one_value): Likewise.
+	(cselib_finish): Release newly added static allocators.
+	* cselib.h (struct cselib_val): Remove unused members.
+	(struct elt_loc_list): Likewise.
+	* df-problems.c (df_chain_alloc): Replace pool_allocator with
+	object_allocator.
+	* df-scan.c (struct df_scan_problem_data): Likewise.
+	(df_scan_alloc): Likewise.
+	* df.h (struct dataflow): Likewise.
+	* dse.c (struct read_info_type): Likewise.
+	(struct insn_info_type): Likewise.
+	(struct dse_bb_info_type): Likewise.
+	(struct group_info): Likewise.
+	(struct deferred_change): Likewise.
+	(get_group_info): Likewise.
+	(delete_dead_store_insn): Likewise.
+	(free_read_records): Likewise.
+	(replace_read): Likewise.
+	(check_mem_read_rtx): Likewise.
+	(scan_insn): Likewise.
+	(dse_step1): Likewise.
+	(dse_step7): Likewise.
+	* et-forest.c (struct et_occ): Remove unused members.
+	(et_new_occ): Use allocate instead of new operator.
+	(et_new_tree): Likewise.
+	(et_free_tree): Call release method explicitly.
+	(et_free_tree_force): Likewise.
+	(et_free_pools): Likewise.
+	(et_split): Use remove instead of delete operator.
+	* et-forest.h (struct et_node): Remove unused members.
+	* ipa-cp.c: Change pool_allocator to object_allocator.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-profile.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-prop.h: Likewise.
+	* ira-build.c (initiate_cost_vectors): Cast return value.
+	(ira_allocate_cost_vector): Likewise.
+	* ira-color.c (struct update_cost_record): Remove unused members.
+	* lra-int.h (struct lra_live_range): Likewise.
+	(struct lra_copy): Likewise.
+	(struct lra_insn_reg): Likewise.
+	* lra-lives.c (lra_live_ranges_finish): Release new static allocator.
+	* lra.c (new_insn_reg): Replace new operator with allocate method.
+	(free_insn_regs): Same for operator delete.
+	(finish_insn_regs): Release new static allocator.
+	(finish_insn_recog_data): Likewise.
+	(lra_free_copies): Replace delete operator with remove method.
+	(lra_create_copy): Replace operator new with allocate method.
+	(invalidate_insn_data_regno_info): Same for remove method.
+	* regcprop.c (struct queued_debug_insn_change): Remove unused members.
+	(free_debug_insn_changes): Replace delete operator with remove method.
+	(replace_oldest_value_reg): Replace operator new with allocate method.
+	(pass_cprop_hardreg::execute): Release new static variable.
+	* sched-deps.c (sched_deps_init): Change pool_allocator to
+	object_allocator.
+	* sel-sched-ir.c: Likewise.
+	* sel-sched-ir.h: Likewise.
+	* stmt.c (expand_case): Likewise.
+	(expand_sjlj_dispatch_table): Likewise.
+	* tree-sra.c (struct access): Remove unused members.
+	(struct assign_link): Likewise.
+	(sra_deinitialize): Release newly added static pools.
+	(create_access_1):Replace operator new with allocate method.
+	(build_accesses_from_assign): Likewise.
+	(create_artificial_child_access): Likewise.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals::execute): Change
+	pool_allocator to object_allocator.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sccvn.c (allocate_vn_table): Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* var-tracking.c (onepart_pool_allocate): New function.
+	(unshare_variable): Use the newly added function.
+	(variable_merge_over_cur): Likewise.
+	(variable_from_dropped): Likewise.
+	(variable_was_changed): Likewise.
+	(set_slot_part): Likewise.
+	(emit_notes_for_differences_1): Likewise.
+	(vt_finalize): Release newly added static pools.
+
 2015-07-16  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (param_aa_status): Rename to ipa_param_aa_status.  Adjust

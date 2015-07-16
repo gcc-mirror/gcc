@@ -349,7 +349,7 @@ clear_expression_ids (void)
   expressions.release ();
 }
 
-static pool_allocator<pre_expr_d> pre_expr_pool ("pre_expr nodes", 30);
+static object_allocator<pre_expr_d> pre_expr_pool ("pre_expr nodes", 30);
 
 /* Given an SSA_NAME NAME, get or create a pre_expr to represent it.  */
 
@@ -488,7 +488,7 @@ static unsigned int get_expr_value_id (pre_expr);
 /* We can add and remove elements and entries to and from sets
    and hash tables, so we use alloc pools for them.  */
 
-static pool_allocator<bitmap_set> bitmap_set_pool ("Bitmap sets", 30);
+static object_allocator<bitmap_set> bitmap_set_pool ("Bitmap sets", 30);
 static bitmap_obstack grand_bitmap_obstack;
 
 /* Set of blocks with statements that have had their EH properties changed.  */

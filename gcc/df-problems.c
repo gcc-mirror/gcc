@@ -1997,7 +1997,7 @@ static void
 df_chain_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 {
   df_chain_remove_problem ();
-  df_chain->block_pool = new pool_allocator<df_link> ("df_chain_block pool",
+  df_chain->block_pool = new object_allocator<df_link> ("df_chain_block pool",
 						      50);
   df_chain->optional_p = true;
 }
