@@ -1,5 +1,9 @@
 2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* gfortran.dg/iomsg_2.f90: New test.
+
+2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66725
 	* gfortran.dg/pr66725.f90: New test.
 
