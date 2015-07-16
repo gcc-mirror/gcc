@@ -1,3 +1,7 @@
+2015-07-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/no-volatile-in-it.c: Skip if -mcpu is overriden.
+
 2015-07-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/66626
