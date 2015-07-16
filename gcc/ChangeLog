@@ -1,5 +1,26 @@
 2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* genoutput.c (data): Use a file_location to record the source
+	position.
+	(nothing): Delete.
+	(idata, idata_end): Remove initialization.
+	(constraint_data): Replace lineno with a file_location.
+	(output_insn_data): Update after changes to data.
+	(gen_insn, gen_peephole, gen_expand, gen_split): Likewise.
+	(scan_operands): Likewise, using *_at rather than *_with_line
+	functions.
+	(process_template): Likewise.
+	(validate_insn_alternatives): Likewise.
+	(validate_insn_operands): Likewise.
+	(validate_optab_operands): Likewise.
+	(init_insn_for_nothing): Initialize idata and idata_end.
+	(note_constraint): Update after changes to constraint_data,
+	using at rather than with_line functions.
+	(mdep_constraint_len): Take a file_location rather than a
+	line number.  Use at rather than with_line functions.
+
+2015-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* read-md.h (fatal_at): Declare.
 	* read-md.c (fatal_at): New function.
 	* genattrtab.c (insn_def, attr_desc, delay_desc): Use a file_location
