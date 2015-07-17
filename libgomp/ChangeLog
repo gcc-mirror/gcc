@@ -1,3 +1,15 @@
+2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libgomp.h (gomp_device_descr): Constify target data arguments.
+	* target.c (struct offload_image_descr): Constify target_data.
+	(gomp_offload_image_to_device): Likewise.
+	(GOMP_offload_register): Likewise.
+	(GOMP_offload_unrefister): Likewise.
+	* plugin/plugin-host.c (GOMP_OFFLOAD_load_image,
+	GOMP_OFFLOAD_unload_image): Constify target data.
+	* plugin/plugin-nvptx.c (struct ptx_image_data): Constify target data.
+	(GOMP_OFFLOAD_load_image, GOMP_OFFLOAD_unload_image): Likewise.
+
 2015-07-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (link_ptx): Constify string argument.

@@ -58,7 +58,7 @@ static gomp_mutex_t register_lock;
 struct offload_image_descr {
   enum offload_target_type type;
   void *host_table;
-  void *target_data;
+  const void *target_data;
 };
 
 /* Array of descriptors of offload images.  */
@@ -642,7 +642,7 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 
 static void
 gomp_offload_image_to_device (struct gomp_device_descr *devicep,
-			      void *host_table, void *target_data,
+			      void *host_table, const void *target_data,
 			      bool is_register_lock)
 {
   void **host_func_table = ((void ***) host_table)[0];
@@ -731,7 +731,7 @@ gomp_offload_image_to_device (struct gomp_device_descr *devicep,
 
 void
 GOMP_offload_register (void *host_table, enum offload_target_type target_type,
-		       void *target_data)
+		       const void *target_data)
 {
   int i;
   gomp_mutex_lock (&register_lock);
@@ -765,7 +765,7 @@ GOMP_offload_register (void *host_table, enum offload_target_type target_type,
 
 void
 GOMP_offload_unregister (void *host_table, enum offload_target_type target_type,
-			 void *target_data)
+			 const void *target_data)
 {
   void **host_func_table = ((void ***) host_table)[0];
   void **host_funcs_end  = ((void ***) host_table)[1];

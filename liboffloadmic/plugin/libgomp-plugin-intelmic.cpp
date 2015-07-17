@@ -61,7 +61,7 @@ typedef std::vector<addr_pair> AddrVect;
 typedef std::vector<AddrVect> DevAddrVect;
 
 /* Addresses for all images and all devices.  */
-typedef std::map<void *, DevAddrVect> ImgDevAddrMap;
+typedef std::map<const void *, DevAddrVect> ImgDevAddrMap;
 
 
 /* Total number of available devices.  */
@@ -255,7 +255,7 @@ get_target_table (int device, int &num_funcs, int &num_vars, void **&table)
    corresponding target addresses.  */
 
 static void
-offload_image (void *target_image)
+offload_image (const void *target_image)
 {
   struct TargetImage {
     int64_t size;
@@ -328,7 +328,8 @@ offload_image (void *target_image)
 }
 
 extern "C" int
-GOMP_OFFLOAD_load_image (int device, void *target_image, addr_pair **result)
+GOMP_OFFLOAD_load_image (int device, const void *target_image,
+			 addr_pair **result)
 {
   TRACE ("(device = %d, target_image = %p)", device, target_image);
 
@@ -352,7 +353,7 @@ GOMP_OFFLOAD_load_image (int device, void *target_image, addr_pair **result)
 }
 
 extern "C" void
-GOMP_OFFLOAD_unload_image (int device, void *target_image)
+GOMP_OFFLOAD_unload_image (int device, const void *target_image)
 {
   TRACE ("(device = %d, target_image = %p)", device, target_image);
 
