@@ -1,3 +1,11 @@
+2015-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (pushsf splitter): Pass curr_insn to
+	find_constant_src.  FAIL if find_constant_src returns NULL_RTX.
+	(mem->fpreg splitters): Ditto.
+	(general_operand->nonimmediate_operand splitter): Use explicit modes.
+	Disable DFmode for TARGET_64BIT.
+
 2015-07-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66906
