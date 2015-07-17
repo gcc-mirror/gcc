@@ -1,3 +1,12 @@
+2015-07-17  Yvan Roux  <yvan.roux@linaro.org>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AC_ARG_WITH checks for native-system-header-dir,
+	build-sysroot, sysroot from the `Miscenalleous configure options' to
+	the `Directories' section and strip trailing `/' from with_sysroot.
+	(gcc_gxx_include_dir): Don't strip a `/' sysroot value.
+	* configure: Regenerated.
+
 2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66824
