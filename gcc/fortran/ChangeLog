@@ -1,3 +1,8 @@
+2015-07-17  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* trans-intrinsic.c (conv_co_collective): Remove redundant address
+	operator in the generated code.
+
 2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66724
