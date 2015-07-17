@@ -1,3 +1,9 @@
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/66891
+	* calls.c (expand_call): Wrap precompute_register_parameters with
+	NO_DEFER_POP/OK_DEFER_POP to prevent deferred pops.
+
 2015-07-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/mkoffload.c (process): Constify mapping variables.
