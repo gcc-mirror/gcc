@@ -1815,6 +1815,17 @@
 	* config/darwin.c (darwin_mark_decl_preserved): Exclude 'L' label
 	names from preservation.
 
+2015-07-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66806
+	* config/i386/i386.c (type_natural_mode): Don't warn vector ABI
+	change for IAMCU.
+	(function_arg_advance_32): Don't pass vectors in registers for
+	IAMCU.
+	(function_arg_32): Likewise.
+	(ix86_return_in_memory): Don't return vectors in registers for
+	IAMCU.
+
 2015-07-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/66334
@@ -2541,6 +2552,11 @@
 	* tree.c (build_each_one_cst): New function.
 	* tree.h (build_each_one_cst): Likewise.
 
+2015-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_IAMCU.
+
 2015-07-06  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config.gcc <mips*-*-*>: Add fused-madd.opt.
@@ -2620,6 +2636,20 @@
 2015-07-06  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/arm.md (movdi): Avoid odd-number ldrd/strd in ARM state.
+
+2015-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66749
+	* config/i386/i386.c (iamcu_cost): New.
+	(m_IAMCU): Likewise.
+	(initial_ix86_arch_features): Disable X86_ARCH_CMOV for m_IAMCU.
+	(processor_target_table): Add an entry for "iamcu".
+	(processor_alias_table): Likewise.
+	(ix86_issue_rate): Handle PROCESSOR_IAMCU.
+	(ix86_adjust_cost): Likewise.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	* config/i386/i386.h (processor_type): Add PROCESSOR_IAMCU.
+	* config/i386/x86-tune.def: Updated for m_IAMCU.
 
 2015-07-06  Richard Biener  <rguenther@suse.de>
 
