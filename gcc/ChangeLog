@@ -1,3 +1,9 @@
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66866
+	* config/i386/i386.c (ix86_expand_pinsr): Reject non-lowpart
+	source subregs.
+
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
