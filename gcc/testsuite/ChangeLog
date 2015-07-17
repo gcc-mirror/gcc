@@ -1,3 +1,8 @@
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66891
+	* gcc.target/i386/pr66891.c: New test.
+
 2015-07-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/no-volatile-in-it.c: Skip if -mcpu is overriden.
