@@ -3,7 +3,7 @@
 	PR target/66866
 	* g++.dg/pr66866.C: New test.
 
-2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
 	2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
@@ -14,7 +14,7 @@
 	type to prevent possible flag-clobbering zero-extensions.
 	* gcc.target/i386/pr66703.c: New test.
 
-2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
 	2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
