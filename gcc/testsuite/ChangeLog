@@ -1,3 +1,7 @@
+2015-07-17  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-minus-7.c: New test.
+
 2015-07-17  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* gfortran.dg/co_reduce_1.f90: New file.
