@@ -1,3 +1,8 @@
+2015-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/coarray_collectives_16.f90: Fix pattern
+	as follow-up to r225930.
+
 2015-07-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52846
