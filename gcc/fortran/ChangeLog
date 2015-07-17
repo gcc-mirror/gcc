@@ -1,5 +1,13 @@
 2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66724
+	PR fortran/66724
+	* io.c (is_char_type): Call gfc_resolve_expr ().
+	(match_open_element, match_dt_element, match_inquire_element): Fix
+	ASYNCHRONOUS case.
+
+2015-07-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66864
 	* simplify.c (gfc_simplify_floor): Set precision of temporary to
 	that of arg.

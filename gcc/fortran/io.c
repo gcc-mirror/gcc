@@ -1260,6 +1260,8 @@ check_char_variable (gfc_expr *e)
 static bool
 is_char_type (const char *name, gfc_expr *e)
 {
+  gfc_resolve_expr (e);
+
   if (e->ts.type != BT_CHARACTER)
     {
       gfc_error ("%s requires a scalar-default-char-expr at %L",
@@ -1580,6 +1582,8 @@ match_open_element (gfc_open *open)
   match m;
 
   m = match_etag (&tag_e_async, &open->asynchronous);
+  if (m == MATCH_YES && !is_char_type ("ASYNCHRONOUS", open->asynchronous))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_unit, &open->unit);
@@ -2752,6 +2756,8 @@ match_dt_element (io_kind k, gfc_dt *dt)
     }
 
   m = match_etag (&tag_e_async, &dt->asynchronous);
+  if (m == MATCH_YES && !is_char_type ("ASYNCHRONOUS", dt->asynchronous))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_e_blank, &dt->blank);
@@ -3986,6 +3992,8 @@ match_inquire_element (gfc_inquire *inquire)
   RETM m = match_vtag (&tag_write, &inquire->write);
   RETM m = match_vtag (&tag_readwrite, &inquire->readwrite);
   RETM m = match_vtag (&tag_s_async, &inquire->asynchronous);
+  if (m == MATCH_YES && !is_char_type ("ASYNCHRONOUS", inquire->asynchronous))
+    return MATCH_ERROR;
   RETM m = match_vtag (&tag_s_delim, &inquire->delim);
   RETM m = match_vtag (&tag_s_decimal, &inquire->decimal);
   RETM m = match_out_tag (&tag_size, &inquire->size);
