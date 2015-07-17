@@ -1,3 +1,7 @@
+2015-07-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* gcc.dg/vect/vect-outer-simd-2.c: New test.
+
 2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66891

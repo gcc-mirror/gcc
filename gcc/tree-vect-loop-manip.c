@@ -77,10 +77,12 @@ rename_use_op (use_operand_p op_p)
 }
 
 
-/* Renames the variables in basic block BB.  */
+/* Renames the variables in basic block BB.  Allow renaming  of PHI argumnets
+   on edges incoming from outer-block header if RENAME_FROM_OUTER_LOOP is
+   true.  */
 
 static void
-rename_variables_in_bb (basic_block bb)
+rename_variables_in_bb (basic_block bb, bool rename_from_outer_loop)
 {
   gimple stmt;
   use_operand_p use_p;
@@ -88,6 +90,13 @@ rename_variables_in_bb (basic_block bb)
   edge e;
   edge_iterator ei;
   struct loop *loop = bb->loop_father;
+  struct loop *outer_loop = NULL;
+
+  if (rename_from_outer_loop)
+    {
+      gcc_assert (loop);
+      outer_loop = loop_outer (loop);
+    }
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
@@ -99,7 +108,8 @@ rename_variables_in_bb (basic_block bb)
 
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      if (!flow_bb_inside_loop_p (loop, e->src))
+      if (!flow_bb_inside_loop_p (loop, e->src)
+	  && (!rename_from_outer_loop || e->src != outer_loop->header))
 	continue;
       for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
@@ -755,6 +765,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
   bool was_imm_dom;
   basic_block exit_dest;
   edge exit, new_exit;
+  bool duplicate_outer_loop = false;
 
   exit = single_exit (loop);
   at_exit = (e == exit);
@@ -766,7 +777,9 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
 
   bbs = XNEWVEC (basic_block, scalar_loop->num_nodes + 1);
   get_loop_body_with_size (scalar_loop, bbs, scalar_loop->num_nodes);
-
+  /* Allow duplication of outer loops.  */
+  if (scalar_loop->inner)
+    duplicate_outer_loop = true;
   /* Check whether duplication is possible.  */
   if (!can_copy_bbs_p (bbs, scalar_loop->num_nodes))
     {
@@ -835,7 +848,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
       redirect_edge_and_branch_force (e, new_preheader);
       flush_pending_stmts (e);
       set_immediate_dominator (CDI_DOMINATORS, new_preheader, e->src);
-      if (was_imm_dom)
+      if (was_imm_dom || duplicate_outer_loop)
 	set_immediate_dominator (CDI_DOMINATORS, exit_dest, new_exit->src);
 
       /* And remove the non-necessary forwarder again.  Keep the other
@@ -878,7 +891,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
     }
 
   for (unsigned i = 0; i < scalar_loop->num_nodes + 1; i++)
-    rename_variables_in_bb (new_bbs[i]);
+    rename_variables_in_bb (new_bbs[i], duplicate_outer_loop);
 
   if (scalar_loop != loop)
     {
@@ -960,11 +973,11 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
 
 
 /* This function verifies that the following restrictions apply to LOOP:
-   (1) it is innermost
-   (2) it consists of exactly 2 basic blocks - header, and an empty latch.
-   (3) it is single entry, single exit
-   (4) its exit condition is the last stmt in the header
-   (5) E is the entry/exit edge of LOOP.
+   (1) it consists of exactly 2 basic blocks - header, and an empty latch
+       for innermost loop and 5 basic blocks for outer-loop.
+   (2) it is single entry, single exit
+   (3) its exit condition is the last stmt in the header
+   (4) E is the entry/exit edge of LOOP.
  */
 
 bool
@@ -974,12 +987,12 @@ slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
   edge entry_e = loop_preheader_edge (loop);
   gcond *orig_cond = get_loop_exit_condition (loop);
   gimple_stmt_iterator loop_exit_gsi = gsi_last_bb (exit_e->src);
+  unsigned int num_bb = loop->inner? 5 : 2;
 
-  if (loop->inner
       /* All loops have an outer scope; the only case loop->outer is NULL is for
          the function itself.  */
-      || !loop_outer (loop)
-      || loop->num_nodes != 2
+      if (!loop_outer (loop)
+      || loop->num_nodes != num_bb
       || !empty_block_p (loop->latch)
       || !single_exit (loop)
       /* Verify that new loop exit condition can be trivially modified.  */
@@ -1165,6 +1178,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loop *scalar_loop,
 			       int bound1, int bound2)
 {
   struct loop *new_loop = NULL, *first_loop, *second_loop;
+  struct loop *inner_loop = NULL;
   edge skip_e;
   tree pre_condition = NULL_TREE;
   basic_block bb_before_second_loop, bb_after_second_loop;
@@ -1184,6 +1198,9 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loop *scalar_loop,
 
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
+
+  if (loop->inner)
+    inner_loop = loop->inner;
 
   /* We might have a queued need to update virtual SSA form.  As we
      delete the update SSA machinery below after doing a regular
@@ -1220,7 +1237,9 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loop *scalar_loop,
 	    add_phi_arg (new_phi, vop, exit_e, UNKNOWN_LOCATION);
 	    gimple_phi_set_result (new_phi, new_vop);
 	    FOR_EACH_IMM_USE_STMT (stmt, imm_iter, vop)
-	      if (stmt != new_phi && gimple_bb (stmt) != loop->header)
+	      if (stmt != new_phi && gimple_bb (stmt) != loop->header
+		  /* Do not rename PHI arguments in inner-loop.  */
+		  && (!inner_loop || gimple_bb (stmt) != inner_loop->header))
 		FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 		  SET_USE (use_p, new_vop);
 	  }

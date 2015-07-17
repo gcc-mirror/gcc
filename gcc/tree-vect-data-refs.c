@@ -1516,7 +1516,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   /* Check if we can possibly peel the loop.  */
   if (!vect_can_advance_ivs_p (loop_vinfo)
-      || !slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
+      || !slpeel_can_duplicate_loop_p (loop, single_exit (loop))
+      || loop->inner)
     do_peeling = false;
 
   if (do_peeling
