@@ -1,3 +1,9 @@
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66866
+	* config/i386/i386.c (ix86_expand_pinsr): Reject non-lowpart
+	source subregs.
+
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
@@ -162,8 +168,8 @@
 2015-07-09  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/66523
-	* config/darwin.c (darwin_mark_decl_preserved): Exclude 'L' label names from
-	preservation.
+	* config/darwin.c (darwin_mark_decl_preserved): Exclude 'L' label
+	names from preservation.
 
 2015-07-06  Alan Lawrence  <alan.lawrence@arm.com>
 
