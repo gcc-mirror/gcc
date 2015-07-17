@@ -1,6 +1,29 @@
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
+	2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (movdi_to_sse): Use gen_lowpart
+	and gen_higpart instead of gen_rtx_SUBREG.
+	* config/i386/i386.md
+	(floatdi<X87MODEF:mode>2_i387_with_xmm splitter): Ditto.
+	(read-modify peephole2): Use gen_lowpart instead of
+	gen_rtx_SUBREG for operand 5.
+
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66814
+	* config/i386/predicates.md (nonimmediate_gr_operand): New predicate.
+	* config/i386/i386.md (not peephole2): Use nonimmediate_gr_operand.
+	(varous peephole2s): Use {GENERAL,SSE,MMX}_REGNO_P instead of
+	{GENERAL,SSE,MMX}_REG_P where appropriate.
+
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
 	2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/66838

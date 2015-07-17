@@ -1,6 +1,14 @@
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
+	2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66814
+	* gcc.target/i386/pr66814.c: New test.
+
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
 	2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/66838
