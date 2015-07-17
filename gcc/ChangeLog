@@ -1,5 +1,18 @@
 2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/66824
+	* config/i386/i386.h (TARGET_HARD_SF_REGS): New define.
+	(TARGET_HARD_DF_REGS): Ditto.
+	(TARGET_HARD_XF_REGS): Ditto.
+	* config/i386/i386.md (*movxf_internal): Add alternatives 9 and 10.
+	Enable alternatives 9 and 10 only for !TARGET_HARD_XF_REG target.
+	(*movdf_internal): Add alternatives 22, 23, 24 and 25. Enable
+	alternatives 22, 23, 24 and 25 only for !TARGET_HARD_DF_REG target.
+	(*movsf_internal): Add alternatives 16 and 17. Enable
+	alternatives 16 and 17 only for !TARGET_HARD_SF_REG target.
+
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR rtl-optimization/66891
 	* calls.c (expand_call): Wrap precompute_register_parameters with
 	NO_DEFER_POP/OK_DEFER_POP to prevent deferred pops.
@@ -447,29 +460,29 @@
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-        * graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Point
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Point
 	iterator to use_stmt.
 
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop <s.pop@samsung.com>
 
-        * graphite-scop-detection.c (build_scops_1): Discard scops for
+	* graphite-scop-detection.c (build_scops_1): Discard scops for
 	which entry==exit.
 
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
-            Sebastian Pop <s.pop@samsung.com>
+	    Sebastian Pop <s.pop@samsung.com>
 
-        * graphite-scop-detection.c (stmt_simple_for_scop_p): Bail out in
+	* graphite-scop-detection.c (stmt_simple_for_scop_p): Bail out in
 	case of a return statement in scop.
 
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop <s.pop@samsung.com>
 
-        * graphite-sese-to-poly.c (parameter_index_in_region): Only handle
+	* graphite-sese-to-poly.c (parameter_index_in_region): Only handle
 	INTEGER_TYPE parameters.
-        (scan_tree_for_params): Handle REAL_CST, COMPLEX_CST, and
+	(scan_tree_for_params): Handle REAL_CST, COMPLEX_CST, and
 	VECTOR_CST in scan_tree_for_params.
-        (add_conditions_to_domain): Only constrain on INTEGER_TYPE.
+	(add_conditions_to_domain): Only constrain on INTEGER_TYPE.
 
 2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
 
