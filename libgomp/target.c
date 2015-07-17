@@ -730,8 +730,7 @@ gomp_offload_image_to_device (struct gomp_device_descr *devicep,
    the target, and TARGET_DATA needed by target plugin.  */
 
 void
-GOMP_offload_register (const void *host_table,
-		       enum offload_target_type target_type,
+GOMP_offload_register (const void *host_table, int target_type,
 		       const void *target_data)
 {
   int i;
@@ -765,8 +764,7 @@ GOMP_offload_register (const void *host_table,
    the target, and TARGET_DATA needed by target plugin.  */
 
 void
-GOMP_offload_unregister (const void *host_table,
-			 enum offload_target_type target_type,
+GOMP_offload_unregister (const void *host_table, int target_type,
 			 const void *target_data)
 {
   void **host_func_table = ((void ***) host_table)[0];

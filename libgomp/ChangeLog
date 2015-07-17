@@ -1,5 +1,8 @@
 2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* target.c (GOMP_offload_register): Use int for device type arg.
+	(GOMP_offload_unregister): Likewise.
+
 	* target.c (struct_offload_image_descr): Constify host_table.
 	(gomp_offload_image_to_device): Likewise.
 	(GOMP_offload_register, GOMP_offload_unregister): Likewise.
