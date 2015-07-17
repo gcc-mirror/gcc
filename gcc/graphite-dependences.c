@@ -88,13 +88,13 @@ constrain_domain (isl_map *map, isl_set *s)
   return isl_map_intersect_domain (map, s);
 }
 
-/* Constrain pdr->accesses with pdr->extent and pbb->domain.  */
+/* Constrain pdr->accesses with pdr->subscript_sizes and pbb->domain.  */
 
 static isl_map *
 add_pdr_constraints (poly_dr_p pdr, poly_bb_p pbb)
 {
   isl_map *x = isl_map_intersect_range (isl_map_copy (pdr->accesses),
-					isl_set_copy (pdr->extent));
+					isl_set_copy (pdr->subscript_sizes));
   x = constrain_domain (x, isl_set_copy (pbb->domain));
   return x;
 }

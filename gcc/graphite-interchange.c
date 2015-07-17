@@ -79,37 +79,40 @@ extern "C" {
 static isl_constraint *
 build_linearized_memory_access (isl_map *map, poly_dr_p pdr)
 {
-  isl_constraint *res;
   isl_local_space *ls = isl_local_space_from_space (isl_map_get_space (map));
-  unsigned offset, nsubs;
-  int i;
-  isl_ctx *ctx;
+  isl_constraint *res = isl_equality_alloc (ls);
+  isl_val *size = isl_val_int_from_ui (isl_map_get_ctx (map), 1);
 
-  isl_val *size, *subsize, *size1;
-
-  res = isl_equality_alloc (ls);
-  ctx = isl_local_space_get_ctx (ls);
-  size = isl_val_int_from_ui (ctx, 1);
-
-  nsubs = isl_set_dim (pdr->extent, isl_dim_set);
+  unsigned nsubs = isl_set_dim (pdr->subscript_sizes, isl_dim_set);
   /* -1 for the already included L dimension.  */
-  offset = isl_map_dim (map, isl_dim_out) - 1 - nsubs;
+  unsigned offset = isl_map_dim (map, isl_dim_out) - 1 - nsubs;
   res = isl_constraint_set_coefficient_si (res, isl_dim_out, offset + nsubs, -1);
-  /* Go through all subscripts from last to first.  First dimension
+  /* Go through all subscripts from last to first.  The dimension "i=0"
      is the alias set, ignore it.  */
-  for (i = nsubs - 1; i >= 1; i--)
+  for (int i = nsubs - 1; i >= 1; i--)
     {
-      isl_space *dc;
-      isl_aff *aff;
+      isl_aff *extract_dim;
+      res = isl_constraint_set_coefficient_val (res, isl_dim_out, offset + i,
+						isl_val_copy (size));
+      isl_space *dc = isl_set_get_space (pdr->subscript_sizes);
+      extract_dim = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
+      extract_dim = isl_aff_set_coefficient_si (extract_dim, isl_dim_in, i, 1);
+      isl_val *max = isl_set_max_val (pdr->subscript_sizes, extract_dim);
+      isl_aff_free (extract_dim);
 
-      size1 = isl_val_copy (size);
-      res = isl_constraint_set_coefficient_val (res, isl_dim_out, offset + i, size);
-      dc = isl_set_get_space (pdr->extent);
-      aff = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
-      aff = isl_aff_set_coefficient_si (aff, isl_dim_in, i, 1);
-      subsize = isl_set_max_val (pdr->extent, aff);
-      isl_aff_free (aff);
-      size = isl_val_mul (size1, subsize);
+      /* The result is NULL in case of an error, the optimal value in case there
+	 is one, negative infinity or infinity if the problem is unbounded and
+	 NaN if the problem is empty.  */
+      gcc_assert (max);
+
+      /* When one of the dimensions cannot be computed, we cannot build the size
+	 of the array for any outer dimensions.  */
+      if (!isl_val_is_int (max))
+	{
+	  isl_val_free (max);
+	  break;
+	}
+      size = isl_val_mul (size, max);
     }
 
   isl_val_free (size);
@@ -176,7 +179,7 @@ pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
 
   /* pdr->accesses:    [P1..nb_param,I1..nb_domain]->[a,S1..nb_subscript]
           ??? [P] not used for PDRs?
-     pdr->extent:      [a,S1..nb_subscript]
+     pdr->subscript_sizes:      [a,S1..nb_subscript]
      pbb->domain:      [P1..nb_param,I1..nb_domain]
      pbb->transformed: [P1..nb_param,I1..nb_domain]->[T1..Tnb_sctr]
           [T] includes local vars (currently unused)

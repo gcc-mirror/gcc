@@ -289,7 +289,6 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
 			     gimple stmt)
 {
   data_reference_p dr;
-  unsigned i;
   int j;
   bool res = true;
   vec<data_reference_p> drs = vNULL;
@@ -302,18 +301,29 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
 					     stmt, &drs);
 
       FOR_EACH_VEC_ELT (drs, j, dr)
-	for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
-	  if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
+	{
+	  int nb_subscripts = DR_NUM_DIMENSIONS (dr);
+	  tree ref = DR_REF (dr);
+
+	  for (int i = nb_subscripts - 1; i >= 0; i--)
 	    {
-	      res = false;
-	      goto done;
+	      if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i))
+		  || (TREE_CODE (ref) != ARRAY_REF
+		      && TREE_CODE (ref) != MEM_REF
+		      && TREE_CODE (ref) != COMPONENT_REF))
+		{
+		  free_data_refs (drs);
+		  return false;
+		}
+
+	      ref = TREE_OPERAND (ref, 0);
 	    }
+	}
 
       free_data_refs (drs);
       drs.create (0);
     }
 
- done:
   free_data_refs (drs);
   return res;
 }

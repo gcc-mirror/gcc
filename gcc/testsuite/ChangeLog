@@ -1,3 +1,9 @@
+2015-07-17  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	PR middle-end/61929
+	* gcc.dg/graphite/pr61929.c: New.
+
 2015-07-17  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-minus-7.c: New test.
