@@ -1,3 +1,10 @@
+2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (process): Constify host data.
+	* config/i386/intelmic-mkoffload.c (generate_target_descr_file):
+	Constify host data.
+	(generate_host_descr_file): Likewise.
+
 2015-07-17  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 

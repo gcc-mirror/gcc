@@ -1,5 +1,9 @@
 2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* target.c (struct_offload_image_descr): Constify host_table.
+	(gomp_offload_image_to_device): Likewise.
+	(GOMP_offload_register, GOMP_offload_unregister): Likewise.
+
 	* libgomp.h (gomp_device_descr): Constify target data arguments.
 	* target.c (struct offload_image_descr): Constify target_data.
 	(gomp_offload_image_to_device): Likewise.

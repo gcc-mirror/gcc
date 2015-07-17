@@ -338,7 +338,7 @@ generate_host_descr_file (const char *host_compiler)
     fatal_error (input_location, "cannot open '%s'", src_filename);
 
   fprintf (src_file,
-	   "extern void *__OFFLOAD_TABLE__;\n"
+	   "extern const void *const __OFFLOAD_TABLE__;\n"
 	   "extern const void *const __offload_image_intelmic_start;\n"
 	   "extern const void *const __offload_image_intelmic_end;\n\n"
 
@@ -350,11 +350,11 @@ generate_host_descr_file (const char *host_compiler)
 	   "#ifdef __cplusplus\n"
 	   "extern \"C\"\n"
 	   "#endif\n"
-	   "void GOMP_offload_register (void *, int, const void *);\n"
+	   "void GOMP_offload_register (const void *, int, const void *);\n"
 	   "#ifdef __cplusplus\n"
 	   "extern \"C\"\n"
 	   "#endif\n"
-	   "void GOMP_offload_unregister (void *, int, const void *);\n\n"
+	   "void GOMP_offload_unregister (const void *, int, const void *);\n\n"
 
 	   "__attribute__((constructor))\n"
 	   "static void\n"
