@@ -1556,6 +1556,7 @@ gfc_use_rename;
 typedef struct gfc_use_list
 {
   const char *module_name;
+  const char *submodule_name;
   bool intrinsic;
   bool non_intrinsic;
   bool only_flag;

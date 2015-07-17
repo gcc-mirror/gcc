@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <zlib.h>
 
 #define MODULE_EXTENSION ".mod"
+#define SUBMODULE_EXTENSION ".smod"
 
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
    recognized.  */
@@ -190,6 +191,8 @@ static gzFile module_fp;
 
 /* The name of the module we're reading (USE'ing) or writing.  */
 static const char *module_name;
+/* The name of the .smod file that the submodule will write to.  */
+static const char *submodule_name;
 static gfc_use_list *module_list;
 
 /* If we're reading an intrinsic module, this is its ID.  */
@@ -715,7 +718,17 @@ cleanup:
 }
 
 
-/* Match a SUBMODULE statement.  */
+/* Match a SUBMODULE statement.
+
+   According to F2008:11.2.3.2, "The submodule identifier is the
+   ordered pair whose first element is the ancestor module name and
+   whose second element is the submodule name. 'Submodule_name' is
+   used for the submodule filename and uses '@' as a separator, whilst
+   the name of the symbol for the module uses '.' as a a separator.
+   The reasons for these choices are:
+   (i) To follow another leading brand in the submodule filenames;
+   (ii) Since '.' is not particularly visible in the filenames; and
+   (iii) The linker does not permit '@' in mnemonics.  */
 
 match
 gfc_match_submodule (void)
@@ -740,7 +753,6 @@ gfc_match_submodule (void)
 	goto syntax;
 
       use_list = gfc_get_use_list ();
-      use_list->module_name = gfc_get_string (name);
       use_list->where = gfc_current_locus;
 
       if (module_list)
@@ -749,9 +761,17 @@ gfc_match_submodule (void)
 	  while (last->next)
 	    last = last->next;
 	  last->next = use_list;
+	  use_list->module_name
+		= gfc_get_string ("%s.%s", module_list->module_name, name);
+	  use_list->submodule_name
+		= gfc_get_string ("%s@%s", module_list->module_name, name);
 	}
       else
+	{
 	module_list = use_list;
+	  use_list->module_name = gfc_get_string (name);
+	  use_list->submodule_name = use_list->module_name;
+	}
 
       if (gfc_match_char (')') == MATCH_YES)
 	break;
@@ -764,9 +784,25 @@ gfc_match_submodule (void)
   if (m != MATCH_YES)
     goto syntax;
 
+  submodule_name = gfc_get_string ("%s@%s", module_list->module_name,
+				   gfc_new_block->name);
+
+  gfc_new_block->name = gfc_get_string ("%s.%s",
+					module_list->module_name,
+					gfc_new_block->name);
+
   if (!gfc_add_flavor (&gfc_new_block->attr, FL_MODULE,
 		       gfc_new_block->name, NULL))
     return MATCH_ERROR;
+
+  /* Just retain the ultimate .(s)mod file for reading, since it
+     contains all the information in its ancestors.  */
+  use_list = module_list;
+  for (; module_list->next; use_list = use_list->next)
+    {
+      module_list = use_list->next;
+      free (use_list);
+    }
 
   return MATCH_YES;
 
@@ -5932,7 +5968,16 @@ gfc_dump_module (const char *name, int dump_flag)
   char *filename, *filename_tmp;
   uLong crc, crc_old;
 
+  module_name = gfc_get_string (name);
+
+  if (gfc_state_stack->state == COMP_SUBMODULE)
+    {
+      name = submodule_name;
+      n = strlen (name) + strlen (SUBMODULE_EXTENSION) + 1;
+    }
+  else
   n = strlen (name) + strlen (MODULE_EXTENSION) + 1;
+
   if (gfc_option.module_dir != NULL)
     {
       n += strlen (gfc_option.module_dir);
@@ -5945,6 +5990,10 @@ gfc_dump_module (const char *name, int dump_flag)
       filename = (char *) alloca (n);
       strcpy (filename, name);
     }
+
+  if (gfc_state_stack->state == COMP_SUBMODULE)
+    strcat (filename, SUBMODULE_EXTENSION);
+  else
   strcat (filename, MODULE_EXTENSION);
 
   /* Name of the temporary file used to write the module.  */
@@ -5974,7 +6023,6 @@ gfc_dump_module (const char *name, int dump_flag)
 
   /* Write the module itself.  */
   iomode = IO_OUTPUT;
-  module_name = gfc_get_string (name);
 
   init_pi_tree ();
 
@@ -6705,10 +6753,22 @@ gfc_use_module (gfc_use_list *module)
     gfc_warning_now (OPT_Wuse_without_only,
 		     "USE statement at %C has no ONLY qualifier");
 
-  filename = XALLOCAVEC (char, strlen (module_name) + strlen (MODULE_EXTENSION)
-			       + 1);
+  if (gfc_state_stack->state == COMP_MODULE
+      || module->submodule_name == NULL
+      || strcmp (module_name, module->submodule_name) == 0)
+    {
+      filename = XALLOCAVEC (char, strlen (module_name)
+				   + strlen (MODULE_EXTENSION) + 1);
   strcpy (filename, module_name);
   strcat (filename, MODULE_EXTENSION);
+    }
+  else
+    {
+      filename = XALLOCAVEC (char, strlen (module->submodule_name)
+				   + strlen (SUBMODULE_EXTENSION) + 1);
+      strcpy (filename, module->submodule_name);
+      strcat (filename, SUBMODULE_EXTENSION);
+    }
 
   /* First, try to find an non-intrinsic module, unless the USE statement
      specified that the module is intrinsic.  */

@@ -29,6 +29,19 @@ proc cleanup-modules { modlist } {
     }
 }
 
+# Remove files for specified Fortran submodules.
+proc cleanup-submodules { modlist } {
+    global clean
+    foreach mod [concat $modlist $clean] {
+	set m [string tolower $mod].smod
+	verbose "cleanup-submodule `$m'" 2
+	if [is_remote host] {
+	    remote_file host delete $m
+	}
+	remote_file build delete $m
+    }
+}
+
 proc keep-modules { modlist } {
     global clean
     # if the modlist is empty, keep everything
