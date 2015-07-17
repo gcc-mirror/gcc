@@ -2670,7 +2670,10 @@ particular release.
       <emphasis>30.2.3 [thread.req.native]/1</emphasis>
       <classname>native_handle_type</classname> and
       <methodname>native_handle</methodname> are provided. The handle types
-      are defined in terms of the Gthreads abstraction layer.
+      are defined in terms of the Gthreads abstraction layer, although this
+      is subject to change at any time. Any use of
+      <classname>native_handle</classname> is inherently non-portable and
+      not guaranteed to work between major releases of GCC.
       <itemizedlist>
          <listitem><para><classname>thread</classname>: The native handle type is
             a typedef for <code>__gthread_t</code> i.e. <code>pthread_t</code>
