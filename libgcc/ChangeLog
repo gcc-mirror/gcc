@@ -1,3 +1,7 @@
+2015-07-17  Jan Beulich  <jbeulich@suse.com>
+
+	* config/t-softfp: Split up "else ifneq".
+
 2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
