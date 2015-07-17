@@ -1,3 +1,21 @@
+2015-07-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52846
+	* decl.c (gfc_match_end): Pick out declared submodule name from
+	the composite identifier.
+	* gfortran.h : Add 'submodule_name' to gfc_use_list structure.
+	* module.c (gfc_match_submodule): Define submodule_name and add
+	static 'submodule_name'.
+	(gfc_match_submodule): Build up submodule filenames, using '@'
+	as a delimiter. Store the output filename in 'submodule_name'.
+	Similarly, the submodule identifier is built using '.' as an
+	identifier.
+	(gfc_dump_module): If current state is COMP_SUBMODULE, write
+	to file 'submodule_name', using SUBMODULE_EXTENSION.
+	(gfc_use_module): Similarly, use the 'submodule_name' field in
+	the gfc_use_list structure and SUBMODULE_EXTENSION to read the
+	implicitly used submodule files.
+
 2015-07-17  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* trans-intrinsic.c (conv_co_collective): Remove redundant address
