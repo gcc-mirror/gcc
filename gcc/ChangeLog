@@ -1,3 +1,28 @@
+2015-07-17  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	PR middle-end/61929
+	* graphite-dependences.c (add_pdr_constraints): Renamed
+	pdr->extent to pdr->subscript_sizes.
+	* graphite-interchange.c (build_linearized_memory_access): Add
+	back all gcc_assert's that the "isl_int to isl_val conversion"
+	patch has removed.  Refactored.
+	(pdr_stride_in_loop): Renamed pdr->extent to pdr->subscript_sizes.
+	* graphite-poly.c (new_poly_dr): Same.
+	(free_poly_dr): Same.
+	* graphite-poly.h (struct poly_dr): Same.
+	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Ignore
+	all data references other than ARRAY_REF, MEM_REF, and COMPONENT_REF.
+	* graphite-scop-detection.h: Fix space.
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons): Add
+	back all gcc_assert's removed by a previous patch.
+	(wrap): Remove the_isl_ctx global variable that the same patch has
+	added.
+	(build_loop_iteration_domains): Same.
+	(add_param_constraints): Same.
+	(pdr_add_data_dimensions): Same.  Refactored.
+	(build_poly_dr): Renamed extent to subscript_sizes.
+
 2015-07-17  Marek Polacek  <polacek@redhat.com>
 
 	* fold-const.c (fold_binary_loc): Move A - (A & B) into ~B & A ...

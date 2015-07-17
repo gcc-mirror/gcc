@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GRAPHITE_SCOP_DETECTION_H
 
 extern void build_scops (vec<scop_p> *);
-extern void dot_all_scops (vec<scop_p> );
+extern void dot_all_scops (vec<scop_p>);
 extern void dot_scop (scop_p);
 
 #endif /* GCC_GRAPHITE_SCOP_DETECTION_H */
