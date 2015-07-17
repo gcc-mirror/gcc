@@ -1,3 +1,10 @@
+2015-07-17  Nathan Sidwell  <nathan@acm.org>
+	Ilya Verbin <iverbin@gmail.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (ImgDevAddrMap): Constify.
+	(offload_image, GOMP_OFFLOAD_load_image,
+	OMP_OFFLOAD_unload_image): Constify target data.
+
 2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/Makefile.am (main_target_image.h): Change type of data

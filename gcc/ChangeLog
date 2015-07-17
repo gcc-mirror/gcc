@@ -1,3 +1,10 @@
+2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (process): Constify target data.
+	* config/i386/intelmic-mkoffload.c (generate_target_descr_file):
+	Constify target data.
+	(generate_target_offloadend_file): Likewise.
+
 2015-07-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* tree-vect-loop-manip.c (rename_variables_in_bb): Add argument

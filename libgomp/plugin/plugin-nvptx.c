@@ -334,7 +334,7 @@ struct ptx_event
 
 struct ptx_image_data
 {
-  void *target_data;
+  const void *target_data;
   CUmodule module;
   struct ptx_image_data *next;
 };
@@ -1633,7 +1633,7 @@ typedef struct nvptx_tdata
 } nvptx_tdata_t;
 
 int
-GOMP_OFFLOAD_load_image (int ord, void *target_data,
+GOMP_OFFLOAD_load_image (int ord, const void *target_data,
 			 struct addr_pair **target_table)
 {
   CUmodule module;
@@ -1641,7 +1641,7 @@ GOMP_OFFLOAD_load_image (int ord, void *target_data,
   unsigned int fn_entries, var_entries, i, j;
   CUresult r;
   struct targ_fn_descriptor *targ_fns;
-  nvptx_tdata_t const *img_header = (nvptx_tdata_t const *) target_data;
+  const nvptx_tdata_t *img_header = (const nvptx_tdata_t *) target_data;
   struct ptx_image_data *new_image;
 
   GOMP_OFFLOAD_init_device (ord);
@@ -1704,9 +1704,10 @@ GOMP_OFFLOAD_load_image (int ord, void *target_data,
 }
 
 void
-GOMP_OFFLOAD_unload_image (int tid __attribute__((unused)), void *target_data)
+GOMP_OFFLOAD_unload_image (int tid __attribute__((unused)),
+			   const void *target_data)
 {
-  void **img_header = (void **) target_data;
+  const void *const *img_header = (const void *const *) target_data;
   struct targ_fn_descriptor *targ_fns
     = (struct targ_fn_descriptor *) img_header[0];
   struct ptx_image_data *image, *prev = NULL, *newhd = NULL;

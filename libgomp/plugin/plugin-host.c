@@ -111,7 +111,7 @@ GOMP_OFFLOAD_fini_device (int n __attribute__ ((unused)))
 
 STATIC int
 GOMP_OFFLOAD_load_image (int n __attribute__ ((unused)),
-			 void *i __attribute__ ((unused)),
+			 const void *t __attribute__ ((unused)),
 			 struct addr_pair **r __attribute__ ((unused)))
 {
   return 0;
@@ -119,7 +119,7 @@ GOMP_OFFLOAD_load_image (int n __attribute__ ((unused)),
 
 STATIC void
 GOMP_OFFLOAD_unload_image (int n __attribute__ ((unused)),
-			   void *i __attribute__ ((unused)))
+			   const void *t __attribute__ ((unused)))
 {
 }
 
