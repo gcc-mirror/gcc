@@ -46,10 +46,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef CRT_BEGIN
 
 #if defined(HAVE_GAS_HIDDEN) && defined(ENABLE_OFFLOADING)
-void *__offload_func_table[0]
+const void *const __offload_func_table[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_FUNC_TABLE_SECTION_NAME))) = { };
-void *__offload_var_table[0]
+const void *const __offload_var_table[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
 #endif
@@ -57,17 +57,17 @@ void *__offload_var_table[0]
 #elif defined CRT_END
 
 #if defined(HAVE_GAS_HIDDEN) && defined(ENABLE_OFFLOADING)
-void *__offload_funcs_end[0]
+const void *const __offload_funcs_end[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_FUNC_TABLE_SECTION_NAME))) = { };
-void *__offload_vars_end[0]
+const void *const __offload_vars_end[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
 
-extern void *__offload_func_table[];
-extern void *__offload_var_table[];
+extern const void *const __offload_func_table[];
+extern const void *const __offload_var_table[];
 
-void *__OFFLOAD_TABLE__[]
+const void *const __OFFLOAD_TABLE__[]
   __attribute__ ((__visibility__ ("hidden"))) =
 {
   &__offload_func_table, &__offload_funcs_end,
