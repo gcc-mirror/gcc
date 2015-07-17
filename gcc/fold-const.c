@@ -9777,30 +9777,6 @@ fold_binary_loc (location_t loc,
 
       if (! FLOAT_TYPE_P (type))
 	{
-	  /* Fold A - (A & B) into ~B & A.  */
-	  if (!TREE_SIDE_EFFECTS (arg0)
-	      && TREE_CODE (arg1) == BIT_AND_EXPR)
-	    {
-	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0))
-		{
-		  tree arg10 = fold_convert_loc (loc, type,
-						 TREE_OPERAND (arg1, 0));
-		  return fold_build2_loc (loc, BIT_AND_EXPR, type,
-				      fold_build1_loc (loc, BIT_NOT_EXPR,
-						   type, arg10),
-				      fold_convert_loc (loc, type, arg0));
-		}
-	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
-		{
-		  tree arg11 = fold_convert_loc (loc,
-						 type, TREE_OPERAND (arg1, 1));
-		  return fold_build2_loc (loc, BIT_AND_EXPR, type,
-				      fold_build1_loc (loc, BIT_NOT_EXPR,
-						   type, arg11),
-				      fold_convert_loc (loc, type, arg0));
-		}
-	    }
-
 	  /* Fold (A & ~B) - (A & B) into (A ^ B) - B, where B is
 	     any power of 2 minus 1.  */
 	  if (TREE_CODE (arg0) == BIT_AND_EXPR
