@@ -2164,11 +2164,28 @@ reload_cse_move2add (rtx_insn *first)
 	 unknown values.  */
       if (CALL_P (insn))
 	{
+	  rtx link;
+
 	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
 	    {
 	      if (call_used_regs[i])
 		/* Reset the information about this register.  */
 		reg_mode[i] = VOIDmode;
+	    }
+
+	  for (link = CALL_INSN_FUNCTION_USAGE (insn); link;
+	       link = XEXP (link, 1))
+	    {
+	      rtx setuse = XEXP (link, 0);
+	      rtx usage_rtx = XEXP (setuse, 0);
+	      if (GET_CODE (setuse) == CLOBBER
+		  && REG_P (usage_rtx))
+	        {
+		  unsigned int end_regno = END_REGNO (usage_rtx);
+		  for (unsigned int r = REGNO (usage_rtx); r < end_regno; ++r)
+		    /* Reset the information about this register.  */
+		    reg_mode[r] = VOIDmode;
+		}
 	    }
 	}
     }

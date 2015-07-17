@@ -1,6 +1,16 @@
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/66838
+	* postreload.c (reload_cse_move2add): Also process
+	CALL_INSN_FUNCTION_USAGE when resetting information of
+	call-clobbered registers.
+
 2015-07-16  Martin Liska  <mliska@suse.cz>
 
-	PR ipa/66896.
+	PR ipa/66896
 	* ipa-prop.c (update_jump_functions_after_inlining): Create properly
 	dst_ctx if it does not exist.
 
