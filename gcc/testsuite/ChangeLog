@@ -1,3 +1,10 @@
+2015-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/61831
+	* gfortran.dg/alloc_comp_auto_array_3.f90: Count the number
+	of generated while loops in the tree dump.
+	* gfortran.dg/derived_constructor_components_6.f90: New file.
+
 2015-07-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* gcc.dg/vect/vect-outer-simd-2.c: New test.
