@@ -1,6 +1,17 @@
 2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
+	2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66703
+	* gcc.target/i386/readeflags-1.c (readeflags_test): Declare with
+	__attribute__((noinline, noclone)).  Change "x" to "volatile char"
+	type to prevent possible flag-clobbering zero-extensions.
+	* gcc.target/i386/pr66703.c: New test.
+
+2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
 	2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66814
