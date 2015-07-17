@@ -11495,6 +11495,7 @@ ix86_expand_prologue (void)
   HOST_WIDE_INT allocate;
   bool int_registers_saved;
   bool sse_registers_saved;
+  rtx static_chain = NULL_RTX;
 
   ix86_finalize_stack_realign_flags ();
 
@@ -11593,7 +11594,8 @@ ix86_expand_prologue (void)
      call.  This insn will be skipped by the trampoline.  */
   else if (ix86_static_chain_on_stack)
     {
-      insn = emit_insn (gen_push (ix86_static_chain (cfun->decl, false)));
+      static_chain = ix86_static_chain (cfun->decl, false);
+      insn = emit_insn (gen_push (static_chain));
       emit_insn (gen_blockage ());
 
       /* We don't want to interpret this push insn as a register save,
@@ -11645,6 +11647,15 @@ ix86_expand_prologue (void)
 	 we've started over with a new frame.  */
       m->fs.sp_offset = INCOMING_FRAME_SP_OFFSET;
       m->fs.realigned = true;
+
+      if (static_chain)
+	{
+	  /* Replicate static chain on the stack so that static chain
+	     can be reached via (argp - 2) slot.  This is needed for
+	     nested function with stack realignment.  */
+	  insn = emit_insn (gen_push (static_chain));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
 
   int_registers_saved = (frame.nregs == 0);

@@ -1,3 +1,9 @@
+2015-07-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66906
+	* config/i386/i386.c (ix86_expand_prologue): Replicate static
+	chain on the stack.
+
 2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/mkoffload.c (process): Constify host data.
