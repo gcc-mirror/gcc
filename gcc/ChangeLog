@@ -1,3 +1,10 @@
+2015-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66922
+	* config/i386/i386.c (ix86_expand_pextr): Reject extractions
+	from misaligned positions.
+	(ix86_expand_pinsr): Reject insertions to misaligned positions.
+
 2015-07-18  Sebastian Pop  <s.pop@samsung.com>
 
 	PR middle-end/46851

@@ -50591,6 +50591,10 @@ ix86_expand_pextr (rtx *operands)
 	    return false;
 	  }
 
+	/* Reject extractions from misaligned positions.  */
+	if (pos & (size-1))
+	  return false;
+
 	if (GET_MODE (dst) == dstmode)
 	  d = dst;
 	else
@@ -50686,6 +50690,10 @@ ix86_expand_pinsr (rtx *operands)
 	  default:
 	    return false;
 	  }
+
+	/* Reject insertions to misaligned positions.  */
+	if (pos & (size-1))
+	  return false;
 
 	if (GET_CODE (src) == SUBREG)
 	  {
