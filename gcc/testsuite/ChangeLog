@@ -1,3 +1,8 @@
+2015-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66922
+	* gcc.target/i386/pr66922.c: New test.
+
 2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66866
