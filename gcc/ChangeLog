@@ -1,10 +1,16 @@
+2015-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66922
+	* config/i386/i386.c (ix86_expand_pinsr): Reject insertions
+	to misaligned positions.
+
 2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66866
 	* config/i386/i386.c (ix86_expand_pinsr): Reject non-lowpart
 	source subregs.
 
-2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
 	2015-07-10  Uros Bizjak  <ubizjak@gmail.com>
@@ -16,7 +22,7 @@
 	(read-modify peephole2): Use gen_lowpart instead of
 	gen_rtx_SUBREG for operand 5.
 
-2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
 	2015-07-08  Uros Bizjak  <ubizjak@gmail.com>
@@ -27,7 +33,7 @@
 	(varous peephole2s): Use {GENERAL,SSE,MMX}_REGNO_P instead of
 	{GENERAL,SSE,MMX}_REG_P where appropriate.
 
-2015-06-17  Uros Bizjak  <ubizjak@gmail.com>
+2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
 	2015-07-15  Uros Bizjak  <ubizjak@gmail.com>

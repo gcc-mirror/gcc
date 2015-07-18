@@ -50396,6 +50396,10 @@ ix86_expand_pinsr (rtx *operands)
 	    return false;
 	  }
 
+	/* Reject insertions to misaligned positions.  */
+	if (pos & (size-1))
+	  return false;
+
 	rtx d = dst;
 	if (GET_MODE (dst) != dstmode)
 	  d = gen_reg_rtx (dstmode);
