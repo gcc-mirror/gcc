@@ -525,41 +525,6 @@ DEFPARAM(PARAM_SCEV_MAX_EXPR_COMPLEXITY,
 	 "Bound on the complexity of the expressions in the scalar evolutions analyzer",
 	 10, 0, 0)
 
-DEFPARAM(PARAM_OMEGA_MAX_VARS,
- 	 "omega-max-vars",
-	 "Bound on the number of variables in Omega constraint systems",
-	 128, 0, 0)
-
-DEFPARAM(PARAM_OMEGA_MAX_GEQS,
- 	 "omega-max-geqs",
-	 "Bound on the number of inequalities in Omega constraint systems",
-	 256, 0, 0)
-
-DEFPARAM(PARAM_OMEGA_MAX_EQS,
- 	 "omega-max-eqs",
-	 "Bound on the number of equalities in Omega constraint systems",
-	 128, 0, 0)
-
-DEFPARAM(PARAM_OMEGA_MAX_WILD_CARDS,
- 	 "omega-max-wild-cards",
-	 "Bound on the number of wild cards in Omega constraint systems",
-	 18, 0, 0)
-
-DEFPARAM(PARAM_OMEGA_HASH_TABLE_SIZE,
- 	 "omega-hash-table-size",
-	 "Bound on the size of the hash table in Omega constraint systems",
-	 550, 0, 0)
-
-DEFPARAM(PARAM_OMEGA_MAX_KEYS,
- 	 "omega-max-keys",
-	 "Bound on the number of keys in Omega constraint systems",
-	 500, 0, 0)
-
-DEFPARAM(PARAM_OMEGA_ELIMINATE_REDUNDANT_CONSTRAINTS,
- 	 "omega-eliminate-redundant-constraints",
-	 "When set to 1, use expensive methods to eliminate all redundant constraints",
-	 0, 0, 1)
-
 DEFPARAM(PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS,
          "vect-max-version-for-alignment-checks",
          "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check",

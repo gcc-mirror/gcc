@@ -1,3 +1,58 @@
+2015-07-18  Sebastian Pop  <s.pop@samsung.com>
+
+	PR middle-end/46851
+	PR middle-end/60340
+	* Makefile.in: Removed omega.o.
+	* common.opt: Document flag fcheck-data-deps as deprecated.
+	* doc/invoke.texi: Remove documentation for fcheck-data-deps and
+	its associated params: omega-max-vars, omega-max-geqs,
+	omega-max-eqs, omega-max-wild-cards, omega-hash-table-size,
+	omega-max-keys, omega-eliminate-redundant-constraints.
+	* doc/loop.texi: Remove all the section on Omega.
+	* graphite-blocking.c: Include missing params.h: it used to be
+	included through tree-data-ref.h and omega.h.
+	* graphite-isl-ast-to-gimple.c: Same.
+	* graphite-optimize-isl.c: Same.
+	* graphite-sese-to-poly.c: Same.
+	* graphite.c: Same.
+	* omega.c: Remove.
+	* omega.h: Remove.
+	* params.def: Removed PARAM_OMEGA_MAX_VARS, PARAM_OMEGA_MAX_GEQS,
+	PARAM_OMEGA_MAX_EQS, PARAM_OMEGA_MAX_WILD_CARDS,
+	PARAM_OMEGA_HASH_TABLE_SIZE, PARAM_OMEGA_MAX_KEYS, and
+	PARAM_OMEGA_ELIMINATE_REDUNDANT_CONSTRAINTS.
+	* passes.def: Remove pass_check_data_deps.
+	* tree-data-ref.c (dump_affine_function): Declare DEBUG_FUNCTION.
+	(dump_conflict_function): Same.
+	(dump_subscript): Same.
+	(print_direction_vector): Same.
+	(print_dir_vectors): Same.
+	(print_lambda_vector): Same.
+	(print_dist_vectors): Same.
+	(dump_data_dependence_relation): Same.
+	(dump_data_dependence_relations): Same.
+	(dump_dist_dir_vectors): Same.
+	(dump_ddrs): Same.
+	(init_omega_eq_with_af): Removed.
+	(omega_extract_distance_vectors): Removed.
+	(omega_setup_subscript): Removed.
+	(init_omega_for_ddr_1): Removed.
+	(init_omega_for_ddr): Removed.
+	(ddr_consistent_p): Removed.
+	(compute_affine_dependence): Do not use omega to check data
+	dependences.
+	(compute_data_dependences_for_bb): Removed.
+	(analyze_all_data_dependences): Removed.
+	(tree_check_data_deps): Removed.
+	* tree-data-ref.h: Do not include omega.h.
+	(compute_data_dependences_for_bb): Removed.
+	(tree_check_data_deps): Removed.
+	* tree-ssa-loop.c (pass_check_data_deps): Removed.
+	(make_pass_check_data_deps): Removed.
+	* tree-ssa-phiopt.c: Include params.h.
+	* tree-vect-data-refs.c: Same.
+	* tree-vect-slp.c: Same.
+
 2015-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (pushsf splitter): Pass curr_insn to

@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "tree-scalar-evolution.h"
 #include "tree-inline.h"
+#include "params.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,

@@ -44,6 +44,7 @@ extern "C" {
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
+#include "params.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop.h"

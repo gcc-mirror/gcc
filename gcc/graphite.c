@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
+#include "params.h"
 
 #ifdef HAVE_isl
 #include "cfghooks.h"

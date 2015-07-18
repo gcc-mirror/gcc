@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
+#include "params.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop.h"

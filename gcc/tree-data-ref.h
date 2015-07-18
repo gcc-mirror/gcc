@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_DATA_REF_H
 
 #include "graphds.h"
-#include "omega.h"
 #include "tree-chrec.h"
 
 /*
@@ -301,9 +300,6 @@ extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       vec<loop_p> *,
 					       vec<data_reference_p> *,
 					       vec<ddr_p> *);
-extern bool compute_data_dependences_for_bb (basic_block, bool,
-                                             vec<data_reference_p> *,
-                                             vec<ddr_p> *);
 extern void debug_ddrs (vec<ddr_p> );
 extern void dump_data_reference (FILE *, struct data_reference *);
 extern void debug (data_reference &ref);
@@ -343,8 +339,6 @@ extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *, bool);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
-extern void tree_check_data_deps (void);
-
 
 /* Return true when the base objects of data references A and B are
    the same memory object.  */
