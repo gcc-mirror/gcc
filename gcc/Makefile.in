@@ -1347,7 +1347,6 @@ OBJS = \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
-	omega.o \
 	omp-low.o \
 	optabs.o \
 	options-save.o \

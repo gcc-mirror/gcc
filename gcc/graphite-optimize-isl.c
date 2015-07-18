@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-data-ref.h"
 #include "graphite-poly.h"
+#include "params.h"
 
 static isl_union_set *
 scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)

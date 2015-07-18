@@ -1,3 +1,10 @@
+2015-07-18  Sebastian Pop  <s.pop@samsung.com>
+
+	PR middle-end/46851
+	PR middle-end/60340
+	* gcc.dg/tree-ssa/pr42327.c: Removed.
+	* g++.dg/other/pr35011.C: Removed.
+
 2015-07-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66906

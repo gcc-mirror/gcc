@@ -385,7 +385,7 @@ Objective-C and Objective-C++ Dialects}.
 -fauto-inc-dec -fbranch-probabilities @gol
 -fbranch-target-load-optimize -fbranch-target-load-optimize2 @gol
 -fbtr-bb-exclusive -fcaller-saves @gol
--fcheck-data-deps -fcombine-stack-adjustments -fconserve-stack @gol
+-fcombine-stack-adjustments -fconserve-stack @gol
 -fcompare-elim -fcprop-registers -fcrossjumping @gol
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
 -fcx-limited-range @gol
@@ -8812,11 +8812,6 @@ be parallelized.  Parallelize all the loops that can be analyzed to
 not contain loop carried dependences without checking that it is
 profitable to parallelize the loops.
 
-@item -fcheck-data-deps
-@opindex fcheck-data-deps
-Compare the results of several data dependence analyzers.  This option
-is used for debugging the data dependence analyzers.
-
 @item -ftree-loop-if-convert
 @opindex ftree-loop-if-convert
 Attempt to transform conditional jumps in the innermost loops to
@@ -10474,34 +10469,6 @@ Large expressions slow the analyzer.
 @item scev-max-expr-complexity
 Bound on the complexity of the expressions in the scalar evolutions analyzer.
 Complex expressions slow the analyzer.
-
-@item omega-max-vars
-The maximum number of variables in an Omega constraint system.
-The default value is 128.
-
-@item omega-max-geqs
-The maximum number of inequalities in an Omega constraint system.
-The default value is 256.
-
-@item omega-max-eqs
-The maximum number of equalities in an Omega constraint system.
-The default value is 128.
-
-@item omega-max-wild-cards
-The maximum number of wildcard variables that the Omega solver is
-able to insert.  The default value is 18.
-
-@item omega-hash-table-size
-The size of the hash table in the Omega solver.  The default value is
-550.
-
-@item omega-max-keys
-The maximal number of keys used by the Omega solver.  The default
-value is 500.
-
-@item omega-eliminate-redundant-constraints
-When set to 1, use expensive methods to eliminate all redundant
-constraints.  The default value is 0.
 
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when

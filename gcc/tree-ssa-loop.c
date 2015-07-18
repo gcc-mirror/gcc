@@ -286,54 +286,6 @@ make_pass_vectorize (gcc::context *ctxt)
   return new pass_vectorize (ctxt);
 }
 
-/* Check the correctness of the data dependence analyzers.  */
-
-namespace {
-
-const pass_data pass_data_check_data_deps =
-{
-  GIMPLE_PASS, /* type */
-  "ckdd", /* name */
-  OPTGROUP_LOOP, /* optinfo_flags */
-  TV_CHECK_DATA_DEPS, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_check_data_deps : public gimple_opt_pass
-{
-public:
-  pass_check_data_deps (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_check_data_deps, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_check_data_deps != 0; }
-  virtual unsigned int execute (function *);
-
-}; // class pass_check_data_deps
-
-unsigned int
-pass_check_data_deps::execute (function *fun)
-{
-  if (number_of_loops (fun) <= 1)
-    return 0;
-
-  tree_check_data_deps ();
-  return 0;
-}
-
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_check_data_deps (gcc::context *ctxt)
-{
-  return new pass_check_data_deps (ctxt);
-}
-
 /* Propagation of constants using scev.  */
 
 namespace {
