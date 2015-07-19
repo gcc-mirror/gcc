@@ -1,3 +1,8 @@
+2015-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Fix URL for N4279.
+	* doc/html/manual/status.html: Regenerate.
+
 2015-07-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Add caveats for native_handle.
