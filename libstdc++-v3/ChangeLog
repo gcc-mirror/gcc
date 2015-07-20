@@ -1,3 +1,7 @@
+2015-07-20  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/c++config: Fix abi_tag in special modes.
+
 2015-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Fix URL for N4279.
