@@ -133,7 +133,7 @@ Expression::determine_type_no_context()
 // assignment.
 
 Expression*
-Expression::convert_for_assignment(Gogo* gogo, Type* lhs_type,
+Expression::convert_for_assignment(Gogo*, Type* lhs_type,
 				   Expression* rhs, Location location)
 {
   Type* rhs_type = rhs->type();
@@ -177,17 +177,6 @@ Expression::convert_for_assignment(Gogo* gogo, Type* lhs_type,
            || (lhs_type->array_type() != NULL
                && rhs_type->array_type() != NULL))
     {
-      // Avoid confusion from zero sized variables which may be
-      // represented as non-zero-sized.
-      // TODO(cmang): This check is for a GCC-specific issue, and should be
-      // removed from the frontend.  FIXME.
-      int64_t lhs_size =
-	gogo->backend()->type_size(lhs_type->get_backend(gogo));
-      int64_t rhs_size =
-	gogo->backend()->type_size(rhs_type->get_backend(gogo));
-      if (rhs_size == 0 || lhs_size == 0)
-	return rhs;
-
       // This conversion must be permitted by Go, or we wouldn't have
       // gotten here.
       return Expression::make_unsafe_cast(lhs_type, rhs, location);
