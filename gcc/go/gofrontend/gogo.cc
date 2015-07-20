@@ -1937,10 +1937,6 @@ Label*
 Gogo::add_label_definition(const std::string& label_name,
 			   Location location)
 {
-  // A label with a blank identifier is never declared or defined.
-  if (label_name == "_")
-    return NULL;
-
   go_assert(!this->functions_.empty());
   Function* func = this->functions_.back().function->func_value();
   Label* label = func->add_label_definition(this, label_name, location);
@@ -4724,7 +4720,13 @@ Function::add_label_definition(Gogo* gogo, const std::string& label_name,
   std::pair<Labels::iterator, bool> ins =
     this->labels_.insert(std::make_pair(label_name, lnull));
   Label* label;
-  if (ins.second)
+  if (label_name == "_")
+    {
+      label = Label::create_dummy_label();
+      if (ins.second)
+	ins.first->second = label;
+    }
+  else if (ins.second)
     {
       // This is a new label.
       label = new Label(label_name);
@@ -7623,6 +7625,20 @@ Label::get_addr(Translate_context* context, Location location)
 {
   Blabel* label = this->get_backend_label(context);
   return context->backend()->label_address(label, location);
+}
+
+// Return the dummy label that represents any instance of the blank label.
+
+Label*
+Label::create_dummy_label()
+{
+  static Label* dummy_label;
+  if (dummy_label == NULL)
+    {
+      dummy_label = new Label("_");
+      dummy_label->set_is_used();
+    }
+  return dummy_label;
 }
 
 // Class Unnamed_label.
