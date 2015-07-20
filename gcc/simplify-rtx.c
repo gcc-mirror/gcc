@@ -957,6 +957,32 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
       if (GET_CODE (op) == NEG)
 	return XEXP (op, 0);
 
+      /* (neg (x ? (neg y) : y)) == !x ? (neg y) : y.
+	 If comparison is not reversible use
+	 x ? y : (neg y).  */
+      if (GET_CODE (op) == IF_THEN_ELSE)
+	{
+	  rtx cond = XEXP (op, 0);
+	  rtx true_rtx = XEXP (op, 1);
+	  rtx false_rtx = XEXP (op, 2);
+
+	  if ((GET_CODE (true_rtx) == NEG
+	       && rtx_equal_p (XEXP (true_rtx, 0), false_rtx))
+	       || (GET_CODE (false_rtx) == NEG
+		   && rtx_equal_p (XEXP (false_rtx, 0), true_rtx)))
+	    {
+	      if (reversed_comparison_code (cond, NULL_RTX) != UNKNOWN)
+		temp = reversed_comparison (cond, mode);
+	      else
+		{
+		  temp = cond;
+		  std::swap (true_rtx, false_rtx);
+		}
+	      return simplify_gen_ternary (IF_THEN_ELSE, mode,
+					    mode, temp, true_rtx, false_rtx);
+	    }
+	}
+
       /* (neg (plus X 1)) can become (not X).  */
       if (GET_CODE (op) == PLUS
 	  && XEXP (op, 1) == const1_rtx)
