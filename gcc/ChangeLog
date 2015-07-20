@@ -1,5 +1,9 @@
 2015-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*lt0_disi): New.
+
+2015-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR target/66217
 	* config/rs6000/constraints.md ("S", "T", "t"): Delete.  Update
 	"available letters" comment.
