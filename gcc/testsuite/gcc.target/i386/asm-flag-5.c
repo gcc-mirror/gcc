@@ -7,6 +7,7 @@ void f_c(void) { char x; asm("" : "=@ccc"(x)); }
 void f_s(void) { short x; asm("" : "=@ccc"(x)); }
 void f_i(void) { int x; asm("" : "=@ccc"(x)); }
 void f_l(void) { long x; asm("" : "=@ccc"(x)); }
+void f_ll(void) { long long x; asm("" : "=@ccc"(x)); }
 
 void f_f(void)
 {

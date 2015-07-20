@@ -1,6 +1,10 @@
+2015-07-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/asm-flag-5.c (f_ll): New.
+
 2015-07-20  Jiong Wang  <jiong.wang@arm.com>
 
-	 * gcc.target/aarch64/got_mem_hoist.c (dg-skip-if): Skip tiny and large
+	* gcc.target/aarch64/got_mem_hoist.c (dg-skip-if): Skip tiny and large
 	model.
 
 2015-07-20  Marek Polacek  <polacek@redhat.com>

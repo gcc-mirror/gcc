@@ -45861,6 +45861,10 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	  error ("invalid type for asm flag output");
 	  continue;
 	}
+
+      if (dest_mode == DImode && !TARGET_64BIT)
+	dest_mode = SImode;
+
       if (dest_mode != QImode)
 	{
 	  rtx destqi = gen_reg_rtx (QImode);
@@ -45877,7 +45881,16 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	  else
 	    x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
 	}
-      emit_insn (gen_rtx_SET (dest, x));
+
+      if (dest_mode != GET_MODE (dest))
+	{
+	  rtx tmp = gen_reg_rtx (SImode);
+
+	  emit_insn (gen_rtx_SET (tmp, x));
+	  emit_insn (gen_zero_extendsidi2 (dest, tmp));
+	}
+      else
+	emit_insn (gen_rtx_SET (dest, x));
     }
   rtx_insn *seq = get_insns ();
   end_sequence ();
