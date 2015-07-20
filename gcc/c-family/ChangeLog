@@ -1,3 +1,14 @@
+2015-07-20  Marek Polacek  <polacek@redhat.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/55095
+	* c-common.c (c_fully_fold_internal): Warn about left shift overflows.
+	Use EXPR_LOC_OR_LOC.
+	(maybe_warn_shift_overflow): New function.
+	* c-common.h (maybe_warn_shift_overflow): Declare.
+	* c-opts.c (c_common_post_options): Set warn_shift_overflow.
+	* c.opt (Wshift-overflow): New option.
+
 2015-07-16  Martin Liska  <mliska@suse.cz>
 
 	* c-format.c (static void check_format_info_main): Use

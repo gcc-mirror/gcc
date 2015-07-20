@@ -1,3 +1,22 @@
+2015-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/55095
+	* c-c++-common/Wshift-overflow-1.c: New test.
+	* c-c++-common/Wshift-overflow-2.c: New test.
+	* c-c++-common/Wshift-overflow-3.c: New test.
+	* c-c++-common/Wshift-overflow-4.c: New test.
+	* c-c++-common/Wshift-overflow-5.c: New test.
+	* g++.dg/cpp1y/left-shift-1.C: New test.
+	* gcc.dg/c90-left-shift-2.c: New test.
+	* gcc.dg/c90-left-shift-3.c: New test.
+	* gcc.dg/c99-left-shift-2.c: New test.
+	* gcc.dg/c99-left-shift-3.c: New test.
+	* gcc.dg/pr40501.c: Use -Wno-shift-overflow.
+	* gcc.c-torture/execute/pr40386.c: Likewise.
+	* gcc.dg/vect/pr33373.c: Likewise.
+	* gcc.dg/vect/vect-shift-2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-shift-2.c: Likewise.
+
 2015-07-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/neg_abs_1.c: New test.

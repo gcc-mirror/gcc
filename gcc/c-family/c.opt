@@ -780,6 +780,14 @@ Wshadow-ivar
 ObjC ObjC++ Var(warn_shadow_ivar) EnabledBy(Wshadow) Init(1) Warning
 Warn if a local declaration hides an instance variable
 
+Wshift-overflow
+C ObjC C++ ObjC++ Warning Alias(Wshift-overflow=, 1, 0)
+Warn if left shift of a signed value overflows
+
+Wshift-overflow=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_shift_overflow) Init(-1) Warning
+Warn if left shift of a signed value overflows
+
 Wshift-count-negative
 C ObjC C++ ObjC++ Var(warn_shift_count_negative) Init(1) Warning
 Warn if shift count is negative

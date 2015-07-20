@@ -1,3 +1,9 @@
+2015-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/55095
+	* c-typeck.c (digest_init): Pass OPT_Wpedantic to pedwarn_init.
+	(build_binary_op): Warn about left shift overflows.
+
 2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-array-notation.c: Adjust includes for flags.h changes.

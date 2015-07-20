@@ -1364,7 +1364,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       if (TREE_OVERFLOW_P (ret)
 	  && !TREE_OVERFLOW_P (op0)
 	  && !TREE_OVERFLOW_P (op1))
-	overflow_warning (EXPR_LOCATION (expr), ret);
+	overflow_warning (EXPR_LOC_OR_LOC (expr, input_location), ret);
       if (code == LSHIFT_EXPR
 	  && TREE_CODE (orig_op0) != INTEGER_CST
 	  && TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
@@ -1394,6 +1394,18 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 			 ? G_("left shift count >= width of type")
 			 : G_("right shift count >= width of type")));
 	}
+      if (code == LSHIFT_EXPR
+	  /* If either OP0 has been folded to INTEGER_CST...  */
+	  && ((TREE_CODE (orig_op0) != INTEGER_CST
+	       && TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+	       && TREE_CODE (op0) == INTEGER_CST)
+	      /* ...or if OP1 has been folded to INTEGER_CST...  */
+	      || (TREE_CODE (orig_op1) != INTEGER_CST
+		  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
+		  && TREE_CODE (op1) == INTEGER_CST))
+	  && c_inhibit_evaluation_warnings == 0)
+	/* ...then maybe we can detect an overflow.  */
+	maybe_warn_shift_overflow (loc, op0, op1);
       if ((code == TRUNC_DIV_EXPR
 	   || code == CEIL_DIV_EXPR
 	   || code == FLOOR_DIV_EXPR
@@ -12326,6 +12338,53 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
 	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
 		    "with boolean expression is always false", cst);
     }
+}
+
+/* Warn if signed left shift overflows.  We don't warn
+   about left-shifting 1 into the sign bit in C++14; cf.
+   <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3367.html#1457>
+   LOC is a location of the shift; OP0 and OP1 are the operands.
+   Return true if an overflow is detected, false otherwise.  */
+
+bool
+maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
+{
+  if (TREE_CODE (op0) != INTEGER_CST
+      || TREE_CODE (op1) != INTEGER_CST)
+    return false;
+
+  tree type0 = TREE_TYPE (op0);
+  unsigned int prec0 = TYPE_PRECISION (type0);
+
+  /* Left-hand operand must be signed.  */
+  if (TYPE_UNSIGNED (type0))
+    return false;
+
+  /* Handle the left-shifting 1 into the sign bit case.  */
+  if (integer_onep (op0)
+      && compare_tree_int (op1, prec0 - 1) == 0)
+    {
+      /* Never warn for C++14 onwards.  */
+      if (cxx_dialect >= cxx14)
+	return false;
+      /* Otherwise only if -Wshift-overflow=2.  But return
+	 true to signal an overflow for the sake of integer
+	 constant expressions.  */
+      if (warn_shift_overflow < 2)
+	return true;
+    }
+
+  unsigned int min_prec = (wi::min_precision (op0, SIGNED)
+			   + TREE_INT_CST_LOW (op1));
+  bool overflowed = min_prec > prec0;
+  if (overflowed && c_inhibit_evaluation_warnings == 0)
+    warning_at (loc, OPT_Wshift_overflow_,
+		"result of %qE requires %u bits to represent, "
+		"but %qT only has %u bits",
+		build2_loc (loc, LSHIFT_EXPR, type0, op0, op1),
+		min_prec, type0, prec0);
+
+  return overflowed;
 }
 
 /* The C and C++ parsers both use vectors to hold function arguments.

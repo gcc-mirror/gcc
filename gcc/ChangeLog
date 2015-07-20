@@ -1,3 +1,8 @@
+2015-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/55095
+	* doc/invoke.texi: Document -Wshift-overflow and -Wshift-overflow=.
+
 2015-07-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1, NEG case):

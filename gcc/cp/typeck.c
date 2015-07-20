@@ -4350,6 +4350,9 @@ cp_build_binary_op (location_t location,
 		    warning (OPT_Wshift_count_overflow,
 			     "left shift count >= width of type");
 		}
+	      else if (TREE_CODE (const_op0) == INTEGER_CST
+		       && (complain & tf_warning))
+		maybe_warn_shift_overflow (location, const_op0, const_op1);
 	    }
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
