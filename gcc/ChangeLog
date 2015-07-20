@@ -1,5 +1,10 @@
 2015-07-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* simplify-rtx.c (simplify_unary_operation_1, NEG case):
+	(neg (x ? (neg y) : y)) -> !x ? (neg y) : y.
+
+2015-07-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* combine.c (combine_simplify_rtx): Move simplification step
 	before various transformations/substitutions.
 
