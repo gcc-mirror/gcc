@@ -5270,7 +5270,7 @@ num_insns_constant (rtx op, machine_mode mode)
     {
     case CONST_INT:
       if ((INTVAL (op) >> 31) != 0 && (INTVAL (op) >> 31) != -1
-	  && mask64_operand (op, mode))
+	  && rs6000_is_valid_and_mask (op, mode))
 	return 2;
       else
 	return num_insns_constant_wide (INTVAL (op));
@@ -5318,7 +5318,7 @@ num_insns_constant (rtx op, machine_mode mode)
 		|| (high == -1 && low < 0))
 	      return num_insns_constant_wide (low);
 
-	    else if (mask64_operand (op, mode))
+	    else if (rs6000_is_valid_and_mask (op, mode))
 	      return 2;
 
 	    else if (low == 0)
@@ -6031,69 +6031,6 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
   mem = adjust_address_nv (mem, inner_mode, elt * GET_MODE_SIZE (inner_mode));
 
   emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
-}
-
-/* Generates shifts and masks for a pair of rldicl or rldicr insns to
-   implement ANDing by the mask IN.  */
-void
-build_mask64_2_operands (rtx in, rtx *out)
-{
-  unsigned HOST_WIDE_INT c, lsb, m1, m2;
-  int shift;
-
-  gcc_assert (GET_CODE (in) == CONST_INT);
-
-  c = INTVAL (in);
-  if (c & 1)
-    {
-      /* Assume c initially something like 0x00fff000000fffff.  The idea
-	 is to rotate the word so that the middle ^^^^^^ group of zeros
-	 is at the MS end and can be cleared with an rldicl mask.  We then
-	 rotate back and clear off the MS    ^^ group of zeros with a
-	 second rldicl.  */
-      c = ~c;			/*   c == 0xff000ffffff00000 */
-      lsb = c & -c;		/* lsb == 0x0000000000100000 */
-      m1 = -lsb;		/*  m1 == 0xfffffffffff00000 */
-      c = ~c;			/*   c == 0x00fff000000fffff */
-      c &= -lsb;		/*   c == 0x00fff00000000000 */
-      lsb = c & -c;		/* lsb == 0x0000100000000000 */
-      c = ~c;			/*   c == 0xff000fffffffffff */
-      c &= -lsb;		/*   c == 0xff00000000000000 */
-      shift = 0;
-      while ((lsb >>= 1) != 0)
-	shift++;		/* shift == 44 on exit from loop */
-      m1 <<= 64 - shift;	/*  m1 == 0xffffff0000000000 */
-      m1 = ~m1;			/*  m1 == 0x000000ffffffffff */
-      m2 = ~c;			/*  m2 == 0x00ffffffffffffff */
-    }
-  else
-    {
-      /* Assume c initially something like 0xff000f0000000000.  The idea
-	 is to rotate the word so that the     ^^^  middle group of zeros
-	 is at the LS end and can be cleared with an rldicr mask.  We then
-	 rotate back and clear off the LS group of ^^^^^^^^^^ zeros with
-	 a second rldicr.  */
-      lsb = c & -c;		/* lsb == 0x0000010000000000 */
-      m2 = -lsb;		/*  m2 == 0xffffff0000000000 */
-      c = ~c;			/*   c == 0x00fff0ffffffffff */
-      c &= -lsb;		/*   c == 0x00fff00000000000 */
-      lsb = c & -c;		/* lsb == 0x0000100000000000 */
-      c = ~c;			/*   c == 0xff000fffffffffff */
-      c &= -lsb;		/*   c == 0xff00000000000000 */
-      shift = 0;
-      while ((lsb >>= 1) != 0)
-	shift++;		/* shift == 44 on exit from loop */
-      m1 = ~c;			/*  m1 == 0x00ffffffffffffff */
-      m1 >>= shift;		/*  m1 == 0x0000000000000fff */
-      m1 = ~m1;			/*  m1 == 0xfffffffffffff000 */
-    }
-
-  /* Note that when we only have two 0->1 and 1->0 transitions, one of the
-     masks will be all 1's.  We are guaranteed more than one transition.  */
-  out[0] = GEN_INT (64 - shift);
-  out[1] = GEN_INT (m1);
-  out[2] = GEN_INT (shift);
-  out[3] = GEN_INT (m2);
 }
 
 /* Return TRUE if OP is an invalid SUBREG operation on the e500.  */
@@ -16423,121 +16360,495 @@ validate_condition_mode (enum rtx_code code, machine_mode mode)
 }
 
 
-/* Return 1 if ANDOP is a mask that has no bits on that are not in the
-   mask required to convert the result of a rotate insn into a shift
-   left insn of SHIFTOP bits.  Both are known to be SImode CONST_INT.  */
+/* Return whether MASK (a CONST_INT) is a valid mask for any rlwinm,
+   rldicl, rldicr, or rldic instruction in mode MODE.  If so, if E is
+   not zero, store there the bit offset (counted from the right) where
+   the single stretch of 1 bits begins; and similarly for B, the bit
+   offset where it ends.  */
 
-int
-includes_lshift_p (rtx shiftop, rtx andop)
+bool
+rs6000_is_valid_mask (rtx mask, int *b, int *e, machine_mode mode)
 {
-  unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
+  unsigned HOST_WIDE_INT val = INTVAL (mask);
+  unsigned HOST_WIDE_INT bit;
+  int nb, ne;
+  int n = GET_MODE_PRECISION (mode);
 
-  shift_mask <<= INTVAL (shiftop);
+  if (mode != DImode && mode != SImode)
+    return false;
 
-  return (INTVAL (andop) & 0xffffffff & ~shift_mask) == 0;
-}
-
-/* Similar, but for right shift.  */
-
-int
-includes_rshift_p (rtx shiftop, rtx andop)
-{
-  unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
-
-  shift_mask >>= INTVAL (shiftop);
-
-  return (INTVAL (andop) & 0xffffffff & ~shift_mask) == 0;
-}
-
-/* Return 1 if ANDOP is a mask suitable for use with an rldic insn
-   to perform a left shift.  It must have exactly SHIFTOP least
-   significant 0's, then one or more 1's, then zero or more 0's.  */
-
-int
-includes_rldic_lshift_p (rtx shiftop, rtx andop)
-{
-  if (GET_CODE (andop) == CONST_INT)
+  if (INTVAL (mask) >= 0)
     {
-      unsigned HOST_WIDE_INT c, lsb, shift_mask;
-
-      c = INTVAL (andop);
-      if (c == 0 || c == HOST_WIDE_INT_M1U)
-	return 0;
-
-      shift_mask = HOST_WIDE_INT_M1U;
-      shift_mask <<= INTVAL (shiftop);
-
-      /* Find the least significant one bit.  */
-      lsb = c & -c;
-
-      /* It must coincide with the LSB of the shift mask.  */
-      if (-lsb != shift_mask)
-	return 0;
-
-      /* Invert to look for the next transition (if any).  */
-      c = ~c;
-
-      /* Remove the low group of ones (originally low group of zeros).  */
-      c &= -lsb;
-
-      /* Again find the lsb, and check we have all 1's above.  */
-      lsb = c & -c;
-      return c == -lsb;
+      bit = val & -val;
+      ne = exact_log2 (bit);
+      nb = exact_log2 (val + bit);
+    }
+  else if (val + 1 == 0)
+    {
+      nb = n;
+      ne = 0;
+    }
+  else if (val & 1)
+    {
+      val = ~val;
+      bit = val & -val;
+      nb = exact_log2 (bit);
+      ne = exact_log2 (val + bit);
     }
   else
-    return 0;
+    {
+      bit = val & -val;
+      ne = exact_log2 (bit);
+      if (val + bit == 0)
+	nb = n;
+      else
+	nb = 0;
+    }
+
+  nb--;
+
+  if (nb < 0 || ne < 0 || nb >= n || ne >= n)
+    return false;
+
+  if (b)
+    *b = nb;
+  if (e)
+    *e = ne;
+
+  return true;
 }
 
-/* Return 1 if ANDOP is a mask suitable for use with an rldicr insn
-   to perform a left shift.  It must have SHIFTOP or more least
-   significant 0's, with the remainder of the word 1's.  */
+/* Return whether MASK (a CONST_INT) is a valid mask for any rlwinm, rldicl,
+   or rldicr instruction, to implement an AND with it in mode MODE.  */
 
-int
-includes_rldicr_lshift_p (rtx shiftop, rtx andop)
+bool
+rs6000_is_valid_and_mask (rtx mask, machine_mode mode)
 {
-  if (GET_CODE (andop) == CONST_INT)
+  int nb, ne;
+
+  if (!rs6000_is_valid_mask (mask, &nb, &ne, mode))
+    return false;
+
+  /* For DImode, we need a rldicl, rldicr, or a rlwinm with mask that
+     does not wrap.  */
+  if (mode == DImode)
+    return (ne == 0 || nb == 63 || (nb < 32 && ne <= nb));
+
+  /* For SImode, rlwinm can do everything.  */
+  if (mode == SImode)
+    return (nb < 32 && ne < 32);
+
+  return false;
+}
+
+/* Return the instruction template for an AND with mask in mode MODE, with
+   operands OPERANDS.  If DOT is true, make it a record-form instruction.  */
+
+const char *
+rs6000_insn_for_and_mask (machine_mode mode, rtx *operands, bool dot)
+{
+  int nb, ne;
+
+  if (!rs6000_is_valid_mask (operands[2], &nb, &ne, mode))
+    gcc_unreachable ();
+
+  if (mode == DImode && ne == 0)
     {
-      unsigned HOST_WIDE_INT c, lsb, shift_mask;
+      operands[3] = GEN_INT (63 - nb);
+      if (dot)
+	return "rldicl. %0,%1,0,%3";
+      return "rldicl %0,%1,0,%3";
+    }
 
-      shift_mask = HOST_WIDE_INT_M1U;
-      shift_mask <<= INTVAL (shiftop);
-      c = INTVAL (andop);
+  if (mode == DImode && nb == 63)
+    {
+      operands[3] = GEN_INT (63 - ne);
+      if (dot)
+	return "rldicr. %0,%1,0,%3";
+      return "rldicr %0,%1,0,%3";
+    }
 
-      /* Find the least significant one bit.  */
-      lsb = c & -c;
+  if (nb < 32 && ne < 32)
+    {
+      operands[3] = GEN_INT (31 - nb);
+      operands[4] = GEN_INT (31 - ne);
+      if (dot)
+	return "rlwinm. %0,%1,0,%3,%4";
+      return "rlwinm %0,%1,0,%3,%4";
+    }
 
-      /* It must be covered by the shift mask.
-	 This test also rejects c == 0.  */
-      if ((lsb & shift_mask) == 0)
-	return 0;
+  gcc_unreachable ();
+}
 
-      /* Check we have all 1's above the transition, and reject all 1's.  */
-      return c == -lsb && lsb != 1;
+/* Return whether MASK (a CONST_INT) is a valid mask for any rlw[i]nm,
+   rld[i]cl, rld[i]cr, or rld[i]c instruction, to implement an AND with
+   shift SHIFT (a ROTATE, ASHIFT, or LSHIFTRT) in mode MODE.  */
+
+bool
+rs6000_is_valid_shift_mask (rtx mask, rtx shift, machine_mode mode)
+{
+  int nb, ne;
+
+  if (!rs6000_is_valid_mask (mask, &nb, &ne, mode))
+    return false;
+
+  int n = GET_MODE_PRECISION (mode);
+  int sh = -1;
+
+  if (CONST_INT_P (XEXP (shift, 1)))
+    {
+      sh = INTVAL (XEXP (shift, 1));
+      if (sh < 0 || sh >= n)
+	return false;
+    }
+
+  rtx_code code = GET_CODE (shift);
+
+  /* Convert any shift by 0 to a rotate, to simplify below code.  */
+  if (sh == 0)
+    code = ROTATE;
+
+  /* Convert rotate to simple shift if we can, to make analysis simpler.  */
+  if (code == ROTATE && sh >= 0 && nb >= ne && ne >= sh)
+    code = ASHIFT;
+  if (code == ROTATE && sh >= 0 && nb >= ne && nb < sh)
+    {
+      code = LSHIFTRT;
+      sh = n - sh;
+    }
+
+  /* DImode rotates need rld*.  */
+  if (mode == DImode && code == ROTATE)
+    return (nb == 63 || ne == 0 || ne == sh);
+
+  /* SImode rotates need rlw*.  */
+  if (mode == SImode && code == ROTATE)
+    return (nb < 32 && ne < 32 && sh < 32);
+
+  /* Wrap-around masks are only okay for rotates.  */
+  if (ne > nb)
+    return false;
+
+  /* Variable shifts are only okay for rotates.  */
+  if (sh < 0)
+    return false;
+
+  /* Don't allow ASHIFT if the mask is wrong for that.  */
+  if (code == ASHIFT && ne < sh)
+    return false;
+
+  /* If we can do it with an rlw*, we can do it.  Don't allow LSHIFTRT
+     if the mask is wrong for that.  */
+  if (nb < 32 && ne < 32 && sh < 32
+      && !(code == LSHIFTRT && nb >= 32 - sh))
+    return true;
+
+  /* If we can do it with an rld*, we can do it.  Don't allow LSHIFTRT
+     if the mask is wrong for that.  */
+  if (code == LSHIFTRT)
+    sh = 64 - sh;
+  if (nb == 63 || ne == 0 || ne == sh)
+    return !(code == LSHIFTRT && nb >= sh);
+
+  return false;
+}
+
+/* Return the instruction template for a shift with mask in mode MODE, with
+   operands OPERANDS.  If DOT is true, make it a record-form instruction.  */
+
+const char *
+rs6000_insn_for_shift_mask (machine_mode mode, rtx *operands, bool dot)
+{
+  int nb, ne;
+
+  if (!rs6000_is_valid_mask (operands[3], &nb, &ne, mode))
+    gcc_unreachable ();
+
+  if (mode == DImode && ne == 0)
+    {
+      if (GET_CODE (operands[4]) == LSHIFTRT && INTVAL (operands[2]))
+	operands[2] = GEN_INT (64 - INTVAL (operands[2]));
+      operands[3] = GEN_INT (63 - nb);
+      if (dot)
+	return "rld%I2cl. %0,%1,%2,%3";
+      return "rld%I2cl %0,%1,%2,%3";
+    }
+
+  if (mode == DImode && nb == 63)
+    {
+      operands[3] = GEN_INT (63 - ne);
+      if (dot)
+	return "rld%I2cr. %0,%1,%2,%3";
+      return "rld%I2cr %0,%1,%2,%3";
+    }
+
+  if (mode == DImode
+      && GET_CODE (operands[4]) != LSHIFTRT
+      && CONST_INT_P (operands[2])
+      && ne == INTVAL (operands[2]))
+    {
+      operands[3] = GEN_INT (63 - nb);
+      if (dot)
+	return "rld%I2c. %0,%1,%2,%3";
+      return "rld%I2c %0,%1,%2,%3";
+    }
+
+  if (nb < 32 && ne < 32)
+    {
+      if (GET_CODE (operands[4]) == LSHIFTRT && INTVAL (operands[2]))
+	operands[2] = GEN_INT (32 - INTVAL (operands[2]));
+      operands[3] = GEN_INT (31 - nb);
+      operands[4] = GEN_INT (31 - ne);
+      if (dot)
+	return "rlw%I2nm. %0,%1,%2,%3,%4";
+      return "rlw%I2nm %0,%1,%2,%3,%4";
+    }
+
+  gcc_unreachable ();
+}
+
+/* Return whether MASK (a CONST_INT) is a valid mask for any rlwimi or
+   rldimi instruction, to implement an insert with shift SHIFT (a ROTATE,
+   ASHIFT, or LSHIFTRT) in mode MODE.  */
+
+bool
+rs6000_is_valid_insert_mask (rtx mask, rtx shift, machine_mode mode)
+{
+  int nb, ne;
+
+  if (!rs6000_is_valid_mask (mask, &nb, &ne, mode))
+    return false;
+
+  int n = GET_MODE_PRECISION (mode);
+
+  int sh = INTVAL (XEXP (shift, 1));
+  if (sh < 0 || sh >= n)
+    return false;
+
+  rtx_code code = GET_CODE (shift);
+
+  /* Convert any shift by 0 to a rotate, to simplify below code.  */
+  if (sh == 0)
+    code = ROTATE;
+
+  /* Convert rotate to simple shift if we can, to make analysis simpler.  */
+  if (code == ROTATE && sh >= 0 && nb >= ne && ne >= sh)
+    code = ASHIFT;
+  if (code == ROTATE && sh >= 0 && nb >= ne && nb < sh)
+    {
+      code = LSHIFTRT;
+      sh = n - sh;
+    }
+
+  /* DImode rotates need rldimi.  */
+  if (mode == DImode && code == ROTATE)
+    return (ne == sh);
+
+  /* SImode rotates need rlwimi.  */
+  if (mode == SImode && code == ROTATE)
+    return (nb < 32 && ne < 32 && sh < 32);
+
+  /* Wrap-around masks are only okay for rotates.  */
+  if (ne > nb)
+    return false;
+
+  /* Don't allow ASHIFT if the mask is wrong for that.  */
+  if (code == ASHIFT && ne < sh)
+    return false;
+
+  /* If we can do it with an rlwimi, we can do it.  Don't allow LSHIFTRT
+     if the mask is wrong for that.  */
+  if (nb < 32 && ne < 32 && sh < 32
+      && !(code == LSHIFTRT && nb >= 32 - sh))
+    return true;
+
+  /* If we can do it with an rldimi, we can do it.  Don't allow LSHIFTRT
+     if the mask is wrong for that.  */
+  if (code == LSHIFTRT)
+    sh = 64 - sh;
+  if (ne == sh)
+    return !(code == LSHIFTRT && nb >= sh);
+
+  return false;
+}
+
+/* Return the instruction template for an insert with mask in mode MODE, with
+   operands OPERANDS.  If DOT is true, make it a record-form instruction.  */
+
+const char *
+rs6000_insn_for_insert_mask (machine_mode mode, rtx *operands, bool dot)
+{
+  int nb, ne;
+
+  if (!rs6000_is_valid_mask (operands[3], &nb, &ne, mode))
+    gcc_unreachable ();
+
+  /* Prefer rldimi because rlwimi is cracked.  */
+  if (TARGET_POWERPC64
+      && (!dot || mode == DImode)
+      && GET_CODE (operands[4]) != LSHIFTRT
+      && ne == INTVAL (operands[2]))
+    {
+      operands[3] = GEN_INT (63 - nb);
+      if (dot)
+	return "rldimi. %0,%1,%2,%3";
+      return "rldimi %0,%1,%2,%3";
+    }
+
+  if (nb < 32 && ne < 32)
+    {
+      if (GET_CODE (operands[4]) == LSHIFTRT && INTVAL (operands[2]))
+	operands[2] = GEN_INT (32 - INTVAL (operands[2]));
+      operands[3] = GEN_INT (31 - nb);
+      operands[4] = GEN_INT (31 - ne);
+      if (dot)
+	return "rlwimi. %0,%1,%2,%3,%4";
+      return "rlwimi %0,%1,%2,%3,%4";
+    }
+
+  gcc_unreachable ();
+}
+
+/* Return whether an AND with C (a CONST_INT) in mode MODE can be done
+   using two machine instructions.  */
+
+bool
+rs6000_is_valid_2insn_and (rtx c, machine_mode mode)
+{
+  /* There are two kinds of AND we can handle with two insns:
+     1) those we can do with two rl* insn;
+     2) ori[s];xori[s].
+
+     We do not handle that last case yet.  */
+
+  /* If there is just one stretch of ones, we can do it.  */
+  if (rs6000_is_valid_mask (c, NULL, NULL, mode))
+    return true;
+
+  /* Otherwise, fill in the lowest "hole"; if we can do the result with
+     one insn, we can do the whole thing with two.  */
+  unsigned HOST_WIDE_INT val = INTVAL (c);
+  unsigned HOST_WIDE_INT bit1 = val & -val;
+  unsigned HOST_WIDE_INT bit2 = (val + bit1) & ~val;
+  unsigned HOST_WIDE_INT val1 = (val + bit1) & val;
+  unsigned HOST_WIDE_INT bit3 = val1 & -val1;
+  return rs6000_is_valid_and_mask (GEN_INT (val + bit3 - bit2), mode);
+}
+
+/* Emit the two insns to do an AND in mode MODE, with operands OPERANDS.
+   If EXPAND is true, split rotate-and-mask instructions we generate to
+   their constituent parts as well (this is used during expand); if DOT
+   is true, make the last insn a record-form instruction.  */
+
+void
+rs6000_emit_2insn_and (machine_mode mode, rtx *operands, bool expand, bool dot)
+{
+  gcc_assert (!(expand && dot));
+
+  /* We do not actually handle record form yet.  */
+  if (dot)
+    gcc_unreachable ();
+
+  unsigned HOST_WIDE_INT val = INTVAL (operands[2]);
+
+  /* If it is one stretch of ones, it is DImode; shift left, mask, then
+     shift right.  This generates better code than doing the masks without
+     shifts, or shifting first right and then left.  */
+  int nb, ne;
+  if (rs6000_is_valid_mask (operands[2], &nb, &ne, mode) && nb >= ne)
+    {
+      gcc_assert (mode == DImode);
+
+      int shift = 63 - nb;
+      if (expand)
+	{
+	  rtx tmp1 = gen_reg_rtx (DImode);
+	  rtx tmp2 = gen_reg_rtx (DImode);
+	  emit_insn (gen_ashldi3 (tmp1, operands[1], GEN_INT (shift)));
+	  emit_insn (gen_anddi3 (tmp2, tmp1, GEN_INT (val << shift)));
+	  emit_insn (gen_lshrdi3 (operands[0], tmp2, GEN_INT (shift)));
+	}
+      else
+	{
+	  rtx tmp = gen_rtx_ASHIFT (mode, operands[1], GEN_INT (shift));
+	  tmp = gen_rtx_AND (mode, tmp, GEN_INT (val << shift));
+	  emit_move_insn (operands[0], tmp);
+	  emit_insn (gen_lshrdi3 (operands[0], operands[0], GEN_INT (shift)));
+	}
+      return;
+    }
+
+  /* Otherwise, make a mask2 that cuts out the lowest "hole", and a mask1
+     that does the rest.  */
+  unsigned HOST_WIDE_INT bit1 = val & -val;
+  unsigned HOST_WIDE_INT bit2 = (val + bit1) & ~val;
+  unsigned HOST_WIDE_INT val1 = (val + bit1) & val;
+  unsigned HOST_WIDE_INT bit3 = val1 & -val1;
+
+  unsigned HOST_WIDE_INT mask1 = -bit3 + bit2 - 1;
+  unsigned HOST_WIDE_INT mask2 = val + bit3 - bit2;
+
+  gcc_assert (rs6000_is_valid_and_mask (GEN_INT (mask2), mode));
+
+  /* Two "no-rotate"-and-mask instructions, for SImode.  */
+  if (rs6000_is_valid_and_mask (GEN_INT (mask1), mode))
+    {
+      gcc_assert (mode == SImode);
+
+      rtx reg = expand ? gen_reg_rtx (mode) : operands[0];
+      rtx tmp = gen_rtx_AND (mode, operands[1], GEN_INT (mask1));
+      emit_move_insn (reg, tmp);
+      tmp = gen_rtx_AND (mode, reg, GEN_INT (mask2));
+      emit_move_insn (operands[0], tmp);
+      return;
+    }
+
+  gcc_assert (mode == DImode);
+
+  /* Two "no-rotate"-and-mask instructions, for DImode: both are rlwinm
+     insns; we have to do the first in SImode, because it wraps.  */
+  if (mask2 <= 0xffffffff
+      && rs6000_is_valid_and_mask (GEN_INT (mask1), SImode))
+    {
+      rtx reg = expand ? gen_reg_rtx (mode) : operands[0];
+      rtx tmp = gen_rtx_AND (SImode, gen_lowpart (SImode, operands[1]),
+			     GEN_INT (mask1));
+      rtx reg_low = gen_lowpart (SImode, reg);
+      emit_move_insn (reg_low, tmp);
+      tmp = gen_rtx_AND (mode, reg, GEN_INT (mask2));
+      emit_move_insn (operands[0], tmp);
+      return;
+    }
+
+  /* Two rld* insns: rotate, clear the hole in the middle (which now is
+     at the top end), rotate back and clear the other hole.  */
+  int right = exact_log2 (bit3);
+  int left = 64 - right;
+
+  /* Rotate the mask too.  */
+  mask1 = (mask1 >> right) | ((bit2 - 1) << left);
+
+  if (expand)
+    {
+      rtx tmp1 = gen_reg_rtx (DImode);
+      rtx tmp2 = gen_reg_rtx (DImode);
+      rtx tmp3 = gen_reg_rtx (DImode);
+      emit_insn (gen_rotldi3 (tmp1, operands[1], GEN_INT (left)));
+      emit_insn (gen_anddi3 (tmp2, tmp1, GEN_INT (mask1)));
+      emit_insn (gen_rotldi3 (tmp3, tmp2, GEN_INT (right)));
+      emit_insn (gen_anddi3 (operands[0], tmp3, GEN_INT (mask2)));
     }
   else
-    return 0;
+    {
+      rtx tmp = gen_rtx_ROTATE (mode, operands[1], GEN_INT (left));
+      tmp = gen_rtx_AND (mode, tmp, GEN_INT (mask1));
+      emit_move_insn (operands[0], tmp);
+      tmp = gen_rtx_ROTATE (mode, operands[0], GEN_INT (right));
+      tmp = gen_rtx_AND (mode, tmp, GEN_INT (mask2));
+      emit_move_insn (operands[0], tmp);
+    }
 }
-
-/* Return 1 if operands will generate a valid arguments to rlwimi
-instruction for insert with right shift in 64-bit mode.  The mask may
-not start on the first bit or stop on the last bit because wrap-around
-effects of instruction do not correspond to semantics of RTL insn.  */
-
-int
-insvdi_rshift_rlwimi_p (rtx sizeop, rtx startop, rtx shiftop)
-{
-  if (INTVAL (startop) > 32
-      && INTVAL (startop) < 64
-      && INTVAL (sizeop) > 1
-      && INTVAL (sizeop) + INTVAL (startop) < 64
-      && INTVAL (shiftop) > 0
-      && INTVAL (sizeop) + INTVAL (shiftop) < 32
-      && (64 - (INTVAL (shiftop) & 63)) >= INTVAL (sizeop))
-    return 1;
-
-  return 0;
-}
-
+
 /* Return 1 if REGNO (reg1) == REGNO (reg2) - 1 making them candidates
    for lfq and stfq insns iff the registers are hard registers.   */
 
@@ -18422,71 +18733,6 @@ rs6000_init_machine_status (void)
 
 #define INT_P(X) (GET_CODE (X) == CONST_INT && GET_MODE (X) == VOIDmode)
 
-int
-extract_MB (rtx op)
-{
-  int i;
-  unsigned long val = INTVAL (op);
-
-  /* If the high bit is zero, the value is the first 1 bit we find
-     from the left.  */
-  if ((val & 0x80000000) == 0)
-    {
-      gcc_assert (val & 0xffffffff);
-
-      i = 1;
-      while (((val <<= 1) & 0x80000000) == 0)
-	++i;
-      return i;
-    }
-
-  /* If the high bit is set and the low bit is not, or the mask is all
-     1's, the value is zero.  */
-  if ((val & 1) == 0 || (val & 0xffffffff) == 0xffffffff)
-    return 0;
-
-  /* Otherwise we have a wrap-around mask.  Look for the first 0 bit
-     from the right.  */
-  i = 31;
-  while (((val >>= 1) & 1) != 0)
-    --i;
-
-  return i;
-}
-
-int
-extract_ME (rtx op)
-{
-  int i;
-  unsigned long val = INTVAL (op);
-
-  /* If the low bit is zero, the value is the first 1 bit we find from
-     the right.  */
-  if ((val & 1) == 0)
-    {
-      gcc_assert (val & 0xffffffff);
-
-      i = 30;
-      while (((val >>= 1) & 1) == 0)
-	--i;
-
-      return i;
-    }
-
-  /* If the low bit is set and the high bit is not, or the mask is all
-     1's, the value is 31.  */
-  if ((val & 0x80000000) == 0 || (val & 0xffffffff) == 0xffffffff)
-    return 31;
-
-  /* Otherwise we have a wrap-around mask.  Look for the first 0 bit
-     from the left.  */
-  i = 0;
-  while (((val <<= 1) & 0x80000000) != 0)
-    ++i;
-
-  return i;
-}
-
 /* Write out a function code label.  */
 
 void
@@ -18535,21 +18781,6 @@ print_operand (FILE *file, rtx x, int code)
   switch (code)
     {
       /* %a is output_address.  */
-
-    case 'b':
-      /* If constant, low-order 16 bits of constant, unsigned.
-	 Otherwise, write normally.  */
-      if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
-      else
-	print_operand (file, x, 0);
-      return;
-
-    case 'B':
-      /* If the low-order bit is zero, write 'r'; otherwise, write 'l'
-	 for 64-bit mask direction.  */
-      putc (((INTVAL (x) & 1) == 0 ? 'r' : 'l'), file);
-      return;
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
 	 output_operand.  */
@@ -18713,24 +18944,6 @@ print_operand (FILE *file, rtx x, int code)
 	}
       return;
 
-    case 'm':
-      /* MB value for a mask operand.  */
-      if (! mask_operand (x, SImode))
-	output_operand_lossage ("invalid %%m value");
-
-      fprintf (file, "%d", extract_MB (x));
-      return;
-
-    case 'M':
-      /* ME value for a mask operand.  */
-      if (! mask_operand (x, SImode))
-	output_operand_lossage ("invalid %%M value");
-
-      fprintf (file, "%d", extract_ME (x));
-      return;
-
-      /* %n outputs the negative of its operand.  */
-
     case 'N':
       /* Write the number of elements in the vector times 4.  */
       if (GET_CODE (x) != PARALLEL)
@@ -18817,44 +19030,6 @@ print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid %%R value");
       else
 	fprintf (file, "%d", 128 >> (REGNO (x) - CR0_REGNO));
-      return;
-
-    case 's':
-      /* Low 5 bits of 32 - value */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%s value");
-      else
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INTVAL (x)) & 31);
-      return;
-
-    case 'S':
-      /* PowerPC64 mask position.  All 0's is excluded.
-	 CONST_INT 32-bit mask is considered sign-extended so any
-	 transition must occur within the CONST_INT, not on the boundary.  */
-      if (! mask64_operand (x, DImode))
-	output_operand_lossage ("invalid %%S value");
-
-      uval = INTVAL (x);
-
-      if (uval & 1)	/* Clear Left */
-	{
-#if HOST_BITS_PER_WIDE_INT > 64
-	  uval &= ((unsigned HOST_WIDE_INT) 1 << 64) - 1;
-#endif
-	  i = 64;
-	}
-      else		/* Clear Right */
-	{
-	  uval = ~uval;
-#if HOST_BITS_PER_WIDE_INT > 64
-	  uval &= ((unsigned HOST_WIDE_INT) 1 << 64) - 1;
-#endif
-	  i = 63;
-	}
-      while (uval != 0)
-	--i, uval >>= 1;
-      gcc_assert (i >= 0);
-      fprintf (file, "%d", i);
       return;
 
     case 't':
@@ -18960,13 +19135,6 @@ print_operand (FILE *file, rtx x, int code)
 		 ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	print_operand (file, x, 0);
-      return;
-
-    case 'W':
-      /* MB value for a PowerPC64 rldic operand.  */
-      i = clz_hwi (INTVAL (x));
-
-      fprintf (file, "%d", i);
       return;
 
     case 'x':
@@ -30671,10 +30839,7 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	      && (satisfies_constraint_K (x)
 		  || (mode == SImode
 		      ? satisfies_constraint_L (x)
-		      : satisfies_constraint_J (x))
-		  || mask_operand (x, mode)
-		  || (mode == DImode
-		      && mask64_operand (x, DImode))))
+		      : satisfies_constraint_J (x))))
 	  || ((outer_code == IOR || outer_code == XOR)
 	      && (satisfies_constraint_K (x)
 		  || (mode == SImode
@@ -30823,15 +30988,60 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case NOT:
       if (outer_code == AND || outer_code == IOR || outer_code == XOR)
-	{
-	  *total = 0;
-	  return false;
-	}
-      /* FALLTHRU */
+	*total = 0;
+      else
+	*total = COSTS_N_INSNS (1);
+      return false;
 
     case AND:
-    case CLZ:
+      if (CONST_INT_P (XEXP (x, 1)))
+	{
+	  rtx left = XEXP (x, 0);
+	  rtx_code left_code = GET_CODE (left);
+
+	  /* rotate-and-mask: 1 insn.  */
+	  if ((left_code == ROTATE
+	       || left_code == ASHIFT
+	       || left_code == LSHIFTRT)
+	      && rs6000_is_valid_shift_mask (XEXP (x, 1), left, mode))
+	    {
+	      *total = rtx_cost (XEXP (left, 0), mode, left_code, 0, speed);
+	      if (!CONST_INT_P (XEXP (left, 1)))
+		*total += rtx_cost (XEXP (left, 1), SImode, left_code, 1, speed);
+	      *total += COSTS_N_INSNS (1);
+	      return true;
+	    }
+
+	  /* rotate-and-mask (no rotate), andi., andis.: 1 insn.  */
+	  HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
+	  if (rs6000_is_valid_and_mask (XEXP (x, 1), mode)
+	      || (val & 0xffff) == val
+	      || (val & 0xffff0000) == val
+	      || ((val & 0xffff) == 0 && mode == SImode))
+	    {
+	      *total = rtx_cost (left, mode, AND, 0, speed);
+	      *total += COSTS_N_INSNS (1);
+	      return true;
+	    }
+
+	  /* 2 insns.  */
+	  if (rs6000_is_valid_2insn_and (XEXP (x, 1), mode))
+	    {
+	      *total = rtx_cost (left, mode, AND, 0, speed);
+	      *total += COSTS_N_INSNS (2);
+	      return true;
+	    }
+	}
+
+      *total = COSTS_N_INSNS (1);
+      return false;
+
     case IOR:
+      /* FIXME */
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case CLZ:
     case XOR:
     case ZERO_EXTRACT:
       *total = COSTS_N_INSNS (1);

@@ -1,3 +1,73 @@
+2015-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/66217
+	* config/rs6000/constraints.md ("S", "T", "t"): Delete.  Update
+	"available letters" comment.
+	* config/rs6000/predicates.md (mask_operand, mask_operand_wrap,
+	mask64_operand, mask64_2_operand, any_mask_operand, and64_2_operand,
+	and_2rld_operand):  Delete.
+	(and_operand): Adjust.
+	(rotate_mask_operator): New.
+	* config/rs6000/rs6000-protos.h (build_mask64_2_operands,
+	includes_lshift_p, includes_rshift_p, includes_rldic_lshift_p,
+	includes_rldicr_lshift_p, insvdi_rshift_rlwimi_p, extract_MB,
+	extract_ME): Delete.
+	(rs6000_is_valid_mask, rs6000_is_valid_and_mask,
+	rs6000_is_valid_shift_mask, rs6000_is_valid_insert_mask,
+	rs6000_insn_for_and_mask, rs6000_insn_for_shift_mask,
+	rs6000_insn_for_insert_mask, rs6000_is_valid_2insn_and,
+	rs6000_emit_2insn_and): New.
+	* config/rs6000/rs6000.c (num_insns_constant): Adjust.
+	(build_mask64_2_operands, includes_lshift_p, includes_rshift_p,
+	includes_rldic_lshift_p, includes_rldicr_lshift_p,
+	insvdi_rshift_rlwimi_p, extract_MB, extract_ME): Delete.
+	(rs6000_is_valid_mask, rs6000_is_valid_and_mask,
+	rs6000_insn_for_and_mask, rs6000_is_valid_shift_mask,
+	s6000_insn_for_shift_mask, rs6000_is_valid_insert_mask,
+	rs6000_insn_for_insert_mask, rs6000_is_valid_2insn_and,
+	rs6000_emit_2insn_and): New.
+	(print_operand) <'b', 'B', 'm', 'M', 's', 'S', 'W'>: Delete.
+	(rs6000_rtx_costs) <CONST_INT>: Delete mask_operand and mask64_operand
+	handling.
+	<NOT>: Don't fall through to next case.
+	<AND>: Handle the various rotate-and-mask cases directly.
+	<IOR>: Always cost as one insn.
+	* config/rs6000/rs6000.md (splitter for bswap:SI): Adjust.
+	(and<mode>3): Adjust expander for the new patterns.
+	(and<mode>3_imm, and<mode>3_imm_dot, and<mode>3_imm_dot2,
+	and<mode>3_imm_mask_dot, and<mode>3_imm_mask_dot2): Adjust condition.
+	(*and<mode>3_imm_dot_shifted): New.
+	(*and<mode>3_mask): Delete, rewrite as ...
+	(and<mode>3_mask): ... New.
+	(*and<mode>3_mask_dot, *and<mode>3_mask_dot): Rewrite.
+	(andsi3_internal0_nomc): Delete.
+	(*andsi3_internal6): Delete.
+	(*and<mode>3_2insn): New.
+	(insv, insvsi_internal, *insvsi_internal1, *insvsi_internal2,
+	*insvsi_internal3, *insvsi_internal4, *insvsi_internal5,
+	*insvsi_internal6, insvdi_internal, *insvdi_internal2,
+	*insvdi_internal3): Delete.
+	(*rotl<mode>3_mask, *rotl<mode>3_mask_dot, *rotl<mode>3_mask_dot2,
+	*rotl<mode>3_insert, *rotl<mode>3_insert_2, *rotl<mode>3_insert_3,
+	*rotl<mode>3_insert_4, two splitters for multi-precision shifts,
+	*ior<mode>_mask): New.
+	(extzv, extzvdi_internal, *extzvdi_internal1, *extzvdi_internal2,
+	*rotlsi3_mask, *rotlsi3_mask_dot, *rotlsi3_mask_dot2,
+	*ashlsi3_imm_mask, *ashlsi3_imm_mask_dot, *ashlsi3_imm_mask_dot2,
+	*lshrsi3_imm_mask, *lshrsi3_imm_mask_dot, *lshrsi3_imm_mask_dot2):
+	Delete.
+	(ashr<mode>3): Delete expander.
+	(*ashr<mode>3): Rename to ...
+	(ashr<mode>3): ... This.
+	(ashrdi3_no_power, *ashrdisi3_noppc64be): Delete.
+	(*rotldi3_internal4, *rotldi3_internal5 and split,
+	*rotldi3_internal6 and split, *ashldi3_internal4, ashldi3_internal5
+	and split, *ashldi3_internal6 and split, *ashldi3_internal7,
+	ashldi3_internal8 and split, *ashldi3_internal9 and split): Delete.
+	(*anddi3_2rld, *anddi3_2rld_dot, *anddi3_2rld_dot2): Delete.
+	(splitter for loading a mask): Adjust.
+	* doc/md.texi (Machine Constraints): Remove q, S, T, t constraints.
+
 2015-07-20  Marek Polacek  <polacek@redhat.com>
 
 	* genemit.c (print_code, gen_exp, gen_insn, gen_expand, gen_split,
