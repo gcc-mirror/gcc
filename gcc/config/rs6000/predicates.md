@@ -751,177 +751,13 @@
        (and (not (match_operand 0 "logical_operand"))
 	    (match_operand 0 "reg_or_logical_cint_operand"))))
 
-;; Return 1 if op is a constant that can be encoded in a 32-bit mask,
-;; suitable for use with rlwinm (no more than two 1->0 or 0->1
-;; transitions).  Reject all ones and all zeros, since these should have
-;; been optimized away and confuse the making of MB and ME.
-(define_predicate "mask_operand"
-  (match_code "const_int")
-{
-  unsigned HOST_WIDE_INT c, lsb;
-
-  c = INTVAL (op);
-
-  if (TARGET_POWERPC64)
-    {
-      /* Fail if the mask is not 32-bit.  */
-      if (mode == DImode && (c & ~(unsigned HOST_WIDE_INT) 0xffffffff) != 0)
-	return 0;
-
-      /* Fail if the mask wraps around because the upper 32-bits of the
-	 mask will all be 1s, contrary to GCC's internal view.  */
-      if ((c & 0x80000001) == 0x80000001)
-	return 0;
-    }
-
-  /* We don't change the number of transitions by inverting,
-     so make sure we start with the LS bit zero.  */
-  if (c & 1)
-    c = ~c;
-
-  /* Reject all zeros or all ones.  */
-  if (c == 0)
-    return 0;
-
-  /* Find the first transition.  */
-  lsb = c & -c;
-
-  /* Invert to look for a second transition.  */
-  c = ~c;
-
-  /* Erase first transition.  */
-  c &= -lsb;
-
-  /* Find the second transition (if any).  */
-  lsb = c & -c;
-
-  /* Match if all the bits above are 1's (or c is zero).  */
-  return c == -lsb;
-})
-
-;; Return 1 for the PowerPC64 rlwinm corner case.
-(define_predicate "mask_operand_wrap"
-  (match_code "const_int")
-{
-  unsigned HOST_WIDE_INT c, lsb;
-
-  c = INTVAL (op);
-
-  if ((c & 0x80000001) != 0x80000001)
-    return 0;
-
-  c = ~c;
-  if (c == 0)
-    return 0;
-
-  lsb = c & -c;
-  c = ~c;
-  c &= -lsb;
-  lsb = c & -c;
-  return c == -lsb;
-})
-
-;; Return 1 if the operand is a constant that is a PowerPC64 mask
-;; suitable for use with rldicl or rldicr (no more than one 1->0 or 0->1
-;; transition).  Reject all zeros, since zero should have been
-;; optimized away and confuses the making of MB and ME.
-(define_predicate "mask64_operand"
-  (match_code "const_int")
-{
-  unsigned HOST_WIDE_INT c, lsb;
-
-  c = INTVAL (op);
-
-  /* Reject all zeros.  */
-  if (c == 0)
-    return 0;
-
-  /* We don't change the number of transitions by inverting,
-     so make sure we start with the LS bit zero.  */
-  if (c & 1)
-    c = ~c;
-
-  /* Find the first transition.  */
-  lsb = c & -c;
-
-  /* Match if all the bits above are 1's (or c is zero).  */
-  return c == -lsb;
-})
-
-;; Like mask64_operand, but allow up to three transitions.  This
-;; predicate is used by insn patterns that generate two rldicl or
-;; rldicr machine insns.
-(define_predicate "mask64_2_operand"
-  (match_code "const_int")
-{
-  unsigned HOST_WIDE_INT c, lsb;
-
-  c = INTVAL (op);
-
-  /* Disallow all zeros.  */
-  if (c == 0)
-    return 0;
-
-  /* We don't change the number of transitions by inverting,
-     so make sure we start with the LS bit zero.  */
-  if (c & 1)
-    c = ~c;
-
-  /* Find the first transition.  */
-  lsb = c & -c;
-
-  /* Invert to look for a second transition.  */
-  c = ~c;
-
-  /* Erase first transition.  */
-  c &= -lsb;
-
-  /* Find the second transition.  */
-  lsb = c & -c;
-
-  /* Invert to look for a third transition.  */
-  c = ~c;
-
-  /* Erase second transition.  */
-  c &= -lsb;
-
-  /* Find the third transition (if any).  */
-  lsb = c & -c;
-
-  /* Match if all the bits above are 1's (or c is zero).  */
-  return c == -lsb;
-})
-
-;; Match a mask_operand or a mask64_operand.
-(define_predicate "any_mask_operand"
-  (ior (match_operand 0 "mask_operand")
-       (and (match_test "TARGET_POWERPC64 && mode == DImode")
-	    (match_operand 0 "mask64_operand"))))
-
-;; Like and_operand, but also match constants that can be implemented
-;; with two rldicl or rldicr insns.
-(define_predicate "and64_2_operand"
-  (ior (match_operand 0 "mask64_2_operand")
-       (if_then_else (match_test "fixed_regs[CR0_REGNO]")
-	 (match_operand 0 "gpc_reg_operand")
-	 (match_operand 0 "logical_operand"))))
-
 ;; Return 1 if the operand is either a non-special register or a
 ;; constant that can be used as the operand of a logical AND.
 (define_predicate "and_operand"
-  (ior (match_operand 0 "mask_operand")
-       (and (match_test "TARGET_POWERPC64 && mode == DImode")
-	    (match_operand 0 "mask64_operand"))
+  (ior (match_test "rs6000_is_valid_and_mask (op, mode)")
        (if_then_else (match_test "fixed_regs[CR0_REGNO]")
 	 (match_operand 0 "gpc_reg_operand")
 	 (match_operand 0 "logical_operand"))))
-
-;; Return 1 if the operand is a constant that can be used as the operand
-;; of a logical AND, implemented with two rld* insns, and it cannot be done
-;; using just one insn.
-(define_predicate "and_2rld_operand"
-  (and (match_operand 0 "and64_2_operand")
-       (not (match_operand 0 "and_operand"))))
 
 ;; Return 1 if the operand is either a logical operand or a short cint operand.
 (define_predicate "scc_eq_operand"
@@ -1127,6 +963,10 @@
 
   return nonimmediate_operand (op, mode);
 })
+
+;; Return true if operand is an operator used in rotate-and-mask instructions.
+(define_predicate "rotate_mask_operator"
+  (match_code "rotate,ashift,lshiftrt"))
 
 ;; Return true if operand is boolean operator.
 (define_predicate "boolean_operator"

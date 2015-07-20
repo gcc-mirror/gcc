@@ -17,7 +17,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Available constraint letters: "e", "k", "q", "u", "A", "B", "C", "D"
+;; Available constraint letters: e k q t u A B C D S T
 
 ;; Register constraints
 
@@ -230,28 +230,10 @@ usually better to use @samp{m} or @samp{es} in @code{asm} statements)"
 
 ;; General constraints
 
-(define_constraint "S"
-  "Constant that can be placed into a 64-bit mask operand"
-  (and (match_test "TARGET_POWERPC64")
-       (match_operand 0 "mask64_operand")))
-
-(define_constraint "T"
-  "Constant that can be placed into a 32-bit mask operand"
-  (match_operand 0 "mask_operand"))
-
 (define_constraint "U"
   "V.4 small data reference"
   (and (match_test "DEFAULT_ABI == ABI_V4")
        (match_test "small_data_operand (op, mode)")))
-
-(define_constraint "t"
-  "AND masks that can be performed by two rldic{l,r} insns
-   (but excluding those that could match other constraints of anddi3)"
-  (and (and (and (match_operand 0 "mask64_2_operand")
-		 (match_test "(fixed_regs[CR0_REGNO]
-			      || !logical_operand (op, DImode))"))
-	    (not (match_operand 0 "mask_operand")))
-       (not (match_operand 0 "mask64_operand"))))
 
 (define_constraint "W"
   "vector constant that does not require memory"

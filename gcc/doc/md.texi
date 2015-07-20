@@ -3173,9 +3173,6 @@ instructions.
 @item h
 @samp{MQ}, @samp{CTR}, or @samp{LINK} register
 
-@item q
-@samp{MQ} register
-
 @item c
 @samp{CTR} register
 
@@ -3268,17 +3265,8 @@ AIX TOC entry
 Address operand that is an indexed or indirect from a register (@samp{p} is
 preferable for @code{asm} statements)
 
-@item S
-Constant suitable as a 64-bit mask operand
-
-@item T
-Constant suitable as a 32-bit mask operand
-
 @item U
 System V Release 4 small data area reference
-
-@item t
-AND masks that can be performed by two rldic@{l, r@} instructions
 
 @item W
 Vector constant that does not require memory
