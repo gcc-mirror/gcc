@@ -1,3 +1,8 @@
+2015-07-20  Jiong Wang  <jiong.wang@arm.com>
+
+	 * gcc.target/aarch64/got_mem_hoist.c (dg-skip-if): Skip tiny and large
+	model.
+
 2015-07-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/55095
