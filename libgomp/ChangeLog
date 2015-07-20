@@ -1,5 +1,12 @@
 2015-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* oacc-parallel.c (GOACC_parallel): Move variadic handling into
+	wait=-specific if.
+	(GOACC_enter_exit_data, GOACC_update): Use consistent num_waits
+	!=0 condition.
+	(goacc_waits): Move !num_waits handling to ...
+	(GOACC_wait): ... here, the only caller that might have zero waits.
+
 	* plugin/plugin-nvptx.c (struct targ_fn_descriptor): Move later.
 	(struct ptx_image_data): Move earlier, add fns field.
 	(struct ptx_device): Add images and image_lock fields.
