@@ -105,13 +105,13 @@ GOACC_parallel (int device, void (*fn) (void *),
       return;
     }
 
-  va_start (ap, num_waits);
+  if (num_waits)
+    {
+      va_start (ap, num_waits);
+      goacc_wait (async, num_waits, ap);
+      va_end (ap);
+    }
   
-  if (num_waits > 0)
-    goacc_wait (async, num_waits, ap);
-
-  va_end (ap);
-
   acc_dev->openacc.async_set_async_func (async);
 
   if (!(acc_dev->capabilities & GOMP_OFFLOAD_CAP_NATIVE_EXEC))
@@ -225,14 +225,12 @@ GOACC_enter_exit_data (int device, size_t mapnum,
       || host_fallback)
     return;
 
-  if (num_waits > 0)
+  if (num_waits)
     {
       va_list ap;
 
       va_start (ap, num_waits);
-
       goacc_wait (async, num_waits, ap);
-
       va_end (ap);
     }
 
@@ -350,47 +348,21 @@ goacc_wait (int async, int num_waits, va_list ap)
 {
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
-  int i;
 
-  assert (num_waits >= 0);
-
-  if (async == acc_async_sync && num_waits == 0)
-    {
-      acc_wait_all ();
-      return;
-    }
-
-  if (async == acc_async_sync && num_waits)
-    {
-      for (i = 0; i < num_waits; i++)
-        {
-          int qid = va_arg (ap, int);
-
-          if (acc_async_test (qid))
-            continue;
-
-          acc_wait (qid);
-        }
-      return;
-    }
-
-  if (async == acc_async_noval && num_waits == 0)
-    {
-      acc_dev->openacc.async_wait_all_async_func (acc_async_noval);
-      return;
-    }
-
-  for (i = 0; i < num_waits; i++)
+  while (num_waits--)
     {
       int qid = va_arg (ap, int);
 
       if (acc_async_test (qid))
 	continue;
 
-      /* If we're waiting on the same asynchronous queue as we're launching on,
-         the queue itself will order work as required, so there's no need to
-	 wait explicitly.  */
-      if (qid != async)
+      if (async == acc_async_sync)
+	acc_wait (qid);
+      else if (qid == async)
+	;/* If we're waiting on the same asynchronous queue as we're
+	    launching on, the queue itself will order work as
+	    required, so there's no need to wait explicitly.  */
+      else
 	acc_dev->openacc.async_wait_async_func (qid, async);
     }
 }
@@ -412,14 +384,12 @@ GOACC_update (int device, size_t mapnum,
       || host_fallback)
     return;
 
-  if (num_waits > 0)
+  if (num_waits)
     {
       va_list ap;
 
       va_start (ap, num_waits);
-
       goacc_wait (async, num_waits, ap);
-
       va_end (ap);
     }
 
@@ -455,13 +425,18 @@ GOACC_update (int device, size_t mapnum,
 void
 GOACC_wait (int async, int num_waits, ...)
 {
-  va_list ap;
+  if (num_waits)
+    {
+      va_list ap;
 
-  va_start (ap, num_waits);
-
-  goacc_wait (async, num_waits, ap);
-
-  va_end (ap);
+      va_start (ap, num_waits);
+      goacc_wait (async, num_waits, ap);
+      va_end (ap);
+    }
+  else if (async == acc_async_sync)
+    acc_wait_all ();
+  else if (async == acc_async_noval)
+    acc_dev->openacc.async_wait_all_async_func (acc_async_noval);
 }
 
 int
