@@ -49,14 +49,6 @@ struct clobber_ent
   struct clobber_ent *next;
 };
 
-static void print_code			(RTX_CODE);
-static void gen_exp			(rtx, enum rtx_code, char *);
-static void gen_insn			(rtx, int);
-static void gen_expand			(rtx);
-static void gen_split			(rtx);
-static void output_add_clobbers		(void);
-static void output_added_clobbers_hard_reg_p (void);
-static void gen_rtx_scratch		(rtx, enum rtx_code);
 static void output_peephole2_scratches	(rtx);
 
 

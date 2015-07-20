@@ -1,5 +1,11 @@
 2015-07-20  Marek Polacek  <polacek@redhat.com>
 
+	* genemit.c (print_code, gen_exp, gen_insn, gen_expand, gen_split,
+	output_add_clobbers, output_added_clobbers_hard_reg_p,
+	gen_rtx_scratch): Remove declarations.
+
+2015-07-20  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/55095
 	* doc/invoke.texi: Document -Wshift-overflow and -Wshift-overflow=.
 
