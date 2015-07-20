@@ -2688,6 +2688,10 @@ class Label
   Bexpression*
   get_addr(Translate_context*, Location location);
 
+  // Return a dummy label, representing any instance of the blank label.
+  static Label*
+  create_dummy_label();
+
  private:
   // The name of the label.
   std::string name_;
