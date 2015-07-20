@@ -1,3 +1,9 @@
+2015-07-20  Aditya Kumar  <hiraditya@msn.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	Refactor so that each function can access 'region'. This will help
+	maintain a parameter rename_map within a region.
+
 2015-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*lt0_disi): New.
