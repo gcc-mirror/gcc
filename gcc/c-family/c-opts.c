@@ -853,6 +853,10 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_int == -1)
     warn_implicit_int = flag_isoc99;
 
+  /* -Wshift-overflow is enabled by default in C99 and C++11 modes.  */
+  if (warn_shift_overflow == -1)
+    warn_shift_overflow = cxx_dialect >= cxx11 || flag_isoc99;
+
   /* -Wshift-negative-value is enabled by -Wextra in C99 and C++11 modes.  */
   if (warn_shift_negative_value == -1)
     warn_shift_negative_value = (extra_warnings

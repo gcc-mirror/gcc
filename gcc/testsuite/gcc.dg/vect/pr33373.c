@@ -1,3 +1,4 @@
+/* { dg-options "-Wno-shift-overflow" } */
 /* { dg-do compile } */
 void DOSMEM_FillIsrTable(int*isr) {
     int i;

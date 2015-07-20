@@ -1,5 +1,5 @@
 /* { dg-do compile { target alpha*-*-* ia64*-*-* i?86-*-* x86_64-*-* s390x-*-* } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-shift-overflow" } */
 /* { dg-require-effective-target lp64 } */
 
 /* PR middle-end/40501 */

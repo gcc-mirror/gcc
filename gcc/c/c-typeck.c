@@ -6892,7 +6892,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  inside_init = error_mark_node;
 	}
       else if (require_constant && !maybe_const)
-	pedwarn_init (init_loc, 0,
+	pedwarn_init (init_loc, OPT_Wpedantic,
 		      "initializer element is not a constant expression");
 
       return inside_init;
@@ -10624,15 +10624,15 @@ build_binary_op (location_t location, enum tree_code code,
           converted = 1;
         }
       else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
-	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
-          && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
-          && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	       && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+	       && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+	       && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
 	{
 	  result_type = type0;
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
-	  && code1 == INTEGER_TYPE)
+	       && code1 == INTEGER_TYPE)
 	{
 	  doing_shift = true;
 	  if (TREE_CODE (op1) == INTEGER_CST)
@@ -10674,15 +10674,15 @@ build_binary_op (location_t location, enum tree_code code,
           converted = 1;
         }
       else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
-	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
-          && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
-          && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	       && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+	       && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+	       && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
 	{
 	  result_type = type0;
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
-	  && code1 == INTEGER_TYPE)
+	       && code1 == INTEGER_TYPE)
 	{
 	  doing_shift = true;
 	  if (TREE_CODE (op0) == INTEGER_CST
@@ -10705,7 +10705,6 @@ build_binary_op (location_t location, enum tree_code code,
 		    warning_at (location, OPT_Wshift_count_negative,
 				"left shift count is negative");
 		}
-
 	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		{
 		  int_const = false;
@@ -10713,6 +10712,10 @@ build_binary_op (location_t location, enum tree_code code,
 		    warning_at (location, OPT_Wshift_count_overflow,
 				"left shift count >= width of type");
 		}
+	      else if (TREE_CODE (op0) == INTEGER_CST
+		       && maybe_warn_shift_overflow (location, op0, op1)
+		       && flag_isoc99)
+		int_const = false;
 	    }
 
 	  /* Use the type of the value to be shifted.  */
