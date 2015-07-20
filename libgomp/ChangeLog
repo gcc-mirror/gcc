@@ -1,3 +1,15 @@
+2015-07-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (struct targ_fn_descriptor): Move later.
+	(struct ptx_image_data): Move earlier, add fns field.
+	(struct ptx_device): Add images and image_lock fields.
+	(ptx_images, ptx_image_lock): Delete.
+	(nvptx_open_device): Initialize images and image_lock fields.
+	(nvptx_close_device): Destroy image_lock.
+	(GOMP_OFFLOAD_load_image): Register image to device-specific fields.
+	(GOMP_OFFLOAD_unload_image): Unregister image from device-specific
+	fields.
+
 2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* target.c (GOMP_offload_register): Use int for device type arg.
