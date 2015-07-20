@@ -194,7 +194,7 @@
 )
 
 (define_insn "*andqi3_real"
-  [(set (match_operand:QI         0 "rl78_nonimmediate_operand"  "=Wsf,A,R,vWsa")
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand"  "=WsfWsaWhlWab,A,R,vWsa")
 	(and:QI (match_operand:QI 1 "rl78_general_operand"       "%0,0,0,0")
 		(match_operand:QI 2 "rl78_general_operand"       "IBqi,iRvWabWhbWh1Whl,A,i")))
    ]
@@ -208,7 +208,7 @@
 )
 
 (define_insn "*iorqi3_real"
-  [(set (match_operand:QI         0 "rl78_nonimmediate_operand"  "=Wsf,A,R,vWsa")
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand"  "=WsfWsaWhlWab,A,R,vWsa")
 	(ior:QI (match_operand:QI 1 "rl78_general_operand"       "%0,0,0,0")
 		(match_operand:QI 2 "rl78_general_operand"       "Ibqi,iRvWabWhbWh1Whl,A,i")))
    ]

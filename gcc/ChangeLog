@@ -1,3 +1,8 @@
+2015-07-20  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78-real.md (andqi3_real): Expand operands for clr1.
+	(iorqi3_real): Likewise for set1.
+
 2015-07-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_md_asm_adjust): Handle DImode dest_mode
