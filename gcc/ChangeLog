@@ -1,3 +1,8 @@
+2015-07-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_md_asm_adjust): Handle DImode dest_mode
+	for !TARGET_64BIT.
+
 2015-07-20  Aditya Kumar  <hiraditya@msn.com>
 
 	* graphite-isl-ast-to-gimple.c:
