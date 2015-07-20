@@ -1,3 +1,8 @@
+2015-07-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* combine.c (combine_simplify_rtx): Move simplification step
+	before various transformations/substitutions.
+
 2015-07-20  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* wide-int.h (struct binary_traits): Fix partial specialization syntax.
