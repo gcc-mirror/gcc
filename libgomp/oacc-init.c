@@ -252,6 +252,18 @@ acc_shutdown_1 (acc_device_t d)
   /* Get the base device for this device type.  */
   base_dev = resolve_device (d, true);
 
+  ndevs = base_dev->get_num_devices_func ();
+
+  /* Unload all the devices of this type that have been opened.  */
+  for (i = 0; i < ndevs; i++)
+    {
+      struct gomp_device_descr *acc_dev = &base_dev[i];
+
+      gomp_mutex_lock (&acc_dev->lock);
+      gomp_unload_device (acc_dev);
+      gomp_mutex_unlock (&acc_dev->lock);
+    }
+  
   gomp_mutex_lock (&goacc_thread_lock);
 
   /* Free target-specific TLS data and close all devices.  */
@@ -290,7 +302,6 @@ acc_shutdown_1 (acc_device_t d)
 
   gomp_mutex_unlock (&goacc_thread_lock);
 
-  ndevs = base_dev->get_num_devices_func ();
 
   /* Close all the devices of this type that have been opened.  */
   for (i = 0; i < ndevs; i++)

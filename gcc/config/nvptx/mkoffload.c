@@ -880,18 +880,29 @@ process (FILE *in, FILE *out)
   fprintf (out, "#ifdef __cplusplus\n"
 	   "extern \"C\" {\n"
 	   "#endif\n");
+
   fprintf (out, "extern void GOMP_offload_register"
 	   " (const void *, int, const void *);\n");
+  fprintf (out, "extern void GOMP_offload_unregister"
+	   " (const void *, int, const void *);\n");
+
   fprintf (out, "#ifdef __cplusplus\n"
 	   "}\n"
 	   "#endif\n");
 
   fprintf (out, "extern const void *const __OFFLOAD_TABLE__[];\n\n");
-  fprintf (out, "static __attribute__((constructor)) void init (void)\n{\n");
-  fprintf (out, "  GOMP_offload_register (__OFFLOAD_TABLE__, %d,\n",
-	   GOMP_DEVICE_NVIDIA_PTX);
-  fprintf (out, "                         &target_data);\n");
-  fprintf (out, "};\n");
+
+  fprintf (out, "static __attribute__((constructor)) void init (void)\n"
+	   "{\n"
+	   "  GOMP_offload_register (__OFFLOAD_TABLE__, %d/*NVIDIA_PTX*/,\n"
+	   "                         &target_data);\n"
+	   "};\n", GOMP_DEVICE_NVIDIA_PTX);
+
+  fprintf (out, "static __attribute__((destructor)) void fini (void)\n"
+	   "{\n"
+	   "  GOMP_offload_unregister (__OFFLOAD_TABLE__, %d/*NVIDIA_PTX*/,\n"
+	   "                           &target_data);\n"
+	   "};\n", GOMP_DEVICE_NVIDIA_PTX);
 }
 
 static void
