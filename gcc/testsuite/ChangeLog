@@ -1,6 +1,13 @@
 2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
 
 	Backport from mainline:
+	2015-05-20  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/arm/thumb1-far-jump-2.c (r4): Added int in definition.
+
+2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
+
+	Backport from mainline:
 	2015-06-01  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/arm/thumb-ltu.c (foo): Predefined.
