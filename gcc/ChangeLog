@@ -1,3 +1,9 @@
+2015-07-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR ipa/66424.
+	* lra-remat.c (operand_to_remat): Prevent using insns with input
+	subregs processed separately by IRA.
+
 2015-07-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	* ssa-iterators.h (has_zero_uses, has_single_use): Implement as

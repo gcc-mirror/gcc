@@ -1,3 +1,8 @@
+2015-07-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR ipa/66424.
+	* gcc.target/i386/pr66424.c: New.
+
 2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/arm/thumb-bitfld1.c (foo): Add explicit return type.
