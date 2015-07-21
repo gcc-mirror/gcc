@@ -461,7 +461,8 @@
               (match_operand:SI 2 "general_operand" "")
               ;; Just to mention the iterator 
               (clobber (any_extend:SI (match_dup 1)))])]
-  "avr_have_dimode"
+  "avr_have_dimode
+   && AVR_HAVE_MUL"
   {
     avr_fix_inputs (operands, 1 << 2, regmask (SImode, 22));
     emit_move_insn (gen_rtx_REG (SImode, 22), operands[1]);
@@ -480,7 +481,8 @@
                  (any_extend:DI (reg:SI 22))))
    (clobber (reg:HI REG_X))
    (clobber (reg:HI REG_Z))]
-  "avr_have_dimode"
+  "avr_have_dimode
+   && AVR_HAVE_MUL"
   "%~call __<extend_u>mulsidi3"
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "clobber")])
