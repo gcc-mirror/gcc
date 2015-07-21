@@ -2,6 +2,5 @@
 
 struct A
 {
-  template<T::X> struct X; // { dg-error "'T' has not been declared" "T" }
-  // { dg-bogus "declaration" "" { xfail *-*-* } 5 }
+  template<T::X> struct X; // { dg-error "'T' has not been declared" }
 };

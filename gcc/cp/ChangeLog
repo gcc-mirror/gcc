@@ -1,3 +1,8 @@
+2015-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): For an erroneous template parameter
+	propagate error_mark_node as type.
+
 2015-07-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/55095
