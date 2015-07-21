@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-additional-options "-fsanitize=address -fdump-tree-original"
+! { dg-additional-options "-fdump-tree-original" }
 !
 ! PR fortran/61831
 ! The deallocation of components of array constructor elements
