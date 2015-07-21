@@ -1,3 +1,8 @@
+2015-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/66035
+	* gfortran.dg/structure_constructor_13.f03: New test.
+
 2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
 
 	Backport from mainline:

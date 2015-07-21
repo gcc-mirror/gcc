@@ -1,3 +1,15 @@
+2015-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/66035
+	* trans-expr.c (alloc_scalar_allocatable_for_subcomponent_assignment):
+	Compute the size to allocate for class and derived type objects
+	correclty.
+	(gfc_trans_subcomponent_assign): Only allocate memory for a
+	component when the object to assign is not an allocatable class
+	object (the memory is already present for allocatable class objects).
+	Furthermore use copy_class_to_class for assigning the rhs to the
+	component (may happen for dummy class objects on the rhs).
+
 2015-07-17  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* trans-intrinsic.c (conv_co_collective): Remove redundant address
