@@ -417,6 +417,16 @@ operand_to_remat (rtx_insn *insn)
 	  return -1;
 	found_reg = reg;
       }
+    /* IRA calculates conflicts separately for subregs of two words
+       pseudo.  Even if the pseudo lives, e.g. one its subreg can be
+       used lately, another subreg hard register can be already used
+       for something else.  In such case, it is not safe to
+       rematerialize the insn.  */
+    else if (reg->type == OP_IN && reg->subreg_p
+	     && reg->regno >= FIRST_PSEUDO_REGISTER
+	     && (GET_MODE_SIZE (PSEUDO_REGNO_MODE (reg->regno))
+		 == 2 * UNITS_PER_WORD))
+      return -1;
   if (found_reg == NULL)
     return -1;
   if (found_reg->regno < FIRST_PSEUDO_REGISTER)
