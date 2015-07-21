@@ -1304,22 +1304,6 @@ unlink_stmt_vdef (gimple stmt)
     SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 1;
 }
 
-
-/* Return true if the var whose chain of uses starts at PTR has no
-   nondebug uses.  */
-bool
-has_zero_uses_1 (const ssa_use_operand_t *head)
-{
-  const ssa_use_operand_t *ptr;
-
-  for (ptr = head->next; ptr != head; ptr = ptr->next)
-    if (!is_gimple_debug (USE_STMT (ptr)))
-      return false;
-
-  return true;
-}
-
-
 /* Return true if the var whose chain of uses starts at PTR has a
    single nondebug use.  Set USE_P and STMT to that single nondebug
    use, if so, or to NULL otherwise.  */
@@ -1330,7 +1314,7 @@ single_imm_use_1 (const ssa_use_operand_t *head,
   ssa_use_operand_t *ptr, *single_use = 0;
 
   for (ptr = head->next; ptr != head; ptr = ptr->next)
-    if (!is_gimple_debug (USE_STMT (ptr)))
+    if (USE_STMT(ptr) && !is_gimple_debug (USE_STMT (ptr)))
       {
 	if (single_use)
 	  {
@@ -1348,3 +1332,4 @@ single_imm_use_1 (const ssa_use_operand_t *head,
 
   return single_use;
 }
+
