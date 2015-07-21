@@ -1052,7 +1052,7 @@ along with GCC; see the file COPYING3.  If not see
    (X & C2) >> C1 into (X >> C1) & (C2 >> C1).  */
 (for shift (lshift rshift)
  (simplify
-  (shift (convert? (bit_and @0 INTEGER_CST@2)) INTEGER_CST@1)
+  (shift (convert?:s (bit_and:s @0 INTEGER_CST@2)) INTEGER_CST@1)
   (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
    (with { tree mask = int_const_binop (shift, fold_convert (type, @2), @1); }
     (bit_and (shift (convert @0) @1) { mask; })))))
