@@ -1,3 +1,12 @@
+2015-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66948
+	* genmatch.c (capture_info::walk_match): Also recurse to
+	captures.  Properly compute expr state from captures of
+	captures.
+	* match.pd: Add single-use guards to
+	(X & C2) >> C1 into (X >> C1) & (C2 >> C1) transform.
+
 2015-07-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/mkoffload.c (process): Add static destructor call.

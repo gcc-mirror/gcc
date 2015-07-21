@@ -1622,17 +1622,28 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
 {
   if (capture *c = dyn_cast <capture *> (o))
     {
-      info[c->where].toplevel_msk |= 1 << toplevel_arg;
-      info[c->where].force_no_side_effects_p |= conditional_p;
-      info[c->where].cond_expr_cond_p |= cond_expr_cond_p;
-      /* Mark expr (non-leaf) captures and recurse.  */
+      unsigned where = c->where;
+      info[where].toplevel_msk |= 1 << toplevel_arg;
+      info[where].force_no_side_effects_p |= conditional_p;
+      info[where].cond_expr_cond_p |= cond_expr_cond_p;
+      if (!c->what)
+	return;
+      /* Recurse to exprs and captures.  */
+      if (is_a <capture *> (c->what)
+	  || is_a <expr *> (c->what))
+	walk_match (c->what, toplevel_arg, conditional_p, false);
+      /* We need to look past multiple captures to find a captured
+	 expression as with conditional converts two captures
+	 can be collapsed onto the same expression.  */
+      while (c->what && is_a <capture *> (c->what))
+	c = as_a <capture *> (c->what);
+      /* Mark expr (non-leaf) captures and forced single-use exprs.  */
       expr *e;
       if (c->what
 	  && (e = dyn_cast <expr *> (c->what)))
 	{
-	  info[c->where].expr_p = true;
-	  info[c->where].force_single_use |= e->force_single_use;
-	  walk_match (c->what, toplevel_arg, conditional_p, false);
+	  info[where].expr_p = true;
+	  info[where].force_single_use |= e->force_single_use;
 	}
     }
   else if (expr *e = dyn_cast <expr *> (o))
