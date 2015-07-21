@@ -1,3 +1,9 @@
+2015-07-21  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/vmx/unpack-be-order.c: Use -Wno-shift-overflow.
+	* gcc.dg/vmx/unpack.c: Likewise.
+	* gcc.target/powerpc/quad-atomic.c: Likewise.
+
 2015-07-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/asm-flag-5.c (f_ll): New.
