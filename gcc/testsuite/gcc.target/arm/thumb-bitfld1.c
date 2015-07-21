@@ -10,6 +10,8 @@ struct foo
   unsigned b28 : 1;
   unsigned rest : 28;
 };
+
+unsigned
 foo(a)
      struct foo a;
 {

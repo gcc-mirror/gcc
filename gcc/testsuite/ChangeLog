@@ -1,3 +1,10 @@
+2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
+
+	Backport from mainline:
+	2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/arm/thumb-bitfld1.c (foo): Add explicit return type.
+
 2015-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/66035
