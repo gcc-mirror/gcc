@@ -1,3 +1,12 @@
+2015-07-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* ssa-iterators.h (has_zero_uses, has_single_use): Implement as
+	straight loops.
+	(single_imm_use): Check for iterator node.
+	(num_imm_uses): Likewise.
+	* tree-ssa-operands.c (has_zero_uses_1): Delete.
+	(single_imm_use_1): Check for iterator node.
+
 2015-07-21  Mike Frysinger  <vapier@gentoo.org>
 	    Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
