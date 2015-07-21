@@ -1,4 +1,4 @@
-/* { dg-options "-maltivec=be -mabi=altivec -std=gnu99 -mno-vsx" } */
+/* { dg-options "-maltivec=be -mabi=altivec -std=gnu99 -mno-vsx -Wno-shift-overflow" } */
 
 #include "harness.h"
 
