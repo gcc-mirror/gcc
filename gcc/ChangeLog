@@ -1,3 +1,7 @@
+2015-07-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (process): Add static destructor call.
+
 2015-07-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/66915

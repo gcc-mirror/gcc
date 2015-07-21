@@ -1,3 +1,16 @@
+2015-07-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* target.c (gomp_offload_image_to_device): Rename to ...
+	(gomp_load_image_to_device): ... here.
+	(GOMP_offload_register): Adjust call.
+	(gomp_init_device): Likewise.
+	(gomp_unload_image_from_device): New.  Broken out of ...
+	(GOMP_offload_unregister): ... here.  Call it.
+	(gomp_unload_device): New.
+	* libgomp.h (gomp_unload_device): Declare.
+	* oacc-init.c (acc_shutdown_1): Unload from device before deleting
+	mem maps.
+
 2015-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* oacc-parallel.c (GOACC_parallel): Move variadic handling into
