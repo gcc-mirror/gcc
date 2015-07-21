@@ -9315,7 +9315,12 @@ grokdeclarator (const cp_declarator *declarator,
 	warning (OPT_Wreturn_type,
                  "ISO C++ forbids declaration of %qs with no type", name);
 
-      type = integer_type_node;
+      if (type_was_error_mark_node && template_parm_flag)
+	/* FIXME we should be able to propagate the error_mark_node as is
+	   for other contexts too.  */
+	type = error_mark_node;
+      else
+	type = integer_type_node;
     }
 
   ctype = NULL_TREE;

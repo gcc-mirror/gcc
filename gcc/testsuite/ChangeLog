@@ -1,3 +1,7 @@
+2015-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/crash81.C: Update.
+
 2015-07-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR ipa/66424.
