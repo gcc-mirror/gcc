@@ -1,3 +1,10 @@
+2015-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66948
+	* genmatch.c (capture_info::walk_match): Also recurse to
+	captures.  Properly compute expr state from captures of
+	captures.
+
 2015-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66922
