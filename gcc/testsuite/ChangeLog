@@ -1,3 +1,9 @@
+2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
+
+        * gcc.target/arm/split-live-ranges-for-shrink-wrap.c (dg-skip-if):
+	Skip -march=armv4t.
+        (dg-additional-options): Set armv5t flag.
+
 2015-07-21  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/vmx/unpack-be-order.c: Use -Wno-shift-overflow.
