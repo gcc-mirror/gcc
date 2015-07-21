@@ -1,3 +1,9 @@
+2015-07-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/66915
+	* match.pd (A - B -> A + (-B)): Don't allow folding
+	when type if a fixed-point type.
+
 2015-07-20  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78-real.md (andqi3_real): Expand operands for clr1.

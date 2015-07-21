@@ -510,8 +510,8 @@ along with GCC; see the file COPYING3.  If not see
 /* A - B -> A + (-B) if B is easily negatable.  */
 (simplify
  (minus @0 negate_expr_p@1)
- (plus @0 (negate @1)))
-
+ (if (!FIXED_POINT_TYPE_P (type))
+ (plus @0 (negate @1))))
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
    when profitable.
