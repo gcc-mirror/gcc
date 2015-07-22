@@ -1,3 +1,12 @@
+2015-07-22  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (struct operand): Add location member.
+	(predicate, expr, c_expr, capture, if_expr, with_expr): Adjust
+	constructors.
+	(struct simplify): Remove match_location and result_location
+	members.
+	(elsehwere): Adjust.
+
 2015-07-22  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* config/mips/m5100.md: New file.
