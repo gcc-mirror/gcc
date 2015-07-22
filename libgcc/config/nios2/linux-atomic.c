@@ -20,11 +20,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <asm/unistd.h>
-#define EFAULT  14
-#define EBUSY   16
-#define ENOSYS  38
-
 /* We implement byte, short and int versions of each atomic operation
    using the kernel helper defined below.  There is no support for
    64-bit operations yet.  */
