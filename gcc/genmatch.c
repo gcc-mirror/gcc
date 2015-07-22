@@ -1877,7 +1877,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       type = optype;
     }
   if (!type)
-    fatal ("two conversions in a row");
+    fatal_at (location, "cannot determine type of operand");
 
   fprintf_indent (f, indent, "{\n");
   indent += 2;
