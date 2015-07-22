@@ -3555,6 +3555,7 @@ parser::parse_result (operand *result, predicate_id *matcher)
 	{
 	  if (!matcher)
 	    fatal_at (peek (), "manual transform not implemented");
+	  ife->trueexpr = result;
 	}
       eat_token (CPP_CLOSE_PAREN);
       return ife;
