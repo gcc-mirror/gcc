@@ -1,3 +1,8 @@
+2015-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66954
+	* g++.dg/ext/mv24.C: New test.
+
 2015-07-22  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/vmx/unpack.c: Use dg-additional-options rather than
