@@ -1,3 +1,8 @@
+2015-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66952
+	* gcc.dg/torture/pr66952.c: New testcase.
+
 2015-07-22  Charles Baylis  <charles.baylis@linaro.org>
 
         * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f32_indices_1.c: New

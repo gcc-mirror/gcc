@@ -1,3 +1,12 @@
+2015-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66952
+	* tree-ssa-ifcombine.c (pass_tree_ifcombine::execute): For
+	blocks we end up executing unconditionally reset all SSA
+	info such as range and alignment.
+	* tree-ssanames.h (reset_flow_sensitive_info): Declare.
+	* tree-ssanames.c (reset_flow_sensitive_info): New function.
+
 2015-07-22  Charles Baylis  <charles.baylis@linaro.org>
 
 	* config/aarch64/aarch64-simd.md (vec_store_lanesoi_lane<mode>): Fix
