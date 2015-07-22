@@ -1,3 +1,18 @@
+2015-07-22  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/m5100.md: New file.
+	* config/mips/mips-cpus.def (m5100, m5101): Define.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_rtx_cost_data): Add costs for m5100.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Map -march=m5100 and
+	-march=m5101 to -mips32r5.
+	(MIPS_ARCH_FLOAT_SPEC): Map -m5101 to -msoft-float.
+	(MIPS_ISA_NAN2008_SPEC): Map -march=m51* to -mnan=2008 if
+	!-msoft-float.
+	* config/mips/mips.md: Include m5100.md.
+	(processor): Add m5100.
+	* doc/invoke.texi (-march=@var{arch}): Add m5100, m5101.
+
 2015-07-22  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips-cpus.def (interaptiv): Define.

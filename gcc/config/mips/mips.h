@@ -725,7 +725,7 @@ struct mips_cpu_info {
        |march=34k*|march=74k*|march=m14k*|march=1004k* \
        |march=interaptiv: -mips32r2} \
      %{march=mips32r3: -mips32r3} \
-     %{march=mips32r5|march=p5600: -mips32r5} \
+     %{march=mips32r5|march=p5600|march=m5100|march=m5101: -mips32r5} \
      %{march=mips32r6: -mips32r6} \
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000 \
        |march=xlr: -mips64} \
@@ -749,7 +749,7 @@ struct mips_cpu_info {
   "%{mhard-float|msoft-float|mno-float|march=mips*:; \
      march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
      |march=34kc|march=34kn|march=74kc|march=1004kc|march=5kc \
-     |march=m14k*|march=octeon|march=xlr: -msoft-float;		  \
+     |march=m14k*|march=m5101|march=octeon|march=xlr: -msoft-float; \
      march=*: -mhard-float}"
 
 /* A spec condition that matches 32-bit options.  It only works if
@@ -772,7 +772,8 @@ struct mips_cpu_info {
 
 /* Infer a -mnan=2008 setting from a -mips argument.  */
 #define MIPS_ISA_NAN2008_SPEC \
-  "%{mnan*:;mips32r6|mips64r6:-mnan=2008}"
+  "%{mnan*:;mips32r6|mips64r6:-mnan=2008;march=m51*: \
+					 %{!msoft-float:-mnan=2008}}"
 
 #if (MIPS_ABI_DEFAULT == ABI_O64 \
      || MIPS_ABI_DEFAULT == ABI_N32 \
