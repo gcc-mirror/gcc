@@ -528,6 +528,23 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple stmt)
 }
 
 
+/* Reset all flow sensitive data on NAME such as range-info, nonzero
+   bits and alignment.  */
+
+void
+reset_flow_sensitive_info (tree name)
+{
+  if (POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      /* points-to info is not flow-sensitive.  */
+      if (SSA_NAME_PTR_INFO (name))
+	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
+    }
+  else
+    SSA_NAME_RANGE_INFO (name) = NULL;
+}
+
+
 /* Release all the SSA_NAMEs created by STMT.  */
 
 void
