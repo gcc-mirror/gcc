@@ -722,7 +722,8 @@ struct mips_cpu_info {
        |march=r10000|march=r12000|march=r14000|march=r16000:-mips4} \
      %{march=mips32|march=4kc|march=4km|march=4kp|march=4ksc:-mips32} \
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
-       |march=34k*|march=74k*|march=m14k*|march=1004k*: -mips32r2} \
+       |march=34k*|march=74k*|march=m14k*|march=1004k* \
+       |march=interaptiv: -mips32r2} \
      %{march=mips32r3: -mips32r3} \
      %{march=mips32r5|march=p5600: -mips32r5} \
      %{march=mips32r6: -mips32r6} \
@@ -825,7 +826,8 @@ struct mips_cpu_info {
 #define BASE_DRIVER_SELF_SPECS \
   MIPS_ISA_NAN2008_SPEC,       \
   "%{!mno-dsp: \
-     %{march=24ke*|march=34kc*|march=34kf*|march=34kx*|march=1004k*: -mdsp} \
+     %{march=24ke*|march=34kc*|march=34kf*|march=34kx*|march=1004k* \
+       |march=interaptiv: -mdsp} \
      %{march=74k*|march=m14ke*: %{!mno-dspr2: -mdspr2 -mdsp}}}"
 
 #define DRIVER_SELF_SPECS \
