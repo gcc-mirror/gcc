@@ -9166,7 +9166,11 @@ gfc_get_proc_ifc_for_expr (gfc_expr *procedure_ref)
     return NULL;
 
   /* Normal procedure case.  */
-  sym = procedure_ref->symtree->n.sym;
+  if (procedure_ref->expr_type == EXPR_FUNCTION
+      && procedure_ref->value.function.esym)
+    sym = procedure_ref->value.function.esym;
+  else
+    sym = procedure_ref->symtree->n.sym;
 
   /* Typebound procedure case.  */
   for (ref = procedure_ref->ref; ref; ref = ref->next)
