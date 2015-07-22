@@ -71,8 +71,12 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef MPX_SPEC
+#ifdef SPEC_64
 #define MPX_SPEC "\
- %{mmpx:%{fcheck-pointer-bounds:%{!static:" LINK_MPX "}}}"
+ %{mmpx:%{fcheck-pointer-bounds:%{!static:%{" SPEC_64 ":" LINK_MPX "}}}}"
+#else
+#define MPX_SPEC ""
+#endif
 #endif
 
 #ifndef LIBMPX_SPEC
