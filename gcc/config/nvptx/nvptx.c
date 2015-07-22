@@ -266,7 +266,9 @@ write_as_kernel (tree attrs)
 	  || lookup_attribute ("omp target entrypoint", attrs) != NULL_TREE);
 }
 
-/* Write a function decl for DECL to S, where NAME is the name to be used.  */
+/* Write a function decl for DECL to S, where NAME is the name to be used.
+   This includes ptx .visible or .extern specifiers, .func or .kernel, and
+   argument and return types.  */
 
 static void
 nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree decl)
@@ -756,7 +758,11 @@ nvptx_end_call_args (void)
   free_EXPR_LIST_list (&cfun->machine->call_args);
 }
 
-/* Emit the sequence for a call.  */
+/* Emit the sequence for a call to ADDRESS, setting RETVAL.  Keep
+   track of whether calls involving static chains or varargs were seen
+   in the current function.
+   For libcalls, maintain a hash table of decls we have seen, and
+   record a function decl for later when encountering a new one.  */
 
 void
 nvptx_expand_call (rtx retval, rtx address)
@@ -815,6 +821,8 @@ nvptx_expand_call (rtx retval, rtx address)
       XVECEXP (pat, 0, nargs + 1) = gen_rtx_USE (VOIDmode, this_arg);
     }
 
+  /* Construct the call insn, including a USE for each argument pseudo
+     register.  These will be used when printing the insn.  */
   int i;
   rtx arg;
   for (i = 1, arg = cfun->machine->call_args; arg; arg = XEXP (arg, 1), i++)
@@ -832,6 +840,11 @@ nvptx_expand_call (rtx retval, rtx address)
       t = gen_rtx_SET (tmp_retval, t);
     }
   XVECEXP (pat, 0, 0) = t;
+
+  /* If this is a libcall, decl_type is NULL. For a call to a non-libcall
+     undeclared function, we'll have an external decl without arg types.
+     In either case we have to try to construct a ptx declaration from one of
+     the calls to the function.  */
   if (!REG_P (callee)
       && (decl_type == NULL_TREE
 	  || (external_decl && TYPE_ARG_TYPES (decl_type) == NULL_TREE)))
@@ -1194,7 +1207,10 @@ nvptx_addr_space_from_address (rtx addr)
   return ADDR_SPACE_GLOBAL;
 }
 
-/* Machinery to output constant initializers.  */
+/* Machinery to output constant initializers.  When beginning an initializer,
+   we decide on a chunk size (which is visible in ptx in the type used), and
+   then all initializer data is buffered until a chunk is filled and ready to
+   be written out.  */
 
 /* Used when assembling integers to ensure data is emitted in
    pieces whose size matches the declaration we printed.  */
@@ -1464,7 +1480,8 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
 }
 
 /* Output INSN, which is a call to CALLEE with result RESULT.  For ptx, this
-   involves writing .param declarations and in/out copies into them.  */
+   involves writing .param declarations and in/out copies into them.  For
+   indirect calls, also write the .callprototype.  */
 
 const char *
 nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
@@ -1484,6 +1501,7 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
 					 false));
     }
 
+  /* Ensure we have a ptx declaration in the output if necessary.  */
   if (GET_CODE (callee) == SYMBOL_REF)
     {
       decl = SYMBOL_REF_DECL (callee);
@@ -2057,7 +2075,8 @@ nvptx_file_start (void)
   fputs ("// END PREAMBLE\n", asm_out_file);
 }
 
-/* Write out the function declarations we've collected.  */
+/* Write out the function declarations we've collected and declare storage
+   for the broadcast buffer.  */
 
 static void
 nvptx_file_end (void)
