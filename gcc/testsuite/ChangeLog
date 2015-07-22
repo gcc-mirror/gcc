@@ -1,3 +1,9 @@
+2015-07-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/61831
+	PR fortran/66929
+	* gfortran.dg/generic_30.f90: New.
+
 2015-07-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66952
