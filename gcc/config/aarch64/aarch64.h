@@ -344,6 +344,31 @@ extern unsigned long aarch64_isa_flags;
     V_ALIASES(28), V_ALIASES(29), V_ALIASES(30), V_ALIASES(31)  \
   }
 
+#define REG_ALLOC_ORDER					\
+  {							\
+    /* Reverse order for argument registers.  */	\
+    7, 6, 5, 4, 3, 2, 1, 0,				\
+    /* Other caller-saved registers.  */		\
+    8, 9, 10, 11, 12, 13, 14, 15,			\
+    16, 17, 18, 30,					\
+    /* Callee-saved registers.  */			\
+    19, 20, 21, 22, 23, 24, 25, 26,			\
+    27, 28,						\
+    /* All other registers.  */				\
+    29, 31,						\
+    /* Reverse order for argument vregisters.  */	\
+    39, 38, 37, 36, 35, 34, 33, 32,			\
+    /* Other caller-saved vregisters.  */		\
+    48, 49, 50, 51, 52, 53, 54, 55,			\
+    56, 57, 58, 59, 60, 61, 62, 63,			\
+    /* Callee-saved vregisters.  */			\
+    40, 41, 42, 43, 44, 45, 46, 47,			\
+    /* Other pseudo registers.  */			\
+    64, 65, 66						\
+}
+
+#define HONOR_REG_ALLOC_ORDER 1
+
 /* Say that the epilogue uses the return address register.  Note that
    in the case of sibcalls, the values "used by the epilogue" are
    considered live at the start of the called function.  */

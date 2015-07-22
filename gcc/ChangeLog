@@ -1,3 +1,9 @@
+2015-07-22  Jiong Wang  <jiong.wang@arm.com>
+
+	PR target/63521
+	* config/aarch64/aarch64.h (REG_ALLOC_ORDER): Define.
+	(HONOR_REG_ALLOC_ORDER): Define.
+
 2015-07-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66952
