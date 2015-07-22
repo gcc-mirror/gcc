@@ -3970,7 +3970,7 @@
     operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
     return "st2\\t{%S1.<Vetype> - %T1.<Vetype>}[%2], %0";
   }
-  [(set_attr "type" "neon_store3_one_lane<q>")]
+  [(set_attr "type" "neon_store2_one_lane<q>")]
 )
 
 (define_expand "vec_store_lanesoi<mode>"
