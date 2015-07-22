@@ -1,4 +1,4 @@
-/* { dg-options "-Wno-shift-overflow" } */
+/* { dg-additional-options "-Wno-shift-overflow" } */
 
 #include "harness.h"
 
