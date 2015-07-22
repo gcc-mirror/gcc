@@ -1,3 +1,8 @@
+2015-07-22  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/vmx/unpack.c: Use dg-additional-options rather than
+	dg-options.
+
 2015-07-22  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61831
