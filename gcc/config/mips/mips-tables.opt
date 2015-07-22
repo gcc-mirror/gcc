@@ -637,53 +637,59 @@ EnumValue
 Enum(mips_arch_opt_value) String(p5600) Value(86) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(5kc) Value(87) Canonical
+Enum(mips_arch_opt_value) String(m5100) Value(87) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(r5kc) Value(87)
+Enum(mips_arch_opt_value) String(m5101) Value(88) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(5kf) Value(88) Canonical
+Enum(mips_arch_opt_value) String(5kc) Value(89) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(r5kf) Value(88)
+Enum(mips_arch_opt_value) String(r5kc) Value(89)
 
 EnumValue
-Enum(mips_arch_opt_value) String(20kc) Value(89) Canonical
+Enum(mips_arch_opt_value) String(5kf) Value(90) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(r20kc) Value(89)
+Enum(mips_arch_opt_value) String(r5kf) Value(90)
 
 EnumValue
-Enum(mips_arch_opt_value) String(sb1) Value(90) Canonical
+Enum(mips_arch_opt_value) String(20kc) Value(91) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(sb1a) Value(91) Canonical
+Enum(mips_arch_opt_value) String(r20kc) Value(91)
 
 EnumValue
-Enum(mips_arch_opt_value) String(sr71000) Value(92) Canonical
+Enum(mips_arch_opt_value) String(sb1) Value(92) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(sr71k) Value(92)
+Enum(mips_arch_opt_value) String(sb1a) Value(93) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(xlr) Value(93) Canonical
+Enum(mips_arch_opt_value) String(sr71000) Value(94) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(loongson3a) Value(94) Canonical
+Enum(mips_arch_opt_value) String(sr71k) Value(94)
 
 EnumValue
-Enum(mips_arch_opt_value) String(octeon) Value(95) Canonical
+Enum(mips_arch_opt_value) String(xlr) Value(95) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(octeon+) Value(96) Canonical
+Enum(mips_arch_opt_value) String(loongson3a) Value(96) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(octeon2) Value(97) Canonical
+Enum(mips_arch_opt_value) String(octeon) Value(97) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(octeon3) Value(98) Canonical
+Enum(mips_arch_opt_value) String(octeon+) Value(98) Canonical
 
 EnumValue
-Enum(mips_arch_opt_value) String(xlp) Value(99) Canonical
+Enum(mips_arch_opt_value) String(octeon2) Value(99) Canonical
+
+EnumValue
+Enum(mips_arch_opt_value) String(octeon3) Value(100) Canonical
+
+EnumValue
+Enum(mips_arch_opt_value) String(xlp) Value(101) Canonical
 
