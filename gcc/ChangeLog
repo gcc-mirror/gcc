@@ -1,3 +1,11 @@
+2015-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66954
+	* config/i386/i386.c (get_builtin_code_for_version): Add P_AES
+	to enum feature_priority and feature_list.
+	(fold_builtin_cpu): Add F_AES to enum processor_features
+	and isa_names_table.
+
 2015-07-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR driver/66737

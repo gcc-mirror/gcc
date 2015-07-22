@@ -100,7 +100,8 @@ enum processor_features
   FEATURE_FMA,
   FEATURE_AVX512F,
   FEATURE_BMI,
-  FEATURE_BMI2
+  FEATURE_BMI2,
+  FEATURE_AES
 };
 
 struct __processor_model
@@ -273,6 +274,8 @@ get_available_features (unsigned int ecx, unsigned int edx,
     features |= (1 << FEATURE_SSE2);
   if (ecx & bit_POPCNT)
     features |= (1 << FEATURE_POPCNT);
+  if (ecx & bit_AES)
+    features |= (1 << FEATURE_AES);
   if (ecx & bit_SSE3)
     features |= (1 << FEATURE_SSE3);
   if (ecx & bit_SSSE3)
