@@ -1,3 +1,8 @@
+2015-07-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/cortex-a53 (cortex_53_advsimd): Rename to...
+	(cortex_a53_advsimd): ...This.
+
 2015-07-22  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (expr::gen_transform): Clarify error message

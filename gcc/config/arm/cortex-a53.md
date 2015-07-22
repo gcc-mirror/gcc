@@ -360,7 +360,7 @@
 ;; Crude Advanced SIMD approximation.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn_reservation "cortex_53_advsimd" 4
+(define_insn_reservation "cortex_a53_advsimd" 4
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "is_neon_type" "yes"))
   "cortex_a53_simd0")
