@@ -1,3 +1,46 @@
+2015-07-22  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/63870
+	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers):
+	Add qualifier_struct_load_store_lane_index.
+	(aarch64_types_loadstruct_lane_qualifiers): Use
+	qualifier_struct_load_store_lane_index for lane index argument for
+	last argument.
+	(aarch64_types_storestruct_lane_qualifiers): Ditto.
+	(builtin_simd_arg): Add SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX.
+	(aarch64_simd_expand_args): Add new argument describing mode of
+	builtin. Check lane bounds for arguments with
+	SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX.
+	(aarch64_simd_expand_builtin): Emit error for incorrect lane indices
+	if marked with SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX.
+	(aarch64_simd_expand_builtin): Handle arguments with
+	qualifier_struct_load_store_lane_index. Pass machine mode of builtin to
+	aarch64_simd_expand_args.
+	* config/aarch64/aarch64-simd-builtins.def: Declare ld[234]_lane and
+	vst[234]_lane with BUILTIN_VALLDIF.
+	* config/aarch64/aarch64-simd.md:
+	(aarch64_vec_load_lanesoi_lane<mode>): Use VALLDIF iterator. Perform
+	endianness reversal on lane index.
+	(aarch64_vec_load_lanesci_lane<mode>): Ditto.
+	(aarch64_vec_load_lanesxi_lane<mode>): Ditto.
+	(vec_store_lanesoi_lane<mode>): Use VALLDIF iterator.
+	(vec_store_lanesci_lane<mode>): Ditto.
+	(vec_store_lanesxi_lane<mode>): Ditto.
+	(aarch64_ld2_lane<mode>): Use VALLDIF iterator. Remove endianness
+	reversal of lane index.
+	(aarch64_ld3_lane<mode>): Ditto.
+	(aarch64_ld4_lane<mode>): Ditto.
+	(aarch64_st2_lane<mode>): Ditto.
+	(aarch64_st3_lane<mode>): Ditto.
+	(aarch64_st4_lane<mode>): Ditto.
+	* config/aarch64/arm_neon.h (__LD2_LANE_FUNC): Rename mode parameter
+	to qmode. Add new mode parameter. Update uses.
+       	(__LD3_LANE_FUNC): Ditto.
+	(__LD4_LANE_FUNC): Ditto.
+	(__ST2_LANE_FUNC): Ditto.
+	(__ST3_LANE_FUNC): Ditto.
+	(__ST4_LANE_FUNC): Ditto.
+
 2015-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (Language Independent Options): Rename node to
