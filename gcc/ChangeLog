@@ -1,3 +1,8 @@
+2015-07-22  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (parser::parse_result): Properly handle
+	match with result operands and conditions.
+
 2015-07-22  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/63870
