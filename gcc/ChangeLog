@@ -1,3 +1,12 @@
+2015-07-22  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips-cpus.def (interaptiv): Define.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Map -march=interaptiv to
+	-mips32r2.
+	(BASE_DRIVER_SELF_SPECS): Likewise but map to -mdsp.
+	* doc/invoke.texi (-march=@var{arch}): Add interaptiv.
+
 2015-07-22  Jiong Wang  <jiong.wang@arm.com>
 
 	PR target/63521
