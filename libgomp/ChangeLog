@@ -1,3 +1,18 @@
+2015-07-22  Maxim Blumenthal  <maxim.blumenthal@intel.com>
+
+	PR libgomp/66950
+	* testsuite/libgomp.c/examples-4/simd-7.c (N): Change to 30 from 45.
+	(fib_ref): New function.
+	(fib): Correct corner cases in the recursion.
+	(main): Replace the non-simd loop with fib_ref call.
+	* testsuite/libgomp.fortran/examples-4/simd-7.f90: (fib_ref): New
+	subroutine.
+	(fibonacci): Lower the parameter N to 30.  Correct accordingly check
+	for the last array element value.  Replace the non-simd loop with
+	fib_ref call.  Remove redundant b_ref array.  Remove the comparison
+	of the last array element with according Fibonacci sequence element.
+	(fib): Correct corner cases in the recursion.
+
 2015-07-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* target.c (gomp_offload_image_to_device): Rename to ...
