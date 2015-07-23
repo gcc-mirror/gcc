@@ -2376,9 +2376,9 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
       if (!simple_iv (loop, loop, res, &iv, true)
 	&& simple_loop_info)
 	{
-           gimple reduc_stmt = vect_force_simple_reduction (simple_loop_info,
-							    phi, true,
-							    &double_reduc);
+	   gimple reduc_stmt
+	     = vect_force_simple_reduction (simple_loop_info, phi, true,
+					    &double_reduc, true);
 	   if (reduc_stmt && !double_reduc)
               build_new_reduction (reduction_list, reduc_stmt, phi);
         }

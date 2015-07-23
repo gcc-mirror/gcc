@@ -1,3 +1,16 @@
+2015-07-23  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/autopar/outer-4.c: Add xfail.
+	* gcc.dg/autopar/outer-5.c: Same.
+	* gcc.dg/autopar/outer-6.c: Same.
+	* gcc.dg/autopar/reduc-2.c: Same.
+	* gcc.dg/autopar/reduc-2char.c: Same.
+	* gcc.dg/autopar/reduc-2short.c: Same.
+	* gcc.dg/autopar/reduc-8.c: Same.
+	* gcc.dg/autopar/uns-outer-4.c: New test.
+	* gcc.dg/autopar/uns-outer-5.c: New test.
+	* gcc.dg/autopar/uns-outer-6.c: New test.
+
 2015-07-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66952
