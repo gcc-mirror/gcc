@@ -1,3 +1,7 @@
+2015-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tree-pass.h (get_current_pass_name): Removed.
+
 2015-07-23  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
