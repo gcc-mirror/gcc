@@ -1,3 +1,8 @@
+2015-07-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66572
+	* g++.dg/warn/Wlogical-op-2.C: New test.
+
 2015-07-23  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/64164

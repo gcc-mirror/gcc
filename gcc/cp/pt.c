@@ -14917,6 +14917,7 @@ tsubst_copy_and_build (tree t,
       {
 	warning_sentinel s1(warn_type_limits);
 	warning_sentinel s2(warn_div_by_zero);
+	warning_sentinel s3(warn_logical_op);
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
 	tree r = build_x_binary_op
