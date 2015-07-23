@@ -1,5 +1,13 @@
 2015-07-23  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	Backport from mainline r223114.
+	2015-05-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/66048
+	* gcc.target/i386/mpx/pr66048.cc: New.
+
+2015-07-23  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	Backport from mainline r223216.
 	2015-05-15  Ilya Enkovich  <ilya.enkovich@intel.com>
 

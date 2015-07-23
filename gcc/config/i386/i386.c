@@ -8211,7 +8211,8 @@ ix86_function_value_regno_p (const unsigned int regno)
     case SI_REG:
       return TARGET_64BIT && ix86_cfun_abi () != MS_ABI;
 
-    case FIRST_BND_REG:
+    case BND0_REG:
+    case BND1_REG:
       return chkp_function_instrumented_p (current_function_decl);
 
       /* Complex values are returned in %st(0)/%st(1) pair.  */
