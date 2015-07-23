@@ -1754,7 +1754,28 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (cmp (convert?@3 (bit_xor @0 INTEGER_CST@1)) INTEGER_CST@2)
   (if (tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@0)))
-   (cmp @0 (bit_xor @1 (convert @2))))))
+   (cmp @0 (bit_xor @1 (convert @2)))))
+   
+ /* If this is an equality comparison of the address of two non-weak,
+    unaliased symbols neither of which are extern (since we do not
+    have access to attributes for externs), then we know the result.  */
+ (simplify
+  (cmp (convert? addr@0) (convert? addr@1))
+  (if (decl_in_symtab_p (TREE_OPERAND (@0, 0))
+       && decl_in_symtab_p (TREE_OPERAND (@1, 0)))
+   (with
+    {
+      int equal = symtab_node::get_create (TREE_OPERAND (@0, 0))
+           ->equal_address_to (symtab_node::get_create (TREE_OPERAND (@1, 0)));
+    }
+    (if (equal != 2)
+     { constant_boolean_node (equal ? cmp == EQ_EXPR : cmp != EQ_EXPR, type); }))))
+
+ (simplify
+  (cmp (convert? addr@0) integer_zerop)
+  (if (tree_single_nonzero_warnv_p (@0, NULL))
+   { constant_boolean_node (cmp == NE_EXPR, type); })))
+
 
 /* bool_var != 0 becomes bool_var.  */
 (simplify
