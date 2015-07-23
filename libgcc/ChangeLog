@@ -1,3 +1,11 @@
+2015-07-23  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline:
+	2015-07-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/linux-atomic.c (<asm/unistd.h>): Remove #include.
+	(EFAULT,EBUSY,ENOSYS): Delete unused #defines.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
