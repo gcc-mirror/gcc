@@ -1,3 +1,18 @@
+2015-07-23  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/i6400.md: New file.
+	* config/mips/mips-cpus.def (mips32r6): Change to PROCESSOR_I6400.
+	(mips64r6): Likewise.
+	(i6400): Define.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_rtx_cost_data): Add I6400 processor.
+	(mips_issue_rate): Add support for i6400.
+	(mips_multipass_dfa_lookahead): Likewise.
+	* config/mips/mips.h (TUNE_I6400): Define.
+	* config/mips/mips.md: Include i6400.md.
+	(processor): Add i6400.
+	* doc/invoke.texi (-march=@var{arch}): Add i6400.
+
 2015-07-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/66916
