@@ -75,7 +75,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
       && !TYPE_UNSIGNED (type))
     {
       tree x;
-      tt = fold_build2 (EQ_EXPR, boolean_type_node, op1,
+      tt = fold_build2 (EQ_EXPR, boolean_type_node, unshare_expr (op1),
 			build_int_cst (type, -1));
       x = fold_build2 (EQ_EXPR, boolean_type_node, op0,
 		       TYPE_MIN_VALUE (type));
@@ -103,7 +103,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 	  TREE_SIDE_EFFECTS (op0) = 1;
 	}
     }
-  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op0, t);
+  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
   if (flag_sanitize_undefined_trap_on_error)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
@@ -117,6 +117,8 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 	  ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
 	  : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
       tt = builtin_decl_explicit (bcode);
+      op0 = unshare_expr (op0);
+      op1 = unshare_expr (op1);
       tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
 				ubsan_encode_value (op1));
     }
@@ -152,7 +154,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       && flag_isoc99)
     {
       tree x = fold_build2 (MINUS_EXPR, op1_utype, uprecm1,
-			    fold_convert (op1_utype, op1));
+			    fold_convert (op1_utype, unshare_expr (op1)));
       tt = fold_convert_loc (loc, unsigned_type_for (type0), op0);
       tt = fold_build2 (RSHIFT_EXPR, TREE_TYPE (tt), tt, x);
       tt = fold_build2 (NE_EXPR, boolean_type_node, tt,
@@ -167,12 +169,13 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       && (cxx_dialect >= cxx11))
     {
       tree x = fold_build2 (MINUS_EXPR, op1_utype, uprecm1,
-			    fold_convert (op1_utype, op1));
-      tt = fold_convert_loc (loc, unsigned_type_for (type0), op0);
+			    fold_convert (op1_utype, unshare_expr (op1)));
+      tt = fold_convert_loc (loc, unsigned_type_for (type0),
+			     unshare_expr (op0));
       tt = fold_build2 (RSHIFT_EXPR, TREE_TYPE (tt), tt, x);
       tt = fold_build2 (GT_EXPR, boolean_type_node, tt,
 			build_int_cst (TREE_TYPE (tt), 1));
-      x = fold_build2 (LT_EXPR, boolean_type_node, op0,
+      x = fold_build2 (LT_EXPR, boolean_type_node, unshare_expr (op0),
 		       build_int_cst (type0, 0));
       tt = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, x, tt);
     }
@@ -197,7 +200,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 	  TREE_SIDE_EFFECTS (op0) = 1;
 	}
     }
-  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op0, t);
+  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
   t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t,
 		   tt ? tt : integer_zero_node);
 
@@ -216,6 +219,8 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 	  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
 	  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
       tt = builtin_decl_explicit (bcode);
+      op0 = unshare_expr (op0);
+      op1 = unshare_expr (op1);
       tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
 				ubsan_encode_value (op1));
     }

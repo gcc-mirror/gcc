@@ -1,5 +1,10 @@
 2015-07-23  Marek Polacek  <polacek@redhat.com>
 
+	* c-ubsan.c (ubsan_instrument_division): Use unshare_expr throughout.
+	(ubsan_instrument_shift): Likewise.
+
+2015-07-23  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/66908
 	* c-ubsan.c: Include gimplify.h.
 	(ubsan_instrument_division): Unshare OP0 and OP1.
