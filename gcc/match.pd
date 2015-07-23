@@ -1679,7 +1679,8 @@ along with GCC; see the file COPYING3.  If not see
 	  type on targets that require function pointer canonicalization.  */
        && !(targetm.have_canonicalize_funcptr_for_compare ()
 	    && TREE_CODE (TREE_TYPE (@00)) == POINTER_TYPE
-	    && TREE_CODE (TREE_TYPE (TREE_TYPE (@00))) == FUNCTION_TYPE))
+	    && TREE_CODE (TREE_TYPE (TREE_TYPE (@00))) == FUNCTION_TYPE)
+       && single_use (@0))
    (if (TYPE_PRECISION (TREE_TYPE (@00)) == TYPE_PRECISION (TREE_TYPE (@0))
 	&& (TREE_CODE (@10) == INTEGER_CST
 	    || (@1 != @10 && types_match (TREE_TYPE (@10), TREE_TYPE (@00))))

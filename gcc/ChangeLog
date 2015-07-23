@@ -1,5 +1,11 @@
 2015-07-23  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/66916
+	* match.pd: Guard widen and sign-change comparison simplification
+	with single_use.
+
+2015-07-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66945
 	* tree-ssa-propagate.c (substitute_and_fold_dom_walker
 	::before_dom_children): Force the propagators idea of
