@@ -255,7 +255,7 @@ MULTILIB_EXCEPTIONS = mcpu=msp430/mlarge
 # Multilibs for different types of hardware multiply support:
 
 MULTILIB_OPTIONS   += mhwmult=none/mhwmult=32bit/mhwmult=f5series
-MULTILIB_DIRNAMES  +=        nomul/        32mul/        f5mul
+MULTILIB_DIRNAMES  +=        nomul         32mul         f5mul
 
 MULTILIB_EXCEPTIONS += mcpu=msp430/mlarge/mhwmult=none
 MULTILIB_EXCEPTIONS += mcpu=msp430/mlarge/mhwmult=32bit
