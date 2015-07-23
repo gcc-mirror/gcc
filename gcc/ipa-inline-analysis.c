@@ -1602,7 +1602,7 @@ unmodified_parm (gimple stmt, tree op)
    loaded.  */
 
 static bool
-unmodified_parm_or_parm_agg_item (struct func_body_info *fbi,
+unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
 				  gimple stmt, tree op, int *index_p,
 				  struct agg_position_info *aggpos)
 {
@@ -1773,7 +1773,7 @@ eliminated_by_inlining_prob (gimple stmt)
    predicates to the CFG edges.   */
 
 static void
-set_cond_stmt_execution_predicate (struct func_body_info *fbi,
+set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				   struct inline_summary *summary,
 				   basic_block bb)
 {
@@ -1855,7 +1855,7 @@ set_cond_stmt_execution_predicate (struct func_body_info *fbi,
    predicates to the CFG edges.   */
 
 static void
-set_switch_stmt_execution_predicate (struct func_body_info *fbi,
+set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				     struct inline_summary *summary,
 				     basic_block bb)
 {
@@ -1916,7 +1916,7 @@ set_switch_stmt_execution_predicate (struct func_body_info *fbi,
    which it is executable.  */
 
 static void
-compute_bb_predicates (struct func_body_info *fbi,
+compute_bb_predicates (struct ipa_func_body_info *fbi,
 		       struct cgraph_node *node,
 		       struct inline_summary *summary)
 {
@@ -2059,7 +2059,7 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
    a compile time constant.  */
 
 static struct predicate
-will_be_nonconstant_predicate (struct func_body_info *fbi,
+will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 			       struct inline_summary *summary,
 			       gimple stmt,
 			       vec<predicate_t> nonconstant_names)
@@ -2509,7 +2509,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   int freq;
   struct inline_summary *info = inline_summaries->get (node);
   struct predicate bb_predicate;
-  struct func_body_info fbi;
+  struct ipa_func_body_info fbi;
   vec<predicate_t> nonconstant_names = vNULL;
   int nblocks, n;
   int *order;

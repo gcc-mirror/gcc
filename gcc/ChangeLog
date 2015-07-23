@@ -1,5 +1,14 @@
 2015-07-23  Martin Jambor  <mjambor@suse.cz>
 
+	Backport from mainline r225867.
+	2015-07-16  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (param_aa_status): Rename to ipa_param_aa_status.  Adjust
+	all uses.  Fix two typos in its general comment.
+	(func_body_info): Rename to ipa_func_body_info.  Adjust all uses.
+
+2015-07-23  Martin Jambor  <mjambor@suse.cz>
+
 	Backport from mainline r225838.
 	2015-07-15  Paolo Bonzini  <bonzini@gnu.org>
 	    	    Martin Jambor  <mjambor@suse.cz>
