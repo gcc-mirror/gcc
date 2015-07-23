@@ -1,3 +1,19 @@
+2015-07-22  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/t-msp430 (MULTILIB_DIRNAMES): Remove trailing
+	slashes.
+
+	* config/msp430/msp430.md (ashlhi3): Optimize shifts of subregs.
+	(ashrhi3): Likewise.
+	(lshrhi3): Likewise.
+	(movhi): Take advantage of zero-extend to load small constants.
+	(movpsi): Likewise.
+	(and<mode>3): Likewise.
+	(zero_extendqihi2): Likewise.
+	(zero_extendqisi2): New.
+	* config/msp430/constraints.md (N,O): New.
+	* config/msp430/msp430.h (WORD_REGISTER_OPERATIONS): Define.
+
 2015-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66954
