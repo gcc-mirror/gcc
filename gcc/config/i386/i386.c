@@ -8744,17 +8744,10 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 /* Create the va_list data type.  */
 
-/* Returns the calling convention specific va_list date type.
-   The argument ABI can be DEFAULT_ABI, MS_ABI, or SYSV_ABI.  */
-
 static tree
-ix86_build_builtin_va_list_abi (enum calling_abi abi)
+ix86_build_builtin_va_list_64 (void)
 {
   tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
-
-  /* For i386 we use plain pointer to argument area.  */
-  if (!TARGET_64BIT || abi == MS_ABI)
-    return build_pointer_type (char_type_node);
 
   record = lang_hooks.types.make_type (RECORD_TYPE);
   type_decl = build_decl (BUILTINS_LOCATION,
@@ -8800,43 +8793,25 @@ ix86_build_builtin_va_list_abi (enum calling_abi abi)
 static tree
 ix86_build_builtin_va_list (void)
 {
-  tree ret = ix86_build_builtin_va_list_abi (ix86_abi);
-
-  /* Initialize abi specific va_list builtin types.  */
   if (TARGET_64BIT)
     {
-      tree t;
-      if (ix86_abi == MS_ABI)
-        {
-          t = ix86_build_builtin_va_list_abi (SYSV_ABI);
-          if (TREE_CODE (t) != RECORD_TYPE)
-            t = build_variant_type_copy (t);
-          sysv_va_list_type_node = t;
-        }
-      else
-        {
-          t = ret;
-          if (TREE_CODE (t) != RECORD_TYPE)
-            t = build_variant_type_copy (t);
-          sysv_va_list_type_node = t;
-        }
-      if (ix86_abi != MS_ABI)
-        {
-          t = ix86_build_builtin_va_list_abi (MS_ABI);
-          if (TREE_CODE (t) != RECORD_TYPE)
-            t = build_variant_type_copy (t);
-          ms_va_list_type_node = t;
-        }
-      else
-        {
-          t = ret;
-          if (TREE_CODE (t) != RECORD_TYPE)
-            t = build_variant_type_copy (t);
-          ms_va_list_type_node = t;
-        }
-    }
+      /* Initialize ABI specific va_list builtin types.  */
+      tree sysv_va_list, ms_va_list;
 
-  return ret;
+      sysv_va_list = ix86_build_builtin_va_list_64 ();
+      sysv_va_list_type_node = build_variant_type_copy (sysv_va_list);
+	
+      /* For MS_ABI we use plain pointer to argument area.  */
+      ms_va_list = build_pointer_type (char_type_node);
+      ms_va_list_type_node = build_variant_type_copy (ms_va_list);
+
+      return (ix86_abi == MS_ABI) ? ms_va_list : sysv_va_list;
+    }
+  else
+    {
+      /* For i386 we use plain pointer to argument area.  */
+      return build_pointer_type (char_type_node);
+    }
 }
 
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */

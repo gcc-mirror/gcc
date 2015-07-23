@@ -1,4 +1,12 @@
-2015-01-12  Jeff Law  <law@redhat.com>
+2015-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_build_builtin_va_list_64): Rename
+	from ix86_build_builtin_va_list_abi.  Handle only 64bit non-MS_ABI
+	targets here.
+	(ix86_build_builtin_va_list): Rewrite sysv_va_list_type_node and
+	ms_va_list_type_node initialization.
+
+2015-07-23  Jeff Law  <law@redhat.com>
 
 	PR lto/66752
 	* tree-ssa-threadedge.c (simplify_conrol_stmt_condition): If we are
