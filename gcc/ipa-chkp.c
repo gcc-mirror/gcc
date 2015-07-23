@@ -104,7 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Return 1 calls to FNDECL should be replaced with
    a call to wrapper function.  */
-static bool
+bool
 chkp_wrap_function (tree fndecl)
 {
   if (!flag_chkp_use_wrappers)
@@ -139,6 +139,51 @@ chkp_wrap_function (tree fndecl)
   return false;
 }
 
+static const char *
+chkp_wrap_function_name (tree fndecl)
+{
+  gcc_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL);
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_STRLEN:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strlen";
+    case BUILT_IN_STRCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strcpy";
+    case BUILT_IN_STRNCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strncpy";
+    case BUILT_IN_STPCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "stpcpy";
+    case BUILT_IN_STPNCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "stpncpy";
+    case BUILT_IN_STRCAT:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strcat";
+    case BUILT_IN_STRNCAT:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strncat";
+    case BUILT_IN_MEMCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "memcpy";
+    case BUILT_IN_MEMPCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "mempcpy";
+    case BUILT_IN_MEMSET:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "memset";
+    case BUILT_IN_MEMMOVE:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "memmove";
+    case BUILT_IN_BZERO:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "bzero";
+    case BUILT_IN_MALLOC:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "malloc";
+    case BUILT_IN_CALLOC:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "calloc";
+    case BUILT_IN_REALLOC:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "realloc";
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return "";
+}
+
 /* Build a clone of FNDECL with a modified name.  */
 
 static tree
@@ -164,9 +209,8 @@ chkp_build_instrumented_fndecl (tree fndecl)
      instrumented version.  */
   if (chkp_wrap_function(fndecl))
     {
-      s = CHKP_WRAPPER_SYMBOL_PREFIX;
-      s += IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
-      new_name = get_identifier (s.c_str ());
+      new_name = get_identifier (chkp_wrap_function_name (fndecl));
+      DECL_VISIBILITY (new_decl) = VISIBILITY_DEFAULT;
     }
   else
     {

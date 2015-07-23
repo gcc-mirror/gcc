@@ -1,5 +1,12 @@
 2015-07-23  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	Backport from mainline r223216.
+	2015-05-15  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/lto/chkp-wrap-asm-name_0.c: New.
+
+2015-07-23  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	Backport from mainline r224074.
 	2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 

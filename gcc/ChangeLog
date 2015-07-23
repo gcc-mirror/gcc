@@ -1,5 +1,18 @@
 2015-07-23  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	Backport from mainline r223216.
+	2015-05-15  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-chkp.h (chkp_wrap_function): New.
+	* ipa-chkp.c (chkp_wrap_function): Remove 'static'.
+	(chkp_wrap_function_name): New.
+	(chkp_build_instrumented_fndecl): Use chkp_wrap_function_name
+	to get wrapper name.
+	* lto-cgraph.c: Include ipa-chkp.h.
+	(input_cgraph_1): Avoid alias chain for wrappers.
+
+2015-07-23  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	Backport from mainline r224074.
 	2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 
