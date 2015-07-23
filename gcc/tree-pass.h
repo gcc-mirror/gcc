@@ -607,7 +607,6 @@ extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple *);
 extern bool pass_init_dump_file (opt_pass *);
 extern void pass_fini_dump_file (opt_pass *);
 
-extern const char *get_current_pass_name (void);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 extern void ipa_write_summaries (void);
