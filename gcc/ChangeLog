@@ -1,3 +1,12 @@
+2015-07-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_gimple_cond): Do not require folding
+	results to pass valid_gimple_rhs_p.
+	* tree-cfg.h (fold_cond_expr_cond): Remove.
+	* tree-cfg.c (fold_cond_expr_cond): Likewise.
+	(make_edges): Do not call it.
+	* tree-inline.c (tree_function_versioning): Likewise.
+
 2015-07-23  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (gather_scalar_reductions): Add arg to call to
@@ -8,7 +17,8 @@
 	(vect_is_simple_reduction, vect_force_simple_reduction): Add and pass
 	need_wrapping_integral_overflow parameter.
 	(vectorizable_reduction): Add arg to call to vect_is_simple_reduction.
-	* tree-vectorizer.h (vect_force_simple_reduction): Add parameter to decl.
+	* tree-vectorizer.h (vect_force_simple_reduction): Add parameter to
+	decl.
 
 2015-07-23  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
