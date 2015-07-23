@@ -1,5 +1,17 @@
 2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	Backport from mainline r224601.
+	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/66568
+	* gcc.target/i386/mpx/pr66568.c: New test.
+
+	Backport from mainline r225296.
+	2015-07-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/mpx/pr66568.c (exit): New prototype.
+2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	Backport from mainline r224600.
 	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 

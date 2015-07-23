@@ -479,6 +479,21 @@ chkp_gimple_call_builtin_p (gimple call,
   return false;
 }
 
+/* Emit code to build zero bounds and return RTL holding
+   the result.  */
+rtx
+chkp_expand_zero_bounds ()
+{
+  tree zero_bnd;
+
+  if (flag_chkp_use_static_const_bounds)
+    zero_bnd = chkp_get_zero_bounds_var ();
+  else
+    zero_bnd = chkp_build_make_bounds_call (integer_zero_node,
+					    integer_zero_node);
+  return expand_normal (zero_bnd);
+}
+
 /* Emit code to store zero bounds for PTR located at MEM.  */
 void
 chkp_expand_bounds_reset_for_mem (tree mem, tree ptr)

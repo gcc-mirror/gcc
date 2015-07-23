@@ -3219,18 +3219,25 @@ expand_return (tree retval, tree bounds)
   bounds_rtl = DECL_BOUNDS_RTL (DECL_RESULT (current_function_decl));
   if (bounds_rtl)
     {
-      rtx addr, bnd;
+      rtx addr = NULL;
+      rtx bnd = NULL;
 
-      if (bounds)
+      if (bounds && bounds != error_mark_node)
 	{
 	  bnd = expand_normal (bounds);
 	  targetm.calls.store_returned_bounds (bounds_rtl, bnd);
 	}
       else if (REG_P (bounds_rtl))
 	{
-	  addr = expand_normal (build_fold_addr_expr (retval_rhs));
-	  addr = gen_rtx_MEM (Pmode, addr);
-	  bnd = targetm.calls.load_bounds_for_arg (addr, NULL, NULL);
+	  if (bounds)
+	    bnd = chkp_expand_zero_bounds ();
+	  else
+	    {
+	      addr = expand_normal (build_fold_addr_expr (retval_rhs));
+	      addr = gen_rtx_MEM (Pmode, addr);
+	      bnd = targetm.calls.load_bounds_for_arg (addr, NULL, NULL);
+	    }
+
 	  targetm.calls.store_returned_bounds (bounds_rtl, bnd);
 	}
       else
@@ -3239,15 +3246,23 @@ expand_return (tree retval, tree bounds)
 
 	  gcc_assert (GET_CODE (bounds_rtl) == PARALLEL);
 
-	  addr = expand_normal (build_fold_addr_expr (retval_rhs));
-	  addr = gen_rtx_MEM (Pmode, addr);
+	  if (bounds)
+	    bnd = chkp_expand_zero_bounds ();
+	  else
+	    {
+	      addr = expand_normal (build_fold_addr_expr (retval_rhs));
+	      addr = gen_rtx_MEM (Pmode, addr);
+	    }
 
 	  for (n = 0; n < XVECLEN (bounds_rtl, 0); n++)
 	    {
-	      rtx offs = XEXP (XVECEXP (bounds_rtl, 0, n), 1);
 	      rtx slot = XEXP (XVECEXP (bounds_rtl, 0, n), 0);
-	      rtx from = adjust_address (addr, Pmode, INTVAL (offs));
-	      rtx bnd = targetm.calls.load_bounds_for_arg (from, NULL, NULL);
+	      if (!bounds)
+		{
+		  rtx offs = XEXP (XVECEXP (bounds_rtl, 0, n), 1);
+		  rtx from = adjust_address (addr, Pmode, INTVAL (offs));
+		  bnd = targetm.calls.load_bounds_for_arg (from, NULL, NULL);
+		}
 	      targetm.calls.store_returned_bounds (slot, bnd);
 	    }
 	}
@@ -3344,33 +3359,40 @@ expand_gimple_stmt_1 (gimple stmt)
       break;
 
     case GIMPLE_RETURN:
-      op0 = gimple_return_retval (as_a <greturn *> (stmt));
+      {
+	tree bnd = gimple_return_retbnd (as_a <greturn *> (stmt));
+	op0 = gimple_return_retval (as_a <greturn *> (stmt));
 
-      if (op0 && op0 != error_mark_node)
-	{
-	  tree result = DECL_RESULT (current_function_decl);
+	if (op0 && op0 != error_mark_node)
+	  {
+	    tree result = DECL_RESULT (current_function_decl);
 
-	  /* If we are not returning the current function's RESULT_DECL,
-	     build an assignment to it.  */
-	  if (op0 != result)
-	    {
-	      /* I believe that a function's RESULT_DECL is unique.  */
-	      gcc_assert (TREE_CODE (op0) != RESULT_DECL);
+	    /* If we are not returning the current function's RESULT_DECL,
+	       build an assignment to it.  */
+	    if (op0 != result)
+	      {
+		/* I believe that a function's RESULT_DECL is unique.  */
+		gcc_assert (TREE_CODE (op0) != RESULT_DECL);
 
-	      /* ??? We'd like to use simply expand_assignment here,
-	         but this fails if the value is of BLKmode but the return
-		 decl is a register.  expand_return has special handling
-		 for this combination, which eventually should move
-		 to common code.  See comments there.  Until then, let's
-		 build a modify expression :-/  */
-	      op0 = build2 (MODIFY_EXPR, TREE_TYPE (result),
-			    result, op0);
-	    }
-	}
-      if (!op0)
-	expand_null_return ();
-      else
-	expand_return (op0, gimple_return_retbnd (stmt));
+		/* ??? We'd like to use simply expand_assignment here,
+		   but this fails if the value is of BLKmode but the return
+		   decl is a register.  expand_return has special handling
+		   for this combination, which eventually should move
+		   to common code.  See comments there.  Until then, let's
+		   build a modify expression :-/  */
+		op0 = build2 (MODIFY_EXPR, TREE_TYPE (result),
+			      result, op0);
+	      }
+	    /* Mark we have return statement with missing bounds.  */
+	    if (!bnd && chkp_function_instrumented_p (cfun->decl))
+	      bnd = error_mark_node;
+	  }
+
+	if (!op0)
+	  expand_null_return ();
+	else
+	  expand_return (op0, bnd);
+      }
       break;
 
     case GIMPLE_ASSIGN:

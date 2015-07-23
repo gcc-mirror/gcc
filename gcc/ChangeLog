@@ -1,5 +1,16 @@
 2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	Backport from mainline r224601.
+	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/66568
+	* cfgexpand.c (expand_return): Handle missing bounds.
+	(expand_gimple_stmt_1): Likewise.
+	* tree-chkp.c (chkp_expand_zero_bounds): New.
+	* tree-chkp.h (chkp_expand_zero_bounds): New.
+
+2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	Backport from mainline r224600.
 	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
