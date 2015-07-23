@@ -3955,6 +3955,8 @@ Unary_expression::do_check_types(Gogo*)
       // Indirecting through a pointer.
       if (type->points_to() == NULL)
 	this->report_error(_("expected pointer"));
+      if (type->points_to()->is_error())
+	this->set_is_error();
       break;
 
     default:
