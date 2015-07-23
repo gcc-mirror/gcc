@@ -585,25 +585,10 @@ chkp_maybe_create_clone (tree fndecl)
 
       if (gimple_has_body_p (fndecl))
 	{
-	  /* If function will not be instrumented, then it's instrumented
-	     version is a thunk for the original.  */
-	  if (!chkp_instrumentable_p (fndecl))
-	    {
-	      clone->remove_callees ();
-	      clone->remove_all_references ();
-	      clone->thunk.thunk_p = true;
-	      clone->thunk.add_pointer_bounds_args = true;
-	      clone->create_edge (node, NULL, 0, CGRAPH_FREQ_BASE);
-	      /* Thunk shouldn't be a cdtor.  */
-	      DECL_STATIC_CONSTRUCTOR (clone->decl) = 0;
-	      DECL_STATIC_DESTRUCTOR (clone->decl) = 0;
-	    }
-	  else
-	    {
-	      tree_function_versioning (fndecl, new_decl, NULL, false,
-					NULL, false, NULL, NULL);
-	      clone->lowered = true;
-	    }
+	  gcc_assert (chkp_instrumentable_p (fndecl));
+	  tree_function_versioning (fndecl, new_decl, NULL, false,
+				    NULL, false, NULL, NULL);
+	  clone->lowered = true;
 	}
 
       /* New params are inserted after versioning because it

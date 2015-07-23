@@ -4100,7 +4100,7 @@ chkp_replace_function_pointer (tree *op, int *walk_subtrees,
 			       void *data ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (*op) == FUNCTION_DECL
-      && !lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (*op))
+      && chkp_instrumentable_p (*op)
       && (DECL_BUILT_IN_CLASS (*op) == NOT_BUILT_IN
 	  /* For builtins we replace pointers only for selected
 	     function and functions having definitions.  */
