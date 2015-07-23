@@ -1,5 +1,13 @@
 2015-07-23  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66945
+	* tree-ssa-propagate.c (substitute_and_fold_dom_walker
+	::before_dom_children): Force the propagators idea of
+	non-executable edges to materialize, not what the folder
+	chooses.
+
+2015-07-23  Richard Biener  <rguenther@suse.de>
+
 	* gimple.h (gimple_cond_make_false): Use 0 != 0.
 	(gimple_cond_make_true): Use 1 != 0.
 

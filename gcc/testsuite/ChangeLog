@@ -1,3 +1,8 @@
+2015-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66945
+	* gcc.dg/torture/pr66945.c: New testcase.
+
 2015-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66954
