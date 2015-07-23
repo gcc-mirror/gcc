@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-ssa-live.h"
 #include "tree-ssa-coalesce.h"
+#include "explow.h"
 #include "diagnostic-core.h"
 
 
@@ -806,6 +807,16 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
   basic_block bb;
   ssa_op_iter iter;
   live_track_p live;
+  basic_block entry;
+
+  /* If inter-variable coalescing is enabled, we may attempt to
+     coalesce variables from different base variables, including
+     different parameters, so we have to make sure default defs live
+     at the entry block conflict with each other.  */
+  if (flag_tree_coalesce_vars)
+    entry = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  else
+    entry = NULL;
 
   map = live_var_map (liveinfo);
   graph = ssa_conflicts_new (num_var_partitions (map));
@@ -862,6 +873,30 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 	  tree result = PHI_RESULT (phi);
 	  if (live_track_live_p (live, result))
 	    live_track_process_def (live, result, graph);
+	}
+
+      /* Pretend there are defs for params' default defs at the start
+	 of the (post-)entry block.  */
+      if (bb == entry)
+	{
+	  unsigned base;
+	  bitmap_iterator bi;
+	  EXECUTE_IF_SET_IN_BITMAP (live->live_base_var, 0, base, bi)
+	    {
+	      bitmap_iterator bi2;
+	      unsigned part;
+	      EXECUTE_IF_SET_IN_BITMAP (live->live_base_partitions[base],
+					0, part, bi2)
+		{
+		  tree var = partition_to_var (map, part);
+		  if (!SSA_NAME_VAR (var)
+		      || (TREE_CODE (SSA_NAME_VAR (var)) != PARM_DECL
+			  && TREE_CODE (SSA_NAME_VAR (var)) != RESULT_DECL)
+		      || !SSA_NAME_IS_DEFAULT_DEF (var))
+		    continue;
+		  live_track_process_def (live, var, graph);
+		}
+	    }
 	}
 
      live_track_clear_base_vars (live);
@@ -1132,6 +1167,7 @@ attempt_coalesce (var_map map, ssa_conflicts_p graph, int x, int y,
     {
       var1 = partition_to_var (map, p1);
       var2 = partition_to_var (map, p2);
+
       z = var_union (map, var1, var2);
       if (z == NO_PARTITION)
 	{
@@ -1149,6 +1185,7 @@ attempt_coalesce (var_map map, ssa_conflicts_p graph, int x, int y,
 
       if (debug)
 	fprintf (debug, ": Success -> %d\n", z);
+
       return true;
     }
 
@@ -1244,6 +1281,328 @@ ssa_name_var_hash::equal (const tree_node *n1, const tree_node *n2)
 }
 
 
+/* Output partition map MAP with coalescing plan PART to file F.  */
+
+void
+dump_part_var_map (FILE *f, partition part, var_map map)
+{
+  int t;
+  unsigned x, y;
+  int p;
+
+  fprintf (f, "\nCoalescible Partition map \n\n");
+
+  for (x = 0; x < map->num_partitions; x++)
+    {
+      if (map->view_to_partition != NULL)
+	p = map->view_to_partition[x];
+      else
+	p = x;
+
+      if (ssa_name (p) == NULL_TREE
+	  || virtual_operand_p (ssa_name (p)))
+        continue;
+
+      t = 0;
+      for (y = 1; y < num_ssa_names; y++)
+        {
+	  tree var = version_to_var (map, y);
+	  if (!var)
+	    continue;
+	  int q = var_to_partition (map, var);
+	  p = partition_find (part, q);
+	  gcc_assert (map->partition_to_base_index[q]
+		      == map->partition_to_base_index[p]);
+
+	  if (p == (int)x)
+	    {
+	      if (t++ == 0)
+	        {
+		  fprintf (f, "Partition %d, base %d (", x,
+			   map->partition_to_base_index[q]);
+		  print_generic_expr (f, partition_to_var (map, q), TDF_SLIM);
+		  fprintf (f, " - ");
+		}
+	      fprintf (f, "%d ", y);
+	    }
+	}
+      if (t != 0)
+	fprintf (f, ")\n");
+    }
+  fprintf (f, "\n");
+}
+
+/* Given SSA_NAMEs NAME1 and NAME2, return true if they are candidates for
+   coalescing together, false otherwise.
+
+   This must stay consistent with var_map_base_init in tree-ssa-live.c.  */
+
+bool
+gimple_can_coalesce_p (tree name1, tree name2)
+{
+  /* First check the SSA_NAME's associated DECL.  Without
+     optimization, we only want to coalesce if they have the same DECL
+     or both have no associated DECL.  */
+  tree var1 = SSA_NAME_VAR (name1);
+  tree var2 = SSA_NAME_VAR (name2);
+  var1 = (var1 && (!VAR_P (var1) || !DECL_IGNORED_P (var1))) ? var1 : NULL_TREE;
+  var2 = (var2 && (!VAR_P (var2) || !DECL_IGNORED_P (var2))) ? var2 : NULL_TREE;
+  if (var1 != var2 && !flag_tree_coalesce_vars)
+    return false;
+
+  /* Now check the types.  If the types are the same, then we should
+     try to coalesce V1 and V2.  */
+  tree t1 = TREE_TYPE (name1);
+  tree t2 = TREE_TYPE (name2);
+  if (t1 == t2)
+    {
+    check_modes:
+      /* If the base variables are the same, we're good: none of the
+	 other tests below could possibly fail.  */
+      var1 = SSA_NAME_VAR (name1);
+      var2 = SSA_NAME_VAR (name2);
+      if (var1 == var2)
+	return true;
+
+      /* We don't want to coalesce two SSA names if one of the base
+	 variables is supposed to be a register while the other is
+	 supposed to be on the stack.  Anonymous SSA names take
+	 registers, but when not optimizing, user variables should go
+	 on the stack, so coalescing them with the anonymous variable
+	 as the partition leader would end up assigning the user
+	 variable to a register.  Don't do that!  */
+      bool reg1 = !var1 || use_register_for_decl (var1);
+      bool reg2 = !var2 || use_register_for_decl (var2);
+      if (reg1 != reg2)
+	return false;
+
+      /* Check that the promoted modes are the same.  We don't want to
+	 coalesce if the promoted modes would be different.  Only
+	 PARM_DECLs and RESULT_DECLs have different promotion rules,
+	 so skip the test if we both are variables or anonymous
+	 SSA_NAMEs.  */
+      return ((!var1 || VAR_P (var1)) && (!var2 || VAR_P (var2)))
+	|| promote_ssa_mode (name1, NULL) == promote_ssa_mode (name2, NULL);
+    }
+
+  /* If the types are not the same, check for a canonical type match.  This
+     (for example) allows coalescing when the types are fundamentally the
+     same, but just have different names. 
+
+     Note pointer types with different address spaces may have the same
+     canonical type.  Those are rejected for coalescing by the
+     types_compatible_p check.  */
+  if (TYPE_CANONICAL (t1)
+      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
+      && types_compatible_p (t1, t2))
+    goto check_modes;
+
+  return false;
+}
+
+/* Fill in MAP's partition_to_base_index, with one index for each
+   partition of SSA names USED_IN_COPIES and related by CL coalesce
+   possibilities.  This must match gimple_can_coalesce_p in the
+   optimized case.  */
+
+static void
+compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
+				   coalesce_list_p cl)
+{
+  int parts = num_var_partitions (map);
+  partition tentative = partition_new (parts);
+
+  /* Partition the SSA versions so that, for each coalescible
+     pair, both of its members are in the same partition in
+     TENTATIVE.  */
+  gcc_assert (!cl->sorted);
+  coalesce_pair_p node;
+  coalesce_iterator_type ppi;
+  FOR_EACH_PARTITION_PAIR (node, ppi, cl)
+    {
+      tree v1 = ssa_name (node->first_element);
+      int p1 = partition_find (tentative, var_to_partition (map, v1));
+      tree v2 = ssa_name (node->second_element);
+      int p2 = partition_find (tentative, var_to_partition (map, v2));
+
+      if (p1 == p2)
+	continue;
+
+      partition_union (tentative, p1, p2);
+    }
+
+  /* We have to deal with cost one pairs too.  */
+  for (cost_one_pair_d *co = cl->cost_one_list; co; co = co->next)
+    {
+      tree v1 = ssa_name (co->first_element);
+      int p1 = partition_find (tentative, var_to_partition (map, v1));
+      tree v2 = ssa_name (co->second_element);
+      int p2 = partition_find (tentative, var_to_partition (map, v2));
+
+      if (p1 == p2)
+	continue;
+
+      partition_union (tentative, p1, p2);
+    }
+
+  /* And also with abnormal edges.  */
+  basic_block bb;
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->flags & EDGE_ABNORMAL)
+	  {
+	    gphi_iterator gsi;
+	    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+		 gsi_next (&gsi))
+	      {
+		gphi *phi = gsi.phi ();
+		tree arg = PHI_ARG_DEF (phi, e->dest_idx);
+		if (SSA_NAME_IS_DEFAULT_DEF (arg)
+		    && (!SSA_NAME_VAR (arg)
+			|| TREE_CODE (SSA_NAME_VAR (arg)) != PARM_DECL))
+		  continue;
+
+		tree res = PHI_RESULT (phi);
+
+		int p1 = partition_find (tentative, var_to_partition (map, res));
+		int p2 = partition_find (tentative, var_to_partition (map, arg));
+
+		if (p1 == p2)
+		  continue;
+
+		partition_union (tentative, p1, p2);
+	      }
+	  }
+    }
+
+  map->partition_to_base_index = XCNEWVEC (int, parts);
+  auto_vec<unsigned int> index_map (parts);
+  if (parts)
+    index_map.quick_grow (parts);
+
+  const unsigned no_part = -1;
+  unsigned count = parts;
+  while (count)
+    index_map[--count] = no_part;
+
+  /* Initialize MAP's mapping from partition to base index, using
+     as base indices an enumeration of the TENTATIVE partitions in
+     which each SSA version ended up, so that we compute conflicts
+     between all SSA versions that ended up in the same potential
+     coalesce partition.  */
+  bitmap_iterator bi;
+  unsigned i;
+  EXECUTE_IF_SET_IN_BITMAP (used_in_copies, 0, i, bi)
+    {
+      int pidx = var_to_partition (map, ssa_name (i));
+      int base = partition_find (tentative, pidx);
+      if (index_map[base] != no_part)
+	continue;
+      index_map[base] = count++;
+    }
+
+  map->num_basevars = count;
+
+  EXECUTE_IF_SET_IN_BITMAP (used_in_copies, 0, i, bi)
+    {
+      int pidx = var_to_partition (map, ssa_name (i));
+      int base = partition_find (tentative, pidx);
+      gcc_assert (index_map[base] < count);
+      map->partition_to_base_index[pidx] = index_map[base];
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_part_var_map (dump_file, tentative, map);
+
+  partition_delete (tentative);
+}
+
+/* Hashtable helpers.  */
+
+struct tree_int_map_hasher : nofree_ptr_hash <tree_int_map>
+{
+  static inline hashval_t hash (const tree_int_map *);
+  static inline bool equal (const tree_int_map *, const tree_int_map *);
+};
+
+inline hashval_t
+tree_int_map_hasher::hash (const tree_int_map *v)
+{
+  return tree_map_base_hash (v);
+}
+
+inline bool
+tree_int_map_hasher::equal (const tree_int_map *v, const tree_int_map *c)
+{
+  return tree_int_map_eq (v, c);
+}
+
+/* This routine will initialize the basevar fields of MAP with base
+   names.  Partitions will share the same base if they have the same
+   SSA_NAME_VAR, or, being anonymous variables, the same type.  This
+   must match gimple_can_coalesce_p in the non-optimized case.  */
+
+static void
+compute_samebase_partition_bases (var_map map)
+{
+  int x, num_part;
+  tree var;
+  struct tree_int_map *m, *mapstorage;
+
+  num_part = num_var_partitions (map);
+  hash_table<tree_int_map_hasher> tree_to_index (num_part);
+  /* We can have at most num_part entries in the hash tables, so it's
+     enough to allocate so many map elements once, saving some malloc
+     calls.  */
+  mapstorage = m = XNEWVEC (struct tree_int_map, num_part);
+
+  /* If a base table already exists, clear it, otherwise create it.  */
+  free (map->partition_to_base_index);
+  map->partition_to_base_index = (int *) xmalloc (sizeof (int) * num_part);
+
+  /* Build the base variable list, and point partitions at their bases.  */
+  for (x = 0; x < num_part; x++)
+    {
+      struct tree_int_map **slot;
+      unsigned baseindex;
+      var = partition_to_var (map, x);
+      if (SSA_NAME_VAR (var)
+	  && (!VAR_P (SSA_NAME_VAR (var))
+	      || !DECL_IGNORED_P (SSA_NAME_VAR (var))))
+	m->base.from = SSA_NAME_VAR (var);
+      else
+	/* This restricts what anonymous SSA names we can coalesce
+	   as it restricts the sets we compute conflicts for.
+	   Using TREE_TYPE to generate sets is the easies as
+	   type equivalency also holds for SSA names with the same
+	   underlying decl.
+
+	   Check gimple_can_coalesce_p when changing this code.  */
+	m->base.from = (TYPE_CANONICAL (TREE_TYPE (var))
+			? TYPE_CANONICAL (TREE_TYPE (var))
+			: TREE_TYPE (var));
+      /* If base variable hasn't been seen, set it up.  */
+      slot = tree_to_index.find_slot (m, INSERT);
+      if (!*slot)
+	{
+	  baseindex = m - mapstorage;
+	  m->to = baseindex;
+	  *slot = m;
+	  m++;
+	}
+      else
+	baseindex = (*slot)->to;
+      map->partition_to_base_index[x] = baseindex;
+    }
+
+  map->num_basevars = m - mapstorage;
+
+  free (mapstorage);
+}
+
 /* Reduce the number of copies by coalescing variables in the function.  Return
    a partition map with the resulting coalesces.  */
 
@@ -1260,9 +1619,10 @@ coalesce_ssa_name (void)
   cl = create_coalesce_list ();
   map = create_outofssa_var_map (cl, used_in_copies);
 
-  /* If optimization is disabled, we need to coalesce all the names originating
-     from the same SSA_NAME_VAR so debug info remains undisturbed.  */
-  if (!optimize)
+  /* If this optimization is disabled, we need to coalesce all the
+     names originating from the same SSA_NAME_VAR so debug info
+     remains undisturbed.  */
+  if (!flag_tree_coalesce_vars)
     {
       hash_table<ssa_name_var_hash> ssa_name_hash (10);
 
@@ -1303,8 +1663,13 @@ coalesce_ssa_name (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);
 
-  /* Don't calculate live ranges for variables not in the coalesce list.  */
-  partition_view_bitmap (map, used_in_copies, true);
+  partition_view_bitmap (map, used_in_copies);
+
+  if (flag_tree_coalesce_vars)
+    compute_optimized_partition_bases (map, used_in_copies, cl);
+  else
+    compute_samebase_partition_bases (map);
+
   BITMAP_FREE (used_in_copies);
 
   if (num_var_partitions (map) < 1)
@@ -1343,8 +1708,7 @@ coalesce_ssa_name (void)
 
   /* Now coalesce everything in the list.  */
   coalesce_partitions (map, graph, cl,
-		       ((dump_flags & TDF_DETAILS) ? dump_file
-						   : NULL));
+		       ((dump_flags & TDF_DETAILS) ? dump_file : NULL));
 
   delete_coalesce_list (cl);
   ssa_conflicts_delete (graph);

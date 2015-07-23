@@ -794,7 +794,8 @@ layout_decl (tree decl, unsigned int known_align)
     {
       PUT_MODE (rtl, DECL_MODE (decl));
       SET_DECL_RTL (decl, 0);
-      set_mem_attributes (rtl, decl, 1);
+      if (MEM_P (rtl))
+	set_mem_attributes (rtl, decl, 1);
       SET_DECL_RTL (decl, rtl);
     }
 }
