@@ -1,3 +1,11 @@
+2015-07-23  DJ Delorie  <dj@redhat.com>
+
+	* include/bits/functional_hash.h: Add specializations for __intN
+	types.
+
+	* include/ext/pb_ds/detail/thin_heap_/thin_heap_.hpp (__gnu_pbds):
+	Guard against values that might exceed size_t's precision.
+
 2015-07-20  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/c++config: Fix abi_tag in special modes.
