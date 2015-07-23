@@ -1,5 +1,15 @@
 2015-07-23  Richard Biener  <rguenther@suse.de>
 
+	* generic-match-head.c: Include cgraph.h.
+	* gimple-match-head.c: Likewise.
+	* tree-ssa-sccvn.c (free_scc_vn): Guard against newly created
+	SSA names.
+	* fold-const.c (fold_binary_loc): Move &A ==/!= &B simplification...
+	* match.pd: ...to a pattern here.  Add &A ==/!= 0 simplification
+	pattern.
+
+2015-07-23  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (fold_gimple_cond): Do not require folding
 	results to pass valid_gimple_rhs_p.
 	* tree-cfg.h (fold_cond_expr_cond): Remove.

@@ -11082,29 +11082,6 @@ fold_binary_loc (location_t loc,
 	  && code == NE_EXPR)
         return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 
-      /* If this is an equality comparison of the address of two non-weak,
-	 unaliased symbols neither of which are extern (since we do not
-	 have access to attributes for externs), then we know the result.  */
-      if (TREE_CODE (arg0) == ADDR_EXPR
-	  && DECL_P (TREE_OPERAND (arg0, 0))
-	  && TREE_CODE (arg1) == ADDR_EXPR
-	  && DECL_P (TREE_OPERAND (arg1, 0)))
-	{
-	  int equal;
-
-	  if (decl_in_symtab_p (TREE_OPERAND (arg0, 0))
-	      && decl_in_symtab_p (TREE_OPERAND (arg1, 0)))
-	    equal = symtab_node::get_create (TREE_OPERAND (arg0, 0))
-		    ->equal_address_to (symtab_node::get_create
-					  (TREE_OPERAND (arg1, 0)));
-	  else
-	    equal = TREE_OPERAND (arg0, 0) == TREE_OPERAND (arg1, 0);
-	  if (equal != 2)
-	    return constant_boolean_node (equal
-				          ? code == EQ_EXPR : code != EQ_EXPR,
-				          type);
-	}
-
       /* Similarly for a BIT_XOR_EXPR;  X ^ C1 == C2 is X == (C1 ^ C2).  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && TREE_CODE (arg1) == INTEGER_CST

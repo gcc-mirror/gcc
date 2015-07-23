@@ -4223,6 +4223,8 @@ free_scc_vn (void)
     {
       tree name = ssa_name (i);
       if (name
+	  && SSA_NAME_VERSION (name) < vn_ssa_aux_table.length ()
+	  && vn_ssa_aux_table[SSA_NAME_VERSION (name)]
 	  && VN_INFO (name)->needs_insertion)
 	release_ssa_name (name);
     }
