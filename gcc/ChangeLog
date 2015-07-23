@@ -1,3 +1,32 @@
+2015-07-23  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline r225838.
+	2015-07-15  Paolo Bonzini  <bonzini@gnu.org>
+	    	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/66760
+	* ipa-inline-analysis.c (unmodified_parm_or_parm_agg_item): Accept
+	struct func_body_info* instead of struct ipa_node_params*, expecting
+	fbi->info to be filled in.  Replace throughout.  Adjust call to
+	ipa_load_from_parm_agg.
+	(set_cond_stmt_execution_predicate): Accept struct func_body_info*
+	instead of struct ipa_node_params*.  Adjust calls to other functions
+	so that they pass either fbi or fbi->info.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(will_be_nonconstant_predicate): Likewise.
+	(compute_bb_predicates): Likewise.
+	(estimate_function_body_sizes): Move asserts earlier.  Fill in
+	struct func_body_info, replace parms_info with fbi.info.  Adjust
+	calls to functions that now accept struct func_body_info.
+	* ipa-prop.c (param_aa_status, struct ipa_bb_info): Move to ipa-prop.h.
+	(struct func_body_info): Likewise.
+	(ipa_load_from_parm_agg_1): Rename to ipa_load_from_parm_agg,
+	remove static.  Adjust callers.
+	(ipa_load_from_parm_agg): Remove.
+	* ipa-prop.h (param_aa_status, ipa_bb_info): Move from ipa-prop.c.
+	(func_body_info): Likewise.
+	(ipa_load_from_parm_agg): Adjust prototype.
+
 2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r224643.

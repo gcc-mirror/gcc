@@ -99,57 +99,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "builtins.h"
 
-/* Intermediate information that we get from alias analysis about a particular
-   parameter in a particular basic_block.  When a parameter or the memory it
-   references is marked modified, we use that information in all dominatd
-   blocks without cosulting alias analysis oracle.  */
-
-struct param_aa_status
-{
-  /* Set when this structure contains meaningful information.  If not, the
-     structure describing a dominating BB should be used instead.  */
-  bool valid;
-
-  /* Whether we have seen something which might have modified the data in
-     question.  PARM is for the parameter itself, REF is for data it points to
-     but using the alias type of individual accesses and PT is the same thing
-     but for computing aggregate pass-through functions using a very inclusive
-     ao_ref.  */
-  bool parm_modified, ref_modified, pt_modified;
-};
-
-/* Information related to a given BB that used only when looking at function
-   body.  */
-
-struct ipa_bb_info
-{
-  /* Call graph edges going out of this BB.  */
-  vec<cgraph_edge *> cg_edges;
-  /* Alias analysis statuses of each formal parameter at this bb.  */
-  vec<param_aa_status> param_aa_statuses;
-};
-
-/* Structure with global information that is only used when looking at function
-   body. */
-
-struct func_body_info
-{
-  /* The node that is being analyzed.  */
-  cgraph_node *node;
-
-  /* Its info.  */
-  struct ipa_node_params *info;
-
-  /* Information about individual BBs. */
-  vec<ipa_bb_info> bb_infos;
-
-  /* Number of parameters.  */
-  int param_count;
-
-  /* Number of statements already walked by when analyzing this function.  */
-  unsigned int aa_walked;
-};
-
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
 /* Vector of IPA-CP transformation data for each clone.  */
@@ -1041,12 +990,12 @@ parm_ref_data_pass_through_p (struct func_body_info *fbi, int index,
    within the aggregate and whether it is a load from a value passed by
    reference respectively.  */
 
-static bool
-ipa_load_from_parm_agg_1 (struct func_body_info *fbi,
-			  vec<ipa_param_descriptor> descriptors,
-			  gimple stmt, tree op, int *index_p,
-			  HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
-			  bool *by_ref_p)
+bool
+ipa_load_from_parm_agg (struct func_body_info *fbi,
+			vec<ipa_param_descriptor> descriptors,
+			gimple stmt, tree op, int *index_p,
+			HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
+			bool *by_ref_p)
 {
   int index;
   HOST_WIDE_INT size, max_size;
@@ -1111,18 +1060,6 @@ ipa_load_from_parm_agg_1 (struct func_body_info *fbi,
       return true;
     }
   return false;
-}
-
-/* Just like the previous function, just without the param_analysis_info
-   pointer, for users outside of this file.  */
-
-bool
-ipa_load_from_parm_agg (struct ipa_node_params *info, gimple stmt,
-			tree op, int *index_p, HOST_WIDE_INT *offset_p,
-			bool *by_ref_p)
-{
-  return ipa_load_from_parm_agg_1 (NULL, info->descriptors, stmt, op, index_p,
-				   offset_p, NULL, by_ref_p);
 }
 
 /* Given that an actual argument is an SSA_NAME (given in NAME) and is a result
@@ -2008,9 +1945,9 @@ ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gcall *call,
   int index;
   gimple def = SSA_NAME_DEF_STMT (target);
   if (gimple_assign_single_p (def)
-      && ipa_load_from_parm_agg_1 (fbi, info->descriptors, def,
-				   gimple_assign_rhs1 (def), &index, &offset,
-				   NULL, &by_ref))
+      && ipa_load_from_parm_agg (fbi, info->descriptors, def,
+				 gimple_assign_rhs1 (def), &index, &offset,
+				 NULL, &by_ref))
     {
       struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
       cs->indirect_info->offset = offset;
@@ -5238,8 +5175,8 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
       if (vce)
 	continue;
 
-      if (!ipa_load_from_parm_agg_1 (m_fbi, m_descriptors, stmt, rhs, &index,
-				     &offset, &size, &by_ref))
+      if (!ipa_load_from_parm_agg (m_fbi, m_descriptors, stmt, rhs, &index,
+				   &offset, &size, &by_ref))
 	continue;
       for (v = m_aggval; v; v = v->next)
 	if (v->index == index
