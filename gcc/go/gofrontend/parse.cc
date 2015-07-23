@@ -1225,7 +1225,11 @@ Parse::interface_type(bool record)
       methods = NULL;
     }
 
-  Interface_type* ret = Type::make_interface_type(methods, location);
+  Interface_type* ret;
+  if (methods == NULL)
+    ret = Type::make_empty_interface_type(location);
+  else
+    ret = Type::make_interface_type(methods, location);
   if (record)
     this->gogo_->record_interface_type(ret);
   return ret;
