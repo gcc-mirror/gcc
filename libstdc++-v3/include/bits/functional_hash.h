@@ -121,6 +121,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Explicit specialization for unsigned long long.
   _Cxx_hashtable_define_trivial_hash(unsigned long long)
 
+#ifdef __GLIBCXX_TYPE_INT_N_0
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0 unsigned)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_1
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1 unsigned)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_2
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2 unsigned)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_3
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3 unsigned)
+#endif
+
 #undef _Cxx_hashtable_define_trivial_hash
 
   struct _Hash_impl
