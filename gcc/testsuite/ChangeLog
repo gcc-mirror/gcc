@@ -1,3 +1,10 @@
+2015-07-23  Jeff Law  <law@redhat.com>
+
+	PR lto/66752
+	* gcc.dg/tree-ssa/pr66752-2.c: New test.
+	* gcc.dg/torture/pr66752-1.c: New test
+	* g++.dg/torture/pr66752-2.C: New test.
+
 2015-07-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/66572
