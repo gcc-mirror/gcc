@@ -3,7 +3,7 @@
 int a = 128, b;
 
 static int
-fn1 (char p1, int p2)
+fn1 (signed char p1, int p2)
 {
   return p1 < 0 || p1 > 1 >> p2 ? 0 : p1 << 1;
 }
@@ -11,7 +11,7 @@ fn1 (char p1, int p2)
 static int
 fn2 ()
 {
-  char c = a;
+  signed char c = a;
   b = fn1 (c, 1);
   if ((128 | c) < 0 ? 1 : 0)
     return 1;
