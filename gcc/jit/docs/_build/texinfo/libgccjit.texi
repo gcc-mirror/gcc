@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 6.0.0 (experimental 20150716), July 16, 2015
+libgccjit 6.0.0 (experimental 20150723), July 23, 2015
 
 David Malcolm
 
@@ -14680,7 +14680,7 @@ via @pxref{5b,,gcc_jit_context_set_logfile()}.  Here is an example of a log
 generated via this call:
 
 @example
-JIT: libgccjit (GCC) version 5.0.0 20150123 (experimental) (x86_64-unknown-linux-gnu)
+JIT: libgccjit (GCC) version 6.0.0 20150723 (experimental) (x86_64-unknown-linux-gnu)
 JIT:	compiled by GNU C version 4.8.3 20140911 (Red Hat 4.8.3-7), GMP version 5.1.2, MPFR version 3.1.2, MPC version 1.0.1
 JIT: entering: gcc_jit_context_set_str_option
 JIT:  GCC_JIT_STR_OPTION_PROGNAME: "./test-hello-world.c.exe"
@@ -14746,6 +14746,7 @@ JIT:   GCC_JIT_BOOL_OPTION_DUMP_SUMMARY: false
 JIT:   GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING: false
 JIT:   GCC_JIT_BOOL_OPTION_SELFCHECK_GC: true
 JIT:   GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES: false
+JIT:   gcc_jit_context_set_bool_allow_unreachable_blocks: false
 JIT:   entering: void gcc::jit::recording::context::validate()
 JIT:   exiting: void gcc::jit::recording::context::validate()
 JIT:   entering: gcc::jit::playback::context::context(gcc::jit::recording::context*)
@@ -14797,12 +14798,6 @@ JIT:      exiting: void gcc::jit::playback::function::postprocess()
 JIT:      entering: void gcc::jit::playback::function::postprocess()
 JIT:      exiting: void gcc::jit::playback::function::postprocess()
 JIT:     exiting: void gcc::jit::playback::context::replay()
-JIT:     entering: void jit_langhook_write_globals()
-JIT:      entering: void gcc::jit::playback::context::write_global_decls_1()
-JIT:      exiting: void gcc::jit::playback::context::write_global_decls_1()
-JIT:      entering: void gcc::jit::playback::context::write_global_decls_2()
-JIT:      exiting: void gcc::jit::playback::context::write_global_decls_2()
-JIT:     exiting: void jit_langhook_write_globals()
 JIT:    exiting: toplev::main
 JIT:    entering: void gcc::jit::playback::context::extract_any_requested_dumps(vec<gcc::jit::recording::requested_dump>*)
 JIT:    exiting: void gcc::jit::playback::context::extract_any_requested_dumps(vec<gcc::jit::recording::requested_dump>*)
@@ -14811,13 +14806,16 @@ JIT:    exiting: toplev::finalize
 JIT:    entering: virtual void gcc::jit::playback::compile_to_memory::postprocess(const char*)
 JIT:     entering: void gcc::jit::playback::context::convert_to_dso(const char*)
 JIT:      entering: void gcc::jit::playback::context::invoke_driver(const char*, const char*, const char*, timevar_id_t, bool, bool)
-JIT:       argv[0]: x86_64-unknown-linux-gnu-gcc-5.0.0
-JIT:       argv[1]: -shared
-JIT:       argv[2]: /tmp/libgccjit-CKq1M9/fake.s
-JIT:       argv[3]: -o
-JIT:       argv[4]: /tmp/libgccjit-CKq1M9/fake.so
-JIT:       argv[5]: -fno-use-linker-plugin
-JIT:       argv[6]: (null)
+JIT:       entering: void gcc::jit::playback::context::add_multilib_driver_arguments(vec<char*>*)
+JIT:       exiting: void gcc::jit::playback::context::add_multilib_driver_arguments(vec<char*>*)
+JIT:       argv[0]: x86_64-unknown-linux-gnu-gcc-6.0.0
+JIT:       argv[1]: -m64
+JIT:       argv[2]: -shared
+JIT:       argv[3]: /tmp/libgccjit-CKq1M9/fake.s
+JIT:       argv[4]: -o
+JIT:       argv[5]: /tmp/libgccjit-CKq1M9/fake.so
+JIT:       argv[6]: -fno-use-linker-plugin
+JIT:       argv[7]: (null)
 JIT:      exiting: void gcc::jit::playback::context::invoke_driver(const char*, const char*, const char*, timevar_id_t, bool, bool)
 JIT:     exiting: void gcc::jit::playback::context::convert_to_dso(const char*)
 JIT:     entering: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()

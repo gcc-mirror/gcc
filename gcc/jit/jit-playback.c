@@ -2382,13 +2382,15 @@ invoke_driver (const char *ctxt_progname,
      TV_ASSEMBLE.  */
   auto_timevar assemble_timevar (tv_id);
   const char *errmsg;
-  auto_vec <const char *> argvec;
-#define ADD_ARG(arg) argvec.safe_push (arg)
+  auto_argvec argvec;
+#define ADD_ARG(arg) argvec.safe_push (xstrdup (arg))
   int exit_status = 0;
   int err = 0;
   const char *gcc_driver_name = GCC_DRIVER_NAME;
 
   ADD_ARG (gcc_driver_name);
+
+  add_multilib_driver_arguments (&argvec);
 
   if (shared)
     ADD_ARG ("-shared");
@@ -2410,7 +2412,7 @@ invoke_driver (const char *ctxt_progname,
   ADD_ARG ("-fno-use-linker-plugin");
 
   /* pex argv arrays are NULL-terminated.  */
-  ADD_ARG (NULL);
+  argvec.safe_push (NULL);
 
   /* pex_one's error-handling requires pname to be non-NULL.  */
   gcc_assert (ctxt_progname);
@@ -2449,6 +2451,36 @@ invoke_driver (const char *ctxt_progname,
       return;
     }
 #undef ADD_ARG
+}
+
+/* Extract the target-specific MULTILIB_DEFAULTS to
+   multilib_defaults_raw for use by
+   playback::context::add_multilib_driver_arguments ().  */
+
+#ifndef MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS { "" }
+#endif
+
+static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
+
+/* Helper function for playback::context::invoke_driver ().
+
+   32-bit and 64-bit multilib peer builds of libgccjit.so may share
+   a driver binary.  We need to pass in options to the shared driver
+   to get the appropriate assembler/linker options for this multilib
+   peer.  */
+
+void
+playback::context::
+add_multilib_driver_arguments (vec <char *> *argvec)
+{
+  JIT_LOG_SCOPE (get_logger ());
+
+  /* Add copies of the arguments in multilib_defaults_raw to argvec,
+     prepending each with a "-".  */
+  for (size_t i = 0; i < ARRAY_SIZE (multilib_defaults_raw); i++)
+    if (multilib_defaults_raw[i][0])
+      argvec->safe_push (concat ("-", multilib_defaults_raw[i], NULL));
 }
 
 /* Dynamically-link the built DSO file into this process, using dlopen.

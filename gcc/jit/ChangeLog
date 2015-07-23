@@ -1,3 +1,21 @@
+2015-07-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (invoke_driver): Convert local "argvec"
+	to an auto_argvec, so that it owns copies of the strings,
+	rather than borrows them, updating ADD_ARG to use xstrdup
+	and special-casing the NULL terminator to avoid
+	xstrdup (NULL).  Call add_multilib_driver_arguments at the front
+	of the arguments.
+	(MULTILIB_DEFAULTS): Provide a default definition.
+	(multilib_defaults_raw): New constant array.
+	(gcc::jit::playback::context::add_multilib_driver_arguments): New
+	method.
+	* jit-playback.h
+	(gcc::jit::playback::context::add_multilib_driver_arguments): New
+	method.
+	* docs/internals/test-hello-world.exe.log.txt: Update.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-07-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/internals/index.rst (Overview of code structure): Add note
