@@ -2538,6 +2538,7 @@ chkp_compute_bounds_for_assignment (tree node, gimple assign)
   tree rhs1 = gimple_assign_rhs1 (assign);
   tree bounds = NULL_TREE;
   gimple_stmt_iterator iter = gsi_for_stmt (assign);
+  tree base = NULL;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2564,6 +2565,7 @@ chkp_compute_bounds_for_assignment (tree node, gimple assign)
     case INTEGER_CST:
       /* Bounds are just propagated from RHS.  */
       bounds = chkp_find_bounds (rhs1, &iter);
+      base = rhs1;
       break;
 
     case VIEW_CONVERT_EXPR:
@@ -2634,6 +2636,8 @@ chkp_compute_bounds_for_assignment (tree node, gimple assign)
 	     (e.g. pointer minus pointer).  In such case
 	     use default invalid op bounds.  */
 	  bounds = chkp_get_invalid_op_bounds ();
+
+	base = (bounds == bnd1) ? rhs1 : (bounds == bnd2) ? rhs2 : NULL;
       }
       break;
 
@@ -2728,6 +2732,19 @@ chkp_compute_bounds_for_assignment (tree node, gimple assign)
     }
 
   gcc_assert (bounds);
+
+  /* We may reuse bounds of other pointer we copy/modify.  But it is not
+     allowed for abnormal ssa names.  If we produced a pointer using
+     abnormal ssa name, we better make a bounds copy to avoid coalescing
+     issues.  */
+  if (base
+      && TREE_CODE (base) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (base))
+    {
+      gimple stmt = gimple_build_assign (chkp_get_tmp_reg (NULL), bounds);
+      gsi_insert_after (&iter, stmt, GSI_SAME_STMT);
+      bounds = gimple_assign_lhs (stmt);
+    }
 
   if (node)
     bounds = chkp_maybe_copy_and_register_bounds (node, bounds);
