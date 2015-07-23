@@ -1,3 +1,8 @@
+2015-07-23  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/66908
+	* c-c++-common/ubsan/pr66908.c: New test.
+
 2015-07-23  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/autopar/outer-4.c: Add xfail.
