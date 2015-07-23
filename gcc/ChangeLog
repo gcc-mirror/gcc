@@ -1,3 +1,8 @@
+2015-07-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* combine.c (try_combine): Use std::swap instead of manually
+	swapping.
+
 2015-07-23  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* config/mips/i6400.md: New file.
