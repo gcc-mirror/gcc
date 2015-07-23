@@ -272,6 +272,9 @@ protected:
 		 bool shared,
 		 bool run_linker);
 
+  void
+  add_multilib_driver_arguments (vec <char *> *argvec);
+
   result *
   dlopen_built_dso ();
 
