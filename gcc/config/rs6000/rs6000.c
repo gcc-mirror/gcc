@@ -16735,19 +16735,53 @@ rs6000_is_valid_2insn_and (rtx c, machine_mode mode)
   return rs6000_is_valid_and_mask (GEN_INT (val + bit3 - bit2), mode);
 }
 
+/* Emit a potentially record-form instruction, setting DST from SRC.
+   If DOT is 0, that is all; otherwise, set CCREG to the result of the
+   signed comparison of DST with zero.  If DOT is 1, the generated RTL
+   doesn't care about the DST result; if DOT is 2, it does.  If CCREG
+   is CR0 do a single dot insn (as a PARALLEL); otherwise, do a SET and
+   a separate COMPARE.  */
+
+static void
+rs6000_emit_dot_insn (rtx dst, rtx src, int dot, rtx ccreg)
+{
+  if (dot == 0)
+    {
+      emit_move_insn (dst, src);
+      return;
+    }
+
+  if (cc_reg_not_cr0_operand (ccreg, CCmode))
+    {
+      emit_move_insn (dst, src);
+      emit_move_insn (ccreg, gen_rtx_COMPARE (CCmode, dst, const0_rtx));
+      return;
+    }
+
+  rtx ccset = gen_rtx_SET (ccreg, gen_rtx_COMPARE (CCmode, src, const0_rtx));
+  if (dot == 1)
+    {
+      rtx clobber = gen_rtx_CLOBBER (VOIDmode, dst);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, ccset, clobber)));
+    }
+  else
+    {
+      rtx set = gen_rtx_SET (dst, src);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, ccset, set)));
+    }
+}
+
 /* Emit the two insns to do an AND in mode MODE, with operands OPERANDS.
    If EXPAND is true, split rotate-and-mask instructions we generate to
    their constituent parts as well (this is used during expand); if DOT
-   is true, make the last insn a record-form instruction.  */
+   is 1, make the last insn a record-form instruction clobbering the
+   destination GPR and setting the CC reg (from operands[3]); if 2, set
+   that GPR as well as the CC reg.  */
 
 void
-rs6000_emit_2insn_and (machine_mode mode, rtx *operands, bool expand, bool dot)
+rs6000_emit_2insn_and (machine_mode mode, rtx *operands, bool expand, int dot)
 {
   gcc_assert (!(expand && dot));
-
-  /* We do not actually handle record form yet.  */
-  if (dot)
-    gcc_unreachable ();
 
   unsigned HOST_WIDE_INT val = INTVAL (operands[2]);
 
@@ -16773,7 +16807,8 @@ rs6000_emit_2insn_and (machine_mode mode, rtx *operands, bool expand, bool dot)
 	  rtx tmp = gen_rtx_ASHIFT (mode, operands[1], GEN_INT (shift));
 	  tmp = gen_rtx_AND (mode, tmp, GEN_INT (val << shift));
 	  emit_move_insn (operands[0], tmp);
-	  emit_insn (gen_lshrdi3 (operands[0], operands[0], GEN_INT (shift)));
+	  tmp = gen_rtx_LSHIFTRT (mode, operands[0], GEN_INT (shift));
+	  rs6000_emit_dot_insn (operands[0], tmp, dot, dot ? operands[3] : 0);
 	}
       return;
     }
@@ -16799,7 +16834,7 @@ rs6000_emit_2insn_and (machine_mode mode, rtx *operands, bool expand, bool dot)
       rtx tmp = gen_rtx_AND (mode, operands[1], GEN_INT (mask1));
       emit_move_insn (reg, tmp);
       tmp = gen_rtx_AND (mode, reg, GEN_INT (mask2));
-      emit_move_insn (operands[0], tmp);
+      rs6000_emit_dot_insn (operands[0], tmp, dot, dot ? operands[3] : 0);
       return;
     }
 
@@ -16816,7 +16851,7 @@ rs6000_emit_2insn_and (machine_mode mode, rtx *operands, bool expand, bool dot)
       rtx reg_low = gen_lowpart (SImode, reg);
       emit_move_insn (reg_low, tmp);
       tmp = gen_rtx_AND (mode, reg, GEN_INT (mask2));
-      emit_move_insn (operands[0], tmp);
+      rs6000_emit_dot_insn (operands[0], tmp, dot, dot ? operands[3] : 0);
       return;
     }
 
@@ -16845,7 +16880,7 @@ rs6000_emit_2insn_and (machine_mode mode, rtx *operands, bool expand, bool dot)
       emit_move_insn (operands[0], tmp);
       tmp = gen_rtx_ROTATE (mode, operands[0], GEN_INT (right));
       tmp = gen_rtx_AND (mode, tmp, GEN_INT (mask2));
-      emit_move_insn (operands[0], tmp);
+      rs6000_emit_dot_insn (operands[0], tmp, dot, dot ? operands[3] : 0);
     }
 }
 

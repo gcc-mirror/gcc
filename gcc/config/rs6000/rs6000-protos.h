@@ -77,7 +77,7 @@ extern const char *rs6000_insn_for_and_mask (machine_mode, rtx *, bool);
 extern const char *rs6000_insn_for_shift_mask (machine_mode, rtx *, bool);
 extern const char *rs6000_insn_for_insert_mask (machine_mode, rtx *, bool);
 extern bool rs6000_is_valid_2insn_and (rtx, machine_mode);
-extern void rs6000_emit_2insn_and (machine_mode, rtx *, bool, bool);
+extern void rs6000_emit_2insn_and (machine_mode, rtx *, bool, int);
 extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int mems_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);

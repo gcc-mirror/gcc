@@ -1,3 +1,14 @@
+2015-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/66217
+	* config/rs6000/rs6000-protos.h (rs6000_emit_2insn_and): Change
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_emit_dot_insn): New function.
+	(rs6000_emit_2insn_and): Handle dot forms.
+	* config/rs6000/rs6000.md (and<mode>3): Adjust.
+	(*and<mode>3_2insn): Remove TODO.  Adjust.  Add "type" attr.
+	(*and<mode>3_2insn_dot, *and<mode>3_2insn_dot2): New.
+
 2015-07-23  Richard Biener  <rguenther@suse.de>
 
 	* generic-match-head.c: Include cgraph.h.
