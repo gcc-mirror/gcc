@@ -3500,9 +3500,11 @@ assign_parm_load_bounds (struct assign_parm_data_one *data,
 
 static void
 assign_bounds (vec<bounds_parm_data> &bndargs,
-	       struct assign_parm_data_all &all)
+	       struct assign_parm_data_all &all,
+	       bool assign_regs, bool assign_special,
+	       bool assign_bt)
 {
-  unsigned i, pass, handled = 0;
+  unsigned i, pass;
   bounds_parm_data *pbdata;
 
   if (!bndargs.exists ())
@@ -3516,17 +3518,20 @@ assign_bounds (vec<bounds_parm_data> &bndargs,
       {
 	/* Pass 0 => regs only.  */
 	if (pass == 0
-	    && (!pbdata->parm_data.entry_parm
-		|| GET_CODE (pbdata->parm_data.entry_parm) != REG))
+	    && (!assign_regs
+		||(!pbdata->parm_data.entry_parm
+		   || GET_CODE (pbdata->parm_data.entry_parm) != REG)))
 	  continue;
 	/* Pass 1 => slots only.  */
 	else if (pass == 1
-		 && (!pbdata->parm_data.entry_parm
-		     || GET_CODE (pbdata->parm_data.entry_parm) == REG))
+		 && (!assign_special
+		     || (!pbdata->parm_data.entry_parm
+			 || GET_CODE (pbdata->parm_data.entry_parm) == REG)))
 	  continue;
 	/* Pass 2 => BT only.  */
 	else if (pass == 2
-		 && pbdata->parm_data.entry_parm)
+		 && (!assign_bt
+		     || pbdata->parm_data.entry_parm))
 	  continue;
 
 	if (!pbdata->parm_data.entry_parm
@@ -3547,14 +3552,7 @@ assign_bounds (vec<bounds_parm_data> &bndargs,
 	else
 	  assign_parm_setup_stack (&all, pbdata->bounds_parm,
 				   &pbdata->parm_data);
-
-	/* Count handled bounds to make sure we miss nothing.  */
-	handled++;
       }
-
-  gcc_assert (handled == bndargs.length ());
-
-  bndargs.release ();
 }
 
 /* Assign RTL expressions to the function's parameters.  This may involve
@@ -3679,12 +3677,14 @@ assign_parms (tree fndecl)
 	      /* We expect this is the last parm.  Otherwise it is wrong
 		 to assign bounds right now.  */
 	      gcc_assert (i == (fnargs.length () - 1));
-	      assign_bounds (bndargs, all);
+	      assign_bounds (bndargs, all, true, false, false);
 	      targetm.calls.setup_incoming_vararg_bounds (all.args_so_far,
 							  data.promoted_mode,
 							  data.passed_type,
 							  &pretend_bytes,
 							  false);
+	      assign_bounds (bndargs, all, false, true, true);
+	      bndargs.release ();
 	    }
 	}
 
@@ -3696,7 +3696,8 @@ assign_parms (tree fndecl)
 	bound_no++;
     }
 
-  assign_bounds (bndargs, all);
+  assign_bounds (bndargs, all, true, true, true);
+  bndargs.release ();
 
   if (targetm.calls.split_complex_arg)
     assign_parms_unsplit_complex (&all, fnargs);

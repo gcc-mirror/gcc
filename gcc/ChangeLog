@@ -1,5 +1,16 @@
 2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	Backport from mainline r224602.
+	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/66569
+	* function.c (assign_bounds): Add arguments assign_regs,
+	assign_special, assign_bt.
+	(assign_parms): For vararg functions handle bounds in BT
+	and special slots after incoming vararg bounds.
+
+2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	Backport from mainline r224601.
 	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 

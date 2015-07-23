@@ -1,5 +1,13 @@
 2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	Backport from mainline r224602.
+	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/66569
+	* gcc.target/i386/mpx/chkp-vararg.c: New test.
+
+2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	Backport from mainline r224601.
 	2015-06-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
