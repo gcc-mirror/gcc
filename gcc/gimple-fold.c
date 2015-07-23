@@ -546,7 +546,7 @@ fold_gimple_cond (gcond *stmt)
   if (result)
     {
       STRIP_USELESS_TYPE_CONVERSION (result);
-      if (is_gimple_condexpr (result) && valid_gimple_rhs_p (result))
+      if (is_gimple_condexpr (result))
         {
           gimple_cond_set_condition_from_tree (stmt, result);
           return true;

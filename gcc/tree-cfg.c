@@ -606,48 +606,6 @@ create_bb (void *h, void *e, basic_block after)
 				 Edge creation
 ---------------------------------------------------------------------------*/
 
-/* Fold COND_EXPR_COND of each COND_EXPR.  */
-
-void
-fold_cond_expr_cond (void)
-{
-  basic_block bb;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      gimple stmt = last_stmt (bb);
-
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
-	{
-	  gcond *cond_stmt = as_a <gcond *> (stmt);
-	  location_t loc = gimple_location (stmt);
-	  tree cond;
-	  bool zerop, onep;
-
-	  fold_defer_overflow_warnings ();
-	  cond = fold_binary_loc (loc, gimple_cond_code (cond_stmt),
-				  boolean_type_node,
-				  gimple_cond_lhs (cond_stmt),
-				  gimple_cond_rhs (cond_stmt));
-	  if (cond)
-	    {
-	      zerop = integer_zerop (cond);
-	      onep = integer_onep (cond);
-	    }
-	  else
-	    zerop = onep = false;
-
-	  fold_undefer_overflow_warnings (zerop || onep,
-					  stmt,
-					  WARN_STRICT_OVERFLOW_CONDITIONAL);
-	  if (zerop)
-	    gimple_cond_make_false (cond_stmt);
-	  else if (onep)
-	    gimple_cond_make_true (cond_stmt);
-	}
-    }
-}
-
 /* If basic block BB has an abnormal edge to a basic block
    containing IFN_ABNORMAL_DISPATCHER internal call, return
    that the dispatcher's basic block, otherwise return NULL.  */
@@ -1000,9 +958,6 @@ make_edges (void)
   XDELETE (bb_to_omp_idx);
 
   free_omp_regions ();
-
-  /* Fold COND_EXPR_COND of each COND_EXPR.  */
-  fold_cond_expr_cond ();
 }
 
 /* Add SEQ after GSI.  Start new bb after GSI, and created further bbs as

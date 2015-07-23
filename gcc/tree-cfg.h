@@ -31,7 +31,6 @@ extern void gt_pch_nx (edge_def *e, gt_pointer_operator, void *);
 
 extern void init_empty_tree_cfg_for_function (struct function *);
 extern void init_empty_tree_cfg (void);
-extern void fold_cond_expr_cond (void);
 extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);
 extern basic_block label_to_block_fn (struct function *, tree);
