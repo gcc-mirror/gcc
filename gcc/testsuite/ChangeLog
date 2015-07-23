@@ -1,3 +1,10 @@
+2015-07-23  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r224074.
+	2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/lto/chkp-removed-alias_0.c: New.
+
 2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
 
 	Backport from mainline:
