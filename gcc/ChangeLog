@@ -1,3 +1,8 @@
+2015-07-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple_cond_make_false): Use 0 != 0.
+	(gimple_cond_make_true): Use 1 != 0.
+
 2015-07-22  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/t-msp430 (MULTILIB_DIRNAMES): Remove trailing

@@ -3187,9 +3187,9 @@ gimple_cond_false_label (const gcond *gs)
 static inline void
 gimple_cond_make_false (gcond *gs)
 {
-  gimple_cond_set_lhs (gs, boolean_true_node);
+  gimple_cond_set_lhs (gs, boolean_false_node);
   gimple_cond_set_rhs (gs, boolean_false_node);
-  gs->subcode = EQ_EXPR;
+  gs->subcode = NE_EXPR;
 }
 
 
@@ -3199,8 +3199,8 @@ static inline void
 gimple_cond_make_true (gcond *gs)
 {
   gimple_cond_set_lhs (gs, boolean_true_node);
-  gimple_cond_set_rhs (gs, boolean_true_node);
-  gs->subcode = EQ_EXPR;
+  gimple_cond_set_rhs (gs, boolean_false_node);
+  gs->subcode = NE_EXPR;
 }
 
 /* Check if conditional statemente GS is of the form 'if (1 == 1)',
