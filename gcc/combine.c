@@ -2730,11 +2730,11 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* If multiple insns feed into one of I2 or I3, they can be in any
      order.  To simplify the code below, reorder them in sequence.  */
   if (i0 && DF_INSN_LUID (i0) > DF_INSN_LUID (i2))
-    temp_insn = i2, i2 = i0, i0 = temp_insn;
+    std::swap (i0, i2);
   if (i0 && DF_INSN_LUID (i0) > DF_INSN_LUID (i1))
-    temp_insn = i1, i1 = i0, i0 = temp_insn;
+    std::swap (i0, i1);
   if (i1 && DF_INSN_LUID (i1) > DF_INSN_LUID (i2))
-    temp_insn = i1, i1 = i2, i2 = temp_insn;
+    std::swap (i1, i2);
 
   added_links_insn = 0;
 
