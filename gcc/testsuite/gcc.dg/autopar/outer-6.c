@@ -44,6 +44,6 @@ int main(void)
 
 
 /* Check that outer loop is parallelized.  */
-/* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "parallelizing inner loop" 0 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" { xfail *-*-* } } } */

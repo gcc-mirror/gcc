@@ -1090,7 +1090,8 @@ extern tree vect_create_addr_base_for_vector_ref (gimple, gimple_seq *,
 /* In tree-vect-loop.c.  */
 /* FORNOW: Used in tree-parloops.c.  */
 extern void destroy_loop_vec_info (loop_vec_info, bool);
-extern gimple vect_force_simple_reduction (loop_vec_info, gimple, bool, bool *);
+extern gimple vect_force_simple_reduction (loop_vec_info, gimple, bool, bool *,
+					   bool);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *);
 /* Drive for loop transformation stage.  */

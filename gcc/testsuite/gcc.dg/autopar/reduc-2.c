@@ -63,6 +63,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Detected reduction" 3 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 4 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "Detected reduction" 3 "parloops" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 4 "parloops" { xfail *-*-* } } } */
 

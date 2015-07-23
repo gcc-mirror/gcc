@@ -1,3 +1,15 @@
+2015-07-23  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (gather_scalar_reductions): Add arg to call to
+	vect_force_simple_reduction.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Same.
+	(vect_is_simple_reduction_1): Add and handle
+	need_wrapping_integral_overflow parameter.
+	(vect_is_simple_reduction, vect_force_simple_reduction): Add and pass
+	need_wrapping_integral_overflow parameter.
+	(vectorizable_reduction): Add arg to call to vect_is_simple_reduction.
+	* tree-vectorizer.h (vect_force_simple_reduction): Add parameter to decl.
+
 2015-07-23  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/66926,66951
