@@ -1,3 +1,11 @@
+2015-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66891
+	* gcc.target/i386/pr66891.c: New test.
+
 2015-07-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r224643.
