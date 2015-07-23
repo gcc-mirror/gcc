@@ -1178,7 +1178,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loop *scalar_loop,
 			       int bound1, int bound2)
 {
   struct loop *new_loop = NULL, *first_loop, *second_loop;
-  struct loop *inner_loop = NULL;
   edge skip_e;
   tree pre_condition = NULL_TREE;
   basic_block bb_before_second_loop, bb_after_second_loop;
@@ -1198,9 +1197,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loop *scalar_loop,
 
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
-
-  if (loop->inner)
-    inner_loop = loop->inner;
 
   /* We might have a queued need to update virtual SSA form.  As we
      delete the update SSA machinery below after doing a regular
@@ -1237,9 +1233,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loop *scalar_loop,
 	    add_phi_arg (new_phi, vop, exit_e, UNKNOWN_LOCATION);
 	    gimple_phi_set_result (new_phi, new_vop);
 	    FOR_EACH_IMM_USE_STMT (stmt, imm_iter, vop)
-	      if (stmt != new_phi && gimple_bb (stmt) != loop->header
-		  /* Do not rename PHI arguments in inner-loop.  */
-		  && (!inner_loop || gimple_bb (stmt) != inner_loop->header))
+	      if (stmt != new_phi
+		  && !flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
 		FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 		  SET_USE (use_p, new_vop);
 	  }
