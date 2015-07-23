@@ -71,8 +71,8 @@ typedef struct _var_map
 extern var_map init_var_map (int);
 extern void delete_var_map (var_map);
 extern int var_union (var_map, tree, tree);
-extern void partition_view_normal (var_map, bool);
-extern void partition_view_bitmap (var_map, bitmap, bool);
+extern void partition_view_normal (var_map);
+extern void partition_view_bitmap (var_map, bitmap);
 extern void dump_scope_blocks (FILE *, int);
 extern void debug_scope_block (tree, int);
 extern void debug_scope_blocks (int);

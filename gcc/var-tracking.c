@@ -4856,12 +4856,16 @@ dataflow_set_remove_mem_locs (variable_def **slot, dataflow_set *set)
    registers, as well as associations between MEMs and VALUEs.  */
 
 static void
-dataflow_set_clear_at_call (dataflow_set *set)
+dataflow_set_clear_at_call (dataflow_set *set, rtx_insn *call_insn)
 {
   unsigned int r;
   hard_reg_set_iterator hrsi;
+  HARD_REG_SET invalidated_regs;
 
-  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, r, hrsi)
+  get_call_reg_set_usage (call_insn, &invalidated_regs,
+			  regs_invalidated_by_call);
+
+  EXECUTE_IF_SET_IN_HARD_REG_SET (invalidated_regs, 0, r, hrsi)
     var_regno_delete (set, r);
 
   if (MAY_HAVE_DEBUG_INSNS)
@@ -6645,7 +6649,7 @@ compute_bb_dataflow (basic_block bb)
       switch (mo->type)
 	{
 	  case MO_CALL:
-	    dataflow_set_clear_at_call (out);
+	    dataflow_set_clear_at_call (out, insn);
 	    break;
 
 	  case MO_USE:
@@ -9107,7 +9111,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
       switch (mo->type)
 	{
 	  case MO_CALL:
-	    dataflow_set_clear_at_call (set);
+	    dataflow_set_clear_at_call (set, insn);
 	    emit_notes_for_changes (insn, EMIT_NOTE_AFTER_CALL_INSN, set->vars);
 	    {
 	      rtx arguments = mo->u.loc, *p = &arguments;
