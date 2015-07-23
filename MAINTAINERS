@@ -31,7 +31,7 @@ Michael Meissner				<gnu@the-meissners.org>
 Jason Merrill					<jason@redhat.com>
 David S. Miller					<davem@redhat.com>
 Joseph Myers					<joseph@codesourcery.com>
-Bernd Schmidt					<bernds@codesourcery.com>
+Bernd Schmidt					<bernds_cb1@t-online.de>
 Ian Lance Taylor				<ian@airs.com>
 Jim Wilson					<wilson@tuliptree.org>
 
@@ -49,9 +49,9 @@ arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
 arm port		Ramana Radhakrishnan	<ramana.radhakrishnan@arm.com>
 avr port		Denis Chertykov		<chertykov@gmail.com>
-bfin port		Bernd Schmidt		<bernds@codesourcery.com>
+bfin port		Bernd Schmidt		<bernds_cb1@t-online.de>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
-c6x port		Bernd Schmidt		<bernds@codesourcery.com>
+c6x port		Bernd Schmidt		<bernds_cb1@t-online.de>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
 epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
@@ -89,7 +89,7 @@ nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
 nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
-nvptx port		Bernd Schmidt		<bernds@codesourcery.com>
+nvptx port		Bernd Schmidt		<bernds_cb1@t-online.de>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 picochip port		Daniel Towner		<dant@picochip.com>
 rl78 port		DJ Delorie		<dj@redhat.com>
@@ -246,7 +246,7 @@ profile feedback	Jan Hubicka		<hubicka@ucw.cz>
 type-safe vectors	Nathan Sidwell		<nathan@codesourcery.com>
 alias analysis		Daniel Berlin		<dberlin@dberlin.org>
 reload			Ulrich Weigand		<uweigand@de.ibm.com>
-reload			Bernd Schmidt		<bernds@codesourcery.com>
+reload			Bernd Schmidt		<bernds_cb1@t-online.de>
 dfp.c, related		Ben Elliston		<bje@gnu.org>
 RTL optimizers		Eric Botcazou		<ebotcazou@libertysurf.fr>
 instruction combiner	Segher Boessenkool	<segher@kernel.crashing.org>
