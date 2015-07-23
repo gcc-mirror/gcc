@@ -1236,13 +1236,33 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
       /* If we made a replacement, fold the statement.  */
       if (did_replace)
-	fold_stmt (&i, follow_single_use_edges);
+	{
+	  fold_stmt (&i, follow_single_use_edges);
+	  stmt = gsi_stmt (i);
+	}
+
+      /* If this is a control statement the propagator left edges
+         unexecuted on force the condition in a way consistent with
+	 that.  See PR66945 for cases where the propagator can end
+	 up with a different idea of a taken edge than folding
+	 (once undefined behavior is involved).  */
+      if (gimple_code (stmt) == GIMPLE_COND)
+	{
+	  if ((EDGE_SUCC (bb, 0)->flags & EDGE_EXECUTABLE)
+	      ^ (EDGE_SUCC (bb, 1)->flags & EDGE_EXECUTABLE))
+	    {
+	      if (((EDGE_SUCC (bb, 0)->flags & EDGE_TRUE_VALUE) != 0)
+		  == ((EDGE_SUCC (bb, 0)->flags & EDGE_EXECUTABLE) != 0))
+		gimple_cond_make_true (as_a <gcond *> (stmt));
+	      else
+		gimple_cond_make_false (as_a <gcond *> (stmt));
+	      did_replace = true;
+	    }
+	}
 
       /* Now cleanup.  */
       if (did_replace)
 	{
-	  stmt = gsi_stmt (i);
-
 	  /* If we cleaned up EH information from the statement,
 	     remove EH edges.  */
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
