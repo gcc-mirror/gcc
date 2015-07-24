@@ -524,10 +524,11 @@ check_global_declaration (tree decl)
 	      && !DECL_STATIC_DESTRUCTOR (decl)))
       /* Otherwise, ask the language.  */
       && lang_hooks.decls.warn_unused_global (decl))
-    warning ((TREE_CODE (decl) == FUNCTION_DECL)
-	     ? OPT_Wunused_function
-             : OPT_Wunused_variable,
-	     "%q+D defined but not used", decl);
+    warning_at (DECL_SOURCE_LOCATION (decl),
+		(TREE_CODE (decl) == FUNCTION_DECL)
+		? OPT_Wunused_function
+		: OPT_Wunused_variable,
+		"%qD defined but not used", decl);
 }
 
 /* Compile an entire translation unit.  Write a file of assembly
