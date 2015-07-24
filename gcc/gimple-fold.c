@@ -3398,6 +3398,19 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	  return true;
 	}
     }
+  else if (rcode.is_fn_code ()
+	   && gimple_call_builtin_p (stmt, rcode))
+    {
+      unsigned i;
+      for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	{
+	  gcc_assert (ops[i] != NULL_TREE);
+	  gimple_call_set_arg (stmt, i, ops[i]);
+	}
+      if (i < 3)
+	gcc_assert (ops[i] == NULL_TREE);
+      return true;
+    }
   else if (!inplace)
     {
       if (gimple_has_lhs (stmt))
