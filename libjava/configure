@@ -28275,7 +28275,7 @@ ac_abs_srcdir=$ac_abs_top_srcdir$ac_dir_suffix
       ac_sub_configure=$ac_srcdir/configure.gnu
     elif test -f "$ac_srcdir/configure"; then
       ac_sub_configure=$ac_srcdir/configure
-    elif test -f "$ac_srcdir/configure.in"; then
+    elif test -f "$ac_srcdir/configure.ac"; then
       # This should be Cygnus configure.
       ac_sub_configure=$ac_aux_dir/configure
     else

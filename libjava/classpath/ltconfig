@@ -1588,7 +1588,7 @@ fi
 echo "checking if libtool supports shared libraries... $can_build_shared" 1>&6
 
 # Only try to build win32 dlls if AC_LIBTOOL_WIN32_DLL was used in
-# configure.in, otherwise build static only libraries.
+# configure.ac, otherwise build static only libraries.
 case $host_os in
 cygwin* | mingw* | pw32* | os2*)
   if test x$can_build_shared = xyes; then

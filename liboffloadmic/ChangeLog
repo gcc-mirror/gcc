@@ -1,3 +1,8 @@
+2015-07-24  Micahel Darling  <darlingm@gmail.com>
+
+	PR other/66259
+	* configure: Reflects renaming of configure.in to configure.ac
+
 2015-07-17  Nathan Sidwell  <nathan@acm.org>
 	Ilya Verbin <iverbin@gmail.com>
 

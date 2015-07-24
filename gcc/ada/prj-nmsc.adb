@@ -580,7 +580,7 @@ package body Prj.Nmsc is
          Canonical_Case_File_Name (Suf);
 
          --  The file name must end with the suffix (which is not an extension)
-         --  For instance a suffix "configure.in" must match a file with the
+         --  For instance a suffix "configure.ac" must match a file with the
          --  same name. To avoid dummy cases, though, a suffix starting with
          --  '.' requires a file that is at least one character longer ('.cpp'
          --  should not match a file with the same name).

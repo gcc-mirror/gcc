@@ -1,3 +1,8 @@
+2015-07-24  Micahel Darling  <darlingm@gmail.com>
+
+	PR other/66259
+	* configure: Reflects renaming of configure.in to configure.ac
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* aclocal.m4: Regenerated with automake-1.11.6.

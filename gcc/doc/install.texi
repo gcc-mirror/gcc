@@ -2108,7 +2108,7 @@ machine.  In general, if the Java front end is enabled, the GCJ
 libraries will be enabled too, unless they're known to not work on
 the target platform.  If GCJ is enabled but @samp{libgcj} isn't built, you
 may need to port it; in this case, before modifying the top-level
-@file{configure.in} so that @samp{libgcj} is enabled by default on this platform,
+@file{configure.ac} so that @samp{libgcj} is enabled by default on this platform,
 you may use @option{--enable-libgcj} to override the default.
 
 @end table

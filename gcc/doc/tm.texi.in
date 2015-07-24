@@ -410,7 +410,7 @@ If defined, this macro is an additional prefix to try after
 @code{STANDARD_EXEC_PREFIX}.  @code{MD_EXEC_PREFIX} is not searched
 when the compiler is built as a cross
 compiler.  If you define @code{MD_EXEC_PREFIX}, then be sure to add it
-to the list of directories used to find the assembler in @file{configure.in}.
+to the list of directories used to find the assembler in @file{configure.ac}.
 @end defmac
 
 @defmac STANDARD_STARTFILE_PREFIX
