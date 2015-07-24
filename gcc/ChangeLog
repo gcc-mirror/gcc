@@ -1,3 +1,13 @@
+2015-07-24  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (struct capture_info): Add same_as field.
+	(capture_info::capture_info): Initialize same_as.
+	(capture_info::walk_match): Compute same_as.
+	(capture_info::walk_result): Compute stuff for the leader.
+	(capture_info::walk_c_expr): Likewise.
+	(dt_simplify::gen_1): Only look at leaders when deciding
+	to force no side-effects or emit side-effects of omitted operands.
+
 2015-07-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_save_gprs_to_fprs): Add CFA_REGISTER

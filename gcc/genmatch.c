@@ -1582,6 +1582,7 @@ struct capture_info
       bool cond_expr_cond_p;
       unsigned long toplevel_msk;
       int result_use_count;
+      unsigned same_as;
     };
 
   auto_vec<cinfo> info;
@@ -1601,6 +1602,9 @@ capture_info::capture_info (simplify *s, operand *result)
 
   force_no_side_effects = 0;
   info.safe_grow_cleared (s->capture_max + 1);
+  for (int i = 0; i <= s->capture_max; ++i)
+    info[i].same_as = i;
+
   e = as_a <expr *> (s->match);
   for (unsigned i = 0; i < e->ops.length (); ++i)
     walk_match (e->ops[i], i,
@@ -1634,9 +1638,16 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
 	walk_match (c->what, toplevel_arg, conditional_p, false);
       /* We need to look past multiple captures to find a captured
 	 expression as with conditional converts two captures
-	 can be collapsed onto the same expression.  */
+	 can be collapsed onto the same expression.  Also collect
+	 what captures capture the same thing.  */
       while (c->what && is_a <capture *> (c->what))
-	c = as_a <capture *> (c->what);
+	{
+	  c = as_a <capture *> (c->what);
+	  if (info[c->where].same_as != c->where
+	      && info[c->where].same_as != info[where].same_as)
+	    fatal_at (c->location, "cannot handle this collapsed capture");
+	  info[c->where].same_as = info[where].same_as;
+	}
       /* Mark expr (non-leaf) captures and forced single-use exprs.  */
       expr *e;
       if (c->what
@@ -1682,19 +1693,20 @@ capture_info::walk_result (operand *o, bool conditional_p, operand *result)
 {
   if (capture *c = dyn_cast <capture *> (o))
     {
-      info[c->where].result_use_count++;
+      unsigned where = info[c->where].same_as;
+      info[where].result_use_count++;
       /* If we substitute an expression capture we don't know
          which captures this will end up using (well, we don't
 	 compute that).  Force the uses to be side-effect free
 	 which means forcing the toplevels that reach the
 	 expression side-effect free.  */
-      if (info[c->where].expr_p)
-	force_no_side_effects |= info[c->where].toplevel_msk;
+      if (info[where].expr_p)
+	force_no_side_effects |= info[where].toplevel_msk;
       /* Mark CSE capture uses as forced to have no side-effects. */
       if (c->what
 	  && is_a <expr *> (c->what))
 	{
-	  info[c->where].cse_p = true;
+	  info[where].cse_p = true;
 	  walk_result (c->what, true, result);
 	}
     }
@@ -1783,7 +1795,8 @@ capture_info::walk_c_expr (c_expr *e)
 	    id = (const char *)n->val.str.text;
 	  else
 	    id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
-	  info[*e->capture_ids->get(id)].force_no_side_effects_p = true;
+	  unsigned where = *e->capture_ids->get(id);
+	  info[info[where].same_as].force_no_side_effects_p = true;
 	}
     }
 }
@@ -2767,6 +2780,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  if (!is_predicate)
 	    for (int i = 0; i < s->capture_max + 1; ++i)
 	      {
+		if (cinfo.info[i].same_as != (unsigned)i)
+		  continue;
 		if (!cinfo.info[i].force_no_side_effects_p
 		    && cinfo.info[i].result_use_count > 1)
 		  {
@@ -2842,6 +2857,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	     on TREE_SIDE_EFFECTS emit omit_one_operand.  */
 	  for (int i = 0; i < s->capture_max + 1; ++i)
 	    {
+	      if (cinfo.info[i].same_as != (unsigned)i)
+		continue;
 	      if (!cinfo.info[i].force_no_side_effects_p
 		  && !cinfo.info[i].expr_p
 		  && cinfo.info[i].result_use_count == 0)
