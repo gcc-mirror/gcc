@@ -126,6 +126,7 @@ enum processor_flags
   { "arch", "%{!march=*:-march=%(VALUE)}" },			\
   { "tune", "%{!mtune=*:-mtune=%(VALUE)}" }
 
+#ifdef __s390__
 extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 # define EXTRA_SPEC_FUNCTIONS \
   { "local_cpu_detect", s390_host_detect_local_cpu },
@@ -133,6 +134,9 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 # define MARCH_MTUNE_NATIVE_SPECS				\
   " %{march=native:%<march=native %:local_cpu_detect(arch)}"	\
   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#else
+# define MARCH_MTUNE_NATIVE_SPECS ""
+#endif
 
 /* Defaulting rules.  */
 #ifdef DEFAULT_TARGET_64BIT
