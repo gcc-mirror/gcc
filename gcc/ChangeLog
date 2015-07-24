@@ -1,5 +1,16 @@
 2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_reorg): Clean up handling of processors
+	with
+	-mtune=
+	(s390_issue_rate): Likewise.
+	(s390_sched_reorder): Likewise.
+	(s390_sched_variable_issue): Likewise.
+	(s390_loop_unroll_adjust): Likewise.
+	(s390_option_override):  Likewise.
+
+2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/driver-native.c (s390_host_detect_local_cpu): Handle
 	processor capabilities with -march=native.
 	* config/s390/s390.h (MARCH_MTUNE_NATIVE_SPECS): Likewise.

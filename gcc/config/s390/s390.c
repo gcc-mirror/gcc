@@ -7304,11 +7304,15 @@ s390_issue_rate (void)
       return 3;
     case PROCESSOR_2097_Z10:
       return 2;
+    case PROCESSOR_9672_G5:
+    case PROCESSOR_9672_G6:
+    case PROCESSOR_2064_Z900:
       /* Starting with EC12 we use the sched_reorder hook to take care
 	 of instruction dispatch constraints.  The algorithm only
 	 picks the best instruction and assumes only a single
 	 instruction gets issued per cycle.  */
     case PROCESSOR_2827_ZEC12:
+    case PROCESSOR_2964_Z13:
     default:
       return 1;
     }
@@ -12914,10 +12918,7 @@ s390_reorg (void)
   s390_optimize_prologue ();
 
   /* Walk over the insns and do some >=z10 specific changes.  */
-  if (s390_tune == PROCESSOR_2097_Z10
-      || s390_tune == PROCESSOR_2817_Z196
-      || s390_tune == PROCESSOR_2827_ZEC12
-      || s390_tune == PROCESSOR_2964_Z13)
+  if (s390_tune >= PROCESSOR_2097_Z10)
     {
       rtx_insn *insn;
       bool insn_added_p = false;
@@ -13168,12 +13169,12 @@ static int
 s390_sched_reorder (FILE *file, int verbose,
 		    rtx_insn **ready, int *nreadyp, int clock ATTRIBUTE_UNUSED)
 {
-  if (s390_tune == PROCESSOR_2097_Z10)
-    if (reload_completed && *nreadyp > 1)
-      s390_z10_prevent_earlyload_conflicts (ready, nreadyp);
+  if (s390_tune == PROCESSOR_2097_Z10
+      && reload_completed
+      && *nreadyp > 1)
+    s390_z10_prevent_earlyload_conflicts (ready, nreadyp);
 
-  if ((s390_tune == PROCESSOR_2827_ZEC12
-       || s390_tune == PROCESSOR_2964_Z13)
+  if (s390_tune >= PROCESSOR_2827_ZEC12
       && reload_completed
       && *nreadyp > 1)
     {
@@ -13256,8 +13257,7 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 {
   last_scheduled_insn = insn;
 
-  if ((s390_tune == PROCESSOR_2827_ZEC12
-       || s390_tune == PROCESSOR_2964_Z13)
+  if (s390_tune >= PROCESSOR_2827_ZEC12
       && reload_completed
       && recog_memoized (insn) >= 0)
     {
@@ -13335,10 +13335,7 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   unsigned i;
   unsigned mem_count = 0;
 
-  if (s390_tune != PROCESSOR_2097_Z10
-      && s390_tune != PROCESSOR_2817_Z196
-      && s390_tune != PROCESSOR_2827_ZEC12
-      && s390_tune != PROCESSOR_2964_Z13)
+  if (s390_tune < PROCESSOR_2097_Z10)
     return nunroll;
 
   /* Count the number of memory references within the loop body.  */
@@ -13553,10 +13550,7 @@ s390_option_override (void)
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
 
-  if (s390_tune == PROCESSOR_2097_Z10
-      || s390_tune == PROCESSOR_2817_Z196
-      || s390_tune == PROCESSOR_2827_ZEC12
-      || s390_tune == PROCESSOR_2964_Z13)
+  if (s390_tune >= PROCESSOR_2097_Z10)
     {
       maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
 			     global_options.x_param_values,
