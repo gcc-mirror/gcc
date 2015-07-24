@@ -1,5 +1,10 @@
 2015-07-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* config/arm/arm.c (arm_emit_movpair): Add REG_EQUAL notes to
+	instruction.
+
+2015-07-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* cse.c (cse_insn): Fix missing check for STRICT_LOW_PART and minor
 	clean up.
 
