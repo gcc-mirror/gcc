@@ -3297,9 +3297,8 @@ fold_rtx (rtx x, rtx_insn *insn)
 	 consistent with the order in X.  */
       if (canonicalize_change_group (insn, x))
 	{
-	  rtx tem;
-	  tem = const_arg0, const_arg0 = const_arg1, const_arg1 = tem;
-	  tem = folded_arg0, folded_arg0 = folded_arg1, folded_arg1 = tem;
+	  std::swap (const_arg0, const_arg1);
+	  std::swap (folded_arg0, folded_arg1);
 	}
 
       apply_change_group ();

@@ -2466,7 +2466,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   rtx basex, basey;
   bool moffsetx_known_p, moffsety_known_p;
   HOST_WIDE_INT moffsetx = 0, moffsety = 0;
-  HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey, tem;
+  HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey;
 
   /* Unless both have exprs, we can't tell anything.  */
   if (exprx == 0 || expry == 0)
@@ -2596,8 +2596,8 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   /* Put the values of the memref with the lower offset in X's values.  */
   if (offsetx > offsety)
     {
-      tem = offsetx, offsetx = offsety, offsety = tem;
-      tem = sizex, sizex = sizey, sizey = tem;
+      std::swap (offsetx, offsety);
+      std::swap (sizex, sizey);
     }
 
   /* If we don't know the size of the lower-offset value, we can't tell

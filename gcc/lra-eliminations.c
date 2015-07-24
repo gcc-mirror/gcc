@@ -215,7 +215,6 @@ setup_elimination_map (void)
 static rtx
 form_sum (rtx x, rtx y)
 {
-  rtx tem;
   machine_mode mode = GET_MODE (x);
 
   if (mode == VOIDmode)
@@ -229,7 +228,7 @@ form_sum (rtx x, rtx y)
   else if (CONST_INT_P (y))
     return plus_constant (mode, x, INTVAL (y));
   else if (CONSTANT_P (x))
-    tem = x, x = y, y = tem;
+    std::swap (x, y);
 
   if (GET_CODE (x) == PLUS && CONSTANT_P (XEXP (x, 1)))
     return form_sum (XEXP (x, 0), form_sum (XEXP (x, 1), y));
