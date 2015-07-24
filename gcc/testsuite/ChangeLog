@@ -1,3 +1,7 @@
+2015-07-24  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/autopar/uns-outer-4.c: Remove loopfn xfail.
+
 2015-07-24  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	PR middle-end/25530

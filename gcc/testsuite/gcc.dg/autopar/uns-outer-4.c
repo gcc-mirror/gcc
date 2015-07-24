@@ -33,4 +33,4 @@ main (void)
 
 
 /* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" } } */
