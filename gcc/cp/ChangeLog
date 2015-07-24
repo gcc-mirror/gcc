@@ -1,3 +1,8 @@
+2015-07-24  Richard Biener  <rguenther@suse.de>
+
+	* init.c (build_vec_init): Build iterator bound in the same
+	type as the iterator.
+
 2015-07-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/66572

@@ -3599,7 +3599,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       if (length_check)
 	{
-	  tree nelts = size_int (CONSTRUCTOR_NELTS (init) - 1);
+	  tree nelts = build_int_cst (ptrdiff_type_node,
+				      CONSTRUCTOR_NELTS (init) - 1);
 	  if (TREE_CODE (atype) != ARRAY_TYPE)
 	    {
 	      if (flag_exceptions)
