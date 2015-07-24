@@ -1,3 +1,8 @@
+2015-07-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* cse.c (cse_insn): Fix missing check for STRICT_LOW_PART and minor
+	clean up.
+
 2015-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_build_builtin_va_list_64): Rename
