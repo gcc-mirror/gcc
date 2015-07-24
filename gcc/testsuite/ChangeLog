@@ -1,3 +1,11 @@
+2015-07-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	Backport from mainline r226155.
+	2015-07-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR ipa/66566
+	* gcc.target/i386/mpx/pr66566.c: New test.
+
 2015-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
