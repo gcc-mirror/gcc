@@ -1,3 +1,8 @@
+2015-07-24  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (gen_parallel_loop): Add debug print for alternative
+	exit-first loop transform.
+
 2015-07-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR 66714

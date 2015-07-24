@@ -1,7 +1,7 @@
 ! { dg-additional-options "-O2" }
 ! { dg-require-effective-target pthread }
 ! { dg-additional-options "-ftree-parallelize-loops=2" }
-! { dg-additional-options "-fdump-tree-parloops" }
+! { dg-additional-options "-fdump-tree-parloops-details" }
 
 ! Constant bound, vector addition.
 
@@ -16,9 +16,4 @@ subroutine foo ()
   end do
 end subroutine foo
 
-! Three times plus 25:
-! - once in f._loopfn.0
-! - once in the parallel
-! - once in the low iteration count loop
-! Crucially, none for a peeled off last iteration following the parallel.
-! { dg-final { scan-tree-dump-times "(?n) \\+ 25;" 3 "parloops" } }
+! { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops" } }

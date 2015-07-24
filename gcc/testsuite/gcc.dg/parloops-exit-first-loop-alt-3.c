@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target pthread } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
 
 /* Variable bound, reduction.  */
 
@@ -18,9 +18,4 @@ f (unsigned int n, unsigned int *__restrict__ a)
   return sum;
 }
 
-/* Three array accesses:
-   - one in f._loopfn.0
-   - one in the parallel
-   - one in the low iteration count loop
-   Crucially, none for a peeled off last iteration following the parallel.  */
-/* { dg-final { scan-tree-dump-times "(?n)\\\* 4" 3 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops" } } */
