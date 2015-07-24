@@ -131,27 +131,26 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 # define EXTRA_SPEC_FUNCTIONS \
   { "local_cpu_detect", s390_host_detect_local_cpu },
 
-# define MARCH_MTUNE_NATIVE_SPECS				\
-  " %{march=native:%<march=native %:local_cpu_detect(arch)}"	\
-  " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#define MARCH_MTUNE_NATIVE_SPECS				\
+  "%{mtune=native:%<mtune=native %:local_cpu_detect(tune)} "	\
+  "%{march=native:%<march=native"				\
+  " %:local_cpu_detect(arch %{mesa|mzarch:mesa_mzarch})}"
 #else
 # define MARCH_MTUNE_NATIVE_SPECS ""
 #endif
 
-/* Defaulting rules.  */
 #ifdef DEFAULT_TARGET_64BIT
-#define DRIVER_SELF_SPECS					\
-  "%{!m31:%{!m64:-m64}}",					\
-  "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
-  "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}",		\
-  MARCH_MTUNE_NATIVE_SPECS
+#define S390_TARGET_BITS_STRING "64"
 #else
-#define DRIVER_SELF_SPECS					\
-  "%{!m31:%{!m64:-m31}}",					\
-  "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
-  "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}",		\
-  MARCH_MTUNE_NATIVE_SPECS
+#define S390_TARGET_BITS_STRING "31"
 #endif
+
+/* Defaulting rules.  */
+#define DRIVER_SELF_SPECS					\
+  MARCH_MTUNE_NATIVE_SPECS,					\
+  "%{!m31:%{!m64:-m" S390_TARGET_BITS_STRING "}}",		\
+  "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
+  "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}"
 
 /* Constants needed to control the TEST DATA CLASS (TDC) instruction.  */
 #define S390_TDC_POSITIVE_ZERO                     (1 << 11)
