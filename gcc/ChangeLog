@@ -1,3 +1,9 @@
+2015-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_va_start): Remove
+	unneeded !TARGET_64BIT check.
+	(ix86_gimplify_va_arg): Ditto.
+
 2015-07-24  Tom de Vries  <tom@codesourcery.com>
 
 	* graphite-sese-to-poly.c (build_poly_scop): Always call
