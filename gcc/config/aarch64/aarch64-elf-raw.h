@@ -44,7 +44,12 @@
 #endif
 
 #ifndef LINK_SPEC
-#define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} -X \
+#define LINK_SPEC "%{h*}			\
+   %{static:-Bstatic}				\
+   %{shared:-shared}				\
+   %{symbolic:-Bsymbolic}			\
+   %{!static:%{rdynamic:-export-dynamic}}	\
+   %{mbig-endian:-EB} %{mlittle-endian:-EL} -X	\
   -maarch64elf%{mabi=ilp32*:32}%{mbig-endian:b}" \
   CA53_ERR_835769_SPEC \
   CA53_ERR_843419_SPEC

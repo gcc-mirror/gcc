@@ -1,5 +1,10 @@
 2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
+	* config/aarch64/aarch64-elf-raw.h (LINK_SPEC): Handle -h, -static,
+	-shared, -symbolic, -rdynamic.
+
+2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
 	PR target/65711
 	* config/aarch64/aarch64-linux.h (LINUX_TARGET_LINK_SPEC): Move
 	-dynamic-linker within %{!static %{!shared, and -rdynamic within
