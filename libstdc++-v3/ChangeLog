@@ -1,3 +1,10 @@
+2015-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_futex.h [_GLIBCXX_HAVE_LINUX_FUTEX]
+	(_M_load_and_test_until): Whitespace.
+	(_M_load_and_test): Value-initialize the unused durations.
+	(_M_load_when_equal): Add missing return value.
+
 2015-07-24  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* fragment.am (AM_CPPFLAGS): Add CPPFLAGS.
