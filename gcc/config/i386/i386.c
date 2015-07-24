@@ -9067,7 +9067,7 @@ ix86_va_start (tree valist, rtx nextarg)
     }
 
   /* Only 64bit target needs something special.  */
-  if (!TARGET_64BIT || is_va_list_char_pointer (TREE_TYPE (valist)))
+  if (is_va_list_char_pointer (TREE_TYPE (valist)))
     {
       if (cfun->machine->split_stack_varargs_pointer == NULL_RTX)
 	std_expand_builtin_va_start (valist, nextarg);
@@ -9188,7 +9188,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   unsigned int arg_boundary;
 
   /* Only 64bit target needs something special.  */
-  if (!TARGET_64BIT || is_va_list_char_pointer (TREE_TYPE (valist)))
+  if (is_va_list_char_pointer (TREE_TYPE (valist)))
     return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (sysv_va_list_type_node));
