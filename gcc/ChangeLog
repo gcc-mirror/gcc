@@ -1,5 +1,13 @@
 2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/driver-native.c (s390_host_detect_local_cpu): Handle
+	processor capabilities with -march=native.
+	* config/s390/s390.h (MARCH_MTUNE_NATIVE_SPECS): Likewise.
+	(DRIVER_SELF_SPECS): Likewise.  Join specs for 31 and 64 bit.
+	(S390_TARGET_BITS_STRING): Macro to simplify specs.
+
+2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_issue_rate): Handle
 	PROCESSOR_2094_Z9_EC.
 	(s390_option_override): Likewise.
