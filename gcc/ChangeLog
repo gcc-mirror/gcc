@@ -1,3 +1,11 @@
+2015-07-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR 66714
+	* tree-cfg.c (struct replace_decls_d): New struct.
+	(replace_block_vars_by_duplicates_1): New function.
+	(replace_block_vars_by_duplicates): Use it to replace the decls
+	in the value exprs by duplicates.
+
 2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/aarch64-elf-raw.h (LINK_SPEC): Handle -h, -static,

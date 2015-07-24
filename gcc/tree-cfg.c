@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-low.h"
 #include "tree-cfgcleanup.h"
 #include "wide-int-print.h"
+#include "gimplify.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -108,6 +109,13 @@ struct cfg_stats_d
 };
 
 static struct cfg_stats_d cfg_stats;
+
+/* Data to pass to replace_block_vars_by_duplicates_1.  */
+struct replace_decls_d
+{
+  hash_map<tree, tree> *vars_map;
+  tree to_context;
+};
 
 /* Hash table to store last discriminator assigned for each locus.  */
 struct locus_discrim_map
@@ -6853,6 +6861,31 @@ new_label_mapper (tree decl, void *data)
   return m->to;
 }
 
+/* Tree walker to replace the decls used inside value expressions by
+   duplicates.  */
+
+static tree
+replace_block_vars_by_duplicates_1 (tree *tp, int *walk_subtrees, void *data)
+{
+  struct replace_decls_d *rd = (struct replace_decls_d *)data;
+
+  switch (TREE_CODE (*tp))
+    {
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+      replace_by_duplicate_decl (tp, rd->vars_map, rd->to_context);
+      break;
+    default:
+      break;
+    }
+
+  if (IS_TYPE_OR_DECL_P (*tp))
+    *walk_subtrees = false;
+
+  return NULL;
+}
+
 /* Change DECL_CONTEXT of all BLOCK_VARS in block, including
    subblocks.  */
 
@@ -6872,7 +6905,11 @@ replace_block_vars_by_duplicates (tree block, hash_map<tree, tree> *vars_map,
 	{
 	  if (TREE_CODE (*tp) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*tp))
 	    {
-	      SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (*tp));
+	      tree x = DECL_VALUE_EXPR (*tp);
+	      struct replace_decls_d rd = { vars_map, to_context };
+	      unshare_expr (x);
+	      walk_tree (&x, replace_block_vars_by_duplicates_1, &rd, NULL);
+	      SET_DECL_VALUE_EXPR (t, x);
 	      DECL_HAS_VALUE_EXPR_P (t) = 1;
 	    }
 	  DECL_CHAIN (t) = DECL_CHAIN (*tp);

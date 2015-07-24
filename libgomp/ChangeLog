@@ -1,3 +1,7 @@
+2015-07-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.c/pr66714.c: New test.
+
 2015-07-22  Maxim Blumenthal  <maxim.blumenthal@intel.com>
 
 	PR libgomp/66950
