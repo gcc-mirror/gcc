@@ -9241,7 +9241,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   if (scalar_to_array && dealloc)
     {
       tmp = gfc_deallocate_alloc_comp_no_caf (expr2->ts.u.derived, rse.expr, 0);
-      gfc_add_expr_to_block (&loop.post, tmp);
+      gfc_prepend_expr_to_block (&loop.post, tmp);
     }
 
   /* When assigning a character function result to a deferred-length variable,
