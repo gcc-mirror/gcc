@@ -1,3 +1,8 @@
+2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.h: S390: Do not define EXTRA_SPEC_FUNCTIONS
+	when cross compiling.
+
 2015-07-24  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (maybe_canonicalize_comparison_1): Move
