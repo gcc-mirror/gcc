@@ -1,3 +1,13 @@
+2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from mainline r226158.
+	2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/65711
+	* config/aarch64/aarch64-linux.h (LINUX_TARGET_LINK_SPEC): Move
+	-dynamic-linker within %{!static %{!shared, and -rdynamic within
+	%{!static.
+
 2015-07-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2015-07-21 trunk r226046.

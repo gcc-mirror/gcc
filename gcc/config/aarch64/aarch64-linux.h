@@ -29,8 +29,9 @@
    %{static:-Bstatic}				\
    %{shared:-shared}				\
    %{symbolic:-Bsymbolic}			\
-   %{rdynamic:-export-dynamic}			\
-   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "	\
+   %{!static:					\
+     %{rdynamic:-export-dynamic}		\
+     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
    -X						\
    %{mbig-endian:-EB} %{mlittle-endian:-EL}     \
    -maarch64linux%{mbig-endian:b}"
