@@ -3156,8 +3156,7 @@ build_poly_scop (scop_p scop)
   if (!scop_ivs_can_be_represented (scop))
     return;
 
-  if (flag_associative_math)
-    rewrite_commutative_reductions_out_of_ssa (scop);
+  rewrite_commutative_reductions_out_of_ssa (scop);
 
   build_sese_loop_nests (region);
   /* Record all conditions in REGION.  */
