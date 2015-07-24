@@ -9,20 +9,21 @@
 
 int A[N][N], B[N][N], C[N][N];
 
-static void __attribute__((noinline))
+static int __attribute__((noinline))
 matmult (void)
 {
   int i, j, k;
 
-  for (i = 0; i < N; i++)
-    for (j = 0; j < N; j++)
-      A[i][j] = 0;
-
   /* Loops J and K should be interchanged.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
-      for (k = 0; k < N; k++)
-	A[i][j] += B[i][k] * C[k][j];
+      {
+	A[i][j] = 0;
+	for (k = 0; k < N; k++)
+	  A[i][j] += B[i][k] * C[k][j];
+      }
+
+  return A[0][0] + A[N-1][N-1];
 }
 
 extern void abort ();
@@ -30,29 +31,26 @@ extern void abort ();
 int
 main (void)
 {
-  int i, j, res = 0;
+  int i, j, res;
 
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       {
-	B[i][j] = j;
-	C[i][j] = i;
+	A[i][j] = 0;
+	B[i][j] = i - j;
+	C[i][j] = i + j;
       }
 
-  matmult ();
-
-  for (i = 0; i < N; i++)
-    res += A[i][i];
+  res = matmult ();
 
 #if DEBUG
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  if (res != 529340000)
+  if (res != 2626800)
     abort ();
 
   return 0;
 }
 
-/* PRE destroys the perfect nest and we can't cope with that yet.  */
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
