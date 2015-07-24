@@ -1,3 +1,9 @@
+2015-07-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gimplify.c (omp_default_clause): New function.  Reorganize flow
+	for clarity. Broken out of ...
+	(omp_notice_variable): ... here.
+
 2015-07-24  Gary Funck  <gary@intrepid.com>
 
 	PR middle-end/66984
