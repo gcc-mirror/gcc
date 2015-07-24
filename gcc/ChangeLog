@@ -1,3 +1,15 @@
+2015-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/64003
+	* config/i386/i386.h (ADJUST_INSN_LENGTH): New define.
+	* config/i386/i386.md (maybe_prefix_bnd): New attribute.
+	(*jcc_1, *jcc_2, jump, simple_return_internal)
+	(simple_return_pop_internal): Set attribute maybe_prefix_bnd.
+	Set length_nobnd attribute instead of length attribute.
+	(indirect_jump, *tablejump_1): Set attribute maybe_prefix_bnd.
+	(length_nobnd): Remove attribute.
+	(length): Remove length_nobnd processing.
+
 2015-07-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gimplify.c (omp_default_clause): New function.  Reorganize flow
