@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target pthread } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,10 +22,5 @@ f (unsigned int n, unsigned int sum)
   return sum;
 }
 
-/* Four times % 13:
-   - once in f._loopfn.0
-   - once in the parallel
-   - once in the low iteration count loop
-   - once for a peeled off last iteration following the parallel.
-   In other words, we want try_transform_to_exit_first_loop_alt to fail.  */
-/* { dg-final { scan-tree-dump-times "(?n)% 13" 4 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "parallelizing inner loop" 1 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 0 "parloops" } } */
