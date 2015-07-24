@@ -1,3 +1,13 @@
+2015-07-24  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (replace_stmt_with_simplification): Special-case
+	valueizing call operands.
+	* gimple-match-head.c (maybe_push_res_to_seq): Take
+	number of call arguments from ops array.
+	(do_valueize): New function.
+	(gimple_simplify): Return true if valueization changed
+	any operand even if the result didn't simplify further.
+
 2015-07-24  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	PR middle-end/25530
