@@ -1,3 +1,8 @@
+2015-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_call_abi_override): Call ix86_function_abi.
+	(ix86_function_abi): Cleanup.
+
 2015-07-24  Michael Darling  <darlingm@gmail.com>
 
 	PR other/66259
