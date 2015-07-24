@@ -381,7 +381,7 @@ WARN_CXXFLAGS = \
 
 
 # -I/-D flags to pass when compiling.
-AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
+AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 
 # Need this library to both be part of libstdc++.a, and installed
 # separately too.

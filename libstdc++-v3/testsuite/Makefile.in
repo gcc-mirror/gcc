@@ -313,7 +313,7 @@ WARN_CXXFLAGS = \
 
 
 # -I/-D flags to pass when compiling.
-AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
+AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 
 # Generated lists of files to run.  All of these names are valid make
 # targets, if you wish to generate a list manually.

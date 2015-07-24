@@ -340,7 +340,7 @@ WARN_CXXFLAGS = \
 
 
 # -I/-D flags to pass when compiling.
-AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
+AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 @ENABLE_PYTHONDIR_FALSE@pythondir = $(datadir)/gcc-$(gcc_version)/python
 @ENABLE_PYTHONDIR_TRUE@pythondir = $(prefix)/$(python_mod_dir)
 nobase_python_DATA = \
