@@ -1,3 +1,9 @@
+2015-07-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/64079
+	* toplev.c (check_global_declaration): Use DECL_SOURCE_LOCATION
+	and "%qD" in warning_at instead of "%q+D" in warning.
+
 2015-07-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_call_abi_override): Call ix86_function_abi.
