@@ -1,5 +1,10 @@
 2015-07-24  Tom de Vries  <tom@codesourcery.com>
 
+	* graphite-sese-to-poly.c (build_poly_scop): Always call
+	rewrite_commutative_reductions_out_of_ssa.
+
+2015-07-24  Tom de Vries  <tom@codesourcery.com>
+
 	* graphite-sese-to-poly.c (is_reduction_operation_p): Limit
 	flag_associative_math to FLOAT_TYPE_P.  Honour
 	TYPE_OVERFLOW_WRAPS for INTEGRAL_TYPE_P. Don't allow any other types.
