@@ -1,3 +1,9 @@
+2015-07-24  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (maybe_canonicalize_comparison_1): Move
+	A code CST canonicalization ...
+	* match.pd: ... to a pattern here.
+
 2015-07-24  Jiong Wang  <jiong.wang@arm.com>
 
 	Revert:

@@ -1371,6 +1371,23 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Simplifications of comparisons.  */
 
+/* See if we can reduce the magnitude of a constant involved in a
+   comparison by changing the comparison code.  This is a canonicalization
+   formerly done by maybe_canonicalize_comparison_1.  */
+(for cmp  (le gt)
+     acmp (lt ge)
+ (simplify
+  (cmp @0 INTEGER_CST@1)
+  (if (tree_int_cst_sgn (@1) == -1)
+   (acmp @0 { wide_int_to_tree (TREE_TYPE (@1), wi::add (@1, 1)); }))))
+(for cmp  (ge lt)
+     acmp (gt le)
+ (simplify
+  (cmp @0 INTEGER_CST@1)
+  (if (tree_int_cst_sgn (@1) == 1)
+   (acmp @0 { wide_int_to_tree (TREE_TYPE (@1), wi::sub (@1, 1)); }))))
+
+
 /* We can simplify a logical negation of a comparison to the
    inverted comparison.  As we cannot compute an expression
    operator using invert_tree_comparison we have to simulate

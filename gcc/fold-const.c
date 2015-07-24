@@ -8092,26 +8092,21 @@ maybe_canonicalize_comparison_1 (location_t loc, enum tree_code code, tree type,
   enum tree_code code0 = TREE_CODE (arg0);
   tree t, cst0 = NULL_TREE;
   int sgn0;
-  bool swap = false;
 
-  /* Match A +- CST code arg1 and CST code arg1.  We can change the
-     first form only if overflow is undefined.  */
-  if (!(((ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
-	 /* In principle pointers also have undefined overflow behavior,
-	    but that causes problems elsewhere.  */
-	 && !POINTER_TYPE_P (TREE_TYPE (arg0))
-	 && (code0 == MINUS_EXPR
-	     || code0 == PLUS_EXPR)
-         && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	|| code0 == INTEGER_CST))
+  /* Match A +- CST code arg1.  We can change this only if overflow
+     is undefined.  */
+  if (!((ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	 && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
+	/* In principle pointers also have undefined overflow behavior,
+	   but that causes problems elsewhere.  */
+	&& !POINTER_TYPE_P (TREE_TYPE (arg0))
+	&& (code0 == MINUS_EXPR
+	    || code0 == PLUS_EXPR)
+	&& TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST))
     return NULL_TREE;
 
   /* Identify the constant in arg0 and its sign.  */
-  if (code0 == INTEGER_CST)
-    cst0 = arg0;
-  else
-    cst0 = TREE_OPERAND (arg0, 1);
+  cst0 = TREE_OPERAND (arg0, 1);
   sgn0 = tree_int_cst_sgn (cst0);
 
   /* Overflowed constants and zero will cause problems.  */
@@ -8121,47 +8116,25 @@ maybe_canonicalize_comparison_1 (location_t loc, enum tree_code code, tree type,
 
   /* See if we can reduce the magnitude of the constant in
      arg0 by changing the comparison code.  */
-  if (code0 == INTEGER_CST)
-    {
-      /* CST <= arg1  ->  CST-1 < arg1.  */
-      if (code == LE_EXPR && sgn0 == 1)
-	code = LT_EXPR;
-      /* -CST < arg1  ->  -CST-1 <= arg1.  */
-      else if (code == LT_EXPR && sgn0 == -1)
-	code = LE_EXPR;
-      /* CST > arg1  ->  CST-1 >= arg1.  */
-      else if (code == GT_EXPR && sgn0 == 1)
-	code = GE_EXPR;
-      /* -CST >= arg1  ->  -CST-1 > arg1.  */
-      else if (code == GE_EXPR && sgn0 == -1)
-	code = GT_EXPR;
-      else
-        return NULL_TREE;
-      /* arg1 code' CST' might be more canonical.  */
-      swap = true;
-    }
+  /* A - CST < arg1  ->  A - CST-1 <= arg1.  */
+  if (code == LT_EXPR
+      && code0 == ((sgn0 == -1) ? PLUS_EXPR : MINUS_EXPR))
+    code = LE_EXPR;
+  /* A + CST > arg1  ->  A + CST-1 >= arg1.  */
+  else if (code == GT_EXPR
+	   && code0 == ((sgn0 == -1) ? MINUS_EXPR : PLUS_EXPR))
+    code = GE_EXPR;
+  /* A + CST <= arg1  ->  A + CST-1 < arg1.  */
+  else if (code == LE_EXPR
+	   && code0 == ((sgn0 == -1) ? MINUS_EXPR : PLUS_EXPR))
+    code = LT_EXPR;
+  /* A - CST >= arg1  ->  A - CST-1 > arg1.  */
+  else if (code == GE_EXPR
+	   && code0 == ((sgn0 == -1) ? PLUS_EXPR : MINUS_EXPR))
+    code = GT_EXPR;
   else
-    {
-      /* A - CST < arg1  ->  A - CST-1 <= arg1.  */
-      if (code == LT_EXPR
-	  && code0 == ((sgn0 == -1) ? PLUS_EXPR : MINUS_EXPR))
-	code = LE_EXPR;
-      /* A + CST > arg1  ->  A + CST-1 >= arg1.  */
-      else if (code == GT_EXPR
-	       && code0 == ((sgn0 == -1) ? MINUS_EXPR : PLUS_EXPR))
-	code = GE_EXPR;
-      /* A + CST <= arg1  ->  A + CST-1 < arg1.  */
-      else if (code == LE_EXPR
-	       && code0 == ((sgn0 == -1) ? MINUS_EXPR : PLUS_EXPR))
-	code = LT_EXPR;
-      /* A - CST >= arg1  ->  A - CST-1 > arg1.  */
-      else if (code == GE_EXPR
-	       && code0 == ((sgn0 == -1) ? PLUS_EXPR : MINUS_EXPR))
-	code = GT_EXPR;
-      else
-	return NULL_TREE;
-      *strict_overflow_p = true;
-    }
+    return NULL_TREE;
+  *strict_overflow_p = true;
 
   /* Now build the constant reduced in magnitude.  But not if that
      would produce one outside of its types range.  */
@@ -8172,21 +8145,14 @@ maybe_canonicalize_comparison_1 (location_t loc, enum tree_code code, tree type,
 	  || (sgn0 == -1
 	      && TYPE_MAX_VALUE (TREE_TYPE (cst0))
 	      && tree_int_cst_equal (cst0, TYPE_MAX_VALUE (TREE_TYPE (cst0))))))
-    /* We cannot swap the comparison here as that would cause us to
-       endlessly recurse.  */
     return NULL_TREE;
 
   t = int_const_binop (sgn0 == -1 ? PLUS_EXPR : MINUS_EXPR,
 		       cst0, build_int_cst (TREE_TYPE (cst0), 1));
-  if (code0 != INTEGER_CST)
-    t = fold_build2_loc (loc, code0, TREE_TYPE (arg0), TREE_OPERAND (arg0, 0), t);
+  t = fold_build2_loc (loc, code0, TREE_TYPE (arg0), TREE_OPERAND (arg0, 0), t);
   t = fold_convert (TREE_TYPE (arg1), t);
 
-  /* If swapping might yield to a more canonical form, do so.  */
-  if (swap)
-    return fold_build2_loc (loc, swap_tree_comparison (code), type, arg1, t);
-  else
-    return fold_build2_loc (loc, code, type, t, arg1);
+  return fold_build2_loc (loc, code, type, t, arg1);
 }
 
 /* Canonicalize the comparison ARG0 CODE ARG1 with type TYPE with undefined
