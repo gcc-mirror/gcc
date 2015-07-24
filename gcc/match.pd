@@ -1743,6 +1743,21 @@ along with GCC; see the file COPYING3.  If not see
 	   (if (cmp == GT_EXPR || cmp == GE_EXPR)
 	    { constant_boolean_node (above ? false : true, type); }))))))))))))
 
+(for cmp (eq ne)
+ /* A local variable can never be pointed to by
+    the default SSA name of an incoming parameter.
+    SSA names are canonicalized to 2nd place.  */
+ (simplify
+  (cmp addr@0 SSA_NAME@1)
+  (if (SSA_NAME_IS_DEFAULT_DEF (@1)
+       && TREE_CODE (SSA_NAME_VAR (@1)) == PARM_DECL)
+   (with { tree base = get_base_address (TREE_OPERAND (@0, 0)); }
+    (if (TREE_CODE (base) == VAR_DECL
+         && auto_var_in_fn_p (base, current_function_decl))
+     (if (cmp == NE_EXPR)
+      { constant_boolean_node (true, type); }
+      { constant_boolean_node (false, type); }))))))
+
 /* Equality compare simplifications from fold_binary  */
 (for cmp (eq ne)
 

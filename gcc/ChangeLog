@@ -1,5 +1,12 @@
 2015-07-24  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (add_operator): Allow SSA_NAME as predicate.
+	* fold-const.c (fold_comparison): Move parameter does not
+	alias &local simplification ...
+	* match.pd: ... as a pattern here.
+
+2015-07-24  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (replace_stmt_with_simplification): Special-case
 	valueizing call operands.
 	* gimple-match-head.c (maybe_push_res_to_seq): Take

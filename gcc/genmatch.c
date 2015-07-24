@@ -395,7 +395,9 @@ add_operator (enum tree_code code, const char *id,
       /* To have INTEGER_CST and friends as "predicate operators".  */
       && strcmp (tcc, "tcc_constant") != 0
       /* And allow CONSTRUCTOR for vector initializers.  */
-      && !(code == CONSTRUCTOR))
+      && !(code == CONSTRUCTOR)
+      /* Allow SSA_NAME as predicate operator.  */
+      && !(code == SSA_NAME))
     return;
   /* Treat ADDR_EXPR as atom, thus don't allow matching its operand.  */
   if (code == ADDR_EXPR)
