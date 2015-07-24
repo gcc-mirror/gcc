@@ -29,7 +29,8 @@ along with GCC; see the file COPYING3.  If not see
    integer_each_onep integer_truep
    real_zerop real_onep real_minus_onep
    CONSTANT_CLASS_P
-   tree_expr_nonnegative_p)
+   tree_expr_nonnegative_p
+   integer_pow2p)
 
 /* Operator lists.  */
 (define_operator_list tcc_comparison
@@ -279,6 +280,14 @@ along with GCC; see the file COPYING3.  If not see
 	&& tree_nop_conversion_p (type, TREE_TYPE (@3))
 	&& integer_pow2p (@2) && tree_int_cst_sgn (@2) > 0)
    (bit_and @0 (convert (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))))
+
+/* Simplify (unsigned t * 2)/2 -> unsigned t & 0x7FFFFFFF.  */
+(simplify
+ (trunc_div (mult @0 integer_pow2p@1) @1)
+ (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (bit_and @0 { wide_int_to_tree
+		(type, wi::mask (TYPE_PRECISION (type) - wi::exact_log2 (@1),
+				 false, TYPE_PRECISION (type))); })))
 
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
