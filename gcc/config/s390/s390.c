@@ -3321,13 +3321,26 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
       *total = 0;
       return true;
 
+    case IOR:
+      /* risbg */
+      if (GET_CODE (XEXP (x, 0)) == AND
+	  && GET_CODE (XEXP (x, 1)) == ASHIFT
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && REG_P (XEXP (XEXP (x, 1), 0))
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	  && CONST_INT_P (XEXP (XEXP (x, 1), 1))
+	  && (UINTVAL (XEXP (XEXP (x, 0), 1)) ==
+	      (1UL << UINTVAL (XEXP (XEXP (x, 1), 1))) - 1))
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
     case ROTATE:
     case ROTATERT:
     case AND:
-    case IOR:
     case XOR:
     case NEG:
     case NOT:
@@ -5839,8 +5852,17 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 
       if (mode_s == VOIDmode)
 	{
-	  /* Assume const_int etc already in the proper mode.  */
-	  src = force_reg (mode, src);
+	  /* For constant zero values the representation with AND
+	     appears to be folded in more situations than the (set
+	     (zero_extract) ...).
+	     We only do this when the start and end of the bitfield
+	     remain in the same SImode chunk.  That way nihf or nilf
+	     can be used.
+	     The AND patterns might still generate a risbg for this.  */
+	  if (src == const0_rtx && bitpos / 32  == (bitpos + bitsize - 1) / 32)
+	    return false;
+	  else
+	    src = force_reg (mode, src);
 	}
       else if (mode_s != mode)
 	{

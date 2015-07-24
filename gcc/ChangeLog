@@ -1,3 +1,13 @@
+2015-07-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_rtx_costs): Make risbg patterns
+	cheaper.
+	(s390_expand_insv): Don't generate risbg pattern for constant zero
+	sources.
+	* config/s390/s390.md ("*insv<mode>_zEC12_appendbitsleft")
+	("*insv<mode>_z10_appendbitsleft"): New pattern definitions.  New
+	splitters.
+
 2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_reorg): Clean up handling of processors

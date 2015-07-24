@@ -1,3 +1,9 @@
+2015-07-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/insv-1.c: New test.
+	* gcc.target/s390/insv-2.c: New test.
+	* gcc.target/s390/insv-3.c: New test.
+
 2015-07-24  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/autopar/uns-outer-4.c: Remove loopfn xfail.
