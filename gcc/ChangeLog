@@ -1,5 +1,13 @@
 2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
+	Backported from mainline r226159.
+	2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-elf-raw.h (LINK_SPEC): Handle -h, -static,
+	-shared, -symbolic, -rdynamic.
+
+2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
 	Backported from mainline r226158.
 	2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
