@@ -2260,6 +2260,14 @@ do {									\
 /* Default threshold for putting data in large sections
    with x86-64 medium memory model */
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
+
+/* Adjust the length of the insn with the length of BND prefix.  */
+#define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
+do {						\
+  if (recog_memoized (INSN) >= 0		\
+      && get_attr_maybe_prefix_bnd (INSN))	\
+    LENGTH += ix86_bnd_prefixed_insn_p (INSN);	\
+} while (0)
 
 /* Which processor to tune code generation for.  These must be in sync
    with processor_target_table in i386.c.  */ 
