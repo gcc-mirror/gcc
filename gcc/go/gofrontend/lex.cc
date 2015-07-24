@@ -1197,7 +1197,6 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 		  : p + 1);
 
 	case 'x':
-	case 'X':
 	  *is_character = false;
 	  if (Lex::is_hex_digit(p[1]) && Lex::is_hex_digit(p[2]))
 	    {
