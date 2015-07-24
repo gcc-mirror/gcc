@@ -108,7 +108,7 @@ this thread backend is able to automatically switch to non-multi-threaded
 mode if the threading library is not linked in.
 
 If you want to compile libobjc standalone, then you would need to modify
-the configure.in and makefiles for it and you need to import the
+the configure.ac and makefiles for it and you need to import the
 gthread code from GCC.
 
 ******************************************************************************

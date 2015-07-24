@@ -39,7 +39,7 @@ dnl If your installed header files require the stdint-types you will want to
 dnl create an installable file mylib-int.h that all your other installable
 dnl header may include. So, for a library package named "mylib", just use
 dnl      GCC_HEADER_STDINT(mylib-int.h)
-dnl in configure.in and install that header file in Makefile.am along with
+dnl in configure.ac and install that header file in Makefile.am along with
 dnl the other headers (mylib.h).  The mylib-specific headers can simply
 dnl use "#include <mylib-int.h>" to obtain the stdint-types.
 dnl

@@ -31,7 +31,7 @@
 # user select which libraries s/he really wants.
 #
 # Subdirectories wishing to use multilib should put the following lines
-# in the "post-target" section of configure.in.
+# in the "post-target" section of configure.ac.
 #
 # if [ "${srcdir}" = "." ] ; then
 #   if [ "${with_target_subdir}" != "." ] ; then
@@ -182,8 +182,8 @@ if [ "${enable_multilib}" = yes ]; then
 # ${with_multisubdir} tells us we're in the right branch, but we could be
 # in a subdir of that.
 # ??? The previous version could void this test by separating the process into
-# two files: one that only the library's toplevel configure.in ran (to
-# configure the multilib subdirs), and another that all configure.in's ran to
+# two files: one that only the library's toplevel configure.ac ran (to
+# configure the multilib subdirs), and another that all configure.ac's ran to
 # update the Makefile.  It seemed reasonable to collapse all multilib support
 # into one file, but it does leave us with having to perform this test.
 ml_toplevel_p=no

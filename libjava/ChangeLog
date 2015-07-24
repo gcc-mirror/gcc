@@ -1,3 +1,8 @@
+2015-07-24  Michael Darling  <darlingm@gmail.com>
+
+	PR other/66259
+	* configure: Reflects renaming of configure.in to configure.ac
+
 2015-05-28  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* configure.host: Add bits for FreeBSD amd64 and i386.

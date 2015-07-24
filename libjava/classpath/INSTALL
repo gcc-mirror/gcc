@@ -43,10 +43,9 @@ be considered for the next release.  If you are using the cache, and at
 some point `config.cache' contains results you don't want to keep, you
 may remove or edit it.
 
-   The file `configure.ac' (or `configure.in') is used to create
-`configure' by a program called `autoconf'.  You need `configure.ac' if
-you want to change it or regenerate `configure' using a newer version
-of `autoconf'.
+   The file `configure.ac' is used to create `configure' by a program
+called `autoconf'.  You need `configure.ac' if you want to change it or
+regenerate `configure' using a newer version of `autoconf'.
 
    The simplest way to compile this package is:
 

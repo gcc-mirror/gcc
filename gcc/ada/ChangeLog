@@ -1,3 +1,9 @@
+2015-07-24  Micahel Darling  <darlingm@gmail.com>
+
+	PR other/66259
+	* prj-nmsc.adb: Reflects renaming of configure.in to configure.ac
+	* gcc-interface/Makefile.in: Likewise
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc-interface/utils.c: Fix double word typos.
