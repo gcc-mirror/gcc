@@ -7270,12 +7270,7 @@ s390_adjust_priority (rtx_insn *insn, int priority)
   if (! INSN_P (insn))
     return priority;
 
-  if (s390_tune != PROCESSOR_2084_Z990
-      && s390_tune != PROCESSOR_2094_Z9_109
-      && s390_tune != PROCESSOR_2097_Z10
-      && s390_tune != PROCESSOR_2817_Z196
-      && s390_tune != PROCESSOR_2827_ZEC12
-      && s390_tune != PROCESSOR_2964_Z13)
+  if (s390_tune <= PROCESSOR_2064_Z900)
     return priority;
 
   switch (s390_safe_attr_type (insn))
@@ -7304,6 +7299,7 @@ s390_issue_rate (void)
     {
     case PROCESSOR_2084_Z990:
     case PROCESSOR_2094_Z9_109:
+    case PROCESSOR_2094_Z9_EC:
     case PROCESSOR_2817_Z196:
       return 3;
     case PROCESSOR_2097_Z10:
@@ -13521,6 +13517,7 @@ s390_option_override (void)
       s390_cost = &z990_cost;
       break;
     case PROCESSOR_2094_Z9_109:
+    case PROCESSOR_2094_Z9_EC:
       s390_cost = &z9_109_cost;
       break;
     case PROCESSOR_2097_Z10:

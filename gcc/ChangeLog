@@ -1,5 +1,12 @@
 2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_issue_rate): Handle
+	PROCESSOR_2094_Z9_EC.
+	(s390_option_override): Likewise.
+	(s390_adjust_priority): Likewise.
+
+2015-07-24  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/s390.h: S390: Do not define EXTRA_SPEC_FUNCTIONS
 	when cross compiling.
 
