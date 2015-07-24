@@ -1212,6 +1212,11 @@ struct dt_node
   unsigned level;
   vec<dt_node *> kids;
 
+  /* Statistics.  */
+  unsigned num_leafs;
+  unsigned total_size;
+  unsigned max_level;
+
   dt_node (enum dt_type type_): type (type_), level (0), kids (vNULL) {}
 
   dt_node *append_node (dt_node *);
@@ -1226,6 +1231,8 @@ struct dt_node
   void gen_kids_1 (FILE *, int, bool,
 		   vec<dt_operand *>, vec<dt_operand *>, vec<dt_operand *>,
 		   vec<dt_operand *>, vec<dt_operand *>, vec<dt_node *>);
+
+  void analyze ();
 };
 
 /* Generic decision tree node used for DT_OPERAND and DT_MATCH.  */
@@ -1426,6 +1433,30 @@ dt_node::append_simplify (simplify *s, unsigned pattern_no,
 {
   dt_simplify *n = new dt_simplify (s, pattern_no, indexes);
   return append_node (n);
+}
+
+/* Analyze the node and its children.  */
+
+void
+dt_node::analyze ()
+{
+  num_leafs = 0;
+  total_size = 1;
+  max_level = level;
+
+  if (type == DT_SIMPLIFY)
+    {
+      num_leafs = 1;
+      return;
+    }
+
+  for (unsigned i = 0; i < kids.length (); ++i)
+    {
+      kids[i]->analyze ();
+      num_leafs += kids[i]->num_leafs;
+      total_size += kids[i]->total_size;
+      max_level = MAX (max_level, kids[i]->max_level);
+    }
 }
 
 /* Insert O into the decision tree and return the decision tree node found
@@ -2912,6 +2943,12 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
 void
 decision_tree::gen_gimple (FILE *f)
 {
+  root->analyze ();
+
+  fprintf (stderr, "GIMPLE decision tree has %u leafs, maximum depth %u and "
+	   "a total number of %u nodes\n", root->num_leafs, root->max_level,
+	   root->total_size);
+
   for (unsigned n = 1; n <= 3; ++n)
     {
       fprintf (f, "\nstatic bool\n"
@@ -2958,6 +2995,12 @@ decision_tree::gen_gimple (FILE *f)
 void
 decision_tree::gen_generic (FILE *f)
 {
+  root->analyze ();
+
+  fprintf (stderr, "GENERIC decision tree has %u leafs, maximum depth %u and "
+	   "a total number of %u nodes\n", root->num_leafs, root->max_level,
+	   root->total_size);
+
   for (unsigned n = 1; n <= 3; ++n)
     {
       fprintf (f, "\ntree\n"

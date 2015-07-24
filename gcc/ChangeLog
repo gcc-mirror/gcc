@@ -1,5 +1,13 @@
 2015-07-24  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (struct dt_node): Add statistic fields.
+	(dt_node::analyze): New method.
+	(decision_tree::gen_gimple): Call analyze on the root node
+	and print statistics to stderr.
+	(decision_tree::gen_generic): Likewise.
+
+2015-07-24  Richard Biener  <rguenther@suse.de>
+
 	* fold-const.c (fold_binary_loc): Move simplifying of comparisons
 	against the highest or lowest possible integer ...
 	* match.pd: ... as patterns here.
