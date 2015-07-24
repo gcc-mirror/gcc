@@ -3109,6 +3109,9 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
     {
+      if (inline_edge_summary_vec.length () <= (unsigned) e->uid)
+	continue;
+
       struct inline_edge_summary *es = inline_edge_summary (e);
 
       /* Do not care about zero sized builtins.  */
@@ -3140,6 +3143,9 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
+      if (inline_edge_summary_vec.length () <= (unsigned) e->uid)
+	continue;
+
       struct inline_edge_summary *es = inline_edge_summary (e);
       if (!es->predicate
 	  || evaluate_predicate (es->predicate, possible_truths))
