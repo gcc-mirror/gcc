@@ -1,5 +1,10 @@
 2015-07-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_save_gprs_to_fprs): Add CFA_REGISTER
+	reg note to the GPR -> FPR save instructions.
+
+2015-07-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_rtx_costs): Make risbg patterns
 	cheaper.
 	(s390_expand_insv): Don't generate risbg pattern for constant zero
