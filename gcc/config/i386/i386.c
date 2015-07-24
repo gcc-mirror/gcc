@@ -6316,43 +6316,51 @@ ix86_reg_parm_stack_space (const_tree fndecl)
   return 0;
 }
 
-/* Returns value SYSV_ABI, MS_ABI dependent on fntype, specifying the
-   call abi used.  */
-enum calling_abi
-ix86_function_type_abi (const_tree fntype)
-{
-  if (fntype != NULL_TREE && TYPE_ATTRIBUTES (fntype) != NULL_TREE)
-    {
-      enum calling_abi abi = ix86_abi;
-      if (abi == SYSV_ABI)
-	{
-	  if (lookup_attribute ("ms_abi", TYPE_ATTRIBUTES (fntype)))
-	    {
-	      if (TARGET_X32)
-		{
-		  static bool warned = false;
-		  if (!warned)
-		    {
-		      error ("X32 does not support ms_abi attribute");
-		      warned = true;
-		    }
-		}
-	      abi = MS_ABI;
-	    }
-	}
-      else if (lookup_attribute ("sysv_abi", TYPE_ATTRIBUTES (fntype)))
-	abi = SYSV_ABI;
-      return abi;
-    }
-  return ix86_abi;
-}
-
 /* We add this as a workaround in order to use libc_has_function
    hook in i386.md.  */
 bool
 ix86_libc_has_function (enum function_class fn_class)
 {
   return targetm.libc_has_function (fn_class);
+}
+
+/* Returns value SYSV_ABI, MS_ABI dependent on fntype,
+   specifying the call abi used.  */
+enum calling_abi
+ix86_function_type_abi (const_tree fntype)
+{
+  enum calling_abi abi = ix86_abi;
+
+  if (fntype == NULL_TREE || TYPE_ATTRIBUTES (fntype) == NULL_TREE)
+    return abi;
+
+  if (abi == SYSV_ABI
+      && lookup_attribute ("ms_abi", TYPE_ATTRIBUTES (fntype)))
+    {
+      if (TARGET_X32)
+	error ("X32 does not support ms_abi attribute");
+
+      abi = MS_ABI;
+    }
+  else if (abi == MS_ABI
+	   && lookup_attribute ("sysv_abi", TYPE_ATTRIBUTES (fntype)))
+    abi = SYSV_ABI;
+
+  return abi;
+}
+
+static enum calling_abi
+ix86_function_abi (const_tree fndecl)
+{
+  return fndecl ? ix86_function_type_abi (TREE_TYPE (fndecl)) : ix86_abi;
+}
+
+/* Returns value SYSV_ABI, MS_ABI dependent on cfun,
+   specifying the call abi used.  */
+enum calling_abi
+ix86_cfun_abi (void)
+{
+  return cfun ? cfun->machine->call_abi : ix86_abi;
 }
 
 static bool
@@ -6367,24 +6375,6 @@ ix86_function_ms_hook_prologue (const_tree fn)
         return true;
     }
   return false;
-}
-
-static enum calling_abi
-ix86_function_abi (const_tree fndecl)
-{
-  if (! fndecl)
-    return ix86_abi;
-  return ix86_function_type_abi (TREE_TYPE (fndecl));
-}
-
-/* Returns value SYSV_ABI, MS_ABI dependent on cfun, specifying the
-   call abi used.  */
-enum calling_abi
-ix86_cfun_abi (void)
-{
-  if (! cfun)
-    return ix86_abi;
-  return cfun->machine->call_abi;
 }
 
 /* Write the extra assembler code needed to declare a function properly.  */
@@ -6439,10 +6429,7 @@ extern void init_regs (void);
 void
 ix86_call_abi_override (const_tree fndecl)
 {
-  if (fndecl == NULL_TREE)
-    cfun->machine->call_abi = ix86_abi;
-  else
-    cfun->machine->call_abi = ix86_function_type_abi (TREE_TYPE (fndecl));
+  cfun->machine->call_abi = ix86_function_abi (fndecl);
 }
 
 /* 64-bit MS and SYSV ABI have different set of call used registers.  Avoid
