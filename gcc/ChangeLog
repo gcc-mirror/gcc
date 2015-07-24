@@ -1,5 +1,10 @@
 2015-07-24  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
+	PR middle-end/25530
+	* match.pd (mult (trunc_div @0 integer_pow2p@1) @1) : New simplifier.
+
+2015-07-24  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
          PR middle-end/25529
          * match.pd (trunc_div (mult @0 integer_pow2p@1) @1) : New simplifier.
 

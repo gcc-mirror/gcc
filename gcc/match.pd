@@ -289,6 +289,12 @@ along with GCC; see the file COPYING3.  If not see
 		(type, wi::mask (TYPE_PRECISION (type) - wi::exact_log2 (@1),
 				 false, TYPE_PRECISION (type))); })))
 
+/* Simplify (unsigned t / 2) * 2 -> unsigned t & ~1.  */
+(simplify
+ (mult (trunc_div @0 integer_pow2p@1) @1)
+ (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (bit_and @0 (negate @1))))
+
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
  (simplify
