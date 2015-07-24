@@ -1,3 +1,9 @@
+2015-07-24  Gary Funck  <gary@intrepid.com>
+
+	PR middle-end/66984
+	* fold-const.c (fold_binary_loc): Call fold_convert on arguments to
+        fold_build2 for CEIL_DIV_EXPR and FLOOR_DIV_EXPR optimization.
+
 2015-07-24  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (gen_parallel_loop): Add debug print for alternative

@@ -10746,7 +10746,9 @@ fold_binary_loc (location_t loc,
 	 after the last round to changes to the DIV code in expmed.c.  */
       if ((code == CEIL_DIV_EXPR || code == FLOOR_DIV_EXPR)
 	  && multiple_of_p (type, arg0, arg1))
-	return fold_build2_loc (loc, EXACT_DIV_EXPR, type, arg0, arg1);
+	return fold_build2_loc (loc, EXACT_DIV_EXPR, type,
+				fold_convert (type, arg0),
+				fold_convert (type, arg1));
 
       strict_overflow_p = false;
       if (TREE_CODE (arg1) == INTEGER_CST
