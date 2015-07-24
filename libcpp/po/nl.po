@@ -1,15 +1,18 @@
 # Dutch translations for GNU cpplib.
-# Copyright (C) 2014 Free Software Foundation, Inc.
+# Copyright (C) 2015 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
+# "If economists could manage to get themselves thought of as humble,
+# competent people, on a level with dentists, that would be splendid!"
+#
 # Tim Van Holder <tim.van.holder@telenet.be>, 2008, 2009, 2010.
-# Benno Schulenberg <benno@vertaalt.nl>, 2014.
+# Benno Schulenberg <benno@vertaalt.nl>, 2014, 2015.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.9-b20140202\n"
+"Project-Id-Version: cpplib 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2014-02-03 12:18+0100\n"
+"PO-Revision-Date: 2015-07-23 19:42+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "Language: nl\n"
@@ -33,7 +36,6 @@ msgstr "iconv_open"
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "geen implementatie van iconv beschikbaar; kan niet omzetten van %s naar %s"
 
-# of "tekenset" aangezien character door "teken" vertaald wordt?
 #: charset.c:781
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
@@ -53,10 +55,8 @@ msgid "universal character names are only valid in C++ and C99"
 msgstr "universele tekennamen zijn alleen geldig in C++ en C99"
 
 #: charset.c:1002
-#, fuzzy
-#| msgid "universal character names are only valid in C++ and C99"
 msgid "C99's universal character names are incompatible with C90"
-msgstr "universele tekennamen zijn alleen geldig in C++ en C99"
+msgstr "universele tekennamen van C99 zijn zijn incompatibel met C90"
 
 #: charset.c:1005
 #, c-format
@@ -203,10 +203,8 @@ msgid "\"defined\" cannot be used as a macro name"
 msgstr "\"defined\" kan niet als macronaam gebruikt worden"
 
 #: directives.c:573
-#, fuzzy
-#| msgid "\"defined\" cannot be used as a macro name"
 msgid "\"__has_include__\" cannot be used as a macro name"
-msgstr "\"defined\" kan niet als macronaam gebruikt worden"
+msgstr "\"__has_include__\" kan niet als macronaam gebruikt worden"
 
 #: directives.c:579
 #, c-format
@@ -280,7 +278,7 @@ msgstr "\"%s\" is geen geldige bestandsnaam"
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" (na #) is geen positieve integer"
 
-# Shouldn't have been marked as translatable I think
+# FIXME: most likely shouldn't have been marked as translatable
 #: directives.c:1095 directives.c:1097 directives.c:1099 directives.c:1685
 #, c-format
 msgid "%s"
@@ -434,7 +432,7 @@ msgstr "niet-beëindigd commentaar"
 msgid "stdout"
 msgstr "standaarduitvoer"
 
-# hoort niet echt een vertaalbare string te zijn :-)
+# FIXME: hoort niet echt een vertaalbare string te zijn :-)
 #: errors.c:233
 #, c-format
 msgid "%s: %s"
@@ -449,14 +447,12 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ongeldige prefix \"0b\" voor floating-point constante"
 
 #: expr.c:550
-#, fuzzy
-#| msgid "use of C99 hexadecimal floating constant"
 msgid "use of C++11 hexadecimal floating constant"
-msgstr "gebruik van C99 hexadecimale floating-point constante"
+msgstr "gebruik van een C++11 hexadecimale floating-point constante"
 
 #: expr.c:553
 msgid "use of C99 hexadecimal floating constant"
-msgstr "gebruik van C99 hexadecimale floating-point constante"
+msgstr "gebruik van een C99 hexadecimale floating-point constante"
 
 #: expr.c:597
 #, c-format
@@ -499,16 +495,12 @@ msgid "imaginary constants are a GCC extension"
 msgstr "imaginaire constantes zijn een uitbreiding van GCC"
 
 #: expr.c:699
-#, fuzzy
-#| msgid "binary constants are a C++1y feature or GCC extension"
 msgid "binary constants are a C++14 feature or GCC extension"
-msgstr "binaire constantes zijn een C++1y-functie of een uitbreiding van GCC"
+msgstr "binaire constantes zijn een C++14-functie of een uitbreiding van GCC"
 
 #: expr.c:701
-#, fuzzy
-#| msgid "imaginary constants are a GCC extension"
 msgid "binary constants are a GCC extension"
-msgstr "imaginaire constantes zijn een uitbreiding van GCC"
+msgstr "binaire constantes zijn een uitbreiding van GCC"
 
 #: expr.c:796
 msgid "integer constant is too large for its type"
@@ -531,7 +523,6 @@ msgstr "de \"defined\" operator vereist een naam als argument"
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(\"%s\" is een alternatieve schrijfwijze voor \"%s\" in C++)"
 
-# betere vertaling voor "portable"?
 #: expr.c:947
 msgid "this use of \"defined\" may not be portable"
 msgstr "dit gebruik van \"define\" is mogelijk niet overdraagbaar"
@@ -603,23 +594,19 @@ msgstr "traditioneel C verwerpt de unaire plus-operator"
 
 #: expr.c:1890
 msgid "comma operator in operand of #if"
-msgstr "comma operator in operand van #if"
+msgstr "komma-operator in operand van '#if'"
 
 #: expr.c:2026
 msgid "division by zero in #if"
 msgstr "deling door nul in '#if'"
 
 #: expr.c:2123
-#, fuzzy
-#| msgid "operator \"defined\" requires an identifier"
 msgid "operator \"__has_include__\" requires a header string"
-msgstr "de \"defined\" operator vereist een naam als argument"
+msgstr "de \"__has_include__\" operator vereist een headerstring"
 
 #: expr.c:2139
-#, fuzzy
-#| msgid "missing ')' after \"defined\""
 msgid "missing ')' after \"__has_include__\""
-msgstr "')' ontbreekt na \"defined\""
+msgstr "')' ontbreekt na \"__has_include__\""
 
 #: files.c:513
 msgid "NULL directory in find_file"
@@ -739,10 +726,8 @@ msgid "attempt to use poisoned \"%s\""
 msgstr "poging tot gebruik van 'vergiftigde' \"%s\""
 
 #: lex.c:1275 lex.c:1364
-#, fuzzy
-#| msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
-msgstr "__VA_ARGS__ mag enkel voorkomen in de expansie van een C99 variadische macro"
+msgstr "__VA_ARGS__ mag enkel voorkomen in de expansie van een C++11 variadische macro"
 
 #: lex.c:1279 lex.c:1368
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
@@ -794,10 +779,8 @@ msgid "(this will be reported only once per input file)"
 msgstr "(dit wordt per invoerbestand maar één keer gemeld)"
 
 #: lex.c:2458
-#, fuzzy
-#| msgid "C++ style comments are not allowed in ISO C90"
 msgid "C++ style comments are incompatible with C90"
-msgstr "commentaar in C++-stijl is niet toegestaan in ISO C90"
+msgstr "commentaar in C++-stijl is incompatibel met C90"
 
 #: lex.c:2489
 msgid "multi-line comment"
@@ -824,7 +807,6 @@ msgstr "ongeldige ingebouwde macro \"%s\""
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr "macro \"%s\" kan reproduceerbare compilaties verhinderen"
 
-# betere vertaling voor 'timestamp'?
 #: macro.c:276
 msgid "could not determine file timestamp"
 msgstr "kan tijdsstempel van bestand niet achterhalen"
@@ -839,23 +821,20 @@ msgstr "expansie van __COUNTER__ binnenin commando terwijl -fdirectives-only opg
 
 #: macro.c:581
 msgid "invalid string literal, ignoring final '\\'"
-msgstr "ongeldige stringconstante, laatste '\\' wordt genegeerd"
+msgstr "ongeldige stringconstante; laatste '\\' wordt genegeerd"
 
 #: macro.c:643
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
-msgstr "\"%s\" en \"%s\" aan elkaar plakken levert geen geldig preprocessing token op"
+msgstr "het plakken van \"%s\" en \"%s\" levert geen geldig preprocessing token op"
 
 #: macro.c:767
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
-msgstr ""
+msgstr "ISO C++11 vereist minstens één argument voor de \"...\" in een variadische macro"
 
-# "rest arguments"?
 #: macro.c:771
-#, fuzzy
-#| msgid "ISO C99 requires rest arguments to be used"
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
-msgstr "ISO C99 verplicht het gebruik van restargumenten"
+msgstr "ISO C99 vereist minstens één argument voor de \"...\" in een variadische macro"
 
 #: macro.c:778
 #, c-format
@@ -878,16 +857,14 @@ msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "functie-achtige macro \"%s\" moet in traditioneel C altijd met argumenten gebruikt worden"
 
 #: macro.c:1814
-#, fuzzy, c-format
-#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+#, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
-msgstr "aanroep van macro %s argument %d: lege macro-argumenten zijn niet gedefinieerd in ISO C90 en ISO C++98"
+msgstr "aanroep van macro %s argument %d: lege macro-argumenten zijn ongedefinieerd in ISO C++98"
 
 #: macro.c:1822 macro.c:1831
-#, fuzzy, c-format
-#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+#, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
-msgstr "aanroep van macro %s argument %d: lege macro-argumenten zijn niet gedefinieerd in ISO C90 en ISO C++98"
+msgstr "aanroep van macro %s argument %d: lege macro-argumenten zijn ongedefinieerd in ISO C90"
 
 #: macro.c:2800
 #, c-format
@@ -908,26 +885,22 @@ msgid "parameter name missing"
 msgstr "parameternaam ontbreekt"
 
 #: macro.c:2896
-#, fuzzy
-#| msgid "anonymous variadic macros were introduced in C99"
 msgid "anonymous variadic macros were introduced in C++11"
-msgstr "anonieme variadische macro's werden door C99 ingevoerd"
+msgstr "anonieme variadische macro's werden geïntroduceerd in C++11"
 
 #: macro.c:2900 macro.c:2905
 msgid "anonymous variadic macros were introduced in C99"
-msgstr "anonieme variadische macro's werden door C99 ingevoerd"
+msgstr "anonieme variadische macro's werden geïntroduceerd in C99"
 
 # variadic? " met variabele argumentenlijst" is nogal lang...
 #: macro.c:2912
-#, fuzzy
-#| msgid "ISO C does not permit named variadic macros"
 msgid "ISO C++ does not permit named variadic macros"
-msgstr "ISO C staat het gebruik benoemde variadische macro's niet toe"
+msgstr "ISO C++ staat geen benoemde variadische macro's toe"
 
 # variadic? " met variabele argumentenlijst" is nogal lang...
 #: macro.c:2915
 msgid "ISO C does not permit named variadic macros"
-msgstr "ISO C staat het gebruik benoemde variadische macro's niet toe"
+msgstr "ISO C staat geen benoemde variadische macro's toe"
 
 #: macro.c:2925
 msgid "missing ')' in macro parameter list"
@@ -938,10 +911,8 @@ msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' mag niet voorkomen aan het begin of einde van een macro-expansie"
 
 #: macro.c:3013
-#, fuzzy
-#| msgid "ISO C99 requires whitespace after the macro name"
 msgid "ISO C++11 requires whitespace after the macro name"
-msgstr "ISO C99 vereist witruimte na de macronaam"
+msgstr "ISO C++11 vereist witruimte na de macronaam"
 
 #: macro.c:3016
 msgid "ISO C99 requires whitespace after the macro name"
