@@ -1,3 +1,12 @@
+2015-07-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline
+	2015-07-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/65249
+	* config/sh/sh.md (movdi): Split simple reg move to two movsi
+	when the destination is R0.
+
 2015-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backported from mainline r226159.

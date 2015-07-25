@@ -7448,6 +7448,24 @@ label:
   ""
 {
   prepare_move_operands (operands, DImode);
+  if (TARGET_SH1)
+    {
+      /* When the dest operand is (R0, R1) register pair, split it to
+	 two movsi of which dest is R1 and R0 so as to lower R0-register
+	 pressure on the first movsi.  Apply only for simple source not
+	 to make complex rtl here.  */
+      if (REG_P (operands[0])
+	  && REGNO (operands[0]) == R0_REG
+	  && REG_P (operands[1])
+	  && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
+	{
+	  emit_insn (gen_movsi (gen_rtx_REG (SImode, R1_REG),
+			        gen_rtx_SUBREG (SImode, operands[1], 4)));
+	  emit_insn (gen_movsi (gen_rtx_REG (SImode, R0_REG),
+			        gen_rtx_SUBREG (SImode, operands[1], 0)));
+	  DONE;
+	}
+    }
 })
 
 (define_insn "movdf_media"
