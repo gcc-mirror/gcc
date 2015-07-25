@@ -1,3 +1,14 @@
+2015-07-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	Revert:
+	2015-07-23  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/64164
+	* gcc.dg/guality/pr54200.c: Add -fno-tree-coalesce-vars.
+	* gcc.dg/ssp-1.c: Make counter a register.
+	* gcc.dg/ssp-2.c: Likewise.
+	* gcc.dg/torture/parm-coalesce.c: New.
+
 2015-07-24  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/graphite/block-1.c: Xfail scan.
