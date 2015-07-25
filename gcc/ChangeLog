@@ -1,5 +1,14 @@
 2015-07-25  Sebastian Pop  <s.pop@samsung.com>
 
+	* Makefile.in: Remove use of TREEBROWSER.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Remove definition of TREEBROWSER.
+	* tree-browser.c: Removed.
+	* tree-browser.def: Removed.
+
+2015-07-25  Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-scop-detection.c: Include gimple-pretty-print.h.
 	(stmt_simple_for_scop_p): Print when a stmt is not handled in
 	Graphite.

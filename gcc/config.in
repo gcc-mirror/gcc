@@ -194,8 +194,7 @@
 
 /* Define if you want all operations on trees (the basic data structure of the
    front ends) to be checked for dynamic type safety at runtime. This is
-   moderately expensive. The tree browser debugging routines will also be
-   enabled by this option. */
+   moderately expensive. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_TREE_CHECKING
 #endif
