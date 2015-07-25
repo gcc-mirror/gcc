@@ -1,3 +1,9 @@
+2015-07-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/66930
+	* config/sh/sh.c (sh_split_movrt_negc_to_movt_xor): Add missing
+	T bit register modified_between_p check.
+
 2015-07-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c: Use SUBREG_P predicate.
