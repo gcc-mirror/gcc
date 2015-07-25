@@ -1,3 +1,15 @@
+2015-07-25  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/graphite/graphite.exp: Include uns-*.c files in
+	interchange_files and block_files variables.
+	* gcc.dg/graphite/uns-block-1.c (main): Change signed into unsigned
+	arithmetic.
+	* gcc.dg/graphite/uns-interchange-12.c: Same.
+	* gcc.dg/graphite/uns-interchange-14.c: Same.
+	* gcc.dg/graphite/uns-interchange-15.c: Same.
+	* gcc.dg/graphite/uns-interchange-9.c (foo): Same.
+	* gcc.dg/graphite/uns-interchange-mvt.c: Same.
+
 2015-07-25  Jeff Law  <law@redhat.com>
 
 	Revert:

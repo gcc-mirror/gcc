@@ -13,9 +13,9 @@ int
 main (void)
 {
   int i, j;
-  int sum = 0;
-  int A[MAX * MAX];
-  int B[MAX * MAX];
+  unsigned int sum = 0;
+  unsigned int A[MAX * MAX];
+  unsigned int B[MAX * MAX];
 
   /* These loops should be loop blocked.  */
   for (i = 0; i < MAX; i++)

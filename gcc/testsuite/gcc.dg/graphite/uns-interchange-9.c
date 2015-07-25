@@ -8,11 +8,11 @@
 #define N 111
 #define M 111
 
-static int __attribute__((noinline))
-foo (int *x)
+static unsigned int __attribute__((noinline))
+foo (unsigned int *x)
 {
   int i, j;
-  int sum = 0;
+  unsigned int sum = 0;
 
   for (j = 0; j < M; ++j)
     for (i = 0;  i < N; ++i)
@@ -26,8 +26,9 @@ extern void abort ();
 int
 main (void)
 {
-  int A[N*M];
-  int i, res;
+  unsigned int A[N*M];
+  int i;
+  unsigned int res;
 
   for (i = 0; i < N*M; i++)
     A[i] = 2;

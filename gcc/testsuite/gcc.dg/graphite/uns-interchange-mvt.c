@@ -7,9 +7,9 @@
 
 #define NMAX 2000
 
-static int x1[NMAX], x2[NMAX], a[NMAX][NMAX], y1[NMAX], y2[NMAX];
+static unsigned int x1[NMAX], x2[NMAX], a[NMAX][NMAX], y1[NMAX], y2[NMAX];
 
-static int __attribute__((noinline))
+static unsigned int __attribute__((noinline))
 mvt (long N)
 {
 
@@ -32,7 +32,8 @@ extern void abort ();
 int
 main (void)
 {
-  int i, j, res;
+  int i, j;
+  unsigned int res;
 
   for (i = 0; i < NMAX; i++)
     for (j = 0; j < NMAX; j++)

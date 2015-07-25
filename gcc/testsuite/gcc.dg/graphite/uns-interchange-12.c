@@ -7,9 +7,9 @@
 
 #define N 200
 
-int A[N][N], B[N][N], C[N][N];
+unsigned int A[N][N], B[N][N], C[N][N];
 
-static int __attribute__((noinline))
+static unsigned int __attribute__((noinline))
 matmult (void)
 {
   int i, j, k;
@@ -31,7 +31,8 @@ extern void abort ();
 int
 main (void)
 {
-  int i, j, res;
+  int i, j;
+  unsigned int res;
 
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
