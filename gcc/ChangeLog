@@ -1,3 +1,12 @@
+2015-07-25  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2015-07-24  Tom de Vries  <tom@codesourcery.com>
+
+	* graphite-sese-to-poly.c (is_reduction_operation_p): Limit
+	flag_associative_math to FLOAT_TYPE_P.  Honour
+	TYPE_OVERFLOW_WRAPS for INTEGRAL_TYPE_P. Don't allow any other types.
+
 2015-07-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline
