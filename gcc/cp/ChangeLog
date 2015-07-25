@@ -1,3 +1,9 @@
+2015-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64989
+	* pt.c (splice_late_return_type): Correct deduced return type for
+	abbreviated function template.
+
 2015-07-24  Richard Biener  <rguenther@suse.de>
 
 	* init.c (build_vec_init): Build iterator bound in the same
