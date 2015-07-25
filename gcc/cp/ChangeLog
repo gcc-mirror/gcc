@@ -1,6 +1,6 @@
 2015-07-24  Jason Merrill  <jason@redhat.com>
 
-	PR c++/64989
+	PR c++/64969
 	* pt.c (splice_late_return_type): Correct deduced return type for
 	abbreviated function template.
 
