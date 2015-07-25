@@ -188,269 +188,269 @@
 
 2015-07-22  Charles Baylis  <charles.baylis@linaro.org>
 
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_p8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_p8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s8_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u16_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u16_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u32_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u32_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u64_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u64_indices_1.c: New
 	test.
-        * gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u8_indices_1.c: New
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u8_indices_1.c: New
 	test.
 
 2015-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
