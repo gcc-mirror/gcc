@@ -21,6 +21,5 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_SSA_COALESCE_H
 
 extern var_map coalesce_ssa_name (void);
-extern bool gimple_can_coalesce_p (tree, tree);
 
 #endif /* GCC_TREE_SSA_COALESCE_H */
