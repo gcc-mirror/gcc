@@ -7,7 +7,7 @@
 
 #define N 200
 
-int A[N][N], B[N][N], C[N][N];
+unsigned int A[N][N], B[N][N], C[N][N];
 
 static void __attribute__((noinline))
 matmult (void)
@@ -30,7 +30,8 @@ extern void abort ();
 int
 main (void)
 {
-  int i, j, res = 0;
+  int i, j;
+  unsigned res = 0;
 
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
@@ -55,5 +56,5 @@ main (void)
 }
 
 /* PRE destroys the perfect nest and we can't cope with that yet.  */
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

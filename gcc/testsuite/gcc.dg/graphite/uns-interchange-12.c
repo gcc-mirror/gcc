@@ -7,9 +7,9 @@
 
 #define N 200
 
-int A[N][N], B[N][N], C[N][N];
+unsigned int A[N][N], B[N][N], C[N][N];
 
-static int __attribute__((noinline))
+static unsigned int __attribute__((noinline))
 matmult (void)
 {
   int i, j, k;
@@ -18,9 +18,9 @@ matmult (void)
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       {
-        A[i][j] = 0;
-        for (k = 0; k < N; k++)
-          A[i][j] += B[i][k] * C[k][j];
+	A[i][j] = 0;
+	for (k = 0; k < N; k++)
+	  A[i][j] += B[i][k] * C[k][j];
       }
 
   return A[0][0] + A[N-1][N-1];
@@ -31,7 +31,8 @@ extern void abort ();
 int
 main (void)
 {
-  int i, j, res;
+  int i, j;
+  unsigned int res;
 
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
@@ -53,5 +54,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

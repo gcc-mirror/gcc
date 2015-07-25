@@ -41,8 +41,10 @@ set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.c ] ]
 set scop_files        [lsort [glob -nocomplain $srcdir/$subdir/scop-*.c ] ]
 set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.c ] ]
 set run_id_files      [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.c ] ]
-set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.c ] ]
-set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.c ] ]
+set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.c \
+			      $srcdir/$subdir/uns-interchange-*.c ] ]
+set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.c \
+			      $srcdir/$subdir/uns-block-*.c ] ]
 set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.c ] ]
 
 # Tests to be compiled.
