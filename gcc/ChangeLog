@@ -1,3 +1,12 @@
+2015-07-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-07-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/66930
+	* config/sh/sh.c (sh_split_movrt_negc_to_movt_xor): Add missing
+	T bit register modified_between_p check.
+
 2015-07-25  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
