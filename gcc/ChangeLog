@@ -1,3 +1,11 @@
+2015-07-25  Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-scop-detection.c: Include gimple-pretty-print.h.
+	(stmt_simple_for_scop_p): Print when a stmt is not handled in
+	Graphite.
+	(scopdet_basic_block_info): Print when a loop or bb cannot be
+	represented in Graphite.
+
 2015-07-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66648
