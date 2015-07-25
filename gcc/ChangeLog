@@ -1,3 +1,9 @@
+2015-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66648
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Emit main loop
+	execution guard when min_size is less than size_needed.
+
 2015-07-25  Sebastian Pop  <s.pop@samsung.com>
 
 	* doc/install.texi: Document supported versions of ISL.

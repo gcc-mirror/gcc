@@ -1,3 +1,8 @@
+2015-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66648
+	* gcc.target/i386/pr66648.c: New test.
+
 2015-07-25  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/graphite/graphite.exp: Include uns-*.c files in
