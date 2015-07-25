@@ -569,10 +569,8 @@ if test x$ac_tree_checking != x ; then
   AC_DEFINE(ENABLE_TREE_CHECKING, 1,
 [Define if you want all operations on trees (the basic data
    structure of the front ends) to be checked for dynamic type safety
-   at runtime.  This is moderately expensive.  The tree browser debugging
-   routines will also be enabled by this option.
+   at runtime.  This is moderately expensive.
    ])
-  TREEBROWSER=tree-browser.o
   TREECHECKING=yes
 fi
 if test x$ac_types_checking != x ; then
@@ -581,7 +579,6 @@ if test x$ac_types_checking != x ; then
    This is cheap.
    ])
 fi
-AC_SUBST(TREEBROWSER)
 AC_SUBST(TREECHECKING)
 if test x$ac_rtl_checking != x ; then
   AC_DEFINE(ENABLE_RTL_CHECKING, 1,
