@@ -216,7 +216,7 @@
 
 	PR middle-end/66984
 	* fold-const.c (fold_binary_loc): Call fold_convert on arguments to
-        fold_build2 for CEIL_DIV_EXPR and FLOOR_DIV_EXPR optimization.
+	fold_build2 for CEIL_DIV_EXPR and FLOOR_DIV_EXPR optimization.
 
 2015-07-24  Tom de Vries  <tom@codesourcery.com>
 
@@ -357,8 +357,8 @@
 
 2015-07-24  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
-         PR middle-end/25529
-         * match.pd (trunc_div (mult @0 integer_pow2p@1) @1) : New simplifier.
+	PR middle-end/25529
+	* match.pd (trunc_div (mult @0 integer_pow2p@1) @1) : New simplifier.
 
 2015-07-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
@@ -716,7 +716,7 @@
 	(aarch64_st4_lane<mode>): Ditto.
 	* config/aarch64/arm_neon.h (__LD2_LANE_FUNC): Rename mode parameter
 	to qmode. Add new mode parameter. Update uses.
-       	(__LD3_LANE_FUNC): Ditto.
+	(__LD3_LANE_FUNC): Ditto.
 	(__LD4_LANE_FUNC): Ditto.
 	(__ST2_LANE_FUNC): Ditto.
 	(__ST3_LANE_FUNC): Ditto.
