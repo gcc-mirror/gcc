@@ -1,3 +1,9 @@
+2015-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67004
+	* config/i386/i386.h (ADJUST_INSN_LENGTH): Use NONDEBUG_INSN_P (INSN)
+	predicate and INSN_CODE (INSN) >= 0 to check for valid instruction.
+
 2015-07-25  Sebastian Pop  <s.pop@samsung.com>
 
 	* Makefile.in: Remove use of TREEBROWSER.

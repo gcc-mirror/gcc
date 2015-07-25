@@ -2262,11 +2262,12 @@ do {									\
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
 
 /* Adjust the length of the insn with the length of BND prefix.  */
-#define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
-do {						\
-  if (recog_memoized (INSN) >= 0		\
-      && get_attr_maybe_prefix_bnd (INSN))	\
-    LENGTH += ix86_bnd_prefixed_insn_p (INSN);	\
+
+#define ADJUST_INSN_LENGTH(INSN, LENGTH)		\
+do {							\
+  if (NONDEBUG_INSN_P (INSN) && INSN_CODE (INSN) >= 0	\
+      && get_attr_maybe_prefix_bnd (INSN))		\
+    LENGTH += ix86_bnd_prefixed_insn_p (INSN);		\
 } while (0)
 
 /* Which processor to tune code generation for.  These must be in sync
