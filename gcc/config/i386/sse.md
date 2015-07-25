@@ -12971,7 +12971,7 @@
   [(set (match_operand:SWI48x 0 "nonimmediate_operand")
 	(match_operand:SWI48x 1 "register_operand"))]
   "can_create_pseudo_p ()
-   && GET_CODE (operands[1]) == SUBREG
+   && SUBREG_P (operands[1])
    && REG_P (SUBREG_REG (operands[1]))
    && (GET_MODE_CLASS (GET_MODE (SUBREG_REG (operands[1]))) == MODE_VECTOR_INT
        || (GET_MODE_CLASS (GET_MODE (SUBREG_REG (operands[1])))

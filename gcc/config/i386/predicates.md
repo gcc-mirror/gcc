@@ -101,7 +101,7 @@
   if ((!TARGET_64BIT || GET_MODE (op) != DImode)
       && GET_MODE (op) != SImode && GET_MODE (op) != HImode)
     return false;
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   /* Be careful to accept only registers having upper parts.  */
@@ -537,7 +537,7 @@
 (define_predicate "call_register_no_elim_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (!TARGET_64BIT && op == stack_pointer_rtx)
@@ -551,7 +551,7 @@
 (define_predicate "register_no_elim_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   return !(op == arg_pointer_rtx
 	   || op == frame_pointer_rtx
@@ -564,7 +564,7 @@
 (define_predicate "index_register_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   if (reload_completed)
     return REG_OK_FOR_INDEX_STRICT_P (op);
@@ -1126,9 +1126,9 @@
   ok = ix86_decompose_address (op, &parts);
   gcc_assert (ok);
 
-  if (parts.base && GET_CODE (parts.base) == SUBREG)
+  if (parts.base && SUBREG_P (parts.base))
     parts.base = SUBREG_REG (parts.base);
-  if (parts.index && GET_CODE (parts.index) == SUBREG)
+  if (parts.index && SUBREG_P (parts.index))
     parts.index = SUBREG_REG (parts.index);
 
   /* Look for some component that isn't known to be aligned.  */
