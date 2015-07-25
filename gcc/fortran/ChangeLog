@@ -1,3 +1,9 @@
+2015-07-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/64986
+	* trans-expr.c (gfc_trans_assignment_1): Put component deallocation
+	code at the beginning of the block.
+
 2015-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/66035
