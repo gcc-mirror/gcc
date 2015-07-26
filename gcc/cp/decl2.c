@@ -1531,15 +1531,18 @@ build_anon_union_vars (tree type, tree object)
 	continue;
       if (TREE_CODE (field) != FIELD_DECL)
 	{
-	  permerror (input_location, "%q+#D invalid; an anonymous union can only "
+	  permerror (DECL_SOURCE_LOCATION (field),
+		     "%q#D invalid; an anonymous union can only "
 		     "have non-static data members", field);
 	  continue;
 	}
 
       if (TREE_PRIVATE (field))
-	permerror (input_location, "private member %q+#D in anonymous union", field);
+	permerror (DECL_SOURCE_LOCATION (field),
+		   "private member %q#D in anonymous union", field);
       else if (TREE_PROTECTED (field))
-	permerror (input_location, "protected member %q+#D in anonymous union", field);
+	permerror (DECL_SOURCE_LOCATION (field),
+		   "protected member %q#D in anonymous union", field);
 
       if (processing_template_decl)
 	ref = build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF, object,
@@ -4764,7 +4767,8 @@ c_parse_final_cleanups (void)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
 				(template_for_substitution (decl)))))
 	{
-	  warning (0, "inline function %q+D used but never defined", decl);
+	  warning_at (DECL_SOURCE_LOCATION (decl), 0,
+		      "inline function %qD used but never defined", decl);
 	  /* Avoid a duplicate warning from check_global_declaration.  */
 	  TREE_NO_WARNING (decl) = 1;
 	}

@@ -389,7 +389,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
       FOR_EACH_VEC_ELT (*pure, ix, fn)
 	if (! DECL_CLONED_FUNCTION_P (fn)
 	    || DECL_COMPLETE_DESTRUCTOR_P (fn))
-	  inform (input_location, "\t%+#D", fn);
+	  inform (DECL_SOURCE_LOCATION (fn), "\t%#D", fn);
 
       /* Now truncate the vector.  This leaves it non-null, so we know
 	 there are pure virtuals, but empty so we don't list them out
@@ -473,8 +473,8 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 		     || TREE_CODE (value) == PARM_DECL
 		     || TREE_CODE (value) == FIELD_DECL))
     {
-      complained = emit_diagnostic (diag_kind, input_location, 0,
-				    "%q+D has incomplete type", value);
+      complained = emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (value), 0,
+				    "%qD has incomplete type", value);
       is_decl = true;
     } 
  retry:
