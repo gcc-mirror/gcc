@@ -1,3 +1,20 @@
+2015-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (poplevel): Use Use DECL_SOURCE_LOCATION and "%qD"
+	in warning_at instead of "%q+D" in warning.
+	(warn_extern_redeclared_static): Likewise for inform.
+	(check_redeclaration_no_default_args): Likewise for permerror.
+	(duplicate_decls): Likewise.
+	(check_previous_goto_1): Likewise for inform.
+	(check_goto, start_decl, check_for_uninitialized_const_var,
+	start_preparsed_function, finish_function§): Likewise.
+	* decl2.c (build_anon_union_vars, c_parse_final_cleanups): Likewise.
+	* init.c (sort_mem_initializers): Likewise.
+	* typeck.c (convert_for_initialization): Likewise for inform.
+	(maybe_warn_about_returning_address_of_local): Likewise.
+	* typeck2.c (abstract_virtuals_error_sfinae): Likewise for inform.
+	(cxx_incomplete_type_diagnostic): Likewise for emit_diagnostic.
+
 2015-07-25  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/66857
