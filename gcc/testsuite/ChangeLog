@@ -1,3 +1,11 @@
+2015-07-26  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/18969
+	* g++.dg/template/pr18969.C: New test.
+	* g++.dg/template/pr18969-2.C: New test.
+	* g++.old-deja/g++.jason/overload.C: Remove return value in
+	template function returning void.
+
 2015-07-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/alpha/pr66140.c (lpfc_bg_setup_bpl): Use unsigned
