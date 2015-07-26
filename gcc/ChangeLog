@@ -1,3 +1,8 @@
+2015-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c: Use SUBREG_P predicate.
+	* config/alpha/predicates.md: Ditto.
+
 2015-07-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config.host (s390*-*-*): Include driver-native.c only when
