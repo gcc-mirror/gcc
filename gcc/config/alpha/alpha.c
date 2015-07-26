@@ -700,7 +700,7 @@ resolve_reload_operand (rtx op)
   if (reload_in_progress)
     {
       rtx tmp = op;
-      if (GET_CODE (tmp) == SUBREG)
+      if (SUBREG_P (tmp))
 	tmp = SUBREG_REG (tmp);
       if (REG_P (tmp)
 	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER)
@@ -891,7 +891,7 @@ alpha_legitimate_address_p (machine_mode mode, rtx x, bool strict)
     x = XEXP (x, 0);
 
   /* Discard non-paradoxical subregs.  */
-  if (GET_CODE (x) == SUBREG
+  if (SUBREG_P (x)
       && (GET_MODE_SIZE (GET_MODE (x))
 	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
     x = SUBREG_REG (x);
@@ -919,7 +919,7 @@ alpha_legitimate_address_p (machine_mode mode, rtx x, bool strict)
       x = XEXP (x, 0);
 
       /* Discard non-paradoxical subregs.  */
-      if (GET_CODE (x) == SUBREG
+      if (SUBREG_P (x)
           && (GET_MODE_SIZE (GET_MODE (x))
 	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
 	x = SUBREG_REG (x);
@@ -953,7 +953,7 @@ alpha_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	  x = XEXP (x, 0);
 
 	  /* Discard non-paradoxical subregs.  */
-	  if (GET_CODE (x) == SUBREG
+	  if (SUBREG_P (x)
 	      && (GET_MODE_SIZE (GET_MODE (x))
 		  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
 	    x = SUBREG_REG (x);

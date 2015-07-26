@@ -134,7 +134,7 @@
 (define_predicate "hard_fp_register_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   return REGNO_REG_CLASS (REGNO (op)) == FLOAT_REGS;
 })
@@ -143,7 +143,7 @@
 (define_predicate "hard_int_register_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   return REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS;
 })
@@ -506,7 +506,7 @@
 (define_special_predicate "any_memory_operand"
   (match_code "mem,reg,subreg")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (MEM_P (op))
@@ -537,7 +537,7 @@
 (define_predicate "reg_not_elim_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   return op != frame_pointer_rtx && op != arg_pointer_rtx;
 })
