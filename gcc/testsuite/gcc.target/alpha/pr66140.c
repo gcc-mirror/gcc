@@ -34,7 +34,7 @@ static inline void lpfc_bg_setup_bpl(struct lpfc_hba *phba, struct scsi_cmnd *sc
 	void *sgde;
 	int i;
 
-	*pde5 = (((0x85 & 0x000000ff) << 24) | (*pde5 & ~(0x000000ff << 24)));
+	*pde5 = (((0x85 & 0x000000ffu) << 24) | (*pde5 & ~(0x000000ffu << 24)));
 	for (i = 0, sgde = scsi_sglist(sc); i < 2; i++, sgde = sg_next(sgde))
 		;
 }

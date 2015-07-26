@@ -1,3 +1,8 @@
+2015-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/alpha/pr66140.c (lpfc_bg_setup_bpl): Use unsigned
+	immediates to avoid shift-overflow warnings.
+
 2015-07-25  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/66857
