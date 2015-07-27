@@ -2951,6 +2951,32 @@ decision_tree::gen_gimple (FILE *f)
 
   for (unsigned n = 1; n <= 3; ++n)
     {
+      /* First generate split-out functions.  */
+      for (unsigned i = 0; i < root->kids.length (); i++)
+	{
+	  dt_operand *dop = static_cast<dt_operand *>(root->kids[i]);
+	  expr *e = static_cast<expr *>(dop->op);
+	  if (e->ops.length () != n)
+	    continue;
+
+	  fprintf (f, "\nstatic bool\n"
+		   "gimple_simplify_%s (code_helper *res_code, tree *res_ops,\n"
+		   "                 gimple_seq *seq, tree (*valueize)(tree) "
+		   "ATTRIBUTE_UNUSED,\n"
+		   "                 code_helper ARG_UNUSED (code), tree "
+		   "ARG_UNUSED (type)\n",
+		   e->operation->id);
+	  for (unsigned i = 0; i < n; ++i)
+	    fprintf (f, ", tree op%d", i);
+	  fprintf (f, ")\n");
+	  fprintf (f, "{\n");
+	  dop->gen_kids (f, 2, true);
+	  fprintf (f, "  return false;\n");
+	  fprintf (f, "}\n");
+	}
+
+      /* Then generate the main entry with the outermost switch and
+         tail-calls to the split-out functions.  */
       fprintf (f, "\nstatic bool\n"
 	       "gimple_simplify (code_helper *res_code, tree *res_ops,\n"
 	       "                 gimple_seq *seq, tree (*valueize)(tree),\n"
@@ -2976,10 +3002,11 @@ decision_tree::gen_gimple (FILE *f)
 	    fprintf (f, "    case %s%s:\n",
 		     is_a <fn_id *> (e->operation) ? "-" : "",
 		     e->operation->id);
-	  fprintf (f,   "      {\n");
-	  dop->gen_kids (f, 8, true);
-	  fprintf (f,   "        break;\n");
-	  fprintf (f,   "      }\n");
+	  fprintf (f, "      return gimple_simplify_%s (res_code, res_ops, "
+		   "seq, valueize, code, type", e->operation->id);
+	  for (unsigned i = 0; i < n; ++i)
+	    fprintf (f, ", op%d", i);
+	  fprintf (f, ");\n");
 	}
       fprintf (f,       "    default:;\n"
 	                "    }\n");
@@ -3003,6 +3030,34 @@ decision_tree::gen_generic (FILE *f)
 
   for (unsigned n = 1; n <= 3; ++n)
     {
+      /* First generate split-out functions.  */
+      for (unsigned i = 0; i < root->kids.length (); i++)
+	{
+	  dt_operand *dop = static_cast<dt_operand *>(root->kids[i]);
+	  expr *e = static_cast<expr *>(dop->op);
+	  if (e->ops.length () != n
+	      /* Builtin simplifications are somewhat premature on
+	         GENERIC.  The following drops patterns with outermost
+		 calls.  It's easy to emit overloads for function code
+		 though if necessary.  */
+	      || e->operation->kind != id_base::CODE)
+	    continue;
+
+	  fprintf (f, "\nstatic tree\n"
+		   "generic_simplify_%s (location_t ARG_UNUSED (loc), enum "
+		   "tree_code ARG_UNUSED (code), tree ARG_UNUSED (type)",
+		   e->operation->id);
+	  for (unsigned i = 0; i < n; ++i)
+	    fprintf (f, ", tree op%d", i);
+	  fprintf (f, ")\n");
+	  fprintf (f, "{\n");
+	  dop->gen_kids (f, 2, false);
+	  fprintf (f, "  return NULL_TREE;\n");
+	  fprintf (f, "}\n");
+	}
+
+      /* Then generate the main entry with the outermost switch and
+         tail-calls to the split-out functions.  */
       fprintf (f, "\ntree\n"
 	       "generic_simplify (location_t loc, enum tree_code code, "
 	       "tree type ATTRIBUTE_UNUSED");
@@ -3030,10 +3085,11 @@ decision_tree::gen_generic (FILE *f)
 	    fprintf (f, "    CASE_CONVERT:\n");
 	  else
 	    fprintf (f, "    case %s:\n", e->operation->id);
-	  fprintf (f,   "      {\n");
-	  dop->gen_kids (f, 8, false);
-	  fprintf (f,   "        break;\n"
-		        "      }\n");
+	  fprintf (f, "      return generic_simplify_%s (loc, code, type",
+		   e->operation->id);
+	  for (unsigned i = 0; i < n; ++i)
+	    fprintf (f, ", op%d", i);
+	  fprintf (f, ");\n");
 	}
       fprintf (f, "    default:;\n"
 	          "    }\n");
