@@ -17,7 +17,6 @@ struct s { int b; };
 void h (struct s x) { }
 
 void j(struct t2); /* { dg-warning "'struct t2' declared inside parameter list" } */
-/* { dg-warning "its scope is only" "explanation" { target *-*-* } 19 } */
 
 union u;
 
