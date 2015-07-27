@@ -1,3 +1,7 @@
+2015-07-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wtautological-compare-2.c: Remove unused line.
+
 2015-07-27  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/autopar/outer-4.c (parloop): Remove superfluous noinline
