@@ -6897,7 +6897,6 @@ get_parm_info (bool ellipsis, tree expr)
   tree types    = 0;
   tree others   = 0;
 
-  static bool explained_incomplete_types = false;
   bool gave_void_only_once_err = false;
 
   arg_info->had_vla_unspec = current_scope->had_vla_unspec;
@@ -7000,19 +6999,16 @@ get_parm_info (bool ellipsis, tree expr)
 	    {
 	      if (b->id)
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning (0, "%<%s %E%> declared inside parameter list",
-			 keyword, b->id);
+		warning_at (input_location, 0,
+			    "%<%s %E%> declared inside parameter list"
+			    " will not be visible outside of this definition or"
+			    " declaration", keyword, b->id);
 	      else
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning (0, "anonymous %s declared inside parameter list",
-			 keyword);
-
-	      if (!explained_incomplete_types)
-		{
-		  warning (0, "its scope is only this definition or declaration,"
-			   " which is probably not what you want");
-		  explained_incomplete_types = true;
-		}
+		warning_at (input_location, 0,
+			    "anonymous %s declared inside parameter list"
+			    " will not be visible outside of this definition or"
+			    " declaration", keyword);
 	    }
 
 	  tag.id = b->id;

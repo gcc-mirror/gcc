@@ -1,3 +1,9 @@
+2015-07-28  Luis Felipe Strano Moraes  <luis.strano@gmail.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-decl.c (get_parm_info): Remove static var. Update warning
+	message.
+
 2015-07-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/66555

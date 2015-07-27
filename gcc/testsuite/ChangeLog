@@ -1,3 +1,11 @@
+2015-07-28  Luis Felipe Strano Moraes  <luis.strano@gmail.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/parm-incomplete-1.c: Update.
+	* gcc.dg/pr18809-1.c: Update.
+	* gcc.dg/pr27953.c: Update.
+	* gcc.dg/vla-11.c: Update.
+
 2015-07-27  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/Wtautological-compare-2.c: Remove unused line.
