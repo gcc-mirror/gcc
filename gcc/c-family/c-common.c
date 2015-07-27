@@ -1890,6 +1890,12 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return;
 
+  /* Don't warn for various macro expansions.  */
+  if (from_macro_expansion_at (loc)
+      || from_macro_expansion_at (EXPR_LOCATION (lhs))
+      || from_macro_expansion_at (EXPR_LOCATION (rhs)))
+    return;
+
   /* We do not warn for constants because they are typical of macro
      expansions that test for features, sizeof, and similar.  */
   if (CONSTANT_CLASS_P (lhs) || CONSTANT_CLASS_P (rhs))
