@@ -1,3 +1,9 @@
+2015-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR debug/66468
+	* dwarf2out.c (gen_inlined_subroutine_die): Check
+	cgraph_function_possibly_inlined_p.
+
 2015-07-27  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc/config/aarch64/aarch64.md (aarch64_lshr_sisd_or_int_<mode>3):
