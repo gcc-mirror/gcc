@@ -1,6 +1,16 @@
 2015-07-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR/63870
+	* config/arm/arm-builtins.c (enum arm_builtins):
+	Add ARM_BUILTIN_NEON_BASE and ARM_BUILTIN_NEON_LANE_CHECK.
+	(ARM_BUILTIN_NEON_BASE): Rename macro to....
+	(ARM_BUILTIN_NEON_PATTERN_START): ...this.
+	(arm_init_neon_builtins): Register __builtin_arm_lane_check.
+	(arm_expand_neon_builtin): Handle ARM_BUILTIN_NEON_LANE_CHECK.
+
+2015-07-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR/63870
 	* config/arm/arm-builtins.c (enum arm_type_qualifiers):
 	Add qualifier_lane_index.
 	(arm_binop_imm_qualifiers, BINOP_IMM_QUALIFIERS): New.

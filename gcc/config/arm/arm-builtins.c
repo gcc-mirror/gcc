@@ -532,12 +532,16 @@ enum arm_builtins
 #undef CRYPTO2
 #undef CRYPTO3
 
+  ARM_BUILTIN_NEON_BASE,
+  ARM_BUILTIN_NEON_LANE_CHECK = ARM_BUILTIN_NEON_BASE,
+
 #include "arm_neon_builtins.def"
 
   ARM_BUILTIN_MAX
 };
 
-#define ARM_BUILTIN_NEON_BASE (ARM_BUILTIN_MAX - ARRAY_SIZE (neon_builtin_data))
+#define ARM_BUILTIN_NEON_PATTERN_START \
+    (ARM_BUILTIN_MAX - ARRAY_SIZE (neon_builtin_data))
 
 #undef CF
 #undef VAR1
@@ -896,7 +900,7 @@ arm_init_simd_builtin_scalar_types (void)
 static void
 arm_init_neon_builtins (void)
 {
-  unsigned int i, fcode = ARM_BUILTIN_NEON_BASE;
+  unsigned int i, fcode = ARM_BUILTIN_NEON_PATTERN_START;
 
   arm_init_simd_builtin_types ();
 
@@ -905,6 +909,15 @@ arm_init_neon_builtins (void)
      removed once all the intrinsics become strongly typed using the qualifier
      system.  */
   arm_init_simd_builtin_scalar_types ();
+
+  tree lane_check_fpr = build_function_type_list (void_type_node,
+						  intSI_type_node,
+						  intSI_type_node,
+						  NULL);
+  arm_builtin_decls[ARM_BUILTIN_NEON_LANE_CHECK] =
+      add_builtin_function ("__builtin_arm_lane_check", lane_check_fpr,
+			    ARM_BUILTIN_NEON_LANE_CHECK, BUILT_IN_MD,
+			    NULL, NULL_TREE);
 
   for (i = 0; i < ARRAY_SIZE (neon_builtin_data); i++, fcode++)
     {
@@ -2169,14 +2182,31 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
   return target;
 }
 
-/* Expand a Neon builtin. These are "special" because they don't have symbolic
+/* Expand a Neon builtin, i.e. those registered only if TARGET_NEON holds.
+   Most of these are "special" because they don't have symbolic
    constants defined per-instruction or per instruction-variant. Instead, the
    required info is looked up in the table neon_builtin_data.  */
 static rtx
 arm_expand_neon_builtin (int fcode, tree exp, rtx target)
 {
+  if (fcode == ARM_BUILTIN_NEON_LANE_CHECK)
+    {
+      /* Builtin is only to check bounds of the lane passed to some intrinsics
+	 that are implemented with gcc vector extensions in arm_neon.h.  */
+
+      tree nlanes = CALL_EXPR_ARG (exp, 0);
+      gcc_assert (TREE_CODE (nlanes) == INTEGER_CST);
+      rtx lane_idx = expand_normal (CALL_EXPR_ARG (exp, 1));
+      if (CONST_INT_P (lane_idx))
+	neon_lane_bounds (lane_idx, 0, TREE_INT_CST_LOW (nlanes), exp);
+      else
+	error ("%Klane index must be a constant immediate", exp);
+      /* Don't generate any RTL.  */
+      return const0_rtx;
+    }
+
   neon_builtin_datum *d =
-		&neon_builtin_data[fcode - ARM_BUILTIN_NEON_BASE];
+		&neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
   enum insn_code icode = d->code;
   builtin_arg args[SIMD_MAX_BUILTIN_ARGS];
   int num_args = insn_data[d->code].n_operands;
