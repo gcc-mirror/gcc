@@ -1,3 +1,8 @@
+2015-07-27  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_ashl_sisd_or_int_<mode>3):
+	Place integer variant first.
+
 2015-07-27  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-arches.def: Add "armv6kz". Replace 6ZK with 6KZ
