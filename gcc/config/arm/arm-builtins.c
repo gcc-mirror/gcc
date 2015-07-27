@@ -75,7 +75,9 @@ enum arm_type_qualifiers
   /* qualifier_const_pointer | qualifier_map_mode  */
   qualifier_const_pointer_map_mode = 0x86,
   /* Polynomial types.  */
-  qualifier_poly = 0x100
+  qualifier_poly = 0x100,
+  /* Lane indices - must be within range of previous argument = a vector.  */
+  qualifier_lane_index = 0x200
 };
 
 /*  The qualifier_internal allows generation of a unary builtin from
@@ -106,21 +108,40 @@ arm_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 
 /* T (T, immediate).  */
 static enum arm_type_qualifiers
-arm_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_immediate };
+#define BINOP_IMM_QUALIFIERS (arm_binop_imm_qualifiers)
+
+/* T (T, lane index).  */
+static enum arm_type_qualifiers
+arm_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_lane_index };
 #define GETLANE_QUALIFIERS (arm_getlane_qualifiers)
 
 /* T (T, T, T, immediate).  */
 static enum arm_type_qualifiers
-arm_lanemac_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_mac_n_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
       qualifier_none, qualifier_immediate };
-#define LANEMAC_QUALIFIERS (arm_lanemac_qualifiers)
+#define MAC_N_QUALIFIERS (arm_mac_n_qualifiers)
+
+/* T (T, T, T, lane index).  */
+static enum arm_type_qualifiers
+arm_mac_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_none, qualifier_lane_index };
+#define MAC_LANE_QUALIFIERS (arm_mac_lane_qualifiers)
 
 /* T (T, T, immediate).  */
 static enum arm_type_qualifiers
-arm_setlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_ternop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
+#define TERNOP_IMM_QUALIFIERS (arm_ternop_imm_qualifiers)
+
+/* T (T, T, lane index).  */
+static enum arm_type_qualifiers
+arm_setlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_lane_index };
 #define SETLANE_QUALIFIERS (arm_setlane_qualifiers)
 
 /* T (T, T).  */
@@ -1925,6 +1946,7 @@ arm_expand_unop_builtin (enum insn_code icode,
 typedef enum {
   NEON_ARG_COPY_TO_REG,
   NEON_ARG_CONSTANT,
+  NEON_ARG_LANE_INDEX,
   NEON_ARG_MEMORY,
   NEON_ARG_STOP
 } builtin_arg;
@@ -2041,6 +2063,16 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 		op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
 	      break;
 
+	    case NEON_ARG_LANE_INDEX:
+	      /* Previous argument must be a vector, which this indexes.  */
+	      gcc_assert (argc > 0);
+	      if (CONST_INT_P (op[argc]))
+		{
+		  enum machine_mode vmode = mode[argc - 1];
+		  neon_lane_bounds (op[argc], 0, GET_MODE_NUNITS (vmode), exp);
+		}
+	      /* Fall through - if the lane index isn't a constant then
+		 the next case will error.  */
 	    case NEON_ARG_CONSTANT:
 	      if (!(*insn_data[icode].operand[opno].predicate)
 		  (op[argc], mode[argc]))
@@ -2168,7 +2200,9 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
       int operands_k = k - is_void;
       int expr_args_k = k - 1;
 
-      if (d->qualifiers[qualifiers_k] & qualifier_immediate)
+      if (d->qualifiers[qualifiers_k] & qualifier_lane_index)
+	args[k] = NEON_ARG_LANE_INDEX;
+      else if (d->qualifiers[qualifiers_k] & qualifier_immediate)
 	args[k] = NEON_ARG_CONSTANT;
       else if (d->qualifiers[qualifiers_k] & qualifier_maybe_immediate)
 	{

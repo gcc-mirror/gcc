@@ -12789,12 +12789,12 @@ neon_expand_vector_init (rtx target, rtx vals)
 }
 
 /* Ensure OPERAND lies between LOW (inclusive) and HIGH (exclusive).  Raise
-   ERR if it doesn't.  FIXME: NEON bounds checks occur late in compilation, so
-   reported source locations are bogus.  */
+   ERR if it doesn't.  EXP indicates the source location, which includes the
+   inlining history for intrinsics.  */
 
 static void
 bounds_check (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
-	      const char *err)
+	      const_tree exp, const char *desc)
 {
   HOST_WIDE_INT lane;
 
@@ -12803,15 +12803,22 @@ bounds_check (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   lane = INTVAL (operand);
 
   if (lane < low || lane >= high)
-    error (err);
+    {
+      if (exp)
+	error ("%K%s %lld out of range %lld - %lld",
+	       exp, desc, lane, low, high - 1);
+      else
+	error ("%s %lld out of range %lld - %lld", desc, lane, low, high - 1);
+    }
 }
 
 /* Bounds-check lanes.  */
 
 void
-neon_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
+neon_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
+		  const_tree exp)
 {
-  bounds_check (operand, low, high, "lane out of range");
+  bounds_check (operand, low, high, exp, "lane");
 }
 
 /* Bounds-check constants.  */
@@ -12819,7 +12826,7 @@ neon_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 void
 neon_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 {
-  bounds_check (operand, low, high, "constant out of range");
+  bounds_check (operand, low, high, NULL_TREE, "constant");
 }
 
 HOST_WIDE_INT

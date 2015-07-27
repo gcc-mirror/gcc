@@ -2663,8 +2663,6 @@
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<MODE>mode));
-
   if (BYTES_BIG_ENDIAN)
     {
       /* The intrinsics are defined in terms of a model where the
@@ -2694,8 +2692,6 @@
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<MODE>mode));
-
   if (BYTES_BIG_ENDIAN)
     {
       /* The intrinsics are defined in terms of a model where the
@@ -2725,7 +2721,6 @@
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, 1);
   emit_move_insn (operands[0], operands[1]);
   DONE;
 })
@@ -2736,18 +2731,11 @@
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  switch (INTVAL (operands[2]))
-    {
-    case 0:
-      emit_move_insn (operands[0], gen_lowpart (DImode, operands[1]));
-      break;
-    case 1:
-      emit_move_insn (operands[0], gen_highpart (DImode, operands[1]));
-      break;
-    default:
-      neon_lane_bounds (operands[2], 0, 1);
-      FAIL;
-    }
+  int lane = INTVAL (operands[2]);
+  gcc_assert ((lane ==0) || (lane == 1));
+  emit_move_insn (operands[0], lane == 0
+				? gen_lowpart (DImode, operands[1])
+				: gen_highpart (DImode, operands[1]));
   DONE;
 })
 
@@ -2759,7 +2747,6 @@
   "TARGET_NEON"
 {
   unsigned int elt = INTVAL (operands[3]);
-  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
 
   if (BYTES_BIG_ENDIAN)
     {
@@ -2782,7 +2769,6 @@
    (match_operand:SI 3 "immediate_operand" "i")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[3], 0, 1);
   emit_move_insn (operands[0], operands[1]);
   DONE;
 })
@@ -2864,7 +2850,6 @@
    (match_operand:SI 2 "immediate_operand" "i")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<V_double_vector_mode>mode));
   if (BYTES_BIG_ENDIAN)
     {
       unsigned int elt = INTVAL (operands[2]);
@@ -2885,7 +2870,6 @@
    (match_operand:SI 2 "immediate_operand" "i")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, 1);
   emit_move_insn (operands[0], operands[1]);
   DONE;
 })
@@ -2897,7 +2881,6 @@
    (match_operand:SI 2 "immediate_operand" "i")]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, 1);
   emit_insn (gen_neon_vdup_nv2di (operands[0], operands[1]));
   DONE;
 })
@@ -3097,7 +3080,6 @@
                     UNSPEC_VMUL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmul.<V_if_elem>\t%P0, %P1, %P2[%c3]";
 }
   [(set (attr "type")
@@ -3115,7 +3097,6 @@
                     UNSPEC_VMUL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<V_HALF>mode));
   return "vmul.<V_if_elem>\t%q0, %q1, %P2[%c3]";
 }
   [(set (attr "type")
@@ -3133,7 +3114,6 @@
                           VMULL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmull.<sup>%#<V_sz_elem>\t%q0, %P1, %P2[%c3]";
 }
   [(set_attr "type" "neon_mul_<V_elem_ch>_scalar_long")]
@@ -3148,7 +3128,6 @@
                           UNSPEC_VQDMULL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vqdmull.<V_s_elem>\t%q0, %P1, %P2[%c3]";
 }
   [(set_attr "type" "neon_sat_mul_<V_elem_ch>_scalar_long")]
@@ -3163,7 +3142,6 @@
                       VQDMULH_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vq<r>dmulh.<V_s_elem>\t%q0, %q1, %P2[%c3]";
 }
   [(set_attr "type" "neon_sat_mul_<V_elem_ch>_scalar_q")]
@@ -3178,7 +3156,6 @@
                       VQDMULH_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vq<r>dmulh.<V_s_elem>\t%P0, %P1, %P2[%c3]";
 }
   [(set_attr "type" "neon_sat_mul_<V_elem_ch>_scalar_q")]
@@ -3194,7 +3171,6 @@
                      UNSPEC_VMLA_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmla.<V_if_elem>\t%P0, %P2, %P3[%c4]";
 }
   [(set (attr "type")
@@ -3213,7 +3189,6 @@
                      UNSPEC_VMLA_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmla.<V_if_elem>\t%q0, %q2, %P3[%c4]";
 }
   [(set (attr "type")
@@ -3232,7 +3207,6 @@
                           VMLAL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmlal.<sup>%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set_attr "type" "neon_mla_<V_elem_ch>_scalar_long")]
@@ -3248,7 +3222,6 @@
                           UNSPEC_VQDMLAL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vqdmlal.<V_s_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set_attr "type" "neon_sat_mla_<V_elem_ch>_scalar_long")]
@@ -3264,7 +3237,6 @@
                     UNSPEC_VMLS_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmls.<V_if_elem>\t%P0, %P2, %P3[%c4]";
 }
   [(set (attr "type")
@@ -3283,7 +3255,6 @@
                     UNSPEC_VMLS_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmls.<V_if_elem>\t%q0, %q2, %P3[%c4]";
 }
   [(set (attr "type")
@@ -3302,7 +3273,6 @@
                           VMLSL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vmlsl.<sup>%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set_attr "type" "neon_mla_<V_elem_ch>_scalar_long")]
@@ -3318,7 +3288,6 @@
                           UNSPEC_VQDMLSL_LANE))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
   return "vqdmlsl.<V_s_elem>\t%q0, %P2, %P3[%c4]";
 }
   [(set_attr "type" "neon_sat_mla_<V_elem_ch>_scalar_long")]
