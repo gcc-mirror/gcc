@@ -19905,6 +19905,10 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
 
   decl = block_ultimate_origin (stmt);
 
+  /* Make sure any inlined functions are known to be inlineable.  */
+  gcc_checking_assert (DECL_ABSTRACT_P (decl)
+		       || cgraph_function_possibly_inlined_p (decl));
+
   /* Emit info for the abstract instance first, if we haven't yet.  We
      must emit this even if the block is abstract, otherwise when we
      emit the block below (or elsewhere), we may end up trying to emit
