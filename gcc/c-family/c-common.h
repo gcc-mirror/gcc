@@ -812,6 +812,7 @@ extern bool warn_if_unused_value (const_tree, location_t);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree);
+extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
 extern void check_main_parameter_types (tree decl);
 extern bool c_determine_visibility (tree);
 extern bool vector_types_compatible_elements_p (tree, tree);

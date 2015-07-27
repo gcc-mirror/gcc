@@ -3430,6 +3430,9 @@ parser_build_binary_op (location_t location, enum tree_code code,
     warn_logical_operator (location, code, TREE_TYPE (result.value),
 			   code1, arg1.value, code2, arg2.value);
 
+  if (warn_tautological_compare)
+    warn_tautological_cmp (location, code, arg1.value, arg2.value);
+
   if (warn_logical_not_paren
       && TREE_CODE_CLASS (code) == tcc_comparison
       && code1 == TRUTH_NOT_EXPR

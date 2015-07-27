@@ -283,7 +283,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wsuggest-final-types @gol -Wsuggest-final-methods -Wsuggest-override @gol
 -Wmissing-format-attribute @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
--Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
+-Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
+-Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
@@ -3452,6 +3453,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
+-Wbool-compare  @gol
 -Wcomment  @gol
 -Wformat   @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
@@ -3468,6 +3470,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wstrict-aliasing  @gol
 -Wstrict-overflow=1  @gol
 -Wswitch  @gol
+-Wtautological-compare  @gol
 -Wtrigraphs  @gol
 -Wuninitialized  @gol
 -Wunknown-pragmas  @gol
@@ -4512,6 +4515,18 @@ GCC to emit warnings from system headers as if they occurred in user
 code.  However, note that using @option{-Wall} in conjunction with this
 option does @emph{not} warn about unknown pragmas in system
 headers---for that, @option{-Wunknown-pragmas} must also be used.
+
+@item -Wtautological-compare
+@opindex Wtautological-compare
+@opindex Wno-tautological-compare
+Warn if a self-comparison always evaluates to true or false.  This
+warning detects various mistakes such as:
+@smallexample
+int i = 1;
+@dots{}
+if (i > i) @{ @dots{} @}
+@end smallexample
+This warning is enabled by @option{-Wall}.
 
 @item -Wtrampolines
 @opindex Wtrampolines

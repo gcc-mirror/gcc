@@ -1,3 +1,9 @@
+2015-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66555
+	PR c/54979
+	* doc/invoke.texi: Document -Wtautological-compare.
+
 2015-07-27  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (decision_tree::gen_gimple): Split out large
