@@ -374,7 +374,7 @@ enum base_architecture
   BASE_ARCH_5TEJ = 5,
   BASE_ARCH_6 = 6,
   BASE_ARCH_6J = 6,
-  BASE_ARCH_6ZK = 6,
+  BASE_ARCH_6KZ = 6,
   BASE_ARCH_6K = 6,
   BASE_ARCH_6T2 = 6,
   BASE_ARCH_6M = 6,

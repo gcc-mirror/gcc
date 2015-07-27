@@ -801,6 +801,9 @@ int arm_arch6 = 0;
 /* Nonzero if this chip supports the ARM 6K extensions.  */
 int arm_arch6k = 0;
 
+/* Nonzero if this chip supports the ARM 6KZ extensions.  */
+int arm_arch6kz = 0;
+
 /* Nonzero if instructions present in ARMv6-M can be used.  */
 int arm_arch6m = 0;
 
@@ -3043,6 +3046,7 @@ arm_option_override (void)
   arm_arch5e = (insn_flags & FL_ARCH5E) != 0;
   arm_arch6 = (insn_flags & FL_ARCH6) != 0;
   arm_arch6k = (insn_flags & FL_ARCH6K) != 0;
+  arm_arch6kz = arm_arch6k && (insn_flags & FL_ARCH6KZ);
   arm_arch_notm = (insn_flags & FL_NOTM) != 0;
   arm_arch6m = arm_arch6 && !arm_arch_notm;
   arm_arch7 = (insn_flags & FL_ARCH7) != 0;
