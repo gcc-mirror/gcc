@@ -2370,6 +2370,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   loop_vec_info simple_loop_info;
 
   simple_loop_info = vect_analyze_loop_form (loop);
+  if (simple_loop_info == NULL)
+    return;
 
   for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -2381,15 +2383,16 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
       if (virtual_operand_p (res))
 	continue;
 
-      if (!simple_iv (loop, loop, res, &iv, true)
-	&& simple_loop_info)
-	{
-	   gimple reduc_stmt
-	     = vect_force_simple_reduction (simple_loop_info, phi, true,
-					    &double_reduc, true);
-	   if (reduc_stmt && !double_reduc)
-              build_new_reduction (reduction_list, reduc_stmt, phi);
-        }
+      if (simple_iv (loop, loop, res, &iv, true))
+	continue;
+
+      gimple reduc_stmt
+	= vect_force_simple_reduction (simple_loop_info, phi, true,
+				       &double_reduc, true);
+      if (!reduc_stmt || double_reduc)
+	continue;
+
+      build_new_reduction (reduction_list, reduc_stmt, phi);
     }
   destroy_loop_vec_info (simple_loop_info, true);
 
