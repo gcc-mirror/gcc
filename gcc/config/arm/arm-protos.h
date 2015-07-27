@@ -86,7 +86,7 @@ extern void neon_pairwise_reduce (rtx, rtx, machine_mode,
 extern rtx neon_make_constant (rtx);
 extern tree arm_builtin_vectorized_function (tree, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
-extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 extern void neon_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT neon_element_bits (machine_mode);
 extern void neon_reinterpret (rtx, rtx);
