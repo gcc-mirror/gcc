@@ -6,7 +6,7 @@ void abort (void);
 unsigned int g_sum=0;
 unsigned int x[500][500];
 
-void __attribute__((noinline))
+void
 parloop (int N)
 {
   int i, j;
@@ -22,15 +22,6 @@ parloop (int N)
 
   g_sum = sum;
 }
-
-int
-main (void)
-{
-  parloop (500);
-
-  return 0;
-}
-
 
 /* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" } } */

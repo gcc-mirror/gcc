@@ -1,3 +1,13 @@
+2015-07-27  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/autopar/outer-4.c (parloop): Remove superfluous noinline
+	attribute.  Update comment.
+	(main): Remove.
+	Add scan for not parallelizing inner loop.
+	* gcc.dg/autopar/uns-outer-4.c (parloop): Remove superfluous noinline
+	attribute.
+	(main): Remove.
+
 2015-07-27  Marek Polacek  <polacek@redhat.com>
 
 	PR bootstrap/67030

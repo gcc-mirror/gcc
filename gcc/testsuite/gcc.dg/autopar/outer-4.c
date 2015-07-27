@@ -6,15 +6,16 @@ void abort (void);
 int g_sum=0;
 int x[500][500];
 
-__attribute__((noinline))
-void parloop (int N)
+void
+parloop (int N)
 {
   int i, j;
   int sum;
 
-  /* Double reduction is currently not supported, outer loop is not 
-     parallelized.  Inner reduction is detected, inner loop is 
-     parallelized.  */
+  /* The inner reduction is not recognized as reduction because we cannot assume
+     that int wraps on overflow.  The way to fix this is to implement the
+     reduction operation in unsigned type, but we've not yet implemented
+     this.  */
   sum = 0;
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
@@ -23,13 +24,7 @@ void parloop (int N)
   g_sum = sum;
 }
 
-int main(void)
-{
-  parloop(500);
 
-  return 0;
-}
-
-
+/* { dg-final { scan-tree-dump-times "parallelizing inner loop" 0 "parloops" } } */
 /* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" { xfail *-*-* } } } */
