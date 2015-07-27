@@ -1,3 +1,8 @@
+2015-07-27  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_call_expression): Don't add this call to
+	the hash table if !depth_ok.
+
 2015-07-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/66555
