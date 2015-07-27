@@ -2,8 +2,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wtautological-compare" } */
 
-extern int foo (void);
-
 #define A a
 #define B A
 #define FOO (A > B)
