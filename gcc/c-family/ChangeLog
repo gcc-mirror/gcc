@@ -1,5 +1,10 @@
 2015-07-27  Marek Polacek  <polacek@redhat.com>
 
+	PR bootstrap/67030
+	* c-common.c (warn_tautological_cmp): Don't warn for macro expansion.
+
+2015-07-27  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/66555
 	PR c/54979
 	* c-common.c (find_array_ref_with_const_idx_r): New function.
