@@ -1,3 +1,10 @@
+2015-07-27  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-07-27  Marek Polacek  <polacek@redhat.com>
+
+	* ipa-devirt.c (types_same_for_odr): Fix typo.
+
 2015-07-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
