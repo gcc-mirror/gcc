@@ -1,3 +1,9 @@
+2015-07-27  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (decision_tree::gen_gimple): Split out large
+	subtrees into separate functions.
+	(decision_tree::gen_generic): Likewise.
+
 2015-07-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c: Use SUBREG_P predicate.
