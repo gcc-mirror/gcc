@@ -848,6 +848,10 @@ Wsystem-headers
 C ObjC C++ ObjC++ Warning
 ; Documented in common.opt
 
+Wtautological-compare
+C ObjC C++ ObjC++ Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn if a comparison always evaluates to true or false
+
 Wterminate
 C++ ObjC++ Warning Var(warn_terminate) Init(1)
 Warn if a throw expression will always result in a call to terminate()

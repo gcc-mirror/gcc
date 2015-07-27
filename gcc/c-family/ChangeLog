@@ -1,3 +1,12 @@
+2015-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66555
+	PR c/54979
+	* c-common.c (find_array_ref_with_const_idx_r): New function.
+	(warn_tautological_cmp): New function.
+	* c-common.h (warn_tautological_cmp): Declare.
+	* c.opt (Wtautological-compare): New option.
+
 2015-07-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-ubsan.c (ubsan_instrument_division): Use unshare_expr throughout.

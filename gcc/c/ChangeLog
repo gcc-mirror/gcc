@@ -1,3 +1,9 @@
+2015-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66555
+	PR c/54979
+	* c-typeck.c (parser_build_binary_op): Call warn_tautological_cmp.
+
 2015-07-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/55095
