@@ -5936,7 +5936,6 @@ thread_prologue_and_epilogue_insns (void)
      uses the flag in the meantime.  */
   epilogue_completed = 1;
 
-#ifdef HAVE_eh_return
   /* Find non-fallthru edges that end with EH_RETURN instructions.  On
      some targets, these get split to a special version of the epilogue
      code.  In order to be able to properly annotate these with unwind
@@ -5960,7 +5959,6 @@ thread_prologue_and_epilogue_insns (void)
       record_insns (NEXT_INSN (prev), NEXT_INSN (trial), &epilogue_insn_hash);
       emit_note_after (NOTE_INSN_EPILOGUE_BEG, prev);
     }
-#endif
 
   /* If nothing falls through into the exit block, we don't need an
      epilogue.  */
