@@ -1,3 +1,11 @@
+2015-07-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_addsi3_internal): New function.
+	Optimizes the case where -mes0 is active and a constant symbolic
+	address is used.
+	* config/rl78/rl78-protos.h: Prototype the new function.
+	* config/rl78/rl78.md (addsi3_internal_real): Call new function.
+
 2015-07-28  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (reduc_stmt_res): New function.
