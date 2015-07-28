@@ -1,3 +1,7 @@
+2015-07-28  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c/uns-outer-4.c: New test.
+
 2015-07-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.c/pr66714.c: New test.
