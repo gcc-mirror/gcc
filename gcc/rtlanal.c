@@ -3571,10 +3571,7 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
       machine_mode xmode_unit;
 
       nregs_xmode = HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode);
-      if (GET_MODE_INNER (xmode) == VOIDmode)
-	xmode_unit = xmode;
-      else
-	xmode_unit = GET_MODE_INNER (xmode);
+      xmode_unit = GET_MODE_INNER (xmode);
       gcc_assert (HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode_unit));
       gcc_assert (nregs_xmode
 		  == (GET_MODE_NUNITS (xmode)

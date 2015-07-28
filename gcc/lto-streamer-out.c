@@ -2682,7 +2682,7 @@ lto_write_mode_table (void)
     if (streamer_mode_table[i])
       {
 	machine_mode m = (machine_mode) i;
-	if (GET_MODE_INNER (m) != VOIDmode)
+	if (GET_MODE_INNER (m) != m)
 	  streamer_mode_table[(int) GET_MODE_INNER (m)] = 1;
       }
   /* First stream modes that have GET_MODE_INNER (m) == VOIDmode,
@@ -2692,7 +2692,7 @@ lto_write_mode_table (void)
       if (streamer_mode_table[i] && i != (int) VOIDmode && i != (int) BLKmode)
 	{
 	  machine_mode m = (machine_mode) i;
-	  if ((GET_MODE_INNER (m) == VOIDmode) ^ (pass == 0))
+	  if ((GET_MODE_INNER (m) == m) ^ (pass == 0))
 	    continue;
 	  bp_pack_value (&bp, m, 8);
 	  bp_pack_enum (&bp, mode_class, MAX_MODE_CLASS, GET_MODE_CLASS (m));

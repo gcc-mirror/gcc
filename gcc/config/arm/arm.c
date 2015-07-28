@@ -12238,17 +12238,15 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
   bool vector = GET_CODE (op) == CONST_VECTOR;
 
   if (vector)
-    {
-      n_elts = CONST_VECTOR_NUNITS (op);
-      innersize = GET_MODE_SIZE (GET_MODE_INNER (mode));
-    }
+    n_elts = CONST_VECTOR_NUNITS (op);
   else
     {
       n_elts = 1;
       if (mode == VOIDmode)
 	mode = DImode;
-      innersize = GET_MODE_SIZE (mode);
     }
+
+  innersize = GET_MODE_SIZE (GET_MODE_INNER (mode));
 
   /* Vectors of float constants.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
@@ -12832,10 +12830,7 @@ neon_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 HOST_WIDE_INT
 neon_element_bits (machine_mode mode)
 {
-  if (mode == DImode)
-    return GET_MODE_BITSIZE (mode);
-  else
-    return GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+  return GET_MODE_BITSIZE (GET_MODE_INNER (mode));
 }
 
 

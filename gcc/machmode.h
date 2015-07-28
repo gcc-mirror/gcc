@@ -209,7 +209,9 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[MODE]
 
-/* Return the mode of the inner elements in a vector.  */
+/* Return the mode of the basic parts of MODE.  For vector modes this is the
+   mode of the vector elements.  For complex modes it is the mode of the real
+   and imaginary parts.  For other modes it is MODE itself.  */
 
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 #if GCC_VERSION >= 4001
@@ -220,21 +222,15 @@ extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 #define GET_MODE_INNER(MODE) ((machine_mode) mode_inner[MODE])
 #endif
 
-/* Get the size in bytes or bites of the basic parts of an
+/* Get the size in bytes or bits of the basic parts of an
    object of mode MODE.  */
 
-#define GET_MODE_UNIT_SIZE(MODE)		\
-  (GET_MODE_INNER (MODE) == VOIDmode		\
-   ? GET_MODE_SIZE (MODE)			\
-   : GET_MODE_SIZE (GET_MODE_INNER (MODE)))
+#define GET_MODE_UNIT_SIZE(MODE) GET_MODE_SIZE (GET_MODE_INNER (MODE))
 
 #define GET_MODE_UNIT_BITSIZE(MODE) \
   ((unsigned short) (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT))
 
-#define GET_MODE_UNIT_PRECISION(MODE)		\
-  (GET_MODE_INNER (MODE) == VOIDmode		\
-   ? GET_MODE_PRECISION (MODE)			\
-   : GET_MODE_PRECISION (GET_MODE_INNER (MODE)))
+#define GET_MODE_UNIT_PRECISION(MODE) GET_MODE_PRECISION (GET_MODE_INNER (MODE))
 
 /* Get the number of units in the object.  */
 
@@ -319,10 +315,6 @@ extern CONST_MODE_BASE_ALIGN unsigned char mode_base_align[NUM_MACHINE_MODES];
 extern unsigned get_mode_alignment (machine_mode);
 
 #define GET_MODE_ALIGNMENT(MODE) get_mode_alignment (MODE)
-
-/* Get the precision of the mode or its inner mode if it has one.  */
-
-extern unsigned int element_precision (machine_mode);
 
 /* For each class, get the narrowest mode in that class.  */
 

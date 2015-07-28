@@ -1039,7 +1039,7 @@ mode_inner_inline (machine_mode mode)\n\
   for_all_modes (c, m)
     printf ("    case %smode: return %smode;\n", m->name,
 	    c != MODE_PARTIAL_INT && m->component
-	    ? m->component->name : void_mode->name);
+	    ? m->component->name : m->name);
 
   puts ("\
     default: return mode_inner[mode];\n\
@@ -1338,7 +1338,7 @@ emit_mode_inner (void)
   for_all_modes (c, m)
     tagged_printf ("%smode",
 		   c != MODE_PARTIAL_INT && m->component
-		   ? m->component->name : void_mode->name,
+		   ? m->component->name : m->name,
 		   m->name);
 
   print_closer ();

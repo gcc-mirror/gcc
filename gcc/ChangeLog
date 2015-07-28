@@ -1,3 +1,26 @@
+2015-07-28  David Sherwood  <david.sherwood@arm.com>
+
+	* config/arm/arm.c (neon_element_bits, neon_valid_immediate): Call
+	GET_MODE_INNER unconditionally.
+	* config/spu/spu.c (arith_immediate_p): Likewise.
+	* config/i386/i386.c (ix86_build_signbit_mask): Likewise.
+	* expmed.c (synth_mult): Remove check for VOIDmode result from
+	GET_MODE_INNER.
+	(expand_mult_const): Likewise.
+	* fold-const.c (fold_binary_loc): Replace call to element_precision
+	with call to GET_MODE_PRECISION.
+	* genmodes.c (emit_mode_inner_inline): Replace void_mode->name with
+	m->name.
+	(emit_mode_inner): Likewise.
+	* lto-streamer-out.c (lto_write_mode_table): Update GET_MODE_INNER
+	result check.
+	* machmode.h (GET_MODE_UNIT_SIZE): Simplify.
+	(GET_MODE_UNIT_PRECISION): Likewise.
+	* rtlanal.c (subreg_get_info): Call GET_MODE_INNER unconditionally.
+	* simplify-rtx.c (simplify_immed_subreg): Likewise.
+	* stor-layout.c (bitwise_type_for_mode): Update assert.
+	(element_precision): Remove.
+
 2015-07-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* target-insns.def (reload_load_address): New targetm instruction

@@ -2427,8 +2427,6 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 
   /* Be prepared for vector modes.  */
   imode = GET_MODE_INNER (mode);
-  if (imode == VOIDmode)
-    imode = mode;
 
   maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (imode));
 
@@ -3088,8 +3086,6 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
   /* Compare only the bits of val and val_so_far that are significant
      in the result mode, to avoid sign-/zero-extension confusion.  */
   nmode = GET_MODE_INNER (mode);
-  if (nmode == VOIDmode)
-    nmode = mode;
   val &= GET_MODE_MASK (nmode);
   val_so_far &= GET_MODE_MASK (nmode);
   gcc_assert (val == val_so_far);
