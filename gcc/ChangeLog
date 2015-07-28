@@ -1,5 +1,13 @@
 2015-07-28  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (eh_return): New targetm instruction pattern.
+	* except.c (expand_eh_return): Use it instead of HAVE_*/gen_*
+	interface.
+	* function.c (thread_prologue_and_epilogue_insns): Remove
+	preprocessor condition.
+
+2015-07-28  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (indirect_jump): New targetm instruction pattern.
 	* optabs.c (emit_indirect_jump): Use it instead of HAVE_*/gen_*
 	interface.
