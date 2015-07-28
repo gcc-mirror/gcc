@@ -1378,8 +1378,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  /* If the built-in is not ansi, then programs can override
 	     it even globally without an error.  */
 	  else if (! DECL_BUILT_IN (olddecl))
-	    warning (0, "library function %q#D redeclared as non-function %q+#D",
-		     olddecl, newdecl);
+	    warning_at (DECL_SOURCE_LOCATION (newdecl), 0,
+			"library function %q#D redeclared as non-function %q#D",
+			olddecl, newdecl);
 	  else
 	    error ("declaration of %q+#D conflicts with built-in "
 		   "declaration %q#D", newdecl, olddecl);

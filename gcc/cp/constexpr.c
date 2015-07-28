@@ -829,7 +829,8 @@ explain_invalid_constexpr_fn (tree fun)
 
   save_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (fun);
-  inform (0, "%q+D is not usable as a constexpr function because:", fun);
+  inform (input_location,
+	  "%qD is not usable as a constexpr function because:", fun);
   /* First check the declaration.  */
   if (is_valid_constexpr_fn (fun, true))
     {

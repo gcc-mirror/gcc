@@ -1,3 +1,23 @@
+2015-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_op_delete_call, convert_like_real, build_over_call):
+	Use Use DECL_SOURCE_LOCATION and "%qD" in inform and pedwarn instead
+	of "%q+D".
+	* constexpr.c (explain_invalid_constexpr_fn): Likewise.
+	* decl.c (duplicate_decls): Likewise for warning/warning_at.
+	* except.c (maybe_noexcept_warning): Likewise.
+	* friend.c (make_friend_class): Likewise for inform.
+	* mangle.c (mangle_decl): Likewise for warning/warning_at.
+	* method.c (process_subob_fn, walk_field_subobs,
+	maybe_explain_implicit_delete): Likewise for inform.
+	* parser.c (cp_parser_lambda_introducer): Likewise.
+	* pt.c (check_specialization_namespace,
+	maybe_process_partial_specialization): Likewise for permerror.
+	(redeclare_class_template): Likewise for inform_n.
+	(coerce_template_parms, tsubst_copy_and_build): Likewise for inform.
+	* search.c (check_final_overrider): Likewise.
+	* semantics.c (process_outer_var_ref): Likewise.
+
 2015-07-27  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_eval_call_expression): Don't add this call to

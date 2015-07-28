@@ -3633,15 +3633,17 @@ mangle_decl (const tree decl)
 	{
 	  if (flag_abi_compat_version != 0
 	      && abi_version_at_least (flag_abi_compat_version))
-	    warning (OPT_Wabi, "the mangled name of %q+D changed between "
-		     "-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-		     G.entity, flag_abi_compat_version, id2,
-		     flag_abi_version, id);
+	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
+			"the mangled name of %qD changed between "
+			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
+			G.entity, flag_abi_compat_version, id2,
+			flag_abi_version, id);
 	  else
-	    warning (OPT_Wabi, "the mangled name of %q+D changes between "
-		     "-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-		     G.entity, flag_abi_version, id,
-		     flag_abi_compat_version, id2);
+	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
+			"the mangled name of %qD changes between "
+			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
+			G.entity, flag_abi_version, id,
+			flag_abi_compat_version, id2);
 	}
 
       note_mangling_alias (decl, id2);

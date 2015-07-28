@@ -9251,7 +9251,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	      error_at (capture_token->location,
 			"capture of non-variable %qD ",
 			capture_init_expr);
-	      inform (0, "%q+#D declared here", capture_init_expr);
+	      inform (DECL_SOURCE_LOCATION (capture_init_expr),
+		      "%q#D declared here", capture_init_expr);
 	      continue;
 	    }
 	  if (VAR_P (capture_init_expr)
@@ -9260,7 +9261,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	      if (pedwarn (capture_token->location, 0, "capture of variable "
 			   "%qD with non-automatic storage duration",
 			   capture_init_expr))
-		inform (0, "%q+#D declared here", capture_init_expr);
+		inform (DECL_SOURCE_LOCATION (capture_init_expr),
+			"%q#D declared here", capture_init_expr);
 	      continue;
 	    }
 

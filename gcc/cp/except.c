@@ -1200,8 +1200,9 @@ maybe_noexcept_warning (tree fn)
     {
       warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
 	       "because of a call to %qD", fn);
-      warning (OPT_Wnoexcept, "but %q+D does not throw; perhaps "
-	       "it should be declared %<noexcept%>", fn);
+      warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wnoexcept,
+		  "but %qD does not throw; perhaps "
+		  "it should be declared %<noexcept%>", fn);
     }
 }
 
