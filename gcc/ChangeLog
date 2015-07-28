@@ -1,3 +1,8 @@
+2015-07-28  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Re-order two cases in comparison with max/min
+	value simplification to make it apply for bools.
+
 2015-07-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_arith_op_extract_p):

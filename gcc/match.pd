@@ -1856,12 +1856,6 @@ along with GCC; see the file COPYING3.  If not see
 	{ constant_boolean_node (true, type); })
        (if (cmp == LT_EXPR)
 	(ne @2 @1))))
-     (if (wi::eq_p (@1, max - 1))
-      (switch
-       (if (cmp == GT_EXPR)
-        (eq @2 { wide_int_to_tree (TREE_TYPE (@1), wi::add (@1, 1)); }))
-       (if (cmp == LE_EXPR)
-        (ne @2 { wide_int_to_tree (TREE_TYPE (@1), wi::add (@1, 1)); }))))
      (if (wi::eq_p (@1, min))
       (switch
        (if (cmp == LT_EXPR)
@@ -1872,6 +1866,12 @@ along with GCC; see the file COPYING3.  If not see
         { constant_boolean_node (true, type); })
        (if (cmp == GT_EXPR)
         (ne @2 @1))))
+     (if (wi::eq_p (@1, max - 1))
+      (switch
+       (if (cmp == GT_EXPR)
+        (eq @2 { wide_int_to_tree (TREE_TYPE (@1), wi::add (@1, 1)); }))
+       (if (cmp == LE_EXPR)
+        (ne @2 { wide_int_to_tree (TREE_TYPE (@1), wi::add (@1, 1)); }))))
      (if (wi::eq_p (@1, min + 1))
       (switch
        (if (cmp == GE_EXPR)
