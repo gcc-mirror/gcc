@@ -31,6 +31,7 @@
 
    Instructions should be documented in md.texi rather than here.  */
 DEF_TARGET_INSN (allocate_stack, (rtx x0, rtx x1))
+DEF_TARGET_INSN (atomic_test_and_set, (rtx x0, rtx x1, rtx x2))
 DEF_TARGET_INSN (builtin_longjmp, (rtx x0))
 DEF_TARGET_INSN (builtin_setjmp_receiver, (rtx x0))
 DEF_TARGET_INSN (builtin_setjmp_setup, (rtx x0))
