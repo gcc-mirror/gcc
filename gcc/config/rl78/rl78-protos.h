@@ -18,6 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+const char *    rl78_addsi3_internal (rtx *, unsigned int);
 void		rl78_emit_eh_epilogue (rtx);
 void		rl78_expand_compare (rtx *);
 void		rl78_expand_movsi (rtx *);
