@@ -4851,10 +4851,8 @@ can_extend_p (machine_mode to_mode, machine_mode from_mode,
 	      int unsignedp)
 {
   convert_optab tab;
-#ifdef HAVE_ptr_extend
-  if (unsignedp < 0)
-    return CODE_FOR_ptr_extend;
-#endif
+  if (unsignedp < 0 && targetm.have_ptr_extend ())
+    return targetm.code_for_ptr_extend;
 
   tab = unsignedp ? zext_optab : sext_optab;
   return convert_optab_handler (tab, to_mode, from_mode);
