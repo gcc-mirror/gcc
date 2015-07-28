@@ -1828,6 +1828,46 @@ along with GCC; see the file COPYING3.  If not see
   (if (tree_single_nonzero_warnv_p (@0, NULL))
    { constant_boolean_node (cmp == NE_EXPR, type); })))
 
+/* When the addresses are not directly of decls compare base and offset.
+   This implements some remaining parts of fold_comparison address
+   comparisons but still no complete part of it.  Still it is good
+   enough to make fold_stmt not regress when not dispatching to fold_binary.  */
+(for cmp (simple_comparison)
+ (simplify
+  (cmp (convert? addr@0) (convert? addr@1))
+  (with
+   {
+     HOST_WIDE_INT off0, off1;
+     tree base0 = get_addr_base_and_unit_offset (TREE_OPERAND (@0, 0), &off0);
+     tree base1 = get_addr_base_and_unit_offset (TREE_OPERAND (@1, 0), &off1);
+     if (base0 && TREE_CODE (base0) == MEM_REF)
+       {
+	 off0 += mem_ref_offset (base0).to_short_addr ();
+         base0 = TREE_OPERAND (base0, 0);
+       }
+     if (base1 && TREE_CODE (base1) == MEM_REF)
+       {
+         off1 += mem_ref_offset (base1).to_short_addr ();
+         base1 = TREE_OPERAND (base1, 0);
+       }
+   }
+   (if (base0 && base1
+	&& operand_equal_p (base0, base1, 0)
+	&& (cmp == EQ_EXPR || cmp == NE_EXPR
+	    || POINTER_TYPE_OVERFLOW_UNDEFINED))
+    (switch
+     (if (cmp == EQ_EXPR)
+      { constant_boolean_node (off0 == off1, type); })
+     (if (cmp == NE_EXPR)
+      { constant_boolean_node (off0 != off1, type); })
+     (if (cmp == LT_EXPR)
+      { constant_boolean_node (off0 < off1, type); })
+     (if (cmp == LE_EXPR)
+      { constant_boolean_node (off0 <= off1, type); })
+     (if (cmp == GE_EXPR)
+      { constant_boolean_node (off0 >= off1, type); })
+     (if (cmp == GT_EXPR)
+      { constant_boolean_node (off0 > off1, type); }))))))
 
 /* Non-equality compare simplifications from fold_binary  */
 (for cmp (lt gt le ge)
