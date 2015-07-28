@@ -141,9 +141,8 @@ echo $exitok`
 
 cd $TESTBASE
 
-find * -type f -print | \
-fgrep -v 'CVS/' | \
-fgrep -v '.svn/' > ${TESTDIR}/LIST
+find * -type f ! -name .DS_Store ! -name CVS ! -name .svn -print \
+> ${TESTDIR}/LIST
 
 exitok=`
 exec < ${TESTDIR}/LIST
