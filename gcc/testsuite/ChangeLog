@@ -1,3 +1,12 @@
+2015-07-28  Alex Velenko  <Alex.Velenko@arm.com>
+
+	backport from trunk:
+	2015-07-21  Alex Velenko  <Alex.Velenko@arm.com>
+
+        * gcc.target/arm/split-live-ranges-for-shrink-wrap.c (dg-skip-if):
+	Skip -march=armv4t.
+        (dg-additional-options): Set armv5t flag.
+
 2015-07-25  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
