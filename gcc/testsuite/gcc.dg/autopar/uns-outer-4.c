@@ -12,9 +12,7 @@ parloop (int N)
   int i, j;
   unsigned int sum;
 
-  /* Double reduction is currently not supported, outer loop is not
-     parallelized.  Inner reduction is detected, inner loop is
-     parallelized.  */
+  /* Double reduction is detected, outer loop is parallelized.  */
   sum = 0;
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
@@ -23,5 +21,5 @@ parloop (int N)
   g_sum = sum;
 }
 
-/* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" } } */
 /* { dg-final { scan-tree-dump-times "loopfn" 4 "optimized" } } */

@@ -549,6 +549,14 @@ take_address_of (tree obj, tree type, edge entry,
   return name;
 }
 
+static tree
+reduc_stmt_res (gimple stmt)
+{
+  return (gimple_code (stmt) == GIMPLE_PHI
+	  ? gimple_phi_result (stmt)
+	  : gimple_assign_lhs (stmt));
+}
+
 /* Callback for htab_traverse.  Create the initialization statement
    for reduction described in SLOT, and place it at the preheader of
    the loop described in DATA.  */
@@ -575,7 +583,7 @@ initialize_reductions (reduction_info **slot, struct loop *loop)
   c = build_omp_clause (gimple_location (reduc->reduc_stmt),
 			OMP_CLAUSE_REDUCTION);
   OMP_CLAUSE_REDUCTION_CODE (c) = reduc->reduction_code;
-  OMP_CLAUSE_DECL (c) = SSA_NAME_VAR (gimple_assign_lhs (reduc->reduc_stmt));
+  OMP_CLAUSE_DECL (c) = SSA_NAME_VAR (reduc_stmt_res (reduc->reduc_stmt));
 
   init = omp_reduction_init (c, TREE_TYPE (bvar));
   reduc->init = init;
@@ -982,7 +990,7 @@ add_field_for_reduction (reduction_info **slot, tree type)
 {
 
   struct reduction_info *const red = *slot;
-  tree var = gimple_assign_lhs (red->reduc_stmt);
+  tree var = reduc_stmt_res (red->reduc_stmt);
   tree field = build_decl (gimple_location (red->reduc_stmt), FIELD_DECL,
 			   SSA_NAME_IDENTIFIER (var), TREE_TYPE (var));
 
@@ -1042,12 +1050,12 @@ create_phi_for_local_result (reduction_info **slot, struct loop *loop)
     e = EDGE_PRED (store_bb, 1);
   else
     e = EDGE_PRED (store_bb, 0);
-  local_res = copy_ssa_name (gimple_assign_lhs (reduc->reduc_stmt));
+  tree lhs = reduc_stmt_res (reduc->reduc_stmt);
+  local_res = copy_ssa_name (lhs);
   locus = gimple_location (reduc->reduc_stmt);
   new_phi = create_phi_node (local_res, store_bb);
   add_phi_arg (new_phi, reduc->init, e, locus);
-  add_phi_arg (new_phi, gimple_assign_lhs (reduc->reduc_stmt),
-	       FALLTHRU_EDGE (loop->latch), locus);
+  add_phi_arg (new_phi, lhs, FALLTHRU_EDGE (loop->latch), locus);
   reduc->new_phi = new_phi;
 
   return 1;
@@ -1140,7 +1148,7 @@ create_loads_for_reductions (reduction_info **slot, struct clsn_data *clsn_data)
   struct reduction_info *const red = *slot;
   gimple stmt;
   gimple_stmt_iterator gsi;
-  tree type = TREE_TYPE (gimple_assign_lhs (red->reduc_stmt));
+  tree type = TREE_TYPE (reduc_stmt_res (red->reduc_stmt));
   tree load_struct;
   tree name;
   tree x;
@@ -1205,7 +1213,7 @@ create_stores_for_reduction (reduction_info **slot, struct clsn_data *clsn_data)
   tree t;
   gimple stmt;
   gimple_stmt_iterator gsi;
-  tree type = TREE_TYPE (gimple_assign_lhs (red->reduc_stmt));
+  tree type = TREE_TYPE (reduc_stmt_res (red->reduc_stmt));
 
   gsi = gsi_last_bb (clsn_data->store_bb);
   t = build3 (COMPONENT_REF, type, clsn_data->store, red->field, NULL_TREE);
@@ -2330,6 +2338,7 @@ build_new_reduction (reduction_info_table_type *reduction_list,
 {
   reduction_info **slot;
   struct reduction_info *new_reduction;
+  enum tree_code reduction_code;
 
   gcc_assert (reduc_stmt);
 
@@ -2341,12 +2350,22 @@ build_new_reduction (reduction_info_table_type *reduction_list,
       fprintf (dump_file, "\n");
     }
 
+  if (gimple_code (reduc_stmt) == GIMPLE_PHI)
+    {
+      tree op1 = PHI_ARG_DEF (reduc_stmt, 0);
+      gimple def1 = SSA_NAME_DEF_STMT (op1);
+      reduction_code = gimple_assign_rhs_code (def1);
+    }
+
+  else
+    reduction_code = gimple_assign_rhs_code (reduc_stmt);
+
   new_reduction = XCNEW (struct reduction_info);
 
   new_reduction->reduc_stmt = reduc_stmt;
   new_reduction->reduc_phi = phi;
   new_reduction->reduc_version = SSA_NAME_VERSION (gimple_phi_result (phi));
-  new_reduction->reduction_code = gimple_assign_rhs_code (reduc_stmt);
+  new_reduction->reduction_code = reduction_code;
   slot = reduction_list->find_slot (new_reduction, INSERT);
   *slot = new_reduction;
 }
@@ -2368,6 +2387,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 {
   gphi_iterator gsi;
   loop_vec_info simple_loop_info;
+  loop_vec_info simple_inner_loop_info = NULL;
+  bool allow_double_reduc = true;
 
   simple_loop_info = vect_analyze_loop_form (loop);
   if (simple_loop_info == NULL)
@@ -2389,12 +2410,46 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
       gimple reduc_stmt
 	= vect_force_simple_reduction (simple_loop_info, phi, true,
 				       &double_reduc, true);
-      if (!reduc_stmt || double_reduc)
+      if (!reduc_stmt)
 	continue;
+
+      if (double_reduc)
+	{
+	  if (!allow_double_reduc
+	      || loop->inner->inner != NULL)
+	    continue;
+
+	  if (!simple_inner_loop_info)
+	    {
+	      simple_inner_loop_info = vect_analyze_loop_form (loop->inner);
+	      if (!simple_inner_loop_info)
+		{
+		  allow_double_reduc = false;
+		  continue;
+		}
+	    }
+
+	  use_operand_p use_p;
+	  gimple inner_stmt;
+	  bool single_use_p = single_imm_use (res, &use_p, &inner_stmt);
+	  gcc_assert (single_use_p);
+	  gphi *inner_phi = as_a <gphi *> (inner_stmt);
+	  if (simple_iv (loop->inner, loop->inner, PHI_RESULT (inner_phi),
+			 &iv, true))
+	    continue;
+
+	  gimple inner_reduc_stmt
+	    = vect_force_simple_reduction (simple_inner_loop_info, inner_phi,
+					   true, &double_reduc, true);
+	  gcc_assert (!double_reduc);
+	  if (inner_reduc_stmt == NULL)
+	    continue;
+	}
 
       build_new_reduction (reduction_list, reduc_stmt, phi);
     }
   destroy_loop_vec_info (simple_loop_info, true);
+  destroy_loop_vec_info (simple_inner_loop_info, true);
 
   /* As gimple_uid is used by the vectorizer in between vect_analyze_loop_form
      and destroy_loop_vec_info, we can set gimple_uid of reduc_phi stmts
