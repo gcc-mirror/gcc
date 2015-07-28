@@ -1,5 +1,11 @@
 2015-07-28  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (reload_load_address): New targetm instruction
+	pattern.
+	* reload1.c (gen_reload): Use it instead of HAVE_*/gen_* interface.
+
+2015-07-28  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (atomic_test_and_set): New targetm instruction
 	pattern.
 	* optabs.c (maybe_emit_atomic_test_and_set): Use it instead of
