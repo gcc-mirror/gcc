@@ -1808,15 +1808,20 @@ along with GCC; see the file COPYING3.  If not see
     have access to attributes for externs), then we know the result.  */
  (simplify
   (cmp (convert? addr@0) (convert? addr@1))
-  (if (decl_in_symtab_p (TREE_OPERAND (@0, 0))
-       && decl_in_symtab_p (TREE_OPERAND (@1, 0)))
-   (with
-    {
-      int equal = symtab_node::get_create (TREE_OPERAND (@0, 0))
+  (if (DECL_P (TREE_OPERAND (@0, 0))
+       && DECL_P (TREE_OPERAND (@1, 0)))
+   (if (decl_in_symtab_p (TREE_OPERAND (@0, 0))
+	&& decl_in_symtab_p (TREE_OPERAND (@1, 0)))
+    (with
+     {
+       int equal = symtab_node::get_create (TREE_OPERAND (@0, 0))
            ->equal_address_to (symtab_node::get_create (TREE_OPERAND (@1, 0)));
-    }
-    (if (equal != 2)
-     { constant_boolean_node (equal ? cmp == EQ_EXPR : cmp != EQ_EXPR, type); }))))
+     }
+     (if (equal != 2)
+      { constant_boolean_node (equal
+			       ? cmp == EQ_EXPR : cmp != EQ_EXPR, type); }))
+    (if (TREE_OPERAND (@0, 0) != TREE_OPERAND (@1, 0))
+     { constant_boolean_node (cmp == EQ_EXPR ? false : true, type); }))))
 
  (simplify
   (cmp (convert? addr@0) integer_zerop)

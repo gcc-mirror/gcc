@@ -8511,30 +8511,6 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      return fold_build2_loc (loc, code, type, offset0, offset1);
 	    }
 	}
-      /* For non-equal bases we can simplify if they are addresses
-	 declarations with different addresses.  */
-      else if (indirect_base0 && indirect_base1
-	       /* We know that !operand_equal_p (base0, base1, 0)
-		  because the if condition was false.  But make
-		  sure two decls are not the same.  */
-	       && base0 != base1
-	       && TREE_CODE (arg0) == ADDR_EXPR
-	       && TREE_CODE (arg1) == ADDR_EXPR
-	       && DECL_P (base0)
-	       && DECL_P (base1)
-	       /* Watch for aliases.  */
-	       && (!decl_in_symtab_p (base0)
-		   || !decl_in_symtab_p (base1)
-		   || !symtab_node::get_create (base0)->equal_address_to
-			 (symtab_node::get_create (base1))))
-	{
-	  if (code == EQ_EXPR)
-	    return omit_two_operands_loc (loc, type, boolean_false_node,
-				      arg0, arg1);
-	  else if (code == NE_EXPR)
-	    return omit_two_operands_loc (loc, type, boolean_true_node,
-				      arg0, arg1);
-	}
       /* For equal offsets we can simplify to a comparison of the
 	 base addresses.  */
       else if (bitpos0 == bitpos1
