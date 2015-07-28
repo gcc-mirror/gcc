@@ -1,3 +1,7 @@
+2012-12-29  Ben Elliston  <bje@gnu.org>
+
+	* config.sub, config.guess: Import from upstream.
+
 2015-07-24  Michael Darling  <darlingm@gmail.com>
 
 	PR other/66259
