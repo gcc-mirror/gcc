@@ -1,5 +1,9 @@
 2015-07-28  Richard Biener  <rguenther@suse.de>
 
+	* match.pd: Add more simplification of address comparisons.
+
+2015-07-28  Richard Biener  <rguenther@suse.de>
+
 	* match.pd: Re-order two cases in comparison with max/min
 	value simplification to make it apply for bools.
 
