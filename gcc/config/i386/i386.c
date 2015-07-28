@@ -19599,7 +19599,6 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case V8SFmode:
     case V4SFmode:
       vec_mode = mode;
-      mode = GET_MODE_INNER (mode);
       imode = SImode;
       break;
 
@@ -19610,7 +19609,6 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case V4DFmode:
     case V2DFmode:
       vec_mode = mode;
-      mode = GET_MODE_INNER (mode);
       imode = DImode;
       break;
 
@@ -19624,17 +19622,18 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
       gcc_unreachable ();
     }
 
-  w = wi::set_bit_in_zero (GET_MODE_BITSIZE (mode) - 1,
-			   GET_MODE_BITSIZE (mode));
+  machine_mode inner_mode = GET_MODE_INNER (mode);
+  w = wi::set_bit_in_zero (GET_MODE_BITSIZE (inner_mode) - 1,
+			   GET_MODE_BITSIZE (inner_mode));
   if (invert)
     w = wi::bit_not (w);
 
   /* Force this value into the low part of a fp vector constant.  */
   mask = immed_wide_int_const (w, imode);
-  mask = gen_lowpart (mode, mask);
+  mask = gen_lowpart (inner_mode, mask);
 
   if (vec_mode == VOIDmode)
-    return force_reg (mode, mask);
+    return force_reg (inner_mode, mask);
 
   v = ix86_build_const_vector (vec_mode, vect, mask);
   return force_reg (vec_mode, v);
