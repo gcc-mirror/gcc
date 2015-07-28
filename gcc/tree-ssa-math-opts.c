@@ -2122,7 +2122,7 @@ perform_symbolic_merge (gimple source_stmt1, struct symbolic_number *n1,
      the same base (array, structure, ...).  */
   if (gimple_assign_rhs1 (source_stmt1) != gimple_assign_rhs1 (source_stmt2))
     {
-      int64_t inc;
+      uint64_t inc;
       HOST_WIDE_INT start_sub, end_sub, end1, end2, end;
       struct symbolic_number *toinc_n_ptr, *n_end;
 
