@@ -1901,7 +1901,7 @@ check_final_overrider (tree overrider, tree basefn)
 	  if (pedwarn (DECL_SOURCE_LOCATION (overrider), 0,
 		       "invalid covariant return type for %q#D", overrider))
 	    inform (DECL_SOURCE_LOCATION (basefn),
-		    "  overriding %q+#D", basefn);
+		    "  overriding %q#D", basefn);
 	}
       else
 	fail = 2;

@@ -329,7 +329,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		{
 		  error ("%qT is not a member class template of %qT",
 			 name, ctype);
-		  inform (input_location, "%q+D declared here", decl);
+		  inform (DECL_SOURCE_LOCATION (decl),
+			  "%qD declared here", decl);
 		  return;
 		}
 	      if (!template_member_p && (TREE_CODE (decl) != TYPE_DECL
@@ -337,7 +338,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		{
 		  error ("%qT is not a nested class of %qT",
 			 name, ctype);
-		  inform (input_location, "%q+D declared here", decl);
+		  inform (DECL_SOURCE_LOCATION (decl),
+			  "%qD declared here", decl);
 		  return;
 		}
 

@@ -3182,7 +3182,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
 	    inform (0, "lambda in local class %q+T cannot "
 		    "capture variables from the enclosing context",
 		    TYPE_CONTEXT (closure));
-	  inform (input_location, "%q+#D declared here", decl);
+	  inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);
 	}
       return error_mark_node;
     }
@@ -3192,7 +3192,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
 	error (VAR_P (decl)
 	       ? G_("use of local variable with automatic storage from containing function")
 	       : G_("use of parameter from containing function"));
-      inform (input_location, "%q+#D declared here", decl);
+      inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);
       return error_mark_node;
     }
   return decl;
