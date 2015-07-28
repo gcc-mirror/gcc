@@ -7258,35 +7258,30 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
    using the atomic_test_and_set instruction pattern.  A boolean value
    is returned from the operation, using TARGET if possible.  */
 
-#ifndef HAVE_atomic_test_and_set
-#define HAVE_atomic_test_and_set 0
-#define CODE_FOR_atomic_test_and_set CODE_FOR_nothing
-#endif
-
 static rtx
 maybe_emit_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 {
   machine_mode pat_bool_mode;
   struct expand_operand ops[3];
 
-  if (!HAVE_atomic_test_and_set)
+  if (!targetm.have_atomic_test_and_set ())
     return NULL_RTX;
 
   /* While we always get QImode from __atomic_test_and_set, we get
      other memory modes from __sync_lock_test_and_set.  Note that we
      use no endian adjustment here.  This matches the 4.6 behavior
      in the Sparc backend.  */
-  gcc_checking_assert
-    (insn_data[CODE_FOR_atomic_test_and_set].operand[1].mode == QImode);
+  enum insn_code icode = targetm.code_for_atomic_test_and_set;
+  gcc_checking_assert (insn_data[icode].operand[1].mode == QImode);
   if (GET_MODE (mem) != QImode)
     mem = adjust_address_nv (mem, QImode, 0);
 
-  pat_bool_mode = insn_data[CODE_FOR_atomic_test_and_set].operand[0].mode;
+  pat_bool_mode = insn_data[icode].operand[0].mode;
   create_output_operand (&ops[0], target, pat_bool_mode);
   create_fixed_operand (&ops[1], mem);
   create_integer_operand (&ops[2], model);
 
-  if (maybe_expand_insn (CODE_FOR_atomic_test_and_set, 3, ops))
+  if (maybe_expand_insn (icode, 3, ops))
     return ops[0].value;
   return NULL_RTX;
 }
