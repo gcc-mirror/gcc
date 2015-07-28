@@ -1,3 +1,10 @@
+2015-07-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_arith_op_extract_p):
+	Handle simple SIGN_EXTEND or ZERO_EXTEND.
+	(aarch64_rtx_costs): Properly strip extend or extract before
+	passing down to rtx costs again.
+
 2015-07-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_addsi3_internal): New function.
