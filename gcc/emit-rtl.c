@@ -1159,9 +1159,10 @@ set_reg_attrs_from_value (rtx reg, rtx x)
 	 || GET_CODE (x) == TRUNCATE
 	 || (GET_CODE (x) == SUBREG && subreg_lowpart_p (x)))
     {
-#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
-      if ((GET_CODE (x) == SIGN_EXTEND && POINTERS_EXTEND_UNSIGNED)
-	  || (GET_CODE (x) != SIGN_EXTEND && ! POINTERS_EXTEND_UNSIGNED))
+#if defined(POINTERS_EXTEND_UNSIGNED)
+      if (((GET_CODE (x) == SIGN_EXTEND && POINTERS_EXTEND_UNSIGNED)
+	   || (GET_CODE (x) != SIGN_EXTEND && ! POINTERS_EXTEND_UNSIGNED))
+	  && !targetm.have_ptr_extend ())
 	can_be_reg_pointer = false;
 #endif
       x = XEXP (x, 0);

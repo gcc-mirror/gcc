@@ -1,5 +1,15 @@
 2015-07-28  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (can_extend, ptr_extend): New targetm instruction
+	patterns.
+	* optabs.c (can_extend_p): Use them instead of HAVE_*/gen_* interface.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	* emit-rtl.c (set_reg_attrs_from_value): Likewise.
+	* rtlanal.c (nonzero_bits1): Likewise.
+	(num_sign_bit_copies1): Likewise.
+
+2015-07-28  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (eh_return): New targetm instruction pattern.
 	* except.c (expand_eh_return): Use it instead of HAVE_*/gen_*
 	interface.
