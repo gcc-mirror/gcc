@@ -1,3 +1,9 @@
+2015-07-28  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* opts-common.c (read_cmdline_option): List DriverOnly enum values
+	as valid only in the error message of the driver, not in the
+	messages of the language compilers.
+
 2015-07-27  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (gather_scalar_reductions): Simplify function

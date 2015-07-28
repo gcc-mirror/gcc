@@ -1079,6 +1079,8 @@ read_cmdline_option (struct gcc_options *opts,
       p = s;
       for (i = 0; e->values[i].arg != NULL; i++)
 	{
+	  if (!enum_arg_ok_for_language (&e->values[i], lang_mask))
+	    continue;
 	  size_t arglen = strlen (e->values[i].arg);
 	  memcpy (p, e->values[i].arg, arglen);
 	  p[arglen] = ' ';
