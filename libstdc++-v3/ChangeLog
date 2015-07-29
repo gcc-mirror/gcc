@@ -1,3 +1,9 @@
+2015-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66829
+	* testsuite/lib/libstdc++.exp (v3-build_support): Compile
+	testsuite_shared.cc with -std=gnu++98.
+
 2015-07-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* include/bits/range_access.h: Change class to typename in every
