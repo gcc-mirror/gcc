@@ -1,3 +1,10 @@
+2015-07-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/iamcu.h (TARGET_ASM_FILE_START_FILE_DIRECTIVE):
+	New.  Copied from config/i386/gnu-user.h.
+	(ASM_COMMENT_START): Likewise.
+	(DBX_REGISTER_NUMBER): Likewise.
+
 2015-07-29  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (fold_gimple_cond): Remove.
