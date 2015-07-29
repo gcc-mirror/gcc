@@ -43,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     begin(_Container& __cont) -> decltype(__cont.begin())
     { return __cont.begin(); }
@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     begin(const _Container& __cont) -> decltype(__cont.begin())
     { return __cont.begin(); }
@@ -63,7 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     end(_Container& __cont) -> decltype(__cont.end())
     { return __cont.end(); }
@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     end(const _Container& __cont) -> decltype(__cont.end())
     { return __cont.end(); }
@@ -82,7 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Return an iterator pointing to the first element of the array.
    *  @param  __arr  Array.
    */
-  template<class _Tp, size_t _Nm>
+  template<typename _Tp, size_t _Nm>
     inline _GLIBCXX14_CONSTEXPR _Tp*
     begin(_Tp (&__arr)[_Nm])
     { return __arr; }
@@ -92,7 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          of the array.
    *  @param  __arr  Array.
    */
-  template<class _Tp, size_t _Nm>
+  template<typename _Tp, size_t _Nm>
     inline _GLIBCXX14_CONSTEXPR _Tp*
     end(_Tp (&__arr)[_Nm])
     { return __arr + _Nm; }
@@ -103,7 +103,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline constexpr auto
     cbegin(const _Container& __cont) noexcept(noexcept(std::begin(__cont)))
       -> decltype(std::begin(__cont))
@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline constexpr auto
     cend(const _Container& __cont) noexcept(noexcept(std::end(__cont)))
       -> decltype(std::end(__cont))
@@ -125,7 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     rbegin(_Container& __cont) -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
@@ -135,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     rbegin(const _Container& __cont) -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     rend(_Container& __cont) -> decltype(__cont.rend())
     { return __cont.rend(); }
@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     rend(const _Container& __cont) -> decltype(__cont.rend())
     { return __cont.rend(); }
@@ -165,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the array.
    *  @param  __arr  Array.
    */
-  template<class _Tp, size_t _Nm>
+  template<typename _Tp, size_t _Nm>
     inline reverse_iterator<_Tp*>
     rbegin(_Tp (&__arr)[_Nm])
     { return reverse_iterator<_Tp*>(__arr + _Nm); }
@@ -175,7 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the array.
    *  @param  __arr  Array.
    */
-  template<class _Tp, size_t _Nm>
+  template<typename _Tp, size_t _Nm>
     inline reverse_iterator<_Tp*>
     rend(_Tp (&__arr)[_Nm])
     { return reverse_iterator<_Tp*>(__arr); }
@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the initializer_list.
    *  @param  __il  initializer_list.
    */
-  template<class _Tp>
+  template<typename _Tp>
     inline reverse_iterator<const _Tp*>
     rbegin(initializer_list<_Tp> __il)
     { return reverse_iterator<const _Tp*>(__il.end()); }
@@ -195,7 +195,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the initializer_list.
    *  @param  __il  initializer_list.
    */
-  template<class _Tp>
+  template<typename _Tp>
     inline reverse_iterator<const _Tp*>
     rend(initializer_list<_Tp> __il)
     { return reverse_iterator<const _Tp*>(__il.begin()); }
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     crbegin(const _Container& __cont) -> decltype(std::rbegin(__cont))
     { return std::rbegin(__cont); }
@@ -215,12 +215,97 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          the const container.
    *  @param  __cont  Container.
    */
-  template<class _Container>
+  template<typename _Container>
     inline auto
     crend(const _Container& __cont) -> decltype(std::rend(__cont))
     { return std::rend(__cont); }
 
 #endif // C++14
+
+#if __cplusplus > 201402L
+
+  /**
+   *  @brief  Return the size of a container.
+   *  @param  __cont  Container.
+   */
+  template <typename _Container>
+    constexpr auto
+    size(const _Container& __cont) -> decltype(__cont.size())
+    { return __cont.size(); }
+
+  /**
+   *  @brief  Return the size of an array.
+   *  @param  __array  Array.
+   */
+  template <typename _Tp, size_t _N>
+    constexpr size_t
+    size(const _Tp (&/*__array*/)[_N]) noexcept
+    { return _N; }
+
+  /**
+   *  @brief  Return whether a container is empty.
+   *  @param  __cont  Container.
+   */
+  template <typename _Container>
+    constexpr auto
+    empty(const _Container& __cont) -> decltype(__cont.empty())
+    { return __cont.empty(); }
+
+  /**
+   *  @brief  Return whether an array is empty (always false).
+   *  @param  __array  Container.
+   */
+  template <typename _Tp, size_t _N>
+    constexpr bool
+    empty(const _Tp (&/*__array*/)[_N]) noexcept
+    { return false; }
+
+  /**
+   *  @brief  Return whether an initializer_list is empty.
+   *  @param  __il  Initializer list.
+   */
+  template <typename _Tp>
+    constexpr bool
+    empty(initializer_list<_Tp> __il) noexcept
+    { return __il.size() == 0;}
+
+  /**
+   *  @brief  Return the data pointer of a container.
+   *  @param  __cont  Container.
+   */
+  template <typename _Container>
+    constexpr auto
+    data(_Container& __cont) -> decltype(__cont.data())
+    { return __cont.data(); }
+
+  /**
+   *  @brief  Return the data pointer of a const container.
+   *  @param  __cont  Container.
+   */
+  template <typename _Container>
+    constexpr auto
+    data(const _Container& __cont) -> decltype(__cont.data())
+    { return __cont.data(); }
+
+  /**
+   *  @brief  Return the data pointer of an array.
+   *  @param  __array  Array.
+   */
+  template <typename _Tp, size_t _N>
+    constexpr _Tp*
+    data(_Tp (&__array)[_N]) noexcept
+    { return __array; }
+
+  /**
+   *  @brief  Return the data pointer of an initializer list.
+   *  @param  __il  Initializer list.
+   */
+  template <typename _Tp>
+    constexpr const _Tp*
+    data(initializer_list<_Tp> __il) noexcept
+    { return __il.begin(); }
+
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
