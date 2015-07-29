@@ -3307,6 +3307,19 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 }
 
 
+/* Return true whether NAME has a use on STMT.  */
+
+static bool
+has_use_on_stmt (tree name, gimple stmt)
+{
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    if (USE_STMT (use_p) == stmt)
+      return true;
+  return false;
+}
+
 /* Worker for fold_stmt_1 dispatch to pattern based folding with
    gimple_simplify.
 
@@ -3322,15 +3335,20 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
   gimple stmt = gsi_stmt (*gsi);
 
   /* Play safe and do not allow abnormals to be mentioned in
-     newly created statements.  See also maybe_push_res_to_seq.  */
+     newly created statements.  See also maybe_push_res_to_seq.
+     As an exception allow such uses if there was a use of the
+     same SSA name on the old stmt.  */
   if ((TREE_CODE (ops[0]) == SSA_NAME
-       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[0]))
+       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[0])
+       && !has_use_on_stmt (ops[0], stmt))
       || (ops[1]
 	  && TREE_CODE (ops[1]) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[1]))
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[1])
+	  && !has_use_on_stmt (ops[1], stmt))
       || (ops[2]
 	  && TREE_CODE (ops[2]) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])))
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])
+	  && !has_use_on_stmt (ops[2], stmt)))
     return false;
 
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
@@ -3531,7 +3549,8 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
      after propagation.
      ???  This shouldn't be done in generic folding but in the
      propagation helpers which also know whether an address was
-     propagated.  */
+     propagated.
+     Also canonicalize operand order.  */
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
@@ -3546,6 +3565,27 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (REFERENCE_CLASS_P (*lhs)
 	      && maybe_canonicalize_mem_ref_addr (lhs))
 	    changed = true;
+	}
+      else
+	{
+	  /* Canonicalize operand order.  */
+	  enum tree_code code = gimple_assign_rhs_code (stmt);
+	  if (TREE_CODE_CLASS (code) == tcc_comparison
+	      || commutative_tree_code (code)
+	      || commutative_ternary_tree_code (code))
+	    {
+	      tree rhs1 = gimple_assign_rhs1 (stmt);
+	      tree rhs2 = gimple_assign_rhs2 (stmt);
+	      if (tree_swap_operands_p (rhs1, rhs2, false))
+		{
+		  gimple_assign_set_rhs1 (stmt, rhs2);
+		  gimple_assign_set_rhs2 (stmt, rhs1);
+		  if (TREE_CODE_CLASS (code) == tcc_comparison)
+		    gimple_assign_set_rhs_code (stmt,
+						swap_tree_comparison (code));
+		  changed = true;
+		}
+	    }
 	}
       break;
     case GIMPLE_CALL:
@@ -3597,6 +3637,21 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	    changed = true;
 	}
       break;
+    case GIMPLE_COND:
+      {
+	/* Canonicalize operand order.  */
+	tree lhs = gimple_cond_lhs (stmt);
+	tree rhs = gimple_cond_rhs (stmt);
+	if (tree_swap_operands_p (lhs, rhs, false))
+	  {
+	    gcond *gc = as_a <gcond *> (stmt);
+	    gimple_cond_set_lhs (gc, rhs);
+	    gimple_cond_set_rhs (gc, lhs);
+	    gimple_cond_set_code (gc,
+				  swap_tree_comparison (gimple_cond_code (gc)));
+	    changed = true;
+	  }
+      }
     default:;
     }
 
