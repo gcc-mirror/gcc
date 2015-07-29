@@ -26,6 +26,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT MASK_IAMCU
 
+/* Output at beginning of assembler file.  */
+/* The .file command should always begin the output.  */
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
+
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n) \
+  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
+
 #undef ASM_SPEC
 #define ASM_SPEC "--32 -march=iamcu"
 
