@@ -1026,19 +1026,19 @@ if ! grep '^const TUNDETACHFILTER' ${OUT} >/dev/null 2>&1; then
   fi
 fi
 
-if ! grep '^const TUNGETVNETHDRSZ'${OUT} >/dev/null 2>&1; then
+if ! grep '^const TUNGETVNETHDRSZ' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TUNGETVNETHDRSZ_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TUNGETVNETHDRSZ = _TUNGETVNETHDRSZ_val' >> ${OUT}
   fi
 fi
 
-if ! grep '^const TUNSETVNETHDRSZ'${OUT} >/dev/null 2>&1; then
+if ! grep '^const TUNSETVNETHDRSZ' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TUNSETVNETHDRSZ_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TUNSETVNETHDRSZ = _TUNSETVNETHDRSZ_val' >> ${OUT}
   fi
 fi
 
-if ! grep '^const TUNSETQUEUE'${OUT} >/dev/null 2>&1; then
+if ! grep '^const TUNSETQUEUE' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TUNSETQUEUE_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TUNSETQUEUE = _TUNSETQUEUE_val' >> ${OUT}
   fi
