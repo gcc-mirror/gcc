@@ -40,6 +40,7 @@ THING (int16x8_t, 8, int16_t, q_s16)	\
 THING (uint16x8_t, 8, uint16_t, q_u16)	\
 THING (int32x4_t, 4, int32_t, q_s32)	\
 THING (uint32x4_t, 4, uint32_t, q_u32)	\
+THING (float32x4_t, 4, float32_t, q_f32)\
 THING (int64x2_t, 2, int64_t, q_s64)	\
 THING (uint64x2_t, 2, uint64_t, q_u64)	\
 THING (float64x2_t, 2, float64_t, q_f64)
