@@ -1802,26 +1802,6 @@ along with GCC; see the file COPYING3.  If not see
   (cmp (convert?@3 (bit_xor @0 INTEGER_CST@1)) INTEGER_CST@2)
   (if (tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@0)))
    (cmp @0 (bit_xor @1 (convert @2)))))
-   
- /* If this is an equality comparison of the address of two non-weak,
-    unaliased symbols neither of which are extern (since we do not
-    have access to attributes for externs), then we know the result.  */
- (simplify
-  (cmp (convert? addr@0) (convert? addr@1))
-  (if (DECL_P (TREE_OPERAND (@0, 0))
-       && DECL_P (TREE_OPERAND (@1, 0)))
-   (if (decl_in_symtab_p (TREE_OPERAND (@0, 0))
-	&& decl_in_symtab_p (TREE_OPERAND (@1, 0)))
-    (with
-     {
-       int equal = symtab_node::get_create (TREE_OPERAND (@0, 0))
-           ->equal_address_to (symtab_node::get_create (TREE_OPERAND (@1, 0)));
-     }
-     (if (equal != 2)
-      { constant_boolean_node (equal
-			       ? cmp == EQ_EXPR : cmp != EQ_EXPR, type); }))
-    (if (TREE_OPERAND (@0, 0) != TREE_OPERAND (@1, 0))
-     { constant_boolean_node (cmp == EQ_EXPR ? false : true, type); }))))
 
  (simplify
   (cmp (convert? addr@0) integer_zerop)
@@ -1834,7 +1814,7 @@ along with GCC; see the file COPYING3.  If not see
    enough to make fold_stmt not regress when not dispatching to fold_binary.  */
 (for cmp (simple_comparison)
  (simplify
-  (cmp (convert? addr@0) (convert? addr@1))
+  (cmp (convert?@2 addr@0) (convert? addr@1))
   (with
    {
      HOST_WIDE_INT off0, off1;
@@ -1851,23 +1831,48 @@ along with GCC; see the file COPYING3.  If not see
          base1 = TREE_OPERAND (base1, 0);
        }
    }
-   (if (base0 && base1
-	&& operand_equal_p (base0, base1, 0)
-	&& (cmp == EQ_EXPR || cmp == NE_EXPR
-	    || POINTER_TYPE_OVERFLOW_UNDEFINED))
-    (switch
-     (if (cmp == EQ_EXPR)
-      { constant_boolean_node (off0 == off1, type); })
-     (if (cmp == NE_EXPR)
-      { constant_boolean_node (off0 != off1, type); })
-     (if (cmp == LT_EXPR)
-      { constant_boolean_node (off0 < off1, type); })
-     (if (cmp == LE_EXPR)
-      { constant_boolean_node (off0 <= off1, type); })
-     (if (cmp == GE_EXPR)
-      { constant_boolean_node (off0 >= off1, type); })
-     (if (cmp == GT_EXPR)
-      { constant_boolean_node (off0 > off1, type); }))))))
+   (if (base0 && base1)
+    (with
+     {
+       int equal;
+       if (decl_in_symtab_p (base0)
+	   && decl_in_symtab_p (base1))
+         equal = symtab_node::get_create (base0)
+	           ->equal_address_to (symtab_node::get_create (base1));
+       else
+         equal = operand_equal_p (base0, base1, 0);
+     }
+     (if (equal == 1
+	  && (cmp == EQ_EXPR || cmp == NE_EXPR
+	      /* If the offsets are equal we can ignore overflow.  */
+	      || off0 == off1
+	      || POINTER_TYPE_OVERFLOW_UNDEFINED
+	      /* Or if we compare using pointers to decls.  */
+	      || (POINTER_TYPE_P (TREE_TYPE (@2))
+		  && DECL_P (base0))))
+      (switch
+       (if (cmp == EQ_EXPR)
+	{ constant_boolean_node (off0 == off1, type); })
+       (if (cmp == NE_EXPR)
+	{ constant_boolean_node (off0 != off1, type); })
+       (if (cmp == LT_EXPR)
+	{ constant_boolean_node (off0 < off1, type); })
+       (if (cmp == LE_EXPR)
+	{ constant_boolean_node (off0 <= off1, type); })
+       (if (cmp == GE_EXPR)
+	{ constant_boolean_node (off0 >= off1, type); })
+       (if (cmp == GT_EXPR)
+	{ constant_boolean_node (off0 > off1, type); }))
+      (if (equal == 0
+	   && DECL_P (base0) && DECL_P (base1)
+	   /* If we compare this as integers require equal offset.  */
+	   && (!INTEGRAL_TYPE_P (TREE_TYPE (@2))
+	       || off0 == off1))
+       (switch
+	(if (cmp == EQ_EXPR)
+	 { constant_boolean_node (false, type); })
+	(if (cmp == NE_EXPR)
+	 { constant_boolean_node (true, type); })))))))))
 
 /* Non-equality compare simplifications from fold_binary  */
 (for cmp (lt gt le ge)
