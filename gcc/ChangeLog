@@ -1,3 +1,7 @@
+2015-07-29  Aditya Kumar  <hiraditya@msn.com>
+
+	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Default to 3.
+
 2015-07-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/iamcu.h (TARGET_ASM_FILE_START_FILE_DIRECTIVE):

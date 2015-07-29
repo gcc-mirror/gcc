@@ -850,7 +850,7 @@ DEFPARAM (PARAM_LOOP_UNROLL_JAM_DEPTH,
 DEFPARAM (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS,
 	  "graphite-max-nb-scop-params",
 	  "maximum number of parameters in a SCoP",
-	  10, 0, 0)
+	  3, 0, 0)
 
 /* Maximal number of basic blocks in the functions analyzed by Graphite.  */
 
