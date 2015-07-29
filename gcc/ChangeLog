@@ -1,3 +1,8 @@
+2015-07-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_gimple_cond): Remove.
+	(fold_stmt_1): Do not call it.
+
 2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_fp16_type_node): New.

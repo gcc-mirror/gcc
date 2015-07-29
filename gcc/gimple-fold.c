@@ -529,33 +529,6 @@ fold_gimple_assign (gimple_stmt_iterator *si)
   return NULL_TREE;
 }
 
-/* Attempt to fold a conditional statement. Return true if any changes were
-   made. We only attempt to fold the condition expression, and do not perform
-   any transformation that would require alteration of the cfg.  It is
-   assumed that the operands have been previously folded.  */
-
-static bool
-fold_gimple_cond (gcond *stmt)
-{
-  tree result = fold_binary_loc (gimple_location (stmt),
-			     gimple_cond_code (stmt),
-                             boolean_type_node,
-                             gimple_cond_lhs (stmt),
-                             gimple_cond_rhs (stmt));
-
-  if (result)
-    {
-      STRIP_USELESS_TYPE_CONVERSION (result);
-      if (is_gimple_condexpr (result))
-        {
-          gimple_cond_set_condition_from_tree (stmt, result);
-          return true;
-        }
-    }
-
-  return false;
-}
-
 
 /* Replace a statement at *SI_P with a sequence of statements in STMTS,
    adjusting the replacement stmts location and virtual operands.
@@ -3710,10 +3683,6 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  }
 	break;
       }
-
-    case GIMPLE_COND:
-      changed |= fold_gimple_cond (as_a <gcond *> (stmt));
-      break;
 
     case GIMPLE_CALL:
       changed |= gimple_fold_call (gsi, inplace);
