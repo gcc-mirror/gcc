@@ -1,5 +1,11 @@
 2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/fp16/fp16.exp: New.
+	* gcc.target/aarch64/fp16/f16_convs_1.c: New.
+	* gcc.target/aarch64/fp16/f16_convs_2.c: New.
+
+2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/f16_movs_1.c: New test.
 
 2015-07-28  Tom de Vries  <tom@codesourcery.com>
