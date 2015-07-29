@@ -116,8 +116,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_insert_bracket_matcher(bool __neg);
 
+      // Returns true if successfully matched one term and should continue.
+      // Returns false if the compiler should move on.
       template<bool __icase, bool __collate>
-	void
+	bool
 	_M_expression_term(pair<bool, _CharT>& __last_char,
 			   _BracketMatcher<_TraitsT, __icase, __collate>&
 			   __matcher);
@@ -389,8 +391,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
       }
 
-      void
-      _M_add_collating_element(const _StringT& __s)
+      _StringT
+      _M_add_collate_element(const _StringT& __s)
       {
 	auto __st = _M_traits.lookup_collatename(__s.data(),
 						 __s.data() + __s.size());
@@ -400,6 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_DEBUG
 	_M_is_ready = false;
 #endif
+	return __st;
       }
 
       void
