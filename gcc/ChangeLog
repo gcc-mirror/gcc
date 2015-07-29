@@ -1,3 +1,10 @@
+2015-07-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (has_use_on_stmt): New function.
+	(replace_stmt_with_simplification): Use it to allow
+	abnormals originally referenced in the stmt.
+	(fold_stmt_1): Canonicalize operand order.
+
 2015-07-28  David Sherwood  <david.sherwood@arm.com>
 
 	* config/arm/arm.c (neon_element_bits, neon_valid_immediate): Call
