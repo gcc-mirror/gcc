@@ -1,3 +1,9 @@
+2015-07-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR sanitizer/63927
+	* sanitizer_common/sanitizer_stacktrace.h: Use fast unwinder
+	for PowerPC.
+
 2015-07-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR sanitizer/63927

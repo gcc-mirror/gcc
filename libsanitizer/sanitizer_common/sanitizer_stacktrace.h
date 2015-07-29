@@ -17,8 +17,7 @@ namespace __sanitizer {
 
 static const uptr kStackTraceMax = 256;
 
-#if SANITIZER_LINUX && (defined(__aarch64__) || defined(__powerpc__) || \
-                        defined(__powerpc64__) || defined(__sparc__) || \
+#if SANITIZER_LINUX && (defined(__aarch64__) || defined(__sparc__) || \
                         defined(__mips__))
 # define SANITIZER_CAN_FAST_UNWIND 0
 #elif SANITIZER_WINDOWS
