@@ -1,5 +1,10 @@
 2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vld1_lane.c (main): Remove unused test data.
+	(CHECK): Pass address of scalar, rather than array.
+
+2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vld1-vst1_1.c: Add missing float32x4_t case.
 
 2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
