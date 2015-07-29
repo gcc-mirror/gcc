@@ -1,3 +1,9 @@
+2015-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libgfortran/66650
+	* libgfortran.h (GFC_DTYPE_SIZE_MASK): Rewrite to avoid
+	"left shift of negative value" warning.
+
 2015-07-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/66861
