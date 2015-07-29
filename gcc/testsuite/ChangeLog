@@ -1,3 +1,7 @@
+2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/f16_movs_1.c: New test.
+
 2015-07-28  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/autopar/uns-outer-4.c: Remove xfail on scan for parallelizing

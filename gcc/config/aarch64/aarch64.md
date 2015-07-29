@@ -978,8 +978,8 @@
 })
 
 (define_expand "mov<mode>"
-  [(set (match_operand:GPF 0 "nonimmediate_operand" "")
-	(match_operand:GPF 1 "general_operand" ""))]
+  [(set (match_operand:GPF_F16 0 "nonimmediate_operand" "")
+	(match_operand:GPF_F16 1 "general_operand" ""))]
   ""
   {
     if (!TARGET_FLOAT)
@@ -993,6 +993,26 @@
 	      && aarch64_float_const_zero_rtx_p (operands[1])))
       operands[1] = force_reg (<MODE>mode, operands[1]);
   }
+)
+
+(define_insn "*movhf_aarch64"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=w, ?r,w,w,m,r,m ,r")
+	(match_operand:HF 1 "general_operand"      "?rY, w,w,m,w,m,rY,r"))]
+  "TARGET_FLOAT && (register_operand (operands[0], HFmode)
+    || register_operand (operands[1], HFmode))"
+  "@
+   mov\\t%0.h[0], %w1
+   umov\\t%w0, %1.h[0]
+   mov\\t%0.h[0], %1.h[0]
+   ldr\\t%h0, %1
+   str\\t%h1, %0
+   ldrh\\t%w0, %1
+   strh\\t%w1, %0
+   mov\\t%w0, %w1"
+  [(set_attr "type" "neon_from_gp,neon_to_gp,fmov,\
+                     f_loads,f_stores,load1,store1,mov_reg")
+   (set_attr "simd" "yes,yes,yes,*,*,*,*,*")
+   (set_attr "fp"   "*,*,*,yes,yes,*,*,*")]
 )
 
 (define_insn "*movsf_aarch64"
@@ -4093,11 +4113,43 @@
   [(set_attr "type" "f_cvt")]
 )
 
+(define_insn "extendhfsf2"
+  [(set (match_operand:SF 0 "register_operand" "=w")
+        (float_extend:SF (match_operand:HF 1 "register_operand" "w")))]
+  "TARGET_FLOAT"
+  "fcvt\\t%s0, %h1"
+  [(set_attr "type" "f_cvt")]
+)
+
+(define_insn "extendhfdf2"
+  [(set (match_operand:DF 0 "register_operand" "=w")
+        (float_extend:DF (match_operand:HF 1 "register_operand" "w")))]
+  "TARGET_FLOAT"
+  "fcvt\\t%d0, %h1"
+  [(set_attr "type" "f_cvt")]
+)
+
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=w")
         (float_truncate:SF (match_operand:DF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fcvt\\t%s0, %d1"
+  [(set_attr "type" "f_cvt")]
+)
+
+(define_insn "truncsfhf2"
+  [(set (match_operand:HF 0 "register_operand" "=w")
+        (float_truncate:HF (match_operand:SF 1 "register_operand" "w")))]
+  "TARGET_FLOAT"
+  "fcvt\\t%h0, %s1"
+  [(set_attr "type" "f_cvt")]
+)
+
+(define_insn "truncdfhf2"
+  [(set (match_operand:HF 0 "register_operand" "=w")
+        (float_truncate:HF (match_operand:DF 1 "register_operand" "w")))]
+  "TARGET_FLOAT"
+  "fcvt\\t%h0, %d1"
   [(set_attr "type" "f_cvt")]
 )
 

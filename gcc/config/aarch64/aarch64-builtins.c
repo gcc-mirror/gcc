@@ -436,6 +436,9 @@ static struct aarch64_simd_type_info aarch64_simd_types [] = {
 };
 #undef ENTRY
 
+/* This type is not SIMD-specific; it is the user-visible __fp16.  */
+static tree aarch64_fp16_type_node = NULL_TREE;
+
 static tree aarch64_simd_intOI_type_node = NULL_TREE;
 static tree aarch64_simd_intEI_type_node = NULL_TREE;
 static tree aarch64_simd_intCI_type_node = NULL_TREE;
@@ -845,6 +848,12 @@ aarch64_init_builtins (void)
   aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPSR]
     = add_builtin_function ("__builtin_aarch64_set_fpsr", ftype_set_fpr,
 			    AARCH64_BUILTIN_SET_FPSR, BUILT_IN_MD, NULL, NULL_TREE);
+
+  aarch64_fp16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (aarch64_fp16_type_node) = 16;
+  layout_type (aarch64_fp16_type_node);
+
+  (*lang_hooks.types.register_builtin_type) (aarch64_fp16_type_node, "__fp16");
 
   if (TARGET_SIMD)
     aarch64_init_simd_builtins ();
