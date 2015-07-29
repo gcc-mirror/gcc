@@ -1,5 +1,10 @@
 2015-07-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	* include/bits/range_access.h: Change class to typename in every
+	template.
+	(size, empty, data): New functions from N4280.
+	* testsuite/24_iterators/container_access.cc: New.
+
 	PR libstdc++/60970
 	* include/bits/functional_hash.h (__hash_enum): New.
 	(hash): Derive from __hash_enum.
