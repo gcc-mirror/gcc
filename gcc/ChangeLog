@@ -1,5 +1,10 @@
 2015-07-29  Richard Biener  <rguenther@suse.de>
 
+	* match.pd: Merge address comparison patterns and make them
+	handle some more cases.
+
+2015-07-29  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (c_expr::gen_transform): Error on unknown captures.
 	(parser::parse_capture): Add bool argument on whether to reject
 	unknown captures.
