@@ -1,3 +1,9 @@
+2015-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libgfortran/66650
+	* libgfortran.h (GFC_DTYPE_SIZE_MASK): Rewrite to avoid
+	"left shift of negative value" warning.
+
 2015-06-26  Release Manager
 
 	* GCC 4.9.3 released.
