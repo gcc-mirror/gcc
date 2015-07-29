@@ -8700,6 +8700,10 @@ aarch64_mangle_type (const_tree type)
   if (lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
     return "St9__va_list";
 
+  /* Half-precision float.  */
+  if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
+    return "Dh";
+
   /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
      builtin types.  */
   if (TYPE_NAME (type) != NULL)
@@ -9940,6 +9944,33 @@ aarch64_start_file (void)
   default_file_start();
 }
 
+static void
+aarch64_init_libfuncs (void)
+{
+   /* Half-precision float operations.  The compiler handles all operations
+     with NULL libfuncs by converting to SFmode.  */
+
+  /* Conversions.  */
+  set_conv_libfunc (trunc_optab, HFmode, SFmode, "__gnu_f2h_ieee");
+  set_conv_libfunc (sext_optab, SFmode, HFmode, "__gnu_h2f_ieee");
+
+  /* Arithmetic.  */
+  set_optab_libfunc (add_optab, HFmode, NULL);
+  set_optab_libfunc (sdiv_optab, HFmode, NULL);
+  set_optab_libfunc (smul_optab, HFmode, NULL);
+  set_optab_libfunc (neg_optab, HFmode, NULL);
+  set_optab_libfunc (sub_optab, HFmode, NULL);
+
+  /* Comparisons.  */
+  set_optab_libfunc (eq_optab, HFmode, NULL);
+  set_optab_libfunc (ne_optab, HFmode, NULL);
+  set_optab_libfunc (lt_optab, HFmode, NULL);
+  set_optab_libfunc (le_optab, HFmode, NULL);
+  set_optab_libfunc (ge_optab, HFmode, NULL);
+  set_optab_libfunc (gt_optab, HFmode, NULL);
+  set_optab_libfunc (unord_optab, HFmode, NULL);
+}
+
 /* Target hook for c_mode_for_suffix.  */
 static machine_mode
 aarch64_c_mode_for_suffix (char suffix)
@@ -9978,7 +10009,8 @@ aarch64_float_const_representable_p (rtx x)
   if (!CONST_DOUBLE_P (x))
     return false;
 
-  if (GET_MODE (x) == VOIDmode)
+  /* We don't support HFmode constants yet.  */
+  if (GET_MODE (x) == VOIDmode || GET_MODE (x) == HFmode)
     return false;
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
@@ -11940,6 +11972,14 @@ aarch64_unspec_may_trap_p (const_rtx x, unsigned flags)
   return default_unspec_may_trap_p (x, flags);
 }
 
+/* Implement TARGET_PROMOTED_TYPE to promote __fp16 to float.  */
+static tree
+aarch64_promoted_type (const_tree t)
+{
+  if (SCALAR_FLOAT_TYPE_P (t) && TYPE_PRECISION (t) == 16)
+    return float_type_node;
+  return NULL_TREE;
+}
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -12094,6 +12134,9 @@ aarch64_unspec_may_trap_p (const_rtx x, unsigned flags)
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH aarch64_reassociation_width
 
+#undef TARGET_PROMOTED_TYPE
+#define TARGET_PROMOTED_TYPE aarch64_promoted_type
+
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD aarch64_secondary_reload
 
@@ -12186,6 +12229,8 @@ aarch64_unspec_may_trap_p (const_rtx x, unsigned flags)
 #define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
   aarch64_vectorize_vec_perm_const_ok
 
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS aarch64_init_libfuncs
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS aarch64_fixed_condition_code_regs

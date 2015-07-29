@@ -61,7 +61,9 @@
       if (TARGET_FLOAT)                                         \
         {                                                       \
           builtin_define ("__ARM_FEATURE_FMA");                 \
-          builtin_define_with_int_value ("__ARM_FP", 0x0C);     \
+	  builtin_define_with_int_value ("__ARM_FP", 0x0E);     \
+	  builtin_define ("__ARM_FP16_FORMAT_IEEE");		\
+	  builtin_define ("__ARM_FP16_ARGS");			\
         }                                                       \
       if (TARGET_SIMD)                                          \
         {                                                       \
