@@ -424,8 +424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __last_char.first = true;
 	    __last_char.second = _M_value[0];
 	  }
-      while (!_M_match_token(_ScannerT::_S_token_bracket_end))
-	_M_expression_term(__last_char, __matcher);
+      while (_M_expression_term(__last_char, __matcher));
       __matcher._M_ready();
       _M_stack.push(_StateSeqT(
 		      *_M_nfa,
@@ -434,21 +433,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _TraitsT>
   template<bool __icase, bool __collate>
-    void
+    bool
     _Compiler<_TraitsT>::
     _M_expression_term(pair<bool, _CharT>& __last_char,
 		       _BracketMatcher<_TraitsT, __icase, __collate>& __matcher)
     {
+      if (_M_match_token(_ScannerT::_S_token_bracket_end))
+	return false;
+
       if (_M_match_token(_ScannerT::_S_token_collsymbol))
-	__matcher._M_add_collating_element(_M_value);
+	{
+	  auto __symbol = __matcher._M_add_collate_element(_M_value);
+	  if (__symbol.size() == 1)
+	    {
+	      __last_char.first = true;
+	      __last_char.second = __symbol[0];
+	    }
+	}
       else if (_M_match_token(_ScannerT::_S_token_equiv_class_name))
 	__matcher._M_add_equivalence_class(_M_value);
       else if (_M_match_token(_ScannerT::_S_token_char_class_name))
 	__matcher._M_add_character_class(_M_value, false);
-      // POSIX doesn't permit '-' as a start-range char (say [a-z--0]),
-      // except when the '-' is the first character in the bracket expression
-      // ([--0]). ECMAScript treats all '-' after a range as a normal character.
-      // Also see above, where _M_expression_term gets called.
+      // POSIX doesn't allow '-' as a start-range char (say [a-z--0]),
+      // except when the '-' is the first or last character in the bracket
+      // expression ([--0]). ECMAScript treats all '-' after a range as a
+      // normal character. Also see above, where _M_expression_term gets called.
       //
       // As a result, POSIX rejects [-----], but ECMAScript doesn't.
       // Boost (1.57.0) always uses POSIX style even in its ECMAScript syntax.
@@ -459,10 +468,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (!__last_char.first)
 	    {
+	      __matcher._M_add_char(_M_value[0]);
 	      if (_M_value[0] == '-'
 		  && !(_M_flags & regex_constants::ECMAScript))
-		__throw_regex_error(regex_constants::error_range);
-	      __matcher._M_add_char(_M_value[0]);
+		{
+		  if (_M_match_token(_ScannerT::_S_token_bracket_end))
+		    return false;
+		  __throw_regex_error(regex_constants::error_range);
+		}
 	      __last_char.first = true;
 	      __last_char.second = _M_value[0];
 	    }
@@ -496,6 +509,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						     _M_value[0]));
       else
 	__throw_regex_error(regex_constants::error_brack);
+
+      return true;
     }
 
   template<typename _TraitsT>
