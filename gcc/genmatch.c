@@ -2048,7 +2048,10 @@ c_expr::gen_transform (FILE *f, int indent, const char *dest,
 		id = (const char *)n->val.str.text;
 	      else
 		id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
-	      fprintf (f, "captures[%u]", *capture_ids->get(id));
+	      unsigned *cid = capture_ids->get (id);
+	      if (!cid)
+		fatal_at (token, "unknown capture id");
+	      fprintf (f, "captures[%u]", *cid);
 	      ++i;
 	      continue;
 	    }
@@ -3153,7 +3156,7 @@ private:
   const char *get_number ();
 
   id_base *parse_operation ();
-  operand *parse_capture (operand *);
+  operand *parse_capture (operand *, bool);
   operand *parse_expr ();
   c_expr *parse_c_expr (cpp_ttype);
   operand *parse_op ();
@@ -3383,7 +3386,7 @@ parser::parse_operation ()
      capture = '@'<number>  */
 
 struct operand *
-parser::parse_capture (operand *op)
+parser::parse_capture (operand *op, bool require_existing)
 {
   source_location src_loc = eat_token (CPP_ATSIGN)->src_loc;
   const cpp_token *token = peek ();
@@ -3398,7 +3401,11 @@ parser::parse_capture (operand *op)
   bool existed;
   unsigned &num = capture_ids->get_or_insert (id, &existed);
   if (!existed)
-    num = next_id;
+    {
+      if (require_existing)
+	fatal_at (src_loc, "unknown capture id");
+      num = next_id;
+    }
   return new capture (src_loc, num, op);
 }
 
@@ -3452,7 +3459,7 @@ parser::parse_expr ()
 
   if (token->type == CPP_ATSIGN
       && !(token->flags & PREV_WHITE))
-    op = parse_capture (e);
+    op = parse_capture (e, !parsing_match_operand);
   else if (force_capture)
     {
       unsigned num = capture_ids->elements ();
@@ -3604,7 +3611,7 @@ parser::parse_op ()
       if (token->type == CPP_COLON)
 	fatal_at (token, "not implemented: predicate on leaf operand");
       if (token->type == CPP_ATSIGN)
-	op = parse_capture (op);
+	op = parse_capture (op, !parsing_match_operand);
     }
 
   return op;
@@ -4074,7 +4081,7 @@ parser::parse_pattern ()
 	  capture_ids = new cid_map_t;
 	  e = new expr (p, e_loc);
 	  while (peek ()->type == CPP_ATSIGN)
-	    e->append_op (parse_capture (NULL));
+	    e->append_op (parse_capture (NULL, false));
 	  eat_token (CPP_CLOSE_PAREN);
 	}
       if (p->nargs != -1

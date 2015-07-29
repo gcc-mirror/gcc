@@ -1,5 +1,14 @@
 2015-07-29  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (c_expr::gen_transform): Error on unknown captures.
+	(parser::parse_capture): Add bool argument on whether to reject
+	unknown captures.
+	(parser::parse_expr): Adjust.
+	(parser::parse_op): Likewise.
+	(parser::parse_pattern): Likewise.
+
+2015-07-29  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (has_use_on_stmt): New function.
 	(replace_stmt_with_simplification): Use it to allow
 	abnormals originally referenced in the stmt.
