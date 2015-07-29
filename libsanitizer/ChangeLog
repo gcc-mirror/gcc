@@ -1,3 +1,11 @@
+2015-07-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR sanitizer/63927
+	* sanitizer_common/sanitizer_stacktrace.cc
+	(BufferedStackTrace::FastUnwindStack): Fix code for PowerPC to
+	find the link register at an offset of 16 from the base of the
+	caller's stack frame.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.
