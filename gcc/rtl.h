@@ -2731,10 +2731,6 @@ extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       machine_mode);
 #endif
 
-/* In loop-iv.c  */
-
-extern rtx lowpart_subreg (machine_mode, rtx, machine_mode);
-
 /* In varasm.c  */
 extern rtx force_const_mem (machine_mode, rtx);
 
@@ -2866,6 +2862,7 @@ extern rtx simplify_subreg (machine_mode, rtx, machine_mode,
 			    unsigned int);
 extern rtx simplify_gen_subreg (machine_mode, rtx, machine_mode,
 				unsigned int);
+extern rtx lowpart_subreg (machine_mode, rtx, machine_mode);
 extern rtx simplify_replace_fn_rtx (rtx, const_rtx,
 				    rtx (*fn) (rtx, const_rtx, void *), void *);
 extern rtx simplify_replace_rtx (rtx, const_rtx, rtx);

@@ -11194,10 +11194,8 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
      include an explicit SUBREG or we may simplify it further in combine.  */
   else
     {
-      int offset = 0;
       rtx res;
 
-      offset = subreg_lowpart_offset (omode, imode);
       if (imode == VOIDmode)
 	{
 	  imode = int_mode_for_mode (omode);
@@ -11205,7 +11203,7 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 	  if (x == NULL)
 	    goto fail;
 	}
-      res = simplify_gen_subreg (omode, x, imode, offset);
+      res = lowpart_subreg (omode, x, imode);
       if (res)
 	return res;
     }

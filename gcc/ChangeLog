@@ -1,3 +1,16 @@
+2015-07-30  Anatoly Sokolov  <aesok@post.ru>
+
+	* rtl.h (lowpart_subreg): Move in file.
+	* loop-iv.c (lowpart_subreg): Move to...
+	* simplify-rtx.c (lowpart_subreg): ...here.
+	  (simplify_binary_operation_1): Use lowpart_subreg instead of
+	  simplify_gen_subreg.
+	* expr.c (expand_expr_real_2): Ditto.
+	* emit-rtl.c (gen_lowpart_common): Ditto.
+	* combine.c (gen_lowpart_for_combine): Ditto.
+	* cfgexpand.c (convert_debug_memory_address, expand_debug_expr,
+	  expand_debug_source_expr): Ditto.
+
 2015-07-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* builtins.c (HAVE_atomic_clear, gen_atomic_clear): Delete.
