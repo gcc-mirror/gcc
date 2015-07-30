@@ -1910,6 +1910,12 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
       || (CONVERT_EXPR_P (rhs) || TREE_CODE (rhs) == NON_LVALUE_EXPR))
     return;
 
+  /* Don't warn if either LHS or RHS has an IEEE floating-point type.
+     It could be a NaN, and NaN never compares equal to anything, even
+     itself.  */
+  if (FLOAT_TYPE_P (TREE_TYPE (lhs)) || FLOAT_TYPE_P (TREE_TYPE (rhs)))
+    return;
+
   if (operand_equal_p (lhs, rhs, 0))
     {
       /* Don't warn about array references with constant indices;

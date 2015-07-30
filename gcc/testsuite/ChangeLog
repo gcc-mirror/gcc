@@ -1,3 +1,7 @@
+2015-07-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wtautological-compare-3.c: New test.
+
 2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vld1_lane.c (main): Remove unused test data.
