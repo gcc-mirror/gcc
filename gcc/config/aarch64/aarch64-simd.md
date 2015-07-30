@@ -4752,7 +4752,7 @@
   "TARGET_SIMD"
 {
   operands[3] = GEN_INT (INTVAL (operands[3])
-      * GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)));
+      * GET_MODE_UNIT_SIZE (<MODE>mode));
   return "ext\\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>, #%3";
 }
   [(set_attr "type" "neon_ext<q>")]

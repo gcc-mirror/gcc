@@ -1,3 +1,23 @@
+2015-07-30  David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_ext<mode>): Replace call to
+	GET_MODE_SIZE (GET_MODE_INNER (m)) with GET_MODE_UNIT_SIZE (m).
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Likewise.
+	* config/arm/arm.c (neon_valid_immediate): Likewise.
+	* config/i386/i386.c (classify_argument, ix86_expand_int_vcond)
+	(expand_vec_perm_blend, expand_vec_perm_pshufb): Likewise.
+	(expand_vec_perm_pshufb2, expand_vec_perm_vpshufb2_vpermq): Likewise.
+	(expand_vec_perm_vpshufb2_vpermq): Likewise.
+	(expand_vec_perm_vpshufb2_vpermq_even_odd): Likewise.
+	(expand_vec_perm_vpshufb4_vpermq2): Likewise.
+	* config/i386/sse.md
+	(<extract_type>_vinsert<shuffletype><extract_suf>_mask): Likewise.
+	(*ssse3_palignr<mode>_perm): Likewise.
+	* config/rs6000/rs6000.c (rs6000_complex_function_value): Likewise.
+	* config/spu/spu.c (arith_immediate_p): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	(simplify_binary_operation_1, simplify_ternary_operation): Likewise.
+
 2015-07-30  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (decision_tree::gen_gimple): Merge with ...
