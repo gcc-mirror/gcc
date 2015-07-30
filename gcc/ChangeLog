@@ -1,5 +1,13 @@
 2015-07-30  Anatoly Sokolov  <aesok@post.ru>
 
+	* config/v850/v850.h (LIBCALL_VALUE): Remove macros.
+	* config/v850/v850.md (RV_REGNUM): New constants.
+	* config/v850/v850.c (v850_libcall_value): New functions.
+	(v850_function_value_regno_p, v850_function_value): Use RV_REGNUM.
+	(TARGET_LIBCALL_VALUE): Define.
+
+2015-07-30  Anatoly Sokolov  <aesok@post.ru>
+
 	* rtl.h (lowpart_subreg): Move in file.
 	* loop-iv.c (lowpart_subreg): Move to...
 	* simplify-rtx.c (lowpart_subreg): ...here.

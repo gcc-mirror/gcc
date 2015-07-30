@@ -2979,7 +2979,7 @@ v850_select_section (tree exp,
 static bool
 v850_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == 10);
+  return (regno == RV_REGNUM);
 }
 
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
@@ -3002,7 +3002,16 @@ v850_function_value (const_tree valtype,
                     const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
                     bool outgoing ATTRIBUTE_UNUSED)
 {
-  return gen_rtx_REG (TYPE_MODE (valtype), 10);
+  return gen_rtx_REG (TYPE_MODE (valtype), RV_REGNUM);
+}
+
+/* Implement TARGET_LIBCALL_VALUE.  */
+
+static rtx
+v850_libcall_value (machine_mode mode,
+		    const_rtx func ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, RV_REGNUM);
 }
 
 
@@ -3304,6 +3313,8 @@ v850_gen_movdi (rtx * operands)
 #define TARGET_FUNCTION_VALUE_REGNO_P v850_function_value_regno_p
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE v850_function_value
+#undef  TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE v850_libcall_value
 
 #undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true

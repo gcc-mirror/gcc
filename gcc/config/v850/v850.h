@@ -549,12 +549,6 @@ struct cum_arg { int nbytes; };
 
 #define FUNCTION_ARG_REGNO_P(N) (N >= 6 && N <= 9)
 
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-
-#define LIBCALL_VALUE(MODE) \
-  gen_rtx_REG (MODE, 10)
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
