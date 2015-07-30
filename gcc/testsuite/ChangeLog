@@ -1,3 +1,23 @@
+2015-07-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66891
+	* gcc.target/i386/pr66891.c: New test.
+
+	2014-05-18  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* gcc.target/i386/pr58066.c: Replace pattern matching of .cfi
+	directive with rtl insns. Add effective-target fpic and
+	tls_native.
+
+	2014-05-08  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* gcc.target/i386/pr58066.c: New test.
+
 2015-07-25  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:

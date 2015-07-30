@@ -1,3 +1,44 @@
+2015-07-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/66891
+	* calls.c (expand_call): Wrap precompute_register_parameters with
+	NO_DEFER_POP/OK_DEFER_POP to prevent deferred pops.
+
+	2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58066
+	* config/i386/i386.md (*tls_global_dynamic_64_<mode>): Depend on SP_REG.
+	(*tls_local_dynamic_base_64_<mode>): Ditto.
+	(*tls_local_dynamic_base_64_largepic): Ditto.
+	(tls_global_dynamic_64_<mode>): Update expander pattern.
+	(tls_local_dynamic_base_64_<mode>): Ditto.
+
+	2015-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/58066
+	* calls.c (expand_call): Precompute register parameters before stack
+	alignment is performed.
+
+	2014-05-08  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* config/i386/i386.c (ix86_compute_frame_layout): Update
+	preferred_stack_boundary for call, expanded from tls descriptor.
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Update RTX
+	to depend on SP register.
+	(*tls_local_dynamic_base_32_gnu): Ditto.
+	(*tls_local_dynamic_32_once): Ditto.
+	(tls_global_dynamic_64_<mode>): Set
+	ix86_tls_descriptor_calls_expanded_in_cfun.
+	(tls_local_dynamic_base_64_<mode>): Ditto.
+	(tls_global_dynamic_32): Set
+	ix86_tls_descriptor_calls_expanded_in_cfun. Update RTX
+	to depend on SP register.
+	(tls_local_dynamic_base_32): Ditto.
+
 2015-07-25  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
