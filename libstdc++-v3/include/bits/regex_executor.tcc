@@ -145,11 +145,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
 	   bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_lookahead(_State<_TraitsT> __state)
+    _M_lookahead(_StateIdT __next)
     {
       _ResultsVec __what(_M_cur_results.size());
       _Executor __sub(_M_current, _M_end, __what, _M_re, _M_flags);
-      __sub._M_states._M_start = __state._M_alt;
+      __sub._M_states._M_start = __next;
       if (__sub._M_search_from_first())
 	{
 	  for (size_t __i = 0; __i < __what.size(); __i++)
@@ -203,7 +203,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto& __state = _M_nfa[__i];
       // Every change on _M_cur_results and _M_current will be rolled back after
       // finishing the recursion step.
-      switch (__state._M_opcode)
+      switch (__state._M_opcode())
 	{
 	// _M_alt branch is "match once more", while _M_next is "get me out
 	// of this quantifier". Executing _M_next first or _M_alt first don't
@@ -280,7 +280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Here __state._M_alt offers a single start node for a sub-NFA.
 	// We recursively invoke our algorithm to match the sub-NFA.
 	case _S_opcode_subexpr_lookahead:
-	  if (_M_lookahead(__state) == !__state._M_neg)
+	  if (_M_lookahead(__state._M_alt) == !__state._M_neg)
 	    _M_dfs(__match_mode, __state._M_next);
 	  break;
 	case _S_opcode_match:

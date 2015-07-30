@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_word_boundary() const;
 
       bool
-      _M_lookahead(_State<_TraitsT> __state);
+      _M_lookahead(_StateIdT __next);
 
        // Holds additional information used in BFS-mode.
       template<typename _SearchMode, typename _ResultsVec>
