@@ -1,5 +1,12 @@
 2015-07-30  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (decision_tree::gen_gimple): Merge with ...
+	(decision_tree::gen_generic): ... this into ...
+	(decision_tree::gen): ... this.
+	(main): Adjust callers.
+
+2015-07-30  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (verbose): New global.
 	(warning_at): Add overload with source_location.
 	(capture_info::capture_info): Add bool whether generating gimple
