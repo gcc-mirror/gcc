@@ -3224,9 +3224,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 				     GET_MODE (SUBREG_REG (op0)),
 				     XEXP (SUBREG_REG (op0), 0),
 				     tmp);
-	  return simplify_gen_subreg (mode, tmp, inner_mode,
-				      subreg_lowpart_offset (mode,
-							     inner_mode));
+	  return lowpart_subreg (mode, tmp, inner_mode);
 	}
     canonicalize_shift:
       if (SHIFT_COUNT_TRUNCATED && CONST_INT_P (op1))
@@ -6025,6 +6023,17 @@ simplify_gen_subreg (machine_mode outermode, rtx op,
     return gen_rtx_SUBREG (outermode, op, byte);
 
   return NULL_RTX;
+}
+
+/* Generates a subreg to get the least significant part of EXPR (in mode
+   INNER_MODE) to OUTER_MODE.  */
+
+rtx
+lowpart_subreg (machine_mode outer_mode, rtx expr,
+			     machine_mode inner_mode)
+{
+  return simplify_gen_subreg (outer_mode, expr, inner_mode,
+			      subreg_lowpart_offset (outer_mode, inner_mode));
 }
 
 /* Simplify X, an rtx expression.

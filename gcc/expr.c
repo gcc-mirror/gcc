@@ -8137,9 +8137,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    inner_mode = TYPE_MODE (inner_type);
 
 	  if (modifier == EXPAND_INITIALIZER)
-	    op0 = simplify_gen_subreg (mode, op0, inner_mode,
-				       subreg_lowpart_offset (mode,
-							      inner_mode));
+	    op0 = lowpart_subreg (mode, op0, inner_mode);
 	  else
 	    op0=  convert_modes (mode, inner_mode, op0,
 				 TYPE_UNSIGNED (inner_type));

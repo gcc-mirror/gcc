@@ -205,17 +205,6 @@ dump_iv_info (FILE *file, struct rtx_iv *iv)
     fprintf (file, " (first special)");
 }
 
-/* Generates a subreg to get the least significant part of EXPR (in mode
-   INNER_MODE) to OUTER_MODE.  */
-
-rtx
-lowpart_subreg (machine_mode outer_mode, rtx expr,
-		machine_mode inner_mode)
-{
-  return simplify_gen_subreg (outer_mode, expr, inner_mode,
-			      subreg_lowpart_offset (outer_mode, inner_mode));
-}
-
 static void
 check_iv_ref_table_size (void)
 {

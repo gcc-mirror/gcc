@@ -3632,9 +3632,7 @@ convert_debug_memory_address (machine_mode mode, rtx x,
     return x;
 
   if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (xmode))
-    x = simplify_gen_subreg (mode, x, xmode,
-			     subreg_lowpart_offset
-			     (mode, xmode));
+    x = lowpart_subreg (mode, x, xmode);
   else if (POINTERS_EXTEND_UNSIGNED > 0)
     x = gen_rtx_ZERO_EXTEND (mode, x);
   else if (!POINTERS_EXTEND_UNSIGNED)
@@ -3850,9 +3848,7 @@ expand_debug_expr (tree exp)
 	      if (SCALAR_INT_MODE_P (opmode)
 		  && (GET_MODE_PRECISION (opmode)
 		      < GET_MODE_PRECISION (inner_mode)))
-		op1 = simplify_gen_subreg (opmode, op1, inner_mode,
-					   subreg_lowpart_offset (opmode,
-								  inner_mode));
+		op1 = lowpart_subreg (opmode, op1, inner_mode);
 	    }
 	  break;
 	default:
@@ -4011,9 +4007,7 @@ expand_debug_expr (tree exp)
 	  }
 	else if (CONSTANT_P (op0)
 		 || GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (inner_mode))
-	  op0 = simplify_gen_subreg (mode, op0, inner_mode,
-				     subreg_lowpart_offset (mode,
-							    inner_mode));
+	  op0 = lowpart_subreg (mode, op0, inner_mode);
 	else if (UNARY_CLASS_P (exp)
 		 ? TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
 		 : unsignedp)
@@ -4141,9 +4135,7 @@ expand_debug_expr (tree exp)
 	      offmode = TYPE_MODE (TREE_TYPE (offset));
 
 	    if (addrmode != offmode)
-	      op1 = simplify_gen_subreg (addrmode, op1, offmode,
-					 subreg_lowpart_offset (addrmode,
-								offmode));
+	      op1 = lowpart_subreg (addrmode, op1, offmode);
 
 	    /* Don't use offset_address here, we don't need a
 	       recognizable address, and we don't want to generate
@@ -4868,8 +4860,7 @@ expand_debug_source_expr (tree exp)
     }
   else if (CONSTANT_P (op0)
 	   || GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (inner_mode))
-    op0 = simplify_gen_subreg (mode, op0, inner_mode,
-			       subreg_lowpart_offset (mode, inner_mode));
+    op0 = lowpart_subreg (mode, op0, inner_mode);
   else if (TYPE_UNSIGNED (TREE_TYPE (exp)))
     op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
   else
