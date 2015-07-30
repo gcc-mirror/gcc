@@ -1,3 +1,8 @@
+2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/iterators.md (VRL2, VRL3, VRL4): Remove values for
+	128-bit vector modes.
+
 2015-07-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

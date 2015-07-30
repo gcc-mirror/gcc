@@ -543,24 +543,15 @@
 
 (define_mode_attr VRL2 [(V8QI "V32QI") (V4HI "V16HI")
 			(V2SI "V8SI")  (V2SF "V8SF")
-			(DI   "V4DI")  (DF   "V4DF")
-			(V16QI "V32QI") (V8HI "V16HI")
-			(V4SI "V8SI")  (V4SF "V8SF")
-			(V2DI "V4DI")  (V2DF "V4DF")])
+			(DI   "V4DI")  (DF   "V4DF")])
 
 (define_mode_attr VRL3 [(V8QI "V48QI") (V4HI "V24HI")
 			(V2SI "V12SI")  (V2SF "V12SF")
-			(DI   "V6DI")  (DF   "V6DF")
-			(V16QI "V48QI") (V8HI "V24HI")
-			(V4SI "V12SI")  (V4SF "V12SF")
-			(V2DI "V6DI")  (V2DF "V6DF")])
+			(DI   "V6DI")  (DF   "V6DF")])
 
 (define_mode_attr VRL4 [(V8QI "V64QI") (V4HI "V32HI")
 			(V2SI "V16SI")  (V2SF "V16SF")
-			(DI   "V8DI")  (DF   "V8DF")
-			(V16QI "V64QI") (V8HI "V32HI")
-			(V4SI "V16SI")  (V4SF "V16SF")
-			(V2DI "V8DI")  (V2DF "V8DF")])
+			(DI   "V8DI")  (DF   "V8DF")])
 
 (define_mode_attr VSTRUCT_DREG [(OI "TI") (CI "EI") (XI "OI")])
 
