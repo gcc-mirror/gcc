@@ -81,6 +81,7 @@
 
 	PR rtl-optimization/58066
 	* calls.c (expand_call): Precompute register parameters before stack
+	alignment is performed.
 
 2015-07-23  Martin Jambor  <mjambor@suse.cz>
 
