@@ -1,3 +1,9 @@
+2015-07-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.c (HAVE_atomic_clear, gen_atomic_clear): Delete.
+	(expand_builtin_atomic_clear): Remove support for atomic_clear
+	pattern.
+
 2015-07-30  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (fold_gimple_assign): Only fold !tcc_comparison

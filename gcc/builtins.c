@@ -5587,12 +5587,6 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
   return ret;
 }
 
-
-#ifndef HAVE_atomic_clear
-# define HAVE_atomic_clear 0
-# define gen_atomic_clear(x,y) (gcc_unreachable (), NULL_RTX)
-#endif
-
 /* Expand an atomic clear operation.
 	void _atomic_clear (BOOL *obj, enum memmodel)
    EXP is the call expression.  */
@@ -5613,12 +5607,6 @@ expand_builtin_atomic_clear (tree exp)
       warning (OPT_Winvalid_memory_model,
 	       "invalid memory model for %<__atomic_store%>");
       model = MEMMODEL_SEQ_CST;
-    }
-
-  if (HAVE_atomic_clear)
-    {
-      emit_insn (gen_atomic_clear (mem, model));
-      return const0_rtx;
     }
 
   /* Try issuing an __atomic_store, and allow fallback to __sync_lock_release.
