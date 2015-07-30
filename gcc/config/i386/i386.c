@@ -7086,7 +7086,7 @@ classify_argument (machine_mode mode, const_tree type,
 
   /* for V1xx modes, just use the base mode */
   if (VECTOR_MODE_P (mode) && mode != V1DImode && mode != V1TImode
-      && GET_MODE_SIZE (GET_MODE_INNER (mode)) == bytes)
+      && GET_MODE_UNIT_SIZE (mode) == bytes)
     mode = GET_MODE_INNER (mode);
 
   /* Classification of atomic types.  */
@@ -21780,8 +21780,8 @@ ix86_expand_int_vcond (rtx operands[])
       && data_mode == mode
       && cop1 == CONST0_RTX (mode)
       && operands[1 + (code == LT)] == CONST0_RTX (data_mode)
-      && GET_MODE_SIZE (GET_MODE_INNER (data_mode)) > 1
-      && GET_MODE_SIZE (GET_MODE_INNER (data_mode)) <= 8
+      && GET_MODE_UNIT_SIZE (data_mode) > 1
+      && GET_MODE_UNIT_SIZE (data_mode) <= 8
       && (GET_MODE_SIZE (data_mode) == 16
 	  || (TARGET_AVX2 && GET_MODE_SIZE (data_mode) == 32)))
     {
@@ -47194,7 +47194,7 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
     return false;
   if (TARGET_AVX512F && GET_MODE_SIZE (vmode) == 64
       && (TARGET_AVX512BW
-	  || GET_MODE_SIZE (GET_MODE_INNER (vmode)) >= 4))
+	  || GET_MODE_UNIT_SIZE (vmode) >= 4))
     ;
   else if (TARGET_AVX2 && GET_MODE_SIZE (vmode) == 32)
     ;
@@ -47641,7 +47641,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
       rperm[i] = GEN_INT ((d->perm[i * nelt / 16] * 16 / nelt) & 15);
   else
     {
-      eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+      eltsz = GET_MODE_UNIT_SIZE (d->vmode);
       if (!d->one_operand_p)
 	mask = 2 * nelt - 1;
       else if (vmode == V16QImode)
@@ -48816,7 +48816,7 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
     return true;
 
   nelt = d->nelt;
-  eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+  eltsz = GET_MODE_UNIT_SIZE (d->vmode);
 
   /* Generate two permutation masks.  If the required element is within
      the given vector it is shuffled into the proper lane.  If the required
@@ -48880,7 +48880,7 @@ expand_vec_perm_vpshufb2_vpermq (struct expand_vec_perm_d *d)
     return true;
 
   nelt = d->nelt;
-  eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+  eltsz = GET_MODE_UNIT_SIZE (d->vmode);
 
   /* Generate two permutation masks.  If the required element is within
      the same lane, it is shuffled in.  If the required element from the
@@ -48956,7 +48956,7 @@ expand_vec_perm_vpshufb2_vpermq_even_odd (struct expand_vec_perm_d *d)
     return true;
 
   nelt = d->nelt;
-  eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+  eltsz = GET_MODE_UNIT_SIZE (d->vmode);
 
   /* Generate two permutation masks.  In the first permutation mask
      the first quarter will contain indexes for the first half
@@ -49548,7 +49548,7 @@ expand_vec_perm_vpshufb4_vpermq2 (struct expand_vec_perm_d *d)
     return true;
 
   nelt = d->nelt;
-  eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+  eltsz = GET_MODE_UNIT_SIZE (d->vmode);
 
   /* Generate 4 permutation masks.  If the required element is within
      the same lane, it is shuffled in.  If the required element from the
