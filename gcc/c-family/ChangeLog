@@ -1,3 +1,8 @@
+2015-07-30  Jason Merrill  <jason@redhat.com>
+
+	* c-pretty-print.c (unary_expression) [INDIRECT_REF]: Don't print
+	'*' for reference decay.
+
 2015-07-30  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (warn_tautological_cmp): Bail for float types.
