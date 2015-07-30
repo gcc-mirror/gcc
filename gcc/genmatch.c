@@ -43,6 +43,12 @@ void ggc_free (void *)
 }
 
 
+/* Global state.  */
+
+/* Verboseness.  0 is quiet, 1 adds some warnings, 2 is for debugging.  */
+unsigned verbose;
+
+
 /* libccp helpers.  */
 
 static struct line_maps *line_table;
@@ -123,6 +129,18 @@ warning_at (const cpp_token *tk, const char *msg, ...)
   va_list ap;
   va_start (ap, msg);
   error_cb (NULL, CPP_DL_WARNING, 0, tk->src_loc, 0, msg, &ap);
+  va_end (ap);
+}
+
+static void
+#if GCC_VERSION >= 4001
+__attribute__((format (printf, 2, 3)))
+#endif
+warning_at (source_location loc, const char *msg, ...)
+{
+  va_list ap;
+  va_start (ap, msg);
+  error_cb (NULL, CPP_DL_WARNING, 0, loc, 0, msg, &ap);
   va_end (ap);
 }
 
@@ -1599,7 +1617,7 @@ decision_tree::print (FILE *f)
 
 struct capture_info
 {
-  capture_info (simplify *s, operand *);
+  capture_info (simplify *s, operand *, bool);
   void walk_match (operand *o, unsigned toplevel_arg, bool, bool);
   bool walk_result (operand *o, bool, operand *);
   void walk_c_expr (c_expr *);
@@ -1614,16 +1632,20 @@ struct capture_info
       unsigned long toplevel_msk;
       int result_use_count;
       unsigned same_as;
+      capture *c;
     };
 
   auto_vec<cinfo> info;
   unsigned long force_no_side_effects;
+  bool gimple;
 };
 
 /* Analyze captures in S.  */
 
-capture_info::capture_info (simplify *s, operand *result)
+capture_info::capture_info (simplify *s, operand *result, bool gimple_)
 {
+  gimple = gimple_;
+
   expr *e;
   if (s->kind == simplify::MATCH)
     {
@@ -1661,6 +1683,8 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
       info[where].toplevel_msk |= 1 << toplevel_arg;
       info[where].force_no_side_effects_p |= conditional_p;
       info[where].cond_expr_cond_p |= cond_expr_cond_p;
+      if (!info[where].c)
+	info[where].c = c;
       if (!c->what)
 	return;
       /* Recurse to exprs and captures.  */
@@ -1710,6 +1734,10 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
     {
       /* Mark non-captured leafs toplevel arg for checking.  */
       force_no_side_effects |= 1 << toplevel_arg;
+      if (verbose >= 1
+	  && !gimple)
+	warning_at (o->location,
+		    "forcing no side-effects on possibly lost leaf");
     }
   else
     gcc_unreachable ();
@@ -1801,15 +1829,25 @@ capture_info::walk_result (operand *o, bool conditional_p, operand *result)
 void
 capture_info::walk_c_expr (c_expr *e)
 {
-  /* Give up for C exprs mentioning captures not inside TREE_TYPE ().  */
+  /* Give up for C exprs mentioning captures not inside TREE_TYPE,
+     TREE_REAL_CST, TREE_CODE or a predicate where they cannot
+     really escape through.  */
   unsigned p_depth = 0;
   for (unsigned i = 0; i < e->code.length (); ++i)
     {
       const cpp_token *t = &e->code[i];
       const cpp_token *n = i < e->code.length () - 1 ? &e->code[i+1] : NULL;
+      id_base *id;
       if (t->type == CPP_NAME
-	  && strcmp ((const char *)CPP_HASHNODE
-		       (t->val.node.node)->ident.str, "TREE_TYPE") == 0
+	  && (strcmp ((const char *)CPP_HASHNODE
+		      (t->val.node.node)->ident.str, "TREE_TYPE") == 0
+	      || strcmp ((const char *)CPP_HASHNODE
+			 (t->val.node.node)->ident.str, "TREE_CODE") == 0
+	      || strcmp ((const char *)CPP_HASHNODE
+			 (t->val.node.node)->ident.str, "TREE_REAL_CST") == 0
+	      || ((id = get_operator ((const char *)CPP_HASHNODE
+				      (t->val.node.node)->ident.str))
+		  && is_a <predicate_id *> (id)))
 	  && n->type == CPP_OPEN_PAREN)
 	p_depth++;
       else if (t->type == CPP_CLOSE_PAREN
@@ -1828,6 +1866,9 @@ capture_info::walk_c_expr (c_expr *e)
 	    id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
 	  unsigned where = *e->capture_ids->get(id);
 	  info[info[where].same_as].force_no_side_effects_p = true;
+	  if (verbose >= 1
+	      && !gimple)
+	    warning_at (t, "capture escapes");
 	}
     }
 }
@@ -2662,25 +2703,37 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 
   /* Analyze captures and perform early-outs on the incoming arguments
      that cover cases we cannot handle.  */
-  capture_info cinfo (s, result);
+  capture_info cinfo (s, result, gimple);
   if (s->kind == simplify::SIMPLIFY)
     {
       if (!gimple)
 	{
 	  for (unsigned i = 0; i < as_a <expr *> (s->match)->ops.length (); ++i)
 	    if (cinfo.force_no_side_effects & (1 << i))
-	      fprintf_indent (f, indent,
-			      "if (TREE_SIDE_EFFECTS (op%d)) return NULL_TREE;\n",
-			      i);
+	      {
+		fprintf_indent (f, indent,
+				"if (TREE_SIDE_EFFECTS (op%d)) return NULL_TREE;\n",
+				i);
+		if (verbose >= 1)
+		  warning_at (as_a <expr *> (s->match)->ops[i]->location,
+			      "forcing toplevel operand to have no "
+			      "side-effects");
+	      }
 	  for (int i = 0; i <= s->capture_max; ++i)
 	    if (cinfo.info[i].cse_p)
 	      ;
 	    else if (cinfo.info[i].force_no_side_effects_p
 		     && (cinfo.info[i].toplevel_msk
 			 & cinfo.force_no_side_effects) == 0)
-	      fprintf_indent (f, indent,
-			      "if (TREE_SIDE_EFFECTS (captures[%d])) "
-			      "return NULL_TREE;\n", i);
+	      {
+		fprintf_indent (f, indent,
+				"if (TREE_SIDE_EFFECTS (captures[%d])) "
+				"return NULL_TREE;\n", i);
+		if (verbose >= 1)
+		  warning_at (cinfo.info[i].c->location,
+			      "forcing captured operand to have no "
+			      "side-effects");
+	      }
 	    else if ((cinfo.info[i].toplevel_msk
 		      & cinfo.force_no_side_effects) != 0)
 	      /* Mark capture as having no side-effects if we had to verify
@@ -4165,7 +4218,6 @@ main (int argc, char **argv)
     return 1;
 
   bool gimple = true;
-  bool verbose = false;
   char *input = argv[argc-1];
   for (int i = 1; i < argc - 1; ++i)
     {
@@ -4174,11 +4226,13 @@ main (int argc, char **argv)
       else if (strcmp (argv[i], "--generic") == 0)
 	gimple = false;
       else if (strcmp (argv[i], "-v") == 0)
-	verbose = true;
+	verbose = 1;
+      else if (strcmp (argv[i], "-vv") == 0)
+	verbose = 2;
       else
 	{
 	  fprintf (stderr, "Usage: genmatch "
-		   "[--gimple] [--generic] [-v] input\n");
+		   "[--gimple] [--generic] [-v[v]] input\n");
 	  return 1;
 	}
     }
@@ -4235,7 +4289,7 @@ add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
       predicate_id *pred = p.user_predicates[i];
       lower (pred->matchers, gimple);
 
-      if (verbose)
+      if (verbose == 2)
 	for (unsigned i = 0; i < pred->matchers.length (); ++i)
 	  print_matches (pred->matchers[i]);
 
@@ -4243,7 +4297,7 @@ add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
       for (unsigned i = 0; i < pred->matchers.length (); ++i)
 	dt.insert (pred->matchers[i], i);
 
-      if (verbose)
+      if (verbose == 2)
 	dt.print (stderr);
 
       write_predicate (stdout, pred, dt, gimple);
@@ -4252,7 +4306,7 @@ add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
   /* Lower the main simplifiers and generate code for them.  */
   lower (p.simplifiers, gimple);
 
-  if (verbose)
+  if (verbose == 2)
     for (unsigned i = 0; i < p.simplifiers.length (); ++i)
       print_matches (p.simplifiers[i]);
 
@@ -4260,7 +4314,7 @@ add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
   for (unsigned i = 0; i < p.simplifiers.length (); ++i)
     dt.insert (p.simplifiers[i], i);
 
-  if (verbose)
+  if (verbose == 2)
     dt.print (stderr);
 
   if (gimple)

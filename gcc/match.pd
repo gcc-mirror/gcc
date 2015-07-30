@@ -26,11 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 /* Generic tree predicates we inherit.  */
 (define_predicates
    integer_onep integer_zerop integer_all_onesp integer_minus_onep
-   integer_each_onep integer_truep
+   integer_each_onep integer_truep integer_nonzerop
    real_zerop real_onep real_minus_onep
    CONSTANT_CLASS_P
    tree_expr_nonnegative_p
-   integer_pow2p)
+   integer_pow2p
+   HONOR_NANS)
 
 /* Operator lists.  */
 (define_operator_list tcc_comparison
