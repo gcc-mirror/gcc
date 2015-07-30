@@ -1814,7 +1814,7 @@ along with GCC; see the file COPYING3.  If not see
    enough to make fold_stmt not regress when not dispatching to fold_binary.  */
 (for cmp (simple_comparison)
  (simplify
-  (cmp (convert?@2 addr@0) (convert? addr@1))
+  (cmp (convert1?@2 addr@0) (convert2? addr@1))
   (with
    {
      HOST_WIDE_INT off0, off1;

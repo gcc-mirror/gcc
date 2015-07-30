@@ -1,3 +1,9 @@
+2015-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67053
+	* match.pd: Allow both operands to independently have conversion
+	when simplifying compares of addresses.
+
 2015-07-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/66217
