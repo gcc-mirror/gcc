@@ -1310,8 +1310,7 @@ struct decision_tree
   dt_node *root;
 
   void insert (struct simplify *, unsigned);
-  void gen_gimple (FILE *f = stderr);
-  void gen_generic (FILE *f = stderr);
+  void gen (FILE *f, bool gimple);
   void print (FILE *f = stderr);
 
   decision_tree () { root = new dt_node (dt_node::DT_NODE); }
@@ -2997,13 +2996,14 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
    tree.  */
 
 void
-decision_tree::gen_gimple (FILE *f)
+decision_tree::gen (FILE *f, bool gimple)
 {
   root->analyze ();
 
-  fprintf (stderr, "GIMPLE decision tree has %u leafs, maximum depth %u and "
-	   "a total number of %u nodes\n", root->num_leafs, root->max_level,
-	   root->total_size);
+  fprintf (stderr, "%s decision tree has %u leafs, maximum depth %u and "
+	   "a total number of %u nodes\n",
+	   gimple ? "GIMPLE" : "GENERIC", 
+	   root->num_leafs, root->max_level, root->total_size);
 
   for (unsigned n = 1; n <= 3; ++n)
     {
@@ -3012,43 +3012,73 @@ decision_tree::gen_gimple (FILE *f)
 	{
 	  dt_operand *dop = static_cast<dt_operand *>(root->kids[i]);
 	  expr *e = static_cast<expr *>(dop->op);
-	  if (e->ops.length () != n)
+	  if (e->ops.length () != n
+	      /* Builtin simplifications are somewhat premature on
+		 GENERIC.  The following drops patterns with outermost
+		 calls.  It's easy to emit overloads for function code
+		 though if necessary.  */
+	      || (!gimple
+		  && e->operation->kind != id_base::CODE))
 	    continue;
 
-	  fprintf (f, "\nstatic bool\n"
-		   "gimple_simplify_%s (code_helper *res_code, tree *res_ops,\n"
-		   "                 gimple_seq *seq, tree (*valueize)(tree) "
-		   "ATTRIBUTE_UNUSED,\n"
-		   "                 code_helper ARG_UNUSED (code), tree "
-		   "ARG_UNUSED (type)\n",
-		   e->operation->id);
+	  if (gimple)
+	    fprintf (f, "\nstatic bool\n"
+		     "gimple_simplify_%s (code_helper *res_code, tree *res_ops,\n"
+		     "                 gimple_seq *seq, tree (*valueize)(tree) "
+		     "ATTRIBUTE_UNUSED,\n"
+		     "                 code_helper ARG_UNUSED (code), tree "
+		     "ARG_UNUSED (type)\n",
+		     e->operation->id);
+	  else
+	    fprintf (f, "\nstatic tree\n"
+		     "generic_simplify_%s (location_t ARG_UNUSED (loc), enum "
+		     "tree_code ARG_UNUSED (code), tree ARG_UNUSED (type)",
+		     e->operation->id);
 	  for (unsigned i = 0; i < n; ++i)
 	    fprintf (f, ", tree op%d", i);
 	  fprintf (f, ")\n");
 	  fprintf (f, "{\n");
-	  dop->gen_kids (f, 2, true);
-	  fprintf (f, "  return false;\n");
+	  dop->gen_kids (f, 2, gimple);
+	  if (gimple)
+	    fprintf (f, "  return false;\n");
+	  else
+	    fprintf (f, "  return NULL_TREE;\n");
 	  fprintf (f, "}\n");
 	}
 
       /* Then generate the main entry with the outermost switch and
          tail-calls to the split-out functions.  */
-      fprintf (f, "\nstatic bool\n"
-	       "gimple_simplify (code_helper *res_code, tree *res_ops,\n"
-	       "                 gimple_seq *seq, tree (*valueize)(tree),\n"
-	       "                 code_helper code, tree type");
+      if (gimple)
+	fprintf (f, "\nstatic bool\n"
+		 "gimple_simplify (code_helper *res_code, tree *res_ops,\n"
+		 "                 gimple_seq *seq, tree (*valueize)(tree),\n"
+		 "                 code_helper code, tree type");
+      else
+	fprintf (f, "\ntree\n"
+		 "generic_simplify (location_t loc, enum tree_code code, "
+		 "tree type ATTRIBUTE_UNUSED");
       for (unsigned i = 0; i < n; ++i)
 	fprintf (f, ", tree op%d", i);
       fprintf (f, ")\n");
       fprintf (f, "{\n");
 
-      fprintf (f, "  switch (code.get_rep())\n"
-	          "    {\n");
+      if (gimple)
+	fprintf (f, "  switch (code.get_rep())\n"
+		 "    {\n");
+      else
+	fprintf (f, "  switch (code)\n"
+		 "    {\n");
       for (unsigned i = 0; i < root->kids.length (); i++)
 	{
 	  dt_operand *dop = static_cast<dt_operand *>(root->kids[i]);
 	  expr *e = static_cast<expr *>(dop->op);
-	  if (e->ops.length () != n)
+	  if (e->ops.length () != n
+	      /* Builtin simplifications are somewhat premature on
+		 GENERIC.  The following drops patterns with outermost
+		 calls.  It's easy to emit overloads for function code
+		 though if necessary.  */
+	      || (!gimple
+		  && e->operation->kind != id_base::CODE))
 	    continue;
 
 	  if (*e->operation == CONVERT_EXPR
@@ -3058,8 +3088,12 @@ decision_tree::gen_gimple (FILE *f)
 	    fprintf (f, "    case %s%s:\n",
 		     is_a <fn_id *> (e->operation) ? "-" : "",
 		     e->operation->id);
-	  fprintf (f, "      return gimple_simplify_%s (res_code, res_ops, "
-		   "seq, valueize, code, type", e->operation->id);
+	  if (gimple)
+	    fprintf (f, "      return gimple_simplify_%s (res_code, res_ops, "
+		     "seq, valueize, code, type", e->operation->id);
+	  else
+	    fprintf (f, "      return generic_simplify_%s (loc, code, type",
+		     e->operation->id);
 	  for (unsigned i = 0; i < n; ++i)
 	    fprintf (f, ", op%d", i);
 	  fprintf (f, ");\n");
@@ -3067,90 +3101,10 @@ decision_tree::gen_gimple (FILE *f)
       fprintf (f,       "    default:;\n"
 	                "    }\n");
 
-      fprintf (f, "  return false;\n");
-      fprintf (f, "}\n");
-    }
-}
-
-/* Main entry to generate code for matching GENERIC IL off the decision
-   tree.  */
-
-void
-decision_tree::gen_generic (FILE *f)
-{
-  root->analyze ();
-
-  fprintf (stderr, "GENERIC decision tree has %u leafs, maximum depth %u and "
-	   "a total number of %u nodes\n", root->num_leafs, root->max_level,
-	   root->total_size);
-
-  for (unsigned n = 1; n <= 3; ++n)
-    {
-      /* First generate split-out functions.  */
-      for (unsigned i = 0; i < root->kids.length (); i++)
-	{
-	  dt_operand *dop = static_cast<dt_operand *>(root->kids[i]);
-	  expr *e = static_cast<expr *>(dop->op);
-	  if (e->ops.length () != n
-	      /* Builtin simplifications are somewhat premature on
-	         GENERIC.  The following drops patterns with outermost
-		 calls.  It's easy to emit overloads for function code
-		 though if necessary.  */
-	      || e->operation->kind != id_base::CODE)
-	    continue;
-
-	  fprintf (f, "\nstatic tree\n"
-		   "generic_simplify_%s (location_t ARG_UNUSED (loc), enum "
-		   "tree_code ARG_UNUSED (code), tree ARG_UNUSED (type)",
-		   e->operation->id);
-	  for (unsigned i = 0; i < n; ++i)
-	    fprintf (f, ", tree op%d", i);
-	  fprintf (f, ")\n");
-	  fprintf (f, "{\n");
-	  dop->gen_kids (f, 2, false);
-	  fprintf (f, "  return NULL_TREE;\n");
-	  fprintf (f, "}\n");
-	}
-
-      /* Then generate the main entry with the outermost switch and
-         tail-calls to the split-out functions.  */
-      fprintf (f, "\ntree\n"
-	       "generic_simplify (location_t loc, enum tree_code code, "
-	       "tree type ATTRIBUTE_UNUSED");
-      for (unsigned i = 0; i < n; ++i)
-	fprintf (f, ", tree op%d", i);
-      fprintf (f, ")\n");
-      fprintf (f, "{\n");
-
-      fprintf (f, "  switch (code)\n"
-	          "    {\n");
-      for (unsigned i = 0; i < root->kids.length (); i++)
-	{
-	  dt_operand *dop = static_cast<dt_operand *>(root->kids[i]);
-	  expr *e = static_cast<expr *>(dop->op);
-	  if (e->ops.length () != n
-	      /* Builtin simplifications are somewhat premature on
-	         GENERIC.  The following drops patterns with outermost
-		 calls.  It's easy to emit overloads for function code
-		 though if necessary.  */
-	      || e->operation->kind != id_base::CODE)
-	    continue;
-
-	  operator_id *op_id = static_cast <operator_id *> (e->operation);
-	  if (op_id->code == NOP_EXPR || op_id->code == CONVERT_EXPR)
-	    fprintf (f, "    CASE_CONVERT:\n");
-	  else
-	    fprintf (f, "    case %s:\n", e->operation->id);
-	  fprintf (f, "      return generic_simplify_%s (loc, code, type",
-		   e->operation->id);
-	  for (unsigned i = 0; i < n; ++i)
-	    fprintf (f, ", op%d", i);
-	  fprintf (f, ");\n");
-	}
-      fprintf (f, "    default:;\n"
-	          "    }\n");
-
-      fprintf (f, "  return NULL_TREE;\n");
+      if (gimple)
+	fprintf (f, "  return false;\n");
+      else
+	fprintf (f, "  return NULL_TREE;\n");
       fprintf (f, "}\n");
     }
 }
@@ -4317,10 +4271,7 @@ add_operator (VIEW_CONVERT2, "VIEW_CONVERT2", "tcc_unary", 1);
   if (verbose == 2)
     dt.print (stderr);
 
-  if (gimple)
-    dt.gen_gimple (stdout);
-  else
-    dt.gen_generic (stdout);
+  dt.gen (stdout, gimple);
 
   /* Finalize.  */
   cpp_finish (r, NULL);
