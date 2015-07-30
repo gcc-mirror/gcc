@@ -1,3 +1,10 @@
+2015-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/any (any::operator=(const any&)): Check for
+	self-assignment.
+	* testsuite/experimental/any/assign/self.cc: New.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+
 2015-07-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66829

@@ -1,7 +1,4 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do compile }
-
-// Copyright (C) 2014-2015 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,13 +15,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <experimental/any>
+// { dg-options "-std=gnu++14" }
 
-void test01()
+#include <experimental/any>
+#include <testsuite_hooks.h>
+
+void
+test01()
 {
   using std::experimental::any;
-  using std::experimental::any_cast;
 
-  const any y(1);
-  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 359 }
+  any a;
+  a = a;
+  VERIFY( a.empty() );
+
+  a = 1;
+  a = a;
+  VERIFY( !a.empty() );
+}
+
+int
+main()
+{
+  test01();
 }
