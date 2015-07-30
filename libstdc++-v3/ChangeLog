@@ -1,3 +1,18 @@
+2015-07-30  Tim Shen  <timshen@google.com>
+
+	* include/bits/regex_automaton.h (_State_base, _State<>):
+	Remove _TraitsT dependency from _State<>; Make matcher member
+	into the union to reduce struct size.
+	* include/bits/regex_automaton.tcc (_State_base<>::_M_print,
+	_State_base<>::_M_dot, _StateSeq<>::_M_clone):
+	Adjust to fit the interface. Factor out common parts in
+	_M_clone as _State<>::_M_has_alt.
+	* include/bits/regex_executor.h (_Executer<>::_M_lookahead):
+	Only pass state id instead of the whole state.
+	* include/bits/regex_executor.tcc (_Executer<>::_M_dfs,
+	_Executer<>::_M_lookahead): Adjust to fit the interface.
+	* include/std/regex: Include <ext/aligned_buffer.h>
+
 2015-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/any (any::operator=(const any&)): Check for
