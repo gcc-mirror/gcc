@@ -1,5 +1,21 @@
 2015-07-30  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (verbose): New global.
+	(warning_at): Add overload with source_location.
+	(capture_info::capture_info): Add bool whether generating gimple
+	or generic.  Add gimple member.
+	(capture_info::cinfo): Add capture member.
+	(capture_info::walk_match): Record capture.  Warn on
+	non-captured leafs.
+	(capture_info::walk_c_expr): Add more fragments captures cannot
+	escape through.  Warn on escaped captures.
+	(dt_simplify::gen_1): Warn on operands we force to have no
+	side-effects.
+	(main): Initialize verbose.
+	* match.pd: Add integer_nonzerop and HONOR_NANS predicates.
+
+2015-07-30  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/67053
 	* match.pd: Allow both operands to independently have conversion
 	when simplifying compares of addresses.
