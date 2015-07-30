@@ -1,3 +1,20 @@
+2015-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (check_for_override): Use DECL_SOURCE_LOCATION and "%qD"
+	in warning_at instead of "%q+D" in warning.
+	(warn_hidden): Likewise but use location_of.
+	(finish_struct_anon_r): Likewise use DECL_SOURCE_LOCATION in permerror.
+	(check_bitfield_decl, check_field_decls): Likewise in warning_at.
+	(check_field_decls): Likewise for permerror.
+	(explain_non_literal_class): Likewise for inform.
+	(check_bases_and_members, layout_class_type): Likewise for warning_at.
+	(note_name_declared_in_class): Use location_of in permerror.
+	* name-lookup.c (diagnose_name_conflict): Use location_of in inform.
+	(pushdecl_maybe_friend_1): Use DECL_SOURCE_LOCATION in pedwarn,
+	inform, and warning_at.
+	(check_for_out_of_scope_variable): Likewise for warning_at and
+	permerror.
+
 2015-07-30  Jason Merrill  <jason@redhat.com>
 
 	DR 1558

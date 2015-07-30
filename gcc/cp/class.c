@@ -2926,7 +2926,7 @@ check_for_override (tree decl, tree ctype)
       if (warn_override && !DECL_OVERRIDE_P (decl)
 	  && !DECL_DESTRUCTOR_P (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wsuggest_override,
-		    "%q+D can be marked override", decl);
+		    "%qD can be marked override", decl);
     }
 
   if (DECL_VIRTUAL_P (decl))
@@ -3007,9 +3007,12 @@ warn_hidden (tree t)
       FOR_EACH_VEC_ELT (base_fndecls, k, base_fndecl)
 	if (base_fndecl)
 	  {
-	      /* Here we know it is a hider, and no overrider exists.  */
-	      warning (OPT_Woverloaded_virtual, "%q+D was hidden", base_fndecl);
-	      warning (OPT_Woverloaded_virtual, "  by %q+D", fns);
+	    /* Here we know it is a hider, and no overrider exists.  */
+	    warning_at (location_of (base_fndecl),
+			OPT_Woverloaded_virtual,
+			"%qD was hidden", base_fndecl);
+	    warning_at (location_of (fns),
+			OPT_Woverloaded_virtual, "  by %qD", fns);
 	  }
     }
 }
@@ -3042,12 +3045,12 @@ finish_struct_anon_r (tree field, bool complain)
 	  if (complain && !VAR_P (elt))
 	    {
 	      if (is_union)
-		permerror (input_location,
-			   "%q+#D invalid; an anonymous union can "
+		permerror (DECL_SOURCE_LOCATION (elt),
+			   "%q#D invalid; an anonymous union can "
 			   "only have non-static data members", elt);
 	      else
-		permerror (input_location,
-			   "%q+#D invalid; an anonymous struct can "
+		permerror (DECL_SOURCE_LOCATION (elt),
+			   "%q#D invalid; an anonymous struct can "
 			   "only have non-static data members", elt);
 	    }
 	  continue;
@@ -3058,20 +3061,20 @@ finish_struct_anon_r (tree field, bool complain)
 	  if (TREE_PRIVATE (elt))
 	    {
 	      if (is_union)
-		permerror (input_location,
-			   "private member %q+#D in anonymous union", elt);
+		permerror (DECL_SOURCE_LOCATION (elt),
+			   "private member %q#D in anonymous union", elt);
 	      else
-		permerror (input_location,
-			   "private member %q+#D in anonymous struct", elt);
+		permerror (DECL_SOURCE_LOCATION (elt),
+			   "private member %q#D in anonymous struct", elt);
 	    }
 	  else if (TREE_PROTECTED (elt))
 	    {
 	      if (is_union)
-		permerror (input_location,
-			   "protected member %q+#D in anonymous union", elt);
+		permerror (DECL_SOURCE_LOCATION (elt),
+			   "protected member %q#D in anonymous union", elt);
 	      else
-		permerror (input_location,
-			   "protected member %q+#D in anonymous struct", elt);
+		permerror (DECL_SOURCE_LOCATION (elt),
+			   "protected member %q#D in anonymous struct", elt);
 	    }
 	}
 
@@ -3460,11 +3463,14 @@ check_bitfield_decl (tree field)
 	       || ((TREE_CODE (type) == ENUMERAL_TYPE
 		    || TREE_CODE (type) == BOOLEAN_TYPE)
 		   && tree_int_cst_lt (TYPE_SIZE (type), w)))
-	warning (0, "width of %q+D exceeds its type", field);
+	warning_at (DECL_SOURCE_LOCATION (field), 0,
+		    "width of %qD exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > (compare_tree_int
 			(w, TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type))))))
-	warning (0, "%q+D is too small to hold all values of %q#T", field, type);
+	warning_at (DECL_SOURCE_LOCATION (field), 0,
+		    "%qD is too small to hold all values of %q#T",
+		    field, type);
     }
 
   if (w != error_mark_node)
@@ -3737,9 +3743,9 @@ check_field_decls (tree t, tree *access_decls,
 	{
 	  if (!layout_pod_type_p (type) && !TYPE_PACKED (type))
 	    {
-	      warning
-		(0,
-		 "ignoring packed attribute because of unpacked non-POD field %q+#D",
+	      warning_at
+		(DECL_SOURCE_LOCATION (x), 0,
+		 "ignoring packed attribute because of unpacked non-POD field %q#D",
 		 x);
 	      cant_pack = 1;
 	    }
@@ -3854,7 +3860,8 @@ check_field_decls (tree t, tree *access_decls,
 	 user-declared constructor.  */
       if (constructor_name_p (DECL_NAME (x), t)
 	  && TYPE_HAS_USER_CONSTRUCTOR (t))
-	permerror (input_location, "field %q+#D with same name as class", x);
+	permerror (DECL_SOURCE_LOCATION (x),
+		   "field %q#D with same name as class", x);
     }
 
   /* Effective C++ rule 11: if a class has dynamic memory held by pointers,
@@ -5623,14 +5630,15 @@ explain_non_literal_class (tree t)
 	  ftype = TREE_TYPE (field);
 	  if (!literal_type_p (ftype))
 	    {
-	      inform (0, "  non-static data member %q+D has "
-		      "non-literal type", field);
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "  non-static data member %qD has non-literal type",
+		      field);
 	      if (CLASS_TYPE_P (ftype))
 		explain_non_literal_class (ftype);
 	    }
 	  if (CP_TYPE_VOLATILE_P (ftype))
-	    inform (0, "  non-static data member %q+D has "
-		    "volatile type", field);
+	    inform (DECL_SOURCE_LOCATION (field),
+		    "  non-static data member %qD has volatile type", field);
 	}
     }
 }
@@ -5775,13 +5783,15 @@ check_bases_and_members (tree t)
 
 	  type = TREE_TYPE (field);
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
-	    warning (OPT_Wuninitialized, "non-static reference %q+#D "
-		     "in class without a constructor", field);
+	    warning_at (DECL_SOURCE_LOCATION (field),
+			OPT_Wuninitialized, "non-static reference %q#D "
+			"in class without a constructor", field);
 	  else if (CP_TYPE_CONST_P (type)
 		   && (!CLASS_TYPE_P (type)
 		       || !TYPE_HAS_DEFAULT_CONSTRUCTOR (type)))
-	    warning (OPT_Wuninitialized, "non-static const member %q+#D "
-		     "in class without a constructor", field);
+	    warning_at (DECL_SOURCE_LOCATION (field),
+			OPT_Wuninitialized, "non-static const member %q#D "
+			"in class without a constructor", field);
 	}
     }
 
@@ -6322,8 +6332,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	  && !integer_zerop (size_binop (TRUNC_MOD_EXPR,
 					 DECL_FIELD_BIT_OFFSET (field),
 					 bitsize_unit_node)))
-	warning (OPT_Wabi, "offset of %q+D is not ABI-compliant and may "
-		 "change in a future version of GCC", field);
+	warning_at (DECL_SOURCE_LOCATION (field), OPT_Wabi,
+		    "offset of %qD is not ABI-compliant and may "
+		    "change in a future version of GCC", field);
 
       /* The middle end uses the type of expressions to determine the
 	 possible range of expression values.  In order to optimize
@@ -8113,8 +8124,9 @@ note_name_declared_in_class (tree name, tree decl)
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
       permerror (input_location, "declaration of %q#D", decl);
-      permerror (input_location, "changes meaning of %qD from %q+#D",
-	       DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
+      permerror (location_of ((tree) n->value),
+		 "changes meaning of %qD from %q#D",
+		 DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
     }
 }
 

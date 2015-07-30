@@ -590,7 +590,7 @@ diagnose_name_conflict (tree decl, tree bval)
   else
     error ("%q#D conflicts with a previous declaration", decl);
 
-  inform (input_location, "previous declaration %q+#D", bval);
+  inform (location_of (bval), "previous declaration %q#D", bval);
 }
 
 /* Wrapper for supplement_binding_1.  */
@@ -875,8 +875,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		      pedwarn (input_location, 0,
                                "declaration of %q#D with C language linkage",
 			       x);
-		      pedwarn (input_location, 0,
-                               "conflicts with previous declaration %q+#D",
+		      pedwarn (DECL_SOURCE_LOCATION (previous), 0,
+                               "conflicts with previous declaration %q#D",
 			       previous);
 		      pedwarn (input_location, 0,
                                "due to different exception specifications");
@@ -890,8 +890,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		{
 		  pedwarn (input_location, 0,
 			   "declaration of %q#D with C language linkage", x);
-		  pedwarn (input_location, 0,
-			   "conflicts with previous declaration %q+#D",
+		  pedwarn (DECL_SOURCE_LOCATION (previous), 0,
+			   "conflicts with previous declaration %q#D",
 			   previous);
 		}
 	    }
@@ -992,8 +992,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    {
 	      if (permerror (input_location, "type mismatch with previous "
 			     "external decl of %q#D", x))
-		inform (input_location, "previous external decl of %q+#D",
-			decl);
+		inform (DECL_SOURCE_LOCATION (decl),
+			"previous external decl of %q#D", decl);
 	    }
 	}
 
@@ -1082,7 +1082,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      else
 		{
 		  warning (0, "extern declaration of %q#D doesn%'t match", x);
-		  warning (0, "global declaration %q+#D", oldglobal);
+		  warning_at (DECL_SOURCE_LOCATION (oldglobal), 0,
+			      "global declaration %q#D", oldglobal);
 		}
 	    }
 	  /* If we have a local external declaration,
@@ -1170,8 +1171,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 			   || oldscope->kind == sk_for))
 		{
 		  error ("redeclaration of %q#D", x);
-		  inform (input_location, "%q+#D previously declared here",
-			  oldlocal);
+		  inform (DECL_SOURCE_LOCATION (oldlocal),
+			  "%q#D previously declared here", oldlocal);
 		  nowarn = true;
 		}
 	      /* C++11:
@@ -1193,8 +1194,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 			   && in_function_try_handler))
 		{
 		  if (permerror (input_location, "redeclaration of %q#D", x))
-		    inform (input_location, "%q+#D previously declared here",
-			    oldlocal);
+		    inform (DECL_SOURCE_LOCATION (oldlocal),
+			    "%q#D previously declared here", oldlocal);
 		  nowarn = true;
 		}
 
@@ -1410,9 +1411,11 @@ check_for_out_of_scope_variable (tree decl)
       if (!DECL_ERROR_REPORTED (decl))
 	{
 	  warning (0, "name lookup of %qD changed", DECL_NAME (decl));
-	  warning (0, "  matches this %q+D under ISO standard rules",
-		   shadowed);
-	  warning (0, "  matches this %q+D under old rules", decl);
+	  warning_at (DECL_SOURCE_LOCATION (shadowed), 0,
+		      "  matches this %qD under ISO standard rules",
+		      shadowed);
+	  warning_at (DECL_SOURCE_LOCATION (decl), 0,
+		      "  matches this %qD under old rules", decl);
 	  DECL_ERROR_REPORTED (decl) = 1;
 	}
       return shadowed;
@@ -1441,7 +1444,8 @@ check_for_out_of_scope_variable (tree decl)
       permerror (input_location, "name lookup of %qD changed for ISO %<for%> scoping",
 	         DECL_NAME (decl));
       if (flag_permissive)
-        permerror (input_location, "  using obsolete binding at %q+D", decl);
+        permerror (DECL_SOURCE_LOCATION (decl),
+		   "  using obsolete binding at %qD", decl);
       else
 	{
 	  static bool hint;
