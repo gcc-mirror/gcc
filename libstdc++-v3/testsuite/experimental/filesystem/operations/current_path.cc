@@ -42,11 +42,11 @@ test02()
   auto oldwd = fs::current_path();
   auto tmpdir = fs::temp_directory_path();
   current_path(tmpdir);
-  VERIFY( fs::current_path() == tmpdir );
+  VERIFY( canonical(fs::current_path()) == canonical(tmpdir) );
   std::error_code ec;
   current_path(oldwd, ec);
-  VERIFY( fs::current_path() == oldwd );
-  VERIFY( fs::current_path(ec) == oldwd );
+  VERIFY( canonical(fs::current_path()) == canonical(oldwd) );
+  VERIFY( canonical(fs::current_path(ec)) == canonical(oldwd) );
 }
 
 int

@@ -1,3 +1,8 @@
+2015-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/operations/current_path.cc: Use
+	canonical paths for comparisons.
+
 2015-07-30  Tim Shen  <timshen@google.com>
 
 	* include/bits/regex_automaton.h (_State_base, _State<>):
