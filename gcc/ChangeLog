@@ -1,3 +1,10 @@
+2015-07-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_gimple_assign): Only fold !tcc_comparison
+	binaries.  Move X == 0, X == 1, X != 0, and X != 1 canonicalization ...
+	(fold_stmt_1): ... here and work on GIMPLE directly.  Remove
+	redundant operand canonicalization.
+
 2015-07-30  David Sherwood  <david.sherwood@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_ext<mode>): Replace call to
