@@ -1,3 +1,9 @@
+2015-07-30  Jason Merrill  <jason@redhat.com>
+
+	DR 1558
+	PR c++/67021
+	* pt.c (tsubst_decl) [TYPE_DECL]: Clear TYPE_DEPENDENT_P_VALID.
+
 2015-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* call.c (build_op_delete_call, convert_like_real, build_over_call):
