@@ -1774,7 +1774,13 @@ c_pretty_printer::unary_expression (tree e)
       if (code == ADDR_EXPR && TREE_CODE (TREE_OPERAND (e, 0)) != STRING_CST)
 	pp_ampersand (this);
       else if (code == INDIRECT_REF)
-	pp_c_star (this);
+	{
+	  tree type = TREE_TYPE (TREE_OPERAND (e, 0));
+	  if (type && TREE_CODE (type) == REFERENCE_TYPE)
+	    /* Reference decay is implicit, don't print anything.  */;
+	  else
+	    pp_c_star (this);
+	}
       else if (code == NEGATE_EXPR)
 	pp_minus (this);
       else if (code == BIT_NOT_EXPR || code == CONJ_EXPR)
