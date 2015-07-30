@@ -1,3 +1,10 @@
+2015-07-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/66217
+	PR target/67045
+	* config/rs6000/rs6000.md (and<mode>3): Put a CONST_INT_P check
+	around those cases that need one.
+
 2015-07-29  Aditya Kumar  <hiraditya@msn.com>
 
 	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Default to 3.
