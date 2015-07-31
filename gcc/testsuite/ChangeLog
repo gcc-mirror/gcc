@@ -1,3 +1,8 @@
+2015-07-31  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/66977
+	* g++.dg/ubsan/pr66977.C: New test.
+
 2015-07-30  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/Wtautological-compare-3.c: New test.

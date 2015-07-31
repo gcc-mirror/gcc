@@ -1,3 +1,9 @@
+2015-07-31  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/66977
+	* typeck.c (get_member_function_from_ptrfunc): Don't sanitize
+	RSHIFT_EXPR.
+
 2015-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* class.c (check_for_override): Use DECL_SOURCE_LOCATION and "%qD"
