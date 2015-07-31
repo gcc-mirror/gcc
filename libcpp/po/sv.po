@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 5.1.0\n"
+"Project-Id-Version: cpplib 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2015-05-01 14:05+0200\n"
+"PO-Revision-Date: 2015-07-30 10:21+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -533,7 +533,7 @@ msgstr "försäkringar är en GCC-utvidgning"
 
 #: expr.c:1086
 msgid "assertions are a deprecated extension"
-msgstr "försäkringar är en GCC-utvidgning som avrådes ifrån"
+msgstr "försäkringar är en utvidgning som avrådes ifrån"
 
 #: expr.c:1331
 #, c-format
