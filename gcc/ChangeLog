@@ -1,3 +1,11 @@
+2015-07-31  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport form mainline
+	2015-07-31  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/67049
+	* config/sh/sh.md (GOTaddr2picreg): Fix typo.
+
 2015-07-31  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/66691
