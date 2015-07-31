@@ -1,3 +1,8 @@
+2015-07-31  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_gimple_assign): Remove folding of
+	GIMPLE_BINARY_RHS.
+
 2015-07-31  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/66846

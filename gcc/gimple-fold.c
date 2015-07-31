@@ -413,20 +413,6 @@ fold_gimple_assign (gimple_stmt_iterator *si)
       break;
 
     case GIMPLE_BINARY_RHS:
-      if (TREE_CODE_CLASS (subcode) != tcc_comparison)
-	{
-	  result = fold_binary_loc (loc, subcode,
-				    TREE_TYPE (gimple_assign_lhs (stmt)),
-				    gimple_assign_rhs1 (stmt),
-				    gimple_assign_rhs2 (stmt));
-
-	  if (result)
-	    {
-	      STRIP_USELESS_TYPE_CONVERSION (result);
-	      if (valid_gimple_rhs_p (result))
-		return result;
-	    }
-	}
       break;
 
     case GIMPLE_TERNARY_RHS:
