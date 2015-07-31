@@ -3258,6 +3258,17 @@ Gogo::check_types()
 {
   Check_types_traverse traverse(this);
   this->traverse(&traverse);
+
+  Bindings* bindings = this->current_bindings();
+  for (Bindings::const_declarations_iterator p = bindings->begin_declarations();
+       p != bindings->end_declarations();
+       ++p)
+    {
+      // Also check the types in a function declaration's signature.
+      Named_object* no = p->second;
+      if (no->is_function_declaration())
+        no->func_declaration_value()->check_types();
+    }
 }
 
 // Check the types in a single block.
@@ -5294,6 +5305,26 @@ Function_declaration::build_backend_descriptor(Gogo* gogo)
     {
       Translate_context context(gogo, NULL, NULL, NULL);
       this->descriptor_->get_backend(&context);
+    }
+}
+
+// Check that the types used in this declaration's signature are defined.
+// Reports errors for any undefined type.
+
+void
+Function_declaration::check_types() const
+{
+  // Calling Type::base will give errors for any undefined types.
+  Function_type* fntype = this->type();
+  if (fntype->receiver() != NULL)
+    fntype->receiver()->type()->base();
+  if (fntype->parameters() != NULL)
+    {
+      const Typed_identifier_list* params = fntype->parameters();
+      for (Typed_identifier_list::const_iterator p = params->begin();
+           p != params->end();
+           ++p)
+        p->type()->base();
     }
 }
 

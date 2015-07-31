@@ -1394,6 +1394,10 @@ class Function_declaration
   export_func(Export* exp, const std::string& name) const
   { Function::export_func_with_type(exp, name, this->fntype_); }
 
+  // Check that the types used in this declaration's signature are defined.
+  void
+  check_types() const;
+
  private:
   // The type of the function.
   Function_type* fntype_;
