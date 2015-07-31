@@ -14,10 +14,10 @@
 # rank			ordning
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 5.1.0\n"
+"Project-Id-Version: gcc 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-07-02 12:31+0000\n"
-"PO-Revision-Date: 2015-07-04 11:22+0200\n"
+"PO-Revision-Date: 2015-07-30 10:38+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -6153,7 +6153,7 @@ msgstr "Varna för PCH-filer som hittas men inte används"
 
 #: c-family/c.opt:527
 msgid "Warn when a jump misses a variable initialization"
-msgstr "Varna när ett hopp missare en variabelinitiering"
+msgstr "Varna när ett hopp missar en variabelinitiering"
 
 #: c-family/c.opt:531
 msgid "Warn when a string or character literal is followed by a ud-suffix which does not begin with an underscore."
@@ -7668,10 +7668,8 @@ msgid "Workaround for ARM Cortex-A53 Erratum number 835769"
 msgstr "Sätt att gå runt ARM Cortex-A53:s errata nummer 835796"
 
 #: config/aarch64/aarch64.opt:76
-#, fuzzy
-#| msgid "Workaround for ARM Cortex-A53 Erratum number 835769"
 msgid "Workaround for ARM Cortex-A53 Erratum number 843419"
-msgstr "Sätt att gå runt ARM Cortex-A53:s errata nummer 835796"
+msgstr "Sätt att gå runt ARM Cortex-A53:s errata nummer 843419"
 
 #: config/aarch64/aarch64.opt:80 config/arm/arm.opt:151
 #: config/microblaze/microblaze.opt:64
@@ -8032,7 +8030,7 @@ msgstr "Vektorisera för dubbelordsoperationer."
 
 #: config/epiphany/epiphany.opt:128
 msgid "Split unaligned 8 byte vector moves before post-modify address generation."
-msgstr "Dela ojusterade 8-bytes vektorerförflyttningar före adressgenerering efter ändring."
+msgstr "Dela ojusterade 8-bytes vektorförflyttningar före adressgenerering efter ändring."
 
 #: config/epiphany/epiphany.opt:132
 msgid "Use the floating point unit for integer add/subtract."
@@ -8779,10 +8777,8 @@ msgid "Support MPX code generation"
 msgstr "Stöd MPX-kodgenerering "
 
 #: config/i386/i386.opt:864
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support MWAITX and MONITORX built-in functions and code generation"
-msgstr "Stöd inbyggda MMX- och SSE-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MWAITX- och MONITORX-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:868
 msgid "Use given stack-protector guard"
@@ -9116,7 +9112,7 @@ msgstr "Gör så att länkarens lättnadsmaskin antar att programräknaren slår
 
 #: config/avr/avr.opt:79
 msgid "Accumulate outgoing function arguments and acquire/release the needed stack space for outpoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf."
-msgstr "Samla utgående funktionsargument och ta/släpp det nödvändiga stackutrymmet för utgående funktionsargument i funktionsprologen/-epilogen.  Utan denna flagga trycks utgående argment på stacken före anrop av en funktion och plockas efteråt.  Denna flagga kan medföra reducerad kodstorlek för funktioner som anropar många funktioner som får sina argument på stacken som, till exempel printf."
+msgstr "Samla utgående funktionsargument och ta/släpp det nödvändiga stackutrymmet för utgående funktionsargument i funktionsprologen/-epilogen.  Utan denna flagga trycks utgående argument på stacken före anrop av en funktion och plockas efteråt.  Denna flagga kan medföra reducerad kodstorlek för funktioner som anropar många funktioner som får sina argument på stacken som, till exempel printf."
 
 #: config/avr/avr.opt:83
 msgid "When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X."
@@ -9135,10 +9131,8 @@ msgid "Allow to use truncation instead of rounding towards 0 for fractional int 
 msgstr "Tillåt avhuggning istället för avrundning mot 0 för decimalheltalstyper"
 
 #: config/avr/avr.opt:100
-#, fuzzy
-#| msgid "Do not link against the device-specific library libdev.a"
 msgid "Do not link against the device-specific library lib<MCU>.a"
-msgstr "Länka inte mot det enhetsspecifika biblioteket libdev.a"
+msgstr "Länka inte mot det enhetsspecifika biblioteket lib<MCU>.a"
 
 #: config/m32r/m32r.opt:34
 msgid "Compile for the m32rx"
@@ -9984,10 +9978,8 @@ msgid "Use/do not use vector and scalar instructions added in ISA 2.07."
 msgstr "Använd/använd inte vektor och skalära instruktioner som lades till i ISA 2.07."
 
 #: config/rs6000/rs6000.opt:566
-#, fuzzy
-#| msgid "Use ISA 2.07 transactional memory (HTM) instructions"
 msgid "Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions"
-msgstr "Använd ISA 2.07 transaktionsminnesinstruktioner (HTM)"
+msgstr "Använd ISA 2.07 instruktioner Category:Vector.AES och Category:Vector.SHA2"
 
 #: config/rs6000/rs6000.opt:570
 msgid "Use ISA 2.07 direct move between GPR & VSX register instructions"
@@ -10371,7 +10363,7 @@ msgstr "Heltals-id (N) för anpassad instruktion floatus"
 
 #: config/nios2/nios2.opt:178
 msgid "Do not use the floatis custom instruction"
-msgstr "Använd inte den anpassade instruktionen  floatis"
+msgstr "Använd inte den anpassade instruktionen floatis"
 
 #: config/nios2/nios2.opt:182
 msgid "Integer id (N) of floatis custom instruction"
@@ -10387,7 +10379,7 @@ msgstr "Heltals-id (N) för anpassad instruktion fcmpned"
 
 #: config/nios2/nios2.opt:194
 msgid "Do not use the fcmpeqd custom instruction"
-msgstr "Använd inte den anpassade instruktionen  fcmpeqd"
+msgstr "Använd inte den anpassade instruktionen fcmpeqd"
 
 #: config/nios2/nios2.opt:198
 msgid "Integer id (N) of fcmpeqd custom instruction"
@@ -10795,7 +10787,7 @@ msgstr "Maximal storlek på globala och statiska variabler som kan placeras i de
 
 #: config/rx/rx.opt:93
 msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax."
-msgstr "Genereara assemblerutdatat som är kompatibel med Renesas AS100-assembler.  Detta kan begränsa några av kompilatorns egenskaper.  Standard är att generera GAS-kopatibel sysntax."
+msgstr "Genereara assemblerutdatat som är kompatibel med Renesas AS100-assembler.  Detta kan begränsa några av kompilatorns egenskaper.  Standard är att generera GAS-kompatibel syntax."
 
 #: config/rx/rx.opt:99
 msgid "Enable linker relaxation."
@@ -15798,7 +15790,7 @@ msgstr "Analyserad nod har ingen referens till en instrumenterad version"
 #: cgraph.c:3046
 #, gcc-internal-format
 msgid "Alias chain for instrumented node is broken"
-msgstr ""
+msgstr "En aliaskedja för en instrumenterad not är bruten"
 
 #: cgraph.c:3055
 #, gcc-internal-format
@@ -17290,7 +17282,7 @@ msgstr "en uppräkningstyp andra värdenamn definierad i en annan översättning
 #: ipa-devirt.c:1206
 #, gcc-internal-format
 msgid "an enum with different values is defined in another translation unit"
-msgstr "en uppräkningstyptyp med andra värden är definierad i en annan översättningsenhet"
+msgstr "en uppräkningstyp med andra värden är definierad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1214
 #, gcc-internal-format
@@ -17355,12 +17347,12 @@ msgstr "en typ andra baser är definierad i en annan översättningsenhet"
 #: ipa-devirt.c:1436
 #, gcc-internal-format
 msgid "a field with different name is defined in another translation unit"
-msgstr "ett fält med ett annat namn är definerat i en annan översättningsenhet"
+msgstr "ett fält med ett annat namn är definierat i en annan översättningsenhet"
 
 #: ipa-devirt.c:1449
 #, gcc-internal-format
 msgid "a field of same name but different type is defined in another translation unit"
-msgstr "ett fält med samma namn men annan typ är definerat i en annan översättningsenhet"
+msgstr "ett fält med samma namn men annan typ är definierat i en annan översättningsenhet"
 
 #: ipa-devirt.c:1462
 #, gcc-internal-format
@@ -23032,10 +23024,9 @@ msgid "too many input files"
 msgstr "för många indatafiler"
 
 #: common/config/aarch64/aarch64-common.c:116
-#, fuzzy, gcc-internal-format
-#| msgid "stack frame too large"
+#, gcc-internal-format
 msgid "-mcpu string too large"
-msgstr "för stor stackram"
+msgstr "strängen till -mcpu är för stor"
 
 #: common/config/alpha/alpha-common.c:76
 #, gcc-internal-format
@@ -23412,7 +23403,7 @@ msgstr "%Kbanindex måste vara en konstant omedelbar"
 #: config/aarch64/aarch64-builtins.c:1021
 #, gcc-internal-format
 msgid "%Ktotal size and element size must be a non-zero constant immediate"
-msgstr "%Ktotal storlek och elementstorlek måste vara en konstant omedelbar"
+msgstr "%Ktotal storlek och elementstorlek måste vara en konstant omedelbar skild från noll"
 
 #: config/aarch64/aarch64.c:6643
 #, gcc-internal-format
@@ -24677,10 +24668,9 @@ msgstr "felaktigt stringop-strateginamn %s angivet till flaggan %s"
 
 #. rep; movq isn't available in 32-bit code.
 #: config/i386/i386.c:2997
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "wrong stringop strategy name %s specified for option %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "stringop strategy name %s specified for option %s not supported for 32-bit code"
-msgstr "felaktigt stringop-strateginamn %s angivet till flaggan %s"
+msgstr "stringop-strateginamn %s angivet till flaggan %s stödjs inte i 32-bitars kod"
 
 #: config/i386/i386.c:3012
 #, gcc-internal-format, gfc-internal-format
@@ -25017,15 +25007,14 @@ msgid "x87 register return with x87 disabled"
 msgstr "x87-registerretur med x87 avaktiverat"
 
 #: config/i386/i386.c:7551 config/i386/i386.c:7801
-#, fuzzy, gcc-internal-format
-#| msgid "calling %qD with SSE caling convention without SSE/SSE2 enabled"
+#, gcc-internal-format
 msgid "calling %qD with SSE calling convention without SSE/SSE2 enabled"
 msgstr "anrop av %qD med SSE-anropskonvention utan SSE/SSE2 aktiverat"
 
 #: config/i386/i386.c:7553 config/i386/i386.c:7803 config/i386/i386.c:8289
 #, gcc-internal-format
 msgid "this is a GCC bug that can be worked around by adding attribute used to function called"
-msgstr ""
+msgstr "detta är ett fel i GCC som kan gås runt genom att lägga till attributet used till den anropade funktionen"
 
 #: config/i386/i386.c:8190
 #, gcc-internal-format, gfc-internal-format
@@ -26706,10 +26695,9 @@ msgid "argument 1 of __builtin_altivec_predicate is out of range"
 msgstr "argument 1 till __builtin_altivec_predicate är utanför sitt intervall"
 
 #: config/rs6000/rs6000.c:12714
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%srtd%s is ignored in 64bit mode"
+#, gcc-internal-format, gfc-internal-format
 msgid "builtin %s is only valid in 64-bit mode"
-msgstr "%srtd%s ignoreras i 64-bitsläge"
+msgstr "inbyggd %s är endast giltigt i 64-bitsläge"
 
 #: config/rs6000/rs6000.c:12763
 #, gcc-internal-format, gfc-internal-format
@@ -27872,7 +27860,7 @@ msgstr "variabeln %qD sätts men används inte"
 #: c/c-decl.c:1310
 #, gcc-internal-format
 msgid "type of array %q+D completed incompatibly with implicit initialization"
-msgstr "den kompletterade typen på vektor %q+D är okompatibel med implicit initiering"
+msgstr "den kompletterade typen på vektor %q+D är inkompatibel med implicit initiering"
 
 #: c/c-decl.c:1589 c/c-decl.c:6359 c/c-decl.c:7221 c/c-decl.c:7930
 #, gcc-internal-format
@@ -27982,7 +27970,7 @@ msgstr "motstridiga typkvalificerare för %q+D"
 #: c/c-decl.c:1982
 #, gcc-internal-format
 msgid "redefinition of typedef %q+D with different type"
-msgstr "omdefiniering av typedef %q+D med annan typ"
+msgstr "omdefinition av typedef %q+D med annan typ"
 
 #: c/c-decl.c:1995
 #, gcc-internal-format
@@ -27992,12 +27980,12 @@ msgstr "omdefinition av typedef %q+D med variabelt modifierad typ"
 #: c/c-decl.c:2000
 #, gcc-internal-format
 msgid "redefinition of typedef %q+D"
-msgstr "omdefiniering av typedef %q+D"
+msgstr "omdefinition av typedef %q+D"
 
 #: c/c-decl.c:2052 c/c-decl.c:2155
 #, gcc-internal-format
 msgid "redefinition of %q+D"
-msgstr "omdefiniering av %q+D"
+msgstr "omdefinition av %q+D"
 
 #: c/c-decl.c:2087 c/c-decl.c:2193
 #, gcc-internal-format
@@ -28067,7 +28055,7 @@ msgstr "deklarationen av %q+D med attributet %qs följer på en deklaration med 
 #: c/c-decl.c:2299
 #, gcc-internal-format
 msgid "redefinition of parameter %q+D"
-msgstr "omdefiniering av parametern %q+D"
+msgstr "omdefinition av parametern %q+D"
 
 #: c/c-decl.c:2326
 #, gcc-internal-format
@@ -30435,10 +30423,9 @@ msgid "%<#pragma omp target update%> may only be used in compound statements"
 msgstr "%<#pragma omp target update%> får bara användas i sammansatta satser"
 
 #: c/c-parser.c:13851 cp/parser.c:31433
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma omp target update must contain at least one %<from%> or %<to%> clauses"
+#, gcc-internal-format
 msgid "%<#pragma omp target update%> must contain at least one %<from%> or %<to%> clauses"
-msgstr "%<#pragma omp target update måste innehålla åtminstone en %<from%>- eller %<to%>-klausul"
+msgstr "%<#pragma omp target update%> måste innehålla åtminstone en %<from%>- eller %<to%>-klausul"
 
 #: c/c-parser.c:13993
 #, gcc-internal-format
@@ -32868,13 +32855,12 @@ msgstr "  men ersätter inte %<operator=(const %T&)%>"
 #: cp/class.c:4300
 #, gcc-internal-format
 msgid "alignment of %qD increased in -fabi-version=9 (GCC 5.2)"
-msgstr ""
+msgstr "justeringen av %qD ökade i -fabi-version=9 (GCC 5.2)"
 
 #: cp/class.c:4303
-#, fuzzy, gcc-internal-format
-#| msgid "alignment of %qD is bigger than original declaration"
+#, gcc-internal-format
 msgid "alignment of %qD will increase in -fabi-version=9"
-msgstr "justering av %qD är större än originaldeklarationen"
+msgstr "justering av %qD kommer öka med -fabi-version=9"
 
 #: cp/class.c:4557
 #, gcc-internal-format
@@ -39208,7 +39194,7 @@ msgstr "ogiltigt Objective-C++-selekterarnamn"
 #: cp/parser.c:26315 cp/parser.c:26333
 #, gcc-internal-format
 msgid "objective-c++ method declaration is expected"
-msgstr "metodeklaration i objective-c++ förväntades"
+msgstr "metoddeklaration i objective-c++ förväntades"
 
 #: cp/parser.c:26327 cp/parser.c:26392
 #, gcc-internal-format
@@ -43546,7 +43532,7 @@ msgstr "%qs-argumentet till inbyggd %qs vid %L måste vara INTEGER eller LOGICAL
 #: fortran/check.c:6219
 #, gcc-internal-format, gfc-internal-format
 msgid "Intrinsic function NULL at %L cannot be an actual argument to STORAGE_SIZE, because it returns a disassociated pointer"
-msgstr ""
+msgstr "Den inbyggda funktionen NULL vid %L kan inte vara ett aktuellt argument till STORATE_SIZE, eftersom den returnerar en disassocierad pekare"
 
 #: fortran/class.c:614
 #, gcc-internal-format, gfc-internal-format
@@ -44387,10 +44373,9 @@ msgid "ENTRY statement at %C cannot appear within a contained subprogram"
 msgstr "ENTRY-sats vid %C kan inte förekomma inuti ett inneslutet underprogram"
 
 #: fortran/decl.c:5595
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected END statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unexpected ENTRY statement at %C"
-msgstr "Oväntad END-sats vid %C"
+msgstr "Oväntad ENTRY-sats vid %C"
 
 #: fortran/decl.c:5609
 #, gcc-internal-format, gfc-internal-format
@@ -44894,10 +44879,9 @@ msgid "Expected generic name or operator descriptor at %C"
 msgstr "Generiskt namn eller operatorbeskrivare förväntades vid %C"
 
 #: fortran/decl.c:8515
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ENTRY statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Malformed GENERIC statement at %C"
-msgstr "ENTRY-sats vid %C"
+msgstr "Felformad GENERIC-sats vid %C"
 
 #: fortran/decl.c:8526
 #, gcc-internal-format
@@ -45682,10 +45666,9 @@ msgid "Expected %<END INTERFACE ASSIGNMENT (=)%> at %C"
 msgstr "%<END INTERFACE ASSIGNMENT (=)%> förväntades vid %C"
 
 #: fortran/interface.c:350
-#, fuzzy, gcc-internal-format
-#| msgid "Expecting %<END INTERFACE OPERATOR (.%s.)%> at %C"
+#, gcc-internal-format
 msgid "Expecting %<END INTERFACE OPERATOR (%s)%> at %C, "
-msgstr "%<END INTERFACE OPERATOR (.%s.)%> förväntades vid %C"
+msgstr "%<END INTERFACE OPERATOR (%s)%> förväntades vid %C"
 
 #: fortran/interface.c:353
 #, gcc-internal-format
@@ -50350,7 +50333,7 @@ msgstr "Startindex för delsträng vid %L måste vara skalärt"
 #: fortran/resolve.c:4486
 #, gcc-internal-format, gfc-internal-format
 msgid "Substring start index at %L is less than one"
-msgstr "Substrängs startindex vid %L är mindre än ett"
+msgstr "Delsträngs startindex vid %L är mindre än ett"
 
 #: fortran/resolve.c:4499
 #, gcc-internal-format, gfc-internal-format
@@ -52371,10 +52354,9 @@ msgid "Namelist group name at %L cannot have the SAVE attribute"
 msgstr "Namnlistegruppnamnet vid %L kan inte ha attributet SAVE"
 
 #: fortran/symbol.c:463
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Internal procedure %qs is used as actual argument at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "internal procedure '%s' at %L conflicts with DUMMY argument"
-msgstr "Den interna proceduren %qs används som aktuellt argument vid %L"
+msgstr "den interna proceduren ”%s” vid %L står i konflikt med DUMMY-argument"
 
 #: fortran/symbol.c:489
 #, gcc-internal-format, gfc-internal-format
@@ -54489,21 +54471,3 @@ msgstr "%<-fobjc-sjlj-exceptions%> ignoreras för %<-fnext-runtime%> när %<-fob
 #, gcc-internal-format
 msgid "creating selector for nonexistent method %qE"
 msgstr "skapar selektor för icke existerande metod %qE"
-
-#~ msgid "Use ISA 2.07 crypto instructions"
-#~ msgstr "Använd ISA 2.07 kryptoinstruktioner"
-
-#~ msgid "lastprivate variable %qE is private in outer context"
-#~ msgstr "lastprivate-variabel %qE är privat i yttre sammanhang"
-
-#~ msgid "-munix=98 option required for C89 Amendment 1 features.\n"
-#~ msgstr "flaggan -munix=98 krävs för funktioner från C89 tillägg 1.\n"
-
-#~ msgid "ISO C++ forbids subscripting non-lvalue array"
-#~ msgstr "ISO C++ förbjuder indexering av icke-lvalue-vektor"
-
-#~ msgid "gfc_match_entry(): Bad state"
-#~ msgstr "gfc_match_entry(): Felaktigt tillstånd"
-
-#~ msgid "Unexpected %s statement in verify_st_order() at %C"
-#~ msgstr "Oväntad %s-sats i verify_st_order() vid %C"
