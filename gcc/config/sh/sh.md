@@ -10638,7 +10638,7 @@ label:
   if (TARGET_SHMEDIA)
     {
       rtx tr = gen_rtx_REG (Pmode, TR0_REG);
-      rtx pic = operands[0];
+      rtx pic = operands[1];
       rtx lab = PATTERN (gen_call_site ());
       rtx insn, equiv;
 
