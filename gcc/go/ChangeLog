@@ -1,3 +1,9 @@
+2015-07-31  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* go-lang.c (go_langhook_init_options_struct): Don't set
+	x_flag_split_stack.
+	(go_langhook_post_options): Set it here instead.
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gofrontend/backend.h: Fix double word typos.
