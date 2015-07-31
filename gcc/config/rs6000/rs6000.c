@@ -166,6 +166,7 @@ typedef struct GTY(()) machine_function
   rtx sdmode_stack_slot;
   /* Alternative internal arg pointer for -fsplit-stack.  */
   rtx split_stack_arg_pointer;
+  bool split_stack_argp_used;
   /* Flag if r2 setup is needed with ELFv2 ABI.  */
   bool r2_setup_needed;
 } machine_function;
@@ -24693,6 +24694,7 @@ rs6000_emit_prologue (void)
 	 __morestack was called, it left the arg pointer to the old
 	 stack in r29.  Otherwise, the arg pointer is the top of the
 	 current frame.  */
+      cfun->machine->split_stack_argp_used = true;
       if (sp_adjust)
 	{
 	  rtx r12 = gen_rtx_REG (Pmode, 12);
@@ -33930,6 +33932,8 @@ rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
       && TARGET_MINIMAL_TOC
       && get_pool_size () != 0)
     add_to_hard_reg_set (&set->set, Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
+  if (cfun->machine->split_stack_argp_used)
+    add_to_hard_reg_set (&set->set, Pmode, 12);
 }
 
 
