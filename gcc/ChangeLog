@@ -1,3 +1,12 @@
+2015-07-31  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Remove X ^ C1 == C2
+	-> X == (C1 ^ C2) which is already implemented in match.pd.
+	Remove redundant dispatching to fold_relational_const.
+	Move unordered self and NaN compares ...
+	* match.pd: ... as patterns here.  Remove some stray captures
+	and add a comment.
+
 2015-07-31  Petr Murzin  <petr.murzin@intel.com>
 
 	* config/i386/i386.c

@@ -11002,17 +11002,6 @@ fold_binary_loc (location_t loc,
 	  && code == NE_EXPR)
         return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 
-      /* Similarly for a BIT_XOR_EXPR;  X ^ C1 == C2 is X == (C1 ^ C2).  */
-      if (TREE_CODE (arg0) == BIT_XOR_EXPR
-	  && TREE_CODE (arg1) == INTEGER_CST
-	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0),
-			    fold_build2_loc (loc, BIT_XOR_EXPR, TREE_TYPE (arg0),
-					 fold_convert_loc (loc,
-							   TREE_TYPE (arg0),
-							   arg1),
-					 TREE_OPERAND (arg0, 1)));
-
       /* Transform comparisons of the form X +- Y CMP X to Y CMP 0.  */
       if ((TREE_CODE (arg0) == PLUS_EXPR
 	   || TREE_CODE (arg0) == POINTER_PLUS_EXPR
@@ -11693,45 +11682,6 @@ fold_binary_loc (location_t loc,
     case UNGE_EXPR:
     case UNEQ_EXPR:
     case LTGT_EXPR:
-      if (TREE_CODE (arg0) == REAL_CST && TREE_CODE (arg1) == REAL_CST)
-	{
-	  t1 = fold_relational_const (code, type, arg0, arg1);
-	  if (t1 != NULL_TREE)
-	    return t1;
-	}
-
-      /* If the first operand is NaN, the result is constant.  */
-      if (TREE_CODE (arg0) == REAL_CST
-	  && REAL_VALUE_ISNAN (TREE_REAL_CST (arg0))
-	  && (code != LTGT_EXPR || ! flag_trapping_math))
-	{
-	  t1 = (code == ORDERED_EXPR || code == LTGT_EXPR)
-	       ? integer_zero_node
-	       : integer_one_node;
-	  return omit_one_operand_loc (loc, type, t1, arg1);
-	}
-
-      /* If the second operand is NaN, the result is constant.  */
-      if (TREE_CODE (arg1) == REAL_CST
-	  && REAL_VALUE_ISNAN (TREE_REAL_CST (arg1))
-	  && (code != LTGT_EXPR || ! flag_trapping_math))
-	{
-	  t1 = (code == ORDERED_EXPR || code == LTGT_EXPR)
-	       ? integer_zero_node
-	       : integer_one_node;
-	  return omit_one_operand_loc (loc, type, t1, arg0);
-	}
-
-      /* Simplify unordered comparison of something with itself.  */
-      if ((code == UNLE_EXPR || code == UNGE_EXPR || code == UNEQ_EXPR)
-	  && operand_equal_p (arg0, arg1, 0))
-	return constant_boolean_node (1, type);
-
-      if (code == LTGT_EXPR
-	  && !flag_trapping_math
-	  && operand_equal_p (arg0, arg1, 0))
-	return constant_boolean_node (0, type);
-
       /* Fold (double)float1 CMP (double)float2 into float1 CMP float2.  */
       {
 	tree targ0 = strip_float_extensions (arg0);
