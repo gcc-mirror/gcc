@@ -113,6 +113,7 @@ static bool m32r_can_eliminate (const int, const int);
 static void m32r_conditional_register_usage (void);
 static void m32r_trampoline_init (rtx, tree, rtx);
 static bool m32r_legitimate_constant_p (machine_mode, rtx);
+static bool m32r_attribute_identifier (const_tree);
 
 /* M32R specific attributes.  */
 
@@ -129,6 +130,8 @@ static const struct attribute_spec m32r_attribute_table[] =
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32r_attribute_table
+#undef  TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
+#define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P m32r_attribute_identifier
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P m32r_legitimate_address_p
@@ -403,6 +406,13 @@ m32r_handle_model_attribute (tree *node ATTRIBUTE_UNUSED, tree name,
     }
 
   return NULL_TREE;
+}
+
+static bool
+m32r_attribute_identifier (const_tree name)
+{
+  return strcmp (IDENTIFIER_POINTER (name), "model") == 0
+    ||   strcmp (IDENTIFIER_POINTER (name), "__model__") == 0;
 }
 
 /* Encode section information of DECL, which is either a VAR_DECL,

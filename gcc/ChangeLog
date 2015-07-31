@@ -1,3 +1,9 @@
+2015-07-31  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.c (m32r_attribute_identifier): New function.
+	Returns true for __model__.
+	(TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P): Define.
+
 2015-07-31  Alan Modra  <amodra@gmail.com>
 
 	PR target/66870
