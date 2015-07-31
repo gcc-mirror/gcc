@@ -1,3 +1,8 @@
+2015-07-31  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/67049
+	* config/sh/sh.md (GOTaddr2picreg): Fix typo.
+
 2015-07-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (*if_neg_move): Convert to insn_and_split.
