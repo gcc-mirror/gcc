@@ -1,3 +1,10 @@
+2015-07-31  Alan Modra  <amodra@gmail.com>
+
+	PR target/66870
+	* config/rs6000/rs6000.c (machine_function): Add split_stack_argp_used.
+	(rs6000_emit_prologue): Set it.
+	(rs6000_set_up_by_prologue): Specify r12 when split_stack_argp_used.
+
 2015-07-31  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Remove X ^ C1 == C2
