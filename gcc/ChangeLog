@@ -1,3 +1,23 @@
+2015-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66846
+	* omp-low.c (expand_omp_taskreg) [ENABLE_CHECKING]: Call
+	verify_loop_structure for child_cfun if !LOOPS_NEED_FIXUP.
+	(expand_omp_target) [ENABLE_CHECKING]: Same.
+	(execute_expand_omp) [ENABLE_CHECKING]: Call verify_loop_structure for
+	cfun if !LOOPS_NEED_FIXUP.
+	(expand_omp_for_static_nochunk): Handle simple latch bb.  Handle case
+	that omp_for already has its own loop struct.
+	* tree-parloops.c (create_phi_for_local_result)
+	(create_call_for_reduction): Handle simple latch bb.
+	(create_parallel_loop): Add simple latch bb to preserve
+	LOOPS_HAVE_SIMPLE_LATCHES.  Record new exit.  Handle simple latch bb.
+	(gen_parallel_loop): Remove call to cancel_loop_tree.
+	(parallelize_loops): Skip loops that are inner loops of parallelized
+	loops.
+	(pass_parallelize_loops::execute) [ENABLE_CHECKING]: Call
+	verify_loop_structure.
+
 2015-07-30  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/v850/v850.h (LIBCALL_VALUE): Remove macros.
