@@ -8499,7 +8499,8 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
     {
       if (!this->fn_->type()->is_error())
 	this->report_error(_("expected function"));
-      return Expression::make_error(loc);
+      this->set_is_error();
+      return this;
     }
 
   // Handle an argument which is a call to a function which returns
