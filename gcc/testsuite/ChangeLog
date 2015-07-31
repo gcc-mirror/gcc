@@ -1,3 +1,8 @@
+2015-07-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/66691
+	* gcc.target/i386/pr66691.c: New.
+
 2015-07-28  Alex Velenko  <Alex.Velenko@arm.com>
 
 	backport from trunk:
