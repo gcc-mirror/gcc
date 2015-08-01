@@ -1,3 +1,8 @@
+2015-08-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67091
+	* gfortran.dg/associated_target_6.f03: New test
+
 2015-08-01  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/autopar/reduc-2char.c (init_arrays): Mark with attribute

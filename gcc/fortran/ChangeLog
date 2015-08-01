@@ -1,3 +1,9 @@
+2015-08-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67091
+	* trans-intrinsic.c (gfc_conv_associated): Add the pre and post
+	blocks for the second argument to se.
+
 2015-07-27  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* parse.c (parse_oacc_structured_block): Fix logic error.
