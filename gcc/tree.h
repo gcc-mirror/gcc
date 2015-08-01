@@ -4369,6 +4369,8 @@ extern int type_num_arguments (const_tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
 extern bool commutative_ternary_tree_code (enum tree_code);
+extern bool operation_can_overflow (enum tree_code);
+extern bool operation_no_trapping_overflow (tree, enum tree_code);
 extern tree upper_bound_in_type (tree, tree);
 extern tree lower_bound_in_type (tree, tree);
 extern int operand_equal_for_phi_arg_p (const_tree, const_tree);

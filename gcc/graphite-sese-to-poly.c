@@ -2614,8 +2614,11 @@ is_reduction_operation_p (gimple stmt)
   if (FLOAT_TYPE_P (type))
     return flag_associative_math;
 
-  return (INTEGRAL_TYPE_P (type)
-	  && TYPE_OVERFLOW_WRAPS (type));
+  if (ANY_INTEGRAL_TYPE_P (type))
+    return (TYPE_OVERFLOW_WRAPS (type)
+	    || !operation_can_overflow (code));
+
+  return false;
 }
 
 /* Returns true when PHI contains an argument ARG.  */
