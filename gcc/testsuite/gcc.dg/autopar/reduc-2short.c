@@ -38,8 +38,9 @@ void main1 (short x, short max_result, short min_result)
     abort ();
 }
 
- __attribute__((noinline))
- void init_arrays ()
+void __attribute__((noinline))
+  __attribute__((optimize ("-ftree-parallelize-loops=0")))
+init_arrays ()
  {
    int i;
 
@@ -58,7 +59,8 @@ int main (void)
   return 0;
 }
 
+/* { dg-final { scan-tree-dump-times "Detected reduction" 2 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "Detected reduction" 3 "parloops" { xfail *-*-* } } } */
 
-/* { dg-final { scan-tree-dump-times "Detected reduction" 2 "parloops" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 2 "parloops" } } */
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 3 "parloops" { xfail *-*-* } } } */
-

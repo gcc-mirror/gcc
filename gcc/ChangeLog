@@ -1,3 +1,14 @@
+2015-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* tree.c (operation_can_overflow, operation_no_trapping_overflow): New
+	function.
+	* tree.h (operation_can_overflow, operation_no_trapping_overflow):
+	Declare.
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Use
+	operation_no_trapping_overflow.  Allow non-overflow operations.
+	* graphite-sese-to-poly.c (is_reduction_operation_p): Allow non-overflow
+	operations.
+
 2015-07-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/67049

@@ -2615,7 +2615,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
     }
   else if (INTEGRAL_TYPE_P (type) && check_reduction)
     {
-      if (TYPE_OVERFLOW_TRAPS (type))
+      if (!operation_no_trapping_overflow (type, code))
 	{
 	  /* Changing the order of operations changes the semantics.  */
 	  if (dump_enabled_p ())
@@ -2624,7 +2624,9 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
 			    " (overflow traps): ");
 	  return NULL;
 	}
-      if (need_wrapping_integral_overflow && !TYPE_OVERFLOW_WRAPS (type))
+      if (need_wrapping_integral_overflow
+	  && !TYPE_OVERFLOW_WRAPS (type)
+	  && operation_can_overflow (code))
 	{
 	  /* Changing the order of operations changes the semantics.  */
 	  if (dump_enabled_p ())

@@ -1,3 +1,16 @@
+2015-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/autopar/reduc-2char.c (init_arrays): Mark with attribute
+	optimize ("-ftree-parallelize-loops=0").
+	Add successful scans for 2 detected reductions.	 Add xfail scans for 3
+	detected reductions.
+	* gcc.dg/autopar/reduc-2short.c: Same.
+	* gcc.dg/autopar/reduc-8.c (init_arrays): Mark with attribute
+	optimize ("-ftree-parallelize-loops=0").  Add successful scans for 2
+	detected reductions.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Update scan to match vectorized min
+	and max reductions.
+
 2015-07-31  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/66977

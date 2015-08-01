@@ -7597,6 +7597,75 @@ commutative_ternary_tree_code (enum tree_code code)
   return false;
 }
 
+/* Returns true if CODE can overflow.  */
+
+bool
+operation_can_overflow (enum tree_code code)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case LSHIFT_EXPR:
+      /* Can overflow in various ways.  */
+      return true;
+    case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+      /* For INT_MIN / -1.  */
+      return true;
+    case NEGATE_EXPR:
+    case ABS_EXPR:
+      /* For -INT_MIN.  */
+      return true;
+    default:
+      /* These operators cannot overflow.  */
+      return false;
+    }
+}
+
+/* Returns true if CODE operating on operands of type TYPE doesn't overflow, or
+   ftrapv doesn't generate trapping insns for CODE.  */
+
+bool
+operation_no_trapping_overflow (tree type, enum tree_code code)
+{
+  gcc_checking_assert (ANY_INTEGRAL_TYPE_P (type));
+
+  /* We don't generate instructions that trap on overflow for complex or vector
+     types.  */
+  if (!INTEGRAL_TYPE_P (type))
+    return true;
+
+  if (!TYPE_OVERFLOW_TRAPS (type))
+    return true;
+
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case NEGATE_EXPR:
+    case ABS_EXPR:
+      /* These operators can overflow, and -ftrapv generates trapping code for
+	 these.  */
+      return false;
+    case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case LSHIFT_EXPR:
+      /* These operators can overflow, but -ftrapv does not generate trapping
+	 code for these.  */
+      return true;
+    default:
+      /* These operators cannot overflow.  */
+      return true;
+    }
+}
+
 namespace inchash
 {
 
