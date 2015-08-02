@@ -1,5 +1,13 @@
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	* c-indentation.c (get_visual_column): Add parameter first_nws,
+	use it.  Update comment documenting the function.
+	(is_first_nonwhitespace_on_line): Remove.
+	(should_warn_for_misleading_indentation): Replace usage of
+	of is_first_nonwhitespace_on_line with get_visual_column.
+
+2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	* c-indentation.h (struct token_indent_info): Define.
 	(get_token_indent_info): Define.
 	(warn_for_misleading_information): Declare.
