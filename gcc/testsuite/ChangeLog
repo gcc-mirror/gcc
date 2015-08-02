@@ -1,3 +1,12 @@
+2015-08-02  Martin Sebor  <msebor@redhat.com>
+
+        * g++.dg/Wframe-address-in-Wall.C: New test.
+        * g++.dg/Wframe-address.C: New test.
+        * g++.dg/Wno-frame-address.C: New test.
+        * gcc.dg/Wframe-address-in-Wall.c: New test.
+        * gcc.dg/Wframe-address.c: New test.
+        * gcc.dg/Wno-frame-address.c: New test.
+
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-c++-common/Wmisleading-indentation.c: Add more tests.

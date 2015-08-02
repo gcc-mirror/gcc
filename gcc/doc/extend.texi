@@ -8652,8 +8652,11 @@ to determine if the top of the stack has been reached.
 Additional post-processing of the returned value may be needed, see
 @code{__builtin_extract_return_addr}.
 
-This function should only be used with a nonzero argument for debugging
-purposes.
+Calling this function with a nonzero argument can have unpredictable
+effects, including crashing the calling program.  As a result, calls
+that are considered unsafe are diagnosed when the @option{-Wframe-address}
+option is in effect.  Such calls should only be made in debugging
+situations.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_extract_return_addr (void *@var{addr})
@@ -8691,8 +8694,11 @@ any function other than the current one; in such cases, or when the top
 of the stack has been reached, this function returns @code{0} if
 the first frame pointer is properly initialized by the startup code.
 
-This function should only be used with a nonzero argument for debugging
-purposes.
+Calling this function with a nonzero argument can have unpredictable
+effects, including crashing the calling program.  As a result, calls
+that are considered unsafe are diagnosed when the @option{-Wframe-address}
+option is in effect.  Such calls should only be made in debugging
+situations.
 @end deftypefn
 
 @node Vector Extensions

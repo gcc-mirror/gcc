@@ -4551,32 +4551,36 @@ expand_builtin_frame_address (tree fndecl, tree exp)
 {
   /* The argument must be a nonnegative integer constant.
      It counts the number of frames to scan up the stack.
-     The value is the return address saved in that frame.  */
+     The value is either the frame pointer value or the return
+     address saved in that frame.  */
   if (call_expr_nargs (exp) == 0)
     /* Warning about missing arg was already issued.  */
     return const0_rtx;
   else if (! tree_fits_uhwi_p (CALL_EXPR_ARG (exp, 0)))
     {
-      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
-	error ("invalid argument to %<__builtin_frame_address%>");
-      else
-	error ("invalid argument to %<__builtin_return_address%>");
+      error ("invalid argument to %qD", fndecl);
       return const0_rtx;
     }
   else
     {
-      rtx tem
-	= expand_builtin_return_addr (DECL_FUNCTION_CODE (fndecl),
-				      tree_to_uhwi (CALL_EXPR_ARG (exp, 0)));
+      /* Number of frames to scan up the stack.  */
+      unsigned HOST_WIDE_INT count = tree_to_uhwi (CALL_EXPR_ARG (exp, 0));
+
+      rtx tem = expand_builtin_return_addr (DECL_FUNCTION_CODE (fndecl), count);
 
       /* Some ports cannot access arbitrary stack frames.  */
       if (tem == NULL)
 	{
-	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
-	    warning (0, "unsupported argument to %<__builtin_frame_address%>");
-	  else
-	    warning (0, "unsupported argument to %<__builtin_return_address%>");
+	  warning (0, "unsupported argument to %qD", fndecl);
 	  return const0_rtx;
+	}
+
+      if (count)
+	{
+	  /* Warn since no effort is made to ensure that any frame
+	     beyond the current one exists or can be safely reached.  */
+	  warning (OPT_Wframe_address, "calling %qD with "
+		   "a nonzero argument is unsafe", fndecl);
 	}
 
       /* For __builtin_frame_address, return what we've got.  */
