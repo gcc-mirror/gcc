@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "type-utils.h"
 #include "omp-low.h"
 #include "gomp-constants.h"
+#include "c-family/c-indentation.h"
 
 
 /* The lexer.  */
@@ -2055,9 +2056,9 @@ static void cp_parser_declaration_statement
   (cp_parser *);
 
 static tree cp_parser_implicitly_scoped_statement
-  (cp_parser *, bool *, location_t, const char *);
+  (cp_parser *, bool *, const token_indent_info &);
 static void cp_parser_already_scoped_statement
-  (cp_parser *, location_t, const char *);
+  (cp_parser *, const token_indent_info &);
 
 /* Declarations [gram.dcl.dcl] */
 
@@ -10120,12 +10121,14 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 {
   cp_token *token;
   enum rid keyword;
+  token_indent_info guard_tinfo;
 
   if (if_p != NULL)
     *if_p = false;
 
   /* Peek at the next token.  */
   token = cp_parser_require (parser, CPP_KEYWORD, RT_SELECT);
+  guard_tinfo = get_token_indent_info (token);
 
   /* See what kind of keyword it is.  */
   keyword = token->keyword;
@@ -10168,19 +10171,8 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 	    /* Parse the then-clause.  */
 	    in_statement = parser->in_statement;
 	    parser->in_statement |= IN_IF_STMT;
-	    if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	      {
-	        location_t loc = cp_lexer_peek_token (parser->lexer)->location;
-		add_stmt (build_empty_stmt (loc));
-		cp_lexer_consume_token (parser->lexer);
-	        if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_ELSE))
-		  warning_at (loc, OPT_Wempty_body, "suggest braces around "
-			      "empty body in an %<if%> statement");
-		nested_if = false;
-	      }
-	    else
-	      cp_parser_implicitly_scoped_statement (parser, &nested_if,
-						     token->location, "if");
+	    cp_parser_implicitly_scoped_statement (parser, &nested_if,
+						   guard_tinfo);
 	    parser->in_statement = in_statement;
 
 	    finish_then_clause (statement);
@@ -10189,24 +10181,14 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 	    if (cp_lexer_next_token_is_keyword (parser->lexer,
 						RID_ELSE))
 	      {
+		guard_tinfo
+		  = get_token_indent_info (cp_lexer_peek_token (parser->lexer));
 		/* Consume the `else' keyword.  */
-		location_t else_tok_loc
-		  = cp_lexer_consume_token (parser->lexer)->location;
+		cp_lexer_consume_token (parser->lexer);
 		begin_else_clause (statement);
 		/* Parse the else-clause.  */
-	        if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	          {
-		    location_t loc;
-		    loc = cp_lexer_peek_token (parser->lexer)->location;
-		    warning_at (loc,
-				OPT_Wempty_body, "suggest braces around "
-			        "empty body in an %<else%> statement");
-		    add_stmt (build_empty_stmt (loc));
-		    cp_lexer_consume_token (parser->lexer);
-		  }
-		else
-		  cp_parser_implicitly_scoped_statement (parser, NULL,
-							 else_tok_loc, "else");
+		cp_parser_implicitly_scoped_statement (parser, NULL,
+						       guard_tinfo);
 
 		finish_else_clause (statement);
 
@@ -10247,7 +10229,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 	    parser->in_switch_statement_p = true;
 	    parser->in_statement |= IN_SWITCH_STMT;
 	    cp_parser_implicitly_scoped_statement (parser, NULL,
-						   0, "switch");
+						   guard_tinfo);
 	    parser->in_switch_statement_p = in_switch_statement_p;
 	    parser->in_statement = in_statement;
 
@@ -10792,17 +10774,17 @@ static tree
 cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
 {
   cp_token *token;
-  location_t tok_loc;
   enum rid keyword;
   tree statement;
   unsigned char in_statement;
+  token_indent_info guard_tinfo;
 
   /* Peek at the next token.  */
   token = cp_parser_require (parser, CPP_KEYWORD, RT_INTERATION);
   if (!token)
     return error_mark_node;
 
-  tok_loc = token->location;
+  guard_tinfo = get_token_indent_info (token);
 
   /* Remember whether or not we are already within an iteration
      statement.  */
@@ -10827,7 +10809,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 	/* Parse the dependent statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
-	cp_parser_already_scoped_statement (parser, tok_loc, "while");
+	cp_parser_already_scoped_statement (parser, guard_tinfo);
 	parser->in_statement = in_statement;
 	/* We're done with the while-statement.  */
 	finish_while_stmt (statement);
@@ -10842,7 +10824,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
 	statement = begin_do_stmt ();
 	/* Parse the body of the do-statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
-	cp_parser_implicitly_scoped_statement (parser, NULL, 0, "do");
+	cp_parser_implicitly_scoped_statement (parser, NULL, guard_tinfo);
 	parser->in_statement = in_statement;
 	finish_do_body (statement);
 	/* Look for the `while' keyword.  */
@@ -10872,7 +10854,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
 
 	/* Parse the body of the for-statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
-	cp_parser_already_scoped_statement (parser, tok_loc, "for");
+	cp_parser_already_scoped_statement (parser, guard_tinfo);
 	parser->in_statement = in_statement;
 
 	/* We're done with the for-statement.  */
@@ -11142,10 +11124,12 @@ cp_parser_declaration_statement (cp_parser* parser)
 
 static tree
 cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
-				       location_t guard_loc,
-				       const char *guard_kind)
+				       const token_indent_info &guard_tinfo)
 {
   tree statement;
+  location_t body_loc = cp_lexer_peek_token (parser->lexer)->location;
+  token_indent_info body_tinfo
+    = get_token_indent_info (cp_lexer_peek_token (parser->lexer));
 
   if (if_p != NULL)
     *if_p = false;
@@ -11153,9 +11137,16 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
   /* Mark if () ; with a special NOP_EXPR.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
-      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
       cp_lexer_consume_token (parser->lexer);
-      statement = add_stmt (build_empty_stmt (loc));
+      statement = add_stmt (build_empty_stmt (body_loc));
+
+      if (guard_tinfo.keyword == RID_IF
+	  && !cp_lexer_next_token_is_keyword (parser->lexer, RID_ELSE))
+	warning_at (body_loc, OPT_Wempty_body,
+		    "suggest braces around empty body in an %<if%> statement");
+      else if (guard_tinfo.keyword == RID_ELSE)
+	warning_at (body_loc, OPT_Wempty_body,
+		    "suggest braces around empty body in an %<else%> statement");
     }
   /* if a compound is opened, we simply parse the statement directly.  */
   else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
@@ -11166,19 +11157,14 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
       /* Create a compound-statement.  */
       statement = begin_compound_stmt (0);
       /* Parse the dependent-statement.  */
-      location_t body_loc = cp_lexer_peek_token (parser->lexer)->location;
       cp_parser_statement (parser, NULL_TREE, false, if_p);
       /* Finish the dummy compound-statement.  */
       finish_compound_stmt (statement);
-      cp_token *next_tok = cp_lexer_peek_token (parser->lexer);
-      if (next_tok->keyword != RID_ELSE)
-        {
-          location_t next_stmt_loc = next_tok->location;
-          warn_for_misleading_indentation (guard_loc, body_loc,
-                                           next_stmt_loc, next_tok->type,
-                                           guard_kind);
-        }
     }
+
+  token_indent_info next_tinfo
+    = get_token_indent_info (cp_lexer_peek_token (parser->lexer));
+  warn_for_misleading_indentation (guard_tinfo, body_tinfo, next_tinfo);
 
   /* Return the statement.  */
   return statement;
@@ -11190,19 +11176,19 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
    scope.  */
 
 static void
-cp_parser_already_scoped_statement (cp_parser* parser, location_t guard_loc,
-				    const char *guard_kind)
+cp_parser_already_scoped_statement (cp_parser* parser,
+				    const token_indent_info &guard_tinfo)
 {
   /* If the token is a `{', then we must take special action.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
     {
-      location_t body_loc = cp_lexer_peek_token (parser->lexer)->location;
+      token_indent_info body_tinfo
+	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
+
       cp_parser_statement (parser, NULL_TREE, false, NULL);
-      cp_token *next_tok = cp_lexer_peek_token (parser->lexer);
-      location_t next_stmt_loc = next_tok->location;
-      warn_for_misleading_indentation (guard_loc, body_loc,
-                                       next_stmt_loc, next_tok->type,
-                                       guard_kind);
+      token_indent_info next_tinfo
+	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
+      warn_for_misleading_indentation (guard_tinfo, body_tinfo, next_tinfo);
     }
   else
     {
