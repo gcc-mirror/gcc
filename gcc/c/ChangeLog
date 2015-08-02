@@ -1,3 +1,15 @@
+2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* c-parser.c (c_parser_if_body): Take token_indent_info
+	argument. Call warn_for_misleading_indentation even when the
+	body is a semicolon.  Extract token_indent_infos corresponding
+	to the guard, body and next tokens.  Adjust call to
+	warn_for_misleading_indentation accordingly.
+	(c_parser_else_body): Likewise.
+	(c_parser_if_statement): Likewise.
+	(c_parser_while_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+
 2015-07-28  Luis Felipe Strano Moraes  <luis.strano@gmail.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

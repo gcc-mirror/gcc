@@ -1,3 +1,17 @@
+2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* parser.c (cp_parser_selection_statement): Move handling of
+	semicolon body to ...
+	(cp_parser_implicitly_scoped_statement): .. here.  Call
+	warn_for_misleading_indentation even when the body is a
+	semicolon.  Extract token_indent_infos corresponding to the
+	guard, body and next tokens.  Adjust call to
+	warn_for_misleading_indentation accordingly.  Take
+	token_indent_info argument.
+	(cp_parser_already_scoped_statement): Likewise.
+	(cp_parser_selection_statement, cp_parser_iteration_statement):
+	Extract a token_indent_info corresponding to the guard token.
+
 2015-08-01  Caroline Tice  <cmtice@google.com>
 
 	PR 66521

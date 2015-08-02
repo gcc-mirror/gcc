@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "c-common.h"
+#include "c-indentation.h"
 
 extern cpp_options *cpp_opts;
 
@@ -184,11 +185,16 @@ detect_preprocessor_logic (expanded_location body_exploc,
    description of that function below.  */
 
 static bool
-should_warn_for_misleading_indentation (location_t guard_loc,
-					location_t body_loc,
-					location_t next_stmt_loc,
-					enum cpp_ttype next_tok_type)
+should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
+					const token_indent_info &body_tinfo,
+					const token_indent_info &next_tinfo)
 {
+  location_t guard_loc = guard_tinfo.location;
+  location_t body_loc = body_tinfo.location;
+  location_t next_stmt_loc = next_tinfo.location;
+
+  enum cpp_ttype next_tok_type = next_tinfo.type;
+
   /* Don't attempt to compare the indentation of BODY_LOC and NEXT_STMT_LOC
      if either are within macros.  */
   if (linemap_location_from_macro_expansion_p (line_table, body_loc)
@@ -214,7 +220,22 @@ should_warn_for_misleading_indentation (location_t guard_loc,
   if (line_table->seen_line_directive)
     return false;
 
-  if (next_tok_type == CPP_CLOSE_BRACE)
+  /* If the token following the body is a close brace or an "else"
+     then while indentation may be sloppy, there is not much ambiguity
+     about control flow, e.g.
+
+     if (foo)       <- GUARD
+       bar ();      <- BODY
+       else baz (); <- NEXT
+
+     {
+     while (foo)  <- GUARD
+     bar ();      <- BODY
+     }            <- NEXT
+     baz ();
+  */
+  if (next_tok_type == CPP_CLOSE_BRACE
+      || next_tinfo.keyword == RID_ELSE)
     return false;
 
   /* Don't warn here about spurious semicolons.  */
@@ -341,6 +362,28 @@ should_warn_for_misleading_indentation (location_t guard_loc,
   return false;
 }
 
+/* Return the string identifier corresponding to the given guard token.  */
+
+static const char *
+guard_tinfo_to_string (const token_indent_info &guard_tinfo)
+{
+  switch (guard_tinfo.keyword)
+    {
+    case RID_FOR:
+      return "for";
+    case RID_ELSE:
+      return "else";
+    case RID_IF:
+      return "if";
+    case RID_WHILE:
+      return "while";
+    case RID_DO:
+      return "do";
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Called by the C/C++ frontends when we have a guarding statement at
    GUARD_LOC containing a statement at BODY_LOC, where the block wasn't
    written using braces, like this:
@@ -368,11 +411,9 @@ should_warn_for_misleading_indentation (location_t guard_loc,
    GUARD_KIND identifies the kind of clause e.g. "if", "else" etc.  */
 
 void
-warn_for_misleading_indentation (location_t guard_loc,
-				 location_t body_loc,
-				 location_t next_stmt_loc,
-				 enum cpp_ttype next_tok_type,
-				 const char *guard_kind)
+warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
+				 const token_indent_info &body_tinfo,
+				 const token_indent_info &next_tinfo)
 {
   /* Early reject for the case where -Wmisleading-indentation is disabled,
      to avoid doing work only to have the warning suppressed inside the
@@ -380,12 +421,14 @@ warn_for_misleading_indentation (location_t guard_loc,
   if (!warn_misleading_indentation)
     return;
 
-  if (should_warn_for_misleading_indentation (guard_loc,
-					      body_loc,
-					      next_stmt_loc,
-					      next_tok_type))
-    if (warning_at (next_stmt_loc, OPT_Wmisleading_indentation,
-		    "statement is indented as if it were guarded by..."))
-      inform (guard_loc,
-	      "...this %qs clause, but it is not", guard_kind);
+  if (should_warn_for_misleading_indentation (guard_tinfo,
+					      body_tinfo,
+					      next_tinfo))
+    {
+      if (warning_at (next_tinfo.location, OPT_Wmisleading_indentation,
+		      "statement is indented as if it were guarded by..."))
+        inform (guard_tinfo.location,
+		"...this %qs clause, but it is not",
+		guard_tinfo_to_string (guard_tinfo));
+    }
 }
