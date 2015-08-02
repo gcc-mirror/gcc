@@ -241,7 +241,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
 -Waggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
--Wbool-compare @gol
+-Wbool-compare -Wframe-address @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wc++14-compat -Wcast-align  -Wcast-qual  @gol
@@ -4461,6 +4461,13 @@ int n = 5;
 if ((n > 1) == 2) @{ @dots{} @}
 @end smallexample
 This warning is enabled by @option{-Wall}.
+
+@item -Wframe-address
+@opindex Wno-frame-address
+@opindex Wframe-address
+Warn when the @samp{__builtin_frame_address} or @samp{__builtin_return_address}
+is called with an argument greater than 0.  Such calls may return indeterminate
+values or crash the program.  The warning is included in @option{-Wall}.
 
 @item -Wno-discarded-qualifiers @r{(C and Objective-C only)}
 @opindex Wno-discarded-qualifiers

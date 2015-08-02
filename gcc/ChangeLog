@@ -1,3 +1,12 @@
+2015-08-02  Martin Sebor  <msebor@redhat.com>
+
+	* c-family/c.opt (-Wframe-address): New warning option.
+	* doc/invoke.texi (Wframe-address): Document it.
+	* doc/extend.texi (__builtin_frame_address, __builtin_return_address):
+	Clarify possible effects of calling the functions with non-zero
+	arguments and mention -Wframe-address.
+	* builtins.c (expand_builtin_frame_address): Handle -Wframe-address.
+
 2015-08-01  Michael Collison  <michael.collison@linaro.org
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 

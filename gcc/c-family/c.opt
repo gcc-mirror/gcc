@@ -295,6 +295,10 @@ Wbool-compare
 C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about boolean expression compared with an integer value different from true/false
 
+Wframe-address
+C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn when __builtin_frame_address or __builtin_return_address is used unsafely
+
 Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACRO_REDEFINED) Var(cpp_warn_builtin_macro_redefined) Init(1) Warning
 Warn when a built-in preprocessor macro is undefined or redefined
