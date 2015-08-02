@@ -691,3 +691,169 @@ fn_36 (void)
 	}
 	foo(6); /* We shouldn't warn here.  */
 }
+
+/* The following function contain code whose indentation is misleading, thus
+   we warn about it.  */
+
+void
+fn_37 (void)
+{
+  int i;
+
+#define EMPTY
+#define FOR_EACH(VAR, START, STOP) for (VAR = START; VAR < STOP; VAR++)
+
+  while (flagA); /* { dg-message "3: ...this 'while' clause" } */
+    foo (0); /* { dg-warning "statement is indented as if" } */
+
+  if (flagA)
+    ;
+  else if (flagA); /* { dg-message "8: ...this 'if' clause" } */
+    foo (0); /* { dg-warning "statement is indented as if" } */
+  while (flagA) /* { dg-message "3: ...this 'while' clause" } */
+    /* blah */;
+    foo (0); /* { dg-warning "statement is indented as if" } */
+
+  if (flagA)
+    ;
+  else if (flagA) /* { dg-message "8: ...this 'if' clause" } */
+    foo (1);
+    foo (2); /* { dg-warning "statement is indented as if" } */
+
+  if (flagA)
+    foo (1);
+  else if (flagA) /* { dg-message "8: ...this 'if' clause" } */
+    foo (2);
+    foo (3); /* { dg-warning "statement is indented as if" } */
+
+  if (flagB) /* { dg-message "3: ...this 'if' clause" } */
+    /* blah */;
+    { /* { dg-warning "statement is indented as if" } */
+      foo (0);
+    }
+
+  if (flagB)
+    ;
+  else; foo (0); /* { dg-warning "statement is indented as if" } */
+
+  if (flagC); foo (2); /* { dg-warning "statement is indented as if" } */
+
+  if (flagA)
+    ; /* blah */ { /* { dg-warning "statement is indented as if" } */
+      foo (1);
+    }
+
+  if (flagB) ; /* { dg-message "3: ...this 'if' clause" } */
+    return; /* { dg-warning "statement is indented as if" } */
+
+  if (flagB) EMPTY; /* { dg-message "3: ...this 'if' clause" } */
+    foo (1); /* { dg-warning "statement is indented as if" } */
+
+  for (i = 0; i < 10; i++); /* { dg-message "3: ...this 'for' clause" } */
+    foo (2); /* { dg-warning "statement is indented as if" } */
+
+  FOR_EACH (i, 0, 10);
+    foo (2); /* { dg-warning "statement is indented as if" } */
+
+  FOR_EACH (i, 0, 10);
+    { /* { dg-warning "statement is indented as if" } */
+      foo (3);
+    }
+
+  FOR_EACH (i, 0, 10);
+  { /* { dg-warning "statement is indented as if" } */
+    foo (3);
+  }
+
+  while (i++); { /* { dg-warning "statement is indented as if" } */
+    foo (3);
+  }
+
+  if (i++); { /* { dg-warning "statement is indented as if" } */
+    foo (3);
+  }
+
+  if (flagA) {
+    foo (1);
+  } else /* { dg-message "5: ...this 'else' clause" } */
+    if (flagB)
+       foo (2);
+    foo (3); /* { dg-warning "statement is indented as if" } */
+
+  if (flagA)
+    foo (1);
+  else if (flagB); /* { dg-message "8: ...this 'if' clause" } */
+    foo (2); /* { dg-warning "statement is indented as if" } */
+
+#undef EMPTY
+#undef FOR_EACH
+}
+
+/* The following function contains code whose indentation is not great but not
+   misleading, thus we don't warn.  */
+
+void
+fn_38 (void)
+{
+  int i = 0;
+
+  while (flagA)
+    ;
+    foo (0);
+
+  if (flagB)
+    ;
+    {
+      foo (0);
+    }
+
+  while (flagC);
+  foo (2);
+
+  if (flagA)
+    while (flagC++);
+  else
+    foo (2);
+
+  if (i)
+    while (i++ < 10000);
+  foo (5);
+
+  if (i) while (i++ < 10000);
+  foo (5);
+
+  if (flagA) {
+    foo (1);
+  } else
+  if (flagB)
+    foo (2);
+  foo (3);
+
+  if (flagA)
+    {
+    foo (1);
+    } else
+  if (flagB)
+    foo (2);
+  foo (3);
+}
+
+/* The following function contains good indentation which we definitely should
+   not warn about.  */
+
+void
+fn_39 (void)
+{
+  if (flagA)
+    ;
+  if (flagB)
+    ;
+
+  if (flagA)
+    if (flagB)
+      foo (0);
+    else
+      foo (1);
+  else
+    foo (2);
+}
