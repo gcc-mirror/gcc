@@ -23,24 +23,28 @@ proc load_gcc_lib { filename } {
 }
 
 load_lib dg.exp
-load_gcc_lib file-format.exp
+
+# Required to use gcc-dg.exp - however, the latter should NOT be
+# loaded until ${tool}_target_compile is defined since it uses that
+# to determine default LTO options.
+
+load_gcc_lib prune.exp
+load_gcc_lib target-libpath.exp
+load_gcc_lib wrapper.exp
 load_gcc_lib target-supports.exp
-load_gcc_lib target-supports-dg.exp
 load_gcc_lib target-utils.exp
+load_gcc_lib gcc-defs.exp
+load_gcc_lib timeout.exp
+load_gcc_lib file-format.exp
+load_gcc_lib target-supports-dg.exp
 load_gcc_lib scanasm.exp
 load_gcc_lib scandump.exp
 load_gcc_lib scanrtl.exp
 load_gcc_lib scantree.exp
 load_gcc_lib scanipa.exp
-load_gcc_lib prune.exp
-load_gcc_lib target-libpath.exp
-load_gcc_lib wrapper.exp
-load_gcc_lib gcc-defs.exp
-load_gcc_lib torture-options.exp
-load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
+load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
-load_gcc_lib gcc-dg.exp
 
 set dg-do-what-default run
 
@@ -143,8 +147,18 @@ proc libvtv_init { args } {
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 
+    # We use atomic operations in the testcases to validate results.
+    if { ([istarget i?86-*-*] || [istarget x86_64-*-*])
+	 && [check_effective_target_ia32] } {
+	lappend ALWAYS_CFLAGS "additional_flags=-march=i486"
+    }
+
     if [istarget *-*-darwin*] {
 	lappend ALWAYS_CFLAGS "additional_flags=-shared-libgcc"
+    }
+
+    if [istarget sparc*-*-*] {
+	lappend ALWAYS_CFLAGS "additional_flags=-mcpu=v9"
     }
 
     if [info exists TOOL_OPTIONS] {
@@ -155,9 +169,8 @@ proc libvtv_init { args } {
     # error-message parsing machinery.
     lappend ALWAYS_CFLAGS "additional_flags=-fmessage-length=0"
 
-    # Turn on vtable verification
-    lappend ALWAYS_CFLAGS "-fvtable-verify=std"
-    # lappend ALWAYS_CFLAGS "ldflags=-lvtv"
+    # Turn on vtable verification.
+    lappend ALWAYS_CFLAGS "additional_flags=-fvtable-verify=std"
 }
 
 #

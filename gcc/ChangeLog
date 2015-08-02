@@ -1,3 +1,22 @@
+2015-08-01  Caroline Tice  <cmtice@google.com>
+
+	PR 66521
+	* vtable-verify.c (vtbl_mangled_name_types, vtbl_mangled_name_ids): New
+	global variables.
+	(vtbl_find_mangled_name):  New function.
+	(vtbl_register_mangled_name):  New function.
+	(vtbl_map_get_node):  If DECL_ASSEMBLER_NAME is "<anon>", look up
+	mangled name in mangled name vectors.
+	(find_or_create_vtbl_map_node):  Ditto.
+	(var_is_used_for_virtual_call_p):  Add recursion_depth parameter;
+	update recursion_depth on function entry; pass it to every recursive
+	call; automatically exit if depth > 25 (give up looking at that point).
+	(verify_bb_vtables):  Initialize recursion_depth and pass it to
+	var_is_used_for_virtual_call_p.
+	* vtable-verify.h (vtbl_mangbled_name_types, vtbl_mangled_name_ids): New
+	global variable decls.
+	(vtbl_register_mangled_name): New extern function decl.
+
 2015-08-01  Tom de Vries  <tom@codesourcery.com>
 
 	* tree.c (operation_can_overflow, operation_no_trapping_overflow): New
