@@ -1,3 +1,11 @@
+2015-08-01  Caroline Tice  <cmtice@google.com>
+
+	PR 66521
+	* mangle.c : Add vtable-verify.h to include files.
+	(get_mangled_vtable_map_var_name):  If the DECL_ASSEMBLER_NAME
+	is "<anon>" get the real mangled name for the class instead, and
+	also store the real mangled name in a vector for use later.
+
 2015-07-31  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/66977

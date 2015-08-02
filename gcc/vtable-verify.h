@@ -127,6 +127,11 @@ extern bool vtv_debug;
 /* The global vector of vtbl_map_nodes.  */
 extern vec<struct vtbl_map_node *> vtbl_map_nodes_vec;
 
+/*  The global vectors for mangled class names for anonymous classes.  */
+extern GTY(()) vec<tree, va_gc> *vtbl_mangled_name_types;
+extern GTY(()) vec<tree, va_gc> *vtbl_mangled_name_ids;
+
+extern void vtbl_register_mangled_name (tree, tree);
 extern struct vtbl_map_node *vtbl_map_get_node (tree);
 extern struct vtbl_map_node *find_or_create_vtbl_map_node (tree);
 extern void vtbl_map_node_class_insert (struct vtbl_map_node *, unsigned);

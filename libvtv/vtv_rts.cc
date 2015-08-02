@@ -201,14 +201,15 @@ unsigned long long verify_vtable_cycles = 0;
    debugging/tracing will not be ON on production environments */
 
 static const bool debug_hash = HASHTABLE_STATS;
-static const int debug_functions = 0;
-static const int debug_init = 0;
-static const int debug_verify_vtable = 0;
 
 #ifdef VTV_DEBUG
 static const int debug_functions = 1;
 static const int debug_init = 1;
 static const int debug_verify_vtable = 1;
+#else
+static const int debug_functions = 0;
+static const int debug_init = 0;
+static const int debug_verify_vtable = 0;
 #endif
 
 /* Global file descriptor variables for logging, tracing and debugging.  */
