@@ -1,3 +1,7 @@
+2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* c-c++-common/Wmisleading-indentation.c: Add more tests.
+
 2015-08-01  Michael Collison  <michael.collison@linaro.org
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 

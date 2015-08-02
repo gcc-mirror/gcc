@@ -1,5 +1,10 @@
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	* c-indentation.c (should_warn_for_misleading_indentation):
+	Improve heuristics.
+
+2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	* c-indentation.c (get_visual_column): Add parameter first_nws,
 	use it.  Update comment documenting the function.
 	(is_first_nonwhitespace_on_line): Remove.
