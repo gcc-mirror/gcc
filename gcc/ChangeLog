@@ -1,3 +1,9 @@
+2015-08-01  Michael Collison  <michael.collison@linaro.org
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* gcc/config/arm/arm.md (*arm_smin_cmp): New pattern.
+	(*arm_umin_cmp): Likewise.
+
 2015-08-01  Caroline Tice  <cmtice@google.com>
 
 	PR 66521
