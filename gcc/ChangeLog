@@ -1,3 +1,8 @@
+2015-08-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/htm.md (tabort.): Restrict the source operand to
+	using a base register.
+
 2015-08-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* main.c (main): Pass in NULL for toplev's external_timer.

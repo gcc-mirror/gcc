@@ -1,3 +1,7 @@
+2015-08-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-tabort-no-r0.c: New test.
+
 2015-08-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-benchmark.c (test_jit): Add param "timer" and use

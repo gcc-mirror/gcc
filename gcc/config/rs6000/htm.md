@@ -48,7 +48,7 @@
 
 (define_insn "tabort"
   [(set (match_operand:CC 1 "cc_reg_operand" "=x")
-	(unspec_volatile:CC [(match_operand:SI 0 "gpc_reg_operand" "r")]
+	(unspec_volatile:CC [(match_operand:SI 0 "base_reg_operand" "b")]
 			    UNSPECV_HTM_TABORT))]
   "TARGET_HTM"
   "tabort. %0"
