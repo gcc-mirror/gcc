@@ -3023,16 +3023,15 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
   output_line_directive (f,
 			 s->result ? s->result->location : s->match->location);
   if (s->capture_max >= 0)
-    fprintf_indent (f, indent, "tree captures[%u] ATTRIBUTE_UNUSED = {};\n",
-		    s->capture_max + 1);
+    {
+      char opname[20];
+      fprintf_indent (f, indent, "tree captures[%u] ATTRIBUTE_UNUSED = { %s",
+		      s->capture_max + 1, indexes[0]->get_name (opname));
 
-  for (int i = 0; i <= s->capture_max; ++i)
-    if (indexes[i])
-      {
-	char opname[20];
-	fprintf_indent (f, indent, "captures[%u] = %s;\n",
-			i, indexes[i]->get_name (opname));
-      }
+      for (int i = 1; i <= s->capture_max; ++i)
+	fprintf (f, ", %s", indexes[i]->get_name (opname));
+      fprintf (f, " };\n");
+    }
 
   /* If we have a split-out function for the actual transform, call it.  */
   if (info && info->fname)
