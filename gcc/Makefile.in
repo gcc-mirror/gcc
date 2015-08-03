@@ -1165,10 +1165,12 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o
 
 # Language-independent object files.
-# We put the insn-*.o files first so that a parallel make will build
-# them sooner, because they are large and otherwise tend to be the
-# last objects to finish building.
+# We put the *-match.o and insn-*.o files first so that a parallel make
+# will build them sooner, because they are large and otherwise tend to be
+# the last objects to finish building.
 OBJS = \
+	gimple-match.o \
+	generic-match.o \
 	insn-attrtab.o \
 	insn-automata.o \
 	insn-dfatab.o \
@@ -1263,8 +1265,6 @@ OBJS = \
 	gimple-fold.o \
 	gimple-laddress.o \
 	gimple-low.o \
-	gimple-match.o \
-	generic-match.o \
 	gimple-pretty-print.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-strength-reduction.o \

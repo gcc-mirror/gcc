@@ -1,3 +1,7 @@
+2015-08-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* Makefile.in (OBJS): Put gimple-match.o and generic-match.o first.
+
 2015-08-03  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree-ssa-uninit.c (find_uninit_use): Declare and pass to
