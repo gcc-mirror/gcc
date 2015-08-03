@@ -1,3 +1,7 @@
+2015-08-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* MAINTAINERS (loop ivopts): Add the entry and myself.
+
 2015-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* MAINTAINERS (nvptx): Add self.

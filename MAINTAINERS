@@ -254,6 +254,7 @@ instruction combiner	Segher Boessenkool	<segher@kernel.crashing.org>
 auto-vectorizer		Richard Biener		<rguenther@suse.de>
 auto-vectorizer		Zdenek Dvorak		<ook@ucw.cz>
 loop infrastructure	Zdenek Dvorak		<ook@ucw.cz>
+loop ivopts		Bin Cheng		<bin.cheng@arm.com>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
 testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
