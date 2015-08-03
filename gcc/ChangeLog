@@ -1,5 +1,10 @@
 2015-08-03  Richard Biener  <rguenther@suse.de>
 
+	* gimple-fold.c (fold_gimple_assign): Remove folding of
+	the comparison in COND_EXPRs.
+
+2015-08-03  Richard Biener  <rguenther@suse.de>
+
 	* gimple-match-head.c (gimple_simplify): For [VEC_]COND_EXPRs
 	on the rhs of assignments first simplify the embedded
 	GENERIC condition.
