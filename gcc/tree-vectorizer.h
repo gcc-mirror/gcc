@@ -707,10 +707,15 @@ typedef struct _stmt_vec_info {
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
 struct dataref_aux {
-  tree base_decl;
-  bool base_misaligned;
   int misalignment;
+  /* If true the alignment of base_decl needs to be increased.  */
+  bool base_misaligned;
+  /* If true we know the base is at least vector element alignment aligned.  */
+  bool base_element_aligned;
+  tree base_decl;
 };
+
+#define DR_VECT_AUX(dr) ((dataref_aux *)(dr)->aux)
 
 #define VECT_MAX_COST 1000
 
@@ -910,14 +915,13 @@ destroy_cost_data (void *data)
   targetm.vectorize.destroy_cost_data (data);
 }
 
-
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
 inline void
 set_dr_misalignment (struct data_reference *dr, int val)
 {
-  dataref_aux *data_aux = (dataref_aux *) dr->aux;
+  dataref_aux *data_aux = DR_VECT_AUX (dr);
 
   if (!data_aux)
     {
@@ -931,8 +935,7 @@ set_dr_misalignment (struct data_reference *dr, int val)
 inline int
 dr_misalignment (struct data_reference *dr)
 {
-  gcc_assert (dr->aux);
-  return ((dataref_aux *) dr->aux)->misalignment;
+  return DR_VECT_AUX (dr)->misalignment;
 }
 
 /* Reflects actual alignment of first access in the vectorized loop,
