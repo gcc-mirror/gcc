@@ -1848,6 +1848,10 @@ go_unicode_utf8_files = \
 
 # Define socket sizes and types.
 @LIBGO_IS_LINUX_TRUE@syscall_socket_file = go/syscall/socket_linux.go epoll.go
+@LIBGO_IS_LINUX_FALSE@syscall_socket_type_file = 
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_PPC64LE_FALSE@@LIBGO_IS_PPC64_FALSE@syscall_socket_type_file = go/syscall/socket_linux_type.go
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_PPC64LE_FALSE@@LIBGO_IS_PPC64_TRUE@syscall_socket_type_file = go/syscall/socket_linux_ppc64x_type.go
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_PPC64LE_TRUE@syscall_socket_type_file = go/syscall/socket_linux_ppc64x_type.go
 @LIBGO_IS_SOLARIS_FALSE@syscall_socket_os_file = go/syscall/socket_posix.go
 
 # Define socket functions.
@@ -1898,6 +1902,7 @@ go_base_syscall_files = \
 	$(syscall_size_file) \
 	$(syscall_socket_file) \
 	$(syscall_socket_os_file) \
+	$(syscall_socket_type_file) \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
 	$(syscall_lsf_file) \
