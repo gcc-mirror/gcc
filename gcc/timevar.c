@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
 #include "timevar.h"
 
 #ifndef HAVE_CLOCK_T
@@ -120,6 +121,93 @@ static void timevar_accumulate (struct timevar_time_def *,
 				struct timevar_time_def *,
 				struct timevar_time_def *);
 
+/* The implementation of timing events for jit client code, allowing
+   arbitrary named items to appear on the timing stack.  */
+
+class timer::named_items
+{
+ public:
+  named_items (timer *t);
+  ~named_items ();
+
+  void push (const char *item_name);
+  void pop ();
+  void print (FILE *fp, const timevar_time_def *total);
+
+ private:
+  /* Which timer instance does this relate to?  */
+  timer *m_timer;
+
+  /* Dictionary, mapping from item names to timevar_def.
+     Note that currently we merely store/compare the raw string
+     pointers provided by client code; we don't take a copy,
+     or use strcmp.  */
+  hash_map <const char *, timer::timevar_def> m_hash_map;
+
+  /* The order in which items were originally inserted.  */
+  auto_vec <const char *> m_names;
+};
+
+/* The constructor for class timer::named_items.  */
+
+timer::named_items::named_items (timer *t)
+: m_timer (t),
+  m_hash_map (),
+  m_names ()
+{
+}
+
+/* The destructor for class timer::named_items.  */
+
+timer::named_items::~named_items ()
+{
+}
+
+/* Push the named item onto the timer stack.  */
+
+void
+timer::named_items::push (const char *item_name)
+{
+  gcc_assert (item_name);
+
+  bool existed;
+  timer::timevar_def *def = &m_hash_map.get_or_insert (item_name, &existed);
+  if (!existed)
+    {
+      def->elapsed.user = 0;
+      def->elapsed.sys = 0;
+      def->elapsed.wall = 0;
+      def->name = item_name;
+      def->standalone = 0;
+      m_names.safe_push (item_name);
+    }
+  m_timer->push_internal (def);
+}
+
+/* Pop the top item from the timer stack.  */
+
+void
+timer::named_items::pop ()
+{
+  m_timer->pop_internal ();
+}
+
+/* Print the given client item.  Helper function for timer::print.  */
+
+void
+timer::named_items::print (FILE *fp, const timevar_time_def *total)
+{
+  unsigned int i;
+  const char *item_name;
+  fprintf (fp, "Client items:\n");
+  FOR_EACH_VEC_ELT (m_names, i, item_name)
+    {
+      timer::timevar_def *def = m_hash_map.get (item_name);
+      gcc_assert (def);
+      m_timer->print_row (fp, total, def);
+    }
+}
+
 /* Fill the current times into TIME.  The definition of this function
    also defines any or all of the HAVE_USER_TIME, HAVE_SYS_TIME, and
    HAVE_WALL_TIME macros.  */
@@ -169,7 +257,8 @@ timevar_accumulate (struct timevar_time_def *timer,
 timer::timer () :
   m_stack (NULL),
   m_unused_stack_instances (NULL),
-  m_start_time ()
+  m_start_time (),
+  m_jit_client_items (NULL)
 {
   /* Zero all elapsed times.  */
   memset (m_timevars, 0, sizeof (m_timevars));
@@ -188,6 +277,26 @@ timer::timer () :
 #ifdef USE_CLOCK
   clocks_to_msec = CLOCKS_TO_MSEC;
 #endif
+}
+
+/* Class timer's destructor.  */
+
+timer::~timer ()
+{
+  timevar_stack_def *iter, *next;
+
+  for (iter = m_stack; iter; iter = next)
+    {
+      next = iter->next;
+      free (iter);
+    }
+  for (iter = m_unused_stack_instances; iter; iter = next)
+    {
+      next = iter->next;
+      free (iter);
+    }
+
+  delete m_jit_client_items;
 }
 
 /* Initialize timing variables.  */
@@ -212,8 +321,19 @@ void
 timer::push (timevar_id_t timevar)
 {
   struct timevar_def *tv = &m_timevars[timevar];
+  push_internal (tv);
+}
+
+/* Push TV onto the timing stack, either one of the builtin ones
+   for a timevar_id_t, or one provided by client code to libgccjit.  */
+
+void
+timer::push_internal (struct timevar_def *tv)
+{
   struct timevar_stack_def *context;
   struct timevar_time_def now;
+
+  gcc_assert (tv);
 
   /* Mark this timing variable as used.  */
   tv->used = 1;
@@ -258,10 +378,19 @@ timer::push (timevar_id_t timevar)
 void
 timer::pop (timevar_id_t timevar)
 {
+  gcc_assert (&m_timevars[timevar] == m_stack->timevar);
+
+  pop_internal ();
+}
+
+/* Pop the topmost item from the stack, either one of the builtin ones
+   for a timevar_id_t, or one provided by client code to libgccjit.  */
+
+void
+timer::pop_internal ()
+{
   struct timevar_time_def now;
   struct timevar_stack_def *popped = m_stack;
-
-  gcc_assert (&m_timevars[timevar] == m_stack->timevar);
 
   /* What time is it?  */
   get_time (&now);
@@ -410,6 +539,28 @@ timer::cond_stop (timevar_id_t timevar)
   timevar_accumulate (&tv->elapsed, &tv->start_time, &now);
 }
 
+/* Push the named item onto the timing stack.  */
+
+void
+timer::push_client_item (const char *item_name)
+{
+  gcc_assert (item_name);
+
+  /* Lazily create the named_items instance.  */
+  if (!m_jit_client_items)
+    m_jit_client_items = new named_items (this);
+
+  m_jit_client_items->push (item_name);
+}
+
+/* Pop the top-most client item from the timing stack.  */
+
+void
+timer::pop_client_item ()
+{
+  gcc_assert (m_jit_client_items);
+  m_jit_client_items->pop ();
+}
 
 /* Validate that phase times are consistent.  */
 
@@ -462,6 +613,46 @@ timer::validate_phases (FILE *fp) const
     }
 }
 
+/* Helper function for timer::print.  */
+
+void
+timer::print_row (FILE *fp,
+		  const timevar_time_def *total,
+		  const timevar_def *tv)
+{
+  /* The timing variable name.  */
+  fprintf (fp, " %-24s:", tv->name);
+
+#ifdef HAVE_USER_TIME
+  /* Print user-mode time for this process.  */
+  fprintf (fp, "%7.2f (%2.0f%%) usr",
+	   tv->elapsed.user,
+	   (total->user == 0 ? 0 : tv->elapsed.user / total->user) * 100);
+#endif /* HAVE_USER_TIME */
+
+#ifdef HAVE_SYS_TIME
+  /* Print system-mode time for this process.  */
+  fprintf (fp, "%7.2f (%2.0f%%) sys",
+	   tv->elapsed.sys,
+	   (total->sys == 0 ? 0 : tv->elapsed.sys / total->sys) * 100);
+#endif /* HAVE_SYS_TIME */
+
+#ifdef HAVE_WALL_TIME
+  /* Print wall clock time elapsed.  */
+  fprintf (fp, "%7.2f (%2.0f%%) wall",
+	   tv->elapsed.wall,
+	   (total->wall == 0 ? 0 : tv->elapsed.wall / total->wall) * 100);
+#endif /* HAVE_WALL_TIME */
+
+  /* Print the amount of ggc memory allocated.  */
+  fprintf (fp, "%8u kB (%2.0f%%) ggc",
+	   (unsigned) (tv->elapsed.ggc_mem >> 10),
+	   (total->ggc_mem == 0
+	    ? 0
+	    : (float) tv->elapsed.ggc_mem / total->ggc_mem) * 100);
+
+  putc ('\n', fp);
+}
 
 /* Summarize timing variables to FP.  The timing variable TV_TOTAL has
    a special meaning -- it's considered to be the total elapsed time,
@@ -494,6 +685,8 @@ timer::print (FILE *fp)
   m_start_time = now;
 
   fputs ("\nExecution times (seconds)\n", fp);
+  if (m_jit_client_items)
+    fputs ("GCC items:\n", fp);
   for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
     {
       const timevar_def *tv = &m_timevars[(timevar_id_t) id];
@@ -516,39 +709,10 @@ timer::print (FILE *fp)
 	  && tv->elapsed.ggc_mem < GGC_MEM_BOUND)
 	continue;
 
-      /* The timing variable name.  */
-      fprintf (fp, " %-24s:", tv->name);
-
-#ifdef HAVE_USER_TIME
-      /* Print user-mode time for this process.  */
-      fprintf (fp, "%7.2f (%2.0f%%) usr",
-	       tv->elapsed.user,
-	       (total->user == 0 ? 0 : tv->elapsed.user / total->user) * 100);
-#endif /* HAVE_USER_TIME */
-
-#ifdef HAVE_SYS_TIME
-      /* Print system-mode time for this process.  */
-      fprintf (fp, "%7.2f (%2.0f%%) sys",
-	       tv->elapsed.sys,
-	       (total->sys == 0 ? 0 : tv->elapsed.sys / total->sys) * 100);
-#endif /* HAVE_SYS_TIME */
-
-#ifdef HAVE_WALL_TIME
-      /* Print wall clock time elapsed.  */
-      fprintf (fp, "%7.2f (%2.0f%%) wall",
-	       tv->elapsed.wall,
-	       (total->wall == 0 ? 0 : tv->elapsed.wall / total->wall) * 100);
-#endif /* HAVE_WALL_TIME */
-
-      /* Print the amount of ggc memory allocated.  */
-      fprintf (fp, "%8u kB (%2.0f%%) ggc",
-	       (unsigned) (tv->elapsed.ggc_mem >> 10),
-	       (total->ggc_mem == 0
-		? 0
-		: (float) tv->elapsed.ggc_mem / total->ggc_mem) * 100);
-
-      putc ('\n', fp);
+      print_row (fp, total, tv);
     }
+  if (m_jit_client_items)
+    m_jit_client_items->print (fp, total);
 
   /* Print total time.  */
   fputs (" TOTAL                 :", fp);
@@ -576,6 +740,17 @@ timer::print (FILE *fp)
 	  || defined (HAVE_WALL_TIME) */
 
   validate_phases (fp);
+}
+
+/* Get the name of the topmost item.  For use by jit for validating
+   inputs to gcc_jit_timer_pop.  */
+const char *
+timer::get_topmost_item_name () const
+{
+  if (m_stack)
+    return m_stack->timevar->name;
+  else
+    return NULL;
 }
 
 /* Prints a message to stderr stating that time elapsed in STR is

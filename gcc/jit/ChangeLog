@@ -1,3 +1,66 @@
+2015-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_4): New.
+	* docs/topics/contexts.rst (GCC_JIT_BOOL_OPTION_DUMP_SUMMARY):
+	We no longer show a profile.
+	* docs/topics/index.rst (Topic Reference): Add performance.rst.
+	* docs/topics/performance.rst: New file.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::context::compile): Add timer
+	param when constructing the "toplev" instance.
+	(gcc::jit::playback::context::acquire_mutex): Add timer param when
+	constructing auto_timevar instance.
+	(gcc::jit::playback::context::make_fake_args): If we have a timer,
+	add "-ftime-report".
+	(gcc::jit::playback::context::invoke_driver): Add timer param when
+	constructing auto_timevar instance.
+	(gcc::jit::playback::context::dlopen_built_dso): Likewise.
+	* jit-playback.h (gcc::jit::playback::context::get_timer): New accessor.
+	* jit-recording.c: Include timevar.h.
+	(gcc::jit::recording::context::context): Initialize field "m_timer".
+	* jit-recording.h: Add forward declaration of class timer.
+	(gcc::jit::recording::context::set_timer): New method.
+	(gcc::jit::recording::context::get_timer): New method.
+	(gcc::jit::recording::context::m_timer): New field.
+	* libgccjit++.h (gccjit::timer): New class.
+	(gccjit::auto_time): New class.
+	(gccjit::context::set_timer): New method.
+	(gccjit::context::get_timer): New.
+	(gccjit::timer::timer): New.
+	(gccjit::timer::push): New.
+	(gccjit::timer::pop): New.
+	(timer::print): New.
+	(timer::get_inner_timer): New.
+	(timer::release): New.
+	(auto_time::auto_time): New.
+	(auto_time::~auto_time): New.
+	* libgccjit.c: Include timevar.h.
+	(struct gcc_jit_timer): New.
+	(gcc_jit_timer_new): New function.
+	(gcc_jit_timer_release): New function.
+	(gcc_jit_context_set_timer): New function.
+	(gcc_jit_context_get_timer): New function.
+	(gcc_jit_timer_push): New function.
+	(gcc_jit_timer_pop): New function.
+	(gcc_jit_timer_print): New function.
+	* libgccjit.h (LIBGCCJIT_HAVE_TIMING_API): New macro.
+	(gcc_jit_timer): New typedef.
+	(gcc_jit_timer_new): New function.
+	(gcc_jit_timer_release): New function.
+	(gcc_jit_context_set_timer): New function.
+	(gcc_jit_context_get_timer): New function.
+	(gcc_jit_timer_push): New function.
+	(gcc_jit_timer_pop): New function.
+	(gcc_jit_timer_print): New function.
+	* libgccjit.map (LIBGCCJIT_ABI_4): New.
+	(gcc_jit_timer_new): New function.
+	(gcc_jit_timer_release): New function.
+	(gcc_jit_context_set_timer): New function.
+	(gcc_jit_context_get_timer): New function.
+	(gcc_jit_timer_push): New function.
+	(gcc_jit_timer_pop): New function.
+	(gcc_jit_timer_print): New function.
+
 2015-07-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-playback.c (invoke_driver): Convert local "argvec"

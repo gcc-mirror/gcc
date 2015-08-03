@@ -128,3 +128,15 @@ LIBGCCJIT_ABI_3 {
     gcc_jit_case_as_object;
     gcc_jit_context_new_case;
 } LIBGCCJIT_ABI_2;
+
+# Add timing API.
+LIBGCCJIT_ABI_4 {
+  global:
+    gcc_jit_context_get_timer;
+    gcc_jit_context_set_timer;
+    gcc_jit_timer_new;
+    gcc_jit_timer_release;
+    gcc_jit_timer_push;
+    gcc_jit_timer_pop;
+    gcc_jit_timer_print;
+};

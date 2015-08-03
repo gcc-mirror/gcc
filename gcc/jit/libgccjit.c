@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "safe-ctype.h"
 #include "typed-splay-tree.h"
+#include "timevar.h"
 
 #include "libgccjit.h"
 #include "jit-common.h"
@@ -86,6 +87,10 @@ struct gcc_jit_param : public gcc::jit::recording::param
 };
 
 struct gcc_jit_case : public gcc::jit::recording::case_
+{
+};
+
+struct gcc_jit_timer : public timer
 {
 };
 
@@ -2827,4 +2832,108 @@ gcc_jit_result_release (gcc_jit_result *result)
   JIT_LOG_FUNC (result->get_logger ());
   result->log ("deleting result: %p", (void *)result);
   delete result;
+}
+
+/**********************************************************************
+ Timing support.
+ **********************************************************************/
+
+/* Create a gcc_jit_timer instance, and start timing.  */
+
+gcc_jit_timer *
+gcc_jit_timer_new (void)
+{
+  gcc_jit_timer *timer = new gcc_jit_timer ();
+  timer->start (TV_TOTAL);
+  timer->push (TV_JIT_CLIENT_CODE);
+  return timer;
+}
+
+/* Release a gcc_jit_timer instance.  */
+
+void
+gcc_jit_timer_release (gcc_jit_timer *timer)
+{
+  RETURN_IF_FAIL (timer, NULL, NULL, "NULL timer");
+
+  delete timer;
+}
+
+/* Associate a gcc_jit_timer instance with a context.  */
+
+void
+gcc_jit_context_set_timer (gcc_jit_context *ctxt,
+			   gcc_jit_timer *timer)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL ctxt");
+  RETURN_IF_FAIL (timer, ctxt, NULL, "NULL timer");
+
+  ctxt->set_timer (timer);
+}
+
+/* Get the timer associated with a context (if any).  */
+
+gcc_jit_timer *
+gcc_jit_context_get_timer (gcc_jit_context *ctxt)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL ctxt");
+
+  return (gcc_jit_timer *)ctxt->get_timer ();
+}
+
+/* Push the given item onto the timing stack.  */
+
+void
+gcc_jit_timer_push (gcc_jit_timer *timer,
+		    const char *item_name)
+{
+  RETURN_IF_FAIL (timer, NULL, NULL, "NULL timer");
+  RETURN_IF_FAIL (item_name, NULL, NULL, "NULL item_name");
+  timer->push_client_item (item_name);
+}
+
+/* Pop the top item from the timing stack.  */
+
+void
+gcc_jit_timer_pop (gcc_jit_timer *timer,
+		   const char *item_name)
+{
+  RETURN_IF_FAIL (timer, NULL, NULL, "NULL timer");
+
+  if (item_name)
+    {
+      const char *top_item_name = timer->get_topmost_item_name ();
+
+      RETURN_IF_FAIL_PRINTF1
+	(top_item_name, NULL, NULL,
+	 "pop of empty timing stack (attempting to pop: \"%s\")",
+	 item_name);
+
+      RETURN_IF_FAIL_PRINTF2
+	(0 == strcmp (item_name, top_item_name), NULL, NULL,
+	 "mismatching item_name:"
+	 " top of timing stack: \"%s\","
+	 " attempting to pop: \"%s\"",
+	 top_item_name,
+	 item_name);
+    }
+
+  timer->pop_client_item ();
+}
+
+/* Print timing information to the given stream about activity since
+   the timer was started.  */
+
+void
+gcc_jit_timer_print (gcc_jit_timer *timer,
+		     FILE *f_out)
+{
+  RETURN_IF_FAIL (timer, NULL, NULL, "NULL timer");
+  RETURN_IF_FAIL (f_out, NULL, NULL, "NULL f_out");
+
+  timer->pop (TV_JIT_CLIENT_CODE);
+  timer->stop (TV_TOTAL);
+  timer->print (f_out);
+  timer->start (TV_TOTAL);
+  timer->push (TV_JIT_CLIENT_CODE);
 }
