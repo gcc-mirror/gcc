@@ -7440,7 +7440,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "call_reg_64bit"
   [(call (mem:SI (match_operand:DI 0 "register_operand" "r"))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (clobber (match_operand 2))
    (use (reg:DI 27))
@@ -7461,7 +7460,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "register_operand" ""))
 		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:DI 27))
@@ -7472,7 +7470,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 2) (reg:DI 27))
    (parallel [(call (mem:SI (match_dup 0))
 		    (match_dup 1))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (use (reg:DI 27))
 	      (use (reg:DI 29))
@@ -7482,7 +7479,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "register_operand" ""))
 		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:DI 27))
@@ -7492,7 +7488,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 2) (reg:DI 27))
    (parallel [(call (mem:SI (match_dup 0))
 		    (match_dup 1))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (use (reg:DI 27))
 	      (use (reg:DI 29))
@@ -7503,7 +7498,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "*call_reg_64bit_post_reload"
   [(call (mem:SI (match_operand:DI 0 "register_operand" "r"))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (use (reg:DI 27))
    (use (reg:DI 29))
