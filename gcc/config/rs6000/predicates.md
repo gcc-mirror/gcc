@@ -460,6 +460,8 @@
 
   switch (mode)
     {
+    case KFmode:
+    case IFmode:
     case TFmode:
     case DFmode:
     case SFmode:
@@ -485,6 +487,12 @@
      no easy way to load a CONST_VECTOR without using memory.  */
   if (TARGET_PAIRED_FLOAT)
     return false;
+
+  /* Because IEEE 128-bit floating point is considered a vector type
+     in order to pass it in VSX registers, it might use this function
+     instead of easy_fp_constant.  */
+  if (FLOAT128_VECTOR_P (mode))
+    return easy_fp_constant (op, mode);
 
   if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode))
     {

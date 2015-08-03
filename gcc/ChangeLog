@@ -1,3 +1,55 @@
+2015-08-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (VEC_L): Add KFmode and TFmode.
+	(VEC_M): Likewise.
+	(VEC_N): Likewise.
+	(mov<mode>, VEC_M iterator): Add support for IEEE 128-bit floating
+	point in VSX registers.
+
+	* config/rs6000/constraints.md (wb constraint): Document unused
+	w<x> constraint.
+	(we constraint): Likewise.
+	(wo constraint): Likewise.
+	(wp constraint): New constraint for IEEE 128-bit floating point in
+	VSX registers.
+	(wq constraint): Likewise.
+
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for
+	IEEE 128-bit floating point in VSX registers.
+	(easy_scalar_constant): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Add new
+	constraints (wp, wq) for IEEE 128-bit floating point in VSX
+	registers.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+
+	* config/rs6000/vsx.md (VSX_LE_128): Add support for IEEE 128-bit
+	floating point in VSX registers.
+	(VSX_L): Likewise.
+	(VSX_M): Likewise.
+	(VSX_M2): Likewise.
+	(VSm): Likewise.
+	(VSs): Likewise.
+	(VSr): Likewise.
+	(VSa): Likewise.
+	(VSv): Likewise.
+	(vsx_le_permute_<mode>): Add support to properly swap bytes for
+	IEEE 128-bit floating point in VSX registers on little endian.
+	(vsx_le_undo_permute_<mode>): Likewise.
+	(vsx_le_perm_load_<mode>): Likewise.
+	(vsx_le_perm_store_<mode>): Likewise.
+	(splitters for IEEE 128-bit fp moves): Likewise.
+
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add wp and
+	wq constraints.
+
+	* config/rs6000/altivec.md (VM): Add support for IEEE 128-bit
+	floating point in VSX registers.
+	(VM2): Likewise.
+
+	* doc/md.text (Machine Constraints): Document wp and wq
+	constraints on PowerPC.
+
 2015-08-03  Jeff Law  <law@redhat.com>
 
 	PR middle-end/66314
