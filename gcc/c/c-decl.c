@@ -5153,8 +5153,10 @@ flexible_array_type_p (tree type)
 
 /* Performs sanity checks on the TYPE and WIDTH of the bit-field NAME,
    replacing with appropriate values if they are invalid.  */
+
 static void
-check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
+check_bitfield_type_and_width (location_t loc, tree *type, tree *width,
+			       tree orig_name)
 {
   tree type_mv;
   unsigned int max_width;
@@ -5167,7 +5169,7 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
      field widths.  */
   if (!INTEGRAL_TYPE_P (TREE_TYPE (*width)))
     {
-      error ("bit-field %qs width not an integer constant", name);
+      error_at (loc, "bit-field %qs width not an integer constant", name);
       *width = integer_one_node;
     }
   else
@@ -5176,24 +5178,24 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
 	{
 	  *width = c_fully_fold (*width, false, NULL);
 	  if (TREE_CODE (*width) == INTEGER_CST)
-	    pedwarn (input_location, OPT_Wpedantic,
+	    pedwarn (loc, OPT_Wpedantic,
 		     "bit-field %qs width not an integer constant expression",
 		     name);
 	}
       if (TREE_CODE (*width) != INTEGER_CST)
 	{
-	  error ("bit-field %qs width not an integer constant", name);
+	  error_at (loc, "bit-field %qs width not an integer constant", name);
 	  *width = integer_one_node;
 	}
       constant_expression_warning (*width);
       if (tree_int_cst_sgn (*width) < 0)
 	{
-	  error ("negative width in bit-field %qs", name);
+	  error_at (loc, "negative width in bit-field %qs", name);
 	  *width = integer_one_node;
 	}
       else if (integer_zerop (*width) && orig_name)
 	{
-	  error ("zero width for bit-field %qs", name);
+	  error_at (loc, "zero width for bit-field %qs", name);
 	  *width = integer_one_node;
 	}
     }
@@ -5203,7 +5205,7 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
       && TREE_CODE (*type) != BOOLEAN_TYPE
       && TREE_CODE (*type) != ENUMERAL_TYPE)
     {
-      error ("bit-field %qs has invalid type", name);
+      error_at (loc, "bit-field %qs has invalid type", name);
       *type = unsigned_type_node;
     }
 
@@ -5212,14 +5214,14 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
       && type_mv != integer_type_node
       && type_mv != unsigned_type_node
       && type_mv != boolean_type_node)
-    pedwarn_c90 (input_location, OPT_Wpedantic,
+    pedwarn_c90 (loc, OPT_Wpedantic,
 		 "type of bit-field %qs is a GCC extension", name);
 
   max_width = TYPE_PRECISION (*type);
 
   if (0 < compare_tree_int (*width, max_width))
     {
-      error ("width of %qs exceeds its type", name);
+      error_at (loc, "width of %qs exceeds its type", name);
       w = max_width;
       *width = build_int_cst (integer_type_node, w);
     }
@@ -5232,7 +5234,7 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
       if (!lt
 	  || w < tree_int_cst_min_precision (lt->enum_min, TYPE_SIGN (*type))
 	  || w < tree_int_cst_min_precision (lt->enum_max, TYPE_SIGN (*type)))
-	warning (0, "%qs is narrower than values of its type", name);
+	warning_at (loc, 0, "%qs is narrower than values of its type", name);
     }
 }
 
@@ -6224,7 +6226,7 @@ grokdeclarator (const struct c_declarator *declarator,
   /* Check the type and width of a bit-field.  */
   if (bitfield)
     {
-      check_bitfield_type_and_width (&type, width, name);
+      check_bitfield_type_and_width (loc, &type, width, name);
       /* C11 makes it implementation-defined (6.7.2.1#5) whether
 	 atomic types are permitted for bit-fields; we have no code to
 	 make bit-field accesses atomic, so disallow them.  */

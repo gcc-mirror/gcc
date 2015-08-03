@@ -1,3 +1,10 @@
+2015-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67088
+	* c-decl.c (check_bitfield_type_and_width): Add location parameter.
+	Use it.
+	(grokdeclarator): Pass LOC down to check_bitfield_type_and_width.
+
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-parser.c (c_parser_if_body): Take token_indent_info
