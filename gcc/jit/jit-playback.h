@@ -215,6 +215,8 @@ public:
     return m_recording_ctxt->errors_occurred ();
   }
 
+  timer *get_timer () const { return m_recording_ctxt->get_timer (); }
+
 private:
   void dump_generated_code ();
 

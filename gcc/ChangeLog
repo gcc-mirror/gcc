@@ -1,3 +1,48 @@
+2015-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* main.c (main): Pass in NULL for toplev's external_timer.
+	* timevar.c: Include coretypes.h.
+	(class timer::named_items): New.
+	(timer::named_items::named_items): New.
+	(timer::named_items::~named_items): New.
+	(timer::named_items::push): New.
+	(timer::named_items::pop): New.
+	(timer::named_items::print): New.
+	(timer::timer): Initialize field "m_jit_client_items".
+	(timer::~timer): New.
+	(timer::push): Move bulk of implementation to...
+	(timer::push_internal): ...here.  New function.
+	(timer::pop): Move bulk of implementation to...
+	(timer::pop_internal): ...here.  New function.
+	(timer::push_client_item): New.
+	(timer::pop_client_item): New.
+	(timer::print_row): New function, taken from timer::print.
+	(timer::print): Print "GCC items" header if we also have client
+	items.  Move row-printing to timer::print_row.  Print any client
+	items.
+	(timer::get_topmost_item_name): New method.
+	* timevar.def (TV_JIT_ACQUIRING_MUTEX): New.
+	(TV_JIT_CLIENT_CODE): New.
+	* timevar.h (timer::push_client_item): New declaration.
+	(timer::pop_client_item): New declaration.
+	(timer::get_topmost_item_name): New method.
+	(timer::push_internal): New declaration.
+	(timer::pop_internal): New declaration.
+	(timer::print_row): New declaration.
+	(timer::named_items): New declaration.
+	(timer::m_jit_client_items): New field.
+	(timer): Add friend class named_items.
+	(auto_timevar::auto_timevar): Add timer param.
+	(auto_timevar::~auto_timevar): Use field "m_timer".
+	(auto_timevar::m_timer): New field.
+	* toplev.c (initialize_rtl): Add g_timer as param when
+	constructing auto_timevar instance.
+	(toplev::toplev): Add "external_timer" param, and use it to
+	initialize the "g_timer" global if non-NULL.
+	(toplev::~toplev): If this created "g_timer", delete it.
+	* toplev.h (toplev::toplev): Replace "use_TV_TOTAL" bool param
+	with "external_timer" timer *.
+
 2015-08-03  Alexander Basov <coohpt@gmail.com>
 
 	PR middle-end/64744

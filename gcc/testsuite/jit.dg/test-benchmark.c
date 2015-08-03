@@ -141,10 +141,12 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 
 /* Run one iteration of the test.  */
 static void
-test_jit (const char *argv0, int opt_level)
+test_jit (const char *argv0, int opt_level, gcc_jit_timer *timer)
 {
   gcc_jit_context *ctxt;
   gcc_jit_result *result;
+
+  gcc_jit_timer_push (timer, "test_jit");
 
   ctxt = gcc_jit_context_acquire ();
   if (!ctxt)
@@ -152,6 +154,8 @@ test_jit (const char *argv0, int opt_level)
       fail ("gcc_jit_context_acquire failed");
       return;
     }
+
+  gcc_jit_context_set_timer (ctxt, timer);
 
   /* Set up options.  */
   gcc_jit_context_set_str_option (
@@ -182,13 +186,22 @@ test_jit (const char *argv0, int opt_level)
       GCC_JIT_BOOL_OPTION_DUMP_SUMMARY,
       1);
 
+  gcc_jit_timer_push (timer, "create_code");
   create_code (ctxt, NULL);
+  gcc_jit_timer_pop (timer, "create_code");
 
+  gcc_jit_timer_push (timer, "compile");
   result = gcc_jit_context_compile (ctxt);
+  gcc_jit_timer_pop (timer, "compile");
+
+  gcc_jit_timer_push (timer, "verify_code");
   verify_code (ctxt, result);
+  gcc_jit_timer_pop (timer, "verify_code");
 
   gcc_jit_context_release (ctxt);
   gcc_jit_result_release (result);
+
+  gcc_jit_timer_pop (timer, "test_jit");
 }
 
 /* Taken from timevar.c.  */
@@ -217,16 +230,19 @@ main (int argc, char **argv)
       int i;
       double start_time, end_time, elapsed_time;
       start_time = get_wallclock_time ();
+      gcc_jit_timer *timer = gcc_jit_timer_new ();
       for (i = 1; i <= num_iterations; i++)
 	{
 	  snprintf (test, sizeof (test),
 		    "%s iteration %d of %d",
 		    extract_progname (argv[0]),
 		    i, num_iterations);
-	  test_jit (argv[0], opt_level);
+	  test_jit (argv[0], opt_level, timer);
 	}
       end_time = get_wallclock_time ();
       elapsed_time = end_time - start_time;
+      gcc_jit_timer_print (timer, stderr);
+      gcc_jit_timer_release (timer);
       pass ("%s: survived %i iterations at optlevel %i",
 	    argv[0], num_iterations, opt_level);
       note (("%s: %i iterations at optlevel %i"

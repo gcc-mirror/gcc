@@ -430,8 +430,7 @@ Boolean options
   .. macro:: GCC_JIT_BOOL_OPTION_DUMP_SUMMARY
 
      If true, :func:`gcc_jit_context_compile` will print information to stderr
-     on the actions it is performing, followed by a profile showing
-     the time taken and memory usage of each phase.
+     on the actions it is performing.
 
   .. macro:: GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING
 

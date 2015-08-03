@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "hash-map.h"
 #include "toplev.h"
+#include "timevar.h"
 
 #include <pthread.h>
 
@@ -461,6 +462,7 @@ recording::context::context (context *parent_ctxt)
   : log_user (NULL),
     m_parent_ctxt (parent_ctxt),
     m_toplevel_ctxt (m_parent_ctxt ? m_parent_ctxt->m_toplevel_ctxt : this),
+    m_timer (NULL),
     m_error_count (0),
     m_first_error_str (NULL),
     m_owns_first_error_str (false),

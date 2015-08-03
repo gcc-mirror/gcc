@@ -1,3 +1,12 @@
+2015-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-benchmark.c (test_jit): Add param "timer" and use
+	it to push/pop timing items.
+	(main): For each optimization level, create a gcc_jit_timer, and
+	time all of the iteration within that level cumulatively.
+	* jit.dg/test-error-gcc_jit_timer_pop-mismatch.c: New test case.
+	* jit.dg/test-error-gcc_jit_timer_pop-too-many.c: New test case.
+
 2015-08-03  Alexander Basov <coohpt@gmail.com>
 
 	PR middle-end/64744

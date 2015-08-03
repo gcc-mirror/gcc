@@ -1793,7 +1793,7 @@ compile ()
     }
 
   /* This runs the compiler.  */
-  toplev toplev (false, /* use_TV_TOTAL */
+  toplev toplev (get_timer (), /* external_timer */
 		 false); /* init_signals */
   enter_scope ("toplev::main");
   if (get_logger ())
@@ -2085,6 +2085,8 @@ static pthread_mutex_t jit_mutex = PTHREAD_MUTEX_INITIALIZER;
 void
 playback::context::acquire_mutex ()
 {
+  auto_timevar tv (get_timer (), TV_JIT_ACQUIRING_MUTEX);
+
   /* Acquire the big GCC mutex. */
   JIT_LOG_SCOPE (get_logger ());
   pthread_mutex_lock (&jit_mutex);
@@ -2252,6 +2254,9 @@ make_fake_args (vec <char *> *argvec,
       }
   }
 
+  if (get_timer ())
+    ADD_ARG ("-ftime-report");
+
   /* Add any user-provided extra options, starting with any from
      parent contexts.  */
   m_recording_ctxt->append_command_line_options (argvec);
@@ -2380,7 +2385,7 @@ invoke_driver (const char *ctxt_progname,
   JIT_LOG_SCOPE (get_logger ());
   /* Currently this lumps together both assembling and linking into
      TV_ASSEMBLE.  */
-  auto_timevar assemble_timevar (tv_id);
+  auto_timevar assemble_timevar (get_timer (), tv_id);
   const char *errmsg;
   auto_argvec argvec;
 #define ADD_ARG(arg) argvec.safe_push (xstrdup (arg))
@@ -2492,7 +2497,7 @@ playback::context::
 dlopen_built_dso ()
 {
   JIT_LOG_SCOPE (get_logger ());
-  auto_timevar load_timevar (TV_LOAD);
+  auto_timevar load_timevar (get_timer (), TV_LOAD);
   void *handle = NULL;
   const char *error = NULL;
   result *result_obj = NULL;

@@ -46,6 +46,8 @@ namespace gccjit
      class lvalue;
        class param;
     class case_;
+  class timer;
+  class auto_time;
 
   /* Errors within the API become C++ exceptions of this class.  */
   class error
@@ -124,6 +126,9 @@ namespace gccjit
     void set_bool_allow_unreachable_blocks (int bool_value);
 
     void add_command_line_option (const char *optname);
+
+    void set_timer (gccjit::timer t);
+    gccjit::timer get_timer () const;
 
     location
     new_location (const std::string &filename,
@@ -523,6 +528,36 @@ namespace gccjit
 
   /* Dereferencing. */
   lvalue operator* (rvalue ptr);
+
+  class timer
+  {
+  public:
+    timer ();
+    timer (gcc_jit_timer *inner_timer);
+
+    void push (const char *item_name);
+    void pop (const char *item_name);
+    void print (FILE *f_out) const;
+
+    void release ();
+
+    gcc_jit_timer *get_inner_timer () const;
+
+  private:
+    gcc_jit_timer *m_inner_timer;
+  };
+
+  class auto_time
+  {
+  public:
+    auto_time (timer t, const char *item_name);
+    auto_time (context ctxt, const char *item_name);
+    ~auto_time ();
+
+  private:
+    timer m_timer;
+    const char *m_item_name;
+  };
 }
 
 /****************************************************************************
@@ -635,6 +670,19 @@ context::add_command_line_option (const char *optname)
 {
   gcc_jit_context_add_command_line_option (m_inner_ctxt, optname);
 }
+
+inline void
+context::set_timer (gccjit::timer t)
+{
+  gcc_jit_context_set_timer (m_inner_ctxt, t.get_inner_timer ());
+}
+
+inline gccjit::timer
+context::get_timer () const
+{
+  return gccjit::timer (gcc_jit_context_get_timer (m_inner_ctxt));
+}
+
 
 inline location
 context::new_location (const std::string &filename,
@@ -1711,6 +1759,75 @@ inline rvalue operator>= (rvalue a, rvalue b)
 inline lvalue operator* (rvalue ptr)
 {
   return ptr.dereference ();
+}
+
+// class timer
+inline
+timer::timer ()
+{
+  m_inner_timer = gcc_jit_timer_new ();
+}
+
+inline
+timer::timer (gcc_jit_timer *inner_timer)
+{
+  m_inner_timer = inner_timer;
+}
+
+inline void
+timer::push (const char *item_name)
+{
+  gcc_jit_timer_push (m_inner_timer, item_name);
+
+}
+
+inline void
+timer::pop (const char *item_name)
+{
+  gcc_jit_timer_pop (m_inner_timer, item_name);
+}
+
+inline void
+timer::print (FILE *f_out) const
+{
+  gcc_jit_timer_print (m_inner_timer, f_out);
+}
+
+inline gcc_jit_timer *
+timer::get_inner_timer () const
+{
+  return m_inner_timer;
+}
+
+inline void
+timer::release ()
+{
+  gcc_jit_timer_release (m_inner_timer);
+  m_inner_timer = NULL;
+}
+
+// class auto_time
+
+inline
+auto_time::auto_time (timer t, const char *item_name)
+  : m_timer (t),
+    m_item_name (item_name)
+{
+  t.push (item_name);
+}
+
+inline
+auto_time::auto_time (context ctxt, const char *item_name)
+  : m_timer (ctxt.get_timer ()),
+    m_item_name (item_name)
+{
+  m_timer.push (item_name);
+}
+
+inline
+auto_time::~auto_time ()
+{
+  m_timer.pop (m_item_name);
 }
 
 } // namespace gccjit

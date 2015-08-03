@@ -29,3 +29,4 @@ Topic Reference
    locations.rst
    compilation.rst
    compatibility.rst
+   performance.rst

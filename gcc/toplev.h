@@ -24,11 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 extern struct cl_decoded_option *save_decoded_options;
 extern unsigned int save_decoded_options_count;
 
+class timer;
+
 /* Invoking the compiler.  */
 class toplev
 {
 public:
-  toplev (bool use_TV_TOTAL,
+  toplev (timer *external_timer,
 	  bool init_signals);
   ~toplev ();
 

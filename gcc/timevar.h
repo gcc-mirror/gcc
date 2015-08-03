@@ -115,11 +115,23 @@ class timer
   bool cond_start (timevar_id_t tv);
   void cond_stop (timevar_id_t tv);
 
+  void push_client_item (const char *item_name);
+  void pop_client_item ();
+
   void print (FILE *fp);
+
+  const char *get_topmost_item_name () const;
 
  private:
   /* Private member functions.  */
   void validate_phases (FILE *fp) const;
+
+  struct timevar_def;
+  void push_internal (struct timevar_def *tv);
+  void pop_internal ();
+  static void print_row (FILE *fp,
+			 const timevar_time_def *total,
+			 const timevar_def *tv);
 
  private:
 
@@ -157,6 +169,12 @@ class timer
     struct timevar_stack_def *next;
   };
 
+  /* A class for managing a collection of named timing items, for use
+     e.g. by libgccjit for timing client code.  This class is declared
+     inside timevar.c to avoid everything using timevar.h
+     from needing vec and hash_map.  */
+  class named_items;
+
  private:
 
   /* Data members (all private).  */
@@ -176,6 +194,11 @@ class timer
      pushed.  Time elapsed since then is attributed to the topmost
      element.  */
   timevar_time_def m_start_time;
+
+  /* If non-NULL, for use when timing libgccjit's client code.  */
+  named_items *m_jit_client_items;
+
+  friend class named_items;
 };
 
 /* Provided for backward compatibility.  */
@@ -198,15 +221,18 @@ timevar_pop (timevar_id_t tv)
 class auto_timevar
 {
  public:
-  auto_timevar (timevar_id_t tv)
-    : m_tv (tv)
+  auto_timevar (timer *t, timevar_id_t tv)
+    : m_timer (t),
+      m_tv (tv)
   {
-    timevar_push (m_tv);
+    if (m_timer)
+      m_timer->push (m_tv);
   }
 
   ~auto_timevar ()
   {
-    timevar_pop (m_tv);
+    if (m_timer)
+      m_timer->pop (m_tv);
   }
 
  private:
@@ -214,6 +240,7 @@ class auto_timevar
   // Private to disallow copies.
   auto_timevar (const auto_timevar &);
 
+  timer *m_timer;
   timevar_id_t m_tv;
 };
 

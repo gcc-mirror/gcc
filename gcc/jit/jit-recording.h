@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-common.h"
 #include "jit-logging.h"
 
+class timer;
+
 namespace gcc {
 
 namespace jit {
@@ -276,6 +278,9 @@ public:
   void
   get_all_requested_dumps (vec <recording::requested_dump> *out);
 
+  void set_timer (timer *t) { m_timer = t; }
+  timer *get_timer () const { return m_timer; }
+
 private:
   void log_all_options () const;
   void log_str_option (enum gcc_jit_str_option opt) const;
@@ -291,6 +296,8 @@ private:
   /* The ultimate ancestor of the contexts within a family tree of
      contexts.  This has itself as its own m_toplevel_ctxt.  */
   context *m_toplevel_ctxt;
+
+  timer *m_timer;
 
   int m_error_count;
 
