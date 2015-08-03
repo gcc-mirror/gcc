@@ -1,3 +1,8 @@
+2015-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67078
+	* include/bits/range_access.h (size, empty, data): Fix _N bad name.
+
 2015-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/operations/current_path.cc: Use
