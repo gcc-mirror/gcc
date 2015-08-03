@@ -1,5 +1,19 @@
 2015-08-03  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (struct sinfo, struct sinfo_hashmap_traits, sinfo_map_t):
+	New hash-map to record equivalent transforms.
+	(dt_node::analyze): Populate the equivalent transforms hash-map.
+	(dt_simplify::info): Add reference to hash-map entry.
+	(dt_simplify::gen): If we have split out a function for the
+	transform, generate a call to it.
+	(sinfo_hashmap_traits::hash): New function.
+	(compare_op): New helper function for ...
+	(sinfo_hashmap_traits::equal_keys): ... this new function.
+	(decision_tree::gen): Split out common equivalent transforms
+	into functions.
+
+2015-08-03  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (fold_gimple_assign): Remove folding of
 	the comparison in COND_EXPRs.
 
