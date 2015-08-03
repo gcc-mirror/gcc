@@ -1,3 +1,9 @@
+2015-08-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/67060
+	* config/pa/pa.md (call_reg_64bit): Remove reg:DI 1 clobber.
+	Adjust splits to match new pattern.
+
 2015-08-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport form mainline r226496.
