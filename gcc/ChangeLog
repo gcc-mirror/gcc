@@ -1,3 +1,11 @@
+2015-08-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* ifcvt.c (noce_try_store_flag_constants): Make logic of the case
+	when diff == STORE_FLAG_VALUE or diff == -STORE_FLAG_VALUE more
+	explicit.  Prefer to add the flag whenever possible.
+	(noce_process_if_block): Try noce_try_store_flag_constants before
+	noce_try_cmove.
+
 2015-08-03  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (struct sinfo, struct sinfo_hashmap_traits, sinfo_map_t):
