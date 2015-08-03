@@ -518,7 +518,7 @@ xno)
 		wait $pid
 		status=$?
 		if ! test -f gotest-timeout; then
-		    kill $alarmpid
+		    ps -o pid,ppid | grep " $alarmpid" | cut -f1 -d" " | xargs kill -9
 		fi
 	else
 		if test "$trace" = "true"; then
