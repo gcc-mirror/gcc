@@ -789,6 +789,7 @@ c_strict_warn
 strict_warn
 c_loose_warn
 loose_warn
+aliasing_flags
 CPP
 EGREP
 GREP
@@ -6524,6 +6525,42 @@ else
   as_fn_error "error verifying int64_t uses long long" "$LINENO" 5
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+# Check whether compiler is affected by placement new aliasing bug (PR 29286).
+# If the host compiler is affected by the bug, and we build with optimization
+# enabled (which happens e.g. when cross-compiling), the pool allocator may
+# get miscompiled.  Use -fno-strict-aliasing to work around this problem.
+# Since there is no reliable feature check for the presence of this bug,
+# we simply use a GCC version number check.  (This should never trigger for
+# stages 2 or 3 of a native bootstrap.)
+aliasing_flags=
+if test "$GCC" = yes; then
+  saved_CXXFLAGS="$CXXFLAGS"
+
+  # The following test compilation will succeed if and only if $CXX accepts
+  # -fno-strict-aliasing *and* is older than GCC 4.3.
+  CXXFLAGS="$CXXFLAGS -fno-strict-aliasing"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CXX is affected by placement new aliasing bug" >&5
+$as_echo_n "checking whether $CXX is affected by placement new aliasing bug... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)
+#error compiler not affected by placement new aliasing bug
+#endif
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; aliasing_flags='-fno-strict-aliasing'
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+  CXXFLAGS="$saved_CXXFLAGS"
 fi
 
 
@@ -18301,7 +18338,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18304 "configure"
+#line 18341 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18407,7 +18444,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18410 "configure"
+#line 18447 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

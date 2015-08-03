@@ -1,3 +1,11 @@
+2015-08-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* configure.ac: Set aliasing_flags to -fno-strict-aliasing if
+	the host compiler is affected by placement new aliasing bug.
+	* configure: Regenerate.
+	* Makefile.in (ALIASING_FLAGS): New variable.
+	(ALL_CXXFLAGS): Add $(ALIASING_FLAGS).
+
 2015-08-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/66731

@@ -416,6 +416,32 @@ struct X<long long> { typedef long long t; };
 ]], [[X<int64_t>::t x;]])],[],[AC_MSG_ERROR([error verifying int64_t uses long long])])
 fi
 
+# Check whether compiler is affected by placement new aliasing bug (PR 29286).
+# If the host compiler is affected by the bug, and we build with optimization
+# enabled (which happens e.g. when cross-compiling), the pool allocator may
+# get miscompiled.  Use -fno-strict-aliasing to work around this problem.
+# Since there is no reliable feature check for the presence of this bug,
+# we simply use a GCC version number check.  (This should never trigger for
+# stages 2 or 3 of a native bootstrap.)
+aliasing_flags=
+if test "$GCC" = yes; then
+  saved_CXXFLAGS="$CXXFLAGS"
+
+  # The following test compilation will succeed if and only if $CXX accepts
+  # -fno-strict-aliasing *and* is older than GCC 4.3.
+  CXXFLAGS="$CXXFLAGS -fno-strict-aliasing"
+  AC_MSG_CHECKING([whether $CXX is affected by placement new aliasing bug])
+  AC_COMPILE_IFELSE([
+#if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)
+#error compiler not affected by placement new aliasing bug
+#endif
+],
+    [AC_MSG_RESULT([yes]); aliasing_flags='-fno-strict-aliasing'],
+    [AC_MSG_RESULT([no])])
+
+  CXXFLAGS="$saved_CXXFLAGS"
+fi
+AC_SUBST(aliasing_flags)
 
 
 
