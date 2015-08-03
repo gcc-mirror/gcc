@@ -1,3 +1,14 @@
+2015-08-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport form mainline r226496.
+	2015-08-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/66731
+	* gcc.target/arm/vnmul-1.c: New.
+	* gcc.target/arm/vnmul-2.c: New.
+	* gcc.target/arm/vnmul-3.c: New.
+	* gcc.target/arm/vnmul-4.c: New.
+
 2015-07-31  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/66691

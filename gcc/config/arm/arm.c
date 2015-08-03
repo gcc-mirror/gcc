@@ -10269,7 +10269,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
 	  *cost = COSTS_N_INSNS (1);
 
-	  if (GET_CODE (op0) == NEG)
+	  if (GET_CODE (op0) == NEG && !flag_rounding_math)
 	    op0 = XEXP (op0, 0);
 
 	  if (speed_p)
@@ -10345,6 +10345,13 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
 	  && (mode == SFmode || !TARGET_VFP_SINGLE))
 	{
+	  if (GET_CODE (XEXP (x, 0)) == MULT)
+	    {
+	      /* VNMUL.  */
+	      *cost = rtx_cost (XEXP (x, 0), NEG, 0, speed_p);
+	      return true;
+	    }
+
 	  *cost = COSTS_N_INSNS (1);
 	  if (speed_p)
 	    *cost += extra_cost->fp[mode != SFmode].neg;
