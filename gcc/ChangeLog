@@ -1,3 +1,8 @@
+2015-08-03  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_simplify::gen): Create captures array
+	with an initializer.
+
 2015-08-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* configure.ac: Set aliasing_flags to -fno-strict-aliasing if
