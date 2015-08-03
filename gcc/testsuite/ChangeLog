@@ -1,3 +1,13 @@
+2015-08-03  Alexander Basov <coohpt@gmail.com>
+
+	PR middle-end/64744
+	PR middle-end/48470
+	PR middle-end/43404
+	* gcc.target/arm/pr43404.c : New testcase.
+	* gcc.target/arm/pr48470.c : New testcase.
+	* gcc.target/arm/pr64744-1.c : New testcase.
+	* gcc.target/arm/pr64744-2.c : New testcase.
+
 2015-08-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/67077
