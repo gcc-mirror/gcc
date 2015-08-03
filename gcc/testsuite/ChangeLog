@@ -1,3 +1,10 @@
+2015-08-03  Jeff Law  <law@redhat.com>
+
+	PR middle-end/66314
+	PR gcov-profile/66899
+	* gcc.dg/pr66899.c: New test.
+	* gcc.dg/pr66314.c: New test.
+
 2015-08-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67088

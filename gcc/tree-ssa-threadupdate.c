@@ -2130,7 +2130,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
      cases where the second path starts at a downstream edge on the same
      path).  First record all joiner paths, deleting any in the unexpected
      case where there is already a path for that incoming edge.  */
-  for (i = 0; i < paths.length (); i++)
+  for (i = 0; i < paths.length ();)
     {
       vec<jump_thread_edge *> *path = paths[i];
 
@@ -2140,6 +2140,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	  if ((*path)[0]->e->aux == NULL)
 	    {
 	      (*path)[0]->e->aux = path;
+	      i++;
 	    }
 	  else
 	    {
@@ -2149,10 +2150,15 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	      delete_jump_thread_path (path);
 	    }
 	}
+      else
+	{
+	  i++;
+	}
     }
+
   /* Second, look for paths that have any other jump thread attached to
      them, and either finish converting them or cancel them.  */
-  for (i = 0; i < paths.length (); i++)
+  for (i = 0; i < paths.length ();)
     {
       vec<jump_thread_edge *> *path = paths[i];
       edge e = (*path)[0]->e;
@@ -2167,7 +2173,10 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	  /* If we iterated through the entire path without exiting the loop,
 	     then we are good to go, record it.  */
 	  if (j == path->length ())
-	    bitmap_set_bit (tmp, e->dest->index);
+	    {
+	      bitmap_set_bit (tmp, e->dest->index);
+	      i++;
+	    }
 	  else
 	    {
 	      e->aux = NULL;
@@ -2176,6 +2185,10 @@ mark_threaded_blocks (bitmap threaded_blocks)
 		dump_jump_thread_path (dump_file, *path, false);
 	      delete_jump_thread_path (path);
 	    }
+	}
+      else
+	{
+	  i++;
 	}
     }
 
