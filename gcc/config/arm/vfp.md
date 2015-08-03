@@ -765,6 +765,17 @@
   [(set (match_operand:SF		   0 "s_register_operand" "=t")
 	(mult:SF (neg:SF (match_operand:SF 1 "s_register_operand" "t"))
 		 (match_operand:SF	   2 "s_register_operand" "t")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP && !flag_rounding_math"
+  "fnmuls%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "fmuls")]
+)
+
+(define_insn "*negmulsf3_vfp"
+  [(set (match_operand:SF		   0 "s_register_operand" "=t")
+	(neg:SF (mult:SF (match_operand:SF 1 "s_register_operand" "t")
+		 (match_operand:SF	   2 "s_register_operand" "t"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmuls%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
@@ -776,6 +787,18 @@
   [(set (match_operand:DF		   0 "s_register_operand" "=w")
 	(mult:DF (neg:DF (match_operand:DF 1 "s_register_operand" "w"))
 		 (match_operand:DF	   2 "s_register_operand" "w")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE
+  && !flag_rounding_math"
+  "fnmuld%?\\t%P0, %P1, %P2"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "fmuld")]
+)
+
+(define_insn "*negmuldf3_vfp"
+  [(set (match_operand:DF		   0 "s_register_operand" "=w")
+	(neg:DF (mult:DF (match_operand:DF 1 "s_register_operand" "w")
+		 (match_operand:DF	   2 "s_register_operand" "w"))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "fnmuld%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
