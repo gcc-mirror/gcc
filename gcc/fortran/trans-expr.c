@@ -5921,18 +5921,18 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   vec_safe_reserve (retargs, arglen);
 
   /* Add the return arguments.  */
-  retargs->splice (arglist);
+  vec_safe_splice (retargs, arglist);
 
   /* Add the hidden present status for optional+value to the arguments.  */
-  retargs->splice (optionalargs);
+  vec_safe_splice (retargs, optionalargs);
 
   /* Add the hidden string length parameters to the arguments.  */
-  retargs->splice (stringargs);
+  vec_safe_splice (retargs, stringargs);
 
   /* We may want to append extra arguments here.  This is used e.g. for
      calls to libgfortran_matmul_??, which need extra information.  */
-  if (!vec_safe_is_empty (append_args))
-    retargs->splice (append_args);
+  vec_safe_splice (retargs, append_args);
+
   arglist = retargs;
 
   /* Generate the actual call.  */
