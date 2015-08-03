@@ -1,3 +1,8 @@
+2015-08-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/64921
+	* gfortran.dg/class_allocate_20.f90: New.
+
 2015-08-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/csel_bfx_1.c: New test.
@@ -5,12 +10,12 @@
 
 2015-08-02  Martin Sebor  <msebor@redhat.com>
 
-        * g++.dg/Wframe-address-in-Wall.C: New test.
-        * g++.dg/Wframe-address.C: New test.
-        * g++.dg/Wno-frame-address.C: New test.
-        * gcc.dg/Wframe-address-in-Wall.c: New test.
-        * gcc.dg/Wframe-address.c: New test.
-        * gcc.dg/Wno-frame-address.c: New test.
+	* g++.dg/Wframe-address-in-Wall.C: New test.
+	* g++.dg/Wframe-address.C: New test.
+	* g++.dg/Wno-frame-address.C: New test.
+	* gcc.dg/Wframe-address-in-Wall.c: New test.
+	* gcc.dg/Wframe-address.c: New test.
+	* gcc.dg/Wno-frame-address.c: New test.
 
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
