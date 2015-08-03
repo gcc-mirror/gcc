@@ -1335,7 +1335,16 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
   else
     {
       if (really_expand)
-        expand_one_stack_var (origvar);
+        {
+          if (lookup_attribute ("naked",
+                                DECL_ATTRIBUTES (current_function_decl)))
+            error ("cannot allocate stack for variable %q+D, naked function.",
+                   var);
+
+          expand_one_stack_var (origvar);
+        }
+
+
       return tree_to_uhwi (DECL_SIZE_UNIT (var));
     }
   return 0;

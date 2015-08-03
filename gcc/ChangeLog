@@ -1,3 +1,15 @@
+2015-08-03  Alexander Basov <coohpt@gmail.com>
+
+	PR middle-end/64744
+	PR middle-end/48470
+	PR middle-end/43404
+	* cfgexpand.c (expand_one_var): Add check if stack is going to
+	be used in naked function.
+	* expr.c (expand_expr_addr_expr_1): Remove excess checking
+	whether expression should not reside in MEM.
+	* function.c (use_register_for_decl): Do not use registers for
+	non-register things (volatile, float, BLKMode) in naked functions.
+
 2015-08-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/67060

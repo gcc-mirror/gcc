@@ -2105,9 +2105,6 @@ aggregate_value_p (const_tree exp, const_tree fntype)
 bool
 use_register_for_decl (const_tree decl)
 {
-  if (!targetm.calls.allocate_stack_slots_for_args ())
-    return true;
-
   /* Honor volatile.  */
   if (TREE_SIDE_EFFECTS (decl))
     return false;
@@ -2134,6 +2131,9 @@ use_register_for_decl (const_tree decl)
      propagates values across these stores, and it probably shouldn't.  */
   if (flag_float_store && FLOAT_TYPE_P (TREE_TYPE (decl)))
     return false;
+
+  if (!targetm.calls.allocate_stack_slots_for_args ())
+    return true;
 
   /* If we're not interested in tracking debugging information for
      this decl, then we can certainly put it in a register.  */
