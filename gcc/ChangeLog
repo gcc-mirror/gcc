@@ -1,3 +1,13 @@
+2015-08-03  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* tree-ssa-uninit.c (find_uninit_use): Declare and pass to
+	is_use_properly_guarded the variable def_preds.  Free its
+	contents before returning.
+	(prune_uninit_phi_opnds_in_unrealizable_paths): Same.
+	(is_use_properly_guarded): Replace local variable def_preds with
+	a parameter.  Adjust accordingly.  Only update *def_preds if it's
+	the empty vector.
+
 2015-08-03  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (simplify::for_subst_vec): New member.
