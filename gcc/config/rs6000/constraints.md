@@ -56,11 +56,15 @@
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
   "Any VSX register if the -mvsx option was used or NO_REGS.")
 
+;; wb is not currently used
+
 ;; NOTE: For compatibility, "wc" is reserved to represent individual CR bits.
 ;; It is currently used for that purpose in LLVM.
 
 (define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
   "VSX vector register to hold vector double data or NO_REGS.")
+
+;; we is not currently used
 
 (define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
   "VSX vector register to hold vector float data or NO_REGS.")
@@ -92,6 +96,14 @@
 ;; direct move directly, and movsf can't to move between the register sets.
 ;; There is a mode_attr that resolves to wm for SDmode and wn for SFmode
 (define_register_constraint "wn" "NO_REGS" "No register (NO_REGS).")
+
+;; wo is not currently used
+
+(define_register_constraint "wp" "rs6000_constraints[RS6000_CONSTRAINT_wp]"
+  "VSX register to use for IEEE 128-bit fp TFmode, or NO_REGS.")
+
+(define_register_constraint "wq" "rs6000_constraints[RS6000_CONSTRAINT_wq]"
+  "VSX register to use for IEEE 128-bit fp KFmode, or NO_REGS.")
 
 (define_register_constraint "wr" "rs6000_constraints[RS6000_CONSTRAINT_wr]"
   "General purpose register if 64-bit instructions are enabled or NO_REGS.")

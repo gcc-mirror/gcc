@@ -167,10 +167,27 @@
 (define_mode_iterator V [V4SI V8HI V16QI V4SF])
 ;; Vec modes for move/logical/permute ops, include vector types for move not
 ;; otherwise handled by altivec (v2df, v2di, ti)
-(define_mode_iterator VM [V4SI V8HI V16QI V4SF V2DF V2DI V1TI TI])
+(define_mode_iterator VM [V4SI
+			  V8HI
+			  V16QI
+			  V4SF
+			  V2DF
+			  V2DI
+			  V1TI
+			  TI
+			  (KF "FLOAT128_VECTOR_P (KFmode)")
+			  (TF "FLOAT128_VECTOR_P (TFmode)")])
 
 ;; Like VM, except don't do TImode
-(define_mode_iterator VM2 [V4SI V8HI V16QI V4SF V2DF V2DI V1TI])
+(define_mode_iterator VM2 [V4SI
+			   V8HI
+			   V16QI
+			   V4SF
+			   V2DF
+			   V2DI
+			   V1TI
+			   (KF "FLOAT128_VECTOR_P (KFmode)")
+			   (TF "FLOAT128_VECTOR_P (TFmode)")])
 
 (define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
 (define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
