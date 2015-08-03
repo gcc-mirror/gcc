@@ -1,5 +1,11 @@
 2015-08-03  Richard Biener  <rguenther@suse.de>
 
+	* gimple-match-head.c (gimple_simplify): For [VEC_]COND_EXPRs
+	on the rhs of assignments first simplify the embedded
+	GENERIC condition.
+
+2015-08-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66917
 	* tree-vectorizer.h (struct dataref_aux): Add base_element_aligned
 	field.
