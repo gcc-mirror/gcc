@@ -660,10 +660,43 @@ gimple_simplify (gimple stmt,
 	    }
 	  case GIMPLE_TERNARY_RHS:
 	    {
+	      bool valueized = false;
 	      tree rhs1 = gimple_assign_rhs1 (stmt);
+	      /* If this is a [VEC_]COND_EXPR first try to simplify an
+		 embedded GENERIC condition.  */
+	      if (code == COND_EXPR
+		  || code == VEC_COND_EXPR)
+		{
+		  if (COMPARISON_CLASS_P (rhs1))
+		    {
+		      tree lhs = TREE_OPERAND (rhs1, 0);
+		      tree rhs = TREE_OPERAND (rhs1, 1);
+		      lhs = do_valueize (lhs, top_valueize, valueized);
+		      rhs = do_valueize (rhs, top_valueize, valueized);
+		      code_helper rcode2 = TREE_CODE (rhs1);
+		      tree ops2[3] = {};
+		      ops2[0] = lhs;
+		      ops2[1] = rhs;
+		      if ((gimple_resimplify2 (seq, &rcode2, TREE_TYPE (rhs1),
+					       ops2, valueize)
+			   || valueized)
+			  && rcode2.is_tree_code ())
+			{
+			  valueized = true;
+			  if (TREE_CODE_CLASS ((enum tree_code)rcode2)
+			      == tcc_comparison)
+			    rhs1 = build2 (rcode2, TREE_TYPE (rhs1),
+					   ops2[0], ops2[1]);
+			  else if (rcode2 == SSA_NAME
+				   || rcode2 == INTEGER_CST)
+			    rhs1 = ops2[0];
+			  else
+			    valueized = false;
+			}
+		    }
+		}
 	      tree rhs2 = gimple_assign_rhs2 (stmt);
 	      tree rhs3 = gimple_assign_rhs3 (stmt);
-	      bool valueized = false;
 	      rhs1 = do_valueize (rhs1, top_valueize, valueized);
 	      rhs2 = do_valueize (rhs2, top_valueize, valueized);
 	      rhs3 = do_valueize (rhs3, top_valueize, valueized);
