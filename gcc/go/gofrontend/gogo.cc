@@ -7151,7 +7151,7 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
         // still be returned by some function.  Simply calling the
         // type_descriptor method is enough to create the type
         // descriptor, even though we don't do anything with it.
-        if (this->package_ == NULL)
+        if (this->package_ == NULL && !saw_errors())
           {
             named_type->
                 type_descriptor_pointer(gogo, Linemap::predeclared_location());
