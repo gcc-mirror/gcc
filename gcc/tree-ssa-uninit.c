@@ -980,6 +980,7 @@ is_use_properly_guarded (gimple use_stmt,
                          basic_block use_bb,
                          gphi *phi,
                          unsigned uninit_opnds,
+			 pred_chain_union *def_preds,
                          hash_set<gphi *> *visited_phis);
 
 /* Returns true if all uninitialized opnds are pruned. Returns false
@@ -1098,14 +1099,19 @@ prune_uninit_phi_opnds_in_unrealizable_paths (gphi *phi,
               edge opnd_edge;
               unsigned uninit_opnds2
                   = compute_uninit_opnds_pos (opnd_def_phi);
+              pred_chain_union def_preds = vNULL;
+              bool ok;
               gcc_assert (!MASK_EMPTY (uninit_opnds2));
               opnd_edge = gimple_phi_arg_edge (phi, i);
-              if (!is_use_properly_guarded (phi,
-                                            opnd_edge->src,
-                                            opnd_def_phi,
-                                            uninit_opnds2,
-                                            visited_phis))
-                  return false;
+              ok = is_use_properly_guarded (phi,
+					    opnd_edge->src,
+					    opnd_def_phi,
+					    uninit_opnds2,
+					    &def_preds,
+					    visited_phis);
+	      destroy_predicate_vecs (def_preds);
+	      if (!ok)
+		return false;
             }
           else
             return false;
@@ -2158,23 +2164,31 @@ normalize_preds (pred_chain_union preds, gimple use_or_def, bool is_use)
    true if it can be determined that the use of PHI's def in
    USE_STMT is guarded with a predicate set not overlapping with
    predicate sets of all runtime paths that do not have a definition.
+
    Returns false if it is not or it can not be determined. USE_BB is
    the bb of the use (for phi operand use, the bb is not the bb of
-   the phi stmt, but the src bb of the operand edge). UNINIT_OPNDS
-   is a bit vector. If an operand of PHI is uninitialized, the
-   corresponding bit in the vector is 1.  VISIED_PHIS is a pointer
-   set of phis being visted.  */
+   the phi stmt, but the src bb of the operand edge).
+
+   UNINIT_OPNDS is a bit vector. If an operand of PHI is uninitialized, the
+   corresponding bit in the vector is 1.  VISITED_PHIS is a pointer
+   set of phis being visited.
+
+   *DEF_PREDS contains the (memoized) defining predicate chains of PHI.
+   If *DEF_PREDS is the empty vector, the defining predicate chains of
+   PHI will be computed and stored into *DEF_PREDS as needed.
+
+   VISITED_PHIS is a pointer set of phis being visited.  */
 
 static bool
 is_use_properly_guarded (gimple use_stmt,
                          basic_block use_bb,
                          gphi *phi,
                          unsigned uninit_opnds,
+			 pred_chain_union *def_preds,
                          hash_set<gphi *> *visited_phis)
 {
   basic_block phi_bb;
   pred_chain_union preds = vNULL;
-  pred_chain_union def_preds = vNULL;
   bool has_valid_preds = false;
   bool is_properly_guarded = false;
 
@@ -2205,25 +2219,26 @@ is_use_properly_guarded (gimple use_stmt,
       return true;
     }
 
-  has_valid_preds = find_def_preds (&def_preds, phi);
-
-  if (!has_valid_preds)
+  if (def_preds->is_empty ())
     {
-      destroy_predicate_vecs (preds);
-      destroy_predicate_vecs (def_preds);
-      return false;
+      has_valid_preds = find_def_preds (def_preds, phi);
+
+      if (!has_valid_preds)
+	{
+	  destroy_predicate_vecs (preds);
+	  return false;
+	}
+
+      simplify_preds (def_preds, phi, false);
+      *def_preds = normalize_preds (*def_preds, phi, false);
     }
 
   simplify_preds (&preds, use_stmt, true);
   preds = normalize_preds (preds, use_stmt, true);
 
-  simplify_preds (&def_preds, phi, false);
-  def_preds = normalize_preds (def_preds, phi, false);
-
-  is_properly_guarded = is_superset_of (def_preds, preds);
+  is_properly_guarded = is_superset_of (*def_preds, preds);
 
   destroy_predicate_vecs (preds);
-  destroy_predicate_vecs (def_preds);
   return is_properly_guarded;
 }
 
@@ -2245,6 +2260,8 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
   use_operand_p use_p;
   gimple use_stmt;
   imm_use_iterator iter;
+  pred_chain_union def_preds = vNULL;
+  gimple ret = NULL;
 
   phi_result = gimple_phi_result (phi);
 
@@ -2264,7 +2281,7 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
 
       hash_set<gphi *> visited_phis;
       if (is_use_properly_guarded (use_stmt, use_bb, phi, uninit_opnds,
-                                   &visited_phis))
+				   &def_preds, &visited_phis))
 	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2274,7 +2291,10 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
         }
       /* Found one real use, return.  */
       if (gimple_code (use_stmt) != GIMPLE_PHI)
-        return use_stmt;
+	{
+	  ret = use_stmt;
+	  break;
+	}
 
       /* Found a phi use that is not guarded,
          add the phi to the worklist.  */
@@ -2291,7 +2311,8 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
         }
     }
 
-  return NULL;
+  destroy_predicate_vecs (def_preds);
+  return ret;
 }
 
 /* Look for inputs to PHI that are SSA_NAMEs that have empty definitions
