@@ -180,6 +180,8 @@ NOCOMMON_FLAG = @nocommon_flag@
 
 NOEXCEPTION_FLAGS = @noexception_flags@
 
+ALIASING_FLAGS = @aliasing_flags@
+
 # This is set by --disable-maintainer-mode (default) to "#"
 # FIXME: 'MAINT' will always be set to an empty string, no matter if
 # --disable-maintainer-mode is used or not.  This is because the
@@ -986,7 +988,8 @@ ALL_CFLAGS = $(T_CFLAGS) $(CFLAGS-$@) \
 
 # The C++ version.
 ALL_CXXFLAGS = $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS) $(INTERNAL_CFLAGS) \
-  $(COVERAGE_FLAGS) $(NOEXCEPTION_FLAGS) $(WARN_CXXFLAGS) @DEFS@
+  $(COVERAGE_FLAGS) $(ALIASING_FLAGS) $(NOEXCEPTION_FLAGS) \
+  $(WARN_CXXFLAGS) @DEFS@
 
 # Likewise.  Put INCLUDES at the beginning: this way, if some autoconf macro
 # puts -I options in CPPFLAGS, our include files in the srcdir will always
