@@ -1,5 +1,21 @@
 2015-08-03  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (simplify::for_subst_vec): New member.
+	(binary_ok): New helper for for lowering.
+	(lower_for): Delay substituting operators into result expressions
+	if we can merge the results eventually again.
+	(capture_info::walk_result): Adjust for user_id appearing as
+	result expression operator.
+	(expr::gen_transform): Likewise.
+	(dt_simplify::gen_1): Likewise.
+	(dt_simplify::gen): Pass not substituted operators to tail
+	functions or initialize local variable with it.
+	(decision_tree::gen): Adjust function signature.
+	* match.pd: Fix tests against global code and add default
+	cases to switch stmts.
+
+2015-08-03  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (dt_simplify::gen): Create captures array
 	with an initializer.
 
