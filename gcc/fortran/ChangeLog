@@ -1,3 +1,8 @@
+2015-08-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66942
+	* trans-expr.c (gfc_conv_procedure_call): Avoid NULL pointer reference
+
 2015-07-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/64986
