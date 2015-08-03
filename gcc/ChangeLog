@@ -1,3 +1,18 @@
+2015-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66917
+	* tree-vectorizer.h (struct dataref_aux): Add base_element_aligned
+	field.
+	(DR_VECT_AUX): New macro.
+	(set_dr_misalignment): Adjust.
+	(dr_misalignment): Likewise.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Compute whether the base is at least element aligned.
+	* tree-vect-stmts.c (ensure_base_align): Adjust.
+	(vectorizable_store): If the base is not element aligned
+	preserve alignment of the original access if misalignment is unknown.
+	(vectorizable_load): Likewise.
+
 2015-08-02  Martin Sebor  <msebor@redhat.com>
 
 	* c-family/c.opt (-Wframe-address): New warning option.
