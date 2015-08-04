@@ -221,7 +221,7 @@ get_fpu_trap_exceptions (void)
 
   __asm__ __volatile__ ("fstcw\t%0" : "=m" (cw));
   mask = cw;
-  
+
   if (has_sse())
     {
       unsigned int cw_sse;
