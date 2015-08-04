@@ -1,5 +1,29 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config.gcc (aarch64*-*-*): Specify c_target_objs and cxx_target_objs.
+	* config/aarch64/aarch64.h (REGISTER_TARGET_PRAGMAS): Define.
+	(TARGET_CPU_CPP_BUILTINS): Redefine to call aarch64_cpu_cpp_builtins.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal): Remove
+	static keyword.
+	(aarch64_reset_previous_fndecl): New function.
+	(aarch64_handle_attr_isa_flags): Handle "+nothing" in the beginning of
+	the string.
+	* config/aarch64/aarch64-c.c: New file.
+	* config/aarch64/arm_acle.h: Add pragma +crc+nofp at the top.
+	Push and pop options at beginning and end.  Remove ifdef
+	__ARM_FEATURE_CRC32.
+	* config/aarch64/arm_neon.h: Remove #ifdef check on __ARM_NEON.
+	Add pragma +nothing+simd and +nothing+crypto where appropriate.
+	* config/aarch64/t-aarch64 (aarch64-c.o): New rule.
+	* config/aarch64/aarch64-protos.h (aarch64_cpu_cpp_builtins):
+	Define prototype.
+	(aarch64_register_pragmas): Likewise.
+	(aarch64_reset_previous_fndecl): Likewise.
+	(aarch64_process_target_attr): Likewise.
+	(aarch64_override_options_internal): Likewise.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_tribools_ok_for_inlining_p):
 	New function.
 	(aarch64_can_inline_p): Likewise.

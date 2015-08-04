@@ -27,9 +27,8 @@
 #ifndef _AARCH64_NEON_H_
 #define _AARCH64_NEON_H_
 
-#ifndef __ARM_NEON
-#error You must enable AdvancedSIMD instructions to use arm_neon.h
-#else
+#pragma GCC push_options
+#pragma GCC target ("+nothing+simd")
 
 #include <stdint.h>
 
@@ -11414,8 +11413,8 @@ vbslq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
   return __builtin_aarch64_simd_bslv2di_uuuu (__a, __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
-
+#pragma GCC push_options
+#pragma GCC target ("+nothing+crypto")
 /* vaes  */
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
@@ -11441,8 +11440,7 @@ vaesimcq_u8 (uint8x16_t data)
 {
   return __builtin_aarch64_crypto_aesimcv16qi_uu (data);
 }
-
-#endif
+#pragma GCC pop_options
 
 /* vcage  */
 
@@ -21067,7 +21065,8 @@ vrsrad_n_u64 (uint64_t __a, uint64_t __b, const int __c)
   return __builtin_aarch64_ursra_ndi_uuus (__a, __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("+nothing+crypto")
 
 /* vsha1  */
 
@@ -21144,7 +21143,7 @@ vmull_high_p64 (poly64x2_t a, poly64x2_t b)
   return __builtin_aarch64_crypto_pmullv2di_ppp (a, b);
 }
 
-#endif
+#pragma GCC pop_options
 
 /* vshl */
 
@@ -24912,6 +24911,6 @@ __INTERLEAVE_LIST (zip)
 #undef __aarch64_vdupq_laneq_u32
 #undef __aarch64_vdupq_laneq_u64
 
-#endif
+#pragma GCC pop_options
 
 #endif

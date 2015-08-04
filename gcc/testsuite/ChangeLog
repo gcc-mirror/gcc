@@ -1,5 +1,9 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/arm_neon-nosimd-error.c: Delete.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/cpu-diagnostics-3.c: Update expected error
 	message.
 
