@@ -1,6 +1,7 @@
 /* { dg-do compile { target powerpc64*-*-* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-maltivec -O2" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-maltivec -O2 -mvsx -mpower8-vector" } */
 /* { dg-final { scan-assembler "vcmpgtsd" } } */
 /* { dg-final { scan-assembler-not "xxlnor" } } */
 

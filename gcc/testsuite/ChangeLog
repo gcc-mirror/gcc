@@ -1,3 +1,8 @@
+2015-08-04  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.target/powerpc/vec-cmp-sel.c: Avoid test failure on machines
+	without VSX an Power8 vector support.
+
 2015-08-04  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-ccp-38.c: New testcase.
