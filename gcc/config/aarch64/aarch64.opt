@@ -77,7 +77,7 @@ Target Report RejectNegative Mask(STRICT_ALIGN)
 Don't assume that unaligned accesses are handled by the system
 
 momit-leaf-frame-pointer
-Target Report Save Var(flag_omit_leaf_frame_pointer) Init(1)
+Target Report Save Var(flag_omit_leaf_frame_pointer) Init(2)
 Omit the frame pointer in leaf functions
 
 mtls-dialect=
