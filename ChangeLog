@@ -15,7 +15,7 @@
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
-2012-12-29  Ben Elliston  <bje@gnu.org>
+2015-07-28  Ben Elliston  <bje@gnu.org>  
 
 	* config.sub, config.guess: Import from upstream.
 
