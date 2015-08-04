@@ -1,5 +1,12 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_tribools_ok_for_inlining_p):
+	New function.
+	(aarch64_can_inline_p): Likewise.
+	(TARGET_CAN_INLINE_P): Define.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
 	Remove static.  Handle OPT_mgeneral_regs_only,
 	OPT_mfix_cortex_a53_835769, OPT_mstrict_align,
