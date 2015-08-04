@@ -1676,7 +1676,17 @@ endif # !LIBGO_IS_LINUX
 # Define socket sizes and types.
 if LIBGO_IS_LINUX
 syscall_socket_file = go/syscall/socket_linux.go epoll.go
+if LIBGO_IS_PPC64LE
+syscall_socket_type_file = go/syscall/socket_linux_ppc64x_type.go
 else
+if LIBGO_IS_PPC64
+syscall_socket_type_file = go/syscall/socket_linux_ppc64x_type.go
+else
+syscall_socket_type_file = go/syscall/socket_linux_type.go
+endif
+endif
+else
+syscall_socket_type_file =
 if LIBGO_IS_SOLARIS
 syscall_socket_file = go/syscall/socket_solaris.go
 else
@@ -1762,6 +1772,7 @@ go_base_syscall_files = \
 	$(syscall_size_file) \
 	$(syscall_socket_file) \
 	$(syscall_socket_os_file) \
+	$(syscall_socket_type_file) \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
 	$(syscall_lsf_file) \
