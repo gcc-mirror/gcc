@@ -1,5 +1,14 @@
 2015-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/66197
+	* g++.dg/cpp1z/abbrev2.C: New.
+
+2015-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1z/static_assert-nomsg.C: Fix DejaGnu directive.
+
+2015-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/66392
 	* g++.dg/init/explicit4.C: New.
 
