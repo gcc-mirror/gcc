@@ -48,17 +48,6 @@ Enum(cmodel) String(small) Value(AARCH64_CMODEL_SMALL)
 EnumValue
 Enum(cmodel) String(large) Value(AARCH64_CMODEL_LARGE)
 
-; The cpu/arch option names to use in cpu/arch selection.
-
-Variable
-const char *aarch64_arch_string
-
-Variable
-const char *aarch64_cpu_string
-
-Variable
-const char *aarch64_tune_string
-
 mbig-endian
 Target Report RejectNegative Mask(BIG_END)
 Assume target CPU is configured as big endian

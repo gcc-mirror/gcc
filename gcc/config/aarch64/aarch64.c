@@ -7108,12 +7108,26 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   return retval;
 }
 
-static void initialize_aarch64_code_model (void);
+static void initialize_aarch64_code_model (struct gcc_options *);
 
-/* Parse the architecture extension string.  */
+/* Enum describing the various ways that the
+   aarch64_parse_{arch,tune,cpu,extension} functions can fail.
+   This way their callers can choose what kind of error to give.  */
 
-static void
-aarch64_parse_extension (char *str)
+enum aarch64_parse_opt_result
+{
+  AARCH64_PARSE_OK,			/* Parsing was successful.  */
+  AARCH64_PARSE_MISSING_ARG,		/* Missing argument.  */
+  AARCH64_PARSE_INVALID_FEATURE,	/* Invalid feature modifier.  */
+  AARCH64_PARSE_INVALID_ARG		/* Invalid arch, tune, cpu arg.  */
+};
+
+/* Parse the architecture extension string STR and update ISA_FLAGS
+   with the architecture features turned on or off.  Return a
+   aarch64_parse_opt_result describing the result.  */
+
+static enum aarch64_parse_opt_result
+aarch64_parse_extension (char *str, unsigned long *isa_flags)
 {
   /* The extension string is parsed left to right.  */
   const struct aarch64_option_extension *opt = NULL;
@@ -7144,11 +7158,8 @@ aarch64_parse_extension (char *str)
 	adding_ext = 1;
 
       if (len == 0)
-	{
-	  error ("missing feature modifier after %qs", adding_ext ? "+"
-	                                                          : "+no");
-	  return;
-	}
+	return AARCH64_PARSE_MISSING_ARG;
+
 
       /* Scan over the extensions table trying to find an exact match.  */
       for (opt = all_extensions; opt->name != NULL; opt++)
@@ -7157,9 +7168,9 @@ aarch64_parse_extension (char *str)
 	    {
 	      /* Add or remove the extension.  */
 	      if (adding_ext)
-		aarch64_isa_flags |= opt->flags_on;
+		*isa_flags |= opt->flags_on;
 	      else
-		aarch64_isa_flags &= ~(opt->flags_off);
+		*isa_flags &= ~(opt->flags_off);
 	      break;
 	    }
 	}
@@ -7167,27 +7178,30 @@ aarch64_parse_extension (char *str)
       if (opt->name == NULL)
 	{
 	  /* Extension not found in list.  */
-	  error ("unknown feature modifier %qs", str);
-	  return;
+	  return AARCH64_PARSE_INVALID_FEATURE;
 	}
 
       str = ext;
     };
 
-  return;
+  return AARCH64_PARSE_OK;
 }
 
-/* Parse the ARCH string.  */
+/* Parse the TO_PARSE string and put the architecture struct that it
+   selects into RES and the architectural features into ISA_FLAGS.
+   Return an aarch64_parse_opt_result describing the parse result.
+   If there is an error parsing, RES and ISA_FLAGS are left unchanged.  */
 
-static void
-aarch64_parse_arch (void)
+static enum aarch64_parse_opt_result
+aarch64_parse_arch (const char *to_parse, const struct processor **res,
+		    unsigned long *isa_flags)
 {
   char *ext;
   const struct processor *arch;
-  char *str = (char *) alloca (strlen (aarch64_arch_string) + 1);
+  char *str = (char *) alloca (strlen (to_parse) + 1);
   size_t len;
 
-  strcpy (str, aarch64_arch_string);
+  strcpy (str, to_parse);
 
   ext = strchr (str, '+');
 
@@ -7197,55 +7211,52 @@ aarch64_parse_arch (void)
     len = strlen (str);
 
   if (len == 0)
-    {
-      error ("missing arch name in -march=%qs", str);
-      return;
-    }
+    return AARCH64_PARSE_MISSING_ARG;
 
-  /* Loop through the list of supported ARCHs to find a match.  */
+
+  /* Loop through the list of supported ARCHes to find a match.  */
   for (arch = all_architectures; arch->name != NULL; arch++)
     {
       if (strlen (arch->name) == len && strncmp (arch->name, str, len) == 0)
 	{
-	  selected_arch = arch;
-	  aarch64_isa_flags = selected_arch->flags;
-
-	  if (!selected_cpu)
-	    selected_cpu = &all_cores[selected_arch->ident];
+	  unsigned long isa_temp = arch->flags;
 
 	  if (ext != NULL)
 	    {
-	      /* ARCH string contains at least one extension.  */
-	      aarch64_parse_extension (ext);
-	    }
+	      /* TO_PARSE string contains at least one extension.  */
+	      enum aarch64_parse_opt_result ext_res
+		= aarch64_parse_extension (ext, &isa_temp);
 
-	  if (selected_arch->arch != selected_cpu->arch)
-	    {
-	      warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
-		       all_architectures[selected_cpu->arch].name,
-		       selected_arch->name);
+	      if (ext_res != AARCH64_PARSE_OK)
+		return ext_res;
 	    }
-
-	  return;
+	  /* Extension parsing was successful.  Confirm the result
+	     arch and ISA flags.  */
+	  *res = arch;
+	  *isa_flags = isa_temp;
+	  return AARCH64_PARSE_OK;
 	}
     }
 
   /* ARCH name not found in list.  */
-  error ("unknown value %qs for -march", str);
-  return;
+  return AARCH64_PARSE_INVALID_ARG;
 }
 
-/* Parse the CPU string.  */
+/* Parse the TO_PARSE string and put the result tuning in RES and the
+   architecture flags in ISA_FLAGS.  Return an aarch64_parse_opt_result
+   describing the parse result.  If there is an error parsing, RES and
+   ISA_FLAGS are left unchanged.  */
 
-static void
-aarch64_parse_cpu (void)
+static enum aarch64_parse_opt_result
+aarch64_parse_cpu (const char *to_parse, const struct processor **res,
+		   unsigned long *isa_flags)
 {
   char *ext;
   const struct processor *cpu;
-  char *str = (char *) alloca (strlen (aarch64_cpu_string) + 1);
+  char *str = (char *) alloca (strlen (to_parse) + 1);
   size_t len;
 
-  strcpy (str, aarch64_cpu_string);
+  strcpy (str, to_parse);
 
   ext = strchr (str, '+');
 
@@ -7255,56 +7266,62 @@ aarch64_parse_cpu (void)
     len = strlen (str);
 
   if (len == 0)
-    {
-      error ("missing cpu name in -mcpu=%qs", str);
-      return;
-    }
+    return AARCH64_PARSE_MISSING_ARG;
+
 
   /* Loop through the list of supported CPUs to find a match.  */
   for (cpu = all_cores; cpu->name != NULL; cpu++)
     {
       if (strlen (cpu->name) == len && strncmp (cpu->name, str, len) == 0)
 	{
-	  selected_cpu = cpu;
-	  aarch64_isa_flags = selected_cpu->flags;
+	  unsigned long isa_temp = cpu->flags;
+
 
 	  if (ext != NULL)
 	    {
-	      /* CPU string contains at least one extension.  */
-	      aarch64_parse_extension (ext);
-	    }
+	      /* TO_PARSE string contains at least one extension.  */
+	      enum aarch64_parse_opt_result ext_res
+		= aarch64_parse_extension (ext, &isa_temp);
 
-	  return;
+	      if (ext_res != AARCH64_PARSE_OK)
+		return ext_res;
+	    }
+	  /* Extension parsing was successfull.  Confirm the result
+	     cpu and ISA flags.  */
+	  *res = cpu;
+	  *isa_flags = isa_temp;
+	  return AARCH64_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  error ("unknown value %qs for -mcpu", str);
-  return;
+  return AARCH64_PARSE_INVALID_ARG;
 }
 
-/* Parse the TUNE string.  */
+/* Parse the TO_PARSE string and put the cpu it selects into RES.
+   Return an aarch64_parse_opt_result describing the parse result.
+   If the parsing fails the RES does not change.  */
 
-static void
-aarch64_parse_tune (void)
+static enum aarch64_parse_opt_result
+aarch64_parse_tune (const char *to_parse, const struct processor **res)
 {
   const struct processor *cpu;
-  char *str = (char *) alloca (strlen (aarch64_tune_string) + 1);
-  strcpy (str, aarch64_tune_string);
+  char *str = (char *) alloca (strlen (to_parse) + 1);
+
+  strcpy (str, to_parse);
 
   /* Loop through the list of supported CPUs to find a match.  */
   for (cpu = all_cores; cpu->name != NULL; cpu++)
     {
       if (strcmp (cpu->name, str) == 0)
 	{
-	  selected_tune = cpu;
-	  return;
+	  *res = cpu;
+	  return AARCH64_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  error ("unknown value %qs for -mtune", str);
-  return;
+  return AARCH64_PARSE_INVALID_ARG;
 }
 
 /* Parse TOKEN, which has length LENGTH to see if it is an option
@@ -7480,32 +7497,238 @@ aarch64_parse_override_string (const char* input_string,
   free (string_root);
 }
 
-/* Implement TARGET_OPTION_OVERRIDE.  */
+
+static void
+aarch64_override_options_after_change_1 (struct gcc_options *opts)
+{
+  if (opts->x_flag_omit_frame_pointer)
+    opts->x_flag_omit_leaf_frame_pointer = false;
+  else if (opts->x_flag_omit_leaf_frame_pointer)
+    opts->x_flag_omit_frame_pointer = true;
+
+  /* If not opzimizing for size, set the default
+     alignment to what the target wants.  */
+  if (!opts->x_optimize_size)
+    {
+      if (opts->x_align_loops <= 0)
+	opts->x_align_loops = aarch64_tune_params.loop_align;
+      if (opts->x_align_jumps <= 0)
+	opts->x_align_jumps = aarch64_tune_params.jump_align;
+      if (opts->x_align_functions <= 0)
+	opts->x_align_functions = aarch64_tune_params.function_align;
+    }
+}
+
+/* 'Unpack' up the internal tuning structs and update the options
+    in OPTS.  The caller must have set up selected_tune and selected_arch
+    as all the other target-specific codegen decisions are
+    derived from them.  */
+
+static void
+aarch64_override_options_internal (struct gcc_options *opts)
+{
+  aarch64_tune_flags = selected_tune->flags;
+  aarch64_tune = selected_tune->sched_core;
+  /* Make a copy of the tuning parameters attached to the core, which
+     we may later overwrite.  */
+  aarch64_tune_params = *(selected_tune->tune);
+  aarch64_architecture_version = selected_arch->architecture_version;
+
+  if (opts->x_aarch64_override_tune_string)
+    aarch64_parse_override_string (opts->x_aarch64_override_tune_string,
+				  &aarch64_tune_params);
+
+  /* This target defaults to strict volatile bitfields.  */
+  if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
+    opts->x_flag_strict_volatile_bitfields = 1;
+
+  if (opts->x_aarch64_fix_a53_err835769 == 2)
+    {
+#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+      opts->x_aarch64_fix_a53_err835769 = 1;
+#else
+      opts->x_aarch64_fix_a53_err835769 = 0;
+#endif
+    }
+
+  /* -mgeneral-regs-only sets a mask in target_flags, make sure that
+     aarch64_isa_flags does not contain the FP/SIMD/Crypto feature flags
+     in case some code tries reading aarch64_isa_flags directly to check if
+     FP is available.  Reuse the aarch64_parse_extension machinery since it
+     knows how to disable any other flags that fp implies.  */
+  if (TARGET_GENERAL_REGS_ONLY_P (opts->x_target_flags))
+    {
+      /* aarch64_parse_extension takes char* rather than const char* because
+	 it is usually called from within other parsing functions.  */
+      char tmp_str[] = "+nofp";
+      aarch64_parse_extension (tmp_str, &aarch64_isa_flags);
+    }
+
+  initialize_aarch64_code_model (opts);
+
+  aarch64_override_options_after_change_1 (opts);
+}
+
+/* Validate a command-line -mcpu option.  Parse the cpu and extensions (if any)
+   specified in STR and throw errors if appropriate.  Put the results if
+   they are valid in RES and ISA_FLAGS.  */
+
+static void
+aarch64_validate_mcpu (const char *str, const struct processor **res,
+		       unsigned long *isa_flags)
+{
+  enum aarch64_parse_opt_result parse_res
+    = aarch64_parse_cpu (str, res, isa_flags);
+
+  if (parse_res == AARCH64_PARSE_OK)
+    return;
+
+  switch (parse_res)
+    {
+      case AARCH64_PARSE_MISSING_ARG:
+	error ("missing cpu name in -mcpu=%qs", str);
+	break;
+      case AARCH64_PARSE_INVALID_ARG:
+	error ("unknown value %qs for -mcpu", str);
+	break;
+      case AARCH64_PARSE_INVALID_FEATURE:
+	error ("invalid feature modifier in -mcpu=%qs", str);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+}
+
+/* Validate a command-line -march option.  Parse the arch and extensions
+   (if any) specified in STR and throw errors if appropriate.  Put the
+   results, if they are valid, in RES and ISA_FLAGS.  */
+
+static void
+aarch64_validate_march (const char *str, const struct processor **res,
+		       unsigned long *isa_flags)
+{
+  enum aarch64_parse_opt_result parse_res
+    = aarch64_parse_arch (str, res, isa_flags);
+
+  if (parse_res == AARCH64_PARSE_OK)
+    return;
+
+  switch (parse_res)
+    {
+      case AARCH64_PARSE_MISSING_ARG:
+	error ("missing arch name in -march=%qs", str);
+	break;
+      case AARCH64_PARSE_INVALID_ARG:
+	error ("unknown value %qs for -march", str);
+	break;
+      case AARCH64_PARSE_INVALID_FEATURE:
+	error ("invalid feature modifier in -march=%qs", str);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+}
+
+/* Validate a command-line -mtune option.  Parse the cpu
+   specified in STR and throw errors if appropriate.  Put the
+   result, if it is valid, in RES.  */
+
+static void
+aarch64_validate_mtune (const char *str, const struct processor **res)
+{
+  enum aarch64_parse_opt_result parse_res
+    = aarch64_parse_tune (str, res);
+
+  if (parse_res == AARCH64_PARSE_OK)
+    return;
+
+  switch (parse_res)
+    {
+      case AARCH64_PARSE_MISSING_ARG:
+	error ("missing cpu name in -mtune=%qs", str);
+	break;
+      case AARCH64_PARSE_INVALID_ARG:
+	error ("unknown value %qs for -mtune", str);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+}
+
+/* Implement TARGET_OPTION_OVERRIDE.  This is called once in the beginning
+   and is used to parse the -m{cpu,tune,arch} strings and setup the initial
+   tuning structs.  In particular it must set selected_tune and
+   aarch64_isa_flags that define the available ISA features and tuning
+   decisions.  It must also set selected_arch as this will be used to
+   output the .arch asm tags for each function.  */
 
 static void
 aarch64_override_options (void)
 {
+  unsigned long cpu_isa = 0;
+  unsigned long arch_isa = 0;
+  aarch64_isa_flags = 0;
+
+  selected_cpu = NULL;
+  selected_arch = NULL;
+  selected_tune = NULL;
+
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
      If either of -march or -mtune is given, they override their
-     respective component of -mcpu.
-
-     So, first parse AARCH64_CPU_STRING, then the others, be careful
-     with -march as, if -mcpu is not present on the command line, march
-     must set a sensible default CPU.  */
+     respective component of -mcpu.  */
   if (aarch64_cpu_string)
-    {
-      aarch64_parse_cpu ();
-    }
+    aarch64_validate_mcpu (aarch64_cpu_string, &selected_cpu, &cpu_isa);
 
   if (aarch64_arch_string)
-    {
-      aarch64_parse_arch ();
-    }
+    aarch64_validate_march (aarch64_arch_string, &selected_arch, &arch_isa);
 
   if (aarch64_tune_string)
+    aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
+
+  /* If the user did not specify a processor, choose the default
+     one for them.  This will be the CPU set during configuration using
+     --with-cpu, otherwise it is "generic".  */
+  if (!selected_cpu)
     {
-      aarch64_parse_tune ();
+      if (selected_arch)
+	{
+	  selected_cpu = &all_cores[selected_arch->ident];
+	  aarch64_isa_flags = arch_isa;
+	}
+      else
+	{
+	  selected_cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> 6;
+	}
     }
+  /* If both -mcpu and -march are specified check that they are architecturally
+     compatible, warn if they're not and prefer the -march ISA flags.  */
+  else if (selected_arch)
+    {
+      if (selected_arch->arch != selected_cpu->arch)
+	{
+	  warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
+		       all_architectures[selected_cpu->arch].name,
+		       selected_arch->name);
+	}
+      aarch64_isa_flags = arch_isa;
+    }
+  else
+    {
+      /* -mcpu but no -march.  */
+      aarch64_isa_flags = cpu_isa;
+    }
+
+  /* Set the arch as well as we will need it when outputing
+     the .arch directive in assembly.  */
+  if (!selected_arch)
+    {
+      gcc_assert (selected_cpu);
+      selected_arch = &all_architectures[selected_cpu->arch];
+    }
+
+  if (!selected_tune)
+    selected_tune = selected_cpu;
 
 #ifndef HAVE_AS_MABI_OPTION
   /* The compiler may have been configured with 2.23.* binutils, which does
@@ -7514,51 +7737,17 @@ aarch64_override_options (void)
     error ("Assembler does not support -mabi=ilp32");
 #endif
 
-  initialize_aarch64_code_model ();
-
   aarch64_build_bitmask_table ();
 
-  /* This target defaults to strict volatile bitfields.  */
-  if (flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
-    flag_strict_volatile_bitfields = 1;
+  aarch64_override_options_internal (&global_options);
 
-  /* If the user did not specify a processor, choose the default
-     one for them.  This will be the CPU set during configuration using
-     --with-cpu, otherwise it is "generic".  */
-  if (!selected_cpu)
-    {
-      selected_cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
-      aarch64_isa_flags = TARGET_CPU_DEFAULT >> 6;
-    }
-
-  gcc_assert (selected_cpu);
-
-  if (!selected_tune)
-    selected_tune = selected_cpu;
-
-  aarch64_tune_flags = selected_tune->flags;
-  aarch64_tune = selected_tune->sched_core;
-  /* Make a copy of the tuning parameters attached to the core, which
-     we may later overwrite.  */
-  aarch64_tune_params = *(selected_tune->tune);
-  aarch64_architecture_version = selected_cpu->architecture_version;
-
-  if (aarch64_override_tune_string)
-    aarch64_parse_override_string (aarch64_override_tune_string,
-				   &aarch64_tune_params);
-
-  if (aarch64_fix_a53_err835769 == 2)
-    {
-#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
-      aarch64_fix_a53_err835769 = 1;
-#else
-      aarch64_fix_a53_err835769 = 0;
-#endif
-    }
+  /* Save these options as the default ones in case we push and pop them later
+     while processing functions with potential target attributes.  */
+  target_option_default_node = target_option_current_node
+      = build_target_option_node (&global_options);
 
   aarch64_register_fma_steering ();
 
-  aarch64_override_options_after_change ();
 }
 
 /* Implement targetm.override_options_after_change.  */
@@ -7566,22 +7755,7 @@ aarch64_override_options (void)
 static void
 aarch64_override_options_after_change (void)
 {
-  if (flag_omit_frame_pointer)
-    flag_omit_leaf_frame_pointer = false;
-  else if (flag_omit_leaf_frame_pointer)
-    flag_omit_frame_pointer = true;
-
-  /* If not optimizing for size, set the default
-     alignment to what the target wants */
-  if (!optimize_size)
-    {
-      if (align_loops <= 0)
-	align_loops = aarch64_tune_params.loop_align;
-      if (align_jumps <= 0)
-	align_jumps = aarch64_tune_params.jump_align;
-      if (align_functions <= 0)
-	align_functions = aarch64_tune_params.function_align;
-    }
+  aarch64_override_options_after_change_1 (&global_options);
 }
 
 static struct machine_function *
@@ -7600,11 +7774,11 @@ aarch64_init_expanders (void)
 
 /* A checking mechanism for the implementation of the various code models.  */
 static void
-initialize_aarch64_code_model (void)
+initialize_aarch64_code_model (struct gcc_options *opts)
 {
-   if (flag_pic)
+   if (opts->x_flag_pic)
      {
-       switch (aarch64_cmodel_var)
+       switch (opts->x_aarch64_cmodel_var)
 	 {
 	 case AARCH64_CMODEL_TINY:
 	   aarch64_cmodel = AARCH64_CMODEL_TINY_PIC;
@@ -7620,13 +7794,13 @@ initialize_aarch64_code_model (void)
 	   break;
 	 case AARCH64_CMODEL_LARGE:
 	   sorry ("code model %qs with -f%s", "large",
-		  flag_pic > 1 ? "PIC" : "pic");
+		  opts->x_flag_pic > 1 ? "PIC" : "pic");
 	 default:
 	   gcc_unreachable ();
 	 }
      }
    else
-     aarch64_cmodel = aarch64_cmodel_var;
+     aarch64_cmodel = opts->x_aarch64_cmodel_var;
 }
 
 /* Return true if SYMBOL_REF X binds locally.  */

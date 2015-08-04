@@ -1,3 +1,8 @@
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/cpu-diagnostics-3.c: Update expected error
+	message.
+
 2015-08-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/64022
