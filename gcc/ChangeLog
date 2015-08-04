@@ -1,5 +1,10 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.opt (momit-leaf-frame-pointer): Initialize
+	flag_omit_leaf_frame_pointer to 2.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.h (TARGET_FIX_ERR_A53_835769_DEFAULT): Always
 	define to 0 or 1.
 	(TARGET_FIX_ERR_A53_835769): New macro.
