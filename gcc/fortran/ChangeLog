@@ -1,3 +1,9 @@
+2015-08-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/64022
+	* simplify.c (gfc_simplify_ieee_selected_real_kind): Extend IEEE
+	support to all real kinds.
+
 2015-08-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66942
