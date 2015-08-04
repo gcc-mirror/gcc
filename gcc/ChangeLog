@@ -1,3 +1,8 @@
+2015-08-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/neon.md (neon_vget_lanev2di): Handle big-endian
+	targets.
+
 2015-08-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.h (struct nvptx_pseudo_info): Delete.
