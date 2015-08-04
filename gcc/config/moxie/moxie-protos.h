@@ -20,6 +20,4 @@ along with GCC; see the file COPYING3.  If not see
 extern void  moxie_expand_prologue (void);
 extern void  moxie_expand_epilogue (void);
 extern int   moxie_initial_elimination_offset (int, int);
-extern void  moxie_print_operand (FILE *, rtx, int);
-extern void  moxie_print_operand_address (FILE *, rtx);
 extern bool  moxie_offset_address_p (rtx);

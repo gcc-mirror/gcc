@@ -128,7 +128,7 @@ moxie_operand_lossage (const char *msgid, rtx op)
 
 /* The PRINT_OPERAND_ADDRESS worker.  */
 
-void
+static void
 moxie_print_operand_address (FILE *file, rtx x)
 {
   switch (GET_CODE (x))
@@ -175,7 +175,7 @@ moxie_print_operand_address (FILE *file, rtx x)
 
 /* The PRINT_OPERAND worker.  */
 
-void
+static void
 moxie_print_operand (FILE *file, rtx x, int code)
 {
   rtx operand = x;
@@ -678,6 +678,11 @@ moxie_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE moxie_option_override
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND moxie_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS moxie_print_operand_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
