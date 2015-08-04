@@ -1,3 +1,8 @@
+2015-08-04  Pawel Kupidura  <pawel.kupidura@arm.com>
+
+	* config/aarch64/aarch64.c: Change inner loop statement cost
+	to be consistent with other targets.
+
 2015-08-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/neon.md (neon_vget_lanev2di): Handle big-endian
