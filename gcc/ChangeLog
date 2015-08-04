@@ -1,3 +1,10 @@
+2015-08-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/67043
+	* loop-invariant.c (move_invariant_reg): Recompute luids in loop
+	preheader after hoisting invariant in it.
+	(find_defs): Force recomputation of all luids.
+
 2015-08-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/htm.md (tabort.): Restrict the source operand to
