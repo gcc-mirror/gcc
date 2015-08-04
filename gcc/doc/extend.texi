@@ -2191,6 +2191,7 @@ GCC plugins may provide their own attributes.
 
 @menu
 * Common Function Attributes::
+* AArch64 Function Attributes::
 * ARC Function Attributes::
 * ARM Function Attributes::
 * AVR Function Attributes::
@@ -3322,6 +3323,145 @@ easier to pack regions.
 
 @c This is the end of the target-independent attribute table
 
+@node AArch64 Function Attributes
+@subsection AArch64 Function Attributes
+
+The following target-specific function attributes are available for the
+AArch64 target.  For the most part, these options mirror the behavior of
+similar command-line options (@pxref{AArch64 Options}), but on a
+per-function basis.
+
+@table @code
+@item general-regs-only
+@cindex @code{general-regs-only} function attribute, AArch64
+Indicates that no floating-point or Advanced SIMD registers should be
+used when generating code for this function.  If the function explicitly
+uses floating-point code, then the compiler gives an error.  This is
+the same behavior as that of the command-line option
+@option{-mgeneral-regs-only}.
+
+@item fix-cortex-a53-835769
+@cindex @code{fix-cortex-a53-835769} function attribute, AArch64
+Indicates that the workaround for the Cortex-A53 erratum 835769 should be
+applied to this function.  To explicitly disable the workaround for this
+function specify the negated form: @code{no-fix-cortex-a53-835769}.
+This corresponds to the behavior of the command line options
+@option{-mfix-cortex-a53-835769} and @option{-mno-fix-cortex-a53-835769}.
+
+@item cmodel=
+@cindex @code{cmodel=} function attribute, AArch64
+Indicates that code should be generated for a particular code model for
+this function.  The behavior and permissible arguments are the same as
+for the command line option @option{-mcmodel=}.
+
+@item strict-align
+@cindex @code{strict-align} function attribute, AArch64
+Indicates that the compiler should not assume that unaligned memory references
+are handled by the system.  The behavior is the same as for the command-line
+option @option{-mstrict-align}.
+
+@item omit-leaf-frame-pointer
+@cindex @code{omit-leaf-frame-pointer} function attribute, AArch64
+Indicates that the frame pointer should be omitted for a leaf function call.
+To keep the frame pointer, the inverse attribute
+@code{no-omit-leaf-frame-pointer} can be specified.  These attributes have
+the same behavior as the command-line options @option{-momit-leaf-frame-pointer}
+and @option{-mno-omit-leaf-frame-pointer}.
+
+@item tls-dialect=
+@cindex @code{tls-dialect=} function attribute, AArch64
+Specifies the TLS dialect to use for this function.  The behavior and
+permissible arguments are the same as for the command-line option
+@option{-mtls-dialect=}.
+
+@item arch=
+@cindex @code{arch=} function attribute, AArch64
+Specifies the architecture version and architectural extensions to use
+for this function.  The behavior and permissible arguments are the same as
+for the @option{-march=} command-line option.
+
+@item tune=
+@cindex @code{tune=} function attribute, AArch64
+Specifies the core for which to tune the performance of this function.
+The behavior and permissible arguments are the same as for the @option{-mtune=}
+command-line option.
+
+@item cpu=
+@cindex @code{cpu=} function attribute, AArch64
+Specifies the core for which to tune the performance of this function and also
+whose architectural features to use.  The behavior and valid arguments are the
+same as for the @option{-mcpu=} command-line option.
+
+@end table
+
+The above target attributes can be specified as follows:
+
+@smallexample
+__attribute__((target("@var{attr-string}")))
+int
+f (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+where @code{@var{attr-string}} is one of the attribute strings specified above.
+
+Additionally, the architectural extension string may be specified on its
+own.  This can be used to turn on and off particular architectural extensions
+without having to specify a particular architecture version or core.  Example:
+
+@smallexample
+__attribute__((target("+crc+nocrypto")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+In this example @code{target("+crc+nocrypto")} enables the @code{crc}
+extension and disables the @code{crypto} extension for the function @code{foo}
+without modifying an existing @option{-march=} or @option{-mcpu} option.
+
+Multiple target function attributes can be specified by separating them with
+a comma.  For example:
+@smallexample
+__attribute__((target("arch=armv8-a+crc+crypto,tune=cortex-a53")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+is valid and compiles function @code{foo} for ARMv8-A with @code{crc}
+and @code{crypto} extensions and tunes it for @code{cortex-a53}.
+
+@subsubsection Inlining rules
+Specifying target attributes on individual functions or performing link-time
+optimization across translation units compiled with different target options
+can affect function inlining rules:
+
+In particular, a caller function can inline a callee function only if the
+architectural features available to the callee are a subset of the features
+available to the caller.
+For example: A function @code{foo} compiled with @option{-march=armv8-a+crc},
+or tagged with the equivalent @code{arch=armv8-a+crc} attribute,
+can inline a function @code{bar} compiled with @option{-march=armv8-a+nocrc}
+because the all the architectural features that function @code{bar} requires
+are available to function @code{foo}.  Conversely, function @code{bar} cannot
+inline function @code{foo}.
+
+Additionally inlining a function compiled with @option{-mstrict-align} into a
+function compiled without @code{-mstrict-align} is not allowed.
+However, inlining a function compiled without @option{-mstrict-align} into a
+function compiled with @option{-mstrict-align} is allowed.
+
+Note that CPU tuning options and attributes such as the @option{-mcpu=},
+@option{-mtune=} do not inhibit inlining unless the CPU specified by the
+@option{-mcpu=} option or the @code{cpu=} attribute conflicts with the
+architectural feature rules specified above.
 
 @node ARC Function Attributes
 @subsection ARC Function Attributes
@@ -18170,6 +18310,7 @@ we do not recommend the use of pragmas; @xref{Function Attributes},
 for further explanation.
 
 @menu
+* AArch64 Pragmas::
 * ARM Pragmas::
 * M32C Pragmas::
 * MeP Pragmas::
@@ -18185,6 +18326,19 @@ for further explanation.
 * Function Specific Option Pragmas::
 * Loop-Specific Pragmas::
 @end menu
+
+@node AArch64 Pragmas
+@subsection AArch64 Pragmas
+
+The pragmas defined by the AArch64 target correspond to the AArch64
+target function attributes.  They can be specified as below:
+@smallexample
+#pragma GCC target("string")
+@end smallexample
+
+where @code{@var{string}} can be any string accepted as an AArch64 target
+attribute.  @xref{AArch64 Function Attributes}, for more details
+on the permissible values of @code{string}.
 
 @node ARM Pragmas
 @subsection ARM Pragmas
