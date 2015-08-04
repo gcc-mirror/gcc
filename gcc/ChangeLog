@@ -1,3 +1,15 @@
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_FIX_ERR_A53_835769_DEFAULT): Always
+	define to 0 or 1.
+	(TARGET_FIX_ERR_A53_835769): New macro.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal): Remove
+	handling of opts->x_aarch64_fix_a53_err835769.
+	(aarch64_madd_needs_nop): Check for TARGET_FIX_ERR_A53_835769 rather
+	than aarch64_fix_a53_err835769.
+	* config/aarch64/aarch64-elf-raw.h: Update for above changes.
+	* config/aarch64/aarch64-linux.h: Likewise.
+
 2015-08-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_int_movcc): Check result of

@@ -45,7 +45,7 @@
    %{mbig-endian:-EB} %{mlittle-endian:-EL}     \
    -maarch64linux%{mabi=ilp32:32}%{mbig-endian:b}"
 
-#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+#if TARGET_FIX_ERR_A53_835769_DEFAULT
 #define CA53_ERR_835769_SPEC \
   " %{!mno-fix-cortex-a53-835769:--fix-cortex-a53-835769}"
 #else

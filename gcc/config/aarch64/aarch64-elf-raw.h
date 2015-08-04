@@ -27,7 +27,7 @@
   " crtend%O%s crtn%O%s " \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 
-#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+#if TARGET_FIX_ERR_A53_835769_DEFAULT
 #define CA53_ERR_835769_SPEC \
   " %{!mno-fix-cortex-a53-835769:--fix-cortex-a53-835769}"
 #else
