@@ -235,6 +235,20 @@ extern unsigned long aarch64_isa_flags;
 /* CRC instructions that can be enabled through +crc arch extension.  */
 #define TARGET_CRC32 (AARCH64_ISA_CRC)
 
+/* Make sure this is always defined so we don't have to check for ifdefs
+   but rather use normal ifs.  */
+#ifndef TARGET_FIX_ERR_A53_835769_DEFAULT
+#define TARGET_FIX_ERR_A53_835769_DEFAULT 0
+#else
+#undef TARGET_FIX_ERR_A53_835769_DEFAULT
+#define TARGET_FIX_ERR_A53_835769_DEFAULT 1
+#endif
+
+/* Apply the workaround for Cortex-A53 erratum 835769.  */
+#define TARGET_FIX_ERR_A53_835769	\
+  ((aarch64_fix_a53_err835769 == 2)	\
+  ? TARGET_FIX_ERR_A53_835769_DEFAULT : aarch64_fix_a53_err835769)
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:

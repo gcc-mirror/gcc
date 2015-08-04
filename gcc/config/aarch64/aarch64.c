@@ -7542,15 +7542,6 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
     opts->x_flag_strict_volatile_bitfields = 1;
 
-  if (opts->x_aarch64_fix_a53_err835769 == 2)
-    {
-#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
-      opts->x_aarch64_fix_a53_err835769 = 1;
-#else
-      opts->x_aarch64_fix_a53_err835769 = 0;
-#endif
-    }
-
   /* -mgeneral-regs-only sets a mask in target_flags, make sure that
      aarch64_isa_flags does not contain the FP/SIMD/Crypto feature flags
      in case some code tries reading aarch64_isa_flags directly to check if
@@ -8985,7 +8976,7 @@ aarch64_madd_needs_nop (rtx_insn* insn)
   rtx_insn *prev;
   rtx body;
 
-  if (!aarch64_fix_a53_err835769)
+  if (!TARGET_FIX_ERR_A53_835769)
     return false;
 
   if (recog_memoized (insn) < 0)
