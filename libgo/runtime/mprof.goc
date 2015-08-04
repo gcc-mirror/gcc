@@ -403,7 +403,7 @@ func ThreadCreateProfile(p Slice) (n int, ok bool) {
 
 func Stack(b Slice, all bool) (n int) {
 	byte *pc;
-	bool enablegc;
+	bool enablegc = false;
 	
 	pc = (byte*)(uintptr)runtime_getcallerpc(&b);
 
