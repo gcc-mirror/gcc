@@ -1,3 +1,8 @@
+2015-08-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/67043
+	* gcc.dg/pr67043.c: New test.
+
 2015-08-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/htm-tabort-no-r0.c: New test.

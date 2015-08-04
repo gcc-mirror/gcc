@@ -676,6 +676,8 @@ find_defs (struct loop *loop)
   df_remove_problem (df_chain);
   df_process_deferred_rescans ();
   df_chain_add_problem (DF_UD_CHAIN);
+  df_live_add_problem ();
+  df_live_set_all_dirty ();
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_analyze_loop (loop);
   check_invariant_table_size ();
@@ -1629,6 +1631,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	fprintf (dump_file, "Invariant %d moved without introducing a new "
 			    "temporary register\n", invno);
       reorder_insns (inv->insn, inv->insn, BB_END (preheader));
+      df_recompute_luids (preheader);
 
       /* If there is a REG_EQUAL note on the insn we just moved, and the
 	 insn is in a basic block that is not always executed or the note
