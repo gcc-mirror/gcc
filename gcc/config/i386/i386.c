@@ -21245,7 +21245,7 @@ ix86_expand_int_movcc (rtx operands[])
       operands[0] = tmp;
 
       /* Recurse to get the constant loaded.  */
-      if (ix86_expand_int_movcc (operands) == 0)
+      if (!ix86_expand_int_movcc (operands))
         return false;
 
       /* Mask in the interesting variable.  */
