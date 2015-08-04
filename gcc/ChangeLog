@@ -1,5 +1,11 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_option_valid_attribute_p):
+	Exit early and use target_option_current_node if processing current
+	pragma.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* doc/extend.texi (AArch64 Function Attributes): New node.
 	(AArch64 Pragmas): Likewise.
 
