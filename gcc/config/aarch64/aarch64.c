@@ -5465,11 +5465,17 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
       if (speed)
 	{
 	  /* Floating-point FMA/FMUL can also support negations of the
-	     operands.  */
-	  if (GET_CODE (op0) == NEG)
-	    op0 = XEXP (op0, 0);
-	  if (GET_CODE (op1) == NEG)
-	    op1 = XEXP (op1, 0);
+	     operands, unless the rounding mode is upward or downward in
+	     which case FNMUL is different than FMUL with operand negation.  */
+	  bool neg0 = GET_CODE (op0) == NEG;
+	  bool neg1 = GET_CODE (op1) == NEG;
+	  if (compound_p || !flag_rounding_math || (neg0 && neg1))
+	    {
+	      if (neg0)
+		op0 = XEXP (op0, 0);
+	      if (neg1)
+		op1 = XEXP (op1, 0);
+	    }
 
 	  if (compound_p)
 	    /* FMADD/FNMADD/FNMSUB/FMSUB.  */
@@ -5991,6 +5997,12 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	      *cost = rtx_cost (op0, mode, NEG, 0, speed);
               return true;
             }
+	  if (GET_CODE (op0) == MULT)
+	    {
+	      /* FNMUL.  */
+	      *cost = rtx_cost (op0, mode, NEG, 0, speed);
+	      return true;
+	    }
 	  if (speed)
 	    /* FNEG.  */
 	    *cost += extra_cost->fp[mode == DFmode].neg;

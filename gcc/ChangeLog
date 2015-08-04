@@ -1,3 +1,9 @@
+2015-08-04  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/66731
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Fix NEG cost for FNMUL.
+	(aarch64_rtx_mult_cost): Fix MULT cost with -frounding-math.
+
 2015-08-04  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (dt_node::gen_kids_1): Use gassign and gcall in
