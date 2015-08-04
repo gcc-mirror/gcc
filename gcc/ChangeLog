@@ -1,3 +1,12 @@
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (struct processor): Add ident field.
+	Rename core sched_core.
+	(all_cores): Handle above changes.
+	(all_architectures): Likewise.
+	(aarch64_parse_arch): Likewise.
+	(aarch64_override_options): Likewise.
+
 2015-08-04  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Remove

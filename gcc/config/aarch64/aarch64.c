@@ -498,7 +498,8 @@ aarch64_tuning_override_functions[] =
 struct processor
 {
   const char *const name;
-  enum aarch64_processor core;
+  enum aarch64_processor ident;
+  enum aarch64_processor sched_core;
   const char *arch;
   unsigned architecture_version;
   const unsigned long flags;
@@ -509,21 +510,22 @@ struct processor
 static const struct processor all_cores[] =
 {
 #define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
-  {NAME, SCHED, #ARCH, ARCH, FLAGS, &COSTS##_tunings},
+  {NAME, IDENT, SCHED, #ARCH, ARCH, FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
 #undef AARCH64_CORE
-  {"generic", cortexa53, "8", 8, AARCH64_FL_FOR_ARCH8, &generic_tunings},
-  {NULL, aarch64_none, NULL, 0, 0, NULL}
+  {"generic", generic, cortexa53, "8", 8,
+   AARCH64_FL_FOR_ARCH8, &generic_tunings},
+  {NULL, aarch64_none, aarch64_none, NULL, 0, 0, NULL}
 };
 
 /* Architectures implementing AArch64.  */
 static const struct processor all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, CORE, ARCH, FLAGS) \
-  {NAME, CORE, #ARCH, ARCH, FLAGS, NULL},
+  {NAME, CORE, CORE, #ARCH, ARCH, FLAGS, NULL},
 #include "aarch64-arches.def"
 #undef AARCH64_ARCH
-  {NULL, aarch64_none, NULL, 0, 0, NULL}
+  {NULL, aarch64_none, aarch64_none, NULL, 0, 0, NULL}
 };
 
 /* Target specification.  These are populated as commandline arguments
@@ -7206,7 +7208,7 @@ aarch64_parse_arch (void)
 	  aarch64_isa_flags = selected_arch->flags;
 
 	  if (!selected_cpu)
-	    selected_cpu = &all_cores[selected_arch->core];
+	    selected_cpu = &all_cores[selected_arch->ident];
 
 	  if (ext != NULL)
 	    {
@@ -7531,7 +7533,7 @@ aarch64_override_options (void)
     selected_tune = selected_cpu;
 
   aarch64_tune_flags = selected_tune->flags;
-  aarch64_tune = selected_tune->core;
+  aarch64_tune = selected_tune->sched_core;
   /* Make a copy of the tuning parameters attached to the core, which
      we may later overwrite.  */
   aarch64_tune_params = *(selected_tune->tune);
