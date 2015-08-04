@@ -1,3 +1,8 @@
+2015-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_int_movcc): Check result of
+	ix86_expand_int_movcc as boolean.
+
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.opt (aarch64_arch_string): Delete.
@@ -1297,7 +1302,7 @@
 	(arm_option_override): Set arm_arch6kz.
 	* config/arm/arm.h (BASE_ARCH_6ZK): Rename to BASE_ARCH_6KZ.
 	* config/arm/driver-arm.c: Add comment to "armv6zk" entry.
-        * doc/invoke.texi: Replace "armv6zk" with "armv6kz".
+	* doc/invoke.texi: Replace "armv6zk" with "armv6kz".
 
 2015-07-27  Marek Polacek  <polacek@redhat.com>
 
