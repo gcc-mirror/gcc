@@ -1,5 +1,12 @@
 2015-08-04  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
+	* gcc.target/aarch64/fnmul-1.c: Fix whitespace.
+	* gcc.target/aarch64/fnmul-2.c: Likewise.
+	* gcc.target/aarch64/fnmul-3.c: Likewise.
+	* gcc.target/aarch64/fnmul-4.c: Likewise.
+
+2015-08-04  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
 	Backport from mainline r225450:
 	2015-07-06  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
