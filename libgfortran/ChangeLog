@@ -1,3 +1,8 @@
+2015-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (get_fpu_trap_exceptions): Add temporary variable
+	to improve generated code.
+
 2015-08-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/64022
