@@ -1,3 +1,14 @@
+2015-08-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/plugin-nvptx.c: Don't include dlfcn.h.
+	(cuda_errlist): Constify.
+	(errmsg):  Move into ...
+	(cuda_error): ... here.  Make smaller.
+	(_XSTR, _STR): Delete.
+	(cuda_synames): Delete.
+	(verify_device_library): Delete.
+	(nvptx_init): Don't call it.
+
 2015-07-28  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.c/uns-outer-4.c: New test.
