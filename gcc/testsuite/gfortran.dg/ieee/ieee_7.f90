@@ -1,7 +1,13 @@
 ! { dg-do run }
 
   use :: ieee_arithmetic
+  use :: iso_fortran_env, only : real_kinds
   implicit none
+
+  ! This should be 
+  ! integer, parameter :: maxreal = maxval(real_kinds)
+  ! but it works because REAL_KINDS happen to be in increasing order
+  integer, parameter :: maxreal = real_kinds(size(real_kinds))
 
   ! Test IEEE_SELECTED_REAL_KIND in specification expressions
 
@@ -27,8 +33,8 @@
   end if
 
   if (ieee_selected_real_kind(0,0,3) /= -5) call abort
-  if (ieee_selected_real_kind(precision(0.d0)+1) /= -1) call abort
-  if (ieee_selected_real_kind(0,range(0.d0)+1) /= -2) call abort
-  if (ieee_selected_real_kind(precision(0.d0)+1,range(0.d0)+1) /= -3) call abort
+  if (ieee_selected_real_kind(precision(0._maxreal)+1) /= -1) call abort
+  if (ieee_selected_real_kind(0,range(0._maxreal)+1) /= -2) call abort
+  if (ieee_selected_real_kind(precision(0._maxreal)+1,range(0._maxreal)+1) /= -3) call abort
 
 end
