@@ -8414,6 +8414,18 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   tree old_optimize;
   tree new_target, new_optimize;
   tree existing_target = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+
+  /* If what we're processing is the current pragma string then the
+     target option node is already stored in target_option_current_node
+     by aarch64_pragma_target_parse in aarch64-c.c.  Use that to avoid
+     having to re-parse the string.  This is especially useful to keep
+     arm_neon.h compile times down since that header contains a lot
+     of intrinsics enclosed in pragmas.  */
+  if (!existing_target && args == current_target_pragma)
+    {
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = target_option_current_node;
+      return true;
+    }
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
 
   old_optimize = build_optimization_node (&global_options);
