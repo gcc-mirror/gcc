@@ -1,3 +1,8 @@
+2015-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66427
+	* g++.dg/cpp1y/var-templ34.C: New.
+
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/pragma_cpp_predefs_1.c: New test.
