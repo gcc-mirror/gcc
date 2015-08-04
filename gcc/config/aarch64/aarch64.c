@@ -5250,7 +5250,7 @@ aarch64_rtx_mult_cost (rtx x, int code, int outer, bool speed)
 	     which case FNMUL is different than FMUL with operand negation.  */
 	  bool neg0 = GET_CODE (op0) == NEG;
 	  bool neg1 = GET_CODE (op1) == NEG;
-	  if (compound_p || !flag_rounding_math || (neg0 && neg1))
+	  if (maybe_fma || !flag_rounding_math || (neg0 && neg1))
 	    {
 	      if (neg0)
 		op0 = XEXP (op0, 0);
