@@ -29,7 +29,7 @@ if { (![istarget x86_64-*-linux*] && ![istarget i?86-*-linux*])
 
 torture-init
 set-torture-options $C_TORTURE_OPTIONS
-set additional_flags "-miamcu -W -Wall -Wno-abi"
+set additional_flags "-miamcu -W -Wall -Wno-abi -fno-pie -no-pie"
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
     if {[runtest_file_p $runtests $src]} {
