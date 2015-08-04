@@ -1,3 +1,8 @@
+2015-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66392
+	* g++.dg/init/explicit4.C: New.
+
 2015-08-04  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* gcc.target/powerpc/vec-cmp-sel.c: Avoid test failure on machines
