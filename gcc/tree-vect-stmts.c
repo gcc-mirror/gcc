@@ -7125,7 +7125,7 @@ vect_is_simple_cond (tree cond, gimple stmt, loop_vec_info loop_vinfo,
 
    When STMT is vectorized as nested cycle, REDUC_DEF is the vector variable
    to be used at REDUC_INDEX (in then clause if REDUC_INDEX is 1, and in
-   else caluse if it is 2).
+   else clause if it is 2).
 
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
 

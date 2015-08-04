@@ -1,3 +1,8 @@
+2015-08-03  Abe Skolnik  <a.skolnik@samsung.com>
+
+	* tree-if-conv.c: Fix various typos in comments.
+	* tree-vect-stmts.c: Likewise.
+
 2015-08-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/67043
