@@ -2033,6 +2033,10 @@ class Pointer_type : public Type
   do_traverse(Traverse*);
 
   bool
+  do_verify()
+  { return this->to_type_->verify(); }
+
+  bool
   do_has_pointer() const
   { return true; }
 
