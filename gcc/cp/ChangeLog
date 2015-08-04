@@ -1,3 +1,7 @@
+2015-08-04  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_target_expr): Copy the location from value.
+
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* parser.c (cp_parser_selection_statement): Move handling of
