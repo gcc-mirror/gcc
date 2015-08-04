@@ -1,5 +1,21 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define
+	__ARM_ARCH_8A directly rather than with cpp_define_formatted.
+	* config/aarch64/aarch64.c (struct processor): Add arch field.
+	(all_architectures): Handle above, move above all_cores.
+	(all_cores): Handle above.
+	(aarch64_parse_arch): Handle above changes.
+	* config/aarch64/aarch64-arches.def (armv8-a): Extend according to
+	above.  Update comments.
+	(armv8.1-a): Likewise.
+	* config/aarch64/aarch64-cores.def: Update according to above.
+	* config/aarch64/aarch64-opts.h (aarch64_arch): New enum.
+	* config/aarch64/driver-aarch64.c (struct aarch64_arch): Rename to
+	aarch64_arch_driver_info.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (struct processor): Add ident field.
 	Rename core sched_core.
 	(all_cores): Handle above changes.

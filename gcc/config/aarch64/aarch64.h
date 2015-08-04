@@ -34,8 +34,7 @@
         ("__ARM_ALIGN_MAX_STACK_PWR", 16);              \
       builtin_define_with_int_value                     \
         ("__ARM_ARCH", aarch64_architecture_version);   \
-      cpp_define_formatted                                              \
-        (parse_in, "__ARM_ARCH_%dA", aarch64_architecture_version);     \
+      builtin_define ("__ARM_ARCH_8A");                   \
       builtin_define ("__ARM_ARCH_ISA_A64");            \
       builtin_define_with_int_value                     \
         ("__ARM_ARCH_PROFILE", 'A');                    \

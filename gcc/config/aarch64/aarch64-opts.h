@@ -35,6 +35,15 @@ enum aarch64_processor
   aarch64_none
 };
 
+enum aarch64_arch
+{
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
+  AARCH64_ARCH_##ARCH_IDENT,
+#include "aarch64-arches.def"
+#undef AARCH64_ARCH
+  aarch64_no_arch
+};
+
 /* TLS types.  */
 enum aarch64_tls_type {
   TLS_TRADITIONAL,
