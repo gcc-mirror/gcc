@@ -2283,8 +2283,8 @@ combine_blocks (struct loop *loop, bool any_mask_load_store)
   ifc_bbs = NULL;
 }
 
-/* Version LOOP before if-converting it, the original loop
-   will be then if-converted, the new copy of the loop will not,
+/* Version LOOP before if-converting it; the original loop
+   will be if-converted, the new copy of the loop will not,
    and the LOOP_VECTORIZED internal call will be guarding which
    loop to execute.  The vectorizer pass will fold this
    internal call into either true or false.  */
@@ -2456,7 +2456,7 @@ ifcvt_walk_pattern_tree (tree var, vec<gimple> *defuse_list,
   return;
 }
 
-/* Returns true if STMT can be a root of bool pattern apllied
+/* Returns true if STMT can be a root of bool pattern applied
    by vectorizer.  */
 
 static bool
@@ -2486,7 +2486,7 @@ stmt_is_root_of_bool_pattern (gimple stmt)
   return false;
 }
 
-/*  Traverse all statements in BB which correspondent to loop header to
+/*  Traverse all statements in BB which correspond to loop header to
     find out all statements which can start bool pattern applied by
     vectorizer and convert multiple uses in it to conform pattern
     restrictions.  Such case can occur if the same predicate is used both
@@ -2567,7 +2567,7 @@ ifcvt_local_dce (basic_block bb)
       gimple_set_plf (phi, GF_PLF_2, true);
       worklist.safe_push (phi);
     }
-  /* Consider load/store statemnts, CALL and COND as live.  */
+  /* Consider load/store statements, CALL and COND as live.  */
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
@@ -2655,7 +2655,7 @@ tree_if_conversion (struct loop *loop)
   ifc_bbs = NULL;
   bool any_mask_load_store = false;
 
-  /* Set-up aggressive if-conversion for loops marked with simd pragma.  */
+  /* Set up aggressive if-conversion for loops marked with simd pragma.  */
   aggressive_if_conv = loop->force_vectorize;
   /* Check either outer loop was marked with simd pragma.  */
   if (!aggressive_if_conv)
@@ -2687,7 +2687,7 @@ tree_if_conversion (struct loop *loop)
   combine_blocks (loop, any_mask_load_store);
 
   /* Delete dead predicate computations and repair tree correspondent
-     to bool pattern to delete multiple uses of preidcates.  */
+     to bool pattern to delete multiple uses of predicates.  */
   if (aggressive_if_conv)
     {
       ifcvt_local_dce (loop->header);
