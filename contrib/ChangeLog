@@ -1,3 +1,7 @@
+2015-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* texi2pod.pl: Escape braces in regexp involving @strong{...}.
+
 2015-07-15  Tom de Vries  <tom@codesourcery.com>
 
 	* check_GNU_style.sh (cat_with_prefix): Fix quoting.
@@ -140,7 +144,7 @@
 
 2014-11-11  Marat Zakirov  <m.zakirov@samsung.com>
 
-	* mklog: Symbol '}' stops search for changes.  
+	* mklog: Symbol '}' stops search for changes.
 
 2014-11-11  Tobias Burnus  <burnus@net-b.de>
 
@@ -148,8 +152,8 @@
 
 2014-11-07  Marat Zakirov  <m.zakirov@samsung.com>
 
-	* mklog: Always doubt in functions.  
-	Add EOF protection.  
+	* mklog: Always doubt in functions.
+	Add EOF protection.
 
 2014-10-31  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
@@ -554,7 +558,7 @@
 
 2012-05-31  Marek Polacek  <polacek@redhat.com>
 
-       * mklog: Prevent printing three spaces after the date.
+	* mklog: Prevent printing three spaces after the date.
 
 2012-06-04   Diego Novillo  <dnovillo@google.com>
 
@@ -821,8 +825,8 @@
 
 2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
 
-       * compare-debug (Darwin): Remove '-x' flag from ld-based object
-       stripping.  Add a comment as to why we do it this way.
+	* compare-debug (Darwin): Remove '-x' flag from ld-based object
+	stripping.  Add a comment as to why we do it this way.
 
 2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
 
