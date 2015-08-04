@@ -1,5 +1,27 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
+	Remove static.  Handle OPT_mgeneral_regs_only,
+	OPT_mfix_cortex_a53_835769, OPT_mstrict_align,
+	OPT_momit_leaf_frame_pointer.
+	* config/aarch64/aarch64.c: Include opts.h and diagnostic.h
+	(aarch64_attr_opt_type): New enum.
+	(aarch64_attribute_info): New struct.
+	(aarch64_handle_attr_arch): New function.
+	(aarch64_handle_attr_cpu): Likewise.
+	(aarch64_handle_attr_tune): Likewise.
+	(aarch64_handle_attr_isa_flags): Likewise.
+	(aarch64_attributes): New table.
+	(aarch64_process_one_target_attr): New function.
+	(num_occurences_in_str): Likewise.
+	(aarch64_process_target_attr): Likewise.
+	(aarch64_option_valid_attribute_p): Likewise.
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Define.
+	* config/aarch64/aarch64-protos.h: Include input.h
+	(aarch64_handle_option): Declare prototype.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.h (SWITCHABLE_TARGET): Define.
 	* config/aarch64/aarch64.c: Include target-globals.h
 	(aarch64_previous_fndecl): New variable.

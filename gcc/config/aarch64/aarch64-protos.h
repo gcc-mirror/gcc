@@ -22,6 +22,8 @@
 #ifndef GCC_AARCH64_PROTOS_H
 #define GCC_AARCH64_PROTOS_H
 
+#include "input.h"
+
 /*
   SYMBOL_CONTEXT_ADR
   The symbol is used in a load-address operation.
@@ -252,6 +254,8 @@ bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
 bool aarch64_gen_movmemqi (rtx *);
 bool aarch64_gimple_fold_builtin (gimple_stmt_iterator *);
+bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
+			     const struct cl_decoded_option *, location_t);
 bool aarch64_is_extend_from_extract (machine_mode, rtx, rtx);
 bool aarch64_is_long_call_p (rtx);
 bool aarch64_label_mentioned_p (rtx);

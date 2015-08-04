@@ -60,7 +60,7 @@ static const struct default_options aarch_option_optimization_table[] =
    respective component of -mcpu.  This logic is implemented
    in config/aarch64/aarch64.c:aarch64_override_options.  */
 
-static bool
+bool
 aarch64_handle_option (struct gcc_options *opts,
 		       struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		       const struct cl_decoded_option *decoded,
@@ -68,6 +68,7 @@ aarch64_handle_option (struct gcc_options *opts,
 {
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
+  int val = decoded->value;
 
   switch (code)
     {
@@ -81,6 +82,22 @@ aarch64_handle_option (struct gcc_options *opts,
 
     case OPT_mtune_:
       opts->x_aarch64_tune_string = arg;
+      return true;
+
+    case OPT_mgeneral_regs_only:
+      opts->x_target_flags |= MASK_GENERAL_REGS_ONLY;
+      return true;
+
+    case OPT_mfix_cortex_a53_835769:
+      opts->x_aarch64_fix_a53_err835769 = val;
+      return true;
+
+    case OPT_mstrict_align:
+      opts->x_target_flags |= MASK_STRICT_ALIGN;
+      return true;
+
+    case OPT_momit_leaf_frame_pointer:
+      opts->x_flag_omit_frame_pointer = val;
       return true;
 
     default:
