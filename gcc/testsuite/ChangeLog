@@ -1,5 +1,9 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/target_attr_crypto_ice_1.c: New test.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/arm_neon-nosimd-error.c: Delete.
 
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
