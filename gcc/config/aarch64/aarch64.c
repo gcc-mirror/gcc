@@ -7091,15 +7091,9 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
-	 a function (linear for now) of the loop nest level.  */
+	 arbitrary and could potentially be improved with analysis.  */
       if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
-	{
-	  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
-	  struct loop *loop =  LOOP_VINFO_LOOP (loop_info);
-	  unsigned nest_level = loop_depth (loop);
-
-	  count *= nest_level;
-	}
+	count *= 50; /*  FIXME  */
 
       retval = (unsigned) (count * stmt_cost);
       cost[where] += retval;
