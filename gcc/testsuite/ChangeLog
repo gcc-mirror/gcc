@@ -1,5 +1,24 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/pragma_cpp_predefs_1.c: New test.
+	* gcc.target/aarch64/target_attr_1.c: Likewise.
+	* gcc.target/aarch64/target_attr_2.c: Likewise.
+	* gcc.target/aarch64/target_attr_3.c: Likewise.
+	* gcc.target/aarch64/target_attr_4.c: Likewise.
+	* gcc.target/aarch64/target_attr_5.c: Likewise.
+	* gcc.target/aarch64/target_attr_6.c: Likewise.
+	* gcc.target/aarch64/target_attr_7.c: Likewise.
+	* gcc.target/aarch64/target_attr_8.c: Likewise.
+	* gcc.target/aarch64/target_attr_9.c: Likewise.
+	* gcc.target/aarch64/target_attr_10.c: Likewise.
+	* gcc.target/aarch64/target_attr_11.c: Likewise.
+	* gcc.target/aarch64/target_attr_12.c: Likewise.
+	* gcc.target/aarch64/target_attr_13.c: Likewise.
+	* gcc.target/aarch64/target_attr_14.c: Likewise.
+	* gcc.target/aarch64/target_attr_15.c: Likewise.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/target_attr_crypto_ice_1.c: New test.
 
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
