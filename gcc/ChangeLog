@@ -1,3 +1,9 @@
+2015-08-04  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Canonicalize
+	bool compares on RHS.
+	* match.pd: Add X ==/!= !X is false/true pattern.
+
 2015-08-04  Pawel Kupidura  <pawel.kupidura@arm.com>
 
 	* config/aarch64/aarch64.c: Change inner loop statement cost
