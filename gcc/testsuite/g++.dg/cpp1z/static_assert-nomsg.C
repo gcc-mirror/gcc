@@ -1,4 +1,4 @@
-// { dg-do compile { target c++1z } }
+// { dg-options "-std=c++1z" }
 
 template<typename T>
   struct is_float
