@@ -158,9 +158,6 @@ unsigned aarch64_architecture_version;
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
 
-/* Mask to specify which instructions we are allowed to generate.  */
-unsigned long aarch64_isa_flags = 0;
-
 /* Mask to specify which instruction scheduling options should be used.  */
 unsigned long aarch64_tune_flags = 0;
 
@@ -531,8 +528,8 @@ static const struct processor all_cores[] =
 };
 
 
-/* Target specification.  These are populated as commandline arguments
-   are processed, or NULL if not specified.  */
+/* Target specification.  These are populated by the -march, -mtune, -mcpu
+   handling code or by target attributes.  */
 static const struct processor *selected_arch;
 static const struct processor *selected_cpu;
 static const struct processor *selected_tune;
@@ -7552,7 +7549,7 @@ aarch64_override_options_internal (struct gcc_options *opts)
       /* aarch64_parse_extension takes char* rather than const char* because
 	 it is usually called from within other parsing functions.  */
       char tmp_str[] = "+nofp";
-      aarch64_parse_extension (tmp_str, &aarch64_isa_flags);
+      aarch64_parse_extension (tmp_str, &opts->x_aarch64_isa_flags);
     }
 
   initialize_aarch64_code_model (opts);
@@ -7562,9 +7559,10 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
 /* Validate a command-line -mcpu option.  Parse the cpu and extensions (if any)
    specified in STR and throw errors if appropriate.  Put the results if
-   they are valid in RES and ISA_FLAGS.  */
+   they are valid in RES and ISA_FLAGS.  Return whether the option is
+   valid.  */
 
-static void
+static bool
 aarch64_validate_mcpu (const char *str, const struct processor **res,
 		       unsigned long *isa_flags)
 {
@@ -7572,7 +7570,7 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
     = aarch64_parse_cpu (str, res, isa_flags);
 
   if (parse_res == AARCH64_PARSE_OK)
-    return;
+    return true;
 
   switch (parse_res)
     {
@@ -7588,13 +7586,16 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
       default:
 	gcc_unreachable ();
     }
+
+  return false;
 }
 
 /* Validate a command-line -march option.  Parse the arch and extensions
    (if any) specified in STR and throw errors if appropriate.  Put the
-   results, if they are valid, in RES and ISA_FLAGS.  */
+   results, if they are valid, in RES and ISA_FLAGS.  Return whether the
+   option is valid.  */
 
-static void
+static bool
 aarch64_validate_march (const char *str, const struct processor **res,
 		       unsigned long *isa_flags)
 {
@@ -7602,7 +7603,7 @@ aarch64_validate_march (const char *str, const struct processor **res,
     = aarch64_parse_arch (str, res, isa_flags);
 
   if (parse_res == AARCH64_PARSE_OK)
-    return;
+    return true;
 
   switch (parse_res)
     {
@@ -7618,20 +7619,23 @@ aarch64_validate_march (const char *str, const struct processor **res,
       default:
 	gcc_unreachable ();
     }
+
+  return false;
 }
 
 /* Validate a command-line -mtune option.  Parse the cpu
    specified in STR and throw errors if appropriate.  Put the
-   result, if it is valid, in RES.  */
+   result, if it is valid, in RES.  Return whether the option is
+   valid.  */
 
-static void
+static bool
 aarch64_validate_mtune (const char *str, const struct processor **res)
 {
   enum aarch64_parse_opt_result parse_res
     = aarch64_parse_tune (str, res);
 
   if (parse_res == AARCH64_PARSE_OK)
-    return;
+    return true;
 
   switch (parse_res)
     {
@@ -7644,6 +7648,38 @@ aarch64_validate_mtune (const char *str, const struct processor **res)
       default:
 	gcc_unreachable ();
     }
+  return false;
+}
+
+/* Return the CPU corresponding to the enum CPU.
+   If it doesn't specify a cpu, return the default.  */
+
+static const struct processor *
+aarch64_get_tune_cpu (enum aarch64_processor cpu)
+{
+  if (cpu != aarch64_none)
+    return &all_cores[cpu];
+
+  /* The & 0x3f is to extract the bottom 6 bits that encode the
+     default cpu as selected by the --with-cpu GCC configure option
+     in config.gcc.
+     ???: The whole TARGET_CPU_DEFAULT and AARCH64_CPU_DEFAULT_FLAGS
+     flags mechanism should be reworked to make it more sane.  */
+  return &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+}
+
+/* Return the architecture corresponding to the enum ARCH.
+   If it doesn't specify a valid architecture, return the default.  */
+
+static const struct processor *
+aarch64_get_arch (enum aarch64_arch arch)
+{
+  if (arch != aarch64_no_arch)
+    return &all_architectures[arch];
+
+  const struct processor *cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+
+  return &all_architectures[cpu->arch];
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  This is called once in the beginning
@@ -7660,6 +7696,10 @@ aarch64_override_options (void)
   unsigned long arch_isa = 0;
   aarch64_isa_flags = 0;
 
+  bool valid_cpu = true;
+  bool valid_tune = true;
+  bool valid_arch = true;
+
   selected_cpu = NULL;
   selected_arch = NULL;
   selected_tune = NULL;
@@ -7668,13 +7708,15 @@ aarch64_override_options (void)
      If either of -march or -mtune is given, they override their
      respective component of -mcpu.  */
   if (aarch64_cpu_string)
-    aarch64_validate_mcpu (aarch64_cpu_string, &selected_cpu, &cpu_isa);
+    valid_cpu = aarch64_validate_mcpu (aarch64_cpu_string, &selected_cpu,
+					&cpu_isa);
 
   if (aarch64_arch_string)
-    aarch64_validate_march (aarch64_arch_string, &selected_arch, &arch_isa);
+    valid_arch = aarch64_validate_march (aarch64_arch_string, &selected_arch,
+					  &arch_isa);
 
   if (aarch64_tune_string)
-    aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
+    valid_tune = aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
 
   /* If the user did not specify a processor, choose the default
      one for them.  This will be the CPU set during configuration using
@@ -7685,12 +7727,17 @@ aarch64_override_options (void)
 	{
 	  selected_cpu = &all_cores[selected_arch->ident];
 	  aarch64_isa_flags = arch_isa;
+	  explicit_arch = selected_arch->arch;
 	}
       else
 	{
-	  selected_cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+	  /* Get default configure-time CPU.  */
+	  selected_cpu = aarch64_get_tune_cpu (aarch64_none);
 	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> 6;
 	}
+
+      if (selected_tune)
+	explicit_tune_core = selected_tune->ident;
     }
   /* If both -mcpu and -march are specified check that they are architecturally
      compatible, warn if they're not and prefer the -march ISA flags.  */
@@ -7703,11 +7750,19 @@ aarch64_override_options (void)
 		       selected_arch->name);
 	}
       aarch64_isa_flags = arch_isa;
+      explicit_arch = selected_arch->arch;
+      explicit_tune_core = selected_tune ? selected_tune->ident
+					  : selected_cpu->ident;
     }
   else
     {
       /* -mcpu but no -march.  */
       aarch64_isa_flags = cpu_isa;
+      explicit_tune_core = selected_tune ? selected_tune->ident
+					  : selected_cpu->ident;
+      gcc_assert (selected_cpu);
+      selected_arch = &all_architectures[selected_cpu->arch];
+      explicit_arch = selected_arch->arch;
     }
 
   /* Set the arch as well as we will need it when outputing
@@ -7727,6 +7782,15 @@ aarch64_override_options (void)
   if (TARGET_ILP32)
     error ("Assembler does not support -mabi=ilp32");
 #endif
+
+  /* Make sure we properly set up the explicit options.  */
+  if ((aarch64_cpu_string && valid_cpu)
+       || (aarch64_tune_string && valid_tune))
+    gcc_assert (explicit_tune_core != aarch64_none);
+
+  if ((aarch64_cpu_string && valid_cpu)
+       || (aarch64_arch_string && valid_arch))
+    gcc_assert (explicit_arch != aarch64_no_arch);
 
   aarch64_build_bitmask_table ();
 
@@ -7793,6 +7857,59 @@ initialize_aarch64_code_model (struct gcc_options *opts)
    else
      aarch64_cmodel = opts->x_aarch64_cmodel_var;
 }
+
+/* Print to F the architecture features specified by ISA_FLAGS.  */
+
+static void
+aarch64_print_extension (FILE *f, unsigned long isa_flags)
+{
+  const struct aarch64_option_extension *opt = NULL;
+
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    if ((isa_flags & opt->flags_on) == opt->flags_on)
+      asm_fprintf (f, "+%s", opt->name);
+
+  asm_fprintf (f, "\n");
+}
+
+/* Implement TARGET_OPTION_SAVE.  */
+
+static void
+aarch64_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
+{
+  ptr->x_aarch64_override_tune_string = opts->x_aarch64_override_tune_string;
+}
+
+/* Implements TARGET_OPTION_RESTORE.  Restore the backend codegen decisions
+   using the information saved in PTR.  */
+
+static void
+aarch64_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
+{
+  opts->x_explicit_tune_core = ptr->x_explicit_tune_core;
+  selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
+  opts->x_explicit_arch = ptr->x_explicit_arch;
+  selected_arch = aarch64_get_arch (ptr->x_explicit_arch);
+  opts->x_aarch64_override_tune_string = ptr->x_aarch64_override_tune_string;
+
+  aarch64_override_options_internal (opts);
+}
+
+/* Implement TARGET_OPTION_PRINT.  */
+
+static void
+aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
+{
+  const struct processor *cpu
+    = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
+  unsigned long isa_flags = ptr->x_aarch64_isa_flags;
+  const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
+
+  fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
+  fprintf (file, "%*sselected arch = %s", indent, "", arch->name);
+  aarch64_print_extension (file, isa_flags);
+}
+
 
 /* Return true if SYMBOL_REF X binds locally.  */
 
@@ -9805,6 +9922,42 @@ aarch64_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
    return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
 }
 
+/* Implement ASM_DECLARE_FUNCTION_NAME.  Output the ISA features used
+   by the function fndecl.  */
+
+void
+aarch64_declare_function_name (FILE *stream, const char* name,
+				tree fndecl)
+{
+  tree target_parts = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+
+  struct cl_target_option *targ_options;
+  if (target_parts)
+    targ_options = TREE_TARGET_OPTION (target_parts);
+  else
+    targ_options = TREE_TARGET_OPTION (target_option_current_node);
+  gcc_assert (targ_options);
+
+  const struct processor *this_arch
+    = aarch64_get_arch (targ_options->x_explicit_arch);
+
+  asm_fprintf (asm_out_file, "\t.arch %s", this_arch->name);
+  aarch64_print_extension (asm_out_file, targ_options->x_aarch64_isa_flags);
+
+  /* Print the cpu name we're tuning for in the comments, might be
+     useful to readers of the generated asm.  */
+
+  const struct processor *this_tune
+    = aarch64_get_tune_cpu (targ_options->x_explicit_tune_core);
+
+  asm_fprintf (asm_out_file, "\t" ASM_COMMENT_START ".tune %s\n",
+	       this_tune->name);
+
+  /* Don't forget the type directive for ELF.  */
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
+  ASM_OUTPUT_LABEL (stream, name);
+}
+
 /* Emit load exclusive.  */
 
 static void
@@ -10083,36 +10236,6 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   /* Emit any final barrier needed for a __sync operation.  */
   if (is_sync)
     aarch64_emit_post_barrier (model);
-}
-
-static void
-aarch64_print_extension (void)
-{
-  const struct aarch64_option_extension *opt = NULL;
-
-  for (opt = all_extensions; opt->name != NULL; opt++)
-    if ((aarch64_isa_flags & opt->flags_on) == opt->flags_on)
-      asm_fprintf (asm_out_file, "+%s", opt->name);
-
-  asm_fprintf (asm_out_file, "\n");
-}
-
-static void
-aarch64_start_file (void)
-{
-  if (selected_arch)
-    {
-      asm_fprintf (asm_out_file, "\t.arch %s", selected_arch->name);
-      aarch64_print_extension ();
-    }
-  else if (selected_cpu)
-    {
-      const char *truncated_name
-	    = aarch64_rewrite_selected_cpu (selected_cpu->name);
-      asm_fprintf (asm_out_file, "\t.cpu %s", truncated_name);
-      aarch64_print_extension ();
-    }
-  default_file_start();
 }
 
 static void
@@ -12174,9 +12297,6 @@ aarch64_promoted_type (const_tree t)
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK \
   hook_bool_const_tree_hwi_hwi_const_tree_true
 
-#undef TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START aarch64_start_file
-
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK aarch64_output_mi_thunk
 
@@ -12295,6 +12415,15 @@ aarch64_promoted_type (const_tree t)
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE \
   aarch64_override_options_after_change
+
+#undef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE aarch64_option_save
+
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE aarch64_option_restore
+
+#undef TARGET_OPTION_PRINT
+#define TARGET_OPTION_PRINT aarch64_option_print
 
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE aarch64_pass_by_reference

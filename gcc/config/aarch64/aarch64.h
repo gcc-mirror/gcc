@@ -223,7 +223,7 @@ extern unsigned aarch64_architecture_version;
    | AARCH64_FL_LOR | AARCH64_FL_RDMA)
 
 /* Macros to test ISA flags.  */
-extern unsigned long aarch64_isa_flags;
+
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
@@ -437,6 +437,10 @@ extern unsigned long aarch64_isa_flags;
 /* Select a format to encode pointers in exception handling data.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
   aarch64_asm_preferred_eh_data_format ((CODE), (GLOBAL))
+
+/* Output the assembly strings we want to add to a function definition.  */
+#define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)	\
+  aarch64_declare_function_name (STR, NAME, DECL)
 
 /* The register that holds the return address in exception handlers.  */
 #define AARCH64_EH_STACKADJ_REGNUM	(R0_REGNUM + 4)
