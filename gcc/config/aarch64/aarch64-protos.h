@@ -313,6 +313,7 @@ tree aarch64_fold_builtin (tree, int, tree *, bool);
 unsigned aarch64_dbx_register_number (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
+void aarch64_cpu_cpp_builtins (cpp_reader *);
 void aarch64_elf_asm_named_section (const char *, unsigned, tree);
 void aarch64_err_no_fpadvsimd (machine_mode, const char *);
 void aarch64_expand_epilogue (bool);
@@ -325,6 +326,8 @@ void aarch64_init_expanders (void);
 void aarch64_print_operand (FILE *, rtx, char);
 void aarch64_print_operand_address (FILE *, rtx);
 void aarch64_emit_call_insn (rtx);
+void aarch64_register_pragmas (void);
+void aarch64_reset_previous_fndecl (void);
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
@@ -362,6 +365,10 @@ bool aarch64_gen_adjusted_ldpstp (rtx *, bool, enum machine_mode, RTX_CODE);
 #endif /* RTX_CODE */
 
 void aarch64_init_builtins (void);
+
+bool aarch64_process_target_attr (tree, const char*);
+void aarch64_override_options_internal (struct gcc_options *);
+
 rtx aarch64_expand_builtin (tree exp,
 			    rtx target,
 			    rtx subtarget ATTRIBUTE_UNUSED,

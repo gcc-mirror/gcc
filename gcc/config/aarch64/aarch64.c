@@ -7524,7 +7524,7 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
     as all the other target-specific codegen decisions are
     derived from them.  */
 
-static void
+void
 aarch64_override_options_internal (struct gcc_options *opts)
 {
   aarch64_tune_flags = selected_tune->flags;
@@ -7915,6 +7915,12 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 
 static GTY(()) tree aarch64_previous_fndecl;
 
+void
+aarch64_reset_previous_fndecl (void)
+{
+  aarch64_previous_fndecl = NULL;
+}
+
 /* Implement TARGET_SET_CURRENT_FUNCTION.  Unpack the codegen decisions
    like tuning and ISA features from the DECL_FUNCTION_SPECIFIC_TARGET
    of the function, if such exists.  This function may be called multiple
@@ -8117,6 +8123,14 @@ aarch64_handle_attr_isa_flags (char *str, const char *pragma_or_attr)
 {
   enum aarch64_parse_opt_result parse_res;
   unsigned long isa_flags = aarch64_isa_flags;
+
+  /* We allow "+nothing" in the beginning to clear out all architectural
+     features if the user wants to handpick specific features.  */
+  if (strncmp ("+nothing", str, 8) == 0)
+    {
+      isa_flags = 0;
+      str += 8;
+    }
 
   parse_res = aarch64_parse_extension (str, &isa_flags);
 

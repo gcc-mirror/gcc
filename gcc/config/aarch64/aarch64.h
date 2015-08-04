@@ -23,84 +23,12 @@
 #define GCC_AARCH64_H
 
 /* Target CPU builtins.  */
-#define TARGET_CPU_CPP_BUILTINS()			\
-  do							\
-    {							\
-      builtin_define ("__aarch64__");                   \
-      builtin_define ("__ARM_64BIT_STATE");             \
-      builtin_define_with_int_value                     \
-        ("__ARM_ALIGN_MAX_PWR", 28);                    \
-      builtin_define_with_int_value                     \
-        ("__ARM_ALIGN_MAX_STACK_PWR", 16);              \
-      builtin_define_with_int_value                     \
-        ("__ARM_ARCH", aarch64_architecture_version);   \
-      builtin_define ("__ARM_ARCH_8A");                   \
-      builtin_define ("__ARM_ARCH_ISA_A64");            \
-      builtin_define_with_int_value                     \
-        ("__ARM_ARCH_PROFILE", 'A');                    \
-      builtin_define ("__ARM_FEATURE_CLZ");             \
-      builtin_define ("__ARM_FEATURE_IDIV");            \
-      builtin_define ("__ARM_FEATURE_UNALIGNED");       \
-      if (flag_unsafe_math_optimizations)               \
-        builtin_define ("__ARM_FP_FAST");               \
-      builtin_define ("__ARM_PCS_AAPCS64");             \
-      builtin_define_with_int_value                     \
-        ("__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE / 8);  \
-      builtin_define_with_int_value                     \
-        ("__ARM_SIZEOF_MINIMAL_ENUM",                   \
-         flag_short_enums? 1 : 4);                      \
-      if (TARGET_BIG_END)				\
-        {                                               \
-          builtin_define ("__AARCH64EB__");             \
-          builtin_define ("__ARM_BIG_ENDIAN");          \
-        }                                               \
-      else						\
-	builtin_define ("__AARCH64EL__");		\
-							\
-      if (TARGET_FLOAT)                                         \
-        {                                                       \
-          builtin_define ("__ARM_FEATURE_FMA");                 \
-	  builtin_define_with_int_value ("__ARM_FP", 0x0E);     \
-	  builtin_define ("__ARM_FP16_FORMAT_IEEE");		\
-	  builtin_define ("__ARM_FP16_ARGS");			\
-        }                                                       \
-      if (TARGET_SIMD)                                          \
-        {                                                       \
-          builtin_define ("__ARM_FEATURE_NUMERIC_MAXMIN");      \
-          builtin_define ("__ARM_NEON");			\
-          builtin_define_with_int_value ("__ARM_NEON_FP", 0x0C);\
-        }                                                       \
-							        \
-      if (TARGET_CRC32)				        \
-	builtin_define ("__ARM_FEATURE_CRC32");		\
-							\
-      switch (aarch64_cmodel)				\
-	{						\
-	  case AARCH64_CMODEL_TINY:			\
-	  case AARCH64_CMODEL_TINY_PIC:			\
-	    builtin_define ("__AARCH64_CMODEL_TINY__");	\
-	    break;					\
-	  case AARCH64_CMODEL_SMALL:			\
-	  case AARCH64_CMODEL_SMALL_PIC:		\
-	    builtin_define ("__AARCH64_CMODEL_SMALL__");\
-	    break;					\
-	  case AARCH64_CMODEL_LARGE:			\
-	    builtin_define ("__AARCH64_CMODEL_LARGE__");	\
-	    break;					\
-	  default:					\
-	    break;					\
-	}						\
-							\
-      if (TARGET_ILP32)					\
-	{						\
-	  cpp_define (parse_in, "_ILP32");		\
-	  cpp_define (parse_in, "__ILP32__");		\
-	}						\
-      if (TARGET_CRYPTO)				\
-	builtin_define ("__ARM_FEATURE_CRYPTO");	\
-    } while (0)
+#define TARGET_CPU_CPP_BUILTINS()	\
+  aarch64_cpu_cpp_builtins (pfile)
 
 
+
+#define REGISTER_TARGET_PRAGMAS() aarch64_register_pragmas ()
 
 /* Target machine storage layout.  */
 
