@@ -1,5 +1,30 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.opt (aarch64_arch_string): Delete.
+	(aarch64_cpu_string): Likewise.
+	(aarch64_tune_string): Likewise.
+	* config/aarch64/aarch64.c (aarch64_parse_opt_result): New enum.
+	(aarch64_parse_extension): Return aarch64_parse_opt_result.
+	Add extra argument to put result into.
+	(aarch64_parse_arch): Likewise.  Do not set selected_cpu.
+	(aarch64_parse_cpu): Add arguments to put results into. Return
+	aarch64_parse_opt_result.
+	(aarch64_parse_tune): Likewise.
+	(aarch64_override_options_after_change_1): New function.
+	(aarch64_override_options_internal): New function.
+	(aarch64_validate_mcpu): Likewise.
+	(aarch64_validate_march): Likewise.
+	(aarch64_validate_mtune): Likewise.
+	(aarch64_override_options): Update to reflect above changes.
+	Move some logic into aarch64_override_options_internal.
+	Initialize target_option_default_node and target_option_current_node.
+	(aarch64_override_options_after_change): Move logic into
+	aarch64_override_options_after_change_1 and call it with global_options.
+	(initialize_aarch64_code_model): Take a gcc_options pointer and use the
+	flag values from that.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define
 	__ARM_ARCH_8A directly rather than with cpp_define_formatted.
 	* config/aarch64/aarch64.c (struct processor): Add arch field.
