@@ -57,6 +57,8 @@
 #include "tm_p.h"
 #include "recog.h"
 #include "langhooks.h"
+#include "opts.h"
+#include "diagnostic.h"
 #include "diagnostic-core.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
@@ -7964,6 +7966,499 @@ aarch64_set_current_function (tree fndecl)
     }
 }
 
+/* Enum describing the various ways we can handle attributes.
+   In many cases we can reuse the generic option handling machinery.  */
+
+enum aarch64_attr_opt_type
+{
+  aarch64_attr_mask,	/* Attribute should set a bit in target_flags.  */
+  aarch64_attr_bool,	/* Attribute sets or unsets a boolean variable.  */
+  aarch64_attr_enum,	/* Attribute sets an enum variable.  */
+  aarch64_attr_custom	/* Attribute requires a custom handling function.  */
+};
+
+/* All the information needed to handle a target attribute.
+   NAME is the name of the attribute.
+   ATTR_TYPE specifies the type of behaviour of the attribute as described
+   in the definition of enum aarch64_attr_opt_type.
+   ALLOW_NEG is true if the attribute supports a "no-" form.
+   HANDLER is the function that takes the attribute string and whether
+   it is a pragma or attribute and handles the option.  It is needed only
+   when the ATTR_TYPE is aarch64_attr_custom.
+   OPT_NUM is the enum specifying the option that the attribute modifies.
+   This is needed for attributes that mirror the behaviour of a command-line
+   option, that is it has ATTR_TYPE aarch64_attr_mask, aarch64_attr_bool or
+   aarch64_attr_enum.  */
+
+struct aarch64_attribute_info
+{
+  const char *name;
+  enum aarch64_attr_opt_type attr_type;
+  bool allow_neg;
+  bool (*handler) (const char *, const char *);
+  enum opt_code opt_num;
+};
+
+/* Handle the ARCH_STR argument to the arch= target attribute.
+   PRAGMA_OR_ATTR is used in potential error messages.  */
+
+static bool
+aarch64_handle_attr_arch (const char *str, const char *pragma_or_attr)
+{
+  const struct processor *tmp_arch = NULL;
+  enum aarch64_parse_opt_result parse_res
+    = aarch64_parse_arch (str, &tmp_arch, &aarch64_isa_flags);
+
+  if (parse_res == AARCH64_PARSE_OK)
+    {
+      gcc_assert (tmp_arch);
+      selected_arch = tmp_arch;
+      explicit_arch = selected_arch->arch;
+      return true;
+    }
+
+  switch (parse_res)
+    {
+      case AARCH64_PARSE_MISSING_ARG:
+	error ("missing architecture name in 'arch' target %s", pragma_or_attr);
+	break;
+      case AARCH64_PARSE_INVALID_ARG:
+	error ("unknown value %qs for 'arch' target %s", str, pragma_or_attr);
+	break;
+      case AARCH64_PARSE_INVALID_FEATURE:
+	error ("invalid feature modifier %qs for 'arch' target %s",
+	       str, pragma_or_attr);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Handle the argument CPU_STR to the cpu= target attribute.
+   PRAGMA_OR_ATTR is used in potential error messages.  */
+
+static bool
+aarch64_handle_attr_cpu (const char *str, const char *pragma_or_attr)
+{
+  const struct processor *tmp_cpu = NULL;
+  enum aarch64_parse_opt_result parse_res
+    = aarch64_parse_cpu (str, &tmp_cpu, &aarch64_isa_flags);
+
+  if (parse_res == AARCH64_PARSE_OK)
+    {
+      gcc_assert (tmp_cpu);
+      selected_tune = tmp_cpu;
+      explicit_tune_core = selected_tune->ident;
+
+      selected_arch = &all_architectures[tmp_cpu->arch];
+      explicit_arch = selected_arch->arch;
+      return true;
+    }
+
+  switch (parse_res)
+    {
+      case AARCH64_PARSE_MISSING_ARG:
+	error ("missing cpu name in 'cpu' target %s", pragma_or_attr);
+	break;
+      case AARCH64_PARSE_INVALID_ARG:
+	error ("unknown value %qs for 'cpu' target %s", str, pragma_or_attr);
+	break;
+      case AARCH64_PARSE_INVALID_FEATURE:
+	error ("invalid feature modifier %qs for 'cpu' target %s",
+	       str, pragma_or_attr);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Handle the argument STR to the tune= target attribute.
+   PRAGMA_OR_ATTR is used in potential error messages.  */
+
+static bool
+aarch64_handle_attr_tune (const char *str, const char *pragma_or_attr)
+{
+  const struct processor *tmp_tune = NULL;
+  enum aarch64_parse_opt_result parse_res
+    = aarch64_parse_tune (str, &tmp_tune);
+
+  if (parse_res == AARCH64_PARSE_OK)
+    {
+      gcc_assert (tmp_tune);
+      selected_tune = tmp_tune;
+      explicit_tune_core = selected_tune->ident;
+      return true;
+    }
+
+  switch (parse_res)
+    {
+      case AARCH64_PARSE_INVALID_ARG:
+	error ("unknown value %qs for 'tune' target %s", str, pragma_or_attr);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Parse an architecture extensions target attribute string specified in STR.
+   For example "+fp+nosimd".  Show any errors if needed.  Return TRUE
+   if successful.  Update aarch64_isa_flags to reflect the ISA features
+   modified.
+   PRAGMA_OR_ATTR is used in potential error messages.  */
+
+static bool
+aarch64_handle_attr_isa_flags (char *str, const char *pragma_or_attr)
+{
+  enum aarch64_parse_opt_result parse_res;
+  unsigned long isa_flags = aarch64_isa_flags;
+
+  parse_res = aarch64_parse_extension (str, &isa_flags);
+
+  if (parse_res == AARCH64_PARSE_OK)
+    {
+      aarch64_isa_flags = isa_flags;
+      return true;
+    }
+
+  switch (parse_res)
+    {
+      case AARCH64_PARSE_MISSING_ARG:
+	error ("missing feature modifier in target %s %qs",
+	       pragma_or_attr, str);
+	break;
+
+      case AARCH64_PARSE_INVALID_FEATURE:
+	error ("invalid feature modifier in target %s %qs",
+	       pragma_or_attr, str);
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+
+ return false;
+}
+
+/* The target attributes that we support.  On top of these we also support just
+   ISA extensions, like  __attribute__ ((target ("+crc"))), but that case is
+   handled explicitly in aarch64_process_one_target_attr.  */
+
+static const struct aarch64_attribute_info aarch64_attributes[] =
+{
+  { "general-regs-only", aarch64_attr_mask, false, NULL,
+     OPT_mgeneral_regs_only },
+  { "fix-cortex-a53-835769", aarch64_attr_bool, true, NULL,
+     OPT_mfix_cortex_a53_835769 },
+  { "cmodel", aarch64_attr_enum, false, NULL, OPT_mcmodel_ },
+  { "strict-align", aarch64_attr_mask, false, NULL, OPT_mstrict_align },
+  { "omit-leaf-frame-pointer", aarch64_attr_bool, true, NULL,
+     OPT_momit_leaf_frame_pointer },
+  { "tls-dialect", aarch64_attr_enum, false, NULL, OPT_mtls_dialect_ },
+  { "arch", aarch64_attr_custom, false, aarch64_handle_attr_arch,
+     OPT_march_ },
+  { "cpu", aarch64_attr_custom, false, aarch64_handle_attr_cpu, OPT_mcpu_ },
+  { "tune", aarch64_attr_custom, false, aarch64_handle_attr_tune,
+     OPT_mtune_ },
+  { NULL, aarch64_attr_custom, false, NULL, OPT____ }
+};
+
+/* Parse ARG_STR which contains the definition of one target attribute.
+   Show appropriate errors if any or return true if the attribute is valid.
+   PRAGMA_OR_ATTR holds the string to use in error messages about whether
+   we're processing a target attribute or pragma.  */
+
+static bool
+aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
+{
+  bool invert = false;
+
+  size_t len = strlen (arg_str);
+
+  if (len == 0)
+    {
+      error ("malformed target %s", pragma_or_attr);
+      return false;
+    }
+
+  char *str_to_check = (char *) alloca (len + 1);
+  strcpy (str_to_check, arg_str);
+
+  /* Skip leading whitespace.  */
+  while (*str_to_check == ' ' || *str_to_check == '\t')
+    str_to_check++;
+
+  /* We have something like __attribute__ ((target ("+fp+nosimd"))).
+     It is easier to detect and handle it explicitly here rather than going
+     through the machinery for the rest of the target attributes in this
+     function.  */
+  if (*str_to_check == '+')
+    return aarch64_handle_attr_isa_flags (str_to_check, pragma_or_attr);
+
+  if (len > 3 && strncmp (str_to_check, "no-", 3) == 0)
+    {
+      invert = true;
+      str_to_check += 3;
+    }
+  char *arg = strchr (str_to_check, '=');
+
+  /* If we found opt=foo then terminate STR_TO_CHECK at the '='
+     and point ARG to "foo".  */
+  if (arg)
+    {
+      *arg = '\0';
+      arg++;
+    }
+  const struct aarch64_attribute_info *p_attr;
+  for (p_attr = aarch64_attributes; p_attr->name; p_attr++)
+    {
+      /* If the names don't match up, or the user has given an argument
+	 to an attribute that doesn't accept one, or didn't give an argument
+	 to an attribute that expects one, fail to match.  */
+      if (strcmp (str_to_check, p_attr->name) != 0)
+	continue;
+
+      bool attr_need_arg_p = p_attr->attr_type == aarch64_attr_custom
+			      || p_attr->attr_type == aarch64_attr_enum;
+
+      if (attr_need_arg_p ^ (arg != NULL))
+	{
+	  error ("target %s %qs does not accept an argument",
+		  pragma_or_attr, str_to_check);
+	  return false;
+	}
+
+      /* If the name matches but the attribute does not allow "no-" versions
+	 then we can't match.  */
+      if (invert && !p_attr->allow_neg)
+	{
+	  error ("target %s %qs does not allow a negated form",
+		  pragma_or_attr, str_to_check);
+	  return false;
+	}
+
+      switch (p_attr->attr_type)
+	{
+	/* Has a custom handler registered.
+	   For example, cpu=, arch=, tune=.  */
+	  case aarch64_attr_custom:
+	    gcc_assert (p_attr->handler);
+	    if (!p_attr->handler (arg, pragma_or_attr))
+	      return false;
+	    break;
+
+	  /* Either set or unset a boolean option.  */
+	  case aarch64_attr_bool:
+	    {
+	      struct cl_decoded_option decoded;
+
+	      generate_option (p_attr->opt_num, NULL, !invert,
+			       CL_TARGET, &decoded);
+	      aarch64_handle_option (&global_options, &global_options_set,
+				      &decoded, input_location);
+	      break;
+	    }
+	  /* Set or unset a bit in the target_flags.  aarch64_handle_option
+	     should know what mask to apply given the option number.  */
+	  case aarch64_attr_mask:
+	    {
+	      struct cl_decoded_option decoded;
+	      /* We only need to specify the option number.
+		 aarch64_handle_option will know which mask to apply.  */
+	      decoded.opt_index = p_attr->opt_num;
+	      decoded.value = !invert;
+	      aarch64_handle_option (&global_options, &global_options_set,
+				      &decoded, input_location);
+	      break;
+	    }
+	  /* Use the option setting machinery to set an option to an enum.  */
+	  case aarch64_attr_enum:
+	    {
+	      gcc_assert (arg);
+	      bool valid;
+	      int value;
+	      valid = opt_enum_arg_to_value (p_attr->opt_num, arg,
+					      &value, CL_TARGET);
+	      if (valid)
+		{
+		  set_option (&global_options, NULL, p_attr->opt_num, value,
+			      NULL, DK_UNSPECIFIED, input_location,
+			      global_dc);
+		}
+	      else
+		{
+		  error ("target %s %s=%s is not valid",
+			 pragma_or_attr, str_to_check, arg);
+		}
+	      break;
+	    }
+	  default:
+	    gcc_unreachable ();
+	}
+    }
+
+  return true;
+}
+
+/* Count how many times the character C appears in
+   NULL-terminated string STR.  */
+
+static unsigned int
+num_occurences_in_str (char c, char *str)
+{
+  unsigned int res = 0;
+  while (*str != '\0')
+    {
+      if (*str == c)
+	res++;
+
+      str++;
+    }
+
+  return res;
+}
+
+/* Parse the tree in ARGS that contains the target attribute information
+   and update the global target options space.  PRAGMA_OR_ATTR is a string
+   to be used in error messages, specifying whether this is processing
+   a target attribute or a target pragma.  */
+
+bool
+aarch64_process_target_attr (tree args, const char* pragma_or_attr)
+{
+  if (TREE_CODE (args) == TREE_LIST)
+    {
+      do
+	{
+	  tree head = TREE_VALUE (args);
+	  if (head)
+	    {
+	      if (!aarch64_process_target_attr (head, pragma_or_attr))
+		return false;
+	    }
+	  args = TREE_CHAIN (args);
+	} while (args);
+
+      return true;
+    }
+  /* We expect to find a string to parse.  */
+  gcc_assert (TREE_CODE (args) == STRING_CST);
+
+  size_t len = strlen (TREE_STRING_POINTER (args));
+  char *str_to_check = (char *) alloca (len + 1);
+  strcpy (str_to_check, TREE_STRING_POINTER (args));
+
+  if (len == 0)
+    {
+      error ("malformed target %s value", pragma_or_attr);
+      return false;
+    }
+
+  /* Used to catch empty spaces between commas i.e.
+     attribute ((target ("attr1,,attr2"))).  */
+  unsigned int num_commas = num_occurences_in_str (',', str_to_check);
+
+  /* Handle multiple target attributes separated by ','.  */
+  char *token = strtok (str_to_check, ",");
+
+  unsigned int num_attrs = 0;
+  while (token)
+    {
+      num_attrs++;
+      if (!aarch64_process_one_target_attr (token, pragma_or_attr))
+	{
+	  error ("target %s %qs is invalid", pragma_or_attr, token);
+	  return false;
+	}
+
+      token = strtok (NULL, ",");
+    }
+
+  if (num_attrs != num_commas + 1)
+    {
+      error ("malformed target %s list %qs",
+	      pragma_or_attr, TREE_STRING_POINTER (args));
+      return false;
+    }
+
+  return true;
+}
+
+/* Implement TARGET_OPTION_VALID_ATTRIBUTE_P.  This is used to
+   process attribute ((target ("..."))).  */
+
+static bool
+aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
+{
+  struct cl_target_option cur_target;
+  bool ret;
+  tree old_optimize;
+  tree new_target, new_optimize;
+  tree existing_target = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+  tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+
+  old_optimize = build_optimization_node (&global_options);
+  func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+
+  /* If the function changed the optimization levels as well as setting
+     target options, start with the optimizations specified.  */
+  if (func_optimize && func_optimize != old_optimize)
+    cl_optimization_restore (&global_options,
+			     TREE_OPTIMIZATION (func_optimize));
+
+  /* Save the current target options to restore at the end.  */
+  cl_target_option_save (&cur_target, &global_options);
+
+  /* If fndecl already has some target attributes applied to it, unpack
+     them so that we add this attribute on top of them, rather than
+     overwriting them.  */
+  if (existing_target)
+    {
+      struct cl_target_option *existing_options
+	= TREE_TARGET_OPTION (existing_target);
+
+      if (existing_options)
+	cl_target_option_restore (&global_options, existing_options);
+    }
+  else
+    cl_target_option_restore (&global_options,
+			TREE_TARGET_OPTION (target_option_current_node));
+
+
+  ret = aarch64_process_target_attr (args, "attribute");
+
+  /* Set up any additional state.  */
+  if (ret)
+    {
+      aarch64_override_options_internal (&global_options);
+      new_target = build_target_option_node (&global_options);
+    }
+  else
+    new_target = NULL;
+
+  new_optimize = build_optimization_node (&global_options);
+
+  if (fndecl && ret)
+    {
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
+
+      if (old_optimize != new_optimize)
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
+    }
+
+  cl_target_option_restore (&global_options, &cur_target);
+
+  if (old_optimize != new_optimize)
+    cl_optimization_restore (&global_options,
+			     TREE_OPTIMIZATION (old_optimize));
+  return ret;
+}
+
 /* Return true if SYMBOL_REF X binds locally.  */
 
 static bool
@@ -12477,6 +12972,9 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_OPTION_PRINT
 #define TARGET_OPTION_PRINT aarch64_option_print
+
+#undef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P aarch64_option_valid_attribute_p
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION aarch64_set_current_function
