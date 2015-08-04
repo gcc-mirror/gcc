@@ -212,12 +212,6 @@ enum reg_class
 #define ASM_OUTPUT_ALIGN(STREAM,POWER) \
 	fprintf (STREAM, "\t.p2align\t%d\n", POWER);
 
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand X.  */
-#define PRINT_OPERAND(STREAM, X, CODE) moxie_print_operand (STREAM, X, CODE)
-
-#define PRINT_OPERAND_ADDRESS(STREAM ,X) moxie_print_operand_address (STREAM, X)
-
 /* Output and Generation of Labels */
 
 #define GLOBAL_ASM_OP "\t.global\t"
