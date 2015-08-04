@@ -21,6 +21,18 @@
 HeaderInclude
 config/aarch64/aarch64-opts.h
 
+TargetVariable
+enum aarch64_processor explicit_tune_core = aarch64_none
+
+TargetVariable
+enum aarch64_arch explicit_arch = aarch64_no_arch
+
+TargetSave
+const char *x_aarch64_override_tune_string
+
+TargetVariable
+unsigned long aarch64_isa_flags = 0
+
 ; The TLS dialect names to use with -mtls-dialect.
 
 Enum
@@ -53,11 +65,11 @@ Target Report RejectNegative Mask(BIG_END)
 Assume target CPU is configured as big endian
 
 mgeneral-regs-only
-Target Report RejectNegative Mask(GENERAL_REGS_ONLY)
+Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses only the general registers
 
 mfix-cortex-a53-835769
-Target Report Var(aarch64_fix_a53_err835769) Init(2)
+Target Report Var(aarch64_fix_a53_err835769) Init(2) Save
 Workaround for ARM Cortex-A53 Erratum number 835769
 
 mfix-cortex-a53-843419
@@ -69,19 +81,19 @@ Target Report RejectNegative InverseMask(BIG_END)
 Assume target CPU is configured as little endian
 
 mcmodel=
-Target RejectNegative Joined Enum(cmodel) Var(aarch64_cmodel_var) Init(AARCH64_CMODEL_SMALL)
+Target RejectNegative Joined Enum(cmodel) Var(aarch64_cmodel_var) Init(AARCH64_CMODEL_SMALL) Save
 Specify the code model
 
 mstrict-align
-Target Report RejectNegative Mask(STRICT_ALIGN)
+Target Report RejectNegative Mask(STRICT_ALIGN) Save
 Don't assume that unaligned accesses are handled by the system
 
 momit-leaf-frame-pointer
-Target Report Save Var(flag_omit_leaf_frame_pointer) Init(2)
+Target Report Var(flag_omit_leaf_frame_pointer) Init(2) Save
 Omit the frame pointer in leaf functions
 
 mtls-dialect=
-Target RejectNegative Joined Enum(tls_type) Var(aarch64_tls_dialect) Init(TLS_DESCRIPTORS)
+Target RejectNegative Joined Enum(tls_type) Var(aarch64_tls_dialect) Init(TLS_DESCRIPTORS) Save
 Specify TLS dialect
 
 march=

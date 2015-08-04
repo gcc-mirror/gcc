@@ -1,5 +1,42 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.opt (explicit_tune_core): New TargetVariable.
+	(explicit_arch): Likewise.
+	(x_aarch64_isa_flags): Likewise.
+	(mgeneral-regs-only): Mark as Save.
+	(mfix-cortex-a53-835769): Likewise.
+	(mcmodel=): Likewise.
+	(mstrict-align): Likewise.
+	(momit-leaf-frame-pointer): Likewise.
+	(mtls-dialect): Likewise.
+	(master=): Likewise.
+	* config/aarch64/aarch64.h (ASM_DECLARE_FUNCTION_NAME): Define.
+	(aarch64_isa_flags): Remove extern declaration.
+	* config/aarch64/aarch64.c (aarch64_validate_mcpu): Return a bool
+	to indicate success or failure.
+	(aarch64_validate_march): Likewise.
+	(aarch64_validate_mtune): Likewise.
+	(aarch64_isa_flags): Delete.
+	(aarch64_override_options_internal): Access opts->x_aarch64_isa_flags
+	instead of aarch64_isa_flags.
+	(aarch64_get_tune_cpu): New function.
+	(aarch64_get_arch): Likewise.
+	(aarch64_override_options): Use above and set up explicit_tune_core
+	and explicit_arch.
+	(aarch64_print_extension): Move earlier in file.  Add isa_flags
+	argument and use that instead of the global aarch64_isa_flags.
+	(aarch64_option_save): New function.
+	(aarch64_option_restore): Likewise.
+	(aarch64_option_print): Likewise.
+	(aarch64_declare_function_name): Likewise.
+	(aarch64_start_file): Delete.
+	(TARGET_ASM_FILE_START): Do not define.
+	(TARGET_OPTION_RESTORE, TARGET_OPTION_PRINT): Define.
+	* config/aarch64/aarch64-protos.h (aarch64_declare_function_name):
+	Declare prototype.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.opt (momit-leaf-frame-pointer): Initialize
 	flag_omit_leaf_frame_pointer to 2.
 
