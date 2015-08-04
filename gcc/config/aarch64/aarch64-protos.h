@@ -323,10 +323,12 @@ void aarch64_expand_vector_init (rtx, rtx);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 				   const_tree, unsigned);
 void aarch64_init_expanders (void);
+void aarch64_init_simd_builtins (void);
 void aarch64_print_operand (FILE *, rtx, char);
 void aarch64_print_operand_address (FILE *, rtx);
 void aarch64_emit_call_insn (rtx);
 void aarch64_register_pragmas (void);
+void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
 
 /* Initialize builtins for SIMD intrinsics.  */

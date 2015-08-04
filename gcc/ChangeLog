@@ -1,5 +1,21 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_option_valid_attribute_p):
+	Initialize simd builtins if TARGET_SIMD.
+	* config/aarch64/aarch64-builtins.c (aarch64_init_simd_builtins):
+	Make sure that the builtins are initialized only once no matter how
+	many times the function is called.
+	(aarch64_init_builtins): Unconditionally initialize crc builtins.
+	(aarch64_relayout_simd_param): New function.
+	(aarch64_simd_expand_args): Use above during argument expansion.
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse): Initialize
+	simd builtins if TARGET_SIMD.
+	* config/aarch64/aarch64-protos.h (aarch64_init_simd_builtins): New
+	prototype.
+	(aarch64_relayout_simd_types): Likewise.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config.gcc (aarch64*-*-*): Specify c_target_objs and cxx_target_objs.
 	* config/aarch64/aarch64.h (REGISTER_TARGET_PRAGMAS): Define.
 	(TARGET_CPU_CPP_BUILTINS): Redefine to call aarch64_cpu_cpp_builtins.
