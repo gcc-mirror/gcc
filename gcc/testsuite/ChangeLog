@@ -1,3 +1,9 @@
+2015-08-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67110
+	* gcc.target/i386/iamcu/abi-iamcu.exp (additional_flags): Add
+	-fno-pie -no-pie.
+
 2015-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66427
