@@ -8459,6 +8459,113 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   return ret;
 }
 
+/* Helper for aarch64_can_inline_p.  In the case where CALLER and CALLEE are
+   tri-bool options (yes, no, don't care) and the default value is
+   DEF, determine whether to reject inlining.  */
+
+static bool
+aarch64_tribools_ok_for_inlining_p (int caller, int callee,
+				     int dont_care, int def)
+{
+  /* If the callee doesn't care, always allow inlining.  */
+  if (callee == dont_care)
+    return true;
+
+  /* If the caller doesn't care, always allow inlining.  */
+  if (caller == dont_care)
+    return true;
+
+  /* Otherwise, allow inlining if either the callee and caller values
+     agree, or if the callee is using the default value.  */
+  return (callee == caller || callee == def);
+}
+
+/* Implement TARGET_CAN_INLINE_P.  Decide whether it is valid
+   to inline CALLEE into CALLER based on target-specific info.
+   Make sure that the caller and callee have compatible architectural
+   features.  Then go through the other possible target attributes
+   and see if they can block inlining.  Try not to reject always_inline
+   callees unless they are incompatible architecturally.  */
+
+static bool
+aarch64_can_inline_p (tree caller, tree callee)
+{
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  /* If callee has no option attributes, then it is ok to inline.  */
+  if (!callee_tree)
+    return true;
+
+  struct cl_target_option *caller_opts
+	= TREE_TARGET_OPTION (caller_tree ? caller_tree
+					   : target_option_default_node);
+
+  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+
+
+  /* Callee's ISA flags should be a subset of the caller's.  */
+  if ((caller_opts->x_aarch64_isa_flags & callee_opts->x_aarch64_isa_flags)
+       != callee_opts->x_aarch64_isa_flags)
+    return false;
+
+  /* Allow non-strict aligned functions inlining into strict
+     aligned ones.  */
+  if ((TARGET_STRICT_ALIGN_P (caller_opts->x_target_flags)
+       != TARGET_STRICT_ALIGN_P (callee_opts->x_target_flags))
+      && !(!TARGET_STRICT_ALIGN_P (callee_opts->x_target_flags)
+	   && TARGET_STRICT_ALIGN_P (caller_opts->x_target_flags)))
+    return false;
+
+  bool always_inline = lookup_attribute ("always_inline",
+					  DECL_ATTRIBUTES (callee));
+
+  /* If the architectural features match up and the callee is always_inline
+     then the other attributes don't matter.  */
+  if (always_inline)
+    return true;
+
+  if (caller_opts->x_aarch64_cmodel_var
+      != callee_opts->x_aarch64_cmodel_var)
+    return false;
+
+  if (caller_opts->x_aarch64_tls_dialect
+      != callee_opts->x_aarch64_tls_dialect)
+    return false;
+
+  /* Honour explicit requests to workaround errata.  */
+  if (!aarch64_tribools_ok_for_inlining_p (
+	  caller_opts->x_aarch64_fix_a53_err835769,
+	  callee_opts->x_aarch64_fix_a53_err835769,
+	  2, TARGET_FIX_ERR_A53_835769_DEFAULT))
+    return false;
+
+  /* If the user explicitly specified -momit-leaf-frame-pointer for the
+     caller and calle and they don't match up, reject inlining.  */
+  if (!aarch64_tribools_ok_for_inlining_p (
+	  caller_opts->x_flag_omit_leaf_frame_pointer,
+	  callee_opts->x_flag_omit_leaf_frame_pointer,
+	  2, 1))
+    return false;
+
+  /* If the callee has specific tuning overrides, respect them.  */
+  if (callee_opts->x_aarch64_override_tune_string != NULL
+      && caller_opts->x_aarch64_override_tune_string == NULL)
+    return false;
+
+  /* If the user specified tuning override strings for the
+     caller and callee and they don't match up, reject inlining.
+     We just do a string compare here, we don't analyze the meaning
+     of the string, as it would be too costly for little gain.  */
+  if (callee_opts->x_aarch64_override_tune_string
+      && caller_opts->x_aarch64_override_tune_string
+      && (strcmp (callee_opts->x_aarch64_override_tune_string,
+		  caller_opts->x_aarch64_override_tune_string) != 0))
+    return false;
+
+  return true;
+}
+
 /* Return true if SYMBOL_REF X binds locally.  */
 
 static bool
@@ -12862,6 +12969,9 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE aarch64_can_eliminate
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P aarch64_can_inline_p
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM aarch64_cannot_force_const_mem
