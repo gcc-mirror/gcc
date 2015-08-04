@@ -618,6 +618,11 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (op:c truth_valued_p@0 (logical_inverted_value @0))
   { constant_boolean_node (true, type); }))
+/* X ==/!= !X is false/true.  */
+(for op (eq ne)
+ (simplify
+  (op:c truth_valued_p@0 (logical_inverted_value @0))
+  { constant_boolean_node (op == NE_EXPR ? true : false, type); }))
 
 /* If arg1 and arg2 are booleans (or any single bit type)
    then try to simplify:

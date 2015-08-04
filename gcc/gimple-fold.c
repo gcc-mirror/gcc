@@ -5012,10 +5012,8 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
 	       further propagation.  */
 	    if (subcode == POINTER_PLUS_EXPR)
 	      {
-		/* Handle binary operators that can appear in GIMPLE form.  */
 		tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
 		tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
-
 		if (TREE_CODE (op0) == ADDR_EXPR
 		    && TREE_CODE (op1) == INTEGER_CST)
 		  {
@@ -5025,6 +5023,38 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
 			 fold_build2 (MEM_REF,
 				      TREE_TYPE (TREE_TYPE (op0)),
 				      unshare_expr (op0), off));
+		  }
+	      }
+	    /* Canonicalize bool != 0 and bool == 0 appearing after
+	       valueization.  While gimple_simplify handles this
+	       it can get confused by the ~X == 1 -> X == 0 transform
+	       which we cant reduce to a SSA name or a constant
+	       (and we have no way to tell gimple_simplify to not
+	       consider those transforms in the first place).  */
+	    else if (subcode == EQ_EXPR
+		     || subcode == NE_EXPR)
+	      {
+		tree lhs = gimple_assign_lhs (stmt);
+		tree op0 = gimple_assign_rhs1 (stmt);
+		if (useless_type_conversion_p (TREE_TYPE (lhs),
+					       TREE_TYPE (op0)))
+		  {
+		    tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
+		    op0 = (*valueize) (op0);
+		    if (subcode == NE_EXPR)
+		      {
+			if (integer_zerop (op1))
+			  return op0;
+			else if (integer_zerop (op0))
+			  return op1;
+		      }
+		    else
+		      {
+			if (integer_onep (op1))
+			  return op0;
+			else if (integer_onep (op0))
+			  return op1;
+		      }
 		  }
 	      }
 	    return NULL_TREE;
