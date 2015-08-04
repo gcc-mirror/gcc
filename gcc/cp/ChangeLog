@@ -1,5 +1,7 @@
 2015-08-04  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (lookup_template_class_1): Clear elt.spec.
+
 	* tree.c (build_target_expr): Copy the location from value.
 
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>

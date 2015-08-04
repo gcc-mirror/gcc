@@ -7876,6 +7876,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       /* If we already have this specialization, return it.  */
       elt.tmpl = gen_tmpl;
       elt.args = arglist;
+      elt.spec = NULL_TREE;
       hash = spec_hasher::hash (&elt);
       entry = type_specializations->find_with_hash (&elt, hash);
 
