@@ -1,5 +1,13 @@
 2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.h (SWITCHABLE_TARGET): Define.
+	* config/aarch64/aarch64.c: Include target-globals.h
+	(aarch64_previous_fndecl): New variable.
+	(aarch64_set_current_function): New function.
+	(TARGET_SET_CURRENT_FUNCTION): Define.
+
+2015-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.opt (explicit_tune_core): New TargetVariable.
 	(explicit_arch): Likewise.
 	(x_aarch64_isa_flags): Likewise.

@@ -919,6 +919,9 @@ do {									     \
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) \
 		(FP_REGNUM_P (REGNO) && GET_MODE_SIZE (MODE) > 8)
 
+#undef SWITCHABLE_TARGET
+#define SWITCHABLE_TARGET 1
+
 /* Check TLS Descriptors mechanism is selected.  */
 #define TARGET_TLS_DESC (aarch64_tls_dialect == TLS_DESCRIPTORS)
 

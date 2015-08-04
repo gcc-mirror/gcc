@@ -73,6 +73,7 @@
 #include "tm-constrs.h"
 #include "sched-int.h"
 #include "cortex-a57-fma-steering.h"
+#include "target-globals.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -7910,6 +7911,58 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
   aarch64_print_extension (file, isa_flags);
 }
 
+static GTY(()) tree aarch64_previous_fndecl;
+
+/* Implement TARGET_SET_CURRENT_FUNCTION.  Unpack the codegen decisions
+   like tuning and ISA features from the DECL_FUNCTION_SPECIFIC_TARGET
+   of the function, if such exists.  This function may be called multiple
+   times on a single function so use aarch64_previous_fndecl to avoid
+   setting up identical state.  */
+
+static void
+aarch64_set_current_function (tree fndecl)
+{
+  tree old_tree = (aarch64_previous_fndecl
+		   ? DECL_FUNCTION_SPECIFIC_TARGET (aarch64_previous_fndecl)
+		   : NULL_TREE);
+
+  tree new_tree = (fndecl
+		   ? DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
+		   : NULL_TREE);
+
+
+  if (fndecl && fndecl != aarch64_previous_fndecl)
+    {
+      aarch64_previous_fndecl = fndecl;
+      if (old_tree == new_tree)
+	;
+
+      else if (new_tree && new_tree != target_option_default_node)
+	{
+	  cl_target_option_restore (&global_options,
+				    TREE_TARGET_OPTION (new_tree));
+	  if (TREE_TARGET_GLOBALS (new_tree))
+	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+	  else
+	    TREE_TARGET_GLOBALS (new_tree)
+	      = save_target_globals_default_opts ();
+	}
+
+      else if (old_tree && old_tree != target_option_default_node)
+	{
+	  new_tree = target_option_current_node;
+	  cl_target_option_restore (&global_options,
+				    TREE_TARGET_OPTION (new_tree));
+	  if (TREE_TARGET_GLOBALS (new_tree))
+	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+	  else if (new_tree == target_option_default_node)
+	    restore_target_globals (&default_target_globals);
+	  else
+	    TREE_TARGET_GLOBALS (new_tree)
+	      = save_target_globals_default_opts ();
+	}
+    }
+}
 
 /* Return true if SYMBOL_REF X binds locally.  */
 
@@ -12424,6 +12477,9 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_OPTION_PRINT
 #define TARGET_OPTION_PRINT aarch64_option_print
+
+#undef TARGET_SET_CURRENT_FUNCTION
+#define TARGET_SET_CURRENT_FUNCTION aarch64_set_current_function
 
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE aarch64_pass_by_reference
