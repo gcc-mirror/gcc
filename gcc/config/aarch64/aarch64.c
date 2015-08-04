@@ -500,33 +500,36 @@ struct processor
   const char *const name;
   enum aarch64_processor ident;
   enum aarch64_processor sched_core;
-  const char *arch;
+  enum aarch64_arch arch;
   unsigned architecture_version;
   const unsigned long flags;
   const struct tune_params *const tune;
+};
+
+/* Architectures implementing AArch64.  */
+static const struct processor all_architectures[] =
+{
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
+  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, ARCH_REV, FLAGS, NULL},
+#include "aarch64-arches.def"
+#undef AARCH64_ARCH
+  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, 0, NULL}
 };
 
 /* Processor cores implementing AArch64.  */
 static const struct processor all_cores[] =
 {
 #define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
-  {NAME, IDENT, SCHED, #ARCH, ARCH, FLAGS, &COSTS##_tunings},
+  {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH,				\
+  all_architectures[AARCH64_ARCH_##ARCH].architecture_version,	\
+  FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
 #undef AARCH64_CORE
-  {"generic", generic, cortexa53, "8", 8,
-   AARCH64_FL_FOR_ARCH8, &generic_tunings},
-  {NULL, aarch64_none, aarch64_none, NULL, 0, 0, NULL}
+  {"generic", generic, cortexa53, AARCH64_ARCH_8A, 8,
+    AARCH64_FL_FOR_ARCH8, &generic_tunings},
+  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, 0, NULL}
 };
 
-/* Architectures implementing AArch64.  */
-static const struct processor all_architectures[] =
-{
-#define AARCH64_ARCH(NAME, CORE, ARCH, FLAGS) \
-  {NAME, CORE, CORE, #ARCH, ARCH, FLAGS, NULL},
-#include "aarch64-arches.def"
-#undef AARCH64_ARCH
-  {NULL, aarch64_none, aarch64_none, NULL, 0, 0, NULL}
-};
 
 /* Target specification.  These are populated as commandline arguments
    are processed, or NULL if not specified.  */
@@ -7216,10 +7219,11 @@ aarch64_parse_arch (void)
 	      aarch64_parse_extension (ext);
 	    }
 
-	  if (strcmp (selected_arch->arch, selected_cpu->arch))
+	  if (selected_arch->arch != selected_cpu->arch)
 	    {
 	      warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
-		       selected_cpu->name, selected_arch->name);
+		       all_architectures[selected_cpu->arch].name,
+		       selected_arch->name);
 	    }
 
 	  return;

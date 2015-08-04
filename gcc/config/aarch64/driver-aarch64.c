@@ -54,16 +54,16 @@ static struct aarch64_core_data cpu_data [] =
 
 #undef AARCH64_CORE
 
-struct aarch64_arch
+struct aarch64_arch_driver_info
 {
   const char* id;
   const char* name;
 };
 
-#define AARCH64_ARCH(NAME, CORE, ARCH, FLAGS) \
-  { #ARCH, NAME  },
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
+  { #ARCH_IDENT, NAME  },
 
-static struct aarch64_arch aarch64_arches [] =
+static struct aarch64_arch_driver_info aarch64_arches [] =
 {
 #include "aarch64-arches.def"
   {NULL, NULL}

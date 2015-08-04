@@ -19,12 +19,17 @@
 
 /* Before using #include to read this file, define a macro:
 
-      AARCH64_ARCH(NAME, CORE, ARCH, FLAGS)
+      AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS)
 
    The NAME is the name of the architecture, represented as a string
    constant.  The CORE is the identifier for a core representative of
-   this architecture.  ARCH is the architecture revision.  FLAGS are
-   the flags implied by the architecture.  */
+   this architecture.  ARCH_IDENT is the architecture identifier.  It must be
+   unique and be syntactically valid to appear as part of an enum identifier.
+   ARCH_REV is an integer specifying the architecture major revision.
+   FLAGS are the flags implied by the architecture.
+   Due to the assumptions about the positions of these fields in config.gcc,
+   the NAME should be kept as the first argument and FLAGS as the last.  */
 
-AARCH64_ARCH("armv8-a",	      generic,	     8,  AARCH64_FL_FOR_ARCH8)
-AARCH64_ARCH("armv8.1-a",     generic,	     8,  AARCH64_FL_FOR_ARCH8_1)
+AARCH64_ARCH("armv8-a",	      generic,	     8A,	8,  AARCH64_FL_FOR_ARCH8)
+AARCH64_ARCH("armv8.1-a",     generic,	     8_1A,	8,  AARCH64_FL_FOR_ARCH8_1)
+
