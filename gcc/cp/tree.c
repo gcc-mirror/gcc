@@ -338,6 +338,8 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
   if (t == error_mark_node)
     return error_mark_node;
   t = build4 (TARGET_EXPR, type, decl, value, t, NULL_TREE);
+  if (EXPR_HAS_LOCATION (value))
+    SET_EXPR_LOCATION (t, EXPR_LOCATION (value));
   /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
      ignore the TARGET_EXPR.  If there really turn out to be no
      side-effects, then the optimizer should be able to get rid of
