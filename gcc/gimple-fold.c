@@ -5008,28 +5008,26 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
 	    return NULL_TREE;
 
           case GIMPLE_BINARY_RHS:
-            {
-              /* Handle binary operators that can appear in GIMPLE form.  */
-              tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
-              tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
+	    /* Translate &x + CST into an invariant form suitable for
+	       further propagation.  */
+	    if (subcode == POINTER_PLUS_EXPR)
+	      {
+		/* Handle binary operators that can appear in GIMPLE form.  */
+		tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
+		tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
 
-	      /* Translate &x + CST into an invariant form suitable for
-	         further propagation.  */
-	      if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
-		  && TREE_CODE (op0) == ADDR_EXPR
-		  && TREE_CODE (op1) == INTEGER_CST)
-		{
-		  tree off = fold_convert (ptr_type_node, op1);
-		  return build_fold_addr_expr_loc
-			   (loc,
-			    fold_build2 (MEM_REF,
-					 TREE_TYPE (TREE_TYPE (op0)),
-					 unshare_expr (op0), off));
-		}
-
-              return fold_binary_loc (loc, subcode,
-				      gimple_expr_type (stmt), op0, op1);
-            }
+		if (TREE_CODE (op0) == ADDR_EXPR
+		    && TREE_CODE (op1) == INTEGER_CST)
+		  {
+		    tree off = fold_convert (ptr_type_node, op1);
+		    return build_fold_addr_expr_loc
+			(loc,
+			 fold_build2 (MEM_REF,
+				      TREE_TYPE (TREE_TYPE (op0)),
+				      unshare_expr (op0), off));
+		  }
+	      }
+	    return NULL_TREE;
 
           case GIMPLE_TERNARY_RHS:
             {
@@ -5037,20 +5035,6 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
               tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
               tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
               tree op2 = (*valueize) (gimple_assign_rhs3 (stmt));
-
-	      /* Fold embedded expressions in ternary codes.  */
-	      if ((subcode == COND_EXPR
-		   || subcode == VEC_COND_EXPR)
-		  && COMPARISON_CLASS_P (op0))
-		{
-		  tree op00 = (*valueize) (TREE_OPERAND (op0, 0));
-		  tree op01 = (*valueize) (TREE_OPERAND (op0, 1));
-		  tree tem = fold_binary_loc (loc, TREE_CODE (op0),
-					      TREE_TYPE (op0), op00, op01);
-		  if (tem)
-		    op0 = tem;
-		}
-
               return fold_ternary_loc (loc, subcode,
 				       gimple_expr_type (stmt), op0, op1, op2);
             }

@@ -1,3 +1,9 @@
+2015-08-04  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Remove
+	dispatching to fold_binary for GIMPLE_BINARY_RHS and for
+	comparisons embedded in [VEC_]COND_EXPRs.
+
 2015-08-03  Abe Skolnik  <a.skolnik@samsung.com>
 
 	* tree-if-conv.c: Fix various typos in comments.
