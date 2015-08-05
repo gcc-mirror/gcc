@@ -1,5 +1,15 @@
 2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gensupport.h (get_c_test): Declare.
+	* gensupport.c (get_c_test): New function.
+	* genconditions.c (main): Use it.
+	* genrecog.c (validate_pattern): Likewise.
+	(match_pattern_1): Likewise.  Remove c_test argument.
+	(match_pattern): Update accordingly and remove c_test argument.
+	(main): Update accordingly.
+
+2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gensupport.h (get_num_insn_codes): Declare.
 	* gensupport.c (get_num_insn_codes): New function.
 	* genattrtab.c (optimize_attrs): Rename max_insn_code to

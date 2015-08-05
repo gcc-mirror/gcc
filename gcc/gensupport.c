@@ -2610,6 +2610,29 @@ get_num_insn_codes ()
   return sequence_num;
 }
 
+/* Return the C test that says whether definition rtx DEF can be used,
+   or "" if it can be used unconditionally.  */
+
+const char *
+get_c_test (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case DEFINE_INSN:
+    case DEFINE_EXPAND:
+    case DEFINE_SUBST:
+      return XSTR (x, 2);
+
+    case DEFINE_SPLIT:
+    case DEFINE_PEEPHOLE:
+    case DEFINE_PEEPHOLE2:
+      return XSTR (x, 1);
+
+    default:
+      return "";
+    }
+}
+
 /* Helper functions for insn elision.  */
 
 /* Compute a hash function of a c_test structure, which is keyed

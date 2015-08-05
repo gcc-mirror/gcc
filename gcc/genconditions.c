@@ -222,23 +222,15 @@ main (int argc, char **argv)
   while (read_md_rtx (&info))
     {
       rtx def = info.def;
-      /* N.B. define_insn_and_split, define_cond_exec are handled
-	 entirely within read_md_rtx; we never see them.  */
+      add_c_test (get_c_test (def), -1);
       switch (GET_CODE (def))
 	{
 	case DEFINE_INSN:
 	case DEFINE_EXPAND:
-	  add_c_test (XSTR (def, 2), -1);
 	  /* except.h needs to know whether there is an eh_return
 	     pattern in the machine description.  */
 	  if (!strcmp (XSTR (def, 0), "eh_return"))
 	    saw_eh_return = 1;
-	  break;
-
-	case DEFINE_SPLIT:
-	case DEFINE_PEEPHOLE:
-	case DEFINE_PEEPHOLE2:
-	  add_c_test (XSTR (def, 1), -1);
 	  break;
 
 	default:
