@@ -1,3 +1,8 @@
+2015-08-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_force_nonfar_3): Remove optimization
+	to allow identical far pointers to remain.
+
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67120

@@ -608,13 +608,6 @@ rl78_force_nonfar_3 (rtx *operands, rtx (*gen)(rtx,rtx,rtx))
   int did = 0;
   rtx temp_reg = NULL;
 
-  /* As an exception, we allow two far operands if they're identical
-     and the third operand is not a MEM.  This allows global variables
-     to be incremented, for example.  */
-  if (rtx_equal_p (operands[0], operands[1])
-      && ! MEM_P (operands[2]))
-    return 0;
-
   /* FIXME: Likewise.  */
   if (rl78_far_p (operands[1]))
     {

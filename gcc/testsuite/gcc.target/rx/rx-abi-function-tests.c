@@ -15,7 +15,29 @@ extern float              _COM_ADDf (float, float);
 extern float              _COM_SUBf (float, float);
 extern float              _COM_MULf (float, float);
 extern float              _COM_DIVf (float, float);
+
+#ifdef __RX_64BIT_DOUBLES__
+extern int                _COM_CMPLTf (double, double);
+extern int                _COM_CMPGTf (double, double);
+extern int                _COM_CMPLEf (double, double);
+extern int                _COM_CMPGEf (double, double);
+extern int                _COM_CMPEQf (double, double);
+extern int                _COM_CMPNEf (double, double);
+#else
 extern int                _COM_CMPLTf (float, float);
+extern int                _COM_CMPGTf (float, float);
+extern int                _COM_CMPLEf (float, float);
+extern int                _COM_CMPGEf (float, float);
+extern int                _COM_CMPEQf (float, float);
+extern int                _COM_CMPNEf (float, float);
+#endif
+
+extern int                _COM_CMPLTd (double, double);
+extern int                _COM_CMPGTd (double, double);
+extern int                _COM_CMPLEd (double, double);
+extern int                _COM_CMPGEd (double, double);
+extern int                _COM_CMPEQd (double, double);
+extern int                _COM_CMPNEd (double, double);
 
 extern long long          _COM_MUL64 (long long, long long);
 extern signed long long   _COM_DIV64s (long long, long long);
