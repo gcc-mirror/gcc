@@ -1,3 +1,9 @@
+2015-08-05  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* cse.c (cse_insn): Restoring old behaviour for src_eqv
+	 when dest and value in the REG_EQUAL are same and dest
+	 is STRICT_LOW_PART.
+
 2015-08-04  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/moxie/moxie.h (PRINT_OPERAND,

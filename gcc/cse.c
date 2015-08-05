@@ -4528,12 +4528,13 @@ cse_insn (rtx_insn *insn)
      this case, and if it isn't set, then there will be no equivalence
      for the destination.  */
   if (n_sets == 1 && REG_NOTES (insn) != 0
-      && (tem = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0
-      && (! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl))))
+      && (tem = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0)
     {
-      if (GET_CODE (SET_DEST (sets[0].rtl)) == STRICT_LOW_PART)
-	src_eqv = copy_rtx (XEXP (tem, 0));
 
+      if (GET_CODE (SET_DEST (sets[0].rtl)) != ZERO_EXTRACT
+	  && (! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl))
+	      || GET_CODE (SET_DEST (sets[0].rtl)) == STRICT_LOW_PART))
+	src_eqv = copy_rtx (XEXP (tem, 0));
       /* If DEST is of the form ZERO_EXTACT, as in:
 	 (set (zero_extract:SI (reg:SI 119)
 		  (const_int 16 [0x10])
