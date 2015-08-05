@@ -1,3 +1,21 @@
+2015-08-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Jeff Law  <law@redhat.com>
+
+	PR c/16351
+	* doc/invoke.texi (Wnull-dereference): New.
+	* tree-vrp.c (infer_value_range): Update call to infer_nonnull_range.
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behaviour):
+	Warn for potential NULL dereferences.
+	(find_explicit_erroneous_behaviour): Warn for NULL dereferences.
+	* ubsan.c (instrument_nonnull_arg): Call
+	infer_nonnull_range_by_attribute.
+	(instrument_nonnull_return): Likewise.
+	* common.opt (Wnull-dereference); New.
+	* gimple.c (infer_nonnull_range): Remove bool arguments.
+	(infer_nonnull_range_by_dereference): New.
+	(infer_nonnull_range_by_attribute): New.
+	* gimple.h: Update declarations.
+
 2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gensupport.c (sequence_num): Replace with...

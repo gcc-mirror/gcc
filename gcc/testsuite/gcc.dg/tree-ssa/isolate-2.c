@@ -35,7 +35,7 @@ bar (void)
    from a PHI, the second with an explicit return 0 in the IL.
 
    We also verify that after isolation phi-cprop simplifies the
-   return statement so that it returns &z directly.
+   return statement so that it returns &z directly. */
 /* { dg-final { scan-tree-dump-times "__builtin_trap" 2 "isolate-paths"} } */
 /* { dg-final { scan-tree-dump-times "return &z;" 1 "phicprop1"} } */
 

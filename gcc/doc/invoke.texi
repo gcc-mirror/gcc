@@ -260,6 +260,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
+-Wnull-dereference @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args @gol
@@ -4155,6 +4156,16 @@ All the above @option{-Wunused} options combined.
 In order to get a warning about an unused function parameter, you must
 either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @option{-Wunused}), or separately specify @option{-Wunused-parameter}.
+
+@item -Wnull-dereference
+@opindex Wnull-dereference
+@opindex Wno-null-dereference
+Warn if the compiler detects paths that trigger erroneous or
+undefined behavior due to dereferencing a null pointer.  This option
+is only active when @option{-fdelete-null-pointer-checks} is active,
+which is enabled by optimizations in most targets.  The precision of
+the warnings depends on the optimization options used.  This option is
+enabled by @option{-Wall}.
 
 @item -Wuninitialized
 @opindex Wuninitialized

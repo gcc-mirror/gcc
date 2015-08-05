@@ -4938,7 +4938,7 @@ infer_value_range (gimple stmt, tree op, enum tree_code *comp_code_p, tree *val_
 	return false;
     }
 
-  if (infer_nonnull_range (stmt, op, true, true))
+  if (infer_nonnull_range (stmt, op))
     {
       *val_p = build_int_cst (TREE_TYPE (op), 0);
       *comp_code_p = NE_EXPR;
