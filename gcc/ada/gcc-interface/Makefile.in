@@ -797,12 +797,15 @@ gnatlib-shared-win32:
 		$(PICFLAG_FOR_TARGET) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
-		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) $(MISCLIB)
+		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-Wl,-out-implib,libgnat$(hyphen)$(LIBRARY_VERSION).dll.a \
+		$(MISCLIB)
 	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -shared -shared-libgcc \
 		$(PICFLAG_FOR_TARGET) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS)libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-Wl,-out-implib,libgnarl$(hyphen)$(LIBRARY_VERSION).dll.a \
 		$(THREADSLIB) -Wl,libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
 
 gnatlib-shared-darwin:
