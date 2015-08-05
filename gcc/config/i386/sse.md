@@ -299,6 +299,12 @@
    V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
 
 ;; All DImode vector integer modes
+(define_mode_iterator V_AVX
+  [V16QI V8HI V4SI V2DI V4SF V2DF
+   (V32QI "TARGET_AVX") (V16HI "TARGET_AVX")
+   (V8SI "TARGET_AVX") (V4DI "TARGET_AVX")
+   (V8SF "TARGET_AVX") (V4DF"TARGET_AVX")])
+
 (define_mode_iterator VI8
   [(V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") V2DI])
 
@@ -566,7 +572,11 @@
 (define_mode_attr sse4_1
   [(V4SF "sse4_1") (V2DF "sse4_1")
    (V8SF "avx") (V4DF "avx")
-   (V8DF "avx512f")])
+   (V8DF "avx512f")
+   (V4DI "avx") (V2DI "sse4_1")
+   (V8SI "avx") (V4SI "sse4_1")
+   (V16QI "sse4_1") (V32QI "avx")
+   (V8HI "sse4_1") (V16HI "avx")])
 
 (define_mode_attr avxsizesuffix
   [(V64QI "512") (V32HI "512") (V16SI "512") (V8DI "512")
@@ -14640,30 +14650,23 @@
 
 ;; ptest is very similar to comiss and ucomiss when setting FLAGS_REG.
 ;; But it is not a really compare instruction.
-(define_insn "avx_ptest256"
+(define_insn "<sse4_1>_ptest<mode>"
   [(set (reg:CC FLAGS_REG)
-	(unspec:CC [(match_operand:V4DI 0 "register_operand" "x")
-		    (match_operand:V4DI 1 "nonimmediate_operand" "xm")]
-		   UNSPEC_PTEST))]
-  "TARGET_AVX"
-  "vptest\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecomi")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "btver2_decode" "vector")
-   (set_attr "mode" "OI")])
-
-(define_insn "sse4_1_ptest"
-  [(set (reg:CC FLAGS_REG)
-	(unspec:CC [(match_operand:V2DI 0 "register_operand" "Yr,*x")
-		    (match_operand:V2DI 1 "nonimmediate_operand" "Yrm,*xm")]
+	(unspec:CC [(match_operand:V_AVX 0 "register_operand" "Yr, *x, x")
+		    (match_operand:V_AVX 1 "nonimmediate_operand" "Yrm, *xm, xm")]
 		   UNSPEC_PTEST))]
   "TARGET_SSE4_1"
   "%vptest\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecomi")
+  [(set_attr "isa" "*,*,avx")
+   (set_attr "type" "ssecomi")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
+   (set (attr "btver2_decode")
+     (if_then_else
+       (match_test "<sseinsnmode>mode==OImode")
+     (const_string "vector")
+     (const_string "*")))
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse4_1>_round<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x")
