@@ -9105,14 +9105,18 @@ aarch64_split_compare_and_swap (rtx operands[])
   bool is_weak;
   rtx_code_label *label1, *label2;
   rtx x, cond;
+  enum memmodel model;
+  rtx model_rtx;
 
   rval = operands[0];
   mem = operands[1];
   oldval = operands[2];
   newval = operands[3];
   is_weak = (operands[4] != const0_rtx);
+  model_rtx = operands[5];
   scratch = operands[7];
   mode = GET_MODE (mem);
+  model = memmodel_from_int (INTVAL (model_rtx));
 
   label1 = NULL;
   if (!is_weak)
@@ -9122,7 +9126,13 @@ aarch64_split_compare_and_swap (rtx operands[])
     }
   label2 = gen_label_rtx ();
 
-  aarch64_emit_load_exclusive (mode, rval, mem, operands[5]);
+  /* The initial load can be relaxed for a __sync operation since a final
+     barrier will be emitted to stop code hoisting.  */
+  if (is_mm_sync (model))
+    aarch64_emit_load_exclusive (mode, rval, mem,
+				 GEN_INT (MEMMODEL_RELAXED));
+  else
+    aarch64_emit_load_exclusive (mode, rval, mem, model_rtx);
 
   cond = aarch64_gen_compare_reg (NE, rval, oldval);
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
@@ -9130,7 +9140,7 @@ aarch64_split_compare_and_swap (rtx operands[])
 			    gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
   aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
 
-  aarch64_emit_store_exclusive (mode, scratch, mem, newval, operands[5]);
+  aarch64_emit_store_exclusive (mode, scratch, mem, newval, model_rtx);
 
   if (!is_weak)
     {
@@ -9147,6 +9157,10 @@ aarch64_split_compare_and_swap (rtx operands[])
     }
 
   emit_label (label2);
+
+  /* Emit any final barrier needed for a __sync operation.  */
+  if (is_mm_sync (model))
+    aarch64_emit_post_barrier (model);
 }
 
 /* Split an atomic operation.  */
