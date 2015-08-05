@@ -1,3 +1,9 @@
+2015-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67121
+	* tree-if-conv.c (combine_blocks): Clear range-info produced
+	by stmts no longer executed conditionally.
+
 2015-08-05  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_force_nonfar_3): Remove optimization
