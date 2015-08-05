@@ -1,5 +1,11 @@
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/67120
+	* match.pd: Compare address bases with == if they are decls
+	or SSA names, not operand_equal_p.  Otherwise fail.
+
+2015-08-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/67055
 	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Handle
 	NULL gimple_block.
