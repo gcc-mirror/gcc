@@ -1,6 +1,18 @@
 2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
 
 	Backport from trunk:
+	2015-07-01  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc.target/arm/armv8-sync-comp-swap.c: Replace
+	'do-require-effective-target' with 'dg-require-effective-target'.
+	* gcc.target/arm/armv8-sync-op-full.c: Likewise.
+	* gcc.target/arm/armv8-sync-op-release.c: Likewise.
+	* gcc.target/arm/armv8-sync-op-acquire.c: Likewise.  Also, replace
+	'stlex' with 'strex' as the expected output.
+
+2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
+
+	Backport from trunk:
 	2015-06-29  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/65697
