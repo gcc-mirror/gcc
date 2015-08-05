@@ -1,5 +1,16 @@
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/67109
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Check
+	against too big groups.  Print whether this is a load or store
+	group.  Rename from ...
+	(vect_analyze_group_access): ... this which is now a wrapper
+	dissolving an invalid group.
+	(vect_analyze_data_ref_accesses): Print whether this is a load
+	or store group.
+
+2015-08-05  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/67107
 	* match.pd: Guard const_binop result checking against NULL_TREE
 	result.

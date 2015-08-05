@@ -2012,10 +2012,11 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo,
 /* Analyze groups of accesses: check that DR belongs to a group of
    accesses of legal size, step, etc.  Detect gaps, single element
    interleaving, and other special cases. Set grouped access info.
-   Collect groups of strided stores for further use in SLP analysis.  */
+   Collect groups of strided stores for further use in SLP analysis.
+   Worker for vect_analyze_group_access.  */
 
 static bool
-vect_analyze_group_access (struct data_reference *dr)
+vect_analyze_group_access_1 (struct data_reference *dr)
 {
   tree step = DR_STEP (dr);
   tree scalar_type = TREE_TYPE (DR_REF (dr));
@@ -2182,6 +2183,14 @@ vect_analyze_group_access (struct data_reference *dr)
       if (groupsize == 0)
         groupsize = count + gaps;
 
+      if (groupsize > UINT_MAX)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "group is too large\n");
+	  return false;
+	}
+
       /* Check that the size of the interleaving is equal to count for stores,
          i.e., that there are no gaps.  */
       if (groupsize != count
@@ -2203,13 +2212,18 @@ vect_analyze_group_access (struct data_reference *dr)
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Detected interleaving of size %d starting with ",
-			   (int)groupsize);
+			   "Detected interleaving ");
+	  if (DR_IS_READ (dr))
+	    dump_printf (MSG_NOTE, "load ");
+	  else
+	    dump_printf (MSG_NOTE, "store ");
+	  dump_printf (MSG_NOTE, "of size %u starting with ",
+		       (unsigned)groupsize);
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
 	  if (GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "There is a gap of %d elements after the group\n",
-			     (int)GROUP_GAP (vinfo_for_stmt (stmt)));
+			     "There is a gap of %u elements after the group\n",
+			     GROUP_GAP (vinfo_for_stmt (stmt)));
 	}
 
       /* SLP: create an SLP data structure for every interleaving group of
@@ -2249,6 +2263,30 @@ vect_analyze_group_access (struct data_reference *dr)
   return true;
 }
 
+/* Analyze groups of accesses: check that DR belongs to a group of
+   accesses of legal size, step, etc.  Detect gaps, single element
+   interleaving, and other special cases. Set grouped access info.
+   Collect groups of strided stores for further use in SLP analysis.  */
+
+static bool
+vect_analyze_group_access (struct data_reference *dr)
+{
+  if (!vect_analyze_group_access_1 (dr))
+    {
+      /* Dissolve the group if present.  */
+      gimple next, stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (DR_STMT (dr)));
+      while (stmt)
+	{
+	  stmt_vec_info vinfo = vinfo_for_stmt (stmt);
+	  next = GROUP_NEXT_ELEMENT (vinfo);
+	  GROUP_FIRST_ELEMENT (vinfo) = NULL;
+	  GROUP_NEXT_ELEMENT (vinfo) = NULL;
+	  stmt = next;
+	}
+      return false;
+    }
+  return true;
+}
 
 /* Analyze the access pattern of the data-reference DR.
    In case of non-consecutive accesses call vect_analyze_group_access() to
@@ -2598,6 +2636,10 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "Detected interleaving ");
+	      if (DR_IS_READ (dra))
+		dump_printf (MSG_NOTE, "load ");
+	      else
+		dump_printf (MSG_NOTE, "store ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
 	      dump_printf (MSG_NOTE,  " and ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
