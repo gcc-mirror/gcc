@@ -1,3 +1,9 @@
+2015-08-05  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.target/rl78: New directory.
+        * gcc.target/rl78/rl78.exp: New file: Test driver.
+        * gcc.target/rl78/test_addm3.c: New file: Test adds.
+
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67120
