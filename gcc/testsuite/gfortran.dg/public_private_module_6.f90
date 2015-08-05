@@ -11,4 +11,7 @@ module m
   integer, save :: aaaa
 end module m
 
-! { dg-final { scan-assembler-not "aaaa" } }
+! The xfail below has appeared with the introduction of submodules. 'aaaa'
+! now is TREE_PUBLIC but has DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN set.
+
+! { dg-final { scan-assembler-not "aaaa" { xfail *-*-* } } }

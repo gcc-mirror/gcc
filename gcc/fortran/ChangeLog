@@ -1,3 +1,21 @@
+2015-08-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52846
+	* module.c (check_access): Return true if new static flag
+	'dump_smod' is true..
+	(gfc_dump_module): Rename original 'dump_module' and call from
+	new version. Use 'dump_smod' rather than the stack state to
+	determine if a submodule is being processed. The new version of
+	this procedure sets 'dump_smod' depending on the stack state and
+	then writes both the mod and smod files if a module is being
+	processed or just the smod for a submodule.
+	(gfc_use_module): Eliminate the check for module_name and
+	submodule_name being the same.
+	* trans-decl.c (gfc_finish_var_decl, gfc_build_qualified_array,
+	get_proc_pointer_decl): Set TREE_PUBLIC unconditionally and use
+	the conditions to set DECL_VISIBILITY as hidden and to set as
+	true DECL_VISIBILITY_SPECIFIED.
+
 2015-08-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/64022

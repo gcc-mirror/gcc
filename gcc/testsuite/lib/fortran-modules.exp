@@ -17,6 +17,7 @@
 # helper to deal with fortran modules
 
 # Remove files for specified Fortran modules.
+# This includes both .mod and .smod files.
 proc cleanup-modules { modlist } {
     global clean
     foreach mod [concat $modlist $clean] {
@@ -27,6 +28,7 @@ proc cleanup-modules { modlist } {
 	}
 	remote_file build delete $m
     }
+    cleanup-submodules $modlist
 }
 
 # Remove files for specified Fortran submodules.

@@ -18,12 +18,15 @@
         integer, bind(C,name='') :: qq
       end module mod
 
+! The two xfails below have appeared with the introduction of submodules. 'iii' and
+! 'mmm' now are TREE_PUBLIC but has DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN set.
+
       ! { dg-final { scan-assembler "__mod_MOD_aa" } }
-      ! { dg-final { scan-assembler-not "iii" } }
+      ! { dg-final { scan-assembler-not "iii" { xfail *-*-* } } }
       ! { dg-final { scan-assembler "jj" } }
       ! { dg-final { scan-assembler "lll" } }
       ! { dg-final { scan-assembler-not "kk" } }
-      ! { dg-final { scan-assembler-not "mmmm" } }
+      ! { dg-final { scan-assembler-not "mmmm" { xfail *-*-* } } }
       ! { dg-final { scan-assembler "nnn" } }
       ! { dg-final { scan-assembler "oo" } }
       ! { dg-final { scan-assembler "__mod_MOD_qq" } }
