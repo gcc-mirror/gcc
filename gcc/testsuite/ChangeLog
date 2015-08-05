@@ -1,3 +1,8 @@
+2015-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67121
+	* gcc.dg/torture/pr67121.c: New testcase.
+
 2015-08-05  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.target/rl78: New directory.
