@@ -2107,6 +2107,7 @@ fold_builtin_alloca_with_align (gimple stmt)
      as a declared array, so we allow a larger size.  */
   block = gimple_block (stmt);
   if (!(cfun->after_inlining
+	&& block
         && TREE_CODE (BLOCK_SUPERCONTEXT (block)) == FUNCTION_DECL))
     threshold /= 10;
   if (size > threshold)
