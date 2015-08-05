@@ -43,11 +43,14 @@ int insn_elision = 1;
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
-/* Counter for patterns that generate code: define_insn, define_expand,
-   define_split, define_peephole, and define_peephole2.  See read_md_rtx().
-   Any define_insn_and_splits are already in separate queues so that the
-   insn and the splitter get a unique number also.  */
-static int sequence_num;
+/* Counter for named patterns and INSN_CODEs.  */
+static int insn_sequence_num;
+
+/* Counter for define_splits.  */
+static int split_sequence_num;
+
+/* Counter for define_peephole2s.  */
+static int peephole2_sequence_num;
 
 static int predicable_default;
 static const char *predicable_true;
@@ -2504,7 +2507,11 @@ init_rtx_reader_args_cb (int argc, char **argv,
   obstack_init (rtl_obstack);
 
   /* Start at 1, to make 0 available for CODE_FOR_nothing.  */
-  sequence_num = 1;
+  insn_sequence_num = 1;
+
+  /* These sequences are not used as indices, so can start at 1 also.  */
+  split_sequence_num = 1;
+  peephole2_sequence_num = 1;
 
   read_md_files (argc, argv, parse_opt, rtx_handle_directive);
 
@@ -2539,30 +2546,8 @@ init_rtx_reader_args (int argc, char **argv)
 bool
 read_md_rtx (md_rtx_info *info)
 {
-  struct queue_elem **queue, *elem;
-  rtx desc;
-
- discard:
-
-  /* Read all patterns from a given queue before moving on to the next.  */
-  if (define_attr_queue != NULL)
-    queue = &define_attr_queue;
-  else if (define_pred_queue != NULL)
-    queue = &define_pred_queue;
-  else if (define_insn_queue != NULL)
-    queue = &define_insn_queue;
-  else if (other_queue != NULL)
-    queue = &other_queue;
-  else
-    return false;
-
-  elem = *queue;
-  *queue = elem->next;
-  info->def = elem->data;
-  info->loc = elem->loc;
-  info->index = sequence_num;
-
-  free (elem);
+  int truth, *counter;
+  rtx def;
 
   /* Discard insn patterns which we know can never match (because
      their C test is provably always false).  If insn_elision is
@@ -2570,34 +2555,69 @@ read_md_rtx (md_rtx_info *info)
      elided patterns are never counted by the sequence numbering; it
      is the caller's responsibility, when insn_elision is false, not
      to use elided pattern numbers for anything.  */
-  desc = info->def;
-  switch (GET_CODE (desc))
+  do
+    {
+      struct queue_elem **queue, *elem;
+
+      /* Read all patterns from a given queue before moving on to the next.  */
+      if (define_attr_queue != NULL)
+	queue = &define_attr_queue;
+      else if (define_pred_queue != NULL)
+	queue = &define_pred_queue;
+      else if (define_insn_queue != NULL)
+	queue = &define_insn_queue;
+      else if (other_queue != NULL)
+	queue = &other_queue;
+      else
+	return false;
+
+      elem = *queue;
+      *queue = elem->next;
+      def = elem->data;
+      info->def = def;
+      info->loc = elem->loc;
+      free (elem);
+
+      truth = maybe_eval_c_test (get_c_test (def));
+    }
+  while (truth == 0 && insn_elision);
+
+  /* Perform code-specific processing and pick the appropriate sequence
+     number counter.  */
+  switch (GET_CODE (def))
     {
     case DEFINE_INSN:
     case DEFINE_EXPAND:
-    case DEFINE_SUBST:
-      if (maybe_eval_c_test (XSTR (desc, 2)) != 0)
-	sequence_num++;
-      else if (insn_elision)
-	goto discard;
-
-      /* info->index is used here so the name table will match caller's
+      /* insn_sequence_num is used here so the name table will match caller's
 	 idea of insn numbering, whether or not elision is active.  */
-      record_insn_name (info->index, XSTR (desc, 0));
+      record_insn_name (insn_sequence_num, XSTR (def, 0));
+
+      /* Fall through.  */
+    case DEFINE_PEEPHOLE:
+      counter = &insn_sequence_num;
       break;
 
     case DEFINE_SPLIT:
-    case DEFINE_PEEPHOLE:
+      counter = &split_sequence_num;
+      break;
+
     case DEFINE_PEEPHOLE2:
-      if (maybe_eval_c_test (XSTR (desc, 1)) != 0)
-	sequence_num++;
-      else if (insn_elision)
-	goto discard;
+      counter = &peephole2_sequence_num;
       break;
 
     default:
+      counter = NULL;
       break;
     }
+
+  if (counter)
+    {
+      info->index = *counter;
+      if (truth != 0)
+	*counter += 1;
+    }
+  else
+    info->index = -1;
 
   return true;
 }
@@ -2607,7 +2627,7 @@ read_md_rtx (md_rtx_info *info)
 unsigned int
 get_num_insn_codes ()
 {
-  return sequence_num;
+  return insn_sequence_num;
 }
 
 /* Return the C test that says whether definition rtx DEF can be used,
