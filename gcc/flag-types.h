@@ -91,19 +91,6 @@ enum debug_struct_file
   DINFO_STRUCT_FILE_ANY     /* Debug structs defined in all files. */
 };
 
-/* Enumerate visibility settings.  This is deliberately ordered from most
-   to least visibility.  */
-#ifndef SYMBOL_VISIBILITY_DEFINED
-#define SYMBOL_VISIBILITY_DEFINED
-enum symbol_visibility
-{
-  VISIBILITY_DEFAULT,
-  VISIBILITY_PROTECTED,
-  VISIBILITY_HIDDEN,
-  VISIBILITY_INTERNAL
-};
-#endif
-
 /* Enumerate Objective-c instance variable visibility settings. */
 
 enum ivar_visibility

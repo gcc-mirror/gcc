@@ -1,3 +1,9 @@
+2015-08-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* coretypes.h (enum symbol_visibility): Relocate here.
+	* flag-types.h (enum symbol_visibility): Remove.
+	* tree-core.h (enum symbol_visibility): Remove.
+
 2015-08-05  Lynn Boger  <laboger@linux.vnet.ibm.com>
 
 	PR target/66870
