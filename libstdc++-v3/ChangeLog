@@ -1,3 +1,17 @@
+2015-08-05  Tim Shen  <timshen@google.com>
+
+	Backported from mainline
+	2015-07-29  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/67015
+	* include/bits/regex_compiler.h (_Compiler<>::_M_expression_term,
+	_BracketMatcher<>::_M_add_collating_element): Change signature
+	to make checking the and of bracket expression easier.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_M_expression_term):
+	Treat '-' as a valid literal if it's at the end of bracket expression.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	New testcases.
+
 2015-06-26  Release Manager
 
 	* GCC 4.9.3 released.
