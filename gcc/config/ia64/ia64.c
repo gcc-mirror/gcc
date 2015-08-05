@@ -2389,10 +2389,12 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 	{
 	case MEMMODEL_ACQ_REL:
 	case MEMMODEL_SEQ_CST:
+	case MEMMODEL_SYNC_SEQ_CST:
 	  emit_insn (gen_memory_barrier ());
 	  /* FALLTHRU */
 	case MEMMODEL_RELAXED:
 	case MEMMODEL_ACQUIRE:
+	case MEMMODEL_SYNC_ACQUIRE:
 	case MEMMODEL_CONSUME:
 	  if (mode == SImode)
 	    icode = CODE_FOR_fetchadd_acq_si;
@@ -2400,6 +2402,7 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 	    icode = CODE_FOR_fetchadd_acq_di;
 	  break;
 	case MEMMODEL_RELEASE:
+	case MEMMODEL_SYNC_RELEASE:
 	  if (mode == SImode)
 	    icode = CODE_FOR_fetchadd_rel_si;
 	  else
@@ -2426,8 +2429,7 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
      front half of the full barrier.  The end half is the cmpxchg.rel.
      For relaxed and release memory models, we don't need this.  But we
      also don't bother trying to prevent it either.  */
-  gcc_assert (model == MEMMODEL_RELAXED
-	      || model == MEMMODEL_RELEASE
+  gcc_assert (is_mm_relaxed (model) || is_mm_release (model)
 	      || MEM_VOLATILE_P (mem));
 
   old_reg = gen_reg_rtx (DImode);
@@ -2471,6 +2473,7 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
     {
     case MEMMODEL_RELAXED:
     case MEMMODEL_ACQUIRE:
+    case MEMMODEL_SYNC_ACQUIRE:
     case MEMMODEL_CONSUME:
       switch (mode)
 	{
@@ -2484,8 +2487,10 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
       break;
 
     case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
     case MEMMODEL_ACQ_REL:
     case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
       switch (mode)
 	{
 	case QImode: icode = CODE_FOR_cmpxchg_rel_qi;  break;

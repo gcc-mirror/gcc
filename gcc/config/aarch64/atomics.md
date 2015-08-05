@@ -260,10 +260,8 @@
       UNSPECV_LDA))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_RELEASE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
       return "ldr<atomic_sfx>\t%<w>0, %1";
     else
       return "ldar<atomic_sfx>\t%<w>0, %1";
@@ -278,10 +276,8 @@
       UNSPECV_STL))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_ACQUIRE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
       return "str<atomic_sfx>\t%<w>1, %0";
     else
       return "stlr<atomic_sfx>\t%<w>1, %0";
@@ -297,10 +293,8 @@
 	UNSPECV_LX)))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_RELEASE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
       return "ldxr<atomic_sfx>\t%w0, %1";
     else
       return "ldaxr<atomic_sfx>\t%w0, %1";
@@ -315,10 +309,8 @@
       UNSPECV_LX))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_RELEASE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
       return "ldxr\t%<w>0, %1";
     else
       return "ldaxr\t%<w>0, %1";
@@ -335,10 +327,8 @@
       UNSPECV_SX))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[3]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_ACQUIRE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
       return "stxr<atomic_sfx>\t%w0, %<w>2, %1";
     else
       return "stlxr<atomic_sfx>\t%w0, %<w>2, %1";
@@ -349,8 +339,8 @@
   [(match_operand:SI 0 "const_int_operand" "")]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[0]);
-    if (model != MEMMODEL_RELAXED && model != MEMMODEL_CONSUME)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[0]));
+    if (!(is_mm_relaxed (model) || is_mm_consume (model)))
       emit_insn (gen_dmb (operands[0]));
     DONE;
   }
@@ -373,8 +363,8 @@
      UNSPEC_MB))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[1]);
-    if (model == MEMMODEL_ACQUIRE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[1]));
+    if (is_mm_acquire (model))
       return "dmb\\tishld";
     else
       return "dmb\\tish";

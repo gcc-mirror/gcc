@@ -105,11 +105,11 @@
   [(match_operand:SI 0 "const_int_operand")]		;; model
   ""
 {
-  enum memmodel model = (enum memmodel) (INTVAL (operands[0]) & MEMMODEL_MASK);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[0]));
 
   /* Unless this is a SEQ_CST fence, the i386 memory model is strong
      enough not to require barriers of any kind.  */
-  if (model == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     {
       rtx (*mfence_insn)(rtx);
       rtx mem;
@@ -217,7 +217,7 @@
 		       UNSPEC_STA))]
   ""
 {
-  enum memmodel model = (enum memmodel) (INTVAL (operands[2]) & MEMMODEL_MASK);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
 
   if (<MODE>mode == DImode && !TARGET_64BIT)
     {
@@ -233,7 +233,7 @@
       operands[1] = force_reg (<MODE>mode, operands[1]);
 
       /* For seq-cst stores, when we lack MFENCE, use XCHG.  */
-      if (model == MEMMODEL_SEQ_CST && !(TARGET_64BIT || TARGET_SSE2))
+      if (is_mm_seq_cst (model) && !(TARGET_64BIT || TARGET_SSE2))
 	{
 	  emit_insn (gen_atomic_exchange<mode> (gen_reg_rtx (<MODE>mode),
 						operands[0], operands[1],
@@ -246,7 +246,7 @@
 					   operands[2]));
     }
   /* ... followed by an MFENCE, if required.  */
-  if (model == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     emit_insn (gen_mem_thread_fence (operands[2]));
   DONE;
 })

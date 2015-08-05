@@ -5271,7 +5271,7 @@ expand_builtin_sync_operation (machine_mode mode, tree exp,
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 1), mode);
 
-  return expand_atomic_fetch_op (target, mem, val, code, MEMMODEL_SEQ_CST,
+  return expand_atomic_fetch_op (target, mem, val, code, MEMMODEL_SYNC_SEQ_CST,
 				 after);
 }
 
@@ -5301,8 +5301,8 @@ expand_builtin_compare_and_swap (machine_mode mode, tree exp,
 	poval = &target;
     }
   if (!expand_atomic_compare_and_swap (pbool, poval, mem, old_val, new_val,
-				       false, MEMMODEL_SEQ_CST,
-				       MEMMODEL_SEQ_CST))
+				       false, MEMMODEL_SYNC_SEQ_CST,
+				       MEMMODEL_SYNC_SEQ_CST))
     return NULL_RTX;
 
   return target;
@@ -5337,7 +5337,7 @@ expand_builtin_sync_lock_release (machine_mode mode, tree exp)
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
 
-  expand_atomic_store (mem, const0_rtx, MEMMODEL_RELEASE, true);
+  expand_atomic_store (mem, const0_rtx, MEMMODEL_SYNC_RELEASE, true);
 }
 
 /* Given an integer representing an ``enum memmodel'', verify its
@@ -5366,7 +5366,8 @@ get_memmodel (tree exp)
       return MEMMODEL_SEQ_CST;
     }
 
-  if ((INTVAL (op) & MEMMODEL_MASK) >= MEMMODEL_LAST)
+  /* Should never see a user explicit SYNC memodel model, so >= LAST works. */
+  if (memmodel_base (val) >= MEMMODEL_LAST)
     {
       warning (OPT_Winvalid_memory_model,
 	       "invalid memory model argument to builtin");
@@ -5433,8 +5434,7 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
       success = MEMMODEL_SEQ_CST;
     }
  
-  if ((failure & MEMMODEL_MASK) == MEMMODEL_RELEASE
-      || (failure & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
+  if (is_mm_release (failure) || is_mm_acq_rel (failure))
     {
       warning (OPT_Winvalid_memory_model,
 	       "invalid failure memory model for "
@@ -5496,8 +5496,7 @@ expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
   enum memmodel model;
 
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
-  if ((model & MEMMODEL_MASK) == MEMMODEL_RELEASE
-      || (model & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
+  if (is_mm_release (model) || is_mm_acq_rel (model))
     {
       warning (OPT_Winvalid_memory_model,
 	       "invalid memory model for %<__atomic_load%>");
@@ -5526,9 +5525,8 @@ expand_builtin_atomic_store (machine_mode mode, tree exp)
   enum memmodel model;
 
   model = get_memmodel (CALL_EXPR_ARG (exp, 2));
-  if ((model & MEMMODEL_MASK) != MEMMODEL_RELAXED
-      && (model & MEMMODEL_MASK) != MEMMODEL_SEQ_CST
-      && (model & MEMMODEL_MASK) != MEMMODEL_RELEASE)
+  if (!(is_mm_relaxed (model) || is_mm_seq_cst (model)
+	|| is_mm_release (model)))
     {
       warning (OPT_Winvalid_memory_model,
 	       "invalid memory model for %<__atomic_store%>");
@@ -5635,9 +5633,7 @@ expand_builtin_atomic_clear (tree exp)
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
 
-  if ((model & MEMMODEL_MASK) == MEMMODEL_CONSUME
-      || (model & MEMMODEL_MASK) == MEMMODEL_ACQUIRE
-      || (model & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
+  if (is_mm_consume (model) || is_mm_acquire (model) || is_mm_acq_rel (model))
     {
       warning (OPT_Winvalid_memory_model,
 	       "invalid memory model for %<__atomic_store%>");
@@ -5833,7 +5829,7 @@ expand_builtin_atomic_signal_fence (tree exp)
 static void
 expand_builtin_sync_synchronize (void)
 {
-  expand_mem_thread_fence (MEMMODEL_SEQ_CST);
+  expand_mem_thread_fence (MEMMODEL_SYNC_SEQ_CST);
 }
 
 static rtx

@@ -41,18 +41,21 @@
   [(match_operand:SI 0 "const_int_operand" "")]		;; model
   ""
 {
-  enum memmodel model = (enum memmodel) INTVAL (operands[0]);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[0]));
   switch (model)
     {
     case MEMMODEL_RELAXED:
       break;
     case MEMMODEL_CONSUME:
     case MEMMODEL_ACQUIRE:
+    case MEMMODEL_SYNC_ACQUIRE:
     case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
     case MEMMODEL_ACQ_REL:
       emit_insn (gen_lwsync ());
       break;
     case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
       emit_insn (gen_hwsync ());
       break;
     default:
@@ -144,9 +147,9 @@
   if (<MODE>mode == TImode && !TARGET_SYNC_TI)
     FAIL;
 
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
 
-  if (model == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     emit_insn (gen_hwsync ());
 
   if (<MODE>mode != TImode)
@@ -182,7 +185,9 @@
       break;
     case MEMMODEL_CONSUME:
     case MEMMODEL_ACQUIRE:
+    case MEMMODEL_SYNC_ACQUIRE:
     case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
       emit_insn (gen_loadsync_<mode> (operands[0]));
       break;
     default:
@@ -209,15 +214,17 @@
   if (<MODE>mode == TImode && !TARGET_SYNC_TI)
     FAIL;
 
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
   switch (model)
     {
     case MEMMODEL_RELAXED:
       break;
     case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
       emit_insn (gen_lwsync ());
       break;
     case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
       emit_insn (gen_hwsync ());
       break;
     default:

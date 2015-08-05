@@ -51526,7 +51526,7 @@ ix86_destroy_cost_data (void *data)
 static unsigned HOST_WIDE_INT
 ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 {
-  unsigned HOST_WIDE_INT model = val & MEMMODEL_MASK;
+  enum memmodel model = memmodel_from_int (val);
   bool strong;
 
   if (val & ~(unsigned HOST_WIDE_INT)(IX86_HLE_ACQUIRE|IX86_HLE_RELEASE
@@ -51537,14 +51537,14 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 	       "Unknown architecture specific memory model");
       return MEMMODEL_SEQ_CST;
     }
-  strong = (model == MEMMODEL_ACQ_REL || model == MEMMODEL_SEQ_CST);
-  if (val & IX86_HLE_ACQUIRE && !(model == MEMMODEL_ACQUIRE || strong))
+  strong = (is_mm_acq_rel (model) || is_mm_seq_cst (model));
+  if (val & IX86_HLE_ACQUIRE && !(is_mm_acquire (model) || strong))
     {
       warning (OPT_Winvalid_memory_model,
               "HLE_ACQUIRE not used with ACQUIRE or stronger memory model");
       return MEMMODEL_SEQ_CST | IX86_HLE_ACQUIRE;
     }
-   if (val & IX86_HLE_RELEASE && !(model == MEMMODEL_RELEASE || strong))
+  if (val & IX86_HLE_RELEASE && !(is_mm_release (model) || strong))
     {
       warning (OPT_Winvalid_memory_model,
               "HLE_RELEASE not used with RELEASE or stronger memory model");

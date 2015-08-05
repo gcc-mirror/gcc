@@ -20537,12 +20537,15 @@ rs6000_pre_atomic_barrier (rtx mem, enum memmodel model)
     case MEMMODEL_RELAXED:
     case MEMMODEL_CONSUME:
     case MEMMODEL_ACQUIRE:
+    case MEMMODEL_SYNC_ACQUIRE:
       break;
     case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
     case MEMMODEL_ACQ_REL:
       emit_insn (gen_lwsync ());
       break;
     case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
       emit_insn (gen_hwsync ());
       break;
     default:
@@ -20559,10 +20562,13 @@ rs6000_post_atomic_barrier (enum memmodel model)
     case MEMMODEL_RELAXED:
     case MEMMODEL_CONSUME:
     case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
       break;
     case MEMMODEL_ACQUIRE:
+    case MEMMODEL_SYNC_ACQUIRE:
     case MEMMODEL_ACQ_REL:
     case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
       emit_insn (gen_isync ());
       break;
     default:
@@ -20662,8 +20668,8 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
   oldval = operands[3];
   newval = operands[4];
   is_weak = (INTVAL (operands[5]) != 0);
-  mod_s = (enum memmodel) INTVAL (operands[6]);
-  mod_f = (enum memmodel) INTVAL (operands[7]);
+  mod_s = memmodel_from_int (INTVAL (operands[6]));
+  mod_f = memmodel_from_int (INTVAL (operands[7]));
   orig_mode = mode = GET_MODE (mem);
 
   mask = shift = NULL_RTX;
@@ -20751,12 +20757,12 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
       emit_unlikely_jump (x, label1);
     }
 
-  if (mod_f != MEMMODEL_RELAXED)
+  if (!is_mm_relaxed (mod_f))
     emit_label (XEXP (label2, 0));
 
   rs6000_post_atomic_barrier (mod_s);
 
-  if (mod_f == MEMMODEL_RELAXED)
+  if (is_mm_relaxed (mod_f))
     emit_label (XEXP (label2, 0));
 
   if (shift)

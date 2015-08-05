@@ -1,3 +1,64 @@
+2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
+
+	Backport from trunk
+	2015-05-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/65697
+	* coretypes.h (MEMMODEL_SYNC, MEMMODEL_BASE_MASK): New macros.
+	(enum memmodel): Add SYNC_{ACQUIRE,RELEASE,SEQ_CST}.
+	* tree.h (memmodel_from_int, memmodel_base, is_mm_relaxed)
+	(is_mm_consume,is_mm_acquire, is_mm_release, is_mm_acq_rel)
+	(is_mm_seq_cst, is_mm_sync): New accessor functions.
+	* builtins.c (expand_builtin_sync_operation)
+	(expand_builtin_compare_and_swap): Use MEMMODEL_SYNC_SEQ_CST.
+	(expand_builtin_sync_lock_release): Use MEMMODEL_SYNC_RELEASE.
+	(get_memmodel,  expand_builtin_atomic_compare_exchange)
+	(expand_builtin_atomic_load, expand_builtin_atomic_store)
+	(expand_builtin_atomic_clear): Use new accessor routines.
+	(expand_builtin_sync_synchronize): Use MEMMODEL_SYNC_SEQ_CST.
+	* optabs.c (expand_compare_and_swap_loop): Use MEMMODEL_SYNC_SEQ_CST.
+	(maybe_emit_sync_lock_test_and_set): Use new accessors and
+	MEMMODEL_SYNC_ACQUIRE.
+	(expand_sync_lock_test_and_set): Use MEMMODEL_SYNC_ACQUIRE.
+	(expand_mem_thread_fence, expand_mem_signal_fence, expand_atomic_load)
+	(expand_atomic_store): Use new accessors.
+	* emit-rtl.c (need_atomic_barrier_p): Add additional enum cases.
+	* tsan.c (instrument_builtin_call): Update check for memory model beyond
+	final enum to use MEMMODEL_LAST.
+	* c-family/c-common.c: Use new accessor for memmodel_base.
+	* config/aarch64/aarch64.c (aarch64_expand_compare_and_swap): Use new
+	accessors.
+	* config/aarch64/atomics.md (atomic_load<mode>,atomic_store<mode>)
+	(arch64_load_exclusive<mode>, aarch64_store_exclusive<mode>)
+	(mem_thread_fence, *dmb): Likewise.
+	* config/alpha/alpha.c (alpha_split_compare_and_swap)
+	(alpha_split_compare_and_swap_12): Likewise.
+	* config/arm/arm.c (arm_expand_compare_and_swap)
+	(arm_split_compare_and_swap, arm_split_atomic_op): Likewise.
+	* config/arm/sync.md (atomic_load<mode>, atomic_store<mode>)
+	(atomic_loaddi): Likewise.
+	* config/i386/i386.c (ix86_destroy_cost_data, ix86_memmodel_check):
+	Likewise.
+	* config/i386/sync.md (mem_thread_fence, atomic_store<mode>): Likewise.
+	* config/ia64/ia64.c (ia64_expand_atomic_op): Add new memmodel cases and
+	use new accessors.
+	* config/ia64/sync.md (mem_thread_fence, atomic_load<mode>)
+	(atomic_store<mode>, atomic_compare_and_swap<mode>)
+	(atomic_exchange<mode>): Use new accessors.
+	* config/mips/mips.c (mips_process_sync_loop): Likewise.
+	* config/pa/pa.md (atomic_loaddi, atomic_storedi): Likewise.
+	* config/rs6000/rs6000.c (rs6000_pre_atomic_barrier)
+	(rs6000_post_atomic_barrier): Add new cases.
+	(rs6000_expand_atomic_compare_and_swap): Use new accessors.
+	* config/rs6000/sync.md (mem_thread_fence): Add new cases.
+	(atomic_load<mode>): Add new cases and use new accessors.
+	(store_quadpti): Add new cases.
+	* config/s390/s390.md (mem_thread_fence, atomic_store<mode>): Use new
+	accessors.
+	* config/sparc/sparc.c (sparc_emit_membar_for_model): Use new accessors.
+	* doc/extend.texi: Update docs to indicate 16 bits are used for memory
+	model, not 8.
+
 2015-08-04  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline:
