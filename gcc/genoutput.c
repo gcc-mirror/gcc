@@ -973,46 +973,6 @@ gen_expand (md_rtx_info *info)
   place_operands (d);
 }
 
-/* Process a define_split just read.  Assign its code number,
-   only for reasons of consistency and to simplify genrecog.  */
-
-static void
-gen_split (md_rtx_info *info)
-{
-  struct pattern_stats stats;
-  data *d = new data;
-  int i;
-
-  d->code_number = info->index;
-  d->loc = info->loc;
-  d->name = 0;
-
-  /* Build up the list in the same order as the insns are seen
-     in the machine description.  */
-  d->next = 0;
-  *idata_end = d;
-  idata_end = &d->next;
-
-  memset (d->operand, 0, sizeof (d->operand));
-
-  /* Get the number of operands by scanning all the patterns of the
-     split patterns.  But ignore all the rest of the information thus
-     obtained.  */
-  rtx split = info->def;
-  for (i = 0; i < XVECLEN (split, 0); i++)
-    scan_operands (d, XVECEXP (split, 0, i), 0, 0);
-
-  get_pattern_stats (&stats, XVEC (split, 0));
-  d->n_generator_args = 0;
-  d->n_operands = stats.num_insn_operands;
-  d->n_dups = 0;
-  d->n_alternatives = 0;
-  d->template_code = 0;
-  d->output_format = INSN_OUTPUT_FORMAT_NONE;
-
-  place_operands (d);
-}
-
 static void
 init_insn_for_nothing (void)
 {
@@ -1053,11 +1013,6 @@ main (int argc, char **argv)
 
       case DEFINE_EXPAND:
 	gen_expand (&info);
-	break;
-
-      case DEFINE_SPLIT:
-      case DEFINE_PEEPHOLE2:
-	gen_split (&info);
 	break;
 
       case DEFINE_CONSTRAINT:

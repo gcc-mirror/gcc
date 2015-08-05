@@ -1,5 +1,17 @@
 2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gensupport.c (sequence_num): Replace with...
+	(insn_sequence_num, split_sequence_num, peephole2_sequence_num):
+	...these new variables.
+	(init_rtx_reader_args_cb): Update accordingly.
+	(get_num_code_insns): Likewise.
+	(read_md_rtx): Rework to use a while loop and get_c_test.
+	Use the new counters.  Remove redundant DEFINE_SUBST case.
+	* genoutput.c (gen_split): Delete.
+	(main): Don't call it.
+
+2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gensupport.h (get_c_test): Declare.
 	* gensupport.c (get_c_test): New function.
 	* genconditions.c (main): Use it.
