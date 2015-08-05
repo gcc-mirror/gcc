@@ -1,5 +1,14 @@
 2015-08-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
+	* config/i386/i386.md (define_attr "isa"): Addd avx512vl and
+	noavx512vl.
+	(define_attr "enabled"): Handle avx521vl and noavx512vl.
+	* config/i386/sse.md (define_insn "vec_dupv2df<mask_name>"): Split
+	AVX-512 alternative out of SSE.
+	(define_insn "*vec_concatv2df"): Ditto.
+
+2015-08-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
 	* config/i386/i386.c (bdesc_args): Rename CODE_FOR_sse4_1_ptest into
 	CODE_FOR_sse4_1_ptestv2di and CODE_FOR_avx_vtestps256 into
 	CODE_FOR_avx_ptestv4di.
