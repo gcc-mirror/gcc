@@ -1,3 +1,11 @@
+2015-08-05  Lynn Boger  <laboger@linux.vnet.ibm.com>
+
+	PR target/66870
+	* gcc/config/rs6000/rs6000.c (rs6000_emit_prologue): Check
+	for no_split_stack function attribute along with
+	flag_split_stack.
+	(rs6000_expand_split_stack_prologue): Likewise.
+
 2015-08-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Jeff Law  <law@redhat.com>
 
