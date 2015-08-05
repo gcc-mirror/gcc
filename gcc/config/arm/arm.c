@@ -27829,6 +27829,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   rtx_code_label *label;
   rtx x;
 
+  bool is_armv8_sync = arm_arch8 && is_mm_sync (model);
+
   bool use_acquire = TARGET_HAVE_LDACQ
                      && !(is_mm_relaxed (model) || is_mm_consume (model)
 			  || is_mm_release (model));
@@ -27836,6 +27838,11 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   bool use_release = TARGET_HAVE_LDACQ
                      && !(is_mm_relaxed (model) || is_mm_consume (model)
 			  || is_mm_acquire (model));
+
+  /* For ARMv8, a load-acquire is too weak for __sync memory orders.  Instead,
+     a full barrier is emitted after the store-release.  */
+  if (is_armv8_sync)
+    use_acquire = false;
 
   /* Checks whether a barrier is needed and emits one accordingly.  */
   if (!(use_acquire || use_release))
@@ -27907,7 +27914,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   emit_unlikely_jump (gen_cbranchsi4 (x, cond, const0_rtx, label));
 
   /* Checks whether a barrier is needed and emits one accordingly.  */
-  if (!(use_acquire || use_release))
+  if (is_armv8_sync
+      || !(use_acquire || use_release))
     arm_post_atomic_barrier (model);
 }
 

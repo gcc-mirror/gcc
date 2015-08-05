@@ -1,5 +1,14 @@
 2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
 
+	Backport from trunk:
+	2015-06-29  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/65697
+	* config/armc/arm.c (arm_split_atomic_op): For ARMv8, replace an
+	initial acquire barrier with final barrier.
+
+2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
+
 	Backport from trunk.
 	2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
 
