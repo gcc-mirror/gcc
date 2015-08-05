@@ -1599,6 +1599,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   final->ts.type = BT_INTEGER;
   final->ts.kind = 4;
   final->attr.artificial = 1;
+  final->attr.always_explicit = 1;
   final->attr.if_source = expr_null_wrapper ? IFSRC_IFBODY : IFSRC_DECL;
   if (ns->proc_name->attr.flavor == FL_MODULE)
     final->module = ns->proc_name->name;

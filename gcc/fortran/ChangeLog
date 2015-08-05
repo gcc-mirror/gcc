@@ -1,3 +1,9 @@
+2015-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/64921
+	* class.c (generate_finalization_wrapper): Set finalization
+	procedure symbol's always_explicit attribute.
+
 2015-08-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66942
