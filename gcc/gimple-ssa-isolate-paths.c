@@ -331,11 +331,29 @@ find_implicit_erroneous_behaviour (void)
 		  if (gimple_bb (use_stmt) != bb)
 		    continue;
 
-		  if (infer_nonnull_range (use_stmt, lhs,
-					   flag_isolate_erroneous_paths_dereference,
-					   flag_isolate_erroneous_paths_attribute))
+		  bool by_dereference 
+		    = infer_nonnull_range_by_dereference (use_stmt, lhs);
 
+		  if (by_dereference 
+		      || infer_nonnull_range_by_attribute (use_stmt, lhs))
 		    {
+		      location_t loc = gimple_location (use_stmt)
+			? gimple_location (use_stmt)
+			: gimple_phi_arg_location (phi, i);
+
+		      if (by_dereference)
+			{
+			  warning_at (loc, OPT_Wnull_dereference,
+				      "potential null pointer dereference");
+			  if (!flag_isolate_erroneous_paths_dereference)
+			    continue;
+			}
+		      else 
+			{
+			  if (!flag_isolate_erroneous_paths_attribute)
+			    continue;
+			}
+
 		      duplicate = isolate_path (bb, duplicate, e,
 						use_stmt, lhs, false);
 
@@ -381,13 +399,29 @@ find_explicit_erroneous_behaviour (void)
 	{
 	  gimple stmt = gsi_stmt (si);
 
-	  /* By passing null_pointer_node, we can use infer_nonnull_range
-	     to detect explicit NULL pointer dereferences and other uses
-	     where a non-NULL value is required.  */
-	  if (infer_nonnull_range (stmt, null_pointer_node,
-				   flag_isolate_erroneous_paths_dereference,
-				   flag_isolate_erroneous_paths_attribute))
+	  /* By passing null_pointer_node, we can use the
+	     infer_nonnull_range functions to detect explicit NULL
+	     pointer dereferences and other uses where a non-NULL
+	     value is required.  */
+	  
+	  bool by_dereference
+	    = infer_nonnull_range_by_dereference (stmt, null_pointer_node);
+	  if (by_dereference
+	      || infer_nonnull_range_by_attribute (stmt, null_pointer_node))
 	    {
+	      if (by_dereference)
+		{
+		  warning_at (gimple_location (stmt), OPT_Wnull_dereference,
+			      "null pointer dereference");
+		  if (!flag_isolate_erroneous_paths_dereference)
+		    continue;
+		}
+	      else
+		{
+		  if (!flag_isolate_erroneous_paths_attribute)
+		    continue;
+		}
+
 	      insert_trap_and_remove_trailing_statements (&si,
 							  null_pointer_node);
 
@@ -534,7 +568,8 @@ public:
       /* If we do not have a suitable builtin function for the trap statement,
 	 then do not perform the optimization.  */
       return (flag_isolate_erroneous_paths_dereference != 0
-	      || flag_isolate_erroneous_paths_attribute != 0);
+	      || flag_isolate_erroneous_paths_attribute != 0
+	      || warn_null_dereference);
     }
 
   virtual unsigned int execute (function *)

@@ -1615,7 +1615,7 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
     {
       tree arg = gimple_call_arg (stmt, i);
       if (POINTER_TYPE_P (TREE_TYPE (arg))
-	  && infer_nonnull_range (stmt, arg, false, true))
+	  && infer_nonnull_range_by_attribute (stmt, arg))
 	{
 	  gimple g;
 	  if (!is_gimple_val (arg))
@@ -1680,7 +1680,7 @@ instrument_nonnull_return (gimple_stmt_iterator *gsi)
   if (arg
       && POINTER_TYPE_P (TREE_TYPE (arg))
       && is_gimple_val (arg)
-      && infer_nonnull_range (stmt, arg, false, true))
+      && infer_nonnull_range_by_attribute (stmt, arg))
     {
       basic_block then_bb, fallthru_bb;
       *gsi = create_cond_insert_point (gsi, true, false, true,

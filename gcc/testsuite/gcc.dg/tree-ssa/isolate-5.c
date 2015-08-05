@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdelete-null-pointer-checks -fdump-tree-isolate-paths -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdelete-null-pointer-checks -fdump-tree-isolate-paths -fdump-tree-optimized -Wnull-dereference" } */
 /* { dg-skip-if "" keeps_null_pointer_checks } */
 
 struct demangle_component
@@ -36,8 +36,8 @@ d_type (struct d_info *di)
 {
    struct demangle_component *ret;
    ret = d_make_empty (di);
-   foo (ret->type);
-   bar (ret->zzz);
+   foo (ret->type); /* { dg-warning "null pointer dereference" } */
+   bar (ret->zzz); /* { dg-warning "null pointer dereference" } */
    return ret;
 }
 

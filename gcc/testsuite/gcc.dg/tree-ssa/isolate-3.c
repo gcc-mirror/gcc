@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-isolate-paths -fdelete-null-pointer-checks" } */
+/* { dg-options "-O2 -fdump-tree-isolate-paths -fdelete-null-pointer-checks -Wnull-dereference" } */
 /* { dg-skip-if "" keeps_null_pointer_checks } */
 
 
@@ -29,7 +29,7 @@ static __inline__ void
 VEC_rtx_gc_safe_grow (VEC_rtx_gc ** vec_, int size_, const char *file_,
                       unsigned line_, const char *function_)
 {
-  ((*vec_) ? &(*vec_)->base : 0)->num = size_;
+  ((*vec_) ? &(*vec_)->base : 0)->num = size_; /* { dg-warning "null pointer dereference" } */
 } 
 
 static __inline__ void
