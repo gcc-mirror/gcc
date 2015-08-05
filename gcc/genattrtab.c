@@ -2952,11 +2952,11 @@ get_attr_order (struct attr_desc ***ret)
 
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
-   calls during the compilation.  MAX_INSN_CODE is the number of unique
+   calls during the compilation.  NUM_INSN_CODES is the number of unique
    instruction codes.  */
 
 static void
-optimize_attrs (int max_insn_code)
+optimize_attrs (int num_insn_codes)
 {
   struct attr_desc *attr;
   struct attr_value *av;
@@ -2975,7 +2975,7 @@ optimize_attrs (int max_insn_code)
     return;
 
   /* Make 2 extra elements, for "code" values -2 and -1.  */
-  insn_code_values = XCNEWVEC (struct attr_value_list *, max_insn_code + 2);
+  insn_code_values = XCNEWVEC (struct attr_value_list *, num_insn_codes + 2);
 
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
@@ -3003,7 +3003,7 @@ optimize_attrs (int max_insn_code)
   gcc_assert (iv == ivbuf + num_insn_ents);
 
   /* Process one insn code at a time.  */
-  for (i = -2; i < max_insn_code; i++)
+  for (i = -2; i < num_insn_codes; i++)
     {
       /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere relevant.
 	 We use it to mean "already simplified for this insn".  */
@@ -5161,7 +5161,6 @@ main (int argc, char **argv)
   struct attr_desc *attr;
   struct insn_def *id;
   int i;
-  int max_insn_code = 0;
 
   progname = "genattrtab";
 
@@ -5224,13 +5223,10 @@ main (int argc, char **argv)
 	}
       if (GET_CODE (info.def) != DEFINE_ASM_ATTRIBUTES)
 	insn_index_number++;
-      max_insn_code = info.index;
     }
 
   if (have_error)
     return FATAL_EXIT_CODE;
-
-  max_insn_code++;
 
   /* If we didn't have a DEFINE_ASM_ATTRIBUTES, make a null one.  */
   if (! got_define_asm_attributes)
@@ -5248,14 +5244,15 @@ main (int argc, char **argv)
     expand_delays ();
 
   /* Make `insn_alternatives'.  */
-  insn_alternatives = oballocvec (uint64_t, max_insn_code);
+  int num_insn_codes = get_num_insn_codes ();
+  insn_alternatives = oballocvec (uint64_t, num_insn_codes);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_alternatives[id->insn_code]
 	= (((uint64_t) 1) << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
-  insn_n_alternatives = oballocvec (int, max_insn_code);
+  insn_n_alternatives = oballocvec (int, num_insn_codes);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_n_alternatives[id->insn_code] = id->num_alternatives;
@@ -5284,7 +5281,7 @@ main (int argc, char **argv)
   make_length_attrs ();
 
   /* Perform any possible optimizations to speed up compilation.  */
-  optimize_attrs (max_insn_code);
+  optimize_attrs (num_insn_codes);
 
   /* Now write out all the `gen_attr_...' routines.  Do these before the
      special routines so that they get defined before they are used.  */

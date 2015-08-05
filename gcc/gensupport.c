@@ -2602,6 +2602,14 @@ read_md_rtx (md_rtx_info *info)
   return true;
 }
 
+/* Return the number of possible INSN_CODEs.  Only meaningful once the
+   whole file has been processed.  */
+unsigned int
+get_num_insn_codes ()
+{
+  return sequence_num;
+}
+
 /* Helper functions for insn elision.  */
 
 /* Compute a hash function of a c_test structure, which is keyed
