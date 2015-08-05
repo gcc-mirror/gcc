@@ -1,3 +1,8 @@
+2015-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67107
+	* gcc.dg/pr67107.c: New testcase.
+
 2015-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66197

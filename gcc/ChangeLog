@@ -1,3 +1,9 @@
+2015-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67107
+	* match.pd: Guard const_binop result checking against NULL_TREE
+	result.
+
 2015-08-05  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* cse.c (cse_insn): Restoring old behaviour for src_eqv
