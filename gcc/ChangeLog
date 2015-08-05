@@ -1,5 +1,14 @@
 2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gensupport.h (get_num_insn_codes): Declare.
+	* gensupport.c (get_num_insn_codes): New function.
+	* genattrtab.c (optimize_attrs): Rename max_insn_code to
+	num_insn_codes.
+	(main): Likewise.  Use get_num_insn_codes.
+	* gencodes.c (main): Remove "last" and use get_num_insn_codes.
+
+2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR middle-end/66311
 	* wide-int.cc (wi::from_mpz): Make sure that absolute mpz value
 	is zero- rather than sign-extended.

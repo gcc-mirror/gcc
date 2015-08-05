@@ -43,6 +43,7 @@ extern rtx add_implicit_parallel (rtvec);
 extern bool init_rtx_reader_args_cb (int, char **, bool (*)(const char *));
 extern bool init_rtx_reader_args (int, char **);
 extern bool read_md_rtx (md_rtx_info *);
+extern unsigned int get_num_insn_codes ();
 
 /* Set this to 0 to disable automatic elision of insn patterns which
    can never be used in this configuration.  See genconditions.c.

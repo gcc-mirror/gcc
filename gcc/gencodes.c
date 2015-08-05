@@ -49,8 +49,6 @@ gen_insn (md_rtx_info *info)
 int
 main (int argc, char **argv)
 {
-  int last = 1;
-
   progname = "gencodes";
 
   /* We need to see all the possibilities.  Elided insns may have
@@ -79,7 +77,6 @@ enum insn_code {\n\
       case DEFINE_INSN:
       case DEFINE_EXPAND:
 	gen_insn (&info);
-	last = info.index + 1;
 	break;
 
       default:
@@ -89,7 +86,7 @@ enum insn_code {\n\
   printf ("  LAST_INSN_CODE = %d\n\
 };\n\
 \n\
-#endif /* GCC_INSN_CODES_H */\n", last);
+#endif /* GCC_INSN_CODES_H */\n", get_num_insn_codes () - 1);
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))
     return FATAL_EXIT_CODE;
