@@ -1,3 +1,8 @@
+2015-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67120
+	* gcc.dg/torture/pr67120.c: New testcase.
+
 2015-08-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52846

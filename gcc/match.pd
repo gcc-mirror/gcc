@@ -1848,13 +1848,14 @@ along with GCC; see the file COPYING3.  If not see
    (if (base0 && base1)
     (with
      {
-       int equal;
+       int equal = 2;
        if (decl_in_symtab_p (base0)
 	   && decl_in_symtab_p (base1))
          equal = symtab_node::get_create (base0)
 	           ->equal_address_to (symtab_node::get_create (base1));
-       else
-         equal = operand_equal_p (base0, base1, 0);
+       else if ((DECL_P (base0) || TREE_CODE (base0) == SSA_NAME)
+		&& (DECL_P (base1) || TREE_CODE (base1) == SSA_NAME))
+         equal = (base0 == base1);
      }
      (if (equal == 1
 	  && (cmp == EQ_EXPR || cmp == NE_EXPR
