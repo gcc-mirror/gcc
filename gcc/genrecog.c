@@ -519,10 +519,7 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	const struct pred_data *pred;
 	const char *c_test;
 
-	if (GET_CODE (info->def) == DEFINE_INSN)
-	  c_test = XSTR (info->def, 2);
-	else
-	  c_test = XSTR (info->def, 1);
+	c_test = get_c_test (info->def);
 
 	if (pred_name[0] != 0)
 	  {
@@ -4080,13 +4077,13 @@ match_pattern_2 (state *s, md_rtx_info *info, position *pos, rtx pattern)
 
    (1) the rtx doesn't match anything already matched by S
    (2) the rtx matches TOP_PATTERN and
-   (3) C_TEST is true.
+   (3) the C test required by INFO->def is true
 
    For peephole2, TOP_PATTERN is a SEQUENCE of the instruction patterns
    to match, otherwise it is a single instruction pattern.  */
 
 static void
-match_pattern_1 (state *s, md_rtx_info *info, rtx pattern, const char *c_test,
+match_pattern_1 (state *s, md_rtx_info *info, rtx pattern,
 		 acceptance_type acceptance)
 {
   if (acceptance.type == PEEPHOLE2)
@@ -4120,6 +4117,7 @@ match_pattern_1 (state *s, md_rtx_info *info, rtx pattern, const char *c_test,
     }
 
   /* Make sure that the C test is true.  */
+  const char *c_test = get_c_test (info->def);
   if (maybe_eval_c_test (c_test) != 1)
     s = add_decision (s, rtx_test::c_test (c_test), true, false);
 
@@ -4132,7 +4130,7 @@ match_pattern_1 (state *s, md_rtx_info *info, rtx pattern, const char *c_test,
    backtracking.  */
 
 static void
-match_pattern (state *s, md_rtx_info *info, rtx pattern, const char *c_test,
+match_pattern (state *s, md_rtx_info *info, rtx pattern,
 	       acceptance_type acceptance)
 {
   if (merge_states_p)
@@ -4140,11 +4138,11 @@ match_pattern (state *s, md_rtx_info *info, rtx pattern, const char *c_test,
       state root;
       /* Add the decisions to a fresh state and then merge the full tree
 	 into the existing one.  */
-      match_pattern_1 (&root, info, pattern, c_test, acceptance);
+      match_pattern_1 (&root, info, pattern, acceptance);
       merge_into_state (s, &root);
     }
   else
-    match_pattern_1 (s, info, pattern, c_test, acceptance);
+    match_pattern_1 (s, info, pattern, acceptance);
 }
 
 /* Begin the output file.  */
@@ -5256,15 +5254,13 @@ main (int argc, char **argv)
 	    acceptance.u.full.u.num_clobbers = 0;
 	    pattern = add_implicit_parallel (XVEC (def, 1));
 	    validate_pattern (pattern, &info, NULL_RTX, 0);
-	    match_pattern (&insn_root, &info, pattern,
-			   XSTR (def, 2), acceptance);
+	    match_pattern (&insn_root, &info, pattern, acceptance);
 
 	    /* If the pattern is a PARALLEL with trailing CLOBBERs,
 	       allow recog_for_combine to match without the clobbers.  */
 	    if (GET_CODE (pattern) == PARALLEL
 		&& remove_clobbers (&acceptance, &pattern))
-	      match_pattern (&insn_root, &info, pattern,
-			     XSTR (def, 2), acceptance);
+	      match_pattern (&insn_root, &info, pattern, acceptance);
 	    break;
 	  }
 
@@ -5272,8 +5268,7 @@ main (int argc, char **argv)
 	  acceptance.type = SPLIT;
 	  pattern = add_implicit_parallel (XVEC (def, 0));
 	  validate_pattern (pattern, &info, NULL_RTX, 0);
-	  match_pattern (&split_root, &info, pattern,
-			 XSTR (def, 1), acceptance);
+	  match_pattern (&split_root, &info, pattern, acceptance);
 
 	  /* Declare the gen_split routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.c.  */
@@ -5285,8 +5280,7 @@ main (int argc, char **argv)
 	  acceptance.type = PEEPHOLE2;
 	  pattern = get_peephole2_pattern (&info);
 	  validate_pattern (pattern, &info, NULL_RTX, 0);
-	  match_pattern (&peephole2_root, &info, pattern,
-			 XSTR (def, 1), acceptance);
+	  match_pattern (&peephole2_root, &info, pattern, acceptance);
 
 	  /* Declare the gen_peephole2 routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.c.  */

@@ -50,6 +50,10 @@ extern unsigned int get_num_insn_codes ();
    Must be set before calling init_md_reader.  */
 extern int insn_elision;
 
+/* Return the C test that says whether a definition rtx can be used,
+   or "" if it can be used unconditionally.  */
+extern const char *get_c_test (rtx);
+
 /* If the C test passed as the argument can be evaluated at compile
    time, return its truth value; else return -1.  The test must have
    appeared somewhere in the machine description when genconditions
