@@ -9078,6 +9078,23 @@ aarch64_expand_compare_and_swap (rtx operands[])
   emit_insn (gen_rtx_SET (VOIDmode, bval, x));
 }
 
+/* Emit a barrier, that is appropriate for memory model MODEL, at the end of a
+   sequence implementing an atomic operation.  */
+
+static void
+aarch64_emit_post_barrier (enum memmodel model)
+{
+  const enum memmodel base_model = memmodel_base (model);
+
+  if (is_mm_sync (model)
+      && (base_model == MEMMODEL_ACQUIRE
+	  || base_model == MEMMODEL_ACQ_REL
+	  || base_model == MEMMODEL_SEQ_CST))
+    {
+      emit_insn (gen_mem_thread_fence (GEN_INT (MEMMODEL_SEQ_CST)));
+    }
+}
+
 /* Split a compare and swap pattern.  */
 
 void
@@ -9140,6 +9157,8 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 {
   machine_mode mode = GET_MODE (mem);
   machine_mode wmode = (mode == DImode ? DImode : SImode);
+  const enum memmodel model = memmodel_from_int (INTVAL (model_rtx));
+  const bool is_sync = is_mm_sync (model);
   rtx_code_label *label;
   rtx x;
 
@@ -9154,7 +9173,13 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
     old_out = new_out;
   value = simplify_gen_subreg (wmode, value, mode, 0);
 
-  aarch64_emit_load_exclusive (mode, old_out, mem, model_rtx);
+  /* The initial load can be relaxed for a __sync operation since a final
+     barrier will be emitted to stop code hoisting.  */
+ if (is_sync)
+    aarch64_emit_load_exclusive (mode, old_out, mem,
+				 GEN_INT (MEMMODEL_RELAXED));
+  else
+    aarch64_emit_load_exclusive (mode, old_out, mem, model_rtx);
 
   switch (code)
     {
@@ -9190,6 +9215,10 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
 			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
   aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+
+  /* Emit any final barrier needed for a __sync operation.  */
+  if (is_sync)
+    aarch64_emit_post_barrier (model);
 }
 
 static void

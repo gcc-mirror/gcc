@@ -1,5 +1,15 @@
 2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
 
+	Backport from trunk.
+	2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/65697
+	* config/aarch64/aarch64.c (aarch64_emit_post_barrier): New.
+	(aarch64_split_atomic_op): Check for __sync memory models, emit
+	appropriate initial loads and final barriers.
+
+2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
+
 	Backport from trunk
 	2015-05-12  Andrew MacLeod  <amacleod@redhat.com>
 
