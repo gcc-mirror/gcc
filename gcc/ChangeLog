@@ -1,5 +1,11 @@
 2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR middle-end/66311
+	* wide-int.cc (wi::from_mpz): Make sure that absolute mpz value
+	is zero- rather than sign-extended.
+
+2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target-insns.def (can_extend): Delete.
 
 2015-08-05  Richard Biener  <rguenther@suse.de>

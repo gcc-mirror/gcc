@@ -1,3 +1,8 @@
+2015-08-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/66311
+	* gfortran.dg/pr66311.f90: New file.
+
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67121
