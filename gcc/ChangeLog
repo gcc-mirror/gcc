@@ -1,3 +1,7 @@
+2015-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target-insns.def (can_extend): Delete.
+
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67121
