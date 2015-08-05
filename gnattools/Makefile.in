@@ -197,7 +197,7 @@ gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib-rts
 	  ../../gnatmake$(exeext) ../../gnatlink$(exeext)
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_NATIVE) common-tools
+	  $(TOOLS_FLAGS_TO_PASS_NATIVE) common-tools $(EXTRA_GNATTOOLS)
 
 # gnatmake/link can be built with recent gnatmake/link if they are available.
 # This is especially convenient for building cross tools or for rebuilding
@@ -209,7 +209,7 @@ regnattools: $(GCC_DIR)/stamp-gnatlib-rts
 	  gnatmake-re gnatlink-re
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_NATIVE) common-tools
+	  $(TOOLS_FLAGS_TO_PASS_NATIVE) common-tools $(EXTRA_GNATTOOLS)
 
 gnattools-cross: $(GCC_DIR)/stamp-tools
 	# gnattools1-re
