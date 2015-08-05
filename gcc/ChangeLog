@@ -1,3 +1,14 @@
+2015-08-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/i386.c (bdesc_args): Rename CODE_FOR_sse4_1_ptest into
+	CODE_FOR_sse4_1_ptestv2di and CODE_FOR_avx_vtestps256 into
+	CODE_FOR_avx_ptestv4di.
+	* config/i386/sse.md (define_mode_iterator V_AVX): New.
+	(define_mode_attr sse4_1): Extend to other 128/256-bit modes.
+	(define_insn "avx_ptest256"): Merge this ...
+	(define_insn "sse4_1_ptest"): And this ...
+	(define_insn "<sse4_1>_ptest<mode>"): Into this. Use V_AVX iterator.
+
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67109
