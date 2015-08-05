@@ -1599,7 +1599,7 @@ along with GCC; see the file COPYING3.  If not see
        tree tem = const_binop (op == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR,
 			       TREE_TYPE (@1), @2, @1);
      }
-     (if (!TREE_OVERFLOW (tem))
+     (if (tem && !TREE_OVERFLOW (tem))
       (cmp @0 { tem; }))))))
 
  /* Likewise, we can simplify a comparison of a real constant with
@@ -1610,7 +1610,7 @@ along with GCC; see the file COPYING3.  If not see
   (simplify
    (cmp (minus REAL_CST@0 @1) REAL_CST@2)
    (with { tree tem = const_binop (MINUS_EXPR, TREE_TYPE (@1), @0, @2); }
-    (if (!TREE_OVERFLOW (tem))
+    (if (tem && !TREE_OVERFLOW (tem))
      (cmp { tem; } @1)))))
 
  /* Fold comparisons against built-in math functions.  */
