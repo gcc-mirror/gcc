@@ -1,3 +1,19 @@
+2015-08-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52846
+
+	* lib/fortran-modules.exp: Call cleanup-submodules from
+	cleanup-modules.
+	* gfortran.dg/public_private_module_2.f90: Add two XFAILS to
+	cover the cases where private entities are no longer optimized
+	away.
+	* gfortran.dg/public_private_module_6.f90: Add an XFAIL for the
+	same reason.
+	* gfortran.dg/submodule_1.f08: Change cleanup module names.
+	* gfortran.dg/submodule_5.f08: The same.
+	* gfortran.dg/submodule_9.f08: The same.
+	* gfortran.dg/submodule_10.f08: New test.
+
 2015-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66595

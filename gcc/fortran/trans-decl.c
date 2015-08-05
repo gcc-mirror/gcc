@@ -596,6 +596,11 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	 both, of course.) (J3/04-007, section 15.3).  */
       TREE_PUBLIC(decl) = 1;
       DECL_COMMON(decl) = 1;
+      if (sym->attr.access == ACCESS_PRIVATE && !sym->attr.public_used)
+	{
+	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (decl) = true;
+	}
     }
 
   /* If a variable is USE associated, it's always external.  */
@@ -609,9 +614,13 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       /* TODO: Don't set sym->module for result or dummy variables.  */
       gcc_assert (current_function_decl == NULL_TREE || sym->result == sym);
 
-      if (sym->attr.access != ACCESS_PRIVATE || sym->attr.public_used)
-	TREE_PUBLIC (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
+      if (sym->attr.access == ACCESS_PRIVATE && !sym->attr.public_used)
+	{
+	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (decl) = true;
+	}
     }
 
   /* Derived types are a bit peculiar because of the possibility of
@@ -837,9 +846,13 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	  else
 	    TREE_STATIC (token) = 1;
 
-	  if (sym->attr.use_assoc || sym->attr.access != ACCESS_PRIVATE ||
-	      sym->attr.public_used)
-	    TREE_PUBLIC (token) = 1;
+	  TREE_PUBLIC (token) = 1;
+
+	  if (sym->attr.access == ACCESS_PRIVATE && !sym->attr.public_used)
+	    {
+	      DECL_VISIBILITY (token) = VISIBILITY_HIDDEN;
+	      DECL_VISIBILITY_SPECIFIED (token) = true;
+	    }
 	}
       else
 	{
@@ -1747,9 +1760,12 @@ get_proc_pointer_decl (gfc_symbol *sym)
   else if (sym->module && sym->ns->proc_name->attr.flavor == FL_MODULE)
     {
       /* This is the declaration of a module variable.  */
-      if (sym->ns->proc_name->attr.flavor == FL_MODULE
-	  && (sym->attr.access != ACCESS_PRIVATE || sym->attr.public_used))
-	TREE_PUBLIC (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+      if (sym->attr.access == ACCESS_PRIVATE && !sym->attr.public_used)
+	{
+	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (decl) = true;
+	}
       TREE_STATIC (decl) = 1;
     }
 

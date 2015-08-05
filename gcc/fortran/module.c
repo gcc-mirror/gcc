@@ -525,9 +525,9 @@ gfc_match_use (void)
   gfc_intrinsic_op op;
   match m;
   gfc_use_list *use_list;
- 
+
   use_list = gfc_get_use_list ();
-  
+
   if (gfc_match (" , ") == MATCH_YES)
     {
       if ((m = gfc_match (" %n ::", module_nature)) == MATCH_YES)
@@ -1080,7 +1080,7 @@ gzopen_included_file_1 (const char *name, gfc_directorylist *list,
   return NULL;
 }
 
-static gzFile 
+static gzFile
 gzopen_included_file (const char *name, bool include_cwd, bool module)
 {
   gzFile f = NULL;
@@ -1660,7 +1660,7 @@ write_atom (atom_type atom, const void *v)
 
     }
 
-  if(p == NULL || *p == '\0') 
+  if(p == NULL || *p == '\0')
      len = 0;
   else
   len = strlen (p);
@@ -1856,7 +1856,7 @@ unquote_string (const char *s)
     {
       if (*p != '\\')
 	continue;
-	
+
       if (p[1] == '\\')
 	p++;
       else if (p[1] == 'U')
@@ -2106,7 +2106,7 @@ mio_symbol_attribute (symbol_attribute *attr)
   attr->proc = MIO_NAME (procedure_type) (attr->proc, procedures);
   attr->if_source = MIO_NAME (ifsrc) (attr->if_source, ifsrc_types);
   attr->save = MIO_NAME (save_state) (attr->save, save_status);
-  
+
   ext_attr = attr->ext_attr;
   mio_integer ((int *) &ext_attr);
   attr->ext_attr = ext_attr;
@@ -2472,7 +2472,7 @@ mio_typespec (gfc_typespec *ts)
   /* Add info for C interop and is_iso_c.  */
   mio_integer (&ts->is_c_interop);
   mio_integer (&ts->is_iso_c);
-  
+
   /* If the typespec is for an identifier either from iso_c_binding, or
      a constant that was initialized to an identifier from it, use the
      f90_type.  Otherwise, use the ts->type, since it shouldn't matter.  */
@@ -2725,7 +2725,7 @@ mio_component (gfc_component *c, int vtype)
   mio_symbol_attribute (&c->attr);
   if (c->ts.type == BT_CLASS)
     c->attr.class_ok = 1;
-  c->attr.access = MIO_NAME (gfc_access) (c->attr.access, access_types); 
+  c->attr.access = MIO_NAME (gfc_access) (c->attr.access, access_types);
 
   if (!vtype || strcmp (c->name, "_final") == 0
       || strcmp (c->name, "_hash") == 0)
@@ -2925,7 +2925,7 @@ mio_symtree_ref (gfc_symtree **stp)
 	    resolve_fixups (p->fixup, p->u.rsym.sym);
 	  p->fixup = NULL;
 	}
-      
+
       if (p->type == P_UNKNOWN)
 	p->type = P_SYMBOL;
 
@@ -3260,7 +3260,7 @@ static const mstring intrinsics[] =
 
 
 /* Remedy a couple of situations where the gfc_expr's can be defective.  */
- 
+
 static void
 fix_mio_expr (gfc_expr *e)
 {
@@ -3830,7 +3830,7 @@ mio_full_typebound_tree (gfc_symtree** root)
 	{
 	  gfc_symtree* st;
 
-	  mio_lparen (); 
+	  mio_lparen ();
 
 	  require_atom (ATOM_STRING);
 	  st = gfc_get_tbp_symtree (root, atom_string);
@@ -3931,7 +3931,7 @@ static void
 mio_full_f2k_derived (gfc_symbol *sym)
 {
   mio_lparen ();
-  
+
   if (iomode == IO_OUTPUT)
     {
       if (sym->f2k_derived)
@@ -4158,7 +4158,7 @@ static void
 mio_symbol (gfc_symbol *sym)
 {
   int intmod = INTMOD_NONE;
-  
+
   mio_lparen ();
 
   mio_symbol_attribute (&sym->attr);
@@ -4219,7 +4219,7 @@ mio_symbol (gfc_symbol *sym)
       else
 	sym->from_intmod = (intmod_id) intmod;
     }
-  
+
   mio_integer (&(sym->intmod_sym_id));
 
   if (sym->attr.flavor == FL_DERIVED)
@@ -4559,7 +4559,7 @@ load_commons (void)
       if (strlen (label))
 	p->binding_label = IDENTIFIER_POINTER (get_identifier (label));
       XDELETEVEC (label);
-      
+
       mio_rparen ();
     }
 
@@ -4805,7 +4805,7 @@ load_needed (pointer_info *p)
       sym->name = dt_lower_string (p->u.rsym.true_name);
       sym->module = gfc_get_string (p->u.rsym.module);
       if (p->u.rsym.binding_label)
-	sym->binding_label = IDENTIFIER_POINTER (get_identifier 
+	sym->binding_label = IDENTIFIER_POINTER (get_identifier
 						 (p->u.rsym.binding_label));
 
       associate_integer_pointer (p, sym);
@@ -4989,7 +4989,7 @@ read_module (void)
 	info->u.rsym.binding_label = bind_label;
       else
 	XDELETEVEC (bind_label);
-      
+
       require_atom (ATOM_INTEGER);
       info->u.rsym.ns = atom_int;
 
@@ -5165,8 +5165,8 @@ read_module (void)
 		  sym->module = gfc_get_string (info->u.rsym.module);
 
 		  if (info->u.rsym.binding_label)
-		    sym->binding_label = 
-		      IDENTIFIER_POINTER (get_identifier 
+		    sym->binding_label =
+		      IDENTIFIER_POINTER (get_identifier
 					  (info->u.rsym.binding_label));
 		}
 
@@ -5279,13 +5279,18 @@ read_module (void)
 
 /* Given an access type that is specific to an entity and the default
    access, return nonzero if the entity is publicly accessible.  If the
-   element is declared as PUBLIC, then it is public; if declared 
+   element is declared as PUBLIC, then it is public; if declared
    PRIVATE, then private, and otherwise it is public unless the default
    access in this context has been declared PRIVATE.  */
+
+static bool dump_smod = false;
 
 static bool
 check_access (gfc_access specific_access, gfc_access default_access)
 {
+  if (dump_smod)
+    return true;
+
   if (specific_access == ACCESS_PUBLIC)
     return TRUE;
   if (specific_access == ACCESS_PRIVATE)
@@ -5359,7 +5364,7 @@ write_common_0 (gfc_symtree *st, bool this_module)
   const char *label;
   struct written_common *w;
   bool write_me = true;
-	      
+
   if (st == NULL)
     return;
 
@@ -5436,8 +5441,8 @@ write_blank_common (void)
   const char * name = BLANK_COMMON_NAME;
   int saved;
   /* TODO: Blank commons are not bind(c).  The F2003 standard probably says
-     this, but it hasn't been checked.  Just making it so for now.  */  
-  int is_bind_c = 0;  
+     this, but it hasn't been checked.  Just making it so for now.  */
+  int is_bind_c = 0;
 
   if (gfc_current_ns->blank_common.head == NULL)
     return;
@@ -5697,8 +5702,8 @@ find_symbols_to_write(sorted_pointer_info **tree, pointer_info *p)
   if (p->type == P_SYMBOL && p->u.wsym.state == NEEDS_WRITE)
     {
       sorted_pointer_info *sp = gfc_get_sorted_pointer_info();
-      sp->p = p; 
- 
+      sp->p = p;
+
       gfc_insert_bbt (tree, sp, compare_sorted_pointer_info);
    }
 
@@ -5724,7 +5729,7 @@ write_symbol1_recursion (sorted_pointer_info *sp)
   p1->u.wsym.state = WRITTEN;
   write_symbol (p1->integer, p1->u.wsym.sym);
   p1->u.wsym.sym->attr.public_used = 1;
- 
+
   write_symbol1_recursion (sp->right);
 }
 
@@ -5945,10 +5950,10 @@ read_crc32_from_module_file (const char* filename, uLong* crc)
   /* Close the file.  */
   fclose (file);
 
-  val = (buf[0] & 0xFF) + ((buf[1] & 0xFF) << 8) + ((buf[2] & 0xFF) << 16) 
+  val = (buf[0] & 0xFF) + ((buf[1] & 0xFF) << 8) + ((buf[2] & 0xFF) << 16)
     + ((buf[3] & 0xFF) << 24);
   *crc = val;
-  
+
   /* For debugging, the CRC value printed in hexadecimal should match
      the CRC printed by "zcat -l -v filename".
      printf("CRC of file %s is %x\n", filename, val); */
@@ -5961,8 +5966,8 @@ read_crc32_from_module_file (const char* filename, uLong* crc)
    processing the module, dump_flag will be set to zero and we delete
    the module file, even if it was already there.  */
 
-void
-gfc_dump_module (const char *name, int dump_flag)
+static void
+dump_module (const char *name, int dump_flag)
 {
   int n;
   char *filename, *filename_tmp;
@@ -5970,13 +5975,13 @@ gfc_dump_module (const char *name, int dump_flag)
 
   module_name = gfc_get_string (name);
 
-  if (gfc_state_stack->state == COMP_SUBMODULE)
+  if (dump_smod)
     {
       name = submodule_name;
       n = strlen (name) + strlen (SUBMODULE_EXTENSION) + 1;
     }
   else
-  n = strlen (name) + strlen (MODULE_EXTENSION) + 1;
+    n = strlen (name) + strlen (MODULE_EXTENSION) + 1;
 
   if (gfc_option.module_dir != NULL)
     {
@@ -5991,7 +5996,7 @@ gfc_dump_module (const char *name, int dump_flag)
       strcpy (filename, name);
     }
 
-  if (gfc_state_stack->state == COMP_SUBMODULE)
+  if (dump_smod)
     strcat (filename, SUBMODULE_EXTENSION);
   else
   strcat (filename, MODULE_EXTENSION);
@@ -6059,6 +6064,27 @@ gfc_dump_module (const char *name, int dump_flag)
     }
 }
 
+
+void
+gfc_dump_module (const char *name, int dump_flag)
+{
+  if (gfc_state_stack->state == COMP_SUBMODULE)
+    dump_smod = true;
+  else
+    dump_smod =false;
+
+  dump_module (name, dump_flag);
+
+  if (dump_smod)
+    return;
+
+  /* Write a submodule file from a module.  The 'dump_smod' flag switches
+     off the check for PRIVATE entities.  */
+  dump_smod = true;
+  submodule_name = module_name;
+  dump_module (name, dump_flag);
+  dump_smod = false;
+}
 
 static void
 create_intrinsic_function (const char *name, int id,
@@ -6140,7 +6166,7 @@ import_iso_c_binding_module (void)
       /* symtree doesn't already exist in current namespace.  */
       gfc_get_sym_tree (iso_c_module_name, gfc_current_ns, &mod_symtree,
 			false);
-      
+
       if (mod_symtree != NULL)
 	mod_sym = mod_symtree->n.sym;
       else
@@ -6452,7 +6478,7 @@ create_int_parameter_array (const char *name, int size, gfc_expr *value,
   sym->as->rank = 1;
   sym->as->type = AS_EXPLICIT;
   sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
-  sym->as->upper[0] = gfc_get_int_expr (gfc_default_integer_kind, NULL, size); 
+  sym->as->upper[0] = gfc_get_int_expr (gfc_default_integer_kind, NULL, size);
 
   sym->value = value;
   sym->value->shape = gfc_get_shape (1);
@@ -6754,13 +6780,12 @@ gfc_use_module (gfc_use_list *module)
 		     "USE statement at %C has no ONLY qualifier");
 
   if (gfc_state_stack->state == COMP_MODULE
-      || module->submodule_name == NULL
-      || strcmp (module_name, module->submodule_name) == 0)
+      || module->submodule_name == NULL)
     {
       filename = XALLOCAVEC (char, strlen (module_name)
 				   + strlen (MODULE_EXTENSION) + 1);
-  strcpy (filename, module_name);
-  strcat (filename, MODULE_EXTENSION);
+      strcpy (filename, module_name);
+      strcat (filename, MODULE_EXTENSION);
     }
   else
     {
@@ -7003,7 +7028,7 @@ gfc_use_modules (void)
 		  r->next = next->rename;
 		  next->rename = seek->rename;
 		}
-	      last->next = seek->next; 
+	      last->next = seek->next;
 	      free (seek);
 	    }
 	  else
