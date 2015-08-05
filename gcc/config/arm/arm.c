@@ -27764,6 +27764,8 @@ arm_split_compare_and_swap (rtx operands[])
   scratch = operands[7];
   mode = GET_MODE (mem);
 
+  bool is_armv8_sync = arm_arch8 && is_mm_sync (mod_s);
+
   bool use_acquire = TARGET_HAVE_LDACQ
                      && !(is_mm_relaxed (mod_s) || is_mm_consume (mod_s)
 			  || is_mm_release (mod_s));
@@ -27771,6 +27773,11 @@ arm_split_compare_and_swap (rtx operands[])
   bool use_release = TARGET_HAVE_LDACQ
                      && !(is_mm_relaxed (mod_s) || is_mm_consume (mod_s)
 			  || is_mm_acquire (mod_s));
+
+  /* For ARMv8, the load-acquire is too weak for __sync memory orders.  Instead,
+     a full barrier is emitted after the store-release.  */
+  if (is_armv8_sync)
+    use_acquire = false;
 
   /* Checks whether a barrier is needed and emits one accordingly.  */
   if (!(use_acquire || use_release))
@@ -27812,7 +27819,8 @@ arm_split_compare_and_swap (rtx operands[])
     emit_label (label2);
 
   /* Checks whether a barrier is needed and emits one accordingly.  */
-  if (!(use_acquire || use_release))
+  if (is_armv8_sync
+      || !(use_acquire || use_release))
     arm_post_atomic_barrier (mod_s);
 
   if (is_mm_relaxed (mod_f))
