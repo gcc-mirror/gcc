@@ -270,6 +270,16 @@ enum function_class {
   function_c11_misc
 };
 
+/* Enumerate visibility settings.  This is deliberately ordered from most
+   to least visibility.  */
+enum symbol_visibility
+{
+  VISIBILITY_DEFAULT,
+  VISIBILITY_PROTECTED,
+  VISIBILITY_HIDDEN,
+  VISIBILITY_INTERNAL
+};
+
 /* Suppose that higher bits are target dependent. */
 #define MEMMODEL_MASK ((1<<16)-1)
 
