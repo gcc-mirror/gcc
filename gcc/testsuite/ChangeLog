@@ -1,3 +1,18 @@
+2015-08-05  Matthew Wahab  <matthew.wahab@arm.com>
+
+	Backport from trunk
+	2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/65697
+	* gcc.target/aarch64/sync-comp-swap.c: New.
+	* gcc.target/aarch64/sync-comp-swap.x: New.
+	* gcc.target/aarch64/sync-op-acquire.c: New.
+	* gcc.target/aarch64/sync-op-acquire.x: New.
+	* gcc.target/aarch64/sync-op-full.c: New.
+	* gcc.target/aarch64/sync-op-full.x: New.
+	* gcc.target/aarch64/sync-op-release.c: New.
+	* gcc.target/aarch64/sync-op-release.x: New.
+
 2015-08-04  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gcc.target/aarch64/fnmul-1.c: Fix whitespace.
