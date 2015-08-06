@@ -6497,6 +6497,10 @@ s390_dwarf_frame_reg_mode (int regno)
 {
   machine_mode save_mode = default_dwarf_frame_reg_mode (regno);
 
+  /* Make sure not to return DImode for any GPR with -m31 -mzarch.  */
+  if (GENERAL_REGNO_P (regno))
+    save_mode = Pmode;
+
   /* The rightmost 64 bits of vector registers are call-clobbered.  */
   if (GET_MODE_SIZE (save_mode) > 8)
     save_mode = DImode;
