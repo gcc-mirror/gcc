@@ -5041,20 +5041,12 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
 		  {
 		    tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
 		    op0 = (*valueize) (op0);
-		    if (subcode == NE_EXPR)
-		      {
-			if (integer_zerop (op1))
-			  return op0;
-			else if (integer_zerop (op0))
-			  return op1;
-		      }
-		    else
-		      {
-			if (integer_onep (op1))
-			  return op0;
-			else if (integer_onep (op0))
-			  return op1;
-		      }
+		    if (TREE_CODE (op0) == INTEGER_CST)
+		      std::swap (op0, op1);
+		    if (TREE_CODE (op1) == INTEGER_CST
+			&& ((subcode == NE_EXPR && integer_zerop (op1))
+			    || (subcode == EQ_EXPR && integer_onep (op1))))
+		      return op0;
 		  }
 	      }
 	    return NULL_TREE;

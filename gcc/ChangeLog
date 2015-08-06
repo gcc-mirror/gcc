@@ -1,3 +1,8 @@
+2015-08-06  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Simplify
+	bool comparison canonicalization and restrict to integers.
+
 2015-08-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	* coretypes.h (enum symbol_visibility): Relocate here.
