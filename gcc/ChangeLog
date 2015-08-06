@@ -1,5 +1,10 @@
 2015-08-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_dwarf_frame_reg_mode): Return Pmode for
+	all GPRs.
+
+2015-08-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_expand_tbegin): Expand either
 	tbegin_1_z13 or tbegin_1 depending on VX flag.
 	* config/s390/s390.md ("tbegin_1_z13"): New expander.
