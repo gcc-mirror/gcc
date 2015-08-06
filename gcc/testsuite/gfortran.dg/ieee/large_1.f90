@@ -16,6 +16,7 @@ program test
 
   real(kind=k1) :: x1, y1
   real(kind=k2) :: x2, y2
+  logical :: l
 
   ! Checking ieee_is_finite
 
@@ -52,7 +53,8 @@ program test
   if (.not. ieee_support_rounding(ieee_nearest, x1)) call abort
   if (.not. ieee_support_sqrt(x1)) call abort
   if (.not. ieee_support_standard(x1)) call abort
-  if (.not. ieee_support_underflow_control(x1)) call abort
+
+  l = ieee_support_underflow_control(x1)
 
   if (.not. ieee_support_datatype(x2)) call abort
   if (.not. ieee_support_denormal(x2)) call abort
@@ -63,7 +65,8 @@ program test
   if (.not. ieee_support_rounding(ieee_nearest, x2)) call abort
   if (.not. ieee_support_sqrt(x2)) call abort
   if (.not. ieee_support_standard(x2)) call abort
-  if (.not. ieee_support_underflow_control(x2)) call abort
+
+  l = ieee_support_underflow_control(x2)
 
   ! ieee_value and ieee_class
 

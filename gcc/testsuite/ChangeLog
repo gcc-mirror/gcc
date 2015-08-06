@@ -1,3 +1,8 @@
+2015-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/64022
+	* gfortran.dg/ieee/large_1.f90: Adjust test.
+
 2015-08-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Jeff Law  <law@redhat.com>
 
