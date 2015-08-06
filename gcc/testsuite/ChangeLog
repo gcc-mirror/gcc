@@ -1,3 +1,8 @@
+2015-08-06  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	* gcc.dg/vect/vect-mult-pattern-1.c: New test.
+	* gcc.dg/vect/vect-mult-pattern-2.c: New test.
+
 2015-08-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/dwarfregtable-1.c: New test.
