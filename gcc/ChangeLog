@@ -1,3 +1,8 @@
+2015-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_concatv2df): Declare added
+	alternatives as sselog type.
+
 2015-08-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_dwarf_frame_reg_mode): Return Pmode for
