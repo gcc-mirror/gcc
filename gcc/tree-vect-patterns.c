@@ -76,6 +76,10 @@ static gimple vect_recog_vector_vector_shift_pattern (vec<gimple> *,
 						      tree *, tree *);
 static gimple vect_recog_divmod_pattern (vec<gimple> *,
 					 tree *, tree *);
+
+static gimple vect_recog_mult_pattern (vec<gimple> *,
+				       tree *, tree *);
+
 static gimple vect_recog_mixed_size_cond_pattern (vec<gimple> *,
 						  tree *, tree *);
 static gimple vect_recog_bool_pattern (vec<gimple> *, tree *, tree *);
@@ -90,6 +94,7 @@ static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
 	vect_recog_rotate_pattern,
 	vect_recog_vector_vector_shift_pattern,
 	vect_recog_divmod_pattern,
+	vect_recog_mult_pattern,
 	vect_recog_mixed_size_cond_pattern,
 	vect_recog_bool_pattern};
 
@@ -2144,6 +2149,140 @@ vect_recog_vector_vector_shift_pattern (vec<gimple> *stmts,
     dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
 
   stmts->safe_push (last_stmt);
+  return pattern_stmt;
+}
+
+/* Detect multiplication by constant which are postive or negatives of power 2,
+   and convert them to shift patterns.
+
+   Mult with constants that are postive power of two.
+   type a_t;
+   type b_t
+   S1: b_t = a_t * n
+
+   or
+
+   Mult with constants that are negative power of two.
+   S2: b_t = a_t * -n
+
+   Input/Output:
+
+   STMTS: Contains a stmt from which the pattern search begins,
+   i.e. the mult stmt.  Convert the mult operation to LSHIFT if
+   constant operand is a power of 2.
+   type a_t, b_t
+   S1': b_t = a_t << log2 (n)
+
+   Convert the mult operation to LSHIFT and followed by a NEGATE
+   if constant operand is a negative power of 2.
+   type a_t, b_t, res_T;
+   S2': b_t = a_t << log2 (n)
+   S3': res_T  = - (b_t)
+
+ Output:
+
+  * TYPE_IN: The type of the input arguments to the pattern.
+
+  * TYPE_OUT: The type of the output of this pattern.
+
+  * Return value: A new stmt that will be used to replace the multiplication
+    S1 or S2 stmt.  */
+
+static gimple
+vect_recog_mult_pattern (vec<gimple> *stmts,
+			 tree *type_in, tree *type_out)
+{
+  gimple last_stmt = stmts->pop ();
+  tree oprnd0, oprnd1, vectype, itype;
+  gimple pattern_stmt, def_stmt;
+  optab optab;
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
+  int power2_val, power2_neg_val;
+  tree shift;
+
+  if (!is_gimple_assign (last_stmt))
+    return NULL;
+
+  if (gimple_assign_rhs_code (last_stmt) != MULT_EXPR)
+    return NULL;
+
+  oprnd0 = gimple_assign_rhs1 (last_stmt);
+  oprnd1 = gimple_assign_rhs2 (last_stmt);
+  itype = TREE_TYPE (oprnd0);
+
+  if (TREE_CODE (oprnd0) != SSA_NAME
+      || TREE_CODE (oprnd1) != INTEGER_CST
+      || !INTEGRAL_TYPE_P (itype)
+      || TYPE_PRECISION (itype) != GET_MODE_PRECISION (TYPE_MODE (itype)))
+    return NULL;
+
+  vectype = get_vectype_for_scalar_type (itype);
+  if (vectype == NULL_TREE)
+    return NULL;
+
+  /* If the target can handle vectorized multiplication natively,
+     don't attempt to optimize this.  */
+  optab = optab_for_tree_code (MULT_EXPR, vectype, optab_default);
+  if (optab != unknown_optab)
+    {
+      machine_mode vec_mode = TYPE_MODE (vectype);
+      int icode = (int) optab_handler (optab, vec_mode);
+      if (icode != CODE_FOR_nothing)
+	return NULL;
+    }
+
+  /* If target cannot handle vector left shift then we cannot
+     optimize and bail out.  */
+  optab = optab_for_tree_code (LSHIFT_EXPR, vectype, optab_vector);
+  if (!optab
+      || optab_handler (optab, TYPE_MODE (vectype)) == CODE_FOR_nothing)
+    return NULL;
+
+  power2_val = wi::exact_log2 (oprnd1);
+  power2_neg_val = wi::exact_log2 (wi::neg (oprnd1));
+
+  /* Handle constant operands that are postive or negative powers of 2.  */
+  if (power2_val != -1)
+    {
+      shift = build_int_cst (itype, power2_val);
+      pattern_stmt
+	= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
+			       LSHIFT_EXPR, oprnd0, shift);
+    }
+  else if (power2_neg_val != -1)
+    {
+      /* If the target cannot handle vector NEGATE then we cannot
+	 do the optimization.  */
+      optab = optab_for_tree_code (NEGATE_EXPR, vectype, optab_vector);
+      if (!optab
+	  || optab_handler (optab, TYPE_MODE (vectype)) == CODE_FOR_nothing)
+	return NULL;
+
+      shift = build_int_cst (itype, power2_neg_val);
+      def_stmt
+	= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
+			       LSHIFT_EXPR, oprnd0, shift);
+      new_pattern_def_seq (stmt_vinfo, def_stmt);
+      pattern_stmt
+	 = gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
+				NEGATE_EXPR, gimple_assign_lhs (def_stmt));
+    }
+  else
+    return NULL;
+
+  /* Pattern detected.  */
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "vect_recog_mult_pattern: detected:\n");
+
+  if (dump_enabled_p ())
+    dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM,
+			  pattern_stmt,0);
+
+  stmts->safe_push (last_stmt);
+  *type_in = vectype;
+  *type_out = vectype;
+
   return pattern_stmt;
 }
 
