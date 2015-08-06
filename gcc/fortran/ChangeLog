@@ -1,3 +1,15 @@
+2015-08-06  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (gfc_trans_scalar_assign): Remove fourth argument.
+	* trans-expr.c (gfc_trans_scalar_assign): Merge fourth into sixth
+	argument.
+	(gfc_conv_subref_array_arg, gfc_trans_subarray_assign,
+	 gfc_trans_subcomponent_assign, gfc_trans_assignment_1): Update callers.
+	* trans-array.c (gfc_conv_expr_descriptor): Ditto.
+	* trans-stmt.c (forall_make_variable_temp,
+	generate_loop_for_temp_to_lhs, generate_loop_for_rhs_to_temp,
+	gfc_trans_where_assign, gfc_trans_where_3): Ditto.
+
 2015-08-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52846
