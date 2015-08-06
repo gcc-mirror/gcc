@@ -1,5 +1,10 @@
 2015-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66336
+	* pt.c (find_parameter_packs_r): Handle variable templates.
+	(variable_template_specialization_p): New.
+	* cp-tree.h: Declare it.
+
 	* decl.c (start_decl): Don't push the plain VAR_DECL for a
 	variable template.
 

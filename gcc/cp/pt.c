@@ -3222,6 +3222,13 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 			ppd, ppd->visited);
 	  *walk_subtrees = 0;
 	}
+      else if (variable_template_specialization_p (t))
+	{
+	  cp_walk_tree (&DECL_TI_ARGS (t),
+			find_parameter_packs_r,
+			ppd, ppd->visited);
+	  *walk_subtrees = 0;
+	}
       break;
 
     case BASES:
@@ -5321,6 +5328,17 @@ tree
 instantiate_non_dependent_expr (tree expr)
 {
   return instantiate_non_dependent_expr_sfinae (expr, tf_error);
+}
+
+/* True iff T is a specialization of a variable template.  */
+
+bool
+variable_template_specialization_p (tree t)
+{
+  if (!VAR_P (t) || !DECL_LANG_SPECIFIC (t) || !DECL_TEMPLATE_INFO (t))
+    return false;
+  tree tmpl = DECL_TI_TEMPLATE (t);
+  return variable_template_p (tmpl);
 }
 
 /* Return TRUE iff T is a type alias, a TEMPLATE_DECL for an alias
