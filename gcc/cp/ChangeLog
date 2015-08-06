@@ -1,5 +1,16 @@
 2015-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66260
+	PR c++/66596
+	PR c++/66649
+	PR c++/66923
+	* pt.c (lookup_template_variable): Use NULL_TREE for type.
+	(instantiate_template_1): Also set DECL_TI_ARGS based on
+	the immediate parent.
+	(tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: Handle variable templates.
+	(finish_template_variable): Add complain parm.
+	* cp-tree.h: Adjust.
+
 	PR c++/65195
 	PR c++/66619
 	* semantics.c (finish_id_expression): Call convert_from_reference

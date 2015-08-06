@@ -8179,14 +8179,14 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 tree
 lookup_template_variable (tree templ, tree arglist)
 {
-  tree type = unknown_type_node;
+  tree type = NULL_TREE;
   return build2 (TEMPLATE_ID_EXPR, type, templ, arglist);
 }
 
 /* Instantiate a variable declaration from a TEMPLATE_ID_EXPR for use. */
 
 tree
-finish_template_variable (tree var)
+finish_template_variable (tree var, tsubst_flags_t complain)
 {
   tree templ = TREE_OPERAND (var, 0);
 
@@ -8195,7 +8195,6 @@ finish_template_variable (tree var)
   arglist = add_outermost_template_args (tmpl_args, arglist);
 
   tree parms = DECL_TEMPLATE_PARMS (templ);
-  tsubst_flags_t complain = tf_warning_or_error;
   arglist = coerce_innermost_template_parms (parms, arglist, templ, complain,
 					     /*req_all*/true,
 					     /*use_default*/true);
@@ -14737,6 +14736,17 @@ tsubst_copy_and_build (tree t,
 	if (targs)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
 
+	if (variable_template_p (templ))
+	  {
+	    templ = lookup_template_variable (templ, targs);
+	    if (!any_dependent_template_arguments_p (targs))
+	      {
+		templ = finish_template_variable (templ, complain);
+		mark_used (templ);
+	      }
+	    RETURN (convert_from_reference (templ));
+	  }
+
 	if (TREE_CODE (templ) == COMPONENT_REF)
 	  {
 	    object = TREE_OPERAND (templ, 0);
@@ -16134,6 +16144,8 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   /* The DECL_TI_TEMPLATE should always be the immediate parent
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
+  if (VAR_P (fndecl))
+    DECL_TI_ARGS (fndecl) = targ_ptr;
 
   /* Now we know the specialization, compute access previously
      deferred.  */
