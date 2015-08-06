@@ -1,5 +1,40 @@
 2015-08-06  Richard Biener  <rguenther@suse.de>
 
+	* gimple.h (gimple_call_set_fn): Access op member directly.
+	(gimple_call_chain_ptr): Likewise.
+	(gimple_call_set_chain): Likewise.
+	(gimple_cond_lhs_ptr): Likewise.
+	(gimple_cond_set_lhs): Likewise.
+	(gimple_cond_rhs_ptr): Likewise.
+	(gimple_cond_set_rhs): Likewise.
+	(gimple_cond_true_label): Likewise.
+	(gimple_cond_set_true_label): Likewise.
+	(gimple_cond_set_false_label): Likewise.
+	(gimple_cond_false_label): Likewise.
+	(gimple_label_label): Likewise.
+	(gimple_label_set_label): Likewise.
+	(gimple_goto_set_dest): Likewise.
+	(gimple_asm_input_op): Likewise.
+	(gimple_asm_input_op_ptr): Likewise.
+	(gimple_asm_set_input_op): Likewise.
+	(gimple_asm_output_op): Likewise.
+	(gimple_asm_output_op_ptr): Likewise.
+	(gimple_asm_set_output_op): Likewise.
+	(gimple_asm_clobber_op): Likewise.
+	(gimple_asm_set_clobber_op): Likewise.
+	(gimple_asm_label_op): Likewise.
+	(gimple_asm_set_label_op): Likewise.
+	(gimple_switch_index): Likewise.
+	(gimple_switch_index_ptr): Likewise.
+	(gimple_return_retval_ptr): Likewise.
+	(gimple_return_retval): Likewise.
+	(gimple_return_set_retval): Likewise.
+	(gimple_switch_set_index): Likewise.  Remove superfluous GIMPLE_CHECK.
+	(gimple_switch_label): Likewise.
+	(gimple_switch_set_label): Likewise.
+
+2015-08-06  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Simplify
 	bool comparison canonicalization and restrict to integers.
 
