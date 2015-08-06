@@ -2636,11 +2636,8 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 
   if (processing_template_decl)
     {
-      if (/* If OBJECT_TYPE is dependent, so is OBJECT.NAME.  */
-	  dependent_type_p (object_type)
-	  /* If NAME is just an IDENTIFIER_NODE, then the expression
-	     is dependent.  */
-	  || identifier_p (object)
+      if (/* If OBJECT is dependent, so is OBJECT.NAME.  */
+	  type_dependent_expression_p (object)
 	  /* If NAME is "f<args>", where either 'f' or 'args' is
 	     dependent, then the expression is dependent.  */
 	  || (TREE_CODE (name) == TEMPLATE_ID_EXPR

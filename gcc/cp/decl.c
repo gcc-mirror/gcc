@@ -6525,11 +6525,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 then it can be used in future constant expressions, so its value
 	 must be available. */
 
-      if (!VAR_P (decl) || dependent_type_p (type))
+      if (!VAR_P (decl) || type_dependent_p)
 	/* We can't do anything if the decl has dependent type.  */;
       else if (init
 	       && init_const_expr_p
-	       && !type_dependent_p
 	       && TREE_CODE (type) != REFERENCE_TYPE
 	       && decl_maybe_constant_var_p (decl)
 	       && !type_dependent_init_p (init)

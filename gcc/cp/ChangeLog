@@ -1,5 +1,14 @@
 2015-08-05  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (cp_finish_decl): Tidy.
+	* typeck.c (finish_class_member_access_expr): Use
+	type_dependent_expression_p.
+	* semantics.c (finish_id_expression): Use
+	type_dependent_expression_p.  Don't build_qualified_name for a
+	decl in non-dependent scope.
+	* pt.c (type_dependent_expression_p): A TEMPLATE_ID_EXPR of an
+	identifier is dependent.  Remove variable_template_p check.
+
 	PR c++/66260
 	PR c++/66596
 	PR c++/66649
