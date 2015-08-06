@@ -2771,7 +2771,9 @@ write_expression (tree expr)
     {
       tree fn = TREE_OPERAND (expr, 0);
       if (is_overloaded_fn (fn))
-	fn = DECL_NAME (get_first_fn (fn));
+	fn = get_first_fn (fn);
+      if (DECL_P (fn))
+	fn = DECL_NAME (fn);
       if (IDENTIFIER_OPNAME_P (fn))
 	write_string ("on");
       write_unqualified_id (fn);

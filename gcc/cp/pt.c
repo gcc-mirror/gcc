@@ -14735,6 +14735,8 @@ tsubst_copy_and_build (tree t,
 
 	if (targs)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
+	if (targs == error_mark_node)
+	  return error_mark_node;
 
 	if (variable_template_p (templ))
 	  {

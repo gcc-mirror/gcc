@@ -1,3 +1,13 @@
+2015-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67130
+	PR c++/67131
+	PR c++/66260
+	* mangle.c (write_expression) [TEMPLATE_ID_EXPR]: Handle variable
+	templates.
+	* pt.c (tsubst_copy_and_build): Check for argument substitution
+	failure.
+
 2015-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66260
