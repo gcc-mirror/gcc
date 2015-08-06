@@ -209,13 +209,14 @@ main (int argc, char **argv)
 {
   int opt_level;
   int num_iterations = 100;
+  double elapsed_time[4];
 
   ticks_to_msec = TICKS_TO_MSEC;
 
   for (opt_level = 0; opt_level < 4; opt_level++)
     {
       int i;
-      double start_time, end_time, elapsed_time;
+      double start_time, end_time;
       start_time = get_wallclock_time ();
       for (i = 1; i <= num_iterations; i++)
 	{
@@ -226,15 +227,26 @@ main (int argc, char **argv)
 	  test_jit (argv[0], opt_level);
 	}
       end_time = get_wallclock_time ();
-      elapsed_time = end_time - start_time;
+      elapsed_time[opt_level] = end_time - start_time;
       pass ("%s: survived %i iterations at optlevel %i",
 	    argv[0], num_iterations, opt_level);
       note (("%s: %i iterations at optlevel %i"
 	     " took a total of %.3fs (%.3fs per iteration)"),
 	    argv[0], num_iterations, opt_level,
-	    elapsed_time, elapsed_time / num_iterations);
+	    elapsed_time[opt_level],
+	    elapsed_time[opt_level] / num_iterations);
     }
+
   totals ();
+
+  /* Print a summary.  */
+  printf ("%s: %i iterations: time taken (lower is better)\n",
+	  argv[0], num_iterations);
+  for (opt_level = 0; opt_level < 4; opt_level++)
+    printf ("optlevel %i: %.3fs (%.3fs per iteration)\n",
+	    opt_level,
+	    elapsed_time[opt_level],
+	    elapsed_time[opt_level] / num_iterations);
 
   return 0;
 }

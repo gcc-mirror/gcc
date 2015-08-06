@@ -1,3 +1,11 @@
+2015-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from trunk r226697:
+	2015-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-benchmark.c (main): Record all elapsed times at each
+	optimization level, and print a summary at the end.
+
 2015-08-05  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/64921
