@@ -21,9 +21,6 @@
 	(variable_template_specialization_p): New.
 	* cp-tree.h: Declare it.
 
-	* decl.c (start_decl): Don't push the plain VAR_DECL for a
-	variable template.
-
 2015-07-30  Jason Merrill  <jason@redhat.com>
 
 	DR 1558
