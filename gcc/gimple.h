@@ -2759,7 +2759,7 @@ static inline void
 gimple_call_set_fn (gcall *gs, tree fn)
 {
   gcc_gimple_checking_assert (!gimple_call_internal_p (gs));
-  gimple_set_op (gs, 1, fn);
+  gs->op[1] = fn;
 }
 
 
@@ -2828,7 +2828,7 @@ gimple_call_chain (const_gimple gs)
 static inline tree *
 gimple_call_chain_ptr (const gcall *call_stmt)
 {
-  return gimple_op_ptr (call_stmt, 2);
+  return const_cast<tree *> (&call_stmt->op[2]);
 }
 
 /* Set CHAIN to be the static chain for call statement CALL_STMT.  */
@@ -2836,7 +2836,7 @@ gimple_call_chain_ptr (const gcall *call_stmt)
 static inline void
 gimple_call_set_chain (gcall *call_stmt, tree chain)
 {
-  gimple_set_op (call_stmt, 2, chain);
+  call_stmt->op[2] = chain;
 }
 
 
@@ -3101,7 +3101,7 @@ gimple_cond_lhs (const_gimple gs)
 static inline tree *
 gimple_cond_lhs_ptr (const gcond *gs)
 {
-  return gimple_op_ptr (gs, 0);
+  return const_cast<tree *> (&gs->op[0]);
 }
 
 /* Set LHS to be the LHS operand of the predicate computed by
@@ -3110,7 +3110,7 @@ gimple_cond_lhs_ptr (const gcond *gs)
 static inline void
 gimple_cond_set_lhs (gcond *gs, tree lhs)
 {
-  gimple_set_op (gs, 0, lhs);
+  gs->op[0] = lhs;
 }
 
 
@@ -3129,7 +3129,7 @@ gimple_cond_rhs (const_gimple gs)
 static inline tree *
 gimple_cond_rhs_ptr (const gcond *gs)
 {
-  return gimple_op_ptr (gs, 1);
+  return const_cast<tree *> (&gs->op[1]);
 }
 
 
@@ -3139,7 +3139,7 @@ gimple_cond_rhs_ptr (const gcond *gs)
 static inline void
 gimple_cond_set_rhs (gcond *gs, tree rhs)
 {
-  gimple_set_op (gs, 1, rhs);
+  gs->op[1] = rhs;
 }
 
 
@@ -3149,7 +3149,7 @@ gimple_cond_set_rhs (gcond *gs, tree rhs)
 static inline tree
 gimple_cond_true_label (const gcond *gs)
 {
-  return gimple_op (gs, 2);
+  return gs->op[2];
 }
 
 
@@ -3159,7 +3159,7 @@ gimple_cond_true_label (const gcond *gs)
 static inline void
 gimple_cond_set_true_label (gcond *gs, tree label)
 {
-  gimple_set_op (gs, 2, label);
+  gs->op[2] = label;
 }
 
 
@@ -3169,7 +3169,7 @@ gimple_cond_set_true_label (gcond *gs, tree label)
 static inline void
 gimple_cond_set_false_label (gcond *gs, tree label)
 {
-  gimple_set_op (gs, 3, label);
+  gs->op[3] = label;
 }
 
 
@@ -3179,8 +3179,7 @@ gimple_cond_set_false_label (gcond *gs, tree label)
 static inline tree
 gimple_cond_false_label (const gcond *gs)
 {
-
-  return gimple_op (gs, 3);
+  return gs->op[3];
 }
 
 
@@ -3271,7 +3270,7 @@ gimple_cond_set_condition (gcond *stmt, enum tree_code code, tree lhs,
 static inline tree
 gimple_label_label (const glabel *gs)
 {
-  return gimple_op (gs, 0);
+  return gs->op[0];
 }
 
 
@@ -3281,7 +3280,7 @@ gimple_label_label (const glabel *gs)
 static inline void
 gimple_label_set_label (glabel *gs, tree label)
 {
-  gimple_set_op (gs, 0, label);
+  gs->op[0] = label;
 }
 
 
@@ -3300,7 +3299,7 @@ gimple_goto_dest (const_gimple gs)
 static inline void
 gimple_goto_set_dest (ggoto *gs, tree dest)
 {
-  gimple_set_op (gs, 0, dest);
+  gs->op[0] = dest;
 }
 
 
@@ -3438,7 +3437,7 @@ static inline tree
 gimple_asm_input_op (const gasm *asm_stmt, unsigned index)
 {
   gcc_gimple_checking_assert (index < asm_stmt->ni);
-  return gimple_op (asm_stmt, index + asm_stmt->no);
+  return asm_stmt->op[index + asm_stmt->no];
 }
 
 /* Return a pointer to input operand INDEX of GIMPLE_ASM ASM_STMT.  */
@@ -3447,7 +3446,7 @@ static inline tree *
 gimple_asm_input_op_ptr (const gasm *asm_stmt, unsigned index)
 {
   gcc_gimple_checking_assert (index < asm_stmt->ni);
-  return gimple_op_ptr (asm_stmt, index + asm_stmt->no);
+  return const_cast<tree *> (&asm_stmt->op[index + asm_stmt->no]);
 }
 
 
@@ -3458,7 +3457,7 @@ gimple_asm_set_input_op (gasm *asm_stmt, unsigned index, tree in_op)
 {
   gcc_gimple_checking_assert (index < asm_stmt->ni
 			      && TREE_CODE (in_op) == TREE_LIST);
-  gimple_set_op (asm_stmt, index + asm_stmt->no, in_op);
+  asm_stmt->op[index + asm_stmt->no] = in_op;
 }
 
 
@@ -3468,7 +3467,7 @@ static inline tree
 gimple_asm_output_op (const gasm *asm_stmt, unsigned index)
 {
   gcc_gimple_checking_assert (index < asm_stmt->no);
-  return gimple_op (asm_stmt, index);
+  return asm_stmt->op[index];
 }
 
 /* Return a pointer to output operand INDEX of GIMPLE_ASM ASM_STMT.  */
@@ -3477,7 +3476,7 @@ static inline tree *
 gimple_asm_output_op_ptr (const gasm *asm_stmt, unsigned index)
 {
   gcc_gimple_checking_assert (index < asm_stmt->no);
-  return gimple_op_ptr (asm_stmt, index);
+  return const_cast<tree *> (&asm_stmt->op[index]);
 }
 
 
@@ -3488,7 +3487,7 @@ gimple_asm_set_output_op (gasm *asm_stmt, unsigned index, tree out_op)
 {
   gcc_gimple_checking_assert (index < asm_stmt->no
 			      && TREE_CODE (out_op) == TREE_LIST);
-  gimple_set_op (asm_stmt, index, out_op);
+  asm_stmt->op[index] = out_op;
 }
 
 
@@ -3498,7 +3497,7 @@ static inline tree
 gimple_asm_clobber_op (const gasm *asm_stmt, unsigned index)
 {
   gcc_gimple_checking_assert (index < asm_stmt->nc);
-  return gimple_op (asm_stmt, index + asm_stmt->ni + asm_stmt->no);
+  return asm_stmt->op[index + asm_stmt->ni + asm_stmt->no];
 }
 
 
@@ -3509,7 +3508,7 @@ gimple_asm_set_clobber_op (gasm *asm_stmt, unsigned index, tree clobber_op)
 {
   gcc_gimple_checking_assert (index < asm_stmt->nc
 			      && TREE_CODE (clobber_op) == TREE_LIST);
-  gimple_set_op (asm_stmt, index + asm_stmt->ni + asm_stmt->no, clobber_op);
+  asm_stmt->op[index + asm_stmt->ni + asm_stmt->no] = clobber_op;
 }
 
 /* Return label operand INDEX of GIMPLE_ASM ASM_STMT.  */
@@ -3518,7 +3517,7 @@ static inline tree
 gimple_asm_label_op (const gasm *asm_stmt, unsigned index)
 {
   gcc_gimple_checking_assert (index < asm_stmt->nl);
-  return gimple_op (asm_stmt, index + asm_stmt->ni + asm_stmt->nc);
+  return asm_stmt->op[index + asm_stmt->ni + asm_stmt->nc];
 }
 
 /* Set LABEL_OP to be label operand INDEX in GIMPLE_ASM ASM_STMT.  */
@@ -3528,7 +3527,7 @@ gimple_asm_set_label_op (gasm *asm_stmt, unsigned index, tree label_op)
 {
   gcc_gimple_checking_assert (index < asm_stmt->nl
 			      && TREE_CODE (label_op) == TREE_LIST);
-  gimple_set_op (asm_stmt, index + asm_stmt->ni + asm_stmt->nc, label_op);
+  asm_stmt->op[index + asm_stmt->ni + asm_stmt->nc] = label_op;
 }
 
 /* Return the string representing the assembly instruction in
@@ -4124,7 +4123,7 @@ gimple_switch_set_num_labels (gswitch *g, unsigned nlabels)
 static inline tree
 gimple_switch_index (const gswitch *gs)
 {
-  return gimple_op (gs, 0);
+  return gs->op[0];
 }
 
 
@@ -4133,7 +4132,7 @@ gimple_switch_index (const gswitch *gs)
 static inline tree *
 gimple_switch_index_ptr (const gswitch *gs)
 {
-  return gimple_op_ptr (gs, 0);
+  return const_cast<tree *> (&gs->op[0]);
 }
 
 
@@ -4142,9 +4141,8 @@ gimple_switch_index_ptr (const gswitch *gs)
 static inline void
 gimple_switch_set_index (gswitch *gs, tree index)
 {
-  GIMPLE_CHECK (gs, GIMPLE_SWITCH);
   gcc_gimple_checking_assert (SSA_VAR_P (index) || CONSTANT_CLASS_P (index));
-  gimple_set_op (gs, 0, index);
+  gs->op[0] = index;
 }
 
 
@@ -4154,9 +4152,8 @@ gimple_switch_set_index (gswitch *gs, tree index)
 static inline tree
 gimple_switch_label (const gswitch *gs, unsigned index)
 {
-  GIMPLE_CHECK (gs, GIMPLE_SWITCH);
   gcc_gimple_checking_assert (gimple_num_ops (gs) > index + 1);
-  return gimple_op (gs, index + 1);
+  return gs->op[index + 1];
 }
 
 /* Set the label number INDEX to LABEL.  0 is always the default label.  */
@@ -4164,11 +4161,10 @@ gimple_switch_label (const gswitch *gs, unsigned index)
 static inline void
 gimple_switch_set_label (gswitch *gs, unsigned index, tree label)
 {
-  GIMPLE_CHECK (gs, GIMPLE_SWITCH);
   gcc_gimple_checking_assert (gimple_num_ops (gs) > index + 1
 			      && (label == NULL_TREE
 			          || TREE_CODE (label) == CASE_LABEL_EXPR));
-  gimple_set_op (gs, index + 1, label);
+  gs->op[index + 1] = label;
 }
 
 /* Return the default label for a switch statement.  */
@@ -5522,7 +5518,7 @@ gimple_transaction_set_subcode (gtransaction *transaction_stmt,
 static inline tree *
 gimple_return_retval_ptr (const greturn *gs)
 {
-  return gimple_op_ptr (gs, 0);
+  return const_cast<tree *> (&gs->op[0]);
 }
 
 /* Return the return value for GIMPLE_RETURN GS.  */
@@ -5530,7 +5526,7 @@ gimple_return_retval_ptr (const greturn *gs)
 static inline tree
 gimple_return_retval (const greturn *gs)
 {
-  return gimple_op (gs, 0);
+  return gs->op[0];
 }
 
 
@@ -5539,7 +5535,7 @@ gimple_return_retval (const greturn *gs)
 static inline void
 gimple_return_set_retval (greturn *gs, tree retval)
 {
-  gimple_set_op (gs, 0, retval);
+  gs->op[0] = retval;
 }
 
 
