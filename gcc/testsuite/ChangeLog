@@ -1,5 +1,9 @@
 2015-08-06  Jiong Wang  <jiong.wang@arm.com>
 
+	* gcc.target/aarch64/tlsdesc_hoist.c: New testcase.
+
+2015-08-06  Jiong Wang  <jiong.wang@arm.com>
+
 	* gcc.target/aarch64/noplt_3.c: New testcase.
 
 2015-08-06  Jiong Wang  <jiong.wang@arm.com>

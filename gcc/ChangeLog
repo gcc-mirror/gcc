@@ -1,3 +1,16 @@
+2015-08-06    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	      Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.d (tlsdesc_small_pseudo_<mode>): New pattern.
+	* config/aarch64/aarch64.h (reg_class): New enumeration FIXED_REG0.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	* config/aarch64/aarch64.c (aarch64_class_max_nregs): Likewise.
+	(aarch64_register_move_cost): Likewise.
+	(aarch64_load_symref_appropriately): Invoke the new added pattern if
+	possible.
+	* config/aarch64/constraints.md (Uc0): New constraint.
+
 2015-08-06  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/constraints.md (Usf): Add the test of
