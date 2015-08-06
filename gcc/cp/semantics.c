@@ -3362,7 +3362,7 @@ finish_id_expression (tree id_expression,
     }
   else
     {
-      bool dependent_p;
+      bool dependent_p = type_dependent_expression_p (decl);
 
       /* If the declaration was explicitly qualified indicate
 	 that.  The semantics of `A::f(3)' are different than
@@ -3371,79 +3371,25 @@ finish_id_expression (tree id_expression,
 	      ? CP_ID_KIND_QUALIFIED
 	      : (TREE_CODE (decl) == TEMPLATE_ID_EXPR
 		 ? CP_ID_KIND_TEMPLATE_ID
-		 : CP_ID_KIND_UNQUALIFIED));
-
-
-      /* [temp.dep.expr]
-
-	 An id-expression is type-dependent if it contains an
-	 identifier that was declared with a dependent type.
-
-	 The standard is not very specific about an id-expression that
-	 names a set of overloaded functions.  What if some of them
-	 have dependent types and some of them do not?  Presumably,
-	 such a name should be treated as a dependent name.  */
-      /* Assume the name is not dependent.  */
-      dependent_p = false;
-      if (!processing_template_decl)
-	/* No names are dependent outside a template.  */
-	;
-      else if (TREE_CODE (decl) == CONST_DECL)
-	/* We don't want to treat enumerators as dependent.  */
-	;
-      /* A template-id where the name of the template was not resolved
-	 is definitely dependent.  */
-      else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
-	       && (identifier_p (TREE_OPERAND (decl, 0))))
-	dependent_p = true;
-      /* For anything except an overloaded function, just check its
-	 type.  */
-      else if (!is_overloaded_fn (decl))
-	dependent_p
-	  = dependent_type_p (TREE_TYPE (decl));
-      /* For a set of overloaded functions, check each of the
-	 functions.  */
-      else
-	{
-	  tree fns = decl;
-
-	  if (BASELINK_P (fns))
-	    fns = BASELINK_FUNCTIONS (fns);
-
-	  /* For a template-id, check to see if the template
-	     arguments are dependent.  */
-	  if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
-	    {
-	      tree args = TREE_OPERAND (fns, 1);
-	      dependent_p = any_dependent_template_arguments_p (args);
-	      /* The functions are those referred to by the
-		 template-id.  */
-	      fns = TREE_OPERAND (fns, 0);
-	    }
-
-	  /* If there are no dependent template arguments, go through
-	     the overloaded functions.  */
-	  while (fns && !dependent_p)
-	    {
-	      tree fn = OVL_CURRENT (fns);
-
-	      /* Member functions of dependent classes are
-		 dependent.  */
-	      if (TREE_CODE (fn) == FUNCTION_DECL
-		  && type_dependent_expression_p (fn))
-		dependent_p = true;
-	      else if (TREE_CODE (fn) == TEMPLATE_DECL
-		       && dependent_template_p (fn))
-		dependent_p = true;
-
-	      fns = OVL_NEXT (fns);
-	    }
-	}
+		 : (dependent_p
+		    ? CP_ID_KIND_UNQUALIFIED_DEPENDENT
+		    : CP_ID_KIND_UNQUALIFIED)));
 
       /* If the name was dependent on a template parameter, we will
 	 resolve the name at instantiation time.  */
       if (dependent_p)
 	{
+	  /* If we found a variable, then name lookup during the
+	     instantiation will always resolve to the same VAR_DECL
+	     (or an instantiation thereof).  */
+	  if (VAR_P (decl)
+	      || TREE_CODE (decl) == CONST_DECL
+	      || TREE_CODE (decl) == PARM_DECL)
+	    {
+	      mark_used (decl);
+	      return convert_from_reference (decl);
+	    }
+
 	  /* Create a SCOPE_REF for qualified names, if the scope is
 	     dependent.  */
 	  if (scope)
@@ -3475,16 +3421,6 @@ finish_id_expression (tree id_expression,
 	     need.  */
 	  if (TREE_CODE (id_expression) == TEMPLATE_ID_EXPR)
 	    return id_expression;
-	  *idk = CP_ID_KIND_UNQUALIFIED_DEPENDENT;
-	  /* If we found a variable, then name lookup during the
-	     instantiation will always resolve to the same VAR_DECL
-	     (or an instantiation thereof).  */
-	  if (VAR_P (decl)
-	      || TREE_CODE (decl) == PARM_DECL)
-	    {
-	      mark_used (decl);
-	      return convert_from_reference (decl);
-	    }
 	  /* The same is true for FIELD_DECL, but we also need to
 	     make sure that the syntax is correct.  */
 	  else if (TREE_CODE (decl) == FIELD_DECL)
