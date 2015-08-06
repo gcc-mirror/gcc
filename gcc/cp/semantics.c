@@ -3580,6 +3580,7 @@ finish_id_expression (tree id_expression,
 	{
 	  decl = finish_template_variable (decl);
 	  mark_used (decl);
+	  decl = convert_from_reference (decl);
 	}
       else if (scope)
 	{

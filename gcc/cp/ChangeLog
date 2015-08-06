@@ -1,5 +1,10 @@
 2015-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65195
+	PR c++/66619
+	* semantics.c (finish_id_expression): Call convert_from_reference
+	for variable template.
+
 	PR c++/66336
 	* pt.c (find_parameter_packs_r): Handle variable templates.
 	(variable_template_specialization_p): New.
