@@ -1,3 +1,8 @@
+2015-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-benchmark.c (main): Record all elapsed times at each
+	optimization level, and print a summary at the end.
+
 2015-08-06  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/tlsdesc_hoist.c: New testcase.
