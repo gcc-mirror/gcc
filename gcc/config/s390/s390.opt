@@ -158,7 +158,8 @@ mvcle use
 
 mzvector
 Target Report Mask(ZVECTOR)
-Enable the z vector language extension providing the context-sensitive vector macro.
+Enable the z vector language extension providing the context-sensitive
+vector macro and enable the Altivec-style builtins in vecintrin.h
 
 mwarn-dynamicstack
 Target RejectNegative Var(s390_warn_dynamicstack_p)

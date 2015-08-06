@@ -964,6 +964,7 @@ See RS/6000 and PowerPC Options.
 -mbackchain  -mno-backchain -mpacked-stack  -mno-packed-stack @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
+-mhtm -mvx -mzvector @gol
 -mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
 -mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard @gol
 -mhotpatch=@var{halfwords},@var{halfwords}}
@@ -20510,6 +20511,46 @@ not possible with @option{-m64}.
 When generating code compliant to the GNU/Linux for S/390 ABI,
 the default is @option{-mesa}.  When generating code compliant
 to the GNU/Linux for zSeries ABI, the default is @option{-mzarch}.
+
+@item -mhtm
+@itemx -mno-htm
+@opindex mhtm
+@opindex mno-htm
+The @option{-mhtm} option enables a set of builtins making use of
+instructions available with the transactional execution facility
+introduced with the IBM zEnterprise EC12 machine generation
+@ref{S/390 System z Built-in Functions}.
+@option{-mhtm} is enabled by default when using @option{-march=zEC12}.
+
+@item -mvx
+@itemx -mno-vx
+@opindex mvx
+@opindex mno-vx
+When @option{-mvx} is specified, generate code using the instructions
+available with the vector extension facility introduced with the IBM
+z13 machine generation.
+This option changes the ABI for some vector type values with regard to
+alignment and calling conventions.  In case vector type values are
+being used in an ABI-relevant context a GAS @samp{.gnu_attribute}
+command will be added to mark the resulting binary with the ABI used.
+@option{-mvx} is enabled by default when using @option{-march=z13}.
+
+@item -mzvector
+@itemx -mno-zvector
+@opindex mzvector
+@opindex mno-zvector
+The @option{-mzvector} option enables vector language extensions and
+builtins using instructions available with the vector extension
+facility introduced with the IBM z13 machine generation.
+This option adds support for @samp{vector} to be used as a keyword to
+define vector type variables and arguments.  @samp{vector} is only
+available when GNU extensions are enabled.  It will not be expanded
+when requesting strict standard compliance e.g. with @option{-std=c99}.
+In addition to the GCC low-level builtins @option{-mzvector} enables
+a set of builtins added for compatibility with Altivec-style
+implementations like Power and Cell.  In order to make use of these
+builtins the header file @file{vecintrin.h} needs to be included.
+@option{-mzvector} is disabled by default.
 
 @item -mmvcle
 @itemx -mno-mvcle
