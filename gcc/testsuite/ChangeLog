@@ -1,3 +1,7 @@
+2015-08-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/htm-builtins-z13-1.c: New test.
+
 2015-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/64022
