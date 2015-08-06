@@ -744,6 +744,24 @@ aarch64_is_long_call_p (rtx sym)
   return aarch64_decl_is_long_call_p (SYMBOL_REF_DECL (sym));
 }
 
+/* Return true if calls to symbol-ref SYM should not go through
+   plt stubs.  */
+
+bool
+aarch64_is_noplt_call_p (rtx sym)
+{
+  const_tree decl = SYMBOL_REF_DECL (sym);
+
+  if (flag_pic
+      && decl
+      && (!flag_plt
+	  || lookup_attribute ("noplt", DECL_ATTRIBUTES (decl)))
+      && !targetm.binds_local_p (decl))
+    return true;
+
+  return false;
+}
+
 /* Return true if the offsets to a zero/sign-extract operation
    represent an expression that matches an extend operation.  The
    operands represent the paramters from

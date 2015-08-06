@@ -1,3 +1,10 @@
+2015-08-06  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_is_noplt_call_p): New declaration.
+	* config/aarch64/aarch64.c (aarch64_is_noplt_call_p): New function.
+	* config/aarch64/aarch64.md (call_value_symbol): Check noplt scenarios.
+	(call_symbol): Likewise.
+
 2015-08-06  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
 
 	* tree-vect-patterns.c (vect_recog_mult_pattern): New function

@@ -603,7 +603,8 @@
    (use (match_operand 2 "" ""))
    (clobber (reg:DI LR_REGNUM))]
   "GET_CODE (operands[0]) == SYMBOL_REF
-   && !aarch64_is_long_call_p (operands[0])"
+   && !aarch64_is_long_call_p (operands[0])
+   && !aarch64_is_noplt_call_p (operands[0])"
   "bl\\t%a0"
   [(set_attr "type" "call")]
 )
@@ -665,7 +666,8 @@
    (use (match_operand 3 "" ""))
    (clobber (reg:DI LR_REGNUM))]
   "GET_CODE (operands[1]) == SYMBOL_REF
-   && !aarch64_is_long_call_p (operands[1])"
+   && !aarch64_is_long_call_p (operands[1])
+   && !aarch64_is_noplt_call_p (operands[1])"
   "bl\\t%a1"
   [(set_attr "type" "call")]
 )
