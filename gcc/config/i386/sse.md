@@ -8683,7 +8683,7 @@
   [(set_attr "isa" "sse2_noavx,avx,avx512vl,sse3,avx512vl,sse2_noavx,avx,sse2,noavx,noavx")
    (set (attr "type")
      (if_then_else
-       (eq_attr "alternative" "0,1,2")
+       (eq_attr "alternative" "0,1,2,3,4")
        (const_string "sselog")
        (const_string "ssemov")))
    (set (attr "prefix_data16")
