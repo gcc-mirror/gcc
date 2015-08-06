@@ -1,3 +1,7 @@
+2015-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/compile_options.c (set_options): Fix typos.
+
 2015-08-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/fpu-387.h (get_fpu_trap_exceptions): Add temporary variable

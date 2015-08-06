@@ -161,7 +161,7 @@ set_options (int num, int options[])
     compile_options.allow_std = options[1];
   if (num >= 3)
     compile_options.pedantic = options[2];
-  /* options[3] is the removed -fdump-core option. It's place in the
+  /* options[3] is the removed -fdump-core option. Its place in the
      options array is retained due to ABI compatibility. Remove when
      bumping the library ABI.  */
   if (num >= 5)
@@ -172,7 +172,7 @@ set_options (int num, int options[])
     compile_options.bounds_check = options[6];
   /* options[7] is the -frange-check option, which no longer affects
      the library behavior; range checking is now always done when
-     parsing integers. It's place in the options array is retained due
+     parsing integers. Its place in the options array is retained due
      to ABI compatibility. Remove when bumping the library ABI.  */
   if (num >= 9)
     compile_options.fpe_summary = options[8];
