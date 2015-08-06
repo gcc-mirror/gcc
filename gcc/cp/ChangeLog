@@ -1,5 +1,9 @@
 2015-08-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66533
+	* parser.c (cp_parser_primary_expression): Don't skip to the end
+	of the statement if we're parsing tentatively.
+
 	PR c++/67130
 	PR c++/67131
 	PR c++/66260
