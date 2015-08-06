@@ -1,5 +1,8 @@
 2015-08-05  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (determine_specialization): Print candidates after 'no
+	match' error.
+
 	* decl.c (cp_finish_decl): Tidy.
 	* typeck.c (finish_class_member_access_expr): Use
 	type_dependent_expression_p.
