@@ -101,8 +101,9 @@
        (match_test "(unsigned HOST_WIDE_INT) ival < 64")))
 
 (define_constraint "Usf"
-  "@internal Usf is a symbol reference."
-  (match_code "symbol_ref"))
+  "@internal Usf is a symbol reference under the context where plt stub allowed."
+  (and (match_code "symbol_ref")
+       (match_test "!aarch64_is_noplt_call_p (op)")))
 
 (define_constraint "UsM"
   "@internal
