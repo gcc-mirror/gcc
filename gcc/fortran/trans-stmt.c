@@ -2852,8 +2852,8 @@ forall_make_variable_temp (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
 	  tse.expr = gfc_create_var (tmp, "temp");
 	}
 
-      tmp = gfc_trans_scalar_assign (&tse, &rse, e->ts, true,
-				     e->expr_type == EXPR_VARIABLE, true);
+      tmp = gfc_trans_scalar_assign (&tse, &rse, e->ts,
+				     e->expr_type == EXPR_VARIABLE, false);
       gfc_add_expr_to_block (pre, tmp);
     }
   gfc_free_expr (e);
@@ -3224,7 +3224,7 @@ generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree count3,
 
       /* Use the scalar assignment.  */
       rse.string_length = lse.string_length;
-      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, false, true, true);
+      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, true, true);
 
       /* Form the mask expression according to the mask tree list.  */
       if (wheremask)
@@ -3322,8 +3322,8 @@ generate_loop_for_rhs_to_temp (gfc_expr *expr2, tree tmp1, tree count3,
 
   /* Use the scalar assignment.  */
   lse.string_length = rse.string_length;
-  tmp = gfc_trans_scalar_assign (&lse, &rse, expr2->ts, true,
-				 expr2->expr_type == EXPR_VARIABLE, true);
+  tmp = gfc_trans_scalar_assign (&lse, &rse, expr2->ts,
+				 expr2->expr_type == EXPR_VARIABLE, false);
 
   /* Form the mask expression according to the mask tree list.  */
   if (wheremask)
@@ -4497,7 +4497,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 
   /* Use the scalar assignment as is.  */
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
-				 loop.temp_ss != NULL, false, true);
+				 false, loop.temp_ss == NULL);
 
   tmp = build3_v (COND_EXPR, maskexpr, tmp, build_empty_stmt (input_location));
 
@@ -4550,8 +4550,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 					TREE_TYPE (maskexpr), maskexpr);
 
           /* Use the scalar assignment as is.  */
-          tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts, false, false,
-					 true);
+          tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts, false, true);
           tmp = build3_v (COND_EXPR, maskexpr, tmp,
 			  build_empty_stmt (input_location));
           gfc_add_expr_to_block (&body, tmp);
@@ -4951,8 +4950,8 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
 	gfc_conv_expr (&edse, edst);
     }
 
-  tstmt = gfc_trans_scalar_assign (&tdse, &tsse, tdst->ts, false, false, true);
-  estmt = eblock ? gfc_trans_scalar_assign (&edse, &esse, edst->ts, false,
+  tstmt = gfc_trans_scalar_assign (&tdse, &tsse, tdst->ts, false, true);
+  estmt = eblock ? gfc_trans_scalar_assign (&edse, &esse, edst->ts,
 					    false, true)
 		 : build_empty_stmt (input_location);
   tmp = build3_v (COND_EXPR, cexpr, tstmt, estmt);

@@ -6882,9 +6882,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       gfc_add_block_to_block (&block, &lse.pre);
 
       lse.string_length = rse.string_length;
-      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, true,
+      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts,
 				     expr->expr_type == EXPR_VARIABLE
-				     || expr->expr_type == EXPR_ARRAY, true);
+				     || expr->expr_type == EXPR_ARRAY, false);
       gfc_add_expr_to_block (&block, tmp);
 
       /* Finish the copying loops.  */
