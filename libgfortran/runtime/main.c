@@ -263,7 +263,11 @@ init (void)
   init_variables ();
 
   init_units ();
-  set_fpu ();
+
+  /* If (and only if) the user asked for it, set up the FPU state.  */
+  if (options.fpe != 0)
+    set_fpu ();
+
   init_compile_options ();
 
 #ifdef DEBUG
