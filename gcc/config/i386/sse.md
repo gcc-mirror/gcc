@@ -8490,42 +8490,48 @@
    (set_attr "mode" "DF,DF,V1DF,V1DF,V1DF,V2DF,V1DF,V1DF,V1DF")])
 
 (define_insn "vec_dupv2df<mask_name>"
-  [(set (match_operand:V2DF 0 "register_operand"     "=x,v")
+  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v")
 	(vec_duplicate:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,vm")))]
+	  (match_operand:DF 1 "nonimmediate_operand" " 0,xm,vm")))]
   "TARGET_SSE2 && <mask_avx512vl_condition>"
   "@
    unpcklpd\t%0, %0
-   %vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
-  [(set_attr "isa" "noavx,sse3")
+   %vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}
+   vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "isa" "noavx,sse3,avx512vl")
    (set_attr "type" "sselog1")
-   (set_attr "prefix" "orig,maybe_vex")
-   (set_attr "mode" "V2DF,DF")])
+   (set_attr "prefix" "orig,maybe_vex,evex")
+   (set_attr "mode" "V2DF,DF,DF")])
 
 (define_insn "*vec_concatv2df"
-  [(set (match_operand:V2DF 0 "register_operand"     "=x,v,v,x,x,v,x,x")
+  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,x,v,x,x,v,x,x")
 	(vec_concat:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,v,m,0,x,m,0,0")
-	  (match_operand:DF 2 "vector_move_operand"  " x,v,1,m,m,C,x,m")))]
+	  (match_operand:DF 1 "nonimmediate_operand" " 0,x,v,m,m,0,x,m,0,0")
+	  (match_operand:DF 2 "vector_move_operand"  " x,x,v,1,1,m,m,C,x,m")))]
   "TARGET_SSE"
   "@
    unpcklpd\t{%2, %0|%0, %2}
    vunpcklpd\t{%2, %1, %0|%0, %1, %2}
+   vunpcklpd\t{%2, %1, %0|%0, %1, %2}
    %vmovddup\t{%1, %0|%0, %1}
+   vmovddup\t{%1, %0|%0, %1}
    movhpd\t{%2, %0|%0, %2}
    vmovhpd\t{%2, %1, %0|%0, %1, %2}
    %vmovsd\t{%1, %0|%0, %1}
    movlhps\t{%2, %0|%0, %2}
    movhps\t{%2, %0|%0, %2}"
-  [(set_attr "isa" "sse2_noavx,avx,sse3,sse2_noavx,avx,sse2,noavx,noavx")
+  [(set_attr "isa" "sse2_noavx,avx,avx512vl,sse3,avx512vl,sse2_noavx,avx,sse2,noavx,noavx")
    (set (attr "type")
      (if_then_else
-       (eq_attr "alternative" "0,1,2")
+       (eq_attr "alternative" "0,1,2,3,4")
        (const_string "sselog")
        (const_string "ssemov")))
-   (set_attr "prefix_data16" "*,*,*,1,*,*,*,*")
-   (set_attr "prefix" "orig,vex,maybe_vex,orig,vex,maybe_vex,orig,orig")
-   (set_attr "mode" "V2DF,V2DF,DF,V1DF,V1DF,DF,V4SF,V2SF")])
+   (set (attr "prefix_data16")
+	(if_then_else (eq_attr "alternative" "5")
+		      (const_string "1")
+		      (const_string "*")))
+   (set_attr "prefix" "orig,vex,evex,maybe_vex,evex,orig,vex,maybe_vex,orig,orig")
+   (set_attr "mode" "V2DF,V2DF,V2DF, DF, DF, V1DF,V1DF,DF,V4SF,V2SF")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
