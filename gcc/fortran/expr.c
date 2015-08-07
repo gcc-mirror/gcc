@@ -2474,13 +2474,14 @@ gfc_check_init_expr (gfc_expr *e)
 	gfc_intrinsic_sym* isym;
 	gfc_symbol* sym = e->symtree->n.sym;
 
-	/* Special case for IEEE_SELECTED_REAL_KIND from the intrinsic
-	   module IEEE_ARITHMETIC, which is allowed in initialization
-	   expressions.  */
-	if (!strcmp(sym->name, "ieee_selected_real_kind")
-	    && sym->from_intmod == INTMOD_IEEE_ARITHMETIC)
+	/* Simplify here the intrinsics from the IEEE_ARITHMETIC and
+	   IEEE_EXCEPTIONS modules.  */
+	int mod = sym->from_intmod;
+	if (mod == INTMOD_NONE && sym->generic)
+	  mod = sym->generic->sym->from_intmod;
+	if (mod == INTMOD_IEEE_ARITHMETIC || mod == INTMOD_IEEE_EXCEPTIONS)
 	  {
-	    gfc_expr *new_expr = gfc_simplify_ieee_selected_real_kind (e);
+	    gfc_expr *new_expr = gfc_simplify_ieee_functions (e);
 	    if (new_expr)
 	      {
 		gfc_replace_expr (e, new_expr);
@@ -2738,6 +2739,29 @@ external_spec_function (gfc_expr *e)
 
   f = e->value.function.esym;
 
+  /* IEEE functions allowed are "a reference to a transformational function
+     from the intrinsic module IEEE_ARITHMETIC or IEEE_EXCEPTIONS", and
+     "inquiry function from the intrinsic modules IEEE_ARITHMETIC and
+     IEEE_EXCEPTIONS".  */
+  if (f->from_intmod == INTMOD_IEEE_ARITHMETIC
+      || f->from_intmod == INTMOD_IEEE_EXCEPTIONS)
+    {
+      if (!strcmp (f->name, "ieee_selected_real_kind")
+	  || !strcmp (f->name, "ieee_support_rounding")
+	  || !strcmp (f->name, "ieee_support_flag")
+	  || !strcmp (f->name, "ieee_support_halting")
+	  || !strcmp (f->name, "ieee_support_datatype")
+	  || !strcmp (f->name, "ieee_support_denormal")
+	  || !strcmp (f->name, "ieee_support_divide")
+	  || !strcmp (f->name, "ieee_support_inf")
+	  || !strcmp (f->name, "ieee_support_io")
+	  || !strcmp (f->name, "ieee_support_nan")
+	  || !strcmp (f->name, "ieee_support_sqrt")
+	  || !strcmp (f->name, "ieee_support_standard")
+	  || !strcmp (f->name, "ieee_support_underflow_control"))
+	goto function_allowed;
+    }
+
   if (f->attr.proc == PROC_ST_FUNCTION)
     {
       gfc_error ("Specification function %qs at %L cannot be a statement "
@@ -2766,6 +2790,7 @@ external_spec_function (gfc_expr *e)
       return false;
     }
 
+function_allowed:
   return restricted_args (e->value.function.actual);
 }
 

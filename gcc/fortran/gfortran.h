@@ -2881,8 +2881,6 @@ gfc_formal_arglist *gfc_sym_get_dummy_args (gfc_symbol *);
 /* intrinsic.c -- true if working in an init-expr, false otherwise.  */
 extern bool gfc_init_expr_flag;
 
-gfc_expr *gfc_simplify_ieee_selected_real_kind (gfc_expr *);
-
 /* Given a symbol that we have decided is intrinsic, mark it as such
    by placing it into a special module that is otherwise impossible to
    read or write.  */
@@ -3245,6 +3243,7 @@ int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
 /* simplify.c */
 
 void gfc_convert_mpz_to_signed (mpz_t, int);
+gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
 
 /* trans-array.c  */
 
