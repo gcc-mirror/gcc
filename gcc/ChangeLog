@@ -1,3 +1,7 @@
+2015-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in (.INTERMEDIATE): Add gpl.pod.
+
 2015-08-07  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/67002
@@ -29,7 +33,8 @@
 
 2015-08-06  Jiong Wang  <jiong.wang@arm.com>
 
-	* config/aarch64/aarch64-protos.h (aarch64_is_noplt_call_p): New declaration.
+	* config/aarch64/aarch64-protos.h (aarch64_is_noplt_call_p): New
+	declaration.
 	* config/aarch64/aarch64.c (aarch64_is_noplt_call_p): New function.
 	* config/aarch64/aarch64.md (call_value_symbol): Check noplt scenarios.
 	(call_symbol): Likewise.
