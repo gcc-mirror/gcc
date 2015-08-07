@@ -1,3 +1,9 @@
+2015-08-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/67002
+	* config/sh/sh.c (sh_recog_treg_set_expr): Return false when
+	currently_expanding_to_rtl is set.
+
 2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* configure.ac: Define LIBICONV_DEP with in-tree libiconv.

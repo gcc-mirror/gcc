@@ -14165,6 +14165,12 @@ sh_recog_treg_set_expr (rtx op, machine_mode mode)
   if (!can_create_pseudo_p ())
     return false;
 
+  /* expand_debug_locations may call this to compute rtx costs at
+     very early stage.  In that case, don't make new insns here to
+     avoid codegen differences with -g. */
+  if (currently_expanding_to_rtl)
+    return false;
+
   /* We are going to invoke recog in a re-entrant way and thus
      have to capture its current state and restore it afterwards.  */
   recog_data_d prev_recog_data = recog_data;
