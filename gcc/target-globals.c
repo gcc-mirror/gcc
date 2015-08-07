@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ira.h"
 #include "alloc-pool.h"
+#include "recog.h"
 #include "ira-int.h"
 #include "builtins.h"
 #include "gcse.h"
