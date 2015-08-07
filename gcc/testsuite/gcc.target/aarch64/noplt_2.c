@@ -14,5 +14,5 @@ foo (int a)
   return b0[a] + b1[a];
 }
 
-/* { dg-final { scan-assembler-times "#:got:" 1 { target { aarch64_tiny || aarch64_small } } } } */
-/* { dg-final { scan-assembler-times "#:got_lo12:" 1 { target aarch64_small } } } */
+/* { dg-final { scan-assembler-times "blr" 1 } } */
+/* { dg-final { scan-assembler-times "bl\t" 1 } } */

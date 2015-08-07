@@ -11,5 +11,5 @@ foo (int a)
   return b[a];
 }
 
-/* { dg-final { scan-assembler "#:got:" { target { aarch64_tiny || aarch64_small } } } } */
-/* { dg-final { scan-assembler "#:got_lo12:" { target aarch64_small } } } */
+/* { dg-final { scan-assembler "blr" } } */
+/* { dg-final { scan-assembler-not "bl\t" } } */
