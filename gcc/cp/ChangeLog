@@ -1,6 +1,7 @@
 2015-08-06  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Braden Obrzut  <admin@maniacsvault.net>
 	    Jason Merrill  <jason@redhat.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Add C++ Concepts TS support.
 	* constraint.cc, logic.cc: New files.
