@@ -1086,6 +1086,10 @@ fcilkplus
 C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)
 Enable Cilk Plus
 
+fconcepts
+C++ ObjC++ Var(flag_concepts)
+Enable support for C++ concepts
+
 fcond-mismatch
 C ObjC C++ ObjC++
 Allow the arguments of the '?' operator to have different types

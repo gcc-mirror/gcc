@@ -1333,6 +1333,15 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
 	}
     }
 
+  if (flag_concepts)
+    if (tree ci = get_constraints (t))
+      if (check_constraint_info (ci))
+        if (tree reqs = CI_TEMPLATE_REQS (ci))
+	  {
+	    pp_cxx_requires_clause (pp, reqs);
+	    pp_cxx_whitespace (pp);
+	  }
+
   if (DECL_CLASS_TEMPLATE_P (t))
     dump_type (pp, TREE_TYPE (t),
 	       ((flags & ~TFF_CLASS_KEY_OR_ENUM) | TFF_TEMPLATE_NAME
@@ -1563,6 +1572,11 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 
       if (show_return)
 	dump_type_suffix (pp, TREE_TYPE (fntype), flags);
+
+      if (flag_concepts)
+        if (tree ci = get_constraints (t))
+          if (tree reqs = CI_DECLARATOR_REQS (ci))
+            pp_cxx_requires_clause (pp, reqs);
 
       dump_substitution (pp, t, template_parms, template_args, flags);
     }
@@ -2687,6 +2701,38 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_left_paren (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_right_paren (pp);
+      break;
+
+    case REQUIRES_EXPR:
+      pp_cxx_requires_expr (cxx_pp, t);
+      break;
+
+    case SIMPLE_REQ:
+      pp_cxx_simple_requirement (cxx_pp, t);
+      break;
+
+    case TYPE_REQ:
+      pp_cxx_type_requirement (cxx_pp, t);
+      break;
+
+    case COMPOUND_REQ:
+      pp_cxx_compound_requirement (cxx_pp, t);
+      break;
+
+    case NESTED_REQ:
+      pp_cxx_nested_requirement (cxx_pp, t);
+      break;
+
+    case PRED_CONSTR:
+    case EXPR_CONSTR:
+    case TYPE_CONSTR:
+    case ICONV_CONSTR:
+    case DEDUCT_CONSTR:
+    case EXCEPT_CONSTR:
+    case PARM_CONSTR:
+    case CONJ_CONSTR:
+    case DISJ_CONSTR:
+      pp_cxx_constraint (cxx_pp, t);
       break;
 
     case PLACEHOLDER_EXPR:

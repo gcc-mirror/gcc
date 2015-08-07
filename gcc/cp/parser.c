@@ -1343,7 +1343,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
 static cp_declarator *make_call_declarator
-  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier, tree, tree);
+  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier, tree, tree, tree);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1522,7 +1522,8 @@ make_call_declarator (cp_declarator *target,
 		      cp_virt_specifiers virt_specifiers,
 		      cp_ref_qualifier ref_qualifier,
 		      tree exception_specification,
-		      tree late_return_type)
+		      tree late_return_type,
+		      tree requires_clause)
 {
   cp_declarator *declarator;
 
@@ -1534,6 +1535,7 @@ make_call_declarator (cp_declarator *target,
   declarator->u.function.ref_qualifier = ref_qualifier;
   declarator->u.function.exception_specification = exception_specification;
   declarator->u.function.late_return_type = late_return_type;
+  declarator->u.function.requires_clause = requires_clause;
   if (target)
     {
       declarator->id_loc = target->id_loc;
@@ -2082,6 +2084,8 @@ static tree cp_parser_type_specifier
 static tree cp_parser_simple_type_specifier
   (cp_parser *, cp_decl_specifier_seq *, cp_parser_flags);
 static tree cp_parser_type_name
+  (cp_parser *, bool);
+static tree cp_parser_type_name
   (cp_parser *);
 static tree cp_parser_nonclass_name 
   (cp_parser* parser);
@@ -2136,7 +2140,7 @@ static cp_virt_specifiers cp_parser_virt_specifier_seq_opt
 static cp_ref_qualifier cp_parser_ref_qualifier_opt
   (cp_parser *);
 static tree cp_parser_late_return_type_opt
-  (cp_parser *, cp_declarator *, cp_cv_quals);
+  (cp_parser *, cp_declarator *, tree &, cp_cv_quals);
 static tree cp_parser_declarator_id
   (cp_parser *, bool);
 static tree cp_parser_type_id
@@ -2177,7 +2181,7 @@ static tree cp_parser_late_parsing_cilk_simd_fn_info
   (cp_parser *, tree);
 
 static tree synthesize_implicit_template_parm
-  (cp_parser *);
+  (cp_parser *, tree);
 static tree finish_fully_implicit_template
   (cp_parser *, tree);
 
@@ -2314,6 +2318,31 @@ static bool cp_parser_extension_opt
 static void cp_parser_label_declaration
   (cp_parser *);
 
+/* Concept Extensions */
+
+static tree cp_parser_requires_clause
+  (cp_parser *);
+static tree cp_parser_requires_clause_opt
+  (cp_parser *);
+static tree cp_parser_requires_expression
+  (cp_parser *);
+static tree cp_parser_requirement_parameter_list
+  (cp_parser *);
+static tree cp_parser_requirement_body
+  (cp_parser *);
+static tree cp_parser_requirement_list
+  (cp_parser *);
+static tree cp_parser_requirement
+  (cp_parser *);
+static tree cp_parser_simple_requirement
+  (cp_parser *);
+static tree cp_parser_compound_requirement
+  (cp_parser *);
+static tree cp_parser_type_requirement
+  (cp_parser *);
+static tree cp_parser_nested_requirement
+  (cp_parser *);
+
 /* Transactional Memory Extensions */
 
 static tree cp_parser_transaction
@@ -2396,7 +2425,7 @@ static tree cp_parser_function_definition_from_specifiers_and_declarator
   (cp_parser *, cp_decl_specifier_seq *, tree, const cp_declarator *);
 static tree cp_parser_function_definition_after_declarator
   (cp_parser *, bool);
-static void cp_parser_template_declaration_after_export
+static bool cp_parser_template_declaration_after_export
   (cp_parser *, bool);
 static void cp_parser_perform_template_parameter_access_checks
   (vec<deferred_access_check, va_gc> *);
@@ -2531,6 +2560,30 @@ static bool cp_parser_array_designator_p
   (cp_parser *);
 static bool cp_parser_skip_to_closing_square_bracket
   (cp_parser *);
+
+/* Concept-related syntactic transformations */
+
+static tree cp_parser_maybe_concept_name       (cp_parser *, tree);
+static tree cp_parser_maybe_partial_concept_id (cp_parser *, tree, tree);
+
+// -------------------------------------------------------------------------- //
+// Unevaluated Operand Guard
+//
+// Implementation of an RAII helper for unevaluated operand parsing.
+cp_unevaluated::cp_unevaluated ()
+{
+  ++cp_unevaluated_operand;
+  ++c_inhibit_evaluation_warnings;
+}
+
+cp_unevaluated::~cp_unevaluated ()
+{
+  --c_inhibit_evaluation_warnings;
+  --cp_unevaluated_operand;
+}
+
+// -------------------------------------------------------------------------- //
+// Tentative Parsing
 
 /* Returns nonzero if we are parsing tentatively.  */
 
@@ -3551,6 +3604,9 @@ cp_parser_new (void)
   parser->fully_implicit_function_template_p = false;
   parser->implicit_template_parms = 0;
   parser->implicit_template_scope = 0;
+
+  /* Allow constrained-type-specifiers. */
+  parser->prevent_constrained_type_specifiers = 0;
 
   return parser;
 }
@@ -4591,6 +4647,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_LITERAL_TYPE:
 	case RID_IS_POD:
 	case RID_IS_POLYMORPHIC:
+	case RID_IS_SAME_AS:
 	case RID_IS_STD_LAYOUT:
 	case RID_IS_TRIVIAL:
 	case RID_IS_TRIVIALLY_ASSIGNABLE:
@@ -4598,6 +4655,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_TRIVIALLY_COPYABLE:
 	case RID_IS_UNION:
 	  return cp_parser_trait_expr (parser, token->keyword);
+
+	// C++ concepts
+	case RID_REQUIRES:
+	  return cp_parser_requires_expression (parser);
 
 	/* Objective-C++ expressions.  */
 	case RID_AT_ENCODE:
@@ -5956,9 +6017,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	tree type;
 	/* The syntax permitted here is the same permitted for an
 	   elaborated-type-specifier.  */
+        ++parser->prevent_constrained_type_specifiers;
 	type = cp_parser_elaborated_type_specifier (parser,
 						    /*is_friend=*/false,
 						    /*is_declaration=*/false);
+        --parser->prevent_constrained_type_specifiers;
 	postfix_expression = cp_parser_functional_cast (parser, type);
       }
       break;
@@ -6056,9 +6119,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	   that doesn't work we fall back to the primary-expression.  */
 	cp_parser_parse_tentatively (parser);
 	/* Look for the simple-type-specifier.  */
+        ++parser->prevent_constrained_type_specifiers;
 	type = cp_parser_simple_type_specifier (parser,
 						/*decl_specs=*/NULL,
 						CP_PARSER_FLAGS_NONE);
+        --parser->prevent_constrained_type_specifiers;
 	/* Parse the cast itself.  */
 	if (!cp_parser_error_occurred (parser))
 	  postfix_expression
@@ -8843,6 +8908,10 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case RID_IS_POLYMORPHIC:
       kind = CPTK_IS_POLYMORPHIC;
       break;
+    case RID_IS_SAME_AS:
+      kind = CPTK_IS_SAME_AS;
+      binary = true;
+      break;
     case RID_IS_STD_LAYOUT:
       kind = CPTK_IS_STD_LAYOUT;
       break;
@@ -9440,7 +9509,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       VIRT_SPEC_UNSPECIFIED,
                                        REF_QUAL_NONE,
 				       exception_spec,
-                                       /*late_return_type=*/NULL_TREE);
+                                       /*late_return_type=*/NULL_TREE,
+                                       /*requires_clause*/NULL_TREE);
     declarator->id_loc = LAMBDA_EXPR_LOCATION (lambda_expr);
 
     fco = grokmethod (&return_type_specs,
@@ -11371,8 +11441,12 @@ cp_parser_declaration (cp_parser* parser)
 	   && token1.keyword == RID_ATTRIBUTE
 	   && cp_parser_objc_valid_prefix_attributes (parser, &attributes))
     cp_parser_objc_declaration (parser, attributes);
-  /* We must have either a block declaration or a function
-     definition.  */
+  /* At this point we may have a template declared by a concept
+     introduction.  */
+  else if (flag_concepts
+	   && cp_parser_template_declaration_after_export (parser,
+							   /*member_p=*/false))
+    /* We did.  */;
   else
     /* Try to parse a block-declaration, or a function-definition.  */
     cp_parser_block_declaration (parser, /*statement_p=*/false);
@@ -11723,6 +11797,11 @@ cp_parser_simple_declaration (cp_parser* parser,
    decl-specifier:
      attributes
 
+   Concepts Extension:
+
+   decl-specifier:
+     concept
+
    Set *DECL_SPECS to a representation of the decl-specifier-seq.
 
    The parser flags FLAGS is used to control type-specifier parsing.
@@ -11847,6 +11926,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 
         case RID_CONSTEXPR:
 	  ds = ds_constexpr;
+          cp_lexer_consume_token (parser->lexer);
+          break;
+
+        case RID_CONCEPT:
+          ds = ds_concept;
           cp_lexer_consume_token (parser->lexer);
           break;
 
@@ -13256,7 +13340,15 @@ cp_parser_operator (cp_parser* parser)
 
    template-parameter-list-seq:
      template-parameter-list-seq [opt]
-     template < template-parameter-list >  */
+     template < template-parameter-list >
+
+   Concept Extensions:
+
+   template-parameter-list-seq:
+     template < template-parameter-list > requires-clause [opt]
+
+   requires-clause:
+     requires logical-or-expression  */
 
 static void
 cp_parser_template_declaration (cp_parser* parser, bool member_p)
@@ -13328,6 +13420,244 @@ cp_parser_template_parameter_list (cp_parser* parser)
     }
 
   return end_template_parm_list (parameter_list);
+}
+
+/* Parse a introduction-list.
+
+   introduction-list:
+     introduced-parameter
+     introduction-list , introduced-parameter
+
+   introduced-parameter:
+     ...[opt] identifier
+
+   Returns a TREE_VEC of WILDCARD_DECLs.  If the parameter is a pack
+   then the introduced parm will have WILDCARD_PACK_P set.  In addition, the
+   WILDCARD_DECL will also have DECL_NAME set and token location in
+   DECL_SOURCE_LOCATION.  */
+
+static tree
+cp_parser_introduction_list (cp_parser *parser)
+{
+  vec<tree, va_gc> *introduction_vec = make_tree_vector ();
+
+  while (true)
+    {
+      bool is_pack = cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS);
+      if (is_pack)
+	cp_lexer_consume_token (parser->lexer);
+
+      /* Build placeholder. */
+      tree parm = build_nt (WILDCARD_DECL);
+      DECL_SOURCE_LOCATION (parm)
+	= cp_lexer_peek_token (parser->lexer)->location;
+      DECL_NAME (parm) = cp_parser_identifier (parser);
+      WILDCARD_PACK_P (parm) = is_pack;
+      vec_safe_push (introduction_vec, parm);
+
+      /* If the next token is not a `,', we're done.  */
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+	break;
+      /* Otherwise, consume the `,' token.  */
+      cp_lexer_consume_token (parser->lexer);
+    }
+
+  /* Convert the vec into a TREE_VEC.  */
+  tree introduction_list = make_tree_vec (introduction_vec->length ());
+  unsigned int n;
+  tree parm;
+  FOR_EACH_VEC_ELT (*introduction_vec, n, parm)
+    TREE_VEC_ELT (introduction_list, n) = parm;
+
+  release_tree_vector (introduction_vec);
+  return introduction_list;
+}
+
+/* Given a declarator, get the declarator-id part, or NULL_TREE if this
+   is an abstract declarator. */
+
+static inline cp_declarator*
+get_id_declarator (cp_declarator *declarator)
+{
+  cp_declarator *d = declarator;
+  while (d && d->kind != cdk_id)
+    d = d->declarator;
+  return d;
+}
+
+/* Get the unqualified-id from the DECLARATOR or NULL_TREE if this
+   is an abstract declarator. */
+
+static inline tree
+get_unqualified_id (cp_declarator *declarator)
+{
+  declarator = get_id_declarator (declarator);
+  if (declarator)
+    return declarator->u.id.unqualified_name;
+  else
+    return NULL_TREE;
+}
+
+/* Returns true if DECL represents a constrained-parameter.  */
+
+static inline bool
+is_constrained_parameter (tree decl)
+{
+  return (decl
+          && TREE_CODE (decl) == TYPE_DECL
+          && CONSTRAINED_PARM_CONCEPT (decl)
+          && DECL_P (CONSTRAINED_PARM_CONCEPT (decl)));
+}
+
+/* Returns true if PARM declares a constrained-parameter. */
+
+static inline bool
+is_constrained_parameter (cp_parameter_declarator *parm)
+{
+  return is_constrained_parameter (parm->decl_specifiers.type);
+}
+
+/* Check that the type parameter is only a declarator-id, and that its
+   type is not cv-qualified. */
+
+bool
+cp_parser_check_constrained_type_parm (cp_parser *parser,
+				       cp_parameter_declarator *parm)
+{
+  if (!parm->declarator)
+    return true;
+
+  if (parm->declarator->kind != cdk_id)
+    {
+      cp_parser_error (parser, "invalid constrained type parameter");
+      return false;
+    }
+
+  /* Don't allow cv-qualified type parameters.  */
+  if (decl_spec_seq_has_spec_p (&parm->decl_specifiers, ds_const)
+      || decl_spec_seq_has_spec_p (&parm->decl_specifiers, ds_volatile))
+    {
+      cp_parser_error (parser, "cv-qualified type parameter");
+      return false;
+    }
+
+  return true;
+}
+
+/* Finish parsing/processing a template type parameter and checking
+   various restrictions. */
+
+static inline tree
+cp_parser_constrained_type_template_parm (cp_parser *parser,
+                                          tree id,
+                                          cp_parameter_declarator* parmdecl)
+{
+  if (cp_parser_check_constrained_type_parm (parser, parmdecl))
+    return finish_template_type_parm (class_type_node, id);
+  else
+    return error_mark_node;
+}
+
+/* Finish parsing/processing a template template parameter by borrowing
+   the template parameter list from the prototype parameter.  */
+
+static tree
+cp_parser_constrained_template_template_parm (cp_parser *parser,
+                                              tree proto,
+                                              tree id,
+                                              cp_parameter_declarator *parmdecl)
+{
+  if (!cp_parser_check_constrained_type_parm (parser, parmdecl))
+    return error_mark_node;
+
+  /* FIXME: This should probably be copied, and we may need to adjust
+     the template parameter depths.  */
+  tree saved_parms = current_template_parms;
+  begin_template_parm_list ();
+  current_template_parms = DECL_TEMPLATE_PARMS (proto);
+  end_template_parm_list ();
+
+  tree parm = finish_template_template_parm (class_type_node, id);
+  current_template_parms = saved_parms;
+
+  return parm;
+}
+
+/* Create a new non-type template parameter from the given PARM
+   declarator.  */
+
+static tree
+constrained_non_type_template_parm (bool *is_non_type,
+                                    cp_parameter_declarator *parm)
+{
+  *is_non_type = true;
+  cp_declarator *decl = parm->declarator;
+  cp_decl_specifier_seq *specs = &parm->decl_specifiers;
+  specs->type = TREE_TYPE (DECL_INITIAL (specs->type));
+  return grokdeclarator (decl, specs, TPARM, 0, NULL);
+}
+
+/* Build a constrained template parameter based on the PARMDECL
+   declarator. The type of PARMDECL is the constrained type, which
+   refers to the prototype template parameter that ultimately
+   specifies the type of the declared parameter. */
+
+static tree
+finish_constrained_parameter (cp_parser *parser,
+                              cp_parameter_declarator *parmdecl,
+                              bool *is_non_type,
+                              bool *is_parameter_pack)
+{
+  tree decl = parmdecl->decl_specifiers.type;
+  tree id = get_unqualified_id (parmdecl->declarator);
+  tree def = parmdecl->default_argument;
+  tree proto = DECL_INITIAL (decl);
+
+  /* A template parameter constrained by a variadic concept shall also
+     be declared as a template parameter pack.  */
+  bool is_variadic = template_parameter_pack_p (proto);
+  if (is_variadic && !*is_parameter_pack)
+    cp_parser_error (parser, "variadic constraint introduced without %<...%>");
+
+  /* Build the parameter. Return an error if the declarator was invalid. */
+  tree parm;
+  if (TREE_CODE (proto) == TYPE_DECL)
+    parm = cp_parser_constrained_type_template_parm (parser, id, parmdecl);
+  else if (TREE_CODE (proto) == TEMPLATE_DECL)
+    parm = cp_parser_constrained_template_template_parm (parser, proto, id,
+							 parmdecl);
+  else
+    parm = constrained_non_type_template_parm (is_non_type, parmdecl);
+  if (parm == error_mark_node)
+    return error_mark_node;
+
+  /* Finish the parameter decl and create a node attaching the
+     default argument and constraint.  */
+  parm = build_tree_list (def, parm);
+  TEMPLATE_PARM_CONSTRAINTS (parm) = decl;
+
+  return parm;
+}
+
+/* Returns true if the parsed type actually represents the declaration
+   of a type template-parameter.  */
+
+static inline bool
+declares_constrained_type_template_parameter (tree type)
+{
+  return (is_constrained_parameter (type)
+	  && TREE_CODE (TREE_TYPE (type)) == TEMPLATE_TYPE_PARM);
+}
+
+
+/* Returns true if the parsed type actually represents the declaration of
+   a template template-parameter.  */
+
+static bool
+declares_constrained_template_template_parameter (tree type)
+{
+  return (is_constrained_parameter (type)
+	  && TREE_CODE (TREE_TYPE (type)) == TEMPLATE_TEMPLATE_PARM);
 }
 
 /* Parse a default argument for a type template-parameter.
@@ -13454,7 +13784,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
 	return cp_parser_type_parameter (parser, is_parameter_pack);
     }
 
-  /* Otherwise, it is a non-type parameter.
+  /* Otherwise, it is a non-type parameter or a constrained parameter.
 
      [temp.param]
 
@@ -13462,7 +13792,6 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
      template-parameter, the first non-nested `>' is taken as the end
      of the template parameter-list rather than a greater-than
      operator.  */
-  *is_non_type = true;
   parameter_declarator
      = cp_parser_parameter_declaration (parser, /*template_parm_p=*/true,
 					/*parenthesized_p=*/NULL);
@@ -13482,6 +13811,16 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
 	/* Consume the `...' for better error recovery.  */
 	cp_lexer_consume_token (parser->lexer);
     }
+
+  // The parameter may have been constrained.
+  if (is_constrained_parameter (parameter_declarator))
+    return finish_constrained_parameter (parser,
+                                         parameter_declarator,
+                                         is_non_type,
+                                         is_parameter_pack);
+
+  // Now we're sure that the parameter is a non-type parameter.
+  *is_non_type = true;
 
   parm = grokdeclarator (parameter_declarator->declarator,
 			 &parameter_declarator->decl_specifiers,
@@ -13599,6 +13938,16 @@ cp_parser_type_parameter (cp_parser* parser, bool *is_parameter_pack)
 	cp_parser_template_parameter_list (parser);
 	/* Look for the `>'.  */
 	cp_parser_require (parser, CPP_GREATER, RT_GREATER);
+
+        // If template requirements are present, parse them.
+	if (flag_concepts)
+          {
+            tree reqs = get_shorthand_constraints (current_template_parms);
+            if (tree r = cp_parser_requires_clause_opt (parser))
+              reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
+            TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+          }
+
 	/* Look for the `class' or 'typename' keywords.  */
 	cp_parser_type_parameter_key (parser);
         /* If the next token is an ellipsis, we have a template
@@ -13833,6 +14182,11 @@ cp_parser_template_id (cp_parser *parser,
       template_id
 	= finish_template_type (templ, arguments, entering_scope);
     }
+  /* A template-like identifier may be a partial concept id. */
+  else if (flag_concepts
+           && (template_id = (cp_parser_maybe_partial_concept_id
+			      (parser, templ, arguments))))
+    return template_id;
   else if (variable_template_p (templ))
     {
       template_id = lookup_template_variable (templ, arguments);
@@ -14844,6 +15198,11 @@ cp_parser_type_specifier (cp_parser* parser,
      __typeof__ ( type-id )
      __typeof__ ( type-id ) { initializer-list , [opt] }
 
+   Concepts Extension:
+
+   simple-type-specifier:
+     constrained-type-specifier
+
    Returns the indicated TYPE_DECL.  If DECL_SPECS is not NULL, it is
    appropriately updated.  */
 
@@ -14954,7 +15313,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	    }
 
 	  if (cxx_dialect >= cxx14)
-	    type = synthesize_implicit_template_parm (parser);
+	    type = synthesize_implicit_template_parm (parser, NULL_TREE);
 	  else
 	    type = error_mark_node;
 
@@ -15195,10 +15554,26 @@ cp_parser_simple_type_specifier (cp_parser* parser,
    typedef-name:
      identifier
 
+  Concepts:
+
+   type-name:
+     concept-name
+     partial-concept-id
+
+   concept-name:
+     identifier
+
    Returns a TYPE_DECL for the type.  */
 
 static tree
 cp_parser_type_name (cp_parser* parser)
+{
+  return cp_parser_type_name (parser, /*typename_keyword_p=*/false);
+}
+
+/* See above. */
+static tree
+cp_parser_type_name (cp_parser* parser, bool typename_keyword_p)
 {
   tree type_decl;
 
@@ -15206,7 +15581,7 @@ cp_parser_type_name (cp_parser* parser)
   cp_parser_parse_tentatively (parser);
   /* Try a class-name.  */
   type_decl = cp_parser_class_name (parser,
-				    /*typename_keyword_p=*/false,
+				    typename_keyword_p,
 				    /*template_keyword_p=*/false,
 				    none_type,
 				    /*check_dependency_p=*/true,
@@ -15236,11 +15611,16 @@ cp_parser_type_name (cp_parser* parser)
 	 Whereas [temp.names]/7 says:
 	 
 	     A simple-template-id that names a class template
-	     specialization is a class-name.  */
+	     specialization is a class-name.
+
+         With concepts, this could also be a partial-concept-id that
+         declares a non-type template parameter. */
       if (type_decl != NULL_TREE
 	  && TREE_CODE (type_decl) == TYPE_DECL
 	  && TYPE_DECL_ALIAS_P (type_decl))
 	gcc_assert (DECL_TEMPLATE_INSTANTIATION (type_decl));
+      else if (is_constrained_parameter (type_decl))
+        /* Don't do anything. */ ;
       else
 	cp_parser_simulate_error (parser);
 
@@ -15252,12 +15632,129 @@ cp_parser_type_name (cp_parser* parser)
   return type_decl;
 }
 
-/* Parse a non-class type-name, that is, either an enum-name or a typedef-name.
+/* Returns true if proto is a type parameter, but not a template
+   template parameter.  */
+static bool
+check_type_concept (tree fn, tree proto)
+{
+  if (TREE_CODE (proto) != TYPE_DECL)
+    {
+      error ("invalid use of non-type concept %qD", fn);
+      return false;
+    }
+  return true;
+}
+
+/*  Check if DECL and ARGS can form a constrained-type-specifier.
+    If ARGS is non-null, we try to form a concept check of the
+    form DECL<?, ARGS> where ? is a wildcard that matches any
+    kind of template argument. If ARGS is NULL, then we try to
+    form a concept check of the form DECL<?>. */
+
+static tree
+cp_parser_maybe_constrained_type_specifier (cp_parser *parser,
+					    tree decl, tree args)
+{
+  gcc_assert (args ? TREE_CODE (args) == TREE_VEC : true);
+
+  /* If we a constrained-type-specifier cannot be deduced. */
+  if (parser->prevent_constrained_type_specifiers)
+    return NULL_TREE;
+
+  /* A constrained type specifier can only be found in an
+     overload set or as a reference to a template declaration.
+
+     FIXME: This might be masking a bug.  It's possible that
+     that the deduction below is causing template specializations
+     to be formed with the wildcard as an argument.  */
+  if (TREE_CODE (decl) != OVERLOAD && TREE_CODE (decl) != TEMPLATE_DECL)
+    return NULL_TREE;
+
+  /* Try to build a call expression that evaluates the
+     concept. This can fail if the overload set refers
+     only to non-templates. */
+  tree placeholder = build_nt (WILDCARD_DECL);
+  tree check = build_concept_check (decl, placeholder, args);
+  if (check == error_mark_node)
+    return NULL_TREE;
+
+  /* Deduce the checked constraint and the prototype parameter.
+
+     FIXME: In certain cases, failure to deduce should be a
+     diagnosable error.  */
+  tree conc;
+  tree proto;
+  if (!deduce_constrained_parameter (check, conc, proto))
+    return NULL_TREE;
+
+  /* In template parameter scope, this results in a constrained
+     parameter. Return a descriptor of that parm. */
+  if (processing_template_parmlist)
+    return build_constrained_parameter (conc, proto, args);
+
+  /* In any other context, a concept must be a type concept.
+
+     FIXME: A constrained-type-specifier can be a placeholder
+     of any kind.  */
+  if (!check_type_concept (conc, proto))
+    return error_mark_node;
+
+  /* In a parameter-declaration-clause, constrained-type
+     specifiers result in invented template parameters.  */
+  if (parser->auto_is_implicit_function_template_parm_p)
+    {
+      tree x = build_constrained_parameter (conc, proto, args);
+      return synthesize_implicit_template_parm (parser, x);
+    }
+  else
+    {
+     /* Otherwise, we're in a context where the constrained
+        type name is deduced and the constraint applies
+        after deduction. */
+      return make_constrained_auto (conc, args);
+    }
+
+  return NULL_TREE;
+}
+
+/* If DECL refers to a concept, return a TYPE_DECL representing
+   the result of using the constrained type specifier in the
+   current context.  DECL refers to a concept if
+
+  - it is an overload set containing a function concept taking a single
+    type argument, or
+
+  - it is a variable concept taking a single type argument.  */
+
+static tree
+cp_parser_maybe_concept_name (cp_parser* parser, tree decl)
+{
+  return cp_parser_maybe_constrained_type_specifier (parser, decl, NULL_TREE);
+}
+
+/* Check if DECL and ARGS form a partial-concept-id.  If so,
+   assign ID to the resulting constrained placeholder.
+
+   Returns true if the partial-concept-id designates a placeholder
+   and false otherwise. Note that *id is set to NULL_TREE in
+   this case. */
+
+static tree
+cp_parser_maybe_partial_concept_id (cp_parser *parser, tree decl, tree args)
+{
+  return cp_parser_maybe_constrained_type_specifier (parser, decl, args);
+}
+
+/* Parse a non-class type-name, that is, either an enum-name, a typedef-name,
+   or a concept-name.
 
    enum-name:
      identifier
 
    typedef-name:
+     identifier
+
+   concept-name:
      identifier
 
    Returns a TYPE_DECL for the type.  */
@@ -15278,6 +15775,17 @@ cp_parser_nonclass_name (cp_parser* parser)
 
   type_decl = strip_using_decl (type_decl);
   
+  /* If we found an overload set, then it may refer to a concept-name. */
+  if (flag_concepts
+      && (TREE_CODE (type_decl) == OVERLOAD
+	  || BASELINK_P (type_decl)
+	  || variable_concept_p (type_decl)))
+  {
+    /* Determine whether the overload refers to a concept. */
+    if (tree decl = cp_parser_maybe_concept_name (parser, type_decl))
+      return decl;
+  }
+
   if (TREE_CODE (type_decl) != TYPE_DECL
       && (objc_is_id (identifier) || objc_is_class_name (identifier)))
     {
@@ -16637,6 +17145,14 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (decl == error_mark_node)
     return decl;
 
+  // Attach constraints to the alias declaration.
+  if (flag_concepts && current_template_parms)
+    {
+      tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+      tree constr = build_constraints (reqs, NULL_TREE);
+      set_constraints (decl, constr);
+    }
+
   cp_finish_decl (decl, NULL_TREE, 0, NULL_TREE, 0);
 
   if (pushed_scope)
@@ -17632,10 +18148,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 		      else
 			attrs = chainon (attr, attrs);
 		    }
+		  tree requires_clause = NULL_TREE;
 		  late_return = (cp_parser_late_return_type_opt
-				 (parser, declarator,
+				 (parser, declarator, requires_clause,
 				  memfn ? cv_quals : -1));
-
 
 		  /* Parse the virt-specifier-seq.  */
 		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
@@ -17647,7 +18163,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     virt_specifiers,
 						     ref_qual,
 						     exception_specification,
-						     late_return);
+						     late_return,
+						     requires_clause);
 		  declarator->std_attributes = attrs;
 		  /* Any subsequent parameter lists are to do with
 		     return type, so are not those of the declared
@@ -18369,7 +18886,7 @@ parsing_nsdmi (void)
 
 static tree
 cp_parser_late_return_type_opt (cp_parser* parser, cp_declarator *declarator,
-				cp_cv_quals quals)
+				tree& requires_clause, cp_cv_quals quals)
 {
   cp_token *token;
   tree type = NULL_TREE;
@@ -18383,7 +18900,9 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_declarator *declarator,
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
   /* A late-specified return type is indicated by an initial '->'. */
-  if (token->type != CPP_DEREF && !(declare_simd_p || cilk_simd_fn_vector_p))
+  if (token->type != CPP_DEREF
+      && token->keyword != RID_REQUIRES
+      && !(declare_simd_p || cilk_simd_fn_vector_p))
     return NULL_TREE;
 
   tree save_ccp = current_class_ptr;
@@ -18401,6 +18920,10 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_declarator *declarator,
 
       type = cp_parser_trailing_type_id (parser);
     }
+
+  /* Function declarations may be followed by a trailing
+     requires-clause.  */
+  requires_clause = cp_parser_requires_clause_opt (parser);
 
   if (cilk_simd_fn_vector_p)
     declarator->std_attributes
@@ -18502,11 +19025,16 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
       && type_uses_auto (type_specifier_seq.type))
     {
       /* A type-id with type 'auto' is only ok if the abstract declarator
-	 is a function declarator with a late-specified return type.  */
+	 is a function declarator with a late-specified return type.
+
+         A type-id with 'auto' is also valid in a trailing-return-type
+         in a compound-requirement. */
       if (abstract_declarator
 	  && abstract_declarator->kind == cdk_function
 	  && abstract_declarator->u.function.late_return_type)
 	/* OK */;
+      else if (parser->in_result_type_constraint_p)
+        /* OK */;
       else
 	{
 	  error ("invalid use of %<auto%>");
@@ -18539,7 +19067,8 @@ static tree cp_parser_template_type_arg (cp_parser *parser)
   return r;
 }
 
-static tree cp_parser_trailing_type_id (cp_parser *parser)
+static tree
+cp_parser_trailing_type_id (cp_parser *parser)
 {
   return cp_parser_type_id_1 (parser, false, true);
 }
@@ -19123,6 +19652,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
   /* If the next token is `=', then process a default argument.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
     {
+      tree type = decl_specifiers.type;
       token = cp_lexer_peek_token (parser->lexer);
       /* If we are defining a class, then the tokens that make up the
 	 default argument must be saved and processed later.  */
@@ -19130,6 +19660,17 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  && TYPE_BEING_DEFINED (current_class_type)
 	  && !LAMBDA_TYPE_P (current_class_type))
 	default_argument = cp_parser_cache_defarg (parser, /*nsdmi=*/false);
+
+      // A constrained-type-specifier may declare a type template-parameter.
+      else if (declares_constrained_type_template_parameter (type))
+        default_argument
+          = cp_parser_default_type_template_argument (parser);
+
+      // A constrained-type-specifier may declare a template-template-parameter.
+      else if (declares_constrained_template_template_parameter (type))
+        default_argument
+          = cp_parser_default_template_template_argument (parser);
+
       /* Outside of a class definition, we can just parse the
 	 assignment-expression.  */
       else
@@ -19871,6 +20412,10 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   saved_in_unbraced_linkage_specification_p
     = parser->in_unbraced_linkage_specification_p;
   parser->in_unbraced_linkage_specification_p = false;
+
+  // Associate constraints with the type.
+  if (flag_concepts)
+    type = associate_classtype_constraints (type);
 
   /* Start the class.  */
   if (nested_name_specifier_p)
@@ -20770,6 +21315,9 @@ cp_parser_member_declaration (cp_parser* parser)
 
       return;
     }
+  /* Check for a template introduction.  */
+  else if (cp_parser_template_declaration_after_export (parser, true))
+    return;
 
   /* Check for a using-declaration.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
@@ -22764,6 +23312,324 @@ cp_parser_label_declaration (cp_parser* parser)
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 }
 
+// -------------------------------------------------------------------------- //
+// Requires Clause
+
+// Parse a requires clause.
+//
+//    requires-clause:
+//      'requires' logical-or-expression
+//
+// The required logical-or-expression must be a constant expression. Note
+// that we don't check that the expression is constepxr here. We defer until
+// we analyze constraints and then, we only check atomic constraints.
+static tree
+cp_parser_requires_clause (cp_parser *parser)
+{
+  // Parse the requires clause so that it is not automatically folded.
+  ++processing_template_decl;
+  tree expr = cp_parser_binary_expression (parser, false, false,
+					   PREC_NOT_OPERATOR, NULL);
+  --processing_template_decl;
+  return expr;
+}
+
+// Optionally parse a requires clause:
+static tree
+cp_parser_requires_clause_opt (cp_parser *parser)
+{
+  if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_REQUIRES))
+    return NULL_TREE;
+  cp_lexer_consume_token (parser->lexer);
+  return cp_parser_requires_clause (parser);
+}
+
+
+/*---------------------------------------------------------------------------
+                           Requires expressions
+---------------------------------------------------------------------------*/
+
+/* Parse a requires expression
+
+   requirement-expression:
+       'requires' requirement-parameter-list [opt] requirement-body */
+static tree
+cp_parser_requires_expression (cp_parser *parser)
+{
+  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_REQUIRES));
+  location_t loc = cp_lexer_consume_token (parser->lexer)->location;
+
+  /* A requires-expression shall appear only within a concept
+     definition or a requires-clause.
+
+     TODO: Implement this diagnostic correctly. */
+  if (!processing_template_decl)
+    {
+      error_at (loc, "a requires expression cannot appear outside a template");
+      cp_parser_skip_to_end_of_statement (parser);
+      return error_mark_node;
+    }
+
+  tree parms, reqs;
+  {
+    /* Local parameters are delared as variables within the scope
+       of the expression.  They are not visible past the end of
+       the expression.  Expressions within the requires-expression
+       are unevaluated.  */
+    struct scope_sentinel
+    {
+      scope_sentinel ()
+      {
+	++cp_unevaluated_operand;
+	begin_scope (sk_block, NULL_TREE);
+      }
+
+      ~scope_sentinel ()
+      {
+	pop_bindings_and_leave_scope ();
+	--cp_unevaluated_operand;
+      }
+    } s;
+
+    /* Parse the optional parameter list. */
+    if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+      {
+	parms = cp_parser_requirement_parameter_list (parser);
+	if (parms == error_mark_node)
+	  return error_mark_node;
+      }
+    else
+      parms = NULL_TREE;
+
+    /* Parse the requirement body. */
+    reqs = cp_parser_requirement_body (parser);
+    if (reqs == error_mark_node)
+      return error_mark_node;
+  }
+
+  /* This needs to happen after pop_bindings_and_leave_scope, as it reverses
+     the parm chain.  */
+  grokparms (parms, &parms);
+  return finish_requires_expr (parms, reqs);
+}
+
+/* Parse a parameterized requirement.
+
+   requirement-parameter-list:
+       '(' parameter-declaration-clause ')' */
+static tree
+cp_parser_requirement_parameter_list (cp_parser *parser)
+{
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    return error_mark_node;
+
+  tree parms = cp_parser_parameter_declaration_clause (parser);
+
+  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+    return error_mark_node;
+
+  return parms;
+}
+
+/* Parse the body of a requirement.
+
+   requirement-body:
+       '{' requirement-list '}' */
+static tree
+cp_parser_requirement_body (cp_parser *parser)
+{
+  if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
+    return error_mark_node;
+
+  tree reqs = cp_parser_requirement_list (parser);
+
+  if (!cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE))
+    return error_mark_node;
+
+  return reqs;
+}
+
+/* Parse a list of requirements.
+
+   requirement-list:
+       requirement
+       requirement-list ';' requirement[opt] */
+static tree
+cp_parser_requirement_list (cp_parser *parser)
+{
+  tree result = NULL_TREE;
+  while (true)
+    {
+      tree req = cp_parser_requirement (parser);
+      if (req == error_mark_node)
+        return error_mark_node;
+
+      result = tree_cons (NULL_TREE, req, result);
+
+      /* If we see a semi-colon, consume it. */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
+
+      /* Stop processing at the end of the list. */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
+        break;
+    }
+
+  /* Reverse the order of requirements so they are analyzed in
+     declaration order. */
+  return nreverse (result);
+}
+
+/* Parse a syntactic requirement or type requirement.
+
+     requirement:
+       simple-requirement
+       compound-requirement
+       type-requirement
+       nested-requirement */
+static tree
+cp_parser_requirement (cp_parser *parser)
+{
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    return cp_parser_compound_requirement (parser);
+  else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME))
+    return cp_parser_type_requirement (parser);
+  else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_REQUIRES))
+    return cp_parser_nested_requirement (parser);
+  else
+    return cp_parser_simple_requirement (parser);
+}
+
+/* Parse a simple requirement.
+
+     simple-requirement:
+       expression ';' */
+static tree
+cp_parser_simple_requirement (cp_parser *parser)
+{
+  tree expr = cp_parser_expression (parser, NULL, false, false);
+  if (!expr || expr == error_mark_node)
+    return error_mark_node;
+
+  if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+    return error_mark_node;
+
+  return finish_simple_requirement (expr);
+}
+
+/* Parse a type requirement
+
+     type-requirement
+         nested-name-specifier [opt] required-type-name ';'
+
+     required-type-name:
+         type-name
+         'template' [opt] simple-template-id  */
+static tree
+cp_parser_type_requirement (cp_parser *parser)
+{
+  cp_lexer_consume_token (parser->lexer);
+
+  // Save the scope before parsing name specifiers.
+  tree saved_scope = parser->scope;
+  tree saved_object_scope = parser->object_scope;
+  tree saved_qualifying_scope = parser->qualifying_scope;
+  cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/true);
+  cp_parser_nested_name_specifier_opt (parser,
+                                       /*typename_keyword_p=*/true,
+                                       /*check_dependency_p=*/false,
+                                       /*type_p=*/true,
+                                       /*is_declaration=*/false);
+
+  tree type;
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      type = cp_parser_template_id (parser,
+                                    /*template_keyword_p=*/true,
+                                    /*check_dependency=*/false,
+                                    /*tag_type=*/none_type,
+                                    /*is_declaration=*/false);
+      type = make_typename_type (parser->scope, type, typename_type,
+                                 /*complain=*/tf_error);
+    }
+  else
+   type = cp_parser_type_name (parser, /*typename_keyword_p=*/true);
+
+  if (TREE_CODE (type) == TYPE_DECL)
+    type = TREE_TYPE (type);
+
+  parser->scope = saved_scope;
+  parser->object_scope = saved_object_scope;
+  parser->qualifying_scope = saved_qualifying_scope;
+
+  if (type == error_mark_node)
+    cp_parser_skip_to_end_of_statement (parser);
+
+  if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+    return error_mark_node;
+  if (type == error_mark_node)
+    return error_mark_node;
+
+  return finish_type_requirement (type);
+}
+
+/* Parse a compound requirement
+
+     compound-requirement:
+         '{' expression '}' 'noexcept' [opt] trailing-return-type [opt] ';' */
+static tree
+cp_parser_compound_requirement (cp_parser *parser)
+{
+  /* Parse an expression enclosed in '{ }'s. */
+  if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
+    return error_mark_node;
+
+  tree expr = cp_parser_expression (parser, NULL, false, false);
+  if (!expr || expr == error_mark_node)
+    return error_mark_node;
+
+  if (!cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE))
+    return error_mark_node;
+
+  /* Parse the optional noexcept. */
+  bool noexcept_p = false;
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_NOEXCEPT))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      noexcept_p = true;
+    }
+
+  /* Parse the optional trailing return type. */
+  tree type = NULL_TREE;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      bool saved_result_type_constraint_p = parser->in_result_type_constraint_p;
+      parser->in_result_type_constraint_p = true;
+      type = cp_parser_trailing_type_id (parser);
+      parser->in_result_type_constraint_p = saved_result_type_constraint_p;
+      if (type == error_mark_node)
+        return error_mark_node;
+    }
+
+  return finish_compound_requirement (expr, type, noexcept_p);
+}
+
+/* Parse a nested requirement. This is the same as a requires clause.
+
+   nested-requirement:
+     requires-clause */
+static tree
+cp_parser_nested_requirement (cp_parser *parser)
+{
+  cp_lexer_consume_token (parser->lexer);
+  tree req = cp_parser_requires_clause (parser);
+  if (req == error_mark_node)
+    return error_mark_node;
+  return finish_nested_requirement (req);
+}
+
 /* Support Functions */
 
 /* Looks up NAME in the current scope, as given by PARSER->SCOPE.
@@ -23586,87 +24452,29 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
   return fn;
 }
 
-/* Parse a template-declaration, assuming that the `export' (and
-   `extern') keywords, if present, has already been scanned.  MEMBER_P
-   is as for cp_parser_template_declaration.  */
+/* Parse a template-declaration body (following argument list).  */
 
 static void
-cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
+cp_parser_template_declaration_after_parameters (cp_parser* parser,
+						 tree parameter_list,
+						 bool member_p)
 {
   tree decl = NULL_TREE;
-  vec<deferred_access_check, va_gc> *checks;
-  tree parameter_list;
   bool friend_p = false;
-  bool need_lang_pop;
-  cp_token *token;
 
-  /* Look for the `template' keyword.  */
-  token = cp_lexer_peek_token (parser->lexer);
-  if (!cp_parser_require_keyword (parser, RID_TEMPLATE, RT_TEMPLATE))
-    return;
-
-  /* And the `<'.  */
-  if (!cp_parser_require (parser, CPP_LESS, RT_LESS))
-    return;
-  if (at_class_scope_p () && current_function_decl)
-    {
-      /* 14.5.2.2 [temp.mem]
-
-         A local class shall not have member templates.  */
-      error_at (token->location,
-		"invalid declaration of member template in local class");
-      cp_parser_skip_to_end_of_block_or_statement (parser);
-      return;
-    }
-  /* [temp]
-
-     A template ... shall not have C linkage.  */
-  if (current_lang_name == lang_name_c)
-    {
-      error_at (token->location, "template with C linkage");
-      /* Give it C++ linkage to avoid confusing other parts of the
-	 front end.  */
-      push_lang_context (lang_name_cplusplus);
-      need_lang_pop = true;
-    }
-  else
-    need_lang_pop = false;
-
-  /* We cannot perform access checks on the template parameter
-     declarations until we know what is being declared, just as we
-     cannot check the decl-specifier list.  */
-  push_deferring_access_checks (dk_deferred);
-
-  /* If the next token is `>', then we have an invalid
-     specialization.  Rather than complain about an invalid template
-     parameter, issue an error message here.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
-    {
-      cp_parser_error (parser, "invalid explicit specialization");
-      begin_specialization ();
-      parameter_list = NULL_TREE;
-    }
-  else
-    {
-      /* Parse the template parameters.  */
-      parameter_list = cp_parser_template_parameter_list (parser);
-    }
+  /* We just processed one more parameter list.  */
+  ++parser->num_template_parameter_lists;
 
   /* Get the deferred access checks from the parameter list.  These
      will be checked once we know what is being declared, as for a
      member template the checks must be performed in the scope of the
      class containing the member.  */
-  checks = get_deferred_access_checks ();
+  vec<deferred_access_check, va_gc> *checks = get_deferred_access_checks ();
 
-  /* Look for the `>'.  */
-  cp_parser_skip_to_end_of_template_parameter_list (parser);
-  /* We just processed one more parameter list.  */
-  ++parser->num_template_parameter_lists;
-  /* If the next token is `template', there are more template
-     parameters.  */
-  if (cp_lexer_next_token_is_keyword (parser->lexer,
-				      RID_TEMPLATE))
-    cp_parser_template_declaration_after_export (parser, member_p);
+  /* Tentatively parse for a new template parameter list, which can either be
+     the template keyword or a template introduction.  */
+  if (cp_parser_template_declaration_after_export (parser, member_p))
+    /* OK */;
   else if (cxx_dialect >= cxx11
 	   && cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
     decl = cp_parser_alias_declaration (parser);
@@ -23675,7 +24483,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
       /* There are no access checks when parsing a template, as we do not
 	 know if a specialization will be a friend.  */
       push_deferring_access_checks (dk_no_check);
-      token = cp_lexer_peek_token (parser->lexer);
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
       decl = cp_parser_single_declaration (parser,
 					   checks,
 					   member_p,
@@ -23750,19 +24558,192 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 		   decl);
 	}
     }
+
   /* Register member declarations.  */
   if (member_p && !friend_p && decl && !DECL_CLASS_TEMPLATE_P (decl))
     finish_member_declaration (decl);
-  /* For the erroneous case of a template with C linkage, we pushed an
-     implicit C++ linkage scope; exit that scope now.  */
-  if (need_lang_pop)
-    pop_lang_context ();
   /* If DECL is a function template, we must return to parse it later.
      (Even though there is no definition, there might be default
      arguments that need handling.)  */
   if (member_p && decl
       && DECL_DECLARES_FUNCTION_P (decl))
     vec_safe_push (unparsed_funs_with_definitions, decl);
+}
+
+/* Parse a template introduction header for a template-declaration.  Returns
+   false if tentative parse fails.  */
+
+static bool
+cp_parser_template_introduction (cp_parser* parser, bool member_p)
+{
+  cp_parser_parse_tentatively (parser);
+
+  tree saved_scope = parser->scope;
+  tree saved_object_scope = parser->object_scope;
+  tree saved_qualifying_scope = parser->qualifying_scope;
+
+  /* Look for the optional `::' operator.  */
+  cp_parser_global_scope_opt (parser,
+			      /*current_scope_valid_p=*/false);
+  /* Look for the nested-name-specifier.  */
+  cp_parser_nested_name_specifier_opt (parser,
+				       /*typename_keyword_p=*/false,
+				       /*check_dependency_p=*/true,
+				       /*type_p=*/false,
+				       /*is_declaration=*/false);
+
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  tree concept_name = cp_parser_identifier (parser);
+
+  /* Look up the concept for which we will be matching
+     template parameters.  */
+  tree tmpl_decl = cp_parser_lookup_name_simple (parser, concept_name,
+						 token->location);
+  parser->scope = saved_scope;
+  parser->object_scope = saved_object_scope;
+  parser->qualifying_scope = saved_qualifying_scope;
+
+  if (concept_name == error_mark_node)
+    cp_parser_simulate_error (parser);
+
+  /* Look for opening brace for introduction.  */
+  cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
+
+  if (!cp_parser_parse_definitely (parser))
+    return false;
+
+  push_deferring_access_checks (dk_deferred);
+
+  /* Build vector of placeholder parameters and grab
+     matching identifiers.  */
+  tree introduction_list = cp_parser_introduction_list (parser);
+
+  /* The introduction-list shall not be empty.  */
+  int nargs = TREE_VEC_LENGTH (introduction_list);
+  if (nargs == 0)
+    {
+      error ("empty introduction-list");
+      return true;
+    }
+
+  /* Look for closing brace for introduction.  */
+  if (!cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE))
+    return true;
+
+  if (tmpl_decl == error_mark_node)
+    {
+      cp_parser_name_lookup_error (parser, concept_name, tmpl_decl, NLE_NULL,
+				   token->location);
+      return true;
+    }
+
+  /* Build and associate the constraint.  */
+  tree parms = finish_template_introduction (tmpl_decl, introduction_list);
+  if (parms && parms != error_mark_node)
+    {
+      cp_parser_template_declaration_after_parameters (parser, parms,
+						       member_p);
+      return true;
+    }
+
+  error_at (token->location, "no matching concept for template-introduction");
+  return true;
+}
+
+/* Parse a normal template-declaration following the template keyword.  */
+
+static void
+cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
+{
+  tree parameter_list;
+  bool need_lang_pop;
+  location_t location = input_location;
+
+  /* Look for the `<' token.  */
+  if (!cp_parser_require (parser, CPP_LESS, RT_LESS))
+    return;
+  if (at_class_scope_p () && current_function_decl)
+    {
+      /* 14.5.2.2 [temp.mem]
+
+         A local class shall not have member templates.  */
+      error_at (location,
+                "invalid declaration of member template in local class");
+      cp_parser_skip_to_end_of_block_or_statement (parser);
+      return;
+    }
+  /* [temp]
+
+     A template ... shall not have C linkage.  */
+  if (current_lang_name == lang_name_c)
+    {
+      error_at (location, "template with C linkage");
+      /* Give it C++ linkage to avoid confusing other parts of the
+         front end.  */
+      push_lang_context (lang_name_cplusplus);
+      need_lang_pop = true;
+    }
+  else
+    need_lang_pop = false;
+
+  /* We cannot perform access checks on the template parameter
+     declarations until we know what is being declared, just as we
+     cannot check the decl-specifier list.  */
+  push_deferring_access_checks (dk_deferred);
+
+  /* If the next token is `>', then we have an invalid
+     specialization.  Rather than complain about an invalid template
+     parameter, issue an error message here.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
+    {
+      cp_parser_error (parser, "invalid explicit specialization");
+      begin_specialization ();
+      parameter_list = NULL_TREE;
+    }
+  else
+    {
+      /* Parse the template parameters.  */
+      parameter_list = cp_parser_template_parameter_list (parser);
+    }
+
+  /* Look for the `>'.  */
+  cp_parser_skip_to_end_of_template_parameter_list (parser);
+
+  /* Manage template requirements */
+  if (flag_concepts)
+  {
+    tree reqs = get_shorthand_constraints (current_template_parms);
+    if (tree r = cp_parser_requires_clause_opt (parser))
+      reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
+    TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+  }
+
+  cp_parser_template_declaration_after_parameters (parser, parameter_list,
+						   member_p);
+
+  /* For the erroneous case of a template with C linkage, we pushed an
+     implicit C++ linkage scope; exit that scope now.  */
+  if (need_lang_pop)
+    pop_lang_context ();
+}
+
+/* Parse a template-declaration, assuming that the `export' (and
+   `extern') keywords, if present, has already been scanned.  MEMBER_P
+   is as for cp_parser_template_declaration.  */
+
+static bool
+cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
+{
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      cp_parser_explicit_template_declaration (parser, member_p);
+      return true;
+    }
+  else if (flag_concepts)
+    return cp_parser_template_introduction (parser, member_p);
+
+  return false;
 }
 
 /* Perform the deferred access checks from a template-parameter-list.
@@ -23832,6 +24813,12 @@ cp_parser_single_declaration (cp_parser* parser,
     {
       if (cp_parser_declares_only_class_p (parser))
 	{
+	  // If this is a declaration, but not a definition, associate
+	  // any constraints with the type declaration. Constraints
+	  // are associated with definitions in cp_parser_class_specifier.
+	  if (declares_class_or_enum == 1)
+	    associate_classtype_constraints (decl_specifiers.type);
+
 	  decl = shadow_tag (&decl_specifiers);
 
 	  /* In this case:
@@ -33614,14 +34601,56 @@ tree_type_is_auto_or_concept (const_tree t)
   return TREE_TYPE (t) && is_auto_or_concept (TREE_TYPE (t));
 }
 
+/* Returns the template declaration being called or evaluated as
+   part of the constraint check. Note that T must be a predicate
+   constraint (it can't be any other kind of constraint). */
+static tree
+get_concept_from_constraint (tree t)
+{
+  gcc_assert (TREE_CODE (t) == PRED_CONSTR);
+  t = PRED_CONSTR_EXPR (t);
+  gcc_assert (TREE_CODE (t) == CALL_EXPR
+              || TREE_CODE (t) == TEMPLATE_ID_EXPR
+              || VAR_P (t));
+
+  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
+    return DECL_TEMPLATE_RESULT (TREE_OPERAND (t, 0));
+  if (VAR_P (t))
+    return DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (t));
+  else
+    {
+      tree fn = CALL_EXPR_FN (t);
+      tree ovl = TREE_OPERAND (fn, 0);
+      tree tmpl = OVL_FUNCTION (ovl);
+      return DECL_TEMPLATE_RESULT (tmpl);
+    }
+}
+
 /* Add an implicit template type parameter to the CURRENT_TEMPLATE_PARMS
    (creating a new template parameter list if necessary).  Returns the newly
    created template type parm.  */
 
 tree
-synthesize_implicit_template_parm  (cp_parser *parser)
+synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 {
   gcc_assert (current_binding_level->kind == sk_function_parms);
+
+   /* Before committing to modifying any scope, if we're in an
+      implicit template scope, and we're trying to synthesize a
+      constrained parameter, try to find a previous parameter with
+      the same name.  This is the same-type rule for abbreviated
+      function templates.  */
+  if (parser->implicit_template_scope && constr)
+    {
+      tree t = parser->implicit_template_parms;
+      while (t)
+        {
+          tree c = get_concept_from_constraint (TREE_TYPE (t));
+          if (c == CONSTRAINED_PARM_CONCEPT (constr))
+            return TREE_VALUE (t);
+          t = TREE_CHAIN (t);
+        }
+    }
 
   /* We are either continuing a function template that already contains implicit
      template parameters, creating a new fully-implicit function template, or
@@ -33731,14 +34760,18 @@ synthesize_implicit_template_parm  (cp_parser *parser)
   tree synth_id = make_generic_type_name ();
   tree synth_tmpl_parm = finish_template_type_parm (class_type_node,
 						    synth_id);
+
+  // Attach the constraint to the parm before processing.
+  tree node = build_tree_list (NULL_TREE, synth_tmpl_parm);
+  TREE_TYPE (node) = constr;
   tree new_parm
     = process_template_parm (parser->implicit_template_parms,
 			     input_location,
-			     build_tree_list (NULL_TREE, synth_tmpl_parm),
+			     node,
 			     /*non_type=*/false,
 			     /*param_pack=*/false);
 
-
+  // Chain the new parameter to the list of implicit parameters.
   if (parser->implicit_template_parms)
     parser->implicit_template_parms
       = TREE_CHAIN (parser->implicit_template_parms);
@@ -33766,6 +34799,15 @@ synthesize_implicit_template_parm  (cp_parser *parser)
       int new_parm_idx = TREE_VEC_LENGTH (new_parms);
       new_parms = grow_tree_vec (new_parms, new_parm_idx + 1);
       TREE_VEC_ELT (new_parms, new_parm_idx) = parser->implicit_template_parms;
+    }
+
+  // If the new parameter was constrained, we need to add that to the
+  // constraints in the template parameter list.
+  if (tree req = TEMPLATE_PARM_CONSTRAINTS (tree_last (new_parm)))
+    {
+      tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+      reqs = conjoin_constraints (reqs, req);
+      TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
     }
 
   current_binding_level = entry_scope;

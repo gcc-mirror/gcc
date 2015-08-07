@@ -19280,7 +19280,8 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
 * Function Multiversioning::   Declaring multiple function versions.
 * Namespace Association:: Strong using-directives for namespace association.
-* Type Traits::         Compiler support for type traits
+* Type Traits::         Compiler support for type traits.
+* C++ Concepts::        Improved support for generic programming.
 * Java Exceptions::     Tweaking exception handling to work with Java.
 * Deprecated Features:: Things will disappear from G++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
@@ -20075,6 +20076,52 @@ The underlying type of @code{type}.  Requires: @code{type} shall be
 an enumeration type ([dcl.enum]).
 
 @end table
+
+
+@node C++ Concepts
+@section C++ Concepts
+
+C++ concepts provide much-improved support for generic programming. In
+particular, they allow the specification of constraints on template arguments.
+The constraints are used to extend the usual overloading and partial
+specialization capabilities of the language, allowing generic data structures
+and algorithms to be ``refined'' based on their properties rather than their
+type names.
+
+The following keywords are reserved for concepts.
+
+@table @code
+@item assumes
+States an expression as an assumption, and if possible, verifies that the
+assumption is valid. For example, @code{assume(n > 0)}.
+
+@item axiom
+Introduces an axiom definition. Axioms introduce requirements on values.
+
+@item forall
+Introduces a universally quantified object in an axiom. For example,
+@code{forall (int n) n + 0 == n}).
+
+@item concept
+Introduces a concept definition. Concepts are sets of syntactic and semantic
+requirements on types and their values.
+
+@item requires
+Introduces constraints on template arguments or requirements for a member
+function of a class template.
+
+@end table
+
+The front end also exposes a number of internal mechanism that can be used
+to simplify the writing of type traits. Note that some of these traits are
+likely to be removed in the future.
+
+@table @code
+@item __is_same (type1, type2)
+A binary type trait: true whenever the type arguments are the same.
+
+@end table
+
 
 @node Java Exceptions
 @section Java Exceptions

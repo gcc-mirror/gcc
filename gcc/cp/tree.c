@@ -2955,15 +2955,18 @@ cp_tree_equal (tree t1, tree t2)
 	 up for expressions that involve 'this' in a member function
 	 template.  */
 
-      if (comparing_specializations)
+      if (comparing_specializations && !CONSTRAINT_VAR_P (t1))
 	/* When comparing hash table entries, only an exact match is
 	   good enough; we don't want to replace 'this' with the
-	   version from another function.  */
+	   version from another function.  But be more flexible
+	   with local parameters in a requires-expression.  */
 	return false;
 
       if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	{
 	  if (DECL_ARTIFICIAL (t1) ^ DECL_ARTIFICIAL (t2))
+	    return false;
+	  if (CONSTRAINT_VAR_P (t1) ^ CONSTRAINT_VAR_P (t2))
 	    return false;
 	  if (DECL_ARTIFICIAL (t1)
 	      || (DECL_PARM_LEVEL (t1) == DECL_PARM_LEVEL (t2)
@@ -2999,6 +3002,10 @@ cp_tree_equal (tree t1, tree t2)
     case TEMPLATE_ID_EXPR:
       return (cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0))
 	      && cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1)));
+
+    case CONSTRAINT_INFO:
+      return cp_tree_equal (CI_ASSOCIATED_CONSTRAINTS (t1),
+                            CI_ASSOCIATED_CONSTRAINTS (t2));
 
     case TREE_VEC:
       {
@@ -3876,6 +3883,14 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       *walk_subtrees_p = 0;
       break;
  
+    case REQUIRES_EXPR:
+      // Only recurse through the nested expression. Do not
+      // walk the parameter list. Doing so causes false
+      // positives in the pack expansion checker since the
+      // requires parameters are introduced as pack expansions.
+      WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+      *walk_subtrees_p = 0;
+      break;
 
     default:
       return NULL_TREE;

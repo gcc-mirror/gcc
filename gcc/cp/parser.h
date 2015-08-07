@@ -397,6 +397,15 @@ typedef struct GTY(()) cp_parser {
      member definition using a generic type, it is the sk_class scope.  */
   cp_binding_level* implicit_template_scope;
 
+  /* True if parsing a result type in a compound requirement. This permits
+     constrained-type-specifiers inside what would normally be a trailing
+     return type. */
+  bool in_result_type_constraint_p;
+
+  /* True if a constrained-type-specifier is not allowed in this
+     context e.g., because they could never be deduced.  */
+  int prevent_constrained_type_specifiers;
+
 } cp_parser;
 
 /* In parser.c  */

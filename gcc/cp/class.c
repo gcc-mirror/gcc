@@ -1138,7 +1138,8 @@ add_method (tree type, tree method, tree using_decl)
       if (compparms (parms1, parms2)
 	  && (!DECL_CONV_FN_P (fn)
 	      || same_type_p (TREE_TYPE (fn_type),
-			      TREE_TYPE (method_type))))
+			      TREE_TYPE (method_type)))
+          && equivalently_constrained (fn, method))
 	{
 	  /* For function versions, their parms and types match
 	     but they are not duplicates.  Record function versions
@@ -4602,6 +4603,14 @@ build_clone (tree fn, tree name)
       TREE_TYPE (clone) = TREE_TYPE (result);
       return clone;
     }
+  else
+    {
+      // Clone constraints.
+      if (flag_concepts)
+        if (tree ci = get_constraints (fn))
+          set_constraints (clone, copy_node (ci));
+    }
+
 
   SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   DECL_CLONED_FUNCTION (clone) = fn;
@@ -7281,15 +7290,17 @@ pop_class_stack (void)
 }
 
 /* Returns 1 if the class type currently being defined is either T or
-   a nested type of T.  */
+   a nested type of T.  Returns the type from the current_class_stack,
+   which might be equivalent to but not equal to T in case of
+   constrained partial specializations.  */
 
-bool
+tree
 currently_open_class (tree t)
 {
   int i;
 
   if (!CLASS_TYPE_P (t))
-    return false;
+    return NULL_TREE;
 
   t = TYPE_MAIN_VARIANT (t);
 
@@ -7309,9 +7320,9 @@ currently_open_class (tree t)
       if (!c)
 	continue;
       if (same_type_p (c, t))
-	return true;
+	return c;
     }
-  return false;
+  return NULL_TREE;
 }
 
 /* If either current_class_type or one of its enclosing classes are derived
@@ -7659,6 +7670,12 @@ resolve_address_of_overloaded_function (tree target_type,
 					       false, false);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
+	    continue;
+
+	  /* Constraints must be satisfied. This is done before
+	     return type deduction since that instantiates the
+	     function. */
+	  if (flag_concepts && !constraints_satisfied_p (instantiation))
 	    continue;
 
 	  /* And now force instantiation to do return type deduction.  */
