@@ -1041,6 +1041,8 @@ extern void ira_debug_live_ranges (void);
 extern void ira_create_allocno_live_ranges (void);
 extern void ira_compress_allocno_live_ranges (void);
 extern void ira_finish_allocno_live_ranges (void);
+extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *,
+					       alternative_mask);
 
 /* ira-conflicts.c */
 extern void ira_debug_conflicts (bool);
