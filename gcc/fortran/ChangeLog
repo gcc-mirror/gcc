@@ -1,3 +1,9 @@
+2015-08-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/66929
+	* trans-array.c (gfc_get_proc_ifc_for_expr): Use esym as procedure
+	symbol if available.
+
 2015-08-05  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/64921

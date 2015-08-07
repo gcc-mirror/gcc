@@ -1,3 +1,9 @@
+2015-08-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/66929
+	* gfortran.dg/generic_30.f90: New.
+	* gfortran.dg/generic_31.f90: New.
+
 2015-08-06  David Malcolm  <dmalcolm@redhat.com>
 
 	Backport from trunk r226697:
