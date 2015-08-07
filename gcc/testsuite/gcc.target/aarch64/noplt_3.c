@@ -16,5 +16,5 @@ cal_novalue (int a)
   dec (a);
 }
 
-/* { dg-final { scan-assembler-times "#:got:" 2 { target { aarch64_tiny || aarch64_small } } } } */
-/* { dg-final { scan-assembler-times "#:got_lo12:" 2 { target aarch64_small } } } */
+/* { dg-final { scan-assembler-times "br" 2 } } */
+/* { dg-final { scan-assembler-not "b\t" } } */
