@@ -1,3 +1,12 @@
+2015-08-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline
+	2015-08-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/67002
+	* config/sh/sh.c (sh_recog_treg_set_expr): Return false when
+	currently_expanding_to_rtl is set.
+
 2015-08-07  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.md (define_attr "isa"): Addd avx512vl and
