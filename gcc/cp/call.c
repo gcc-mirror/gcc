@@ -425,7 +425,8 @@ enum rejection_reason_code {
   rr_arg_conversion,
   rr_bad_arg_conversion,
   rr_template_unification,
-  rr_invalid_copy
+  rr_invalid_copy,
+  rr_constraint_failure
 };
 
 struct conversion_info {
@@ -685,6 +686,27 @@ static struct rejection_reason *
 invalid_copy_with_fn_template_rejection (void)
 {
   struct rejection_reason *r = alloc_rejection (rr_invalid_copy);
+  return r;
+}
+
+// Build a constraint failure record, saving information into the
+// template_instantiation field of the rejection. If FN is not a template
+// declaration, the TMPL member is the FN declaration and TARGS is empty.
+
+static struct rejection_reason *
+constraint_failure (tree fn)
+{
+  struct rejection_reason *r = alloc_rejection (rr_constraint_failure);
+  if (tree ti = DECL_TEMPLATE_INFO (fn))
+    {
+      r->u.template_instantiation.tmpl = TI_TEMPLATE (ti);
+      r->u.template_instantiation.targs = TI_ARGS (ti);
+    }
+  else
+    {
+      r->u.template_instantiation.tmpl = fn;
+      r->u.template_instantiation.targs = NULL_TREE;
+    }
   return r;
 }
 
@@ -1957,10 +1979,20 @@ add_function_candidate (struct z_candidate **candidates,
       viable = 0;
       reason = arity_rejection (first_arg, i + remaining, len);
     }
+
+  /* Second, for a function to be viable, its constraints must be
+     satisfied. */
+  if (flag_concepts && viable
+      && !constraints_satisfied_p (fn))
+    {
+      reason = constraint_failure (fn);
+      viable = false;
+    }
+
   /* When looking for a function from a subobject from an implicit
      copy/move constructor/operator=, don't consider anything that takes (a
      reference to) an unrelated type.  See c++/44909 and core 1092.  */
-  else if (parmlist && (flags & LOOKUP_DEFAULTED))
+  if (viable && parmlist && (flags & LOOKUP_DEFAULTED))
     {
       if (DECL_CONSTRUCTOR_P (fn))
 	i = 1;
@@ -1984,7 +2016,7 @@ add_function_candidate (struct z_candidate **candidates,
   if (! viable)
     goto out;
 
-  /* Second, for F to be a viable function, there shall exist for each
+  /* Third, for F to be a viable function, there shall exist for each
      argument an implicit conversion sequence that converts that argument
      to the corresponding parameter of F.  */
 
@@ -3387,6 +3419,13 @@ print_z_candidate (location_t loc, const char *msgstr,
 		  "  a constructor taking a single argument of its own "
 		  "class type is invalid");
 	  break;
+	case rr_constraint_failure:
+	  {
+	    tree tmpl = r->u.template_instantiation.tmpl;
+	    tree args = r->u.template_instantiation.targs;
+	    diagnose_constraints (cloc, tmpl, args);
+	  }
+	  break;
 	case rr_none:
 	default:
 	  /* This candidate didn't have any issues or we failed to
@@ -4044,9 +4083,13 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
     {
       if (complain & tf_error)
 	{
+	  // If there is a single (non-viable) function candidate,
+	  // let the error be diagnosed by cp_build_function_call_vec.
 	  if (!any_viable_p && candidates && ! candidates->next
 	      && (TREE_CODE (candidates->fn) == FUNCTION_DECL))
 	    return cp_build_function_call_vec (candidates->fn, args, complain);
+
+	  // Otherwise, emit notes for non-viable candidates.
 	  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
 	    fn = TREE_OPERAND (fn, 0);
 	  print_error_for_call_failure (fn, *args, candidates);
@@ -4061,7 +4104,26 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
          through flags so that later we can use it to decide whether to warn
          about peculiar null pointer conversion.  */
       if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-        flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
+        {
+          /* If overload resolution selects a specialization of a
+             function concept for non-dependent template arguments,
+             the expression is true if the constraints are satisfied
+             and false otherwise.
+
+             NOTE: This is an extension of Concepts Lite TS that
+             allows constraints to be used in expressions. */
+          if (flag_concepts && !processing_template_decl)
+            {
+              tree tmpl = DECL_TI_TEMPLATE (cand->fn);
+              tree targs = DECL_TI_ARGS (cand->fn);
+              tree decl = DECL_TEMPLATE_RESULT (tmpl);
+              if (DECL_DECLARED_CONCEPT_P (decl))
+                return evaluate_function_concept (decl, targs);
+            }
+
+          flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
+        }
+
       result = build_over_call (cand, flags, complain);
     }
 
@@ -9094,6 +9156,15 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       if (winner)
 	return winner;
     }
+
+    // C++ Concepts
+    // or, if not that, F1 is more constrained than F2.
+    if (flag_concepts)
+      {
+        winner = more_constrained (cand1->fn, cand2->fn);
+        if (winner)
+          return winner;
+      }
 
   /* Check whether we can discard a builtin candidate, either because we
      have two identical ones or matching builtin and non-builtin candidates.

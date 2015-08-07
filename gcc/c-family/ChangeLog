@@ -1,3 +1,15 @@
+2015-08-06  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Braden Obrzut  <admin@maniacsvault.net>
+	    Jason Merrill  <jason@redhat.com>
+
+	Add C++ Concepts TS support.
+	* c-common.c (c_common_reswords): Add __is_same_as, concept, requires.
+	* c-common.h (enum rid): Add RID_IS_SAME_AS, RID_CONCEPT, RID_REQUIRES.
+	(D_CXX_CONCEPTS, D_CXX_CONCEPTS_FLAGS): New.
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_concepts.
+	* c-opts.c (set_std_cxx1z): Set flag_concepts.
+	* c.opt (fconcepts): New.
+
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-indentation.c (should_warn_for_misleading_indentation):

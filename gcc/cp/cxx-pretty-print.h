@@ -91,6 +91,21 @@ void pp_cxx_trait_expression (cxx_pretty_printer *, tree);
 void pp_cxx_va_arg_expression (cxx_pretty_printer *, tree);
 void pp_cxx_offsetof_expression (cxx_pretty_printer *, tree);
 void pp_cxx_userdef_literal (cxx_pretty_printer *, tree);
-
+void pp_cxx_requires_clause (cxx_pretty_printer *, tree);
+void pp_cxx_requires_expr (cxx_pretty_printer *, tree);
+void pp_cxx_simple_requirement (cxx_pretty_printer *, tree);
+void pp_cxx_type_requirement (cxx_pretty_printer *, tree);
+void pp_cxx_compound_requirement (cxx_pretty_printer *, tree);
+void pp_cxx_nested_requirement (cxx_pretty_printer *, tree);
+void pp_cxx_predicate_constraint (cxx_pretty_printer *, tree);
+void pp_cxx_expression_constraint (cxx_pretty_printer *, tree);
+void pp_cxx_type_constraint (cxx_pretty_printer *, tree);
+void pp_cxx_implicit_conversion_constraint (cxx_pretty_printer *, tree);
+void pp_cxx_argument_deduction_constraint (cxx_pretty_printer *, tree);
+void pp_cxx_exception_constraint (cxx_pretty_printer *, tree);
+void pp_cxx_parameterized_constraint (cxx_pretty_printer *, tree);
+void pp_cxx_conjunction (cxx_pretty_printer *, tree);
+void pp_cxx_disjunction (cxx_pretty_printer *, tree);
+void pp_cxx_constraint (cxx_pretty_printer *, tree);
 
 #endif /* GCC_CXX_PRETTY_PRINT_H */

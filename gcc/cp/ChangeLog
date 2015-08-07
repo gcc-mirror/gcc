@@ -1,3 +1,186 @@
+2015-08-06  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Braden Obrzut  <admin@maniacsvault.net>
+	    Jason Merrill  <jason@redhat.com>
+
+	Add C++ Concepts TS support.
+	* constraint.cc, logic.cc: New files.
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add constraint.o and logic.o.
+	(c++.tags): Also process .cc files.
+	* call.c (enum rejection_reason_code): Add rr_constraint_failure.
+	(print_z_candidate): Handle it.
+	(constraint_failure): New.
+	(add_function_candidate): Check constraints.
+	(build_new_function_call): Handle evaluating concepts.
+	(joust): Check more_constrained.
+	* class.c (add_method): Check equivalently_constrained.
+	(build_clone): Copy constraints.
+	(currently_open_class): Return tree.
+	(resolve_address_of_overloaded_function): Check constraints.
+	* constexpr.c (cxx_eval_constant_expression): Handle REQUIRES_EXPR.
+	(potential_constant_expression_1): Likewise.
+	* cp-objcp-common.c (cp_tree_size): Handle CONSTRAINT_INFO.
+	(cp_common_init_ts): Handle WILDCARD_DECL and REQUIRES_EXPR.
+	* cp-tree.def: Add CONSTRAINT_INFO, WILDCARD_DECL, REQUIRES_EXPR,
+	SIMPLE_REQ, TYPE_REQ, COMPOUND_REQ, NESTED_REQ, PRED_CONSTR,
+	EXPR_CONSTR, TYPE_CONSTR, ICONV_CONSTR, DEDUCT_CONSTR,
+	EXCEPT_CONSTR, PARM_CONSTR, CONJ_CONSTR, DISJ_CONSTR.
+	* cp-tree.h (struct tree_constraint_info, check_nonnull)
+	(check_constraint_info, CI_TEMPLATE_REQS, CI_DECLARATOR_REQS)
+	(CI_ASSOCIATED_CONSTRAINTS, CI_NORMALIZED_CONSTRAINTS)
+	(CI_ASSUMPTIONS, TEMPLATE_PARMS_CONSTRAINTS)
+	(TEMPLATE_PARM_CONSTRAINTS, COMPOUND_REQ_NOEXCEPT_P)
+	(PLACEHOLDER_TYPE_CONSTRAINTS, PRED_CONSTR_EXPR, EXPR_CONSTR_EXPR)
+	(TYPE_CONSTR_TYPE, ICONV_CONSTR_EXPR, ICONV_CONSTR_TYPE)
+	(DEDUCT_CONSTR_EXPR, DEDUCT_CONSTR_PATTERN)
+	(DEDUCT_CONSTR_PLACEHOLDER, EXCEPT_CONSTR_EXPR, PARM_CONSTR_PARMS)
+	(PARM_CONSTR_OPERAND, CONSTRAINT_VAR_P, CONSTRAINED_PARM_CONCEPT)
+	(CONSTRAINED_PARM_EXTRA_ARGS, CONSTRAINED_PARM_PROTOTYPE)
+	(DECL_DECLARED_CONCEPT_P, WILDCARD_PACK_P, struct cp_unevaluated)
+	(struct local_specialization_stack, enum auto_deduction_context)
+	(variable_concept_p, concept_template_p)
+	(struct deferring_access_check_sentinel): New.
+	(enum cp_tree_node_structure_enum): Add TS_CP_CONSTRAINT_INFO.
+	(union lang_tree_node): Add constraint_info field.
+	(struct lang_decl_base): Add concept_p flag.
+	(enum cp_decl_spec): Add ds_concept.
+	(struct cp_declarator): Add requires_clause.
+	* cxx-pretty-print.c (cxx_pretty_printer::primary_expression)
+	(cxx_pretty_printer::expression): Handle REQUIRES_EXPR,
+	TRAIT_EXPR, *_CONSTR.
+	(pp_cxx_parameter_declaration_clause): Accept a chain of
+	PARM_DECLs.
+	(cxx_pretty_printer::declarator): Print requires-clause.
+	(pp_cxx_template_declaration): Likewise.
+	(pp_cxx_trait_expression): Handle CPTK_IS_SAME_AS.
+	(pp_cxx_requires_clause, pp_cxx_requirement)
+	(pp_cxx_requirement_list, pp_cxx_requirement_body)
+	(pp_cxx_requires_expr, pp_cxx_simple_requirement)
+	(pp_cxx_type_requirement, pp_cxx_compound_requirement)
+	(pp_cxx_nested_requirement, pp_cxx_predicate_constraint)
+	(pp_cxx_expression_constraint, pp_cxx_type_constraint)
+	(pp_cxx_implicit_conversion_constraint)
+	(pp_cxx_argument_deduction_constraint)
+	(pp_cxx_exception_constraint, pp_cxx_parameterized_constraint)
+	(pp_cxx_conjunction, pp_cxx_disjunction, pp_cxx_constraint): New.
+	* cxx-pretty-print.h: Declare them.
+	* decl.c (decls_match): Compare constraints.
+	(duplicate_decls): Likewise.  Remove constraints before freeing.
+	(cxx_init_decl_processing): Call init_constraint_processing.
+	(cp_finish_decl): Diagnose concept without initializer.
+	(grokfndecl, grokvardecl): Handle concepts and constraints.
+	(grokdeclarator): Handle concept, requires-clause.
+	(grokparms): No longer static.
+	(xref_tag_1): Check constraints.
+	(finish_function): Call check_function_concept.
+	(cp_tree_node_structure): Handle CONSTRAINT_INFO.
+	(check_concept_refinement, is_concept_var, check_concept_fn): New.
+	* decl2.c (check_classfn): Compare constraints.
+	(mark_used): Don't instantiate concepts.
+	* error.c (dump_template_decl): Print constraints.
+	(dump_function_decl): Likewise.
+	(dump_expr): Handle REQUIRES_EXPR, *_REQ, *_CONSTR.
+	* lex.c (init_reswords): Set D_CXX_CONCEPTS.
+	* method.c (implicitly_declare_fn): Copy constraints from
+	inherited ctor.
+	* parser.h (struct cp_parser): Add in_result_type_constraint_p and
+	prevent_constrained_type_specifiers fields.
+	* parser.c (make_call_declarator): Add requires_clause parm.
+	(cp_parser_new): Clear prevent_constrained_type_specifiers.
+	(cp_parser_primary_expression): Handle RID_IS_SAME_AS, RID_REQUIRES.
+	(cp_parser_postfix_expression): Set prevent_constrained_type_specifiers.
+	(cp_parser_trait_expr): Handle RID_IS_SAME_AS.
+	(cp_parser_declaration): Handle concept introduction.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_template_parameter): Handle constrained parameter.
+	(cp_parser_type_parameter): Handle constraints.
+	(cp_parser_decl_specifier_seq): Handle RID_CONCEPT.
+	(cp_parser_template_id): Handle partial concept id.
+	(cp_parser_type_name): Add overload that takes typename_keyword_p.
+	Handle constrained parameter.
+	(cp_parser_nonclass_name): Handle concept names.
+	(cp_parser_alias_declaration): Handle constraints.
+	(cp_parser_late_return_type_opt): Also handle requires-clause.
+	(cp_parser_type_id_1): Handle deduction constraint.
+	(cp_parser_parameter_declaration): Handle constrained parameters.
+	(cp_parser_class_specifier_1): Handle constraints.
+	(cp_parser_template_declaration_after_parameters): Split out from
+	cp_parser_template_declaration_after_export.
+	(cp_parser_single_declaration): Handle constraints.
+	(synthesize_implicit_template_parm): Handle constraints.
+	(cp_parser_maybe_concept_name, cp_parser_maybe_partial_concept_id)
+	(cp_parser_introduction_list, get_id_declarator)
+	(get_unqualified_id, is_constrained_parameter)
+	(cp_parser_check_constrained_type_parm)
+	(cp_parser_constrained_type_template_parm)
+	(cp_parser_constrained_template_template_parm)
+	(constrained_non_type_template_parm, finish_constrained_parameter)
+	(declares_constrained_type_template_parameter)
+	(declares_constrained_template_template_parameter)
+	(check_type_concept, cp_parser_maybe_constrained_type_specifier)
+	(cp_parser_maybe_concept_name, cp_parser_maybe_partial_concept_id)
+	(cp_parser_requires_clause, cp_parser_requires_clause_opt)
+	(cp_parser_requires_expression)
+	(cp_parser_requirement_parameter_list, cp_parser_requirement_body)
+	(cp_parser_requirement_list, cp_parser_requirement)
+	(cp_parser_simple_requirement, cp_parser_type_requirement)
+	(cp_parser_compound_requirement, cp_parser_nested_requirement)
+	(cp_parser_template_introduction)
+	(cp_parser_explicit_template_declaration)
+	(get_concept_from_constraint): New.
+	* pt.c (local_specialization_stack): Implement.
+	(maybe_new_partial_specialization): New.
+	(maybe_process_partial_specialization): Use it.
+	(retrieve_local_specialization, register_local_specialization)
+	(template_parm_to_arg, build_template_decl, extract_fnparm_pack)
+	(tsubst_expr): No longer static.
+	(spec_hasher::equal): Compare constraints.
+	(determine_specialization): Handle constraints.
+	(check_explicit_specialization): Handle concepts.
+	(process_template_parm): Handle constraints.
+	(end_template_parm_list): Add overload taking no arguments.
+	(process_partial_specialization): Handle concepts and constraints.
+	Register partial specializations of variable templates.
+	(redeclare_class_template): Handle constraints.
+	(convert_template_argument): Handle WILDCARD_DECL.  Check
+	is_compatible_template_arg.
+	(coerce_template_parameter_pack): Handle wildcard packs.
+	(coerce_template_parms): DR 1430 also applies to concepts.  Add
+	overloads taking fewer parameters.
+	(lookup_template_class_1): Handle constraints.
+	(lookup_template_variable): Concepts are always bool.
+	(finish_template_variable): Handle concepts and constraints.
+	(tsubst_friend_class): Handle constraints.
+	(gen_elem_of_pack_expansion_instantiation): Handle constraints.
+	(tsubst_pack_expansion): Handle local parameters.
+	(tsubst_decl) [FUNCTION_DECL]: Handle constraints.
+	(tsubst) [TEMPLATE_TYPE_PARM]: Handle deduction constraints.
+	(tsubst_copy_and_build): Handle REQUIRES_EXPR.
+	(more_specialized_fn, more_specialized_partial_spec): Check constraints.
+	(more_specialized_inst): Split out from most_specialized_instantiation.
+	(most_specialized_partial_spec): Check constraints.
+	(instantiate_decl): Never instantiate a concept.
+	(value_dependent_expression_p): Handle REQUIRES_EXPR, TYPE_REQ,
+	variable concepts.
+	(type_dependent_expression_p): Handle WILDCARD_DECL, REQUIRES_EXPR.
+	(instantiation_dependent_r): Handle REQUIRES_EXPR and concepts.
+	(do_auto_deduction): Add overload taking tsubst flags and context enum.
+	Handle constraints.
+	(get_template_for_ordering, most_constrained_function)
+	(is_compatible_template_arg, convert_wildcard_argument)
+	(struct	constr_entry, struct constr_hasher, decl_constraints)
+	(valid_constraints_p, get_constraints, set_constraints)
+	(remove_constraints, init_constraint_processing): New.
+	* ptree.c (cxx_print_xnode): Handle CONSTRAINT_INFO.
+	* search.c (lookup_member): Do lookup in the open partial
+	instantiation.
+	* semantics.c (finish_template_template_parm): Handle constraints.
+	(fixup_template_type): New.
+	(finish_template_type): Call it.
+	(trait_expr_value, finish_trait_expr): Handle CPTK_IS_SAME_AS.
+	* tree.c (cp_tree_equal): Handle local parameters, CONSTRAINT_INFO.
+	(cp_walk_subtrees): Handle REQUIRES_EXPR.
+	* typeck.c (cp_build_function_call_vec): Check constraints.
+
 2015-08-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66533

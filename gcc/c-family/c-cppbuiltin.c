@@ -865,6 +865,10 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
 	  cpp_define (pfile, "__cpp_digit_separators=201309");
 	}
+      if (flag_concepts)
+	/* Use a value smaller than the 201507 specified in
+	   the TS, since we don't yet support extended auto.  */
+	cpp_define (pfile, "__cpp_concepts=201500");
       if (flag_sized_deallocation)
 	cpp_define (pfile, "__cpp_sized_deallocation=201309");
     }

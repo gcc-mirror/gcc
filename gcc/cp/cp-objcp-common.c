@@ -100,6 +100,8 @@ cp_tree_size (enum tree_code code)
 
     case TEMPLATE_INFO:         return sizeof (struct tree_template_info);
 
+    case CONSTRAINT_INFO:       return sizeof (struct tree_constraint_info);
+
     case USERDEF_LITERAL:	return sizeof (struct tree_userdef_literal);
 
     case TEMPLATE_DECL:		return sizeof (struct tree_template_decl);
@@ -240,6 +242,7 @@ cp_common_init_ts (void)
 {
   MARK_TS_DECL_NON_COMMON (USING_DECL);
   MARK_TS_DECL_COMMON (TEMPLATE_DECL);
+  MARK_TS_DECL_COMMON (WILDCARD_DECL);
 
   MARK_TS_COMMON (TEMPLATE_TEMPLATE_PARM);
   MARK_TS_COMMON (TEMPLATE_TYPE_PARM);
@@ -311,6 +314,7 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (LAMBDA_EXPR);
   MARK_TS_TYPED (CTOR_INITIALIZER);
   MARK_TS_TYPED (ARRAY_NOTATION_REF);
+  MARK_TS_TYPED (REQUIRES_EXPR);
 }
 
 #include "gt-cp-cp-objcp-common.h"

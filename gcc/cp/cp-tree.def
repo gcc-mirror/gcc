@@ -475,6 +475,94 @@ DEFTREECODE (BASES, "bases", tcc_type, 0)
    instantiation time.  */
 DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
 
+/* Extensions for Concepts. */
+
+/* Used to represent information associated with constrained declarations. */
+DEFTREECODE (CONSTRAINT_INFO, "constraint_info", tcc_exceptional, 0)
+
+/* A wildcard declaration is a placeholder for a template parameter
+   used to resolve constrained-type-names in concepts.  During
+   resolution, the matching argument is saved as the TREE_TYPE
+   of the wildcard.  */
+DEFTREECODE (WILDCARD_DECL, "wildcard_decl", tcc_declaration, 0)
+
+/* A requires-expr is a binary expression. The first operand is
+   its parameter list (possibly NULL). The second is a list of
+   requirements, which are denoted by the _REQ* tree codes
+   below. */
+DEFTREECODE (REQUIRES_EXPR,   "requires_expr", tcc_expression, 2)
+
+/* A requirement for an expression. */
+DEFTREECODE (SIMPLE_REQ, "simple_req", tcc_expression, 1)
+
+/* A requirement for a type. */
+DEFTREECODE (TYPE_REQ, "type_req", tcc_expression, 1)
+
+/* A requirement for an expression and its properties. The
+   first operand is the expression, and the 2nd is its type.
+   The accessor COMPOUND_REQ_NOEXCEPT determines whether
+   the noexcept keyword was present. */
+DEFTREECODE (COMPOUND_REQ, "compound_req", tcc_expression, 2)
+
+/* A requires clause within a requires expression. */
+DEFTREECODE (NESTED_REQ, "nested_req", tcc_expression, 1)
+
+/* Constraints are modeled as kinds of expressions.
+   The operands of a constraint can be either types or expressions.
+   Unlike expressions, constraints do not have a type. */
+
+/* A predicate constraint evaluates an expression E.
+
+   PRED_CONSTR_EXPR has the expression to be evaluated. */
+DEFTREECODE (PRED_CONSTR, "pred_constr", tcc_expression, 1)
+
+/* An expression constraint determines the validity of a expression E.
+
+   EXPR_CONST_EXPR has the expression being validated. */
+DEFTREECODE (EXPR_CONSTR, "expr_constr", tcc_expression, 1)
+
+/* A type constraint determines the validity of a type T. Note that
+
+   TYPE_CONST_TYPE has the type being validated */
+DEFTREECODE (TYPE_CONSTR, "type_constr", tcc_expression, 1)
+
+/* An implicit conversion constraint determines if an expression
+   E is implicitly convertible to a type T. Note that T may
+   be dependent but does not contain any placeholders.
+
+   ICONV_CONSTR_EXPR has the expression E.
+   ICONV_CONSTR_TYPE has the type T.
+   */
+DEFTREECODE (ICONV_CONSTR, "iconv_constr", tcc_expression, 2)
+
+/* An argument deduction constraint determines if the type of an
+   expression E can be deduced from a type pattern T. Note that
+   T must contain at least one place holder.
+
+   DEDUCT_CONSTR_EXPR has the expression E
+   DEDUCT_CONSTR_PATTERN has the type patter T.
+   DEDUCT_CONSTR_PLACEHOLDERS has the list of placeholder nodes in T. */
+DEFTREECODE (DEDUCT_CONSTR, "deduct_constr", tcc_expression, 3)
+
+/* An exception constraint determines if, for an expression E,
+   noexcept(E) is true.
+
+   EXCEPT_CONSTR_EXPR has the expression E. */
+DEFTREECODE (EXCEPT_CONSTR, "except_constr", tcc_expression, 1)
+
+/* A parameterized constraint declares constraint variables, which
+   are used in expression, type, and exception constraints.
+
+   PARM_CONSTR_PARMS has a TREE_LIST of parameter declarations.
+   PARM_CONSTR_OPERAND has the nested constraint. */
+DEFTREECODE (PARM_CONSTR, "parm_constr", tcc_expression, 2)
+
+/* The conjunction and disjunction of two constraints, respectively.
+   Operands are accessed using TREE_OPERAND. */
+DEFTREECODE (CONJ_CONSTR, "conj_constr", tcc_expression, 2)
+DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
+
+
 /*
 Local variables:
 mode:c

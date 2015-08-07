@@ -2710,10 +2710,18 @@ finish_template_template_parm (tree aggr, tree identifier)
 {
   tree decl = build_decl (input_location,
 			  TYPE_DECL, identifier, NULL_TREE);
+
   tree tmpl = build_lang_decl (TEMPLATE_DECL, identifier, NULL_TREE);
   DECL_TEMPLATE_PARMS (tmpl) = current_template_parms;
   DECL_TEMPLATE_RESULT (tmpl) = decl;
   DECL_ARTIFICIAL (decl) = 1;
+
+  // Associate the constraints with the underlying declaration,
+  // not the template.
+  tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+  tree constr = build_constraints (reqs, NULL_TREE);
+  set_constraints (decl, constr);
+
   end_template_decl ();
 
   gcc_assert (DECL_TEMPLATE_PARMS (tmpl));
@@ -2977,6 +2985,72 @@ finish_template_decl (tree parms)
     end_specialization ();
 }
 
+// Returns the template type of the class scope being entered. If we're
+// entering a constrained class scope. TYPE is the class template
+// scope being entered and we may need to match the intended type with
+// a constrained specialization. For example:
+//
+//    template<Object T>
+//      struct S { void f(); }; #1
+//
+//    template<Object T>
+//      void S<T>::f() { }      #2
+//
+// We check, in #2, that S<T> refers precisely to the type declared by
+// #1 (i.e., that the constraints match). Note that the following should
+// be an error since there is no specialization of S<T> that is
+// unconstrained, but this is not diagnosed here.
+//
+//    template<typename T>
+//      void S<T>::f() { }
+//
+// We cannot diagnose this problem here since this function also matches
+// qualified template names that are not part of a definition. For example:
+//
+//    template<Integral T, Floating_point U>
+//      typename pair<T, U>::first_type void f(T, U);
+//
+// Here, it is unlikely that there is a partial specialization of
+// pair constrained for for Integral and Floating_point arguments.
+//
+// The general rule is: if a constrained specialization with matching
+// constraints is found return that type. Also note that if TYPE is not a
+// class-type (e.g. a typename type), then no fixup is needed.
+
+static tree
+fixup_template_type (tree type)
+{
+  // Find the template parameter list at the a depth appropriate to
+  // the scope we're trying to enter.
+  tree parms = current_template_parms;
+  int depth = template_class_depth (type);
+  for (int n = processing_template_decl; n > depth && parms; --n)
+    parms = TREE_CHAIN (parms);
+  if (!parms)
+    return type;
+  tree cur_reqs = TEMPLATE_PARMS_CONSTRAINTS (parms);
+  tree cur_constr = build_constraints (cur_reqs, NULL_TREE);
+
+  // Search for a specialization whose type and constraints match.
+  tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
+  tree specs = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
+  while (specs)
+    {
+      tree spec_constr = get_constraints (TREE_VALUE (specs));
+
+      // If the type and constraints match a specialization, then we
+      // are entering that type.
+      if (same_type_p (type, TREE_TYPE (specs))
+	  && equivalent_constraints (cur_constr, spec_constr))
+        return TREE_TYPE (specs);
+      specs = TREE_CHAIN (specs);
+    }
+
+  // If no specialization matches, then must return the type
+  // previously found.
+  return type;
+}
+
 /* Finish processing a template-id (which names a type) of the form
    NAME < ARGS >.  Return the TYPE_DECL for the type named by the
    template-id.  If ENTERING_SCOPE is nonzero we are about to enter
@@ -2990,6 +3064,16 @@ finish_template_type (tree name, tree args, int entering_scope)
   type = lookup_template_class (name, args,
 				NULL_TREE, NULL_TREE, entering_scope,
 				tf_warning_or_error | tf_user);
+
+  /* If we might be entering the scope of a partial specialization,
+     find the one with the right constraints.  */
+  if (flag_concepts
+      && entering_scope
+      && CLASS_TYPE_P (type)
+      && dependent_type_p (type)
+      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
+    type = fixup_template_type (type);
+
   if (type == error_mark_node)
     return type;
   else if (CLASS_TYPE_P (type) && !alias_type_or_template_p (type))
@@ -7442,6 +7526,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_POLYMORPHIC:
       return (CLASS_TYPE_P (type1) && TYPE_POLYMORPHIC_P (type1));
 
+    case CPTK_IS_SAME_AS:
+      return same_type_p (type1, type2);
+
     case CPTK_IS_STD_LAYOUT:
       return (std_layout_type_p (type1));
 
@@ -7549,8 +7636,9 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_CLASS:
     case CPTK_IS_ENUM:
     case CPTK_IS_UNION:
+    case CPTK_IS_SAME_AS:
       break;
-    
+
     default:
       gcc_unreachable ();
     }
