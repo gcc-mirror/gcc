@@ -1,3 +1,15 @@
+2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* Makefile.def (libiconv): Define bootstrap=true.
+	Mark pdf/html/info as missing.
+	(configure-gcc): Depend on all-libiconv.
+	(all-gcc): Ditto.
+	(configure-libcpp): Ditto.
+	(all-libcpp): Ditto.
+	(configure-intl): Ditto.
+	(all-intl): Ditto.
+	* Makefile.in: Regenerate.
+
 2015-08-03  Bin Cheng  <bin.cheng@arm.com>
 
 	* MAINTAINERS (loop ivopts): Add the entry and myself.
