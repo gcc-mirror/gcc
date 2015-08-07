@@ -1079,7 +1079,9 @@ all-host: maybe-all-libiberty
 @if libiberty-linker-plugin-no-bootstrap
 all-host: maybe-all-libiberty-linker-plugin
 @endif libiberty-linker-plugin-no-bootstrap
+@if libiconv-no-bootstrap
 all-host: maybe-all-libiconv
+@endif libiconv-no-bootstrap
 all-host: maybe-all-m4
 all-host: maybe-all-readline
 all-host: maybe-all-sid
@@ -24134,7 +24136,6 @@ configure-libiconv: stage_current
 @if libiconv
 maybe-configure-libiconv: configure-libiconv
 configure-libiconv: 
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
@@ -24158,6 +24159,211 @@ configure-libiconv:
 
 
 
+.PHONY: configure-stage1-libiconv maybe-configure-stage1-libiconv
+maybe-configure-stage1-libiconv:
+@if libiconv-bootstrap
+maybe-configure-stage1-libiconv: configure-stage1-libiconv
+configure-stage1-libiconv:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/libiconv; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv; \
+	cd $(HOST_SUBDIR)/libiconv || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiconv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   \
+	  $(STAGE1_CONFIGURE_FLAGS) \
+	  --disable-shared
+@endif libiconv-bootstrap
+
+.PHONY: configure-stage2-libiconv maybe-configure-stage2-libiconv
+maybe-configure-stage2-libiconv:
+@if libiconv-bootstrap
+maybe-configure-stage2-libiconv: configure-stage2-libiconv
+configure-stage2-libiconv:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/libiconv; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv; \
+	cd $(HOST_SUBDIR)/libiconv || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiconv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS) \
+	  --disable-shared
+@endif libiconv-bootstrap
+
+.PHONY: configure-stage3-libiconv maybe-configure-stage3-libiconv
+maybe-configure-stage3-libiconv:
+@if libiconv-bootstrap
+maybe-configure-stage3-libiconv: configure-stage3-libiconv
+configure-stage3-libiconv:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/libiconv; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv; \
+	cd $(HOST_SUBDIR)/libiconv || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiconv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS) \
+	  --disable-shared
+@endif libiconv-bootstrap
+
+.PHONY: configure-stage4-libiconv maybe-configure-stage4-libiconv
+maybe-configure-stage4-libiconv:
+@if libiconv-bootstrap
+maybe-configure-stage4-libiconv: configure-stage4-libiconv
+configure-stage4-libiconv:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/libiconv; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv; \
+	cd $(HOST_SUBDIR)/libiconv || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiconv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS) \
+	  --disable-shared
+@endif libiconv-bootstrap
+
+.PHONY: configure-stageprofile-libiconv maybe-configure-stageprofile-libiconv
+maybe-configure-stageprofile-libiconv:
+@if libiconv-bootstrap
+maybe-configure-stageprofile-libiconv: configure-stageprofile-libiconv
+configure-stageprofile-libiconv:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(HOST_SUBDIR)/libiconv; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv; \
+	cd $(HOST_SUBDIR)/libiconv || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiconv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS) \
+	  --disable-shared
+@endif libiconv-bootstrap
+
+.PHONY: configure-stagefeedback-libiconv maybe-configure-stagefeedback-libiconv
+maybe-configure-stagefeedback-libiconv:
+@if libiconv-bootstrap
+maybe-configure-stagefeedback-libiconv: configure-stagefeedback-libiconv
+configure-stagefeedback-libiconv:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/libiconv; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv; \
+	cd $(HOST_SUBDIR)/libiconv || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiconv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+	  --disable-shared
+@endif libiconv-bootstrap
+
+
+
 
 
 .PHONY: all-libiconv maybe-all-libiconv
@@ -24169,7 +24375,6 @@ all-libiconv: stage_current
 TARGET-libiconv=all
 maybe-all-libiconv: all-libiconv
 all-libiconv: configure-libiconv
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
@@ -24177,6 +24382,255 @@ all-libiconv: configure-libiconv
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libiconv))
 @endif libiconv
+
+
+
+.PHONY: all-stage1-libiconv maybe-all-stage1-libiconv
+.PHONY: clean-stage1-libiconv maybe-clean-stage1-libiconv
+maybe-all-stage1-libiconv:
+maybe-clean-stage1-libiconv:
+@if libiconv-bootstrap
+maybe-all-stage1-libiconv: all-stage1-libiconv
+all-stage1: all-stage1-libiconv
+TARGET-stage1-libiconv = $(TARGET-libiconv)
+all-stage1-libiconv: configure-stage1-libiconv
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" \
+		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
+		LIBCFLAGS="$(LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE1_TFLAGS)" \
+		$(TARGET-stage1-libiconv)
+
+maybe-clean-stage1-libiconv: clean-stage1-libiconv
+clean-stage1: clean-stage1-libiconv
+clean-stage1-libiconv:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiconv/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libiconv/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+	$(STAGE1_FLAGS_TO_PASS)  clean
+@endif libiconv-bootstrap
+
+
+.PHONY: all-stage2-libiconv maybe-all-stage2-libiconv
+.PHONY: clean-stage2-libiconv maybe-clean-stage2-libiconv
+maybe-all-stage2-libiconv:
+maybe-clean-stage2-libiconv:
+@if libiconv-bootstrap
+maybe-all-stage2-libiconv: all-stage2-libiconv
+all-stage2: all-stage2-libiconv
+TARGET-stage2-libiconv = $(TARGET-libiconv)
+all-stage2-libiconv: configure-stage2-libiconv
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" \
+		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE2_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE2_TFLAGS)" \
+		$(TARGET-stage2-libiconv)
+
+maybe-clean-stage2-libiconv: clean-stage2-libiconv
+clean-stage2: clean-stage2-libiconv
+clean-stage2-libiconv:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiconv/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libiconv/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libiconv-bootstrap
+
+
+.PHONY: all-stage3-libiconv maybe-all-stage3-libiconv
+.PHONY: clean-stage3-libiconv maybe-clean-stage3-libiconv
+maybe-all-stage3-libiconv:
+maybe-clean-stage3-libiconv:
+@if libiconv-bootstrap
+maybe-all-stage3-libiconv: all-stage3-libiconv
+all-stage3: all-stage3-libiconv
+TARGET-stage3-libiconv = $(TARGET-libiconv)
+all-stage3-libiconv: configure-stage3-libiconv
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" \
+		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE3_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE3_TFLAGS)" \
+		$(TARGET-stage3-libiconv)
+
+maybe-clean-stage3-libiconv: clean-stage3-libiconv
+clean-stage3: clean-stage3-libiconv
+clean-stage3-libiconv:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiconv/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libiconv/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libiconv-bootstrap
+
+
+.PHONY: all-stage4-libiconv maybe-all-stage4-libiconv
+.PHONY: clean-stage4-libiconv maybe-clean-stage4-libiconv
+maybe-all-stage4-libiconv:
+maybe-clean-stage4-libiconv:
+@if libiconv-bootstrap
+maybe-all-stage4-libiconv: all-stage4-libiconv
+all-stage4: all-stage4-libiconv
+TARGET-stage4-libiconv = $(TARGET-libiconv)
+all-stage4-libiconv: configure-stage4-libiconv
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" \
+		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE4_TFLAGS)" \
+		$(TARGET-stage4-libiconv)
+
+maybe-clean-stage4-libiconv: clean-stage4-libiconv
+clean-stage4: clean-stage4-libiconv
+clean-stage4-libiconv:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiconv/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libiconv/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libiconv-bootstrap
+
+
+.PHONY: all-stageprofile-libiconv maybe-all-stageprofile-libiconv
+.PHONY: clean-stageprofile-libiconv maybe-clean-stageprofile-libiconv
+maybe-all-stageprofile-libiconv:
+maybe-clean-stageprofile-libiconv:
+@if libiconv-bootstrap
+maybe-all-stageprofile-libiconv: all-stageprofile-libiconv
+all-stageprofile: all-stageprofile-libiconv
+TARGET-stageprofile-libiconv = $(TARGET-libiconv)
+all-stageprofile-libiconv: configure-stageprofile-libiconv
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEprofile_TFLAGS)" \
+		$(TARGET-stageprofile-libiconv)
+
+maybe-clean-stageprofile-libiconv: clean-stageprofile-libiconv
+clean-stageprofile: clean-stageprofile-libiconv
+clean-stageprofile-libiconv:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libiconv/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libiconv/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libiconv-bootstrap
+
+
+.PHONY: all-stagefeedback-libiconv maybe-all-stagefeedback-libiconv
+.PHONY: clean-stagefeedback-libiconv maybe-clean-stagefeedback-libiconv
+maybe-all-stagefeedback-libiconv:
+maybe-clean-stagefeedback-libiconv:
+@if libiconv-bootstrap
+maybe-all-stagefeedback-libiconv: all-stagefeedback-libiconv
+all-stagefeedback: all-stagefeedback-libiconv
+TARGET-stagefeedback-libiconv = $(TARGET-libiconv)
+all-stagefeedback-libiconv: configure-stagefeedback-libiconv
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEfeedback_TFLAGS)" \
+		$(TARGET-stagefeedback-libiconv)
+
+maybe-clean-stagefeedback-libiconv: clean-stagefeedback-libiconv
+clean-stagefeedback: clean-stagefeedback-libiconv
+clean-stagefeedback-libiconv:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libiconv/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libiconv/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiconv && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libiconv-bootstrap
+
 
 
 
@@ -24190,9 +24644,9 @@ check-libiconv:
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS)  \
+	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/libiconv && \
-	  $(MAKE) $(FLAGS_TO_PASS)  check)
+	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
 
 @endif libiconv
 
@@ -24221,24 +24675,8 @@ maybe-info-libiconv:
 @if libiconv
 maybe-info-libiconv: info-libiconv
 
-info-libiconv: \
-    configure-libiconv 
-	@: $(MAKE); $(unstage)
-	@[ -f ./libiconv/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in libiconv"; \
-	(cd $(HOST_SUBDIR)/libiconv && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          info) \
-	  || exit 1
+# libiconv doesn't support info.
+info-libiconv:
 
 @endif libiconv
 
@@ -24249,7 +24687,6 @@ maybe-dvi-libiconv: dvi-libiconv
 
 dvi-libiconv: \
     configure-libiconv 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libiconv/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -24273,24 +24710,8 @@ maybe-pdf-libiconv:
 @if libiconv
 maybe-pdf-libiconv: pdf-libiconv
 
-pdf-libiconv: \
-    configure-libiconv 
-	@: $(MAKE); $(unstage)
-	@[ -f ./libiconv/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing pdf in libiconv"; \
-	(cd $(HOST_SUBDIR)/libiconv && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          pdf) \
-	  || exit 1
+# libiconv doesn't support pdf.
+pdf-libiconv:
 
 @endif libiconv
 
@@ -24299,24 +24720,8 @@ maybe-html-libiconv:
 @if libiconv
 maybe-html-libiconv: html-libiconv
 
-html-libiconv: \
-    configure-libiconv 
-	@: $(MAKE); $(unstage)
-	@[ -f ./libiconv/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing html in libiconv"; \
-	(cd $(HOST_SUBDIR)/libiconv && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          html) \
-	  || exit 1
+# libiconv doesn't support html.
+html-libiconv:
 
 @endif libiconv
 
@@ -24327,7 +24732,6 @@ maybe-TAGS-libiconv: TAGS-libiconv
 
 TAGS-libiconv: \
     configure-libiconv 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libiconv/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -24383,7 +24787,6 @@ maybe-installcheck-libiconv: installcheck-libiconv
 
 installcheck-libiconv: \
     configure-libiconv 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libiconv/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -24408,7 +24811,6 @@ maybe-mostlyclean-libiconv:
 maybe-mostlyclean-libiconv: mostlyclean-libiconv
 
 mostlyclean-libiconv: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libiconv/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -24433,7 +24835,6 @@ maybe-clean-libiconv:
 maybe-clean-libiconv: clean-libiconv
 
 clean-libiconv: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libiconv/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -24458,7 +24859,6 @@ maybe-distclean-libiconv:
 maybe-distclean-libiconv: distclean-libiconv
 
 distclean-libiconv: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libiconv/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -24483,7 +24883,6 @@ maybe-maintainer-clean-libiconv:
 maybe-maintainer-clean-libiconv: maintainer-clean-libiconv
 
 maintainer-clean-libiconv: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libiconv/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -47537,6 +47936,11 @@ stage1-start::
 	  mkdir stage1-libiberty-linker-plugin; \
 	mv stage1-libiberty-linker-plugin libiberty-linker-plugin
 @endif libiberty-linker-plugin
+@if libiconv
+	@cd $(HOST_SUBDIR); [ -d stage1-libiconv ] || \
+	  mkdir stage1-libiconv; \
+	mv stage1-libiconv libiconv
+@endif libiconv
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage1-zlib ] || \
 	  mkdir stage1-zlib; \
@@ -47647,6 +48051,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv libiberty-linker-plugin stage1-libiberty-linker-plugin; \
 	fi
 @endif libiberty-linker-plugin
+@if libiconv
+	@if test -d $(HOST_SUBDIR)/libiconv; then \
+	  cd $(HOST_SUBDIR); mv libiconv stage1-libiconv; \
+	fi
+@endif libiconv
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib; then \
 	  cd $(HOST_SUBDIR); mv zlib stage1-zlib; \
@@ -47819,6 +48228,12 @@ stage2-start::
 	mv stage2-libiberty-linker-plugin libiberty-linker-plugin; \
 	mv stage1-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage1-lean 
 @endif libiberty-linker-plugin
+@if libiconv
+	@cd $(HOST_SUBDIR); [ -d stage2-libiconv ] || \
+	  mkdir stage2-libiconv; \
+	mv stage2-libiconv libiconv; \
+	mv stage1-libiconv prev-libiconv || test -f stage1-lean 
+@endif libiconv
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage2-zlib ] || \
 	  mkdir stage2-zlib; \
@@ -47951,6 +48366,12 @@ stage2-end::
 	  mv prev-libiberty-linker-plugin stage1-libiberty-linker-plugin; : ; \
 	fi
 @endif libiberty-linker-plugin
+@if libiconv
+	@if test -d $(HOST_SUBDIR)/libiconv; then \
+	  cd $(HOST_SUBDIR); mv libiconv stage2-libiconv; \
+	  mv prev-libiconv stage1-libiconv; : ; \
+	fi
+@endif libiconv
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib; then \
 	  cd $(HOST_SUBDIR); mv zlib stage2-zlib; \
@@ -48149,6 +48570,12 @@ stage3-start::
 	mv stage3-libiberty-linker-plugin libiberty-linker-plugin; \
 	mv stage2-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage2-lean 
 @endif libiberty-linker-plugin
+@if libiconv
+	@cd $(HOST_SUBDIR); [ -d stage3-libiconv ] || \
+	  mkdir stage3-libiconv; \
+	mv stage3-libiconv libiconv; \
+	mv stage2-libiconv prev-libiconv || test -f stage2-lean 
+@endif libiconv
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage3-zlib ] || \
 	  mkdir stage3-zlib; \
@@ -48281,6 +48708,12 @@ stage3-end::
 	  mv prev-libiberty-linker-plugin stage2-libiberty-linker-plugin; : ; \
 	fi
 @endif libiberty-linker-plugin
+@if libiconv
+	@if test -d $(HOST_SUBDIR)/libiconv; then \
+	  cd $(HOST_SUBDIR); mv libiconv stage3-libiconv; \
+	  mv prev-libiconv stage2-libiconv; : ; \
+	fi
+@endif libiconv
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib; then \
 	  cd $(HOST_SUBDIR); mv zlib stage3-zlib; \
@@ -48535,6 +48968,12 @@ stage4-start::
 	mv stage4-libiberty-linker-plugin libiberty-linker-plugin; \
 	mv stage3-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage3-lean 
 @endif libiberty-linker-plugin
+@if libiconv
+	@cd $(HOST_SUBDIR); [ -d stage4-libiconv ] || \
+	  mkdir stage4-libiconv; \
+	mv stage4-libiconv libiconv; \
+	mv stage3-libiconv prev-libiconv || test -f stage3-lean 
+@endif libiconv
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage4-zlib ] || \
 	  mkdir stage4-zlib; \
@@ -48667,6 +49106,12 @@ stage4-end::
 	  mv prev-libiberty-linker-plugin stage3-libiberty-linker-plugin; : ; \
 	fi
 @endif libiberty-linker-plugin
+@if libiconv
+	@if test -d $(HOST_SUBDIR)/libiconv; then \
+	  cd $(HOST_SUBDIR); mv libiconv stage4-libiconv; \
+	  mv prev-libiconv stage3-libiconv; : ; \
+	fi
+@endif libiconv
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib; then \
 	  cd $(HOST_SUBDIR); mv zlib stage4-zlib; \
@@ -48909,6 +49354,12 @@ stageprofile-start::
 	mv stageprofile-libiberty-linker-plugin libiberty-linker-plugin; \
 	mv stage1-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage1-lean 
 @endif libiberty-linker-plugin
+@if libiconv
+	@cd $(HOST_SUBDIR); [ -d stageprofile-libiconv ] || \
+	  mkdir stageprofile-libiconv; \
+	mv stageprofile-libiconv libiconv; \
+	mv stage1-libiconv prev-libiconv || test -f stage1-lean 
+@endif libiconv
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stageprofile-zlib ] || \
 	  mkdir stageprofile-zlib; \
@@ -49041,6 +49492,12 @@ stageprofile-end::
 	  mv prev-libiberty-linker-plugin stage1-libiberty-linker-plugin; : ; \
 	fi
 @endif libiberty-linker-plugin
+@if libiconv
+	@if test -d $(HOST_SUBDIR)/libiconv; then \
+	  cd $(HOST_SUBDIR); mv libiconv stageprofile-libiconv; \
+	  mv prev-libiconv stage1-libiconv; : ; \
+	fi
+@endif libiconv
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib; then \
 	  cd $(HOST_SUBDIR); mv zlib stageprofile-zlib; \
@@ -49216,6 +49673,12 @@ stagefeedback-start::
 	mv stagefeedback-libiberty-linker-plugin libiberty-linker-plugin; \
 	mv stageprofile-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stageprofile-lean 
 @endif libiberty-linker-plugin
+@if libiconv
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-libiconv ] || \
+	  mkdir stagefeedback-libiconv; \
+	mv stagefeedback-libiconv libiconv; \
+	mv stageprofile-libiconv prev-libiconv || test -f stageprofile-lean 
+@endif libiconv
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-zlib ] || \
 	  mkdir stagefeedback-zlib; \
@@ -49348,6 +49811,12 @@ stagefeedback-end::
 	  mv prev-libiberty-linker-plugin stageprofile-libiberty-linker-plugin; : ; \
 	fi
 @endif libiberty-linker-plugin
+@if libiconv
+	@if test -d $(HOST_SUBDIR)/libiconv; then \
+	  cd $(HOST_SUBDIR); mv libiconv stagefeedback-libiconv; \
+	  mv prev-libiconv stageprofile-libiconv; : ; \
+	fi
+@endif libiconv
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib; then \
 	  cd $(HOST_SUBDIR); mv zlib stagefeedback-zlib; \
@@ -49668,6 +50137,14 @@ configure-stage3-gcc: maybe-all-stage3-libelf
 configure-stage4-gcc: maybe-all-stage4-libelf
 configure-stageprofile-gcc: maybe-all-stageprofile-libelf
 configure-stagefeedback-gcc: maybe-all-stagefeedback-libelf
+configure-gcc: maybe-all-libiconv
+
+configure-stage1-gcc: maybe-all-stage1-libiconv
+configure-stage2-gcc: maybe-all-stage2-libiconv
+configure-stage3-gcc: maybe-all-stage3-libiconv
+configure-stage4-gcc: maybe-all-stage4-libiconv
+configure-stageprofile-gcc: maybe-all-stageprofile-libiconv
+configure-stagefeedback-gcc: maybe-all-stagefeedback-libiconv
 all-gcc: all-libiberty
 
 all-stage1-gcc: all-stage1-libiberty
@@ -49812,6 +50289,14 @@ all-stage3-gcc: maybe-all-stage3-lto-plugin
 all-stage4-gcc: maybe-all-stage4-lto-plugin
 all-stageprofile-gcc: maybe-all-stageprofile-lto-plugin
 all-stagefeedback-gcc: maybe-all-stagefeedback-lto-plugin
+all-gcc: maybe-all-libiconv
+
+all-stage1-gcc: maybe-all-stage1-libiconv
+all-stage2-gcc: maybe-all-stage2-libiconv
+all-stage3-gcc: maybe-all-stage3-libiconv
+all-stage4-gcc: maybe-all-stage4-libiconv
+all-stageprofile-gcc: maybe-all-stageprofile-libiconv
+all-stagefeedback-gcc: maybe-all-stagefeedback-libiconv
 info-gcc: maybe-all-build-libiberty
 
 info-stage1-gcc: maybe-all-build-libiberty
@@ -49864,6 +50349,14 @@ configure-stage3-libcpp: maybe-configure-stage3-intl
 configure-stage4-libcpp: maybe-configure-stage4-intl
 configure-stageprofile-libcpp: maybe-configure-stageprofile-intl
 configure-stagefeedback-libcpp: maybe-configure-stagefeedback-intl
+configure-libcpp: maybe-all-libiconv
+
+configure-stage1-libcpp: maybe-all-stage1-libiconv
+configure-stage2-libcpp: maybe-all-stage2-libiconv
+configure-stage3-libcpp: maybe-all-stage3-libiconv
+configure-stage4-libcpp: maybe-all-stage4-libiconv
+configure-stageprofile-libcpp: maybe-all-stageprofile-libiconv
+configure-stagefeedback-libcpp: maybe-all-stagefeedback-libiconv
 all-libcpp: all-libiberty
 
 all-stage1-libcpp: all-stage1-libiberty
@@ -49880,6 +50373,14 @@ all-stage3-libcpp: maybe-all-stage3-intl
 all-stage4-libcpp: maybe-all-stage4-intl
 all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
+all-libcpp: maybe-all-libiconv
+
+all-stage1-libcpp: maybe-all-stage1-libiconv
+all-stage2-libcpp: maybe-all-stage2-libiconv
+all-stage3-libcpp: maybe-all-stage3-libiconv
+all-stage4-libcpp: maybe-all-stage4-libiconv
+all-stageprofile-libcpp: maybe-all-stageprofile-libiconv
+all-stagefeedback-libcpp: maybe-all-stagefeedback-libiconv
 all-fixincludes: maybe-all-libiberty
 
 all-stage1-fixincludes: maybe-all-stage1-libiberty
@@ -49910,6 +50411,14 @@ configure-libcc1: maybe-configure-gcc
 all-libcc1: maybe-all-gcc
 all-gotools: maybe-all-target-libgo
 all-utils: maybe-all-libiberty
+configure-intl: maybe-all-libiconv
+
+configure-stage1-intl: maybe-all-stage1-libiconv
+configure-stage2-intl: maybe-all-stage2-libiconv
+configure-stage3-intl: maybe-all-stage3-libiconv
+configure-stage4-intl: maybe-all-stage4-libiconv
+configure-stageprofile-intl: maybe-all-stageprofile-libiconv
+configure-stagefeedback-intl: maybe-all-stagefeedback-libiconv
 configure-mpfr: maybe-all-gmp
 
 configure-stage1-mpfr: maybe-all-stage1-gmp
@@ -49934,6 +50443,14 @@ configure-stage3-isl: maybe-all-stage3-gmp
 configure-stage4-isl: maybe-all-stage4-gmp
 configure-stageprofile-isl: maybe-all-stageprofile-gmp
 configure-stagefeedback-isl: maybe-all-stagefeedback-gmp
+all-intl: maybe-all-libiconv
+
+all-stage1-intl: maybe-all-stage1-libiconv
+all-stage2-intl: maybe-all-stage2-libiconv
+all-stage3-intl: maybe-all-stage3-libiconv
+all-stage4-intl: maybe-all-stage4-libiconv
+all-stageprofile-intl: maybe-all-stageprofile-libiconv
+all-stagefeedback-intl: maybe-all-stagefeedback-libiconv
 configure-gdb: maybe-all-intl
 configure-gdb: maybe-configure-sim
 configure-gdb: maybe-all-bfd

@@ -1,3 +1,7 @@
+2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* configure: Reflects renaming of configure.in to configure.ac
+
 2015-07-24  Micahel Darling  <darlingm@gmail.com>
 
 	PR other/66259

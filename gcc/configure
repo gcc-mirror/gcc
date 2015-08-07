@@ -10764,6 +10764,9 @@ _ACEOF
 
 # Until we have in-tree GNU iconv:
 LIBICONV_DEP=
+if test -f "$LTLIBICONV"; then
+  LIBICONV_DEP=$LTLIBICONV
+fi
 
 
 
@@ -18338,7 +18341,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18341 "configure"
+#line 18344 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18444,7 +18447,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18447 "configure"
+#line 18450 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -1,3 +1,8 @@
+2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* configure.ac: Define LIBICONV_DEP with in-tree libiconv.
+	* configure: Regenerate.
+
 2015-08-06    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	      Jiong Wang  <jiong.wang@arm.com>
 

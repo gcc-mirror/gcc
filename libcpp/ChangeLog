@@ -1,3 +1,7 @@
+2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* configure: Regenerate.
+
 2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* include/line-map.h (RESERVED_LOCATION_COUNT): Change type to
