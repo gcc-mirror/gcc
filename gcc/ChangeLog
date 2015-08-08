@@ -1,3 +1,7 @@
+2015-08-07  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (rx_mode_dependent_address_p): Remove unneeded asserts.
+	
 2015-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/67029
