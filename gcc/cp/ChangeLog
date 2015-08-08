@@ -1,3 +1,8 @@
+2015-08-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67114
+	* call.c (joust): Only call more_constrained on decls.
+
 2015-08-06  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Braden Obrzut  <admin@maniacsvault.net>
 	    Jason Merrill  <jason@redhat.com>
