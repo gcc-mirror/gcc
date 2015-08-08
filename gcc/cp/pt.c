@@ -1662,6 +1662,8 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
   equal = (e1->tmpl == e2->tmpl
 	   && comp_template_args (e1->args, e2->args));
   if (equal && flag_concepts
+      /* tmpl could be a FIELD_DECL for a capture pack.  */
+      && TREE_CODE (e1->tmpl) == TEMPLATE_DECL
       && VAR_P (DECL_TEMPLATE_RESULT (e1->tmpl))
       && uses_template_parms (e1->args))
     {
