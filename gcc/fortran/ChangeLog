@@ -1,3 +1,8 @@
+2015-08-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/67059
+	* gfortranspec.c (lang_specific_driver): Adjust --version output.
+
 2015-08-08  Bud Davis  <jmdavis@link.com>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
