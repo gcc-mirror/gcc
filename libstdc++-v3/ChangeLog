@@ -1,3 +1,19 @@
+2015-08-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement N4279, Improved insertion interface for unique-key maps.
+	* include/bits/stl_map.h (try_emplace, insert_or_assign): New.
+	* include/bits/stl_tree.h (_M_get_insert_unique_pos,
+	_M_get_insert_equal_pos, _M_get_insert_hint_unique_pos,
+	_M_get_insert_hint_equal_pos): Make public.
+	* include/bits/unordered_map.h (try_emplace, insert_or_assign): New.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/try_emplace/1.cc: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/insert_or_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/try_emplace.cc:
+	Likewise.
+
 2015-08-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement N4089 Safe conversions in unique_ptr<T[]> (LWG 2118)
