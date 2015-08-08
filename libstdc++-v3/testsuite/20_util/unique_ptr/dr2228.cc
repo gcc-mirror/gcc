@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11 " }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
-// Copyright (C) 2011-2015 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +19,20 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <memory>
+#include <type_traits>
 
-struct B { };
-struct D : B { };
+struct do_nothing
+{
+    template <class T>
+    void operator()(T*) {}
+};
 
-// libstdc++/48631
-D d;
-std::default_delete<B[]> db;
-typedef decltype(db(&d)) type; // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 106 }
+int
+main()
+{
+    int i = 0;
+    std::unique_ptr<int, do_nothing> p1(&i);
+    std::unique_ptr<int> p2;
+    static_assert(!std::is_assignable<decltype(p2), decltype(p1)>::value, "");
+
+}

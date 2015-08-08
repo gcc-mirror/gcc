@@ -88,11 +88,25 @@ void
 test07()
 {
   // Allow conversions from user-defined pointer-like types
+  // for the single-object version
   A_pointer p;
-  std::unique_ptr<A[]> upA(p);
-  std::unique_ptr<const A[]> cA(p);
-  std::unique_ptr<volatile A[]> vA(p);
-  std::unique_ptr<const volatile A[]> cvA(p);
+  std::unique_ptr<A> upA(p);
+  std::unique_ptr<const A> cA(p);
+  std::unique_ptr<volatile A> vA(p);
+  std::unique_ptr<const volatile A> cvA(p);
+  // Allow conversions from user-defined pointer-like types
+  // for the array version when the type is converted explicitly
+  std::unique_ptr<A[]> upA2((A*)p);
+  std::unique_ptr<const A[]> cA2((A*)p);
+  std::unique_ptr<volatile A[]> vA2((A*)p);
+  std::unique_ptr<const volatile A[]> cvA2((A*)p);
+  // Disallow conversions from user-defined pointer-like types
+  // for the array version
+  std::unique_ptr<A[]> upA3(p); // { dg-error "no matching function" }
+  std::unique_ptr<const A[]> cA3(p); // { dg-error "no matching function" }
+  std::unique_ptr<volatile A[]> vA3(p); // { dg-error "no matching function" }
+  std::unique_ptr<const volatile A[]> cvA3(p); // { dg-error "no matching function" }
+  // { dg-error "no type" "" { target *-*-* } 445 }
 }
 
 template<typename T>
@@ -108,8 +122,8 @@ struct deleter
 void
 test08()
 {
-  // Allow conversions from user-defined pointer-like types
+  // Disallow conversions from non-assignable deleter
   std::unique_ptr<B[], deleter<A_pointer>> p;
-  std::unique_ptr<A[], deleter<A*>> upA(std::move(p));
+  std::unique_ptr<A[], deleter<A*>> upA(std::move(p)); // { dg-error "no matching function" }
 }
 

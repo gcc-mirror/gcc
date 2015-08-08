@@ -1,3 +1,43 @@
+2015-08-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement N4089 Safe conversions in unique_ptr<T[]> (LWG 2118)
+	and N4366 LWG 2228: Missing SFINAE rule in unique_ptr
+	templated assignment
+	* include/bits/unique_ptr.h
+	(__remove_cv, __is_derived_Tp): Remove.
+	(default_delete::default_delete(const default_delete<_Up[]>)):
+	Constrain with array convertibility.
+	(default_delete::operator(_Up*)): Turn into a template,
+	constrain with array convertibility.
+	(__safe_conversion_up): New, single object version.
+	(unique_ptr(unique_ptr<_Up, _Ep>&&)): Constrain with deleter
+	convertibility.
+	(unique_ptr::operator=(unique_ptr<_Up, _Ep>&&)): Likewise, and add
+	is_assignable as a constraint.
+	(__safe_conversion_up): Array version, renamed from __safe_conversion,
+	updated to implement N4089.
+	(__safe_conversion_raw): New.
+	(unique_ptr(_Up)): Turn into a template, constrain with array
+	convertibility.
+	(unique_ptr(_Up,
+	typename conditional<is_reference<deleter_type>::value,
+	deleter_type, const deleter_type&>::type)): Likewise.
+	(unique_ptr(_Up, typename
+	remove_reference<deleter_type>::type&&)): Likewise.
+	(unique_ptr(unique_ptr<_Up, _Ep>&&)): Likewise.
+	(operator=(unique_ptr<_Up, _Ep>&&)): Likewise, and add
+	is_assignable as a constraint (array version).
+	(reset(_Up)): Turn into a template, constrain with array
+	convertibility.
+	(reset(nullptr_t)): New.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/assign/48635.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/cv_qual.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/cv_qual.cc: Likewise.
+	* testsuite/20_util/unique_ptr/dr2228.cc: New.
+	* testsuite/20_util/unique_ptr/modifiers/cv_qual.cc: Adjust.
+
 2015-08-05  Nikolai Bozhenov  <n.bozhenov@samsung.com>
 
 	* testsuite/20_util/enable_shared_from_this/cons/constexpr.cc: Remove
