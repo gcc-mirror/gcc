@@ -11,7 +11,7 @@
 	PR c++/67142
 	* pt.c (equal): Make sure tmpl is actually a template.
 
-	PR c++/67114
+	PR c++/67144
 	* call.c (joust): Only call more_constrained on decls.
 
 2015-08-06  Andrew Sutton  <andrew.n.sutton@gmail.com>
