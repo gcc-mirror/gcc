@@ -731,7 +731,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
-    private:
       pair<_Base_ptr, _Base_ptr>
       _M_get_insert_unique_pos(const key_type& __k);
 
@@ -746,6 +745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_get_insert_hint_equal_pos(const_iterator __pos,
 				   const key_type& __k);
 
+    private:
 #if __cplusplus >= 201103L
       template<typename _Arg, typename _NodeGen>
         iterator
