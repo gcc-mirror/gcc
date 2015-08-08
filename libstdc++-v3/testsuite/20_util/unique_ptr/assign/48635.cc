@@ -59,16 +59,8 @@ void test01()
 
   DDeleter dd;
 
-  std::unique_ptr<int, DDeleter&> p1t(nullptr, dd);
-  std::unique_ptr<int, Deleter&> p2t(nullptr, d);
-  p2t = std::move(p1t);
-
   std::unique_ptr<int[], Deleter&> p1a(nullptr, d), p2a(nullptr, d);
   p2a = std::move(p1a);
-
-  std::unique_ptr<int[], DDeleter&> p1at(nullptr, dd);
-  std::unique_ptr<int[], Deleter&> p2at(nullptr, d);
-  p2at = std::move(p1at);
 }
 
 int main()

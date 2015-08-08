@@ -82,8 +82,10 @@ struct deleter
 void
 test04()
 {
-  // Allow conversions from user-defined pointer-like types
+  // Disallow conversions from incompatible deleter
   std::unique_ptr<B[], deleter<A_pointer>> p;
   std::unique_ptr<A[], deleter<A*>> upA;
-  upA = std::move(p);
+  upA = std::move(p);  // { dg-error "no match" }
+  // { dg-error "no type" "" { target *-*-* } 537 }
+  // { dg-error "no matching function" "" { target *-*-* } 614 }
 }
