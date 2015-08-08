@@ -1,5 +1,9 @@
 2015-08-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67152
+	* pt.c (process_partial_specialization): Call
+	associate_classtype_constraints.
+
 	PR c++/67159
 	* constraint.cc (finish_template_introduction):
 	SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT.

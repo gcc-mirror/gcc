@@ -4672,6 +4672,8 @@ process_partial_specialization (tree decl)
     /* We didn't register this in check_explicit_specialization so we could
        wait until the constraints were set.  */
     decl = register_specialization (decl, maintmpl, specargs, false, 0);
+  else
+    associate_classtype_constraints (type);
 
   DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)
     = tree_cons (specargs, tmpl,
