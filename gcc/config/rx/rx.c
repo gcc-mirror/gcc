@@ -371,8 +371,6 @@ rx_mode_dependent_address_p (const_rtx addr, addr_space_t as ATTRIBUTE_UNUSED)
 	  return true;
 
 	case MULT:
-	  gcc_assert (REG_P (XEXP (addr, 0)));
-	  gcc_assert (CONST_INT_P (XEXP (addr, 1)));
 	  /* REG+REG*SCALE is always mode dependent.  */
 	  return true;
 
