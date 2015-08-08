@@ -1,5 +1,9 @@
 2015-08-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67159
+	* constraint.cc (finish_template_introduction):
+	SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT.
+
 	PR c++/67142
 	* pt.c (equal): Make sure tmpl is actually a template.
 
