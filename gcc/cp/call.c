@@ -9157,14 +9157,14 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	return winner;
     }
 
-    // C++ Concepts
-    // or, if not that, F1 is more constrained than F2.
-    if (flag_concepts)
-      {
-        winner = more_constrained (cand1->fn, cand2->fn);
-        if (winner)
-          return winner;
-      }
+  // C++ Concepts
+  // or, if not that, F1 is more constrained than F2.
+  if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn))
+    {
+      winner = more_constrained (cand1->fn, cand2->fn);
+      if (winner)
+	return winner;
+    }
 
   /* Check whether we can discard a builtin candidate, either because we
      have two identical ones or matching builtin and non-builtin candidates.
