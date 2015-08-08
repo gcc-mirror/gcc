@@ -1337,6 +1337,7 @@ finish_template_introduction (tree tmpl_decl, tree intro_list)
       tree parm = TREE_VEC_ELT (parm_list, n);
       TREE_VEC_ELT (check_args, n) = template_parm_to_arg (parm);
     }
+  SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (check_args, n);
 
   /* If the template expects more parameters we should be able
      to use the defaults from our deduced concept.  */
