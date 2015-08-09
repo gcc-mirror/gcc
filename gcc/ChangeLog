@@ -1,3 +1,14 @@
+2015-08-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/options.texi (EnabledBy): Document that the argument must be
+	a Common option.
+	* doc/invoke.texi (Wnull-dereference): Move after Wnonnull.
+	Not enabled by -Wall.
+	* optc-gen.awk: Give nicer error messages. Detect if the argument
+	of EnabledBy is not a Common option.
+	* common.opt (Wnull-dereference): Not enabled by -Wall.
+	* opt-functions.awk (lang_enabled_by): Nicer error messages.
+
 2015-08-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Treat
