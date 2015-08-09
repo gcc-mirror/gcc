@@ -76,6 +76,7 @@ extern __float128 ldexpq (__float128, int) __quadmath_throw;
 extern __float128 lgammaq (__float128) __quadmath_throw;
 extern long long int llrintq (__float128) __quadmath_throw;
 extern long long int llroundq (__float128) __quadmath_throw;
+extern __float128 logbq (__float128) __quadmath_throw;
 extern __float128 logq (__float128) __quadmath_throw;
 extern __float128 log10q (__float128) __quadmath_throw;
 extern __float128 log2q (__float128) __quadmath_throw;
