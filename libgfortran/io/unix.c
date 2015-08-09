@@ -101,6 +101,12 @@ id_from_fd (const int fd)
 }
 
 #endif /* HAVE_WORKING_STAT */
+
+
+/* On mingw, we don't use umask in tempfile_open(), because it
+   doesn't support the user/group/other-based permissions.  */
+#undef HAVE_UMASK
+
 #endif /* __MINGW32__ */
 
 
