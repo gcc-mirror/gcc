@@ -1,3 +1,8 @@
+2015-08-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Treat
+	model == 0x4f as Broadwell.
+
 2015-08-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/67028
