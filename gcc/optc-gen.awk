@@ -30,7 +30,21 @@
 # Dump that array of options into a C file.
 END {
 
-# Record first EnabledBy and LangEnabledBy uses.
+
+# Combine the flags of identical switches.  Switches
+# appear many times if they are handled by many front
+# ends, for example.
+for (i = 0; i < n_opts; i++) {
+    merged_flags[i] = flags[i]
+}
+for (i = 0; i < n_opts; i++) {
+    while(i + 1 != n_opts && opts[i] == opts[i + 1] ) {
+	merged_flags[i + 1] = merged_flags[i] " " merged_flags[i + 1];
+	i++;
+    }
+}
+
+# Record EnabledBy and LangEnabledBy uses.
 n_enabledby = 0;
 for (i = 0; i < n_langs; i++) {
     n_enabledby_lang[i] = 0;
@@ -48,15 +62,19 @@ for (i = 0; i < n_opts; i++) {
         }
         n_enabledby_names = split(enabledby_arg, enabledby_names, split_sep);
         if (logical_and != 0 && n_enabledby_names > 2) {
-            print "#error EnabledBy (Wfoo && Wbar && Wbaz) not currently supported"
+            print "#error " opts[i] " EnabledBy(Wfoo && Wbar && Wbaz) currently not supported"
         }
         for (j = 1; j <= n_enabledby_names; j++) {
             enabledby_name = enabledby_names[j];
             enabledby_index = opt_numbers[enabledby_name];
             if (enabledby_index == "") {
-                print "#error Enabledby: " enabledby_name 
-            } else {
-                condition = "";
+                print "#error " opts[i] " Enabledby(" enabledby_name "), unknown option '" enabledby_name "'"
+            } else if (!flag_set_p("Common", merged_flags[enabledby_index])) {
+		print "#error " opts[i] " Enabledby(" enabledby_name "), '" \
+		    enabledby_name "' must have flag 'Common'"		\
+		    " to use Enabledby(), otherwise use LangEnabledBy()"
+	    } else {
+		condition = "";
                 if (logical_and != 0) {
                     opt_var_name_1 = search_var_name(enabledby_names[1], opt_numbers, opts, flags, n_opts);
                     opt_var_name_2 = search_var_name(enabledby_names[2], opt_numbers, opts, flags, n_opts);

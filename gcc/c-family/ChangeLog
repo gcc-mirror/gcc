@@ -1,3 +1,7 @@
+2015-08-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wchkp): Use LangEnabledBy instead of EnabledBy.
+
 2015-08-06  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Braden Obrzut  <admin@maniacsvault.net>
 	    Jason Merrill  <jason@redhat.com>

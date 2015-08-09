@@ -335,7 +335,7 @@ C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ Obj
 Warn about subscripts whose type is \"char\"
 
 Wchkp
-C ObjC C++ ObjC++ Var(warn_chkp) Warning EnabledBy(Wall)
+C ObjC C++ ObjC++ Var(warn_chkp) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about memory access errors found by Pointer Bounds Checker
 
 Wclobbered

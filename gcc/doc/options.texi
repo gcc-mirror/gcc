@@ -464,7 +464,9 @@ value of @option{-fmath-errno} for languages that do not use
 If not explicitly set, the option is set to the value of
 @option{-@var{opt}}; multiple options can be given, separated by
 @code{||}.  The third form using @code{&&} specifies that the option is
-only set if both @var{opt} and @var{opt2} are set.
+only set if both @var{opt} and @var{opt2} are set. The options @var{opt}
+and @var{opt2} must have the @code{Common} property; otherwise, use
+@code{LangEnabledBy}.
 
 @item LangEnabledBy(@var{language}, @var{opt})
 @itemx LangEnabledBy(@var{language}, @var{opt}, @var{posarg}, @var{negarg})

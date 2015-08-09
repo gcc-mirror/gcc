@@ -3722,6 +3722,15 @@ requiring a non-null value by the @code{nonnull} function attribute.
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
 
+@item -Wnull-dereference
+@opindex Wnull-dereference
+@opindex Wno-null-dereference
+Warn if the compiler detects paths that trigger erroneous or
+undefined behavior due to dereferencing a null pointer.  This option
+is only active when @option{-fdelete-null-pointer-checks} is active,
+which is enabled by optimizations in most targets.  The precision of
+the warnings depends on the optimization options used.
+
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
 @opindex Wno-init-self
@@ -4157,16 +4166,6 @@ All the above @option{-Wunused} options combined.
 In order to get a warning about an unused function parameter, you must
 either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @option{-Wunused}), or separately specify @option{-Wunused-parameter}.
-
-@item -Wnull-dereference
-@opindex Wnull-dereference
-@opindex Wno-null-dereference
-Warn if the compiler detects paths that trigger erroneous or
-undefined behavior due to dereferencing a null pointer.  This option
-is only active when @option{-fdelete-null-pointer-checks} is active,
-which is enabled by optimizations in most targets.  The precision of
-the warnings depends on the optimization options used.  This option is
-enabled by @option{-Wall}.
 
 @item -Wuninitialized
 @opindex Wuninitialized
