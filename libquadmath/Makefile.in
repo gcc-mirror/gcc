@@ -140,23 +140,24 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBQUADMATH_TRUE@	math/tgammaq.lo math/finiteq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/nextafterq.lo math/truncq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/floorq.lo math/powq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/fmaq.lo math/cacoshq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/cacosq.lo math/casinhq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/casinq.lo math/catanhq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/catanq.lo math/cimagq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/conjq.lo math/cprojq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/crealq.lo math/fdimq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/fmaxq.lo math/fminq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/ilogbq.lo math/llrintq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/log2q.lo math/lrintq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/nearbyintq.lo math/remquoq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/ccoshq.lo math/cexpq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/clog10q.lo math/clogq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/csinq.lo math/csinhq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/csqrtq.lo math/ctanq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/ctanhq.lo printf/addmul_1.lo \
-@BUILD_LIBQUADMATH_TRUE@	printf/add_n.lo printf/cmp.lo \
-@BUILD_LIBQUADMATH_TRUE@	printf/divrem.lo printf/flt1282mpn.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/fmaq.lo math/logbq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/cacoshq.lo math/cacosq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/casinhq.lo math/casinq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/catanhq.lo math/catanq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/cimagq.lo math/conjq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/cprojq.lo math/crealq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/fdimq.lo math/fmaxq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/fminq.lo math/ilogbq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/llrintq.lo math/log2q.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/lrintq.lo math/nearbyintq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/remquoq.lo math/ccoshq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/cexpq.lo math/clog10q.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/clogq.lo math/csinq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/csinhq.lo math/csqrtq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/ctanq.lo math/ctanhq.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/addmul_1.lo printf/add_n.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/cmp.lo printf/divrem.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/flt1282mpn.lo \
 @BUILD_LIBQUADMATH_TRUE@	printf/fpioconst.lo printf/lshift.lo \
 @BUILD_LIBQUADMATH_TRUE@	printf/mul_1.lo printf/mul_n.lo \
 @BUILD_LIBQUADMATH_TRUE@	printf/mul.lo printf/printf_fphex.lo \
@@ -368,7 +369,7 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@  math/erfq.c math/logq.c math/sqrtq.c math/expm1q.c math/lroundq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/tanhq.c math/expq.c math/modfq.c math/tanq.c math/fabsq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/nanq.c math/tgammaq.c math/finiteq.c math/nextafterq.c \
-@BUILD_LIBQUADMATH_TRUE@  math/truncq.c math/floorq.c math/powq.c math/fmaq.c \
+@BUILD_LIBQUADMATH_TRUE@  math/truncq.c math/floorq.c math/powq.c math/fmaq.c math/logbq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/cacoshq.c math/cacosq.c math/casinhq.c math/casinq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
@@ -607,6 +608,7 @@ math/truncq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/floorq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/powq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/fmaq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/logbq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/cacoshq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/cacosq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/casinhq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
@@ -809,6 +811,8 @@ mostlyclean-compile:
 	-rm -f math/log1pq.lo
 	-rm -f math/log2q.$(OBJEXT)
 	-rm -f math/log2q.lo
+	-rm -f math/logbq.$(OBJEXT)
+	-rm -f math/logbq.lo
 	-rm -f math/logq.$(OBJEXT)
 	-rm -f math/logq.lo
 	-rm -f math/lrintq.$(OBJEXT)
@@ -967,6 +971,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/log10q.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/log1pq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/log2q.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/logbq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/logq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/lrintq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/lroundq.Plo@am__quote@

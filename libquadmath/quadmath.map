@@ -96,3 +96,8 @@ QUADMATH_1.0 {
   local:
     *;
 };
+
+QUADMATH_1.1 {
+  global:
+    logbq;
+} QUADMATH_1.0;
