@@ -749,6 +749,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  cpu = "haswell";
 	  break;
 	case 0x3d:
+	case 0x47:
 	case 0x4f:
 	case 0x56:
 	  /* Broadwell.  */
