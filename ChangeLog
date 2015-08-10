@@ -1,3 +1,10 @@
+2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (noconfigdirs): Don't add "target-libgomp" for target
+	nvptx*-*-*.
+	* configure: Regenerate.
+
 2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* Makefile.def (libiconv): Define bootstrap=true.
