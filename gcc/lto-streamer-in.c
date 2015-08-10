@@ -1573,7 +1573,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	for (machine_mode mr = pass ? VOIDmode
 				    : GET_CLASS_NARROWEST_MODE (mclass);
 	     pass ? mr < MAX_MACHINE_MODE : mr != VOIDmode;
-	     pass ? mr = (machine_mode) (m + 1)
+	     pass ? mr = (machine_mode) (mr + 1)
 		  : mr = GET_MODE_WIDER_MODE (mr))
 	  if (GET_MODE_CLASS (mr) != mclass
 	      || GET_MODE_SIZE (mr) != size
