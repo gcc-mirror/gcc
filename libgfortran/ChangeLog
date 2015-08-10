@@ -1,3 +1,9 @@
+2015-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR libfortran/67140
+	* gfortran.map: Add _gfortran_mvbits_i16.
+	* intrinsics/mvbits.c: Generate mvbits for c_int128_t.
+
 2015-08-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/66936
