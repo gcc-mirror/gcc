@@ -26,51 +26,215 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This shares much of the implementation of the plugin-host.c "host_nonshm"
-   plugin.  */
-#include "plugin/plugin-host.c"
+#include "libgomp.h"
+#include "oacc-int.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+static struct gomp_device_descr host_dispatch;
+
+static const char *
+host_get_name (void)
+{
+  return host_dispatch.name;
+}
+
+static unsigned int
+host_get_caps (void)
+{
+  return host_dispatch.capabilities;
+}
+
+static int
+host_get_type (void)
+{
+  return host_dispatch.type;
+}
+
+static int
+host_get_num_devices (void)
+{
+  return 1;
+}
+
+static void
+host_init_device (int n __attribute__ ((unused)))
+{
+}
+
+static void
+host_fini_device (int n __attribute__ ((unused)))
+{
+}
+
+static int
+host_load_image (int n __attribute__ ((unused)),
+		 const void *t __attribute__ ((unused)),
+		 struct addr_pair **r __attribute__ ((unused)))
+{
+  return 0;
+}
+
+static void
+host_unload_image (int n __attribute__ ((unused)),
+		   const void *t __attribute__ ((unused)))
+{
+}
+
+static void *
+host_alloc (int n __attribute__ ((unused)), size_t s)
+{
+  return gomp_malloc (s);
+}
+
+static void
+host_free (int n __attribute__ ((unused)), void *p)
+{
+  free (p);
+}
+
+static void *
+host_dev2host (int n __attribute__ ((unused)),
+	       void *h __attribute__ ((unused)),
+	       const void *d __attribute__ ((unused)),
+	       size_t s __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+static void *
+host_host2dev (int n __attribute__ ((unused)),
+	       void *d __attribute__ ((unused)),
+	       const void *h __attribute__ ((unused)),
+	       size_t s __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+static void
+host_run (int n __attribute__ ((unused)), void *fn_ptr, void *vars)
+{
+  void (*fn)(void *) = (void (*)(void *)) fn_ptr;
+
+  fn (vars);
+}
+
+static void
+host_openacc_exec (void (*fn) (void *),
+		   size_t mapnum __attribute__ ((unused)),
+		   void **hostaddrs,
+		   void **devaddrs __attribute__ ((unused)),
+		   size_t *sizes __attribute__ ((unused)),
+		   unsigned short *kinds __attribute__ ((unused)),
+		   int num_gangs __attribute__ ((unused)),
+		   int num_workers __attribute__ ((unused)),
+		   int vector_length __attribute__ ((unused)),
+		   int async __attribute__ ((unused)),
+		   void *targ_mem_desc __attribute__ ((unused)))
+{
+  fn (hostaddrs);
+}
+
+static void
+host_openacc_register_async_cleanup (void *targ_mem_desc __attribute__ ((unused)))
+{
+}
+
+static int
+host_openacc_async_test (int async __attribute__ ((unused)))
+{
+  return 1;
+}
+
+static int
+host_openacc_async_test_all (void)
+{
+  return 1;
+}
+
+static void
+host_openacc_async_wait (int async __attribute__ ((unused)))
+{
+}
+
+static void
+host_openacc_async_wait_async (int async1 __attribute__ ((unused)),
+			       int async2 __attribute__ ((unused)))
+{
+}
+
+static void
+host_openacc_async_wait_all (void)
+{
+}
+
+static void
+host_openacc_async_wait_all_async (int async __attribute__ ((unused)))
+{
+}
+
+static void
+host_openacc_async_set_async (int async __attribute__ ((unused)))
+{
+}
+
+static void *
+host_openacc_create_thread_data (int ord __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+static void
+host_openacc_destroy_thread_data (void *tls_data __attribute__ ((unused)))
+{
+}
 
 static struct gomp_device_descr host_dispatch =
   {
     .name = "host",
-    .capabilities = (GOMP_OFFLOAD_CAP_OPENACC_200
+    .capabilities = (GOMP_OFFLOAD_CAP_SHARED_MEM
 		     | GOMP_OFFLOAD_CAP_NATIVE_EXEC
-		     | GOMP_OFFLOAD_CAP_SHARED_MEM),
+		     | GOMP_OFFLOAD_CAP_OPENACC_200),
     .target_id = 0,
     .type = OFFLOAD_TARGET_TYPE_HOST,
 
-    .get_name_func = GOMP_OFFLOAD_get_name,
-    .get_caps_func = GOMP_OFFLOAD_get_caps,
-    .get_type_func = GOMP_OFFLOAD_get_type,
-    .get_num_devices_func = GOMP_OFFLOAD_get_num_devices,
-    .init_device_func = GOMP_OFFLOAD_init_device,
-    .fini_device_func = GOMP_OFFLOAD_fini_device,
-    .load_image_func = GOMP_OFFLOAD_load_image,
-    .unload_image_func = GOMP_OFFLOAD_unload_image,
-    .alloc_func = GOMP_OFFLOAD_alloc,
-    .free_func = GOMP_OFFLOAD_free,
-    .dev2host_func = GOMP_OFFLOAD_dev2host,
-    .host2dev_func = GOMP_OFFLOAD_host2dev,
-    .run_func = GOMP_OFFLOAD_run,
+    .get_name_func = host_get_name,
+    .get_caps_func = host_get_caps,
+    .get_type_func = host_get_type,
+    .get_num_devices_func = host_get_num_devices,
+    .init_device_func = host_init_device,
+    .fini_device_func = host_fini_device,
+    .load_image_func = host_load_image,
+    .unload_image_func = host_unload_image,
+    .alloc_func = host_alloc,
+    .free_func = host_free,
+    .dev2host_func = host_dev2host,
+    .host2dev_func = host_host2dev,
+    .run_func = host_run,
 
+    .mem_map = { NULL },
+    /* .lock initilized in goacc_host_init.  */
     .is_initialized = false,
 
     .openacc = {
-      .exec_func = GOMP_OFFLOAD_openacc_parallel,
+      .data_environ = NULL,
 
-      .register_async_cleanup_func
-        = GOMP_OFFLOAD_openacc_register_async_cleanup,
+      .exec_func = host_openacc_exec,
 
-      .async_set_async_func = GOMP_OFFLOAD_openacc_async_set_async,
-      .async_test_func = GOMP_OFFLOAD_openacc_async_test,
-      .async_test_all_func = GOMP_OFFLOAD_openacc_async_test_all,
-      .async_wait_func = GOMP_OFFLOAD_openacc_async_wait,
-      .async_wait_async_func = GOMP_OFFLOAD_openacc_async_wait_async,
-      .async_wait_all_func = GOMP_OFFLOAD_openacc_async_wait_all,
-      .async_wait_all_async_func = GOMP_OFFLOAD_openacc_async_wait_all_async,
+      .register_async_cleanup_func = host_openacc_register_async_cleanup,
 
-      .create_thread_data_func = GOMP_OFFLOAD_openacc_create_thread_data,
-      .destroy_thread_data_func = GOMP_OFFLOAD_openacc_destroy_thread_data,
+      .async_test_func = host_openacc_async_test,
+      .async_test_all_func = host_openacc_async_test_all,
+      .async_wait_func = host_openacc_async_wait,
+      .async_wait_async_func = host_openacc_async_wait_async,
+      .async_wait_all_func = host_openacc_async_wait_all,
+      .async_wait_all_async_func = host_openacc_async_wait_all_async,
+      .async_set_async_func = host_openacc_async_set_async,
+
+      .create_thread_data_func = host_openacc_create_thread_data,
+      .destroy_thread_data_func = host_openacc_destroy_thread_data,
 
       .cuda = {
 	.get_current_device_func = NULL,
@@ -81,9 +245,9 @@ static struct gomp_device_descr host_dispatch =
     }
   };
 
-/* Register this device type.  */
-static __attribute__ ((constructor))
-void goacc_host_init (void)
+/* Initialize and register this device type.  */
+static __attribute__ ((constructor)) void
+goacc_host_init (void)
 {
   gomp_mutex_init (&host_dispatch.lock);
   goacc_register (&host_dispatch);

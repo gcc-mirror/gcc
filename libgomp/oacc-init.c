@@ -29,7 +29,6 @@
 #include "libgomp.h"
 #include "oacc-int.h"
 #include "openacc.h"
-#include "plugin/plugin-host.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -102,7 +101,6 @@ name_of_acc_device_t (enum acc_device_t type)
     case acc_device_none: return "none";
     case acc_device_default: return "default";
     case acc_device_host: return "host";
-    case acc_device_host_nonshm: return "host_nonshm";
     case acc_device_not_host: return "not_host";
     case acc_device_nvidia: return "nvidia";
     default: gomp_fatal ("unknown device type %u", (unsigned) type);
@@ -625,18 +623,8 @@ ialias (acc_set_device_num)
 int
 acc_on_device (acc_device_t dev)
 {
-  struct goacc_thread *thr = goacc_thread ();
-
-  /* We only want to appear to be the "host_nonshm" plugin from "offloaded"
-     code -- i.e. within a parallel region.  Test a flag set by the
-     openacc_parallel hook of the host_nonshm plugin to determine that.  */
-  if (acc_get_device_type () == acc_device_host_nonshm
-      && thr && thr->target_tls
-      && ((struct nonshm_thread *)thr->target_tls)->nonshm_exec)
-    return dev == acc_device_host_nonshm || dev == acc_device_not_host;
-
-  /* For OpenACC, libgomp is only built for the host, so this is sufficient.  */
-  return dev == acc_device_host || dev == acc_device_none;
+  /* Just rely on the compiler builtin.  */
+  return __builtin_acc_on_device (dev);
 }
 
 ialias (acc_on_device)

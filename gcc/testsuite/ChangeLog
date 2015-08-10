@@ -1,3 +1,9 @@
+2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65742
+	PR middle-end/66332
+	* c-c++-common/goacc/acc_on_device-2.c: Remove XFAIL for C.
+
 2015-08-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR fortran/64022

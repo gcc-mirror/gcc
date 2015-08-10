@@ -15170,7 +15170,6 @@ if test x"$plugin_support" = xyes; then
 
 $as_echo "#define PLUGIN_SUPPORT 1" >>confdefs.h
 
-  offload_targets=host_nonshm
 elif test "x${enable_offload_targets-no}" != xno; then
   as_fn_error "Can't support offloading without support for plugins" "$LINENO" 5
 fi
