@@ -1,4 +1,48 @@
 2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/affinity.c: New file.
+	* config/nvptx/alloc.c: Likewise.
+	* config/nvptx/bar.c: Likewise.
+	* config/nvptx/barrier.c: Likewise.
+	* config/nvptx/critical.c: Likewise.
+	* config/nvptx/env.c: Likewise.
+	* config/nvptx/error.c: Likewise.
+	* config/nvptx/fortran.c: Likewise.
+	* config/nvptx/iter.c: Likewise.
+	* config/nvptx/iter_ull.c: Likewise.
+	* config/nvptx/libgomp-plugin.c: Likewise.
+	* config/nvptx/lock.c: Likewise.
+	* config/nvptx/loop.c: Likewise.
+	* config/nvptx/loop_ull.c: Likewise.
+	* config/nvptx/mutex.c: Likewise.
+	* config/nvptx/oacc-async.c: Likewise.
+	* config/nvptx/oacc-cuda.c: Likewise.
+	* config/nvptx/oacc-host.c: Likewise.
+	* config/nvptx/oacc-init.c: Likewise.
+	* config/nvptx/oacc-mem.c: Likewise.
+	* config/nvptx/oacc-parallel.c: Likewise.
+	* config/nvptx/oacc-plugin.c: Likewise.
+	* config/nvptx/omp-lock.h: Likewise.
+	* config/nvptx/ordered.c: Likewise.
+	* config/nvptx/parallel.c: Likewise.
+	* config/nvptx/proc.c: Likewise.
+	* config/nvptx/ptrlock.c: Likewise.
+	* config/nvptx/sections.c: Likewise.
+	* config/nvptx/sem.c: Likewise.
+	* config/nvptx/single.c: Likewise.
+	* config/nvptx/splay-tree.c: Likewise.
+	* config/nvptx/target.c: Likewise.
+	* config/nvptx/task.c: Likewise.
+	* config/nvptx/team.c: Likewise.
+	* config/nvptx/time.c: Likewise.
+	* config/nvptx/work.c: Likewise.
+	* configure.ac: Don't probe pthreads support for host nvptx*-*-*.
+	* configure: Regenerate.
+	* configure.tgt (config_path): Set to "nvptx" for target
+	nvptx*-*-*.
+
+2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/vector-type-1.c: New file.
 

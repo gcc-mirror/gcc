@@ -151,6 +151,10 @@ case "${target}" in
 	XLDFLAGS="${XLDFLAGS} -lpthread"
 	;;
 
+  nvptx*-*-*)
+	config_path="nvptx"
+	;;
+
   *)
 	;;
 
