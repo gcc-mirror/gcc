@@ -4549,23 +4549,6 @@
   [(set_attr "type" "call")
    (set_attr "length" "16")])
 
-;; The same as tlsdesc_small_<mode> except that we don't expose hard register X0
-;; as the destination of set as it will cause trouble for RTL loop iv.
-;; RTL loop iv will abort ongoing optimization once it finds there is hard reg
-;; as destination of set.  This pattern thus could help these tlsdesc
-;; instruction sequences hoisted out of loop.
-(define_insn "tlsdesc_small_pseudo_<mode>"
-  [(set (match_operand:PTR 1 "register_operand" "=r")
-        (unspec:PTR [(match_operand 0 "aarch64_valid_symref" "S")]
-		   UNSPEC_TLSDESC))
-   (clobber (reg:DI R0_REGNUM))
-   (clobber (reg:DI LR_REGNUM))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_TLS_DESC"
-  "adrp\\tx0, %A0\;ldr\\t%<w>1, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
-  [(set_attr "type" "call")
-   (set_attr "length" "16")])
-
 (define_insn "stack_tie"
   [(set (mem:BLK (scratch))
 	(unspec:BLK [(match_operand:DI 0 "register_operand" "rk")
