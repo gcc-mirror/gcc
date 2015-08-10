@@ -1,3 +1,9 @@
+2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* lto-streamer-in.c (lto_input_mode_table): Correctly advance
+	iterator.
+
 2015-08-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/options.texi (EnabledBy): Document that the argument must be
