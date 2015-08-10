@@ -1544,7 +1544,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	= bp_unpack_enum (&bp, mode_class, MAX_MODE_CLASS);
       unsigned int size = bp_unpack_value (&bp, 8);
       unsigned int prec = bp_unpack_value (&bp, 16);
-      machine_mode inner = (machine_mode) table[bp_unpack_value (&bp, 8)];
+      machine_mode inner = (machine_mode) bp_unpack_value (&bp, 8);
       unsigned int nunits = bp_unpack_value (&bp, 8);
       unsigned int ibit = 0, fbit = 0;
       unsigned int real_fmt_len = 0;
@@ -1578,7 +1578,9 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	  if (GET_MODE_CLASS (mr) != mclass
 	      || GET_MODE_SIZE (mr) != size
 	      || GET_MODE_PRECISION (mr) != prec
-	      || GET_MODE_INNER (mr) != inner
+	      || (inner == m
+		  ? GET_MODE_INNER (mr) != mr
+		  : GET_MODE_INNER (mr) != table[(int) inner])
 	      || GET_MODE_IBIT (mr) != ibit
 	      || GET_MODE_FBIT (mr) != fbit
 	      || GET_MODE_NUNITS (mr) != nunits)
@@ -1606,7 +1608,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	    case MODE_VECTOR_UACCUM:
 	      /* For unsupported vector modes just use BLKmode,
 		 if the scalar mode is supported.  */
-	      if (inner != VOIDmode)
+	      if (table[(int) inner] != VOIDmode)
 		{
 		  table[m] = BLKmode;
 		  break;

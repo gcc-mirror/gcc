@@ -2676,7 +2676,7 @@ lto_write_mode_table (void)
   ob = create_output_block (LTO_section_mode_table);
   bitpack_d bp = bitpack_create (ob->main_stream);
 
-  /* Ensure that for GET_MODE_INNER (m) != VOIDmode we have
+  /* Ensure that for GET_MODE_INNER (m) != m we have
      also the inner mode marked.  */
   for (int i = 0; i < (int) MAX_MACHINE_MODE; i++)
     if (streamer_mode_table[i])
@@ -2685,7 +2685,7 @@ lto_write_mode_table (void)
 	if (GET_MODE_INNER (m) != m)
 	  streamer_mode_table[(int) GET_MODE_INNER (m)] = 1;
       }
-  /* First stream modes that have GET_MODE_INNER (m) == VOIDmode,
+  /* First stream modes that have GET_MODE_INNER (m) == m,
      so that we can refer to them afterwards.  */
   for (int pass = 0; pass < 2; pass++)
     for (int i = 0; i < (int) MAX_MACHINE_MODE; i++)

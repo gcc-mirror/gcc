@@ -1,4 +1,9 @@
 2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-streamer-in.c (lto_input_mode_table): Adjust to
+	GET_MODE_INNER changes.
+
+2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 
 	* lto-streamer-in.c (lto_input_mode_table): Correctly advance
