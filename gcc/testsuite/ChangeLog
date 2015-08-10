@@ -1,3 +1,8 @@
+2015-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/builtin_target.c (check_intel_cpu_model):
+	Treat model == 0x4f as Broadwell.
+
 2015-08-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/67140

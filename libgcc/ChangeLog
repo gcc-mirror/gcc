@@ -1,3 +1,8 @@
+2015-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Treat model == 0x4f as
+	Broadwell.
+
 2015-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66954

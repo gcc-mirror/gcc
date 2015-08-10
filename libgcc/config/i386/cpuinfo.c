@@ -232,6 +232,7 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_HASWELL;
 	      break;
 	    case 0x3d:
+	    case 0x47:
 	    case 0x4f:
 	    case 0x56:
 	      /* Broadwell.  */
