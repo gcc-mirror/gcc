@@ -84,6 +84,7 @@ SUB_NAME (const TYPE *from, const int *frompos, const int *len, TYPE *to,
 #  undef TYPE
 #  undef UTYPE
 
+#if defined (HAVE_GFC_INTEGER_16)
 #  define TYPE GFC_INTEGER_16
 #  define UTYPE GFC_UINTEGER_16
 #  define SUB_NAME mvbits_i16
@@ -91,4 +92,5 @@ SUB_NAME (const TYPE *from, const int *frompos, const int *len, TYPE *to,
 #  undef SUB_NAME
 #  undef TYPE
 #  undef UTYPE
+#endif
 #endif
