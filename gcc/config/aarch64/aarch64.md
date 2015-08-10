@@ -4549,6 +4549,25 @@
   [(set_attr "type" "call")
    (set_attr "length" "16")])
 
+;; The same as tlsdesc_small_<mode> with hard register hiding.
+;; The first operand is actually x0, while we wrap it under a delicated
+;; register class so that before register allocation, it's seen as pseudo
+;; register.  The reason for doing this is we don't expose hard register X0
+;; as the destination of set as it will cause trouble for RTL loop iv.
+;; RTL loop iv will abort ongoing optimization once it finds there is hard reg
+;; as destination of set.
+(define_insn "tlsdesc_small_pseudo_<mode>"
+  [(set (match_operand:PTR 0 "register_operand" "=Uc0")
+	(unspec:PTR [(match_operand 1 "aarch64_valid_symref" "S")]
+		    UNSPEC_TLSDESC))
+   (clobber (reg:DI LR_REGNUM))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (match_scratch:DI 2 "=r"))]
+  "TARGET_TLS_DESC"
+  "adrp\\t<w>0, %A1\;ldr\\t%<w>2, [%<w>0, #%L1]\;add\\t%<w>0, %<w>0, %L1\;.tlsdesccall\\t%1\;blr\\t%2"
+  [(set_attr "type" "call")
+   (set_attr "length" "16")])
+
 (define_insn "stack_tie"
   [(set (mem:BLK (scratch))
 	(unspec:BLK [(match_operand:DI 0 "register_operand" "rk")
