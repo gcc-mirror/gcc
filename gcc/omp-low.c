@@ -9975,24 +9975,6 @@ oacc_process_reduction_data (gimple_seq *body, gimple_seq *in_stmt_seqp,
 			   in_stmt_seqp);
 	  gimple_seq_add_stmt (in_stmt_seqp, gimple_build_label (exit));
 
-	  /* Also, set nthreads = 1 for ACC_DEVICE_TYPE=host_nonshm.  */
-	  gimplify_assign (acc_device_host,
-			   build_int_cst (integer_type_node,
-					  GOMP_DEVICE_HOST_NONSHM),
-			   in_stmt_seqp);
-
-	  enter = create_artificial_label (UNKNOWN_LOCATION);
-	  exit = create_artificial_label (UNKNOWN_LOCATION);
-
-	  stmt = gimple_build_cond (EQ_EXPR, acc_device, acc_device_host,
-				    enter, exit);
-	  gimple_seq_add_stmt (in_stmt_seqp, stmt);
-	  gimple_seq_add_stmt (in_stmt_seqp, gimple_build_label (enter));
-	  gimplify_assign (nthreads, fold_build1 (NOP_EXPR, sizetype,
-						  integer_one_node),
-			   in_stmt_seqp);
-	  gimple_seq_add_stmt (in_stmt_seqp, gimple_build_label (exit));
-
 	  oacc_initialize_reduction_data (clauses, nthreads, in_stmt_seqp,
 					  ctx);
 	  oacc_finalize_reduction_data (clauses, nthreads, out_stmt_seqp, ctx);

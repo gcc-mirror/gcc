@@ -11,7 +11,6 @@ implicit none
 
 if (.not. acc_on_device (acc_device_none)) call abort
 if (.not. acc_on_device (acc_device_host)) call abort
-if (acc_on_device (acc_device_host_nonshm)) call abort
 if (acc_on_device (acc_device_not_host)) call abort
 if (acc_on_device (acc_device_nvidia)) call abort
 
@@ -21,7 +20,6 @@ if (acc_on_device (acc_device_nvidia)) call abort
 !$acc parallel if(.false.)
 if (.not. acc_on_device (acc_device_none)) call abort
 if (.not. acc_on_device (acc_device_host)) call abort
-if (acc_on_device (acc_device_host_nonshm)) call abort
 if (acc_on_device (acc_device_not_host)) call abort
 if (acc_on_device (acc_device_nvidia)) call abort
 !$acc end parallel
@@ -34,11 +32,6 @@ if (acc_on_device (acc_device_nvidia)) call abort
 !$acc parallel
 if (acc_on_device (acc_device_none)) call abort
 if (acc_on_device (acc_device_host)) call abort
-#if ACC_DEVICE_TYPE_host_nonshm
-if (.not. acc_on_device (acc_device_host_nonshm)) call abort
-#else
-if (acc_on_device (acc_device_host_nonshm)) call abort
-#endif
 if (.not. acc_on_device (acc_device_not_host)) call abort
 #if ACC_DEVICE_TYPE_nvidia
 if (.not. acc_on_device (acc_device_nvidia)) call abort

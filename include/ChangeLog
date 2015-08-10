@@ -1,3 +1,7 @@
+2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.c (GOMP_DEVICE_HOST_NONSHM): Remove.
+
 2015-05-22  Yunlian Jiang  <yunlian@google.com>
 
 	* libiberty.h (asprintf): Don't declare if HAVE_DECL_ASPRINTF is

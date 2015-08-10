@@ -1,5 +1,12 @@
 2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/65742
+	PR middle-end/66332
+	* builtins.c (expand_builtin_acc_on_device) [ACCEL_COMPILER]: Emit
+	open-coded sequence.
+	* omp-low.c (oacc_process_reduction_data): Remove handline of
+	GOMP_DEVICE_HOST_NONSHM.
+
 	* lto-streamer-in.c (lto_input_mode_table): Adjust to
 	GET_MODE_INNER changes.
 

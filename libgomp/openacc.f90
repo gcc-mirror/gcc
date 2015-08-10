@@ -43,7 +43,7 @@ module openacc_kinds
   integer (acc_device_kind), parameter :: acc_device_none = 0
   integer (acc_device_kind), parameter :: acc_device_default = 1
   integer (acc_device_kind), parameter :: acc_device_host = 2
-  integer (acc_device_kind), parameter :: acc_device_host_nonshm = 3
+  ! integer (acc_device_kind), parameter :: acc_device_host_nonshm = 3 removed.
   integer (acc_device_kind), parameter :: acc_device_not_host = 4
   integer (acc_device_kind), parameter :: acc_device_nvidia = 5
 

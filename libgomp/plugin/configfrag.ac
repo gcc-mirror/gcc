@@ -33,7 +33,6 @@ AC_CHECK_LIB(dl, dlsym, , [plugin_support=no])
 if test x"$plugin_support" = xyes; then
   AC_DEFINE(PLUGIN_SUPPORT, 1,
     [Define if all infrastructure, needed for plugins, is supported.])
-  offload_targets=host_nonshm
 elif test "x${enable_offload_targets-no}" != xno; then
   AC_MSG_ERROR([Can't support offloading without support for plugins])
 fi
