@@ -1,3 +1,8 @@
+2015-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/64022
+	* gfortran.dg/ieee/large_4.f90: New test.
+
 2015-08-08  Bud Davis  <jmdavis@link.com>
 
 	PR fortran/59746
@@ -93,8 +98,8 @@
 2015-08-05  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.target/rl78: New directory.
-        * gcc.target/rl78/rl78.exp: New file: Test driver.
-        * gcc.target/rl78/test_addm3.c: New file: Test adds.
+	* gcc.target/rl78/rl78.exp: New file: Test driver.
+	* gcc.target/rl78/test_addm3.c: New file: Test adds.
 
 2015-08-05  Richard Biener  <rguenther@suse.de>
 
