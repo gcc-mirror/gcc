@@ -313,6 +313,15 @@ So instead we use the macro below and test it against specific values.  */
 #define ENUM_BITFIELD(TYPE) unsigned int
 #endif
 
+    /* This is used to mark a class or virtual function as final.  */
+#if __cplusplus >= 201103L
+#define GCC_FINAL final
+#elif GCC_VERSION >= 4007
+#define GCC_FINAL __final
+#else
+#define GCC_FINAL
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,3 +1,7 @@
+2015-08-11  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* ansidecl.h (GCC_FINAL): New macro.
+
 2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gomp-constants.c (GOMP_DEVICE_HOST_NONSHM): Remove.
