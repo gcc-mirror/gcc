@@ -600,8 +600,14 @@ Lex::next_token()
 		{
 		  this->lineoff_ = p + 2 - this->linebuf_;
 		  Location location = this->location();
-		  if (!this->skip_c_comment())
+                  bool found_newline = false;
+		  if (!this->skip_c_comment(&found_newline))
 		    return Token::make_invalid_token(location);
+                  if (found_newline && this->add_semi_at_eol_)
+                    {
+                      this->add_semi_at_eol_ = false;
+                      return this->make_operator(OPERATOR_SEMICOLON, 1);
+                    }
 		  p = this->linebuf_ + this->lineoff_;
 		  pend = this->linebuf_ + this->linesize_;
 		}
@@ -1621,7 +1627,7 @@ Lex::one_character_operator(char c)
 // Skip a C-style comment.
 
 bool
-Lex::skip_c_comment()
+Lex::skip_c_comment(bool* found_newline)
 {
   while (true)
     {
@@ -1641,6 +1647,9 @@ Lex::skip_c_comment()
 	      this->lineoff_ = p + 2 - this->linebuf_;
 	      return true;
 	    }
+
+          if (p[0] == '\n')
+            *found_newline = true;
 
 	  this->lineoff_ = p - this->linebuf_;
 	  unsigned int c;
