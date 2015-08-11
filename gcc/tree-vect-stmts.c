@@ -4461,7 +4461,9 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   /* Determine whether the shift amount is a vector, or scalar.  If the
      shift/rotate amount is a vector, use the vector/vector shift optabs.  */
 
-  if (dt[1] == vect_internal_def && !slp_node)
+  if ((dt[1] == vect_internal_def
+       || dt[1] == vect_induction_def)
+      && !slp_node)
     scalar_shift_arg = false;
   else if (dt[1] == vect_constant_def
 	   || dt[1] == vect_external_def
