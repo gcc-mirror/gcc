@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "stor-layout.h"
 #include "builtins.h"
+#include "gimplify.h"
 
 /* Instrument division by zero and INT_MIN / -1.  If not instrumenting,
    return NULL_TREE.  */
@@ -70,6 +71,9 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
      Use TYPE_MAIN_VARIANT since typedefs can confuse us.  */
   gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (op0))
 	      == TYPE_MAIN_VARIANT (TREE_TYPE (op1)));
+
+  op0 = unshare_expr (op0);
+  op1 = unshare_expr (op1);
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && (flag_sanitize & SANITIZE_DIVIDE))
@@ -150,6 +154,9 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   tree op1_utype = unsigned_type_for (type1);
   HOST_WIDE_INT op0_prec = TYPE_PRECISION (type0);
   tree uprecm1 = build_int_cst (op1_utype, op0_prec - 1);
+
+  op0 = unshare_expr (op0);
+  op1 = unshare_expr (op1);
 
   t = fold_convert_loc (loc, op1_utype, op1);
   t = fold_build2 (GT_EXPR, boolean_type_node, t, uprecm1);
