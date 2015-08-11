@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target avx2 } */
 /* { dg-options "-mavx2 -O3 -fdump-tree-vect-details" } */
 
 #define N 32
@@ -13,4 +12,3 @@ void foo()
     a[i] = 1 << i;
 }
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
