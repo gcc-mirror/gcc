@@ -118,23 +118,6 @@ if CREATE_GJDOC
 noinst_SCRIPTS += gjdoc
 endif
 bin_PROGRAMS =
-## FIXME: remove these unneeded dependency lines once we can
-## require Automake 1.11.
-gappletviewer: gappletviewer.in
-gjarsigner: gjarsigner.in
-gkeytool: gkeytool.in
-gjar: gjar.in
-gnative2ascii: gnative2ascii.in
-gserialver: gserialver.in
-gjavah: gjavah.in
-grmiregistry: grmiregistry.in
-gtnameserv: gtnameserv.in
-gorbd: gorbd.in
-grmid: grmid.in
-grmic: grmic.in
-if CREATE_GJDOC
-gjdoc: gjdoc.in
-endif
 endif
 EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
 	gjar.in gnative2ascii.in gserialver.in gjavah.in grmiregistry.in \

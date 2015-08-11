@@ -782,8 +782,8 @@ $(am__aclocal_m4_deps):
 @CREATE_WRAPPERS_FALSE@	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 @CREATE_WRAPPERS_FALSE@gjavah: $(top_builddir)/config.status $(srcdir)/gjavah.in
 @CREATE_WRAPPERS_FALSE@	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-gjdoc: $(top_builddir)/config.status $(srcdir)/gjdoc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+@CREATE_WRAPPERS_FALSE@gjdoc: $(top_builddir)/config.status $(srcdir)/gjdoc.in
+@CREATE_WRAPPERS_FALSE@	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
@@ -867,9 +867,6 @@ clean-noinstPROGRAMS:
 @CREATE_WRAPPERS_TRUE@gjavah$(EXEEXT): $(gjavah_OBJECTS) $(gjavah_DEPENDENCIES) $(EXTRA_gjavah_DEPENDENCIES) 
 @CREATE_WRAPPERS_TRUE@	@rm -f gjavah$(EXEEXT)
 @CREATE_WRAPPERS_TRUE@	$(gjavah_LINK) $(gjavah_OBJECTS) $(gjavah_LDADD) $(LIBS)
-@CREATE_GJDOC_FALSE@gjdoc$(EXEEXT): $(gjdoc_OBJECTS) $(gjdoc_DEPENDENCIES) $(EXTRA_gjdoc_DEPENDENCIES) 
-@CREATE_GJDOC_FALSE@	@rm -f gjdoc$(EXEEXT)
-@CREATE_GJDOC_FALSE@	$(gjdoc_LINK) $(gjdoc_OBJECTS) $(gjdoc_LDADD) $(LIBS)
 @CREATE_WRAPPERS_TRUE@gjdoc$(EXEEXT): $(gjdoc_OBJECTS) $(gjdoc_DEPENDENCIES) $(EXTRA_gjdoc_DEPENDENCIES) 
 @CREATE_WRAPPERS_TRUE@	@rm -f gjdoc$(EXEEXT)
 @CREATE_WRAPPERS_TRUE@	$(gjdoc_LINK) $(gjdoc_OBJECTS) $(gjdoc_LDADD) $(LIBS)
@@ -1342,19 +1339,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-binSCRIPTS
 
-@CREATE_WRAPPERS_FALSE@gappletviewer: gappletviewer.in
-@CREATE_WRAPPERS_FALSE@gjarsigner: gjarsigner.in
-@CREATE_WRAPPERS_FALSE@gkeytool: gkeytool.in
-@CREATE_WRAPPERS_FALSE@gjar: gjar.in
-@CREATE_WRAPPERS_FALSE@gnative2ascii: gnative2ascii.in
-@CREATE_WRAPPERS_FALSE@gserialver: gserialver.in
-@CREATE_WRAPPERS_FALSE@gjavah: gjavah.in
-@CREATE_WRAPPERS_FALSE@grmiregistry: grmiregistry.in
-@CREATE_WRAPPERS_FALSE@gtnameserv: gtnameserv.in
-@CREATE_WRAPPERS_FALSE@gorbd: gorbd.in
-@CREATE_WRAPPERS_FALSE@grmid: grmid.in
-@CREATE_WRAPPERS_FALSE@grmic: grmic.in
-@CREATE_GJDOC_TRUE@@CREATE_WRAPPERS_FALSE@gjdoc: gjdoc.in
 
 # Make sure everything is included in the distribution.
 dist-hook:

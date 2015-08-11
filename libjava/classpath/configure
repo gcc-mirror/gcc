@@ -25874,10 +25874,14 @@ fi
 
 if test "x${COMPILE_GJDOC}" = xyes
 then
-ac_config_files="$ac_config_files tools/gjdoc"
+if test -z "$CREATE_WRAPPERS_TRUE"; then :
+  else
+  ac_config_files="$ac_config_files tools/gjdoc"
 
 ac_config_commands="$ac_config_commands gjdoc"
 
+
+fi
 fi
 
 ac_config_commands="$ac_config_commands gen-classlist"
