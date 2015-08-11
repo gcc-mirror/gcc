@@ -469,7 +469,7 @@ class Lex
   one_character_operator(char);
 
   bool
-  skip_c_comment();
+  skip_c_comment(bool* found_newline);
 
   void
   skip_cpp_comment();
