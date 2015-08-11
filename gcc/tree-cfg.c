@@ -7011,7 +7011,11 @@ verify_sese (basic_block entry, basic_block exit, vec<basic_block> *bbs_p)
 
    All local variables referenced in the region are assumed to be in
    the corresponding BLOCK_VARS and unexpanded variable lists
-   associated with DEST_CFUN.  */
+   associated with DEST_CFUN.
+
+   TODO: investigate whether we can reuse gimple_duplicate_sese_region to
+   reimplement move_sese_region_to_fn by duplicating the region rather than
+   moving it.  */
 
 basic_block
 move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
