@@ -1,3 +1,12 @@
+2015-08-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2015-07-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/66828
+	* tree-ssa-math-opts.c (perform_symbolic_merge): Change type of inc
+	from int64_t to uint64_t.
+
 2015-08-07  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline
