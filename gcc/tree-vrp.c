@@ -9152,37 +9152,25 @@ simplify_div_or_mod_using_ranges (gimple stmt)
 static bool
 simplify_abs_using_ranges (gimple stmt)
 {
-  tree val = NULL;
   tree op = gimple_assign_rhs1 (stmt);
-  tree type = TREE_TYPE (op);
   value_range_t *vr = get_value_range (op);
 
-  if (TYPE_UNSIGNED (type))
+  if (vr)
     {
-      val = integer_zero_node;
-    }
-  else if (vr)
-    {
+      tree val = NULL;
       bool sop = false;
 
       val = compare_range_with_value (LE_EXPR, vr, integer_zero_node, &sop);
       if (!val)
 	{
+	  /* The range is neither <= 0 nor > 0.  Now see if it is
+	     either < 0 or >= 0.  */
 	  sop = false;
-	  val = compare_range_with_value (GE_EXPR, vr, integer_zero_node,
+	  val = compare_range_with_value (LT_EXPR, vr, integer_zero_node,
 					  &sop);
-
-	  if (val)
-	    {
-	      if (integer_zerop (val))
-		val = integer_one_node;
-	      else if (integer_onep (val))
-		val = integer_zero_node;
-	    }
 	}
 
-      if (val
-	  && (integer_onep (val) || integer_zerop (val)))
+      if (val)
 	{
 	  if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
 	    {
@@ -9198,10 +9186,10 @@ simplify_abs_using_ranges (gimple stmt)
 	    }
 
 	  gimple_assign_set_rhs1 (stmt, op);
-	  if (integer_onep (val))
-	    gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
-	  else
+	  if (integer_zerop (val))
 	    gimple_assign_set_rhs_code (stmt, SSA_NAME);
+	  else
+	    gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
 	  update_stmt (stmt);
 	  return true;
 	}
