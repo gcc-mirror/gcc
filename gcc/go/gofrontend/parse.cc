@@ -1045,7 +1045,8 @@ Parse::parameter_decl(bool parameters_have_names,
 	    {
 	      *mix_error = true;
 	      while (!this->peek_token()->is_op(OPERATOR_COMMA)
-		     && !this->peek_token()->is_op(OPERATOR_RPAREN))
+		     && !this->peek_token()->is_op(OPERATOR_RPAREN)
+                     && !this->peek_token()->is_eof())
 		this->advance_token();
 	    }
 	}
