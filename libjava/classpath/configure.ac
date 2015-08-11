@@ -1256,8 +1256,10 @@ AC_CONFIG_COMMANDS([gjavah], [chmod 755 tools/gjavah])
 
 if test "x${COMPILE_GJDOC}" = xyes
 then
-AC_CONFIG_FILES([tools/gjdoc])
+CLASSPATH_COND_IF([CREATE_WRAPPERS], [test "x${COMPILE_WRAPPERS}" = xyes], [],
+[AC_CONFIG_FILES([tools/gjdoc])
 AC_CONFIG_COMMANDS([gjdoc], [chmod 755 tools/gjdoc])
+])
 fi
 
 AC_CONFIG_COMMANDS([gen-classlist],[chmod 755 lib/gen-classlist.sh])
