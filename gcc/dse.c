@@ -3725,9 +3725,7 @@ rest_of_handle_dse (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_rtl_dse1 =
+static const pass_data pass_data_rtl_dse1 =
 {
   RTL_PASS, /* type */
   "dse1", /* name */
@@ -3740,7 +3738,7 @@ const pass_data pass_data_rtl_dse1 =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_rtl_dse1 : public rtl_opt_pass
+class pass_rtl_dse1 GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_rtl_dse1 (gcc::context *ctxt)
@@ -3757,17 +3755,13 @@ public:
 
 }; // class pass_rtl_dse1
 
-} // anon namespace
-
 rtl_opt_pass *
 make_pass_rtl_dse1 (gcc::context *ctxt)
 {
   return new pass_rtl_dse1 (ctxt);
 }
 
-namespace {
-
-const pass_data pass_data_rtl_dse2 =
+static const pass_data pass_data_rtl_dse2 =
 {
   RTL_PASS, /* type */
   "dse2", /* name */
@@ -3780,7 +3774,7 @@ const pass_data pass_data_rtl_dse2 =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_rtl_dse2 : public rtl_opt_pass
+class pass_rtl_dse2 GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_rtl_dse2 (gcc::context *ctxt)
@@ -3796,8 +3790,6 @@ public:
   virtual unsigned int execute (function *) { return rest_of_handle_dse (); }
 
 }; // class pass_rtl_dse2
-
-} // anon namespace
 
 rtl_opt_pass *
 make_pass_rtl_dse2 (gcc::context *ctxt)

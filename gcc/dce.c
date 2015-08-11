@@ -784,9 +784,7 @@ rest_of_handle_ud_dce (void)
 }
 
 
-namespace {
-
-const pass_data pass_data_ud_rtl_dce =
+static const pass_data pass_data_ud_rtl_dce =
 {
   RTL_PASS, /* type */
   "ud_dce", /* name */
@@ -799,7 +797,7 @@ const pass_data pass_data_ud_rtl_dce =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_ud_rtl_dce : public rtl_opt_pass
+class pass_ud_rtl_dce GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_ud_rtl_dce (gcc::context *ctxt)
@@ -818,8 +816,6 @@ public:
     }
 
 }; // class pass_ud_rtl_dce
-
-} // anon namespace
 
 rtl_opt_pass *
 make_pass_ud_rtl_dce (gcc::context *ctxt)
@@ -1215,9 +1211,7 @@ run_fast_dce (void)
 }
 
 
-namespace {
-
-const pass_data pass_data_fast_rtl_dce =
+static const pass_data pass_data_fast_rtl_dce =
 {
   RTL_PASS, /* type */
   "rtl_dce", /* name */
@@ -1230,7 +1224,7 @@ const pass_data pass_data_fast_rtl_dce =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_fast_rtl_dce : public rtl_opt_pass
+class pass_fast_rtl_dce GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_fast_rtl_dce (gcc::context *ctxt)
@@ -1249,8 +1243,6 @@ public:
     }
 
 }; // class pass_fast_rtl_dce
-
-} // anon namespace
 
 rtl_opt_pass *
 make_pass_fast_rtl_dce (gcc::context *ctxt)

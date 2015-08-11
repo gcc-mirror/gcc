@@ -3584,9 +3584,7 @@ analyze_candidates_and_replace (void)
     }
 }
 
-namespace {
-
-const pass_data pass_data_strength_reduction =
+static const pass_data pass_data_strength_reduction =
 {
   GIMPLE_PASS, /* type */
   "slsr", /* name */
@@ -3599,7 +3597,7 @@ const pass_data pass_data_strength_reduction =
   0, /* todo_flags_finish */
 };
 
-class pass_strength_reduction : public gimple_opt_pass
+class pass_strength_reduction GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_strength_reduction (gcc::context *ctxt)
@@ -3664,8 +3662,6 @@ pass_strength_reduction::execute (function *fun)
 
   return 0;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_strength_reduction (gcc::context *ctxt)

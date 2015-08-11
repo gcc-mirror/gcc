@@ -728,9 +728,7 @@ function_and_variable_visibility (bool whole_program)
 /* Local function pass handling visibilities.  This happens before LTO streaming
    so in particular -fwhole-program should be ignored at this level.  */
 
-namespace {
-
-const pass_data pass_data_ipa_function_and_variable_visibility =
+static const pass_data pass_data_ipa_function_and_variable_visibility =
 {
   SIMPLE_IPA_PASS, /* type */
   "visibility", /* name */
@@ -754,11 +752,7 @@ whole_program_function_and_variable_visibility (void)
   return 0;
 }
 
-} // anon namespace
-
-namespace {
-
-const pass_data pass_data_ipa_whole_program_visibility =
+static const pass_data pass_data_ipa_whole_program_visibility =
 {
   IPA_PASS, /* type */
   "whole-program", /* name */
@@ -771,7 +765,7 @@ const pass_data pass_data_ipa_whole_program_visibility =
   ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
 };
 
-class pass_ipa_whole_program_visibility : public ipa_opt_pass_d
+class pass_ipa_whole_program_visibility GCC_FINAL : public ipa_opt_pass_d
 {
 public:
   pass_ipa_whole_program_visibility (gcc::context *ctxt)
@@ -800,8 +794,6 @@ public:
     }
 
 }; // class pass_ipa_whole_program_visibility
-
-} // anon namespace
 
 ipa_opt_pass_d *
 make_pass_ipa_whole_program_visibility (gcc::context *ctxt)

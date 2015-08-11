@@ -2137,9 +2137,7 @@ lower_eh_constructs_1 (struct leh_state *state, gimple_seq *pseq)
     lower_eh_constructs_2 (state, &gsi);
 }
 
-namespace {
-
-const pass_data pass_data_lower_eh =
+static const pass_data pass_data_lower_eh =
 {
   GIMPLE_PASS, /* type */
   "eh", /* name */
@@ -2152,7 +2150,7 @@ const pass_data pass_data_lower_eh =
   0, /* todo_flags_finish */
 };
 
-class pass_lower_eh : public gimple_opt_pass
+class pass_lower_eh GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_lower_eh (gcc::context *ctxt)
@@ -2206,8 +2204,6 @@ pass_lower_eh::execute (function *fun)
 
   return 0;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_lower_eh (gcc::context *ctxt)
@@ -3113,9 +3109,7 @@ refactor_eh_r (gimple_seq seq)
     }
 }
 
-namespace {
-
-const pass_data pass_data_refactor_eh =
+static const pass_data pass_data_refactor_eh =
 {
   GIMPLE_PASS, /* type */
   "ehopt", /* name */
@@ -3128,7 +3122,7 @@ const pass_data pass_data_refactor_eh =
   0, /* todo_flags_finish */
 };
 
-class pass_refactor_eh : public gimple_opt_pass
+class pass_refactor_eh GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_refactor_eh (gcc::context *ctxt)
@@ -3144,8 +3138,6 @@ public:
     }
 
 }; // class pass_refactor_eh
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_refactor_eh (gcc::context *ctxt)
@@ -3303,9 +3295,7 @@ lower_resx (basic_block bb, gresx *stmt,
   return ret;
 }
 
-namespace {
-
-const pass_data pass_data_lower_resx =
+static const pass_data pass_data_lower_resx =
 {
   GIMPLE_PASS, /* type */
   "resx", /* name */
@@ -3318,7 +3308,7 @@ const pass_data pass_data_lower_resx =
   0, /* todo_flags_finish */
 };
 
-class pass_lower_resx : public gimple_opt_pass
+class pass_lower_resx GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_lower_resx (gcc::context *ctxt)
@@ -3359,8 +3349,6 @@ pass_lower_resx::execute (function *fun)
 
   return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_lower_resx (gcc::context *ctxt)
@@ -3700,9 +3688,7 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
   return redirected;
 }
 
-namespace {
-
-const pass_data pass_data_lower_eh_dispatch =
+static const pass_data pass_data_lower_eh_dispatch =
 {
   GIMPLE_PASS, /* type */
   "ehdisp", /* name */
@@ -3715,7 +3701,7 @@ const pass_data pass_data_lower_eh_dispatch =
   0, /* todo_flags_finish */
 };
 
-class pass_lower_eh_dispatch : public gimple_opt_pass
+class pass_lower_eh_dispatch GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_lower_eh_dispatch (gcc::context *ctxt)
@@ -3761,8 +3747,6 @@ pass_lower_eh_dispatch::execute (function *fun)
     delete_unreachable_blocks ();
   return flags;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_lower_eh_dispatch (gcc::context *ctxt)
@@ -4572,9 +4556,7 @@ execute_cleanup_eh_1 (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_cleanup_eh =
+static const pass_data pass_data_cleanup_eh =
 {
   GIMPLE_PASS, /* type */
   "ehcleanup", /* name */
@@ -4587,7 +4569,7 @@ const pass_data pass_data_cleanup_eh =
   0, /* todo_flags_finish */
 };
 
-class pass_cleanup_eh : public gimple_opt_pass
+class pass_cleanup_eh GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_cleanup_eh (gcc::context *ctxt)
@@ -4619,8 +4601,6 @@ pass_cleanup_eh::execute (function *fun)
 
   return ret;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_cleanup_eh (gcc::context *ctxt)

@@ -306,9 +306,7 @@ replace_ref (df_ref ref, rtx reg)
 }
 
 
-namespace {
-
-const pass_data pass_data_web =
+static const pass_data pass_data_web =
 {
   RTL_PASS, /* type */
   "web", /* name */
@@ -321,7 +319,7 @@ const pass_data pass_data_web =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_web : public rtl_opt_pass
+class pass_web GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_web (gcc::context *ctxt)
@@ -426,8 +424,6 @@ pass_web::execute (function *fun)
   return 0;
 }
 
-} // anon namespace
-
 rtl_opt_pass *
 make_pass_web (gcc::context *ctxt)
 {

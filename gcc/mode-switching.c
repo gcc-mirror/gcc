@@ -854,9 +854,7 @@ optimize_mode_switching (void)
 
 #endif /* OPTIMIZE_MODE_SWITCHING */
 
-namespace {
-
-const pass_data pass_data_mode_switching =
+static const pass_data pass_data_mode_switching =
 {
   RTL_PASS, /* type */
   "mode_sw", /* name */
@@ -869,7 +867,7 @@ const pass_data pass_data_mode_switching =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_mode_switching : public rtl_opt_pass
+class pass_mode_switching GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_mode_switching (gcc::context *ctxt)
@@ -898,8 +896,6 @@ public:
     }
 
 }; // class pass_mode_switching
-
-} // anon namespace
 
 rtl_opt_pass *
 make_pass_mode_switching (gcc::context *ctxt)

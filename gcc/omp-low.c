@@ -9529,9 +9529,7 @@ execute_expand_omp (void)
 
 /* OMP expansion -- the default pass, run before creation of SSA form.  */
 
-namespace {
-
-const pass_data pass_data_expand_omp =
+static const pass_data pass_data_expand_omp =
 {
   GIMPLE_PASS, /* type */
   "ompexp", /* name */
@@ -9544,7 +9542,7 @@ const pass_data pass_data_expand_omp =
   0, /* todo_flags_finish */
 };
 
-class pass_expand_omp : public gimple_opt_pass
+class pass_expand_omp GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_expand_omp (gcc::context *ctxt)
@@ -9568,17 +9566,13 @@ public:
 
 }; // class pass_expand_omp
 
-} // anon namespace
-
 gimple_opt_pass *
 make_pass_expand_omp (gcc::context *ctxt)
 {
   return new pass_expand_omp (ctxt);
 }
 
-namespace {
-
-const pass_data pass_data_expand_omp_ssa =
+static const pass_data pass_data_expand_omp_ssa =
 {
   GIMPLE_PASS, /* type */
   "ompexpssa", /* name */
@@ -9591,7 +9585,7 @@ const pass_data pass_data_expand_omp_ssa =
   TODO_cleanup_cfg | TODO_rebuild_alias, /* todo_flags_finish */
 };
 
-class pass_expand_omp_ssa : public gimple_opt_pass
+class pass_expand_omp_ssa GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_expand_omp_ssa (gcc::context *ctxt)
@@ -9606,8 +9600,6 @@ public:
   virtual unsigned int execute (function *) { return execute_expand_omp (); }
 
 }; // class pass_expand_omp_ssa
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_expand_omp_ssa (gcc::context *ctxt)
@@ -11952,9 +11944,7 @@ execute_lower_omp (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_lower_omp =
+static const pass_data pass_data_lower_omp =
 {
   GIMPLE_PASS, /* type */
   "omplower", /* name */
@@ -11967,7 +11957,7 @@ const pass_data pass_data_lower_omp =
   0, /* todo_flags_finish */
 };
 
-class pass_lower_omp : public gimple_opt_pass
+class pass_lower_omp GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_lower_omp (gcc::context *ctxt)
@@ -11978,8 +11968,6 @@ public:
   virtual unsigned int execute (function *) { return execute_lower_omp (); }
 
 }; // class pass_lower_omp
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_lower_omp (gcc::context *ctxt)
@@ -12410,9 +12398,7 @@ diagnose_omp_structured_block_errors (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_diagnose_omp_blocks =
+static const pass_data pass_data_diagnose_omp_blocks =
 {
   GIMPLE_PASS, /* type */
   "*diagnose_omp_blocks", /* name */
@@ -12425,7 +12411,7 @@ const pass_data pass_data_diagnose_omp_blocks =
   0, /* todo_flags_finish */
 };
 
-class pass_diagnose_omp_blocks : public gimple_opt_pass
+class pass_diagnose_omp_blocks GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_diagnose_omp_blocks (gcc::context *ctxt)
@@ -12443,8 +12429,6 @@ public:
     }
 
 }; // class pass_diagnose_omp_blocks
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_diagnose_omp_blocks (gcc::context *ctxt)
@@ -13707,9 +13691,7 @@ ipa_omp_simd_clone (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_omp_simd_clone =
+static const pass_data pass_data_omp_simd_clone =
 {
   SIMPLE_IPA_PASS,		/* type */
   "simdclone",			/* name */
@@ -13722,7 +13704,7 @@ const pass_data pass_data_omp_simd_clone =
   0,				/* todo_flags_finish */
 };
 
-class pass_omp_simd_clone : public simple_ipa_opt_pass
+class pass_omp_simd_clone GCC_FINAL : public simple_ipa_opt_pass
 {
 public:
   pass_omp_simd_clone(gcc::context *ctxt)
@@ -13742,8 +13724,6 @@ pass_omp_simd_clone::gate (function *)
 	   || (in_lto_p && !flag_wpa))
 	  && (targetm.simd_clone.compute_vecsize_and_simdlen != NULL));
 }
-
-} // anon namespace
 
 simple_ipa_opt_pass *
 make_pass_omp_simd_clone (gcc::context *ctxt)

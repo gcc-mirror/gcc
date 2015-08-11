@@ -1114,9 +1114,7 @@ expand_ifn_va_arg (function *fun)
 #endif
 }
 
-namespace {
-
-const pass_data pass_data_stdarg =
+static const pass_data pass_data_stdarg =
 {
   GIMPLE_PASS, /* type */
   "stdarg", /* name */
@@ -1129,7 +1127,7 @@ const pass_data pass_data_stdarg =
   0, /* todo_flags_finish */
 };
 
-class pass_stdarg : public gimple_opt_pass
+class pass_stdarg GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_stdarg (gcc::context *ctxt)
@@ -1165,17 +1163,13 @@ pass_stdarg::execute (function *fun)
   return 0;
 }
 
-} // anon namespace
-
 gimple_opt_pass *
 make_pass_stdarg (gcc::context *ctxt)
 {
   return new pass_stdarg (ctxt);
 }
 
-namespace {
-
-const pass_data pass_data_lower_vaarg =
+static const pass_data pass_data_lower_vaarg =
 {
   GIMPLE_PASS, /* type */
   "lower_vaarg", /* name */
@@ -1188,7 +1182,7 @@ const pass_data pass_data_lower_vaarg =
   0, /* todo_flags_finish */
 };
 
-class pass_lower_vaarg : public gimple_opt_pass
+class pass_lower_vaarg GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_lower_vaarg (gcc::context *ctxt)
@@ -1211,8 +1205,6 @@ pass_lower_vaarg::execute (function *fun)
   expand_ifn_va_arg (fun);
   return 0;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_lower_vaarg (gcc::context *ctxt)

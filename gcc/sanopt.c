@@ -621,9 +621,7 @@ sanopt_optimize (function *fun)
 
 /* Perform optimization of sanitize functions.  */
 
-namespace {
-
-const pass_data pass_data_sanopt =
+static const pass_data pass_data_sanopt =
 {
   GIMPLE_PASS, /* type */
   "sanopt", /* name */
@@ -636,7 +634,7 @@ const pass_data pass_data_sanopt =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_sanopt : public gimple_opt_pass
+class pass_sanopt GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_sanopt (gcc::context *ctxt)
@@ -744,8 +742,6 @@ pass_sanopt::execute (function *fun)
     }
   return 0;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_sanopt (gcc::context *ctxt)
