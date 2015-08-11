@@ -1,3 +1,8 @@
+2015-08-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/dfp/operator-comma.c: Call init function.
+	* c-c++-common/dfp/convert-dfp-2.c: New test.
+
 2015-08-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/builtin_target.c (check_intel_cpu_model):

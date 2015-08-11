@@ -1277,8 +1277,16 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       gsi_move_before (&gsi_from, &gsi);
     }
 
+  /* Create an SSA var to hold the min/max result.  If we're the only
+     things setting the target PHI, then we  can clone the PHI
+     variable.  Otherwise we must create a new one.  */
+  result = PHI_RESULT (phi);
+  if (EDGE_COUNT (gimple_bb (phi)->preds) == 2)
+    result = duplicate_ssa_name (result, NULL);
+  else
+    result = make_ssa_name (TREE_TYPE (result));
+
   /* Emit the statement to compute min/max.  */
-  result = duplicate_ssa_name (PHI_RESULT (phi), NULL);
   new_stmt = gimple_build_assign (result, minmax, arg0, arg1);
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);

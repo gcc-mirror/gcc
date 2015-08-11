@@ -1,3 +1,8 @@
+2015-08-11  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-ssa-phiopt.c (minmax_replacement): Create new ssa name if
+	we're not the only contributor to target phi.
+
 2015-08-11  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.h (REG_CLASS_NAMES): Add the missing ',' after
