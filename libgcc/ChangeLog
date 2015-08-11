@@ -1,3 +1,9 @@
+2015-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66954
+	* config/i386/cpuinfo.c (enum processor_features): Add FEATURE_PCLMUL.
+	(get_available_features): Handle FEATURE_PCLMUL.
+
 2015-08-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/cpuinfo.c (get_intel_cpu): Treat model == 0x4f as

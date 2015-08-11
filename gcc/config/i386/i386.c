@@ -34574,6 +34574,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     P_PROC_SSE4_2,
     P_POPCNT,
     P_AES,
+    P_PCLMUL,
     P_AVX,
     P_PROC_AVX,
     P_BMI,
@@ -34612,6 +34613,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       {"sse4.2", P_SSE4_2},
       {"popcnt", P_POPCNT},
       {"aes", P_AES},
+      {"pclmul", P_PCLMUL},
       {"avx", P_AVX},
       {"bmi", P_BMI},
       {"fma4", P_FMA4},
@@ -35600,6 +35602,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_BMI,
     F_BMI2,
     F_AES,
+    F_PCLMUL,
     F_MAX
   };
 
@@ -35696,7 +35699,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"avx512f",F_AVX512F},
       {"bmi",    F_BMI},
       {"bmi2",   F_BMI2},
-      {"aes",    F_AES}
+      {"aes",    F_AES},
+      {"pclmul", F_PCLMUL}
     };
 
   tree __processor_model_type = build_processor_model_struct ();
