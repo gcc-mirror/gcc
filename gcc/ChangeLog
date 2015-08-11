@@ -1,3 +1,15 @@
+2015-08-11  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* compare-elim.c, dce.c, dse.c, gimple-ssa-isolate-paths.c,
+	gimple-ssa-strength-reduction.c, graphite.c, init-regs.c,
+	ipa-pure-const.c, ipa-visibility.c, ipa.c, mode-switching.c,
+	omp-low.c, reorg.c, sanopt.c, trans-mem.c, tree-eh.c,
+	tree-if-conv.c, tree-ssa-copyrename.c, tree-ssa-dce.c,
+	tree-ssa-dom.c, tree-ssa-dse.c, tree-ssa-forwprop.c,
+	tree-ssa-sink.c, tree-ssanames.c, tree-stdarg.c, tree-tailcall.c,
+	tree-vect-generic.c, tree.c, ubsan.c, var-tracking.c,
+	vtable-verify.c, web.c: Use GCC_FINAL instead of the anonymous
+
 2015-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66954

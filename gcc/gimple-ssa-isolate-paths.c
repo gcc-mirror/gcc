@@ -540,8 +540,7 @@ gimple_ssa_isolate_erroneous_paths (void)
   return 0;
 }
 
-namespace {
-const pass_data pass_data_isolate_erroneous_paths =
+static const pass_data pass_data_isolate_erroneous_paths =
 {
   GIMPLE_PASS, /* type */
   "isolate-paths", /* name */
@@ -554,7 +553,7 @@ const pass_data pass_data_isolate_erroneous_paths =
   0, /* todo_flags_finish */
 };
 
-class pass_isolate_erroneous_paths : public gimple_opt_pass
+class pass_isolate_erroneous_paths GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_isolate_erroneous_paths (gcc::context *ctxt)
@@ -578,7 +577,6 @@ public:
     }
 
 }; // class pass_isolate_erroneous_paths
-}
 
 gimple_opt_pass *
 make_pass_isolate_erroneous_paths (gcc::context *ctxt)

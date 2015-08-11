@@ -338,9 +338,7 @@ gate_graphite_transforms (void)
   return flag_graphite != 0;
 }
 
-namespace {
-
-const pass_data pass_data_graphite =
+static const pass_data pass_data_graphite =
 {
   GIMPLE_PASS, /* type */
   "graphite0", /* name */
@@ -353,7 +351,7 @@ const pass_data pass_data_graphite =
   0, /* todo_flags_finish */
 };
 
-class pass_graphite : public gimple_opt_pass
+class pass_graphite GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_graphite (gcc::context *ctxt)
@@ -365,17 +363,13 @@ public:
 
 }; // class pass_graphite
 
-} // anon namespace
-
 gimple_opt_pass *
 make_pass_graphite (gcc::context *ctxt)
 {
   return new pass_graphite (ctxt);
 }
 
-namespace {
-
-const pass_data pass_data_graphite_transforms =
+static const pass_data pass_data_graphite_transforms =
 {
   GIMPLE_PASS, /* type */
   "graphite", /* name */
@@ -388,7 +382,7 @@ const pass_data pass_data_graphite_transforms =
   0, /* todo_flags_finish */
 };
 
-class pass_graphite_transforms : public gimple_opt_pass
+class pass_graphite_transforms GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_graphite_transforms (gcc::context *ctxt)
@@ -400,8 +394,6 @@ public:
   virtual unsigned int execute (function *fun) { return graphite_transforms (fun); }
 
 }; // class pass_graphite_transforms
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_graphite_transforms (gcc::context *ctxt)

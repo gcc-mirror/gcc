@@ -347,9 +347,7 @@ dse_dom_walker::before_dom_children (basic_block bb)
     }
 }
 
-namespace {
-
-const pass_data pass_data_dse =
+static const pass_data pass_data_dse =
 {
   GIMPLE_PASS, /* type */
   "dse", /* name */
@@ -362,7 +360,7 @@ const pass_data pass_data_dse =
   0, /* todo_flags_finish */
 };
 
-class pass_dse : public gimple_opt_pass
+class pass_dse GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_dse (gcc::context *ctxt)
@@ -408,8 +406,6 @@ pass_dse::execute (function *fun)
   free_dominance_info (CDI_POST_DOMINATORS);
   return 0;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_dse (gcc::context *ctxt)

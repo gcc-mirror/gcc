@@ -1896,9 +1896,7 @@ do_ubsan_in_current_function ()
 				DECL_ATTRIBUTES (current_function_decl)));
 }
 
-namespace {
-
-const pass_data pass_data_ubsan =
+static const pass_data pass_data_ubsan =
 {
   GIMPLE_PASS, /* type */
   "ubsan", /* name */
@@ -1911,7 +1909,7 @@ const pass_data pass_data_ubsan =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_ubsan : public gimple_opt_pass
+class pass_ubsan GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_ubsan (gcc::context *ctxt)
@@ -2000,8 +1998,6 @@ pass_ubsan::execute (function *fun)
     }
   return 0;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_ubsan (gcc::context *ctxt)

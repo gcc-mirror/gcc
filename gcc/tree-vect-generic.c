@@ -1705,9 +1705,7 @@ expand_vector_operations (void)
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
-namespace {
-
-const pass_data pass_data_lower_vector =
+static const pass_data pass_data_lower_vector =
 {
   GIMPLE_PASS, /* type */
   "veclower", /* name */
@@ -1720,7 +1718,7 @@ const pass_data pass_data_lower_vector =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_lower_vector : public gimple_opt_pass
+class pass_lower_vector GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_lower_vector (gcc::context *ctxt)
@@ -1740,17 +1738,13 @@ public:
 
 }; // class pass_lower_vector
 
-} // anon namespace
-
 gimple_opt_pass *
 make_pass_lower_vector (gcc::context *ctxt)
 {
   return new pass_lower_vector (ctxt);
 }
 
-namespace {
-
-const pass_data pass_data_lower_vector_ssa =
+static const pass_data pass_data_lower_vector_ssa =
 {
   GIMPLE_PASS, /* type */
   "veclower2", /* name */
@@ -1764,7 +1758,7 @@ const pass_data pass_data_lower_vector_ssa =
     | TODO_cleanup_cfg ), /* todo_flags_finish */
 };
 
-class pass_lower_vector_ssa : public gimple_opt_pass
+class pass_lower_vector_ssa GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_lower_vector_ssa (gcc::context *ctxt)
@@ -1779,8 +1773,6 @@ public:
     }
 
 }; // class pass_lower_vector_ssa
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_lower_vector_ssa (gcc::context *ctxt)

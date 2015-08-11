@@ -3940,9 +3940,7 @@ rest_of_handle_delay_slots (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_delay_slots =
+static const pass_data pass_data_delay_slots =
 {
   RTL_PASS, /* type */
   "dbr", /* name */
@@ -3955,7 +3953,7 @@ const pass_data pass_data_delay_slots =
   0, /* todo_flags_finish */
 };
 
-class pass_delay_slots : public rtl_opt_pass
+class pass_delay_slots GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_delay_slots (gcc::context *ctxt)
@@ -3982,8 +3980,6 @@ pass_delay_slots::gate (function *)
 #endif
 }
 
-} // anon namespace
-
 rtl_opt_pass *
 make_pass_delay_slots (gcc::context *ctxt)
 {
@@ -3992,9 +3988,7 @@ make_pass_delay_slots (gcc::context *ctxt)
 
 /* Machine dependent reorg pass.  */
 
-namespace {
-
-const pass_data pass_data_machine_reorg =
+static const pass_data pass_data_machine_reorg =
 {
   RTL_PASS, /* type */
   "mach", /* name */
@@ -4007,7 +4001,7 @@ const pass_data pass_data_machine_reorg =
   0, /* todo_flags_finish */
 };
 
-class pass_machine_reorg : public rtl_opt_pass
+class pass_machine_reorg GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_machine_reorg (gcc::context *ctxt)
@@ -4027,8 +4021,6 @@ public:
     }
 
 }; // class pass_machine_reorg
-
-} // anon namespace
 
 rtl_opt_pass *
 make_pass_machine_reorg (gcc::context *ctxt)

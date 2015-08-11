@@ -2075,9 +2075,7 @@ fwprop_ssa_val (tree name)
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
-namespace {
-
-const pass_data pass_data_forwprop =
+static const pass_data pass_data_forwprop =
 {
   GIMPLE_PASS, /* type */
   "forwprop", /* name */
@@ -2090,7 +2088,7 @@ const pass_data pass_data_forwprop =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_forwprop : public gimple_opt_pass
+class pass_forwprop GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_forwprop (gcc::context *ctxt)
@@ -2476,8 +2474,6 @@ pass_forwprop::execute (function *fun)
 
   return todoflags;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_forwprop (gcc::context *ctxt)

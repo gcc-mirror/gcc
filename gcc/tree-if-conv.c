@@ -2734,9 +2734,7 @@ tree_if_conversion (struct loop *loop)
 
 /* Tree if-conversion pass management.  */
 
-namespace {
-
-const pass_data pass_data_if_conversion =
+static const pass_data pass_data_if_conversion =
 {
   GIMPLE_PASS, /* type */
   "ifcvt", /* name */
@@ -2749,7 +2747,7 @@ const pass_data pass_data_if_conversion =
   0, /* todo_flags_finish */
 };
 
-class pass_if_conversion : public gimple_opt_pass
+class pass_if_conversion GCC_FINAL : public gimple_opt_pass
 {
 public:
   pass_if_conversion (gcc::context *ctxt)
@@ -2797,8 +2795,6 @@ pass_if_conversion::execute (function *fun)
 
   return todo;
 }
-
-} // anon namespace
 
 gimple_opt_pass *
 make_pass_if_conversion (gcc::context *ctxt)

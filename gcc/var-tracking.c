@@ -10325,9 +10325,7 @@ variable_tracking_main (void)
   return ret;
 }
 
-namespace {
-
-const pass_data pass_data_variable_tracking =
+static const pass_data pass_data_variable_tracking =
 {
   RTL_PASS, /* type */
   "vartrack", /* name */
@@ -10340,7 +10338,7 @@ const pass_data pass_data_variable_tracking =
   0, /* todo_flags_finish */
 };
 
-class pass_variable_tracking : public rtl_opt_pass
+class pass_variable_tracking GCC_FINAL : public rtl_opt_pass
 {
 public:
   pass_variable_tracking (gcc::context *ctxt)
@@ -10359,8 +10357,6 @@ public:
     }
 
 }; // class pass_variable_tracking
-
-} // anon namespace
 
 rtl_opt_pass *
 make_pass_variable_tracking (gcc::context *ctxt)
