@@ -417,7 +417,7 @@ enum reg_class
 #define REG_CLASS_NAMES				\
 {						\
   "NO_REGS",					\
-  "FIXED_REG0"					\
+  "FIXED_REG0",					\
   "CALLER_SAVE_REGS",				\
   "GENERAL_REGS",				\
   "STACK_REG",					\
