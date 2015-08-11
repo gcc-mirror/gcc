@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.  */
 
 /* This file exports one function; dlang_demangle.
 
-   This file imports strtol and strtod for decoding mangled literals.  */
+   This file imports strtol for decoding mangled literals.  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -44,7 +44,6 @@ If not, see <http://www.gnu.org/licenses/>.  */
 #include <stdlib.h>
 #else
 extern long strtol (const char *nptr, char **endptr, int base);
-extern double strtod (const char *nptr, char **endptr);
 #endif
 
 #include <demangle.h>
@@ -970,8 +969,6 @@ dlang_parse_real (string *decl, const char *mangled)
 {
   char buffer[64];
   int len = 0;
-  double value;
-  char *endptr;
 
   /* Handle NAN and +-INF.  */
   if (strncmp (mangled, "NAN", 3) == 0)
@@ -1035,14 +1032,10 @@ dlang_parse_real (string *decl, const char *mangled)
       mangled++;
     }
 
-  /* Convert buffer from hexadecimal to floating-point.  */
+  /* Write out the demangled hexadecimal, rather than trying to
+     convert the buffer into a floating-point value.  */
   buffer[len] = '\0';
-  value = strtod (buffer, &endptr);
-
-  if (endptr == NULL || endptr != (buffer + len))
-    return NULL;
-
-  len = snprintf (buffer, sizeof(buffer), "%#g", value);
+  len = strlen (buffer);
   string_appendn (decl, buffer, len);
   return mangled;
 }
