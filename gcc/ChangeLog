@@ -1,5 +1,7 @@
 2015-08-11  Nathan Sidwell  <nathan@acm.org>
 
+	* tree-vrp.c (simplify_abs_using_ranges): Simplify.
+
 	* tree-ssa-phiopt.c (minmax_replacement): Create new ssa name if
 	we're not the only contributor to target phi.
 
