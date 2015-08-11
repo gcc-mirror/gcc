@@ -348,7 +348,15 @@ Statement::make_variable_declaration(Named_object* var)
 Type*
 Temporary_statement::type() const
 {
-  return this->type_ != NULL ? this->type_ : this->init_->type();
+  Type* type = this->type_ != NULL ? this->type_ : this->init_->type();
+
+  // Temporary variables cannot have a void type.
+  if (type->is_void_type())
+    {
+      go_assert(saw_errors());
+      return Type::make_error_type();
+    }
+  return type;
 }
 
 // Traversal.
