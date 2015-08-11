@@ -1,3 +1,10 @@
+2015-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_real): Remove call to strtod.
+	(strtod): Remove declaration.
+	* testsuite/d-demangle-expected: Update float and complex literal
+	tests to check correct hexadecimal demangling.
+
 2015-07-13  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* cp-demangle.c (d_dump): Fix syntax error.
