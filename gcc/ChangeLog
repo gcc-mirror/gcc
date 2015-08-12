@@ -1,3 +1,28 @@
+2015-08-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/67071
+	* config/rs6000/predicates.md (easy_vector_constant_vsldoi): New
+	predicate to allow construction of vector constants using the
+	VSLDOI vector shift instruction.
+
+	* config/rs6000/rs6000-protos.h (vspltis_shifted): Add
+	declaration.
+
+	* config/rs6000/rs6000.c (vspltis_shifted): New function to return
+	the number of bytes to be shifted left and filled in with either
+	all zero or all one bits.
+	(gen_easy_altivec_constant): Call vsplitis_shifted if no other
+	methods exist.
+	(output_vec_const_move): On power8, generate XXLORC to generate
+	a vector constant with all 1's. Do a split if we need to use a
+	VSLDOI instruction.
+
+	* config/rs6000/rs6000.h (EASY_VECTOR_MSB): Use mode mask to
+	properly test for the MSB.
+
+	* config/rs6000/altivec.md (VSLDOI splitter): Add splitter for
+	vector constants that can be created with VSLDOI.
+
 2015-08-11  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	revert:

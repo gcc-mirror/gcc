@@ -311,6 +311,47 @@
   operands[4] = gen_rtx_PLUS (op_mode, operands[0], operands[0]);
 })
 
+(define_split
+  [(set (match_operand:VM 0 "altivec_register_operand" "")
+	(match_operand:VM 1 "easy_vector_constant_vsldoi" ""))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode) && can_create_pseudo_p ()"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))
+   (set (match_dup 0)
+        (unspec:VM [(match_dup 2)
+		    (match_dup 4)
+		    (match_dup 6)]
+		   UNSPEC_VSLDOI))]
+{
+  rtx op1 = operands[1];
+  int elt = (BYTES_BIG_ENDIAN) ? 0 : GET_MODE_NUNITS (<MODE>mode) - 1;
+  HOST_WIDE_INT val = const_vector_elt_as_int (op1, elt);
+  rtx rtx_val = GEN_INT (val);
+  int shift = vspltis_shifted (op1);
+  int nunits = GET_MODE_NUNITS (<MODE>mode);
+  int i;
+
+  gcc_assert (shift != 0);
+  operands[2] = gen_reg_rtx (<MODE>mode);
+  operands[3] = gen_rtx_CONST_VECTOR (<MODE>mode, rtvec_alloc (nunits));
+  operands[4] = gen_reg_rtx (<MODE>mode);
+
+  if (shift < 0)
+    {
+      operands[5] = CONSTM1_RTX (<MODE>mode);
+      operands[6] = GEN_INT (-shift);
+    }
+  else
+    {
+      operands[5] = CONST0_RTX (<MODE>mode);
+      operands[6] = GEN_INT (shift);
+    }
+
+  /* Populate the constant vectors.  */
+  for (i = 0; i < nunits; i++)
+    XVECEXP (operands[3], 0, i) = rtx_val;
+})
+
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(reg:SI 109)] UNSPEC_GET_VRSAVE))]
