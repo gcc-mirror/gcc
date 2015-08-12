@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "domwalk.h"
 #include "cgraph.h"
+#include "gimple-iterator.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
    Cooper and L. Taylor Simpson in "SCC-Based Value numbering"
@@ -4277,18 +4278,20 @@ set_hashtable_value_ids (void)
     set_value_id_for_result (vr->result, &vr->value_id);
 }
 
-class cond_dom_walker : public dom_walker
+class sccvn_dom_walker : public dom_walker
 {
 public:
-  cond_dom_walker () : dom_walker (CDI_DOMINATORS), fail (false) {}
+  sccvn_dom_walker () : dom_walker (CDI_DOMINATORS), fail (false) {}
 
   virtual void before_dom_children (basic_block);
 
   bool fail;
 };
 
+/* Value number all statements in BB.  */
+
 void
-cond_dom_walker::before_dom_children (basic_block bb)
+sccvn_dom_walker::before_dom_children (basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -4317,6 +4320,34 @@ cond_dom_walker::before_dom_children (basic_block bb)
       return;
     }
 
+  /* Value-number all defs in the basic-block.  */
+  for (gphi_iterator gsi = gsi_start_phis (bb);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      tree res = PHI_RESULT (phi);
+      if (!VN_INFO (res)->visited
+	  && !DFS (res))
+	{
+	  fail = true;
+	  return;
+	}
+    }
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      ssa_op_iter i;
+      tree op;
+      FOR_EACH_SSA_TREE_OPERAND (op, gsi_stmt (gsi), i, SSA_OP_ALL_DEFS)
+	if (!VN_INFO (op)->visited
+	    && !DFS (op))
+	  {
+	    fail = true;
+	    return;
+	  }
+    }
+
+  /* Finally look at the last stmt.  */
   gimple stmt = last_stmt (bb);
   if (!stmt)
     return;
@@ -4329,8 +4360,7 @@ cond_dom_walker::before_dom_children (basic_block bb)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Value-numbering operands of stmt ending BB %d: ",
-	       bb->index);
+      fprintf (dump_file, "Visiting stmt ending BB %d: ", bb->index);
       print_gimple_stmt (dump_file, stmt, 0, 0);
     }
 
@@ -4338,12 +4368,8 @@ cond_dom_walker::before_dom_children (basic_block bb)
   ssa_op_iter i;
   tree op;
   FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
-    if (VN_INFO (op)->visited == false
-	&& !DFS (op))
-      {
-	fail = true;
-	return;
-      }
+    gcc_assert (VN_INFO (op)->visited
+		|| SSA_NAME_IS_DEFAULT_DEF (op));
 
   /* ???  We can even handle stmts with outgoing EH or ABNORMAL edges
      if value-numbering can prove they are not reachable.  Handling
@@ -4427,9 +4453,9 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 	e->flags |= EDGE_EXECUTABLE;
     }
 
-  /* Walk all blocks in dominator order, value-numbering the last stmts
-     SSA uses and decide whether outgoing edges are not executable.  */
-  cond_dom_walker walker;
+  /* Walk all blocks in dominator order, value-numbering stmts
+     SSA defs and decide whether outgoing edges are not executable.  */
+  sccvn_dom_walker walker;
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   if (walker.fail)
     {
@@ -4437,22 +4463,8 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
       return false;
     }
 
-  /* Value-number remaining SSA names.  */
-  for (i = 1; i < num_ssa_names; ++i)
-    {
-      tree name = ssa_name (i);
-      if (name
-	  && VN_INFO (name)->visited == false
-	  && !has_zero_uses (name))
-	if (!DFS (name))
-	  {
-	    free_scc_vn ();
-	    return false;
-	  }
-    }
-
-  /* Initialize the value ids.  */
-
+  /* Initialize the value ids and prune out remaining VN_TOPs
+     from dead code.  */
   for (i = 1; i < num_ssa_names; ++i)
     {
       tree name = ssa_name (i);
@@ -4460,6 +4472,8 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
       if (!name)
 	continue;
       info = VN_INFO (name);
+      if (!info->visited)
+	info->valnum = name;
       if (info->valnum == name
 	  || info->valnum == VN_TOP)
 	info->value_id = get_next_value_id ();

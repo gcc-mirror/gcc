@@ -1,3 +1,14 @@
+2015-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Eliminate edges marked as not executable by SCCVN.
+	* tree-ssa-sccvn.c: Include gimple-iterator.h.
+	(cond_dom_walker): Rename to sccvn_dom_walker.
+	(sccvn_dom_walker::before_dom_children): Value-number defs
+	of all stmts.
+	(run_scc_vn): Remove loop value-numbering all SSA names.
+	Drop not visited SSA names to varying.
+
 2015-08-11  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* compare-elim.c, dce.c, dse.c, gimple-ssa-isolate-paths.c,

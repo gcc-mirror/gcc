@@ -1,3 +1,7 @@
+2015-08-12  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-43.c: Adjust.
+
 2015-08-12  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/67175
