@@ -318,6 +318,19 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
   {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
+/* FPU feature sets.  */
+
+typedef unsigned long arm_fpu_feature_set;
+
+/* Test for an FPU feature.  */
+#define ARM_FPU_FSET_HAS(S,F) (((S) & (F)) == (F))
+
+/* FPU Features.  */
+#define FPU_FL_NONE	(0)
+#define FPU_FL_NEON	(1 << 0)	/* NEON instructions.  */
+#define FPU_FL_FP16	(1 << 1)	/* Half-precision.  */
+#define FPU_FL_CRYPTO	(1 << 2)	/* Crypto extensions.  */
+
 /* Which floating point model to use.  */
 enum arm_fp_model
 {
