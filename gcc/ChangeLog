@@ -1,3 +1,8 @@
+2015-08-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (initialize_aarch64_code_model): Break
+	after -mcmodel=large -fPIC sorry.
+
 2015-08-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_nary_op_compute_hash): Also canonicalize
