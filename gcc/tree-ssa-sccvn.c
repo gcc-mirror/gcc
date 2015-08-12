@@ -2365,10 +2365,18 @@ vn_nary_op_compute_hash (const vn_nary_op_t vno1)
     if (TREE_CODE (vno1->op[i]) == SSA_NAME)
       vno1->op[i] = SSA_VAL (vno1->op[i]);
 
-  if (vno1->length == 2
-      && commutative_tree_code (vno1->opcode)
+  if (((vno1->length == 2
+	&& commutative_tree_code (vno1->opcode))
+       || (vno1->length == 3
+	   && commutative_ternary_tree_code (vno1->opcode)))
       && tree_swap_operands_p (vno1->op[0], vno1->op[1], false))
     std::swap (vno1->op[0], vno1->op[1]);
+  else if (TREE_CODE_CLASS (vno1->opcode) == tcc_comparison
+	   && tree_swap_operands_p (vno1->op[0], vno1->op[1], false))
+    {
+      std::swap (vno1->op[0], vno1->op[1]);
+      vno1->opcode = swap_tree_comparison  (vno1->opcode);
+    }
 
   hstate.add_int (vno1->opcode);
   for (i = 0; i < vno1->length; ++i)
@@ -4281,12 +4289,104 @@ set_hashtable_value_ids (void)
 class sccvn_dom_walker : public dom_walker
 {
 public:
-  sccvn_dom_walker () : dom_walker (CDI_DOMINATORS), fail (false) {}
+  sccvn_dom_walker ()
+    : dom_walker (CDI_DOMINATORS), fail (false), cond_stack (vNULL) {}
 
   virtual void before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+  void record_cond (basic_block,
+		    enum tree_code code, tree lhs, tree rhs, bool value);
+  void record_conds (basic_block,
+		     enum tree_code code, tree lhs, tree rhs, bool value);
 
   bool fail;
+  vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
+    cond_stack;
 };
+
+/* Record a temporary condition for the BB and its dominated blocks.  */
+
+void
+sccvn_dom_walker::record_cond (basic_block bb,
+			       enum tree_code code, tree lhs, tree rhs,
+			       bool value)
+{
+  tree ops[2] = { lhs, rhs };
+  vn_nary_op_t old = NULL;
+  if (vn_nary_op_lookup_pieces (2, code, boolean_type_node, ops, &old))
+    current_info->nary->remove_elt_with_hash (old, old->hashcode);
+  vn_nary_op_t cond
+    = vn_nary_op_insert_pieces (2, code, boolean_type_node, ops,
+				value
+				? boolean_true_node
+				: boolean_false_node, 0);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Recording temporarily ");
+      print_generic_expr (dump_file, ops[0], TDF_SLIM);
+      fprintf (dump_file, " %s ", get_tree_code_name (code));
+      print_generic_expr (dump_file, ops[1], TDF_SLIM);
+      fprintf (dump_file, " == %s%s\n",
+	       value ? "true" : "false",
+	       old ? " (old entry saved)" : "");
+    }
+  cond_stack.safe_push (std::make_pair (bb, std::make_pair (cond, old)));
+}
+
+/* Record temporary conditions for the BB and its dominated blocks
+   according to LHS CODE RHS == VALUE and its dominated conditions.  */
+
+void
+sccvn_dom_walker::record_conds (basic_block bb,
+				enum tree_code code, tree lhs, tree rhs,
+				bool value)
+{
+  /* Record the original condition.  */
+  record_cond (bb, code, lhs, rhs, value);
+
+  if (!value)
+    return;
+
+  /* Record dominated conditions if the condition is true.  Note that
+     the inversion is already recorded.  */
+  switch (code)
+    {
+    case LT_EXPR:
+    case GT_EXPR:
+      record_cond (bb, code == LT_EXPR ? LE_EXPR : GE_EXPR, lhs, rhs, true);
+      record_cond (bb, NE_EXPR, lhs, rhs, true);
+      record_cond (bb, EQ_EXPR, lhs, rhs, false);
+      break;
+
+    case EQ_EXPR:
+      record_cond (bb, LE_EXPR, lhs, rhs, true);
+      record_cond (bb, GE_EXPR, lhs, rhs, true);
+      record_cond (bb, LT_EXPR, lhs, rhs, false);
+      record_cond (bb, GT_EXPR, lhs, rhs, false);
+      break;
+
+    default:
+      break;
+    }
+}
+ 
+/* Restore expressions and values derived from conditionals.  */
+
+void
+sccvn_dom_walker::after_dom_children (basic_block bb)
+{
+  while (!cond_stack.is_empty ()
+	 && cond_stack.last ().first == bb)
+    {
+      vn_nary_op_t cond = cond_stack.last ().second.first;
+      vn_nary_op_t old = cond_stack.last ().second.second;
+      current_info->nary->remove_elt_with_hash (cond, cond->hashcode);
+      if (old)
+	vn_nary_op_insert_into (old, current_info->nary, false);
+      cond_stack.pop ();
+    }
+}
 
 /* Value number all statements in BB.  */
 
@@ -4318,6 +4418,39 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	e->flags &= ~EDGE_EXECUTABLE;
       return;
+    }
+
+  /* If we have a single predecessor record the equivalence from a
+     possible condition on the predecessor edge.  */
+  if (single_pred_p (bb))
+    {
+      edge e = single_pred_edge (bb);
+      /* Check if there are multiple executable successor edges in
+	 the source block.  Otherwise there is no additional info
+	 to be recorded.  */
+      edge e2;
+      FOR_EACH_EDGE (e2, ei, e->src->succs)
+	if (e2 != e
+	    && e2->flags & EDGE_EXECUTABLE)
+	  break;
+      if (e2 && (e2->flags & EDGE_EXECUTABLE))
+	{
+
+	  gimple stmt = last_stmt (e->src);
+	  if (stmt
+	      && gimple_code (stmt) == GIMPLE_COND)
+	    {
+	      enum tree_code code = gimple_cond_code (stmt);
+	      tree lhs = gimple_cond_lhs (stmt);
+	      tree rhs = gimple_cond_rhs (stmt);
+	      record_conds (bb, code, lhs, rhs,
+			    (e->flags & EDGE_TRUE_VALUE) != 0);
+	      code = invert_tree_comparison (code, HONOR_NANS (lhs));
+	      if (code != ERROR_MARK)
+		record_conds (bb, code, lhs, rhs,
+			      (e->flags & EDGE_TRUE_VALUE) == 0);
+	    }
+	}
     }
 
   /* Value-number all defs in the basic-block.  */
@@ -4389,6 +4522,16 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 	  rhs = vn_get_expr_for (rhs);
 	val = fold_binary (gimple_cond_code (stmt),
 			   boolean_type_node, lhs, rhs);
+	/* If that didn't simplify to a constant see if we have recorded
+	   temporary expressions from taken edges.  */
+	if (!val || TREE_CODE (val) != INTEGER_CST)
+	  {
+	    tree ops[2];
+	    ops[0] = gimple_cond_lhs (stmt);
+	    ops[1] = gimple_cond_rhs (stmt);
+	    val = vn_nary_op_lookup_pieces (2, gimple_cond_code (stmt),
+					    boolean_type_node, ops, NULL);
+	  }
 	break;
       }
     case GIMPLE_SWITCH:
