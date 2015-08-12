@@ -1,5 +1,25 @@
 2015-08-12  Richard Biener  <rguenther@suse.de>
 
+	* gimple.h (remove_pointer): New trait.
+	(GIMPLE_CHECK2): New inline template function.
+	(gassign::code_): New constant static member.
+	(is_a_helper<const gassign *>): Add.
+	(gimple_assign_lhs): Use GIMPLE_CHECK2 in the gimple overload
+	and forward to a new gassign overload with less checking and a
+	cheaper way to access the operand.
+	(gimple_assign_lhs_ptr): Likewise.
+	(gimple_assign_set_lhs): Likewise.
+	(gimple_assign_rhs1, gimple_assign_rhs1_ptr, gimple_assign_set_rhs1):
+	Likewise.
+	(gimple_assign_rhs2, gimple_assign_rhs2_ptr, gimple_assign_set_rhs2):
+	Likewise.
+	(gimple_assign_rhs3, gimple_assign_rhs3_ptr, gimple_assign_set_rhs3):
+	Likewise.
+	(gimple_assign_rhs_code): Likewise.
+	* gimple.c (gassign::code_): Define.
+
+2015-08-12  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
 	Eliminate edges marked as not executable by SCCVN.
 	* tree-ssa-sccvn.c: Include gimple-iterator.h.
