@@ -46,4 +46,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Detected reduction\\." 2 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { ! { sparc*-*-* } } } } } */
