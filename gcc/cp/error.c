@@ -1230,7 +1230,8 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	if (args == error_mark_node)
 	  pp_string (pp, M_("<template arguments error>"));
 	else if (args)
-	  dump_template_argument_list (pp, args, flags);
+	  dump_template_argument_list
+	    (pp, args, flags|TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS);
       	pp_cxx_end_template_argument_list (pp);
       }
       break;

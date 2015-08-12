@@ -1,3 +1,9 @@
+2015-08-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67161
+	* error.c (dump_decl) [TEMPLATE_ID_EXPR]: Pass
+	TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS.
+
 2015-08-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66533
