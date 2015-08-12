@@ -1,3 +1,8 @@
+2015-08-12  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-vrp.c (simplify_min_or_max_using_ranges): New.
+	(simplify_stmt_using_ranges): Simplify MIN and MAX exprs.
+
 2015-08-12  Simon Dardis  <simon.dardis@imgtec.com>
 
 	* config/mips/mips.c (mips_store_data_bypass_p): Bring code into
