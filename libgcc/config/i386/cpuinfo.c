@@ -56,6 +56,7 @@ enum processor_types
   AMDFAM10H,
   AMDFAM15H,
   INTEL_SILVERMONT,
+  INTEL_KNL,
   AMD_BTVER1,
   AMD_BTVER2,  
   CPU_TYPE_MAX
@@ -196,6 +197,10 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	    case 0x5d:
 	      /* Silvermont.  */
 	      __cpu_model.__cpu_type = INTEL_SILVERMONT;
+	      break;
+	    case 0x57:
+	      /* Knights Landing.  */
+	      __cpu_model.__cpu_type = INTEL_KNL;
 	      break;
 	    case 0x1a:
 	    case 0x1e:
