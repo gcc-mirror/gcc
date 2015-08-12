@@ -1131,7 +1131,9 @@ private:
    every new symbol exposed, its corresponding bit will be set in
    VARS_TO_RENAME.  */
 
-static const pass_data pass_data_dominator =
+namespace {
+
+const pass_data pass_data_dominator =
 {
   GIMPLE_PASS, /* type */
   "dom", /* name */
@@ -1144,7 +1146,7 @@ static const pass_data pass_data_dominator =
   ( TODO_cleanup_cfg | TODO_update_ssa ), /* todo_flags_finish */
 };
 
-class pass_dominator GCC_FINAL : public gimple_opt_pass
+class pass_dominator : public gimple_opt_pass
 {
 public:
   pass_dominator (gcc::context *ctxt)
@@ -1296,6 +1298,8 @@ pass_dominator::execute (function *fun)
 
   return 0;
 }
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_dominator (gcc::context *ctxt)

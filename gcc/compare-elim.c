@@ -668,7 +668,9 @@ execute_compare_elim_after_reload (void)
   return 0;
 }
 
-static const pass_data pass_data_compare_elim_after_reload =
+namespace {
+
+const pass_data pass_data_compare_elim_after_reload =
 {
   RTL_PASS, /* type */
   "cmpelim", /* name */
@@ -681,7 +683,7 @@ static const pass_data pass_data_compare_elim_after_reload =
   ( TODO_df_finish | TODO_df_verify ), /* todo_flags_finish */
 };
 
-class pass_compare_elim_after_reload GCC_FINAL : public rtl_opt_pass
+class pass_compare_elim_after_reload : public rtl_opt_pass
 {
 public:
   pass_compare_elim_after_reload (gcc::context *ctxt)
@@ -703,6 +705,8 @@ public:
     }
 
 }; // class pass_compare_elim_after_reload
+
+} // anon namespace
 
 rtl_opt_pass *
 make_pass_compare_elim_after_reload (gcc::context *ctxt)

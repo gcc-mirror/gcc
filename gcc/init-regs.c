@@ -137,7 +137,9 @@ initialize_uninitialized_regs (void)
   BITMAP_FREE (already_genned);
 }
 
-static const pass_data pass_data_initialize_regs =
+namespace {
+
+const pass_data pass_data_initialize_regs =
 {
   RTL_PASS, /* type */
   "init-regs", /* name */
@@ -150,7 +152,7 @@ static const pass_data pass_data_initialize_regs =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_initialize_regs GCC_FINAL : public rtl_opt_pass
+class pass_initialize_regs : public rtl_opt_pass
 {
 public:
   pass_initialize_regs (gcc::context *ctxt)
@@ -166,6 +168,8 @@ public:
     }
 
 }; // class pass_initialize_regs
+
+} // anon namespace
 
 rtl_opt_pass *
 make_pass_initialize_regs (gcc::context *ctxt)

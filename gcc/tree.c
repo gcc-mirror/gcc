@@ -5948,7 +5948,9 @@ free_lang_data (void)
 }
 
 
-static const pass_data pass_data_ipa_free_lang_data =
+namespace {
+
+const pass_data pass_data_ipa_free_lang_data =
 {
   SIMPLE_IPA_PASS, /* type */
   "*free_lang_data", /* name */
@@ -5961,7 +5963,7 @@ static const pass_data pass_data_ipa_free_lang_data =
   0, /* todo_flags_finish */
 };
 
-class pass_ipa_free_lang_data GCC_FINAL : public simple_ipa_opt_pass
+class pass_ipa_free_lang_data : public simple_ipa_opt_pass
 {
 public:
   pass_ipa_free_lang_data (gcc::context *ctxt)
@@ -5972,6 +5974,8 @@ public:
   virtual unsigned int execute (function *) { return free_lang_data (); }
 
 }; // class pass_ipa_free_lang_data
+
+} // anon namespace
 
 simple_ipa_opt_pass *
 make_pass_ipa_free_lang_data (gcc::context *ctxt)

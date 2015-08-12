@@ -845,7 +845,9 @@ diagnose_tm_blocks (void)
   return 0;
 }
 
-static const pass_data pass_data_diagnose_tm_blocks =
+namespace {
+
+const pass_data pass_data_diagnose_tm_blocks =
 {
   GIMPLE_PASS, /* type */
   "*diagnose_tm_blocks", /* name */
@@ -858,7 +860,7 @@ static const pass_data pass_data_diagnose_tm_blocks =
   0, /* todo_flags_finish */
 };
 
-class pass_diagnose_tm_blocks GCC_FINAL : public gimple_opt_pass
+class pass_diagnose_tm_blocks : public gimple_opt_pass
 {
 public:
   pass_diagnose_tm_blocks (gcc::context *ctxt)
@@ -870,6 +872,8 @@ public:
   virtual unsigned int execute (function *) { return diagnose_tm_blocks (); }
 
 }; // class pass_diagnose_tm_blocks
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_diagnose_tm_blocks (gcc::context *ctxt)
@@ -1761,7 +1765,9 @@ execute_lower_tm (void)
   return 0;
 }
 
-static const pass_data pass_data_lower_tm =
+namespace {
+
+const pass_data pass_data_lower_tm =
 {
   GIMPLE_PASS, /* type */
   "tmlower", /* name */
@@ -1774,7 +1780,7 @@ static const pass_data pass_data_lower_tm =
   0, /* todo_flags_finish */
 };
 
-class pass_lower_tm GCC_FINAL : public gimple_opt_pass
+class pass_lower_tm : public gimple_opt_pass
 {
 public:
   pass_lower_tm (gcc::context *ctxt)
@@ -1786,6 +1792,8 @@ public:
   virtual unsigned int execute (function *) { return execute_lower_tm (); }
 
 }; // class pass_lower_tm
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_lower_tm (gcc::context *ctxt)
@@ -2052,7 +2060,9 @@ gate_tm_init (void)
   return true;
 }
 
-static const pass_data pass_data_tm_init =
+namespace {
+
+const pass_data pass_data_tm_init =
 {
   GIMPLE_PASS, /* type */
   "*tminit", /* name */
@@ -2065,7 +2075,7 @@ static const pass_data pass_data_tm_init =
   0, /* todo_flags_finish */
 };
 
-class pass_tm_init GCC_FINAL : public gimple_opt_pass
+class pass_tm_init : public gimple_opt_pass
 {
 public:
   pass_tm_init (gcc::context *ctxt)
@@ -2076,6 +2086,8 @@ public:
   virtual bool gate (function *) { return gate_tm_init (); }
 
 }; // class pass_tm_init
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_tm_init (gcc::context *ctxt)
@@ -3018,7 +3030,9 @@ execute_tm_mark (void)
   return 0;
 }
 
-static const pass_data pass_data_tm_mark =
+namespace {
+
+const pass_data pass_data_tm_mark =
 {
   GIMPLE_PASS, /* type */
   "tmmark", /* name */
@@ -3031,7 +3045,7 @@ static const pass_data pass_data_tm_mark =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_tm_mark GCC_FINAL : public gimple_opt_pass
+class pass_tm_mark : public gimple_opt_pass
 {
 public:
   pass_tm_mark (gcc::context *ctxt)
@@ -3042,6 +3056,8 @@ public:
   virtual unsigned int execute (function *) { return execute_tm_mark (); }
 
 }; // class pass_tm_mark
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_tm_mark (gcc::context *ctxt)
@@ -3175,7 +3191,9 @@ expand_block_edges (struct tm_region *const region, basic_block bb)
 
 /* Entry point to the final expansion of transactional nodes. */
 
-static const pass_data pass_data_tm_edges =
+namespace {
+
+const pass_data pass_data_tm_edges =
 {
   GIMPLE_PASS, /* type */
   "tmedge", /* name */
@@ -3188,7 +3206,7 @@ static const pass_data pass_data_tm_edges =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_tm_edges GCC_FINAL : public gimple_opt_pass
+class pass_tm_edges : public gimple_opt_pass
 {
 public:
   pass_tm_edges (gcc::context *ctxt)
@@ -3224,6 +3242,8 @@ pass_tm_edges::execute (function *fun)
 
   return 0;
 }
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_tm_edges (gcc::context *ctxt)
@@ -3930,7 +3950,9 @@ execute_tm_memopt (void)
   return 0;
 }
 
-static const pass_data pass_data_tm_memopt =
+namespace {
+
+const pass_data pass_data_tm_memopt =
 {
   GIMPLE_PASS, /* type */
   "tmmemopt", /* name */
@@ -3943,7 +3965,7 @@ static const pass_data pass_data_tm_memopt =
   0, /* todo_flags_finish */
 };
 
-class pass_tm_memopt GCC_FINAL : public gimple_opt_pass
+class pass_tm_memopt : public gimple_opt_pass
 {
 public:
   pass_tm_memopt (gcc::context *ctxt)
@@ -3955,6 +3977,8 @@ public:
   virtual unsigned int execute (function *) { return execute_tm_memopt (); }
 
 }; // class pass_tm_memopt
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_tm_memopt (gcc::context *ctxt)
@@ -5568,7 +5592,9 @@ ipa_tm_execute (void)
   return 0;
 }
 
-static const pass_data pass_data_ipa_tm =
+namespace {
+
+const pass_data pass_data_ipa_tm =
 {
   SIMPLE_IPA_PASS, /* type */
   "tmipa", /* name */
@@ -5581,7 +5607,7 @@ static const pass_data pass_data_ipa_tm =
   0, /* todo_flags_finish */
 };
 
-class pass_ipa_tm GCC_FINAL : public simple_ipa_opt_pass
+class pass_ipa_tm : public simple_ipa_opt_pass
 {
 public:
   pass_ipa_tm (gcc::context *ctxt)
@@ -5593,6 +5619,8 @@ public:
   virtual unsigned int execute (function *) { return ipa_tm_execute (); }
 
 }; // class pass_ipa_tm
+
+} // anon namespace
 
 simple_ipa_opt_pass *
 make_pass_ipa_tm (gcc::context *ctxt)

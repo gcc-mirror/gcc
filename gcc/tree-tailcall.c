@@ -1092,7 +1092,9 @@ execute_tail_calls (void)
   return tree_optimize_tail_calls_1 (true);
 }
 
-static const pass_data pass_data_tail_recursion =
+namespace {
+
+const pass_data pass_data_tail_recursion =
 {
   GIMPLE_PASS, /* type */
   "tailr", /* name */
@@ -1105,7 +1107,7 @@ static const pass_data pass_data_tail_recursion =
   0, /* todo_flags_finish */
 };
 
-class pass_tail_recursion GCC_FINAL : public gimple_opt_pass
+class pass_tail_recursion : public gimple_opt_pass
 {
 public:
   pass_tail_recursion (gcc::context *ctxt)
@@ -1122,13 +1124,17 @@ public:
 
 }; // class pass_tail_recursion
 
+} // anon namespace
+
 gimple_opt_pass *
 make_pass_tail_recursion (gcc::context *ctxt)
 {
   return new pass_tail_recursion (ctxt);
 }
 
-static const pass_data pass_data_tail_calls =
+namespace {
+
+const pass_data pass_data_tail_calls =
 {
   GIMPLE_PASS, /* type */
   "tailc", /* name */
@@ -1141,7 +1147,7 @@ static const pass_data pass_data_tail_calls =
   0, /* todo_flags_finish */
 };
 
-class pass_tail_calls GCC_FINAL : public gimple_opt_pass
+class pass_tail_calls : public gimple_opt_pass
 {
 public:
   pass_tail_calls (gcc::context *ctxt)
@@ -1153,6 +1159,8 @@ public:
   virtual unsigned int execute (function *) { return execute_tail_calls (); }
 
 }; // class pass_tail_calls
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_tail_calls (gcc::context *ctxt)

@@ -590,7 +590,9 @@ sink_code_in_bb (basic_block bb)
    Note that this reduces the number of computations of a = b + c to 1
    when we take the else edge, instead of 2.
 */
-static const pass_data pass_data_sink_code =
+namespace {
+
+const pass_data pass_data_sink_code =
 {
   GIMPLE_PASS, /* type */
   "sink", /* name */
@@ -605,7 +607,7 @@ static const pass_data pass_data_sink_code =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_sink_code GCC_FINAL : public gimple_opt_pass
+class pass_sink_code : public gimple_opt_pass
 {
 public:
   pass_sink_code (gcc::context *ctxt)
@@ -635,6 +637,8 @@ pass_sink_code::execute (function *fun)
 
   return 0;
 }
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_sink_code (gcc::context *ctxt)

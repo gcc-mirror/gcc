@@ -120,7 +120,9 @@ static vec<funct_state> funct_state_vec;
 
 static bool gate_pure_const (void);
 
-static const pass_data pass_data_ipa_pure_const =
+namespace {
+
+const pass_data pass_data_ipa_pure_const =
 {
   IPA_PASS, /* type */
   "pure-const", /* name */
@@ -133,7 +135,7 @@ static const pass_data pass_data_ipa_pure_const =
   0, /* todo_flags_finish */
 };
 
-class pass_ipa_pure_const GCC_FINAL : public ipa_opt_pass_d
+class pass_ipa_pure_const : public ipa_opt_pass_d
 {
 public:
   pass_ipa_pure_const(gcc::context *ctxt);
@@ -153,6 +155,8 @@ private:
   struct cgraph_node_hook_list *node_removal_hook_holder;
 
 }; // class pass_ipa_pure_const
+
+} // anon namespace
 
 /* Try to guess if function body will always be visible to compiler
    when compiling the call and whether compiler will be able
@@ -1665,7 +1669,9 @@ skip_function_for_local_pure_const (struct cgraph_node *node)
    ipa_pure_const.   This pass is effective when executed together with
    other optimization passes in early optimization pass queue.  */
 
-static const pass_data pass_data_local_pure_const =
+namespace {
+
+const pass_data pass_data_local_pure_const =
 {
   GIMPLE_PASS, /* type */
   "local-pure-const", /* name */
@@ -1678,7 +1684,7 @@ static const pass_data pass_data_local_pure_const =
   0, /* todo_flags_finish */
 };
 
-class pass_local_pure_const GCC_FINAL : public gimple_opt_pass
+class pass_local_pure_const : public gimple_opt_pass
 {
 public:
   pass_local_pure_const (gcc::context *ctxt)
@@ -1802,6 +1808,8 @@ pass_local_pure_const::execute (function *fun)
     return 0;
 }
 
+} // anon namespace
+
 gimple_opt_pass *
 make_pass_local_pure_const (gcc::context *ctxt)
 {
@@ -1810,7 +1818,9 @@ make_pass_local_pure_const (gcc::context *ctxt)
 
 /* Emit noreturn warnings.  */
 
-static const pass_data pass_data_warn_function_noreturn =
+namespace {
+
+const pass_data pass_data_warn_function_noreturn =
 {
   GIMPLE_PASS, /* type */
   "*warn_function_noreturn", /* name */
@@ -1823,7 +1833,7 @@ static const pass_data pass_data_warn_function_noreturn =
   0, /* todo_flags_finish */
 };
 
-class pass_warn_function_noreturn GCC_FINAL : public gimple_opt_pass
+class pass_warn_function_noreturn : public gimple_opt_pass
 {
 public:
   pass_warn_function_noreturn (gcc::context *ctxt)
@@ -1842,6 +1852,8 @@ public:
 
 }; // class pass_warn_function_noreturn
 
+} // anon namespace
+
 gimple_opt_pass *
 make_pass_warn_function_noreturn (gcc::context *ctxt)
 {
@@ -1852,7 +1864,9 @@ make_pass_warn_function_noreturn (gcc::context *ctxt)
    ipa_pure_const.   This pass is effective when executed together with
    other optimization passes in early optimization pass queue.  */
 
-static const pass_data pass_data_nothrow =
+namespace {
+
+const pass_data pass_data_nothrow =
 {
   GIMPLE_PASS, /* type */
   "nothrow", /* name */
@@ -1865,7 +1879,7 @@ static const pass_data pass_data_nothrow =
   0, /* todo_flags_finish */
 };
 
-class pass_nothrow GCC_FINAL : public gimple_opt_pass
+class pass_nothrow : public gimple_opt_pass
 {
 public:
   pass_nothrow (gcc::context *ctxt)
@@ -1930,6 +1944,8 @@ pass_nothrow::execute (function *)
 	     current_function_name ());
   return 0;
 }
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_nothrow (gcc::context *ctxt)

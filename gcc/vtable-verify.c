@@ -801,7 +801,9 @@ verify_bb_vtables (basic_block bb)
 
 /* Definition of this optimization pass.  */
 
-static const pass_data pass_data_vtable_verify =
+namespace {
+
+const pass_data pass_data_vtable_verify =
 {
   GIMPLE_PASS, /* type */
   "vtable-verify", /* name */
@@ -814,7 +816,7 @@ static const pass_data pass_data_vtable_verify =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_vtable_verify GCC_FINAL : public gimple_opt_pass
+class pass_vtable_verify : public gimple_opt_pass
 {
 public:
   pass_vtable_verify (gcc::context *ctxt)
@@ -842,6 +844,8 @@ pass_vtable_verify::execute (function *fun)
 
   return ret;
 }
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_vtable_verify (gcc::context *ctxt)

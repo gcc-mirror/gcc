@@ -576,7 +576,9 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
    version namespace.  This is used to keep footprint of compiler during
    interprocedural optimization.  */
 
-static const pass_data pass_data_release_ssa_names =
+namespace {
+
+const pass_data pass_data_release_ssa_names =
 {
   GIMPLE_PASS, /* type */
   "release_ssa", /* name */
@@ -589,7 +591,7 @@ static const pass_data pass_data_release_ssa_names =
   0, /* todo_flags_finish */
 };
 
-class pass_release_ssa_names GCC_FINAL : public gimple_opt_pass
+class pass_release_ssa_names : public gimple_opt_pass
 {
 public:
   pass_release_ssa_names (gcc::context *ctxt)
@@ -634,6 +636,8 @@ pass_release_ssa_names::execute (function *fun)
 	     n, n * 100.0 / num_ssa_names, i - j);
   return 0;
 }
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_release_ssa_names (gcc::context *ctxt)
