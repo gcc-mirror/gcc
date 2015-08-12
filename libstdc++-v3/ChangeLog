@@ -1,3 +1,10 @@
+2015-08-12  Caroline Tice <cmtice@google.com>
+
+	PR 66521, Contributed by Eric Gallager
+	* acinclude.m4 (VTV_CXXLINKFLAGS): Make this variable OS-specific, and
+	fix the rpath flag to work properly for darwin.
+	* configure: Regenerated.
+
 2015-08-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Update patch email policy.
