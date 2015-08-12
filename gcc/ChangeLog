@@ -1,3 +1,9 @@
+2015-08-12  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR target/67127
+	* config/arm/arm.md (movdi): Restrict illegitimate ldrd/strd checking
+	to ARM core registers.
+
 2015-08-12  Nathan Sidwell  <nathan@acm.org>
 
 	* tree-vrp.c (simplify_min_or_max_using_ranges): New.
