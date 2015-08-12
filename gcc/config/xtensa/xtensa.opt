@@ -38,6 +38,10 @@ mtext-section-literals
 Target
 Intersperse literal pools with code in the text section
 
+mauto-litpools
+Target Report Mask(AUTO_LITPOOLS)
+Relax literals in assembler and place them automatically in the text section
+
 mserialize-volatile
 Target Report Mask(SERIALIZE_VOLATILE)
 -mno-serialize-volatile	Do not serialize volatile memory references with MEMW instructions
