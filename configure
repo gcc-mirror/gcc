@@ -772,7 +772,6 @@ with_gmp_dir
 with_gmp
 with_gmp_include
 with_gmp_lib
-with_host_libstdcxx
 with_stage1_libs
 with_stage1_ldflags
 with_boot_libs
@@ -1540,8 +1539,6 @@ Optional Packages:
                           --with-gmp-lib=PATH/lib
   --with-gmp-include=PATH specify directory for installed GMP include files
   --with-gmp-lib=PATH     specify directory for the installed GMP library
-  --with-host-libstdcxx=L use linker arguments L to link with libstdc++ when
-                          linking with PPL
   --with-stage1-libs=LIBS libraries for stage1
   --with-stage1-ldflags=FLAGS
                           linker flags for stage1
@@ -5849,20 +5846,6 @@ fi
 
 
 
-# Allow host libstdc++ to be specified for static linking with PPL.
-
-# Check whether --with-host-libstdcxx was given.
-if test "${with_host_libstdcxx+set}" = set; then :
-  withval=$with_host_libstdcxx;
-fi
-
-
-case $with_host_libstdcxx in
-  no|yes)
-    as_fn_error "-with-host-libstdcxx needs an argument" "$LINENO" 5
-    ;;
-esac
-
 # Libraries to use for stage1 or when not bootstrapping.
 
 # Check whether --with-stage1-libs was given.
@@ -5873,7 +5856,7 @@ if test "${with_stage1_libs+set}" = set; then :
    stage1_libs=$withval
  fi
 else
-  stage1_libs=$with_host_libstdcxx
+  stage1_libs=
 fi
 
 
@@ -5899,8 +5882,7 @@ fi
 
 
 
-# Libraries to use for stage2 and later builds.  This defaults to the
-# argument passed to --with-host-libstdcxx.
+# Libraries to use for stage2 and later builds.
 
 # Check whether --with-boot-libs was given.
 if test "${with_boot_libs+set}" = set; then :
@@ -5910,7 +5892,7 @@ if test "${with_boot_libs+set}" = set; then :
    poststage1_libs=$withval
  fi
 else
-  poststage1_libs=$with_host_libstdcxx
+  poststage1_libs=
 fi
 
 
