@@ -1709,7 +1709,7 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
       found = false;
       vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (ary);
       constructor_elt *e;
-      for (unsigned ix = 0; vec_safe_iterate (v, ix, &e); ++i)
+      for (unsigned ix = 0; vec_safe_iterate (v, ix, &e); ++ix)
 	{
 	  if (TREE_CODE (e->index) == RANGE_EXPR)
 	    {
