@@ -216,7 +216,7 @@
   "ir_sb1_load,ir_sb1a_load,ir_sb1_fpload,ir_sb1_fpload_32bitfp,
    ir_sb1_fpidxload,ir_sb1_fpidxload_32bitfp"
   "ir_sb1_store,ir_sb1_fpstore,ir_sb1_fpidxstore"
-  "mips_store_data_bypass_p")
+  "!mips_store_data_bypass_p")
 
 ;; On SB-1, simple alu instructions can execute on the LS1 unit.
 
@@ -289,7 +289,7 @@
 (define_bypass 5
   "ir_sb1a_simple_alu,ir_sb1_alu,ir_sb1_alu_0,ir_sb1_mfhi,ir_sb1_mflo"
   "ir_sb1_store,ir_sb1_fpstore,ir_sb1_fpidxstore"
-  "mips_store_data_bypass_p")
+  "!mips_store_data_bypass_p")
 
 ;; mf{hi,lo} is 1 cycle.  
 
@@ -351,7 +351,7 @@
 (define_bypass 7
   "ir_sb1_mulsi,ir_sb1_muldi"
   "ir_sb1_store,ir_sb1_fpstore,ir_sb1_fpidxstore"
-  "mips_store_data_bypass_p")
+  "!mips_store_data_bypass_p")
 
 ;; The divide unit is not pipelined.  Divide busy is asserted in the 4th
 ;; cycle, and then deasserted on the latency cycle.  So only one divide at

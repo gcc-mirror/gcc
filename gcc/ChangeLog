@@ -1,3 +1,9 @@
+2015-08-12  Simon Dardis  <simon.dardis@imgtec.com>
+
+	* config/mips/mips.c (mips_store_data_bypass_p): Bring code into
+	line with comments.
+	* config/mips/sb1.md: Update usage of mips_store_data_bypass_p.
+
 2015-08-12  Richard Biener  <rguenther@suse.de>
 
 	* gimple.h (remove_pointer): New trait.
