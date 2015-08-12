@@ -1689,7 +1689,9 @@ tree_ssa_cd_dce (void)
   return perform_tree_ssa_dce (/*aggressive=*/optimize >= 2);
 }
 
-static const pass_data pass_data_dce =
+namespace {
+
+const pass_data pass_data_dce =
 {
   GIMPLE_PASS, /* type */
   "dce", /* name */
@@ -1702,7 +1704,7 @@ static const pass_data pass_data_dce =
   0, /* todo_flags_finish */
 };
 
-class pass_dce GCC_FINAL : public gimple_opt_pass
+class pass_dce : public gimple_opt_pass
 {
 public:
   pass_dce (gcc::context *ctxt)
@@ -1716,13 +1718,17 @@ public:
 
 }; // class pass_dce
 
+} // anon namespace
+
 gimple_opt_pass *
 make_pass_dce (gcc::context *ctxt)
 {
   return new pass_dce (ctxt);
 }
 
-static const pass_data pass_data_cd_dce =
+namespace {
+
+const pass_data pass_data_cd_dce =
 {
   GIMPLE_PASS, /* type */
   "cddce", /* name */
@@ -1735,7 +1741,7 @@ static const pass_data pass_data_cd_dce =
   0, /* todo_flags_finish */
 };
 
-class pass_cd_dce GCC_FINAL : public gimple_opt_pass
+class pass_cd_dce : public gimple_opt_pass
 {
 public:
   pass_cd_dce (gcc::context *ctxt)
@@ -1748,6 +1754,8 @@ public:
   virtual unsigned int execute (function *) { return tree_ssa_cd_dce (); }
 
 }; // class pass_cd_dce
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_cd_dce (gcc::context *ctxt)

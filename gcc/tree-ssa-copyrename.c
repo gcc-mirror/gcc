@@ -301,7 +301,9 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 }
 
 
-static const pass_data pass_data_rename_ssa_copies =
+namespace {
+
+const pass_data pass_data_rename_ssa_copies =
 {
   GIMPLE_PASS, /* type */
   "copyrename", /* name */
@@ -314,7 +316,7 @@ static const pass_data pass_data_rename_ssa_copies =
   0, /* todo_flags_finish */
 };
 
-class pass_rename_ssa_copies GCC_FINAL : public gimple_opt_pass
+class pass_rename_ssa_copies : public gimple_opt_pass
 {
 public:
   pass_rename_ssa_copies (gcc::context *ctxt)
@@ -463,6 +465,8 @@ pass_rename_ssa_copies::execute (function *fun)
   delete_var_map (map);
   return 0;
 }
+
+} // anon namespace
 
 gimple_opt_pass *
 make_pass_rename_ssa_copies (gcc::context *ctxt)

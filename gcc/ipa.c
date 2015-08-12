@@ -832,7 +832,9 @@ ipa_discover_readonly_nonaddressable_vars (void)
 
 /* Free inline summary.  */
 
-static const pass_data pass_data_ipa_free_inline_summary =
+namespace {
+
+const pass_data pass_data_ipa_free_inline_summary =
 {
   SIMPLE_IPA_PASS, /* type */
   "free-inline-summary", /* name */
@@ -848,7 +850,7 @@ static const pass_data pass_data_ipa_free_inline_summary =
   ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
 };
 
-class pass_ipa_free_inline_summary GCC_FINAL : public simple_ipa_opt_pass
+class pass_ipa_free_inline_summary : public simple_ipa_opt_pass
 {
 public:
   pass_ipa_free_inline_summary (gcc::context *ctxt)
@@ -863,6 +865,8 @@ public:
     }
 
 }; // class pass_ipa_free_inline_summary
+
+} // anon namespace
 
 simple_ipa_opt_pass *
 make_pass_ipa_free_inline_summary (gcc::context *ctxt)
@@ -1160,7 +1164,9 @@ ipa_cdtor_merge (void)
   return 0;
 }
 
-static const pass_data pass_data_ipa_cdtor_merge =
+namespace {
+
+const pass_data pass_data_ipa_cdtor_merge =
 {
   IPA_PASS, /* type */
   "cdtor", /* name */
@@ -1173,7 +1179,7 @@ static const pass_data pass_data_ipa_cdtor_merge =
   0, /* todo_flags_finish */
 };
 
-class pass_ipa_cdtor_merge GCC_FINAL : public ipa_opt_pass_d
+class pass_ipa_cdtor_merge : public ipa_opt_pass_d
 {
 public:
   pass_ipa_cdtor_merge (gcc::context *ctxt)
@@ -1203,6 +1209,8 @@ pass_ipa_cdtor_merge::gate (function *)
      function.  */
   return !targetm.have_ctors_dtors || (optimize && in_lto_p);
 }
+
+} // anon namespace
 
 ipa_opt_pass_d *
 make_pass_ipa_cdtor_merge (gcc::context *ctxt)
@@ -1380,7 +1388,9 @@ ipa_single_use (void)
   return 0;
 }
 
-static const pass_data pass_data_ipa_single_use =
+namespace {
+
+const pass_data pass_data_ipa_single_use =
 {
   IPA_PASS, /* type */
   "single-use", /* name */
@@ -1393,7 +1403,7 @@ static const pass_data pass_data_ipa_single_use =
   0, /* todo_flags_finish */
 };
 
-class pass_ipa_single_use GCC_FINAL : public ipa_opt_pass_d
+class pass_ipa_single_use : public ipa_opt_pass_d
 {
 public:
   pass_ipa_single_use (gcc::context *ctxt)
@@ -1420,6 +1430,8 @@ pass_ipa_single_use::gate (function *)
 {
   return optimize;
 }
+
+} // anon namespace
 
 ipa_opt_pass_d *
 make_pass_ipa_single_use (gcc::context *ctxt)
