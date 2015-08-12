@@ -4846,6 +4846,9 @@ c_parse_final_cleanups (void)
 
   timevar_stop (TV_PHASE_DEFERRED);
   timevar_start (TV_PHASE_PARSING);
+
+  /* Indicate that we're done with front end processing.  */
+  at_eof = 2;
 }
 
 /* Perform any post compilation-proper cleanups for the C++ front-end.

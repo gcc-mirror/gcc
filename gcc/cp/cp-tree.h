@@ -4797,7 +4797,8 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
 
 
-/* Nonzero if we're done parsing and into end-of-file activities.  */
+/* Nonzero if we're done parsing and into end-of-file activities.
+   Two if we're done with front-end processing.  */
 
 extern int at_eof;
 
