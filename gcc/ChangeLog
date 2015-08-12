@@ -1,3 +1,12 @@
+2015-08-12  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm.h (arm_fpu_feature_set): New.
+	(ARM_FPU_FSET_HAS): New.
+	(FPU_FL_NONE): New.
+	(FPU_FL_NEON): New.
+	(FPU_FL_FP16): New.
+	(FPU_FL_CRYPTO): New.
+
 2015-08-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (initialize_aarch64_code_model): Break
