@@ -1,3 +1,25 @@
+2015-08-12  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/constraints.md (define_constraint "Y"): New
+	constraint.
+	* config/xtensa/elf.h (ASM_SPEC): Add m(no-)auto-litpools.
+	* config/xtensa/linux.h (ASM_SPEC): Likewise.
+	* config/xtensa/predicates.md (move_operand): Match constants
+	and symbols in the presence of TARGET_AUTO_LITPOOLS.
+	* config/xtensa/xtensa.c (xtensa_valid_move): Don't allow
+	immediate references to TLS data.
+	(xtensa_emit_move_sequence): Don't force constants to memory in
+	the presence of TARGET_AUTO_LITPOOLS.
+	(print_operand): Add 'y' format, same as default, but capable of
+	printing SF mode constants as well.
+	* config/xtensa/xtensa.md (movsi_internal, movhi_internal)
+	(movsf_internal): Add movi pattern that loads literal.
+	(movsf, movdf): Don't force constants to memory in the presence
+	of TARGET_AUTO_LITPOOLS.
+	(movdf_internal): Add 'Y' constraint.
+	* config/xtensa/xtensa.opt (mauto-litpools): New option.
+	* doc/invoke.text (Xtensa options): Document -mauto-litpools.
+
 2015-08-12  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-fpus.def: Replace booleans with feature flags.

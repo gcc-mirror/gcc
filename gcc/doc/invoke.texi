@@ -1120,6 +1120,7 @@ See RS/6000 and PowerPC Options.
 -mforce-no-pic @gol
 -mserialize-volatile  -mno-serialize-volatile @gol
 -mtext-section-literals  -mno-text-section-literals @gol
+-mauto-litpools  -mno-auto-litpools @gol
 -mtarget-align  -mno-target-align @gol
 -mlongcalls  -mno-longcalls}
 
@@ -23605,7 +23606,23 @@ pools from separate object files to remove redundant literals and
 improve code size.  With @option{-mtext-section-literals}, the literals
 are interspersed in the text section in order to keep them as close as
 possible to their references.  This may be necessary for large assembly
-files.
+files.  Literals for each function are placed right before that function.
+
+@item -mauto-litpools
+@itemx -mno-auto-litpools
+@opindex mauto-litpools
+@opindex mno-auto-litpools
+These options control the treatment of literal pools.  The default is
+@option{-mno-auto-litpools}, which places literals in a separate
+section in the output file unless @option{-mtext-section-literals} is
+used.  With @option{-mauto-litpools} the literals are interspersed in
+the text section by the assembler.  Compiler does not produce explicit
+@code{.literal} directives and loads literals into registers with
+@code{MOVI} instructions instead of @code{L32R} to let the assembler
+do relaxation and place literals as necessary.  This option allows
+assembler to create several literal pools per function and assemble
+very big functions, which may not be possible with
+@option{-mtext-section-literals}.
 
 @item -mtarget-align
 @itemx -mno-target-align
