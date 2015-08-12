@@ -1,3 +1,9 @@
+2015-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/55095
+	* c-common.c (maybe_warn_shift_overflow): Properly handle
+	left-shifting 1 into the sign bit.
+
 2015-08-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (Wchkp): Use LangEnabledBy instead of EnabledBy.
