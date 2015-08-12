@@ -1,3 +1,9 @@
+2015-08-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/67175
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Add reduction detection scan.
+	Handle absence of vector min/max for sparc.
+
 2015-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66954
