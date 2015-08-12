@@ -1,5 +1,9 @@
 2015-08-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67108
+	* decl2.c (c_parse_final_cleanups): Set at_eof to 2 at end.
+	* error.c (dump_template_bindings): Don't tsubst in that case.
+
 	PR c++/67161
 	* error.c (dump_decl) [TEMPLATE_ID_EXPR]: Pass
 	TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS.

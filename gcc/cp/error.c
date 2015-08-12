@@ -339,6 +339,11 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
       && !DECL_LANG_SPECIFIC (current_function_decl))
     return;
 
+  /* Don't try to do this once cgraph starts throwing away front-end
+     information.  */
+  if (at_eof >= 2)
+    return;
+
   FOR_EACH_VEC_SAFE_ELT (typenames, i, t)
     {
       if (need_semicolon)
