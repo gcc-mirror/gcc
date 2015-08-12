@@ -562,6 +562,14 @@
   return EASY_VECTOR_MSB (val, GET_MODE_INNER (mode));
 })
 
+;; Return true if this is an easy altivec constant that we form
+;; by using VSLDOI.
+(define_predicate "easy_vector_constant_vsldoi"
+  (and (match_code "const_vector")
+       (and (match_test "TARGET_ALTIVEC")
+	    (and (match_test "easy_altivec_constant (op, mode)")
+		 (match_test "vspltis_shifted (op) != 0")))))
+
 ;; Return 1 if operand is constant zero (scalars and vectors).
 (define_predicate "zero_constant"
   (and (match_code "const_int,const_double,const_wide_int,const_vector")
