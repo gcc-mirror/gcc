@@ -1,5 +1,9 @@
 2015-08-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67104
+	* constexpr.c (cxx_eval_array_reference): Handle sparse
+	CONSTRUCTORs.
+
 	PR c++/67108
 	* decl2.c (c_parse_final_cleanups): Set at_eof to 2 at end.
 	* error.c (dump_template_bindings): Don't tsubst in that case.
