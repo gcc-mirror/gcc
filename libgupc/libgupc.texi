@@ -10,7 +10,7 @@
 Copyright @copyright{} 2006-2014 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being ``Funding Free Software'', the Front-Cover
 texts being (a) (see below), and with the Back-Cover Texts being (b)
@@ -69,11 +69,10 @@ Boston, MA 02110-1301, USA@*
 @top Introduction
 @cindex Introduction
 
-This manual documents the usage of libgupc, the GNU implementation of the 
-@uref{http://www.openmp.org, UPC} Application Programming Interface (API)
-for multi-platform shared-memory parallel programming in C/C++ and Fortran.
-
-
+This manual documents the usage of libgupc, the GNU runtime library
+implementation of the 
+@w{@uref{http://upc.lbl.gov/publications/upc-spec-1.3.pdf, UPC}}
+language extensions for shared-memory parallel programming in C.
 
 @comment
 @comment  When you add a new menu item, please keep the right hand
@@ -81,12 +80,13 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 @comment  better formatting.
 @comment
 @menu
-* Enabling UPC::            How to enable UPC for your applications.
+* Enabling UPC::               How to enable UPC for your applications.
+* Configuring Libgupc::        How to configure the UPC runtime library.
 * Runtime Library Routines::   The UPC runtime application programming 
                                interface.
+* The libgupc ABI::            Notes on the external ABI presented by libgupc.
 * Environment Variables::      Influencing runtime behavior with environment 
                                variables.
-* The libgupc ABI::             Notes on the external ABI presented by libgupc.
 * Reporting Bugs::             How to report bugs in GNU UPC.
 * Copying::                    GNU general public license says
                                how you can copy and share libgupc.
@@ -94,9 +94,8 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
                                How you can copy and share this manual.
 * Funding::                    How to help assure continued work for free 
                                software.
-* Index::                      Index of this documentation.
+* Library Index::              Index of this documentation.
 @end menu
-
 
 @c ---------------------------------------------------------------------
 @c Enabling UPC
@@ -105,6 +104,48 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 @node Enabling UPC
 @chapter Enabling UPC
 
+To activate the UPC extensions for C, the compile-time 
+flag @command{-fupc} must be specified.  This enables the UPC language
+extensions which include the @code{shared} type qualifier
+and various synchronization statements such as @code{upc_barrier}.
+The flag also arranges for automatic linking of the UPC runtime library 
+(@ref{Runtime Library Routines}).
+
+Alternatively, two command line drivers can be invoked: @command{upc}
+and @command{gupc}.  These drivers are wrappers around the @command{gcc}
+and will automatically supply the @option{-fupc} option and
+will default the compilation of @file{*.c} files as UPC language source.
+
+The @samp{libgomp} runtime library supports both a single-node
+Symmetric Memory Processor (@samp{smp}) and a multi-node distributed
+(@samp{portals4}) target configurations.  The target configuration
+is selected via the @command{configure} command when the library is
+built.  See @ref{Configuring Libgupc} for details.
+
+@c ---------------------------------------------------------------------
+@c Configuring Libgupc
+@c ---------------------------------------------------------------------
+
+@node Configuring Libgupc
+@chapter Configuring Libgupc
+
+@menu
+* SMP Configuration::        How to configure libgupc for SMP single-node
+                             operation.
+* Portals4 Configuration::   How to configure libgupc for multi-node
+                             operation using the Portals4 communication
+			     library.
+@end menu
+
+@node SMP Configuration
+@section SMP Configuration
+@cindex Configuration
+@cindex SMP Configuration
+
+@node Portals4 Configuration
+@section Portals4 Configuration
+@cindex Configuration
+@cindex Portals4 Configuration
 
 @c ---------------------------------------------------------------------
 @c Runtime Library Routines
@@ -135,8 +176,10 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
 @chapter Reporting Bugs
 
 Bugs in the GNU UPC implementation should be reported via 
-@uref{http://gcc.gnu.org/bugzilla/, bugzilla}. In all cases, please add 
+@uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  For all cases, please add 
 "UPC" to the keywords field in the bug report.
+
+
 
 @c ---------------------------------------------------------------------
 @c GNU General Public License
@@ -164,8 +207,8 @@ Bugs in the GNU UPC implementation should be reported via
 @c Index
 @c ---------------------------------------------------------------------
 
-@node Index
-@unnumbered Index
+@node Library Index
+@unnumbered Library Index
 
 @printindex cp
 

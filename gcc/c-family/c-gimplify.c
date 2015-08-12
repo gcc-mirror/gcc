@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "c-upc-low.h"
 #include "flags.h"
 #include "dumpfile.h"
 #include "c-pretty-print.h"
@@ -141,8 +140,8 @@ ubsan_walk_array_refs_r (tree *tp, int *walk_subtrees, void *data)
 /* Convert the tree representation of FNDECL from C frontend trees to
    GENERIC.  */
 
-static void
-c_common_genericize (tree fndecl)
+void
+c_genericize (tree fndecl)
 {
   FILE *dump_orig;
   int local_dump_flags;
@@ -179,14 +178,6 @@ c_common_genericize (tree fndecl)
   cgn = cgraph_node::get_create (fndecl);
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
     c_genericize (cgn->decl);
-}
-
-void
-c_genericize (tree fndecl)
-{
-  if (flag_upc)
-    upc_genericize (fndecl);
-  c_common_genericize (fndecl);
 }
 
 static void

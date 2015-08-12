@@ -235,7 +235,6 @@ struct type_cache_hasher : ggc_cache_hasher<type_hash *>
 
 static GTY ((cache)) hash_table<type_cache_hasher> *type_hash_table;
 
-
 /* Hash table and temporary node for larger integer const values.  */
 static GTY (()) tree int_cst_node;
 

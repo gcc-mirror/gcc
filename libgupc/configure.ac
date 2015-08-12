@@ -85,7 +85,7 @@ target_alias=${target_alias-$host_alias}
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is required.
 #  -Wno-override: ... and this one, since we do want this in testsuite.
-AM_INIT_AUTOMAKE([1.11.1 foreign -Wall -Wno-portability -Wno-override])
+AM_INIT_AUTOMAKE([1.11.6 foreign -Wall -Wno-portability -Wno-override])
 
 # UPC disables multilib for portals4 runtime
 if echo "${with_upc_runtime}" | grep -v -i '^portals4$' 2>&1 >/dev/null; then
@@ -681,11 +681,23 @@ AC_ARG_ENABLE(upc-backtrace,
 [
   enable_upc_backtrace=yes
 ])
-AC_MSG_RESULT($enable_upc_backtrace)
+# Check for execinfo library (needed on BSD systems for UPC backtracing)
+case "${target}" in
+  *-*-freebsd* | *-*-openbsd* | *-*-netbsd )
+    AC_CHECK_LIB(execinfo,backtrace,[execinfo_lib="yes"])
+    if test "x$execinfo_lib" = xyes; then
+      enable_execinfo_lib=yes
+    else
+      enable_upc_backtrace=no
+    fi
+  ;;
+  *) ;;
+esac
 if test "$enable_upc_backtrace" = yes; then
   AC_DEFINE(HAVE_UPC_BACKTRACE, 1,
     [Define to 1 if UPC backtrace is enabled.])
 fi
+AC_MSG_RESULT($enable_upc_backtrace)
 
 # Check for user specified GDB
 AC_ARG_WITH(upc-backtrace-gdb,
@@ -777,40 +789,6 @@ if test "$enable_upc_backtrace_signal" = yes; then
 fi
 
 if test "$enable_upc_backtrace" = yes; then
-  # Check for "-rdynamic" for UPC backtrace
-  case "${host}" in
-    *-*-darwin*)
-      if test x$build = x$host; then
-        export_sym_check="nm${exeext} -g"
-      elif test x$host = x$target; then
-        export_sym_check="$gcc_cv_nm -g"
-      else
-        export_sym_check=
-      fi
-    ;;
-    *)
-      if test x$build = x$host; then
-        export_sym_check="objdump${exeext} -T"
-      elif test x$host = x$target; then
-        export_sym_check="$gcc_cv_objdump -T"
-      else
-        export_sym_check=
-      fi
-    ;;
-  esac
-  AC_MSG_CHECKING([for -rdynamic])
-  if test "x$export_sym_check" != x; then
-    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
-      -o conftest > /dev/null 2>&1
-    if $export_sym_check conftest | grep foobar > /dev/null; then
-      have_rdynamic=yes
-    else
-      have_rdynamic=no
-    fi
-  fi
-  AC_MSG_RESULT([$have_rdynamic])
-
   # Check if backtrace can use addr2line
   if test x"$ADDR2LINE" != x""; then
     AC_DEFINE(HAVE_UPC_BACKTRACE_ADDR2LINE, 1,

@@ -1370,7 +1370,7 @@ struct GTY((user)) tree_type_common {
   unsigned no_force_blk_flag : 1;
   unsigned needs_constructing_flag : 1;
   unsigned transparent_aggr_flag : 1;
-  unsigned reupc_strict_flag : 1;
+  unsigned restrict_flag : 1;
   unsigned contains_placeholder_bits : 2;
 
   ENUM_BITFIELD(machine_mode) mode : 8;

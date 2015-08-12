@@ -252,7 +252,7 @@ __upc_fatal_backtrace (void)
 	      const char *btcmd = "backtrace 30\n";
               fprintf (stderr, "Thread %d GDB backtrace:\n", MYTHREAD);
 	      /* Get pid and name of the running program. */
-              sprintf(pid_buf, "%d", getpid());
+              sprintf(pid_buf, "%ld", (long) getpid());
 	      /* Create temp file for GDB commands. */
 	      if ((fbt = __upc_create_temp_file 
 			 ("upc_bt_gdb.XXXXXX", tmpf, &err_msg)) == -1)
@@ -319,7 +319,8 @@ __upc_backtrace_monitor (void)
       fprintf (stderr, " Thread   PID\n");
       for (i = 0; i < THREADS; i++)
 	{
-	  fprintf (stderr, "   %4d   %d\n", i, __upc_info->thread_info[i].pid);
+	  fprintf (stderr,
+	           "   %4d   %ld\n", i, (long) __upc_info->thread_info[i].pid);
 	}
     }
 }

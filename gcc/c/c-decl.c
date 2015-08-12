@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-upc.h"
+#include "c-family/c-upc-low.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-ubsan.h"
 #include "c-lang.h"
@@ -9198,6 +9199,8 @@ finish_function (void)
       if (!decl_function_context (fndecl))
 	{
 	  invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
+          if (flag_upc)
+            upc_genericize (fndecl);
 	  c_genericize (fndecl);
 
 	  /* ??? Objc emits functions after finalizing the compilation unit.

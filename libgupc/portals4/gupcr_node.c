@@ -172,7 +172,7 @@ gupcr_mem_private (size_t size)
 {
   char *memaddr;
   memaddr = mmap (NULL, size, PROT_READ | PROT_WRITE,
-		  MAP_PRIVATE | MAP_ANONYMOUS, 0, OFFSET_ZERO);
+		  MAP_PRIVATE | MAP_ANONYMOUS, -1, OFFSET_ZERO);
   if (!memaddr || memaddr == MAP_ERROR)
     gupcr_fatal_error
       ("cannot mmap 0x%lx bytes of node's private shared memory (%s)",

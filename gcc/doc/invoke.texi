@@ -169,7 +169,11 @@ in the following sections.
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding -fopenacc -fopenmp -fopenmp-simd @gol
+-fupc -fupc-threads=@var{N} -fupc-pthreads-model-tls @gol
+-fupc-inline-lib -fupc-pre-include -fupc-debug -dwarf-2-upc @gol
+-fupc-instrument -fupc-instrument-functions @gol
 -fms-extensions -fplan9-extensions -trigraphs -traditional -traditional-cpp @gol
+-trigraphs  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char}
@@ -1928,6 +1932,71 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
 in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
 are ignored.
+
+@item -fupc
+@opindex fupc
+@cindex Enable UPC
+Enable the usage of UPC language extension features for C.
+When @option{-fupc} is specified, enable the UPC language
+extension features for C.  The present implementation conforms
+to version 1.3 of the UPC language and library specifications
+@w{@uref{http://upc.lbl.gov/publications/upc-spec-1.3.pdf}}.
+This is an experimental feature, and the compiler ABI is subject
+to change in future versions of GCC.
+
+@item -fupc-threads=N
+@opindex fupc-threads
+Specify the number of UPC threads at compile-time as @option{N}.  If this
+option is not present or the value of @option{N} is 0, the number of
+threads will be specified dynamically when the program is executed.
+The @option{-fupc} must also be present for this option to take effect.
+
+@item -fupc-pthreads-model-tls
+@opindex fupc-pthreads-model-tls
+Compile for the POSIX threads (pthreads) environment. Each UPC thread
+is directly mapped to one pthread.
+The @option{-fupc} must also be present for this option to take effect.
+
+@item -fupc-inline-lib
+@opindex fupc-inline-lib
+Inline various UPC run-time library routines. This option is
+enabled by default when compiled with @option{-O1} or higher.
+The @option{-fno-upc-inline-lib} option will disable inlining
+of the UPC runtime.
+The @option{-fupc} must also be present for this option to take effect.
+
+@item -fupc-pre-include
+@opindex fupc-pre-include
+Pre-include the UPC runtime header files. This option is enabled
+by default when @option{-fupc} is asserted.
+The @option{-fupc} must also be present for this option to take effect.
+
+@item -dwarf-2-upc
+@opindex dwarf-2-upc
+Generate UPC-specific symbolic DWARF-2 debugging information.  This
+debugging information is processed by UPC-aware debuggers including
+GDB-UPC, a variant of the GDB debugger, and the commercially available
+Rogue Wave Totalview and Allinea DDT debuggers.
+The @option{-fupc} must also be present for this option to take effect.
+
+@item -fupc-debug
+@opindex fupc-debug
+Generate calls to the UPC run-time library that include source filename
+and line number information; this information is used to print more
+informative error messages when errors are detected at run-time.
+The @option{-fupc} must also be present for this option to take effect.
+
+@item -fupc-instrument
+@opindex fupc-instrument
+Instrument UPC shared accesses and library calls using GASP tool
+support API. This option implies @option{-fno-upc-inline-lib}.
+The @option{-fupc} must also be present for this option to take effect.
+
+@item -fupc-instrument-functions
+@opindex fupc-instrument-functions
+Instrument functions calls using GASP tool support. This option implies
+@option{-fupc-instrument} and @option{-fno-upc-inline-lib}.
+The @option{-fupc} must also be present for this option to take effect.
 
 @item -fcilkplus
 @opindex fcilkplus

@@ -1773,7 +1773,7 @@ extern machine_mode element_mode (const_tree t);
 
 /* If nonzero, this type is `restrict'-qualified, in the C sense of
    the term.  */
-#define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type_common.reupc_strict_flag)
+#define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type_common.restrict_flag)
 
 /* If nonzero, this type is `shared'-qualified, in the UPC dialect */
 #define TYPE_UPC_SHARED(NODE) (TYPE_CHECK (NODE)->base.u.bits.upc_shared_flag)

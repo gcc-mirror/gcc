@@ -101,10 +101,15 @@ if test "$upc_runtime_model" = "portals4"; then
     LIBS="$portals4libs $LIBS"
   fi
 fi
-if test "x${have_rdynamic}" == "xyes"; then
-  LIBS="-export-dynamic $LIBS"
+if test "x$enable_execinfo_lib" = "xyes"; then
+  LIBS="-lexecinfo $LIBS"
 fi
 libgupc_spec="%{!fupc-pthreads*:-lgupc;:-lgupc_pt -lpthread}"
+if test "$enable_upc_backtrace" = yes &&
+   test -n "$export_dynamic_flag_spec"; then
+  dynamic_spec=`echo "$export_dynamic_flag_spec" | sed -e 's/${wl}//'`
+  libgupc_spec="$dynamic_spec ${libgupc_spec}"
+fi
 if test "$enable_upc_link_script" = yes; then
   libgupc_spec="-T gupc.ld%s ${libgupc_spec}"
 fi

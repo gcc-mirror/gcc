@@ -359,9 +359,6 @@ qualify_type (tree type, tree like)
   int result_quals;
   tree result_block_factor = NULL_TREE;
 
-  gcc_assert (type && TREE_CODE (type) != ARRAY_TYPE);
-  gcc_assert (like && TREE_CODE (like) != ARRAY_TYPE);
-
   /* If the two named address spaces are different, determine the common
      superset address space.  If there isn't one, raise an error.  */
   if (!addr_space_superset (as_type, as_like, &as_common))
@@ -11637,6 +11634,7 @@ build_binary_op (location_t location, enum tree_code code,
 
   return ret;
 }
+
 
 /* Convert EXPR to be a truth-value, validating its type for this
    purpose.  LOCATION is the source location for the expression.  */

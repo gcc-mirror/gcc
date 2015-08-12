@@ -98,7 +98,7 @@ static void upc_genericize_compound_expr (tree *, int);
 static void upc_genericize_cond_expr (tree *, int);
 static void upc_genericize_decl_expr (tree *);
 static tree upc_genericize_expr (tree *, int *, void *);
-static void upc_genericize_fndecl (tree);
+static void upc_genericize_function (tree);
 static void upc_genericize_field_ref (location_t, tree *);
 static void upc_genericize_forall_stmt (tree *);
 static void upc_genericize_indirect_ref (location_t, tree *);
@@ -1322,19 +1322,16 @@ upc_genericize_body (tree *body_p, tree fndecl)
   input_location = saved_location;
 }
 
-/* Convert the function tree rooted at FNDECL into GENERIC.
-   After some initial set up, call upc_genericize_body()
-   on the function body.  */
+/* Convert the tree representation of FNDECL, along with all nested
+   functions defined within it, into the GENERIC form.  */
 
 static void
-upc_genericize_function_tree (tree fndecl)
+upc_genericize_function (tree fndecl)
 {
-  tree oldfn;
+  struct cgraph_node *cgn;
 
   gcc_assert (DECL_SAVED_TREE (fndecl));
 
-  oldfn = current_function_decl;
-  current_function_decl = fndecl;
   if (DECL_STRUCT_FUNCTION (fndecl))
     push_cfun (DECL_STRUCT_FUNCTION (fndecl));
   else
@@ -1349,22 +1346,11 @@ upc_genericize_function_tree (tree fndecl)
       upc_instrument_func (fndecl);
     }
 
-  current_function_decl = oldfn;
   pop_cfun ();
-}
 
-/* Convert the tree representation of FNDECL, along with all nested
-   functions defined within it, into the GENERIC form.  */
-
-static void
-upc_genericize_fndecl (tree fndecl)
-{
-  struct cgraph_node *cgn;
-  /* Lower this function and any nested functions.  */
-  upc_genericize_function_tree (fndecl);
   cgn = cgraph_node::get_create (fndecl);
   for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    upc_genericize_fndecl (cgn->decl);
+    upc_genericize_function (cgn->decl);
 }
 
 /* If the accumulated UPC initialization statement list is
@@ -1389,7 +1375,7 @@ upc_write_init_func (void)
 void
 upc_genericize (tree fndecl)
 {
-  upc_genericize_fndecl (fndecl);
+  upc_genericize_function (fndecl);
 }
 
 /* Return TRUE if either DECL's type is a UPC shared type, or if

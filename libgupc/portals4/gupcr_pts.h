@@ -123,10 +123,10 @@ typedef upc_shared_ptr_t upc_dbg_shared_ptr_t;
 #endif
 #define GUPCR_PTS_TO_REP(V) *((upc_shared_ptr_t *)&(V))
 #if GUPCR_TARGET64
-#define GUPCR_ONE 1L
+#define GUPCR_ONE 1UL
 #define GUPCR_PTS_REP_T unsigned long
 #else
-#define GUPCR_ONE 1LL
+#define GUPCR_ONE 1ULL
 #define GUPCR_PTS_REP_T unsigned long long
 #endif
 #define GUPCR_PTS_VADDR_MASK	((GUPCR_ONE << GUPCR_PTS_VADDR_SIZE) \

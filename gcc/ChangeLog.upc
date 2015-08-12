@@ -1,7 +1,93 @@
+2015-08-12  Gary Funck  <gary@intrepid.com>
+
+	Cherry pick gupc branch updates, up to version 226835.
+
 2015-07-16  Gary Funck  <gary@intrepid.com>
 
 	Merge GCC 5.2 release into gupc-5-branch.
 	Merge gcc-5-branch version 225864 into gupc-5-branch.
+
+2015-06-23  Gary Funck  <gary@intrepid.com>
+
+	* function.c (assign_parm_setup_reg): Improve check for
+	struct PTS.
+
+2015-06-06  Gary Funck  <gary@intrepid.com>
+
+	* config/rs6000/rs6000.c (rs6000_pass_by_reference):
+	Check for UPC struct pointer-to-shared type,
+	if using V4 ABI (typical of 32 bit target).
+
+2015-05-27  Gary Funck  <gary@intrepid.com>
+
+	* config/rs6000/rs6000.c (rs6000_return_in_memory):
+	Generalize check for struct PTS to handle various ABI's.
+	(rs6000_function_arg_boundary): Simplify the check for struct PTS.
+	(rs6000_function_value): Improve formatting.
+
+2015-05-24  Gary Funck  <gary@intrepid.com>
+
+	* tree-core.h, tree.h: Fix typo introduced in revision 209120.
+
+2015-05-23  Gary Funck  <gary@intrepid.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg_boundary):
+	Disable ABI warning for UPC pointer-to-shared types
+	or the PTS representation type.
+
+2015-05-22  Gary Funck  <gary@intrepid.com>
+
+	* config/rs6000/rs6000.c (s6000_function_arg_boundary):
+	Check for UPC pointer-to-shared type in logic that
+	handles new ABI for types that are aligned at >= 16 bytes.
+
+2015-05-22  Gary Funck  <gary@intrepid.com>
+
+	Fix RTL check for "struct-PTS".
+	* function.c (assign_parm_setup_reg): Don't call mark_reg_pointer()
+	with a UPC pointer-to-shared.
+
+2015-05-13  Gary Funck  <gary@intrepid.com>
+
+	Fix ICE when initializing a global shared variable of type __int128.
+	* c/c-convert.c (convert):
+        Drop 'shared' qualifier for all conversions.
+	Previously, this was done only for types that
+	shared the same main variant.
+
+2015-05-12  Gary Funck  <gary@intrepid.com>
+
+	Fix ICE when compiling nested functions.
+	* c-family/c-gimplify.c: Revert to trunk.
+	* c/c-decl.c (finish_function):
+	Move call to upc_genericize here.
+	* c-family/c-upc-low.c (upc_genericize_function): Renamed.
+	Was: upc_genericize_fndecl.
+	Remove logic that attempted to explicitly save/restore
+	current_function_decl.
+	(upc_genericize_function_tree): Delete.
+
+2015-05-11  Gary Funck  <gary@intrepid.com>
+
+	Remove asserts which check for attempt to qualify an ARRAY_TYPE.
+	Caused an ICE when compiling gcc.dg/pointer-array-quals-*.c.
+	* c/c-typeck.c (qualify_type): Revert to trunk.
+
+2015-05-08  Gary Funck  <gary@intrepid.com>
+
+	Revert cosmetic changes to trunk to avoid spurious differences.
+	* tree.c: Remove extra blank line.
+	* c/c-typeck.c: Add back extra blank line.
+
+2015-04-30  Gary Funck  <gary@intrepid.com>
+
+	* doc/passes.texi: Add @section command for "UPC Transformation".
+
+2015-04-29  Gary Funck  <gary@intrepid.com>
+
+	* doc/gupc.texi, doc/install.texi, doc/invoke.texi,
+	doc/passes.texi, doc/sourcebuild.texi:
+	Update GUPC documentation.
 
 2015-04-12  Gary Funck  <gary@intrepid.com>
 
@@ -1235,7 +1321,7 @@
 	Merge trunk version 185278 into gupc branch.
 	* c-decl.c (c_build_pointer_type): For UPC pointer-to-shared types
 	call build_pointer_type() to apply UPC-specific qualifiers.
-	* top-level/configure.ac: factor the checking for posix hostst
+	* top-level/configure.ac: factor the checking for posix hosts
 	out of the libgomp section so that it can also be used by libgupc.
 	* top-level/configure: Re-generate.
 	* DEV-PHASE: bump to 4.8.0-1.
@@ -1418,7 +1504,7 @@
 	* gcc/ada/mlib-tgt-specific-darwin.adb: Ditto.
 	* gcc/ada/gcc-interface/Makefile.in: Ditto.
 	* top-level/configure: Re-generate.
-	* gcc/configure: Re-genrate.
+	* gcc/configure: Re-generate.
 
 2011-10-26  Gary Funck  <gary@intrepid.com>
 
@@ -1715,7 +1801,7 @@
 	Merge trunk version 177548 into gupc branch.
 	* config/i386/i386.c (ix86_promote_function_mode):
 	  Do not promote UPC pointers-to-shared to Pmode.
-	* c-family/c-ommon.c (pointer_int_sum):
+	* c-family/c-common.c (pointer_int_sum):
 	  Also check the pointer operand, rather than just
 	  its type, when making the decision to derive
 	  the equivalent unshared type.
@@ -2498,7 +2584,7 @@
 	It had been incorrectly spelled as Objc.
 	* c-family/c.opt: Add UPC for the various switches
 	that are valid for both C and ObjC.
-	* c-fmaily/c-opts.c: Add CL_UPC to the list of
+	* c-family/c-opts.c: Add CL_UPC to the list of
 	supported options switches when compiling assembly
 	language.
 	* lto/lto-lang.c (use_upc_dwarf2_extensions,
@@ -2532,7 +2618,7 @@
 	C preprocessor.  This is not necessary because
 	UPC is a derivative of C99, and does not need
 	a different language kind.
-	* c-fmaily/c-opts.c (c_common_handle_option):
+	* c-family/c-opts.c (c_common_handle_option):
 	Call set_std_c99() when processing the
 	"--lang upc" switch, instead of setting the
 	language kind to CL_UPC.
@@ -2900,7 +2986,7 @@
 	Merge trunk version 177548 into gupc branch.
 	* config/i386/i386.c (ix86_promote_function_mode):
 	  Do not promote UPC pointers-to-shared to Pmode.
-	* c-family/c-ommon.c (pointer_int_sum):
+	* c-family/c-common.c (pointer_int_sum):
 	  Also check the pointer operand, rather than just
 	  its type, when making the decision to derive
 	  the equivalent unshared type.
@@ -2920,7 +3006,7 @@
 	* upc/upc-genericize.c (upc_expand_put): Fix bug, where strict/relaxed
 	qualification was incorrectly derived from the source operand.
 	(upc_genericize_fndecl): New.
-	(upc_gnericize): Call upc_genericize_fndecl() to avoid calling
+	(upc_genericize): Call upc_genericize_fndecl() to avoid calling
 	c_genericize() more than once in the event of nested procedures.
 	(upc_genericize_real_imag_ref): Rename,
 	was: upc_genericize_real_image_ref.
@@ -3476,7 +3562,7 @@
 
 2011-04-29  Gary Funck  <gary@intrepid.com>
 
-	* upc/upc-gimplify.c (upc_expsnd_get): Improve error diagnostics.
+	* upc/upc-gimplify.c (upc_expand_get): Improve error diagnostics.
 	  (upc_expand_put): Ditto.
 	  (upc_shared_addr): Ditto.
 	  (upc_gimplify_sync_stmt): Ditto.
@@ -4247,7 +4333,7 @@
 	It had been incorrectly spelled as Objc.
 	* c-family/c.opt: Add UPC for the various switches
 	that are valid for both C and ObjC.
-	* c-fmaily/c-opts.c: Add CL_UPC to the list of
+	* c-family/c-opts.c: Add CL_UPC to the list of
 	supported options switches when compiling assembly
 	language.
 	* lto/lto-lang.c (use_upc_dwarf2_extensions,
@@ -4281,7 +4367,7 @@
 	C preprocessor.  This is not necessary because
 	UPC is a derivative of C99, and does not need
 	a different language kind.
-	* c-fmaily/c-opts.c (c_common_handle_option):
+	* c-family/c-opts.c (c_common_handle_option):
 	Call set_std_c99() when processing the
 	"--lang upc" switch, instead of setting the
 	language kind to CL_UPC.

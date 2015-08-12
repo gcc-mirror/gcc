@@ -1597,6 +1597,9 @@ support for @code{libquadmath} on systems supporting it.
 Specify that the GNU Offloading and Multi Processing Runtime Library
 should not be built.
 
+@item --disable-libgupc
+Specify that the run-time libraries used by GNU UPC should not be built.
+
 @item --disable-libvtv
 Specify that the run-time libraries used by vtable verification
 should not be built.
@@ -2079,6 +2082,38 @@ When you use this option, you should ensure that @var{dir} includes
 @command{ranlib} and @command{strip} if necessary, and possibly
 @command{objdump}.  Otherwise, GCC may use an inconsistent set of
 tools.
+@end table
+
+@subheading UPC-Specific Options
+
+The following options apply to the build of the GCC front end;
+they control aspects of UPC code generation.
+
+@table @code
+
+@item --enable-upc-link-script
+Enable UPC's use of a custom linker script; this
+will define the UPC shared section as a no load
+section on targets where this feature is supported
+
+@item --with-upc-pts=@var{struct} or @var{packed}
+Specify the representation of a UPC pointer-to-shared.
+The @var{packed} representation is the default.
+The @var{struct} representation supports configurations
+with a larger range for the number of UPC threads,
+the maximum UPC blocking factor, and address offsets within
+a UPC thread.
+
+@item --with-upc-pts-vaddr-order=@var{last} or @var{first}
+Specify the position of the address offset field in the UPC
+pointer-to-shared representation.  The @var{last} position
+is the default.
+
+@item --with-upc-pts-packed-bits=@var{phase},@var{thread},@var{vaddr}
+Specify the bit distribution of the fields
+in the packed UPC pointer-to-shared representation.
+The default values are @samp{20,10,34}.
+
 @end table
 
 @subheading Java-Specific Options

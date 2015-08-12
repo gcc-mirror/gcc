@@ -103,9 +103,8 @@ convert (tree type, tree expr)
 
   /* Drop 'shared' qualifier when considering conversions
      of expression values.  */
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr))
-      && upc_shared_type_p (type))
-    return fold_convert_loc (loc, build_upc_unshared_type(type), expr);
+  if (upc_shared_type_p (type))
+    type = build_upc_unshared_type(type);
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr))
       && (TREE_CODE (TREE_TYPE (expr)) != COMPLEX_TYPE

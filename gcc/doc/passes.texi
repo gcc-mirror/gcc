@@ -18,6 +18,7 @@ where near complete.
 
 @menu
 * Parsing pass::         The language front end turns text into bits.
+* UPC Transformation::   Transform UPC constructs into equivalent C.
 * Cilk Plus Transformation:: Transform Cilk Plus Code to equivalent C/C++.
 * Gimplification pass::  The bits are turned into something we can optimize.
 * Pass manager::         Sequencing the optimization passes.
@@ -103,6 +104,100 @@ that is more descriptive than "rest_of".
 
 The middle-end will, at its option, emit the function and data
 definitions immediately or queue them for later processing.
+
+@node UPC Transformation
+@section UPC Transformation
+@cindex UPC
+
+If UPC compilation is enabled via the flag @option{-fupc},
+all UPC constructs are transformed into equivalent C operations
+and/or calls to the UPC runtime library (@file{libgupc}).
+The majority of this transformation occurs near the end of the parsing pass
+and before the gimplification pass.  This transformation
+pass is implemented in the file @file{c-family/c-upc-low.c}.
+
+UPC constructs are handled in the @code{C} parser when the
+@option{-fupc} option is asserted.  The UPC language is specified as
+a series of extensions to ISO C99.  GNU UPC conforms to version 1.3
+of the UPC Language Specification
+@w{(@uref{http://upc.lbl.gov/publications/upc-spec-1.3.pdf}).}
+
+UPC introduces three type qualifiers: ``shared'', ``strict'',
+and ``relaxed''.  `shared'' qualified memory may be remote to
+the currently executing UPC thread.  The ``strict'' and ``relaxed''
+qualifiers further modify accesses to UPC shared memory.  A ``strict''
+UPC shared access has more stronger memory consistency properties
+than a ``relaxed'' access.  UPC introduces an additional ``layout qualifier''
+(also known as the blocking factor) which controls the layout of
+UPC shared arrays.  The following example illustrates the use of
+UPC-specific type qualifiers:
+@smallexample
+  shared strict int x;
+  shared relaxed int y;
+  /* Below, ``[100]'' is the layout qualifier. */
+  shared [100] float A[100*THREADS*10];
+@end smallexample
+
+UPC also defines several synchronization statements
+which are specified as reserved words: ``upc_barrier'', ``upc_fence'',
+``upc_notify'', and ``upc_wait''.  Additionally, an
+iterator statement, ``upc_forall'' is defined; it is similar
+to the ``for'' statement, but has an additional (fourth)
+``affinity clause'' which constrains UPC shared accesses for
+each iteration of the loop.
+
+UPC introduces two reserved identifiers:
+@table @code
+@item MYTHREAD
+The thread number (in the range @code{0..THREADS-1})
+of the currently executing UPC thread.
+@item THREADS
+The number of UPC threads specified for the current
+program execution.
+@end table
+
+The major components of the UPC language extension transform passe are:
+@itemize @bullet
+@item UPC shared memory accesses:
+Read accesses to UPC shared memory are translated into calls
+to various ``get'' functions implemented in the UPC runtime library.
+Write accesses to UPC shared memory are translated into calls
+to various ``put'' routines implemented in the UPC runtime library.
+@item UPC shared variable allocation and references:
+Variables qualified by the UPC ``shared'' qualifier must be allocated
+in UPC shared memory which can be accessed by all UPC threads.
+It is common for a UPC thread to be implemented as an operating
+system process and for UPC threads to execute on different computing
+nodes often connected by specialized high speed networks.
+Therefore, UPC shared variable declarations must be consolidated
+and allocated separately from regular @code{C} global variables.
+
+@item UPC pointer-to-shared arithmetic:
+UPC pointers-to-shared have three components: ``thread'',
+``phase'', and ``offset''.  The ``thread'' gives the thread number
+of the thread that has affinity to the globally shared data.  The ``offset''
+gives the offset of the data within shared data allocated on the
+target thread.  The ``phase'' is used to implement the properties
+defined by the UPC ``layout qualifier''.  UPC pointer-to-shared
+arithmetic requires several multiplications and modulo operations
+to implement the more general cases.  The UPC transformation pass
+translates UPC pointer-to-shared arithmetic into an equivalent
+series of @code{C} arithmetic operations.
+
+@item UPC pointer-to-shared conversions:
+UPC pointers-to-shared can be converted into @code{C}
+pointers if the current UPC has affinity to the referenced
+UPC shared memory.  The UPC transformation pass translates
+conversions from UPC pointers-to-shared into a call to
+the UPC runtime which will implement the conversion if it
+it meets the affinity constraint.
+
+@item UPC synchronization statements:
+The UPC language defined synchronization statements
+(for example, ``upc_barrier'') are translated into
+calls to the UPC runtime.
+
+@end itemize
 
 @node Cilk Plus Transformation
 @section Cilk Plus Transformation

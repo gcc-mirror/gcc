@@ -9233,22 +9233,26 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
       /* Otherwise fall through to more conventional ABI rules.  */
     }
 
-#if HAVE_UPC_PTS_STRUCT_REP
-  if (POINTER_TYPE_P (type) && upc_shared_type_p (TREE_TYPE (type)))
-    return true;
-#endif
-
   /* The ELFv2 ABI returns homogeneous VFP aggregates in registers */
   if (rs6000_discover_homogeneous_aggregate (TYPE_MODE (type), type,
 					     NULL, NULL))
     return false;
 
+  /* TYPE is a UPC pointer-to-shared type
+     and its underlying representation is an aggregate.  */
+  bool upc_struct_pts_p = (POINTER_TYPE_P (type)
+			     && upc_shared_type_p (TREE_TYPE (type)))
+			   && AGGREGATE_TYPE_P (upc_pts_rep_type_node);
+  /* If TYPE is a UPC struct PTS type, handle it as an aggregate type.  */
+  bool aggregate_p = AGGREGATE_TYPE_P (type)
+                     || upc_struct_pts_p;
+
   /* The ELFv2 ABI returns aggregates up to 16B in registers */
-  if (DEFAULT_ABI == ABI_ELFv2 && AGGREGATE_TYPE_P (type)
+  if (DEFAULT_ABI == ABI_ELFv2 && aggregate_p
       && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) <= 16)
     return false;
 
-  if (AGGREGATE_TYPE_P (type)
+  if (aggregate_p
       && (aix_struct_return
 	  || (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 8))
     return true;
@@ -9560,6 +9564,18 @@ rs6000_function_arg_boundary (machine_mode mode, const_tree type)
        || DEFAULT_ABI == ABI_ELFv2)
       && type && TYPE_ALIGN (type) > 64)
     {
+
+      /* If the underlying UPC pointer-to-shared representation
+         an aggregate, and TYPE is either a pointer-to-shared
+	 or the PTS representation type, then return the 16-byte
+	 alignment and skip the ABI warning.  */
+      if (upc_pts_rep_type_node
+          && AGGREGATE_TYPE_P (upc_pts_rep_type_node)
+          && ((POINTER_TYPE_P (type)
+	       && upc_shared_type_p (TREE_TYPE (type)))
+              || (TYPE_MAIN_VARIANT (type) == upc_pts_rep_type_node)))
+	return 128;
+
       /* "Aggregate" means any AGGREGATE_TYPE except for single-element
          or homogeneous float/vector aggregates here.  We already handled
          vector aggregates above, but still need to check for float here. */
@@ -10835,18 +10851,16 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
   if (!type)
     return 0;
 
-#if HAVE_UPC_PTS_STRUCT_REP
-  if (DEFAULT_ABI == ABI_V4 && POINTER_TYPE_P (type)
-      && upc_shared_type_p (TREE_TYPE (type)))
-    {
-      if (TARGET_DEBUG_ARG)
-	fprintf (stderr, 
-		 "function_arg_pass_by_reference: V4 UPC ptr to shared\n");
-      return 1;
-    }
-#endif
+  /* TYPE is a UPC pointer-to-shared type
+     and its underlying representation is an aggregate.  */
+  bool upc_struct_pts_p = (POINTER_TYPE_P (type)
+                             && upc_shared_type_p (TREE_TYPE (type)))
+                           && AGGREGATE_TYPE_P (upc_pts_rep_type_node);
+  /* If TYPE is a UPC struct PTS type, handle it as an aggregate type.  */
+  bool aggregate_p = AGGREGATE_TYPE_P (type)
+                     || upc_struct_pts_p;
 
-  if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (type))
+  if (DEFAULT_ABI == ABI_V4 && aggregate_p)
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: V4 aggregate\n");
@@ -31902,7 +31916,8 @@ rs6000_function_value (const_tree valtype,
 
   if ((INTEGRAL_TYPE_P (valtype)
        && GET_MODE_BITSIZE (mode) < (TARGET_32BIT ? 32 : 64))
-      || (POINTER_TYPE_P (valtype) && !upc_shared_type_p (TREE_TYPE (valtype))))
+      || (POINTER_TYPE_P (valtype)
+          && !upc_shared_type_p (TREE_TYPE (valtype))))
     mode = TARGET_32BIT ? SImode : DImode;
 
   if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)

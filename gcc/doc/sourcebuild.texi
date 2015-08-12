@@ -91,6 +91,9 @@ The Go runtime library.  The bulk of this library is mirrored from the
 @item libgomp
 The GNU Offloading and Multi Processing Runtime Library.
 
+@item libgupc
+The GNU UPC runtime library.
+
 @item libiberty
 The @code{libiberty} library, used for portability and for some
 generally useful data structures and algorithms.  @xref{Top, ,
@@ -1853,6 +1856,9 @@ Target supports @option{-freorder-blocks-and-partition}.
 
 @item fstack_protector
 Target supports @option{-fstack-protector}.
+
+@item fupc
+Target supports UPC via @option{-fupc}.
 
 @item gas
 Target uses GNU @command{as}.

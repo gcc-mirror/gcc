@@ -1,3 +1,53 @@
+2015-08-08  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Check for existence of execinfo library
+	on BSD systems as it is required for backtrace.
+	* configure: Re-generate.
+	* configure.tgt: Add execinfo library on the link line if
+	necessary.
+	* portals4/gupcr_node.c (gupcr_mem_private): File number must
+	be -1 on BSD systems for anonymous maps.
+	* smp/upc_sysdep.c (__upc_strsignal): Add support for SUN. Do
+	not declare sys_siglist on netBSD (already in signal.h).
+	(__upc_create_runtime_heap): File number must be -1 on BSD
+	systems for anonymous maps.
+	* smp/upc_backtrace.c: Fix compile warnings.
+
+2015-08-03  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Remove unnecessary check for
+	-rdynamic.
+	* configure: Re-generate.
+	* configure.tgt: Add option for exporting dynamic symbols
+	only if linker supports it.
+
+2015-07-25  Gary Funck  <gary@intrepid.com>
+
+	* libgupc.texi: Change menu ordering to agree with node ordering.
+
+2015-07-24  Gary Funck  <gary@intrepid.com>
+
+	* smp/upc_pts.h (GUPCR_ONE): Define as unsigned constant,
+	to avoid overflow warnings.
+	* portals4/gupcr_pts.h (GUPCR_ONE): Ditto.
+
+2015-07-03  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_nb.upc (upc_memset_nb, upc_memset_nbi): Complete
+	upc_memset() with upc fence.  Otherwise it will not be completed by
+	the non-blocking sync functions.
+
+2015-05-18  Gary Funck  <gary@intrepid.com>
+
+	* configure.ac: Set minimum automake version to 1.11.6.
+	* aclocal.m4, configure, Makefile.in, testsuite/Makefile.in:
+	Re-generate with automake 1.11.6.
+
+2015-04-30  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_nb_sup.c (gupc_nb_put/get): Fix bug. Increment
+	number of outstanding implicit transfers.
+
 2014-11-01  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* portals4/gupcr_gmem.c (gupc_gmem_get): Advance remote offset
@@ -50,7 +100,7 @@
 	* portals4/gcc-upc-lib.in: Use stddef.h for size_t
 	instead of sys/types.h as it might break on some
 	systems.
-	
+
 2014-05-27  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_main.c (__upc_run_threads): Set O_APPEND flag
@@ -127,7 +177,7 @@
 
 	* configure.ac: Remove check for cc1upc.
 	* configure: Re-generate.
-	* portals4/gcc-upc-lib.in: Protect upc_atomicdomain_t declartion
+	* portals4/gcc-upc-lib.in: Protect upc_atomicdomain_t declaration
 	with #pragma upc upc_code.
 	* smp/gcc-upc-lib.in: Ditto.
 
@@ -591,7 +641,7 @@
 	* Makefile.am: Add more files for cleanup.
 	* Makefile.in: Regenerate.
 	* smp/upc_tick.c: Add proper casting for calculating
-	  nanoseconds from sec/usec if gettimeofday() call was used.
+	  nanoseconds from sec/micro-sec if gettimeofday() call was used.
 
 2012-10-23  Nenad Vukicevic  <nenad@intrepid.com>
             Gary Funck  <gary@intrepid.com>
@@ -702,7 +752,7 @@
 	* smp/upc_lock.c: Delete.
 	* smp/upc_lock.h: Add prototype for lock init routine.
 	* smp/upc_lock_sup.h: MCS lock support routines for
-	signalling, swap, and compare/swap.
+	signaling, swap, and compare/swap.
 	* smp/upc_main.c (__upc_per_thread_init): Call lock init.
 	  (GUPCR_START): Remove init of alloc lock.
 	* smp/upc_lock.upc: New. New MCS lock implementation.
@@ -825,7 +875,7 @@
 
 2012-08-22  Nenad Vukicevic  <nenad@intrepid.com>
 
-	* upc_defs.h: Additianl clean-up related to the new barrier
+	* upc_defs.h: Additional clean-up related to the new barrier
 	implementation.
 	(upc_barrier_id_t): Delete.
 	(upc_barrier_info_t): Delete.
@@ -910,7 +960,7 @@
 	* Makefile.am: Removed indented spaces on if/endif.
 
 2012-06-08  Nenad Vukicevic  <nenad@intrepid.com>
-	
+
 	Add backtrace support for UPC SMP run-time.
 	* configure.ac: Added UPC backtrace configuration
 	options (--enable-upc-backtrace, --enable-upc-backtrace-gdb,
@@ -984,7 +1034,7 @@
 
 	* smp/upc_lock.c (upc_lock): Adding a fence as per the
 	language specification.  This also forces the processor to
-	discard all speculaive memory fetches.
+	discard all speculative memory fetches.
 	(upc_lock_attempt): Ditto.
 	(upc_ulock): Ditto.
 
@@ -1341,11 +1391,11 @@
 	  was re-worked to use automake (when the gupc branch
 	  was first checked in).
 
-	* smp/upc_config.h: Move the defintions of GUPCR_INIT_ARRAY_START
+	* smp/upc_config.h: Move the definitions of GUPCR_INIT_ARRAY_START
 	  and GUPCR_INIT_ARRAY_END from smp/upc_main.c to here.
 
 	* smp/upc_main.c: Rename HAVE_GUM_DEBUG to GUPCR_HAVE_GUM_DEBUG.
-	  Move the defintions of GUPCR_INIT_ARRAY_START and
+	  Move the definitions of GUPCR_INIT_ARRAY_START and
 	  GUPCR_INIT_ARRAY_END to smp/upc_config.h.
 
 2011-02-22  Gary Funck  <gary@intrepid.com>
@@ -1438,7 +1488,7 @@
 	  static variables that refer to shared addresses.
 
 	  The shared data initialization routine created by the compiler needs
-	  to be called on each threead, because in some cases it will
+	  to be called on each thread, because in some cases it will
 	  initialize per thread data.  At the moment, the compiler does not
 	  generate code that will differentiate between initialization code
 	  that should only occur on thread 0, so some additional work may get

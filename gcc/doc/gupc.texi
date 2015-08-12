@@ -28,7 +28,7 @@ any later version published by the Free Software Foundation; with the
 Invariant Sections being ``GNU General Public License'' and ``Funding
 Free Software'', the Front-Cover texts being (a) (see below), and with
 the Back-Cover Texts being (b) (see below).  A copy of the license is
-included in the 
+included in the
 @c man end
 section entitled ``GNU Free Documentation License''.
 @ignore
@@ -80,20 +80,20 @@ Boston, MA 02110-1301, USA@*
 @chapter @command{gupc}--- UPC compiler for parallel computers
 
 @command{gupc} provides a compilation and execution environment for
-programs written in the UPC (Unified Parallel C) language. 
+programs written in the UPC (Unified Parallel C) language.
 
 @menu
-* Gupc Intro::		Introduction to gupc.
+* GUPC Intro::		Introduction to gupc.
 * Threads::		Number of Execution Threads.
-* Invoking Gupc::	How to use gupc.
-* Gupc Options::	Gupc Options.
-* Seealso::		Referencies.
-* Gupc Bugs::		Report Gupc Problems.
-* Contributors::	Gupc Contributors.
+* Invoking GUPC::	How to use gupc.
+* GUPC Options::	GUPC Options.
+* See also::		References.
+* GUPC Bugs::		Report GUPC Problems.
+* Contributors::	GUPC Contributors.
 * Index::		Index.
 @end menu
 
-@node Gupc Intro
+@node GUPC Intro
 @section Introduction to @command{gupc}
 @c man begin DESCRIPTION
 
@@ -171,14 +171,14 @@ execution option.
 
 @c man end
 
-@node Invoking Gupc
+@node Invoking GUPC
 @section Invoking @command{gupc}
 
 @c man begin SYNOPSIS
 gupc @r{[}@var{options}@r{]} @file{files}
 @c man end
 
-@node Gupc Options
+@node GUPC Options
 @section @command{gupc} Options
 
 @c man begin OPTIONS
@@ -188,8 +188,8 @@ gupc @r{[}@var{options}@r{]} @file{files}
 @table @gcctabopt
 @item -v
 @cindex @option{-v}
-Print (on standard error output) the commands executed to run the stages 
-of compilation.  Also print the version number of the compiler driver 
+Print (on standard error output) the commands executed to run the stages
+of compilation.  Also print the version number of the compiler driver
 program and of the preprocessor and the compiler proper.
 @end table
 
@@ -200,11 +200,12 @@ program and of the preprocessor and the compiler proper.
 @cindex @option{-x}
 All source files ending in @file{.upc}, @file{.c}, or @file{.upci} will
 be compiled by the @command{gupc} compiler. The @option{-x upc} option
-tells the compiler to process all of the following file names as 
-UPC source code, ignoring the default language typically associated 
+tells the compiler to process all of the following file names as
+UPC source code, ignoring the default language typically associated
 with filename extensions.
 
-@item -fupc-threads-N
+@item -fupc-threads=N
+@cindex @option{-fupc-threads}
 Specify the number of threads at compile-time as @option{N}.  See the
 Number of Threads section, above.
 
@@ -215,10 +216,10 @@ is directly mapped to one pthread.
 
 @item -fupc-inline-lib
 @cindex @option{-fupc-inline-lib}
-Inline UPC run-time library calls. This option is turned on by default 
-when compiled with optimization and the @option{-fno-upc-inline-lib} option 
-must be specified to turn it off. In general, inlining of run-time 
-library calls produces larger code. Turn it off if more 
+Inline UPC run-time library calls. This option is turned on by default
+when compiled with optimization and the @option{-fno-upc-inline-lib} option
+must be specified to turn it off. In general, inlining of run-time
+library calls produces larger code. Turn it off if more
 condensed code is required.
 
 @item -fupc-pre-include
@@ -242,9 +243,9 @@ Totalview debugger.
 
 @item -fupc-debug
 @cindex @option{-fupc-debug}
-Generate calls to the UPC run-time library that include source filename and line
-number information that is used to print more informative error messages when
-errors are detected at run-time.
+Generate calls to the UPC run-time library that include source filename
+and line number information that is used to print more informative
+error messages when errors are detected at run-time.
 @end table
 
 @subsection Instrumentation Options
@@ -252,12 +253,12 @@ errors are detected at run-time.
 @table @gcctabopt
 @item -fupc-instrument
 @cindex @option{-fupc-instrument}
-Instrument UPC shared accesses and library calls using GASP tool 
+Instrument UPC shared accesses and library calls using GASP tool
 support. This option implies @option{-fno-upc-inline-lib}.
 
 @item -fupc-instrument-functions
 @cindex @option{-fupc-instrument-functions}
-Instrument functions calls using GASP tool support. This option implies 
+Instrument functions calls using GASP tool support. This option implies
 @option{-fupc-instrument} and @option{-fno-upc-inline-lib}.
 @end table
 
@@ -281,7 +282,7 @@ command line.
 @file{UPC_program}
 @r{[}@option{number of threads}@r{]}
 @r{[}@option{heap size}@r{]}
-@r{[}@option{affinity options}@r{]} 
+@r{[}@option{affinity options}@r{]}
 @r{[}@option{program arguments}@r{]}
 
 @table @gcctabopt
@@ -321,16 +322,16 @@ specifies that threads are evenly scheduled over available CPUs.
 (A CPU is a processor with a single core or a core unit in a multicore
 processor.)
 @item strict
-is similar to cpu scheduling except that one to one mapping of 
+is similar to cpu scheduling except that one to one mapping of
 threads and CPUs is required.
 @item node
-specifies that threads are scheduled on nodes if a NUMA-aware kernel 
-is available. 
+specifies that threads are scheduled on nodes if a NUMA-aware kernel
+is available.
 @item auto
 specifies that the UPC run-time should not manage scheduling of UPC threads.
 @end table
 
-@item -sched-cpu-avoid n1,n2,.. 
+@item -sched-cpu-avoid n1,n2,..
 @cindex @option{-sched-cpu-avoid}
 Specifies the availability of CPUs for UPC thread scheduling.  The UPC
 run-time will not schedule any thread on the specified CPUs.
@@ -351,36 +352,36 @@ lets the kernel decide the memory allocation policy.
 @c man end
 
 @node Seealso
-@section Referencies
+@section References
 @c man begin SEEALSO
 gcc(1), cpp(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1).
 
 
-@uref{http://upc.lbl.gov/publications/UPC-TR-Original99.pdf} 
-Introduction to UPC and Language Specification, 
+@w{@uref{http://upc.lbl.gov/publications/UPC-TR-Original99.pdf}}
+Introduction to UPC and Language Specification,
 William W. Carlson et al., LLNL, CCS-TR-99-157, May 13, 1999
 
 
-@uref{http://www.gwu.edu/~upc/docs/upc_specs_1.2.pdf} 
-UPC Language Specification, 
-Tarek A. El-Ghazawi et al, February 25, 2001
+@w{@uref{http://upc.lbl.gov/publications/upc-spec-1.3.pdf}}
+UPC Language Specifications, Version 1.3
+A publication of the UPC Consortium
 
 
-@uref{http://gasp.hcs.ufl.edu/} 
-GASP Tool Interface, 
+@uref{http://gasp.hcs.ufl.edu/ppw/}
+GASP Tool Interface,
 University of Florida
 
-@uref{http://www.gccupc.org} 
+@uref{http://www.gccupc.org}
 GNU UPC web site
 
-@uref{http://www.gwu.edu/~upc/software/gnu-upc-ml.html} 
-GNU UPC Mailing List is an electronic forum for discussing 
-news announcements, bug reports, planned developments, and other 
+@uref{http://www.gwu.edu/~upc/software/gnu-upc-ml.html}
+GNU UPC Mailing List is an electronic forum for discussing
+news announcements, bug reports, planned developments, and other
 topics of interest to GNU UPC developers and users.
-@c man end 
+@c man end
 
-@node Gupc Bugs
-@section Report Gupc Problems
+@node GUPC Bugs
+@section Report GUPC Problems
 @c man begin BUGS
 Report bugs at @uref{http://gccupc.org/bugs}.
 @c man end
@@ -398,7 +399,7 @@ William W. Carlson @email{wwc@@super.org}.
 
 @c man begin AUTHOR
 See the Info entry for @command{gupc}, or
-@uref{http://gcc.gnu.org/onlinedocs/gcc/Contributors.html} 
+@uref{http://gcc.gnu.org/onlinedocs/gcc/Contributors.html}
 for contributors to GCC and GUPC.
 @c man end
 

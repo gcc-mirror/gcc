@@ -56,11 +56,13 @@ char *__upc_strsignal (sig)
      int sig;
 {
   static char sigbuf[64];
-#ifdef __sgi__
+#if defined(__sgi__) || defined(__sun__)
   char **sys_siglist = _sys_siglist;
   const int nsig = _sys_nsig;
 #else
+#ifndef __NetBSD__ // signal.h has pointer decl instead of array
   extern const char * const sys_siglist[];
+#endif
   const int nsig = NSIG;
 #endif
   if (sig > 0 && sig < nsig)
@@ -183,7 +185,7 @@ __upc_runtime_alloc (size_t size, os_heap_p *ARG_UNUSED (heap),
 #else
   alloc = mmap ((void *) 0, size,
 	        PROT_READ | PROT_WRITE,
-	        MAP_SHARED | MAP_ANONYMOUS, 0, OFFSET_ZERO);
+	        MAP_SHARED | MAP_ANONYMOUS, -1, OFFSET_ZERO);
   if (!alloc || alloc == MAP_ERROR)
     { *err_msg = strerror(errno); return 0; }
 #endif
