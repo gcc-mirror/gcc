@@ -1,3 +1,11 @@
+2015-08-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/67092
+	PR other/67098
+	* doc/install.texi: Remove --with_host_libstdcxx item.  Update
+	--with-stage1-libs, --with-boot-ldflags and --with-boot-libs items
+	accordingly.  Mention default for --with-stage1-ldflags.
+
 2015-08-12  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm.h (arm_fpu_feature_set): New.

@@ -1,3 +1,9 @@
+2015-08-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/67092
+	* configure.ac: Remove --with_host_libstdcxx support.
+	* configure: Regenerate.
+
 2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
