@@ -37,6 +37,10 @@ enum gimple_code {
 extern const char *const gimple_code_name[];
 extern const unsigned char gimple_rhs_class_table[];
 
+/* Strip the outermost pointer, from tr1/type_traits.  */
+template<typename T> struct remove_pointer { typedef T type; };
+template<typename T> struct remove_pointer<T *> { typedef T type; };
+
 /* Error out if a gimple tuple is addressed incorrectly.  */
 #if defined ENABLE_GIMPLE_CHECKING
 #define gcc_gimple_checking_assert(EXPR) gcc_assert (EXPR)
@@ -51,9 +55,59 @@ extern void gimple_check_failed (const_gimple, const char *, int,          \
       gimple_check_failed (__gs, __FILE__, __LINE__, __FUNCTION__,	\
 	  		   (CODE), ERROR_MARK);				\
   } while (0)
+template <typename T>
+static inline T
+GIMPLE_CHECK2(const_gimple gs,
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+	      const char *file = __builtin_FILE (),
+	      int line = __builtin_LINE (),
+	      const char *fun = __builtin_FUNCTION ())
+#else
+	      const char *file = __FILE__,
+	      int line = __LINE__,
+	      const char *fun = NULL)
+#endif
+{
+  T ret = dyn_cast <T> (gs);
+  if (!ret)
+    gimple_check_failed (gs, file, line, fun,
+			 remove_pointer<T>::type::code_, ERROR_MARK);
+  return ret;
+}
+template <typename T>
+static inline T
+GIMPLE_CHECK2(gimple gs,
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+	      const char *file = __builtin_FILE (),
+	      int line = __builtin_LINE (),
+	      const char *fun = __builtin_FUNCTION ())
+#else
+	      const char *file = __FILE__,
+	      int line = __LINE__,
+	      const char *fun = NULL)
+#endif
+{
+  T ret = dyn_cast <T> (gs);
+  if (!ret)
+    gimple_check_failed (gs, file, line, fun,
+			 remove_pointer<T>::type::code_, ERROR_MARK);
+  return ret;
+}
 #else  /* not ENABLE_GIMPLE_CHECKING  */
 #define gcc_gimple_checking_assert(EXPR) ((void)(0 && (EXPR)))
 #define GIMPLE_CHECK(GS, CODE)			(void)0
+template <typename T>
+static inline T
+GIMPLE_CHECK2(gimple gs)
+{
+  return as_a <T> (gs);
+}
+template <typename T>
+static inline T
+GIMPLE_CHECK2(const_gimple gs)
+{
+  return as_a <T> (gs);
+}
 #endif
 
 /* Class of GIMPLE expressions suitable for the RHS of assignments.  See
@@ -832,6 +886,7 @@ struct GTY((tag("GSS_WITH_OPS")))
 struct GTY((tag("GSS_WITH_MEM_OPS")))
   gassign : public gimple_statement_with_memory_ops
 {
+  static const enum gimple_code code_ = GIMPLE_ASSIGN;
   /* no additional fields; this uses the layout for GSS_WITH_MEM_OPS. */
 };
 
@@ -857,6 +912,14 @@ template <>
 template <>
 inline bool
 is_a_helper <gassign *>::test (gimple gs)
+{
+  return gs->code == GIMPLE_ASSIGN;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const gassign *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_ASSIGN;
 }
@@ -2326,43 +2389,67 @@ get_gimple_rhs_class (enum tree_code code)
 /* Return the LHS of assignment statement GS.  */
 
 static inline tree
+gimple_assign_lhs (const gassign *gs)
+{
+  return gs->op[0];
+}
+
+static inline tree
 gimple_assign_lhs (const_gimple gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-  return gimple_op (gs, 0);
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_lhs (ass);
 }
 
 
 /* Return a pointer to the LHS of assignment statement GS.  */
 
 static inline tree *
+gimple_assign_lhs_ptr (const gassign *gs)
+{
+  return const_cast<tree *> (&gs->op[0]);
+}
+
+static inline tree *
 gimple_assign_lhs_ptr (const_gimple gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-  return gimple_op_ptr (gs, 0);
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_lhs_ptr (ass);
 }
 
 
 /* Set LHS to be the LHS operand of assignment statement GS.  */
 
 static inline void
-gimple_assign_set_lhs (gimple gs, tree lhs)
+gimple_assign_set_lhs (gassign *gs, tree lhs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-  gimple_set_op (gs, 0, lhs);
+  gs->op[0] = lhs;
 
   if (lhs && TREE_CODE (lhs) == SSA_NAME)
     SSA_NAME_DEF_STMT (lhs) = gs;
+}
+
+static inline void
+gimple_assign_set_lhs (gimple gs, tree lhs)
+{
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
+  gimple_assign_set_lhs (ass, lhs);
 }
 
 
 /* Return the first operand on the RHS of assignment statement GS.  */
 
 static inline tree
+gimple_assign_rhs1 (const gassign *gs)
+{
+  return gs->op[1];
+}
+
+static inline tree
 gimple_assign_rhs1 (const_gimple gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-  return gimple_op (gs, 1);
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_rhs1 (ass);
 }
 
 
@@ -2370,20 +2457,31 @@ gimple_assign_rhs1 (const_gimple gs)
    statement GS.  */
 
 static inline tree *
+gimple_assign_rhs1_ptr (const gassign *gs)
+{
+  return const_cast<tree *> (&gs->op[1]);
+}
+
+static inline tree *
 gimple_assign_rhs1_ptr (const_gimple gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-  return gimple_op_ptr (gs, 1);
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_rhs1_ptr (ass);
 }
 
 /* Set RHS to be the first operand on the RHS of assignment statement GS.  */
 
 static inline void
+gimple_assign_set_rhs1 (gassign *gs, tree rhs)
+{
+  gs->op[1] = rhs;
+}
+
+static inline void
 gimple_assign_set_rhs1 (gimple gs, tree rhs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-
-  gimple_set_op (gs, 1, rhs);
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
+  gimple_assign_set_rhs1 (ass, rhs);
 }
 
 
@@ -2391,14 +2489,19 @@ gimple_assign_set_rhs1 (gimple gs, tree rhs)
    If GS does not have two operands, NULL is returned instead.  */
 
 static inline tree
-gimple_assign_rhs2 (const_gimple gs)
+gimple_assign_rhs2 (const gassign *gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-
   if (gimple_num_ops (gs) >= 3)
-    return gimple_op (gs, 2);
+    return gs->op[2];
   else
     return NULL_TREE;
+}
+
+static inline tree
+gimple_assign_rhs2 (const_gimple gs)
+{
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_rhs2 (ass);
 }
 
 
@@ -2406,35 +2509,53 @@ gimple_assign_rhs2 (const_gimple gs)
    statement GS.  */
 
 static inline tree *
+gimple_assign_rhs2_ptr (const gassign *gs)
+{
+  gcc_gimple_checking_assert (gimple_num_ops (gs) >= 3);
+  return const_cast<tree *> (&gs->op[2]);
+}
+
+static inline tree *
 gimple_assign_rhs2_ptr (const_gimple gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-  return gimple_op_ptr (gs, 2);
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_rhs2_ptr (ass);
 }
 
 
 /* Set RHS to be the second operand on the RHS of assignment statement GS.  */
 
 static inline void
+gimple_assign_set_rhs2 (gassign *gs, tree rhs)
+{
+  gcc_gimple_checking_assert (gimple_num_ops (gs) >= 3);
+  gs->op[2] = rhs;
+}
+
+static inline void
 gimple_assign_set_rhs2 (gimple gs, tree rhs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-
-  gimple_set_op (gs, 2, rhs);
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
+  return gimple_assign_set_rhs2 (ass, rhs);
 }
 
 /* Return the third operand on the RHS of assignment statement GS.
    If GS does not have two operands, NULL is returned instead.  */
 
 static inline tree
-gimple_assign_rhs3 (const_gimple gs)
+gimple_assign_rhs3 (const gassign *gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-
   if (gimple_num_ops (gs) >= 4)
-    return gimple_op (gs, 3);
+    return gs->op[3];
   else
     return NULL_TREE;
+}
+
+static inline tree
+gimple_assign_rhs3 (const_gimple gs)
+{
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_rhs3 (ass);
 }
 
 /* Return a pointer to the third operand on the RHS of assignment
@@ -2443,20 +2564,28 @@ gimple_assign_rhs3 (const_gimple gs)
 static inline tree *
 gimple_assign_rhs3_ptr (const_gimple gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-  return gimple_op_ptr (gs, 3);
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  gcc_gimple_checking_assert (gimple_num_ops (gs) >= 4);
+  return const_cast<tree *> (&ass->op[3]);
 }
 
 
 /* Set RHS to be the third operand on the RHS of assignment statement GS.  */
 
 static inline void
+gimple_assign_set_rhs3 (gassign *gs, tree rhs)
+{
+  gcc_gimple_checking_assert (gimple_num_ops (gs) >= 4);
+  gs->op[3] = rhs;
+}
+
+static inline void
 gimple_assign_set_rhs3 (gimple gs, tree rhs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-
-  gimple_set_op (gs, 3, rhs);
+  gassign *ass = GIMPLE_CHECK2<gassign *> (gs);
+  gimple_assign_set_rhs3 (ass, rhs);
 }
+
 
 /* A wrapper around 3 operand gimple_assign_set_rhs_with_ops, for callers
    which expect to see only two operands.  */
@@ -2501,19 +2630,23 @@ gimple_assign_set_nontemporal_move (gimple gs, bool nontemporal)
    tree code of the object.  */
 
 static inline enum tree_code
-gimple_assign_rhs_code (const_gimple gs)
+gimple_assign_rhs_code (const gassign *gs)
 {
-  enum tree_code code;
-  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
-
-  code = (enum tree_code) gs->subcode;
+  enum tree_code code = (enum tree_code) gs->subcode;
   /* While we initially set subcode to the TREE_CODE of the rhs for
      GIMPLE_SINGLE_RHS assigns we do not update that subcode to stay
      in sync when we rewrite stmts into SSA form or do SSA propagations.  */
   if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
-    code = TREE_CODE (gimple_assign_rhs1 (gs));
+    code = TREE_CODE (gs->op[1]);
 
   return code;
+}
+
+static inline enum tree_code
+gimple_assign_rhs_code (const_gimple gs)
+{
+  const gassign *ass = GIMPLE_CHECK2<const gassign *> (gs);
+  return gimple_assign_rhs_code (ass);
 }
 
 
