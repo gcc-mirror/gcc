@@ -81,14 +81,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4089.pdf">
 	  N4089
 	</link>
       </entry>
       <entry>Safe conversions in <code>unique_ptr&lt;T[]&gt;</code> </entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
 
@@ -116,14 +115,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4279.html">
 	  N4279
 	</link>
       </entry>
       <entry>Improved insertion interface for unique-key maps</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
 
@@ -147,32 +145,30 @@ not in any particular release.
       </entry>
       <entry>A proposal to add invoke function template</entry>
       <entry>N</entry>
-      <entry/>
+      <entry>In progress</entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4280.pdf">
 	  N4280
 	</link>
       </entry>
       <entry>Non-member size() and more</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4366.html">
-	  N4387
+	  N4366
 	</link>
       </entry>
       <entry>
         LWG 2228: Missing SFINAE rule in unique_ptr templated assignment
       </entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
 
@@ -314,14 +310,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4391.html">
 	  N4391
 	</link>
       </entry>
       <entry> <code>make_array</code>, revision 4 </entry>
-      <entry>N</entry>
+      <entry>Y (not committed yet)</entry>
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 
