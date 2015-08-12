@@ -2230,8 +2230,8 @@ char arm_arch_name[] = "__ARM_ARCH_0UNK__";
 
 static const struct arm_fpu_desc all_fpus[] =
 {
-#define ARM_FPU(NAME, MODEL, REV, VFP_REGS, NEON, FP16, CRYPTO) \
-  { NAME, MODEL, REV, VFP_REGS, NEON, FP16, CRYPTO },
+#define ARM_FPU(NAME, MODEL, REV, VFP_REGS, FEATURES) \
+  { NAME, MODEL, REV, VFP_REGS, FEATURES },
 #include "arm-fpus.def"
 #undef ARM_FPU
 };

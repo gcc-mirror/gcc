@@ -1,3 +1,15 @@
+2015-08-12  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-fpus.def: Replace booleans with feature flags.
+	Update comment.
+	* config/arm/arm.c (ARM_FPU): Update macro.
+	* config/arm/arm.h (TARGET_NEON_FP16): Update feature test.
+	(TARGET_FP16): Likewise.
+	(TARGET_CRYPTO): Likewise.
+	(TARGET_NEON): Likewise.
+	(struct arm_fpu_desc): Remove fields neon, fp16 and crypto.  Add
+	field features.
+
 2015-08-12  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/67092
