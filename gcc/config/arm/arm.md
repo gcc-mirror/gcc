@@ -5519,7 +5519,7 @@
       if (!REG_P (operands[0]))
 	operands[1] = force_reg (DImode, operands[1]);
     }
-  if (REG_P (operands[0]) && REGNO (operands[0]) < FIRST_VIRTUAL_REGISTER
+  if (REG_P (operands[0]) && REGNO (operands[0]) <= LAST_ARM_REGNUM
       && !HARD_REGNO_MODE_OK (REGNO (operands[0]), DImode))
     {
       /* Avoid LDRD's into an odd-numbered register pair in ARM state
@@ -5538,7 +5538,7 @@
 		      gen_highpart (SImode, operands[1]));
       DONE;
     }
-  else if (REG_P (operands[1]) && REGNO (operands[1]) < FIRST_VIRTUAL_REGISTER
+  else if (REG_P (operands[1]) && REGNO (operands[1]) <= LAST_ARM_REGNUM
 	   && !HARD_REGNO_MODE_OK (REGNO (operands[1]), DImode))
     {
       /* Avoid STRD's from an odd-numbered register pair in ARM state
