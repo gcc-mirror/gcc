@@ -184,7 +184,8 @@
 	  When you have all these pieces, bundle them up in a
 	  mail message and send it to libstdc++@gcc.gnu.org. All
 	  patches and related discussion should be sent to the
-	  libstdc++ mailing list.
+	  libstdc++ mailing list. In common with the rest of GCC,
+	  patches should also be sent to the gcc-patches mailing list.
 	</para>
       </listitem>
     </itemizedlist>

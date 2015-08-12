@@ -1,3 +1,9 @@
+2015-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Update patch email policy.
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* doc/html/manual/*: Regenerate.
+
 2015-08-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement N4279, Improved insertion interface for unique-key maps.
