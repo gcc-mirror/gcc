@@ -44,8 +44,8 @@
                      used by DRIVER_SELF_SPECS and gen-avr-mmcu-specs.c for
                      - the name of the device specific specs file
                        in -specs=device-specs/spec-<NAME>
-                     - the name of the startup file dev/<NAME>/crt1.o
-                     - the name of the device library dev/<NAME>/libdev.a
+                     - the name of the startup file crt<NAME>.o
+                     - to link the device library by means of -l<NAME>
 
        ARCH          Specifies the multilib variant together with AVR_SHORT_SP
 

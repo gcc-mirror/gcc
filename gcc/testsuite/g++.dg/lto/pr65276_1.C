@@ -3,7 +3,7 @@
 #pragma interface
 extern "C++"
 {
-  namespace std
+  namespace std2
   {
     class exception
     {
@@ -12,7 +12,7 @@ extern "C++"
     };
   }
 }
-namespace std
+namespace std2
 {
   struct __cow_string
   {

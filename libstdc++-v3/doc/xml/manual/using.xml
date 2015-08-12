@@ -6,8 +6,7 @@
   <section xml:id="manual.intro.using.flags" xreflabel="Flags"><info><title>Command Options</title></info>
     
     <para>
-      The set of features available in the GNU C++ library is shaped
-      by
+      The set of features available in the GNU C++ library is shaped by
       several <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.3.2/gcc/Invoking-GCC.html">GCC
       Command Options</link>. Options that impact libstdc++ are
       enumerated and detailed in the table below.
@@ -64,8 +63,20 @@
 
     <row>
       <entry><literal>-pthread</literal> or <literal>-pthreads</literal></entry>
-      <entry>For ISO C++11 &lt;thread&gt;, &lt;future&gt;,
-      &lt;mutex&gt;, or &lt;condition_variable&gt;.</entry>
+      <entry>For ISO C++11
+        <filename class="headerfile">&lt;thread&gt;</filename>,
+        <filename class="headerfile">&lt;future&gt;</filename>,
+        <filename class="headerfile">&lt;mutex&gt;</filename>,
+        or <filename class="headerfile">&lt;condition_variable&gt;</filename>.
+      </entry>
+    </row>
+
+    <row>
+      <entry><literal>-latomic</literal></entry>
+      <entry>Linking to <filename class="libraryfile">libatomic</filename>
+        is required for some uses of ISO C++11
+        <filename class="headerfile">&lt;atomic&gt;</filename>.
+      </entry>
     </row>
 
     <row>
@@ -779,8 +790,9 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       file <filename class="headerfile">c++config.h</filename>, which
       is generated during the libstdc++ configuration and build
       process. This file is then included when needed by files part of
-      the public libstdc++ API, like &lt;ios&gt;. Most of these macros
-      should not be used by consumers of libstdc++, and are reserved
+      the public libstdc++ API, like
+      <filename class="headerfile">&lt;ios&gt;</filename>. Most of these
+      macros should not be used by consumers of libstdc++, and are reserved
       for internal implementation use. <emphasis>These macros cannot
       be redefined</emphasis>.
    </para>
@@ -800,10 +812,10 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       <term><code>__GLIBCXX__</code></term>
       <listitem>
 	<para>The current version of
-    libstdc++ in compressed ISO date format, form of an unsigned
+    libstdc++ in compressed ISO date format, as an unsigned
     long. For details on the value of this particular macro for a
-    particular release, please consult this <link linkend="appendix.porting.abi">
-    document</link>.
+    particular release, please consult the <link linkend="appendix.porting.abi">
+    ABI Policy and Guidelines</link> appendix.
     </para>
     </listitem>
     </varlistentry>
@@ -816,14 +828,15 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
    <para><quote>Configurable</quote> (or <quote>Not configurable</quote>) means
       that the symbol is initially chosen (or not) based on
       --enable/--disable options at library build and configure time
-      (documented <link linkend="manual.intro.setup.configure">here</link>), with the
-      various --enable/--disable choices being translated to
+      (documented in
+      <link linkend="manual.intro.setup.configure">Configure</link>),
+      with the various --enable/--disable choices being translated to
       #define/#undef).
    </para>
 
    <para> <acronym>ABI</acronym> means that changing from the default value may
-  mean changing the <acronym>ABI</acronym> of compiled code. In other words, these
-  choices control code which has already been compiled (i.e., in a
+  mean changing the <acronym>ABI</acronym> of compiled code. In other words,
+  these choices control code which has already been compiled (i.e., in a
   binary such as libstdc++.a/.so).  If you explicitly #define or
   #undef these macros, the <emphasis>headers</emphasis> may see different code
   paths, but the <emphasis>libraries</emphasis> which you link against will not.
@@ -847,6 +860,22 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     </para>
     </listitem></varlistentry>
 
+    <varlistentry><term><code>_GLIBCXX_USE_CXX11_ABI</code></term>
+    <listitem>
+      <para>
+        Defined to the value <literal>1</literal> by default.
+        Configurable via  <code>--disable-libstdcxx-dual-abi</code>
+        and/or <code>--with-default-libstdcxx-abi</code>.
+        ABI-changing.
+        When defined to a non-zero value the library headers will use the
+        new C++11-conforming ABI introduced in GCC 5, rather than the older
+        ABI introduced in GCC 3.4. This changes the definition of several
+        class templates, including <classname>std:string</classname>,
+        <classname>std::list</classname> and some locale facets.
+        For more details see <xref linkend="manual.intro.using.abi"/>.
+    </para>
+    </listitem></varlistentry>
+
     <varlistentry><term><code>_GLIBCXX_CONCEPT_CHECKS</code></term>
     <listitem>
       <para>
@@ -854,7 +883,8 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	<code>--enable-concept-checks</code>.  When defined, performs
 	compile-time checking on certain template instantiations to
 	detect violations of the requirements of the standard.  This
-	is described in more detail <link linkend="manual.ext.compile_checks">here</link>.
+	is described in more detail in
+	<link linkend="manual.ext.compile_checks">Compile Time Checks</link>.
       </para>
     </listitem></varlistentry>
 
@@ -862,36 +892,124 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     <listitem>
       <para>
 	Undefined by default. When defined, compiles user code using
-    the <link linkend="manual.ext.debug_mode">debug mode</link>.
+	the <link linkend="manual.ext.debug_mode">debug mode</link>.
       </para>
     </listitem></varlistentry>
     <varlistentry><term><code>_GLIBCXX_DEBUG_PEDANTIC</code></term>
     <listitem>
       <para>
 	Undefined by default. When defined while compiling with
-    the <link linkend="manual.ext.debug_mode">debug mode</link>, makes
-    the debug mode extremely picky by making the use of libstdc++
-    extensions and libstdc++-specific behavior into errors.
+	the <link linkend="manual.ext.debug_mode">debug mode</link>, makes
+	the debug mode extremely picky by making the use of libstdc++
+	extensions and libstdc++-specific behavior into errors.
       </para>
     </listitem></varlistentry>
     <varlistentry><term><code>_GLIBCXX_PARALLEL</code></term>
     <listitem>
       <para>Undefined by default. When defined, compiles user code
-    using the <link linkend="manual.ext.parallel_mode">parallel
-    mode</link>.
+	using the <link linkend="manual.ext.parallel_mode">parallel
+	mode</link>.
       </para>
     </listitem></varlistentry>
 
     <varlistentry><term><code>_GLIBCXX_PROFILE</code></term>
     <listitem>
       <para>Undefined by default. When defined, compiles user code
-    using the <link linkend="manual.ext.profile_mode">profile
-    mode</link>.
+	using the <link linkend="manual.ext.profile_mode">profile
+	mode</link>.
       </para>
     </listitem></varlistentry>
     </variablelist>
 
   </section>
+
+<section xml:id="manual.intro.using.abi" xreflabel="Dual ABI">
+  <info><title>Dual ABI</title></info>
+  <?dbhtml filename="using_dual_abi.html"?>
+
+<para> In the GCC 5.1 release libstdc++ introduced a new library ABI that
+  includes new implementations of <classname>std::string</classname> and
+  <classname>std::list</classname>. These changes were necessary to conform
+  to the 2011 C++ standard which forbids Copy-On-Write strings and requires
+  lists to keep track of their size.
+</para>
+
+<para> In order to maintain backwards compatibility for existing code linked
+  to libstdc++ the library's soname has not changed and the old
+  implementations are still supported in parallel with the new ones.
+  This is achieved by defining the new implementations in an inline namespace
+  so they have different names for linkage purposes, e.g. the new version of
+  <classname>std::list&lt;int&gt;</classname> is actually defined as
+  <classname>std::__cxx11::list&lt;int&gt;</classname>. Because the symbols
+  for the new implementations have different names the definitions for both
+  versions can be present in the same library.
+</para>
+
+<para> The <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro (see
+<xref linkend="manual.intro.using.macros"/>) controls whether
+  the declarations in the library headers use the old or new ABI.
+  So the decision of which ABI to use can be made separately for each
+  source file being compiled.
+  Using the default configuration options for GCC the default value
+  of the macro is <literal>1</literal> which causes the new ABI to be active,
+  so to use the old ABI you must explicitly define the macro to
+  <literal>0</literal> before including any library headers.
+  (Be aware that some GNU/Linux distributions configure GCC 5 differently so
+  that the default value of the macro is <literal>0</literal> and users must
+  define it to <literal>1</literal> to enable the new ABI.)
+</para>
+
+<para> Although the changes were made for C++11 conformance, the choice of ABI
+  to use is independent of the <option>-std</option> option used to compile
+  your code, i.e. for a given GCC build the default value of the
+  <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro is the same for all dialects.
+  This ensures that the <option>-std</option> does not change the ABI, so
+  that it is straightforward to link C++03 and C++11 code together.
+</para>
+
+<para> Because <classname>std::string</classname> is used extensively
+  throughout the library a number of other types are also defined twice,
+  including the stringstream classes and several facets used by
+  <classname>std::locale</classname>. The standard facets which are always
+  installed in a locale may be present twice, with both ABIs, to ensure that
+  code like
+  <code>std::use_facet&lt;std::time_get&lt;char&gt;&gt;(locale);</code>
+  will work correctly for both <classname>std::time_get</classname> and
+  <classname>std::__cxx11::time_get</classname> (even if a user-defined
+  facet that derives from one or other version of
+  <classname>time_get</classname> is installed in the locale).
+</para>
+
+<para> Although the standard exception types defined in
+  <filename class="headerfile">&lt;stdexcept&gt;</filename> use strings, they
+  are not defined twice, so that a <classname>std::out_of_range</classname>
+  exception thrown in one file can always be caught by a suitable handler in
+  another file, even if the two files are compiled with different ABIs.
+</para>
+
+<section xml:id="manual.intro.using.abi.trouble" xreflabel="Dual ABI Troubleshooting"><info><title>Troubleshooting</title></info>
+
+<para> If you get linker errors about undefined references to symbols
+  that involve types in the <code>std::__cxx11</code> namespace or the tag
+  <code>[abi:cxx11]</code> then it probably indicates that you are trying to
+  link together object files that were compiled with different values for the
+  <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro. This commonly happens when
+  linking to a third-party library that was compiled with an older version
+  of GCC. If the third-party library cannot be rebuilt with the new ABI then
+  you will need to recompile your code with the old ABI.
+</para>
+
+<para> Not all uses of the new ABI will cause changes in symbol names, for
+  example a class with a <classname>std::string</classname> member variable
+  will have the same mangled name whether compiled with the old or new ABI.
+  In order to detect such problems the new types and functions are
+  annotated with the <property>abi_tag</property> attribute, allowing the
+  compiler to warn about potential ABI incompatibilities in code using them.
+  Those warnings can be enabled with the <option>-Wabi-tag</option> option.
+</para>
+
+</section>
+</section>
 
   <section xml:id="manual.intro.using.namespaces" xreflabel="Namespaces"><info><title>Namespaces</title></info>
     <?dbhtml filename="using_namespaces.html"?>
@@ -926,6 +1044,11 @@ include <code>__gnu_cxx</code>, <code>__gnu_debug</code>, <code>__gnu_parallel</
 and <code>__gnu_pbds</code>.
 </para></listitem>
 </itemizedlist>
+
+<para> The library uses a number of inline namespaces as implementation
+details that are not intended for users to refer to directly, these include
+<code>std::__detail</code>, <code>std::__cxx11</code> and <code>std::_V2</code>.
+</para>
 
 <para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</link>.
 </para>
@@ -1248,13 +1371,16 @@ A quick read of the relevant part of the GCC
       all required macros to a compilation (if any such flags are
       required then you must provide the flag for all compilations not
       just linking) and link-library additions and/or replacements at
-      link time.  The documentation is weak.  Here is a quick summary
-      to display how ad hoc this is: On Solaris, both -pthreads and
-      -threads (with subtly different meanings) are honored.  
-      On GNU/Linux x86, -pthread is honored.  On FreeBSD,
-      -pthread is honored.  Some other ports use other switches.
-      AFAIK, none of this is properly documented anywhere other than
-      in ``gcc -dumpspecs'' (look at lib and cpp entries).
+      link time.  The documentation is weak.  On several targets (including
+      GNU/Linux, Solaris and various BSDs) -pthread is honored.
+      Some other ports use other switches.
+      This is not well documented anywhere other than
+      in "gcc -dumpspecs" (look at the 'lib' and 'cpp' entries).
+   </para>
+
+   <para>
+     Some uses of <classname>std::atomic</classname> also require linking
+     to <filename class="libraryfile">libatomic</filename>.
    </para>
 
     </section>
@@ -1305,14 +1431,19 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 Requisite command-line flags are used for atomic operations
 	 and threading. Examples of this include <code>-pthread</code>
 	 and <code>-march=native</code>, although specifics vary
-	 depending on the host environment. See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">Machine
+	 depending on the host environment. See
+	 <link linkend="manual.intro.using.flags">Command Options</link> and
+	 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">Machine
 	 Dependent Options</link>.
        </para>
        </listitem>
        <listitem>
 	 <para>
-	   An implementation of atomicity.h functions
-	   exists for the architecture in question. See the internals documentation for more <link linkend="internals.thread_safety">details</link>.
+	   An implementation of the
+	   <filename class="headerfile">atomicity.h</filename> functions
+	   exists for the architecture in question. See the
+	   <link linkend="internals.thread_safety">internals
+	   documentation</link> for more details.
        </para>
        </listitem>
 

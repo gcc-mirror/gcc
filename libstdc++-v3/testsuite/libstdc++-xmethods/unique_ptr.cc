@@ -30,6 +30,9 @@ main ()
 // { dg-final { note-test *p 10 } }
 // { dg-final { regexp-test p.get() 0x.* } }
 
+// { dg-final { whatis-test *p int } }
+// { dg-final { whatis-test p.get() "int \*" } }
+
   return 0;  // Mark SPOT
 }
 

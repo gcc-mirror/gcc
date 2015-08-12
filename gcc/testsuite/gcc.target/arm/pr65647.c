@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=armv6-m -mthumb -O3 -w" } */
+/* { dg-options "-march=armv6-m -mthumb -O3 -w -mfloat-abi=soft" } */
 
 a, b, c, e, g = &e, h, i = 7, l = 1, m, n, o, q = &m, r, s = &r, u, w = 9, x,
   y = 6, z, t6 = 7, t8, t9 = 1, t11 = 5, t12 = &t8, t13 = 3, t15,

@@ -1,3 +1,316 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225248
+	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66700
+	* jit-playback.c (jit_mark_addressable): New function.
+	(gcc::jit::playback::lvalue::get_address): Call
+	jit_mark_addressable on the underlying tree.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225246
+	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/types.rst (gcc_jit_context_new_union_type): Add
+	documentation.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225245
+	2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/contexts.rst (gcc_jit_context_set_bool_option):
+	Clarify lack of lifetime requirements on (const char *) parameter.
+	* docs/topics/expressions.rst
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_global): Likewise.
+	* docs/topics/functions.rst (gcc_jit_context_new_param): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_function_new_block): Likewise.
+	(gcc_jit_block_add_comment): Likewise.
+	* docs/topics/locations.rst (gcc_jit_context_new_location):
+	Likewise.
+	* docs/topics/types.rst (gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225207
+	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/functions.rst (Blocks): Add switch statements to
+	list of ways to terminate a block.
+	(gccjit::block::end_with_switch): Add function description.
+	(gccjit::case_): Add class.
+	(gccjit::context::new_case): Add function description.
+	* docs/cp/topics/objects.rst: Add "case_" to class hierarchy.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_3): New.
+	* docs/topics/functions.rst (Blocks): Add switch statements to
+	list of ways to terminate a block.
+	(gcc_jit_block_end_with_switch): Add function description.
+	(gcc_jit_case): Add type.
+	(gcc_jit_context_new_case): Add function description.
+	(gcc_jit_case_as_object): Add function description.
+	* docs/topics/objects.rst: Add gcc_jit_case to class hierarchy.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::recording::case_): Add forward decl.
+	(gcc::jit::playback::case_): Add forward decl.
+	* jit-playback.c (add_case): New function.
+	(gcc::jit::playback::block::add_switch): New function.
+	* jit-playback.h (gcc::jit::playback::case_): New struct.
+	(gcc::jit::playback::block::get_function): New method.
+	(gcc::jit::playback::block::add_switch): New method.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::new_case): New method.
+	(recording::function::validate): Update for change to
+	get_successor_blocks.
+	(recording::block::end_with_switch): New method.
+	(recording::block::get_successor_blocks): Update to support an
+	arbitrary number of successor blocks.
+	(recording::block::dump_edges_to_dot): Likewise.
+	(memento_of_new_rvalue_from_const <int>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <long>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <double>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <void *>::get_wide_int): New.
+	(recording::statement::get_successor_blocks): Update to support an
+	arbitrary number of successor blocks.
+	(recording::conditional::get_successor_blocks): Likewise.
+	(recording::jump::get_successor_blocks): Likewise.
+	(recording::return_::get_successor_blocks): Likewise.
+	(recording::case_::write_reproducer): New.
+	(recording::case_::make_debug_string): New.
+	(recording::switch_::switch_): New.
+	(recording::switch_::replay_into): New.
+	(recording::switch_::get_successor_blocks): New.
+	(recording::switch_::make_debug_string): New.
+	(recording::switch_::write_reproducer): New.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(context::new_case): New.
+	(rvalue::is_constant): New.
+	(rvalue::get_wide_int): New.
+	(block::end_with_switch): New.
+	(block::get_successor_blocks): Update to support an arbitrary
+	number of successor blocks.
+	(memento_of_new_rvalue_from_const::is_constant): New.
+	(memento_of_new_rvalue_from_const::get_wide_int): New.
+	(statement::get_successor_blocks): Update to support an arbitrary
+	number of successor blocks.
+	(conditional::get_successor_blocks): Likewise.
+	(jump::get_successor_blocks): Likewise.
+	(return_::get_successor_blocks): Likewise.
+	(case_): New subclass of memento.
+	(switch_): New subclass of statement.
+	* libgccjit++.h (gccjit::case_): New subclass of gccjit::object.
+	(gccjit::context::new_case): New method.
+	(gccjit::block::end_with_switch): New method.
+	(gccjit::case_::case): New ctors.
+	(gccjit::case_::get_inner_case): New method.
+	* libgccjit.c: Include "typed-splay-tree.h"
+	(struct gcc_jit_case): New.
+	(gcc_jit_context_new_case): New function.
+	(gcc_jit_case_as_object): New function.
+	(valid_dest_for_switch): New function.
+	(valid_case_for_switch): New function.
+	(class api_call_validator): New class.
+	(class case_range_validator): New class.
+	(case_range_validator::case_range_validator): New.
+	(case_range_validator::validate): New.
+	(case_range_validator::case_compare): New.
+	(case_range_validator::get_wide_int): new.
+	(gcc_jit_block_end_with_switch): New.
+	* libgccjit.h: Add gcc_jit_case to class hierarchy comment.
+	(gcc_jit_case): New typedef.
+	(gcc_jit_context_new_case): New function.
+	(gcc_jit_case_as_object): New function.
+	(gcc_jit_block_end_with_switch): New function.
+	(LIBGCCJIT_HAVE_SWITCH_STATEMENTS): New.
+	* libgccjit.map: Add gcc_jit_block_end_with_switch,
+	gcc_jit_case_as_object and gcc_jit_context_new_case.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225206
+	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66546
+	* docs/cp/topics/contexts.rst
+	(gccjit::context::set_bool_allow_unreachable_blocks): New.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_2): New.
+	* docs/topics/contexts.rst (Options): Add notes discussing the
+	transition from enums to entrypoints for new options.
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): New.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::inner_bool_option): New enum.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::context): Handle m_inner_bool_options.
+	(recording::context::set_inner_bool_option): New.
+	(inner_bool_option_reproducer_strings): New.
+	(recording::context::log_all_options): Log the "inner" bool
+	options.
+	(recording::context::log_inner_bool_option): New.
+	(recording::context::dump_reproducer_to_file): Write initializers
+	for "inner" bool options.
+	(recording::function::validate): Don't check for block
+	reachability if INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS is set.
+	* jit-recording.h: Within namespace gcc::jit...
+	(recording::context::set_inner_bool_option): New.
+	(recording::context::get_inner_bool_option): New.
+	(recording::context::log_inner_bool_option): New.
+	(recording::context::m_inner_bool_options): New.
+	* libgccjit++.h
+	(gccjit::context::set_bool_allow_unreachable_blocks): New.
+	* libgccjit.c
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): New.
+	* libgccjit.h: Add note about options present in the
+	initial release of libgccjit.
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): New API
+	entrypoint.
+	(LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks):
+	New macro.
+	* libgccjit.map (LIBGCCJIT_ABI_2): New, containing...
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): ...this new
+	entrypoint.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225205
+	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66628
+	* docs/cp/topics/contexts.rst (Additional command-line options):
+	New section.
+	* docs/topics/compatibility.rst: New file.
+	* docs/topics/contexts.rst (Additional command-line options): New
+	section.
+	* docs/topics/index.rst: Add compatibility.rst.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (make_fake_args): Add call to
+	append_command_line_options.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::~context): Free the optnames within
+	m_command_line_options.
+	(recording::context::set_bool_option): Likewise.
+	(recording::context::add_command_line_option): New method.
+	(recording::context::append_command_line_options): New method.
+	(recording::context::dump_reproducer_to_file): Add command-line
+	options.
+	* jit-recording.h: Within namespace gcc::jit...
+	(recording::context::add_command_line_option): New method.
+	(recording::context::append_command_line_options): New method.
+	(recording::context::m_command_line_options): New field.
+	* libgccjit++.h (gccjit::context::add_command_line_option): New
+	method.
+	* libgccjit.c (gcc_jit_context_add_command_line_option): New API
+	entrypoint.
+	* libgccjit.h (gcc_jit_context_add_command_line_option): New API
+	entrypoint.
+	(LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option): New
+	macro.
+	* libgccjit.map: Put existing symbols within LIBGCCJIT_ABI_0; add
+	LIBGCCJIT_ABI_1 and gcc_jit_context_add_command_line_option.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225204
+	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c
+	(gcc::jit::recording::context::dump_reproducer_to_file):
+	Add pragma to generated reproducers to disable -Wunused-variable.
+	Fix handling of NULL string options.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r225203
+	2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/expressions.rst: Remove stray semicolon.
+	* docs/cp/topics/functions.rst: Remove stray backslash.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-06-29  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r224565
+	2015-06-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_lvalue_access_field): Verify that the field
+	is for the correct struct.
+	(gcc_jit_rvalue_access_field): Likewise.
+
+2015-06-29  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r224531
+	2015-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66539
+	* jit-recording.c: Within namespace gcc::jit::recording::
+	(rvalue::get_debug_string_parens): New function.
+	(binary_op::make_debug_string): Update to mimic C precedence
+	rules.
+	(binary_op_precedence): New array.
+	(binary_op::get_precedence): New function.
+	(comparison::make_debug_string): Update to mimic C precedence
+	rules.
+	(comparison_precedence): New array.
+	(comparison::get_precedence): New function.
+	(cast::make_debug_string): Update to mimic C precedence rules.
+	(call::make_debug_string): Likewise.
+	(call_through_ptr::make_debug_string): Likewise.
+	(array_access::make_debug_string): Likewise.
+	(access_field_of_lvalue::make_debug_string): Likewise.
+	(access_field_rvalue::make_debug_string): Likewise.
+	(dereference_field_rvalue::make_debug_string): Likewise.
+	(dereference_rvalue::make_debug_string): Likewise.
+	(get_address_of_lvalue::make_debug_string): Likewise.
+	* jit-recording.h: Within namespace gcc::jit::recording::
+	(precedence): New enum.
+	(rvalue::rvalue): Initialize field "m_parenthesized_string".
+	(rvalue::get_debug_string_parens): New method.
+	(rvalue::get_precedence): New pure virtual function.
+	(rvalue::m_parenthesized_string): New field.
+	(param::get_precedence): New function.
+	(global::get_precedence): New function.
+	(memento_of_new_rvalue_from_const::get_precedence): New function.
+	(memento_of_new_string_literal::get_precedence): New function.
+	(unary_op::get_precedence): New function.
+	(binary_op::get_precedence): New function.
+	(comparison::get_precedence): New function.
+	(cast::get_precedence): New function.
+	(call::get_precedence): New function.
+	(call_through_ptr::get_precedence): New function.
+	(array_access::get_precedence): New function.
+	(access_field_of_lvalue::get_precedence): New function.
+	(access_field_rvalue::get_precedence): New function.
+	(dereference_field_rvalue::get_precedence): New function.
+	(dereference_rvalue::get_precedence): New function.
+	(get_address_of_lvalue::get_precedence): New function.
+	(local::get_precedence): New function.
+
+2015-06-09  Matthias Klose  <doko@ubuntu.com>
+
+	* Make-lang.in (jit.install-common): Install headers using INSTALL_DATA.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
+2015-04-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/65691
+	* docs/cp/topics/expressions.rst (Simple expressions): Fix copy
+	and paste error in description of gccjit::context::one.
+	* docs/topics/expressions.rst (Simple expressions): Likewise in
+	description of gcc_jit_context_one.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* jit-recording.c (dump::write): Also check vasprintf return value.

@@ -801,7 +801,15 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  dst_regno = REGNO (SET_DEST (set));
 	  if (dst_regno >= lra_constraint_new_regno_start
 	      && src_regno >= lra_constraint_new_regno_start)
-	    lra_create_copy (dst_regno, src_regno, freq);
+	    {
+	      /* It might be still an original (non-reload) insn with
+		 one unused output and a constraint requiring to use
+		 the same reg for input/output operands. In this case
+		 dst_regno and src_regno have the same value, we don't
+		 need a misleading copy for this case.  */
+	      if (dst_regno != src_regno)
+		lra_create_copy (dst_regno, src_regno, freq);
+	    }
 	  else if (dst_regno >= lra_constraint_new_regno_start)
 	    {
 	      if ((hard_regno = src_regno) >= FIRST_PSEUDO_REGISTER)
@@ -843,6 +851,12 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	if (reg->type != OP_IN)
 	  make_hard_regno_born (reg->regno, false);
 
+      if (curr_id->arg_hard_regs != NULL)
+	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    /* It is a clobber.  */
+	    make_hard_regno_born (regno - FIRST_PSEUDO_REGISTER, false);
+
       sparseset_copy (unused_set, start_living);
 
       sparseset_clear (start_dying);
@@ -857,6 +871,12 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type == OP_OUT && ! reg->early_clobber && ! reg->subreg_p)
 	  make_hard_regno_dead (reg->regno);
+
+      if (curr_id->arg_hard_regs != NULL)
+	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    /* It is a clobber.  */
+	    make_hard_regno_dead (regno - FIRST_PSEUDO_REGISTER);
 
       if (call_p)
 	{
@@ -906,7 +926,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	/* Make argument hard registers live.  Don't create conflict
 	   of used REAL_PIC_OFFSET_TABLE_REGNUM and the pic pseudo.  */
 	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
-	  make_hard_regno_born (regno, true);
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    make_hard_regno_born (regno, true);
 
       sparseset_and_compl (dead_set, start_living, start_dying);
 

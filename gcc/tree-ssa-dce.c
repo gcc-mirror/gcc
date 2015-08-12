@@ -1149,7 +1149,12 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	if (e != e2)
 	  {
 	    cfg_altered = true;
-            remove_edge (e2);
+	    /* If we made a BB unconditionally exit a loop then this
+	       transform alters the set of BBs in the loop.  Schedule
+	       a fixup.  */
+	    if (loop_exit_edge_p (bb->loop_father, e))
+	      loops_state_set (LOOPS_NEED_FIXUP);
+	    remove_edge (e2);
 	  }
 	else
 	  ei_next (&ei);

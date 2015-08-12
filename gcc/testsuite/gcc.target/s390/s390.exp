@@ -37,6 +37,21 @@ proc check_effective_target_htm { } {
     }] "-march=zEC12 -mzarch" ] } { return 0 } else { return 1 }
 }
 
+# Return 1 if vector (va - vector add) instructions are understood by
+# the assembler and can be executed.  This also covers checking for
+# the VX kernel feature.  A kernel without that feature does not
+# enable the vector facility and the following check will die with a
+# signal.
+proc check_effective_target_vector { } {
+    if { ![check_runtime s390_check_vector [subst {
+	int main (void)
+	{
+	    asm ("va %%v24, %%v26, %%v28, 3" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    }] "-march=z13 -mzarch" ] } { return 0 } else { return 1 }
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
@@ -46,8 +61,20 @@ if ![info exists DEFAULT_CFLAGS] then {
 # Initialize `dg'.
 dg-init
 
+set hotpatch_tests $srcdir/$subdir/hotpatch-\[0-9\]*.c
+
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
+dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.\[cS\]] \
+			 $hotpatch_tests]] "" $DEFAULT_CFLAGS
+
+# Additional hotpatch torture tests.
+torture-init
+set HOTPATCH_TEST_OPTS [list -Os -O0 -O1 -O2 -O3]
+set-torture-options $HOTPATCH_TEST_OPTS
+gcc-dg-runtest [lsort [glob -nocomplain $hotpatch_tests]] "" $DEFAULT_CFLAGS
+torture-finish
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
 
 # All done.

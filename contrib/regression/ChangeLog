@@ -1,3 +1,11 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2012-08-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* btest-gcc.sh (TESTLOGS): Make gfortran.sum optional.

@@ -231,6 +231,7 @@ GOMP_4.0 {
 GOMP_4.0.1 {
   global:
 	GOMP_offload_register;
+	GOMP_offload_unregister;
 } GOMP_4.0;
 
 OACC_2.0 {

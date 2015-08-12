@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-forwprop1" } */
+/* { dg-options "-O -fdump-tree-cddce1" } */
 
 signed char f1(signed char n)
 {
@@ -19,6 +19,6 @@ signed char g2(unsigned long long n)
   return (float)n;
 }
 
-/* { dg-final { scan-tree-dump-times "\\\(float\\\)" 2 "forwprop1" } } */
-/* { dg-final { scan-tree-dump-not "\\\(long double\\\)" "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "\\\(float\\\)" 2 "cddce1" } } */
+/* { dg-final { scan-tree-dump-not "\\\(long double\\\)" "cddce1" } } */
+/* { dg-final { cleanup-tree-dump "cddce1" } } */

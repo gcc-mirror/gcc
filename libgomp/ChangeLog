@@ -1,3 +1,224 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-07-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport trunk r225560:
+
+	2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65099
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Return 0 if not
+	in a 64-bit configuration.
+	* testsuite/libgomp.oacc-c++/c++.exp: Don't attempt nvidia
+	offloading testing if no such device is available.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+	Backport trunk r223801:
+
+	2015-05-28  Julian Brown  <julian@codesourcery.com>
+
+	PR libgomp/65742
+
+	* oacc-init.c (plugin/plugin-host.h): Include.
+	(acc_on_device): Check whether we're in an offloaded region for
+	host_nonshm
+	plugin. Don't use __builtin_acc_on_device.
+	* plugin/plugin-host.c (GOMP_OFFLOAD_openacc_parallel): Set
+	nonshm_exec flag in thread-local data.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Allocate thread-local
+	data for host_nonshm plugin.
+	(GOMP_OFFLOAD_openacc_destroy_thread_data): Free thread-local data
+	for host_nonshm plugin.
+	* plugin/plugin-host.h: New.
+
+2015-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66702
+	* testsuite/libgomp.c++/pr66702-1.C: New test.
+	* testsuite/libgomp.c++/pr66702-2.C: New test.
+
+2015-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66199
+	* testsuite/libgomp.c/pr66199-1.c: New test.
+	* testsuite/libgomp.c/pr66199-2.c: New test.
+	* testsuite/libgomp.c++/pr66199-1.C: New test.
+	* testsuite/libgomp.c++/pr66199-2.C: New test.
+	* testsuite/libgomp.fortran/pr66199-1.f90: New test.
+	* testsuite/libgomp.fortran/pr66199-2.f90: New test.
+
+	2015-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66133
+	* testsuite/libgomp.c/pr66133.c: New test.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
+2015-04-08  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (target_mem_desc: Remove mem_map field.
+	(acc_dispatch_t): Remove open_device_func, close_device_func,
+	get_device_num_func, set_device_num_func, target_data members.
+	Change create_thread_data_func argument to device number instead of
+	generic pointer.
+	* oacc-async.c (assert.h): Include.
+	(acc_async_test, acc_async_test_all, acc_wait, acc_wait_async)
+	(acc_wait_all, acc_wait_all_async): Use current host thread's
+	active device, not base_dev.
+	* oacc-cuda.c (acc_get_current_cuda_device)
+	(acc_get_current_cuda_context, acc_get_cuda_stream)
+	(acc_set_cuda_stream): Likewise.
+	* oacc-host.c (host_dispatch): Don't set open_device_func,
+	close_device_func, get_device_num_func or set_device_num_func.
+	* oacc-init.c (base_dev, init_key): Remove.
+	(cached_base_dev): New.
+	(name_of_acc_device_t): New.
+	(acc_init_1): Initialise default-numbered device, not zeroth.
+	(acc_shutdown_1): Close all devices of a given type.
+	(goacc_destroy_thread): Don't use base_dev.
+	(lazy_open, lazy_init, lazy_init_and_open): Remove.
+	(goacc_attach_host_thread_to_device): New.
+	(acc_init): Reimplement with goacc_attach_host_thread_to_device.
+	(acc_get_num_devices): Don't use base_dev.
+	(acc_set_device_type): Reimplement.
+	(acc_get_device_type): Don't use base_dev.
+	(acc_get_device_num): Tweak logic.
+	(acc_set_device_num): Likewise.
+	(acc_on_device): Use acc_get_device_type.
+	(goacc_runtime_initialize): Initialize cached_base_dev not base_dev.
+	(goacc_lazy_initialize): Reimplement with acc_init and
+	goacc_attach_host_thread_to_device.
+	* oacc-int.h (goacc_thread): Add base_dev field.
+	(base_dev): Remove extern declaration.
+	(goacc_attach_host_thread_to_device): Add prototype.
+	* oacc-mem.c (acc_malloc): Use current thread's device instead of
+	base_dev.
+	(acc_free): Likewise.
+	(acc_memcpy_to_device): Likewise.
+	(acc_memcpy_from_device): Likewise.
+	* oacc-parallel.c (select_acc_device): Remove. Replace calls with
+	goacc_lazy_initialize (throughout).
+	(GOACC_parallel): Use tgt_offset to locate target functions.
+	* target.c (gomp_map_vars): Don't set tgt->mem_map.
+	(gomp_unmap_vars): Use devicep->mem_map pointer not tgt->mem_map.
+	(gomp_load_plugin_for_device): Remove open_device, close_device,
+	get_device_num, set_device_num openacc hook initialisation. Don't set
+	openacc.target_data.
+	* plugin/plugin-host.c (GOMP_OFFLOAD_openacc_open_device)
+	(GOMP_OFFLOAD_openacc_close_device)
+	(GOMP_OFFLOAD_openacc_get_device_num)
+	(GOMP_OFFLOAD_openacc_set_device_num): Remove.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Change (unused) argument
+	to int.
+	* plugin/plugin-nvptx.c (ptx_inited): Remove.
+	(instantiated_devices, ptx_dev_lock): New.
+	(struct ptx_image_data): New.
+	(ptx_devices, ptx_images, ptx_image_lock): New.
+	(fini_streams_for_device): Reorder cuStreamDestroy call.
+	(nvptx_get_num_devices): Remove forward declaration.
+	(nvptx_init): Change return type to bool.
+	(nvptx_fini): Remove.
+	(nvptx_attach_host_thread_to_device): New.
+	(nvptx_open_device): Return struct ptx_device* instead of void*.
+	(nvptx_close_device): Change argument type to struct ptx_device*,
+	return type to void.
+	(nvptx_get_num_devices): Use instantiated_devices not ptx_inited.
+	(kernel_target_data, kernel_host_table): Remove static globals.
+	(GOMP_OFFLOAD_register_image, GOMP_OFFLOAD_get_table): Remove.
+	(GOMP_OFFLOAD_init_device): Reimplement.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(GOMP_OFFLOAD_load_image, GOMP_OFFLOAD_unload_image): New.
+	(GOMP_OFFLOAD_alloc, GOMP_OFFLOAD_free, GOMP_OFFLOAD_dev2host)
+	(GOMP_OFFLOAD_host2dev): Use ORD argument.
+	(GOMP_OFFLOAD_openacc_open_device)
+	(GOMP_OFFLOAD_openacc_close_device)
+	(GOMP_OFFLOAD_openacc_set_device_num)
+	(GOMP_OFFLOAD_openacc_get_device_num): Remove.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Change argument to int
+	(device number).
+
+	testsuite/
+	* libgomp.oacc-c-c++-common/lib-9.c: Fix devnum check in test.
+
+2015-04-06  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* libgomp-plugin.h (struct mapping_table): Replace with addr_pair.
+	* libgomp.h (struct gomp_memory_mapping): Remove.
+	(struct target_mem_desc): Change type of mem_map from
+	gomp_memory_mapping * to splay_tree_s *.
+	(struct gomp_device_descr): Remove register_image_func, get_table_func.
+	Add load_image_func, unload_image_func.
+	Change type of mem_map from gomp_memory_mapping to splay_tree_s.
+	Remove offload_regions_registered.
+	(gomp_init_tables): Remove.
+	(gomp_free_memmap): Change type of argument from gomp_memory_mapping *
+	to splay_tree_s *.
+	* libgomp.map (GOMP_4.0.1): Add GOMP_offload_unregister.
+	* oacc-host.c (host_dispatch): Do not initialize register_image_func,
+	get_table_func, mem_map.is_initialized, mem_map.splay_tree.root,
+	offload_regions_registered.
+	Initialize load_image_func, unload_image_func, mem_map.root.
+	(goacc_host_init): Do not initialize host_dispatch.mem_map.lock.
+	* oacc-init.c (lazy_open): Don't call gomp_init_tables.
+	(acc_shutdown_1): Use dev's lock and splay_tree instead of mem_map's.
+	* oacc-mem.c (lookup_host): Get gomp_device_descr *dev instead of
+	gomp_memory_mapping *.  Use dev's lock and splay_tree.
+	(lookup_dev): Use dev's lock.
+	(acc_deviceptr): Pass dev to lookup_host instead of mem_map.
+	(acc_is_present): Likewise.
+	(acc_map_data): Likewise.
+	(acc_unmap_data): Likewise.  Use dev's lock.
+	(present_create_copy): Likewise.
+	(delete_copyout): Pass dev to lookup_host instead of mem_map.
+	(update_dev_host): Likewise.
+	(gomp_acc_remove_pointer): Likewise.  Use dev's lock.
+	* oacc-parallel.c (GOACC_parallel): Use dev's lock and splay_tree.
+	* plugin/plugin-host.c (GOMP_OFFLOAD_register_image): Remove.
+	(GOMP_OFFLOAD_get_table): Remove
+	(GOMP_OFFLOAD_load_image): New function.
+	(GOMP_OFFLOAD_unload_image): New function.
+	* target.c (register_lock): New mutex for offload image registration.
+	(num_devices): Do not guard with PLUGIN_SUPPORT.
+	(gomp_realloc_unlock): New static function.
+	(gomp_map_vars_existing): Add device descriptor argument.  Unlock mutex
+	before gomp_fatal.
+	(gomp_map_vars): Use dev's lock and splay_tree instead of mem_map's.
+	Pass devicep to gomp_map_vars_existing.  Unlock mutex before gomp_fatal.
+	(gomp_copy_from_async): Use dev's lock and splay_tree instead of
+	mem_map's.
+	(gomp_unmap_vars): Likewise.
+	(gomp_update): Remove gomp_memory_mapping argument.  Use dev's lock and
+	splay_tree instead of mm's.  Unlock mutex before gomp_fatal.
+	(gomp_offload_image_to_device): New static function.
+	(GOMP_offload_register): Add mutex lock.
+	Call gomp_offload_image_to_device for all initialized devices.
+	Replace gomp_realloc with gomp_realloc_unlock.
+	(GOMP_offload_unregister): New function.
+	(gomp_init_tables): Replace with gomp_init_device.  Replace a call to
+	get_table_func from the plugin with calls to init_device_func and
+	gomp_offload_image_to_device.
+	(gomp_free_memmap): Change type of argument from gomp_memory_mapping *
+	to splay_tree_s *.
+	(GOMP_target): Do not call gomp_init_tables.  Use dev's lock and
+	splay_tree instead of mem_map's.  Unlock mutex before gomp_fatal.
+	(GOMP_target_data): Do not call gomp_init_tables.
+	(GOMP_target_update): Likewise.  Remove argument from gomp_update.
+	(gomp_load_plugin_for_device): Replace register_image and get_table
+	with load_image and unload_image in DLSYM ().
+	(gomp_register_images_for_device): Remove function.
+	(gomp_target_init): Do not initialize current_device.mem_map.*,
+	current_device.offload_regions_registered.
+	Remove call to gomp_register_images_for_device.
+	Do not free offload_images and num_offload_images.
+
 2015-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/65597

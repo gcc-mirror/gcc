@@ -1,3 +1,39 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_declare_simd_clauses_to_numbers): If all clauses
+	are to be removed, return NULL rather than original clauses list.
+
+2015-07-01  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Highest ABI version is 9.
+
+2015-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* c-ada-spec.c (in_function): Delete.
+	(dump_generic_ada_node): Do not change in_function and remove the
+	redundant code dealing with it.
+	(print_ada_declaration): Do not change in_function.  Use INDENT_INCR.
+	(print_ada_methods): Output the static member functions in a nested
+	package after the regular methods as well as associated renamings.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
+2015-04-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR target/55143
+	* c-common.c (c_default_pointer_mode): Add definition.
+	* c-common.h (c_default_pointer_mode): Add declaration.
+
 2015-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_common_nodes_and_builtins): Don't call xstrdup

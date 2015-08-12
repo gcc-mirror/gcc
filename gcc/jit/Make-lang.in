@@ -268,9 +268,9 @@ jit.install-common: installdirs
 	ln -sf \
 	  $(LIBGCCJIT_SONAME_SYMLINK)\
 	  $(DESTDIR)/$(libdir)/$(LIBGCCJIT_LINKER_NAME_SYMLINK)
-	$(INSTALL_PROGRAM) $(srcdir)/jit/libgccjit.h \
+	$(INSTALL_DATA) $(srcdir)/jit/libgccjit.h \
 	  $(DESTDIR)/$(includedir)/libgccjit.h
-	$(INSTALL_PROGRAM) $(srcdir)/jit/libgccjit++.h \
+	$(INSTALL_DATA) $(srcdir)/jit/libgccjit++.h \
 	  $(DESTDIR)/$(includedir)/libgccjit++.h
 
 jit.install-man:

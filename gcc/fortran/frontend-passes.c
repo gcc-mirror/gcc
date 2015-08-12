@@ -1205,6 +1205,10 @@ combine_array_constructor (gfc_expr *e)
   if (in_assoc_list)
     return false;
 
+  /* With FORALL, the BLOCKS created by create_var will cause an ICE.  */
+  if (forall_level > 0)
+    return false;
+
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
 

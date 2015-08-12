@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_valptr() const
       { return std::__addressof(_M_value_field); }
 #else
-      __gnu_cxx::__aligned_buffer<_Val> _M_storage;
+      __gnu_cxx::__aligned_membuf<_Val> _M_storage;
 
       _Val*
       _M_valptr()
@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_node() { }
 
       explicit
-      _Rb_tree_iterator(_Link_type __x) _GLIBCXX_NOEXCEPT
+      _Rb_tree_iterator(_Base_ptr __x) _GLIBCXX_NOEXCEPT
       : _M_node(__x) { }
 
       reference
@@ -260,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_node() { }
 
       explicit
-      _Rb_tree_const_iterator(_Link_type __x) _GLIBCXX_NOEXCEPT
+      _Rb_tree_const_iterator(_Base_ptr __x) _GLIBCXX_NOEXCEPT
       : _M_node(__x) { }
 
       _Rb_tree_const_iterator(const iterator& __it) _GLIBCXX_NOEXCEPT
@@ -268,8 +268,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       iterator
       _M_const_cast() const _GLIBCXX_NOEXCEPT
-      { return iterator(static_cast<typename iterator::_Link_type>
-			(const_cast<typename iterator::_Base_ptr>(_M_node))); }
+      { return iterator(const_cast<typename iterator::_Base_ptr>(_M_node)); }
 
       reference
       operator*() const _GLIBCXX_NOEXCEPT
@@ -868,28 +867,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       iterator
       begin() _GLIBCXX_NOEXCEPT
-      { 
-	return iterator(static_cast<_Link_type>
-			(this->_M_impl._M_header._M_left));
-      }
+      { return iterator(this->_M_impl._M_header._M_left); }
 
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
-      { 
-	return const_iterator(static_cast<_Const_Link_type>
-			      (this->_M_impl._M_header._M_left));
-      }
+      { return const_iterator(this->_M_impl._M_header._M_left); }
 
       iterator
       end() _GLIBCXX_NOEXCEPT
-      { return iterator(static_cast<_Link_type>(&this->_M_impl._M_header)); }
+      { return iterator(&this->_M_impl._M_header); }
 
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
-      { 
-	return const_iterator(static_cast<_Const_Link_type>
-			      (&this->_M_impl._M_header));
-      }
+      { return const_iterator(&this->_M_impl._M_header); }
 
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT

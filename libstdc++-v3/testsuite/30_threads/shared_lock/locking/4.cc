@@ -3,7 +3,6 @@
 // { dg-options " -std=gnu++14 -pthreads" { target *-*-solaris* } }
 // { dg-options " -std=gnu++14 " { target *-*-cygwin *-*-darwin* } }
 // { dg-require-cstdint "" }
-// { dg-require-gthreads-timed "" }
 
 // Copyright (C) 2013-2015 Free Software Foundation, Inc.
 //

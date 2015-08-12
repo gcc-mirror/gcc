@@ -51,6 +51,7 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_int_charstar,	         /* end_epilogue */
   debug_nothing_tree,		         /* begin_function */
   debug_nothing_int,		         /* end_function */
+  debug_nothing_tree,		         /* register_main_translation_unit */
   debug_nothing_tree,		         /* function_decl */
   debug_nothing_tree,		         /* global_decl */
   debug_nothing_tree_int,		 /* type_decl */

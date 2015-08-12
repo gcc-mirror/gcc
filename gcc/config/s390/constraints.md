@@ -29,7 +29,13 @@
 ;;    c -- Condition code register 33.
 ;;    d -- Any register from 0 to 15.
 ;;    f -- Floating point registers.
+;;    j -- Multiple letter constraint for constant scalar and vector values
+;;         j00: constant zero scalar or vector
+;;         jm1: constant scalar or vector with all bits set
+;;         jxx: contiguous bitmask of 0 or 1 in all vector elements
+;;         jyy: constant consisting of byte chunks being either 0 or 0xff
 ;;    t -- Access registers 36 and 37.
+;;    v -- Vector registers v0-v31.
 ;;    C -- A signed 8-bit constant (-128..127)
 ;;    D -- An unsigned 16-bit constant (0..65535)
 ;;    G -- Const double zero operand
@@ -102,11 +108,33 @@
   "FP_REGS"
   "Floating point registers")
 
+(define_constraint "j00"
+  "Zero scalar or vector constant"
+  (match_test "op == CONST0_RTX (GET_MODE (op))"))
+
+(define_constraint "jm1"
+  "All one bit scalar or vector constant"
+  (match_test "op == CONSTM1_RTX (GET_MODE (op))"))
+
+(define_constraint "jxx"
+  "@internal"
+  (and (match_code "const_vector")
+       (match_test "s390_contiguous_bitmask_vector_p (op, NULL, NULL)")))
+
+(define_constraint "jyy"
+  "@internal"
+  (and (match_code "const_vector")
+       (match_test "s390_bytemask_vector_p (op, NULL)")))
 
 (define_register_constraint "t"
   "ACCESS_REGS"
   "@internal
    Access registers 36 and 37")
+
+
+(define_register_constraint "v"
+  "VEC_REGS"
+  "Vector registers v0-v31")
 
 
 ;;

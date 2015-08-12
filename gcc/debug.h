@@ -86,6 +86,10 @@ struct gcc_debug_hooks
   /* Record end of function.  LINE is highest line number in function.  */
   void (* end_function) (unsigned int line);
 
+  /* Register UNIT as the main translation unit.  Called from front-ends when
+     they create their main translation unit.  */
+  void (* register_main_translation_unit) (tree);
+
   /* Debug information for a function DECL.  This might include the
      function name (a symbol), its parameters, and the block that
      makes up the function's body, and the local variables of the

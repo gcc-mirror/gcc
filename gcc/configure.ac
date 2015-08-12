@@ -3723,6 +3723,29 @@ AS_HELP_STRING([--disable-fix-cortex-a53-835769],
         esac
       ],
     [])
+    # Enable default workaround for AArch64 Cortex-A53 erratum 843419.
+    AC_ARG_ENABLE(fix-cortex-a53-843419,
+    [
+AS_HELP_STRING([--enable-fix-cortex-a53-843419],
+        [enable workaround for AArch64 Cortex-A53 erratum 843419 by default])
+AS_HELP_STRING([--disable-fix-cortex-a53-843419],
+        [disable workaround for AArch64 Cortex-A53 erratum 843419 by default])
+    ],
+      [
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_FIX_ERR_A53_843419_DEFAULT=1"
+            ;;
+          no)
+            ;;
+          *)
+            AC_MSG_ERROR(['$enableval' is an invalid value for --enable-fix-cortex-a53-843419.\
+  Valid choices are 'yes' and 'no'.])
+            ;;
+
+        esac
+      ],
+    [])
     ;;
 
   # All TARGET_ABI_OSF targets.
@@ -4000,13 +4023,13 @@ foo:	nop
 
     gcc_GAS_CHECK_FEATURE([filds and fists mnemonics],
        gcc_cv_as_ix86_filds,,,
-       [filds mem; fists mem],,
+       [filds (%ebp); fists (%ebp)],,
        [AC_DEFINE(HAVE_AS_IX86_FILDS, 1,
          [Define if your assembler uses filds and fists mnemonics.])])
 
     gcc_GAS_CHECK_FEATURE([fildq and fistpq mnemonics],
        gcc_cv_as_ix86_fildq,,,
-       [fildq mem; fistpq mem],,
+       [fildq (%ebp); fistpq (%ebp)],,
        [AC_DEFINE(HAVE_AS_IX86_FILDQ, 1,
          [Define if your assembler uses fildq and fistq mnemonics.])])
 
@@ -4556,6 +4579,13 @@ pointers into PC-relative form.])
       AC_MSG_ERROR(
 	[Requesting --with-nan= requires assembler support for -mnan=])
     fi
+    ;;
+    s390*-*-*)
+    gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
+      gcc_cv_as_s390_gnu_attribute, [2,18,0],,
+      [.gnu_attribute 8,1],,
+      [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
+	  [Define if your assembler supports .gnu_attribute.])])
     ;;
 esac
 

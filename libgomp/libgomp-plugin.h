@@ -51,14 +51,12 @@ enum offload_target_type
   OFFLOAD_TARGET_TYPE_INTEL_MIC = 6
 };
 
-/* Auxiliary struct, used for transferring a host-target address range mapping
-   from plugin to libgomp.  */
-struct mapping_table
+/* Auxiliary struct, used for transferring pairs of addresses from plugin
+   to libgomp.  */
+struct addr_pair
 {
-  uintptr_t host_start;
-  uintptr_t host_end;
-  uintptr_t tgt_start;
-  uintptr_t tgt_end;
+  uintptr_t start;
+  uintptr_t end;
 };
 
 /* Miscellaneous functions.  */

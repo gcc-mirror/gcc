@@ -5,6 +5,8 @@
 
 #include "harness.h"
 
+/* Quote from here in docs/topics/types.rst.  */
+
 union int_or_float
 {
   int as_int;
@@ -76,6 +78,8 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 				 NULL,
 				 as_float));
 }
+
+/* Quote up to here in docs/topics/types.rst.  */
 
 void
 verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)

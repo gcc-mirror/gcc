@@ -73,6 +73,9 @@ main ()
 // { dg-final { note-test umm.empty() false } }
 // { dg-final { note-test umm1.empty() true } }
 
+// { dg-final { whatis-test s.size() std::size_t } }
+// { dg-final { whatis-test s.empty() bool } }
+
   return 0;  // Mark SPOT
 }
 

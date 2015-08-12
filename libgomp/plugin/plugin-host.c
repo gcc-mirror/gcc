@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #ifdef HOST_NONSHM_PLUGIN
 #define STATIC
@@ -53,6 +54,10 @@
 #define STATIC static
 #define GOMP(X) gomp_##X
 #define SELF "host: "
+#endif
+
+#ifdef HOST_NONSHM_PLUGIN
+#include "plugin-host.h"
 #endif
 
 STATIC const char *
@@ -95,12 +100,6 @@ GOMP_OFFLOAD_get_num_devices (void)
 }
 
 STATIC void
-GOMP_OFFLOAD_register_image (void *host_table __attribute__ ((unused)),
-			     void *target_data __attribute__ ((unused)))
-{
-}
-
-STATIC void
 GOMP_OFFLOAD_init_device (int n __attribute__ ((unused)))
 {
 }
@@ -111,35 +110,17 @@ GOMP_OFFLOAD_fini_device (int n __attribute__ ((unused)))
 }
 
 STATIC int
-GOMP_OFFLOAD_get_table (int n __attribute__ ((unused)),
-			struct mapping_table **table __attribute__ ((unused)))
-{
-  return 0;
-}
-
-STATIC void *
-GOMP_OFFLOAD_openacc_open_device (int n)
-{
-  return (void *) (intptr_t) n;
-}
-
-STATIC int
-GOMP_OFFLOAD_openacc_close_device (void *hnd)
-{
-  return 0;
-}
-
-STATIC int
-GOMP_OFFLOAD_openacc_get_device_num (void)
+GOMP_OFFLOAD_load_image (int n __attribute__ ((unused)),
+			 void *i __attribute__ ((unused)),
+			 struct addr_pair **r __attribute__ ((unused)))
 {
   return 0;
 }
 
 STATIC void
-GOMP_OFFLOAD_openacc_set_device_num (int n)
+GOMP_OFFLOAD_unload_image (int n __attribute__ ((unused)),
+			   void *i __attribute__ ((unused)))
 {
-  if (n > 0)
-    GOMP (fatal) ("device number %u out of range for host execution", n);
 }
 
 STATIC void *
@@ -198,7 +179,10 @@ GOMP_OFFLOAD_openacc_parallel (void (*fn) (void *),
 			       void *targ_mem_desc __attribute__ ((unused)))
 {
 #ifdef HOST_NONSHM_PLUGIN
+  struct nonshm_thread *thd = GOMP_PLUGIN_acc_thread ();
+  thd->nonshm_exec = true;
   fn (devaddrs);
+  thd->nonshm_exec = false;
 #else
   fn (hostaddrs);
 #endif
@@ -253,14 +237,23 @@ GOMP_OFFLOAD_openacc_async_wait_all_async (int async __attribute__ ((unused)))
 }
 
 STATIC void *
-GOMP_OFFLOAD_openacc_create_thread_data (void *targ_data
+GOMP_OFFLOAD_openacc_create_thread_data (int ord
 					 __attribute__ ((unused)))
 {
+#ifdef HOST_NONSHM_PLUGIN
+  struct nonshm_thread *thd
+    = GOMP_PLUGIN_malloc (sizeof (struct nonshm_thread));
+  thd->nonshm_exec = false;
+  return thd;
+#else
   return NULL;
+#endif
 }
 
 STATIC void
-GOMP_OFFLOAD_openacc_destroy_thread_data (void *tls_data
-					  __attribute__ ((unused)))
+GOMP_OFFLOAD_openacc_destroy_thread_data (void *tls_data)
 {
+#ifdef HOST_NONSHM_PLUGIN
+  free (tls_data);
+#endif
 }

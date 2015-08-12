@@ -5174,8 +5174,11 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 	e = gfc_constructor_lookup_expr (source->value.constructor, j);
       else
 	{
-	  gcc_assert (npad > 0);
-
+	  if (npad <= 0)
+	    {
+	      mpz_clear (index);
+	      return NULL;
+	    }
 	  j = j - nsource;
 	  j = j % npad;
 	  e = gfc_constructor_lookup_expr (pad->value.constructor, j);

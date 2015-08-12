@@ -1141,7 +1141,7 @@ find_source (const char *file_name)
       if (!info_emitted)
 	{
 	  fnotice (stderr,
-		   "(the message is only displayed one per source file)\n");
+		   "(the message is displayed only once per source file)\n");
 	  info_emitted = 1;
 	}
       sources[idx].file_time = 0;

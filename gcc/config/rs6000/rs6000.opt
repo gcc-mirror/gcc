@@ -204,31 +204,35 @@ mvsx-scalar-memory
 Target Undocumented Report Alias(mupper-regs-df)
 
 mvsx-align-128
-Target Undocumented Report Var(TARGET_VSX_ALIGN_128)
+Target Undocumented Report Var(TARGET_VSX_ALIGN_128) Save
 ; If -mvsx, set alignment to 128 bits instead of 32/64
 
 mallow-movmisalign
-Target Undocumented Var(TARGET_ALLOW_MOVMISALIGN) Init(-1)
+Target Undocumented Var(TARGET_ALLOW_MOVMISALIGN) Init(-1) Save
 ; Allow/disallow the movmisalign in DF/DI vectors
 
+mefficient-unaligned-vector
+Target Undocumented Report Var(TARGET_EFFICIENT_UNALIGNED_VSX) Init(-1) Save
+; Consider unaligned VSX accesses to be efficient/inefficient
+
 mallow-df-permute
-Target Undocumented Var(TARGET_ALLOW_DF_PERMUTE)
+Target Undocumented Var(TARGET_ALLOW_DF_PERMUTE) Save
 ; Allow/disallow permutation of DF/DI vectors
 
 msched-groups
-Target Undocumented Report Var(TARGET_SCHED_GROUPS) Init(-1)
+Target Undocumented Report Var(TARGET_SCHED_GROUPS) Init(-1) Save
 ; Explicitly set/unset whether rs6000_sched_groups is set
 
 malways-hint
-Target Undocumented Report Var(TARGET_ALWAYS_HINT) Init(-1)
+Target Undocumented Report Var(TARGET_ALWAYS_HINT) Init(-1) Save
 ; Explicitly set/unset whether rs6000_always_hint is set
 
 malign-branch-targets
-Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1)
+Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1) Save
 ; Explicitly set/unset whether rs6000_align_branch_targets is set
 
 mvectorize-builtins
-Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1)
+Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1) Save
 ; Explicitly control whether we vectorize the builtins or not.
 
 mno-update
@@ -538,7 +542,7 @@ Target Report Var(TARGET_POINTERS_TO_NESTED_FUNCTIONS) Init(1) Save
 Use/do not use r11 to hold the static link in calls to functions via pointers.
 
 msave-toc-indirect
-Target Report Var(TARGET_SAVE_TOC_INDIRECT) Save
+Target Report Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
 Control whether we save the TOC in the prologue for indirect calls or generate the save inline
 
 mvsx-timode
@@ -559,7 +563,7 @@ Use/do not use vector and scalar instructions added in ISA 2.07.
 
 mcrypto
 Target Report Mask(CRYPTO) Var(rs6000_isa_flags)
-Use ISA 2.07 crypto instructions
+Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions
 
 mdirect-move
 Target Report Mask(DIRECT_MOVE) Var(rs6000_isa_flags)

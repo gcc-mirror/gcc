@@ -82,7 +82,10 @@ while (<PVS>) {
 close PVS or die "pvs error";
 
 # Only look at .dynsym table, like readelf in extract_symvers.
-open ELFDUMP, "/usr/ccs/bin/elfdump -s -N .dynsym $lib |" or die $!;
+# Ignore error output to avoid getting confused by
+# .gnu.version_r: zero sh_entsize information, expected 0x1
+# warning with Solaris 11 elfdump on gld-produced shared objects.
+open ELFDUMP, "/usr/ccs/bin/elfdump -s -N .dynsym $lib 2>/dev/null |" or die $!;
 while (<ELFDUMP>) {
     chomp;
 

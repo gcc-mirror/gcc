@@ -1,5 +1,15 @@
+2015-07-16  Gary Funck  <gary@intrepid.com>
+
+	Merge GCC 5.2 release into gupc-5-branch.
+	Merge gcc-5-branch version 225864 into gupc-5-branch.
+
+2015-04-12  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 222024 into gupc-5-branch.
+
 2015-04-06  Gary Funck  <gary@intrepid.com>
 
+	Create gupc-5-branch from version 221948 of the gupc branch.
 	Merge trunk version 221876 into gupc branch.
 
 2015-03-30  Gary Funck  <gary@intrepid.com>

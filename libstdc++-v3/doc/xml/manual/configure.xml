@@ -385,18 +385,23 @@
 <varlistentry><term><code>--disable-libstdcxx-dual-abi</code></term>
  <listitem>
    <para>
-     Disable support for the new, C++11-conforming <code>std::string</code>
-     implementation.  This option changes the library ABI.
+     Disable support for the new, C++11-conforming implementations of
+     <code>std::string</code>, <code>std::list</code> etc. so that the
+     library only provides definitions of types using the old ABI
+     (see <xref linkend="manual.intro.using.abi"/>).
+     This option changes the library ABI.
    </para>
  </listitem></varlistentry>
 
-<varlistentry><term><code>--with-default-libstdcxx-abi</code></term>
+<varlistentry><term><code>--with-default-libstdcxx-abi=</code><replaceable>OPTION</replaceable></term>
  <listitem>
    <para>
-     By default, the new <code>std::string</code> implementation will be
-     declared and a macro must be defined to declare the old implementation
-     instead. That default can be reversed by configuring the library with
-     <code>--with-default-libstdcxx-abi=c++98</code>.
+     Set the default value for the <symbol>_GLIBCXX_USE_CXX11_ABI</symbol>
+     macro (see <xref linkend="manual.intro.using.macros"/>).
+     The default is <option>OPTION=new</option> which sets the macro to
+     <literal>1</literal>,
+     use <option>OPTION=gcc4-compatible</option> to set it to
+     <literal>0</literal>.
      This option does not change the library ABI.
    </para>
  </listitem></varlistentry>

@@ -509,6 +509,9 @@ extern	uint32	runtime_Hchansize;
 extern	DebugVars	runtime_debug;
 extern	uintptr	runtime_maxstacksize;
 
+extern	bool	runtime_isstarted;
+extern	bool	runtime_isarchive;
+
 /*
  * common functions and data
  */
@@ -845,3 +848,9 @@ struct time_now_ret
 
 struct time_now_ret now() __asm__ (GOSYM_PREFIX "time.now")
   __attribute__ ((no_split_stack));
+
+extern void _cgo_wait_runtime_init_done (void);
+extern void _cgo_notify_runtime_init_done (void);
+extern _Bool runtime_iscgo;
+extern _Bool runtime_cgoHasExtraM;
+extern Hchan *runtime_main_init_done;

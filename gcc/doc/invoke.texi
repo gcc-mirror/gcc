@@ -511,6 +511,7 @@ Objective-C and Objective-C++ Dialects}.
 -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer @gol
 -mtls-dialect=desc  -mtls-dialect=traditional @gol
 -mfix-cortex-a53-835769  -mno-fix-cortex-a53-835769 @gol
+-mfix-cortex-a53-843419  -mno-fix-cortex-a53-843419 @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
 
 @emph{Adapteva Epiphany Options}
@@ -1075,7 +1076,7 @@ See RS/6000 and PowerPC Options.
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma -mprefetchwt1 @gol
 -mclflushopt -mxsavec -mxsaves @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mthreads @gol
+-mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mmwaitx -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy} @gol
@@ -2703,10 +2704,10 @@ int i = @{ 2.2 @}; // error: narrowing from double to int
 
 This flag is included in @option{-Wall} and @option{-Wc++11-compat}.
 
-With @option{-std=c++11}, @option{-Wno-narrowing} suppresses for
-non-constants the diagnostic required by the standard.  Note that this
-does not affect the meaning of well-formed code; narrowing conversions
-are still considered ill-formed in SFINAE context.
+With @option{-std=c++11}, @option{-Wno-narrowing} suppresses the diagnostic
+required by the standard.  Note that this does not affect the meaning
+of well-formed code; narrowing conversions are still considered
+ill-formed in SFINAE context.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
@@ -4909,10 +4910,10 @@ Warn for suspicious calls to the @code{memset} built-in function, if the
 second argument is not zero and the third argument is zero.  This warns e.g.@
 about @code{memset (buf, sizeof buf, 0)} where most probably
 @code{memset (buf, 0, sizeof buf)} was meant instead.  The diagnostics
-is only emitted if the third argument is literal zero, if it is some expression
-that is folded to zero, or e.g. a cast of zero to some type etc., it
-is far less likely that user has mistakenly exchanged the arguments and
-no warning is emitted.  This warning is enabled by @option{-Wall}.
+is only emitted if the third argument is literal zero.  If it is some
+expression that is folded to zero, a cast of zero to some type, etc., 
+it is far less likely that the user has mistakenly exchanged the arguments 
+and no warning is emitted.  This warning is enabled by @option{-Wall}.
 
 @item -Waddress
 @opindex Waddress
@@ -12312,6 +12313,14 @@ Enable or disable the workaround for the ARM Cortex-A53 erratum number 835769.
 This involves inserting a NOP instruction between memory instructions and
 64-bit integer multiply-accumulate instructions.
 
+@item -mfix-cortex-a53-843419
+@itemx -mno-fix-cortex-a53-843419
+@opindex mfix-cortex-a53-843419
+@opindex mno-fix-cortex-a53-843419
+Enable or disable the workaround for the ARM Cortex-A53 erratum number 843419.
+This erratum workaround is made at link time and this will only pass the
+corresponding flag to the linker.
+
 @item -march=@var{name}
 @opindex march
 Specify the name of the target architecture, optionally suffixed by one or
@@ -12335,8 +12344,8 @@ architecture.
 @opindex mtune
 Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
-@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57},
-@samp{cortex-a72}, @samp{thunderx}, @samp{xgene1}.
+@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{cortex-a72},
+@samp{exynos-m1}, @samp{thunderx}, @samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible values for this
@@ -13211,6 +13220,7 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m1.small-multiply},
 @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply},
+@samp{exynos-m1},
 @samp{marvell-pj4},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},
@@ -20207,7 +20217,8 @@ The default is to not print debug information.
 Generate code that runs on @var{cpu-type}, which is the name of a system
 representing a certain processor type.  Possible values for
 @var{cpu-type} are @samp{g5}, @samp{g6}, @samp{z900}, @samp{z990},
-@samp{z9-109}, @samp{z9-ec}, @samp{z10},  @samp{z196}, and @samp{zEC12}.
+@samp{z9-109}, @samp{z9-ec}, @samp{z10},  @samp{z196}, @samp{zEC12},
+and @samp{z13}.
 When generating code using the instructions available on z/Architecture,
 the default is @option{-march=z900}.  Otherwise, the default is
 @option{-march=g5}.
@@ -22288,7 +22299,7 @@ in ordinary CPU registers instead.
 @opindex mno-fancy-math-387
 Some 387 emulators do not support the @code{sin}, @code{cos} and
 @code{sqrt} instructions for the 387.  Specify this option to avoid
-generating those instructions.  This option is the default on FreeBSD,
+generating those instructions.  This option is the default on
 OpenBSD and NetBSD@.  This option is overridden when @option{-march}
 indicates that the target CPU always has an FPU and so the
 instruction does not need emulation.  These
@@ -22624,10 +22635,13 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mmpx
 @opindex mmpx
+@need 200
+@itemx -mmwaitx
+@opindex mmwaitx
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-BMI, BMI2, FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX or 3DNow!@:
+BMI, BMI2, FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX or 3DNow!@:
 extended instruction sets.  Each has a corresponding @option{-mno-} option
 to disable use of these instructions.
 

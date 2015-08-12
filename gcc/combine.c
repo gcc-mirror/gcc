@@ -2492,14 +2492,11 @@ update_cfg_for_uncondjump (rtx_insn *insn)
     }
 }
 
-#ifndef HAVE_cc0
-/* Return whether INSN is a PARALLEL of exactly N register SETs followed
+/* Return whether PAT is a PARALLEL of exactly N register SETs followed
    by an arbitrary number of CLOBBERs.  */
 static bool
-is_parallel_of_n_reg_sets (rtx_insn *insn, int n)
+is_parallel_of_n_reg_sets (rtx pat, int n)
 {
-  rtx pat = PATTERN (insn);
-
   if (GET_CODE (pat) != PARALLEL)
     return false;
 
@@ -2519,6 +2516,7 @@ is_parallel_of_n_reg_sets (rtx_insn *insn, int n)
   return true;
 }
 
+#ifndef HAVE_cc0
 /* Return whether INSN, a PARALLEL of N register SETs (and maybe some
    CLOBBERs), can be split into individual SETs in that order, without
    changing semantics.  */
@@ -2907,7 +2905,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      decrement insn.  */
 
   if (i1 == 0
-      && is_parallel_of_n_reg_sets (i2, 2)
+      && is_parallel_of_n_reg_sets (PATTERN (i2), 2)
       && (GET_MODE_CLASS (GET_MODE (SET_DEST (XVECEXP (PATTERN (i2), 0, 0))))
 	  == MODE_CC)
       && GET_CODE (SET_SRC (XVECEXP (PATTERN (i2), 0, 0))) == COMPARE
@@ -2939,7 +2937,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      make those two SETs separate I1 and I2 insns, and make an I0 that is
      the original I1.  */
   if (i0 == 0
-      && is_parallel_of_n_reg_sets (i2, 2)
+      && is_parallel_of_n_reg_sets (PATTERN (i2), 2)
       && can_split_parallel_of_n_reg_sets (i2, 2)
       && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
       && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3))
@@ -3460,10 +3458,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      debug info less accurate.  */
 
   if (!(added_sets_2 && i1 == 0)
-      && GET_CODE (newpat) == PARALLEL
-      && XVECLEN (newpat, 0) == 2
-      && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
-      && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
+      && is_parallel_of_n_reg_sets (newpat, 2)
       && asm_noperands (newpat) < 0)
     {
       rtx set0 = XVECEXP (newpat, 0, 0);

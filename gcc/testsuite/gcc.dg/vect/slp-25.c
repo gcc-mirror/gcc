@@ -57,5 +57,5 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect"  } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { vect_no_align || { ! vect_natural_alignment } } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { { vect_no_align && { ! vect_hw_misalign } } || { ! vect_natural_alignment } } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -176,7 +176,7 @@ simd_array_to_simduid::equal (const value_type *p1, const value_type *p2)
    into their corresponding constants.  */
 
 static void
-adjust_simduid_builtins (hash_table<simduid_to_vf> **htab)
+adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 {
   basic_block bb;
 
@@ -208,10 +208,12 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> **htab)
 	  gcc_assert (TREE_CODE (arg) == SSA_NAME);
 	  simduid_to_vf *p = NULL, data;
 	  data.simduid = DECL_UID (SSA_NAME_VAR (arg));
-	  if (*htab)
-	    p = (*htab)->find (&data);
-	  if (p)
-	    vf = p->vf;
+	  if (htab)
+	    {
+	      p = htab->find (&data);
+	      if (p)
+		vf = p->vf;
+	    }
 	  switch (ifn)
 	    {
 	    case IFN_GOMP_SIMD_VF:
@@ -313,6 +315,38 @@ note_simd_array_uses (hash_table<simd_array_to_simduid> **htab)
 	  if (!is_gimple_debug (use_stmt))
 	    walk_gimple_op (use_stmt, note_simd_array_uses_cb, &wi);
       }
+}
+
+/* Shrink arrays with "omp simd array" attribute to the corresponding
+   vectorization factor.  */
+
+static void
+shrink_simd_arrays
+  (hash_table<simd_array_to_simduid> *simd_array_to_simduid_htab,
+   hash_table<simduid_to_vf> *simduid_to_vf_htab)
+{
+  for (hash_table<simd_array_to_simduid>::iterator iter
+	 = simd_array_to_simduid_htab->begin ();
+       iter != simd_array_to_simduid_htab->end (); ++iter)
+    if ((*iter)->simduid != -1U)
+      {
+	tree decl = (*iter)->decl;
+	int vf = 1;
+	if (simduid_to_vf_htab)
+	  {
+	    simduid_to_vf *p = NULL, data;
+	    data.simduid = (*iter)->simduid;
+	    p = simduid_to_vf_htab->find (&data);
+	    if (p)
+	      vf = p->vf;
+	  }
+	tree atype
+	  = build_array_type_nelts (TREE_TYPE (TREE_TYPE (decl)), vf);
+	TREE_TYPE (decl) = atype;
+	relayout_decl (decl);
+      }
+
+  delete simd_array_to_simduid_htab;
 }
 
 /* A helper function to free data refs.  */
@@ -417,11 +451,7 @@ vectorize_loops (void)
 
   /* Bail out if there are no loops.  */
   if (vect_loops_num <= 1)
-    {
-      if (cfun->has_simduid_loops)
-	adjust_simduid_builtins (&simduid_to_vf_htab);
-      return 0;
-    }
+    return 0;
 
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
@@ -560,37 +590,14 @@ vectorize_loops (void)
 
   /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE} builtins.  */
   if (cfun->has_simduid_loops)
-    adjust_simduid_builtins (&simduid_to_vf_htab);
+    adjust_simduid_builtins (simduid_to_vf_htab);
 
   /* Shrink any "omp array simd" temporary arrays to the
      actual vectorization factors.  */
   if (simd_array_to_simduid_htab)
-    {
-      for (hash_table<simd_array_to_simduid>::iterator iter
-	   = simd_array_to_simduid_htab->begin ();
-	   iter != simd_array_to_simduid_htab->end (); ++iter)
-	if ((*iter)->simduid != -1U)
-	  {
-	    tree decl = (*iter)->decl;
-	    int vf = 1;
-	    if (simduid_to_vf_htab)
-	      {
-		simduid_to_vf *p = NULL, data;
-		data.simduid = (*iter)->simduid;
-		p = simduid_to_vf_htab->find (&data);
-		if (p)
-		  vf = p->vf;
-	      }
-	    tree atype
-	      = build_array_type_nelts (TREE_TYPE (TREE_TYPE (decl)), vf);
-	    TREE_TYPE (decl) = atype;
-	    relayout_decl (decl);
-	  }
-
-      delete simd_array_to_simduid_htab;
-    }
-    delete simduid_to_vf_htab;
-    simduid_to_vf_htab = NULL;
+    shrink_simd_arrays (simd_array_to_simduid_htab, simduid_to_vf_htab);
+  delete simduid_to_vf_htab;
+  cfun->has_simduid_loops = false;
 
   if (num_vectorized_loops > 0)
     {
@@ -602,6 +609,64 @@ vectorize_loops (void)
     }
 
   return ret;
+}
+
+
+/* Entry point to the simduid cleanup pass.  */
+
+namespace {
+
+const pass_data pass_data_simduid_cleanup =
+{
+  GIMPLE_PASS, /* type */
+  "simduid", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  ( PROP_ssa | PROP_cfg ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_simduid_cleanup : public gimple_opt_pass
+{
+public:
+  pass_simduid_cleanup (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_simduid_cleanup, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_simduid_cleanup (m_ctxt); }
+  virtual bool gate (function *fun) { return fun->has_simduid_loops; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_simduid_cleanup
+
+unsigned int
+pass_simduid_cleanup::execute (function *fun)
+{
+  hash_table<simd_array_to_simduid> *simd_array_to_simduid_htab = NULL;
+
+  note_simd_array_uses (&simd_array_to_simduid_htab);
+
+  /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE} builtins.  */
+  adjust_simduid_builtins (NULL);
+
+  /* Shrink any "omp array simd" temporary arrays to the
+     actual vectorization factors.  */
+  if (simd_array_to_simduid_htab)
+    shrink_simd_arrays (simd_array_to_simduid_htab, NULL);
+  fun->has_simduid_loops = false;
+  return 0;
+}
+
+}  // anon namespace
+
+gimple_opt_pass *
+make_pass_simduid_cleanup (gcc::context *ctxt)
+{
+  return new pass_simduid_cleanup (ctxt);
 }
 
 

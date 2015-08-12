@@ -543,6 +543,9 @@ GLIBCXX_3.4 {
     # std::codecvt_byname
     _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[12]EPKc[jmy];
     _ZNSt14codecvt_bynameI[cw]c11__mbstate_tED*;
+#if defined (_WIN32) && !defined (__CYGWIN__)
+    _ZNSt14codecvt_bynameI[cw]ciE[CD]*;
+#endif
 
     # std::collate
     _ZNSt7collateI[cw]*;
@@ -1709,9 +1712,9 @@ GLIBCXX_3.4.21 {
 
     # fstream functions taking ABI-tagged std::string
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
-    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC1ERKNSt7__cxx1112basic_string*;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC[12]ERKNSt7__cxx1112basic_string*;
     _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
-    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EEC1ERKNSt7__cxx1112basic_string*;
+    _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EEC[12]ERKNSt7__cxx1112basic_string*;
     _ZNSt14basic_[io]fstreamI[cw]St11char_traitsI[cw]EE4openERKNSt7__cxx1112basic_string*;
 
     # std::locale::name() returning new std::string
@@ -1819,9 +1822,9 @@ GLIBCXX_3.4.21 {
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE6do_getES3_S3_RSt8ios_baseRSt12_Ios_IostateP2tmcc;
 
     # codecvt<char16_t, char, mbstate_t>, codecvt<char32_t, char, mbstate_t>
-    _ZNKSt7codecvtID[is]c11__mbstate_t*;
-    _ZNSt7codecvtID[is]c11__mbstate_t*;
-    _ZT[ISV]St7codecvtID[is]c11__mbstate_tE;
+    _ZNKSt7codecvtID[is]c*;
+    _ZNSt7codecvtID[is]c*;
+    _ZT[ISV]St7codecvtID[is]c*E;
 
     extern "C++"
     {

@@ -97,4 +97,4 @@ Allow to use truncation instead of rounding towards 0 for fractional int types
 
 nodevicelib
 Driver Target Report RejectNegative
-Do not link against the device-specific library libdev.a
+Do not link against the device-specific library lib<MCU>.a

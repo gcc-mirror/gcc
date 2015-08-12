@@ -2467,6 +2467,7 @@ static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx_insn *);
 static void dwarf2out_begin_function (tree);
 static void dwarf2out_end_function (unsigned int);
+static void dwarf2out_register_main_translation_unit (tree unit);
 static void dwarf2out_set_name (tree, tree);
 
 /* The debug hooks structure.  */
@@ -2495,6 +2496,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_end_epilogue,
   dwarf2out_begin_function,
   dwarf2out_end_function,	/* end_function */
+  dwarf2out_register_main_translation_unit,
   dwarf2out_function_decl,	/* function_decl */
   dwarf2out_global_decl,
   dwarf2out_type_decl,		/* type_decl */
@@ -3886,6 +3888,7 @@ add_AT_wide (dw_die_ref die, enum dwarf_attribute attr_kind,
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_wide_int;
+  attr.dw_attr_val.val_entry = NULL;
   attr.dw_attr_val.v.val_wide = ggc_alloc<wide_int> ();
   *attr.dw_attr_val.v.val_wide = w;
   add_dwarf_attr (die, &attr);
@@ -14686,6 +14689,7 @@ loc_list_from_tree (tree loc, int want_address,
 
     case TARGET_MEM_REF:
     case SSA_NAME:
+    case DEBUG_EXPR_DECL:
       return NULL;
 
     case COMPOUND_EXPR:
@@ -20671,6 +20675,28 @@ is_naming_typedef_decl (const_tree decl)
 	      != TYPE_NAME (TREE_TYPE (decl))));
 }
 
+/* Looks up the DIE for a context.  */
+
+static inline dw_die_ref
+lookup_context_die (tree context)
+{
+  if (context)
+    {
+      /* Find die that represents this context.  */
+      if (TYPE_P (context))
+	{
+	  context = TYPE_MAIN_VARIANT (context);
+	  dw_die_ref ctx = lookup_type_die (context);
+	  if (!ctx)
+	    return NULL;
+	  return strip_naming_typedef (context, ctx);
+	}
+      else
+	return lookup_decl_die (context);
+    }
+  return comp_unit_die ();
+}
+
 /* Returns the DIE for a context.  */
 
 static inline dw_die_ref
@@ -22068,6 +22094,26 @@ dwarf2out_end_function (unsigned int)
   maybe_at_text_label_p = false;
 }
 
+/* Temporary holder for dwarf2out_register_main_translation_unit.  Used to let
+   front-ends register a translation unit even before dwarf2out_init is
+   called.  */
+static tree main_translation_unit = NULL_TREE;
+
+/* Hook called by front-ends after they built their main translation unit.
+   Associate comp_unit_die to UNIT.  */
+
+static void
+dwarf2out_register_main_translation_unit (tree unit)
+{
+  gcc_assert (TREE_CODE (unit) == TRANSLATION_UNIT_DECL
+	      && main_translation_unit == NULL_TREE);
+  main_translation_unit = unit;
+  /* If dwarf2out_init has not been called yet, it will perform the association
+     itself looking at main_translation_unit.  */
+  if (decl_die_table != NULL)
+    equate_decl_number_to_die (unit, comp_unit_die ());
+}
+
 /* Add OPCODE+VAL as an entry at the end of the opcode array in TABLE.  */
 
 static void
@@ -22805,6 +22851,11 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   /* Make sure the line number table for .text always exists.  */
   text_section_line_info = new_line_info_table ();
   text_section_line_info->end_label = text_end_label;
+
+  /* If front-ends already registered a main translation unit but we were not
+     ready to perform the association, do this now.  */
+  if (main_translation_unit != NULL_TREE)
+    equate_decl_number_to_die (main_translation_unit, comp_unit_die ());
 }
 
 /* Called before compile () starts outputtting functions, variables
@@ -24000,12 +24051,22 @@ resolve_addr (dw_die_ref die)
 	  {
 	    tree tdecl = SYMBOL_REF_DECL (a->dw_attr_val.v.val_addr);
 	    dw_die_ref tdie = lookup_decl_die (tdecl);
+	    dw_die_ref cdie;
 	    if (tdie == NULL
 		&& DECL_EXTERNAL (tdecl)
-		&& DECL_ABSTRACT_ORIGIN (tdecl) == NULL_TREE)
+		&& DECL_ABSTRACT_ORIGIN (tdecl) == NULL_TREE
+		&& (cdie = lookup_context_die (DECL_CONTEXT (tdecl))))
 	      {
-		force_decl_die (tdecl);
-		tdie = lookup_decl_die (tdecl);
+		/* Creating a full DIE for tdecl is overly expensive and
+		   at this point even wrong when in the LTO phase
+		   as it can end up generating new type DIEs we didn't
+		   output and thus optimize_external_refs will crash.  */
+		tdie = new_die (DW_TAG_subprogram, cdie, NULL_TREE);
+		add_AT_flag (tdie, DW_AT_external, 1);
+		add_AT_flag (tdie, DW_AT_declaration, 1);
+		add_linkage_attr (tdie, tdecl);
+		add_name_and_src_coords_attributes (tdie, tdecl);
+		equate_decl_number_to_die (tdecl, tdie);
 	      }
 	    if (tdie)
 	      {

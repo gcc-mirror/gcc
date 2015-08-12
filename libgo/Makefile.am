@@ -105,7 +105,7 @@ toolexeclib_LTLIBRARIES = libgo-llgo.la
 toolexeclib_LIBRARIES = libgobegin-llgo.a
 else
 toolexeclib_LTLIBRARIES = libgo.la
-toolexeclib_LIBRARIES = libgobegin.a
+toolexeclib_LIBRARIES = libgobegin.a libgolibbegin.a libnetgo.a
 endif
 
 toolexeclibgo_DATA = \
@@ -774,9 +774,7 @@ endif
 endif
 endif
 
-go_net_files = \
-	go/net/cgo_unix.go \
-	$(go_net_cgo_file) \
+go_net_common_files = \
 	$(go_net_cloexec_file) \
 	go/net/dial.go \
 	go/net/dnsclient.go \
@@ -819,6 +817,15 @@ go_net_files = \
 	go/net/udpsock_posix.go \
 	go/net/unixsock.go \
 	go/net/unixsock_posix.go
+
+go_net_files = \
+	go/net/cgo_unix.go \
+	$(go_net_cgo_file) \
+	$(go_net_common_files)
+
+go_netgo_files = \
+	go/net/cgo_stub.go \
+	$(go_net_common_files)
 
 if LIBGO_IS_SOLARIS
 if LIBGO_IS_386
@@ -2025,6 +2032,18 @@ libgobegin_a_SOURCES = \
 libgobegin_llgo_a_SOURCES = \
 	runtime/go-main.c
 
+# Use -fPIC for libgobegin so that it can be put in a PIE.
+libgobegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
+libgobegin_llgo_a_CFLAGS = $(AM_CFLAGS) -fPIC
+
+libgolibbegin_a_SOURCES = \
+	runtime/go-libmain.c
+
+libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
+
+libnetgo_a_SOURCES = $(go_netgo_files)
+libnetgo_a_LIBADD = netgo.o
+
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
 GOCFLAGS = $(CFLAGS)
@@ -2048,6 +2067,12 @@ BUILDPACKAGE = \
 	$(MKDIR_P) $(@D); \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
 	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//' -e 's/-go$$//'` -o $@ $$files
+
+# Build netgo.o.
+BUILDNETGO = \
+	$(MKDIR_P) $(@D); \
+	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
+	$(GOCOMPILE) -I . -c -fPIC -fgo-pkgpath=net -o $@ $$files
 
 GOTESTFLAGS =
 GOBENCH = 
@@ -2269,6 +2294,12 @@ net.lo: $(go_net_files)
 net/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: net/check
+
+@go_include@ netgo.o.dep
+netgo.o.dep: $(go_netgo_files)
+	$(BUILDDEPS)
+netgo.o: $(go_netgo_files)
+	$(BUILDNETGO)
 
 @go_include@ os.lo.dep
 os.lo.dep: $(go_os_files)

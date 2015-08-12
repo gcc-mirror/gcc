@@ -8712,7 +8712,7 @@ Elemental function
 The return value is of type @code{REAL} or @code{COMPLEX}.
 The kind type parameter is the same as @var{X}.
 If @var{X} is @code{COMPLEX}, the imaginary part @math{\omega} is in the range
-@math{-\pi \leq \omega \leq \pi}.
+@math{-\pi < \omega \leq \pi}.
 
 @item @emph{Example}:
 @smallexample

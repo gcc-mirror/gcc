@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wno-pointer-arith" } */
+/* { dg-options "-O" } */
 
 void
 test (void)

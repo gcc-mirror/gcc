@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// shared_timed_mutex
   class shared_timed_mutex
   {
-#ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_T
+#if _GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK
     typedef chrono::system_clock	__clock_t;
 
 #ifdef PTHREAD_RWLOCK_INITIALIZER
@@ -116,7 +116,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -158,7 +157,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_until(__s_atime);
       }
-#endif
 
     void
     unlock()
@@ -200,7 +198,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_shared_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -258,7 +255,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_shared_until(__s_atime);
       }
-#endif
 
     void
     unlock_shared()
@@ -266,35 +262,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unlock();
     }
 
-#else // ! _GLIBCXX_USE_PTHREAD_RWLOCK_T
+#else // ! (_GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK)
 
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
-    struct _Mutex : mutex, __timed_mutex_impl<_Mutex>
-    {
-      template<typename _Rep, typename _Period>
-	bool
-	try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
-	{ return _M_try_lock_for(__rtime); }
+    // Must use the same clock as condition_variable
+    typedef chrono::system_clock	__clock_t;
 
-      template<typename _Clock, typename _Duration>
-	bool
-	try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
-	{ return _M_try_lock_until(__atime); }
-    };
-#else
-    typedef mutex _Mutex;
-#endif
+    // Based on Howard Hinnant's reference implementation from N2406.
 
-    // Based on Howard Hinnant's reference implementation from N2406
+    // The high bit of _M_state is the write-entered flag which is set to
+    // indicate a writer has taken the lock or is queuing to take the lock.
+    // The remaining bits are the count of reader locks.
+    //
+    // To take a reader lock, block on gate1 while the write-entered flag is
+    // set or the maximum number of reader locks is held, then increment the
+    // reader lock count.
+    // To release, decrement the count, then if the write-entered flag is set
+    // and the count is zero then signal gate2 to wake a queued writer,
+    // otherwise if the maximum number of reader locks was held signal gate1
+    // to wake a reader.
+    //
+    // To take a writer lock, block on gate1 while the write-entered flag is
+    // set, then set the write-entered flag to start queueing, then block on
+    // gate2 while the number of reader locks is non-zero.
+    // To release, unset the write-entered flag and signal gate1 to wake all
+    // blocked readers and writers.
+    //
+    // This means that when no reader locks are held readers and writers get
+    // equal priority. When one or more reader locks is held a writer gets
+    // priority and no more reader locks can be taken while the writer is
+    // queued.
 
-    _Mutex		_M_mut;
+    // Only locked when accessing _M_state or waiting on condition variables.
+    mutex		_M_mut;
+    // Used to block while write-entered is set or reader count at maximum.
     condition_variable	_M_gate1;
+    // Used to block queued writers while reader count is non-zero.
     condition_variable	_M_gate2;
+    // The write-entered flag and reader count.
     unsigned		_M_state;
 
     static constexpr unsigned _S_write_entered
       = 1U << (sizeof(unsigned)*__CHAR_BIT__ - 1);
-    static constexpr unsigned _M_n_readers = ~_S_write_entered;
+    static constexpr unsigned _S_max_readers = ~_S_write_entered;
+
+    // Test whether the write-entered flag is set. _M_mut must be locked.
+    bool _M_write_entered() const { return _M_state & _S_write_entered; }
+
+    // The number of reader locks currently held. _M_mut must be locked.
+    unsigned _M_readers() const { return _M_state & _S_max_readers; }
 
   public:
     shared_timed_mutex() : _M_state(0) {}
@@ -313,11 +328,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lock()
     {
       unique_lock<mutex> __lk(_M_mut);
-      while (_M_state & _S_write_entered)
-	_M_gate1.wait(__lk);
+      // Wait until we can set the write-entered flag.
+      _M_gate1.wait(__lk, [=]{ return !_M_write_entered(); });
       _M_state |= _S_write_entered;
-      while (_M_state & _M_n_readers)
-	_M_gate2.wait(__lk);
+      // Then wait until there are no more readers.
+      _M_gate2.wait(__lk, [=]{ return _M_readers() == 0; });
     }
 
     bool
@@ -332,41 +347,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rel_time)
       {
-	unique_lock<_Mutex> __lk(_M_mut, __rel_time);
-	if (__lk.owns_lock() && _M_state == 0)
-	  {
-	    _M_state = _S_write_entered;
-	    return true;
-	  }
-	return false;
+	return try_lock_until(__clock_t::now() + __rel_time);
       }
 
     template<typename _Clock, typename _Duration>
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __abs_time)
       {
-	unique_lock<_Mutex> __lk(_M_mut, __abs_time);
-	if (__lk.owns_lock() && _M_state == 0)
+	unique_lock<mutex> __lk(_M_mut);
+	if (!_M_gate1.wait_until(__lk, __abs_time,
+				 [=]{ return !_M_write_entered(); }))
 	  {
-	    _M_state = _S_write_entered;
-	    return true;
+	    return false;
 	  }
-	return false;
+	_M_state |= _S_write_entered;
+	if (!_M_gate2.wait_until(__lk, __abs_time,
+				 [=]{ return _M_readers() == 0; }))
+	  {
+	    _M_state ^= _S_write_entered;
+	    // Wake all threads blocked while the write-entered flag was set.
+	    _M_gate1.notify_all();
+	    return false;
+	  }
+	return true;
       }
-#endif
 
     void
     unlock()
     {
-      {
-	lock_guard<_Mutex> __lk(_M_mut);
-	_M_state = 0;
-      }
+      lock_guard<mutex> __lk(_M_mut);
+      _GLIBCXX_DEBUG_ASSERT( _M_write_entered() );
+      _M_state = 0;
+      // call notify_all() while mutex is held so that another thread can't
+      // lock and unlock the mutex then destroy *this before we make the call.
       _M_gate1.notify_all();
     }
 
@@ -376,51 +393,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lock_shared()
     {
       unique_lock<mutex> __lk(_M_mut);
-      while ((_M_state & _S_write_entered)
-	  || (_M_state & _M_n_readers) == _M_n_readers)
-	{
-	  _M_gate1.wait(__lk);
-	}
-      unsigned __num_readers = (_M_state & _M_n_readers) + 1;
-      _M_state &= ~_M_n_readers;
-      _M_state |= __num_readers;
+      _M_gate1.wait(__lk, [=]{ return _M_state < _S_max_readers; });
+      ++_M_state;
     }
 
     bool
     try_lock_shared()
     {
-      unique_lock<_Mutex> __lk(_M_mut, try_to_lock);
-      unsigned __num_readers = _M_state & _M_n_readers;
-      if (__lk.owns_lock() && !(_M_state & _S_write_entered)
-	  && __num_readers != _M_n_readers)
+      unique_lock<mutex> __lk(_M_mut, try_to_lock);
+      if (!__lk.owns_lock())
+	return false;
+      if (_M_state < _S_max_readers)
 	{
-	  ++__num_readers;
-	  _M_state &= ~_M_n_readers;
-	  _M_state |= __num_readers;
+	  ++_M_state;
 	  return true;
 	}
       return false;
     }
 
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_shared_for(const chrono::duration<_Rep, _Period>& __rel_time)
       {
-	unique_lock<_Mutex> __lk(_M_mut, __rel_time);
-	if (__lk.owns_lock())
-	  {
-	    unsigned __num_readers = _M_state & _M_n_readers;
-	    if (!(_M_state & _S_write_entered)
-		&& __num_readers != _M_n_readers)
-	      {
-		++__num_readers;
-		_M_state &= ~_M_n_readers;
-		_M_state |= __num_readers;
-		return true;
-	      }
-	  }
-	return false;
+	return try_lock_shared_until(__clock_t::now() + __rel_time);
       }
 
     template <typename _Clock, typename _Duration>
@@ -428,42 +423,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       try_lock_shared_until(const chrono::time_point<_Clock,
 						     _Duration>& __abs_time)
       {
-	unique_lock<_Mutex> __lk(_M_mut, __abs_time);
-	if (__lk.owns_lock())
+	unique_lock<mutex> __lk(_M_mut);
+	if (!_M_gate1.wait_until(__lk, __abs_time,
+				 [=]{ return _M_state < _S_max_readers; }))
 	  {
-	    unsigned __num_readers = _M_state & _M_n_readers;
-	    if (!(_M_state & _S_write_entered)
-		&& __num_readers != _M_n_readers)
-	      {
-		++__num_readers;
-		_M_state &= ~_M_n_readers;
-		_M_state |= __num_readers;
-		return true;
-	      }
+	    return false;
 	  }
-	return false;
+	++_M_state;
+	return true;
       }
-#endif
 
     void
     unlock_shared()
     {
-      lock_guard<_Mutex> __lk(_M_mut);
-      unsigned __num_readers = (_M_state & _M_n_readers) - 1;
-      _M_state &= ~_M_n_readers;
-      _M_state |= __num_readers;
-      if (_M_state & _S_write_entered)
+      lock_guard<mutex> __lk(_M_mut);
+      _GLIBCXX_DEBUG_ASSERT( _M_readers() > 0 );
+      auto __prev = _M_state--;
+      if (_M_write_entered())
 	{
-	  if (__num_readers == 0)
+	  // Wake the queued writer if there are no more readers.
+	  if (_M_readers() == 0)
 	    _M_gate2.notify_one();
+	  // No need to notify gate1 because we give priority to the queued
+	  // writer, and that writer will eventually notify gate1 after it
+	  // clears the write-entered flag.
 	}
       else
 	{
-	  if (__num_readers == _M_n_readers - 1)
+	  // Wake any thread that was blocked on reader overflow.
+	  if (__prev == _S_max_readers)
 	    _M_gate1.notify_one();
 	}
     }
-#endif // ! _GLIBCXX_USE_PTHREAD_RWLOCK_T
+#endif // _GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK
   };
 #endif // _GLIBCXX_HAS_GTHREADS
 

@@ -224,7 +224,6 @@ struct gomp_team_state
 };
 
 struct target_mem_desc;
-struct gomp_memory_mapping;
 
 /* These are the OpenMP 4.0 Internal Control Variables described in
    section 2.3.1.  Those described as having one copy per task are
@@ -656,9 +655,6 @@ struct target_mem_desc {
   /* Corresponding target device descriptor.  */
   struct gomp_device_descr *device_descr;
 
-  /* Memory mapping info for the thread that created this descriptor.  */
-  struct gomp_memory_mapping *mem_map;
-
   /* List of splay keys to remove (or decrease refcount)
      at the end of region.  */
   splay_tree_key list[];
@@ -683,20 +679,6 @@ struct splay_tree_key_s {
 
 #include "splay-tree.h"
 
-/* Information about mapped memory regions (per device/context).  */
-
-struct gomp_memory_mapping
-{
-  /* Mutex for operating with the splay tree and other shared structures.  */
-  gomp_mutex_t lock;
-
-  /* True when tables have been added to this memory map.  */
-  bool is_initialized;
-
-  /* Splay tree containing information about mapped memory regions.  */
-  struct splay_tree_s splay_tree;
-};
-
 typedef struct acc_dispatch_t
 {
   /* This is a linked list of data mapped using the
@@ -705,18 +687,6 @@ typedef struct acc_dispatch_t
      happen out-of-order with respect to mapping.  */
   /* This is guarded by the lock in the "outer" struct gomp_device_descr.  */
   struct target_mem_desc *data_environ;
-
-  /* Extra information required for a device instance by a given target.  */
-  /* This is guarded by the lock in the "outer" struct gomp_device_descr.  */
-  void *target_data;
-
-  /* Open or close a device instance.  */
-  void *(*open_device_func) (int n);
-  int (*close_device_func) (void *h);
-
-  /* Set or get the device number.  */
-  int (*get_device_num_func) (void);
-  void (*set_device_num_func) (int);
 
   /* Execute.  */
   void (*exec_func) (void (*) (void *), size_t, void **, void **, size_t *,
@@ -735,7 +705,7 @@ typedef struct acc_dispatch_t
   void (*async_set_async_func) (int);
 
   /* Create/destroy TLS data.  */
-  void *(*create_thread_data_func) (void *);
+  void *(*create_thread_data_func) (int);
   void (*destroy_thread_data_func) (void *);
 
   /* NVIDIA target specific routines.  */
@@ -773,28 +743,24 @@ struct gomp_device_descr
   unsigned int (*get_caps_func) (void);
   int (*get_type_func) (void);
   int (*get_num_devices_func) (void);
-  void (*register_image_func) (void *, void *);
   void (*init_device_func) (int);
   void (*fini_device_func) (int);
-  int (*get_table_func) (int, struct mapping_table **);
+  int (*load_image_func) (int, void *, struct addr_pair **);
+  void (*unload_image_func) (int, void *);
   void *(*alloc_func) (int, size_t);
   void (*free_func) (int, void *);
   void *(*dev2host_func) (int, void *, const void *, size_t);
   void *(*host2dev_func) (int, void *, const void *, size_t);
   void (*run_func) (int, void *, void *);
 
-  /* Memory-mapping info for this device instance.  */
-  /* Uses a separate lock.  */
-  struct gomp_memory_mapping mem_map;
+  /* Splay tree containing information about mapped memory regions.  */
+  struct splay_tree_s mem_map;
 
   /* Mutex for the mutable data.  */
   gomp_mutex_t lock;
 
   /* Set to true when device is initialized.  */
   bool is_initialized;
-
-  /* True when offload regions have been registered with this device.  */
-  bool offload_regions_registered;
 
   /* OpenACC-specific data and functions.  */
   /* This is mutable because of its mutable data_environ and target_data
@@ -811,9 +777,7 @@ extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 extern void gomp_copy_from_async (struct target_mem_desc *);
 extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_init_device (struct gomp_device_descr *);
-extern void gomp_init_tables (struct gomp_device_descr *,
-			      struct gomp_memory_mapping *);
-extern void gomp_free_memmap (struct gomp_memory_mapping *);
+extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_fini_device (struct gomp_device_descr *);
 
 /* work.c */

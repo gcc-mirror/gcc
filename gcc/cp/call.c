@@ -910,9 +910,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   tree field = next_initializable_field (TYPE_FIELDS (type));
   tree empty_ctor = NULL_TREE;
 
-  ctor = reshape_init (type, ctor, tf_none);
-  if (ctor == error_mark_node)
-    return NULL;
+  /* We already called reshape_init in implicit_conversion.  */
 
   /* The conversions within the init-list aren't affected by the enclosing
      context; they're always simple copy-initialization.  */
@@ -1800,6 +1798,18 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
      We really ought not to issue that warning until we've committed
      to that conversion.  */
   complain &= ~tf_error;
+
+  /* Call reshape_init early to remove redundant braces.  */
+  if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr)
+      && CLASS_TYPE_P (to)
+      && COMPLETE_TYPE_P (complete_type (to))
+      && !CLASSTYPE_NON_AGGREGATE (to))
+    {
+      expr = reshape_init (to, expr, complain);
+      if (expr == error_mark_node)
+	return NULL;
+      from = TREE_TYPE (expr);
+    }
 
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, c_cast_p, flags, complain);
@@ -5677,8 +5687,9 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      warn_logical_operator (loc, code, boolean_type_node,
-			     code_orig_arg1, arg1, code_orig_arg2, arg2);
+      if (complain & tf_warning)
+	warn_logical_operator (loc, code, boolean_type_node,
+			       code_orig_arg1, arg1, code_orig_arg2, arg2);
       /* Fall through.  */
     case GT_EXPR:
     case LT_EXPR:
@@ -5686,8 +5697,9 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case LE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
-      if ((code_orig_arg1 == BOOLEAN_TYPE)
-	  ^ (code_orig_arg2 == BOOLEAN_TYPE))
+      if ((complain & tf_warning)
+	  && ((code_orig_arg1 == BOOLEAN_TYPE)
+	      ^ (code_orig_arg2 == BOOLEAN_TYPE)))
 	maybe_warn_bool_compare (loc, code, arg1, arg2);
       /* Fall through.  */
     case PLUS_EXPR:

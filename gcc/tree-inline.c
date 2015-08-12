@@ -3033,7 +3033,7 @@ insert_init_debug_bind (copy_body_data *id,
 	base_stmt = gsi_stmt (gsi);
     }
 
-  note = gimple_build_debug_bind (tracked_var, value, base_stmt);
+  note = gimple_build_debug_bind (tracked_var, unshare_expr (value), base_stmt);
 
   if (bb)
     {

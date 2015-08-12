@@ -35,6 +35,10 @@ Params
    In preparation for creating a function, create a new parameter of the
    given type and name.
 
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
+
 Parameters are lvalues, and thus are also rvalues (and objects), so the
 following upcasts are available:
 
@@ -111,6 +115,10 @@ Functions
          above 0; when optimization is off, this is essentially the
          same as GCC_JIT_FUNCTION_INTERNAL.
 
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
+
 .. function::  gcc_jit_function *\
                gcc_jit_context_get_builtin_function (gcc_jit_context *ctxt,\
                                                      const char *name)
@@ -140,6 +148,9 @@ Functions
    Create a new local variable within the function, of the given type and
    name.
 
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
 
 Blocks
 ------
@@ -153,7 +164,8 @@ Blocks
    be the entrypoint.
 
    Each basic block that you create within a function must be
-   terminated, either with a conditional, a jump, or a return.
+   terminated, either with a conditional, a jump, a return, or a
+   switch.
 
    It's legal to have multiple basic blocks that return within
    one function.
@@ -165,7 +177,17 @@ Blocks
    Create a basic block of the given name.  The name may be NULL, but
    providing meaningful names is often helpful when debugging: it may
    show up in dumps of the internal representation, and in error
-   messages.
+   messages.  It is copied, so the input buffer does not need to outlive
+   the call; you can pass in a pointer to an on-stack buffer, e.g.:
+
+   .. code-block:: c
+
+     for (pc = 0; pc < fn->fn_num_ops; pc++)
+      {
+        char buf[16];
+        sprintf (buf, "instr%i", pc);
+        state.op_blocks[pc] = gcc_jit_function_new_block (state.fn, buf);
+      }
 
 .. function::  gcc_jit_object *\
                gcc_jit_block_as_object (gcc_jit_block *block)
@@ -251,6 +273,17 @@ Statements
    and thus may be of use when debugging how your project's internal
    representation gets converted to the libgccjit IR.
 
+   The parameter ``text`` must be non-NULL.  It is copied, so the input
+   buffer does not need to outlive the call.  For example:
+
+   .. code-block:: c
+
+     char buf[100];
+     snprintf (buf, sizeof (buf),
+               "op%i: %s",
+               pc, opcode_names[op->op_opcode]);
+     gcc_jit_block_add_comment (block, loc, buf);
+
 .. function:: void\
               gcc_jit_block_end_with_conditional (gcc_jit_block *block,\
                                                   gcc_jit_location *loc,\
@@ -313,3 +346,96 @@ Statements
    .. code-block:: c
 
       return;
+
+.. function:: void\
+              gcc_jit_block_end_with_switch (gcc_jit_block *block,\
+                                             gcc_jit_location *loc,\
+                                             gcc_jit_rvalue *expr,\
+                                             gcc_jit_block *default_block,\
+                                             int num_cases,\
+                                             gcc_jit_case **cases)
+
+   Terminate a block by adding evalation of an rvalue, then performing
+   a multiway branch.
+
+   This is roughly equivalent to this C code:
+
+   .. code-block:: c
+
+     switch (expr)
+       {
+       default:
+         goto default_block;
+
+       case C0.min_value ... C0.max_value:
+         goto C0.dest_block;
+
+       case C1.min_value ... C1.max_value:
+         goto C1.dest_block;
+
+       ...etc...
+
+       case C[N - 1].min_value ... C[N - 1].max_value:
+         goto C[N - 1].dest_block;
+     }
+
+   ``block``, ``expr``, ``default_block`` and ``cases`` must all be
+   non-NULL.
+
+   ``expr`` must be of the same integer type as all of the ``min_value``
+   and ``max_value`` within the cases.
+
+   ``num_cases`` must be >= 0.
+
+   The ranges of the cases must not overlap (or have duplicate
+   values).
+
+   The API entrypoints relating to switch statements and cases:
+
+      * :c:func:`gcc_jit_block_end_with_switch`
+
+      * :c:func:`gcc_jit_case_as_object`
+
+      * :c:func:`gcc_jit_context_new_case`
+
+   were added in :ref:`LIBGCCJIT_ABI_3`; you can test for their presence
+   using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+
+   .. type:: gcc_jit_case
+
+   A `gcc_jit_case` represents a case within a switch statement, and
+   is created within a particular :c:type:`gcc_jit_context` using
+   :c:func:`gcc_jit_context_new_case`.
+
+   Each case expresses a multivalued range of integer values.  You
+   can express single-valued cases by passing in the same value for
+   both `min_value` and `max_value`.
+
+   .. function:: gcc_jit_case *\
+                 gcc_jit_context_new_case (gcc_jit_context *ctxt,\
+                                           gcc_jit_rvalue *min_value,\
+                                           gcc_jit_rvalue *max_value,\
+                                           gcc_jit_block *dest_block)
+
+      Create a new gcc_jit_case instance for use in a switch statement.
+      `min_value` and `max_value` must be constants of an integer type,
+      which must match that of the expression of the switch statement.
+
+      `dest_block` must be within the same function as the switch
+      statement.
+
+   .. function:: gcc_jit_object *\
+                 gcc_jit_case_as_object (gcc_jit_case *case_)
+
+      Upcast from a case to an object.
+
+   Here's an example of creating a switch statement:
+
+     .. literalinclude:: ../../../testsuite/jit.dg/test-switch.c
+       :start-after: /* Quote from here in docs/topics/functions.rst.  */
+       :end-before: /* Quote up to here in docs/topics/functions.rst.  */
+       :language: c

@@ -1981,7 +1981,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	}
 
       comp = gfc_get_proc_ptr_comp(e);
-      if (comp && comp->attr.elemental)
+      if (e->expr_type == EXPR_VARIABLE
+	  && comp && comp->attr.elemental)
 	{
 	    gfc_error ("ELEMENTAL procedure pointer component %qs is not "
 		       "allowed as an actual argument at %L", comp->name,
@@ -2383,14 +2384,11 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       if (!gsym->ns->resolved)
 	{
 	  gfc_dt_list *old_dt_list;
-	  struct gfc_omp_saved_state old_omp_state;
 
 	  /* Stash away derived types so that the backend_decls do not
 	     get mixed up.  */
 	  old_dt_list = gfc_derived_types;
 	  gfc_derived_types = NULL;
-	  /* And stash away openmp state.  */
-	  gfc_omp_save_and_clear_state (&old_omp_state);
 
 	  gfc_resolve (gsym->ns);
 
@@ -2400,8 +2398,6 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
 	  /* Restore the derived types of this namespace.  */
 	  gfc_derived_types = old_dt_list;
-	  /* And openmp state.  */
-	  gfc_omp_restore_state (&old_omp_state);
 	}
 
       /* Make sure that translation for the gsymbol occurs before
@@ -10948,7 +10944,7 @@ apply_default_init_local (gfc_symbol *sym)
      result variable, which are also nonstatic.  */
   if (sym->attr.save || sym->ns->save_all
       || (flag_max_stack_var_size == 0 && !sym->attr.result
-	  && !sym->ns->proc_name->attr.recursive
+	  && (sym->ns->proc_name && !sym->ns->proc_name->attr.recursive)
 	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
     {
       /* Don't clobber an existing initializer!  */
@@ -15070,6 +15066,7 @@ gfc_resolve (gfc_namespace *ns)
 {
   gfc_namespace *old_ns;
   code_stack *old_cs_base;
+  struct gfc_omp_saved_state old_omp_state;
 
   if (ns->resolved)
     return;
@@ -15077,6 +15074,11 @@ gfc_resolve (gfc_namespace *ns)
   ns->resolved = -1;
   old_ns = gfc_current_ns;
   old_cs_base = cs_base;
+
+  /* As gfc_resolve can be called during resolution of an OpenMP construct
+     body, we should clear any state associated to it, so that say NS's
+     DO loops are not interpreted as OpenMP loops.  */
+  gfc_omp_save_and_clear_state (&old_omp_state);
 
   resolve_types (ns);
   component_assignment_level = 0;
@@ -15087,4 +15089,6 @@ gfc_resolve (gfc_namespace *ns)
   ns->resolved = 1;
 
   gfc_run_passes (ns);
+
+  gfc_omp_restore_state (&old_omp_state);
 }

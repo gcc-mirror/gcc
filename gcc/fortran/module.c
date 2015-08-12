@@ -4479,8 +4479,8 @@ load_commons (void)
 static void
 load_equiv (void)
 {
-  gfc_equiv *head, *tail, *end, *eq;
-  bool unused;
+  gfc_equiv *head, *tail, *end, *eq, *equiv;
+  bool duplicate;
 
   mio_lparen ();
   in_load_equiv = true;
@@ -4507,23 +4507,19 @@ load_equiv (void)
 	mio_expr (&tail->expr);
       }
 
-    /* Unused equivalence members have a unique name.  In addition, it
-       must be checked that the symbols are from the same module.  */
-    unused = true;
-    for (eq = head; eq; eq = eq->eq)
+    /* Check for duplicate equivalences being loaded from different modules */
+    duplicate = false;
+    for (equiv = gfc_current_ns->equiv; equiv; equiv = equiv->next)
       {
-	if (eq->expr->symtree->n.sym->module
-	      && head->expr->symtree->n.sym->module
-	      && strcmp (head->expr->symtree->n.sym->module,
-			 eq->expr->symtree->n.sym->module) == 0
-	      && !check_unique_name (eq->expr->symtree->name))
+	if (equiv->module && head->module
+	    && strcmp (equiv->module, head->module) == 0)
 	  {
-	    unused = false;
+	    duplicate = true;
 	    break;
 	  }
       }
 
-    if (unused)
+    if (duplicate)
       {
 	for (eq = head; eq; eq = head)
 	  {

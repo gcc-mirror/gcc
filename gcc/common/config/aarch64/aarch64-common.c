@@ -27,6 +27,7 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "errors.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
@@ -89,23 +90,34 @@ aarch64_handle_option (struct gcc_options *opts,
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
 
-#define AARCH64_CPU_NAME_LENGTH 20
+#define AARCH64_CPU_NAME_LENGTH 128
 
-/* Truncate NAME at the first '.' character seen, or return
-   NAME unmodified.  */
+/* Truncate NAME at the first '.' character seen up to the first '+'
+   or return NAME unmodified.  */
 
 const char *
 aarch64_rewrite_selected_cpu (const char *name)
 {
   static char output_buf[AARCH64_CPU_NAME_LENGTH + 1] = {0};
-  char *arg_pos;
+  const char *bL_sep;
+  const char *feats;
+  size_t pref_size;
+  size_t feat_size;
 
-  strncpy (output_buf, name, AARCH64_CPU_NAME_LENGTH);
-  arg_pos = strchr (output_buf, '.');
+  bL_sep = strchr (name, '.');
+  if (!bL_sep)
+    return name;
 
-  /* If we found a '.' truncate the entry at that point.  */
-  if (arg_pos)
-    *arg_pos = '\0';
+  feats = strchr (name, '+');
+  feat_size = feats ? strnlen (feats, AARCH64_CPU_NAME_LENGTH) : 0;
+  pref_size = bL_sep - name;
+
+  if ((feat_size + pref_size) > AARCH64_CPU_NAME_LENGTH)
+    internal_error ("-mcpu string too large");
+
+  strncpy (output_buf, name, pref_size);
+  if (feats)
+    strncpy (output_buf + pref_size, feats, feat_size);
 
   return output_buf;
 }

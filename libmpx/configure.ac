@@ -23,7 +23,6 @@ AC_MSG_RESULT($version_specific_libs)
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
-GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
 # See if supported.
 unset LIBMPX_SUPPORTED
@@ -94,7 +93,6 @@ AC_SUBST(toolexeclibdir)
 m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
-AC_PROG_CXX
 m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AM_PROG_CC_C_O

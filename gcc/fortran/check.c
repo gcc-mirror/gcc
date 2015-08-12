@@ -6213,6 +6213,15 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 bool
 gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 {
+
+  if (a->expr_type == EXPR_NULL)
+    {
+      gfc_error ("Intrinsic function NULL at %L cannot be an actual "
+		 "argument to STORAGE_SIZE, because it returns a "
+		 "disassociated pointer", &a->where);
+      return false;
+    }
+
   if (a->ts.type == BT_ASSUMED)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L shall not be TYPE(*)",

@@ -85,4 +85,5 @@
 
 #include <xsavecintrin.h>
 
+#include <mwaitxintrin.h>
 #endif /* _X86INTRIN_H_INCLUDED */

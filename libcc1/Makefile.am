@@ -17,7 +17,7 @@
 ## <http://www.gnu.org/licenses/>.
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
-gcc_build_dir = ../$(host_subdir)/gcc
+gcc_build_dir = ../gcc
 AM_CPPFLAGS = -I $(srcdir)/../include -I $(srcdir)/../libgcc \
 	-I $(gcc_build_dir) -I$(srcdir)/../gcc \
 	-I $(srcdir)/../gcc/c -I $(srcdir)/../gcc/c-family \

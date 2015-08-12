@@ -43,6 +43,9 @@ extern void s390_set_has_landing_pad_p (bool);
 extern bool s390_hard_regno_mode_ok (unsigned int, machine_mode);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
+extern int s390_cannot_change_mode_class (machine_mode, machine_mode,
+					  enum reg_class);
+extern bool s390_function_arg_vector (machine_mode, const_tree);
 
 #ifdef RTX_CODE
 extern int s390_extra_constraint_str (rtx, int, const char *);
@@ -51,6 +54,8 @@ extern int s390_const_double_ok_for_constraint_p (rtx, int, const char *);
 extern int s390_single_part (rtx, machine_mode, machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, machine_mode, int);
 extern bool s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT, int, int *, int *);
+extern bool s390_contiguous_bitmask_vector_p (rtx, int *, int *);
+extern bool s390_bytemask_vector_p (rtx, unsigned *);
 extern bool s390_split_ok_p (rtx, rtx, machine_mode, int);
 extern bool s390_overlap_p (rtx, rtx, HOST_WIDE_INT);
 extern bool s390_offset_p (rtx, rtx, rtx);
@@ -83,6 +88,7 @@ extern void s390_load_address (rtx, rtx);
 extern bool s390_expand_movmem (rtx, rtx, rtx);
 extern void s390_expand_setmem (rtx, rtx, rtx);
 extern bool s390_expand_cmpmem (rtx, rtx, rtx, rtx);
+extern void s390_expand_vec_strlen (rtx, rtx, rtx);
 extern bool s390_expand_addcc (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern bool s390_expand_insv (rtx, rtx, rtx, rtx);
 extern void s390_expand_cs_hqi (machine_mode, rtx, rtx, rtx,
@@ -90,6 +96,10 @@ extern void s390_expand_cs_hqi (machine_mode, rtx, rtx, rtx,
 extern void s390_expand_atomic (machine_mode, enum rtx_code,
 				rtx, rtx, rtx, bool);
 extern void s390_expand_tbegin (rtx, rtx, rtx, bool);
+extern void s390_expand_vec_compare (rtx, enum rtx_code, rtx, rtx);
+extern void s390_expand_vec_compare_cc (rtx, enum rtx_code, rtx, rtx, bool);
+extern void s390_expand_vcond (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
+extern void s390_expand_vec_init (rtx, rtx);
 extern rtx s390_return_addr_rtx (int, rtx);
 extern rtx s390_back_chain_rtx (void);
 extern rtx_insn *s390_emit_call (rtx, rtx, rtx, rtx);
@@ -115,3 +125,10 @@ extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);
 extern void s390_asm_output_function_label (FILE *, const char *, tree);
 
 #endif /* RTX_CODE */
+
+/* s390-c.c routines */
+extern void s390_cpu_cpp_builtins (struct cpp_reader *);
+extern void s390_register_target_pragmas (void);
+
+/* Routines for s390-c.c */
+extern bool s390_const_operand_ok (tree, int, int, tree);

@@ -69,13 +69,17 @@ namespace __gnu_debug
 
       _Safe_vector&
       operator=(const _Safe_vector&) noexcept
-      { _M_update_guaranteed_capacity(); }
+      {
+	_M_update_guaranteed_capacity();
+	return *this;
+      }
 
       _Safe_vector&
       operator=(_Safe_vector&& __x) noexcept
       {
 	_M_update_guaranteed_capacity();
 	__x._M_guaranteed_capacity = 0;
+	return *this;
       }
 #endif
 

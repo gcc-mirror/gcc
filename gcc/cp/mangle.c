@@ -2571,7 +2571,7 @@ write_template_args (tree args)
   if (args)
     length = TREE_VEC_LENGTH (args);
 
-  if (args && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+  if (args && length && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
     {
       /* We have nested template args.  We want the innermost template
 	 argument list.  */
@@ -3470,11 +3470,11 @@ get_mangled_id (tree decl)
   return targetm.mangle_decl_assembler_name (decl, id);
 }
 
-/* If DECL is a mangling alias, remove it from the symbol table and return
-   true; otherwise return false.  */
+/* If DECL is an implicit mangling alias, return its symtab node; otherwise
+   return NULL.  */
 
-bool
-maybe_remove_implicit_alias (tree decl)
+static symtab_node *
+decl_implicit_alias_p (tree decl)
 {
   if (DECL_P (decl) && DECL_ARTIFICIAL (decl)
       && DECL_IGNORED_P (decl)
@@ -3484,10 +3484,21 @@ maybe_remove_implicit_alias (tree decl)
     {
       symtab_node *n = symtab_node::get (decl);
       if (n && n->cpp_implicit_alias)
-	{
-	  n->remove();
-	  return true;
-	}
+	return n;
+    }
+  return NULL;
+}
+
+/* If DECL is a mangling alias, remove it from the symbol table and return
+   true; otherwise return false.  */
+
+bool
+maybe_remove_implicit_alias (tree decl)
+{
+  if (symtab_node *n = decl_implicit_alias_p (decl))
+    {
+      n->remove();
+      return true;
     }
   return false;
 }
@@ -3514,21 +3525,38 @@ mangle_decl (const tree decl)
   id = get_mangled_id (decl);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
-  if (G.need_abi_warning
+  if (id != DECL_NAME (decl)
+      && !DECL_REALLY_EXTERN (decl)
       /* Don't do this for a fake symbol we aren't going to emit anyway.  */
       && TREE_CODE (decl) != TYPE_DECL
       && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
       && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
     {
+      bool set = false;
+
+      /* Check IDENTIFIER_GLOBAL_VALUE before setting to avoid redundant
+	 errors from multiple definitions.  */
+      tree d = IDENTIFIER_GLOBAL_VALUE (id);
+      if (!d || decl_implicit_alias_p (d))
+	{
+	  set = true;
+	  SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+	}
+
+      if (!G.need_abi_warning)
+	return;
+
       /* If the mangling will change in the future, emit an alias with the
 	 future mangled name for forward-compatibility.  */
       int save_ver;
       tree id2;
 
-      SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
-      if (IDENTIFIER_GLOBAL_VALUE (id) != decl)
-	inform (DECL_SOURCE_LOCATION (decl), "a later -fabi-version= (or =0) "
-		"avoids this error with a change in mangling");
+      if (!set)
+	{
+	  SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+	  inform (DECL_SOURCE_LOCATION (decl), "a later -fabi-version= (or "
+		  "=0) avoids this error with a change in mangling");
+	}
 
       save_ver = flag_abi_version;
       flag_abi_version = flag_abi_compat_version;

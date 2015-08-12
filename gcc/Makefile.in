@@ -828,14 +828,20 @@ endif
 
 version     := $(BASEVER_c)
 
+PATCHLEVEL_c := \
+  $(shell echo $(BASEVER_c) | sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\)$$/\1/')
+
+
 # For use in version.c - double quoted strings, with appropriate
 # surrounding punctuation and spaces, and with the datestamp and
 # development phase collapsed to the empty string in release mode
-# (i.e. if DEVPHASE_c is empty).  The space immediately after the
-# comma in the $(if ...) constructs is significant - do not remove it.
+# (i.e. if DEVPHASE_c is empty and PATCHLEVEL_c is 0).  The space
+# immediately after the comma in the $(if ...) constructs is
+# significant - do not remove it.
 BASEVER_s   := "\"$(BASEVER_c)\""
 DEVPHASE_s  := "\"$(if $(DEVPHASE_c), ($(DEVPHASE_c)))\""
-DATESTAMP_s := "\"$(if $(DEVPHASE_c), $(DATESTAMP_c))\""
+DATESTAMP_s := \
+  "\"$(if $(DEVPHASE_c)$(filter-out 0,$(PATCHLEVEL_c)), $(DATESTAMP_c))\""
 PKGVERSION_s:= "\"@PKGVERSION@\""
 BUGURL_s    := "\"@REPORT_BUGS_TO@\""
 
@@ -843,7 +849,8 @@ PKGVERSION  := @PKGVERSION@
 BUGURL_TEXI := @REPORT_BUGS_TEXI@
 
 ifdef REVISION_c
-REVISION_s  := "\"$(if $(DEVPHASE_c), $(REVISION_c))\""
+REVISION_s  := \
+  "\"$(if $(DEVPHASE_c)$(filter-out 0,$(PATCHLEVEL_c)), $(REVISION_c))\""
 else
 REVISION_s  := "\"\""
 endif

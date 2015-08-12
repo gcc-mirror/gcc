@@ -7,6 +7,18 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
+#ifndef FIXINC_WRAP_CTYPE_H_AIX_EXTERNC
+#define FIXINC_WRAP_CTYPE_H_AIX_EXTERNC 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+#if defined( AIX_EXTERNC_CHECK )
+extern int __n_pthreads;
+
+#endif  /* AIX_EXTERNC_CHECK */
 
 
 #if defined( HPUX10_CTYPE_DECLARATIONS1_CHECK )
@@ -63,3 +75,8 @@ extern int __toupper();
 # define isalpha(__c) (__SB_masks ? (int)__SB_masks[__c] & _IS
 
 #endif  /* HPUX_CTYPE_MACROS_CHECK */
+#ifdef __cplusplus
+}
+#endif
+
+#endif  /* FIXINC_WRAP_CTYPE_H_AIX_EXTERNC */

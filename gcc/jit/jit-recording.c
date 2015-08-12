@@ -489,6 +489,9 @@ recording::context::context (context *parent_ctxt)
       memcpy (m_bool_options,
 	      parent_ctxt->m_bool_options,
 	      sizeof (m_bool_options));
+      memcpy (m_inner_bool_options,
+	      parent_ctxt->m_inner_bool_options,
+	      sizeof (m_inner_bool_options));
       set_logger (parent_ctxt->get_logger ());
     }
   else
@@ -496,6 +499,7 @@ recording::context::context (context *parent_ctxt)
       memset (m_str_options, 0, sizeof (m_str_options));
       memset (m_int_options, 0, sizeof (m_int_options));
       memset (m_bool_options, 0, sizeof (m_bool_options));
+      memset (m_inner_bool_options, 0, sizeof (m_inner_bool_options));
     }
 
   memset (m_basic_types, 0, sizeof (m_basic_types));
@@ -516,6 +520,10 @@ recording::context::~context ()
 
   for (i = 0; i < GCC_JIT_NUM_STR_OPTIONS; ++i)
     free (m_str_options[i]);
+
+  char *optname;
+  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+    free (optname);
 
   if (m_builtins_manager)
     delete m_builtins_manager;
@@ -1076,6 +1084,22 @@ recording::context::new_array_access (recording::location *loc,
   return result;
 }
 
+/* Create a recording::case_ instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_case.  */
+
+recording::case_ *
+recording::context::new_case (recording::rvalue *min_value,
+			      recording::rvalue *max_value,
+			      recording::block *block)
+{
+  recording::case_ *result = new case_ (this, min_value, max_value, block);
+  record (result);
+  return result;
+}
+
 /* Set the given string option for this context, or add an error if
    it's not recognized.
 
@@ -1135,6 +1159,43 @@ recording::context::set_bool_option (enum gcc_jit_bool_option opt,
     }
   m_bool_options[opt] = value ? true : false;
   log_bool_option (opt);
+}
+
+void
+recording::context::set_inner_bool_option (enum inner_bool_option inner_opt,
+					   int value)
+{
+  gcc_assert (inner_opt >= 0 && inner_opt < NUM_INNER_BOOL_OPTIONS);
+  m_inner_bool_options[inner_opt] = value ? true : false;
+  log_inner_bool_option (inner_opt);
+}
+
+
+/* Add the given optname to this context's list of extra options.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_add_command_line_option.  */
+
+void
+recording::context::add_command_line_option (const char *optname)
+{
+  m_command_line_options.safe_push (xstrdup (optname));
+}
+
+/* Add any user-provided extra options, starting with any from
+   parent contexts.
+   Called by playback::context::make_fake_args.  */
+
+void
+recording::context::append_command_line_options (vec <char *> *argvec)
+{
+  if (m_parent_ctxt)
+    m_parent_ctxt->append_command_line_options (argvec);
+
+  int i;
+  char *optname;
+  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+    argvec->safe_push (xstrdup (optname));
 }
 
 /* Add the given dumpname/out_ptr pair to this context's list of requested
@@ -1387,6 +1448,10 @@ static const char * const
   "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES"
 };
 
+static const char * const
+ inner_bool_option_reproducer_strings[NUM_INNER_BOOL_OPTIONS] = {
+  "gcc_jit_context_set_bool_allow_unreachable_blocks"
+};
 
 /* Write the current value of all options to the log file (if any).  */
 
@@ -1406,6 +1471,8 @@ recording::context::log_all_options () const
 
   for (opt_idx = 0; opt_idx < GCC_JIT_NUM_BOOL_OPTIONS; opt_idx++)
     log_bool_option ((enum gcc_jit_bool_option)opt_idx);
+  for (opt_idx = 0; opt_idx < NUM_INNER_BOOL_OPTIONS; opt_idx++)
+    log_inner_bool_option ((enum inner_bool_option)opt_idx);
 }
 
 /* Write the current value of the given string option to the
@@ -1453,6 +1520,19 @@ recording::context::log_bool_option (enum gcc_jit_bool_option opt) const
 	 m_bool_options[opt] ? "true" : "false");
 }
 
+/* Write the current value of the given "inner" bool option to the
+   log file (if any).  */
+
+void
+recording::context::log_inner_bool_option (enum inner_bool_option opt) const
+{
+  gcc_assert (opt < NUM_INNER_BOOL_OPTIONS);
+  if (get_logger ())
+    log ("%s: %s",
+	 inner_bool_option_reproducer_strings[opt],
+	 m_inner_bool_options[opt] ? "true" : "false");
+}
+
 /* Write C source code to PATH that attempts to replay the API
    calls made to this context (and its parents), for use in
    minimizing test cases for libgccjit.
@@ -1494,6 +1574,7 @@ recording::context::dump_reproducer_to_file (const char *path)
   print_version (r.get_file (), "  ", false);
   r.write ("*/\n");
   r.write ("#include <libgccjit.h>\n\n");
+  r.write ("#pragma GCC diagnostic ignored \"-Wunused-variable\"\n\n");
   r.write ("static void\nset_options (");
   r.write_params (contexts);
   r.write (");\n\n");
@@ -1564,12 +1645,17 @@ recording::context::dump_reproducer_to_file (const char *path)
 
       r.write ("  /* String options.  */\n");
       for (int opt_idx = 0; opt_idx < GCC_JIT_NUM_STR_OPTIONS; opt_idx++)
-	r.write ("  gcc_jit_context_set_str_option (%s,\n"
-		 "                                  %s,\n"
-		 "                                  \"%s\");\n",
-		 r.get_identifier (contexts[ctxt_idx]),
-		 str_option_reproducer_strings[opt_idx],
-		 m_str_options[opt_idx] ? m_str_options[opt_idx] : "NULL");
+	{
+	  r.write ("  gcc_jit_context_set_str_option (%s,\n"
+		   "                                  %s,\n",
+		   r.get_identifier (contexts[ctxt_idx]),
+		   str_option_reproducer_strings[opt_idx]);
+	  if (m_str_options[opt_idx])
+	    r.write ("                                  \"%s\");\n",
+		     m_str_options[opt_idx]);
+	  else
+	    r.write ("                                  NULL);\n");
+	}
       r.write ("  /* Int options.  */\n");
       for (int opt_idx = 0; opt_idx < GCC_JIT_NUM_INT_OPTIONS; opt_idx++)
 	r.write ("  gcc_jit_context_set_int_option (%s,\n"
@@ -1586,6 +1672,22 @@ recording::context::dump_reproducer_to_file (const char *path)
 		 r.get_identifier (contexts[ctxt_idx]),
 		 bool_option_reproducer_strings[opt_idx],
 		 m_bool_options[opt_idx]);
+      for (int opt_idx = 0; opt_idx < NUM_INNER_BOOL_OPTIONS; opt_idx++)
+	r.write ("  %s (%s, %i);\n",
+		 inner_bool_option_reproducer_strings[opt_idx],
+		 r.get_identifier (contexts[ctxt_idx]),
+		 m_inner_bool_options[opt_idx]);
+
+      if (!m_command_line_options.is_empty ())
+	{
+	  int i;
+	  char *optname;
+	  r.write ("  /* User-provided command-line options.  */\n");
+	  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+	    r.write ("  gcc_jit_context_add_command_line_option (%s, \"%s\");\n",
+		     r.get_identifier (contexts[ctxt_idx]),
+		     optname);
+	}
 
       if (m_requested_dumps.length ())
 	{
@@ -3021,6 +3123,63 @@ recording::rvalue::access_as_rvalue (reproducer &r)
   return r.get_identifier (this);
 }
 
+/* Return a debug string for the given rvalue, wrapping it in parentheses
+   if needed to mimic C's precedence rules, i.e. if OUTER_PREC is of
+   stronger precedence that this rvalue's precedence.
+
+   For example, given:
+
+           MULT
+          /    \
+       PLUS     MINUS
+      /    \   /     \
+     A      B C       D
+
+   we want to emit:
+
+     (A + B) * (C - D)
+
+   since MULT has strong precedence than PLUS and MINUS, whereas for:
+
+           PLUS
+          /    \
+       MULT     DIVIDE
+      /    \   /      \
+     A      B C        D
+
+   we can simply emit:
+
+     A * B + C / D
+
+   since PLUS has weaker precedence than MULT and DIVIDE.  */
+
+const char *
+recording::rvalue::get_debug_string_parens (enum precedence outer_prec)
+{
+  enum precedence this_prec = get_precedence ();
+
+  /* If this_prec has stronger precedence than outer_prec, we don't
+     need to wrap this in parens within the outer debug string.
+     Stronger precedences occur earlier than weaker within the enum,
+     so this is a less than test.  Equal precedences don't need
+     parentheses.  */
+  if (this_prec <= outer_prec)
+    return get_debug_string();
+
+  /* Otherwise, we need parentheses.  */
+
+  /* Lazily-build and cache m_parenthesized_string.  */
+  if (!m_parenthesized_string)
+    {
+      const char *debug_string = get_debug_string ();
+      m_parenthesized_string = string::from_printf (get_context (),
+						    "(%s)",
+						    debug_string);
+    }
+  gcc_assert (m_parenthesized_string);
+  return m_parenthesized_string->c_str ();
+}
+
 
 /* The implementation of class gcc::jit::recording::lvalue.  */
 
@@ -3347,7 +3506,9 @@ recording::function::validate ()
   }
 
   /* Check that all blocks are reachable.  */
-  if (m_blocks.length () > 0 && 0 == num_invalid_blocks)
+  if (!m_ctxt->get_inner_bool_option
+        (INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS)
+      && m_blocks.length () > 0 && 0 == num_invalid_blocks)
     {
       /* Iteratively walk the graph of blocks, marking their "m_is_reachable"
 	 flag, starting at the initial block.  */
@@ -3360,23 +3521,13 @@ recording::function::validate ()
 
 	  /* Add successor blocks that aren't yet marked to the worklist.  */
 	  /* We checked that each block has a terminating statement above .  */
-	  block *next1, *next2;
-	  int n = b->get_successor_blocks (&next1, &next2);
-	  switch (n)
-	    {
-	    default:
-	      gcc_unreachable ();
-	    case 2:
-	      if (!next2->m_is_reachable)
-		worklist.safe_push (next2);
-	      /* fallthrough */
-	    case 1:
-	      if (!next1->m_is_reachable)
-		worklist.safe_push (next1);
-	      break;
-	    case 0:
-	      break;
-	    }
+	  vec <block *> successors = b->get_successor_blocks ();
+	  int i;
+	  block *succ;
+	  FOR_EACH_VEC_ELT (successors, i, succ)
+	    if (!succ->m_is_reachable)
+	      worklist.safe_push (succ);
+	  successors.release ();
 	}
 
       /* Now complain about any blocks that haven't been marked.  */
@@ -3624,6 +3775,30 @@ recording::block::end_with_return (recording::location *loc,
   return result;
 }
 
+/* Create a recording::switch_ instance and add it to
+   the block's context's list of mementos, and to the block's
+   list of statements.
+
+   Implements the heart of gcc_jit_block_end_with_switch.  */
+
+recording::statement *
+recording::block::end_with_switch (recording::location *loc,
+				   recording::rvalue *expr,
+				   recording::block *default_block,
+				   int num_cases,
+				   recording::case_ **cases)
+{
+  statement *result = new switch_ (this, loc,
+				   expr,
+				   default_block,
+				   num_cases,
+				   cases);
+  m_ctxt->record (result);
+  m_statements.safe_push (result);
+  m_has_been_terminated = true;
+  return result;
+}
+
 /* Override the default implementation of
    recording::memento::write_to_dump for blocks by writing
    an unindented block name as a label, followed by the indented
@@ -3701,24 +3876,20 @@ recording::block::get_last_statement () const
     return NULL;
 }
 
-/* Assuming that this block has been terminated, get the number of
-   successor blocks, which will be 0, 1 or 2, for return, unconditional
-   jump, and conditional jump respectively.
-   NEXT1 and NEXT2 must be non-NULL.  The first successor block (if any)
-   is written to NEXT1, and the second (if any) to NEXT2.
+/* Assuming that this block has been terminated, get the successor blocks
+   as a vector.  Ownership of the vector transfers to the caller, which
+   must call its release () method.
 
    Used when validating functions, and when dumping dot representations
    of them.  */
 
-int
-recording::block::get_successor_blocks (block **next1, block **next2) const
+vec <recording::block *>
+recording::block::get_successor_blocks () const
 {
   gcc_assert (m_has_been_terminated);
-  gcc_assert (next1);
-  gcc_assert (next2);
   statement *last_statement = get_last_statement ();
   gcc_assert (last_statement);
-  return last_statement->get_successor_blocks (next1, next2);
+  return last_statement->get_successor_blocks ();
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3796,12 +3967,14 @@ recording::block::dump_to_dot (pretty_printer *pp)
 void
 recording::block::dump_edges_to_dot (pretty_printer *pp)
 {
-  block *next[2];
-  int num_succs = get_successor_blocks (&next[0], &next[1]);
-  for (int i = 0; i < num_succs; i++)
+  vec <block *> successors = get_successor_blocks ();
+  int i;
+  block *succ;
+  FOR_EACH_VEC_ELT (successors, i, succ)
     pp_printf (pp,
 	       "\tblock_%d:s -> block_%d:n;\n",
-	       m_index, next[i]->m_index);
+	       m_index, succ->m_index);
+  successors.release ();
 }
 
 /* The implementation of class gcc::jit::recording::global.  */
@@ -3946,6 +4119,16 @@ memento_of_new_rvalue_from_const <int>::make_debug_string ()
 			      m_value);
 }
 
+/* The get_wide_int specialization for <int>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <int>::get_wide_int (wide_int *out) const
+{
+  *out = wi::shwi (m_value, sizeof (m_value) * 8);
+  return true;
+}
+
 /* The write_reproducer specialization for <int>.  */
 
 template <>
@@ -3976,6 +4159,16 @@ memento_of_new_rvalue_from_const <long>::make_debug_string ()
 			      "(%s)%li",
 			      m_type->get_debug_string (),
 			      m_value);
+}
+
+/* The get_wide_int specialization for <long>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <long>::get_wide_int (wide_int *out) const
+{
+  *out = wi::shwi (m_value, sizeof (m_value) * 8);
+  return true;
 }
 
 /* The write_reproducer specialization for <long>.  */
@@ -4031,6 +4224,15 @@ memento_of_new_rvalue_from_const <double>::make_debug_string ()
 			      m_value);
 }
 
+/* The get_wide_int specialization for <double>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <double>::get_wide_int (wide_int *) const
+{
+  return false;
+}
+
 /* The write_reproducer specialization for <double>.  */
 
 template <>
@@ -4068,6 +4270,15 @@ memento_of_new_rvalue_from_const <void *>::make_debug_string ()
     return string::from_printf (m_ctxt,
 				"(%s)NULL",
 				m_type->get_debug_string ());
+}
+
+/* The get_wide_int specialization for <void *>.  */
+
+template <>
+bool
+memento_of_new_rvalue_from_const <void *>::get_wide_int (wide_int *) const
+{
+  return false;
 }
 
 /* Implementation of recording::memento::write_reproducer for <void *>
@@ -4251,11 +4462,12 @@ static const char * const binary_op_strings[] = {
 recording::string *
 recording::binary_op::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s %s %s",
-			      m_a->get_debug_string (),
+			      m_a->get_debug_string_parens (prec),
 			      binary_op_strings[m_op],
-			      m_b->get_debug_string ());
+			      m_b->get_debug_string_parens (prec));
 }
 
 static const char * const binary_op_reproducer_strings[] = {
@@ -4295,6 +4507,31 @@ recording::binary_op::write_reproducer (reproducer &r)
 	   r.get_identifier_as_rvalue (m_b));
 }
 
+namespace recording {
+static const enum precedence binary_op_precedence[] = {
+  PRECEDENCE_ADDITIVE, /* GCC_JIT_BINARY_OP_PLUS */
+  PRECEDENCE_ADDITIVE, /* GCC_JIT_BINARY_OP_MINUS */
+
+  PRECEDENCE_MULTIPLICATIVE, /* GCC_JIT_BINARY_OP_MULT */
+  PRECEDENCE_MULTIPLICATIVE, /* GCC_JIT_BINARY_OP_DIVIDE */
+  PRECEDENCE_MULTIPLICATIVE, /* GCC_JIT_BINARY_OP_MODULO */
+
+  PRECEDENCE_BITWISE_AND, /* GCC_JIT_BINARY_OP_BITWISE_AND */
+  PRECEDENCE_BITWISE_XOR, /* GCC_JIT_BINARY_OP_BITWISE_XOR */
+  PRECEDENCE_BITWISE_IOR, /* GCC_JIT_BINARY_OP_BITWISE_OR */
+  PRECEDENCE_LOGICAL_AND, /* GCC_JIT_BINARY_OP_LOGICAL_AND */
+  PRECEDENCE_LOGICAL_OR, /* GCC_JIT_BINARY_OP_LOGICAL_OR */
+  PRECEDENCE_SHIFT, /* GCC_JIT_BINARY_OP_LSHIFT */
+  PRECEDENCE_SHIFT, /* GCC_JIT_BINARY_OP_RSHIFT */
+};
+} /* namespace recording */
+
+enum recording::precedence
+recording::binary_op::get_precedence () const
+{
+  return binary_op_precedence[m_op];
+}
+
 /* The implementation of class gcc::jit::recording::comparison.  */
 
 /* Implementation of recording::memento::make_debug_string for
@@ -4313,11 +4550,12 @@ static const char * const comparison_strings[] =
 recording::string *
 recording::comparison::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s %s %s",
-			      m_a->get_debug_string (),
+			      m_a->get_debug_string_parens (prec),
 			      comparison_strings[m_op],
-			      m_b->get_debug_string ());
+			      m_b->get_debug_string_parens (prec));
 }
 
 /* A table of enum gcc_jit_comparison values expressed in string
@@ -4375,6 +4613,25 @@ recording::comparison::visit_children (rvalue_visitor *v)
   v->visit (m_b);
 }
 
+namespace recording {
+static const enum precedence comparison_precedence[] =
+{
+  PRECEDENCE_EQUALITY, /* GCC_JIT_COMPARISON_EQ */
+  PRECEDENCE_EQUALITY, /* GCC_JIT_COMPARISON_NE */
+
+  PRECEDENCE_RELATIONAL,  /* GCC_JIT_COMPARISON_LT */
+  PRECEDENCE_RELATIONAL, /* GCC_JIT_COMPARISON_LE */
+  PRECEDENCE_RELATIONAL,  /* GCC_JIT_COMPARISON_GT */
+  PRECEDENCE_RELATIONAL, /* GCC_JIT_COMPARISON_GE */
+};
+} /* namespace recording */
+
+enum recording::precedence
+recording::comparison::get_precedence () const
+{
+  return comparison_precedence[m_op];
+}
+
 /* Implementation of pure virtual hook recording::memento::replay_into
    for recording::cast.  */
 
@@ -4400,10 +4657,11 @@ recording::cast::visit_children (rvalue_visitor *v)
 recording::string *
 recording::cast::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "(%s)%s",
 			      get_type ()->get_debug_string (),
-			      m_rvalue->get_debug_string ());
+			      m_rvalue->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for casts.  */
@@ -4473,12 +4731,13 @@ recording::call::visit_children (rvalue_visitor *v)
 recording::string *
 recording::call::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   /* First, build a buffer for the arguments.  */
   /* Calculate length of said buffer.  */
   size_t sz = 1; /* nil terminator */
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      sz += strlen (m_args[i]->get_debug_string ());
+      sz += strlen (m_args[i]->get_debug_string_parens (prec));
       sz += 2; /* ", " separator */
     }
 
@@ -4488,8 +4747,8 @@ recording::call::make_debug_string ()
 
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      strcpy (argbuf + len, m_args[i]->get_debug_string ());
-      len += strlen (m_args[i]->get_debug_string ());
+      strcpy (argbuf + len, m_args[i]->get_debug_string_parens (prec));
+      len += strlen (m_args[i]->get_debug_string_parens (prec));
       if (i + 1 < m_args.length ())
 	{
 	  strcpy (argbuf + len, ", ");
@@ -4586,12 +4845,13 @@ recording::call_through_ptr::visit_children (rvalue_visitor *v)
 recording::string *
 recording::call_through_ptr::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   /* First, build a buffer for the arguments.  */
   /* Calculate length of said buffer.  */
   size_t sz = 1; /* nil terminator */
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      sz += strlen (m_args[i]->get_debug_string ());
+      sz += strlen (m_args[i]->get_debug_string_parens (prec));
       sz += 2; /* ", " separator */
     }
 
@@ -4601,8 +4861,8 @@ recording::call_through_ptr::make_debug_string ()
 
   for (unsigned i = 0; i< m_args.length (); i++)
     {
-      strcpy (argbuf + len, m_args[i]->get_debug_string ());
-      len += strlen (m_args[i]->get_debug_string ());
+      strcpy (argbuf + len, m_args[i]->get_debug_string_parens (prec));
+      len += strlen (m_args[i]->get_debug_string_parens (prec));
       if (i + 1 < m_args.length ())
 	{
 	  strcpy (argbuf + len, ", ");
@@ -4614,7 +4874,7 @@ recording::call_through_ptr::make_debug_string ()
   /* ...and use it to get the string for the call as a whole.  */
   string *result = string::from_printf (m_ctxt,
 					"%s (%s)",
-					m_fn_ptr->get_debug_string (),
+					m_fn_ptr->get_debug_string_parens (prec),
 					argbuf);
 
   delete[] argbuf;
@@ -4680,10 +4940,11 @@ recording::array_access::visit_children (rvalue_visitor *v)
 recording::string *
 recording::array_access::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s[%s]",
-			      m_ptr->get_debug_string (),
-			      m_index->get_debug_string ());
+			      m_ptr->get_debug_string_parens (prec),
+			      m_index->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for
@@ -4735,9 +4996,10 @@ recording::access_field_of_lvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::access_field_of_lvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s.%s",
-			      m_lvalue->get_debug_string (),
+			      m_lvalue->get_debug_string_parens (prec),
 			      m_field->get_debug_string ());
 }
 
@@ -4787,9 +5049,10 @@ recording::access_field_rvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::access_field_rvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s.%s",
-			      m_rvalue->get_debug_string (),
+			      m_rvalue->get_debug_string_parens (prec),
 			      m_field->get_debug_string ());
 }
 
@@ -4840,9 +5103,10 @@ recording::dereference_field_rvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::dereference_field_rvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "%s->%s",
-			      m_rvalue->get_debug_string (),
+			      m_rvalue->get_debug_string_parens (prec),
 			      m_field->get_debug_string ());
 }
 
@@ -4891,9 +5155,10 @@ recording::dereference_rvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::dereference_rvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "*%s",
-			      m_rvalue->get_debug_string ());
+			      m_rvalue->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for
@@ -4939,9 +5204,10 @@ recording::get_address_of_lvalue::visit_children (rvalue_visitor *v)
 recording::string *
 recording::get_address_of_lvalue::make_debug_string ()
 {
+  enum precedence prec = get_precedence ();
   return string::from_printf (m_ctxt,
 			      "&%s",
-			      m_lvalue->get_debug_string ());
+			      m_lvalue->get_debug_string_parens (prec));
 }
 
 /* Implementation of recording::memento::write_reproducer for
@@ -5013,14 +5279,15 @@ recording::local::write_reproducer (reproducer &r)
    since this vfunc must only ever be called on terminator
    statements.  */
 
-int
-recording::statement::get_successor_blocks (block **/*out_next1*/,
-					    block **/*out_next2*/) const
+vec <recording::block *>
+recording::statement::get_successor_blocks () const
 {
   /* The base class implementation is for non-terminating statements,
      and thus should never be called.  */
   gcc_unreachable ();
-  return 0;
+  vec <block *> result;
+  result.create (0);
+  return result;
 }
 
 /* Extend the default implementation of
@@ -5229,13 +5496,14 @@ recording::conditional::replay_into (replayer *r)
 
    A conditional jump has 2 successor blocks.  */
 
-int
-recording::conditional::get_successor_blocks (block **out_next1,
-					      block **out_next2) const
+vec <recording::block *>
+recording::conditional::get_successor_blocks () const
 {
-  *out_next1 = m_on_true;
-  *out_next2 = m_on_false;
-  return 2;
+  vec <block *> result;
+  result.create (2);
+  result.quick_push (m_on_true);
+  result.quick_push (m_on_false);
+  return result;
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -5293,12 +5561,13 @@ recording::jump::replay_into (replayer *r)
 
    An unconditional jump has 1 successor block.  */
 
-int
-recording::jump::get_successor_blocks (block **out_next1,
-				       block **/*out_next2*/) const
+vec <recording::block *>
+recording::jump::get_successor_blocks () const
 {
-  *out_next1 = m_target;
-  return 1;
+  vec <block *> result;
+  result.create (1);
+  result.quick_push (m_target);
+  return result;
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -5344,11 +5613,12 @@ recording::return_::replay_into (replayer *r)
 
    A return statement has no successor block.  */
 
-int
-recording::return_::get_successor_blocks (block **/*out_next1*/,
-					  block **/*out_next2*/) const
+vec <recording::block *>
+recording::return_::get_successor_blocks () const
 {
-  return 0;
+  vec <block *> result;
+  result.create (0);
+  return result;
 }
 
 /* Implementation of recording::memento::make_debug_string for
@@ -5384,6 +5654,158 @@ recording::return_::write_reproducer (reproducer &r)
 	     "                                      %s); /* gcc_jit_location *loc */\n",
 	     r.get_identifier (get_block ()),
 	     r.get_identifier (get_loc ()));
+}
+
+/* The implementation of class gcc::jit::recording::case_.  */
+
+void
+recording::case_::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "case");
+  const char *fmt =
+    "  gcc_jit_case *%s = \n"
+    "    gcc_jit_context_new_case (%s, /*gcc_jit_context *ctxt */\n"
+    "                              %s, /* gcc_jit_rvalue *min_value */\n"
+    "                              %s, /* gcc_jit_rvalue *max_value */\n"
+    "                              %s); /* gcc_jit_block *dest_block */\n";
+  r.write (fmt,
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier_as_rvalue (m_min_value),
+	   r.get_identifier_as_rvalue (m_max_value),
+	   r.get_identifier (m_dest_block));
+}
+
+recording::string *
+recording::case_::make_debug_string ()
+{
+  return string::from_printf (get_context (),
+			      "case %s ... %s: goto %s;",
+			      m_min_value->get_debug_string (),
+			      m_max_value->get_debug_string (),
+			      m_dest_block->get_debug_string ());
+}
+
+/* The implementation of class gcc::jit::recording::switch_.  */
+
+/* gcc::jit::recording::switch_'s constructor.  */
+
+recording::switch_::switch_ (block *b,
+			     location *loc,
+			     rvalue *expr,
+			     block *default_block,
+			     int num_cases,
+			     case_ **cases)
+: statement (b, loc),
+  m_expr (expr),
+  m_default_block (default_block)
+{
+  m_cases.reserve_exact (num_cases);
+  for (int i = 0; i< num_cases; i++)
+    m_cases.quick_push (cases[i]);
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::switch_.  */
+
+void
+recording::switch_::replay_into (replayer *r)
+{
+  auto_vec <playback::case_> pcases;
+  int i;
+  recording::case_ *rcase;
+  pcases.reserve_exact (m_cases.length ());
+  FOR_EACH_VEC_ELT (m_cases, i, rcase)
+    {
+      playback::case_ pcase (rcase->get_min_value ()->playback_rvalue (),
+			     rcase->get_max_value ()->playback_rvalue (),
+			     rcase->get_dest_block ()->playback_block ());
+      pcases.safe_push (pcase);
+    }
+  playback_block (get_block ())
+    ->add_switch (playback_location (r),
+		  m_expr->playback_rvalue (),
+		  m_default_block->playback_block (),
+		  &pcases);
+}
+
+/* Override the poisoned default implementation of
+   gcc::jit::recording::statement::get_successor_blocks
+
+   A switch statement has (NUM_CASES + 1) successor blocks.  */
+
+vec <recording::block *>
+recording::switch_::get_successor_blocks () const
+{
+  vec <block *> result;
+  result.create (m_cases.length () + 1);
+  result.quick_push (m_default_block);
+  int i;
+  case_ *c;
+  FOR_EACH_VEC_ELT (m_cases, i, c)
+    result.quick_push (c->get_dest_block ());
+  return result;
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   a switch statement.  */
+
+recording::string *
+recording::switch_::make_debug_string ()
+{
+  auto_vec <char> cases_str;
+  int i;
+  case_ *c;
+  FOR_EACH_VEC_ELT (m_cases, i, c)
+    {
+      size_t len = strlen (c->get_debug_string ());
+      unsigned idx = cases_str.length ();
+      cases_str.safe_grow (idx + 1 + len);
+      cases_str[idx] = ' ';
+      memcpy (&(cases_str[idx + 1]),
+	      c->get_debug_string (),
+	      len);
+    }
+  cases_str.safe_push ('\0');
+
+  return string::from_printf (m_ctxt,
+			      "switch (%s) {default: goto %s;%s}",
+			      m_expr->get_debug_string (),
+			      m_default_block->get_debug_string (),
+			      &cases_str[0]);
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   switch statements.  */
+
+void
+recording::switch_::write_reproducer (reproducer &r)
+{
+  r.make_identifier (this, "switch");
+  int i;
+  case_ *c;
+  const char *cases_id =
+    r.make_tmp_identifier ("cases_for", this);
+  r.write ("  gcc_jit_case *%s[%i] = {\n",
+	   cases_id,
+	   m_cases.length ());
+  FOR_EACH_VEC_ELT (m_cases, i, c)
+    r.write ("    %s,\n", r.get_identifier (c));
+  r.write ("  };\n");
+  const char *fmt =
+    "  gcc_jit_block_end_with_switch (%s, /*gcc_jit_block *block */\n"
+    "                                 %s, /* gcc_jit_location *loc */\n"
+    "                                 %s, /* gcc_jit_rvalue *expr */\n"
+    "                                 %s, /* gcc_jit_block *default_block */\n"
+    "                                 %i, /* int num_cases */\n"
+    "                                 %s); /* gcc_jit_case **cases */\n";
+    r.write (fmt,
+	     r.get_identifier (get_block ()),
+	     r.get_identifier (get_loc ()),
+	     r.get_identifier_as_rvalue (m_expr),
+	     r.get_identifier (m_default_block),
+	     m_cases.length (),
+	     cases_id);
 }
 
 } // namespace gcc::jit

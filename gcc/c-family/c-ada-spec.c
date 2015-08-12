@@ -1827,7 +1827,6 @@ is_simple_enum (tree node)
   return true;
 }
 
-static bool in_function = true;
 static bool bitfield_used = false;
 
 /* Recursively dump in BUFFER Ada declarations corresponding to NODE of type
@@ -2006,7 +2005,6 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	{
 	  tree fnode = TREE_TYPE (node);
 	  bool is_function;
-	  bool prev_in_function = in_function;
 
 	  if (VOID_TYPE_P (TREE_TYPE (fnode)))
 	    {
@@ -2019,10 +2017,8 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	      pp_string (buffer, "access function");
 	    }
 
-	  in_function = is_function;
 	  dump_ada_function_declaration
 	    (buffer, node, false, false, false, spc + INDENT_INCR);
-	  in_function = prev_in_function;
 
 	  if (is_function)
 	    {
@@ -2141,11 +2137,6 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 			}
 		      else if (quals & TYPE_QUAL_CONST)
 			pp_string (buffer, "in ");
-		      else if (in_function)
-			{
-			  is_access = true;
-			  pp_string (buffer, "access ");
-			}
 		      else
 			{
 			  is_access = true;
@@ -2316,27 +2307,119 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 }
 
 /* Dump in BUFFER NODE's methods.  SPC is the indentation level.  Return 1 if
-   methods were printed, 0 otherwise.  */
+   methods were printed, 0 otherwise.
+
+   We do it in 2 passes: first, the regular methods, i.e. non-static member
+   functions, are output immediately within the package created for the class
+   so that they are considered as primitive operations in Ada; second, the
+   static member functions are output in a nested package so that they are
+   _not_ considered as primitive operations in Ada.
+
+   This approach is necessary because the formers have the implicit 'this'
+   pointer whereas the latters don't and, on 32-bit x86/Windows, the calling
+   conventions for the 'this' pointer are special.  Therefore, the compiler
+   needs to be able to differentiate regular methods (with 'this' pointer)
+   from static member functions that take a pointer to the class as first
+   parameter.  */
 
 static int
 print_ada_methods (pretty_printer *buffer, tree node, int spc)
 {
-  int res = 1;
-  tree tmp;
+  bool has_static_methods = false;
+  tree t;
+  int res;
 
   if (!has_nontrivial_methods (node))
     return 0;
 
   pp_semicolon (buffer);
 
-  for (tmp = TYPE_METHODS (node); tmp; tmp = TREE_CHAIN (tmp))
+  /* First pass: the regular methods.  */
+  res = 1;
+  for (t = TYPE_METHODS (node); t; t = TREE_CHAIN (t))
     {
+      if (TREE_CODE (TREE_TYPE (t)) != METHOD_TYPE)
+	{
+	  has_static_methods = true;
+	  continue;
+	}
+
       if (res)
 	{
 	  pp_newline (buffer);
 	  pp_newline (buffer);
 	}
-      res = print_ada_declaration (buffer, tmp, node, spc);
+
+      res = print_ada_declaration (buffer, t, node, spc);
+    }
+
+  if (!has_static_methods)
+    return 1;
+
+  pp_newline (buffer);
+  newline_and_indent (buffer, spc);
+
+  /* Second pass: the static member functions.  */
+  pp_string (buffer, "package Static is");
+  pp_newline (buffer);
+  spc += INDENT_INCR;
+
+  res = 0;
+  for (t = TYPE_METHODS (node); t; t = TREE_CHAIN (t))
+    {
+      if (TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)
+	continue;
+
+      if (res)
+	{
+	  pp_newline (buffer);
+	  pp_newline (buffer);
+	}
+
+      res = print_ada_declaration (buffer, t, node, spc);
+    }
+
+  spc -= INDENT_INCR;
+  newline_and_indent (buffer, spc);
+  pp_string (buffer, "end;");
+
+  /* In order to save the clients from adding a second use clause for the
+     nested package, we generate renamings for the static member functions
+     in the package created for the class.  */
+  for (t = TYPE_METHODS (node); t; t = TREE_CHAIN (t))
+    {
+      bool is_function;
+
+      if (TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)
+	continue;
+
+      pp_newline (buffer);
+      newline_and_indent (buffer, spc);
+
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (t))))
+	{
+	  pp_string (buffer, "procedure ");
+	  is_function = false;
+	}
+      else
+	{
+	  pp_string (buffer, "function ");
+	  is_function = true;
+	}
+
+      dump_ada_decl_name (buffer, t, false);
+      dump_ada_function_declaration (buffer, t, false, false, false, spc);
+
+      if (is_function)
+	{
+	  pp_string (buffer, " return ");
+	  dump_generic_ada_node (buffer, TREE_TYPE (TREE_TYPE (t)), node,
+				 spc, false, true);
+	}
+
+       pp_string (buffer, " renames Static.");
+       dump_ada_decl_name (buffer, t, false);
+       pp_semicolon (buffer);
     }
 
   return 1;
@@ -2796,7 +2879,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_function, is_abstract_class = false;
       bool is_method = TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE;
       tree decl_name = DECL_NAME (t);
-      int prev_in_function = in_function;
       bool is_abstract = false;
       bool is_constructor = false;
       bool is_destructor = false;
@@ -2848,8 +2930,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  is_function = true;
 	}
 
-      in_function = is_function;
-
       if (is_constructor)
 	print_constructor (buffer, t);
       else if (is_destructor)
@@ -2859,7 +2939,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
       dump_ada_function_declaration
 	(buffer, t, is_method, is_constructor, is_destructor, spc);
-      in_function = prev_in_function;
 
       if (is_function)
 	{
@@ -3048,7 +3127,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
   if (is_class)
     {
-      spc -= 3;
+      spc -= INDENT_INCR;
       newline_and_indent (buffer, spc);
       pp_string (buffer, "end;");
       newline_and_indent (buffer, spc);

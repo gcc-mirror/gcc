@@ -57,10 +57,24 @@
 #undef create_code
 #undef verify_code
 
+/* test-compound-assignment.c */
+#define create_code create_code_compound_assignment
+#define verify_code verify_code_compound_assignment
+#include "test-compound-assignment.c"
+#undef create_code
+#undef verify_code
+
 /* test-constants.c */
 #define create_code create_code_constants
 #define verify_code verify_code_constants
 #include "test-constants.c"
+#undef create_code
+#undef verify_code
+
+/* test-debug-strings.c */
+#define create_code create_code_debug_strings
+#define verify_code verify_code_debug_strings
+#include "test-debug-strings.c"
 #undef create_code
 #undef verify_code
 
@@ -80,6 +94,9 @@
 #include "test-expressions.c"
 #undef create_code
 #undef verify_code
+
+/* test-extra-options.c: We don't use this one, since the extra options
+   affect the whole context.  */
 
 /* test-factorial.c */
 #define create_code create_code_factorial
@@ -137,6 +154,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-pr66700-observing-write-through-ptr.c */
+#define create_code create_code_pr66700_observing_write_through_ptr
+#define verify_code verify_code_pr66700_observing_write_through_ptr
+#include "test-pr66700-observing-write-through-ptr.c"
+#undef create_code
+#undef verify_code
+
 /* test-reading-struct.c */
 #define create_code create_code_reading_struct
 #define verify_code verify_code_reading_struct
@@ -158,6 +182,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-switch.c */
+#define create_code create_code_switch
+#define verify_code verify_code_switch
+#include "test-switch.c"
+#undef create_code
+#undef verify_code
+
 /* test-types.c */
 #define create_code create_code_types
 #define verify_code verify_code_types
@@ -171,6 +202,10 @@
 #include "test-using-global.c"
 #undef create_code
 #undef verify_code
+
+/* test-validly-unreachable-block.c: We don't use this one, since the use
+   of gcc_jit_context_set_bool_allow_unreachable_blocks affects the whole
+   context.  */
 
 /* test-volatile.c */
 #define create_code create_code_volatile
@@ -212,9 +247,15 @@ const struct testcase testcases[] = {
   {"calling_function_ptr",
    create_code_calling_function_ptr,
    verify_code_calling_function_ptr},
+  {"compound_assignment",
+   create_code_compound_assignment,
+   verify_code_compound_assignment},
   {"constants",
    create_code_constants,
    verify_code_constants},
+  {"debug_strings",
+   create_code_debug_strings,
+   verify_code_debug_strings},
   {"dot_product",
    create_code_dot_product,
    verify_code_dot_product},
@@ -245,6 +286,9 @@ const struct testcase testcases[] = {
   {"nested_loop",
    create_code_nested_loop,
    verify_code_nested_loop},
+  {"pr66700_observing_write_through_ptr",
+   create_code_pr66700_observing_write_through_ptr,
+   verify_code_pr66700_observing_write_through_ptr},
   {"reading_struct ",
    create_code_reading_struct ,
    verify_code_reading_struct },
@@ -254,6 +298,9 @@ const struct testcase testcases[] = {
   {"sum_of_squares",
    create_code_sum_of_squares,
    verify_code_sum_of_squares},
+  {"switch",
+   create_code_switch,
+   verify_code_switch},
   {"types",
    create_code_types,
    verify_code_types},

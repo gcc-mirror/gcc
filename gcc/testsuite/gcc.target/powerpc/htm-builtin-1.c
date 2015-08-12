@@ -6,8 +6,8 @@
 /* { dg-final { scan-assembler-times "tbegin\\." 1 } } */
 /* { dg-final { scan-assembler-times "tend\\." 2 } } */
 /* { dg-final { scan-assembler-times "tabort\\." 2 } } */
-/* { dg-final { scan-assembler-times "tabortdc\\." 1 } } */
-/* { dg-final { scan-assembler-times "tabortdci\\." 1 } } */
+/* { dg-final { scan-assembler-times "tabortdc\\." 1 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "tabortdci\\." 1 { target lp64 } } } */
 /* { dg-final { scan-assembler-times "tabortwc\\." 1 } } */
 /* { dg-final { scan-assembler-times "tabortwci\\." 2 } } */
 /* { dg-final { scan-assembler-times "tcheck" 1 } } */
@@ -25,12 +25,14 @@ void use_builtins (long *p, char code, long *a, long *b)
   p[3] = __builtin_tabort (0);
   p[4] = __builtin_tabort (code);
 
+#ifdef __powerpc64__
   p[5] = __builtin_tabortdc (0xf, a[5], b[5]);
   p[6] = __builtin_tabortdci (0xf, a[6], 13);
+#endif
   p[7] = __builtin_tabortwc (0xf, a[7], b[7]);
   p[8] = __builtin_tabortwci (0xf, a[8], 13);
 
-  p[9] = __builtin_tcheck (5);
+  p[9] = __builtin_tcheck ();
   p[10] = __builtin_trechkpt ();
   p[11] = __builtin_treclaim (0);
   p[12] = __builtin_tresume ();

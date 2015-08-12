@@ -1,3 +1,18 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-07-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/66861
+	* io/unix.c (compare_file_filename): Verify that u->filename is
+	non-NULL before strcmp.
+	(find_file0): Likewise.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/65596

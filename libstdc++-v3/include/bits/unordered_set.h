@@ -174,7 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       unordered_set(const allocator_type& __a)
-	: _M_h(__a)
+      : _M_h(__a)
       { }
 
       /*
@@ -184,7 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_set(const unordered_set& __uset,
 		    const allocator_type& __a)
-	: _M_h(__uset._M_h, __a)
+      : _M_h(__uset._M_h, __a)
       { }
 
       /*
@@ -194,7 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_set(unordered_set&& __uset,
 		    const allocator_type& __a)
-	: _M_h(std::move(__uset._M_h), __a)
+      : _M_h(std::move(__uset._M_h), __a)
       { }
 
       /**
@@ -213,7 +213,42 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-	: _M_h(__l, __n, __hf, __eql, __a)
+      : _M_h(__l, __n, __hf, __eql, __a)
+      { }
+
+      unordered_set(size_type __n, const allocator_type& __a)
+      : unordered_set(__n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_set(size_type __n, const hasher& __hf,
+		    const allocator_type& __a)
+      : unordered_set(__n, __hf, key_equal(), __a)
+      { }
+
+      template<typename _InputIterator>
+	unordered_set(_InputIterator __first, _InputIterator __last,
+		      size_type __n,
+		      const allocator_type& __a)
+	: unordered_set(__first, __last, __n, hasher(), key_equal(), __a)
+	{ }
+
+      template<typename _InputIterator>
+	unordered_set(_InputIterator __first, _InputIterator __last,
+		      size_type __n, const hasher& __hf,
+		      const allocator_type& __a)
+	: unordered_set(__first, __last, __n, __hf, key_equal(), __a)
+	{ }
+
+      unordered_set(initializer_list<value_type> __l,
+		    size_type __n,
+		    const allocator_type& __a)
+      : unordered_set(__l, __n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_set(initializer_list<value_type> __l,
+		    size_type __n, const hasher& __hf,
+		    const allocator_type& __a)
+      : unordered_set(__l, __n, __hf, key_equal(), __a)
       { }
 
       /// Copy assignment operator.
@@ -702,8 +737,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Value1, typename _Hash1, typename _Pred1,
 	       typename _Alloc1>
         friend bool
-      operator==(const unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&,
-		 const unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&);
+        operator==(const unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&,
+		   const unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&);
     };
 
   /**
@@ -823,7 +858,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
-	: _M_h(__l, __n, __hf, __eql, __a)
+      : _M_h(__l, __n, __hf, __eql, __a)
       { }
 
       /// Copy assignment operator.
@@ -840,7 +875,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       unordered_multiset(const allocator_type& __a)
-	: _M_h(__a)
+      : _M_h(__a)
       { }
 
       /*
@@ -850,7 +885,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_multiset(const unordered_multiset& __umset,
 			 const allocator_type& __a)
-	: _M_h(__umset._M_h, __a)
+      : _M_h(__umset._M_h, __a)
       { }
 
       /*
@@ -860,7 +895,42 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_multiset(unordered_multiset&& __umset,
 			 const allocator_type& __a)
-	: _M_h(std::move(__umset._M_h), __a)
+      : _M_h(std::move(__umset._M_h), __a)
+      { }
+
+      unordered_multiset(size_type __n, const allocator_type& __a)
+      : unordered_multiset(__n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_multiset(size_type __n, const hasher& __hf,
+			 const allocator_type& __a)
+      : unordered_multiset(__n, __hf, key_equal(), __a)
+      { }
+
+      template<typename _InputIterator>
+	unordered_multiset(_InputIterator __first, _InputIterator __last,
+			   size_type __n,
+			   const allocator_type& __a)
+	: unordered_multiset(__first, __last, __n, hasher(), key_equal(), __a)
+	{ }
+
+      template<typename _InputIterator>
+	unordered_multiset(_InputIterator __first, _InputIterator __last,
+			   size_type __n, const hasher& __hf,
+			   const allocator_type& __a)
+	: unordered_multiset(__first, __last, __n, __hf, key_equal(), __a)
+	{ }
+
+      unordered_multiset(initializer_list<value_type> __l,
+			 size_type __n,
+			 const allocator_type& __a)
+      : unordered_multiset(__l, __n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_multiset(initializer_list<value_type> __l,
+			 size_type __n, const hasher& __hf,
+			 const allocator_type& __a)
+      : unordered_multiset(__l, __n, __hf, key_equal(), __a)
       { }
 
       /**
@@ -871,8 +941,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  in the initializer list @a __l.
        *
        *  Note that the assignment completely changes the %unordered_multiset
-       *  and that the resulting %unordered_set's size is the same as the number
-       *  of elements assigned.  Old data may be lost.
+       *  and that the resulting %unordered_multiset's size is the same as the
+       *  number of elements assigned. Old data may be lost.
        */
       unordered_multiset&
       operator=(initializer_list<value_type> __l)

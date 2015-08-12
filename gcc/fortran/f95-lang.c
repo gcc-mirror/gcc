@@ -215,6 +215,7 @@ gfc_create_decls (void)
 
   /* Build our translation-unit decl.  */
   current_translation_unit = build_translation_unit_decl (NULL_TREE);
+  debug_hooks->register_main_translation_unit (current_translation_unit);
 }
 
 

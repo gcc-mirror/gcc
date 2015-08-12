@@ -52,7 +52,7 @@ Functions
                                               const char *name, \
                                               std::vector<param> &params, \
                                               int is_variadic, \
-                                              gccjit::location loc) \
+                                              gccjit::location loc)
 
    Create a gcc_jit_function with the given name and parameters.
 
@@ -98,7 +98,8 @@ Blocks
    be the entrypoint.
 
    Each basic block that you create within a function must be
-   terminated, either with a conditional, a jump, or a return.
+   terminated, either with a conditional, a jump, a return, or
+   a switch.
 
    It's legal to have multiple basic blocks that return within
    one function.
@@ -241,3 +242,82 @@ Statements
    .. code-block:: c
 
       return;
+
+.. function:: void\
+              gccjit::block::end_with_switch (gccjit::rvalue expr,\
+                                              gccjit::block default_block,\
+                                              std::vector <gccjit::case_> cases,\
+                                              gccjit::location loc)
+
+   Terminate a block by adding evalation of an rvalue, then performing
+   a multiway branch.
+
+   This is roughly equivalent to this C code:
+
+   .. code-block:: c
+
+     switch (expr)
+       {
+       default:
+         goto default_block;
+
+       case C0.min_value ... C0.max_value:
+         goto C0.dest_block;
+
+       case C1.min_value ... C1.max_value:
+         goto C1.dest_block;
+
+       ...etc...
+
+       case C[N - 1].min_value ... C[N - 1].max_value:
+         goto C[N - 1].dest_block;
+     }
+
+   ``expr`` must be of the same integer type as all of the ``min_value``
+   and ``max_value`` within the cases.
+
+   The ranges of the cases must not overlap (or have duplicate
+   values).
+
+   The API entrypoints relating to switch statements and cases:
+
+      * :func:`gccjit::block::end_with_switch`
+
+      * :func:`gccjit::context::new_case`
+
+   were added in :ref:`LIBGCCJIT_ABI_3`; you can test for their presence
+   using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+
+   .. class:: gccjit::case_
+
+   A `gccjit::case_` represents a case within a switch statement, and
+   is created within a particular :class:`gccjit::context` using
+   :func:`gccjit::context::new_case`.  It is a subclass of
+   :class:`gccjit::object`.
+
+   Each case expresses a multivalued range of integer values.  You
+   can express single-valued cases by passing in the same value for
+   both `min_value` and `max_value`.
+
+   .. function:: gccjit::case_ *\
+                 gccjit::context::new_case (gccjit::rvalue min_value,\
+                                            gccjit::rvalue max_value,\
+                                            gccjit::block dest_block)
+
+      Create a new gccjit::case for use in a switch statement.
+      `min_value` and `max_value` must be constants of an integer type,
+      which must match that of the expression of the switch statement.
+
+      `dest_block` must be within the same function as the switch
+      statement.
+
+   Here's an example of creating a switch statement:
+
+     .. literalinclude:: ../../../../testsuite/jit.dg/test-switch.cc
+       :start-after: /* Quote from here in docs/cp/topics/functions.rst.  */
+       :end-before: /* Quote up to here in docs/cp/topics/functions.rst.  */
+       :language: c++

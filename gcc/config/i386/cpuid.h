@@ -57,6 +57,7 @@
 #define bit_LWP 	(1 << 15)
 #define bit_FMA4        (1 << 16)
 #define bit_TBM         (1 << 21)
+#define bit_MWAITX      (1 << 29)
 
 /* %edx */
 #define bit_MMXEXT	(1 << 22)

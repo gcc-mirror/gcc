@@ -1,3 +1,33 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-05-12  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
+	2015-04-13  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/64839
+	* sanitizer_common/sanitizer_platform.h: Cherry pick
+	upstream r234470.
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Ditto.
+	* configure.ac (RPC_DEFS): Check for precense of RPC headers.
+	* sanitizer_common/Makefile.am (DEFS): Pass info to compiler.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2015-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR sanitizer/59009

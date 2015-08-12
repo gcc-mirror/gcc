@@ -928,6 +928,7 @@ enable_gnu_indirect_function
 enable_initfini_array
 enable_comdat
 enable_fix_cortex_a53_835769
+enable_fix_cortex_a53_843419
 with_glibc_version
 enable_gnu_unique_object
 enable_linker_build_id
@@ -1657,6 +1658,14 @@ Optional Features:
   --disable-fix-cortex-a53-835769
                           disable workaround for AArch64 Cortex-A53 erratum
                           835769 by default
+
+
+  --enable-fix-cortex-a53-843419
+                          enable workaround for AArch64 Cortex-A53 erratum
+                          843419 by default
+  --disable-fix-cortex-a53-843419
+                          disable workaround for AArch64 Cortex-A53 erratum
+                          843419 by default
 
   --enable-gnu-unique-object
                           enable the use of the @gnu_unique_object ELF
@@ -4804,9 +4813,15 @@ esac
 case "${target}" in
     # PIC is the default on some targets or must not be used.
     *-*-darwin*)
-	# PIC is the default on this platform
-	# Common symbols not allowed in MH_DYLIB files
-	PICFLAG_FOR_TARGET=-fno-common
+	# For darwin, common symbols are not allowed in MH_DYLIB files
+	case "${CFLAGS}" in
+	  # If we are using a compiler supporting mdynamic-no-pic
+	  # and the option has been tested as safe to add, then cancel
+	  # it here, since the code generated is incompatible with shared
+	  # libs.
+	  *-mdynamic-no-pic*) PICFLAG_FOR_TARGET='-fno-common -mno-dynamic-no-pic' ;;
+	  *) PICFLAG_FOR_TARGET=-fno-common ;;
+	esac
 	;;
     alpha*-dec-osf5*)
 	# PIC is the default.
@@ -18350,7 +18365,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18353 "configure"
+#line 18368 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18456,7 +18471,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18459 "configure"
+#line 18474 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24299,6 +24314,25 @@ if test "${enable_fix_cortex_a53_835769+set}" = set; then :
 
 fi
 
+    # Enable default workaround for AArch64 Cortex-A53 erratum 843419.
+    # Check whether --enable-fix-cortex-a53-843419 was given.
+if test "${enable_fix_cortex_a53_843419+set}" = set; then :
+  enableval=$enable_fix_cortex_a53_843419;
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_FIX_ERR_A53_843419_DEFAULT=1"
+            ;;
+          no)
+            ;;
+          *)
+            as_fn_error "'$enableval' is an invalid value for --enable-fix-cortex-a53-843419.\
+  Valid choices are 'yes' and 'no'." "$LINENO" 5
+            ;;
+
+        esac
+
+fi
+
     ;;
 
   # All TARGET_ABI_OSF targets.
@@ -25081,7 +25115,7 @@ if test "${gcc_cv_as_ix86_filds+set}" = set; then :
 else
   gcc_cv_as_ix86_filds=no
   if test x$gcc_cv_as != x; then
-    $as_echo 'filds mem; fists mem' > conftest.s
+    $as_echo 'filds (%ebp); fists (%ebp)' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
@@ -25112,7 +25146,7 @@ if test "${gcc_cv_as_ix86_fildq+set}" = set; then :
 else
   gcc_cv_as_ix86_fildq=no
   if test x$gcc_cv_as != x; then
-    $as_echo 'fildq mem; fistpq mem' > conftest.s
+    $as_echo 'fildq (%ebp); fistpq (%ebp)' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
@@ -26740,6 +26774,42 @@ fi
        && test x$with_nan != x; then
       as_fn_error "Requesting --with-nan= requires assembler support for -mnan=" "$LINENO" 5
     fi
+    ;;
+    s390*-*-*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
+$as_echo_n "checking assembler for .gnu_attribute support... " >&6; }
+if test "${gcc_cv_as_s390_gnu_attribute+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_s390_gnu_attribute=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
+  then gcc_cv_as_s390_gnu_attribute=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.gnu_attribute 8,1' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_s390_gnu_attribute=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_s390_gnu_attribute" >&5
+$as_echo "$gcc_cv_as_s390_gnu_attribute" >&6; }
+if test $gcc_cv_as_s390_gnu_attribute = yes; then
+
+$as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
+
+fi
     ;;
 esac
 

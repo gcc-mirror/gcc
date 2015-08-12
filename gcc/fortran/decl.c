@@ -1404,9 +1404,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		    }
 		  else if (init->expr_type == EXPR_ARRAY)
 		    {
-		      gfc_constructor *c;
-		      c = gfc_constructor_first (init->value.constructor);
-		      clen = c->expr->value.character.length;
+		      clen = mpz_get_si (init->ts.u.cl->length->value.integer);
 		      sym->ts.u.cl->length
 				= gfc_get_int_expr (gfc_default_integer_kind,
 						    NULL, clen);
@@ -2876,6 +2874,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       return MATCH_ERROR;
     }
 
+  gfc_save_symbol_data (sym);
   gfc_set_sym_referenced (sym);
   if (!sym->attr.generic
       && !gfc_add_generic (&sym->attr, sym->name, NULL))
@@ -2900,6 +2899,8 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       sym->generic = intr;
       sym->attr.if_source = IFSRC_DECL;
     }
+  else
+    gfc_save_symbol_data (dt_sym);
 
   gfc_set_sym_referenced (dt_sym);
 
@@ -5591,7 +5592,7 @@ gfc_match_entry (void)
 		       "a contained subprogram");
 	    break;
 	  default:
-	    gfc_internal_error ("gfc_match_entry(): Bad state");
+	    gfc_error ("Unexpected ENTRY statement at %C");
 	}
       return MATCH_ERROR;
     }
@@ -6967,7 +6968,8 @@ gfc_match_protected (void)
   gfc_symbol *sym;
   match m;
 
-  if (gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
+  if (!gfc_current_ns->proc_name
+      || gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
     {
        gfc_error ("PROTECTED at %C only allowed in specification "
 		  "part of a module");
@@ -8507,6 +8509,11 @@ gfc_match_generic (void)
     case INTERFACE_INTRINSIC_OP:
       snprintf (bind_name, sizeof (bind_name), "OPERATOR(%s)",
 		gfc_op2string (op));
+      break;
+
+    case INTERFACE_NAMELESS:
+      gfc_error ("Malformed GENERIC statement at %C");
+      goto error;
       break;
 
     default:

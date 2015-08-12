@@ -107,6 +107,10 @@ proc libstdc++_init { testfile } {
     setenv LC_ALL C
     setenv LANG C
 
+    # LANGUAGE changes the behavior of GNU gettext(3) and causes
+    # std::messages tests to fail.
+    array unset env LANGUAGE
+
     # Many hosts now default to a non-ASCII C locale, however, so
     # they can set a charset encoding here if they need.
     if { [ishost "*-*-cygwin*"] } {
@@ -1219,6 +1223,62 @@ proc check_v3_target_cmath { } {
     }
     verbose "check_v3_target_c99_math: $et_c99_math" 2
     return $et_c99_math
+}
+
+proc check_v3_target_thread_fence { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_thread_fence
+
+    global tool
+
+    if { ![info exists et_thread_fence_target_name] } {
+	set et_thread_fence_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_thread_fence_target_name } {
+	verbose "check_v3_target_thread_fence: `$et_thread_fence_target_name'" 2
+	set et_thread_fence_target_name $current_target
+	if [info exists et_thread_fence] {
+	    verbose "check_v3_target_thread_fence: removing cached result" 2
+	    unset et_thread_fence
+	}
+    }
+
+    if [info exists et_thread_fence] {
+	verbose "check_v3_target_thread_fence: using cached result" 2
+    } else {
+	set et_thread_fence 0
+
+	# Set up and preprocess a C++11 test program that depends
+	# on the thread fence to be available.
+	set src thread_fence[pid].cc
+
+	set f [open $src "w"]
+	puts $f "int main() {"
+	puts $f "__atomic_thread_fence (__ATOMIC_SEQ_CST);"
+	puts $f "return 0;"
+	puts $f "}"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
+
+	set lines [v3_target_compile $src /dev/null executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, linking succeeded.
+	    set et_thread_fence 1
+	} else {
+	    verbose "check_v3_target_thread_fence: compilation failed" 2
+	}
+    }
+    verbose "check_v3_target_thread_fence: $et_thread_fence" 2
+    return $et_thread_fence
 }
 
 proc check_v3_target_atomic_builtins { } {

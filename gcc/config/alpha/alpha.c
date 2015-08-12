@@ -241,6 +241,7 @@ static struct machine_function *alpha_init_machine_status (void);
 static rtx alpha_emit_xfloating_compare (enum rtx_code *, rtx, rtx);
 static void alpha_handle_trap_shadows (void);
 static void alpha_align_insns (void);
+static void alpha_override_options_after_change (void);
 
 #if TARGET_ABI_OPEN_VMS
 static void alpha_write_linkage (FILE *, const char *);
@@ -628,17 +629,7 @@ alpha_option_override (void)
   else if (flag_pic == 2)
     target_flags &= ~MASK_SMALL_DATA;
 
-  /* Align labels and loops for optimal branching.  */
-  /* ??? Kludge these by not doing anything if we don't optimize.  */
-  if (optimize > 0)
-    {
-      if (align_loops <= 0)
-	align_loops = 16;
-      if (align_jumps <= 0)
-	align_jumps = 16;
-    }
-  if (align_functions <= 0)
-    align_functions = 16;
+  alpha_override_options_after_change ();
 
   /* Register variables and functions with the garbage collector.  */
 
@@ -661,6 +652,24 @@ alpha_option_override (void)
   /* This needs to be done at start up.  It's convenient to do it here.  */
   register_pass (&handle_trap_shadows_info);
   register_pass (&align_insns_info);
+}
+
+/* Implement targetm.override_options_after_change.  */
+
+static void
+alpha_override_options_after_change (void)
+{
+  /* Align labels and loops for optimal branching.  */
+  /* ??? Kludge these by not doing anything if we don't optimize.  */
+  if (optimize > 0)
+    {
+      if (align_loops <= 0)
+	align_loops = 16;
+      if (align_jumps <= 0)
+	align_jumps = 16;
+    }
+  if (align_functions <= 0)
+    align_functions = 16;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -1547,8 +1556,7 @@ get_aligned_mem (rtx ref, rtx *paligned_mem, rtx *pbitnum)
 
   gcc_assert (MEM_P (ref));
 
-  if (reload_in_progress
-      && ! memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
+  if (reload_in_progress)
     {
       base = find_replacement (&XEXP (ref, 0));
       gcc_assert (memory_address_p (GET_MODE (ref), base));
@@ -1593,11 +1601,9 @@ get_unaligned_address (rtx ref)
 
   gcc_assert (MEM_P (ref));
 
-  if (reload_in_progress
-      && ! memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
+  if (reload_in_progress)
     {
       base = find_replacement (&XEXP (ref, 0));
-
       gcc_assert (memory_address_p (GET_MODE (ref), base));
     }
   else
@@ -9665,7 +9671,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
   if (cfun->machine->links)
     {
       /* Is this name already defined?  */
-      alpha_links *slot = cfun->machine->links->get (name);
+      alpha_links **slot = cfun->machine->links->get (name);
       if (slot)
 	al = *slot;
     }
@@ -9711,7 +9717,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
 }
 
 static int
-alpha_write_one_linkage (const char *name, alpha_links *link, FILE *steam)
+alpha_write_one_linkage (const char *name, alpha_links *link, FILE *stream)
 {
   ASM_OUTPUT_INTERNAL_LABEL (stream, XSTR (link->linkage, 0));
   if (link->rkind == KIND_CODEADDR)
@@ -10101,6 +10107,10 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE alpha_option_override
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE \
+  alpha_override_options_after_change
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 #undef TARGET_MANGLE_TYPE

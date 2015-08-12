@@ -7,7 +7,7 @@
 
 extern "C++"
 {
-  namespace std
+  namespace std2
   {
     class exception
     {
@@ -16,7 +16,7 @@ extern "C++"
     };
   }
 }
-namespace std
+namespace std2
 {
   struct __cow_string
   {
@@ -31,9 +31,9 @@ namespace std
     __cow_string _M_msg;
   };
 }
-namespace std
+namespace std2
 {
-  class system_error:public std::runtime_error
+  class system_error:public std2::runtime_error
   {
   };
   enum _Ios_Fmtflags
@@ -59,3 +59,5 @@ namespace std
   };
   static ios_base::Init __ioinit;
 }
+
+std2::exception::~exception() noexcept { }

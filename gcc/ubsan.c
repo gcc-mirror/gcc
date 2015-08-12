@@ -87,6 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-object-size.h"
 #include "tree-eh.h"
+#include "tree-cfg.h"
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -1232,9 +1233,9 @@ instrument_mem_ref (tree mem, tree base, gimple_stmt_iterator *iter,
   tree t = TREE_OPERAND (base, 0);
   if (!POINTER_TYPE_P (TREE_TYPE (t)))
     return;
-  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_TYPE (t))) && mem != base)
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (base)) && mem != base)
     ikind = UBSAN_MEMBER_ACCESS;
-  tree kind = build_int_cst (TREE_TYPE (t), ikind);
+  tree kind = build_int_cst (build_pointer_type (TREE_TYPE (base)), ikind);
   tree alignt = build_int_cst (pointer_sized_int_node, align);
   gcall *g = gimple_build_call_internal (IFN_UBSAN_NULL, 3, t, kind, alignt);
   gimple_set_location (g, gimple_location (gsi_stmt (*iter)));
@@ -1420,7 +1421,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
       || TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
     return;
 
-  bool can_throw = stmt_could_throw_p (stmt);
+  bool ends_bb = stmt_ends_bb_p (stmt);
   location_t loc = gimple_location (stmt);
   tree lhs = gimple_assign_lhs (stmt);
   tree ptype = build_pointer_type (TREE_TYPE (rhs));
@@ -1432,7 +1433,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   tree mem = build2 (MEM_REF, utype, gimple_assign_lhs (g),
 		     build_int_cst (atype, 0));
   tree urhs = make_ssa_name (utype);
-  if (can_throw)
+  if (ends_bb)
     {
       gimple_assign_set_lhs (stmt, urhs);
       g = gimple_build_assign (lhs, NOP_EXPR, urhs);
@@ -1469,7 +1470,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   gimple_set_location (g, loc);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
-  if (!can_throw)
+  if (!ends_bb)
     {
       gimple_assign_set_rhs_with_ops (&gsi2, NOP_EXPR, urhs);
       update_stmt (stmt);

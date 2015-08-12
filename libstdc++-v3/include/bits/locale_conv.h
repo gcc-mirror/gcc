@@ -1,6 +1,6 @@
 // wstring_convert implementation -*- C++ -*-
 
-// Copyright (C) 2012 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,6 +51,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
   /// String conversions
   template<typename _Codecvt, typename _Elem = wchar_t,
 	   typename _Wide_alloc = allocator<_Elem>,
@@ -192,18 +193,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_conv(const _InChar* __first, const _InChar* __last,
 		const _OutStr* __err, _MemFn __memfn)
 	{
+	  auto __outstr = __err ? _OutStr(__err->get_allocator()) : _OutStr();
+
+	  if (__first == __last)
+	    {
+	      _M_count = 0;
+	      return __outstr;
+	    }
+
 	  if (!_M_with_cvtstate)
 	    _M_state = state_type();
 
-	  auto __outstr = __err ? _OutStr(__err->get_allocator()) : _OutStr();
 	  size_t __outchars = 0;
 	  auto __next = __first;
-	  const auto __maxlen = _M_cvt->max_length();
+	  const auto __maxlen = _M_cvt->max_length() + 1;
 
 	  codecvt_base::result __result;
 	  do
 	    {
-	      __outstr.resize(__outstr.size() + (__last - __next) + __maxlen);
+	      __outstr.resize(__outstr.size() + (__last - __next) * __maxlen);
 	      auto __outnext = &__outstr.front() + __outchars;
 	      auto const __outlast = &__outstr.back() + 1;
 	      __result = ((*_M_cvt).*__memfn)(_M_state, __next, __last, __next,
@@ -239,6 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool			_M_with_cvtstate = false;
       bool			_M_with_strings = false;
     };
+_GLIBCXX_END_NAMESPACE_CXX11
 
   /// Buffer conversions
   template<typename _Codecvt, typename _Elem = wchar_t,
@@ -264,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_buf(__bytebuf), _M_cvt(__pcvt), _M_state(__state)
       {
 	if (!_M_cvt)
-	  __throw_logic_error("wstring_convert");
+	  __throw_logic_error("wbuffer_convert");
 
 	_M_always_noconv = _M_cvt->always_noconv();
 

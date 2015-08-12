@@ -72,8 +72,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Alloc<_Tp, _Args...> __type;
     };
 
-  template<typename _Ptr, typename _Tp>
-    using __alloc_rebind = typename __alloctr_rebind<_Ptr, _Tp>::__type;
+  template<typename _Alloc, typename _Tp>
+    using __alloc_rebind = typename __alloctr_rebind<_Alloc, _Tp>::__type;
 
   /**
    * @brief  Uniform interface to all allocator types.

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "opts.h"
 #include "safe-ctype.h"
+#include "typed-splay-tree.h"
 
 #include "libgccjit.h"
 #include "jit-common.h"
@@ -81,6 +82,10 @@ struct gcc_jit_lvalue : public gcc::jit::recording::lvalue
 };
 
 struct gcc_jit_param : public gcc::jit::recording::param
+{
+};
+
+struct gcc_jit_case : public gcc::jit::recording::case_
 {
 };
 
@@ -1671,6 +1676,15 @@ gcc_jit_lvalue_access_field (gcc_jit_lvalue *struct_,
   RETURN_NULL_IF_FAIL_PRINTF1 (field->get_container (), field->m_ctxt, loc,
 			       "field %s has not been placed in a struct",
 			       field->get_debug_string ());
+  gcc::jit::recording::type *underlying_type =
+    struct_->get_type ();
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    (field->get_container ()->unqualified ()
+     == underlying_type->unqualified ()),
+    struct_->m_ctxt, loc,
+    "%s is not a field of %s",
+    field->get_debug_string (),
+    underlying_type->get_debug_string ());
 
   return (gcc_jit_lvalue *)struct_->access_field (loc, field);
 }
@@ -1694,6 +1708,15 @@ gcc_jit_rvalue_access_field (gcc_jit_rvalue *struct_,
   RETURN_NULL_IF_FAIL_PRINTF1 (field->get_container (), field->m_ctxt, loc,
 			       "field %s has not been placed in a struct",
 			       field->get_debug_string ());
+  gcc::jit::recording::type *underlying_type =
+    struct_->get_type ();
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    (field->get_container ()->unqualified ()
+     == underlying_type->unqualified ()),
+    struct_->m_ctxt, loc,
+    "%s is not a field of %s",
+    field->get_debug_string (),
+    underlying_type->get_debug_string ());
 
   return (gcc_jit_rvalue *)struct_->access_field (loc, field);
 }
@@ -2105,6 +2128,382 @@ gcc_jit_block_end_with_void_return (gcc_jit_block *block,
   block->end_with_return (loc, NULL);
 }
 
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_case method in
+   jit-recording.c.  */
+
+gcc_jit_case *
+gcc_jit_context_new_case (gcc_jit_context *ctxt,
+			  gcc_jit_rvalue *min_value,
+			  gcc_jit_rvalue *max_value,
+			  gcc_jit_block *block)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (min_value, ctxt, NULL, "NULL min_value");
+  RETURN_NULL_IF_FAIL (max_value, ctxt, NULL, "NULL max_value");
+  RETURN_NULL_IF_FAIL (block, ctxt, NULL, "NULL block");
+
+  RETURN_NULL_IF_FAIL_PRINTF1 (min_value->is_constant (), ctxt, NULL,
+			       "min_value is not a constant: %s",
+			       min_value->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF1 (max_value->is_constant (), ctxt, NULL,
+			       "max_value is not a constant: %s",
+			       max_value->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    min_value->get_type ()->is_int (),
+    ctxt, NULL,
+    "min_value: %s (type: %s) is not of integer type",
+    min_value->get_debug_string (),
+    min_value->get_type ()->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    max_value->get_type ()->is_int (),
+    ctxt, NULL,
+    "max_value: %s (type: %s) is not of integer type",
+    max_value->get_debug_string (),
+    max_value->get_type ()->get_debug_string ());
+
+  wide_int wi_min, wi_max;
+  if (!min_value->get_wide_int (&wi_min))
+    gcc_unreachable ();
+  if (!max_value->get_wide_int (&wi_max))
+    gcc_unreachable ();
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    wi::les_p (wi_min, wi_max),
+    ctxt, NULL,
+    "min_value: %s > max_value: %s",
+    min_value->get_debug_string (),
+    max_value->get_debug_string ());
+  return (gcc_jit_case *)ctxt->new_case (min_value,
+					 max_value,
+					 block);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, this calls the trivial
+   gcc::jit::recording::memento::as_object method (a case is a
+   memento), in jit-recording.h.  */
+
+gcc_jit_object *
+gcc_jit_case_as_object (gcc_jit_case *case_)
+{
+  RETURN_NULL_IF_FAIL (case_, NULL, NULL, "NULL case");
+
+  return static_cast <gcc_jit_object *> (case_->as_object ());
+}
+
+/* Helper function for gcc_jit_block_end_with_switch and
+   valid_case_for_switch.  */
+
+static bool
+valid_dest_for_switch (gcc::jit::recording::context *ctxt,
+		       gcc_jit_location *loc,
+		       const char *api_funcname,
+		       gcc::jit::recording::block *switch_block,
+		       gcc::jit::recording::block *dest_block,
+		       const char *dest_block_desc)
+{
+  if (!dest_block)
+    {
+      jit_error (ctxt, loc, "%s: NULL %s", api_funcname, dest_block_desc);
+      return false;
+    }
+  gcc::jit::recording::function *switch_fn = switch_block->get_function ();
+  gcc::jit::recording::function *dest_fn = dest_block->get_function ();
+  if (switch_fn != dest_fn)
+    {
+      jit_error (ctxt, loc,
+		 "%s: %s is not in same function:"
+		 " switch block %s is in function %s"
+		 " whereas %s %s is in function %s",
+		 api_funcname,
+		 dest_block_desc,
+		 switch_block->get_debug_string (),
+		 switch_fn->get_debug_string (),
+		 dest_block_desc,
+		 dest_block->get_debug_string (),
+		 dest_fn->get_debug_string ());
+      return false;
+    }
+  return true;
+}
+
+/* Helper function for gcc_jit_block_end_with_switch.  */
+
+static bool
+valid_case_for_switch (gcc::jit::recording::context *ctxt,
+		       gcc_jit_location *loc,
+		       const char *api_funcname,
+		       gcc_jit_block *switch_block,
+		       gcc_jit_rvalue *expr,
+		       gcc_jit_case *case_,
+		       const char *case_desc,
+		       int case_idx)
+{
+  if (!case_)
+    {
+      jit_error (ctxt, loc,
+		 "%s:"
+		 " NULL case %i",
+		 api_funcname,
+		 case_idx);
+      return false;
+    }
+  if (!valid_dest_for_switch (ctxt, loc,
+			      api_funcname,
+			      switch_block,
+			      case_->get_dest_block (),
+			      case_desc))
+    return false;
+  gcc::jit::recording::type *expr_type = expr->get_type ();
+  if (expr_type != case_->get_min_value ()->get_type ())
+    {
+      jit_error (ctxt, loc,
+		 "%s:"
+		 " mismatching types between case and expression:"
+		 " cases[%i]->min_value: %s (type: %s)"
+		 " expr: %s (type: %s)",
+		 api_funcname,
+		 case_idx,
+		 case_->get_min_value ()->get_debug_string (),
+		 case_->get_min_value ()->get_type ()->get_debug_string (),
+		 expr->get_debug_string (),
+		 expr_type->get_debug_string ());
+      return false;
+    }
+  if (expr_type != case_->get_max_value ()->get_type ())
+    {
+      jit_error (ctxt, loc,
+		 "%s:"
+		 " mismatching types between case and expression:"
+		 " cases[%i]->max_value: %s (type: %s)"
+		 " expr: %s (type: %s)",
+		 api_funcname,
+		 case_idx,
+		 case_->get_max_value ()->get_debug_string (),
+		 case_->get_max_value ()->get_type ()->get_debug_string (),
+		 expr->get_debug_string (),
+		 expr_type->get_debug_string ());
+      return false;
+    }
+  return true;
+}
+
+/* A class for holding the data we need to perform error-checking
+   on a libgccjit API call.  */
+
+class api_call_validator
+{
+ public:
+  api_call_validator (gcc::jit::recording::context *ctxt,
+		      gcc_jit_location *loc,
+		      const char *funcname)
+  : m_ctxt (ctxt),
+    m_loc (loc),
+    m_funcname (funcname)
+  {}
+
+ protected:
+  gcc::jit::recording::context *m_ctxt;
+  gcc_jit_location *m_loc;
+  const char *m_funcname;
+};
+
+/* A class for verifying that the ranges of cases within
+   gcc_jit_block_end_with_switch don't overlap.  */
+
+class case_range_validator : public api_call_validator
+{
+ public:
+  case_range_validator (gcc::jit::recording::context *ctxt,
+			gcc_jit_location *loc,
+			const char *funcname);
+
+  bool
+  validate (gcc_jit_case *case_, int idx);
+
+ private:
+  static int
+  case_compare (gcc::jit::recording::rvalue *k1,
+		gcc::jit::recording::rvalue *k2);
+
+  static wide_int
+  get_wide_int (gcc::jit::recording::rvalue *k);
+
+ private:
+  typed_splay_tree <gcc::jit::recording::rvalue *, gcc_jit_case *> m_cases;
+};
+
+/* case_range_validator's ctor.  */
+
+case_range_validator::case_range_validator (gcc::jit::recording::context *ctxt,
+					    gcc_jit_location *loc,
+					    const char *funcname)
+: api_call_validator (ctxt, loc, funcname),
+  m_cases (case_compare, NULL, NULL)
+{
+}
+
+/* Ensure that the range of CASE_ does not overlap with any of the
+   ranges of cases we've already seen.
+   Return true if everything is OK.
+   Return false and emit an error if there is an overlap.
+   Compare with c-family/c-common.c:c_add_case_label.  */
+
+bool
+case_range_validator::validate (gcc_jit_case *case_,
+				int case_idx)
+{
+  /* Look up the LOW_VALUE in the table of case labels we already
+     have.  */
+  gcc_jit_case *other = m_cases.lookup (case_->get_min_value ());
+
+  /* If there was not an exact match, check for overlapping ranges.  */
+  if (!other)
+    {
+      gcc_jit_case *pred;
+      gcc_jit_case *succ;
+
+      /* Even though there wasn't an exact match, there might be an
+	 overlap between this case range and another case range.
+	 Since we've (inductively) not allowed any overlapping case
+	 ranges, we simply need to find the greatest low case label
+	 that is smaller that CASE_MIN_VALUE, and the smallest low case
+	 label that is greater than CASE_MAX_VALUE.  If there is an overlap
+	 it will occur in one of these two ranges.  */
+      pred = m_cases.predecessor (case_->get_min_value ());
+      succ = m_cases.successor (case_->get_max_value ());
+
+      /* Check to see if the PRED overlaps.  It is smaller than
+	 the LOW_VALUE, so we only need to check its max value.  */
+      if (pred)
+	{
+	  wide_int wi_case_min = get_wide_int (case_->get_min_value ());
+	  wide_int wi_pred_max = get_wide_int (pred->get_max_value ());
+	  if (wi::ges_p (wi_pred_max, wi_case_min))
+	    other = pred;
+	}
+
+      if (!other && succ)
+	{
+	  /* Check to see if the SUCC overlaps.  The low end of that
+	     range is bigger than the low end of the current range.  */
+	  wide_int wi_case_max = get_wide_int (case_->get_max_value ());
+	  wide_int wi_succ_min = get_wide_int (succ->get_min_value ());
+	  if (wi::les_p (wi_succ_min, wi_case_max))
+	    other = succ;
+	}
+    }
+
+  /* If there was an overlap, issue an error.  */
+  if (other)
+    {
+      jit_error (m_ctxt, m_loc,
+		 "%s: duplicate (or overlapping) cases values:"
+		 " case %i: %s overlaps %s",
+		 m_funcname,
+		 case_idx,
+		 case_->get_debug_string (),
+		 other->get_debug_string ());
+      return false;
+    }
+
+  /* Register this case label in the splay tree.  */
+  m_cases.insert (case_->get_min_value (),
+		  case_);
+  return true;
+}
+
+/* Compare with c-family/c-common.c:case_compare, which acts on tree
+   nodes, rather than rvalue *.
+
+   Comparator for case label values.  K1 and K2 must be constant integer
+   values (anything else should have been rejected by
+   gcc_jit_context_new_case.
+
+   Returns -1 if K1 is ordered before K2, -1 if K1 is ordered after
+   K2, and 0 if K1 and K2 are equal.  */
+
+int
+case_range_validator::case_compare (gcc::jit::recording::rvalue * k1,
+				    gcc::jit::recording::rvalue * k2)
+{
+  wide_int wi1 = get_wide_int (k1);
+  wide_int wi2 = get_wide_int (k2);
+  return wi::cmps(wi1, wi2);
+}
+
+/* Given a const int rvalue K, get the underlying value as a wide_int.  */
+
+wide_int
+case_range_validator::get_wide_int (gcc::jit::recording::rvalue *k)
+{
+  wide_int wi;
+  bool got_wi = k->get_wide_int (&wi);
+  gcc_assert (got_wi);
+  return wi;
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::block::end_with_switch method in
+   jit-recording.c.  */
+
+void
+gcc_jit_block_end_with_switch (gcc_jit_block *block,
+			       gcc_jit_location *loc,
+			       gcc_jit_rvalue *expr,
+			       gcc_jit_block *default_block,
+			       int num_cases,
+			       gcc_jit_case **cases)
+{
+  RETURN_IF_NOT_VALID_BLOCK (block, loc);
+  gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_IF_FAIL (expr, ctxt, loc,
+		  "NULL expr");
+  gcc::jit::recording::type *expr_type = expr->get_type ();
+  RETURN_IF_FAIL_PRINTF2 (
+    expr_type->is_int (),
+    ctxt, loc,
+    "expr: %s (type: %s) is not of integer type",
+    expr->get_debug_string (),
+    expr_type->get_debug_string ());
+  if (!valid_dest_for_switch (ctxt, loc,
+			      __func__,
+			      block,
+			      default_block,
+			      "default_block"))
+    return;
+  RETURN_IF_FAIL (num_cases >= 0, ctxt, loc, "num_cases < 0");
+  case_range_validator crv (ctxt, loc, __func__);
+  for (int i = 0; i < num_cases; i++)
+    {
+      char case_desc[32];
+      snprintf (case_desc, sizeof (case_desc),
+		"cases[%i]", i);
+      if (!valid_case_for_switch (ctxt, loc,
+				  __func__,
+				  block,
+				  expr,
+				  cases[i],
+				  case_desc,
+				  i))
+	return;
+      if (!crv.validate (cases[i], i))
+	return;
+    }
+
+  block->end_with_switch (loc, expr, default_block,
+			  num_cases,
+			  (gcc::jit::recording::case_ **)cases);
+}
+
 /**********************************************************************
  Option-management
  **********************************************************************/
@@ -2162,6 +2561,42 @@ gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
   /* opt is checked by the inner function.  */
 
   ctxt->set_bool_option (opt, value);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::set_inner_bool_option method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
+						   int bool_value)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  ctxt->set_inner_bool_option (
+    gcc::jit::INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS,
+    bool_value);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::add_command_line_option method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,
+					 const char *optname)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_IF_FAIL (optname, ctxt, NULL, "NULL optname");
+  if (ctxt->get_logger ())
+    ctxt->get_logger ()->log ("optname: %s", optname);
+
+  ctxt->add_command_line_option (optname);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

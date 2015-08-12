@@ -38,7 +38,7 @@
 /* Return block containing [H->S), or NULL if not contained.  */
 
 static splay_tree_key
-lookup_host (struct gomp_memory_mapping *mem_map, void *h, size_t s)
+lookup_host (struct gomp_device_descr *dev, void *h, size_t s)
 {
   struct splay_tree_key_s node;
   splay_tree_key key;
@@ -46,11 +46,9 @@ lookup_host (struct gomp_memory_mapping *mem_map, void *h, size_t s)
   node.host_start = (uintptr_t) h;
   node.host_end = (uintptr_t) h + s;
 
-  gomp_mutex_lock (&mem_map->lock);
-
-  key = splay_tree_lookup (&mem_map->splay_tree, &node);
-
-  gomp_mutex_unlock (&mem_map->lock);
+  gomp_mutex_lock (&dev->lock);
+  key = splay_tree_lookup (&dev->mem_map, &node);
+  gomp_mutex_unlock (&dev->lock);
 
   return key;
 }
@@ -65,14 +63,11 @@ lookup_dev (struct target_mem_desc *tgt, void *d, size_t s)
 {
   int i;
   struct target_mem_desc *t;
-  struct gomp_memory_mapping *mem_map;
 
   if (!tgt)
     return NULL;
 
-  mem_map = tgt->mem_map;
-
-  gomp_mutex_lock (&mem_map->lock);
+  gomp_mutex_lock (&tgt->device_descr->lock);
 
   for (t = tgt; t != NULL; t = t->prev)
     {
@@ -80,7 +75,7 @@ lookup_dev (struct target_mem_desc *tgt, void *d, size_t s)
         break;
     }
 
-  gomp_mutex_unlock (&mem_map->lock);
+  gomp_mutex_unlock (&tgt->device_descr->lock);
 
   if (!t)
     return NULL;
@@ -112,7 +107,9 @@ acc_malloc (size_t s)
 
   struct goacc_thread *thr = goacc_thread ();
 
-  return base_dev->alloc_func (thr->dev->target_id, s);
+  assert (thr->dev);
+
+  return thr->dev->alloc_func (thr->dev->target_id, s);
 }
 
 /* OpenACC 2.0a (3.2.16) doesn't specify what to do in the event
@@ -127,6 +124,8 @@ acc_free (void *d)
   if (!d)
     return;
 
+  assert (thr && thr->dev);
+
   /* We don't have to call lazy open here, as the ptr value must have
      been returned by acc_malloc.  It's not permitted to pass NULL in
      (unless you got that null from acc_malloc).  */
@@ -139,7 +138,7 @@ acc_free (void *d)
      acc_unmap_data ((void *)(k->host_start + offset));
    }
 
-  base_dev->free_func (thr->dev->target_id, d);
+  thr->dev->free_func (thr->dev->target_id, d);
 }
 
 void
@@ -149,7 +148,9 @@ acc_memcpy_to_device (void *d, void *h, size_t s)
      been obtained from a routine that did that.  */
   struct goacc_thread *thr = goacc_thread ();
 
-  base_dev->host2dev_func (thr->dev->target_id, d, h, s);
+  assert (thr && thr->dev);
+
+  thr->dev->host2dev_func (thr->dev->target_id, d, h, s);
 }
 
 void
@@ -159,7 +160,9 @@ acc_memcpy_from_device (void *h, void *d, size_t s)
      been obtained from a routine that did that.  */
   struct goacc_thread *thr = goacc_thread ();
 
-  base_dev->dev2host_func (thr->dev->target_id, h, d, s);
+  assert (thr && thr->dev);
+
+  thr->dev->dev2host_func (thr->dev->target_id, h, d, s);
 }
 
 /* Return the device pointer that corresponds to host data H.  Or NULL
@@ -176,7 +179,7 @@ acc_deviceptr (void *h)
 
   struct goacc_thread *thr = goacc_thread ();
 
-  n = lookup_host (&thr->dev->mem_map, h, 1);
+  n = lookup_host (thr->dev, h, 1);
 
   if (!n)
     return NULL;
@@ -229,7 +232,7 @@ acc_is_present (void *h, size_t s)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
-  n = lookup_host (&acc_dev->mem_map, h, s);
+  n = lookup_host (acc_dev, h, s);
 
   if (n && ((uintptr_t)h < n->host_start
 	    || (uintptr_t)h + s > n->host_end
@@ -271,7 +274,7 @@ acc_map_data (void *h, void *d, size_t s)
 	gomp_fatal ("[%p,+%d]->[%p,+%d] is a bad map",
                     (void *)h, (int)s, (void *)d, (int)s);
 
-      if (lookup_host (&acc_dev->mem_map, h, s))
+      if (lookup_host (acc_dev, h, s))
 	gomp_fatal ("host address [%p, +%d] is already mapped", (void *)h,
 		    (int)s);
 
@@ -296,7 +299,7 @@ acc_unmap_data (void *h)
   /* No need to call lazy open, as the address must have been mapped.  */
 
   size_t host_size;
-  splay_tree_key n = lookup_host (&acc_dev->mem_map, h, 1);
+  splay_tree_key n = lookup_host (acc_dev, h, 1);
   struct target_mem_desc *t;
 
   if (!n)
@@ -320,7 +323,7 @@ acc_unmap_data (void *h)
       t->tgt_end = 0;
       t->to_free = 0;
 
-      gomp_mutex_lock (&acc_dev->mem_map.lock);
+      gomp_mutex_lock (&acc_dev->lock);
 
       for (tp = NULL, t = acc_dev->openacc.data_environ; t != NULL;
 	   tp = t, t = t->prev)
@@ -334,7 +337,7 @@ acc_unmap_data (void *h)
 	    break;
 	  }
 
-      gomp_mutex_unlock (&acc_dev->mem_map.lock);
+      gomp_mutex_unlock (&acc_dev->lock);
     }
 
   gomp_unmap_vars (t, true);
@@ -358,7 +361,7 @@ present_create_copy (unsigned f, void *h, size_t s)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
-  n = lookup_host (&acc_dev->mem_map, h, s);
+  n = lookup_host (acc_dev, h, s);
   if (n)
     {
       /* Present. */
@@ -389,13 +392,13 @@ present_create_copy (unsigned f, void *h, size_t s)
       tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, NULL, &s, &kinds, true,
 			   false);
 
-      gomp_mutex_lock (&acc_dev->mem_map.lock);
+      gomp_mutex_lock (&acc_dev->lock);
 
       d = tgt->to_free;
       tgt->prev = acc_dev->openacc.data_environ;
       acc_dev->openacc.data_environ = tgt;
 
-      gomp_mutex_unlock (&acc_dev->mem_map.lock);
+      gomp_mutex_unlock (&acc_dev->lock);
     }
 
   return d;
@@ -436,7 +439,7 @@ delete_copyout (unsigned f, void *h, size_t s)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
-  n = lookup_host (&acc_dev->mem_map, h, s);
+  n = lookup_host (acc_dev, h, s);
 
   /* No need to call lazy open, as the data must already have been
      mapped.  */
@@ -479,7 +482,7 @@ update_dev_host (int is_dev, void *h, size_t s)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
-  n = lookup_host (&acc_dev->mem_map, h, s);
+  n = lookup_host (acc_dev, h, s);
 
   /* No need to call lazy open, as the data must already have been
      mapped.  */
@@ -532,7 +535,7 @@ gomp_acc_remove_pointer (void *h, bool force_copyfrom, int async, int mapnum)
   struct target_mem_desc *t;
   int minrefs = (mapnum == 1) ? 2 : 3;
 
-  n = lookup_host (&acc_dev->mem_map, h, 1);
+  n = lookup_host (acc_dev, h, 1);
 
   if (!n)
     gomp_fatal ("%p is not a mapped block", (void *)h);
@@ -543,7 +546,7 @@ gomp_acc_remove_pointer (void *h, bool force_copyfrom, int async, int mapnum)
 
   struct target_mem_desc *tp;
 
-  gomp_mutex_lock (&acc_dev->mem_map.lock);
+  gomp_mutex_lock (&acc_dev->lock);
 
   if (t->refcount == minrefs)
     {
@@ -570,7 +573,7 @@ gomp_acc_remove_pointer (void *h, bool force_copyfrom, int async, int mapnum)
   if (force_copyfrom)
     t->list[0]->copy_from = 1;
 
-  gomp_mutex_unlock (&acc_dev->mem_map.lock);
+  gomp_mutex_unlock (&acc_dev->lock);
 
   /* If running synchronously, unmap immediately.  */
   if (async < acc_async_noval)

@@ -18,6 +18,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// List xmethods only recognize the non cxx11 std::list for now.
+#define _GLIBCXX_USE_CXX11_ABI 0
+
 #include <list>
 
 int
@@ -35,6 +38,10 @@ main ()
 // { dg-final { note-test l1.front() 123 } }
 // { dg-final { note-test l1.back() 789 } }
 
+// { dg-final { whatis-test l1.empty() bool } }
+// { dg-final { whatis-test l1.size() std::size_t } }
+// { dg-final { whatis-test l1.front() int } }
+// { dg-final { whatis-test l1.back() int } }
 
   return 0;  // Mark SPOT
 }

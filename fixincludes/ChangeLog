@@ -1,3 +1,23 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-05-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline.
+	2015-05-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_externc): New fix.
+	(aix_externcpp[12]): New fix.
+	* fixincl.x: Regenerate.
+	* test/base/ctype.h [AIX_EXTERNC_CHECK]: New test.
+	* test/base/sys/socket.h [AIX_EXTERNCPP[12]_CHECK]: New test.
+	* test/base/fcntl.h: New file.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2015-03-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libstdc++/65500

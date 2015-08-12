@@ -67,5 +67,5 @@ void test5 (int* a, int* b)
 }
 
 /* { dg-final { scan-tree-dump-times "hoist" 8 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "hoist" 3 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "hoist" 3 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

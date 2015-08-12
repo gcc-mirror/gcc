@@ -293,6 +293,15 @@ future activies on a context to the given `FILE *`.
 Options
 -------
 
+Options present in the initial release of libgccjit were handled using
+enums, whereas those added subsequently have their own per-option API
+entrypoints.
+
+Adding entrypoints for each new option means that client code that use
+the new options can be identified directly from binary metadata, which
+would not be possible if we instead extended the various
+``enum gcc_jit_*_option``.
+
 String Options
 **************
 
@@ -304,7 +313,11 @@ String Options
 
    .. type:: enum gcc_jit_str_option
 
-   There is currently just one string option:
+   The parameter ``value`` can be NULL.   If non-NULL, the call takes a
+   copy of the underlying string, so it is valid to pass in a pointer to
+   an on-stack buffer.
+
+   There is just one string option specified this way:
 
    .. macro:: GCC_JIT_STR_OPTION_PROGNAME
 
@@ -441,6 +454,22 @@ Boolean options
      If true, the :type:`gcc_jit_context` will not clean up intermediate files
      written to the filesystem, and will display their location on stderr.
 
+.. function:: void \
+              gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt, \
+                                                                 int bool_value)
+
+   By default, libgccjit will issue an error about unreachable blocks
+   within a function.
+
+   This entrypoint can be used to disable that error.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_2`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+
 Integer options
 ***************
 
@@ -452,7 +481,7 @@ Integer options
 
   .. type:: enum gcc_jit_int_option
 
-  There is currently just one integer option:
+  There is just one integer option specified this way:
 
   .. macro:: GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL
 
@@ -462,3 +491,39 @@ Integer options
      -O0 through -O3.
 
      The default value is 0 (unoptimized).
+
+Additional command-line options
+*******************************
+
+.. function:: void gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,\
+                                                            const char *optname)
+
+   Add an arbitrary gcc command-line option to the context, for use
+   by :func:`gcc_jit_context_compile` and
+   :func:`gcc_jit_context_compile_to_file`.
+
+   The parameter ``optname`` must be non-NULL.  The underlying buffer is
+   copied, so that it does not need to outlive the call.
+
+   Extra options added by `gcc_jit_context_add_command_line_option` are
+   applied *after* the regular options above, potentially overriding them.
+   Options from parent contexts are inherited by child contexts; options
+   from the parent are applied *before* those from the child.
+
+   For example:
+
+   .. code-block:: c
+
+      gcc_jit_context_add_command_line_option (ctxt, "-ffast-math");
+      gcc_jit_context_add_command_line_option (ctxt, "-fverbose-asm");
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   optimization and code-generation are likely to be useful.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_1`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option

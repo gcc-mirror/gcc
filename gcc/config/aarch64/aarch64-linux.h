@@ -49,8 +49,17 @@
   " %{mfix-cortex-a53-835769:--fix-cortex-a53-835769}"
 #endif
 
+#ifdef TARGET_FIX_ERR_A53_843419_DEFAULT
+#define CA53_ERR_843419_SPEC \
+  " %{!mno-fix-cortex-a53-843419:--fix-cortex-a53-843419}"
+#else
+#define CA53_ERR_843419_SPEC \
+  " %{mfix-cortex-a53-843419:--fix-cortex-a53-843419}"
+#endif
+
 #define LINK_SPEC LINUX_TARGET_LINK_SPEC \
-                  CA53_ERR_835769_SPEC
+                  CA53_ERR_835769_SPEC \
+                  CA53_ERR_843419_SPEC
 
 #define GNU_USER_TARGET_MATHFILE_SPEC \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
@@ -68,5 +77,11 @@
   while (0)
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
+/* Uninitialized common symbols in non-PIE executables, even with
+   strong definitions in dependent shared libraries, will resolve
+   to COPY relocated symbol in the executable.  See PR65780.  */
+#undef TARGET_BINDS_LOCAL_P
+#define TARGET_BINDS_LOCAL_P default_binds_local_p_2
 
 #endif  /* GCC_AARCH64_LINUX_H */

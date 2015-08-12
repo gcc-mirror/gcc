@@ -19,6 +19,8 @@ character(25) :: astring
     )
 800 format('This is actually ok.'& !comment
    ' end'  )
+900 format('This is actually ok.' & !comment
+   ' end'  )
 write(astring,100)
 if (astring.ne."This format is OK.") call abort
 write(astring,200)
@@ -34,6 +36,8 @@ if (astring.ne."This format now works.'") call abort
 write(astring,700)
 if (astring.ne."This format now works.'") call abort
 write(astring,800)
+if (astring.ne."This is actually ok.' end") call abort
+write(astring,900)
 if (astring.ne."This is actually ok. end") call abort
 
 end

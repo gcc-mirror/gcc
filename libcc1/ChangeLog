@@ -1,3 +1,17 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
+2015-04-15  Andreas Schwab  <schwab@suse.de>
+
+	PR bootstrap/65763
+	* Makefile.am (gcc_build_dir): Remove $(host_subdir)/ part.
+	* Makefile.in: Regenerated.
+
 2015-01-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* plugin.cc: All callers of fatal_error changed to pass

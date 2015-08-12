@@ -18,6 +18,15 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; NOTE: Although this file contains all the instructions from
+;; section 5.11 of ISA 2.07, only those in sections 5.11.1 and
+;; 5.11.2 are in Category:Vector.Crypto.  Those are the only
+;; ones controlled by -m[no-]crypto.
+
+;; FIXME: The builtin names for the instructions in this file
+;; are likely to be deprecated in favor of other names to be
+;; agreed upon with the XL compilers and LLVM.
+
 (define_c_enum "unspec"
   [UNSPEC_VCIPHER
    UNSPEC_VNCIPHER
@@ -65,7 +74,7 @@
 	(unspec:CR_mode [(match_operand:CR_mode 1 "register_operand" "v")
 			 (match_operand:CR_mode 2 "register_operand" "v")]
 			UNSPEC_VPMSUM))]
-  "TARGET_CRYPTO"
+  "TARGET_P8_VECTOR"
   "vpmsum<CR_char> %0,%1,%2"
   [(set_attr "type" "crypto")])
 
@@ -76,7 +85,7 @@
 			 (match_operand:CR_mode 2 "register_operand" "v")
 			 (match_operand:CR_mode 3 "register_operand" "v")]
 			UNSPEC_VPERMXOR))]
-  "TARGET_CRYPTO"
+  "TARGET_P8_VECTOR"
   "vpermxor %0,%1,%2,%3"
   [(set_attr "type" "crypto")])
 

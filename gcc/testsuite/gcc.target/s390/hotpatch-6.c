@@ -1,7 +1,7 @@
 /* Functional tests for the function hotpatching feature.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -mzarch -mhotpatch=0,5" } */
+/* { dg-options "-mzarch -mhotpatch=0,5" } */
 
 #include <stdio.h>
 
@@ -12,7 +12,7 @@ void hp1(void)
 
 /* Check number of occurences of certain instructions.  */
 /* { dg-final { scan-assembler-not "pre-label NOPs" } } */
-/* { dg-final { scan-assembler "post-label.*(5 halfwords)" } } */
+/* { dg-final { scan-assembler "^\[^.\].*:\n.*post-label.*(5 halfwords).*\n\(\(.L.*:\n\)\|\(\[\[:space:\]\]*.cfi_.*\n\)\)*\[\[:space:\]\]*brcl\t0, 0" } } */
 /* { dg-final { scan-assembler-not "nopr\t%r7" } } */
 /* { dg-final { scan-assembler-times "nop\t0" 1 } } */
 /* { dg-final { scan-assembler-times "brcl\t0, 0" 1 } } */

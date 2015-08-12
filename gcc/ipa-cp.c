@@ -839,7 +839,6 @@ set_single_call_flag (cgraph_node *node, void *)
     cs = cs->next_caller;
   if (cs)
     {
-      gcc_assert (!cs->next_caller);
       IPA_NODE_REF (cs->caller)->node_calling_single_call = true;
       return true;
     }

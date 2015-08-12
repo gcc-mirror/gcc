@@ -910,6 +910,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
   enum reg_class rclass;
   unsigned int spill_regno, reload_regno, uid;
   int insn_pseudos_num, best_insn_pseudos_num;
+  int bad_spills_num, smallest_bad_spills_num;
   lra_live_range_t r;
   bitmap_iterator bi;
 
@@ -928,6 +929,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
   best_hard_regno = -1;
   best_cost = INT_MAX;
   best_insn_pseudos_num = INT_MAX;
+  smallest_bad_spills_num = INT_MAX;
   rclass_size = ira_class_hard_regs_num[rclass];
   mode = PSEUDO_REGNO_MODE (regno);
   /* Invalidate try_hard_reg_pseudos elements.  */
@@ -958,6 +960,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 		&& ! bitmap_bit_p (&lra_optional_reload_pseudos, spill_regno)))
 	  goto fail;
       insn_pseudos_num = 0;
+      bad_spills_num = 0;
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "	 Trying %d:", hard_regno);
       sparseset_clear (live_range_reload_inheritance_pseudos);
@@ -965,6 +968,8 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	{
 	  if (bitmap_bit_p (&insn_conflict_pseudos, spill_regno))
 	    insn_pseudos_num++;
+	  if (spill_regno >= (unsigned int) lra_bad_spill_regno_start)
+	    bad_spills_num++;
 	  for (r = lra_reg_info[spill_regno].live_ranges;
 	       r != NULL;
 	       r = r->next)
@@ -1035,15 +1040,19 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	    }
 	  if (best_insn_pseudos_num > insn_pseudos_num
 	      || (best_insn_pseudos_num == insn_pseudos_num
-		  && best_cost > cost))
+		  && (bad_spills_num < smallest_bad_spills_num
+		      || (bad_spills_num == smallest_bad_spills_num
+			  && best_cost > cost))))
 	    {
 	      best_insn_pseudos_num = insn_pseudos_num;
+	      smallest_bad_spills_num = bad_spills_num;
 	      best_cost = cost;
 	      best_hard_regno = hard_regno;
 	      bitmap_copy (&best_spill_pseudos_bitmap, &spill_pseudos_bitmap);
 	      if (lra_dump_file != NULL)
-		fprintf (lra_dump_file, "	 Now best %d(cost=%d)\n",
-			 hard_regno, cost);
+		fprintf (lra_dump_file,
+			 "	 Now best %d(cost=%d, bad_spills=%d, insn_pseudos=%d)\n",
+			 hard_regno, cost, bad_spills_num, insn_pseudos_num);
 	    }
 	  assign_temporarily (regno, -1);
 	  for (j = 0; j < n; j++)

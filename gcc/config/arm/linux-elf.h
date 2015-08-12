@@ -70,7 +70,7 @@
    %{symbolic:-Bsymbolic} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
-     -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
+     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
    -X \
    %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
    SUBTARGET_EXTRA_LINK_SPEC
@@ -118,3 +118,9 @@
 /* Add .note.GNU-stack.  */
 #undef NEED_INDICATE_EXEC_STACK
 #define NEED_INDICATE_EXEC_STACK	1
+
+/* Uninitialized common symbols in non-PIE executables, even with
+   strong definitions in dependent shared libraries, will resolve
+   to COPY relocated symbol in the executable.  See PR65780.  */
+#undef TARGET_BINDS_LOCAL_P
+#define TARGET_BINDS_LOCAL_P default_binds_local_p_2

@@ -1,3 +1,11 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* objcp-decl.c: Include hash-set.h, machmode.h, vec.h, double-int.h,

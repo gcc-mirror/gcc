@@ -790,10 +790,12 @@ get_static_chain (struct nesting_info *info, tree target_context,
   if (info->context == target_context)
     {
       x = build_addr (info->frame_decl, target_context);
+      info->static_chain_added |= 1;
     }
   else
     {
       x = get_chain_decl (info);
+      info->static_chain_added |= 2;
 
       for (i = info->outer; i->context != target_context; i = i->outer)
 	{
@@ -825,10 +827,12 @@ get_frame_field (struct nesting_info *info, tree target_context,
       /* Make sure frame_decl gets created.  */
       (void) get_frame_type (info);
       x = info->frame_decl;
+      info->static_chain_added |= 1;
     }
   else
     {
       x = get_chain_decl (info);
+      info->static_chain_added |= 2;
 
       for (i = info->outer; i->context != target_context; i = i->outer)
 	{
@@ -874,10 +878,12 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
       (void) get_frame_type (info);
       x = info->frame_decl;
       i = info;
+      info->static_chain_added |= 1;
     }
   else
     {
       x = get_chain_decl (info);
+      info->static_chain_added |= 2;
       for (i = info->outer; i->context != target_context; i = i->outer)
 	{
 	  field = get_chain_field (i);
@@ -2311,17 +2317,55 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
       {
-	tree save_local_var_chain;
+	tree save_local_var_chain = info->new_local_var_chain;
         walk_gimple_op (stmt, convert_tramp_reference_op, wi);
-	save_local_var_chain = info->new_local_var_chain;
 	info->new_local_var_chain = NULL;
+	char save_static_chain_added = info->static_chain_added;
+	info->static_chain_added = 0;
         walk_body (convert_tramp_reference_stmt, convert_tramp_reference_op,
 		   info, gimple_omp_body_ptr (stmt));
 	if (info->new_local_var_chain)
 	  declare_vars (info->new_local_var_chain,
 			gimple_seq_first_stmt (gimple_omp_body (stmt)),
 			false);
+	for (int i = 0; i < 2; i++)
+	  {
+	    tree c, decl;
+	    if ((info->static_chain_added & (1 << i)) == 0)
+	      continue;
+	    decl = i ? get_chain_decl (info) : info->frame_decl;
+	    /* Don't add CHAIN.* or FRAME.* twice.  */
+	    for (c = gimple_omp_taskreg_clauses (stmt);
+		 c;
+		 c = OMP_CLAUSE_CHAIN (c))
+	      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED)
+		  && OMP_CLAUSE_DECL (c) == decl)
+		break;
+	      if (c == NULL && gimple_code (stmt) != GIMPLE_OMP_TARGET)
+		{
+		  c = build_omp_clause (gimple_location (stmt),
+					i ? OMP_CLAUSE_FIRSTPRIVATE
+					  : OMP_CLAUSE_SHARED);
+		  OMP_CLAUSE_DECL (c) = decl;
+		  OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
+		  gimple_omp_taskreg_set_clauses (stmt, c);
+		}
+	      else if (c == NULL)
+		{
+		  c = build_omp_clause (gimple_location (stmt),
+					OMP_CLAUSE_MAP);
+		  OMP_CLAUSE_DECL (c) = decl;
+		  OMP_CLAUSE_SET_MAP_KIND (c,
+					   i ? GOMP_MAP_TO : GOMP_MAP_TOFROM);
+		  OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (decl);
+		  OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
+		  gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt),
+						 c);
+		}
+	  }
 	info->new_local_var_chain = save_local_var_chain;
+	info->static_chain_added |= save_static_chain_added;
       }
       break;
 

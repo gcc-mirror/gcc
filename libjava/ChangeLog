@@ -1,3 +1,26 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-06-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2015-05-28  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* configure.host: Add bits for FreeBSD amd64 and i386.
+	* configure.ac: Add signal handler for FreeBSD (amd64/i386)
+	* configure: Regenerate.
+	* include/freebsd-signal.h: New file.
+
+	2015-05-26  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_get_cxxflags_invocation): Add
+	libiconv for FreeBSD to cxxflags.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2015-01-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* libtool-version: Add a comment about cygwin.

@@ -961,6 +961,7 @@ proc check_effective_target_shared { } {
 
 proc check_effective_target_pie { } {
     if { [istarget *-*-darwin\[912\]*]
+	 || [istarget *-*-freebsd*]
 	 || [istarget *-*-linux*]
 	 || [istarget *-*-gnu*] } {
 	return 1;
@@ -3288,6 +3289,25 @@ proc check_effective_target_powerpc_htm_ok { } {
     }
 }
 
+# Return 1 if the target supports executing HTM hardware instructions,
+# 0 otherwise.  Cache the result.
+
+proc check_htm_hw_available { } {
+    return [check_cached_effective_target htm_hw_available {
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    check_runtime_nocache htm_hw_available {
+		int main()
+		{
+		  __builtin_ttest ();
+		  return 0;
+		}
+	    } "-mhtm"
+	}
+    }]
+}
 # Return 1 if this is a PowerPC target supporting -mcpu=cell.
 
 proc check_effective_target_powerpc_ppu_ok { } {
@@ -4223,6 +4243,7 @@ proc check_effective_target_vect_no_align { } {
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [check_effective_target_arm_vect_no_misalign]
+	     || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	     || ([istarget mips*-*-*]
 		 && [check_effective_target_mips_loongson]) } {
 	    set et_vect_no_align_saved 1
@@ -4244,6 +4265,7 @@ proc check_effective_target_vect_hw_misalign { } {
     } else {
         set et_vect_hw_misalign_saved 0
        if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+            || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	    || [istarget aarch64*-*-*] } {
           set et_vect_hw_misalign_saved 1
        }
@@ -4335,7 +4357,8 @@ proc check_effective_target_vect_natural_alignment { } {
     } else {
         set et_vect_natural_alignment_saved 1
         if { [check_effective_target_arm_eabi]
-	     || [istarget nvptx-*-*] } {
+	     || [istarget nvptx-*-*]
+	     || [istarget s390*-*-*] } {
             set et_vect_natural_alignment_saved 0
         }
     }
@@ -5287,6 +5310,7 @@ proc is-effective-target { arg } {
 	  "p8vector_hw"    { set selected [check_p8vector_hw_available] }
 	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
 	  "dfp_hw"         { set selected [check_dfp_hw_available] }
+	  "htm_hw"         { set selected [check_htm_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
@@ -5310,6 +5334,7 @@ proc is-effective-target-keyword { arg } {
 	  "p8vector_hw"    { return 1 }
 	  "ppc_recip_hw"   { return 1 }
 	  "dfp_hw"         { return 1 }
+	  "htm_hw"         { return 1 }
 	  "named_sections" { return 1 }
 	  "gc_sections"    { return 1 }
 	  "cxa_atexit"     { return 1 }
@@ -6009,7 +6034,7 @@ proc check_vect_support_and_set_flags { } {
 
         lappend DEFAULT_VECTCFLAGS "-maltivec"
         if [check_p8vector_hw_available] {
-            lappend DEFAULT_VECTCFLAGS "-mpower8-vector" "-mno-allow-movmisalign"
+            lappend DEFAULT_VECTCFLAGS "-mpower8-vector"
         } elseif [check_vsx_hw_available] {
             lappend DEFAULT_VECTCFLAGS "-mvsx" "-mno-allow-movmisalign"
         }

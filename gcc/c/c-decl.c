@@ -170,10 +170,6 @@ static int warn_about_return_type;
 
 static bool undef_nested_function;
 
-/* Mode used to build pointers (VOIDmode means ptr_mode).  */
-
-machine_mode c_default_pointer_mode = VOIDmode;
-
 /* If non-zero, implicit "omp declare target" attribute is added into the
    attribute lists.  */
 int current_omp_declare_target_attribute;
@@ -1215,6 +1211,7 @@ pop_scope (void)
     {
       tree file_decl = build_translation_unit_decl (NULL_TREE);
       context = file_decl;
+      debug_hooks->register_main_translation_unit (file_decl);
     }
   else
     context = block;

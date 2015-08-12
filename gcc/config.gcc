@@ -367,7 +367,7 @@ i[34567]86-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h"
+		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h mwaitxintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -388,7 +388,7 @@ x86_64-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h"
+		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h mwaitxintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -454,7 +454,7 @@ spu*-*-*)
 s390*-*-*)
 	cpu_type=s390
 	extra_options="${extra_options} fused-madd.opt"
-	extra_headers="s390intrin.h htmintrin.h htmxlintrin.h"
+	extra_headers="s390intrin.h htmintrin.h htmxlintrin.h vecintrin.h"
 	;;
 # Note the 'l'; we need to be able to match e.g. "shle" or "shl".
 sh[123456789lbe]*-*-* | sh-*-*)
@@ -2351,6 +2351,7 @@ powerpc*-*-linux*)
 	maybe_biarch=${cpu_is_64bit}
 	case ${enable_targets} in
 	    *powerpc64*) maybe_biarch=yes ;;
+	    all) maybe_biarch=yes ;;
 	esac
 	case ${target} in
 	    powerpc64*-*-linux*spe* | powerpc64*-*-linux*paired*)
@@ -2514,27 +2515,35 @@ rx-*-elf*)
 s390-*-linux*)
 	default_gnu_indirect_function=yes
 	tm_file="s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
+	c_target_objs="${c_target_objs} s390-c.o"
+	cxx_target_objs="${cxx_target_objs} s390-c.o"
 	if test x$enable_targets = xall; then
 		tmake_file="${tmake_file} s390/t-linux64"
 	fi
+	tmake_file="${tmake_file} s390/t-s390"
 	;;
 s390x-*-linux*)
 	default_gnu_indirect_function=yes
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
 	tm_p_file="linux-protos.h s390/s390-protos.h"
+	c_target_objs="${c_target_objs} s390-c.o"
+	cxx_target_objs="${cxx_target_objs} s390-c.o"
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
 	out_file=s390/s390.c
-	tmake_file="${tmake_file} s390/t-linux64"
+	tmake_file="${tmake_file} s390/t-linux64 s390/t-s390"
 	;;
 s390x-ibm-tpf*)
-        tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h s390/tpf.h"
-        tm_p_file=s390/s390-protos.h
-        md_file=s390/s390.md
-        extra_modes=s390/s390-modes.def
-        out_file=s390/s390.c
-        thread_file='tpf'
+	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h s390/tpf.h"
+	tm_p_file=s390/s390-protos.h
+	c_target_objs="${c_target_objs} s390-c.o"
+	cxx_target_objs="${cxx_target_objs} s390-c.o"
+	md_file=s390/s390.md
+	extra_modes=s390/s390-modes.def
+	out_file=s390/s390.c
+	thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
+	tmake_file="${tmake_file} s390/t-s390"
 	;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
@@ -4066,7 +4075,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12)
+			"" | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13)
 				# OK
 				;;
 			*)

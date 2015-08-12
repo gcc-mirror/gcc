@@ -1645,7 +1645,7 @@ aarch64_function_value_regno_p (const unsigned int regno)
   /* Up to four fp/simd registers can return a function value, e.g. a
      homogeneous floating-point aggregate having four members.  */
   if (regno >= V0_REGNUM && regno < V0_REGNUM + HA_MAX_NUM_FLDS)
-    return !TARGET_GENERAL_REGS_ONLY;
+    return TARGET_FLOAT;
 
   return false;
 }
@@ -4762,7 +4762,7 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   /* A TFmode or TImode memory access should be handled via an FP_REGS
      because AArch64 has richer addressing modes for LDR/STR instructions
      than LDP/STP instructions.  */
-  if (!TARGET_GENERAL_REGS_ONLY && rclass == GENERAL_REGS
+  if (TARGET_FLOAT && rclass == GENERAL_REGS
       && GET_MODE_SIZE (mode) == 16 && MEM_P (x))
     return FP_REGS;
 
@@ -6872,18 +6872,6 @@ aarch64_override_options (void)
 #endif
     }
 
-  /* If not opzimizing for size, set the default
-     alignment to what the target wants */
-  if (!optimize_size)
-    {
-      if (align_loops <= 0)
-	align_loops = aarch64_tune_params->loop_align;
-      if (align_jumps <= 0)
-	align_jumps = aarch64_tune_params->jump_align;
-      if (align_functions <= 0)
-	align_functions = aarch64_tune_params->function_align;
-    }
-
   aarch64_override_options_after_change ();
 }
 
@@ -6896,6 +6884,18 @@ aarch64_override_options_after_change (void)
     flag_omit_leaf_frame_pointer = false;
   else if (flag_omit_leaf_frame_pointer)
     flag_omit_frame_pointer = true;
+
+  /* If not optimizing for size, set the default
+     alignment to what the target wants */
+  if (!optimize_size)
+    {
+      if (align_loops <= 0)
+	align_loops = aarch64_tune_params->loop_align;
+      if (align_jumps <= 0)
+	align_jumps = aarch64_tune_params->jump_align;
+      if (align_functions <= 0)
+	align_functions = aarch64_tune_params->function_align;
+    }
 }
 
 static struct machine_function *
@@ -7233,7 +7233,7 @@ aarch64_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   vr_save_area_size
     = (NUM_FP_ARG_REGS - cum->aapcs_nvrn) * UNITS_PER_VREG;
 
-  if (TARGET_GENERAL_REGS_ONLY)
+  if (!TARGET_FLOAT)
     {
       if (cum->aapcs_nvrn > 0)
 	sorry ("%qs and floating point or vector arguments",
@@ -7343,7 +7343,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 					       &is_ha))
     {
       /* TYPE passed in fp/simd registers.  */
-      if (TARGET_GENERAL_REGS_ONLY)
+      if (!TARGET_FLOAT)
 	sorry ("%qs and floating point or vector arguments",
 	       "-mgeneral-regs-only");
 
@@ -7580,7 +7580,7 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
   gr_saved = NUM_ARG_REGS - local_cum.aapcs_ncrn;
   vr_saved = NUM_FP_ARG_REGS - local_cum.aapcs_nvrn;
 
-  if (TARGET_GENERAL_REGS_ONLY)
+  if (!TARGET_FLOAT)
     {
       if (local_cum.aapcs_nvrn > 0)
 	sorry ("%qs and floating point or vector arguments",
@@ -11461,6 +11461,9 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 
 #undef TARGET_SCHED_FUSION_PRIORITY
 #define TARGET_SCHED_FUSION_PRIORITY aarch64_sched_fusion_priority
+
+#undef TARGET_RELAXED_ORDERING
+#define TARGET_RELAXED_ORDERING true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

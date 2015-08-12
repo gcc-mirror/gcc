@@ -1,7 +1,8 @@
 /* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-O2 -fpie" } */
 
-/* Common symbol with -fpie.  */
+/* Initialized common symbol with -fpie.  */
+int xxx = 5;
 int xxx;
 
 int

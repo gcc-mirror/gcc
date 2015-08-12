@@ -35,7 +35,9 @@ enum processor_flags
   PF_Z10 = 32,
   PF_Z196 = 64,
   PF_ZEC12 = 128,
-  PF_TX = 256
+  PF_TX = 256,
+  PF_Z13 = 512,
+  PF_VX = 1024
 };
 
 /* This is necessary to avoid a warning about comparing different enum
@@ -64,6 +66,10 @@ enum processor_flags
  	(s390_arch_flags & PF_ZEC12)
 #define TARGET_CPU_HTM \
  	(s390_arch_flags & PF_TX)
+#define TARGET_CPU_Z13 \
+        (s390_arch_flags & PF_Z13)
+#define TARGET_CPU_VX \
+        (s390_arch_flags & PF_VX)
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility when run in
@@ -82,7 +88,15 @@ enum processor_flags
 #define TARGET_ZEC12 \
        (TARGET_ZARCH && TARGET_CPU_ZEC12)
 #define TARGET_HTM (TARGET_OPT_HTM)
+#define TARGET_Z13 \
+       (TARGET_ZARCH && TARGET_CPU_Z13)
+#define TARGET_VX \
+       (TARGET_ZARCH && TARGET_CPU_VX && TARGET_OPT_VX && TARGET_HARD_FLOAT)
 
+/* Use the ABI introduced with IBM z13:
+   - pass vector arguments <= 16 bytes in VRs
+   - align *all* vector types to 8 bytes  */
+#define TARGET_VX_ABI TARGET_VX
 
 #define TARGET_AVOID_CMP_AND_BRANCH (s390_tune == PROCESSOR_2817_Z196)
 
@@ -97,25 +111,11 @@ enum processor_flags
 #define TARGET_TPF 0
 
 /* Target CPU builtins.  */
-#define TARGET_CPU_CPP_BUILTINS()					\
-  do									\
-    {									\
-      builtin_assert ("cpu=s390");					\
-      builtin_assert ("machine=s390");					\
-      builtin_define ("__s390__");					\
-      if (TARGET_ZARCH)							\
-	builtin_define ("__zarch__");					\
-      if (TARGET_64BIT)							\
-        builtin_define ("__s390x__");					\
-      if (TARGET_LONG_DOUBLE_128)					\
-        builtin_define ("__LONG_DOUBLE_128__");				\
-      if (TARGET_HTM)							\
-	builtin_define ("__HTM__");					\
-    }									\
-  while (0)
+#define TARGET_CPU_CPP_BUILTINS() s390_cpu_cpp_builtins (pfile)
 
 #ifdef DEFAULT_TARGET_64BIT
-#define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP | MASK_OPT_HTM)
+#define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
+                            | MASK_OPT_HTM | MASK_OPT_VX)
 #else
 #define TARGET_DEFAULT             0
 #endif
@@ -183,6 +183,13 @@ enum processor_flags
 #define WORDS_BIG_ENDIAN 1
 
 #define STACK_SIZE_MODE (Pmode)
+
+/* Vector arguments are left-justified when placed on the stack during
+   parameter passing.  */
+#define FUNCTION_ARG_PADDING(MODE, TYPE)			\
+  (s390_function_arg_vector ((MODE), (TYPE))			\
+   ? upward							\
+   : DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE)))
 
 #ifndef IN_LIBGCC2
 
@@ -281,9 +288,11 @@ enum processor_flags
    Reg 35: Return address pointer
 
    Registers 36 and 37 are mapped to access registers
-   0 and 1, used to implement thread-local storage.  */
+   0 and 1, used to implement thread-local storage.
 
-#define FIRST_PSEUDO_REGISTER 38
+   Reg 38-53: Vector registers v16-v31  */
+
+#define FIRST_PSEUDO_REGISTER 54
 
 /* Standard register usage.  */
 #define GENERAL_REGNO_P(N)	((int)(N) >= 0 && (N) < 16)
@@ -292,6 +301,8 @@ enum processor_flags
 #define CC_REGNO_P(N)		((N) == 33)
 #define FRAME_REGNO_P(N)	((N) == 32 || (N) == 34 || (N) == 35)
 #define ACCESS_REGNO_P(N)	((N) == 36 || (N) == 37)
+#define VECTOR_NOFP_REGNO_P(N)  ((N) >= 38 && (N) <= 53)
+#define VECTOR_REGNO_P(N)       (FP_REGNO_P (N) || VECTOR_NOFP_REGNO_P (N))
 
 #define GENERAL_REG_P(X)	(REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 #define ADDR_REG_P(X)		(REG_P (X) && ADDR_REGNO_P (REGNO (X)))
@@ -299,6 +310,8 @@ enum processor_flags
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define FRAME_REG_P(X)		(REG_P (X) && FRAME_REGNO_P (REGNO (X)))
 #define ACCESS_REG_P(X)		(REG_P (X) && ACCESS_REGNO_P (REGNO (X)))
+#define VECTOR_NOFP_REG_P(X)    (REG_P (X) && VECTOR_NOFP_REGNO_P (REGNO (X)))
+#define VECTOR_REG_P(X)         (REG_P (X) && VECTOR_REGNO_P (REGNO (X)))
 
 /* Set up fixed registers and calling convention:
 
@@ -313,7 +326,9 @@ enum processor_flags
 
    On 31-bit, FPRs 18-19 are call-clobbered;
    on 64-bit, FPRs 24-31 are call-clobbered.
-   The remaining FPRs are call-saved.  */
+   The remaining FPRs are call-saved.
+
+   All non-FP vector registers are call-clobbered v16-v31.  */
 
 #define FIXED_REGISTERS				\
 { 0, 0, 0, 0, 					\
@@ -325,7 +340,11 @@ enum processor_flags
   0, 0, 0, 0, 					\
   0, 0, 0, 0, 					\
   1, 1, 1, 1,					\
-  1, 1 }
+  1, 1,						\
+  0, 0, 0, 0, 					\
+  0, 0, 0, 0, 					\
+  0, 0, 0, 0, 					\
+  0, 0, 0, 0 }
 
 #define CALL_USED_REGISTERS			\
 { 1, 1, 1, 1, 					\
@@ -337,26 +356,35 @@ enum processor_flags
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
   1, 1, 1, 1,					\
-  1, 1 }
+  1, 1,					        \
+  1, 1, 1, 1, 					\
+  1, 1, 1, 1,					\
+  1, 1, 1, 1, 					\
+  1, 1, 1, 1 }
 
 #define CALL_REALLY_USED_REGISTERS		\
-{ 1, 1, 1, 1, 					\
+{ 1, 1, 1, 1, 	/* r0 - r15 */			\
   1, 1, 0, 0, 					\
   0, 0, 0, 0, 					\
   0, 0, 0, 0,					\
+  1, 1, 1, 1, 	/* f0 (16) - f15 (31) */	\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
-  1, 1, 1, 1, 					\
+  1, 1, 1, 1,	/* arg, cc, fp, ret addr */	\
+  0, 0,		/* a0 (36), a1 (37) */	        \
+  1, 1, 1, 1, 	/* v16 (38) - v23 (45) */	\
   1, 1, 1, 1,					\
-  0, 0 }
+  1, 1, 1, 1, 	/* v24 (46) - v31 (53) */	\
+  1, 1, 1, 1 }
 
 /* Preferred register allocation order.  */
-#define REG_ALLOC_ORDER                                         \
-{  1, 2, 3, 4, 5, 0, 12, 11, 10, 9, 8, 7, 6, 14, 13,            \
-   16, 17, 18, 19, 20, 21, 22, 23,                              \
-   24, 25, 26, 27, 28, 29, 30, 31,                              \
-   15, 32, 33, 34, 35, 36, 37 }
+#define REG_ALLOC_ORDER							\
+  {  1, 2, 3, 4, 5, 0, 12, 11, 10, 9, 8, 7, 6, 14, 13,			\
+     16, 17, 18, 19, 20, 21, 22, 23,					\
+     24, 25, 26, 27, 28, 29, 30, 31,					\
+     38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 	\
+     15, 32, 33, 34, 35, 36, 37 }
 
 
 /* Fitting values into registers.  */
@@ -396,26 +424,22 @@ enum processor_flags
    but conforms to the 31-bit ABI, GPRs can hold 8 bytes;
    the ABI guarantees only that the lower 4 bytes are
    saved across calls, however.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)		\
-  (!TARGET_64BIT && TARGET_ZARCH				\
-   && GET_MODE_SIZE (MODE) > 4					\
-   && (((REGNO) >= 6 && (REGNO) <= 15) || (REGNO) == 32))
+#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
+  ((!TARGET_64BIT && TARGET_ZARCH					\
+    && GET_MODE_SIZE (MODE) > 4						\
+    && (((REGNO) >= 6 && (REGNO) <= 15) || (REGNO) == 32))		\
+   || (TARGET_VX							\
+       && GET_MODE_SIZE (MODE) > 8					\
+       && (((TARGET_64BIT && (REGNO) >= 24 && (REGNO) <= 31))		\
+	   || (!TARGET_64BIT && ((REGNO) == 18 || (REGNO) == 19)))))
 
 /* Maximum number of registers to represent a value of mode MODE
    in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
   s390_class_max_nregs ((CLASS), (MODE))
 
-/* If a 4-byte value is loaded into a FPR, it is placed into the
-   *upper* half of the register, not the lower.  Therefore, we
-   cannot use SUBREGs to switch between modes in FP registers.
-   Likewise for access registers, since they have only half the
-   word size on 64-bit.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		        \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			        \
-   ? ((reg_classes_intersect_p (FP_REGS, CLASS)				\
-       && (GET_MODE_SIZE (FROM) < 8 || GET_MODE_SIZE (TO) < 8))		\
-      || reg_classes_intersect_p (ACCESS_REGS, CLASS)) : 0)
+  s390_cannot_change_mode_class ((FROM), (TO), (CLASS))
 
 /* Register classes.  */
 
@@ -443,6 +467,7 @@ enum reg_class
   NO_REGS, CC_REGS, ADDR_REGS, GENERAL_REGS, ACCESS_REGS,
   ADDR_CC_REGS, GENERAL_CC_REGS,
   FP_REGS, ADDR_FP_REGS, GENERAL_FP_REGS,
+  VEC_REGS, ADDR_VEC_REGS, GENERAL_VEC_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -450,11 +475,13 @@ enum reg_class
 #define REG_CLASS_NAMES							\
 { "NO_REGS", "CC_REGS", "ADDR_REGS", "GENERAL_REGS", "ACCESS_REGS",	\
   "ADDR_CC_REGS", "GENERAL_CC_REGS",					\
-  "FP_REGS", "ADDR_FP_REGS", "GENERAL_FP_REGS", "ALL_REGS" }
+  "FP_REGS", "ADDR_FP_REGS", "GENERAL_FP_REGS",				\
+  "VEC_REGS", "ADDR_VEC_REGS", "GENERAL_VEC_REGS",			\
+  "ALL_REGS" }
 
 /* Class -> register mapping.  */
-#define REG_CLASS_CONTENTS \
-{				       			\
+#define REG_CLASS_CONTENTS				\
+{							\
   { 0x00000000, 0x00000000 },	/* NO_REGS */		\
   { 0x00000000, 0x00000002 },	/* CC_REGS */		\
   { 0x0000fffe, 0x0000000d },	/* ADDR_REGS */		\
@@ -465,7 +492,10 @@ enum reg_class
   { 0xffff0000, 0x00000000 },	/* FP_REGS */		\
   { 0xfffffffe, 0x0000000d },	/* ADDR_FP_REGS */	\
   { 0xffffffff, 0x0000000d },	/* GENERAL_FP_REGS */	\
-  { 0xffffffff, 0x0000003f },	/* ALL_REGS */		\
+  { 0xffff0000, 0x003fffc0 },	/* VEC_REGS */		\
+  { 0xfffffffe, 0x003fffcd },	/* ADDR_VEC_REGS */	\
+  { 0xffffffff, 0x003fffcd },	/* GENERAL_VEC_REGS */	\
+  { 0xffffffff, 0x003fffff },	/* ALL_REGS */		\
 }
 
 /* In some case register allocation order is not enough for IRA to
@@ -496,14 +526,27 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
 
 
-/* We need secondary memory to move data between GPRs and FPRs.  With
-   DFP the ldgr lgdr instructions are available.  But these
-   instructions do not handle GPR pairs so it is not possible for 31
-   bit.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
- ((CLASS1) != (CLASS2)                                \
-  && ((CLASS1) == FP_REGS || (CLASS2) == FP_REGS)     \
-  && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (MODE) != 8))
+/* We need secondary memory to move data between GPRs and FPRs.
+
+   - With DFP the ldgr lgdr instructions are available.  Due to the
+     different alignment we cannot use them for SFmode.  For 31 bit a
+     64 bit value in GPR would be a register pair so here we still
+     need to go via memory.
+
+   - With z13 we can do the SF/SImode moves with vlgvf.  Due to the
+     overlapping of FPRs and VRs we still disallow TF/TD modes to be
+     in full VRs so as before also on z13 we do these moves via
+     memory.
+
+     FIXME: Should we try splitting it into two vlgvg's/vlvg's instead?  */
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
+  (((reg_classes_intersect_p (CLASS1, VEC_REGS)				\
+     && reg_classes_intersect_p (CLASS2, GENERAL_REGS))			\
+    || (reg_classes_intersect_p (CLASS1, GENERAL_REGS)			\
+	&& reg_classes_intersect_p (CLASS2, VEC_REGS)))			\
+   && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (MODE) != 8)	\
+   && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (MODE)			\
+			  && GET_MODE_SIZE (MODE) > 8)))
 
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
    because the movsi and movsf patterns don't handle r/f moves.  */
@@ -597,6 +640,11 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Let the assembler generate debug line info.  */
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
+/* Define the dwarf register mapping.
+   v16-v31 -> 68-83
+   rX      -> X      otherwise  */
+#define DBX_REGISTER_NUMBER(regno)			\
+  ((regno >= 38 && regno <= 53) ? regno + 30 : regno)
 
 /* Frame registers.  */
 
@@ -644,21 +692,29 @@ typedef struct s390_arg_structure
 {
   int gprs;			/* gpr so far */
   int fprs;			/* fpr so far */
+  int vrs;                      /* vr so far */
 }
 CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, NN, N_NAMED_ARGS) \
-  ((CUM).gprs=0, (CUM).fprs=0)
+  ((CUM).gprs=0, (CUM).fprs=0, (CUM).vrs=0)
+
+#define FIRST_VEC_ARG_REGNO 46
+#define LAST_VEC_ARG_REGNO 53
 
 /* Arguments can be placed in general registers 2 to 6, or in floating
    point registers 0 and 2 for 31 bit and fprs 0, 2, 4 and 6 for 64
    bit.  */
-#define FUNCTION_ARG_REGNO_P(N) (((N) >=2 && (N) <7) || \
-  (N) == 16 || (N) == 17 || (TARGET_64BIT && ((N) == 18 || (N) == 19)))
+#define FUNCTION_ARG_REGNO_P(N)						\
+  (((N) >=2 && (N) < 7) || (N) == 16 || (N) == 17			\
+   || (TARGET_64BIT && ((N) == 18 || (N) == 19))			\
+   || (TARGET_VX && ((N) >= FIRST_VEC_ARG_REGNO && (N) <= LAST_VEC_ARG_REGNO)))
 
 
-/* Only gpr 2 and fpr 0 are ever used as return registers.  */
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 2 || (N) == 16)
+/* Only gpr 2, fpr 0, and v24 are ever used as return registers.  */
+#define FUNCTION_VALUE_REGNO_P(N)		\
+  ((N) == 2 || (N) == 16			\
+   || (TARGET_VX && (N) == FIRST_VEC_ARG_REGNO))
 
 
 /* Function entry and exit.  */
@@ -818,12 +874,20 @@ do {									\
 /* How to refer to registers in assembler output.  This sequence is
    indexed by compiler's hard-register-number (see above).  */
 #define REGISTER_NAMES							\
-{ "%r0",  "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",	\
-  "%r8",  "%r9",  "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",	\
-  "%f0",  "%f2",  "%f4",  "%f6",  "%f1",  "%f3",  "%f5",  "%f7",	\
-  "%f8",  "%f10", "%f12", "%f14", "%f9",  "%f11", "%f13", "%f15",	\
-  "%ap",  "%cc",  "%fp",  "%rp",  "%a0",  "%a1"				\
-}
+  { "%r0",  "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",	\
+    "%r8",  "%r9",  "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",	\
+    "%f0",  "%f2",  "%f4",  "%f6",  "%f1",  "%f3",  "%f5",  "%f7",	\
+    "%f8",  "%f10", "%f12", "%f14", "%f9",  "%f11", "%f13", "%f15",	\
+    "%ap",  "%cc",  "%fp",  "%rp",  "%a0",  "%a1",			\
+    "%v16", "%v18", "%v20", "%v22", "%v17", "%v19", "%v21", "%v23",	\
+    "%v24", "%v26", "%v28", "%v30", "%v25", "%v27", "%v29", "%v31"	\
+  }
+
+#define ADDITIONAL_REGISTER_NAMES					\
+  { { "v0", 16 }, { "v2",  17 }, { "v4",  18 }, { "v6",  19 },		\
+    { "v1", 20 }, { "v3",  21 }, { "v5",  22 }, { "v7",  23 },          \
+    { "v8", 24 }, { "v10", 25 }, { "v12", 26 }, { "v14", 27 },          \
+    { "v9", 28 }, { "v11", 29 }, { "v13", 30 }, { "v15", 31 } };
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.  */
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
@@ -893,13 +957,31 @@ do {									\
 #define SYMBOL_REF_NOT_NATURALLY_ALIGNED_P(X) \
   ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_NOT_NATURALLY_ALIGNED))
 
+/* Check whether integer displacement is in range for a short displacement.  */
+#define SHORT_DISP_IN_RANGE(d) ((d) >= 0 && (d) <= 4095)
+
 /* Check whether integer displacement is in range.  */
 #define DISP_IN_RANGE(d) \
   (TARGET_LONG_DISPLACEMENT? ((d) >= -524288 && (d) <= 524287) \
-                           : ((d) >= 0 && (d) <= 4095))
+                           : SHORT_DISP_IN_RANGE(d))
 
 /* Reads can reuse write prefetches, used by tree-ssa-prefetch-loops.c.  */
 #define READ_CAN_USE_WRITE_PREFETCH 1
 
 extern const int processor_flags_table[];
-#endif
+
+/* The truth element value for vector comparisons.  Our instructions
+   always generate -1 in that case.  */
+#define VECTOR_STORE_FLAG_VALUE(MODE) CONSTM1_RTX (GET_MODE_INNER (MODE))
+
+/* Target pragma.  */
+
+/* resolve_overloaded_builtin can not be defined the normal way since
+   it is defined in code which technically belongs to the
+   front-end.  */
+#define REGISTER_TARGET_PRAGMAS()		\
+  do {						\
+    s390_register_target_pragmas ();		\
+  } while (0)
+
+#endif /* S390_H */

@@ -34,6 +34,9 @@ main ()
 // { dg-final { note-test l1.empty() false } }
 // { dg-final { note-test l1.front() 11011 } }
 
+// { dg-final { whatis-test l1.empty() bool } }
+// { dg-final { whatis-test l1.front() int } }
+
   return 0;  // Mark SPOT
 }
 

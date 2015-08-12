@@ -1175,6 +1175,10 @@ is_late_template_attribute (tree attr, tree decl)
       && is_attribute_p ("omp declare simd", name))
     return true;
 
+  /* An attribute pack is clearly dependent.  */
+  if (args && PACK_EXPANSION_P (args))
+    return true;
+
   /* If any of the arguments are dependent expressions, we can't evaluate
      the attribute until instantiation time.  */
   for (arg = args; arg; arg = TREE_CHAIN (arg))
@@ -5015,8 +5019,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       && DECL_TEMPLATE_INFO (decl)
       && (decl_maybe_constant_var_p (decl)
 	  || (TREE_CODE (decl) == FUNCTION_DECL
-	      && (DECL_DECLARED_CONSTEXPR_P (decl)
-		  || DECL_OMP_DECLARE_REDUCTION_P (decl)))
+	      && DECL_OMP_DECLARE_REDUCTION_P (decl))
 	  || undeduced_auto_decl (decl))
       && !uses_template_parms (DECL_TI_ARGS (decl)))
     {

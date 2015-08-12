@@ -133,6 +133,7 @@ namespace recording {
 	class global;
         class param;
     class statement;
+    class case_;
 
   /* End of recording types. */
 }
@@ -154,6 +155,7 @@ namespace playback {
     class source_file;
     class source_line;
     class location;
+    class case_;
 
   /* End of playback types. */
 }
@@ -187,6 +189,16 @@ private:
   int m_line;
   int m_column;
   FILE *m_file;
+};
+
+/* A hidden enum of boolean options that are only exposed via API
+   entrypoints, rather than via gcc_jit_context_set_bool_option.  */
+
+enum inner_bool_option
+{
+  INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS,
+
+  NUM_INNER_BOOL_OPTIONS
 };
 
 } // namespace gcc::jit

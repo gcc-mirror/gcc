@@ -43,8 +43,8 @@ int main (void)
 }
 
 /* Peeling to align the store is used. Overhead of peeling is too high.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target vector_alignment_reachable } } } */
-/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" { target { vector_alignment_reachable && {! vect_no_align} } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { vector_alignment_reachable && {! vect_no_align} } } } } */
+/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" { target { vector_alignment_reachable && {! vect_hw_misalign} } } } } */
 
 /* Versioning to align the store is used. Overhead of versioning is not too high.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_no_align || {! vector_alignment_reachable} } } } } */

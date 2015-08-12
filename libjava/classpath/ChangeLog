@@ -1,3 +1,11 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2014-11-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63784

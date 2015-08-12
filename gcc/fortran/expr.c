@@ -3118,19 +3118,22 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 	bad_proc = true;
 
       /* (ii) The assignment is in the main program; or  */
-      if (gfc_current_ns->proc_name->attr.is_main_program)
+      if (gfc_current_ns->proc_name
+	  && gfc_current_ns->proc_name->attr.is_main_program)
 	bad_proc = true;
 
       /* (iii) A module or internal procedure...  */
-      if ((gfc_current_ns->proc_name->attr.proc == PROC_INTERNAL
-	   || gfc_current_ns->proc_name->attr.proc == PROC_MODULE)
+      if (gfc_current_ns->proc_name
+	  && (gfc_current_ns->proc_name->attr.proc == PROC_INTERNAL
+	      || gfc_current_ns->proc_name->attr.proc == PROC_MODULE)
 	  && gfc_current_ns->parent
 	  && (!(gfc_current_ns->parent->proc_name->attr.function
 		|| gfc_current_ns->parent->proc_name->attr.subroutine)
 	      || gfc_current_ns->parent->proc_name->attr.is_main_program))
 	{
 	  /* ... that is not a function...  */
-	  if (!gfc_current_ns->proc_name->attr.function)
+	  if (gfc_current_ns->proc_name
+	      && !gfc_current_ns->proc_name->attr.function)
 	    bad_proc = true;
 
 	  /* ... or is not an entry and has a different name.  */

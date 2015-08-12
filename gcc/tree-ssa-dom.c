@@ -2963,6 +2963,9 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 		{
 		  basic_block bb = gimple_bb (use_stmt);
 		  edge te = find_taken_edge (bb, val);
+		  if (!te)
+		    continue;
+
 		  edge_iterator ei;
 		  edge e;
 		  gimple_stmt_iterator gsi;

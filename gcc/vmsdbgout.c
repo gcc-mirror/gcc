@@ -198,6 +198,7 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_end_epilogue,
    vmsdbgout_begin_function,
    vmsdbgout_end_function,
+   debug_nothing_tree,		  /* register_main_translation_unit */
    vmsdbgout_decl,
    vmsdbgout_global_decl,
    vmsdbgout_type_decl,		  /* type_decl */

@@ -195,7 +195,7 @@ caller-save.c		Jeff Law		<law@redhat.com>
 callgraph		Jan Hubicka		<hubicka@ucw.cz>
 debugging code		Jim Wilson		<wilson@tuliptree.org>
 dwarf debugging code	Jason Merrill		<jason@redhat.com>
-dwarf debugging code	Cary Coutant		<ccoutant@google.com>
+dwarf debugging code	Cary Coutant		<ccoutant@gmail.com>
 c++ runtime libs	Paolo Carlini		<paolo.carlini@oracle.com>
 c++ runtime libs	Ulrich Drepper		<drepper@gmail.com>
 c++ runtime libs	Benjamin De Kosnik	<bkoz@gnu.org>
@@ -300,7 +300,7 @@ libsanitizer, asan.c	Dmitry Vyukov		<dvyukov@google.com>
 loop optimizer		Zdenek Dvorak		<ook@ucw.cz>
 loop optimizer		Daniel Berlin		<dberlin@dberlin.org>
 LTO			Richard Biener		<rguenther@suse.de>
-LTO plugin		Cary Coutant		<ccoutant@google.com>
+LTO plugin		Cary Coutant		<ccoutant@gmail.com>
 Plugin			Le-Chun Wu		<lcwu@google.com>
 register allocation	Peter Bergner		<bergner@vnet.ibm.com>
 register allocation	Kenneth Zadeck		<zadeck@naturalbridge.com>
@@ -365,7 +365,7 @@ William Cohen					<wcohen@redhat.com>
 Josh Conner					<jconner@apple.com>
 R. Kelley Cook					<kcook@gcc.gnu.org>
 Christian Cornelssen				<ccorn@cs.tu-berlin.de>
-Cary Coutant					<ccoutant@google.com>
+Cary Coutant					<ccoutant@gmail.com>
 Lawrence Crowl					<crowl@google.com>
 Ian Dall					<ian@beware.dropbear.id.au>
 David Daney					<david.daney@caviumnetworks.com>

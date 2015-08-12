@@ -1,3 +1,39 @@
+2015-07-16  Release Manager
+
+	* GCC 5.2.0 released.
+
+2015-07-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg): Reorder arguments to
+	better match light-weight syscall argument order.
+	(__kernel_cmpxchg2): Likewise.
+	Adjust callers.
+
+2015-06-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2015-05-27  John Marino <gnugcc@marino.st>
+
+	* config.host (i[34567]86-*-freebsd*, x86_64-*-freebsd*): Set
+	md_unwind_header
+	* config/i386/freebsd-unwind.h: New.
+
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
+2015-04-10  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
 2015-03-25  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config.host (nios2-*-linux*): Remove 'extra_parts' setting.

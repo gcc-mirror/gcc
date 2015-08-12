@@ -43,28 +43,19 @@ static struct gomp_device_descr host_dispatch =
     .get_caps_func = GOMP_OFFLOAD_get_caps,
     .get_type_func = GOMP_OFFLOAD_get_type,
     .get_num_devices_func = GOMP_OFFLOAD_get_num_devices,
-    .register_image_func = GOMP_OFFLOAD_register_image,
     .init_device_func = GOMP_OFFLOAD_init_device,
     .fini_device_func = GOMP_OFFLOAD_fini_device,
-    .get_table_func = GOMP_OFFLOAD_get_table,
+    .load_image_func = GOMP_OFFLOAD_load_image,
+    .unload_image_func = GOMP_OFFLOAD_unload_image,
     .alloc_func = GOMP_OFFLOAD_alloc,
     .free_func = GOMP_OFFLOAD_free,
     .dev2host_func = GOMP_OFFLOAD_dev2host,
     .host2dev_func = GOMP_OFFLOAD_host2dev,
     .run_func = GOMP_OFFLOAD_run,
 
-    .mem_map.is_initialized = false,
-    .mem_map.splay_tree.root = NULL,
     .is_initialized = false,
-    .offload_regions_registered = false,
 
     .openacc = {
-      .open_device_func = GOMP_OFFLOAD_openacc_open_device,
-      .close_device_func = GOMP_OFFLOAD_openacc_close_device,
-
-      .get_device_num_func = GOMP_OFFLOAD_openacc_get_device_num,
-      .set_device_num_func = GOMP_OFFLOAD_openacc_set_device_num,
-
       .exec_func = GOMP_OFFLOAD_openacc_parallel,
 
       .register_async_cleanup_func
@@ -94,7 +85,6 @@ static struct gomp_device_descr host_dispatch =
 static __attribute__ ((constructor))
 void goacc_host_init (void)
 {
-  gomp_mutex_init (&host_dispatch.mem_map.lock);
   gomp_mutex_init (&host_dispatch.lock);
   goacc_register (&host_dispatch);
 }

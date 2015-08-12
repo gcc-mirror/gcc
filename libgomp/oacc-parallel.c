@@ -49,32 +49,6 @@ find_pset (int pos, size_t mapnum, unsigned short *kinds)
   return kind == GOMP_MAP_TO_PSET;
 }
 
-
-/* Ensure that the target device for DEVICE_TYPE is initialised (and that
-   plugins have been loaded if appropriate).  The ACC_dev variable for the
-   current thread will be set appropriately for the given device type on
-   return.  */
-
-attribute_hidden void
-select_acc_device (int device_type)
-{
-  goacc_lazy_initialize ();
-
-  if (device_type == GOMP_DEVICE_HOST_FALLBACK)
-    return;
-
-  if (device_type == acc_device_none)
-    device_type = acc_device_host;
-
-  if (device_type >= 0)
-    {
-      /* NOTE: this will go badly if the surrounding data environment is set up
-         to use a different device type.  We'll just have to trust that users
-	 know what they're doing...  */
-      acc_set_device_type (device_type);
-    }
-}
-
 static void goacc_wait (int async, int num_waits, va_list ap);
 
 void
@@ -111,7 +85,7 @@ GOACC_parallel (int device, void (*fn) (void *),
 	      __FUNCTION__, (unsigned long) mapnum, hostaddrs, sizes, kinds,
 	      async);
 #endif
-  select_acc_device (device);
+  goacc_lazy_initialize ();
 
   thr = goacc_thread ();
   acc_dev = thr->dev;
@@ -144,14 +118,14 @@ GOACC_parallel (int device, void (*fn) (void *),
     {
       k.host_start = (uintptr_t) fn;
       k.host_end = k.host_start + 1;
-      gomp_mutex_lock (&acc_dev->mem_map.lock);
-      tgt_fn_key = splay_tree_lookup (&acc_dev->mem_map.splay_tree, &k);
-      gomp_mutex_unlock (&acc_dev->mem_map.lock);
+      gomp_mutex_lock (&acc_dev->lock);
+      tgt_fn_key = splay_tree_lookup (&acc_dev->mem_map, &k);
+      gomp_mutex_unlock (&acc_dev->lock);
 
       if (tgt_fn_key == NULL)
 	gomp_fatal ("target function wasn't mapped");
 
-      tgt_fn = (void (*)) tgt_fn_key->tgt->tgt_start;
+      tgt_fn = (void (*)) tgt_fn_key->tgt_offset;
     }
   else
     tgt_fn = (void (*)) fn;
@@ -195,7 +169,7 @@ GOACC_data_start (int device, size_t mapnum,
 	      __FUNCTION__, (unsigned long) mapnum, hostaddrs, sizes, kinds);
 #endif
 
-  select_acc_device (device);
+  goacc_lazy_initialize ();
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
@@ -242,7 +216,7 @@ GOACC_enter_exit_data (int device, size_t mapnum,
   bool data_enter = false;
   size_t i;
 
-  select_acc_device (device);
+  goacc_lazy_initialize ();
 
   thr = goacc_thread ();
   acc_dev = thr->dev;
@@ -429,7 +403,7 @@ GOACC_update (int device, size_t mapnum,
   bool host_fallback = device == GOMP_DEVICE_HOST_FALLBACK;
   size_t i;
 
-  select_acc_device (device);
+  goacc_lazy_initialize ();
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;

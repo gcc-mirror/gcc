@@ -279,12 +279,26 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
 </programlisting>
 
     <para>
-      To run a subset of the library tests, you will need to generate
-      the <emphasis>testsuite_files</emphasis> file by running
+      To run a subset of the library tests, you can either generate the
+      <emphasis>testsuite_files</emphasis> file (described below) by running
       <command>make testsuite_files</command> in the
-      <emphasis>libbuilddir/testsuite</emphasis> directory, described
-      below.  Edit the file to remove the tests you don't want and
-      then run the testsuite as normal.
+      <emphasis>libbuilddir/testsuite</emphasis> directory, then edit the
+      file to remove the tests you don't want and then run the testsuite as
+      normal, or you can specify a testsuite and a subset of tests in the
+      RUNTESTFLAGS variable.
+    </para>
+
+    <para>
+      For example, to run only the tests for containers you could use:
+    </para>
+
+<programlisting>
+make check-target-libstdc++-v3 RUNTESTFLAGS="conformance.exp=23_containers/*"
+</programlisting>
+
+    <para>
+      When combining this with other options in RUNTESTFLAGS the
+      <emphasis>testsuite.exp=testfiles</emphasis> options must come first.
     </para>
 
     <para>

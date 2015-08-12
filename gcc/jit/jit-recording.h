@@ -183,6 +183,11 @@ public:
 		    rvalue *ptr,
 		    rvalue *index);
 
+  case_ *
+  new_case (rvalue *min_value,
+	    rvalue *max_value,
+	    block *block);
+
   void
   set_str_option (enum gcc_jit_str_option opt,
 		  const char *value);
@@ -194,6 +199,16 @@ public:
   void
   set_bool_option (enum gcc_jit_bool_option opt,
 		   int value);
+
+  void
+  set_inner_bool_option (enum inner_bool_option inner_opt,
+			 int value);
+
+  void
+  add_command_line_option (const char *optname);
+
+  void
+  append_command_line_options (vec <char *> *argvec);
 
   void
   enable_dump (const char *dumpname,
@@ -215,6 +230,12 @@ public:
   get_bool_option (enum gcc_jit_bool_option opt) const
   {
     return m_bool_options[opt];
+  }
+
+  int
+  get_inner_bool_option (enum inner_bool_option opt) const
+  {
+    return m_inner_bool_options[opt];
   }
 
   result *
@@ -260,6 +281,7 @@ private:
   void log_str_option (enum gcc_jit_str_option opt) const;
   void log_int_option (enum gcc_jit_int_option opt) const;
   void log_bool_option (enum gcc_jit_bool_option opt) const;
+  void log_inner_bool_option (enum inner_bool_option opt) const;
 
   void validate ();
 
@@ -281,6 +303,8 @@ private:
   char *m_str_options[GCC_JIT_NUM_STR_OPTIONS];
   int m_int_options[GCC_JIT_NUM_INT_OPTIONS];
   bool m_bool_options[GCC_JIT_NUM_BOOL_OPTIONS];
+  bool m_inner_bool_options[NUM_INNER_BOOL_OPTIONS];
+  auto_vec <char *> m_command_line_options;
 
   /* Dumpfiles that were requested via gcc_jit_context_enable_dump.  */
   auto_vec<requested_dump> m_requested_dumps;
@@ -858,6 +882,27 @@ class rvalue_visitor
   virtual void visit (rvalue *rvalue) = 0;
 };
 
+/* When generating debug strings for rvalues we mimic C, so we need to
+   mimic C's precedence levels when handling compound expressions.
+   These are in order from strongest precedence to weakest.  */
+enum precedence
+{
+  PRECEDENCE_PRIMARY,
+  PRECEDENCE_POSTFIX,
+  PRECEDENCE_UNARY,
+  PRECEDENCE_CAST,
+  PRECEDENCE_MULTIPLICATIVE,
+  PRECEDENCE_ADDITIVE,
+  PRECEDENCE_SHIFT,
+  PRECEDENCE_RELATIONAL,
+  PRECEDENCE_EQUALITY,
+  PRECEDENCE_BITWISE_AND,
+  PRECEDENCE_BITWISE_XOR,
+  PRECEDENCE_BITWISE_IOR,
+  PRECEDENCE_LOGICAL_AND,
+  PRECEDENCE_LOGICAL_OR
+};
+
 class rvalue : public memento
 {
 public:
@@ -867,7 +912,8 @@ public:
   : memento (ctxt),
     m_loc (loc),
     m_type (type_),
-    m_scope (NULL)
+    m_scope (NULL),
+    m_parenthesized_string (NULL)
   {
     gcc_assert (type_);
   }
@@ -909,12 +955,23 @@ public:
 
   virtual const char *access_as_rvalue (reproducer &r);
 
+  /* Get the debug string, wrapped in parentheses.  */
+  const char *
+  get_debug_string_parens (enum precedence outer_prec);
+
+  virtual bool is_constant () const { return false; }
+  virtual bool get_wide_int (wide_int *) const { return false; }
+
+private:
+  virtual enum precedence get_precedence () const = 0;
+
 protected:
   location *m_loc;
   type *m_type;
 
  private:
   function *m_scope; /* NULL for globals, non-NULL for locals/params */
+  string *m_parenthesized_string;
 };
 
 class lvalue : public rvalue
@@ -977,6 +1034,7 @@ public:
 private:
   string * make_debug_string () { return m_name; }
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   string *m_name;
@@ -1102,6 +1160,13 @@ public:
   end_with_return (location *loc,
 		   rvalue *rvalue);
 
+  statement *
+  end_with_switch (location *loc,
+		   rvalue *expr,
+		   block *default_block,
+		   int num_cases,
+		   case_ **cases);
+
   playback::block *
   playback_block () const
   {
@@ -1117,7 +1182,7 @@ public:
   statement *get_first_statement () const;
   statement *get_last_statement () const;
 
-  int get_successor_blocks (block **next1, block **next2) const;
+  vec <block *> get_successor_blocks () const;
 
 private:
   string * make_debug_string ();
@@ -1161,6 +1226,7 @@ public:
 private:
   string * make_debug_string () { return m_name; }
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   enum gcc_jit_global_kind m_kind;
@@ -1182,9 +1248,14 @@ public:
 
   void visit_children (rvalue_visitor *) {}
 
+  bool is_constant () const { return true; }
+
+  bool get_wide_int (wide_int *out) const;
+
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   HOST_TYPE m_value;
@@ -1206,6 +1277,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   string *m_value;
@@ -1231,6 +1303,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const {return PRECEDENCE_UNARY;}
 
 private:
   enum gcc_jit_unary_op m_op;
@@ -1257,6 +1330,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const;
 
 private:
   enum gcc_jit_binary_op m_op;
@@ -1284,6 +1358,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const;
 
 private:
   enum gcc_jit_comparison m_op;
@@ -1309,6 +1384,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_CAST; }
 
 private:
   rvalue *m_rvalue;
@@ -1330,6 +1406,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   function *m_func;
@@ -1352,6 +1429,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_fn_ptr;
@@ -1377,6 +1455,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_ptr;
@@ -1402,6 +1481,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   lvalue *m_lvalue;
@@ -1427,6 +1507,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_rvalue;
@@ -1452,6 +1533,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_POSTFIX; }
 
 private:
   rvalue *m_rvalue;
@@ -1474,6 +1556,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_UNARY; }
 
 private:
   rvalue *m_rvalue;
@@ -1496,6 +1579,7 @@ public:
 private:
   string * make_debug_string ();
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_UNARY; }
 
 private:
   lvalue *m_lvalue;
@@ -1521,6 +1605,7 @@ public:
 private:
   string * make_debug_string () { return m_name; }
   void write_reproducer (reproducer &r);
+  enum precedence get_precedence () const { return PRECEDENCE_PRIMARY; }
 
 private:
   function *m_func;
@@ -1530,8 +1615,7 @@ private:
 class statement : public memento
 {
 public:
-  virtual int get_successor_blocks (block **out_next1,
-				    block **out_next2) const;
+  virtual vec <block *> get_successor_blocks () const;
 
   void write_to_dump (dump &d);
 
@@ -1655,8 +1739,7 @@ public:
 
   void replay_into (replayer *r);
 
-  int get_successor_blocks (block **out_next1,
-			    block **out_next2) const;
+  vec <block *> get_successor_blocks () const;
 
 private:
   string * make_debug_string ();
@@ -1679,8 +1762,7 @@ public:
 
   void replay_into (replayer *r);
 
-  int get_successor_blocks (block **out_next1,
-			    block **out_next2) const;
+  vec <block *> get_successor_blocks () const;
 
 private:
   string * make_debug_string ();
@@ -1701,8 +1783,7 @@ public:
 
   void replay_into (replayer *r);
 
-  int get_successor_blocks (block **out_next1,
-			    block **out_next2) const;
+  vec <block *> get_successor_blocks () const;
 
 private:
   string * make_debug_string ();
@@ -1710,6 +1791,60 @@ private:
 
 private:
   rvalue *m_rvalue;
+};
+
+class case_ : public memento
+{
+ public:
+  case_ (context *ctxt,
+	 rvalue *min_value,
+	 rvalue *max_value,
+	 block *dest_block)
+  : memento (ctxt),
+    m_min_value (min_value),
+    m_max_value (max_value),
+    m_dest_block (dest_block)
+  {}
+
+  rvalue *get_min_value () const { return m_min_value; }
+  rvalue *get_max_value () const { return m_max_value; }
+  block *get_dest_block () const { return m_dest_block; }
+
+  void replay_into (replayer *) { /* empty */ }
+
+  void write_reproducer (reproducer &r);
+
+private:
+  string * make_debug_string ();
+
+ private:
+  rvalue *m_min_value;
+  rvalue *m_max_value;
+  block *m_dest_block;
+};
+
+class switch_ : public statement
+{
+public:
+  switch_ (block *b,
+	   location *loc,
+	   rvalue *expr,
+	   block *default_block,
+	   int num_cases,
+	   case_ **cases);
+
+  void replay_into (replayer *r);
+
+  vec <block *> get_successor_blocks () const;
+
+private:
+  string * make_debug_string ();
+  void write_reproducer (reproducer &r);
+
+private:
+  rvalue *m_expr;
+  block *m_default_block;
+  auto_vec <case_ *> m_cases;
 };
 
 } // namespace gcc::jit::recording
