@@ -12442,9 +12442,10 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
   if (TYPE_UNSIGNED (type0))
     return false;
 
+  unsigned int min_prec = (wi::min_precision (op0, SIGNED)
+			   + TREE_INT_CST_LOW (op1));
   /* Handle the left-shifting 1 into the sign bit case.  */
-  if (integer_onep (op0)
-      && compare_tree_int (op1, prec0 - 1) == 0)
+  if (min_prec == prec0 + 1)
     {
       /* Never warn for C++14 onwards.  */
       if (cxx_dialect >= cxx14)
@@ -12456,8 +12457,6 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
 	return true;
     }
 
-  unsigned int min_prec = (wi::min_precision (op0, SIGNED)
-			   + TREE_INT_CST_LOW (op1));
   bool overflowed = min_prec > prec0;
   if (overflowed && c_inhibit_evaluation_warnings == 0)
     warning_at (loc, OPT_Wshift_overflow_,
