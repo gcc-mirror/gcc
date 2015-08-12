@@ -6233,9 +6233,9 @@ grokdeclarator (const struct c_declarator *declarator,
       if (type_quals & TYPE_QUAL_ATOMIC)
 	{
 	  if (name)
-	    error ("bit-field %qE has atomic type", name);
+	    error_at (loc, "bit-field %qE has atomic type", name);
 	  else
-	    error ("bit-field has atomic type");
+	    error_at (loc, "bit-field has atomic type");
 	  type_quals &= ~TYPE_QUAL_ATOMIC;
 	}
     }
