@@ -1,3 +1,25 @@
+2015-08-12  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-47.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-48.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-49.c: Likewise.
+	* g++.dg/tree-ssa/pr61034.C: Adjust.
+	* gcc.dg/fold-compare-2.c: Likewise.
+	* gcc.dg/pr50763.c: Likewise.
+	* gcc.dg/predict-3.c: Likewise.
+	* gcc.dg/tree-ssa/20030709-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr19831-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr20657.c: Likewise.
+	* gcc.dg/tree-ssa/pr21001.c: Likewise.
+	* gcc.dg/tree-ssa/pr37508.c: Likewise.
+	* gcc.dg/tree-ssa/vrp04.c: Likewise.
+	* gcc.dg/tree-ssa/vrp07.c: Likewise.
+	* gcc.dg/tree-ssa/vrp09.c: Likewise.
+	* gcc.dg/tree-ssa/vrp16.c: Likewise.
+	* gcc.dg/tree-ssa/vrp20.c: Likewise.
+	* gcc.dg/tree-ssa/vrp25.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+
 2015-08-12  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/vrp-min-max-1.c: New.

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1-details" } */
 
 extern void abort ();
 extern void arf ();

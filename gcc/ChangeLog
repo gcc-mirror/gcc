@@ -1,3 +1,20 @@
+2015-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_nary_op_compute_hash): Also canonicalize
+	comparison operand order and commutative ternary op operand order.
+	(sccvn_dom_walker::cond_stack): New state to track temporary
+	expressions.
+	(sccvn_dom_walker::after_dom_children): Remove tempoary expressions
+	no longer valid.
+	(sccvn_dom_walker::record_cond): Add a single temporary conditional
+	expression.
+	(sccvn_dom_walker::record_conds): Add a temporary conditional
+	expressions and all related expressions also true/false.
+	(sccvn_dom_walker::before_dom_children): Record temporary
+	expressions based on the controlling condition of a single
+	predecessor.  When trying to simplify a conditional statement
+	lookup expressions we might have inserted earlier.
+
 2015-08-12  Yvan Roux  <yvan.roux@linaro.org>
 
 	PR target/67127
