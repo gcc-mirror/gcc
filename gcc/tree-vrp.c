@@ -7466,7 +7466,8 @@ compare_names (enum tree_code comp, tree n1, tree n2,
   return NULL_TREE;
 }
 
-/* Helper function for vrp_evaluate_conditional_warnv.  */
+/* Helper function for vrp_evaluate_conditional_warnv & other
+   optimizers.  */
 
 static tree
 vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code code,
@@ -9145,6 +9146,54 @@ simplify_div_or_mod_using_ranges (gimple stmt)
   return false;
 }
 
+/* Simplify a min or max if the ranges of the two operands are
+   disjoint.   Return true if we do simplify.  */
+
+static bool
+simplify_min_or_max_using_ranges (gimple stmt)
+{
+  tree op0 = gimple_assign_rhs1 (stmt);
+  tree op1 = gimple_assign_rhs2 (stmt);
+  bool sop = false;
+  tree val;
+
+  val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
+	 (LE_EXPR, op0, op1, &sop));
+  if (!val)
+    {
+      sop = false;
+      val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
+	     (LT_EXPR, op0, op1, &sop));
+    }
+
+  if (val)
+    {
+      if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
+	{
+	  location_t location;
+
+	  if (!gimple_has_location (stmt))
+	    location = input_location;
+	  else
+	    location = gimple_location (stmt);
+	  warning_at (location, OPT_Wstrict_overflow,
+		      "assuming signed overflow does not occur when "
+		      "simplifying %<min/max (X,Y)%> to %<X%> or %<Y%>");
+	}
+
+      /* VAL == TRUE -> OP0 < or <= op1
+	 VAL == FALSE -> OP0 > or >= op1.  */
+      tree res = ((gimple_assign_rhs_code (stmt) == MAX_EXPR)
+		  == integer_zerop (val)) ? op0 : op1;
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gimple_assign_set_rhs_from_tree (&gsi, res);
+      update_stmt (stmt);
+      return true;
+    }
+
+  return false;
+}
+
 /* If the operand to an ABS_EXPR is >= 0, then eliminate the
    ABS_EXPR.  If the operand is <= 0, then simplify the
    ABS_EXPR into a NEGATE_EXPR.  */
@@ -9985,6 +10034,11 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_float_conversion_using_ranges (gsi, stmt);
+	  break;
+
+	case MIN_EXPR:
+	case MAX_EXPR:
+	  return simplify_min_or_max_using_ranges (stmt);
 	  break;
 
 	default:
