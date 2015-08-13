@@ -1,3 +1,10 @@
+2015-08-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67191
+	* tree-ssa-sccvn.c (sccvn_dom_walker::before_dom_children): Remove
+	assert we value-numbered last stmts operand because it can validly
+	trigger for unreachable code.
+
 2015-08-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/67103
