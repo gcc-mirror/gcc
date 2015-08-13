@@ -3101,6 +3101,12 @@ Expression*
 Type_conversion_expression::do_flatten(Gogo*, Named_object*,
                                        Statement_inserter* inserter)
 {
+  if (this->type()->is_error_type() || this->expr_->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location());
+    }
+
   if (((this->type()->is_string_type()
         && this->expr_->type()->is_slice_type())
        || this->expr_->type()->interface_type() != NULL)
@@ -3585,8 +3591,13 @@ Expression*
 Unary_expression::do_flatten(Gogo* gogo, Named_object*,
                              Statement_inserter* inserter)
 {
-  if (this->is_error_expression() || this->expr_->is_error_expression())
-    return Expression::make_error(this->location());
+  if (this->is_error_expression()
+      || this->expr_->is_error_expression()
+      || this->expr_->type()->is_error_type())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location());
+    }
 
   Location location = this->location();
   if (this->op_ == OPERATOR_MULT
@@ -5062,10 +5073,16 @@ Expression*
 Binary_expression::do_flatten(Gogo* gogo, Named_object*,
                               Statement_inserter* inserter)
 {
-  if (this->classification() == EXPRESSION_ERROR)
-    return this;
-
   Location loc = this->location();
+  if (this->left_->type()->is_error_type()
+      || this->right_->type()->is_error_type()
+      || this->left_->is_error_expression()
+      || this->right_->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(loc);
+    }
+
   Temporary_statement* temp;
   if (this->left_->type()->is_string_type()
       && this->op_ == OPERATOR_PLUS)
@@ -6806,6 +6823,11 @@ Builtin_call_expression::do_flatten(Gogo*, Named_object*,
                                     Statement_inserter* inserter)
 {
   Location loc = this->location();
+  if (this->is_erroneous_call())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(loc);
+    }
 
   switch (this->code_)
     {
@@ -8733,8 +8755,11 @@ Expression*
 Call_expression::do_flatten(Gogo* gogo, Named_object*,
 			    Statement_inserter* inserter)
 {
-  if (this->classification() == EXPRESSION_ERROR)
-    return this;
+  if (this->is_erroneous_call())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location());
+    }
 
   if (this->is_flattened_)
     return this;
@@ -8900,6 +8925,27 @@ Call_expression::issue_error()
       this->issued_error_ = true;
       return true;
     }
+}
+
+// Whether or not this call contains errors, either in the call or the
+// arguments to the call.
+
+bool
+Call_expression::is_erroneous_call()
+{
+  if (this->is_error_expression() || this->fn()->is_error_expression())
+    return true;
+
+  if (this->args() == NULL)
+    return false;
+  for (Expression_list::iterator pa = this->args()->begin();
+       pa != this->args()->end();
+       ++pa)
+    {
+      if ((*pa)->type()->is_error_type() || (*pa)->is_error_expression())
+        return true;
+    }
+  return false;
 }
 
 // Get the type.
@@ -9848,30 +9894,47 @@ Array_index_expression::do_flatten(Gogo*, Named_object*,
                                    Statement_inserter* inserter)
 {
   Location loc = this->location();
-  Temporary_statement* temp;
-  if (this->array_->type()->is_slice_type() && !this->array_->is_variable())
+  Expression* array = this->array_;
+  Expression* start = this->start_;
+  Expression* end = this->end_;
+  Expression* cap = this->cap_;
+  if (array->is_error_expression()
+      || array->type()->is_error_type()
+      || start->is_error_expression()
+      || start->type()->is_error_type()
+      || (end != NULL
+          && (end->is_error_expression() || end->type()->is_error_type()))
+      || (cap != NULL
+          && (cap->is_error_expression() || cap->type()->is_error_type())))
     {
-      temp = Statement::make_temporary(NULL, this->array_, loc);
+      go_assert(saw_errors());
+      return Expression::make_error(loc);
+    }
+
+  Temporary_statement* temp;
+  if (array->type()->is_slice_type() && !array->is_variable())
+    {
+      temp = Statement::make_temporary(NULL, array, loc);
       inserter->insert(temp);
       this->array_ = Expression::make_temporary_reference(temp, loc);
     }
-  if (!this->start_->is_variable())
+  if (!start->is_variable())
     {
-      temp = Statement::make_temporary(NULL, this->start_, loc);
+      temp = Statement::make_temporary(NULL, start, loc);
       inserter->insert(temp);
       this->start_ = Expression::make_temporary_reference(temp, loc);
     }
-  if (this->end_ != NULL
-      && !this->end_->is_nil_expression()
-      && !this->end_->is_variable())
+  if (end != NULL
+      && !end->is_nil_expression()
+      && !end->is_variable())
     {
-      temp = Statement::make_temporary(NULL, this->end_, loc);
+      temp = Statement::make_temporary(NULL, end, loc);
       inserter->insert(temp);
       this->end_ = Expression::make_temporary_reference(temp, loc);
     }
-  if (this->cap_ != NULL && !this->cap_->is_variable())
+  if (cap!= NULL && !cap->is_variable())
     {
-      temp = Statement::make_temporary(NULL, this->cap_, loc);
+      temp = Statement::make_temporary(NULL, cap, loc);
       inserter->insert(temp);
       this->cap_ = Expression::make_temporary_reference(temp, loc);
     }
@@ -10179,8 +10242,22 @@ Expression*
 String_index_expression::do_flatten(Gogo*, Named_object*,
                                     Statement_inserter* inserter)
 {
-  Temporary_statement* temp;
   Location loc = this->location();
+  Expression* string = this->string_;
+  Expression* start = this->start_;
+  Expression* end = this->end_;
+  if (string->is_error_expression()
+      || string->type()->is_error_type()
+      || start->is_error_expression()
+      || start->type()->is_error_type()
+      || (end != NULL
+          && (end->is_error_expression() || end->type()->is_error_type())))
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(loc);
+    }
+
+  Temporary_statement* temp;
   if (!this->string_->is_variable())
     {
       temp = Statement::make_temporary(NULL, this->string_, loc);
@@ -10419,6 +10496,14 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
 {
   Location loc = this->location();
   Map_type* mt = this->get_map_type();
+  if (this->index()->is_error_expression()
+      || this->index()->type()->is_error_type()
+      || mt->is_error_type())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(loc);
+    }
+
   if (!Type::are_identical(mt->key_type(), this->index_->type(), false, NULL))
     {
       if (this->index_->type()->interface_type() != NULL
@@ -10443,6 +10528,9 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
 
   if (this->value_pointer_ == NULL)
     this->get_value_pointer(this->is_lvalue_);
+  if (this->value_pointer_->is_error_expression()
+      || this->value_pointer_->type()->is_error_type())
+    return Expression::make_error(loc);
   if (!this->value_pointer_->is_variable())
     {
       Temporary_statement* temp =
@@ -10819,6 +10907,13 @@ Expression*
 Interface_field_reference_expression::do_flatten(Gogo*, Named_object*,
 						 Statement_inserter* inserter)
 {
+  if (this->expr_->is_error_expression()
+      || this->expr_->type()->is_error_type())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location());
+    }
+
   if (!this->expr_->is_variable())
     {
       Temporary_statement* temp =
@@ -11598,6 +11693,11 @@ Struct_construction_expression::do_flatten(Gogo*, Named_object*,
     {
       if (*pv != NULL)
 	{
+          if ((*pv)->is_error_expression() || (*pv)->type()->is_error_type())
+            {
+              go_assert(saw_errors());
+              return Expression::make_error(loc);
+            }
 	  if (!(*pv)->is_variable())
 	    {
 	      Temporary_statement* temp =
@@ -11809,6 +11909,11 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
     {
       if (*pv != NULL)
 	{
+          if ((*pv)->is_error_expression() || (*pv)->type()->is_error_type())
+            {
+              go_assert(saw_errors());
+              return Expression::make_error(loc);
+            }
 	  if (!(*pv)->is_variable())
 	    {
 	      Temporary_statement* temp =
@@ -12124,6 +12229,11 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
         {
           Expression_list* key_value_pair = new Expression_list();
           Expression* key = *pv;
+          if (key->is_error_expression() || key->type()->is_error_type())
+            {
+              go_assert(saw_errors());
+              return Expression::make_error(loc);
+            }
 	  if (key->type()->interface_type() != NULL && !key->is_variable())
 	    {
 	      Temporary_statement* temp =
@@ -12135,6 +12245,11 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
 
           ++pv;
           Expression* val = *pv;
+          if (val->is_error_expression() || val->type()->is_error_type())
+            {
+              go_assert(saw_errors());
+              return Expression::make_error(loc);
+            }
 	  if (val->type()->interface_type() != NULL && !val->is_variable())
 	    {
 	      Temporary_statement* temp =
@@ -13103,6 +13218,13 @@ Expression*
 Type_guard_expression::do_flatten(Gogo*, Named_object*,
                                   Statement_inserter* inserter)
 {
+  if (this->expr_->is_error_expression()
+      || this->expr_->type()->is_error_type())
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location());
+    }
+
   if (!this->expr_->is_variable())
     {
       Temporary_statement* temp = Statement::make_temporary(NULL, this->expr_,
@@ -13297,6 +13419,11 @@ Receive_expression::do_flatten(Gogo*, Named_object*,
       go_assert(saw_errors());
       return this;
     }
+  else if (this->channel_->is_error_expression())
+   {
+     go_assert(saw_errors());
+     return Expression::make_error(this->location());
+   }
 
   Type* element_type = channel_type->element_type();
   if (this->temp_receiver_ == NULL)
