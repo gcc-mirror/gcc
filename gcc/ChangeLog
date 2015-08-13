@@ -1,3 +1,8 @@
+2015-08-13  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	PR middle-end/25529
+	* match.pd (div (mult @0 @1) @1) : New simplifier.
+
 2015-08-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/67071
