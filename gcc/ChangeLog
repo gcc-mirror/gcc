@@ -1,5 +1,18 @@
 2015-08-13  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/aarch64/aarch64-protos.h
+	(aarch64_gen_atomic_cas): Declare.
+	* config/aarch64/aarch64.c (aarch64_expand_compare_and_swap):
+	Choose appropriate instruction pattern for the target.
+	(aarch64_gen_atomic_cas): New.
+	* config/aarch64/atomics.md (UNSPECV_ATOMIC_CAS): New.
+	(atomic_compare_and_swap<mode>_1): Rename to
+	aarch64_compare_and_swap<mode>.  Fix some indentation.
+	(aarch64_compare_and_swap<mode>_lse): New.
+	(aarch64_atomic_cas<mode>): New.
+
+2015-08-13  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/aarch64/aarch64.h (AARCH64_ISA_LSE): New.
 	(TARGET_LSE): New.
 

@@ -362,6 +362,7 @@ rtx aarch64_load_tp (rtx);
 
 void aarch64_expand_compare_and_swap (rtx op[]);
 void aarch64_split_compare_and_swap (rtx op[]);
+void aarch64_gen_atomic_cas (rtx, rtx, rtx, rtx, rtx);
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
 bool aarch64_gen_adjusted_ldpstp (rtx *, bool, enum machine_mode, RTX_CODE);
