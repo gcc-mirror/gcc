@@ -4203,19 +4203,6 @@ init_scc_vn (void)
 
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
 
-  /* Create the VN_INFO structures, and initialize value numbers to
-     TOP.  */
-  for (i = 0; i < num_ssa_names; i++)
-    {
-      tree name = ssa_name (i);
-      if (name)
-	{
-	  VN_INFO_GET (name)->valnum = VN_TOP;
-	  VN_INFO (name)->expr = NULL_TREE;
-	  VN_INFO (name)->value_id = 0;
-	}
-    }
-
   renumber_gimple_stmt_uids ();
 
   /* Create the valid and optimistic value numbering tables.  */
@@ -4223,6 +4210,65 @@ init_scc_vn (void)
   allocate_vn_table (valid_info);
   optimistic_info = XCNEW (struct vn_tables_s);
   allocate_vn_table (optimistic_info);
+  current_info = valid_info;
+
+  /* Create the VN_INFO structures, and initialize value numbers to
+     TOP or VARYING for parameters.  */
+  for (i = 1; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      if (!name)
+	continue;
+
+      VN_INFO_GET (name)->valnum = VN_TOP;
+      VN_INFO (name)->expr = NULL_TREE;
+      VN_INFO (name)->value_id = 0;
+
+      if (!SSA_NAME_IS_DEFAULT_DEF (name))
+	continue;
+
+      switch (TREE_CODE (SSA_NAME_VAR (name)))
+	{
+	case VAR_DECL:
+	  /* Undefined vars keep TOP.  */
+	  break;
+
+	case PARM_DECL:
+	  /* Parameters are VARYING but we can record a condition
+	     if we know it is a non-NULL pointer.  */
+	  VN_INFO (name)->visited = true;
+	  VN_INFO (name)->valnum = name; 
+	  if (POINTER_TYPE_P (TREE_TYPE (name))
+	      && nonnull_arg_p (SSA_NAME_VAR (name)))
+	    {
+	      tree ops[2];
+	      ops[0] = name;
+	      ops[1] = build_int_cst (TREE_TYPE (name), 0);
+	      vn_nary_op_insert_pieces (2, NE_EXPR, boolean_type_node, ops,
+					boolean_true_node, 0);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Recording ");
+		  print_generic_expr (dump_file, name, TDF_SLIM);
+		  fprintf (dump_file, " != 0\n");
+		}
+	    }
+	  break;
+
+	case RESULT_DECL:
+	  /* If the result is passed by invisible reference the default
+	     def is initialized, otherwise it's uninitialized.  */
+	  if (DECL_BY_REFERENCE (SSA_NAME_VAR (name)))
+	    {
+	      VN_INFO (name)->visited = true;
+	      VN_INFO (name)->valnum = name; 
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
 }
 
 void
@@ -4447,7 +4493,6 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 	  break;
       if (e2 && (e2->flags & EDGE_EXECUTABLE))
 	{
-
 	  gimple stmt = last_stmt (e->src);
 	  if (stmt
 	      && gimple_code (stmt) == GIMPLE_COND)
@@ -4573,24 +4618,10 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 {
   basic_block bb;
   size_t i;
-  tree param;
 
   default_vn_walk_kind = default_vn_walk_kind_;
 
   init_scc_vn ();
-  current_info = valid_info;
-
-  for (param = DECL_ARGUMENTS (current_function_decl);
-       param;
-       param = DECL_CHAIN (param))
-    {
-      tree def = ssa_default_def (cfun, param);
-      if (def)
-	{
-	  VN_INFO (def)->visited = true;
-	  VN_INFO (def)->valnum = def;
-	}
-    }
 
   /* Mark all edges as possibly executable.  */
   FOR_ALL_BB_FN (bb, cfun)

@@ -5133,4 +5133,6 @@ extern void gt_ggc_mx (tree &);
 extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
+extern bool nonnull_arg_p (const_tree);
+
 #endif  /* GCC_TREE_H  */
