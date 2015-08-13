@@ -1,3 +1,13 @@
+2015-08-13  Richard Biener  <rguenther@suse.de>
+
+	* tree.c (nonnull_arg_p): Move from ...
+	* tree-vrp.c (nonnull_arg_p): ... here.
+	* tree.h (nonnull_arg_p): Declare.
+	* tree-ssa-sccvn.c (init_scc_vn): Perform all lattice init
+	here, register ptr != 0 for nonnull_arg_p pointer arguments.
+	Properly initialize static chain and by-reference result pointer.
+	(run_scc_vn): Adjust.
+
 2015-08-13  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips.h (ENABLE_LD_ST_PAIRS): Enable load/store pairs for
