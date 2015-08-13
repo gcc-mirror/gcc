@@ -10754,7 +10754,23 @@ aarch64_expand_compare_and_swap (rtx operands[])
 {
   rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
   machine_mode mode, cmp_mode;
-  rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx (*gen_cas_fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  int idx;
+  gen_cas_fn gen;
+  const gen_cas_fn split_cas[] =
+  {
+    gen_aarch64_compare_and_swapqi,
+    gen_aarch64_compare_and_swaphi,
+    gen_aarch64_compare_and_swapsi,
+    gen_aarch64_compare_and_swapdi
+  };
+  const gen_cas_fn atomic_cas[] =
+  {
+    gen_aarch64_compare_and_swapqi_lse,
+    gen_aarch64_compare_and_swaphi_lse,
+    gen_aarch64_compare_and_swapsi_lse,
+    gen_aarch64_compare_and_swapdi_lse
+  };
 
   bval = operands[0];
   rval = operands[1];
@@ -10799,13 +10815,17 @@ aarch64_expand_compare_and_swap (rtx operands[])
 
   switch (mode)
     {
-    case QImode: gen = gen_atomic_compare_and_swapqi_1; break;
-    case HImode: gen = gen_atomic_compare_and_swaphi_1; break;
-    case SImode: gen = gen_atomic_compare_and_swapsi_1; break;
-    case DImode: gen = gen_atomic_compare_and_swapdi_1; break;
+    case QImode: idx = 0; break;
+    case HImode: idx = 1; break;
+    case SImode: idx = 2; break;
+    case DImode: idx = 3; break;
     default:
       gcc_unreachable ();
     }
+  if (TARGET_LSE)
+    gen = atomic_cas[idx];
+  else
+    gen = split_cas[idx];
 
   emit_insn (gen (rval, mem, oldval, newval, is_weak, mod_s, mod_f));
 
@@ -10832,6 +10852,42 @@ aarch64_emit_post_barrier (enum memmodel model)
     {
       emit_insn (gen_mem_thread_fence (GEN_INT (MEMMODEL_SEQ_CST)));
     }
+}
+
+/* Emit an atomic compare-and-swap operation.  RVAL is the destination register
+   for the data in memory.  EXPECTED is the value expected to be in memory.
+   DESIRED is the value to store to memory.  MEM is the memory location.  MODEL
+   is the memory ordering to use.  */
+
+void
+aarch64_gen_atomic_cas (rtx rval, rtx mem,
+			rtx expected, rtx desired,
+			rtx model)
+{
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+  machine_mode mode;
+
+  mode = GET_MODE (mem);
+
+  switch (mode)
+    {
+    case QImode: gen = gen_aarch64_atomic_casqi; break;
+    case HImode: gen = gen_aarch64_atomic_cashi; break;
+    case SImode: gen = gen_aarch64_atomic_cassi; break;
+    case DImode: gen = gen_aarch64_atomic_casdi; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Move the expected value into the CAS destination register.  */
+  emit_insn (gen_rtx_SET (rval, expected));
+
+  /* Emit the CAS.  */
+  emit_insn (gen (rval, mem, desired, model));
+
+  /* Compare the expected value with the value loaded by the CAS, to establish
+     whether the swap was made.  */
+  aarch64_gen_compare_reg (EQ, rval, expected);
 }
 
 /* Split a compare and swap pattern.  */
