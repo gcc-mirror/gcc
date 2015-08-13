@@ -1,5 +1,10 @@
 2015-08-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	* testsuite/experimental/array/neg.s: Remove.
+	* testsuite/experimental/array/neg.ii.gz: Remove.
+
+2015-08-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement std::experimental::fundamentals_v2::make_array and
 	std::experimental::fundamentals_v2::to_array.
 	* include/Makefile.am: Add array.
