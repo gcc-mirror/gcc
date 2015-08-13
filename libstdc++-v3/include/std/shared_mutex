@@ -331,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     void lock() { _M_impl.lock(); }
     bool try_lock() { return _M_impl.try_lock(); }
-    void unlock() { _M_impl.try_lock(); }
+    void unlock() { _M_impl.unlock(); }
 
     // Shared ownership
 
