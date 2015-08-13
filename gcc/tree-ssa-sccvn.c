@@ -4429,6 +4429,9 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
       return;
     }
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Visiting BB %d\n", bb->index);
+
   /* If we have a single predecessor record the equivalence from a
      possible condition on the predecessor edge.  */
   if (single_pred_p (bb))
@@ -4502,16 +4505,9 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Visiting stmt ending BB %d: ", bb->index);
+      fprintf (dump_file, "Visiting control stmt ending BB %d: ", bb->index);
       print_gimple_stmt (dump_file, stmt, 0, 0);
     }
-
-  /* Value-number the last stmts SSA uses.  */
-  ssa_op_iter i;
-  tree op;
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
-    gcc_assert (VN_INFO (op)->visited
-		|| SSA_NAME_IS_DEFAULT_DEF (op));
 
   /* ???  We can even handle stmts with outgoing EH or ABNORMAL edges
      if value-numbering can prove they are not reachable.  Handling
