@@ -3177,5 +3177,5 @@ extern GTY(()) struct target_globals *micromips_globals;
    performance can be degraded for those targets.  Hence, do not bond for
    micromips or fix_24k.  */
 #define ENABLE_LD_ST_PAIRS \
-  (TARGET_LOAD_STORE_PAIRS && TUNE_P5600 \
+  (TARGET_LOAD_STORE_PAIRS && (TUNE_P5600 || TUNE_I6400) \
    && !TARGET_MICROMIPS && !TARGET_FIX_24K)
