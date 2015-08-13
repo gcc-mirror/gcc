@@ -1,3 +1,8 @@
+2015-08-13  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_ISA_LSE): New.
+	(TARGET_LSE): New.
+
 2015-08-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67191

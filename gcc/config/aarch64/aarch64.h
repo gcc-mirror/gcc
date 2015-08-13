@@ -156,12 +156,16 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
+#define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
 
 /* CRC instructions that can be enabled through +crc arch extension.  */
 #define TARGET_CRC32 (AARCH64_ISA_CRC)
+
+/* Atomic instructions that can be enabled through the +lse extension.  */
+#define TARGET_LSE (AARCH64_ISA_LSE)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
