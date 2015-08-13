@@ -1,3 +1,8 @@
+2015-08-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* ifcvt.c (noce_try_store_flag_constants): Handle PLUS-immediate
+	expressions in A and B.
+
 2015-08-13  Richard Biener  <rguenther@suse.de>
 
 	* tree.c (nonnull_arg_p): Move from ...
