@@ -1,3 +1,9 @@
+2015-08-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66502
+	PR tree-optimization/67167
+	* gcc.dg/tree-ssa/ssa-fre-46.c: New testcase.
+
 2015-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53330

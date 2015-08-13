@@ -1,5 +1,17 @@
 2015-08-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66502
+	PR tree-optimization/67167
+	* tree-ssa-sccvn.c (vn_phi_compute_hash): Do not include
+	backedge arguments.
+	(vn_phi_lookup): Adjust.
+	(vn_phi_insert): Likewise.
+	(visit_phi): Prefer to value-number to another PHI node
+	over value-numbering to a PHI argument.
+	(init_scc_vn): Mark DFS back edges.
+
+2015-08-13  Richard Biener  <rguenther@suse.de>
+
 	* gimple.h (gcall::code_): New constant static member.
 	(gcond::code_): Likewise.
 	* gimple.c (gcall::code_): Define.

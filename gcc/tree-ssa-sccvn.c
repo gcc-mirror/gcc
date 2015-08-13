@@ -2663,17 +2663,24 @@ static inline hashval_t
 vn_phi_compute_hash (vn_phi_t vp1)
 {
   inchash::hash hstate (vp1->block->index);
-  int i;
   tree phi1op;
   tree type;
+  edge e;
+  edge_iterator ei;
 
   /* If all PHI arguments are constants we need to distinguish
      the PHI node via its type.  */
   type = vp1->type;
   hstate.merge_hash (vn_hash_type (type));
 
-  FOR_EACH_VEC_ELT (vp1->phiargs, i, phi1op)
+  FOR_EACH_EDGE (e, ei, vp1->block->preds)
     {
+      /* Don't hash backedge values they need to be handled as VN_TOP
+         for optimistic value-numbering.  */
+      if (e->flags & EDGE_DFS_BACK)
+	continue;
+
+      phi1op = vp1->phiargs[e->dest_idx];
       if (phi1op == VN_TOP)
 	continue;
       inchash::add_expr (phi1op, hstate);
@@ -2726,16 +2733,18 @@ vn_phi_lookup (gimple phi)
 {
   vn_phi_s **slot;
   struct vn_phi_s vp1;
-  unsigned i;
+  edge e;
+  edge_iterator ei;
 
   shared_lookup_phiargs.truncate (0);
+  shared_lookup_phiargs.safe_grow (gimple_phi_num_args (phi));
 
   /* Canonicalize the SSA_NAME's to their value number.  */
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
+  FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
     {
-      tree def = PHI_ARG_DEF (phi, i);
+      tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
       def = TREE_CODE (def) == SSA_NAME ? SSA_VAL (def) : def;
-      shared_lookup_phiargs.safe_push (def);
+      shared_lookup_phiargs[e->dest_idx] = def;
     }
   vp1.type = TREE_TYPE (gimple_phi_result (phi));
   vp1.phiargs = shared_lookup_phiargs;
@@ -2759,15 +2768,18 @@ vn_phi_insert (gimple phi, tree result)
 {
   vn_phi_s **slot;
   vn_phi_t vp1 = current_info->phis_pool->allocate ();
-  unsigned i;
   vec<tree> args = vNULL;
+  edge e;
+  edge_iterator ei;
+
+  args.safe_grow (gimple_phi_num_args (phi));
 
   /* Canonicalize the SSA_NAME's to their value number.  */
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
+  FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
     {
-      tree def = PHI_ARG_DEF (phi, i);
+      tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
       def = TREE_CODE (def) == SSA_NAME ? SSA_VAL (def) : def;
-      args.safe_push (def);
+      args[e->dest_idx] = def;
     }
   vp1->value_id = VN_INFO (result)->value_id;
   vp1->type = TREE_TYPE (gimple_phi_result (phi));
@@ -3252,28 +3264,23 @@ visit_phi (gimple phi)
 	if (def == VN_TOP)
 	  continue;
 	if (sameval == VN_TOP)
+	  sameval = def;
+	else if (!expressions_equal_p (def, sameval))
 	  {
-	    sameval = def;
-	  }
-	else
-	  {
-	    if (!expressions_equal_p (def, sameval))
-	      {
-		allsame = false;
-		break;
-	      }
+	    allsame = false;
+	    break;
 	  }
       }
 
-  /* If all value numbered to the same value, the phi node has that
-     value.  */
-  if (allsame)
-    return set_ssa_val_to (PHI_RESULT (phi), sameval);
-
-  /* Otherwise, see if it is equivalent to a phi node in this block.  */
+  /* First see if it is equivalent to a phi node in this block.  We prefer
+     this as it allows IV elimination - see PRs 66502 and 67167.  */
   result = vn_phi_lookup (phi);
   if (result)
     changed = set_ssa_val_to (PHI_RESULT (phi), result);
+  /* Otherwise all value numbered to the same value, the phi node has that
+     value.  */
+  else if (allsame)
+    changed = set_ssa_val_to (PHI_RESULT (phi), sameval);
   else
     {
       vn_phi_insert (phi, PHI_RESULT (phi));
@@ -4163,6 +4170,8 @@ init_scc_vn (void)
   int *rpo_numbers_temp;
 
   calculate_dominance_info (CDI_DOMINATORS);
+  mark_dfs_back_edges ();
+
   sccstack.create (0);
   constant_to_value_id = new hash_table<vn_constant_hasher> (23);
 
