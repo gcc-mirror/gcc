@@ -89,7 +89,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "recog.h"
 #include "params.h"
 #include "reload.h"
 #include "cfgloop.h"

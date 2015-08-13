@@ -1,3 +1,17 @@
+2015-08-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* ira-int.h: Include recog.h.
+	* ira-build.c: Don't include recog.h.
+	* ira-color.c: Likewise.
+	* ira-conflicts.c: Likewise.
+	* ira-costs.c: Likewise.
+	* ira-emit.c: Likewise.
+	* ira-lives.c: Likewise.
+	* ira.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sel-sched.c: Likewise.
+	* target-globals.c: Likewise.
+
 2015-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR bootstrap/55035
