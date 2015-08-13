@@ -2250,7 +2250,8 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 		     struct unit *u, uint64_t base, struct dwarf_buf *unit_buf,
 		     const struct line_header *lhdr,
 		     backtrace_error_callback error_callback, void *data,
-		     struct function_vector *vec)
+		     struct function_vector *vec_function,
+		     struct function_vector *vec_inlined)
 {
   while (unit_buf->left > 0)
     {
@@ -2258,6 +2259,7 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
       const struct abbrev *abbrev;
       int is_function;
       struct function *function;
+      struct function_vector *vec;
       size_t i;
       uint64_t lowpc;
       int have_lowpc;
@@ -2278,6 +2280,11 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
       is_function = (abbrev->tag == DW_TAG_subprogram
 		     || abbrev->tag == DW_TAG_entry_point
 		     || abbrev->tag == DW_TAG_inlined_subroutine);
+
+      if (abbrev->tag == DW_TAG_inlined_subroutine)
+	vec = vec_inlined;
+      else
+	vec = vec_function;
 
       function = NULL;
       if (is_function)
@@ -2458,7 +2465,8 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 	  if (!is_function)
 	    {
 	      if (!read_function_entry (state, ddata, u, base, unit_buf, lhdr,
-					error_callback, data, vec))
+					error_callback, data, vec_function,
+					vec_inlined))
 		return 0;
 	    }
 	  else
@@ -2471,7 +2479,8 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 	      memset (&fvec, 0, sizeof fvec);
 
 	      if (!read_function_entry (state, ddata, u, base, unit_buf, lhdr,
-					error_callback, data, &fvec))
+					error_callback, data, vec_function,
+					&fvec))
 		return 0;
 
 	      if (fvec.count > 0)
@@ -2535,7 +2544,7 @@ read_function_info (struct backtrace_state *state, struct dwarf_data *ddata,
   while (unit_buf.left > 0)
     {
       if (!read_function_entry (state, ddata, u, 0, &unit_buf, lhdr,
-				error_callback, data, pfvec))
+				error_callback, data, pfvec, pfvec))
 	return;
     }
 
