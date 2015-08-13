@@ -1,3 +1,9 @@
+2015-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53421
+	* g++.dg/ext/attribute-may-alias-1.C: New.
+	* g++.dg/ext/attribute-may-alias-2.C: Likewise.
+
 2015-08-13  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/aarch64/atomic-inst-cas.c: New.
