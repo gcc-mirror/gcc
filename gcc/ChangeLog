@@ -1,3 +1,37 @@
+2015-08-13  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gcall::code_): New constant static member.
+	(gcond::code_): Likewise.
+	* gimple.c (gcall::code_): Define.
+	(gcond::code_): Likewise.
+	(is_a_helper <const gcond *>): Add.
+	(gimple_call_lhs): Use GIMPLE_CHECK2 in the gimple overload
+	and forward to a new gcall overload with less checking and a
+	cheaper way to access the operand.
+	(gimple_call_lhs_ptr): Likewise.
+	(gimple_call_set_lhs): Likewise.
+	(gimple_call_internal_p): Likewise.
+	(gimple_call_with_bounds_p): Likewise.
+	(gimple_call_set_with_bounds): Likewise.
+	(gimple_call_internal_fn): Likewise.
+	(gimple_call_set_ctrl_altering): Likewise.
+	(gimple_call_ctrl_altering_p): Likewise.
+	(gimple_call_fntype): Likewise.
+	(gimple_call_fn): Likewise.
+	(gimple_call_fn_ptr): Likewise.
+	(gimple_call_set_fndecl): Likewise.
+	(gimple_call_fndecl): Likewise.
+	(gimple_call_chain): Likewise.
+	(gimple_call_num_args): Likewise.
+	(gimple_call_arg): Likewise.
+	(gimple_call_arg_ptr): Likewise.
+	(gimple_call_set_arg): Likewise.
+	(gimple_call_noreturn_p): Likewise.
+	(gimple_cond_code): Likewise.
+	(gimple_cond_lhs): Likewise.
+	(gimple_cond_rhs): Likewise.
+	(gimple_has_lhs): Reduce checking.
+
 2015-08-13  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	PR middle-end/25529
