@@ -1239,9 +1239,6 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	  normalize = -1;
 	  reversep = true;
 	}
-      else if ((if_info->branch_cost >= 2 && STORE_FLAG_VALUE == -1)
-	       || if_info->branch_cost >= 3)
-	normalize = -1;
       else
 	return FALSE;
 
@@ -1287,18 +1284,10 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 					target, gen_int_mode (ifalse, mode),
 					if_info->x, 0, OPTAB_WIDEN);
 	}
-
-      /* if (test) x = a; else x = b;
-	 =>   x = (-(test != 0) & (b - a)) + a;  */
       else
 	{
-	  target = expand_simple_binop (mode, AND,
-					target, gen_int_mode (diff, mode),
-					if_info->x, 0, OPTAB_WIDEN);
-	  if (target)
-	    target = expand_simple_binop (mode, PLUS,
-					  target, gen_int_mode (ifalse, mode),
-					  if_info->x, 0, OPTAB_WIDEN);
+	  end_sequence ();
+	  return FALSE;
 	}
 
       if (! target)
@@ -1615,11 +1604,67 @@ noce_try_cmove (struct noce_if_info *if_info)
 				   INSN_LOCATION (if_info->insn_a));
 	  return TRUE;
 	}
-      else
+      /* If both a and b are constants try a last-ditch transformation:
+	 if (test) x = a; else x = b;
+	 =>   x = (-(test != 0) & (b - a)) + a;
+	 Try this only if the target-specific expansion above has failed.
+	 The target-specific expander may want to generate sequences that
+	 we don't know about, so give them a chance before trying this
+	 approach.  */
+      else if (!targetm.have_conditional_execution ()
+		&& CONST_INT_P (if_info->a) && CONST_INT_P (if_info->b)
+		&& ((if_info->branch_cost >= 2 && STORE_FLAG_VALUE == -1)
+		    || if_info->branch_cost >= 3))
 	{
-	  end_sequence ();
-	  return FALSE;
+	  machine_mode mode = GET_MODE (if_info->x);
+	  HOST_WIDE_INT ifalse = INTVAL (if_info->a);
+	  HOST_WIDE_INT itrue = INTVAL (if_info->b);
+	  rtx target = noce_emit_store_flag (if_info, if_info->x, false, -1);
+	  if (!target)
+	    {
+	      end_sequence ();
+	      return FALSE;
+	    }
+
+	  HOST_WIDE_INT diff = (unsigned HOST_WIDE_INT) itrue - ifalse;
+	  /* Make sure we can represent the difference
+	     between the two values.  */
+	  if ((diff > 0)
+	      != ((ifalse < 0) != (itrue < 0) ? ifalse < 0 : ifalse < itrue))
+	    {
+	      end_sequence ();
+	      return FALSE;
+	    }
+
+	  diff = trunc_int_for_mode (diff, mode);
+	  target = expand_simple_binop (mode, AND,
+					target, gen_int_mode (diff, mode),
+					if_info->x, 0, OPTAB_WIDEN);
+	  if (target)
+	    target = expand_simple_binop (mode, PLUS,
+					  target, gen_int_mode (ifalse, mode),
+					  if_info->x, 0, OPTAB_WIDEN);
+	  if (target)
+	    {
+	      if (target != if_info->x)
+		noce_emit_move_insn (if_info->x, target);
+
+	      seq = end_ifcvt_sequence (if_info);
+	      if (!seq)
+		return FALSE;
+
+	      emit_insn_before_setloc (seq, if_info->jump,
+				   INSN_LOCATION (if_info->insn_a));
+	      return TRUE;
+	    }
+	  else
+	    {
+	      end_sequence ();
+	      return FALSE;
+	    }
 	}
+      else
+	end_sequence ();
     }
 
   return FALSE;
