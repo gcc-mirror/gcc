@@ -1958,6 +1958,11 @@ class Call_expression : public Expression
   bool
   issue_error();
 
+  // Whether or not this call contains errors, either in the call or the
+  // arguments to the call.
+  bool
+  is_erroneous_call();
+
   // Whether this call returns multiple results that are used as an
   // multi-valued argument.
   bool

@@ -253,6 +253,14 @@ Statement*
 Variable_declaration_statement::do_flatten(Gogo* gogo, Named_object* function,
                                            Block*, Statement_inserter* inserter)
 {
+  Variable* var = this->var_->var_value();
+  if (var->type()->is_error_type()
+      || (var->init() != NULL
+          && var->init()->is_error_expression()))
+    {
+      go_assert(saw_errors());
+      return Statement::make_error_statement(this->location());
+    }
   this->var_->var_value()->flatten_init_expression(gogo, function, inserter);
   return this;
 }
@@ -437,6 +445,14 @@ Statement*
 Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
 				Statement_inserter* inserter)
 {
+  if (this->type()->is_error_type()
+      || (this->init_ != NULL
+          && this->init_->is_error_expression()))
+    {
+      go_assert(saw_errors());
+      return Statement::make_error_statement(this->location());
+    }
+
   if (this->type_ != NULL
       && this->init_ != NULL
       && !Type::are_identical(this->type_, this->init_->type(), false, NULL)
@@ -610,6 +626,15 @@ Statement*
 Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
 				 Statement_inserter* inserter)
 {
+  if (this->lhs_->is_error_expression()
+      || this->lhs_->type()->is_error_type()
+      || this->rhs_->is_error_expression()
+      || this->rhs_->type()->is_error_type())
+    {
+      go_assert(saw_errors());
+      return Statement::make_error_statement(this->location());
+    }
+
   if (!this->lhs_->is_sink_expression()
       && !Type::are_identical(this->lhs_->type(), this->rhs_->type(),
 			      false, NULL)
@@ -4397,6 +4422,13 @@ Statement*
 Send_statement::do_flatten(Gogo*, Named_object*, Block*,
 			   Statement_inserter* inserter)
 {
+  if (this->channel_->is_error_expression()
+      || this->channel_->type()->is_error_type())
+    {
+      go_assert(saw_errors());
+      return Statement::make_error_statement(this->location());
+    }
+
   Type* element_type = this->channel_->type()->channel_type()->element_type();
   if (!Type::are_identical(element_type, this->val_->type(), false, NULL)
       && this->val_->type()->interface_type() != NULL
