@@ -78,6 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 2103. std::allocator propagate_on_container_move_assignment
       typedef true_type propagate_on_container_move_assignment;
 
+#define __cpp_lib_allocator_is_always_equal 201411
       typedef true_type is_always_equal;
 #endif
     };
