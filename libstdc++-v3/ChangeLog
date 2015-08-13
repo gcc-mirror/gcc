@@ -1,3 +1,7 @@
+2015-08-13  Eelis van der Weegen  <eelis@eelis.net>
+
+	* include/std/shared_mutex (shared_mutex::unlock()): Fix typo.
+
 2015-08-12  Caroline Tice <cmtice@google.com>
 
 	PR 66521, Contributed by Eric Gallager
