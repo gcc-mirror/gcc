@@ -296,6 +296,14 @@ along with GCC; see the file COPYING3.  If not see
  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
   (bit_and @0 (negate @1))))
 
+/* Simplify (t * 2) / 2) -> t.  */
+(for div (trunc_div ceil_div floor_div round_div exact_div)
+ (simplify
+  (div (mult @0 @1) @1)
+  (if (ANY_INTEGRAL_TYPE_P (type)
+       && TYPE_OVERFLOW_UNDEFINED (type))
+   @0)))
+
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
  (simplify
