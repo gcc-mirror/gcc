@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "addresses.h"
-#include "recog.h"
 #include "reload.h"
 #include "diagnostic-core.h"
 #include "target.h"

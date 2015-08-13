@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "flags.h"
 #include "insn-config.h"
-#include "recog.h"
 #include "diagnostic-core.h"
 #include "params.h"
 #include "reload.h"
