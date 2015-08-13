@@ -646,6 +646,7 @@ experimental_builddir = ./experimental
 experimental_headers = \
 	${experimental_srcdir}/algorithm \
 	${experimental_srcdir}/any \
+	${experimental_srcdir}/array \
 	${experimental_srcdir}/chrono \
 	${experimental_srcdir}/deque \
 	${experimental_srcdir}/erase_if.h \
