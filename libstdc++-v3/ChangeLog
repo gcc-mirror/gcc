@@ -1,3 +1,15 @@
+2015-08-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement std::experimental::fundamentals_v2::make_array and
+	std::experimental::fundamentals_v2::to_array.
+	* include/Makefile.am: Add array.
+	* include/Makefile.in: Add array.
+	* include/experimental/array: New.
+	* testsuite/experimental/array/make_array.cc: Likewise.
+	* testsuite/experimental/array/neg.cc: Likewise.
+	* doc/html/manual/status.html: Mark make_array as Y.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+
 2015-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h: Add feature-test macro.
