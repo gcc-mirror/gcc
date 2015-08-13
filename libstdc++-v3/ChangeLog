@@ -1,5 +1,13 @@
 2015-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/alloc_traits.h: Add feature-test macro.
+	* include/bits/allocator.h: Likewise.
+	* include/bits/range_access.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+
+2015-08-13  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/30_threads/mutex/unlock/2.cc: New.
 	* testsuite/30_threads/recursive_mutex/unlock/2.cc: New.
 	* testsuite/30_threads/recursive_timed_mutex/unlock/2.cc: New.
