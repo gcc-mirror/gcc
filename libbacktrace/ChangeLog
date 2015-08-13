@@ -1,3 +1,8 @@
+2015-08-13  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c (read_function_entry): Add vec_inlined parameter.
+	Change all callers.
+
 2015-06-11  Martin Sebor  <msebor@redhat.com>
 
 	PR sanitizer/65479
