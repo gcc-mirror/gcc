@@ -1152,7 +1152,9 @@ noce_try_store_flag (struct noce_if_info *if_info)
     }
 }
 
-/* Convert "if (test) x = a; else x = b", for A and B constant.  */
+/* Convert "if (test) x = a; else x = b", for A and B constant.
+   Also allow A = y + c1, B = y + c2, with a common y between A
+   and B.  */
 
 static int
 noce_try_store_flag_constants (struct noce_if_info *if_info)
@@ -1163,14 +1165,31 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
   HOST_WIDE_INT itrue, ifalse, diff, tmp;
   int normalize;
   bool can_reverse;
-  machine_mode mode;
+  machine_mode mode = GET_MODE (if_info->x);;
+  rtx common = NULL_RTX;
 
-  if (CONST_INT_P (if_info->a)
-      && CONST_INT_P (if_info->b))
+  rtx a = if_info->a;
+  rtx b = if_info->b;
+
+  /* Handle cases like x := test ? y + 3 : y + 4.  */
+  if (GET_CODE (a) == PLUS
+      && GET_CODE (b) == PLUS
+      && CONST_INT_P (XEXP (a, 1))
+      && CONST_INT_P (XEXP (b, 1))
+      && rtx_equal_p (XEXP (a, 0), XEXP (b, 0))
+      && noce_operand_ok (XEXP (a, 0))
+      && if_info->branch_cost >= 2)
     {
-      mode = GET_MODE (if_info->x);
-      ifalse = INTVAL (if_info->a);
-      itrue = INTVAL (if_info->b);
+      common = XEXP (a, 0);
+      a = XEXP (a, 1);
+      b = XEXP (b, 1);
+    }
+
+  if (CONST_INT_P (a)
+      && CONST_INT_P (b))
+    {
+      ifalse = INTVAL (a);
+      itrue = INTVAL (b);
       bool subtract_flag_p = false;
 
       diff = (unsigned HOST_WIDE_INT) itrue - ifalse;
@@ -1203,6 +1222,11 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	    {
 	      reversep = can_reverse;
 	      subtract_flag_p = !can_reverse;
+	      /* If we need to subtract the flag and we have PLUS-immediate
+		 A and B then it is unlikely to be beneficial to play tricks
+		 here.  */
+	      if (subtract_flag_p && common)
+		return FALSE;
 	    }
 	  /* test ? 3 : 4
 	     => can_reverse  | 3 + (test == 0)
@@ -1211,6 +1235,11 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	    {
 	      reversep = can_reverse;
 	      subtract_flag_p = !can_reverse;
+	      /* If we need to subtract the flag and we have PLUS-immediate
+		 A and B then it is unlikely to be beneficial to play tricks
+		 here.  */
+	      if (subtract_flag_p && common)
+		return FALSE;
 	    }
 	  /* test ? 4 : 3
 	     => 4 + (test != 0).  */
@@ -1249,6 +1278,15 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	}
 
       start_sequence ();
+
+      /* If we have x := test ? x + 3 : x + 4 then move the original
+	 x out of the way while we store flags.  */
+      if (common && rtx_equal_p (common, if_info->x))
+	{
+	  common = gen_reg_rtx (mode);
+	  noce_emit_move_insn (common, if_info->x);
+	}
+
       target = noce_emit_store_flag (if_info, if_info->x, reversep, normalize);
       if (! target)
 	{
@@ -1260,13 +1298,27 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	 =>   x = 3 + (test == 0);  */
       if (diff == STORE_FLAG_VALUE || diff == -STORE_FLAG_VALUE)
 	{
+	  /* Add the common part now.  This may allow combine to merge this
+	     with the store flag operation earlier into some sort of conditional
+	     increment/decrement if the target allows it.  */
+	  if (common)
+	    target = expand_simple_binop (mode, PLUS,
+					   target, common,
+					   target, 0, OPTAB_WIDEN);
+
 	  /* Always use ifalse here.  It should have been swapped with itrue
 	     when appropriate when reversep is true.  */
 	  target = expand_simple_binop (mode, subtract_flag_p ? MINUS : PLUS,
 					gen_int_mode (ifalse, mode), target,
 					if_info->x, 0, OPTAB_WIDEN);
 	}
-
+      /* Other cases are not beneficial when the original A and B are PLUS
+	 expressions.  */
+      else if (common)
+	{
+	  end_sequence ();
+	  return FALSE;
+	}
       /* if (test) x = 8; else x = 0;
 	 =>   x = (test != 0) << 3;  */
       else if (ifalse == 0 && (tmp = exact_log2 (itrue)) >= 0)
