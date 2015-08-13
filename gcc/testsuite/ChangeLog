@@ -1,3 +1,8 @@
+2015-08-13  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc.target/aarch64/atomic-inst-cas.c: New.
+	* gcc.target/aarch64/atomic-inst-ops.inc: New.
+
 2015-08-13  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.dg/tree-ssa/vrp33.c: Add -fno-tree-fre.
