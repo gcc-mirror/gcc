@@ -1,3 +1,11 @@
+2015-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	Backport from mainline r226882
+	2015-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (invoke_driver): On OS X, add
+	"-Wl,-undefined,dynamic_lookup" to the driver arguments.
+
 2015-07-23  David Malcolm  <dmalcolm@redhat.com>
 
 	Backport from mainline r226126
