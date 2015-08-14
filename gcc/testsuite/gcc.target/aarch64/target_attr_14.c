@@ -4,7 +4,7 @@
 /* Inlining non-strict-align functions into strict-align
    functions is allowed.  */
 
-int
+static int
 bar (int a)
 {
   return a - 6;

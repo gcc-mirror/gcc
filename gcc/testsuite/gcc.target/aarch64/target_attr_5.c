@@ -4,7 +4,7 @@
 /* Make sure that bar is inlined into bam.  */
 
 __attribute__ ((target ("arch=armv8-a+nocrc")))
-int
+static int
 bar (int a)
 {
   return a - 6;
