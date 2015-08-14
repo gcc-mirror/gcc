@@ -1,5 +1,9 @@
 2015-08-14  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* dwarf2.def (DW_AT_GNU_bias): New attribute.
+
+2015-08-14  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* dwarf2.def (DW_AT_GNU_numerator, DW_AT_GNU_denominator): New
 	attributes.
 
