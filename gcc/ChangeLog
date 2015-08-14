@@ -1,3 +1,20 @@
+2015-08-14  Thomas Schwinge  <thomas@codesourcery.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_option_override): Don't override
+	debug options.
+	* config/nvptx/nvptx.h (DWARF2_LINENO_DEBUGGING_INFO): Define.
+	(DWARF2_DEBUGGING_INFO): Don't define.
+	* debug.h (dwarf2_lineno_debug_hooks): Declare.
+	* toplev.c (process_options): Add a case for it.
+	* dwarf2out.c (dwarf2_lineno_debug_hooks): New variable.
+	(dwarf2out_init): Skip most initializations if
+	DWARF2_LINENO_DEBUGGING_INFO, but set cur_line_info_table in that
+	case.
+	* defaults.h (PREFERRED_DEBUGGING_TYPE): Also use DWARF2_DEBUG if
+	DWARF2_LINENO_DEBUGGING_INFO.
+	* opts.c (set_debug_level): Likewise.
+
 2015-08-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/types.md (is_neon_type): Add missing types.
