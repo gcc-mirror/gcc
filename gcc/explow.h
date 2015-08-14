@@ -57,6 +57,9 @@ extern machine_mode promote_mode (const_tree, machine_mode, int *);
 /* Return mode and signedness to use when object is promoted.  */
 machine_mode promote_decl_mode (const_tree, int *);
 
+/* Return mode and signedness to use when object is promoted.  */
+machine_mode promote_ssa_mode (const_tree, int *);
+
 /* Remove some bytes from the stack.  An rtx says how many.  */
 extern void adjust_stack (rtx);
 

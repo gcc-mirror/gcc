@@ -891,7 +891,7 @@ emit_case_decision_tree (tree index_expr, tree index_type,
     {
       index = copy_to_reg (index);
       if (TREE_CODE (index_expr) == SSA_NAME)
-	set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (index_expr), index);
+	set_reg_attrs_for_decl_rtl (index_expr, index);
     }
 
   balance_case_nodes (&case_list, NULL);

@@ -72,6 +72,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
+#include "cfgexpand.h"
+#include "basic-block.h"
+#include "df.h"
 #include "params.h"
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
@@ -148,6 +151,9 @@ static bool contains (const_rtx, hash_table<insn_cache_hasher> *);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
+static rtx rtl_for_parm (struct assign_parm_data_all *, tree);
+static void maybe_reset_rtl_for_parm (tree);
+
 
 /* Stack of nested functions.  */
 /* Keep track of the cfun stack.  */
@@ -2105,6 +2111,30 @@ aggregate_value_p (const_tree exp, const_tree fntype)
 bool
 use_register_for_decl (const_tree decl)
 {
+  if (TREE_CODE (decl) == SSA_NAME)
+    {
+      /* We often try to use the SSA_NAME, instead of its underlying
+	 decl, to get type information and guide decisions, to avoid
+	 differences of behavior between anonymous and named
+	 variables, but in this one case we have to go for the actual
+	 variable if there is one.  The main reason is that, at least
+	 at -O0, we want to place user variables on the stack, but we
+	 don't mind using pseudos for anonymous or ignored temps.
+	 Should we take the SSA_NAME, we'd conclude all SSA_NAMEs
+	 should go in pseudos, whereas their corresponding variables
+	 might have to go on the stack.  So, disregarding the decl
+	 here would negatively impact debug info at -O0, enable
+	 coalescing between SSA_NAMEs that ought to get different
+	 stack/pseudo assignments, and get the incoming argument
+	 processing thoroughly confused by PARM_DECLs expected to live
+	 in stack slots but assigned to pseudos.  */
+      if (!SSA_NAME_VAR (decl))
+	return TYPE_MODE (TREE_TYPE (decl)) != BLKmode
+	  && !(flag_float_store && FLOAT_TYPE_P (TREE_TYPE (decl)));
+
+      decl = SSA_NAME_VAR (decl);
+    }
+
   /* Honor volatile.  */
   if (TREE_SIDE_EFFECTS (decl))
     return false;
@@ -2240,7 +2270,7 @@ assign_parms_initialize_all (struct assign_parm_data_all *all)
    needed, else the old list.  */
 
 static void
-split_complex_args (vec<tree> *args)
+split_complex_args (struct assign_parm_data_all *all, vec<tree> *args)
 {
   unsigned i;
   tree p;
@@ -2251,6 +2281,7 @@ split_complex_args (vec<tree> *args)
       if (TREE_CODE (type) == COMPLEX_TYPE
 	  && targetm.calls.split_complex_arg (type))
 	{
+	  tree cparm = p;
 	  tree decl;
 	  tree subtype = TREE_TYPE (type);
 	  bool addressable = TREE_ADDRESSABLE (p);
@@ -2269,6 +2300,9 @@ split_complex_args (vec<tree> *args)
 	  DECL_ARTIFICIAL (p) = addressable;
 	  DECL_IGNORED_P (p) = addressable;
 	  TREE_ADDRESSABLE (p) = 0;
+	  /* Reset the RTL before layout_decl, or it may change the
+	     mode of the RTL of the original argument copied to P.  */
+	  SET_DECL_RTL (p, NULL_RTX);
 	  layout_decl (p, 0);
 	  (*args)[i] = p;
 
@@ -2280,6 +2314,25 @@ split_complex_args (vec<tree> *args)
 	  DECL_IGNORED_P (decl) = addressable;
 	  layout_decl (decl, 0);
 	  args->safe_insert (++i, decl);
+
+	  /* If we are expanding a function, rather than gimplifying
+	     it, propagate the RTL of the complex parm to the split
+	     declarations, and set their contexts so that
+	     maybe_reset_rtl_for_parm can recognize them and refrain
+	     from resetting their RTL.  */
+	  if (currently_expanding_to_rtl)
+	    {
+	      maybe_reset_rtl_for_parm (cparm);
+	      rtx rtl = rtl_for_parm (all, cparm);
+	      if (rtl)
+		{
+		  SET_DECL_RTL (p, read_complex_part (rtl, false));
+		  SET_DECL_RTL (decl, read_complex_part (rtl, true));
+
+		  DECL_CONTEXT (p) = cparm;
+		  DECL_CONTEXT (decl) = cparm;
+		}
+	    }
 	}
     }
 }
@@ -2342,7 +2395,7 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
 
   /* If the target wants to split complex arguments into scalars, do so.  */
   if (targetm.calls.split_complex_arg)
-    split_complex_args (&fnargs);
+    split_complex_args (all, &fnargs);
 
   return fnargs;
 }
@@ -2745,23 +2798,98 @@ assign_parm_remove_parallels (struct assign_parm_data_one *data)
   data->entry_parm = entry_parm;
 }
 
+/* Wrapper for use_register_for_decl, that special-cases the
+   .result_ptr as the function's RESULT_DECL when the RESULT_DECL is
+   passed by reference.  */
+
+static bool
+use_register_for_parm_decl (struct assign_parm_data_all *all, tree parm)
+{
+  if (parm == all->function_result_decl)
+    {
+      tree result = DECL_RESULT (current_function_decl);
+
+      if (DECL_BY_REFERENCE (result))
+	parm = result;
+    }
+
+  return use_register_for_decl (parm);
+}
+
+/* Wrapper for get_rtl_for_parm_ssa_default_def, that special-cases
+   the .result_ptr as the function's RESULT_DECL when the RESULT_DECL
+   is passed by reference.  */
+
+static rtx
+rtl_for_parm (struct assign_parm_data_all *all, tree parm)
+{
+  if (parm == all->function_result_decl)
+    {
+      tree result = DECL_RESULT (current_function_decl);
+
+      if (!DECL_BY_REFERENCE (result))
+	return NULL_RTX;
+
+      parm = result;
+    }
+
+  return get_rtl_for_parm_ssa_default_def (parm);
+}
+
+/* Reset the location of PARM_DECLs and RESULT_DECLs that had
+   SSA_NAMEs in multiple partitions, so that assign_parms will choose
+   the default def, if it exists, or create new RTL to hold the unused
+   entry value.  If we are coalescing across variables, we want to
+   reset the location too, because a parm without a default def
+   (incoming value unused) might be coalesced with one with a default
+   def, and then assign_parms would copy both incoming values to the
+   same location, which might cause the wrong value to survive.  */
+static void
+maybe_reset_rtl_for_parm (tree parm)
+{
+  gcc_assert (TREE_CODE (parm) == PARM_DECL
+	      || TREE_CODE (parm) == RESULT_DECL);
+
+  /* This is a split complex parameter, and its context was set to its
+     original PARM_DECL in split_complex_args so that we could
+     recognize it here and not reset its RTL.  */
+  if (DECL_CONTEXT (parm) && TREE_CODE (DECL_CONTEXT (parm)) == PARM_DECL)
+    {
+      DECL_CONTEXT (parm) = DECL_CONTEXT (DECL_CONTEXT (parm));
+      return;
+    }
+
+  if ((flag_tree_coalesce_vars
+       || (DECL_RTL_SET_P (parm) && DECL_RTL (parm) == pc_rtx))
+      && is_gimple_reg (parm))
+    SET_DECL_RTL (parm, NULL_RTX);
+}
+
 /* A subroutine of assign_parms.  Adjust DATA->STACK_RTL such that it's
    always valid and properly aligned.  */
 
 static void
-assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
+assign_parm_adjust_stack_rtl (struct assign_parm_data_all *all, tree parm,
+			      struct assign_parm_data_one *data)
 {
   rtx stack_parm = data->stack_parm;
+
+  /* If out-of-SSA assigned RTL to the parm default def, make sure we
+     don't use what we might have computed before.  */
+  rtx ssa_assigned = rtl_for_parm (all, parm);
+  if (ssa_assigned)
+    stack_parm = NULL;
 
   /* If we can't trust the parm stack slot to be aligned enough for its
      ultimate type, don't use that slot after entry.  We'll make another
      stack slot, if we need one.  */
-  if (stack_parm
-      && ((STRICT_ALIGNMENT
-	   && GET_MODE_ALIGNMENT (data->nominal_mode) > MEM_ALIGN (stack_parm))
-	  || (data->nominal_type
-	      && TYPE_ALIGN (data->nominal_type) > MEM_ALIGN (stack_parm)
-	      && MEM_ALIGN (stack_parm) < PREFERRED_STACK_BOUNDARY)))
+  else if (stack_parm
+	   && ((STRICT_ALIGNMENT
+		&& (GET_MODE_ALIGNMENT (data->nominal_mode)
+		    > MEM_ALIGN (stack_parm)))
+	       || (data->nominal_type
+		   && TYPE_ALIGN (data->nominal_type) > MEM_ALIGN (stack_parm)
+		   && MEM_ALIGN (stack_parm) < PREFERRED_STACK_BOUNDARY)))
     stack_parm = NULL;
 
   /* If parm was passed in memory, and we need to convert it on entry,
@@ -2823,14 +2951,32 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 
   size = int_size_in_bytes (data->passed_type);
   size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
+
   if (stack_parm == 0)
     {
       DECL_ALIGN (parm) = MAX (DECL_ALIGN (parm), BITS_PER_WORD);
-      stack_parm = assign_stack_local (BLKmode, size_stored,
-				       DECL_ALIGN (parm));
-      if (GET_MODE_SIZE (GET_MODE (entry_parm)) == size)
-	PUT_MODE (stack_parm, GET_MODE (entry_parm));
-      set_mem_attributes (stack_parm, parm, 1);
+      rtx from_expand = rtl_for_parm (all, parm);
+      if (from_expand && (!parm_maybe_byref_p (parm)
+			  || XEXP (from_expand, 0) != NULL_RTX))
+	stack_parm = copy_rtx (from_expand);
+      else
+	{
+	  stack_parm = assign_stack_local (BLKmode, size_stored,
+					   DECL_ALIGN (parm));
+	  if (GET_MODE_SIZE (GET_MODE (entry_parm)) == size)
+	    PUT_MODE (stack_parm, GET_MODE (entry_parm));
+	  if (from_expand)
+	    {
+	      gcc_assert (GET_CODE (stack_parm) == MEM);
+	      gcc_assert (GET_CODE (from_expand) == MEM);
+	      gcc_assert (XEXP (from_expand, 0) == NULL_RTX);
+	      XEXP (from_expand, 0) = XEXP (stack_parm, 0);
+	      PUT_MODE (from_expand, GET_MODE (stack_parm));
+	      stack_parm = copy_rtx (from_expand);
+	    }
+	  else
+	    set_mem_attributes (stack_parm, parm, 1);
+	}
     }
 
   /* If a BLKmode arrives in registers, copy it to a stack slot.  Handle
@@ -2968,14 +3114,34 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
     = promote_function_mode (data->nominal_type, data->nominal_mode, &unsignedp,
 			     TREE_TYPE (current_function_decl), 2);
 
-  parmreg = gen_reg_rtx (promoted_nominal_mode);
+  rtx from_expand = parmreg = rtl_for_parm (all, parm);
 
-  if (!DECL_ARTIFICIAL (parm))
-    mark_user_reg (parmreg);
+  if (from_expand && !data->passed_pointer)
+    {
+      if (GET_MODE (parmreg) != promoted_nominal_mode)
+	parmreg = gen_lowpart (promoted_nominal_mode, parmreg);
+    }
+  else if (!from_expand || parm_maybe_byref_p (parm))
+    {
+      parmreg = gen_reg_rtx (promoted_nominal_mode);
+      if (!DECL_ARTIFICIAL (parm))
+	mark_user_reg (parmreg);
+
+      if (from_expand)
+	{
+	  gcc_assert (data->passed_pointer);
+	  gcc_assert (GET_CODE (from_expand) == MEM
+		      && GET_MODE (from_expand) == BLKmode
+		      && XEXP (from_expand, 0) == NULL_RTX);
+	  XEXP (from_expand, 0) = parmreg;
+	}
+    }
 
   /* If this was an item that we received a pointer to,
      set DECL_RTL appropriately.  */
-  if (data->passed_pointer)
+  if (from_expand)
+    SET_DECL_RTL (parm, from_expand);
+  else if (data->passed_pointer)
     {
       rtx x = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data->passed_type)), parmreg);
       set_mem_attributes (x, parm, 1);
@@ -2990,10 +3156,13 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
      assign_parm_find_data_types and expand_expr_real_1.  */
 
   equiv_stack_parm = data->stack_parm;
+  if (!equiv_stack_parm)
+    equiv_stack_parm = data->entry_parm;
   validated_mem = validize_mem (copy_rtx (data->entry_parm));
 
   need_conversion = (data->nominal_mode != data->passed_mode
 		     || promoted_nominal_mode != data->promoted_mode);
+  gcc_assert (!(need_conversion && data->passed_pointer && from_expand));
   moved = false;
 
   if (need_conversion
@@ -3125,16 +3294,28 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 
       did_conversion = true;
     }
-  else
+  /* We don't want to copy the incoming pointer to a parmreg expected
+     to hold the value rather than the pointer.  */
+  else if (!data->passed_pointer || parmreg != from_expand)
     emit_move_insn (parmreg, validated_mem);
 
   /* If we were passed a pointer but the actual value can safely live
      in a register, retrieve it and use it directly.  */
-  if (data->passed_pointer && TYPE_MODE (TREE_TYPE (parm)) != BLKmode)
+  if (data->passed_pointer
+      && (from_expand || TYPE_MODE (TREE_TYPE (parm)) != BLKmode))
     {
+      rtx src = DECL_RTL (parm);
+
       /* We can't use nominal_mode, because it will have been set to
 	 Pmode above.  We must use the actual mode of the parm.  */
-      if (use_register_for_decl (parm))
+      if (from_expand)
+	{
+	  parmreg = from_expand;
+	  gcc_assert (GET_MODE (parmreg) == TYPE_MODE (TREE_TYPE (parm)));
+	  src = gen_rtx_MEM (GET_MODE (parmreg), validated_mem);
+	  set_mem_attributes (src, parm, 1);
+	}
+      else if (use_register_for_decl (parm))
 	{
 	  parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
 	  mark_user_reg (parmreg);
@@ -3151,14 +3332,14 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  set_mem_attributes (parmreg, parm, 1);
 	}
 
-      if (GET_MODE (parmreg) != GET_MODE (DECL_RTL (parm)))
+      if (GET_MODE (parmreg) != GET_MODE (src))
 	{
-	  rtx tempreg = gen_reg_rtx (GET_MODE (DECL_RTL (parm)));
+	  rtx tempreg = gen_reg_rtx (GET_MODE (src));
 	  int unsigned_p = TYPE_UNSIGNED (TREE_TYPE (parm));
 
 	  push_to_sequence2 (all->first_conversion_insn,
 			     all->last_conversion_insn);
-	  emit_move_insn (tempreg, DECL_RTL (parm));
+	  emit_move_insn (tempreg, src);
 	  tempreg = convert_to_mode (GET_MODE (parmreg), tempreg, unsigned_p);
 	  emit_move_insn (parmreg, tempreg);
 	  all->first_conversion_insn = get_insns ();
@@ -3167,14 +3348,16 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 
 	  did_conversion = true;
 	}
+      else if (GET_MODE (parmreg) == BLKmode)
+	gcc_assert (parm_maybe_byref_p (parm));
       else
-	emit_move_insn (parmreg, DECL_RTL (parm));
+	emit_move_insn (parmreg, src);
 
       SET_DECL_RTL (parm, parmreg);
 
       /* STACK_PARM is the pointer, not the parm, and PARMREG is
 	 now the parm.  */
-      data->stack_parm = NULL;
+      data->stack_parm = equiv_stack_parm = NULL;
     }
 
   /* Mark the register as eliminable if we did no conversion and it was
@@ -3184,11 +3367,11 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
      make here would screw up life analysis for it.  */
   if (data->nominal_mode == data->passed_mode
       && !did_conversion
-      && data->stack_parm != 0
-      && MEM_P (data->stack_parm)
+      && equiv_stack_parm != 0
+      && MEM_P (equiv_stack_parm)
       && data->locate.offset.var == 0
       && reg_mentioned_p (virtual_incoming_args_rtx,
-			  XEXP (data->stack_parm, 0)))
+			  XEXP (equiv_stack_parm, 0)))
     {
       rtx_insn *linsn = get_last_insn ();
       rtx_insn *sinsn;
@@ -3201,8 +3384,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	    = GET_MODE_INNER (GET_MODE (parmreg));
 	  int regnor = REGNO (XEXP (parmreg, 0));
 	  int regnoi = REGNO (XEXP (parmreg, 1));
-	  rtx stackr = adjust_address_nv (data->stack_parm, submode, 0);
-	  rtx stacki = adjust_address_nv (data->stack_parm, submode,
+	  rtx stackr = adjust_address_nv (equiv_stack_parm, submode, 0);
+	  rtx stacki = adjust_address_nv (equiv_stack_parm, submode,
 					  GET_MODE_SIZE (submode));
 
 	  /* Scan backwards for the set of the real and
@@ -3275,6 +3458,13 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 
       if (data->stack_parm == 0)
 	{
+	  rtx x = data->stack_parm = rtl_for_parm (all, parm);
+	  if (x)
+	    gcc_assert (GET_MODE (x) == GET_MODE (data->entry_parm));
+	}
+
+      if (data->stack_parm == 0)
+	{
 	  int align = STACK_SLOT_ALIGNMENT (data->passed_type,
 					    GET_MODE (data->entry_parm),
 					    TYPE_ALIGN (data->passed_type));
@@ -3337,11 +3527,21 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all,
 	  imag = DECL_RTL (fnargs[i + 1]);
 	  if (inner != GET_MODE (real))
 	    {
-	      real = gen_lowpart_SUBREG (inner, real);
-	      imag = gen_lowpart_SUBREG (inner, imag);
+	      real = simplify_gen_subreg (inner, real, GET_MODE (real),
+					  subreg_lowpart_offset
+					  (inner, GET_MODE (real)));
+	      imag = simplify_gen_subreg (inner, imag, GET_MODE (imag),
+					  subreg_lowpart_offset
+					  (inner, GET_MODE (imag)));
 	    }
 
-	  if (TREE_ADDRESSABLE (parm))
+	  if ((tmp = rtl_for_parm (all, parm)) != NULL_RTX
+	      && rtx_equal_p (real,
+			      read_complex_part (tmp, false))
+	      && rtx_equal_p (imag,
+			      read_complex_part (tmp, true)))
+	    ; /* We now have the right rtl in tmp.  */
+	  else if (TREE_ADDRESSABLE (parm))
 	    {
 	      rtx rmem, imem;
 	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (parm));
@@ -3487,7 +3687,7 @@ assign_bounds (vec<bounds_parm_data> &bndargs,
 	  assign_parm_setup_block (&all, pbdata->bounds_parm,
 				   &pbdata->parm_data);
 	else if (pbdata->parm_data.passed_pointer
-		 || use_register_for_decl (pbdata->bounds_parm))
+		 || use_register_for_parm_decl (&all, pbdata->bounds_parm))
 	  assign_parm_setup_reg (&all, pbdata->bounds_parm,
 				 &pbdata->parm_data);
 	else
@@ -3531,6 +3731,8 @@ assign_parms (tree fndecl)
 	  DECL_INCOMING_RTL (parm) = DECL_RTL (parm);
 	  continue;
 	}
+      else
+	maybe_reset_rtl_for_parm (parm);
 
       /* Estimate stack alignment from parameter alignment.  */
       if (SUPPORTS_STACK_ALIGNMENT)
@@ -3580,7 +3782,9 @@ assign_parms (tree fndecl)
       else
 	set_decl_incoming_rtl (parm, data.entry_parm, false);
 
-      /* Boudns should be loaded in the particular order to
+      assign_parm_adjust_stack_rtl (&all, parm, &data);
+
+      /* Bounds should be loaded in the particular order to
 	 have registers allocated correctly.  Collect info about
 	 input bounds and load them later.  */
       if (POINTER_BOUNDS_TYPE_P (data.passed_type))
@@ -3597,11 +3801,10 @@ assign_parms (tree fndecl)
 	}
       else
 	{
-	  assign_parm_adjust_stack_rtl (&data);
-
 	  if (assign_parm_setup_block_p (&data))
 	    assign_parm_setup_block (&all, parm, &data);
-	  else if (data.passed_pointer || use_register_for_decl (parm))
+	  else if (data.passed_pointer
+		   || use_register_for_parm_decl (&all, parm))
 	    assign_parm_setup_reg (&all, parm, &data);
 	  else
 	    assign_parm_setup_stack (&all, parm, &data);
@@ -4932,7 +5135,9 @@ expand_function_start (tree subr)
      before any library calls that assign parms might generate.  */
 
   /* Decide whether to return the value in memory or in a register.  */
-  if (aggregate_value_p (DECL_RESULT (subr), subr))
+  tree res = DECL_RESULT (subr);
+  maybe_reset_rtl_for_parm (res);
+  if (aggregate_value_p (res, subr))
     {
       /* Returning something that won't go in a register.  */
       rtx value_address = 0;
@@ -4940,7 +5145,7 @@ expand_function_start (tree subr)
 #ifdef PCC_STATIC_STRUCT_RETURN
       if (cfun->returns_pcc_struct)
 	{
-	  int size = int_size_in_bytes (TREE_TYPE (DECL_RESULT (subr)));
+	  int size = int_size_in_bytes (TREE_TYPE (res));
 	  value_address = assemble_static_space (size);
 	}
       else
@@ -4952,36 +5157,45 @@ expand_function_start (tree subr)
 	     it.  */
 	  if (sv)
 	    {
-	      value_address = gen_reg_rtx (Pmode);
+	      if (DECL_BY_REFERENCE (res))
+		value_address = get_rtl_for_parm_ssa_default_def (res);
+	      if (!value_address)
+		value_address = gen_reg_rtx (Pmode);
 	      emit_move_insn (value_address, sv);
 	    }
 	}
       if (value_address)
 	{
 	  rtx x = value_address;
-	  if (!DECL_BY_REFERENCE (DECL_RESULT (subr)))
+	  if (!DECL_BY_REFERENCE (res))
 	    {
-	      x = gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), x);
-	      set_mem_attributes (x, DECL_RESULT (subr), 1);
+	      x = get_rtl_for_parm_ssa_default_def (res);
+	      if (!x)
+		{
+		  x = gen_rtx_MEM (DECL_MODE (res), value_address);
+		  set_mem_attributes (x, res, 1);
+		}
 	    }
-	  SET_DECL_RTL (DECL_RESULT (subr), x);
+	  SET_DECL_RTL (res, x);
 	}
     }
-  else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
+  else if (DECL_MODE (res) == VOIDmode)
     /* If return mode is void, this decl rtl should not be used.  */
-    SET_DECL_RTL (DECL_RESULT (subr), NULL_RTX);
+    SET_DECL_RTL (res, NULL_RTX);
   else
     {
       /* Compute the return values into a pseudo reg, which we will copy
 	 into the true return register after the cleanups are done.  */
-      tree return_type = TREE_TYPE (DECL_RESULT (subr));
-      if (TYPE_MODE (return_type) != BLKmode
-	  && targetm.calls.return_in_msb (return_type))
+      tree return_type = TREE_TYPE (res);
+      rtx x = get_rtl_for_parm_ssa_default_def (res);
+      if (x)
+	/* Use it.  */;
+      else if (TYPE_MODE (return_type) != BLKmode
+	       && targetm.calls.return_in_msb (return_type))
 	/* expand_function_end will insert the appropriate padding in
 	   this case.  Use the return value's natural (unpadded) mode
 	   within the function proper.  */
-	SET_DECL_RTL (DECL_RESULT (subr),
-		      gen_reg_rtx (TYPE_MODE (return_type)));
+	x = gen_reg_rtx (TYPE_MODE (return_type));
       else
 	{
 	  /* In order to figure out what mode to use for the pseudo, we
@@ -4992,25 +5206,26 @@ expand_function_start (tree subr)
 	  /* Structures that are returned in registers are not
 	     aggregate_value_p, so we may see a PARALLEL or a REG.  */
 	  if (REG_P (hard_reg))
-	    SET_DECL_RTL (DECL_RESULT (subr),
-			  gen_reg_rtx (GET_MODE (hard_reg)));
+	    x = gen_reg_rtx (GET_MODE (hard_reg));
 	  else
 	    {
 	      gcc_assert (GET_CODE (hard_reg) == PARALLEL);
-	      SET_DECL_RTL (DECL_RESULT (subr), gen_group_rtx (hard_reg));
+	      x = gen_group_rtx (hard_reg);
 	    }
 	}
 
+      SET_DECL_RTL (res, x);
+
       /* Set DECL_REGISTER flag so that expand_function_end will copy the
 	 result to the real return register(s).  */
-      DECL_REGISTER (DECL_RESULT (subr)) = 1;
+      DECL_REGISTER (res) = 1;
 
       if (chkp_function_instrumented_p (current_function_decl))
 	{
-	  tree return_type = TREE_TYPE (DECL_RESULT (subr));
+	  tree return_type = TREE_TYPE (res);
 	  rtx bounds = targetm.calls.chkp_function_value_bounds (return_type,
 								 subr, 1);
-	  SET_DECL_BOUNDS_RTL (DECL_RESULT (subr), bounds);
+	  SET_DECL_BOUNDS_RTL (res, bounds);
 	}
     }
 
@@ -5025,12 +5240,18 @@ expand_function_start (tree subr)
       rtx local, chain;
      rtx_insn *insn;
 
-      local = gen_reg_rtx (Pmode);
+      local = get_rtl_for_parm_ssa_default_def (parm);
+      if (!local)
+	local = gen_reg_rtx (Pmode);
       chain = targetm.calls.static_chain (current_function_decl, true);
 
       set_decl_incoming_rtl (parm, chain, false);
       SET_DECL_RTL (parm, local);
       mark_reg_pointer (local, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (parm))));
+
+      if (GET_MODE (local) != Pmode)
+	local = convert_to_mode (Pmode, local,
+				 TYPE_UNSIGNED (TREE_TYPE (parm)));
 
       insn = emit_move_insn (local, chain);
 
