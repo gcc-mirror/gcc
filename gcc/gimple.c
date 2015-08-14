@@ -2694,10 +2694,13 @@ infer_nonnull_range_by_attribute (gimple stmt, tree op)
 	  /* Now see if op appears in the nonnull list.  */
 	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
 	    {
-	      int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
-	      tree arg = gimple_call_arg (stmt, idx);
-	      if (operand_equal_p (op, arg, 0))
-		return true;
+	      unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
+	      if (idx < gimple_call_num_args (stmt))
+		{
+		  tree arg = gimple_call_arg (stmt, idx);
+		  if (operand_equal_p (op, arg, 0))
+		    return true;
+		}
 	    }
 	}
     }
