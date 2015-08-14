@@ -1,3 +1,8 @@
+2015-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (invoke_driver): On OS X, add
+	"-Wl,-undefined,dynamic_lookup" to the driver arguments.
+
 2015-08-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_4): New.
