@@ -1,3 +1,8 @@
+2015-08-14  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/cpuinfo.c (enum processor_subtypes): Add skylake.
+	(get_intel_cpu): Likewise.
+
 2015-08-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/cpuinfo.c (processor_types): Add INTEL_KNL.

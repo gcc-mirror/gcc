@@ -85,6 +85,12 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("broadwell"));
 	      break;
+	    case 0x4e:
+	    case 0x5e:
+	      /* Skylake.  */
+	      assert (__builtin_cpu_is ("corei7"));
+	      assert (__builtin_cpu_is ("skylake"));
+	      break;
 	    case 0x17:
 	    case 0x1d:
 	      /* Penryn.  */

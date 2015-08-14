@@ -3285,6 +3285,8 @@ ix86_option_override_internal (bool main_args_p,
    | PTA_FMA | PTA_MOVBE | PTA_HLE)
 #define PTA_BROADWELL \
   (PTA_HASWELL | PTA_ADX | PTA_PRFCHW | PTA_RDSEED)
+#define PTA_SKYLAKE \
+  (PTA_BROADWELL | PTA_CLFLUSHOPT | PTA_XSAVEC | PTA_XSAVES)
 #define PTA_KNL \
   (PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD)
 #define PTA_BONNELL \
@@ -3347,6 +3349,7 @@ ix86_option_override_internal (bool main_args_p,
       {"haswell", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_HASWELL},
       {"core-avx2", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_HASWELL},
       {"broadwell", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_BROADWELL},
+      {"skylake", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_SKYLAKE},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -35636,7 +35639,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMDFAM15H_BDVER4,
     M_INTEL_COREI7_IVYBRIDGE,
     M_INTEL_COREI7_HASWELL,
-    M_INTEL_COREI7_BROADWELL
+    M_INTEL_COREI7_BROADWELL,
+    M_INTEL_COREI7_SKYLAKE
   };
 
   static struct _arch_names_table
@@ -35658,6 +35662,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"ivybridge", M_INTEL_COREI7_IVYBRIDGE},
       {"haswell", M_INTEL_COREI7_HASWELL},
       {"broadwell", M_INTEL_COREI7_BROADWELL},
+      {"skylake", M_INTEL_COREI7_SKYLAKE},
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},
