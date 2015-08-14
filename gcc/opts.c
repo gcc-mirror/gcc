@@ -2223,7 +2223,7 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg,
 
 	  if (extended == 2)
 	    {
-#ifdef DWARF2_DEBUGGING_INFO
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
 	      opts->x_write_symbols = DWARF2_DEBUG;
 #elif defined DBX_DEBUGGING_INFO
 	      opts->x_write_symbols = DBX_DEBUG;

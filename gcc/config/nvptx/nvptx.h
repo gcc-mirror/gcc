@@ -339,7 +339,7 @@ struct GTY(()) machine_function
 
 /* Misc.  */
 
-#define DWARF2_DEBUGGING_INFO 1
+#define DWARF2_LINENO_DEBUGGING_INFO 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_BITSIZE ((MODE)), 2)

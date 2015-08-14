@@ -103,8 +103,6 @@ nvptx_option_override (void)
   flag_toplevel_reorder = 1;
   /* Assumes that it will see only hard registers.  */
   flag_var_tracking = 0;
-  write_symbols = NO_DEBUG;
-  debug_info_level = DINFO_LEVEL_NONE;
 
   declared_fndecls_htab = hash_table<tree_hasher>::create_ggc (17);
   needed_fndecls_htab = hash_table<tree_hasher>::create_ggc (17);
