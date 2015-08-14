@@ -1,5 +1,9 @@
 2015-08-14  Marek Polacek  <polacek@redhat.com>
 
+	* tree-core.h (tree_base): Fix typo.
+
+2015-08-14  Marek Polacek  <polacek@redhat.com>
+
 	PR middle-end/67133
 	* gimple.c (infer_nonnull_range_by_attribute): Check that the
 	nonnull argument position is not outside function arguments.
