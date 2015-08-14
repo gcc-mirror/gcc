@@ -1,3 +1,14 @@
+2015-08-14  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/67143
+	* config/aarch64/atomics.md (atomic_<optab><mode>): Replace
+	'lconst_atomic' with 'const_atomic'.
+	(atomic_fetch_<optab><mode>): Likewise.
+	(atomic_<optab>_fetch<mode>): Likewise.
+	* config/aarch64/iterators.md (lconst-atomic): Move below
+	'const_atomic'.
+	(const_atomic): New.
+
 2015-08-14  Thomas Schwinge  <thomas@codesourcery.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 

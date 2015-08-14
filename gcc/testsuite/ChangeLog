@@ -1,3 +1,12 @@
+2015-08-14  Matthew Wahab  <matthew.wahab@arm.com>
+	    Matthias Klose  <doko@debian.org>
+
+	PR target/67143
+	* gcc.c-torture/compile/pr67143.c: New
+	* gcc.target/aarch64/atomic-op-imm.c
+	(atomic_fetch_add_negative_RELAXED): New.
+	(atomic_fetch_sub_negative_ACQUIRE): New.
+
 2015-08-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/target_attr_5.c: Add static modifier to bar.
