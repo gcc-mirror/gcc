@@ -1,3 +1,8 @@
+2015-08-14  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2.def (DW_AT_GNU_numerator, DW_AT_GNU_denominator): New
+	attributes.
+
 2015-08-11  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* ansidecl.h (GCC_FINAL): New macro.
