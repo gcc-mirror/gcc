@@ -19,6 +19,16 @@
 #endif  /* AAB_AIX_STDIO_CHECK */
 
 
+#if defined( AIX_STDIO_INLINE_CHECK )
+#ifdef __cplusplus
+}
+#endif
+
+#if (defined(__cplusplus) && defined(__IBMCPP__))
+#ifdef ferror
+#endif  /* AIX_STDIO_INLINE_CHECK */
+
+
 #if defined( ALPHA_GETOPT_CHECK )
 extern int getopt(int, char *const[], const char *);
 #endif  /* ALPHA_GETOPT_CHECK */
