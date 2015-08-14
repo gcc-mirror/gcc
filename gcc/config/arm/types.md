@@ -1146,10 +1146,12 @@
           neon_store3_one_lane, neon_store3_one_lane_q, neon_store4_4reg,\
           neon_store4_4reg_q, neon_store4_one_lane, neon_store4_one_lane_q,\
           neon_fp_abd_s, neon_fp_abd_s_q, neon_fp_abd_d, neon_fp_abd_d_q,\
+          neon_fp_abs_s, neon_fp_abs_s_q, neon_fp_abs_d, neon_fp_abs_d_q,\
           neon_fp_addsub_s, neon_fp_addsub_s_q, neon_fp_addsub_d,\
           neon_fp_addsub_d_q, neon_fp_compare_s, neon_fp_compare_s_q,\
           neon_fp_compare_d, neon_fp_compare_d_q, neon_fp_minmax_s,\
           neon_fp_minmax_s_q, neon_fp_minmax_d, neon_fp_minmax_d_q,\
+          neon_fp_neg_s, neon_fp_neg_s_q, neon_fp_neg_d, neon_fp_neg_d_q,\
           neon_fp_reduc_add_s, neon_fp_reduc_add_s_q, neon_fp_reduc_add_d,\
           neon_fp_reduc_add_d_q, neon_fp_reduc_minmax_s,
           neon_fp_reduc_minmax_s_q, neon_fp_reduc_minmax_d,\
@@ -1157,6 +1159,8 @@
           neon_fp_cvt_narrow_s_q, neon_fp_cvt_narrow_d_q,\
           neon_fp_cvt_widen_h, neon_fp_cvt_widen_s, neon_fp_to_int_s,\
           neon_fp_to_int_s_q, neon_int_to_fp_s, neon_int_to_fp_s_q,\
+          neon_fp_to_int_d, neon_fp_to_int_d_q,\
+          neon_int_to_fp_d, neon_int_to_fp_d_q,\
           neon_fp_round_s, neon_fp_round_s_q, neon_fp_recpe_s,\
           neon_fp_recpe_s_q,\
           neon_fp_recpe_d, neon_fp_recpe_d_q, neon_fp_recps_s,\

@@ -1,3 +1,7 @@
+2015-08-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/types.md (is_neon_type): Add missing types.
+
 2015-08-14  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Add support
