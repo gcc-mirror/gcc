@@ -755,6 +755,11 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  /* Broadwell.  */
 	  cpu = "broadwell";
 	  break;
+	case 0x4e:
+	case 0x5e:
+	  /* Skylake.  */
+	  cpu = "skylake";
+	  break;
 	case 0x57:
 	  /* Knights Landing.  */
 	  cpu = "knl";
