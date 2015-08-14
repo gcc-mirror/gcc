@@ -892,10 +892,32 @@ fix = {
 };
 
 /*
+ * stdio.h on AIX defines ferror, clearerr and feof as C++ inline, which
+   produces wrong code with G++.
+ */
+fix = {
+    hackname  = aix_stdio_inline;
+    mach      = "*-*-aix*";
+    files     = stdio.h;
+    select    = "#ifdef __cplusplus\\\n"
+                "}\\\n\\\n"
+                "#ifdef ferror\\\n";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\n"
+                "}\n"
+                "#endif\n\n"
+                "#if (defined(__cplusplus) && defined(__IBMCPP__))\n"
+                "#ifdef ferror\n";
+    test_text = "#ifdef __cplusplus\n}\n\n#ifdef ferror";
+};
+
+
+/*
  * stdlib.h on AIX 4.3 declares strtof() with a non-const first argument.
  */
 fix = {
     hackname  = aix_strtof_const;
+    mach      = "*-*-aix*";
     files     = stdlib.h;
     select    = "((extern[ \t]+)?float[ \t]+strtof)\\(char \\*, char \\*\\*\\);";
     c_fix     = format;
@@ -909,6 +931,7 @@ fix = {
  */
 fix = {
     hackname  = aix_sysmachine;
+    mach      = "*-*-aix*";
     files     = sys/machine.h;
     select    = "\\\\ +\n";
     c_fix     = format;
@@ -923,6 +946,7 @@ fix = {
  */
 fix = {
     hackname  = aix_syswait_2;
+    mach      = "*-*-aix*";
     files     = sys/wait.h;
     select    = '\? (\(\(\(\(unsigned[^)]*\)[^)]*\) >> [^)]*\) \& 0xff\) : -1)';
     c_fix     = format;
@@ -939,6 +963,7 @@ fix = {
  */
 fix = {
     hackname  = aix_volatile;
+    mach      = "*-*-aix*";
     files     = sys/signal.h;
     select    = "typedef volatile int sig_atomic_t";
     c_fix     = format;
