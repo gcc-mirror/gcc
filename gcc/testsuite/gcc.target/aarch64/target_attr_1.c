@@ -1,4 +1,4 @@
-/* { dg-do assemble } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mcpu=thunderx -save-temps" } */
 
 /* Test that cpu attribute overrides the command-line -mcpu.  */
