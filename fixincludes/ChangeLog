@@ -1,3 +1,13 @@
+2015-08-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_stdio_inline): New fix.
+	(aix_strtof_const): Limit to *-*-aix*.
+	(aix_sysmachine): Same.
+	(aix_syswait_2): Same.
+	(aix_volatile): Same.
+	* fixincl.x: Regenerated.
+	* test/base/stdio.h [AIX_STDIO_INLINE]: New test.
+
 2015-07-28  Eric Gallager  <egall@gwmail.gwu.edu>
 
 	* check.tpl: Ignore .DS_Store directories.
