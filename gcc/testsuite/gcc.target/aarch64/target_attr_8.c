@@ -5,7 +5,7 @@
    Inlining should be allowed.  */
 
 __attribute__ ((target ("arch=armv8-a+nocrc")))
-int
+static int
 bar (int a)
 {
   return a - 6;
