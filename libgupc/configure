@@ -15182,7 +15182,7 @@ fi
 
 # Check for execinfo library (needed on BSD systems for UPC backtracing)
 case "${target}" in
-  *-*-freebsd* | *-*-openbsd* | *-*-netbsd )
+  *-*-freebsd* | *-*-openbsd* | *-*-netbsd* )
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for backtrace in -lexecinfo" >&5
 $as_echo_n "checking for backtrace in -lexecinfo... " >&6; }
 if test "${ac_cv_lib_execinfo_backtrace+set}" = set; then :

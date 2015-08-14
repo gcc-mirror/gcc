@@ -683,7 +683,7 @@ AC_ARG_ENABLE(upc-backtrace,
 ])
 # Check for execinfo library (needed on BSD systems for UPC backtracing)
 case "${target}" in
-  *-*-freebsd* | *-*-openbsd* | *-*-netbsd )
+  *-*-freebsd* | *-*-openbsd* | *-*-netbsd* )
     AC_CHECK_LIB(execinfo,backtrace,[execinfo_lib="yes"])
     if test "x$execinfo_lib" = xyes; then
       enable_execinfo_lib=yes

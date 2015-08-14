@@ -1,3 +1,8 @@
+2015-08-14  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Fix the previous update for netbsd checking.
+	* configure: Re-generate.
+
 2015-08-08  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Check for existence of execinfo library
