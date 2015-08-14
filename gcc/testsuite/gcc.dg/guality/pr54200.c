@@ -1,6 +1,6 @@
 /* PR tree-optimization/54200 */
 /* { dg-do run } */
-/* { dg-options "-g -fno-var-tracking-assignments" } */
+/* { dg-options "-g -fno-var-tracking-assignments -fno-tree-coalesce-vars" } */
 
 int o __attribute__((used));
 
