@@ -1927,7 +1927,11 @@ Gogo::declare_function(const std::string& name, Function_type* type,
 	  return ftype->add_method_declaration(name, NULL, type, location);
 	}
       else
-	go_unreachable();
+        {
+          error_at(type->receiver()->location(),
+                   "invalid receiver type (receiver must be a named type)");
+          return Named_object::make_erroneous_name(name);
+        }
     }
 }
 
