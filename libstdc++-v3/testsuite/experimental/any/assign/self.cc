@@ -18,7 +18,16 @@
 // { dg-options "-std=gnu++14" }
 
 #include <experimental/any>
+#include <set>
 #include <testsuite_hooks.h>
+
+std::set<const void*> live_objects;
+
+struct A {
+  A() { live_objects.insert(this); }
+  ~A() { live_objects.erase(this); }
+  A(const A& a) { VERIFY(live_objects.count(&a)); live_objects.insert(this); }
+};
 
 void
 test01()
@@ -29,13 +38,56 @@ test01()
   a = a;
   VERIFY( a.empty() );
 
-  a = 1;
+  a = A{};
   a = a;
   VERIFY( !a.empty() );
+
+  a.clear();
+  VERIFY( live_objects.empty() );
+}
+
+void
+test02()
+{
+  using std::experimental::any;
+
+  struct X {
+    any a;
+  };
+
+  X x;
+  std::swap(x, x); // results in "self-move-assignment" of X::a
+  VERIFY( x.a.empty() );
+
+  x.a = A{};
+  std::swap(x, x); // results in "self-move-assignment" of X::a
+  VERIFY( !x.a.empty() );
+
+  x.a.clear();
+  VERIFY( live_objects.empty() );
+}
+
+void
+test03()
+{
+  using std::experimental::any;
+
+  any a;
+  a.swap(a);
+  VERIFY( a.empty() );
+
+  a = A{};
+  a.swap(a);
+  VERIFY( !a.empty() );
+
+  a.clear();
+  VERIFY( live_objects.empty() );
 }
 
 int
 main()
 {
   test01();
+  test02();
+  test03();
 }

@@ -175,12 +175,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Copy the state of another object.
     any& operator=(const any& __rhs)
     {
-      if (this == &__rhs)
-	return *this;
-
       if (__rhs.empty())
 	clear();
-      else
+      else if (this != &__rhs)
 	{
 	  if (!empty())
 	    _M_manager(_Op_destroy, this, nullptr);
@@ -200,7 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__rhs.empty())
 	clear();
-      else
+      else if (this != &__rhs)
 	{
 	  if (!empty())
 	    _M_manager(_Op_destroy, this, nullptr);
@@ -213,7 +210,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Store a copy of @p __rhs as the contained object.
     template<typename _ValueType>
-      any& operator=(_ValueType&& __rhs)
+      enable_if_t<!is_same<any, decay_t<_ValueType>>::value, any&>
+      operator=(_ValueType&& __rhs)
       {
 	*this = any(std::forward<_ValueType>(__rhs));
 	return *this;
@@ -233,30 +231,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Exchange state with another object.
     void swap(any& __rhs) noexcept
-      {
-	if (empty() && __rhs.empty())
-	  return;
+    {
+      if (empty() && __rhs.empty())
+	return;
 
-	if (!empty() && !__rhs.empty())
-	  {
-	    any __tmp;
-	    _Arg __arg;
-	    __arg._M_any = &__tmp;
-	    __rhs._M_manager(_Op_xfer, &__rhs, &__arg);
-	    __arg._M_any = &__rhs;
-	    _M_manager(_Op_xfer, this, &__arg);
-	    __arg._M_any = this;
-	    __tmp._M_manager(_Op_xfer, &__tmp, &__arg);
-	  }
-	else
-	  {
-	    any* __empty = empty() ? this : &__rhs;
-	    any* __full = empty() ? &__rhs : this;
-	    _Arg __arg;
-	    __arg._M_any = __empty;
-	    __full->_M_manager(_Op_xfer, __full, &__arg);
-	  }
-      }
+      if (!empty() && !__rhs.empty())
+	{
+	  if (this == &__rhs)
+	    return;
+
+	  any __tmp;
+	  _Arg __arg;
+	  __arg._M_any = &__tmp;
+	  __rhs._M_manager(_Op_xfer, &__rhs, &__arg);
+	  __arg._M_any = &__rhs;
+	  _M_manager(_Op_xfer, this, &__arg);
+	  __arg._M_any = this;
+	  __tmp._M_manager(_Op_xfer, &__tmp, &__arg);
+	}
+      else
+	{
+	  any* __empty = empty() ? this : &__rhs;
+	  any* __full = empty() ? &__rhs : this;
+	  _Arg __arg;
+	  __arg._M_any = __empty;
+	  __full->_M_manager(_Op_xfer, __full, &__arg);
+	}
+    }
 
     // observers
 

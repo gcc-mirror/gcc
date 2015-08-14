@@ -1,5 +1,15 @@
 2015-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/any (any::operator=(const any&)): Move check
+	for self-assignment.
+	(any::operator=(any&&)): Add check for self-assignment.
+	(any::operator=(_ValueType&&)): Constrain template argument.
+	(any::swap(any&)): Add check for self-swap.
+	* testsuite/experimental/any/assign/self.cc: Test move and swap.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Update dg-error.
+
+2015-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/experimental/array: Add feature-test macro.
 	* testsuite/experimental/array/neg.cc: Update dg-error.
 
