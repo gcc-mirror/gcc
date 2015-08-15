@@ -1306,7 +1306,12 @@ d_encoding (struct d_info *di, int top_level)
 static struct demangle_component *
 d_abi_tags (struct d_info *di, struct demangle_component *dc)
 {
+  struct demangle_component *hold_last_name;
   char peek;
+
+  /* Preserve the last name, so the ABI tag doesn't clobber it.  */
+  hold_last_name = di->last_name;
+
   while (peek = d_peek_char (di),
 	 peek == 'B')
     {
@@ -1315,6 +1320,9 @@ d_abi_tags (struct d_info *di, struct demangle_component *dc)
       tag = d_source_name (di);
       dc = d_make_comp (di, DEMANGLE_COMPONENT_TAGGED_NAME, dc, tag);
     }
+
+  di->last_name = hold_last_name;
+
   return dc;
 }
 

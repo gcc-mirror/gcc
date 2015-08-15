@@ -1,3 +1,8 @@
+2015-08-15  Ian Lance Taylor  <iant@google.com>
+
+	* cp-demangle.c (d_abi_tags): Preserve di->last_name across any
+	ABI tags.
+
 2015-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_parse_real): Remove call to strtod.
