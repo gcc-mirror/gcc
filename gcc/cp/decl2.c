@@ -1742,6 +1742,9 @@ mark_vtable_entries (tree decl)
   tree fnaddr;
   unsigned HOST_WIDE_INT idx;
 
+  /* It's OK for the vtable to refer to deprecated virtual functions.  */
+  warning_sentinel w(warn_deprecated_decl);
+
   FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)),
 			      idx, fnaddr)
     {

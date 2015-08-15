@@ -1,3 +1,8 @@
+2015-08-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65974
+	* decl2.c (mark_vtable_entries): Suppress -Wdeprecated.
+
 2015-08-14  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/66857
