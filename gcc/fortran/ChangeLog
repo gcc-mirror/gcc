@@ -1,3 +1,8 @@
+2015-08-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/41387
+	* gfortran.texi: New section "File operations on symbolic links".
+
 2015-08-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/67059
