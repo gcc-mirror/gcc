@@ -1,5 +1,11 @@
 2015-08-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/54656
+	* trans-intrinsic.c (gfc_build_intrinsic_lib_fndecls): Add decl
+	for quadruple precision BUILT_IN_SQRT.
+
+2015-08-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* trans-intrinsic.c (conv_intrinsic_ieee_is_negative): Use type
 	generic BUILT_IN_SIGNBIT.
 	(conv_intrinsic_ieee_copy_sign): Likewise.
