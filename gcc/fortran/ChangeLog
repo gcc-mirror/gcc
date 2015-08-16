@@ -1,5 +1,16 @@
 2015-08-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* trans-intrinsic.c (conv_intrinsic_ieee_is_negative): Use type
+	generic BUILT_IN_SIGNBIT.
+	(conv_intrinsic_ieee_copy_sign): Likewise.
+	* f95-lang.c (gfc_init_builtin_functions): Add BUILT_IN_ISINF,
+	BUILT_IN_ISINF_SIGN, BUILT_IN_SIGNBIT, BUILT_IN_ISLESS,
+	BUILT_IN_ISLESSGREATER, BUILT_IN_ISGREATER. Remove non-type generic
+	variants of BUILT_IN_SIGNBIT.
+	* mathbuiltins.def: Remove SIGNBIT.
+
+2015-08-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/41387
 	* gfortran.texi: New section "File operations on symbolic links".
 
