@@ -1,3 +1,8 @@
+2015-08-15  Gary Funck  <gary@intrepid.com>
+
+	* testsuite/lib/libgupc.exp: Load target-utils.exp.
+	Move load of target-supports.exp earlier.
+
 2015-08-14  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Fix the previous update for netbsd checking.
