@@ -40911,8 +40911,8 @@ configure-target-libgupc:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	echo "Checking multilib configuration for libgupc..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgupc ; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgupc/multilib.tmp 2> /dev/null ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgupc; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgupc/multilib.tmp 2> /dev/null; \
 	if test -r $(TARGET_SUBDIR)/libgupc/multilib.out; then \
 	  if cmp -s $(TARGET_SUBDIR)/libgupc/multilib.tmp $(TARGET_SUBDIR)/libgupc/multilib.out; then \
 	    rm -f $(TARGET_SUBDIR)/libgupc/multilib.tmp; \
@@ -40924,7 +40924,7 @@ configure-target-libgupc:
 	  mv $(TARGET_SUBDIR)/libgupc/multilib.tmp $(TARGET_SUBDIR)/libgupc/multilib.out; \
 	fi; \
 	test ! -f $(TARGET_SUBDIR)/libgupc/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgupc ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgupc; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	echo Configuring in $(TARGET_SUBDIR)/libgupc; \
 	cd "$(TARGET_SUBDIR)/libgupc" || exit 1; \
@@ -41024,11 +41024,11 @@ maybe-info-target-libgupc: info-target-libgupc
 info-target-libgupc: \
     configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing info in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41050,11 +41050,11 @@ maybe-dvi-target-libgupc: dvi-target-libgupc
 dvi-target-libgupc: \
     configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41076,11 +41076,11 @@ maybe-pdf-target-libgupc: pdf-target-libgupc
 pdf-target-libgupc: \
     configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41102,11 +41102,11 @@ maybe-html-target-libgupc: html-target-libgupc
 html-target-libgupc: \
     configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing html in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41128,11 +41128,11 @@ maybe-TAGS-target-libgupc: TAGS-target-libgupc
 TAGS-target-libgupc: \
     configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41155,11 +41155,11 @@ install-info-target-libgupc: \
     configure-target-libgupc \
     info-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41182,11 +41182,11 @@ install-pdf-target-libgupc: \
     configure-target-libgupc \
     pdf-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41209,11 +41209,11 @@ install-html-target-libgupc: \
     configure-target-libgupc \
     html-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41235,11 +41235,11 @@ maybe-installcheck-target-libgupc: installcheck-target-libgupc
 installcheck-target-libgupc: \
     configure-target-libgupc 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41260,11 +41260,11 @@ maybe-mostlyclean-target-libgupc: mostlyclean-target-libgupc
 
 mostlyclean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41285,11 +41285,11 @@ maybe-clean-target-libgupc: clean-target-libgupc
 
 clean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing clean in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41310,11 +41310,11 @@ maybe-distclean-target-libgupc: distclean-target-libgupc
 
 distclean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -41335,11 +41335,11 @@ maybe-maintainer-clean-target-libgupc: maintainer-clean-target-libgupc
 
 maintainer-clean-target-libgupc: 
 	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0 ; \
+	@[ -f $(TARGET_SUBDIR)/libgupc/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgupc" ; \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgupc"; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -47828,14 +47828,6 @@ check-gcc-objc:
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-objc);
 check-objc: check-gcc-objc check-target-libobjc
-
-.PHONY: check-gcc-upc check-upc
-check-gcc-upc:
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-upc);
-check-upc: check-gcc-upc check-target-libgupc
 
 .PHONY: check-gcc-obj-c++ check-obj-c++
 check-gcc-obj-c++:

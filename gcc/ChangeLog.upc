@@ -1,3 +1,13 @@
+2015-08-15  Gary Funck  <gary@intrepid.com>
+
+	Cherry pick gupc branch updates, up to version 226919.
+
+2015-08-15  Gary Funck  <gary@intrepid.com>
+
+	* top-level/Makefile.def (language=upc):
+	Remove UPC language target.
+	* top-level/Makefile.in: Re-generate.
+
 2015-08-12  Gary Funck  <gary@intrepid.com>
 
 	Cherry pick gupc branch updates, up to version 226835.

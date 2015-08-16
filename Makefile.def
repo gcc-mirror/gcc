@@ -609,8 +609,6 @@ languages = { language=ada;	gcc-check-target=check-ada;
 				lib-check-target=check-target-libada; };
 languages = { language=objc;	gcc-check-target=check-objc;
 				lib-check-target=check-target-libobjc; };
-languages = { language=upc;	gcc-check-target=check-upc;
-				lib-check-target=check-target-libgupc; };
 languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-target-libgo; };
