@@ -676,6 +676,11 @@ gfc_build_intrinsic_lib_fndecls (void)
 #undef DEFINE_MATH_BUILTIN
 #undef DEFINE_MATH_BUILTIN_C
 
+    /* There is one built-in we defined manually, because it gets called
+       with builtin_decl_for_precision() or builtin_decl_for_float_type()
+       even though it is not an OTHER_BUILTIN: it is SQRT.  */
+    quad_decls[BUILT_IN_SQRT] = define_quad_builtin ("sqrtq", func_1, true);
+
   }
 
   /* Add GCC builtin functions.  */
