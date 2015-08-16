@@ -1140,6 +1140,7 @@ might in some way or another become visible to the programmer.
 * Thread-safety of the runtime library::
 * Data consistency and durability::
 * Files opened without an explicit ACTION= specifier::
+* File operations on symbolic links::
 @end menu
 
 
@@ -1343,6 +1344,33 @@ processor dependent.  GNU Fortran behaves as follows:
 @item If that fails, try to open with @code{ACTION='WRITE'}
 @item If that fails, generate an error
 @end enumerate
+
+
+@node File operations on symbolic links
+@section File operations on symbolic links
+@cindex file, symbolic link
+
+This section documents the behavior of GNU Fortran for file operations on
+symbolic links, on systems that support them. 
+
+@itemize
+
+@item Results of INQUIRE statements of the ``inquire by file'' form will
+relate to the target of the symbolic link. For example,
+@code{INQUIRE(FILE="foo",EXIST=ex)} will set @var{ex} to @var{.true.} if
+@var{foo} is a symbolic link pointing to an existing file, and @var{.false.}
+if @var{foo} points to an non-existing file (``dangling'' symbolic link).
+
+@item Using the @code{OPEN} statement with a @code{STATUS="NEW"} specifier
+on a symbolic link will result in an error condition, whether the symbolic
+link points to an existing target or is dangling.
+
+@item If a symbolic link was connected, using the @code{CLOSE} statement
+with a @code{STATUS="DELETE"} specifier will cause the symbolic link itself
+to be deleted, not its target.
+
+@end itemize
+
 
 
 @c ---------------------------------------------------------------------
