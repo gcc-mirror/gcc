@@ -1,3 +1,7 @@
+2015-08-16  Gary Funck  <gary@intrepid.com>
+
+	Released GUPC 5.2.0.1 based on gupc-5-branch version 226922.
+
 2015-08-15  Gary Funck  <gary@intrepid.com>
 
 	Cherry pick gupc branch updates, up to version 226919.
