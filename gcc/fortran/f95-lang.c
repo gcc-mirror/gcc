@@ -975,37 +975,38 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_realloc", ftype, BUILT_IN_REALLOC,
 		      "realloc", ATTR_NOTHROW_LEAF_LIST);
 
+  /* Type-generic floating-point classification built-ins.  */
+
   ftype = build_function_type_list (integer_type_node,
                                     void_type_node, NULL_TREE);
-  gfc_define_builtin ("__builtin_isnan", ftype, BUILT_IN_ISNAN,
-		      "__builtin_isnan", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isfinite", ftype, BUILT_IN_ISFINITE,
 		      "__builtin_isfinite", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isinf", ftype, BUILT_IN_ISINF,
+		      "__builtin_isinf", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isinf_sign", ftype, BUILT_IN_ISINF_SIGN,
+		      "__builtin_isinf_sign", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isnan", ftype, BUILT_IN_ISNAN,
+		      "__builtin_isnan", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isnormal", ftype, BUILT_IN_ISNORMAL,
 		      "__builtin_isnormal", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_signbit", ftype, BUILT_IN_SIGNBIT,
+		      "__builtin_signbit", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (integer_type_node, void_type_node,
 				    void_type_node, NULL_TREE);
-  gfc_define_builtin ("__builtin_isunordered", ftype, BUILT_IN_ISUNORDERED,
-		      "__builtin_isunordered", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isless", ftype, BUILT_IN_ISLESS,
+		      "__builtin_isless", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_islessequal", ftype, BUILT_IN_ISLESSEQUAL,
 		      "__builtin_islessequal", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_islessgreater", ftype, BUILT_IN_ISLESSGREATER,
+		      "__builtin_islessgreater", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isgreater", ftype, BUILT_IN_ISGREATER,
+		      "__builtin_isgreater", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isgreaterequal", ftype,
 		      BUILT_IN_ISGREATEREQUAL, "__builtin_isgreaterequal",
 		      ATTR_CONST_NOTHROW_LEAF_LIST);
-
-  ftype = build_function_type_list (integer_type_node,
-                                    float_type_node, NULL_TREE); 
-  gfc_define_builtin("__builtin_signbitf", ftype, BUILT_IN_SIGNBITF,
-		     "signbitf", ATTR_CONST_NOTHROW_LEAF_LIST);
-  ftype = build_function_type_list (integer_type_node,
-                                    double_type_node, NULL_TREE); 
-  gfc_define_builtin("__builtin_signbit", ftype, BUILT_IN_SIGNBIT,
-		     "signbit", ATTR_CONST_NOTHROW_LEAF_LIST);
-  ftype = build_function_type_list (integer_type_node,
-                                    long_double_type_node, NULL_TREE); 
-  gfc_define_builtin("__builtin_signbitl", ftype, BUILT_IN_SIGNBITL,
-		     "signbitl", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_isunordered", ftype, BUILT_IN_ISUNORDERED,
+		      "__builtin_isunordered", ATTR_CONST_NOTHROW_LEAF_LIST);
 
 
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
