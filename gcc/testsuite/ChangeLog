@@ -1,3 +1,11 @@
+2015-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66648
+	* gcc.target/i386/pr66648.c: New test.
+
 2015-08-11  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
