@@ -13159,7 +13159,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	}
       else
 	r = t;
-      mark_used (r);
+      if (!mark_used (r, complain) && !(complain & tf_error))
+	return error_mark_node;
       return r;
 
     case NAMESPACE_DECL:
