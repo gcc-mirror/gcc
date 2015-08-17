@@ -3271,6 +3271,11 @@ visit_phi (gimple phi)
 	    break;
 	  }
       }
+  
+  /* If none of the edges was executable or all incoming values are
+     undefined keep the value-number at VN_TOP.  */
+  if (sameval == VN_TOP)
+    return set_ssa_val_to (PHI_RESULT (phi), VN_TOP);
 
   /* First see if it is equivalent to a phi node in this block.  We prefer
      this as it allows IV elimination - see PRs 66502 and 67167.  */
@@ -4463,7 +4468,7 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
       reachable |= (e->flags & EDGE_EXECUTABLE);
 
   /* If the block is not reachable all outgoing edges are not
-     executable.  */
+     executable.  Neither are incoming edges with src dominated by us.  */
   if (!reachable)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4472,6 +4477,18 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	e->flags &= ~EDGE_EXECUTABLE;
+
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Marking backedge from BB %d into "
+			 "unreachable BB %d as not executable\n",
+			 e->src->index, bb->index);
+	      e->flags &= ~EDGE_EXECUTABLE;
+	    }
+	}
       return;
     }
 
