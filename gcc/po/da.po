@@ -32,6 +32,7 @@
 # dereference -> følge
 # discard -> fjerne
 # discard -> kassere
+# divide -> division
 # driver -> styringsprogram
 # duplicate -> optræder mere end én gang; mangfoldiggøre
 # edge list -> kantliste
@@ -80,6 +81,7 @@
 # null pointer -> nul[-]henvisning
 # offset -> forskydning
 # opcodes (til ovenstående) -> instruktioner
+# option -> tilvalg
 # out of range -> uden for det gyldige (til tider mulige) interval
 # overflow -> (til tider) løber over
 # overlap -> [interval]sammenfald
@@ -96,6 +98,7 @@
 # scope -> virkningsfelt
 # shadowing -> skygger for
 # shift -> skift
+# slice -> skive (NB UAFKLARET, BEDRE FORSLAG?)
 # specified -> (oftest) angivet
 # specifier -> anvisning, angivelse
 # stab -> stik (?)
@@ -130,10 +133,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 5.1.0\n"
+"Project-Id-Version: gcc 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-07-02 12:31+0000\n"
-"PO-Revision-Date: 2015-04-29 18:00+0200\n"
+"PO-Revision-Date: 2015-08-16 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -477,14 +480,12 @@ msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
 msgstr "  -print-multi-os-directory Vis den relative sti for OS-biblioteker\n"
 
 #: gcc.c:3197
-#, fuzzy
-#| msgid "  -dumpmachine             Display the compiler's target processor\n"
 msgid "  -print-sysroot           Display the target libraries directory\n"
-msgstr "  -dumpmachine             Vis oversætterens målprocessor\n"
+msgstr "  -print-sysroot           Vis mappen for målets biblioteker\n"
 
 #: gcc.c:3198
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"
-msgstr ""
+msgstr "  -print-sysroot-headers-suffix Vis sysroot-suffikset brugt til at finde teksthoveder\n"
 
 #: gcc.c:3199
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
@@ -499,9 +500,8 @@ msgid "  -Wl,<options>            Pass comma-separated <options> on to the linke
 msgstr "  -Wl,<tilvalg>            Videregiv komma-adskilte <tilvalg> til sammenkæderen\n"
 
 #: gcc.c:3202
-#, fuzzy
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
-msgstr "  -Xlinker <para>          Videregiv <para> til sammenkæderen\n"
+msgstr "  -Xassembler <para>       Videregiv <para> til maskinkodeoversætteren\n"
 
 #: gcc.c:3203
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"
@@ -8086,10 +8086,8 @@ msgid "Emit call graph information"
 msgstr "Udsend kaldegrafinfo"
 
 #: config/mcore/mcore.opt:43
-#, fuzzy
-#| msgid "Do not use the divide instruction"
 msgid "Use the divide instruction"
-msgstr "Benyt ikke divisionsinstruktionen"
+msgstr "Benyt divisionsinstruktionen"
 
 #: config/mcore/mcore.opt:47
 msgid "Inline constants if it can be done in 2 insns or less"
@@ -9816,7 +9814,7 @@ msgstr ""
 
 #: config/i386/i386.opt:844
 msgid "Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check"
-msgstr ""
+msgstr "Udvid 32-bit/64-bit heltalsdivision til 8-bit ej underskrevet heltalsdivision med kørselstidskontrol"
 
 #: config/i386/i386.opt:848
 msgid "Split 32-byte AVX unaligned load"
@@ -10764,10 +10762,8 @@ msgid "Use features of and schedule code for given CPU"
 msgstr "Benyt faciliteter fra og planlæg koden til en given processor"
 
 #: config/sparc/sparc.opt:199
-#, fuzzy
-#| msgid "Use given SPARC code model"
 msgid "Use given SPARC-V9 code model"
-msgstr "Benyt given SPARC-kodemodel"
+msgstr "Benyt given SPARC-V9-kodemodel"
 
 #: config/sparc/sparc.opt:203
 msgid "Enable debug output"
@@ -10790,18 +10786,16 @@ msgid "Specify the memory model in effect for the program."
 msgstr ""
 
 #: config/rs6000/darwin.opt:38 config/rs6000/sysv4.opt:141
-#, fuzzy
 msgid "Generate 64-bit code"
-msgstr "Generér 64 bit x86-64-kode"
+msgstr "Opret 64-bit kode"
 
 #: config/rs6000/darwin.opt:42 config/rs6000/sysv4.opt:145
-#, fuzzy
 msgid "Generate 32-bit code"
-msgstr "Generér 64 bit i386-kode"
+msgstr "Opret 32-bit kode"
 
 #: config/rs6000/rs6000-tables.opt:24
 msgid "Known CPUs (for use with the -mcpu= and -mtune= options):"
-msgstr ""
+msgstr "Kendte cpu'er (for brug med tilvalgene -mcpu= og -mtune=):"
 
 #: config/rs6000/476.opt:24
 msgid "Preserve the PowerPC 476's link stack by matching up a blr with the bcl/bl insns used for GOT accesses"
@@ -10816,10 +10810,8 @@ msgid "Compile for 32-bit pointers"
 msgstr "Oversæt for 32 bit-henvisninger"
 
 #: config/rs6000/aix64.opt:32 config/rs6000/linux64.opt:28
-#, fuzzy
-#| msgid "Use given SPARC code model"
 msgid "Select code model"
-msgstr "Benyt given SPARC-kodemodel"
+msgstr "Vælg kodemodel"
 
 #: config/rs6000/aix64.opt:49
 msgid "Support message passing with the Parallel Environment"
@@ -10843,21 +10835,16 @@ msgid "Use PowerPC Graphics group optional instructions"
 msgstr "Benyt valgfrie instruktioner fra PowerPC Graphics-gruppen"
 
 #: config/rs6000/rs6000.opt:121
-#, fuzzy
 msgid "Use PowerPC V2.01 single field mfcr instruction"
-msgstr "Generér char-instruktioner"
+msgstr "Benyt PowerPC V2.01-enkeltfelt mfcr-instruktion"
 
 #: config/rs6000/rs6000.opt:125
-#, fuzzy
-#| msgid "Use PowerPC instruction set"
 msgid "Use PowerPC V2.02 popcntb instruction"
-msgstr "Benyt PowerPC-instruktionssættet"
+msgstr "Benyt PowerPC V2.02 popcntb-instruktion"
 
 #: config/rs6000/rs6000.opt:129
-#, fuzzy
-#| msgid "Use hardware floating point instructions"
 msgid "Use PowerPC V2.02 floating point rounding instructions"
-msgstr "Benyt hardware-kommatalsinstruktioner"
+msgstr "Benyt PowerPC V2.02-kommatalsafrundingsinstruktioner"
 
 #: config/rs6000/rs6000.opt:133
 msgid "Use PowerPC V2.05 compare bytes instruction"
@@ -10914,10 +10901,8 @@ msgid "Under -ffast-math, generate a FRIZ instruction for (double)(long long) co
 msgstr ""
 
 #: config/rs6000/rs6000.opt:193
-#, fuzzy
-#| msgid "Use AltiVec instructions"
 msgid "Use vector/scalar (VSX) instructions"
-msgstr "Benyt AltiVec-instruktioner"
+msgstr "Benyt vektor/skalar-instruktioner (VSX)"
 
 #: config/rs6000/rs6000.opt:240
 msgid "Do not generate load/store with update instructions"
@@ -10934,15 +10919,12 @@ msgid "Avoid generation of indexed load/store instructions when possible"
 msgstr "Generér ikke flere indlæsnings-/lagringsinstruktioner"
 
 #: config/rs6000/rs6000.opt:256
-#, fuzzy
-#| msgid "`__builtin_next_arg' called without an argument"
 msgid "Mark __tls_get_addr calls with argument info"
-msgstr "`__builtin_next_arg' kaldt uden en parameter"
+msgstr "Marker __tls_get_addr-kald med parameterinformation"
 
 #: config/rs6000/rs6000.opt:263
-#, fuzzy
 msgid "Schedule the start and end of the procedure"
-msgstr "Planlæg ikke begyndelsen og slutningen af proceduren"
+msgstr "Planlæg begyndelsen og slutningen af proceduren"
 
 #: config/rs6000/rs6000.opt:267
 msgid "Return all structures in memory (AIX default)"
@@ -10957,16 +10939,14 @@ msgid "Conform more closely to IBM XLC semantics"
 msgstr ""
 
 #: config/rs6000/rs6000.opt:279 config/rs6000/rs6000.opt:283
-#, fuzzy
 msgid "Generate software reciprocal divide and square root for better throughput."
-msgstr "Generér indlejrede heltalsdivisioner, optimér for båndbredde"
+msgstr "Opret programreciprok division og kvadratrod for bedre båndbredde."
 
 #: config/rs6000/rs6000.opt:287
 msgid "Assume that the reciprocal estimate instructions provide more accuracy."
 msgstr ""
 
 #: config/rs6000/rs6000.opt:291
-#, fuzzy
 msgid "Do not place floating point constants in TOC"
 msgstr "Anbring ikke kommatalskonstanter i indholdsfortegnelsen"
 
@@ -10975,7 +10955,6 @@ msgid "Place floating point constants in TOC"
 msgstr "Anbring kommatalskonstanter i indholdsfortegnelsen"
 
 #: config/rs6000/rs6000.opt:299
-#, fuzzy
 msgid "Do not place symbol+offset constants in TOC"
 msgstr "Anbring ikke symbol+afsæt-konstanter i indholdsfortegnelsen"
 
@@ -10999,11 +10978,11 @@ msgstr "Angiv yes/no hvis VRSAVE-instruktioner skal genereres til AltiVec"
 
 #: config/rs6000/rs6000.opt:326
 msgid "Deprecated option.  Use -mno-vrsave instead"
-msgstr ""
+msgstr "Forældet tilvalg. Brug -mno-vrsave i stedet"
 
 #: config/rs6000/rs6000.opt:330
 msgid "Deprecated option.  Use -mvrsave instead"
-msgstr ""
+msgstr "Forældet tilvalg. Brug -mvrsave i stedet"
 
 #: config/rs6000/rs6000.opt:334
 msgid "Specify how many bytes should be moved inline before calling out to memcpy/memmove"
@@ -11457,21 +11436,16 @@ msgid "Known TILEPro CPUs (for use with the -mcpu= option):"
 msgstr ""
 
 #: config/lm32/lm32.opt:24
-#, fuzzy
 msgid "Enable multiply instructions"
-msgstr "Generér sammensatte gang/addér-instruktioner"
+msgstr "Aktiver multiply-instruktioner"
 
 #: config/lm32/lm32.opt:28
-#, fuzzy
-#| msgid "Enable parallel instructions"
 msgid "Enable divide and modulus instructions"
-msgstr "Aktivér parallelle instruktioner"
+msgstr "Aktiver division- og modulinstruktioner"
 
 #: config/lm32/lm32.opt:32
-#, fuzzy
-#| msgid "Enable parallel instructions"
 msgid "Enable barrel shift instructions"
-msgstr "Aktivér parallelle instruktioner"
+msgstr "Aktiver barrel shift-instruktioner"
 
 #: config/lm32/lm32.opt:36
 #, fuzzy
@@ -11517,7 +11491,7 @@ msgstr ""
 
 #: config/nios2/nios2.opt:47
 msgid "Use table based fast divide (default at -O3)"
-msgstr ""
+msgstr "Benyt tabelbaseret hurtig division (standard på -03)"
 
 #: config/nios2/nios2.opt:51
 #, fuzzy
@@ -11832,10 +11806,8 @@ msgid "Integer id (N) of fmind custom instruction"
 msgstr ""
 
 #: config/nios2/nios2.opt:322
-#, fuzzy
-#| msgid "Do not use the divide instruction"
 msgid "Do not use the fdivd custom instruction"
-msgstr "Benyt ikke divisionsinstruktionen"
+msgstr "Benyt ikke den fdivd-tilpassede instruktion"
 
 #: config/nios2/nios2.opt:326
 msgid "Integer id (N) of fdivd custom instruction"
@@ -12269,26 +12241,20 @@ msgid "-mcpu=PROCESSOR\t\tUse features of and schedule code for given CPU"
 msgstr "Benyt faciliteter fra og planlæg koden til en given processor"
 
 #: config/microblaze/microblaze.opt:56
-#, fuzzy
-#| msgid "Don't optimize block moves"
 msgid "Don't optimize block moves, use memcpy"
-msgstr "Optimér ikke blokflytninger"
+msgstr "Optimer ikke blokflytninger, brug memcpy"
 
 #: config/microblaze/microblaze.opt:68
-#, fuzzy
-#| msgid "Use data cache for volatile mem refs (default)"
 msgid "Use the soft multiply emulation (default)"
-msgstr "Benyt datamellemlager for volatile hukommelsesreferencer (standard)"
+msgstr "Benyt den bløde multiply-emulering (standard)"
 
 #: config/microblaze/microblaze.opt:72
 msgid "Use reorder instructions (swap and byte reversed load/store) (default)"
-msgstr ""
+msgstr "Benyt instruktioner for ny rækkefølge (swap og byte vendt om indlæs/lager) (standard)"
 
 #: config/microblaze/microblaze.opt:76
-#, fuzzy
-#| msgid "Use data cache for volatile mem refs (default)"
 msgid "Use the software emulation for divides (default)"
-msgstr "Benyt datamellemlager for volatile hukommelsesreferencer (standard)"
+msgstr "Benyt programemuleringen for divisioner (standard)"
 
 #: config/microblaze/microblaze.opt:80
 #, fuzzy
@@ -13204,10 +13170,8 @@ msgid "Const variables default to the near section"
 msgstr ""
 
 #: config/mep/mep.opt:78
-#, fuzzy
-#| msgid "Do not use the divide instruction"
 msgid "Enable 32-bit divide instructions"
-msgstr "Benyt ikke divisionsinstruktionen"
+msgstr "Aktiver 32-bit divisionsinstruktioner"
 
 #: config/mep/mep.opt:93
 msgid "__io vars are volatile by default"
@@ -13218,10 +13182,8 @@ msgid "All variables default to the far section"
 msgstr ""
 
 #: config/mep/mep.opt:101
-#, fuzzy
-#| msgid "Enable parallel instructions"
 msgid "Enable leading zero instructions"
-msgstr "Aktivér parallelle instruktioner"
+msgstr "Aktiver foranstaillede zero-instruktioner"
 
 #: config/mep/mep.opt:108
 #, fuzzy
@@ -13346,32 +13308,24 @@ msgid "Use trap instructions to check for integer divide by zero"
 msgstr "Forårsag ikke undtagelse ved heltalsdivision med nul"
 
 #: config/mips/mips.opt:112
-#, fuzzy
-#| msgid "Enable use of DB instruction"
 msgid "Allow the use of MDMX instructions"
-msgstr "Aktivér brug af DB-instruktioner"
+msgstr "Tillade brugen af MDMX-instruktioner"
 
 #: config/mips/mips.opt:116
 msgid "Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations"
 msgstr ""
 
 #: config/mips/mips.opt:120
-#, fuzzy
-#| msgid "Don't use MIPS16 instructions"
 msgid "Use MIPS-DSP instructions"
-msgstr "Benyt ikke MIPS16-instruktioner"
+msgstr "Benyt MIPS-DSP-instruktioner"
 
 #: config/mips/mips.opt:124
-#, fuzzy
-#| msgid "Use POWER2 instruction set"
 msgid "Use MIPS-DSP REV 2 instructions"
-msgstr "Benyt POWER2-instruktionssættet"
+msgstr "Benyt MIPS-DSP REV 2-instruktioner"
 
 #: config/mips/mips.opt:146
-#, fuzzy
-#| msgid "Use the bit-field instructions"
 msgid "Use Enhanced Virtual Addressing instructions"
-msgstr "Benyt bitfeltinstruktionerne"
+msgstr "Benyt Enhanced Virtual Addressing-instruktioner"
 
 #: config/mips/mips.opt:150
 msgid "Use NewABI-style %reloc() assembly operators"
@@ -13379,23 +13333,19 @@ msgstr ""
 
 #: config/mips/mips.opt:154
 msgid "Use -G for data that is not defined by the current object"
-msgstr ""
+msgstr "Benyt -G for data som ikke er defineret af det nuværende objekt"
 
 #: config/mips/mips.opt:158
 msgid "Work around certain 24K errata"
 msgstr ""
 
 #: config/mips/mips.opt:162
-#, fuzzy
-#| msgid "Work around early 4300 hardware bug"
 msgid "Work around certain R4000 errata"
-msgstr "Arbejd rundt om tidlig 4300-hardwarefejl"
+msgstr "Arbejd rundt om bestemte R4000-fejl"
 
 #: config/mips/mips.opt:166
-#, fuzzy
-#| msgid "Work around early 4300 hardware bug"
 msgid "Work around certain R4400 errata"
-msgstr "Arbejd rundt om tidlig 4300-hardwarefejl"
+msgstr "Arbejd rundt om bestemte R4400-fejl"
 
 #: config/mips/mips.opt:170
 msgid "Work around certain RM7000 errata"
@@ -15529,7 +15479,7 @@ msgstr ""
 
 #: common.opt:2000
 msgid "Enable the group heuristic in the scheduler"
-msgstr ""
+msgstr "Aktiver gruppeheuristikken i planlæggeren"
 
 #: common.opt:2004
 msgid "Enable the critical path heuristic in the scheduler"
@@ -15666,21 +15616,19 @@ msgstr ""
 
 #: common.opt:2144
 msgid "Check for syntax errors, then stop"
-msgstr "Kontrollér syntaks og stop derefter"
+msgstr "Kontroller for syntaksfejl og stop derefter"
 
 #: common.opt:2148
-#, fuzzy
 msgid "Create data files needed by \"gcov\""
-msgstr "Opret datafiler som gcov har brug for"
+msgstr "Opret datafiler som »gcov« har brug for"
 
 #: common.opt:2152
 msgid "Perform jump threading optimizations"
 msgstr "Udfør springtrådningsoptimeringer"
 
 #: common.opt:2156
-#, fuzzy
 msgid "Report the time taken by each compiler pass"
-msgstr "Rapportér den tid det tager for hver oversættelsesfase ved afslutningen af kørslen"
+msgstr "Rapporter den tid det tager for hvert kompilergennemløb"
 
 #: common.opt:2160
 #, fuzzy
@@ -15688,9 +15636,9 @@ msgid "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tSet t
 msgstr "  -ftls-model=[global-dynamic | local-dynamic | initial-exec | local-exec] Indikerer den forvalgte tråd-lokale lagringsmodel for kodegenerering\n"
 
 #: common.opt:2163
-#, fuzzy, c-format
+#, c-format
 msgid "unknown TLS model %qs"
-msgstr "'%s': ukendt tls-model-tilvalg"
+msgstr "ukendt tls-model %qs"
 
 #: common.opt:2179
 msgid "Reorder top level functions, variables, and asms"
@@ -15717,10 +15665,8 @@ msgid "Enable SSA-CCP optimization on trees"
 msgstr "Aktivér SSA-optimeringer"
 
 #: common.opt:2202
-#, fuzzy
-#| msgid "Enable SSA optimizations"
 msgid "Enable SSA-BIT-CCP optimization on trees"
-msgstr "Aktivér SSA-optimeringer"
+msgstr "Aktiver SSA-BIT-CCP-optimering på træer"
 
 #: common.opt:2210
 msgid "Enable loop header copying on trees"
@@ -15863,10 +15809,8 @@ msgid "Enable reassociation on tree level"
 msgstr ""
 
 #: common.opt:2335
-#, fuzzy
-#| msgid "Enable SSA optimizations"
 msgid "Enable SSA code sinking on trees"
-msgstr "Aktivér SSA-optimeringer"
+msgstr "Aktiver SSA-kodesinking på træer"
 
 #: common.opt:2339
 #, fuzzy
@@ -16009,9 +15953,9 @@ msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol 
 msgstr ""
 
 #: common.opt:2510
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized visibility value %qs"
-msgstr "ukendt registernavn '%s'"
+msgstr "ikke genkendt synlighedsværdi %qs"
 
 #: common.opt:2526
 msgid "Validate vtable pointers before using them."
@@ -16092,11 +16036,11 @@ msgstr "Generér ikke sammensatte gang/addér-instruktioner"
 
 #: common.opt:2598
 msgid "Generate DWARF pubnames and pubtypes sections."
-msgstr ""
+msgstr "Opret sektioner for DWARF-pubnavne og pubtyper."
 
 #: common.opt:2602
 msgid "Generate DWARF pubnames and pubtypes sections with GNU extensions."
-msgstr ""
+msgstr "Opret sektioner for DWARF-pubnavne og pubtyper med GNU-udvidelser."
 
 #: common.opt:2606
 msgid "Don't record gcc command line switches in DWARF DW_AT_producer."
@@ -16107,24 +16051,20 @@ msgid "Record gcc command line switches in DWARF DW_AT_producer."
 msgstr ""
 
 #: common.opt:2614
-#, fuzzy
 msgid "Don't generate debug information in separate .dwo files"
-msgstr "Generér fejlfindingsinfo i standardformat"
+msgstr "Opret ikek fejlsøgningsinformation i separate .dwo-filer"
 
 #: common.opt:2618
-#, fuzzy
 msgid "Generate debug information in separate .dwo files"
-msgstr "Generér fejlfindingsinfo i standardformat"
+msgstr "Opret fejlsøgningsinformation i separate .dwo-filer"
 
 #: common.opt:2622
-#, fuzzy
 msgid "Generate debug information in STABS format"
-msgstr "Generér fejlfindingsinfo i standardformat"
+msgstr "Opret fejlsøgningsinformation i STABS-format"
 
 #: common.opt:2626
-#, fuzzy
 msgid "Generate debug information in extended STABS format"
-msgstr "Generér fejlfindingsinfo i udvidet standardformat"
+msgstr "Opret fejlsøgningsinformation i udvidet STABS-format"
 
 #: common.opt:2630
 msgid "Emit DWARF additions beyond selected version"
@@ -16140,25 +16080,20 @@ msgid "Toggle debug information generation"
 msgstr "Generér fejlfindingsinfo i standardformat"
 
 #: common.opt:2642
-#, fuzzy
 msgid "Generate debug information in VMS format"
-msgstr "Generér fejlfindingsinfo i standardformat"
+msgstr "Opret fejlsøgningsinformation i VMS-format"
 
 #: common.opt:2646
-#, fuzzy
 msgid "Generate debug information in XCOFF format"
-msgstr "Generér fejlfindingsinfo i standardformat"
+msgstr "Opret fejlsøgningsinformation i XCOFF-format"
 
 #: common.opt:2650
-#, fuzzy
 msgid "Generate debug information in extended XCOFF format"
-msgstr "Generér fejlfindingsinfo i udvidet standardformat"
+msgstr "Opret fejlsøgningsinformation i udvidet XCOFF-format"
 
 #: common.opt:2668
-#, fuzzy
-#| msgid "Generate char instructions"
 msgid "Generate compressed debug sections"
-msgstr "Generér char-instruktioner"
+msgstr "Opret komprimeret fejlsøgningssektioner"
 
 #: common.opt:2672
 #, fuzzy
@@ -16188,34 +16123,28 @@ msgid "Like -pedantic but issue them as errors"
 msgstr ""
 
 #: common.opt:2759
-#, fuzzy
 msgid "Do not display functions compiled or elapsed time"
-msgstr "  -quiet                  Vis ikke funktioner der oversættes eller forløbet tid\n"
+msgstr "Vis ikke funktioner der oversættes eller forløbet tid"
 
 #: common.opt:2791
-#, fuzzy
 msgid "Enable verbose output"
-msgstr "Aktivér fejlanalyseringsuddata"
+msgstr "Aktiver uddybende uddata"
 
 #: common.opt:2795
-#, fuzzy
-#| msgid "  -version                Display the compiler's version\n"
 msgid "Display the compiler's version"
-msgstr "  -version                Udskriv oversætterens version\n"
+msgstr "Vis oversætterens version"
 
 #: common.opt:2799
-#, fuzzy
 msgid "Suppress warnings"
-msgstr "%s: advarsel: "
+msgstr "Undertryk advarsler"
 
 #: common.opt:2809
 msgid "Create a shared library"
-msgstr ""
+msgstr "Opret et delt bibliotek"
 
 #: common.opt:2854
-#, fuzzy
 msgid "Create a position independent executable"
-msgstr "Generér placeringsuafhængig kode, om muligt"
+msgstr "Opret en placeringsuafhængig kørbar fil"
 
 #: common.opt:2861
 msgid "Use caller save register across calls if possible"
@@ -16223,21 +16152,18 @@ msgstr ""
 
 #: go/gofrontend/expressions.cc:93 c-family/c-common.c:1910 cp/cvt.c:1182
 #: cp/cvt.c:1430
-#, fuzzy, gcc-internal-format
-#| msgid "%Hvalue computed is not used"
+#, gcc-internal-format
 msgid "value computed is not used"
-msgstr "%Hberegnet værdi benyttes ikke"
+msgstr "beregnet værdi benyttes ikke"
 
 #: go/gofrontend/expressions.cc:628
-#, fuzzy
-#| msgid "invalid use of `::'"
 msgid "invalid use of type"
-msgstr "ugyldig brug af '::'"
+msgstr "ugyldig brug af type"
 
 #: go/gofrontend/expressions.cc:2725 go/gofrontend/expressions.cc:2791
 #: go/gofrontend/expressions.cc:2807
 msgid "constant refers to itself"
-msgstr ""
+msgstr "konstant har reference til sig selv"
 
 #: go/gofrontend/expressions.cc:3704 go/gofrontend/expressions.cc:4082
 #, fuzzy
@@ -16246,30 +16172,24 @@ msgid "expected pointer"
 msgstr "uventet operand"
 
 #: go/gofrontend/expressions.cc:4049
-#, fuzzy
 msgid "expected numeric type"
-msgstr "uventet operand"
+msgstr "forventet numerisk type"
 
 #: go/gofrontend/expressions.cc:4054
-#, fuzzy
 msgid "expected boolean type"
-msgstr "uventet operand"
+msgstr "forventet boolesk type"
 
 #: go/gofrontend/expressions.cc:4060
 msgid "expected integer or boolean type"
-msgstr ""
+msgstr "forventet heltal eller boolesk type"
 
 #: go/gofrontend/expressions.cc:5565
-#, fuzzy
-#| msgid "comparison of promoted ~unsigned with unsigned"
 msgid "invalid comparison of nil with nil"
-msgstr "sammenligning af forfremmet ~unsigned med unsigned"
+msgstr "ugyldig sammenligning af nil med nil"
 
 #: go/gofrontend/expressions.cc:5571 go/gofrontend/expressions.cc:5589
-#, fuzzy
-#| msgid "incompatible types in %s"
 msgid "incompatible types in binary expression"
-msgstr "uforenelige typer i %s"
+msgstr "uforenelige typer i binæret udtryk"
 
 #: go/gofrontend/expressions.cc:5609
 #, fuzzy
@@ -16306,16 +16226,12 @@ msgid "method type does not match object type"
 msgstr "typeomtvingelse passer ikke til funktionstype"
 
 #: go/gofrontend/expressions.cc:6777
-#, fuzzy
-#| msgid "invalid use of `this' in non-member function"
 msgid "invalid use of %<...%> with builtin function"
-msgstr "ugyldig brug af 'this' i ikke-medlemsfunktion"
+msgstr "ugyldig brug af %<...%> med indbygget funktion"
 
 #: go/gofrontend/expressions.cc:6788
-#, fuzzy
-#| msgid "invalid type argument of `%s'"
 msgid "invalid use of method value as argument of Offsetof"
-msgstr "ugyldig typeparameter '%s'"
+msgstr "ugyldig brug af metodeværdi som argument for Offsetof"
 
 #: go/gofrontend/expressions.cc:6802
 msgid "argument of Offsetof implies indirection of an embedded field"
@@ -16326,10 +16242,8 @@ msgstr ""
 #: go/gofrontend/expressions.cc:7953 go/gofrontend/expressions.cc:7999
 #: go/gofrontend/expressions.cc:8058 go/gofrontend/expressions.cc:9210
 #: go/gofrontend/expressions.cc:9227 go/gofrontend/expressions.cc:9243
-#, fuzzy
-#| msgid "no arguments"
 msgid "not enough arguments"
-msgstr "ingen parametre"
+msgstr "ikke nok parametre"
 
 #: go/gofrontend/expressions.cc:6829 go/gofrontend/expressions.cc:6890
 #: go/gofrontend/expressions.cc:7809 go/gofrontend/expressions.cc:7936
@@ -16337,165 +16251,121 @@ msgstr "ingen parametre"
 #: go/gofrontend/expressions.cc:8060 go/gofrontend/expressions.cc:8808
 #: go/gofrontend/expressions.cc:9215 go/gofrontend/expressions.cc:9229
 #: go/gofrontend/expressions.cc:9250
-#, fuzzy
-#| msgid "too many arguments for format"
 msgid "too many arguments"
-msgstr "for mange parametre til formatering"
+msgstr "for mange parametre"
 
 #: go/gofrontend/expressions.cc:6892
-#, fuzzy
-#| msgid "argument 1 must be a 5-bit signed literal"
 msgid "argument 1 must be a map"
-msgstr "1. parameter skal være en 5 bit-konstant med fortegn"
+msgstr "1. parameter skal være en oversættelse"
 
 #: go/gofrontend/expressions.cc:7016
-#, fuzzy
-#| msgid "invalid return type for member function `%#D'"
 msgid "invalid type for make function"
-msgstr "ugyldig returtype for medlemsfunktionen '%#D'"
+msgstr "ugyldig type for make-funktion"
 
 #: go/gofrontend/expressions.cc:7032
 msgid "length required when allocating a slice"
-msgstr ""
+msgstr "længde krævet når en skive allokeres"
 
 #: go/gofrontend/expressions.cc:7067
 msgid "len larger than cap"
-msgstr ""
+msgstr "len større end cap"
 
 #: go/gofrontend/expressions.cc:7079
-#, fuzzy
-#| msgid "too many arguments for format"
 msgid "too many arguments to make"
-msgstr "for mange parametre til formatering"
+msgstr "for mange parametre for make"
 
 #: go/gofrontend/expressions.cc:7853
-#, fuzzy
-#| msgid "argument 1 must be a 5-bit signed literal"
 msgid "argument must be array or slice or channel"
-msgstr "1. parameter skal være en 5 bit-konstant med fortegn"
+msgstr "parameter skal være en array eller skive eller kanal"
 
 #: go/gofrontend/expressions.cc:7863
 msgid "argument must be string or array or slice or map or channel"
-msgstr ""
+msgstr "parameter skal være streng eller array eller skive eller oversættelse eller kanal"
 
-# shadowing betyder at en funktion har samme navn og dermed skjuler en anden
 #: go/gofrontend/expressions.cc:7909
-#, fuzzy
-#| msgid "Support 3DNow! built-in functions"
 msgid "unsupported argument type to builtin function"
-msgstr "Understøt indbyggede 3DNow!-funktioner"
+msgstr "ikke understøttet parametertype for indbygget funktion"
 
 #: go/gofrontend/expressions.cc:7920
-#, fuzzy
-#| msgid "argument 2 must be a 5-bit unsigned literal"
 msgid "argument must be channel"
-msgstr "2. parameter skal være en 5 bit-konstant uden fortegn"
+msgstr "parameter skal være kanal"
 
 #: go/gofrontend/expressions.cc:7922
 msgid "cannot close receive-only channel"
-msgstr ""
+msgstr "kan ikke lukke modtag-kun kanal"
 
 #: go/gofrontend/expressions.cc:7944
-#, fuzzy
-#| msgid "argument 1 must be a 5-bit signed literal"
 msgid "argument must be a field reference"
-msgstr "1. parameter skal være en 5 bit-konstant med fortegn"
+msgstr "parameter skal være en feltreference"
 
 #: go/gofrontend/expressions.cc:7974
-#, fuzzy
-#| msgid "argument 1 must be a 5-bit signed literal"
 msgid "left argument must be a slice"
-msgstr "1. parameter skal være en 5 bit-konstant med fortegn"
+msgstr "venstre parameter skal være en skive"
 
 #: go/gofrontend/expressions.cc:7982
 msgid "element types must be the same"
-msgstr ""
+msgstr "elementtyper skal være ens"
 
 #: go/gofrontend/expressions.cc:7987
-#, fuzzy
 msgid "first argument must be []byte"
-msgstr "den første parameter til '%s' skal være 'int'"
+msgstr "første parameter skal være []byte"
 
 #: go/gofrontend/expressions.cc:7990
-#, fuzzy
-#| msgid "second token after #line is not a string"
 msgid "second argument must be slice or string"
-msgstr "det andet symbol efter #line er ikke en streng"
+msgstr "anden parameter skal være skive eller streng"
 
 #: go/gofrontend/expressions.cc:8034
-#, fuzzy
-#| msgid "bit-field `%s' has invalid type"
 msgid "argument 2 has invalid type"
-msgstr "bitfeltet '%s' er af en ufuldstændig type"
+msgstr "parameter 2 har ugyldig type"
 
 #: go/gofrontend/expressions.cc:8050
-#, fuzzy
-#| msgid "parameter `%s' has incomplete type"
 msgid "argument must have complex type"
-msgstr "parameteren '%s' er af en ufuldstændig type"
+msgstr "parameter skal have kompleks type"
 
 #: go/gofrontend/expressions.cc:8068
-#, fuzzy
-#| msgid "macro names must be identifiers"
 msgid "complex arguments must have identical types"
-msgstr "makronavne skal være kaldenavne"
+msgstr "komplekse parametre skal have identiske typer"
 
 #: go/gofrontend/expressions.cc:8070
-#, fuzzy
-#| msgid "Do not use hardware floating point"
 msgid "complex arguments must have floating-point type"
-msgstr "Benyt ikke hardware-kommatal"
+msgstr "komplekse parametre skal have kommatalstype"
 
 #: go/gofrontend/expressions.cc:8620 go/gofrontend/expressions.cc:9156
 #: go/gofrontend/expressions.cc:9592
-#, fuzzy
-#| msgid "In function"
 msgid "expected function"
-msgstr "I funktionen"
+msgstr "forventet funktion"
 
 #: go/gofrontend/expressions.cc:8647
 msgid "multiple-value argument in single-value context"
-msgstr ""
+msgstr "multiple-value parameter i enkel-værdi kontekst"
 
 #: go/gofrontend/expressions.cc:8812
-#, fuzzy
-#| msgid "invalid use of non-lvalue array"
 msgid "invalid use of %<...%> with non-slice"
-msgstr "ugyldig brug af en tabel der ikke kan optræde som en venstreværdi"
+msgstr "ugyldig brug af %<...%> med ikke-skive"
 
 #: go/gofrontend/expressions.cc:9164
 msgid "function result count mismatch"
 msgstr ""
 
 #: go/gofrontend/expressions.cc:9182
-#, fuzzy
-#| msgid "incompatible types in %s"
 msgid "incompatible type for receiver"
-msgstr "uforenelige typer i %s"
+msgstr "uforenelige typer for modtager"
 
 #: go/gofrontend/expressions.cc:9200
-#, fuzzy
-#| msgid "invalid use of `this' in non-member function"
 msgid "invalid use of %<...%> calling non-variadic function"
-msgstr "ugyldig brug af 'this' i ikke-medlemsfunktion"
+msgstr "ugyldig brug af %<...%> kaldende ikke-variadic funktion"
 
 #: go/gofrontend/expressions.cc:9601 go/gofrontend/expressions.cc:9615
-#, fuzzy
-#| msgid "number of arguments doesn't match prototype"
 msgid "number of results does not match number of values"
-msgstr "antallet af parametre passer ikke til prototypen"
+msgstr "antallet af resultater matcher ikke antallet af værdier"
 
 #: go/gofrontend/expressions.cc:9971 go/gofrontend/expressions.cc:10483
-#, fuzzy
-#| msgid "macro names must be identifiers"
 msgid "index must be integer"
-msgstr "makronavne skal være kaldenavne"
+msgstr "indeks skal være heltal"
 
 #: go/gofrontend/expressions.cc:9979 go/gofrontend/expressions.cc:10491
-#, fuzzy
-#| msgid "Assume int to be 8 bit integer"
 msgid "slice end must be integer"
-msgstr "Antag at int er 8 bit-heltal"
+msgstr "skive-slutning skal være heltal"
 
 #: go/gofrontend/expressions.cc:9987
 #, fuzzy
@@ -16522,16 +16392,12 @@ msgid "expected interface or pointer to interface"
 msgstr ""
 
 #: go/gofrontend/expressions.cc:11859
-#, fuzzy
-#| msgid "too many arguments for format"
 msgid "too many expressions for struct"
-msgstr "for mange parametre til formatering"
+msgstr "for mange udtryk for struct"
 
 #: go/gofrontend/expressions.cc:11872
-#, fuzzy
-#| msgid "too few arguments for format"
 msgid "too few expressions for struct"
-msgstr "for få parametre til formatering"
+msgstr "for få udtryk for struct"
 
 #: go/gofrontend/expressions.cc:13620 go/gofrontend/statements.cc:1585
 #, fuzzy
@@ -64250,12 +64116,6 @@ msgstr "opretter vælger for ikke-eksisterende metode '%s'"
 
 #~ msgid "fp_offset (%ld) or end_offset (%ld) is less than zero"
 #~ msgstr "fp_offset (%ld) eller end_offset (%ld) er mindre end nul"
-
-#~ msgid "Trap on integer divide overflow"
-#~ msgstr "Forårsag undtagelse ved heltalsdivisionsoverløb"
-
-#~ msgid "Don't trap on integer divide overflow"
-#~ msgstr "Forårsag ikke undtagelse ved heltalsdivisionsoverløb"
 
 #~ msgid "Use mips16 entry/exit psuedo ops"
 #~ msgstr "Benyt MIPS16-indtrædelse-/afslutningspseudooperationer"
