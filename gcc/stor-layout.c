@@ -1831,9 +1831,13 @@ finalize_type_size (tree type)
 	{
 	  TYPE_SIZE (variant) = size;
 	  TYPE_SIZE_UNIT (variant) = size_unit;
-	  TYPE_ALIGN (variant) = align;
+	  unsigned valign = align;
+	  if (TYPE_USER_ALIGN (variant))
+	    valign = MAX (valign, TYPE_ALIGN (variant));
+	  else
+	    TYPE_USER_ALIGN (variant) = user_align;
+	  TYPE_ALIGN (variant) = valign;
 	  TYPE_PRECISION (variant) = precision;
-	  TYPE_USER_ALIGN (variant) = user_align;
 	  SET_TYPE_MODE (variant, mode);
 	}
     }
@@ -2154,6 +2158,10 @@ layout_type (tree type)
   if (type == error_mark_node)
     return;
 
+  /* We don't want finalize_type_size to copy an alignment attribute to
+     variants that don't have it.  */
+  type = TYPE_MAIN_VARIANT (type);
+
   /* Do nothing if type has been laid out before.  */
   if (TYPE_SIZE (type))
     return;
@@ -2350,13 +2358,17 @@ layout_type (tree type)
 	/* Now round the alignment and size,
 	   using machine-dependent criteria if any.  */
 
+	unsigned align = TYPE_ALIGN (element);
+	if (TYPE_USER_ALIGN (type))
+	  align = MAX (align, TYPE_ALIGN (type));
+	else
+	  TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
 #ifdef ROUND_TYPE_ALIGN
-	TYPE_ALIGN (type)
-	  = ROUND_TYPE_ALIGN (type, TYPE_ALIGN (element), BITS_PER_UNIT);
+	align = ROUND_TYPE_ALIGN (type, align, BITS_PER_UNIT);
 #else
-	TYPE_ALIGN (type) = MAX (TYPE_ALIGN (element), BITS_PER_UNIT);
+	align = MAX (align, BITS_PER_UNIT);
 #endif
-	TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
+	TYPE_ALIGN (type) = align;
 	SET_TYPE_MODE (type, BLKmode);
 	if (TYPE_SIZE (type) != 0
 	    && ! targetm.member_type_forces_blk (type, VOIDmode)
