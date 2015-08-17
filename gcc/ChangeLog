@@ -1,3 +1,9 @@
+2015-08-17  Richard Biener  <rguenther@suse.de>
+	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	PR middle-end/16107
+	* match.pd (div (coss (op @0) : New simplifier.
+
 2015-08-14  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
