@@ -14412,7 +14412,10 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
 				srcoffset + j * UNITS_PER_WORD - src_autoinc);
 	  mem = adjust_automodify_address (srcbase, SImode, addr,
 					   srcoffset + j * UNITS_PER_WORD);
-	  emit_insn (gen_unaligned_loadsi (regs[j], mem));
+	  if (src_aligned)
+	    emit_move_insn (regs[j], mem);
+	  else
+	    emit_insn (gen_unaligned_loadsi (regs[j], mem));
 	}
       srcoffset += words * UNITS_PER_WORD;
     }
@@ -14431,7 +14434,10 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
 				dstoffset + j * UNITS_PER_WORD - dst_autoinc);
 	  mem = adjust_automodify_address (dstbase, SImode, addr,
 					   dstoffset + j * UNITS_PER_WORD);
-	  emit_insn (gen_unaligned_storesi (mem, regs[j]));
+	  if (dst_aligned)
+	    emit_move_insn (mem, regs[j]);
+	  else
+	    emit_insn (gen_unaligned_storesi (mem, regs[j]));
 	}
       dstoffset += words * UNITS_PER_WORD;
     }

@@ -1,3 +1,9 @@
+2015-08-17  Mike Stump  <mikestump@comcast.net>
+
+	* config/arm/arm.c (arm_block_move_unaligned_straight):
+	Emit normal move instead of unaligned load when source or destination
+	are appropriately aligned.
+
 2015-08-17  Richard Biener  <rguenther@suse.de>
 	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
