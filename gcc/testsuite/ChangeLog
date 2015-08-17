@@ -1,3 +1,8 @@
+2015-08-17  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): Redefine isa
+	which is used in later code.
+
 2015-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67216
