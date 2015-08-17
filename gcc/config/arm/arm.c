@@ -12836,7 +12836,7 @@ neon_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 HOST_WIDE_INT
 neon_element_bits (machine_mode mode)
 {
-  return GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+  return GET_MODE_UNIT_BITSIZE (mode);
 }
 
 

@@ -6588,7 +6588,7 @@ static rtx
 shift_amt_for_vec_perm_mask (rtx sel)
 {
   unsigned int i, first, nelt = GET_MODE_NUNITS (GET_MODE (sel));
-  unsigned int bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (sel)));
+  unsigned int bitsize = GET_MODE_UNIT_BITSIZE (GET_MODE (sel));
 
   if (GET_CODE (sel) != CONST_VECTOR)
     return NULL_RTX;

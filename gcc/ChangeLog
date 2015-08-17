@@ -1,3 +1,26 @@
+2015-08-17  David Sherwood  <david.sherwood@arm.com>
+
+	* config/arm/arm.c (neon_element_bits): Replace call to
+	GET_MODE_BITSIZE (GET_MODE_INNER (m)) with GET_MODE_UNIT_BITSIZE (m).
+	* config/arm/neon.md (neon_vget_lane<mode>): Likewise.
+	(neon_vget_laneu<mode>, neon_vset_lane<mode>): Likewise
+	(neon_vdup_lane<mode>): Likewise.
+	* config/i386/i386.c (ix86_expand_int_vcond): Likewise.
+	(ix86_expand_multi_arg_builtin, ix86_expand_reduc): Likewise.
+	(expand_vec_perm_palignr, ix86_expand_sse2_abs): Likewise.
+	* config/rs6000/rs6000.c (rs6000_do_expand_vec_perm): Likewise.
+	* config/spu/spu.c (arith_immediate_p): Likewise.
+	* expmed.c (store_bit_field_1, extract_bit_field_1): Likewise.
+	* expr.c (expand_expr_real_2): Likewise.
+	* optabs.c (shift_amt_for_vec_perm_mask): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Likewise.
+	* tree-cfg.c (verify_gimple_assign_ternary): Likewise.
+	* tree-vect-patterns.c (vect_recog_mixed_size_cond_pattern): Likewise.
+	New variable.
+	* fold-const.c (fold_binary_loc): Replace call to
+	GET_MODE_PRECISION (GET_MODE_INNER (m)) with
+	GET_MODE_UNIT_PRECISION (m).
+
 2015-08-17  Mike Stump  <mikestump@comcast.net>
 
 	* config/arm/arm.c (arm_block_move_unaligned_straight):
