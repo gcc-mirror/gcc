@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list POW10 BUILT_IN_POW10F BUILT_IN_POW10 BUILT_IN_POW10L)
 (define_operator_list SQRT BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
 (define_operator_list CBRT BUILT_IN_CBRTF BUILT_IN_CBRT BUILT_IN_CBRTL)
+(define_operator_list COS BUILT_IN_COS BUILT_IN_COSL BUILT_IN_COSF)
+(define_operator_list COSH BUILT_IN_COSH BUILT_IN_COSHL BUILT_IN_COSHF)
 
 
 /* Simplifications of operations with one constant operand and
@@ -303,6 +305,13 @@ along with GCC; see the file COPYING3.  If not see
   (if (ANY_INTEGRAL_TYPE_P (type)
        && TYPE_OVERFLOW_UNDEFINED (type))
    @0)))
+
+/* Simplify cos (-x) -> cos (x).  */
+(for op (negate abs)
+(for coss (COS COSH)
+ (simplify
+  (coss (op @0))
+   (coss @0))))
 
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
