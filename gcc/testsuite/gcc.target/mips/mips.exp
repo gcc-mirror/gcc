@@ -1190,6 +1190,7 @@ proc mips-dg-options { args } {
 
     # Re-calculate the isa_rev for use in the abi handling code below
     set arch [mips_option options arch]
+    set isa [mips_arch_info $arch isa]
     set isa_rev [mips_arch_info $arch isa_rev]
 
     # Set an appropriate ABI, handling dependencies between the pre-abi
