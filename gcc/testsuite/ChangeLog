@@ -1,3 +1,13 @@
+2015-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67216
+	* g++.dg/cpp0x/nullptr34.C: New.
+	* g++.dg/warn/Wconversion2.C: Adjust.
+	* g++.dg/warn/Wnull-conversion-1.C: Likewise.
+	* g++.old-deja/g++.other/null3.C: Likewise.
+
+	* g++.dg/cpp0x/pr51313.C: Adjust.
+
 2015-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67221
