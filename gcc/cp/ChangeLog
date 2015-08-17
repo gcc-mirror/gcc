@@ -1,5 +1,8 @@
 2015-08-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67244
+	* pt.c (tsubst_copy_and_build): Call insert_pending_capture_proxies.
+
 	PR c++/65734
 	* class.c (fixup_attribute_variants): Respect TYPE_USER_ALIGN.
 
