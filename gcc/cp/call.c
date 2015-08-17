@@ -524,22 +524,33 @@ struct z_candidate {
 bool
 null_ptr_cst_p (tree t)
 {
+  tree type = TREE_TYPE (t);
+
   /* [conv.ptr]
 
      A null pointer constant is an integral constant expression
      (_expr.const_) rvalue of integer type that evaluates to zero or
      an rvalue of type std::nullptr_t. */
-  if (NULLPTR_TYPE_P (TREE_TYPE (t)))
+  if (NULLPTR_TYPE_P (type))
     return true;
-  if (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)))
+
+  if (cxx_dialect >= cxx11)
     {
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
-      if (cxx_dialect < cxx11)
-	t = fold_non_dependent_expr (t);
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TREE_CODE (t) == INTEGER_CST
+	  && integer_zerop (t)
+	  && !TREE_OVERFLOW (t))
+	return true;
+    }
+  else if (CP_INTEGRAL_TYPE_P (type))
+    {
+      t = fold_non_dependent_expr (t);
       STRIP_NOPS (t);
       if (integer_zerop (t) && !TREE_OVERFLOW (t))
 	return true;
     }
+
   return false;
 }
 
