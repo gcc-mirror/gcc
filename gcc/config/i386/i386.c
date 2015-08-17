@@ -73,7 +73,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cselib.h"
 #include "debug.h"
 #include "sched-int.h"
-#include "fibheap.h"
 #include "opts.h"
 #include "diagnostic.h"
 #include "dumpfile.h"

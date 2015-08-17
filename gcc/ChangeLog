@@ -1,3 +1,7 @@
+2015-08-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/i386/i386.c: Remove include of fibheap.h.
+
 2015-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67221
