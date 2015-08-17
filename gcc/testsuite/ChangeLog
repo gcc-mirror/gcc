@@ -1,3 +1,8 @@
+2015-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67221
+	* gcc.dg/torture/pr67221.c: New testcase.
+
 2015-08-17 Mike Stump  <mikestump@comcast.net>
            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 

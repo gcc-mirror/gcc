@@ -1,3 +1,10 @@
+2015-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67221
+	* tree-ssa-sccvn.c (visit_phi): Keep all-TOP args TOP.
+	(sccvn_dom_walker::before_dom_children): Mark backedges of
+	non-executable blocks as not executable.
+
 2015-08-17  David Sherwood  <david.sherwood@arm.com>
 
 	* config/arm/arm.c (neon_element_bits): Replace call to
