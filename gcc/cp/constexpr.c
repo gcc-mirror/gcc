@@ -1732,6 +1732,18 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
     {
       if (tree_int_cst_lt (index, array_type_nelts_top (TREE_TYPE (ary))))
 	{
+	  if (TREE_CODE (ary) == CONSTRUCTOR
+	      && CONSTRUCTOR_NO_IMPLICIT_ZERO (ary))
+	    {
+	      /* 'ary' is part of the aggregate initializer we're currently
+		 building; if there's no initializer for this element yet,
+		 that's an error. */
+	      if (!ctx->quiet)
+		error ("accessing uninitialized array element");
+	      *non_constant_p = true;
+	      return t;
+	    }
+
 	  /* If it's within the array bounds but doesn't have an explicit
 	     initializer, it's value-initialized.  */
 	  tree val = build_value_init (elem_type, tf_warning_or_error);
@@ -2674,13 +2686,17 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       return t;
     }
   type = TREE_TYPE (object);
+  bool no_zero_init = true;
   while (!refs->is_empty())
     {
       if (*valp == NULL_TREE)
 	{
 	  *valp = build_constructor (type, NULL);
-	  CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp) = true;
+	  CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp) = no_zero_init;
 	}
+      /* If the value of object is already zero-initialized, any new ctors for
+	 subobjects will also be zero-initialized.  */
+      no_zero_init = CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp);
 
       constructor_elt ce;
       type = refs->pop();
@@ -2708,7 +2724,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       new_ctx.ctor = build_constructor (type, NULL);
       if (*valp == NULL_TREE)
 	*valp = new_ctx.ctor;
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = true;
+      CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = no_zero_init;
       new_ctx.object = target;
     }
 

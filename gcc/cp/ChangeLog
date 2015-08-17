@@ -1,5 +1,10 @@
 2015-08-17  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_store_expression): Don't set
+	CONSTRUCTOR_NO_IMPLICIT_ZERO if we have an enclosing CONSTRUCTOR
+	without it.
+	(cxx_eval_array_reference): Check it.
+
 	* except.c (check_noexcept_r): Assert that fn is POINTER_TYPE_P.
 
 2015-08-14  Jason Merrill  <jason@redhat.com>
