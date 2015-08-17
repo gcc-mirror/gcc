@@ -16344,6 +16344,8 @@ tsubst_copy_and_build (tree t,
 
 	LAMBDA_EXPR_THIS_CAPTURE (r) = NULL_TREE;
 
+	insert_pending_capture_proxies ();
+
 	RETURN (build_lambda_object (r));
       }
 
