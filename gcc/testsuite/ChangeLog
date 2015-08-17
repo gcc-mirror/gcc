@@ -1,3 +1,8 @@
+2015-08-17 Mike Stump  <mikestump@comcast.net>
+           Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/memcpy-aligned-1.c: New test.
+
 2015-08-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/54656
