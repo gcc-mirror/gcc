@@ -5491,7 +5491,7 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
     {
       num_elem = CONST_VECTOR_NUNITS (op);
       elems = &CONST_VECTOR_ELT (op, 0);
-      elem_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (innermode));
+      elem_bitsize = GET_MODE_UNIT_BITSIZE (innermode);
     }
   else
     {

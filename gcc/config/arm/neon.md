@@ -2672,12 +2672,12 @@
 	 to this model.  */
       unsigned int elt = INTVAL (operands[2]);
       unsigned int reg_nelts
-	= 64 / GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
+	= 64 / GET_MODE_UNIT_BITSIZE (<MODE>mode);
       elt ^= reg_nelts - 1;
       operands[2] = GEN_INT (elt);
     }
 
-  if (GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode)) == 32)
+  if (GET_MODE_UNIT_BITSIZE (<MODE>mode) == 32)
     emit_insn (gen_vec_extract<mode> (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vget_lane<mode>_sext_internal (operands[0],
@@ -2701,12 +2701,12 @@
 	 to this model.  */
       unsigned int elt = INTVAL (operands[2]);
       unsigned int reg_nelts
-	= 64 / GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
+	= 64 / GET_MODE_UNIT_BITSIZE (<MODE>mode);
       elt ^= reg_nelts - 1;
       operands[2] = GEN_INT (elt);
     }
 
-  if (GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode)) == 32)
+  if (GET_MODE_UNIT_BITSIZE (<MODE>mode) == 32)
     emit_insn (gen_vec_extract<mode> (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vget_lane<mode>_zext_internal (operands[0],
@@ -2766,7 +2766,7 @@ if (BYTES_BIG_ENDIAN)
   if (BYTES_BIG_ENDIAN)
     {
       unsigned int reg_nelts
-	= 64 / GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
+	= 64 / GET_MODE_UNIT_BITSIZE (<MODE>mode);
       elt ^= reg_nelts - 1;
     }
 
@@ -2869,7 +2869,7 @@ if (BYTES_BIG_ENDIAN)
     {
       unsigned int elt = INTVAL (operands[2]);
       unsigned int reg_nelts
-	= 64 / GET_MODE_BITSIZE (GET_MODE_INNER (<V_double_vector_mode>mode));
+	= 64 / GET_MODE_UNIT_BITSIZE (<V_double_vector_mode>mode);
       elt ^= reg_nelts - 1;
       operands[2] = GEN_INT (elt);
     }

@@ -3392,7 +3392,7 @@ arith_immediate_p (rtx op, machine_mode mode,
   constant_to_array (mode, op, arr);
 
   bytes = GET_MODE_UNIT_SIZE (mode);
-  mode = mode_for_size (GET_MODE_BITSIZE (GET_MODE_INNER (mode)), MODE_INT, 0);
+  mode = mode_for_size (GET_MODE_UNIT_BITSIZE (mode), MODE_INT, 0);
 
   /* Check that bytes are repeated. */
   for (i = bytes; i < 16; i += bytes)

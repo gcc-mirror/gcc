@@ -2784,7 +2784,6 @@ vect_recog_mixed_size_cond_pattern (vec<gimple> *stmts, tree *type_in,
   tree cond_expr, then_clause, else_clause;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt), def_stmt_info;
   tree type, vectype, comp_vectype, itype = NULL_TREE, vecitype;
-  machine_mode cmpmode;
   gimple pattern_stmt, def_stmt;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
@@ -2846,9 +2845,11 @@ vect_recog_mixed_size_cond_pattern (vec<gimple> *stmts, tree *type_in,
       itype = orig_type1;
     }
 
-  cmpmode = GET_MODE_INNER (TYPE_MODE (comp_vectype));
 
-  if (GET_MODE_BITSIZE (TYPE_MODE (type)) == GET_MODE_BITSIZE (cmpmode))
+  HOST_WIDE_INT cmp_mode_size
+    = GET_MODE_UNIT_BITSIZE (TYPE_MODE (comp_vectype));
+
+  if (GET_MODE_BITSIZE (TYPE_MODE (type)) == cmp_mode_size)
     return NULL;
 
   vectype = get_vectype_for_scalar_type (type);
@@ -2859,11 +2860,11 @@ vect_recog_mixed_size_cond_pattern (vec<gimple> *stmts, tree *type_in,
     return NULL;
 
   if (itype == NULL_TREE)
-    itype = build_nonstandard_integer_type (GET_MODE_BITSIZE (cmpmode),
+    itype = build_nonstandard_integer_type (cmp_mode_size,
   					    TYPE_UNSIGNED (type));
 
   if (itype == NULL_TREE
-      || GET_MODE_BITSIZE (TYPE_MODE (itype)) != GET_MODE_BITSIZE (cmpmode))
+      || GET_MODE_BITSIZE (TYPE_MODE (itype)) != cmp_mode_size)
     return NULL;
 
   vecitype = get_vectype_for_scalar_type (itype);
@@ -2873,7 +2874,7 @@ vect_recog_mixed_size_cond_pattern (vec<gimple> *stmts, tree *type_in,
   if (!expand_vec_cond_expr_p (vecitype, comp_vectype))
     return NULL;
 
-  if (GET_MODE_BITSIZE (TYPE_MODE (type)) > GET_MODE_BITSIZE (cmpmode))
+  if (GET_MODE_BITSIZE (TYPE_MODE (type)) > cmp_mode_size)
     {
       if ((TREE_CODE (then_clause) == INTEGER_CST
 	   && !int_fits_type_p (then_clause, itype))

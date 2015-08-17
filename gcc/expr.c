@@ -9008,7 +9008,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
            little-endian, or element N-1 if big-endian.  So pull the scalar
            result out of that element.  */
         int index = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (vec_mode) - 1 : 0;
-        int bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (vec_mode));
+	int bitsize = GET_MODE_UNIT_BITSIZE (vec_mode);
         temp = extract_bit_field (temp, bitsize, bitsize * index, unsignedp,
 				  target, mode, mode);
         gcc_assert (temp);

@@ -680,8 +680,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && !MEM_P (op0)
       && optab_handler (vec_set_optab, GET_MODE (op0)) != CODE_FOR_nothing
       && fieldmode == GET_MODE_INNER (GET_MODE (op0))
-      && bitsize == GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
-      && !(bitnum % GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))))
+      && bitsize == GET_MODE_UNIT_BITSIZE (GET_MODE (op0))
+      && !(bitnum % GET_MODE_UNIT_BITSIZE (GET_MODE (op0))))
     {
       struct expand_operand ops[3];
       machine_mode outermode = GET_MODE (op0);
@@ -1491,8 +1491,8 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
       && optab_handler (vec_extract_optab, GET_MODE (op0)) != CODE_FOR_nothing
-      && ((bitnum + bitsize - 1) / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
-	  == bitnum / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))))
+      && ((bitnum + bitsize - 1) / GET_MODE_UNIT_BITSIZE (GET_MODE (op0))
+	  == bitnum / GET_MODE_UNIT_BITSIZE (GET_MODE (op0))))
     {
       struct expand_operand ops[3];
       machine_mode outermode = GET_MODE (op0);
