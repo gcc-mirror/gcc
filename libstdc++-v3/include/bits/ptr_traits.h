@@ -32,7 +32,7 @@
 
 #if __cplusplus >= 201103L
 
-#include <type_traits>
+#include <bits/move.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -1,5 +1,7 @@
 2015-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/ptr_traits.h: Include <bits/move.h> for addressof.
+
 	PR libstdc++/67066
 	* doc/xml/manual/configure.xml (manual.intro.setup.configure): Add
 	caveats for --enable-concept-checks. Improve link text.
