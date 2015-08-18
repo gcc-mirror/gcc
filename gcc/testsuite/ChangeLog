@@ -1,3 +1,8 @@
+2015-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67160
+	* g++.dg/cpp1z/feat-cxx1z.C: New.
+
 2015-08-18  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/67222

@@ -1,3 +1,9 @@
+2015-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67160
+	* c-cppbuiltin.c (c_cpp_builtins): Fix __cpp_static_assert value
+	in c++1z mode.
+
 2015-08-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-pretty-print.c (pp_c_cv_qualifiers): Remove code dealing
