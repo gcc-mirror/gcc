@@ -6469,16 +6469,18 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  if (complain & tf_error)
 	    error ("%qE is not a valid template argument for type %qT "
-		   "because it is not an object with external linkage",
+		   "because it is not an object with linkage",
 		   expr, type);
 	  return NULL_TREE;
 	}
 
-      if (!DECL_EXTERNAL_LINKAGE_P (expr))
+      /* DR 1155 allows internal linkage in C++11 and up.  */
+      linkage_kind linkage = decl_linkage (expr);
+      if (linkage < (cxx_dialect >= cxx11 ? lk_internal : lk_external))
 	{
 	  if (complain & tf_error)
 	    error ("%qE is not a valid template argument for type %qT "
-		   "because object %qD has not external linkage",
+		   "because object %qD does not have linkage",
 		   expr, type, expr);
 	  return NULL_TREE;
 	}

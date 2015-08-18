@@ -11,7 +11,7 @@ int a = 1;
 X<a> x; // ok, a has external linkage
 
 const int b = 2;
-X<b> y; // { dg-error "" } const b has internal linkage
+X<b> y; // { dg-error "" "" { target c++98_only } } const b has internal linkage
 
 extern const int c;
 X<c> z; // ok, c has external linkage
