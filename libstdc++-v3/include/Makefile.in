@@ -418,6 +418,7 @@ bits_headers = \
 	${bits_srcdir}/postypes.h \
 	${bits_srcdir}/predefined_ops.h \
 	${bits_srcdir}/ptr_traits.h \
+	${bits_srcdir}/quoted_string.h \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/range_access.h \
@@ -939,10 +940,19 @@ experimental_headers = \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/string_view \
-	${experimental_srcdir}/system_error \
 	${experimental_srcdir}/string_view.tcc \
+	${experimental_srcdir}/system_error \
 	${experimental_srcdir}/tuple \
-	${experimental_srcdir}/type_traits
+	${experimental_srcdir}/type_traits \
+	${experimental_filesystem_headers}
+
+@ENABLE_FILESYSTEM_TS_FALSE@experimental_filesystem_headers = 
+@ENABLE_FILESYSTEM_TS_TRUE@experimental_filesystem_headers = \
+@ENABLE_FILESYSTEM_TS_TRUE@	${experimental_srcdir}/filesystem \
+@ENABLE_FILESYSTEM_TS_TRUE@	${experimental_srcdir}/fs_dir.h \
+@ENABLE_FILESYSTEM_TS_TRUE@	${experimental_srcdir}/fs_fwd.h \
+@ENABLE_FILESYSTEM_TS_TRUE@	${experimental_srcdir}/fs_ops.h \
+@ENABLE_FILESYSTEM_TS_TRUE@	${experimental_srcdir}/fs_path.h
 
 
 # This is the common subset of C++ files that all three "C" header models use.

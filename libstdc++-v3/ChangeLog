@@ -1,5 +1,99 @@
 2015-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport Filesystem TS from mainline
+	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS,
+	GLIBCXX_CHECK_FILESYSTEM_DEPS): Define.
+	* configure.ac: Use them.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* include/Makefile.am: Add filesystem headers. Fix order of headers.
+	* include/Makefile.in: Regenerate.
+	* include/bits/locale_conv.h (__do_str_codecvt, __str_codecvt_in,
+	__str_codecvt_out, wstring_convert): Refactor to move all conversion
+	logic to non-member functions.
+	* include/bits/quoted_string.h (_Quoted_string, operator<<,
+	operator>>): Move from <iomanip> to new header.
+	* include/experimental/filesystem: New.
+	* include/experimental/fs_dir.h: New.
+	* include/experimental/fs_fwd.h: New.
+	* include/experimental/fs_ops.h: New.
+	* include/experimental/fs_path.h: New.
+	* include/std/iomanip (_Quoted_string, operator<<, operator>>): Move
+	to <bits/quoted_string.h>.
+	* libstdcxx/v6/printers.py (StdExpPathPrinter): Define.
+	* scripts/testsuite_flags.in: Add filesystem dir to ldflags.
+	* src/Makefile.am: Add filesystem sub-dir.
+	* src/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.am: New.
+	* src/filesystem/Makefile.in: New.
+	* src/filesystem/dir.cc: New.
+	* src/filesystem/ops.cc: New.
+	* src/filesystem/path.cc: New.
+	* testsuite/experimental/filesystem/operations/absolute.cc: New.
+	* testsuite/experimental/filesystem/operations/copy.cc: New.
+	* testsuite/experimental/filesystem/operations/current_path.cc: New.
+	* testsuite/experimental/filesystem/operations/exists.cc: New.
+	* testsuite/experimental/filesystem/operations/file_size.cc: New.
+	* testsuite/experimental/filesystem/operations/status.cc: New.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	New.
+	* testsuite/experimental/filesystem/path/append/path.cc: New.
+	* testsuite/experimental/filesystem/path/assign/assign.cc: New.
+	* testsuite/experimental/filesystem/path/assign/copy.cc: New.
+	* testsuite/experimental/filesystem/path/compare/compare.cc: New.
+	* testsuite/experimental/filesystem/path/compare/path.cc: New.
+	* testsuite/experimental/filesystem/path/compare/strings.cc: New.
+	* testsuite/experimental/filesystem/path/concat/path.cc: New.
+	* testsuite/experimental/filesystem/path/concat/strings.cc: New.
+	* testsuite/experimental/filesystem/path/construct/copy.cc: New.
+	* testsuite/experimental/filesystem/path/construct/default.cc: New.
+	* testsuite/experimental/filesystem/path/construct/locale.cc: New.
+	* testsuite/experimental/filesystem/path/construct/range.cc: New.
+	* testsuite/experimental/filesystem/path/decompose/extension.cc: New.
+	* testsuite/experimental/filesystem/path/decompose/filename.cc: New.
+	* testsuite/experimental/filesystem/path/decompose/parent_path.cc:
+	New.
+	* testsuite/experimental/filesystem/path/decompose/relative_path.cc:
+	New.
+	* testsuite/experimental/filesystem/path/decompose/root_directory.cc:
+	New.
+	* testsuite/experimental/filesystem/path/decompose/root_name.cc: New.
+	* testsuite/experimental/filesystem/path/decompose/root_path.cc: New.
+	* testsuite/experimental/filesystem/path/decompose/stem.cc: New.
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	New.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: New.
+	* testsuite/experimental/filesystem/path/modifiers/clear.cc: New.
+	* testsuite/experimental/filesystem/path/modifiers/make_preferred.cc:
+	New.
+	* testsuite/experimental/filesystem/path/modifiers/remove_filename.cc:
+	New.
+	* testsuite/experimental/filesystem/path/modifiers/
+	replace_extension.cc: New.
+	* testsuite/experimental/filesystem/path/modifiers/replace_filename.cc:
+	New.
+	* testsuite/experimental/filesystem/path/modifiers/swap.cc: New.
+	* testsuite/experimental/filesystem/path/nonmember/hash_value.cc:
+	New.
+	* testsuite/experimental/filesystem/path/query/empty.cc: New.
+	* testsuite/experimental/filesystem/path/query/has_extension.cc: New.
+	* testsuite/experimental/filesystem/path/query/has_filename.cc: New.
+	* testsuite/experimental/filesystem/path/query/has_parent_path.cc:
+	New.
+	* testsuite/experimental/filesystem/path/query/has_relative_path.cc:
+	New.
+	* testsuite/experimental/filesystem/path/query/has_root_directory.cc:
+	New.
+	* testsuite/experimental/filesystem/path/query/has_root_name.cc: New.
+	* testsuite/experimental/filesystem/path/query/has_root_path.cc: New.
+	* testsuite/experimental/filesystem/path/query/has_stem.cc: New.
+	* testsuite/experimental/filesystem/path/query/is_relative.cc: New.
+	* testsuite/lib/dg-options.exp (dg-require-filesystem-ts): Define.
+	* testsuite/lib/libstdc++.exp (check_v3_target_filesystem_ts): Define.
+	* testsuite/util/testsuite_fs.h: New.
+
+2015-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
 	* Makefile.in: Regenerate with automake-1.11.6.
 	* aclocal.m4: Likewise.
 	* configure: Likewise.

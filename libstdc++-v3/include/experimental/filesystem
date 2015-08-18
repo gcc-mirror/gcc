@@ -1,0 +1,77 @@
+// <experimental/filesystem> -*- C++ -*-
+
+// Copyright (C) 2014-2015 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file experimental/filesystem
+ *  This is a TS C++ Library header.
+ */
+
+#ifndef _GLIBCXX_EXPERIMENTAL_FILESYSTEM
+#define _GLIBCXX_EXPERIMENTAL_FILESYSTEM 1
+
+#pragma GCC system_header
+
+#if __cplusplus < 201103L
+# include <bits/c++0x_warning.h>
+#else
+
+#include <experimental/fs_fwd.h>
+#include <experimental/fs_path.h>
+#include <experimental/fs_dir.h>
+#include <experimental/fs_ops.h>
+
+#define __cpp_lib_experimental_filesystem 201406
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace experimental
+{
+namespace filesystem
+{
+inline namespace v1
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /**
+   * @ingroup filesystem
+   */
+    inline std::string filesystem_error::_M_gen_what()
+    {
+      std::string __what = "filesystem error: ";
+      __what += system_error::what();
+      if (!_M_path1.empty())
+	  __what += " [" + _M_path1.string() + ']';
+      if (!_M_path2.empty())
+	  __what += " [" + _M_path2.string() + ']';
+      return __what;
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace v1
+} // namespace filesystem
+} // namespace experimental
+} // namespace std
+
+#endif // C++11
+
+#endif // _GLIBCXX_EXPERIMENTAL_FILESYSTEM

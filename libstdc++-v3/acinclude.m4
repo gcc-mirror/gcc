@@ -49,7 +49,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   # Keep these sync'd with the list in Makefile.am.  The first provides an
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
-  m4_define([glibcxx_SUBDIRS],[include libsupc++ python src src/c++98 src/c++11 doc po testsuite])
+  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/filesystem doc po testsuite python])
   SUBDIRS='glibcxx_SUBDIRS'
 
   # These need to be absolute paths, yet at the same time need to
@@ -3905,6 +3905,167 @@ AC_DEFUN([GLIBCXX_DEFAULT_ABI], [
   GLIBCXX_CONDITIONAL(ENABLE_CXX11_ABI, test $glibcxx_cxx11_abi = 1)
 ])
 
+dnl
+dnl Check to see whether to build libstdc++fs.a
+dnl
+dnl --enable-libstdcxx-filesystem-ts
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_FILESYSTEM_TS], [
+  GLIBCXX_ENABLE(libstdcxx-filesystem-ts,auto,,
+    [turns on ISO/IEC TS 18822 support],
+    [permit yes|no|auto])
+
+  AC_MSG_CHECKING([whether to build Filesystem TS support])
+  if test x"$ac_cv_header_dirent_h" != x"yes"; then
+    enable_libstdcxx_filesystem_ts=no
+  fi
+  if test x"$enable_libstdcxx_filesystem_ts" = x"auto"; then
+    case "${target_os}" in
+      freebsd*|netbsd*|openbsd*|dragonfly*|darwin*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      solaris*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      *)
+        enable_libstdcxx_filesystem_ts=no
+        ;;
+    esac
+  fi
+  AC_MSG_RESULT($enable_libstdcxx_filesystem_ts)
+  GLIBCXX_CONDITIONAL(ENABLE_FILESYSTEM_TS, test $enable_libstdcxx_filesystem_ts = yes)
+])
+
+dnl
+dnl Check whether the library calls required by the Filesystem TS are present
+dnl and define _GLIBCXX_USE_REALPATH and _GLIBCXX_USE_UTIMENSAT.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_FILESYSTEM_DEPS], [dnl
+dnl
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+dnl
+  AC_MSG_CHECKING([for struct dirent.d_type])
+  AC_CACHE_VAL(glibcxx_cv_dirent_d_type, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
+      ],
+      [glibcxx_cv_dirent_d_type=yes],
+      [glibcxx_cv_dirent_d_type=no])
+  ])
+  if test $glibcxx_cv_dirent_d_type = yes; then
+    AC_DEFINE(_GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_dirent_d_type)
+dnl
+  AC_MSG_CHECKING([for realpath])
+  AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <stdlib.h>],
+      [char *tmp = realpath((const char*)NULL, (char*)NULL);],
+      [glibcxx_cv_realpath=yes],
+      [glibcxx_cv_realpath=no])
+  ])
+  if test $glibcxx_cv_realpath = yes; then
+    AC_DEFINE(_GLIBCXX_USE_REALPATH, 1, [Define if realpath is available in <stdlib.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_realpath)
+dnl
+  AC_MSG_CHECKING([for utimensat])
+  AC_CACHE_VAL(glibcxx_cv_utimensat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [
+        #include <fcntl.h>
+        #include <sys/stat.h>
+      ],
+      [
+        struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+        int i = utimensat(AT_FDCWD, "path", ts, 0);
+      ],
+      [glibcxx_cv_utimensat=yes],
+      [glibcxx_cv_utimensat=no])
+  ])
+  if test $glibcxx_cv_utimensat = yes; then
+    AC_DEFINE(_GLIBCXX_USE_UTIMENSAT, 1, [Define if utimensat and UTIME_OMIT are available in <sys/stat.h> and AT_FDCWD in <fcntl.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_utimensat)
+dnl
+  AC_MSG_CHECKING([for struct stat.st_mtim.tv_nsec])
+  AC_CACHE_VAL(glibcxx_cv_st_mtim, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [ #include <sys/stat.h> ],
+      [
+        struct stat st;
+        return st.st_mtim.tv_nsec;
+      ],
+      [glibcxx_cv_st_mtim=yes],
+      [glibcxx_cv_st_mtim=no])
+  ])
+  if test $glibcxx_cv_st_mtim = yes; then
+    AC_DEFINE(_GLIBCXX_USE_ST_MTIM, 1, [Define if struct stat has timespec members.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_st_mtim)
+dnl
+  AC_MSG_CHECKING([for fchmod])
+  AC_CACHE_VAL(glibcxx_cv_fchmod, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <sys/stat.h>],
+      [fchmod(1, S_IWUSR);],
+      [glibcxx_cv_fchmod=yes],
+      [glibcxx_cv_fchmod=no])
+  ])
+  if test $glibcxx_cv_fchmod = yes; then
+    AC_DEFINE(_GLIBCXX_USE_FCHMOD, 1, [Define if fchmod is available in <sys/stat.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_fchmod)
+dnl
+  AC_MSG_CHECKING([for fchmodat])
+  AC_CACHE_VAL(glibcxx_cv_fchmodat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [
+        #include <fcntl.h>
+        #include <sys/stat.h>
+      ],
+      [fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);],
+      [glibcxx_cv_fchmodat=yes],
+      [glibcxx_cv_fchmodat=no])
+  ])
+  if test $glibcxx_cv_fchmodat = yes; then
+    AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_fchmodat)
+dnl
+  AC_MSG_CHECKING([for sendfile that can copy files])
+  AC_CACHE_VAL(glibcxx_cv_sendfile, [dnl
+    case "${target_os}" in
+      gnu* | linux* | solaris*)
+        GCC_TRY_COMPILE_OR_LINK(
+          [#include <sys/sendfile.h>],
+          [sendfile(1, 2, (off_t*)NULL, sizeof 1);],
+          [glibcxx_cv_sendfile=yes],
+          [glibcxx_cv_sendfile=no])
+        ;;
+      *)
+        glibcxx_cv_sendfile=no
+        ;;
+    esac
+  ])
+  if test $glibcxx_cv_sendfile = yes; then
+    AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/stat.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_sendfile)
+dnl
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
 
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])

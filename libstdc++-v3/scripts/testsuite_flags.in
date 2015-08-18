@@ -77,7 +77,8 @@ case ${query} in
       echo ${PCHFLAGS}
       ;;
     --cxxldflags)
-      SECTIONLDFLAGS="@SECTION_LDFLAGS@ @LIBICONV@"
+      SECTIONLDFLAGS="@SECTION_LDFLAGS@ @LIBICONV@
+                      -L${BUILD_DIR}/src/filesystem/.libs"
       echo ${SECTIONLDFLAGS}
       ;;
     *)

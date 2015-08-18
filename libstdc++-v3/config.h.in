@@ -54,6 +54,9 @@
 /* Define to 1 if you have the `cosl' function. */
 #undef HAVE_COSL
 
+/* Define to 1 if you have the <dirent.h> header file. */
+#undef HAVE_DIRENT_H
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -131,6 +134,9 @@
 
 /* Define to 1 if you have the `fabsl' function. */
 #undef HAVE_FABSL
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
 
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
@@ -406,6 +412,9 @@
 /* Define to 1 if you have the <sys/sem.h> header file. */
 #undef HAVE_SYS_SEM_H
 
+/* Define to 1 if you have the <sys/statvfs.h> header file. */
+#undef HAVE_SYS_STATVFS_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -450,6 +459,9 @@
 
 /* Defined if usleep exists. */
 #undef HAVE_USLEEP
+
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
 
 /* Defined if vfwscanf exists. */
 #undef HAVE_VFWSCANF
@@ -726,6 +738,9 @@
 /* Define if gthreads library is available. */
 #undef _GLIBCXX_HAS_GTHREADS
 
+/* Define to 1 if `d_type' is a member of `struct dirent'. */
+#undef _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE
+
 /* Define to 1 if a full hosted library is built, or 0 if freestanding. */
 #undef _GLIBCXX_HOSTED
 
@@ -824,6 +839,12 @@
    this host. */
 #undef _GLIBCXX_USE_DECIMAL_FLOAT
 
+/* Define if fchmod is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_FCHMOD
+
+/* Define if fchmodat is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_FCHMODAT
+
 /* Define if __float128 is supported on this host. */
 #undef _GLIBCXX_USE_FLOAT128
 
@@ -858,6 +879,9 @@
    of TR1 (Chapter 5.1). */
 #undef _GLIBCXX_USE_RANDOM_TR1
 
+/* Define if realpath is available in <stdlib.h>. */
+#undef _GLIBCXX_USE_REALPATH
+
 /* Defined if sched_yield is available. */
 #undef _GLIBCXX_USE_SCHED_YIELD
 
@@ -867,11 +891,21 @@
 /* Define if _SC_NPROC_ONLN is available in <unistd.h>. */
 #undef _GLIBCXX_USE_SC_NPROC_ONLN
 
+/* Define if sendfile is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_SENDFILE
+
+/* Define if struct stat has timespec members. */
+#undef _GLIBCXX_USE_ST_MTIM
+
 /* Define if sysctl(), CTL_HW and HW_NCPU are available in <sys/sysctl.h>. */
 #undef _GLIBCXX_USE_SYSCTL_HW_NCPU
 
 /* Define if obsolescent tmpnam is available in <stdio.h>. */
 #undef _GLIBCXX_USE_TMPNAM
+
+/* Define if utimensat and UTIME_OMIT are available in <sys/stat.h> and
+   AT_FDCWD in <fcntl.h>. */
+#undef _GLIBCXX_USE_UTIMENSAT
 
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T

@@ -402,6 +402,11 @@ GLIBCXX_CONFIGURE_TESTSUITE
 # For gthread support.  Depends on GLIBCXX_ENABLE_SYMVERS.
 GLIBCXX_CHECK_GTHREADS
 
+# For Filesystem TS.
+AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
+GLIBCXX_ENABLE_FILESYSTEM_TS
+GLIBCXX_CHECK_FILESYSTEM_DEPS
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough
