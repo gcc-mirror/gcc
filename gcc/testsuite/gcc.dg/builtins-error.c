@@ -16,6 +16,7 @@ int test1(struct X x)
   if (x.x == 10) return __builtin_islessequal(x, x); /* { dg-error "non-floating-point arguments" } */
   if (x.x == 11) return __builtin_islessgreater(x, x); /* { dg-error "non-floating-point arguments" } */
   if (x.x == 12) return __builtin_isunordered(x, x); /* { dg-error "non-floating-point arguments" } */
+  if (x.x == 13) return __builtin_signbit(x); /* { dg-error "non-floating-point argument" } */
 
   return 0;
 }
@@ -34,6 +35,7 @@ int test2(double x)
   if (x == 10) return __builtin_islessequal(x); /* { dg-error "not enough arguments" } */
   if (x == 11) return __builtin_islessgreater(x); /* { dg-error "not enough arguments" } */
   if (x == 12) return __builtin_isunordered(x); /* { dg-error "not enough arguments" } */
+  if (x == 13) return __builtin_signbit(); /* { dg-error "not enough arguments" } */
   return 0;
 }
 
@@ -51,6 +53,7 @@ int test3(double x)
   if (x == 10) return __builtin_islessequal(x, x, x); /* { dg-error "too many arguments" } */
   if (x == 11) return __builtin_islessgreater(x, x, x); /* { dg-error "too many arguments" } */
   if (x == 12) return __builtin_isunordered(x, x, x); /* { dg-error "too many arguments" } */
+  if (x == 13) return __builtin_signbit(x, x); /* { dg-error "too many arguments" } */
   return 0;
 }
 

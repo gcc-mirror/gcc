@@ -10151,6 +10151,7 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
     case BUILT_IN_ISINF_SIGN:
     case BUILT_IN_ISNAN:
     case BUILT_IN_ISNORMAL:
+    case BUILT_IN_SIGNBIT:
       if (builtin_function_validate_nargs (fndecl, nargs, 1))
 	{
 	  if (TREE_CODE (TREE_TYPE (args[0])) != REAL_TYPE)

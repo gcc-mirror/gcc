@@ -1,3 +1,9 @@
+2015-08-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/36757
+	* c-common.c (check_builtin_function_arguments): Add check
+	for BUILT_IN_SIGNBIT argument.
+
 2015-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67160
