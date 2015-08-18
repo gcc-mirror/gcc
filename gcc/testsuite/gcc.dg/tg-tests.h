@@ -11,7 +11,7 @@ void __attribute__ ((__noinline__))
 foo_1 (float f, double d, long double ld,
        int res_unord, int res_isnan, int res_isinf,
        int res_isinf_sign, int res_isfin, int res_isnorm,
-       int classification)
+       int res_signbit, int classification)
 {
   if (__builtin_isunordered (f, 0) != res_unord)
     __builtin_abort ();
@@ -80,6 +80,23 @@ foo_1 (float f, double d, long double ld,
   if (__builtin_finitel (ld) != res_isfin)
     __builtin_abort ();
 
+  /* Sign bit of zeros and nans is not preserved in unsafe math mode.  */
+#ifdef UNSAFE
+  if (!res_isnan && d != 0)
+#endif
+    {
+      if ((__builtin_signbit (f) ? 1 : 0) != res_signbit)
+	__builtin_abort ();
+      if ((__builtin_signbit (d) ? 1 : 0) != res_signbit)
+	__builtin_abort ();
+      if ((__builtin_signbit (ld) ? 1 : 0) != res_signbit)
+	__builtin_abort ();
+      if ((__builtin_signbitf (f) ? 1 : 0) != res_signbit)
+	__builtin_abort ();
+      if ((__builtin_signbitl (ld) ? 1 : 0) != res_signbit)
+	__builtin_abort ();
+    }
+
   /* Subnormals can abruptly underflow to zero in unsafe math
      mode, so bypass testing these numbers if necessary.  */
 #ifdef UNSAFE
@@ -100,9 +117,10 @@ foo (float f, double d, long double ld,
      int res_unord, int res_isnan, int res_isinf,
      int res_isfin, int res_isnorm, int classification)
 {
-  foo_1 (f, d, ld, res_unord, res_isnan, res_isinf, res_isinf, res_isfin, res_isnorm, classification);
-  /* Try all the values negated as well.  */
-  foo_1 (-f, -d, -ld, res_unord, res_isnan, res_isinf, -res_isinf, res_isfin, res_isnorm, classification);
+  foo_1 (f, d, ld, res_unord, res_isnan, res_isinf, res_isinf, res_isfin, res_isnorm, 0, classification);
+  /* Try all the values negated as well.  All will have the sign bit set,
+     except for the nan.  */
+  foo_1 (-f, -d, -ld, res_unord, res_isnan, res_isinf, -res_isinf, res_isfin, res_isnorm, 1, classification);
 }
 
 int __attribute__ ((__noinline__))

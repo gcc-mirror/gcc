@@ -1,3 +1,11 @@
+2015-08-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/36757
+	* builtins.c (expand_builtin_signbit): Add asserts to make sure
+	we can expand BUILT_IN_SIGNBIT inline.
+	* builtins.def (BUILT_IN_SIGNBIT): Make type-generic.
+	* doc/extend.texi: Document the type-generic __builtin_signbit.
+
 2015-08-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/67218

@@ -10448,7 +10448,7 @@ the same names as the standard macros ( @code{isgreater},
 prefixed.  We intend for a library implementor to be able to simply
 @code{#define} each standard macro to its built-in equivalent.
 In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
-@code{isinf_sign} and @code{isnormal} built-ins used with
+@code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
 @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
 

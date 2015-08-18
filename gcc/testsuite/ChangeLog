@@ -1,3 +1,9 @@
+2015-08-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/36757
+	* gcc.dg/builtins-error.c: Add checks for __builtin_signbit.
+	* gcc.dg/tg-tests.h: Add checks for __builtin_signbit.
+
 2015-08-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/67218
