@@ -1,3 +1,7 @@
+2015-08-18  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/interrupt_handler-bug-1.c: New test.
+
 2015-08-18  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/loop-bound-1.c: New test.

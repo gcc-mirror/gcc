@@ -1,3 +1,11 @@
+2015-08-18  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips-protos.h (mips_hard_regno_rename_ok): New prototype.
+	* config/mips/mips.c (mips_hard_regno_rename_ok): New function.
+	(mips_hard_regno_scratch_ok): Likewise.
+	(TARGET_HARD_REGNO_SCRATCH_OK): Define macro.
+	* config/mips/mips.h (HARD_REGNO_RENAME_OK): New.
+
 2015-08-18  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-niter.c (refine_value_range_using_guard): New.
