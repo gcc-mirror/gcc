@@ -1,3 +1,24 @@
+2015-08-18  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* config/rs6000/altivec.h (vec_adde): New define.
+	(vec_addec): Likewise.
+	(vec_double): Likewise.
+	(vec_bperm): Likewise.
+	(vec_gb): Likewise.
+	* config/rs6000/rs6000-builtin.def (ADDE): New
+	BU_ALTIVEC_OVERLOAD_3.
+	(ADDEC): Likewise.
+	(DOUBLE): New BU_VSX_OVERLOAD_1.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add new
+	entries for ALTIVEC_BUILTIN_VEC_ADDC, ALTIVEC_BUILTIN_VEC_ADDE,
+	ALTIVEC_BUILTIN_VEC_ADDEC, ALTIVEC_BUILTIN_VEC_ANDC,
+	VSX_BUILTIN_VEC_DOUBLE, ALTIVEC_BUILTIN_VEC_MERGEH,
+	ALTIVEC_BUILTIN_VEC_MERGEL, ALTIVEC_BUILTIN_VEC_NOR,
+	ALTIVEC_BUILTIN_VEC_OR, ALTIVEC_BUILTIN_VEC_XOR,
+	ALTIVEC_BUILTIN_VEC_PERM, ALTIVEC_BUILTIN_VEC_SEL,
+	P8V_BUILTIN_VEC_EQV, P8V_BUILTIN_VEC_NAND, P8V_BUILTIN_VEC_ORC,
+	and P8V_BUILTIN_VEC_VBPERMQ.
+
 2015-08-18  Jason Merrill  <jason@redhat.com>
 
 	* print-tree.c (print_node): Handle TREE_BINFO.
