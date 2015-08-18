@@ -1,3 +1,9 @@
+2015-08-18  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.target/powerpc/altivec-35.c: New test.
+	* gcc.target/powerpc/p8vector-builtin-8.c: New test.
+	* gcc.target/powerpc/vsx-vector-7.c: New test.
+
 2015-08-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR middle-end/36757

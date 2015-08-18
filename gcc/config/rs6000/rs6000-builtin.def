@@ -951,6 +951,8 @@ BU_ALTIVEC_X (VEC_EXT_V4SF,	"vec_ext_v4sf",     CONST)
    before we get to the point about classifying the builtin type.  */
 
 /* 3 argument Altivec overloaded builtins.  */
+BU_ALTIVEC_OVERLOAD_3 (ADDE,	   "adde")
+BU_ALTIVEC_OVERLOAD_3 (ADDEC,	   "addec")
 BU_ALTIVEC_OVERLOAD_3 (MADD,       "madd")
 BU_ALTIVEC_OVERLOAD_3 (MADDS,      "madds")
 BU_ALTIVEC_OVERLOAD_3 (MLADD,      "mladd")
@@ -1446,6 +1448,9 @@ BU_VSX_OVERLOAD_2 (XXMRGHW,  "xxmrghw")
 BU_VSX_OVERLOAD_2 (XXMRGLW,  "xxmrglw")
 BU_VSX_OVERLOAD_2 (XXSPLTD,  "xxspltd")
 BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
+
+/* 1 argument VSX overloaded builtin functions.  */
+BU_VSX_OVERLOAD_1 (DOUBLE,   "double")
 
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
