@@ -829,6 +829,32 @@ simplify_unary_operation (enum rtx_code code, machine_mode mode,
   return simplify_unary_operation_1 (code, mode, op);
 }
 
+/* Return true if FLOAT or UNSIGNED_FLOAT operation OP is known
+   to be exact.  */
+
+static bool
+exact_int_to_float_conversion_p (const_rtx op)
+{
+  int out_bits = significand_size (GET_MODE_INNER (GET_MODE (op)));
+  machine_mode op0_mode = GET_MODE (XEXP (op, 0));
+  /* Constants shouldn't reach here.  */
+  gcc_assert (op0_mode != VOIDmode);
+  int in_prec = GET_MODE_UNIT_PRECISION (op0_mode);
+  int in_bits = in_prec;
+  if (HWI_COMPUTABLE_MODE_P (op0_mode))
+    {
+      unsigned HOST_WIDE_INT nonzero = nonzero_bits (XEXP (op, 0), op0_mode);
+      if (GET_CODE (op) == FLOAT)
+	in_bits -= num_sign_bit_copies (XEXP (op, 0), op0_mode);
+      else if (GET_CODE (op) == UNSIGNED_FLOAT)
+	in_bits = wi::min_precision (wi::uhwi (nonzero, in_prec), UNSIGNED);
+      else
+	gcc_unreachable ();
+      in_bits -= wi::ctz (wi::uhwi (nonzero, in_prec));
+    }
+  return in_bits <= out_bits;
+}
+
 /* Perform some simplifications we can do even if the operands
    aren't constant.  */
 static rtx
@@ -1190,11 +1216,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
       /*  (float_truncate (float x)) is (float x)  */
       if ((GET_CODE (op) == FLOAT || GET_CODE (op) == UNSIGNED_FLOAT)
 	  && (flag_unsafe_math_optimizations
-	      || (SCALAR_FLOAT_MODE_P (GET_MODE (op))
-		  && ((unsigned)significand_size (GET_MODE (op))
-		      >= (GET_MODE_PRECISION (GET_MODE (XEXP (op, 0)))
-			  - num_sign_bit_copies (XEXP (op, 0),
-						 GET_MODE (XEXP (op, 0))))))))
+	      || exact_int_to_float_conversion_p (op)))
 	return simplify_gen_unary (GET_CODE (op), mode,
 				   XEXP (op, 0),
 				   GET_MODE (XEXP (op, 0)));
@@ -1227,11 +1249,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
           */
       if (GET_CODE (op) == FLOAT_EXTEND
 	  || ((GET_CODE (op) == FLOAT || GET_CODE (op) == UNSIGNED_FLOAT)
-	      && SCALAR_FLOAT_MODE_P (GET_MODE (op))
-	      && ((unsigned)significand_size (GET_MODE (op))
-		  >= (GET_MODE_PRECISION (GET_MODE (XEXP (op, 0)))
-		      - num_sign_bit_copies (XEXP (op, 0),
-					     GET_MODE (XEXP (op, 0)))))))
+	      && exact_int_to_float_conversion_p (op)))
 	return simplify_gen_unary (GET_CODE (op), mode,
 				   XEXP (op, 0),
 				   GET_MODE (XEXP (op, 0)));
