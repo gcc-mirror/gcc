@@ -1,5 +1,9 @@
 2015-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR c++/67216
+	* testsuite/tr1/2_general_utilities/shared_ptr/observers/bool_conv.cc:
+	Fix use of safe-bool idiom that isn't valid in C++11.
+
 	* include/bits/ptr_traits.h: Include <bits/move.h> for addressof.
 
 	PR libstdc++/67066

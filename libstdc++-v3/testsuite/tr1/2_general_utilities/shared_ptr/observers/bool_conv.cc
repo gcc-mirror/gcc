@@ -31,9 +31,9 @@ test01()
   bool test __attribute__((unused)) = true;
 
   const std::tr1::shared_ptr<A> p1;
-  VERIFY( p1 == false );
+  VERIFY( bool(p1) == false );
   const std::tr1::shared_ptr<A> p2(p1);
-  VERIFY( p2 == false );
+  VERIFY( bool(p2) == false );
 
   return 0;
 }
