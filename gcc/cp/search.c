@@ -727,7 +727,7 @@ protected_accessible_p (tree decl, tree derived, tree binfo)
     Here DERIVED is a possible P, DECL is m and BINFO_TYPE (binfo) is N.  */
 
   /* If DERIVED isn't derived from N, then it can't be a P.  */
-  if (!DERIVED_FROM_P (BINFO_TYPE (binfo), derived))
+  if (!DERIVED_FROM_P (context_for_name_lookup (decl), derived))
     return 0;
 
   access = access_in_type (derived, decl);

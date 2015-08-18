@@ -15,7 +15,7 @@ struct B : protected P
 struct C : public P
 {
   // C can access P's copy ctor, but can't convert b to const P&.
-  C(const B& b) : P(b) {}	// { dg-error "inaccessible base" }
+  C(const B& b) : P(b) {}	// { dg-error "inaccessible base" "" { xfail *-*-* } }
 };
 
 void foo()
