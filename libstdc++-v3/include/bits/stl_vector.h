@@ -215,7 +215,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       // Concept requirements.
       typedef typename _Alloc::value_type                _Alloc_value_type;
+#if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+#endif
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
       
       typedef _Vector_base<_Tp, _Alloc>			 _Base;
