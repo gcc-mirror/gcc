@@ -169,10 +169,12 @@
 	Mostly useful together with shared memory allocators, see PR
 	libstdc++/16612 for details.
      </p></dd><dt><span class="term"><code class="code">--enable-concept-checks</code></span></dt><dd><p>This turns on additional compile-time checks for instantiated
-	library templates, in the form of specialized templates,
-	<a class="link" href="concept_checking.html" title="Concept Checking">described here</a>.  They
+	library templates, in the form of specialized templates described in
+        the <a class="link" href="concept_checking.html" title="Concept Checking">Concept
+        Checking</a> section.  They
 	can help users discover when they break the rules of the STL, before
-	their programs run.
+	their programs run. These checks are based on C++03 rules and some of
+	them are not compatible with correct C++11 code.
      </p></dd><dt><span class="term"><code class="code">--enable-symvers[=style]</code></span></dt><dd><p>In 3.1 and later, tries to turn on symbol versioning in the
 	shared library (if a shared library has been
 	requested). Values for 'style' that are currently supported

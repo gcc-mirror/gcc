@@ -100,8 +100,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // concept requirements
       typedef typename _Sequence::value_type _Sequence_value_type;
+#if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
       __glibcxx_class_requires(_Sequence, _BackInsertionSequenceConcept)
+#endif
       __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
 
       template<typename _Tp1, typename _Seq1>
