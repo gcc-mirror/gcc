@@ -832,7 +832,7 @@ c_cpp_builtins (cpp_reader *pfile)
 
       if (cxx_dialect >= cxx11)
 	{
-	  /* Set feature test macros for C++11  */
+	  /* Set feature test macros for C++11.  */
 	  cpp_define (pfile, "__cpp_unicode_characters=200704");
 	  cpp_define (pfile, "__cpp_raw_strings=200710");
 	  cpp_define (pfile, "__cpp_unicode_literals=200710");
@@ -841,7 +841,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  if (cxx_dialect == cxx11)
 	    cpp_define (pfile, "__cpp_constexpr=200704");
 	  cpp_define (pfile, "__cpp_range_based_for=200907");
-	  cpp_define (pfile, "__cpp_static_assert=200410");
+	  if (cxx_dialect <= cxx14)
+	    cpp_define (pfile, "__cpp_static_assert=200410");
 	  cpp_define (pfile, "__cpp_decltype=200707");
 	  cpp_define (pfile, "__cpp_attributes=200809");
 	  cpp_define (pfile, "__cpp_rvalue_reference=200610");
@@ -855,7 +856,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx11)
 	{
-	  /* Set feature test macros for C++14  */
+	  /* Set feature test macros for C++14.  */
 	  cpp_define (pfile, "__cpp_return_type_deduction=201304");
 	  cpp_define (pfile, "__cpp_init_captures=201304");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201304");
@@ -864,6 +865,11 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_aggregate_nsdmi=201304");
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
 	  cpp_define (pfile, "__cpp_digit_separators=201309");
+	}
+      if (cxx_dialect > cxx14)
+	{
+	  /* Set feature test macros for C++1z.  */
+	  cpp_define (pfile, "__cpp_static_assert=201411");
 	}
       if (flag_concepts)
 	/* Use a value smaller than the 201507 specified in
