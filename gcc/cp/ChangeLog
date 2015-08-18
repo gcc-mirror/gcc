@@ -1,3 +1,9 @@
+2015-08-18  Jason Merrill  <jason@redhat.com>
+
+	DR 1155
+	* pt.c (convert_nontype_argument): Allow internal linkage in C++11
+	and up.
+
 2015-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67216
