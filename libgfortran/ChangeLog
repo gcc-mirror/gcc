@@ -1,3 +1,8 @@
+2015-08-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/66936
+	* io/unix.c (__MINGW32__): Undefine HAVE_UMASK.
+
 2015-07-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libgfortran/66650
