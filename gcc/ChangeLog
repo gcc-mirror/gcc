@@ -1,3 +1,9 @@
+2015-08-18  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-niter.c (refine_value_range_using_guard): New.
+	(determine_value_range): Call refine_value_range_using_guard for
+	each loop initial condition to improve value range.
+
 2015-08-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/i386/i386.c: Remove include of fibheap.h.

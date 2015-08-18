@@ -122,6 +122,237 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
     }
 }
 
+/* From condition C0 CMP C1 derives information regarding the value range
+   of VAR, which is of TYPE.  Results are stored in to BELOW and UP.  */
+
+static void
+refine_value_range_using_guard (tree type, tree var,
+				tree c0, enum tree_code cmp, tree c1,
+				mpz_t below, mpz_t up)
+{
+  tree varc0, varc1, ctype;
+  mpz_t offc0, offc1;
+  mpz_t mint, maxt, minc1, maxc1;
+  wide_int minv, maxv;
+  bool no_wrap = nowrap_type_p (type);
+  bool c0_ok, c1_ok;
+  signop sgn = TYPE_SIGN (type);
+
+  switch (cmp)
+    {
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+      STRIP_SIGN_NOPS (c0);
+      STRIP_SIGN_NOPS (c1);
+      ctype = TREE_TYPE (c0);
+      if (!useless_type_conversion_p (ctype, type))
+	return;
+
+      break;
+
+    case EQ_EXPR:
+      /* We could derive quite precise information from EQ_EXPR, however,
+	 such a guard is unlikely to appear, so we do not bother with
+	 handling it.  */
+      return;
+
+    case NE_EXPR:
+      /* NE_EXPR comparisons do not contain much of useful information,
+	 except for cases of comparing with bounds.  */
+      if (TREE_CODE (c1) != INTEGER_CST
+	  || !INTEGRAL_TYPE_P (type))
+	return;
+
+      /* Ensure that the condition speaks about an expression in the same
+	 type as X and Y.  */
+      ctype = TREE_TYPE (c0);
+      if (TYPE_PRECISION (ctype) != TYPE_PRECISION (type))
+	return;
+      c0 = fold_convert (type, c0);
+      c1 = fold_convert (type, c1);
+
+      if (operand_equal_p (var, c0, 0))
+	{
+	  mpz_t valc1;
+
+	  /* Case of comparing VAR with its below/up bounds.  */
+	  mpz_init (valc1);
+	  wi::to_mpz (c1, valc1, TYPE_SIGN (type));
+	  if (mpz_cmp (valc1, below) == 0)
+	    cmp = GT_EXPR;
+	  if (mpz_cmp (valc1, up) == 0)
+	    cmp = LT_EXPR;
+
+	  mpz_clear (valc1);
+	}
+      else
+	{
+	  /* Case of comparing with the bounds of the type.  */
+	  wide_int min = wi::min_value (type);
+	  wide_int max = wi::max_value (type);
+
+	  if (wi::eq_p (c1, min))
+	    cmp = GT_EXPR;
+	  if (wi::eq_p (c1, max))
+	    cmp = LT_EXPR;
+	}
+
+      /* Quick return if no useful information.  */
+      if (cmp == NE_EXPR)
+	return;
+
+      break;
+
+    default:
+      return;
+    }
+
+  mpz_init (offc0);
+  mpz_init (offc1);
+  split_to_var_and_offset (expand_simple_operations (c0), &varc0, offc0);
+  split_to_var_and_offset (expand_simple_operations (c1), &varc1, offc1);
+
+  /* We are only interested in comparisons of expressions based on VAR.  */
+  if (operand_equal_p (var, varc1, 0))
+    {
+      std::swap (varc0, varc1);
+      mpz_swap (offc0, offc1);
+      cmp = swap_tree_comparison (cmp);
+    }
+  else if (!operand_equal_p (var, varc0, 0))
+    {
+      mpz_clear (offc0);
+      mpz_clear (offc1);
+      return;
+    }
+
+  mpz_init (mint);
+  mpz_init (maxt);
+  get_type_static_bounds (type, mint, maxt);
+  mpz_init (minc1);
+  mpz_init (maxc1);
+  /* Setup range information for varc1.  */
+  if (integer_zerop (varc1))
+    {
+      wi::to_mpz (integer_zero_node, minc1, TYPE_SIGN (type));
+      wi::to_mpz (integer_zero_node, maxc1, TYPE_SIGN (type));
+    }
+  else if (TREE_CODE (varc1) == SSA_NAME
+	   && INTEGRAL_TYPE_P (type)
+	   && get_range_info (varc1, &minv, &maxv) == VR_RANGE)
+    {
+      gcc_assert (wi::le_p (minv, maxv, sgn));
+      wi::to_mpz (minv, minc1, sgn);
+      wi::to_mpz (maxv, maxc1, sgn);
+    }
+  else
+    {
+      mpz_set (minc1, mint);
+      mpz_set (maxc1, maxt);
+    }
+
+  /* Compute valid range information for varc1 + offc1.  Note nothing
+     useful can be derived if it overflows or underflows.  Overflow or
+     underflow could happen when:
+
+       offc1 > 0 && varc1 + offc1 > MAX_VAL (type)
+       offc1 < 0 && varc1 + offc1 < MIN_VAL (type).  */
+  mpz_add (minc1, minc1, offc1);
+  mpz_add (maxc1, maxc1, offc1);
+  c1_ok = (no_wrap
+	   || mpz_sgn (offc1) == 0
+	   || (mpz_sgn (offc1) < 0 && mpz_cmp (minc1, mint) >= 0)
+	   || (mpz_sgn (offc1) > 0 && mpz_cmp (maxc1, maxt) <= 0));
+  if (!c1_ok)
+    goto end;
+
+  if (mpz_cmp (minc1, mint) < 0)
+    mpz_set (minc1, mint);
+  if (mpz_cmp (maxc1, maxt) > 0)
+    mpz_set (maxc1, maxt);
+
+  if (cmp == LT_EXPR)
+    {
+      cmp = LE_EXPR;
+      mpz_sub_ui (maxc1, maxc1, 1);
+    }
+  if (cmp == GT_EXPR)
+    {
+      cmp = GE_EXPR;
+      mpz_add_ui (minc1, minc1, 1);
+    }
+
+  /* Compute range information for varc0.  If there is no overflow,
+     the condition implied that
+
+       (varc0) cmp (varc1 + offc1 - offc0)
+
+     We can possibly improve the upper bound of varc0 if cmp is LE_EXPR,
+     or the below bound if cmp is GE_EXPR.
+
+     To prove there is no overflow/underflow, we need to check below
+     four cases:
+       1) cmp == LE_EXPR && offc0 > 0
+
+	    (varc0 + offc0) doesn't overflow
+	    && (varc1 + offc1 - offc0) doesn't underflow
+
+       2) cmp == LE_EXPR && offc0 < 0
+
+	    (varc0 + offc0) doesn't underflow
+	    && (varc1 + offc1 - offc0) doesn't overfloe
+
+	  In this case, (varc0 + offc0) will never underflow if we can
+	  prove (varc1 + offc1 - offc0) doesn't overflow.
+
+       3) cmp == GE_EXPR && offc0 < 0
+
+	    (varc0 + offc0) doesn't underflow
+	    && (varc1 + offc1 - offc0) doesn't overflow
+
+       4) cmp == GE_EXPR && offc0 > 0
+
+	    (varc0 + offc0) doesn't overflow
+	    && (varc1 + offc1 - offc0) doesn't underflow
+
+	  In this case, (varc0 + offc0) will never overflow if we can
+	  prove (varc1 + offc1 - offc0) doesn't underflow.
+
+     Note we only handle case 2 and 4 in below code.  */
+
+  mpz_sub (minc1, minc1, offc0);
+  mpz_sub (maxc1, maxc1, offc0);
+  c0_ok = (no_wrap
+	   || mpz_sgn (offc0) == 0
+	   || (cmp == LE_EXPR
+	       && mpz_sgn (offc0) < 0 && mpz_cmp (maxc1, maxt) <= 0)
+	   || (cmp == GE_EXPR
+	       && mpz_sgn (offc0) > 0 && mpz_cmp (minc1, mint) >= 0));
+  if (!c0_ok)
+    goto end;
+
+  if (cmp == LE_EXPR)
+    {
+      if (mpz_cmp (up, maxc1) > 0)
+	mpz_set (up, maxc1);
+    }
+  else
+    {
+      if (mpz_cmp (below, minc1) < 0)
+	mpz_set (below, minc1);
+    }
+
+end:
+  mpz_clear (mint);
+  mpz_clear (maxt);
+  mpz_clear (minc1);
+  mpz_clear (maxc1);
+  mpz_clear (offc0);
+  mpz_clear (offc1);
+}
+
 /* Stores estimate on the minimum/maximum value of the expression VAR + OFF
    in TYPE to MIN and MAX.  */
 
@@ -129,6 +360,9 @@ static void
 determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		       mpz_t min, mpz_t max)
 {
+  int cnt = 0;
+  mpz_t minm, maxm;
+  basic_block bb;
   wide_int minv, maxv;
   enum value_range_type rtype = VR_VARYING;
 
@@ -183,35 +417,69 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		}
 	    }
 	}
-      if (rtype == VR_RANGE)
+      mpz_init (minm);
+      mpz_init (maxm);
+      if (rtype != VR_RANGE)
 	{
-	  mpz_t minm, maxm;
+	  mpz_set (minm, min);
+	  mpz_set (maxm, max);
+	}
+      else
+	{
 	  gcc_assert (wi::le_p (minv, maxv, sgn));
-	  mpz_init (minm);
-	  mpz_init (maxm);
 	  wi::to_mpz (minv, minm, sgn);
 	  wi::to_mpz (maxv, maxm, sgn);
-	  mpz_add (minm, minm, off);
-	  mpz_add (maxm, maxm, off);
-	  /* If the computation may not wrap or off is zero, then this
-	     is always fine.  If off is negative and minv + off isn't
-	     smaller than type's minimum, or off is positive and
-	     maxv + off isn't bigger than type's maximum, use the more
-	     precise range too.  */
-	  if (nowrap_type_p (type)
-	      || mpz_sgn (off) == 0
-	      || (mpz_sgn (off) < 0 && mpz_cmp (minm, min) >= 0)
-	      || (mpz_sgn (off) > 0 && mpz_cmp (maxm, max) <= 0))
-	    {
-	      mpz_set (min, minm);
-	      mpz_set (max, maxm);
-	      mpz_clear (minm);
-	      mpz_clear (maxm);
-	      return;
-	    }
+	}
+      /* Now walk the dominators of the loop header and use the entry
+	 guards to refine the estimates.  */
+      for (bb = loop->header;
+	   bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
+	   bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+	{
+	  edge e;
+	  tree c0, c1;
+	  gimple cond;
+	  enum tree_code cmp;
+
+	  if (!single_pred_p (bb))
+	    continue;
+	  e = single_pred_edge (bb);
+
+	  if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
+	    continue;
+
+	  cond = last_stmt (e->src);
+	  c0 = gimple_cond_lhs (cond);
+	  cmp = gimple_cond_code (cond);
+	  c1 = gimple_cond_rhs (cond);
+
+	  if (e->flags & EDGE_FALSE_VALUE)
+	    cmp = invert_tree_comparison (cmp, false);
+
+	  refine_value_range_using_guard (type, var, c0, cmp, c1, minm, maxm);
+	  ++cnt;
+	}
+
+      mpz_add (minm, minm, off);
+      mpz_add (maxm, maxm, off);
+      /* If the computation may not wrap or off is zero, then this
+	 is always fine.  If off is negative and minv + off isn't
+	 smaller than type's minimum, or off is positive and
+	 maxv + off isn't bigger than type's maximum, use the more
+	 precise range too.  */
+      if (nowrap_type_p (type)
+	  || mpz_sgn (off) == 0
+	  || (mpz_sgn (off) < 0 && mpz_cmp (minm, min) >= 0)
+	  || (mpz_sgn (off) > 0 && mpz_cmp (maxm, max) <= 0))
+	{
+	  mpz_set (min, minm);
+	  mpz_set (max, maxm);
 	  mpz_clear (minm);
 	  mpz_clear (maxm);
+	  return;
 	}
+      mpz_clear (minm);
+      mpz_clear (maxm);
     }
 
   /* If the computation may wrap, we know nothing about the value, except for
