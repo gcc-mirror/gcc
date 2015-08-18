@@ -1,3 +1,18 @@
+2015-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Regenerate with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* doc/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* python/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++98/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2015-07-29  Tim Shen  <timshen@google.com>
 
 	Backport from mainline
