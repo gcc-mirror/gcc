@@ -1,3 +1,8 @@
+2015-08-18  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67222
+	* gcc.dg/torture/pr67222.c: New test.
+
 2015-08-18  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* gcc.target/mips/interrupt_handler-bug-1.c: New test.
