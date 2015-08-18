@@ -1,3 +1,10 @@
+2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/lib2funcs.S (__xtensa_libgcc_window_spill): Use
+	CALL12 followed by series of ENTRY to spill windowed registers.
+	(__xtensa_nonlocal_goto): Call __xtensa_libgcc_window_spill
+	instead of making linux spill syscall.
+
 2015-08-14  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/cpuinfo.c (enum processor_subtypes): Add skylake.
