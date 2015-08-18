@@ -1,3 +1,9 @@
+2015-08-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/67218
+	* simplify-rtx.c (exact_int_to_float_conversion_p): New function.
+	(simplify_unary_operation_1): Use it.
+
 2015-08-18  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/67222

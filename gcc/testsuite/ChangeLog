@@ -1,3 +1,16 @@
+2015-08-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/67218
+	* gcc.c-torture/execute/ieee/pr67218.c,
+	gcc.target/aarch64/fcvt_int_float_double1.c,
+	gcc.target/aarch64/fcvt_int_float_double2.c,
+	gcc.target/aarch64/fcvt_int_float_double3.c,
+	gcc.target/aarch64/fcvt_int_float_double4.c,
+	gcc.target/aarch64/fcvt_uint_float_double1.c,
+	gcc.target/aarch64/fcvt_uint_float_double2.c,
+	gcc.target/aarch64/fcvt_uint_float_double3.c,
+	gcc.target/aarch64/fcvt_uint_float_double4.c: New tests.
+
 2015-08-18  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: Adjust
