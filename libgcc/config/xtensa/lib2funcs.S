@@ -34,10 +34,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.global	__xtensa_libgcc_window_spill
 	.type	__xtensa_libgcc_window_spill,@function
 __xtensa_libgcc_window_spill:
-	entry	sp, 32
-	movi	a2, 0
-	syscall
+	entry	sp, 48
+#if XCHAL_NUM_AREGS > 16
+	call12	1f
 	retw
+	.align	4
+1:
+	.rept	(XCHAL_NUM_AREGS - 24) / 12
+	_entry	sp, 48
+	mov	a12, a0
+	.endr
+	_entry	sp, 16
+#if XCHAL_NUM_AREGS % 12 == 0
+	mov	a4, a4
+#elif XCHAL_NUM_AREGS % 12 == 4
+	mov	a8, a8
+#elif XCHAL_NUM_AREGS % 12 == 8
+	mov	a12, a12
+#endif
+	retw
+#else
+	mov	a8, a8
+	retw
+#endif
 	.size	__xtensa_libgcc_window_spill, .-__xtensa_libgcc_window_spill
 #endif
 
@@ -61,10 +80,7 @@ __xtensa_nonlocal_goto:
 	entry	sp, 32
 
 	/* Flush registers.  */
-	mov	a5, a2
-	movi	a2, 0
-	syscall
-	mov	a2, a5
+	call8	__xtensa_libgcc_window_spill
 
 	/* Because the save area for a0-a3 is stored one frame below
 	   the one identified by a2, the only way to restore those
