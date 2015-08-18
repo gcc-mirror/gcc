@@ -911,6 +911,17 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 			    indent + 4);
 	  break;
 
+	case TREE_BINFO:
+	  fprintf (file, " bases %d",
+		   vec_safe_length (BINFO_BASE_BINFOS (node)));
+	  print_node_brief (file, "offset", BINFO_OFFSET (node), indent + 4);
+	  print_node_brief (file, "virtuals", BINFO_VIRTUALS (node),
+			    indent + 4);
+	  print_node_brief (file, "inheritance chain",
+			    BINFO_INHERITANCE_CHAIN (node),
+			    indent + 4);
+	  break;
+
 	default:
 	  if (EXCEPTIONAL_CLASS_P (node))
 	    lang_hooks.print_xnode (file, node, indent);
