@@ -1,5 +1,10 @@
 2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
 
+	* config/xtensa/unwind-dw2-xtensa.c (_Unwind_GetCFA): Return
+	context->sp instead of context->cfa.
+
+2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
+
 	* config/xtensa/t-windowed (LIB2ADDEH): Replace unwind-dw2-fde
 	with unwind-dw2-fde-dip.
 

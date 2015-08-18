@@ -130,7 +130,7 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
 _Unwind_Word
 _Unwind_GetCFA (struct _Unwind_Context *context)
 {
-  return (_Unwind_Ptr) context->cfa;
+  return (_Unwind_Ptr) context->sp;
 }
 
 /* Overwrite the saved value for register INDEX in CONTEXT with VAL.  */
