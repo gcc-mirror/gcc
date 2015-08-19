@@ -1,3 +1,7 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* lto.h: Remove useless typedefs.
+
 2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto.c: Remove redundant includes.

@@ -107,15 +107,14 @@ gfc_se;
 
 /* Denotes different types of coarray.
    Please keep in sync with libgfortran/caf/libcaf.h.  */
-typedef enum
+enum gfc_coarray_type
 {
   GFC_CAF_COARRAY_STATIC,
   GFC_CAF_COARRAY_ALLOC,
   GFC_CAF_LOCK_STATIC,
   GFC_CAF_LOCK_ALLOC,
   GFC_CAF_CRITICAL
-}
-gfc_coarray_type;
+};
 
 
 /* The array-specific scalarization information.  The array members of
@@ -148,7 +147,7 @@ typedef struct gfc_array_info
 }
 gfc_array_info;
 
-typedef enum
+enum gfc_ss_type
 {
   /* A scalar value.  This will be evaluated before entering the
      scalarization loop.  */
@@ -190,8 +189,7 @@ typedef enum
 
   /* A component of a derived type.  */
   GFC_SS_COMPONENT
-}
-gfc_ss_type;
+};
 
 
 typedef struct gfc_ss_info

@@ -39,7 +39,7 @@ struct GTY(()) tree_check {
 
 /* A C++ token.  */
 
-typedef struct GTY (()) cp_token {
+struct GTY (()) cp_token {
   /* The kind of token.  */
   ENUM_BITFIELD (cpp_ttype) type : 8;
   /* If this token is a keyword, this value indicates which keyword.
@@ -68,7 +68,7 @@ typedef struct GTY (()) cp_token {
     /* Use for all other tokens.  */
     tree GTY((tag ("0"))) value;
   } GTY((desc ("(%1.type == CPP_TEMPLATE_ID) || (%1.type == CPP_NESTED_NAME_SPECIFIER)"))) u;
-} cp_token;
+};
 
 
 /* We use a stack of token pointer for saving token sets.  */
@@ -79,7 +79,7 @@ typedef struct cp_token *cp_token_position;
    it to the parser.  Tokens are never added to the cp_lexer after
    it is created.  */
 
-typedef struct GTY (()) cp_lexer {
+struct GTY (()) cp_lexer {
   /* The memory allocated for the buffer.  NULL if this lexer does not
      own the token buffer.  */
   vec<cp_token, va_gc> *buffer;
@@ -107,7 +107,7 @@ typedef struct GTY (()) cp_lexer {
   /* True if we're in the context of parsing a pragma, and should not
      increment past the end-of-line marker.  */
   bool in_pragma;
-} cp_lexer;
+};
 
 
 /* cp_token_cache is a range of tokens.  There is no need to represent
@@ -116,17 +116,17 @@ typedef struct GTY (()) cp_lexer {
    a cp_token_cache, since everything in here is referenced through
    a lexer.  */
 
-typedef struct GTY(()) cp_token_cache {
+struct GTY(()) cp_token_cache {
   /* The beginning of the token range.  */
   cp_token * GTY((skip)) first;
 
   /* Points immediately after the last token in the range.  */
   cp_token * GTY ((skip)) last;
-} cp_token_cache;
+};
 
 typedef cp_token_cache *cp_token_cache_ptr;
 
-struct cp_token_ident_d
+struct cp_token_ident
 {
   unsigned int ident_len;
   const char *ident_str;
@@ -136,22 +136,20 @@ struct cp_token_ident_d
   const char *after_str;
 };
 
-typedef struct cp_token_ident_d cp_token_ident;
-
 /* An entry in a queue of function arguments that require post-processing.  */
 
-typedef struct GTY(()) cp_default_arg_entry_d {
+struct GTY(()) cp_default_arg_entry {
   /* The current_class_type when we parsed this arg.  */
   tree class_type;
 
   /* The function decl itself.  */
   tree decl;
-} cp_default_arg_entry;
+};
 
 
 /* An entry in a stack for member functions defined within their classes.  */
 
-typedef struct GTY(()) cp_unparsed_functions_entry_d {
+struct GTY(()) cp_unparsed_functions_entry {
   /* Functions with default arguments that require post-processing.
      Functions appear in this list in declaration order.  */
   vec<cp_default_arg_entry, va_gc> *funs_with_default_args;
@@ -167,12 +165,12 @@ typedef struct GTY(()) cp_unparsed_functions_entry_d {
   /* Nested classes go in this vector, so that we can do some final
      processing after parsing any NSDMIs.  */
   vec<tree, va_gc> *classes;
-} cp_unparsed_functions_entry;
+};
 
 
 /* The status of a tentative parse.  */
 
-typedef enum cp_parser_status_kind
+enum cp_parser_status_kind
 {
   /* No errors have occurred.  */
   CP_PARSER_STATUS_KIND_NO_ERROR,
@@ -181,11 +179,11 @@ typedef enum cp_parser_status_kind
   /* We are committed to this tentative parse, whether or not an error
      has occurred.  */
   CP_PARSER_STATUS_KIND_COMMITTED
-} cp_parser_status_kind;
+};
 
 
 /* Context that is saved and restored when parsing tentatively.  */
-typedef struct GTY (()) cp_parser_context {
+struct GTY (()) cp_parser_context {
   /* If this is a tentative parsing context, the status of the
      tentative parse.  */
   enum cp_parser_status_kind status;
@@ -197,7 +195,7 @@ typedef struct GTY (()) cp_parser_context {
 
   /* The next parsing context in the stack.  */
   struct cp_parser_context *next;
-} cp_parser_context;
+};
 
 
 /* Control structure for #pragma omp declare simd parsing.  */
@@ -210,7 +208,7 @@ struct cp_omp_declare_simd_data {
 
 /* The cp_parser structure represents the C++ parser.  */
 
-typedef struct GTY(()) cp_parser {
+struct GTY(()) cp_parser {
   /* The lexer from which we are obtaining tokens.  */
   cp_lexer *lexer;
 
@@ -406,7 +404,7 @@ typedef struct GTY(()) cp_parser {
      context e.g., because they could never be deduced.  */
   int prevent_constrained_type_specifiers;
 
-} cp_parser;
+};
 
 /* In parser.c  */
 extern void debug (cp_token &ref);

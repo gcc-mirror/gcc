@@ -1,3 +1,15 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* bb-reorder.c, cfgloop.h, collect2.c, combine.c, dse.c,
+	dwarf2cfi.c, gcse-common.h, genopinit.c, ggc-page.c, machmode.h,
+	mcf.c, modulo-sched.c, omp-low.c, read-rtl.c, sched-rgn.c,
+	signop.h, tree-call-cdce.c, tree-dfa.c, tree-diagnostic.c,
+	tree-inline.h, tree-scalar-evolution.c, tree-ssa-address.c,
+	tree-ssa-loop-niter.c, tree-ssa-loop.h, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sccvn.h, tree-ssa-structalias.c,
+	tree-ssa-uninit.c, tree-ssa.h, tree-vect-loop-manip.c,
+	tree-vectorizer.h, tree-vrp.c, var-tracking.c: Remove useless
+
 2015-08-18  trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* bt-load.c, cgraph.h, dwarf2out.c, dwarf2out.h, final.c,

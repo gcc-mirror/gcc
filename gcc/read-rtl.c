@@ -80,9 +80,6 @@ struct iterator_use {
   void *ptr;
 };
 
-/* Vector definitions for the above.  */
-typedef struct iterator_use iterator_use;
-
 /* Records one use of an attribute (the "<[iterator:]attribute>" syntax)
    in a non-string rtx field.  */
 struct attribute_use {
@@ -95,9 +92,6 @@ struct attribute_use {
   /* The location of the use, as passed to GROUP's apply_iterator callback.  */
   void *ptr;
 };
-
-/* Vector definitions for the above.  */
-typedef struct attribute_use attribute_use;
 
 /* This struct is used to link subst_attr named ATTR_NAME with
    corresponding define_subst named ITER_NAME.  */

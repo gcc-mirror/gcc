@@ -1014,10 +1014,10 @@ next_runtime_abi_02_string_decl (tree type, const char *name,  string_section wh
 
 /* NOTE --- entry --- */
 
-typedef struct GTY(()) ident_data_tuple {
+struct GTY(()) ident_data_tuple {
   tree ident;
   tree data;
-} ident_data_tuple ;
+};
 
 /* This routine creates a file scope static variable of type 'Class'
    to hold the address of a class.  */
@@ -1198,11 +1198,11 @@ build_v2_message_reference_decl (tree sel_name, tree message_func_ident)
   return decl;
 }
 
-typedef struct GTY(()) msgref_entry {
+struct GTY(()) msgref_entry {
   tree func;
   tree selname;
   tree refdecl;
-} msgref_entry;
+};
 
 static GTY (()) vec<msgref_entry, va_gc> *msgrefs;
 
@@ -1254,10 +1254,10 @@ build_v2_protocollist_ref_decl (tree protocol)
   return decl;
 }
 
-typedef struct GTY(()) prot_list_entry {
+struct GTY(()) prot_list_entry {
   tree id;
   tree refdecl;
-} prot_list_entry;
+};
 static GTY (()) vec<prot_list_entry, va_gc> *protrefs;
 
 static tree
@@ -2758,11 +2758,11 @@ generate_v2_category (struct imp_entry *impent)
 /* This routine declares a variable to hold the offset for ivar
    FIELD_DECL.  Variable name is .objc_ivar.ClassName.IvarName.  */
 
-typedef struct GTY(()) ivarref_entry
+struct GTY(()) ivarref_entry
 {
   tree decl;
   tree offset;
-} ivarref_entry;
+};
 
 static GTY (()) vec<ivarref_entry, va_gc> *ivar_offset_refs;
 

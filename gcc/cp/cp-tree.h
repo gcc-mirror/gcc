@@ -283,14 +283,13 @@ identifier_p (tree t)
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
 
-struct GTY(()) template_parm_index_s {
+struct GTY(()) template_parm_index {
   struct tree_common common;
   int index;
   int level;
   int orig_level;
   tree decl;
 };
-typedef struct template_parm_index_s template_parm_index;
 
 struct GTY(()) ptrmem_cst {
   struct tree_common common;
@@ -417,7 +416,7 @@ struct GTY(()) tree_baselink {
 
 /* The different kinds of ids that we encounter.  */
 
-typedef enum cp_id_kind
+enum cp_id_kind
 {
   /* Not an id at all.  */
   CP_ID_KIND_NONE,
@@ -429,12 +428,12 @@ typedef enum cp_id_kind
   CP_ID_KIND_TEMPLATE_ID,
   /* A qualified-id.  */
   CP_ID_KIND_QUALIFIED
-} cp_id_kind;
+};
 
 
 /* The various kinds of C++0x warnings we encounter. */
 
-typedef enum cpp0x_warn_str
+enum cpp0x_warn_str
 {
   /* extended initializer lists */
   CPP0X_INITIALIZER_LISTS,
@@ -466,11 +465,11 @@ typedef enum cpp0x_warn_str
   CPP0X_ATTRIBUTES,
   /* ref-qualified member functions */
   CPP0X_REF_QUALIFIER
-} cpp0x_warn_str;
+};
 
 /* The various kinds of operation used by composite_pointer_type. */
 
-typedef enum composite_pointer_operation
+enum composite_pointer_operation
 {
   /* comparison */
   CPO_COMPARISON,
@@ -478,27 +477,27 @@ typedef enum composite_pointer_operation
   CPO_CONVERSION,
   /* conditional expression */
   CPO_CONDITIONAL_EXPR
-} composite_pointer_operation;
+};
 
 /* Possible cases of expression list used by build_x_compound_expr_from_list. */
-typedef enum expr_list_kind {
+enum expr_list_kind {
   ELK_INIT,		/* initializer */
   ELK_MEM_INIT,		/* member initializer */
   ELK_FUNC_CAST		/* functional cast */
-} expr_list_kind; 
+};
 
 /* Possible cases of implicit bad rhs conversions. */
-typedef enum impl_conv_rhs {
+enum impl_conv_rhs {
   ICR_DEFAULT_ARGUMENT, /* default argument */
   ICR_CONVERTING,       /* converting */
   ICR_INIT,             /* initialization */
   ICR_ARGPASS,          /* argument passing */
   ICR_RETURN,           /* return */
   ICR_ASSIGN            /* assignment */
-} impl_conv_rhs;
+};
 
 /* Possible cases of implicit or explicit bad conversions to void. */
-typedef enum impl_conv_void {
+enum impl_conv_void {
   ICV_CAST,            /* (explicit) conversion to void */
   ICV_SECOND_OF_COND,  /* second operand of conditional expression */
   ICV_THIRD_OF_COND,   /* third operand of conditional expression */
@@ -506,11 +505,11 @@ typedef enum impl_conv_void {
   ICV_LEFT_OF_COMMA,   /* left operand of comma operator */
   ICV_STATEMENT,       /* statement */
   ICV_THIRD_IN_FOR     /* for increment expression */
-} impl_conv_void;
+};
 
 /* Possible invalid uses of an abstract class that might not have a
    specific associated declaration.  */
-typedef enum abstract_class_use {
+enum GTY(()) abstract_class_use {
   ACU_UNKNOWN,			/* unknown or decl provided */
   ACU_CAST,			/* cast to abstract class */
   ACU_NEW,			/* new-expression of abstract class */
@@ -519,7 +518,7 @@ typedef enum abstract_class_use {
   ACU_ARRAY,			/* array of abstract class */
   ACU_RETURN,			/* return type of abstract class */
   ACU_PARM			/* parameter type of abstract class */
-} abstract_class_use;
+};
 
 /* Macros for access to language-specific slots in an identifier.  */
 
@@ -642,7 +641,7 @@ struct GTY (()) tree_argument_pack_select {
 
 /* The different kinds of traits that we encounter.  */
 
-typedef enum cp_trait_kind
+enum cp_trait_kind
 {
   CPTK_BASES,
   CPTK_DIRECT_BASES,
@@ -671,7 +670,7 @@ typedef enum cp_trait_kind
   CPTK_IS_TRIVIALLY_COPYABLE,
   CPTK_IS_UNION,
   CPTK_UNDERLYING_TYPE
-} cp_trait_kind;
+};
 
 /* The types that we are processing.  */
 #define TRAIT_EXPR_TYPE1(NODE) \
@@ -991,7 +990,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
        chain_next ("(union lang_tree_node *) c_tree_chain_next (&%h.generic)"))) lang_tree_node {
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
-  struct template_parm_index_s GTY ((tag ("TS_CP_TPI"))) tpi;
+  struct template_parm_index GTY ((tag ("TS_CP_TPI"))) tpi;
   struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
@@ -1584,10 +1583,10 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define CLASSTYPE_VISIBILITY_SPECIFIED(TYPE)	\
 	DECL_VISIBILITY_SPECIFIED (TYPE_MAIN_DECL (TYPE))
 
-typedef struct GTY (()) tree_pair_s {
+struct GTY (()) tree_pair_s {
   tree purpose;
   tree value;
-} tree_pair_s;
+};
 typedef tree_pair_s *tree_pair_p;
 
 /* This is a few header flags for 'struct lang_type'.  Actually,
@@ -3333,11 +3332,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Abstract iterators for AGGR_INIT_EXPRs.  */
 
 /* Structure containing iterator state.  */
-typedef struct aggr_init_expr_arg_iterator_d {
+struct aggr_init_expr_arg_iterator {
   tree t;	/* the aggr_init_expr */
   int n;	/* argument count */
   int i;	/* next argument index */
-} aggr_init_expr_arg_iterator;
+};
 
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from AGGR_INIT_EXPR node EXP.  */
@@ -4502,7 +4501,7 @@ enum cp_lvalue_kind_flags {
 typedef int cp_lvalue_kind;
 
 /* Various kinds of template specialization, instantiation, etc.  */
-typedef enum tmpl_spec_kind {
+enum tmpl_spec_kind {
   tsk_none,		   /* Not a template at all.  */
   tsk_invalid_member_spec, /* An explicit member template
 			      specialization, but the enclosing
@@ -4517,22 +4516,22 @@ typedef enum tmpl_spec_kind {
   tsk_template,		   /* A template declaration.  */
   tsk_expl_spec,	   /* An explicit specialization.  */
   tsk_expl_inst		   /* An explicit instantiation.  */
-} tmpl_spec_kind;
+};
 
 /* The various kinds of access.  BINFO_ACCESS depends on these being
    two bit quantities.  The numerical values are important; they are
    used to initialize RTTI data structures, so changing them changes
    the ABI.  */
-typedef enum access_kind {
+enum access_kind {
   ak_none = 0,		   /* Inaccessible.  */
   ak_public = 1,	   /* Accessible, as a `public' thing.  */
   ak_protected = 2,	   /* Accessible, as a `protected' thing.  */
   ak_private = 3	   /* Accessible, as a `private' thing.  */
-} access_kind;
+};
 
 /* The various kinds of special functions.  If you add to this list,
    you should update special_function_p as well.  */
-typedef enum special_function_kind {
+enum special_function_kind {
   sfk_none = 0,		   /* Not a special function.  This enumeral
 			      must have value zero; see
 			      special_function_p.  */
@@ -4549,7 +4548,7 @@ typedef enum special_function_kind {
 			      destroyed.  */
   sfk_conversion,	   /* A conversion operator.  */
   sfk_inheriting_constructor /* An inheriting constructor */
-} special_function_kind;
+};
 
 /* The various kinds of linkage.  From [basic.link],
 
@@ -4568,18 +4567,18 @@ typedef enum special_function_kind {
       -- When a name has no linkage, the entity it denotes cannot be
 	 referred to by names from other scopes.  */
 
-typedef enum linkage_kind {
+enum linkage_kind {
   lk_none,			/* No linkage.  */
   lk_internal,			/* Internal linkage.  */
   lk_external			/* External linkage.  */
-} linkage_kind;
+};
 
-typedef enum duration_kind {
+enum duration_kind {
   dk_static,
   dk_thread,
   dk_auto,
   dk_dynamic
-} duration_kind;
+};
 
 /* Bitmask flags to control type substitution.  */
 enum tsubst_flags {
@@ -4625,15 +4624,15 @@ enum base_access_flags {
 typedef int base_access;
 
 /* The various kinds of access check during parsing.  */
-typedef enum deferring_kind {
+enum deferring_kind {
   dk_no_deferred = 0, /* Check access immediately */
   dk_deferred = 1,    /* Deferred check */
   dk_no_check = 2     /* No access check */
-} deferring_kind;
+};
 
 /* The kind of base we can find, looking in a class hierarchy.
    Values <0 indicate we failed.  */
-typedef enum base_kind {
+enum base_kind {
   bk_inaccessible = -3,   /* The base is inaccessible */
   bk_ambig = -2,	  /* The base is ambiguous */
   bk_not_base = -1,	  /* It is not a base */
@@ -4642,7 +4641,7 @@ typedef enum base_kind {
   bk_via_virtual = 2	  /* It is a proper base, but via a virtual
 			     path. This might not be the canonical
 			     binfo.  */
-} base_kind;
+};
 
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
@@ -4684,11 +4683,11 @@ struct cp_unevaluated
    fn_type_unification.  Their meanings are described with the
    documentation for fn_type_unification.  */
 
-typedef enum unification_kind_t {
+enum unification_kind_t {
   DEDUCE_CALL,
   DEDUCE_CONV,
   DEDUCE_EXACT
-} unification_kind_t;
+};
 
 // An RAII class used to create a new pointer map for local
 // specializations. When the stack goes out of scope, the
@@ -5121,7 +5120,7 @@ enum cp_ref_qualifier {
 
 /* A storage class.  */
 
-typedef enum cp_storage_class {
+enum cp_storage_class {
   /* sc_none must be zero so that zeroing a cp_decl_specifier_seq
      sets the storage_class field to sc_none.  */
   sc_none = 0,
@@ -5130,13 +5129,13 @@ typedef enum cp_storage_class {
   sc_static,
   sc_extern,
   sc_mutable
-} cp_storage_class;
+};
 
 /* An individual decl-specifier.  This is used to index the array of
    locations for the declspecs in struct cp_decl_specifier_seq
    below.  */
 
-typedef enum cp_decl_spec {
+enum cp_decl_spec {
   ds_first,
   ds_signed = ds_first,
   ds_unsigned,
@@ -5162,11 +5161,11 @@ typedef enum cp_decl_spec {
   ds_long_long,
   ds_concept,
   ds_last /* This enumerator must always be the last one.  */
-} cp_decl_spec;
+};
 
 /* A decl-specifier-seq.  */
 
-typedef struct cp_decl_specifier_seq {
+struct cp_decl_specifier_seq {
   /* An array of locations for the declaration sepecifiers, indexed by
      enum cp_decl_spec_word.  */
   source_location locations[ds_last];
@@ -5210,11 +5209,11 @@ typedef struct cp_decl_specifier_seq {
   BOOL_BITFIELD gnu_thread_keyword_p : 1;
   /* True iff the type is a decltype.  */
   BOOL_BITFIELD decltype_p : 1;
-} cp_decl_specifier_seq;
+};
 
 /* The various kinds of declarators.  */
 
-typedef enum cp_declarator_kind {
+enum cp_declarator_kind {
   cdk_id,
   cdk_function,
   cdk_array,
@@ -5222,7 +5221,7 @@ typedef enum cp_declarator_kind {
   cdk_reference,
   cdk_ptrmem,
   cdk_error
-} cp_declarator_kind;
+};
 
 /* A declarator.  */
 
@@ -6096,7 +6095,7 @@ extern int shared_member_p			(tree);
 
 /* The representation of a deferred access check.  */
 
-typedef struct GTY(()) deferred_access_check {
+struct GTY(()) deferred_access_check {
   /* The base class in which the declaration is referenced. */
   tree binfo;
   /* The declaration whose access must be checked.  */
@@ -6105,7 +6104,7 @@ typedef struct GTY(()) deferred_access_check {
   tree diag_decl;
   /* The location of this access.  */
   location_t loc;
-} deferred_access_check;
+};
 
 /* in semantics.c */
 extern void push_deferring_access_checks	(deferring_kind);

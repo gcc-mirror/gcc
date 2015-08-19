@@ -22,11 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GCSE_COMMON_H
 
 typedef vec<rtx_insn *> vec_rtx_heap;
-typedef struct modify_pair_s
+struct modify_pair
 {
   rtx dest;                     /* A MEM.  */
   rtx dest_addr;                /* The canonical address of `dest'.  */
-} modify_pair;
+};
 
 typedef vec<modify_pair> vec_modify_pair_heap;
 

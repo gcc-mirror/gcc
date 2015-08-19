@@ -95,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 	   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))))
 
 /* Things we only need one of.  This module is not reentrant.  */
-typedef struct GTY(()) globals {
+struct GTY(()) globals {
   /* An array of the current substitution candidates, in the order
      we've seen them.  */
   vec<tree, va_gc> *substitutions;
@@ -109,7 +109,7 @@ typedef struct GTY(()) globals {
   /* True if the mangling will be different in a future version of the
      ABI.  */
   bool need_abi_warning;
-} globals;
+};
 
 static GTY (()) globals G;
 

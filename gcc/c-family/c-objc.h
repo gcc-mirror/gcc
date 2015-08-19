@@ -21,12 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_C_COMMON_OBJC_H
 
 /* ObjC ivar visibility types.  */
-typedef enum objc_ivar_visibility_kind {
+enum GTY(()) objc_ivar_visibility_kind {
   OBJC_IVAR_VIS_PROTECTED = 0,
   OBJC_IVAR_VIS_PUBLIC    = 1,
   OBJC_IVAR_VIS_PRIVATE   = 2,
   OBJC_IVAR_VIS_PACKAGE   = 3
-} objc_ivar_visibility_kind;
+};
 
 /* Objective-C / Objective-C++ entry points.  */
 

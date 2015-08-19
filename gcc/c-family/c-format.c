@@ -46,12 +46,12 @@ enum format_type { printf_format_type, asm_fprintf_format_type,
 		   gcc_objc_string_format_type,
 		   format_type_error = -1};
 
-typedef struct function_format_info
+struct function_format_info
 {
   int format_type;			/* type of format (printf, scanf, etc.) */
   unsigned HOST_WIDE_INT format_num;	/* number of format argument */
   unsigned HOST_WIDE_INT first_arg_num;	/* number of first arg (zero for varargs) */
-} function_format_info;
+};
 
 static bool decode_format_attr (tree, function_format_info *, int);
 static int decode_format_type (const char *);
@@ -425,7 +425,7 @@ static const char *kind_descriptions[] = {
 
 /* Structure describing details of a type expected in format checking,
    and the type to check against it.  */
-typedef struct format_wanted_type
+struct format_wanted_type
 {
   /* The type wanted.  */
   tree wanted_type;
@@ -460,7 +460,7 @@ typedef struct format_wanted_type
   unsigned int offset_loc;
   /* The next type to check for this format conversion, or NULL if none.  */
   struct format_wanted_type *next;
-} format_wanted_type;
+};
 
 /* Convenience macro for format_length_info meaning unused.  */
 #define NO_FMT NULL, FMT_LEN_none, STD_C89
@@ -965,7 +965,7 @@ static int n_format_types = ARRAY_SIZE (format_types_orig);
 /* Structure detailing the results of checking a format function call
    where the format expression may be a conditional expression with
    many leaves resulting from nested conditional expressions.  */
-typedef struct
+struct format_check_results
 {
   /* Number of leaves of the format argument that could not be checked
      as they were not string literals.  */
@@ -990,14 +990,14 @@ typedef struct
   int number_other;
   /* Location of the format string.  */
   location_t format_string_loc;
-} format_check_results;
+};
 
-typedef struct
+struct format_check_context
 {
   format_check_results *res;
   function_format_info *info;
   tree params;
-} format_check_context;
+};
 
 /* Return the format name (as specified in the original table) for the format
    type indicated by format_num.  */

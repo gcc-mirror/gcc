@@ -115,7 +115,7 @@ static tree capture_decltype (tree);
       In case of parsing error, we simply call `pop_deferring_access_checks'
       without `perform_deferred_access_checks'.  */
 
-typedef struct GTY(()) deferred_access {
+struct GTY(()) deferred_access {
   /* A vector representing name-lookups for which we have deferred
      checking access controls.  We cannot check the accessibility of
      names used in a decl-specifier-seq until we know what is being
@@ -134,7 +134,7 @@ typedef struct GTY(()) deferred_access {
   /* The current mode of access checks.  */
   enum deferring_kind deferring_access_checks_kind;
 
-} deferred_access;
+};
 
 /* Data for deferred access checking.  */
 static GTY(()) vec<deferred_access, va_gc> *deferred_access_stack;

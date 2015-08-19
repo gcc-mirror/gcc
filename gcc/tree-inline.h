@@ -152,7 +152,7 @@ struct copy_body_data
 
 /* Weights of constructions for estimate_num_insns.  */
 
-typedef struct eni_weights_d
+struct eni_weights
 {
   /* Cost per call.  */
   unsigned call_cost;
@@ -179,7 +179,7 @@ typedef struct eni_weights_d
      cost of a switch statement is logarithmic rather than linear in number
      of cases.  */
   bool time_based;
-} eni_weights;
+};
 
 /* Weights that estimate_num_insns uses for heuristics in inlining.  */
 

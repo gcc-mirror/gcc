@@ -140,22 +140,20 @@ static state_t *bb_state = NULL;
    while other blocks in the region from which insns can be moved to the
    target are called "source" blocks.  The candidate structure holds info
    about such sources: are they valid?  Speculative?  Etc.  */
-typedef struct
+struct bblst
 {
   basic_block *first_member;
   int nr_members;
-}
-bblst;
+};
 
-typedef struct
+struct candidate
 {
   char is_valid;
   char is_speculative;
   int src_prob;
   bblst split_bbs;
   bblst update_bbs;
-}
-candidate;
+};
 
 static candidate *candidate_table;
 #define IS_VALID(src) (candidate_table[src].is_valid)
@@ -168,12 +166,11 @@ static candidate *candidate_table;
 int target_bb;
 
 /* List of edges.  */
-typedef struct
+struct edgelst
 {
   edge *first_member;
   int nr_members;
-}
-edgelst;
+};
 
 static edge *edgelst_table;
 static int edgelst_last;

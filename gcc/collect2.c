@@ -282,7 +282,7 @@ static struct lto_object_list lto_objects;
 
 /* Special kinds of symbols that a name may denote.  */
 
-typedef enum {
+enum symkind {
   SYM_REGULAR = 0,  /* nothing special  */
 
   SYM_CTOR = 1,  /* constructor */
@@ -292,7 +292,7 @@ typedef enum {
   SYM_DWEH = 5,  /* DWARF exception handling table  */
   SYM_AIXI = 6,
   SYM_AIXD = 7
-} symkind;
+};
 
 const char tool_name[] = "collect2";
 
@@ -333,13 +333,13 @@ static void process_args (int *argcp, char **argv);
 /* Enumerations describing which pass this is for scanning the
    program file ...  */
 
-typedef enum {
+enum scanpass {
   PASS_FIRST,				/* without constructors */
   PASS_OBJ,				/* individual objects */
   PASS_LIB,				/* looking for shared libraries */
   PASS_SECOND,				/* with constructors linked in */
   PASS_LTOINFO				/* looking for objects with LTO info */
-} scanpass;
+};
 
 /* ... and which kinds of symbols are to be considered.  */
 

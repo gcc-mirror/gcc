@@ -340,12 +340,12 @@ extern void init_adjust_machine_modes (void);
   (SCALAR_INT_MODE_P (MODE) \
    && GET_MODE_PRECISION (MODE) <= HOST_BITS_PER_WIDE_INT)
 
-typedef struct {
+struct int_n_data_t {
   /* These parts are initailized by genmodes output */
   unsigned int bitsize;
   machine_mode m;
   /* RID_* is RID_INTN_BASE + index into this array */
-} int_n_data_t;
+};
 
 /* This is also in tree.h.  genmodes.c guarantees the're sorted from
    smallest bitsize to largest bitsize. */

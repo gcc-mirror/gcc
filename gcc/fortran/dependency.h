@@ -19,14 +19,13 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /****************************** Enums *********************************/
-typedef enum
+enum gfc_dep_check
 {
   NOT_ELEMENTAL,        /* Not elemental case: normal dependency check.  */
   ELEM_CHECK_VARIABLE,  /* Test whether variables overlap.  */
   ELEM_DONT_CHECK_VARIABLE  /* Test whether variables overlap only if used 
 			       in an expression.  */
-}
-gfc_dep_check;
+};
 
 /*********************** Functions prototypes **************************/
 

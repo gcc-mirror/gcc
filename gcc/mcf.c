@@ -61,7 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Limit the number of iterations for cancel_negative_cycles() to ensure
    reasonable compile time.  */
 #define MAX_ITER(n, e)  10 + (1000000 / ((n) * (e)))
-typedef enum
+enum edge_type
 {
   INVALID_EDGE,
   VERTEX_SPLIT_EDGE,	    /* Edge to represent vertex with w(e) = w(v).  */
@@ -72,10 +72,10 @@ typedef enum
   BALANCE_EDGE,		    /* Edge connecting with source/sink: cp(e) = 0.  */
   REDIRECT_NORMALIZED_EDGE, /* Normalized edge for a redirect edge.  */
   REVERSE_NORMALIZED_EDGE   /* Normalized edge for a reverse edge.  */
-} edge_type;
+};
 
 /* Structure to represent an edge in the fixup graph.  */
-typedef struct fixup_edge_d
+struct fixup_edge_type
 {
   int src;
   int dest;
@@ -91,21 +91,21 @@ typedef struct fixup_edge_d
   gcov_type weight;
   gcov_type cost;
   gcov_type max_capacity;
-} fixup_edge_type;
+};
 
 typedef fixup_edge_type *fixup_edge_p;
 
 
 /* Structure to represent a vertex in the fixup graph.  */
-typedef struct fixup_vertex_d
+struct fixup_vertex_type
 {
   vec<fixup_edge_p> succ_edges;
-} fixup_vertex_type;
+};
 
 typedef fixup_vertex_type *fixup_vertex_p;
 
 /* Fixup graph used in the MCF algorithm.  */
-typedef struct fixup_graph_d
+struct fixup_graph_type
 {
   /* Current number of vertices for the graph.  */
   int num_vertices;
@@ -119,18 +119,18 @@ typedef struct fixup_graph_d
   fixup_vertex_p vertex_list;
   /* Fixup edge list.  */
   fixup_edge_p edge_list;
-} fixup_graph_type;
+};
 
-typedef struct queue_d
+struct queue_type
 {
   int *queue;
   int head;
   int tail;
   int size;
-} queue_type;
+};
 
 /* Structure used in the maximal flow routines to find augmenting path.  */
-typedef struct augmenting_path_d
+struct augmenting_path_type
 {
   /* Queue used to hold vertex indices.  */
   queue_type queue_list;
@@ -138,7 +138,7 @@ typedef struct augmenting_path_d
   int *bb_pred;
   /* Vector that indicates if basic block i has been visited.  */
   int *is_visited;
-} augmenting_path_type;
+};
 
 
 /* Function definitions.  */

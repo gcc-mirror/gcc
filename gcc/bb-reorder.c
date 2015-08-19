@@ -142,7 +142,7 @@ typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
 typedef fibonacci_node <long, basic_block_def> bb_heap_node_t;
 
 /* Structure to hold needed information for each basic block.  */
-typedef struct bbro_basic_block_data_def
+struct bbro_basic_block_data
 {
   /* Which trace is the bb start of (-1 means it is not a start of any).  */
   int start_of_trace;
@@ -161,7 +161,7 @@ typedef struct bbro_basic_block_data_def
 
   /* Which heap node is BB in (if any)?  */
   bb_heap_node_t *node;
-} bbro_basic_block_data;
+};
 
 /* The current size of the following dynamic array.  */
 static int array_size;

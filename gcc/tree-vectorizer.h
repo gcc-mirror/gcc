@@ -66,12 +66,12 @@ enum vect_def_type {
 
 /* Structure to encapsulate information about a group of like
    instructions to be presented to the target cost model.  */
-typedef struct _stmt_info_for_cost {
+struct stmt_info_for_cost {
   int count;
   enum vect_cost_for_stmt kind;
   gimple stmt;
   int misalign;
-} stmt_info_for_cost;
+};
 
 
 typedef vec<stmt_info_for_cost> stmt_vector_for_cost;
