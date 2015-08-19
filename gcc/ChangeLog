@@ -1,9 +1,16 @@
+2015-08-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/67042
+	* hwint.h (sext_hwi): Switch to unsigned for the left shift, and
+	conditionalize the whole on __GNUC__.  Add fallback code
+	depending neither on undefined nor implementation-defined behaviour.
+
 2015-08-19  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Replace
 	whitespaces with tab.
 
-2015-08-13  Florian Weimer  <fweimer@redhat.com>
+2015-08-19  Florian Weimer  <fweimer@redhat.com>
 
 	* prj.adb (For_Every_Project_Imported_Context.Recursive_Check_Context):
 	Move Name_Id_Set instantiation to the Prj package, to avoid trampolines.
