@@ -1,3 +1,8 @@
+2015-08-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (bounds_check): Use %wd print format
+	for HOST_WIDE_INT arguments.
+
 2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* bb-reorder.c, cfgloop.h, collect2.c, combine.c, dse.c,
