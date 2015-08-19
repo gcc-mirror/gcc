@@ -12809,10 +12809,10 @@ bounds_check (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   if (lane < low || lane >= high)
     {
       if (exp)
-	error ("%K%s %lld out of range %lld - %lld",
+	error ("%K%s %wd out of range %wd - %wd",
 	       exp, desc, lane, low, high - 1);
       else
-	error ("%s %lld out of range %lld - %lld", desc, lane, low, high - 1);
+	error ("%s %wd out of range %wd - %wd", desc, lane, low, high - 1);
     }
 }
 
