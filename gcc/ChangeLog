@@ -1,3 +1,8 @@
+2015-08-19  Jiong Wang  <jiong.wang@arm.com>
+
+	* expr.c (expand_expr_real_2): Check gimple statement during
+	LSHIFT_EXPR expand.
+
 2015-08-19  Magnus Granberg  <zorry@gentoo.org>
 
 	* common.opt (fstack-protector): Initialize to -1.
