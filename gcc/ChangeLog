@@ -14,6 +14,7 @@
 	tree-ssa-reassoc.c, tree-ssa-sccvn.h, tree-ssa-structalias.c,
 	tree-ssa-uninit.c, tree-ssa.h, tree-vect-loop-manip.c,
 	tree-vectorizer.h, tree-vrp.c, var-tracking.c: Remove useless
+	typedefs.
 
 2015-08-18  trevor Saunders  <tbsaunde@tbsaunde.org>
 
@@ -727,8 +728,8 @@
 	* configure.ac: Define LIBICONV_DEP with in-tree libiconv.
 	* configure: Regenerate.
 
-2015-08-06    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-	      Jiong Wang  <jiong.wang@arm.com>
+2015-08-06  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.d (tlsdesc_small_pseudo_<mode>): New pattern.
 	* config/aarch64/aarch64.h (reg_class): New enumeration FIXED_REG0.
