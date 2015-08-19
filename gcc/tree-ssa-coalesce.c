@@ -1386,8 +1386,8 @@ gimple_can_coalesce_p (tree name1, tree name2)
 	 because it may be passed by reference.  */
       return ((!var1 || VAR_P (var1)) && (!var2 || VAR_P (var2)))
 	|| (/* The case var1 == var2 is already covered above.  */
-	    !parm_maybe_byref_p (var1)
-	    && !parm_maybe_byref_p (var2)
+	    !parm_in_stack_slot_p (var1)
+	    && !parm_in_stack_slot_p (var2)
 	    && promote_ssa_mode (name1, NULL) == promote_ssa_mode (name2, NULL));
     }
 

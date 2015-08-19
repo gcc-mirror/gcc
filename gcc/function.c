@@ -153,6 +153,7 @@ static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
 static rtx rtl_for_parm (struct assign_parm_data_all *, tree);
 static void maybe_reset_rtl_for_parm (tree);
+static bool parm_in_unassigned_mem_p (tree, rtx);
 
 
 /* Stack of nested functions.  */
@@ -2326,6 +2327,22 @@ split_complex_args (struct assign_parm_data_all *all, vec<tree> *args)
 	      rtx rtl = rtl_for_parm (all, cparm);
 	      if (rtl)
 		{
+		  /* If this is parm is unassigned, assign it now: the
+		     newly-created decls wouldn't expect the need for
+		     assignment, and if they were assigned
+		     independently, they might not end up in adjacent
+		     slots, so unsplit wouldn't be able to fill in the
+		     unassigned address of the complex MEM.  */
+		  if (parm_in_unassigned_mem_p (cparm, rtl))
+		    {
+		      int align = STACK_SLOT_ALIGNMENT
+			(TREE_TYPE (cparm), GET_MODE (rtl), MEM_ALIGN (rtl));
+		      rtx loc = assign_stack_local
+			(GET_MODE (rtl), GET_MODE_SIZE (GET_MODE (rtl)),
+			 align);
+		      XEXP (rtl, 0) = XEXP (loc, 0);
+		    }
+
 		  SET_DECL_RTL (p, read_complex_part (rtl, false));
 		  SET_DECL_RTL (decl, read_complex_part (rtl, true));
 
@@ -2934,6 +2951,27 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
   return false;
 }
 
+/* Return true if FROM_EXPAND is a MEM with an address to be filled in
+   by assign_params.  This should be the case if, and only if,
+   parm_in_stack_slot_p holds for the parm DECL that expanded to
+   FROM_EXPAND, so we check that, too.  */
+
+static bool
+parm_in_unassigned_mem_p (tree decl, rtx from_expand)
+{
+  bool result = MEM_P (from_expand) && !XEXP (from_expand, 0);
+
+  gcc_assert (result == parm_in_stack_slot_p (decl)
+	      /* Maybe it was already assigned.  That's ok, especially
+		 for split complex args.  */
+	      || (!result && MEM_P (from_expand)
+		  && (XEXP (from_expand, 0) == virtual_stack_vars_rtx
+		      || (GET_CODE (XEXP (from_expand, 0)) == PLUS
+			  && XEXP (XEXP (from_expand, 0), 0) == virtual_stack_vars_rtx))));
+
+  return result;
+}
+
 /* A subroutine of assign_parms.  Arrange for the parameter to be
    present and valid in DATA->STACK_RTL.  */
 
@@ -2956,8 +2994,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
     {
       DECL_ALIGN (parm) = MAX (DECL_ALIGN (parm), BITS_PER_WORD);
       rtx from_expand = rtl_for_parm (all, parm);
-      if (from_expand && (!parm_maybe_byref_p (parm)
-			  || XEXP (from_expand, 0) != NULL_RTX))
+      if (from_expand && !parm_in_unassigned_mem_p (parm, from_expand))
 	stack_parm = copy_rtx (from_expand);
       else
 	{
@@ -2968,8 +3005,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	  if (from_expand)
 	    {
 	      gcc_assert (GET_CODE (stack_parm) == MEM);
-	      gcc_assert (GET_CODE (from_expand) == MEM);
-	      gcc_assert (XEXP (from_expand, 0) == NULL_RTX);
+	      gcc_assert (parm_in_unassigned_mem_p (parm, from_expand));
 	      XEXP (from_expand, 0) = XEXP (stack_parm, 0);
 	      PUT_MODE (from_expand, GET_MODE (stack_parm));
 	      stack_parm = copy_rtx (from_expand);
@@ -3016,6 +3052,11 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 
       else if (size == 0)
 	;
+
+      /* MEM may be a REG if coalescing assigns the param's partition
+	 to a pseudo.  */
+      else if (REG_P (mem))
+	emit_move_insn (mem, entry_parm);
 
       /* If SIZE is that of a mode no bigger than a word, just use
 	 that mode's store operation.  */
@@ -3121,7 +3162,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       if (GET_MODE (parmreg) != promoted_nominal_mode)
 	parmreg = gen_lowpart (promoted_nominal_mode, parmreg);
     }
-  else if (!from_expand || parm_maybe_byref_p (parm))
+  else if (!from_expand || parm_in_unassigned_mem_p (parm, from_expand))
     {
       parmreg = gen_reg_rtx (promoted_nominal_mode);
       if (!DECL_ARTIFICIAL (parm))
@@ -3131,7 +3172,6 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	{
 	  gcc_assert (data->passed_pointer);
 	  gcc_assert (GET_CODE (from_expand) == MEM
-		      && GET_MODE (from_expand) == BLKmode
 		      && XEXP (from_expand, 0) == NULL_RTX);
 	  XEXP (from_expand, 0) = parmreg;
 	}
@@ -3349,7 +3389,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  did_conversion = true;
 	}
       else if (GET_MODE (parmreg) == BLKmode)
-	gcc_assert (parm_maybe_byref_p (parm));
+	gcc_assert (parm_in_stack_slot_p (parm));
       else
 	emit_move_insn (parmreg, src);
 
@@ -3455,12 +3495,15 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
   if (data->entry_parm != data->stack_parm)
     {
       rtx src, dest;
+      rtx from_expand = NULL_RTX;
 
       if (data->stack_parm == 0)
 	{
-	  rtx x = data->stack_parm = rtl_for_parm (all, parm);
-	  if (x)
-	    gcc_assert (GET_MODE (x) == GET_MODE (data->entry_parm));
+	  from_expand = rtl_for_parm (all, parm);
+	  if (from_expand)
+	    gcc_assert (GET_MODE (from_expand) == GET_MODE (data->entry_parm));
+	  if (from_expand && !parm_in_unassigned_mem_p (parm, from_expand))
+	    data->stack_parm = from_expand;
 	}
 
       if (data->stack_parm == 0)
@@ -3472,7 +3515,16 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	    = assign_stack_local (GET_MODE (data->entry_parm),
 				  GET_MODE_SIZE (GET_MODE (data->entry_parm)),
 				  align);
-	  set_mem_attributes (data->stack_parm, parm, 1);
+	  if (!from_expand)
+	    set_mem_attributes (data->stack_parm, parm, 1);
+	  else
+	    {
+	      gcc_assert (GET_CODE (data->stack_parm) == MEM);
+	      gcc_assert (parm_in_unassigned_mem_p (parm, from_expand));
+	      XEXP (from_expand, 0) = XEXP (data->stack_parm, 0);
+	      PUT_MODE (from_expand, GET_MODE (data->stack_parm));
+	      data->stack_parm = copy_rtx (from_expand);
+	    }
 	}
 
       dest = validize_mem (copy_rtx (data->stack_parm));

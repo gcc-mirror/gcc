@@ -172,17 +172,23 @@ leader_merge (tree cur, tree next)
   return cur;
 }
 
-/* Return true if VAR is a PARM_DECL or a RESULT_DECL of type BLKmode.
+/* Return true if VAR is a PARM_DECL or a RESULT_DECL that ought to be
+   assigned to a stack slot.  We can't have expand_one_ssa_partition
+   choose their address: the pseudo holding the address would be set
+   up too late for assign_params to copy the parameter if needed.
+
    Such parameters are likely passed as a pointer to the value, rather
    than as a value, and so we must not coalesce them, nor allocate
    stack space for them before determining the calling conventions for
-   them.  For their SSA_NAMEs, expand_one_ssa_partition emits RTL as
-   MEMs with pc_rtx as the address, and then it replaces the pc_rtx
-   with NULL so as to make sure the MEM is not used before it is
-   adjusted in assign_parm_setup_reg.  */
+   them.
+
+   For their SSA_NAMEs, expand_one_ssa_partition emits RTL as MEMs
+   with pc_rtx as the address, and then it replaces the pc_rtx with
+   NULL so as to make sure the MEM is not used before it is adjusted
+   in assign_parm_setup_reg.  */
 
 bool
-parm_maybe_byref_p (tree var)
+parm_in_stack_slot_p (tree var)
 {
   if (!var || VAR_P (var))
     return false;
@@ -190,7 +196,7 @@ parm_maybe_byref_p (tree var)
   gcc_assert (TREE_CODE (var) == PARM_DECL
 	      || TREE_CODE (var) == RESULT_DECL);
 
-  return TYPE_MODE (TREE_TYPE (var)) == BLKmode;
+  return !use_register_for_decl (var);
 }
 
 /* Return the partition of the default SSA_DEF for decl VAR.  */
@@ -1343,17 +1349,35 @@ expand_one_ssa_partition (tree var)
 
   if (!use_register_for_decl (var))
     {
-      if (parm_maybe_byref_p (SSA_NAME_VAR (var))
-	  && ssa_default_def_partition (SSA_NAME_VAR (var)) == part)
+      /* We can't risk having the parm assigned to a MEM location
+	 whose address references a pseudo, for the pseudo will only
+	 be set up after arguments are copied to the stack slot.
+
+	 If the parm doesn't have a default def (e.g., because its
+	 incoming value is unused), then we want to let assign_params
+	 do the allocation, too.  In this case we want to make sure
+	 SSA_NAMEs associated with the parm don't get assigned to more
+	 than one partition, lest we'd create two unassigned stac
+	 slots for the same parm, thus the assert at the end of the
+	 block.  */
+      if (parm_in_stack_slot_p (SSA_NAME_VAR (var))
+	  && (ssa_default_def_partition (SSA_NAME_VAR (var)) == part
+	      || !ssa_default_def (cfun, SSA_NAME_VAR (var))))
 	{
 	  expand_one_stack_var_at (var, pc_rtx, 0, 0);
 	  rtx x = SA.partition_to_pseudo[part];
 	  gcc_assert (GET_CODE (x) == MEM);
-	  gcc_assert (GET_MODE (x) == BLKmode);
 	  gcc_assert (XEXP (x, 0) == pc_rtx);
 	  /* Reset the address, so that any attempt to use it will
 	     ICE.  It will be adjusted in assign_parm_setup_reg.  */
 	  XEXP (x, 0) = NULL_RTX;
+	  /* If the RTL associated with the parm is not what we have
+	     just created, the parm has been split over multiple
+	     partitions.  In order for this to work, we must have a
+	     default def for the parm, otherwise assign_params won't
+	     know what to do.  */
+	  gcc_assert (DECL_RTL_IF_SET (SSA_NAME_VAR (var)) == x
+		      || ssa_default_def (cfun, SSA_NAME_VAR (var)));
 	}
       else if (defer_stack_allocation (var, true))
 	add_stack_var (var);
