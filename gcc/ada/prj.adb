@@ -76,6 +76,9 @@ package body Prj is
                           All_Upper_Case => All_Upper_Case_Image'Access,
                           Mixed_Case     => Mixed_Case_Image'Access);
 
+   package Name_Id_Set is
+      new Ada.Containers.Ordered_Sets (Element_Type => Name_Id);
+
    procedure Free (Project : in out Project_Id);
    --  Free memory allocated for Project
 
@@ -589,9 +592,6 @@ package body Prj is
          In_Aggregate_Lib      : Boolean;
          From_Encapsulated_Lib : Boolean)
       is
-         package Name_Id_Set is
-           new Ada.Containers.Ordered_Sets (Element_Type => Name_Id);
-
          Seen_Name : Name_Id_Set.Set;
          --  This set is needed to ensure that we do not handle the same
          --  project twice in the context of aggregate libraries.
