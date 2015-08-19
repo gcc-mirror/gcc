@@ -1230,18 +1230,18 @@ init_temp_slots (void)
 
 /* Private type used by get_hard_reg_initial_reg, get_hard_reg_initial_val,
    and has_hard_reg_initial_val..  */
-typedef struct GTY(()) initial_value_pair {
+struct GTY(()) initial_value_pair {
   rtx hard_reg;
   rtx pseudo;
-} initial_value_pair;
+};
 /* ???  This could be a VEC but there is currently no way to define an
    opaque VEC type.  This could be worked around by defining struct
    initial_value_pair in function.h.  */
-typedef struct GTY(()) initial_value_struct {
+struct GTY(()) initial_value_struct {
   int num_entries;
   int max_entries;
   initial_value_pair * GTY ((length ("%h.num_entries"))) entries;
-} initial_value_struct;
+};
 
 /* If a pseudo represents an initial hard reg (or expression), return
    it, else return NULL_RTX.  */

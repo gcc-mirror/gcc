@@ -249,7 +249,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This structure represents a candidate for elimination.  */
 
-typedef struct ext_cand
+struct ext_cand
 {
   /* The expression.  */
   const_rtx expr;
@@ -262,7 +262,7 @@ typedef struct ext_cand
 
   /* The instruction where it lives.  */
   rtx_insn *insn;
-} ext_cand;
+};
 
 
 static int max_insn_uid;
@@ -565,7 +565,7 @@ struct ATTRIBUTE_PACKED ext_modified
 };
 
 /* Vectors used by combine_reaching_defs and its helpers.  */
-typedef struct ext_state
+struct ext_state
 {
   /* In order to avoid constant alloc/free, we keep these
      4 vectors live through the entire find_and_remove_re and just
@@ -579,7 +579,7 @@ typedef struct ext_state
      the original mode from which the insn is extending and
      kind of extension.  */
   struct ext_modified *modified;
-} ext_state;
+};
 
 /* Reaching Definitions of the extended register could be conditional copies
    or regular definitions.  This function separates the two types into two

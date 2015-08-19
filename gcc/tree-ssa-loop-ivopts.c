@@ -169,14 +169,14 @@ enum use_type
 };
 
 /* Cost of a computation.  */
-typedef struct
+struct comp_cost
 {
   int cost;		/* The runtime cost.  */
   unsigned complexity;	/* The estimate of the complexity of the code for
 			   the computation (in no concrete units --
 			   complexity field should be larger for more
 			   complex expressions and addressing modes).  */
-} comp_cost;
+};
 
 static const comp_cost no_cost = {0, 0};
 static const comp_cost infinite_cost = {INFTY, INFTY};

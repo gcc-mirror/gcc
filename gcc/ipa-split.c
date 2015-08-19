@@ -122,11 +122,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Per basic block info.  */
 
-typedef struct
+struct split_bb_info
 {
   unsigned int size;
   unsigned int time;
-} split_bb_info;
+};
 
 static vec<split_bb_info> bb_info_vec;
 
@@ -1008,7 +1008,7 @@ visit_bb (basic_block bb, basic_block return_bb,
 
 /* Stack entry for recursive DFS walk in find_split_point.  */
 
-typedef struct
+struct stack_entry
 {
   /* Basic block we are examining.  */
   basic_block bb;
@@ -1034,7 +1034,7 @@ typedef struct
 
   /* When false we can not split on this BB.  */
   bool can_split;
-} stack_entry;
+};
 
 
 /* Find all articulations and call consider_split on them.

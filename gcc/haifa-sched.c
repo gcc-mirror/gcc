@@ -2569,7 +2569,7 @@ static const char *rfs_str[RFS_N] = {
   "RFS_DEP_COUNT", "RFS_TIE", "RFS_FUSION" };
 
 /* Statistical breakdown of rank_for_schedule decisions.  */
-typedef struct { unsigned stats[RFS_N]; } rank_for_schedule_stats_t;
+struct rank_for_schedule_stats_t { unsigned stats[RFS_N]; };
 static rank_for_schedule_stats_t rank_for_schedule_stats;
 
 /* Return the result of comparing insns TMP and TMP2 and update

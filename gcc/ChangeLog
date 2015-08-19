@@ -1,3 +1,11 @@
+2015-08-18  trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* bt-load.c, cgraph.h, dwarf2out.c, dwarf2out.h, final.c,
+	function.c, graphite-scop-detection.c, haifa-sched.c,
+	ipa-devirt.c, ipa-split.c, recog.c, ree.c, stmt.c,
+	tree-data-ref.c, tree-ssa-dom.c, tree-ssa-loop-ivopts.c,
+	varasm.c: Remove typedefs of structs.
+
 2015-08-18  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* config/rs6000/altivec.h (vec_adde): New define.

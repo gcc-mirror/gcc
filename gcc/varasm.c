@@ -4640,10 +4640,10 @@ initializer_constant_valid_for_bitfield_p (tree value)
 /* output_constructor outer state of relevance in recursive calls, typically
    for nested aggregate bitfields.  */
 
-typedef struct {
+struct oc_outer_state {
   unsigned int bit_offset;  /* current position in ...  */
   int byte;                 /* ... the outer byte buffer.  */
-} oc_outer_state;
+};
 
 static unsigned HOST_WIDE_INT
   output_constructor (tree, unsigned HOST_WIDE_INT, unsigned int,
@@ -4883,7 +4883,7 @@ array_size_for_constructor (tree val)
 
 /* output_constructor local state to support interaction with helpers.  */
 
-typedef struct {
+struct oc_local_state {
 
   /* Received arguments.  */
   tree exp;                     /* Constructor expression.  */
@@ -4904,7 +4904,7 @@ typedef struct {
   tree val;        /* Current element value.  */
   tree index;      /* Current element index.  */
 
-} oc_local_state;
+};
 
 /* Helper for output_constructor.  From the current LOCAL state, output a
    RANGE_EXPR element.  */
@@ -5829,12 +5829,12 @@ get_tm_clone_pair (tree o)
   return NULL_TREE;
 }
 
-typedef struct tm_alias_pair
+struct tm_alias_pair
 {
   unsigned int uid;
   tree from;
   tree to;
-} tm_alias_pair;
+};
 
 
 /* Dump the actual pairs to the .tm_clone_table section.  */

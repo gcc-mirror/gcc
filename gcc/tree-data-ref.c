@@ -3798,14 +3798,14 @@ compute_all_dependences (vec<data_reference_p> datarefs,
 
 /* Describes a location of a memory reference.  */
 
-typedef struct data_ref_loc_d
+struct data_ref_loc
 {
   /* The memory reference.  */
   tree ref;
 
   /* True if the memory reference is read.  */
   bool is_read;
-} data_ref_loc;
+};
 
 
 /* Stores the locations of memory references in STMT to REFERENCES.  Returns
