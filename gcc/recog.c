@@ -188,14 +188,14 @@ check_asm_operands (rtx x)
 
 /* Static data for the next two routines.  */
 
-typedef struct change_t
+struct change_t
 {
   rtx object;
   int old_code;
   rtx *loc;
   rtx old;
   bool unshare;
-} change_t;
+};
 
 static change_t *changes;
 static int changes_allocated;

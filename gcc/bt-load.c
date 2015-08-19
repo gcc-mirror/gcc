@@ -404,13 +404,13 @@ note_other_use_this_block (unsigned int regno, btr_user users_this_bb)
       user->other_use_this_block = 1;
 }
 
-typedef struct {
+struct defs_uses_info {
   btr_user users_this_bb;
   HARD_REG_SET btrs_written_in_block;
   HARD_REG_SET btrs_live_in_block;
   sbitmap bb_gen;
   sbitmap *btr_defset;
-} defs_uses_info;
+};
 
 /* Called via note_stores or directly to register stores into /
    clobbers of a branch target register DEST that are not recognized as

@@ -39,15 +39,13 @@ enum symtab_type
 /* Section names are stored as reference counted strings in GGC safe hashtable
    (to make them survive through PCH).  */
 
-struct GTY((for_user)) section_hash_entry_d
+struct GTY((for_user)) section_hash_entry
 {
   int ref_count;
   char *name;  /* As long as this datastructure stays in GGC, we can not put
 		  string at the tail of structure of GGC dies in horrible
 		  way  */
 };
-
-typedef struct section_hash_entry_d section_hash_entry;
 
 struct section_name_hasher : ggc_ptr_hash<section_hash_entry>
 {

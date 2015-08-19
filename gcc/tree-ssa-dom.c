@@ -85,11 +85,11 @@ struct hashable_expr
 /* Structure for recording known values of a conditional expression
    at the exits from its block.  */
 
-typedef struct cond_equivalence_s
+struct cond_equivalence
 {
   struct hashable_expr cond;
   tree value;
-} cond_equivalence;
+};
 
 
 /* Structure for recording edge equivalences as well as any pending

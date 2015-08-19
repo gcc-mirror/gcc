@@ -1518,14 +1518,14 @@ asm_str_count (const char *templ)
 /* Structure recording the mapping from source file and directory
    names at compile time to those to be embedded in debug
    information.  */
-typedef struct debug_prefix_map
+struct debug_prefix_map
 {
   const char *old_prefix;
   const char *new_prefix;
   size_t old_len;
   size_t new_len;
   struct debug_prefix_map *next;
-} debug_prefix_map;
+};
 
 /* Linked list of such structures.  */
 static debug_prefix_map *debug_prefix_maps;

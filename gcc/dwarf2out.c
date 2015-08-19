@@ -1258,7 +1258,7 @@ enum ate_kind {
   ate_kind_label
 };
 
-typedef struct GTY((for_user)) addr_table_entry_struct {
+struct GTY((for_user)) addr_table_entry {
   enum ate_kind kind;
   unsigned int refcount;
   unsigned int index;
@@ -1268,8 +1268,7 @@ typedef struct GTY((for_user)) addr_table_entry_struct {
       char * GTY ((tag ("1"))) label;
     }
   GTY ((desc ("%1.kind"))) addr;
-}
-addr_table_entry;
+};
 
 /* Location lists are ranges + location descriptions for that range,
    so you can track variables that are in different places over

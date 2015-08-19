@@ -106,7 +106,6 @@ struct case_node
   int                   subtree_prob;
 };
 
-typedef struct case_node case_node;
 typedef struct case_node *case_node_ptr;
 
 extern basic_block label_to_block_fn (struct function *, tree);
