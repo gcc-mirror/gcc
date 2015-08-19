@@ -1,3 +1,11 @@
+2015-08-13  Florian Weimer  <fweimer@redhat.com>
+
+	* prj.adb (For_Every_Project_Imported_Context.Recursive_Check_Context):
+	Move Name_Id_Set instantiation to the Prj package, to avoid trampolines.
+	* prj-proc.adb (Process.Process_Expression_Variable_Decl):
+	Move Name_Ids instantiation to the Prj.Proc package, to avoid
+	trampolines.
+
 2015-08-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (bounds_check): Use %wd print format

@@ -72,6 +72,8 @@ package body Prj.Proc is
       Equal      => "=");
    --  Stores the default values of 'Runtime names for the various languages
 
+   package Name_Ids is new Ada.Containers.Vectors (Positive, Name_Id);
+
    procedure Add (To_Exp : in out Name_Id; Str : Name_Id);
    --  Concatenate two strings and returns another string if both
    --  arguments are not null string.
@@ -2193,8 +2195,6 @@ package body Prj.Proc is
          if Is_Attribute and then Name = Snames.Name_Project_Path then
             if In_Tree.Is_Root_Tree then
                declare
-                  package Name_Ids is
-                    new Ada.Containers.Vectors (Positive, Name_Id);
                   Val  : String_List_Id := New_Value.Values;
                   List : Name_Ids.Vector;
                begin
