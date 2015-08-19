@@ -931,7 +931,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	       The generate instruction sequence for accessing global variable
 	       is:
 
-	         ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym]
+		 ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym]
 
 	       Only one instruction needed. But we must initialize
 	       pic_offset_table_rtx properly.  We generate initialize insn for
@@ -940,12 +940,12 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	       The final instruction sequences will look like the following
 	       for multiply global variables access.
 
-	         adrp pic_offset_table_rtx, _GLOBAL_OFFSET_TABLE_
+		 adrp pic_offset_table_rtx, _GLOBAL_OFFSET_TABLE_
 
-	         ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym1]
-	         ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym2]
-	         ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym3]
-	         ...  */
+		 ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym1]
+		 ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym2]
+		 ldr reg, [pic_offset_table_rtx, #:gotpage_lo15:sym3]
+		 ...  */
 
 	    rtx s = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
 	    crtl->uses_pic_offset_table = 1;
