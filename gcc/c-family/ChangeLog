@@ -1,3 +1,8 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* c-ada-spec.h, c-common.c, c-common.h, c-format.c, c-format.h,
+	c-objc.h, c-ppoutput.c, c-pragma.c, c-pragma.h: Remove useless
+
 2015-08-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR middle-end/36757

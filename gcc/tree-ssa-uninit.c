@@ -483,13 +483,13 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
 
 /* The type to represent a simple predicate  */
 
-typedef struct use_def_pred_info
+struct pred_info
 {
   tree pred_lhs;
   tree pred_rhs;
   enum tree_code cond_code;
   bool invert;
-} pred_info;
+};
 
 /* The type to represent a sequence of predicates grouped
   with .AND. operation.  */

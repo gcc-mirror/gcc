@@ -1,3 +1,9 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* call.c, class.c, cp-tree.h, decl.c, except.c, mangle.c,
+	method.c, name-lookup.h, parser.c, parser.h, rtti.c,
+	semantics.c, typeck2.c: Remove useless typedefs.
+
 2015-08-18  Jason Merrill  <jason@redhat.com>
 
 	DR 1155

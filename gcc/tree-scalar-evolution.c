@@ -895,11 +895,11 @@ get_loop_exit_condition (const struct loop *loop)
 
 /* Depth first search algorithm.  */
 
-typedef enum t_bool {
+enum t_bool {
   t_false,
   t_true,
   t_dont_know
-} t_bool;
+};
 
 
 static t_bool follow_ssa_edge (struct loop *loop, gimple, gphi *,

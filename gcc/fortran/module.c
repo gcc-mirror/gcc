@@ -1117,11 +1117,10 @@ gzopen_intrinsic_module (const char* name)
 }
 
 
-typedef enum
+enum atom_type
 {
   ATOM_NAME, ATOM_LPAREN, ATOM_RPAREN, ATOM_INTEGER, ATOM_STRING
-}
-atom_type;
+};
 
 static atom_type last_atom;
 
@@ -1971,7 +1970,7 @@ mio_internal_string (char *string)
 }
 
 
-typedef enum
+enum ab_attribute
 { AB_ALLOCATABLE, AB_DIMENSION, AB_EXTERNAL, AB_INTRINSIC, AB_OPTIONAL,
   AB_POINTER, AB_TARGET, AB_DUMMY, AB_RESULT, AB_DATA,
   AB_IN_NAMELIST, AB_IN_COMMON, AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE,
@@ -1984,8 +1983,7 @@ typedef enum
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
   AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY, AB_OMP_DECLARE_TARGET,
   AB_ARRAY_OUTER_DEPENDENCY, AB_MODULE_PROCEDURE
-}
-ab_attribute;
+};
 
 static const mstring attr_bits[] =
 {

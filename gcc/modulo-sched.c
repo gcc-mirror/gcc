@@ -171,8 +171,6 @@ struct ps_reg_move_info
   rtx_insn *insn;
 };
 
-typedef struct ps_reg_move_info ps_reg_move_info;
-
 /* Holds the partial schedule as an array of II rows.  Each entry of the
    array points to a linked list of PS_INSNs, which represents the
    instructions that are scheduled for that row.  */
@@ -257,8 +255,6 @@ typedef struct node_sched_params
      u will precede v if column (u) < column (v).  */
   int column;
 } *node_sched_params_ptr;
-
-typedef struct node_sched_params node_sched_params;
 
 /* The following three functions are copied from the current scheduler
    code in order to use sched_analyze() for computing the dependencies.

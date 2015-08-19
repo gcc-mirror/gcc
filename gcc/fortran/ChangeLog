@@ -1,3 +1,8 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* dependency.c, dependency.h, gfortran.h, io.c, module.c,
+	parse.h, resolve.c, trans-types.h, trans.h: remove useless
+
 2015-08-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/54656

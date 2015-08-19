@@ -29,12 +29,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "c-tree.h"
 
-enum formals_style_enum {
+enum formals_style {
   ansi,
   k_and_r_names,
   k_and_r_decls
 };
-typedef enum formals_style_enum formals_style;
 
 
 static const char *data_type;

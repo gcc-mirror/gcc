@@ -991,12 +991,12 @@ static void linearize_expr_tree (vec<operand_entry_t> *, gimple,
 				 bool, bool);
 
 /* Structure for tracking and counting operands.  */
-typedef struct oecount_s {
+struct oecount {
   int cnt;
   int id;
   enum tree_code oecode;
   tree op;
-} oecount;
+};
 
 
 /* The heap for the oecount hashtable and the sorted list of operands.  */

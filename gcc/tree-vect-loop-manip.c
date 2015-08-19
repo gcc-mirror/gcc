@@ -118,11 +118,11 @@ rename_variables_in_bb (basic_block bb, bool rename_from_outer_loop)
 }
 
 
-typedef struct
+struct adjust_info
 {
   tree from, to;
   basic_block bb;
-} adjust_info;
+};
 
 /* A stack of values to be adjusted in debug stmts.  We have to
    process them LIFO, so that the closest substitution applies.  If we

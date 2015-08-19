@@ -184,13 +184,13 @@ enum pre_expr_kind
     CONSTANT
 };
 
-typedef union pre_expr_union_d
+union pre_expr_union
 {
   tree name;
   tree constant;
   vn_nary_op_t nary;
   vn_reference_t reference;
-} pre_expr_union;
+};
 
 typedef struct pre_expr_d : nofree_ptr_hash <pre_expr_d>
 {

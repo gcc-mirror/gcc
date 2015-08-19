@@ -56,8 +56,6 @@ enum mangling_flags
   mf_use_underscores_around_value = 2
 };
 
-typedef enum mangling_flags mangling_flags;
-
 static void do_build_copy_assign (tree);
 static void do_build_copy_constructor (tree);
 static tree make_alias_for_thunk (tree);

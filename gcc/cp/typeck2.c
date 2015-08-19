@@ -145,7 +145,7 @@ struct GTY((chain_next ("%h.next"), for_user)) pending_abstract_type {
   tree type;
 
   /* Kind of use in an unnamed declarator.  */
-  abstract_class_use use;
+  enum abstract_class_use use;
 
   /* Position of the declaration. This is only needed for IDENTIFIER_NODEs,
      because DECLs already carry locus information.  */

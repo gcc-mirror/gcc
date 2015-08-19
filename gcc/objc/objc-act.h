@@ -95,11 +95,11 @@ void objc_common_init_ts (void);
 #define PROPERTY_NONATOMIC(DECL) \
    DECL_LANG_FLAG_1 (PROPERTY_DECL_CHECK (DECL))
 
-typedef enum objc_property_assign_semantics {
+enum objc_property_assign_semantics {
   OBJC_PROPERTY_ASSIGN = 1,
   OBJC_PROPERTY_RETAIN = 2,
   OBJC_PROPERTY_COPY = 3
-} objc_property_assign_semantics;
+};
 
 /* PROPERTY_ASSIGN_SEMANTICS can be OBJC_PROPERTY_ASSIGN,
    OBJC_PROPERTY_RETAIN or OBJC_PROPERTY_COPY.  We need an integer to
@@ -291,7 +291,7 @@ extern GTY(()) struct imp_entry *imp_list;
 extern GTY(()) int imp_count;	/* `@implementation' */
 extern GTY(()) int cat_count;	/* `@category' */
 
-extern GTY(()) objc_ivar_visibility_kind objc_ivar_visibility;
+extern GTY(()) enum objc_ivar_visibility_kind objc_ivar_visibility;
 
 /* Objective-C/Objective-C++ global tree enumeration.  */
 
@@ -645,13 +645,13 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define TAG_ENUMERATION_MUTATION        "objc_enumerationMutation"
 #define TAG_FAST_ENUMERATION_STATE      "__objcFastEnumerationState"
 
-typedef enum string_section
+enum string_section
 {
   class_names,		/* class, category, protocol, module names */
   meth_var_names,	/* method and variable names */
   meth_var_types,	/* method and variable type descriptors */
   prop_names_attr	/* property names and their attributes. */
-} string_section;
+};
 
 #define METHOD_DEF			0
 #define METHOD_REF			1

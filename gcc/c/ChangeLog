@@ -1,3 +1,7 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* c-aux-info.c, c-parser.c, c-tree.h: Remove useless typedefs.
+
 2015-08-12  Marek Polacek  <polacek@redhat.com>
 
 	* c-decl.c (grokdeclarator): Call error_at instead of error and pass

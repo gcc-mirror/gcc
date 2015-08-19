@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
    differences from the parser's perspective.  */
 
 /* TODO: Do we want the initial underscore ? */
-typedef struct _objc_runtime_hooks_r
+struct objc_runtime_hooks
 {
   /* TODO: Expand comments in this file.  */
 
@@ -97,7 +97,7 @@ typedef struct _objc_runtime_hooks_r
      during parsing.  */
   void (*generate_metadata) (void);
 
-} objc_runtime_hooks;
+};
 
 /* For shared support that needs to access these.  */
 extern objc_runtime_hooks runtime;

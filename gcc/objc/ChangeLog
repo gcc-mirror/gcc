@@ -1,3 +1,8 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* objc-act.h, objc-next-runtime-abi-02.c, objc-runtime-hooks.h:
+	Remove useless typedefs.
+
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* objc-map.h: Fix double word typos.

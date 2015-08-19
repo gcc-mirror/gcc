@@ -84,7 +84,7 @@ enum
 
 /* Structure describing a length modifier supported in format checking, and
    possibly a doubled version such as "hh".  */
-typedef struct
+struct format_length_info
 {
   /* Name of the single-character length modifier. If prefixed by
      a zero character, it describes a multi character length
@@ -102,12 +102,12 @@ typedef struct
   /* If this flag is set, just scalar width identity is checked, and
      not the type identity itself.  */
   int scalar_identity_flag;
-} format_length_info;
+};
 
 
 /* Structure describing the combination of a conversion specifier
    (or a set of specifiers which act identically) and a length modifier.  */
-typedef struct
+struct format_type_detail
 {
   /* The standard version this combination of length and type appeared in.
      This is only relevant if greater than those for length and type
@@ -118,7 +118,7 @@ typedef struct
   const char *name;
   /* The type itself.  */
   tree *type;
-} format_type_detail;
+};
 
 
 /* Macros to fill out tables of these.  */
@@ -129,7 +129,7 @@ typedef struct
 
 /* Structure describing a format conversion specifier (or a set of specifiers
    which act identically), and the length modifiers used with it.  */
-typedef struct format_char_info
+struct format_char_info
 {
   const char *format_chars;
   int pointer_count;
@@ -158,11 +158,11 @@ typedef struct format_char_info
      arguments, only POINTER_COUNT, TYPES, and the "c", "R", and "W" flags
      in FLAGS2 are used.  */
   const struct format_char_info *chain;
-} format_char_info;
+};
 
 
 /* Structure describing a flag accepted by some kind of format.  */
-typedef struct
+struct format_flag_spec
 {
   /* The flag character in question (0 for end of array).  */
   int flag_char;
@@ -186,12 +186,12 @@ typedef struct
   const char *long_name;
   /* The standard version in which it appeared.  */
   enum format_std_version std;
-} format_flag_spec;
+};
 
 
 /* Structure describing a combination of flags that is bad for some kind
    of format.  */
-typedef struct
+struct format_flag_pair
 {
   /* The first flag character in question (0 for end of array).  */
   int flag_char1;
@@ -204,11 +204,11 @@ typedef struct
      a nonzero character from flags2 if it only applies in some
      circumstances (e.g. 'i' for printf formats ignoring 0 with precision).  */
   int predicate;
-} format_flag_pair;
+};
 
 
 /* Structure describing a particular kind of format processed by GCC.  */
-typedef struct
+struct format_kind_info
 {
   /* The name of this kind of format, for use in diagnostics.  Also
      the name of the attribute (without preceding and following __).  */
@@ -251,7 +251,7 @@ typedef struct
   /* Pointer to type of argument expected if '*' is used for a precision,
      or NULL if '*' not used for precisions.  */
   tree *precision_type;
-} format_kind_info;
+};
 
 #define T_I	&integer_type_node
 #define T89_I	{ STD_C89, NULL, T_I }
@@ -317,12 +317,12 @@ typedef struct
    interpreted as "gnu_printf" or "ms_printf" on a particular system.
    TARGET_OVERRIDES_FORMAT_ATTRIBUTES is used to specify target-specific
    defaults.  */
-typedef struct
+struct target_ovr_attr
 {
   /* The name of the to be copied format attribute. */
   const char *named_attr_src;
   /* The name of the to be overridden format attribute. */
   const char *named_attr_dst;
-} target_ovr_attr;
+};
 
 #endif /* GCC_C_FORMAT_H */

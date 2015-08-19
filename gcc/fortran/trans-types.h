@@ -44,12 +44,12 @@ extern GTY(()) tree gfc_charlen_type_node;
    and __float128.  */
 extern bool gfc_real16_is_float128;
 
-typedef enum {
+enum gfc_packed {
   PACKED_NO = 0,
   PACKED_PARTIAL,
   PACKED_FULL,
   PACKED_STATIC
-} gfc_packed;
+};
 
 /* be-function.c */
 void gfc_convert_function_code (gfc_namespace *);

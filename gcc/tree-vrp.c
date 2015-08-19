@@ -173,10 +173,10 @@ static bool values_propagated;
    node.  */
 static int *vr_phi_edge_counts;
 
-typedef struct {
+struct switch_update {
   gswitch *stmt;
   tree vec;
-} switch_update;
+};
 
 static vec<edge> to_remove_edges;
 static vec<switch_update> to_update_switch_stmts;

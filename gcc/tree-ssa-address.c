@@ -85,13 +85,13 @@ along with GCC; see the file COPYING3.  If not see
 /* A "template" for memory address, used to determine whether the address is
    valid for mode.  */
 
-typedef struct GTY (()) mem_addr_template {
+struct GTY (()) mem_addr_template {
   rtx ref;			/* The template.  */
   rtx * GTY ((skip)) step_p;	/* The point in template where the step should be
 				   filled in.  */
   rtx * GTY ((skip)) off_p;	/* The point in template where the offset should
 				   be filled in.  */
-} mem_addr_template;
+};
 
 
 /* The templates.  Each of the low five bits of the index corresponds to one

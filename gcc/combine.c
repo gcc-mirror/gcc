@@ -154,7 +154,7 @@ static rtx i2mod_old_rhs;
 
 static rtx i2mod_new_rhs;
 
-typedef struct reg_stat_struct {
+struct reg_stat_type {
   /* Record last point of death of (hard or pseudo) register n.  */
   rtx_insn			*last_death;
 
@@ -261,7 +261,7 @@ typedef struct reg_stat_struct {
      value.  */
 
   ENUM_BITFIELD(machine_mode)	truncated_to_mode : 8;
-} reg_stat_type;
+};
 
 
 static vec<reg_stat_type> reg_stat;

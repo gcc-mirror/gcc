@@ -808,12 +808,12 @@ free_store_info (insn_info_t insn_info)
   insn_info->store_rec = NULL;
 }
 
-typedef struct
+struct note_add_store_info
 {
   rtx_insn *first, *current;
   regset fixed_regs_live;
   bool failure;
-} note_add_store_info;
+};
 
 /* Callback for emit_inc_dec_insn_before via note_stores.
    Check if a register is clobbered which is live afterwards.  */

@@ -830,12 +830,11 @@ stmt_references_abnormal_ssa_name (gimple stmt)
 }
 
 /* Pair of tree and a sorting index, for dump_enumerated_decls.  */
-struct GTY(()) numbered_tree_d
+struct GTY(()) numbered_tree
 {
   tree t;
   int num;
 };
-typedef struct numbered_tree_d numbered_tree;
 
 
 /* Compare two declarations references by their DECL_UID / sequence number.

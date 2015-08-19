@@ -21,12 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_SSA_H
 
 /* Mapping for redirected edges.  */
-struct _edge_var_map {
+struct edge_var_map {
   tree result;			/* PHI result.  */
   tree def;			/* PHI arg definition.  */
   source_location locus;        /* PHI arg location.  */
 };
-typedef struct _edge_var_map edge_var_map;
 
 /* A vector of var maps.  */
 typedef vec<edge_var_map, va_heap, vl_embed> edge_var_map_vector;

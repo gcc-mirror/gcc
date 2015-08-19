@@ -44,13 +44,13 @@ static struct
 
 /* Defined and undefined macros being queued for output with -dU at
    the next newline.  */
-typedef struct macro_queue
+struct macro_queue
 {
   struct macro_queue *next;	/* Next macro in the list.  */
   char *macro;			/* The name of the macro if not
 				   defined, the full definition if
 				   defined.  */
-} macro_queue;
+};
 static macro_queue *define_queue, *undef_queue;
 
 /* General output routines.  */

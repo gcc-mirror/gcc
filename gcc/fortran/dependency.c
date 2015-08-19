@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 enum range {LHS, RHS, MID};
 
 /* Dependency types.  These must be in reverse order of priority.  */
-typedef enum
+enum gfc_dependency
 {
   GFC_DEP_ERROR,
   GFC_DEP_EQUAL,	/* Identical Ranges.  */
@@ -44,8 +44,7 @@ typedef enum
   GFC_DEP_BACKWARD,	/* e.g. a(2:4) = a(1:3).  */
   GFC_DEP_OVERLAP,	/* May overlap in some other way.  */
   GFC_DEP_NODEP		/* Distinct ranges.  */
-}
-gfc_dependency;
+};
 
 /* Macros */
 #define IS_ARRAY_EXPLICIT(as) ((as->type == AS_EXPLICIT ? 1 : 0))
