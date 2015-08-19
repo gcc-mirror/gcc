@@ -5329,6 +5329,25 @@ if test x$gcc_cv_libc_provides_ssp = xyes; then
 	    [Define if your target C library provides stack protector support])
 fi
 
+# Check whether --enable-default-ssp was given.
+AC_ARG_ENABLE(default-ssp,
+[AS_HELP_STRING([--enable-default-ssp],
+  [enable Stack Smashing Protection as default])],[
+if test x$gcc_cv_libc_provides_ssp = xyes; then
+  case "$target" in
+    ia64*-*-*) enable_default_ssp=no ;;
+    *) enable_default_ssp=$enableval ;;
+  esac
+else
+  enable_default_ssp=no
+fi],
+enable_default_ssp=no)
+if test x$enable_default_ssp == xyes ; then
+  AC_DEFINE(ENABLE_DEFAULT_SSP, 1,
+      [Define if your target supports default stack protector and it is enabled.])
+fi
+AC_SUBST([enable_default_ssp])
+
 # Test for <sys/sdt.h> on the target.
 GCC_TARGET_TEMPLATE([HAVE_SYS_SDT_H])
 AC_MSG_CHECKING(sys/sdt.h in the target C library)

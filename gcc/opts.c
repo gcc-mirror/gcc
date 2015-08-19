@@ -754,6 +754,11 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_opts_finished = true;
     }
 
+  /* We initialize opts->x_flag_stack_protect to -1 so that targets
+     can set a default value.  */
+  if (opts->x_flag_stack_protect == -1)
+    opts->x_flag_stack_protect = DEFAULT_FLAG_SSP;
+
   if (opts->x_optimize == 0)
     {
       /* Inlining does not work if not optimizing,

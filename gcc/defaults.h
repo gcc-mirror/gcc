@@ -1359,6 +1359,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STACK_SIZE_MODE word_mode
 #endif
 
+/* Default value for flag_stack_protect when flag_stack_protect is initialized to -1:
+   --enable-default-ssp: Default flag_stack_protect to -fstack-protector-strong.
+   --disable-default-ssp: Default flag_stack_protect to 0.
+ */
+#ifdef ENABLE_DEFAULT_SSP
+# ifndef DEFAULT_FLAG_SSP
+#  define DEFAULT_FLAG_SSP 3
+# endif
+#else
+# define DEFAULT_FLAG_SSP 0
+#endif
+
 /* Provide default values for the macros controlling stack checking.  */
 
 /* The default is neither full builtin stack checking...  */
