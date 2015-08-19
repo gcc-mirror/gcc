@@ -1,3 +1,8 @@
+2015-08-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Delete obsolete
+	comment.
+
 2015-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/67133
