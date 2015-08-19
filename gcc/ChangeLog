@@ -1,3 +1,24 @@
+2015-08-19  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/64164
+	* cfgexpand.c (parm_maybe_byref_p): Renamed to...
+	(parm_in_stack_slot_p): ... this.  Disregard mode, what
+	matters is whether the parm will live in a pseudo or a stack
+	slot.
+	(expand_one_ssa_partition): Deal with params without a default
+	def.  Disregard mode.
+	* cfgexpand.h: Renamed function declaration.
+	* tree-ssa-coalesce.c: Adjust.
+	* function.c (split_complex_args): Allocate stack slot for
+	unassigned parms before splitting.
+	(parm_in_unassigned_mem_p): New.  Use it instead of
+	parm_maybe_byref_p throughout this file.
+	(assign_parm_setup_block): Use it.  Accept pseudos in the
+	expand-assigned rtl.
+	(assign_parm_setup_reg): Drop BLKmode requirement.
+	(assign_parm_setup_stack): Allocate and fill in the address of
+	unassigned MEM parms.
+
 2015-08-19  David Sherwood  <david.sherwood@arm.com>
 
 	* genmodes.c (emit_mode_unit_size_inline): New function.
