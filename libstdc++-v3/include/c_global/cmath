@@ -650,7 +650,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     isnormal(_Tp __x)
     { return __x != 0 ? true : false; }
 
-  // Note: c++/36757 is fixed, __builtin_signbit is type-generic.
+  // Note: middle-end/36757 is fixed, __builtin_signbit is type-generic.
   constexpr bool
   signbit(float __x)
   { return __builtin_signbit(__x); }
