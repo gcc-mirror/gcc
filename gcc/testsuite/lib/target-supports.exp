@@ -1145,6 +1145,17 @@ proc check_effective_target_pie_enabled { } {
     }]
 }
 
+# Return 1 if the target generates -fstack-protector by default.
+
+proc check_effective_target_fstack_protector_enabled {} {
+    return [ check_no_compiler_messages fstack_protector_enabled assembly {
+    #if !defined(__SSP__) && !defined(__SSP_ALL__) && \
+      !defined(__SSP_STRONG__) && !defined(__SSP_EXPICIT__)
+    #error unsupported
+    #endif
+    }]
+}
+
 # Return 1 if the target does not use a status wrapper.
 
 proc check_effective_target_unwrapped { } {

@@ -1,3 +1,17 @@
+2015-08-19  Magnus Granberg  <zorry@gentoo.org>
+
+	* common.opt (fstack-protector): Initialize to -1.
+	(fstack-protector-all): Likewise.
+	(fstack-protector-strong): Likewise.
+	(fstack-protector-explicit): Likewise.
+	* configure.ac: Add --enable-default-ssp.
+	* defaults.h (DEFAULT_FLAG_SSP): New.  Default SSP to strong.
+	* opts.c (finish_options): Update opts->x_flag_stack_protect if it is
+	-1.
+	* doc/install.texi: Document --enable-default-ssp.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
 2015-08-19  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/64164

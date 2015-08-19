@@ -1,3 +1,9 @@
+2015-08-19  Magnus Granberg  <zorry@gentoo.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_fstack_protector_enabled): New test.
+	* gcc.target/i386/ssp-default.c: New test.
+
 2015-08-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66929

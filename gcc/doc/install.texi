@@ -1642,6 +1642,9 @@ Using the GNU Compiler Collection (GCC)},
 See ``RS/6000 and PowerPC Options'' in the main manual
 @end ifhtml
 
+@item --enable-default-ssp
+Turn on @option{-fstack-protector-strong} by default.
+
 @item --enable-cld
 This option enables @option{-mcld} by default for 32-bit x86 targets.
 @ifnothtml
