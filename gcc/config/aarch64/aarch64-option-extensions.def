@@ -34,11 +34,6 @@
    should contain a whitespace-separated list of the strings in 'Features'
    that are required.  Their order is not important.  */
 
-/* V8 Architecture Extensions.
-   This list currently contains example extensions for CPUs that implement
-   AArch64, and therefore serves as a template for adding more CPUs in the
-   future.  */
-
 AARCH64_OPT_EXTENSION("fp",	AARCH64_FL_FP,                          AARCH64_FL_FPSIMD | AARCH64_FL_CRYPTO | AARCH64_FL_RDMA, "fp")
 AARCH64_OPT_EXTENSION("simd",	AARCH64_FL_FPSIMD,                      AARCH64_FL_SIMD | AARCH64_FL_CRYPTO | AARCH64_FL_RDMA,   "asimd")
 AARCH64_OPT_EXTENSION("crypto",	AARCH64_FL_CRYPTO | AARCH64_FL_FPSIMD,  AARCH64_FL_CRYPTO,   "aes pmull sha1 sha2")
