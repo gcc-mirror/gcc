@@ -225,12 +225,28 @@ extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 /* Get the size in bytes or bits of the basic parts of an
    object of mode MODE.  */
 
-#define GET_MODE_UNIT_SIZE(MODE) GET_MODE_SIZE (GET_MODE_INNER (MODE))
+extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
+#if GCC_VERSION >= 4001
+#define GET_MODE_UNIT_SIZE(MODE) \
+  ((unsigned char) (__builtin_constant_p (MODE) \
+		   ? mode_unit_size_inline (MODE) : mode_unit_size[MODE]))
+#else
+#define GET_MODE_UNIT_SIZE(MODE) mode_unit_size[MODE]
+#endif
 
 #define GET_MODE_UNIT_BITSIZE(MODE) \
   ((unsigned short) (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT))
 
-#define GET_MODE_UNIT_PRECISION(MODE) GET_MODE_PRECISION (GET_MODE_INNER (MODE))
+extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
+#if GCC_VERSION >= 4001
+#define GET_MODE_UNIT_PRECISION(MODE) \
+  ((unsigned short) (__builtin_constant_p (MODE) \
+		    ? mode_unit_precision_inline (MODE)\
+		    : mode_unit_precision[MODE]))
+#else
+#define GET_MODE_UNIT_PRECISION(MODE) mode_unit_precision[MODE]
+#endif
+
 
 /* Get the number of units in the object.  */
 

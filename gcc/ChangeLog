@@ -1,3 +1,15 @@
+2015-08-19  David Sherwood  <david.sherwood@arm.com>
+
+	* genmodes.c (emit_mode_unit_size_inline): New function.
+	(emit_mode_unit_precision_inline): New function.
+	(emit_insn_modes_h): Emit new #define.  Emit new functions.
+	(emit_mode_unit_size): New function.
+	(emit_mode_unit_precision): New function.
+	(emit_mode_adjustments): Add mode_unit_size adjustments.
+	(emit_insn_modes_c): Emit new arrays.
+	* machmode.h (GET_MODE_UNIT_SIZE, GET_MODE_UNIT_PRECISION): Update to
+	use new inline methods.
+
 2015-08-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (bit_count): Delete prototype
