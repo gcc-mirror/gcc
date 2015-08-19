@@ -150,7 +150,6 @@ static void aarch64_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_override_options_after_change (void);
 static bool aarch64_vector_mode_supported_p (machine_mode);
-static unsigned bit_count (unsigned HOST_WIDE_INT);
 static bool aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
 						 const unsigned char *sel);
 static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
@@ -4163,19 +4162,6 @@ aarch64_const_vec_all_same_int_p (rtx x, HOST_WIDE_INT val)
   return aarch64_const_vec_all_same_in_range_p (x, val, val);
 }
 
-static unsigned
-bit_count (unsigned HOST_WIDE_INT value)
-{
-  unsigned count = 0;
-
-  while (value)
-    {
-      count++;
-      value &= value - 1;
-    }
-
-  return count;
-}
 
 /* N Z C V.  */
 #define AARCH64_CC_V 1
@@ -4330,7 +4316,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  return;
 	}
 
-      asm_fprintf (f, "%u", bit_count (INTVAL (x)));
+      asm_fprintf (f, "%u", popcount_hwi (INTVAL (x)));
       break;
 
     case 'H':

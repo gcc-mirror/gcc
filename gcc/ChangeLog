@@ -1,5 +1,11 @@
 2015-08-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (bit_count): Delete prototype
+	and definition.
+	(aarch64_print_operand): Use popcount_hwi instead of the above.
+
+2015-08-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64-option-extensions.def: Delete obsolete
 	comment.
 
