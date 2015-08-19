@@ -1,3 +1,12 @@
+2015-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67133
+	* gimple-ssa-isolate-paths.c
+	(insert_trap_and_remove_trailing_statements): Rename to ...
+	(insert_trap): ... this.  Don't remove trailing statements; split
+	block instead.
+	(find_explicit_erroneous_behaviour): Don't remove all outgoing edges.
+
 2015-08-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR other/67042

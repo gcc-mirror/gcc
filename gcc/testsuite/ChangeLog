@@ -1,3 +1,8 @@
+2015-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67133
+	* g++.dg/torture/pr67133.C: New test.
+
 2015-08-18  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* gcc.target/powerpc/altivec-35.c: New test.
