@@ -1,5 +1,9 @@
 2015-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/any (__any_caster): Define at namespace scope
+	so the name is visible to name lookup.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+
 	* python/Makefile.am: Ensure gdb.py is installed for libstdc++ not
 	libstdc++fs.
 	* python/Makefile.in: Regenerate.
