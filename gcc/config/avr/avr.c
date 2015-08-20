@@ -9255,10 +9255,10 @@ avr_pgm_check_var_decl (tree node)
         {
           if (TYPE_P (node))
             error ("%qT uses address space %qs beyond flash of %d KiB",
-                   node, avr_addrspace[as].name, avr_n_flash);
+                   node, avr_addrspace[as].name, 64 * avr_n_flash);
           else
             error ("%s %q+D uses address space %qs beyond flash of %d KiB",
-                   reason, node, avr_addrspace[as].name, avr_n_flash);
+                   reason, node, avr_addrspace[as].name, 64 * avr_n_flash);
         }
       else
         {
@@ -9305,7 +9305,7 @@ avr_insert_attributes (tree node, tree *attributes)
       if (avr_addrspace[as].segment >= avr_n_flash)
         {
           error ("variable %q+D located in address space %qs beyond flash "
-                 "of %d KiB", node, avr_addrspace[as].name, avr_n_flash);
+                 "of %d KiB", node, avr_addrspace[as].name, 64 * avr_n_flash);
         }
       else if (!AVR_HAVE_LPM && avr_addrspace[as].pointer_size > 2)
 	{
