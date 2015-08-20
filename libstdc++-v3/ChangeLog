@@ -1,5 +1,10 @@
 2015-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/67294
+	* testsuite/30_threads/recursive_timed_mutex/unlock/2.cc: Do not run
+	on Darwin.
+	* testsuite/30_threads/timed_mutex/unlock/2.cc: Likewise.
+
 	* include/experimental/any (__any_caster): Define at namespace scope
 	so the name is visible to name lookup.
 	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
