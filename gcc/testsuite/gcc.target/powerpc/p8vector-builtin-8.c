@@ -8,7 +8,9 @@
 
 vector unsigned char      vuca, vucb, vucc;
 vector bool     char      vbca, vbcb;
+vector unsigned short     vusa, vusb;
 vector bool     short     vbsa, vbsb;
+vector unsigned int       vuia, vuib;
 vector bool     int       vbia, vbib;
 vector signed   long long vsla, vslb;
 vector unsigned long long vula, vulb, vulc;
@@ -19,7 +21,9 @@ vector          double    vda,  vdb;
 
 void foo (vector unsigned char *vucr,
 	  vector bool char *vbcr,
+	  vector unsigned short *vusr,
 	  vector bool short *vbsr,
+	  vector unsigned int *vuir,
 	  vector bool int *vbir,
 	  vector unsigned long long *vulr,
 	  vector bool long long *vblr,
@@ -48,6 +52,12 @@ void foo (vector unsigned char *vucr,
   *vblr++ = vec_orc (vbla, vblb);
   *vbsr++ = vec_orc (vbsa, vbsb);
   *vblr++ = vec_perm (vbla, vblb, vucc);
+  *vusr++ = vec_pmsum_be (vuca, vucb);
+  *vuir++ = vec_pmsum_be (vusa, vusb);
+  *vulr++ = vec_pmsum_be (vuia, vuib);
+  *vuxr++ = vec_pmsum_be (vula, vulb);
+  *vuir++ = vec_shasigma_be (vuia, 0, 1);
+  *vulr++ = vec_shasigma_be (vula, 0, 1);
 }
 
 /* { dg-final { scan-assembler-times "vaddcuq" 2 } } */
@@ -59,4 +69,10 @@ void foo (vector unsigned char *vucr,
 /* { dg-final { scan-assembler-times "xxlnand" 4 } } */
 /* { dg-final { scan-assembler-times "xxlorc" 4 } } */
 /* { dg-final { scan-assembler-times "vperm" 1 } } */
+/* { dg-final { scan-assembler-times "vpmsumb" 1 } } */
+/* { dg-final { scan-assembler-times "vpmsumh" 1 } } */
+/* { dg-final { scan-assembler-times "vpmsumw" 1 } } */
+/* { dg-final { scan-assembler-times "vpmsumd" 1 } } */
+/* { dg-final { scan-assembler-times "vshasigmaw" 1 } } */
+/* { dg-final { scan-assembler-times "vshasigmad" 1 } } */
 

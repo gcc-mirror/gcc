@@ -1,3 +1,15 @@
+2015-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_pmsum_be): New #define.
+	(vec_shasigma_be): New #define.
+	* config/rs6000/rs6000-builtin.def (VPMSUMB): New BU_P8V_AV2_2.
+	(VPMSUMH): Likewise.
+	(VPMSUMW): Likewise.
+	(VPMSUMD): Likewise.
+	(VPMSUM): New BU_P8V_OVERLOAD_2.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): New
+	entries for VEC_MADD and VEC_VPMSUM.
+
 2015-08-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_insert_attributes): In diagnostic essage:
