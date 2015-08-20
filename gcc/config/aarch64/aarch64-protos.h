@@ -310,6 +310,7 @@ rtx aarch64_simd_gen_const_vector_dup (machine_mode, int);
 bool aarch64_simd_mem_operand_p (rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, bool);
 rtx aarch64_tls_get_addr (void);
+std::string aarch64_get_extension_string_for_isa_flags (unsigned long);
 tree aarch64_fold_builtin (tree, int, tree *, bool);
 unsigned aarch64_dbx_register_number (unsigned);
 unsigned aarch64_trampoline_size (void);

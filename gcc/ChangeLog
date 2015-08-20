@@ -1,3 +1,29 @@
+2015-08-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* common/config/aarch64/aarch64-common.c
+	(AARCH64_CPU_NAME_LENGTH): Delete.
+	(aarch64_option_extension): New.
+	(all_extensions): Likewise.
+	(processor_name_to_arch): Likewise.
+	(arch_to_arch_name): Likewise.
+	(all_cores): New.
+	(all_architectures): Likewise.
+	(aarch64_get_extension_string_for_isa_flags): Likewise.
+	(aarch64_rewrite_selected_cpu): Change to rewrite CPU names to
+	architecture names.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_get_extension_string_for_isa_flags): New.
+	* config/aarch64/aarch64.c (aarch64_print_extension): Delete.
+	(aarch64_option_print): Get the string to print from
+	aarch64_get_extension_string_for_isa_flags.
+	(aarch64_declare_function_name): Likewise.
+	* config/aarch64/aarch64.h (BIG_LITTLE_SPEC): Rename to...
+	(MCPU_TO_MARCH_SPEC): This.
+	(ASM_CPU_SPEC): Use it.
+	(BIG_LITTLE_SPEC_FUNCTIONS): Rename to...
+	(MCPU_TO_MARCH_SPEC_FUNCTIONS): ...This.
+	(EXTRA_SPEC_FUNCTIONS): Use it.
+
 2015-08-20  Simon Dardis  <simon.dardis@imgtec.com>
 
 	* config/mips/mips.c (mips_expand_block_move): Enable inline memcpy
