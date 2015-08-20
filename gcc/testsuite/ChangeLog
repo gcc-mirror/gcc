@@ -1,3 +1,9 @@
+2015-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/altivec-35.c (foo): Add tests for vec_madd.
+	* gcc.target/powerpc/p8vector-builtin-8.c (foo): Add tests for
+	vec_vpmsum_be and vec_shasigma_be.
+
 2015-08-20  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* lib/target-supports.exp
