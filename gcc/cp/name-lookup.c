@@ -4346,6 +4346,13 @@ hidden_name_p (tree val)
       && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (val)
       && DECL_ANTICIPATED (val))
     return true;
+  if (TREE_CODE (val) == OVERLOAD)
+    {
+      for (tree o = val; o; o = OVL_CHAIN (o))
+	if (!hidden_name_p (OVL_FUNCTION (o)))
+	  return false;
+      return true;
+    }
   return false;
 }
 
