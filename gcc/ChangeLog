@@ -1,3 +1,15 @@
+2015-08-20  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/arm/arm-builtins.c (arm_init_simd_builtin_types): Move
+	initialization of HFmode scalar type (float16_t) to...
+	(arm_init_fp16_builtins): ... Here. Combine with __fp16 initialization
+	code.
+
+	(arm_init_builtins): Call arm_init_fp16_builtins earlier and always.
+
+	* config/arm/arm_neon.h (vcvt_f16_f32, vcvt_f32_f16): Condition on
+	having an -mfp16-format.
+
 2015-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/i386/predicates.md (vector_all_ones_operand): Use
