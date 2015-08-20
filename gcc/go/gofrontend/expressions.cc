@@ -8177,6 +8177,12 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
                                                       location);
 	  }
 
+        // There aren't any arguments to the print builtin.  The compiler
+        // issues a warning for this so we should avoid getting the backend
+        // representation for this call.  Instead, perform a no-op.
+        if (print_stmts == NULL)
+          return context->backend()->boolean_constant_expression(false);
+
         return print_stmts->get_backend(context);
       }
 
