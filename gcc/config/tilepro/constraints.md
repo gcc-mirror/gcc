@@ -90,12 +90,10 @@
   "A 4-element vector constant with identical elements"
   (and (match_code "const_vector")
        (match_test "CONST_VECTOR_NUNITS (op) == 4")
-       (match_test "CONST_VECTOR_ELT (op, 0) == CONST_VECTOR_ELT (op, 1)")
-       (match_test "CONST_VECTOR_ELT (op, 0) == CONST_VECTOR_ELT (op, 2)")
-       (match_test "CONST_VECTOR_ELT (op, 0) == CONST_VECTOR_ELT (op, 3)")))
+       (match_test "const_vec_duplicate_p (op)")))
 
 (define_constraint "Y"
   "A 2-element vector constant with identical elements"
   (and (match_code "const_vector")
        (match_test "CONST_VECTOR_NUNITS (op) == 2")
-       (match_test "CONST_VECTOR_ELT (op, 0) == CONST_VECTOR_ELT (op, 1)")))
+       (match_test "const_vec_duplicate_p (op)")))

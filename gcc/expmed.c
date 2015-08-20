@@ -3117,15 +3117,7 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
 
   /* For vectors, there are several simplifications that can be made if
      all elements of the vector constant are identical.  */
-  scalar_op1 = op1;
-  if (GET_CODE (op1) == CONST_VECTOR)
-    {
-      int i, n = CONST_VECTOR_NUNITS (op1);
-      scalar_op1 = CONST_VECTOR_ELT (op1, 0);
-      for (i = 1; i < n; ++i)
-	if (!rtx_equal_p (scalar_op1, CONST_VECTOR_ELT (op1, i)))
-	  goto skip_scalar;
-    }
+  scalar_op1 = unwrap_const_vec_duplicate (op1);
 
   if (INTEGRAL_MODE_P (mode))
     {
@@ -3254,7 +3246,6 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
 			       target, unsignedp, OPTAB_LIB_WIDEN);
 	}
     }
- skip_scalar:
 
   /* This used to use umul_optab if unsigned, but for non-widening multiply
      there is no difference between signed and unsigned.  */

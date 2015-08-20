@@ -3185,11 +3185,8 @@ classify_immediate (rtx op, machine_mode mode)
       && mode == V4SImode
       && GET_CODE (op) == CONST_VECTOR
       && GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_INT
-      && GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_DOUBLE
-      && CONST_VECTOR_ELT (op, 0) == CONST_VECTOR_ELT (op, 1)
-      && CONST_VECTOR_ELT (op, 1) == CONST_VECTOR_ELT (op, 2)
-      && CONST_VECTOR_ELT (op, 2) == CONST_VECTOR_ELT (op, 3))
-    op = CONST_VECTOR_ELT (op, 0);
+      && GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_DOUBLE)
+    op = unwrap_const_vec_duplicate (op);
 
   switch (GET_CODE (op))
     {
@@ -3507,9 +3504,7 @@ spu_legitimate_constant_p (machine_mode mode, rtx x)
       && (GET_CODE (CONST_VECTOR_ELT (x, 0)) == SYMBOL_REF
 	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == LABEL_REF
 	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == CONST))
-    return CONST_VECTOR_ELT (x, 0) == CONST_VECTOR_ELT (x, 1)
-	   && CONST_VECTOR_ELT (x, 1) == CONST_VECTOR_ELT (x, 2)
-	   && CONST_VECTOR_ELT (x, 2) == CONST_VECTOR_ELT (x, 3);
+    return const_vec_duplicate_p (x);
 
   if (GET_CODE (x) == CONST_VECTOR
       && !const_vector_immediate_p (x))

@@ -9867,31 +9867,10 @@ sizetochar (int size)
 static bool
 aarch64_vect_float_const_representable_p (rtx x)
 {
-  int i = 0;
-  REAL_VALUE_TYPE r0, ri;
-  rtx x0, xi;
-
-  if (GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_FLOAT)
-    return false;
-
-  x0 = CONST_VECTOR_ELT (x, 0);
-  if (!CONST_DOUBLE_P (x0))
-    return false;
-
-  REAL_VALUE_FROM_CONST_DOUBLE (r0, x0);
-
-  for (i = 1; i < CONST_VECTOR_NUNITS (x); i++)
-    {
-      xi = CONST_VECTOR_ELT (x, i);
-      if (!CONST_DOUBLE_P (xi))
-	return false;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (ri, xi);
-      if (!REAL_VALUES_EQUAL (r0, ri))
-	return false;
-    }
-
-  return aarch64_float_const_representable_p (x0);
+  rtx elt;
+  return (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_FLOAT
+	  && const_vec_duplicate_p (x, &elt)
+	  && aarch64_float_const_representable_p (elt));
 }
 
 /* Return true for valid and false for invalid.  */
@@ -10354,28 +10333,15 @@ aarch64_simd_dup_constant (rtx vals)
 {
   machine_mode mode = GET_MODE (vals);
   machine_mode inner_mode = GET_MODE_INNER (mode);
-  int n_elts = GET_MODE_NUNITS (mode);
-  bool all_same = true;
   rtx x;
-  int i;
 
-  if (GET_CODE (vals) != CONST_VECTOR)
-    return NULL_RTX;
-
-  for (i = 1; i < n_elts; ++i)
-    {
-      x = CONST_VECTOR_ELT (vals, i);
-      if (!rtx_equal_p (x, CONST_VECTOR_ELT (vals, 0)))
-	all_same = false;
-    }
-
-  if (!all_same)
+  if (!const_vec_duplicate_p (vals, &x))
     return NULL_RTX;
 
   /* We can load this constant by using DUP and a constant in a
      single ARM register.  This will be cheaper than a vector
      load.  */
-  x = copy_to_mode_reg (inner_mode, CONST_VECTOR_ELT (vals, 0));
+  x = copy_to_mode_reg (inner_mode, x);
   return gen_rtx_VEC_DUPLICATE (mode, x);
 }
 

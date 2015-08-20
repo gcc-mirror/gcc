@@ -2678,6 +2678,42 @@ extern unsigned int rtx_size (const_rtx);
 extern rtx shallow_copy_rtx_stat (const_rtx MEM_STAT_DECL);
 #define shallow_copy_rtx(a) shallow_copy_rtx_stat (a MEM_STAT_INFO)
 extern int rtx_equal_p (const_rtx, const_rtx);
+extern bool rtvec_all_equal_p (const_rtvec);
+
+/* Return true if X is a vector constant with a duplicated element value.  */
+
+inline bool
+const_vec_duplicate_p (const_rtx x)
+{
+  return GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0));
+}
+
+/* Return true if X is a vector constant with a duplicated element value.
+   Store the duplicated element in *ELT if so.  */
+
+template <typename T>
+inline bool
+const_vec_duplicate_p (T x, T *elt)
+{
+  if (const_vec_duplicate_p (x))
+    {
+      *elt = CONST_VECTOR_ELT (x, 0);
+      return true;
+    }
+  return false;
+}
+
+/* If X is a vector constant with a duplicated element value, return that
+   element value, otherwise return X.  */
+
+template <typename T>
+inline T
+unwrap_const_vec_duplicate (T x)
+{
+  if (const_vec_duplicate_p (x))
+    x = CONST_VECTOR_ELT (x, 0);
+  return x;
+}
 
 /* In emit-rtl.c */
 extern rtvec gen_rtvec_v (int, rtx *);

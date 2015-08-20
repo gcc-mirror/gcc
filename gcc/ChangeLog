@@ -1,3 +1,22 @@
+2015-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (rtvec_all_equal_p): Declare.
+	(const_vec_duplicate_p, unwrap_const_vec_duplicate): New functions.
+	* rtl.c (rtvec_all_equal_p): New function.
+	* expmed.c (expand_mult): Use unwrap_const_vec_duplicate.
+	* config/aarch64/aarch64.c (aarch64_vect_float_const_representable_p)
+	(aarch64_simd_dup_constant): Use const_vec_duplicate_p.
+	* config/arm/arm.c (neon_vdup_constant): Likewise.
+	* config/s390/s390.c (s390_contiguous_bitmask_vector_p): Likewise.
+	* config/tilegx/constraints.md (W, Y): Likewise.
+	* config/tilepro/constraints.md (W, Y): Likewise.
+	* config/spu/spu.c (spu_legitimate_constant_p): Likewise.
+	(classify_immediate): Use unwrap_const_vec_duplicate.
+	* config/tilepro/predicates.md (reg_or_v4s8bit_operand): Likewise.
+	(reg_or_v2s8bit_operand): Likewise.
+	* config/tilegx/predicates.md (reg_or_v8s8bit_operand): Likewise.
+	(reg_or_v4s8bit_operand): Likewise.
+
 2015-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.h (vec_pmsum_be): New #define.
