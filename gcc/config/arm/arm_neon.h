@@ -41,7 +41,9 @@ typedef __simd64_int8_t int8x8_t;
 typedef __simd64_int16_t int16x4_t;
 typedef __simd64_int32_t int32x2_t;
 typedef __builtin_neon_di int64x1_t;
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 typedef __simd64_float16_t float16x4_t;
+#endif
 typedef __simd64_float32_t float32x2_t;
 typedef __simd64_poly8_t poly8x8_t;
 typedef __simd64_poly16_t poly16x4_t;
@@ -6220,21 +6222,25 @@ vcvtq_u32_f32 (float32x4_t __a)
 }
 
 #if ((__ARM_FP & 0x2) != 0)
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
 vcvt_f16_f32 (float32x4_t __a)
 {
   return (float16x4_t)__builtin_neon_vcvtv4hfv4sf (__a);
 }
-
 #endif
+#endif
+
 #if ((__ARM_FP & 0x2) != 0)
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vcvt_f32_f16 (float16x4_t __a)
 {
   return (float32x4_t)__builtin_neon_vcvtv4sfv4hf (__a);
 }
-
 #endif
+#endif
+
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vcvt_n_s32_f32 (float32x2_t __a, const int __b)
 {
