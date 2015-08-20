@@ -1,3 +1,7 @@
+2015-08-19  Jason Merrill  <jason@redhat.com>
+
+	* lambda.c (current_nonlambda_scope): New.
+
 2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* call.c, class.c, cp-tree.h, decl.c, except.c, mangle.c,
