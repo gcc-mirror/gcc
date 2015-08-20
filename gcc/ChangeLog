@@ -1,3 +1,9 @@
+2015-08-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_insert_attributes): In diagnostic essage:
+	Multiply argument avr_n_flash by 64 to match unit of "KiB".
+	(avr_pgm_check_var_decl): Same.
+
 2015-08-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline:
