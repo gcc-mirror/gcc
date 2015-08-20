@@ -156,11 +156,9 @@ add_friend (tree type, tree decl, bool complain)
 		}
 	    }
 
-	  maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
-
 	  TREE_VALUE (list) = tree_cons (NULL_TREE, decl,
 					 TREE_VALUE (list));
-	  return;
+	  break;
 	}
       list = TREE_CHAIN (list);
     }
@@ -172,9 +170,10 @@ add_friend (tree type, tree decl, bool complain)
 
   maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
 
-  DECL_FRIENDLIST (typedecl)
-    = tree_cons (DECL_NAME (decl), build_tree_list (NULL_TREE, decl),
-		 DECL_FRIENDLIST (typedecl));
+  if (!list)
+    DECL_FRIENDLIST (typedecl)
+      = tree_cons (DECL_NAME (decl), build_tree_list (NULL_TREE, decl),
+		   DECL_FRIENDLIST (typedecl));
   if (!uses_template_parms (type))
     DECL_BEFRIENDING_CLASSES (decl)
       = tree_cons (NULL_TREE, type,

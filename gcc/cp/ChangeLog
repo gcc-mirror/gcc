@@ -1,5 +1,18 @@
 2015-08-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66957
+	* search.c (protected_accessible_p): Remove redundant access_in_type.
+	Add otype parm instead of walking binfo.
+	(friend_accessible_p): Check SCOPE itself.  Handle class
+	templates.  Pass through otype.
+	(dfs_accessible_post): Handle all accessibility cases.
+	(dfs_accessible_pre): New.
+	(accessible_p): Use it.  Don't check protected access here.  Pass
+	decl and otype to dfs_walk.
+	(member_declared_in_type, dfs_access_in_type_pre): New.
+	(access_in_type): Use dfs_access_in_type_pre.
+	* friend.c (add_friend): Fix multiple friends with the same name.
+
 	* lambda.c (current_nonlambda_scope): New.
 
 2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
