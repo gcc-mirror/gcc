@@ -49,7 +49,7 @@ install-data-local: gdb.py
 ## fragile, but there does not seem to be a better option, because
 ## libtool hides the real names from us.
 	@here=`pwd`; cd $(DESTDIR)$(toolexeclibdir); \
-	  for file in libstdc++*; do \
+	  for file in libstdc++.*; do \
 	    case $$file in \
 	      *-gdb.py) ;; \
 	      *.la) ;; \
