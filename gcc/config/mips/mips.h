@@ -2981,6 +2981,9 @@ while (0)
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
 
+/* The minimum alignment of any expanded block move.  */
+#define MIPS_MIN_MOVE_MEM_ALIGN 16
+
 /* The maximum number of bytes that can be copied by one iteration of
    a movmemsi loop; see mips_block_move_loop.  */
 #define MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER \
