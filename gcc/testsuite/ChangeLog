@@ -1,6 +1,12 @@
+2015-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67065
+	* g++.dg/other/pr67065.C: New.
+
 2015-08-20  Simon Dardis  <simon.dardis@imgtec.com>
 
-	* gcc.target/mips/inline-memcpy-1.c: Test for inline expansion of memcpy.
+	* gcc.target/mips/inline-memcpy-1.c: Test for inline expansion of
+	memcpy.
 	* gcc.target/mips/inline-memcpy-2.c: Ditto.
 	* gcc.target/mips/inline-memcpy-3.c: Ditto.
 	* gcc.target/mips/inline-memcpy-4.c: Ditto.
