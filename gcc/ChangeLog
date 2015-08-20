@@ -1,3 +1,11 @@
+2015-08-20  Simon Dardis  <simon.dardis@imgtec.com>
+
+	* config/mips/mips.c (mips_expand_block_move): Enable inline memcpy
+	expansion when !ISA_HAS_LWL_LWR.
+	(mips_block_move_straight): Update the size of elements copied to
+	account for alignment when !ISA_HAS_LWL_LWR.
+	* config/mips/mips.h (MIPS_MIN_MOVE_MEM_ALIGN): New macro.
+
 2015-08-19  Jiong Wang  <jiong.wang@arm.com>
 
 	* expr.c (expand_expr_real_2): Check gimple statement during

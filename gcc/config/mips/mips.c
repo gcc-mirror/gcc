@@ -7630,12 +7630,22 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
      half-word alignment, it is usually better to move in half words.
      For instance, lh/lh/sh/sh is usually better than lwl/lwr/swl/swr
      and lw/lw/sw/sw is usually better than ldl/ldr/sdl/sdr.
-     Otherwise move word-sized chunks.  */
-  if (MEM_ALIGN (src) == BITS_PER_WORD / 2
-      && MEM_ALIGN (dest) == BITS_PER_WORD / 2)
-    bits = BITS_PER_WORD / 2;
+     Otherwise move word-sized chunks.
+
+     For ISA_HAS_LWL_LWR we rely on the lwl/lwr & swl/swr load. Otherwise
+     picking the minimum of alignment or BITS_PER_WORD gets us the
+     desired size for bits.  */
+
+  if (!ISA_HAS_LWL_LWR)
+    bits = MIN (BITS_PER_WORD, MIN (MEM_ALIGN (src), MEM_ALIGN (dest)));
   else
-    bits = BITS_PER_WORD;
+    {
+      if (MEM_ALIGN (src) == BITS_PER_WORD / 2
+	  && MEM_ALIGN (dest) == BITS_PER_WORD / 2)
+	bits = BITS_PER_WORD / 2;
+      else
+	bits = BITS_PER_WORD;
+    }
 
   mode = mode_for_size (bits, MODE_INT, 0);
   delta = bits / BITS_PER_UNIT;
@@ -7754,8 +7764,9 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 bool
 mips_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  /* Disable entirely for R6 initially.  */
-  if (!ISA_HAS_LWL_LWR)
+  if (!ISA_HAS_LWL_LWR
+      && (MEM_ALIGN (src) < MIPS_MIN_MOVE_MEM_ALIGN
+	  || MEM_ALIGN (dest) < MIPS_MIN_MOVE_MEM_ALIGN))
     return false;
 
   if (CONST_INT_P (length))
