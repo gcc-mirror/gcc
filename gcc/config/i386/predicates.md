@@ -912,25 +912,9 @@
 
 /* Return true if operand is a vector constant that is all ones. */
 (define_predicate "vector_all_ones_operand"
-  (match_code "const_vector")
-{
-  int nunits = GET_MODE_NUNITS (mode);
-
-  if (GET_CODE (op) == CONST_VECTOR
-      && CONST_VECTOR_NUNITS (op) == nunits)
-    {
-      int i;
-      for (i = 0; i < nunits; ++i)
-        {
-          rtx x = CONST_VECTOR_ELT (op, i);
-          if (x != constm1_rtx)
-            return false;
-        }
-      return true;
-    }
-
-  return false;
-})
+  (and (match_code "const_vector")
+       (match_test "INTEGRAL_MODE_P (GET_MODE (op))")
+       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
 ; Return true when OP is operand acceptable for standard SSE move.
 (define_predicate "vector_move_operand"
