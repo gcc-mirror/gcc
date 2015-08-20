@@ -27,7 +27,7 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
-#include "errors.h"
+#include "diagnostic.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
@@ -107,36 +107,134 @@ aarch64_handle_option (struct gcc_options *opts,
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
 
-#define AARCH64_CPU_NAME_LENGTH 128
+/* An ISA extension in the co-processor and main instruction set space.  */
+struct aarch64_option_extension
+{
+  const char *const name;
+  const unsigned long flags_on;
+  const unsigned long flags_off;
+};
 
-/* Truncate NAME at the first '.' character seen up to the first '+'
-   or return NAME unmodified.  */
+/* ISA extensions in AArch64.  */
+static const struct aarch64_option_extension all_extensions[] =
+{
+#define AARCH64_OPT_EXTENSION(NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
+  {NAME, FLAGS_ON, FLAGS_OFF},
+#include "config/aarch64/aarch64-option-extensions.def"
+#undef AARCH64_OPT_EXTENSION
+  {NULL, 0, 0}
+};
+
+struct processor_name_to_arch
+{
+  const std::string processor_name;
+  const enum aarch64_arch arch;
+  const unsigned long flags;
+};
+
+struct arch_to_arch_name
+{
+  const enum aarch64_arch arch;
+  const std::string arch_name;
+};
+
+/* Map processor names to the architecture revision they implement and
+   the default set of architectural feature flags they support.  */
+static const struct processor_name_to_arch all_cores[] =
+{
+#define AARCH64_CORE(NAME, X, IDENT, ARCH_IDENT, FLAGS, COSTS, IMP, PART) \
+  {NAME, AARCH64_ARCH_##ARCH_IDENT, FLAGS},
+#include "config/aarch64/aarch64-cores.def"
+#undef AARCH64_CORE
+  {"generic", AARCH64_ARCH_8A, AARCH64_FL_FOR_ARCH8},
+  {"", aarch64_no_arch, 0}
+};
+
+/* Map architecture revisions to their string representation.  */
+static const struct arch_to_arch_name all_architectures[] =
+{
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH, FLAGS) \
+  {AARCH64_ARCH_##ARCH_IDENT, NAME},
+#include "config/aarch64/aarch64-arches.def"
+#undef AARCH64_ARCH
+  {aarch64_no_arch, ""}
+};
+
+/* Return a string representation of ISA_FLAGS.  */
+
+std::string
+aarch64_get_extension_string_for_isa_flags (unsigned long isa_flags)
+{
+  const struct aarch64_option_extension *opt = NULL;
+  std::string outstr = "";
+
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    if ((isa_flags & opt->flags_on) == opt->flags_on)
+      {
+	outstr += "+";
+	outstr += opt->name;
+      }
+  return outstr;
+}
+
+/* Attempt to rewrite NAME, which has been passed on the command line
+   as a -mcpu option to an equivalent -march value.  If we can do so,
+   return the new string, otherwise return an error.  */
 
 const char *
 aarch64_rewrite_selected_cpu (const char *name)
 {
-  static char output_buf[AARCH64_CPU_NAME_LENGTH + 1] = {0};
-  const char *bL_sep;
-  const char *feats;
-  size_t pref_size;
-  size_t feat_size;
+  std::string original_string (name);
+  std::string extensions;
+  std::string processor;
+  size_t extension_pos = original_string.find_first_of ('+');
 
-  bL_sep = strchr (name, '.');
-  if (!bL_sep)
-    return name;
+  /* Strip and save the extension string.  */
+  if (extension_pos != std::string::npos)
+    {
+      processor = original_string.substr (0, extension_pos);
+      extensions = original_string.substr (extension_pos,
+					std::string::npos);
+    }
+  else
+    {
+      /* No extensions.  */
+      processor = original_string;
+    }
 
-  feats = strchr (name, '+');
-  feat_size = feats ? strnlen (feats, AARCH64_CPU_NAME_LENGTH) : 0;
-  pref_size = bL_sep - name;
+  const struct processor_name_to_arch* p_to_a;
+  for (p_to_a = all_cores;
+       p_to_a->arch != aarch64_no_arch;
+       p_to_a++)
+    {
+      if (p_to_a->processor_name == processor)
+	break;
+    }
 
-  if ((feat_size + pref_size) > AARCH64_CPU_NAME_LENGTH)
-    internal_error ("-mcpu string too large");
+  const struct arch_to_arch_name* a_to_an;
+  for (a_to_an = all_architectures;
+       a_to_an->arch != aarch64_no_arch;
+       a_to_an++)
+    {
+      if (a_to_an->arch == p_to_a->arch)
+	break;
+    }
 
-  strncpy (output_buf, name, pref_size);
-  if (feats)
-    strncpy (output_buf + pref_size, feats, feat_size);
+  /* We couldn't find that proceesor name, or the processor name we
+     found does not map to an architecture we understand.  */
+  if (p_to_a->arch == aarch64_no_arch
+      || a_to_an->arch == aarch64_no_arch)
+    fatal_error (input_location, "unknown value %qs for -mcpu", name);
 
-  return output_buf;
+  std::string outstr = a_to_an->arch_name
+	+ aarch64_get_extension_string_for_isa_flags (p_to_a->flags)
+	+ extensions;
+
+  /* We are going to memory leak here, nobody elsewhere
+     in the callchain is going to clean up after us.  The alternative is
+     to allocate a static buffer, and assert that it is big enough for our
+     modified string, which seems much worse!  */
+  return xstrdup (outstr.c_str ());
 }
 
 /* Called by the driver to rewrite a name passed to the -mcpu

@@ -887,18 +887,18 @@ extern enum aarch64_code_model aarch64_cmodel;
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" },	\
   {"cpu",  "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" },
 
-#define BIG_LITTLE_SPEC \
-   " %{mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}"
+#define MCPU_TO_MARCH_SPEC \
+   " %{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
 
 extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
-#define BIG_LITTLE_CPU_SPEC_FUNCTIONS \
+#define MCPU_TO_MARCH_SPEC_FUNCTIONS \
   { "rewrite_mcpu", aarch64_rewrite_mcpu },
 
 #if defined(__aarch64__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define EXTRA_SPEC_FUNCTIONS						\
   { "local_cpu_detect", host_detect_local_cpu },			\
-  BIG_LITTLE_CPU_SPEC_FUNCTIONS
+  MCPU_TO_MARCH_SPEC_FUNCTIONS
 
 # define MCPU_MTUNE_NATIVE_SPECS					\
    " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
@@ -906,11 +906,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #else
 # define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS BIG_LITTLE_CPU_SPEC_FUNCTIONS
+# define EXTRA_SPEC_FUNCTIONS MCPU_TO_MARCH_SPEC_FUNCTIONS
 #endif
 
 #define ASM_CPU_SPEC \
-   BIG_LITTLE_SPEC
+   MCPU_TO_MARCH_SPEC
 
 #define EXTRA_SPECS						\
   { "asm_cpu_spec",		ASM_CPU_SPEC }

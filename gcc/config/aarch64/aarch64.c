@@ -7890,20 +7890,6 @@ initialize_aarch64_code_model (struct gcc_options *opts)
      aarch64_cmodel = opts->x_aarch64_cmodel_var;
 }
 
-/* Print to F the architecture features specified by ISA_FLAGS.  */
-
-static void
-aarch64_print_extension (FILE *f, unsigned long isa_flags)
-{
-  const struct aarch64_option_extension *opt = NULL;
-
-  for (opt = all_extensions; opt->name != NULL; opt++)
-    if ((isa_flags & opt->flags_on) == opt->flags_on)
-      asm_fprintf (f, "+%s", opt->name);
-
-  asm_fprintf (f, "\n");
-}
-
 /* Implement TARGET_OPTION_SAVE.  */
 
 static void
@@ -7936,10 +7922,12 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
     = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
   unsigned long isa_flags = ptr->x_aarch64_isa_flags;
   const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
+  std::string extension
+    = aarch64_get_extension_string_for_isa_flags (isa_flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
-  fprintf (file, "%*sselected arch = %s", indent, "", arch->name);
-  aarch64_print_extension (file, isa_flags);
+  fprintf (file, "%*sselected arch = %s%s\n", indent, "",
+	   arch->name, extension.c_str ());
 }
 
 static GTY(()) tree aarch64_previous_fndecl;
@@ -10663,8 +10651,11 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   const struct processor *this_arch
     = aarch64_get_arch (targ_options->x_explicit_arch);
 
-  asm_fprintf (asm_out_file, "\t.arch %s", this_arch->name);
-  aarch64_print_extension (asm_out_file, targ_options->x_aarch64_isa_flags);
+  unsigned long isa_flags = targ_options->x_aarch64_isa_flags;
+  std::string extension
+    = aarch64_get_extension_string_for_isa_flags (isa_flags);
+  asm_fprintf (asm_out_file, "\t.arch %s%s\n",
+	       this_arch->name, extension.c_str ());
 
   /* Print the cpu name we're tuning for in the comments, might be
      useful to readers of the generated asm.  */
