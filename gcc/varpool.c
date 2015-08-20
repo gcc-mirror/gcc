@@ -586,6 +586,12 @@ varpool_node::assemble_decl (void)
       gcc_assert (TREE_ASM_WRITTEN (decl));
       gcc_assert (definition);
       assemble_aliases ();
+      /* After the parser has generated debugging information, augment
+	 this information with any new location/etc information that may
+	 have become available after the compilation proper.  */
+      timevar_start (TV_PHASE_DBGINFO);
+      debug_hooks->late_global_decl (decl);
+      timevar_stop (TV_PHASE_DBGINFO);
       return true;
     }
 
