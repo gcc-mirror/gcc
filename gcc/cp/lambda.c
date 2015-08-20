@@ -817,6 +817,30 @@ nonlambda_method_basetype (void)
   return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
 }
 
+/* Like current_scope, but looking through lambdas.  */
+
+tree
+current_nonlambda_scope (void)
+{
+  tree scope = current_scope ();
+  for (;;)
+    {
+      if (TREE_CODE (scope) == FUNCTION_DECL
+	  && LAMBDA_FUNCTION_P (scope))
+	{
+	  scope = CP_TYPE_CONTEXT (DECL_CONTEXT (scope));
+	  continue;
+	}
+      else if (LAMBDA_TYPE_P (scope))
+	{
+	  scope = CP_TYPE_CONTEXT (scope);
+	  continue;
+	}
+      break;
+    }
+  return scope;
+}
+
 /* Helper function for maybe_add_lambda_conv_op; build a CALL_EXPR with
    indicated FN and NARGS, but do not initialize the return type or any of the
    argument slots.  */
