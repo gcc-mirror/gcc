@@ -12607,22 +12607,12 @@ neon_vdup_constant (rtx vals)
 {
   machine_mode mode = GET_MODE (vals);
   machine_mode inner_mode = GET_MODE_INNER (mode);
-  int n_elts = GET_MODE_NUNITS (mode);
-  bool all_same = true;
   rtx x;
-  int i;
 
   if (GET_CODE (vals) != CONST_VECTOR || GET_MODE_SIZE (inner_mode) > 4)
     return NULL_RTX;
 
-  for (i = 0; i < n_elts; ++i)
-    {
-      x = XVECEXP (vals, 0, i);
-      if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
-	all_same = false;
-    }
-
-  if (!all_same)
+  if (!const_vec_duplicate_p (vals, &x))
     /* The elements are not all the same.  We could handle repeating
        patterns of a mode larger than INNER_MODE here (e.g. int8x8_t
        {0, C, 0, C, 0, C, 0, C} which can be loaded using
@@ -12633,7 +12623,7 @@ neon_vdup_constant (rtx vals)
      single ARM register.  This will be cheaper than a vector
      load.  */
 
-  x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
+  x = copy_to_mode_reg (inner_mode, x);
   return gen_rtx_VEC_DUPLICATE (mode, x);
 }
 

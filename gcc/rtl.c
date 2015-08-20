@@ -657,6 +657,31 @@ rtx_equal_p (const_rtx x, const_rtx y)
   return 1;
 }
 
+/* Return true if all elements of VEC are equal.  */
+
+bool
+rtvec_all_equal_p (const_rtvec vec)
+{
+  const_rtx first = RTVEC_ELT (vec, 0);
+  /* Optimize the important special case of a vector of constants.
+     The main use of this function is to detect whether every element
+     of CONST_VECTOR is the same.  */
+  switch (GET_CODE (first))
+    {
+    CASE_CONST_UNIQUE:
+      for (int i = 1, n = GET_NUM_ELEM (vec); i < n; ++i)
+	if (first != RTVEC_ELT (vec, i))
+	  return false;
+      return true;
+
+    default:
+      for (int i = 1, n = GET_NUM_ELEM (vec); i < n; ++i)
+	if (!rtx_equal_p (first, RTVEC_ELT (vec, i)))
+	  return false;
+      return true;
+    }
+}
+
 /* Return an indication of which type of insn should have X as a body.
    In generator files, this can be UNKNOWN if the answer is only known
    at (GCC) runtime.  Otherwise the value is CODE_LABEL, INSN, CALL_INSN
