@@ -1,3 +1,9 @@
+2015-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/Makefile.am: Ensure gdb.py is installed for libstdc++ not
+	libstdc++fs.
+	* python/Makefile.in: Regenerate.
+
 2015-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport Filesystem TS from mainline
