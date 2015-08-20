@@ -7,8 +7,8 @@ struct S {
 };
 
 template class S<int, double>;
-template char f(char, long, short);
-template char* f(char*, long*, short*);
+template char f(char, long, short); // { dg-error "f" }
+template char* f(char*, long*, short*); // { dg-error "f" }
 
 template <class X, class Y, class Z>
 X f(X x, Y, Z) {

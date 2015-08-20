@@ -7,13 +7,14 @@
 
 template <int N> struct X
 {
-  template <int M> friend int foo(X const &)
+  template <int M> friend int foo(X const &, X<M> const&)
   {
     return N * 10000 + M;
   }
 };
 X<1234> bring;
+X<5678> brung;
 
 int main() {
-  return foo<5678> (bring) != 12345678;
+  return foo (bring, brung) != 12345678;
 }
