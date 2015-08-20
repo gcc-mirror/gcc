@@ -8355,6 +8355,11 @@ grokvardecl (tree type,
   else
     DECL_INTERFACE_KNOWN (decl) = 1;
 
+  if (DECL_NAME (decl)
+      && MAIN_NAME_P (DECL_NAME (decl))
+      && CP_DECL_CONTEXT (decl) == global_namespace)
+    error ("cannot declare %<::main%> to be a global variable");
+
   /* Check that the variable can be safely declared as a concept.
      Note that this also forbids explicit specializations.  */
   if (conceptp)
