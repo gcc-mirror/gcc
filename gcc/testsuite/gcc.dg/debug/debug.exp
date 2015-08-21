@@ -19,6 +19,11 @@
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Disable on ptx
+if { [istarget nvptx-*-*] } {
+    return
+}
+
 # Initialize `dg'.
 dg-init
 

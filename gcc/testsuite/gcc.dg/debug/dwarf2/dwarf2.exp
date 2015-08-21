@@ -19,6 +19,11 @@
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Disable on ptx
+if { [istarget nvptx-*-*] } {
+    return
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

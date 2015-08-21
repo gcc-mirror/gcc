@@ -1,8 +1,8 @@
-call (foo, a)
+bar (foo, a)
      int (**foo) ();
 {
 
-  (foo)[1] = call;
+  (foo)[1] = bar;
 
   foo[a] (1);
 }

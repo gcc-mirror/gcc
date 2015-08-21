@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires io" { freestanding } { "*" } { "" } }  */
+
 #ifndef test
 #include <stdio.h>
 #include <stdlib.h>
