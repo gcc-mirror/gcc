@@ -1,3 +1,13 @@
+2015-08-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* configure.ac: Remove uwin* cases.
+	* config.build: Remove cases for i370-*-opened*, i370-*-mvs*,
+	i[34567]86-*-sco3.2v5*, i[34567]86-sequent-ptx4*,
+	i[34567]86-sequent-sysv4*, i[34567]86-*-sysv4*,
+	i[34567]86-*-udk*, i[34567]86-*-uwin*, i386-*-vsta.
+	* config.host: Remove cases for i370-*-opened*, i370-*-mvs*,
+	i[34567]86-*-uwin*, powerpc-*-beos*.
+
 2015-08-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gencodes.c (gencodes): Print the comma for the preceding

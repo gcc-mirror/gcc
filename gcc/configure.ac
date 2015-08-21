@@ -1795,7 +1795,7 @@ AS_HELP_STRING([--enable-win32-registry=KEY],
                 of the registry key])],,)
 
 case $host_os in
-  win32 | pe | cygwin* | mingw32* | uwin*)
+  win32 | pe | cygwin* | mingw32*)
     if test "x$enable_win32_registry" != xno; then
       AC_SEARCH_LIBS(RegOpenKeyExA, advapi32,, [enable_win32_registry=no])
     fi
@@ -2752,7 +2752,7 @@ gcc_GAS_CHECK_FEATURE([cfi sections directive],
 	.cfi_startproc
 	.cfi_endproc],
 [case $target_os in
-  win32 | pe | cygwin* | mingw32* | uwin*)
+  win32 | pe | cygwin* | mingw32*)
     # Need to check that we generated the correct relocation for the
     # .debug_frame section.  This was fixed for binutils 2.21.
     gcc_cv_as_cfi_sections_directive=no
