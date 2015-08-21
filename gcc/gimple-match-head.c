@@ -338,6 +338,9 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
       tree decl = builtin_decl_implicit (rcode);
       if (!decl)
 	return NULL_TREE;
+      /* We can't and should not emit calls to non-const functions.  */
+      if (!(flags_from_decl_or_type (decl) & ECF_CONST))
+	return NULL_TREE;
       /* Play safe and do not allow abnormals to be mentioned in
          newly created statements.  */
       unsigned nargs;

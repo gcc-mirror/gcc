@@ -3308,6 +3308,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
       if (i < 3)
 	gcc_assert (ops[i] == NULL_TREE);
+      gcc_assert (gimple_seq_empty_p (*seq));
       return true;
     }
   else if (!inplace)
