@@ -1,3 +1,9 @@
+2015-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67240
+	* constraint.cc (satisfy_implicit_conversion_constraint): Also
+	check for NULL_TREE.
+
 2015-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokvardecl): Simplify the latter.
