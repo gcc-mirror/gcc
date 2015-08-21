@@ -1,3 +1,32 @@
+2015-08-21  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* fold-const.c (fold_binary_loc) : Move sqrt(x)*sqrt(x) as x
+	to match.pd.
+	Move Optimize pow(x,y)*pow(z,y) as pow(x*z,y)to match.pd.
+	Move Optimize tan(x)*cos(x) as sin(x) to match.pd.
+	Move Optimize x*pow(x,c) as pow(x,c+1) to match.pd.
+	Move Optimize pow(x,c)*x as pow(x,c+1) to match.pd.
+	Move Optimize sin(x)/cos(x) as tan(x) to match.pd.
+	Move Optimize cos(x)/sin(x) as 1.0/tan(x) to match.pd.
+	Move Optimize sin(x)/tan(x) as cos(x) to match.pd.
+	Move Optimize tan(x)/sin(x) as 1.0/cos(x) to match.pd.
+	Move Optimize pow(x,c)/x as pow(x,c-1) to match.pd.
+	Move Optimize x/pow(y,z) into x*pow(y,-z) to match.pd.
+
+	* match.pd (SIN ) : New Operator.
+	(TAN) : New Operator.
+	(mult (SQRT@1 @0) @1) : New simplifier.
+	(mult (POW:s @0 @1) (POW:s @2 @1)) : New simplifier.
+	(mult:c (TAN:s @0) (COS:s @0)) : New simplifier.
+	(mult:c (TAN:s @0) (COS:s @0)) : New simplifier.
+	(rdiv (SIN:s @0) (COS:s @0)) : New simplifier.
+	(rdiv (COS:s @0) (SIN:s @0)) : New simplifier.
+	(rdiv (SIN:s @0) (TAN:s @0)) : New simplifier.
+	(rdiv (TAN:s @0) (SIN:s @0)) : New simplifier.
+	(rdiv (POW:s @0 REAL_CST@1) @0) : New simplifier.
+	(rdiv @0 (SQRT:s (rdiv:s @1 @2))) : New simplifier.
+	(rdiv @0 (POW:s @1 @2)) : New simplifier.
+
 2015-08-21  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-niter.c (simplify_using_initial_conditions): Break

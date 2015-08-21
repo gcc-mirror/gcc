@@ -55,9 +55,10 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list POW10 BUILT_IN_POW10F BUILT_IN_POW10 BUILT_IN_POW10L)
 (define_operator_list SQRT BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
 (define_operator_list CBRT BUILT_IN_CBRTF BUILT_IN_CBRT BUILT_IN_CBRTL)
+(define_operator_list SIN BUILT_IN_SIN BUILT_IN_SINL BUILT_IN_SINF)
 (define_operator_list COS BUILT_IN_COS BUILT_IN_COSL BUILT_IN_COSF)
+(define_operator_list TAN BUILT_IN_TAN BUILT_IN_TANL BUILT_IN_TANF)
 (define_operator_list COSH BUILT_IN_COSH BUILT_IN_COSHL BUILT_IN_COSHF)
-
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -2006,6 +2007,69 @@ along with GCC; see the file COPYING3.  If not see
 
 /* fold_builtin_logarithm */
 (if (flag_unsafe_math_optimizations)
+
+ /* Simplify sqrt(x) * sqrt(x) -> x.  */
+ (simplify
+  (mult (SQRT@1 @0) @1)
+  (if (!HONOR_SNANS (type))
+   @0))
+
+ /* Simplify pow(x,y) * pow(z,y) -> pow(x*z,y). */
+ (simplify
+  (mult (POW:s @0 @1) (POW:s @2 @1))
+   (POW (mult @0 @2) @1))
+
+ /* Simplify tan(x) * cos(x) -> sin(x). */
+ (simplify
+  (mult:c (TAN:s @0) (COS:s @0))
+   (SIN @0))
+
+ /* Simplify x * pow(x,c) -> pow(x,c+1). */
+ (simplify
+  (mult @0 (POW:s @0 REAL_CST@1))
+  (if (!TREE_OVERFLOW (@1))
+   (POW @0 (plus @1 { build_one_cst (type); }))))
+
+ /* Simplify sin(x) / cos(x) -> tan(x). */
+ (simplify
+  (rdiv (SIN:s @0) (COS:s @0))
+   (TAN @0))
+
+ /* Simplify cos(x) / sin(x) -> 1 / tan(x). */
+ (simplify
+  (rdiv (COS:s @0) (SIN:s @0))
+   (rdiv { build_one_cst (type); } (TAN @0)))
+
+ /* Simplify sin(x) / tan(x) -> cos(x). */
+ (simplify
+  (rdiv (SIN:s @0) (TAN:s @0))
+  (if (! HONOR_NANS (@0)
+       && ! HONOR_INFINITIES (@0))
+   (cos @0)))
+
+ /* Simplify tan(x) / sin(x) -> 1.0 / cos(x). */
+ (simplify
+  (rdiv (TAN:s @0) (SIN:s @0))
+  (if (! HONOR_NANS (@0)
+       && ! HONOR_INFINITIES (@0))
+   (rdiv { build_one_cst (type); } (COS @0))))
+
+ /* Simplify pow(x,c) / x -> pow(x,c-1). */
+ (simplify
+  (rdiv (POW:s @0 REAL_CST@1) @0)
+  (if (!TREE_OVERFLOW (@1))
+   (POW @0 (minus @1 { build_one_cst (type); }))))
+
+ /* Simplify a/root(b/c) into a*root(c/b).  */
+ (simplify
+  (rdiv @0 (SQRT:s (rdiv:s @1 @2)))
+   (mult @0 (SQRT (rdiv @2 @1))))
+
+ /* Simplify x / pow (y,z) -> x * pow(y,-z). */
+ (simplify
+  (rdiv @0 (POW:s @1 @2))
+   (mult @0 (POW @1 (negate @2))))
+
  /* Special case, optimize logN(expN(x)) = x.  */
  (for logs (LOG LOG2 LOG10)
       exps (EXP EXP2 EXP10)
