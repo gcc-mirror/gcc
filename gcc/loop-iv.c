@@ -2330,8 +2330,8 @@ iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
   enum rtx_code cond;
   machine_mode mode, comp_mode;
   rtx mmin, mmax, mode_mmin, mode_mmax;
-  uint64_t s, size, d, inv, max;
-  int64_t up, down, inc, step_val;
+  uint64_t s, size, d, inv, max, up, down;
+  int64_t inc, step_val;
   int was_sharp = false;
   rtx old_niter;
   bool step_is_pow2;
@@ -2621,7 +2621,7 @@ iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
 	  down = INTVAL (CONST_INT_P (iv0.base)
 			 ? iv0.base
 			 : mode_mmin);
-	  max = (uint64_t) (up - down) / inc + 1;
+	  max = (up - down) / inc + 1;
 	  if (!desc->infinite
 	      && !desc->assumptions)
 	    record_niter_bound (loop, max, false, true);
