@@ -9957,12 +9957,6 @@ fold_binary_loc (location_t loc,
 		  tree arg00 = CALL_EXPR_ARG (arg0, 0);
 		  tree arg10 = CALL_EXPR_ARG (arg1, 0);
 
-		  /* Optimize sqrt(x)*sqrt(x) as x.  */
-		  if (BUILTIN_SQRT_P (fcode0)
-		      && operand_equal_p (arg00, arg10, 0)
-		      && ! HONOR_SNANS (element_mode (type)))
-		    return arg00;
-
 	          /* Optimize root(x)*root(y) as root(x*y).  */
 		  rootfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
 		  arg = fold_build2_loc (loc, MULT_EXPR, type, arg00, arg10);
@@ -9989,15 +9983,6 @@ fold_binary_loc (location_t loc,
 		  tree arg10 = CALL_EXPR_ARG (arg1, 0);
 		  tree arg11 = CALL_EXPR_ARG (arg1, 1);
 
-		  /* Optimize pow(x,y)*pow(z,y) as pow(x*z,y).  */
-		  if (operand_equal_p (arg01, arg11, 0))
-		    {
-		      tree powfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
-		      tree arg = fold_build2_loc (loc, MULT_EXPR, type,
-					      arg00, arg10);
-		      return build_call_expr_loc (loc, powfn, 2, arg, arg01);
-		    }
-
 		  /* Optimize pow(x,y)*pow(x,z) as pow(x,y+z).  */
 		  if (operand_equal_p (arg00, arg10, 0))
 		    {
@@ -10005,67 +9990,6 @@ fold_binary_loc (location_t loc,
 		      tree arg = fold_build2_loc (loc, PLUS_EXPR, type,
 					      arg01, arg11);
 		      return build_call_expr_loc (loc, powfn, 2, arg00, arg);
-		    }
-		}
-
-	      /* Optimize tan(x)*cos(x) as sin(x).  */
-	      if (((fcode0 == BUILT_IN_TAN && fcode1 == BUILT_IN_COS)
-		   || (fcode0 == BUILT_IN_TANF && fcode1 == BUILT_IN_COSF)
-		   || (fcode0 == BUILT_IN_TANL && fcode1 == BUILT_IN_COSL)
-		   || (fcode0 == BUILT_IN_COS && fcode1 == BUILT_IN_TAN)
-		   || (fcode0 == BUILT_IN_COSF && fcode1 == BUILT_IN_TANF)
-		   || (fcode0 == BUILT_IN_COSL && fcode1 == BUILT_IN_TANL))
-		  && operand_equal_p (CALL_EXPR_ARG (arg0, 0),
-				      CALL_EXPR_ARG (arg1, 0), 0))
-		{
-		  tree sinfn = mathfn_built_in (type, BUILT_IN_SIN);
-
-		  if (sinfn != NULL_TREE)
-		    return build_call_expr_loc (loc, sinfn, 1,
-					    CALL_EXPR_ARG (arg0, 0));
-		}
-
-	      /* Optimize x*pow(x,c) as pow(x,c+1).  */
-	      if (fcode1 == BUILT_IN_POW
-		  || fcode1 == BUILT_IN_POWF
-		  || fcode1 == BUILT_IN_POWL)
-		{
-		  tree arg10 = CALL_EXPR_ARG (arg1, 0);
-		  tree arg11 = CALL_EXPR_ARG (arg1, 1);
-		  if (TREE_CODE (arg11) == REAL_CST
-		      && !TREE_OVERFLOW (arg11)
-		      && operand_equal_p (arg0, arg10, 0))
-		    {
-		      tree powfn = TREE_OPERAND (CALL_EXPR_FN (arg1), 0);
-		      REAL_VALUE_TYPE c;
-		      tree arg;
-
-		      c = TREE_REAL_CST (arg11);
-		      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
-		      arg = build_real (type, c);
-		      return build_call_expr_loc (loc, powfn, 2, arg0, arg);
-		    }
-		}
-
-	      /* Optimize pow(x,c)*x as pow(x,c+1).  */
-	      if (fcode0 == BUILT_IN_POW
-		  || fcode0 == BUILT_IN_POWF
-		  || fcode0 == BUILT_IN_POWL)
-		{
-		  tree arg00 = CALL_EXPR_ARG (arg0, 0);
-		  tree arg01 = CALL_EXPR_ARG (arg0, 1);
-		  if (TREE_CODE (arg01) == REAL_CST
-		      && !TREE_OVERFLOW (arg01)
-		      && operand_equal_p (arg1, arg00, 0))
-		    {
-		      tree powfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
-		      REAL_VALUE_TYPE c;
-		      tree arg;
-
-		      c = TREE_REAL_CST (arg01);
-		      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
-		      arg = build_real (type, c);
-		      return build_call_expr_loc (loc, powfn, 2, arg1, arg);
 		    }
 		}
 
@@ -10481,109 +10405,10 @@ fold_binary_loc (location_t loc,
 
       if (flag_unsafe_math_optimizations)
 	{
-	  enum built_in_function fcode0 = builtin_mathfn_code (arg0);
 	  enum built_in_function fcode1 = builtin_mathfn_code (arg1);
 
-	  /* Optimize sin(x)/cos(x) as tan(x).  */
-	  if (((fcode0 == BUILT_IN_SIN && fcode1 == BUILT_IN_COS)
-	       || (fcode0 == BUILT_IN_SINF && fcode1 == BUILT_IN_COSF)
-	       || (fcode0 == BUILT_IN_SINL && fcode1 == BUILT_IN_COSL))
-	      && operand_equal_p (CALL_EXPR_ARG (arg0, 0),
-				  CALL_EXPR_ARG (arg1, 0), 0))
-	    {
-	      tree tanfn = mathfn_built_in (type, BUILT_IN_TAN);
-
-	      if (tanfn != NULL_TREE)
-		return build_call_expr_loc (loc, tanfn, 1, CALL_EXPR_ARG (arg0, 0));
-	    }
-
-	  /* Optimize cos(x)/sin(x) as 1.0/tan(x).  */
-	  if (((fcode0 == BUILT_IN_COS && fcode1 == BUILT_IN_SIN)
-	       || (fcode0 == BUILT_IN_COSF && fcode1 == BUILT_IN_SINF)
-	       || (fcode0 == BUILT_IN_COSL && fcode1 == BUILT_IN_SINL))
-	      && operand_equal_p (CALL_EXPR_ARG (arg0, 0),
-				  CALL_EXPR_ARG (arg1, 0), 0))
-	    {
-	      tree tanfn = mathfn_built_in (type, BUILT_IN_TAN);
-
-	      if (tanfn != NULL_TREE)
-		{
-		  tree tmp = build_call_expr_loc (loc, tanfn, 1,
-					      CALL_EXPR_ARG (arg0, 0));
-		  return fold_build2_loc (loc, RDIV_EXPR, type,
-				      build_real (type, dconst1), tmp);
-		}
-	    }
-
- 	  /* Optimize sin(x)/tan(x) as cos(x) if we don't care about
-	     NaNs or Infinities.  */
- 	  if (((fcode0 == BUILT_IN_SIN && fcode1 == BUILT_IN_TAN)
- 	       || (fcode0 == BUILT_IN_SINF && fcode1 == BUILT_IN_TANF)
- 	       || (fcode0 == BUILT_IN_SINL && fcode1 == BUILT_IN_TANL)))
-	    {
-	      tree arg00 = CALL_EXPR_ARG (arg0, 0);
-	      tree arg01 = CALL_EXPR_ARG (arg1, 0);
-
-	      if (! HONOR_NANS (arg00)
-		  && ! HONOR_INFINITIES (element_mode (arg00))
-		  && operand_equal_p (arg00, arg01, 0))
-		{
-		  tree cosfn = mathfn_built_in (type, BUILT_IN_COS);
-
-		  if (cosfn != NULL_TREE)
-		    return build_call_expr_loc (loc, cosfn, 1, arg00);
-		}
-	    }
-
- 	  /* Optimize tan(x)/sin(x) as 1.0/cos(x) if we don't care about
-	     NaNs or Infinities.  */
- 	  if (((fcode0 == BUILT_IN_TAN && fcode1 == BUILT_IN_SIN)
- 	       || (fcode0 == BUILT_IN_TANF && fcode1 == BUILT_IN_SINF)
- 	       || (fcode0 == BUILT_IN_TANL && fcode1 == BUILT_IN_SINL)))
-	    {
-	      tree arg00 = CALL_EXPR_ARG (arg0, 0);
-	      tree arg01 = CALL_EXPR_ARG (arg1, 0);
-
-	      if (! HONOR_NANS (arg00)
-		  && ! HONOR_INFINITIES (element_mode (arg00))
-		  && operand_equal_p (arg00, arg01, 0))
-		{
-		  tree cosfn = mathfn_built_in (type, BUILT_IN_COS);
-
-		  if (cosfn != NULL_TREE)
-		    {
-		      tree tmp = build_call_expr_loc (loc, cosfn, 1, arg00);
-		      return fold_build2_loc (loc, RDIV_EXPR, type,
-					  build_real (type, dconst1),
-					  tmp);
-		    }
-		}
-	    }
-
-	  /* Optimize pow(x,c)/x as pow(x,c-1).  */
-	  if (fcode0 == BUILT_IN_POW
-	      || fcode0 == BUILT_IN_POWF
-	      || fcode0 == BUILT_IN_POWL)
-	    {
-	      tree arg00 = CALL_EXPR_ARG (arg0, 0);
-	      tree arg01 = CALL_EXPR_ARG (arg0, 1);
-	      if (TREE_CODE (arg01) == REAL_CST
-		  && !TREE_OVERFLOW (arg01)
-		  && operand_equal_p (arg1, arg00, 0))
-		{
-		  tree powfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
-		  REAL_VALUE_TYPE c;
-		  tree arg;
-
-		  c = TREE_REAL_CST (arg01);
-		  real_arithmetic (&c, MINUS_EXPR, &c, &dconst1);
-		  arg = build_real (type, c);
-		  return build_call_expr_loc (loc, powfn, 2, arg1, arg);
-		}
-	    }
-
 	  /* Optimize a/root(b/c) into a*root(c/b).  */
-	  if (BUILTIN_ROOT_P (fcode1))
+	  if (BUILTIN_CBRT_P (fcode1))
 	    {
 	      tree rootarg = CALL_EXPR_ARG (arg1, 0);
 
@@ -10611,19 +10436,6 @@ fold_binary_loc (location_t loc,
 	      return fold_build2_loc (loc, MULT_EXPR, type, arg0, arg1);
 	    }
 
-	  /* Optimize x/pow(y,z) into x*pow(y,-z).  */
-	  if (fcode1 == BUILT_IN_POW
-	      || fcode1 == BUILT_IN_POWF
-	      || fcode1 == BUILT_IN_POWL)
-	    {
-	      tree powfn = TREE_OPERAND (CALL_EXPR_FN (arg1), 0);
-	      tree arg10 = CALL_EXPR_ARG (arg1, 0);
-	      tree arg11 = CALL_EXPR_ARG (arg1, 1);
-	      tree neg11 = fold_convert_loc (loc, type,
-					     negate_expr (arg11));
-	      arg1 = build_call_expr_loc (loc, powfn, 2, arg10, neg11);
-	      return fold_build2_loc (loc, MULT_EXPR, type, arg0, arg1);
-	    }
 	}
       return NULL_TREE;
 
