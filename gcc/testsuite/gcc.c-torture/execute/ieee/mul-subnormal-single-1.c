@@ -57,7 +57,7 @@ struct
   };
 
 int
-main (int argc, char *argv[], char *envp[])
+main ()
 {
   unsigned int i;
 

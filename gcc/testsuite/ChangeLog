@@ -1,3 +1,74 @@
+2015-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/target-supports.exp (check_effective_target_freestanding): nvptx
+	is freestanding.
+	(check_effective_target_global_constructor): New.
+	* lib/gcc.exp (gcc_target_compile): Set SIGNAL_SUPPRESS if needed.
+	* gcc.dg/debug/debug.exp: Skip  for nvptx.
+	* gcc.dg/debug/dwarf2/dwarf2.exp: Likewise.
+
+	* gcc.c-torture/execute/981019-1.c: Ptx assembler bug.
+	* gcc.c-torture/compile/limits-externdecl.c: Likewise.
+	* gcc.c-torture/compile/pr33855.c: Likewise.
+	* gcc.c-torture/compile/920723-1.c: Likewise.
+	* gcc.c-torture/compile/pr35468.c: Ptx assembler objects to
+	writing a const.
+	* gcc.c-torture/compile/mangle-1.c: Ptx assembler objects to . in
+	label.
+	* gcc.c-torture/compile/callind.c: Ptx assembler objects to label
+	'call'.
+
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.c: Make main
+	prototype normal.
+	* gcc.c-torture/execute/switch-1.c: Likewise.
+
+	* gcc.c-torture/execute/pr34456.c: Require not freestanding
+	* gcc.c-torture/execute/printf-1.c: Likewise.
+	* gcc.c-torture/execute/printf-chk-1.c: Likewise.
+	* gcc.c-torture/execute/fprintf-1.c: Likewise.
+	* gcc.c-torture/execute/fprintf-chk-1.c: Likewise.
+	* gcc.c-torture/execute/vprintf-1.c: Likewise.
+	* gcc.c-torture/execute/vprintf-chk-1.c: Likewise.
+	* gcc.c-torture/execute/vfprintf-1.c: Likewise.
+	* gcc.c-torture/execute/vfprintf-chk-1.c: Likewise.
+	* gcc.c-torture/execute/builtins/fputs.x: Likewise.
+	* gcc.c-torture/execute/gofast.c: Likewise.
+	* gcc.c-torture/execute/complex-6.c: Likewise.
+
+	* gcc.c-torture/execute/builtins/memcpy-chk.x: Require nonlocal goto.
+	* gcc.c-torture/execute/builtins/memmove-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/mempcpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/memset-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/snprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/sprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/stpcpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/stpncpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strcat-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strcpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strncat-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strncpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/vsnprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/vsprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/pr23484-chk.x: Likewise.
+	* gcc.dg/setjmp-1.c: Likewise.
+	* gcc.dg/cleanup-5.c: Likewise.
+	* gcc.dg/cleanup-12.c: Likewise.
+	* gcc.dg/cleanup-13.c: Likewise.
+
+	* gcc.dg/constructor-1.c: Require global ctor.
+
+	* gcc.dg/fork-instrumentation.c: Require profiling.
+	* gcc.dg/20030107-1.c: Likewise.
+	* gcc.dg/20030702-1.c: Likewise.
+
+	* gcc.dg/cpp/lexstrng.c: Avoid IO unless debugging.
+	* gcc.dg/cpp/paste2.c: Likewise.
+	* gcc.dg/cpp/strify3.c: Likewise.
+	* gcc.dg/cpp/strify4.c: Likewise.
+	* gcc.dg/cpp/lexnum.c: Likewise.
+	* gcc.dg/cpp/digraphs.c: Likewise.
+	* gcc.dg/cpp/macro1.c: Likewise.
+
 2015-08-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/zvector/vec-load_bndry-1.c: New test.

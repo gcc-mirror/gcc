@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-fexceptions" } */
 /* { dg-skip-if "" { "ia64-*-hpux11.*" }  { "*" } { "" } } */
+/* { dg-skip-if "" { ! nonlocal_goto } { "*" } { "" } } */
 /* Verify DW_OP_* handling in the unwinder.  */
 
 #include <unwind.h>
