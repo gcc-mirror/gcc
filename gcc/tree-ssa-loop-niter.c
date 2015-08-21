@@ -2083,6 +2083,10 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
       if (e->flags & EDGE_FALSE_VALUE)
 	cond = invert_truthvalue (cond);
       expr = tree_simplify_using_condition (cond, expr);
+      /* Break if EXPR is simplified to const values.  */
+      if (expr && (integer_zerop (expr) || integer_nonzerop (expr)))
+	break;
+
       ++cnt;
     }
 

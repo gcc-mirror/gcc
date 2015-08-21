@@ -1,3 +1,8 @@
+2015-08-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-niter.c (simplify_using_initial_conditions): Break
+	loop if EXPR is simplified to const value.
+
 2015-08-21  Yury Gribov  <y.gribov@samsung.com>
 
 	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_NONNULL_ARG,
