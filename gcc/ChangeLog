@@ -1,3 +1,8 @@
+2015-08-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* genconfig.c (main): Always define HAVE_CONDITIONAL_EXECUTION.
+	* targhooks.c (default_have_conditional_execution): Adjust.
+
 2015-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtl.h (rtvec_all_equal_p): Declare.

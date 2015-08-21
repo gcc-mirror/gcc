@@ -1350,11 +1350,7 @@ default_case_values_threshold (void)
 bool
 default_have_conditional_execution (void)
 {
-#ifdef HAVE_conditional_execution
   return HAVE_conditional_execution;
-#else
-  return false;
-#endif
 }
 
 /* By default we assume that c99 functions are present at the runtime,
