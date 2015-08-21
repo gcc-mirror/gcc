@@ -1,3 +1,8 @@
+2015-08-21  Yury Gribov  <y.gribov@samsung.com>
+
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_NONNULL_ARG,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_ARG): Fix builtin types.
+
 2015-08-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67285
