@@ -314,10 +314,9 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
       /* The alignment of a CONST_DECL is determined by its initializer.  */
       exp = DECL_INITIAL (exp);
       align = TYPE_ALIGN (TREE_TYPE (exp));
-#ifdef CONSTANT_ALIGNMENT
       if (CONSTANT_CLASS_P (exp))
 	align = (unsigned) CONSTANT_ALIGNMENT (exp, align);
-#endif
+
       known_alignment = true;
     }
   else if (DECL_P (exp))
@@ -393,10 +392,9 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
       /* STRING_CST are the only constant objects we allow to be not
          wrapped inside a CONST_DECL.  */
       align = TYPE_ALIGN (TREE_TYPE (exp));
-#ifdef CONSTANT_ALIGNMENT
       if (CONSTANT_CLASS_P (exp))
 	align = (unsigned) CONSTANT_ALIGNMENT (exp, align);
-#endif
+
       known_alignment = true;
     }
 

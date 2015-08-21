@@ -1048,7 +1048,7 @@ that is being placed in memory.  @var{constant} is the constant and
 have.  The value of this macro is used instead of that alignment to
 align the object.
 
-If this macro is not defined, then @var{basic-align} is used.
+The default definition just returns @var{basic-align}.
 
 The typical use of this macro is to increase alignment for string
 constants to be word aligned so that @code{strcpy} calls that copy
