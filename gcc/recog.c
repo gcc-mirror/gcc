@@ -2441,9 +2441,9 @@ preprocess_constraints (int n_operands, int n_alternatives,
    instruction ICODE.  */
 
 const operand_alternative *
-preprocess_insn_constraints (int icode)
+preprocess_insn_constraints (unsigned int icode)
 {
-  gcc_checking_assert (IN_RANGE (icode, 0, LAST_INSN_CODE));
+  gcc_checking_assert (IN_RANGE (icode, 0, NUM_INSN_CODES - 1));
   if (this_target_recog->x_op_alt[icode])
     return this_target_recog->x_op_alt[icode];
 
@@ -4118,7 +4118,7 @@ recog_init ()
     }
   memset (this_target_recog->x_bool_attr_masks, 0,
 	  sizeof (this_target_recog->x_bool_attr_masks));
-  for (int i = 0; i < LAST_INSN_CODE; ++i)
+  for (unsigned int i = 0; i < NUM_INSN_CODES; ++i)
     if (this_target_recog->x_op_alt[i])
       {
 	free (this_target_recog->x_op_alt[i]);
