@@ -1,3 +1,13 @@
+2015-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.md (allocate_stack): Emit sorry during
+	expansion.
+	* config/nvptx/nvptx.c (nvptx_declare_function_name): Look at
+	crtl->stack_alignment_needed to determine alignment.
+	(nvptx_get_drap_rtx): New.
+	(TARGET_GET_DRAP_RTX): Override.
+	* config/nvptx/nvptx.h (MAX_STACK_ALIGNMENT): Set.
+
 2015-08-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* config.build: Remove case for m68000-hp-hpux* | m68k-hp-hpux*.

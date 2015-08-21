@@ -52,6 +52,8 @@
 #define BIGGEST_ALIGNMENT 64
 #define STRICT_ALIGNMENT 1
 
+#define MAX_STACK_ALIGNMENT (1024 * 8)
+
 /* Copied from elf.h and other places.  We'd otherwise use
    BIGGEST_ALIGNMENT and fail a number of testcases.  */
 #define MAX_OFILE_ALIGNMENT (32768 * 8)

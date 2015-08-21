@@ -1241,6 +1241,12 @@
    (match_operand 1 "nvptx_register_operand")]
   ""
 {
+  /* The ptx documentation specifies an alloca intrinsic (for 32 bit
+     only)  but notes it is not implemented.  The assembler emits a
+     confused error message.  Issue a blunt one now instead.  */
+  sorry ("target cannot support alloca.");
+  emit_insn (gen_nop ());
+  DONE;
   if (TARGET_ABI64)
     emit_insn (gen_allocate_stack_di (operands[0], operands[1]));
   else
