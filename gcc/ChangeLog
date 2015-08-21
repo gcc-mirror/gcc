@@ -1,5 +1,16 @@
 2015-08-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (CONSTANT_ALIGNMENT): New macro definition.
+	* builtins.c (get_object_alignment_2): Adjust.
+	* varasm.c (align_variable): Likewise.
+	(get_variable_align): Likewise.
+	(build_constant_desc): Likewise.
+	(force_const_mem): Likewise.
+	* doc/tm.texi.in: Likewise.
+	* doc/tm.texi: Regenerate.
+
+2015-08-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* genconfig.c (main): Always define HAVE_cc0.
 	* recog.c (rest_of_handle_peephole2): Adjust.
 

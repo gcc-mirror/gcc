@@ -1043,7 +1043,6 @@ align_variable (tree decl, bool dont_output_data)
 	  if (! DECL_THREAD_LOCAL_P (decl) || data_align <= BITS_PER_WORD)
 	    align = data_align;
 #endif
-#ifdef CONSTANT_ALIGNMENT
 	  if (DECL_INITIAL (decl) != 0
 	      /* In LTO we have no errors in program; error_mark_node is used
 		 to mark offlined constructors.  */
@@ -1056,7 +1055,6 @@ align_variable (tree decl, bool dont_output_data)
 	      if (! DECL_THREAD_LOCAL_P (decl) || const_align <= BITS_PER_WORD)
 		align = const_align;
 	    }
-#endif
 	}
     }
 
@@ -1097,7 +1095,6 @@ get_variable_align (tree decl)
       if (! DECL_THREAD_LOCAL_P (decl) || data_align <= BITS_PER_WORD)
 	align = data_align;
 #endif
-#ifdef CONSTANT_ALIGNMENT
       if (DECL_INITIAL (decl) != 0
 	  /* In LTO we have no errors in program; error_mark_node is used
 	     to mark offlined constructors.  */
@@ -1110,7 +1107,6 @@ get_variable_align (tree decl)
 	  if (! DECL_THREAD_LOCAL_P (decl) || const_align <= BITS_PER_WORD)
 	    align = const_align;
 	}
-#endif
     }
 
   return align;
@@ -3286,9 +3282,7 @@ build_constant_desc (tree exp)
      architectures so use DATA_ALIGNMENT as well, except for strings.  */
   if (TREE_CODE (exp) == STRING_CST)
     {
-#ifdef CONSTANT_ALIGNMENT
       DECL_ALIGN (decl) = CONSTANT_ALIGNMENT (exp, DECL_ALIGN (decl));
-#endif
     }
   else
     align_variable (decl, 0);
@@ -3743,13 +3737,10 @@ force_const_mem (machine_mode mode, rtx x)
 
   /* Align the location counter as required by EXP's data type.  */
   align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
-#ifdef CONSTANT_ALIGNMENT
-  {
-    tree type = lang_hooks.types.type_for_mode (mode, 0);
-    if (type != NULL_TREE)
-      align = CONSTANT_ALIGNMENT (make_tree (type, x), align);
-  }
-#endif
+
+  tree type = lang_hooks.types.type_for_mode (mode, 0);
+  if (type != NULL_TREE)
+    align = CONSTANT_ALIGNMENT (make_tree (type, x), align);
 
   pool->offset += (align / BITS_PER_UNIT) - 1;
   pool->offset &= ~ ((align / BITS_PER_UNIT) - 1);

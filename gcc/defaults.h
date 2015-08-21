@@ -1273,6 +1273,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define WORD_REGISTER_OPERATIONS 0
 #endif
 
+#ifndef CONSTANT_ALIGNMENT
+#define CONSTANT_ALIGNMENT(EXP, ALIGN) ALIGN
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 
