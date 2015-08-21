@@ -1,5 +1,9 @@
 2015-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* decl.c (grokvardecl): Simplify the latter.
+
+2015-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* decl.c (grokvardecl): Complete check added for c++/67065.
 
 2015-08-20  Jason Merrill  <jason@redhat.com>
