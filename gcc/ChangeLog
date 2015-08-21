@@ -1,3 +1,12 @@
+2015-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67285
+	* gimple-fold.c (replace_stmt_with_simplification): Assert
+	seq is empty when replacing a call with itself but different
+	arguments.
+	* gimple-match-head.c (maybe_push_res_to_seq): When pushing
+	a call require that it is const.
+
 2015-08-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* defaults.h (CONSTANT_ALIGNMENT): New macro definition.
