@@ -1775,7 +1775,7 @@ satisfy_implicit_conversion_constraint (tree t, tree args,
      of the form TYPE <unspecified> = EXPR.  */
   tree conv =
     perform_direct_initialization_if_possible (type, expr, false, complain);
-  if (conv == error_mark_node)
+  if (conv == NULL_TREE || conv == error_mark_node)
     return boolean_false_node;
   else
     return boolean_true_node;
