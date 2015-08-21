@@ -1,3 +1,7 @@
+2015-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/other/pr67065.C: Extend.
+
 2015-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	* lib/target-supports.exp (check_effective_target_freestanding): nvptx
