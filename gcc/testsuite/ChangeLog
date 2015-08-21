@@ -1,3 +1,8 @@
+2015-08-21  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* g++.old-deja/g++.jason/overload.C: Adjust to preserve original
+	property that instantiation here is a compile-time error.
+
 2015-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/other/pr67065.C: Extend.
