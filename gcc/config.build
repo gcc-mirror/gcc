@@ -73,10 +73,6 @@ case $build in
     build_xm_file=i386/xm-djgpp.h
     build_exeext=.exe
     ;;
-  m68000-hp-hpux* | m68k-hp-hpux*) 
-    # HP 9000 series 300
-    build_install_headers_dir=install-headers-cpio
-    ;;
   *-*-sysv*)
     # All other System V variants.
     build_install_headers_dir=install-headers-cpio

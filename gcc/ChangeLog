@@ -1,5 +1,9 @@
 2015-08-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* config.build: Remove case for m68000-hp-hpux* | m68k-hp-hpux*.
+
+2015-08-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* configure.ac: Remove uwin* cases.
 	* config.build: Remove cases for i370-*-opened*, i370-*-mvs*,
 	i[34567]86-*-sco3.2v5*, i[34567]86-sequent-ptx4*,
