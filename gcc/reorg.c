@@ -3445,15 +3445,13 @@ relax_delay_slots (rtx_insn *first)
 	  && ! condjump_in_parallel_p (delay_jump_insn)
 	  && prev_active_insn (target_label) == insn
 	  && ! BARRIER_P (prev_nonnote_insn (target_label))
-#if HAVE_cc0
 	  /* If the last insn in the delay slot sets CC0 for some insn,
 	     various code assumes that it is in a delay slot.  We could
 	     put it back where it belonged and delete the register notes,
 	     but it doesn't seem worthwhile in this uncommon case.  */
-	  && ! find_reg_note (XVECEXP (pat, 0, XVECLEN (pat, 0) - 1),
-			      REG_CC_USER, NULL_RTX)
-#endif
-	  )
+	  && (!HAVE_cc0
+	      || ! find_reg_note (XVECEXP (pat, 0, XVECLEN (pat, 0) - 1),
+				  REG_CC_USER, NULL_RTX)))
 	{
 	  rtx_insn *after;
 	  int i;
