@@ -372,6 +372,11 @@ main (int argc, char **argv)
       printf ("#define HAVE_peephole2 1\n");
       printf ("#define MAX_INSNS_PER_PEEP2 %d\n", max_insns_per_peep2);
     }
+  else
+    {
+      printf ("#define HAVE_peephole2 0\n");
+      printf ("#define MAX_INSNS_PER_PEEP2 0\n");
+    }
 
   puts ("\n#endif /* GCC_INSN_CONFIG_H */");
 

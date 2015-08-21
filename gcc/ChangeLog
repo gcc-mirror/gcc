@@ -1,5 +1,10 @@
 2015-08-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* genconfig.c (main): Always define HAVE_cc0.
+	* recog.c (rest_of_handle_peephole2): Adjust.
+
+2015-08-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* reorg.c (relax_delay_slots): Don't use #if to check value of
 	HAVE_cc0.
 
