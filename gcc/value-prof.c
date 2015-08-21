@@ -212,7 +212,6 @@ gimple_add_histogram_value (struct function *fun, gimple stmt,
   hist->fun = fun;
 }
 
-
 /* Remove histogram HIST from STMT's histogram list.  */
 
 void
@@ -236,7 +235,6 @@ gimple_remove_histogram_value (struct function *fun, gimple stmt,
 #endif
   free (hist);
 }
-
 
 /* Lookup histogram of type TYPE in the STMT.  */
 
@@ -408,6 +406,7 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
   if (hist->hvalue.next)
     stream_out_histogram_value (ob, hist->hvalue.next);
 }
+
 /* Dump information about HIST to DUMP_FILE.  */
 
 void
@@ -512,7 +511,6 @@ gimple_duplicate_stmt_histograms (struct function *fun, gimple stmt,
     }
 }
 
-
 /* Move all histograms associated with OSTMT to STMT.  */
 
 void
@@ -552,7 +550,6 @@ visit_hist (void **slot, void *data)
     }
   return 1;
 }
-
 
 /* Verify sanity of the histograms.  */
 
@@ -616,7 +613,6 @@ free_histograms (void)
     }
 }
 
-
 /* The overall number of invocations of the counter should match
    execution count of basic block.  Report it as error rather than
    internal error as it might mean that user has misused the profile
@@ -660,7 +656,6 @@ check_counter (gimple stmt, const char * name,
   return false;
 }
 
-
 /* GIMPLE based transformations. */
 
 bool
@@ -669,7 +664,6 @@ gimple_value_profile_transformations (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
   bool changed = false;
-
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -718,7 +712,6 @@ gimple_value_profile_transformations (void)
 
   return changed;
 }
-
 
 /* Generate code for transformation 1 (with parent gimple assignment
    STMT and probability of taking the optimal path PROB, which is
@@ -801,7 +794,6 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, int prob,
 
   return tmp2;
 }
-
 
 /* Do transform 1) on INSN if applicable.  */
 
@@ -888,6 +880,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
    probability of taking the optimal path PROB, which is equivalent to COUNT/ALL
    within roundoff error).  This generates the result into a temp and returns
    the temp; it does not replace or alter the original STMT.  */
+
 static tree
 gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
 {
@@ -968,6 +961,7 @@ gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
 }
 
 /* Do transform 2) on INSN if applicable.  */
+
 static bool
 gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
 {
@@ -1137,7 +1131,6 @@ gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
   return result;
 }
 
-
 /* Do transforms 3) and 4) on the statement pointed-to by SI if applicable.  */
 
 static bool
@@ -1151,7 +1144,6 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   unsigned int i, steps;
   gcov_type count1, count2;
   gassign *stmt;
-
   stmt = dyn_cast <gassign *> (gsi_stmt (*si));
   if (!stmt)
     return false;
@@ -1632,15 +1624,15 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   return true;
 }
 
-/* Return true if the stringop CALL with FNDECL shall be profiled.
-   SIZE_ARG be set to the argument index for the size of the string
-   operation.
-*/
-static bool
-interesting_stringop_to_profile_p (tree fndecl, gcall *call, int *size_arg)
-{
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+/* Return true if the stringop CALL shall be profiled.  SIZE_ARG be
+   set to the argument index for the size of the string operation.  */
 
+static bool
+interesting_stringop_to_profile_p (gcall *call, int *size_arg)
+{
+  enum built_in_function fcode;
+
+  fcode = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
   if (fcode != BUILT_IN_MEMCPY && fcode != BUILT_IN_MEMPCPY
       && fcode != BUILT_IN_MEMSET && fcode != BUILT_IN_BZERO)
     return false;
@@ -1665,7 +1657,7 @@ interesting_stringop_to_profile_p (tree fndecl, gcall *call, int *size_arg)
     }
 }
 
-/* Convert   stringop (..., vcall_size)
+/* Convert stringop (..., vcall_size)
    into
    if (vcall_size == icall_size)
      stringop (..., icall_size);
@@ -1684,11 +1676,9 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
   basic_block cond_bb, icall_bb, vcall_bb, join_bb;
   edge e_ci, e_cv, e_iv, e_ij, e_vj;
   gimple_stmt_iterator gsi;
-  tree fndecl;
   int size_arg;
 
-  fndecl = gimple_call_fndecl (vcall_stmt);
-  if (!interesting_stringop_to_profile_p (fndecl, vcall_stmt, &size_arg))
+  if (!interesting_stringop_to_profile_p (vcall_stmt, &size_arg))
     gcc_unreachable ();
 
   cond_bb = gimple_bb (vcall_stmt);
@@ -1767,11 +1757,11 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
 
 /* Find values inside STMT for that we want to measure histograms for
    division/modulo optimization.  */
+
 static bool
 gimple_stringops_transform (gimple_stmt_iterator *gsi)
 {
   gcall *stmt;
-  tree fndecl;
   tree blck_size;
   enum built_in_function fcode;
   histogram_value histogram;
@@ -1785,11 +1775,11 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   stmt = dyn_cast <gcall *> (gsi_stmt (*gsi));
   if (!stmt)
     return false;
-  fndecl = gimple_call_fndecl (stmt);
-  if (!fndecl)
+
+  if (!gimple_call_builtin_p (gsi_stmt (*gsi), BUILT_IN_NORMAL))
     return false;
-  fcode = DECL_FUNCTION_CODE (fndecl);
-  if (!interesting_stringop_to_profile_p (fndecl, stmt, &size_arg))
+
+  if (!interesting_stringop_to_profile_p (stmt, &size_arg))
     return false;
 
   blck_size = gimple_call_arg (stmt, size_arg);
@@ -1799,10 +1789,12 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_SINGLE_VALUE);
   if (!histogram)
     return false;
+
   val = histogram->hvalue.counters[0];
   count = histogram->hvalue.counters[1];
   all = histogram->hvalue.counters[2];
   gimple_remove_histogram_value (cfun, stmt, histogram);
+
   /* We require that count is at least half of all; this means
      that for the transformation to fire the value must be constant
      at least 80% of time.  */
@@ -1814,8 +1806,10 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
+
   dest = gimple_call_arg (stmt, 0);
   dest_align = get_pointer_alignment (dest);
+  fcode = DECL_FUNCTION_CODE (gimple_call_fndecl (stmt));
   switch (fcode)
     {
     case BUILT_IN_MEMCPY:
@@ -1840,6 +1834,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     default:
       gcc_unreachable ();
     }
+
   if (sizeof (gcov_type) == sizeof (HOST_WIDE_INT))
     tree_val = build_int_cst (get_gcov_type (), val);
   else
@@ -1858,6 +1853,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
 	       (int)val);
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
+
   gimple_stringop_fixed_value (stmt, tree_val, prob, count, all);
 
   return true;
@@ -1869,6 +1865,7 @@ stringop_block_profile (gimple stmt, unsigned int *expected_align,
 {
   histogram_value histogram;
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_AVERAGE);
+
   if (!histogram)
     *expected_size = -1;
   else if (!histogram->hvalue.counters[1])
@@ -1889,7 +1886,9 @@ stringop_block_profile (gimple stmt, unsigned int *expected_align,
       *expected_size = size;
       gimple_remove_histogram_value (cfun, stmt, histogram);
     }
+
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_IOR);
+
   if (!histogram)
     *expected_align = 0;
   else if (!histogram->hvalue.counters[0])
@@ -1915,6 +1914,7 @@ stringop_block_profile (gimple stmt, unsigned int *expected_align,
 
 /* Find values inside STMT for that we want to measure histograms for
    division/modulo optimization.  */
+
 static void
 gimple_divmod_values_to_profile (gimple stmt, histogram_values *values)
 {
@@ -1999,11 +1999,11 @@ gimple_indirect_call_to_profile (gimple stmt, histogram_values *values)
 
 /* Find values inside STMT for that we want to measure histograms for
    string operations.  */
+
 static void
 gimple_stringops_values_to_profile (gimple gs, histogram_values *values)
 {
   gcall *stmt;
-  tree fndecl;
   tree blck_size;
   tree dest;
   int size_arg;
@@ -2011,11 +2011,11 @@ gimple_stringops_values_to_profile (gimple gs, histogram_values *values)
   stmt = dyn_cast <gcall *> (gs);
   if (!stmt)
     return;
-  fndecl = gimple_call_fndecl (stmt);
-  if (!fndecl)
+
+  if (!gimple_call_builtin_p (gs, BUILT_IN_NORMAL))
     return;
 
-  if (!interesting_stringop_to_profile_p (fndecl, stmt, &size_arg))
+  if (!interesting_stringop_to_profile_p (stmt, &size_arg))
     return;
 
   dest = gimple_call_arg (stmt, 0);
@@ -2029,6 +2029,7 @@ gimple_stringops_values_to_profile (gimple gs, histogram_values *values)
       values->safe_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_AVERAGE,
 						       stmt, blck_size));
     }
+
   if (TREE_CODE (blck_size) != INTEGER_CST)
     values->safe_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_IOR,
 						     stmt, dest));

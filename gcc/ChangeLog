@@ -1,3 +1,12 @@
+2014-08-21  Felix Yang  <felix.yang@huawei.com>
+	    Jiji Jiang  <jiangjiji@huawei.com>
+
+	* value-prof.c (interesting_stringop_to_profile_p): Removed FNDECL argument
+	and get builtin function code directly from CALL.
+	(gimple_stringop_fixed_value): Modified accordingly.
+	(gimple_stringops_transform, gimple_stringops_values_to_profile): Modified
+	accordingly and only accept BUILT_IN_NORMAL string operations.
+
 2015-08-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390-builtins.def: Fix value range of vec_load_bndry.
