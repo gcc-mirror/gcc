@@ -1,5 +1,8 @@
 2015-08-21  Alexandre Oliva <aoliva@redhat.com>
 
+	* print-rtl.c (print_rtx): Check the correct range for
+	flag_dump_unnumbered_links to behave as documented.
+
 	PR rtl-optimization/67227
 	PR rtl-optimization/64164
 	* alias.c (memrefs_conflict_p): Handle VALUEs in PLUS better.

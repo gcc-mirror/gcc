@@ -550,7 +550,7 @@ print_rtx (const_rtx in_rtx)
 	      }
 
 	    if (flag_dump_unnumbered
-		|| (flag_dump_unnumbered_links && (i == 1 || i == 2)
+		|| (flag_dump_unnumbered_links && i <= 1
 		    && (INSN_P (in_rtx) || NOTE_P (in_rtx)
 			|| LABEL_P (in_rtx) || BARRIER_P (in_rtx))))
 	      fputs (" #", outfile);
