@@ -585,7 +585,7 @@ finish_insn_regs (void)
 
 /* Map INSN_CODE -> the static insn data.  This info is valid during
    all translation unit.  */
-struct lra_static_insn_data *insn_code_data[LAST_INSN_CODE];
+struct lra_static_insn_data *insn_code_data[NUM_INSN_CODES];
 
 /* Debug insns are represented as a special insn with one input
    operand which is RTL expression in var_location.  */
@@ -631,9 +631,7 @@ init_insn_code_data_once (void)
 static void
 finish_insn_code_data_once (void)
 {
-  int i;
-
-  for (i = 0; i < LAST_INSN_CODE; i++)
+  for (unsigned int i = 0; i < NUM_INSN_CODES; i++)
     {
       if (insn_code_data[i] != NULL)
 	free (insn_code_data[i]);
@@ -650,7 +648,7 @@ get_static_insn_data (int icode, int nop, int ndup, int nalt)
   struct lra_static_insn_data *data;
   size_t n_bytes;
 
-  lra_assert (icode < LAST_INSN_CODE);
+  lra_assert (icode < (int) NUM_INSN_CODES);
   if (icode >= 0 && (data = insn_code_data[icode]) != NULL)
     return data;
   lra_assert (nop >= 0 && ndup >= 0 && nalt >= 0);

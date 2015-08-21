@@ -1,3 +1,18 @@
+2015-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gencodes.c (gencodes): Print the comma for the preceding
+	enum value rather than the current one.  Use aliased enum values
+	rather than #defines for compiled-out patterns.
+	(main): Update accordingly.  Replace LAST_INSN_CODE with
+	NUM_INSN_CODES.
+	* lra.c (insn_code_data): Update accordingly.
+	(finish_insn_code_data_once, get_static_insn_data): Likewise.
+	* recog.h (target_recog): Likewise.
+	(preprocess_insn_constraints): Change parameter to unsigned int.
+	* recog.c (preprocess_insn_constraints): Likewise.
+	(recog_init): Replace LAST_INSN_CODE with NUM_INSN_CODES.
+	* tree-vect-stmts.c (vectorizable_operation): Simplify.
+
 2015-08-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR rtl-optimization/61657

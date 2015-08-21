@@ -137,7 +137,7 @@ extern void extract_constrain_insn_cached (rtx_insn *);
 extern void extract_insn_cached (rtx_insn *);
 extern void preprocess_constraints (int, int, const char **,
 				    operand_alternative *);
-extern const operand_alternative *preprocess_insn_constraints (int);
+extern const operand_alternative *preprocess_insn_constraints (unsigned int);
 extern void preprocess_constraints (rtx_insn *);
 extern rtx_insn *peep2_next_insn (int);
 extern int peep2_regno_dead_p (int, int);
@@ -393,8 +393,8 @@ enum bool_attr {
 /* Target-dependent globals.  */
 struct target_recog {
   bool x_initialized;
-  alternative_mask x_bool_attr_masks[LAST_INSN_CODE][BA_LAST + 1];
-  operand_alternative *x_op_alt[LAST_INSN_CODE];
+  alternative_mask x_bool_attr_masks[NUM_INSN_CODES][BA_LAST + 1];
+  operand_alternative *x_op_alt[NUM_INSN_CODES];
 };
 
 extern struct target_recog default_target_recog;

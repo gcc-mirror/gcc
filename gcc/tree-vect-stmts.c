@@ -4719,7 +4719,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   tree new_temp;
   int op_type;
   optab optab;
-  int icode;
+  bool target_support_p;
   tree def;
   gimple def_stmt;
   enum vect_def_type dt[3]
@@ -4870,12 +4870,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 
   vec_mode = TYPE_MODE (vectype);
   if (code == MULT_HIGHPART_EXPR)
-    {
-      if (can_mult_highpart_p (vec_mode, TYPE_UNSIGNED (vectype)))
-	icode = LAST_INSN_CODE;
-      else
-	icode = CODE_FOR_nothing;
-    }
+    target_support_p = can_mult_highpart_p (vec_mode, TYPE_UNSIGNED (vectype));
   else
     {
       optab = optab_for_tree_code (code, vectype, optab_default);
@@ -4886,10 +4881,11 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
                              "no optab.\n");
 	  return false;
 	}
-      icode = (int) optab_handler (optab, vec_mode);
+      target_support_p = (optab_handler (optab, vec_mode)
+			  != CODE_FOR_nothing);
     }
 
-  if (icode == CODE_FOR_nothing)
+  if (!target_support_p)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
