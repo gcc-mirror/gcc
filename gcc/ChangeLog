@@ -1,3 +1,9 @@
+2015-08-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR rtl-optimization/61657
+	* loop-iv.c (iv_number_of_iterations): Declare up and down as
+	unsigned.  Remove superflous uint64_t cast.
+
 2014-08-21  Felix Yang  <felix.yang@huawei.com>
 	    Jiji Jiang  <jiangjiji@huawei.com>
 
