@@ -2228,12 +2228,24 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       rtx x0 = XEXP (x, 0);
       rtx x1 = XEXP (x, 1);
 
+      /* However, VALUEs might end up in different positions even in
+	 canonical PLUSes.  Comparing their addresses is enough.  */
+      if (x0 == y)
+	return memrefs_conflict_p (xsize, x1, ysize, const0_rtx, c);
+      else if (x1 == y)
+	return memrefs_conflict_p (xsize, x0, ysize, const0_rtx, c);
+
       if (GET_CODE (y) == PLUS)
 	{
 	  /* The fact that Y is canonicalized means that this
 	     PLUS rtx is canonicalized.  */
 	  rtx y0 = XEXP (y, 0);
 	  rtx y1 = XEXP (y, 1);
+
+	  if (x0 == y1)
+	    return memrefs_conflict_p (xsize, x1, ysize, y0, c);
+	  if (x1 == y0)
+	    return memrefs_conflict_p (xsize, x0, ysize, y1, c);
 
 	  if (rtx_equal_for_memref_p (x1, y1))
 	    return memrefs_conflict_p (xsize, x0, ysize, y0, c);
@@ -2262,6 +2274,11 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	 PLUS rtx is canonicalized.  */
       rtx y0 = XEXP (y, 0);
       rtx y1 = XEXP (y, 1);
+
+      if (x == y0)
+	return memrefs_conflict_p (xsize, const0_rtx, ysize, y1, c);
+      if (x == y1)
+	return memrefs_conflict_p (xsize, const0_rtx, ysize, y0, c);
 
       if (CONST_INT_P (y1))
 	return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
@@ -2518,7 +2535,11 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
      able to do anything about them since no SSA information will have
      remained to guide it.  */
   if (is_gimple_reg (exprx) || is_gimple_reg (expry))
-    return exprx != expry;
+    return exprx != expry
+      || (moffsetx_known_p && moffsety_known_p
+	  && MEM_SIZE_KNOWN_P (x) && MEM_SIZE_KNOWN_P (y)
+	  && !offset_overlap_p (moffsety - moffsetx,
+				MEM_SIZE (x), MEM_SIZE (y)));
 
   /* With invalid code we can end up storing into the constant pool.
      Bail out to avoid ICEing when creating RTL for this.
