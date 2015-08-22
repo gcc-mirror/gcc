@@ -20,19 +20,17 @@
 /* Pairs of instructions which can be fused. before including this file,
    define a macro:
 
-     AARCH64_FUSION_PAIR (name, internal_name, index_bit)
+     AARCH64_FUSION_PAIR (name, internal_name)
 
    Where:
 
      NAME is a string giving a friendly name for the instructions to fuse.
      INTERNAL_NAME gives the internal name suitable for appending to
-     AARCH64_FUSE_ to give an enum name.
-     INDEX_BIT is the bit to set in the bitmask of supported fusion
-     operations.  */
+     AARCH64_FUSE_ to give an enum name. */
 
-AARCH64_FUSION_PAIR ("mov+movk", MOV_MOVK, 0)
-AARCH64_FUSION_PAIR ("adrp+add", ADRP_ADD, 1)
-AARCH64_FUSION_PAIR ("movk+movk", MOVK_MOVK, 2)
-AARCH64_FUSION_PAIR ("adrp+ldr", ADRP_LDR, 3)
-AARCH64_FUSION_PAIR ("cmp+branch", CMP_BRANCH, 4)
+AARCH64_FUSION_PAIR ("mov+movk", MOV_MOVK)
+AARCH64_FUSION_PAIR ("adrp+add", ADRP_ADD)
+AARCH64_FUSION_PAIR ("movk+movk", MOVK_MOVK)
+AARCH64_FUSION_PAIR ("adrp+ldr", ADRP_LDR)
+AARCH64_FUSION_PAIR ("cmp+branch", CMP_BRANCH)
 

@@ -1,3 +1,14 @@
+2015-08-22  Andrew Pinski  <apinski@cavium.com>
+
+	 * aarch64-fusion-pairs.def: Remove all index to AARCH64_FUSION_PAIR.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_fusion_pairs_index): New enum.
+	(aarch64_fusion_pairs): Base the shifted value on the index instead
+	Rewrite AARCH64_FUSE_ALL to be based on the end index.
+	of the argument to AARCH64_FUSION_PAIR.
+	* config/aarch64/aarch64.c: Remove the last argument to
+	AARCH64_FUSION_PAIR.
+
 2015-08-22  Mikhail Maltsev <maltsevm@gmail.com>
 
 	* dominance.c (new_zero_array): Define.
