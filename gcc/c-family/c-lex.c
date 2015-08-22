@@ -523,11 +523,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	cppchar_t c = tok->val.str.text[0];
 
 	if (c == '"' || c == '\'')
-	  error ("missing terminating %c character", (int) c);
+	  error_at (*loc, "missing terminating %c character", (int) c);
 	else if (ISGRAPH (c))
-	  error ("stray %qc in program", (int) c);
+	  error_at (*loc, "stray %qc in program", (int) c);
 	else
-	  error ("stray %<\\%o%> in program", (int) c);
+	  error_at (*loc, "stray %<\\%o%> in program", (int) c);
       }
       goto retry;
 
