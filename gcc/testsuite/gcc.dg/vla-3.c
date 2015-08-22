@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
+/* { dg-require-effective-target alloca } */
 
 /* This used to crash as we did not preserve the correct type
    for __SIZE_TYPE__. See PR22439. */

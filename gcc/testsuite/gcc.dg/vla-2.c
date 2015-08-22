@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
+/* { dg-require-effective-target alloca } */
 
 /* These are crash tests related to PR middle-end/6994; see also
    g++.dg/ext/vla1.C.  Note that at present A and C cannot be inlined.  */

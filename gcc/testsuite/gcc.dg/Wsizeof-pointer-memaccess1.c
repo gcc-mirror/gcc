@@ -1,6 +1,7 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
 /* { dg-options "-Wall -Wno-sizeof-array-argument" } */
+/* { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 extern void bzero (void *, size_t);

@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-std=c99 -pedantic-errors" } */
+/* { dg-require-effective-target alloca } */
 /* PR c/18740 */
 
 static int i;
