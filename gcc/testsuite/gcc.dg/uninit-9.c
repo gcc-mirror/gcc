@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O -Wuninitialized" } */
+/* { dg-require-effective-target alloca } */
 
 struct foo
 {

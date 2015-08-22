@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -ftree-vrp -fdump-tree-dom2" } */
+/* { dg-require-effective-target alloca } */
      
 extern void abort (void);
 extern void bitmap_clear (int *);

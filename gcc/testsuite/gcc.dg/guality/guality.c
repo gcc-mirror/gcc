@@ -1,5 +1,6 @@
 /* { dg-do run { xfail *-*-* } } */
 /* { dg-options "-g" } */
+/* { dg-require-effective-target alloca } */
 
 #include "guality.h"
 

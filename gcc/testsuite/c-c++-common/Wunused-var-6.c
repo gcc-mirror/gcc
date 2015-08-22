@@ -1,6 +1,7 @@
 /* PR c/43981 */
 /* { dg-do compile } */
 /* { dg-options "-Wunused" } */
+/* { dg-require-effective-target alloca } */
 
 void g (char *);
 
