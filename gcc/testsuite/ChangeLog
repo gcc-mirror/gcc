@@ -1,3 +1,8 @@
+2015-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63693
+	* g++.dg/cpp0x/decltype63.C: New.
+
 2015-08-22  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/Wsizeof-pointer-memaccess1.c: Require alloca.
