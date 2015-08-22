@@ -1,3 +1,9 @@
+2015-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/63693
+	* pt.c (resolve_typename_type): Use CLASSTYPE_PRIMARY_TEMPLATE_TYPE
+	only on class types.
+
 2015-08-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67240
