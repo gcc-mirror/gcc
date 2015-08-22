@@ -171,7 +171,7 @@ struct aarch64_flag_desc
   unsigned int flag;
 };
 
-#define AARCH64_FUSION_PAIR(name, internal_name, y) \
+#define AARCH64_FUSION_PAIR(name, internal_name) \
   { name, AARCH64_FUSE_##internal_name },
 static const struct aarch64_flag_desc aarch64_fusible_pairs[] =
 {

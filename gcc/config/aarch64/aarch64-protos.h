@@ -201,23 +201,24 @@ struct tune_params
   unsigned int extra_tuning_flags;
 };
 
-#define AARCH64_FUSION_PAIR(x, name, index) \
-  AARCH64_FUSE_##name = (1 << index),
+#define AARCH64_FUSION_PAIR(x, name) \
+  AARCH64_FUSE_##name##_index, 
+/* Supported fusion operations.  */
+enum aarch64_fusion_pairs_index
+{
+#include "aarch64-fusion-pairs.def"
+  AARCH64_FUSE_index_END
+};
+#undef AARCH64_FUSION_PAIR
+
+#define AARCH64_FUSION_PAIR(x, name) \
+  AARCH64_FUSE_##name = (1u << AARCH64_FUSE_##name##_index),
 /* Supported fusion operations.  */
 enum aarch64_fusion_pairs
 {
   AARCH64_FUSE_NOTHING = 0,
 #include "aarch64-fusion-pairs.def"
-
-/* Hacky macro to build AARCH64_FUSE_ALL.  The sequence below expands
-   to:
-   AARCH64_FUSE_ALL = 0 | AARCH64_FUSE_index1 | AARCH64_FUSE_index2 ...  */
-#undef AARCH64_FUSION_PAIR
-#define AARCH64_FUSION_PAIR(x, name, y) \
-  | AARCH64_FUSE_##name
-
-  AARCH64_FUSE_ALL = 0
-#include "aarch64-fusion-pairs.def"
+  AARCH64_FUSE_ALL = (1u << AARCH64_FUSE_index_END) - 1
 };
 #undef AARCH64_FUSION_PAIR
 
