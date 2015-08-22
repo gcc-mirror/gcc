@@ -1,3 +1,11 @@
+2015-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/multiline-2.c: Add column numbers.
+	* gcc.dg/dollar.c: Likewise.
+	* gcc.dg/pragma-message.c: Likewise.
+	* g++.dg/cpp1y/digit-sep-neg.C: Likewise.
+	* c-c++-common/raw-string-14.c: Likewise.
+
 2015-08-21  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* g++.old-deja/g++.jason/overload.C: Adjust to preserve original

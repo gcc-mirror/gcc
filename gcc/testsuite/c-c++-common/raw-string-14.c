@@ -12,7 +12,7 @@ const void *s1 = R"??/
 	// { dg-error "invalid new-line" "invalid" { target *-*-* } 10 }
 	// { dg-error "stray" "stray" { target *-*-* } 10 }
 	// { dg-warning "missing terminating" "missing" { target *-*-* } 10 }
-	// { dg-error "missing terminating" "missing" { target *-*-* } 10 }
+	// { dg-error "19:missing terminating" "missing" { target *-*-* } 10 }
 const void *s2 = R"abcdefghijklmn??/(a)abcdefghijklmn???";
 	// { dg-error "raw string delimiter longer" "longer" { target *-*-* } 16 }
 	// { dg-error "stray" "stray" { target *-*-* } 16 }

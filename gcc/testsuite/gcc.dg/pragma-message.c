@@ -16,13 +16,13 @@
    matching dg-message), dejagnu will report these as excess errors.  */
 
 #pragma message "
-/* { dg-error "missing terminating" "" { target *-*-* } 18 } */
+/* { dg-error "17:missing terminating" "" { target *-*-* } 18 } */
 /* { dg-warning "expected a string" "" { target *-*-* } 18 } */
 #pragma message "Bad 1
-/* { dg-error "missing terminating" "" { target *-*-* } 21 } */
+/* { dg-error "17:missing terminating" "" { target *-*-* } 21 } */
 /* { dg-warning "expected a string" "" { target *-*-* } 21 } */
 #pragma message ("Bad 2
-/* { dg-error "missing terminating" "" { target *-*-* } 24 } */
+/* { dg-error "18:missing terminating" "" { target *-*-* } 24 } */
 /* { dg-warning "expected a string" "" { target *-*-* } 24 } */
 #pragma message ("Bad 3"
 /* { dg-warning "malformed '#pragma message" "" { target *-*-* } 27 } */
