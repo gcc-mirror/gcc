@@ -1,3 +1,18 @@
+2015-08-22  Mikhail Maltsev <maltsevm@gmail.com>
+
+	* dominance.c (new_zero_array): Define.
+	(dom_info): Redefine as class with proper encapsulation.
+	(dom_info::m_n_basic_blocks, m_reverse, m_start_block, m_end_block):
+	Add new members.
+	(dom_info::dom_info, ~dom_info): Define.  Use new/delete for memory
+	allocations/deallocations.  Pass function as parameter (instead of
+	using cfun).
+	(dom_info::get_idom): Define accessor method.
+	(dom_info::calc_dfs_tree_nonrec, calc_dfs_tree, compress, eval,
+	link_roots, calc_idoms): Redefine as class members.  Do not use cfun.
+	(calculate_dominance_info): Adjust to use dom_info class.
+	(verify_dominators): Likewise.
+
 2015-08-21  Alexandre Oliva <aoliva@redhat.com>
 
 	* print-rtl.c (print_rtx): Check the correct range for
