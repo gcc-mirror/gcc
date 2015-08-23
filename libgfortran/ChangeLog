@@ -1,5 +1,31 @@
 2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR libfortran/54572
+	* Makefile.am (libgfortran_la_LDFLAGS): Link in libbacktrace.
+	(AM_CPPFLAGS): Add libbacktrace directories to include paths.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove checks for strtok_r, wait, execve, pipe,
+	and dup2. Remove call to GCC_CHECK_UNWIND_GETIPINFO.
+	* libgfortran.h (full_exe_path, find_addr2line, backtrace): Remove
+	prototypes.
+	(show_backtrace): Add prototype.
+	* runtime/backtrace.c: Rework file entirely.
+	* runtime/compile_options.c (backtrace_handler): Rename backtrace
+	to show_backtrace.
+	(maybe_find_addr2line): Remove function.
+	(set_options): Remove call to maybe_find_addr2line.
+	* runtime/error.c (sys_abort): Rename backtrace to show_backtrace.
+	* runtime/main.c (store_exe_path): Empty function body.
+	(full_exe_path, gfstrtok_r, find_addr2line): Remove functions.
+	(cleanup): Don't free removed variables.
+	* runtime/minimal.c (full_exe_path): Remove function.
+	(set_args): Don't set exe_path.
+
+2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR libfortran/62296
 	* intrinsics/execute_command_line.c (EXEC_INVALIDCOMMAND): New
 	error code.

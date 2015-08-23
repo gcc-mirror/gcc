@@ -597,6 +597,7 @@ dependencies = { module=all-target-winsup; on=all-target-libtermcap; };
 dependencies = { module=configure-target-newlib; on=all-binutils; };
 dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
+dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;

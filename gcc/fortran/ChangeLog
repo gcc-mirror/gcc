@@ -1,3 +1,8 @@
+2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/54572
+	* config-lang.in: Add libbacktrace to target_libs.
+
 2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* dependency.c, dependency.h, gfortran.h, io.c, module.c,

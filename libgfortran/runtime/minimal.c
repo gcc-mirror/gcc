@@ -53,8 +53,6 @@ int big_endian = 0;
 static int argc_save;
 static char **argv_save;
 
-static const char *exe_path;
-
 /* recursion_check()-- It's possible for additional errors to occur
  * during fatal error processing.  We detect this condition here and
  * exit with code 4 immediately. */
@@ -163,14 +161,6 @@ internal_error (st_parameter_common *cmp, const char *message)
 }
 
 
-/* Return the full path of the executable.  */
-char *
-full_exe_path (void)
-{
-  return (char *) exe_path;
-}
-
-
 /* Set the saved values of the command line arguments.  */
 
 void
@@ -178,7 +168,6 @@ set_args (int argc, char **argv)
 {
   argc_save = argc;
   argv_save = argv;
-  exe_path = argv[0];
 }
 iexport(set_args);
 

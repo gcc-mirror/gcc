@@ -1,5 +1,10 @@
 2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR libfortran/54572
+	* gfortran.dg/backtrace_1.f90: New test.
+
+2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR libfortran/62296
 	* gfortran.dg/execute_command_line_2.f90: New test.
 

@@ -173,7 +173,7 @@ sys_abort (void)
       || (options.backtrace == -1 && compile_options.backtrace == 1))
     {
       estr_write ("\nProgram aborted. Backtrace:\n");
-      backtrace ();
+      show_backtrace (0);
       signal (SIGABRT, SIG_DFL);
     }
 
