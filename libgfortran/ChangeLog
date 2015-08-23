@@ -1,7 +1,16 @@
+2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/62296
+	* intrinsics/execute_command_line.c (EXEC_INVALIDCOMMAND): New
+	error code.
+	(cmdmsg_values): New error message.
+	(set_cmdstat): Rework runtime error.
+	(execute_command_line): Handle invalid command line error status.
+
 2015-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR libfortran/67140
-	* intrinsics/mvbits.c: Fix build for paltforms without c_int128_t.
+	* intrinsics/mvbits.c: Fix build for platforms without c_int128_t.
 
 2015-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 

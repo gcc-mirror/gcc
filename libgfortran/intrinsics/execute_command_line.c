@@ -36,11 +36,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 enum { EXEC_SYNCHRONOUS = -2, EXEC_NOERROR = 0, EXEC_SYSTEMFAILED,
-       EXEC_CHILDFAILED };
+       EXEC_CHILDFAILED, EXEC_INVALIDCOMMAND };
 static const char *cmdmsg_values[] =
   { "",
     "Termination status of the command-language interpreter cannot be obtained",
-    "Execution of child process impossible" };
+    "Execution of child process impossible",
+    "Invalid command line" };
 
 
 
@@ -50,7 +51,12 @@ set_cmdstat (int *cmdstat, int value)
   if (cmdstat)
     *cmdstat = value;
   else if (value > EXEC_NOERROR)
-    runtime_error ("Could not execute command line");
+    {
+#define MSGLEN 200
+      char msg[MSGLEN] = "EXECUTE_COMMAND_LINE: ";
+      strncat (msg, cmdmsg_values[value], MSGLEN - strlen(msg) - 1);
+      runtime_error (msg);
+    }
 }
 
 
@@ -95,6 +101,15 @@ execute_command_line (const char *command, bool wait, int *exitstat,
       else if (!wait)
 	set_cmdstat (cmdstat, EXEC_SYNCHRONOUS);
 #endif
+      else if (res == 127 || res == 126
+#if defined(WEXITSTATUS) && defined(WIFEXITED)
+	       || (WIFEXITED(res) && WEXITSTATUS(res) == 127)
+	       || (WIFEXITED(res) && WEXITSTATUS(res) == 126)
+#endif
+	       )
+	/* Shell return codes 126 and 127 mean that the command line could
+	   not be executed for various reasons.  */
+	set_cmdstat (cmdstat, EXEC_INVALIDCOMMAND);
       else
 	set_cmdstat (cmdstat, EXEC_NOERROR);
 
