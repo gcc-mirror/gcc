@@ -287,7 +287,6 @@ if test "x${with_newlib}" = "xyes"; then
    AC_DEFINE(HAVE_GMTIME_R, 1, [Define if you have gmtime_r.])
    AC_DEFINE(HAVE_STRNLEN, 1, [Define if you have strnlen.])
    AC_DEFINE(HAVE_STRNDUP, 1, [Define if you have strndup.])
-   AC_DEFINE(HAVE_STRTOK_R, 1, [Define if you have strtok_r.])
 
    # At some point, we should differentiate between architectures
    # like x86, which have long double versions, and alpha/powerpc/etc.,
@@ -298,11 +297,11 @@ if test "x${with_newlib}" = "xyes"; then
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
-   alarm access fork execl wait setmode execve pipe dup2 close fcntl \
+   alarm access fork execl setmode close fcntl \
    strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    readlink getgid getpid getppid getuid geteuid umask getegid \
-   secure_getenv __secure_getenv mkostemp strnlen strndup strtok_r newlocale \
+   secure_getenv __secure_getenv mkostemp strnlen strndup newlocale \
    freelocale uselocale strerror_l)
 fi
 
@@ -609,9 +608,6 @@ LIBGFOR_CHECK_UNLINK_OPEN_FILE
 
 # Check whether line terminator is LF or CRLF
 LIBGFOR_CHECK_CRLF
-
-# Check whether we have _Unwind_GetIPInfo for backtrace
-GCC_CHECK_UNWIND_GETIPINFO
 
 AC_CACHE_SAVE
 

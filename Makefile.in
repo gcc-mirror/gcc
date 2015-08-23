@@ -50921,6 +50921,7 @@ all-target-winsup: maybe-all-target-libtermcap
 configure-target-newlib: maybe-all-binutils
 configure-target-newlib: maybe-all-ld
 configure-target-libgfortran: maybe-all-target-libquadmath
+configure-target-libgfortran: maybe-all-target-libbacktrace
 
 
 # Dependencies for target modules on other target modules are

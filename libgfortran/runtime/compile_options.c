@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 compile_options_t compile_options;
 
 #ifndef LIBGFOR_MINIMAL
-volatile sig_atomic_t fatal_error_in_progress = 0;
+static volatile sig_atomic_t fatal_error_in_progress = 0;
 
 
 /* Helper function for backtrace_handler to write information about the
@@ -126,7 +126,7 @@ backtrace_handler (int signum)
 
   show_signal (signum);
   estr_write ("\nBacktrace for this error:\n");
-  backtrace ();
+  show_backtrace (1);
 
   /* Now reraise the signal.  We reactivate the signal's
      default handling, which is to terminate the process.
@@ -135,16 +135,6 @@ backtrace_handler (int signum)
      from the process correctly. */
   signal (signum, SIG_DFL);
   raise (signum);
-}
-
-
-/* Helper function for set_options because we need to access the
-   global variable options which is not seen in set_options.  */
-static void
-maybe_find_addr2line (void)
-{
-  if (options.backtrace == -1)
-    find_addr2line ();
 }
 #endif
 
@@ -211,8 +201,6 @@ set_options (int num, int options[])
 #if defined(SIGXFSZ)
       signal (SIGXFSZ, backtrace_handler);
 #endif
-
-      maybe_find_addr2line ();
     }
 #endif
 }

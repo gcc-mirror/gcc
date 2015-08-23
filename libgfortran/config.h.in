@@ -315,9 +315,6 @@
 /* Define to 1 if you have the `dup' function. */
 #undef HAVE_DUP
 
-/* Define to 1 if you have the `dup2' function. */
-#undef HAVE_DUP2
-
 /* Define to 1 if you have the `erf' function. */
 #undef HAVE_ERF
 
@@ -338,9 +335,6 @@
 
 /* Define to 1 if you have the `execl' function. */
 #undef HAVE_EXECL
-
-/* Define to 1 if you have the `execve' function. */
-#undef HAVE_EXECVE
 
 /* Define to 1 if you have the `exp' function. */
 #undef HAVE_EXP
@@ -461,9 +455,6 @@
 
 /* Define to 1 if you have the `gethostname' function. */
 #undef HAVE_GETHOSTNAME
-
-/* Define if _Unwind_GetIPInfo is available. */
-#undef HAVE_GETIPINFO
 
 /* Define to 1 if you have the `getlogin' function. */
 #undef HAVE_GETLOGIN
@@ -636,9 +627,6 @@
 /* Define to 1 if you have the `nextafterl' function. */
 #undef HAVE_NEXTAFTERL
 
-/* Define to 1 if you have the `pipe' function. */
-#undef HAVE_PIPE
-
 /* Define to 1 if we have POSIX getpwuid_r which takes 5 arguments. */
 #undef HAVE_POSIX_GETPWUID_R
 
@@ -753,9 +741,6 @@
 /* Define to 1 if you have the `strtof' function. */
 #undef HAVE_STRTOF
 
-/* Define to 1 if you have the `strtok_r' function. */
-#undef HAVE_STRTOK_R
-
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
 
@@ -854,9 +839,6 @@
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
-
-/* Define to 1 if you have the `wait' function. */
-#undef HAVE_WAIT
 
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
