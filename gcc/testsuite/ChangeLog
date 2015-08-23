@@ -1,3 +1,25 @@
+2015-08-23  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Use vect_no_int_min_max.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-reduc-1char.c: Rename
+	vect_no_int_max to vect_no_int_min_max.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-reduc-1char.c: Same.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-reduc-1char.c: Same.
+	* gcc.dg/vect/no-scevccp-noreassoc-slp-reduc-7.c: Same.
+	* gcc.dg/vect/slp-reduc-4.c: Same.
+	* gcc.dg/vect/slp-reduc-5.c: Same.
+	* gcc.dg/vect/vect-125.c: Same.
+	* gcc.dg/vect/vect-13.c: Same.
+	* gcc.dg/vect/vect-double-reduc-3.c: Same.
+	* gcc.dg/vect/vect-reduc-1.c: Same.
+	* gcc.dg/vect/vect-reduc-1char-big-array.c: Same.
+	* gcc.dg/vect/vect-reduc-1char.c:Same.
+	* gcc.dg/vect/vect-reduc-1short.c: Same.
+	* gcc.dg/vect/vect-reduc-2.c: Same.
+	* gcc.dg/vect/wrapv-vect-reduc-2char.c: Same.
+	* gcc.dg/vect/wrapv-vect-reduc-2short.c: Same.
+	* lib/target-supports.exp: Same.
+
 2015-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63693

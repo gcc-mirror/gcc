@@ -1,3 +1,8 @@
+2015-08-23  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi: Rename vect_no_int_max with
+	vect_no_int_min_max.  Update description.
+
 2015-08-22  Andrew Pinski  <apinski@cavium.com>
 
 	 * aarch64-fusion-pairs.def: Remove all index to AARCH64_FUSION_PAIR.

@@ -16,4 +16,4 @@ void train(short *t, short *w, int n, int err)
     }
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail vect_no_int_max } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail vect_no_int_min_max } } } */
