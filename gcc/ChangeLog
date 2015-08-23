@@ -1,5 +1,17 @@
 2015-08-23  Tom de Vries  <tom@codesourcery.com>
 
+	* omp-low.c (expand_omp_taskreg): If in ssa, set rhs of parcopy stmt to
+	parm_decl, rather than generating a dummy default def in cfun.
+	* tree-cfg.c (replace_ssa_name): Assume no default defs.  Make sure
+	ssa_name from cfun and child_fn do not share a stmt as def stmt.
+	(move_stmt_op): Handle PARM_DECl.
+	(gather_ssa_name_hash_map_from): New function.
+	(move_sese_region_to_fn): Add default defs for function params, and add
+	them to vars_map.  Release copied ssa names.
+	* tree-cfg.h (gather_ssa_name_hash_map_from): Declare.
+
+2015-08-23  Tom de Vries  <tom@codesourcery.com>
+
 	* doc/sourcebuild.texi: Rename vect_no_int_max with
 	vect_no_int_min_max.  Update description.
 
