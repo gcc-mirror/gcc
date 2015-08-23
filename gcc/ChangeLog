@@ -1,3 +1,10 @@
+2015-08-23  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (walk_args_for_param): Promote arg reg
+	decls.
+	(nvptx_declare_function_name): Insert formatting tabs for
+	consistency.
+
 2015-08-23  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-low.c (expand_omp_taskreg): If in ssa, set rhs of parcopy stmt to
