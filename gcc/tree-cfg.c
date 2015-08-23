@@ -6420,16 +6420,18 @@ replace_ssa_name (tree name, hash_map<tree, tree> *vars_map,
       tree decl = SSA_NAME_VAR (name);
       if (decl)
 	{
+	  gcc_assert (!SSA_NAME_IS_DEFAULT_DEF (name));
 	  replace_by_duplicate_decl (&decl, vars_map, to_context);
 	  new_name = make_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
 				       decl, SSA_NAME_DEF_STMT (name));
-	  if (SSA_NAME_IS_DEFAULT_DEF (name))
-	    set_ssa_default_def (DECL_STRUCT_FUNCTION (to_context),
-				 decl, new_name);
 	}
       else
 	new_name = copy_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
 				     name, SSA_NAME_DEF_STMT (name));
+
+      /* Now that we've used the def stmt to define new_name, make sure it
+	 doesn't define name anymore.  */
+      SSA_NAME_DEF_STMT (name) = NULL;
 
       vars_map->put (name, new_name);
     }
@@ -6482,6 +6484,9 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
     {
       if (TREE_CODE (t) == SSA_NAME)
 	*tp = replace_ssa_name (t, p->vars_map, p->to_context);
+      else if (TREE_CODE (t) == PARM_DECL
+	       && gimple_in_ssa_p (cfun))
+	*tp = *(p->vars_map->get (t));
       else if (TREE_CODE (t) == LABEL_DECL)
 	{
 	  if (p->new_label_map)
@@ -6992,6 +6997,19 @@ verify_sese (basic_block entry, basic_block exit, vec<basic_block> *bbs_p)
   BITMAP_FREE (bbs);
 }
 
+/* If FROM is an SSA_NAME, mark the version in bitmap DATA.  */
+
+bool
+gather_ssa_name_hash_map_from (tree const &from, tree const &, void *data)
+{
+  bitmap release_names = (bitmap)data;
+
+  if (TREE_CODE (from) != SSA_NAME)
+    return true;
+
+  bitmap_set_bit (release_names, SSA_NAME_VERSION (from));
+  return true;
+}
 
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
    EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
@@ -7189,6 +7207,14 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   d.eh_map = eh_map;
   d.remap_decls_p = true;
 
+  if (gimple_in_ssa_p (cfun))
+    for (tree arg = DECL_ARGUMENTS (d.to_context); arg; arg = DECL_CHAIN (arg))
+      {
+	tree narg = make_ssa_name_fn (dest_cfun, arg, gimple_build_nop ());
+	set_ssa_default_def (dest_cfun, arg, narg);
+	vars_map.put (arg, narg);
+      }
+
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
       /* No need to update edge counts on the last block.  It has
@@ -7245,6 +7271,19 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     htab_delete (new_label_map);
   if (eh_map)
     delete eh_map;
+
+  if (gimple_in_ssa_p (cfun))
+    {
+      /* We need to release ssa-names in a defined order, so first find them,
+	 and then iterate in ascending version order.  */
+      bitmap release_names = BITMAP_ALLOC (NULL);
+      vars_map.traverse<void *, gather_ssa_name_hash_map_from> (release_names);
+      bitmap_iterator bi;
+      unsigned i;
+      EXECUTE_IF_SET_IN_BITMAP (release_names, 0, i, bi)
+	release_ssa_name (ssa_name (i));
+      BITMAP_FREE (release_names);
+    }
 
   /* Rewire the entry and exit blocks.  The successor to the entry
      block turns into the successor of DEST_FN's ENTRY_BLOCK_PTR in

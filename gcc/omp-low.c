@@ -5417,7 +5417,7 @@ expand_omp_taskreg (struct omp_region *region)
 	  basic_block entry_succ_bb
 	    = single_succ_p (entry_bb) ? single_succ (entry_bb)
 				       : FALLTHRU_EDGE (entry_bb)->dest;
-	  tree arg, narg;
+	  tree arg;
 	  gimple parcopy_stmt = NULL;
 
 	  for (gsi = gsi_start_bb (entry_succ_bb); ; gsi_next (&gsi))
@@ -5462,15 +5462,15 @@ expand_omp_taskreg (struct omp_region *region)
 	    }
 	  else
 	    {
-	      /* If we are in ssa form, we must load the value from the default
-		 definition of the argument.  That should not be defined now,
-		 since the argument is not used uninitialized.  */
-	      gcc_assert (ssa_default_def (cfun, arg) == NULL);
-	      narg = make_ssa_name (arg, gimple_build_nop ());
-	      set_ssa_default_def (cfun, arg, narg);
-	      /* ?? Is setting the subcode really necessary ??  */
-	      gimple_omp_set_subcode (parcopy_stmt, TREE_CODE (narg));
-	      gimple_assign_set_rhs1 (parcopy_stmt, narg);
+	      tree lhs = gimple_assign_lhs (parcopy_stmt);
+	      gcc_assert (SSA_NAME_VAR (lhs) == arg);
+	      /* We'd like to set the rhs to the default def in the child_fn,
+		 but it's too early to create ssa names in the child_fn.
+		 Instead, we set the rhs to the parm.  In
+		 move_sese_region_to_fn, we introduce a default def for the
+		 parm, map the parm to it's default def, and once we encounter
+		 this stmt, replace the parm with the default def.  */
+	      gimple_assign_set_rhs1 (parcopy_stmt, arg);
 	      update_stmt (parcopy_stmt);
 	    }
 	}
