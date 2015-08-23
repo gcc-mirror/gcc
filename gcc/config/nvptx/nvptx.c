@@ -1,4 +1,3 @@
-
 /* Target code for NVPTX.
    Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
@@ -413,10 +412,10 @@ walk_args_for_param (FILE *file, tree argtypes, tree args, bool write_copy,
 	  i++;
 	  if (write_copy)
 	    fprintf (file, "\tld.param%s %%ar%d, [%%in_ar%d];\n",
-		     nvptx_ptx_type_from_mode (mode, false), i, i);
+		     nvptx_ptx_type_from_mode (mode, true), i, i);
 	  else
 	    fprintf (file, "\t.reg%s %%ar%d;\n",
-		     nvptx_ptx_type_from_mode (mode, false), i);
+		     nvptx_ptx_type_from_mode (mode, true), i);
 	}
     }
 }
@@ -546,7 +545,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   else if (TYPE_MODE (result_type) != VOIDmode)
     {
       machine_mode mode = arg_promotion (TYPE_MODE (result_type));
-      fprintf (file, ".reg%s %%retval;\n",
+      fprintf (file, "\t.reg%s %%retval;\n",
 	       nvptx_ptx_type_from_mode (mode, false));
     }
 
@@ -618,10 +617,10 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   walk_args_for_param (file, TYPE_ARG_TYPES (fntype), DECL_ARGUMENTS (decl),
 		       true, return_in_mem);
   if (return_in_mem)
-    fprintf (file, "ld.param.u%d %%ar1, [%%in_ar1];\n",
+    fprintf (file, "\tld.param.u%d %%ar1, [%%in_ar1];\n",
 	     GET_MODE_BITSIZE (Pmode));
   if (stdarg_p (fntype))
-    fprintf (file, "ld.param.u%d %%argp, [%%in_argp];\n",
+    fprintf (file, "\tld.param.u%d %%argp, [%%in_argp];\n",
 	     GET_MODE_BITSIZE (Pmode));
 }
 
