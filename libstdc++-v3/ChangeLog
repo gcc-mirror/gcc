@@ -1,3 +1,13 @@
+2015-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67309
+	* include/bits/random.tcc
+	(poisson_distribution::param_type::_M_initialize): Use max<double>.
+	(binomial_distribution::param_type::_M_initialize): Likewise.
+	* testsuite/17_intro/headers/c++200x/67309.cc: New.
+	* testsuite/17_intro/headers/c++200x/all_attributes.cc: Remove
+	redundant header.
+
 2015-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/67294
