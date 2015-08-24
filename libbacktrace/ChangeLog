@@ -1,3 +1,8 @@
+2015-08-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* configure.ac: Set have_mmap to no on spu-*-* targets.
+	* configure: Regenerate.
+
 2015-08-13  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf.c (read_function_entry): Add vec_inlined parameter.
