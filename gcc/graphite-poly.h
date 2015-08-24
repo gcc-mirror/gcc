@@ -1345,7 +1345,7 @@ lst_remove_all_before_excluding_pbb (lst_p loop, poly_bb_p pbb, bool before)
 struct scop
 {
   /* A SCOP is defined as a SESE region.  */
-  void *region;
+  sese region;
 
   /* Number of parameters in SCoP.  */
   graphite_dim_t nb_params;
@@ -1390,14 +1390,14 @@ struct scop
 };
 
 #define SCOP_BBS(S) (S->bbs)
-#define SCOP_REGION(S) ((sese) S->region)
+#define SCOP_REGION(S) (S->region)
 #define SCOP_CONTEXT(S) (NULL)
 #define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
 #define SCOP_TRANSFORMED_SCHEDULE(S) (S->transformed_schedule)
 #define SCOP_SAVED_SCHEDULE(S) (S->saved_schedule)
 #define POLY_SCOP_P(S) (S->poly_scop_p)
 
-extern scop_p new_scop (void *);
+extern scop_p new_scop (sese);
 extern void free_scop (scop_p);
 extern void free_scops (vec<scop_p> );
 extern void print_generated_program (FILE *, scop_p);
@@ -1414,7 +1414,7 @@ extern bool graphite_legal_transform (scop_p);
 /* Set the region of SCOP to REGION.  */
 
 static inline void
-scop_set_region (scop_p scop, void *region)
+scop_set_region (scop_p scop, sese region)
 {
   scop->region = region;
 }
