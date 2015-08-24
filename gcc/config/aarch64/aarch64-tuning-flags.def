@@ -20,15 +20,13 @@
 /* Additional control over certain tuning parameters.  Before including
    this file, define a macro:
 
-     AARCH64_EXTRA_TUNING_OPTION (name, internal_name, index_bit)
+     AARCH64_EXTRA_TUNING_OPTION (name, internal_name)
 
    Where:
 
      NAME is a string giving a friendly name for the tuning flag.
      INTERNAL_NAME gives the internal name suitable for appending to
-     AARCH64_TUNE_ to give an enum name.
-     INDEX_BIT is the bit to set in the bitmask of supported tuning
-     flags.  */
+     AARCH64_TUNE_ to give an enum name. */
 
-AARCH64_EXTRA_TUNING_OPTION ("rename_fma_regs", RENAME_FMA_REGS, 0)
+AARCH64_EXTRA_TUNING_OPTION ("rename_fma_regs", RENAME_FMA_REGS)
 

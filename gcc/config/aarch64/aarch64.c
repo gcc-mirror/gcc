@@ -182,7 +182,7 @@ static const struct aarch64_flag_desc aarch64_fusible_pairs[] =
 };
 #undef AARCH64_FUION_PAIR
 
-#define AARCH64_EXTRA_TUNING_OPTION(name, internal_name, y) \
+#define AARCH64_EXTRA_TUNING_OPTION(name, internal_name) \
   { name, AARCH64_EXTRA_TUNE_##internal_name },
 static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 {
