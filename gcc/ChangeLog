@@ -1,5 +1,12 @@
 2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target-insns.def (movstr): New pattern.
+	* builtins.c (HAVE_movstr, CODE_FOR_movstr): Delete.
+	(expand_movstr): Use targetm rather than HAVE_movstr/
+	CODE_FOR_movstr.
+
+2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/microblaze/microblaze.c (microblaze_classify_unspec): Fix
 	cast syntax.
 
