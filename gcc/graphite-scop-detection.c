@@ -409,8 +409,8 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 	  {
 	    tree op = gimple_op (stmt, i);
 	    if (!graphite_can_represent_expr (scop_entry, loop, op)
-		/* We can not handle REAL_TYPE. Failed for pr39260.  */
-		|| TREE_CODE (TREE_TYPE (op)) == REAL_TYPE)
+		/* We can only constrain on integer type.  */
+		|| (TREE_CODE (TREE_TYPE (op)) != INTEGER_TYPE))
 	      {
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  {
