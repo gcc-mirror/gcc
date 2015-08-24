@@ -1,3 +1,7 @@
+2015-08-24  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* iconv.m4 (AM_ICONV_LINK): Use in-tree libiconv when present.
+
 2015-07-24  Micahel Darling  <darlingm@gmail.com>
 
 	PR other/66259
