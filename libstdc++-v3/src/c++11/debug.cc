@@ -185,7 +185,8 @@ namespace __gnu_debug
     "load factor shall be positive",
     "allocators must be equal",
     "attempt to insert with an iterator range [%1.name;, %2.name;) from this"
-    " container"
+    " container",
+    "comparison doesn't meet irreflexive requirements, assert(!(a < a))"
   };
 
   void
@@ -592,10 +593,12 @@ namespace
       {
 	const int __bufsize = 64;
 	char __buf[__bufsize];
-	__formatter->_M_format_word(__buf, __bufsize, "\"%s\" ",
+	__formatter->_M_format_word(__buf, __bufsize, "\"%s\"",
 				    __variant._M_name);
 	__formatter->_M_print_word(__buf);
       }
+
+    __formatter->_M_print_word(" {\n");
 
     if (__variant._M_type)
       {
@@ -768,6 +771,7 @@ namespace __gnu_debug
 					_M_variant._M_iterator._M_sequence);
 	    __formatter->_M_print_word(__buf);
 	  }
+
 	__formatter->_M_print_word("}\n");
 	break;
       case __sequence:
@@ -786,10 +790,12 @@ namespace __gnu_debug
 	if (_M_variant._M_instance._M_type)
 	  __formatter->_M_print_word(";\n");
 
+	__formatter->_M_print_word("}\n");
 	break;
       case __iterator_value_type:
 	__formatter->_M_print_word("iterator::value_type ");
 	print_description(__formatter, _M_variant._M_iterator_value_type);
+	__formatter->_M_print_word("}\n");
 	break;
       default:
 	break;

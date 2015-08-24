@@ -362,4 +362,37 @@ _GLIBCXX_DEBUG_VERIFY(_This.get_allocator() == _Other.get_allocator(),	\
 #define __glibcxx_check_string_len(_String,_Len) \
   _GLIBCXX_DEBUG_PEDASSERT(_String != 0 || _Len == 0)
 
+// Verify that a predicate is irreflexive
+#define __glibcxx_check_irreflexive(_First,_Last)			\
+  _GLIBCXX_DEBUG_VERIFY(_First == _Last || !(*_First < *_First),	\
+			_M_message(__gnu_debug::__msg_irreflexive_ordering) \
+			._M_iterator_value_type(_First, "< operator type"))
+
+#if __cplusplus >= 201103L
+# define __glibcxx_check_irreflexive2(_First,_Last)			\
+  _GLIBCXX_DEBUG_VERIFY(_First == _Last					\
+			|| __gnu_debug::__is_irreflexive(_First),	\
+			_M_message(__gnu_debug::__msg_irreflexive_ordering) \
+			._M_iterator_value_type(_First, "< operator type"))
+#else
+# define __glibcxx_check_irreflexive2(_First,_Last)
+#endif
+
+#define __glibcxx_check_irreflexive_pred(_First,_Last,_Pred)		\
+  _GLIBCXX_DEBUG_VERIFY(_First == _Last	|| !_Pred(*_First, *_First),		\
+			_M_message(__gnu_debug::__msg_irreflexive_ordering) \
+			._M_instance(_Pred, "functor")			\
+			._M_iterator_value_type(_First, "ordered type"))
+
+#if __cplusplus >= 201103L
+# define __glibcxx_check_irreflexive_pred2(_First,_Last,_Pred)		\
+  _GLIBCXX_DEBUG_VERIFY(_First == _Last					\
+			||__gnu_debug::__is_irreflexive_pred(_First, _Pred), \
+			_M_message(__gnu_debug::__msg_irreflexive_ordering) \
+			._M_instance(_Pred, "functor")			\
+			._M_iterator_value_type(_First, "ordered type"))
+#else
+# define __glibcxx_check_irreflexive_pred2(_First,_Last,_Pred)
+#endif
+
 #endif

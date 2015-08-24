@@ -1750,6 +1750,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				                     _OutputValueType>)
       __glibcxx_function_requires(_LessThanComparableConcept<_OutputValueType>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
       __glibcxx_requires_valid_range(__result_first, __result_last);
 
       return std::__partial_sort_copy(__first, __last,
@@ -1803,6 +1804,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _OutputValueType, _OutputValueType>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
       __glibcxx_requires_valid_range(__result_first, __result_last);
 
       return std::__partial_sort_copy(__first, __last,
@@ -2027,6 +2029,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  _ValueType, _Tp>)
       __glibcxx_requires_partitioned_lower_pred(__first, __last,
 						__val, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__lower_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_comp_val(__comp));
@@ -2082,6 +2085,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
+      __glibcxx_requires_irreflexive2(__first, __last);
 
       return std::__upper_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__val_less_iter());
@@ -2116,6 +2120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  _Tp, _ValueType>)
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__upper_bound(__first, __last, __val,
 				__gnu_cxx::__ops::__val_comp_iter(__comp));
@@ -2189,7 +2194,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType, _Tp>)
       __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
-      __glibcxx_requires_partitioned_upper(__first, __last, __val);      
+      __glibcxx_requires_partitioned_upper(__first, __last, __val);
+      __glibcxx_requires_irreflexive2(__first, __last);
 
       return std::__equal_range(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_less_val(),
@@ -2231,6 +2237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       return std::__equal_range(__first, __last, __val,
 				__gnu_cxx::__ops::__iter_comp_val(__comp),
@@ -2262,6 +2269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
+      __glibcxx_requires_irreflexive2(__first, __last);
 
       _ForwardIterator __i
 	= std::__lower_bound(__first, __last, __val,
@@ -2300,6 +2308,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						__val, __comp);
       __glibcxx_requires_partitioned_upper_pred(__first, __last,
 						__val, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first, __last, __comp);
 
       _ForwardIterator __i
 	= std::__lower_bound(__first, __last, __val,
@@ -2594,6 +2603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_sorted(__first, __middle);
       __glibcxx_requires_sorted(__middle, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       std::__inplace_merge(__first, __middle, __last,
 			   __gnu_cxx::__ops::__iter_less_iter());
@@ -2636,6 +2646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_sorted_pred(__first, __middle, __comp);
       __glibcxx_requires_sorted_pred(__middle, __last, __comp);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       std::__inplace_merge(__first, __middle, __last,
 			   __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -2847,6 +2858,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
+      __glibcxx_requires_irreflexive2(__first1, __last1);
+      __glibcxx_requires_irreflexive2(__first2, __last2);
 
       return std::__includes(__first1, __last1, __first2, __last2,
 			     __gnu_cxx::__ops::__iter_less_iter());
@@ -2891,6 +2904,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
       __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first1, __last1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first2, __last2, __comp);
 
       return std::__includes(__first1, __last1, __first2, __last2,
 			     __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -2966,6 +2981,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       return std::__next_permutation
 	(__first, __last, __gnu_cxx::__ops::__iter_less_iter());
@@ -2998,6 +3014,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_BidirectionalIterator>::value_type,
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       return std::__next_permutation
 	(__first, __last, __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -3064,6 +3081,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       return std::__prev_permutation(__first, __last,
 				     __gnu_cxx::__ops::__iter_less_iter());
@@ -3096,6 +3114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_BidirectionalIterator>::value_type,
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       return std::__prev_permutation(__first, __last,
 				__gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -3258,6 +3277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       return std::__is_sorted_until(__first, __last,
 				    __gnu_cxx::__ops::__iter_less_iter());
@@ -3283,6 +3303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_ForwardIterator>::value_type,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       return std::__is_sorted_until(__first, __last,
 				    __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -3407,6 +3428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       return std::__minmax_element(__first, __last,
 				   __gnu_cxx::__ops::__iter_less_iter());
@@ -3436,6 +3458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename iterator_traits<_ForwardIterator>::value_type,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       return std::__minmax_element(__first, __last,
 				   __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -4556,6 +4579,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       std::__partial_sort(__first, __middle, __last,
 			  __gnu_cxx::__ops::__iter_less_iter());
@@ -4595,6 +4619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       std::__partial_sort(__first, __middle, __last,
 			  __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -4627,6 +4652,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __nth);
       __glibcxx_requires_valid_range(__nth, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       if (__first == __last || __nth == __last)
 	return;
@@ -4666,6 +4692,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __nth);
       __glibcxx_requires_valid_range(__nth, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       if (__first == __last || __nth == __last)
 	return;
@@ -4699,6 +4726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       std::__sort(__first, __last, __gnu_cxx::__ops::__iter_less_iter());
     }
@@ -4730,6 +4758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_RandomAccessIterator>::value_type,
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       std::__sort(__first, __last, __gnu_cxx::__ops::__iter_comp_iter(__comp));
     }
@@ -4797,6 +4826,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)	
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
+      __glibcxx_requires_irreflexive2(__first1, __last1);
+      __glibcxx_requires_irreflexive2(__first2, __last2);
 
       return _GLIBCXX_STD_A::__merge(__first1, __last1,
 				     __first2, __last2, __result,
@@ -4845,6 +4876,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
       __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first1, __last1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first2, __last2, __comp);
 
       return _GLIBCXX_STD_A::__merge(__first1, __last1,
 				__first2, __last2, __result,
@@ -4898,6 +4931,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       _GLIBCXX_STD_A::__stable_sort(__first, __last,
 				    __gnu_cxx::__ops::__iter_less_iter());
@@ -4933,6 +4967,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_RandomAccessIterator>::value_type,
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       _GLIBCXX_STD_A::__stable_sort(__first, __last,
 				    __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -5010,6 +5045,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
+      __glibcxx_requires_irreflexive2(__first1, __last1);
+      __glibcxx_requires_irreflexive2(__first2, __last2);
 
       return _GLIBCXX_STD_A::__set_union(__first1, __last1,
 				__first2, __last2, __result,
@@ -5057,6 +5094,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
       __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first1, __last1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first2, __last2, __comp);
 
       return _GLIBCXX_STD_A::__set_union(__first1, __last1,
 				__first2, __last2, __result,
@@ -5123,6 +5162,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
+      __glibcxx_requires_irreflexive2(__first1, __last1);
+      __glibcxx_requires_irreflexive2(__first2, __last2);
 
       return _GLIBCXX_STD_A::__set_intersection(__first1, __last1,
 				     __first2, __last2, __result,
@@ -5169,6 +5210,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
       __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first1, __last1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first2, __last2, __comp);
 
       return _GLIBCXX_STD_A::__set_intersection(__first1, __last1,
 				__first2, __last2, __result,
@@ -5239,6 +5282,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)	
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
+      __glibcxx_requires_irreflexive2(__first1, __last1);
+      __glibcxx_requires_irreflexive2(__first2, __last2);
 
       return _GLIBCXX_STD_A::__set_difference(__first1, __last1,
 				   __first2, __last2, __result,
@@ -5287,6 +5332,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
       __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first1, __last1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first2, __last2, __comp);
 
       return _GLIBCXX_STD_A::__set_difference(__first1, __last1,
 				   __first2, __last2, __result,
@@ -5365,6 +5412,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)	
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
+      __glibcxx_requires_irreflexive2(__first1, __last1);
+      __glibcxx_requires_irreflexive2(__first2, __last2);
 
       return _GLIBCXX_STD_A::__set_symmetric_difference(__first1, __last1,
 					__first2, __last2, __result,
@@ -5414,6 +5463,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
       __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first1, __last1, __comp);
+      __glibcxx_requires_irreflexive_pred2(__first2, __last2, __comp);
 
       return _GLIBCXX_STD_A::__set_symmetric_difference(__first1, __last1,
 				__first2, __last2, __result,
@@ -5452,6 +5503,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       return _GLIBCXX_STD_A::__min_element(__first, __last,
 				__gnu_cxx::__ops::__iter_less_iter());
@@ -5478,6 +5530,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_ForwardIterator>::value_type,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       return _GLIBCXX_STD_A::__min_element(__first, __last,
 				__gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -5514,6 +5567,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       return _GLIBCXX_STD_A::__max_element(__first, __last,
 				__gnu_cxx::__ops::__iter_less_iter());
@@ -5540,6 +5594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_ForwardIterator>::value_type,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       return _GLIBCXX_STD_A::__max_element(__first, __last,
 				__gnu_cxx::__ops::__iter_comp_iter(__comp));

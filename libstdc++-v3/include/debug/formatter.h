@@ -126,7 +126,8 @@ namespace __gnu_debug
     __msg_valid_load_factor,
     // others
     __msg_equal_allocs,
-    __msg_insert_range_from_self
+    __msg_insert_range_from_self,
+    __msg_irreflexive_ordering
   };
 
   class _Error_formatter

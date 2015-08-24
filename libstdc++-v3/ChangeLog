@@ -1,3 +1,58 @@
+2015-08-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (_Debug_msg_id::__msg_irreflexive_ordering):
+	New enum entry.
+	* include/debug/functions.h (_Irreflexive_checker): New.
+	(__is_irreflexive, __is_irreflexive_pred): New.
+	* include/debug/macros.h
+	(__glibcxx_check_irreflexive, __glibcxx_check_irreflexive_pred): New
+	macros.
+	(__glibcxx_check_irreflexive2, __glibcxx_check_irreflexive_pred2): New
+	macros limited to post-C++11 mode.
+	* include/debug/debug.h
+	(__glibcxx_requires_irreflexive, __glibcxx_requires_irreflexive_pred):
+	New macros, use latter.
+	(__glibcxx_requires_irreflexive2, __glibcxx_requires_irreflexive_pred2):
+	Likewise.
+	* include/bits/stl_algo.h
+	(partial_sort_copy): Add irreflexive debug check.
+	(partial_sort_copy): Likewise.
+	(lower_bound): Likewise.
+	(upper_bound): Likewise.
+	(equal_range): Likewise.
+	(binary_search): Likewise.
+	(inplace_merge): Likewise.
+	(includes): Likewise.
+	(next_permutation): Likewise.
+	(prev_permutation): Likewise.
+	(is_sorted_until): Likewise.
+	(minmax_element): Likewise.
+	(partial_sort): Likewise.
+	(nth_element): Likewise.
+	(sort): Likewise.
+	(merge): Likewise.
+	(stable_sort): Likewise.
+	(set_union): Likewise.
+	(set_intersection): Likewise.
+	(set_difference): Likewise.
+	(set_symmetric_difference): Likewise.
+	(min_element): Likewise.
+	(max_element): Likewise.
+	* include/bits/stl_algobase.h
+	(lower_bound): Likewise.
+	(lexicographical_compare): Likewise.
+	* include/bits/stl_heap.h
+	(push_heap): Likewise.
+	(pop_heap): Likewise.
+	(make_heap): Likewise.
+	(sort_heap): Likewise.
+	(is_heap_until): Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/debug/
+	irreflexive_neg.cc: New.
+	* testsuite/25_algorithms/lower_bound/debug/irreflexive.cc: New.
+	* testsuite/25_algorithms/partial_sort_copy/debug/irreflexive_neg.cc:
+	New.
+
 2015-08-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65049
