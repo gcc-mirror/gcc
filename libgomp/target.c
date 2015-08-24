@@ -56,6 +56,7 @@ static gomp_mutex_t register_lock;
    It contains type of the target device, pointer to host table descriptor, and
    pointer to target data.  */
 struct offload_image_descr {
+  unsigned version;
   enum offload_target_type type;
   const void *host_table;
   const void *target_data;
@@ -642,7 +643,7 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
    emitting variable and functions in the same order.  */
 
 static void
-gomp_load_image_to_device (struct gomp_device_descr *devicep,
+gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 			   const void *host_table, const void *target_data,
 			   bool is_register_lock)
 {
@@ -658,16 +659,20 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep,
 
   /* Load image to device and get target addresses for the image.  */
   struct addr_pair *target_table = NULL;
-  int i, num_target_entries
-    = devicep->load_image_func (devicep->target_id, target_data,
-				&target_table);
+  int i, num_target_entries;
+
+  num_target_entries
+    = devicep->load_image_func (devicep->target_id, version,
+				target_data, &target_table);
 
   if (num_target_entries != num_funcs + num_vars)
     {
       gomp_mutex_unlock (&devicep->lock);
       if (is_register_lock)
 	gomp_mutex_unlock (&register_lock);
-      gomp_fatal ("Can't map target functions or variables");
+      gomp_fatal ("Cannot map target functions or variables"
+		  " (expected %u, have %u)", num_funcs + num_vars,
+		  num_target_entries);
     }
 
   /* Insert host-target address mapping into splay tree.  */
@@ -732,6 +737,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep,
 
 static void
 gomp_unload_image_from_device (struct gomp_device_descr *devicep,
+			       unsigned version,
 			       const void *host_table, const void *target_data)
 {
   void **host_func_table = ((void ***) host_table)[0];
@@ -756,8 +762,8 @@ gomp_unload_image_from_device (struct gomp_device_descr *devicep,
       k.host_end = k.host_start + 1;
       node = splay_tree_lookup (&devicep->mem_map, &k);
     }
-  
-  devicep->unload_image_func (devicep->target_id, target_data);
+
+  devicep->unload_image_func (devicep->target_id, version, target_data);
 
   /* Remove mappings from splay tree.  */
   for (j = 0; j < num_funcs; j++)
@@ -786,10 +792,15 @@ gomp_unload_image_from_device (struct gomp_device_descr *devicep,
    the target, and TARGET_DATA needed by target plugin.  */
 
 void
-GOMP_offload_register (const void *host_table, int target_type,
-		       const void *target_data)
+GOMP_offload_register_ver (unsigned version, const void *host_table,
+			   int target_type, const void *target_data)
 {
   int i;
+
+  if (GOMP_VERSION_LIB (version) > GOMP_VERSION)
+    gomp_fatal ("Library too old for offload (version %u < %u)",
+		GOMP_VERSION, GOMP_VERSION_LIB (version));
+  
   gomp_mutex_lock (&register_lock);
 
   /* Load image to all initialized devices.  */
@@ -798,7 +809,8 @@ GOMP_offload_register (const void *host_table, int target_type,
       struct gomp_device_descr *devicep = &devices[i];
       gomp_mutex_lock (&devicep->lock);
       if (devicep->type == target_type && devicep->is_initialized)
-	gomp_load_image_to_device (devicep, host_table, target_data, true);
+	gomp_load_image_to_device (devicep, version,
+				   host_table, target_data, true);
       gomp_mutex_unlock (&devicep->lock);
     }
 
@@ -807,6 +819,7 @@ GOMP_offload_register (const void *host_table, int target_type,
     = gomp_realloc_unlock (offload_images,
 			   (num_offload_images + 1)
 			   * sizeof (struct offload_image_descr));
+  offload_images[num_offload_images].version = version;
   offload_images[num_offload_images].type = target_type;
   offload_images[num_offload_images].host_table = host_table;
   offload_images[num_offload_images].target_data = target_data;
@@ -815,13 +828,20 @@ GOMP_offload_register (const void *host_table, int target_type,
   gomp_mutex_unlock (&register_lock);
 }
 
+void
+GOMP_offload_register (const void *host_table, int target_type,
+		       const void *target_data)
+{
+  GOMP_offload_register_ver (0, host_table, target_type, target_data);
+}
+
 /* This function should be called from every offload image while unloading.
    It gets the descriptor of the host func and var tables HOST_TABLE, TYPE of
    the target, and TARGET_DATA needed by target plugin.  */
 
 void
-GOMP_offload_unregister (const void *host_table, int target_type,
-			 const void *target_data)
+GOMP_offload_unregister_ver (unsigned version, const void *host_table,
+			     int target_type, const void *target_data)
 {
   int i;
 
@@ -833,7 +853,8 @@ GOMP_offload_unregister (const void *host_table, int target_type,
       struct gomp_device_descr *devicep = &devices[i];
       gomp_mutex_lock (&devicep->lock);
       if (devicep->type == target_type && devicep->is_initialized)
-	gomp_unload_image_from_device (devicep, host_table, target_data);
+	gomp_unload_image_from_device (devicep, version,
+				       host_table, target_data);
       gomp_mutex_unlock (&devicep->lock);
     }
 
@@ -846,6 +867,13 @@ GOMP_offload_unregister (const void *host_table, int target_type,
       }
 
   gomp_mutex_unlock (&register_lock);
+}
+
+void
+GOMP_offload_unregister (const void *host_table, int target_type,
+			 const void *target_data)
+{
+  GOMP_offload_unregister_ver (0, host_table, target_type, target_data);
 }
 
 /* This function initializes the target device, specified by DEVICEP.  DEVICEP
@@ -862,8 +890,9 @@ gomp_init_device (struct gomp_device_descr *devicep)
     {
       struct offload_image_descr *image = &offload_images[i];
       if (image->type == devicep->type)
-	gomp_load_image_to_device (devicep, image->host_table,
-				   image->target_data, false);
+	gomp_load_image_to_device (devicep, image->version,
+				   image->host_table, image->target_data,
+				   false);
     }
 
   devicep->is_initialized = true;
@@ -881,7 +910,8 @@ gomp_unload_device (struct gomp_device_descr *devicep)
 	{
 	  struct offload_image_descr *image = &offload_images[i];
 	  if (image->type == devicep->type)
-	    gomp_unload_image_from_device (devicep, image->host_table,
+	    gomp_unload_image_from_device (devicep, image->version,
+					   image->host_table,
 					   image->target_data);
 	}
     }
@@ -1085,43 +1115,29 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
 			     const char *plugin_name)
 {
   const char *err = NULL, *last_missing = NULL;
-  int optional_present, optional_total;
-
-  /* Clear any existing error.  */
-  dlerror ();
 
   void *plugin_handle = dlopen (plugin_name, RTLD_LAZY);
   if (!plugin_handle)
-    {
-      err = dlerror ();
-      goto out;
-    }
+    goto dl_fail;
 
   /* Check if all required functions are available in the plugin and store
-     their handlers.  */
+     their handlers.  None of the symbols can legitimately be NULL,
+     so we don't need to check dlerror all the time.  */
 #define DLSYM(f)							\
-  do									\
-    {									\
-      device->f##_func = dlsym (plugin_handle, "GOMP_OFFLOAD_" #f);	\
-      err = dlerror ();							\
-      if (err != NULL)							\
-	goto out;							\
-    }									\
-  while (0)
-  /* Similar, but missing functions are not an error.  */
-#define DLSYM_OPT(f, n)						\
-  do									\
-    {									\
-      const char *tmp_err;							\
-      device->f##_func = dlsym (plugin_handle, "GOMP_OFFLOAD_" #n);	\
-      tmp_err = dlerror ();						\
-      if (tmp_err == NULL)						\
-        optional_present++;						\
-      else								\
-        last_missing = #n;						\
-      optional_total++;							\
-    }									\
-  while (0)
+  if (!(device->f##_func = dlsym (plugin_handle, "GOMP_OFFLOAD_" #f)))	\
+    goto dl_fail
+  /* Similar, but missing functions are not an error.  Return false if
+     failed, true otherwise.  */
+#define DLSYM_OPT(f, n)							\
+  ((device->f##_func = dlsym (plugin_handle, "GOMP_OFFLOAD_" #n))	\
+   || (last_missing = #n, 0))
+
+  DLSYM (version);
+  if (device->version_func () != GOMP_VERSION)
+    {
+      err = "plugin version mismatch";
+      goto fail;
+    }
 
   DLSYM (get_name);
   DLSYM (get_caps);
@@ -1140,53 +1156,57 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
     DLSYM (run);
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
     {
-      optional_present = optional_total = 0;
-      DLSYM_OPT (openacc.exec, openacc_parallel);
-      DLSYM_OPT (openacc.register_async_cleanup,
-		 openacc_register_async_cleanup);
-      DLSYM_OPT (openacc.async_test, openacc_async_test);
-      DLSYM_OPT (openacc.async_test_all, openacc_async_test_all);
-      DLSYM_OPT (openacc.async_wait, openacc_async_wait);
-      DLSYM_OPT (openacc.async_wait_async, openacc_async_wait_async);
-      DLSYM_OPT (openacc.async_wait_all, openacc_async_wait_all);
-      DLSYM_OPT (openacc.async_wait_all_async, openacc_async_wait_all_async);
-      DLSYM_OPT (openacc.async_set_async, openacc_async_set_async);
-      DLSYM_OPT (openacc.create_thread_data, openacc_create_thread_data);
-      DLSYM_OPT (openacc.destroy_thread_data, openacc_destroy_thread_data);
-      /* Require all the OpenACC handlers if we have
-	 GOMP_OFFLOAD_CAP_OPENACC_200.  */
-      if (optional_present != optional_total)
+      if (!DLSYM_OPT (openacc.exec, openacc_parallel)
+	  || !DLSYM_OPT (openacc.register_async_cleanup,
+			 openacc_register_async_cleanup)
+	  || !DLSYM_OPT (openacc.async_test, openacc_async_test)
+	  || !DLSYM_OPT (openacc.async_test_all, openacc_async_test_all)
+	  || !DLSYM_OPT (openacc.async_wait, openacc_async_wait)
+	  || !DLSYM_OPT (openacc.async_wait_async, openacc_async_wait_async)
+	  || !DLSYM_OPT (openacc.async_wait_all, openacc_async_wait_all)
+	  || !DLSYM_OPT (openacc.async_wait_all_async,
+			 openacc_async_wait_all_async)
+	  || !DLSYM_OPT (openacc.async_set_async, openacc_async_set_async)
+	  || !DLSYM_OPT (openacc.create_thread_data,
+			 openacc_create_thread_data)
+	  || !DLSYM_OPT (openacc.destroy_thread_data,
+			 openacc_destroy_thread_data))
 	{
+	  /* Require all the OpenACC handlers if we have
+	     GOMP_OFFLOAD_CAP_OPENACC_200.  */
 	  err = "plugin missing OpenACC handler function";
-	  goto out;
+	  goto fail;
 	}
-      optional_present = optional_total = 0;
-      DLSYM_OPT (openacc.cuda.get_current_device,
-		 openacc_get_current_cuda_device);
-      DLSYM_OPT (openacc.cuda.get_current_context,
-		 openacc_get_current_cuda_context);
-      DLSYM_OPT (openacc.cuda.get_stream, openacc_get_cuda_stream);
-      DLSYM_OPT (openacc.cuda.set_stream, openacc_set_cuda_stream);
-      /* Make sure all the CUDA functions are there if any of them are.  */
-      if (optional_present && optional_present != optional_total)
+
+      unsigned cuda = 0;
+      cuda += DLSYM_OPT (openacc.cuda.get_current_device,
+			 openacc_get_current_cuda_device);
+      cuda += DLSYM_OPT (openacc.cuda.get_current_context,
+			 openacc_get_current_cuda_context);
+      cuda += DLSYM_OPT (openacc.cuda.get_stream, openacc_get_cuda_stream);
+      cuda += DLSYM_OPT (openacc.cuda.set_stream, openacc_set_cuda_stream);
+      if (cuda && cuda != 4)
 	{
+	  /* Make sure all the CUDA functions are there if any of them are.  */
 	  err = "plugin missing OpenACC CUDA handler function";
-	  goto out;
+	  goto fail;
 	}
     }
 #undef DLSYM
 #undef DLSYM_OPT
 
- out:
-  if (err != NULL)
-    {
-      gomp_error ("while loading %s: %s", plugin_name, err);
-      if (last_missing)
-        gomp_error ("missing function was %s", last_missing);
-      if (plugin_handle)
-	dlclose (plugin_handle);
-    }
-  return err == NULL;
+  return 1;
+
+ dl_fail:
+  err = dlerror ();
+ fail:
+  gomp_error ("while loading %s: %s", plugin_name, err);
+  if (last_missing)
+    gomp_error ("missing function was %s", last_missing);
+  if (plugin_handle)
+    dlclose (plugin_handle);
+
+  return 0;
 }
 
 /* This function initializes the runtime needed for offloading.

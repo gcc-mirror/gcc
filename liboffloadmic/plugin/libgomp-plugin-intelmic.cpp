@@ -328,11 +328,25 @@ offload_image (const void *target_image)
   free (image);
 }
 
+/* Return the libgomp version number we're compatible with.  There is
+   no requirement for cross-version compatibility.  */
+
+extern "C" unsigned
+GOMP_OFFLOAD_version (void)
+{
+  return GOMP_VERSION;
+}
+
 extern "C" int
-GOMP_OFFLOAD_load_image (int device, const void *target_image,
-			 addr_pair **result)
+GOMP_OFFLOAD_load_image (int device, const unsigned version,
+			 void *target_image, addr_pair **result)
 {
   TRACE ("(device = %d, target_image = %p)", device, target_image);
+
+  if (GOMP_VERSION_DEV (version) > GOMP_VERSION_INTEL_MIC)
+    GOMP_PLUGIN_fatal ("Offload data incompatible with intelmic plugin"
+		       " (expected %u, received %u)",
+		       GOMP_VERSION_INTEL_MIC, GOMP_VERSION_DEV (version));
 
   /* If target_image is already present in address_table, then there is no need
      to offload it.  */
@@ -354,8 +368,12 @@ GOMP_OFFLOAD_load_image (int device, const void *target_image,
 }
 
 extern "C" void
-GOMP_OFFLOAD_unload_image (int device, const void *target_image)
+GOMP_OFFLOAD_unload_image (int device, unsigned version,
+			   const void *target_image)
 {
+  if (GOMP_VERSION_DEV (version) > GOMP_VERSION_INTEL_MIC)
+    return;
+
   TRACE ("(device = %d, target_image = %p)", device, target_image);
 
   /* TODO: Currently liboffloadmic doesn't support __offload_unregister_image

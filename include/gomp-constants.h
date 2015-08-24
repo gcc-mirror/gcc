@@ -113,4 +113,13 @@ enum gomp_map_kind
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
 
+/* Versions of libgomp and device-specific plugins.  */
+#define GOMP_VERSION	0
+#define GOMP_VERSION_NVIDIA_PTX 0
+#define GOMP_VERSION_INTEL_MIC 0
+
+#define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
+#define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)
+#define GOMP_VERSION_DEV(PACK) ((PACK) & 0xffff)
+
 #endif

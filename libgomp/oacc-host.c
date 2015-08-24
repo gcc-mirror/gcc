@@ -28,6 +28,7 @@
 
 #include "libgomp.h"
 #include "oacc-int.h"
+#include "gomp-constants.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -69,8 +70,15 @@ host_fini_device (int n __attribute__ ((unused)))
 {
 }
 
+static unsigned
+host_version (void)
+{
+  return GOMP_VERSION;
+}
+
 static int
 host_load_image (int n __attribute__ ((unused)),
+		 unsigned v __attribute__ ((unused)),
 		 const void *t __attribute__ ((unused)),
 		 struct addr_pair **r __attribute__ ((unused)))
 {
@@ -79,6 +87,7 @@ host_load_image (int n __attribute__ ((unused)),
 
 static void
 host_unload_image (int n __attribute__ ((unused)),
+		   unsigned v __attribute__ ((unused)),
 		   const void *t __attribute__ ((unused)))
 {
 }
@@ -206,6 +215,7 @@ static struct gomp_device_descr host_dispatch =
     .get_num_devices_func = host_get_num_devices,
     .init_device_func = host_init_device,
     .fini_device_func = host_fini_device,
+    .version_func = host_version,
     .load_image_func = host_load_image,
     .unload_image_func = host_unload_image,
     .alloc_func = host_alloc,

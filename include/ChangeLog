@@ -1,3 +1,9 @@
+2015-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION, GOMP_VERSION_NVIDIA_PTX,
+	GOMP_VERSION_INTEL_MIC): New.
+	(GOMP_VERSION_PACK, GOMP_VERSION_LIB, GOMP_VERSION_DEV): New.
+
 2015-08-14  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2.def (DW_AT_GNU_bias): New attribute.
