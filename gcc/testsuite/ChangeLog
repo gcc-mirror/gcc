@@ -1,3 +1,8 @@
+2015-08-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65468
+	* gcc.dg/gomp/static-chunk-size-one.c: New test.
+
 2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/54572
