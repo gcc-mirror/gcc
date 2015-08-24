@@ -1,3 +1,13 @@
+2015-08-24  Joost VandeVondele  <vondele@gnu.gcc.org>
+
+	PR libgomp/66761
+	PR libgomp/67303
+	* iter.c (gomp_iter_dynamic_next): Employ an atomic load.
+	(gomp_iter_guided_next): Idem.
+	* iter_ull.c (gomp_iter_ull_dynamic_next): Idem.
+	(gomp_iter_ull_guided_next): Idem.
+	* config/linux/wait.h (do_spin): Idem.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
