@@ -1,3 +1,8 @@
+2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/microblaze/microblaze.c (microblaze_classify_unspec): Fix
+	cast syntax.
+
 2015-08-24  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-tuning-flags.def: Remove all index to

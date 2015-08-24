@@ -661,7 +661,7 @@ microblaze_classify_unspec (struct microblaze_address_info *info, rtx x)
   else if (XINT (x, 1) == UNSPEC_TLS)
     {
       info->type = ADDRESS_TLS;
-      info->tls_type = tls_reloc INTVAL(XVECEXP(x, 0, 1));
+      info->tls_type = tls_reloc (INTVAL (XVECEXP (x, 0, 1)));
     }
   else
     {
