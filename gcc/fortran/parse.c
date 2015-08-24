@@ -3935,6 +3935,7 @@ static void
 parse_block_construct (void)
 {
   gfc_namespace* my_ns;
+  gfc_namespace* my_parent;
   gfc_state_data s;
 
   gfc_notify_std (GFC_STD_F2008, "BLOCK construct at %C");
@@ -3948,10 +3949,14 @@ parse_block_construct (void)
 
   push_state (&s, COMP_BLOCK, my_ns->proc_name);
   gfc_current_ns = my_ns;
+  my_parent = my_ns->parent;
 
   parse_progunit (ST_NONE);
 
-  gfc_current_ns = gfc_current_ns->parent;
+  /* Don't depend on the value of gfc_current_ns;  it might have been
+     reset if the block had errors and was cleaned up.  */
+  gfc_current_ns = my_parent;
+
   pop_state ();
 }
 

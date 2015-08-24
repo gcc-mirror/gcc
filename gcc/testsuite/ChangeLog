@@ -1,3 +1,10 @@
+2015-08-24  Louis Krupp <louis.krupp@zoho.com>
+
+	PR fortran/62536
+	PR fortran/66175
+	* gfortran.dg/block_end_error_1.f90: New test.
+	* gfortran.dg/blocks_nested_incomplete_1.f90: New test.
+
 2015-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66821

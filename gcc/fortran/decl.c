@@ -6483,7 +6483,7 @@ cleanup:
   /* If we are missing an END BLOCK, we created a half-ready namespace.
      Remove it from the parent namespace's sibling list.  */
 
-  if (state == COMP_BLOCK)
+  while (state == COMP_BLOCK)
     {
       parent_ns = gfc_current_ns->parent;
 
@@ -6506,6 +6506,8 @@ cleanup:
   
       gfc_free_namespace (gfc_current_ns);
       gfc_current_ns = parent_ns;
+      gfc_state_stack = gfc_state_stack->previous;
+      state = gfc_current_state ();
     }
 
   return MATCH_ERROR;

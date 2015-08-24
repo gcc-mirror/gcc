@@ -1,3 +1,11 @@
+2015-08-24  Louis Krupp <louis.krupp@zoho.com>
+
+	PR fortran/62536
+	PR fortran/66175
+	* decl.c (gfc_match_end): Clean up nested BLOCKs.
+	* parse.c (parse_block_construct): Deal gracefully with cleaned-up
+	BLOCKs.
+
 2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/54572
