@@ -27,15 +27,23 @@
 
    where NAME is the name of the pattern and PROTOTYPE is its C prototype.
    The prototype should use parameter names of the form "x0", "x1", etc.
-   Patterns that take no operands should have a prototype "(void)".
+   for the operands that the .md pattern is required to have, followed by
+   parameter names of the form "optN" for operands that the .md pattern
+   may choose to ignore.  Patterns that never take operands should have
+   a prototype "(void)".
 
-   Instructions should be documented in md.texi rather than here.  */
+   Pattern names should be documented in md.texi rather than here.  */
 DEF_TARGET_INSN (allocate_stack, (rtx x0, rtx x1))
 DEF_TARGET_INSN (atomic_test_and_set, (rtx x0, rtx x1, rtx x2))
 DEF_TARGET_INSN (builtin_longjmp, (rtx x0))
 DEF_TARGET_INSN (builtin_setjmp_receiver, (rtx x0))
 DEF_TARGET_INSN (builtin_setjmp_setup, (rtx x0))
 DEF_TARGET_INSN (canonicalize_funcptr_for_compare, (rtx x0, rtx x1))
+DEF_TARGET_INSN (call, (rtx x0, rtx opt1, rtx opt2, rtx opt3))
+DEF_TARGET_INSN (call_pop, (rtx x0, rtx opt1, rtx opt2, rtx opt3))
+DEF_TARGET_INSN (call_value, (rtx x0, rtx x1, rtx opt2, rtx opt3, rtx opt4))
+DEF_TARGET_INSN (call_value_pop, (rtx x0, rtx x1, rtx opt2, rtx opt3,
+				  rtx opt4))
 DEF_TARGET_INSN (casesi, (rtx x0, rtx x1, rtx x2, rtx x3, rtx x4))
 DEF_TARGET_INSN (check_stack, (rtx x0))
 DEF_TARGET_INSN (clear_cache, (rtx x0, rtx x1))
@@ -69,7 +77,10 @@ DEF_TARGET_INSN (return, (void))
 DEF_TARGET_INSN (save_stack_block, (rtx x0, rtx x1))
 DEF_TARGET_INSN (save_stack_function, (rtx x0, rtx x1))
 DEF_TARGET_INSN (save_stack_nonlocal, (rtx x0, rtx x1))
+DEF_TARGET_INSN (sibcall, (rtx x0, rtx opt1, rtx opt2, rtx opt3))
 DEF_TARGET_INSN (sibcall_epilogue, (void))
+DEF_TARGET_INSN (sibcall_value, (rtx x0, rtx x1, rtx opt2, rtx opt3,
+				 rtx opt4))
 DEF_TARGET_INSN (simple_return, (void))
 DEF_TARGET_INSN (split_stack_prologue, (void))
 DEF_TARGET_INSN (split_stack_space_check, (rtx x0, rtx x1))

@@ -60,6 +60,43 @@ static hash_table <nofree_string_hash> *stubs;
    from the C condition to the function name.  */
 static hash_map <nofree_string_hash, const char *> *have_funcs;
 
+/* Return true if the part of the prototype at P is for an argument
+   name.  If so, point *END_OUT to the first character after the name.
+   If OPNO_OUT is nonnull, set *OPNO_OUT to the number of the associated
+   operand.  If REQUIRED_OUT is nonnull, set *REQUIRED_OUT to whether the
+   .md pattern is required to match the operand.  */
+
+static bool
+parse_argument (const char *p, const char **end_out,
+		unsigned int *opno_out = 0,
+		bool *required_out = 0)
+{
+  while (ISSPACE (*p))
+    p++;
+  if (p[0] == 'x' && ISDIGIT (p[1]))
+    {
+      p += 1;
+      if (required_out)
+	*required_out = true;
+    }
+  else if (p[0] == 'o' && p[1] == 'p' && p[2] == 't' && ISDIGIT (p[3]))
+    {
+      p += 3;
+      if (required_out)
+	*required_out = false;
+    }
+  else
+    return false;
+
+  char *endptr;
+  unsigned int opno = strtol (p, &endptr, 10);
+  if (opno_out)
+    *opno_out = opno;
+  *end_out = endptr;
+  return true;
+}
+
+
 /* Output hook definitions for pattern NAME, which has target-insns.def
    prototype PROTOTYPE.  */
 
@@ -78,21 +115,27 @@ def_target_insn (const char *name, const char *prototype)
   char *suffix = XALLOCAVEC (char, strlen (prototype) + 1);
   i = 0;
   unsigned int opno = 0;
+  unsigned int required_ops = 0;
+  unsigned int this_opno;
+  bool required_p;
   for (const char *p = prototype; *p; ++p)
-    if (*p == 'x' && ISDIGIT (p[1]))
+    if (parse_argument (p, &p, &this_opno, &required_p))
       {
-	/* This should be a parameter name of the form "x<OPNO>".
-	   That doesn't contribute to the suffix, so skip ahead and
-	   process the following character.  */
-	char *endptr;
-	if ((unsigned int) strtol (p + 1, &endptr, 10) != opno
-	    || (*endptr != ',' && *endptr != ')'))
+	if (this_opno != opno || (*p != ',' && *p != ')'))
 	  {
 	    error ("invalid prototype for '%s'", name);
 	    exit (FATAL_EXIT_CODE);
 	  }
+	if (required_p && required_ops < opno)
+	  {
+	    error ("prototype for '%s' has required operands after"
+		   " optional operands", name);
+	    exit (FATAL_EXIT_CODE);
+	  }
 	opno += 1;
-	p = endptr;
+	if (required_p)
+	  required_ops = opno;
+	/* Skip over ')'s.  */
 	if (*p == ',')
 	  suffix[i++] = '_';
       }
@@ -117,6 +160,22 @@ def_target_insn (const char *name, const char *prototype)
   const char *have_name = name;
   if (rtx insn = insns->find_with_hash (name, hash))
     {
+      pattern_stats stats;
+      get_pattern_stats (&stats, XVEC (insn, 1));
+      unsigned int actual_ops = stats.num_generator_args;
+      if (opno == required_ops && opno != actual_ops)
+	error_at (get_file_location (insn),
+		  "'%s' must have %d operands (excluding match_dups)",
+		  name, required_ops);
+      else if (actual_ops < required_ops)
+	error_at (get_file_location (insn),
+		  "'%s' must have at least %d operands (excluding match_dups)",
+		  name, required_ops);
+      else if (actual_ops > opno)
+	error_at (get_file_location (insn),
+		  "'%s' must have no more than %d operands"
+		  " (excluding match_dups)", name, opno);
+
       const char *test = XSTR (insn, 2);
       truth = maybe_eval_c_test (test);
       gcc_assert (truth != 0);
@@ -139,13 +198,23 @@ def_target_insn (const char *name, const char *prototype)
 	  have_name = entry;
 	}
       printf ("\nstatic rtx_insn *\n");
-      printf ("target_gen_%s %s\n", name, prototype);
-      printf ("{\n");
+      printf ("target_gen_%s ", name);
+      /* Print the prototype with the argument names after ACTUAL_OPS
+	 removed.  */
+      const char *p = prototype, *end;
+      while (*p)
+	if (parse_argument (p, &end, &this_opno) && this_opno >= actual_ops)
+	  p = end;
+	else
+	  fputc (*p++, stdout);
+
+      printf ("\n{\n");
       if (truth < 0)
 	printf ("  gcc_checking_assert (targetm.have_%s ());\n", name);
       printf ("  return insnify (gen_%s (", name);
-      for (i = 0; i < opno; ++i)
-	printf ("%sx%d", i == 0 ? "" : ", ", i);
+      for (i = 0; i < actual_ops; ++i)
+	printf ("%s%s%d", i == 0 ? "" : ", ",
+		i < required_ops ? "x" : "opt", i);
       printf ("));\n");
       printf ("}\n");
     }
@@ -157,18 +226,11 @@ def_target_insn (const char *name, const char *prototype)
 	  *slot = xstrdup (suffix);
 	  printf ("\nstatic rtx_insn *\n");
 	  printf ("invalid_%s ", suffix);
+	  /* Print the prototype with the argument names removed.  */
 	  const char *p = prototype;
 	  while (*p)
-	    {
-	      if (p[0] == 'x' && ISDIGIT (p[1]))
-		{
-		  char *endptr;
-		  strtol (p + 1, &endptr, 10);
-		  p = endptr;
-		}
-	      else
-		fputc (*p++, stdout);
-	    }
+	    if (!parse_argument (p, &p))
+	      fputc (*p++, stdout);
 	  printf ("\n{\n");
 	  printf ("  gcc_unreachable ();\n");
 	  printf ("}\n");

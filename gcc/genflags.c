@@ -42,7 +42,6 @@ static int max_opno;
 static void max_operand_1 (rtx);
 static int num_operands (rtx);
 static void gen_proto (rtx);
-static void gen_macro (const char *, int, int);
 
 /* Count the number of match_operand's found.  */
 
@@ -92,32 +91,6 @@ num_operands (rtx insn)
   return max_opno + 1;
 }
 
-/* Print out a wrapper macro for a function which corrects the number
-   of arguments it takes.  Any missing arguments are assumed to be at
-   the end.  */
-static void
-gen_macro (const char *name, int real, int expect)
-{
-  int i;
-
-  gcc_assert (real <= expect);
-  gcc_assert (real);
-
-  /* #define GEN_CALL(A, B, C, D) gen_call((A), (B)) */
-  fputs ("#define GEN_", stdout);
-  for (i = 0; name[i]; i++)
-    putchar (TOUPPER (name[i]));
-
-  putchar ('(');
-  for (i = 0; i < expect - 1; i++)
-    printf ("%c, ", i + 'A');
-  printf ("%c) gen_%s (", i + 'A', name);
-
-  for (i = 0; i < real - 1; i++)
-    printf ("(%c), ", i + 'A');
-  printf ("(%c))\n", i + 'A');
-}
-
 /* Print out prototype information for a generator function.  If the
    insn pattern has been elided, print out a dummy generator that
    does nothing.  */
@@ -129,25 +102,6 @@ gen_proto (rtx insn)
   int i;
   const char *name = XSTR (insn, 0);
   int truth = maybe_eval_c_test (XSTR (insn, 2));
-
-  /* Many md files don't refer to the last two operands passed to the
-     call patterns.  This means their generator functions will be two
-     arguments too short.  Instead of changing every md file to touch
-     those operands, we wrap the prototypes in macros that take the
-     correct number of arguments.  */
-  if (name[0] == 'c' || name[0] == 's')
-    {
-      if (!strcmp (name, "call")
-	  || !strcmp (name, "call_pop")
-	  || !strcmp (name, "sibcall")
-	  || !strcmp (name, "sibcall_pop"))
-	gen_macro (name, num, 4);
-      else if (!strcmp (name, "call_value")
-	       || !strcmp (name, "call_value_pop")
-	       || !strcmp (name, "sibcall_value")
-	       || !strcmp (name, "sibcall_value_pop"))
-	gen_macro (name, num, 5);
-    }
 
   if (truth != 0)
     printf ("extern rtx        gen_%-*s (", max_id_len, name);

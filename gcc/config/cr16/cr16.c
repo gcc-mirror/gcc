@@ -583,7 +583,7 @@ cr16_function_arg (cumulative_args_t cum_v, machine_mode mode,
   /* function_arg () is called with this type just after all the args have 
      had their registers assigned. The rtx that function_arg returns from 
      this type is supposed to pass to 'gen_call' but currently it is not 
-     implemented (see macro GEN_CALL).  */
+     implemented.  */
   if (type == void_type_node)
     return NULL_RTX;
 

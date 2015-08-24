@@ -1,5 +1,41 @@
 2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* genflags.c (gen_macro): Delete.
+	(gen_proto): Don't create GEN.*CALL.* macros.
+	* gensupport.h (get_file_location): Declare.
+	* gensupport.c (rtx_locs): New variable.
+	(read_md_rtx): Record rtx locations.
+	(get_file_location): New function.
+	* target-insns.def (call, call_pop, call_value, call_value_pop)
+	(sibcall, sibcall_value): New patterns.
+	* gentarget-def.c (parse_argument): New function.
+	(def_target_insn): Use it.  Handle optional operands.  Raise an
+	error if an .md pattern has the wrong number of operands for the
+	pattern name.  Remove the names of unused operands from the prototype.
+	* builtins.c (expand_builtin_apply): Use targetm functions
+	instead of HAVE_call_value and GEN_CALL_VALUE.
+	* calls.c (emit_call_1): Likewise.  Remove support for sibcall_pop
+	and sibcall_value_pop.
+	* config/aarch64/aarch64.md (untyped_call): Use gen_call instead
+	of GEN_CALL.
+	* config/alpha/alpha.md (untyped_call): Likewise.
+	* config/iq2000/iq2000.md (untyped_call): Likewise.
+	* config/m68k/m68k.md (untyped_call): Likewise.
+	* config/mips/mips.md (untyped_call): Likewise.
+	* config/pa/pa.md (untyped_call): Likewise.
+	* config/rs6000/rs6000.md (untyped_call): Likewise.
+	* config/sparc/sparc.md (untyped_call): Likewise.
+	* config/tilegx/tilegx.md (untyped_call): Likewise.
+	* config/tilepro/tilepro.md (untyped_call): Likewise.
+	* config/visium/visium.md (untyped_call): Likewise.
+	* config/alpha/alpha.c (alpha_emit_xfloating_libcall): Use
+	gen_call_value instead of GEN_CALL_VALUE.
+	* config/arm/arm.md (untyped_call): Likewise.
+	* config/cr16/cr16.c (cr16_function_arg): Remove reference to
+	GEN_CALL.
+
+2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ifcvt.c (HAVE_incscc, HAVE_decscc, HAVE_cbranchcc4): Delete.
 	(have_cbranchcc4): New variable.
 	(cc_in_cond, noce_emit_cmove, noce_get_alt_condition)

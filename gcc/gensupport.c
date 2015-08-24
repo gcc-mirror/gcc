@@ -93,6 +93,9 @@ static struct queue_elem **other_tail = &other_queue;
 static struct queue_elem *define_subst_attr_queue;
 static struct queue_elem **define_subst_attr_tail = &define_subst_attr_queue;
 
+/* Mapping from DEFINE_* rtxes to their location in the source file.  */
+static hash_map <rtx, file_location> *rtx_locs;
+
 static void remove_constraints (rtx);
 
 static int is_predicable (struct queue_elem *);
@@ -2619,7 +2622,22 @@ read_md_rtx (md_rtx_info *info)
   else
     info->index = -1;
 
+  if (!rtx_locs)
+    rtx_locs = new hash_map <rtx, file_location>;
+  rtx_locs->put (info->def, info->loc);
+
   return true;
+}
+
+/* Return the file location of DEFINE_* rtx X, which was previously
+   returned by read_md_rtx.  */
+file_location
+get_file_location (rtx x)
+{
+  gcc_assert (rtx_locs);
+  file_location *entry = rtx_locs->get (x);
+  gcc_assert (entry);
+  return *entry;
 }
 
 /* Return the number of possible INSN_CODEs.  Only meaningful once the

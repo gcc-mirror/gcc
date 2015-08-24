@@ -291,7 +291,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	     cumulative_args_t args_so_far ATTRIBUTE_UNUSED)
 {
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
-  rtx call, funmem;
+  rtx call, funmem, pat;
   int already_popped = 0;
   HOST_WIDE_INT n_popped
     = targetm.calls.return_pops_args (fndecl, funtype, stack_size);
@@ -330,90 +330,50 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   else if (fntree)
     set_mem_expr (funmem, build_simple_mem_ref (CALL_EXPR_FN (fntree)));
 
-#if defined (HAVE_sibcall_pop) && defined (HAVE_sibcall_value_pop)
-  if ((ecf_flags & ECF_SIBCALL)
-      && HAVE_sibcall_pop && HAVE_sibcall_value_pop
-      && (n_popped > 0 || stack_size == 0))
+  if (ecf_flags & ECF_SIBCALL)
     {
-      rtx n_pop = GEN_INT (n_popped);
-      rtx pat;
-
-      /* If this subroutine pops its own args, record that in the call insn
-	 if possible, for the sake of frame pointer elimination.  */
-
       if (valreg)
-	pat = GEN_SIBCALL_VALUE_POP (valreg, funmem, rounded_stack_size_rtx,
-				     next_arg_reg, n_pop);
+	pat = targetm.gen_sibcall_value (valreg, funmem,
+					 rounded_stack_size_rtx,
+					 next_arg_reg, NULL_RTX);
       else
-	pat = GEN_SIBCALL_POP (funmem, rounded_stack_size_rtx, next_arg_reg,
-			       n_pop);
-
-      emit_call_insn (pat);
-      already_popped = 1;
+	pat = targetm.gen_sibcall (funmem, rounded_stack_size_rtx,
+				   next_arg_reg, GEN_INT (struct_value_size));
     }
-  else
-#endif
-
-#if defined (HAVE_call_pop) && defined (HAVE_call_value_pop)
   /* If the target has "call" or "call_value" insns, then prefer them
      if no arguments are actually popped.  If the target does not have
      "call" or "call_value" insns, then we must use the popping versions
      even if the call has no arguments to pop.  */
-#if defined (HAVE_call) && defined (HAVE_call_value)
-  if (HAVE_call && HAVE_call_value && HAVE_call_pop && HAVE_call_value_pop
-      && n_popped > 0)
-#else
-  if (HAVE_call_pop && HAVE_call_value_pop)
-#endif
+  else if (n_popped > 0
+	   || !(valreg
+		? targetm.have_call_value ()
+		: targetm.have_call ()))
     {
       rtx n_pop = GEN_INT (n_popped);
-      rtx pat;
 
       /* If this subroutine pops its own args, record that in the call insn
 	 if possible, for the sake of frame pointer elimination.  */
 
       if (valreg)
-	pat = GEN_CALL_VALUE_POP (valreg, funmem, rounded_stack_size_rtx,
-				  next_arg_reg, n_pop);
+	pat = targetm.gen_call_value_pop (valreg, funmem,
+					  rounded_stack_size_rtx,
+					  next_arg_reg, n_pop);
       else
-	pat = GEN_CALL_POP (funmem, rounded_stack_size_rtx, next_arg_reg,
-			    n_pop);
+	pat = targetm.gen_call_pop (funmem, rounded_stack_size_rtx,
+				    next_arg_reg, n_pop);
 
-      emit_call_insn (pat);
       already_popped = 1;
     }
   else
-#endif
-
-#if defined (HAVE_sibcall) && defined (HAVE_sibcall_value)
-  if ((ecf_flags & ECF_SIBCALL)
-      && HAVE_sibcall && HAVE_sibcall_value)
     {
       if (valreg)
-	emit_call_insn (GEN_SIBCALL_VALUE (valreg, funmem,
-					   rounded_stack_size_rtx,
-					   next_arg_reg, NULL_RTX));
+	pat = targetm.gen_call_value (valreg, funmem, rounded_stack_size_rtx,
+				      next_arg_reg, NULL_RTX);
       else
-	emit_call_insn (GEN_SIBCALL (funmem, rounded_stack_size_rtx,
-				     next_arg_reg,
-				     GEN_INT (struct_value_size)));
+	pat = targetm.gen_call (funmem, rounded_stack_size_rtx, next_arg_reg,
+				GEN_INT (struct_value_size));
     }
-  else
-#endif
-
-#if defined (HAVE_call) && defined (HAVE_call_value)
-  if (HAVE_call && HAVE_call_value)
-    {
-      if (valreg)
-	emit_call_insn (GEN_CALL_VALUE (valreg, funmem, rounded_stack_size_rtx,
-					next_arg_reg, NULL_RTX));
-      else
-	emit_call_insn (GEN_CALL (funmem, rounded_stack_size_rtx, next_arg_reg,
-				  GEN_INT (struct_value_size)));
-    }
-  else
-#endif
-    gcc_unreachable ();
+  emit_insn (pat);
 
   /* Find the call we just emitted.  */
   rtx_call_insn *call_insn = last_call_insn ();
