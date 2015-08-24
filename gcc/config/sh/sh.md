@@ -135,6 +135,7 @@
   UNSPEC_PLT
   UNSPEC_CALLER
   UNSPEC_GOTPLT
+  UNSPEC_PCREL
   UNSPEC_ICACHE
   UNSPEC_INIT_TRAMP
   UNSPEC_FCOSA
@@ -9470,11 +9471,8 @@ label:
   [(const_int 0)]
 {
   rtx lab = PATTERN (gen_call_site ());
-
-  if (SYMBOL_REF_LOCAL_P (operands[0]))
-    emit_insn (gen_sym_label2reg (operands[2], operands[0], lab));
-  else
-    emit_insn (gen_symPLT_label2reg (operands[2], operands[0], lab));
+  
+  sh_expand_sym_label2reg (operands[2], operands[0], lab, false);
   emit_call_insn (gen_calli_pcrel (operands[2], operands[1], copy_rtx (lab)));
   DONE;
 }
@@ -9605,10 +9603,7 @@ label:
 {
   rtx lab = PATTERN (gen_call_site ());
 
-  if (SYMBOL_REF_LOCAL_P (operands[1]))
-    emit_insn (gen_sym_label2reg (operands[3], operands[1], lab));
-  else
-    emit_insn (gen_symPLT_label2reg (operands[3], operands[1], lab));
+  sh_expand_sym_label2reg (operands[3], operands[1], lab, false);
   emit_call_insn (gen_call_valuei_pcrel (operands[0], operands[3],
 					 operands[2], copy_rtx (lab)));
   DONE;
@@ -10008,7 +10003,7 @@ label:
   rtx lab = PATTERN (gen_call_site ());
   rtx call_insn;
 
-  emit_insn (gen_sym_label2reg (operands[2], operands[0], lab));
+  sh_expand_sym_label2reg (operands[2], operands[0], lab, true);
   call_insn = emit_call_insn (gen_sibcalli_pcrel (operands[2], operands[1],
 						  copy_rtx (lab)));
   SIBLING_CALL_P (call_insn) = 1;
@@ -10200,7 +10195,7 @@ label:
   rtx lab = PATTERN (gen_call_site ());
   rtx call_insn;
 
-  emit_insn (gen_sym_label2reg (operands[3], operands[1], lab));
+  sh_expand_sym_label2reg (operands[3], operands[1], lab, true);
   call_insn = emit_call_insn (gen_sibcall_valuei_pcrel (operands[0],
 							operands[3],
 							operands[2],
@@ -10747,6 +10742,16 @@ label:
 					      (const_int 2)))]
 			     UNSPEC_SYMOFF)))]
   "TARGET_SH1" "")
+
+(define_expand "symPCREL_label2reg"
+  [(set (match_operand:SI 0 "" "")
+	(const:SI
+	 (unspec:SI
+	  [(const:SI (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_PCREL))
+	   (const:SI (plus:SI (match_operand:SI 2 "" "")
+			      (const_int 2)))] UNSPEC_PCREL_SYMOFF)))]
+  "TARGET_SH1"
+  "")
 
 (define_expand "symGOT_load"
   [(set (match_dup 2) (match_operand 1 "" ""))
