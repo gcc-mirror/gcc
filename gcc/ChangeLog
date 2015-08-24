@@ -1,3 +1,8 @@
+2015-08-24  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-scop-detection.c (stmt_simple_for_scop_p):
+	Constrain only on INTEGER_TYPE.
+
 2015-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/67211
