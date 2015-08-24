@@ -1,3 +1,13 @@
+2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* df-scan.c (df_insn_info_init_fields): New function, split out
+	from...
+	(df_insn_create_insn_record): ...here.
+	(df_insn_info_free_fields): New function, split out from...
+	(df_insn_info_delete): ...here.
+	(df_insn_rescan): Use the new functions instead of freeing and
+	reallocating the df_insn_info.
+
 2015-08-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* doc/install.texi (Binaries): Remove links no longer valid.
