@@ -1,3 +1,18 @@
+2015-08-24  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/66609
+	* config/sh/sh.c (sh_asm_output_addr_const_extra): Handle
+	UNSPEC_PCREL.
+	(nonpic_symbol_mentioned_p): Likewise.
+	(sh_delegitimize_address): Likewise.
+	(sh_function_ok_for_sibcall): Take into account weak symbols.
+	(sh_expand_sym_label2reg): New.
+	* config/sh/sh-protos.h (sh_expand_sym_label2reg): Declare.
+	* config/sh/sh.md (UNSPEC_PCREL): New enum.
+	(call_pcrel): Use sh_expand_sym_label2reg.
+	(call_value_pcrel, sibcall_pcrel, sibcall_value_pcrel): Likewise.
+	(symPCREL_label2reg) New expand.
+
 2015-08-24  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-poly.c: Change type of region from void* to sese.
