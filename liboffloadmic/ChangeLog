@@ -1,3 +1,10 @@
+2015-08-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefile.am (include_src_dir): Set.
+	[PLUGIN_HOST] (libgomp_plugin_intelmic_la_CPPFLAGS): Use it.
+	* plugin/Makefile.in: Regenerate.
+	* plugin/libgomp-plugin-intelmic.cpp: Include "gomp-constants.h".
+
 2015-07-24  Micahel Darling  <darlingm@gmail.com>
 
 	PR other/66259
