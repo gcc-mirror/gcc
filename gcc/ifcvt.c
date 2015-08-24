@@ -55,21 +55,10 @@
 #include "shrink-wrap.h"
 #include "ifcvt.h"
 
-#ifndef HAVE_incscc
-#define HAVE_incscc 0
-#endif
-#ifndef HAVE_decscc
-#define HAVE_decscc 0
-#endif
-
 #ifndef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE \
   (BRANCH_COST (optimize_function_for_speed_p (cfun), false) \
    + 1)
-#endif
-
-#ifndef HAVE_cbranchcc4
-#define HAVE_cbranchcc4 0
 #endif
 
 #define IFCVT_MULTIPLE_DUMPS 1
@@ -78,6 +67,9 @@
 
 /* True if after combine pass.  */
 static bool ifcvt_after_combine;
+
+/* True if the target has the cbranchcc4 optab.  */
+static bool have_cbranchcc4;
 
 /* # of IF-THEN or IF-THEN-ELSE blocks we looked at  */
 static int num_possible_if_blocks;
@@ -1014,7 +1006,7 @@ noce_emit_move_insn (rtx x, rtx y)
 static rtx
 cc_in_cond (rtx cond)
 {
-  if (HAVE_cbranchcc4 && cond
+  if (have_cbranchcc4 && cond
       && GET_MODE_CLASS (GET_MODE (XEXP (cond, 0))) == MODE_CC)
     return XEXP (cond, 0);
 
@@ -1557,7 +1549,7 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
   if (! general_operand (cmp_a, GET_MODE (cmp_a))
       || ! general_operand (cmp_b, GET_MODE (cmp_b)))
     {
-      if (!(HAVE_cbranchcc4)
+      if (!have_cbranchcc4
 	  || GET_MODE_CLASS (GET_MODE (cmp_a)) != MODE_CC
 	  || cmp_b != const0_rtx)
 	return NULL_RTX;
@@ -2052,7 +2044,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
     }
 
   cond = canonicalize_condition (if_info->jump, cond, reverse,
-				 earliest, target, HAVE_cbranchcc4, true);
+				 earliest, target, have_cbranchcc4, true);
   if (! cond || ! reg_mentioned_p (target, cond))
     return NULL;
 
@@ -2544,7 +2536,7 @@ noce_get_condition (rtx_insn *jump, rtx_insn **earliest, bool then_else_reversed
   /* Otherwise, fall back on canonicalize_condition to do the dirty
      work of manipulating MODE_CC values and COMPARE rtx codes.  */
   tmp = canonicalize_condition (jump, cond, reverse, earliest,
-				NULL_RTX, HAVE_cbranchcc4, true);
+				NULL_RTX, have_cbranchcc4, true);
 
   /* We don't handle side-effects in the condition, like handling
      REG_INC notes and making sure no duplicate conditions are emitted.  */
@@ -4645,6 +4637,8 @@ if_convert (bool after_combine)
 
   /* Record whether we are after combine pass.  */
   ifcvt_after_combine = after_combine;
+  have_cbranchcc4 = (direct_optab_handler (cbranch_optab, CCmode)
+		     != CODE_FOR_nothing);
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
   num_true_changes = 0;
