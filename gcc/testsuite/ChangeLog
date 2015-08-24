@@ -1,3 +1,8 @@
+2015-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/67329
+	* gcc.target/i386/pr67329.c: New test.
+
 2015-08-24  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc/testsuite/gcc.dg/pr49551.c: Needs -fdata-sections.
