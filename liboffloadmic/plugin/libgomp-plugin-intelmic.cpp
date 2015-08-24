@@ -1,6 +1,6 @@
 /* Plugin for offload execution on Intel MIC devices.
 
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2015 Free Software Foundation, Inc.
 
    Contributed by Ilya Verbin <ilya.verbin@intel.com>.
 
@@ -38,6 +38,7 @@
 #include "libgomp-plugin.h"
 #include "compiler_if_host.h"
 #include "main_target_image.h"
+#include "gomp-constants.h"
 
 #define LD_LIBRARY_PATH_ENV	"LD_LIBRARY_PATH"
 #define MIC_LD_LIBRARY_PATH_ENV	"MIC_LD_LIBRARY_PATH"
