@@ -1,3 +1,8 @@
+2015-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (process): Replace
+	GOMP_offload_{,un}register with GOMP_offload_{,un}register_ver.
+
 2015-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/67329

@@ -234,6 +234,12 @@ GOMP_4.0.1 {
 	GOMP_offload_unregister;
 } GOMP_4.0;
 
+GOMP_4.0.2 {
+  global:
+	GOMP_offload_register_ver;
+	GOMP_offload_unregister_ver;
+} GOMP_4.0.1;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

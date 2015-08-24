@@ -1,3 +1,9 @@
+2015-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_version): New.
+	(GOMP_OFFLOAD_load_image): Add version arg and check it.
+	(GOMP_OFFLOAD_unload_image): Likewise.
+
 2015-08-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/Makefile.am (include_src_dir): Set.

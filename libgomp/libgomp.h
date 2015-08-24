@@ -748,8 +748,9 @@ struct gomp_device_descr
   int (*get_num_devices_func) (void);
   void (*init_device_func) (int);
   void (*fini_device_func) (int);
-  int (*load_image_func) (int, const void *, struct addr_pair **);
-  void (*unload_image_func) (int, const void *);
+  unsigned (*version_func) (void);
+  int (*load_image_func) (int, unsigned, const void *, struct addr_pair **);
+  void (*unload_image_func) (int, unsigned, const void *);
   void *(*alloc_func) (int, size_t);
   void (*free_func) (int, void *);
   void *(*dev2host_func) (int, void *, const void *, size_t);

@@ -36,6 +36,7 @@
 #include "libgomp-plugin.h"
 #include "oacc-ptx.h"
 #include "oacc-plugin.h"
+#include "gomp-constants.h"
 
 #include <pthread.h>
 #include <cuda.h>
@@ -1570,11 +1571,20 @@ typedef struct nvptx_tdata
   size_t fn_num;
 } nvptx_tdata_t;
 
+/* Return the libgomp version number we're compatible with.  There is
+   no requirement for cross-version compatibility.  */
+
+unsigned
+GOMP_OFFLOAD_version (void)
+{
+  return GOMP_VERSION;
+}
+
 /* Load the (partial) program described by TARGET_DATA to device
    number ORD.  Allocate and return TARGET_TABLE.  */
 
 int
-GOMP_OFFLOAD_load_image (int ord, const void *target_data,
+GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			 struct addr_pair **target_table)
 {
   CUmodule module;
@@ -1587,6 +1597,11 @@ GOMP_OFFLOAD_load_image (int ord, const void *target_data,
   struct ptx_image_data *new_image;
   struct ptx_device *dev;
 
+  if (GOMP_VERSION_DEV (version) > GOMP_VERSION_NVIDIA_PTX)
+    GOMP_PLUGIN_fatal ("Offload data incompatible with PTX plugin"
+		       " (expected %u, received %u)",
+		       GOMP_VERSION_NVIDIA_PTX, GOMP_VERSION_DEV (version));
+  
   GOMP_OFFLOAD_init_device (ord);
 
   dev = ptx_devices[ord];
@@ -1656,11 +1671,14 @@ GOMP_OFFLOAD_load_image (int ord, const void *target_data,
    function descriptors allocated by G_O_load_image.  */
 
 void
-GOMP_OFFLOAD_unload_image (int ord, const void *target_data)
+GOMP_OFFLOAD_unload_image (int ord, unsigned version, const void *target_data)
 {
   struct ptx_image_data *image, **prev_p;
   struct ptx_device *dev = ptx_devices[ord];
 
+  if (GOMP_VERSION_DEV (version) > GOMP_VERSION_NVIDIA_PTX)
+    return;
+  
   pthread_mutex_lock (&dev->image_lock);
   for (prev_p = &dev->images; (image = *prev_p) != 0; prev_p = &image->next)
     if (image->target_data == target_data)
