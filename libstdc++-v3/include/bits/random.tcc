@@ -1405,7 +1405,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const double __pi_4 = 0.7853981633974483096156608458198757L;
 	  const double __dx = std::sqrt(2 * __m * std::log(32 * __m
 							      / __pi_4));
-	  _M_d = std::round(std::max(6.0, std::min(__m, __dx)));
+	  _M_d = std::round(std::max<double>(6.0, std::min(__m, __dx)));
 	  const double __cx = 2 * __m + _M_d;
 	  _M_scx = std::sqrt(__cx / 2);
 	  _M_1cx = 1 / __cx;
@@ -1613,11 +1613,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const double __d1x =
 	    std::sqrt(__np * __1p * std::log(32 * __np
 					     / (81 * __pi_4 * __1p)));
-	  _M_d1 = std::round(std::max(1.0, __d1x));
+	  _M_d1 = std::round(std::max<double>(1.0, __d1x));
 	  const double __d2x =
 	    std::sqrt(__np * __1p * std::log(32 * _M_t * __1p
 					     / (__pi_4 * __pa)));
-	  _M_d2 = std::round(std::max(1.0, __d2x));
+	  _M_d2 = std::round(std::max<double>(1.0, __d2x));
 
 	  // sqrt(pi / 2)
 	  const double __spi_2 = 1.2533141373155002512078826424055226L;
