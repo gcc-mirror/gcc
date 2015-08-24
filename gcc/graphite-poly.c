@@ -422,7 +422,7 @@ debug_pdr (poly_dr_p pdr, int verbosity)
 /* Creates a new SCOP containing REGION.  */
 
 scop_p
-new_scop (void *region)
+new_scop (sese region)
 {
   scop_p scop = XNEW (struct scop);
 

@@ -1,5 +1,12 @@
 2015-08-24  Aditya Kumar  <aditya.k7@samsung.com>
 
+	* graphite-poly.c: Change type of region from void* to sese.
+	* graphite-poly.h (struct scop): Changing the type of scop::region
+	from void* to sese. Change accessor macro accordingly.
+	* graphite-sese-to-poly.c (extract_affine_chrec): Use accessor macro.
+
+2015-08-24  Aditya Kumar  <aditya.k7@samsung.com>
+
 	* graphite-scop-detection.c (stmt_simple_for_scop_p):
 	Constrain only on INTEGER_TYPE.
 
