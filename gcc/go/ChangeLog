@@ -1,3 +1,11 @@
+2015-08-24  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67284
+	* go-gcc.cc (Gcc_backend::define_builtin): Add NORETURN_P parameter.
+	Set TREE_THIS_VOLATILE.
+	(Gcc_backend::Gcc_backend): Mark __builtin_trap as a noreturn call.
+	Pass false to the rest of define_builtin calls.
+
 2015-07-31  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* go-lang.c (go_langhook_init_options_struct): Don't set
