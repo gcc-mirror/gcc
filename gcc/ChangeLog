@@ -1,5 +1,14 @@
 2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (expand_cmpstrn): Rename to...
+	(expand_cmpstrn_or_cmpmem): ...this.
+	(expand_builtin_strcmp, expand_builtin_strncmp): Update accordingly.
+	(expand_builtin_memcmp): Use optabs instead of HAVE_cmpmem/gen_cmpmem.
+	Remove mode argument.
+	(expand_builtin): Update accordingly.
+
+2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (expand_cmpstr, expand_cmpstrn): New functions.
 	(expand_builtin_strcmp, expand_builtin_strncmp): Use them.  Remove
 	references to HAVE_cmpstr{,n}si and CODE_FOR_cmpstr{,n}si.
