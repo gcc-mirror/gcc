@@ -178,10 +178,10 @@
 ;; 3 = alignment
 
 (define_expand "cmpstrsi"
-  [(match_operand:HI 0 "" "")
-   (match_operand 1 "ap_operand" "")
-   (match_operand 2 "ap_operand" "")
-   (match_operand 3 "" "")
+  [(match_operand:HI 0 "register_operand" "")
+   (match_operand 1 "memory_operand" "")
+   (match_operand 2 "memory_operand" "")
+   (match_operand 3 "const_int_operand" "")
    ]
   "TARGET_A24"
   "if (m32c_expand_cmpstr(operands)) DONE; FAIL;"
