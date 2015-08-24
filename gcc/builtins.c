@@ -1686,9 +1686,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
       emit_call_insn (targetm.gen_untyped_call (mem, result,
 						result_vector (1, result)));
     }
-  else
-#ifdef HAVE_call_value
-  if (HAVE_call_value)
+  else if (targetm.have_call_value ())
     {
       rtx valreg = 0;
 
@@ -1699,19 +1697,18 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if ((mode = apply_result_mode[regno]) != VOIDmode)
 	  {
-	    gcc_assert (!valreg); /* HAVE_untyped_call required.  */
+	    gcc_assert (!valreg); /* have_untyped_call required.  */
 
 	    valreg = gen_rtx_REG (mode, regno);
 	  }
 
-      emit_call_insn (GEN_CALL_VALUE (valreg,
-				      gen_rtx_MEM (FUNCTION_MODE, function),
-				      const0_rtx, NULL_RTX, const0_rtx));
+      emit_insn (targetm.gen_call_value (valreg,
+					 gen_rtx_MEM (FUNCTION_MODE, function),
+					 const0_rtx, NULL_RTX, const0_rtx));
 
       emit_move_insn (adjust_address (result, GET_MODE (valreg), 0), valreg);
     }
   else
-#endif
     gcc_unreachable ();
 
   /* Find the CALL insn we just emitted, and attach the register usage
