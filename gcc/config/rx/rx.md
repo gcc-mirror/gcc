@@ -2315,7 +2315,7 @@
   
     emit_move_insn (str1, force_operand (XEXP (operands[1], 0), NULL_RTX));
     emit_move_insn (str2, force_operand (XEXP (operands[2], 0), NULL_RTX));
-    emit_move_insn (len, force_operand (operands[3], NULL_RTX));
+    emit_move_insn (len, operands[3]);
 
     emit_insn (gen_rx_cmpstrn (operands[0], operands[1], operands[2]));
     DONE;

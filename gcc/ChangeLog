@@ -1,5 +1,17 @@
 2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* builtins.c (expand_cmpstr, expand_cmpstrn): New functions.
+	(expand_builtin_strcmp, expand_builtin_strncmp): Use them.  Remove
+	references to HAVE_cmpstr{,n}si and CODE_FOR_cmpstr{,n}si.
+	* config/m32c/blkmov.md (cmpstrsi): Fix predicates of operands 1 and 2.
+	Add predicates for operands 0 and 3.
+	* config/rx/rx.md (cmpstrnsi): Remove force_operand for the length
+	operand.
+	* config/sh/sh.md (cmpstrnsi): Change the length predicate from
+	immediate_operand to nonmemory_operand.
+
+2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* df-scan.c (df_insn_info_init_fields): New function, split out
 	from...
 	(df_insn_create_insn_record): ...here.
