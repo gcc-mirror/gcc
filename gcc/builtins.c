@@ -3438,11 +3438,6 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
     }
 }
 
-#ifndef HAVE_movstr
-# define HAVE_movstr 0
-# define CODE_FOR_movstr CODE_FOR_nothing
-#endif
-
 /* Expand into a movstr instruction, if one is available.  Return NULL_RTX if
    we failed, the caller should emit a normal call, otherwise try to
    get the result in TARGET, if convenient.  If ENDP is 0 return the
@@ -3457,7 +3452,7 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
   rtx dest_mem;
   rtx src_mem;
 
-  if (!HAVE_movstr)
+  if (!targetm.have_movstr ())
     return NULL_RTX;
 
   dest_mem = get_memory_rtx (dest, NULL);
@@ -3471,7 +3466,7 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
   create_output_operand (&ops[0], endp ? target : NULL_RTX, Pmode);
   create_fixed_operand (&ops[1], dest_mem);
   create_fixed_operand (&ops[2], src_mem);
-  if (!maybe_expand_insn (CODE_FOR_movstr, 3, ops))
+  if (!maybe_expand_insn (targetm.code_for_movstr, 3, ops))
     return NULL_RTX;
 
   if (endp && target != const0_rtx)
