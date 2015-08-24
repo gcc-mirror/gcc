@@ -3153,35 +3153,23 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://www.bullfreeware.com,,Bull's Freeware and Shareware Archive for AIX};
+@uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
+for AIX 5L and AIX 6};
 
 @item
-@uref{http://pware.hvcc.edu,,Hudson Valley Community College Open Source Software for IBM System p};
-
-@item
-@uref{http://www.perzl.org/aix/,,AIX 5L and 6 Open Source Packages}.
+@uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
+AIX 7.1)}.
 @end itemize
 
 @item
 DOS---@uref{http://www.delorie.com/djgpp/,,DJGPP}.
 
 @item
-Renesas H8/300[HS]---@uref{http://h8300-hms.sourceforge.net/,,GNU
-Development Tools for the Renesas H8/300[HS] Series}.
-
-@item
 HP-UX:
 @itemize
 @item
 @uref{http://hpux.connect.org.uk/,,HP-UX Porting Center};
-
-@item
-@uref{ftp://sunsite.informatik.rwth-aachen.de/pub/packages/gcc_hpux/,,Binaries for HP-UX 11.00 at Aachen University of Technology}.
 @end itemize
-
-@item
-@uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO
-OpenServer/Unixware}.
 
 @item
 Solaris 2 (SPARC, Intel):
@@ -3199,16 +3187,9 @@ Microsoft Windows:
 @item
 The @uref{http://sourceware.org/cygwin/,,Cygwin} project;
 @item
-The @uref{http://www.mingw.org/,,MinGW} project.
+The @uref{http://www.mingw.org/,,MinGW} and
+@uref{http://mingw-w64.org/,,mingw-w64} projects.
 @end itemize
-
-@item
-@uref{ftp://ftp.thewrittenword.com/packages/by-name/,,The
-Written Word} offers binaries for
-AIX 4.3.3, 5.1 and 5.2,
-GNU/Linux (i386),
-HP-UX 10.20, 11.00, and 11.11, and
-Solaris/SPARC 2.5.1, 2.6, 7, 8, 9 and 10.
 
 @item
 @uref{http://www.openpkg.org/,,OpenPKG} offers binaries for quite a
