@@ -1,3 +1,38 @@
+2015-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc/testsuite/gcc.dg/pr49551.c: Needs -fdata-sections.
+
+	* gcc/testsuite/gcc.dg/pr64935-2.c: Needs scheduling.
+
+	* gcc/testsuite/gcc.dg/torture/pr66101.c: Needs nonlocal goto.
+	* gcc/testsuite/gcc.dg/torture/pr63738.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/pr64728.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr63748.c: Likewise.
+	* gcc/testsuite/gcc.dg/20020312-2.c: Likewise.
+
+	* gcc/testsuite/gcc.dg/torture/pr66123.c: Needs label_values.
+
+	* gcc/testsuite/gcc.dg/torture/pr41261.c: Needs profiling.
+	* gcc/testsuite/gcc.dg/pr26570.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr61776.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/ssa-lim-11.c: Likewise.
+	* gcc/testsuite/gcc.dg/gomp/pr34610.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr54121.c: Likewise.
+	* gcc/testsuite/gcc.dg/20050325-1.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr66899.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr48770.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr24225.c: Likewise.
+
+	* gcc/testsuite/gcc.dg/pr27531-1.c: Needs io.
+	* gcc/testsuite/gcc.dg/pr44606.c: Likewise.
+
+	* gcc/testsuite/gcc.dg/tree-ssa/nonzero-1.c: Needs weak.
+
+	* gcc/testsuite/gcc.dg/pr51990.c: Needs alloca.
+
+	* gcc/testsuite/gcc.misc-tests/options.exp: Disable profiling
+	check for nvptx.
+
 2015-08-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65468
@@ -96,7 +131,7 @@
 	* gcc.dg/pr51990-2.c: Likewise.
 	* gcc.dg/vla-22.c: Likewise.
 
-2015-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-08-22  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	* gcc.dg/cpp/multiline-2.c: Add column numbers.
 	* gcc.dg/dollar.c: Likewise.
@@ -496,7 +531,7 @@
 
 	* gcc.target/i386/avx2-vect-shift.c: New test.
 
-2015-08-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-08-11  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR c/66098
 	PR c/66711
@@ -600,7 +635,7 @@
 	PR fortran/64022
 	* gfortran.dg/ieee/large_1.f90: Adjust test.
 
-2015-08-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-08-05  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 	    Jeff Law  <law@redhat.com>
 
 	PR c/16351
@@ -874,7 +909,7 @@
 	outer loop.
 
 2015-07-28  Luis Felipe Strano Moraes  <luis.strano@gmail.com>
-	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	* gcc.dg/parm-incomplete-1.c: Update.
 	* gcc.dg/pr18809-1.c: Update.
@@ -983,7 +1018,7 @@
 	* gcc.dg/graphite/uns-interchange-9.c: New test.
 	* gcc.dg/graphite/uns-interchange-mvt.c: New test.
 
-2015-07-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-07-24  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR c++/64079
 	* c-c++-common/Wunused-function-1.c: New.
@@ -1872,7 +1907,7 @@
 	PR tree-optimization/66718
 	* gcc.dg/vect/vect-126.c: New test.
 
-2015-07-08  Carlos Sánchez de La Lama  <csanchezdll@gmail.com>
+2015-07-08  Carlos SÃ¡nchez de La Lama  <csanchezdll@gmail.com>
 
 	* g++.dg/debug/dwarf2/*.C: generate dwarf-2 debug information
 	even when dwarf-2 is not the default.
@@ -2371,7 +2406,7 @@
 	* g++.dg/cpp0x/constexpr-friend-3.C: New.
 	* g++.dg/cpp0x/constexpr-friend-2.C: Adjust.
 
-2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-06-29  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR fortran/66605
 	* gfortran.dg/wunused-parameter.f90: New test.
@@ -2446,7 +2481,7 @@
 	* gcc.dg/stack-usage-1.c: Add SIZE values for V850, MN10300,
 	H8300 and M32R targets.
 
-2015-06-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-06-24  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR fortran/66528
 	* gfortran.dg/maxerrors.f90: New test.
@@ -3269,7 +3304,7 @@
 	PR c/66341
 	* gcc.dg/lvalue-8.c: New test.
 
-2015-06-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-06-03  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66130
@@ -3624,7 +3659,7 @@
 	PR tree-optimization/66142
 	* gcc.dg/tree-ssa/ssa-fre-44.c: Fixup.
 
-2015-05-28  Lawrence Velázquez  <vq@larryv.me>
+2015-05-28  Lawrence VelÃ¡zquez  <vq@larryv.me>
 
 	PR target/63810
 	* gcc.dg/darwin-minversion-3.c: Update testcase.
@@ -4018,7 +4053,7 @@
 	* gcc.dg/lto/pr66221_0.c: New test.
 	* gcc.dg/lto/pr66221_1.c: New test.
 
-2015-05-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-05-21  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR c/52952
 	* gcc.dg/redecl-4.c: Update column numbers.
@@ -4323,7 +4358,7 @@
 	PR fortran/66113
 	* gfortran.dg/block_14.f90:  New test.
 
-2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2015-05-16  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
 	* lib/gfortran-dg.exp: Update regex to handle two locations for

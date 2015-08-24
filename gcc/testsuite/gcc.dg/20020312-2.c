@@ -7,6 +7,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O -fno-pic" } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 extern void abort (void);
 

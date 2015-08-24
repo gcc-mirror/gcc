@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprofile-generate" } */
+/* { dg-require-profiling "-fprofile-generate" } */
 
 #include <setjmp.h>
 

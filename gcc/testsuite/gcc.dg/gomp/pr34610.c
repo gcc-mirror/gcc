@@ -1,6 +1,7 @@
 /* PR gcov-profile/34610 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprofile-arcs -fopenmp" } */
+/* { dg-require-profiling "-fprofile-generate" } */
 
 extern void bar (int);
 extern void baz (int) __attribute__((noreturn));

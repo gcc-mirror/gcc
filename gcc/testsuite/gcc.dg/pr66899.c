@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -fprofile-arcs" } */
+/* { dg-require-profiling "-fprofile-generate" } */
 
 struct
 {
