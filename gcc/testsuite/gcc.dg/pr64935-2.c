@@ -1,6 +1,7 @@
 /* PR rtl-optimization/64935 */
 /* { dg-do compile } */
 /* { dg-options "-O -fschedule-insns --param=max-sched-ready-insns=0 -fcompare-debug" } */
+/* { dg-require-effective-target scheduling } */
 
 void
 foo (int *data, unsigned len, const int qlp_coeff[],

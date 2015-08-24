@@ -1,4 +1,5 @@
 /*  { dg-do compile } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 #include <setjmp.h>
 
