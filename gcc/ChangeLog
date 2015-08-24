@@ -1,5 +1,13 @@
 2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ifcvt.c (HAVE_incscc, HAVE_decscc, HAVE_cbranchcc4): Delete.
+	(have_cbranchcc4): New variable.
+	(cc_in_cond, noce_emit_cmove, noce_get_alt_condition)
+	(noce_get_condition): Use it instead of HAVE_cbranchcc4.
+	(if_convert): Initialize have_cbranchcc4.
+
+2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* builtins.c (expand_cmpstrn): Rename to...
 	(expand_cmpstrn_or_cmpmem): ...this.
 	(expand_builtin_strcmp, expand_builtin_strncmp): Update accordingly.
