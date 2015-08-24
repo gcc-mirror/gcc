@@ -405,17 +405,17 @@ walk_args_for_param (FILE *file, tree argtypes, tree args, bool write_copy,
 		mode = DFmode;
 
 	    }
-	  mode = arg_promotion (mode);
 	}
+      mode = arg_promotion (mode);
       while (count-- > 0)
 	{
 	  i++;
 	  if (write_copy)
 	    fprintf (file, "\tld.param%s %%ar%d, [%%in_ar%d];\n",
-		     nvptx_ptx_type_from_mode (mode, true), i, i);
+		     nvptx_ptx_type_from_mode (mode, false), i, i);
 	  else
 	    fprintf (file, "\t.reg%s %%ar%d;\n",
-		     nvptx_ptx_type_from_mode (mode, true), i);
+		     nvptx_ptx_type_from_mode (mode, false), i);
 	}
     }
 }

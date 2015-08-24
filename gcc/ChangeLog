@@ -1,3 +1,9 @@
+2015-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (walk_args_for_param): Revert previous
+	change to nvptx_type_from_mode call. Use arg_promotion for both
+	split and non-split args.
+
 2015-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* target-insns.def (movstr): New pattern.
