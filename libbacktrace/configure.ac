@@ -273,6 +273,12 @@ else
     # When built as a GCC target library, we can't do a link test.  We
     # simply assume that if we have mman.h, we have mmap.
     have_mmap=yes
+    case "${host}" in
+    spu-*-*)
+        # The SPU does not have mmap, but it has a sys/mman.h header file
+        # containing "mmap_eaddr" and the mmap flags, confusing the test.
+	have_mmap=no ;;
+    esac
   else
     AC_CHECK_FUNC(mmap, [have_mmap=yes], [have_mmap=no])
   fi
