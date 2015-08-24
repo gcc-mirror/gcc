@@ -1,3 +1,9 @@
+2015-08-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/57496
+	* io/write_float.def: Use built-in type-generic functions defined
+	by libgfortran.h for isfinite, isnan, and signbit.
+
 2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/54572
