@@ -1,6 +1,11 @@
 2015-08-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65468
+	* testsuite/libgomp.oacc-c-c++-common/vector-loop.c: New test.
+
+2015-08-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65468
 	* testsuite/libgomp.c/static-chunk-size-one.c: New test.
 
 2015-08-24  Joost VandeVondele  <vondele@gnu.gcc.org>
