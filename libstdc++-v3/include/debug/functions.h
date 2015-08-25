@@ -445,6 +445,49 @@ namespace __gnu_debug
       return __first == __last;
     }
 
+#if __cplusplus >= 201103L
+  struct _Irreflexive_checker
+  {
+    template<typename _It>
+      static typename std::iterator_traits<_It>::reference
+      __deref();
+
+    template<typename _It,
+	     typename = decltype(__deref<_It>() < __deref<_It>())>
+      static bool
+      _S_is_valid(_It __it)
+      { return !(*__it < *__it); }
+
+    // Fallback method if operator doesn't exist.
+    template<typename... _Args>
+      static bool
+      _S_is_valid(_Args...)
+      { return true; }
+
+    template<typename _It, typename _Pred, typename
+	= decltype(std::declval<_Pred>()(__deref<_It>(), __deref<_It>()))>
+      static bool
+      _S_is_valid_pred(_It __it, _Pred __pred)
+      { return !__pred(*__it, *__it); }
+
+    // Fallback method if predicate can't be invoked.
+    template<typename... _Args>
+      static bool
+      _S_is_valid_pred(_Args...)
+      { return true; }
+  };
+
+  template<typename _Iterator>
+    inline bool
+    __is_irreflexive(_Iterator __it)
+    { return _Irreflexive_checker::_S_is_valid(__it); }
+
+  template<typename _Iterator, typename _Pred>
+    inline bool
+    __is_irreflexive_pred(_Iterator __it, _Pred __pred)
+    { return _Irreflexive_checker::_S_is_valid_pred(__it, __pred); }
+#endif
+
 } // namespace __gnu_debug
 
 #endif

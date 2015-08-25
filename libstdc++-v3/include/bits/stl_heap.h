@@ -159,6 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
       __glibcxx_requires_heap(__first, __last - 1);
 
       _ValueType __value = _GLIBCXX_MOVE(*(__last - 1));
@@ -193,6 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
       __glibcxx_requires_heap_pred(__first, __last - 1, __comp);
 
       _ValueType __value = _GLIBCXX_MOVE(*(__last - 1));
@@ -271,6 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
       __glibcxx_requires_non_empty_range(__first, __last);
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
       __glibcxx_requires_heap(__first, __last);
 
       if (__last - __first > 1)
@@ -301,6 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
       __glibcxx_requires_non_empty_range(__first, __last);
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
@@ -356,6 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       std::__make_heap(__first, __last,
 		       __gnu_cxx::__ops::__iter_less_iter());
@@ -380,6 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       std::__make_heap(__first, __last,
 		       __gnu_cxx::__ops::__iter_comp_iter(__comp));
@@ -415,6 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
       __glibcxx_requires_heap(__first, __last);
 
       std::__sort_heap(__first, __last,
@@ -440,6 +447,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
       std::__sort_heap(__first, __last,
@@ -467,6 +475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive(__first, __last);
 
       return __first + 
 	std::__is_heap_until(__first, std::distance(__first, __last),
@@ -493,6 +502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       return __first
 	+ std::__is_heap_until(__first, std::distance(__first, __last),
