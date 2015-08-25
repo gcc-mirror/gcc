@@ -3943,9 +3943,8 @@ Unary_expression::do_check_types(Gogo*)
       break;
 
     case OPERATOR_XOR:
-      if (type->integer_type() == NULL
-	  && !type->is_boolean_type())
-	this->report_error(_("expected integer or boolean type"));
+      if (type->integer_type() == NULL)
+	this->report_error(_("expected integer"));
       break;
 
     case OPERATOR_AND:
