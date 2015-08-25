@@ -1,3 +1,8 @@
+2015-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-pr63969-missing-driver.c: Add call to
+	gcc_jit_context_set_bool_use_external_driver.
+
 2015-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.c-torture/execute/builtins/20010124-1.x: New.

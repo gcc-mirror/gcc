@@ -177,6 +177,12 @@ public:
     return m_recording_ctxt->get_bool_option (opt);
   }
 
+  int
+  get_inner_bool_option (enum inner_bool_option opt) const
+  {
+    return m_recording_ctxt->get_inner_bool_option (opt);
+  }
+
   builtins_manager *get_builtins_manager () const
   {
     return m_recording_ctxt->get_builtins_manager ();
@@ -279,6 +285,14 @@ protected:
 
   result *
   dlopen_built_dso ();
+
+ private:
+  void
+  invoke_embedded_driver (const vec <char *> *argvec);
+
+  void
+  invoke_external_driver (const char *ctxt_progname,
+			  vec <char *> *argvec);
 
 private:
   ::gcc::jit::recording::context *m_recording_ctxt;

@@ -278,6 +278,30 @@ gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
    tested for with #ifdef.  */
 #define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
 
+/* Implementation detail:
+   libgccjit internally generates assembler, and uses "driver" code
+   for converting it to other formats (e.g. shared libraries).
+
+   By default, libgccjit will use an embedded copy of the driver
+   code.
+
+   This option can be used to instead invoke an external driver executable
+   as a subprocess.
+
+   This entrypoint was added in LIBGCCJIT_ABI_5; you can test for
+   its presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver
+*/
+
+extern void
+gcc_jit_context_set_bool_use_external_driver (gcc_jit_context *ctxt,
+					      int bool_value);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_context_set_bool_use_external_driver.  This can be
+   tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver
+
 /* Add an arbitrary gcc command-line option to the context.
    The context takes a copy of the string, so the
    (const char *) optname is not needed anymore after the call

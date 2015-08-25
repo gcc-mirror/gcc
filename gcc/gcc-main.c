@@ -40,7 +40,8 @@ extern int main (int, char **);
 int
 main (int argc, char **argv)
 {
-  driver d;
+  driver d (false, /* can_finalize */
+	    false); /* debug */
 
   return d.main (argc, argv);
 }

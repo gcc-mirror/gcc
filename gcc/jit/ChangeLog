@@ -1,3 +1,36 @@
+2015-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/contexts.rst
+	(gccjit::context::set_bool_use_external_driver): New.
+	* docs/internals/test-hello-world.exe.log.txt: Update.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_5): New.
+	* docs/topics/contexts.rst
+	(gcc_jit_context_set_bool_use_external_driver): New.
+	* jit-common.h (enum inner_bool_option): Add
+	INNER_BOOL_OPTION_USE_EXTERNAL_DRIVER.
+	* jit-playback.c (gcc_driver_name): New global.
+	(gcc:jit::playback::context::invoke_driver): Split out second
+	half into...
+	(gcc::jit::playback::context::invoke_embedded_driver): ...this new
+	function, and...
+	(gcc::jit::playback::context::invoke_external_driver): ...this new
+	function.
+	* jit-playback.h
+	(gcc::jit::playback::context::get_inner_bool_option): New.
+	(gcc::jit::playback::context::invoke_embedded_driver): New.
+	(gcc::jit::playback::context::invoke_external_driver): New.
+	* jit-recording.c (inner_bool_option_reproducer_strings):
+	Add entry for INNER_BOOL_OPTION_USE_EXTERNAL_DRIVER.
+	* libgccjit++.h
+	(gccjit::context::set_bool_use_external_driver): New.
+	* libgccjit.c (gcc_jit_context_set_bool_use_external_driver): New.
+	* libgccjit.h (gcc_jit_context_set_bool_use_external_driver): New.
+	(LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver):
+	New.
+	* libgccjit.map (LIBGCCJIT_ABI_5): New.
+	* notes.txt: Show invocation of embedded copy of driver.
+	* docs/internals/test-hello-world.exe.log.txt: Update
+
 2015-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-playback.c (invoke_driver): On OS X, add

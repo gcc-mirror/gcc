@@ -1,4 +1,4 @@
-JIT: libgccjit (GCC) version 6.0.0 20150723 (experimental) (x86_64-unknown-linux-gnu)
+JIT: libgccjit (GCC) version 6.0.0 20150803 (experimental) (x86_64-pc-linux-gnu)
 JIT:	compiled by GNU C version 4.8.3 20140911 (Red Hat 4.8.3-7), GMP version 5.1.2, MPFR version 3.1.2, MPC version 1.0.1
 JIT: entering: gcc_jit_context_set_str_option
 JIT:  GCC_JIT_STR_OPTION_PROGNAME: "./test-hello-world.c.exe"
@@ -65,6 +65,7 @@ JIT:   GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING: false
 JIT:   GCC_JIT_BOOL_OPTION_SELFCHECK_GC: true
 JIT:   GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES: false
 JIT:   gcc_jit_context_set_bool_allow_unreachable_blocks: false
+JIT:   gcc_jit_context_set_bool_use_external_driver: false
 JIT:   entering: void gcc::jit::recording::context::validate()
 JIT:   exiting: void gcc::jit::recording::context::validate()
 JIT:   entering: gcc::jit::playback::context::context(gcc::jit::recording::context*)
@@ -133,7 +134,8 @@ JIT:       argv[3]: /tmp/libgccjit-CKq1M9/fake.s
 JIT:       argv[4]: -o
 JIT:       argv[5]: /tmp/libgccjit-CKq1M9/fake.so
 JIT:       argv[6]: -fno-use-linker-plugin
-JIT:       argv[7]: (null)
+JIT:       entering: void gcc::jit::playback::context::invoke_embedded_driver(const vec<char*>*)
+JIT:       exiting: void gcc::jit::playback::context::invoke_embedded_driver(const vec<char*>*)
 JIT:      exiting: void gcc::jit::playback::context::invoke_driver(const char*, const char*, const char*, timevar_id_t, bool, bool)
 JIT:     exiting: void gcc::jit::playback::context::convert_to_dso(const char*)
 JIT:     entering: gcc::jit::result* gcc::jit::playback::context::dlopen_built_dso()
