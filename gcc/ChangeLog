@@ -1,3 +1,10 @@
+2015-08-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-08-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+    	* config/s390/s390-builtins.def: Fix value range of vec_load_bndry.
+
 2015-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from mainline:

@@ -1,3 +1,10 @@
+2015-08-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-08-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+    	* gcc.target/s390/zvector/vec-load_bndry-1.c: New test.
+
 2015-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline:
