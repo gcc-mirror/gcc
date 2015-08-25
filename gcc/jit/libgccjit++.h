@@ -124,6 +124,7 @@ namespace gccjit
 			  int value);
 
     void set_bool_allow_unreachable_blocks (int bool_value);
+    void set_bool_use_external_driver (int bool_value);
 
     void add_command_line_option (const char *optname);
 
@@ -663,6 +664,13 @@ context::set_bool_allow_unreachable_blocks (int bool_value)
 {
   gcc_jit_context_set_bool_allow_unreachable_blocks (m_inner_ctxt,
 						     bool_value);
+}
+
+inline void
+context::set_bool_use_external_driver (int bool_value)
+{
+  gcc_jit_context_set_bool_use_external_driver (m_inner_ctxt,
+						bool_value);
 }
 
 inline void

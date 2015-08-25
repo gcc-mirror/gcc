@@ -469,6 +469,26 @@ Boolean options
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
 
+.. function:: void \
+              gcc_jit_context_set_bool_use_external_driver (gcc_jit_context *ctxt, \
+                                                            int bool_value)
+
+   libgccjit internally generates assembler, and uses "driver" code
+   for converting it to other formats (e.g. shared libraries).
+
+   By default, libgccjit will use an embedded copy of the driver
+   code.
+
+   This option can be used to instead invoke an external driver executable
+   as a subprocess.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_5`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver
+
 Integer options
 ***************
 

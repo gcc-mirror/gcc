@@ -1,3 +1,39 @@
+2015-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-main.c (main): Add params to driver ctor.
+	* gcc.c (class env_manager): New.
+	(env): New global.
+	(env_manager::init): New.
+	(env_manager::get): New.
+	(env_manager::xput): New.
+	(env_manager::restore): New.
+	Poison getenv and putenv.
+	(DEFAULT_TARGET_SYSTEM_ROOT): New.
+	(target_system_root): Update initialization to use
+	DEFAULT_TARGET_SYSTEM_ROOT.
+	(struct spec_list): Add field "default_ptr".
+	(INIT_STATIC_SPEC): Initialize new field "default_ptr".
+	(init_spec): Likewise.
+	(set_spec): Clear field "default_ptr".
+	(read_specs): Free "spec" and "buffer".
+	(xputenv): Reimplement in terms of env_manager.
+	(process_command): Replace ::getenv calls with calls to the
+	env_manager singleton.
+	(process_brace_body): Free string in three places.
+	(driver::driver): New.
+	(driver::~driver): New.
+	(used_arg): Convert from a function to...
+	(class used_arg_t): ...this class, and...
+	(used_arg): ...this new global instance.
+	(used_arg_t::finalize): New function.
+	(getenv_spec_function): Add "const" to local "value".  Replace
+	::getenv call with call to the env_manager singleton.
+	(path_prefix_reset): New function.
+	(driver::finalize): New function.
+	* gcc.h (driver::driver): New.
+	(driver::~driver): New.
+	(driver::finalize): New.
+
 2015-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	* optabs.c (emit_indirect_jump): Don't try an emit a jump if the

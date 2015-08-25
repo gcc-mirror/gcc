@@ -1452,7 +1452,8 @@ static const char * const
 
 static const char * const
  inner_bool_option_reproducer_strings[NUM_INNER_BOOL_OPTIONS] = {
-  "gcc_jit_context_set_bool_allow_unreachable_blocks"
+  "gcc_jit_context_set_bool_allow_unreachable_blocks",
+  "gcc_jit_context_set_bool_use_external_driver"
 };
 
 /* Write the current value of all options to the log file (if any).  */

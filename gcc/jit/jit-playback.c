@@ -2373,6 +2373,8 @@ convert_to_dso (const char *ctxt_progname)
 		 true);/* bool run_linker */
 }
 
+static const char * const gcc_driver_name = GCC_DRIVER_NAME;
+
 void
 playback::context::
 invoke_driver (const char *ctxt_progname,
@@ -2383,15 +2385,15 @@ invoke_driver (const char *ctxt_progname,
 	       bool run_linker)
 {
   JIT_LOG_SCOPE (get_logger ());
+
+  bool embedded_driver
+    = !get_inner_bool_option (INNER_BOOL_OPTION_USE_EXTERNAL_DRIVER);
+
   /* Currently this lumps together both assembling and linking into
      TV_ASSEMBLE.  */
   auto_timevar assemble_timevar (get_timer (), tv_id);
-  const char *errmsg;
   auto_argvec argvec;
 #define ADD_ARG(arg) argvec.safe_push (xstrdup (arg))
-  int exit_status = 0;
-  int err = 0;
-  const char *gcc_driver_name = GCC_DRIVER_NAME;
 
   ADD_ARG (gcc_driver_name);
 
@@ -2425,8 +2427,10 @@ invoke_driver (const char *ctxt_progname,
   ADD_ARG ("-Wl,-undefined,dynamic_lookup");
 #endif
 
-  /* pex argv arrays are NULL-terminated.  */
-  argvec.safe_push (NULL);
+  if (0)
+    ADD_ARG ("-v");
+
+#undef ADD_ARG
 
   /* pex_one's error-handling requires pname to be non-NULL.  */
   gcc_assert (ctxt_progname);
@@ -2435,9 +2439,42 @@ invoke_driver (const char *ctxt_progname,
     for (unsigned i = 0; i < argvec.length (); i++)
       get_logger ()->log ("argv[%i]: %s", i, argvec[i]);
 
+  if (embedded_driver)
+    invoke_embedded_driver (&argvec);
+  else
+    invoke_external_driver (ctxt_progname, &argvec);
+}
+
+void
+playback::context::
+invoke_embedded_driver (const vec <char *> *argvec)
+{
+  JIT_LOG_SCOPE (get_logger ());
+  driver d (true, /* can_finalize */
+	    false); /* debug */
+  int result = d.main (argvec->length (),
+		       const_cast <char **> (argvec->address ()));
+  d.finalize ();
+  if (result)
+    add_error (NULL, "error invoking gcc driver");
+}
+
+void
+playback::context::
+invoke_external_driver (const char *ctxt_progname,
+			vec <char *> *argvec)
+{
+  JIT_LOG_SCOPE (get_logger ());
+  const char *errmsg;
+  int exit_status = 0;
+  int err = 0;
+
+  /* pex argv arrays are NULL-terminated.  */
+  argvec->safe_push (NULL);
+
   errmsg = pex_one (PEX_SEARCH, /* int flags, */
 		    gcc_driver_name,
-		    const_cast <char *const *> (argvec.address ()),
+		    const_cast <char *const *> (argvec->address ()),
 		    ctxt_progname, /* const char *pname */
 		    NULL, /* const char *outname */
 		    NULL, /* const char *errname */
@@ -2464,7 +2501,6 @@ invoke_driver (const char *ctxt_progname,
 		 getenv ("PATH"));
       return;
     }
-#undef ADD_ARG
 }
 
 /* Extract the target-specific MULTILIB_DEFAULTS to

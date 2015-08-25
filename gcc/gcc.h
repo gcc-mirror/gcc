@@ -30,7 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 class driver
 {
  public:
+  driver (bool can_finalize, bool debug);
+  ~driver ();
   int main (int argc, char **argv);
+  void finalize ();
 
  private:
   void set_progname (const char *argv0) const;

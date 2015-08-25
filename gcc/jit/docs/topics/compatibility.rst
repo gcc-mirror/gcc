@@ -128,3 +128,10 @@ entrypoints:
   * :func:`gcc_jit_timer_pop`
 
   * :func:`gcc_jit_timer_print`
+
+.. _LIBGCCJIT_ABI_5:
+
+``LIBGCCJIT_ABI_5``
+-------------------
+``LIBGCCJIT_ABI_5`` covers the addition of
+:func:`gcc_jit_context_set_bool_use_external_driver`

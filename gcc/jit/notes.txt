@@ -78,7 +78,13 @@ Client Code   . Generated .            libgccjit.so
               .           .      │   .               .
               .           .      │   (assuming an in-memory compile):
               .           .      │   .               .
-              .           .      │   . Convert assembler to DSO ("fake.so")
+              .           .      --> Convert assembler to DSO, via embedded
+              .           .          copy of driver:
+              .           .           driver::main ()
+              .           .             invocation of "as"
+              .           .             invocation of "ld"
+              .           .           driver::finalize ()
+              .           .      <----
               .           .      │   .               .
               .           .      │   . Load DSO (dlopen "fake.so")
               .           .      │   .               .
