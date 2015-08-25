@@ -21,7 +21,7 @@
 ;; The following register constraints have been used:
 ;; - in ARM/Thumb-2 state: t, w, x, y, z
 ;; - in Thumb state: h, b
-;; - in both states: l, c, k, q, US
+;; - in both states: l, c, k, q, Cs, Ts, US
 ;; In ARM state, 'l' is an alias for 'r'
 ;; 'f' and 'v' were previously used for FPA and MAVERICK registers.
 

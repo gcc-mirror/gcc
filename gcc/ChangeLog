@@ -1,3 +1,8 @@
+2015-08-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/constraints.md: Also list Cs and US ARM-specific
+	constraints as used.
+
 2015-08-24  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/66609
