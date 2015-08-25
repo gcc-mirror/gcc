@@ -3068,10 +3068,15 @@ execute (void)
    SWITCH_LIVE to indicate this switch is true in a conditional spec.
    SWITCH_FALSE to indicate this switch is overridden by a later switch.
    SWITCH_IGNORE to indicate this switch should be ignored (used in %<S).
-   SWITCH_IGNORE_PERMANENTLY to indicate this switch should be ignored
+   SWITCH_IGNORE_PERMANENTLY to indicate this switch should be ignored.
+   SWITCH_KEEP_FOR_GCC to indicate that this switch, otherwise ignored,
+   should be included in COLLECT_GCC_OPTIONS.
    in all do_spec calls afterwards.  Used for %<S from self specs.
-   The `validated' field is nonzero if any spec has looked at this switch;
-   if it remains zero at the end of the run, it must be meaningless.  */
+   The `known' field describes whether this is an internal switch.
+   The `validated' field describes whether any spec has looked at this switch;
+   if it remains false at the end of the run, the switch must be meaningless.
+   The `ordering' field is used to temporarily mark switches that have to be
+   kept in a specific order.  */
 
 #define SWITCH_LIVE    			(1 << 0)
 #define SWITCH_FALSE   			(1 << 1)

@@ -1,3 +1,8 @@
+2015-08-25  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (struct switchstr): Expand comment.
+
 2015-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_write_function_decl): Reformat.
