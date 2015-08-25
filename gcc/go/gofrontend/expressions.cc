@@ -10341,7 +10341,10 @@ String_index_expression::do_check_types(Gogo*)
     {
       ival_valid = true;
       if (mpz_sgn(ival) < 0
-	  || (sval_valid && mpz_cmp_ui(ival, sval.length()) >= 0))
+	  || (sval_valid
+	      && (this->end_ == NULL
+		  ? mpz_cmp_ui(ival, sval.length()) >= 0
+		  : mpz_cmp_ui(ival, sval.length()) > 0)))
 	{
 	  error_at(this->start_->location(), "string index out of bounds");
 	  this->set_is_error();
