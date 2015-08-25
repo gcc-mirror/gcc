@@ -2305,8 +2305,20 @@ Parse::function_decl(bool saw_nointerface)
 
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     {
-      if (named_object == NULL && !Gogo::is_sink_name(name))
+      if (named_object == NULL)
 	{
+          // Function declarations with the blank identifier as a name are
+          // mostly ignored since they cannot be called.  We make an object
+          // for this declaration for type-checking purposes.
+          if (Gogo::is_sink_name(name))
+            {
+              static int count;
+              char buf[30];
+              snprintf(buf, sizeof buf, ".$sinkfndecl%d", count);
+              ++count;
+              name = std::string(buf);
+            }
+
 	  if (fntype == NULL
               || (expected_receiver && rec == NULL))
 	    this->gogo_->add_erroneous_name(name);
