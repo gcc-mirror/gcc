@@ -321,7 +321,8 @@ nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree de
 
   /* Declare argument types.  */
   if ((args != NULL_TREE
-       && !(TREE_CODE (args) == TREE_LIST && TREE_VALUE (args) == void_type_node))
+       && !(TREE_CODE (args) == TREE_LIST
+	    && TREE_VALUE (args) == void_type_node))
       || is_main
       || return_in_mem
       || DECL_STATIC_CHAIN (decl))
@@ -1917,7 +1918,7 @@ nvptx_reorg_subreg (void)
     {
       next = NEXT_INSN (insn);
       if (!NONDEBUG_INSN_P (insn)
-	  || asm_noperands (insn) >= 0
+	  || asm_noperands (PATTERN (insn)) >= 0
 	  || GET_CODE (PATTERN (insn)) == USE
 	  || GET_CODE (PATTERN (insn)) == CLOBBER)
 	continue;
