@@ -819,6 +819,10 @@ proc check_effective_target_fgraphite {} {
 # code, 0 otherwise.
 
 proc check_effective_target_fopenacc {} {
+    # nvptx can be built with the device-side bits of openacc, but it
+    # does not make sense to test it as an openacc host.
+    if [istarget nvptx-*-*] { return 0 }
+
     return [check_no_compiler_messages fopenacc object {
 	void foo (void) { }
     } "-fopenacc"]
@@ -828,6 +832,10 @@ proc check_effective_target_fopenacc {} {
 # code, 0 otherwise.
 
 proc check_effective_target_fopenmp {} {
+    # nvptx can be built with the device-side bits of libgomp, but it
+    # does not make sense to test it as an openmp host.
+    if [istarget nvptx-*-*] { return 0 }
+
     return [check_no_compiler_messages fopenmp object {
 	void foo (void) { }
     } "-fopenmp"]

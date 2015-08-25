@@ -1,5 +1,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target label_values } */
+
 void *a;
 int b, c, d;
 
