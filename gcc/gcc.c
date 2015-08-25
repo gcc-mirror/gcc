@@ -9813,7 +9813,9 @@ driver::finalize ()
 	}
       *(sl->ptr_spec) = sl->default_ptr;
     }
+#ifdef EXTRA_SPECS
   extra_specs = NULL;
+#endif
 
   processing_spec_function = 0;
 
