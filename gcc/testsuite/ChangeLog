@@ -1,3 +1,8 @@
+2015-08-25  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67330
+	* gcc.dg/weak/weak-18.c: New test.
+
 2015-08-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-error-pr63969-missing-driver.c: Add call to

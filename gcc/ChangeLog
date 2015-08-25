@@ -1,3 +1,8 @@
+2015-08-25  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67330
+	* varasm.c (declare_weak): Return after giving an error.
+
 2015-08-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-main.c (main): Add params to driver ctor.

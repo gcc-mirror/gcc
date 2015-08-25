@@ -8328,12 +8328,7 @@ handle_weak_attribute (tree *node, tree name,
       return NULL_TREE;
     }
   else if (VAR_OR_FUNCTION_DECL_P (*node))
-    {
-      struct symtab_node *n = symtab_node::get (*node);
-      if (n && n->refuse_visibility_changes)
-	error ("%+D declared weak after being used", *node);
-      declare_weak (*node);
-    }
+    declare_weak (*node);
   else
     warning (OPT_Wattributes, "%qE attribute ignored", name);
 
