@@ -1,5 +1,10 @@
 2015-08-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* io/unit.c (get_internal_unit): Make default sign mode unspecified.
+	(init_units): Make default sign mode unspecified.
+
+2015-08-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* libgfortran.h (check_buffered): Remove unused prototype.
 
 2015-08-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
