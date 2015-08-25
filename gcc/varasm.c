@@ -5403,7 +5403,10 @@ declare_weak (tree decl)
 {
   gcc_assert (TREE_CODE (decl) != FUNCTION_DECL || !TREE_ASM_WRITTEN (decl));
   if (! TREE_PUBLIC (decl))
-    error ("weak declaration of %q+D must be public", decl);
+    {
+      error ("weak declaration of %q+D must be public", decl);
+      return;
+    }
   else if (!TARGET_SUPPORTS_WEAK)
     warning (0, "weak declaration of %q+D not supported", decl);
 
