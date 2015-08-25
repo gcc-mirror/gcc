@@ -2177,11 +2177,19 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 	fprintf_indent (f, indent, "res = fold_build%d_loc (loc, %s, %s",
 			ops.length(), opr_name, type);
       else
-	fprintf_indent (f, indent, "res = build_call_expr_loc (loc, "
-			"builtin_decl_implicit (%s), %d", opr_name, ops.length());
+	{
+	  fprintf_indent (f, indent, "{\n");
+	  fprintf_indent (f, indent, "  tree decl = builtin_decl_implicit (%s);\n",
+			  opr_name);
+	  fprintf_indent (f, indent, "  if (!decl) return NULL_TREE;\n");
+	  fprintf_indent (f, indent, "  res = build_call_expr_loc (loc, "
+			  "decl, %d", ops.length());
+	}
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", ops%d[%u]", depth, i);
       fprintf (f, ");\n");
+      if (opr->kind != id_base::CODE)
+	fprintf_indent (f, indent, "}\n");
       if (*opr == CONVERT_EXPR)
 	{
 	  indent -= 2;
@@ -3069,13 +3077,24 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 				    *e->operation == CONVERT_EXPR
 				    ? "NOP_EXPR" : e->operation->id);
 		  else
-		    fprintf_indent (f, indent,
-				    "res = build_call_expr_loc "
-				    "(loc, builtin_decl_implicit (%s), %d",
-				    e->operation->id, e->ops.length());
+		    {
+		      fprintf_indent (f, indent,
+				      "{\n");
+		      fprintf_indent (f, indent,
+				      "  tree decl = builtin_decl_implicit (%s);\n",
+				      e->operation->id);
+		      fprintf_indent (f, indent,
+				      "  if (!decl) return NULL_TREE;\n");
+		      fprintf_indent (f, indent,
+				      "  res = build_call_expr_loc "
+				      "(loc, decl, %d",
+				      e->ops.length());
+		    }
 		  for (unsigned j = 0; j < e->ops.length (); ++j)
 		    fprintf (f, ", res_op%d", j);
 		  fprintf (f, ");\n");
+		  if (!is_a <operator_id *> (opr))
+		    fprintf_indent (f, indent, "}\n");
 		}
 	    }
 	}
