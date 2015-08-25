@@ -5781,6 +5781,8 @@ Array_type::verify_length()
 bool
 Array_type::do_verify()
 {
+  if (this->element_type()->is_error_type())
+    return false;
   if (!this->verify_length())
     this->length_ = Expression::make_error(this->length_->location());
   return true;
