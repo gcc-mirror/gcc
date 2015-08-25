@@ -1,3 +1,9 @@
+2015-08-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/67344
+	* config/rs6000/rs6000.md (*and<mode>3_imm_dot_shifted): Change to
+	a define_insn, remove second alternative.
+
 2015-08-25  Thomas Schwinge  <thomas@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
