@@ -1,3 +1,8 @@
+2015-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (driver::finalize): Only assign to extra_specs if
+	[EXTRA_SPECS].
+
 2015-08-25  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/67330
