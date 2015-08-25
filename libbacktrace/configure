@@ -11710,10 +11710,28 @@ fi
 
 # When building as a target library, shared libraries may want to link
 # this in.  We don't want to provide another shared library to
-# complicate dependencies.  Instead, we just compile with -fPIC.
+# complicate dependencies.  Instead, we just compile with -fPIC, if
+# the target supports compiling with that option.
 PIC_FLAG=
 if test -n "${with_target_subdir}"; then
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -fPIC"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
   PIC_FLAG=-fPIC
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
 fi
 # Similarly, use -fPIC with --enable-host-shared:
 # Check whether --enable-host-shared was given.

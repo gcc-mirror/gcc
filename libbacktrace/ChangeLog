@@ -1,3 +1,9 @@
+2015-08-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac: Only compile with -fPIC if the target
+	supports it.
+	* configure: Regenerate.
+
 2015-08-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* configure.ac: Set have_mmap to no on spu-*-* targets.
