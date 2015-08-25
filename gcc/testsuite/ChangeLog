@@ -1,5 +1,7 @@
 2015-08-25  Nathan Sidwell  <nathan@acm.org>
 
+	* gcc.c-torture/execute/builtins/20010124-1.x: New.
+
 	* gcc.dg/20001117-1.c: Needs return_address.
 	* gcc.dg/20020415-1.c: Needs alloca.
 	* gcc.dg/graphite/id-pr44676.c: Needs profiling.
