@@ -1047,7 +1047,7 @@ Lex::gather_number()
 	  pnum = p;
 	  while (p < pend)
 	    {
-	      if (*p < '0' || *p > '7')
+	      if (*p < '0' || *p > '9')
 		break;
 	      ++p;
 	    }
@@ -1060,7 +1060,13 @@ Lex::gather_number()
 	  std::string s(pnum, p - pnum);
 	  mpz_t val;
 	  int r = mpz_init_set_str(val, s.c_str(), base);
-	  go_assert(r == 0);
+          if (r != 0)
+            {
+              if (base == 8)
+                error_at(this->location(), "invalid octal literal");
+              else
+                error_at(this->location(), "invalid hex literal");
+            }
 
 	  if (neg)
 	    mpz_neg(val, val);
