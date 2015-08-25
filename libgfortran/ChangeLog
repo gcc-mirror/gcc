@@ -1,3 +1,7 @@
+2015-08-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (check_buffered): Remove unused prototype.
+
 2015-08-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/57496
