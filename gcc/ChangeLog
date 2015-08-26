@@ -1,3 +1,10 @@
+2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc/config/arm/arm-cores.def: Add FL_FOR_ARCH flag for each
+	ARM_CORE entry.  Fix some white-space.
+	* gcc/config/arm/arm.c: Remove FL_FOR_ARCH derivation from
+	ARM_CORE definition.
+
 2015-08-26  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* fold-const.c (fold_binary_loc) : Move Optimize 
