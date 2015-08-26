@@ -1,5 +1,10 @@
 2015-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/map.h (map::try_emplace, map::insert_or_assign):
+	Define.
+	* include/debug/unordered_map (unordered_map::try_emplace,
+	unordered_map::insert_or_assign): Define.
+
 	PR libstdc++/66902
 	* src/c++11/debug.cc (_S_debug_messages): Give internal linkage.
 
