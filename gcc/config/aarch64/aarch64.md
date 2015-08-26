@@ -3927,6 +3927,16 @@
   [(set_attr "type" "bfm")]
 )
 
+(define_insn "*aarch64_bfi<GPI:mode><ALLX:mode>4"
+  [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
+			  (match_operand 1 "const_int_operand" "n")
+			  (match_operand 2 "const_int_operand" "n"))
+	(zero_extend:GPI (match_operand:ALLX 3  "register_operand" "r")))]
+  "UINTVAL (operands[1]) <= <ALLX:sizen>"
+  "bfi\\t%<GPI:w>0, %<GPI:w>3, %2, %1"
+  [(set_attr "type" "bfm")]
+)
+
 (define_insn "*extr_insv_lower_reg<mode>"
   [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
 			  (match_operand 1 "const_int_operand" "n")
