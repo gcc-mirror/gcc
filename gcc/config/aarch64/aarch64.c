@@ -1114,14 +1114,43 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	return;
       }
 
+    case SYMBOL_TLSLE12:
     case SYMBOL_TLSLE24:
+    case SYMBOL_TLSLE32:
+    case SYMBOL_TLSLE48:
       {
+	machine_mode mode = GET_MODE (dest);
 	rtx tp = aarch64_load_tp (NULL);
 
-	if (GET_MODE (dest) != Pmode)
-	  tp = gen_lowpart (GET_MODE (dest), tp);
+	if (mode != Pmode)
+	  tp = gen_lowpart (mode, tp);
 
-	emit_insn (gen_tlsle (dest, tp, imm));
+	switch (type)
+	  {
+	  case SYMBOL_TLSLE12:
+	    emit_insn ((mode == DImode ? gen_tlsle12_di : gen_tlsle12_si)
+			(dest, tp, imm));
+	    break;
+	  case SYMBOL_TLSLE24:
+	    emit_insn ((mode == DImode ? gen_tlsle24_di : gen_tlsle24_si)
+			(dest, tp, imm));
+	  break;
+	  case SYMBOL_TLSLE32:
+	    emit_insn ((mode == DImode ? gen_tlsle32_di : gen_tlsle32_si)
+			(dest, imm));
+	    emit_insn ((mode == DImode ? gen_adddi3 : gen_addsi3)
+			(dest, dest, tp));
+	  break;
+	  case SYMBOL_TLSLE48:
+	    emit_insn ((mode == DImode ? gen_tlsle48_di : gen_tlsle48_si)
+			(dest, imm));
+	    emit_insn ((mode == DImode ? gen_adddi3 : gen_addsi3)
+			(dest, dest, tp));
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+
 	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
 	return;
       }
@@ -1676,7 +1705,10 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
 	case SYMBOL_SMALL_ABSOLUTE:
 	case SYMBOL_TINY_ABSOLUTE:
+	case SYMBOL_TLSLE12:
 	case SYMBOL_TLSLE24:
+	case SYMBOL_TLSLE32:
+	case SYMBOL_TLSLE48:
 	  aarch64_load_symref_appropriately (dest, imm, sty);
 	  return;
 
@@ -4577,6 +4609,10 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
 	case SYMBOL_SMALL_GOTTPREL:
 	  asm_fprintf (asm_out_file, ":gottprel_lo12:");
+	  break;
+
+	case SYMBOL_TLSLE12:
+	  asm_fprintf (asm_out_file, ":tprel_lo12:");
 	  break;
 
 	case SYMBOL_TLSLE24:
@@ -8695,7 +8731,16 @@ aarch64_classify_tls_symbol (rtx x)
       return SYMBOL_SMALL_GOTTPREL;
 
     case TLS_MODEL_LOCAL_EXEC:
-      return SYMBOL_TLSLE24;
+      if (aarch64_tls_size == 12)
+	return SYMBOL_TLSLE12;
+      else if (aarch64_tls_size == 24)
+	return SYMBOL_TLSLE24;
+      else if (aarch64_tls_size == 32)
+	return SYMBOL_TLSLE32;
+      else if (aarch64_tls_size == 48)
+	return SYMBOL_TLSLE48;
+      else
+	gcc_unreachable ();
 
     case TLS_MODEL_EMULATED:
     case TLS_MODEL_NONE:

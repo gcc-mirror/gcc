@@ -1,3 +1,22 @@
+2015-08-26  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (initialize_aarch64_tls_size): Set default
+	tls size for tiny, small, large memory model.
+	(aarch64_load_symref_appropriately): Support new symbol types.
+	(aarch64_expand_mov_immediate): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_classify_tls_symbol): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_symbol_context): Likewise.
+	(aarch64_symbol_type): Likewise.
+	* config/aarch64/aarch64.md (tlsle): Deleted.
+	(tlsle12_<mode>): New define_insn.
+	(tlsle24_<mode>): Likewise.
+	(tlsle32_<mode>): Likewise.
+	(tlsle48_<mode>): Likewise.
+	* doc/sourcebuild.texi (AArch64-specific attributes): Document
+	"aarch64_tlsle32".
+
 2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-protos.h (FL_NONE): New.
