@@ -1,3 +1,10 @@
+2015-08-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (show_variables): Remove prototype.
+	* runtime/environ.c (print_spaces, var_source, show_integer,
+	show_boolean, show_sep, show_string): Remove functions.
+	* runtime/main.c (init): Remove dead code.
+
 2015-08-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* io/unit.c (get_internal_unit): Make default sign mode unspecified.

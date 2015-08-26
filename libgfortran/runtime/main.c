@@ -120,15 +120,6 @@ init (void)
 
   init_compile_options ();
 
-#ifdef DEBUG
-  /* Check for special command lines.  */
-
-  if (argc > 1 && strcmp (argv[1], "--help") == 0)
-    show_variables ();
-
-  /* if (argc > 1 && strcmp(argv[1], "--resume") == 0) resume();  */
-#endif
-
   random_seed_i4 (NULL, NULL, NULL);
 }
 
