@@ -239,6 +239,25 @@
   return INT_REGNO_P (REGNO (op));
 })
 
+;; Like int_reg_operand, but don't return true for pseudo registers
+(define_predicate "int_reg_operand_not_pseudo"
+  (match_operand 0 "register_operand")
+{
+  if ((TARGET_E500_DOUBLE || TARGET_SPE) && invalid_e500_subreg (op, mode))
+    return 0;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (!REG_P (op))
+    return 0;
+
+  if (REGNO (op) >= FIRST_PSEUDO_REGISTER)
+    return 0;
+
+  return INT_REGNO_P (REGNO (op));
+})
+
 ;; Like int_reg_operand, but only return true for base registers
 (define_predicate "base_reg_operand"
   (match_operand 0 "int_reg_operand")
