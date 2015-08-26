@@ -1,3 +1,17 @@
+2015-08-26  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* fold-const.c (fold_binary_loc) : Move Optimize 
+	root(x)*root(y)	as root(x*y) to match.pd.
+	Move Optimize expN(x)*expN(y) as expN(x+y) to match.pd.
+	Move Optimize pow(x,y)*pow(x,z) as pow(x,y+z) to match.pd.
+	Move Optimize a/root(b/c) into a*root(c/b) to match.pd.
+	Move Optimize x/expN(y) into x*expN(-y) to match.pd.
+	* match.pd (mult (root:s @0) (root:s @1)): New simplifier.
+	(mult (POW:s @0 @1) (POW:s @0 @2)) : New simplifier.
+	(mult (exps:s @0) (exps:s @1)) : New simplifier.
+	(rdiv @0 (root:s (rdiv:s @1 @2))) : New simplifier.
+	(rdiv @0 (exps:s @1)) : New simplifier.
+
 2015-08-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (driver::finalize): Only assign to extra_specs if

@@ -2014,10 +2014,27 @@ along with GCC; see the file COPYING3.  If not see
   (if (!HONOR_SNANS (type))
    @0))
 
+ /* Simplify sqrt(x) * sqrt(y) -> sqrt(x*y).  */
+ (for root (SQRT CBRT)
+  (simplify
+   (mult (root:s @0) (root:s @1))
+    (root (mult @0 @1))))
+
+ /* Simplify pow(x,y) * pow(x,z) -> pow(x,y+z). */
+ (simplify
+  (mult (POW:s @0 @1) (POW:s @0 @2))
+   (POW @0 (plus @1 @2)))
+
  /* Simplify pow(x,y) * pow(z,y) -> pow(x*z,y). */
  (simplify
   (mult (POW:s @0 @1) (POW:s @2 @1))
    (POW (mult @0 @2) @1))
+
+ /* Simplify expN(x) * expN(y) -> expN(x+y). */
+ (for exps (EXP EXP2 EXP10 POW10)
+  (simplify
+   (mult (exps:s @0) (exps:s @1))
+    (exps (plus @0 @1))))
 
  /* Simplify tan(x) * cos(x) -> sin(x). */
  (simplify
@@ -2061,9 +2078,16 @@ along with GCC; see the file COPYING3.  If not see
    (POW @0 (minus @1 { build_one_cst (type); }))))
 
  /* Simplify a/root(b/c) into a*root(c/b).  */
- (simplify
-  (rdiv @0 (SQRT:s (rdiv:s @1 @2)))
-   (mult @0 (SQRT (rdiv @2 @1))))
+ (for root (SQRT CBRT)
+  (simplify
+   (rdiv @0 (root:s (rdiv:s @1 @2)))
+    (mult @0 (root (rdiv @2 @1)))))
+
+ /* Simplify x/expN(y) into x*expN(-y).  */
+ (for exps (EXP EXP2 EXP10 POW10)
+  (simplify
+   (rdiv @0 (exps:s @1))
+    (mult @0 (exps (negate @1)))))
 
  /* Simplify x / pow (y,z) -> x * pow(y,-z). */
  (simplify
