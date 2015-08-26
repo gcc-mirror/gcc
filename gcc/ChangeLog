@@ -1,3 +1,22 @@
+2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-builtins.c (def_mbuiltin): Use ARM_FSET macro.
+	(struct builtin_description): Change type of mask to unsigned
+	long.
+	* config/arm/arm-protos.h (insn_flags): Declare as type
+	arm_feature_set.
+	(tune_flags): Likewise.
+	* config/arm/arm.c (feature_count): New.
+	(insn_flags): Define as type arm_feature_set.
+	(tune_flags): Likewise.
+	(struct processors): Define field flags as type arm_feature_set.
+	(all_cores): Update for change to struct processors.
+	(all_architectures): Likewise.
+	(arm_option_check_internal): Use arm_feature_set and ARM_FSET
+	macros.
+	(arm_option_override_internal): Likewise.
+	(arm_option_override): Likewise.
+
 2015-08-26  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
