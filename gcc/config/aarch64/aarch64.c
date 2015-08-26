@@ -1159,6 +1159,31 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       emit_insn (gen_ldr_got_tiny (dest, imm));
       return;
 
+    case SYMBOL_TINY_TLSIE:
+      {
+	machine_mode mode = GET_MODE (dest);
+	rtx tp = aarch64_load_tp (NULL);
+
+	if (mode == ptr_mode)
+	  {
+	    if (mode == DImode)
+	      emit_insn (gen_tlsie_tiny_di (dest, imm, tp));
+	    else
+	      {
+		tp = gen_lowpart (mode, tp);
+		emit_insn (gen_tlsie_tiny_si (dest, imm, tp));
+	      }
+	  }
+	else
+	  {
+	    gcc_assert (mode == Pmode);
+	    emit_insn (gen_tlsie_tiny_sidi (dest, imm, tp));
+	  }
+
+	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
+	return;
+      }
+
     default:
       gcc_unreachable ();
     }
@@ -1693,6 +1718,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	case SYMBOL_SMALL_GOT_28K:
 	case SYMBOL_SMALL_GOT_4G:
 	case SYMBOL_TINY_GOT:
+	case SYMBOL_TINY_TLSIE:
 	  if (offset != const0_rtx)
 	    {
 	      gcc_assert(can_create_pseudo_p ());
@@ -4621,6 +4647,10 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
 	case SYMBOL_TINY_GOT:
 	  asm_fprintf (asm_out_file, ":got:");
+	  break;
+
+	case SYMBOL_TINY_TLSIE:
+	  asm_fprintf (asm_out_file, ":gottprel:");
 	  break;
 
 	default:
@@ -8728,7 +8758,14 @@ aarch64_classify_tls_symbol (rtx x)
       return TARGET_TLS_DESC ? SYMBOL_SMALL_TLSDESC : SYMBOL_SMALL_TLSGD;
 
     case TLS_MODEL_INITIAL_EXEC:
-      return SYMBOL_SMALL_GOTTPREL;
+      switch (aarch64_cmodel)
+	{
+	case AARCH64_CMODEL_TINY:
+	case AARCH64_CMODEL_TINY_PIC:
+	  return SYMBOL_TINY_TLSIE;
+	default:
+	  return SYMBOL_SMALL_GOTTPREL;
+	}
 
     case TLS_MODEL_LOCAL_EXEC:
       if (aarch64_tls_size == 12)

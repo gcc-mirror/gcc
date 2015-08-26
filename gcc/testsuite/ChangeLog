@@ -1,5 +1,9 @@
 2015-08-26  Jiong Wang  <jiong.wang@arm.com>
 
+	* gcc.target/aarch64/tlsie_tiny_1.c: New testcase.
+
+2015-08-26  Jiong Wang  <jiong.wang@arm.com>
+
 	* gcc.target/aarch64/tlsle_1.x: Rename to tls_1.x
 	* gcc.target/aarch64/aarch64/tlsle12_1.c: Update source file name.
 	* gcc.target/aarch64/aarch64/tlsle24_1.c: Likewise.
