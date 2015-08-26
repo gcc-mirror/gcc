@@ -74,7 +74,10 @@ enum aarch64_symbol_context
    SYMBOL_SMALL_TLSGD
    SYMBOL_SMALL_TLSDESC
    SYMBOL_SMALL_GOTTPREL
+   SYMBOL_TLSLE12
    SYMBOL_TLSLE24
+   SYMBOL_TLSLE32
+   SYMBOL_TLSLE48
    Each of these represents a thread-local symbol, and corresponds to the
    thread local storage relocation operator for the symbol being referred to.
 
@@ -111,7 +114,10 @@ enum aarch64_symbol_type
   SYMBOL_SMALL_GOTTPREL,
   SYMBOL_TINY_ABSOLUTE,
   SYMBOL_TINY_GOT,
+  SYMBOL_TLSLE12,
   SYMBOL_TLSLE24,
+  SYMBOL_TLSLE32,
+  SYMBOL_TLSLE48,
   SYMBOL_FORCE_TO_MEM
 };
 

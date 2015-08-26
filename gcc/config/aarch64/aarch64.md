@@ -117,7 +117,10 @@
     UNSPEC_ST4_LANE
     UNSPEC_TLS
     UNSPEC_TLSDESC
-    UNSPEC_TLSLE
+    UNSPEC_TLSLE12
+    UNSPEC_TLSLE24
+    UNSPEC_TLSLE32
+    UNSPEC_TLSLE48
     UNSPEC_USHL_2S
     UNSPEC_VSTRUCTDUMMY
     UNSPEC_SP_SET
@@ -4512,29 +4515,46 @@
    (set_attr "length" "8")]
 )
 
-(define_expand "tlsle"
-  [(set (match_operand 0 "register_operand" "=r")
-        (unspec [(match_operand 1 "register_operand" "r")
-                   (match_operand 2 "aarch64_tls_le_symref" "S")]
-                   UNSPEC_TLSLE))]
-  ""
-{
-  machine_mode mode = GET_MODE (operands[0]);
-  emit_insn ((mode == DImode
-	      ? gen_tlsle_di
-	      : gen_tlsle_si) (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_insn "tlsle_<mode>"
+(define_insn "tlsle12_<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
-        (unspec:P [(match_operand:P 1 "register_operand" "r")
-                   (match_operand 2 "aarch64_tls_le_symref" "S")]
-		   UNSPEC_TLSLE))]
+	(unspec:P [(match_operand:P 1 "register_operand" "r")
+		   (match_operand 2 "aarch64_tls_le_symref" "S")]
+		   UNSPEC_TLSLE12))]
+  ""
+  "add\\t%<w>0, %<w>1, #%L2";
+  [(set_attr "type" "alu_sreg")
+   (set_attr "length" "4")]
+)
+
+(define_insn "tlsle24_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "register_operand" "r")
+		   (match_operand 2 "aarch64_tls_le_symref" "S")]
+		   UNSPEC_TLSLE24))]
   ""
   "add\\t%<w>0, %<w>1, #%G2, lsl #12\;add\\t%<w>0, %<w>0, #%L2"
-  [(set_attr "type" "alu_sreg")
+  [(set_attr "type" "multiple")
    (set_attr "length" "8")]
+)
+
+(define_insn "tlsle32_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand 1 "aarch64_tls_le_symref" "S")]
+		   UNSPEC_TLSLE32))]
+  ""
+  "movz\\t%<w>0, #:tprel_g1:%1\;movk\\t%<w>0, #:tprel_g0_nc:%1"
+  [(set_attr "type" "multiple")
+   (set_attr "length" "8")]
+)
+
+(define_insn "tlsle48_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand 1 "aarch64_tls_le_symref" "S")]
+		   UNSPEC_TLSLE48))]
+  ""
+  "movz\\t%<w>0, #:tprel_g2:%1\;movk\\t%<w>0, #:tprel_g1_nc:%1\;movk\\t%<w>0, #:tprel_g0_nc:%1"
+  [(set_attr "type" "multiple")
+   (set_attr "length" "12")]
 )
 
 (define_insn "tlsdesc_small_<mode>"

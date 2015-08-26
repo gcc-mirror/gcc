@@ -977,6 +977,23 @@ proc check_effective_target_aarch64_small_fpic { } {
     }
 }
 
+# On AArch64, instruction sequence for TLS LE under -mtls-size=32 will utilize
+# the relocation modifier "tprel_g0_nc" together with MOVK, it's only supported
+# in binutils since 2015-03-04 as PR gas/17843.
+#
+# This test directive make sure binutils support all features needed by TLS LE
+# under -mtls-size=32 on AArch64.
+
+proc check_effective_target_aarch64_tlsle32 { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_tlsle32 object {
+	    void foo (void) { asm ("movk x1,#:tprel_g0_nc:t1"); }
+	}]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if -shared is supported, as in no warnings or errors
 # emitted, 0 otherwise.
 
