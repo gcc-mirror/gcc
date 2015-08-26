@@ -2197,7 +2197,7 @@ static const struct processors all_cores[] =
   /* ARM Cores */
 #define ARM_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
   {NAME, IDENT, #ARCH, BASE_ARCH_##ARCH,	  \
-   ARM_FSET_MAKE_CPU1 (FLAGS), &arm_##COSTS##_tune},
+   FLAGS, &arm_##COSTS##_tune},
 #include "arm-cores.def"
 #undef ARM_CORE
   {NULL, arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
@@ -2210,7 +2210,7 @@ static const struct processors all_architectures[] =
      from the core.  */
 
 #define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
-  {NAME, CORE, #ARCH, BASE_ARCH_##ARCH, ARM_FSET_MAKE_CPU1 (FLAGS), NULL},
+  {NAME, CORE, #ARCH, BASE_ARCH_##ARCH, FLAGS, NULL},
 #include "arm-arches.def"
 #undef ARM_ARCH
   {NULL, arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}

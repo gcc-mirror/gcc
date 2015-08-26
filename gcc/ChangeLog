@@ -1,5 +1,16 @@
 2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/arm-arches.def: Replace single value flags with
+	an initializer built from ARM_FSET_MAKE_CPU1.
+	* config/arm/arm-cores.def: Likewise.
+	* config/arm/arm.c: (all_cores): Remove ARM_FSET_MAKE_CPU1
+	derivation from the ARM_CORE macro definition, use the given value
+	instead.
+	(all_architectures): Remove ARM_FSET_MAKE_CPU1 derivation from the
+	ARM_ARCH macro definition, use the given value instead.
+
+2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/arm-builtins.c (def_mbuiltin): Test all flags in a
 	feature set.
 	(struct builtin_description): Replace field mask with field
