@@ -1,3 +1,29 @@
+2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-protos.h (FL_NONE): New.
+	(FL_ANY): New.
+	(arm_feature_set): New.
+	(ARM_FSET_MAKE): New.
+	(ARM_FSET_MAKE_CPU1): New.
+	(ARM_FSET_MAKE_CPU2): New.
+	(ARM_FSET_CPU1): New.
+	(ARM_FSET_CPU2): New.
+	(ARM_FSET_EMPTY): New.
+	(ARM_FSET_ANY): New.
+	(ARM_FSET_HAS_CPU1): New.
+	(ARM_FSET_HAS_CPU2): New.
+	(ARM_FSET_HAS_CPU): New.
+	(ARM_FSET_ADD_CPU1): New.
+	(ARM_FSET_ADD_CPU2): New.
+	(ARM_FSET_DEL_CPU1): New.
+	(ARM_FSET_DEL_CPU2): New.
+	(ARM_FSET_UNION): New.
+	(ARM_FSET_INTER): New.
+	(ARM_FSET_XOR): New.
+	(ARM_FSET_EXCLUDE): New.
+	(AFM_FSET_IS_EMPTY): New.
+	(ARM_FSET_CPU_SUBSET): New.
+
 2015-08-26  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_symbol_type): Rename
