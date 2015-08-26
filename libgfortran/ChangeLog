@@ -1,5 +1,18 @@
 2015-08-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/29600
+	* Makefile.am: Add generated/shape_i{1,2}.c
+	* Makefile.in: Regenerate.
+	* generated/shape_i1.c: New generated file.
+	* generated/shape_i2.c: New generated file.
+	* generated/shape_i4.c: Regenerate.
+	* generated/shape_i8.c: Regenerate.
+	* generated/shape_i16.c: Regenerate.
+	* gfortran.map (GFORTRAN_1.7): Add _gfortran_shape_{1,2}.
+	* m4/shape.m4: Fix parameter type.
+
+2015-08-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* libgfortran.h (show_variables): Remove prototype.
 	* runtime/environ.c (print_spaces, var_source, show_integer,
 	show_boolean, show_sep, show_string): Remove functions.

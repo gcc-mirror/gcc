@@ -1285,6 +1285,8 @@ GFORTRAN_1.7 {
     __ieee_exceptions_MOD_ieee_support_flag_10;
     __ieee_exceptions_MOD_ieee_support_flag_16;
     _gfortran_mvbits_i16;
+    _gfortran_shape_1;
+    _gfortran_shape_2;
 } GFORTRAN_1.6; 
 
 F2C_1.0 {
