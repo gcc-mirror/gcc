@@ -7492,6 +7492,40 @@ aarch64_parse_one_override_token (const char* token,
   return;
 }
 
+/* A checking mechanism for the implementation of the tls size.  */
+
+static void
+initialize_aarch64_tls_size (struct gcc_options *opts)
+{
+  if (aarch64_tls_size == 0)
+    aarch64_tls_size = 24;
+
+  switch (opts->x_aarch64_cmodel_var)
+    {
+    case AARCH64_CMODEL_TINY:
+      /* Both the default and maximum TLS size allowed under tiny is 1M which
+	 needs two instructions to address, so we clamp the size to 24.  */
+      if (aarch64_tls_size > 24)
+	aarch64_tls_size = 24;
+      break;
+    case AARCH64_CMODEL_SMALL:
+      /* The maximum TLS size allowed under small is 4G.  */
+      if (aarch64_tls_size > 32)
+	aarch64_tls_size = 32;
+      break;
+    case AARCH64_CMODEL_LARGE:
+      /* The maximum TLS size allowed under large is 16E.
+	 FIXME: 16E should be 64bit, we only support 48bit offset now.  */
+      if (aarch64_tls_size > 48)
+	aarch64_tls_size = 48;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return;
+}
+
 /* Parse STRING looking for options in the format:
      string	:: option:string
      option	:: name=substring
@@ -7584,6 +7618,7 @@ aarch64_override_options_internal (struct gcc_options *opts)
     }
 
   initialize_aarch64_code_model (opts);
+  initialize_aarch64_tls_size (opts);
 
   aarch64_override_options_after_change_1 (opts);
 }
