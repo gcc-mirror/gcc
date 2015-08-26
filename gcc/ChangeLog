@@ -1,3 +1,79 @@
+2015-08-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_expand_float128_convert):
+	Add declaration.
+
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_store): Fix a
+	comment.
+	(rs6000_cannot_change_mode_class): Add support for IEEE 128-bit
+	floating point in VSX registers.
+	(rs6000_output_move_128bit): Always print out the set insn if we
+	can't generate an appropriate 128-bit move.
+	(rs6000_generate_compare): Add support for IEEE 128-bit floating
+	point in VSX registers comparisons.
+	(rs6000_expand_float128_convert): Likewise.
+
+	* config/rs6000/predicates.md (int_reg_operand_not_pseudo): New
+	predicate for only GPR hard registers.
+
+	* config/rs6000/rs6000.md (FP): Add IEEE 128-bit floating point
+	modes to iterators. Add new iterators for moving 128-bit values in
+	scalar FPR registers and VSX registers.
+	(FMOVE128): Likewise.
+	(FMOVE128_FPR): Likewise.
+	(FMOVE128_GPR): Likewise.
+	(FMOVE128_VSX): Likewise.
+	(FLOAT128_SFDFTF): New iterators for IEEE 128-bit floating point
+	in VSX registers.
+	(IFKF): Likewise.
+	(IBM128): Likewise.
+	(TFIFKF): Likewise.
+	(RELOAD): Add IEEE 128-bit floating point modes.
+	(signbittf2): Convert TF insns to add support for new IEEE 128-bit
+	floating point in VSX registers modes.
+	(signbit<mode>2, IBM128 iterator): Likewise.
+	(mov<mode>_64bit_dm, FMOVE128_FPR iterator): Likewise.
+	(mov<mode>_32bit, FMOVE128_FPR iterator): Likewise.
+	(negtf2): Likewise.
+	(neg<mode>2, TFIFKF iterator): Likewise.
+	(negtf2_internal): Likewise.
+	(abstf2): Likewise.
+	(abs<mode>2, TFIFKF iterator): Likewise.
+	(ieee_128bit_negative_zero): New IEEE 128-bit floating point in
+	VSX insn support for negate, absolute value, and negative absolute
+	value.
+	(ieee_128bit_vsx_neg<mode>2): Likewise.
+	(ieee_128bit_vsx_neg<mode>2_internal): Likewise.
+	(ieee_128bit_vsx_abs<mode>2): Likewise.
+	(ieee_128bit_vsx_abs<mode>2_internal): Likewise.
+	(ieee_128bit_vsx_nabs<mode>2): Likewise.
+	(ieee_128bit_vsx_nabs<mode>2_internal): Likewise.
+	(FP128_64): Update pack/unpack 128-bit insns for IEEE 128-bit
+	floating point in VSX registers.
+	(unpack<mode>_dm): Likewise.
+	(unpack<mode>_nodm): Likewise.
+	(pack<mode>): Likewise.
+	(unpackv1ti): Likewise.
+	(unpack<mode>, FMOVE128_VSX iterator): Likewise.
+	(packv1ti): Likewise.
+	(pack<mode>, FMOVE128_VSX iterator): Likewise.
+	(extenddftf2): Add support for IEEE 128-bit floating point in VSX
+	registers.
+	(extenddftf2_internal): Likewise.
+	(trunctfdf2): Likewise.
+	(trunctfdf2_internal2): Likewise.
+	(fix_trunc_helper): Likewise.
+	(fix_trunctfdi2"): Likewise.
+	(floatditf2): Likewise.
+	(floatuns<mode>tf2): Likewise.
+	(extend<FLOAT128_SFDFTF:mode><IFKF:mode>2): Likewise.
+	(trunc<IFKF:mode><FLOAT128_SFDFTF:mode>2): Likewise.
+	(fix_trunc<IFKF:mode><SDI:mode>2): Likewise.
+	(fixuns_trunc<IFKF:mode><SDI:mode>2): Likewise.
+	(float<SDI:mode><IFKF:mode>2): Likewise.
+	(floatuns<SDI:mode><IFKF:mode>2): Likewise.
+
+
 2015-08-26  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.md (*aarch64_bfi<GPI:mode><ALLX:mode>4): New.
