@@ -1101,10 +1101,11 @@ arm_init_neon_builtins (void)
 #undef NUM_DREG_TYPES
 #undef NUM_QREG_TYPES
 
-#define def_mbuiltin(FLAG, NAME, TYPE, CODE)				\
+#define def_mbuiltin(FLAGS, NAME, TYPE, CODE)				\
   do									\
     {									\
-      if (ARM_FSET_HAS_CPU1 (insn_flags, (FLAG)))			\
+      const arm_feature_set flags = FLAGS;				\
+      if (ARM_FSET_CPU_SUBSET (flags, insn_flags))			\
 	{								\
 	  tree bdecl;							\
 	  bdecl = add_builtin_function ((NAME), (TYPE), (CODE),		\
@@ -1116,7 +1117,7 @@ arm_init_neon_builtins (void)
 
 struct builtin_description
 {
-  const unsigned long      mask;
+  const arm_feature_set    features;
   const enum insn_code     icode;
   const char * const       name;
   const enum arm_builtins  code;
@@ -1127,11 +1128,13 @@ struct builtin_description
 static const struct builtin_description bdesc_2arg[] =
 {
 #define IWMMXT_BUILTIN(code, string, builtin) \
-  { FL_IWMMXT, CODE_FOR_##code, "__builtin_arm_" string, \
+  { ARM_FSET_MAKE_CPU1 (FL_IWMMXT), CODE_FOR_##code, \
+    "__builtin_arm_" string,			     \
     ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
 #define IWMMXT2_BUILTIN(code, string, builtin) \
-  { FL_IWMMXT2, CODE_FOR_##code, "__builtin_arm_" string, \
+  { ARM_FSET_MAKE_CPU1 (FL_IWMMXT2), CODE_FOR_##code, \
+    "__builtin_arm_" string,			      \
     ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
   IWMMXT_BUILTIN (addv8qi3, "waddb", WADDB)
@@ -1214,10 +1217,12 @@ static const struct builtin_description bdesc_2arg[] =
   IWMMXT_BUILTIN (iwmmxt_walignr3, "walignr3", WALIGNR3)
 
 #define IWMMXT_BUILTIN2(code, builtin) \
-  { FL_IWMMXT, CODE_FOR_##code, NULL, ARM_BUILTIN_##builtin, UNKNOWN, 0 },
+  { ARM_FSET_MAKE_CPU1 (FL_IWMMXT), CODE_FOR_##code, NULL, \
+    ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
 #define IWMMXT2_BUILTIN2(code, builtin) \
-  { FL_IWMMXT2, CODE_FOR_##code, NULL, ARM_BUILTIN_##builtin, UNKNOWN, 0 },
+  { ARM_FSET_MAKE_CPU2 (FL_IWMMXT2), CODE_FOR_##code, NULL, \
+    ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
   IWMMXT2_BUILTIN2 (iwmmxt_waddbhusm, WADDBHUSM)
   IWMMXT2_BUILTIN2 (iwmmxt_waddbhusl, WADDBHUSL)
@@ -1232,7 +1237,7 @@ static const struct builtin_description bdesc_2arg[] =
 
 
 #define FP_BUILTIN(L, U) \
-  {0, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
+  {ARM_FSET_EMPTY, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
    UNKNOWN, 0},
 
   FP_BUILTIN (get_fpscr, GET_FPSCR)
@@ -1240,8 +1245,8 @@ static const struct builtin_description bdesc_2arg[] =
 #undef FP_BUILTIN
 
 #define CRC32_BUILTIN(L, U) \
-  {0, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
-   UNKNOWN, 0},
+  {ARM_FSET_EMPTY, CODE_FOR_##L, "__builtin_arm_"#L, \
+   ARM_BUILTIN_##U, UNKNOWN, 0},
    CRC32_BUILTIN (crc32b, CRC32B)
    CRC32_BUILTIN (crc32h, CRC32H)
    CRC32_BUILTIN (crc32w, CRC32W)
@@ -1251,9 +1256,9 @@ static const struct builtin_description bdesc_2arg[] =
 #undef CRC32_BUILTIN
 
 
-#define CRYPTO_BUILTIN(L, U) \
-  {0, CODE_FOR_crypto_##L, "__builtin_arm_crypto_"#L, ARM_BUILTIN_CRYPTO_##U, \
-   UNKNOWN, 0},
+#define CRYPTO_BUILTIN(L, U)					   \
+  {ARM_FSET_EMPTY, CODE_FOR_crypto_##L,	"__builtin_arm_crypto_"#L, \
+   ARM_BUILTIN_CRYPTO_##U, UNKNOWN, 0},
 #undef CRYPTO1
 #undef CRYPTO2
 #undef CRYPTO3
@@ -1509,7 +1514,9 @@ arm_init_iwmmxt_builtins (void)
       machine_mode mode;
       tree type;
 
-      if (d->name == 0 || !(d->mask == FL_IWMMXT || d->mask == FL_IWMMXT2))
+      if (d->name == 0 ||
+	  !(ARM_FSET_HAS_CPU1 (d->features, FL_IWMMXT) ||
+	    ARM_FSET_HAS_CPU1 (d->features, FL_IWMMXT2)))
 	continue;
 
       mode = insn_data[d->icode].operand[1].mode;
@@ -1533,17 +1540,17 @@ arm_init_iwmmxt_builtins (void)
 	  gcc_unreachable ();
 	}
 
-      def_mbuiltin (d->mask, d->name, type, d->code);
+      def_mbuiltin (d->features, d->name, type, d->code);
     }
 
   /* Add the remaining MMX insns with somewhat more complicated types.  */
 #define iwmmx_mbuiltin(NAME, TYPE, CODE)			\
-  def_mbuiltin (FL_IWMMXT, "__builtin_arm_" NAME, (TYPE),	\
-		ARM_BUILTIN_ ## CODE)
+  def_mbuiltin (ARM_FSET_MAKE_CPU1 (FL_IWMMXT), "__builtin_arm_" NAME, \
+		(TYPE), ARM_BUILTIN_ ## CODE)
 
 #define iwmmx2_mbuiltin(NAME, TYPE, CODE)                      \
-  def_mbuiltin (FL_IWMMXT2, "__builtin_arm_" NAME, (TYPE),     \
-               ARM_BUILTIN_ ## CODE)
+  def_mbuiltin (ARM_FSET_MAKE_CPU1 (FL_IWMMXT2), "__builtin_arm_" NAME, \
+		(TYPE),	ARM_BUILTIN_ ## CODE)
 
   iwmmx_mbuiltin ("wzero", di_ftype_void, WZERO);
   iwmmx_mbuiltin ("setwcgr0", void_ftype_int, SETWCGR0);

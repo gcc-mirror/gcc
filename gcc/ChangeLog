@@ -1,5 +1,22 @@
 2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/arm-builtins.c (def_mbuiltin): Test all flags in a
+	feature set.
+	(struct builtin_description): Replace field mask with field
+	features.
+	(IWMMXT_BUILTIN): Use ARM_FSET macros for feature flags.
+	(IWMMXT2_BUILTIN): Likewise.
+	(IWMMXT2_BUILTIN2): Likewise.
+	(FP_BUILTIN): Likewise.
+	(CRC32_BUILTIN): Likewise.
+	(CRYPTO_BUILTIN): Likewise.
+	(iwmmx_mbuiltin): Likewise.
+	(iwmmx2_mbuiltin): Likewise.
+	(arm_init_iwmmxt_builtins): Likewise. Also, update for change to
+	struct builtin_description.
+
+2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/arm-builtins.c (def_mbuiltin): Use ARM_FSET macro.
 	(struct builtin_description): Change type of mask to unsigned
 	long.
