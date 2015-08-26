@@ -1101,10 +1101,10 @@ arm_init_neon_builtins (void)
 #undef NUM_DREG_TYPES
 #undef NUM_QREG_TYPES
 
-#define def_mbuiltin(MASK, NAME, TYPE, CODE)				\
+#define def_mbuiltin(FLAG, NAME, TYPE, CODE)				\
   do									\
     {									\
-      if ((MASK) & insn_flags)						\
+      if (ARM_FSET_HAS_CPU1 (insn_flags, (FLAG)))			\
 	{								\
 	  tree bdecl;							\
 	  bdecl = add_builtin_function ((NAME), (TYPE), (CODE),		\
@@ -1116,7 +1116,7 @@ arm_init_neon_builtins (void)
 
 struct builtin_description
 {
-  const unsigned int       mask;
+  const unsigned long      mask;
   const enum insn_code     icode;
   const char * const       name;
   const enum arm_builtins  code;
