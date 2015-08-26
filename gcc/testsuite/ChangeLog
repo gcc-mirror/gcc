@@ -1,3 +1,7 @@
+2015-08-26  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/aarch64/combine_bfi_1.c: New testcase.
+
 2015-08-26  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/tlsie_tiny_1.c: New testcase.
