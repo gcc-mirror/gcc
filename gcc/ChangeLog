@@ -1,3 +1,18 @@
+2015-08-26  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.md (UNSPEC_GOTTINYTLS): New UNSPEC.
+	(tlsie_tiny_<mode>): New define_insn.
+	(tlsie_tiny_sidi): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_symbol_type): Define
+	SYMBOL_TINY_TLSIE.
+	(aarch64_symbol_context): New comment for SYMBOL_TINY_TLSIE.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Support
+	SYMBOL_TINY_TLSIE.
+	(aarch64_expand_mov_immediate): Likewise.
+	(aarch64_print_operand): Likewise.
+	(arch64_classify_tls_symbol): Likewise.
+
 2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-arches.def: Replace single value flags with

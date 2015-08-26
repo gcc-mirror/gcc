@@ -90,6 +90,7 @@
     UNSPEC_GOTSMALLPIC28K
     UNSPEC_GOTSMALLTLS
     UNSPEC_GOTTINYPIC
+    UNSPEC_GOTTINYTLS
     UNSPEC_LD1
     UNSPEC_LD2
     UNSPEC_LD2_DUP
@@ -4512,6 +4513,30 @@
   ""
   "adrp\\t%0, %A1\;ldr\\t%w0, [%0, #%L1]"
   [(set_attr "type" "load1")
+   (set_attr "length" "8")]
+)
+
+(define_insn "tlsie_tiny_<mode>"
+  [(set (match_operand:PTR 0 "register_operand" "=&r")
+	(unspec:PTR [(match_operand 1 "aarch64_tls_ie_symref" "S")
+		     (match_operand:PTR 2 "register_operand" "r")]
+		   UNSPEC_GOTTINYTLS))]
+  ""
+  "ldr\\t%<w>0, %L1\;add\\t%<w>0, %<w>0, %<w>2"
+  [(set_attr "type" "multiple")
+   (set_attr "length" "8")]
+)
+
+(define_insn "tlsie_tiny_sidi"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+	(zero_extend:DI
+	  (unspec:SI [(match_operand 1 "aarch64_tls_ie_symref" "S")
+		      (match_operand:DI 2 "register_operand" "r")
+		      ]
+		      UNSPEC_GOTTINYTLS)))]
+  ""
+  "ldr\\t%w0, %L1\;add\\t%<w>0, %<w>0, %<w>2"
+  [(set_attr "type" "multiple")
    (set_attr "length" "8")]
 )
 
