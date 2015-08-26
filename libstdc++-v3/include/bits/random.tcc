@@ -3472,15 +3472,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const long double __r = static_cast<long double>(__urng.max())
 			    - static_cast<long double>(__urng.min()) + 1.0L;
       const size_t __log2r = std::log(__r) / std::log(2.0L);
-      size_t __k = std::max<size_t>(1UL, (__b + __log2r - 1UL) / __log2r);
-      _RealType __sum = _RealType(0);
-      _RealType __tmp = _RealType(1);
-      for (; __k != 0; --__k)
+      const size_t __m = std::max<size_t>(1UL,
+					  (__b + __log2r - 1UL) / __log2r);
+      _RealType __ret;
+      do
 	{
-	  __sum += _RealType(__urng() - __urng.min()) * __tmp;
-	  __tmp *= __r;
+	  _RealType __sum = _RealType(0);
+	  _RealType __tmp = _RealType(1);
+	  for (size_t __k = __m; __k != 0; --__k)
+	    {
+	      __sum += _RealType(__urng() - __urng.min()) * __tmp;
+	      __tmp *= __r;
+	    }
+	  __ret = __sum / __tmp;
 	}
-      return __sum / __tmp;
+      while (__builtin_expect(__ret >= _RealType(1), 0));
+      return __ret;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,3 +1,13 @@
+2015-08-26  Edward Smith-Rowland  <3dw4rd@verizon.net>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64351
+	PR libstdc++/63176
+	* include/bits/random.tcc (generate_canonical): Loop until we get a
+	result less than one.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	64351.cc: New.
+
 2015-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr.h (__enable_shared_from_this_helper): Use
