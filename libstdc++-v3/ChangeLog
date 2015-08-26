@@ -1,3 +1,8 @@
+2015-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66902
+	* src/c++11/debug.cc (_S_debug_messages): Give internal linkage.
+
 2015-08-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/60519
