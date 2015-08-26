@@ -1,3 +1,10 @@
+2015-08-26  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.opt (mtls-size): New entry.
+	* config/aarch64/aarch64.c (initialize_aarch64_tls_size): New function.
+	(aarch64_override_options_internal): Call initialize_aarch64_tls_size.
+	* doc/invoke.texi (AArch64 Options): Document -mtls-size.
+
 2015-08-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc/config/arm/arm-cores.def: Add FL_FOR_ARCH flag for each

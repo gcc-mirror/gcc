@@ -96,6 +96,25 @@ mtls-dialect=
 Target RejectNegative Joined Enum(tls_type) Var(aarch64_tls_dialect) Init(TLS_DESCRIPTORS) Save
 Specify TLS dialect
 
+mtls-size=
+Target RejectNegative Joined Var(aarch64_tls_size) Enum(aarch64_tls_size)
+Specifies bit size of immediate TLS offsets.  Valid values are 12, 24, 32, 48.
+
+Enum
+Name(aarch64_tls_size) Type(int)
+
+EnumValue
+Enum(aarch64_tls_size) String(12) Value(12)
+
+EnumValue
+Enum(aarch64_tls_size) String(24) Value(24)
+
+EnumValue
+Enum(aarch64_tls_size) String(32) Value(32)
+
+EnumValue
+Enum(aarch64_tls_size) String(48) Value(48)
+
 march=
 Target RejectNegative ToLower Joined Var(aarch64_arch_string)
 -march=ARCH	Use features of architecture ARCH

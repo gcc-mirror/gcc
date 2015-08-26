@@ -514,6 +514,7 @@ Objective-C and Objective-C++ Dialects}.
 -mstrict-align @gol
 -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer @gol
 -mtls-dialect=desc  -mtls-dialect=traditional @gol
+-mtls-size=@var{size} @gol
 -mfix-cortex-a53-835769  -mno-fix-cortex-a53-835769 @gol
 -mfix-cortex-a53-843419  -mno-fix-cortex-a53-843419 @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
@@ -12408,6 +12409,11 @@ of TLS variables.  This is the default.
 @opindex mtls-dialect=traditional
 Use traditional TLS as the thread-local storage mechanism for dynamic accesses
 of TLS variables.
+
+@item -mtls-size=@var{size}
+@opindex mtls-size
+Specify bit size of immediate TLS offsets.  Valid values are 12, 24, 32, 48.
+This option depends on binutils higher than 2.25.
 
 @item -mfix-cortex-a53-835769
 @itemx -mno-fix-cortex-a53-835769
