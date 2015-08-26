@@ -483,6 +483,8 @@ $(srcdir)/generated/transpose_c10.c \
 $(srcdir)/generated/transpose_c16.c
 
 i_shape_c= \
+$(srcdir)/generated/shape_i1.c \
+$(srcdir)/generated/shape_i2.c \
 $(srcdir)/generated/shape_i4.c \
 $(srcdir)/generated/shape_i8.c \
 $(srcdir)/generated/shape_i16.c

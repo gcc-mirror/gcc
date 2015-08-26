@@ -28,14 +28,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 
 
-#if defined (HAVE_GFC_INTEGER_16)
+#if defined (HAVE_GFC_INTEGER_2)
 
-extern void shape_16 (gfc_array_i16 * const restrict ret, 
+extern void shape_2 (gfc_array_i2 * const restrict ret, 
 	const array_t * const restrict array);
-export_proto(shape_16);
+export_proto(shape_2);
 
 void
-shape_16 (gfc_array_i16 * const restrict ret, 
+shape_2 (gfc_array_i2 * const restrict ret, 
 	const array_t * const restrict array)
 {
   int n;
@@ -49,7 +49,7 @@ shape_16 (gfc_array_i16 * const restrict ret,
     {
       GFC_DIMENSION_SET(ret->dim[0], 0, rank - 1, 1);
       ret->offset = 0;
-      ret->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_16));
+      ret->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_2));
     }
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);

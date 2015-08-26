@@ -259,7 +259,8 @@ am__objects_23 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
 	transpose_r4.lo transpose_r8.lo transpose_r10.lo \
 	transpose_r16.lo transpose_c4.lo transpose_c8.lo \
 	transpose_c10.lo transpose_c16.lo
-am__objects_24 = shape_i4.lo shape_i8.lo shape_i16.lo
+am__objects_24 = shape_i1.lo shape_i2.lo shape_i4.lo shape_i8.lo \
+	shape_i16.lo
 am__objects_25 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
 am__objects_26 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
 am__objects_27 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
@@ -916,6 +917,8 @@ $(srcdir)/generated/transpose_c10.c \
 $(srcdir)/generated/transpose_c16.c
 
 i_shape_c = \
+$(srcdir)/generated/shape_i1.c \
+$(srcdir)/generated/shape_i2.c \
 $(srcdir)/generated/shape_i4.c \
 $(srcdir)/generated/shape_i8.c \
 $(srcdir)/generated/shape_i16.c
@@ -1826,7 +1829,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal.Plo@am__quote@
@@ -4015,6 +4020,20 @@ transpose_c16.lo: $(srcdir)/generated/transpose_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/transpose_c16.c' object='transpose_c16.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_c16.lo `test -f '$(srcdir)/generated/transpose_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/transpose_c16.c
+
+shape_i1.lo: $(srcdir)/generated/shape_i1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shape_i1.lo -MD -MP -MF $(DEPDIR)/shape_i1.Tpo -c -o shape_i1.lo `test -f '$(srcdir)/generated/shape_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/shape_i1.Tpo $(DEPDIR)/shape_i1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/shape_i1.c' object='shape_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shape_i1.lo `test -f '$(srcdir)/generated/shape_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i1.c
+
+shape_i2.lo: $(srcdir)/generated/shape_i2.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shape_i2.lo -MD -MP -MF $(DEPDIR)/shape_i2.Tpo -c -o shape_i2.lo `test -f '$(srcdir)/generated/shape_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i2.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/shape_i2.Tpo $(DEPDIR)/shape_i2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/shape_i2.c' object='shape_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shape_i2.lo `test -f '$(srcdir)/generated/shape_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i2.c
 
 shape_i4.lo: $(srcdir)/generated/shape_i4.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shape_i4.lo -MD -MP -MF $(DEPDIR)/shape_i4.Tpo -c -o shape_i4.lo `test -f '$(srcdir)/generated/shape_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i4.c
