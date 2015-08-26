@@ -9947,51 +9947,6 @@ fold_binary_loc (location_t loc,
 
 	  if (flag_unsafe_math_optimizations)
 	    {
-	      enum built_in_function fcode0 = builtin_mathfn_code (arg0);
-	      enum built_in_function fcode1 = builtin_mathfn_code (arg1);
-
-	      /* Optimizations of root(...)*root(...).  */
-	      if (fcode0 == fcode1 && BUILTIN_ROOT_P (fcode0))
-		{
-		  tree rootfn, arg;
-		  tree arg00 = CALL_EXPR_ARG (arg0, 0);
-		  tree arg10 = CALL_EXPR_ARG (arg1, 0);
-
-	          /* Optimize root(x)*root(y) as root(x*y).  */
-		  rootfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
-		  arg = fold_build2_loc (loc, MULT_EXPR, type, arg00, arg10);
-		  return build_call_expr_loc (loc, rootfn, 1, arg);
-		}
-
-	      /* Optimize expN(x)*expN(y) as expN(x+y).  */
-	      if (fcode0 == fcode1 && BUILTIN_EXPONENT_P (fcode0))
-		{
-		  tree expfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
-		  tree arg = fold_build2_loc (loc, PLUS_EXPR, type,
-					  CALL_EXPR_ARG (arg0, 0),
-					  CALL_EXPR_ARG (arg1, 0));
-		  return build_call_expr_loc (loc, expfn, 1, arg);
-		}
-
-	      /* Optimizations of pow(...)*pow(...).  */
-	      if ((fcode0 == BUILT_IN_POW && fcode1 == BUILT_IN_POW)
-		  || (fcode0 == BUILT_IN_POWF && fcode1 == BUILT_IN_POWF)
-		  || (fcode0 == BUILT_IN_POWL && fcode1 == BUILT_IN_POWL))
-		{
-		  tree arg00 = CALL_EXPR_ARG (arg0, 0);
-		  tree arg01 = CALL_EXPR_ARG (arg0, 1);
-		  tree arg10 = CALL_EXPR_ARG (arg1, 0);
-		  tree arg11 = CALL_EXPR_ARG (arg1, 1);
-
-		  /* Optimize pow(x,y)*pow(x,z) as pow(x,y+z).  */
-		  if (operand_equal_p (arg00, arg10, 0))
-		    {
-		      tree powfn = TREE_OPERAND (CALL_EXPR_FN (arg0), 0);
-		      tree arg = fold_build2_loc (loc, PLUS_EXPR, type,
-					      arg01, arg11);
-		      return build_call_expr_loc (loc, powfn, 2, arg00, arg);
-		    }
-		}
 
 	      /* Canonicalize x*x as pow(x,2.0), which is expanded as x*x.  */
 	      if (!in_gimple_form
@@ -10403,40 +10358,6 @@ fold_binary_loc (location_t loc,
 				TREE_OPERAND (arg1, 0));
 	}
 
-      if (flag_unsafe_math_optimizations)
-	{
-	  enum built_in_function fcode1 = builtin_mathfn_code (arg1);
-
-	  /* Optimize a/root(b/c) into a*root(c/b).  */
-	  if (BUILTIN_CBRT_P (fcode1))
-	    {
-	      tree rootarg = CALL_EXPR_ARG (arg1, 0);
-
-	      if (TREE_CODE (rootarg) == RDIV_EXPR)
-		{
-		  tree rootfn = TREE_OPERAND (CALL_EXPR_FN (arg1), 0);
-		  tree b = TREE_OPERAND (rootarg, 0);
-		  tree c = TREE_OPERAND (rootarg, 1);
-
-		  tree tmp = fold_build2_loc (loc, RDIV_EXPR, type, c, b);
-
-		  tmp = build_call_expr_loc (loc, rootfn, 1, tmp);
-		  return fold_build2_loc (loc, MULT_EXPR, type, arg0, tmp);
-		}
-	    }
-
-	  /* Optimize x/expN(y) into x*expN(-y).  */
-	  if (BUILTIN_EXPONENT_P (fcode1))
-	    {
-	      tree expfn = TREE_OPERAND (CALL_EXPR_FN (arg1), 0);
-	      tree arg = negate_expr (CALL_EXPR_ARG (arg1, 0));
-	      arg1 = build_call_expr_loc (loc,
-				      expfn, 1,
-				      fold_convert_loc (loc, type, arg));
-	      return fold_build2_loc (loc, MULT_EXPR, type, arg0, arg1);
-	    }
-
-	}
       return NULL_TREE;
 
     case TRUNC_DIV_EXPR:
