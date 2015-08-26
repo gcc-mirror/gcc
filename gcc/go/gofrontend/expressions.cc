@@ -15150,7 +15150,11 @@ Numeric_constant::set_type(Type* type, bool issue_error, Location loc)
   else if (type->complex_type() != NULL)
     ret = this->check_complex_type(type->complex_type(), issue_error, loc);
   else
-    go_unreachable();
+    {
+      ret = false;
+      if (issue_error)
+        go_assert(saw_errors());
+    }
   if (ret)
     this->type_ = type;
   return ret;
