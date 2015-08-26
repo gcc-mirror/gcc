@@ -1,5 +1,15 @@
 2015-08-26  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_symbol_type): Rename
+	SYMBOL_TLSLE to SYMBOL_TLSLE24.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Likewise.
+	(aarch64_expand_mov_immediate): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_classify_symbol): Likewise.
+
+2015-08-26  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.opt (mtls-size): New entry.
 	* config/aarch64/aarch64.c (initialize_aarch64_tls_size): New function.
 	(aarch64_override_options_internal): Call initialize_aarch64_tls_size.
