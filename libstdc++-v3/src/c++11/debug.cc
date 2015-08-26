@@ -103,7 +103,7 @@ namespace
 
 namespace __gnu_debug
 {
-  const char* _S_debug_messages[] =
+  static const char* _S_debug_messages[] =
   {
     // General Checks
     "function requires a valid iterator range [%1.name;, %2.name;)",
