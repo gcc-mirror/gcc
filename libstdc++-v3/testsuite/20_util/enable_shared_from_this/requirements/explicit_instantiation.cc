@@ -21,3 +21,8 @@
 #include <memory>
 
 template class std::enable_shared_from_this<int>;
+template class std::enable_shared_from_this<const int>;
+
+class Incomplete;
+template class std::enable_shared_from_this<Incomplete>;
+template class std::enable_shared_from_this<const Incomplete>;

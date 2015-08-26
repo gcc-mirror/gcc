@@ -1,5 +1,15 @@
 2015-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr.h (__enable_shared_from_this_helper): Use
+	nullptr.
+	* include/bits/shared_ptr_base.h (weak_ptr::_M_assign): Don't assign
+	if ownership is already shared with a shared_ptr object.
+	(__enable_shared_from_this_helper): Use nullptr.
+	* testsuite/20_util/enable_shared_from_this/members/const.cc: New.
+	* testsuite/20_util/enable_shared_from_this/members/reinit.cc: New.
+	* testsuite/20_util/enable_shared_from_this/requirements/
+	explicit_instantiation.cc: Instantiate with const and incomplete types.
+
 	* include/debug/map.h (map::try_emplace, map::insert_or_assign):
 	Define.
 	* include/debug/unordered_map (unordered_map::try_emplace,

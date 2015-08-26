@@ -1468,8 +1468,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_assign(_Tp* __ptr, const __shared_count<_Lp>& __refcount) noexcept
       {
-	_M_ptr = __ptr;
-	_M_refcount = __refcount;
+	if (use_count() == 0)
+	  {
+	    _M_ptr = __ptr;
+	    _M_refcount = __refcount;
+	  }
       }
 
       template<typename _Tp1, _Lock_policy _Lp1> friend class __shared_ptr;
@@ -1549,7 +1552,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					 const __enable_shared_from_this* __pe,
 					 const _Tp1* __px) noexcept
 	{
-	  if (__pe != 0)
+	  if (__pe != nullptr)
 	    __pe->_M_weak_assign(const_cast<_Tp1*>(__px), __pn);
 	}
 
