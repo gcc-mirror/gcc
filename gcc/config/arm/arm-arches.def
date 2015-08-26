@@ -23,39 +23,40 @@
 
    The NAME is the name of the architecture, represented as a string
    constant.  The CORE is the identifier for a core representative of
-   this architecture.  ARCH is the architecture revision.  FLAGS are
-   the flags implied by the architecture.
+   this architecture.  ARCH is the architecture revision.  FLAGS is
+   the set of feature flags implied by the architecture.
 
    genopt.sh assumes no whitespace up to the first "," in each entry.  */
 
-ARM_ARCH("armv2",   arm2,       2,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2)
-ARM_ARCH("armv2a",  arm2,       2,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2)
-ARM_ARCH("armv3",   arm6,       3,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3)
-ARM_ARCH("armv3m",  arm7m,      3M,  FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3M)
-ARM_ARCH("armv4",   arm7tdmi,   4,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH4)
+ARM_ARCH("armv2",   arm2,       2,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2))
+ARM_ARCH("armv2a",  arm2,       2,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2))
+ARM_ARCH("armv3",   arm6,       3,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3))
+ARM_ARCH("armv3m",  arm7m,      3M,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3M))
+ARM_ARCH("armv4",   arm7tdmi,   4,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH4))
 /* Strictly, FL_MODE26 is a permitted option for v4t, but there are no
    implementations that support it, so we will leave it out for now.  */
-ARM_ARCH("armv4t",  arm7tdmi,   4T,  FL_CO_PROC |             FL_FOR_ARCH4T)
-ARM_ARCH("armv5",   arm10tdmi,  5,   FL_CO_PROC |             FL_FOR_ARCH5)
-ARM_ARCH("armv5t",  arm10tdmi,  5T,  FL_CO_PROC |             FL_FOR_ARCH5T)
-ARM_ARCH("armv5e",  arm1026ejs, 5E,  FL_CO_PROC |             FL_FOR_ARCH5E)
-ARM_ARCH("armv5te", arm1026ejs, 5TE, FL_CO_PROC |             FL_FOR_ARCH5TE)
-ARM_ARCH("armv6",   arm1136js,  6,   FL_CO_PROC |             FL_FOR_ARCH6)
-ARM_ARCH("armv6j",  arm1136js,  6J,  FL_CO_PROC |             FL_FOR_ARCH6J)
-ARM_ARCH("armv6k",  mpcore,	6K,  FL_CO_PROC |             FL_FOR_ARCH6K)
-ARM_ARCH("armv6z",  arm1176jzs, 6Z,  FL_CO_PROC |             FL_FOR_ARCH6Z)
-ARM_ARCH("armv6kz", arm1176jzs, 6KZ, FL_CO_PROC |             FL_FOR_ARCH6KZ)
-ARM_ARCH("armv6zk", arm1176jzs, 6KZ, FL_CO_PROC |             FL_FOR_ARCH6KZ)
-ARM_ARCH("armv6t2", arm1156t2s, 6T2, FL_CO_PROC |             FL_FOR_ARCH6T2)
-ARM_ARCH("armv6-m", cortexm1,	6M,			      FL_FOR_ARCH6M)
-ARM_ARCH("armv6s-m", cortexm1,	6M,			      FL_FOR_ARCH6M)
-ARM_ARCH("armv7",   cortexa8,	7,   FL_CO_PROC |	      FL_FOR_ARCH7)
-ARM_ARCH("armv7-a", cortexa8,	7A,  FL_CO_PROC |	      FL_FOR_ARCH7A)
-ARM_ARCH("armv7ve", cortexa8,	7A,  FL_CO_PROC |	      FL_FOR_ARCH7VE)
-ARM_ARCH("armv7-r", cortexr4,	7R,  FL_CO_PROC |	      FL_FOR_ARCH7R)
-ARM_ARCH("armv7-m", cortexm3,	7M,  FL_CO_PROC |	      FL_FOR_ARCH7M)
-ARM_ARCH("armv7e-m", cortexm4,  7EM, FL_CO_PROC |	      FL_FOR_ARCH7EM)
-ARM_ARCH("armv8-a", cortexa53,  8A,  FL_CO_PROC |             FL_FOR_ARCH8A)
-ARM_ARCH("armv8-a+crc",cortexa53, 8A,FL_CO_PROC | FL_CRC32  | FL_FOR_ARCH8A)
-ARM_ARCH("iwmmxt",  iwmmxt,     5TE, FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT)
-ARM_ARCH("iwmmxt2", iwmmxt2,    5TE, FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT | FL_IWMMXT2)
+ARM_ARCH("armv4t",  arm7tdmi,   4T,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH4T))
+ARM_ARCH("armv5",   arm10tdmi,  5,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH5))
+ARM_ARCH("armv5t",  arm10tdmi,  5T,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH5T))
+ARM_ARCH("armv5e",  arm1026ejs, 5E,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH5E))
+ARM_ARCH("armv5te", arm1026ejs, 5TE,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH5TE))
+ARM_ARCH("armv6",   arm1136js,  6,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH6))
+ARM_ARCH("armv6j",  arm1136js,  6J,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH6J))
+ARM_ARCH("armv6k",  mpcore,	6K,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH6K))
+ARM_ARCH("armv6z",  arm1176jzs, 6Z,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH6Z))
+ARM_ARCH("armv6kz", arm1176jzs, 6KZ,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH6KZ))
+ARM_ARCH("armv6zk", arm1176jzs, 6KZ,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH6KZ))
+ARM_ARCH("armv6t2", arm1156t2s, 6T2,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH6T2))
+ARM_ARCH("armv6-m", cortexm1,	6M,	ARM_FSET_MAKE_CPU1 (FL_FOR_ARCH6M))
+ARM_ARCH("armv6s-m", cortexm1,	6M,	ARM_FSET_MAKE_CPU1 (FL_FOR_ARCH6M))
+ARM_ARCH("armv7",   cortexa8,	7,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |	      FL_FOR_ARCH7))
+ARM_ARCH("armv7-a", cortexa8,	7A,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |	      FL_FOR_ARCH7A))
+ARM_ARCH("armv7ve", cortexa8,	7A,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |	      FL_FOR_ARCH7VE))
+ARM_ARCH("armv7-r", cortexr4,	7R,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |	      FL_FOR_ARCH7R))
+ARM_ARCH("armv7-m", cortexm3,	7M,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |	      FL_FOR_ARCH7M))
+ARM_ARCH("armv7e-m", cortexm4,  7EM,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |	      FL_FOR_ARCH7EM))
+ARM_ARCH("armv8-a", cortexa53,  8A,	ARM_FSET_MAKE_CPU1 (FL_CO_PROC |             FL_FOR_ARCH8A))
+ARM_ARCH("armv8-a+crc",cortexa53, 8A,   ARM_FSET_MAKE_CPU1 (FL_CO_PROC | FL_CRC32  | FL_FOR_ARCH8A))
+ARM_ARCH("iwmmxt",  iwmmxt,     5TE,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT))
+ARM_ARCH("iwmmxt2", iwmmxt2,    5TE,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT | FL_IWMMXT2))
+
