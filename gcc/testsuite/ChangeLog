@@ -1,3 +1,43 @@
+2015-08-27  Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/graphite/graphite.exp (interchange_files, block_files):
+	Replaced by opt_files, compile with -floop-nest-optimize.
+	* g++.dg/graphite/graphite.exp: Same.
+	* gfortran.dg/graphite/graphite.exp: Same.
+	* gcc.dg/graphite/block-0.c: Adjust pattern.
+	* gcc.dg/graphite/block-1.c: Same.
+	* gcc.dg/graphite/block-3.c: Same.
+	* gcc.dg/graphite/block-4.c: Same.
+	* gcc.dg/graphite/block-5.c: Same.
+	* gcc.dg/graphite/block-6.c: Same.
+	* gcc.dg/graphite/block-7.c: Same.
+	* gcc.dg/graphite/block-8.c: Same.
+	* gcc.dg/graphite/block-pr47654.c: Same.
+	* gcc.dg/graphite/interchange-0.c: Same.
+	* gcc.dg/graphite/interchange-1.c: Same.
+	* gcc.dg/graphite/interchange-10.c: Same.
+	* gcc.dg/graphite/interchange-11.c: Same.
+	* gcc.dg/graphite/interchange-12.c: Same.
+	* gcc.dg/graphite/interchange-13.c: Same.
+	* gcc.dg/graphite/interchange-14.c: Same.
+	* gcc.dg/graphite/interchange-15.c: Same.
+	* gcc.dg/graphite/interchange-3.c: Same.
+	* gcc.dg/graphite/interchange-4.c: Same.
+	* gcc.dg/graphite/interchange-5.c: Same.
+	* gcc.dg/graphite/interchange-6.c: Same.
+	* gcc.dg/graphite/interchange-7.c: Same.
+	* gcc.dg/graphite/interchange-8.c: Same.
+	* gcc.dg/graphite/interchange-9.c: Same.
+	* gcc.dg/graphite/interchange-mvt.c: Same.
+	* gcc.dg/graphite/pr37485.c: Same.
+	* gcc.dg/graphite/uns-block-1.c: Same.
+	* gcc.dg/graphite/uns-interchange-12.c: Same.
+	* gcc.dg/graphite/uns-interchange-14.c: Same.
+	* gcc.dg/graphite/uns-interchange-15.c: Same.
+	* gcc.dg/graphite/uns-interchange-9.c: Same.
+	* gcc.dg/graphite/uns-interchange-mvt.c: Same.
+	* gfortran.dg/graphite/interchange-3.f90: Same.
+
 2015-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67317

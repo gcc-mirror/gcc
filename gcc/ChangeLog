@@ -1,5 +1,139 @@
 2015-08-27  Sebastian Pop  <s.pop@samsung.com>
 
+	* Makefile.in (OBJS): Remove graphite-blocking.o and
+	graphite-interchange.o.
+	* common.opt (floop-strip-mine, floop-interchange, floop-block):
+	Alias of floop-nest-optimize.
+	* doc/invoke.texi (floop-strip-mine, floop-interchange, floop-block):
+	Document as alias of -floop-nest-optimize.
+	* graphite-blocking.c: Remove.
+	* graphite-interchange.c: Remove.
+	* graphite-optimize-isl.c: Include dumpfile.h.
+	(getScheduleForBand): Add dump for tiled loops.  Use
+	PARAM_LOOP_BLOCK_TILE_SIZE instead of hard coded constant.
+	* graphite-poly.c (scop_max_loop_depth): Remove.
+	(print_scattering_function_1): Remove.
+	(print_scattering_function): Remove.
+	(print_scattering_functions): Remove.
+	(debug_scattering_function): Remove.
+	(debug_scattering_functions): Remove.
+	(apply_poly_transforms): Remove use of flag_loop_block,
+	flag_loop_strip_mine, and flag_loop_interchange.
+	(new_poly_bb): Remove use of PBB_TRANSFORMED, PBB_SAVED, and
+	PBB_ORIGINAL.
+	(print_pdr_access_layout): Remove.
+	(print_pdr): Print ISL representation.
+	(new_scop): Remove use of SCOP_ORIGINAL_SCHEDULE,
+	SCOP_TRANSFORMED_SCHEDULE, and SCOP_SAVED_SCHEDULE.
+	(free_scop): Same.
+	(openscop_print_pbb_domain): Remove.
+	(print_pbb): Remove call to print_scattering_function.
+	(openscop_print_scop_context): Remove.
+	(print_scop_context): Do not print matrices anymore.
+	(print_scop): Do not print SCOP_ORIGINAL_SCHEDULE and
+	SCOP_TRANSFORMED_SCHEDULE.
+	(print_isl_set): Add printing of a new line.
+	(print_isl_map): Same.
+	(print_isl_aff): Same.
+	(print_isl_constraint): Same.
+	(loop_to_lst): Remove.
+	(scop_to_lst): Remove.
+	(lst_indent_to): Remove.
+	(print_lst): Remove.
+	(debug_lst): Remove.
+	(dot_lst_1): Remove.
+	(dot_lst): Remove.
+	(reverse_loop_at_level): Remove.
+	(reverse_loop_for_pbbs): Remove.
+	* graphite-poly.h (pdr_dim_iter_domain): Remove.
+	(pdr_nb_params): Remove.
+	(pdr_alias_set_dim): Remove.
+	(pdr_subscript_dim): Remove.
+	(pdr_iterator_dim): Remove.
+	(pdr_parameter_dim): Remove.
+	(same_pdr_p): Remove.
+	(struct poly_scattering): Remove.
+	(struct poly_bb): Remove _original, _transformed, _saved.
+	(PBB_DOMAIN, PBB_ORIGINAL, PBB_ORIGINAL_SCATTERING): Remove.
+	(PBB_TRANSFORMED, PBB_TRANSFORMED_SCATTERING, PBB_SAVED): Remove.
+	(PBB_NB_LOCAL_VARIABLES): Remove.
+	(PBB_NB_SCATTERING_TRANSFORM): Remove.
+	(schedule_to_scattering): Remove.
+	(number_of_write_pdrs): Remove.
+	(pbb_dim_iter_domain): Remove.
+	(pbb_nb_params): Remove.
+	(pbb_nb_scattering_orig): Remove.
+	(pbb_nb_scattering_transform): Remove.
+	(pbb_nb_dynamic_scattering_transform): Remove.
+	(pbb_nb_local_vars): Remove.
+	(pbb_iterator_dim): Remove.
+	(pbb_parameter_dim): Remove.
+	(psco_scattering_dim): Remove.
+	(psct_scattering_dim): Remove.
+	(psct_local_var_dim): Remove.
+	(psco_iterator_dim): Remove.
+	(psct_iterator_dim): Remove.
+	(psco_parameter_dim): Remove.
+	(psct_parameter_dim): Remove.
+	(psct_dynamic_dim): Remove.
+	(psct_static_dim): Remove.
+	(psct_add_local_variable): Remove.
+	(new_lst_loop): Remove.
+	(new_lst_stmt): Remove.
+	(free_lst): Remove.
+	(copy_lst): Remove.
+	(lst_add_loop_under_loop): Remove.
+	(lst_depth): Remove.
+	(lst_dewey_number): Remove.
+	(lst_dewey_number_at_depth): Remove.
+	(lst_pred): Remove.
+	(lst_succ): Remove.
+	(lst_find_pbb): Remove.
+	(find_lst_loop): Remove.
+	(lst_find_first_pbb): Remove.
+	(lst_empty_p): Remove.
+	(lst_find_last_pbb): Remove.
+	(lst_contains_p): Remove.
+	(lst_contains_pbb): Remove.
+	(lst_create_nest): Remove.
+	(lst_remove_from_sequence): Remove.
+	(lst_remove_loop_and_inline_stmts_in_loop_father): Remove.
+	(lst_niter_for_loop): Remove.
+	(pbb_update_scattering): Remove.
+	(lst_update_scattering_under): Remove.
+	(lst_update_scattering): Remove.
+	(lst_insert_in_sequence): Remove.
+	(lst_replace): Remove.
+	(lst_substitute_3): Remove.
+	(lst_distribute_lst): Remove.
+	(lst_remove_all_before_including_pbb): Remove.
+	(lst_remove_all_before_excluding_pbb): Remove.
+	(struct scop): Remove original_schedule, transformed_schedule, and
+	saved_schedule.
+	(SCOP_ORIGINAL_SCHEDULE, SCOP_TRANSFORMED_SCHEDULE): Remove.
+	(SCOP_SAVED_SCHEDULE): Remove.
+	(poly_scattering_new): Remove.
+	(poly_scattering_free): Remove.
+	(poly_scattering_copy): Remove.
+	(store_scattering_pbb): Remove.
+	(store_lst_schedule): Remove.
+	(restore_lst_schedule): Remove.
+	(store_scattering): Remove.
+	(restore_scattering_pbb): Remove.
+	(restore_scattering): Remove.
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons):
+	Remove scattering_dimensions.  Do not use pbb_dim_iter_domain:
+	compute the scattering polyhedron dimension from the dimension of
+	pbb->domain.
+	(build_scop_scattering): Update call to
+	build_pbb_scattering_polyhedrons.
+	(build_poly_scop): Remove call to scop_to_lst.
+	* graphite.c (graphite_transform_loops): Add call to print_scop.
+	(gate_graphite_transforms): Remove use of flag_loop_block,
+	flag_loop_interchange, and flag_loop_strip_mine.
+
+2015-08-27  Sebastian Pop  <s.pop@samsung.com>
+
 	* common.opt (floop-unroll-and-jam): Make alias of floop-nest-optimize.
 	* doc/invoke.texi (-floop-unroll-and-jam): Document as alias of
 	-floop-nest-optimize.

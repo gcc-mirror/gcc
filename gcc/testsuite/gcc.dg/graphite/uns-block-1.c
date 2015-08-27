@@ -45,4 +45,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be loop blocked" 3 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "tiled by" 4 "graphite" } } */

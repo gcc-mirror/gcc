@@ -17,7 +17,7 @@ foo (void)
 {
   int i, j, k;
 
-  /* These loops contain too few iterations to be blocked by 64.  */
+  /* These loops contain too few iterations to be blocked.  */
   for (i = 0; i < 24; i++)
     for (j = 0; j < 24; j++)
       for (k = 0; k < 24; k++)
@@ -58,4 +58,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "tiled by" 3 "graphite" } } */

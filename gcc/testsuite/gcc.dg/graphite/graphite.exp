@@ -41,10 +41,10 @@ set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.c ] ]
 set scop_files        [lsort [glob -nocomplain $srcdir/$subdir/scop-*.c ] ]
 set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.c ] ]
 set run_id_files      [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.c ] ]
-set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.c \
-			      $srcdir/$subdir/uns-interchange-*.c ] ]
-set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.c \
-			      $srcdir/$subdir/uns-block-*.c ] ]
+set opt_files         [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.c \
+					       $srcdir/$subdir/uns-interchange-*.c \
+					       $srcdir/$subdir/block-*.c \
+					       $srcdir/$subdir/uns-block-*.c ] ]
 set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.c ] ]
 
 # Tests to be compiled.
@@ -55,8 +55,7 @@ dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math"
 # Tests to be run.
 set dg-do-what-default run
 dg-runtest $run_id_files      "" "-O2 -fgraphite-identity"
-dg-runtest $interchange_files "" "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
-dg-runtest $block_files       "" "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
+dg-runtest $opt_files         "" "-O2 -ffast-math -floop-nest-optimize -fdump-tree-graphite-all"
 
 # Vectorizer tests, to be run or compiled, depending on target capabilities.
 global DEFAULT_VECTCFLAGS
@@ -71,8 +70,7 @@ set dg-do-what-default compile
 foreach f $scop_files        {lremove wait_to_run_files $f}
 foreach f $id_files          {lremove wait_to_run_files $f}
 foreach f $run_id_files      {lremove wait_to_run_files $f}
-foreach f $interchange_files {lremove wait_to_run_files $f}
-foreach f $block_files       {lremove wait_to_run_files $f}
+foreach f $opt_files         {lremove wait_to_run_files $f}
 foreach f $vect_files        {lremove wait_to_run_files $f}
 dg-runtest $wait_to_run_files "" "-ansi -pedantic-errors"
 

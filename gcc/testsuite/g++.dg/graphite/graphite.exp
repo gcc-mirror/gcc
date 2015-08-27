@@ -41,8 +41,8 @@ set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.C ] ]
 set scop_files        [lsort [glob -nocomplain $srcdir/$subdir/scop-*.C ] ]
 set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.C ] ]
 set run_id_files      [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.C ] ]
-set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.C ] ]
-set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.C ] ]
+set opt_files         [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.C \
+					       $srcdir/$subdir/block-*.C ] ]
 
 # Tests to be compiled.
 set dg-do-what-default compile
@@ -52,16 +52,14 @@ g++-dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math"
 # Tests to be run.
 set dg-do-what-default run
 g++-dg-runtest $run_id_files      "" "-O2 -fgraphite-identity"
-g++-dg-runtest $interchange_files "" "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
-g++-dg-runtest $block_files       "" "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
+g++-dg-runtest $opt_files         "" "-O2 -floop-nest-optimize -ffast-math -fdump-tree-graphite-all"
 
 # The default action for the rest of the files is 'compile'.
 set dg-do-what-default compile
 foreach f $scop_files        {lremove wait_to_run_files $f}
 foreach f $id_files          {lremove wait_to_run_files $f}
 foreach f $run_id_files      {lremove wait_to_run_files $f}
-foreach f $interchange_files {lremove wait_to_run_files $f}
-foreach f $block_files       {lremove wait_to_run_files $f}
+foreach f $opt_files         {lremove wait_to_run_files $f}
 g++-dg-runtest $wait_to_run_files "" "-pedantic-errors"
 
 # Clean up.
