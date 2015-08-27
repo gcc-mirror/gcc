@@ -988,6 +988,7 @@
   rtx bitshift = operands[2];
   rtx shift;
   rtx insn;
+  rtx zero_reg;
   HOST_WIDE_INT bitshift_val;
   HOST_WIDE_INT byteshift_val;
 
@@ -997,16 +998,18 @@
   if (bitshift_val & 0x7)
     FAIL;
   byteshift_val = bitshift_val >> 3;
+  zero_reg = gen_reg_rtx (<MODE>mode);
+  emit_move_insn (zero_reg, CONST0_RTX (<MODE>mode));
   if (TARGET_VSX && (byteshift_val & 0x3) == 0)
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
-      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], operands[1],
+      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], zero_reg,
 				     shift);
     }
   else
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val);
-      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
+      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], zero_reg,
 					shift);
     }
 
@@ -1029,6 +1032,7 @@
   rtx bitshift = operands[2];
   rtx shift;
   rtx insn;
+  rtx zero_reg;
   HOST_WIDE_INT bitshift_val;
   HOST_WIDE_INT byteshift_val;
 
@@ -1038,16 +1042,18 @@
   if (bitshift_val & 0x7)
     FAIL;
   byteshift_val = 16 - (bitshift_val >> 3);
+  zero_reg = gen_reg_rtx (<MODE>mode);
+  emit_move_insn (zero_reg, CONST0_RTX (<MODE>mode));
   if (TARGET_VSX && (byteshift_val & 0x3) == 0)
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
-      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], operands[1],
+      insn = gen_vsx_xxsldwi_<mode> (operands[0], zero_reg, operands[1],
 				     shift);
     }
   else
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val);
-      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
+      insn = gen_altivec_vsldoi_<mode> (operands[0], zero_reg, operands[1],
 					shift);
     }
 

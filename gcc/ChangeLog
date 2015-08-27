@@ -1,3 +1,11 @@
+2015-08-27  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2015-08-27  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/vector.md (vec_shr_<mode>): Fix to do a shift
+	instead of a rotate.
+
 2015-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from mainline:
