@@ -1,3 +1,12 @@
+2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* tree-sra.c (completely_scalarize_var): Rename to...
+	(create_total_scalarization_access): ... Here. Drop call to
+	completely_scalarize_record.
+
+	(analyze_all_variable_accesses): Replace completely_scalarize_var
+	with create_total_scalarization_access and completely_scalarize_record.
+
 2015-08-27  Alan Modra  <amodra@gmail.com>
 
 	PR target/67356

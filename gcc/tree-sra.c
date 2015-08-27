@@ -980,12 +980,11 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
       }
 }
 
-/* Create total_scalarization accesses for all scalar type fields in VAR and
-   for VAR as a whole.  VAR must be of a RECORD_TYPE conforming to
-   type_consists_of_records_p.   */
+/* Create a total_scalarization access for VAR as a whole.  VAR must be of a
+   RECORD_TYPE conforming to type_consists_of_records_p.  */
 
 static void
-completely_scalarize_var (tree var)
+create_total_scalarization_access (tree var)
 {
   HOST_WIDE_INT size = tree_to_uhwi (DECL_SIZE (var));
   struct access *access;
@@ -994,8 +993,6 @@ completely_scalarize_var (tree var)
   access->expr = var;
   access->type = TREE_TYPE (var);
   access->grp_total_scalarization = 1;
-
-  completely_scalarize_record (var, var, 0, var);
 }
 
 /* Return true if REF has an VIEW_CONVERT_EXPR somewhere in it.  */
@@ -2529,7 +2526,8 @@ analyze_all_variable_accesses (void)
 	    if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
 		<= max_scalarization_size)
 	      {
-		completely_scalarize_var (var);
+		create_total_scalarization_access (var);
+		completely_scalarize_record (var, var, 0, var);
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  {
 		    fprintf (dump_file, "Will attempt to totally scalarize ");
