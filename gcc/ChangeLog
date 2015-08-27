@@ -1,5 +1,11 @@
 2015-08-27  Sebastian Pop  <s.pop@samsung.com>
 
+	* toplev.c (process_options): Do not use flag_loop_block,
+	flag_loop_interchange, and flag_loop_strip_mine.  Add check for
+	flag_loop_optimize_isl.
+
+2015-08-27  Sebastian Pop  <s.pop@samsung.com>
+
 	* Makefile.in (OBJS): Remove graphite-blocking.o and
 	graphite-interchange.o.
 	* common.opt (floop-strip-mine, floop-interchange, floop-block):
