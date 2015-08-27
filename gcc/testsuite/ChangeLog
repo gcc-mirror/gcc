@@ -1,3 +1,10 @@
+2015-08-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* lib/target-supports.exp (check-effective_target_vect_double):
+	Enable for Power targets with VSX hardware available.
+	* gfortran.dg/vect/O3-pr49957.f: Replace vect_no_align with
+	vect_no_align && { ! vect_hw_misalign }.
+
 2015-08-27  Sebastian Pop  <s.pop@samsung.com>
 
 	* gcc.dg/graphite/graphite.exp (interchange_files, block_files):
