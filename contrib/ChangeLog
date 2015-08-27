@@ -1,3 +1,7 @@
+2015-08-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* update-copyright.py (GCCCmdLine): Add libvtv.
+
 2015-08-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* texi2pod.pl: Escape braces in regexp involving @strong{...}.
