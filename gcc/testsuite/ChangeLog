@@ -1,3 +1,10 @@
+2015-08-27  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2015-08-27  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/vec-shr.c: New.
+
 2015-08-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	Backport from mainline
