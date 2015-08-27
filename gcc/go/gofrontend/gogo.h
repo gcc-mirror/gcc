@@ -2389,6 +2389,17 @@ class Named_object
   void
   export_named_object(Export*) const;
 
+  // Mark this named object as an invalid redefinition of another object.
+  void
+  set_is_redefinition()
+  { this->is_redefinition_ = true; }
+
+  // Return whether or not this object is a invalid redefinition of another
+  // object.
+  bool
+  is_redefinition() const
+  { return this->is_redefinition_; }
+
  private:
   Named_object(const std::string&, const Package*, Classification);
 
@@ -2412,6 +2423,8 @@ class Named_object
     Function_declaration* func_declaration_value;
     Package* package_value;
   } u_;
+  // True if this object is an invalid redefinition of another object.
+  bool is_redefinition_;
 };
 
 // A binding contour.  This binds names to objects.
