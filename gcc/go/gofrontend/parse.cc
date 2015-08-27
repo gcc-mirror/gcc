@@ -1741,6 +1741,14 @@ Parse::init_vars_from_call(const Typed_identifier_list* vars, Type* type,
 	    first_var = no;
 	  else
 	    {
+              // If the current object is a redefinition of another object, we
+              // might have already recorded the dependency relationship between
+              // it and the first variable.  Either way, an error will be
+              // reported for the redefinition and we don't need to properly
+              // record dependency information for an invalid program.
+              if (no->is_redefinition())
+                continue;
+
 	      // The subsequent vars have an implicit dependency on
 	      // the first one, so that everything gets initialized in
 	      // the right order and so that we detect cycles

@@ -6753,7 +6753,8 @@ Unknown_name::set_real_named_object(Named_object* no)
 Named_object::Named_object(const std::string& name,
 			   const Package* package,
 			   Classification classification)
-  : name_(name), package_(package), classification_(classification)
+  : name_(name), package_(package), classification_(classification),
+    is_redefinition_(false)
 {
   if (Gogo::is_sink_name(name))
     go_assert(classification == NAMED_OBJECT_SINK);
@@ -7439,6 +7440,8 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
   else
     error_at(new_object->location(), "redefinition of %qs: %s", n.c_str(),
 	     reason.c_str());
+  old_object->set_is_redefinition();
+  new_object->set_is_redefinition();
 
   inform(old_object->location(), "previous definition of %qs was here",
 	 n.c_str());
