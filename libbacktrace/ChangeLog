@@ -1,3 +1,9 @@
+2015-08-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* configure.ac: Remove [disable-shared] argument to LT_INIT.
+	Remove setting PIC_FLAG when building as target library.
+	* configure: Regenerate.
+
 2015-08-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.ac: Only compile with -fPIC if the target
