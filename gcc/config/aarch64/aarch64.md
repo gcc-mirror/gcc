@@ -185,6 +185,13 @@
 	     (const_string "no")
 	] (const_string "yes")))
 
+;; Attribute that specifies whether we are dealing with a branch to a
+;; label that is far away, i.e. further away than the maximum/minimum
+;; representable in a signed 21-bits number.
+;; 0 :=: no
+;; 1 :=: yes
+(define_attr "far_branch" "" (const_int 0))
+
 ;; -------------------------------------------------------------------
 ;; Pipeline descriptions and scheduling
 ;; -------------------------------------------------------------------
@@ -312,8 +319,23 @@
 			   (label_ref (match_operand 2 "" ""))
 			   (pc)))]
   ""
-  "b%m0\\t%l2"
-  [(set_attr "type" "branch")]
+  {
+    if (get_attr_length (insn) == 8)
+      return aarch64_gen_far_branch (operands, 2, "Lbcond", "b%M0\\t");
+    else
+      return  "b%m0\\t%l2";
+  }
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
+			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+		      (const_int 4)
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
+			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+		      (const_int 0)
+		      (const_int 1)))]
 )
 
 (define_expand "casesi"
@@ -492,9 +514,23 @@
 			   (label_ref (match_operand 1 "" ""))
 			   (pc)))]
   ""
-  "<cbz>\\t%<w>0, %l1"
-  [(set_attr "type" "branch")]
-
+  {
+    if (get_attr_length (insn) == 8)
+      return aarch64_gen_far_branch (operands, 1, "Lcb", "<inv_cb>\\t%<w>0, ");
+    else
+      return "<cbz>\\t%<w>0, %l1";
+  }
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -1048576))
+			   (lt (minus (match_dup 1) (pc)) (const_int 1048572)))
+		      (const_int 4)
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
+			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+		      (const_int 0)
+		      (const_int 1)))]
 )
 
 (define_insn "*tb<optab><mode>1"
@@ -510,8 +546,14 @@
   {
     if (get_attr_length (insn) == 8)
       {
-	operands[1] = GEN_INT (HOST_WIDE_INT_1U << UINTVAL (operands[1]));
-	return "tst\t%<w>0, %1\;<bcond>\t%l2";
+	if (get_attr_far_branch (insn) == 1)
+	  return aarch64_gen_far_branch (operands, 2, "Ltb",
+					 "<inv_tb>\\t%<w>0, %1, ");
+	else
+	  {
+	    operands[1] = GEN_INT (HOST_WIDE_INT_1U << UINTVAL (operands[1]));
+	    return "tst\t%<w>0, %1\;<bcond>\t%l2";
+	  }
       }
     else
       return "<tbz>\t%<w>0, %1, %l2";
@@ -521,7 +563,13 @@
 	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -32768))
 			   (lt (minus (match_dup 2) (pc)) (const_int 32764)))
 		      (const_int 4)
-		      (const_int 8)))]
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -1048576))
+			   (lt (minus (match_dup 2) (pc)) (const_int 1048572)))
+		      (const_int 0)
+		      (const_int 1)))]
+
 )
 
 (define_insn "*cb<optab><mode>1"
@@ -534,12 +582,18 @@
   {
     if (get_attr_length (insn) == 8)
       {
-	char buf[64];
-	uint64_t val = ((uint64_t ) 1)
-			<< (GET_MODE_SIZE (<MODE>mode) * BITS_PER_UNIT - 1);
-	sprintf (buf, "tst\t%%<w>0, %" PRId64, val);
-	output_asm_insn (buf, operands);
-	return "<bcond>\t%l1";
+	if (get_attr_far_branch (insn) == 1)
+	  return aarch64_gen_far_branch (operands, 1, "Ltb",
+					 "<inv_tb>\\t%<w>0, <sizem1>, ");
+	else
+	  {
+	    char buf[64];
+	    uint64_t val = ((uint64_t) 1)
+		<< (GET_MODE_SIZE (<MODE>mode) * BITS_PER_UNIT - 1);
+	    sprintf (buf, "tst\t%%<w>0, %" PRId64, val);
+	    output_asm_insn (buf, operands);
+	    return "<bcond>\t%l1";
+	  }
       }
     else
       return "<tbz>\t%<w>0, <sizem1>, %l1";
@@ -549,7 +603,12 @@
 	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -32768))
 			   (lt (minus (match_dup 1) (pc)) (const_int 32764)))
 		      (const_int 4)
-		      (const_int 8)))]
+		      (const_int 8)))
+   (set (attr "far_branch")
+	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -1048576))
+			   (lt (minus (match_dup 1) (pc)) (const_int 1048572)))
+		      (const_int 0)
+		      (const_int 1)))]
 )
 
 ;; -------------------------------------------------------------------
