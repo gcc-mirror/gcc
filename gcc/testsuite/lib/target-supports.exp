@@ -3711,6 +3711,8 @@ proc check_effective_target_vect_double { } {
 	    }
 	} elseif { [istarget spu-*-*] } {
 	   set et_vect_double_saved 1
+	} elseif { [istarget powerpc*-*-*] && [check_vsx_hw_available] } {
+	   set et_vect_double_saved 1
 	}
     }
 
