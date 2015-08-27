@@ -1,3 +1,7 @@
+2015-08-27  Richard Biener  <rguenther@suse.de>
+
+	* ipa.c (cgraph_build_static_cdtor_1): Set DECL_IGNORED_P.
+
 2015-08-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologue): Add emit_barrier() after
