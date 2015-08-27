@@ -977,6 +977,8 @@
 ;; General shift amounts can be supported using vsro + vsr. We're
 ;; not expecting to see these yet (the vectorizer currently
 ;; generates only shifts by a whole number of vector elements).
+;; Note that the vec_shr operation is actually defined as 
+;; 'shift toward element 0' so is a shr for LE and shl for BE.
 (define_expand "vec_shr_<mode>"
   [(match_operand:VEC_L 0 "vlogical_operand" "")
    (match_operand:VEC_L 1 "vlogical_operand" "")
@@ -987,6 +989,7 @@
   rtx bitshift = operands[2];
   rtx shift;
   rtx insn;
+  rtx zero_reg, op1, op2;
   HOST_WIDE_INT bitshift_val;
   HOST_WIDE_INT byteshift_val;
 
@@ -996,19 +999,29 @@
   if (bitshift_val & 0x7)
     FAIL;
   byteshift_val = (bitshift_val >> 3);
+  zero_reg = gen_reg_rtx (<MODE>mode);
+  emit_move_insn (zero_reg, CONST0_RTX (<MODE>mode));
   if (!BYTES_BIG_ENDIAN)
-    byteshift_val = 16 - byteshift_val;
+    {
+      byteshift_val = 16 - byteshift_val;
+      op1 = zero_reg;
+      op2 = operands[1];
+    }
+  else
+    {
+      op1 = operands[1];
+      op2 = zero_reg;
+    }
+
   if (TARGET_VSX && (byteshift_val & 0x3) == 0)
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
-      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], operands[1],
-				     shift);
+      insn = gen_vsx_xxsldwi_<mode> (operands[0], op1, op2, shift);
     }
   else
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val);
-      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
-					shift);
+      insn = gen_altivec_vsldoi_<mode> (operands[0], op1, op2, shift);
     }
 
   emit_insn (insn);
