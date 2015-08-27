@@ -1,3 +1,7 @@
+2015-08-27  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/54572
