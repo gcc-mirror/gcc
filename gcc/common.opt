@@ -1353,8 +1353,8 @@ Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
 
 floop-unroll-and-jam
-Common Report Var(flag_loop_unroll_jam) Optimization
-Enable Loop Unroll Jam transformation
+Common Alias(floop-nest-optimize)
+Enable loop nest transforms.  Same as -floop-nest-optimize
  
 fgnu-tm
 Common Report Var(flag_tm)

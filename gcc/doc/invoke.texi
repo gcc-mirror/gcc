@@ -8849,10 +8849,10 @@ is experimental.
 
 @item -floop-unroll-and-jam
 @opindex floop-unroll-and-jam
-Enable unroll and jam for the ISL based loop nest optimizer.  The unroll 
-factor can be changed using the @option{loop-unroll-jam-size} parameter.
-The unrolled dimension (counting from the most inner one) can be changed 
-using the @option{loop-unroll-jam-depth} parameter.                 .
+Perform loop nest transformations.  Same as
+@option{-floop-nest-optimize}.  To use this code transformation, GCC has
+to be configured with @option{--with-isl} to enable the Graphite loop
+transformation infrastructure.
 
 @item -floop-parallelize-all
 @opindex floop-parallelize-all

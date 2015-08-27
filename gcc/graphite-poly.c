@@ -258,7 +258,7 @@ apply_poly_transforms (scop_p scop)
 
   /* This pass needs to be run at the final stage, as it does not
      update the lst.  */
-  if (flag_loop_optimize_isl || flag_loop_unroll_jam)
+  if (flag_loop_optimize_isl)
     transform_done |= optimize_isl (scop);
 
   return transform_done;
@@ -309,7 +309,6 @@ new_poly_bb (scop_p scop, void *black_box)
   pbb->schedule = NULL;
   pbb->transformed = NULL;
   pbb->saved = NULL;
-  pbb->map_sepclass = NULL;
   PBB_SCOP (pbb) = scop;
   pbb_set_black_box (pbb, black_box);
   PBB_TRANSFORMED (pbb) = NULL;
