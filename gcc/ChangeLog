@@ -1,3 +1,8 @@
+2015-08-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Add emit_barrier() after
+	trap to fix ICE.
+
 2015-08-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_expand_float128_convert):
