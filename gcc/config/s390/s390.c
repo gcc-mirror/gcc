@@ -10351,6 +10351,7 @@ s390_emit_prologue (void)
 		       current_function_name(), cfun_frame_layout.frame_size,
 		       s390_stack_size);
 	      emit_insn (gen_trap ());
+	      emit_barrier ();
 	    }
 	  else
 	    {
