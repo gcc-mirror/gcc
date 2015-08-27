@@ -10614,7 +10614,112 @@ fi
 
 
 
-          am_save_CPPFLAGS="$CPPFLAGS"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
+$as_echo_n "checking for iconv... " >&6; }
+if test "${am_cv_func_iconv+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    am_cv_func_iconv="no, consider installing GNU libiconv"
+    am_cv_lib_iconv=no
+                    am_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $INCICONV"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <iconv.h>
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+       iconv(cd,NULL,NULL,NULL,NULL);
+       iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    CPPFLAGS="$am_save_CPPFLAGS"
+
+    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
+      for _libs in .libs _libs; do
+        am_save_CPPFLAGS="$CPPFLAGS"
+        am_save_LIBS="$LIBS"
+        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
+        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <iconv.h>
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+           iconv(cd,NULL,NULL,NULL,NULL);
+           iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  INCICONV="-I../libiconv/include"
+          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
+          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
+          am_cv_lib_iconv=yes
+          am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        CPPFLAGS="$am_save_CPPFLAGS"
+        LIBS="$am_save_LIBS"
+        if test "$am_cv_func_iconv" = "yes"; then
+          break
+        fi
+      done
+    fi
+
+    if test "$am_cv_func_iconv" != yes; then
+      am_save_CPPFLAGS="$CPPFLAGS"
+      am_save_LIBS="$LIBS"
+      CPPFLAGS="$LIBS $INCICONV"
+      LIBS="$LIBS $LIBICONV"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <iconv.h>
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+         iconv(cd,NULL,NULL,NULL,NULL);
+         iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  am_cv_lib_iconv=yes
+        am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS="$am_save_CPPFLAGS"
+      LIBS="$am_save_LIBS"
+    fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv" >&5
+$as_echo "$am_cv_func_iconv" >&6; }
+  if test "$am_cv_func_iconv" = yes; then
+
+$as_echo "#define HAVE_ICONV 1" >>confdefs.h
+
+  fi
+  if test "$am_cv_lib_iconv" = yes; then
 
   for element in $INCICONV; do
     haveit=
@@ -10638,75 +10743,11 @@ fi
     fi
   done
 
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
-$as_echo_n "checking for iconv... " >&6; }
-if test "${am_cv_func_iconv+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    am_cv_func_iconv="no, consider installing GNU libiconv"
-    am_cv_lib_iconv=no
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-       iconv(cd,NULL,NULL,NULL,NULL);
-       iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    if test "$am_cv_func_iconv" != yes; then
-      am_save_LIBS="$LIBS"
-      LIBS="$LIBS $LIBICONV"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-         iconv(cd,NULL,NULL,NULL,NULL);
-         iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  am_cv_lib_iconv=yes
-        am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-      LIBS="$am_save_LIBS"
-    fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv" >&5
-$as_echo "$am_cv_func_iconv" >&6; }
-  if test "$am_cv_func_iconv" = yes; then
-
-$as_echo "#define HAVE_ICONV 1" >>confdefs.h
-
-  fi
-  if test "$am_cv_lib_iconv" = yes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
 $as_echo_n "checking how to link with libiconv... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
 $as_echo "$LIBICONV" >&6; }
   else
-            CPPFLAGS="$am_save_CPPFLAGS"
     LIBICONV=
     LTLIBICONV=
   fi
@@ -11909,7 +11950,7 @@ fi
 
 
 case $host_os in
-  win32 | pe | cygwin* | mingw32* | uwin*)
+  win32 | pe | cygwin* | mingw32*)
     if test "x$enable_win32_registry" != xno; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing RegOpenKeyExA" >&5
 $as_echo_n "checking for library containing RegOpenKeyExA... " >&6; }
@@ -18344,7 +18385,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18347 "configure"
+#line 18388 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18450,7 +18491,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18453 "configure"
+#line 18494 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23156,7 +23197,7 @@ else
   test $ac_status = 0; }; }
     then
 	case $target_os in
-  win32 | pe | cygwin* | mingw32* | uwin*)
+  win32 | pe | cygwin* | mingw32*)
     # Need to check that we generated the correct relocation for the
     # .debug_frame section.  This was fixed for binutils 2.21.
     gcc_cv_as_cfi_sections_directive=no

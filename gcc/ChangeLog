@@ -1,3 +1,7 @@
+2015-08-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/67283
