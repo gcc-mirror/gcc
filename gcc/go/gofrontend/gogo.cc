@@ -3156,6 +3156,7 @@ Check_types_traverse::variable(Named_object* named_object)
 	    error_at(var->location(),
 		     "incompatible type in initialization (%s)",
 		     reason.c_str());
+          init = Expression::make_error(named_object->location());
 	  var->clear_init();
 	}
       else if (init != NULL
@@ -3180,13 +3181,13 @@ Check_types_traverse::variable(Named_object* named_object)
                        no->message_name().c_str());
             }
         }
-      else if (!var->is_used()
-	       && !var->is_global()
-	       && !var->is_parameter()
-	       && !var->is_receiver()
-	       && !var->type()->is_error()
-	       && (init == NULL || !init->is_error_expression())
-	       && !Lex::is_invalid_identifier(named_object->name()))
+      if (!var->is_used()
+          && !var->is_global()
+          && !var->is_parameter()
+          && !var->is_receiver()
+          && !var->type()->is_error()
+          && (init == NULL || !init->is_error_expression())
+          && !Lex::is_invalid_identifier(named_object->name()))
 	error_at(var->location(), "%qs declared and not used",
 		 named_object->message_name().c_str());
     }
