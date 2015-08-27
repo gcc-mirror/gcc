@@ -1,3 +1,29 @@
+2015-08-27  Sebastian Pop  <s.pop@samsung.com>
+
+	* common.opt (floop-unroll-and-jam): Make alias of floop-nest-optimize.
+	* doc/invoke.texi (-floop-unroll-and-jam): Document as alias of
+	-floop-nest-optimize.
+	* graphite-isl-ast-to-gimple.c (generate_luj_sepclass_opt): Remove.
+	(generate_luj_sepclass): Remove.
+	(generate_luj_options): Remove.
+	(set_options): Remove opt_luj.
+	(scop_to_isl_ast): Remove opt_luj.
+	* graphite-optimize-isl.c (getScheduleForBand): Remove check for
+	flag_loop_unroll_jam.
+	(getPrevectorMap_full): Remove.
+	(getScheduleForBandList): Remove map_sepcl.
+	(getScheduleMap): Same.
+	(apply_schedule_map_to_scop): Remove sepcl.
+	(optimize_isl): Same.
+	* graphite-poly.c (apply_poly_transforms): Remove check for
+	flag_loop_unroll_jam.
+	(new_poly_bb): Remove map_sepclass.
+	* graphite-poly.h (struct poly_bb): Same.
+	* graphite.c (gate_graphite_transforms): Remove flag_loop_unroll_jam.
+	* params.def (PARAM_LOOP_UNROLL_JAM_SIZE)
+	(PARAM_LOOP_UNROLL_JAM_DEPTH): Remove.
+	* toplev.c (process_options): Remove flag_loop_unroll_jam.
+
 2015-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67317

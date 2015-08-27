@@ -356,9 +356,6 @@ struct poly_bb
   poly_scattering_p _saved;
   isl_map *saved;
 
-  /* For tiling, the map for computing the separating class.  */
-  isl_map *map_sepclass;
-
   /* True when this PBB contains only a reduction statement.  */
   bool is_reduction;
 };
