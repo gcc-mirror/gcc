@@ -1,3 +1,8 @@
+2015-08-27  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67005
+	* gcc.dg/torture/pr67005.c: New test.
+
 2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.dg/tree-ssa/sra-15.c: New.
