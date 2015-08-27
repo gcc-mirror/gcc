@@ -79,7 +79,7 @@ case "$AWK" in
 "") AC_MSG_ERROR([can't build without awk]) ;;
 esac
 
-LT_INIT([disable-shared])
+LT_INIT
 AM_PROG_LIBTOOL
 
 backtrace_supported=yes
@@ -161,22 +161,11 @@ else
   fi
 fi
 
-# When building as a target library, shared libraries may want to link
-# this in.  We don't want to provide another shared library to
-# complicate dependencies.  Instead, we just compile with -fPIC, if
-# the target supports compiling with that option.
-PIC_FLAG=
-if test -n "${with_target_subdir}"; then
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -fPIC"
-  AC_TRY_COMPILE([], [], [PIC_FLAG=-fPIC])
-  CFLAGS="$ac_save_CFLAGS"
-fi
-# Similarly, use -fPIC with --enable-host-shared:
+# Enable --enable-host-shared.
 AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
 		[build host code as shared libraries])],
-[PIC_FLAG=-fPIC], [])
+[PIC_FLAG=-fPIC], [PIC_FLAG=])
 AC_SUBST(PIC_FLAG)
 
 # Test for __sync support.
