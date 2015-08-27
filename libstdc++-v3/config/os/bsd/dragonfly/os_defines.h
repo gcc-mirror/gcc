@@ -29,6 +29,7 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
+#define _GLIBCXX_USE_C99 1
 #define _GLIBCXX_USE_C99_CHECK 1
 #define _GLIBCXX_USE_C99_DYNAMIC (!(__ISO_C_VISIBLE >= 1999))
 #define _GLIBCXX_USE_C99_LONG_LONG_CHECK 1
