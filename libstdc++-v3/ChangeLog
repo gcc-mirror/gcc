@@ -1,3 +1,20 @@
+2015-08-27  John Marino  <gnugcc@marino.st>
+
+	* acinclude.m4 (*-*-dragonfly*): Change 7 locale support files
+	from generic to new DragonFly versions.
+	* configure: Regenerate.
+	* config/locale/dragonfly/c_locale.cc: Improve locale support.
+	* config/locale/dragonfly/ctype_members.cc: Likewise.
+	* config/os/bsd/dragonfly/ctype_configure_char.cc: Likewise.
+	* config/os/bsd/dragonfly/os_defines.h: Define _GLIBCXX_USE_C99.
+	* config/locale/dragonfly/c_locale.h: New.
+	* config/locale/dragonfly/codecvt_members.cc: New.
+	* config/locale/dragonfly/collate_members.cc: New.
+	* config/locale/dragonfly/monetary_members.cc: New.
+	* config/locale/dragonfly/numeric_members.cc: New.
+	* config/locale/dragonfly/time_members.cc: New.
+	* config/locale/dragonfly/time_members.h: New.
+
 2015-08-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure: Regenerate.
