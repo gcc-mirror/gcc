@@ -318,7 +318,10 @@ rest_of_decl_compilation (tree decl,
       && !decl_function_context (decl)
       && !current_function_decl
       && DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
-      && !decl_type_context (decl))
+      && !decl_type_context (decl)
+      /* Avoid confusing the debug information machinery when there are
+	 errors.  */
+      && !seen_error ())
     (*debug_hooks->early_global_decl) (decl);
 }
 
