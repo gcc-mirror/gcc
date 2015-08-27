@@ -1,3 +1,15 @@
+2015-08-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.md (*condjump): Handle functions > 1 MiB.
+	(*cb<optab><mode>1): Likewise.
+	(*tb<optab><mode>1): Likewise.
+	(*cb<optab><mode>1): Likewise.
+	* config/aarch64/iterators.md (inv_cb): New code attribute.
+	(inv_tb): Likewise.
+	* config/aarch64/aarch64.c (aarch64_gen_far_branch): New.
+	* config/aarch64/aarch64-protos.h (aarch64_gen_far_branch): New.
+
 2015-08-27  Richard Biener  <rguenther@suse.de>
 
 	* ipa.c (cgraph_build_static_cdtor_1): Set DECL_IGNORED_P.

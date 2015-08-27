@@ -817,8 +817,14 @@
 ;; Emit cbz/cbnz depending on comparison type.
 (define_code_attr cbz [(eq "cbz") (ne "cbnz") (lt "cbnz") (ge "cbz")])
 
+;; Emit inverted cbz/cbnz depending on comparison type.
+(define_code_attr inv_cb [(eq "cbnz") (ne "cbz") (lt "cbz") (ge "cbnz")])
+
 ;; Emit tbz/tbnz depending on comparison type.
 (define_code_attr tbz [(eq "tbz") (ne "tbnz") (lt "tbnz") (ge "tbz")])
+
+;; Emit inverted tbz/tbnz depending on comparison type.
+(define_code_attr inv_tb [(eq "tbnz") (ne "tbz") (lt "tbz") (ge "tbnz")])
 
 ;; Max/min attributes.
 (define_code_attr maxmin [(smax "max")

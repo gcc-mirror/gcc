@@ -1,3 +1,7 @@
+2015-08-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/long_branch_1.c: New test.
+
 2015-08-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/20150826-1.c: New test.
