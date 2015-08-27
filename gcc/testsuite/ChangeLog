@@ -1,3 +1,7 @@
+2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/tree-ssa/sra-15.c: New.
+
 2015-08-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/aarch64/long_branch_1.c: New test.
