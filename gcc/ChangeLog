@@ -1,3 +1,9 @@
+2015-08-27  Alan Modra  <amodra@gmail.com>
+
+	PR target/67356
+	* config/rs6000/rs6000.md (ior<mode>_mask): Use constraint "0"
+	for operand 1.
+
 2015-08-27  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (rest_of_decl_compilation): Guard early_global_decl
