@@ -1341,16 +1341,16 @@ Common Report Var(flag_loop_parallelize_all) Optimization
 Mark all loops as parallel
 
 floop-strip-mine
-Common Report Var(flag_loop_strip_mine) Optimization
-Enable Loop Strip Mining transformation
+Common Alias(floop-nest-optimize)
+Enable loop nest transforms.  Same as -floop-nest-optimize
 
 floop-interchange
-Common Report Var(flag_loop_interchange) Optimization
-Enable Loop Interchange transformation
+Common Alias(floop-nest-optimize)
+Enable loop nest transforms.  Same as -floop-nest-optimize
 
 floop-block
-Common Report Var(flag_loop_block) Optimization
-Enable Loop Blocking transformation
+Common Alias(floop-nest-optimize)
+Enable loop nest transforms.  Same as -floop-nest-optimize
 
 floop-unroll-and-jam
 Common Alias(floop-nest-optimize)
@@ -2315,8 +2315,8 @@ Common Report Var(flag_tree_loop_im) Init(1) Optimization
 Enable loop invariant motion on trees
 
 ftree-loop-linear
-Common Alias(floop-interchange)
-Enable loop interchange transforms.  Same as -floop-interchange
+Common Alias(floop-nest-optimize)
+Enable loop nest transforms.  Same as -floop-nest-optimize
 
 ftree-loop-ivcanon
 Common Report Var(flag_tree_loop_ivcanon) Init(1) Optimization

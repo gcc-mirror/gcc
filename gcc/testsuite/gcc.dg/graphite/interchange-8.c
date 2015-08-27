@@ -82,4 +82,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be interchanged" 2 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "tiled by" 5 "graphite" } } */

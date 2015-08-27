@@ -443,18 +443,12 @@ isl_id_for_pbb (scop_p s, poly_bb_p pbb)
 /* Converts the STATIC_SCHEDULE of PBB into a scattering polyhedron.
    We generate SCATTERING_DIMENSIONS scattering dimensions.
 
-   CLooG 0.15.0 and previous versions require, that all
-   scattering functions of one CloogProgram have the same number of
-   scattering dimensions, therefore we allow to specify it.  This
-   should be removed in future versions of CLooG.
-
    The scattering polyhedron consists of these dimensions: scattering,
    loop_iterators, parameters.
 
    Example:
 
    | scattering_dimensions = 5
-   | used_scattering_dimensions = 3
    | nb_iterators = 1
    | scop_nb_params = 2
    |
@@ -475,15 +469,13 @@ isl_id_for_pbb (scop_p s, poly_bb_p pbb)
 
 static void
 build_pbb_scattering_polyhedrons (isl_aff *static_sched,
-				  poly_bb_p pbb, int scattering_dimensions)
+				  poly_bb_p pbb)
 {
   int i;
-  int nb_iterators = pbb_dim_iter_domain (pbb);
-  int used_scattering_dimensions = nb_iterators * 2 + 1;
   isl_val *val;
   isl_space *dc, *dm;
 
-  gcc_assert (scattering_dimensions >= used_scattering_dimensions);
+  int scattering_dimensions = isl_set_dim (pbb->domain, isl_dim_set) * 2 + 1;
 
   dc = isl_set_get_space (pbb->domain);
   dm = isl_space_add_dims (isl_space_from_domain (dc),
@@ -577,7 +569,6 @@ build_scop_scattering (scop_p scop)
     {
       gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
       int prefix;
-      int nb_scat_dims = pbb_dim_iter_domain (pbb) * 2 + 1;
 
       if (previous_gbb)
 	prefix = nb_common_loops (SCOP_REGION (scop), previous_gbb, gbb);
@@ -588,7 +579,7 @@ build_scop_scattering (scop_p scop)
 
       static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in,
 						 prefix, 1);
-      build_pbb_scattering_polyhedrons (static_sched, pbb, nb_scat_dims);
+      build_pbb_scattering_polyhedrons (static_sched, pbb);
     }
 
   isl_aff_free (static_sched);
@@ -3103,7 +3094,7 @@ rewrite_commutative_reductions_out_of_ssa (scop_p scop)
 }
 
 /* Can all ivs be represented by a signed integer?
-   As CLooG might generate negative values in its expressions, signed loop ivs
+   As ISL might generate negative values in its expressions, signed loop ivs
    are required in the backend. */
 
 static bool
@@ -3149,9 +3140,7 @@ build_poly_scop (scop_p scop)
 
   build_scop_bbs (scop);
 
-  /* FIXME: This restriction is needed to avoid a problem in CLooG.
-     Once CLooG is fixed, remove this guard.  Anyways, it makes no
-     sense to optimize a scop containing only PBBs that do not belong
+  /* Do not optimize a scop containing only PBBs that do not belong
      to any loops.  */
   if (nb_pbbs_in_loops (scop) == 0)
     return;
@@ -3182,7 +3171,6 @@ build_poly_scop (scop_p scop)
   rewrite_cross_bb_scalar_deps_out_of_ssa (scop);
 
   build_scop_drs (scop);
-  scop_to_lst (scop);
   build_scop_scattering (scop);
 
   /* This SCoP has been translated to the polyhedral

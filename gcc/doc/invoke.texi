@@ -8734,102 +8734,19 @@ Perform loop optimizations on trees.  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-loop-linear
+@itemx -floop-interchange
+@itemx -floop-strip-mine
+@itemx -floop-block
+@itemx -floop-unroll-and-jam
 @opindex ftree-loop-linear
-Perform loop interchange transformations on tree.  Same as
-@option{-floop-interchange}.  To use this code transformation, GCC has
+@opindex floop-interchange
+@opindex floop-strip-mine
+@opindex floop-block
+@opindex floop-unroll-and-jam
+Perform loop nest optimizations.  Same as
+@option{-floop-nest-optimize}.  To use this code transformation, GCC has
 to be configured with @option{--with-isl} to enable the Graphite loop
 transformation infrastructure.
-
-@item -floop-interchange
-@opindex floop-interchange
-Perform loop interchange transformations on loops.  Interchanging two
-nested loops switches the inner and outer loops.  For example, given a
-loop like:
-@smallexample
-DO J = 1, M
-  DO I = 1, N
-    A(J, I) = A(J, I) * C
-  ENDDO
-ENDDO
-@end smallexample
-@noindent
-loop interchange transforms the loop as if it were written:
-@smallexample
-DO I = 1, N
-  DO J = 1, M
-    A(J, I) = A(J, I) * C
-  ENDDO
-ENDDO
-@end smallexample
-which can be beneficial when @code{N} is larger than the caches,
-because in Fortran, the elements of an array are stored in memory
-contiguously by column, and the original loop iterates over rows,
-potentially creating at each access a cache miss.  This optimization
-applies to all the languages supported by GCC and is not limited to
-Fortran.  To use this code transformation, GCC has to be configured
-with @option{--with-isl} to enable the Graphite loop transformation
-infrastructure.
-
-@item -floop-strip-mine
-@opindex floop-strip-mine
-Perform loop strip mining transformations on loops.  Strip mining
-splits a loop into two nested loops.  The outer loop has strides
-equal to the strip size and the inner loop has strides of the
-original loop within a strip.  The strip length can be changed
-using the @option{loop-block-tile-size} parameter.  For example,
-given a loop like:
-@smallexample
-DO I = 1, N
-  A(I) = A(I) + C
-ENDDO
-@end smallexample
-@noindent
-loop strip mining transforms the loop as if it were written:
-@smallexample
-DO II = 1, N, 51
-  DO I = II, min (II + 50, N)
-    A(I) = A(I) + C
-  ENDDO
-ENDDO
-@end smallexample
-This optimization applies to all the languages supported by GCC and is
-not limited to Fortran.  To use this code transformation, GCC has to
-be configured with @option{--with-isl} to enable the Graphite loop
-transformation infrastructure.
-
-@item -floop-block
-@opindex floop-block
-Perform loop blocking transformations on loops.  Blocking strip mines
-each loop in the loop nest such that the memory accesses of the
-element loops fit inside caches.  The strip length can be changed
-using the @option{loop-block-tile-size} parameter.  For example, given
-a loop like:
-@smallexample
-DO I = 1, N
-  DO J = 1, M
-    A(J, I) = B(I) + C(J)
-  ENDDO
-ENDDO
-@end smallexample
-@noindent
-loop blocking transforms the loop as if it were written:
-@smallexample
-DO II = 1, N, 51
-  DO JJ = 1, M, 51
-    DO I = II, min (II + 50, N)
-      DO J = JJ, min (JJ + 50, M)
-        A(J, I) = B(I) + C(J)
-      ENDDO
-    ENDDO
-  ENDDO
-ENDDO
-@end smallexample
-which can be beneficial when @code{M} is larger than the caches,
-because the innermost loop iterates over a smaller amount of data
-which can be kept in the caches.  This optimization applies to all the
-languages supported by GCC and is not limited to Fortran.  To use this
-code transformation, GCC has to be configured with @option{--with-isl}
-to enable the Graphite loop transformation infrastructure.
 
 @item -fgraphite-identity
 @opindex fgraphite-identity
@@ -8846,13 +8763,6 @@ Enable the ISL based loop nest optimizer.  This is a generic loop nest
 optimizer based on the Pluto optimization algorithms.  It calculates a loop
 structure optimized for data-locality and parallelism.  This option
 is experimental.
-
-@item -floop-unroll-and-jam
-@opindex floop-unroll-and-jam
-Perform loop nest transformations.  Same as
-@option{-floop-nest-optimize}.  To use this code transformation, GCC has
-to be configured with @option{--with-isl} to enable the Graphite loop
-transformation infrastructure.
 
 @item -floop-parallelize-all
 @opindex floop-parallelize-all

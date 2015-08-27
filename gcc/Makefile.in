@@ -1277,10 +1277,8 @@ OBJS = \
 	graph.o \
 	graphds.o \
 	graphite.o \
-	graphite-blocking.o \
 	graphite-isl-ast-to-gimple.o \
 	graphite-dependences.o \
-	graphite-interchange.o \
 	graphite-optimize-isl.o \
 	graphite-poly.o \
 	graphite-scop-detection.o \

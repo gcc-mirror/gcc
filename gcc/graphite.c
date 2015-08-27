@@ -25,12 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    An early description of this pass can be found in the GCC Summit'06
    paper "GRAPHITE: Polyhedral Analyses and Optimizations for GCC".
    The wiki page http://gcc.gnu.org/wiki/Graphite contains pointers to
-   the related work.
-
-   One important document to read is CLooG's internal manual:
-   http://repo.or.cz/w/cloog-ppl.git?a=blob_plain;f=doc/cloog.texi;hb=HEAD
-   that describes the data structure of loops used in this file, and
-   the functions that are used for transforming the code.  */
+   the related work.  */
 
 #include "config.h"
 
@@ -286,6 +281,9 @@ graphite_transform_loops (void)
 	scop->ctx = ctx;
 	build_poly_scop (scop);
 
+	if (dump_file && dump_flags)
+	  print_scop (dump_file, scop, 3);
+
 	if (POLY_SCOP_P (scop)
 	    && apply_poly_transforms (scop)
 	    && graphite_regenerate_ast_isl (scop))
@@ -326,10 +324,7 @@ gate_graphite_transforms (void)
 {
   /* Enable -fgraphite pass if any one of the graphite optimization flags
      is turned on.  */
-  if (flag_loop_block
-      || flag_loop_interchange
-      || flag_loop_strip_mine
-      || flag_graphite_identity
+  if (flag_graphite_identity
       || flag_loop_parallelize_all
       || flag_loop_optimize_isl)
     flag_graphite = 1;

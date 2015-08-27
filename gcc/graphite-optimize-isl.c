@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "graphite-poly.h"
 #include "params.h"
+#include "dumpfile.h"
 
 static isl_union_set *
 scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
@@ -177,12 +178,21 @@ getScheduleForBand (isl_band *Band, int *Dimensions)
 
   /* It does not make any sense to tile a band with just one dimension.  */
   if (*Dimensions == 1)
-    return PartialSchedule;
+    {
+      if (dump_file && dump_flags)
+	fprintf (dump_file, "not tiled\n");
+      return PartialSchedule;
+    }
+
+  if (dump_file && dump_flags)
+    fprintf (dump_file, "tiled by %d\n",
+	     PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE));
 
   ctx = isl_union_map_get_ctx (PartialSchedule);
   Space = isl_union_map_get_space (PartialSchedule);
 
-  TileMap = getTileMap (ctx, *Dimensions, 32);
+  TileMap = getTileMap (ctx, *Dimensions,
+			PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE));
   TileUMap = isl_union_map_from_map (isl_map_from_basic_map (TileMap));
   TileUMap = isl_union_map_align_params (TileUMap, Space);
   *Dimensions = 2 * *Dimensions;
