@@ -3080,6 +3080,11 @@ Label_statement::do_traverse(Traverse*)
 Bstatement*
 Label_statement::do_get_backend(Translate_context* context)
 {
+  if (this->label_->is_dummy_label())
+    {
+      Bexpression* bce = context->backend()->boolean_constant_expression(false);
+      return context->backend()->expression_statement(bce);
+    }
   Blabel* blabel = this->label_->get_backend_label(context);
   return context->backend()->label_definition_statement(blabel);
 }

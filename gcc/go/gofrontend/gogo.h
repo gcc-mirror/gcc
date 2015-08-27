@@ -2689,6 +2689,8 @@ class Label
   void
   define(Location location, Bindings_snapshot* snapshot)
   {
+    if (this->is_dummy_label())
+      return;
     go_assert(Linemap::is_unknown_location(this->location_)
               && this->snapshot_ == NULL);
     this->location_ = location;
@@ -2708,6 +2710,11 @@ class Label
   // Return a dummy label, representing any instance of the blank label.
   static Label*
   create_dummy_label();
+
+  // Return TRUE if this is a dummy label.
+  bool
+  is_dummy_label() const
+  { return this->name_ == "_"; }
 
  private:
   // The name of the label.
