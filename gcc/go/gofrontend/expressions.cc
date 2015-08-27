@@ -6588,7 +6588,11 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     recover_arg_is_set_(false)
 {
   Func_expression* fnexp = this->fn()->func_expression();
-  go_assert(fnexp != NULL);
+  if (fnexp == NULL)
+    {
+      this->code_ = BUILTIN_INVALID;
+      return;
+    }
   const std::string& name(fnexp->named_object()->name());
   if (name == "append")
     this->code_ = BUILTIN_APPEND;
@@ -6661,7 +6665,7 @@ Expression*
 Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 				  Statement_inserter* inserter, int)
 {
-  if (this->classification() == EXPRESSION_ERROR)
+  if (this->is_error_expression())
     return this;
 
   Location loc = this->location();
@@ -7500,11 +7504,13 @@ Builtin_call_expression::do_discarding_value()
 Type*
 Builtin_call_expression::do_type()
 {
+  if (this->is_error_expression())
+    return Type::make_error_type();
   switch (this->code_)
     {
     case BUILTIN_INVALID:
     default:
-      go_unreachable();
+      return Type::make_error_type();
 
     case BUILTIN_NEW:
     case BUILTIN_MAKE:
