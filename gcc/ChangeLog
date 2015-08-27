@@ -1,5 +1,15 @@
 2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR tree-optimization/67283
+	* tree-sra.c (type_consists_of_records_p): Rename to...
+	(scalarizable_type_p): ...this, add case for ARRAY_TYPE.
+
+	(completely_scalarize_record): Rename to...
+	(completely_scalarize): ...this, add ARRAY_TYPE case, move some code to:
+	(scalarize_elem): New.
+
+2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* tree-sra.c (completely_scalarize_var): Rename to...
 	(create_total_scalarization_access): ... Here. Drop call to
 	completely_scalarize_record.
