@@ -1103,7 +1103,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	return;
       }
 
-    case SYMBOL_SMALL_GOTTPREL:
+    case SYMBOL_SMALL_TLSIE:
       {
 	/* In ILP32, the mode of dest can be either SImode or DImode,
 	   while the got entry is always of SImode size.  The mode of
@@ -1737,7 +1737,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
         case SYMBOL_SMALL_TLSGD:
         case SYMBOL_SMALL_TLSDESC:
-        case SYMBOL_SMALL_GOTTPREL:
+	case SYMBOL_SMALL_TLSIE:
 	case SYMBOL_SMALL_GOT_28K:
 	case SYMBOL_SMALL_GOT_4G:
 	case SYMBOL_TINY_GOT:
@@ -4623,7 +4623,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  asm_fprintf (asm_out_file, ":tlsdesc:");
 	  break;
 
-	case SYMBOL_SMALL_GOTTPREL:
+	case SYMBOL_SMALL_TLSIE:
 	  asm_fprintf (asm_out_file, ":gottprel:");
 	  break;
 
@@ -4656,7 +4656,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  asm_fprintf (asm_out_file, ":tlsdesc_lo12:");
 	  break;
 
-	case SYMBOL_SMALL_GOTTPREL:
+	case SYMBOL_SMALL_TLSIE:
 	  asm_fprintf (asm_out_file, ":gottprel_lo12:");
 	  break;
 
@@ -8787,7 +8787,7 @@ aarch64_classify_tls_symbol (rtx x)
 	case AARCH64_CMODEL_TINY_PIC:
 	  return SYMBOL_TINY_TLSIE;
 	default:
-	  return SYMBOL_SMALL_GOTTPREL;
+	  return SYMBOL_SMALL_TLSIE;
 	}
 
     case TLS_MODEL_LOCAL_EXEC:

@@ -1,3 +1,14 @@
+2015-08-28  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_symbol_context): Rename
+	SYMBOL_SMALL_GOTTPREL to SYMBOL_SMALL_TLSIE.
+	(aarch64_symbol_type): Likewise.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Likewise.
+	(aarch64_expand_mov_immediate): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_classify_tls_symbol): Likewise.
+
 2015-08-28  Richard Biener  <rguenther@suse.de>
 
 	* cgraphunit.c (symbol_table::compile): Move early debug generation
