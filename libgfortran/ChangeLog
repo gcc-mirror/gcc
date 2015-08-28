@@ -1,3 +1,8 @@
+2015-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/53668
+	* intrinsics/malloc.c: Adapt comments.
+
 2015-08-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* configure.ac: Auto-detect newlib function support unless we

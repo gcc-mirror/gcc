@@ -27,6 +27,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h>
 
 
+/* The runtime MALLOC and FREE are kept here until the libgfortran ABI
+   is broken.  The front-end now emits direct calls to the GCC's malloc()
+   and free() built-ins.  */
+
 extern void PREFIX(free) (void **);
 export_proto_np(PREFIX(free));
 

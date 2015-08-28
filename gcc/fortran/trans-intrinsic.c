@@ -2657,6 +2657,27 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Generate a direct call to free() for the FREE subroutine.  */
+
+static tree
+conv_intrinsic_free (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se argse;
+  tree arg, call;
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr (&argse, code->ext.actual->expr);
+  arg = fold_convert (ptr_type_node, argse.expr);
+
+  gfc_init_block (&block);
+  call = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_FREE), 1, arg);
+  gfc_add_expr_to_block (&block, call);
+  return gfc_finish_block (&block);
+}
+
+
 /* Call the SYSTEM_CLOCK library functions, handling the type and kind
    conversions.  */
 
@@ -7648,6 +7669,22 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Generate a direct call to malloc() for the MALLOC intrinsic.  */
+
+static void
+gfc_conv_intrinsic_malloc (gfc_se * se, gfc_expr * expr)
+{
+  tree arg, res, restype;
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  arg = fold_convert (size_type_node, arg);
+  res = build_call_expr_loc (input_location,
+			     builtin_decl_explicit (BUILT_IN_MALLOC), 1, arg);
+  restype = gfc_typenode_for_spec (&expr->ts);
+  se->expr = fold_convert (restype, res);
+}
+
+
 /* Generate code for an intrinsic function.  Some map directly to library
    calls, others get special handling.  In some cases the name of the function
    used depends on the type specifiers.  */
@@ -8078,6 +8115,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_strcmp (se, expr, LT_EXPR);
       break;
 
+    case GFC_ISYM_MALLOC:
+      gfc_conv_intrinsic_malloc (se, expr);
+      break;
+
     case GFC_ISYM_MASKL:
       gfc_conv_intrinsic_mask (se, expr, 1);
       break;
@@ -8267,7 +8308,6 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_JN2:
     case GFC_ISYM_LINK:
     case GFC_ISYM_LSTAT:
-    case GFC_ISYM_MALLOC:
     case GFC_ISYM_MATMUL:
     case GFC_ISYM_MCLOCK:
     case GFC_ISYM_MCLOCK8:
@@ -9534,6 +9574,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
     case GFC_ISYM_CO_REDUCE:
     case GFC_ISYM_CO_SUM:
       res = conv_co_collective (code);
+      break;
+
+    case GFC_ISYM_FREE:
+      res = conv_intrinsic_free (code);
       break;
 
     case GFC_ISYM_SYSTEM_CLOCK:

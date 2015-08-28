@@ -2298,7 +2298,7 @@ add_functions (void)
   make_generic ("lstat", GFC_ISYM_LSTAT, GFC_STD_GNU);
 
   add_sym_1 ("malloc", GFC_ISYM_MALLOC, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER, ii,
-	     GFC_STD_GNU, gfc_check_malloc, NULL, gfc_resolve_malloc,
+	     GFC_STD_GNU, gfc_check_malloc, NULL, NULL,
 	     sz, BT_INTEGER, di, REQUIRED);
 
   make_generic ("malloc", GFC_ISYM_MALLOC, GFC_STD_GNU);
@@ -3433,7 +3433,7 @@ add_subroutines (void)
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_1s ("free", GFC_ISYM_FREE, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
-	      gfc_check_free, NULL, gfc_resolve_free,
+	      gfc_check_free, NULL, NULL,
 	      ptr, BT_INTEGER, ii, REQUIRED, INTENT_INOUT);
 
   add_sym_4s ("fseek", GFC_ISYM_FSEEK, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
