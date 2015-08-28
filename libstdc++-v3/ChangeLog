@@ -1,3 +1,15 @@
+2015-08-28  Tim Shen  <timshen@google.com>
+
+	Backport from mainline
+	2015-08-28  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/67362
+	* include/bits/regex_scanner.tcc (_Scanner<>::_M_scan_normal):
+	Always returns ordinary char token if the char isn't
+	considered a special char.
+	* testsuite/28_regex/regression.cc: New test file for collecting
+	regression testcases from, typically, bugzilla.
+
 2015-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/Makefile.am: Ensure gdb.py is installed for libstdc++ not
