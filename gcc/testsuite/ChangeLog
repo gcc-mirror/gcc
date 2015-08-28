@@ -1,3 +1,9 @@
+2015-08-28  Alan Lawrence  <alan.lawrence@arm.com>
+	Revert:
+	2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
+
+		* gcc.dg/tree-ssa/sra-15.c: New.
+
 2015-08-28  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* gcc.target/mips/madd-8.c: Add lo register to clobber list. 
