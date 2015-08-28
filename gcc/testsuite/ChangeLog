@@ -1,5 +1,8 @@
 2015-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	* gcc/testsuite/gcc.dg/compat/struct-layout-1_generate.c: Simply
+	use exit code for failure.
+
 	* gcc/testsuite/gcc.dg/torture/matrix-1.c: Use plain printf.
 	* gcc/testsuite/gcc.dg/torture/matrix-2.c: Likewise.
 	* gcc/testsuite/gcc.dg/torture/matrix-5.c: Likewise.
