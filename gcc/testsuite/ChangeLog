@@ -1,3 +1,16 @@
+2015-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc/testsuite/gcc.dg/torture/matrix-1.c: Use plain printf.
+	* gcc/testsuite/gcc.dg/torture/matrix-2.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/matrix-5.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/matrix-6.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/transpose-1.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/transpose-2.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/transpose-3.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/transpose-4.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/transpose-5.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/transpose-6.c: Likewise.
+
 2015-08-28  Jeff Law  <law@redhat.com>
 
 	PR lto/66752
