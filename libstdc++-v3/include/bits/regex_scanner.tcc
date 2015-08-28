@@ -97,6 +97,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __c = *_M_current++;
       const char* __pos;
 
+      if (std::strchr(_M_spec_char, _M_ctype.narrow(__c, '\0')) == nullptr)
+	{
+	  _M_token = _S_token_ord_char;
+	  _M_value.assign(1, __c);
+	  return;
+	}
       if (__c == '\\')
 	{
 	  if (_M_current == _M_end)
