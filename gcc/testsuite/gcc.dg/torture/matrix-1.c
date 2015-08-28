@@ -62,8 +62,7 @@ mem_init (void)
       vel[i] = (int **) malloc (3 * sizeof (int *));
       if (vel[i] == (int **) NULL)
 	{
-	  fprintf (stderr, "malloc failed for vel[%d]\n", i);
-	  fflush (stderr);
+	  printf ("malloc failed for vel[%d]\n", i);
 	  exit (0);
 	}
     }
