@@ -1,3 +1,10 @@
+2015-08-28  Richard Biener  <rguenther@suse.de>
+
+	* cgraphunit.c (symbol_table::compile): Move early debug generation
+	and finish...
+	(symbol_table::finalize_compilation_unit): ... back here and
+	add a !seen_error () guard.
+
 2015-08-27  Sebastian Pop  <s.pop@samsung.com>
 
 	* toplev.c (process_options): Do not use flag_loop_block,
