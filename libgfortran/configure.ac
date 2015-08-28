@@ -273,8 +273,13 @@ GCC_HEADER_STDINT(gstdint.h)
 
 AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_blocks, struct stat.st_rdev])
 
+case "${host}--x${with_newlib}" in
+  mips*--xyes)
+    hardwire_newlib=1;;
+esac
+
 # Check for library functions.
-if test "x${with_newlib}" = "xyes"; then
+if test "${hardwire_newlib:-0}" -eq 1; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
    # may not work correctly, because the compiler may not be able to
    # link executables.

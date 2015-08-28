@@ -1,3 +1,9 @@
+2015-08-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* configure.ac: Auto-detect newlib function support unless we
+	know there are issues when configuring for a host.
+	* configure: Regenerate.
+
 2015-08-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29600
