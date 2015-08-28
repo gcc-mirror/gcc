@@ -805,12 +805,7 @@ int main (void)\n\
 #define TX(n, type, attrs, fields, ops)   test##n ();\n\
 #include \"t%03d_test.h\"\n\
 #undef TX\n\
-  if (fails)\n\
-    {\n\
-      fflush (stdout);\n\
-      abort ();\n\
-    }\n\
-  exit (0);\n\
+  exit (fails != 0);\n\
 }\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_x.c", filecnt);
