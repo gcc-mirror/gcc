@@ -1,3 +1,13 @@
+2015-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/53668
+	* intrinsic.c (add_functions, add_subroutines): Remove resolution
+	functions for FREE and MALLOC.
+	* intrinsic.h (gfc_resolve_malloc, gfc_resolve_free): Remove.
+	* iresolve.c (gfc_resolve_malloc, gfc_resolve_free): Remove.
+	* trans-intrinsic.c (conv_intrinsic_free,
+	gfc_conv_intrinsic_malloc): New functions.
+
 2015-08-24  Louis Krupp <louis.krupp@zoho.com>
 
 	PR fortran/62536
