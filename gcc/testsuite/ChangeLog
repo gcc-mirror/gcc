@@ -1,3 +1,8 @@
+2015-08-28  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/madd-8.c: Add lo register to clobber list. 
+	* gcc.target/mips/msub-8.c: Ditto
+
 2015-08-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* lib/target-supports.exp (check-effective_target_vect_double):
