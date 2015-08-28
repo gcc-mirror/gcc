@@ -1,3 +1,10 @@
+2015-08-28  Jeff Law  <law@redhat.com>
+
+	PR lto/66752
+	* gcc.dg/tree-ssa/pr66752-2.c: New test.
+	* gcc.dg/torture/pr66752-1.c: New test
+	* g++.dg/torture/pr66752-2.C: New test.
+
 2015-08-28  Alan Lawrence  <alan.lawrence@arm.com>
 	Revert:
 	2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>

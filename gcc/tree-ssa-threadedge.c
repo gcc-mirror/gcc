@@ -553,6 +553,24 @@ simplify_control_stmt_condition (edge e,
           || !is_gimple_min_invariant (cached_lhs))
         cached_lhs = (*simplify) (dummy_cond, stmt);
 
+      /* If we were just testing that an integral type was != 0, and that
+	 failed, just return the first operand.  This gives the FSM code a
+	 chance to optimize the path.  */
+      if (cached_lhs == NULL
+	  && cond_code == NE_EXPR)
+	{
+	  /* Recover the original operands.  They may have been simplified
+	     using context sensitive equivalences.  Those context sensitive
+	     equivalences may not be valid on paths found by the FSM optimizer.  */
+	  tree op0 = gimple_cond_lhs (stmt);
+	  tree op1 = gimple_cond_rhs (stmt);
+
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (op0))
+	      && TREE_CODE (op0) == SSA_NAME
+	      && integer_zerop (op1))
+	    return op0;
+	}
+
       return cached_lhs;
     }
 
@@ -973,6 +991,21 @@ fsm_find_control_statement_thread_paths (tree expr,
 	  vec_free (next_path);
 	  return;
 	}
+
+      /* Make sure we haven't already visited any of the nodes in
+	 NEXT_PATH.  Don't add them here to avoid pollution.  */
+      for (unsigned int i = 0; i < next_path->length () - 1; i++)
+	{
+	  if (visited_bbs->contains ((*next_path)[i]))
+	    {
+	      vec_free (next_path);
+	      return;
+	    }
+	}
+
+      /* Now add the nodes to VISISTED_BBS.  */
+      for (unsigned int i = 0; i < next_path->length () - 1; i++)
+	visited_bbs->add ((*next_path)[i]);
 
       /* Append all the nodes from NEXT_PATH to PATH.  */
       vec_safe_splice (path, next_path);
