@@ -16485,6 +16485,15 @@ $as_echo "#define HAVE_STRTOK_R 1" >>confdefs.h
 $as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
 
    fi
+
+  # ARM, AArch64 and SH also provide ftruncate.
+  case "${host}" in
+     arm* | aarch64* | sh*)
+
+$as_echo "#define HAVE_FTRUNCATE 1" >>confdefs.h
+
+       ;;
+  esac
 else
 
 

@@ -280,6 +280,13 @@ if test "x${with_newlib}" = "xyes"; then
    if test x"long_double_math_on_this_cpu" = x"yes"; then
      AC_DEFINE(HAVE_STRTOLD, 1, [Define if you have strtold.])
    fi
+
+  # ARM, AArch64 and SH also provide ftruncate.
+  case "${host}" in
+     arm* | aarch64* | sh*)
+       AC_DEFINE(HAVE_FTRUNCATE, 1, [Define if you have ftruncate.])
+       ;;
+  esac
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
