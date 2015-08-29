@@ -1,5 +1,14 @@
 2015-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* acinclude.m4: Remove LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT.
+	* configure.ac: Remove checks for strcasestr, execl, close,
+	getrlimit, readlink, getppid, powl, erfl, j0l, j1l, y0l, y1l,
+	tgammal, and lgammal.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2015-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* io/unix.c (min): Remove unused macro.
 
 2015-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
