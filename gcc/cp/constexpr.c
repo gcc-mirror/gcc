@@ -4273,15 +4273,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	return false;
       return true;
 
-    case IF_STMT:
-      if (!RECUR (IF_COND (t), rval))
-	return false;
-      if (!RECUR (THEN_CLAUSE (t), any))
-	return false;
-      if (!RECUR (ELSE_CLAUSE (t), any))
-	return false;
-      return true;
-
     case DO_STMT:
       if (!RECUR (DO_COND (t), rval))
 	return false;
@@ -4310,8 +4301,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case SWITCH_STMT:
       if (!RECUR (SWITCH_STMT_COND (t), rval))
 	return false;
-      if (!RECUR (SWITCH_STMT_BODY (t), any))
-	return false;
+      /* FIXME we don't check SWITCH_STMT_BODY currently, because even
+	 unreachable labels would be checked.  */
       return true;
 
     case STMT_EXPR:
@@ -4592,6 +4583,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	return false;
      return true;
 
+    case IF_STMT:
     case COND_EXPR:
     case VEC_COND_EXPR:
       /* If the condition is a known constant, we know which of the legs we
