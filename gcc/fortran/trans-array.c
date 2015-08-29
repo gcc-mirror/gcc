@@ -922,7 +922,7 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
     {
       /* Free the temporary.  */
       tmp = gfc_conv_descriptor_data_get (desc);
-      tmp = gfc_call_free (fold_convert (pvoid_type_node, tmp));
+      tmp = gfc_call_free (tmp);
       gfc_add_expr_to_block (post, tmp);
     }
 }
@@ -5885,7 +5885,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
       gfc_add_modify (&init, decl, tmp);
 
       /* Free the temporary.  */
-      tmp = gfc_call_free (convert (pvoid_type_node, decl));
+      tmp = gfc_call_free (decl);
       space = NULL_TREE;
     }
 
@@ -7542,7 +7542,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	}
 
       /* Free the temporary.  */
-      tmp = gfc_call_free (convert (pvoid_type_node, ptr));
+      tmp = gfc_call_free (ptr);
       gfc_add_expr_to_block (&block, tmp);
 
       stmt = gfc_finish_block (&block);

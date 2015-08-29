@@ -3035,7 +3035,7 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
       gfc_add_modify (&se->pre, var, tmp);
 
       /* Free the temporary afterwards.  */
-      tmp = gfc_call_free (convert (pvoid_type_node, var));
+      tmp = gfc_call_free (var);
       gfc_add_expr_to_block (&se->post, tmp);
     }
 
@@ -5880,7 +5880,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  gfc_add_modify (&se->pre, var,
 				  fold_convert (TREE_TYPE (var),
 						null_pointer_node));
-		  tmp = gfc_call_free (convert (pvoid_type_node, var));
+		  tmp = gfc_call_free (var);
 		  gfc_add_expr_to_block (&se->post, tmp);
 		}
 
@@ -6140,14 +6140,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  if (se->ss && se->ss->loop)
 	    {
 	      gfc_add_expr_to_block (&se->ss->loop->post, tmp);
-	      tmp = gfc_call_free (convert (pvoid_type_node, info->data));
+	      tmp = gfc_call_free (info->data);
 	      gfc_add_expr_to_block (&se->ss->loop->post, tmp);
 	    }
 	  else
 	    {
 	      gfc_add_expr_to_block (&se->post, tmp);
 	      tmp = gfc_class_data_get (se->expr);
-	      tmp = gfc_call_free (convert (pvoid_type_node, tmp));
+	      tmp = gfc_call_free (tmp);
 	      gfc_add_expr_to_block (&se->post, tmp);
 	    }
 	  expr->must_finalize = 0;
@@ -8453,7 +8453,7 @@ fcncall_realloc_result (gfc_se *se, int rank)
 			       boolean_type_node, tmp,
 			       build_int_cst (TREE_TYPE (tmp), 0));
   zero_cond = gfc_evaluate_now (zero_cond, &se->post);
-  tmp = gfc_call_free (fold_convert (pvoid_type_node, tmp));
+  tmp = gfc_call_free (tmp);
   gfc_add_expr_to_block (&se->post, tmp);
 
   tmp = gfc_conv_descriptor_data_get (res_desc);
