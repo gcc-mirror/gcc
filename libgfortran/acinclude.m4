@@ -43,21 +43,6 @@ AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY], [
       [Define to 1 if the target supports __attribute__((visibility(...))).])
   fi])
 
-dnl Check whether the target supports dllexport
-AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT], [
-  AC_CACHE_CHECK([whether the target supports dllexport],
-		 libgfor_cv_have_attribute_dllexport, [
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -Werror"
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void __attribute__((dllexport)) foo(void) { }]], [])],
-		    libgfor_cv_have_attribute_dllexport=yes,
-		    libgfor_cv_have_attribute_dllexport=no)
-  CFLAGS="$save_CFLAGS"])
-  if test $libgfor_cv_have_attribute_dllexport = yes; then
-    AC_DEFINE(HAVE_ATTRIBUTE_DLLEXPORT, 1,
-      [Define to 1 if the target supports __attribute__((dllexport)).])
-  fi])
-
 dnl Check whether the target supports symbol aliases.
 AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_ALIAS], [
   AC_CACHE_CHECK([whether the target supports symbol aliases],

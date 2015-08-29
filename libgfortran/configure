@@ -2569,12 +2569,8 @@ as_fn_append ac_func_list " ttyname"
 as_fn_append ac_func_list " alarm"
 as_fn_append ac_func_list " access"
 as_fn_append ac_func_list " fork"
-as_fn_append ac_func_list " execl"
 as_fn_append ac_func_list " setmode"
-as_fn_append ac_func_list " close"
 as_fn_append ac_func_list " fcntl"
-as_fn_append ac_func_list " strcasestr"
-as_fn_append ac_func_list " getrlimit"
 as_fn_append ac_func_list " gettimeofday"
 as_fn_append ac_func_list " stat"
 as_fn_append ac_func_list " fstat"
@@ -2588,10 +2584,8 @@ as_fn_append ac_func_list " gmtime_r"
 as_fn_append ac_func_list " getpwuid_r"
 as_fn_append ac_func_list " ttyname_r"
 as_fn_append ac_func_list " clock_gettime"
-as_fn_append ac_func_list " readlink"
 as_fn_append ac_func_list " getgid"
 as_fn_append ac_func_list " getpid"
-as_fn_append ac_func_list " getppid"
 as_fn_append ac_func_list " getuid"
 as_fn_append ac_func_list " geteuid"
 as_fn_append ac_func_list " umask"
@@ -12369,7 +12363,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12372 "configure"
+#line 12366 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12475,7 +12469,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12478 "configure"
+#line 12472 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16494,9 +16488,6 @@ $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
 $as_echo "#define HAVE_SNPRINTF 1" >>confdefs.h
 
 
-$as_echo "#define HAVE_STRCASESTR 1" >>confdefs.h
-
-
 $as_echo "#define HAVE_VSNPRINTF 1" >>confdefs.h
 
 
@@ -16536,18 +16527,6 @@ _ACEOF
 
 fi
 done
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -20882,54 +20861,6 @@ _ACEOF
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for powl" >&5
-$as_echo_n "checking for powl... " >&6; }
-if test "${gcc_cv_math_func_powl+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())powl;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_powl=yes
-else
-  gcc_cv_math_func_powl=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_powl" >&5
-$as_echo "$gcc_cv_math_func_powl" >&6; }
-  if test $gcc_cv_math_func_powl = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_POWL 1
-_ACEOF
-
-  fi
-
-
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cpowf" >&5
 $as_echo_n "checking for cpowf... " >&6; }
 if test "${gcc_cv_math_func_cpowf+set}" = set; then :
@@ -23330,54 +23261,6 @@ _ACEOF
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for erfl" >&5
-$as_echo_n "checking for erfl... " >&6; }
-if test "${gcc_cv_math_func_erfl+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())erfl;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_erfl=yes
-else
-  gcc_cv_math_func_erfl=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_erfl" >&5
-$as_echo "$gcc_cv_math_func_erfl" >&6; }
-  if test $gcc_cv_math_func_erfl = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_ERFL 1
-_ACEOF
-
-  fi
-
-
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for erfcf" >&5
 $as_echo_n "checking for erfcf... " >&6; }
 if test "${gcc_cv_math_func_erfcf+set}" = set; then :
@@ -23618,54 +23501,6 @@ _ACEOF
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for j0l" >&5
-$as_echo_n "checking for j0l... " >&6; }
-if test "${gcc_cv_math_func_j0l+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())j0l;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_j0l=yes
-else
-  gcc_cv_math_func_j0l=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_j0l" >&5
-$as_echo "$gcc_cv_math_func_j0l" >&6; }
-  if test $gcc_cv_math_func_j0l = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_J0L 1
-_ACEOF
-
-  fi
-
-
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for j1f" >&5
 $as_echo_n "checking for j1f... " >&6; }
 if test "${gcc_cv_math_func_j1f+set}" = set; then :
@@ -23755,54 +23590,6 @@ $as_echo "$gcc_cv_math_func_j1" >&6; }
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_J1 1
-_ACEOF
-
-  fi
-
-
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for j1l" >&5
-$as_echo_n "checking for j1l... " >&6; }
-if test "${gcc_cv_math_func_j1l+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())j1l;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_j1l=yes
-else
-  gcc_cv_math_func_j1l=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_j1l" >&5
-$as_echo "$gcc_cv_math_func_j1l" >&6; }
-  if test $gcc_cv_math_func_j1l = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_J1L 1
 _ACEOF
 
   fi
@@ -24050,54 +23837,6 @@ _ACEOF
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for y0l" >&5
-$as_echo_n "checking for y0l... " >&6; }
-if test "${gcc_cv_math_func_y0l+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())y0l;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_y0l=yes
-else
-  gcc_cv_math_func_y0l=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_y0l" >&5
-$as_echo "$gcc_cv_math_func_y0l" >&6; }
-  if test $gcc_cv_math_func_y0l = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_Y0L 1
-_ACEOF
-
-  fi
-
-
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for y1f" >&5
 $as_echo_n "checking for y1f... " >&6; }
 if test "${gcc_cv_math_func_y1f+set}" = set; then :
@@ -24187,54 +23926,6 @@ $as_echo "$gcc_cv_math_func_y1" >&6; }
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_Y1 1
-_ACEOF
-
-  fi
-
-
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for y1l" >&5
-$as_echo_n "checking for y1l... " >&6; }
-if test "${gcc_cv_math_func_y1l+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())y1l;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_y1l=yes
-else
-  gcc_cv_math_func_y1l=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_y1l" >&5
-$as_echo "$gcc_cv_math_func_y1l" >&6; }
-  if test $gcc_cv_math_func_y1l = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_Y1L 1
 _ACEOF
 
   fi
@@ -24482,54 +24173,6 @@ _ACEOF
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tgammal" >&5
-$as_echo_n "checking for tgammal... " >&6; }
-if test "${gcc_cv_math_func_tgammal+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())tgammal;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_tgammal=yes
-else
-  gcc_cv_math_func_tgammal=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_tgammal" >&5
-$as_echo "$gcc_cv_math_func_tgammal" >&6; }
-  if test $gcc_cv_math_func_tgammal = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_TGAMMAL 1
-_ACEOF
-
-  fi
-
-
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lgamma" >&5
 $as_echo_n "checking for lgamma... " >&6; }
 if test "${gcc_cv_math_func_lgamma+set}" = set; then :
@@ -24619,54 +24262,6 @@ $as_echo "$gcc_cv_math_func_lgammaf" >&6; }
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_LGAMMAF 1
-_ACEOF
-
-  fi
-
-
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lgammal" >&5
-$as_echo_n "checking for lgammal... " >&6; }
-if test "${gcc_cv_math_func_lgammal+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_COMPLEX_H
-#include <complex.h>
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-
-int (*ptr)() = (int (*)())lgammal;
-
-int
-main ()
-{
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  gcc_cv_math_func_lgammal=yes
-else
-  gcc_cv_math_func_lgammal=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_lgammal" >&5
-$as_echo "$gcc_cv_math_func_lgammal" >&6; }
-  if test $gcc_cv_math_func_lgammal = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_LGAMMAL 1
 _ACEOF
 
   fi
@@ -26277,41 +25872,6 @@ $as_echo "$libgfor_cv_have_attribute_visibility" >&6; }
   if test $libgfor_cv_have_attribute_visibility = yes; then
 
 $as_echo "#define HAVE_ATTRIBUTE_VISIBILITY 1" >>confdefs.h
-
-  fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports dllexport" >&5
-$as_echo_n "checking whether the target supports dllexport... " >&6; }
-if test "${libgfor_cv_have_attribute_dllexport+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -Werror"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-void __attribute__((dllexport)) foo(void) { }
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  libgfor_cv_have_attribute_dllexport=yes
-else
-  libgfor_cv_have_attribute_dllexport=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_attribute_dllexport" >&5
-$as_echo "$libgfor_cv_have_attribute_dllexport" >&6; }
-  if test $libgfor_cv_have_attribute_dllexport = yes; then
-
-$as_echo "#define HAVE_ATTRIBUTE_DLLEXPORT 1" >>confdefs.h
 
   fi
 
