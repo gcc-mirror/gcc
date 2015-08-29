@@ -1,3 +1,11 @@
+2015-08-29  Anatoly Sokolov  <aesok@post.ru>
+
+	* ira.c (print_unform_and_important_classes,
+	print_translated_classes): Remove reg_class_names static array.
+	(print_unform_and_important_classes): Rename to ...
+	(print_uniform_and_important_classes): ... this.
+	(ira_debug_allocno_classes): Update accordingly.
+
 2015-08-29  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/46193
