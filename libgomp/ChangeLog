@@ -1,3 +1,8 @@
+2015-08-29  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/46193
+	* testsuite/libgomp.c/pr46193.c: New test.
+
 2015-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	libgomp/
