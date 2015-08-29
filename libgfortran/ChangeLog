@@ -1,3 +1,7 @@
+2015-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* io/unix.c (min): Remove unused macro.
+
 2015-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/53668
