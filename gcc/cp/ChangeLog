@@ -1,3 +1,10 @@
+2015-08-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/67371
+	* constexpr.c (potential_constant_expression_1): Remove IF_STMT
+	case. Move label to COND_EXPR case. Remove checking of
+	SWITCH_STMT_BODY.
+
 2015-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/63693
