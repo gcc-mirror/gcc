@@ -110,17 +110,6 @@ id_from_fd (const int fd)
 #endif /* __MINGW32__ */
 
 
-/* min macro that evaluates its arguments only once.  */
-#ifdef min
-#undef min
-#endif
-
-#define min(a,b)		\
-  ({ typeof (a) _a = (a);	\
-    typeof (b) _b = (b);	\
-    _a < _b ? _a : _b; })
-
-
 /* These flags aren't defined on all targets (mingw32), so provide them
    here.  */
 #ifndef S_IRGRP
