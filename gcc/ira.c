@@ -1376,9 +1376,8 @@ setup_reg_class_relations (void)
 
 /* Output all uniform and important classes into file F.  */
 static void
-print_unform_and_important_classes (FILE *f)
+print_uniform_and_important_classes (FILE *f)
 {
-  static const char *const reg_class_names[] = REG_CLASS_NAMES;
   int i, cl;
 
   fprintf (f, "Uniform classes:\n");
@@ -1403,7 +1402,6 @@ print_translated_classes (FILE *f, bool pressure_p)
   enum reg_class *class_translate = (pressure_p
 				     ? ira_pressure_class_translate
 				     : ira_allocno_class_translate);
-  static const char *const reg_class_names[] = REG_CLASS_NAMES;
   int i;
 
   fprintf (f, "%s classes:\n", pressure_p ? "Pressure" : "Allocno");
@@ -1420,7 +1418,7 @@ print_translated_classes (FILE *f, bool pressure_p)
 void
 ira_debug_allocno_classes (void)
 {
-  print_unform_and_important_classes (stderr);
+  print_uniform_and_important_classes (stderr);
   print_translated_classes (stderr, false);
   print_translated_classes (stderr, true);
 }
