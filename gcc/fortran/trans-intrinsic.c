@@ -6259,7 +6259,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
 	  /* Free the temporary.  */
 	  gfc_start_block (&block);
-	  tmp = gfc_call_free (convert (pvoid_type_node, source));
+	  tmp = gfc_call_free (source);
 	  gfc_add_expr_to_block (&block, tmp);
 	  stmt = gfc_finish_block (&block);
 
