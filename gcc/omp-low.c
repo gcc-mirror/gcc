@@ -3412,6 +3412,12 @@ omp_reduction_init (tree clause, tree type)
 	    real_maxval (&min, 1, TYPE_MODE (type));
 	  return build_real (type, min);
 	}
+      else if (POINTER_TYPE_P (type))
+	{
+	  wide_int min
+	    = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+	  return wide_int_to_tree (type, min);
+	}
       else
 	{
 	  gcc_assert (INTEGRAL_TYPE_P (type));
@@ -3427,6 +3433,12 @@ omp_reduction_init (tree clause, tree type)
 	  else
 	    real_maxval (&max, 0, TYPE_MODE (type));
 	  return build_real (type, max);
+	}
+      else if (POINTER_TYPE_P (type))
+	{
+	  wide_int max
+	    = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+	  return wide_int_to_tree (type, max);
 	}
       else
 	{
