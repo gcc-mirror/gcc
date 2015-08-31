@@ -1,3 +1,8 @@
+2015-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67381
+	* genmatch.c (dt_node::gen_kids): Also treat matches as barrier.
+
 2015-08-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (SIN, COS, TAN, COSH): Reorder for consistency.

@@ -2529,12 +2529,15 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple)
 	  else
 	    gcc_unreachable ();
 	}
-      else if (kids[i]->type == dt_node::DT_MATCH
-	       || kids[i]->type == dt_node::DT_SIMPLIFY)
+      else if (kids[i]->type == dt_node::DT_SIMPLIFY)
 	others.safe_push (kids[i]);
-      else if (kids[i]->type == dt_node::DT_TRUE)
+      else if (kids[i]->type == dt_node::DT_MATCH
+	       || kids[i]->type == dt_node::DT_TRUE)
 	{
 	  /* A DT_TRUE operand serves as a barrier - generate code now
+	     for what we have collected sofar.
+	     Like DT_TRUE, DT_MATCH serves as a barrier as it can cause
+	     dependent matches to get out-of-order.  Generate code now
 	     for what we have collected sofar.  */
 	  gen_kids_1 (f, indent, gimple, gimple_exprs, generic_exprs,
 		      fns, generic_fns, preds, others);
