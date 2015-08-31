@@ -171,6 +171,8 @@ lto_location_cache::cmp_loc (const void *pa, const void *pb)
     }
   if (a->file != b->file)
     return strcmp (a->file, b->file);
+  if (a->sysp != b->sysp)
+    return a->sysp ? 1 : -1;
   if (a->line != b->line)
     return a->line - b->line;
   return a->col - b->col;
@@ -194,7 +196,7 @@ lto_location_cache::apply_location_cache ()
 
       if (current_file != loc.file)
 	linemap_add (line_table, prev_file ? LC_RENAME : LC_ENTER,
-		     false, loc.file, loc.line);
+		     loc.sysp, loc.file, loc.line);
       else if (current_line != loc.line)
 	{
 	  int max = loc.col;
@@ -251,6 +253,7 @@ lto_location_cache::input_location (location_t *loc, struct bitpack_d *bp,
   static const char *stream_file;
   static int stream_line;
   static int stream_col;
+  static bool stream_sysp;
   bool file_change, line_change, column_change;
 
   gcc_assert (current_cache == this);
@@ -268,7 +271,10 @@ lto_location_cache::input_location (location_t *loc, struct bitpack_d *bp,
   column_change = bp_unpack_value (bp, 1);
 
   if (file_change)
-    stream_file = canon_file_name (bp_unpack_string (data_in, bp));
+    {
+      stream_file = canon_file_name (bp_unpack_string (data_in, bp));
+      stream_sysp = bp_unpack_value (bp, 1);
+    }
 
   if (line_change)
     stream_line = bp_unpack_var_len_unsigned (bp);
@@ -280,13 +286,14 @@ lto_location_cache::input_location (location_t *loc, struct bitpack_d *bp,
      streaming.  */
      
   if (current_file == stream_file && current_line == stream_line
-      && current_col == stream_col)
+      && current_col == stream_col && current_sysp == stream_sysp)
     {
       *loc = current_loc;
       return;
     }
 
-  struct cached_location entry = {stream_file, loc, stream_line, stream_col};
+  struct cached_location entry
+    = {stream_file, loc, stream_line, stream_col, stream_sysp};
   loc_cache.safe_push (entry);
 }
 

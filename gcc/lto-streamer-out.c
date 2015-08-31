@@ -191,8 +191,12 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
   bp_pack_value (bp, ob->current_col != xloc.column, 1);
 
   if (ob->current_file != xloc.file)
-    bp_pack_string (ob, bp, xloc.file, true);
+    {
+      bp_pack_string (ob, bp, xloc.file, true);
+      bp_pack_value (bp, xloc.sysp, 1);
+    }
   ob->current_file = xloc.file;
+  ob->current_sysp = xloc.sysp;
 
   if (ob->current_line != xloc.line)
     bp_pack_var_len_unsigned (bp, xloc.line);

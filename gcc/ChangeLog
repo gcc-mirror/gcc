@@ -1,3 +1,16 @@
+2015-08-31  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (lto_location_cache::cached_location::sysp): Add.
+	(lto_location_cache::current_sysp): Likewise.
+	(output_block::current_sysp): Likewise.
+	* lto-streamer-in.c (lto_location_cache::cmp_loc): Compare sysp.
+	(lto_location_cache::apply_location_cache): Properly record
+	system header locations.
+	(lto_location_cache::input_location): Input whether a file
+	is a system header.
+	* lto-streamer-out.c (lto_output_location): Stream whether a file
+	is a system header.
+
 2015-08-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/67363
