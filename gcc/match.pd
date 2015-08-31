@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
    integer_onep integer_zerop integer_all_onesp integer_minus_onep
    integer_each_onep integer_truep integer_nonzerop
    real_zerop real_onep real_minus_onep
+   zerop
    CONSTANT_CLASS_P
    tree_expr_nonnegative_p
    integer_pow2p
@@ -1608,7 +1609,7 @@ along with GCC; see the file COPYING3.  If not see
        /* x <= +Inf is always true, if we don't case about NaNs.  */
        (if (! HONOR_NANS (@0))
 	{ constant_boolean_node (true, type); }
-	/* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
+	/* x <= +Inf is the same as x == x, i.e. !isnan(x).  */
 	(eq @0 @0)))
       /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
       (if (code == EQ_EXPR || code == GE_EXPR)
@@ -1765,6 +1766,12 @@ along with GCC; see the file COPYING3.  If not see
     (if (tem && !TREE_OVERFLOW (tem))
      (scmp @0 { tem; }))))))
 
+/* Convert ABS_EXPR<x> == 0 or ABS_EXPR<x> != 0 to x == 0 or x != 0.  */
+(for op (eq ne)
+ (simplify
+  (op (abs @0) zerop@1)
+  (op @0 @1)))
+
 /* From fold_sign_changed_comparison and fold_widened_comparison.  */
 (for cmp (simple_comparison)
  (simplify
@@ -1870,6 +1877,28 @@ along with GCC; see the file COPYING3.  If not see
   (cmp (convert? addr@0) integer_zerop)
   (if (tree_single_nonzero_warnv_p (@0, NULL))
    { constant_boolean_node (cmp == NE_EXPR, type); })))
+
+/* If we have (A & C) == C where C is a power of 2, convert this into
+   (A & C) != 0.  Similarly for NE_EXPR.  */
+(for cmp (eq ne)
+     icmp (ne eq)
+ (simplify
+  (cmp (bit_and@2 @0 integer_pow2p@1) @1)
+  (icmp @2 { build_zero_cst (TREE_TYPE (@0)); })))
+ 
+/* If we have (A & C) != 0 where C is the sign bit of A, convert
+   this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
+(for cmp (eq ne)
+     ncmp (ge lt)
+ (simplify
+  (cmp (bit_and (convert?@2 @0) integer_pow2p@1) integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && (TYPE_PRECISION (TREE_TYPE (@0))
+	   == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@0))))
+       && element_precision (@2) >= element_precision (@0)
+       && wi::only_sign_bit_p (@1, element_precision (@0)))
+   (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
+    (ncmp (convert:stype @0) { build_zero_cst (stype); })))))
 
 /* When the addresses are not directly of decls compare base and offset.
    This implements some remaining parts of fold_comparison address

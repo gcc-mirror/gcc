@@ -1,5 +1,9 @@
 2015-08-31  Marc Glisse  <marc.glisse@inria.fr>
 
+	* gcc.dg/tree-ssa/cmp-1.c: New file.
+
+2015-08-31  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/complex-7.c: New file.
 
 2015-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>

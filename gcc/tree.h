@@ -4109,6 +4109,10 @@ extern tree uniform_vector_p (const_tree);
 
 extern vec<tree, va_gc> *ctor_to_vec (tree);
 
+/* zerop (tree x) is nonzero if X is a constant of value 0.  */
+
+extern int zerop (const_tree);
+
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0.  */
 
 extern int integer_zerop (const_tree);
