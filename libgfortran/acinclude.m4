@@ -69,27 +69,21 @@ if (foovar > 10) return __sync_add_and_fetch (&foovar, -1);]])],
 	      [Define to 1 if the target supports __sync_fetch_and_add])
   fi])
 
-dnl Check for pragma weak.
-AC_DEFUN([LIBGFOR_GTHREAD_WEAK], [
-  AC_CACHE_CHECK([whether pragma weak works],
-		 libgfor_cv_have_pragma_weak, [
-  gfor_save_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -Wunknown-pragmas"
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-void foo (void);
-#pragma weak foo
-]], [[if (foo) foo ();]])],
-		    libgfor_cv_have_pragma_weak=yes, libgfor_cv_have_pragma_weak=no)])
-  if test $libgfor_cv_have_pragma_weak = yes; then
-    AC_DEFINE(SUPPORTS_WEAK, 1,
-	      [Define to 1 if the target supports #pragma weak])
-  fi
-  case "$host" in
-    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* | *-*-musl* )
-      AC_DEFINE(GTHREAD_USE_WEAK, 0,
-		[Define to 0 if the target shouldn't use #pragma weak])
-      ;;
-  esac])
+dnl Check whether target effectively supports weakref
+AC_DEFUN([LIBGFOR_CHECK_WEAKREF], [
+  AC_CACHE_CHECK([whether the target supports weakref],
+		 libgfor_cv_have_weakref, [
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Wunknown-pragmas -Werror"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+static int mytoto (int) __attribute__((__weakref__("toto")));
+]], [[return (mytoto != 0);]])],
+		 libgfor_cv_have_weakref=yes, libgfor_cv_have_weakref=no)
+  CFLAGS="$save_CFLAGS"])
+  if test $libgfor_cv_have_weakref = yes; then
+    AC_DEFINE(SUPPORTS_WEAKREF, 1,
+	      [Define to 1 if the target supports weakref])
+  fi])
 
 dnl Check whether target can unlink a file still open.
 AC_DEFUN([LIBGFOR_CHECK_UNLINK_OPEN_FILE], [
