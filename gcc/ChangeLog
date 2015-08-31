@@ -1,3 +1,15 @@
+2015-08-31  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt)
+	(find_uses_to_rename_bb, find_uses_to_rename): Add and handle use_flags
+	parameter.
+	(find_uses_to_rename_def, find_uses_to_rename_in_loop): New function.
+	(rewrite_into_loop_closed_ssa_1): New function, factored out of ...
+	(rewrite_into_loop_closed_ssa): ... here.
+	(replace_uses_in_dominated_bbs): Remove function.
+	(rewrite_virtuals_into_loop_closed_ssa): Reimplement using
+	rewrite_into_loop_closed_ssa_1.
+
 2015-08-31  Michael Matz  <matz@suse.de>
 
 	* cfganal.c (pre_and_rev_post_order_compute_fn): Correctly
