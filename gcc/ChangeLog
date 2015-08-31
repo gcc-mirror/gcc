@@ -1,3 +1,8 @@
+2015-08-31  Michael Matz  <matz@suse.de>
+
+	* cfganal.c (pre_and_rev_post_order_compute_fn): Correctly
+	enter entry and exit blocks for reverse post order.
+
 2015-08-31  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (lto_location_cache::cached_location::sysp): Add.
