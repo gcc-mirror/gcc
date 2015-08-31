@@ -798,17 +798,16 @@ lto_symtab_prevailing_decl (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_ABSTRACT_P (decl))
     return decl;
 
-  /* Likewise builtins are their own prevailing decl.  This preserves
-     non-builtin vs. builtin uses from compile-time.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
-    return decl;
-
   /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */
   gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
 
   /* Walk through the list of candidates and return the one we merged to.  */
   ret = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (decl));
   if (!ret)
+    return decl;
+
+  /* Do not replace a non-builtin with a builtin.  */
+  if (is_builtin_fn (ret->decl))
     return decl;
 
   return ret->decl;
