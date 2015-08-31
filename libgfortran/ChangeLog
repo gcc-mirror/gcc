@@ -1,6 +1,14 @@
 2015-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/47571
+	* acinclude.m4 (LIBGFOR_GTHREAD_WEAK): Reinstate.
+	* configure.ac: Call LIBGFOR_GTHREAD_WEAK again.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2015-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47571
 	* acinclude.m4 (LIBGFOR_GTHREAD_WEAK): Remove.
 	(LIBGFOR_CHECK_WEAKREF): New test.
 	* configure.ac: Call LIBGFOR_CHECK_WEAKREF instead of
