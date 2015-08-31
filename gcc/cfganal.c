@@ -925,7 +925,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 	pre_order[pre_order_num] = ENTRY_BLOCK;
       pre_order_num++;
       if (rev_post_order)
-	rev_post_order[rev_post_order_num--] = ENTRY_BLOCK;
+	rev_post_order[rev_post_order_num--] = EXIT_BLOCK;
     }
   else
     rev_post_order_num -= NUM_FIXED_BLOCKS;
@@ -996,7 +996,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 	pre_order[pre_order_num] = EXIT_BLOCK;
       pre_order_num++;
       if (rev_post_order)
-	rev_post_order[rev_post_order_num--] = EXIT_BLOCK;
+	rev_post_order[rev_post_order_num--] = ENTRY_BLOCK;
     }
 
   return pre_order_num;
