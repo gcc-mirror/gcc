@@ -850,23 +850,14 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree token,
 }
 
 
-/* Free a given variable, if it's not NULL.  */
+/* Free a given variable.  */
 
 tree
 gfc_call_free (tree var)
 {
-  tree cond, call;
-
-  /* Only evaluate the variable once.  */
-  var = save_expr (fold_convert (pvoid_type_node, var));
-
-  cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, var,
-			  build_int_cst (pvoid_type_node, 0));
-  call = build_call_expr_loc (input_location,
+  return build_call_expr_loc (input_location,
 			      builtin_decl_explicit (BUILT_IN_FREE),
-			      1, var);
-  return fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			  cond, call, build_empty_stmt (input_location));
+			      1, fold_convert (pvoid_type_node, var));
 }
 
 

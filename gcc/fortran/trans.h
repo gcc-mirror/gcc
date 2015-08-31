@@ -642,7 +642,7 @@ void gfc_trans_runtime_check (bool, bool, tree, stmtblock_t *, locus *,
 void gfc_trans_same_strlen_check (const char*, locus*, tree, tree,
 				  stmtblock_t*);
 
-/* Generate a call to free() after checking that its arg is non-NULL.  */
+/* Generate a call to free().  */
 tree gfc_call_free (tree);
 
 /* Allocate memory after performing a few checks.  */

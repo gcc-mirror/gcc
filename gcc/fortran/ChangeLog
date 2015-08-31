@@ -1,3 +1,9 @@
+2015-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/54833
+	* trans.c (gfc_call_free): Don't check if pointer is NULL.
+	* trans.h (gfc_call_free): Adjust comment.
+
 2015-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans.c (gfc_call_malloc, gfc_allocate_using_malloc,
