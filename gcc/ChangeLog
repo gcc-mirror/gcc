@@ -1,3 +1,8 @@
+2015-08-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/67363
+	* gcc.c (env_manager::xput): Replace strndup by xstrndup.
+
 2015-08-31  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-loop-manip.c (find_uses_to_rename_use)

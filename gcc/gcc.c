@@ -123,7 +123,7 @@ env_manager::xput (const char *string)
       gcc_assert (equals);
 
       struct kv kv;
-      kv.m_key = strndup (string, equals - string);
+      kv.m_key = xstrndup (string, equals - string);
       const char *cur_value = ::getenv (kv.m_key);
       if (m_debug)
 	fprintf (stderr, "saving old value: %s\n",cur_value);
