@@ -366,7 +366,9 @@ get_loops_exits (bitmap *loop_exits)
 
 /* For USE in BB, if it is used outside of the loop it is defined in,
    mark it for rewrite.  Record basic block BB where it is used
-   to USE_BLOCKS.  Record the ssa name index to NEED_PHIS bitmap.  */
+   to USE_BLOCKS.  Record the ssa name index to NEED_PHIS bitmap.
+   Note that for USEs in phis, BB should be the src of the edge corresponding to
+   the use, rather than the bb containing the phi.  */
 
 static void
 find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
@@ -402,9 +404,8 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
 }
 
 /* For uses in STMT, mark names that are used outside of the loop they are
-   defined to rewrite.  Record the set of blocks in that the ssa
-   names are defined to USE_BLOCKS and the ssa names themselves to
-   NEED_PHIS.  */
+   defined to rewrite.  Record the set of blocks in which the ssa names are used
+   to USE_BLOCKS and the ssa names themselves to NEED_PHIS.  */
 
 static void
 find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis)
@@ -420,10 +421,9 @@ find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis)
     find_uses_to_rename_use (bb, var, use_blocks, need_phis);
 }
 
-/* Marks names that are used in BB and outside of the loop they are
-   defined in for rewrite.  Records the set of blocks in that the ssa
-   names are defined to USE_BLOCKS.  Record the SSA names that will
-   need exit PHIs in NEED_PHIS.  */
+/* Marks names that are used in BB and outside of the loop they are defined in
+   for rewrite.  Records the set of blocks in which the ssa names are used to
+   USE_BLOCKS.  Record the SSA names that will need exit PHIs in NEED_PHIS.  */
 
 static void
 find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
@@ -446,10 +446,10 @@ find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
     find_uses_to_rename_stmt (gsi_stmt (bsi), use_blocks, need_phis);
 }
 
-/* Marks names that are used outside of the loop they are defined in
-   for rewrite.  Records the set of blocks in that the ssa
-   names are defined to USE_BLOCKS.  If CHANGED_BBS is not NULL,
-   scan only blocks in this set.  */
+/* Marks names that are used outside of the loop they are defined in for
+   rewrite.  Records the set of blocks in which the ssa names are used to
+   USE_BLOCKS.  Record the SSA names that will need exit PHIs in NEED_PHIS.  If
+   CHANGED_BBS is not NULL, scan only blocks in this set.  */
 
 static void
 find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
