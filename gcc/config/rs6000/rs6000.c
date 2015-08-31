@@ -34986,7 +34986,7 @@ class swap_web_entry : public web_entry_base
   /* A nonzero value indicates what kind of special handling for this
      insn is required if doublewords are swapped.  Undefined if
      is_swappable is not set.  */
-  unsigned int special_handling : 3;
+  unsigned int special_handling : 4;
   /* Set if the web represented by this entry cannot be optimized.  */
   unsigned int web_not_optimizable : 1;
   /* Set if this insn should be deleted.  */
@@ -35000,7 +35000,9 @@ enum special_handling_values {
   SH_NOSWAP_LD,
   SH_NOSWAP_ST,
   SH_EXTRACT,
-  SH_SPLAT
+  SH_SPLAT,
+  SH_XXPERMDI,
+  SH_CONCAT
 };
 
 /* Union INSN with all insns containing definitions that reach USE.
@@ -35192,6 +35194,20 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  *special = SH_EXTRACT;
 	  return 1;
 	}
+      /* An XXPERMDI is ok if we adjust the lanes.  Note that if the
+	 XXPERMDI is a swap operation, it will be identified by
+	 insn_is_swap_p and therefore we won't get here.  */
+      else if (GET_CODE (XEXP (op, 0)) == VEC_CONCAT
+	       && (GET_MODE (XEXP (op, 0)) == V4DFmode
+		   || GET_MODE (XEXP (op, 0)) == V4DImode)
+	       && GET_CODE ((parallel = XEXP (op, 1))) == PARALLEL
+	       && XVECLEN (parallel, 0) == 2
+	       && GET_CODE (XVECEXP (parallel, 0, 0)) == CONST_INT
+	       && GET_CODE (XVECEXP (parallel, 0, 1)) == CONST_INT)
+	{
+	  *special = SH_XXPERMDI;
+	  return 1;
+	}
       else
 	return 0;
 
@@ -35366,6 +35382,17 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
 	  }
 	}
 
+      return 1;
+    }
+
+  /* A concatenation of two doublewords is ok if we reverse the
+     order of the inputs.  */
+  if (GET_CODE (body) == SET
+      && GET_CODE (SET_SRC (body)) == VEC_CONCAT
+      && (GET_MODE (SET_SRC (body)) == V2DFmode
+	  || GET_MODE (SET_SRC (body)) == V2DImode))
+    {
+      *special = SH_CONCAT;
       return 1;
     }
 
@@ -35658,6 +35685,49 @@ adjust_splat (rtx_insn *insn)
     fprintf (dump_file, "Changing lane for splat %d\n", INSN_UID (insn));
 }
 
+/* Given OP that contains an XXPERMDI operation (that is not a doubleword
+   swap), reverse the order of the source operands and adjust the indices
+   of the source lanes to account for doubleword reversal.  */
+static void
+adjust_xxpermdi (rtx_insn *insn)
+{
+  rtx set = PATTERN (insn);
+  rtx select = XEXP (set, 1);
+  rtx concat = XEXP (select, 0);
+  rtx src0 = XEXP (concat, 0);
+  XEXP (concat, 0) = XEXP (concat, 1);
+  XEXP (concat, 1) = src0;
+  rtx parallel = XEXP (select, 1);
+  int lane0 = INTVAL (XVECEXP (parallel, 0, 0));
+  int lane1 = INTVAL (XVECEXP (parallel, 0, 1));
+  int new_lane0 = 3 - lane1;
+  int new_lane1 = 3 - lane0;
+  XVECEXP (parallel, 0, 0) = GEN_INT (new_lane0);
+  XVECEXP (parallel, 0, 1) = GEN_INT (new_lane1);
+  INSN_CODE (insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (insn);
+
+  if (dump_file)
+    fprintf (dump_file, "Changing lanes for xxpermdi %d\n", INSN_UID (insn));
+}
+
+/* Given OP that contains a VEC_CONCAT operation of two doublewords,
+   reverse the order of those inputs.  */
+static void
+adjust_concat (rtx_insn *insn)
+{
+  rtx set = PATTERN (insn);
+  rtx concat = XEXP (set, 1);
+  rtx src0 = XEXP (concat, 0);
+  XEXP (concat, 0) = XEXP (concat, 1);
+  XEXP (concat, 1) = src0;
+  INSN_CODE (insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (insn);
+
+  if (dump_file)
+    fprintf (dump_file, "Reversing inputs for concat %d\n", INSN_UID (insn));
+}
+
 /* The insn described by INSN_ENTRY[I] can be swapped, but only
    with special handling.  Take care of that here.  */
 static void
@@ -35703,6 +35773,14 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
     case SH_SPLAT:
       /* Change the lane on a direct-splat operation.  */
       adjust_splat (insn);
+      break;
+    case SH_XXPERMDI:
+      /* Change the lanes on an XXPERMDI operation.  */
+      adjust_xxpermdi (insn);
+      break;
+    case SH_CONCAT:
+      /* Reverse the order of a concatenation operation.  */
+      adjust_concat (insn);
       break;
     }
 }
@@ -35776,6 +35854,10 @@ dump_swap_insn_table (swap_web_entry *insn_entry)
 	      fputs ("special:extract ", dump_file);
 	    else if (insn_entry[i].special_handling == SH_SPLAT)
 	      fputs ("special:splat ", dump_file);
+	    else if (insn_entry[i].special_handling == SH_XXPERMDI)
+	      fputs ("special:xxpermdi ", dump_file);
+	    else if (insn_entry[i].special_handling == SH_CONCAT)
+	      fputs ("special:concat ", dump_file);
 	  }
 	if (insn_entry[i].web_not_optimizable)
 	  fputs ("unoptimizable ", dump_file);

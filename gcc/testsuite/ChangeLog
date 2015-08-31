@@ -1,3 +1,7 @@
+2015-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-19.c: New test.
+
 2015-08-29 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/67367

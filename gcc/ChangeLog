@@ -1,3 +1,18 @@
+2015-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (swap_web_entry): Enlarge
+	special_handling bitfield.
+	(special_handling_values): Add SH_XXPERMDI and SH_CONCAT.
+	(rtx_is_swappable_p): Add handling for vec_select/vec_concat form
+	that represents a general xxpermdi.
+	(insn_is_swappable_p): Add handling for vec_concat of two
+	doublewords, which maps to a specific xxpermdi.
+	(adjust_xxpermdi): New function.
+	(adjust_concat): Likewise.
+	(handle_special_swappables): Call adjust_xxpermdi and
+	adjust_concat.
+	(dump_swap_insn_table): Handle SH_XXPERMDI and SH_CONCAT.
+
 2015-08-30  Rich Felker <dalias@libc.org>
 
 	* config.gcc (supported_defaults): Handle sh[123456ble]*-*-*
