@@ -7732,21 +7732,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	}
       return NULL_TREE;
 
-    case CONJ_EXPR:
-      if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
-	return fold_convert_loc (loc, type, arg0);
-      if (TREE_CODE (arg0) == COMPLEX_EXPR)
-	{
-	  tree itype = TREE_TYPE (type);
-	  tree rpart = fold_convert_loc (loc, itype, TREE_OPERAND (arg0, 0));
-	  tree ipart = fold_convert_loc (loc, itype, TREE_OPERAND (arg0, 1));
-	  return fold_build2_loc (loc, COMPLEX_EXPR, type, rpart,
-			      negate_expr (ipart));
-	}
-      if (TREE_CODE (arg0) == CONJ_EXPR)
-	return fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
-      return NULL_TREE;
-
     case BIT_NOT_EXPR:
       /* Convert ~(X ^ Y) to ~X ^ Y or X ^ ~Y if ~X or ~Y simplify.  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
@@ -7775,81 +7760,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       if (!tem)
 	return NULL_TREE;
       return fold_convert_loc (loc, type, tem);
-
-    case REALPART_EXPR:
-      if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
-	return fold_convert_loc (loc, type, arg0);
-      if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	{
-	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
-	  tem = fold_build2_loc (loc, TREE_CODE (arg0), itype,
-			     fold_build1_loc (loc, REALPART_EXPR, itype,
-					  TREE_OPERAND (arg0, 0)),
-			     fold_build1_loc (loc, REALPART_EXPR, itype,
-					  TREE_OPERAND (arg0, 1)));
-	  return fold_convert_loc (loc, type, tem);
-	}
-      if (TREE_CODE (arg0) == CONJ_EXPR)
-	{
-	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
-	  tem = fold_build1_loc (loc, REALPART_EXPR, itype,
-			     TREE_OPERAND (arg0, 0));
-	  return fold_convert_loc (loc, type, tem);
-	}
-      if (TREE_CODE (arg0) == CALL_EXPR)
-	{
-	  tree fn = get_callee_fndecl (arg0);
-	  if (fn && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
-	    switch (DECL_FUNCTION_CODE (fn))
-	      {
-	      CASE_FLT_FN (BUILT_IN_CEXPI):
-	        fn = mathfn_built_in (type, BUILT_IN_COS);
-		if (fn)
-	          return build_call_expr_loc (loc, fn, 1, CALL_EXPR_ARG (arg0, 0));
-		break;
-
-	      default:
-		break;
-	      }
-	}
-      return NULL_TREE;
-
-    case IMAGPART_EXPR:
-      if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
-	return build_zero_cst (type);
-      if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	{
-	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
-	  tem = fold_build2_loc (loc, TREE_CODE (arg0), itype,
-			     fold_build1_loc (loc, IMAGPART_EXPR, itype,
-					  TREE_OPERAND (arg0, 0)),
-			     fold_build1_loc (loc, IMAGPART_EXPR, itype,
-					  TREE_OPERAND (arg0, 1)));
-	  return fold_convert_loc (loc, type, tem);
-	}
-      if (TREE_CODE (arg0) == CONJ_EXPR)
-	{
-	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
-	  tem = fold_build1_loc (loc, IMAGPART_EXPR, itype, TREE_OPERAND (arg0, 0));
-	  return fold_convert_loc (loc, type, negate_expr (tem));
-	}
-      if (TREE_CODE (arg0) == CALL_EXPR)
-	{
-	  tree fn = get_callee_fndecl (arg0);
-	  if (fn && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
-	    switch (DECL_FUNCTION_CODE (fn))
-	      {
-	      CASE_FLT_FN (BUILT_IN_CEXPI):
-	        fn = mathfn_built_in (type, BUILT_IN_SIN);
-		if (fn)
-	          return build_call_expr_loc (loc, fn, 1, CALL_EXPR_ARG (arg0, 0));
-		break;
-
-	      default:
-		break;
-	      }
-	}
-      return NULL_TREE;
 
     case INDIRECT_REF:
       /* Fold *&X to X if X is an lvalue.  */

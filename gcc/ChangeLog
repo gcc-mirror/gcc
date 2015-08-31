@@ -1,3 +1,12 @@
+2015-08-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (SIN, COS, TAN, COSH): Reorder for consistency.
+	(CEXPI): New operator list.
+	(real (conj (x)), imag (conj (x)), real (x +- y), real (cexpi (x)),
+	imag (cexpi (x)), conj (conj (x)), conj (complex (x, y))):
+	Converted from ...
+	* fold-const.c (fold_unary_loc, fold_binary_loc): ... here. Remove.
+
 2015-08-31  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt)

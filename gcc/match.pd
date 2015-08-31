@@ -55,10 +55,11 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list POW10 BUILT_IN_POW10F BUILT_IN_POW10 BUILT_IN_POW10L)
 (define_operator_list SQRT BUILT_IN_SQRTF BUILT_IN_SQRT BUILT_IN_SQRTL)
 (define_operator_list CBRT BUILT_IN_CBRTF BUILT_IN_CBRT BUILT_IN_CBRTL)
-(define_operator_list SIN BUILT_IN_SIN BUILT_IN_SINL BUILT_IN_SINF)
-(define_operator_list COS BUILT_IN_COS BUILT_IN_COSL BUILT_IN_COSF)
-(define_operator_list TAN BUILT_IN_TAN BUILT_IN_TANL BUILT_IN_TANF)
-(define_operator_list COSH BUILT_IN_COSH BUILT_IN_COSHL BUILT_IN_COSHF)
+(define_operator_list SIN BUILT_IN_SINF BUILT_IN_SIN BUILT_IN_SINL)
+(define_operator_list COS BUILT_IN_COSF BUILT_IN_COS BUILT_IN_COSL)
+(define_operator_list TAN BUILT_IN_TANF BUILT_IN_TAN BUILT_IN_TANL)
+(define_operator_list COSH BUILT_IN_COSHF BUILT_IN_COSH BUILT_IN_COSHL)
+(define_operator_list CEXPI BUILT_IN_CEXPIF BUILT_IN_CEXPI BUILT_IN_CEXPIL)
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -1312,6 +1313,36 @@ along with GCC; see the file COPYING3.  If not see
  (imagpart (complex @0 @1))
  @1)
 
+/* Sometimes we only care about half of a complex expression.  */
+(simplify
+ (realpart (convert?:s (conj:s @0)))
+ (convert (realpart @0)))
+(simplify
+ (imagpart (convert?:s (conj:s @0)))
+ (convert (negate (imagpart @0))))
+(for part (realpart imagpart)
+ (for op (plus minus)
+  (simplify
+   (part (convert?:s@2 (op:s @0 @1)))
+   (convert (op (part @0) (part @1))))))
+(simplify
+ (realpart (convert?:s (CEXPI:s @0)))
+ (convert (COS @0)))
+(simplify
+ (imagpart (convert?:s (CEXPI:s @0)))
+ (convert (SIN @0)))
+
+/* conj(conj(x)) -> x  */
+(simplify
+ (conj (convert? (conj @0)))
+ (if (tree_nop_conversion_p (TREE_TYPE (@0), type))
+  (convert @0)))
+
+/* conj({x,y}) -> {x,-y}  */
+(simplify
+ (conj (convert?:s (complex:s @0 @1)))
+ (with { tree itype = TREE_TYPE (type); }
+  (complex (convert:itype @0) (negate (convert:itype @1)))))
 
 /* BSWAP simplifications, transforms checked by gcc.dg/builtin-bswap-8.c.  */
 (for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32 BUILT_IN_BSWAP64)
