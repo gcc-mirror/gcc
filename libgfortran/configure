@@ -25953,6 +25953,52 @@ $as_echo "#define HAVE_SYNC_FETCH_AND_ADD 1" >>confdefs.h
 
   fi
 
+# Check out #pragma weak.
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether pragma weak works" >&5
+$as_echo_n "checking whether pragma weak works... " >&6; }
+if test "${libgfor_cv_have_pragma_weak+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  gfor_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Wunknown-pragmas"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+void foo (void);
+#pragma weak foo
+
+int
+main ()
+{
+if (foo) foo ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgfor_cv_have_pragma_weak=yes
+else
+  libgfor_cv_have_pragma_weak=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_pragma_weak" >&5
+$as_echo "$libgfor_cv_have_pragma_weak" >&6; }
+  if test $libgfor_cv_have_pragma_weak = yes; then
+
+$as_echo "#define SUPPORTS_WEAK 1" >>confdefs.h
+
+  fi
+  case "$host" in
+    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* | *-*-musl* )
+
+$as_echo "#define GTHREAD_USE_WEAK 0" >>confdefs.h
+
+      ;;
+  esac
+
 # Check out weakref support.
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports weakref" >&5
