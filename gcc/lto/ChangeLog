@@ -1,3 +1,10 @@
+2015-08-31  Richard Biener  <rguenther@suse.de>
+
+	* lto-symtab.c (lto_symtab_prevailing_decl): Remove redundant
+	test, do not replace a non-builtin with a builtin.
+	* lto.c (compare_tree_sccs_1): Do not merge things we stream
+	as builtins vs. non-builtins.
+
 2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* lto.h: Remove useless typedefs.
