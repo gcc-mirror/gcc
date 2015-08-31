@@ -1305,6 +1305,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_tree_edges (DECL_SIZE (t1), DECL_SIZE (t2));
       compare_tree_edges (DECL_SIZE_UNIT (t1), DECL_SIZE_UNIT (t2));
       compare_tree_edges (DECL_ATTRIBUTES (t1), DECL_ATTRIBUTES (t2));
+      compare_tree_edges (DECL_ABSTRACT_ORIGIN (t1), DECL_ABSTRACT_ORIGIN (t2));
       if ((code == VAR_DECL
 	   || code == PARM_DECL)
 	  && DECL_HAS_VALUE_EXPR_P (t1))

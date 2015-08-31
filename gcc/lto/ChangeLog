@@ -1,5 +1,12 @@
 2015-08-31  Richard Biener  <rguenther@suse.de>
 
+	* lto.c (compare_tree_sccs_1): Compare DECL_ABSTRACT_ORIGIN.
+	* lto-symtab.c (lto_symtab_merge): Merge DECL_POSSIBLY_INLINED flag.
+	(lto_symtab_prevailing_decl): Do not replace a decl that didn't
+	participate in merging with something else.
+
+2015-08-31  Richard Biener  <rguenther@suse.de>
+
 	* lto-symtab.c (lto_symtab_prevailing_decl): Remove redundant
 	test, do not replace a non-builtin with a builtin.
 	* lto.c (compare_tree_sccs_1): Do not merge things we stream

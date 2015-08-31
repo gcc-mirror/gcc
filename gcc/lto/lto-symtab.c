@@ -312,6 +312,11 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
+      /* Merge decl state in both directions, we may still end up using
+	 the new decl.  */
+      DECL_POSSIBLY_INLINED (prevailing_decl) |= DECL_POSSIBLY_INLINED (decl);
+      DECL_POSSIBLY_INLINED (decl) |= DECL_POSSIBLY_INLINED (prevailing_decl);
+
       if (warn_type_compatibility_p (TREE_TYPE (prevailing_decl),
 			             TREE_TYPE (decl)))
 	return false;
@@ -796,6 +801,18 @@ lto_symtab_prevailing_decl (tree decl)
 
   /* DECL_ABSTRACT_Ps are their own prevailing decl.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_ABSTRACT_P (decl))
+    return decl;
+
+  /* When decl did not participate in symbol resolution leave it alone.
+     This can happen when we streamed the decl as abstract origin
+     from the block tree of inlining a partially inlined function.
+     If all, the split function and the original function end up
+     optimized away early we do not put the abstract origin into the
+     ltrans boundary and we'll end up ICEing in
+     dwarf2out.c:gen_inlined_subroutine_die because we eventually
+     replace a decl with DECL_POSSIBLY_INLINED set with one without.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && ! cgraph_node::get (decl))
     return decl;
 
   /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */
