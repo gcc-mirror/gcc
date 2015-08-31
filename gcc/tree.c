@@ -2215,6 +2215,17 @@ grow_tree_vec_stat (tree v, int len MEM_STAT_DECL)
   return v;
 }
 
+/* Return 1 if EXPR is the constant zero, whether it is integral, float or
+   fixed, and scalar, complex or vector.  */
+
+int
+zerop (const_tree expr)
+{
+  return (integer_zerop (expr)
+	  || real_zerop (expr)
+	  || fixed_zerop (expr));
+}
+
 /* Return 1 if EXPR is the integer constant zero or a complex constant
    of zero.  */
 
@@ -7512,6 +7523,8 @@ valid_constant_size_p (const_tree size)
 unsigned int
 element_precision (const_tree type)
 {
+  if (!TYPE_P (type))
+    type = TREE_TYPE (type);
   enum tree_code code = TREE_CODE (type);
   if (code == COMPLEX_TYPE || code == VECTOR_TYPE)
     type = TREE_TYPE (type);

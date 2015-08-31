@@ -1,3 +1,13 @@
+2015-08-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.h (zerop): New function.
+	* tree.c (zerop): Likewise.
+	(element_precision): Handle expressions.
+	* match.pd (define_predicates): Add zerop.
+	(x <= +Inf): Fix comment.
+	(abs (x) == 0, A & C == C, A & C != 0): Converted from ...
+	* fold-const.c (fold_binary_loc): ... here. Remove.
+
 2015-08-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67381

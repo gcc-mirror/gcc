@@ -10678,11 +10678,6 @@ fold_binary_loc (location_t loc,
 				    TREE_OPERAND (arg0, 1), arg1);
 	}
 
-      /* Convert ABS_EXPR<x> == 0 or ABS_EXPR<x> != 0 to x == 0 or x != 0.  */
-      if (TREE_CODE (arg0) == ABS_EXPR
-	  && (integer_zerop (arg1) || real_zerop (arg1)))
-	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0), arg1);
-
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
 	 two operations, but the latter can be done in one less insn
@@ -10784,21 +10779,6 @@ fold_binary_loc (location_t loc,
 					 arg000);
 	    }
 	}
-
-      /* If we have (A & C) == C where C is a power of 2, convert this into
-	 (A & C) != 0.  Similarly for NE_EXPR.  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && integer_pow2p (TREE_OPERAND (arg0, 1))
-	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
-	return fold_build2_loc (loc, code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
-			    arg0, fold_convert_loc (loc, TREE_TYPE (arg0),
-						    integer_zero_node));
-
-      /* If we have (A & C) != 0 or (A & C) == 0 and C is the sign
-	 bit, then fold the expression into A < 0 or A >= 0.  */
-      tem = fold_single_bit_test_into_sign_test (loc, code, arg0, arg1, type);
-      if (tem)
-	return tem;
 
       /* If we have (A & C) == D where D & ~C != 0, convert this into 0.
 	 Similarly for NE_EXPR.  */
