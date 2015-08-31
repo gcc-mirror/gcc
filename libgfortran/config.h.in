@@ -1,8 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 0 if the target shouldn't use #pragma weak */
-#undef GTHREAD_USE_WEAK
-
 /* Define to 1 if you have the `access' function. */
 #undef HAVE_ACCESS
 
@@ -874,8 +871,8 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Define to 1 if the target supports #pragma weak */
-#undef SUPPORTS_WEAK
+/* Define to 1 if the target supports weakref */
+#undef SUPPORTS_WEAKREF
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
