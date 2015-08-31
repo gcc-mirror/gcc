@@ -1,3 +1,9 @@
+2015-08-30  Michael Collison  <michael.collison@linaro.org>
+
+	PR other/67320
+	* doc.md.texi: Rename [su]sum_widen to widen_[su]sum to reflect correct
+	standard names
+
 2015-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (swap_web_entry): Enlarge
