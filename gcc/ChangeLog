@@ -1,3 +1,8 @@
+2015-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c: Add contributed-by.
+	* trans-mem.h: Same.
+
 2015-09-01  Richard Biener  <rguenther@suse.de>
 
 	* expr.c (expand_expr_real_1): For expanding TERed defs
