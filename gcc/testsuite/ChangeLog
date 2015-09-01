@@ -1,3 +1,7 @@
+2015-09-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/no-scevccp-outer-11.c: Don't xfail scan-tree-dump-times.
+
 2015-09-01  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/ifcvt-1.c: New test.
