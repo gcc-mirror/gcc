@@ -47,4 +47,10 @@ enum mips_r10k_cache_barrier_setting {
 #define MIPS_ARCH_OPTION_FROM_ABI -1
 #define MIPS_ARCH_OPTION_NATIVE -2
 
+/* Enumerates the setting of the -mcompact-branches= option.  */
+enum mips_cb_setting {
+  MIPS_CB_NEVER,
+  MIPS_CB_OPTIMAL,
+  MIPS_CB_ALWAYS
+};
 #endif

@@ -176,7 +176,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Return the opcode to jump to register DEST.  When the JR opcode is not
    available use JALR $0, DEST.  */
 #define MIPS_JR(DEST) \
-  (((DEST) << 21) | (ISA_HAS_JR ? 0x8 : 0x9))
+  (TARGET_CB_ALWAYS ? ((0x1b << 27) | ((DEST) << 16)) \
+		    : (((DEST) << 21) | (ISA_HAS_JR ? 0x8 : 0x9)))
 
 /* Return the opcode for:
 
@@ -5181,7 +5182,8 @@ mips_allocate_fcc (machine_mode mode)
    conditions are:
 
       - EQ or NE between two registers.
-      - any comparison between a register and zero.  */
+      - any comparison between a register and zero.
+      - if compact branches are available then any condition is valid.  */
 
 static void
 mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
@@ -5202,6 +5204,44 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 	    }
 	  else
 	    *op1 = force_reg (GET_MODE (cmp_op0), cmp_op1);
+	}
+      else if (!need_eq_ne_p && TARGET_CB_MAYBE)
+	{
+	  bool swap = false;
+	  switch (*code)
+	    {
+	    case LE:
+	      swap = true;
+	      *code = GE;
+	      break;
+	    case GT:
+	      swap = true;
+	      *code = LT;
+	      break;
+	    case LEU:
+	      swap = true;
+	      *code = GEU;
+	      break;
+	    case GTU:
+	      swap = true;
+	      *code = LTU;
+	      break;
+	    case GE:
+	    case LT:
+	    case GEU:
+	    case LTU:
+	      /* Do nothing.  */
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  *op1 = force_reg (GET_MODE (cmp_op0), cmp_op1);
+	  if (swap)
+	    {
+	      rtx tmp = *op1;
+	      *op1 = *op0;
+	      *op0 = tmp;
+	    }
 	}
       else
 	{
@@ -7260,7 +7300,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
       if (fp_ret_p)
 	{
 	  /* Now call the non-MIPS16 function.  */
-	  output_asm_insn (MIPS_CALL ("jal", &fn, 0, -1), &fn);
+	  output_asm_insn (mips_output_jump (&fn, 0, -1, true), &fn);
 	  fprintf (asm_out_file, "\t.cfi_register 31,18\n");
 
 	  /* Move the result from floating-point registers to
@@ -8378,7 +8418,7 @@ mips_pop_asm_switch (struct mips_asm_switch *asm_switch)
    '!'  Print "s" to use the short version if the delay slot contains a
 	16-bit instruction.
 
-   See also mips_init_print_operand_pucnt.  */
+   See also mips_init_print_operand_punct.  */
 
 static void
 mips_print_operand_punctuation (FILE *file, int ch)
@@ -8462,7 +8502,8 @@ mips_print_operand_punctuation (FILE *file, int ch)
 
     case ':':
       /* When final_sequence is 0, the delay slot will be a nop.  We can
-	 use the compact version for microMIPS.  */
+	 use the compact version where available.  The %: formatter will
+	 only be present if a compact form of the branch is available.  */
       if (final_sequence == 0)
 	putc ('c', file);
       break;
@@ -8470,8 +8511,9 @@ mips_print_operand_punctuation (FILE *file, int ch)
     case '!':
       /* If the delay slot instruction is short, then use the
 	 compact version.  */
-      if (final_sequence == 0
-	  || get_attr_length (final_sequence->insn (1)) == 2)
+      if (TARGET_MICROMIPS && !TARGET_INTERLINK_COMPRESSED && mips_isa_rev <= 5
+	  && (final_sequence == 0
+	      || get_attr_length (final_sequence->insn (1)) == 2))
 	putc ('s', file);
       break;
 
@@ -12969,6 +13011,7 @@ mips_adjust_insn_length (rtx_insn *insn, int length)
 	break;
 
       case HAZARD_DELAY:
+      case HAZARD_FORBIDDEN_SLOT:
 	length += NOP_INSN_LENGTH;
 	break;
 
@@ -12978,6 +13021,78 @@ mips_adjust_insn_length (rtx_insn *insn, int length)
       }
 
   return length;
+}
+
+/* Return the asm template for a call.  OPERANDS are the operands, TARGET_OPNO
+   is the operand number of the target.  SIZE_OPNO is the operand number of
+   the argument size operand that can optionally hold the call attributes.  If
+   SIZE_OPNO is not -1 and the call is indirect, use the function symbol from
+   the call attributes to attach a R_MIPS_JALR relocation to the call.  LINK_P
+   indicates whether the jump is a call and needs to set the link register.
+
+   When generating GOT code without explicit relocation operators, all calls
+   should use assembly macros.  Otherwise, all indirect calls should use "jr"
+   or "jalr"; we will arrange to restore $gp afterwards if necessary.  Finally,
+   we can only generate direct calls for -mabicalls by temporarily switching
+   to non-PIC mode.
+
+   For microMIPS jal(r), we try to generate jal(r)s when a 16-bit
+   instruction is in the delay slot of jal(r).
+
+   Where compact branches are available, we try to use them if the delay slot
+   has a NOP (or equivalently delay slots were not enabled for the instruction
+   anyway).  */
+
+const char *
+mips_output_jump (rtx *operands, int target_opno, int size_opno, bool link_p)
+{
+  static char buffer[300];
+  char *s = buffer;
+  bool reg_p = REG_P (operands[target_opno]);
+
+  const char *and_link = link_p ? "al" : "";
+  const char *reg = reg_p ? "r" : "";
+  const char *compact = "";
+  const char *nop = "%/";
+  const char *short_delay = link_p ? "%!" : "";
+  const char *insn_name = TARGET_CB_NEVER || reg_p ? "j" : "b";
+
+  /* Compact branches can only be described when the ISA has support for them
+     as both the compact formatter '%:' and the delay slot NOP formatter '%/'
+     work as a mutually exclusive pair.  I.e. a NOP is never required if a
+     compact form is available.  */
+  if (!final_sequence
+      && (TARGET_CB_MAYBE
+	  || (ISA_HAS_JRC && !link_p && reg_p)))
+    {
+      compact = "c";
+      nop = "";
+    }
+
+  if (TARGET_USE_GOT && !TARGET_EXPLICIT_RELOCS)
+    sprintf (s, "%%*%s%s\t%%%d%%/", insn_name, and_link, target_opno);
+  else
+    {
+      if (!reg_p && TARGET_ABICALLS_PIC2)
+	s += sprintf (s, ".option\tpic0\n\t");
+
+      if (reg_p && mips_get_pic_call_symbol (operands, size_opno))
+	{
+	  s += sprintf (s, "%%*.reloc\t1f,R_MIPS_JALR,%%%d\n1:\t", size_opno);
+	  /* Not sure why this shouldn't permit a short delay but it did not
+	     allow it before so we still don't allow it.  */
+	  short_delay = "";
+	}
+      else
+	s += sprintf (s, "%%*");
+
+      s += sprintf (s, "%s%s%s%s%s\t%%%d%s", insn_name, and_link, reg, compact, short_delay,
+					    target_opno, nop);
+
+      if (!reg_p && TARGET_ABICALLS_PIC2)
+	s += sprintf (s, "\n\t.option\tpic2");
+    }
+  return buffer;
 }
 
 /* Return the assembly code for INSN, which has the operands given by
@@ -13033,12 +13148,25 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
     }
 
   /* Output the unconditional branch to TAKEN.  */
-  if (TARGET_ABSOLUTE_JUMPS)
+  if (TARGET_ABSOLUTE_JUMPS && TARGET_CB_MAYBE)
+    {
+      /* Add a hazard nop.  */
+      if (!final_sequence)
+	{
+	  output_asm_insn ("nop\t\t# hazard nop", 0);
+	  fprintf (asm_out_file, "\n");
+	}
+      output_asm_insn (MIPS_ABSOLUTE_JUMP ("bc\t%0"), &taken);
+    }
+  else if (TARGET_ABSOLUTE_JUMPS)
     output_asm_insn (MIPS_ABSOLUTE_JUMP ("j\t%0%/"), &taken);
   else
     {
       mips_output_load_label (taken);
-      output_asm_insn ("jr\t%@%]%/", 0);
+      if (TARGET_CB_MAYBE)
+	output_asm_insn ("jrc\t%@%]", 0);
+      else
+	output_asm_insn ("jr\t%@%]%/", 0);
     }
 
   /* Now deal with its delay slot; see above.  */
@@ -13052,7 +13180,7 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 			   asm_out_file, optimize, 1, NULL);
 	  final_sequence->insn (1)->set_deleted ();
 	}
-      else
+      else if (TARGET_CB_NEVER)
 	output_asm_insn ("nop", 0);
       fprintf (asm_out_file, "\n");
     }
@@ -13064,42 +13192,155 @@ mips_output_conditional_branch (rtx_insn *insn, rtx *operands,
 }
 
 /* Return the assembly code for INSN, which branches to OPERANDS[0]
+   if some equality condition is true.  The condition is given by
+   OPERANDS[1] if !INVERTED_P, otherwise it is the inverse of
+   OPERANDS[1].  OPERANDS[2] is the comparison's first operand;
+   OPERANDS[3] is the second operand and may be zero or a register.  */
+
+const char *
+mips_output_equal_conditional_branch (rtx_insn* insn, rtx *operands,
+				      bool inverted_p)
+{
+  const char *branch[2];
+  /* For a simple BNEZ or BEQZ microMIPSr3 branch.  */
+  if (TARGET_MICROMIPS
+      && mips_isa_rev <= 5
+      && operands[3] == const0_rtx
+      && get_attr_length (insn) <= 8)
+    {
+      if (mips_cb == MIPS_CB_OPTIMAL)
+	{
+	  branch[!inverted_p] = "%*b%C1z%:\t%2,%0";
+	  branch[inverted_p] = "%*b%N1z%:\t%2,%0";
+	}
+      else
+	{
+	  branch[!inverted_p] = "%*b%C1z\t%2,%0%/";
+	  branch[inverted_p] = "%*b%N1z\t%2,%0%/";
+	}
+    }
+  else if (TARGET_CB_MAYBE)
+    {
+      if (operands[3] == const0_rtx)
+	{
+	  branch[!inverted_p] = MIPS_BRANCH_C ("b%C1z", "%2,%0");
+	  branch[inverted_p] = MIPS_BRANCH_C ("b%N1z", "%2,%0");
+	}
+      else if (REGNO (operands[2]) != REGNO (operands[3]))
+	{
+	  branch[!inverted_p] = MIPS_BRANCH_C ("b%C1", "%2,%3,%0");
+	  branch[inverted_p] = MIPS_BRANCH_C ("b%N1", "%2,%3,%0");
+	}
+      else
+	{
+	  /* This case is degenerate.  It should not happen, but does.  */
+	  if (GET_CODE (operands[1]) == NE)
+	    inverted_p = !inverted_p;
+
+	  branch[!inverted_p] = MIPS_BRANCH_C ("b", "%0");
+	  branch[inverted_p] = "%*\t\t# branch never";
+	}
+    }
+  else
+    {
+      branch[!inverted_p] = MIPS_BRANCH ("b%C1", "%2,%z3,%0");
+      branch[inverted_p] = MIPS_BRANCH ("b%N1", "%2,%z3,%0");
+    }
+
+  return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
+}
+
+/* Return the assembly code for INSN, which branches to OPERANDS[0]
    if some ordering condition is true.  The condition is given by
    OPERANDS[1] if !INVERTED_P, otherwise it is the inverse of
    OPERANDS[1].  OPERANDS[2] is the comparison's first operand;
-   its second is always zero.  */
+   OPERANDS[3] is the second operand and may be zero or a register.  */
 
 const char *
-mips_output_order_conditional_branch (rtx_insn *insn, rtx *operands, bool inverted_p)
+mips_output_order_conditional_branch (rtx_insn *insn, rtx *operands,
+				      bool inverted_p)
 {
   const char *branch[2];
 
   /* Make BRANCH[1] branch to OPERANDS[0] when the condition is true.
      Make BRANCH[0] branch on the inverse condition.  */
-  switch (GET_CODE (operands[1]))
+  if (operands[3] != const0_rtx)
     {
-      /* These cases are equivalent to comparisons against zero.  */
-    case LEU:
-      inverted_p = !inverted_p;
-      /* Fall through.  */
-    case GTU:
-      branch[!inverted_p] = MIPS_BRANCH ("bne", "%2,%.,%0");
-      branch[inverted_p] = MIPS_BRANCH ("beq", "%2,%.,%0");
-      break;
+      /* Handle degenerate cases that should not, but do, occur.  */
+      if (REGNO (operands[2]) == REGNO (operands[3]))
+	{
+	  switch (GET_CODE (operands[1]))
+	    {
+	    case LT:
+	    case LTU:
+	      inverted_p = !inverted_p;
+	      /* Fall through.  */
+	    case GE:
+	    case GEU:
+	      branch[!inverted_p] = MIPS_BRANCH_C ("b", "%0");
+	      branch[inverted_p] = "%*\t\t# branch never";
+	      break;
+	   default:
+	      gcc_unreachable ();
+	    }
+	}
+      else
+	{
+	  branch[!inverted_p] = MIPS_BRANCH_C ("b%C1", "%2,%3,%0");
+	  branch[inverted_p] = MIPS_BRANCH_C ("b%N1", "%2,%3,%0");
+	}
+    }
+  else
+    {
+      switch (GET_CODE (operands[1]))
+	{
+	  /* These cases are equivalent to comparisons against zero.  */
+	case LEU:
+	  inverted_p = !inverted_p;
+	  /* Fall through.  */
+	case GTU:
+	  if (TARGET_CB_MAYBE)
+	    {
+	      branch[!inverted_p] = MIPS_BRANCH_C ("bnez", "%2,%0");
+	      branch[inverted_p] = MIPS_BRANCH_C ("beqz", "%2,%0");
+	    }
+	  else
+	    {
+	      branch[!inverted_p] = MIPS_BRANCH ("bne", "%2,%.,%0");
+	      branch[inverted_p] = MIPS_BRANCH ("beq", "%2,%.,%0");
+	    }
+	  break;
 
-      /* These cases are always true or always false.  */
-    case LTU:
-      inverted_p = !inverted_p;
-      /* Fall through.  */
-    case GEU:
-      branch[!inverted_p] = MIPS_BRANCH ("beq", "%.,%.,%0");
-      branch[inverted_p] = MIPS_BRANCH ("bne", "%.,%.,%0");
-      break;
+	  /* These cases are always true or always false.  */
+	case LTU:
+	  inverted_p = !inverted_p;
+	  /* Fall through.  */
+	case GEU:
+	  if (TARGET_CB_MAYBE)
+	    {
+	      branch[!inverted_p] = MIPS_BRANCH_C ("b", "%0");
+	      branch[inverted_p] = "%*\t\t# branch never";
+	    }
+	  else
+	    {
+	      branch[!inverted_p] = MIPS_BRANCH ("beq", "%.,%.,%0");
+	      branch[inverted_p] = MIPS_BRANCH ("bne", "%.,%.,%0");
+	    }
+	  break;
 
-    default:
-      branch[!inverted_p] = MIPS_BRANCH ("b%C1z", "%2,%0");
-      branch[inverted_p] = MIPS_BRANCH ("b%N1z", "%2,%0");
-      break;
+	default:
+	  if (TARGET_CB_MAYBE)
+	    {
+	      branch[!inverted_p] = MIPS_BRANCH_C ("b%C1z", "%2,%0");
+	      branch[inverted_p] = MIPS_BRANCH_C ("b%N1z", "%2,%0");
+	    }
+	  else
+	    {
+	      branch[!inverted_p] = MIPS_BRANCH ("b%C1z", "%2,%0");
+	      branch[inverted_p] = MIPS_BRANCH ("b%N1z", "%2,%0");
+	    }
+	  break;
+	}
     }
   return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
 }
@@ -13302,11 +13543,18 @@ mips_process_sync_loop (rtx_insn *insn, rtx *operands)
 			       at, oldval, inclusive_mask, NULL);
 	  tmp1 = at;
 	}
-      mips_multi_add_insn ("bne\t%0,%z1,2f", tmp1, required_oldval, NULL);
+      if (TARGET_CB_NEVER)
+	mips_multi_add_insn ("bne\t%0,%z1,2f", tmp1, required_oldval, NULL);
 
       /* CMP = 0 [delay slot].  */
       if (cmp)
         mips_multi_add_insn ("li\t%0,0", cmp, NULL);
+
+      if (TARGET_CB_MAYBE && required_oldval == const0_rtx)
+	mips_multi_add_insn ("bnezc\t%0,2f", tmp1, NULL);
+      else if (TARGET_CB_MAYBE)
+	mips_multi_add_insn ("bnec\t%0,%1,2f", tmp1, required_oldval, NULL);
+
     }
 
   /* $TMP1 = OLDVAL & EXCLUSIVE_MASK.  */
@@ -13369,7 +13617,10 @@ mips_process_sync_loop (rtx_insn *insn, rtx *operands)
      be annulled.  To ensure this behaviour unconditionally use a NOP
      in the delay slot for the branch likely case.  */
 
-  mips_multi_add_insn ("beq%?\t%0,%.,1b%~", at, NULL);
+  if (TARGET_CB_MAYBE)
+    mips_multi_add_insn ("beqzc\t%0,1b", at, NULL);
+  else
+    mips_multi_add_insn ("beq%?\t%0,%.,1b%~", at, NULL);
 
   /* if (INSN1 != MOVE && INSN1 != LI) NEWVAL = $TMP3 [delay slot].  */
   if (insn1 != SYNC_INSN1_MOVE && insn1 != SYNC_INSN1_LI && tmp3 != newval)
@@ -16651,7 +16902,7 @@ mips_orphaned_high_part_p (mips_offset_table *htab, rtx_insn *insn)
 
 static void
 mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
-		   rtx *delayed_reg, rtx lo_reg)
+		   rtx *delayed_reg, rtx lo_reg, bool *fs_delay)
 {
   rtx pattern, set;
   int nops, ninsns;
@@ -16677,6 +16928,15 @@ mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
     nops = 2 - *hilo_delay;
   else if (*delayed_reg != 0 && reg_referenced_p (*delayed_reg, pattern))
     nops = 1;
+  /* If processing a forbidden slot hazard then a NOP is required if the
+     branch instruction was not in a sequence (as the sequence would
+     imply it is not actually a compact branch anyway) and the current
+     insn is not an inline asm, and can't go in a delay slot.  */
+  else if (*fs_delay && get_attr_can_delay (insn) == CAN_DELAY_NO
+	   && GET_CODE (PATTERN (after)) != SEQUENCE
+	   && GET_CODE (pattern) != ASM_INPUT
+	   && asm_noperands (pattern) < 0)
+    nops = 1;
   else
     nops = 0;
 
@@ -16689,10 +16949,16 @@ mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
   /* Set up the state for the next instruction.  */
   *hilo_delay += ninsns;
   *delayed_reg = 0;
+  *fs_delay = false;
   if (INSN_CODE (insn) >= 0)
     switch (get_attr_hazard (insn))
       {
       case HAZARD_NONE:
+	break;
+
+      case HAZARD_FORBIDDEN_SLOT:
+	if (TARGET_CB_MAYBE)
+	  *fs_delay = true;
 	break;
 
       case HAZARD_HILO:
@@ -16718,6 +16984,7 @@ mips_reorg_process_insns (void)
   rtx_insn *insn, *last_insn, *subinsn, *next_insn;
   rtx lo_reg, delayed_reg;
   int hilo_delay;
+  bool fs_delay;
 
   /* Force all instructions to be split into their final form.  */
   split_all_insns_noflow ();
@@ -16786,6 +17053,7 @@ mips_reorg_process_insns (void)
   hilo_delay = 2;
   delayed_reg = 0;
   lo_reg = gen_rtx_REG (SImode, LO_REGNUM);
+  fs_delay = false;
 
   /* Make a second pass over the instructions.  Delete orphaned
      high-part relocations or turn them into NOPs.  Avoid hazards
@@ -16809,7 +17077,7 @@ mips_reorg_process_insns (void)
 			INSN_CODE (subinsn) = CODE_FOR_nop;
 		      }
 		    mips_avoid_hazard (last_insn, subinsn, &hilo_delay,
-				       &delayed_reg, lo_reg);
+				       &delayed_reg, lo_reg, &fs_delay);
 		  }
 	      last_insn = insn;
 	    }
@@ -16830,7 +17098,7 @@ mips_reorg_process_insns (void)
 	      else
 		{
 		  mips_avoid_hazard (last_insn, insn, &hilo_delay,
-				     &delayed_reg, lo_reg);
+				     &delayed_reg, lo_reg, &fs_delay);
 		  last_insn = insn;
 		}
 	    }
@@ -17693,6 +17961,27 @@ mips_option_override (void)
       /* Allow compilation to continue further even though invalid output
          will be produced.  */
       target_flags |= MASK_ODD_SPREG;
+    }
+
+  if (!ISA_HAS_COMPACT_BRANCHES && mips_cb == MIPS_CB_ALWAYS)
+    {
+      error ("unsupported combination: %qs%s %s",
+	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",
+	      "-mcompact-branches=always");
+    }
+  else if (!ISA_HAS_DELAY_SLOTS && mips_cb == MIPS_CB_NEVER)
+    {
+      error ("unsupported combination: %qs%s %s",
+	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",
+	      "-mcompact-branches=never");
+    }
+
+  /* Require explicit relocs for MIPS R6 onwards.  This enables simplification
+     of the compact branch and jump support through the backend.  */
+  if (!TARGET_EXPLICIT_RELOCS && mips_isa_rev >= 6)
+    {
+      error ("unsupported combination: %qs %s",
+	     mips_arch_info->name, "-mno-explicit-relocs");
     }
 
   /* The effect of -mabicalls isn't defined for the EABI.  */
@@ -18713,6 +19002,18 @@ mips_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
     }
 
 #undef OP
+
+  /* If we are using compact branches we don't have delay slots so
+     place the instruction that was in the delay slot before the JRC
+     instruction.  */
+
+  if (TARGET_CB_ALWAYS)
+    {
+      rtx temp;
+      temp = trampoline[i-2];
+      trampoline[i-2] = trampoline[i-1];
+      trampoline[i-1] = temp;
+    }
 
   /* Copy the trampoline code.  Leave any padding uninitialized.  */
   for (j = 0; j < i; j++)

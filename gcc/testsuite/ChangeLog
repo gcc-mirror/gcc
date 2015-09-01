@@ -1,3 +1,42 @@
+2015-09-01  Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): Handle the
+	dependencies between ISA level and compact-branches.
+	* gcc.target/mips/branch-10.c: Update expected output to allow
+	compact forms of b/bal.
+	* gcc.target/mips/branch-11.c: Likewise.
+	* gcc.target/mips/branch-12.c: Likewise.
+	* gcc.target/mips/branch-13.c: Likewise.
+	* gcc.target/mips/branch-3.c: Likewise.
+	* gcc.target/mips/branch-4.c: Likewise.
+	* gcc.target/mips/branch-5.c: Likewise.
+	* gcc.target/mips/branch-6.c: Likewise.
+	* gcc.target/mips/branch-7.c: Likewise.
+	* gcc.target/mips/branch-8.c: Likewise.
+	* gcc.target/mips/branch-9.c: Likewise.
+	* gcc.target/mips/branch-cost-1.c: Likewise.
+	* gcc.target/mips/call-1.c: Likewise.
+	* gcc.target/mips/call-2.c: Likewise.
+	* gcc.target/mips/call-3.c: Likewise.
+	* gcc.target/mips/call-4.c: Likewise.
+	* gcc.target/mips/call-5.c: Likewise.
+	* gcc.target/mips/call-6.c: Likewise.
+	* gcc.target/mips/lazy-binding-1.c: Likewise.
+	* gcc.target/mips/near-far-1.c: Likewise.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+	* gcc.target/mips/umips-branch-3.c: Ensure the test is
+	run with compact branches allowed.
+	* gcc.target/mips/compact-branches-1.c: New file.
+	* gcc.target/mips/compact-branches-2.c: Likewise.
+	* gcc.target/mips/compact-branches-3.c: Likewise.
+	* gcc.target/mips/compact-branches-4.c: Likewise.
+	* gcc.target/mips/compact-branches-5.c: Likewise.
+	* gcc.target/mips/compact-branches-6.c: Likewise.
+	* gcc.target/mips/compact-branches-7.c: Likewise.
+
 2015-09-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/read_dir.f90: XFAIL this testcase on FreeBSD.

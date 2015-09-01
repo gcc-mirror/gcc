@@ -418,3 +418,20 @@ Driver
 mload-store-pairs
 Target Report Var(TARGET_LOAD_STORE_PAIRS) Init(1)
 Enable load/store bonding.
+
+mcompact-branches=
+Target RejectNegative JoinedOrMissing Var(mips_cb) Report Enum(mips_cb_setting) Init(MIPS_CB_OPTIMAL)
+Specify the compact branch usage policy
+
+Enum
+Name(mips_cb_setting) Type(enum mips_cb_setting)
+Policies available for use with -mcompact-branches=:
+
+EnumValue
+Enum(mips_cb_setting) String(never) Value(MIPS_CB_NEVER)
+
+EnumValue
+Enum(mips_cb_setting) String(optimal) Value(MIPS_CB_OPTIMAL)
+
+EnumValue
+Enum(mips_cb_setting) String(always) Value(MIPS_CB_ALWAYS)
