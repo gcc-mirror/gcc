@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-xfail-run-if "PR libfortran/67412" { *-*-solaris2.10 } }
 !
 ! Check that EXECUTE_COMMAND_LINE handles invalid command lines appropriately
 !
