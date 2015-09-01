@@ -1,3 +1,7 @@
+2015-09-01  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.opt (mcpu): Fix typo.
+
 2015-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_set_current_function):
