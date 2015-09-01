@@ -1,3 +1,9 @@
+2015-08-31  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* tree-ssa-dom.c (record_equivalences_from_phis,
+	record_equivalences_from_stmt, optimize_stmt): Use dom_valueize.
+	(lookup_avail_expr): Likewise, and remove comment and unused temp.
+
 2015-09-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.opt (mcpu): Fix typo.
