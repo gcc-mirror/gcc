@@ -1,3 +1,11 @@
+2015-09-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61753
+	* decl.c (smallest_type_quals_location): New.
+	(check_special_function_return_type): Use the latter; add int and
+	const location_t* parameters.
+	(grokdeclarator): Adjust check_special_function_return_type call.
+
 2015-08-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR c++/67371
