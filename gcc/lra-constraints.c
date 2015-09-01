@@ -928,10 +928,12 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	 they live in the same place.  When we create a pseudo we
 	 assign value of original pseudo (if any) from which we
 	 created the new pseudo.  If we create the pseudo from the
-	 input pseudo, the new pseudo will no conflict with the input
-	 pseudo which is wrong when the input pseudo lives after the
-	 insn and as the new pseudo value is changed by the insn
-	 output.  Therefore we create the new pseudo from the output.
+	 input pseudo, the new pseudo will have no conflict with the
+	 input pseudo which is wrong when the input pseudo lives after
+	 the insn and as the new pseudo value is changed by the insn
+	 output.  Therefore we create the new pseudo from the output
+	 except the case when we have single matched dying input
+	 pseudo.
 
 	 We cannot reuse the current output register because we might
 	 have a situation like "a <- a op b", where the constraints
@@ -940,8 +942,12 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	 so that it doesn't clobber the current value of "a".  */
 
       new_in_reg = new_out_reg
-	= lra_create_new_reg_with_unique_value (outmode, out_rtx,
-						goal_class, "");
+	= (ins[1] < 0 && REG_P (in_rtx)
+	   && (int) REGNO (in_rtx) < lra_new_regno_start
+	   && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx))
+	   ? lra_create_new_reg (inmode, in_rtx, goal_class, "")
+	   : lra_create_new_reg_with_unique_value (outmode, out_rtx,
+						   goal_class, ""));
     }
   /* In operand can be got from transformations before processing insn
      constraints.  One example of such transformations is subreg
