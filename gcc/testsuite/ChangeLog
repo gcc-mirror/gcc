@@ -1,3 +1,8 @@
+2015-09-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61753
+	* g++.dg/other/pr61753.C: New.
+
 2015-08-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/cmp-1.c: New file.

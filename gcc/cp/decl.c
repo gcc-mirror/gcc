@@ -113,7 +113,7 @@ static void end_cleanup_fn (void);
 static tree cp_make_fname_decl (location_t, tree, int);
 static void initialize_predefined_identifiers (void);
 static tree check_special_function_return_type
-	(special_function_kind, tree, tree);
+       (special_function_kind, tree, tree, int, const location_t*);
 static tree push_cp_library_fn (enum tree_code, tree, int);
 static tree build_cp_library_fn (tree, enum tree_code, tree, int);
 static void store_parm_decls (tree);
@@ -8924,24 +8924,51 @@ create_array_type_for_decl (tree name, tree type, tree size)
   return build_cplus_array_type (type, itype);
 }
 
-/* Check that it's OK to declare a function with the indicated TYPE.
-   SFK indicates the kind of special function (if any) that this
-   function is.  OPTYPE is the type given in a conversion operator
-   declaration, or the class type for a constructor/destructor.
-   Returns the actual return type of the function; that
-   may be different than TYPE if an error occurs, or for certain
-   special functions.  */
+/* Returns the smallest location != UNKNOWN_LOCATION among the
+   three stored in LOCATIONS[ds_const], LOCATIONS[ds_volatile],
+   and LOCATIONS[ds_restrict].  */
+
+static location_t
+smallest_type_quals_location (int type_quals, const location_t* locations)
+{
+  location_t loc = UNKNOWN_LOCATION;
+
+  if (type_quals & TYPE_QUAL_CONST)
+    loc = locations[ds_const];
+
+  if ((type_quals & TYPE_QUAL_VOLATILE)
+      && (loc == UNKNOWN_LOCATION || locations[ds_volatile] < loc))
+    loc = locations[ds_volatile];
+
+  if ((type_quals & TYPE_QUAL_RESTRICT)
+      && (loc == UNKNOWN_LOCATION || locations[ds_restrict] < loc))
+    loc = locations[ds_restrict];
+
+  return loc;
+}
+
+/* Check that it's OK to declare a function with the indicated TYPE
+   and TYPE_QUALS.  SFK indicates the kind of special function (if any)
+   that this function is.  OPTYPE is the type given in a conversion
+   operator declaration, or the class type for a constructor/destructor.
+   Returns the actual return type of the function; that may be different
+   than TYPE if an error occurs, or for certain special functions.  */
 
 static tree
 check_special_function_return_type (special_function_kind sfk,
 				    tree type,
-				    tree optype)
+				    tree optype,
+				    int type_quals,
+				    const location_t* locations)
 {
   switch (sfk)
     {
     case sfk_constructor:
       if (type)
 	error ("return type specification for constructor invalid");
+      else if (type_quals != TYPE_UNQUALIFIED)
+	error_at (smallest_type_quals_location (type_quals, locations),
+		  "qualifiers are not allowed on constructor declaration");
 
       if (targetm.cxx.cdtor_returns_this () && !TYPE_FOR_JAVA (optype))
 	type = build_pointer_type (optype);
@@ -8952,6 +8979,10 @@ check_special_function_return_type (special_function_kind sfk,
     case sfk_destructor:
       if (type)
 	error ("return type specification for destructor invalid");
+      else if (type_quals != TYPE_UNQUALIFIED)
+	error_at (smallest_type_quals_location (type_quals, locations),
+		  "qualifiers are not allowed on destructor declaration");
+
       /* We can't use the proper return type here because we run into
 	 problems with ambiguous bases and covariant returns.
 	 Java classes are left unchanged because (void *) isn't a valid
@@ -8964,7 +8995,12 @@ check_special_function_return_type (special_function_kind sfk,
 
     case sfk_conversion:
       if (type)
-	error ("return type specified for %<operator %T%>",  optype);
+	error ("return type specified for %<operator %T%>", optype);
+      else if (type_quals != TYPE_UNQUALIFIED)
+	error_at (smallest_type_quals_location (type_quals, locations),
+		  "qualifiers are not allowed on declaration of "
+		  "%<operator %T%>", optype);
+
       type = optype;
       break;
 
@@ -9090,7 +9126,7 @@ grokdeclarator (const cp_declarator *declarator,
      a member function.  */
   cp_ref_qualifier rqual = REF_QUAL_NONE;
   /* cv-qualifiers that apply to the type specified by the DECLSPECS.  */
-  int type_quals;
+  int type_quals = TYPE_UNQUALIFIED;
   tree raises = NULL_TREE;
   int template_count = 0;
   tree returned_attrs = NULL_TREE;
@@ -9136,6 +9172,13 @@ grokdeclarator (const cp_declarator *declarator,
   bool concept_p = decl_spec_seq_has_spec_p (declspecs, ds_concept);
   if (concept_p)
     constexpr_p = true;
+
+  if (decl_spec_seq_has_spec_p (declspecs, ds_const))
+    type_quals |= TYPE_QUAL_CONST;
+  if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
+    type_quals |= TYPE_QUAL_VOLATILE;
+  if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
+    type_quals |= TYPE_QUAL_RESTRICT;
 
   if (decl_context == FUNCDEF)
     funcdef_flag = true, decl_context = NORMAL;
@@ -9462,8 +9505,13 @@ grokdeclarator (const cp_declarator *declarator,
     ctor_return_type = ctype;
 
   if (sfk != sfk_none)
-    type = check_special_function_return_type (sfk, type,
-					       ctor_return_type);
+    {
+      type = check_special_function_return_type (sfk, type,
+						 ctor_return_type,
+						 type_quals,
+						 declspecs->locations);
+      type_quals = TYPE_UNQUALIFIED;
+    }
   else if (type == NULL_TREE)
     {
       int is_main;
@@ -9647,17 +9695,6 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	type = build_complex_type (type);
     }
-
-  type_quals = TYPE_UNQUALIFIED;
-  if (decl_spec_seq_has_spec_p (declspecs, ds_const))
-    type_quals |= TYPE_QUAL_CONST;
-  if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
-    type_quals |= TYPE_QUAL_VOLATILE;
-  if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
-    type_quals |= TYPE_QUAL_RESTRICT;
-  if (sfk == sfk_conversion && type_quals != TYPE_UNQUALIFIED)
-    error ("qualifiers are not allowed on declaration of %<operator %T%>",
-	   ctor_return_type);
 
   /* If we're using the injected-class-name to form a compound type or a
      declaration, replace it with the underlying class so we don't get
