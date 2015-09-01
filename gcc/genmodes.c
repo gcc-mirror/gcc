@@ -1063,7 +1063,8 @@ extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
 unsigned char\n\
 mode_unit_size_inline (machine_mode mode)\n\
 {\n\
-  extern unsigned char mode_unit_size[NUM_MACHINE_MODES];\n\
+  extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];\
+\n\
   switch (mode)\n\
     {");
 
