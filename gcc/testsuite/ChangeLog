@@ -1,3 +1,6 @@
+2015-09-01  Kenneth Zadeck <zadeck@naturalbridge.com>
+        * gcc.c-torture/execute/ieee/20000320-1.c Fixed misplaced test case.
+
 2015-09-01  Matthew Fortune  <matthew.fortune@imgtec.com>
 	    Andrew Bennett  <andrew.bennett@imgtec.com>
 
