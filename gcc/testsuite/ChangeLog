@@ -1,3 +1,9 @@
+2015-09-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libfortran/67412
+	* gfortran.dg/execute_command_line_2.f90: XFAIL execution on
+	*-*-solaris2.10.
+
 2015-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/target_attr_crypto_ice_2.c: New test.
