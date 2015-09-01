@@ -1,3 +1,8 @@
+2015-09-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/read_dir.f90: XFAIL this testcase on FreeBSD.
+	Clean-up a created directory if testcase fails.
+
 2015-09-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/67405
