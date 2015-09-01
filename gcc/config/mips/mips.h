@@ -92,6 +92,33 @@ struct mips_cpu_info {
 /* True if we are generating position-independent VxWorks RTP code.  */
 #define TARGET_RTP_PIC (TARGET_VXWORKS_RTP && flag_pic)
 
+/* Compact branches must not be used if the user either selects the
+   'never' policy or the 'optimal' policy on a core that lacks
+   compact branch instructions.  */
+#define TARGET_CB_NEVER (mips_cb == MIPS_CB_NEVER	\
+			 || (mips_cb == MIPS_CB_OPTIMAL \
+			     && !ISA_HAS_COMPACT_BRANCHES))
+
+/* Compact branches may be used if the user either selects the
+   'always' policy or the 'optimal' policy on a core that supports
+   compact branch instructions.  */
+#define TARGET_CB_MAYBE (TARGET_CB_ALWAYS		\
+			 || (mips_cb == MIPS_CB_OPTIMAL \
+			     && ISA_HAS_COMPACT_BRANCHES))
+
+/* Compact branches must always be generated if the user selects
+   the 'always' policy or the 'optimal' policy om a core that
+   lacks delay slot branch instructions.  */
+#define TARGET_CB_ALWAYS (mips_cb == MIPS_CB_ALWAYS	\
+			 || (mips_cb == MIPS_CB_OPTIMAL \
+			     && !ISA_HAS_DELAY_SLOTS))
+
+/* Special handling for JRC that exists in microMIPSR3 as well as R6
+   ISAs with full compact branch support.  */
+#define ISA_HAS_JRC ((ISA_HAS_COMPACT_BRANCHES		\
+		      || TARGET_MICROMIPS)		\
+		     && mips_cb != MIPS_CB_NEVER)
+
 /* True if the output file is marked as ".abicalls; .option pic0"
    (-call_nonpic).  */
 #define TARGET_ABICALLS_PIC0 \
@@ -871,6 +898,10 @@ struct mips_cpu_info {
 				 || ISA_MIPS64R6)
 
 #define ISA_HAS_JR		(mips_isa_rev <= 5)
+
+#define ISA_HAS_DELAY_SLOTS	1
+
+#define ISA_HAS_COMPACT_BRANCHES (mips_isa_rev >= 6)
 
 /* ISA has branch likely instructions (e.g. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
@@ -2645,51 +2676,15 @@ typedef struct mips_args {
 #define MIPS_BRANCH(OPCODE, OPERANDS) \
   "%*" OPCODE "%?\t" OPERANDS "%/"
 
+#define MIPS_BRANCH_C(OPCODE, OPERANDS) \
+  "%*" OPCODE "%:\t" OPERANDS
+
 /* Return an asm string that forces INSN to be treated as an absolute
    J or JAL instruction instead of an assembler macro.  */
 #define MIPS_ABSOLUTE_JUMP(INSN) \
   (TARGET_ABICALLS_PIC2						\
    ? ".option\tpic0\n\t" INSN "\n\t.option\tpic2"		\
    : INSN)
-
-/* Return the asm template for a call.  INSN is the instruction's mnemonic
-   ("j" or "jal"), OPERANDS are its operands, TARGET_OPNO is the operand
-   number of the target.  SIZE_OPNO is the operand number of the argument size
-   operand that can optionally hold the call attributes.  If SIZE_OPNO is not
-   -1 and the call is indirect, use the function symbol from the call
-   attributes to attach a R_MIPS_JALR relocation to the call.
-
-   When generating GOT code without explicit relocation operators,
-   all calls should use assembly macros.  Otherwise, all indirect
-   calls should use "jr" or "jalr"; we will arrange to restore $gp
-   afterwards if necessary.  Finally, we can only generate direct
-   calls for -mabicalls by temporarily switching to non-PIC mode.
-
-   For microMIPS jal(r), we try to generate jal(r)s when a 16-bit
-   instruction is in the delay slot of jal(r).  */
-#define MIPS_CALL(INSN, OPERANDS, TARGET_OPNO, SIZE_OPNO)	\
-  (TARGET_USE_GOT && !TARGET_EXPLICIT_RELOCS			\
-   ? "%*" INSN "\t%" #TARGET_OPNO "%/"				\
-   : REG_P (OPERANDS[TARGET_OPNO])				\
-   ? (mips_get_pic_call_symbol (OPERANDS, SIZE_OPNO)		\
-      ? ("%*.reloc\t1f,R_MIPS_JALR,%" #SIZE_OPNO "\n"		\
-	 "1:\t" INSN "r\t%" #TARGET_OPNO "%/")			\
-      : TARGET_MICROMIPS && !TARGET_INTERLINK_COMPRESSED	\
-      ? "%*" INSN "r%!\t%" #TARGET_OPNO "%/"			\
-      : "%*" INSN "r\t%" #TARGET_OPNO "%/")			\
-   : TARGET_MICROMIPS && !TARGET_INTERLINK_COMPRESSED		\
-     ? MIPS_ABSOLUTE_JUMP ("%*" INSN "%!\t%" #TARGET_OPNO "%/")	\
-     : MIPS_ABSOLUTE_JUMP ("%*" INSN "\t%" #TARGET_OPNO "%/"))	\
-
-/* Similar to MIPS_CALL, but this is for MICROMIPS "j" to generate
-   "jrc" when nop is in the delay slot of "jr".  */
-
-#define MICROMIPS_J(INSN, OPERANDS, OPNO)			\
-  (TARGET_USE_GOT && !TARGET_EXPLICIT_RELOCS			\
-   ? "%*j\t%" #OPNO "%/"					\
-   : REG_P (OPERANDS[OPNO])					\
-   ? "%*jr%:\t%" #OPNO						\
-   : MIPS_ABSOLUTE_JUMP ("%*" INSN "\t%" #OPNO "%/"))
 
 
 /* Control the assembler format that we output.  */

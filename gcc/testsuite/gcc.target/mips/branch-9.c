@@ -4,7 +4,7 @@
 /* { dg-final { scan-assembler "\tlw\t\\\$1,16\\(\\\$(fp|sp)\\)\n" } } */
 /* { dg-final { scan-assembler "\tlw\t\\\$1,%got\\(\[^)\]*\\)\\(\\\$1\\)\n" } } */
 /* { dg-final { scan-assembler "\taddiu\t\\\$1,\\\$1,%lo\\(\[^)\]*\\)\n" } } */
-/* { dg-final { scan-assembler "\tjr\t\\\$1\n" } } */
+/* { dg-final { scan-assembler "\tjrc?\t\\\$1\n" } } */
 /* { dg-final { scan-assembler-not "\\\$28" } } */
 
 #include "branch-helper.h"

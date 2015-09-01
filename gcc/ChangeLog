@@ -1,3 +1,77 @@
+2015-09-01  Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* config/mips/mips-opts.h (mips_cb_setting): New enum.
+	* config/mips/mips-protos.h: Add definitions for
+	mips_output_jump and mips_output_equal_conditional_branch
+	* gcc/config/mips/mips.c (MIPS_JR): Change to support the
+	JIC instruction.
+	(mips_emit_compare): Add support for the MIPS R6 conditional
+	compact branches.
+	(mips_process_sync_loop): Likewise.
+	(mips_output_order_conditional_branch): Likewise.
+	(mips16_build_call_stub): Change MIPS_CALL to
+	mips_output_jump.
+	(mips_print_operand_punctuation): Update 's' case to only
+	apply to micromips r2.
+	(mips_adjust_insn_length): Add support for forbidden slot
+	hazards.
+	(mips_avoid_hazard): Likewise.
+	(mips_reorg_process_insns): Likewise.
+	(mips_output_jump): New function.
+	(mips_output_equal_conditional_branch): Likewise.
+	(mips_output_conditional_branch): Use jrc/bc if compact
+	branch support is enabled.  Ensure the forbidden slots
+	between the two branch instructions is filled with a nop.
+	(mips_option_override): Add support to process the compact
+	branch option and set the correct defaults.  Prevent
+	non-explict relocs being using for MIPS R6.
+	(mips_trampoline_init): Add compact branch support.
+	(mips_mult_zero_zero_cost): Allow zero initialisation of
+	accumulators with TARGET_DSP.
+	* gcc/config/mips/mips.h (TARGET_CB_NEVER): New define.
+	(TARGET_CB_MAYBE): New define.
+	(TARGET_CB_ALWAYS): New define.
+	(ISA_HAS_DELAY_SLOTS): New define.
+	(ISA_HAS_COMPACT_BRANCHES): New define.
+	(ISA_HAS_JRC): New define.
+	(MIPS_BRANCH_C): New define.
+	(MIPS_CALL): Removed.
+	(MICROMIPS_J): Removed.
+	* config/mips/mips.md (compact_form): New attr.
+	(hazard): Add support for forbidden slots.
+	(define_delay): Add support for compact branches.
+	(*branch_order<mode>): Likewise.
+	(*branch_order<mode>_inverted): Likewise.
+	(*branch_equality<mode>): Likewise.
+	(*branch_equality<mode>_inverted): Likewise.
+	(*jump_absolute): Likewise.
+	(*jump_pic): Likewise.
+	(indirect_jump): Use mips_output_jump to produce assembly output.
+	(tablejump_<mode>"): Likewise.
+	(*<optab>"): Likewise.
+	(<optab>_internal): Likewise.
+	(sibcall_internal): Likewise.
+	(sibcall_value_internal): Likewise.
+	(sibcall_value_multiple_internal): Likewise.
+	(call_internal): Likewise.
+	(call_split): Likewise.
+	(call_internal_direct): Likewise.
+	(call_direct_split): Likewise.
+	(call_value_internal): Likewise.
+	(call_value_split): Likewise.
+	(call_value_internal_direct): Likewise.
+	(call_value_direct_split): Likewise.
+	(call_value_multiple_internal): Likewise.
+	(call_value_multiple_split): Likewise.
+	(mips_get_fcsr_mips16_<mode>): Likewise.
+	(mips_set_fcsr_mips16_<mode>): Likewise.
+	(tls_get_tp_mips16_<mode>): Likewise.
+	* config/mips/mips.opt: Add -mcompact-branches option.
+	* config/mips/predicates.md (order_operator): Ensure the
+	conditional compact branches are only used if the ISA them.
+	* doc/invoke.texi: Document -mcompact-branches option.
+
 2015-09-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/61578

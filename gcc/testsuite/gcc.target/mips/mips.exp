@@ -243,6 +243,7 @@ set mips_option_groups {
     mips16 "-mips16|-mno-mips16|-mflip-mips16"
     mips3d "-mips3d|-mno-mips3d"
     pic "-f(no-|)(pic|PIC)"
+    cb "-mcompact-branches=.*"
     profiling "-pg"
     small-data "-G[0-9]+"
     warnings "-w"
@@ -1068,8 +1069,10 @@ proc mips-dg-options { args } {
 	# We need a revision 6 or better ISA for:
 	#
 	#   - When the LSA instruction is required
+	#   - When only using compact branches
 	if { $isa_rev < 6
-	     && ([mips_have_test_option_p options "HAS_LSA"]) } {
+	     && ([mips_have_test_option_p options "HAS_LSA"]
+		 || [mips_have_test_option_p options "-mcompact-branches=always"]) } {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32r6"
 	    } else {
@@ -1164,6 +1167,9 @@ proc mips-dg-options { args } {
 		mips_make_test_option options "-mips64r5"
 	    }
 	    mips_make_test_option options "-mnan=2008"
+	    if { [mips_have_option_p options "-mcompact-branches=always"] } {
+		mips_make_test_option options "-mcompact-branches=optimal"
+	    }
 	# Check whether we need to switch from a 32-bit processor to the
 	# "nearest" 64-bit processor.
 	} elseif { $gp_size == 64 && [mips_32bit_arch_p $arch] } {
@@ -1307,6 +1313,11 @@ proc mips-dg-options { args } {
 	    mips_make_test_option options "-mno-synci"
 	    mips_make_test_option options "-mno-micromips"
 	    mips_make_test_option options "-mnan=legacy"
+	}
+	if { $isa_rev < 6 } {
+	    if { [mips_have_option_p options "-mcompact-branches=always"] } {
+		mips_make_test_option options "-mcompact-branches=optimal"
+	    }
 	}
         if { $isa_rev > 5 } {
 	    mips_make_test_option options "-mno-dsp"

@@ -1,6 +1,6 @@
 /* { dg-options "-mshared -mabi=32" } */
 /* { dg-final { scan-assembler-not "(\\\$28|cpload|cprestore)" } } */
-/* { dg-final { scan-assembler-not "\tjr\t\\\$1\n" } } */
+/* { dg-final { scan-assembler-not "\tjrc?\t\\\$1\n" } } */
 
 #include "branch-helper.h"
 

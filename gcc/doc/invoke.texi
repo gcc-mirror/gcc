@@ -782,6 +782,7 @@ Objective-C and Objective-C++ Dialects}.
 -mgp32  -mgp64  -mfp32  -mfpxx  -mfp64  -mhard-float  -msoft-float @gol
 -mno-float  -msingle-float  -mdouble-float @gol
 -modd-spreg -mno-odd-spreg @gol
+-mcompact-branches=@var{policy} @gol
 -mabs=@var{mode}  -mnan=@var{encoding} @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
@@ -17302,6 +17303,30 @@ Enable the use of odd-numbered single-precision floating-point registers
 for the o32 ABI.  This is the default for processors that are known to
 support these registers.  When using the o32 FPXX ABI, @option{-mno-odd-spreg}
 is set by default.
+
+@item -mcompact-branches=never
+@itemx -mcompact-branches=optimal
+@itemx -mcompact-branches=always
+@opindex mcompact-branches=never
+@opindex mcompact-branches=optimal
+@opindex mcompact-branches=always
+These options control which form of branches will be generated.  The
+default is @option{-mcompact-branches=optimal}.
+
+The @option{-mcompact-branches=never} option ensures that compact branch
+instructions will never be generated.
+
+The @option{-mcompact-branches=always} option ensures that a compact
+branch instruction will be generated if available.  If a compact branch
+instruction is not available, a delay slot form of the branch will be
+used instead.
+
+This option is supported from MIPS Release 6 onwards.
+
+The @option{-mcompact-branches=optimal} option will cause a delay slot
+branch to be used if one is available in the current ISA and the delay
+slot is successfully filled.  If the delay slot is not filled, a compact
+branch will be chosen if one is available.
 
 @item -mabs=2008
 @itemx -mabs=legacy

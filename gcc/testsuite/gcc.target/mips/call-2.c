@@ -1,6 +1,6 @@
 /* See through some simple data-flow.  */
 /* { dg-options "-mrelax-pic-calls" } */
-/* { dg-final { scan-assembler-times "\\.reloc\t1f,R_MIPS_JALR,g\n1:\tjalrs?\t" 2 } } */
+/* { dg-final { scan-assembler-times "\\.reloc\t1f,R_MIPS_JALR,g\n1:\tjalrc?s?\t" 2 } } */
 
 extern void g (void);
 
