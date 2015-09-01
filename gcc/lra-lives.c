@@ -726,28 +726,33 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  lra_hard_reg_usage[reg->regno] += freq;
 
       call_p = CALL_P (curr_insn);
+      src_regno = (set != NULL_RTX && REG_P (SET_SRC (set))
+		   ? REGNO (SET_SRC (set)) : -1);
+      dst_regno = (set != NULL_RTX && REG_P (SET_DEST (set))
+		   ? REGNO (SET_DEST (set)) : -1);
       if (complete_info_p
-	  && set != NULL_RTX
-	  && REG_P (SET_DEST (set)) && REG_P (SET_SRC (set))
+	  && src_regno >= 0 && dst_regno >= 0
 	  /* Check that source regno does not conflict with
 	     destination regno to exclude most impossible
 	     preferences.  */
-	  && ((((src_regno = REGNO (SET_SRC (set))) >= FIRST_PSEUDO_REGISTER
-		&& ! sparseset_bit_p (pseudos_live, src_regno))
+	  && (((src_regno >= FIRST_PSEUDO_REGISTER
+		&& (! sparseset_bit_p (pseudos_live, src_regno)
+		    || (dst_regno >= FIRST_PSEUDO_REGISTER
+			&& lra_reg_val_equal_p (src_regno,
+						lra_reg_info[dst_regno].val,
+						lra_reg_info[dst_regno].offset))))
 	       || (src_regno < FIRST_PSEUDO_REGISTER
 		   && ! TEST_HARD_REG_BIT (hard_regs_live, src_regno)))
 	      /* It might be 'inheritance pseudo <- reload pseudo'.  */
 	      || (src_regno >= lra_constraint_new_regno_start
-		  && ((int) REGNO (SET_DEST (set))
-		      >= lra_constraint_new_regno_start)
+		  && dst_regno >= lra_constraint_new_regno_start
 		  /* Remember to skip special cases where src/dest regnos are
 		     the same, e.g. insn SET pattern has matching constraints
 		     like =r,0.  */
-		  && src_regno != (int) REGNO (SET_DEST (set)))))
+		  && src_regno != dst_regno)))
 	{
 	  int hard_regno = -1, regno = -1;
 
-	  dst_regno = REGNO (SET_DEST (set));
 	  if (dst_regno >= lra_constraint_new_regno_start
 	      && src_regno >= lra_constraint_new_regno_start)
 	    {
