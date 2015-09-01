@@ -8111,6 +8111,23 @@ aarch64_set_current_function (tree fndecl)
 	      = save_target_globals_default_opts ();
 	}
     }
+
+  if (!fndecl)
+    return;
+
+  /* If we turned on SIMD make sure that any vector parameters are re-laid out
+     so that they use proper vector modes.  */
+  if (TARGET_SIMD)
+    {
+      tree parms = DECL_ARGUMENTS (fndecl);
+      for (; parms && parms != void_list_node; parms = TREE_CHAIN (parms))
+	{
+	  if (TREE_CODE (parms) == PARM_DECL
+	      && VECTOR_TYPE_P (TREE_TYPE (parms))
+	      && DECL_MODE (parms) != TYPE_MODE (TREE_TYPE (parms)))
+	    relayout_decl (parms);
+	}
+    }
 }
 
 /* Enum describing the various ways we can handle attributes.
