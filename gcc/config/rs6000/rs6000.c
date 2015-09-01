@@ -22340,6 +22340,7 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp)
       || ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 	  && decl
 	  && !DECL_EXTERNAL (decl)
+	  && !DECL_WEAK (decl)
 	  && (*targetm.binds_local_p) (decl))
       || (DEFAULT_ABI == ABI_V4
 	  && (!TARGET_SECURE_PLT

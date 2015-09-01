@@ -1,3 +1,10 @@
+2015-09-02  Alan Modra  <amodra@gmail.com>
+
+	PR target/67417
+	* config/rs6000/predicates.md (current_file_function_operand): Don't
+	return true for weak symbols.
+	* config/rs6000/rs6000.c (rs6000_function_ok_for_sibcall): Likewise.
+
 2015-08-31  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
