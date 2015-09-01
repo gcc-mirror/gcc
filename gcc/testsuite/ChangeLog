@@ -1,3 +1,9 @@
+2015-09-01  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/ifcvt-1.c: New test.
+	* gcc.dg/ifcvt-2.c: Likewise.
+	* gcc.dg/ifcvt-3.c: Likewise.
+
 2015-09-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libfortran/67412
