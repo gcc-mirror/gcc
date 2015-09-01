@@ -1,3 +1,8 @@
+2015-09-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/67405
+	* g++.dg/pr67405.C: New test.
+
 2015-09-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/vect/no-scevccp-outer-11.c: Don't xfail scan-tree-dump-times.

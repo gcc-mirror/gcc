@@ -1,3 +1,8 @@
+2015-09-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/67405
+	* tree-chkp.c (chkp_find_bound_slots_1): Add NULL check.
+
 2015-09-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-mem.c: Add contributed-by.
