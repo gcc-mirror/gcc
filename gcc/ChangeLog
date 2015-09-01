@@ -1,3 +1,7 @@
+2015-09-01  David Sherwood  <david.sherwood@arm.com>
+
+	* genmodes.c: Add CONST_MODE_UNIT_SIZE modifier.
+
 2015-09-01  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
 
 	* ifcvt.c (struct noce_if_info): Add then_simple, else_simple,
