@@ -12,7 +12,7 @@ Specify the MCU to build for.
 
 mcpu=
 Target Report Joined RejectNegative Var(target_cpu)
-Specify the ISA to build for: msp430, mdsp430x, msp430xv2
+Specify the ISA to build for: msp430, msp430x, msp430xv2
 
 mlarge
 Target Report Mask(LARGE) RejectNegative
