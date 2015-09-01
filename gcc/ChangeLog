@@ -1,3 +1,7 @@
+2015-08-31  Mike Frysinger  <vapier@gentoo.org>
+
+	* doc/invoke.texi (asan-stack): Add space before option.
+
 2015-08-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree.h (zerop): New function.

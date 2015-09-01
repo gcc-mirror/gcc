@@ -10949,7 +10949,7 @@ To disable global objects protection use @option{--param asan-globals=0}.
 
 @item asan-stack
 Enable buffer overflow detection for stack objects.  This kind of
-protection is enabled by default when using@option{-fsanitize=address}.
+protection is enabled by default when using @option{-fsanitize=address}.
 To disable stack protection use @option{--param asan-stack=0} option.
 
 @item asan-instrument-reads
