@@ -57,6 +57,7 @@ epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>
 frv port		Alexandre Oliva		<aoliva@redhat.com>
+ft32 port		James Bowman		<james.bowman@ftdichip.com>
 h8 port			Jeff Law		<law@redhat.com>
 h8 port			Kazu Hirata		<kazu@codesourcery.com>
 hppa port		Jeff Law		<law@redhat.com>
