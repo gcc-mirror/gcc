@@ -2555,7 +2555,16 @@ c_parser_enum_specifier (c_parser *parser)
 	  location_t decl_loc, value_loc;
 	  if (c_parser_next_token_is_not (parser, CPP_NAME))
 	    {
-	      c_parser_error (parser, "expected identifier");
+	      /* Give a nicer error for "enum {}".  */
+	      if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE)
+		  && !parser->error)
+		{
+		  error_at (c_parser_peek_token (parser)->location,
+			    "empty enum is invalid");
+		  parser->error = true;
+		}
+	      else
+		c_parser_error (parser, "expected identifier");
 	      c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, NULL);
 	      values = error_mark_node;
 	      break;
