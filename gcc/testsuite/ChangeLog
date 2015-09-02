@@ -1,3 +1,8 @@
+2015-09-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67432
+	* gcc.dg/pr67432.c: New test.
+
 2015-09-02  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp (clear_effective_target_cache): New.
