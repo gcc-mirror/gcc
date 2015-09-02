@@ -221,8 +221,16 @@ gf_strerror (int errnum,
 #ifdef HAVE_STRERROR_L
   locale_t myloc = newlocale (LC_CTYPE_MASK | LC_MESSAGES_MASK, "",
 			      (locale_t) 0);
-  char *p = strerror_l (errnum, myloc);
-  freelocale (myloc);
+  char *p;
+  if (myloc)
+    {
+      p = strerror_l (errnum, myloc);
+      freelocale (myloc);
+    }
+  else
+    /* newlocale might fail e.g. due to running out of memory, fall
+       back to the simpler strerror.  */
+    p = strerror (errnum);
   return p;
 #elif defined(HAVE_STRERROR_R)
 #ifdef HAVE_USELOCALE
