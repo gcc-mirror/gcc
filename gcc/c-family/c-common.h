@@ -1424,6 +1424,8 @@ extern vec <tree, va_gc> *fix_sec_implicit_args
 extern tree insert_cilk_frame (tree);
 extern void cilk_init_builtins (void);
 extern int gimplify_cilk_spawn (tree *);
+extern void cilk_gimplify_call_params_in_spawned_fn (tree *, gimple_seq *,
+						     gimple_seq *);
 extern void cilk_install_body_with_frame_cleanup (tree, tree, void *);
 extern bool cilk_detect_spawn_and_unwrap (tree *);
 extern bool cilk_set_spawn_marker (location_t, tree);

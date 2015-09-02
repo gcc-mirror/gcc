@@ -762,6 +762,34 @@ create_cilk_wrapper (tree exp, tree *args_out)
   return fndecl;
 }
 
+/* Gimplify all the parameters for the Spawned function.  *EXPR_P can be a
+   CALL_EXPR, INIT_EXPR, MODIFY_EXPR or TARGET_EXPR.  *PRE_P and *POST_P are
+   gimple sequences from the caller of gimplify_cilk_spawn.  */
+
+void
+cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
+					 gimple_seq *post_p)
+{
+  int ii = 0;
+  tree *fix_parm_expr = expr_p;
+
+  /* Remove CLEANUP_POINT_EXPR and EXPR_STMT from *spawn_p.  */
+  while (TREE_CODE (*fix_parm_expr) == CLEANUP_POINT_EXPR
+	 || TREE_CODE (*fix_parm_expr) == EXPR_STMT)
+    *fix_parm_expr = TREE_OPERAND (*fix_parm_expr, 0);
+
+  if ((TREE_CODE (*expr_p) == INIT_EXPR)
+      || (TREE_CODE (*expr_p) == TARGET_EXPR)
+      || (TREE_CODE (*expr_p) == MODIFY_EXPR))
+    fix_parm_expr = &TREE_OPERAND (*expr_p, 1);
+
+  if (TREE_CODE (*fix_parm_expr) == CALL_EXPR)
+    for (ii = 0; ii < call_expr_nargs (*fix_parm_expr); ii++)
+      gimplify_expr (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p, post_p,
+		     is_gimple_reg, fb_rvalue);
+}
+
+
 /* Transform *SPAWN_P, a spawned CALL_EXPR, to gimple.  *SPAWN_P can be a
    CALL_EXPR, INIT_EXPR or MODIFY_EXPR.  Returns GS_OK if everything is fine,
    and GS_UNHANDLED, otherwise.  */
@@ -779,12 +807,6 @@ gimplify_cilk_spawn (tree *spawn_p)
 
   cfun->calls_cilk_spawn = 1;
   cfun->is_cilk_function = 1;
-
-  /* Remove CLEANUP_POINT_EXPR and EXPR_STMT from *spawn_p.  */
-  while (TREE_CODE (expr) == CLEANUP_POINT_EXPR
-	 || TREE_CODE (expr) == EXPR_STMT)
-    expr = TREE_OPERAND (expr, 0);
-  
   new_args = NULL;
   function = create_cilk_wrapper (expr, &new_args);
 

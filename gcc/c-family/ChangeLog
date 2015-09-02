@@ -1,3 +1,14 @@
+2015-09-02  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR middle-end/60586
+	* c-common.h (cilk_gimplify_call_params_in_spawned_fn): New
+	prototype.
+	* c-gimplify.c (c_gimplify_expr): Added a call to the function
+	cilk_gimplify_call_params_in_spawned_fn.
+	* cilk.c (cilk_gimplify_call_params_in_spawned_fn): New function.
+	(gimplify_cilk_spawn): Removed EXPR_STMT and CLEANUP_POINT_EXPR
+	unwrapping.
+
 2015-08-25  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/67330
