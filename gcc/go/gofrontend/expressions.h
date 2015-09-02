@@ -3460,6 +3460,11 @@ class Numeric_constant
   void
   set_complex(Type*, const mpc_t);
 
+  // Mark numeric constant as invalid.
+  void
+  set_invalid()
+  { this->classification_ = NC_INVALID; }
+
   // Classifiers.
   bool
   is_int() const
@@ -3476,6 +3481,10 @@ class Numeric_constant
   bool
   is_complex() const
   { return this->classification_ == Numeric_constant::NC_COMPLEX; }
+
+  bool
+  is_invalid() const
+  { return this->classification_ == Numeric_constant::NC_INVALID; }
 
   // Value retrievers.  These will initialize the values as well as
   // set them.  GET_INT is only valid if IS_INT returns true, and
@@ -3554,7 +3563,7 @@ class Numeric_constant
   mpfr_to_unsigned_long(const mpfr_t fval, unsigned long *val) const;
 
   bool
-  check_int_type(Integer_type*, bool, Location) const;
+  check_int_type(Integer_type*, bool, Location);
 
   bool
   check_float_type(Float_type*, bool, Location);
