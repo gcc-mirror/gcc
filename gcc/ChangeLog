@@ -1,5 +1,11 @@
 2015-09-02  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/sysv4le.h (LINK_TARGET_SPEC): Don't define.
+	* config/rs6000/sysv4.h (LINK_TARGET_SPEC): Likewise.
+	(LINK_SPEC, SUBTARGET_EXTRA_SPECS): Delete link_target.
+
+2015-09-02  Alan Modra  <amodra@gmail.com>
+
 	PR target/67417
 	* config/rs6000/predicates.md (current_file_function_operand): Don't
 	return true for weak symbols.
