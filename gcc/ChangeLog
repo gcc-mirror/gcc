@@ -1,3 +1,36 @@
+2015-09-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67317
+	* config/i386/i386.md (*add<mode>3_cc): Remove insn pattern.
+	(addqi3_cc): Ditto.
+	(UNSPEC_ADD_CARRY): Remove.
+	(addqi3_cconly_overflow): New expander.
+	(*add<dwi>3_doubleword): Split to add<mode>3_cconly_overflow.
+	Adjust for changed add<mode>3_carry.
+	(*neg<dwi>2_doubleword): Adjust for changed add<mode>3_carry.
+	(*sub<dwi>3_doubleword): Adjust for changed sub<mode>3_carry.
+	(<plusminus_insn><mode>3_carry): Remove expander.
+	(*<plusminus_insn><mode>3_carry): Split insn pattern to
+	add<mode>3_carry and sub<mode>3_carry.
+	(plusminus_carry_mnemonic): Remove code attribute.
+	(add<mode>3_carry): Canonicalize insn pattern.
+	(*addsi3_carry_zext): Ditto.
+	(sub<mode>3_carry): Ditto.
+	(*subsi3_carry_zext): Ditto.
+	(adcx<mode>3): Remove insn pattern.
+	(addcarry<mode>): New insn pattern.
+	(subborrow<mode>): Ditto.
+	* config/i386/i386.c (ix86_expand_strlensi_unroll_1): Use
+	gen_addqi3_cconly_overflow instead of gen_addqi3_cc.
+	(ix86_expand_builtin) <case IX86_BUILTIN_SBB32,
+	case IX86_BUILTIN_SBB64, case IX86_BUILTIN_ADDCARRY32,
+	case IX86_BUILTIN_ADDCARRY64>: Use CODE_FOR_subborrowsi,
+	CODE_FOR_subborrowdi, CODE_FOR_addcarrysi and CODE_FOR_addcarrydi.
+	Rewrite expander to not clobber carry flag chains.
+
 2015-09-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/67417
