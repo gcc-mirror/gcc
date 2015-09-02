@@ -101,4 +101,5 @@ proc cilkplus_finish { args } {
     } else {
 	unset TEST_ALWAYS_FLAGS
     }
+    clear_effective_target_cache
 }

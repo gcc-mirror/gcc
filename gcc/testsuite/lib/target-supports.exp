@@ -117,6 +117,7 @@ proc current_target_name { } {
 
 proc check_cached_effective_target { prop args } {
     global et_cache
+    global et_prop_list
 
     set target [current_target_name]
     if {![info exists et_cache($prop,target)]
@@ -124,10 +125,35 @@ proc check_cached_effective_target { prop args } {
 	verbose "check_cached_effective_target $prop: checking $target" 2
 	set et_cache($prop,target) $target
 	set et_cache($prop,value) [uplevel eval $args]
+	lappend et_prop_list $prop
+	verbose "check_cached_effective_target cached list is now: $et_prop_list" 2
     }
     set value $et_cache($prop,value)
     verbose "check_cached_effective_target $prop: returning $value for $target" 2
     return $value
+}
+
+# Clear effective-target cache. This is useful after testing
+# effective-target features and overriding TEST_ALWAYS_FLAGS and/or
+# ALWAYS_CXXFLAGS.
+# If one changes ALWAYS_CXXFLAGS or TEST_ALWAYS_FLAGS then they should
+# do a clear_effective_target_cache at the end as the target cache can
+# make decisions based upon the flags, and those decisions need to be
+# redone when the flags change. An example of this is the
+# asan_init/asan_finish pair.
+
+proc clear_effective_target_cache { } {
+    global et_cache
+    global et_prop_list
+
+    if {[info exists et_prop_list]} {
+	verbose "clear_effective_target_cache: $et_prop_list" 2
+	foreach prop $et_prop_list {
+	    unset et_cache($prop,value)
+	    unset et_cache($prop,target)
+	}
+	unset et_prop_list
+    }
 }
 
 # Like check_compile, but delete the output file and return true if the
