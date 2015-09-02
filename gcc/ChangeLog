@@ -1,3 +1,14 @@
+2015-09-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/59810
+	PR target/63652
+	PR target/63653
+	* config/aarch64/aarch64-simd.md
+	(aarch64_ld<VSTRUCT:nregs><VQ:mode>): Call
+	gen_aarch64_simd_ld<VSTRUCT:nregs><VQ:mode>.
+	(aarch64_st<VSTRUCT:nregs><VQ:mode>): Call
+	gen_aarch64_simd_st<VSTRUCT:nregs><VQ:mode>.
+
 2015-09-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/sysv4le.h (LINK_TARGET_SPEC): Don't define.

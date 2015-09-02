@@ -4566,7 +4566,7 @@
   machine_mode mode = <VSTRUCT:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
-  emit_insn (gen_vec_load_lanes<VSTRUCT:mode><VQ:mode> (operands[0], mem));
+  emit_insn (gen_aarch64_simd_ld<VSTRUCT:nregs><VQ:mode> (operands[0], mem));
   DONE;
 })
 
@@ -4849,7 +4849,7 @@
   machine_mode mode = <VSTRUCT:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
-  emit_insn (gen_vec_store_lanes<VSTRUCT:mode><VQ:mode> (mem, operands[1]));
+  emit_insn (gen_aarch64_simd_st<VSTRUCT:nregs><VQ:mode> (mem, operands[1]));
   DONE;
 })
 
