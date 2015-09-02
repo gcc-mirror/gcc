@@ -138,6 +138,7 @@ proc asan_finish { args } {
     }
     set ld_library_path $asan_saved_library_path
     set_ld_library_path_env_vars
+    clear_effective_target_cache
 }
 
 # Symbolize lines like
