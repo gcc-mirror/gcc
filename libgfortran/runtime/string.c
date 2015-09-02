@@ -1,7 +1,7 @@
 /* Copyright (C) 2002-2015 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -166,4 +166,49 @@ find_option (st_parameter_common *cmp, const char *s1, gfc_charlen_type s1_len,
   generate_error (cmp, LIBERROR_BAD_OPTION, error_message);
 
   return -1;
+}
+
+
+/* gfc_itoa()-- Integer to decimal conversion.
+   The itoa function is a widespread non-standard extension to
+   standard C, often declared in <stdlib.h>.  Even though the itoa
+   defined here is a static function we take care not to conflict with
+   any prior non-static declaration.  Hence the 'gfc_' prefix, which
+   is normally reserved for functions with external linkage.  Notably,
+   in contrast to the *printf() family of functions, this ought to be
+   async-signal-safe.  */
+
+const char *
+gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
+{
+  int negative;
+  char *p;
+  GFC_UINTEGER_LARGEST t;
+
+  if (len < GFC_ITOA_BUF_SIZE)
+    sys_abort ();
+
+  if (n == 0)
+    return "0";
+
+  negative = 0;
+  t = n;
+  if (n < 0)
+    {
+      negative = 1;
+      t = -n; /*must use unsigned to protect from overflow*/
+    }
+
+  p = buffer + GFC_ITOA_BUF_SIZE - 1;
+  *p = '\0';
+
+  while (t != 0)
+    {
+      *--p = '0' + (t % 10);
+      t /= 10;
+    }
+
+  if (negative)
+    *--p = '-';
+  return p;
 }
