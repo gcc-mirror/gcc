@@ -1,3 +1,7 @@
+2015-09-02  Dmitry Vyukov  <dvyukov@google.com>
+
+	* include/bits/basic_string.h: Fix data races on _M_refcount.
+
 2015-09-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR libstdc++/67408

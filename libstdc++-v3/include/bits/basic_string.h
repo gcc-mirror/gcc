@@ -2601,11 +2601,32 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
         bool
 	_M_is_leaked() const _GLIBCXX_NOEXCEPT
-        { return this->_M_refcount < 0; }
+        {
+#if defined(__GTHREADS)
+          // _M_refcount is mutated concurrently by _M_refcopy/_M_dispose,
+          // so we need to use an atomic load. However, _M_is_leaked
+          // predicate does not change concurrently (i.e. the string is either
+          // leaked or not), so a relaxed load is enough.
+          return __atomic_load_n(&this->_M_refcount, __ATOMIC_RELAXED) < 0;
+#else
+          return this->_M_refcount < 0;
+#endif
+        }
 
         bool
 	_M_is_shared() const _GLIBCXX_NOEXCEPT
-        { return this->_M_refcount > 0; }
+	{
+#if defined(__GTHREADS)
+          // _M_refcount is mutated concurrently by _M_refcopy/_M_dispose,
+          // so we need to use an atomic load. Another thread can drop last
+          // but one reference concurrently with this check, so we need this
+          // load to be acquire to synchronize with release fetch_and_add in
+          // _M_dispose.
+          return __atomic_load_n(&this->_M_refcount, __ATOMIC_ACQUIRE) > 0;
+#else
+          return this->_M_refcount > 0;
+#endif
+        }
 
         void
 	_M_set_leaked() _GLIBCXX_NOEXCEPT
@@ -2654,6 +2675,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	    {
 	      // Be race-detector-friendly.  For more info see bits/c++config.
 	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount);
+              // Decrement of _M_refcount is acq_rel, because:
+              // - all but last decrements need to release to synchronize with
+              //   the last decrement that will delete the object.
+              // - the last decrement needs to acquire to synchronize with
+              //   all the previous decrements.
+              // - last but one decrement needs to release to synchronize with
+              //   the acquire load in _M_is_shared that will conclude that
+              //   the object is not shared anymore.
 	      if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
 							 -1) <= 0)
 		{
