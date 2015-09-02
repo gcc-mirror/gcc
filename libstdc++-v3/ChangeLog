@@ -1,3 +1,11 @@
+2015-09-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR libstdc++/67408
+	* include/std/mutex (__timed_mutex_impl::_M_try_lock_until): Use
+	_Derived::_M_timedlock().
+	(timed_mutex): Add _M_timedlock() and make base class a friend.
+	(recursive_timed_mutex): Likewise.
+
 2015-08-28  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/67362
