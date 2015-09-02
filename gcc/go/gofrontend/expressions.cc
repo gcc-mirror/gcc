@@ -3039,6 +3039,25 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 	}
     }
 
+  // According to the language specification on string conversions
+  // (http://golang.org/ref/spec#Conversions_to_and_from_a_string_type):
+  // When converting an integer into a string, the string will be a UTF-8
+  // representation of the integer and integers "outside the range of valid
+  // Unicode code points are converted to '\uFFFD'."
+  if (type->is_string_type())
+    {
+      Numeric_constant nc;
+      if (val->numeric_constant_value(&nc) && nc.is_int())
+        {
+          // An integer value doesn't fit in the Unicode code point range if it
+          // overflows the Go "int" type or is negative.
+          unsigned long ul;
+          if (!nc.set_type(Type::lookup_integer_type("int"), false, location)
+              || nc.to_unsigned_long(&ul) == Numeric_constant::NC_UL_NEGATIVE)
+            return Expression::make_string("\ufffd", location);
+        }
+    }
+
   if (type->is_slice_type())
     {
       Type* element_type = type->array_type()->element_type()->forwarded();
