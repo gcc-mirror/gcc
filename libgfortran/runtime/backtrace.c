@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -38,8 +39,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Store our own state while backtracing.  */
 struct mystate
 {
-  int try_simple;
   int frame;
+  bool try_simple;
+  bool in_signal_handler;
 };
 
 
@@ -65,15 +67,35 @@ static void
 error_callback (void *data, const char *msg, int errnum)
 {
   struct mystate *state = (struct mystate *) data;
+#define ERRHDR "\nCould not print backtrace: "
+
   if (errnum < 0)
     {
-      state->try_simple = 1;
+      state->try_simple = true;
       return;
     }
-
-  estr_write ("\nSomething went wrong while printing the backtrace: ");
-  estr_write (msg);
-  estr_write ("\n");
+  else if (errnum == 0)
+    {
+      estr_write (ERRHDR);
+      estr_write (msg);
+      estr_write ("\n");
+    }
+  else
+    {
+      char errbuf[256];
+      if (state->in_signal_handler)
+	{
+	  estr_write (ERRHDR);
+	  estr_write (msg);
+	  estr_write (", errno: ");
+	  const char *p = gfc_itoa (errnum, errbuf, sizeof (errbuf));
+	  estr_write (p);
+	  estr_write ("\n");
+	}
+      else
+	st_printf (ERRHDR "%s: %s\n", msg,
+		  gf_strerror (errnum, errbuf, sizeof (errbuf)));
+    }
 }
 
 static int
@@ -110,10 +132,10 @@ full_callback (void *data, uintptr_t pc, const char *filename,
 /* Display the backtrace.  */
 
 void
-show_backtrace (int in_signal_handler)
+show_backtrace (bool in_signal_handler)
 {
   struct backtrace_state *lbstate;
-  struct mystate state = { 0, 0 };
+  struct mystate state = { 0, false, in_signal_handler };
  
   lbstate = backtrace_create_state (NULL, 1, error_callback, NULL);
 
@@ -147,6 +169,6 @@ export_proto (backtrace);
 void
 backtrace (void)
 {
-  show_backtrace (0);
+  show_backtrace (false);
 }
 

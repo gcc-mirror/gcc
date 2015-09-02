@@ -126,7 +126,7 @@ backtrace_handler (int signum)
 
   show_signal (signum);
   estr_write ("\nBacktrace for this error:\n");
-  show_backtrace (1);
+  show_backtrace (true);
 
   /* Now reraise the signal.  We reactivate the signal's
      default handling, which is to terminate the process.

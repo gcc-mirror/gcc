@@ -1,3 +1,23 @@
+2015-09-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/67414
+	* io/write.c (gfc_itoa): Move to runtime/string.c.
+	* libgfortran.h (show_backtrace): Make arg bool.
+	(gfc_itoa): New prototype.
+	* runtime/backtrace.c (struct mystate): Change type of try_simple
+	field, add in_signal_handler field.
+	(error_callback): Print out error number, or if not in a signal
+	handler, the error message.
+	(show_backtrace): Change type of arg, change initialization of
+	struct mystate.
+	(backtrace): Call show_backtrace with correct arg type.
+	* runtime/compile_options.c (backtrace_handler): Call with correct
+	arg type.
+	* runtime/error.c (sys_abort): Likewise.
+	(gf_strerror): Handle newlocale() failure.
+	* runtime/string.c (gfc_itoa): Function moved here from
+	io/write.c.
+
 2015-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/47571
