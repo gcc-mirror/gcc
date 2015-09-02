@@ -1,3 +1,9 @@
+2015-09-02  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR middle-end/60586
+	* c-c++-common/cilk-plus/CK/pr60586.c: New file.
+	* g++.dg/cilk-plus/CK/pr60586.cc: Likewise.
+
 2015-09-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67432
