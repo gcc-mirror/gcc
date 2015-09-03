@@ -1,3 +1,64 @@
+2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/gthr-rtems.h (__GTHREADS_CXX0X): New.
+	(__GTHREAD_HAS_COND): Likewise.
+	(__gthread_t): Likewise.
+	(__gthread_cond_t): Likewise.
+	(__gthread_time_t): Likewise.
+	(__GTHREAD_MUTEX_INIT): Likewise.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT): Likewise.
+	(__GTHREAD_COND_INIT): Likewise.
+	(__GTHREAD_COND_INIT_FUNCTION): Likewise.
+	(__GTHREAD_TIME_INIT): Likewise.
+	(__gthread_create): Likewise.
+	(__gthread_join): Likewise.
+	(__gthread_detach): Likewise.
+	(__gthread_equal): Likewise.
+	(__gthread_self): Likewise.
+	(__gthread_yield): Likewise.
+	(__gthread_cond_broadcast): Likewise.
+	(__gthread_cond_signal): Likewise.
+	(__gthread_cond_wait): Likewise.
+	(__gthread_cond_timedwait): Likewise.
+	(__gthread_cond_wait_recursive): Likewise.
+	(__gthread_cond_destroy): Likewise.
+	(rtems_gxx_once): Delete.
+	(rtems_gxx_key_create): Likewise.
+	(rtems_gxx_key_delete): Likewise.
+	(rtems_gxx_getspecific): Likewise.
+	(rtems_gxx_setspecific): Likewise.
+	(rtems_gxx_mutex_init): Likewise.
+	(rtems_gxx_mutex_destroy): Likewise.
+	(rtems_gxx_mutex_lock): Likewise.
+	(rtems_gxx_mutex_trylock): Likewise.
+	(rtems_gxx_mutex_unlock): Likewise.
+	(rtems_gxx_recursive_mutex_init): Likewise.
+	(rtems_gxx_recursive_mutex_lock): Likewise.
+	(rtems_gxx_recursive_mutex_trylock): Likewise.
+	(rtems_gxx_recursive_mutex_unlock): Likewise.
+	(__GTHREAD_ONCE_INIT): Use <pthread.h> initializer.
+	(__GTHREAD_MUTEX_INIT_FUNCTION): Use <pthread.h> function.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION): Likewise.
+	(__gthread_once): Likewise.
+	(__gthread_key_create): Likewise.
+	(__gthread_key_delete): Likewise.
+	(__gthread_getspecific): Likewise.
+	(__gthread_setspecific): Likewise.
+	(__gthread_key_t): Use <pthread.h> type.
+	(__gthread_once_t): Likewise
+	(__gthread_mutex_t): Use <sys/lock.h> type.
+	(__gthread_recursive_mutex_t): Likewise
+	(__gthread_mutex_lock): Use <sys/lock.h> function.
+	(__gthread_mutex_trylock): Likewise.
+	(__gthread_mutex_timedlock): Likewise.
+	(__gthread_mutex_unlock): Likewise.
+	(__gthread_mutex_destroy): Likewise.
+	(__gthread_recursive_mutex_lock): Likewise.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_recursive_mutex_timedlock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_destroy): Likewise.
+
 2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/unwind-dw2-xtensa.c (_Unwind_GetCFA): Return
