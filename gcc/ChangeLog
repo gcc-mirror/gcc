@@ -1,6 +1,12 @@
 2015-09-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65637
+	* omp-low.c (expand_omp_for_static_chunk): Handle case that fin_bb has 2
+	predecessors.
+
+2015-09-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65637
 	* omp-low.c (find_phi_with_arg_on_edge): New function.
 	(expand_omp_for_static_chunk): Fix inner loop phi.
 
