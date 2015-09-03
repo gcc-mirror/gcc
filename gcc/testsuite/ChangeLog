@@ -1,3 +1,8 @@
+2015-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/66705
+	* g++.dg/lto/pr66705_0.C: New testcase.
+
 2015-09-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
