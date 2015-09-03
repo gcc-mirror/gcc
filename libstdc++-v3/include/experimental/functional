@@ -376,8 +376,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Generalized negator.
   template<typename _Fn>
-    struct _Not_fn
+    class _Not_fn
     {
+      _Fn _M_fn;
+
+    public:
       template<typename _Fn2>
 	explicit
 	_Not_fn(_Fn2&& __fn) : _M_fn(std::forward<_Fn2>(__fn)) { }
@@ -389,34 +392,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~_Not_fn() = default;
 
       template<typename... _Args>
-	decltype(auto)
+	auto
 	operator()(_Args&&... __args)
+	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
+	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
 	{ return !_M_fn(std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
-	decltype(auto)
+	auto
 	operator()(_Args&&... __args) const
+	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
+	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
 	{ return !_M_fn(std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
-	decltype(auto)
+	auto
 	operator()(_Args&&... __args) volatile
+	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
+	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
 	{ return !_M_fn(std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
-	decltype(auto)
+	auto
 	operator()(_Args&&... __args) const volatile
+	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
+	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
 	{ return !_M_fn(std::forward<_Args>(__args)...); }
-
-    private:
-      _Fn _M_fn;
     };
 
   /// [func.not_fn] Function template not_fn
-  template <class _Fn>
+  template<typename _Fn>
     inline auto
     not_fn(_Fn&& __fn)
-    { return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn)}; }
+    noexcept(std::is_nothrow_constructible<std::decay_t<_Fn>, _Fn&&>::value)
+    {
+      using __maybe_type = _Maybe_wrap_member_pointer<std::decay_t<_Fn>>;
+      return _Not_fn<typename __maybe_type::type>{std::forward<_Fn>(__fn)};
+    }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
