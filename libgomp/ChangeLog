@@ -1,5 +1,16 @@
 2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	* config/posix/pool.h: New.
+	* config/rtems/pool.h: Likewise.
+	* config/rtems/proc.c: Likewise.
+	* libgomp.h (gomp_thread_destructor): Declare.
+	* team.c: Include configuration provided "pool.h".
+	(gomp_get_thread_pool): Define in configuration.
+	(gomp_team_end): Call configuration defined
+	gomp_release_thread_pool().
+
+2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* config/rtems/bar.c: New.
 	* config/rtems/bar.h: Likewise.
 	* config/rtems/mutex.c: Likewise.
