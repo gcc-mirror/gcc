@@ -1,3 +1,11 @@
+2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62039
+	* include/bits/stl_iterator_base_funcs.h (next, prev): Add concept
+	checks.
+	* testsuite/24_iterators/operations/prev_neg.cc: New.
+	* testsuite/24_iterators/operations/next_neg.cc: New.
+
 2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* testsuite/18_support/pthread_guard.cc: Add *-*-rtems* target
