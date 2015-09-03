@@ -20,6 +20,8 @@
 #include <experimental/functional>
 #include <testsuite_hooks.h>
 
+using std::experimental::not_fn;
+
 int func(int, char) { return 0; }
 
 struct F
@@ -33,8 +35,6 @@ struct F
 void
 test01()
 {
-  using std::experimental::not_fn;
-
   auto f1 = not_fn(func);
   VERIFY( f1(1, '2') == true );
 
@@ -50,8 +50,36 @@ test01()
   VERIFY( f5(1) == false );
 }
 
+template<typename F, typename Arg>
+auto foo(F f, Arg arg) -> decltype(not_fn(f)(arg)) { return not_fn(f)(arg); }
+
+template<typename F, typename Arg>
+auto foo(F f, Arg arg) -> decltype(not_fn(f)()) { return not_fn(f)(); }
+
+struct negator
+{
+    bool operator()(int) const { return false; }
+    void operator()() const {}
+};
+
+void 
+test02()
+{
+  foo(negator{}, 1); // PR libstdc++/66998
+}
+
+void
+test03()
+{
+  struct X { bool b; };
+  X x{ false };
+  VERIFY( not_fn(&X::b)(x) );
+}
+
 int
 main()
 {
   test01();
+  test02();
+  test03();
 }
