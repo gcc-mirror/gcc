@@ -1,3 +1,8 @@
+2015-09-03  Richard Biener  <rguenther@suse.de>
+
+	* varasm.c (output_constant): Use fold_convert instead of
+	wide_int_to_tree.
+
 2015-09-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65637
