@@ -1,5 +1,8 @@
 2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66902
+	* src/c++11/debug.cc (_S_debug_messages): Make array const.
+
 	PR libstdc++/66998
 	* include/experimental/functional (_Not_fn): Add exception
 	specifications and non-deduced return types.
