@@ -1,3 +1,9 @@
+2015-09-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vperm_v8hiv16qi): New
+	define_insn.
+	(mulv16qi3): New define_expand.
+
 2015-09-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c/66516

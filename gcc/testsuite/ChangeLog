@@ -1,3 +1,10 @@
+2015-09-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.target/powerpc/vec-mult-char-1.c: New test.
+	* gcc.target/powerpc/vec-mult-char-2.c: New test.
+	* lib/target-supports.exp (check_effective_target_vect_char_mult):
+	Return true for PowerPC targets that implement Altivec.
+
 2015-09-03  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.target/aarch64/arm_align_max_pwr.c: Make it a compile test case,

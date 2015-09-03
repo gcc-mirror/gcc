@@ -1957,6 +1957,16 @@
   "vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
 
+(define_insn "altivec_vperm_v8hiv16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v")
+   	               (match_operand:V8HI 2 "register_operand" "v")
+		       (match_operand:V16QI 3 "register_operand" "v")]
+		   UNSPEC_VPERM))]
+  "TARGET_ALTIVEC"
+  "vperm %0,%1,%2,%3"
+  [(set_attr "type" "vecperm")])
+
 (define_expand "altivec_vperm_<mode>_uns"
   [(set (match_operand:VM 0 "register_operand" "=v")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
@@ -3160,6 +3170,33 @@
                       UNSPEC_VPACK_UNS_UNS_MOD))]
   "<VI_unit>"
   "")
+
+(define_expand "mulv16qi3"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (mult:V16QI (match_operand:V16QI 1 "register_operand" "v")
+                    (match_operand:V16QI 2 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "
+{
+  rtx even = gen_reg_rtx (V8HImode);
+  rtx odd = gen_reg_rtx (V8HImode);
+  rtx mask = gen_reg_rtx (V16QImode);
+  rtvec v = rtvec_alloc (16);
+  int i;
+
+  for (i = 0; i < 8; ++i) {
+    RTVEC_ELT (v, 2 * i)
+     = gen_rtx_CONST_INT (QImode, BYTES_BIG_ENDIAN ? 2 * i + 1 : 31 - 2 * i);
+    RTVEC_ELT (v, 2 * i + 1)
+     = gen_rtx_CONST_INT (QImode, BYTES_BIG_ENDIAN ? 2 * i + 17 : 15 - 2 * i);
+  }
+
+  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_altivec_vmulesb (even, operands[1], operands[2]));
+  emit_insn (gen_altivec_vmulosb (odd, operands[1], operands[2]));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (operands[0], even, odd, mask));
+  DONE;
+}")
 
 (define_expand "altivec_negv4sf2"
   [(use (match_operand:V4SF 0 "register_operand" ""))

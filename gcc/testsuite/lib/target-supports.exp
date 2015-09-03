@@ -4577,7 +4577,8 @@ proc check_effective_target_vect_char_mult { } {
 	if { [istarget aarch64*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
-            || [check_effective_target_arm32] } {
+             || [check_effective_target_arm32]
+	     || [check_effective_target_powerpc_altivec] } {
 	   set et_vect_char_mult_saved 1
 	}
     }
