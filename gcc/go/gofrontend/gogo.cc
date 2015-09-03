@@ -1818,7 +1818,11 @@ Gogo::start_function(const std::string& name, Function_type* type,
 								  function);
 	    }
 	  else
-	    go_unreachable();
+            {
+              error_at(type->receiver()->location(),
+                       "invalid receiver type (receiver must be a named type)");
+              ret = Named_object::make_function(name, NULL, function);
+            }
 	}
       this->package_->bindings()->add_method(ret);
     }
