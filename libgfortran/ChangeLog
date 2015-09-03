@@ -1,3 +1,11 @@
+2015-09-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h (delete_file): Remove prototype.
+	* io/unix.c (delete_file): Remove function.
+	* io/close.c (st_close): Replace delete_file and unlink with
+	remove.
+	* io/open.c (already_open): Replace unlink with remove.
+
 2015-09-02  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/67414

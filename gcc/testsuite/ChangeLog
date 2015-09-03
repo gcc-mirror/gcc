@@ -1,3 +1,8 @@
+2015-09-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/read_dir.f90: Delete empty directory when closing
+	rather than calling rmdir, cleanup if open fails.
+
 2015-09-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* gcc.target/powerpc/vec-mult-char-1.c: New test.
