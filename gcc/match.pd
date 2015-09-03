@@ -931,6 +931,20 @@ along with GCC; see the file COPYING3.  If not see
       && tree_expr_nonnegative_p (@1))
   @0))
 
+/* Optimize (x >> c) << c into x & (-1<<c).  */
+(simplify
+ (lshift (rshift @0 INTEGER_CST@1) @1)
+ (if (wi::ltu_p (@1, element_precision (type)))
+  (bit_and @0 (lshift { build_minus_one_cst (type); } @1))))
+
+/* Optimize (x << c) >> c into x & ((unsigned)-1 >> c) for unsigned
+   types.  */
+(simplify
+ (rshift (lshift @0 INTEGER_CST@1) @1)
+ (if (TYPE_UNSIGNED (type)
+      && (wi::ltu_p (@1, element_precision (type))))
+  (bit_and @0 (rshift { build_minus_one_cst (type); } @1))))
+
 (for shiftrotate (lrotate rrotate lshift rshift)
  (simplify
   (shiftrotate @0 integer_zerop)

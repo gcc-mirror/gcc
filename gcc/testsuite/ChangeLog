@@ -1,3 +1,8 @@
+2015-09-03  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	PR middle-end/67351
+	* g++.dg/pr66752-2.C: New test.
+
 2015-09-03  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/66705
