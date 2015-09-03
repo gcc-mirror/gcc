@@ -1,6 +1,14 @@
 2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2015-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66855
+	* src/c++11/codecvt.cc (__codecvt_utf8_utf16_base::do_in): Override
+	endianness bit in mode.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/66855.cc: New.
+
+	Backport from mainline
 	2015-04-27  Dmitry Prokoptsev  <dprokoptsev@gmail.com>
 		    Michael Hanselmann  <public@hansmi.ch>
 
