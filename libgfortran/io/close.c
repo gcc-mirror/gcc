@@ -80,7 +80,7 @@ st_close (st_parameter_close *clp)
 	  if (status == CLOSE_DELETE)
             {
 #if HAVE_UNLINK_OPEN_FILE
-	      delete_file (u);
+	      remove (u->filename);
 #else
 	      path = strdup (u->filename);
 #endif
@@ -92,7 +92,7 @@ st_close (st_parameter_close *clp)
 #if !HAVE_UNLINK_OPEN_FILE
       if (path != NULL)
 	{
-	  unlink (path);
+	  remove (path);
 	  free (path);
 	}
 #endif

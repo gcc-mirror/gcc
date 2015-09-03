@@ -1716,16 +1716,6 @@ flush_all_units (void)
 }
 
 
-/* delete_file()-- Given a unit structure, delete the file associated
- * with the unit.  Returns nonzero if something went wrong. */
-
-int
-delete_file (gfc_unit * u)
-{
-  return unlink (u->filename);
-}
-
-
 /* file_exists()-- Returns nonzero if the current filename exists on
  * the system */
 

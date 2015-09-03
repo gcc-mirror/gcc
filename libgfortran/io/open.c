@@ -664,7 +664,7 @@ already_open (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
  
 #if !HAVE_UNLINK_OPEN_FILE
       if (u->filename && u->flags.status == STATUS_SCRATCH)
-	unlink (u->filename);
+	remove (u->filename);
 #endif
      free (u->filename);
      u->filename = NULL;
