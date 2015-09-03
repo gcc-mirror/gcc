@@ -1,5 +1,11 @@
 2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr_base.h: Add required header.
+	* include/std/condition_variable: Likewise.
+	* include/std/mutex: Remove unused header.
+	* include/std/shared_mutex: Remove redundant header.
+	(shared_mutex::shared_mutex()): Replace throw with __throw_bad_alloc.
+
 	PR libstdc++/66902
 	* src/c++11/debug.cc (_S_debug_messages): Make array const.
 
