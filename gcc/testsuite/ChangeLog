@@ -1,3 +1,8 @@
+2015-09-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65637
+	* gcc.dg/autopar/pr46099-2.c: New test.
+
 2015-09-03  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	PR middle-end/67351
