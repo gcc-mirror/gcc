@@ -205,6 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     next(_ForwardIterator __x, typename
 	 iterator_traits<_ForwardIterator>::difference_type __n = 1)
     {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<
+				  _ForwardIterator>)
       std::advance(__x, __n);
       return __x;
     }
@@ -214,6 +217,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     prev(_BidirectionalIterator __x, typename
 	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 
     {
+      // concept requirements
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
       std::advance(__x, -__n);
       return __x;
     }
