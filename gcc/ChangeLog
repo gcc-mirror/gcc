@@ -1,3 +1,11 @@
+2015-09-03  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/invoke.texi (parloops-chunk-size): Add item.
+	* params.def (PARAM_PARLOOPS_CHUNK_SIZE): Add DEFPARAM.
+	* tree-parloops.c: Include params.h.
+	(create_parallel_loop): Set chunk-size of schedule of omp-for loop, if
+	param parloops-chunk-size is used.
+
 2015-09-03  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	PR middle-end/67351

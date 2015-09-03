@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-nested.h"
 #include "cgraph.h"
 #include "tree-ssa.h"
+#include "params.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its
@@ -2092,6 +2093,10 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   type = TREE_TYPE (cvar);
   t = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
   OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_STATIC;
+  int chunk_size = PARAM_VALUE (PARAM_PARLOOPS_CHUNK_SIZE);
+  if (chunk_size != 0)
+    OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (t)
+      = build_int_cst (integer_type_node, chunk_size);
 
   for_stmt = gimple_build_omp_for (NULL, GF_OMP_FOR_KIND_FOR, t, 1, NULL);
   gimple_set_location (for_stmt, loc);
