@@ -1,6 +1,15 @@
 2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2015-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67374
+	* include/bits/range_access.h (valarray, begin, end): Declare.
+	* testsuite/26_numerics/valarray/range_access.cc: Test const
+	overloads.
+	* testsuite/26_numerics/valarray/range_access2.cc: New.
+
+	Backport from mainline
 	2015-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_futex.h [_GLIBCXX_HAVE_LINUX_FUTEX]

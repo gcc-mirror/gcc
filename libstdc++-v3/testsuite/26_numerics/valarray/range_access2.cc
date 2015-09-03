@@ -1,7 +1,7 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++14" }
 
-// Copyright (C) 2010-2015 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,15 +20,17 @@
 
 // 26.6.10 valarray range access: [valarray.range]
 
+#include <iterator>
 #include <valarray>
 
+// PR libstdc++/67374
 void
 test01()
 {
   std::valarray<double> va{1.0, 2.0, 3.0};
-  std::begin(va);
-  std::end(va);
+  std::cbegin(va);
+  std::cend(va);
   const auto& cva = va;
-  std::begin(cva);
-  std::end(cva);
+  std::cbegin(cva);
+  std::cend(cva);
 }
