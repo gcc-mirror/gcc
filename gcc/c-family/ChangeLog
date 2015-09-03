@@ -1,3 +1,10 @@
+2015-09-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66516
+	* c-common.h (c_decl_implicit, reject_gcc_builtin): Declare new
+	functions.
+	* c-common.c (reject_gcc_builtin): Define.
+
 2015-09-02  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR middle-end/60586

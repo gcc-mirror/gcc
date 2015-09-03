@@ -1,3 +1,9 @@
+2015-09-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66516
+	* doc/extend.texi (Other Builtins): Document when the address
+	of a built-in function can be taken.
+
 2015-09-03  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (flush_limbo_die_list): Split out from ...

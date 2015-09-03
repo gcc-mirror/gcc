@@ -10316,14 +10316,22 @@ recommend general use of these functions.
 
 The remaining functions are provided for optimization purposes.
 
+With the exception of built-ins that have library equivalents such as
+the standard C library functions discussed below, or that expand to
+library calls, GCC built-in functions are always expanded inline and
+thus do not have corresponding entry points and their address cannot
+be obtained.  Attempting to use them in an expression other than
+a function call results in a compile-time error.
+
 @opindex fno-builtin
 GCC includes built-in versions of many of the functions in the standard
-C library.  The versions prefixed with @code{__builtin_} are always
-treated as having the same meaning as the C library function even if you
-specify the @option{-fno-builtin} option.  (@pxref{C Dialect Options})
-Many of these functions are only optimized in certain cases; if they are
-not optimized in a particular case, a call to the library function is
-emitted.
+C library.  These functions come in two forms: one whose names start with
+the @code{__builtin_} prefix, and the other without.  Both forms have the
+same type (including prototype), the same address (when their address is
+taken), and the same meaning as the C library functions even if you specify
+the @option{-fno-builtin} option @pxref{C Dialect Options}).  Many of these
+functions are only optimized in certain cases; if they are not optimized in
+a particular case, a call to the library function is emitted.
 
 @opindex ansi
 @opindex std

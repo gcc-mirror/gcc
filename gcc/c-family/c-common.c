@@ -12882,4 +12882,41 @@ pointer_to_zero_sized_aggr_p (tree t)
   return (TYPE_SIZE (t) && integer_zerop (TYPE_SIZE (t)));
 }
 
+/* For an EXPR of a FUNCTION_TYPE that references a GCC built-in function
+   with no library fallback or for an ADDR_EXPR whose operand is such type
+   issues an error pointing to the location LOC.
+   Returns true when the expression has been diagnosed and false
+   otherwise.  */
+bool
+reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
+{
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  if (TREE_TYPE (expr)
+      && TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
+      && DECL_P (expr)
+      /* The intersection of DECL_BUILT_IN and DECL_IS_BUILTIN avoids
+	 false positives for user-declared built-ins such as abs or
+	 strlen, and for C++ operators new and delete.
+	 The c_decl_implicit() test avoids false positives for implicitly
+	 declared built-ins with library fallbacks (such as abs).  */
+      && DECL_BUILT_IN (expr)
+      && DECL_IS_BUILTIN (expr)
+      && !c_decl_implicit (expr)
+      && !DECL_ASSEMBLER_NAME_SET_P (expr))
+    {
+      if (loc == UNKNOWN_LOCATION)
+	loc = EXPR_LOC_OR_LOC (expr, input_location);
+
+      /* Reject arguments that are built-in functions with
+	 no library fallback.  */
+      error_at (loc, "built-in function %qE must be directly called", expr);
+
+      return true;
+    }
+
+  return false;
+}
+
 #include "gt-c-family-c-common.h"

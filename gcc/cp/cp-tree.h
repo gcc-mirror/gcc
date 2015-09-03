@@ -5787,7 +5787,9 @@ extern tree create_try_catch_expr               (tree, tree);
 
 /* in expr.c */
 extern tree cplus_expand_constant		(tree);
-extern tree mark_rvalue_use			(tree);
+extern tree mark_rvalue_use			(tree,
+                                                 location_t = UNKNOWN_LOCATION,
+                                                 bool = true);
 extern tree mark_lvalue_use			(tree);
 extern tree mark_type_use			(tree);
 extern void mark_exp_read			(tree);
@@ -6461,7 +6463,9 @@ extern tree cxx_alignas_expr                    (tree);
 extern tree cxx_sizeof_nowarn                   (tree);
 extern tree is_bitfield_expr_with_lowered_type  (const_tree);
 extern tree unlowered_expr_type                 (const_tree);
-extern tree decay_conversion			(tree, tsubst_flags_t);
+extern tree decay_conversion			(tree,
+                                                 tsubst_flags_t,
+                                                 bool = true);
 extern tree build_class_member_access_expr      (tree, tree, tree, bool,
 						 tsubst_flags_t);
 extern tree finish_class_member_access_expr     (tree, tree, bool, 
