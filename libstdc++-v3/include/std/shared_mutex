@@ -36,7 +36,6 @@
 #else
 
 #include <bits/c++config.h>
-#include <mutex>
 #include <condition_variable>
 #include <bits/functexcept.h>
 
@@ -80,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       int __ret = pthread_rwlock_init(&_M_rwlock, NULL);
       if (__ret == ENOMEM)
-	throw bad_alloc();
+	__throw_bad_alloc();
       else if (__ret == EAGAIN)
 	__throw_system_error(int(errc::resource_unavailable_try_again));
       else if (__ret == EPERM)

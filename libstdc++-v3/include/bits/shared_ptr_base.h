@@ -49,6 +49,7 @@
 #ifndef _SHARED_PTR_BASE_H
 #define _SHARED_PTR_BASE_H 1
 
+#include <typeinfo>
 #include <bits/allocated_ptr.h>
 #include <ext/aligned_buffer.h>
 
@@ -67,8 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class bad_weak_ptr : public std::exception
   {
   public:
-    virtual char const*
-    what() const noexcept;
+    virtual char const* what() const noexcept;
 
     virtual ~bad_weak_ptr() noexcept;    
   };
