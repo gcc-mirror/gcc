@@ -1,9 +1,9 @@
 2015-09-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c/66516
-	* c/c-typeck.c (convert_arguments, parser_build_unary_op)
-	(build_conditional_expr, c_cast_expr, convert_for_assignment)
-	(build_binary_op, _objc_common_truthvalue_conversion): Call
+	* c-typeck.c (convert_arguments, parser_build_unary_op,
+	build_conditional_expr, c_cast_expr, convert_for_assignment,
+	build_binary_op, _objc_common_truthvalue_conversion): Call
 	reject_gcc_builtin.
 	(c_decl_implicit): Define.
 
