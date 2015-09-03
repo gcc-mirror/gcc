@@ -799,12 +799,13 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       start_data->thread_pool = pool;
       start_data->nested = nested;
 
+      attr = gomp_adjust_thread_attr (attr, &thread_attr);
       err = pthread_create (&pt, attr, gomp_thread_start, start_data++);
       if (err != 0)
 	gomp_fatal ("Thread creation failed: %s", strerror (err));
     }
 
-  if (__builtin_expect (gomp_places_list != NULL, 0))
+  if (__builtin_expect (attr == &thread_attr, 0))
     pthread_attr_destroy (&thread_attr);
 
  do_release:

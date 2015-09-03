@@ -48,7 +48,8 @@ allocate_thread_pool_reservoirs (void)
 }
 
 static void
-allocate_thread_pool_reservoir (unsigned long count, unsigned long scheduler)
+allocate_thread_pool_reservoir (unsigned long count, unsigned long priority,
+				unsigned long scheduler)
 {
   struct gomp_thread_pool_reservoir *res;
   struct gomp_thread_pool *pools;
@@ -63,6 +64,7 @@ allocate_thread_pool_reservoir (unsigned long count, unsigned long scheduler)
   memset (pools, 0, size);
   res = (struct gomp_thread_pool_reservoir *) (pools + count);
   res->index = count;
+  res->priority = priority;
   gomp_sem_init (&res->available, count);
   gomp_mutex_init (&res->lock);
   for (i = 0; i < count; ++i)
@@ -71,7 +73,8 @@ allocate_thread_pool_reservoir (unsigned long count, unsigned long scheduler)
 }
 
 static char *
-parse_thread_pools (char *env, unsigned long *count, unsigned long *scheduler)
+parse_thread_pools (char *env, unsigned long *count, unsigned long *priority,
+		    unsigned long *scheduler)
 {
   size_t len;
   int i;
@@ -83,6 +86,17 @@ parse_thread_pools (char *env, unsigned long *count, unsigned long *scheduler)
   *count = strtoul (env, &env, 10);
   if (errno != 0)
     gomp_fatal ("Invalid thread pool count");
+
+  if (*env == '$')
+    {
+      ++env;
+      errno = 0;
+      *priority = strtoul (env, &env, 10);
+      if (errno != 0)
+	gomp_fatal ("Invalid thread pool priority");
+    }
+  else
+    *priority = -1;
 
   if (*env != '@')
     gomp_fatal ("Invalid thread pool scheduler prefix");
@@ -110,9 +124,10 @@ init_thread_pool_reservoirs (void)
       while (*env != '\0')
 	{
 	  unsigned long count;
+	  unsigned long priority;
 	  unsigned long scheduler;
-	  env = parse_thread_pools (env, &count, &scheduler);
-	  allocate_thread_pool_reservoir (count, scheduler);
+	  env = parse_thread_pools (env, &count, &priority, &scheduler);
+	  allocate_thread_pool_reservoir (count, priority, scheduler);
 	}
     }
 }

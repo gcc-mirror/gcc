@@ -1306,23 +1306,24 @@ section 4 of the OpenMP specification in version 4.0, while those
 beginning with @env{GOMP_} are GNU extensions.
 
 @menu
-* OMP_CANCELLATION::      Set whether cancellation is activated
-* OMP_DISPLAY_ENV::       Show OpenMP version and environment variables
-* OMP_DEFAULT_DEVICE::    Set the device used in target regions
-* OMP_DYNAMIC::           Dynamic adjustment of threads
-* OMP_MAX_ACTIVE_LEVELS:: Set the maximum number of nested parallel regions
-* OMP_NESTED::            Nested parallel regions
-* OMP_NUM_THREADS::       Specifies the number of threads to use
-* OMP_PROC_BIND::         Whether theads may be moved between CPUs
-* OMP_PLACES::            Specifies on which CPUs the theads should be placed
-* OMP_STACKSIZE::         Set default thread stack size
-* OMP_SCHEDULE::          How threads are scheduled
-* OMP_THREAD_LIMIT::      Set the maximum number of threads
-* OMP_WAIT_POLICY::       How waiting threads are handled
-* GOMP_CPU_AFFINITY::     Bind threads to specific CPUs
-* GOMP_DEBUG::            Enable debugging output
-* GOMP_STACKSIZE::        Set default thread stack size
-* GOMP_SPINCOUNT::        Set the busy-wait spin count
+* OMP_CANCELLATION::        Set whether cancellation is activated
+* OMP_DISPLAY_ENV::         Show OpenMP version and environment variables
+* OMP_DEFAULT_DEVICE::      Set the device used in target regions
+* OMP_DYNAMIC::             Dynamic adjustment of threads
+* OMP_MAX_ACTIVE_LEVELS::   Set the maximum number of nested parallel regions
+* OMP_NESTED::              Nested parallel regions
+* OMP_NUM_THREADS::         Specifies the number of threads to use
+* OMP_PROC_BIND::           Whether theads may be moved between CPUs
+* OMP_PLACES::              Specifies on which CPUs the theads should be placed
+* OMP_STACKSIZE::           Set default thread stack size
+* OMP_SCHEDULE::            How threads are scheduled
+* OMP_THREAD_LIMIT::        Set the maximum number of threads
+* OMP_WAIT_POLICY::         How waiting threads are handled
+* GOMP_CPU_AFFINITY::       Bind threads to specific CPUs
+* GOMP_DEBUG::              Enable debugging output
+* GOMP_STACKSIZE::          Set default thread stack size
+* GOMP_SPINCOUNT::          Set the busy-wait spin count
+* GOMP_RTEMS_THREAD_POOLS:: Set the RTEMS specific thread pools
 @end menu
 
 
@@ -1701,6 +1702,46 @@ or @env{OMP_WAIT_POLICY} is @code{PASSIVE}.
 
 @item @emph{See also}:
 @ref{OMP_WAIT_POLICY}
+@end table
+
+
+
+@node GOMP_RTEMS_THREAD_POOLS
+@section @env{GOMP_RTEMS_THREAD_POOLS} -- Set the RTEMS specific thread pools
+@cindex Environment Variable
+@cindex Implementation specific setting
+@table @asis
+@item @emph{Description}:
+This environment variable is only used on the RTEMS real-time operating system.
+It determines the scheduler instance specific thread pools.  The format for
+@env{GOMP_RTEMS_THREAD_POOLS} is a list of optional
+@code{<thread-pool-count>[$<priority>]@@<scheduler-name>} configurations
+separated by @code{:} where:
+@itemize @bullet
+@item @code{<thread-pool-count>} is the thread pool count for this scheduler
+instance.
+@item @code{$<priority>} is an optional priority for the worker threads of a
+thread pool according to @code{pthread_setschedparam}.  In case a priority
+value is omitted, then a worker thread will inherit the priority of the OpenMP
+master thread that created it.  The priority of the worker thread is not
+changed after creation, even if a new OpenMP master thread using the worker has
+a different priority.
+@item @code{@@<scheduler-name>} is the scheduler instance name according to the
+RTEMS application configuration.
+@end itemize
+In case no thread pool configuration is specified for a scheduler instance,
+then each OpenMP master thread of this scheduler instance will use its own
+dynamically allocated thread pool.  To limit the worker thread count of the
+thread pools, each OpenMP master thread must call @code{omp_set_num_threads}.
+@item @emph{Example}:
+Lets suppose we have three scheduler instances @code{IO}, @code{WRK0}, and
+@code{WRK1} with @env{GOMP_RTEMS_THREAD_POOLS} set to
+@code{"1@@WRK0:3$4@@WRK1"}.  Then there are no thread pool restrictions for
+scheduler instance @code{IO}.  In the scheduler instance @code{WRK0} there is
+one thread pool available.  Since no priority is specified for this scheduler
+instance, the worker thread inherits the priority of the OpenMP master thread
+that created it.  In the scheduler instance @code{WRK1} there are three thread
+pools available and their worker threads run at priority four.
 @end table
 
 
