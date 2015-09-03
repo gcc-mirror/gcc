@@ -10412,32 +10412,6 @@ fold_binary_loc (location_t loc,
 
       prec = element_precision (type);
 
-      /* Transform (x >> c) << c into x & (-1<<c), or transform (x << c) >> c
-         into x & ((unsigned)-1 >> c) for unsigned types.  */
-      if (((code == LSHIFT_EXPR && TREE_CODE (arg0) == RSHIFT_EXPR)
-           || (TYPE_UNSIGNED (type)
-	       && code == RSHIFT_EXPR && TREE_CODE (arg0) == LSHIFT_EXPR))
-	  && tree_fits_uhwi_p (arg1)
-	  && tree_to_uhwi (arg1) < prec
-	  && tree_fits_uhwi_p (TREE_OPERAND (arg0, 1))
-	  && tree_to_uhwi (TREE_OPERAND (arg0, 1)) < prec)
-	{
-	  HOST_WIDE_INT low0 = tree_to_uhwi (TREE_OPERAND (arg0, 1));
-	  HOST_WIDE_INT low1 = tree_to_uhwi (arg1);
-	  tree lshift;
-	  tree arg00;
-
-	  if (low0 == low1)
-	    {
-	      arg00 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
-
-	      lshift = build_minus_one_cst (type);
-	      lshift = const_binop (code, lshift, arg1);
-
-	      return fold_build2_loc (loc, BIT_AND_EXPR, type, arg00, lshift);
-	    }
-	}
-
       /* If we have a rotate of a bit operation with the rotate count and
 	 the second operand of the bit operation both constant,
 	 permute the two operations.  */
