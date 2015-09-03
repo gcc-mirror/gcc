@@ -1,13 +1,13 @@
 2015-09-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c/66516
-	* cp/cp-tree.h (mark_rvalue_use, decay_conversion): Add new
+	* cp-tree.h (mark_rvalue_use, decay_conversion): Add new
 	argument(s).
-	* cp/expr.c (mark_rvalue_use): Use new argument.
-	* cp/call.c (build_addr_func): Call decay_conversion with new
+	* expr.c (mark_rvalue_use): Use new argument.
+	* call.c (build_addr_func): Call decay_conversion with new
 	argument.
-	* cp/pt.c (convert_template_argument): Call reject_gcc_builtin.
-	* cp/typeck.c (decay_conversion): Use new argument.
+	* pt.c (convert_template_argument): Call reject_gcc_builtin.
+	* typeck.c (decay_conversion): Use new argument.
 	(c_decl_implicit): Define.
 
 2015-09-02  Balaji V. Iyer  <balaji.v.iyer@intel.com>
