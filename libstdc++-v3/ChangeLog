@@ -1,5 +1,8 @@
 2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/shared_mutex (shared_timed_mutex::shared_timed_mutex):
+	Replace throw with __throw_bad_alloc.
+
 	PR libstdc++/66998
 	* include/experimental/functional (_Not_fn): Add exception
 	specifications and non-deduced return types.
