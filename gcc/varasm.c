@@ -4699,7 +4699,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	exp = build1 (ADDR_EXPR, saved_type, TREE_OPERAND (exp, 0));
       /* Likewise for constant ints.  */
       else if (TREE_CODE (exp) == INTEGER_CST)
-	exp = wide_int_to_tree (saved_type, exp);
+	exp = fold_convert (saved_type, exp);
 
     }
 
