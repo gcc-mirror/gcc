@@ -1,5 +1,12 @@
 2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66998
+	* include/experimental/functional (_Not_fn): Add exception
+	specifications and non-deduced return types.
+	(not_fn): Add exception specification and wrap pointer-to-member.
+	* testsuite/experimental/functional/not_fn.cc: Test in SFINAE context
+	and test pointer-to-member.
+
 	Backport from mainline
 	2015-08-27  Jonathan Wakely  <jwakely@redhat.com>
 
