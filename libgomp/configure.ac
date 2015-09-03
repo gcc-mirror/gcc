@@ -216,6 +216,13 @@ case "$host" in
     ;;
 esac
 
+# RTEMS specific checks
+case "$host" in
+  *-*-rtems*)
+    AC_CHECK_TYPES([struct _Mutex_Control],[],[],[#include <sys/lock.h>])
+    ;;
+esac
+
 GCC_LINUX_FUTEX(:)
 
 # Check for pthread_{,attr_}[sg]etaffinity_np.

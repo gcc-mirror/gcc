@@ -1,5 +1,19 @@
 2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	* config/rtems/bar.c: New.
+	* config/rtems/bar.h: Likewise.
+	* config/rtems/mutex.c: Likewise.
+	* config/rtems/mutex.h: Likewise.
+	* config/rtems/sem.c: Likewise.
+	* config/rtems/sem.h: Likewise.
+	* configure.ac (*-*-rtems*): Check that Newlib provides a proper
+	<sys/lock.h> header file.
+	* configure.tgt (*-*-rtems*): Enable RTEMS configuration if
+	supported by Newlib.
+	* configure: Regenerate.
+
+2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* team.c (gomp_new_thread_pool): Delete and move content to ...
 	(gomp_get_thread_pool): ... new function.  Allocate and
 	initialize thread pool on demand.

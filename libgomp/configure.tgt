@@ -153,6 +153,12 @@ case "${target}" in
 
   nvptx*-*-*)
 	config_path="nvptx"
+
+  *-*-rtems*)
+	# Use self-contained synchronization objects if provided by Newlib
+	if test "x$ac_cv_type_struct__Mutex_Control" = xyes ; then
+	    config_path="rtems posix"
+	fi
 	;;
 
   *)
