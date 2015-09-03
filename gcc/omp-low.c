@@ -6960,7 +6960,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
   body_bb = single_succ (seq_start_bb);
   if (!broken_loop)
     {
-      gcc_assert (BRANCH_EDGE (cont_bb)->dest == body_bb);
+      gcc_assert (BRANCH_EDGE (cont_bb)->dest == body_bb
+		  || single_succ (BRANCH_EDGE (cont_bb)->dest) == body_bb);
       gcc_assert (EDGE_COUNT (cont_bb->succs) == 2);
       trip_update_bb = split_edge (FALLTHRU_EDGE (cont_bb));
     }
@@ -7261,6 +7262,11 @@ expand_omp_for_static_chunk (struct omp_region *region,
   if (!broken_loop)
     {
       se = find_edge (cont_bb, body_bb);
+      if (se == NULL)
+	{
+	  se = BRANCH_EDGE (cont_bb);
+	  gcc_assert (single_succ (se->dest) == body_bb);
+	}
       if (gimple_omp_for_combined_p (fd->for_stmt))
 	{
 	  remove_edge (se);
@@ -7351,14 +7357,24 @@ expand_omp_for_static_chunk (struct omp_region *region,
 
   if (!broken_loop)
     {
+      struct loop *loop = body_bb->loop_father;
       struct loop *trip_loop = alloc_loop ();
       trip_loop->header = iter_part_bb;
       trip_loop->latch = trip_update_bb;
       add_loop (trip_loop, iter_part_bb->loop_father);
 
+      if (loop != entry_bb->loop_father)
+	{
+	  gcc_assert (loop->header == body_bb);
+	  gcc_assert (loop->latch == region->cont
+		      || single_pred (loop->latch) == region->cont);
+	  trip_loop->inner = loop;
+	  return;
+	}
+
       if (!gimple_omp_for_combined_p (fd->for_stmt))
 	{
-	  struct loop *loop = alloc_loop ();
+	  loop = alloc_loop ();
 	  loop->header = body_bb;
 	  if (collapse_bb == NULL)
 	    loop->latch = cont_bb;
