@@ -1135,6 +1135,11 @@ DEFPARAM (PARAM_MAX_FSM_THREAD_PATHS,
 	  "max-fsm-thread-paths",
 	  "Maximum number of new jump thread paths to create for a finite state automaton",
 	  50, 1, 999999)
+
+DEFPARAM (PARAM_PARLOOPS_CHUNK_SIZE,
+	  "parloops-chunk-size",
+	  "Chunk size of omp schedule for loops parallelized by parloops",
+	  0, 0, 0)
 /*
 
 Local variables:
