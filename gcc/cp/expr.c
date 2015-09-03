@@ -91,18 +91,24 @@ cplus_expand_constant (tree cst)
   return cst;
 }
 
-/* Called whenever an expression is used
-   in a rvalue context.  */
-
+/* Called whenever the expression EXPR is used in an rvalue context.
+   When REJECT_BUILTIN is true the expression is checked to make sure
+   it doesn't make it possible to obtain the address of a GCC built-in
+   function with no library fallback (or any of its bits, such as in
+   a conversion to bool).  */
 tree
-mark_rvalue_use (tree expr)
+mark_rvalue_use (tree expr,
+		 location_t loc /* = UNKNOWN_LOCATION */,
+		 bool reject_builtin /* = true */)
 {
+  if (reject_builtin && reject_gcc_builtin (expr, loc))
+    return error_mark_node;
+
   mark_exp_read (expr);
   return expr;
 }
 
-/* Called whenever an expression is used
-   in a lvalue context.  */
+/* Called whenever an expression is used in an lvalue context.  */
 
 tree
 mark_lvalue_use (tree expr)

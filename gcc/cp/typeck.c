@@ -1911,7 +1911,9 @@ unlowered_expr_type (const_tree exp)
    that the return value is no longer an lvalue.  */
 
 tree
-decay_conversion (tree exp, tsubst_flags_t complain)
+decay_conversion (tree exp,
+		  tsubst_flags_t complain,
+		  bool reject_builtin /* = true */)
 {
   tree type;
   enum tree_code code;
@@ -1921,7 +1923,7 @@ decay_conversion (tree exp, tsubst_flags_t complain)
   if (type == error_mark_node)
     return error_mark_node;
 
-  exp = mark_rvalue_use (exp);
+  exp = mark_rvalue_use (exp, loc, reject_builtin);
 
   exp = resolve_nondeduced_context (exp);
   if (type_unknown_p (exp))
@@ -9396,4 +9398,13 @@ check_literal_operator_args (const_tree decl,
 
       return true;
     }
+}
+
+/* Always returns false since unlike C90, C++ has no concept of implicit
+   function declarations.  */
+
+bool
+c_decl_implicit (const_tree)
+{
+  return false;
 }

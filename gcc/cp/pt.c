@@ -7199,6 +7199,18 @@ convert_template_argument (tree parm,
       else if (val == error_mark_node && (complain & tf_error))
 	error ("could not convert template argument %qE to %qT",  orig_arg, t);
 
+      if (INDIRECT_REF_P (val))
+        {
+          /* Reject template arguments that are references to built-in
+             functions with no library fallbacks.  */
+          const_tree inner = TREE_OPERAND (val, 0);
+          if (TREE_CODE (TREE_TYPE (inner)) == REFERENCE_TYPE
+              && TREE_CODE (TREE_TYPE (TREE_TYPE (inner))) == FUNCTION_TYPE
+              && TREE_CODE (TREE_TYPE (inner)) == REFERENCE_TYPE
+              && reject_gcc_builtin (TREE_OPERAND (inner, 0)))
+              return error_mark_node;
+        }
+
       if (TREE_CODE (val) == SCOPE_REF)
 	{
 	  /* Strip typedefs from the SCOPE_REF.  */

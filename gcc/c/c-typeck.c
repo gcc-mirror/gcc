@@ -3339,6 +3339,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  error (invalid_func_diag);
 	  return -1;
 	}
+      else if (TREE_CODE (val) == ADDR_EXPR && reject_gcc_builtin (val))
+	{
+	  return -1;
+	}
       else
 	/* Convert `short' and `char' to full-size `int'.  */
 	parmval = default_conversion (val);
@@ -3376,12 +3380,20 @@ parser_build_unary_op (location_t loc, enum tree_code code, struct c_expr arg)
 {
   struct c_expr result;
 
-  result.value = build_unary_op (loc, code, arg.value, 0);
   result.original_code = code;
   result.original_type = NULL;
 
+  if (reject_gcc_builtin (arg.value))
+    {
+      result.value = error_mark_node;
+    }
+  else
+    {
+      result.value = build_unary_op (loc, code, arg.value, 0);
+
   if (TREE_OVERFLOW_P (result.value) && !TREE_OVERFLOW_P (arg.value))
     overflow_warning (loc, result.value);
+    }
 
   return result;
 }
@@ -4484,6 +4496,12 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
   type2 = TREE_TYPE (op2);
   code2 = TREE_CODE (type2);
 
+  if (code1 == POINTER_TYPE && reject_gcc_builtin (op1))
+    return error_mark_node;
+
+  if (code2 == POINTER_TYPE && reject_gcc_builtin (op2))
+    return error_mark_node;
+
   /* C90 does not permit non-lvalue arrays in conditional expressions.
      In C99 they will be pointers by now.  */
   if (code1 == ARRAY_TYPE || code2 == ARRAY_TYPE)
@@ -5222,6 +5240,10 @@ c_cast_expr (location_t loc, struct c_type_name *type_name, tree expr)
   type = groktypename (type_name, &type_expr, &type_expr_const);
   warn_strict_prototypes = saved_wsp;
 
+  if (TREE_CODE (expr) == ADDR_EXPR && !VOID_TYPE_P (type)
+      && reject_gcc_builtin (expr))
+    return error_mark_node;
+
   ret = build_c_cast (loc, type, expr);
   if (type_expr)
     {
@@ -5861,6 +5883,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   rhs = require_complete_type (rhs);
   if (rhs == error_mark_node)
     return error_mark_node;
+
+  if (coder == POINTER_TYPE && reject_gcc_builtin (rhs))
+    return error_mark_node;
+
   /* A non-reference type can convert to a reference.  This handles
      va_start, va_copy and possibly port built-ins.  */
   if (codel == REFERENCE_TYPE && coder != REFERENCE_TYPE)
@@ -10350,6 +10376,14 @@ build_binary_op (location_t location, enum tree_code code,
   if (code0 == ERROR_MARK || code1 == ERROR_MARK)
     return error_mark_node;
 
+  if (code0 == POINTER_TYPE
+      && reject_gcc_builtin (op0, EXPR_LOCATION (orig_op0)))
+    return error_mark_node;
+
+  if (code1 == POINTER_TYPE
+      && reject_gcc_builtin (op1, EXPR_LOCATION (orig_op1)))
+    return error_mark_node;
+
   if ((invalid_op_diag
        = targetm.invalid_binary_op (code, type0, type1)))
     {
@@ -11329,6 +11363,11 @@ c_objc_common_truthvalue_conversion (location_t location, tree expr)
     case VOID_TYPE:
       error_at (location, "void value not ignored as it ought to be");
       return error_mark_node;
+
+    case POINTER_TYPE:
+      if (reject_gcc_builtin (expr))
+	return error_mark_node;
+      break;
 
     case FUNCTION_TYPE:
       gcc_unreachable ();
@@ -12881,4 +12920,14 @@ cilk_install_body_with_frame_cleanup (tree fndecl, tree body, void *w)
   append_to_statement_list (body, &body_list);
   append_to_statement_list (build_stmt (EXPR_LOCATION (body), TRY_FINALLY_EXPR,
 				       	body_list, dtor), &list);
+}
+
+/* Returns true when the function declaration FNDECL is implicit,
+   introduced as a result of a call to an otherwise undeclared
+   function, and false otherwise.  */
+
+bool
+c_decl_implicit (const_tree fndecl)
+{
+  return C_DECL_IMPLICIT (fndecl);
 }

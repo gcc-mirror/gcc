@@ -572,6 +572,7 @@ extern int field_decl_cmp (const void *, const void *);
 extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
 				  void *);
 extern bool has_c_linkage (const_tree decl);
+extern bool c_decl_implicit (const_tree);
 
 /* Switches common to the C front ends.  */
 
@@ -1439,5 +1440,6 @@ extern bool contains_cilk_spawn_stmt (tree);
 extern tree cilk_for_number_of_iterations (tree);
 extern bool check_no_cilk (tree, const char *, const char *,
 		           location_t loc = UNKNOWN_LOCATION);
+extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
 
 #endif /* ! GCC_C_COMMON_H */
