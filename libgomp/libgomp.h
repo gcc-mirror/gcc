@@ -513,6 +513,8 @@ static inline struct gomp_task_icv *gomp_icv (bool write)
 /* The attributes to be used during thread creation.  */
 extern pthread_attr_t gomp_thread_attr;
 
+extern pthread_key_t gomp_thread_destructor;
+
 /* Function prototypes.  */
 
 /* affinity.c */

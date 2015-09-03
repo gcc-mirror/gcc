@@ -27,6 +27,7 @@
    creation and termination.  */
 
 #include "libgomp.h"
+#include "pool.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -132,26 +133,6 @@ gomp_thread_start (void *xdata)
   thr->thread_pool = NULL;
   thr->task = NULL;
   return NULL;
-}
-
-/* Get the thread pool, allocate and initialize it on demand.  */
-
-static inline struct gomp_thread_pool *
-gomp_get_thread_pool (struct gomp_thread *thr, unsigned nthreads)
-{
-  struct gomp_thread_pool *pool = thr->thread_pool;
-  if (__builtin_expect (pool == NULL, 0))
-    {
-      pool = gomp_malloc (sizeof (*pool));
-      pool->threads = NULL;
-      pool->threads_size = 0;
-      pool->threads_used = 0;
-      pool->last_team = NULL;
-      pool->threads_busy = nthreads;
-      thr->thread_pool = pool;
-      pthread_setspecific (gomp_thread_destructor, thr);
-    }
-  return pool;
 }
 
 static inline struct gomp_team *
@@ -930,6 +911,7 @@ gomp_team_end (void)
       if (pool->last_team)
 	free_team (pool->last_team);
       pool->last_team = team;
+      gomp_release_thread_pool (pool);
     }
 }
 
