@@ -153,6 +153,7 @@ case "${target}" in
 
   nvptx*-*-*)
 	config_path="nvptx"
+	;;
 
   *-*-rtems*)
 	# Use self-contained synchronization objects if provided by Newlib
