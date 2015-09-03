@@ -1,5 +1,18 @@
 2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	* config/posix/pool.h (gomp_adjust_thread_attr): New.
+	* config/rtems/pool.h (gomp_adjust_thread_attr): Likewise.
+	(gomp_thread_pool_reservoir): Add priority member.
+	* confi/rtems/proc.c (allocate_thread_pool_reservoir): Add
+	priority.
+	(parse_thread_pools): Likewise.
+	* team.c (gomp_team_start): Call configuration provided
+	gomp_adjust_thread_attr(). Destroy thread attributes if
+	necessary.
+	* libgomp.texi: Document GOMP_RTEMS_THREAD_POOLS.
+
+2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* config/posix/pool.h: New.
 	* config/rtems/pool.h: Likewise.
 	* config/rtems/proc.c: Likewise.

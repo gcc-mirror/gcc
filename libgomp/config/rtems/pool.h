@@ -41,6 +41,7 @@ struct gomp_thread_pool_reservoir {
   gomp_sem_t available;
   gomp_mutex_t lock;
   size_t index;
+  int priority;
   struct gomp_thread_pool *pools[];
 };
 
@@ -123,6 +124,34 @@ gomp_release_thread_pool (struct gomp_thread_pool *pool)
       gomp_mutex_unlock (&res->lock);
       gomp_sem_post (&res->available);
     }
+}
+
+static inline pthread_attr_t *
+gomp_adjust_thread_attr (pthread_attr_t *attr, pthread_attr_t *mutable_attr)
+{
+  struct gomp_thread_pool_reservoir *res = gomp_get_thread_pool_reservoir ();
+  if (res != NULL && res->priority > 0)
+    {
+      struct sched_param param;
+      int err;
+      if (attr != mutable_attr)
+	{
+	  attr = mutable_attr;
+	  pthread_attr_init (attr);
+	}
+      memset (&param, 0, sizeof (param));
+      param.sched_priority = res->priority;
+      err = pthread_attr_setschedparam (attr, &param);
+      if (err != 0)
+	gomp_fatal ("Thread attribute set scheduler parameters failed: %s", strerror (err));
+      err = pthread_attr_setschedpolicy (attr, SCHED_FIFO);
+      if (err != 0)
+	gomp_fatal ("Thread attribute set scheduler policy failed: %s", strerror (err));
+      err = pthread_attr_setinheritsched (attr, PTHREAD_EXPLICIT_SCHED);
+      if (err != 0)
+	gomp_fatal ("Thread attribute set explicit scheduler failed: %s", strerror (err));
+    }
+  return attr;
 }
 
 #endif /* GOMP_POOL_H */
