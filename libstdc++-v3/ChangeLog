@@ -1,3 +1,14 @@
+2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-04-27  Dmitry Prokoptsev  <dprokoptsev@gmail.com>
+		    Michael Hanselmann  <public@hansmi.ch>
+
+	PR libstdc++/62258
+	* libsupc++/eh_ptr.cc (rethrow_exception): Increment count of
+	uncaught exceptions.
+	* testsuite/18_support/exception_ptr/62258.cc: New.
+
 2015-08-28  Tim Shen  <timshen@google.com>
 
 	Backport from mainline
