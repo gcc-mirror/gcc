@@ -1,3 +1,8 @@
+2015-09-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65637
+	* testsuite/libgomp.c/autopar-2.c: New test.
+
 2015-08-29  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/46193

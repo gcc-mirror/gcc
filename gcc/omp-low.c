@@ -6885,6 +6885,24 @@ expand_omp_for_static_nochunk (struct omp_region *region,
     }
 }
 
+/* Return phi in E->DEST with ARG on edge E.  */
+
+static gphi *
+find_phi_with_arg_on_edge (tree arg, edge e)
+{
+  basic_block bb = e->dest;
+
+  for (gphi_iterator gpi = gsi_start_phis (bb);
+       !gsi_end_p (gpi);
+       gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      if (PHI_ARG_DEF_FROM_EDGE (phi, e) == arg)
+	return phi;
+    }
+
+  return NULL;
+}
 
 /* A subroutine of expand_omp_for.  Generate code for a parallel
    loop with static schedule and a specified chunk size.  Given
@@ -7324,7 +7342,19 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	    t = vextra;
 	  add_phi_arg (nphi, t, ene, locus);
 	  locus = redirect_edge_var_map_location (vm);
-	  add_phi_arg (nphi, redirect_edge_var_map_def (vm), re, locus);
+	  tree back_arg = redirect_edge_var_map_def (vm);
+	  add_phi_arg (nphi, back_arg, re, locus);
+	  edge ce = find_edge (cont_bb, body_bb);
+	  if (ce == NULL)
+	    {
+	      ce = BRANCH_EDGE (cont_bb);
+	      gcc_assert (single_succ (ce->dest) == body_bb);
+	      ce = single_succ_edge (ce->dest);
+	    }
+	  gphi *inner_loop_phi = find_phi_with_arg_on_edge (back_arg, ce);
+	  gcc_assert (inner_loop_phi != NULL);
+	  add_phi_arg (inner_loop_phi, gimple_phi_result (nphi),
+		       find_edge (seq_start_bb, body_bb), locus);
 	}
       gcc_assert (gsi_end_p (psi) && (head == NULL || i == head->length ()));
       redirect_edge_var_map_clear (re);
