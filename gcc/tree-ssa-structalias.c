@@ -5619,7 +5619,6 @@ create_variable_info_for_1 (tree decl, const char *name)
   auto_vec<fieldoff_s> fieldstack;
   fieldoff_s *fo;
   unsigned int i;
-  varpool_node *vnode;
 
   if (!declsize
       || !tree_fits_uhwi_p (declsize))
@@ -5637,12 +5636,10 @@ create_variable_info_for_1 (tree decl, const char *name)
   /* Collect field information.  */
   if (use_field_sensitive
       && var_can_have_subvars (decl)
-      /* ???  Force us to not use subfields for global initializers
-	 in IPA mode.  Else we'd have to parse arbitrary initializers.  */
+      /* ???  Force us to not use subfields for globals in IPA mode.
+	 Else we'd have to parse arbitrary initializers.  */
       && !(in_ipa_mode
-	   && is_global_var (decl)
-	   && (vnode = varpool_node::get (decl))
-	   && vnode->get_constructor ()))
+	   && is_global_var (decl)))
     {
       fieldoff_s *fo = NULL;
       bool notokay = false;
@@ -5774,13 +5771,13 @@ create_variable_info_for (tree decl, const char *name)
 
 	  /* If this is a global variable with an initializer and we are in
 	     IPA mode generate constraints for it.  */
-	  if (vnode->get_constructor ()
-	      && vnode->definition)
+	  ipa_ref *ref;
+	  for (unsigned idx = 0; vnode->iterate_reference (idx, ref); ++idx)
 	    {
 	      auto_vec<ce_s> rhsc;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
-	      get_constraint_for_rhs (vnode->get_constructor (), &rhsc);
+	      get_constraint_for_address_of (ref->referred->decl, &rhsc);
 	      lhs.var = vi->id;
 	      lhs.offset = 0;
 	      lhs.type = SCALAR;
