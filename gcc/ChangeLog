@@ -1,3 +1,10 @@
+2015-09-03  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (flush_limbo_die_list): Split out from ...
+	(dwarf2out_early_finish): ... here.
+	(dwarf2out_finish): Do not call dwarf2out_early_finish but
+	flush_limbo_die_list.  Assert we have no deferred asm names.
+
 2015-09-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* optabs.c (expand_binop): Don't create a broadcast vector with a
