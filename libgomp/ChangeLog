@@ -1,3 +1,11 @@
+2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* team.c (gomp_new_thread_pool): Delete and move content to ...
+	(gomp_get_thread_pool): ... new function.  Allocate and
+	initialize thread pool on demand.
+	(get_last_team): Use gomp_get_thread_pool().
+	(gomp_team_start): Delete thread pool initialization.
+
 2015-09-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65637

@@ -134,22 +134,39 @@ gomp_thread_start (void *xdata)
   return NULL;
 }
 
+/* Get the thread pool, allocate and initialize it on demand.  */
+
+static inline struct gomp_thread_pool *
+gomp_get_thread_pool (struct gomp_thread *thr, unsigned nthreads)
+{
+  struct gomp_thread_pool *pool = thr->thread_pool;
+  if (__builtin_expect (pool == NULL, 0))
+    {
+      pool = gomp_malloc (sizeof (*pool));
+      pool->threads = NULL;
+      pool->threads_size = 0;
+      pool->threads_used = 0;
+      pool->last_team = NULL;
+      pool->threads_busy = nthreads;
+      thr->thread_pool = pool;
+      pthread_setspecific (gomp_thread_destructor, thr);
+    }
+  return pool;
+}
+
 static inline struct gomp_team *
 get_last_team (unsigned nthreads)
 {
   struct gomp_thread *thr = gomp_thread ();
   if (thr->ts.team == NULL)
     {
-      struct gomp_thread_pool *pool = thr->thread_pool;
-      if (pool != NULL)
-	{
-	  struct gomp_team *last_team = pool->last_team;
-	  if (last_team != NULL && last_team->nthreads == nthreads)
-	    {
-	      pool->last_team = NULL;
-	      return last_team;
-	    }
-	}
+      struct gomp_thread_pool *pool = gomp_get_thread_pool (thr, nthreads);
+      struct gomp_team *last_team = pool->last_team;
+      if (last_team != NULL && last_team->nthreads == nthreads)
+        {
+          pool->last_team = NULL;
+          return last_team;
+        }
     }
   return NULL;
 }
@@ -217,19 +234,6 @@ free_team (struct gomp_team *team)
   gomp_barrier_destroy (&team->barrier);
   gomp_mutex_destroy (&team->task_lock);
   free (team);
-}
-
-/* Allocate and initialize a thread pool. */
-
-static struct gomp_thread_pool *gomp_new_thread_pool (void)
-{
-  struct gomp_thread_pool *pool
-    = gomp_malloc (sizeof(struct gomp_thread_pool));
-  pool->threads = NULL;
-  pool->threads_size = 0;
-  pool->threads_used = 0;
-  pool->last_team = NULL;
-  return pool;
 }
 
 static void
@@ -316,12 +320,6 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 
   thr = gomp_thread ();
   nested = thr->ts.team != NULL;
-  if (__builtin_expect (thr->thread_pool == NULL, 0))
-    {
-      thr->thread_pool = gomp_new_thread_pool ();
-      thr->thread_pool->threads_busy = nthreads;
-      pthread_setspecific (gomp_thread_destructor, thr);
-    }
   pool = thr->thread_pool;
   task = thr->task;
   icv = task ? &task->icv : &gomp_global_icv;
