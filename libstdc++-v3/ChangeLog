@@ -1,3 +1,22 @@
+2015-09-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	Add C++11 header <cuchar>.
+	* acinclude.m4 (GLIBCXX_CHECK_UCHAR_H): Define.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for <uchar.h>.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/c/cuchar: New.
+	* include/c_compatibility/uchar.h: New.
+	* include/c_global/cuchar: New.
+	* include/c_std/cuchar: New.
+	* include/precompiled/stdc++.h: Include <cuchar>.
+	* testsuite/17_intro/headers/c++200x/stdc++.cc: Include <uchar.h>.
+	* testsuite/17_intro/headers/c++200x/stdc++_multiple_inclusion.cc:
+	Include <uchar.h>.
+
 2015-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65473

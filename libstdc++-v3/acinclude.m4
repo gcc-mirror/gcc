@@ -1809,6 +1809,52 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 ])
 
 dnl
+dnl Check for uchar.h and usability.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
+
+  # Test uchar.h.
+  AC_CHECK_HEADERS(uchar.h, ac_has_uchar_h=yes, ac_has_uchar_h=no)
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++11"
+
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    AC_MSG_CHECKING([for ISO C11 support for <uchar.h>])
+    AC_TRY_COMPILE([#include <uchar.h>
+		    #ifdef __STDC_UTF_16__
+		    long i = __STDC_UTF_16__;
+		    #endif
+		    #ifdef __STDC_UTF_32__
+		    long j = __STDC_UTF_32__;
+		    #endif
+		    namespace test
+		    {
+		      using ::c16rtomb;
+		      using ::c32rtomb;
+		      using ::mbrtoc16;
+		      using ::mbrtoc32;
+		    }
+		   ],
+		   [], [ac_c11_uchar_cxx11=yes], [ac_c11_uchar_cxx11=no])
+  else
+    ac_c11_uchar_cxx11=no
+  fi
+  AC_MSG_RESULT($ac_c11_uchar_cxx11)
+  if test x"$ac_c11_uchar_cxx11" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C11_UCHAR_CXX11, 1,
+	      [Define if C11 functions in <uchar.h> should be imported into
+	      namespace std in <cuchar>.])
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+
+dnl
 dnl Check whether "/dev/random" and "/dev/urandom" are available for the
 dnl random_device of "TR1" (Chapter 5.1, "Random number generation").
 dnl
