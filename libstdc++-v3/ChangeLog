@@ -1,4 +1,7 @@
-2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
+2015-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65704
+	* include/std/mutex (recursive_timed_mutex): Fix uses of _Can_lock.
 
 	PR libstdc++/65704
 	* include/Makefile.am: Add <bits/mutex.h>.
