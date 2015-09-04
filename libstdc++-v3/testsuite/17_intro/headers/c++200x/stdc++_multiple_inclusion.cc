@@ -59,6 +59,9 @@
 #include <tgmath.h>
 #endif
 #include <time.h>
+#if __has_include(<uchar.h>)
+#include <uchar.h>
+#endif
 #ifdef _GLIBCXX_HAVE_WCHAR_H
 #include <wchar.h>
 #endif
@@ -103,6 +106,9 @@
 #include <tgmath.h>
 #endif
 #include <time.h>
+#if __has_include(<uchar.h>)
+#include <uchar.h>
+#endif
 #ifdef _GLIBCXX_HAVE_WCHAR_H
 #include <wchar.h>
 #endif

@@ -18149,6 +18149,87 @@ fi
 
 
 
+
+  # Test uchar.h.
+  for ac_header in uchar.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "uchar.h" "ac_cv_header_uchar_h" "$ac_includes_default"
+if test "x$ac_cv_header_uchar_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UCHAR_H 1
+_ACEOF
+ ac_has_uchar_h=yes
+else
+  ac_has_uchar_h=no
+fi
+
+done
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++11"
+
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C11 support for <uchar.h>" >&5
+$as_echo_n "checking for ISO C11 support for <uchar.h>... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <uchar.h>
+		    #ifdef __STDC_UTF_16__
+		    long i = __STDC_UTF_16__;
+		    #endif
+		    #ifdef __STDC_UTF_32__
+		    long j = __STDC_UTF_32__;
+		    #endif
+		    namespace test
+		    {
+		      using ::c16rtomb;
+		      using ::c32rtomb;
+		      using ::mbrtoc16;
+		      using ::mbrtoc32;
+		    }
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_c11_uchar_cxx11=yes
+else
+  ac_c11_uchar_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  else
+    ac_c11_uchar_cxx11=no
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_c11_uchar_cxx11" >&5
+$as_echo "$ac_c11_uchar_cxx11" >&6; }
+  if test x"$ac_c11_uchar_cxx11" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_C11_UCHAR_CXX11 1" >>confdefs.h
+
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
 # For the streamoff typedef.
 
 

@@ -454,6 +454,9 @@
 /* Define to 1 if the target supports thread-local storage. */
 #undef HAVE_TLS
 
+/* Define to 1 if you have the <uchar.h> header file. */
+#undef HAVE_UCHAR_H
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -779,6 +782,10 @@
 
 /* Define to use Sun versioning in the shared library. */
 #undef _GLIBCXX_SYMVER_SUN
+
+/* Define if C11 functions in <uchar.h> should be imported into namespace std
+   in <cuchar>. */
+#undef _GLIBCXX_USE_C11_UCHAR_CXX11
 
 /* Define if C99 functions or macros from <wchar.h>, <math.h>, <complex.h>,
    <stdio.h>, and <stdlib.h> can be used or exposed. */

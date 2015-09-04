@@ -56,6 +56,7 @@
 #include <cstdbool>
 #include <cstdint>
 #include <ctgmath>
+#include <cuchar>
 #include <cwchar>
 #include <cwctype>
 #endif
