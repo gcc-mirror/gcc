@@ -1,3 +1,9 @@
+2015-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/67429
+	* error.c (gfc_clear_pp_buffer): Reset last_location, otherwise
+	caret lines might be skipped when actually giving a diagnostic.
+
 2015-08-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66929
@@ -170,7 +176,7 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66052
-	* decl.c(gfc_match_protected): Prevent dereference of NULL pointer. 
+	* decl.c(gfc_match_protected): Prevent dereference of NULL pointer.
 
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
@@ -182,7 +188,7 @@
 
 	PR fortran/66044
 	* decl.c(gfc_match_entry):  Change a gfc_internal_error() into
-	a gfc_error() 
+	a gfc_error()
 
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
