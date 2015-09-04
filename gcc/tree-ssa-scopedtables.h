@@ -23,18 +23,31 @@ along with GCC; see the file COPYING3.  If not see
 class const_and_copies
 {
  public:
-  const_and_copies (FILE *, int);
+  const_and_copies (void) { stack.create (20); };
   ~const_and_copies (void) { stack.release (); }
+
+  /* Push the unwinding marker onto the stack.  */
   void push_marker (void) { stack.safe_push (NULL_TREE); }
+
+  /* Restore the const/copies table to its state whe the last marker
+     was pushed.  */
   void pop_to_marker (void);
+
+  /* Record a single const/copy pair that can be unwound.  */
   void record_const_or_copy (tree, tree);
+
+  /* Special entry point when we want to provide an explicit previous
+     value for the first argument.  Try to get rid of this in the future.  */
   void record_const_or_copy (tree, tree, tree);
+
+  /* When threading we need to invalidate certain equivalences after
+     following a loop backedge.  The entries we need to invalidate will
+     always be in this unwindable stack.  This entry point handles
+     finding and invalidating those entries.  */
   void invalidate (tree);
 
  private:
   vec<tree> stack;
-  FILE *dump_file;
-  int dump_flags;
 };
 
 #endif /* GCC_TREE_SSA_SCOPED_TABLES_H */

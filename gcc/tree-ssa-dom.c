@@ -1168,7 +1168,7 @@ pass_dominator::execute (function *fun)
   /* Create our hash tables.  */
   avail_exprs = new hash_table<expr_elt_hasher> (1024);
   avail_exprs_stack.create (20);
-  const_and_copies = new class const_and_copies (dump_file, dump_flags);
+  const_and_copies = new class const_and_copies ();
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_noreturn_fixup.create (0);
 

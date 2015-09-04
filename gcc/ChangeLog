@@ -1,3 +1,18 @@
+2015-09-04  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-scopedtables.c (const_and_copies::const_and_copies): Remove
+	unnecessary constructor.  It's now trivial and implemented inside...
+	* tree-ssa-scopedtables.h (const_and_copies): Implement trivial
+	constructor.  Add comments to various methods.  Remove unused
+	private fields.
+	* tree-ssa-dom.c (pass_dominator::execute): Corresponding changes.
+	* tree-vrp.c (identify_jump_threads): Likewise.
+	* tree-ssa-threadedge.c (thread_through_normal_block): Fix minor
+	indentation issues.
+	(thread_across_edge): Similarly.
+	(record_temporary_equivalences_from_stmts_at_dest): Remove unused
+	arguments in constructor call.
+
 2015-09-04  Jonas Hahnfeld  <Hahnfeld@itc.rwth-aachen.de>
 
 	* config/i386/intelmic-mkoffload.c (prepare_target_image): Fix if the
