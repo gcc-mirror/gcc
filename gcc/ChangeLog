@@ -1,3 +1,7 @@
+2015-09-04  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/invoke.texi (@item -ftrapv, @item -fwrapv): Document interaction.
+
 2015-09-04  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-scopedtables.c (const_and_copies::const_and_copies): Remove
