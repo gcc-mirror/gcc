@@ -1,3 +1,8 @@
+2015-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/67279
+	* gcc.dg/ubsan/pr67279.c: New test.
+
 2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Petr Murzin  <petr.murzin@intel.com>
 	    Kirill Yukhin <kirill.yukhin@intel.com>

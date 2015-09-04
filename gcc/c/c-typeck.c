@@ -11292,7 +11292,8 @@ build_binary_op (location_t location, enum tree_code code,
   if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE
 			| SANITIZE_FLOAT_DIVIDE))
       && do_ubsan_in_current_function ()
-      && (doing_div_or_mod || doing_shift))
+      && (doing_div_or_mod || doing_shift)
+      && !require_constant_value)
     {
       /* OP0 and/or OP1 might have side-effects.  */
       op0 = c_save_expr (op0);
