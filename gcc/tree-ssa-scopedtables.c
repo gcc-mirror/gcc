@@ -28,13 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 
-const_and_copies::const_and_copies (FILE *file, int flags)
-{
-  stack.create (20);
-  dump_file = file;
-  dump_flags = flags;
-}
-
 /* Pop entries off the stack until we hit the NULL marker.
    For each entry popped, use the SRC/DEST pair to restore
    SRC to its prior value.  */

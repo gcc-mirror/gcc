@@ -10149,7 +10149,7 @@ identify_jump_threads (void)
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
-  equiv_stack = new const_and_copies (dump_file, dump_flags);
+  equiv_stack = new const_and_copies ();
 
   /* To avoid lots of silly node creation, we create a single
      conditional and just modify it in-place when attempting to

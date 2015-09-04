@@ -432,7 +432,8 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       if (cached_lhs
 	  && (TREE_CODE (cached_lhs) == SSA_NAME
 	      || is_gimple_min_invariant (cached_lhs)))
-	const_and_copies->record_const_or_copy (gimple_get_lhs (stmt), cached_lhs);
+	const_and_copies->record_const_or_copy (gimple_get_lhs (stmt),
+						cached_lhs);
       else if (backedge_seen)
 	const_and_copies->invalidate (gimple_get_lhs (stmt));
     }
@@ -1208,7 +1209,8 @@ thread_through_normal_block (edge e,
   /* Now walk each statement recording any context sensitive
      temporary equivalences we can detect.  */
   gimple stmt
-    = record_temporary_equivalences_from_stmts_at_dest (e, const_and_copies, simplify,
+    = record_temporary_equivalences_from_stmts_at_dest (e, const_and_copies,
+							simplify,
 							*backedge_seen_p);
 
   /* There's two reasons STMT might be null, and distinguishing
@@ -1474,8 +1476,8 @@ thread_across_edge (gcond *dummy_cond,
 	if (!found)
 	  found = thread_through_normal_block (path->last ()->e, dummy_cond,
 					       handle_dominating_asserts,
-					       const_and_copies, simplify, path, visited,
-					       &backedge_seen) > 0;
+					       const_and_copies, simplify, path,
+					       visited, &backedge_seen) > 0;
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
