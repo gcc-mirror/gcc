@@ -1,3 +1,8 @@
+2015-09-04  Jonas Hahnfeld  <Hahnfeld@itc.rwth-aachen.de>
+
+	* config/i386/intelmic-mkoffload.c (prepare_target_image): Fix if the
+	temp path contains a '-'.
+
 2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Petr Murzin  <petr.murzin@intel.com>
 	    Kirill Yukhin <kirill.yukhin@intel.com>
