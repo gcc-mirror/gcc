@@ -2,6 +2,29 @@
 	    Petr Murzin  <petr.murzin@intel.com>
 	    Kirill Yukhin <kirill.yukhin@intel.com>
 
+	* config/i386/i386-builtin-types.def
+	(VOID_PFLOAT_HI_V8DI_V16SF_INT): New.
+	(VOID_PDOUBLE_QI_V16SI_V8DF_INT): Ditto.
+	(VOID_PINT_HI_V8DI_V16SI_INT): Ditto.
+	(VOID_PLONGLONG_QI_V16SI_V8DI_INT): Ditto.
+	* config/i386/i386.c
+	(ix86_builtins): Add IX86_BUILTIN_SCATTERALTSIV8DF,
+	IX86_BUILTIN_SCATTERALTDIV16SF, IX86_BUILTIN_SCATTERALTSIV8DI,
+	IX86_BUILTIN_SCATTERALTDIV16SI.
+	(ix86_init_mmx_sse_builtins): Define __builtin_ia32_scatteraltsiv8df,
+	__builtin_ia32_scatteraltdiv8sf, __builtin_ia32_scatteraltsiv8di,
+	__builtin_ia32_scatteraltdiv8si.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_SCATTERALTSIV8DF,
+	IX86_BUILTIN_SCATTERALTDIV16SF, IX86_BUILTIN_SCATTERALTSIV8DI,
+	IX86_BUILTIN_SCATTERALTDIV16SI.
+	(ix86_vectorize_builtin_scatter): New.
+	(TARGET_VECTORIZE_BUILTIN_SCATTER): Define as
+	ix86_vectorize_builtin_scatter.
+
+2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Petr Murzin  <petr.murzin@intel.com>
+	    Kirill Yukhin <kirill.yukhin@intel.com>
+
 	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_SCATTER): New.
 	* doc/tm.texi: Regenerate.
 	* target.def: Add scatter builtin.

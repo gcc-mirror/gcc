@@ -30388,6 +30388,10 @@ enum ix86_builtins
   IX86_BUILTIN_GATHER3SIV16SI,
   IX86_BUILTIN_GATHER3SIV8DF,
   IX86_BUILTIN_GATHER3SIV8DI,
+  IX86_BUILTIN_SCATTERALTSIV8DF,
+  IX86_BUILTIN_SCATTERALTDIV16SF,
+  IX86_BUILTIN_SCATTERALTSIV8DI,
+  IX86_BUILTIN_SCATTERALTDIV16SI,
   IX86_BUILTIN_SCATTERDIV16SF,
   IX86_BUILTIN_SCATTERDIV16SI,
   IX86_BUILTIN_SCATTERDIV8DF,
@@ -34204,6 +34208,21 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv2di",
 	       VOID_FTYPE_PLONGLONG_QI_V2DI_V2DI_INT,
 	       IX86_BUILTIN_SCATTERDIV2DI);
+  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltsiv8df ",
+	       VOID_FTYPE_PDOUBLE_QI_V16SI_V8DF_INT,
+	       IX86_BUILTIN_SCATTERALTSIV8DF);
+
+  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltdiv8sf ",
+	       VOID_FTYPE_PFLOAT_HI_V8DI_V16SF_INT,
+	       IX86_BUILTIN_SCATTERALTDIV16SF);
+
+  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltsiv8di ",
+	       VOID_FTYPE_PLONGLONG_QI_V16SI_V8DI_INT,
+	       IX86_BUILTIN_SCATTERALTSIV8DI);
+
+  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltdiv8si ",
+	       VOID_FTYPE_PINT_HI_V8DI_V16SI_INT,
+	       IX86_BUILTIN_SCATTERALTDIV16SI);
 
   /* AVX512PF */
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfdpd",
@@ -39860,6 +39879,18 @@ rdseed_step:
     case IX86_BUILTIN_GATHERPFDPD:
       icode = CODE_FOR_avx512pf_gatherpfv8sidf;
       goto vec_prefetch_gen;
+    case IX86_BUILTIN_SCATTERALTSIV8DF:
+      icode = CODE_FOR_avx512f_scattersiv8df;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTDIV16SF:
+      icode = CODE_FOR_avx512f_scatterdiv16sf;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTSIV8DI:
+      icode = CODE_FOR_avx512f_scattersiv8di;
+      goto scatter_gen;
+    case IX86_BUILTIN_SCATTERALTDIV16SI:
+      icode = CODE_FOR_avx512f_scatterdiv16si;
+      goto scatter_gen;
     case IX86_BUILTIN_GATHERPFDPS:
       icode = CODE_FOR_avx512pf_gatherpfv16sisf;
       goto vec_prefetch_gen;
@@ -40122,6 +40153,36 @@ rdseed_step:
       mode2 = insn_data[icode].operand[2].mode;
       mode3 = insn_data[icode].operand[3].mode;
       mode4 = insn_data[icode].operand[4].mode;
+
+      /* Scatter instruction stores operand op3 to memory with
+	 indices from op2 and scale from op4 under writemask op1.
+	 If index operand op2 has more elements then source operand
+	 op3 one need to use only its low half. And vice versa.  */
+      switch (fcode)
+	{
+	case IX86_BUILTIN_SCATTERALTSIV8DF:
+	case IX86_BUILTIN_SCATTERALTSIV8DI:
+	  half = gen_reg_rtx (V8SImode);
+	  if (!nonimmediate_operand (op2, V16SImode))
+	    op2 = copy_to_mode_reg (V16SImode, op2);
+	  emit_insn (gen_vec_extract_lo_v16si (half, op2));
+	  op2 = half;
+	  break;
+	case IX86_BUILTIN_SCATTERALTDIV16SF:
+	case IX86_BUILTIN_SCATTERALTDIV16SI:
+	  half = gen_reg_rtx (mode3);
+	  if (mode3 == V8SFmode)
+	    gen = gen_vec_extract_lo_v16sf;
+	  else
+	    gen = gen_vec_extract_lo_v16si;
+	  if (!nonimmediate_operand (op3, GET_MODE (op3)))
+	    op3 = copy_to_mode_reg (GET_MODE (op3), op3);
+	  emit_insn (gen (half, op3));
+	  op3 = half;
+	  break;
+	default:
+	  break;
+	}
 
       /* Force memory operand only with base register here.  But we
 	 don't want to do it on memory operand for other builtin
@@ -41200,6 +41261,62 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
     }
 
   return ix86_get_builtin (code);
+}
+
+/* Returns a decl of a function that implements scatter store with
+   register type VECTYPE and index type INDEX_TYPE and SCALE.
+   Return NULL_TREE if it is not available.  */
+
+static tree
+ix86_vectorize_builtin_scatter (const_tree vectype,
+				const_tree index_type, int scale)
+{
+  bool si;
+  enum ix86_builtins code;
+
+  if (!TARGET_AVX512F)
+    return NULL_TREE;
+
+  if ((TREE_CODE (index_type) != INTEGER_TYPE
+       && !POINTER_TYPE_P (index_type))
+      || (TYPE_MODE (index_type) != SImode
+	  && TYPE_MODE (index_type) != DImode))
+    return NULL_TREE;
+
+  if (TYPE_PRECISION (index_type) > POINTER_SIZE)
+    return NULL_TREE;
+
+  /* v*scatter* insn sign extends index to pointer mode.  */
+  if (TYPE_PRECISION (index_type) < POINTER_SIZE
+      && TYPE_UNSIGNED (index_type))
+    return NULL_TREE;
+
+  /* Scale can be 1, 2, 4 or 8.  */
+  if (scale <= 0
+      || scale > 8
+      || (scale & (scale - 1)) != 0)
+    return NULL_TREE;
+
+  si = TYPE_MODE (index_type) == SImode;
+  switch (TYPE_MODE (vectype))
+    {
+    case V8DFmode:
+      code = si ? IX86_BUILTIN_SCATTERALTSIV8DF : IX86_BUILTIN_SCATTERDIV8DF;
+      break;
+    case V8DImode:
+      code = si ? IX86_BUILTIN_SCATTERALTSIV8DI : IX86_BUILTIN_SCATTERDIV8DI;
+      break;
+    case V16SFmode:
+      code = si ? IX86_BUILTIN_SCATTERSIV16SF : IX86_BUILTIN_SCATTERALTDIV16SF;
+      break;
+    case V16SImode:
+      code = si ? IX86_BUILTIN_SCATTERSIV16SI : IX86_BUILTIN_SCATTERALTDIV16SI;
+      break;
+    default:
+      return NULL_TREE;
+    }
+
+  return ix86_builtins[code];
 }
 
 /* Returns a code for a target-specific builtin that implements
@@ -52331,6 +52448,9 @@ ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 
 #undef TARGET_VECTORIZE_BUILTIN_GATHER
 #define TARGET_VECTORIZE_BUILTIN_GATHER ix86_vectorize_builtin_gather
+
+#undef TARGET_VECTORIZE_BUILTIN_SCATTER
+#define TARGET_VECTORIZE_BUILTIN_SCATTER ix86_vectorize_builtin_scatter
 
 #undef TARGET_BUILTIN_RECIPROCAL
 #define TARGET_BUILTIN_RECIPROCAL ix86_builtin_reciprocal
