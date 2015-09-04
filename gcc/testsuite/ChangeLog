@@ -1,3 +1,11 @@
+2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Petr Murzin  <petr.murzin@intel.com>
+	    Kirill Yukhin <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx512f-scatter-1.c: New.
+	* gcc.target/i386/avx512f-scatter-2.c: Ditto.
+	* gcc.target/i386/avx512f-scatter-3.c: Ditto.
+
 2015-09-04  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gfortran.dg/read_dir.f90: Delete empty directory when closing
