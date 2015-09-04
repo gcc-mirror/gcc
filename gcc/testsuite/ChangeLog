@@ -1,3 +1,9 @@
+2015-09-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/67450
+	* lib/target-supports.exp (check_cached_effective_target):
+	Apppend $prop to et_prop_list only if needed.
+
 2015-09-04  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/67279

@@ -125,7 +125,10 @@ proc check_cached_effective_target { prop args } {
 	verbose "check_cached_effective_target $prop: checking $target" 2
 	set et_cache($prop,target) $target
 	set et_cache($prop,value) [uplevel eval $args]
-	lappend et_prop_list $prop
+	if {![info exists et_prop_list]
+	    || [lsearch $et_prop_list $prop] < 0} {
+	    lappend et_prop_list $prop
+	}
 	verbose "check_cached_effective_target cached list is now: $et_prop_list" 2
     }
     set value $et_cache($prop,value)
