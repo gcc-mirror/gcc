@@ -757,6 +757,9 @@ gfc_clear_pp_buffer (output_buffer *this_buffer)
   pp->buffer = this_buffer;
   pp_clear_output_area (pp);
   pp->buffer = tmp_buffer;
+  /* We need to reset last_location, otherwise we may skip caret lines
+     when we actually give a diagnostic.  */
+  global_dc->last_location = UNKNOWN_LOCATION;
 }
 
 
