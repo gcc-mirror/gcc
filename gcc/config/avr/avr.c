@@ -9069,6 +9069,8 @@ avr_eval_addr_attrib (rtx x)
       if (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_IO)
 	{
 	  attr = lookup_attribute ("io", DECL_ATTRIBUTES (decl));
+         if (!attr || !TREE_VALUE (attr))
+           attr = lookup_attribute ("io_low", DECL_ATTRIBUTES (decl));
 	  gcc_assert (attr);
 	}
       if (!attr || !TREE_VALUE (attr))
