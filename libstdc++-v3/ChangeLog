@@ -1,3 +1,59 @@
+2015-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65704
+	* include/Makefile.am: Add <bits/mutex.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/mutex.h (__mutex_base, mutex, lock_guard, unique_lock):
+	New file containing types moved from <mutex>.
+	* include/std/condition_variable: Include <bits/mutex.h> instead of
+	<mutex>.
+	* include/std/mutex (__mutex_base, mutex, lock_guard, unique_lock):
+	Move to <bits/mutex.h>.
+	*  testsuite/30_threads/recursive_timed_mutex/cons/1.cc: Remove
+	dg-require-gthreads-timed.
+	*  testsuite/30_threads/recursive_timed_mutex/cons/assign_neg.cc:
+	Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/cons/copy_neg.cc:
+	Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/dest/
+	destructor_locked.cc: Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/lock/1.cc: Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/lock/2.cc: Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/try_lock/1.cc: Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/try_lock/2.cc: Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/try_lock_for/1.cc:
+	Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/try_lock_for/2.cc:
+	Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/try_lock_for/3.cc:
+	Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc:
+	Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc:
+	Likewise.
+	*  testsuite/30_threads/recursive_timed_mutex/unlock/1.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/cons/1.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/cons/assign_neg.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/cons/copy_neg.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/dest/destructor_locked.cc:
+	Likewise.
+	*  testsuite/30_threads/timed_mutex/lock/1.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/requirements/standard_layout.cc:
+	Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock/1.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock/2.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock_for/1.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock_for/2.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock_for/3.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock_until/1.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock_until/2.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Likewise.
+	*  testsuite/30_threads/timed_mutex/unlock/1.cc: Likewise.
+	*  testsuite/30_threads/unique_lock/cons/5.cc: Likewise.
+	*  testsuite/30_threads/unique_lock/cons/6.cc: Likewise.
+	*  testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	*  testsuite/30_threads/unique_lock/locking/4.cc: Likewise.
+
 2015-09-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
