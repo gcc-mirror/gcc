@@ -3290,8 +3290,7 @@ add_subroutines (void)
 	      t, BT_UNKNOWN, 0, REQUIRED, INTENT_OUT);
 
   add_sym_5s ("mvbits", GFC_ISYM_MVBITS, CLASS_ELEMENTAL, BT_UNKNOWN, 0,
-	      GFC_STD_F95, gfc_check_mvbits, gfc_simplify_mvbits,
-	      gfc_resolve_mvbits,
+	      GFC_STD_F95, gfc_check_mvbits, NULL, gfc_resolve_mvbits,
 	      f, BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      fp, BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      ln, BT_INTEGER, di, REQUIRED, INTENT_IN,
