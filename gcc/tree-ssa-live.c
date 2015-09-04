@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cgraph.h"
 #include "ipa-utils.h"
+#include "cfgloop.h"
 
 #ifdef ENABLE_CHECKING
 static void  verify_live_on_entry (tree_live_info_p);
@@ -819,6 +820,14 @@ remove_unused_locals (void)
 	    gsi_next (&gsi);
 	  }
       }
+
+  if (cfun->has_simduid_loops)
+    {
+      struct loop *loop;
+      FOR_EACH_LOOP (loop, 0)
+	if (loop->simduid && !is_used_p (loop->simduid))
+	  loop->simduid = NULL_TREE;
+    }
 
   cfun->has_local_explicit_reg_vars = false;
 
