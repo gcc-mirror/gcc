@@ -1,3 +1,25 @@
+2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Petr Murzin  <petr.murzin@intel.com>
+	    Kirill Yukhin <kirill.yukhin@intel.com>
+
+	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_SCATTER): New.
+	* doc/tm.texi: Regenerate.
+	* target.def: Add scatter builtin.
+	* tree-vectorizer.h: Rename gather_p to gather_scatter_p and use it
+	for loads/stores in case of gather/scatter accordingly.
+	(STMT_VINFO_GATHER_SCATTER_P(S)): Use it instead of STMT_VINFO_GATHER_P(S).
+	(vect_check_gather): Rename to ...
+	(vect_check_gather_scatter): this.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Use
+	STMT_VINFO_GATHER_SCATTER_P instead of STMT_VINFO_SCATTER_P.
+	(vect_check_gather_scatter): Use it instead of vect_check_gather.
+	(vect_analyze_data_refs): Add gatherscatter enum and maybe_scatter variable
+	and new checkings for it accordingly.
+	* tree-vect-stmts.c
+	(STMT_VINFO_GATHER_SCATTER_P(S)): Use it instead of STMT_VINFO_GATHER_P(S).
+	(vect_check_gather_scatter): Use it instead of vect_check_gather.
+	(vectorizable_store): Add checkings for STMT_VINFO_GATHER_SCATTER_P.
+
 2015-09-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* config/rs6000/altivec.md (altivec_vperm_v8hiv16qi): New

@@ -1801,6 +1801,18 @@ loads.",
  (const_tree mem_vectype, const_tree index_type, int scale),
  NULL)
 
+/* Target builtin that implements vector scatter operation.  */
+DEFHOOK
+(builtin_scatter,
+"Target builtin that implements vector scatter operation.  @var{vectype}\n\
+is the vector type of the store and @var{index_type} is scalar type of\n\
+the index, scaled by @var{scale}.\n\
+The default is @code{NULL_TREE} which means to not vectorize scatter\n\
+stores.",
+ tree,
+ (const_tree vectype, const_tree index_type, int scale),
+ NULL)
+
 /* Target function to initialize the cost model for a loop or block.  */
 DEFHOOK
 (init_cost,
