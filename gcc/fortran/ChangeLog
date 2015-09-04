@@ -1,3 +1,9 @@
+2015-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/67429
+	* error.c (gfc_clear_pp_buffer): Reset last_location, otherwise
+	caret lines might be skipped when actually giving a diagnostic.
+
 2015-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/54833
