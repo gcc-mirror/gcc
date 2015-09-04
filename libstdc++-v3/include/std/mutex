@@ -368,9 +368,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Predicate type that tests whether the current thread can lock a mutex.
     struct _Can_lock
     {
-      _Can_lock(const recursive_timed_mutex* __mx)
-      : _M_mx(__mx), _M_caller(this_thread::get_id()) { }
-
       // Returns true if the mutex is unlocked or is locked by _M_caller.
       bool
       operator()() const noexcept
@@ -391,7 +388,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     lock()
     {
-      _Can_lock __can_lock{this};
+      auto __id = this_thread::get_id();
+      _Can_lock __can_lock{this, __id};
       unique_lock<mutex> __lk(_M_mut);
       _M_cv.wait(__lk, __can_lock);
       if (_M_count == -1u)
@@ -403,7 +401,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     try_lock()
     {
-      _Can_lock __can_lock{this};
+      auto __id = this_thread::get_id();
+      _Can_lock __can_lock{this, __id};
       lock_guard<mutex> __lk(_M_mut);
       if (!__can_lock())
 	return false;
@@ -418,9 +417,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
       {
-	_Can_lock __can_lock{this};
+	auto __id = this_thread::get_id();
+	_Can_lock __can_lock{this, __id};
 	unique_lock<mutex> __lk(_M_mut);
-	if (!_M_cv.wait_for(__lk, __rtime, __can_lock);
+	if (!_M_cv.wait_for(__lk, __rtime, __can_lock))
 	  return false;
 	if (_M_count == -1u)
 	  return false;
@@ -433,9 +433,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
       {
-	_Can_lock __can_lock{this};
+	auto __id = this_thread::get_id();
+	_Can_lock __can_lock{this, __id};
 	unique_lock<mutex> __lk(_M_mut);
-	if (!_M_cv.wait_until(__lk, __atime, __can_lock);
+	if (!_M_cv.wait_until(__lk, __atime, __can_lock))
 	  return false;
 	if (_M_count == -1u)
 	  return false;
