@@ -460,7 +460,7 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   for (size_t i = 0; i <= symbol_name_len; i++)
     {
       char c = target_so_filename[i];
-      if ((c == '/') || (c == '.'))
+      if (c == '/' || c == '.' || c == '-')
 	c = '_';
       symbol_name[i] = c;
     }
