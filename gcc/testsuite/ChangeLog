@@ -1,3 +1,8 @@
+2015-09-02  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/65210
+	* gcc.target/avr/pr65210.c: New test.
+
 2015-09-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/67450
