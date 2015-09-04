@@ -1,3 +1,17 @@
+2015-09-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53379
+	* libgfortran.h (exit_error): New prototype.
+	* runtime/error.c (exit_error): New function.
+	(os_error): Call exit_error instead of exit.
+	(runtime_error): Likewise.
+	(runtime_error_at): Likewise.
+	(internal_error): Likewise.
+	(generate_error): Likewise.
+	(notify_std): Likewise.
+	* runtime/stop.c (error_stop_string): Likewise.
+	(error_stop_numeric): Likewise.
+
 2015-09-04  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/unix.h (delete_file): Remove prototype.
