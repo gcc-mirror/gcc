@@ -38,6 +38,7 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
 #include <limits.h>
 
 #ifndef _GLIBCXX_CLIMITS
