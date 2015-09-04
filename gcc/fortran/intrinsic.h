@@ -345,8 +345,6 @@ gfc_expr *gfc_simplify_maxexponent (gfc_expr *);
 gfc_expr *gfc_simplify_minexponent (gfc_expr *);
 gfc_expr *gfc_simplify_mod (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_modulo (gfc_expr *, gfc_expr *);
-gfc_expr *gfc_simplify_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
-			       gfc_expr *);
 gfc_expr *gfc_simplify_nearest (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_new_line (gfc_expr *);
 gfc_expr *gfc_simplify_nint (gfc_expr *, gfc_expr *);

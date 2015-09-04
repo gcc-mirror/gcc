@@ -4443,18 +4443,6 @@ gfc_simplify_modulo (gfc_expr *a, gfc_expr *p)
 }
 
 
-/* Exists for the sole purpose of consistency with other intrinsics.  */
-gfc_expr *
-gfc_simplify_mvbits (gfc_expr *f  ATTRIBUTE_UNUSED,
-		     gfc_expr *fp ATTRIBUTE_UNUSED,
-		     gfc_expr *l  ATTRIBUTE_UNUSED,
-		     gfc_expr *to ATTRIBUTE_UNUSED,
-		     gfc_expr *tp ATTRIBUTE_UNUSED)
-{
-  return NULL;
-}
-
-
 gfc_expr *
 gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
 {

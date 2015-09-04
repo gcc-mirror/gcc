@@ -1,3 +1,10 @@
+2015-09-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsic.h (gfc_simplify_mvbits): Remove.
+	* simplify.c (gfc_simplify_mvbits): Remove.
+	* intrinsic.c (add_subroutines): Remove reference to
+	gfc_simplify_mvbits.
+
 2015-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/67429
