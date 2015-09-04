@@ -675,6 +675,9 @@ internal_proto(show_backtrace);
 extern _Noreturn void sys_abort (void);
 internal_proto(sys_abort);
 
+extern _Noreturn void exit_error (int);
+internal_proto(exit_error);
+
 extern ssize_t estr_write (const char *);
 internal_proto(estr_write);
 
