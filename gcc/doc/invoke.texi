@@ -23696,6 +23696,11 @@ option is used to control the temporary stack reuse optimization.
 @opindex ftrapv
 This option generates traps for signed overflow on addition, subtraction,
 multiplication operations.
+The options @option{-ftrapv} and @option{-fwrapv} override each other, so using
+@option{-ftrapv} @option{-fwrapv} on the command-line results in
+@option{-fwrapv} being effective.  Note that only active options override, so
+using @option{-ftrapv} @option{-fwrapv} @option{-fno-wrapv} on the command-line
+results in @option{-ftrapv} being effective.
 
 @item -fwrapv
 @opindex fwrapv
@@ -23704,6 +23709,11 @@ overflow of addition, subtraction and multiplication wraps around
 using twos-complement representation.  This flag enables some optimizations
 and disables others.  This option is enabled by default for the Java
 front end, as required by the Java language specification.
+The options @option{-ftrapv} and @option{-fwrapv} override each other, so using
+@option{-ftrapv} @option{-fwrapv} on the command-line results in
+@option{-fwrapv} being effective.  Note that only active options override, so
+using @option{-ftrapv} @option{-fwrapv} @option{-fno-wrapv} on the command-line
+results in @option{-ftrapv} being effective.
 
 @item -fexceptions
 @opindex fexceptions
