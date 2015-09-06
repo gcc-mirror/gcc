@@ -198,20 +198,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef  SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (TARGET_64BIT && flag_pic != 1)					\
-    {									\
-      if (flag_pic > 1)							\
-        warning (0,							\
-	         "-fPIC ignored for target (all code is position independent)"\
-                 );                         				\
-      flag_pic = 1;							\
-    }									\
-  else if (!TARGET_64BIT && flag_pic)					\
-    {									\
-      warning (0, "-f%s ignored for target (all code is position independent)",\
-	       (flag_pic > 1) ? "PIC" : "pic");				\
-      flag_pic = 0;							\
-    }									\
+  flag_pic = TARGET_64BIT ? 1 : 0;                                      \
 } while (0)
 
 /* Define this macro if references to a symbol must be treated
