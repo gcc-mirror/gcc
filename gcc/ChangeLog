@@ -1,5 +1,11 @@
 2015-09-07  Marek Polacek  <polacek@redhat.com>
 
+	PR inline-asm/67448
+	* gimplify.c (gimplify_asm_expr): Don't allow MODIFY_EXPR as
+	a memory input.
+
+2015-09-07  Marek Polacek  <polacek@redhat.com>
+
 	* system.h (INTTYPE_MINIMUM): Rewrite to avoid shift warning.
 
 2015-09-04  Paolo Bonzini  <bonzini@gnu.org>
