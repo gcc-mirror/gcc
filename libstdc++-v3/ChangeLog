@@ -1,5 +1,8 @@
 2015-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Rename
+	shadowed variable.
+
 	* testsuite/30_threads/recursive_timed_mutex/unlock/2.cc: Run on
 	darwin.
 	* testsuite/30_threads/timed_mutex/unlock/2.cc: Run on darwin.
