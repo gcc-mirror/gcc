@@ -1,5 +1,8 @@
 2015-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex_compiler.h (_BracketMatcher::_M_is_ready):
+	Initialize using NSDMI and set using _GLIBCXX_DEBUG_ONLY.
+
 	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Rename
 	shadowed variable.
 
