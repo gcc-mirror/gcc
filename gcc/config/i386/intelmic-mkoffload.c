@@ -453,17 +453,18 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   fork_execute (objcopy_argv[0], CONST_CAST (char **, objcopy_argv), false);
 
   /* Objcopy has created symbols, containing the input file name with
-     special characters replaced with '_'.  We are going to rename these
-     new symbols.  */
+     non-alphanumeric characters replaced by underscores.
+     We are going to rename these new symbols.  */
   size_t symbol_name_len = strlen (target_so_filename);
   char *symbol_name = XALLOCAVEC (char, symbol_name_len + 1);
-  for (size_t i = 0; i <= symbol_name_len; i++)
+  for (size_t i = 0; i < symbol_name_len; i++)
     {
       char c = target_so_filename[i];
-      if ((c == '/') || (c == '.'))
+      if (!ISALNUM (c))
 	c = '_';
       symbol_name[i] = c;
     }
+  symbol_name[symbol_name_len] = '\0';
 
   char *opt_for_objcopy[3];
   opt_for_objcopy[0] = XALLOCAVEC (char, sizeof ("_binary__start=")

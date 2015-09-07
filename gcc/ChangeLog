@@ -1,3 +1,8 @@
+2015-09-07  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* config/i386/intelmic-mkoffload.c (prepare_target_image): Handle all
+	non-alphanumeric characters in the symbol name.
+
 2015-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/67452
