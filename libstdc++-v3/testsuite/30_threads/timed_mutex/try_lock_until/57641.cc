@@ -48,21 +48,21 @@ struct clock
 };
 
 std::timed_mutex mx;
-bool test = false;
+bool locked = false;
 
 void f()
 {
-  test = mx.try_lock_until(clock::now() + C::milliseconds(1));
+  locked = mx.try_lock_until(clock::now() + C::milliseconds(1));
 }
 
 int main()
 {
-  bool test = false;
+  bool test __attribute__((unused)) = true;
   std::lock_guard<std::timed_mutex> l(mx);
   auto start = C::system_clock::now();
   std::thread t(f);
   t.join();
   auto stop = C::system_clock::now();
   VERIFY( (stop - start) < C::seconds(9) );
-  VERIFY( !test );
+  VERIFY( !locked );
 }
