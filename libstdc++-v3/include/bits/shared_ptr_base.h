@@ -1054,7 +1054,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tp*
       operator->() const noexcept
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	_GLIBCXX_DEBUG_PEDASSERT(_M_ptr != 0);
 	return _M_ptr;
       }
 

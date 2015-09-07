@@ -295,7 +295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       pointer
       operator->() const noexcept
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
+	_GLIBCXX_DEBUG_PEDASSERT(get() != pointer());
 	return get();
       }
 

@@ -1,5 +1,11 @@
 2015-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr_base.h (__shared_ptr::operator->): Change
+	_GLIBCXX_DEBUG_ASSERT to _GLIBCXX_DEBUG_PEDASSERT.
+	* include/bits/unique_ptr.h (unique_ptr::operator->): Likewise.
+	* testsuite/20_util/shared_ptr/observers/get.cc: Test operator-> on
+	empty shared_ptr.
+
 	* include/bits/regex_compiler.h (_BracketMatcher::_M_is_ready):
 	Initialize using NSDMI and set using _GLIBCXX_DEBUG_ONLY.
 
