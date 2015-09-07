@@ -1,3 +1,7 @@
+2015-09-07  Marek Polacek  <polacek@redhat.com>
+
+	* system.h (INTTYPE_MINIMUM): Rewrite to avoid shift warning.
+
 2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* configure: Regenerate.
