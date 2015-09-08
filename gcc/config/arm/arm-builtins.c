@@ -239,6 +239,12 @@ typedef struct {
 #define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
   VAR9 (T, N, A, B, C, D, E, F, G, H, I) \
   VAR1 (T, N, J)
+#define VAR11(T, N, A, B, C, D, E, F, G, H, I, J, K) \
+  VAR10 (T, N, A, B, C, D, E, F, G, H, I, J) \
+  VAR1 (T, N, K)
+#define VAR12(T, N, A, B, C, D, E, F, G, H, I, J, K, L) \
+  VAR11 (T, N, A, B, C, D, E, F, G, H, I, J, K) \
+  VAR1 (T, N, L)
 
 /* The NEON builtin data can be found in arm_neon_builtins.def.
    The mode entries in the following table correspond to the "key" type of the

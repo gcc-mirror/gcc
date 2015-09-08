@@ -164,9 +164,9 @@ VAR10 (UNOP, vdup_n,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
 VAR10 (GETLANE, vdup_lane,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR5 (COMBINE, vcombine, v8qi, v4hi, v2si, v2sf, di)
-VAR5 (UNOP, vget_high, v16qi, v8hi, v4si, v4sf, v2di)
-VAR5 (UNOP, vget_low, v16qi, v8hi, v4si, v4sf, v2di)
+VAR6 (COMBINE, vcombine, v8qi, v4hi, v4hf, v2si, v2sf, di)
+VAR6 (UNOP, vget_high, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
+VAR6 (UNOP, vget_low, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
 VAR3 (UNOP, vmovn, v8hi, v4si, v2di)
 VAR3 (UNOP, vqmovns, v8hi, v4si, v2di)
 VAR3 (UNOP, vqmovnu, v8hi, v4si, v2di)
@@ -242,40 +242,40 @@ VAR6 (UNOP, vreinterpretv4si, v16qi, v8hi, v4si, v4sf, v2di, ti)
 VAR6 (UNOP, vreinterpretv4sf, v16qi, v8hi, v4si, v4sf, v2di, ti)
 VAR6 (UNOP, vreinterpretv2di, v16qi, v8hi, v4si, v4sf, v2di, ti)
 VAR6 (UNOP, vreinterpretti, v16qi, v8hi, v4si, v4sf, v2di, ti)
-VAR10 (LOAD1, vld1,
-        v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
+VAR12 (LOAD1, vld1,
+        v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
 VAR10 (LOAD1LANE, vld1_lane,
 	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
 VAR10 (LOAD1, vld1_dup,
 	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR10 (STORE1, vst1,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR10 (STORE1LANE, vst1_lane,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR9 (LOAD1, vld2,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf)
-VAR7 (LOAD1LANE, vld2_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf)
-VAR5 (LOAD1, vld2_dup, v8qi, v4hi, v2si, v2sf, di)
-VAR9 (STORE1, vst2,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf)
-VAR7 (STORE1LANE, vst2_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf)
-VAR9 (LOAD1, vld3,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf)
-VAR7 (LOAD1LANE, vld3_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf)
-VAR5 (LOAD1, vld3_dup, v8qi, v4hi, v2si, v2sf, di)
-VAR9 (STORE1, vst3,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf)
-VAR7 (STORE1LANE, vst3_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf)
-VAR9 (LOAD1, vld4,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf)
-VAR7 (LOAD1LANE, vld4_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf)
-VAR5 (LOAD1, vld4_dup, v8qi, v4hi, v2si, v2sf, di)
-VAR9 (STORE1, vst4,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf)
-VAR7 (STORE1LANE, vst4_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf)
+VAR12 (STORE1, vst1,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
+VAR12 (STORE1LANE, vst1_lane,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
+VAR11 (LOAD1, vld2,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
+VAR9 (LOAD1LANE, vld2_lane,
+	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR6 (LOAD1, vld2_dup, v8qi, v4hi, v4hf, v2si, v2sf, di)
+VAR11 (STORE1, vst2,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
+VAR9 (STORE1LANE, vst2_lane,
+	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR11 (LOAD1, vld3,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
+VAR9 (LOAD1LANE, vld3_lane,
+	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR6 (LOAD1, vld3_dup, v8qi, v4hi, v4hf, v2si, v2sf, di)
+VAR11 (STORE1, vst3,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
+VAR9 (STORE1LANE, vst3_lane,
+	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR11 (LOAD1, vld4,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
+VAR9 (LOAD1LANE, vld4_lane,
+	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR6 (LOAD1, vld4_dup, v8qi, v4hi, v4hf, v2si, v2sf, di)
+VAR11 (STORE1, vst4,
+	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
+VAR9 (STORE1LANE, vst4_lane,
+	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
