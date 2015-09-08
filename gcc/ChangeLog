@@ -1,5 +1,19 @@
 2015-09-07  Alan Lawrence  <alan.lawrence.com>
 
+	* config/arm/arm_neon.h (vgetq_lane_f16, vsetq_lane_f16, vld1q_lane_f16,
+	vld1q_dup_f16, vreinterpretq_p8_f16, vreinterpretq_p16_f16,
+	vreinterpretq_f16_p8, vreinterpretq_f16_p16, vreinterpretq_f16_f32,
+	vreinterpretq_f16_p64, vreinterpretq_f16_p128, vreinterpretq_f16_s64,
+	vreinterpretq_f16_u64, vreinterpretq_f16_s8, vreinterpretq_f16_s16,
+	vreinterpretq_f16_s32, vreinterpretq_f16_u8, vreinterpretq_f16_u16,
+	vreinterpretq_f16_u32, vreinterpretq_f32_f16, vreinterpretq_p64_f16,
+	vreinterpretq_p128_f16, vreinterpretq_s64_f16, vreinterpretq_u64_f16,
+	vreinterpretq_s8_f16, vreinterpretq_s16_f16, vreinterpretq_s32_f16,
+	vreinterpretq_u8_f16, vreinterpretq_u16_f16, vreinterpretq_u32_f16):
+	New.
+
+2015-09-07  Alan Lawrence  <alan.lawrence.com>
+
 	* config/arm/arm.h (VALID_NEON_QREG_MODE): Add V8HFmode.
 
 	* config/arm/arm.c (arm_vector_mode_supported_p): Support V8HFmode.
