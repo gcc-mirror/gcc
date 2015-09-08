@@ -1,3 +1,7 @@
+2015-09-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* backtrace.c: #include <sys/types.h>.
+
 2015-09-08  Ian Lance Taylor  <iant@google.com>
 
 	PR other/67457
