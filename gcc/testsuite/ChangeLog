@@ -1,5 +1,10 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vget_high_1.c: Add float16x8->float16x4 case.
+	* gcc.target/aarch64/vget_low_1.c: Likewise.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vldN_1.c: Add float16x4_t and float16x8_t cases.
 	* gcc.target/aarch64/vldN_dup_1.c: Likewise.
 	* gcc.target/aarch64/vldN_lane_1.c: Likewise.

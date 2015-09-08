@@ -1,5 +1,26 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/arm_neon.h (vreinterpret_p8_f16, vreinterpret_p16_f16,
+	vreinterpret_f16_f64, vreinterpret_f16_s8, vreinterpret_f16_s16,
+	vreinterpret_f16_s32, vreinterpret_f16_s64, vreinterpret_f16_f32,
+	vreinterpret_f16_u8, vreinterpret_f16_u16, vreinterpret_f16_u32,
+	vreinterpret_f16_u64, vreinterpret_f16_p8, vreinterpret_f16_p16,
+	vreinterpretq_f16_f64, vreinterpretq_f16_s8, vreinterpretq_f16_s16,
+	vreinterpretq_f16_s32, vreinterpretq_f16_s64, vreinterpretq_f16_f32,
+	vreinterpretq_f16_u8, vreinterpretq_f16_u16, vreinterpretq_f16_u32,
+	vreinterpretq_f16_u64, vreinterpretq_f16_p8, vreinterpretq_f16_p16,
+	vreinterpret_f32_f16, vreinterpret_f64_f16, vreinterpret_s64_f16,
+	vreinterpret_u64_f16, vreinterpretq_u64_f16, vreinterpret_s8_f16,
+	vreinterpret_s16_f16, vreinterpret_s32_f16, vreinterpret_u8_f16,
+	vreinterpret_u16_f16, vreinterpret_u32_f16, vreinterpretq_p8_f16,
+	vreinterpretq_p16_f16, vreinterpretq_f32_f16, vreinterpretq_f64_f16,
+	vreinterpretq_s64_f16, vreinterpretq_s8_f16, vreinterpretq_s16_f16,
+	vreinterpretq_s32_f16, vreinterpretq_u8_f16, vreinterpretq_u16_f16,
+	vreinterpretq_u32_f16, vget_low_f16, vget_high_f16, vld1_dup_f16,
+	vld1q_dup_f16): New.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_float_truncate_lo_v2sf):
 	Reparameterize to...
 	(aarch64_float_truncate_lo_<mode>): ...this, for both V2SF and V4HF.
