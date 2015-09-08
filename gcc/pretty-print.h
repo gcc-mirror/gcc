@@ -187,7 +187,7 @@ struct pp_wrapping_mode_t
 /* Get or set the wrapping mode as a single entity.  */
 #define pp_wrapping_mode(PP) (PP)->wrapping
 
-/* The type of a hook that formats client-specific data onto a pretty_pinter.
+/* The type of a hook that formats client-specific data onto a pretty_printer.
    A client-supplied formatter returns true if everything goes well,
    otherwise it returns false.  */
 typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,

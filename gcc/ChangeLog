@@ -1,3 +1,7 @@
+2015-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.h (printer_fn): Fix typo in comment.
+
 2015-09-07  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-scopedtables.h (class const_and_copies): Fix comment typo.
