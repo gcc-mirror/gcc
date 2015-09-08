@@ -29,7 +29,7 @@ class const_and_copies
   /* Push the unwinding marker onto the stack.  */
   void push_marker (void) { stack.safe_push (NULL_TREE); }
 
-  /* Restore the const/copies table to its state whe the last marker
+  /* Restore the const/copies table to its state when the last marker
      was pushed.  */
   void pop_to_marker (void);
 
