@@ -1,5 +1,10 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* fold-const.c (native_interpret_real): Fix HFmode for bigendian where
+	UNITS_PER_WORD >= 4.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_unpacks_lo_<mode>,
 	aarch64_simd_vec_unpacks_hi_<mode>): New insn.
 	(vec_unpacks_lo_v4sf, vec_unpacks_hi_v4sf): Delete insn.
