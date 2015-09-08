@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -63,10 +63,11 @@ extern "C" {
 /// main() function from exiting until it is directed to by the source. When
 /// the shutdown message is received this function will stop any future run
 /// functions from executing but will wait for any current run functions to
-/// complete. All Intel® Coprocessor Offload Infrastructure (Intel® COI)  resources will be cleaned up and no additional Intel® Coprocessor Offload Infrastructure (Intel® COI)  APIs
-/// should be called after this function returns.  This function does not
-/// invoke exit() so the application can perform any of its own cleanup once
-/// this call returns.
+/// complete. All Intel® Coprocessor Offload Infrastructure (Intel® COI)
+/// resources will be cleaned up and no additional Intel® Coprocessor Offload
+/// Infrastructure (Intel® COI) APIs should be called after this function
+/// returns. This function does not invoke exit() so the application
+/// can perform any of its own cleanup once this call returns.
 ///
 /// @return COI_SUCCESS once the process receives the shutdown message.
 ///
@@ -86,8 +87,9 @@ COIProcessWaitForShutdown();
 /// from this call.
 ///
 /// @return COI_SUCCESS once the proxy output has been flushed to and written
-///         written by the host. Note that Intel® Coprocessor Offload Infrastructure (Intel® COI)  on the source writes to stdout
-///         and stderr, but does not flush this output.
+///         written by the host. Note that Intel® Coprocessor Offload
+///         Infrastructure (Intel® COI) on the source writes to stdout and
+///         stderr, but does not flush this output.
 /// @return COI_SUCCESS if the process was created without enabling
 ///         proxy IO this function.
 ///

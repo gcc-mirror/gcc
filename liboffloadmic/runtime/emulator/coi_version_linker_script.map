@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -38,6 +38,12 @@
  * intellectual property rights is granted herein.
  */
 
+/***
+* See http://sourceware.org/binutils/docs/ld/VERSION.html#VERSION for more info.
+* Use this in conjunction with coi_version_asm.h.
+* // Comments don't work in this file.
+***/
+
 COI_1.0
 {
   global:
@@ -56,17 +62,23 @@ COI_1.0
     COIEngineGetCount;
     COIEngineGetHandle;
     COIEngineGetIndex;
+    COIEngineGetInfo;
     COIEventWait;
+    COIEventRegisterCallback;
     COIPerfGetCycleFrequency;
+    COIPipelineClearCPUMask;
     COIPipelineCreate;
     COIPipelineDestroy;
     COIPipelineRunFunction;
+    COIPipelineSetCPUMask;
     COIPipelineStartExecutingRunFunctions;
+    COIProcessCreateFromFile;
     COIProcessCreateFromMemory;
     COIProcessDestroy;
     COIProcessGetFunctionHandles;
     COIProcessLoadLibraryFromMemory;
     COIProcessRegisterLibraries;
+    COIProcessUnloadLibrary;
     COIProcessWaitForShutdown;
   local:
     *;

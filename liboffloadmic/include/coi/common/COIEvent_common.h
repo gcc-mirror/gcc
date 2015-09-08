@@ -10,11 +10,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
- *
  * Disclaimer: The codes contained in these modules may be specific
  * to the Intel Software Development Platform codenamed Knights Ferry,
  * and the Intel product codenamed Knights Corner, and are not backward
@@ -38,48 +33,52 @@
  * intellectual property rights is granted herein.
  */
 
-#ifndef _COITYPES_COMMON_H
-#define _COITYPES_COMMON_H
+#ifndef _COIEVENT_COMMON_H
+#define _COIEVENT_COMMON_H
 
-/** @ingroup COITypes
- *  @addtogroup COITypesSource
+/** @ingroup COIEvent
+ *  @addtogroup COIEventcommon
 @{
-
-* @file common/COITypes_common.h
+* @file common/COIEvent_common.h
 */
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    #include <stdint.h>
-    #include <wchar.h>
-    #define COIACCESSAPI /* nothing */
-    #define COIACCESSAPI2 /* nothing */
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+#include "../common/COITypes_common.h"
+#include "../common/COIResult_common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
 
-struct coievent  { uint64_t opaque[2]; };
-
-typedef struct coiprocess  * COIPROCESS;
-typedef struct coipipeline * COIPIPELINE;
-typedef struct coifunction * COIFUNCTION;
-typedef struct coiengine   * COIENGINE;
-typedef struct coievent      COIEVENT;
-typedef struct coibuffer   * COIBUFFER;
-typedef struct coilibrary  * COILIBRARY;
-typedef struct coimapinst  * COIMAPINSTANCE;
-
-typedef uint64_t COI_CPU_MASK[16];
-
-/**
- * On Windows, coi_wchar_t is a uint32_t. On Windows, wchar_t is 16 bits wide, and on Linux it is 32 bits wide, so uint32_t is used for portability.
- */
-typedef wchar_t  coi_wchar_t;
-
+///////////////////////////////////////////////////////////////////////////////
+///
+/// Signal one shot user event. User events created on source can be
+/// signaled from both sink and source. This fires the event and wakes up
+/// threads waiting on COIEventWait.
+///
+/// Note: For events that are not registered or already signaled this call
+///       will behave as a NOP. Users need to make sure that they pass valid
+///       events on the sink side.
+///
+/// @param  in_Event
+///         Event Handle to be signaled.
+///
+/// @return COI_INVAILD_HANDLE if in_Event was not a User event.
+///
+/// @return COI_ERROR if the signal fails to be sent from the sink.
+///
+/// @return COI_SUCCESS if the event was successfully signaled or ignored.
+///
+COIACCESSAPI
+COIRESULT COIEventSignalUserEvent(COIEVENT in_Event);
+///
+///
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* _COITYPES_COMMON_H */
+#endif /* _COIEVENT_COMMON_H */
+
+/*! @} */

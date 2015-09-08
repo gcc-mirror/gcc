@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -38,16 +38,24 @@
  * intellectual property rights is granted herein.
  */
 
-__asm__ (".symver myoAcquire1,myoAcquire@@MYO_1.0");
-__asm__ (".symver myoRelease1,myoRelease@@MYO_1.0");
-__asm__ (".symver myoSharedAlignedFree1,myoSharedAlignedFree@@MYO_1.0");
-__asm__ (".symver myoSharedAlignedMalloc1,myoSharedAlignedMalloc@@MYO_1.0");
-__asm__ (".symver myoSharedFree1,myoSharedFree@@MYO_1.0");
-__asm__ (".symver myoSharedMalloc1,myoSharedMalloc@@MYO_1.0");
+/*Version for Symbols( only Functions currently versioned)
+Only that Linux Host Side code is versioned currently*/
+#if (! defined MYO_MIC_CARD) && (! defined _WIN32)
 
-__asm__ (".symver myoiLibInit1,myoiLibInit@@MYO_1.0");
-__asm__ (".symver myoiLibFini1,myoiLibFini@@MYO_1.0");
-__asm__ (".symver myoiMicVarTableRegister1,myoiMicVarTableRegister@@MYO_1.0");
-__asm__ (".symver myoiRemoteFuncRegister1,myoiRemoteFuncRegister@@MYO_1.0");
-__asm__ (".symver myoiTargetFptrTableRegister1,myoiTargetFptrTableRegister@@MYO_1.0");
+   __asm__(".symver myoArenaAlignedMalloc1,myoArenaAlignedMalloc@@MYO_1.0");
+   __asm__(".symver myoArenaAlignedFree1,myoArenaAlignedFree@@MYO_1.0");
+   __asm__(".symver myoArenaAcquire1,myoArenaAcquire@@MYO_1.0");
+   __asm__(".symver myoArenaRelease1,myoArenaRelease@@MYO_1.0");
+   __asm__(".symver myoAcquire1,myoAcquire@@MYO_1.0");
+   __asm__(".symver myoRelease1,myoRelease@@MYO_1.0");
+   __asm__(".symver myoSharedAlignedFree1,myoSharedAlignedFree@@MYO_1.0");
+   __asm__(".symver myoSharedAlignedMalloc1,myoSharedAlignedMalloc@@MYO_1.0");
+   __asm__(".symver myoSharedFree1,myoSharedFree@@MYO_1.0");
+   __asm__(".symver myoSharedMalloc1,myoSharedMalloc@@MYO_1.0");
+   __asm__(".symver myoiLibInit1,myoiLibInit@@MYO_1.0");
+   __asm__(".symver myoiLibFini1,myoiLibFini@@MYO_1.0");
+   __asm__(".symver myoiMicVarTableRegister1,myoiMicVarTableRegister@@MYO_1.0");
+   __asm__(".symver myoiRemoteFuncRegister1,myoiRemoteFuncRegister@@MYO_1.0");
+   __asm__(".symver myoiTargetFptrTableRegister1,myoiTargetFptrTableRegister@@MYO_1.0");
 
+#endif

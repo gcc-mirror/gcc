@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -68,21 +68,16 @@ typedef enum COI_BUFFER_TYPE
     /// Sink physical memory. Mapping the buffer may stall the pipelines.
     COI_BUFFER_NORMAL = 1,
 
-    /// A streaming buffer creates new versions each time it is passed to
-    /// Runfunction. These new versions are consumed by run functions.
-
-    ///  To_SINK buffers are used to send data from SOURCE to SINK
-    ///  These buffers are SOURCE write only buffers. If read, won't
-    ///  get Data written by SINK
-    COI_BUFFER_STREAMING_TO_SINK,
-
-    ///  To_SOURCE buffers are used to get data from SINK to SOURCE
-    ///  These buffers are SOURCE Read only buffers. If written, data
-    ///  won't get reflected on SINK side.
-    COI_BUFFER_STREAMING_TO_SOURCE,
+    // Reserved values, not used by COI any more
+    COI_BUFFER_RESERVED_1,
+    COI_BUFFER_RESERVED_2,
 
     /// A pinned buffer exists in a shared memory region and is always
     /// available for read or write operations.
+    /// Note: Pinned Buffers larger than 4KB are not supported in
+    /// Windows 7 kernels.
+    /// The value of COI_BUFFER_PINNED is set to specific value
+    /// to maintain compatibility with older versions of COI
     COI_BUFFER_PINNED,
 
     /// OpenCL buffers are similar to Normal buffers except they don't
@@ -126,12 +121,15 @@ typedef enum COI_BUFFER_TYPE
 /// check to see if this memory is read only. Ordinarily this is checked
 /// and an error is thrown upon buffer creation. With this flag, the error
 /// might occur later, and cause undetermined behavior. Be sure to always
-/// use writeable memory for COIBuffers.
+/// use writable memory for COIBuffers.
 #define COI_OPTIMIZE_NO_DMA                0x00000040
 
 /// Hint to the runtime to try to use huge page sizes for backing store on the
-/// sink.  Is currently not compatible with PINNED buffers or the SAME_ADDRESS
-/// flags or the SINK_MEMORY flag.
+/// sink. Is currently not compatible with PINNED buffers or the SAME_ADDRESS
+/// flags or the SINK_MEMORY flag. It is important to note that this is a hint
+/// and internally the runtime may not actually promote to huge pages.
+/// Specifically if the buffer is too small (less than 4KiB for example) then
+/// the runtime will not promote the buffer to use huge pages.
 #define COI_OPTIMIZE_HUGE_PAGE_SIZE        0x00000080
 
 /// Used to tell Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
@@ -167,12 +165,12 @@ COI_VALID_BUFFER_TYPES_AND_FLAGS[COI_BUFFER_OPENCL+1] = {
              | ADDR  | SINK | SRC  | SRC   | SINK | SINK  | NO  | PAGE | SINK |
              | SINKS | SRC  | READ | WRITE | READ | WRITE | DMA | SIZE | MEM  |
              +-------+------+------+-------+------+-------+-----+------+-----*/
-MTM(INVALID  ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F  ),
-MTM(NORMAL   ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  T  ),
-MTM(TO_SINK  ,   F   ,   F  ,   F  ,   T   ,   T  ,   T   ,  F  ,   F  ,  F  ),
-MTM(TO_SOURCE,   F   ,   F  ,   T  ,   F   ,   F  ,   T   ,  F  ,   F  ,  F  ),
-MTM(PINNED   ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  F  ,   F  ,  F  ),
-MTM(OPENCL   ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  F  ),
+MTM(INVALID   ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F  ),
+MTM(NORMAL    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  T  ),
+MTM(RESERVED1 ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F  ),
+MTM(RESERVED2 ,   F   ,   F  ,   F  ,   F   ,   F  ,   F   ,  F  ,   F  ,  F  ),
+MTM(PINNED    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  F  ,   F  ,  F  ),
+MTM(OPENCL    ,   T   ,   T  ,   T  ,   T   ,   T  ,   T   ,  T  ,   T  ,  F  ),
 };
 ///\endcode
 #undef MTM
@@ -223,8 +221,8 @@ COI_VALID_BUFFER_TYPES_AND_MAP
                         +-------+-------+-------+*/
 MMM(INVALID             ,   F   ,   F   ,   F   ),
 MMM(NORMAL              ,   T   ,   T   ,   T   ),
-MMM(STREAMING_TO_SINK   ,   F   ,   F   ,   T   ),
-MMM(STREAMING_TO_SOURCE ,   F   ,   T   ,   F   ),
+MMM(RESERVED1           ,   F   ,   F   ,   F   ),
+MMM(RESERVED2           ,   F   ,   F   ,   F   ),
 MMM(PINNED              ,   T   ,   T   ,   T   ),
 MMM(OPENCL              ,   T   ,   T   ,   T   ),
 };
@@ -250,7 +248,19 @@ typedef enum COI_COPY_TYPE
     /// The runtime should use a CPU copy to copy the data.
     /// CPU copy is a synchronous copy. So the resulting operations are always
     /// blocking (even though a out_pCompletion event is specified).
-    COI_COPY_USE_CPU
+    COI_COPY_USE_CPU,
+
+    /// Same as above, but forces moving entire buffer to target process in Ex
+    /// extended APIs, even if the full buffer is not written.
+    COI_COPY_UNSPECIFIED_MOVE_ENTIRE,
+
+    /// Same as above, but forces moving entire buffer to target process in Ex
+    /// extended APIs, even if the full buffer is not written.
+    COI_COPY_USE_DMA_MOVE_ENTIRE,
+
+    /// Same as above, but forces moving entire buffer to target process in Ex
+    /// extended APIs, even if the full buffer is not written.
+    COI_COPY_USE_CPU_MOVE_ENTIRE
 
 } COI_COPY_TYPE;
 
@@ -260,9 +270,7 @@ typedef enum COI_COPY_TYPE
 /// access in a COIPROCESS. This is used with COIBufferSetState.
 ///
 /// Buffer state holds only for NORMAL Buffers and OPENCL buffers. Pinned
-/// buffers are always valid everywhere they get created. Streaming buffers
-/// do not follow the state transition rules, as a new version of the
-/// buffer is created every time it is Mapped or you issue a RunFunction.
+/// buffers are always valid everywhere they get created.
 ///
 /// Rules on State Transition of the buffer:
 /// -. When a Buffer is created by default it is valid only on the source,
@@ -296,11 +304,11 @@ typedef enum COI_COPY_TYPE
 ///
 ///    - COIBufferWrite makes the buffer exclusively valid where the write
 ///      happens. Write gives preference to Source over Sink. In other words
-///      if a buffer is valid on the Source and multiple Sinks, Write will 
-///      happen on the Source and will Invalidate all other Sinks. If the 
-///      buffer is valid on multiple Sinks ( and not on the Source) then 
-///      Intel® Coprocessor Offload Infrastructure (Intel® COI) 
-///      selects process handle with the lowest numerical value to do the 
+///      if a buffer is valid on the Source and multiple Sinks, Write will
+///      happen on the Source and will Invalidate all other Sinks. If the
+///      buffer is valid on multiple Sinks ( and not on the Source) then
+///      Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
+///      selects process handle with the lowest numerical value to do the
 ///      exclusive write Again, OPENCL buffers are invalidated only if the
 ///      buffer is not in use on that SINK/SOURCE.
 ///
@@ -308,41 +316,41 @@ typedef enum COI_COPY_TYPE
 ///      when data needs to be moved from a valid location. The selection of
 ///      valid location happens as stated above.
 ///
-/// - It is possible to alter only parts of the buffer and change it state 
-///   In other words it is possible for different parts of the buffer to have 
-///   different states on different devices. A byte is the minimum size at 
+/// - It is possible to alter only parts of the buffer and change it state
+///   In other words it is possible for different parts of the buffer to have
+///   different states on different devices. A byte is the minimum size at
 ///   which state can be maintained internally. Granularity level is completely
 ///   determined by how the buffer gets fragmented.
 ///
-/// Note: Buffer is considered 'in use' if is 
+/// Note: Buffer is considered 'in use' if is
 ///         - Being used in RunFunction : In use on a Sink
 ///         - Mapped: In use on a Source
 ///         - AddRef'd: In use on Sink
 ///
 
 //////////////////////////////////////////////////////////////////////////////
-/// The buffer states used with COIBufferSetState call to indicate the new 
+/// The buffer states used with COIBufferSetState call to indicate the new
 /// state of the buffer on a given process
 ///
 typedef enum {
     COI_BUFFER_VALID = 0,      // Buffer is valid and up-to-date on the process
     COI_BUFFER_INVALID ,       // Buffer is not valid, need valid data
     COI_BUFFER_VALID_MAY_DROP, // Same as valid but will drop the content when
-                               // evicted to avoid overwriting the shadow 
+                               // evicted to avoid overwriting the shadow
                                // memory
     COI_BUFFER_RESERVED        // Reserved for internal use
 } COI_BUFFER_STATE;
 ///
 /// Note: A VALID_MAY_DROP declares a buffer's copy as secondary on a given
 /// process. This means that there needs to be at least one primary copy of the
-/// the buffer somewhere in order to mark the buffer as VALID_MAY_DROP on a 
+/// the buffer somewhere in order to mark the buffer as VALID_MAY_DROP on a
 /// process. In other words to make a buffer VALID_MAY_DROP on a given process
 /// it needs to be in COI_BUFFER_VALID state somewhere else. The operation gets
 /// ignored (or is a nop) if there is no primary copy of the buffer. The nature
-/// of this state to "drop the content" when evicted is a side effect of 
-/// marking the buffer as secondary copy. So when a buffer marked 
-/// VALID_MAY_DROP is evicted Intel® Coprocessor Offload Infrastructure
-/// (Intel® COI)  doesn't back it up as it is assumed that 
+/// of this state to "drop the content" when evicted is a side effect of
+/// marking the buffer as secondary copy. So when a buffer marked
+/// VALID_MAY_DROP is evicted Intel(R) Coprocessor Offload Infrastructure
+/// (Intel(R) COI) doesn't back it up as it is assumed that
 /// there is a primary copy somewhere.
 
 //////////////////////////////////////////////////////////////////////////////
@@ -355,19 +363,37 @@ typedef enum {
 
 // A process handle for COIBufferSetState call to indicate all the sink
 // processes where the given buffer is valid
-#define COI_SINK_OWNERS  ((COIPROCESS)-2)
+#define COI_SINK_OWNERS ((COIPROCESS)-2)
+
+// Matrix descriptors used with MultiD Read/Write
+typedef struct dim_desc {
+    int64_t size;       // Size of data type
+    int64_t lindex;     // Lower index, used in Fortran
+    int64_t lower;      // Lower section bound
+    int64_t upper;      // Upper section bound
+    int64_t stride;     // Stride, or number of bytes between the start
+                        // of one element and start of next one divided
+                        // by size.
+} dim_desc;
+
+typedef struct arr_desc {
+    int64_t base;       // Base address
+    int64_t rank;       // Rank of array, i.e. number of dimensions
+    dim_desc dim[3];    // This array has as many elements as �rank�
+                        // currently limited to 3.
+} arr_desc;
 
 //////////////////////////////////////////////////////////////////////////////
 ///
 /// Creates a buffer that can be used in RunFunctions that are queued in
 /// pipelines. The address space for the buffer is reserved when it is
 /// created although the memory may not be committed until the buffer is
-/// used for the first time. Please note that the Intel® Coprocessor Offload
-/// Infrastructure (Intel® COI)  runtime may also
-/// allocate space for the source process to use as shadow memory for
-/// certain types of buffers. If Intel® Coprocessor Offload Infrastructure
-/// (Intel® COI)  does allocate this memory it will not
-/// be released or reallocated until the COIBuffer is destroyed.
+/// used for the first time. Please note that the Intel(R) Coprocessor Offload
+/// Infrastructure (Intel(R) COI) runtime may also allocate space for the
+/// source process to use as shadow memory for certain types of buffers.
+/// If Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
+/// does allocate this memory it will not be released or reallocated
+/// until the COIBuffer is destroyed.
 ///
 /// @param  in_Size
 ///         [in] The number of bytes to allocate for the buffer. If in_Size
@@ -408,13 +434,13 @@ typedef enum {
 ///         which flags and types are compatible.
 ///
 /// @return COI_OUT_OF_RANGE if in_Size is zero, if the bits set in
-///         the in_Flags parameter are not recognized flags, or if
-///         in_NumProcesses is zero.
+///         the in_Flags parameter are not recognized flags, or if in_NumProcesses is zero.
 ///
 /// @return COI_INVALID_POINTER if the in_pProcesses or out_pBuffer parameter
 ///         is NULL.
 ///
-/// @return COI_NOT_SUPPORTED if one of the in_Flags is COI_SINK_MEMORY.
+/// @return COI_NOT_SUPPORTED if in_Type has invalid value or if
+///        one of the in_Flags is COI_SINK_MEMORY.
 ///
 /// @return COI_NOT_SUPPORTED if the flags include either
 ///         COI_SAME_ADDRESS_SINKS or COI_SAME_ADDRESS_SINKS_AND_SOURCE and
@@ -425,7 +451,10 @@ typedef enum {
 ///
 /// @return COI_OUT_OF_MEMORY if allocating the buffer fails.
 ///
-/// @return COI_RESOURCE_EXHAUSTED if the sink is out of buffer memory.
+/// @return COI_RESOURCE_EXHAUSTED if the sink is out of buffer memory. This
+///         error can also be thrown from Windows 7 operating systems if
+///         COI_BUFFER_PINNED and a size larger than 4KB is requested.
+///         This is due to a limitation of the Windows 7 memory management unit.
 ///
 COIACCESSAPI
 COIRESULT
@@ -442,22 +471,22 @@ COIBufferCreate(
 ///
 /// Creates a buffer from some existing memory that can be used in
 /// RunFunctions that are queued in pipelines. If the flag COI_SINK_MEMORY
-/// is specified then Intel® Coprocessor Offload I
-/// nfrastructure (Intel® COI)  will use that memory for the buffer on the sink.
-/// If that flag isn't set then the memory provided is used as backing store 
+/// is specified then Intel(R) Coprocessor Offload
+/// Infrastructure (Intel(R) COI) will use that memory for the buffer on the sink.
+/// If that flag isn't set then the memory provided is used as backing store
 /// for the buffer on the source. In either case the memory must not be freed
 /// before the buffer is destroyed.
-/// While the user still owns the memory passed in they must use the 
+/// While the user still owns the memory passed in they must use the
 /// appropriate access flags when accessing the buffer in COIPipelinRunFunction
 /// or COIBufferMap calls so that the runtime knows when the
 /// memory has been modified. If the user just writes directly to the memory
-/// location then those changes may not be visible when the corresponding 
+/// location then those changes may not be visible when the corresponding
 /// buffer is accessed.
 /// Whatever values are already present in the memory location when this call
 /// is made are preserved. The memory values are also preserved when
 /// COIBufferDestroy is called.
 ///
-/// @warning: Use of this function is highly discouraged if the calling program
+/// @warning: Use of this function is highly discouraged if the calling
 /// program forks at all (including calls to system(3), popen(3), or similar
 /// functions) during the life of this buffer. See the discussion around the
 /// in_Memory parameter below regarding this.
@@ -467,8 +496,7 @@ COIBufferCreate(
 ///         is not page aligned, it will be rounded up.
 ///
 /// @param  in_Type
-///         [in] The type of the buffer to create. Note that streaming buffers
-///         can not be created from user memory. Only COI_BUFFER_NORMAL and
+///         [in] The type of the buffer to create. Only COI_BUFFER_NORMAL and
 ///         COI_BUFFER_PINNED buffer types are supported.
 ///
 /// @param  in_Flags
@@ -496,7 +524,7 @@ COIBufferCreate(
 ///         system(3), popen(3), among others).
 ///
 ///         For forked processes, Linux uses copy-on-write semantics for
-///         performances reasons. Conseqeuently, if the parent forks and then
+///         performance reasons. Consequently, if the parent forks and then
 ///         writes to this memory, the physical page mapping changes causing
 ///         the DMA to fail (and thus data corruption).
 ///
@@ -522,8 +550,8 @@ COIBufferCreate(
 ///
 /// @return COI_SUCCESS if the buffer was created
 ///
-/// @return COI_NOT_SUPPORTED if the in_Type value is not COI_BUFFER_NORMAL or
-///         COI_BUFFER_PINNED.
+/// @return COI_NOT_SUPPORTED if the in_Type value is not COI_BUFFER_NORMAL,
+///         COI_BUFFER_PINNED, or COI_BUFFER_OPENCL.
 ///
 /// @return COI_NOT_SUPPORTED if in_Memory is read-only memory
 ///
@@ -547,8 +575,7 @@ COIBufferCreate(
 ///         COI_OPTIMIZE_HUGE_PAGE_SIZE are both set.
 ///
 /// @return COI_OUT_OF_RANGE if in_Size is zero, if the bits set in
-///         the in_Flags parameter are not recognized flags, or if
-///         in_NumProcesses is zero.
+///         the in_Flags parameter are not recognized flags,  or if in_NumProcesses is zero.
 ///
 /// @return COI_INVALID_POINTER if in_Memory, in_pProcesses or
 ///         out_pBuffer parameter is NULL.
@@ -560,7 +587,7 @@ COIACCESSAPI
 COIRESULT
 COIBufferCreateFromMemory(
             uint64_t            in_Size,
-           COI_BUFFER_TYPE     in_Type,
+            COI_BUFFER_TYPE     in_Type,
             uint32_t            in_Flags,
             void*               in_Memory,
             uint32_t            in_NumProcesses,
@@ -570,10 +597,10 @@ COIBufferCreateFromMemory(
 
 //////////////////////////////////////////////////////////////////////////////
 ///
-/// Destroys a buffer.  Will block on completion of any operations on the
-/// buffer, such as COIPipelineRunFunction or COIBufferCopy.  Will block until
+/// Destroys a buffer. Will block on completion of any operations on the
+/// buffer, such as COIPipelineRunFunction or COIBufferCopy. Will block until
 /// all COIBufferAddRef calls have had a matching COIBufferReleaseRef call
-/// made.  Will not block on an outstanding COIBufferUnmap but will instead
+/// made. will not block on an outstanding COIBufferUnmap but will instead
 /// return COI_RETRY.
 ///
 /// @param  in_Buffer
@@ -599,32 +626,30 @@ COIBufferDestroy(
 ///
 /// This call initiates a request to access a region of a buffer. Multiple
 /// overlapping (or non overlapping) regions can be mapped simultaneously for
-/// any given buffer.  If a completion event is specified this call will
+/// any given buffer. If a completion event is specified this call will
 /// queue a request for the data which will be satisfied when the buffer is
-/// available.  Once all conditions are met the completion event will be
-/// signaled and the user can access the data at out_ppData.  The user can call
+/// available. Once all conditions are met the completion event will be
+/// signaled and the user can access the data at out_ppData. The user can call
 /// COIEventWait with out_pCompletion to find out when the map operation has
 /// completed. If the user accesses the data before the map operation is
-/// complete the results are undefined.  If out_pCompletion is NULL then this
+/// complete the results are undefined. If out_pCompletion is NULL then this
 /// call blocks until the map operation completes and when this call returns
-/// out_ppData can be safely accessed.  This call returns a map instance handle
+/// out_ppData can be safely accessed. This call returns a map instance handle
 /// in an out parameter which must be passed into COIBufferUnmap when the user
 /// no longer needs access to that region of the buffer.
 ///
 /// The address returned from COIBufferMap may point to memory that
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)
+/// Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
 /// manages on behalf of the user. The user must not free or reallocate this
-/// memory, Intel® Coprocessor Offload Infrastructure (Intel® COI)
+/// memory, Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
 /// will perform any necessary cleanup when the buffer is
 /// destroyed.
 ///
 /// Note that different types of buffers behave differently when mapped.
 /// For instance, mapping a COI_BUFFER_NORMAL for write must stall if the
-/// buffer is currently being written to by a run function. Mapping a
-/// COI_BUFFER_STREAMING_TO_SINK will create a new physical copy of the buffer
-/// and make it available immediately.  Mapping a COI_BUFFER_PINNED buffer will
-/// not affect other functions that use that buffer since a COI_BUFFER_PINNED
-/// buffer can be mapped at any time.
+/// buffer is currently being written to by a run function. Mapping
+/// a COI_BUFFER_PINNED buffer will not affect other functions that use
+/// that buffer since a COI_BUFFER_PINNED buffer can be mapped at any time.
 /// The asynchronous operation of COIBufferMap will likely be most useful when
 /// paired with a COI_BUFFER_NORMAL.
 ///
@@ -633,15 +658,15 @@ COIBufferDestroy(
 ///
 /// @param  in_Offset
 ///         [in] Offset into the buffer that a pointer should be returned
-///         for.  The value 0 can be passed in to signify that the mapped
+///         for. The value 0 can be passed in to signify that the mapped
 ///         region should start at the beginning of the buffer.
 ///
 /// @param  in_Length
 ///         [in] Length of the buffer area to map. This parameter, in
 ///         combination with in_Offset, allows the caller to specify
-///         that only a subset of an entire buffer need be mapped.  A
-///         value of 0 can be passed in only if in_Offset is 0, to signify 
-///         that the mapped region is the entire buffer.  
+///         that only a subset of an entire buffer need be mapped. A
+///         value of 0 can be passed in only if in_Offset is 0, to signify
+///         that the mapped region is the entire buffer.
 ///
 /// @param  in_Type
 ///         [in] The access type that is needed by the application. This will
@@ -700,11 +725,6 @@ COIBufferDestroy(
 /// @return COI_ARGUMENT_MISMATCH if the in_Type of map is not a valid type
 ///         for in_Buffer's type of buffer.
 ///
-/// @return COI_RESOURCE_EXHAUSTED if could not create a version for TO_SINK
-///         streaming buffer. It can fail if enough memory is not available to
-///         register. This call will succeed eventually when the registered
-///         memory becomes available.
-///
 /// @return COI_INVALID_HANDLE if in_Buffer is not a valid buffer handle.
 ///
 /// @return COI_INVALID_POINTER if out_pMapInstance or out_ppData is NULL.
@@ -725,9 +745,9 @@ COIBufferMap(
 //////////////////////////////////////////////////////////////////////////////
 ///
 /// Disables Source access to the region of the buffer that was provided
-/// through the corresponding call to COIBufferMap.  The number of calls to
+/// through the corresponding call to COIBufferMap. The number of calls to
 /// COIBufferUnmap() should always match the number of calls made to
-/// COIBufferMap().  The data pointer returned from the COIBufferMap() call
+/// COIBufferMap(). The data pointer returned from the COIBufferMap() call
 /// will be invalid after this call.
 ///
 /// @param  in_MapInstance
@@ -750,7 +770,7 @@ COIBufferMap(
 ///
 /// @param  out_pCompletion
 ///         [out] An optional pointer to a COIEVENT object that will be
-///         signaled when the unmap is complete.  The user may pass in NULL if
+///         signaled when the unmap is complete. The user may pass in NULL if
 ///         the user wants COIBufferUnmap to perform a blocking unmap
 ///         operation.
 ///
@@ -774,11 +794,12 @@ COIBufferUnmap(
 
 //////////////////////////////////////////////////////////////////////////////
 ///
-/// Gets the Sink's virtual address of the buffer.  This is the same
-/// address that is passed to the run function on the Sink. The virtual
+/// Gets the Sink's virtual address of the buffer for the first process
+/// that is using the buffer. This is the same address
+/// that is passed to the run function on the Sink. The virtual
 /// address assigned to the buffer for use on the sink is fixed;
 /// the buffer will always be present at that virtual address on the sink
-/// and will not get a different virtual address across different 
+/// and will not get a different virtual address across different
 /// RunFunctions.
 /// This address is only valid on the Sink and should not be dereferenced on
 /// the Source (except for the special case of buffers created with the
@@ -796,9 +817,6 @@ COIBufferUnmap(
 ///
 /// @return COI_INVALID_POINTER if the out_pAddress parameter was invalid.
 ///
-/// @return COI_NOT_SUPPORTED if the buffer passed in is of type
-///         COI_BUFFER_STREAMING_TO_SOURCE or COI_BUFFER_STREAMING_TO_SINK.
-///
 COIACCESSAPI
 COIRESULT
 COIBufferGetSinkAddress(
@@ -807,9 +825,47 @@ COIBufferGetSinkAddress(
 
 //////////////////////////////////////////////////////////////////////////////
 ///
+/// Gets the Sink's virtual address of the buffer. This is the same
+/// address that is passed to the run function on the Sink. The virtual
+/// address assigned to the buffer for use on the sink is fixed;
+/// the buffer will always be present at that virtual address on the sink
+/// and will not get a different virtual address across different
+/// RunFunctions.
+/// This address is only valid on the Sink and should not be dereferenced on
+/// the Source (except for the special case of buffers created with the
+/// COI_SAME_ADDRESS flag).
+///
+/// @param  in_Process
+///         [in] The process for which the address should be returned.
+///         Special handle value 0 can be passed to the function;
+///         in this case, address for the first valid process will be returned
+///
+/// @param  in_Buffer
+///         [in] Buffer handle
+///
+/// @param  out_pAddress
+///         [out] pointer to a uint64_t* that will be filled with the address.
+///
+/// @return COI_SUCCESS upon successful return of the buffer's address.
+///
+/// @return COI_INVALID_HANDLE if the passed in buffer or process
+///         handle was invalid.
+///
+/// @return COI_INVALID_POINTER if the out_pAddress parameter was invalid.
+///
+/// @return COI_OUT_OF_RANGE if the in_Process is not valid for in_Buffer at the
+///         moment of calling the function.
+///
+COIACCESSAPI
+COIRESULT
+COIBufferGetSinkAddressEx(
+            COIPROCESS          in_Process,
+            COIBUFFER           in_Buffer,
+            uint64_t*           out_pAddress);
+
+//////////////////////////////////////////////////////////////////////////////
+///
 /// Copy data from a normal virtual address into an existing COIBUFFER.
-/// Note that it is not possible to use this API with any type of
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)  Streaming Buffers.
 /// Please note that COIBufferWrite does not follow implicit buffer
 /// dependencies. If a buffer is in use in a run function or has been added
 /// to a process using COIBufferAddRef the call to COIBufferWrite will not
@@ -817,19 +873,327 @@ COIBufferGetSinkAddress(
 /// This is to facilitate a usage model where a buffer is being used outside
 /// of a run function, for example in a spawned thread, but data still needs
 /// to be transferred to or from the buffer.
+/// Additionally this means that if more than one DMA channel is enabled,
+/// (See COIProcessConfigureDMA) operations to the same buffer may
+/// happen in parallel if they can be assigned to different DMA hardware.
+/// So it is highly recommended to use explicit event dependencies to
+/// order operations where needed.
 ///
 /// @param  in_DestBuffer
 ///         [in] Buffer to write into.
 ///
-#ifdef COI_PROTOTYPE_TARGET_PROCESS
 /// @param  in_DestProcess
-///         [in] A pointer to the processes which are used as hints
-///         to to COI. Buffers are updated upon these processes first.
+///         [in] A pointer to the process to which the data will be written.
+///         Buffer is updated only in this process and invalidated in other
+///         processes. Only a single process can be specified.
 ///         Can be left NULL and default behavior will be chosen, which
-///         chooses the lowest SCIF node with an active regions first. Others
-///         buffer regions are invalidated in both cases. Will only update a single
-///         process at this time.
-#endif
+///         chooses the first valid process in which regions are found. Other
+///         buffer regions are invalidated if not updated.
+///
+/// @param  in_Offset
+///         [in] Location in the buffer to start writing to.
+///
+/// @param  in_pSourceData
+///         [in] A pointer to local memory that should be copied into the
+///         provided buffer.
+///
+/// @param  in_Length
+///         [in] The number of bytes to write from in_pSourceData into
+///         in_DestBuffer. Must not be larger than the size of in_DestBuffer
+///         and must not over run in_DestBuffer if an in_Offset is provided.
+///
+/// @param  in_Type
+///         [in] The type of copy operation to use, one of either
+///         COI_COPY_UNSPECIFIED, COI_COPY_USE_DMA, COI_COPY_USE_CPU.
+///
+/// @param  in_NumDependencies
+///         [in] The number of dependencies specified in the in_pDependencies
+///         array. This may be 0 if the caller does not want the write call to
+///         wait for any additional events to be signaled before starting the
+///         write operation.
+///
+/// @param  in_pDependencies
+///         [in] An optional array of handles to previously created COIEVENT
+///         objects that this write operation will wait for before starting.
+///         This allows the user to create dependencies between buffer write
+///         calls and other operations such as run functions and map calls. The
+///         user may pass in NULL if they do not wish to wait for any
+///         additional dependencies to complete before doing the write.
+///
+/// @param  out_pCompletion
+///         [out] An optional event to be signaled when the write has
+///         completed. This event can be used as a dependency to order
+///         the write with regard to future operations.
+///         If no completion event is passed in then the write is
+///         synchronous and will block until the transfer is complete.
+///
+///
+/// @return COI_SUCCESS if the buffer was written successfully.
+///
+/// @return COI_INVALID_HANDLE if the buffer handle was invalid.
+///
+/// @return COI_OUT_OF_RANGE if in_Offset is beyond the end of the buffer.
+///
+/// @return COI_ARGUMENT_MISMATCH if the in_pDependencies is non NULL but
+///         in_NumDependencies is 0.
+///
+/// @return COI_ARGUMENT_MISMATCH if in_pDependencies is NULL but
+///         in_NumDependencies is not 0.
+///
+/// @return COI_INVALID_POINTER if the in_pSourceData pointer is NULL.
+///
+/// @return COI_OUT_OF_RANGE if in_Offset + in_Length exceeds the size of
+///         the buffer.
+///
+/// @return COI_OUT_OF_RANGE if in_Length is 0.
+///
+/// @return COI_RETRY if in_DestBuffer is mapped and is not a COI_BUFFER_PINNED
+///         buffer or COI_BUFFER_OPENCL buffer.
+///
+COIACCESSAPI
+COIRESULT
+COIBufferWriteEx(
+            COIBUFFER           in_DestBuffer,
+    const   COIPROCESS          in_DestProcess,
+            uint64_t            in_Offset,
+    const   void*               in_pSourceData,
+            uint64_t            in_Length,
+            COI_COPY_TYPE       in_Type,
+            uint32_t            in_NumDependencies,
+    const   COIEVENT*           in_pDependencies,
+            COIEVENT*           out_pCompletion);
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Copy data specified by multi-dimensional array data structure into another
+/// multi-dimensional array in an existing COIBUFFER.
+/// Arrays with more than 3 dimensions are not supported.
+/// Different numbers of elements between src and destination is not supported.
+/// Please note that COIBufferWriteMultiD does not follow implicit buffer
+/// dependencies. If a buffer is in use in a run function or has been added
+/// to a process using COIBufferAddRef the call to COIBufferWriteMultiD will not
+/// wait, it will still copy data immediately.
+/// This is to facilitate a usage model where a buffer is being used outside
+/// of a run function, for example in a spawned thread, but data still needs
+/// to be transferred to or from the buffer.
+/// Additionally this means that if more than one DMA channel is enabled,
+/// (See COIProcessConfigureDMA) operations to the same buffer may
+/// happen in parallel if they can be assigned to different DMA hardware.
+/// So it is highly recommended to use explicit event dependencies to
+/// order operations where needed.
+///
+///
+/// @param  in_DestBuffer
+///         [in] Buffer to write into.
+///
+/// @param  in_DestProcess
+///         [in] A pointer to the process to which the data will be written.
+///         Buffer is updated only in this process and invalidated in other
+///         processes. Only a single process can be specified.
+///         Can be left NULL and default behavior will be chosen, which
+///         chooses the first valid process in which regions are found. Other
+///         buffer regions are invalidated if not updated.
+///
+/// @param  in_Offset
+///         [in] Start location of the destination array within the buffer.
+///
+/// @param  in_DestArray
+///         [in] A pointer to a data structure describing the structure of
+///         the data array in the buffer. Total size must not be larger than
+///         the size of in_DestBuffer. The base field of this structure will
+///         be ignored.
+///
+/// @param  in_SrcArray
+///         [in] A pointer to a data structure describing the structure of
+///         the data array in local memory that should be copied. in_SrcArray
+///         and in_DestArry must have the same number of elements. The base
+///         field of this structure should be the virtual pointer to the local
+///         memory in which this array is located.
+///
+/// @param  in_Type
+///         [in] The type of copy operation to use, one of either
+///         COI_COPY_UNSPECIFIED, COI_COPY_USE_DMA, COI_COPY_USE_CPU.
+///
+/// @param  in_NumDependencies
+///         [in] The number of dependencies specified in the in_pDependencies
+///         array. This may be 0 if the caller does not want the write call to
+///         wait for any additional events to be signaled before starting the
+///         write operation.
+///
+/// @param  in_pDependencies
+///         [in] An optional array of handles to previously created COIEVENT
+///         objects that this write operation will wait for before starting.
+///         This allows the user to create dependencies between buffer write
+///         calls and other operations such as run functions and map calls. The
+///         user may pass in NULL if they do not wish to wait for any
+///         additional dependencies to complete before doing the write.
+///
+/// @param  out_pCompletion
+///         [out] An optional event to be signaled when the write has
+///         completed. This event can be used as a dependency to order
+///         the write with regard to future operations.
+///         If no completion event is passed in then the write is
+///         synchronous and will block until the transfer is complete.
+///
+///
+/// @return COI_SUCCESS if the buffer was copied successfully.
+///
+/// @return COI_INVALID_HANDLE if the buffer or process handle was invalid.
+///
+/// @return COI_OUT_OF_RANGE if in_Offset is beyond the end of the buffer.
+///
+/// @return COI_ARGUMENT_MISMATCH if the in_pDependencies is non NULL but
+///         in_NumDependencies is 0.
+///
+/// @return COI_ARGUMENT_MISMATCH if in_pDependencies is NULL but
+///         in_NumDependencies is not 0.
+///
+/// @return COI_NOT_SUPPORTED or dimension of destination or source arrays
+///         are greater than 3 or less than 1
+///
+/// @return COI_INVALID_POINTER if the pointer in_SrcArray->base is NULL.
+///
+/// @return COI_OUT_OF_RANGE if in_Offset + size of in_DestArray exceeds the
+///         size of the buffer.
+///
+/// @return COI_OUT_OF_MEMORY if any allocation of memory fails
+///
+/// @return COI_RETRY if in_DestBuffer is mapped and is not a COI_BUFFER_PINNED
+///         buffer or COI_BUFFER_OPENCL buffer.
+///
+COIACCESSAPI
+COIRESULT
+COIBufferWriteMultiD(
+            COIBUFFER          in_DestBuffer,
+    const   COIPROCESS         in_DestProcess,
+            uint64_t           in_Offset,
+            struct arr_desc*   in_DestArray,
+            struct arr_desc*   in_SrcArray,
+            COI_COPY_TYPE      in_Type,
+            uint32_t           in_NumDependencies,
+    const   COIEVENT*          in_pDependencies,
+            COIEVENT*          out_pCompletion);
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Copy data specified by multi-dimensional array data structure from an
+/// existing COIBUFFER to another multi-dimensional array located in memory.
+/// Arrays with more than 3 dimensions are not supported.
+/// Different numbers of elements between source and destination are not supported.
+/// Please note that COIBufferReadMultiD does not follow implicit buffer
+/// dependencies. If a buffer is in use in a run function or has been added
+/// to a process using COIBufferAddRef the call to COIBufferReadMultiD will not
+/// wait, it will still copy data immediately.
+/// This is to facilitate a usage model where a buffer is being used outside
+/// of a run function, for example in a spawned thread, but data still needs
+/// to be transferred to or from the buffer.
+/// Additionally this means that if more than one DMA channel is enabled,
+/// (See COIProcessConfigureDMA) operations to the same buffer may
+/// happen in parallel if they can be assigned to different DMA hardware.
+/// So it is highly recommended to use explicit event dependencies to
+/// order operations where needed.
+///
+///
+/// @param  in_SourceBuffer
+///         [in] Buffer to read from.
+///
+/// @param  in_Offset
+///         [in] Start location of the source array within the buffer.
+///
+/// @param  in_DestArray
+///         [in] A pointer to a data structure describing the structure of
+///         the data array in the buffer. Total size must not be larger than
+///         the size of in_DestBuffer. The base field of this structure will
+///         be ignored.
+///
+/// @param  in_SrcArray
+///         [in] A pointer to a data structure describing the structure of
+///         the data array in local memory that should be copied. in_SrcArray
+///         and in_DestArry must have the same number of elements. The base
+///         field of this structure should be the virtual pointer to the local
+///         memory in which this array is located.
+///
+/// @param  in_Type
+///         [in] The type of copy operation to use, one of either
+///         COI_COPY_UNSPECIFIED, COI_COPY_USE_DMA, COI_COPY_USE_CPU.
+///
+/// @param  in_NumDependencies
+///         [in] The number of dependencies specified in the in_pDependencies
+///         array. This may be 0 if the caller does not want the write call to
+///         wait for any additional events to be signaled before starting the
+///         write operation.
+///
+/// @param  in_pDependencies
+///         [in] An optional array of handles to previously created COIEVENT
+///         objects that this write operation will wait for before starting.
+///         This allows the user to create dependencies between buffer write
+///         calls and other operations such as run functions and map calls. The
+///         user may pass in NULL if they do not wish to wait for any
+///         additional dependencies to complete before doing the write.
+///
+/// @param  out_pCompletion
+///         [out] An optional event to be signaled when the write has
+///         completed. This event can be used as a dependency to order
+///         the write with regard to future operations.
+///         If no completion event is passed in then the write is
+///         synchronous and will block until the transfer is complete.
+///
+///
+/// @return COI_SUCCESS if the buffer was written successfully.
+///
+/// @return COI_INVALID_HANDLE if the buffer or process handle was invalid.
+///
+/// @return COI_OUT_OF_RANGE if in_Offset is beyond the end of the buffer.
+///
+/// @return COI_ARGUMENT_MISMATCH if the in_pDependencies is non NULL but
+///         in_NumDependencies is 0.
+///
+/// @return COI_ARGUMENT_MISMATCH if in_pDependencies is NULL but
+///         in_NumDependencies is not 0.
+///
+/// @return COI_NOT_SUPPORTED or dimension of destination or source arrays
+///         are greater than 3 or less than 1
+///
+/// @return COI_INVALID_POINTER if the pointer in_DestArray->base is NULL.
+///
+/// @return COI_OUT_OF_RANGE if in_Offset + size of in_SourceArray exceeds the
+///         size of the buffer.
+///
+/// @return COI_OUT_OF_MEMORY if any allocation of memory fails
+///
+/// @return COI_RETRY if in_SourceBuffer is mapped and is not a COI_BUFFER_PINNED
+///         buffer or COI_BUFFER_OPENCL buffer.
+///
+COIACCESSAPI
+COIRESULT
+COIBufferReadMultiD(
+            COIBUFFER          in_SourceBuffer,
+            uint64_t           in_Offset,
+            struct arr_desc*   in_DestArray,
+            struct arr_desc*   in_SrcArray,
+            COI_COPY_TYPE      in_Type,
+            uint32_t           in_NumDependencies,
+    const   COIEVENT*          in_pDependencies,
+            COIEVENT*          out_pCompletion);
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Copy data from a normal virtual address into an existing COIBUFFER.
+/// Please note that COIBufferWrite does not follow implicit buffer
+/// dependencies. If a buffer is in use in a run function or has been added
+/// to a process using COIBufferAddRef the call to COIBufferWrite will not
+/// wait, it will still copy data immediately.
+/// This is to facilitate a usage model where a buffer is being used outside
+/// of a run function, for example in a spawned thread, but data still needs
+/// to be transferred to or from the buffer.
+/// Additionally this means that if more than one DMA channel is enabled,
+/// (See COIProcessConfigureDMA) operations to the same buffer may
+/// happen in parallel if they can be assigned to different DMA hardware.
+/// So it is highly recommended to use explicit event dependencies to
+/// order operations where needed.
+///
+/// @param  in_DestBuffer
+///         [in] Buffer to write into.
 ///
 /// @param  in_Offset
 ///         [in] Location in the buffer to start writing to.
@@ -881,9 +1245,6 @@ COIBufferGetSinkAddress(
 /// @return COI_ARGUMENT_MISMATCH if in_pDependencies is NULL but
 ///         in_NumDependencies is not 0.
 ///
-/// @return COI_NOT_SUPPORTED if the source buffer is of type
-///         COI_BUFFER_STREAMING_TO_SINK or COI_BUFFER_STREAMING_TO_SOURCE.
-///
 /// @return COI_INVALID_POINTER if the in_pSourceData pointer is NULL.
 ///
 /// @return COI_OUT_OF_RANGE if in_Offset + in_Length exceeds the size of
@@ -894,21 +1255,6 @@ COIBufferGetSinkAddress(
 /// @return COI_RETRY if in_DestBuffer is mapped and is not a COI_BUFFER_PINNED
 ///         buffer or COI_BUFFER_OPENCL buffer.
 ///
-#ifdef COI_PROTOTYPE_TARGET_PROCESS
-COIACCESSAPI
-COIRESULT
-COIBufferWrite(
-            COIBUFFER           in_DestBuffer,
-    const   COIPROCESS          in_DestProcess,
-            uint64_t            in_Offset,
-    const   void*               in_pSourceData,
-            uint64_t            in_Length,
-            COI_COPY_TYPE       in_Type,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
-__asm__(".symver COIBufferWrite,COIBufferWrite@COI_2.0");
-#else
 COIACCESSAPI
 COIRESULT
 COIBufferWrite(
@@ -920,14 +1266,10 @@ COIBufferWrite(
             uint32_t            in_NumDependencies,
     const   COIEVENT*           in_pDependencies,
             COIEVENT*           out_pCompletion);
-__asm__(".symver COIBufferWrite,COIBufferWrite@COI_1.0");
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 ///
 /// Copy data from a buffer into local memory.
-/// Note that it is not possible to use this API with any type of
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)  Streaming Buffers.
 /// Please note that COIBufferRead does not follow implicit buffer
 /// dependencies. If a buffer is in use in a run function or has been added
 /// to a process using COIBufferAddRef the call to COIBufferRead will not
@@ -935,6 +1277,11 @@ __asm__(".symver COIBufferWrite,COIBufferWrite@COI_1.0");
 /// This is to facilitate a usage model where a buffer is being used outside
 /// of a run function, for example in a spawned thread, but data still needs
 /// to be transferred to or from the buffer.
+/// Additionally this means that if more than one DMA channel is enabled,
+/// (See COIProcessConfigureDMA) operations to the same buffer may
+/// happen in parallel if they can be assigned to different DMA hardware.
+/// So it is highly recommended to use explicit event dependencies to
+/// order operations where needed.
 ///
 ///
 /// @param  in_SourceBuffer
@@ -989,9 +1336,6 @@ __asm__(".symver COIBufferWrite,COIBufferWrite@COI_1.0");
 /// @return COI_ARGUMENT_MISMATCH if in_pDependencies is NULL but
 ///         in_NumDependencies is not 0.
 ///
-/// @return COI_NOT_SUPPORTED if the source buffer is of type
-///         COI_BUFFER_STREAMING_TO_SINK or COI_BUFFER_STREAMING_TO_SOURCE.
-///
 /// @return COI_OUT_OF_RANGE if in_Offset + in_Length exceeds the size of
 ///         the buffer.
 ///
@@ -1019,8 +1363,6 @@ COIBufferRead(
 /// Copy data between two buffers. It also allows copying within the same
 /// buffer. For copy within the same buffer, if source and destination regions
 /// overlap then this API returns error.
-/// Note that it is not possible to use this API with any type of
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)  Streaming Buffers.
 /// Please note that COIBufferCopy does not follow implicit buffer
 /// dependencies. If a buffer is in use in a run function or has been added
 /// to a process using COIBufferAddRef the call to COIBufferCopy will not
@@ -1028,18 +1370,22 @@ COIBufferRead(
 /// This is to facilitate a usage model where a buffer is being used outside
 /// of a run function, for example in a spawned thread, but data still needs
 /// to be transferred to or from the buffer.
+/// Additionally this means that if more than one DMA channel is enabled,
+/// (See COIProcessConfigureDMA) operations to the same buffer may
+/// happen in parallel if they can be assigned to different DMA hardware.
+/// So it is highly recommended to use explicit event dependencies to
+/// order operations where needed.
 ///
 /// @param  in_DestBuffer
 ///         [in] Buffer to copy into.
-#ifdef COI_PROTOTYPE_TARGET_PROCESS
+///
 /// @param  in_DestProcess
-///         [in] A pointer to the processes which are used as hints
-///         to to COI. Buffers are updated upon these processes first.
+///         [in] A pointer to the process to which the data will be written.
+///         Buffer is updated only in this process and invalidated in other
+///         processes. Only a single process can be specified.
 ///         Can be left NULL and default behavior will be chosen, which
-///         chooses the lowest SCIF node with an active regions first. Others
-///         buffer regions are invalidated in both cases. Will only update a single
-///         process at this time.
-#endif
+///         chooses the first valid process in which regions are found. Other
+///         buffer regions are invalidated if not updated.
 ///
 /// @param  in_SourceBuffer
 ///         [in] Buffer to copy from.
@@ -1089,7 +1435,7 @@ COIBufferRead(
 /// @return COI_INVALID_HANDLE if either buffer handle was invalid.
 ///
 /// @return COI_MEMORY_OVERLAP if in_SourceBuffer and in_DestBuffer are the
-///         same buffer(or have the same parent buffer) and the source and 
+///         same buffer(or have the same parent buffer) and the source and
 ///         destination regions overlap
 ///
 /// @return COI_OUT_OF_RANGE if in_DestOffset is is beyond the end of
@@ -1110,19 +1456,12 @@ COIBufferRead(
 /// @return COI_ARGUMENT_MISMATCH if in_pDependencies is NULL but
 ///         in_NumDependencies is not 0.
 ///
-/// @return COI_NOT_SUPPORTED if the source or destination buffers are of type
-///         COI_BUFFER_STREAMING_TO_SINK or COI_BUFFER_STREAMING_TO_SOURCE.
-///
-/// @return COI_NOT_SUPPORTED if either buffer is of type
-///         COI_BUFFER_STREAMING_TO_SINK or COI_BUFFER_STREAMING_TO_SOURCE.
-///
 /// @return COI_RETRY if in_DestBuffer or in_SourceBuffer are mapped and not
 ///         COI_BUFFER_PINNED buffers or COI_BUFFER_OPENCL buffers.
 ///
-#ifdef COI_PROTOTYPE_TARGET_PROCESS
 COIACCESSAPI
 COIRESULT
-COIBufferCopy(
+COIBufferCopyEx(
             COIBUFFER           in_DestBuffer,
     const   COIPROCESS          in_DestProcess,
             COIBUFFER           in_SourceBuffer,
@@ -1133,8 +1472,100 @@ COIBufferCopy(
             uint32_t            in_NumDependencies,
     const   COIEVENT*           in_pDependencies,
             COIEVENT*           out_pCompletion);
-__asm__(".symver COIBufferCopy,COIBufferCopy@COI_2.0");
-#else
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Copy data between two buffers. It also allows copying within the same
+/// buffer. For copy within the same buffer, if source and destination regions
+/// overlap then this API returns error.
+/// Please note that COIBufferCopy does not follow implicit buffer
+/// dependencies. If a buffer is in use in a run function or has been added
+/// to a process using COIBufferAddRef the call to COIBufferCopy will not
+/// wait, it will still copy data immediately.
+/// This is to facilitate a usage model where a buffer is being used outside
+/// of a run function, for example in a spawned thread, but data still needs
+/// to be transferred to or from the buffer.
+/// Additionally this means that if more than one DMA channel is enabled,
+/// (See COIProcessConfigureDMA) operations to the same buffer may
+/// happen in parallel if they can be assigned to different DMA hardware.
+/// So it is highly recommended to use explicit event dependencies to
+/// order operations where needed.
+///
+/// @param  in_DestBuffer
+///         [in] Buffer to copy into.
+///
+/// @param  in_SourceBuffer
+///         [in] Buffer to copy from.
+///
+/// @param  in_DestOffset
+///         [in] Location in the destination buffer to start writing to.
+///
+/// @param  in_SourceOffset
+///         [in] Location in the source buffer to start reading from.
+///
+/// @param  in_Length
+///         [in] The number of bytes to copy from in_SourceBuffer into
+///         in_DestinationBuffer.
+///         If the length is specified as zero then length to be copied
+///         is entire destination buffer's length.
+///         Must not be larger than the size of in_SourceBuffer or
+///         in_DestBuffer and must not over run in_SourceBuffer or
+///         in_DestBuffer if offsets are specified.
+///
+/// @param  in_Type
+///         [in] The type of copy operation to use, one of either
+///         COI_COPY_UNSPECIFIED, COI_COPY_USE_DMA, COI_COPY_USE_CPU.
+///
+/// @param  in_NumDependencies
+///         [in] The number of dependencies specified in the in_pDependencies
+///         array. This may be 0 if the caller does not want the copy call to
+///         wait for any additional events to be signaled before starting the
+///         copy operation.
+///
+/// @param  in_pDependencies
+///         [in] An optional array of handles to previously created COIEVENT
+///         objects that this copy operation will wait for before starting.
+///         This allows the user to create dependencies between buffer copy
+///         calls and other operations such as run functions and map calls. The
+///         user may pass in NULL if they do not wish to wait for any
+///         additional dependencies to complete before doing the copy.
+///
+/// @param  out_pCompletion
+///         [out] An optional event to be signaled when the copy has
+///         completed. This event can be used as a dependency to order
+///         the copy with regard to future operations.
+///         If no completion event is passed in then the copy is
+///         synchronous and will block until the transfer is complete.
+///
+/// @return COI_SUCCESS if the buffer was copied successfully.
+///
+/// @return COI_INVALID_HANDLE if either buffer handle was invalid.
+///
+/// @return COI_MEMORY_OVERLAP if in_SourceBuffer and in_DestBuffer are the
+///         same buffer(or have the same parent buffer) and the source and
+///         destination regions overlap
+///
+/// @return COI_OUT_OF_RANGE if in_DestOffset is is beyond the end of
+///         in_DestBuffer
+///
+/// @return COI_OUT_OF_RANGE if in_SourceOffset is beyond the end of
+///         in_SourceBuffer.
+///
+/// @return COI_OUT_OF_RANGE if in_DestOffset + in_Length exceeds the size of
+///         the in_DestBuffer
+///
+/// @return COI_OUT_OF_RANGE if in_SourceOffset + in_Length exceeds
+///         the size of in_SourceBuffer.
+///
+/// @return COI_ARGUMENT_MISMATCH if the in_pDependencies is non NULL but
+///         in_NumDependencies is 0.
+///
+/// @return COI_ARGUMENT_MISMATCH if in_pDependencies is NULL but
+///         in_NumDependencies is not 0.
+///
+/// @return COI_RETRY if in_DestBuffer or in_SourceBuffer are mapped and not
+///         COI_BUFFER_PINNED buffers or COI_BUFFER_OPENCL buffers.
+///
 COIACCESSAPI
 COIRESULT
 COIBufferCopy(
@@ -1147,21 +1578,20 @@ COIBufferCopy(
             uint32_t            in_NumDependencies,
     const   COIEVENT*           in_pDependencies,
             COIEVENT*           out_pCompletion);
-__asm__(".symver COIBufferCopy,COIBufferCopy@COI_1.0");
-#endif
+
 //////////////////////////////////////////////////////////////////////////////
 ///
-/// This API allows an experienced Intel® Coprocessor Offload Infrastructure
-/// (Intel® COI)  developer to set where a COIBUFFER is
+/// This API allows an experienced Intel(R) Coprocessor Offload Infrastructure
+/// (Intel(R) COI) developer to set where a COIBUFFER is
 /// located and when the COIBUFFER's data is moved. This functionality is
 /// useful when the developer knows when and where a buffer is going to be
 /// accessed. It allows the data movement to happen sooner than if the
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)
+/// Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
 /// runtime tried to manage the buffer placement itself. The advantage of
 /// this API is that the developer knows much more about their own
 /// application's data access patterns and can therefore optimize the data
-/// access to be much more efficient than the Intel® Coprocessor Offload
-/// Infrastructure (Intel® COI) runtime. Using this API may yield better 
+/// access to be much more efficient than the Intel(R)Coprocessor Offload
+/// Infrastructure (Intel(R) COI) runtime. Using this API may yield better
 /// memory utilization, lower latency and overall improved workload
 /// throughput.
 /// This API does respect implicit dependencies for buffer read/write hazards.
@@ -1169,17 +1599,17 @@ __asm__(".symver COIBufferCopy,COIBufferCopy@COI_1.0");
 /// requests the buffer be placed in another COIPROCESS then this API will wait
 /// for the first access to complete before moving the buffer.
 /// This API is not required for program correctness. It is intended solely
-/// for advanced Intel® Coprocessor Offload Infrastructure (Intel® COI)
+/// for advanced Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
 /// developers who wish to fine tune their application performance
 /// Cases where "a change in state" is an error condition the change just gets
-/// ignored without any error. This is because the SetState can be a 
+/// ignored without any error. This is because the SetState can be a
 /// nonblocking call and in such cases we can't rely on the state of the buffer
 /// at the time of the call. We can do the transition checks only at the time
 /// when the actual state change happens (which is something in future).
 /// Currently there is no way to report an error from something that happens in
 /// future and that is why such state transitions are nop. One example is using
-/// VALID_MAY_DROP with COI_SINK_OWNERS when buffer is not valid at source. 
-/// This operation will be a nop if at the time of actual state change the 
+/// VALID_MAY_DROP with COI_SINK_OWNERS when buffer is not valid at source.
+/// This operation will be a nop if at the time of actual state change the
 /// buffer is not valid at source.
 ///
 /// @param  in_Buffer
@@ -1188,7 +1618,7 @@ __asm__(".symver COIBufferCopy,COIBufferCopy@COI_1.0");
 /// @param  in_Process
 ///         [in] The process where the state is being modified for this
 ///         buffer. To modify buffer's state on source process use
-///         COI_PROCESS_SOURCE as process handle. To modify buffer's 
+///         COI_PROCESS_SOURCE as process handle. To modify buffer's
 ///         state on all processes where buffer is valid use COI_SINK_OWNERS
 ///         as the process handle.
 ///
@@ -1222,7 +1652,7 @@ __asm__(".symver COIBufferCopy,COIBufferCopy@COI_1.0");
 ///         [out] An optional event to be signaled when the SetState has
 ///         completed. This event can be used as a dependency to order
 ///         the SetState with regard to future operations.
-///         If no completion event is passed in then the  is
+///         If no completion event is passed in then the state changing is
 ///         synchronous and will block until the SetState and dma transfers
 ///         related to this operation are complete.
 ///
@@ -1239,10 +1669,9 @@ __asm__(".symver COIBufferCopy,COIBufferCopy@COI_1.0");
 /// @return COI_ARGUMENT_MISMATCH if the in_Process is COI_SINK_OWNERS and the
 ///         COI_BUFFER_MOVE is passed as move flag.
 ///
-/// @return COI_MISSING_DEPENDENCY if buffer was not created on the process 
+/// @return COI_MISSING_DEPENDENCY if buffer was not created on the process
 ///         handle that was passed in.
 ///
-
 COIACCESSAPI
 COIRESULT
 COIBufferSetState(
@@ -1257,9 +1686,9 @@ COIBufferSetState(
 //////////////////////////////////////////////////////////////////////////////
 ///
 /// Creates a sub-buffer that is a reference to a portion of an existing
-/// buffer.  The returned buffer handle can be used in all API calls that the
+/// buffer. The returned buffer handle can be used in all API calls that the
 /// original buffer handle could be used in except COIBufferCreateSubBuffer.
-/// Sub buffers out of Huge Page Buffer are also supported but the original 
+/// Sub buffers out of Huge Page Buffer are also supported but the original
 /// buffer needs to be a OPENCL buffer created with COI_OPTIMIZE_HUGE_PAGE_SIZE
 /// flag.
 ///
@@ -1279,7 +1708,7 @@ COIBufferSetState(
 /// @param  out_pSubBuffer
 ///         [out] Pointer to a buffer handle that is filled in with the newly
 ///         created sub-buffer.
-/// 
+///
 /// @return COI_SUCCESS if the sub-buffer was created
 ///
 /// @return COI_INVALID_HANDLE if in_Buffer is not a valid buffer handle.
@@ -1301,6 +1730,79 @@ COIBufferCreateSubBuffer(
             uint64_t    in_Length,
             uint64_t    in_Offset,
             COIBUFFER*  out_pSubBuffer);
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Releases the reference count on the specified buffer and process by
+/// in_ReleaseRefcnt. The returned result being COI_SUCCESS indicates that the
+/// specified process contains a reference to the specified buffer that has a
+/// refcnt that can be decremented. Otherwise, if the buffer or process
+/// specified do not exist, then COI_INVALID_HANDLE will be returned. If the
+/// process does not contain a reference to the specified buffer then
+/// COI_OUT_OF_RANGE will be returned.
+///
+///
+/// @param  in_Process
+///         [in] The COI Process whose reference count for the specified buffer
+///         the user wants to decrement.
+///
+/// @param  in_Buffer
+///         [in] The buffer used in the specified coi process in which the user
+///         wants to decrement the reference count.
+///
+/// @param  in_ReleaseRefcnt
+///         [in] The value the reference count will be decremented by.
+///
+/// @return COI_SUCCESS if the reference count was successfully decremented.
+///
+/// @return COI_INVALID_HANDLE if in_Buffer or in_Process are invalid handles.
+///
+/// @return COI_OUT_OF_RANGE if the reference for the specified buffer or
+///         process does not exist.
+///
+
+COIACCESSAPI
+COIRESULT
+COIBufferReleaseRefcnt(
+            COIPROCESS          in_Process,
+            COIBUFFER           in_Buffer,
+            uint64_t            in_ReleaseRefcnt);
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Increments the reference count on the specified buffer and process by
+/// in_AddRefcnt. The returned result being COI_SUCCESS indicates that the
+/// specified process contains a reference to the specified buffer or a new
+/// reference has been created and that reference has a new refcnt. Otherwise,
+/// if the buffer or process specified do not exist, then COI_INVALID_HANDLE
+/// will be returned. If the input buffer is not valid on the target process
+/// then COI_NOT_INITIALIZED will be returned since the buffer is not current
+/// or allocated on the process.
+///
+/// @param  in_Process
+///         [in] The COI Process whose reference count for the specified buffer
+///         the user wants to increment.
+///
+/// @param  in_Buffer
+///         [in] The buffer used in the specified coi process in which the user
+///         wants to increment the reference count.
+///
+/// @param  in_AddRefcnt
+///         [in] The value the reference count will be incremented by.
+///
+/// @return COI_SUCCESS if the reference count was successfully incremented.
+///
+/// @return COI_INVALID_HANDLE if in_Buffer or in_Process are invalid handles.
+///
+/// @return COI_NOT_INITIALIZED if in_Buffer does not have a buffer state of
+///         COI_BUFFER_VALID on the in_Process.
+///
+COIACCESSAPI
+COIRESULT
+COIBufferAddRefcnt(
+            COIPROCESS          in_Process,
+            COIBUFFER           in_Buffer,
+            uint64_t            in_AddRefcnt);
 
 #ifdef __cplusplus
 } /* extern "C" */

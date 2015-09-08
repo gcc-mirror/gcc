@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@ static void CheckResult(const char *func, MyoError error) {
     }
 }
 
-static void __offload_myo_shared_table_register(SharedTableEntry *entry)
+static void __offload_myo_shared_table_process(SharedTableEntry *entry)
 {
     int entries = 0;
     SharedTableEntry *t_start;
@@ -68,7 +68,32 @@ static void __offload_myo_shared_table_register(SharedTableEntry *entry)
     }
 }
 
-static void __offload_myo_fptr_table_register(
+static void __offload_myo_shared_vtable_process(SharedTableEntry *entry)
+{
+    int entries = 0;
+    SharedTableEntry *t_start;
+
+    OFFLOAD_DEBUG_TRACE(3, "%s(%p)\n", __func__, entry);
+
+    t_start = entry;
+    while (t_start->varName != 0) {
+        OFFLOAD_DEBUG_TRACE_1(4, 0, c_offload_mic_myo_shared,
+                              "myo shared vtable entry name"
+                              " = \"%s\" addr = %p\n",
+                              t_start->varName, t_start->sharedAddr);
+        t_start++;
+        entries++;
+    }
+
+    if (entries > 0) {
+        OFFLOAD_DEBUG_TRACE(3, "myoiMicVarTableRegister(%p, %d)\n", entry,
+                            entries);
+        CheckResult("myoiMicVarTableRegister",
+                    myoiMicVarTableRegister(entry, entries));
+    }
+}
+
+static void __offload_myo_fptr_table_process(
     FptrTableEntry *entry
 )
 {
@@ -94,9 +119,22 @@ static void __offload_myo_fptr_table_register(
     }
 }
 
+void __offload_myo_shared_init_table_process(InitTableEntry* entry)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%p)\n", __func__, entry);
+
+    for (; entry->func != 0; entry++) {
+        // Invoke the function to init the shared memory
+        OFFLOAD_DEBUG_TRACE(3, "Invoked a shared init function @%p\n",
+            (void *)(entry->func));
+        entry->func();
+    }
+}
+
 extern "C" void __offload_myoAcquire(void)
 {
     OFFLOAD_DEBUG_TRACE(3, "%s\n", __func__);
+
     CheckResult("myoAcquire", myoAcquire());
 }
 
@@ -162,8 +200,35 @@ extern "C" void __offload_myoRegisterTables(
         return;
     }
 
-    __offload_myo_shared_table_register(shared_table);
-    __offload_myo_fptr_table_register(fptr_table);
+    __offload_myo_shared_table_process(shared_table);
+    __offload_myo_fptr_table_process(fptr_table);
+}
+
+extern "C" void __offload_myoProcessTables(
+    InitTableEntry* init_table,
+    SharedTableEntry *shared_table,
+    SharedTableEntry *shared_vtable,
+    FptrTableEntry *fptr_table
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s\n", __func__);
+
+    // one time registration of Intel(R) Cilk(TM) language entries
+    static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+    pthread_once(&once_control, __offload_myo_once_init);
+
+    // register module's tables
+    // check slot-1 of the function table because 
+    // slot-0 is predefined with --vtable_initializer--
+    if (shared_table->varName == 0 &&
+        shared_vtable->varName == 0 &&
+        fptr_table[1].funcName == 0) {
+        return;
+    }
+
+    __offload_myo_shared_table_process(shared_table);
+    __offload_myo_shared_vtable_process(shared_vtable);
+    __offload_myo_fptr_table_process(fptr_table);
 }
 
 extern "C" void* _Offload_shared_malloc(size_t size)
@@ -188,6 +253,46 @@ extern "C" void _Offload_shared_aligned_free(void *ptr)
 {
     OFFLOAD_DEBUG_TRACE(3, "%s(%p)\n", __func__, ptr);
     myoSharedAlignedFree(ptr);
+}
+
+extern "C" void* _Offload_shared_aligned_arena_malloc(
+    MyoArena arena,
+    size_t size,
+    size_t align
+)
+{
+    OFFLOAD_DEBUG_TRACE(
+        3, "%s(%u, %lld, %lld)\n", __func__, arena, size, align);
+
+    return myoArenaAlignedMalloc(arena, size, align);
+}
+
+extern "C" void _Offload_shared_aligned_arena_free(
+    MyoArena arena,
+    void *ptr
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%u, %p)\n", __func__, arena, ptr);
+
+    myoArenaAlignedFree(arena, ptr);
+}
+
+extern "C" void _Offload_shared_arena_acquire(
+    MyoArena arena
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%u)\n", __func__, arena);
+
+    myoArenaAcquire(arena);
+}
+
+extern "C" void _Offload_shared_arena_release(
+    MyoArena arena
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%u)\n", __func__, arena);
+
+    myoArenaRelease(arena);
 }
 
 // temporary workaround for blocking behavior of myoiLibInit/Fini calls

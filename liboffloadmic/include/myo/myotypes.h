@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -74,7 +74,8 @@ typedef enum {
 
     MYO_ALREADY_EXISTS,   /*!< Already Exists */
 
-    MYO_EOF,               /*!< EOF */
+    MYO_EOF,              /*!< EOF */
+    MYO_FEATURE_NOT_IMPLEMENTED = -1,  /*!< Feature not implemented (see myoiSupportsFeature(). */
 } MyoError;
 
 
@@ -83,6 +84,40 @@ typedef enum {
     MYO_ARENA_MINE = 1, /*!< Arena MINE Ownership */ 
     MYO_ARENA_OURS,     /*!< Arena OURS Ownership */
 } MyoOwnershipType;
+
+  /*! MYO Features */
+typedef enum {
+                                                         /*!< EVERY VALUE that is less than MYO_FEATURE_BEGIN is not implemented.       */
+  MYO_FEATURE_BEGIN         = 1,                         /*!< The first feature that is supported.                                      */
+  MYO_FEATURE_POST_LIB_INIT = MYO_FEATURE_BEGIN,         /*!< Allows specifying a function to be executed immediately                   */
+                                                         /*   after myoiLibInit() completes. This feature was implemented in version    */
+                                                         /*     3.3 of MPSS.                                                            */
+  /* MYO_FEATURE_FUTURE_CAPABILITY     = 2,   at some time in the future, as new features are added to MYO, new enumeration constants   */
+  /*                                 will be added to the MyoFeatureType, and the value of the new enumeration constant will be greater */
+  /*                                 than the current value of MYO_FEATURE_LAST constant, and then the MYO_FEATURE_LAST constant too,   */
+  /*                                 will be changed to be the value of the new enumeration constant.  For example, in April, 2014,     */
+  /*                                 the POST_LIB_INIT feature was implemented in version 3.3 of MPSS, and the MYO_FEATURE_BEGIN        */
+  /*                                 enumeration constant is the same as the MYO_FEATURE_LAST enumeration constant, and both are equal  */
+  /*                                 to 1.                                                                                              */
+  /*                                 Suppose in December, 2014, a new feature is added to the MYO library, for version 3.4 of MPSS.     */
+  /*                                 Then, MYO_FEATURE_BEGIN enumeration constant will be still the value 1, but the MYO_FEATURE_LAST   */
+  /*                                 enumeration constant will be set to 2.                                                             */
+  /*                                 At runtime, one client binary can determine if the MYO that is installed is capable of any         */
+  /*                                 capability.  For example, suppose a future client binary queries version 3.3 of MYO if it is       */
+  /*                                 capable of some future feature.  Version 3.3 of MYO will indicate that the feature is not          */
+  /*                                 implemented to the client.  But, conversely, suppose the future client queries version 3.4 of MYO  */
+  /*                                 if it is capable of some future feature.  Version 3.4 of MYO will indicate that the feature isd    */
+  /*                                 supported.                                                                                         */
+  /*                                                                                                                                    */
+  /*   Date:        |  MYO_FEATURE_BEGIN: |  MYO_FEATURE_LAST: | MPSS VERSION: | myoiSupportsFeature(MYO_FEATURE_FUTURE_CAPABILITY)     */
+  /* ---------------+---------------------+--------------------+---------------+---------------------------------------------------     */
+  /* April, 2014    |         1           |         1          |     3.3       | MYO_FEATURE_NOT_IMPLEMENTED                            */
+  /* December, 2014 |         1           |         2          |     3.4       | MYO_SUCCESS                                            */
+  /* ---------------+---------------------+--------------------+---------------+---------------------------------------------------     */
+  MYO_FEATURE_LAST          = MYO_FEATURE_POST_LIB_INIT, /*!< The last feature that is supported.                                       */
+                                                         /*!< EVERY VALUE that is greater than MYO_FEATURE_LAST is not implemented.     */
+  /*!< EVERY VALUE that is greater than or equal to MYO_FEATURE_BEGIN AND less than or equal to MYO_FEATURE_LAST is implemented.        */
+} MyoFeatureType;  /* (For more information, please also see myoiSupportsFeature() function declaration.)  */
 
 /*************************************************************
  *  define the property of MYO Arena 

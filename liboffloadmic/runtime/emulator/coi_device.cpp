@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -109,8 +109,8 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	  strlen (PIPE_HOST_PATH) + strlen (mic_dir) + 1);
   MALLOC (char *, pipe_target_path,
 	  strlen (PIPE_TARGET_PATH) + strlen (mic_dir) + 1);
-  sprintf (pipe_host_path, "%s"PIPE_HOST_PATH, mic_dir);
-  sprintf (pipe_target_path, "%s"PIPE_TARGET_PATH, mic_dir);
+  sprintf (pipe_host_path, "%s" PIPE_HOST_PATH, mic_dir);
+  sprintf (pipe_target_path, "%s" PIPE_TARGET_PATH, mic_dir);
   pipe_host = open (pipe_host_path, O_CLOEXEC | O_WRONLY);
   if (pipe_host < 0)
     COIERROR ("Cannot open target-to-host pipe.");
@@ -237,6 +237,7 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	  {
 	    char *lib_path;
 	    size_t len;
+	    void *handle;
 
 	    /* Receive data from host.  */
 	    READ (pipe_target, &len, sizeof (size_t));
@@ -244,11 +245,25 @@ SYMBOL_VERSION (COIProcessWaitForShutdown, 1) ()
 	    READ (pipe_target, lib_path, len);
 
 	    /* Open library.  */
-	    if (dlopen (lib_path, RTLD_LAZY | RTLD_GLOBAL) == 0)
+	    handle = dlopen (lib_path, RTLD_LAZY | RTLD_GLOBAL);
+	    if (handle == NULL)
 	      COIERROR ("Cannot load %s: %s", lib_path, dlerror ());
+
+	    /* Send data to host.  */
+	    WRITE (pipe_host, &handle, sizeof (void *));
 
 	    /* Clean up.  */
 	    free (lib_path);
+
+	    break;
+	  }
+	case CMD_CLOSE_LIBRARY:
+	  {
+	    /* Receive data from host.  */
+	    void *handle;
+	    READ (pipe_target, &handle, sizeof (void *));
+
+	    dlclose (handle);
 
 	    break;
 	  }

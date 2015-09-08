@@ -35,7 +35,6 @@ ACLOCAL_AMFLAGS = -I ../.. -I ../../config
 build_dir = $(top_builddir)
 source_dir = $(top_srcdir)
 coi_inc_dir = $(top_srcdir)/../include/coi
-myo_inc_dir = $(top_srcdir)/../include/myo
 include_src_dir = $(top_srcdir)/../../include
 libgomp_src_dir = $(top_srcdir)/../../libgomp
 libgomp_dir = $(build_dir)/../../libgomp
@@ -53,12 +52,12 @@ target_install_dir = $(accel_search_dir)/lib/gcc/$(accel_target)/$(gcc_version)$
 if PLUGIN_HOST
   toolexeclib_LTLIBRARIES = libgomp-plugin-intelmic.la
   libgomp_plugin_intelmic_la_SOURCES = libgomp-plugin-intelmic.cpp
-  libgomp_plugin_intelmic_la_CPPFLAGS = $(CPPFLAGS) -DLINUX -DCOI_LIBRARY_VERSION=2 -DMYO_SUPPORT -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -DHOST_LIBRARY=1 -I$(coi_inc_dir) -I$(myo_inc_dir) -I$(liboffload_src_dir) -I$(libgomp_src_dir) -I$(libgomp_dir) -I$(include_src_dir) -I$(target_prefix_dir)/include -I$(target_build_dir) -I$(target_install_dir)/include
+  libgomp_plugin_intelmic_la_CPPFLAGS = $(CPPFLAGS) -DLINUX -DCOI_LIBRARY_VERSION=2 -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -DHOST_LIBRARY=1 -I$(coi_inc_dir) -I$(liboffload_src_dir) -I$(libgomp_src_dir) -I$(libgomp_dir) -I$(include_src_dir) -I$(target_prefix_dir)/include -I$(target_build_dir) -I$(target_install_dir)/include
   libgomp_plugin_intelmic_la_LDFLAGS = -L$(liboffload_dir)/.libs -loffloadmic_host -version-info 1:0:0
 else # PLUGIN_TARGET
   plugin_includedir = $(libsubincludedir)
   plugin_include_HEADERS = main_target_image.h
-  AM_CPPFLAGS = $(CPPFLAGS) -DLINUX -DCOI_LIBRARY_VERSION=2 -DMYO_SUPPORT -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -DHOST_LIBRARY=0 -I$(coi_inc_dir) -I$(myo_inc_dir) -I$(liboffload_src_dir) -I$(libgomp_dir)
+  AM_CPPFLAGS = $(CPPFLAGS) -DLINUX -DCOI_LIBRARY_VERSION=2 -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -DHOST_LIBRARY=0 -I$(coi_inc_dir) -I$(liboffload_src_dir) -I$(libgomp_dir)
   AM_CXXFLAGS = $(CXXFLAGS)
   AM_LDFLAGS = -L$(liboffload_dir)/.libs -L$(libgomp_dir)/.libs -loffloadmic_target -lcoi_device -lmyo-service -lgomp -rdynamic
 endif

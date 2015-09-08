@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,17 +28,19 @@
 */
 
 
+#include "offload_util.h"
+
 #ifndef OFFLOAD_ORSL_H_INCLUDED
 #define OFFLOAD_ORSL_H_INCLUDED
 
 // ORSL interface
 namespace ORSL {
 
-extern void init();
+DLL_LOCAL extern void init();
 
-extern bool reserve(int device);
-extern bool try_reserve(int device);
-extern void release(int device);
+DLL_LOCAL extern bool reserve(int device);
+DLL_LOCAL extern bool try_reserve(int device);
+DLL_LOCAL extern void release(int device);
 
 } // namespace ORSL
 

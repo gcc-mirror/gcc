@@ -84,8 +84,6 @@ liboffloadmic_host_la_SOURCES = $(liboffloadmic_sources) \
 
 liboffloadmic_host_la_CPPFLAGS = $(liboffloadmic_cppflags) -DHOST_LIBRARY=1
 liboffloadmic_host_la_LDFLAGS = @lt_cv_dlopen_libs@ -version-info 5:0:0
-liboffloadmic_host_la_LIBADD = libcoi_host.la libmyo-client.la
-liboffloadmic_host_la_DEPENDENCIES = $(liboffloadmic_host_la_LIBADD)
 
 liboffloadmic_target_la_SOURCES = $(liboffloadmic_sources) \
 				  runtime/coi/coi_server.cpp \

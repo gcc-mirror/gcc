@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -38,9 +38,17 @@
  * intellectual property rights is granted herein.
  */
 
+/***
+* See http://sourceware.org/binutils/docs/ld/VERSION.html#VERSION for more info.
+***/
+
 MYO_1.0
 {
   global:
+    myoArenaAlignedMalloc;
+    myoArenaAlignedFree;
+    myoArenaAcquire;
+    myoArenaRelease;
     myoAcquire;
     myoRelease;
     myoSharedAlignedFree;

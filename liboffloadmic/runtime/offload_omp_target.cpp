@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -86,7 +86,7 @@ static int omp_get_int_from_host(
     return setting;
 }
 
-void omp_set_num_threads_lrb(
+DLL_LOCAL void omp_set_num_threads_lrb(
     void *ofld
 )
 {
@@ -96,7 +96,7 @@ void omp_set_num_threads_lrb(
     omp_set_num_threads(num_threads);
 }
 
-void omp_get_max_threads_lrb(
+DLL_LOCAL void omp_get_max_threads_lrb(
     void *ofld
 )
 {
@@ -106,7 +106,7 @@ void omp_get_max_threads_lrb(
     omp_send_int_to_host(ofld, num_threads);
 }
 
-void omp_get_num_procs_lrb(
+DLL_LOCAL void omp_get_num_procs_lrb(
     void *ofld
 )
 {
@@ -116,7 +116,7 @@ void omp_get_num_procs_lrb(
     omp_send_int_to_host(ofld, num_procs);
 }
 
-void omp_set_dynamic_lrb(
+DLL_LOCAL void omp_set_dynamic_lrb(
     void *ofld
 )
 {
@@ -126,7 +126,7 @@ void omp_set_dynamic_lrb(
     omp_set_dynamic(dynamic);
 }
 
-void omp_get_dynamic_lrb(
+DLL_LOCAL void omp_get_dynamic_lrb(
     void *ofld
 )
 {
@@ -136,7 +136,7 @@ void omp_get_dynamic_lrb(
     omp_send_int_to_host(ofld, dynamic);
 }
 
-void omp_set_nested_lrb(
+DLL_LOCAL void omp_set_nested_lrb(
     void *ofld
 )
 {
@@ -146,7 +146,7 @@ void omp_set_nested_lrb(
     omp_set_nested(nested);
 }
 
-void omp_get_nested_lrb(
+DLL_LOCAL void omp_get_nested_lrb(
     void *ofld
 )
 {
@@ -156,7 +156,7 @@ void omp_get_nested_lrb(
     omp_send_int_to_host(ofld, nested);
 }
 
-void omp_set_schedule_lrb(
+DLL_LOCAL void omp_set_schedule_lrb(
     void *ofld_
 )
 {
@@ -180,7 +180,7 @@ void omp_set_schedule_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_get_schedule_lrb(
+DLL_LOCAL void omp_get_schedule_lrb(
     void *ofld_
 )
 {
@@ -206,7 +206,7 @@ void omp_get_schedule_lrb(
 
 // lock API functions
 
-void omp_init_lock_lrb(
+DLL_LOCAL void omp_init_lock_lrb(
     void *ofld_
 )
 {
@@ -224,7 +224,7 @@ void omp_init_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_destroy_lock_lrb(
+DLL_LOCAL void omp_destroy_lock_lrb(
     void *ofld_
 )
 {
@@ -242,7 +242,7 @@ void omp_destroy_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_set_lock_lrb(
+DLL_LOCAL void omp_set_lock_lrb(
     void *ofld_
 )
 {
@@ -260,7 +260,7 @@ void omp_set_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_unset_lock_lrb(
+DLL_LOCAL void omp_unset_lock_lrb(
     void *ofld_
 )
 {
@@ -278,7 +278,7 @@ void omp_unset_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_test_lock_lrb(
+DLL_LOCAL void omp_test_lock_lrb(
     void *ofld_
 )
 {
@@ -304,7 +304,7 @@ void omp_test_lock_lrb(
 
 // nested lock API functions
 
-void omp_init_nest_lock_lrb(
+DLL_LOCAL void omp_init_nest_lock_lrb(
     void *ofld_
 )
 {
@@ -322,7 +322,7 @@ void omp_init_nest_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_destroy_nest_lock_lrb(
+DLL_LOCAL void omp_destroy_nest_lock_lrb(
     void *ofld_
 )
 {
@@ -340,7 +340,7 @@ void omp_destroy_nest_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_set_nest_lock_lrb(
+DLL_LOCAL void omp_set_nest_lock_lrb(
     void *ofld_
 )
 {
@@ -358,7 +358,7 @@ void omp_set_nest_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_unset_nest_lock_lrb(
+DLL_LOCAL void omp_unset_nest_lock_lrb(
     void *ofld_
 )
 {
@@ -376,7 +376,7 @@ void omp_unset_nest_lock_lrb(
     OFFLOAD_TARGET_LEAVE(ofld);
 }
 
-void omp_test_nest_lock_lrb(
+DLL_LOCAL void omp_test_nest_lock_lrb(
     void *ofld_
 )
 {

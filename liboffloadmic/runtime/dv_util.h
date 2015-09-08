@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,6 +32,7 @@
 #define DV_UTIL_H_INCLUDED
 
 #include <stdint.h>
+#include "offload_util.h"
 
 // Dope vector declarations
 #define ArrDescMaxArrayRank         31
@@ -64,18 +65,18 @@ typedef struct ArrDesc {
 
 typedef ArrDesc* pArrDesc;
 
-bool __dv_is_contiguous(const ArrDesc *dvp);
+DLL_LOCAL bool __dv_is_contiguous(const ArrDesc *dvp);
 
-bool __dv_is_allocated(const ArrDesc *dvp);
+DLL_LOCAL bool __dv_is_allocated(const ArrDesc *dvp);
 
-uint64_t __dv_data_length(const ArrDesc *dvp);
+DLL_LOCAL uint64_t __dv_data_length(const ArrDesc *dvp);
 
-uint64_t __dv_data_length(const ArrDesc *dvp, int64_t nelems);
+DLL_LOCAL uint64_t __dv_data_length(const ArrDesc *dvp, int64_t nelems);
 
-CeanReadRanges * init_read_ranges_dv(const ArrDesc *dvp);
+DLL_LOCAL CeanReadRanges * init_read_ranges_dv(const ArrDesc *dvp);
 
 #if OFFLOAD_DEBUG > 0
-void    __dv_desc_dump(const char *name, const ArrDesc *dvp);
+DLL_LOCAL void    __dv_desc_dump(const char *name, const ArrDesc *dvp);
 #else // OFFLOAD_DEBUG
 #define __dv_desc_dump(name, dvp)
 #endif // OFFLOAD_DEBUG

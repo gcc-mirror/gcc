@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -50,6 +50,13 @@ COIRESULT (*ProcessCreateFromMemory)(COIENGINE, const char*, const void*,
                                      const char**, uint8_t, const char*,
                                      uint64_t, const char*, const char*,
                                      uint64_t, COIPROCESS*);
+COIRESULT (*ProcessCreateFromFile)(COIENGINE, const char*,
+                                     int, const char**, uint8_t,
+                                     const char**, uint8_t, const char*,
+                                     uint64_t, const char*,COIPROCESS*);
+COIRESULT (*ProcessSetCacheSize)(COIPROCESS, uint64_t, uint32_t,
+                                 uint64_t, uint32_t, uint32_t,
+                                 const COIEVENT*, COIEVENT*);
 COIRESULT (*ProcessDestroy)(COIPROCESS, int32_t, uint8_t, int8_t*, uint32_t*);
 COIRESULT (*ProcessGetFunctionHandles)(COIPROCESS, uint32_t, const char**,
                                        COIFUNCTION*);
@@ -57,6 +64,8 @@ COIRESULT (*ProcessLoadLibraryFromMemory)(COIPROCESS, const void*, uint64_t,
                                           const char*, const char*,
                                           const char*, uint64_t, uint32_t,
                                           COILIBRARY*);
+COIRESULT (*ProcessUnloadLibrary)(COIPROCESS,
+                                  COILIBRARY);
 COIRESULT (*ProcessRegisterLibraries)(uint32_t, const void**, const uint64_t*,
                                       const char**, const uint64_t*);
 
@@ -80,6 +89,13 @@ COIRESULT (*BufferWrite)(COIBUFFER, uint64_t, const void*, uint64_t,
                          COI_COPY_TYPE, uint32_t, const COIEVENT*, COIEVENT*);
 COIRESULT (*BufferRead)(COIBUFFER, uint64_t, void*, uint64_t, COI_COPY_TYPE,
                         uint32_t, const COIEVENT*, COIEVENT*);
+COIRESULT (*BufferReadMultiD)(COIBUFFER, uint64_t,
+                        void *, void *, COI_COPY_TYPE,
+                        uint32_t, const   COIEVENT*, COIEVENT*);
+COIRESULT (*BufferWriteMultiD)(COIBUFFER, const   COIPROCESS,
+                       uint64_t, void *, void *,
+                       COI_COPY_TYPE, uint32_t, const   COIEVENT*, COIEVENT*);
+
 COIRESULT (*BufferCopy)(COIBUFFER, COIBUFFER, uint64_t, uint64_t, uint64_t,
                         COI_COPY_TYPE, uint32_t, const COIEVENT*, COIEVENT*);
 COIRESULT (*BufferGetSinkAddress)(COIBUFFER, uint64_t*);
@@ -91,6 +107,20 @@ COIRESULT (*EventWait)(uint16_t, const COIEVENT*, int32_t, uint8_t, uint32_t*,
                        uint32_t*);
 
 uint64_t  (*PerfGetCycleFrequency)(void);
+
+COIRESULT (*PipelineClearCPUMask) (COI_CPU_MASK);
+
+COIRESULT (*PipelineSetCPUMask) (COIPROCESS, uint32_t,
+                                        uint8_t, COI_CPU_MASK);
+COIRESULT (*EngineGetInfo)(COIENGINE, uint32_t, COI_ENGINE_INFO*);
+
+COIRESULT (*EventRegisterCallback)(
+    const COIEVENT,
+    void (*)(COIEVENT, const COIRESULT, const void*),
+    const void*,
+    const uint64_t);
+
+COIRESULT (*ProcessConfigureDMA)(const uint64_t, const int);
 
 bool init(void)
 {
@@ -140,6 +170,32 @@ bool init(void)
         return false;
     }
 
+    ProcessSetCacheSize =
+           (COIRESULT (*)(COIPROCESS, uint64_t, uint32_t,
+                                 uint64_t, uint32_t, uint32_t,
+                                 const COIEVENT*, COIEVENT*))
+               DL_sym(lib_handle, "COIProcessSetCacheSize", COI_VERSION1);
+    if (ProcessSetCacheSize == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
+                            "COIProcessSetCacheSize");
+#if 0  // for now disable as ProcessSetCacheSize is not available on < MPSS 3.4
+        fini();
+        return false;
+#endif
+    }
+
+    ProcessCreateFromFile =
+           (COIRESULT (*)(COIENGINE, const char*, int, const char**, uint8_t,
+                          const char**, uint8_t, const char*, uint64_t,
+                          const char*, COIPROCESS*))
+            DL_sym(lib_handle, "COIProcessCreateFromFile", COI_VERSION1);
+    if (ProcessCreateFromFile == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
+                            "COIProcessCreateFromFile");
+        fini();
+        return false;
+    }
+
     ProcessDestroy =
         (COIRESULT (*)(COIPROCESS, int32_t, uint8_t, int8_t*,
                        uint32_t*))
@@ -169,6 +225,17 @@ bool init(void)
     if (ProcessLoadLibraryFromMemory == 0) {
         OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
                             "COIProcessLoadLibraryFromMemory");
+        fini();
+        return false;
+    }
+
+    ProcessUnloadLibrary =
+        (COIRESULT (*)(COIPROCESS,
+                       COILIBRARY))
+            DL_sym(lib_handle, "COIProcessUnloadLibrary", COI_VERSION1);
+    if (ProcessUnloadLibrary == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
+                            "COIProcessUnloadLibrary");
         fini();
         return false;
     }
@@ -295,6 +362,22 @@ bool init(void)
         return false;
     }
 
+    BufferReadMultiD =
+        (COIRESULT (*)(COIBUFFER, uint64_t,
+                       void *, void *, COI_COPY_TYPE,
+                       uint32_t, const   COIEVENT*, COIEVENT*))
+            DL_sym(lib_handle, "COIBufferReadMultiD", COI_VERSION1);
+    // We  accept that coi library has no COIBufferReadMultiD routine.
+    // So there is no check for zero value
+
+    BufferWriteMultiD =
+        (COIRESULT (*)(COIBUFFER, const   COIPROCESS,
+                       uint64_t, void *, void *,
+                       COI_COPY_TYPE, uint32_t, const   COIEVENT*, COIEVENT*))
+            DL_sym(lib_handle, "COIBufferWriteMultiD", COI_VERSION1);
+    // We  accept that coi library has no COIBufferWriteMultiD routine.
+    // So there is no check for zero value
+
     BufferCopy =
         (COIRESULT (*)(COIBUFFER, COIBUFFER, uint64_t, uint64_t, uint64_t,
                        COI_COPY_TYPE, uint32_t, const COIEVENT*,
@@ -350,6 +433,47 @@ bool init(void)
         return false;
     }
 
+    PipelineClearCPUMask =
+        (COIRESULT (*)(COI_CPU_MASK))
+            DL_sym(lib_handle, "COIPipelineClearCPUMask", COI_VERSION1);
+    if (PipelineClearCPUMask == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
+                            "COIPipelineClearCPUMask");
+        fini();
+        return false;
+    }
+
+    PipelineSetCPUMask =
+        (COIRESULT (*)(COIPROCESS, uint32_t,uint8_t, COI_CPU_MASK))
+            DL_sym(lib_handle, "COIPipelineSetCPUMask", COI_VERSION1);
+    if (PipelineSetCPUMask == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
+                            "COIPipelineSetCPUMask");
+        fini();
+        return false;
+    }
+
+    EngineGetInfo =
+        (COIRESULT (*)(COIENGINE, uint32_t, COI_ENGINE_INFO*))
+            DL_sym(lib_handle, "COIEngineGetInfo", COI_VERSION1);
+    if (COIEngineGetInfo == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
+                            "COIEngineGetInfo");
+        fini();
+        return false;
+    }
+    
+    EventRegisterCallback =
+        (COIRESULT (*)(COIEVENT,
+         void (*)(COIEVENT, const COIRESULT, const void*),
+         const void*,
+         const uint64_t))
+            DL_sym(lib_handle, "COIEventRegisterCallback", COI_VERSION1);
+
+    ProcessConfigureDMA =
+        (COIRESULT (*)(const uint64_t, const int))
+            DL_sym(lib_handle, "COIProcessConfigureDMA", COI_VERSION1);
+    
     is_available = true;
 
     return true;

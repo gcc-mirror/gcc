@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -61,9 +61,15 @@ extern "C" {
 /// This is a special COIPROCESS handle that can be used to indicate that
 /// the source process should be used for an operation.
 ///
-#define COI_PROCESS_SOURCE  ((COIPROCESS)-1)
+#define COI_PROCESS_SOURCE ((COIPROCESS)-1)
 
 #define COI_MAX_FILE_NAME_LENGTH 256
+
+///////////////////////////////////////////////////////////////////////////////
+/// This is a flag for COIProcessCreateFromMemory that indicates the passed in
+/// memory pointer is a fat binary file and should not have regular validation.
+///
+#define COI_FAT_BINARY ((uint64_t)-1)
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -74,14 +80,14 @@ extern "C" {
 ///
 /// @param  in_Engine
 ///         [in] A handle retrieved via a call to COIEngineGetHandle() that
-///         indicates which device to create the process on.  This is
+///         indicates which device to create the process on. This is
 ///         necessary because there can be more than one device
 ///         within the system.
 ///
 /// @param  in_pBinaryName
 ///         [in] Pointer to a null-terminated string that contains the
 ///         path to the program binary to be instantiated as a process on
-///         the sink device.  The file name will be accessed via
+///         the sink device. The file name will be accessed via
 ///         fopen and fread, as such, the passed in binary name must
 ///         be locatable via these commands. Also, the file name (without
 ///         directory information) will be used automatically by the system
@@ -121,8 +127,8 @@ extern "C" {
 /// @param  in_InitialBufferSpace
 ///         [in] The initial memory (in bytes) that will be pre-allocated at
 ///         process creation for use by buffers associated with this remote
-///         process. In addition to allocating, Intel® Coprocessor Offload
-///         Infrastructure (Intel® COI)  will also fault in the
+///         process. In addition to allocating, Intel(R) Coprocessor Offload
+///         Infrastructure (Intel(R) COI) will also fault in the
 ///         memory during process creation. If the total size of the buffers
 ///         in use by this process exceed this initial size, memory on the
 ///         sink may continue to be allocated on demand, as needed, subject
@@ -186,7 +192,7 @@ COIProcessCreateFromFile(
 ///
 /// @param  in_Engine
 ///         [in] A handle retrieved via a call to COIEngineGetHandle() that
-///         indicates which device to create the process on.  This is
+///         indicates which device to create the process on. This is
 ///         necessary because there can be more than one device
 ///         within the system.
 ///
@@ -236,8 +242,8 @@ COIProcessCreateFromFile(
 /// @param  in_InitialBufferSpace
 ///         [in] The initial memory (in bytes) that will be pre-allocated at
 ///         process creation for use by buffers associated with this remote
-///         process. In addition to allocating, Intel® Coprocessor
-///         Offload Infrastructure (Intel® COI)  will also fault in the
+///         process. In addition to allocating, Intel(R) Coprocessor
+///         Offload Infrastructure (Intel(R) COI) will also fault in the
 ///         memory during process creation. If the total size of the buffers
 ///         in use by this process exceed this initial size, memory on the
 ///         sink may continue to be allocated on demand, as needed, subject
@@ -314,8 +320,8 @@ COIProcessCreateFromFile(
 /// @return COI_PROCESS_DIED if at some point during the loading of the remote
 ///         process the remote process terminated abnormally.
 ///
-/// @return COI_VERSION_MISMATCH if the version of Intel® Coprocessor
-///         Offload Infrastructure (Intel® COI)  on the host is not
+/// @return COI_VERSION_MISMATCH if the version of Intel(R) Coprocessor
+///         Offload Infrastructure (Intel(R) COI) on the host is not
 ///         compatible with the version on the device.
 ///
 COIACCESSAPI
@@ -354,7 +360,7 @@ COIProcessCreateFromMemory(
 ///         [in] If this flag is set to true, then the sink process will be
 ///         forcibly terminated after the timeout has been reached. A timeout
 ///         value of 0 will kill the process immediately, while a timeout of
-///         -1 is invalid.  If the flag is set to false then a message will
+///         -1 is invalid. If the flag is set to false then a message will
 ///         be sent to the sink process requesting a clean shutdown. A value
 ///         of false along with a timeout of 0 does not send a shutdown
 ///         message, instead simply polls the process to see if it is alive.
@@ -374,8 +380,8 @@ COIProcessCreateFromMemory(
 ///         be 0 if the remote process exited cleanly. If the remote process
 ///         exited abnormally this will contain the termination code given
 ///         by the operating system of the remote process. This is an optional
-///         parameter and the caller may pass in NULL if they are not 
-///         interested in the termination code. The output value of this 
+///         parameter and the caller may pass in NULL if they are not
+///         interested in the termination code. The output value of this
 ///         pointer is only meaningful if COI_SUCCESS is returned.
 ///
 /// @return COI_SUCCESS if the process was destroyed.
@@ -390,8 +396,8 @@ COIProcessCreateFromMemory(
 ///
 /// @return COI_TIME_OUT_REACHED if the sink process is still running after
 ///         waiting in_WaitForMainTimeout milliseconds and in_ForceDestroy
-///         is false.  This is true even if in_WaitForMainTimeout was 0.
-///         In this case, out_pProcessReturn and out_pTerminationCode 
+///         is false. This is true even if in_WaitForMainTimeout was 0.
+///         In this case, out_pProcessReturn and out_pTerminationCode
 ///         are undefined.
 ///
 COIACCESSAPI
@@ -410,10 +416,10 @@ COIProcessDestroy(
 ///
 /// Given a loaded native process, gets an array of function handles that can
 /// be used to schedule run functions on a pipeline associated with that
-/// process.  See the documentation for COIPipelineRunFunction() for
-/// additional information.  All functions that are to be retrieved in this
-/// fashion must have the define COINATIVEPROCESSEXPORT preceeding their type
-/// specification.  For functions that are written in C++, either the entries
+/// process. See the documentation for COIPipelineRunFunction() for
+/// additional information. All functions that are to be retrieved in this
+/// fashion must have the define COINATIVEPROCESSEXPORT preceding their type
+/// specification. For functions that are written in C++, either the entries
 /// in in_pFunctionNameArray in must be pre-mangled, or the functions must be
 /// declared as extern "C". It is also necessary to link the binary containing
 /// the exported functions with the -rdynamic linker flag.
@@ -432,7 +438,7 @@ COIProcessDestroy(
 /// @param  in_ppFunctionNameArray
 ///         [in] Pointer to an array of null-terminated strings that match
 ///         the name of functions present in the code of the binary
-///         previously loaded via COIProcessCreate().  Note that if a C++
+///         previously loaded via COIProcessCreate(). Note that if a C++
 ///         function is used, then the string passed in must already be
 ///         properly name-mangled, or extern "C" must be used for where
 ///         the function is declared.
@@ -462,7 +468,7 @@ COIProcessDestroy(
 ///         the null.
 ///
 /// @warning This operation can take several milliseconds so it is recommended
-///          that it only be be done at load time.
+///          that it only be done at load time.
 ///
 COIACCESSAPI
 COIRESULT
@@ -486,7 +492,7 @@ COIProcessGetFunctionHandles(
 #define COI_LOADLIBRARY_DEEPBIND   0x00008
 #define COI_LOADLIBRARY_NODELETE   0x01000
 
-/// Flags to replicate the behavior of the original version of
+/// Flags to replicate the behaviour of the original version of
 /// COIProcessLoadLibrary* APIs.
 #define COI_LOADLIBRARY_V1_FLAGS   (COI_LOADLIBRARY_GLOBAL|COI_LOADLIBRARY_NOW)
 
@@ -796,13 +802,13 @@ COIProcessRegisterLibraries(
 //////////////////////////////////////////////////////////////////////////////
 /// The user can choose to have notifications for these internal events
 /// so that they can build their own profiling and performance layer on
-/// top of Intel® Coprocessor Offload Infrastructure (Intel® COI) . 
+/// top of Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI).
 ///
 typedef enum COI_NOTIFICATIONS
 {
     /// This event occurs when all explicit and implicit dependencies are
-    /// satisified and Intel® Coprocessor Offload Infrastructure
-    /// (Intel® COI)  schedules the run function to begin execution.
+    /// satisfied and Intel(R) Coprocessor Offload Infrastructure
+    /// (Intel(R) COI) schedules the run function to begin execution.
     RUN_FUNCTION_READY = 0,
 
     /// This event occurs just before the run function actually starts
@@ -835,20 +841,17 @@ typedef enum COI_NOTIFICATIONS
 //////////////////////////////////////////////////////////////////////////////
 ///
 /// A callback that will be invoked to notify the user of an internal
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI) 
+/// Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
 /// event. Note that the callback is registered per process so any of the
 /// above notifications that happen on the registered process will receive
 /// the callback.
 /// As with any callback mechanism it is up to the user to make sure that
-/// there are no possible deadlocks due to reentrancy (ie the callback being
+/// there are no possible deadlocks due to reentrancy (i.e. the callback being
 /// invoked in the same context that triggered the notification) and also
 /// that the callback does not slow down overall processing. If the user
 /// performs too much work within the callback it could delay further
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI) 
-/// processing.
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)  
-/// promises to invoke the callback for an internal event prior to
-/// signaling the corresponding COIEvent. For example, if a user is waiting
+/// processing. The callback will be invoked prior to the signaling of
+/// the corresponding COIEvent. For example, if a user is waiting
 /// for a COIEvent associated with a run function completing they will
 /// receive the callback before the COIEvent is marked as signaled.
 ///
@@ -865,11 +868,12 @@ typedef enum COI_NOTIFICATIONS
 ///
 /// @param  in_UserData
 ///         [in] Opaque data that was provided when the callback was
-///         registered. Intel® Coprocessor Offload Infrastructure (Intel® COI)  simply passes this back to the user so that
+///         registered. Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
+///         simply passes this back to the user so that
 ///         they can interpret it as they choose.
 ///
 typedef void (*COI_NOTIFICATION_CALLBACK)(
-            COI_NOTIFICATIONS   in_Type, 
+            COI_NOTIFICATIONS   in_Type,
             COIPROCESS          in_Process,
             COIEVENT            in_Event,
     const   void*               in_UserData);
@@ -878,7 +882,7 @@ typedef void (*COI_NOTIFICATION_CALLBACK)(
 //////////////////////////////////////////////////////////////////////////////
 ///
 /// Register a callback to be invoked to notify that an internal
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)  event
+/// Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI) event
 /// has occured on the process that is associated with the callback.
 /// Note that it is legal to have more than one callback registered with
 /// a given process but those must all be unique callback pointers.
@@ -942,13 +946,13 @@ COIRESULT COIUnregisterNotificationCallback(
 ///
 /// Set the user data that will be returned in the notification callback.
 /// This data is sticky and per thread so must be set prior to the
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI) //
+/// Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
 /// operation being invoked. If you wish to set the context to be returned
 /// for a specific instance of a user event notification then the context
 /// must be set using this API prior to registering that user event with
 /// COIEventRegisterUserEvent.
-/// The value may be set prior to each Intel® Coprocessor Offload
-/// Infrastructure (Intel® COI)  operation being called to 
+/// The value may be set prior to each Intel(R) Coprocessor Offload
+/// Infrastructure (Intel(R) COI) operation being called to
 /// effectively have a unique UserData per callback.
 /// Setting this value overrides any value that was set when the
 /// callback was registered and will also override any future registrations
@@ -961,6 +965,266 @@ COIRESULT COIUnregisterNotificationCallback(
 COIACCESSAPI
 void COINotificationCallbackSetContext(
     const   void*                       in_UserData);
+
+
+/// @name COIProcessSetCacheSize flags.
+/// Flags are divided into two categories: _MODE_ and _ACTION_
+/// only one of each is valid with each call.
+/// _ACTIONS_ and _MODES_ should be bitwised OR'ed together, i.e. |
+//@{
+
+/// Current set of DEFINED bits for _MODE_, can be used
+/// to clear or check fields, not useful to pass into APIs. Used internally.
+#define COI_CACHE_MODE_MASK                 0x00000007
+
+/// Flag to indicate to keep the previous mode of operation. By default
+/// this would be COI_CACHE_MODE_ONDEMAND_SYNC. As of this release
+/// This is the only mode available. This mode is valid with _ACTION_
+/// flags.
+#define COI_CACHE_MODE_NOCHANGE             0x00000001
+
+/// Mode of operation that indicates that COI will allocate physical
+/// cache memory exactly when it is is needed. COIPipeline execution in
+/// the given process will momentarily block until the allocation request
+/// is completed. This is and has been the default mode.
+#define COI_CACHE_MODE_ONDEMAND_SYNC        0x00000002
+
+/// Not yet implemented. Future mode that will not stall a COIPipeline
+/// but prefer eviction/paging if possible as to immediately execute pipeline.
+/// At the same time, enqueue background requests to allocate extra cache
+/// so as to provide optimze behavior on subsequent runs.
+#define COI_CACHE_MODE_ONDEMAND_ASYNC       0x00000004
+
+
+/// Current set of DEFINED bits for _ACTION_ can be used
+/// to clear fields, but not useful to pass into API's. Used internally.
+#define COI_CACHE_ACTION_MASK               0x00070000
+
+/// No action requested. With this flag specified
+/// it is recommended to NOT provide a out_pCompletion event,
+/// as with this flag, modes and values are immediately set.
+/// This is valid with _MODE_ flags.
+#define COI_CACHE_ACTION_NONE               0x00010000
+
+/// This _ACTION_ flag will immediately attempt to increase the cache
+/// physical memory size to the current set pool size(s). Used to
+/// pre-allocate memory on remote processes, so that runfunction will
+/// enqueue faster. Also may prevent unused buffer eviction from process
+/// reducing overhead in trade for memory allocation cost.
+#define COI_CACHE_ACTION_GROW_NOW           0x00020000
+
+/// Not yet implemented. Future _ACTION_ that will attempt to find unused
+/// allocated cache and free it, with the express goal of reducing the
+/// footprint on the remote process down to the value of the currently set
+/// pool size(s).
+#define COI_CACHE_ACTION_FREE_UNUSED        0x00040000
+
+//@}
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Set the minimum preferred COIProcess cache size. By default these values
+/// are set to 1GB. With the default size of 1GB, Intel(R) COI will only
+/// grow the cache with each new buffer up until the set limit is consumed,
+/// after which, only required to accommodate additional buffers.
+/// This means that after the cache preference is met, a process will act
+/// as conservative as possible for memory consumption.
+/// This API will allow users to adjust memory consumption aggressiveness.
+///
+/// Additional performance may be gained if the user sets a value higher than
+/// default. With high memory consumption user can choose to trade performance
+/// between memory allocation cost and transfer speeds to and from the
+/// remote process. A last consideration is that if buffers are used only
+/// once, it may be best to keep a small cache size, or ensure buffers are
+/// fully destroyed after their use.
+///
+/// Adjusting this value to high may result in out of resource conditions.
+///
+/// @param  in_pProcess
+///         [in] Handle to uniquely identify the process for which the cache
+///         is to be adjusted.
+///
+/// @param  in_HugePagePoolSize
+///         [in] The suggested size of the remote huge page cache in bytes.
+///         This value defaults to 1GB. A process will only allocate cache
+///         memory if the current cache is smaller than this limit, or it is
+///         absolutely necessary to fulfill a request, but preferring to
+///         re-use existing memory and paging unused buffers back to the host
+///         Increasing this value will cause a process to
+///         aggressively allocate memory on demand up to this value, before
+///         evicting/paging memory from the remote process back to the host
+///         process.
+///
+///         The net result is that memory consumption is increased, but the
+///         user can 'cache' more buffers on the remote process. More time
+///         may be spent during first use of run functions as more memory
+///         may be allocated, but subsequent run functions will likely
+///         see an increase in queueing performance as the data is already
+///         valid in the remote process.
+///
+///         Users should tune this value for optimum performance balanced
+///         against memory consumption. This value does not affect 4K page
+///         cache. Please use in_SmallPagePoolSize for 4K pages.
+///
+/// @param  in_HugeFlags
+///         [in] Flags to select mode or action for huge page cache. One _MODE_
+///         and one _ACTION_ flag are specified together. Default _MODE_ is
+///         COI_CACHE_MODE_ONDEMAND_SYNC. See all COI_CACHE_MODE_* and
+///         COI_CACHE_ACTION_* for other modes and actions. Default _ACTION_
+///         is COI_CACHE_ACTION_NONE.
+///
+/// @param  in_SmallPagePoolSize
+///         [in] The suggested size of the remote 4K cache in bytes. Same
+///         function as in_HugePagePoolSize but affecting only 4K page cache.
+///         Defaults to 1GB.
+///
+/// @param  in_SmallFlags
+///         [in] Flags to select mode or action for 4K page cache. One _MODE_
+///         and one _ACTION_ flag are be specified together. Default _MODE_ is
+///         COI_CACHE_MODE_ONDEMAND_SYNC. See all COI_CACHE_MODE_* and
+///         COI_CACHE_ACTION_* for other modes and actions.
+///
+/// @param  in_NumDependencies
+///         [in] The number of dependencies specified in the in_pDependencies
+///         array. This may be 0 if the caller does not want the call to
+///         wait for any events to be signaled.
+///
+/// @param  in_pDependencies
+///         [in] An optional array of handles to previously created COIEVENT
+///         objects that this operation will wait for before starting.
+///         This allows the user to create dependencies between asynchronous
+///         calls and other operations such as run functions. The user may
+///         pass in NULL if they do not wish to wait for any dependencies.
+///         Only useful with _ACTION_ flags, otherwise there is no action
+///         to wait on. All _MODE_ changes happen immediately.
+///
+/// @param  out_pCompletion
+///         [out] An optional pointer to a COIEVENT object that will be
+///         signaled when the operation is complete. The user may pass in
+///         NULL if the user wants the operation to block until completed.
+///         Note: This flag is not useful unless paired with a
+///               valid _ACTION_ flag.
+///
+/// @return COI_SUCCESS if the cache was successfully adjusted. In case of
+///         valid flags including _ACTION_, if out_pCompletion was specified,
+///         this does not indicate the operation succeeded, but rather only
+///         it was successfully queued. For further information see
+///         that COIEventWait() for getting return values.
+///
+/// @return COI_INVALID_HANDLE if the in_Process handle passed in was invalid.
+///
+/// @return COI_RESOURCE_EXHAUSTED if no more cache can be created,
+///         possibly, but not necessarily because a pool size was set to large
+///         and COI_CACHE_ACTION_GROW_NOW was specified.
+///
+/// @return COI_NOT_SUPPORTED if more than one _MODE_ or _ACTION_ was
+///         specified.
+///
+/// @return COI_NOT_SUPPORTED if an invalid _MODE_ or _ACTION_ was
+///         specified.
+///
+/// @return COI_ARGUMENT_MISMATCH if in_NumDependencies is non-zero while
+///         in_pDependencies was passed in as NULL.
+///
+/// @return COI_OUT_OF_RANGE if one of the pool sizes was invalid.
+///
+/// @return COI_PROCESS_DIED if at some point during the mode or action the
+///         remote process terminated abnormally. Possible due to an out of
+///         memory condition.
+///
+COIACCESSAPI
+COIRESULT COIProcessSetCacheSize(
+    const   COIPROCESS          in_Process,
+    const   uint64_t            in_HugePagePoolSize,
+    const   uint32_t            in_HugeFlags,
+    const   uint64_t            in_SmallPagePoolSize,
+    const   uint32_t            in_SmallFlags,
+            uint32_t            in_NumDependencies,
+    const   COIEVENT*           in_pDependencies,
+            COIEVENT*           out_pCompletion);
+
+
+//////////////////////////////////////////////////////////////////////////////
+/// These are the different modes of operation that can be selected for
+/// the COI_DMA_MODE by the API COIProcessConfigureDMA. They allow the user
+/// to customize the DMA layer behaviour.
+///
+typedef enum COI_DMA_MODE
+{
+    /// This mode will use one common logical channel for all DMA operations.
+    /// Using this mode requires a channel count of one.
+    COI_DMA_MODE_SINGLE = 0,
+
+    /// This mode will dedicate on logical channel for write operations
+    /// and one logical channel for read operations. Requires a minimum of
+    /// two logical channels, if more than two are used they are ignored
+    /// in the current implementation.
+    COI_DMA_MODE_READ_WRITE,
+
+    /// This mode is not yet implemented and is a placeholder for future
+    /// releases. Check here for updates when it is implemented.
+    /// Will require a minimum of two logical channels and a maximum
+    /// of four channels.
+    COI_DMA_MODE_ROUND_ROBIN,
+
+    /// Reserved for internal use.
+    COI_DMA_RESERVED
+} COI_DMA_MODE;
+
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Set the number and mode of the physical DMA channels that each COIProcess
+/// will establish during COIProcess creation.
+///
+/// By default the runtime will operate in COI_DMA_MODE_SINGLE mode.
+/// This API is intended to be called before COIProcessCreateFromFile() or
+/// COIProcessCreateFromMemory(). The values are stored globally and will
+/// be used by the creation API's. It is possible to call this API once
+/// before each new COIPROCESS is created and thus have each COIPROCESS
+/// run in different modes. It is not possible to change the mode on an
+/// existing COIPROCESS.
+///
+/// The larger number of logical connections requested will impose a
+/// performance penalty on the COIBUFFER creation API's, but unlock better
+/// parallelism for DMA transfers during runtime.
+///
+/// A maximum value of four (4) channels is available today, but current
+/// implementation will only take advantage of two DMA channels. The option
+/// is left available for programmers to use in case future implementations
+/// provide performance advantages.
+///
+/// It is important to note that for some operations that enabling this
+/// options may increase parallelism and require the user to enforce
+/// explicit dependencies for operations on the same buffers. See documentation
+/// for COIBufferRead/Write/Copy operations for more details.
+///
+/// @param  in_Channels
+///         [in] Number of logical connections to the remote COIProcess that
+///         the runtime will establish and use for DMA transfer requests.
+///         Will be ignored if in_Mode is set to COI_DMA_MODE_SINGLE.
+///
+/// @param  in_Mode
+///         [in] The mode of operation in which the runtime will use the
+///         logical connections to the remote COIProcess.
+///
+/// @return COI_SUCCESS if the mode and number of DMA channels requested
+///         is valid. The actual create creation of channels and modes is
+///         done during COIProcessCreateFromFile() and
+///         COIProcessCreateFromMemory().
+///
+/// @return COI_NOT_SUPPORTED if an invalid value for in_Channels or
+///         in_Mode was requested.
+///
+/// @return COI_ARGUMENT_MISMATCH if an invalid combination of in_Channels and
+///          in_Mode was requested. Example could be 2 channels with
+///          COI_DMA_MODE_SINGLE, or 1 channel with COI_DMA_MODE_READ_WRITE.
+///
+COIACCESSAPI
+COIRESULT COIProcessConfigureDMA(
+    const   uint64_t            in_Channels,
+    const   COI_DMA_MODE        in_Mode);
+
 
 #ifdef __cplusplus
 } /* extern "C" */

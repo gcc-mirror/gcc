@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -102,8 +102,8 @@ CeanReadRanges * init_read_ranges_dv(const ArrDesc *dvp)
         }
         res = (CeanReadRanges *)malloc(
             sizeof(CeanReadRanges) + (rank - i) * sizeof(CeanReadDim));
-	if (res == NULL)
-          LIBOFFLOAD_ERROR(c_malloc);
+        if (res == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
         res -> last_noncont_ind = rank - i - 1;
         count = 1;
         for (; i < rank; i++) {

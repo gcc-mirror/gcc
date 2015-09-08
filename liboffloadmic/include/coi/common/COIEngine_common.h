@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -64,7 +64,7 @@ extern "C" {
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-///  List of ISA types of supported engines.
+/// List of ISA types of supported engines.
 ///
 typedef enum
 {
@@ -89,7 +89,7 @@ typedef enum
 ///         [out] The zero-based index of this engine in the collection of
 ///         engines of the ISA returned in out_pType.
 ///
-/// @return COI_INVALID_POINTER if the any of the parameters are NULL.
+/// @return COI_INVALID_POINTER if any of the parameters are NULL.
 ///
 /// @return COI_SUCCESS
 ///

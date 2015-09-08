@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,14 +28,15 @@
 */
 
 
+#if defined(LINUX) || defined(FREEBSD)
+#include <mm_malloc.h>
+#endif
+
 #include "offload_myo_host.h"
 #include <errno.h>
 #include <malloc.h>
 #include "offload_host.h"
-
-#if defined(LINUX) || defined(FREEBSD)
-#include <mm_malloc.h>
-#endif
+//#include "offload_util.h"
 
 #define MYO_VERSION1    "MYO_1.0"
 
@@ -47,11 +48,7 @@ extern "C" void __cilkrts_cilk_for_64(void*, void*, uint64_t, int32_t);
 #pragma weak __cilkrts_cilk_for_64
 #endif // TARGET_WINNT
 
-#ifdef TARGET_WINNT
-#define MYO_TABLE_END_MARKER() reinterpret_cast<const char*>(-1)
-#else // TARGET_WINNT
-#define MYO_TABLE_END_MARKER() reinterpret_cast<const char*>(0)
-#endif // TARGET_WINNT
+static void __offload_myoProcessDeferredTables();
 
 class MyoWrapper {
 public:
@@ -140,7 +137,7 @@ public:
         CheckResult(__func__, m_remote_thunk_call(thunk, args, device));
     }
 
-    MyoiRFuncCallHandle RemoteCall(char *func, void *args, int device) const {
+    MyoiRFuncCallHandle RemoteCall(const char *func, void *args, int device) const {
         OFFLOAD_DEBUG_TRACE(4, "%s(%s, %p, %d)\n", __func__, func, args,
                             device);
         return m_remote_call(func, args, device);
@@ -149,6 +146,73 @@ public:
     void GetResult(MyoiRFuncCallHandle handle) const {
         OFFLOAD_DEBUG_TRACE(4, "%s(%p)\n", __func__, handle);
         CheckResult(__func__, m_get_result(handle));
+    }
+
+    bool PostInitFuncSupported() const {
+        OFFLOAD_DEBUG_TRACE(4, "%s()\n", __func__);
+        if (m_feature_available) {
+            return m_feature_available(MYO_FEATURE_POST_LIB_INIT) ==
+                       MYO_SUCCESS;
+        } else {
+            return false;
+        }
+    }
+
+    void CreateVtableArena();
+
+    MyoArena GetVtableArena()const {
+        return m_vtable_arena;
+    }
+
+    void ArenaCreate(
+        MyoOwnershipType ownership,
+        int consistency,
+        MyoArena* arena
+    ) const
+    {
+        OFFLOAD_DEBUG_TRACE(4, "%s(%d, %d, %p)\n",
+            __func__, ownership, consistency, arena);
+        CheckResult(__func__, m_arena_create(ownership, consistency, arena));
+    }
+
+    void* SharedAlignedArenaMalloc(
+        MyoArena arena,
+        size_t size,
+        size_t align
+    ) const
+    {
+        OFFLOAD_DEBUG_TRACE_1(4, 0, c_offload_myosharedalignedarenamalloc,
+                                 "%s(%u, %lld, %lld)\n",
+                                 __func__, arena, size, align);
+        return m_arena_aligned_malloc(arena, size, align);
+    }
+
+    void* SharedAlignedArenaFree(
+        MyoArena arena,
+        void* ptr
+    ) const
+    {
+        OFFLOAD_DEBUG_TRACE_1(4, 0, c_offload_myosharedalignedarenafree,
+                                 "%s(%u, %p)\n", __func__, arena, ptr);
+        return m_arena_aligned_free(arena, ptr);
+    }
+
+    void ArenaAcquire(
+        MyoArena arena
+    ) const
+    {
+        OFFLOAD_DEBUG_TRACE_1(4, 0, c_offload_myoarenaacquire,
+                              "%s()\n", __func__);
+        CheckResult(__func__, m_arena_acquire(arena));
+    }
+
+    void ArenaRelease(
+        MyoArena arena
+    ) const
+    {
+        OFFLOAD_DEBUG_TRACE_1(4, 0, c_offload_myoarenarelease,
+                            "%s()\n", __func__);
+        CheckResult(__func__, m_arena_release(arena));
     }
 
 private:
@@ -160,8 +224,10 @@ private:
     }
 
 private:
-    void* m_lib_handle;
-    bool  m_is_available;
+    void*    m_lib_handle;
+    bool     m_is_available;
+    int      m_post_init_func;
+    MyoArena m_vtable_arena;
 
     // pointers to functions from myo library
     MyoError (*m_lib_init)(void*, void*);
@@ -175,11 +241,18 @@ private:
     MyoError (*m_host_var_table_propagate)(void*, int);
     MyoError (*m_host_fptr_table_register)(void*, int, int);
     MyoError (*m_remote_thunk_call)(void*, void*, int);
-    MyoiRFuncCallHandle (*m_remote_call)(char*, void*, int);
+    MyoiRFuncCallHandle (*m_remote_call)(const char*, void*, int);
     MyoError (*m_get_result)(MyoiRFuncCallHandle);
+    MyoError (*m_arena_create)(MyoOwnershipType, int, MyoArena*);
+    void*    (*m_arena_aligned_malloc)(MyoArena, size_t, size_t);
+    void*    (*m_arena_aligned_free)(MyoArena, void*);
+    MyoError (*m_arena_acquire)(MyoArena);
+    MyoError (*m_arena_release)(MyoArena);
+    // Placeholder until MYO headers support enum type for feature
+    MyoError (*m_feature_available)(int feature);
 };
 
-bool MyoWrapper::LoadLibrary(void)
+DLL_LOCAL bool MyoWrapper::LoadLibrary(void)
 {
 #ifndef TARGET_WINNT
     const char *lib_name = "libmyo-client.so";
@@ -295,7 +368,7 @@ bool MyoWrapper::LoadLibrary(void)
         return false;
     }
 
-    m_remote_call = (MyoiRFuncCallHandle (*)(char*, void*, int))
+    m_remote_call = (MyoiRFuncCallHandle (*)(const char*, void*, int))
         DL_sym(m_lib_handle, "myoiRemoteCall", MYO_VERSION1);
     if (m_remote_call == 0) {
         OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in MYO library\n",
@@ -313,7 +386,65 @@ bool MyoWrapper::LoadLibrary(void)
         return false;
     }
 
+    m_arena_create = (MyoError (*)(MyoOwnershipType, int, MyoArena*))
+        DL_sym(m_lib_handle, "myoArenaCreate", MYO_VERSION1);
+    if (m_arena_create == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in MYO library\n",
+                            "myoArenaCreate");
+        UnloadLibrary();
+        return false;
+    }
+
+    m_arena_aligned_malloc = (void* (*)(MyoArena, size_t, size_t))
+        DL_sym(m_lib_handle, "myoArenaAlignedMalloc", MYO_VERSION1);
+    if (m_arena_aligned_malloc == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in MYO library\n",
+                            "myoArenaAlignedMalloc");
+        UnloadLibrary();
+        return false;
+    }
+
+    m_arena_aligned_free = (void* (*)(MyoArena, void*))
+        DL_sym(m_lib_handle, "myoArenaAlignedFree", MYO_VERSION1);
+    if (m_arena_aligned_free == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in MYO library\n",
+                            "myoArenaAlignedFree");
+        UnloadLibrary();
+        return false;
+    }
+
+    m_arena_acquire = (MyoError (*)(MyoArena))
+        DL_sym(m_lib_handle, "myoArenaAcquire", MYO_VERSION1);
+    if (m_acquire == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in MYO library\n",
+                            "myoArenaAcquire");
+        UnloadLibrary();
+        return false;
+    }
+
+    m_arena_release = (MyoError (*)(MyoArena))
+        DL_sym(m_lib_handle, "myoArenaRelease", MYO_VERSION1);
+    if (m_release == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in MYO library\n",
+                            "myoArenaRelease");
+        UnloadLibrary();
+        return false;
+    }
+
+    // Check for "feature-available" API added in MPSS 3.3.
+    // Not finding it is not an error.
+    m_feature_available = (MyoError (*)(int))
+        DL_sym(m_lib_handle, "myoiSupportsFeature", MYO_VERSION1);
+    if (m_feature_available == 0) {
+        OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in MYO library\n",
+                            "myoiSupportsFeature");
+    }    
+
     OFFLOAD_DEBUG_TRACE(2, "The library was successfully loaded\n");
+
+    // Create arena if supported
+    CreateVtableArena();
+    OFFLOAD_DEBUG_TRACE(3, "Vtable arena created\n");
 
     m_is_available = true;
 
@@ -322,6 +453,23 @@ bool MyoWrapper::LoadLibrary(void)
 
 static bool myo_is_available;
 static MyoWrapper myo_wrapper;
+
+void MyoWrapper::CreateVtableArena()
+{
+    MyoArena* vtable_arena;
+
+    // Check if this MYO supports arenas for vtables
+    if (myo_wrapper.PostInitFuncSupported()) {
+        // Create arena for vtables
+	    vtable_arena = (MyoArena *)myo_wrapper.SharedMalloc(sizeof(MyoArena));
+        myo_wrapper.ArenaCreate(
+            MYO_ARENA_OURS, MYO_NO_CONSISTENCY, vtable_arena);
+        m_vtable_arena = *vtable_arena;
+        OFFLOAD_DEBUG_TRACE(4, "created arena = %d\n", m_vtable_arena);
+    } else {
+        m_vtable_arena = 0;
+    }
+}
 
 struct MyoTable
 {
@@ -337,9 +485,11 @@ static MyoTableList __myo_table_list;
 static mutex_t      __myo_table_lock;
 static bool         __myo_tables = false;
 
-static void __offload_myo_shared_table_register(SharedTableEntry *entry);
-static void __offload_myo_shared_init_table_register(InitTableEntry* entry);
-static void __offload_myo_fptr_table_register(FptrTableEntry *entry);
+static void __offload_myo_shared_vtable_process(SharedTableEntry *entry);
+static void __offload_myo_shared_table_process(SharedTableEntry *entry);
+static void __offload_myo_shared_init_table_process(InitTableEntry* entry);
+static void __offload_myo_fptr_table_process(FptrTableEntry *entry);
+static void __offload_propagate_shared_vars();
 
 static void __offload_myoLoadLibrary_once(void)
 {
@@ -350,6 +500,7 @@ static void __offload_myoLoadLibrary_once(void)
 
 static bool __offload_myoLoadLibrary(void)
 {
+    OFFLOAD_DEBUG_TRACE(4, "__offload_myoLoadLibrary\n");
     static OffloadOnceControl ctrl = OFFLOAD_ONCE_CONTROL_INIT;
     __offload_run_once(&ctrl, __offload_myoLoadLibrary_once);
 
@@ -371,17 +522,71 @@ static void __offload_myoInit_once(void)
     OFFLOAD_DEBUG_TRACE(2, "Initializing MYO library ...\n");
 
     COIEVENT events[MIC_ENGINES_MAX];
-    MyoiUserParams params[MIC_ENGINES_MAX+1];
 
-    // load target library to all devices
+    // One entry per device + 
+    // A pair of entries for the Host postInit func +
+    // A pair of entries for the MIC postInit func +
+    // end marker
+    MyoiUserParams params[MIC_ENGINES_MAX+5];
+
+    // Load target library to all devices and
+    // create libinit parameters for all devices
     for (int i = 0; i < mic_engines_total; i++) {
         mic_engines[i].init_myo(&events[i]);
 
         params[i].type = MYOI_USERPARAMS_DEVID;
         params[i].nodeid = mic_engines[i].get_physical_index() + 1;
+        OFFLOAD_DEBUG_TRACE(2, "params[%d] = { %d, %d }\n",
+            i, params[i].type, params[i].nodeid);
     }
 
-    params[mic_engines_total].type = MYOI_USERPARAMS_LAST_MSG;
+    // Check if V2 myoLibInit is available
+    if (myo_wrapper.PostInitFuncSupported()) {
+        // Set the host post libInit function indicator
+        params[mic_engines_total].type =
+            MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC;
+        params[mic_engines_total].nodeid =
+            MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_HOST_NODE;
+        OFFLOAD_DEBUG_TRACE(2, "params[%d] = { %d, %d }\n",
+            mic_engines_total,
+            params[mic_engines_total].type, params[mic_engines_total].nodeid);
+    
+        // Set the host post libInit host function address
+        ((MyoiUserParamsPostLibInit*)(&params[mic_engines_total+1]))->
+            postLibInitHostFuncAddress =
+                (void (*)())&__offload_propagate_shared_vars;
+        OFFLOAD_DEBUG_TRACE(2, "params[%d] = { %p }\n",
+            mic_engines_total+1,
+            ((MyoiUserParamsPostLibInit*)(&params[mic_engines_total+1]))->
+                postLibInitHostFuncAddress);
+    
+        // Set the target post libInit function indicator
+        params[mic_engines_total+2].type =
+            MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC;
+        params[mic_engines_total+2].nodeid =
+            MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_ALL_NODES;
+    
+        // Set the target post libInit target function name
+        ((MyoiUserParamsPostLibInit*)(&params[mic_engines_total+3]))->
+            postLibInitRemoveFuncName = "--vtable_initializer--";
+        OFFLOAD_DEBUG_TRACE(2, "params[%d] = { %s }\n",
+            mic_engines_total+3,
+            ((MyoiUserParamsPostLibInit*)(&params[mic_engines_total+1]))->
+                postLibInitRemoveFuncName);
+    
+        params[mic_engines_total+4].type = MYOI_USERPARAMS_LAST_MSG;
+        params[mic_engines_total+4].nodeid = 0;
+        OFFLOAD_DEBUG_TRACE(2, "params[%d] = { %d, %d }\n",
+            mic_engines_total+4,
+            params[mic_engines_total+4].type,
+            params[mic_engines_total+4].nodeid);
+    } else {
+        params[mic_engines_total].type = MYOI_USERPARAMS_LAST_MSG;
+        params[mic_engines_total].nodeid = 0;
+        OFFLOAD_DEBUG_TRACE(2, "params[%d] = { %d, %d }\n",
+            mic_engines_total,
+            params[mic_engines_total].type, params[mic_engines_total].nodeid);
+    }
 
     // initialize myo runtime on host
     myo_wrapper.LibInit(params, 0);
@@ -395,6 +600,7 @@ static void __offload_myoInit_once(void)
     }
 
     myo_is_available = true;
+    OFFLOAD_DEBUG_TRACE(2, "setting myo_is_available=%d\n", myo_is_available);
 
     OFFLOAD_DEBUG_TRACE(2, "Initializing MYO library ... done\n");
 }
@@ -404,12 +610,22 @@ static bool __offload_myoInit(void)
     static OffloadOnceControl ctrl = OFFLOAD_ONCE_CONTROL_INIT;
     __offload_run_once(&ctrl, __offload_myoInit_once);
 
-    // register pending shared var tables
-    if (myo_is_available && __myo_tables) {
+    // Check if using V1 myoLibInit
+    if (!myo_wrapper.PostInitFuncSupported()) {
+        __offload_propagate_shared_vars();
+    }
+
+    return myo_is_available;
+}
+
+static void __offload_propagate_shared_vars()
+{
+    // Propagate pending shared var tables
+    if (__myo_tables) {
         mutex_locker_t locker(__myo_table_lock);
 
         if (__myo_tables) {
-            //  Register tables with MYO so it can propagate to target.
+            //  Give tables with MYO so it can propagate to target
             for(MyoTableList::const_iterator it = __myo_table_list.begin();
                 it != __myo_table_list.end(); ++it) {
 #ifdef TARGET_WINNT
@@ -419,6 +635,8 @@ static bool __offload_myoInit(void)
                         continue;
                     }
                     myo_wrapper.HostVarTablePropagate(entry, 1);
+                    OFFLOAD_DEBUG_TRACE(2, "HostVarTablePropagate(%s, 1)\n",
+                        entry->varName);
                 }
 #else // TARGET_WINNT
                 myo_wrapper.HostVarTablePropagate(it->var_tab,
@@ -430,8 +648,6 @@ static bool __offload_myoInit(void)
             __myo_tables = false;
         }
     }
-
-    return myo_is_available;
 }
 
 static bool shared_table_entries(
@@ -485,13 +701,164 @@ extern "C" void __offload_myoRegisterTables(
         __offload_myoLoadLibrary();
 
         // register tables
-        __offload_myo_shared_table_register(shared_table);
-        __offload_myo_fptr_table_register(fptr_table);
-        __offload_myo_shared_init_table_register(init_table);
+        __offload_myo_shared_table_process(shared_table);
+        __offload_myo_fptr_table_process(fptr_table);
+        __offload_myo_shared_init_table_process(init_table);
     }
 }
 
-void __offload_myoFini(void)
+extern "C" bool __offload_myoProcessTables(
+    const void* image,
+    MYOInitTableList::Node *init_table,
+    MYOVarTableList::Node  *shared_table,
+    MYOVarTableList::Node  *shared_vtable,
+    MYOFuncTableList::Node *fptr_table
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s\n", __func__);
+
+    // Collect the tables in this .dll/.so
+    __offload_myoRegisterTables1(
+        init_table, shared_table, shared_vtable, fptr_table);
+
+    // Now check what type of module we are dealing with
+    if (__offload_target_image_is_executable(image)) {
+        OFFLOAD_DEBUG_TRACE(2, "Main encountered\n");
+        OFFLOAD_DEBUG_TRACE(2, "MYO initialization not deferred\n");
+        // MYO tables across dlls have been collected
+        // Now init MYO and process the tables
+        __offload_myoProcessDeferredTables();
+        // Return true to indicate that atexit needs to be calld by ofldbegin
+        return true;
+    } else {
+        // This is a shared library, either auto-loaded or dynamically loaded
+        // If __target_exe is set, then main has started running
+        if (__target_exe != 0) {
+            // Main is running: this is a dynamic load of a shared library
+            // Finish processing the tables in this library
+            OFFLOAD_DEBUG_TRACE(2,
+                "Dynamically loaded shared library encountered\n");
+            OFFLOAD_DEBUG_TRACE(2,
+                "MYO initialization not deferred\n");
+            __offload_myoProcessDeferredTables();
+        } else {
+            // Main is not running: this is an auto-loaded shared library
+            // Tables have been collected, nothing else to do
+            OFFLOAD_DEBUG_TRACE(2,
+                "Auto-loaded shared library encountered\n");
+            OFFLOAD_DEBUG_TRACE(2, "Deferring initialization of MYO\n");
+        }
+        return false;
+    }
+}
+
+// Process contents of all Var tables
+void MYOVarTableList::process()
+{
+    OFFLOAD_DEBUG_TRACE(2, "Process MYO Var tables:\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        __offload_myo_shared_table_process(
+            (SharedTableEntry*)n->table.entries);
+    }
+    for (Node *n = m_head; n != 0; n = n->next) {
+        remove_table(n);
+    }
+
+    m_lock.unlock();
+}
+
+// Process contents of all Var tables
+void MYOVarTableList::process_vtable()
+{
+    OFFLOAD_DEBUG_TRACE(2, "Process MYO Vtable tables:\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        __offload_myo_shared_vtable_process(
+            (SharedTableEntry*)n->table.entries);
+    }
+    for (Node *n = m_head; n != 0; n = n->next) {
+        remove_table(n);
+    }
+
+    m_lock.unlock();
+}
+
+// Process contents of all Func tables
+void MYOFuncTableList::process()
+{
+    OFFLOAD_DEBUG_TRACE(2, "Process MYO Func tables:\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        __offload_myo_fptr_table_process(
+            (FptrTableEntry*)n->table.entries);
+    }
+    for (Node *n = m_head; n != 0; n = n->next) {
+        remove_table(n);
+    }
+
+    m_lock.unlock();
+}
+
+// Process contents of all Init tables
+void MYOInitTableList::process()
+{
+    OFFLOAD_DEBUG_TRACE(2, "Process MYO Init tables:\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        __offload_myo_shared_init_table_process(
+            (InitTableEntry*)n->table.entries);
+    }
+    for (Node *n = m_head; n != 0; n = n->next) {
+        remove_table(n);
+    }
+
+    m_lock.unlock();
+}
+
+static void __offload_myoProcessDeferredTables()
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s()\n", __func__);
+
+    // Debug dumps of MYO tables
+    if (console_enabled >= 2) {
+        __offload_myo_var_tables.dump();
+        __offload_myo_vtable_tables.dump();
+        __offload_myo_func_tables.dump();
+        __offload_myo_init_tables.dump();
+    }
+
+    if (!__offload_myo_var_tables.is_empty() ||
+        !__offload_myo_vtable_tables.is_empty() ||
+        !__offload_myo_func_tables.is_empty() ||
+        !__offload_myo_init_tables.is_empty())
+    {
+        OFFLOAD_DEBUG_TRACE(3, "MYO usage detected in program\n");
+
+        // Make sure myo library is loaded
+        __offload_myoLoadLibrary();
+        OFFLOAD_DEBUG_TRACE(3, "Initialized MYO\n");
+
+        __offload_myo_var_tables.process();
+        __offload_myo_vtable_tables.process_vtable();
+        __offload_myo_func_tables.process();
+        __offload_myo_init_tables.process();
+        OFFLOAD_DEBUG_TRACE(3, "Finished processing MYO tables\n");
+    } else {
+        OFFLOAD_DEBUG_TRACE(3,
+            "MYO tables are empty; Will not initialize MYO\n");
+    }
+}
+
+DLL_LOCAL void __offload_myoFini(void)
 {
     if (myo_is_available) {
         OFFLOAD_DEBUG_TRACE(3, "%s\n", __func__);
@@ -516,7 +883,7 @@ void __offload_myoFini(void)
     }
 }
 
-static void __offload_myo_shared_table_register(
+static void __offload_myo_shared_table_process(
     SharedTableEntry *entry
 )
 {
@@ -529,7 +896,8 @@ static void __offload_myo_shared_table_register(
     for (; entry->varName != MYO_TABLE_END_MARKER(); entry++) {
 #ifdef TARGET_WINNT
         if (entry->varName == 0) {
-            OFFLOAD_DEBUG_TRACE(4, "skip registering a NULL MyoSharedTable entry\n");
+            OFFLOAD_DEBUG_TRACE(4,
+                "skip registering a NULL MyoSharedTable entry\n");
             continue;
         }
 #endif // TARGET_WINNT
@@ -550,29 +918,69 @@ static void __offload_myo_shared_table_register(
     }
 }
 
-static void __offload_myo_shared_init_table_register(InitTableEntry* entry)
+static void __offload_myo_shared_vtable_process(
+    SharedTableEntry *entry
+)
+{
+    SharedTableEntry *start = entry;
+    int entries = 0;
+
+    OFFLOAD_DEBUG_TRACE(3, "%s(%p)\n", __func__, entry);
+
+    // allocate shared memory for vtables
+    for (; entry->varName != MYO_TABLE_END_MARKER(); entry++) {
+#ifdef TARGET_WINNT
+        if (entry->varName == 0) {
+            OFFLOAD_DEBUG_TRACE(4,
+                "skip registering a NULL MyoSharedVTable entry\n");
+            continue;
+        }
+#endif // TARGET_WINNT
+
+        OFFLOAD_DEBUG_TRACE(4,
+            "registering MyoSharedVTable entry for %s @%p\n",
+                            entry->varName, entry);
+
+        // Invoke the function to create shared memory
+        reinterpret_cast<void(*)(MyoArena)>(entry->sharedAddr)(
+                                                myo_wrapper.GetVtableArena());
+        entries++;
+    }
+
+    // add table to the list if it is not empty
+    if (entries > 0) {
+        mutex_locker_t locker(__myo_table_lock);
+        __myo_table_list.push_back(MyoTable(start, entries));
+        __myo_tables = true;
+    }
+}
+
+void __offload_myo_shared_init_table_process(InitTableEntry* entry)
 {
     OFFLOAD_DEBUG_TRACE(3, "%s(%p)\n", __func__, entry);
 
 #ifdef TARGET_WINNT
     for (; entry->funcName != MYO_TABLE_END_MARKER(); entry++) {
         if (entry->funcName == 0) {
-            OFFLOAD_DEBUG_TRACE(4, "skip registering a NULL MyoSharedInit entry\n");
+            OFFLOAD_DEBUG_TRACE(4,
+                "skip registering a NULL MyoSharedInit entry\n");
             continue;
         }
 
         //  Invoke the function to init the shared memory
-        entry->func();
+        OFFLOAD_DEBUG_TRACE(4, "execute MyoSharedInit routine for %s\n",
+            entry->funcName);
+        entry->func(myo_wrapper.GetVtableArena());
     }
 #else // TARGET_WINNT
     for (; entry->func != 0; entry++) {
         // Invoke the function to init the shared memory
-        entry->func();
+        entry->func(myo_wrapper.GetVtableArena());
     }
 #endif // TARGET_WINNT
 }
 
-static void __offload_myo_fptr_table_register(
+static void __offload_myo_fptr_table_process(
     FptrTableEntry *entry
 )
 {
@@ -584,7 +992,8 @@ static void __offload_myo_fptr_table_register(
     for (; entry->funcName != MYO_TABLE_END_MARKER(); entry++) {
 #ifdef TARGET_WINNT
         if (entry->funcName == 0) {
-            OFFLOAD_DEBUG_TRACE(4, "skip registering a NULL MyoFptrTable entry\n");
+            OFFLOAD_DEBUG_TRACE(4,
+                "skip registering a NULL MyoFptrTable entry\n");
             continue;
         }
 #endif // TARGET_WINNT
@@ -719,6 +1128,80 @@ extern "C" void _Offload_shared_aligned_free(void *ptr)
     }
     else {
         _mm_free(ptr);
+    }
+}
+
+extern "C" void _Offload_shared_arena_create(
+    MyoOwnershipType ownership,
+    int consistency,
+    MyoArena* arena
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%d, %d, %p)\n",
+        __func__, ownership, consistency, arena);
+
+    if (__offload_myoLoadLibrary()) {
+        myo_wrapper.ArenaCreate(ownership, consistency, arena);
+    }
+}
+
+extern "C" void* _Offload_shared_aligned_arena_malloc(
+    MyoArena arena,
+    size_t size,
+    size_t align
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%u, %lld, %lld)\n",
+        __func__, arena, size, align);
+
+    if (__offload_myoLoadLibrary()) {
+        void *p = myo_wrapper.SharedAlignedArenaMalloc(arena, size, align);
+        OFFLOAD_DEBUG_TRACE(3, "%s(%u, %lld, %lld)->%p\n",
+            __func__, arena, size, align, p);
+        return p;
+    }
+    else {
+        if (align < sizeof(void*)) {
+            align = sizeof(void*);
+        }
+        return _mm_malloc(size, align);
+    }
+}
+
+extern "C" void _Offload_shared_aligned_arena_free(
+    MyoArena arena,
+    void *ptr
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%u, %p)\n", __func__, arena, ptr);
+
+    if (__offload_myoLoadLibrary()) {
+        myo_wrapper.SharedAlignedArenaFree(arena, ptr);
+    }
+    else {
+        _mm_free(ptr);
+    }
+}
+
+extern "C" void _Offload_shared_arena_acquire(
+    MyoArena arena
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%u)\n", __func__, arena);
+
+    if (__offload_myoLoadLibrary()) {
+        myo_wrapper.ArenaAcquire(arena);
+    }
+}
+
+extern "C" void _Offload_shared_arena_release(
+    MyoArena arena
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s(%u)\n", __func__, arena);
+
+    if (__offload_myoLoadLibrary()) {
+        myo_wrapper.ArenaRelease(arena);
     }
 }
 

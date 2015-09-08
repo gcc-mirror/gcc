@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -75,7 +75,7 @@ typedef enum
 
 
 ///////////////////////////////////////////////////////////////////////////////
-/// This structure returns information about an Intel(r) Xeon Phi(tm)
+/// This structure returns information about an Intel(R) Xeon Phi(TM)
 /// coprocessor.
 /// A pointer to this structure is passed into the COIGetEngineInfo() function,
 /// which fills in the data before returning to the caller.
@@ -101,6 +101,7 @@ typedef struct COI_ENGINE_INFO
     uint32_t     CoreMaxFrequency;
 
     /// The load percentage for each of the hardware threads on the engine.
+    /// Currently this is limited to reporting out a maximum of 1024 HW threads
     uint32_t     Load[COI_MAX_HW_THREADS];
 
     /// The amount of physical memory managed by the OS.
@@ -133,9 +134,9 @@ typedef struct COI_ENGINE_INFO
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// Returns information related to a specified engine. Note that if Intel® Coprocessor Offload Infrastructure (Intel® COI)  is
-/// unable to query a value it will be returned as zero but the call will
-/// still succeed.
+/// Returns information related to a specified engine. Note that if Intel(R)
+/// Coprocessor Offload Infrastructure (Intel(R) COI) is unable to query
+/// a value it will be returned as zero but the call will still succeed.
 ///
 ///
 /// @param  in_EngineHandle
@@ -173,14 +174,15 @@ COIEngineGetInfo(
 ///
 /// Returns the number of engines in the system that match the provided ISA.
 ///
-/// Note that while it is possible to enumerate different types of Intel(r)
-/// Xeon Phi(tm) coprocessors on a single host this is not currently 
-/// supported. Intel® Coprocessor Offload Infrastructure (Intel® COI)  makes an assumption that all Intel(r) Xeon Phi(tm) 
-/// coprocessors found in the system are the same architecture as the first 
-/// coprocessor device.
+/// Note that while it is possible to enumerate different types of Intel(R)
+/// Xeon Phi(TM) coprocessors on a single host this is not currently
+/// supported. Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
+/// makes an assumption that all Intel(R) Xeon Phi(TM) coprocessors found
+/// in the system are the same architecture as the first coprocessor device.
 ///
-/// Also, note that this function returns the number of engines that Intel® Coprocessor Offload Infrastructure (Intel® COI) 
-/// is able to detect. Not all of them may be online.
+/// Also, note that this function returns the number of engines that Intel(R)
+/// Coprocessor Offload Infrastructure (Intel(R) COI) is able to detect. Not
+/// all of them may be online.
 ///
 /// @param  in_ISA
 ///         [in] Specifies the ISA type of the engine requested.
@@ -211,7 +213,7 @@ COIEngineGetCount(
 ///
 /// @param  in_EngineIndex
 ///         [in] A unsigned integer which specifies the zero-based position of
-///         the engine in a collection of engines.  The makeup of this
+///         the engine in a collection of engines. The makeup of this
 ///         collection is defined by the in_ISA parameter.
 ///
 /// @param  out_pEngineHandle
@@ -226,7 +228,8 @@ COIEngineGetCount(
 ///
 /// @return COI_INVALID_POINTER if the out_pEngineHandle parameter is NULL.
 ///
-/// @return COI_VERSION_MISMATCH if the version of Intel® Coprocessor Offload Infrastructure (Intel® COI)  on the host is not
+/// @return COI_VERSION_MISMATCH if the version of Intel(R) Coprocessor Offload
+///         Infrastructure (Intel(R) COI) on the host is not
 ///         compatible with the version on the device.
 ///
 /// @return COI_NOT_INITIALIZED if the engine requested exists but is offline.
