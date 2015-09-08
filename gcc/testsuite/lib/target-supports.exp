@@ -2807,6 +2807,21 @@ proc check_effective_target_arm_neon_fp16_ok { } {
 		check_effective_target_arm_neon_fp16_ok_nocache]
 }
 
+proc check_effective_target_arm_neon_fp16_hw { } {
+    if {! [check_effective_target_arm_neon_fp16_ok] } {
+	return 0
+    }
+    global et_arm_neon_fp16_flags
+    check_runtime_nocache arm_neon_fp16_hw {
+	int
+	main (int argc, char **argv)
+	{
+	  asm ("vcvt.f32.f16 q1, d0");
+	  return 0;
+	}
+    } $et_arm_neon_fp16_flags
+}
+
 proc add_options_for_arm_neon_fp16 { flags } {
     if { ! [check_effective_target_arm_neon_fp16_ok] } {
 	return "$flags"
