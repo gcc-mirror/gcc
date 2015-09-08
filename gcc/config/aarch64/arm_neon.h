@@ -5725,11 +5725,7 @@ vaddlvq_u32 (uint32x4_t a)
        result;                                                          \
      })
 
-/* vcvt_f16_f32 not supported */
-
 /* vcvt_f32_f16 not supported */
-
-/* vcvt_high_f16_f32 not supported */
 
 /* vcvt_high_f32_f16 not supported */
 
@@ -13113,6 +13109,18 @@ vcntq_u8 (uint8x16_t __a)
 }
 
 /* vcvt (double -> float).  */
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_f16_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_float_truncate_lo_v4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcvt_high_f16_f32 (float16x4_t __a, float32x4_t __b)
+{
+  return __builtin_aarch64_float_truncate_hi_v8hf (__a, __b);
+}
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vcvt_f32_f64 (float64x2_t __a)

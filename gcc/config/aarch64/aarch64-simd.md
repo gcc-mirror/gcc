@@ -1726,23 +1726,23 @@
 
 ;; Float narrowing operations.
 
-(define_insn "aarch64_float_truncate_lo_v2sf"
-  [(set (match_operand:V2SF 0 "register_operand" "=w")
-      (float_truncate:V2SF
-	(match_operand:V2DF 1 "register_operand" "w")))]
+(define_insn "aarch64_float_truncate_lo_<mode>"
+  [(set (match_operand:VDF 0 "register_operand" "=w")
+      (float_truncate:VDF
+	(match_operand:<VWIDE> 1 "register_operand" "w")))]
   "TARGET_SIMD"
-  "fcvtn\\t%0.2s, %1.2d"
+  "fcvtn\\t%0.<Vtype>, %1<Vmwtype>"
   [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
 )
 
-(define_insn "aarch64_float_truncate_hi_v4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "=w")
-    (vec_concat:V4SF
-      (match_operand:V2SF 1 "register_operand" "0")
-      (float_truncate:V2SF
-	(match_operand:V2DF 2 "register_operand" "w"))))]
+(define_insn "aarch64_float_truncate_hi_<Vdbl>"
+  [(set (match_operand:<VDBL> 0 "register_operand" "=w")
+    (vec_concat:<VDBL>
+      (match_operand:VDF 1 "register_operand" "0")
+      (float_truncate:VDF
+	(match_operand:<VWIDE> 2 "register_operand" "w"))))]
   "TARGET_SIMD"
-  "fcvtn2\\t%0.4s, %2.2d"
+  "fcvtn2\\t%0.<Vdtype>, %2<Vmwtype>"
   [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
 )
 
