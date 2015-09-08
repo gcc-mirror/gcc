@@ -94,6 +94,9 @@
 ;; Vector single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
 
+;; Quad vector Float modes with half/single elements.
+(define_mode_iterator VQ_HSF [V8HF V4SF])
+
 ;; Modes suitable to use as the return type of a vcond expression.
 (define_mode_iterator VDQF_COND [V2SF V2SI V4SF V4SI V2DF V2DI])
 
@@ -492,14 +495,18 @@
 			 (V2SI "V2DI") (V16QI "V8HI") 
 			 (V8HI "V4SI") (V4SI "V2DI")
 			 (HI "SI")     (SI "DI")
+			 (V8HF "V4SF") (V4SF "V2DF")
 			 (V4HF "V4SF") (V2SF "V2DF")]
-
 )
 
-;; Widened mode register suffixes for VD_BHSI/VQW.
+;; Widened modes of vector modes, lowercase
+(define_mode_attr Vwide [(V2SF "v2df") (V4HF "v4sf")])
+
+;; Widened mode register suffixes for VD_BHSI/VQW/VQ_HSF.
 (define_mode_attr Vwtype [(V8QI "8h") (V4HI "4s")
 			  (V2SI "2d") (V16QI "8h") 
-			  (V8HI "4s") (V4SI "2d")])
+			  (V8HI "4s") (V4SI "2d")
+			  (V8HF "4s") (V4SF "2d")])
 
 ;; Widened mode register suffixes for VDW/VQW.
 (define_mode_attr Vmwtype [(V8QI ".8h") (V4HI ".4s")
@@ -508,9 +515,10 @@
 			   (V4HF ".4s") (V2SF ".2d")
 			   (SI   "")    (HI   "")])
 
-;; Lower part register suffixes for VQW.
+;; Lower part register suffixes for VQW/VQ_HSF.
 (define_mode_attr Vhalftype [(V16QI "8b") (V8HI "4h")
-			     (V4SI "2s")])
+			     (V4SI "2s") (V8HF "4h")
+			     (V4SF "2s")])
 
 ;; Define corresponding core/FP element mode for each vector mode.
 (define_mode_attr vw   [(V8QI "w") (V16QI "w")

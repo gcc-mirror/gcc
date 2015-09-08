@@ -6025,10 +6025,6 @@ vaddlvq_u32 (uint32x4_t a)
        result;                                                          \
      })
 
-/* vcvt_f32_f16 not supported */
-
-/* vcvt_high_f32_f16 not supported */
-
 #define vcvt_n_f32_s32(a, b)                                            \
   __extension__                                                         \
     ({                                                                  \
@@ -13436,11 +13432,23 @@ vcvt_high_f32_f64 (float32x2_t __a, float64x2_t __b)
 
 /* vcvt (float -> double).  */
 
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vcvt_f32_f16 (float16x4_t __a)
+{
+  return __builtin_aarch64_float_extend_lo_v4sf (__a);
+}
+
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vcvt_f64_f32 (float32x2_t __a)
 {
 
   return __builtin_aarch64_float_extend_lo_v2df (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vcvt_high_f32_f16 (float16x8_t __a)
+{
+  return __builtin_aarch64_vec_unpacks_hi_v8hf (__a);
 }
 
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))

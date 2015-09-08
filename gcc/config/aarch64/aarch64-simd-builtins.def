@@ -361,11 +361,12 @@
   BUILTIN_VSDQ_I_DI (UNOP, abs, 0)
   BUILTIN_VDQF (UNOP, abs, 2)
 
-  VAR1 (UNOP, vec_unpacks_hi_, 10, v4sf)
+  BUILTIN_VQ_HSF (UNOP, vec_unpacks_hi_, 10)
   VAR1 (BINOP, float_truncate_hi_, 0, v4sf)
   VAR1 (BINOP, float_truncate_hi_, 0, v8hf)
 
   VAR1 (UNOP, float_extend_lo_, 0, v2df)
+  VAR1 (UNOP, float_extend_lo_,  0, v4sf)
   BUILTIN_VDF (UNOP, float_truncate_lo_, 0)
 
   /* Implemented by aarch64_ld1<VALL_F16:mode>.  */
