@@ -179,6 +179,7 @@
 
 2015-09-02  Charles Baylis  <charles.baylis@linaro.org>
 
+	PR ipa/67280
 	* cgraphunit.c (cgraph_node::create_wrapper): Set can_throw_external
 	in new callgraph edge.
 
