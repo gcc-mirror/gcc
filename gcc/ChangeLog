@@ -1,3 +1,7 @@
+2015-09-07  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-scopedtables.h (class const_and_copies): Fix comment typo.
+
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* doc/sourcebuild.texi (arm_neon_fp16): Correct cross-reference.
