@@ -1,3 +1,123 @@
+2015-09-08  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* Makefile.am (liboffloadmic_host_la_DEPENDENCIES): Remove libcoi_host
+	and libmyo-client.  liboffloadmic_host loads them dynamically.
+	* Makefile.in: Regenerate.
+	* doc/doxygen/header.tex: Merge from upstream, version 20150803
+	<https://openmprtl.org/sites/default/files/liboffload_oss_20150803.tgz>.
+	* runtime/cean_util.cpp: Likewise.
+	* runtime/cean_util.h: Likewise.
+	* runtime/coi/coi_client.cpp: Likewise.
+	* runtime/coi/coi_client.h: Likewise.
+	* runtime/coi/coi_server.cpp: Likewise.
+	* runtime/coi/coi_server.h: Likewise.
+	* runtime/compiler_if_host.cpp: Likewise.
+	* runtime/compiler_if_host.h: Likewise.
+	* runtime/compiler_if_target.cpp: Likewise.
+	* runtime/compiler_if_target.h: Likewise.
+	* runtime/dv_util.cpp: Likewise.
+	* runtime/dv_util.h: Likewise.
+	* runtime/liboffload_error.c: Likewise.
+	* runtime/liboffload_error_codes.h: Likewise.
+	* runtime/liboffload_msg.c: Likewise.
+	* runtime/liboffload_msg.h: Likewise.
+	* runtime/mic_lib.f90: Likewise.
+	* runtime/offload.h: Likewise.
+	* runtime/offload_common.cpp: Likewise.
+	* runtime/offload_common.h: Likewise.
+	* runtime/offload_engine.cpp: Likewise.
+	* runtime/offload_engine.h: Likewise.
+	* runtime/offload_env.cpp: Likewise.
+	* runtime/offload_env.h: Likewise.
+	* runtime/offload_host.cpp: Likewise.
+	* runtime/offload_host.h: Likewise.
+	* runtime/offload_iterator.h: Likewise.
+	* runtime/offload_myo_host.cpp: Likewise.
+	* runtime/offload_myo_host.h: Likewise.
+	* runtime/offload_myo_target.cpp: Likewise.
+	* runtime/offload_myo_target.h: Likewise.
+	* runtime/offload_omp_host.cpp: Likewise.
+	* runtime/offload_omp_target.cpp: Likewise.
+	* runtime/offload_orsl.cpp: Likewise.
+	* runtime/offload_orsl.h: Likewise.
+	* runtime/offload_table.cpp: Likewise.
+	* runtime/offload_table.h: Likewise.
+	* runtime/offload_target.cpp: Likewise.
+	* runtime/offload_target.h: Likewise.
+	* runtime/offload_target_main.cpp: Likewise.
+	* runtime/offload_timer.h: Likewise.
+	* runtime/offload_timer_host.cpp: Likewise.
+	* runtime/offload_timer_target.cpp: Likewise.
+	* runtime/offload_trace.cpp: Likewise.
+	* runtime/offload_trace.h: Likewise.
+	* runtime/offload_util.cpp: Likewise.
+	* runtime/offload_util.h: Likewise.
+	* runtime/ofldbegin.cpp: Likewise.
+	* runtime/ofldend.cpp: Likewise.
+	* runtime/orsl-lite/include/orsl-lite.h: Likewise.
+	* runtime/orsl-lite/lib/orsl-lite.c: Likewise.
+	* runtime/use_mpss2.txt: Likewise.
+	* include/coi/common/COIEngine_common.h: Merge from upstream, MPSS
+	version 3.5
+	<http://registrationcenter.intel.com/irc_nas/7445/mpss-src-3.5.tar>.
+	* include/coi/common/COIEvent_common.h: Likewise.
+	* include/coi/common/COIMacros_common.h: Likewise.
+	* include/coi/common/COIPerf_common.h: Likewise.
+	* include/coi/common/COIResult_common.h: Likewise.
+	* include/coi/common/COISysInfo_common.h: Likewise.
+	* include/coi/common/COITypes_common.h: Likewise.
+	* include/coi/sink/COIBuffer_sink.h: Likewise.
+	* include/coi/sink/COIPipeline_sink.h: Likewise.
+	* include/coi/sink/COIProcess_sink.h: Likewise.
+	* include/coi/source/COIBuffer_source.h: Likewise.
+	* include/coi/source/COIEngine_source.h: Likewise.
+	* include/coi/source/COIEvent_source.h: Likewise.
+	* include/coi/source/COIPipeline_source.h: Likewise.
+	* include/coi/source/COIProcess_source.h: Likewise.
+	* include/myo/myo.h: Likewise.
+	* include/myo/myoimpl.h: Likewise.
+	* include/myo/myotypes.h: Likewise.
+	* plugin/Makefile.am (myo_inc_dir): Remove.
+	(libgomp_plugin_intelmic_la_CPPFLAGS): Do not define MYO_SUPPORT.
+	(AM_CPPFLAGS): Likewise for offload_target_main.
+	* plugin/Makefile.in: Regenerate.
+	* runtime/emulator/coi_common.h: Update copyright years.
+	(OFFLOAD_EMUL_KNC_NUM_ENV): Replace with ...
+	(OFFLOAD_EMUL_NUM_ENV): ... this.
+	(enum cmd_t): Add CMD_CLOSE_LIBRARY.
+	* runtime/emulator/coi_device.cpp: Update copyright years.
+	(COIProcessWaitForShutdown): Add space between string constants.
+	Return handle to host in CMD_OPEN_LIBRARY.
+	Support CMD_CLOSE_LIBRARY.
+	* runtime/emulator/coi_device.h: Update copyright years.
+	* runtime/emulator/coi_host.cpp: Update copyright years.
+	(knc_engines_num): Replace with ...
+	(num_engines): ... this.
+	(init): Replace OFFLOAD_EMUL_KNC_NUM_ENV with OFFLOAD_EMUL_NUM_ENV.
+	(COIEngineGetCount): Replace COI_ISA_KNC with COI_ISA_MIC, and
+	knc_engines_num with num_engines.
+	(COIEngineGetHandle): Likewise.
+	(COIProcessCreateFromMemory): Add space between string constants.
+	(COIProcessCreateFromFile): New function.
+	(COIProcessLoadLibraryFromMemory): Rename arguments according to
+	COIProcess_source.h.  Return handle, received from target.
+	(COIProcessUnloadLibrary): New function.
+	(COIPipelineClearCPUMask): New function.
+	(COIPipelineSetCPUMask): New function.
+	(COIEngineGetInfo): New function.
+	* runtime/emulator/coi_host.h: Update copyright years.
+	* runtime/emulator/coi_version_asm.h: Regenerate.
+	* runtime/emulator/coi_version_linker_script.map: Regenerate.
+	* runtime/emulator/myo_client.cpp: Update copyright years.
+	* runtime/emulator/myo_service.cpp: Update copyright years.
+	(myoArenaRelease): New function.
+	(myoArenaAcquire): New function.
+	(myoArenaAlignedFree): New function.
+	(myoArenaAlignedMalloc): New function.
+	* runtime/emulator/myo_service.h: Update copyright years.
+	* runtime/emulator/myo_version_asm.h: Regenerate.
+	* runtime/emulator/myo_version_linker_script.map: Regenerate.
+
 2015-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_version): New.
@@ -17,11 +137,11 @@
 	* configure: Reflects renaming of configure.in to configure.ac
 
 2015-07-17  Nathan Sidwell  <nathan@acm.org>
-	Ilya Verbin <iverbin@gmail.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (ImgDevAddrMap): Constify.
 	(offload_image, GOMP_OFFLOAD_load_image,
-	OMP_OFFLOAD_unload_image): Constify target data.
+	GOMP_OFFLOAD_unload_image): Constify target data.
 
 2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
 

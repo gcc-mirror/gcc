@@ -165,6 +165,7 @@ libmyo_service_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(CXXFLAGS) $(libmyo_service_la_LDFLAGS) $(LDFLAGS) -o $@
 @LIBOFFLOADMIC_HOST_FALSE@am_libmyo_service_la_rpath = -rpath \
 @LIBOFFLOADMIC_HOST_FALSE@	$(toolexeclibdir)
+liboffloadmic_host_la_LIBADD =
 am__objects_1 = liboffloadmic_host_la-dv_util.lo \
 	liboffloadmic_host_la-liboffload_error.lo \
 	liboffloadmic_host_la-liboffload_msg.lo \
@@ -445,8 +446,6 @@ liboffloadmic_host_la_SOURCES = $(liboffloadmic_sources) \
 
 liboffloadmic_host_la_CPPFLAGS = $(liboffloadmic_cppflags) -DHOST_LIBRARY=1
 liboffloadmic_host_la_LDFLAGS = @lt_cv_dlopen_libs@ -version-info 5:0:0
-liboffloadmic_host_la_LIBADD = libcoi_host.la libmyo-client.la
-liboffloadmic_host_la_DEPENDENCIES = $(liboffloadmic_host_la_LIBADD)
 liboffloadmic_target_la_SOURCES = $(liboffloadmic_sources) \
 				  runtime/coi/coi_server.cpp \
 				  runtime/compiler_if_target.cpp \

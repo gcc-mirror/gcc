@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,8 +29,9 @@
 
 
 // The parts of the offload library common to host and target
+#include "offload_util.h"
 
-void offload_stage_print(int stage, int offload_number, ...);
+DLL_LOCAL void offload_stage_print(int stage, int offload_number, ...);
 
 enum OffloadTraceStage {
     // Total time spent on the target
@@ -68,5 +69,18 @@ enum OffloadTraceStage {
     c_offload_myosharedalignedfree,
     c_offload_myoacquire,
     c_offload_myorelease,
-    c_offload_myofini
+    c_offload_myofini,
+    c_offload_myosupportsfeature,
+    c_offload_myosharedarenacreate,
+    c_offload_myosharedalignedarenamalloc,
+    c_offload_myosharedalignedarenafree,
+    c_offload_myoarenaacquire,
+    c_offload_myoarenarelease,
+    c_offload_stream
+};
+
+enum OffloadWaitKind {
+    c_offload_wait_signal = 0,
+    c_offload_wait_stream,
+    c_offload_wait_all_streams
 };

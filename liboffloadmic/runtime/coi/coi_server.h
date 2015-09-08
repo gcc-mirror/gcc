@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
 */
 
 
-//The interface betwen offload library and the COI API on the target.
+// The interface between offload library and the COI API on the target
 
 #ifndef COI_SERVER_H_INCLUDED
 #define COI_SERVER_H_INCLUDED

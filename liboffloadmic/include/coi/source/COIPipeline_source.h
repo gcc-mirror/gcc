@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -59,12 +59,13 @@ extern "C" {
 
 
 //////////////////////////////////////////////////////////////////////////////
-/// These flags specify how a buffer will be used within a run function.  They
-/// allow Intel® Coprocessor Offload Infrastructure (Intel® COI)  to make optimizations in how it moves data around the system.
+/// These flags specify how a buffer will be used within a run function. They
+/// allow the runtime to make optimizations in how it moves the data around.
 /// These flags can affect the correctness of an application, so they must be
-/// set properly.  For example, if a buffer is used in a run function with the
-/// COI_SINK_READ flag and then mapped on the source, Intel® Coprocessor Offload Infrastructure (Intel® COI)  may use a previously
-/// cached version of the buffer instead of retrieving data from the sink.
+/// set properly. For example, if a buffer is used in a run function with the
+/// COI_SINK_READ flag and then mapped on the source, the runtime may use a
+/// previously cached version of the buffer instead of retrieving data from
+/// the sink.
 typedef enum COI_ACCESS_FLAGS
 {
     /// Specifies that the run function will only read the associated buffer.
@@ -76,7 +77,23 @@ typedef enum COI_ACCESS_FLAGS
     /// Specifies that the run function will overwrite the entire associated
     /// buffer and therefore the buffer will not be synchronized with the
     /// source before execution.
-    COI_SINK_WRITE_ENTIRE
+    COI_SINK_WRITE_ENTIRE,
+
+    /// Specifies that the run function will only read the associated buffer
+    /// and will maintain the reference count on the buffer after
+    /// run function exit.
+    COI_SINK_READ_ADDREF,
+
+    /// Specifies that the run function will write to the associated buffer
+    /// and will maintain the reference count on the buffer after
+    /// run function exit.
+    COI_SINK_WRITE_ADDREF,
+
+    /// Specifies that the run function will overwrite the entire associated
+    /// buffer and therefore the buffer will not be synchronized with the
+    /// source before execution and will maintain the reference count on the
+    /// buffer after run function exit.
+    COI_SINK_WRITE_ENTIRE_ADDREF
 } COI_ACCESS_FLAGS;
 
 #define COI_PIPELINE_MAX_PIPELINES 512
@@ -86,7 +103,7 @@ typedef enum COI_ACCESS_FLAGS
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// Create a pipeline assoiated with a remote process. This pipeline can
+/// Create a pipeline associated with a remote process. This pipeline can
 /// then be used to execute remote functions and to share data using
 /// COIBuffers.
 ///
@@ -133,8 +150,8 @@ typedef enum COI_ACCESS_FLAGS
 /// @return COI_TIME_OUT_REACHED if establishing the communication channel with
 ///         the remote pipeline timed out.
 ///
-/// @return COI_RETRY  if the pipeline cannot be created due to the number of
-///         source-to-sink connections in use. A subsequent call to 
+/// @return COI_RETRY if the pipeline cannot be created due to the number of
+///         source-to-sink connections in use. A subsequent call to
 ///         COIPipelineCreate may succeed if resources are freed up.
 ///
 /// @return COI_PROCESS_DIED if in_Process died.
@@ -149,7 +166,7 @@ COIPipelineCreate(
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// Destroys the inidicated pipeline, releasing its resources.
+/// Destroys the indicated pipeline, releasing its resources.
 ///
 /// @param  in_Pipeline
 ///         [in] Pipeline to destroy.
@@ -175,22 +192,21 @@ COIPipelineDestroy(
 ///
 /// 1. Proper care has to be taken while setting the input dependencies for
 ///    RunFunctions. Setting it incorrectly can lead to cyclic dependencies
-///    and can cause the respective pipeline (as a result Intel® Coprocessor Offload Infrastructure (Intel® COI)  Runtime) to
-///    stall.
+///    and can cause the respective pipeline to stall.
 /// 2. RunFunctions can also segfault if enough memory space is not available
 ///    on the sink for the buffers passed in. Pinned buffers and buffers that
 ///    are AddRef'd need to be accounted for available memory space. In other
 ///    words, this memory is not available for use until it is freed up.
-/// 3. Unexpected segmentation faults or erroneous behaviour can occur if 
-///    handles or data passed in to Runfunction gets destroyed before the 
+/// 3. Unexpected segmentation faults or erroneous behavior can occur if
+///    handles or data passed in to Runfunction gets destroyed before the
 ///    RunFunction finishes.
 ///    For example, if a variable passed in as Misc data or the buffer gets
-///    destroyed before the Intel® Coprocessor Offload Infrastructure (Intel® COI)  runtime receives the completion notification 
-///    of the Runfunction, it can cause unexpected behaviour. So it is always
+///    destroyed before the runtime receives the completion notification
+///    of the Runfunction, it can cause unexpected behavior. So it is always
 ///    recommended to wait for RunFunction completion event before any related
 ///    destroy event occurs.
 ///
-/// Intel® Coprocessor Offload Infrastructure (Intel® COI)  Runtime expects users to handle such scenarios. COIPipelineRunFunction
+/// The runtime expects users to handle such scenarios. COIPipelineRunFunction
 /// returns COI_SUCCESS for above cases because it was queued up successfully.
 /// Also if you try to destroy a pipeline with a stalled function then the
 /// destroy call will hang. COIPipelineDestroy waits until all the functions
@@ -240,7 +256,7 @@ COIPipelineDestroy(
 ///         [in] Pointer to user defined data, typically used to pass
 ///         parameters to Sink side functions. Should only be used for small
 ///         amounts data since the data will be placed directly in the
-///         Driver's command buffer.  COIBuffers should be used to pass large
+///         Driver's command buffer. COIBuffers should be used to pass large
 ///         amounts of data.
 ///
 /// @param  in_MiscDataLen
@@ -250,8 +266,8 @@ COIPipelineDestroy(
 ///
 /// @param  out_pAsyncReturnValue
 ///         [out] Pointer to user-allocated memory where the return value from
-///         the run function will be placed.  This memory should not be read
-///         until out_pCompletion has been signalled.
+///         the run function will be placed. This memory should not be read
+///         until out_pCompletion has been signaled.
 ///
 /// @param  in_AsyncReturnValueLen
 ///         [in] Size of the out_pAsyncReturnValue in bytes.
@@ -259,11 +275,14 @@ COIPipelineDestroy(
 /// @param  out_pCompletion
 ///         [out] An optional pointer to a COIEVENT object
 ///         that will be signaled when this run function has completed
-///         execution. The user may pass in NULL if they do not wish to signal
-///         any COIEVENTs when this run function completes.
+///         execution. The user may pass in NULL if they wish for this function
+///         to be synchronous, otherwise if a COIEVENT object is passed in the
+///         function is then asynchronous and closes after enqueuing the
+///         RunFunction and passes back the COIEVENT that will be signaled
+///         once the RunFunction has completed.
 ///
 /// @return COI_SUCCESS if the function was successfully placed in a
-///         pipeline for future execution.  Note that the actual
+///         pipeline for future execution. Note that the actual
 ///         execution of the function will occur in the future.
 ///
 /// @return COI_OUT_OF_RANGE if in_NumBuffers is greater than
@@ -303,18 +322,10 @@ COIPipelineDestroy(
 /// @return COI_ARGUMENT_MISMATCH if in_pReturnValue is non-NULL but
 ///         in_ReturnValueLen is zero.
 ///
-/// @return COI_ARGUMENT_MISMATCH if a COI_BUFFER_STREAMING_TO_SOURCE buffer
-///         is not passed with COI_SINK_WRITE_ENTIRE access flag.
-///
-/// @return COI_RESOURCE_EXHAUSTED if could not create a version for TO_SOURCE
-///         streaming buffer. It can fail if enough memory is not available to
-///         register. This call will succeed eventually when the registered
-///         memory becomes available.
-///
 /// @return COI_RETRY if any input buffers, which are not pinned buffers,
 ///         are still mapped when passed to the run function.
 ///
-/// @return COI_MISSING_DEPENDENCY if buffer was not created on the process 
+/// @return COI_MISSING_DEPENDENCY if buffer was not created on the process
 ///         associated with the pipeline that was passed in.
 ///
 /// @return COI_OUT_OF_RANGE if any of the access flags in

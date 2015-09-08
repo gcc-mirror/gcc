@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -59,18 +59,26 @@ extern "C" {
 ///
 /// Special case event values which can be passed in to APIs to specify
 /// how the API should behave. In COIBuffer APIs passing in NULL for the
-/// completion event is the equivalent of passing COI_EVENT_SYNC. For
-/// COIPipelineRunFunction passing in NULL is the equivalent of
-/// COI_EVENT_ASYNC.
+/// completion event is the equivalent of passing COI_EVENT_SYNC.
 /// Note that passing COI_EVENT_ASYNC can be used when the caller wishes the
 /// operation to be performed asynchronously but does not care when the
-/// operation completes. This can be useful for opertions that by definition
+/// operation completes. This can be useful for operations that by definition
 /// must complete in order (DMAs, run functions on a single pipeline). If
 /// the caller does care when the operation completes then they should pass
 /// in a valid completion event which they can later wait on.
 ///
 #define COI_EVENT_ASYNC ((COIEVENT*)1)
 #define COI_EVENT_SYNC  ((COIEVENT*)2)
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// This can be used to initialize a COIEVENT to a known invalid state.
+/// This is not required to use, but can be useful in some cases
+/// if a program is unsure if the event will be initialized by the runtime.
+/// Simply set the event to this value: COIEVENT event = COI_EVENT_INITIALIZER;
+///
+#define COI_EVENT_INITIALIZER   { { 0, -1 } }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -94,17 +102,17 @@ extern "C" {
 ///         and returns immediately, -1 blocks indefinitely.
 ///
 /// @param  in_WaitForAll
-///         [in] Boolean value specifying behavior.  If true, wait for all
+///         [in] Boolean value specifying behavior. If true, wait for all
 ///         events to be signaled, or for timeout, whichever happens first.
 ///         If false, return when any event is signaled, or at timeout.
 ///
 /// @param  out_pNumSignaled
-///         [out] The number of events that were signaled.  If in_NumEvents
+///         [out] The number of events that were signaled. If in_NumEvents
 ///         is 1 or in_WaitForAll = True, this parameter is optional.
 ///
 /// @param  out_pSignaledIndices
-///         [out] Pointer to an array of indicies into the original event
-///         array.  Those denoted have been signaled.  The user must provide an
+///         [out] Pointer to an array of indices into the original event
+///         array. Those denoted have been signaled. The user must provide an
 ///         array that is no smaller than the in_Events array. If in_NumEvents
 ///         is 1 or in_WaitForAll = True, this parameter is optional.
 ///
@@ -131,6 +139,10 @@ extern "C" {
 ///
 /// @return COI_PROCESS_DIED if the remote process died. See COIProcessDestroy
 ///         for more details.
+///
+/// @return COI_<REAL ERROR> if only a single event is passed in, and that event
+///         failed, COI will attempt to return the real error code that caused
+///         the original operation to fail, otherwise COI_PROCESS_DIED is reported.
 ///
 COIACCESSAPI
 COIRESULT
@@ -182,6 +194,103 @@ COIACCESSAPI
 COIRESULT
 COIEventUnregisterUserEvent(
             COIEVENT in_Event);
+
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// A callback that will be invoked to notify the user of an internal
+/// runtime event completion.
+///
+/// As with any callback mechanism it is up to the user to make sure that
+/// there are no possible deadlocks due to reentrancy (ie the callback being
+/// invoked in the same context that triggered the notification) and also
+/// that the callback does not slow down overall processing. If the user
+/// performs too much work within the callback it could delay further
+/// processing. The callback will be invoked prior to the signaling of
+/// the corresponding COIEvent. For example, if a user is waiting
+/// for a COIEvent associated with a run function completing they will
+/// receive the callback before the COIEvent is marked as signaled.
+///
+/// @param  in_Event
+///         [in] The completion event that is associated with the
+///         operation that is being notified.
+///
+/// @param  in_Result
+///         [in] The COIRESULT of the operation.
+///
+/// @param  in_UserData
+///         [in] Opaque data that was provided when the callback was
+///         registered. Intel(R) Coprocessor Offload Infrastructure
+///         (Intel(R) COI) simply passes this back to the user so that
+///         they can interpret it as they choose.
+///
+typedef void (*COI_EVENT_CALLBACK)(
+            COIEVENT            in_Event,
+    const   COIRESULT           in_Result,
+    const   void*               in_UserData);
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+///
+/// Registers any COIEVENT to receive a one time callback, when the event
+/// is marked complete in the offload runtime. If the event has completed
+/// before the COIEventRegisterCallback() is called then the callback will
+/// immediately be invoked by the calling thread. When the event is
+/// registered before the event completes, the runtime gaurantees that
+/// the callback will be invoked before COIEventWait() is notified of
+/// the same event completing. In well written user code, this may provide
+/// a slight performance advantage.
+///
+/// Users should treat the callback much like an interrupt routine, in regards
+/// of performance. Specifically designing the callback to be as short and
+/// non blocking as possible. Since the thread that runs the callback is
+/// non deterministic blocking or stalling of the callback, may have severe
+/// performance impacts on the offload runtime. Thus, it is important to not
+/// create deadlocks between the callback and other signaling/waiting
+/// mechanisms. It is recommended to never invoke COIEventWait() inside
+/// a callback function, as this could lead to immediate deadlocks.
+///
+/// It is important to note that the runtime cannot distinguish between
+/// already triggered events and invalid events. Thus the user needs to pass
+/// in a valid event, or the callback will be invoked immediately.
+/// Failed events will still receive a callback and the user can query
+/// COIEventWait() after the callback for the failed return code.
+///
+/// If more than one callback is registered for the same event, only the
+/// single most current callback will be used, i.e. the older one will
+/// be replaced.
+///
+/// @param  in_Event
+///         [in] A valid single event handle to be registered to receive a callback.
+///
+/// @param  in_Callback
+///         [in] Pointer to a user function used to signal an
+///         event completion.
+///
+/// @param  in_UserData
+///         [in] Opaque data to pass to the callback when it is invoked.
+///
+/// @param  in_Flags
+///         [in] Reserved parameter for future expansion, required to be zero for now.
+///
+/// @return COI_INVALID_HANDLE if in_Event is not a valid COIEVENT
+///
+/// @return COI_INVALID_HANDLE if in_Callback is not a valid pointer.
+///
+/// @return COI_ARGUMENT_MISMATCH if the in_Flags is not zero.
+///
+/// @return COI_SUCCESS an event is successfully registered
+///
+COIACCESSAPI
+COIRESULT
+COIEventRegisterCallback(
+      const COIEVENT                in_Event,
+            COI_EVENT_CALLBACK      in_Callback,
+      const void*                   in_UserData,
+      const uint64_t                in_Flags);
+
+
 
 #ifdef __cplusplus
 } /* extern "C" */

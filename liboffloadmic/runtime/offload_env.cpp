@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -146,7 +146,7 @@ void MicEnvVar::add_env_var(
     else {
         card = get_card(card_number);
         if (!card) {
-            // definition for new card occured
+            // definition for new card occurred
             card = new CardEnvVars(card_number);
             card_spec_list.push_back(card);
         }
@@ -321,7 +321,7 @@ void MicEnvVar::mic_parse_env_var_list(
 // Collect all definitions for the card with number "card_num".
 // The returned result is vector of string pointers defining one
 // environment variable. The vector is terminated by NULL pointer.
-// In the begining of the vector there are env vars defined as
+// In the beginning of the vector there are env vars defined as
 // <mic-prefix>_<card-number>_<var>=<value>
 // or
 // <mic-prefix>_<card-number>_ENV=<env-vars>

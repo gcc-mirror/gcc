@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,67 +34,35 @@
 #include <myotypes.h>
 #include <myoimpl.h>
 #include <myo.h>
+
 #include "offload.h"
+// undefine the following since offload.h defines them to malloc and free if __INTEL_OFFLOAD 
+// is not defined which is the case when building the offload library
+#undef _Offload_shared_malloc
+#undef _Offload_shared_free
+#undef _Offload_shared_aligned_malloc
+#undef _Offload_shared_aligned_free
+#include "offload_table.h"
 
-typedef MyoiSharedVarEntry      SharedTableEntry;
-//typedef MyoiHostSharedFptrEntry FptrTableEntry;
-typedef struct {
-    //! Function Name
-    const char *funcName;
-    //! Function Address
-    void *funcAddr;
-    //! Local Thunk Address
-    void *localThunkAddr;
-#ifdef TARGET_WINNT
-    // Dummy to pad up to 32 bytes
-    void *dummy;
-#endif // TARGET_WINNT
-} FptrTableEntry;
-
-struct InitTableEntry {
-#ifdef TARGET_WINNT
-    // Dummy to pad up to 16 bytes
-    // Function Name
-    const char *funcName;
-#endif // TARGET_WINNT
-    void (*func)(void);
-};
-
-#ifdef TARGET_WINNT
-#define OFFLOAD_MYO_SHARED_TABLE_SECTION_START          ".MyoSharedTable$a"
-#define OFFLOAD_MYO_SHARED_TABLE_SECTION_END            ".MyoSharedTable$z"
-
-#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_START     ".MyoSharedInitTable$a"
-#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_END       ".MyoSharedInitTable$z"
-
-#define OFFLOAD_MYO_FPTR_TABLE_SECTION_START            ".MyoFptrTable$a"
-#define OFFLOAD_MYO_FPTR_TABLE_SECTION_END              ".MyoFptrTable$z"
-#else  // TARGET_WINNT
-#define OFFLOAD_MYO_SHARED_TABLE_SECTION_START          ".MyoSharedTable."
-#define OFFLOAD_MYO_SHARED_TABLE_SECTION_END            ".MyoSharedTable."
-
-#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_START     ".MyoSharedInitTable."
-#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_END       ".MyoSharedInitTable."
-
-#define OFFLOAD_MYO_FPTR_TABLE_SECTION_START            ".MyoFptrTable."
-#define OFFLOAD_MYO_FPTR_TABLE_SECTION_END              ".MyoFptrTable."
-#endif // TARGET_WINNT
-
-#pragma section(OFFLOAD_MYO_SHARED_TABLE_SECTION_START, read, write)
-#pragma section(OFFLOAD_MYO_SHARED_TABLE_SECTION_END, read, write)
-
-#pragma section(OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_START, read, write)
-#pragma section(OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_END, read, write)
-
-#pragma section(OFFLOAD_MYO_FPTR_TABLE_SECTION_START, read, write)
-#pragma section(OFFLOAD_MYO_FPTR_TABLE_SECTION_END, read, write)
-
+// This function retained for compatibility with 15.0
 extern "C" void __offload_myoRegisterTables(
     InitTableEntry *init_table,
     SharedTableEntry *shared_table,
     FptrTableEntry *fptr_table
 );
 
+// Process shared variable, shared vtable and function and init routine tables.
+// In .dlls/.sos these will be collected together.
+// In the main program, all collected tables will be processed.
+extern "C" bool __offload_myoProcessTables(
+    const void* image,
+    MYOInitTableList::Node *init_table,
+    MYOVarTableList::Node  *shared_table,
+    MYOVarTableList::Node  *shared_vtable,
+    MYOFuncTableList::Node *fptr_table
+);
+
 extern void __offload_myoFini(void);
+extern bool __offload_myo_init_is_deferred(const void *image);
 
 #endif // OFFLOAD_MYO_HOST_H_INCLUDED

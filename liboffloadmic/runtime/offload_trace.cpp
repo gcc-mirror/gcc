@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -73,7 +73,7 @@ static const char * offload_stage(std::stringstream &ss,
     return 0;
 }
 
-static const char * offload_signal(std::stringstream &ss,
+static const char * offload_message_2str(std::stringstream &ss,
                                   int offload_number,
                                   const char *tag,
                                   const char *text)
@@ -216,27 +216,57 @@ void offload_stage_print(int stage, int offload_number, ...)
                 uint64_t  *signal;
                 str1 = report_get_message_str(c_report_state_signal);
                 str2 = report_get_message_str(c_report_signal);
-                offload_signal(ss, offload_number, str1, str2);
-	        signal = va_arg(va_args, uint64_t*);
-	        if (signal)
-                   ss << " 0x" << std::hex << *signal;
+                offload_message_2str(ss, offload_number, str1, str2);
+                signal = va_arg(va_args, uint64_t*);
+                if (signal)
+                    ss << " 0x" << std::hex << *signal;
                 else
-                   ss << " none";
+                    ss << " none";
+            }
+            break;
+        case c_offload_stream:
+            {
+                int64_t  stream;
+                str1 = report_get_message_str(c_report_state_stream);
+                str2 = report_get_message_str(c_report_stream);
+                offload_message_2str(ss, offload_number, str1, str2);
+                stream = va_arg(va_args, int64_t);
+                if (stream)
+                    ss << " 0x" << std::hex << stream;
+                else
+                    ss << " none";
             }
             break;
         case c_offload_wait:
             {
                 int count;
+                OffloadWaitKind kind;
                 uint64_t  **signal;
-                str1 = report_get_message_str(c_report_state_signal);
+                kind = (enum OffloadWaitKind) va_arg(va_args, int);
+                // kind ==  c_offload_wait_signal for signal;
+                // other kinds are for stream
+                if (kind == c_offload_wait_signal) {
+                    str1 = report_get_message_str(c_report_state_signal);
+                }
+                else {
+                    str1 = report_get_message_str(c_report_state_stream);
+                }
                 str2 = report_get_message_str(c_report_wait);
-                offload_signal(ss, offload_number, str1, str2);
+                offload_message_2str(ss, offload_number, str1, str2);
                 count = va_arg(va_args, int);
                 signal = va_arg(va_args, uint64_t**);
                 if (count) {
-                    while (count) {
-                        ss << " " << std::hex << signal[count-1];
-                        count--;
+                    if (kind == c_offload_wait_signal) {
+                        while (count) {
+                            ss << " " << std::hex << signal[count-1];
+                            count--;
+                        }
+                    }
+                    else if (kind == c_offload_wait_stream) {
+                        ss << signal;
+                    }
+                    else {
+                        ss << " all";
                     }
                 }
                 else
@@ -304,6 +334,7 @@ void offload_stage_print(int stage, int offload_number, ...)
             str1 = report_get_message_str(c_report_state);
             str2 = report_get_message_str(c_report_myosharedalignedfree);
             offload_stage(ss, offload_number, str1, str2, false);
+            ss << " " << va_arg(va_args, size_t);
             break;
         case c_offload_myoacquire:
             str1 = report_get_message_str(c_report_state);
@@ -314,6 +345,55 @@ void offload_stage_print(int stage, int offload_number, ...)
             str1 = report_get_message_str(c_report_state);
             str2 = report_get_message_str(c_report_myorelease);
             offload_stage(ss, offload_number, str1, str2, false);
+            break;
+        case c_offload_myosupportsfeature:
+            str1 = report_get_message_str(c_report_state);
+            str2 = report_get_message_str(c_report_myosupportsfeature);
+            offload_stage(ss, offload_number, str1, str2, false);
+            va_arg(va_args, int);
+            ss << " " << va_arg(va_args, int);
+            ss << " " << va_arg(va_args, int);
+            ss << " " << va_arg(va_args, int);
+            break;
+        case c_offload_myosharedarenacreate:
+            str1 = report_get_message_str(c_report_state);
+            str2 = report_get_message_str(c_report_myosharedarenacreate);
+            offload_stage(ss, offload_number, str1, str2, false);
+            va_arg(va_args, char*);
+            ss << " " << va_arg(va_args, int);
+            ss << " " << va_arg(va_args, int);
+            ss << " " << va_arg(va_args, unsigned int);
+            break;
+        case c_offload_myosharedalignedarenamalloc:
+            str1 = report_get_message_str(c_report_state);
+            str2 = report_get_message_str(c_report_myosharedalignedarenamalloc);
+            offload_stage(ss, offload_number, str1, str2, false);
+            va_arg(va_args, char*);
+            ss << " " << va_arg(va_args, int);
+            ss << " " << va_arg(va_args, size_t);
+            ss << " " << va_arg(va_args, size_t);
+            break;
+        case c_offload_myosharedalignedarenafree:
+            str1 = report_get_message_str(c_report_state);
+            str2 = report_get_message_str(c_report_myosharedalignedarenafree);
+            offload_stage(ss, offload_number, str1, str2, false);
+            va_arg(va_args, char*);
+            ss << " " << va_arg(va_args, int);
+            ss << " " << va_arg(va_args, size_t);
+            break;
+        case c_offload_myoarenaacquire:
+            str1 = report_get_message_str(c_report_state);
+            str2 = report_get_message_str(c_report_myoarenaacquire);
+            offload_stage(ss, offload_number, str1, str2, false);
+            va_arg(va_args, char*);
+            ss << " " << va_arg(va_args, int);
+            break;
+        case c_offload_myoarenarelease:
+            str1 = report_get_message_str(c_report_state);
+            str2 = report_get_message_str(c_report_myoarenarelease);
+            offload_stage(ss, offload_number, str1, str2, false);
+            va_arg(va_args, char*);
+            ss << " " << va_arg(va_args, int);
             break;
         default:
             LIBOFFLOAD_ERROR(c_report_unknown_trace_node);

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -37,6 +37,22 @@
 #ifdef MYO_SUPPORT
 #include "../offload_myo_target.h"      // for __offload_myoLibInit/Fini
 #endif // MYO_SUPPORT
+
+#if !defined(CPU_COUNT)
+// if CPU_COUNT is not defined count number of CPUs manually 
+static
+int my_cpu_count(cpu_set_t const *cpu_set) 
+{
+    int res = 0;
+    for (int i = 0; i < sizeof(cpu_set_t) / sizeof(__cpu_mask); ++i) {
+        res += __builtin_popcountl(cpu_set->__bits[i]);
+    }
+    return res;
+}
+// Map CPU_COUNT to our function
+#define CPU_COUNT(x) my_cpu_count(x)
+
+#endif
 
 COINATIVELIBEXPORT
 void server_compute(
@@ -116,6 +132,20 @@ void server_var_table_copy(
 )
 {
     __offload_vars.table_copy(buffers[0], *static_cast<int64_t*>(misc_data));
+}
+
+COINATIVELIBEXPORT
+void server_set_stream_affinity(
+    uint32_t  buffer_count,
+    void**    buffers,
+    uint64_t* buffers_len,
+    void*     misc_data,
+    uint16_t  misc_data_len,
+    void*     return_data,
+    uint16_t  return_data_len
+)
+{
+  /* kmp affinity is not supported by GCC.  */
 }
 
 #ifdef MYO_SUPPORT
