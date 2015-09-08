@@ -16,6 +16,7 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff1 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf8, 0xf9, 0xfa, 0xfb,
 					0xfc, 0xfd, 0xfe, 0xff };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff4, 0xfff5, 0xfff6, 0xfff7 };
+VECT_VAR_DECL(expected,hfloat,16,4) [] = { 0xca00, 0xc980, 0xc900, 0xc880 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1600000, 0xc1500000 };
 
 #define TEST_MSG "VGET_HIGH"
@@ -31,6 +32,9 @@ void exec_vget_high (void)
   DECL_VARIABLE_128BITS_VARIANTS(vector128);
 
   TEST_MACRO_128BITS_VARIANTS_2_5(VLOAD, vector128, buffer);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  VLOAD(vector128, buffer, q, float, f, 16, 8);
+#endif
   VLOAD(vector128, buffer, q, float, f, 32, 4);
 
   clean_results ();
@@ -46,6 +50,9 @@ void exec_vget_high (void)
   TEST_VGET_HIGH(uint, u, 64, 1, 2);
   TEST_VGET_HIGH(poly, p, 8, 8, 16);
   TEST_VGET_HIGH(poly, p, 16, 4, 8);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  TEST_VGET_HIGH(float, f, 16, 4, 8);
+#endif
   TEST_VGET_HIGH(float, f, 32, 2, 4);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");

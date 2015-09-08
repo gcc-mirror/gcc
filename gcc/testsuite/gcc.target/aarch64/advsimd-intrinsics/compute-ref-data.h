@@ -118,6 +118,10 @@ VECT_VAR_DECL_INIT(buffer, uint, 32, 2);
 PAD(buffer_pad, uint, 32, 2);
 VECT_VAR_DECL_INIT(buffer, uint, 64, 1);
 PAD(buffer_pad, uint, 64, 1);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+VECT_VAR_DECL_INIT(buffer, float, 16, 4);
+PAD(buffer_pad, float, 16, 4);
+#endif
 VECT_VAR_DECL_INIT(buffer, float, 32, 2);
 PAD(buffer_pad, float, 32, 2);
 VECT_VAR_DECL_INIT(buffer, int, 8, 16);
@@ -140,6 +144,10 @@ VECT_VAR_DECL_INIT(buffer, poly, 8, 16);
 PAD(buffer_pad, poly, 8, 16);
 VECT_VAR_DECL_INIT(buffer, poly, 16, 8);
 PAD(buffer_pad, poly, 16, 8);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+VECT_VAR_DECL_INIT(buffer, float, 16, 8);
+PAD(buffer_pad, float, 16, 8);
+#endif
 VECT_VAR_DECL_INIT(buffer, float, 32, 4);
 PAD(buffer_pad, float, 32, 4);
 #ifdef __aarch64__
@@ -170,6 +178,10 @@ VECT_VAR_DECL_INIT(buffer_dup, poly, 8, 8);
 VECT_VAR_DECL(buffer_dup_pad, poly, 8, 8);
 VECT_VAR_DECL_INIT(buffer_dup, poly, 16, 4);
 VECT_VAR_DECL(buffer_dup_pad, poly, 16, 4);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+VECT_VAR_DECL_INIT4(buffer_dup, float, 16, 4);
+VECT_VAR_DECL(buffer_dup_pad, float, 16, 4);
+#endif
 VECT_VAR_DECL_INIT4(buffer_dup, float, 32, 2);
 VECT_VAR_DECL(buffer_dup_pad, float, 32, 2);
 
@@ -193,5 +205,9 @@ VECT_VAR_DECL_INIT(buffer_dup, poly, 8, 16);
 VECT_VAR_DECL(buffer_dup_pad, poly, 8, 16);
 VECT_VAR_DECL_INIT(buffer_dup, poly, 16, 8);
 VECT_VAR_DECL(buffer_dup_pad, poly, 16, 8);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+VECT_VAR_DECL_INIT(buffer_dup, float, 16, 8);
+VECT_VAR_DECL(buffer_dup_pad, float, 16, 8);
+#endif
 VECT_VAR_DECL_INIT(buffer_dup, float, 32, 4);
 VECT_VAR_DECL(buffer_dup_pad, float, 32, 4);
