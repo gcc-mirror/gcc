@@ -11,6 +11,10 @@ foo (int bar, int n, int k)
     if (i == k)
       a[i] = bar;
 
+  for (i = 0; i < n; i++)
+    if (i == k)
+      a[i] = bar;
+
   return a[bar];
 }
 

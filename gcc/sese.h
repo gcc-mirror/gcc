@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SESE_H
 #define GCC_SESE_H
 
+typedef hash_map<tree, tree> parameter_rename_map_t;
+
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
 typedef struct sese_s
@@ -31,6 +33,9 @@ typedef struct sese_s
 
   /* Parameters used within the SCOP.  */
   vec<tree> params;
+
+  /* Parameters to be renamed.  */
+  parameter_rename_map_t *parameter_rename_map;
 
   /* Loops completely contained in the SCOP.  */
   bitmap loops;

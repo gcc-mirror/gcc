@@ -31,5 +31,5 @@ int main (void)
 }
 
 /* Check that parallel code generation part make the right answer.  */
-/* { dg-final { scan-tree-dump-times "3 loops carried no dependency" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "5 loops carried no dependency" 1 "graphite" } } */
 /* { dg-final { scan-tree-dump-times "loopfn.0" 4 "optimized" } } */

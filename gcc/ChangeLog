@@ -1,3 +1,42 @@
+2015-09-08  Aditya Kumar  <hiraditya@msn.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (gcc_expression_from_isl_ast_expr_id):
+	Return the parameter if it was saved in corresponding
+	parameter_rename_map of the region.
+	(copy_def): Copy def from sese region to the newly created region.
+	(copy_internal_parameters): Copy all the internal parameters defined
+	within a region to the newly created region.
+	(graphite_regenerate_ast_isl): Copy parameters to the new region before
+	translating isl to gimple.
+	* graphite-scop-detection.c (graphite_can_represent_loop): Bail out if
+	the loop-nest does not have any data-references.
+	(build_graphite_scops): Create a scop only when there is at least one
+	loop inside it.
+	(contains_only_close_phi_nodes): Deleted.
+	(print_graphite_scop_statistics): Deleted
+	(print_graphite_statistics): Deleted
+	(limit_scops): Deleted.
+	(build_scops): Removed call to limit_scops.
+	* sese.c (new_sese): Construct.
+	(free_sese): Destruct.
+	(sese_add_exit_phis_edge): update_stmt after exit phi edge has been
+	added.
+	(set_rename): Pass sese region so that parameters inside the region can
+	be added to its parameter_rename_map.
+	(rename_uses): Pass sese region.
+	(graphite_copy_stmts_from_block): Do not copy parameters that have been
+	generated in the header of the scop. For each SSA_NAME in the
+	parameter_rename_map rename its usage.
+	(invariant_in_sese_p_rec): Return false if tree t is defined outside
+	sese region.
+	(scalar_evolution_in_region): If the tree t is invariant just return t.
+	* sese.h: Added a parameter renamne map (parameter_rename_map_t) to
+	struct sese to keep track of all the parameters which need renaming.
+	* tree-data-ref.c (loop_nest_has_data_refs): Check if a loop nest has
+	any data-refs.
+	* tree-data-ref.h: Declaration of loop_nest_has_data_refs.
+
 2015-09-08  Tom de Vries  <tom@codesourcery.com>
 
 	* Makefile.in (generated_files): Add params.list.

@@ -35,4 +35,4 @@ int toto()
   return a[3][5] + b[1];
 }
 
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 4" 1 "graphite"} } */ 
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite"} } */

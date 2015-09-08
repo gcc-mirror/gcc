@@ -7,6 +7,9 @@ void foo(int N, int *res)
   double sum = 0.0;
 
   for (i = 0; i < N; i++)
+    sum += u[i];
+
+  for (i = 0; i < N; i++)
     {
       a = u[i];
       u[i] = i * i;

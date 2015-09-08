@@ -6,6 +6,9 @@ int test ()
   int i;
 
   for (i = 0; i < N; i++)
+    a[i] += 32;
+
+  for (i = 0; i < N; i++)
     {
       a[i] = i + 12;
 

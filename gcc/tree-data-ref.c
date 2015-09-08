@@ -3927,6 +3927,49 @@ get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
   return clobbers_memory;
 }
 
+
+/* Returns true if the loop-nest has any data reference.  */
+
+bool
+loop_nest_has_data_refs (loop_p loop)
+{
+  basic_block *bbs = get_loop_body (loop);
+  vec<data_ref_loc> references;
+  references.create (3);
+
+  for (unsigned i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = bbs[i];
+      gimple_stmt_iterator bsi;
+
+      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	{
+	  gimple stmt = gsi_stmt (bsi);
+	  get_references_in_stmt (stmt, &references);
+	  if (references.length ())
+	    {
+	      free (bbs);
+	      references.release ();
+	      return true;
+	    }
+	}
+    }
+  free (bbs);
+  references.release ();
+
+  if (loop->inner)
+    {
+      loop = loop->inner;
+      while (loop)
+	{
+	  if (loop_nest_has_data_refs (loop))
+	    return true;
+	  loop = loop->next;
+	}
+    }
+  return false;
+}
+
 /* Stores the data references in STMT to DATAREFS.  If there is an unanalyzable
    reference, returns false, otherwise returns true.  NEST is the outermost
    loop of the loop nest in which the references should be analyzed.  */

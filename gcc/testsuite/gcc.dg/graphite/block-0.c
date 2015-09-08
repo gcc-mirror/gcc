@@ -42,4 +42,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "not tiled" 3 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "not tiled" 2 "graphite" } } */
