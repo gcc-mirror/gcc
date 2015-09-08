@@ -1016,7 +1016,7 @@ extern int arm_arch_crc;
 /* Modes valid for Neon Q registers.  */
 #define VALID_NEON_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
-   || (MODE) == V4SFmode || (MODE) == V2DImode)
+   || (MODE) == V8HFmode || (MODE) == V4SFmode || (MODE) == V2DImode)
 
 /* Structure modes valid for Neon registers.  */
 #define VALID_NEON_STRUCT_MODE(MODE) \

@@ -44,5 +44,7 @@
 
   ENTRY (Float16x4_t, V4HF, none, 64, float16, 18)
   ENTRY (Float32x2_t, V2SF, none, 64, float32, 18)
+
+  ENTRY (Float16x8_t, V8HF, none, 128, float16, 19)
   ENTRY (Float32x4_t, V4SF, none, 128, float32, 19)
 
