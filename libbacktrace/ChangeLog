@@ -1,6 +1,20 @@
 2015-09-08  Ian Lance Taylor  <iant@google.com>
 
 	PR other/67457
+	* backtrace.c: #include "internal.h".
+	(struct backtrace_data): Add can_alloc field.
+	(unwind): If can_alloc is false, don't try to get file/line
+	information.
+	(backtrace_full): Set can_alloc field in bdata.
+	* alloc.c (backtrace_alloc): Don't call error_callback if it is
+	NULL.
+	* mmap.c (backtrace_alloc): Likewise.
+	* internal.h: Update comments for backtrace_alloc and
+	backtrace_free.
+
+2015-09-08  Ian Lance Taylor  <iant@google.com>
+
+	PR other/67457
 	* mmap.c (backtrace_alloc): Correct test for mmap failure.
 
 2015-08-31  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
