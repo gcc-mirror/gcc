@@ -42,6 +42,7 @@ typedef __simd64_int16_t int16x4_t;
 typedef __simd64_int32_t int32x2_t;
 typedef __builtin_neon_di int64x1_t;
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef __fp16 float16_t;
 typedef __simd64_float16_t float16x4_t;
 #endif
 typedef __simd64_float32_t float32x2_t;
@@ -5203,6 +5204,21 @@ vget_lane_s32 (int32x2_t __a, const int __b)
   return (int32_t)__builtin_neon_vget_lanev2si (__a, __b);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+/* Functions cannot accept or return __FP16 types.  Even if the function
+   were marked always-inline so there were no call sites, the declaration
+   would nonetheless raise an error.  Hence, we must use a macro instead.  */
+
+#define vget_lane_f16(__v, __idx)		\
+  __extension__					\
+    ({						\
+      float16x4_t __vec = (__v);		\
+      __builtin_arm_lane_check (4, __idx);	\
+      float16_t __res = __vec[__idx];		\
+      __res;					\
+    })
+#endif
+
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vget_lane_f32 (float32x2_t __a, const int __b)
 {
@@ -5334,6 +5350,18 @@ vset_lane_s32 (int32_t __a, int32x2_t __b, const int __c)
 {
   return (int32x2_t)__builtin_neon_vset_lanev2si ((__builtin_neon_si) __a, __b, __c);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#define vset_lane_f16(__e, __v, __idx)		\
+  __extension__					\
+    ({						\
+      float16_t __elem = (__e);			\
+      float16x4_t __vec = (__v);		\
+      __builtin_arm_lane_check (4, __idx);	\
+      __vec[__idx] = __elem;			\
+      __vec;					\
+    })
+#endif
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vset_lane_f32 (float32_t __a, float32x2_t __b, const int __c)
@@ -5480,6 +5508,14 @@ vcreate_s64 (uint64_t __a)
 {
   return (int64x1_t)__builtin_neon_vcreatedi ((__builtin_neon_di) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcreate_f16 (uint64_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vcreate_f32 (uint64_t __a)
@@ -8802,6 +8838,14 @@ vld1_lane_s32 (const int32_t * __a, int32x2_t __b, const int __c)
   return (int32x2_t)__builtin_neon_vld1_lanev2si ((const __builtin_neon_si *) __a, __b, __c);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vld1_lane_f16 (const float16_t * __a, float16x4_t __b, const int __c)
+{
+  return vset_lane_f16 (*__a, __b, __c);
+}
+#endif
+
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vld1_lane_f32 (const float32_t * __a, float32x2_t __b, const int __c)
 {
@@ -8949,6 +8993,15 @@ vld1_dup_s32 (const int32_t * __a)
 {
   return (int32x2_t)__builtin_neon_vld1_dupv2si ((const __builtin_neon_si *) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vld1_dup_f16 (const float16_t * __a)
+{
+  float16_t __f = *__a;
+  return (float16x4_t) { __f, __f, __f, __f };
+}
+#endif
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vld1_dup_f32 (const float32_t * __a)
@@ -11833,6 +11886,14 @@ vreinterpret_p8_p16 (poly16x4_t __a)
   return (poly8x8_t)__builtin_neon_vreinterpretv8qiv4hi ((int16x4_t) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vreinterpret_p8_f16 (float16x4_t __a)
+{
+  return (poly8x8_t) __a;
+}
+#endif
+
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vreinterpret_p8_f32 (float32x2_t __a)
 {
@@ -11901,6 +11962,14 @@ vreinterpret_p16_p8 (poly8x8_t __a)
   return (poly16x4_t)__builtin_neon_vreinterpretv4hiv8qi ((int8x8_t) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vreinterpret_p16_f16 (float16x4_t __a)
+{
+  return (poly16x4_t) __a;
+}
+#endif
+
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
 vreinterpret_p16_f32 (float32x2_t __a)
 {
@@ -11963,6 +12032,104 @@ vreinterpret_p16_u32 (uint32x2_t __a)
   return (poly16x4_t)__builtin_neon_vreinterpretv4hiv2si ((int32x2_t) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_p8 (poly8x8_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_p16 (poly16x4_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_f32 (float32x2_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#ifdef __ARM_FEATURE_CRYPTO
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_p64 (poly64x1_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_s64 (int64x1_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_u64 (uint64x1_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_s8 (int8x8_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_s16 (int16x4_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_s32 (int32x2_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_u8 (uint8x8_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_u16 (uint16x4_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vreinterpret_f16_u32 (uint32x2_t __a)
+{
+  return (float16x4_t) __a;
+}
+#endif
+
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vreinterpret_f32_p8 (poly8x8_t __a)
 {
@@ -11974,6 +12141,14 @@ vreinterpret_f32_p16 (poly16x4_t __a)
 {
   return (float32x2_t)__builtin_neon_vreinterpretv2sfv4hi ((int16x4_t) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vreinterpret_f32_f16 (float16x4_t __a)
+{
+  return (float32x2_t) __a;
+}
+#endif
 
 #ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
@@ -12047,6 +12222,17 @@ vreinterpret_p64_p16 (poly16x4_t __a)
 }
 
 #endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#ifdef __ARM_FEATURE_CRYPTO
+__extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
+vreinterpret_p64_f16 (float16x4_t __a)
+{
+  return (poly64x1_t) __a;
+}
+#endif
+#endif
+
 #ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_f32 (float32x2_t __a)
@@ -12131,6 +12317,14 @@ vreinterpret_s64_p16 (poly16x4_t __a)
   return (int64x1_t)__builtin_neon_vreinterpretdiv4hi ((int16x4_t) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vreinterpret_s64_f16 (float16x4_t __a)
+{
+  return (int64x1_t) __a;
+}
+#endif
+
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vreinterpret_s64_f32 (float32x2_t __a)
 {
@@ -12198,6 +12392,14 @@ vreinterpret_u64_p16 (poly16x4_t __a)
 {
   return (uint64x1_t)__builtin_neon_vreinterpretdiv4hi ((int16x4_t) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vreinterpret_u64_f16 (float16x4_t __a)
+{
+  return (uint64x1_t) __a;
+}
+#endif
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vreinterpret_u64_f32 (float32x2_t __a)
@@ -12267,6 +12469,14 @@ vreinterpret_s8_p16 (poly16x4_t __a)
   return (int8x8_t)__builtin_neon_vreinterpretv8qiv4hi ((int16x4_t) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vreinterpret_s8_f16 (float16x4_t __a)
+{
+  return (int8x8_t) __a;
+}
+#endif
+
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vreinterpret_s8_f32 (float32x2_t __a)
 {
@@ -12334,6 +12544,14 @@ vreinterpret_s16_p16 (poly16x4_t __a)
 {
   return (int16x4_t)__builtin_neon_vreinterpretv4hiv4hi ((int16x4_t) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vreinterpret_s16_f16 (float16x4_t __a)
+{
+  return (int16x4_t) __a;
+}
+#endif
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vreinterpret_s16_f32 (float32x2_t __a)
@@ -12403,6 +12621,14 @@ vreinterpret_s32_p16 (poly16x4_t __a)
   return (int32x2_t)__builtin_neon_vreinterpretv2siv4hi ((int16x4_t) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vreinterpret_s32_f16 (float16x4_t __a)
+{
+  return (int32x2_t) __a;
+}
+#endif
+
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vreinterpret_s32_f32 (float32x2_t __a)
 {
@@ -12470,6 +12696,14 @@ vreinterpret_u8_p16 (poly16x4_t __a)
 {
   return (uint8x8_t)__builtin_neon_vreinterpretv8qiv4hi ((int16x4_t) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vreinterpret_u8_f16 (float16x4_t __a)
+{
+  return (uint8x8_t) __a;
+}
+#endif
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vreinterpret_u8_f32 (float32x2_t __a)
@@ -12539,6 +12773,14 @@ vreinterpret_u16_p16 (poly16x4_t __a)
   return (uint16x4_t)__builtin_neon_vreinterpretv4hiv4hi ((int16x4_t) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vreinterpret_u16_f16 (float16x4_t __a)
+{
+  return (uint16x4_t) __a;
+}
+#endif
+
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vreinterpret_u16_f32 (float32x2_t __a)
 {
@@ -12606,6 +12848,14 @@ vreinterpret_u32_p16 (poly16x4_t __a)
 {
   return (uint32x2_t)__builtin_neon_vreinterpretv2siv4hi ((int16x4_t) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vreinterpret_u32_f16 (float16x4_t __a)
+{
+  return (uint32x2_t) __a;
+}
+#endif
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vreinterpret_u32_f32 (float32x2_t __a)

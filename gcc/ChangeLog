@@ -1,3 +1,16 @@
+2015-09-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/arm/arm_neon.h (float16_t, vget_lane_f16, vset_lane_f16,
+	vcreate_f16, vld1_lane_f16, vld1_dup_f16, vreinterpret_p8_f16,
+	vreinterpret_p16_f16, vreinterpret_f16_p8, vreinterpret_f16_p16,
+	vreinterpret_f16_f32, vreinterpret_f16_p64, vreinterpret_f16_s64,
+	vreinterpret_f16_u64, vreinterpret_f16_s8, vreinterpret_f16_s16,
+	vreinterpret_f16_s32, vreinterpret_f16_u8, vreinterpret_f16_u16,
+	vreinterpret_f16_u32, vreinterpret_f32_f16, vreinterpret_p64_f16,
+	vreinterpret_s64_f16, vreinterpret_u64_f16, vreinterpret_s8_f16,
+	vreinterpret_s16_f16, vreinterpret_s32_f16, vreinterpret_u8_f16,
+	vreinterpret_u16_f16, vreinterpret_u32_f16): New.
+
 2015-09-07  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* config/i386/intelmic-mkoffload.c (prepare_target_image): Handle all
