@@ -1,5 +1,21 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	PR target/63870
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f16_indices_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f16_indices_1.c: New.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vcvt_f16.c: New.
 	* lib/target-supports.exp
 	(check_effective_target_arm_neon_fp16_hw): New.
