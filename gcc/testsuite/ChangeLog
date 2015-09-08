@@ -1,5 +1,12 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vldN_1.c: Add float16x4_t and float16x8_t cases.
+	* gcc.target/aarch64/vldN_dup_1.c: Likewise.
+	* gcc.target/aarch64/vldN_lane_1.c: Likewise.
+	(main): update orig_data to avoid float16 NaN on bigendian.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* g++.dg/abi/mangle-neon-aarch64.C: Add cases for float16x4_t and
 	float16x8_t.
 	* gcc.target/aarch64/vset_lane_1.c: Likewise.

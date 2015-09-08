@@ -1,5 +1,25 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_split_simd_combine): Add V4HFmode.
+	* config/aarch64/aarch64-builtins.c (VAR13, VAR14): New.
+	(aarch64_scalar_builtin_types, aarch64_init_simd_builtin_scalar_types):
+	Add __builtin_aarch64_simd_hf.
+	* config/aarch64/arm_neon.h (float16x4x2_t, float16x8x2_t,
+	float16x4x3_t, float16x8x3_t, float16x4x4_t, float16x8x4_t,
+	vcombine_f16, vst2_lane_f16, vst2q_lane_f16, vst3_lane_f16,
+	vst3q_lane_f16, vst4_lane_f16, vst4q_lane_f16, vld2_f16, vld2q_f16,
+	vld3_f16, vld3q_f16, vld4_f16, vld4q_f16, vld2_dup_f16, vld2q_dup_f16,
+	vld3_dup_f16, vld3q_dup_f16, vld4_dup_f16, vld4q_dup_f16,
+	vld2_lane_f16, vld2q_lane_f16, vld3_lane_f16, vld3q_lane_f16,
+	vld4_lane_f16, vld4q_lane_f16, vst2_f16, vst2q_f16, vst3_f16,
+	vst3q_f16, vst4_f16, vst4q_f16, vcreate_f16): New.
+
+	* config/aarch64/iterators.md (VALLDIF, Vtype, Vetype, Vbtype,
+	V_cmp_result, v_cmp_result): Add cases for V4HF and V8HF.
+	(VDC, Vdbl): Add V4HF.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_vector_mode_supported_p): Support
 	V4HFmode and V8HFmode.
 	(aarch64_split_simd_move): Add case for V8HFmode.

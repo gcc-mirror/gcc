@@ -297,6 +297,12 @@ aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define VAR12(T, N, MAP, A, B, C, D, E, F, G, H, I, J, K, L) \
   VAR11 (T, N, MAP, A, B, C, D, E, F, G, H, I, J, K) \
   VAR1 (T, N, MAP, L)
+#define VAR13(T, N, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M) \
+  VAR12 (T, N, MAP, A, B, C, D, E, F, G, H, I, J, K, L) \
+  VAR1 (T, N, MAP, M)
+#define VAR14(T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N) \
+  VAR13 (T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M) \
+  VAR1 (T, X, MAP, N)
 
 #include "aarch64-builtin-iterators.h"
 
@@ -374,6 +380,7 @@ const char *aarch64_scalar_builtin_types[] = {
   "__builtin_aarch64_simd_qi",
   "__builtin_aarch64_simd_hi",
   "__builtin_aarch64_simd_si",
+  "__builtin_aarch64_simd_hf",
   "__builtin_aarch64_simd_sf",
   "__builtin_aarch64_simd_di",
   "__builtin_aarch64_simd_df",
@@ -661,6 +668,8 @@ aarch64_init_simd_builtin_scalar_types (void)
 					     "__builtin_aarch64_simd_qi");
   (*lang_hooks.types.register_builtin_type) (intHI_type_node,
 					     "__builtin_aarch64_simd_hi");
+  (*lang_hooks.types.register_builtin_type) (aarch64_fp16_type_node,
+					     "__builtin_aarch64_simd_hf");
   (*lang_hooks.types.register_builtin_type) (intSI_type_node,
 					     "__builtin_aarch64_simd_si");
   (*lang_hooks.types.register_builtin_type) (float_type_node,
