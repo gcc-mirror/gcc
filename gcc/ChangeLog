@@ -1,5 +1,33 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_vector_mode_supported_p): Support
+	V4HFmode and V8HFmode.
+	(aarch64_split_simd_move): Add case for V8HFmode.
+	* config/aarch64/aarch64-builtins.c (v4hf_UP, v8hf_UP): Define.
+	(aarch64_simd_builtin_std_type): Handle HFmode.
+	(aarch64_init_simd_builtin_types): Include Float16x4_t and Float16x8_t.
+
+	* config/aarch64/aarch64-simd.md (mov<mode>, aarch64_get_lane<mode>,
+	aarch64_ld1<VALL:mode>, aarch64_st1<VALL:mode): Use VALL_F16 iterator.
+	(aarch64_be_ld1<mode>, aarch64_be_st1<mode>): Use VALLDI_F16 iterator.
+
+	* config/aarch64/aarch64-simd-builtin-types.def: Add Float16x4_t,
+	Float16x8_t.
+
+	* config/aarch64/aarch64-simd-builtins.def (ld1, st1): Use VALL_F16.
+	* config/aarch64/arm_neon.h (float16x4_t, float16x8_t, float16_t):
+	New typedefs.
+	(vget_lane_f16, vgetq_lane_f16, vset_lane_f16, vsetq_lane_f16,
+	vld1_f16, vld1q_f16, vst1_f16, vst1q_f16, vst1_lane_f16,
+	vst1q_lane_f16): New.
+	* config/aarch64/iterators.md (VD, VQ, VQ_NO2E): Add vectors of HFmode.
+	(VALLDI_F16, VALL_F16): New.
+	(Vmtype, VEL, VCONQ, VHALF, V_TWO_ELEM, V_THREE_ELEM, V_FOUR_ELEM, q):
+	Add cases for V4HF and V8HF.
+	(VDBL, VRL2, VRL3, VRL4): Add V4HF case.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/arm/arm-builtins.c (VAR11, VAR12): New.
 	* config/arm/arm_neon_builtins.def (vcombine, vld2_dup, vld3_dup,
 	vld4_dup): Add v4hf variant.

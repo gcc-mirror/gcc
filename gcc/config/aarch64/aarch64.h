@@ -875,7 +875,8 @@ extern enum aarch64_code_model aarch64_cmodel;
 /* Modes valid for AdvSIMD Q registers.  */
 #define AARCH64_VALID_SIMD_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
-   || (MODE) == V4SFmode || (MODE) == V2DImode || mode == V2DFmode)
+   || (MODE) == V4SFmode || (MODE) == V8HFmode || (MODE) == V2DImode \
+   || (MODE) == V2DFmode)
 
 #define ENDIAN_LANE_N(mode, n)  \
   (BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 - n : n)

@@ -16,6 +16,7 @@ VARIANT (int32, , 2, _s32, 0)	\
 VARIANT (int64, , 1, _s64, 0)	\
 VARIANT (poly8, , 8, _p8, 7)	\
 VARIANT (poly16, , 4, _p16, 2)	\
+VARIANT (float16, , 4, _f16, 3)	\
 VARIANT (float32, , 2, _f32, 1)	\
 VARIANT (float64, , 1, _f64, 0)	\
 VARIANT (uint8, q, 16, _u8, 13)	\
@@ -28,6 +29,7 @@ VARIANT (int32, q, 4, _s32, 1)	\
 VARIANT (int64, q, 2, _s64, 1)	\
 VARIANT (poly8, q, 16, _p8, 7)	\
 VARIANT (poly16, q, 8, _p16, 4)	\
+VARIANT (float16, q, 8, _f16, 3)\
 VARIANT (float32, q, 4, _f32, 2)\
 VARIANT (float64, q, 2, _f64, 1)
 
@@ -76,6 +78,7 @@ main (int argc, char **argv)
   int64_t int64_data = 0x1234567890abcdefLL;
   poly8_t poly8_data = 13;
   poly16_t poly16_data = 11111;
+  float16_t float16_data = 8.75;
   float32_t float32_data = 3.14159;
   float64_t float64_data = 1.010010001;
 

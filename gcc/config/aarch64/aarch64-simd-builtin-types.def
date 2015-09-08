@@ -44,6 +44,8 @@
   ENTRY (Poly16x8_t, V8HI, poly, 12)
   ENTRY (Poly64x1_t, DI, poly, 12)
   ENTRY (Poly64x2_t, V2DI, poly, 12)
+  ENTRY (Float16x4_t, V4HF, none, 13)
+  ENTRY (Float16x8_t, V8HF, none, 13)
   ENTRY (Float32x2_t, V2SF, none, 13)
   ENTRY (Float32x4_t, V4SF, none, 13)
   ENTRY (Float64x1_t, V1DF, none, 13)

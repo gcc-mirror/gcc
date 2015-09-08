@@ -61,6 +61,7 @@
 
 #define v8qi_UP  V8QImode
 #define v4hi_UP  V4HImode
+#define v4hf_UP  V4HFmode
 #define v2si_UP  V2SImode
 #define v2sf_UP  V2SFmode
 #define v1df_UP  V1DFmode
@@ -68,6 +69,7 @@
 #define df_UP    DFmode
 #define v16qi_UP V16QImode
 #define v8hi_UP  V8HImode
+#define v8hf_UP  V8HFmode
 #define v4si_UP  V4SImode
 #define v4sf_UP  V4SFmode
 #define v2di_UP  V2DImode
@@ -520,6 +522,8 @@ aarch64_simd_builtin_std_type (enum machine_mode mode,
       return aarch64_simd_intCI_type_node;
     case XImode:
       return aarch64_simd_intXI_type_node;
+    case HFmode:
+      return aarch64_fp16_type_node;
     case SFmode:
       return float_type_node;
     case DFmode:
@@ -604,6 +608,8 @@ aarch64_init_simd_builtin_types (void)
   aarch64_simd_types[Poly64x2_t].eltype = aarch64_simd_types[Poly64_t].itype;
 
   /* Continue with standard types.  */
+  aarch64_simd_types[Float16x4_t].eltype = aarch64_fp16_type_node;
+  aarch64_simd_types[Float16x8_t].eltype = aarch64_fp16_type_node;
   aarch64_simd_types[Float32x2_t].eltype = float_type_node;
   aarch64_simd_types[Float32x4_t].eltype = float_type_node;
   aarch64_simd_types[Float64x1_t].eltype = double_type_node;
