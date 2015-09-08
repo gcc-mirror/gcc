@@ -173,7 +173,7 @@
 	vld4_f16, vld4q_f16, vld4_lane_f16, vld4q_lane_f16, vld4_dup_f16,
 	vst4_f16, vst4q_f16, vst4_lane_f16, vst4q_lane_f16): New.
 
-2015-09-07  Alan Lawrence  <alan.lawrence.com>
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/arm_neon.h (vgetq_lane_f16, vsetq_lane_f16, vld1q_lane_f16,
 	vld1q_dup_f16, vreinterpretq_p8_f16, vreinterpretq_p16_f16,
@@ -187,7 +187,7 @@
 	vreinterpretq_u8_f16, vreinterpretq_u16_f16, vreinterpretq_u32_f16):
 	New.
 
-2015-09-07  Alan Lawrence  <alan.lawrence.com>
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/arm.h (VALID_NEON_QREG_MODE): Add V8HFmode.
 
@@ -200,7 +200,7 @@
 
 	* config/arm/arm_neon.h (float16x8_t): New typedef.
 
-2015-09-07  Alan Lawrence  <alan.lawrence@arm.com>
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/arm_neon.h (float16_t, vget_lane_f16, vset_lane_f16,
 	vcreate_f16, vld1_lane_f16, vld1_dup_f16, vreinterpret_p8_f16,
