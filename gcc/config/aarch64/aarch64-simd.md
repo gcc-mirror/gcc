@@ -1692,36 +1692,57 @@
 
 ;; Float widening operations.
 
-(define_insn "vec_unpacks_lo_v4sf"
-  [(set (match_operand:V2DF 0 "register_operand" "=w")
-	(float_extend:V2DF
-	  (vec_select:V2SF
-	    (match_operand:V4SF 1 "register_operand" "w")
-	    (parallel [(const_int 0) (const_int 1)])
-	  )))]
+(define_insn "aarch64_simd_vec_unpacks_lo_<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (float_extend:<VWIDE> (vec_select:<VHALF>
+			       (match_operand:VQ_HSF 1 "register_operand" "w")
+			       (match_operand:VQ_HSF 2 "vect_par_cnst_lo_half" "")
+			    )))]
   "TARGET_SIMD"
-  "fcvtl\\t%0.2d, %1.2s"
+  "fcvtl\\t%0.<Vwtype>, %1.<Vhalftype>"
   [(set_attr "type" "neon_fp_cvt_widen_s")]
 )
 
-(define_insn "aarch64_float_extend_lo_v2df"
-  [(set (match_operand:V2DF 0 "register_operand" "=w")
-	(float_extend:V2DF
-	  (match_operand:V2SF 1 "register_operand" "w")))]
+(define_expand "vec_unpacks_lo_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand" "")
+   (match_operand:VQ_HSF 1 "register_operand" "")]
   "TARGET_SIMD"
-  "fcvtl\\t%0.2d, %1.2s"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, false);
+    emit_insn (gen_aarch64_simd_vec_unpacks_lo_<mode> (operands[0],
+						       operands[1], p));
+    DONE;
+  }
+)
+
+(define_insn "aarch64_simd_vec_unpacks_hi_<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (float_extend:<VWIDE> (vec_select:<VHALF>
+			       (match_operand:VQ_HSF 1 "register_operand" "w")
+			       (match_operand:VQ_HSF 2 "vect_par_cnst_hi_half" "")
+			    )))]
+  "TARGET_SIMD"
+  "fcvtl2\\t%0.<Vwtype>, %1.<Vtype>"
   [(set_attr "type" "neon_fp_cvt_widen_s")]
 )
 
-(define_insn "vec_unpacks_hi_v4sf"
-  [(set (match_operand:V2DF 0 "register_operand" "=w")
-	(float_extend:V2DF
-	  (vec_select:V2SF
-	    (match_operand:V4SF 1 "register_operand" "w")
-	    (parallel [(const_int 2) (const_int 3)])
-	  )))]
+(define_expand "vec_unpacks_hi_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand" "")
+   (match_operand:VQ_HSF 1 "register_operand" "")]
   "TARGET_SIMD"
-  "fcvtl2\\t%0.2d, %1.4s"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
+    emit_insn (gen_aarch64_simd_vec_unpacks_lo_<mode> (operands[0],
+						       operands[1], p));
+    DONE;
+  }
+)
+(define_insn "aarch64_float_extend_lo_<Vwide>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(float_extend:<VWIDE>
+	  (match_operand:VDF 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "fcvtl\\t%0<Vmwtype>, %1<Vmtype>"
   [(set_attr "type" "neon_fp_cvt_widen_s")]
 )
 

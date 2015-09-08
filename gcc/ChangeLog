@@ -1,5 +1,22 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_unpacks_lo_<mode>,
+	aarch64_simd_vec_unpacks_hi_<mode>): New insn.
+	(vec_unpacks_lo_v4sf, vec_unpacks_hi_v4sf): Delete insn.
+	(vec_unpacks_lo_<mode>, vec_unpacks_hi_<mode>): New expand.
+	(aarch64_float_extend_lo_v2df): Rename to...
+	(aarch64_float_extend_lo_<Vwide>): this, using VDF and so adding V4SF.
+
+	* config/aarch64/aarch64-simd-builtins.def (vec_unpacks_hi): Add v8hf.
+	(float_extend_lo): Add v4sf.
+
+	* config/aarch64/arm_neon.h (vcvt_f32_f16, vcvt_high_f32_f16): New.
+	* config/aarch64/iterators.md (VQ_HSF): New iterator.
+	(VWIDE, Vwtype, Vhalftype): Add V8HF, V4SF.
+	(Vwide): New mode_attr.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_dup<mode>,
 	aarch64_dup_lane<mode>, aarch64_dup_lane_<vswap_width_name><mode>,
 	aarch64_simd_vec_set<mode>, vec_set<mode>, vec_perm_const<mode>,
