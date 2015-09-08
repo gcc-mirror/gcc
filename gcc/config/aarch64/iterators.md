@@ -111,9 +111,9 @@
 (define_mode_iterator VALLDI_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
 				  V4HF V8HF V2SF V4SF V2DF DI])
 
-;; All vector modes barring HF modes, plus DI and DF.
+;; All vector modes, plus DI and DF.
 (define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI
-			       V2DI V2SF V4SF V2DF DI DF])
+			       V2DI V4HF V8HF V2SF V4SF V2DF DI DF])
 
 ;; Vector modes for Integer reduction across lanes.
 (define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI V2DI])
@@ -134,7 +134,7 @@
 (define_mode_iterator VQW [V16QI V8HI V4SI])
 
 ;; Double vector modes for combines.
-(define_mode_iterator VDC [V8QI V4HI V2SI V2SF DI DF])
+(define_mode_iterator VDC [V8QI V4HI V4HF V2SI V2SF DI DF])
 
 ;; Vector modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
@@ -361,7 +361,8 @@
                          (V2SI "2s") (V4SI  "4s")
                          (DI   "1d") (DF    "1d")
                          (V2DI "2d") (V2SF "2s")
-			 (V4SF "4s") (V2DF "2d")])
+			 (V4SF "4s") (V2DF "2d")
+			 (V4HF "4h") (V8HF "8h")])
 
 (define_mode_attr Vrevsuff [(V4HI "16") (V8HI "16") (V2SI "32")
                             (V4SI "32") (V2DI "64")])
@@ -387,7 +388,8 @@
 (define_mode_attr Vetype [(V8QI "b") (V16QI "b")
 			  (V4HI "h") (V8HI  "h")
                           (V2SI "s") (V4SI  "s")
-			  (V2DI "d") (V2SF  "s")
+			  (V2DI "d") (V4HF "h")
+			  (V8HF "h") (V2SF  "s")
 			  (V4SF "s") (V2DF  "d")
 			  (SF   "s") (DF  "d")
 			  (QI "b")   (HI "h")
@@ -397,7 +399,8 @@
 (define_mode_attr Vbtype [(V8QI "8b")  (V16QI "16b")
 			  (V4HI "8b") (V8HI  "16b")
 			  (V2SI "8b") (V4SI  "16b")
-			  (V2DI "16b") (V2SF  "8b")
+			  (V2DI "16b") (V4HF "8b")
+			  (V8HF "16b") (V2SF  "8b")
 			  (V4SF "16b") (V2DF  "16b")
 			  (DI   "8b")  (DF    "8b")
 			  (SI   "8b")])
@@ -448,6 +451,7 @@
 
 ;; Double modes of vector modes (lower case).
 (define_mode_attr Vdbl [(V8QI "v16qi") (V4HI "v8hi")
+			(V4HF "v8hf")
 			(V2SI "v4si")  (V2SF "v4sf")
 			(SI   "v2si")  (DI   "v2di")
 			(DF   "v2df")])
@@ -522,6 +526,7 @@
 				(V4HI "V4HI") (V8HI  "V8HI")
 				(V2SI "V2SI") (V4SI  "V4SI")
 				(DI   "DI")   (V2DI  "V2DI")
+				(V4HF "V4HI") (V8HF  "V8HI")
 				(V2SF "V2SI") (V4SF  "V4SI")
 				(V2DF "V2DI") (DF    "DI")
 				(SF   "SI")])
@@ -531,6 +536,7 @@
 				(V4HI "v4hi") (V8HI  "v8hi")
 				(V2SI "v2si") (V4SI  "v4si")
 				(DI   "di")   (V2DI  "v2di")
+				(V4HF "v4hi") (V8HF  "v8hi")
 				(V2SF "v2si") (V4SF  "v4si")
 				(V2DF "v2di") (DF    "di")
 				(SF   "si")])

@@ -39,6 +39,7 @@ VARIANT (int32, 2, STRUCT, _s32)	\
 VARIANT (int64, 1, STRUCT, _s64)	\
 VARIANT (poly8, 8, STRUCT, _p8)		\
 VARIANT (poly16, 4, STRUCT, _p16)	\
+VARIANT (float16, 4, STRUCT, _f16)	\
 VARIANT (float32, 2, STRUCT, _f32)	\
 VARIANT (float64, 1, STRUCT, _f64)	\
 VARIANT (uint8, 16, STRUCT, q_u8)	\
@@ -51,6 +52,7 @@ VARIANT (int32, 4, STRUCT, q_s32)	\
 VARIANT (int64, 2, STRUCT, q_s64)	\
 VARIANT (poly8, 16, STRUCT, q_p8)	\
 VARIANT (poly16, 8, STRUCT, q_p16)	\
+VARIANT (float16, 8, STRUCT, q_f16)	\
 VARIANT (float32, 4, STRUCT, q_f32)	\
 VARIANT (float64, 2, STRUCT, q_f64)
 
