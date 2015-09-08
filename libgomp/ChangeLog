@@ -1,3 +1,14 @@
+2015-09-08  Aditya Kumar  <hiraditya@msn.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
+	* testsuite/libgomp.graphite/bounds.c (int foo): Modifed test case to
+	match o/p.
+	* testsuite/libgomp.graphite/force-parallel-1.c (void parloop): Same.
+	* testsuite/libgomp.graphite/force-parallel-4.c: Same.
+	* testsuite/libgomp.graphite/force-parallel-5.c: Same.
+	* testsuite/libgomp.graphite/force-parallel-7.c: Same.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Same.
+
 2015-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.tgt: Add missing ;; in between nvptx and rtems

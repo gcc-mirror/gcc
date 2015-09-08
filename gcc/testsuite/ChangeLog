@@ -1,3 +1,48 @@
+2015-09-08  Aditya Kumar  <hiraditya@msn.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/graphite/block-0.c: Modifed test case to match current output.
+	* gcc.dg/graphite/block-1.c: Same.
+	* gcc.dg/graphite/block-5.c: Same.
+	* gcc.dg/graphite/block-6.c: Same.
+	* gcc.dg/graphite/interchange-1.c: Same.
+	* gcc.dg/graphite/interchange-10.c: Same.
+	* gcc.dg/graphite/interchange-11.c: Same.
+	* gcc.dg/graphite/interchange-13.c: Same.
+	* gcc.dg/graphite/interchange-14.c: Same.
+	* gcc.dg/graphite/interchange-3.c: Same.
+	* gcc.dg/graphite/interchange-4.c: Same.
+	* gcc.dg/graphite/interchange-7.c: Same.
+	* gcc.dg/graphite/interchange-8.c: Same.
+	* gcc.dg/graphite/interchange-9.c: Same.
+	* gcc.dg/graphite/isl-codegen-loop-dumping.c: Same.
+	* gcc.dg/graphite/pr35356-1.c (foo): Same.
+	* gcc.dg/graphite/pr37485.c: Same.
+	* gcc.dg/graphite/scop-0.c (int toto): Same.
+	* gcc.dg/graphite/scop-1.c: Same.
+	* gcc.dg/graphite/scop-10.c: Same.
+	* gcc.dg/graphite/scop-11.c: Same.
+	* gcc.dg/graphite/scop-12.c: Same.
+	* gcc.dg/graphite/scop-13.c: Same.
+	* gcc.dg/graphite/scop-16.c: Same.
+	* gcc.dg/graphite/scop-17.c: Same.
+	* gcc.dg/graphite/scop-18.c: Same.
+	* gcc.dg/graphite/scop-2.c: Same.
+	* gcc.dg/graphite/scop-21.c (int test): Same.
+	* gcc.dg/graphite/scop-22.c (void foo): Same.
+	* gcc.dg/graphite/scop-4.c: Same.
+	* gcc.dg/graphite/scop-5.c: Same.
+	* gcc.dg/graphite/scop-6.c: Same.
+	* gcc.dg/graphite/scop-7.c: Same.
+	* gcc.dg/graphite/scop-8.c: Same.
+	* gcc.dg/graphite/scop-9.c: Same.
+	* gcc.dg/graphite/scop-mvt.c (void mvt): Introduced dependency so that
+	data-refs remain inside the inner loop.
+	* gcc.dg/graphite/uns-block-1.c: Modifed test case to match o/p.
+	* gcc.dg/graphite/uns-interchange-14.c: Same.
+	* gcc.dg/graphite/uns-interchange-9.c: Same.
+	* gfortran.dg/graphite/interchange-3.f90
+
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63870

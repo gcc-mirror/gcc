@@ -472,6 +472,17 @@ graphite_can_represent_loop (basic_block scop_entry, loop_p loop)
   tree niter;
   struct tree_niter_desc niter_desc;
 
+  if (!loop_nest_has_data_refs (loop))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "[scop-detection-fail] ");
+	  fprintf (dump_file, "Loop %d does not have any data reference.\n",
+		   loop->num);
+	}
+      return false;
+    }
+
   /* FIXME: For the moment, graphite cannot be used on loops that
      iterate using induction variables that wrap.  */
 
@@ -1155,8 +1166,17 @@ build_graphite_scops (vec<sd_region> regions,
       if (!exit)
 	continue;
 
-      scop = new_scop (new_sese (entry, exit));
-      scops->safe_push (scop);
+      sese sese_reg = new_sese (entry, exit);
+      scop = new_scop (sese_reg);
+
+      build_sese_loop_nests (sese_reg);
+
+      /* Scops with one or no loops are not interesting.  */
+      if (SESE_LOOP_NEST (sese_reg).length () > 1)
+	scops->safe_push (scop);
+      else if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Discarded scop: %d loops\n",
+		 SESE_LOOP_NEST (sese_reg).length ());
 
       /* Are there overlapping SCoPs?  */
 #ifdef ENABLE_CHECKING
@@ -1170,151 +1190,6 @@ build_graphite_scops (vec<sd_region> regions,
 	}
 #endif
     }
-}
-
-/* Returns true when BB contains only close phi nodes.  */
-
-static bool
-contains_only_close_phi_nodes (basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
-      return false;
-
-  return true;
-}
-
-/* Print statistics for SCOP to FILE.  */
-
-static void
-print_graphite_scop_statistics (FILE* file, scop_p scop)
-{
-  long n_bbs = 0;
-  long n_loops = 0;
-  long n_stmts = 0;
-  long n_conditions = 0;
-  long n_p_bbs = 0;
-  long n_p_loops = 0;
-  long n_p_stmts = 0;
-  long n_p_conditions = 0;
-
-  basic_block bb;
-
-  FOR_ALL_BB_FN (bb, cfun)
-    {
-      gimple_stmt_iterator psi;
-      loop_p loop = bb->loop_father;
-
-      if (!bb_in_sese_p (bb, SCOP_REGION (scop)))
-	continue;
-
-      n_bbs++;
-      n_p_bbs += bb->count;
-
-      if (EDGE_COUNT (bb->succs) > 1)
-	{
-	  n_conditions++;
-	  n_p_conditions += bb->count;
-	}
-
-      for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  n_stmts++;
-	  n_p_stmts += bb->count;
-	}
-
-      if (loop->header == bb && loop_in_sese_p (loop, SCOP_REGION (scop)))
-	{
-	  n_loops++;
-	  n_p_loops += bb->count;
-	}
-
-    }
-
-  fprintf (file, "\nBefore limit_scops SCoP statistics (");
-  fprintf (file, "BBS:%ld, ", n_bbs);
-  fprintf (file, "LOOPS:%ld, ", n_loops);
-  fprintf (file, "CONDITIONS:%ld, ", n_conditions);
-  fprintf (file, "STMTS:%ld)\n", n_stmts);
-  fprintf (file, "\nBefore limit_scops SCoP profiling statistics (");
-  fprintf (file, "BBS:%ld, ", n_p_bbs);
-  fprintf (file, "LOOPS:%ld, ", n_p_loops);
-  fprintf (file, "CONDITIONS:%ld, ", n_p_conditions);
-  fprintf (file, "STMTS:%ld)\n", n_p_stmts);
-}
-
-/* Print statistics for SCOPS to FILE.  */
-
-static void
-print_graphite_statistics (FILE* file, vec<scop_p> scops)
-{
-  int i;
-  scop_p scop;
-
-  FOR_EACH_VEC_ELT (scops, i, scop)
-    print_graphite_scop_statistics (file, scop);
-}
-
-/* We limit all SCoPs to SCoPs, that are completely surrounded by a loop.
-
-   Example:
-
-   for (i      |
-     {         |
-       for (j  |  SCoP 1
-       for (k  |
-     }         |
-
-   * SCoP frontier, as this line is not surrounded by any loop. *
-
-   for (l      |  SCoP 2
-
-   This is necessary as scalar evolution and parameter detection need a
-   outermost loop to initialize parameters correctly.
-
-   TODO: FIX scalar evolution and parameter detection to allow more flexible
-         SCoP frontiers.  */
-
-static void
-limit_scops (vec<scop_p> *scops)
-{
-  auto_vec<sd_region, 3> regions;
-
-  int i;
-  scop_p scop;
-
-  FOR_EACH_VEC_ELT (*scops, i, scop)
-    {
-      int j;
-      loop_p loop;
-      sese region = SCOP_REGION (scop);
-      build_sese_loop_nests (region);
-
-      FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), j, loop)
-        if (!loop_in_sese_p (loop_outer (loop), region)
-	    && single_exit (loop))
-          {
-	    sd_region open_scop;
-	    open_scop.entry = loop->header;
-	    open_scop.exit = single_exit (loop)->dest;
-
-	    /* This is a hack on top of the limit_scops hack.  The
-	       limit_scops hack should disappear all together.  */
-	    if (single_succ_p (open_scop.exit)
-		&& contains_only_close_phi_nodes (open_scop.exit))
-	      open_scop.exit = single_succ_edge (open_scop.exit)->dest;
-
-	    regions.safe_push (open_scop);
-	  }
-    }
-
-  free_scops (*scops);
-  scops->create (3);
-
-  create_sese_edges (regions);
-  build_graphite_scops (regions, scops);
 }
 
 /* Returns true when P1 and P2 are close phis with the same
@@ -1501,10 +1376,6 @@ build_scops (vec<scop_p> *scops)
   create_sese_edges (regions);
   build_graphite_scops (regions, scops);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    print_graphite_statistics (dump_file, *scops);
-
-  limit_scops (scops);
   regions.release ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))

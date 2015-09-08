@@ -267,6 +267,7 @@ new_sese (edge entry, edge exit)
   SESE_LOOP_NEST (region).create (3);
   SESE_ADD_PARAMS (region) = true;
   SESE_PARAMS (region).create (3);
+  region->parameter_rename_map = new parameter_rename_map_t;
 
   return region;
 }
@@ -281,6 +282,8 @@ free_sese (sese region)
 
   SESE_PARAMS (region).release ();
   SESE_LOOP_NEST (region).release ();
+  delete region->parameter_rename_map;
+  region->parameter_rename_map = NULL;
 
   XDELETE (region);
 }
@@ -294,6 +297,7 @@ sese_add_exit_phis_edge (basic_block exit, tree use, edge false_e, edge true_e)
   create_new_def_for (use, phi, gimple_phi_result_ptr (phi));
   add_phi_arg (phi, use, false_e, UNKNOWN_LOCATION);
   add_phi_arg (phi, use, true_e, UNKNOWN_LOCATION);
+  update_stmt (phi);
 }
 
 /* Insert in the block BB phi nodes for variables defined in REGION
@@ -373,12 +377,19 @@ get_rename (rename_map_type *rename_map, tree old_name)
 /* Register in RENAME_MAP the rename tuple (OLD_NAME, EXPR).  */
 
 static void
-set_rename (rename_map_type *rename_map, tree old_name, tree expr)
+set_rename (rename_map_type *rename_map, tree old_name, tree expr, sese region)
 {
   if (old_name == expr)
     return;
 
   rename_map->put (old_name, expr);
+
+  tree t;
+  int i;
+  /* For a parameter of a scop we dont want to rename it.  */
+  FOR_EACH_VEC_ELT (SESE_PARAMS (region), i, t)
+    if (old_name == t)
+      region->parameter_rename_map->put(old_name, expr);
 }
 
 /* Renames the scalar uses of the statement COPY, using the
@@ -484,7 +495,7 @@ rename_uses (gimple copy, rename_map_type *rename_map,
 	    recompute_tree_invariant_for_addr_expr (rhs);
 	}
 
-      set_rename (rename_map, old_name, new_expr);
+      set_rename (rename_map, old_name, new_expr, region);
     }
 
   return changed;
@@ -525,6 +536,14 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	  && scev_analyzable_p (lhs, region))
 	continue;
 
+      /* Do not copy parameters that have been generated in the header of the
+	 scop.  */
+      if (is_gimple_assign (stmt)
+	  && (lhs = gimple_assign_lhs (stmt))
+	  && TREE_CODE (lhs) == SSA_NAME
+	  && region->parameter_rename_map->get(lhs))
+	continue;
+
       /* Create a new copy of STMT and duplicate STMT's virtual
 	 operands.  */
       copy = gimple_copy (stmt);
@@ -539,7 +558,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
  	{
  	  tree old_name = DEF_FROM_PTR (def_p);
  	  tree new_name = create_new_def_for (old_name, copy, def_p);
-	  set_rename (rename_map, old_name, new_name);
+	  set_rename (rename_map, old_name, new_name, region);
  	}
 
       if (rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map,
@@ -548,6 +567,25 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	  gcc_assert (gsi_stmt (gsi_tgt) == copy);
 	  fold_stmt_inplace (&gsi_tgt);
 	}
+
+      /* For each SSA_NAME in the parameter_rename_map rename their usage.  */
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      if (!is_gimple_debug (copy))
+	FOR_EACH_SSA_USE_OPERAND (use_p, copy, iter, SSA_OP_USE)
+	  {
+	    tree old_name = USE_FROM_PTR (use_p);
+
+	    if (TREE_CODE (old_name) != SSA_NAME
+		|| SSA_NAME_IS_DEFAULT_DEF (old_name))
+	      continue;
+
+	    tree *new_expr = region->parameter_rename_map->get (old_name);
+	    if (!new_expr)
+	      continue;
+
+	    replace_exp (use_p, *new_expr);
+	  }
 
       update_stmt (copy);
     }
@@ -722,6 +760,35 @@ set_ifsese_condition (ifsese if_region, tree condition)
   gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
 }
 
+/* Return false if T is completely defined outside REGION.  */
+
+static bool
+invariant_in_sese_p_rec (tree t, sese region)
+{
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  if (!defined_in_sese_p (t, region))
+    return true;
+
+  gimple stmt = SSA_NAME_DEF_STMT (t);
+
+  if (gimple_code (stmt) == GIMPLE_PHI
+      || gimple_code (stmt) == GIMPLE_CALL)
+    return false;
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+    {
+      tree use = USE_FROM_PTR (use_p);
+      if (!defined_in_sese_p (use, region))
+	continue;
+
+      if (!invariant_in_sese_p_rec (use, region))
+	return false;
+    }
+
+  return true;
+}
+
 /* Returns the scalar evolution of T in REGION.  Every variable that
    is not defined in the REGION is considered a parameter.  */
 
@@ -752,6 +819,9 @@ scalar_evolution_in_region (sese region, loop_p loop, tree t)
       t = compute_overall_effect_of_inner_loop (def_loop, t);
       return t;
     }
-  else
-    return instantiate_scev (before, loop, t);
+
+  if (invariant_in_sese_p_rec (t, region))
+    return t;
+
+  return instantiate_scev (before, loop, t);
 }
