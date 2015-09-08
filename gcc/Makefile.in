@@ -2415,7 +2415,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       c-family/c-target-hooks-def.h
+       c-family/c-target-hooks-def.h params.list
 
 #
 # How to compile object files to run on the build machine.
@@ -3235,6 +3235,12 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(infodir)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
+
+params.list: s-params.list; @true
+s-params.list: $(srcdir)/params-list.h $(srcdir)/params.def
+	$(CPP) $(srcdir)/params-list.h | sed 's/^#.*//;/^$$/d' > tmp-params.list
+	$(SHELL) $(srcdir)/../move-if-change tmp-params.list params.list
+	$(STAMP) s-params.list
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \

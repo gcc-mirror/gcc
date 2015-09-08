@@ -81,10 +81,7 @@ extern void set_param_value (const char *name, int value,
 
 enum compiler_param
 {
-#define DEFPARAM(enumerator, option, nocmsgid, default, min, max) \
-  enumerator,
-#include "params.def"
-#undef DEFPARAM
+#include "params.list"
   LAST_PARAM
 };
 

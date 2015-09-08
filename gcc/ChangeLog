@@ -1,3 +1,11 @@
+2015-09-08  Tom de Vries  <tom@codesourcery.com>
+
+	* Makefile.in (generated_files): Add params.list.
+	(params.list, s-params.list): Add rule.
+	* params.h (enum compiler_param): Include params-list.h.  Move define
+	DEFPARAM, include params.def and undef DEFPARAM ...
+	* params-list.h: ... here.  New file.
+
 2015-09-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* pretty-print.h (printer_fn): Fix typo in comment.
