@@ -187,13 +187,13 @@ void exec_vdup_vmov (void)
 
     switch (i) {
     case 0:
-      CHECK_RESULTS_NAMED (TEST_MSG, expected0, "");
+      CHECK_RESULTS_NAMED_NO_FP16 (TEST_MSG, expected0, "");
       break;
     case 1:
-      CHECK_RESULTS_NAMED (TEST_MSG, expected1, "");
+      CHECK_RESULTS_NAMED_NO_FP16 (TEST_MSG, expected1, "");
       break;
     case 2:
-      CHECK_RESULTS_NAMED (TEST_MSG, expected2, "");
+      CHECK_RESULTS_NAMED_NO_FP16 (TEST_MSG, expected2, "");
       break;
     default:
       abort();
@@ -232,13 +232,13 @@ void exec_vdup_vmov (void)
 
     switch (i) {
     case 0:
-      CHECK_RESULTS_NAMED (TEST_MSG, expected0, "");
+      CHECK_RESULTS_NAMED_NO_FP16 (TEST_MSG, expected0, "");
       break;
     case 1:
-      CHECK_RESULTS_NAMED (TEST_MSG, expected1, "");
+      CHECK_RESULTS_NAMED_NO_FP16 (TEST_MSG, expected1, "");
       break;
     case 2:
-      CHECK_RESULTS_NAMED (TEST_MSG, expected2, "");
+      CHECK_RESULTS_NAMED_NO_FP16 (TEST_MSG, expected2, "");
       break;
     default:
       abort();

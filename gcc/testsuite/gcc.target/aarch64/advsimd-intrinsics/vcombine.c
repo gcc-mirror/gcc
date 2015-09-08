@@ -27,6 +27,8 @@ VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3,
 					 0x66, 0x66, 0x66, 0x66 };
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc1800000, 0xc1700000,
 					   0x40533333, 0x40533333 };
+VECT_VAR_DECL(expected,hfloat,16,8) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80,
+					   0x4080, 0x4080, 0x4080, 0x4080 };
 
 #define TEST_MSG "VCOMBINE"
 void exec_vcombine (void)
@@ -44,6 +46,9 @@ void exec_vcombine (void)
 
   /* Initialize input "vector64_a" from "buffer".  */
   TEST_MACRO_64BITS_VARIANTS_2_5(VLOAD, vector64_a, buffer);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  VLOAD(vector64_a, buffer, , float, f, 16, 4);
+#endif
   VLOAD(vector64_a, buffer, , float, f, 32, 2);
 
   /* Choose init value arbitrarily.  */
@@ -57,6 +62,9 @@ void exec_vcombine (void)
   VDUP(vector64_b, , uint, u, 64, 1, 0x88);
   VDUP(vector64_b, , poly, p, 8, 8, 0x55);
   VDUP(vector64_b, , poly, p, 16, 4, 0x66);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  VDUP(vector64_b, , float, f, 16, 4, 2.25);
+#endif
   VDUP(vector64_b, , float, f, 32, 2, 3.3f);
 
   clean_results ();
@@ -72,6 +80,9 @@ void exec_vcombine (void)
   TEST_VCOMBINE(uint, u, 64, 1, 2);
   TEST_VCOMBINE(poly, p, 8, 8, 16);
   TEST_VCOMBINE(poly, p, 16, 4, 8);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  TEST_VCOMBINE(float, f, 16, 4, 8);
+#endif
   TEST_VCOMBINE(float, f, 32, 2, 4);
 
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
@@ -84,6 +95,9 @@ void exec_vcombine (void)
   CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
   CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
   CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected, "");
+#endif
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected, "");
 }
 

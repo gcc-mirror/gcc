@@ -16,6 +16,7 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					0xf4, 0xf5, 0xf6, 0xf7 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
+VECT_VAR_DECL(expected,hfloat,16,4) [] = { 0xcc00, 0xcb80, 0xcb00, 0xca80 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
 
 #define TEST_MSG "VGET_LOW"
@@ -31,6 +32,9 @@ void exec_vget_low (void)
   DECL_VARIABLE_128BITS_VARIANTS(vector128);
 
   TEST_MACRO_128BITS_VARIANTS_2_5(VLOAD, vector128, buffer);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  VLOAD(vector128, buffer, q, float, f, 16, 8);
+#endif
   VLOAD(vector128, buffer, q, float, f, 32, 4);
 
   clean_results ();
@@ -46,6 +50,9 @@ void exec_vget_low (void)
   TEST_VGET_LOW(uint, u, 64, 1, 2);
   TEST_VGET_LOW(poly, p, 8, 8, 16);
   TEST_VGET_LOW(poly, p, 16, 4, 8);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  TEST_VGET_LOW(float, f, 16, 4, 8);
+#endif
   TEST_VGET_LOW(float, f, 32, 2, 4);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
@@ -58,6 +65,9 @@ void exec_vget_low (void)
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected, "");
   CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");
+#endif
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected, "");
 }
 

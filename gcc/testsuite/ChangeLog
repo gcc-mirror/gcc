@@ -1,5 +1,60 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
+	Set additional_flags for neon-fp16 if supported, else fallback to neon.
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(hfloat16_t): New.
+	(result, expected, clean_results, DECL_VARIABLE_64BITS_VARIANTS,
+	DECL_VARIABLE_128BITS_VARIANTS): Add float16x4_t and float16x8_t cases
+	if supported.
+	(CHECK_RESULTS): Redefine using CHECK_RESULTS_NAMED.
+	(CHECK_RESULTS_NAMED): Move body to CHECK_RESULTS_NAMED_NO_FP16;
+	redefine in terms of CHECK_RESULTS_NAMED_NO_FP16 with float16 variants
+	when those are supported.
+	(CHECK_RESULTS_NAMED_NO_FP16, CHECK_RESULTS_NO_FP16): New.
+	(vdup_n_f16): New.
+
+	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h (buffer,
+	buffer_pad, buffer_dup, buffer_dup_pad): Add float16x4 and float16x8_t
+	cases if supported.
+
+	* gcc.target/aarch64/advsimd-intrinsics/vbsl.c (exec_vbsl):
+	Use CHECK_RESULTS_NO_FP16 in place of CHECK_RESULTS.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup-vmov.c (exec_vdup_vmov):
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup_lane.c (exec_vdup_lane):
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vext.c (exec_vext): Likewise.
+
+	* gcc.target/aarch64/advsimd-intrinsics/vcombine.c (expected):
+	Add float16x8_t case.
+	(main, exec_vcombine): test float16x4_t -> float16x8_t, if supported.
+	* gcc.target/aarch64/advsimd-intrinsics/vcreate.c (expected,
+	main, exec_vcreate): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_high (expected,
+	exec_vget_high): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_low.c (expected,
+	exec_vget_low): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1.c (expected, exec_vld1):
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1_dup.c (expected,
+	exec_vld1_dup): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1_lane.c (expected,
+	exec_vld1_lane): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX.c (expected, exec_vldX):
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c (expected,
+	exec_vldX_dup): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_lane.c (expected,
+	exec_vldX_lane): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vset_lane.c (expected,
+	exec_vset_lane): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1_lane.c (expected,
+	exec_vst1_lane): Likewise.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vget_high_1.c: Add float16x8->float16x4 case.
 	* gcc.target/aarch64/vget_low_1.c: Likewise.
 
