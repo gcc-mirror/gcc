@@ -52,7 +52,7 @@
 (define_mode_iterator VSDQ_I_DI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI DI])
 
 ;; Double vector modes.
-(define_mode_iterator VD [V8QI V4HI V2SI V2SF])
+(define_mode_iterator VD [V8QI V4HI V4HF V2SI V2SF])
 
 ;; vector, 64-bit container, all integer modes
 (define_mode_iterator VD_BHSI [V8QI V4HI V2SI])
@@ -61,10 +61,10 @@
 (define_mode_iterator VDQ_BHSI [V8QI V16QI V4HI V8HI V2SI V4SI])
 
 ;; Quad vector modes.
-(define_mode_iterator VQ [V16QI V8HI V4SI V2DI V4SF V2DF])
+(define_mode_iterator VQ [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
 
 ;; VQ without 2 element modes.
-(define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V4SF])
+(define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V8HF V4SF])
 
 ;; Quad vector with only 2 element modes.
 (define_mode_iterator VQ_2E [V2DI V2DF])
@@ -97,13 +97,21 @@
 ;; Vector Float modes with 2 elements.
 (define_mode_iterator V2F [V2SF V2DF])
 
-;; All modes.
+;; All vector modes on which we support any arithmetic operations.
 (define_mode_iterator VALL [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF])
 
-;; All vector modes and DI.
+;; All vector modes suitable for moving, loading, and storing.
+(define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
+				V4HF V8HF V2SF V4SF V2DF])
+
+;; All vector modes barring HF modes, plus DI.
 (define_mode_iterator VALLDI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF DI])
 
-;; All vector modes and DI and DF.
+;; All vector modes and DI.
+(define_mode_iterator VALLDI_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
+				  V4HF V8HF V2SF V4SF V2DF DI])
+
+;; All vector modes barring HF modes, plus DI and DF.
 (define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI
 			       V2DI V2SF V4SF V2DF DI DF])
 
@@ -361,7 +369,8 @@
 (define_mode_attr Vmtype [(V8QI ".8b") (V16QI ".16b")
 			 (V4HI ".4h") (V8HI  ".8h")
 			 (V2SI ".2s") (V4SI  ".4s")
-			 (V2DI ".2d") (V2SF ".2s")
+			 (V2DI ".2d") (V4HF ".4h")
+			 (V8HF ".8h") (V2SF ".2s")
 			 (V4SF ".4s") (V2DF ".2d")
 			 (DI   "")    (SI   "")
 			 (HI   "")    (QI   "")
@@ -398,6 +407,7 @@
 			(V4HI "HI") (V8HI "HI")
                         (V2SI "SI") (V4SI "SI")
                         (DI "DI")   (V2DI "DI")
+                        (V4HF "HF") (V8HF "HF")
                         (V2SF "SF") (V4SF "SF")
                         (V2DF "DF") (DF "DF")
 			(SI   "SI") (HI   "HI")
@@ -416,6 +426,7 @@
 			 (V4HI "V8HI") (V8HI "V8HI")
 			 (V2SI "V4SI") (V4SI "V4SI")
 			 (DI   "V2DI") (V2DI "V2DI")
+			 (V4HF "V8HF") (V8HF "V8HF")
 			 (V2SF "V2SF") (V4SF "V4SF")
 			 (V2DF "V2DF") (SI   "V4SI")
 			 (HI   "V8HI") (QI   "V16QI")])
@@ -425,10 +436,12 @@
 			 (V4HI "V2HI")  (V8HI  "V4HI")
 			 (V2SI "SI")    (V4SI  "V2SI")
 			 (V2DI "DI")    (V2SF  "SF")
-			 (V4SF "V2SF")  (V2DF  "DF")])
+			 (V4SF "V2SF")  (V4HF "V2HF")
+			 (V8HF "V4HF")  (V2DF  "DF")])
 
 ;; Double modes of vector modes.
 (define_mode_attr VDBL [(V8QI "V16QI") (V4HI "V8HI")
+			(V4HF "V8HF")
 			(V2SI "V4SI")  (V2SF "V4SF")
 			(SI   "V2SI")  (DI   "V2DI")
 			(DF   "V2DF")])
@@ -539,14 +552,17 @@
 (define_mode_attr nregs [(OI "2") (CI "3") (XI "4")])
 
 (define_mode_attr VRL2 [(V8QI "V32QI") (V4HI "V16HI")
+			(V4HF "V16HF")
 			(V2SI "V8SI")  (V2SF "V8SF")
 			(DI   "V4DI")  (DF   "V4DF")])
 
 (define_mode_attr VRL3 [(V8QI "V48QI") (V4HI "V24HI")
+			(V4HF "V24HF")
 			(V2SI "V12SI")  (V2SF "V12SF")
 			(DI   "V6DI")  (DF   "V6DF")])
 
 (define_mode_attr VRL4 [(V8QI "V64QI") (V4HI "V32HI")
+			(V4HF "V32HF")
 			(V2SI "V16SI")  (V2SF "V16SF")
 			(DI   "V8DI")  (DF   "V8DF")])
 
@@ -559,6 +575,7 @@
                               (V2SI "V2SI") (V4SI "V2SI")
                               (DI "V2DI")   (V2DI "V2DI")
                               (V2SF "V2SF") (V4SF "V2SF")
+                              (V4HF "SF") (V8HF "SF")
                               (DF "V2DI")   (V2DF "V2DI")])
 
 ;; Similar, for three elements.
@@ -567,6 +584,7 @@
                                 (V2SI "BLK") (V4SI "BLK")
                                 (DI "EI")    (V2DI "EI")
                                 (V2SF "BLK") (V4SF "BLK")
+                                (V4HF "BLK") (V8HF "BLK")
                                 (DF "EI")    (V2DF "EI")])
 
 ;; Similar, for four elements.
@@ -575,6 +593,7 @@
                                (V2SI "V4SI") (V4SI "V4SI")
                                (DI "OI")     (V2DI "OI")
                                (V2SF "V4SF") (V4SF "V4SF")
+                               (V4HF "V4HF") (V8HF "V4HF")
                                (DF "OI")     (V2DF "OI")])
 
 
@@ -633,6 +652,7 @@
 		     (V4HI "") (V8HI  "_q")
 		     (V2SI "") (V4SI  "_q")
 		     (DI   "") (V2DI  "_q")
+		     (V4HF "") (V8HF "_q")
 		     (V2SF "") (V4SF  "_q")
 			       (V2DF  "_q")
 		     (QI "") (HI "") (SI "") (DI "") (SF "") (DF "")])

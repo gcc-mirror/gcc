@@ -19,8 +19,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VALL 0 "nonimmediate_operand" "")
-	(match_operand:VALL 1 "general_operand" ""))]
+  [(set (match_operand:VALL_F16 0 "nonimmediate_operand" "")
+	(match_operand:VALL_F16 1 "general_operand" ""))]
   "TARGET_SIMD"
   "
     if (GET_CODE (operands[0]) == MEM)
@@ -2450,7 +2450,7 @@
 (define_insn "aarch64_get_lane<mode>"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
 	(vec_select:<VEL>
-	  (match_operand:VALL 1 "register_operand" "w, w, w")
+	  (match_operand:VALL_F16 1 "register_operand" "w, w, w")
 	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i, i")])))]
   "TARGET_SIMD"
   {
@@ -4243,8 +4243,9 @@
 )
 
 (define_insn "aarch64_be_ld1<mode>"
-  [(set (match_operand:VALLDI 0	"register_operand" "=w")
-	(unspec:VALLDI [(match_operand:VALLDI 1 "aarch64_simd_struct_operand" "Utv")]
+  [(set (match_operand:VALLDI_F16 0	"register_operand" "=w")
+	(unspec:VALLDI_F16 [(match_operand:VALLDI_F16 1
+			     "aarch64_simd_struct_operand" "Utv")]
 	UNSPEC_LD1))]
   "TARGET_SIMD"
   "ld1\\t{%0<Vmtype>}, %1"
@@ -4252,8 +4253,8 @@
 )
 
 (define_insn "aarch64_be_st1<mode>"
-  [(set (match_operand:VALLDI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:VALLDI [(match_operand:VALLDI 1 "register_operand" "w")]
+  [(set (match_operand:VALLDI_F16 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VALLDI_F16 [(match_operand:VALLDI_F16 1 "register_operand" "w")]
 	UNSPEC_ST1))]
   "TARGET_SIMD"
   "st1\\t{%1<Vmtype>}, %0"
@@ -4542,16 +4543,16 @@
   DONE;
 })
 
-(define_expand "aarch64_ld1<VALL:mode>"
- [(match_operand:VALL 0 "register_operand")
+(define_expand "aarch64_ld1<VALL_F16:mode>"
+ [(match_operand:VALL_F16 0 "register_operand")
   (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"
 {
-  machine_mode mode = <VALL:MODE>mode;
+  machine_mode mode = <VALL_F16:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
   if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_aarch64_be_ld1<VALL:mode> (operands[0], mem));
+    emit_insn (gen_aarch64_be_ld1<VALL_F16:mode> (operands[0], mem));
   else
     emit_move_insn (operands[0], mem);
   DONE;
@@ -4895,16 +4896,16 @@
   DONE;
 })
 
-(define_expand "aarch64_st1<VALL:mode>"
+(define_expand "aarch64_st1<VALL_F16:mode>"
  [(match_operand:DI 0 "register_operand")
-  (match_operand:VALL 1 "register_operand")]
+  (match_operand:VALL_F16 1 "register_operand")]
   "TARGET_SIMD"
 {
-  machine_mode mode = <VALL:MODE>mode;
+  machine_mode mode = <VALL_F16:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
   if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_aarch64_be_st1<VALL:mode> (mem, operands[1]));
+    emit_insn (gen_aarch64_be_st1<VALL_F16:mode> (mem, operands[1]));
   else
     emit_move_insn (mem, operands[1]);
   DONE;

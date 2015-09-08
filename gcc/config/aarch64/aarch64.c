@@ -1383,6 +1383,9 @@ aarch64_split_simd_move (rtx dst, rtx src)
 	case V2DImode:
 	  gen = gen_aarch64_split_simd_movv2di;
 	  break;
+	case V8HFmode:
+	  gen = gen_aarch64_split_simd_movv8hf;
+	  break;
 	case V4SFmode:
 	  gen = gen_aarch64_split_simd_movv4sf;
 	  break;
@@ -9780,6 +9783,7 @@ aarch64_vector_mode_supported_p (machine_mode mode)
 	  || mode == V2SImode  || mode == V4HImode
 	  || mode == V8QImode || mode == V2SFmode
 	  || mode == V4SFmode || mode == V2DFmode
+	  || mode == V4HFmode || mode == V8HFmode
 	  || mode == V1DFmode))
     return true;
 
