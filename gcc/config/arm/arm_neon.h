@@ -60,6 +60,9 @@ typedef __simd128_int8_t int8x16_t;
 typedef __simd128_int16_t int16x8_t;
 typedef __simd128_int32_t int32x4_t;
 typedef __simd128_int64_t int64x2_t;
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef __simd128_float16_t float16x8_t;
+#endif
 typedef __simd128_float32_t float32x4_t;
 typedef __simd128_poly8_t poly8x16_t;
 typedef __simd128_poly16_t poly16x8_t;

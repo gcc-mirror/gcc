@@ -26278,7 +26278,8 @@ arm_vector_mode_supported_p (machine_mode mode)
 {
   /* Neon also supports V2SImode, etc. listed in the clause below.  */
   if (TARGET_NEON && (mode == V2SFmode || mode == V4SImode || mode == V8HImode
-      || mode == V4HFmode || mode == V16QImode || mode == V4SFmode || mode == V2DImode))
+      || mode == V4HFmode || mode == V16QImode || mode == V4SFmode
+      || mode == V2DImode || mode == V8HFmode))
     return true;
 
   if ((TARGET_NEON || TARGET_IWMMXT)

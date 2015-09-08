@@ -1,3 +1,15 @@
+2015-09-07  Alan Lawrence  <alan.lawrence.com>
+	
+	* config/arm/arm.h (VALID_NEON_QREG_MODE): Add V8HFmode.
+	
+	* config/arm/arm.c (arm_vector_mode_supported_p): Support V8HFmode.
+	
+	* config/arm/arm-builtins.c (v8hf_UP): New.
+	(arm_init_simd_builtin_types): Initialise Float16x8_t.
+	
+	* config/arm/arm-simd-builtin-types.def (Float16x8_t): New.
+	
+	* config/arm/arm_neon.h (float16x8_t): New typedef.
 2015-09-07  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/arm_neon.h (float16_t, vget_lane_f16, vset_lane_f16,
