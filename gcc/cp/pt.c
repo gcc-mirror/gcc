@@ -13110,8 +13110,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      if (r)
 		{
 		  /* Make sure that the one we found is the one we want.  */
-		  tree ctx = tsubst (DECL_CONTEXT (t), args,
-				     complain, in_decl);
+		  tree ctx = DECL_CONTEXT (t);
+		  if (DECL_LANG_SPECIFIC (ctx) && DECL_TEMPLATE_INFO (ctx))
+		    ctx = tsubst (ctx, args, complain, in_decl);
 		  if (ctx != DECL_CONTEXT (r))
 		    r = NULL_TREE;
 		}
