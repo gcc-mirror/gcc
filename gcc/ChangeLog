@@ -1,3 +1,51 @@
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/arm/arm-builtins.c (VAR11, VAR12): New.
+	* config/arm/arm_neon_builtins.def (vcombine, vld2_dup, vld3_dup,
+	vld4_dup): Add v4hf variant.
+	(vget_high, vget_low): Add v8hf variant.
+	(vld1, vst1, vst1_lane, vld2, vld2_lane, vst2, vst2_lane, vld3,
+	vld3_lane, vst3, vst3_lane, vld4, vld4_lane, vst4, vst4_lane): Add
+	v4hf and v8hf variants.
+
+	* config/arm/iterators.md (VD_LANE, VD_RE, VQ2, VQ_HS): New.
+	(VDX): Add V4HF.
+	(V_DOUBLE): Add case for V4HF.
+	(VQX): Add V8HF.
+	(V_HALF): Add case for V8HF.
+	(VDQX): Add V4HF, V8HF.
+	(V_elem, V_two_elem, V_three_elem, V_four_elem, V_cmp_result,
+	V_uf_sclr, V_sz_elem, V_mode_nunits, q): Add cases for V4HF & V8HF.
+
+	* config/arm/neon.md (vec_set<mode>internal, vec_extract<mode>,
+	neon_vget_lane<mode>_sext_internal, neon_vget_lane<mode>_zext_internal,
+	vec_load_lanesoi<mode>, neon_vld2<mode>, vec_store_lanesoi<mode>,
+	neon_vst2<mode>, vec_load_lanesci<mode>, neon_vld3<mode>,
+	neon_vld3qa<mode>, neon_vld3qb<mode>, vec_store_lanesci<mode>,
+	neon_vst3<mode>, neon_vst3qa<mode>, neon_vst3qb<mode>,
+	vec_load_lanesxi<mode>, neon_vld4<mode>, neon_vld4qa<mode>,
+	neon_vld4qb<mode>, vec_store_lanesxi<mode>, neon_vst4<mode>,
+	neon_vst4qa<mode>, neon_vst4qb<mode>): Change VQ iterator to VQ2.
+
+	(neon_vcreate, neon_vreinterpretv8qi<mode>,
+	neon_vreinterpretv4hi<mode>, neon_vreinterpretv2si<mode>,
+	neon_vreinterpretv2sf<mode>, neon_vreinterpretdi<mode>):
+	Change VDX to VD_RE.
+
+	(neon_vld2_lane<mode>, neon_vst2_lane<mode>, neon_vld3_lane<mode>,
+	neon_vst3_lane<mode>, neon_vld4_lane<mode>, neon_vst4_lane<mode>):
+	Change VD iterator to VD_LANE, and VMQ iterator to VQ_HS.
+
+	* config/arm/arm_neon.h (float16x4x2_t, float16x8x2_t, float16x4x3_t,
+	float16x8x3_t, float16x4x4_t, float16x8x4_t, vcombine_f16,
+	vget_high_f16, vget_low_f16, vld1_f16, vld1q_f16, vst1_f16, vst1q_f16,
+	vst1_lane_f16, vst1q_lane_f16, vld2_f16, vld2q_f16, vld2_lane_f16,
+	vld2q_lane_f16, vld2_dup_f16, vst2_f16, vst2q_f16, vst2_lane_f16,
+	vst2q_lane_f16, vld3_f16, vld3q_f16, vld3_lane_f16, vld3q_lane_f16,
+	vld3_dup_f16, vst3_f16, vst3q_f16, vst3_lane_f16, vst3q_lane_f16,
+	vld4_f16, vld4q_f16, vld4_lane_f16, vld4q_lane_f16, vld4_dup_f16,
+	vst4_f16, vst4q_f16, vst4_lane_f16, vst4q_lane_f16): New.
+
 2015-09-07  Alan Lawrence  <alan.lawrence.com>
 
 	* config/arm/arm_neon.h (vgetq_lane_f16, vsetq_lane_f16, vld1q_lane_f16,

@@ -166,6 +166,20 @@ typedef struct uint64x2x2_t
   uint64x2_t val[2];
 } uint64x2x2_t;
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef struct float16x4x2_t
+{
+  float16x4_t val[2];
+} float16x4x2_t;
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef struct float16x8x2_t
+{
+  float16x8_t val[2];
+} float16x8x2_t;
+#endif
+
 typedef struct float32x2x2_t
 {
   float32x2_t val[2];
@@ -292,6 +306,20 @@ typedef struct uint64x2x3_t
   uint64x2_t val[3];
 } uint64x2x3_t;
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef struct float16x4x3_t
+{
+  float16x4_t val[3];
+} float16x4x3_t;
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef struct float16x8x3_t
+{
+  float16x8_t val[3];
+} float16x8x3_t;
+#endif
+
 typedef struct float32x2x3_t
 {
   float32x2_t val[3];
@@ -417,6 +445,20 @@ typedef struct uint64x2x4_t
 {
   uint64x2_t val[4];
 } uint64x2x4_t;
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef struct float16x4x4_t
+{
+  float16x4_t val[4];
+} float16x4x4_t;
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+typedef struct float16x8x4_t
+{
+  float16x8_t val[4];
+} float16x8x4_t;
+#endif
 
 typedef struct float32x2x4_t
 {
@@ -6045,6 +6087,14 @@ vcombine_s64 (int64x1_t __a, int64x1_t __b)
   return (int64x2_t)__builtin_neon_vcombinedi (__a, __b);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcombine_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vcombinev4hf (__a, __b);
+}
+#endif
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vcombine_f32 (float32x2_t __a, float32x2_t __b)
 {
@@ -6119,6 +6169,14 @@ vget_high_s64 (int64x2_t __a)
   return (int64x1_t)__builtin_neon_vget_highv2di (__a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vget_high_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vget_highv8hf (__a);
+}
+#endif
+
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vget_high_f32 (float32x4_t __a)
 {
@@ -6178,6 +6236,14 @@ vget_low_s32 (int32x4_t __a)
 {
   return (int32x2_t)__builtin_neon_vget_lowv4si (__a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vget_low_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vget_lowv8hf (__a);
+}
+#endif
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vget_low_f32 (float32x4_t __a)
@@ -8730,6 +8796,14 @@ vld1_s64 (const int64_t * __a)
   return (int64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vld1_f16 (const float16_t * __a)
+{
+  return __builtin_neon_vld1v4hf (__a);
+}
+#endif
+
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vld1_f32 (const float32_t * __a)
 {
@@ -8803,6 +8877,14 @@ vld1q_s64 (const int64_t * __a)
 {
   return (int64x2_t)__builtin_neon_vld1v2di ((const __builtin_neon_di *) __a);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vld1q_f16 (const float16_t * __a)
+{
+  return __builtin_neon_vld1v8hf (__a);
+}
+#endif
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vld1q_f32 (const float32_t * __a)
@@ -9208,6 +9290,14 @@ vst1_s64 (int64_t * __a, int64x1_t __b)
   __builtin_neon_vst1di ((__builtin_neon_di *) __a, __b);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst1_f16 (float16_t * __a, float16x4_t __b)
+{
+  __builtin_neon_vst1v4hf (__a, __b);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1_f32 (float32_t * __a, float32x2_t __b)
 {
@@ -9282,6 +9372,14 @@ vst1q_s64 (int64_t * __a, int64x2_t __b)
   __builtin_neon_vst1v2di ((__builtin_neon_di *) __a, __b);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst1q_f16 (float16_t * __a, float16x8_t __b)
+{
+  __builtin_neon_vst1v8hf (__a, __b);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1q_f32 (float32_t * __a, float32x4_t __b)
 {
@@ -9341,6 +9439,14 @@ vst1_lane_s32 (int32_t * __a, int32x2_t __b, const int __c)
 {
   __builtin_neon_vst1_lanev2si ((__builtin_neon_si *) __a, __b, __c);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst1_lane_f16 (float16_t * __a, float16x4_t __b, const int __c)
+{
+  __builtin_neon_vst1_lanev4hf (__a, __b, __c);
+}
+#endif
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1_lane_f32 (float32_t * __a, float32x2_t __b, const int __c)
@@ -9415,6 +9521,14 @@ vst1q_lane_s32 (int32_t * __a, int32x4_t __b, const int __c)
 {
   __builtin_neon_vst1_lanev4si ((__builtin_neon_si *) __a, __b, __c);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst1q_lane_f16 (float16_t * __a, float16x8_t __b, const int __c)
+{
+  __builtin_neon_vst1_lanev8hf (__a, __b, __c);
+}
+#endif
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1q_lane_f32 (float32_t * __a, float32x4_t __b, const int __c)
@@ -9495,6 +9609,16 @@ vld2_s32 (const int32_t * __a)
   __rv.__o = __builtin_neon_vld2v2si ((const __builtin_neon_si *) __a);
   return __rv.__i;
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x2_t __attribute__ ((__always_inline__))
+vld2_f16 (const float16_t * __a)
+{
+  union { float16x4x2_t __i; __builtin_neon_ti __o; } __rv;
+  __rv.__o = __builtin_neon_vld2v4hf (__a);
+  return __rv.__i;
+}
+#endif
 
 __extension__ static __inline float32x2x2_t __attribute__ ((__always_inline__))
 vld2_f32 (const float32_t * __a)
@@ -9594,6 +9718,16 @@ vld2q_s32 (const int32_t * __a)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8x2_t __attribute__ ((__always_inline__))
+vld2q_f16 (const float16_t * __a)
+{
+  union { float16x8x2_t __i; __builtin_neon_oi __o; } __rv;
+  __rv.__o = __builtin_neon_vld2v8hf (__a);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x4x2_t __attribute__ ((__always_inline__))
 vld2q_f32 (const float32_t * __a)
 {
@@ -9669,6 +9803,17 @@ vld2_lane_s32 (const int32_t * __a, int32x2x2_t __b, const int __c)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x2_t __attribute__ ((__always_inline__))
+vld2_lane_f16 (const float16_t * __a, float16x4x2_t __b, const int __c)
+{
+  union { float16x4x2_t __i; __builtin_neon_ti __o; } __bu = { __b };
+  union { float16x4x2_t __i; __builtin_neon_ti __o; } __rv;
+  __rv.__o = __builtin_neon_vld2_lanev4hf ( __a, __bu.__o, __c);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x2x2_t __attribute__ ((__always_inline__))
 vld2_lane_f32 (const float32_t * __a, float32x2x2_t __b, const int __c)
 {
@@ -9741,6 +9886,17 @@ vld2q_lane_s32 (const int32_t * __a, int32x4x2_t __b, const int __c)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8x2_t __attribute__ ((__always_inline__))
+vld2q_lane_f16 (const float16_t * __a, float16x8x2_t __b, const int __c)
+{
+  union { float16x8x2_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  union { float16x8x2_t __i; __builtin_neon_oi __o; } __rv;
+  __rv.__o = __builtin_neon_vld2_lanev8hf (__a, __bu.__o, __c);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x4x2_t __attribute__ ((__always_inline__))
 vld2q_lane_f32 (const float32_t * __a, float32x4x2_t __b, const int __c)
 {
@@ -9800,6 +9956,16 @@ vld2_dup_s32 (const int32_t * __a)
   __rv.__o = __builtin_neon_vld2_dupv2si ((const __builtin_neon_si *) __a);
   return __rv.__i;
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x2_t __attribute__ ((__always_inline__))
+vld2_dup_f16 (const float16_t * __a)
+{
+  union { float16x4x2_t __i; __builtin_neon_ti __o; } __rv;
+  __rv.__o = __builtin_neon_vld2_dupv4hf (__a);
+  return __rv.__i;
+}
+#endif
 
 __extension__ static __inline float32x2x2_t __attribute__ ((__always_inline__))
 vld2_dup_f32 (const float32_t * __a)
@@ -9896,6 +10062,15 @@ vst2_s32 (int32_t * __a, int32x2x2_t __b)
   __builtin_neon_vst2v2si ((__builtin_neon_si *) __a, __bu.__o);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst2_f16 (float16_t * __a, float16x4x2_t __b)
+{
+  union { float16x4x2_t __i; __builtin_neon_ti __o; } __bu = { __b };
+  __builtin_neon_vst2v4hf (__a, __bu.__o);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst2_f32 (float32_t * __a, float32x2x2_t __b)
 {
@@ -9982,6 +10157,15 @@ vst2q_s32 (int32_t * __a, int32x4x2_t __b)
   __builtin_neon_vst2v4si ((__builtin_neon_si *) __a, __bu.__o);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst2q_f16 (float16_t * __a, float16x8x2_t __b)
+{
+  union { float16x8x2_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  __builtin_neon_vst2v8hf (__a, __bu.__o);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst2q_f32 (float32_t * __a, float32x4x2_t __b)
 {
@@ -10045,6 +10229,15 @@ vst2_lane_s32 (int32_t * __a, int32x2x2_t __b, const int __c)
   __builtin_neon_vst2_lanev2si ((__builtin_neon_si *) __a, __bu.__o, __c);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst2_lane_f16 (float16_t * __a, float16x4x2_t __b, const int __c)
+{
+  union { float16x4x2_t __i; __builtin_neon_ti __o; } __bu = { __b };
+  __builtin_neon_vst2_lanev4hf (__a, __bu.__o, __c);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst2_lane_f32 (float32_t * __a, float32x2x2_t __b, const int __c)
 {
@@ -10101,6 +10294,15 @@ vst2q_lane_s32 (int32_t * __a, int32x4x2_t __b, const int __c)
   __builtin_neon_vst2_lanev4si ((__builtin_neon_si *) __a, __bu.__o, __c);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst2q_lane_f16 (float16_t * __a, float16x8x2_t __b, const int __c)
+{
+  union { float16x8x2_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  __builtin_neon_vst2_lanev8hf (__a, __bu.__o, __c);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst2q_lane_f32 (float32_t * __a, float32x4x2_t __b, const int __c)
 {
@@ -10152,6 +10354,16 @@ vld3_s32 (const int32_t * __a)
   __rv.__o = __builtin_neon_vld3v2si ((const __builtin_neon_si *) __a);
   return __rv.__i;
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x3_t __attribute__ ((__always_inline__))
+vld3_f16 (const float16_t * __a)
+{
+  union { float16x4x3_t __i; __builtin_neon_ei __o; } __rv;
+  __rv.__o = __builtin_neon_vld3v4hf (__a);
+  return __rv.__i;
+}
+#endif
 
 __extension__ static __inline float32x2x3_t __attribute__ ((__always_inline__))
 vld3_f32 (const float32_t * __a)
@@ -10251,6 +10463,16 @@ vld3q_s32 (const int32_t * __a)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8x3_t __attribute__ ((__always_inline__))
+vld3q_f16 (const float16_t * __a)
+{
+  union { float16x8x3_t __i; __builtin_neon_ci __o; } __rv;
+  __rv.__o = __builtin_neon_vld3v8hf (__a);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x4x3_t __attribute__ ((__always_inline__))
 vld3q_f32 (const float32_t * __a)
 {
@@ -10326,6 +10548,17 @@ vld3_lane_s32 (const int32_t * __a, int32x2x3_t __b, const int __c)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x3_t __attribute__ ((__always_inline__))
+vld3_lane_f16 (const float16_t * __a, float16x4x3_t __b, const int __c)
+{
+  union { float16x4x3_t __i; __builtin_neon_ei __o; } __bu = { __b };
+  union { float16x4x3_t __i; __builtin_neon_ei __o; } __rv;
+  __rv.__o = __builtin_neon_vld3_lanev4hf (__a, __bu.__o, __c);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x2x3_t __attribute__ ((__always_inline__))
 vld3_lane_f32 (const float32_t * __a, float32x2x3_t __b, const int __c)
 {
@@ -10398,6 +10631,17 @@ vld3q_lane_s32 (const int32_t * __a, int32x4x3_t __b, const int __c)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8x3_t __attribute__ ((__always_inline__))
+vld3q_lane_f16 (const float16_t * __a, float16x8x3_t __b, const int __c)
+{
+  union { float16x8x3_t __i; __builtin_neon_ci __o; } __bu = { __b };
+  union { float16x8x3_t __i; __builtin_neon_ci __o; } __rv;
+  __rv.__o = __builtin_neon_vld3_lanev8hf (__a, __bu.__o, __c);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x4x3_t __attribute__ ((__always_inline__))
 vld3q_lane_f32 (const float32_t * __a, float32x4x3_t __b, const int __c)
 {
@@ -10457,6 +10701,16 @@ vld3_dup_s32 (const int32_t * __a)
   __rv.__o = __builtin_neon_vld3_dupv2si ((const __builtin_neon_si *) __a);
   return __rv.__i;
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x3_t __attribute__ ((__always_inline__))
+vld3_dup_f16 (const float16_t * __a)
+{
+  union { float16x4x3_t __i; __builtin_neon_ei __o; } __rv;
+  __rv.__o = __builtin_neon_vld3_dupv4hf (__a);
+  return __rv.__i;
+}
+#endif
 
 __extension__ static __inline float32x2x3_t __attribute__ ((__always_inline__))
 vld3_dup_f32 (const float32_t * __a)
@@ -10553,6 +10807,15 @@ vst3_s32 (int32_t * __a, int32x2x3_t __b)
   __builtin_neon_vst3v2si ((__builtin_neon_si *) __a, __bu.__o);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst3_f16 (float16_t * __a, float16x4x3_t __b)
+{
+  union { float16x4x3_t __i; __builtin_neon_ei __o; } __bu = { __b };
+  __builtin_neon_vst3v4hf (__a, __bu.__o);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst3_f32 (float32_t * __a, float32x2x3_t __b)
 {
@@ -10639,6 +10902,15 @@ vst3q_s32 (int32_t * __a, int32x4x3_t __b)
   __builtin_neon_vst3v4si ((__builtin_neon_si *) __a, __bu.__o);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst3q_f16 (float16_t * __a, float16x8x3_t __b)
+{
+  union { float16x8x3_t __i; __builtin_neon_ci __o; } __bu = { __b };
+  __builtin_neon_vst3v8hf (__a, __bu.__o);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst3q_f32 (float32_t * __a, float32x4x3_t __b)
 {
@@ -10702,6 +10974,15 @@ vst3_lane_s32 (int32_t * __a, int32x2x3_t __b, const int __c)
   __builtin_neon_vst3_lanev2si ((__builtin_neon_si *) __a, __bu.__o, __c);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst3_lane_f16 (float16_t * __a, float16x4x3_t __b, const int __c)
+{
+  union { float16x4x3_t __i; __builtin_neon_ei __o; } __bu = { __b };
+  __builtin_neon_vst3_lanev4hf (__a, __bu.__o, __c);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst3_lane_f32 (float32_t * __a, float32x2x3_t __b, const int __c)
 {
@@ -10758,6 +11039,15 @@ vst3q_lane_s32 (int32_t * __a, int32x4x3_t __b, const int __c)
   __builtin_neon_vst3_lanev4si ((__builtin_neon_si *) __a, __bu.__o, __c);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst3q_lane_f16 (float16_t * __a, float16x8x3_t __b, const int __c)
+{
+  union { float16x8x3_t __i; __builtin_neon_ci __o; } __bu = { __b };
+  __builtin_neon_vst3_lanev8hf (__a, __bu.__o, __c);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst3q_lane_f32 (float32_t * __a, float32x4x3_t __b, const int __c)
 {
@@ -10809,6 +11099,16 @@ vld4_s32 (const int32_t * __a)
   __rv.__o = __builtin_neon_vld4v2si ((const __builtin_neon_si *) __a);
   return __rv.__i;
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x4_t __attribute__ ((__always_inline__))
+vld4_f16 (const float16_t * __a)
+{
+  union { float16x4x4_t __i; __builtin_neon_oi __o; } __rv;
+  __rv.__o = __builtin_neon_vld4v4hf (__a);
+  return __rv.__i;
+}
+#endif
 
 __extension__ static __inline float32x2x4_t __attribute__ ((__always_inline__))
 vld4_f32 (const float32_t * __a)
@@ -10908,6 +11208,16 @@ vld4q_s32 (const int32_t * __a)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8x4_t __attribute__ ((__always_inline__))
+vld4q_f16 (const float16_t * __a)
+{
+  union { float16x8x4_t __i; __builtin_neon_xi __o; } __rv;
+  __rv.__o = __builtin_neon_vld4v8hf (__a);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x4x4_t __attribute__ ((__always_inline__))
 vld4q_f32 (const float32_t * __a)
 {
@@ -10983,6 +11293,18 @@ vld4_lane_s32 (const int32_t * __a, int32x2x4_t __b, const int __c)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x4_t __attribute__ ((__always_inline__))
+vld4_lane_f16 (const float16_t * __a, float16x4x4_t __b, const int __c)
+{
+  union { float16x4x4_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  union { float16x4x4_t __i; __builtin_neon_oi __o; } __rv;
+  __rv.__o = __builtin_neon_vld4_lanev4hf (__a,
+					   __bu.__o, __c);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x2x4_t __attribute__ ((__always_inline__))
 vld4_lane_f32 (const float32_t * __a, float32x2x4_t __b, const int __c)
 {
@@ -11055,6 +11377,18 @@ vld4q_lane_s32 (const int32_t * __a, int32x4x4_t __b, const int __c)
   return __rv.__i;
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x8x4_t __attribute__ ((__always_inline__))
+vld4q_lane_f16 (const float16_t * __a, float16x8x4_t __b, const int __c)
+{
+  union { float16x8x4_t __i; __builtin_neon_xi __o; } __bu = { __b };
+  union { float16x8x4_t __i; __builtin_neon_xi __o; } __rv;
+  __rv.__o = __builtin_neon_vld4_lanev8hf (__a,
+					   __bu.__o, __c);
+  return __rv.__i;
+}
+#endif
+
 __extension__ static __inline float32x4x4_t __attribute__ ((__always_inline__))
 vld4q_lane_f32 (const float32_t * __a, float32x4x4_t __b, const int __c)
 {
@@ -11114,6 +11448,16 @@ vld4_dup_s32 (const int32_t * __a)
   __rv.__o = __builtin_neon_vld4_dupv2si ((const __builtin_neon_si *) __a);
   return __rv.__i;
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline float16x4x4_t __attribute__ ((__always_inline__))
+vld4_dup_f16 (const float16_t * __a)
+{
+  union { float16x4x4_t __i; __builtin_neon_oi __o; } __rv;
+  __rv.__o = __builtin_neon_vld4_dupv4hf (__a);
+  return __rv.__i;
+}
+#endif
 
 __extension__ static __inline float32x2x4_t __attribute__ ((__always_inline__))
 vld4_dup_f32 (const float32_t * __a)
@@ -11210,6 +11554,15 @@ vst4_s32 (int32_t * __a, int32x2x4_t __b)
   __builtin_neon_vst4v2si ((__builtin_neon_si *) __a, __bu.__o);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst4_f16 (float16_t * __a, float16x4x4_t __b)
+{
+  union { float16x4x4_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  __builtin_neon_vst4v4hf (__a, __bu.__o);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst4_f32 (float32_t * __a, float32x2x4_t __b)
 {
@@ -11296,6 +11649,15 @@ vst4q_s32 (int32_t * __a, int32x4x4_t __b)
   __builtin_neon_vst4v4si ((__builtin_neon_si *) __a, __bu.__o);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst4q_f16 (float16_t * __a, float16x8x4_t __b)
+{
+  union { float16x8x4_t __i; __builtin_neon_xi __o; } __bu = { __b };
+  __builtin_neon_vst4v8hf (__a, __bu.__o);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst4q_f32 (float32_t * __a, float32x4x4_t __b)
 {
@@ -11359,6 +11721,15 @@ vst4_lane_s32 (int32_t * __a, int32x2x4_t __b, const int __c)
   __builtin_neon_vst4_lanev2si ((__builtin_neon_si *) __a, __bu.__o, __c);
 }
 
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst4_lane_f16 (float16_t * __a, float16x4x4_t __b, const int __c)
+{
+  union { float16x4x4_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  __builtin_neon_vst4_lanev4hf (__a, __bu.__o, __c);
+}
+#endif
+
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst4_lane_f32 (float32_t * __a, float32x2x4_t __b, const int __c)
 {
@@ -11414,6 +11785,15 @@ vst4q_lane_s32 (int32_t * __a, int32x4x4_t __b, const int __c)
   union { int32x4x4_t __i; __builtin_neon_xi __o; } __bu = { __b };
   __builtin_neon_vst4_lanev4si ((__builtin_neon_si *) __a, __bu.__o, __c);
 }
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vst4q_lane_f16 (float16_t * __a, float16x8x4_t __b, const int __c)
+{
+  union { float16x8x4_t __i; __builtin_neon_xi __o; } __bu = { __b };
+  __builtin_neon_vst4_lanev8hf (__a, __bu.__o, __c);
+}
+#endif
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst4q_lane_f32 (float32_t * __a, float32x4x4_t __b, const int __c)
