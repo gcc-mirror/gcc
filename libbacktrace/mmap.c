@@ -77,7 +77,8 @@ backtrace_free_locked (struct backtrace_state *state, void *addr, size_t size)
     }
 }
 
-/* Allocate memory like malloc.  */
+/* Allocate memory like malloc.  If ERROR_CALLBACK is NULL, don't
+   report an error.  */
 
 void *
 backtrace_alloc (struct backtrace_state *state,
@@ -140,7 +141,10 @@ backtrace_alloc (struct backtrace_state *state,
       page = mmap (NULL, asksize, PROT_READ | PROT_WRITE,
 		   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       if (page == MAP_FAILED)
-	error_callback (data, "mmap", errno);
+	{
+	  if (error_callback)
+	    error_callback (data, "mmap", errno);
+	}
       else
 	{
 	  size = (size + 7) & ~ (size_t) 7;
