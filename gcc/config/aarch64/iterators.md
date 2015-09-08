@@ -82,7 +82,10 @@
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
 (define_mode_iterator PTR [(SI "ptr_mode == SImode") (DI "ptr_mode == DImode")])
 
-;; Vector Float modes.
+;; Vector Float modes suitable for moving, loading and storing.
+(define_mode_iterator VDQF_F16 [V4HF V8HF V2SF V4SF V2DF])
+
+;; Vector Float modes, barring HF modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
 
 ;; Vector Float modes, and DF.
@@ -627,12 +630,14 @@
 				(V2SI "V4SI") (V4SI  "V2SI")
 				(DI   "V2DI") (V2DI  "DI")
 				(V2SF "V4SF") (V4SF  "V2SF")
+				(V4HF "V8HF") (V8HF  "V4HF")
 				(DF   "V2DF") (V2DF  "DF")])
 
 (define_mode_attr vswap_width_name [(V8QI "to_128") (V16QI "to_64")
 				    (V4HI "to_128") (V8HI  "to_64")
 				    (V2SI "to_128") (V4SI  "to_64")
 				    (DI   "to_128") (V2DI  "to_64")
+				    (V4HF "to_128") (V8HF  "to_64")
 				    (V2SF "to_128") (V4SF  "to_64")
 				    (DF   "to_128") (V2DF  "to_64")])
 

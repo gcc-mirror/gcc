@@ -53,18 +53,19 @@
 )
 
 (define_insn "aarch64_simd_dup<mode>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-        (vec_duplicate:VDQF (match_operand:<VEL> 1 "register_operand" "w")))]
+  [(set (match_operand:VDQF_F16 0 "register_operand" "=w")
+	(vec_duplicate:VDQF_F16
+	  (match_operand:<VEL> 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "dup\\t%0.<Vtype>, %1.<Vetype>[0]"
   [(set_attr "type" "neon_dup<q>")]
 )
 
 (define_insn "aarch64_dup_lane<mode>"
-  [(set (match_operand:VALL 0 "register_operand" "=w")
-	(vec_duplicate:VALL
+  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
+	(vec_duplicate:VALL_F16
 	  (vec_select:<VEL>
-	    (match_operand:VALL 1 "register_operand" "w")
+	    (match_operand:VALL_F16 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])
           )))]
   "TARGET_SIMD"
@@ -76,8 +77,8 @@
 )
 
 (define_insn "aarch64_dup_lane_<vswap_width_name><mode>"
-  [(set (match_operand:VALL 0 "register_operand" "=w")
-	(vec_duplicate:VALL
+  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
+	(vec_duplicate:VALL_F16
 	  (vec_select:<VEL>
 	    (match_operand:<VSWAP_WIDTH> 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])
@@ -834,11 +835,11 @@
 )
 
 (define_insn "aarch64_simd_vec_set<mode>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-        (vec_merge:VDQF
-	    (vec_duplicate:VDQF
+  [(set (match_operand:VDQF_F16 0 "register_operand" "=w")
+	(vec_merge:VDQF_F16
+	    (vec_duplicate:VDQF_F16
 		(match_operand:<VEL> 1 "register_operand" "w"))
-	    (match_operand:VDQF 3 "register_operand" "0")
+	    (match_operand:VDQF_F16 3 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {
@@ -851,7 +852,7 @@
 )
 
 (define_expand "vec_set<mode>"
-  [(match_operand:VDQF 0 "register_operand" "+w")
+  [(match_operand:VDQF_F16 0 "register_operand" "+w")
    (match_operand:<VEL> 1 "register_operand" "w")
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_SIMD"
@@ -4670,9 +4671,9 @@
 ;; vec_perm support
 
 (define_expand "vec_perm_const<mode>"
-  [(match_operand:VALL 0 "register_operand")
-   (match_operand:VALL 1 "register_operand")
-   (match_operand:VALL 2 "register_operand")
+  [(match_operand:VALL_F16 0 "register_operand")
+   (match_operand:VALL_F16 1 "register_operand")
+   (match_operand:VALL_F16 2 "register_operand")
    (match_operand:<V_cmp_result> 3)]
   "TARGET_SIMD"
 {
@@ -4936,7 +4937,7 @@
 ;; Standard pattern name vec_init<mode>.
 
 (define_expand "vec_init<mode>"
-  [(match_operand:VALL 0 "register_operand" "")
+  [(match_operand:VALL_F16 0 "register_operand" "")
    (match_operand 1 "" "")]
   "TARGET_SIMD"
 {
@@ -4945,8 +4946,8 @@
 })
 
 (define_insn "*aarch64_simd_ld1r<mode>"
-  [(set (match_operand:VALL 0 "register_operand" "=w")
-	(vec_duplicate:VALL
+  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
+	(vec_duplicate:VALL_F16
 	  (match_operand:<VEL> 1 "aarch64_simd_struct_operand" "Utv")))]
   "TARGET_SIMD"
   "ld1r\\t{%0.<Vtype>}, %1"
@@ -4993,7 +4994,7 @@
 
 (define_expand "vec_extract<mode>"
   [(match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "")
-   (match_operand:VALL 1 "register_operand" "")
+   (match_operand:VALL_F16 1 "register_operand" "")
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_SIMD"
 {

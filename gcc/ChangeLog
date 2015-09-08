@@ -1,5 +1,18 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_simd_dup<mode>,
+	aarch64_dup_lane<mode>, aarch64_dup_lane_<vswap_width_name><mode>,
+	aarch64_simd_vec_set<mode>, vec_set<mode>, vec_perm_const<mode>,
+	vec_init<mode>, *aarch64_simd_ld1r<mode>, vec_extract<mode>): Add
+	V4HF and V8HF variants to iterator.
+
+	* config/aarch64/aarch64.c (aarch64_evpc_dup): Add V4HF and V8HF cases.
+
+	* config/aarch64/iterators.md (VDQF_F16): New.
+	(VSWAP_WIDTH, vswap_width_name): Add V4HF and V8HF cases.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/arm_neon.h (vreinterpret_p8_f16, vreinterpret_p16_f16,
 	vreinterpret_f16_f64, vreinterpret_f16_s8, vreinterpret_f16_s16,
 	vreinterpret_f16_s32, vreinterpret_f16_s64, vreinterpret_f16_f32,

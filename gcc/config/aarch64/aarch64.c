@@ -11906,6 +11906,8 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
     case V4SImode: gen = gen_aarch64_dup_lanev4si; break;
     case V2SImode: gen = gen_aarch64_dup_lanev2si; break;
     case V2DImode: gen = gen_aarch64_dup_lanev2di; break;
+    case V8HFmode: gen = gen_aarch64_dup_lanev8hf; break;
+    case V4HFmode: gen = gen_aarch64_dup_lanev4hf; break;
     case V4SFmode: gen = gen_aarch64_dup_lanev4sf; break;
     case V2SFmode: gen = gen_aarch64_dup_lanev2sf; break;
     case V2DFmode: gen = gen_aarch64_dup_lanev2df; break;
