@@ -1,3 +1,8 @@
+2015-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67041
+	* pt.c (tsubst_copy_and_build): Handle variables like functions.
+
 2015-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67369
