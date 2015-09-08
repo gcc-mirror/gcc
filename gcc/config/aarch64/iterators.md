@@ -41,6 +41,9 @@
 ;; Iterator for General Purpose Float registers, inc __fp16.
 (define_mode_iterator GPF_F16 [HF SF DF])
 
+;; Double vector modes.
+(define_mode_iterator VDF [V2SF V4HF])
+
 ;; Integer vector modes.
 (define_mode_iterator VDQ_I [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
 
@@ -449,6 +452,9 @@
 			(SI   "V2SI")  (DI   "V2DI")
 			(DF   "V2DF")])
 
+;; Register suffix for double-length mode.
+(define_mode_attr Vdtype [(V4HF "8h") (V2SF "4s")])
+
 ;; Double modes of vector modes (lower case).
 (define_mode_attr Vdbl [(V8QI "v16qi") (V4HI "v8hi")
 			(V4HF "v8hf")
@@ -482,7 +488,8 @@
 (define_mode_attr VWIDE [(V8QI "V8HI") (V4HI "V4SI")
 			 (V2SI "V2DI") (V16QI "V8HI") 
 			 (V8HI "V4SI") (V4SI "V2DI")
-			 (HI "SI")     (SI "DI")]
+			 (HI "SI")     (SI "DI")
+			 (V4HF "V4SF") (V2SF "V2DF")]
 
 )
 
@@ -495,6 +502,7 @@
 (define_mode_attr Vmwtype [(V8QI ".8h") (V4HI ".4s")
 			   (V2SI ".2d") (V16QI ".8h") 
 			   (V8HI ".4s") (V4SI ".2d")
+			   (V4HF ".4s") (V2SF ".2d")
 			   (SI   "")    (HI   "")])
 
 ;; Lower part register suffixes for VQW.

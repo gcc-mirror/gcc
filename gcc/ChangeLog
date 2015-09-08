@@ -1,5 +1,22 @@
 2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_float_truncate_lo_v2sf):
+	Reparameterize to...
+	(aarch64_float_truncate_lo_<mode>): ...this, for both V2SF and V4HF.
+	(aarch64_float_truncate_hi_v4sf): Reparameterize to...
+	(aarch64_float_truncate_hi_<Vdbl>): ...this, for both V4SF and V8HF.
+
+	* config/aarch64/aarch64-simd-builtins.def (float_truncate_hi_): Add
+	v8hf variant.
+	(float_truncate_lo_): Use BUILTIN_VDF iterator.
+
+	* config/aarch64/arm_neon.h (vcvt_f16_f32, vcvt_high_f16_f32): New.
+
+	* config/aarch64/iterators.md (VDF, Vdtype): New.
+	(VWIDE, Vmwtype): Add cases for V4HF and V2SF.
+
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_split_simd_combine): Add V4HFmode.
 	* config/aarch64/aarch64-builtins.c (VAR13, VAR14): New.
 	(aarch64_scalar_builtin_types, aarch64_init_simd_builtin_scalar_types):
