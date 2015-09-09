@@ -1,3 +1,7 @@
+2015-09-09  Tom de Vries  <tom@codesourcery.com>
+
+	* params-list.h: Add missing copyright notice.
+
 2015-09-09  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.md (atomic_compare_and_swap<mode>): Use
