@@ -1,3 +1,8 @@
+2015-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67495
+	* gcc.dg/gomp/pr67495.c: New test.
+
 2015-09-09  Aditya Kumar  <hiraditya@msn.com>
             Sebastian Pop  <s.pop@samsung.com>
 
