@@ -11185,9 +11185,9 @@ c_parser_omp_clause_aligned (c_parser *parser, tree list)
       tree alignment = c_parser_expr_no_commas (parser, NULL).value;
       mark_exp_read (alignment);
       alignment = c_fully_fold (alignment, false, NULL);
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (alignment))
-	  && TREE_CODE (alignment) != INTEGER_CST
-	  && tree_int_cst_sgn (alignment) != 1)
+      if (TREE_CODE (alignment) != INTEGER_CST
+	  || !INTEGRAL_TYPE_P (TREE_TYPE (alignment))
+	  || tree_int_cst_sgn (alignment) != 1)
 	{
 	  error_at (clause_loc, "%<aligned%> clause alignment expression must "
 				"be positive constant integer expression");
@@ -11264,9 +11264,9 @@ c_parser_omp_clause_safelen (c_parser *parser, tree list)
   t = c_parser_expr_no_commas (parser, NULL).value;
   mark_exp_read (t);
   t = c_fully_fold (t, false, NULL);
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-      && TREE_CODE (t) != INTEGER_CST
-      && tree_int_cst_sgn (t) != 1)
+  if (TREE_CODE (t) != INTEGER_CST
+      || !INTEGRAL_TYPE_P (TREE_TYPE (t))
+      || tree_int_cst_sgn (t) != 1)
     {
       error_at (clause_loc, "%<safelen%> clause expression must "
 			    "be positive constant integer expression");
@@ -11300,9 +11300,9 @@ c_parser_omp_clause_simdlen (c_parser *parser, tree list)
   t = c_parser_expr_no_commas (parser, NULL).value;
   mark_exp_read (t);
   t = c_fully_fold (t, false, NULL);
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-      && TREE_CODE (t) != INTEGER_CST
-      && tree_int_cst_sgn (t) != 1)
+  if (TREE_CODE (t) != INTEGER_CST
+      || !INTEGRAL_TYPE_P (TREE_TYPE (t))
+      || tree_int_cst_sgn (t) != 1)
     {
       error_at (clause_loc, "%<simdlen%> clause expression must "
 			    "be positive constant integer expression");

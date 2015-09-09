@@ -8883,7 +8883,8 @@ temp_pop_parm_decls (void)
   current_scope->bindings = NULL;
   for (; b; b = free_binding_and_advance (b))
     {
-      gcc_assert (TREE_CODE (b->decl) == PARM_DECL);
+      gcc_assert (TREE_CODE (b->decl) == PARM_DECL
+		  || b->decl == error_mark_node);
       gcc_assert (I_SYMBOL_BINDING (b->id) == b);
       I_SYMBOL_BINDING (b->id) = b->shadowed;
       if (b->shadowed && b->shadowed->u.type)

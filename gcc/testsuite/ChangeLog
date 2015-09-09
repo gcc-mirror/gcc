@@ -1,5 +1,8 @@
 2015-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/67500
+	* gcc.dg/gomp/pr67500.c: New test.
+
 	PR c/67495
 	* gcc.dg/gomp/pr67495.c: New test.
 

@@ -1,5 +1,12 @@
 2015-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/67500
+	* c-parser.c (c_parser_omp_clause_aligned,
+	c_parser_omp_clause_safelen, c_parser_omp_clause_simdlen): Fix up
+	test for errors.
+	* c-decl.c (temp_pop_parm_decls): Allow b->decl equal to
+	error_mark_node.
+
 	PR c/67495
 	* c-parser.c (c_parser_omp_atomic): Use c_parser_cast_expression
 	instead of c_parser_unary_expression.  If the result is !lvalue_p,
