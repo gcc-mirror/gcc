@@ -1310,7 +1310,8 @@ pred_equal_p (pred_info x1, pred_info x2)
     return false;
 
   c1 = x1.cond_code;
-  if (x1.invert != x2.invert)
+  if (x1.invert != x2.invert
+      && TREE_CODE_CLASS (x2.cond_code) == tcc_comparison)
     c2 = invert_tree_comparison (x2.cond_code, false);
   else
     c2 = x2.cond_code;
