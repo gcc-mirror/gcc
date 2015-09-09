@@ -1,3 +1,8 @@
+2015-09-09  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.md (atomic_compare_and_swap<mode>): Use
+	sel_truesi, not andsi.
+
 2015-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (*subsi3_compare0): Rename to...

@@ -1351,14 +1351,12 @@
    (match_operand:SI 7 "const_int_operand")]		;; failure model
   ""
 {
-  emit_insn (gen_atomic_compare_and_swap<mode>_1 (operands[1], operands[2], operands[3],
-					          operands[4], operands[6]));
+  emit_insn (gen_atomic_compare_and_swap<mode>_1
+    (operands[1], operands[2], operands[3], operands[4], operands[6]));
 
-  rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
-  emit_insn (gen_cstore<mode>4 (tmp,
-				gen_rtx_EQ (SImode, operands[1], operands[3]),
-				operands[1], operands[3]));
-  emit_insn (gen_andsi3 (operands[0], tmp, GEN_INT (1)));
+  rtx cond = gen_reg_rtx (BImode);
+  emit_move_insn (cond, gen_rtx_EQ (BImode, operands[1], operands[3]));
+  emit_insn (gen_sel_truesi (operands[0], cond, GEN_INT (1), GEN_INT (0)));
   DONE;
 })
 
