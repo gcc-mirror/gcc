@@ -313,6 +313,62 @@
   }
 )
 
+;; Expansion of signed mod by a power of 2 using CSNEG.
+;; For x0 % n where n is a power of 2 produce:
+;; negs   x1, x0
+;; and    x0, x0, #(n - 1)
+;; and    x1, x1, #(n - 1)
+;; csneg  x0, x0, x1, mi
+
+(define_expand "mod<mode>3"
+  [(match_operand:GPI 0 "register_operand" "")
+   (match_operand:GPI 1 "register_operand" "")
+   (match_operand:GPI 2 "const_int_operand" "")]
+  ""
+  {
+    HOST_WIDE_INT val = INTVAL (operands[2]);
+
+    if (val <= 0
+       || exact_log2 (val) <= 0
+       || !aarch64_bitmask_imm (val - 1, <MODE>mode))
+      FAIL;
+
+    rtx mask = GEN_INT (val - 1);
+
+    /* In the special case of x0 % 2 we can do the even shorter:
+	cmp    x0, xzr
+	and    x0, x0, 1
+	cneg   x0, x0, lt.  */
+    if (val == 2)
+      {
+	rtx masked = gen_reg_rtx (<MODE>mode);
+	rtx ccreg = aarch64_gen_compare_reg (LT, operands[1], const0_rtx);
+	emit_insn (gen_and<mode>3 (masked, operands[1], mask));
+	rtx x = gen_rtx_LT (VOIDmode, ccreg, const0_rtx);
+	emit_insn (gen_csneg3<mode>_insn (operands[0], x, masked, masked));
+	DONE;
+      }
+
+    rtx neg_op = gen_reg_rtx (<MODE>mode);
+    rtx_insn *insn = emit_insn (gen_neg<mode>2_compare0 (neg_op, operands[1]));
+
+    /* Extract the condition register and mode.  */
+    rtx cmp = XVECEXP (PATTERN (insn), 0, 0);
+    rtx cc_reg = SET_DEST (cmp);
+    rtx cond = gen_rtx_GE (VOIDmode, cc_reg, const0_rtx);
+
+    rtx masked_pos = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_and<mode>3 (masked_pos, operands[1], mask));
+
+    rtx masked_neg = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_and<mode>3 (masked_neg, neg_op, mask));
+
+    emit_insn (gen_csneg3<mode>_insn (operands[0], cond,
+				       masked_neg, masked_pos));
+    DONE;
+  }
+)
+
 (define_insn "*condjump"
   [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
 			    [(match_operand 1 "cc_register" "") (const_int 0)])
@@ -2457,7 +2513,7 @@
   [(set_attr "type" "adc_reg")]
 )
 
-(define_insn "*neg<mode>2_compare0"
+(define_insn "neg<mode>2_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ (neg:GPI (match_operand:GPI 1 "register_operand" "r"))
 		       (const_int 0)))

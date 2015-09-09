@@ -1,3 +1,12 @@
+2015-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (mod<mode>3): New define_expand.
+	(*neg<mode>2_compare0): Rename to...
+	(neg<mode>2_compare0): ... This.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs, MOD case):
+	Move check for speed inside the if-then-elses.  Reflect
+	CSNEG sequence in MOD by power of 2 case.
+
 2015-09-09  Alan Modra  <amodra@gmail.com>
 
 	PR target/67378

@@ -6769,6 +6769,25 @@ cost_plus:
       return true;
 
     case MOD:
+    /* We can expand signed mod by power of 2 using a NEGS, two parallel
+       ANDs and a CSNEG.  Assume here that CSNEG is the same as the cost of
+       an unconditional negate.  This case should only ever be reached through
+       the set_smod_pow2_cheap check in expmed.c.  */
+      if (CONST_INT_P (XEXP (x, 1))
+	  && exact_log2 (INTVAL (XEXP (x, 1))) > 0
+	  && (mode == SImode || mode == DImode))
+	{
+	  /* We expand to 4 instructions.  Reset the baseline.  */
+	  *cost = COSTS_N_INSNS (4);
+
+	  if (speed)
+	    *cost += 2 * extra_cost->alu.logical
+		     + 2 * extra_cost->alu.arith;
+
+	  return true;
+	}
+
+    /* Fall-through.  */
     case UMOD:
       if (speed)
 	{
