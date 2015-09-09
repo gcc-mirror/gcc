@@ -1,3 +1,9 @@
+2015-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67512
+	* tree-ssa-uninit.c (pred_equal_p): Only call invert_tree_comparison
+	for comparisons.
+
 2015-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53184
