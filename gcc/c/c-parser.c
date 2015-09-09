@@ -11706,7 +11706,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 
       first = false;
 
-      if (((mask >> c_kind) & 1) == 0 && !parser->error)
+      if (((mask >> c_kind) & 1) == 0)
 	{
 	  /* Remove the invalid clause(s) from the list to avoid
 	     confusing the rest of the compiler.  */
@@ -11935,7 +11935,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 
       first = false;
 
-      if (((mask >> c_kind) & 1) == 0 && !parser->error)
+      if (((mask >> c_kind) & 1) == 0)
 	{
 	  /* Remove the invalid clause(s) from the list to avoid
 	     confusing the rest of the compiler.  */
