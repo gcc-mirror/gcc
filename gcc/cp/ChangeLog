@@ -1,3 +1,9 @@
+2015-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67504
+	* parser.c (cp_parser_omp_clause_collapse): Test tree_fits_shwi_p
+	before INTEGRAL_TYPE_P test.
+
 2015-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67369
