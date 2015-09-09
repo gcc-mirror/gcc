@@ -197,9 +197,9 @@
 (define_predicate "call_operation"
   (match_code "parallel")
 {
-  int i;
+  int arg_end = XVECLEN (op, 0);
 
-  for (i = 1; i < XVECLEN (op, 0); i++)
+  for (int i = 1; i < arg_end; i++)
     {
       rtx elt = XVECEXP (op, 0, i);
 
@@ -783,7 +783,7 @@
 	   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
 	    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
-  "%.\\tsetp%c1 %0,%2,%3;")
+  "%.\\tsetp%c1\\t%0, %2, %3;")
 
 (define_insn "*cmp<mode>"
   [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
@@ -791,7 +791,7 @@
 	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
 	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
-  "%.\\tsetp%c1 %0,%2,%3;")
+  "%.\\tsetp%c1\\t%0, %2, %3;")
 
 (define_insn "jump"
   [(set (pc)
@@ -908,7 +908,7 @@
 	  [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
 	   (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_int<mode>"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
@@ -916,7 +916,7 @@
 	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
 	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
@@ -924,7 +924,7 @@
 	   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
 	    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
@@ -932,7 +932,7 @@
 	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
 	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_expand "cstorebi4"
   [(set (match_operand:SI 0 "nvptx_register_operand")
