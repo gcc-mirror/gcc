@@ -28625,6 +28625,29 @@ rm -f core conftest.err conftest.$ac_objext \
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_options_set_schedule_serialize_sccs" >&5
 $as_echo "$ac_has_isl_options_set_schedule_serialize_sccs" >&6; }
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_ctx_get_max_operations" >&5
+$as_echo_n "checking Checking for isl_ctx_get_max_operations... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <isl/ctx.h>
+int
+main ()
+{
+isl_ctx_get_max_operations (isl_ctx_alloc ());
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_has_isl_ctx_get_max_operations=yes
+else
+  ac_has_isl_ctx_get_max_operations=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_ctx_get_max_operations" >&5
+$as_echo "$ac_has_isl_ctx_get_max_operations" >&6; }
+
   LIBS="$saved_LIBS"
   CXXFLAGS="$saved_CXXFLAGS"
 
@@ -28637,6 +28660,11 @@ $as_echo "#define HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE 1" >>confdefs.h
   if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
 
 $as_echo "#define HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS 1" >>confdefs.h
+
+  fi
+  if test x"$ac_has_isl_ctx_get_max_operations" = x"yes"; then
+
+$as_echo "#define HAVE_ISL_CTX_MAX_OPERATIONS 1" >>confdefs.h
 
   fi
 fi
