@@ -341,8 +341,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     path(string_type __str, _Type __type) : _M_pathname(__str), _M_type(__type)
     {
-      _GLIBCXX_DEBUG_ASSERT(!empty());
-      _GLIBCXX_DEBUG_ASSERT(_M_type != _Type::_Multi);
+      __glibcxx_assert(!empty());
+      __glibcxx_assert(_M_type != _Type::_Multi);
     }
 
     enum class _Split { _Stem, _Extension };
@@ -948,15 +948,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline path::iterator&
   path::iterator::operator++()
   {
-    _GLIBCXX_DEBUG_ASSERT(_M_path != nullptr);
+    __glibcxx_assert(_M_path != nullptr);
     if (_M_path->_M_type == _Type::_Multi)
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_cur != _M_path->_M_cmpts.end());
+	__glibcxx_assert(_M_cur != _M_path->_M_cmpts.end());
 	++_M_cur;
       }
     else
       {
-	_GLIBCXX_DEBUG_ASSERT(!_M_at_end);
+	__glibcxx_assert(!_M_at_end);
 	_M_at_end = true;
       }
     return *this;
@@ -965,15 +965,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline path::iterator&
   path::iterator::operator--()
   {
-    _GLIBCXX_DEBUG_ASSERT(_M_path != nullptr);
+    __glibcxx_assert(_M_path != nullptr);
     if (_M_path->_M_type == _Type::_Multi)
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_cur != _M_path->_M_cmpts.begin());
+	__glibcxx_assert(_M_cur != _M_path->_M_cmpts.begin());
 	--_M_cur;
       }
     else
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_at_end);
+	__glibcxx_assert(_M_at_end);
 	_M_at_end = false;
       }
     return *this;
@@ -982,10 +982,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline path::iterator::reference
   path::iterator::operator*() const
   {
-    _GLIBCXX_DEBUG_ASSERT(_M_path != nullptr);
+    __glibcxx_assert(_M_path != nullptr);
     if (_M_path->_M_type == _Type::_Multi)
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_cur != _M_path->_M_cmpts.end());
+	__glibcxx_assert(_M_cur != _M_path->_M_cmpts.end());
 	return *_M_cur;
       }
     return *_M_path;

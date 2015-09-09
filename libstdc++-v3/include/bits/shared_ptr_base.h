@@ -1029,7 +1029,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	reset(_Tp1* __p) // _Tp1 must be complete.
 	{
 	  // Catch self-reset errors.
-	  _GLIBCXX_DEBUG_ASSERT(__p == 0 || __p != _M_ptr);
+	  __glibcxx_assert(__p == 0 || __p != _M_ptr);
 	  __shared_ptr(__p).swap(*this);
 	}
 
@@ -1047,7 +1047,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename std::add_lvalue_reference<_Tp>::type
       operator*() const noexcept
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	__glibcxx_assert(_M_ptr != 0);
 	return *_M_ptr;
       }
 

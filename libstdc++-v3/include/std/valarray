@@ -621,7 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     valarray<_Tp>::valarray(const _Tp* __restrict__ __p, size_t __n)
     : _M_size(__n), _M_data(__valarray_get_storage<_Tp>(__n))
     { 
-      _GLIBCXX_DEBUG_ASSERT(__p != 0 || __n == 0);
+      __glibcxx_assert(__p != 0 || __n == 0);
       std::__valarray_copy_construct(__p, __p + __n, _M_data); 
     }
 
@@ -779,7 +779,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const slice_array<_Tp>& __sa)
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size == __sa._M_sz);
+      __glibcxx_assert(_M_size == __sa._M_sz);
       std::__valarray_copy(__sa._M_array, __sa._M_sz,
 			   __sa._M_stride, _Array<_Tp>(_M_data));
       return *this;
@@ -789,7 +789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const gslice_array<_Tp>& __ga)
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size == __ga._M_index.size());
+      __glibcxx_assert(_M_size == __ga._M_index.size());
       std::__valarray_copy(__ga._M_array, _Array<size_t>(__ga._M_index),
 			   _Array<_Tp>(_M_data), _M_size);
       return *this;
@@ -799,7 +799,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const mask_array<_Tp>& __ma)
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size == __ma._M_sz);
+      __glibcxx_assert(_M_size == __ma._M_sz);
       std::__valarray_copy(__ma._M_array, __ma._M_mask,
 			   _Array<_Tp>(_M_data), _M_size);
       return *this;
@@ -809,7 +809,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const indirect_array<_Tp>& __ia)
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size == __ia._M_sz);
+      __glibcxx_assert(_M_size == __ia._M_sz);
       std::__valarray_copy(__ia._M_array, __ia._M_index,
 			   _Array<_Tp>(_M_data), _M_size);
       return *this;
@@ -925,7 +925,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Tp
     valarray<_Tp>::sum() const
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
+      __glibcxx_assert(_M_size > 0);
       return std::__valarray_sum(_M_data, _M_data + _M_size);
     }
 
@@ -1032,7 +1032,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Tp
     valarray<_Tp>::min() const
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
+      __glibcxx_assert(_M_size > 0);
       return *std::min_element(_M_data, _M_data + _M_size);
     }
 
@@ -1040,7 +1040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Tp
     valarray<_Tp>::max() const
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
+      __glibcxx_assert(_M_size > 0);
       return *std::max_element(_M_data, _M_data + _M_size);
     }
   
@@ -1090,7 +1090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline valarray<_Tp>&						\
     valarray<_Tp>::operator _Op##=(const valarray<_Tp> &__v)		\
     {									\
-      _GLIBCXX_DEBUG_ASSERT(_M_size == __v._M_size);                    \
+      __glibcxx_assert(_M_size == __v._M_size);				\
       _Array_augmented_##_Name(_Array<_Tp>(_M_data), _M_size, 		\
 			       _Array<_Tp>(__v._M_data));		\
       return *this;							\
@@ -1138,7 +1138,7 @@ _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, __shift_right)
                  typename __fun<_Name, _Tp>::result_type>               \
     operator _Op(const valarray<_Tp>& __v, const valarray<_Tp>& __w)	\
     {									\
-      _GLIBCXX_DEBUG_ASSERT(__v.size() == __w.size());                  \
+      __glibcxx_assert(__v.size() == __w.size());                       \
       typedef _BinClos<_Name, _ValArray, _ValArray, _Tp, _Tp> _Closure; \
       typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
       return _Expr<_Closure, _Rt>(_Closure(__v, __w));                  \

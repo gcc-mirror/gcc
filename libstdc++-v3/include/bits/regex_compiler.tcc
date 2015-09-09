@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (!_M_match_token(_ScannerT::_S_token_eof))
 	__throw_regex_error(regex_constants::error_paren);
       __r._M_append(_M_pop());
-      _GLIBCXX_DEBUG_ASSERT(_M_stack.empty());
+      __glibcxx_assert(_M_stack.empty());
       __r._M_append(_M_nfa->_M_insert_subexpr_end());
       __r._M_append(_M_nfa->_M_insert_accept());
       _M_nfa->_M_eliminate_dummy();
@@ -399,7 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_TraitsT>::
     _M_insert_character_class_matcher()
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_value.size() == 1);
+      __glibcxx_assert(_M_value.size() == 1);
       _BracketMatcher<_TraitsT, __icase, __collate> __matcher
 	(_M_ctype.is(_CtypeT::upper, _M_value[0]), _M_traits);
       __matcher._M_add_character_class(_M_value, false);

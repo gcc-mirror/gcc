@@ -305,7 +305,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// If matched, keep going; else just return and try another state.
 	case _S_opcode_backref:
 	  {
-	    _GLIBCXX_DEBUG_ASSERT(__dfs_mode);
+	    __glibcxx_assert(__dfs_mode);
 	    auto& __submatch = _M_cur_results[__state._M_backref_index];
 	    if (!__submatch.matched)
 	      break;
@@ -333,7 +333,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_opcode_accept:
 	  if (__dfs_mode)
 	    {
-	      _GLIBCXX_DEBUG_ASSERT(!_M_has_sol);
+	      __glibcxx_assert(!_M_has_sol);
 	      if (__match_mode == _Match_mode::_Exact)
 		_M_has_sol = _M_current == _M_end;
 	      else
@@ -347,7 +347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    _M_results = _M_cur_results;
 		  else // POSIX
 		    {
-		      _GLIBCXX_DEBUG_ASSERT(_M_states._M_get_sol_pos());
+		      __glibcxx_assert(_M_states._M_get_sol_pos());
 		      // Here's POSIX's logic: match the longest one. However
 		      // we never know which one (lhs or rhs of "|") is longer
 		      // unless we try both of them and compare the results.
@@ -400,7 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  break;
 	default:
-	  _GLIBCXX_DEBUG_ASSERT(false);
+	  __glibcxx_assert(false);
 	}
     }
 

@@ -216,13 +216,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto& __ref = _M_nfa[__v];
 	  if (__ref._M_next != _S_invalid_state_id)
 	    {
-	      _GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_next) > 0);
+	      __glibcxx_assert(__m.count(__ref._M_next) > 0);
 	      __ref._M_next = __m[__ref._M_next];
 	    }
 	  if (__ref._M_has_alt())
 	    if (__ref._M_alt != _S_invalid_state_id)
 	      {
-		_GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_alt) > 0);
+		__glibcxx_assert(__m.count(__ref._M_alt) > 0);
 		__ref._M_alt = __m[__ref._M_alt];
 	      }
 	}
