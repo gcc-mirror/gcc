@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/band.h>
 #include <isl/aff.h>
 #include <isl/options.h>
+#include <isl/ctx.h>
 
 #include "system.h"
 #include "coretypes.h"
@@ -422,26 +423,25 @@ static const int CONSTANT_BOUND = 20;
 bool
 optimize_isl (scop_p scop)
 {
-
-  isl_schedule *schedule;
-#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
-  isl_schedule_constraints *schedule_constraints;
+#ifdef HAVE_ISL_CTX_MAX_OPERATIONS
+  int old_max_operations = isl_ctx_get_max_operations(scop->ctx);
+  int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
+  if (max_operations)
+    isl_ctx_set_max_operations(scop->ctx, max_operations);
 #endif
-  isl_union_set *domain;
-  isl_union_map *validity, *proximity, *dependences;
-  isl_union_map *schedule_map;
+  isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_CONTINUE);
 
-  domain = scop_get_domains (scop);
-  dependences = scop_get_dependences (scop);
+  isl_union_set *domain = scop_get_domains (scop);
+  isl_union_map *dependences = scop_get_dependences (scop);
   dependences = isl_union_map_gist_domain (dependences,
 					   isl_union_set_copy (domain));
   dependences = isl_union_map_gist_range (dependences,
 					  isl_union_set_copy (domain));
-  validity = dependences;
-
-  proximity = isl_union_map_copy (validity);
+  isl_union_map *validity = dependences;
+  isl_union_map *proximity = isl_union_map_copy (validity);
 
 #ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+  isl_schedule_constraints *schedule_constraints;
   schedule_constraints = isl_schedule_constraints_on_domain (domain);
   schedule_constraints
 	= isl_schedule_constraints_set_proximity (schedule_constraints,
@@ -461,26 +461,39 @@ optimize_isl (scop_p scop)
 #else
   isl_options_set_schedule_fuse (scop->ctx, ISL_SCHEDULE_FUSE_MIN);
 #endif
-  isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_CONTINUE);
 
 #ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
-  schedule = isl_schedule_constraints_compute_schedule(schedule_constraints);
+  isl_schedule *schedule
+    = isl_schedule_constraints_compute_schedule (schedule_constraints);
 #else
-  schedule = isl_union_set_compute_schedule (domain, validity, proximity);
+  isl_schedule *schedule
+    = isl_union_set_compute_schedule (domain, validity, proximity);
 #endif
 
   isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_ABORT);
 
+#ifdef HAVE_ISL_CTX_MAX_OPERATIONS
+  isl_ctx_reset_operations(scop->ctx);
+  isl_ctx_set_max_operations(scop->ctx, old_max_operations);
+  if (!schedule || isl_ctx_last_error (scop->ctx) == isl_error_quota)
+    {
+      if (dump_file && dump_flags)
+	fprintf (dump_file, "ISL timed out at %d operations\n",
+		 max_operations);
+      if (schedule)
+	isl_schedule_free (schedule);
+      return false;
+    }
+#else
   if (!schedule)
     return false;
+#endif
 
-  schedule_map = getScheduleMap (schedule);
-
+  isl_union_map *schedule_map = getScheduleMap (schedule);
   apply_schedule_map_to_scop (scop, schedule_map);
 
   isl_schedule_free (schedule);
   isl_union_map_free (schedule_map);
-
   return true;
 }
 

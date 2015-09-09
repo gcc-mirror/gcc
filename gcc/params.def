@@ -844,6 +844,11 @@ DEFPARAM (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION,
 	  "maximum number of basic blocks per function to be analyzed by Graphite",
 	  100, 0, 0)
 
+DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
+	  "max-isl-operations",
+	  "maximum number of ISL operations, 0 means unlimited",
+	  350000, 0, 0)
+
 /* Avoid data dependence analysis on very large loops.  */
 DEFPARAM (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS,
 	  "loop-max-datarefs-for-datadeps",

@@ -1,3 +1,13 @@
+2015-09-09  Aditya Kumar  <hiraditya@msn.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/53852
+	* gcc.dg/graphite/uns-interchange-12.c: Adjust pattern to pass with
+	both isl-0.12 and isl-0.15.
+	* gcc.dg/graphite/uns-interchange-14.c: Same.
+	* gcc.dg/graphite/uns-interchange-15.c: Same.
+	* gcc.dg/graphite/uns-interchange-mvt.c: Same.
+
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
             Sebastian Pop  <s.pop@samsung.com>
 

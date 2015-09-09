@@ -1,3 +1,17 @@
+2015-09-09  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/53852
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (HAVE_ISL_CTX_MAX_OPERATIONS): Detect.
+	* graphite-optimize-isl.c (optimize_isl): Stop computation when
+	PARAM_MAX_ISL_OPERATIONS is reached.
+	* params.def (PARAM_MAX_ISL_OPERATIONS): Add.
+	* graphite-dependences.c (extend_schedule): Remove gcc_asserts on
+	result equal to isl_stat_ok as the status now can be isl_error_quota.
+	(subtract_commutative_associative_deps): Same.
+	(compute_deps): Same.
+
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
             Sebastian Pop  <s.pop@samsung.com>
 
