@@ -2564,10 +2564,25 @@ constrain_class_visibility (tree type)
 
 	if (subvis == VISIBILITY_ANON)
 	  {
-	    if (!in_main_input_context ())
-	      warning (0, "\
+	    if (!in_main_input_context())
+	      {
+		tree nlt = no_linkage_check (ftype, /*relaxed_p=*/false);
+		if (nlt)
+		  {
+		    if (same_type_p (TREE_TYPE (t), nlt))
+		      warning (OPT_Wsubobject_linkage, "\
+%qT has a field %qD whose type has no linkage",
+			       type, t);
+		    else
+		      warning (OPT_Wsubobject_linkage, "\
+%qT has a field %qD whose type depends on the type %qT which has no linkage",
+			       type, t, nlt);
+		  }
+		else
+		  warning (OPT_Wsubobject_linkage, "\
 %qT has a field %qD whose type uses the anonymous namespace",
-		       type, t);
+			   type, t);
+	      }
 	  }
 	else if (MAYBE_CLASS_TYPE_P (ftype)
 		 && vis < VISIBILITY_HIDDEN
@@ -2585,9 +2600,24 @@ constrain_class_visibility (tree type)
       if (subvis == VISIBILITY_ANON)
         {
 	  if (!in_main_input_context())
-	    warning (0, "\
+	    {
+	      tree nlt = no_linkage_check (TREE_TYPE (t), /*relaxed_p=*/false);
+	      if (nlt)
+		{
+		  if (same_type_p (TREE_TYPE (t), nlt))
+		    warning (OPT_Wsubobject_linkage, "\
+%qT has a base %qT whose type has no linkage",
+			     type, TREE_TYPE (t));
+		  else
+		    warning (OPT_Wsubobject_linkage, "\
+%qT has a base %qT whose type depends on the type %qT which has no linkage",
+			     type, TREE_TYPE (t), nlt);
+		}
+	      else
+		warning (OPT_Wsubobject_linkage, "\
 %qT has a base %qT whose type uses the anonymous namespace",
-		     type, TREE_TYPE (t));
+			 type, TREE_TYPE (t));
+	    }
 	}
       else if (vis < VISIBILITY_HIDDEN
 	       && subvis >= VISIBILITY_HIDDEN)
