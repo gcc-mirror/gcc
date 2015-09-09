@@ -944,6 +944,11 @@ Wuseless-cast
 C++ ObjC++ Var(warn_useless_cast) Warning
 Warn about useless casts
 
+Wsubobject-linkage
+C++ ObjC++ Var(warn_subobject_linkage) Warning Init(1)
+Warn if a class type has a base or a field whose type uses the anonymous
+namespace or depends on a type with no linkage
+
 ansi
 C ObjC C++ ObjC++
 A synonym for -std=c89 (for C) or -std=c++98 (for C++)

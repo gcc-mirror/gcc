@@ -1,3 +1,8 @@
+2015-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53184
+	* c.opt ([Wsubobject-linkage]): Add.
+
 2015-09-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c/66516

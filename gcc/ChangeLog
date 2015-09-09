@@ -1,3 +1,8 @@
+2015-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53184
+	* doc/invoke.texi ([Wsubobject-linkage]): Document.
+
 2015-09-09  Tom de Vries  <tom@codesourcery.com>
 
 	* params-list.h: Add missing copyright notice.

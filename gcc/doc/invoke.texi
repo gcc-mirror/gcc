@@ -282,7 +282,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
 -Wsuggest-final-types @gol -Wsuggest-final-methods -Wsuggest-override @gol
--Wmissing-format-attribute @gol
+-Wmissing-format-attribute -Wsubobject-linkage @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
 -Wtype-limits  -Wundef @gol
@@ -4922,6 +4922,13 @@ types. @option{-Wconversion-null} is enabled by default.
 @opindex Wno-zero-as-null-pointer-constant
 Warn when a literal '0' is used as null pointer constant.  This can
 be useful to facilitate the conversion to @code{nullptr} in C++11.
+
+@item -Wsubobject-linkage @r{(C++ and Objective-C++ only)}
+@opindex Wsubobject-linkage
+@opindex Wno-subobject-linkage
+Warn if a class type has a base or a field whose type uses the anonymous
+namespace or depends on a type with no linkage.  This warning is
+enabled by default.
 
 @item -Wdate-time
 @opindex Wdate-time
