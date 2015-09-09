@@ -12379,6 +12379,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
   bool structured_block = false;
   bool swapped = false;
   bool seq_cst = false;
+  bool non_lvalue_p;
 
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
@@ -12432,20 +12433,33 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
     {
     case OMP_ATOMIC_READ:
     case NOP_EXPR: /* atomic write */
-      v = c_parser_unary_expression (parser).value;
+      v = c_parser_cast_expression (parser, NULL).value;
+      non_lvalue_p = !lvalue_p (v);
       v = c_fully_fold (v, false, NULL);
       if (v == error_mark_node)
 	goto saw_error;
+      if (non_lvalue_p)
+	v = non_lvalue (v);
       loc = c_parser_peek_token (parser)->location;
       if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
 	goto saw_error;
       if (code == NOP_EXPR)
-	lhs = c_parser_expression (parser).value;
+	{
+	  lhs = c_parser_expression (parser).value;
+	  lhs = c_fully_fold (lhs, false, NULL);
+	  if (lhs == error_mark_node)
+	    goto saw_error;
+	}
       else
-	lhs = c_parser_unary_expression (parser).value;
-      lhs = c_fully_fold (lhs, false, NULL);
-      if (lhs == error_mark_node)
-	goto saw_error;
+	{
+	  lhs = c_parser_cast_expression (parser, NULL).value;
+	  non_lvalue_p = !lvalue_p (lhs);
+	  lhs = c_fully_fold (lhs, false, NULL);
+	  if (lhs == error_mark_node)
+	    goto saw_error;
+	  if (non_lvalue_p)
+	    lhs = non_lvalue (lhs);
+	}
       if (code == NOP_EXPR)
 	{
 	  /* atomic write is represented by OMP_ATOMIC with NOP_EXPR
@@ -12464,10 +12478,13 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	}
       else
 	{
-	  v = c_parser_unary_expression (parser).value;
+	  v = c_parser_cast_expression (parser, NULL).value;
+	  non_lvalue_p = !lvalue_p (v);
 	  v = c_fully_fold (v, false, NULL);
 	  if (v == error_mark_node)
 	    goto saw_error;
+	  if (non_lvalue_p)
+	    v = non_lvalue (v);
 	  if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
 	    goto saw_error;
 	}
@@ -12480,7 +12497,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
      old or new x should be captured.  */
 restart:
   eloc = c_parser_peek_token (parser)->location;
-  expr = c_parser_unary_expression (parser);
+  expr = c_parser_cast_expression (parser, NULL);
   lhs = expr.value;
   expr = default_function_array_conversion (eloc, expr);
   unfolded_lhs = expr.value;
@@ -12573,6 +12590,8 @@ restart:
 	}
       /* FALLTHRU */
     default:
+      if (!lvalue_p (unfolded_lhs))
+	lhs = non_lvalue (lhs);
       switch (c_parser_peek_token (parser)->type)
 	{
 	case CPP_MULT_EQ:
@@ -12687,20 +12706,25 @@ stmt_done:
     {
       if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
 	goto saw_error;
-      v = c_parser_unary_expression (parser).value;
+      v = c_parser_cast_expression (parser, NULL).value;
+      non_lvalue_p = !lvalue_p (v);
       v = c_fully_fold (v, false, NULL);
       if (v == error_mark_node)
 	goto saw_error;
+      if (non_lvalue_p)
+	v = non_lvalue (v);
       if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
 	goto saw_error;
       eloc = c_parser_peek_token (parser)->location;
-      expr = c_parser_unary_expression (parser);
+      expr = c_parser_cast_expression (parser, NULL);
       lhs1 = expr.value;
       expr = default_function_array_read_conversion (eloc, expr);
       unfolded_lhs1 = expr.value;
       lhs1 = c_fully_fold (lhs1, false, NULL);
       if (lhs1 == error_mark_node)
 	goto saw_error;
+      if (!lvalue_p (unfolded_lhs1))
+	lhs1 = non_lvalue (lhs1);
     }
   if (structured_block)
     {

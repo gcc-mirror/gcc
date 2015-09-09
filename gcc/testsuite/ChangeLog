@@ -1,3 +1,8 @@
+2015-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67495
+	* gcc.dg/gomp/pr67495.c: New test.
+
 2015-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67369

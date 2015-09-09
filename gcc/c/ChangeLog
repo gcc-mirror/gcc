@@ -1,3 +1,10 @@
+2015-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67495
+	* c-parser.c (c_parser_omp_atomic): Use c_parser_cast_expression
+	instead of c_parser_unary_expression.  If the result is !lvalue_p,
+	wrap the result of c_fully_fold into NON_LVALUE_EXPR.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
