@@ -1,3 +1,8 @@
+2015-09-09  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR sanitizer/67258
+	* ubsan/ubsan_type_hash.cc: Cherry pick upstream r244101.
+
 2015-07-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR sanitizer/63927
