@@ -1,3 +1,15 @@
+2015-09-09  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.md (call_operation): Move bound out of loop.
+	(*cmp<mode>): Add assembler spacing.
+	(setcc_int<mode>, set_cc_float<mode>): Likewise.
+	* config/nvptx/nvptx.c (nvptx_option_override): Override debug
+	level.
+	(write_func_decl_from_insn): Refactor argument loops & comma emission.
+	(nvptx_expand_call): Likewise.
+	(nvptx_output_call_insn): Likewise.
+	(nvptx_reorg_subreg): Add spacing.
+
 2015-09-09  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/67512
