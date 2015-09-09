@@ -1,5 +1,10 @@
 2015-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/67501
+	* c-parser.c (c_parser_oacc_all_clauses,
+	c_parser_omp_all_clauses): Remove invalid clause from
+	list of clauses even if parser->error is set.
+
 	PR c/67500
 	* c-parser.c (c_parser_omp_clause_aligned,
 	c_parser_omp_clause_safelen, c_parser_omp_clause_simdlen): Fix up
