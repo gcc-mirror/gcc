@@ -1,3 +1,9 @@
+2015-09-09  Alan Modra  <amodra@gmail.com>
+
+	PR target/67378
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_gpr): Find
+	reload replacement for PRE_MODIFY address reg.
+
 2015-09-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/67417
