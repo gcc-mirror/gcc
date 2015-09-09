@@ -1,5 +1,13 @@
 2015-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (*subsi3_compare0): Rename to...
+	(subsi3_compare0): ... This.
+	(modsi3): New define_expand.
+	* config/arm/arm.c (arm_new_rtx_costs, MOD case): Handle case
+	when operand is power of 2.
+
+2015-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.md (mod<mode>3): New define_expand.
 	(*neg<mode>2_compare0): Rename to...
 	(neg<mode>2_compare0): ... This.

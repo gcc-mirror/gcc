@@ -1229,7 +1229,7 @@
   ""
 )
 
-(define_insn "*subsi3_compare0"
+(define_insn "subsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (minus:SI (match_operand:SI 1 "arm_rhs_operand" "r,r,I")
@@ -11140,6 +11140,75 @@
              (match_dup 3)))]
   "TARGET_THUMB"
   ""
+)
+
+;; ARM-specific expansion of signed mod by power of 2
+;; using conditional negate.
+;; For r0 % n where n is a power of 2 produce:
+;; rsbs    r1, r0, #0
+;; and     r0, r0, #(n - 1)
+;; and     r1, r1, #(n - 1)
+;; rsbpl   r0, r1, #0
+
+(define_expand "modsi3"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")]
+  "TARGET_32BIT"
+  {
+    HOST_WIDE_INT val = INTVAL (operands[2]);
+
+    if (val <= 0
+       || exact_log2 (val) <= 0)
+      FAIL;
+
+    rtx mask = GEN_INT (val - 1);
+
+    /* In the special case of x0 % 2 we can do the even shorter:
+	cmp     r0, #0
+	and     r0, r0, #1
+	rsblt   r0, r0, #0.  */
+
+    if (val == 2)
+      {
+	rtx cc_reg = arm_gen_compare_reg (LT,
+					  operands[1], const0_rtx, NULL_RTX);
+	rtx cond = gen_rtx_LT (SImode, cc_reg, const0_rtx);
+	rtx masked = gen_reg_rtx (SImode);
+
+	emit_insn (gen_andsi3 (masked, operands[1], mask));
+	emit_move_insn (operands[0],
+			gen_rtx_IF_THEN_ELSE (SImode, cond,
+					      gen_rtx_NEG (SImode,
+							   masked),
+					      masked));
+	DONE;
+      }
+
+    rtx neg_op = gen_reg_rtx (SImode);
+    rtx_insn *insn = emit_insn (gen_subsi3_compare0 (neg_op, const0_rtx,
+						      operands[1]));
+
+    /* Extract the condition register and mode.  */
+    rtx cmp = XVECEXP (PATTERN (insn), 0, 0);
+    rtx cc_reg = SET_DEST (cmp);
+    rtx cond = gen_rtx_GE (SImode, cc_reg, const0_rtx);
+
+    emit_insn (gen_andsi3 (operands[0], operands[1], mask));
+
+    rtx masked_neg = gen_reg_rtx (SImode);
+    emit_insn (gen_andsi3 (masked_neg, neg_op, mask));
+
+    /* We want a conditional negate here, but emitting COND_EXEC rtxes
+       during expand does not always work.  Do an IF_THEN_ELSE instead.  */
+    emit_move_insn (operands[0],
+		    gen_rtx_IF_THEN_ELSE (SImode, cond,
+					  gen_rtx_NEG (SImode, masked_neg),
+					  operands[0]));
+
+
+    DONE;
+  }
 )
 
 (define_expand "bswapsi2"

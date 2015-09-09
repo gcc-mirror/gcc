@@ -1,3 +1,12 @@
+2015-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mod_2.x: New file.
+	* gcc.target/aarch64/mod_256.x: Likewise.
+	* gcc.target/arm/mod_2.c: New test.
+	* gcc.target/arm/mod_256.c: Likewise.
+	* gcc.target/aarch64/mod_2.c: Likewise.
+	* gcc.target/aarch64/mod_256.c: Likewise.
+
 2015-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67504
