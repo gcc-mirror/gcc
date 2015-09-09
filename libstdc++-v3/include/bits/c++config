@@ -138,7 +138,7 @@
 # endif
 #endif
 
-// Macro for extern template, ie controling template linkage via use
+// Macro for extern template, ie controlling template linkage via use
 // of extern keyword on template declaration. As documented in the g++
 // manual, it inhibits all implicit instantiations and is used
 // throughout the library to avoid multiple weak definitions for
@@ -350,8 +350,6 @@ namespace std
 	 namespace _GLIBCXX_STD_C { _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_END_NAMESPACE_CONTAINER \
 	 _GLIBCXX_END_NAMESPACE_VERSION }
-# undef _GLIBCXX_EXTERN_TEMPLATE
-# define _GLIBCXX_EXTERN_TEMPLATE -1
 #endif
 
 #ifdef _GLIBCXX_PARALLEL
@@ -414,8 +412,19 @@ namespace std
 # define _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_END_NAMESPACE_LDBL
 #endif
 
+// Debug Mode implies checking assertions.
+#ifdef _GLIBCXX_DEBUG
+# define _GLIBCXX_ASSERTIONS
+#endif
+
+// Disable std::string explicit instantiation declarations in order to assert.
+#ifdef _GLIBCXX_ASSERTIONS
+# undef _GLIBCXX_EXTERN_TEMPLATE
+# define _GLIBCXX_EXTERN_TEMPLATE -1
+#endif
+
 // Assert.
-#if !defined(_GLIBCXX_DEBUG) && !defined(_GLIBCXX_PARALLEL)
+#if !defined(_GLIBCXX_ASSERTIONS) && !defined(_GLIBCXX_PARALLEL)
 # define __glibcxx_assert(_Condition)
 #else
 namespace std

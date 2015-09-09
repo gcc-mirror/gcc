@@ -1,3 +1,83 @@
+2015-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml (_GLIBCXX_ASSERTIONS): Document.
+	* doc/html/manual/using_macros.html: Regenerate.
+	* include/bits/c++config: Define _GLIBCXX_ASSERTIONS when
+	_GLIBCXX_DEBUG is defined. Disable std::string extern templates when
+	(_GLIBCXX_EXTERN_TEMPLATE, __glibcxx_assert): Depend on
+	_GLIBCXX_ASSERTIONS instead of _GLIBCXX_DEBUG.
+	* include/debug/debug.h [!_GLIBCXX_DEBUG]: Define
+	__glibcxx_requires_non_empty_range and __glibcxx_requires_nonempty.
+	* include/backward/auto_ptr.h (auto_ptr::operator*,
+	auto_ptr::operator->): Replace _GLIBCXX_DEBUG_ASSERT with
+	__glibcxx_assert.
+	* include/bits/basic_string.h (basic_string::operator[],
+	basic_string::front, basic_string::back, basic_string::pop_back):
+	Likewise.
+	* include/bits/random.h
+	(uniform_int_distribution::param_type::param_type,
+	uniform_real_distribution::param_type::param_type,
+	normal_distribution::param_type::param_type,
+	gamma_distribution::param_type::param_type,
+	bernoulli_distribution::param_type::param_type,
+	binomial_distribution::param_type::param_type,
+	geometric_distribution::param_type::param_type,
+	negative_binomial_distribution::param_type::param_type,
+	poisson_distribution::param_type::param_type,
+	exponential_distribution::param_type::param_type): Likewise.
+	* include/bits/regex.h (match_results::operator[],
+	match_results::prefix, match_results::suffix): Likewise.
+	* include/bits/regex.tcc (format, regex_iterator::operator++):
+	Likewise.
+	* include/bits/regex_automaton.tcc (_StateSeq::_M_clone): Likewise.
+	* include/bits/regex_compiler.tcc (_Compiler::_Compiler,
+	_Compiler::_M_insert_character_class_matcher): Likewise.
+	* include/bits/regex_executor.tcc (_Executor::_M_dfs): Likewise.
+	* include/bits/regex_scanner.tcc (_Scanner::_M_advance,
+	_Scanner::_M_scan_normal): Likewise.
+	* include/bits/shared_ptr_base.h (__shared_ptr::_M_reset,
+	__shared_ptr::operator*): Likewise.
+	* include/bits/stl_iterator_base_funcs.h (__advance): Likewise.
+	* include/bits/unique_ptr.h (unique_ptr::operator*,
+	unique_ptr::operator[]): Likewise.
+	* include/experimental/fs_path.h (path::path(string_type, _Type),
+	path::iterator::operator++, path::iterator::operator--,
+	path::iterator::operator*): Likewise.
+	* include/experimental/string_view (basic_string_view::operator[],
+	basic_string_view::front, basic_string_view::back,
+	basic_string_view::remove_prefix): Likewise.
+	* include/ext/random (beta_distribution::param_type::param_type,
+	normal_mv_distribution::param_type::param_type,
+	rice_distribution::param_type::param_type,
+	pareto_distribution::param_type::param_type,
+	k_distribution::param_type::param_type,
+	arcsine_distribution::param_type::param_type,
+	hoyt_distribution::param_type::param_type,
+	triangular_distribution::param_type::param_type,
+	von_mises_distribution::param_type::param_type,
+	hypergeometric_distribution::param_type::param_type,
+	logistic_distribution::param_type::param_type): Likewise.
+	* include/ext/vstring.h (__versa_string::operator[]): Likewise.
+	* include/std/complex (polar): Likewise.
+	* include/std/mutex [!_GTHREAD_USE_MUTEX_TIMEDLOCK]
+	(timed_mutex::~timed_mutex, timed_mutex::unlock,
+	(recursive_timed_mutex::~timed_mutex, recursive_timed_mutex::unlock):
+	Likewise.
+	* include/std/shared_mutex [!PTHREAD_RWLOCK_INITIALIZER]
+	(__shared_mutex_pthread::__shared_mutex_pthread,
+	__shared_mutex_pthread::~__shared_mutex_pthread): Likewise.
+	(__shared_mutex_pthread::lock, __shared_mutex_pthread::try_lock,
+	__shared_mutex_pthread::unlock, __shared_mutex_pthread::lock_shared,
+	__shared_mutex_pthread::try_lock_shared): Likewise.
+	(__shared_mutex_cv::~__shared_mutex_cv, __shared_mutex_cv::unlock,
+	__shared_mutex_cv::unlock_shared): Likewise.
+	(shared_timed_mutex::try_lock_until,
+	shared_timed_mutex::try_lock_shared_until): Likewise.
+	* include/std/valarray (valarray::valarray(const _Tp*, size_t),
+	valarray::operator=, valarray::sum, valarray::min, valarray::max,
+	_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT, _DEFINE_BINARY_OPERATOR):
+	Likewise.
+
 2015-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h (__shared_ptr::operator->): Change

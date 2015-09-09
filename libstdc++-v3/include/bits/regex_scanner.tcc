@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_scan_in_brace();
       else
 	{
-	  _GLIBCXX_DEBUG_ASSERT(false);
+	  __glibcxx_assert(false);
 	}
     }
 
@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_M_token = __it->second;
 		return;
 	      }
-	  _GLIBCXX_DEBUG_ASSERT(false);
+	  __glibcxx_assert(false);
 	}
       else
 	{

@@ -287,7 +287,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename add_lvalue_reference<element_type>::type
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
+	__glibcxx_assert(get() != pointer());
 	return *get();
       }
 
@@ -555,7 +555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename std::add_lvalue_reference<element_type>::type
       operator[](size_t __i) const
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
+	__glibcxx_assert(get() != pointer());
 	return get()[__i];
       }
 

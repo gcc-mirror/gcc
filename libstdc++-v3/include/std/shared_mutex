@@ -85,14 +85,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (__ret == EPERM)
 	__throw_system_error(int(errc::operation_not_permitted));
       // Errors not handled: EBUSY, EINVAL
-      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      __glibcxx_assert(__ret == 0);
     }
 
     ~__shared_mutex_pthread()
     {
       int __ret __attribute((__unused__)) = pthread_rwlock_destroy(&_M_rwlock);
       // Errors not handled: EBUSY, EINVAL
-      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      __glibcxx_assert(__ret == 0);
     }
 #endif
 
@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__ret == EDEADLK)
 	__throw_system_error(int(errc::resource_deadlock_would_occur));
       // Errors not handled: EINVAL
-      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      __glibcxx_assert(__ret == 0);
     }
 
     bool
@@ -115,7 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       int __ret = pthread_rwlock_trywrlock(&_M_rwlock);
       if (__ret == EBUSY) return false;
       // Errors not handled: EINVAL
-      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      __glibcxx_assert(__ret == 0);
       return true;
     }
 
@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       int __ret __attribute((__unused__)) = pthread_rwlock_unlock(&_M_rwlock);
       // Errors not handled: EPERM, EBUSY, EINVAL
-      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      __glibcxx_assert(__ret == 0);
     }
 
     // Shared ownership
@@ -143,7 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__ret == EDEADLK)
 	__throw_system_error(int(errc::resource_deadlock_would_occur));
       // Errors not handled: EINVAL
-      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      __glibcxx_assert(__ret == 0);
     }
 
     bool
@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // an exception.
       if (__ret == EBUSY || __ret == EAGAIN) return false;
       // Errors not handled: EINVAL
-      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      __glibcxx_assert(__ret == 0);
       return true;
     }
 
@@ -224,7 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ~__shared_mutex_cv()
     {
-      _GLIBCXX_DEBUG_ASSERT( _M_state == 0 );
+      __glibcxx_assert( _M_state == 0 );
     }
 
     __shared_mutex_cv(const __shared_mutex_cv&) = delete;
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     unlock()
     {
       lock_guard<mutex> __lk(_M_mut);
-      _GLIBCXX_DEBUG_ASSERT( _M_write_entered() );
+      __glibcxx_assert( _M_write_entered() );
       _M_state = 0;
       // call notify_all() while mutex is held so that another thread can't
       // lock and unlock the mutex then destroy *this before we make the call.
@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     unlock_shared()
     {
       lock_guard<mutex> __lk(_M_mut);
-      _GLIBCXX_DEBUG_ASSERT( _M_readers() > 0 );
+      __glibcxx_assert( _M_readers() > 0 );
       auto __prev = _M_state--;
       if (_M_write_entered())
 	{
@@ -422,7 +422,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__ret == ETIMEDOUT || __ret == EDEADLK)
 	  return false;
 	// Errors not handled: EINVAL
-	_GLIBCXX_DEBUG_ASSERT(__ret == 0);
+	__glibcxx_assert(__ret == 0);
 	return true;
       }
 
@@ -474,7 +474,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__ret == ETIMEDOUT)
 	  return false;
 	// Errors not handled: EINVAL
-	_GLIBCXX_DEBUG_ASSERT(__ret == 0);
+	__glibcxx_assert(__ret == 0);
 	return true;
       }
 

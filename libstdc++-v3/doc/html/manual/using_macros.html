@@ -68,9 +68,16 @@
 	detect violations of the requirements of the standard.  This
 	is described in more detail in
 	<a class="link" href="ext_compile_checks.html" title="Chapter 16. Compile Time Checks">Compile Time Checks</a>.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_ASSERTIONS</code></span></dt><dd><p>
+	Undefined by default. When defined, enables extra error checking in
+        the form of precondition assertions, such as bounds checking in
+        strings and null pointer checks when dereferencing smart pointers.
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_DEBUG</code></span></dt><dd><p>
 	Undefined by default. When defined, compiles user code using
 	the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>.
+        When defined, <code class="code">_GLIBCXX_ASSERTIONS</code> is defined
+        automatically, so all the assertions enabled by that macro are also
+        enabled in debug mode.
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_DEBUG_PEDANTIC</code></span></dt><dd><p>
 	Undefined by default. When defined while compiling with
 	the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>, makes

@@ -362,7 +362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   const match_results<_Bi_iter, _Alloc>::char_type* __fmt_last,
 	   match_flag_type __flags) const
     {
-      _GLIBCXX_DEBUG_ASSERT( ready() );
+      __glibcxx_assert( ready() );
       regex_traits<char_type> __traits;
       typedef std::ctype<char_type> __ctype_type;
       const __ctype_type&
@@ -535,7 +535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   | regex_constants::match_not_null
 				   | regex_constants::match_continuous))
 		    {
-		      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
+		      __glibcxx_assert(_M_match[0].matched);
 		      auto& __prefix = _M_match._M_prefix();
 		      __prefix.first = __prefix_first;
 		      __prefix.matched = __prefix.first != __prefix.second;
@@ -550,7 +550,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_flags |= regex_constants::match_prev_avail;
 	  if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
 	    {
-	      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
+	      __glibcxx_assert(_M_match[0].matched);
 	      auto& __prefix = _M_match._M_prefix();
 	      __prefix.first = __prefix_first;
 	      __prefix.matched = __prefix.first != __prefix.second;

@@ -180,7 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator[](size_type __pos) const
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
-	// _GLIBCXX_DEBUG_ASSERT(__pos < this->_M_len);
+	// __glibcxx_assert(__pos < this->_M_len);
 	return *(this->_M_str + __pos);
       }
 
@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       front() const
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
-	// _GLIBCXX_DEBUG_ASSERT(this->_M_len > 0);
+	// __glibcxx_assert(this->_M_len > 0);
 	return *this->_M_str;
       }
 
@@ -208,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       back() const
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
-	// _GLIBCXX_DEBUG_ASSERT(this->_M_len > 0);
+	// __glibcxx_assert(this->_M_len > 0);
 	return *(this->_M_str + this->_M_len - 1);
       }
 
@@ -221,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       remove_prefix(size_type __n)
       {
-	_GLIBCXX_DEBUG_ASSERT(this->_M_len >= __n);
+	__glibcxx_assert(this->_M_len >= __n);
 	this->_M_str += __n;
 	this->_M_len -= __n;
       }
