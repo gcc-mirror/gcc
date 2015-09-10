@@ -33,10 +33,6 @@ mno-cond-exec
 Target Report RejectNegative Mask(NO_COND_EXEC)
 Disable ARCompact specific pass to generate conditional execution instructions
 
-mA5
-Target Report
-Generate ARCompact 32-bit code for ARCtangent-A5 processor
-
 mA6
 Target Report
 Generate ARCompact 32-bit code for ARC600 processor
@@ -61,7 +57,7 @@ mmixed-code
 Target Report Mask(MIXED_CODE_SET)
 Tweak register allocation to help 16-bit instruction generation
 ; originally this was:
-;Generate ARCompact 16-bit instructions intermixed with 32-bit instructions for ARCtangent-A5 and higher processors
+;Generate ARCompact 16-bit instructions intermixed with 32-bit instructions
 ; but we do that without -mmixed-code, too, it's just a different instruction
 ; count / size tradeoff.
 
@@ -161,9 +157,6 @@ Target RejectNegative Joined Var(arc_cpu) Enum(processor_type) Init(PROCESSOR_NO
 
 Enum
 Name(processor_type) Type(enum processor_type)
-
-EnumValue
-Enum(processor_type) String(A5) Value(PROCESSOR_A5)
 
 EnumValue
 Enum(processor_type) String(ARC600) Value(PROCESSOR_ARC600)

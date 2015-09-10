@@ -66,9 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_CPU_CPP_BUILTINS()	\
  do {					\
     builtin_define ("__arc__");		\
-    if (TARGET_A5)			\
-      builtin_define ("__A5__");	\
-    else if (TARGET_ARC600)			\
+    if (TARGET_ARC600)			\
       {					\
 	builtin_define ("__A6__");	\
 	builtin_define ("__ARC600__");	\
@@ -133,7 +131,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ASM_SPEC  "\
 %{mbig-endian|EB:-EB} %{EL} \
-%{mcpu=A5|mcpu=a5|mA5:-mA5} \
 %{mcpu=ARC600:-mARC600} \
 %{mcpu=ARC601:-mARC601} \
 %{mcpu=ARC700:-mARC700} \
@@ -224,7 +221,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #define DRIVER_SELF_SPECS DRIVER_ENDIAN_SELF_SPECS \
-  "%{mARC5|mA5: -mcpu=A5 %<mARC5 %<mA5}" \
   "%{mARC600|mA6: -mcpu=ARC600 %<mARC600 %<mA6}" \
   "%{mARC601: -mcpu=ARC601 %<mARC601}" \
   "%{mARC700|mA7: -mcpu=ARC700 %<mARC700 %<mA7}" \
@@ -277,7 +273,6 @@ along with GCC; see the file COPYING3.  If not see
    use conditional execution?  */
 #define TARGET_AT_DBR_CONDEXEC  (!TARGET_ARC700)
 
-#define TARGET_A5 (arc_cpu == PROCESSOR_A5)
 #define TARGET_ARC600 (arc_cpu == PROCESSOR_ARC600)
 #define TARGET_ARC601 (arc_cpu == PROCESSOR_ARC601)
 #define TARGET_ARC700 (arc_cpu == PROCESSOR_ARC700)
