@@ -1099,7 +1099,8 @@ Gcc_backend::type_size(Btype* btype)
   gcc_assert(tree_fits_uhwi_p (t));
   unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW(t);
   int64_t ret = static_cast<int64_t>(val_wide);
-  gcc_assert(ret >= 0 && static_cast<unsigned HOST_WIDE_INT>(ret) == val_wide);
+  if (ret < 0 || static_cast<unsigned HOST_WIDE_INT>(ret) != val_wide)
+    return -1;
   return ret;
 }
 

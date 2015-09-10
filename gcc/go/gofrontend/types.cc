@@ -2524,6 +2524,20 @@ Type::backend_type_size(Gogo* gogo, int64_t *psize)
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
   *psize = gogo->backend()->type_size(bt);
+  if (*psize == -1)
+    {
+      if (this->named_type() != NULL)
+        error_at(this->named_type()->location(),
+                 "type %s larger than address space",
+                 Gogo::message_name(this->named_type()->name()).c_str());
+      else
+        error("type %s larger than address space",
+              this->reflection(gogo).c_str());
+
+      // Make this an error type to avoid knock-on errors.
+      this->classification_ = TYPE_ERROR;
+      return false;
+    }
   return true;
 }
 
@@ -6400,8 +6414,12 @@ Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
 
   // Differentiate between slices with zero-length and non-zero-length values.
   Type* element_type = this->element_type();
-  Btype* ebtype = element_type->get_backend(gogo);
-  int64_t element_size = gogo->backend()->type_size(ebtype);
+  int64_t element_size;
+  bool ok = element_type->backend_type_size(gogo, &element_size);
+  if (!ok) {
+    go_assert(saw_errors());
+    element_size = 4;
+  }
 
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   unsigned long opval = element_size == 0 ? GC_APTR : GC_SLICE;
@@ -6432,7 +6450,13 @@ Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
 
   Btype* pbtype = gogo->backend()->pointer_type(gogo->backend()->void_type());
   int64_t pwidth = gogo->backend()->type_size(pbtype);
-  int64_t iwidth = gogo->backend()->type_size(this->get_backend(gogo));
+  int64_t iwidth;
+  bool ok = this->backend_type_size(gogo, &iwidth);
+  if (!ok)
+    {
+      go_assert(saw_errors());
+      iwidth = 4;
+    }
 
   Type* element_type = this->element_type();
   if (bound < 1 || !element_type->has_pointer())

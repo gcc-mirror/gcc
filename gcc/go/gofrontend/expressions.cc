@@ -3626,8 +3626,13 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
       Type* ptype = this->expr_->type()->points_to();
       if (!ptype->is_void_type())
         {
-          Btype* pbtype = ptype->get_backend(gogo);
-          int64_t s = gogo->backend()->type_size(pbtype);
+          int64_t s;
+          bool ok = ptype->backend_type_size(gogo, &s);
+          if (!ok)
+            {
+              go_assert(saw_errors());
+              return Expression::make_error(this->location());
+            }
           if (s >= 4096 || this->issue_nil_check_)
             {
               Temporary_statement* temp =
@@ -4131,7 +4136,13 @@ Unary_expression::do_get_backend(Translate_context* context)
         Btype* pbtype = ptype->get_backend(gogo);
         if (!ptype->is_void_type())
 	  {
-            int64_t s = gogo->backend()->type_size(pbtype);
+            int64_t s;
+            bool ok = ptype->backend_type_size(gogo, &s);
+            if (!ok)
+              {
+                go_assert(saw_errors());
+                return gogo->backend()->error_expression();
+              }
 	    if (s >= 4096 || this->issue_nil_check_)
 	      {
                 go_assert(this->expr_->is_variable());
@@ -8339,8 +8350,14 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
             Expression::make_conditional(cond, arg1_len, arg2_len, location);
 
 	Type* element_type = at->element_type();
-	Btype* element_btype = element_type->get_backend(gogo);
-	int64_t element_size = gogo->backend()->type_size(element_btype);
+	int64_t element_size;
+        bool ok = element_type->backend_type_size(gogo, &element_size);
+        if (!ok)
+          {
+            go_assert(saw_errors());
+            return gogo->backend()->error_expression();
+          }
+
 	Expression* size_expr = Expression::make_integer_int64(element_size,
 							       length->type(),
 							       location);
@@ -8381,8 +8398,12 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 	  {
 	    arg2_val = at->get_value_pointer(gogo, arg2);
 	    arg2_len = at->get_length(gogo, arg2);
-	    Btype* element_btype = element_type->get_backend(gogo);
-	    size = gogo->backend()->type_size(element_btype);
+            bool ok = element_type->backend_type_size(gogo, &size);
+            if (!ok)
+              {
+                go_assert(saw_errors());
+                return gogo->backend()->error_expression();
+              }
 	  }
         Expression* element_size =
 	  Expression::make_integer_int64(size, NULL, location);
@@ -11539,14 +11560,20 @@ Allocation_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   Location loc = this->location();
 
-  Btype* btype = this->type_->get_backend(gogo);
   if (this->allocate_on_stack_)
     {
-      int64_t size = gogo->backend()->type_size(btype);
+      int64_t size;
+      bool ok = this->type_->backend_type_size(gogo, &size);
+      if (!ok)
+        {
+          go_assert(saw_errors());
+          return gogo->backend()->error_expression();
+        }
       return gogo->backend()->stack_allocation_expression(size, loc);
     }
 
-  Bexpression* space = 
+  Btype* btype = this->type_->get_backend(gogo);
+  Bexpression* space =
     gogo->allocate_memory(this->type_, loc)->get_backend(context);
   Btype* pbtype = gogo->backend()->pointer_type(btype);
   return gogo->backend()->convert_expression(pbtype, space, loc);
@@ -13731,22 +13758,27 @@ Type_info_expression::do_type()
 Bexpression*
 Type_info_expression::do_get_backend(Translate_context* context)
 {
-  Btype* btype = this->type_->get_backend(context->gogo());
   Gogo* gogo = context->gogo();
+  bool ok = true;
   int64_t val;
   switch (this->type_info_)
     {
     case TYPE_INFO_SIZE:
-      val = gogo->backend()->type_size(btype);
+      ok = this->type_->backend_type_size(gogo, &val);
       break;
     case TYPE_INFO_ALIGNMENT:
-      val = gogo->backend()->type_alignment(btype);
+      ok = this->type_->backend_type_align(gogo, &val);
       break;
     case TYPE_INFO_FIELD_ALIGNMENT:
-      val = gogo->backend()->type_field_alignment(btype);
+      ok = this->type_->backend_type_field_align(gogo, &val);
       break;
     default:
       go_unreachable();
+    }
+  if (!ok)
+    {
+      go_assert(saw_errors());
+      return gogo->backend()->error_expression();
     }
   Expression* e = Expression::make_integer_int64(val, this->type(),
 						 this->location());
