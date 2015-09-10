@@ -8892,7 +8892,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    && ! unsignedp
 	    && mode == GET_MODE_WIDER_MODE (word_mode)
 	    && GET_MODE_SIZE (mode) == 2 * GET_MODE_SIZE (word_mode)
-	    && ! have_insn_for (ASHIFT, mode)
 	    && TREE_CONSTANT (treeop1)
 	    && TREE_CODE (treeop0) == SSA_NAME)
 	  {
@@ -8908,6 +8907,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    && ((TREE_INT_CST_LOW (treeop1) + GET_MODE_BITSIZE (rmode))
 			>= GET_MODE_BITSIZE (word_mode)))
 		  {
+		    rtx_insn *seq, *seq_old;
 		    unsigned int high_off = subreg_highpart_offset (word_mode,
 								    mode);
 		    rtx low = lowpart_subreg (word_mode, op0, mode);
@@ -8918,6 +8918,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					     - TREE_INT_CST_LOW (treeop1));
 		    tree rshift = build_int_cst (TREE_TYPE (treeop1), ramount);
 
+		    start_sequence ();
 		    /* dest_high = src_low >> (word_size - C).  */
 		    temp = expand_variable_shift (RSHIFT_EXPR, word_mode, low,
 						  rshift, dest_high, unsignedp);
@@ -8930,7 +8931,28 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    if (temp != dest_low)
 		      emit_move_insn (dest_low, temp);
 
+		    seq = get_insns ();
+		    end_sequence ();
 		    temp = target ;
+
+		    if (have_insn_for (ASHIFT, mode))
+		      {
+			bool speed_p = optimize_insn_for_speed_p ();
+			start_sequence ();
+			rtx ret_old = expand_variable_shift (code, mode, op0,
+							     treeop1, target,
+							     unsignedp);
+
+			seq_old = get_insns ();
+			end_sequence ();
+			if (seq_cost (seq, speed_p)
+			    >= seq_cost (seq_old, speed_p))
+			  {
+			    seq = seq_old;
+			    temp = ret_old;
+			  }
+		      }
+		      emit_insn (seq);
 		  }
 	      }
 	  }
