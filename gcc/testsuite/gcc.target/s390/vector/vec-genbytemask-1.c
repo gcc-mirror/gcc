@@ -1,11 +1,13 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mzarch -march=z13 --save-temps" } */
 /* { dg-require-effective-target vector } */
+/* { dg-require-effective-target int128 } */
 
 typedef unsigned char     uv16qi __attribute__((vector_size(16)));
 typedef unsigned short     uv8hi __attribute__((vector_size(16)));
 typedef unsigned int       uv4si __attribute__((vector_size(16)));
 typedef unsigned long long uv2di __attribute__((vector_size(16)));
+typedef unsigned __int128  uv1ti __attribute__((vector_size(16)));
 
 uv2di __attribute__((noinline))
 foo1 ()
@@ -45,6 +47,13 @@ foo4 ()
       0xff, 0, 0xff, 0,
       0, 0xff, 0, 0xff };
 }
+
+uv1ti __attribute__((noinline))
+foo5 ()
+{
+  return (uv1ti){ 0xff00ff00ff00ff00ULL };
+}
+
 /* { dg-final { scan-assembler-times "vgbm\t%v24,61605" 1 } } */
 
 int
@@ -64,6 +73,10 @@ main ()
 
   if (foo4()[1] != 0xff)
     __builtin_abort ();
+
+  if (foo5()[0] != 0xff00ff00ff00ff00ULL)
+    __builtin_abort ();
+
   return 0;
 }
 
