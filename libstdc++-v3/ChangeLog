@@ -1,3 +1,8 @@
+2015-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/operators/char/1.cc: Verify the
+	string contents.
+
 2015-09-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/using.xml (_GLIBCXX_ASSERTIONS): Document.
