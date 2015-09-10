@@ -1,3 +1,9 @@
+2015-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	PR target/67506
+	* gcc.c-torture/compile/pr67506.c: New test.
+
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67523
