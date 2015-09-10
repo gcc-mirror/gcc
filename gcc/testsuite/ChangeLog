@@ -1,3 +1,8 @@
+2015-09-10  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/pic-small.c (dg-skip-if): Skip tiny and large code
+	model.
+
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67523
