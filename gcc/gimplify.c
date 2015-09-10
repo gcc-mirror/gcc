@@ -6195,9 +6195,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		    }
 		  else
 		    break;
-		  gcc_checking_assert (splay_tree_lookup (octx->variables,
-							  (splay_tree_key)
-							  decl) == NULL);
+		  if (splay_tree_lookup (octx->variables,
+					 (splay_tree_key) decl) != NULL)
+		    {
+		      octx = NULL;
+		      break;
+		    }
 		  flags = GOVD_SEEN;
 		  if (!OMP_CLAUSE_LINEAR_NO_COPYIN (c))
 		    flags |= GOVD_FIRSTPRIVATE;
