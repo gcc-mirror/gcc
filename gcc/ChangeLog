@@ -1,3 +1,8 @@
+2015-09-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (*and<mode>3nr_compare0): Use logics_imm
+	type for second alternative.
+
 2015-09-10  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* doc/invoke.texi (Downloading GCC): Mention

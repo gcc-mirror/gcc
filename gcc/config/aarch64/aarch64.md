@@ -3557,7 +3557,7 @@
 	 (const_int 0)))]
   ""
   "tst\\t%<w>0, %<w>1"
-  [(set_attr "type" "logics_reg")]
+  [(set_attr "type" "logics_reg,logics_imm")]
 )
 
 (define_insn "*and_<SHIFT:optab><mode>3nr_compare0"
