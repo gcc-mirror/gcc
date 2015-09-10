@@ -934,6 +934,13 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'setenv', otherwise define to 0.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_SETENV
+#endif
+
+
 /* Define to 1 if we found a declaration for 'setrlimit', otherwise define to
    0. */
 #ifndef USED_FOR_TARGET
@@ -1022,6 +1029,13 @@
    */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_TIMES
+#endif
+
+
+/* Define to 1 if we found a declaration for 'unsetenv', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_UNSETENV
 #endif
 
 

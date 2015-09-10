@@ -1,3 +1,11 @@
+2015-09-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR bootstrap/67363
+	* configure.ac: Check if setenv and unsetenv are declared.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+	* system.h: Declare setenv and unsetenv if not declared.
+
 2015-09-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (swap_web_entry): Update preceding
