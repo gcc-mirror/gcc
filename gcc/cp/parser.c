@@ -19613,11 +19613,12 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	}
     }
 
-  /* If the next token is an ellipsis, and we have not seen a
-     declarator name, and the type of the declarator contains parameter
-     packs but it is not a TYPE_PACK_EXPANSION, then we actually have
-     a parameter pack expansion expression. Otherwise, leave the
-     ellipsis for a C-style variadic function. */
+  /* If the next token is an ellipsis, and we have not seen a declarator
+     name, and if either the type of the declarator contains parameter
+     packs but it is not a TYPE_PACK_EXPANSION or is null (this happens
+     for, eg, abbreviated integral type names), then we actually have a
+     parameter pack expansion expression. Otherwise, leave the ellipsis
+     for a C-style variadic function. */
   token = cp_lexer_peek_token (parser->lexer);
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
     {
@@ -19626,11 +19627,12 @@ cp_parser_parameter_declaration (cp_parser *parser,
       if (type && DECL_P (type))
         type = TREE_TYPE (type);
 
-      if (type
-	  && TREE_CODE (type) != TYPE_PACK_EXPANSION
-	  && declarator_can_be_parameter_pack (declarator)
-          && (template_parm_p || uses_parameter_packs (type)))
-        {
+      if (((type
+	    && TREE_CODE (type) != TYPE_PACK_EXPANSION
+	    && (template_parm_p || uses_parameter_packs (type)))
+	   || (!type && template_parm_p))
+	  && declarator_can_be_parameter_pack (declarator))
+	{
 	  /* Consume the `...'. */
 	  cp_lexer_consume_token (parser->lexer);
 	  maybe_warn_variadic_templates ();

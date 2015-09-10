@@ -1,3 +1,8 @@
+2015-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67318
+	* g++.dg/cpp0x/variadic166.C: New.
+
 2015-09-09  Mark Wielaard  <mjw@redhat.com>
 
 	* c-c++-common/nonnull-1.c: New test.

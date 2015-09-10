@@ -1,3 +1,9 @@
+2015-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67318
+	* parser.c (cp_parser_parameter_declaration): Consume the ellipsis
+	and set template_parameter_pack_p also when the type is null.
+
 2015-09-09  Mark Wielaard  <mjw@redhat.com>
 
 	* typeck.c (cp_build_binary_op): Check and warn when nonnull arg
