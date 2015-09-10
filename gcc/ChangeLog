@@ -1,3 +1,8 @@
+2015-09-10  Claudiu Zissulescu <claziss@synopsys.com>
+
+	* config/arc/arc.md (length): Fix attribute length for conditional
+	executed instructions with long immediate.
+
 2015-09-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (*and<mode>3nr_compare0): Use logics_imm
