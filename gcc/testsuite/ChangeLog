@@ -1,5 +1,8 @@
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/67511
+	* g++.dg/gomp/pr67511.C: New test.
+
 	PR c/67502
 	* c-c++-common/gomp/pr67502.c: New test.
 
