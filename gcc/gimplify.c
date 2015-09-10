@@ -6982,7 +6982,7 @@ find_combined_omp_for (tree *tp, int *walk_subtrees, void *)
 static enum gimplify_status
 gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 {
-  tree for_stmt, orig_for_stmt, decl, var, t;
+  tree for_stmt, orig_for_stmt, inner_for_stmt = NULL_TREE, decl, var, t;
   enum gimplify_status ret = GS_ALL_DONE;
   enum gimplify_status tret;
   gomp_for *gfor;
@@ -7025,6 +7025,19 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  }
     }
 
+  if (OMP_FOR_INIT (for_stmt) == NULL_TREE)
+    {
+      gcc_assert (TREE_CODE (for_stmt) != OACC_LOOP);
+      inner_for_stmt = walk_tree (&OMP_FOR_BODY (for_stmt),
+				  find_combined_omp_for, NULL, NULL);
+      if (inner_for_stmt == NULL_TREE)
+	{
+	  gcc_assert (seen_error ());
+	  *expr_p = NULL_TREE;
+	  return GS_ERROR;
+	}
+    }
+
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p,
 			     simd ? ORT_SIMD : ORT_WORKSHARE);
   if (TREE_CODE (for_stmt) == OMP_DISTRIBUTE)
@@ -7060,10 +7073,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   if (OMP_FOR_INIT (for_stmt) == NULL_TREE)
     {
-      gcc_assert (TREE_CODE (for_stmt) != OACC_LOOP);
-      for_stmt = walk_tree (&OMP_FOR_BODY (for_stmt), find_combined_omp_for,
-			    NULL, NULL);
-      gcc_assert (for_stmt != NULL_TREE);
+      for_stmt = inner_for_stmt;
       gimplify_omp_ctxp->combined_loop = true;
     }
 
