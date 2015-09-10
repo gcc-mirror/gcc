@@ -7163,10 +7163,16 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		    outer = NULL;
 		  if (outer)
 		    {
-		      omp_add_variable (outer, decl,
-					GOVD_LASTPRIVATE | GOVD_SEEN);
-		      if (outer->outer_context)
-			omp_notice_variable (outer->outer_context, decl, true);
+		      n = splay_tree_lookup (outer->variables,
+					     (splay_tree_key)decl);
+		      if (n == NULL || (n->value & GOVD_DATA_SHARE_CLASS) == 0)
+			{
+			  omp_add_variable (outer, decl,
+					    GOVD_LASTPRIVATE | GOVD_SEEN);
+			  if (outer->outer_context)
+			    omp_notice_variable (outer->outer_context, decl,
+						 true);
+			}
 		    }
 		}
 	    }
@@ -7201,10 +7207,16 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		    outer = NULL;
 		  if (outer)
 		    {
-		      omp_add_variable (outer, decl,
-					GOVD_LASTPRIVATE | GOVD_SEEN);
-		      if (outer->outer_context)
-			omp_notice_variable (outer->outer_context, decl, true);
+		      n = splay_tree_lookup (outer->variables,
+					     (splay_tree_key)decl);
+		      if (n == NULL || (n->value & GOVD_DATA_SHARE_CLASS) == 0)
+			{
+			  omp_add_variable (outer, decl,
+					    GOVD_LASTPRIVATE | GOVD_SEEN);
+			  if (outer->outer_context)
+			    omp_notice_variable (outer->outer_context, decl,
+						 true);
+			}
 		    }
 		}
 
