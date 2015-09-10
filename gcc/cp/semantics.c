@@ -6453,7 +6453,8 @@ handle_omp_for_class_iterator (int i, location_t locus, tree declv, tree initv,
   iter_init = build_x_modify_expr (elocus,
 				   iter, PLUS_EXPR, iter_init,
 				   tf_warning_or_error);
-  iter_init = build1 (NOP_EXPR, void_type_node, iter_init);
+  if (iter_init != error_mark_node)
+    iter_init = build1 (NOP_EXPR, void_type_node, iter_init);
   finish_expr_stmt (iter_init);
   finish_expr_stmt (build_x_modify_expr (elocus,
 					 last, NOP_EXPR, decl,

@@ -1,3 +1,9 @@
+2015-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67511
+	* semantics.c (handle_omp_for_class_iterator): Don't wrap
+	error_mark_node into a NOP_EXPR to void_type_node.
+
 2015-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67504
