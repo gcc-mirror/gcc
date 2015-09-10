@@ -1,3 +1,8 @@
+2015-09-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67526
+	* expr.c (gfc_check_init_expr): Do not dereference a NULL pointer.
+
 2015-09-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/67429
