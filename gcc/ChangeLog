@@ -1,3 +1,15 @@
+2015-09-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (swap_web_entry): Update preceding
+	commentary to simplify permute mask adjustment equation.
+	(special_handling_values): Add SH_VPERM.
+	(const_load_sequence_p): New function.
+	(insn_is_swappable_p): Add logic to recognize an UNSPEC_VPERM with
+	the mask loaded from the constant pool.
+	(adjust_vperm): New function.
+	(handle_special_swappables): Call adjust_vperm.
+	(dump_swap_insn_table): Handle SH_VPERM.
+
 2015-09-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* shrink-wrap.c (requires_stack_frame_p): Remove static.

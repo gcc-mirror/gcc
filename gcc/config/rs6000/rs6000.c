@@ -34943,10 +34943,8 @@ emit_fusion_gpr_load (rtx target, rtx mem)
    throughout the computation, we can get correct behavior by replacing
    M with M' as follows:
 
-            { M[i+8]+8 : i < 8, M[i+8] in [0,7] U [16,23]
-    M'[i] = { M[i+8]-8 : i < 8, M[i+8] in [8,15] U [24,31]
-            { M[i-8]+8 : i >= 8, M[i-8] in [0,7] U [16,23]
-            { M[i-8]-8 : i >= 8, M[i-8] in [8,15] U [24,31]
+    M'[i] = { (M[i]+8)%16      : M[i] in [0,15]
+            { ((M[i]+8)%16)+16 : M[i] in [16,31]
 
    This seems promising at first, since we are just replacing one mask
    with another.  But certain masks are preferable to others.  If M
@@ -34964,7 +34962,11 @@ emit_fusion_gpr_load (rtx target, rtx mem)
    mask to be produced by an UNSPEC_LVSL, in which case the mask 
    cannot be known at compile time.  In such a case we would have to
    generate several instructions to compute M' as above at run time,
-   and a cost model is needed again.  */
+   and a cost model is needed again.
+
+   However, when the mask M for an UNSPEC_VPERM is loaded from the
+   constant pool, we can replace M with M' as above at no cost
+   beyond adding a constant pool entry.  */
 
 /* This is based on the union-find logic in web.c.  web_entry_base is
    defined in df.h.  */
@@ -35016,7 +35018,8 @@ enum special_handling_values {
   SH_EXTRACT,
   SH_SPLAT,
   SH_XXPERMDI,
-  SH_CONCAT
+  SH_CONCAT,
+  SH_VPERM
 };
 
 /* Union INSN with all insns containing definitions that reach USE.
@@ -35149,6 +35152,64 @@ insn_is_swap_p (rtx insn)
 	return 0;
     }
   return 1;
+}
+
+/* Return TRUE if insn is a swap fed by a load from the constant pool.  */
+static bool
+const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
+{
+  unsigned uid = INSN_UID (insn);
+  if (!insn_entry[uid].is_swap || insn_entry[uid].is_load)
+    return false;
+
+  /* Find the unique use in the swap and locate its def.  If the def
+     isn't unique, punt.  */
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref use;
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      struct df_link *def_link = DF_REF_CHAIN (use);
+      if (!def_link || def_link->next)
+	return false;
+
+      rtx def_insn = DF_REF_INSN (def_link->ref);
+      unsigned uid2 = INSN_UID (def_insn);
+      if (!insn_entry[uid2].is_load || !insn_entry[uid2].is_swap)
+	return false;
+
+      rtx body = PATTERN (def_insn);
+      if (GET_CODE (body) != SET
+	  || GET_CODE (SET_SRC (body)) != VEC_SELECT
+	  || GET_CODE (XEXP (SET_SRC (body), 0)) != MEM)
+	return false;
+
+      rtx mem = XEXP (SET_SRC (body), 0);
+      rtx base_reg = XEXP (mem, 0);
+
+      df_ref base_use;
+      insn_info = DF_INSN_INFO_GET (def_insn);
+      FOR_EACH_INSN_INFO_USE (base_use, insn_info)
+	{
+	  if (!rtx_equal_p (DF_REF_REG (base_use), base_reg))
+	    continue;
+
+	  struct df_link *base_def_link = DF_REF_CHAIN (base_use);
+	  if (!base_def_link || base_def_link->next)
+	    return false;
+
+	  rtx tocrel_insn = DF_REF_INSN (base_def_link->ref);
+	  rtx tocrel_body = PATTERN (tocrel_insn);
+	  rtx base, offset;
+	  if (GET_CODE (tocrel_body) != SET)
+	    return false;
+	  if (!toc_relative_expr_p (SET_SRC (tocrel_body), false))
+	    return false;
+	  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
+	  if (GET_CODE (base) != SYMBOL_REF || !CONSTANT_POOL_ADDRESS_P (base))
+	    return false;
+	}
+    }
+  return true;
 }
 
 /* Return 1 iff OP is an operand that will not be affected by having
@@ -35408,6 +35469,32 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
     {
       *special = SH_CONCAT;
       return 1;
+    }
+
+  /* An UNSPEC_VPERM is ok if the mask operand is loaded from the
+     constant pool.  */
+  if (GET_CODE (body) == SET
+      && GET_CODE (SET_SRC (body)) == UNSPEC
+      && XINT (SET_SRC (body), 1) == UNSPEC_VPERM
+      && XVECLEN (SET_SRC (body), 0) == 3
+      && GET_CODE (XVECEXP (SET_SRC (body), 0, 2)) == REG)
+    {
+      rtx mask_reg = XVECEXP (SET_SRC (body), 0, 2);
+      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+      df_ref use;
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
+	if (rtx_equal_p (DF_REF_REG (use), mask_reg))
+	  {
+	    struct df_link *def_link = DF_REF_CHAIN (use);
+	    /* Punt if multiple definitions for this reg.  */
+	    if (def_link && !def_link->next &&
+		const_load_sequence_p (insn_entry,
+				       DF_REF_INSN (def_link->ref)))
+	      {
+		*special = SH_VPERM;
+		return 1;
+	      }
+	  }
     }
 
   /* Otherwise check the operands for vector lane violations.  */
@@ -35742,6 +35829,105 @@ adjust_concat (rtx_insn *insn)
     fprintf (dump_file, "Reversing inputs for concat %d\n", INSN_UID (insn));
 }
 
+/* Given an UNSPEC_VPERM insn, modify the mask loaded from the
+   constant pool to reflect swapped doublewords.  */
+static void
+adjust_vperm (rtx_insn *insn)
+{
+  /* We previously determined that the UNSPEC_VPERM was fed by a
+     swap of a swapping load of a TOC-relative constant pool symbol.
+     Find the MEM in the swapping load and replace it with a MEM for
+     the adjusted mask constant.  */
+  rtx set = PATTERN (insn);
+  rtx mask_reg = XVECEXP (SET_SRC (set), 0, 2);
+
+  /* Find the swap.  */
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref use;
+  rtx_insn *swap_insn = 0;
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    if (rtx_equal_p (DF_REF_REG (use), mask_reg))
+      {
+	struct df_link *def_link = DF_REF_CHAIN (use);
+	gcc_assert (def_link && !def_link->next);
+	swap_insn = DF_REF_INSN (def_link->ref);
+	break;
+      }
+  gcc_assert (swap_insn);
+  
+  /* Find the load.  */
+  insn_info = DF_INSN_INFO_GET (swap_insn);
+  rtx_insn *load_insn = 0;
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      struct df_link *def_link = DF_REF_CHAIN (use);
+      gcc_assert (def_link && !def_link->next);
+      load_insn = DF_REF_INSN (def_link->ref);
+      break;
+    }
+  gcc_assert (load_insn);
+
+  /* Find the TOC-relative symbol access.  */
+  insn_info = DF_INSN_INFO_GET (load_insn);
+  rtx_insn *tocrel_insn = 0;
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      struct df_link *def_link = DF_REF_CHAIN (use);
+      gcc_assert (def_link && !def_link->next);
+      tocrel_insn = DF_REF_INSN (def_link->ref);
+      break;
+    }
+  gcc_assert (tocrel_insn);
+
+  /* Find the embedded CONST_VECTOR.  We have to call toc_relative_expr_p
+     to set tocrel_base; otherwise it would be unnecessary as we've
+     already established it will return true.  */
+  rtx base, offset;
+  if (!toc_relative_expr_p (SET_SRC (PATTERN (tocrel_insn)), false))
+    gcc_unreachable ();
+  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
+  rtx const_vector = get_pool_constant (base);
+  gcc_assert (GET_CODE (const_vector) == CONST_VECTOR);
+
+  /* Create an adjusted mask from the initial mask.  */
+  unsigned int new_mask[16], i, val;
+  for (i = 0; i < 16; ++i) {
+    val = INTVAL (XVECEXP (const_vector, 0, i));
+    if (val < 16)
+      new_mask[i] = (val + 8) % 16;
+    else
+      new_mask[i] = ((val + 8) % 16) + 16;
+  }
+
+  /* Create a new CONST_VECTOR and a MEM that references it.  */
+  rtx vals = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
+  for (i = 0; i < 16; ++i)
+    XVECEXP (vals, 0, i) = GEN_INT (new_mask[i]);
+  rtx new_const_vector = gen_rtx_CONST_VECTOR (V16QImode, XVEC (vals, 0));
+  rtx new_mem = force_const_mem (V16QImode, new_const_vector);
+  /* This gives us a MEM whose base operand is a SYMBOL_REF, which we
+     can't recognize.  Force the SYMBOL_REF into a register.  */
+  if (!REG_P (XEXP (new_mem, 0))) {
+    rtx base_reg = force_reg (Pmode, XEXP (new_mem, 0));
+    XEXP (new_mem, 0) = base_reg;
+    /* Move the newly created insn ahead of the load insn.  */
+    rtx_insn *force_insn = get_last_insn ();
+    remove_insn (force_insn);
+    rtx_insn *before_load_insn = PREV_INSN (load_insn);
+    add_insn_after (force_insn, before_load_insn, BLOCK_FOR_INSN (load_insn));
+    df_insn_rescan (before_load_insn);
+    df_insn_rescan (force_insn);
+  }
+
+  /* Replace the MEM in the load instruction and rescan it.  */
+  XEXP (SET_SRC (PATTERN (load_insn)), 0) = new_mem;
+  INSN_CODE (load_insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (load_insn);
+
+  if (dump_file)
+    fprintf (dump_file, "Adjusting mask for vperm %d\n", INSN_UID (insn));
+}
+
 /* The insn described by INSN_ENTRY[I] can be swapped, but only
    with special handling.  Take care of that here.  */
 static void
@@ -35795,6 +35981,10 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
     case SH_CONCAT:
       /* Reverse the order of a concatenation operation.  */
       adjust_concat (insn);
+      break;
+    case SH_VPERM:
+      /* Change the mask loaded from the constant pool for a VPERM.  */
+      adjust_vperm (insn);
       break;
     }
 }
@@ -35872,6 +36062,8 @@ dump_swap_insn_table (swap_web_entry *insn_entry)
 	      fputs ("special:xxpermdi ", dump_file);
 	    else if (insn_entry[i].special_handling == SH_CONCAT)
 	      fputs ("special:concat ", dump_file);
+	    else if (insn_entry[i].special_handling == SH_VPERM)
+	      fputs ("special:vperm ", dump_file);
 	  }
 	if (insn_entry[i].web_not_optimizable)
 	  fputs ("unoptimizable ", dump_file);
