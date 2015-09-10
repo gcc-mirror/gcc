@@ -807,6 +807,7 @@ nvptx_expand_call (rtx retval, rtx address)
 	    external_decl = true;
 	}
     }
+
   if (cfun->machine->funtype
       /* It's possible to construct testcases where we call a variable.
 	 See compile/20020129-1.c.  stdarg_p will crash so avoid calling it
@@ -1981,9 +1982,10 @@ nvptx_reorg_subreg (void)
 }
 
 /* PTX-specific reorganization
-   1) mark now-unused registers, so function begin doesn't declare
+   - Compute live registers
+   - Mark now-unused registers, so function begin doesn't declare
    unused registers.
-   2) replace subregs with suitable sequences.
+   - Replace subregs with suitable sequences.
 */
 
 static void
@@ -1995,6 +1997,7 @@ nvptx_reorg (void)
 
   thread_prologue_and_epilogue_insns ();
 
+  /* Compute live regs */
   df_clear_flags (DF_LR_RUN_DCE);
   df_set_flags (DF_NO_INSN_RESCAN | DF_NO_HARD_REGS);
   df_analyze ();
