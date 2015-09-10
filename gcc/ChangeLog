@@ -1,3 +1,11 @@
+2015-09-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2015-08-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (*-*-solaris2*): Enable default_use_cxa_atexit on
+	Solaris 12+.
+
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67523
