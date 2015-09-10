@@ -1,3 +1,11 @@
+2015-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66993
+	* module.c (read_module): If a symtree exists and the symbol has
+	been associated in a submodule from a parent (sub)module, attach
+	the symbol to a 'unique symtree' and the new symbol to the
+	existing symtree.
+
 2015-09-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsic.h (gfc_simplify_mvbits): Remove.

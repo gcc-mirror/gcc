@@ -5132,7 +5132,8 @@ read_module (void)
 
 	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
 
-	  if (st != NULL)
+	  if (st != NULL
+	      && !(st->n.sym && st->n.sym->attr.used_in_submodule))
 	    {
 	      /* Check for ambiguous symbols.  */
 	      if (check_for_ambiguous (st, info))
@@ -5142,14 +5143,23 @@ read_module (void)
 	    }
 	  else
 	    {
-	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
-
-	      /* Create a symtree node in the current namespace for this
-		 symbol.  */
-	      st = check_unique_name (p)
-		   ? gfc_get_unique_symtree (gfc_current_ns)
-		   : gfc_new_symtree (&gfc_current_ns->sym_root, p);
-	      st->ambiguous = ambiguous;
+	      if (st)
+		{
+		  /* This symbol is host associated from a module in a
+		     submodule.  Hide it with a unique symtree.  */
+		  gfc_symtree *s = gfc_get_unique_symtree (gfc_current_ns);
+		  s->n.sym = st->n.sym;
+		  st->n.sym = NULL;
+		}
+	      else
+		{
+		  /* Create a symtree node in the current namespace for this
+		     symbol.  */
+		  st = check_unique_name (p)
+		       ? gfc_get_unique_symtree (gfc_current_ns)
+		       : gfc_new_symtree (&gfc_current_ns->sym_root, p);
+		  st->ambiguous = ambiguous;
+		}
 
 	      sym = info->u.rsym.sym;
 

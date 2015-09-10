@@ -1,3 +1,8 @@
+2015-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66993
+	* gfortran.dg/submodule_11.f08: New test.
+
 2015-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/67506
@@ -476,7 +481,7 @@
 
 2015-08-28  Andrew Bennett  <andrew.bennett@imgtec.com>
 
-	* gcc.target/mips/madd-8.c: Add lo register to clobber list. 
+	* gcc.target/mips/madd-8.c: Add lo register to clobber list.
 	* gcc.target/mips/msub-8.c: Ditto
 
 2015-08-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
