@@ -4523,6 +4523,12 @@ Binary_expression::eval_constant(Operator op, Numeric_constant* left_nc,
     return false;
   if (!is_shift && !right_nc->set_type(type, true, location))
     return false;
+  if (is_shift
+      && ((left_type->integer_type() == NULL
+           && !left_type->is_abstract())
+          || (right_type->integer_type() == NULL
+              && !right_type->is_abstract())))
+    return false;
 
   bool r;
   if (type->complex_type() != NULL)
