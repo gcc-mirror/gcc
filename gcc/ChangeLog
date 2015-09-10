@@ -1,5 +1,9 @@
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/67521
+	* gimplify.c (gimplify_omp_for): Don't call omp_add_variable
+	if decl is already in outer->variables.
+
 	PR middle-end/67517
 	* gimplify.c (gimplify_scan_omp_clauses): Instead of
 	asserting that decl is not specified in octx->variables,
