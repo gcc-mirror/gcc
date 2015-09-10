@@ -14016,6 +14016,9 @@ sh_extending_set_of_reg::use_as_extended_reg (rtx_insn* use_at_insn) const
   else
     {
       rtx extension_dst = XEXP (set_rtx, 0);
+      if (GET_MODE (extension_dst) != SImode)
+	extension_dst = simplify_gen_subreg (SImode, extension_dst,
+					     GET_MODE (extension_dst), 0);
       if (modified_between_p (extension_dst, insn, use_at_insn))
 	{
 	  if (dump_file)
