@@ -880,7 +880,11 @@ endif
 endif
 
 if LIBGO_IS_SOLARIS
+if HAVE_STAT_TIMESPEC
+go_os_stat_file = go/os/stat_atim.go
+else
 go_os_stat_file = go/os/stat_solaris.go
+endif
 else
 if LIBGO_IS_LINUX
 go_os_stat_file = go/os/stat_atim.go
