@@ -3636,6 +3636,8 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
    eliminations in its operands and record cases where eliminating a reg with
    an invariant equivalence would add extra cost.  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 static void
 elimination_costs_in_insn (rtx_insn *insn)
 {
@@ -3785,6 +3787,7 @@ elimination_costs_in_insn (rtx_insn *insn)
 
   return;
 }
+#pragma GCC diagnostic pop
 
 /* Loop through all elimination pairs.
    Recalculate the number not at initial offset.
