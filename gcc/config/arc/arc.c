@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "rtl-iter.h"
 
-/* Which cpu we're compiling for (A5, ARC600, ARC601, ARC700).  */
+/* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
 static const char *arc_cpu_string = "";
 
 /* ??? Loads can handle any constant, stores can only handle small ones.  */
@@ -702,11 +702,7 @@ arc_init (void)
 {
   enum attr_tune tune_dflt = TUNE_NONE;
 
-  if (TARGET_A5)
-    {
-      arc_cpu_string = "A5";
-    }
-  else if (TARGET_ARC600)
+  if (TARGET_ARC600)
     {
       arc_cpu_string = "ARC600";
       tune_dflt = TUNE_ARC600;
@@ -755,7 +751,7 @@ arc_init (void)
 	break;
       }
 
-  /* Support mul64 generation only for A5 and ARC600.  */
+  /* Support mul64 generation only for ARC600.  */
   if (TARGET_MUL64_SET && TARGET_ARC700)
       error ("-mmul64 not supported for ARC700");
 
@@ -1280,7 +1276,7 @@ arc_conditional_register_usage (void)
 	   i <= ARC_LAST_SIMD_DMA_CONFIG_REG; i++)
 	reg_alloc_order [i] = i;
     }
-  /* For Arctangent-A5 / ARC600, lp_count may not be read in an instruction
+  /* For ARC600, lp_count may not be read in an instruction
      following immediately after another one setting it to a new value.
      There was some discussion on how to enforce scheduling constraints for
      processors with missing interlocks on the gcc mailing list:
@@ -2093,7 +2089,7 @@ arc_compute_frame_size (int size)	/* size = # of var. bytes allocated.  */
   total_size = ARC_STACK_ALIGN (total_size);
 
   /* Compute offset of register save area from stack pointer:
-     A5 Frame: pretend_size <blink> reg_size <fp> var_size args_size <--sp
+     Frame: pretend_size <blink> reg_size <fp> var_size args_size <--sp
   */
   reg_offset = (total_size - (pretend_size + reg_size + extra_size)
 		+ (frame_pointer_needed ? 4 : 0));

@@ -17,8 +17,6 @@
 # with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Selecting -mA5 uses the same functional multilib files/libraries
-# as get used for -mARC600 aka -mA6.
 MULTILIB_OPTIONS=mcpu=ARC600/mcpu=ARC601 mmul64/mmul32x16 mnorm
 MULTILIB_DIRNAMES=arc600 arc601 mul64 mul32x16 norm
 #
@@ -26,7 +24,6 @@ MULTILIB_DIRNAMES=arc600 arc601 mul64 mul32x16 norm
 MULTILIB_MATCHES  = mcpu?ARC600=mcpu?arc600
 MULTILIB_MATCHES += mcpu?ARC600=mARC600
 MULTILIB_MATCHES += mcpu?ARC600=mA6
-MULTILIB_MATCHES += mcpu?ARC600=mA5
 MULTILIB_MATCHES += mcpu?ARC600=mno-mpy
 MULTILIB_MATCHES += mcpu?ARC601=mcpu?arc601
 MULTILIB_MATCHES += EL=mlittle-endian
