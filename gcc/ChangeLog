@@ -1,4 +1,11 @@
-2015-09-09  Mark Wielaard  <mjw@redhat.com>
+2015-09-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* shrink-wrap.c (requires_stack_frame_p): Make static.
+	(prepare_shrink_wrap): Likewise.
+	(dup_block_and_redirect): Likewise.
+	* shrink-wrap.h: Remove declarations of those functions.
+
+2015-09-10  Mark Wielaard  <mjw@redhat.com>
 
 	* doc/invoke.texi (Wnonnull): Also warns when comparing against NULL.
 
