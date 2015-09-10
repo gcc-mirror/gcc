@@ -1,5 +1,10 @@
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/67517
+	* gimplify.c (gimplify_scan_omp_clauses): Instead of
+	asserting that decl is not specified in octx->variables,
+	break out of the loop if it is.
+
 	PR c++/67514
 	* gimplify.c (gimplify_omp_for): For loop SIMD construct, if
 	iterator is not explicitly determined, but is defined inside
