@@ -1,3 +1,11 @@
+2015-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67514
+	* gimplify.c (gimplify_omp_for): For loop SIMD construct, if
+	iterator is not explicitly determined, but is defined inside
+	of the combined workshare region, handle it like if it has
+	DECL_EXPR in OMP_FOR_PRE_BODY.
+
 2015-09-09  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline:

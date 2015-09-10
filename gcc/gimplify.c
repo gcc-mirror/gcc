@@ -7104,13 +7104,27 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  OMP_CLAUSE_LINEAR_NO_COPYOUT (c) = 1;
 		  flags |= GOVD_LINEAR_LASTPRIVATE_NO_OUTER;
 		}
+	      struct gimplify_omp_ctx *outer
+		= gimplify_omp_ctxp->outer_context;
+	      if (outer && !OMP_CLAUSE_LINEAR_NO_COPYOUT (c))
+		{
+		  if (outer->region_type == ORT_WORKSHARE
+		      && outer->combined_loop)
+		    {
+		      n = splay_tree_lookup (outer->variables,
+					     (splay_tree_key)decl);
+		      if (n != NULL && (n->value & GOVD_LOCAL) != 0)
+			{
+			  OMP_CLAUSE_LINEAR_NO_COPYOUT (c) = 1;
+			  flags |= GOVD_LINEAR_LASTPRIVATE_NO_OUTER;
+			}
+		    }
+		}
+
 	      OMP_CLAUSE_DECL (c) = decl;
 	      OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (for_stmt);
 	      OMP_FOR_CLAUSES (for_stmt) = c;
-	      
 	      omp_add_variable (gimplify_omp_ctxp, decl, flags);
-	      struct gimplify_omp_ctx *outer
-		= gimplify_omp_ctxp->outer_context;
 	      if (outer && !OMP_CLAUSE_LINEAR_NO_COPYOUT (c))
 		{
 		  if (outer->region_type == ORT_WORKSHARE
@@ -7147,9 +7161,16 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  if (outer->region_type == ORT_WORKSHARE
 		      && outer->combined_loop)
 		    {
-		      if (outer->outer_context
-			  && (outer->outer_context->region_type
-			      == ORT_COMBINED_PARALLEL))
+		      n = splay_tree_lookup (outer->variables,
+					     (splay_tree_key)decl);
+		      if (n != NULL && (n->value & GOVD_LOCAL) != 0)
+			{
+			  lastprivate = false;
+			  outer = NULL;
+			}
+		      else if (outer->outer_context
+			       && (outer->outer_context->region_type
+				   == ORT_COMBINED_PARALLEL))
 			outer = outer->outer_context;
 		      else if (omp_check_private (outer, decl, false))
 			outer = NULL;
