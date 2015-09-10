@@ -68,7 +68,7 @@ along with GCC; see the file COPYING3.  If not see
    PROLOGUE_USED contains the hard registers used in the function
    prologue.  SET_UP_BY_PROLOGUE is the set of registers we expect the
    prologue to set up for the function.  */
-static bool
+bool
 requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
 			HARD_REG_SET set_up_by_prologue)
 {
