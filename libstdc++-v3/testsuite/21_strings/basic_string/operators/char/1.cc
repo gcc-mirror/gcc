@@ -36,9 +36,11 @@ int test01(void)
   str1 = std::string("8-chars_") + "8-chars_";
   str1.c_str();
   // printf("1:%s\n", str1.c_str());
+  VERIFY( str1 == "8-chars_8-chars_" );
   str2 = str1 + "7-chars";
   // printf("2:%s\n", str1.c_str()); //str1 is gone
   str1.c_str();
+  VERIFY( str1 == "8-chars_8-chars_" );
   return 0;
 }
 
