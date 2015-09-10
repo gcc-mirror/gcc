@@ -1,3 +1,9 @@
+2015-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67502
+	* c-parser.c (c_parser_omp_for_loop): Emit DECL_EXPR stmts
+	into OMP_FOR_PRE_BODY rather than before the loop.
+
 2015-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/67501
