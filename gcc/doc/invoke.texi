@@ -3720,6 +3720,9 @@ formats that may yield only a two-digit year.
 Warn about passing a null pointer for arguments marked as
 requiring a non-null value by the @code{nonnull} function attribute.
 
+Also warns when comparing an argument marked with the @code{nonnull}
+function attribute against null inside the function.
+
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
 
