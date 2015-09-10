@@ -1,3 +1,9 @@
+2015-09-10  Jiong Wang  <jiong.wang@arm.com>
+
+	PR rtl-optimization/67421
+	* expr.c (expand_expr_real_2): Cost instrcution sequences when doing
+	left wide shift tranformation.
+
 2015-09-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* common/config/arc/arc-common.c: Remove references to A5.
