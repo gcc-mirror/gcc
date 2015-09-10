@@ -565,7 +565,10 @@ components of the binutils you intend to build alongside the compiler
 @file{opcodes}, @dots{}) to the directory containing the GCC sources.
 
 Likewise the GMP, MPFR and MPC libraries can be automatically built
-together with GCC.  Unpack the GMP, MPFR and/or MPC source
+together with GCC.  You may simply run the
+./contrib/download_prerequisites script in the GCC source directory
+to set up everythingu.
+Otherwise unpack the GMP, MPFR and/or MPC source
 distributions in the directory containing the GCC sources and rename
 their directories to @file{gmp}, @file{mpfr} and @file{mpc},
 respectively (or use symbolic links with the same name).
