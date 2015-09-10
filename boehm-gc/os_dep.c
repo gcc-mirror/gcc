@@ -3184,13 +3184,11 @@ void GC_dirty_init()
 	    	      		(GC_words_allocd + GC_words_allocd_before_gc));
 #	endif       
     }
-    sprintf(buf, "/proc/%d", getpid());
-    fd = open(buf, O_RDONLY);
-    if (fd < 0) {
+    sprintf(buf, "/proc/%d/pagedata", getpid());
+    GC_proc_fd = open(buf, O_RDONLY);
+    if (GC_proc_fd < 0) {
     	ABORT("/proc open failed");
     }
-    GC_proc_fd = syscall(SYS_ioctl, fd, PIOCOPENPD, 0);
-    close(fd);
     syscall(SYS_fcntl, GC_proc_fd, F_SETFD, FD_CLOEXEC);
     if (GC_proc_fd < 0) {
     	ABORT("/proc ioctl failed");

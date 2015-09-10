@@ -1,3 +1,11 @@
+2015-09-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2015-08-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* os_dep.c [GC_SOLARIS_THREADS] (GC_dirty_init): Use
+	/proc/<pid>/pagedata instead of PIOCOPENPD.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
