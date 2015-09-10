@@ -1,5 +1,12 @@
 2015-09-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/67522
+	* semantics.c (handle_omp_array_sections_1): Only run
+	type_dependent_expression_p on VAR_DECL/PARM_DECLs.
+	(finish_omp_clauses) <case OMP_CLAUSE_LINEAR>: Likewise.
+	Don't adjust OMP_CLAUSE_LINEAR_STEP if OMP_CLAUSE_DECL
+	is not a VAR_DECL/PARM_DECL.
+
 	PR c++/67511
 	* semantics.c (handle_omp_for_class_iterator): Don't wrap
 	error_mark_node into a NOP_EXPR to void_type_node.
