@@ -1,3 +1,8 @@
+2015-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67506
+	* gcc.c-torture/compile/pr67506.c: New test.
+
 2015-09-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/vector/vec-genbytemask-1.c: Add check for V1TI
