@@ -465,12 +465,20 @@ extern char *getwd (char *);
 extern void *sbrk (int);
 #endif
 
+#if defined (HAVE_DECL_SETENV) && !HAVE_DECL_SETENV
+int setenv(const char *, const char *, int);
+#endif
+
 #if defined (HAVE_DECL_STRSTR) && !HAVE_DECL_STRSTR
 extern char *strstr (const char *, const char *);
 #endif
 
 #if defined (HAVE_DECL_STPCPY) && !HAVE_DECL_STPCPY
 extern char *stpcpy (char *, const char *);
+#endif
+
+#if defined (HAVE_DECL_UNSETENV) && !HAVE_DECL_UNSETENV
+int unsetenv(const char *);
 #endif
 
 #ifdef __cplusplus
