@@ -1,3 +1,9 @@
+2015-09-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/67439
+	* config/arm/arm.md (*arm32_movhf): Remove !arm_restrict_it from
+	predicate.  Set predicable_short_it attr to "no".
+
 2015-09-10  Jiong Wang  <jiong.wang@arm.com>
 
 	PR rtl-optimization/67421
