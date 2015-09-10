@@ -575,6 +575,7 @@ namespace __gnu_test
 
       T& operator*() const { return *value; }
       T* operator->() const { return value; }
+      T& operator[](difference_type n) const { return value[n]; }
 
       Derived& operator++() { ++value; return derived(); }
       Derived operator++(int) { Derived tmp(derived()); ++value; return tmp; }
