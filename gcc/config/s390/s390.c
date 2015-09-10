@@ -2265,6 +2265,11 @@ s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
     return false;
 
   size = GET_MODE_UNIT_BITSIZE (GET_MODE (op));
+
+  /* We cannot deal with V1TI/V1TF. This would require a vgmq.  */
+  if (size > 64)
+    return false;
+
   mask = UINTVAL (elt);
   if (s390_contiguous_bitmask_p (mask, size, start,
 				 end != NULL ? &length : NULL))
