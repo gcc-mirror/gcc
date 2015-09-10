@@ -337,8 +337,12 @@
 	(match_test "GET_CODE (PATTERN (insn)) == COND_EXEC") (const_int 4)]
       (const_int 2))
 
-    (eq_attr "iscompact" "true_limm,maybe_limm")
+    (eq_attr "iscompact" "true_limm")
     (const_int 6)
+
+    (eq_attr "iscompact" "maybe_limm")
+    (cond [(match_test "GET_CODE (PATTERN (insn)) == COND_EXEC") (const_int 8)]
+	  (const_int 6))
 
     (eq_attr "type" "load")
     (if_then_else
