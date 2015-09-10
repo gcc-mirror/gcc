@@ -1,3 +1,8 @@
+2015-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* reload1.c (elimination_costs_in_insn): Locally turn
+	-Wmaybe-uninitialized into a warning.
+
 2015-09-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* shrink-wrap.c (requires_stack_frame_p): Make static.
