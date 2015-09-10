@@ -2600,14 +2600,18 @@ gfc_check_init_expr (gfc_expr *e)
       break;
 
     case EXPR_SUBSTRING:
-      t = gfc_check_init_expr (e->ref->u.ss.start);
-      if (!t)
-	break;
+      if (e->ref)
+	{
+	  t = gfc_check_init_expr (e->ref->u.ss.start);
+	  if (!t)
+	    break;
 
-      t = gfc_check_init_expr (e->ref->u.ss.end);
-      if (t)
-	t = gfc_simplify_expr (e, 0);
-
+	  t = gfc_check_init_expr (e->ref->u.ss.end);
+	  if (t)
+	    t = gfc_simplify_expr (e, 0);
+	}
+      else
+	t = false;
       break;
 
     case EXPR_STRUCTURE:
