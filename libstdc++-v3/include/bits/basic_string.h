@@ -379,9 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @brief  Default constructor creates an empty string.
        */
       basic_string()
-#if __cplusplus >= 201103L
-      noexcept(is_nothrow_default_constructible<_Alloc>::value)
-#endif
+      _GLIBCXX_NOEXCEPT_IF(is_nothrow_default_constructible<_Alloc>::value)
       : _M_dataplus(_M_local_data())
       { _M_set_length(0); }
 
@@ -389,7 +387,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @brief  Construct an empty string using allocator @a a.
        */
       explicit
-      basic_string(const _Alloc& __a)
+      basic_string(const _Alloc& __a) _GLIBCXX_NOEXCEPT
       : _M_dataplus(_M_local_data(), __a)
       { _M_set_length(0); }
 
@@ -398,7 +396,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __str  Source string.
        */
       basic_string(const basic_string& __str)
-      : _M_dataplus(_M_local_data(), __str._M_get_allocator()) // TODO A traits
+      : _M_dataplus(_M_local_data(),
+		    _Alloc_traits::_S_select_on_copy(__str._M_get_allocator()))
       { _M_construct(__str._M_data(), __str._M_data() + __str.length()); }
 
       /**
@@ -511,10 +510,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { _M_construct(__str.begin(), __str.end()); }
 
       basic_string(basic_string&& __str, const _Alloc& __a)
+      noexcept(_Alloc_traits::_S_always_equal())
       : _M_dataplus(_M_local_data(), __a)
       {
-	if (__str.get_allocator() == __a)
-	  *this = std::move(__str);
+	if (__str._M_is_local())
+	  {
+	    traits_type::copy(_M_local_buf, __str._M_local_buf,
+			      _S_local_capacity + 1);
+	    _M_length(__str.length());
+	    __str._M_set_length(0);
+	  }
+	else if (_Alloc_traits::_S_always_equal()
+	    || __str.get_allocator() == __a)
+	  {
+	    _M_data(__str._M_data());
+	    _M_length(__str.length());
+	    _M_capacity(__str._M_allocated_capacity);
+	    __str._M_data(__str._M_local_buf);
+	    __str._M_set_length(0);
+	  }
 	else
 	  _M_construct(__str.begin(), __str.end());
       }
@@ -550,7 +564,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_string&
       operator=(const basic_string& __str)
-      { return this->assign(__str); }
+      {
+#if __cplusplus >= 201103L
+	if (_Alloc_traits::_S_propagate_on_copy_assign())
+	  {
+	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
+		&& _M_get_allocator() != __str._M_get_allocator())
+	      {
+		// replacement allocator cannot free existing storage
+		_M_destroy(_M_allocated_capacity);
+		_M_data(_M_local_data());
+		_M_set_length(0);
+	      }
+	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
+	  }
+#endif
+	return this->assign(__str);
+      }
 
       /**
        *  @brief  Copy contents of @a s into this string.
@@ -587,8 +617,51 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // 2063. Contradictory requirements for string move assignment
       basic_string&
       operator=(basic_string&& __str)
+      noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	this->swap(__str);
+	if (!_M_is_local() && _Alloc_traits::_S_propagate_on_move_assign()
+	    && !_Alloc_traits::_S_always_equal()
+	    && _M_get_allocator() != __str._M_get_allocator())
+	  {
+	    // Destroy existing storage before replacing allocator.
+	    _M_destroy(_M_allocated_capacity);
+	    _M_data(_M_local_data());
+	    _M_set_length(0);
+	  }
+	// Replace allocator if POCMA is true.
+	std::__alloc_on_move(_M_get_allocator(), __str._M_get_allocator());
+
+	if (!__str._M_is_local()
+	    && (_Alloc_traits::_S_propagate_on_move_assign()
+	      || _Alloc_traits::_S_always_equal()))
+	  {
+	    pointer __data = nullptr;
+	    size_type __capacity;
+	    if (!_M_is_local())
+	      {
+		if (_Alloc_traits::_S_always_equal())
+		  {
+		    __data = _M_data();
+		    __capacity = _M_allocated_capacity;
+		  }
+		else
+		  _M_destroy(_M_allocated_capacity);
+	      }
+
+	    _M_data(__str._M_data());
+	    _M_length(__str.length());
+	    _M_capacity(__str._M_allocated_capacity);
+	    if (__data)
+	      {
+		__str._M_data(__data);
+		__str._M_capacity(__capacity);
+	      }
+	    else
+	      __str._M_data(__str._M_local_buf);
+	  }
+	else
+	    assign(__str);
+	__str.clear();
 	return *this;
       }
 
@@ -1119,6 +1192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_string&
       assign(basic_string&& __str)
+      noexcept(_Alloc_traits::_S_nothrow_move())
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 2063. Contradictory requirements for string move assignment
@@ -4961,13 +5035,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.compare(__rhs) == 0; }
 
   template<typename _CharT>
     inline
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, bool>::__type
     operator==(const basic_string<_CharT>& __lhs,
-	       const basic_string<_CharT>& __rhs)
+	       const basic_string<_CharT>& __rhs) _GLIBCXX_NOEXCEPT
     { return (__lhs.size() == __rhs.size()
 	      && !std::char_traits<_CharT>::compare(__lhs.data(), __rhs.data(),
 						    __lhs.size())); }
@@ -5007,6 +5082,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator!=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return !(__lhs == __rhs); }
 
   /**
@@ -5044,6 +5120,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator<(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.compare(__rhs) < 0; }
 
   /**
@@ -5081,6 +5158,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.compare(__rhs) > 0; }
 
   /**
@@ -5118,6 +5196,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator<=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.compare(__rhs) <= 0; }
 
   /**
@@ -5155,6 +5234,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator>=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT
     { return __lhs.compare(__rhs) >= 0; }
 
   /**
@@ -5192,6 +5272,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline void
     swap(basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	 basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
 
