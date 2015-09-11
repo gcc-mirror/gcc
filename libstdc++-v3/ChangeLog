@@ -1,3 +1,8 @@
+2015-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65142
+	* src/c++11/random.cc (random_device::_M_getval()): Check read result.
+
 2015-09-11  John Marino  <gnugcc@marino.st>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
