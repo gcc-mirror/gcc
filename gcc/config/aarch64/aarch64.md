@@ -1099,8 +1099,8 @@
 })
 
 (define_expand "mov<mode>"
-  [(set (match_operand:GPF_F16 0 "nonimmediate_operand" "")
-	(match_operand:GPF_F16 1 "general_operand" ""))]
+  [(set (match_operand:GPF_TF_F16 0 "nonimmediate_operand" "")
+	(match_operand:GPF_TF_F16 1 "general_operand" ""))]
   ""
   {
     if (!TARGET_FLOAT)
@@ -1172,24 +1172,6 @@
    mov\\t%x0, %x1"
   [(set_attr "type" "f_mcr,f_mrc,fmov,fconstd,\
                      f_loadd,f_stored,load1,store1,mov_reg")]
-)
-
-(define_expand "movtf"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "")
-	(match_operand:TF 1 "general_operand" ""))]
-  ""
-  {
-    if (!TARGET_FLOAT)
-      {
-	aarch64_err_no_fpadvsimd (TFmode, "code");
-	FAIL;
-      }
-
-    if (GET_CODE (operands[0]) == MEM
-        && ! (GET_CODE (operands[1]) == CONST_DOUBLE
-	      && aarch64_float_const_zero_rtx_p (operands[1])))
-      operands[1] = force_reg (TFmode, operands[1]);
-  }
 )
 
 (define_insn "*movtf_aarch64"

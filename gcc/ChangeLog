@@ -1,3 +1,11 @@
+2015-09-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/63304
+        * config/aarch64/aarch.md (mov<mode>:GPF_F16): Use GPF_TF_F16.
+        (movtf): Delete.
+        * config/aarch64/iterators.md (GPF_TF_F16): New.
+        (GPF_F16): Delete.
+
 2015-09-10  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_expand_call): Add spacing.

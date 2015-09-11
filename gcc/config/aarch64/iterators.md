@@ -38,8 +38,8 @@
 ;; Iterator for General Purpose Floating-point registers (32- and 64-bit modes)
 (define_mode_iterator GPF [SF DF])
 
-;; Iterator for General Purpose Float registers, inc __fp16.
-(define_mode_iterator GPF_F16 [HF SF DF])
+;; Iterator for all scalar floating point modes (HF, SF, DF and TF)
+(define_mode_iterator GPF_TF_F16 [HF SF DF TF])
 
 ;; Double vector modes.
 (define_mode_iterator VDF [V2SF V4HF])
