@@ -1,3 +1,13 @@
+2015-09-11  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* tree-ssa-dom.c (struct cond_equivalence): Update comment.
+	* tree-ssa-scopedtables.h (class const_and_copies): Prefix data
+	member with m_.  Update inline member functions as necessary.  Add
+	toplevel comment.
+	* tree-ssa-scopedtables.c: Update const_and_copies's member
+	functions to use m_ prefix to access the stack.
+
 2015-09-11  Aditya Kumar  <aditya.k7@samsung.com>
 
         * graphite-optimize-isl.c (disable_tiling): Remove.

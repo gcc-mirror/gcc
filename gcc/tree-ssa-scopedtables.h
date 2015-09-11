@@ -20,14 +20,20 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_SCOPED_TABLES_H
 #define GCC_TREE_SSA_SCOPED_TABLES_H
 
+/* This class defines an unwindable const/copy equivalence table
+   layered on top of SSA_NAME_VALUE/set_ssa_name_value.
+
+   Essentially it's just a stack of name,prev value pairs with a
+   special marker (NULL) to indicate unwind points.  */
+
 class const_and_copies
 {
  public:
-  const_and_copies (void) { stack.create (20); };
-  ~const_and_copies (void) { stack.release (); }
+  const_and_copies (void) { m_stack.create (20); };
+  ~const_and_copies (void) { m_stack.release (); }
 
   /* Push the unwinding marker onto the stack.  */
-  void push_marker (void) { stack.safe_push (NULL_TREE); }
+  void push_marker (void) { m_stack.safe_push (NULL_TREE); }
 
   /* Restore the const/copies table to its state when the last marker
      was pushed.  */
@@ -47,7 +53,7 @@ class const_and_copies
   void invalidate (tree);
 
  private:
-  vec<tree> stack;
+  vec<tree> m_stack;
 };
 
 #endif /* GCC_TREE_SSA_SCOPED_TABLES_H */
