@@ -1,3 +1,9 @@
+2015-09-11  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.am (backtrace.lo): Depend on internal.h.
+	(sort.lo, stest.lo): Add explicit dependencies.
+	* Makefile.in: Rebuild.
+
 2015-09-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* backtrace.c: #include <sys/types.h>.
