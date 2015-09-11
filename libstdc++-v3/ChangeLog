@@ -1,3 +1,16 @@
+2015-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65092
+	* include/bits/stl_queue.h (queue, priority_queue): Add
+	allocator-extended constructors.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* testsuite/23_containers/priority_queue/requirements/
+	uses_allocator.cc: Test allocator-extended constructors.
+	* testsuite/23_containers/queue/requirements/uses_allocator.cc:
+	Likewise.
+	* testsuite/23_containers/stack/requirements/uses_allocator.cc:
+	Likewise.
+
 2015-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (PointerBase::operator[]): Add.

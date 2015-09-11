@@ -110,6 +110,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         friend bool
         operator<(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
 
+#if __cplusplus >= 201103L
+      template<typename _Alloc>
+	using _Uses = typename
+	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
+#endif
+
     public:
       typedef typename _Sequence::value_type                value_type;
       typedef typename _Sequence::reference                 reference;
@@ -144,6 +150,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit
       queue(_Sequence&& __c = _Sequence())
       : c(std::move(__c)) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	explicit
+	queue(const _Alloc& __a)
+	: c(__a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	queue(const _Sequence& __c, const _Alloc& __a)
+	: c(__c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	queue(_Sequence&& __c, const _Alloc& __a)
+	: c(std::move(__c), __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	queue(const queue& __q, const _Alloc& __a)
+	: c(__q.c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	queue(queue&& __q, const _Alloc& __a)
+	: c(std::move(__q.c), __a) { }
 #endif
 
       /**
@@ -378,6 +405,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_class_requires4(_Compare, bool, _Tp, _Tp,
 				_BinaryFunctionConcept)
 
+#if __cplusplus >= 201103L
+      template<typename _Alloc>
+	using _Uses = typename
+	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
+#endif
+
     public:
       typedef typename _Sequence::value_type                value_type;
       typedef typename _Sequence::reference                 reference;
@@ -412,6 +445,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     _Sequence&& __s = _Sequence())
       : c(std::move(__s)), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	explicit
+	priority_queue(const _Alloc& __a)
+	: c(__a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	priority_queue(const _Compare& __x, const _Alloc& __a)
+	: c(__x, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	priority_queue(const _Compare& __x, const _Sequence& __c,
+		       const _Alloc& __a)
+	: c(__x, __c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	priority_queue(const _Compare& __x, _Sequence&& __c, const _Alloc& __a)
+	: c(__x, std::move(__c), __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	priority_queue(const priority_queue& __q, const _Alloc& __a)
+	: c(__q.c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	priority_queue(priority_queue&& __q, const _Alloc& __a)
+	: c(std::move(__q.c), __a) { }
 #endif
 
       /**

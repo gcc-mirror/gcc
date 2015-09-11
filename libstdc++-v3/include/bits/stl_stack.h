@@ -114,6 +114,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         friend bool
         operator<(const stack<_Tp1, _Seq1>&, const stack<_Tp1, _Seq1>&);
 
+#if __cplusplus >= 201103L
+      template<typename _Alloc>
+	using _Uses = typename
+	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
+#endif
+
     public:
       typedef typename _Sequence::value_type                value_type;
       typedef typename _Sequence::reference                 reference;
@@ -142,6 +148,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit
       stack(_Sequence&& __c = _Sequence())
       : c(std::move(__c)) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	explicit
+	stack(const _Alloc& __a)
+	: c(__a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(const _Sequence& __c, const _Alloc& __a)
+	: c(__c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(_Sequence&& __c, const _Alloc& __a)
+	: c(std::move(__c), __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(const stack& __q, const _Alloc& __a)
+	: c(__q.c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(stack&& __q, const _Alloc& __a)
+	: c(std::move(__q.c), __a) { }
 #endif
 
       /**
