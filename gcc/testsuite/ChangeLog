@@ -1,3 +1,9 @@
+2015-09-11  Alex Velenko  <Alex.Velenko@arm.com>
+
+	Backport from mainline
+	* gcc.target/arm/pr63210.c (dg-skip-if): Skip armv4t.
+	(dg-additional-options): Add -march=armv5t if arm_arch_v5t_ok.
+
 2015-09-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67526
