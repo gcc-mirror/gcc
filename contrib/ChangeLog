@@ -1,3 +1,8 @@
+2015-09-11  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* download_prerequisites: Make sure that script is run from
+	top level source directory.
+
 2015-08-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* update-copyright.py (GCCCmdLine): Add libvtv.

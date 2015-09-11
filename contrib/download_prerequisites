@@ -24,6 +24,11 @@
 # be downloaded.
 GRAPHITE_LOOP_OPT=yes
 
+if [ ! -e gcc/BASE-VER ] ; then
+	echo "You must run this script in the top level GCC source directory."
+	exit 1
+fi
+
 # Necessary to build GCC.
 MPFR=mpfr-2.4.2
 GMP=gmp-4.3.2
