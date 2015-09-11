@@ -1,3 +1,7 @@
+2015-09-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pie-link.c: Add -pie to dg-options.
+
 2015-09-11  Alex Velenko  <Alex.Velenko@arm.com>
 
 	Backport from mainline
