@@ -20,10 +20,43 @@
 
 #include <stack>
 
+using test_type = std::stack<int>;
+using container = test_type::container_type;
+
 template<typename A>
-  using uses_allocator = std::uses_allocator<std::stack<int>, A>;
+  using uses_allocator = std::uses_allocator<test_type, A>;
 
-static_assert( uses_allocator<std::allocator<int>>::value, "valid allocator" );
+template<typename... Args>
+  using is_constructible = std::is_constructible<test_type, Args...>;
 
+// test with valid allocator
+using alloc_type = container::allocator_type;
+
+static_assert( uses_allocator<alloc_type>::value, "valid allocator" );
+
+static_assert( is_constructible<const alloc_type&>::value,
+               "stack(const Alloc&)" );
+static_assert( is_constructible<const container&, const alloc_type&>::value,
+               "stack(const container_type&, const Alloc&)" );
+static_assert( is_constructible<container&&, const alloc_type&>::value,
+               "stack(const container_type&, const Alloc&)" );
+static_assert( is_constructible<const test_type&, const alloc_type&>::value,
+               "stack(const stack&, const Alloc&)" );
+static_assert( is_constructible<test_type&&, const alloc_type&>::value,
+               "stack(const stack&, const Alloc&)" );
+
+// test with invalid allocator
 struct X { };
+
 static_assert( !uses_allocator<X>::value, "invalid allocator" );
+
+static_assert( !is_constructible<const X&>::value,
+               "stack(const NonAlloc&)" );
+static_assert( !is_constructible<const container&, const X&>::value,
+               "stack(const container_type&, const NonAlloc&)" );
+static_assert( !is_constructible<container&&, const X&>::value,
+               "stack(const container_type&, const NonAlloc&)" );
+static_assert( !is_constructible<const test_type&, const X&>::value,
+               "stack(const stack&, const NonAlloc&)" );
+static_assert( !is_constructible<test_type&&, const X&>::value,
+               "stack(const stack&, const NonAlloc&)" );
