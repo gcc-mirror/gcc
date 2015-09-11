@@ -38,7 +38,7 @@ main (int argc, char **argv)
   runtime_isarchive = false;
 
   if (runtime_isstarted)
-    return NULL;
+    return 0;
   runtime_isstarted = true;
 
   runtime_check ();
