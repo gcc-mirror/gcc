@@ -50,9 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "dumpfile.h"
 
-/* Set this to true to disable tiling of nested loops.  */
-static bool disable_tiling = false;
-
 static isl_union_set *
 scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
 {
@@ -177,9 +174,6 @@ get_schedule_for_band (isl_band *band, int *dimensions)
   partial_schedule = isl_band_get_partial_schedule (band);
   *dimensions = isl_band_n_member (band);
 
-  if (disable_tiling)
-    return partial_schedule;
-
   /* It does not make any sense to tile a band with just one dimension.  */
   if (*dimensions == 1)
     {
@@ -204,119 +198,13 @@ get_schedule_for_band (isl_band *band, int *dimensions)
   return isl_union_map_apply_range (partial_schedule, tile_umap);
 }
 
-/* Create a map that pre-vectorizes one scheduling dimension.
-
-   get_prevector_map creates a map that maps each input dimension to the same
-   output dimension, except for the dimension DIM_TO_VECTORIZE.
-   DIM_TO_VECTORIZE is
-   strip mined by 'VECTOR_WIDTH' and the newly created point loop of
-   DIM_TO_VECTORIZE is moved to the innermost level.
-
-   Example (DIM_TO_VECTORIZE=0, SCHEDULE_DIMENSIONS=2,VECTOR_WIDTH=4):
-
-   | Before transformation
-   |
-   | A[i,j] -> [i,j]
-   |
-   | for (i = 0; i < 128; i++)
-   |    for (j = 0; j < 128; j++)
-   |      A(i,j);
-
-     Prevector map:
-     [i,j] -> [it,j,ip] : it % 4 = 0 and it <= ip <= it + 3 and i = ip
-
-   | After transformation:
-   |
-   | A[i,j] -> [it,j,ip] : it % 4 = 0 and it <= ip <= it + 3 and i = ip
-   |
-   | for (it = 0; it < 128; it+=4)
-   |    for (j = 0; j < 128; j++)
-   |      for (ip = max(0,it); ip < min(128, it + 3); ip++)
-   |        A(ip,j);
-
-   The goal of this transformation is to create a trivially vectorizable loop.
-   This means a parallel loop at the innermost level that has a constant number
-   of iterations corresponding to the target vector width.
-
-   This transformation creates a loop at the innermost level. The loop has a
-   constant number of iterations, if the number of loop iterations at
-   DIM_TO_VECTORIZE can be devided by VECTOR_WIDTH. The default VECTOR_WIDTH is
-   currently constant and not yet target specific. This function does not
-   reason about parallelism.  */
-static isl_map *
-get_prevector_map (isl_ctx *ctx, int dim_to_vectorize, int schedule_dimensions,
-		   int vector_width)
-{
-  isl_space *space;
-  isl_local_space *local_space, *local_space_range;
-  isl_set *modulo;
-  isl_map *tiling_map;
-  isl_constraint *c;
-  isl_aff *aff;
-  int point_dimension; /* ip */
-  int tile_dimension;  /* it */
-  isl_val *vector_widthMP;
-  int i;
-
-  /* assert (0 <= DimToVectorize && DimToVectorize < ScheduleDimensions);*/
-
-  space
-    = isl_space_alloc (ctx, 0, schedule_dimensions, schedule_dimensions + 1);
-  tiling_map = isl_map_universe (isl_space_copy (space));
-  local_space = isl_local_space_from_space (space);
-  point_dimension = schedule_dimensions;
-  tile_dimension = dim_to_vectorize;
-
-  /* Create an identity map for everything except DimToVectorize and map
-     DimToVectorize to the point loop at the innermost dimension.  */
-  for (i = 0; i < schedule_dimensions; i++)
-    {
-      c = isl_equality_alloc (isl_local_space_copy (local_space));
-      isl_constraint_set_coefficient_si (c, isl_dim_in, i, -1);
-
-      if (i == dim_to_vectorize)
-	isl_constraint_set_coefficient_si (c, isl_dim_out, point_dimension, 1);
-      else
-	isl_constraint_set_coefficient_si (c, isl_dim_out, i, 1);
-
-      tiling_map = isl_map_add_constraint (tiling_map, c);
-    }
-
-  /* it % 'VectorWidth' = 0  */
-  local_space_range
-    = isl_local_space_range (isl_local_space_copy (local_space));
-  aff = isl_aff_zero_on_domain (local_space_range);
-  aff = isl_aff_set_constant_si (aff, vector_width);
-  aff = isl_aff_set_coefficient_si (aff, isl_dim_in, tile_dimension, 1);
-
-  vector_widthMP = isl_val_int_from_si (ctx, vector_width);
-  aff = isl_aff_mod_val (aff, vector_widthMP);
-  modulo = isl_pw_aff_zero_set (isl_pw_aff_from_aff (aff));
-  tiling_map = isl_map_intersect_range (tiling_map, modulo);
-
-  /* it <= ip */
-  c = isl_inequality_alloc (isl_local_space_copy (local_space));
-  isl_constraint_set_coefficient_si (c, isl_dim_out, tile_dimension, -1);
-  isl_constraint_set_coefficient_si (c, isl_dim_out, point_dimension, 1);
-  tiling_map = isl_map_add_constraint (tiling_map, c);
-
-  /* ip <= it + ('VectorWidth' - 1) */
-  c = isl_inequality_alloc (local_space);
-  isl_constraint_set_coefficient_si (c, isl_dim_out, tile_dimension, 1);
-  isl_constraint_set_coefficient_si (c, isl_dim_out, point_dimension, -1);
-  isl_constraint_set_constant_si (c, vector_width - 1);
-  tiling_map = isl_map_add_constraint (tiling_map, c);
-
-  return tiling_map;
-}
-
-static bool enable_polly_vector = false;
 
 /* get_schedule_for_band_list - Get the scheduling map for a list of bands.
 
    We walk recursively the forest of bands to combine the schedules of the
    individual bands to the overall schedule.  In case tiling is requested,
    the individual bands are tiled.  */
+
 static isl_union_map *
 get_schedule_for_band_list (isl_band_list *band_list)
 {
@@ -348,31 +236,6 @@ get_schedule_for_band_list (isl_band_list *band_list)
 	    = isl_union_map_flat_range_product (partial_schedule,
 						suffixSchedule);
 	  isl_band_list_free (children);
-	}
-      else if (enable_polly_vector)
-	{
-	  for (i = schedule_dimensions - 1; i >= 0; i--)
-	    {
-#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
-	      if (isl_band_member_is_coincident (band, i))
-#else
-	      if (isl_band_member_is_zero_distance (band, i))
-#endif
-		{
-		  /* FIXME: The default VECTOR_WIDTH is currently constant and
-		   * not yet target specific.  */
-		  isl_map *tile_map
-		    = get_prevector_map (ctx, i, schedule_dimensions, 4);
-		  isl_union_map *tile_umap = isl_union_map_from_map (tile_map);
-		  tile_umap
-		    = isl_union_map_align_params (tile_umap,
-						  isl_space_copy (space));
-		  partial_schedule
-		    = isl_union_map_apply_range (partial_schedule,
-						 tile_umap);
-		  break;
-		}
-	    }
 	}
 
       schedule = isl_union_map_union (schedule, partial_schedule);
@@ -423,6 +286,9 @@ apply_schedule_map_to_scop (scop_p scop, isl_union_map *schedule_map)
 }
 
 static const int CONSTANT_BOUND = 20;
+
+/* Compute the schedule for SCOP based on its parameters, domain and set of
+   constraints.  Then apply the schedule to SCOP.  */
 
 bool
 optimize_isl (scop_p scop)
