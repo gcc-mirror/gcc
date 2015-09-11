@@ -35,11 +35,11 @@ along with GCC; see the file COPYING3.  If not see
 void
 const_and_copies::pop_to_marker (void)
 {
-  while (stack.length () > 0)
+  while (m_stack.length () > 0)
     {
       tree prev_value, dest;
 
-      dest = stack.pop ();
+      dest = m_stack.pop ();
 
       /* A NULL value indicates we should stop unwinding, otherwise
 	 pop off the next entry as they're recorded in pairs.  */
@@ -55,7 +55,7 @@ const_and_copies::pop_to_marker (void)
 	  fprintf (dump_file, "\n");
 	}
 
-      prev_value = stack.pop ();
+      prev_value = m_stack.pop ();
       set_ssa_name_value (dest, prev_value);
     }
 }
@@ -90,9 +90,9 @@ const_and_copies::record_const_or_copy (tree x, tree y, tree prev_x)
     }
 
   set_ssa_name_value (x, y);
-  stack.reserve (2);
-  stack.quick_push (prev_x);
-  stack.quick_push (x);
+  m_stack.reserve (2);
+  m_stack.quick_push (prev_x);
+  m_stack.quick_push (x);
 }
 
 /* A new value has been assigned to LHS.  If necessary, invalidate any
@@ -114,16 +114,16 @@ const_and_copies::invalidate (tree lhs)
      then it's a "stop unwinding" marker.  Else the current marker is
      the SSA_NAME with an equivalence and the prior entry in the stack
      is what the current element is equivalent to.  */
-  for (int i = stack.length() - 1; i >= 0; i--)
+  for (int i = m_stack.length() - 1; i >= 0; i--)
     {
       /* Ignore the stop unwinding markers.  */
-      if ((stack)[i] == NULL)
+      if ((m_stack)[i] == NULL)
 	continue;
 
       /* We want to check the current value of stack[i] to see if
 	 it matches LHS.  If so, then invalidate.  */
-      if (SSA_NAME_VALUE ((stack)[i]) == lhs)
-	record_const_or_copy ((stack)[i], NULL_TREE);
+      if (SSA_NAME_VALUE ((m_stack)[i]) == lhs)
+	record_const_or_copy ((m_stack)[i], NULL_TREE);
 
       /* Remember, we're dealing with two elements in this case.  */
       i--;
