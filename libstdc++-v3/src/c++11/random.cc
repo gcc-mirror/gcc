@@ -130,13 +130,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
 
     result_type __ret;
+
 #ifdef _GLIBCXX_HAVE_UNISTD_H
-    read(fileno(static_cast<FILE*>(_M_file)),
-	 static_cast<void*>(&__ret), sizeof(result_type));
+    auto e = read(fileno(static_cast<FILE*>(_M_file)),
+		  static_cast<void*>(&__ret), sizeof(result_type));
 #else
-    std::fread(static_cast<void*>(&__ret), sizeof(result_type),
-	       1, static_cast<FILE*>(_M_file));
+    auto e = std::fread(static_cast<void*>(&__ret), sizeof(result_type),
+		        1, static_cast<FILE*>(_M_file));
 #endif
+    if (e != sizeof(result_type))
+      __throw_runtime_error(__N("random_device could not read enough bytes"));
+
     return __ret;
   }
 
