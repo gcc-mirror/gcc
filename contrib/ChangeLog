@@ -1,3 +1,8 @@
+2015-09-11  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* download_prerequisites: Make sure that script is run from
+	top level source directory.
+
 2015-06-26  Release Manager
 
 	* GCC 4.9.3 released.
