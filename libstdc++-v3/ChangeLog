@@ -1,5 +1,9 @@
 2015-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/67173
+	* src/filesystem/ops.cc (filesystem::canonical): Allocate buffer for
+	realpath on Solaris 10.
+
 	PR libstdc++/65142
 	* src/c++11/random.cc (random_device::_M_getval()): Check read result.
 

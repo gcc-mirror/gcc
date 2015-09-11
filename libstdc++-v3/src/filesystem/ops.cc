@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <limits.h>  // PATH_MAX
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 # if defined(_GLIBCXX_HAVE_SYS_STAT_H) && defined(_GLIBCXX_HAVE_SYS_TYPES_H)
@@ -97,7 +98,11 @@ fs::canonical(const path& p, const path& base, error_code& ec)
 {
   path can;
 #ifdef _GLIBCXX_USE_REALPATH
-  if (char_ptr rp = char_ptr{::realpath(absolute(p, base).c_str(), nullptr)})
+  char* buffer = nullptr;
+#if defined(__SunOS_5_10) && defined(PATH_MAX)
+  buffer = (char*)::malloc(PATH_MAX);
+#endif
+  if (char_ptr rp = char_ptr{::realpath(absolute(p, base).c_str(), buffer)})
     {
       can.assign(rp.get());
       ec.clear();
