@@ -1,5 +1,5 @@
 /* { dg-do link { target pie } } */
-/* { dg-options "-fpie" } */
+/* { dg-options "-fpie -pie" } */
 
 int main(void)
 {
