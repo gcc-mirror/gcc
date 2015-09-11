@@ -19,5 +19,4 @@
 // { dg-do compile }
 
 // libstdc++/67309
-#include <bits/stdc++.h> // TODO: this is missing from <bits/extc++.h>
 #include <bits/extc++.h>
