@@ -1,3 +1,15 @@
+2015-09-11  Aditya Kumar  <aditya.k7@samsung.com>
+
+        * graphite-optimize-isl.c (get_tile_map): Refactor.
+        (get_schedule_for_band): Same.
+        (getScheduleForBand): Same.
+        (get_prevector_map): Same.
+        (get_schedule_for_band_list): Same.
+        (get_schedule_map): Same.
+        (get_single_map): Same.
+        (apply_schedule_map_to_scop): Same.
+        (optimize_isl): Same.
+
 2015-09-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/63304
