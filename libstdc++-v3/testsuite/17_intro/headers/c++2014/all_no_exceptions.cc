@@ -1,3 +1,6 @@
+// { dg-do compile }
+// { dg-options "-std=gnu++14 -fno-exceptions" }
+
 // Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -15,29 +18,4 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++98" }
-// { dg-do compile }
-
-// Ensure the library only uses the __name__ form for attributes.
-// Don't test 'const' because it is reserved anyway.
-#define abi_tag 1
-#define always_inline 1
-#ifndef __APPLE__
-// darwin headers use these, see PR 64883
-# define deprecated 1
-# define noreturn 1
-# define visibility 1
-#endif
-#define packed 1
-#define pure 1
-// glibc's sysdeps/unix/sysv/linux/arm/sys/ucontext.h uses this on ARM.
-#ifndef __arm__
-#define unused 1
-#endif
-
 #include <bits/extc++.h>
-
-int
-main()
-{
-}

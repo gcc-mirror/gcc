@@ -1,5 +1,23 @@
 2015-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/64857
+	* doc/xml/manual/using.xml: Improve aggregate header documentation.
+	* doc/html/manual/*: Regenerate.
+	* include/precompiled/extc++.h: Include <bits/stdc++.h> for C++11
+	and later and include more extension headers.
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Remove
+	redundant header.
+	* testsuite/17_intro/headers/c++200x/: Rename to c++2011.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: Remove
+	redundant headers.
+	* testsuite/17_intro/headers/c++2014/all_no_exceptions.cc: New.
+	* testsuite/17_intro/headers/c++2014/all_no_rtti.cc: New.
+	* testsuite/17_intro/headers/c++2014/all_pedantic_errors.cc: New.
+	* testsuite/17_intro/headers/c++2014/operator_names.cc: New.
+	* testsuite/17_intro/headers/c++2014/stdc++.cc: New.
+	* testsuite/17_intro/headers/c++2014/stdc++_multiple_inclusion.cc:
+	New.
+
 	PR libstdc++/58265
 	* doc/xml/manual/intro.xml: Document LWG 2063 and 2064 resolutions.
 	* doc/html/manual/bugs.html: Regenerate.
