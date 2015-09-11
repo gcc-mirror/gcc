@@ -1,3 +1,24 @@
+2015-09-11  John Marino  <gnugcc@marino.st>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67096
+	* testsuite/22_locale/codecvt/in/wchar_t/4.cc: Do not test code points
+	above U+10FFFF.
+	* testsuite/22_locale/codecvt/in/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9874.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/11.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/13.cc: Likewise.
+
 2015-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64857
