@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1240,6 +1240,12 @@ package body Exp_Ch9 is
       Set_Stored_Constraint             (Rec_Ent, No_Elist);
       Cdecls := New_List;
 
+      --  Propagate type invariants to the corresponding record type
+
+      Set_Has_Invariants                (Rec_Ent, Has_Invariants (Ctyp));
+      Set_Has_Inheritable_Invariants    (Rec_Ent,
+        Has_Inheritable_Invariants (Ctyp));
+
       --  Use discriminals to create list of discriminants for record, and
       --  create new discriminals for use in default expressions, etc. It is
       --  worth noting that a task discriminant gives rise to 5 entities;
@@ -1919,68 +1925,59 @@ package body Exp_Ch9 is
    -----------------------
 
    procedure Build_PPC_Wrapper (E : Entity_Id; Decl : Node_Id) is
+      Items      : constant Node_Id    := Contract (E);
       Loc        : constant Source_Ptr := Sloc (E);
-      Synch_Type : constant Entity_Id := Scope (E);
-
-      Wrapper_Id : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       Chars => New_External_Name (Chars (E), 'E'));
-      --  the wrapper procedure name
-
-      Wrapper_Body : Node_Id;
-
-      Synch_Id : constant Entity_Id :=
-                   Make_Defining_Identifier (Loc,
-                     Chars => New_External_Name (Chars (Scope (E)), 'A'));
-      --  The parameter that designates the synchronized object in the call
-
-      Actuals : constant List_Id := New_List;
-      --  The actuals in the entry call
-
-      Decls : constant List_Id := New_List;
-
+      Synch_Type : constant Entity_Id  := Scope (E);
+      Actuals    : List_Id;
+      Decls      : List_Id;
       Entry_Call : Node_Id;
       Entry_Name : Node_Id;
-
-      Specs : List_Id;
-      --  The specification of the wrapper procedure
+      Params     : List_Id;
+      Prag       : Node_Id;
+      Synch_Id   : Entity_Id;
+      Wrapper_Id : Entity_Id;
 
    begin
-
-      --  Only build the wrapper if entry has pre/postconditions.
+      --  Only build the wrapper if entry has pre/postconditions
       --  Should this be done unconditionally instead ???
 
-      declare
-         P : Node_Id;
+      if Present (Items) then
+         Prag := Pre_Post_Conditions (Items);
 
-      begin
-         P := Pre_Post_Conditions (Contract (E));
-
-         if No (P) then
+         if No (Prag) then
             return;
          end if;
 
          --  Transfer ppc pragmas to the declarations of the wrapper
 
-         while Present (P) loop
-            if Nam_In (Pragma_Name (P), Name_Precondition,
-                                        Name_Postcondition)
+         Decls := New_List;
+
+         while Present (Prag) loop
+            if Nam_In (Pragma_Name (Prag), Name_Precondition,
+                                           Name_Postcondition)
             then
-               Append (Relocate_Node (P), Decls);
+               Append (Relocate_Node (Prag), Decls);
                Set_Analyzed (Last (Decls), False);
             end if;
 
-            P := Next_Pragma (P);
+            Prag := Next_Pragma (Prag);
          end loop;
-      end;
+      else
+         return;
+      end if;
+
+      Actuals  := New_List;
+      Synch_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Scope (E)), 'A'));
 
       --  First formal is synchronized object
 
-      Specs := New_List (
+      Params := New_List (
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Synch_Id,
-          Out_Present         =>  True,
-          In_Present          =>  True,
+          Out_Present         => True,
+          In_Present          => True,
           Parameter_Type      => New_Occurrence_Of (Scope (E), Loc)));
 
       Entry_Name :=
@@ -1996,7 +1993,7 @@ package body Exp_Ch9 is
             Index : constant Entity_Id :=
                       Make_Defining_Identifier (Loc, Name_I);
          begin
-            Append_To (Specs,
+            Append_To (Params,
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Index,
                 Parameter_Type      =>
@@ -2033,7 +2030,7 @@ package body Exp_Ch9 is
                 In_Present          => In_Present  (Parent (Form)),
                 Parameter_Type      => New_Occurrence_Of (Etype (Form), Loc));
 
-            Append (Parm_Spec, Specs);
+            Append (Parm_Spec, Params);
             Append (New_Occurrence_Of (New_Form, Loc), Actuals);
             Next_Formal (Form);
          end loop;
@@ -2065,21 +2062,22 @@ package body Exp_Ch9 is
          end;
       end if;
 
+      Wrapper_Id :=
+        Make_Defining_Identifier (Loc, New_External_Name (Chars (E), 'E'));
       Set_PPC_Wrapper (E, Wrapper_Id);
-      Wrapper_Body :=
+
+      --  The wrapper body is analyzed when the enclosing type is frozen
+
+      Append_Freeze_Action (Defining_Entity (Decl),
         Make_Subprogram_Body (Loc,
           Specification              =>
             Make_Procedure_Specification (Loc,
               Defining_Unit_Name       => Wrapper_Id,
-              Parameter_Specifications => Specs),
+              Parameter_Specifications => Params),
           Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Entry_Call)));
-
-      --  The wrapper body is analyzed when the enclosing type is frozen
-
-      Append_Freeze_Action (Defining_Entity (Decl), Wrapper_Body);
+              Statements => New_List (Entry_Call))));
    end Build_PPC_Wrapper;
 
    --------------------------
@@ -2639,11 +2637,12 @@ package body Exp_Ch9 is
             if Nkind (Parameter_Type (First_Param)) = N_Access_Definition then
                Obj_Param_Typ :=
                  Make_Access_Definition (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Obj_Typ, Loc));
-               Set_Null_Exclusion_Present (Obj_Param_Typ,
-                 Null_Exclusion_Present (Parameter_Type (First_Param)));
-
+                   Subtype_Mark           =>
+                     New_Occurrence_Of (Obj_Typ, Loc),
+                   Null_Exclusion_Present =>
+                     Null_Exclusion_Present (Parameter_Type (First_Param)),
+                   Constant_Present       =>
+                     Constant_Present (Parameter_Type (First_Param)));
             else
                Obj_Param_Typ := New_Occurrence_Of (Obj_Typ, Loc);
             end if;
@@ -4031,8 +4030,9 @@ package body Exp_Ch9 is
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
                Make_Defining_Identifier (Sloc (Formal), Chars (Formal)),
-             In_Present          => In_Present (Parent (Formal)),
-             Out_Present         => Out_Present (Parent (Formal)),
+             Aliased_Present     => Aliased_Present (Parent (Formal)),
+             In_Present          => In_Present      (Parent (Formal)),
+             Out_Present         => Out_Present     (Parent (Formal)),
              Parameter_Type      => New_Occurrence_Of (Etype (Formal), Loc));
 
          if Unprotected then
@@ -4284,7 +4284,7 @@ package body Exp_Ch9 is
             Append (Unprot_Call, Stmts);
          end if;
 
-         --  Historical note: Previously, call the the cleanup was inserted
+         --  Historical note: Previously, call to the cleanup was inserted
          --  here. This is now done by Build_Protected_Subprogram_Call_Cleanup,
          --  which is also shared by the 'not Exc_Safe' path.
 
@@ -12085,6 +12085,7 @@ package body Exp_Ch9 is
          Ent := First_Entity (Tasktyp);
          while Present (Ent) loop
             if Ekind_In (Ent, E_Entry, E_Entry_Family)
+              and then Present (Contract (Ent))
               and then Present (Pre_Post_Conditions (Contract (Ent)))
             then
                Build_PPC_Wrapper (Ent, N);
@@ -12152,7 +12153,7 @@ package body Exp_Ch9 is
 
    --  3) Ada 2005 (AI-345): When T.E is a dispatching procedure call, there
    --     is no delay and the triggering statements are executed. We first
-   --     determine the kind of of the triggering call and then execute a
+   --     determine the kind of the triggering call and then execute a
    --     synchronized operation or a direct call.
 
    --    declare

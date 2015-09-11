@@ -36,11 +36,6 @@ sed_minuso='s/.* -o \([^ ]*\).*/\1/p'
 
 # In the cases where this matters, `missing' is being run in the
 # srcdir already.
-if test -f configure.ac; then
-  configure_ac=configure.ac
-else
-  configure_ac=configure.in
-fi
 
 msg="missing on your system"
 
@@ -150,7 +145,7 @@ case $program in
   aclocal*)
     echo 1>&2 "\
 WARNING: \`$1' is $msg.  You should only need it if
-         you modified \`acinclude.m4' or \`${configure_ac}'.  You might want
+         you modified \`acinclude.m4' or \`configure.ac'.  You might want
          to install the \`Automake' and \`Perl' packages.  Grab them from
          any GNU archive site."
     touch aclocal.m4
@@ -159,7 +154,7 @@ WARNING: \`$1' is $msg.  You should only need it if
   autoconf*)
     echo 1>&2 "\
 WARNING: \`$1' is $msg.  You should only need it if
-         you modified \`${configure_ac}'.  You might want to install the
+         you modified \`configure.ac'.  You might want to install the
          \`Autoconf' and \`GNU m4' packages.  Grab them from any GNU
          archive site."
     touch configure
@@ -168,10 +163,10 @@ WARNING: \`$1' is $msg.  You should only need it if
   autoheader*)
     echo 1>&2 "\
 WARNING: \`$1' is $msg.  You should only need it if
-         you modified \`acconfig.h' or \`${configure_ac}'.  You might want
+         you modified \`acconfig.h' or \`configure.ac'.  You might want
          to install the \`Autoconf' and \`GNU m4' packages.  Grab them
          from any GNU archive site."
-    files=`sed -n 's/^[ ]*A[CM]_CONFIG_HEADER(\([^)]*\)).*/\1/p' ${configure_ac}`
+    files=`sed -n 's/^[ ]*A[CM]_CONFIG_HEADER(\([^)]*\)).*/\1/p' configure.ac`
     test -z "$files" && files="config.h"
     touch_files=
     for f in $files; do
@@ -187,7 +182,7 @@ WARNING: \`$1' is $msg.  You should only need it if
   automake*)
     echo 1>&2 "\
 WARNING: \`$1' is $msg.  You should only need it if
-         you modified \`Makefile.am', \`acinclude.m4' or \`${configure_ac}'.
+         you modified \`Makefile.am', \`acinclude.m4' or \`configure.ac'.
          You might want to install the \`Automake' and \`Perl' packages.
          Grab them from any GNU archive site."
     find . -type f -name Makefile.am -print |

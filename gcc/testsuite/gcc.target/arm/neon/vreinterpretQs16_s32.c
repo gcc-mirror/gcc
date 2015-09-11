@@ -16,4 +16,3 @@ void test_vreinterpretQs16_s32 (void)
   out_int16x8_t = vreinterpretq_s16_s32 (arg0_int32x4_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

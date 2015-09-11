@@ -437,12 +437,14 @@
 ;; Returns 1 if OP is a simple register address.
 (define_predicate "simple_mem_operand"
   (and (match_code "mem")
+       (match_code "reg" "0")
        (match_test "arith_reg_operand (XEXP (op, 0), SImode)")))
 
 ;; Returns 1 if OP is a valid displacement address.
 (define_predicate "displacement_mem_operand"
   (and (match_code "mem")
-       (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
+       (match_code "plus" "0")
+       (match_code "reg" "00")
        (match_test "arith_reg_operand (XEXP (XEXP (op, 0), 0), SImode)")
        (match_test "sh_legitimate_index_p (GET_MODE (op),
 					   XEXP (XEXP (op, 0), 1),
@@ -451,22 +453,24 @@
 ;; Returns true if OP is a displacement address that can fit into a
 ;; 16 bit (non-SH2A) memory load / store insn.
 (define_predicate "short_displacement_mem_operand"
-  (match_test "sh_disp_addr_displacement (op)
-	       <= sh_max_mov_insn_displacement (GET_MODE (op), false)"))
+  (and (match_code "mem")
+       (match_operand 0 "displacement_mem_operand")
+       (match_test "sh_disp_addr_displacement (op)
+		    <= sh_max_mov_insn_displacement (GET_MODE (op), false)")))
 
 ;; Returns 1 if the operand can be used in an SH2A movu.{b|w} insn.
 (define_predicate "zero_extend_movu_operand"
-  (and (match_operand 0 "displacement_mem_operand")
-       (match_test "GET_MODE (op) == QImode || GET_MODE (op) == HImode")))
+  (and (ior (match_operand 0 "displacement_mem_operand")
+	    (match_operand 0 "simple_mem_operand"))
+       (ior (match_test "GET_MODE (op) == QImode")
+	    (match_test "GET_MODE (op) == HImode"))))
 
 ;; Returns 1 if the operand can be used in a zero_extend.
 (define_predicate "zero_extend_operand"
   (ior (and (match_test "TARGET_SHMEDIA")
 	    (match_operand 0 "general_extend_operand"))
        (and (match_test "! TARGET_SHMEDIA")
-	    (match_operand 0 "arith_reg_operand"))
-       (and (match_test "TARGET_SH2A")
-	    (match_operand 0 "zero_extend_movu_operand"))))
+	    (match_operand 0 "arith_reg_operand"))))
 
 ;; Returns 1 if OP can be source of a simple move operation. Same as
 ;; general_operand, but a LABEL_REF is valid, PRE_DEC is invalid as
@@ -797,6 +801,12 @@
 
   return 0;
 })
+
+;; Returns true if OP is a valid constant source operand for a logical
+;; operations tst/and/or/xor #imm,r0.
+(define_predicate "const_logical_operand"
+  (and (match_code "const_int")
+       (match_test "satisfies_constraint_K08 (op)")))
 
 ;; Like logical_operand but allows additional constant values which can be
 ;; done with zero extensions.  Used for the second operand of and insns.
@@ -1134,23 +1144,17 @@
   return 0;
 })
 
-;; The atomic_* operand predicates are used for the atomic patterns.
-;; Depending on the particular pattern some operands can be immediate
-;; values.  Using these predicates avoids the usage of 'force_reg' in the
-;; expanders.
-(define_predicate "atomic_arith_operand"
-  (ior (match_code "subreg,reg")
-       (and (match_test "satisfies_constraint_I08 (op)")
-	    (match_test "mode != QImode")
-	    (match_test "mode != HImode")
-	    (match_test "TARGET_SH4A"))))
+;; A predicate that matches any expression for which there is an
+;; insn pattern that sets the T bit.
+(define_predicate "treg_set_expr"
+  (match_test "sh_recog_treg_set_expr (op, mode)"))
 
-(define_predicate "atomic_logical_operand"
-  (ior (match_code "subreg,reg")
-       (and (match_test "satisfies_constraint_K08 (op)")
-	    (match_test "mode != QImode")
-	    (match_test "mode != HImode")
-	    (match_test "TARGET_SH4A"))))
+;; Same as treg_set_expr but disallow constants 0 and 1 which can be loaded
+;; into the T bit.
+(define_predicate "treg_set_expr_not_const01"
+  (and (match_test "op != const0_rtx")
+       (match_test "op != const1_rtx")
+       (match_operand 0 "treg_set_expr")))
 
 ;; A predicate describing the T bit register in any form.
 (define_predicate "t_reg_operand"
@@ -1205,6 +1209,10 @@
 (define_predicate "arith_reg_or_t_reg_operand"
   (ior (match_operand 0 "arith_reg_operand")
        (match_operand 0 "t_reg_operand")))
+
+(define_predicate "arith_reg_or_treg_set_expr"
+  (ior (match_operand 0 "arith_reg_operand")
+       (match_operand 0 "treg_set_expr")))
 
 ;; A predicate describing the negated value of the T bit register shifted
 ;; left by 31.

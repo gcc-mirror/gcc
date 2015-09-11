@@ -19,5 +19,3 @@ void foo(int n)
 /* There should be no i_a = i_b assignments.  */
 /* { dg-final { scan-tree-dump-times "i_.*= i_\[0-9\]*;" 0 "aprefetch" } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */

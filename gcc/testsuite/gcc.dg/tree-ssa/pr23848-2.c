@@ -1,6 +1,7 @@
 /* PR middle-end/23848 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-require-effective-target alloca } */
 
 void bar (char *, char *, char *, char *, int);
 void foo (int size)
@@ -22,4 +23,3 @@ void foo (int size)
 
 /* { dg-final { scan-tree-dump-times "__builtin_stack_save" 1 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "__builtin_stack_restore" 1 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

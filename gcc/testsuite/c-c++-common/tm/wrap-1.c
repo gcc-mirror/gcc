@@ -7,4 +7,3 @@ void xyzzy(void) __attribute__((transaction_wrap (orig)));
 void foo() { __transaction_relaxed { orig (); } }
 
 /* { dg-final { scan-tree-dump-times "xyzzy" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

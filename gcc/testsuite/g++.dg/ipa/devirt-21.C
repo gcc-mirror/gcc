@@ -38,4 +38,3 @@ main()
   class C c;
 }
 /* { dg-final { scan-ipa-dump "Discovered a virtual call to" "cp" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */

@@ -307,6 +307,8 @@ cpp_userdef_char_remove_type (enum cpp_ttype type)
     return CPP_CHAR16;
   else if (type == CPP_CHAR32_USERDEF)
     return CPP_CHAR32;
+  else if (type == CPP_UTF8CHAR_USERDEF)
+    return CPP_UTF8CHAR;
   else
     return type;
 }
@@ -325,6 +327,8 @@ cpp_userdef_char_add_type (enum cpp_ttype type)
     return CPP_CHAR16_USERDEF;
   else if (type == CPP_CHAR32)
     return CPP_CHAR32_USERDEF;
+  else if (type == CPP_UTF8CHAR)
+    return CPP_UTF8CHAR_USERDEF;
   else
     return type;
 }
@@ -350,7 +354,8 @@ cpp_userdef_char_p (enum cpp_ttype type)
   if (type == CPP_CHAR_USERDEF
    || type == CPP_WCHAR_USERDEF
    || type == CPP_CHAR16_USERDEF
-   || type == CPP_CHAR32_USERDEF)
+   || type == CPP_CHAR32_USERDEF
+   || type == CPP_UTF8CHAR_USERDEF)
     return true;
   else
     return false;
@@ -696,9 +701,9 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
       && CPP_PEDANTIC (pfile))
     cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 			 CPP_OPTION (pfile, cplusplus)
-			 ? "binary constants are a C++14 feature "
-			   "or GCC extension"
-			 : "binary constants are a GCC extension");
+			 ? N_("binary constants are a C++14 feature "
+			      "or GCC extension")
+			 : N_("binary constants are a GCC extension"));
 
   if (radix == 10)
     result |= CPP_N_DECIMAL;
@@ -1029,6 +1034,7 @@ eval_token (cpp_reader *pfile, const cpp_token *token,
     case CPP_CHAR:
     case CPP_CHAR16:
     case CPP_CHAR32:
+    case CPP_UTF8CHAR:
       {
 	cppchar_t cc = cpp_interpret_charconst (pfile, token,
 						&temp, &unsignedp);
@@ -1214,6 +1220,7 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 	case CPP_WCHAR:
 	case CPP_CHAR16:
 	case CPP_CHAR32:
+	case CPP_UTF8CHAR:
 	case CPP_NAME:
 	case CPP_HASH:
 	  if (!want_value)

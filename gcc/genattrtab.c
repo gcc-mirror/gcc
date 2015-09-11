@@ -139,8 +139,7 @@ struct insn_def
   rtx def;			/* The DEFINE_...  */
   int insn_code;		/* Instruction number.  */
   int insn_index;		/* Expression number in file, for errors.  */
-  const char *filename;		/* Filename.  */
-  int lineno;			/* Line number.  */
+  file_location loc;		/* Where in the .md files it occurs.  */
   int num_alternatives;		/* Number of alternatives.  */
   int vec_idx;			/* Index of attribute vector in `def'.  */
 };
@@ -177,7 +176,7 @@ struct attr_desc
   struct attr_desc *next;	/* Next attribute.  */
   struct attr_value *first_value; /* First value of this attribute.  */
   struct attr_value *default_val; /* Default value for this attribute.  */
-  int lineno : 24;		/* Line number.  */
+  file_location loc;		/* Where in the .md files it occurs.  */
   unsigned is_numeric	: 1;	/* Values of this attribute are numeric.  */
   unsigned is_const	: 1;	/* Attribute value constant for each run.  */
   unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
@@ -189,8 +188,8 @@ struct delay_desc
 {
   rtx def;			/* DEFINE_DELAY expression.  */
   struct delay_desc *next;	/* Next DEFINE_DELAY.  */
+  file_location loc;		/* Where in the .md files it occurs.  */
   int num;			/* Number of DEFINE_DELAY, starting at 1.  */
-  int lineno;			/* Line number.  */
 };
 
 struct attr_value_list
@@ -212,7 +211,6 @@ struct attr_value_list **insn_code_values;
 
 /* Other variables.  */
 
-static int insn_code_number;
 static int insn_index_number;
 static int got_define_asm_attributes;
 static int must_extract;
@@ -230,7 +228,7 @@ static int *insn_n_alternatives;
 /* Stores, for each insn code, a bitmap that has bits on for each possible
    alternative.  */
 
-static int *insn_alternatives;
+static uint64_t *insn_alternatives;
 
 /* Used to simplify expressions.  */
 
@@ -258,7 +256,7 @@ static char *attr_printf           (unsigned int, const char *, ...)
   ATTRIBUTE_PRINTF_2;
 static rtx make_numeric_value      (int);
 static struct attr_desc *find_attr (const char **, int);
-static rtx mk_attr_alt             (int);
+static rtx mk_attr_alt             (uint64_t);
 static char *next_comma_elt	   (const char **);
 static rtx insert_right_side	   (enum rtx_code, rtx, rtx, int, int);
 static rtx copy_boolean		   (rtx);
@@ -746,7 +744,7 @@ attr_copy_rtx (rtx orig)
    Return the new expression, if any.  */
 
 static rtx
-check_attr_test (rtx exp, int is_const, int lineno)
+check_attr_test (rtx exp, int is_const, file_location loc)
 {
   struct attr_desc *attr;
   struct attr_value *av;
@@ -761,7 +759,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	return check_attr_test (attr_rtx (NOT,
 					  attr_eq (XSTR (exp, 0),
 						   &XSTR (exp, 1)[1])),
-				is_const, lineno);
+				is_const, loc);
 
       else if (n_comma_elts (XSTR (exp, 1)) == 1)
 	{
@@ -769,14 +767,15 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	  if (attr == NULL)
 	    {
 	      if (! strcmp (XSTR (exp, 0), "alternative"))
-		return mk_attr_alt (1 << atoi (XSTR (exp, 1)));
+		return mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
 	      else
-		fatal ("unknown attribute `%s' in EQ_ATTR", XSTR (exp, 0));
+		fatal_at (loc, "unknown attribute `%s' in EQ_ATTR",
+			  XSTR (exp, 0));
 	    }
 
 	  if (is_const && ! attr->is_const)
-	    fatal ("constant expression uses insn attribute `%s' in EQ_ATTR",
-		   XSTR (exp, 0));
+	    fatal_at (loc, "constant expression uses insn attribute `%s'"
+		      " in EQ_ATTR", XSTR (exp, 0));
 
 	  /* Copy this just to make it permanent,
 	     so expressions using it can be permanent too.  */
@@ -792,8 +791,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	    {
 	      for (p = XSTR (exp, 1); *p; p++)
 		if (! ISDIGIT (*p))
-		  fatal ("attribute `%s' takes only numeric values",
-			 XSTR (exp, 0));
+		  fatal_at (loc, "attribute `%s' takes only numeric values",
+			    XSTR (exp, 0));
 	    }
 	  else
 	    {
@@ -803,8 +802,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 		  break;
 
 	      if (av == NULL)
-		fatal ("unknown value `%s' for `%s' attribute",
-		       XSTR (exp, 1), XSTR (exp, 0));
+		fatal_at (loc, "unknown value `%s' for `%s' attribute",
+			  XSTR (exp, 1), XSTR (exp, 0));
 	    }
 	}
       else
@@ -815,7 +814,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
 	      name_ptr = XSTR (exp, 1);
 	      while ((p = next_comma_elt (&name_ptr)) != NULL)
-		set |= 1 << atoi (p);
+		set |= ((uint64_t) 1) << atoi (p);
 
 	      return mk_attr_alt (set);
 	    }
@@ -830,7 +829,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 		  orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
 		}
 
-	      return check_attr_test (orexp, is_const, lineno);
+	      return check_attr_test (orexp, is_const, loc);
 	    }
 	}
       break;
@@ -847,12 +846,12 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
     case IOR:
     case AND:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, lineno);
-      XEXP (exp, 1) = check_attr_test (XEXP (exp, 1), is_const, lineno);
+      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, loc);
+      XEXP (exp, 1) = check_attr_test (XEXP (exp, 1), is_const, loc);
       break;
 
     case NOT:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, lineno);
+      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, loc);
       break;
 
     case MATCH_TEST:
@@ -862,8 +861,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
     case MATCH_OPERAND:
       if (is_const)
-	fatal ("RTL operator \"%s\" not valid in constant attribute test",
-	       GET_RTX_NAME (GET_CODE (exp)));
+	fatal_at (loc, "RTL operator \"%s\" not valid in constant attribute"
+		  " test", GET_RTX_NAME (GET_CODE (exp)));
       /* These cases can't be simplified.  */
       ATTR_IND_SIMPLIFIED_P (exp) = 1;
       break;
@@ -890,8 +889,8 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	  break;
 	}
     default:
-      fatal ("RTL operator \"%s\" not valid in attribute test",
-	     GET_RTX_NAME (GET_CODE (exp)));
+      fatal_at (loc, "RTL operator \"%s\" not valid in attribute test",
+		GET_RTX_NAME (GET_CODE (exp)));
     }
 
   return exp;
@@ -899,7 +898,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
 /* Given an expression, ensure that it is validly formed and that all named
    attribute values are valid for the given attribute.  Issue a fatal error
-   if not.  If no attribute is specified, assume a numeric attribute.
+   if not.
 
    Return a perhaps modified replacement expression for the value.  */
 
@@ -913,19 +912,19 @@ check_attr_value (rtx exp, struct attr_desc *attr)
   switch (GET_CODE (exp))
     {
     case CONST_INT:
-      if (attr && ! attr->is_numeric)
+      if (!attr->is_numeric)
 	{
-	  error_with_line (attr->lineno,
-			   "CONST_INT not valid for non-numeric attribute %s",
-			   attr->name);
+	  error_at (attr->loc,
+		    "CONST_INT not valid for non-numeric attribute %s",
+		    attr->name);
 	  break;
 	}
 
       if (INTVAL (exp) < 0)
 	{
-	  error_with_line (attr->lineno,
-			   "negative numeric value specified for attribute %s",
-			   attr->name);
+	  error_at (attr->loc,
+		    "negative numeric value specified for attribute %s",
+		    attr->name);
 	  break;
 	}
       break;
@@ -934,15 +933,15 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       if (! strcmp (XSTR (exp, 0), "*"))
 	break;
 
-      if (attr == 0 || attr->is_numeric)
+      if (attr->is_numeric)
 	{
 	  p = XSTR (exp, 0);
 	  for (; *p; p++)
 	    if (! ISDIGIT (*p))
 	      {
-		error_with_line (attr ? attr->lineno : 0,
-				 "non-numeric value for numeric attribute %s",
-				 attr ? attr->name : "internal");
+		error_at (attr->loc,
+			  "non-numeric value for numeric attribute %s",
+			  attr->name);
 		break;
 	      }
 	  break;
@@ -954,15 +953,13 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  break;
 
       if (av == NULL)
-	error_with_line (attr->lineno,
-			 "unknown value `%s' for `%s' attribute",
-			 XSTR (exp, 0), attr ? attr->name : "internal");
+	error_at (attr->loc, "unknown value `%s' for `%s' attribute",
+		  XSTR (exp, 0), attr->name);
       break;
 
     case IF_THEN_ELSE:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0),
-				       attr ? attr->is_const : 0,
-				       attr ? attr->lineno : 0);
+      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), attr->is_const,
+				       attr->loc);
       XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
       XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
       break;
@@ -972,11 +969,10 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case MULT:
     case DIV:
     case MOD:
-      if (attr && !attr->is_numeric)
+      if (!attr->is_numeric)
 	{
-	  error_with_line (attr->lineno,
-			   "invalid operation `%s' for non-numeric"
-			   " attribute value", GET_RTX_NAME (GET_CODE (exp)));
+	  error_at (attr->loc, "invalid operation `%s' for non-numeric"
+		    " attribute value", GET_RTX_NAME (GET_CODE (exp)));
 	  break;
 	}
       /* Fall through.  */
@@ -999,16 +995,14 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case COND:
       if (XVECLEN (exp, 0) % 2 != 0)
 	{
-	  error_with_line (attr->lineno,
-			   "first operand of COND must have even length");
+	  error_at (attr->loc, "first operand of COND must have even length");
 	  break;
 	}
 
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	{
 	  XVECEXP (exp, 0, i) = check_attr_test (XVECEXP (exp, 0, i),
-						 attr ? attr->is_const : 0,
-						 attr ? attr->lineno : 0);
+						 attr->is_const, attr->loc);
 	  XVECEXP (exp, 0, i + 1)
 	    = check_attr_value (XVECEXP (exp, 0, i + 1), attr);
 	}
@@ -1020,18 +1014,16 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       {
 	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
-	  error_with_line (attr ? attr->lineno : 0,
-			   "unknown attribute `%s' in ATTR",
-			   XSTR (exp, 0));
-	else if (attr && attr->is_const && ! attr2->is_const)
-	  error_with_line (attr->lineno,
-			   "non-constant attribute `%s' referenced from `%s'",
-			   XSTR (exp, 0), attr->name);
-	else if (attr
-		 && attr->is_numeric != attr2->is_numeric)
-	  error_with_line (attr->lineno,
-			   "numeric attribute mismatch calling `%s' from `%s'",
-			   XSTR (exp, 0), attr->name);
+	  error_at (attr->loc, "unknown attribute `%s' in ATTR",
+		    XSTR (exp, 0));
+	else if (attr->is_const && ! attr2->is_const)
+	  error_at (attr->loc,
+		    "non-constant attribute `%s' referenced from `%s'",
+		    XSTR (exp, 0), attr->name);
+	else if (attr->is_numeric != attr2->is_numeric)
+	  error_at (attr->loc,
+		    "numeric attribute mismatch calling `%s' from `%s'",
+		    XSTR (exp, 0), attr->name);
       }
       break;
 
@@ -1042,9 +1034,8 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
 
     default:
-      error_with_line (attr ? attr->lineno : 0,
-		       "invalid operation `%s' for attribute value",
-		       GET_RTX_NAME (GET_CODE (exp)));
+      error_at (attr->loc, "invalid operation `%s' for attribute value",
+		GET_RTX_NAME (GET_CODE (exp)));
       break;
     }
 
@@ -1063,9 +1054,8 @@ convert_set_attr_alternative (rtx exp, struct insn_def *id)
 
   if (XVECLEN (exp, 1) != num_alt)
     {
-      error_with_line (id->lineno,
-		       "bad number of entries in SET_ATTR_ALTERNATIVE, was %d expected %d",
-		       XVECLEN (exp, 1), num_alt);
+      error_at (id->loc, "bad number of entries in SET_ATTR_ALTERNATIVE,"
+		" was %d expected %d", XVECLEN (exp, 1), num_alt);
       return NULL_RTX;
     }
 
@@ -1136,7 +1126,6 @@ check_defs (void)
       if (XVEC (id->def, id->vec_idx) == NULL)
 	continue;
 
-      read_md_filename = id->filename;
       for (i = 0; i < XVECLEN (id->def, id->vec_idx); i++)
 	{
 	  value = XVECEXP (id->def, id->vec_idx, i);
@@ -1145,7 +1134,7 @@ check_defs (void)
 	    case SET:
 	      if (GET_CODE (XEXP (value, 0)) != ATTR)
 		{
-		  error_with_line (id->lineno, "bad attribute set");
+		  error_at (id->loc, "bad attribute set");
 		  value = NULL_RTX;
 		}
 	      break;
@@ -1159,8 +1148,8 @@ check_defs (void)
 	      break;
 
 	    default:
-	      error_with_line (id->lineno, "invalid attribute code %s",
-			       GET_RTX_NAME (GET_CODE (value)));
+	      error_at (id->loc, "invalid attribute code %s",
+			GET_RTX_NAME (GET_CODE (value)));
 	      value = NULL_RTX;
 	    }
 	  if (value == NULL_RTX)
@@ -1168,8 +1157,8 @@ check_defs (void)
 
 	  if ((attr = find_attr (&XSTR (XEXP (value, 0), 0), 0)) == NULL)
 	    {
-	      error_with_line (id->lineno, "unknown attribute %s",
-			       XSTR (XEXP (value, 0), 0));
+	      error_at (id->loc, "unknown attribute %s",
+			XSTR (XEXP (value, 0), 0));
 	      continue;
 	    }
 
@@ -1182,10 +1171,10 @@ check_defs (void)
 /* Given a valid expression for an attribute value, remove any IF_THEN_ELSE
    expressions by converting them into a COND.  This removes cases from this
    program.  Also, replace an attribute value of "*" with the default attribute
-   value.  */
+   value.  LOC is the location to use for error reporting.  */
 
 static rtx
-make_canonical (struct attr_desc *attr, rtx exp)
+make_canonical (file_location loc, struct attr_desc *attr, rtx exp)
 {
   int i;
   rtx newexp;
@@ -1199,8 +1188,8 @@ make_canonical (struct attr_desc *attr, rtx exp)
     case CONST_STRING:
       if (! strcmp (XSTR (exp, 0), "*"))
 	{
-	  if (attr == 0 || attr->default_val == 0)
-	    fatal ("(attr_value \"*\") used in invalid context");
+	  if (attr->default_val == 0)
+	    fatal_at (loc, "(attr_value \"*\") used in invalid context");
 	  exp = attr->default_val->value;
 	}
       else
@@ -1236,14 +1225,14 @@ make_canonical (struct attr_desc *attr, rtx exp)
 
 	/* First, check for degenerate COND.  */
 	if (XVECLEN (exp, 0) == 0)
-	  return make_canonical (attr, XEXP (exp, 1));
-	defval = XEXP (exp, 1) = make_canonical (attr, XEXP (exp, 1));
+	  return make_canonical (loc, attr, XEXP (exp, 1));
+	defval = XEXP (exp, 1) = make_canonical (loc, attr, XEXP (exp, 1));
 
 	for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	  {
 	    XVECEXP (exp, 0, i) = copy_boolean (XVECEXP (exp, 0, i));
 	    XVECEXP (exp, 0, i + 1)
-	      = make_canonical (attr, XVECEXP (exp, 0, i + 1));
+	      = make_canonical (loc, attr, XVECEXP (exp, 0, i + 1));
 	    if (! rtx_equal_p (XVECEXP (exp, 0, i + 1), defval))
 	      allsame = 0;
 	  }
@@ -1286,19 +1275,21 @@ copy_boolean (rtx exp)
    `insn_code' is the code of an insn whose attribute has the specified
    value (-2 if not processing an insn).  We ensure that all insns for
    a given value have the same number of alternatives if the value checks
-   alternatives.  */
+   alternatives.  LOC is the location to use for error reporting.  */
 
 static struct attr_value *
-get_attr_value (rtx value, struct attr_desc *attr, int insn_code)
+get_attr_value (file_location loc, rtx value, struct attr_desc *attr,
+		int insn_code)
 {
   struct attr_value *av;
-  int num_alt = 0;
+  uint64_t num_alt = 0;
 
-  value = make_canonical (attr, value);
+  value = make_canonical (loc, attr, value);
   if (compares_alternatives_p (value))
     {
       if (insn_code < 0 || insn_alternatives == NULL)
-	fatal ("(eq_attr \"alternatives\" ...) used in non-insn context");
+	fatal_at (loc, "(eq_attr \"alternatives\" ...) used in non-insn"
+		  " context");
       else
 	num_alt = insn_alternatives[insn_code];
     }
@@ -1450,7 +1441,7 @@ fill_attr (struct attr_desc *attr)
       if (value == NULL)
 	av = attr->default_val;
       else
-	av = get_attr_value (value, attr, id->insn_code);
+	av = get_attr_value (id->loc, value, attr, id->insn_code);
 
       ie = oballoc (struct insn_ent);
       ie->def = id;
@@ -1563,7 +1554,7 @@ make_length_attrs (void)
     return;
 
   if (! length_attr->is_numeric)
-    fatal ("length attribute must be numeric");
+    fatal_at (length_attr->loc, "length attribute must be numeric");
 
   length_attr->is_const = 0;
   length_attr->is_special = 1;
@@ -1579,7 +1570,8 @@ make_length_attrs (void)
       for (av = length_attr->first_value; av; av = av->next)
 	for (ie = av->first_insn; ie; ie = ie->next)
 	  {
-	    new_av = get_attr_value (substitute_address (av->value,
+	    new_av = get_attr_value (ie->def->loc,
+				     substitute_address (av->value,
 							 no_address_fn[i],
 							 address_fn[i]),
 				     new_attr, ie->def->insn_code);
@@ -1934,7 +1926,7 @@ insert_right_side (enum rtx_code code, rtx exp, rtx term, int insn_code, int ins
    This routine is passed an expression and either AND or IOR.  It returns a
    bitmask indicating which alternatives are mentioned within EXP.  */
 
-static int
+static uint64_t
 compute_alternative_mask (rtx exp, enum rtx_code code)
 {
   const char *string;
@@ -1965,15 +1957,15 @@ compute_alternative_mask (rtx exp, enum rtx_code code)
     return 0;
 
   if (string[1] == 0)
-    return 1 << (string[0] - '0');
-  return 1 << atoi (string);
+    return ((uint64_t) 1) << (string[0] - '0');
+  return ((uint64_t) 1) << atoi (string);
 }
 
 /* Given I, a single-bit mask, return RTX to compare the `alternative'
    attribute with the value represented by that bit.  */
 
 static rtx
-make_alternative_compare (int mask)
+make_alternative_compare (uint64_t mask)
 {
   return mk_attr_alt (mask);
 }
@@ -2472,7 +2464,7 @@ attr_alt_complement (rtx s)
    in E.  */
 
 static rtx
-mk_attr_alt (int e)
+mk_attr_alt (uint64_t e)
 {
   rtx result = rtx_alloc (EQ_ATTR_ALT);
 
@@ -2499,7 +2491,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
   struct attr_value *av;
   struct insn_ent *ie;
   struct attr_value_list *iv;
-  int i;
+  uint64_t i;
   rtx newexp = exp;
   bool left_alt, right_alt;
 
@@ -2532,11 +2524,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	  && compute_alternative_mask (right, IOR))
 	{
 	  if (GET_CODE (left) == IOR)
-	    {
-	      rtx tem = left;
-	      left = right;
-	      right = tem;
-	    }
+	    std::swap (left, right);
 
 	  newexp = attr_rtx (IOR,
 			     attr_rtx (AND, left, XEXP (right, 0)),
@@ -2779,7 +2767,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
     case EQ_ATTR:
       if (XSTR (exp, 0) == alternative_name)
 	{
-	  newexp = mk_attr_alt (1 << atoi (XSTR (exp, 1)));
+	  newexp = mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
 	  break;
 	}
 
@@ -2964,10 +2952,11 @@ get_attr_order (struct attr_desc ***ret)
 
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
-   calls during the compilation.  */
+   calls during the compilation.  NUM_INSN_CODES is the number of unique
+   instruction codes.  */
 
 static void
-optimize_attrs (void)
+optimize_attrs (int num_insn_codes)
 {
   struct attr_desc *attr;
   struct attr_value *av;
@@ -2986,7 +2975,7 @@ optimize_attrs (void)
     return;
 
   /* Make 2 extra elements, for "code" values -2 and -1.  */
-  insn_code_values = XCNEWVEC (struct attr_value_list *, insn_code_number + 2);
+  insn_code_values = XCNEWVEC (struct attr_value_list *, num_insn_codes + 2);
 
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
@@ -3014,7 +3003,7 @@ optimize_attrs (void)
   gcc_assert (iv == ivbuf + num_insn_ents);
 
   /* Process one insn code at a time.  */
-  for (i = -2; i < insn_code_number; i++)
+  for (i = -2; i < num_insn_codes; i++)
     {
       /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere relevant.
 	 We use it to mean "already simplified for this insn".  */
@@ -3055,7 +3044,8 @@ optimize_attrs (void)
 	    {
 	      newexp = attr_copy_rtx (newexp);
 	      remove_insn_ent (av, ie);
-	      av = get_attr_value (newexp, attr, ie->def->insn_code);
+	      av = get_attr_value (ie->def->loc, newexp, attr,
+				   ie->def->insn_code);
 	      iv->av = av;
 	      insert_insn_ent (av, ie);
 	    }
@@ -3140,63 +3130,64 @@ add_attr_value (struct attr_desc *attr, const char *name)
 /* Create table entries for DEFINE_ATTR or DEFINE_ENUM_ATTR.  */
 
 static void
-gen_attr (rtx exp, int lineno)
+gen_attr (md_rtx_info *info)
 {
   struct enum_type *et;
   struct enum_value *ev;
   struct attr_desc *attr;
   const char *name_ptr;
   char *p;
+  rtx def = info->def;
 
   /* Make a new attribute structure.  Check for duplicate by looking at
      attr->default_val, since it is initialized by this routine.  */
-  attr = find_attr (&XSTR (exp, 0), 1);
+  attr = find_attr (&XSTR (def, 0), 1);
   if (attr->default_val)
     {
-      error_with_line (lineno, "duplicate definition for attribute %s",
-		       attr->name);
-      message_with_line (attr->lineno, "previous definition");
+      error_at (info->loc, "duplicate definition for attribute %s",
+		attr->name);
+      message_at (attr->loc, "previous definition");
       return;
     }
-  attr->lineno = lineno;
+  attr->loc = info->loc;
 
-  if (GET_CODE (exp) == DEFINE_ENUM_ATTR)
+  if (GET_CODE (def) == DEFINE_ENUM_ATTR)
     {
-      attr->enum_name = XSTR (exp, 1);
-      et = lookup_enum_type (XSTR (exp, 1));
+      attr->enum_name = XSTR (def, 1);
+      et = lookup_enum_type (XSTR (def, 1));
       if (!et || !et->md_p)
-	error_with_line (lineno, "No define_enum called `%s' defined",
-			 attr->name);
+	error_at (info->loc, "No define_enum called `%s' defined",
+		  attr->name);
       if (et)
 	for (ev = et->values; ev; ev = ev->next)
 	  add_attr_value (attr, ev->name);
     }
-  else if (*XSTR (exp, 1) == '\0')
+  else if (*XSTR (def, 1) == '\0')
     attr->is_numeric = 1;
   else
     {
-      name_ptr = XSTR (exp, 1);
+      name_ptr = XSTR (def, 1);
       while ((p = next_comma_elt (&name_ptr)) != NULL)
 	add_attr_value (attr, p);
     }
 
-  if (GET_CODE (XEXP (exp, 2)) == CONST)
+  if (GET_CODE (XEXP (def, 2)) == CONST)
     {
       attr->is_const = 1;
       if (attr->is_numeric)
-	error_with_line (lineno,
-			 "constant attributes may not take numeric values");
+	error_at (info->loc,
+		  "constant attributes may not take numeric values");
 
       /* Get rid of the CONST node.  It is allowed only at top-level.  */
-      XEXP (exp, 2) = XEXP (XEXP (exp, 2), 0);
+      XEXP (def, 2) = XEXP (XEXP (def, 2), 0);
     }
 
   if (! strcmp_check (attr->name, length_str) && ! attr->is_numeric)
-    error_with_line (lineno, "`length' attribute must take numeric values");
+    error_at (info->loc, "`length' attribute must take numeric values");
 
   /* Set up the default value.  */
-  XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
-  attr->default_val = get_attr_value (XEXP (exp, 2), attr, -2);
+  XEXP (def, 2) = check_attr_value (XEXP (def, 2), attr);
+  attr->default_val = get_attr_value (info->loc, XEXP (def, 2), attr, -2);
 }
 
 /* Given a pattern for DEFINE_PEEPHOLE or DEFINE_INSN, return the number of
@@ -3272,32 +3263,32 @@ compares_alternatives_p (rtx exp)
 /* Process DEFINE_PEEPHOLE, DEFINE_INSN, and DEFINE_ASM_ATTRIBUTES.  */
 
 static void
-gen_insn (rtx exp, int lineno)
+gen_insn (md_rtx_info *info)
 {
   struct insn_def *id;
+  rtx def = info->def;
 
   id = oballoc (struct insn_def);
   id->next = defs;
   defs = id;
-  id->def = exp;
-  id->filename = read_md_filename;
-  id->lineno = lineno;
+  id->def = def;
+  id->loc = info->loc;
 
-  switch (GET_CODE (exp))
+  switch (GET_CODE (def))
     {
     case DEFINE_INSN:
-      id->insn_code = insn_code_number;
+      id->insn_code = info->index;
       id->insn_index = insn_index_number;
-      id->num_alternatives = count_alternatives (exp);
+      id->num_alternatives = count_alternatives (def);
       if (id->num_alternatives == 0)
 	id->num_alternatives = 1;
       id->vec_idx = 4;
       break;
 
     case DEFINE_PEEPHOLE:
-      id->insn_code = insn_code_number;
+      id->insn_code = info->index;
       id->insn_index = insn_index_number;
-      id->num_alternatives = count_alternatives (exp);
+      id->num_alternatives = count_alternatives (def);
       if (id->num_alternatives == 0)
 	id->num_alternatives = 1;
       id->vec_idx = 3;
@@ -3320,16 +3311,16 @@ gen_insn (rtx exp, int lineno)
    true or annul false is specified, and make a `struct delay_desc'.  */
 
 static void
-gen_delay (rtx def, int lineno)
+gen_delay (md_rtx_info *info)
 {
   struct delay_desc *delay;
   int i;
 
+  rtx def = info->def;
   if (XVECLEN (def, 1) % 3 != 0)
     {
-      error_with_line (lineno,
-		       "number of elements in DEFINE_DELAY must"
-		       " be multiple of three");
+      error_at (info->loc, "number of elements in DEFINE_DELAY must"
+		" be multiple of three");
       return;
     }
 
@@ -3345,7 +3336,7 @@ gen_delay (rtx def, int lineno)
   delay->def = def;
   delay->num = ++num_delays;
   delay->next = delays;
-  delay->lineno = lineno;
+  delay->loc = info->loc;
   delays = delay;
 }
 
@@ -4243,8 +4234,9 @@ write_insn_cases (FILE *outf, struct insn_ent *ie, int indent)
       {
 	write_indent (outf, indent);
 	if (GET_CODE (ie->def->def) == DEFINE_PEEPHOLE)
-	  fprintf (outf, "case %d:  /* define_peephole, line %d */\n",
-		   ie->def->insn_code, ie->def->lineno);
+	  fprintf (outf, "case %d:  /* define_peephole, %s:%d */\n",
+		   ie->def->insn_code, ie->def->loc.filename,
+		   ie->def->loc.lineno);
 	else
 	  fprintf (outf, "case %d:  /* %s */\n",
 		   ie->def->insn_code, XSTR (ie->def->def, 0));
@@ -4625,7 +4617,8 @@ make_internal_attr (const char *name, rtx value, int special)
   attr->is_numeric = 1;
   attr->is_const = 0;
   attr->is_special = (special & ATTR_SPECIAL) != 0;
-  attr->default_val = get_attr_value (value, attr, -2);
+  attr->default_val = get_attr_value (file_location ("<internal>", 0),
+				      value, attr, -2);
 }
 
 /* Find the most used value of an attribute.  */
@@ -4737,13 +4730,14 @@ static size_t n_insn_reservs;
 /* Store information from a DEFINE_INSN_RESERVATION for future
    attribute generation.  */
 static void
-gen_insn_reserv (rtx def)
+gen_insn_reserv (md_rtx_info *info)
 {
   struct insn_reserv *decl = oballoc (struct insn_reserv);
+  rtx def = info->def;
 
   decl->name            = DEF_ATTR_STRING (XSTR (def, 0));
   decl->default_latency = XINT (def, 1);
-  decl->condexp         = check_attr_test (XEXP (def, 2), 0, 0);
+  decl->condexp         = check_attr_test (XEXP (def, 2), 0, info->loc);
   decl->insn_num        = n_insn_reservs;
   decl->bypassed	= false;
   decl->next            = 0;
@@ -4789,10 +4783,11 @@ gen_bypass_1 (const char *s, size_t len)
 }
 
 static void
-gen_bypass (rtx def)
+gen_bypass (md_rtx_info *info)
 {
   const char *p, *base;
 
+  rtx def = info->def;
   for (p = base = XSTR (def, 1); *p; p++)
     if (*p == ',')
       {
@@ -5107,22 +5102,15 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"config.h\"\n");
   fprintf (outf, "#include \"system.h\"\n");
   fprintf (outf, "#include \"coretypes.h\"\n");
-  fprintf (outf, "#include \"tm.h\"\n");
-  fprintf (outf, "#include \"hash-set.h\"\n");
-  fprintf (outf, "#include \"machmode.h\"\n");
-  fprintf (outf, "#include \"vec.h\"\n");
-  fprintf (outf, "#include \"double-int.h\"\n");
-  fprintf (outf, "#include \"input.h\"\n");
-  fprintf (outf, "#include \"alias.h\"\n");
-  fprintf (outf, "#include \"symtab.h\"\n");
-  fprintf (outf, "#include \"options.h\"\n");
-  fprintf (outf, "#include \"wide-int.h\"\n");
-  fprintf (outf, "#include \"inchash.h\"\n");
+  fprintf (outf, "#include \"backend.h\"\n");
+  fprintf (outf, "#include \"predict.h\"\n");
   fprintf (outf, "#include \"tree.h\"\n");
+  fprintf (outf, "#include \"rtl.h\"\n");
+  fprintf (outf, "#include \"alias.h\"\n");
+  fprintf (outf, "#include \"options.h\"\n");
   fprintf (outf, "#include \"varasm.h\"\n");
   fprintf (outf, "#include \"stor-layout.h\"\n");
   fprintf (outf, "#include \"calls.h\"\n");
-  fprintf (outf, "#include \"rtl.h\"\n");
   fprintf (outf, "#include \"insn-attr.h\"\n");
   fprintf (outf, "#include \"tm_p.h\"\n");
   fprintf (outf, "#include \"insn-config.h\"\n");
@@ -5132,8 +5120,7 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"output.h\"\n");
   fprintf (outf, "#include \"toplev.h\"\n");
   fprintf (outf, "#include \"flags.h\"\n");
-  fprintf (outf, "#include \"function.h\"\n");
-  fprintf (outf, "#include \"predict.h\"\n");
+  fprintf (outf, "#include \"emit-rtl.h\"\n");
   fprintf (outf, "\n");
   fprintf (outf, "#define operands recog_data.operand\n\n");
 }
@@ -5171,10 +5158,8 @@ handle_arg (const char *arg)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
   struct attr_desc *attr;
   struct insn_def *id;
-  rtx tem;
   int i;
 
   progname = "genattrtab";
@@ -5205,57 +5190,53 @@ main (int argc, char **argv)
 
   /* Read the machine description.  */
 
-  while (1)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
     {
-      int lineno;
-
-      desc = read_md_rtx (&lineno, &insn_code_number);
-      if (desc == NULL)
-	break;
-
-      switch (GET_CODE (desc))
+      switch (GET_CODE (info.def))
 	{
 	case DEFINE_INSN:
 	case DEFINE_PEEPHOLE:
 	case DEFINE_ASM_ATTRIBUTES:
-	  gen_insn (desc, lineno);
+	  gen_insn (&info);
 	  break;
 
 	case DEFINE_ATTR:
 	case DEFINE_ENUM_ATTR:
-	  gen_attr (desc, lineno);
+	  gen_attr (&info);
 	  break;
 
 	case DEFINE_DELAY:
-	  gen_delay (desc, lineno);
+	  gen_delay (&info);
 	  break;
 
 	case DEFINE_INSN_RESERVATION:
-	  gen_insn_reserv (desc);
+	  gen_insn_reserv (&info);
 	  break;
 
 	case DEFINE_BYPASS:
-	  gen_bypass (desc);
+	  gen_bypass (&info);
 	  break;
 
 	default:
 	  break;
 	}
-      if (GET_CODE (desc) != DEFINE_ASM_ATTRIBUTES)
+      if (GET_CODE (info.def) != DEFINE_ASM_ATTRIBUTES)
 	insn_index_number++;
     }
 
   if (have_error)
     return FATAL_EXIT_CODE;
 
-  insn_code_number++;
-
   /* If we didn't have a DEFINE_ASM_ATTRIBUTES, make a null one.  */
   if (! got_define_asm_attributes)
     {
-      tem = rtx_alloc (DEFINE_ASM_ATTRIBUTES);
-      XVEC (tem, 0) = rtvec_alloc (0);
-      gen_insn (tem, 0);
+      md_rtx_info info;
+      info.def = rtx_alloc (DEFINE_ASM_ATTRIBUTES);
+      XVEC (info.def, 0) = rtvec_alloc (0);
+      info.loc = file_location ("<internal>", 0);
+      info.index = -1;
+      gen_insn (&info);
     }
 
   /* Expand DEFINE_DELAY information into new attribute.  */
@@ -5263,13 +5244,15 @@ main (int argc, char **argv)
     expand_delays ();
 
   /* Make `insn_alternatives'.  */
-  insn_alternatives = oballocvec (int, insn_code_number);
+  int num_insn_codes = get_num_insn_codes ();
+  insn_alternatives = oballocvec (uint64_t, num_insn_codes);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
-      insn_alternatives[id->insn_code] = (1 << id->num_alternatives) - 1;
+      insn_alternatives[id->insn_code]
+	= (((uint64_t) 1) << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
-  insn_n_alternatives = oballocvec (int, insn_code_number);
+  insn_n_alternatives = oballocvec (int, num_insn_codes);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_n_alternatives[id->insn_code] = id->num_alternatives;
@@ -5298,7 +5281,7 @@ main (int argc, char **argv)
   make_length_attrs ();
 
   /* Perform any possible optimizations to speed up compilation.  */
-  optimize_attrs ();
+  optimize_attrs (num_insn_codes);
 
   /* Now write out all the `gen_attr_...' routines.  Do these before the
      special routines so that they get defined before they are used.  */

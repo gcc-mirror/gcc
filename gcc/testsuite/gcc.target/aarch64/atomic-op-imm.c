@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-march=armv8-a+nolse -O2" } */
 
 int v = 0;
 
@@ -13,6 +13,18 @@ int
 atomic_fetch_sub_ACQUIRE ()
 {
   return __atomic_fetch_sub (&v, 4096, __ATOMIC_ACQUIRE);
+}
+
+int
+atomic_fetch_add_negative_RELAXED ()
+{
+  return __atomic_fetch_add (&v, -4096, __ATOMIC_RELAXED);
+}
+
+int
+atomic_fetch_sub_negative_ACQUIRE ()
+{
+  return __atomic_fetch_sub (&v, -4096, __ATOMIC_ACQUIRE);
 }
 
 int
@@ -75,4 +87,4 @@ atomic_or_fetch_CONSUME ()
   return __atomic_or_fetch (&v, 4096, __ATOMIC_CONSUME);
 }
 
-/* { dg-final { scan-assembler-times "\tw\[0-9\]+, w\[0-9\]+, #*4096" 12 } } */
+/* { dg-final { scan-assembler-times "\tw\[0-9\]+, w\[0-9\]+, #*4096" 14 } } */

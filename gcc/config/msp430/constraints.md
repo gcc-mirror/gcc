@@ -39,6 +39,16 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 1, 4)")))
 
+(define_constraint "N"
+  "Integer constant 0-255."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 255)")))
+
+(define_constraint "O"
+  "Integer constant 256-65535."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 256, 65535)")))
+
 ;; We do not allow arbitrary constants, eg symbols or labels,
 ;; because their address may be above the 16-bit address limit
 ;; supported by the offset used in the MOVA instruction.

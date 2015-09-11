@@ -301,23 +301,27 @@ Import::import(Gogo* gogo, const std::string& local_name,
       this->require_c_string(";\n");
 
       std::string pkgpath;
+      std::string pkgpath_symbol;
       if (this->match_c_string("prefix "))
 	{
 	  this->advance(7);
 	  std::string unique_prefix = this->read_identifier();
 	  this->require_c_string(";\n");
 	  pkgpath = unique_prefix + '.' + package_name;
+	  pkgpath_symbol = (Gogo::pkgpath_for_symbol(unique_prefix) + '.'
+			    + Gogo::pkgpath_for_symbol(package_name));
 	}
       else
 	{
 	  this->require_c_string("pkgpath ");
 	  pkgpath = this->read_identifier();
 	  this->require_c_string(";\n");
+	  pkgpath_symbol = Gogo::pkgpath_for_symbol(pkgpath);
 	}
 
       this->package_ = gogo->add_imported_package(package_name, local_name,
 						  is_local_name_exported,
-						  pkgpath,
+						  pkgpath, pkgpath_symbol,
 						  this->location_,
 						  &this->add_to_globals_);
       if (this->package_ == NULL)
@@ -333,6 +337,9 @@ Import::import(Gogo* gogo, const std::string& local_name,
 	return NULL;
       this->package_->set_priority(prio);
       this->require_c_string(";\n");
+
+      while (stream->match_c_string("package"))
+	this->read_one_package();
 
       while (stream->match_c_string("import"))
 	this->read_one_import();
@@ -377,6 +384,25 @@ Import::import(Gogo* gogo, const std::string& local_name,
   return this->package_;
 }
 
+// Read a package line.  This let us reliably determine the pkgpath
+// symbol, even if the package was compiled with a -fgo-prefix option.
+
+void
+Import::read_one_package()
+{
+  this->require_c_string("package ");
+  std::string package_name = this->read_identifier();
+  this->require_c_string(" ");
+  std::string pkgpath = this->read_identifier();
+  this->require_c_string(" ");
+  std::string pkgpath_symbol = this->read_identifier();
+  this->require_c_string(";\n");
+
+  Package* p = this->gogo_->register_package(pkgpath, pkgpath_symbol,
+					     Linemap::unknown_location());
+  p->set_package_name(package_name, this->location());
+}
+
 // Read an import line.  We don't actually care about these.
 
 void
@@ -392,7 +418,7 @@ Import::read_one_import()
     stream->advance(1);
   this->require_c_string("\";\n");
 
-  Package* p = this->gogo_->register_package(pkgpath,
+  Package* p = this->gogo_->register_package(pkgpath, "",
 					     Linemap::unknown_location());
   p->set_package_name(package_name, this->location());
 }
@@ -476,15 +502,27 @@ Import::import_func(Package* package)
 {
   std::string name;
   Typed_identifier* receiver;
+  Node::Escapement_lattice rcvr_escape;
   Typed_identifier_list* parameters;
+  Node::Escape_states* param_escapes;
   Typed_identifier_list* results;
   bool is_varargs;
-  Function::import_func(this, &name, &receiver, &parameters, &results,
-			&is_varargs);
+  bool has_escape_info;
+  Function::import_func(this, &name, &receiver, &rcvr_escape, &parameters,
+			&param_escapes, &results, &is_varargs,
+			&has_escape_info);
   Function_type *fntype = Type::make_function_type(receiver, parameters,
 						   results, this->location_);
   if (is_varargs)
     fntype->set_is_varargs();
+
+  if (has_escape_info)
+    {
+      if (fntype->is_method())
+	fntype->set_receiver_escape_state(rcvr_escape);
+      fntype->set_parameter_escape_states(param_escapes);
+      fntype->set_has_escape_info();
+    }
 
   Location loc = this->location_;
   Named_object* no;
@@ -649,7 +687,7 @@ Import::read_type()
     package = this->package_;
   else
     {
-      package = this->gogo_->register_package(pkgpath,
+      package = this->gogo_->register_package(pkgpath, "",
 					      Linemap::unknown_location());
       if (!package_name.empty())
 	package->set_package_name(package_name, this->location());
@@ -734,6 +772,19 @@ Import::read_type()
   this->require_c_string(">");
 
   return type;
+}
+
+// Read escape info in the import stream.
+
+Node::Escapement_lattice
+Import::read_escape_info()
+{
+  Stream* stream = this->stream_;
+  this->require_c_string("<escape ");
+
+  int escape_value = stream->get_char() - '0';
+  this->require_c_string(">");
+  return Node::Escapement_lattice(escape_value);
 }
 
 // Register the builtin types.

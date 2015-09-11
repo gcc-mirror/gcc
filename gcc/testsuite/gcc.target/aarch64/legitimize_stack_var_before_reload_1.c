@@ -18,4 +18,3 @@ test15 (void)
 
 /* { dg-final { scan-rtl-dump "\\(mem\[^\\n\]*\\(plus\[^\\n\]*virtual-stack-vars" "expand" } } */
 
-/* { dg-final { cleanup-rtl-dump "expand" } } */

@@ -1,3 +1,229 @@
+2015-08-31  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (compare_tree_sccs_1): Compare DECL_ABSTRACT_ORIGIN.
+	* lto-symtab.c (lto_symtab_merge): Merge DECL_POSSIBLY_INLINED flag.
+	(lto_symtab_prevailing_decl): Do not replace a decl that didn't
+	participate in merging with something else.
+
+2015-08-31  Richard Biener  <rguenther@suse.de>
+
+	* lto-symtab.c (lto_symtab_prevailing_decl): Remove redundant
+	test, do not replace a non-builtin with a builtin.
+	* lto.c (compare_tree_sccs_1): Do not merge things we stream
+	as builtins vs. non-builtins.
+
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* lto.h: Remove useless typedefs.
+
+2015-07-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto.c: Remove redundant includes.
+
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-lang.c: Fix double word typos.
+
+2015-07-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto.c: Include cfghooks.h rather than predict.h.
+
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Adjust includes of target.h, alloc-pool.h and
+	lto-streamer.h.
+	* lto-object.c: Likewise.
+	* lto-partition.c: Likewise.
+	* lto-symtab.c: Likewise.
+
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Adjust includes for flags.h changes.
+
+2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Adjust includes.
+	* lto-object.c: Likewise.
+	* lto-partition.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* lto.c: Likewise.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* lto-object.c: Likewise.
+	* lto-partition.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* lto-tree.h: Likewise.
+	* lto.c: Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lto.c (tree_scc_hasher): Inherit from nofree_ptr_hash rather
+	than typed_noop_remove.  Remove redudant typedefs.
+
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Do not include input.h, line-map.h or is-a.h.
+	* lto-object.c: Likewise.
+	* lto-partition.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* lto.c: Likewise.
+
+2015-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66181
+	* lto.c (compare_tree_sccs_1): Do not compare TYPE_NO_FORCE_BLK.
+
+2015-06-12  DJ Delorie  <dj@redhat.com>
+
+	* lto-lang.c (lto_type_for_size): Include intN types.
+	(lto_type_for_mode): Likewise.
+
+2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (hash_canonical_type): Drop hashing of TYPE_STRING_FLAG.
+
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c : Adjust include files.
+	* lto-object.c : Likewise.
+	* lto-partition.c : Likewise.
+	* lto-partition.h : Likewise.
+	* lto-symtab.c : Likewise.
+	* lto.c : Likewise.
+	* lto.h : Likewise.
+
+2015-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65378
+	* lto-symtab.c (warn_type_compatibility_p): Fix call of
+	odr_or_derived_type_p.
+	(lto_symtab_merge_decls_2): Update call of warn_types_mismatch.
+
+2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+
+	* lto.c (hash_canonical_type): Do not hash TREE_CODE of TREE_TYPE of
+	pointers.
+
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-lang.c (lto_write_globals): Remove.
+	(LANG_HOOKS_WRITE_GLOBALS): Same.
+
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c: Adjust includes for restructured coretypes.h.
+	* lto-object.c: Likewise.
+	* lto-partition.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* lto.c: Likewise.
+
+2015-06-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (hash_canonical_type): Use tree_code_for_canonical_type_merging.
+
+2015-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (iterative_hash_canonical_type,
+	gimple_register_canonical_type): only hash main variants of types
+
+2015-05-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (new_partition): Reset number of symbols.
+	(add_symbol_to_partition_1): Increment number of symbols.
+	(undo_partition): Decrement number of symbols.
+	(lto_balanced_map): Dump number of symbols and insns that
+	belong to a partition.
+	* lto-partition.h (struct ltrans_partition_def): Add symbol counter.
+
+2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (hash_canonical_type): Be sure we hash only types that
+	need alias set.
+	(gimple_register_canonical_type_1): Do not produce canonical
+	types for types that do not need alias sets.
+
+2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (hash_canonical_type): Drop hashing of METHOD_BASETYPE.
+
+2015-05-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (gimple_canonical_types_compatible_p): Move to tree.c
+
+2015-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (warn_type_compatibility_p): Break out from ...;
+	compare ODR types (if available) and function types.
+	(lto_symtab_merge): ... here; output ODR violation warnings
+	and call warn_types_mismatch.
+
+2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_fixup_state): Call verify_type.
+
+2015-04-18  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto.c: Adjust for hash_table changes.
+
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_read_decls): Move code registering odr types out
+	of TYPE_CANONICAL conditional and also register polymorphic types.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_symtab_merge_decls_2): Silence warning on
+	DECL_ARTIFICAL symbols.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65536
+	* lto.c (unify_scc): Revert location cache when unification
+	suceeded.
+	(lto_read_decls): Accept location cache after sucess;
+	apply location cache before calling debug hooks.
+
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (read_cgraph_and_symbols): Do not do merging
+	at ltrans stage.
+
+2015-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto.c (lto_mode_identity_table): New variable.
+	(lto_read_decls): Add mode_table argument to the lto_input_block
+	constructor.
+	(lto_file_finalize): Initialize mode_table.
+	(lto_init): Initialize lto_mode_identity_table.
+
+2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/64625
+	* lto-lang.c (DEF_FUNCTION_TYPE_VAR_8, DEF_FUNCTION_TYPE_VAR_12):
+	Remove macros.
+	(DEF_FUNCTION_TYPE_VAR_7, DEF_FUNCTION_TYPE_VAR_11): New macros.
+
+2015-02-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Maintain merged flag.
+
+2015-01-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-object.c, lto-symtab.c, lto.c: All callers of fatal_error
+	changed to pass input_location as first argument.
+
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_varpool_replace_node): Merge TLS models.
+
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (compare_tree_sccs_1): Add comparsion of
+	DECL_FUNCTION_SPECIFIC_TARGET
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 

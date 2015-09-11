@@ -14,4 +14,3 @@ foo (int a, int b)
 }
 
 /* { dg-final { scan-tree-dump-times "if" 1 "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

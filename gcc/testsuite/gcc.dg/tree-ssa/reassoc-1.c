@@ -21,4 +21,3 @@ int main(void)
 
 /* { dg-final { scan-tree-dump-times "b.._. \\\+ a.._." 1 "optimized" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times " \\\+ " 2 "optimized" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

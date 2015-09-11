@@ -18,4 +18,3 @@ foo (struct s *p)
 }
 
 /* { dg-final { scan-tree-dump-not "if" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -48,9 +48,7 @@
 #ifndef GCC_TARGET_H
 #define GCC_TARGET_H
 
-#include "insn-modes.h"
 #include "insn-codes.h"
-#include "wide-int.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 

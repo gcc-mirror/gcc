@@ -41,29 +41,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "tree.h"
 #include "rtl.h"
+#include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "flags.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
-#include "symtab.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -72,26 +59,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
-#include "basic-block.h"
-#include "df.h"
 #include "except.h"
 #include "reload.h"
 #include "tree-pass.h"
 #include "rtl-iter.h"
 
 
-/* Turn STACK_GROWS_DOWNWARD into a boolean.  */
-#ifdef STACK_GROWS_DOWNWARD
-#undef STACK_GROWS_DOWNWARD
-#define STACK_GROWS_DOWNWARD 1
-#else
-#define STACK_GROWS_DOWNWARD 0
-#endif
-
 /* This structure records two kinds of stack references between stack
    adjusting instructions: stack references in memory addresses for
    regular insns and all stack references for debug insns.  */

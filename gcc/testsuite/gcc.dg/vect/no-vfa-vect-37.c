@@ -60,4 +60,3 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "can't determine dependence" 2 "vect" { target { ! vect_multiple_sizes } } } } */
 /* { dg-final { scan-tree-dump-times "can't determine dependence" 4 "vect" { target vect_multiple_sizes } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,6 +41,13 @@
 
 #include <stddef.h>
 #include <omp.h>
+
+#ifdef TARGET_WINNT
+// <stdint.h> is not compatible with Windows
+typedef unsigned long long int  uint64_t;
+#else
+#include <stdint.h>
+#endif  // TARGET_WINNT
 
 #ifdef __cplusplus
 extern "C" {
@@ -86,6 +93,8 @@ typedef struct {
     size_t          data_received;  /* number of bytes received by host */
 } _Offload_status;
 
+typedef uint64_t _Offload_stream;
+
 #define OFFLOAD_STATUS_INIT(x) \
     ((x).result = OFFLOAD_DISABLED)
 
@@ -98,14 +107,57 @@ extern int _Offload_number_of_devices(void);
 extern int _Offload_get_device_number(void);
 extern int _Offload_get_physical_device_number(void);
 
+/* Offload stream runtime interfaces */
+
+extern _Offload_stream _Offload_stream_create(
+    int device,           // MIC device number
+    int number_of_cpus    // Cores allocated to the stream
+);
+
+extern int _Offload_stream_destroy(
+    int device,             // MIC device number
+    _Offload_stream stream  // stream handle
+);
+
+extern int _Offload_stream_completed(
+    int device,             // MIC device number
+    _Offload_stream handle  // stream handle
+);
+
+/*
+ * _Offload_shared_malloc/free are only supported when offload is enabled
+ * else they are defined to malloc and free
+*/
+#ifdef __INTEL_OFFLOAD
 extern void* _Offload_shared_malloc(size_t size);
 extern void  _Offload_shared_free(void *ptr);
-
 extern void* _Offload_shared_aligned_malloc(size_t size, size_t align);
 extern void  _Offload_shared_aligned_free(void *ptr);
+#else
+#include <malloc.h>
+#define _Offload_shared_malloc(size)                 malloc(size)
+#define _Offload_shared_free(ptr)                    free(ptr);
+#if defined(_WIN32)
+#define _Offload_shared_aligned_malloc(size, align)  _aligned_malloc(size, align)
+#define _Offload_shared_aligned_free(ptr)            _aligned_free(ptr);
+#else
+#define _Offload_shared_aligned_malloc(size, align)  memalign(align, size)
+#define _Offload_shared_aligned_free(ptr)            free(ptr);
+#endif
+#endif
+
 
 extern int _Offload_signaled(int index, void *signal);
 extern void _Offload_report(int val);
+extern int _Offload_find_associated_mic_memory(
+   int           target,
+   const void*   cpu_addr,
+   void**        cpu_base_addr,
+   uint64_t*     buf_length,
+   void**        mic_addr,
+   uint64_t*     mic_buf_start_offset,
+   int*          is_static
+);
 
 /* OpenMP API */
 
@@ -343,7 +395,11 @@ namespace __offload {
                                 shared_allocator<void>::const_pointer) {
     /* Allocate from shared memory. */
     void *ptr = _Offload_shared_malloc(s*sizeof(T));
-    if (ptr == 0) std::__throw_bad_alloc();
+#if (defined(_WIN32) || defined(_WIN64))   /* Windows */
+        if (ptr == 0) throw std::bad_alloc();
+#else
+        if (ptr == 0) std::__throw_bad_alloc();
+#endif
     return static_cast<pointer>(ptr);
   } /* allocate */
 
@@ -355,13 +411,13 @@ namespace __offload {
   } /* deallocate */
 
   template <typename _T1, typename _T2>
-  inline bool operator==(const shared_allocator<_T1> &, 
+  inline bool operator==(const shared_allocator<_T1> &,
                          const shared_allocator<_T2> &) throw() {
     return true;
   }  /* operator== */
 
   template <typename _T1, typename _T2>
-  inline bool operator!=(const shared_allocator<_T1> &, 
+  inline bool operator!=(const shared_allocator<_T1> &,
                          const shared_allocator<_T2> &) throw() {
     return false;
   }  /* operator!= */

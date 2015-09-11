@@ -12,7 +12,7 @@ subs_si_test1 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int
@@ -24,7 +24,7 @@ subs_si_test2 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int
@@ -36,7 +36,7 @@ subs_si_test3 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 typedef long long s64;
@@ -50,7 +50,7 @@ subs_di_test1 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 s64
@@ -62,7 +62,7 @@ subs_di_test2 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 s64
@@ -74,7 +74,7 @@ subs_di_test3 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int main ()
@@ -83,67 +83,66 @@ int main ()
   s64 y;
 
   x = subs_si_test1 (29, 4, 5);
-  if (x != 33)
+  if (x != 24)
     abort ();
 
-  x = subs_si_test1 (5, 2, 20);
-  if (x != 7)
+  x = subs_si_test1 (20, 2, 20);
+  if (x != 40)
     abort ();
 
-  x = subs_si_test2 (29, 4, 5);
-  if (x != -217)
-    abort ();
+   x = subs_si_test2 (0xff, 4, 5);
+   if (x != (0xff + 5))
+     abort ();
 
-  x = subs_si_test2 (1024, 2, 20);
-  if (x != 791)
-    abort ();
+   x = subs_si_test2 (1024, 2, 20);
+   if (x != (1024 - 0xff))
+     abort ();
 
   x = subs_si_test3 (35, 4, 5);
-  if (x != 12)
+  if (x != 35 - (4 << 3))
     abort ();
 
-  x = subs_si_test3 (5, 2, 20);
-  if (x != 11)
+  x = subs_si_test3 (5 << 3, 5, 20);
+  if (x != (20 + (5 << 3)))
     abort ();
 
   y = subs_di_test1 (0x130000029ll,
 		     0x320000004ll,
 		     0x505050505ll);
 
-  if (y != 0x45000002d)
+  if (y != (0x130000029ll - 0x505050505ll))
     abort ();
 
   y = subs_di_test1 (0x5000500050005ll,
 		     0x2111211121112ll,
-		     0x0000000002020ll);
-  if (y != 0x7111711171117)
+		     0x5000500050005ll);
+  if (y != (0x5000500050005ll + 0x5000500050005ll))
     abort ();
 
   y = subs_di_test2 (0x130000029ll,
 		     0x320000004ll,
 		     0x505050505ll);
-  if (y != 0x955050433)
+  if (y != (0x130000029ll - 0xff))
     abort ();
 
-  y = subs_di_test2 (0x130002900ll,
+  y = subs_di_test2 (0xff,
 		     0x320000004ll,
 		     0x505050505ll);
-  if (y != 0x955052d0a)
+  if (y != (0xff + 0x505050505ll))
     abort ();
 
   y = subs_di_test3 (0x130000029ll,
 		     0x064000008ll,
 		     0x505050505ll);
-  if (y != 0x3790504f6)
+  if (y != (0x130000029ll - (0x064000008ll << 3)))
     abort ();
 
-  y = subs_di_test3 (0x130002900ll,
-		     0x088000008ll,
+  y = subs_di_test3 (0x130002900ll << 3,
+		     0x130002900ll,
 		     0x505050505ll);
-  if (y != 0x27d052dcd)
+  if (y != (0x505050505ll + (0x130002900ll << 3)))
     abort ();
 
   return 0;
 }
 
-/* { dg-final { cleanup-saved-temps } } */

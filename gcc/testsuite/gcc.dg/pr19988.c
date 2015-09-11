@@ -10,5 +10,3 @@ double foo(double x, double y)
 /* { dg-final { scan-tree-dump-times " 1.23" 2 "original" } } */
 /* CSE one multiplication.  */
 /* { dg-final { scan-tree-dump-times " \\\* " 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

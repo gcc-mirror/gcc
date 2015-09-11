@@ -14,5 +14,3 @@ foo () {
 }
 
 /* { dg-final { scan-tree-dump-times "Deleting : vect_" 0 "dce5" } } */
-/* { dg-final { cleanup-tree-dump "dce5" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

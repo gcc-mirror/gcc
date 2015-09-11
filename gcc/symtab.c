@@ -21,41 +21,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "print-tree.h"
 #include "varasm.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "emit-rtl.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "tree-inline.h"
 #include "langhooks.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "timevar.h"
+#include "target.h"
 #include "lto-streamer.h"
 #include "output.h"
 #include "ipa-utils.h"
@@ -313,18 +294,6 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
     }
 }
 
-/* Return true when RESOLUTION indicate that linker will use
-   the symbol from non-LTO object files.  */
-
-bool
-resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)
-{
-  return (resolution == LDPR_PREVAILING_DEF
-	  || resolution == LDPR_PREEMPTED_REG
-	  || resolution == LDPR_RESOLVED_EXEC
-	  || resolution == LDPR_RESOLVED_DYN);
-}
-
 /* Hash sections by their names.  */
 
 hashval_t
@@ -527,18 +496,18 @@ symtab_node::create_reference (symtab_node *referred_node,
 
   /* IPA_REF_ALIAS is always inserted at the beginning of the list.   */
   if(use_type == IPA_REF_ALIAS)
-  {
-    list2->referring.safe_insert (0, ref);
-    ref->referred_index = 0;
+    {
+      list2->referring.safe_insert (0, ref);
+      ref->referred_index = 0;
 
-    for (unsigned int i = 1; i < list2->referring.length (); i++)
-      list2->referring[i]->referred_index = i;
-  }
+      for (unsigned int i = 1; i < list2->referring.length (); i++)
+	list2->referring[i]->referred_index = i;
+    }
   else
-  {
-    list2->referring.safe_push (ref);
-    ref->referred_index = list2->referring.length () - 1;
-  }
+    {
+      list2->referring.safe_push (ref);
+      ref->referred_index = list2->referring.length () - 1;
+    }
 
   ref->referring = this;
   ref->referred = referred_node;
@@ -741,52 +710,6 @@ symtab_node::dump_referring (FILE *file)
 	fprintf (file, " (speculative)");
     }
   fprintf (file, "\n");
-}
-
-/* Return true if list contains an alias.  */
-bool
-symtab_node::has_aliases_p (void)
-{
-  ipa_ref *ref = NULL;
-  int i;
-
-  for (i = 0; iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      return true;
-  return false;
-}
-
-/* Iterates I-th reference in the list, REF is also set.  */
-
-ipa_ref *
-symtab_node::iterate_reference (unsigned i, ipa_ref *&ref)
-{
-  vec_safe_iterate (ref_list.references, i, &ref);
-
-  return ref;
-}
-
-/* Iterates I-th referring item in the list, REF is also set.  */
-
-ipa_ref *
-symtab_node::iterate_referring (unsigned i, ipa_ref *&ref)
-{
-  ref_list.referring.iterate (i, &ref);
-
-  return ref;
-}
-
-/* Iterates I-th referring alias item in the list, REF is also set.  */
-
-ipa_ref *
-symtab_node::iterate_direct_aliases (unsigned i, ipa_ref *&ref)
-{
-  ref_list.referring.iterate (i, &ref);
-
-  if (ref && ref->use != IPA_REF_ALIAS)
-    return NULL;
-
-  return ref;
 }
 
 static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
@@ -1036,6 +959,11 @@ symtab_node::verify_base (void)
       error ("double linked list of assembler names corrupted");
       error_found = true;
     }
+  if (body_removed && definition)
+    {
+      error ("node has body_removed but is definition");
+      error_found = true;
+    }
   if (analyzed && !definition)
     {
       error ("node is analyzed byt it is not a definition");
@@ -1068,11 +996,6 @@ symtab_node::verify_base (void)
       if (n->get_comdat_group () != get_comdat_group ())
 	{
 	  error ("same_comdat_group list across different groups");
-	  error_found = true;
-	}
-      if (!n->definition)
-	{
-	  error ("Node has same_comdat_group but it is not a definition");
 	  error_found = true;
 	}
       if (n->type != type)
@@ -1188,40 +1111,23 @@ symtab_node::verify_symtab_nodes (void)
 						  &existed);
 	  if (!existed)
 	    *entry = node;
-	  else
-	    for (s = (*entry)->same_comdat_group; s != NULL && s != node; s = s->same_comdat_group)
+	  else if (!DECL_EXTERNAL (node->decl))
+	    {
+	      for (s = (*entry)->same_comdat_group;
+		   s != NULL && s != node && s != *entry;
+		   s = s->same_comdat_group)
+		;
 	      if (!s || s == *entry)
 		{
-		  error ("Two symbols with same comdat_group are not linked by the same_comdat_group list.");
+		  error ("Two symbols with same comdat_group are not linked by "
+			 "the same_comdat_group list.");
 		  (*entry)->debug ();
 		  node->debug ();
 		  internal_error ("symtab_node::verify failed");
 		}
+	    }
 	}
     }
-}
-
-/* Return true when NODE is known to be used from other (non-LTO)
-   object file. Known only when doing LTO via linker plugin.  */
-
-bool
-symtab_node::used_from_object_file_p_worker (symtab_node *node)
-{
-  if (!TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl))
-    return false;
-  if (resolution_used_from_other_file_p (node->resolution))
-    return true;
-  return false;
-}
-
-
-/* Return true when symtab_node is known to be used from other (non-LTO)
-   object file. Known only when doing LTO via linker plugin.  */
-
-bool
-symtab_node::used_from_object_file_p (void)
-{
-  return symtab_node::used_from_object_file_p_worker (this);
 }
 
 /* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
@@ -1237,7 +1143,11 @@ symtab_node::make_decl_local (void)
     return;
 
   if (TREE_CODE (decl) == VAR_DECL)
-    DECL_COMMON (decl) = 0;
+    {
+      DECL_COMMON (decl) = 0;
+      /* ADDRESSABLE flag is not defined for public symbols.  */
+      TREE_ADDRESSABLE (decl) = 1;
+    }
   else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   DECL_COMDAT (decl) = 0;
@@ -1246,6 +1156,7 @@ symtab_node::make_decl_local (void)
   DECL_VISIBILITY_SPECIFIED (decl) = 0;
   DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   TREE_PUBLIC (decl) = 0;
+  DECL_DLLIMPORT_P (decl) = 0;
   if (!DECL_RTL_SET_P (decl))
     return;
 
@@ -1265,19 +1176,12 @@ symtab_node::make_decl_local (void)
 
 /* Walk the alias chain to return the symbol NODE is alias of.
    If NODE is not an alias, return NODE.
-   When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+   Assumes NODE is known to be alias.  */
 
 symtab_node *
-symtab_node::ultimate_alias_target (enum availability *availability)
+symtab_node::ultimate_alias_target_1 (enum availability *availability)
 {
   bool weakref_p = false;
-
-  if (!alias)
-    {
-      if (availability)
-	*availability = get_availability ();
-      return this;
-    }
 
   /* To determine visibility of the target, we follow ELF semantic of aliases.
      Here alias is an alternative assembler name of a given definition. Its
@@ -1458,16 +1362,6 @@ symtab_node::get_init_priority ()
   return h ? h->init : DEFAULT_INIT_PRIORITY;
 }
 
-/* Return availability of NODE.  */
-enum availability symtab_node::get_availability (void)
-{
-  if (is_a <cgraph_node *> (this))
-    return dyn_cast <cgraph_node *> (this)->get_availability ();
-  else
-    return dyn_cast <varpool_node *> (this)->get_availability ();;
-}
-
-
 /* Return the finalization priority.  */
 
 priority_type
@@ -1610,34 +1504,20 @@ symtab_node::resolve_alias (symtab_node *target)
   /* If alias has address taken, so does the target.  */
   if (address_taken)
     target->ultimate_alias_target ()->address_taken = true;
-  return true;
-}
 
-/* Call calback on symtab node and aliases associated to this node.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-   skipped. */
-
-bool
-symtab_node::call_for_symbol_and_aliases (bool (*callback) (symtab_node *,
-							  void *),
-					void *data, bool include_overwritable)
-{
-  int i;
+  /* All non-weakref aliases of THIS are now in fact aliases of TARGET.  */
   ipa_ref *ref;
-
-  if (callback (this, data))
-    return true;
-  for (i = 0; iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	symtab_node *alias = ref->referring;
-	if (include_overwritable
-	    || alias->get_availability () > AVAIL_INTERPOSABLE)
-	  if (alias->call_for_symbol_and_aliases (callback, data,
-						include_overwritable))
-	    return true;
-      }
-  return false;
+  for (unsigned i = 0; iterate_direct_aliases (i, ref);)
+    {
+      struct symtab_node *alias_alias = ref->referring;
+      if (!alias_alias->weakref)
+	{
+	  alias_alias->remove_all_references ();
+	  alias_alias->create_reference (target, IPA_REF_ALIAS, NULL);
+	}
+      else i++;
+    }
+  return true;
 }
 
 /* Worker searching noninterposable alias.  */
@@ -1659,7 +1539,6 @@ symtab_node::noninterposable_alias (symtab_node *node, void *data)
 		 != flags_from_decl_or_type (fn->decl))
 	  || DECL_ATTRIBUTES (node->decl) != DECL_ATTRIBUTES (fn->decl))
 	return false;
-
       *(symtab_node **)data = node;
       return true;
     }
@@ -1691,6 +1570,7 @@ symtab_node::noninterposable_alias (void)
 
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
+  DECL_DLLIMPORT_P (new_decl) = 0;
   DECL_NAME (new_decl) = clone_function_name (node->decl, "localalias");
   if (TREE_CODE (new_decl) == FUNCTION_DECL)
     DECL_STRUCT_FUNCTION (new_decl) = NULL;
@@ -1784,10 +1664,14 @@ symtab_node::get_partitioning_class (void)
 
   if (varpool_node *vnode = dyn_cast <varpool_node *> (this))
     {
+      if (alias && definition && !ultimate_alias_target ()->definition)
+	return SYMBOL_EXTERNAL;
       /* Constant pool references use local symbol names that can not
          be promoted global.  We should never put into a constant pool
          objects that can not be duplicated across partitions.  */
       if (DECL_IN_CONSTANT_POOL (decl))
+	return SYMBOL_DUPLICATE;
+      if (DECL_HARD_REGISTER (decl))
 	return SYMBOL_DUPLICATE;
       gcc_checking_assert (vnode->definition);
     }
@@ -1795,7 +1679,7 @@ symtab_node::get_partitioning_class (void)
      Handle them as external; compute_ltrans_boundary take care to make
      proper things to happen (i.e. to make them appear in the boundary but
      with body streamed, so clone can me materialized).  */
-  else if (!dyn_cast <cgraph_node *> (this)->definition)
+  else if (!dyn_cast <cgraph_node *> (this)->function_symbol ()->definition)
     return SYMBOL_EXTERNAL;
 
   /* Linker discardable symbols are duplicated to every use unless they are
@@ -1963,4 +1847,156 @@ symtab_node::equal_address_to (symtab_node *s2)
      alias oracle to use this predicate.  */
 
   return 2;
+}
+
+/* Worker for call_for_symbol_and_aliases.  */
+
+bool
+symtab_node::call_for_symbol_and_aliases_1 (bool (*callback) (symtab_node *,
+							      void *),
+					    void *data,
+					    bool include_overwritable)
+{
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (this, ref)
+    {
+      symtab_node *alias = ref->referring;
+      if (include_overwritable
+	  || alias->get_availability () > AVAIL_INTERPOSABLE)
+	if (alias->call_for_symbol_and_aliases (callback, data,
+					      include_overwritable))
+	  return true;
+    }
+  return false;
+}
+
+/* Return true if address of N is possibly compared.  */
+
+static bool
+address_matters_1 (symtab_node *n, void *)
+{
+  struct ipa_ref *ref;
+
+  if (!n->address_can_be_compared_p ())
+    return false;
+  if (n->externally_visible || n->force_output)
+    return true;
+
+  for (unsigned int i = 0; n->iterate_referring (i, ref); i++)
+    if (ref->address_matters_p ())
+      return true;
+  return false;
+}
+
+/* Return true if symbol's address may possibly be compared to other
+   symbol's address.  */
+
+bool
+symtab_node::address_matters_p ()
+{
+  gcc_assert (!alias);
+  return call_for_symbol_and_aliases (address_matters_1, NULL, true);
+}
+
+/* Return true if symbol's alignment may be increased.  */
+
+bool
+symtab_node::can_increase_alignment_p (void)
+{
+  symtab_node *target = ultimate_alias_target ();
+
+  /* For now support only variables.  */
+  if (TREE_CODE (decl) != VAR_DECL)
+    return false;
+
+  /* With -fno-toplevel-reorder we may have already output the constant.  */
+  if (TREE_ASM_WRITTEN (target->decl))
+    return false;
+
+  /* If target is already placed in an anchor, we can not touch its
+     alignment.  */
+  if (DECL_RTL_SET_P (target->decl)
+      && MEM_P (DECL_RTL (target->decl))
+      && SYMBOL_REF_HAS_BLOCK_INFO_P (XEXP (DECL_RTL (target->decl), 0)))
+    return false;
+
+  /* Constant pool entries may be shared.  */
+  if (DECL_IN_CONSTANT_POOL (target->decl))
+    return false;
+
+  /* We cannot change alignment of symbols that may bind to symbols
+     in other translation unit that may contain a definition with lower
+     alignment.  */
+  if (!decl_binds_to_current_def_p (decl))
+    return false;
+
+  /* When compiling partition, be sure the symbol is not output by other
+     partition.  */
+  if (flag_ltrans
+      && (target->in_other_partition
+	  || target->get_partitioning_class () == SYMBOL_DUPLICATE))
+    return false;
+
+  /* Do not override the alignment as specified by the ABI when the used
+     attribute is set.  */
+  if (DECL_PRESERVE_P (decl) || DECL_PRESERVE_P (target->decl))
+    return false;
+
+  /* Do not override explicit alignment set by the user when an explicit
+     section name is also used.  This is a common idiom used by many
+     software projects.  */
+  if (DECL_SECTION_NAME (target->decl) != NULL && !target->implicit_section)
+    return false;
+
+  return true;
+}
+
+/* Worker for symtab_node::increase_alignment.  */
+
+static bool
+increase_alignment_1 (symtab_node *n, void *v)
+{
+  unsigned int align = (size_t)v;
+  if (DECL_ALIGN (n->decl) < align
+      && n->can_increase_alignment_p ())
+    {
+      DECL_ALIGN (n->decl) = align;
+      DECL_USER_ALIGN (n->decl) = 1;
+    }
+  return false;
+}
+
+/* Increase alignment of THIS to ALIGN.  */
+
+void
+symtab_node::increase_alignment (unsigned int align)
+{
+  gcc_assert (can_increase_alignment_p () && align < MAX_OFILE_ALIGNMENT);
+  ultimate_alias_target()->call_for_symbol_and_aliases (increase_alignment_1,
+						        (void *)(size_t) align,
+						        true);
+  gcc_assert (DECL_ALIGN (decl) >= align);
+}
+
+/* Helper for symtab_node::definition_alignment.  */
+
+static bool
+get_alignment_1 (symtab_node *n, void *v)
+{
+  *((unsigned int *)v) = MAX (*((unsigned int *)v), DECL_ALIGN (n->decl));
+  return false;
+}
+
+/* Return desired alignment of the definition.  This is NOT alignment useful
+   to access THIS, because THIS may be interposable and DECL_ALIGN should
+   be used instead.  It however must be guaranteed when output definition
+   of THIS.  */
+
+unsigned int
+symtab_node::definition_alignment ()
+{
+  unsigned int align = 0;
+  gcc_assert (!alias);
+  call_for_symbol_and_aliases (get_alignment_1, &align, true);
+  return align;
 }

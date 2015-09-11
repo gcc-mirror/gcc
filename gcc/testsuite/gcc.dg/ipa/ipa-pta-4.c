@@ -29,5 +29,3 @@ int main()
 /* { dg-final { scan-ipa-dump "foo.arg0 = &a" "pta" } } */
 /* { dg-final { scan-ipa-dump "foo.arg1 = &b" "pta" } } */
 /* { dg-final { scan-tree-dump "Replaced \\\*p_2\\\(D\\\) with 1" "fre2" } } */
-/* { dg-final { cleanup-tree-dump "fre2" } } */
-/* { dg-final { cleanup-ipa-dump "pta" } } */

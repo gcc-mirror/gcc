@@ -19,4 +19,3 @@ f (POINT * ptBuf)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

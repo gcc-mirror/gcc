@@ -43,5 +43,3 @@ C
 ! { dg-final { scan-tree-dump-times "Executing predictive commoning without unrolling" 1 "pcom" { target lp64 } } }
 ! { dg-final { scan-tree-dump-times "Executing predictive commoning without unrolling" 2 "pcom" { target ia32 } } }
 ! { dg-final { scan-tree-dump-times "Predictive commoning failed: no suitable chains" 0 "pcom" } }
-! { dg-final { cleanup-tree-dump "vect" } }
-! { dg-final { cleanup-tree-dump "pcom" } }

@@ -16,5 +16,3 @@ f (int i)
 }
 /* { dg-final { scan-tree-dump-not "foo" "optimized" } } */
 /* { dg-final { scan-rtl-dump-not "\\(if_then_else" "cse1" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
-/* { dg-final { cleanup-rtl-dump "cse1" } } */

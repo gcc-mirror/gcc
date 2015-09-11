@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -37,6 +37,12 @@
 /* Ensure access to errno is thread safe.  */
 #define _REENTRANT
 #define _THREAD_SAFE
+
+/* Use 64 bit Large File API */
+#ifndef _LARGEFILE_SOURCE
+#define _LARGEFILE_SOURCE
+#endif
+#define _FILE_OFFSET_BITS 64
 
 #ifdef __vxworks
 
@@ -106,18 +112,13 @@
 extern "C" {
 #endif
 
-#if defined (__MINGW32__)
+#if defined (__MINGW32__) || defined (__CYGWIN__)
 
-#if defined (RTX)
-#include <windows.h>
-#include <Rtapi.h>
-#else
 #include "mingw32.h"
 
 /* Current code page and CCS encoding to use, set in initialize.c.  */
 UINT CurrentCodePage;
 UINT CurrentCCSEncoding;
-#endif
 
 #include <sys/utime.h>
 
@@ -157,7 +158,7 @@ UINT CurrentCCSEncoding;
    preventing the inclusion of the GCC header from doing anything.  */
 # define GCC_RESOURCE_H
 # include <sys/wait.h>
-#elif defined (__nucleus__) || defined (__PikeOS__)
+#elif defined (__PikeOS__)
 /* No wait() or waitpid() calls available.  */
 #else
 /* Default case.  */
@@ -253,7 +254,7 @@ char __gnat_path_separator = PATH_SEPARATOR;
 
 const char *__gnat_library_template = GNAT_LIBRARY_TEMPLATE;
 
-#if defined (__vxworks) || defined (__OPENNT) || defined(__nucleus__)
+#if defined (__vxworks)
 #define GNAT_MAX_PATH_LEN PATH_MAX
 
 #else
@@ -297,7 +298,8 @@ int max_path_len = GNAT_MAX_PATH_LEN;
 int __gnat_use_acl = 1;
 
 /* The following macro HAVE_READDIR_R should be defined if the
-   system provides the routine readdir_r.  */
+   system provides the routine readdir_r.
+   ... but we never define it anywhere???  */
 #undef HAVE_READDIR_R
 
 #define MAYBE_TO_PTR32(argv) argv
@@ -417,7 +419,7 @@ __gnat_readlink (char *path ATTRIBUTE_UNUSED,
 		 size_t bufsiz ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) \
-  || defined(__vxworks) || defined (__nucleus__) || defined (__PikeOS__)
+  || defined(__vxworks) || defined (__PikeOS__)
   return -1;
 #else
   return readlink (path, buf, bufsiz);
@@ -433,7 +435,7 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 		char *newpath ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) \
-  || defined(__vxworks) || defined (__nucleus__) || defined (__PikeOS__)
+  || defined(__vxworks) || defined (__PikeOS__)
   return -1;
 #else
   return symlink (oldpath, newpath);
@@ -442,7 +444,7 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 
 /* Try to lock a file, return 1 if success.  */
 
-#if defined (__vxworks) || defined (__nucleus__) \
+#if defined (__vxworks) \
   || defined (_WIN32) || defined (__PikeOS__)
 
 /* Version that does not use link. */
@@ -741,8 +743,8 @@ __gnat_rmdir (char *path)
 #endif
 }
 
-#if defined (_WIN32) || defined (linux) || defined (sun) \
-  || defined (__FreeBSD__)
+#if defined (_WIN32) || defined (__linux__) || defined (__sun__) \
+  || defined (__FreeBSD__) || defined(__DragonFly__)
 #define HAS_TARGET_WCHAR_T
 #endif
 
@@ -980,12 +982,11 @@ __gnat_open_new_temp (char *path, int fmode)
   strcpy (path, "GNAT-XXXXXX");
 
 #if (defined (__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__) \
-  || defined (linux) || defined(__GLIBC__)) && !defined (__vxworks)
+  || defined (__linux__) || defined (__GLIBC__)) && !defined (__vxworks) \
+  || defined (__DragonFly__)
   return mkstemp (path);
 #elif defined (__Lynx__)
   mktemp (path);
-#elif defined (__nucleus__)
-  return -1;
 #else
   if (mktemp (path) == NULL)
     return -1;
@@ -1062,7 +1063,7 @@ __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr)
 
   attr->exists = !ret;
 
-#if !defined (_WIN32) || defined (RTX)
+#if !defined (_WIN32)
   /* on Windows requires extra system call, see __gnat_is_readable_file_attr */
   attr->readable   = (!ret && (statbuf.st_mode & S_IRUSR));
   attr->writable   = (!ret && (statbuf.st_mode & S_IWUSR));
@@ -1120,15 +1121,7 @@ __gnat_named_file_length (char *name)
 void
 __gnat_tmp_name (char *tmp_filename)
 {
-#ifdef RTX
-  /* Variable used to create a series of unique names */
-  static int counter = 0;
-
-  /* RTX in RTSS mode does not support tempnam nor tmpnam so we emulate it */
-  strcpy (tmp_filename, "c:\\WINDOWS\\Temp\\gnat-");
-  sprintf (&tmp_filename[strlen (tmp_filename)], "%d\0", counter++);
-
-#elif defined (__MINGW32__)
+#if defined (__MINGW32__)
   {
     char *pname;
     char prefix[25];
@@ -1161,8 +1154,9 @@ __gnat_tmp_name (char *tmp_filename)
     free (pname);
   }
 
-#elif defined (linux) || defined (__FreeBSD__) || defined (__NetBSD__) \
-  || defined (__OpenBSD__) || defined(__GLIBC__) || defined (__ANDROID__)
+#elif defined (__linux__) || defined (__FreeBSD__) || defined (__NetBSD__) \
+  || defined (__OpenBSD__) || defined (__GLIBC__) || defined (__ANDROID__) \
+  || defined (__DragonFly__)
 #define MAX_SAFE_PATH 1000
   char *tmpdir = getenv ("TMPDIR");
 
@@ -1178,23 +1172,37 @@ __gnat_tmp_name (char *tmp_filename)
     sprintf (tmp_filename, "%s/gnat-XXXXXX", tmpdir);
 
   close (mkstemp(tmp_filename));
-#elif defined (__vxworks) && !(defined (__RTP__) || defined (VTHREADS))
-  int             index;
-  char *          pos;
-  ushort_t        t;
+#elif defined (__vxworks) && !defined (VTHREADS)
+  int index;
+  char *pos;
+  char *savepos;
   static ushort_t seed = 0; /* used to generate unique name */
 
-  /* generate unique name */
+  /* Generate a unique name.  */
   strcpy (tmp_filename, "tmp");
 
-  /* fill up the name buffer from the last position */
   index = 5;
-  pos = tmp_filename + strlen (tmp_filename) + index;
+  savepos = pos = tmp_filename + strlen (tmp_filename) + index;
   *pos = '\0';
 
-  seed++;
-  for (t = seed; 0 <= --index; t >>= 3)
-      *--pos = '0' + (t & 07);
+  while (1)
+    {
+      FILE *f;
+      ushort_t t;
+
+      /* Fill up the name buffer from the last position.  */
+      seed++;
+      for (t = seed; 0 <= --index; t >>= 3)
+        *--pos = '0' + (t & 07);
+
+      /* Check to see if its unique, if not bump the seed and try again.  */
+      f = fopen (tmp_filename, "r");
+      if (f == NULL)
+        break;
+      fclose (f);
+      pos = savepos;
+      index = 5;
+    }
 #else
   tmpnam (tmp_filename);
 #endif
@@ -1204,12 +1212,7 @@ __gnat_tmp_name (char *tmp_filename)
 
 DIR* __gnat_opendir (char *name)
 {
-#if defined (RTX)
-  /* Not supported in RTX */
-
-  return NULL;
-
-#elif defined (__MINGW32__)
+#if defined (__MINGW32__)
   TCHAR wname[GNAT_MAX_PATH_LEN];
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN);
@@ -1223,15 +1226,17 @@ DIR* __gnat_opendir (char *name)
 /* Read the next entry in a directory.  The returned string points somewhere
    in the buffer.  */
 
+#if defined (__sun__)
+/* For Solaris, be sure to use the 64-bit version, otherwise NFS reads may
+   fail with EOVERFLOW if the server uses 64-bit cookies.  */
+#define dirent dirent64
+#define readdir readdir64
+#endif
+
 char *
 __gnat_readdir (DIR *dirp, char *buffer, int *len)
 {
-#if defined (RTX)
-  /* Not supported in RTX */
-
-  return NULL;
-
-#elif defined (__MINGW32__)
+#if defined (__MINGW32__)
   struct _tdirent *dirent = _treaddir ((_TDIR*)dirp);
 
   if (dirent != NULL)
@@ -1273,12 +1278,7 @@ __gnat_readdir (DIR *dirp, char *buffer, int *len)
 
 int __gnat_closedir (DIR *dirp)
 {
-#if defined (RTX)
-  /* Not supported in RTX */
-
-  return 0;
-
-#elif defined (__MINGW32__)
+#if defined (__MINGW32__)
   return _tclosedir ((_TDIR*)dirp);
 
 #else
@@ -1298,7 +1298,7 @@ __gnat_readdir_is_thread_safe (void)
 #endif
 }
 
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
 /* Number of seconds between <Jan 1st 1601> and <Jan 1st 1970>.  */
 static const unsigned long long w32_epoch_offset = 11644473600ULL;
 
@@ -1346,7 +1346,7 @@ OS_Time
 __gnat_file_time_name_attr (char* name, struct file_attributes* attr)
 {
    if (attr->timestamp == (OS_Time)-2) {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
       BOOL res;
       WIN32_FILE_ATTRIBUTE_DATA fad;
       __time64_t ret = -1;
@@ -1377,7 +1377,7 @@ OS_Time
 __gnat_file_time_fd_attr (int fd, struct file_attributes* attr)
 {
    if (attr->timestamp == (OS_Time)-2) {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
      HANDLE h = (HANDLE) _get_osfhandle (fd);
      time_t ret = win32_filetime (h);
      attr->timestamp = (OS_Time) ret;
@@ -1407,7 +1407,7 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
 
 /* Code to implement __gnat_set_file_time_name for these systems.  */
 
-#elif defined (_WIN32) && !defined (RTX)
+#elif defined (_WIN32)
   union
   {
     FILETIME ft_time;
@@ -1458,8 +1458,7 @@ __gnat_get_libraries_from_registry (void)
 
   result[0] = '\0';
 
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS) \
-  && ! defined (RTX)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
 
   HKEY reg_key;
   DWORD name_size, value_size;
@@ -1691,7 +1690,7 @@ __gnat_is_directory (char *name)
    return __gnat_is_directory_attr (name, &attr);
 }
 
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
 
 /* Returns the same constant as GetDriveType but takes a pathname as
    argument. */
@@ -1879,14 +1878,14 @@ __gnat_can_use_acl (TCHAR *wname)
   return __gnat_use_acl && GetDriveTypeFromPath (wname) != DRIVE_REMOTE;
 }
 
-#endif /* defined (_WIN32) && !defined (RTX) */
+#endif /* defined (_WIN32) */
 
 int
 __gnat_is_readable_file_attr (char* name, struct file_attributes* attr)
 {
    if (attr->readable == ATTR_UNSET)
      {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
        TCHAR wname [GNAT_MAX_PATH_LEN + 2];
        GENERIC_MAPPING GenericMapping;
 
@@ -1923,7 +1922,7 @@ __gnat_is_writable_file_attr (char* name, struct file_attributes* attr)
 {
    if (attr->writable == ATTR_UNSET)
      {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
        TCHAR wname [GNAT_MAX_PATH_LEN + 2];
        GENERIC_MAPPING GenericMapping;
 
@@ -1964,7 +1963,7 @@ __gnat_is_executable_file_attr (char* name, struct file_attributes* attr)
 {
    if (attr->executable == ATTR_UNSET)
      {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
        TCHAR wname [GNAT_MAX_PATH_LEN + 2];
        GENERIC_MAPPING GenericMapping;
 
@@ -2011,7 +2010,7 @@ __gnat_is_executable_file (char *name)
 void
 __gnat_set_writable (char *name)
 {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
@@ -2021,8 +2020,7 @@ __gnat_set_writable (char *name)
 
   SetFileAttributes
     (wname, GetFileAttributes (wname) & ~FILE_ATTRIBUTE_READONLY);
-#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
-  ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2041,7 +2039,7 @@ __gnat_set_writable (char *name)
 void
 __gnat_set_executable (char *name, int mode ATTRIBUTE_UNUSED)
 {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
@@ -2049,8 +2047,7 @@ __gnat_set_executable (char *name, int mode ATTRIBUTE_UNUSED)
   if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
 
-#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
-  ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2069,7 +2066,7 @@ __gnat_set_executable (char *name, int mode ATTRIBUTE_UNUSED)
 void
 __gnat_set_non_writable (char *name)
 {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
@@ -2082,8 +2079,7 @@ __gnat_set_non_writable (char *name)
 
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
-#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
-  ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2097,7 +2093,7 @@ __gnat_set_non_writable (char *name)
 void
 __gnat_set_readable (char *name)
 {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
@@ -2105,8 +2101,7 @@ __gnat_set_readable (char *name)
   if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
 
-#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
-  ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2119,7 +2114,7 @@ __gnat_set_readable (char *name)
 void
 __gnat_set_non_readable (char *name)
 {
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
@@ -2127,8 +2122,7 @@ __gnat_set_non_readable (char *name)
   if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
 
-#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
-  ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2144,7 +2138,7 @@ __gnat_is_symbolic_link_attr (char* name ATTRIBUTE_UNUSED,
 {
    if (attr->symbolic_link == ATTR_UNSET)
      {
-#if defined (__vxworks) || defined (__nucleus__)
+#if defined (__vxworks)
        attr->symbolic_link = 0;
 
 #elif defined (_AIX) || defined (__APPLE__) || defined (__unix__)
@@ -2168,7 +2162,7 @@ __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
    return __gnat_is_symbolic_link_attr (name, &attr);
 }
 
-#if defined (sun) && defined (__SVR4)
+#if defined (__sun__)
 /* Using fork on Solaris will duplicate all the threads. fork1, which
    duplicates only the active thread, must be used instead, or spawning
    subprocess from a program with tasking will lead into numerous problems.  */
@@ -2182,8 +2176,7 @@ __gnat_portable_spawn (char *args[] ATTRIBUTE_UNUSED)
   int finished ATTRIBUTE_UNUSED;
   int pid ATTRIBUTE_UNUSED;
 
-#if defined (__vxworks) || defined(__nucleus__) || defined(RTX) \
-  || defined(__PikeOS__)
+#if defined (__vxworks) || defined(__PikeOS__)
   return -1;
 
 #elif defined (_WIN32)
@@ -2276,7 +2269,9 @@ __gnat_number_of_cpus (void)
 {
   int cores = 1;
 
-#if defined (linux) || defined (sun) || defined (AIX) || defined (__APPLE__)
+#if defined (__linux__) || defined (__sun__) || defined (_AIX) \
+  || defined (__APPLE__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
+  || defined (__DragonFly__) || defined (__NetBSD__)
   cores = (int) sysconf (_SC_NPROCESSORS_ONLN);
 
 #elif defined (__hpux__)
@@ -2301,7 +2296,7 @@ __gnat_number_of_cpus (void)
 
 /* WIN32 code to implement a wait call that wait for any child process.  */
 
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
 
 /* Synchronization code, to be thread safe.  */
 
@@ -2552,8 +2547,7 @@ int
 __gnat_portable_no_block_spawn (char *args[] ATTRIBUTE_UNUSED)
 {
 
-#if defined (__vxworks) || defined (__nucleus__) || defined (RTX) \
-  || defined (__PikeOS__)
+#if defined (__vxworks) || defined (__PikeOS__)
   /* Not supported.  */
   return -1;
 
@@ -2593,8 +2587,7 @@ __gnat_portable_wait (int *process_status)
   int status = 0;
   int pid = 0;
 
-#if defined (__vxworks) || defined (__nucleus__) || defined (RTX) \
-  || defined (__PikeOS__)
+#if defined (__vxworks) || defined (__PikeOS__)
   /* Not sure what to do here, so do nothing but return zero.  */
 
 #elif defined (_WIN32)
@@ -2771,7 +2764,7 @@ __gnat_locate_exec_on_path (char *exec_name)
 {
   char *apath_val;
 
-#if defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32)
   TCHAR *wpath_val = _tgetenv (_T("PATH"));
   TCHAR *wapath_val;
   /* In Win32 systems we expand the PATH as for XP environment
@@ -2910,11 +2903,10 @@ int
 __gnat_copy_attribs (char *from ATTRIBUTE_UNUSED, char *to ATTRIBUTE_UNUSED,
                      int mode ATTRIBUTE_UNUSED)
 {
-#if (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) || \
-  defined (__nucleus__)
+#if (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6)
   return -1;
 
-#elif defined (_WIN32) && !defined (RTX)
+#elif defined (_WIN32)
   TCHAR wfrom [GNAT_MAX_PATH_LEN + 2];
   TCHAR wto [GNAT_MAX_PATH_LEN + 2];
   BOOL res;
@@ -3068,37 +3060,6 @@ __gnat_sals_init_using_constructors (void)
 #endif
 }
 
-#ifdef RTX
-
-/* In RTX mode, the procedure to get the time (as file time) is different
-   in RTSS mode and Win32 mode. In order to avoid duplicating an Ada file,
-   we introduce an intermediate procedure to link against the corresponding
-   one in each situation. */
-
-extern void GetTimeAsFileTime (LPFILETIME pTime);
-
-void GetTimeAsFileTime (LPFILETIME pTime)
-{
-#ifdef RTSS
-  RtGetRtssTimeAsFileTime (pTime); /* RTSS interface */
-#else
-  GetSystemTimeAsFileTime (pTime); /* w32 interface */
-#endif
-}
-
-#ifdef RTSS
-/* Add symbol that is required to link. It would otherwise be taken from
-   libgcc.a and it would try to use the gcc constructors that are not
-   supported by Microsoft linker. */
-
-extern void __main (void);
-
-void __main (void)
-{
-}
-#endif /* RTSS */
-#endif /* RTX */
-
 #if defined (__ANDROID__)
 
 #include <pthread.h>
@@ -3109,7 +3070,7 @@ __gnat_lwp_self (void)
    return (void *) pthread_self ();
 }
 
-#elif defined (linux)
+#elif defined (__linux__)
 /* There is no function in the glibc to retrieve the LWP of the current
    thread. We need to do a system call in order to retrieve this
    information. */
@@ -3198,7 +3159,7 @@ __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
   CPU_SET (cpu - 1, set);
 }
 #endif /* !CPU_ALLOC */
-#endif /* linux */
+#endif /* __linux__ */
 
 /* Return the load address of the executable, or 0 if not known.  In the
    specific case of error, (void *)-1 can be returned. Beware: this unit may
@@ -3207,8 +3168,6 @@ __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
 
 #if defined (__APPLE__)
 #include <mach-o/dyld.h>
-#elif 0 && defined (__linux__)
-#include <link.h>
 #endif
 
 const void *

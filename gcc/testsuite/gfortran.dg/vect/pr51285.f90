@@ -33,4 +33,3 @@
     ENDDO
  END SUBROUTINE
 
-! { dg-final { cleanup-tree-dump "vect" } }

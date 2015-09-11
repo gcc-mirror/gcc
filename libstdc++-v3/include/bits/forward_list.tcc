@@ -36,28 +36,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
-    _Fwd_list_base(_Fwd_list_base&& __lst, const _Node_alloc_type& __a)
-    : _M_impl(__a)
+    _Fwd_list_base(_Fwd_list_base&& __lst, _Node_alloc_type&& __a)
+    : _M_impl(std::move(__a))
     {
-      if (__lst._M_get_Node_allocator() == __a)
+      if (__lst._M_get_Node_allocator() == _M_get_Node_allocator())
 	{
 	  this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
 	  __lst._M_impl._M_head._M_next = 0;
 	}
       else
-        {
-          this->_M_impl._M_head._M_next = 0;
-          _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-          _Node* __curr = static_cast<_Node*>(__lst._M_impl._M_head._M_next);
-
-          while (__curr)
-            {
-              __to->_M_next =
-                _M_create_node(std::move_if_noexcept(*__curr->_M_valptr()));
-              __to = __to->_M_next;
-              __curr = static_cast<_Node*>(__curr->_M_next);
-            }
-        }
+	this->_M_impl._M_head._M_next = 0;
     }
 
   template<typename _Tp, typename _Alloc>
@@ -155,7 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     forward_list<_Tp, _Alloc>::
     operator=(const forward_list& __list)
     {
-      if (&__list != this)
+      if (std::__addressof(__list) != this)
         {
 	  if (_Node_alloc_traits::_S_propagate_on_copy_assign())
 	    {
@@ -253,7 +241,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     forward_list<_Tp, _Alloc>::
     splice_after(const_iterator __pos, forward_list&&,
-		 const_iterator __i)
+		 const_iterator __i) noexcept
     {
       const_iterator __j = __i;
       ++__j;
@@ -299,8 +287,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     forward_list<_Tp, _Alloc>::
     remove(const _Tp& __val)
     {
-      _Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
-      _Node* __extra = 0;
+      _Node_base* __curr = &this->_M_impl._M_head;
+      _Node_base* __extra = nullptr;
 
       while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
         {
@@ -314,7 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      else
 		__extra = __curr;
 	    }
-	  __curr = static_cast<_Node*>(__curr->_M_next);
+	  __curr = __curr->_M_next;
         }
 
       if (__extra)
@@ -327,13 +315,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       forward_list<_Tp, _Alloc>::
       remove_if(_Pred __pred)
       {
-	_Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
+	_Node_base* __curr = &this->_M_impl._M_head;
         while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
           {
             if (__pred(*__tmp->_M_valptr()))
               this->_M_erase_after(__curr);
             else
-              __curr = static_cast<_Node*>(__curr->_M_next);
+              __curr = __curr->_M_next;
           }
       }
 

@@ -33,5 +33,4 @@ subroutine yes
 end subroutine yes
 
 ! { dg-final { scan-tree-dump-times "gfortran_compare_string" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

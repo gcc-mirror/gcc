@@ -37,4 +37,3 @@ test_vaesimcq_u8 (uint8x16_t data)
 /* { dg-final { scan-assembler-times "aesimc\\tv\[0-9\]+\.16b, v\[0-9\]+\.16b" 1 } } */
 
 
-/* { dg-final { cleanup-saved-temps } } */

@@ -249,6 +249,10 @@ Wimplicit-procedure
 Fortran Warning Var(warn_implicit_procedure)
 Warn about called procedures not explicitly declared
 
+Winteger-division
+Fortran Warning Var(warn_integer_division) LangEnabledBy(Fortran,Wall)
+Warn about constant integer divisions with truncated results
+
 Wline-truncation
 Fortran Warning Var(warn_line_truncation) LangEnabledBy(Fortran,Wall) Init(-1)
 Warn about truncated source lines
@@ -542,6 +546,10 @@ Enum(gfc_init_local_real) String(inf) Value(GFC_INIT_REAL_INF)
 EnumValue
 Enum(gfc_init_local_real) String(-inf) Value(GFC_INIT_REAL_NEG_INF)
 
+finline-matmul-limit=
+Fortran RejectNegative Joined UInteger Var(flag_inline_matmul_limit) Init(-1)
+-finline-matmul-limit=<n>	Specify the size of the largest matrix for which matmul will be inlined
+
 fmax-array-constructor=
 Fortran RejectNegative Joined UInteger Var(flag_max_array_constructor) Init(65535)
 -fmax-array-constructor=<n>	Maximum number of objects in an array constructor
@@ -567,11 +575,11 @@ Fortran Var(flag_module_private)
 Set default accessibility of module entities to PRIVATE.
 
 fopenacc
-Fortran
+Fortran LTO
 ; Documented in C
 
 fopenmp
-Fortran
+Fortran LTO
 ; Documented in C
 
 fopenmp-simd

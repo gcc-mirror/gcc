@@ -16,4 +16,3 @@ void test_vcreates8 (void)
   out_int8x8_t = vcreate_s8 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

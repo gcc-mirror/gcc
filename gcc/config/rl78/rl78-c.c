@@ -22,15 +22,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "c-family/c-common.h"
 #include "rl78-protos.h"
@@ -39,5 +31,6 @@
 void
 rl78_register_pragmas (void)
 {
+  c_register_addr_space ("__near", ADDR_SPACE_NEAR);
   c_register_addr_space ("__far", ADDR_SPACE_FAR);
 }

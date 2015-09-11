@@ -21,15 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -58,8 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Non-static as some targets don't use it.  */
-void builtin_define_std (const char *) ATTRIBUTE_UNUSED;
-static void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
 static void builtin_define_with_hex_fp_value (const char *, tree,
 					      int, const char *,
 					      const char *,
@@ -68,7 +58,6 @@ static void builtin_define_stdint_macros (void);
 static void builtin_define_constants (const char *, tree);
 static void builtin_define_type_max (const char *, tree);
 static void builtin_define_type_minmax (const char *, const char *, tree);
-static void builtin_define_type_sizeof (const char *, tree);
 static void builtin_define_float_constants (const char *,
 					    const char *,
 					    const char *,
@@ -113,7 +102,7 @@ mode_has_fma (machine_mode mode)
 }
 
 /* Define NAME with value TYPE size_unit.  */
-static void
+void
 builtin_define_type_sizeof (const char *name, tree type)
 {
   builtin_define_with_int_value (name,
@@ -843,7 +832,7 @@ c_cpp_builtins (cpp_reader *pfile)
 
       if (cxx_dialect >= cxx11)
 	{
-	  /* Set feature test macros for C++11  */
+	  /* Set feature test macros for C++11.  */
 	  cpp_define (pfile, "__cpp_unicode_characters=200704");
 	  cpp_define (pfile, "__cpp_raw_strings=200710");
 	  cpp_define (pfile, "__cpp_unicode_literals=200710");
@@ -852,7 +841,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  if (cxx_dialect == cxx11)
 	    cpp_define (pfile, "__cpp_constexpr=200704");
 	  cpp_define (pfile, "__cpp_range_based_for=200907");
-	  cpp_define (pfile, "__cpp_static_assert=200410");
+	  if (cxx_dialect <= cxx14)
+	    cpp_define (pfile, "__cpp_static_assert=200410");
 	  cpp_define (pfile, "__cpp_decltype=200707");
 	  cpp_define (pfile, "__cpp_attributes=200809");
 	  cpp_define (pfile, "__cpp_rvalue_reference=200610");
@@ -866,7 +856,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx11)
 	{
-	  /* Set feature test macros for C++14  */
+	  /* Set feature test macros for C++14.  */
 	  cpp_define (pfile, "__cpp_return_type_deduction=201304");
 	  cpp_define (pfile, "__cpp_init_captures=201304");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201304");
@@ -876,6 +866,15 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_variable_templates=201304");
 	  cpp_define (pfile, "__cpp_digit_separators=201309");
 	}
+      if (cxx_dialect > cxx14)
+	{
+	  /* Set feature test macros for C++1z.  */
+	  cpp_define (pfile, "__cpp_static_assert=201411");
+	}
+      if (flag_concepts)
+	/* Use a value smaller than the 201507 specified in
+	   the TS, since we don't yet support extended auto.  */
+	cpp_define (pfile, "__cpp_concepts=201500");
       if (flag_sized_deallocation)
 	cpp_define (pfile, "__cpp_sized_deallocation=201309");
     }
@@ -891,14 +890,8 @@ c_cpp_builtins (cpp_reader *pfile)
   /* Represents the C++ ABI version, always defined so it can be used while
      preprocessing C and assembler.  */
   if (flag_abi_version == 0)
-    /* Use a very large value so that:
-
-	 #if __GXX_ABI_VERSION >= <value for version X>
-
-       will work whether the user explicitly says "-fabi-version=x" or
-       "-fabi-version=0".  Do not use INT_MAX because that will be
-       different from system to system.  */
-    builtin_define_with_int_value ("__GXX_ABI_VERSION", 999999);
+    /* We should have set this to something real in c_common_post_options.  */
+    gcc_unreachable ();
   else if (flag_abi_version == 1)
     /* Due to a historical accident, this version had the value
        "102".  */
@@ -1144,9 +1137,8 @@ c_cpp_builtins (cpp_reader *pfile)
 				     TRAMPOLINE_SIZE);
 
       /* For libgcc generic-morestack.c and unwinder code.  */
-#ifdef STACK_GROWS_DOWNWARD
-      cpp_define (pfile, "__LIBGCC_STACK_GROWS_DOWNWARD__");
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	cpp_define (pfile, "__LIBGCC_STACK_GROWS_DOWNWARD__");
 
       /* For libgcc unwinder code.  */
 #ifdef DONT_USE_BUILTIN_SETJMP
@@ -1378,7 +1370,7 @@ builtin_define_with_value (const char *macro, const char *expansion, int is_str)
 
 
 /* Pass an object-like macro and an integer value to define it to.  */
-static void
+void
 builtin_define_with_int_value (const char *macro, HOST_WIDE_INT value)
 {
   char *buf;

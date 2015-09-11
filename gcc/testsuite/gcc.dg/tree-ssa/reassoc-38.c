@@ -15,4 +15,3 @@ foo (int x)
 /* Check if the tests have been folded into a bit test.  */
 /* { dg-final { scan-tree-dump "(614180323407|0x0*8f0000004f)" "optimized" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
 /* { dg-final { scan-tree-dump "(<<|>>)" "optimized" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

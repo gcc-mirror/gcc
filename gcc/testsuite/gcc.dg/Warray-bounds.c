@@ -11,6 +11,8 @@ static inline int n(void) {
 void g(int *p);
 void h(int p);
 
+void bar (void *);
+
 int* f(void) {
     int b[10];
     int i;
@@ -26,10 +28,12 @@ int* f(void) {
     a[ 9] = 0;
     a[10] = 0;             /* { dg-warning "6:array subscript" } */
     a[11] = 0;             /* { dg-warning "6:array subscript" } */
+    bar (a);
     a[2 * n() - 11] = 1;    /* { dg-warning "6:array subscript" } */
     a[2 * n() - 10] = 1;
     a[2 * n() -  1] = 1;
     a[2 * n() -  0] = 1;    /* { dg-warning "6:array subscript" } */
+    bar (a);
 
     b[-1] = 0;             /* { dg-warning "6:array subscript" } */
     b[ 0] = 0;
@@ -37,6 +41,7 @@ int* f(void) {
     b[ 9] = 0;
     b[10] = 0;             /* { dg-warning "6:array subscript" } */
     b[11] = 0;             /* { dg-warning "6:array subscript" } */
+    bar (b);
     b[2 * n() - 11] = 1;    /* { dg-warning "6:array subscript" } */
     b[2 * n() - 10] = 1;
     b[2 * n() -  1] = 1;
@@ -48,6 +53,7 @@ int* f(void) {
     c.c[ 9] = 0;
     c.c[10] = 0;           /* { dg-warning "8:array subscript" } */
     c.c[11] = 0;           /* { dg-warning "8:array subscript" } */
+    bar (&c);
     c.c[2 * n() - 11] = 1;  /* { dg-warning "8:array subscript" } */
     c.c[2 * n() - 10] = 1;
     c.c[2 * n() -  1] = 1;
@@ -88,6 +94,8 @@ int* f(void) {
     for (i = 20; i < 30; ++i)
              a[i] = 1;       /* { dg-warning "15:array subscript" } */
 
+    bar (b);
+    bar (&c);
     return a;
 }
 

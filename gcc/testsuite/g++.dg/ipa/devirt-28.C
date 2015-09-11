@@ -14,4 +14,3 @@ void fn1(B* b) {
 // { dg-final { scan-assembler-not "_ZN1AD2Ev" } }
 // { dg-final { scan-assembler-not "_ZN1BD0Ev" } }
 // { dg-final { scan-ipa-dump "Target is artificial" "devirt" } }
-// { dg-final { cleanup-ipa-dump "devirt" } }

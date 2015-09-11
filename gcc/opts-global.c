@@ -23,38 +23,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "opts.h"
+#include "options.h"
 #include "flags.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h" /* Required by langhooks.h.  */
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
+#include "backend.h"
+#include "tree.h"
 #include "gimple.h"
-#include "langhooks.h"
 #include "rtl.h"
+#include "fold-const.h"
+#include "internal-fn.h"
+#include "langhooks.h"
 #include "dbgcnt.h"
 #include "debug.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
-#include "lto-streamer.h"
+#include "target.h"
 #include "output.h"
 #include "plugin.h"
 #include "toplev.h"
@@ -456,6 +438,10 @@ handle_common_deferred_options (void)
 		   "with -fsanitize=kernel-address");
 	  if (!set_asan_shadow_offset (opt->arg))
 	     error ("unrecognized shadow offset %qs", opt->arg);
+	  break;
+
+	case OPT_fsanitize_sections_:
+	  set_sanitized_sections (opt->arg);
 	  break;
 
 	default:

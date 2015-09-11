@@ -8,4 +8,3 @@ void bar (void)
 }
 
 // { dg-final { scan-tree-dump-times "\{" 1 "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

@@ -46,4 +46,3 @@ mult (unsigned x, unsigned y)
 
 /* None of the predicates can be folded in these functions.  */
 /* { dg-final { scan-tree-dump-times "Folding predicate" 0 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

@@ -22,4 +22,3 @@ Matrix Matrix::operator* (const Matrix matrix) const
   return ret;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

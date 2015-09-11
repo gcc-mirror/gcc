@@ -11,6 +11,11 @@ if [info exists lang_include_flags] then {
     unset lang_include_flags
 }
 
+# If a testcase doesn't have special options, use these.
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS "-O2"
+}
+
 # Initialize dg.
 dg-init
 
@@ -60,7 +65,7 @@ if { $lang_test_file_found } {
     }
 
     # Main loop.
-    dg-runtest $tests "" $libstdcxx_includes
+    dg-runtest $tests "" "$libstdcxx_includes $DEFAULT_CFLAGS"
 }
 
 # All done.

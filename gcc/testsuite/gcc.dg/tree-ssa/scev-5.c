@@ -16,4 +16,3 @@ f(int k)
 }
 
 /* { dg-final { scan-tree-dump-times "&a" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

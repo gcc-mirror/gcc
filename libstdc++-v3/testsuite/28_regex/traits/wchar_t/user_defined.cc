@@ -55,8 +55,32 @@ test01()
   VERIFY(!regex_match(L"\u2029", re));
 }
 
+struct MyCtype : std::ctype<wchar_t>
+{
+  char
+  do_narrow(wchar_t c, char dflt) const override
+  {
+    if (c >= 256)
+      return dflt;
+    return ((char)c)+1;
+  }
+};
+
+void
+test02()
+{
+  std::locale loc(std::locale(), new MyCtype);
+  std::regex_traits<wchar_t> traits;
+  traits.imbue(loc);
+  wchar_t wch = L'p';
+  VERIFY(traits.lookup_collatename(&wch, &wch+1) == L"q");
+  std::wstring ws = L"chfhs"; // chars of "digit" shifted by 1.
+  VERIFY(traits.lookup_classname(ws.begin(), ws.end()) != 0);
+}
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }

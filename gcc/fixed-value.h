@@ -20,10 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FIXED_VALUE_H
 #define GCC_FIXED_VALUE_H
 
-#include "machmode.h"
-#include "real.h"
-#include "double-int.h"
-
 struct GTY(()) fixed_value
 {
   double_int data;		/* Store data up to 2 wide integers.  */

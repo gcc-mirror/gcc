@@ -20,4 +20,3 @@ ooof ()
 
 /* There should be no IF conditionals.  */
 /* { dg-final { scan-tree-dump-times "if " 0 "dom2"} } */
-/* { dg-final { cleanup-tree-dump "dom2" } } */

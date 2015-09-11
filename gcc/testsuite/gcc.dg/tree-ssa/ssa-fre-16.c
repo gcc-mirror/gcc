@@ -15,4 +15,3 @@ int foo(int b, int c)
 }
 
 /* { dg-final { scan-tree-dump-not "link_error" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -58,4 +58,3 @@ void keyboard_set_repeat(void)
 
 /* { dg-final { scan-tree-dump-times "ireg.*ax" 1 "optimized"} } */
  
-/* { dg-final { cleanup-tree-dump "optimized" } } */

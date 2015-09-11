@@ -28,25 +28,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
 #include "rtl.h"
-#include "hashtab.h"
-#include "function.h"
+#include "df.h"
+#include "alias.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -57,10 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "tm_p.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "regs.h"
 #include "addresses.h"
 #include "recog.h"
@@ -69,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "target.h"
 #include "tree-pass.h"
-#include "df.h"
 #include "ira.h"
 
 /* Maximum register number used in this function, plus one.  */
@@ -84,15 +66,6 @@ struct simplifiable_subreg
 
   subreg_shape shape;
   HARD_REG_SET simplifiable_regs;
-};
-
-struct simplifiable_subregs_hasher : typed_noop_remove <simplifiable_subreg>
-{
-  typedef simplifiable_subreg value_type;
-  typedef subreg_shape compare_type;
-
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
 };
 
 struct target_hard_regs default_target_hard_regs;
@@ -470,14 +443,12 @@ init_reg_sets_1 (void)
 	}
       else if (i == FRAME_POINTER_REGNUM)
 	;
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-      else if (i == HARD_FRAME_POINTER_REGNUM)
+      else if (!HARD_FRAME_POINTER_IS_FRAME_POINTER
+	       && i == HARD_FRAME_POINTER_REGNUM)
 	;
-#endif
-#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      else if (i == ARG_POINTER_REGNUM && fixed_regs[i])
+      else if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	       && i == ARG_POINTER_REGNUM && fixed_regs[i])
 	;
-#endif
       else if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 	       && i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
 	;
@@ -1132,7 +1103,7 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
       /* Count a set of the destination if it is a register.  */
       for (dest = SET_DEST (x);
 	   GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART
-	   || GET_CODE (dest) == ZERO_EXTEND;
+	   || GET_CODE (dest) == ZERO_EXTRACT;
 	   dest = XEXP (dest, 0))
 	;
 
@@ -1234,14 +1205,14 @@ reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 
 
 inline hashval_t
-simplifiable_subregs_hasher::hash (const value_type *value)
+simplifiable_subregs_hasher::hash (const simplifiable_subreg *value)
 {
   return value->shape.unique_id ();
 }
 
 inline bool
-simplifiable_subregs_hasher::equal (const value_type *value,
-				    const compare_type *compare)
+simplifiable_subregs_hasher::equal (const simplifiable_subreg *value,
+				    const subreg_shape *compare)
 {
   return value->shape == *compare;
 }

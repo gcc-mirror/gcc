@@ -229,6 +229,7 @@ We build the comparison using :c:func:`gcc_jit_context_new_comparison`:
 
 .. code-block:: c
 
+  /* (i >= n) */
    gcc_jit_rvalue *guard =
      gcc_jit_context_new_comparison (
        ctxt, NULL,
@@ -241,7 +242,16 @@ and can then use this to add `b_loop_cond`'s sole statement, via
 
 .. code-block:: c
 
-  gcc_jit_block_end_with_conditional (b_loop_cond, NULL, guard);
+  /* Equivalent to:
+       if (guard)
+         goto after_loop;
+       else
+         goto loop_body;  */
+  gcc_jit_block_end_with_conditional (
+    b_loop_cond, NULL,
+    guard,
+    b_after_loop, /* on_true */
+    b_loop_body); /* on_false */
 
 Next, we populate the body of the loop.
 

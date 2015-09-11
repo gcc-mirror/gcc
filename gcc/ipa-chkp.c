@@ -21,32 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "options.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "tree-pass.h"
 #include "stringpool.h"
-#include "bitmap.h"
-#include "gimple-expr.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "is-a.h"
-#include "tree-ssa-alias.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "ipa-ref.h"
+#include "calls.h"
 #include "lto-streamer.h"
 #include "cgraph.h"
 #include "tree-chkp.h"
@@ -100,6 +85,89 @@ along with GCC; see the file COPYING3.  If not see
     removed.  */
 
 #define CHKP_BOUNDS_OF_SYMBOL_PREFIX "__chkp_bounds_of_"
+#define CHKP_WRAPPER_SYMBOL_PREFIX "__mpx_wrapper_"
+
+/* Return 1 calls to FNDECL should be replaced with
+   a call to wrapper function.  */
+bool
+chkp_wrap_function (tree fndecl)
+{
+  if (!flag_chkp_use_wrappers)
+    return false;
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_STRLEN:
+	case BUILT_IN_STRCPY:
+	case BUILT_IN_STRNCPY:
+	case BUILT_IN_STPCPY:
+	case BUILT_IN_STPNCPY:
+	case BUILT_IN_STRCAT:
+	case BUILT_IN_STRNCAT:
+	case BUILT_IN_MEMCPY:
+	case BUILT_IN_MEMPCPY:
+	case BUILT_IN_MEMSET:
+	case BUILT_IN_MEMMOVE:
+	case BUILT_IN_BZERO:
+	case BUILT_IN_MALLOC:
+	case BUILT_IN_CALLOC:
+	case BUILT_IN_REALLOC:
+	  return 1;
+
+	default:
+	  return 0;
+	}
+    }
+
+  return false;
+}
+
+static const char *
+chkp_wrap_function_name (tree fndecl)
+{
+  gcc_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL);
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_STRLEN:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strlen";
+    case BUILT_IN_STRCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strcpy";
+    case BUILT_IN_STRNCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strncpy";
+    case BUILT_IN_STPCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "stpcpy";
+    case BUILT_IN_STPNCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "stpncpy";
+    case BUILT_IN_STRCAT:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strcat";
+    case BUILT_IN_STRNCAT:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "strncat";
+    case BUILT_IN_MEMCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "memcpy";
+    case BUILT_IN_MEMPCPY:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "mempcpy";
+    case BUILT_IN_MEMSET:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "memset";
+    case BUILT_IN_MEMMOVE:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "memmove";
+    case BUILT_IN_BZERO:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "bzero";
+    case BUILT_IN_MALLOC:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "malloc";
+    case BUILT_IN_CALLOC:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "calloc";
+    case BUILT_IN_REALLOC:
+      return CHKP_WRAPPER_SYMBOL_PREFIX "realloc";
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return "";
+}
 
 /* Build a clone of FNDECL with a modified name.  */
 
@@ -124,11 +192,19 @@ chkp_build_instrumented_fndecl (tree fndecl)
      because it conflicts with decl merging algorithms in LTO.
      Achieve the result by using transparent alias name for the
      instrumented version.  */
-  s = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
-  s += ".chkp";
-  new_name = get_identifier (s.c_str ());
-  IDENTIFIER_TRANSPARENT_ALIAS (new_name) = 1;
-  TREE_CHAIN (new_name) = DECL_ASSEMBLER_NAME (fndecl);
+  if (chkp_wrap_function(fndecl))
+    {
+      new_name = get_identifier (chkp_wrap_function_name (fndecl));
+      DECL_VISIBILITY (new_decl) = VISIBILITY_DEFAULT;
+    }
+  else
+    {
+      s = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
+      s += ".chkp";
+      new_name = get_identifier (s.c_str ());
+      IDENTIFIER_TRANSPARENT_ALIAS (new_name) = 1;
+      TREE_CHAIN (new_name) = DECL_ASSEMBLER_NAME (fndecl);
+    }
   SET_DECL_ASSEMBLER_NAME (new_decl, new_name);
 
   /* For functions with body versioning will make a copy of arguments.
@@ -197,7 +273,7 @@ tree
 chkp_copy_function_type_adding_bounds (tree orig_type)
 {
   tree type;
-  tree arg_type, attrs, t;
+  tree arg_type, attrs;
   unsigned len = list_length (TYPE_ARG_TYPES (orig_type));
   unsigned *indexes = XALLOCAVEC (unsigned, len);
   unsigned idx = 0, new_idx = 0;
@@ -217,7 +293,7 @@ chkp_copy_function_type_adding_bounds (tree orig_type)
   if (!arg_type)
     return orig_type;
 
-  type = copy_node (orig_type);
+  type = build_distinct_type_copy (orig_type);
   TYPE_ARG_TYPES (type) = copy_list (TYPE_ARG_TYPES (type));
 
   for (arg_type = TYPE_ARG_TYPES (type);
@@ -279,20 +355,6 @@ chkp_copy_function_type_adding_bounds (tree orig_type)
       chkp_map_attr_arg_indexes (attrs, "format_arg", indexes, len, delta);
       TYPE_ATTRIBUTES (type) = attrs;
     }
-
-  t = TYPE_MAIN_VARIANT (orig_type);
-  if (orig_type != t)
-    {
-      TYPE_MAIN_VARIANT (type) = t;
-      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (t);
-      TYPE_NEXT_VARIANT (t) = type;
-    }
-  else
-    {
-      TYPE_MAIN_VARIANT (type) = type;
-      TYPE_NEXT_VARIANT (type) = NULL;
-    }
-
 
   return type;
 }
@@ -494,22 +556,10 @@ chkp_maybe_create_clone (tree fndecl)
 
       if (gimple_has_body_p (fndecl))
 	{
-	  /* If function will not be instrumented, then it's instrumented
-	     version is a thunk for the original.  */
-	  if (!chkp_instrumentable_p (fndecl))
-	    {
-	      clone->remove_callees ();
-	      clone->remove_all_references ();
-	      clone->thunk.thunk_p = true;
-	      clone->thunk.add_pointer_bounds_args = true;
-	      clone->create_edge (node, NULL, 0, CGRAPH_FREQ_BASE);
-	    }
-	  else
-	    {
-	      tree_function_versioning (fndecl, new_decl, NULL, false,
-					NULL, false, NULL, NULL);
-	      clone->lowered = true;
-	    }
+	  gcc_assert (chkp_instrumentable_p (fndecl));
+	  tree_function_versioning (fndecl, new_decl, NULL, false,
+				    NULL, false, NULL, NULL);
+	  clone->lowered = true;
 	}
 
       /* New params are inserted after versioning because it
@@ -527,26 +577,22 @@ chkp_maybe_create_clone (tree fndecl)
 
       /* Clones have the same comdat group as originals.  */
       if (node->same_comdat_group
-	  || DECL_ONE_ONLY (node->decl))
+	  || (DECL_ONE_ONLY (node->decl)
+	      && !DECL_EXTERNAL (node->decl)))
 	clone->add_to_same_comdat_group (node);
 
       if (gimple_has_body_p (fndecl))
 	symtab->call_cgraph_insertion_hooks (clone);
 
       /* Clone all aliases.  */
-      for (i = 0; node->iterate_referring (i, ref); i++)
-	if (ref->use == IPA_REF_ALIAS)
-	  {
-	    struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-	    struct cgraph_node *chkp_alias
-	      = chkp_maybe_create_clone (alias->decl);
-	    chkp_alias->create_reference (clone, IPA_REF_ALIAS, NULL);
-	  }
+      for (i = 0; node->iterate_direct_aliases (i, ref); i++)
+	chkp_maybe_create_clone (ref->referring->decl);
 
       /* Clone all thunks.  */
       for (e = node->callers; e; e = e->next_caller)
 	if (e->caller->thunk.thunk_p
-	    && !e->caller->thunk.add_pointer_bounds_args)
+	    && !e->caller->thunk.add_pointer_bounds_args
+	    && !e->caller->instrumentation_clone)
 	  {
 	    struct cgraph_node *thunk
 	      = chkp_maybe_create_clone (e->caller->decl);
@@ -564,7 +610,10 @@ chkp_maybe_create_clone (tree fndecl)
 
 	  ref = node->ref_list.first_reference ();
 	  if (ref)
-	    chkp_maybe_create_clone (ref->referred->decl);
+	    {
+	      target = chkp_maybe_create_clone (ref->referred->decl);
+	      clone->create_reference (target, IPA_REF_ALIAS);
+	    }
 
 	  if (node->alias_target)
 	    {
@@ -643,7 +692,7 @@ chkp_versioning (void)
    function.  */
 
 static unsigned int
-chkp_produce_thunks (void)
+chkp_produce_thunks (bool early)
 {
   struct cgraph_node *node;
 
@@ -652,7 +701,9 @@ chkp_produce_thunks (void)
       if (!node->instrumentation_clone
 	  && node->instrumented_version
 	  && gimple_has_body_p (node->decl)
-	  && gimple_has_body_p (node->instrumented_version->decl))
+	  && gimple_has_body_p (node->instrumented_version->decl)
+	  && (!lookup_attribute ("always_inline", DECL_ATTRIBUTES (node->decl))
+	      || !early))
 	{
 	  node->release_body ();
 	  node->remove_callees ();
@@ -664,18 +715,24 @@ chkp_produce_thunks (void)
 			     0, CGRAPH_FREQ_BASE);
 	  node->create_reference (node->instrumented_version,
 			       IPA_REF_CHKP, NULL);
+	  /* Thunk shouldn't be a cdtor.  */
+	  DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+	  DECL_STATIC_DESTRUCTOR (node->decl) = 0;
 	}
     }
 
   /* Mark instrumentation clones created for aliases and thunks
      as insttrumented so they could be removed as unreachable
      now.  */
-  FOR_EACH_DEFINED_FUNCTION (node)
+  if (!early)
     {
-      if (node->instrumentation_clone
-	  && (node->alias || node->thunk.thunk_p)
-	  && !chkp_function_instrumented_p (node->decl))
-	chkp_function_mark_instrumented (node->decl);
+      FOR_EACH_DEFINED_FUNCTION (node)
+      {
+	if (node->instrumentation_clone
+	    && (node->alias || node->thunk.thunk_p)
+	    && !chkp_function_instrumented_p (node->decl))
+	  chkp_function_mark_instrumented (node->decl);
+      }
     }
 
   return TODO_remove_functions;
@@ -685,6 +742,19 @@ const pass_data pass_data_ipa_chkp_versioning =
 {
   SIMPLE_IPA_PASS, /* type */
   "chkp_versioning", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0 /* todo_flags_finish */
+};
+
+const pass_data pass_data_ipa_chkp_early_produce_thunks =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "chkp_ecleanup", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -732,6 +802,31 @@ public:
 
 }; // class pass_ipa_chkp_versioning
 
+class pass_ipa_chkp_early_produce_thunks : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_chkp_early_produce_thunks (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_chkp_early_produce_thunks, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual opt_pass * clone ()
+    {
+      return new pass_ipa_chkp_early_produce_thunks (m_ctxt);
+    }
+
+  virtual bool gate (function *)
+    {
+      return flag_check_pointer_bounds;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return chkp_produce_thunks (true);
+    }
+
+}; // class pass_chkp_produce_thunks
+
 class pass_ipa_chkp_produce_thunks : public simple_ipa_opt_pass
 {
 public:
@@ -752,7 +847,7 @@ public:
 
   virtual unsigned int execute (function *)
     {
-      return chkp_produce_thunks ();
+      return chkp_produce_thunks (false);
     }
 
 }; // class pass_chkp_produce_thunks
@@ -761,6 +856,12 @@ simple_ipa_opt_pass *
 make_pass_ipa_chkp_versioning (gcc::context *ctxt)
 {
   return new pass_ipa_chkp_versioning (ctxt);
+}
+
+simple_ipa_opt_pass *
+make_pass_ipa_chkp_early_produce_thunks (gcc::context *ctxt)
+{
+  return new pass_ipa_chkp_early_produce_thunks (ctxt);
 }
 
 simple_ipa_opt_pass *

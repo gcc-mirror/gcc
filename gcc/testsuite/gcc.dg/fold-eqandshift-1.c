@@ -53,4 +53,3 @@ void test6(unsigned int f)
 /* { dg-final { scan-tree-dump-times "d >> 3 \& 4" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "e < 0" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "if \\(0\\)" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

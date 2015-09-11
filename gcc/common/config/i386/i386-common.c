@@ -127,6 +127,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_RDRND_SET OPTION_MASK_ISA_RDRND
 #define OPTION_MASK_ISA_F16C_SET \
   (OPTION_MASK_ISA_F16C | OPTION_MASK_ISA_AVX_SET)
+#define OPTION_MASK_ISA_MWAITX_SET OPTION_MASK_ISA_MWAITX
 
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
@@ -186,6 +187,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_XSAVES_UNSET OPTION_MASK_ISA_XSAVES
 #define OPTION_MASK_ISA_PCOMMIT_UNSET OPTION_MASK_ISA_PCOMMIT
 #define OPTION_MASK_ISA_CLWB_UNSET OPTION_MASK_ISA_CLWB
+#define OPTION_MASK_ISA_MWAITX_UNSET OPTION_MASK_ISA_MWAITX
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -221,7 +223,7 @@ along with GCC; see the file COPYING3.  If not see
 
 bool
 ix86_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+		    struct gcc_options *opts_set,
 		    const struct cl_decoded_option *decoded,
 		    location_t loc)
 {
@@ -230,6 +232,20 @@ ix86_handle_option (struct gcc_options *opts,
 
   switch (code)
     {
+    case OPT_miamcu:
+      if (value)
+	{
+	  /* Turn off x87/MMX/SSE/AVX codegen for -miamcu.  */
+	  opts->x_target_flags &= ~MASK_80387;
+	  opts_set->x_target_flags |= MASK_80387;
+	  opts->x_ix86_isa_flags &= ~(OPTION_MASK_ISA_MMX_UNSET
+				      | OPTION_MASK_ISA_SSE_UNSET);
+	  opts->x_ix86_isa_flags_explicit |= (OPTION_MASK_ISA_MMX_UNSET
+					      | OPTION_MASK_ISA_SSE_UNSET);
+
+	}
+      return true;
+
     case OPT_mmmx:
       if (value)
 	{
@@ -929,6 +945,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CLWB_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CLWB_UNSET;
+	}
+      return true;
+
+    case OPT_mmwaitx:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MWAITX_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MWAITX_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_MWAITX_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MWAITX_UNSET;
 	}
       return true;
 

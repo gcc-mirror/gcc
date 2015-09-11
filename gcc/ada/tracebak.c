@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2014, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2015, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -278,6 +278,20 @@ __gnat_backtrace (void **array,
 #error Unhandled darwin architecture.
 #endif
 
+/*---------------------------- x86 *BSD --------------------------------*/
+
+#elif defined (__i386__) &&   \
+    ( defined (__NetBSD__) || defined (__FreeBSD__) || defined (__OpenBSD__) )
+
+#define USE_GCC_UNWINDER
+/* The generic unwinder is not used for this target because the default
+   implementation doesn't unwind on the BSD platforms.  AMD64 targets use the
+   gcc unwinder for all platforms, so let's keep i386 consistent with that.
+*/
+
+#define PC_ADJUST -2
+/* The minimum size of call instructions on this architecture is 2 bytes */
+
 /*---------------------- PPC AIX/PPC Lynx 178/Older Darwin ------------------*/
 #elif ((defined (_POWER) && defined (_AIX)) || \
        (defined (__powerpc__) && defined (__Lynx__) && !defined(__ELF__)) || \
@@ -335,7 +349,7 @@ extern void __runnit(); /* thread entry point.  */
 /*-------------------- PPC ELF (GNU/Linux & VxWorks) ---------------------*/
 
 #elif (defined (_ARCH_PPC) && defined (__vxworks)) ||  \
-  (defined (linux) && defined (__powerpc__))
+  (defined (__linux__) && defined (__powerpc__))
 
 #define USE_GENERIC_UNWINDER
 
@@ -363,7 +377,7 @@ struct layout
 
 /*-------------------------- SPARC Solaris -----------------------------*/
 
-#elif defined (sun) && defined (sparc)
+#elif defined (__sun__) && defined (__sparc__)
 
 #define USE_GENERIC_UNWINDER
 
@@ -401,12 +415,12 @@ struct layout
 
 /*------------------------------- x86 ----------------------------------*/
 
-#elif defined (i386)
+#elif defined (__i386__)
 
 #if defined (__WIN32)
 #include <windows.h>
 #define IS_BAD_PTR(ptr) (IsBadCodePtr((FARPROC)ptr))
-#elif defined (sun)
+#elif defined (__sun__)
 #define IS_BAD_PTR(ptr) ((unsigned long)ptr == -1UL)
 #else
 #define IS_BAD_PTR(ptr) 0
@@ -415,7 +429,7 @@ struct layout
 /* Starting with GCC 4.6, -fomit-frame-pointer is turned on by default for
    32-bit x86/Linux as well and DWARF 2 unwind tables are emitted instead.
    See the x86-64 case below for the drawbacks with this approach.  */
-#if defined (linux) && (__GNUC__ * 10 + __GNUC_MINOR__ > 45)
+#if defined (__linux__) && (__GNUC__ * 10 + __GNUC_MINOR__ > 45)
 #define USE_GCC_UNWINDER
 #else
 #define USE_GENERIC_UNWINDER
@@ -481,7 +495,7 @@ struct layout
 
 /*----------------------------- ia64 ---------------------------------*/
 
-#elif defined (__ia64__) && (defined (linux) || defined (__hpux__))
+#elif defined (__ia64__) && (defined (__linux__) || defined (__hpux__))
 
 #define USE_GCC_UNWINDER
 /* Use _Unwind_Backtrace driven exceptions on ia64 HP-UX and ia64

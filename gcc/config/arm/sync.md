@@ -50,14 +50,11 @@
   {
     if (TARGET_HAVE_DMB)
       {
-	/* Note we issue a system level barrier. We should consider issuing
-	   a inner shareabilty zone barrier here instead, ie. "DMB ISH".  */
-	/* ??? Differentiate based on SEQ_CST vs less strict?  */
-	return "dmb\tsy";
+	return "dmb\\tish";
       }
 
     if (TARGET_HAVE_DMB_MCR)
-      return "mcr\tp15, 0, r0, c7, c10, 5";
+      return "mcr\\tp15, 0, r0, c7, c10, 5";
 
     gcc_unreachable ();
   }
@@ -73,15 +70,14 @@
       VUNSPEC_LDA))]
   "TARGET_HAVE_LDACQ"
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-        || model == MEMMODEL_CONSUME
-        || model == MEMMODEL_RELEASE)
-      return \"ldr<sync_sfx>\\t%0, %1\";
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
+      return \"ldr%(<sync_sfx>%)\\t%0, %1\";
     else
-      return \"lda<sync_sfx>\\t%0, %1\";
+      return \"lda<sync_sfx>%?\\t%0, %1\";
   }
-)
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "atomic_store<mode>"
   [(set (match_operand:QHSI 0 "memory_operand" "=Q")
@@ -91,15 +87,14 @@
       VUNSPEC_STL))]
   "TARGET_HAVE_LDACQ"
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-        || model == MEMMODEL_CONSUME
-        || model == MEMMODEL_ACQUIRE)
-      return \"str<sync_sfx>\t%1, %0\";
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
+      return \"str%(<sync_sfx>%)\t%1, %0\";
     else
-      return \"stl<sync_sfx>\t%1, %0\";
+      return \"stl<sync_sfx>%?\t%1, %0\";
   }
-)
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 ;; Note that ldrd and vldr are *not* guaranteed to be single-copy atomic,
 ;; even for a 64-bit aligned address.  Instead we use a ldrexd unparied
@@ -110,10 +105,10 @@
    (match_operand:SI 2 "const_int_operand")]		;; model
   "TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN"
 {
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
   expand_mem_thread_fence (model);
   emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1]));
-  if (model == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     expand_mem_thread_fence (model);
   DONE;
 })

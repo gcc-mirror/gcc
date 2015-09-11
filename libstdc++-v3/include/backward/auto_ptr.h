@@ -180,7 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       element_type&
       operator*() const throw() 
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	__glibcxx_assert(_M_ptr != 0);
 	return *_M_ptr; 
       }
       
@@ -193,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       element_type*
       operator->() const throw() 
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	__glibcxx_assert(_M_ptr != 0);
 	return _M_ptr; 
       }
       

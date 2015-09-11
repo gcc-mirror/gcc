@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "flags.h"
+#include "options.h"
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
@@ -106,7 +106,7 @@ static gfc_dt *current_dt;
 /**************** Fortran 95 FORMAT parser  *****************/
 
 /* FORMAT tokens returned by format_lex().  */
-typedef enum
+enum format_token
 {
   FMT_NONE, FMT_UNKNOWN, FMT_SIGNED_INT, FMT_ZERO, FMT_POSINT, FMT_PERIOD,
   FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_LPAREN,
@@ -114,8 +114,7 @@ typedef enum
   FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END,
   FMT_ERROR, FMT_DC, FMT_DP, FMT_T, FMT_TR, FMT_TL, FMT_STAR, FMT_RC,
   FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ
-}
-format_token;
+};
 
 /* Local variables for checking format strings.  The saved_token is
    used to back up by a single format token during the parsing
@@ -165,7 +164,7 @@ next_char (gfc_instring in_string)
 	gfc_current_locus = old_locus;
 
       if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
-	gfc_warning ("Extension: backslash character at %C");
+	gfc_warning (0, "Extension: backslash character at %C");
     }
 
   if (mode == MODE_COPY)
@@ -201,7 +200,7 @@ next_char_not_space (bool *error)
       if (c == '\t')
 	{
 	  if (gfc_option.allow_std & GFC_STD_GNU)
-	    gfc_warning ("Extension: Tab character in format at %C");
+	    gfc_warning (0, "Extension: Tab character in format at %C");
 	  else
 	    {
 	      gfc_error ("Extension: Tab character in format at %C");
@@ -385,7 +384,7 @@ format_lex (void)
 
 	  if (c == delim)
 	    {
-	      c = next_char (INSTRING_NOWARN);
+	      c = next_char (NONSTRING);
 
 	      if (c == '\0')
 		{
@@ -681,7 +680,7 @@ format_item_1:
 	return false;
       if (t != FMT_RPAREN || level > 0)
 	{
-	  gfc_warning ("$ should be the last specifier in format at %L",
+	  gfc_warning (0, "$ should be the last specifier in format at %L",
 		       &format_locus);
 	  goto optional_comma_1;
 	}
@@ -779,7 +778,7 @@ data_desc:
 	  case WARNING:
 	    if (mode != MODE_FORMAT)
 	      format_locus.nextc += format_string_pos;
-	    gfc_warning ("Extension: Missing positive width after L "
+	    gfc_warning (0, "Extension: Missing positive width after L "
 			 "descriptor at %L", &format_locus);
 	    saved_token = t;
 	    break;
@@ -874,7 +873,7 @@ data_desc:
               goto fail;
 	    }
 	  else
-	    gfc_warning ("Period required in format "
+	    gfc_warning (0, "Period required in format "
 			 "specifier %s at %L", token_to_string (t),
 			  &format_locus);
 	  /* If we go to finished, we need to unwind this
@@ -946,7 +945,7 @@ data_desc:
 	    }
 	  if (mode != MODE_FORMAT)
 	    format_locus.nextc += format_string_pos;
-	  gfc_warning ("Period required in format specifier at %L",
+	  gfc_warning (0, "Period required in format specifier at %L",
 		       &format_locus);
 	  saved_token = t;
 	  break;
@@ -968,7 +967,7 @@ data_desc:
 	{
 	  if (mode != MODE_FORMAT)
 	    format_locus.nextc += format_string_pos;
-	  gfc_warning ("The H format specifier at %L is"
+	  gfc_warning (0, "The H format specifier at %L is"
 		       " a Fortran 95 deleted feature", &format_locus);
 	}
       if (mode == MODE_STRING)
@@ -1173,14 +1172,15 @@ check_format_string (gfc_expr *e, bool is_input)
       if (e->value.character.string[i] != ' ')
         {
           format_locus.nextc += format_length + 1; 
-          gfc_warning ("Extraneous characters in format at %L", &format_locus); 
+          gfc_warning (0,
+		       "Extraneous characters in format at %L", &format_locus); 
           break;
         }
   return rv;
 }
 
 
-/************ Fortran 95 I/O statement matchers *************/
+/************ Fortran I/O statement matchers *************/
 
 /* Match a FORMAT statement.  This amounts to actually parsing the
    format descriptors in order to correctly locate the end of the
@@ -1238,6 +1238,36 @@ gfc_match_format (void)
   gfc_match_eos ();		/* Guaranteed to succeed */
 
   return MATCH_YES;
+}
+
+
+/* Check for a CHARACTER variable.  The check for scalar is done in
+   resolve_tag.  */
+
+static bool
+check_char_variable (gfc_expr *e)
+{
+  if (e->expr_type != EXPR_VARIABLE || e->ts.type != BT_CHARACTER)
+    {
+      gfc_error("IOMSG must be a scalar-default-char-variable at %L", &e->where);
+      return false;
+    }
+  return true;
+}
+
+
+static bool
+is_char_type (const char *name, gfc_expr *e)
+{
+  gfc_resolve_expr (e);
+
+  if (e->ts.type != BT_CHARACTER)
+    {
+      gfc_error ("%s requires a scalar-default-char-expr at %L",
+		   name, &e->where);
+      return false;
+    }
+  return true;
 }
 
 
@@ -1551,12 +1581,16 @@ match_open_element (gfc_open *open)
   match m;
 
   m = match_etag (&tag_e_async, &open->asynchronous);
+  if (m == MATCH_YES && !is_char_type ("ASYNCHRONOUS", open->asynchronous))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_unit, &open->unit);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &open->iomsg);
+  m = match_etag (&tag_iomsg, &open->iomsg);
+  if (m == MATCH_YES && !check_char_variable (open->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &open->iostat);
@@ -1720,7 +1754,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 
 	if (n == WARNING || (warn && n == ERROR))
 	  {
-	    gfc_warning ("Fortran 2003: %s specifier in %s statement at %C "
+	    gfc_warning (0, "Fortran 2003: %s specifier in %s statement at %C "
 			 "has value %qs", specifier, statement,
 			 allowed_f2003[i]);
 	    return 1;
@@ -1747,7 +1781,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 
 	if (n == WARNING || (warn && n == ERROR))
 	  {
-	    gfc_warning ("Extension: %s specifier in %s statement at %C "
+	    gfc_warning (0, "Extension: %s specifier in %s statement at %C "
 			 "has value %qs", specifier, statement,
 			 allowed_gnu[i]);
 	    return 1;
@@ -1768,7 +1802,8 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
   if (warn)
     {
       char *s = gfc_widechar_to_char (value, -1);
-      gfc_warning ("%s specifier in %s statement at %C has invalid value %qs",
+      gfc_warning (0,
+		   "%s specifier in %s statement at %C has invalid value %qs",
 		   specifier, statement, s);
       free (s);
       return 1;
@@ -1868,6 +1903,9 @@ gfc_match_open (void)
       static const char *access_f2003[] = { "STREAM", NULL };
       static const char *access_gnu[] = { "APPEND", NULL };
 
+      if (!is_char_type ("ACCESS", open->access))
+	goto cleanup;
+
       if (!compare_to_allowed_values ("ACCESS", access_f95, access_f2003,
 				      access_gnu,
 				      open->access->value.character.string,
@@ -1880,6 +1918,9 @@ gfc_match_open (void)
     {
       static const char *action[] = { "READ", "WRITE", "READWRITE", NULL };
 
+      if (!is_char_type ("ACTION", open->action))
+	goto cleanup;
+
       if (!compare_to_allowed_values ("ACTION", action, NULL, NULL,
 				      open->action->value.character.string,
 				      "OPEN", warn))
@@ -1891,6 +1932,9 @@ gfc_match_open (void)
     {
       if (!gfc_notify_std (GFC_STD_F2003, "ASYNCHRONOUS= at %C "
 			   "not allowed in Fortran 95"))
+	goto cleanup;
+
+      if (!is_char_type ("ASYNCHRONOUS", open->asynchronous))
 	goto cleanup;
 
       if (open->asynchronous->expr_type == EXPR_CONSTANT)
@@ -1911,6 +1955,9 @@ gfc_match_open (void)
 			   "not allowed in Fortran 95"))
 	goto cleanup;
 
+      if (!is_char_type ("BLANK", open->blank))
+	goto cleanup;
+
       if (open->blank->expr_type == EXPR_CONSTANT)
 	{
 	  static const char *blank[] = { "ZERO", "NULL", NULL };
@@ -1927,6 +1974,9 @@ gfc_match_open (void)
     {
       if (!gfc_notify_std (GFC_STD_F2003, "DECIMAL= at %C "
 			   "not allowed in Fortran 95"))
+	goto cleanup;
+
+      if (!is_char_type ("DECIMAL", open->decimal))
 	goto cleanup;
 
       if (open->decimal->expr_type == EXPR_CONSTANT)
@@ -1947,6 +1997,9 @@ gfc_match_open (void)
 	{
 	  static const char *delim[] = { "APOSTROPHE", "QUOTE", "NONE", NULL };
 
+	if (!is_char_type ("DELIM", open->delim))
+	  goto cleanup;
+
 	  if (!compare_to_allowed_values ("DELIM", delim, NULL, NULL,
 					  open->delim->value.character.string,
 					  "OPEN", warn))
@@ -1960,7 +2013,10 @@ gfc_match_open (void)
       if (!gfc_notify_std (GFC_STD_F2003, "ENCODING= at %C "
 			   "not allowed in Fortran 95"))
 	goto cleanup;
-    
+
+      if (!is_char_type ("ENCODING", open->encoding))
+	goto cleanup;
+
       if (open->encoding->expr_type == EXPR_CONSTANT)
 	{
 	  static const char * encoding[] = { "DEFAULT", "UTF-8", NULL };
@@ -1977,6 +2033,9 @@ gfc_match_open (void)
     {
       static const char *form[] = { "FORMATTED", "UNFORMATTED", NULL };
 
+      if (!is_char_type ("FORM", open->form))
+	goto cleanup;
+
       if (!compare_to_allowed_values ("FORM", form, NULL, NULL,
 				      open->form->value.character.string,
 				      "OPEN", warn))
@@ -1988,6 +2047,9 @@ gfc_match_open (void)
     {
       static const char *pad[] = { "YES", "NO", NULL };
 
+      if (!is_char_type ("PAD", open->pad))
+	goto cleanup;
+
       if (!compare_to_allowed_values ("PAD", pad, NULL, NULL,
 				      open->pad->value.character.string,
 				      "OPEN", warn))
@@ -1998,6 +2060,9 @@ gfc_match_open (void)
   if (open->position && open->position->expr_type == EXPR_CONSTANT)
     {
       static const char *position[] = { "ASIS", "REWIND", "APPEND", NULL };
+
+      if (!is_char_type ("POSITION", open->position))
+	goto cleanup;
 
       if (!compare_to_allowed_values ("POSITION", position, NULL, NULL,
 				      open->position->value.character.string,
@@ -2011,6 +2076,9 @@ gfc_match_open (void)
       if (!gfc_notify_std (GFC_STD_F2003, "ROUND= at %C "
 			   "not allowed in Fortran 95"))
       goto cleanup;
+
+      if (!is_char_type ("ROUND", open->round))
+	goto cleanup;
 
       if (open->round->expr_type == EXPR_CONSTANT)
 	{
@@ -2032,6 +2100,9 @@ gfc_match_open (void)
 			   "not allowed in Fortran 95"))
 	goto cleanup;
 
+      if (!is_char_type ("SIGN", open->sign))
+	goto cleanup;
+
       if (open->sign->expr_type == EXPR_CONSTANT)
 	{
 	  static const char * sign[] = { "PLUS", "SUPPRESS", "PROCESSOR_DEFINED",
@@ -2047,7 +2118,7 @@ gfc_match_open (void)
 #define warn_or_error(...) \
 { \
   if (warn) \
-    gfc_warning (__VA_ARGS__); \
+    gfc_warning (0, __VA_ARGS__); \
   else \
     { \
       gfc_error (__VA_ARGS__); \
@@ -2068,6 +2139,9 @@ gfc_match_open (void)
     {
       static const char *status[] = { "OLD", "NEW", "SCRATCH",
 	"REPLACE", "UNKNOWN", NULL };
+
+      if (!is_char_type ("STATUS", open->status))
+	goto cleanup;
 
       if (!compare_to_allowed_values ("STATUS", status, NULL, NULL,
 				      open->status->value.character.string,
@@ -2180,7 +2254,9 @@ match_close_element (gfc_close *close)
   m = match_etag (&tag_status, &close->status);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &close->iomsg);
+  m = match_etag (&tag_iomsg, &close->iomsg);
+  if (m == MATCH_YES && !check_char_variable (close->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &close->iostat);
@@ -2253,6 +2329,9 @@ gfc_match_close (void)
   if (close->status && close->status->expr_type == EXPR_CONSTANT)
     {
       static const char *status[] = { "KEEP", "DELETE", NULL };
+
+      if (!is_char_type ("STATUS", close->status))
+	goto cleanup;
 
       if (!compare_to_allowed_values ("STATUS", status, NULL, NULL,
 				      close->status->value.character.string,
@@ -2338,7 +2417,9 @@ match_file_element (gfc_filepos *fp)
   m = match_etag (&tag_unit, &fp->unit);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &fp->iomsg);
+  m = match_etag (&tag_iomsg, &fp->iomsg);
+  if (m == MATCH_YES && !check_char_variable (fp->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &fp->iostat);
@@ -2380,9 +2461,7 @@ match_filepos (gfc_statement st, gfc_exec_op op)
   if (m == MATCH_NO)
     {
       m = gfc_match_expr (&fp->unit);
-      if (m == MATCH_ERROR)
-	goto done;
-      if (m == MATCH_NO)
+      if (m == MATCH_ERROR || m == MATCH_NO)
 	goto syntax;
     }
 
@@ -2676,6 +2755,8 @@ match_dt_element (io_kind k, gfc_dt *dt)
     }
 
   m = match_etag (&tag_e_async, &dt->asynchronous);
+  if (m == MATCH_YES && !is_char_type ("ASYNCHRONOUS", dt->asynchronous))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_e_blank, &dt->blank);
@@ -2705,9 +2786,12 @@ match_dt_element (io_kind k, gfc_dt *dt)
   m = match_etag (&tag_spos, &dt->pos);
   if (m != MATCH_NO)
     return m;
-  m = match_out_tag (&tag_iomsg, &dt->iomsg);
+  m = match_etag (&tag_iomsg, &dt->iomsg);
+  if (m == MATCH_YES && !check_char_variable (dt->iomsg))
+    return MATCH_ERROR;
   if (m != MATCH_NO)
     return m;
+
   m = match_out_tag (&tag_iostat, &dt->iostat);
   if (m != MATCH_NO)
     return m;
@@ -3305,6 +3389,9 @@ if (condition) \
 	  return MATCH_ERROR;
 	}
 
+      if (!is_char_type ("ASYNCHRONOUS", dt->asynchronous))
+	return MATCH_ERROR;
+
       if (!compare_to_allowed_values
 		("ASYNCHRONOUS", asynchronous, NULL, NULL,
 		 dt->asynchronous->value.character.string,
@@ -3334,6 +3421,9 @@ if (condition) \
 	{
 	  static const char * decimal[] = { "COMMA", "POINT", NULL };
 
+      if (!is_char_type ("DECIMAL", dt->decimal))
+	return MATCH_ERROR;
+
 	  if (!compare_to_allowed_values ("DECIMAL", decimal, NULL, NULL,
 					  dt->decimal->value.character.string,
 					  io_kind_name (k), warn))
@@ -3351,9 +3441,13 @@ if (condition) \
 			   "not allowed in Fortran 95"))
 	return MATCH_ERROR;
 
+      if (!is_char_type ("BLANK", dt->blank))
+	return MATCH_ERROR;
+
       if (dt->blank->expr_type == EXPR_CONSTANT)
 	{
 	  static const char * blank[] = { "NULL", "ZERO", NULL };
+
 
 	  if (!compare_to_allowed_values ("BLANK", blank, NULL, NULL,
 					  dt->blank->value.character.string,
@@ -3370,6 +3464,9 @@ if (condition) \
     {
       if (!gfc_notify_std (GFC_STD_F2003, "PAD= at %C "
 			   "not allowed in Fortran 95"))
+	return MATCH_ERROR;
+
+      if (!is_char_type ("PAD", dt->pad))
 	return MATCH_ERROR;
 
       if (dt->pad->expr_type == EXPR_CONSTANT)
@@ -3393,6 +3490,9 @@ if (condition) \
 			   "not allowed in Fortran 95"))
 	return MATCH_ERROR;
 
+      if (!is_char_type ("ROUND", dt->round))
+	return MATCH_ERROR;
+
       if (dt->round->expr_type == EXPR_CONSTANT)
 	{
 	  static const char * round[] = { "UP", "DOWN", "ZERO", "NEAREST",
@@ -3412,6 +3512,10 @@ if (condition) \
       if (gfc_notify_std (GFC_STD_F2003, "SIGN= at %C "
 	  "not allowed in Fortran 95") == false)
 	return MATCH_ERROR;  */
+
+      if (!is_char_type ("SIGN", dt->sign))
+	return MATCH_ERROR;
+
       if (dt->sign->expr_type == EXPR_CONSTANT)
 	{
 	  static const char * sign[] = { "PLUS", "SUPPRESS", "PROCESSOR_DEFINED",
@@ -3436,6 +3540,9 @@ if (condition) \
     {
       if (!gfc_notify_std (GFC_STD_F2003, "DELIM= at %C "
 			   "not allowed in Fortran 95"))
+	return MATCH_ERROR;
+
+      if (!is_char_type ("DELIM", dt->delim))
 	return MATCH_ERROR;
 
       if (dt->delim->expr_type == EXPR_CONSTANT)
@@ -3860,7 +3967,9 @@ match_inquire_element (gfc_inquire *inquire)
   m = match_etag (&tag_unit, &inquire->unit);
   RETM m = match_etag (&tag_file, &inquire->file);
   RETM m = match_ltag (&tag_err, &inquire->err);
-  RETM m = match_out_tag (&tag_iomsg, &inquire->iomsg);
+  RETM m = match_etag (&tag_iomsg, &inquire->iomsg);
+  if (m == MATCH_YES && !check_char_variable (inquire->iomsg))
+    return MATCH_ERROR;
   RETM m = match_out_tag (&tag_iostat, &inquire->iostat);
   RETM m = match_vtag (&tag_exist, &inquire->exist);
   RETM m = match_vtag (&tag_opened, &inquire->opened);
@@ -3882,6 +3991,8 @@ match_inquire_element (gfc_inquire *inquire)
   RETM m = match_vtag (&tag_write, &inquire->write);
   RETM m = match_vtag (&tag_readwrite, &inquire->readwrite);
   RETM m = match_vtag (&tag_s_async, &inquire->asynchronous);
+  if (m == MATCH_YES && !is_char_type ("ASYNCHRONOUS", inquire->asynchronous))
+    return MATCH_ERROR;
   RETM m = match_vtag (&tag_s_delim, &inquire->delim);
   RETM m = match_vtag (&tag_s_decimal, &inquire->decimal);
   RETM m = match_out_tag (&tag_size, &inquire->size);
@@ -4000,7 +4111,7 @@ gfc_match_inquire (void)
 
   if (inquire->unit != NULL && inquire->unit->expr_type == EXPR_CONSTANT
       && inquire->unit->ts.type == BT_INTEGER
-      && mpz_get_si (inquire->unit->value.integer) == -1)
+      && mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT)
     {
       gfc_error ("UNIT number in INQUIRE statement at %L can not be -1", &loc);
       goto cleanup;
@@ -4143,7 +4254,9 @@ match_wait_element (gfc_wait *wait)
   RETM m = match_ltag (&tag_err, &wait->err);
   RETM m = match_ltag (&tag_end, &wait->eor);
   RETM m = match_ltag (&tag_eor, &wait->end);
-  RETM m = match_out_tag (&tag_iomsg, &wait->iomsg);
+  RETM m = match_etag (&tag_iomsg, &wait->iomsg);
+  if (m == MATCH_YES && !check_char_variable (wait->iomsg))
+    return MATCH_ERROR;
   RETM m = match_out_tag (&tag_iostat, &wait->iostat);
   RETM m = match_etag (&tag_id, &wait->id);
   RETM return MATCH_NO;

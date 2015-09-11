@@ -91,19 +91,6 @@ enum debug_struct_file
   DINFO_STRUCT_FILE_ANY     /* Debug structs defined in all files. */
 };
 
-/* Enumerate visibility settings.  This is deliberately ordered from most
-   to least visibility.  */
-#ifndef SYMBOL_VISIBILITY_DEFINED
-#define SYMBOL_VISIBILITY_DEFINED
-enum symbol_visibility
-{
-  VISIBILITY_DEFAULT,
-  VISIBILITY_PROTECTED,
-  VISIBILITY_HIDDEN,
-  VISIBILITY_INTERNAL
-};
-#endif
-
 /* Enumerate Objective-c instance variable visibility settings. */
 
 enum ivar_visibility
@@ -238,6 +225,7 @@ enum sanitize_code {
   SANITIZE_RETURNS_NONNULL_ATTRIBUTE = 1UL << 19,
   SANITIZE_OBJECT_SIZE = 1UL << 20,
   SANITIZE_VPTR = 1UL << 21,
+  SANITIZE_BOUNDS_STRICT = 1UL << 22,
   SANITIZE_UNDEFINED = SANITIZE_SHIFT | SANITIZE_DIVIDE | SANITIZE_UNREACHABLE
 		       | SANITIZE_VLA | SANITIZE_NULL | SANITIZE_RETURN
 		       | SANITIZE_SI_OVERFLOW | SANITIZE_BOOL | SANITIZE_ENUM
@@ -246,6 +234,7 @@ enum sanitize_code {
 		       | SANITIZE_RETURNS_NONNULL_ATTRIBUTE
 		       | SANITIZE_OBJECT_SIZE | SANITIZE_VPTR,
   SANITIZE_NONDEFAULT = SANITIZE_FLOAT_DIVIDE | SANITIZE_FLOAT_CAST
+			| SANITIZE_BOUNDS_STRICT
 };
 
 /* flag_vtable_verify initialization levels. */

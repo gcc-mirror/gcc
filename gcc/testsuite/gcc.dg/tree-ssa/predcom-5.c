@@ -27,4 +27,3 @@ int main(void)
 
 /* { dg-final { scan-tree-dump-times "Combination" 2 "pcom"} } */
 /* { dg-final { scan-tree-dump-times "Unrolling 3 times." 1 "pcom"} } */
-/* { dg-final { cleanup-tree-dump "pcom" } } */

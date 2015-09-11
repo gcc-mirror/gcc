@@ -49,4 +49,3 @@ end program test_caf
 !
 ! { dg-final { scan-tree-dump-times "foo \\(&parm.\[0-9\]+, &a, &C.\[0-9\]+, caf_token.\[0-9\]+, \\(integer\\(kind=.\\)\\) parm.\[0-9\]+.data - \\(integer\\(kind=.\\)\\) b, a.token, 0\\);" 1 "original" } }
 !
-! { dg-final { cleanup-tree-dump "original" } }

@@ -115,5 +115,3 @@ void dont_thread_4 (int a, int nfirst)
 /* { dg-final { scan-tree-dump-times "Jumps threaded: 2" 0 "vrp1"} } */
 /* { dg-final { scan-tree-dump-times "Jumps threaded: 1" 0 "dom1"} } */
 /* { dg-final { scan-tree-dump-times "Jumps threaded: 2" 1 "dom1"} } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

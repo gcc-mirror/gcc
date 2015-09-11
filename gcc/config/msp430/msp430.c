@@ -21,33 +21,21 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "rtl.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
-#include "function.h"
-#include "hashtab.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -62,26 +50,22 @@
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "reload.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "df.h"
-#include "ggc.h"
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"
 #include "msp430-protos.h"
 #include "dumpfile.h"
 #include "opts.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 
 static void msp430_compute_frame_info (void);
@@ -243,6 +227,11 @@ msp430_option_override (void)
 
   if (TARGET_LARGE && !msp430x)
     error ("-mlarge requires a 430X-compatible -mmcu=");
+
+  if (msp430_code_region == UPPER && ! msp430x)
+    error ("-mcode-region=upper requires 430X-compatible cpu");
+  if (msp430_data_region == UPPER && ! msp430x)
+    error ("-mdata-region=upper requires 430X-compatible cpu");
 
   if (flag_exceptions || flag_non_call_exceptions
       || flag_unwind_tables || flag_asynchronous_unwind_tables)
@@ -976,7 +965,8 @@ msp430_asm_integer (rtx x, unsigned int size, int aligned_p)
   switch (size)
     {
     case 4:
-      if (c == SYMBOL_REF || c == CONST || c == LABEL_REF || c == CONST_INT)
+      if (c == SYMBOL_REF || c == CONST || c == LABEL_REF || c == CONST_INT
+	  || c == PLUS || c == MINUS)
 	{
 	  fprintf (asm_out_file, "\t.long\t");
 	  output_addr_const (asm_out_file, x);
@@ -1015,17 +1005,19 @@ msp430_legitimate_constant (machine_mode mode, rtx x)
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS msp430_rtx_costs
 
-static bool msp430_rtx_costs (rtx   x ATTRIBUTE_UNUSED,
-			      int   code,
-			      int   outer_code ATTRIBUTE_UNUSED,
-			      int   opno ATTRIBUTE_UNUSED,
-			      int * total,
-			      bool  speed ATTRIBUTE_UNUSED)
+static bool msp430_rtx_costs (rtx	   x ATTRIBUTE_UNUSED,
+			      machine_mode mode,
+			      int	   outer_code ATTRIBUTE_UNUSED,
+			      int	   opno ATTRIBUTE_UNUSED,
+			      int *	   total,
+			      bool	   speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
     case SIGN_EXTEND:
-      if (GET_MODE (x) == SImode && outer_code == SET)
+      if (mode == SImode && outer_code == SET)
 	{
 	  *total = COSTS_N_INSNS (4);
 	  return true;
@@ -1146,10 +1138,29 @@ msp430_compute_frame_info (void)
 			      + cfun->machine->framesize_outgoing);
 }
 
+/* Attribute Handling.  */
+
+const char * const  ATTR_INTR   = "interrupt";
+const char * const  ATTR_WAKEUP = "wakeup";
+const char * const  ATTR_NAKED  = "naked";
+const char * const  ATTR_REENT  = "reentrant";
+const char * const  ATTR_CRIT   = "critical";
+const char * const  ATTR_LOWER  = "lower";
+const char * const  ATTR_UPPER  = "upper";
+const char * const  ATTR_EITHER = "either";
+
 static inline bool
-is_attr_func (const char * attr)
+has_attr (const char * attr, tree decl)
 {
-  return lookup_attribute (attr, DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE;
+  if (decl == NULL_TREE)
+    return false;
+  return lookup_attribute (attr, DECL_ATTRIBUTES (decl)) != NULL_TREE;
+}
+
+static bool
+is_interrupt_func (tree decl = current_function_decl)
+{
+  return has_attr (ATTR_INTR, decl);
 }
 
 /* Returns true if the current function has the "interrupt" attribute.  */
@@ -1157,34 +1168,203 @@ is_attr_func (const char * attr)
 bool
 msp430_is_interrupt_func (void)
 {
-  if (current_function_decl == NULL)
-    return false;
-  return is_attr_func ("interrupt");
+  return is_interrupt_func (current_function_decl);
 }
 
 static bool
-is_wakeup_func (void)
+is_wakeup_func (tree decl = current_function_decl)
 {
-  return msp430_is_interrupt_func () && is_attr_func ("wakeup");
+  return is_interrupt_func (decl) && has_attr (ATTR_WAKEUP, decl);
 }
 
 static inline bool
-is_naked_func (void)
+is_naked_func (tree decl = current_function_decl)
 {
-  return is_attr_func ("naked");
+  return has_attr (ATTR_NAKED, decl);
 }
 
 static inline bool
-is_reentrant_func (void)
+is_reentrant_func (tree decl = current_function_decl)
 {
-  return is_attr_func ("reentrant");
+  return has_attr (ATTR_REENT, decl);
 }
 
 static inline bool
-is_critical_func (void)
+is_critical_func (tree decl = current_function_decl)
 {
-  return is_attr_func ("critical");
+  return has_attr (ATTR_CRIT, decl);
 }
+
+#undef  TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS	msp430_allocate_stack_slots_for_args
+
+static bool
+msp430_allocate_stack_slots_for_args (void)
+{
+  /* Naked functions should not allocate stack slots for arguments.  */
+  return ! is_naked_func ();
+}
+
+/* Verify MSP430 specific attributes.  */
+#define TREE_NAME_EQ(NAME, STR) (strcmp (IDENTIFIER_POINTER (NAME), (STR)) == 0)
+
+static tree
+msp430_attr (tree * node,
+	     tree   name,
+	     tree   args,
+	     int    flags ATTRIBUTE_UNUSED,
+	     bool * no_add_attrs)
+{
+  gcc_assert (DECL_P (* node));
+
+  if (args != NULL)
+    {
+      gcc_assert (TREE_NAME_EQ (name, ATTR_INTR));
+
+      tree value = TREE_VALUE (args);
+
+      switch (TREE_CODE (value))
+	{
+	case STRING_CST:
+	  if (   strcmp (TREE_STRING_POINTER (value), "reset")
+	      && strcmp (TREE_STRING_POINTER (value), "nmi")
+	      && strcmp (TREE_STRING_POINTER (value), "watchdog"))
+	    /* Allow the attribute to be added - the linker script
+	       being used may still recognise this name.  */
+	    warning (OPT_Wattributes,
+		     "unrecognised interrupt vector argument of %qE attribute",
+		     name);
+	  break;
+
+	case INTEGER_CST:
+	  if (wi::gtu_p (value, 63))
+	    /* Allow the attribute to be added - the linker script
+	       being used may still recognise this value.  */
+	    warning (OPT_Wattributes,
+		     "numeric argument of %qE attribute must be in range 0..63",
+		     name);
+	  break;
+
+	default:
+	  warning (OPT_Wattributes,
+		   "argument of %qE attribute is not a string constant or number",
+		   name);
+	  *no_add_attrs = true;
+	  break;
+	}
+    }
+
+  const char * message = NULL;
+
+  if (TREE_CODE (* node) != FUNCTION_DECL)
+    {
+      message = "%qE attribute only applies to functions";
+    }
+  else if (TREE_NAME_EQ (name, ATTR_INTR))
+    {
+      if (TREE_CODE (TREE_TYPE (* node)) == FUNCTION_TYPE
+	  && ! VOID_TYPE_P (TREE_TYPE (TREE_TYPE (* node))))
+	message = "interrupt handlers must be void";
+    }
+  else if (TREE_NAME_EQ (name, ATTR_REENT))
+    {
+      if (is_naked_func (* node))
+	message = "naked functions cannot be reentrant";
+      else if (is_critical_func (* node))
+	message = "critical functions cannot be reentrant";
+    }
+  else if (TREE_NAME_EQ (name, ATTR_CRIT))
+    {
+      if (is_naked_func (* node))
+	message = "naked functions cannot be critical";
+      else if (is_reentrant_func (* node))
+	message = "reentranct functions cannot be critical";
+    }
+  else if (TREE_NAME_EQ (name, ATTR_NAKED))
+    {
+      if (is_critical_func (* node))
+	message = "critical functions cannot be naked";
+      else if (is_reentrant_func (* node))
+	message = "reentrant functions cannot be naked";
+    }
+
+  if (message)
+    {
+      warning (OPT_Wattributes, message, name);
+      * no_add_attrs = true;
+    }
+    
+  return NULL_TREE;
+}
+
+static tree
+msp430_section_attr (tree * node,
+		     tree   name,
+		     tree   args,
+		     int    flags ATTRIBUTE_UNUSED,
+		     bool * no_add_attrs ATTRIBUTE_UNUSED)
+{
+  gcc_assert (DECL_P (* node));
+  gcc_assert (args == NULL);
+
+  const char * message = NULL;
+
+  if (TREE_NAME_EQ (name, ATTR_UPPER))
+    {
+      if (has_attr (ATTR_LOWER, * node))
+	message = "already marked with 'lower' attribute";
+      else if (has_attr (ATTR_EITHER, * node))
+	message = "already marked with 'either' attribute";
+      else if (! msp430x)
+	message = "upper attribute needs a 430X cpu";
+    }
+  else if (TREE_NAME_EQ (name, ATTR_LOWER))
+    {
+      if (has_attr (ATTR_UPPER, * node))
+	message = "already marked with 'upper' attribute";
+      else if (has_attr (ATTR_EITHER, * node))
+	message = "already marked with 'either' attribute";
+    }
+  else
+    {
+      gcc_assert (TREE_NAME_EQ (name, ATTR_EITHER));
+
+      if (has_attr (ATTR_LOWER, * node))
+	message = "already marked with 'lower' attribute";
+      else if (has_attr (ATTR_UPPER, * node))
+	message = "already marked with 'upper' attribute";
+    }
+
+  if (message)
+    {
+      warning (OPT_Wattributes, message, name);
+      * no_add_attrs = true;
+    }
+    
+  return NULL_TREE;
+}
+
+#undef  TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE		msp430_attribute_table
+
+/* Table of MSP430-specific attributes.  */
+const struct attribute_spec msp430_attribute_table[] =
+{
+  /* Name        min_num_args     type_req,             affects_type_identity
+                      max_num_args,     fn_type_req
+                          decl_req               handler.  */
+  { ATTR_INTR,        0, 1, true,  false, false, msp430_attr, false },
+  { ATTR_NAKED,       0, 0, true,  false, false, msp430_attr, false },
+  { ATTR_REENT,       0, 0, true,  false, false, msp430_attr, false },
+  { ATTR_CRIT,        0, 0, true,  false, false, msp430_attr, false },
+  { ATTR_WAKEUP,      0, 0, true,  false, false, msp430_attr, false },
+
+  { ATTR_LOWER,       0, 0, true,  false, false, msp430_section_attr, false },
+  { ATTR_UPPER,       0, 0, true,  false, false, msp430_section_attr, false },
+  { ATTR_EITHER,      0, 0, true,  false, false, msp430_section_attr, false },
+
+  { NULL,             0, 0, false, false, false, NULL,        false }
+};
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE	msp430_start_function
@@ -1260,85 +1440,6 @@ increment_stack (HOST_WIDE_INT amount)
     }
 }
 
-/* Verify MSP430 specific attributes.  */
-
-static tree
-msp430_attr (tree * node,
-	     tree   name,
-	     tree   args,
-	     int    flags ATTRIBUTE_UNUSED,
-	     bool * no_add_attrs)
-{
-  gcc_assert (DECL_P (* node));
-
-  if (args != NULL)
-    {
-      tree value = TREE_VALUE (args);
-
-      switch (TREE_CODE (value))
-	{
-	case STRING_CST:
-	  if (   strcmp (TREE_STRING_POINTER (value), "reset")
-	      && strcmp (TREE_STRING_POINTER (value), "nmi")
-	      && strcmp (TREE_STRING_POINTER (value), "watchdog"))
-	    /* Allow the attribute to be added - the linker script
-	       being used may still recognise this name.  */
-	    warning (OPT_Wattributes,
-		     "unrecognised interrupt vector argument of %qE attribute",
-		     name);
-	  break;
-
-	case INTEGER_CST:
-	  if (wi::gtu_p (value, 63))
-	    /* Allow the attribute to be added - the linker script
-	       being used may still recognise this value.  */
-	    warning (OPT_Wattributes,
-		     "numeric argument of %qE attribute must be in range 0..63",
-		     name);
-	  break;
-
-	default:
-	  warning (OPT_Wattributes,
-		   "argument of %qE attribute is not a string constant or number",
-		   name);
-	  *no_add_attrs = true;
-	  break;
-	}
-    }
-
-  if (TREE_CODE (* node) != FUNCTION_DECL)
-    {
-      warning (OPT_Wattributes,
-	       "%qE attribute only applies to functions",
-	       name);
-      * no_add_attrs = true;
-    }
-
-  /* FIXME: We ought to check that the interrupt handler
-     attribute has been applied to a void function.  */
-  /* FIXME: We should check that reentrant and critical
-     functions are not naked and that critical functions
-     are not reentrant.  */
-
-  return NULL_TREE;
-}
-
-#undef  TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE		msp430_attribute_table
-
-/* Table of MSP430-specific attributes.  */
-const struct attribute_spec msp430_attribute_table[] =
-{
-  /* Name          min_len  decl_req,    fn_type_req,    affects_type_identity
-                       max_len,  type_req,        handler.  */
-  { "interrupt",      0, 1, true,  false, false, msp430_attr, false },
-  { "naked",          0, 0, true,  false, false, msp430_attr, false },
-  { "reentrant",      0, 0, true,  false, false, msp430_attr, false },
-  { "critical",       0, 0, true,  false, false, msp430_attr, false },
-  { "wakeup",         0, 0, true,  false, false, msp430_attr, false },
-  { NULL,             0, 0, false, false, false, NULL,        false }
-};
-
 void
 msp430_start_function (FILE *file, const char *name, tree decl)
 {
@@ -1378,21 +1479,253 @@ msp430_start_function (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 }
 
-static section *
-msp430_function_section (tree decl, enum node_frequency freq, bool startup, bool exit)
+static const char * const lower_prefix = ".lower";
+static const char * const upper_prefix = ".upper";
+static const char * const either_prefix = ".either";
+
+/* Generate a prefix for a section name, based upon
+   the region into which the object should be placed.  */
+
+static const char *
+gen_prefix (tree decl)
 {
+  if (DECL_ONE_ONLY (decl))
+    return NULL;
+
+  /* If the user has specified a particular section then do not use any prefix.  */
+  if (has_attr ("section", decl))
+    return NULL;
+
+  /* If the object has __attribute__((lower)) then use the ".lower." prefix.  */
+  if (has_attr (ATTR_LOWER, decl))
+    return lower_prefix;
+
+  /* If we are compiling for the MSP430 then we do not support the upper region.  */
+  if (! msp430x)
+    return NULL;
+
+  if (has_attr (ATTR_UPPER, decl))
+    return upper_prefix;
+
+  if (has_attr (ATTR_EITHER, decl))
+    return either_prefix;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      if (msp430_code_region == LOWER)
+	return lower_prefix;
+
+      if (msp430_code_region == UPPER)
+	return upper_prefix;
+
+      if (msp430_code_region == EITHER)
+	return either_prefix;
+    }
+  else
+    {
+      if (msp430_data_region == LOWER)
+	return lower_prefix;
+
+      if (msp430_data_region == UPPER)
+	return upper_prefix;
+
+      if (msp430_data_region == EITHER)
+	return either_prefix;
+    }
+
+  return NULL;
+}
+
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION msp430_select_section
+
+static section *
+msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
+{
+  gcc_assert (decl != NULL_TREE);
+
+  if (TREE_CODE (decl) == STRING_CST
+      || TREE_CODE (decl) == CONSTRUCTOR
+      || TREE_CODE (decl) == INTEGER_CST
+      || TREE_CODE (decl) == VECTOR_CST
+      || TREE_CODE (decl) == COMPLEX_CST)
+    return default_select_section (decl, reloc, align);
+  
   /* In large mode we must make sure that interrupt handlers are put into
      low memory as the vector table only accepts 16-bit addresses.  */
-  if (TARGET_LARGE
-      && lookup_attribute ("interrupt", DECL_ATTRIBUTES (decl)))
+  if (TARGET_LARGE && TREE_CODE (decl) == FUNCTION_DECL && is_interrupt_func (decl))
     return get_section (".lowtext", SECTION_CODE | SECTION_WRITE , decl);
 
-  /* Otherwise, use the default function section.  */
-  return default_function_section (decl, freq, startup, exit);
+  const char * prefix = gen_prefix (decl);
+  if (prefix == NULL)
+    {
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	return text_section;
+      else
+	return default_select_section (decl, reloc, align);
+    }
+  
+  const char * sec;
+  switch (categorize_decl_for_section (decl, reloc))
+    {
+    case SECCAT_TEXT:   sec = ".text";   break;
+    case SECCAT_DATA:   sec = ".data";   break;
+    case SECCAT_BSS:    sec = ".bss";    break;
+    case SECCAT_RODATA: sec = ".rodata"; break;
+
+    case SECCAT_RODATA_MERGE_STR:
+    case SECCAT_RODATA_MERGE_STR_INIT:
+    case SECCAT_RODATA_MERGE_CONST:
+    case SECCAT_SRODATA:
+    case SECCAT_DATA_REL:
+    case SECCAT_DATA_REL_LOCAL:
+    case SECCAT_DATA_REL_RO:
+    case SECCAT_DATA_REL_RO_LOCAL:
+    case SECCAT_SDATA:
+    case SECCAT_SBSS:
+    case SECCAT_TDATA:
+    case SECCAT_TBSS:
+      return default_select_section (decl, reloc, align);
+
+    default:
+      gcc_unreachable ();
+    }
+  
+  const char * dec_name = DECL_SECTION_NAME (decl);
+  char * name = ACONCAT ((prefix, sec, dec_name, NULL));
+
+  return get_named_section (decl, name, 0);
 }
 
 #undef  TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION msp430_function_section
+
+static section *
+msp430_function_section (tree decl, enum node_frequency freq, bool startup, bool exit)
+{
+  const char * name;
+
+  gcc_assert (DECL_SECTION_NAME (decl) != NULL);
+  name = DECL_SECTION_NAME (decl);
+
+  const char * prefix = gen_prefix (decl);
+  if (prefix == NULL
+      || strncmp (name, prefix, strlen (prefix)) == 0)
+    return default_function_section (decl, freq, startup, exit);
+
+  name = ACONCAT ((prefix, name, NULL));
+  return get_named_section (decl, name, 0);
+}
+
+#undef  TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS msp430_section_type_flags
+
+unsigned int
+msp430_section_type_flags (tree decl, const char * name, int reloc)
+{
+  if (strncmp (name, lower_prefix, strlen (lower_prefix)) == 0)
+    name += strlen (lower_prefix);
+  else if (strncmp (name, upper_prefix, strlen (upper_prefix)) == 0)
+    name += strlen (upper_prefix);
+  else if (strncmp (name, either_prefix, strlen (either_prefix)) == 0)
+    name += strlen (either_prefix);
+
+  return default_section_type_flags (decl, name, reloc);
+}
+
+#undef  TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION msp430_unique_section
+
+static void
+msp430_unique_section (tree decl, int reloc)
+{
+  gcc_assert (decl != NULL_TREE);
+
+  /* In large mode we must make sure that interrupt handlers are put into
+     low memory as the vector table only accepts 16-bit addresses.  */
+  if (TARGET_LARGE && TREE_CODE (decl) == FUNCTION_DECL && is_interrupt_func (decl))
+    {
+      set_decl_section_name (decl, ".lowtext");
+      return;
+    }
+
+  default_unique_section (decl, reloc);
+
+  const char * prefix;
+
+  if (   TREE_CODE (decl) == STRING_CST
+      || TREE_CODE (decl) == CONSTRUCTOR
+      || TREE_CODE (decl) == INTEGER_CST
+      || TREE_CODE (decl) == VECTOR_CST
+      || TREE_CODE (decl) == COMPLEX_CST
+      || (prefix = gen_prefix (decl)) == NULL
+      )
+    return;
+
+  const char * dec_name = DECL_SECTION_NAME (decl);
+  char * name = ACONCAT ((prefix, dec_name, NULL));
+
+  set_decl_section_name (decl, name);
+}
+
+/* Emit a declaration of a common symbol.
+   If a data region is in use then put the symbol into the
+   equivalent .bss section instead.  */
+
+void
+msp430_output_aligned_decl_common (FILE *                 stream,
+				   const tree             decl,
+				   const char *           name,
+				   unsigned HOST_WIDE_INT size,
+				   unsigned int           align)
+{
+  if (msp430_data_region == ANY)
+    {
+      fprintf (stream, COMMON_ASM_OP);
+      assemble_name (stream, name);
+      fprintf (stream, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
+	       size, align / BITS_PER_UNIT);
+    }
+  else
+    {
+      section * sec;
+
+      if (decl)
+	sec = msp430_select_section (decl, 0, align);
+      else
+	switch (msp430_data_region)
+	  {
+	  case UPPER: sec = get_named_section (NULL, ".upper.bss", 0); break;
+	  case LOWER: sec = get_named_section (NULL, ".lower.bss", 0); break;
+	  case EITHER: sec = get_named_section (NULL, ".either.bss", 0); break;
+	  default:
+	    gcc_unreachable ();
+	  }
+      gcc_assert (sec != NULL);
+
+      switch_to_section (sec);
+      ASM_OUTPUT_ALIGN (stream, floor_log2 (align / BITS_PER_UNIT));
+      targetm.asm_out.globalize_label (stream, name);
+      ASM_WEAKEN_LABEL (stream, name);
+      ASM_OUTPUT_LABEL (stream, name);
+      ASM_OUTPUT_SKIP (stream, size ? size : 1);
+    }
+}
+
+bool
+msp430_do_not_relax_short_jumps (void)
+{
+  /* When placing code into "either" low or high memory we do not want the linker
+     to grow the size of sections, which it can do if it is encounters a branch to
+     a label that is too far away.  So we tell the cbranch patterns to avoid using
+     short jumps when there is a chance that the instructions will end up in a low
+     section.  */
+  return
+    msp430_code_region == EITHER
+    || msp430_code_region == LOWER
+    || has_attr (ATTR_EITHER, current_function_decl)
+    || has_attr (ATTR_LOWER, current_function_decl);
+}
 
 enum msp430_builtin
 {
@@ -1638,13 +1971,15 @@ msp430_expand_prologue (void)
       p = emit_insn (gen_grow_and_swap ());
 
       /* Document the stack decrement...  */
-      note = F (gen_rtx_SET (Pmode, stack_pointer_rtx,
+      note = F (gen_rtx_SET (stack_pointer_rtx,
 			     gen_rtx_MINUS (Pmode, stack_pointer_rtx, GEN_INT (2))));
       add_reg_note (p, REG_FRAME_RELATED_EXPR, note);
 
       /* ...and the establishment of a new location for the return address.  */
-      note = F (gen_rtx_SET (Pmode, gen_rtx_MEM (Pmode,
-						 gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (-2))),
+      note = F (gen_rtx_SET (gen_rtx_MEM (Pmode,
+					  gen_rtx_PLUS (Pmode,
+							stack_pointer_rtx,
+							GEN_INT (-2))),
 			     pc_rtx));
       add_reg_note (p, REG_CFA_OFFSET, note);
       F (p);
@@ -1669,11 +2004,10 @@ msp430_expand_prologue (void)
 	    note = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
 
 	    XVECEXP (note, 0, 0)
-	      = F (gen_rtx_SET (VOIDmode,
-			     stack_pointer_rtx,
-			     gen_rtx_PLUS (Pmode,
-					   stack_pointer_rtx,
-					   GEN_INT (count * (TARGET_LARGE ? -4 : -2)))));
+	      = F (gen_rtx_SET (stack_pointer_rtx,
+				gen_rtx_PLUS (Pmode,
+					      stack_pointer_rtx,
+					      GEN_INT (count * (TARGET_LARGE ? -4 : -2)))));
 
 	    /* *sp-- = R[i-j] */
 	    /* sp+N	R10
@@ -1690,8 +2024,7 @@ msp430_expand_prologue (void)
 		  addr = stack_pointer_rtx;
 
 		XVECEXP (note, 0, j + 1) =
-		  F (gen_rtx_SET (VOIDmode,
-				  gen_rtx_MEM (Pmode, addr),
+		  F (gen_rtx_SET (gen_rtx_MEM (Pmode, addr),
 				  gen_rtx_REG (Pmode, i - j)) );
 	      }
 
@@ -1902,7 +2235,7 @@ static struct
 }
   const_shift_helpers[] =
 {
-#define CSH(N,C,X,G) { "__mspabi_"N, C, X, gen_##G }
+#define CSH(N,C,X,G) { "__mspabi_" N, C, X, gen_##G }
 
   CSH ("slli", 1, 1, slli_1),
   CSH ("slll", 1, 1, slll_1),
@@ -2033,6 +2366,13 @@ msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
     }
   else if (GET_CODE (r) == MEM)
     rv = adjust_address (r, mode, byte);
+  else if (GET_CODE (r) == SYMBOL_REF
+	   && (byte == 0 || byte == 2)
+	   && mode == HImode)
+    {
+      rv = gen_rtx_ZERO_EXTRACT (HImode, r, GEN_INT (16), GEN_INT (8*byte));
+      rv = gen_rtx_CONST (HImode, r);
+    }
   else
     rv = simplify_gen_subreg (mode, r, omode, byte);
 
@@ -2201,6 +2541,10 @@ msp430_use_f5_series_hwmult (void)
 
   if (strncasecmp (target_mcu, "msp430f5", 8) == 0)
     return cached_result = true;
+  if (strncasecmp (target_mcu, "msp430fr5", 9) == 0)
+    return cached_result = true;
+  if (strncasecmp (target_mcu, "msp430f6", 8) == 0)
+    return cached_result = true;
 
   static const char * known_f5_mult_mcus [] =
     {
@@ -2209,7 +2553,8 @@ msp430_use_f5_series_hwmult (void)
       "cc430f5145",	"cc430f5147",	"cc430f6125",
       "cc430f6126",	"cc430f6127",	"cc430f6135",
       "cc430f6137",	"cc430f6143",	"cc430f6145",
-      "cc430f6147",	"msp430bt5190",	"msp430sl5438a"
+      "cc430f6147",	"msp430bt5190",	"msp430sl5438a",
+      "msp430xgeneric"
     };
   int i;
 

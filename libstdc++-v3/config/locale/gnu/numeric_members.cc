@@ -117,7 +117,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (_M_data->_M_grouping_size)
 	delete [] _M_data->_M_grouping;
-      _M_data->_M_grouping = 0;
       delete _M_data;
     }
    
@@ -210,7 +209,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (_M_data->_M_grouping_size)
 	delete [] _M_data->_M_grouping;
-      _M_data->_M_grouping = 0;
       delete _M_data;
     }
  #endif

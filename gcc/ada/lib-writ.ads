@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -598,11 +598,15 @@ package Lib.Writ is
 
    --         RT  Unit has pragma Remote_Types
 
-   --         SP  Unit has pragma Shared_Passive.
+   --         SE  Compilation of unit encountered one or more serious errors.
+   --             Normally the generation of an ALI file is suppressed if there
+   --             is a serious error, but this can be overridden with -gnatQ.
+
+   --         SP  Unit has pragma Shared_Passive
 
    --         SU  Unit is a subprogram, rather than a package
 
-   --      The attributes may appear in any order, separated by spaces.
+   --      The attributes may appear in any order, separated by spaces
 
    --  -----------------------------
    --  -- W, Y and Z Withed Units --

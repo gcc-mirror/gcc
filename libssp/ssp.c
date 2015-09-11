@@ -55,6 +55,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Native win32 apps don't know about /dev/tty but can print directly
    to the console using  "CONOUT$"   */
 #if defined (_WIN32) && !defined (__CYGWIN__)
+#include <windows.h>
 # define _PATH_TTY "CONOUT$"
 #else
 # define _PATH_TTY "/dev/tty"
@@ -75,6 +76,20 @@ __guard_setup (void)
   if (__stack_chk_guard != 0)
     return;
 
+#if defined (_WIN32) && !defined (__CYGWIN__)
+  HCRYPTPROV hprovider = 0;
+  if (CryptAcquireContext(&hprovider, NULL, NULL, PROV_RSA_FULL,
+                          CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+    {
+      if (CryptGenRandom(hprovider, sizeof (__stack_chk_guard),
+          (BYTE *)&__stack_chk_guard) &&  __stack_chk_guard != 0)
+        {
+           CryptReleaseContext(hprovider, 0);
+           return;
+        }
+      CryptReleaseContext(hprovider, 0);
+    }
+#else
   fd = open ("/dev/urandom", O_RDONLY);
   if (fd != -1)
     {
@@ -85,6 +100,7 @@ __guard_setup (void)
         return;
     }
 
+#endif
   /* If a random generator can't be used, the protector switches the guard
      to the "terminator canary".  */
   p = (unsigned char *) &__stack_chk_guard;

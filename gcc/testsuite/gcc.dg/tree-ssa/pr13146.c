@@ -19,4 +19,3 @@ int foo (struct A *p, struct B *q)
 }
 
 /* { dg-final { scan-tree-dump "return 0;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

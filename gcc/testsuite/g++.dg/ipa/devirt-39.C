@@ -26,4 +26,3 @@ int main()
 
 /* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized"  } } */
 /* { dg-final { scan-assembler-not "_ZN3Foo5cloneEv" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

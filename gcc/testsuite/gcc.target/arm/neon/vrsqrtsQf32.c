@@ -18,4 +18,3 @@ void test_vrsqrtsQf32 (void)
 }
 
 /* { dg-final { scan-assembler "vrsqrts\.f32\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

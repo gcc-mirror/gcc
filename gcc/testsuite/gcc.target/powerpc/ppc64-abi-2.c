@@ -24,72 +24,69 @@ typedef struct
   vector int vrs[12];
 } reg_parms_t;
 
-reg_parms_t gparms;
+volatile reg_parms_t gparms;
 
 /* _mcount call is done on Linux ppc64 early in the prologue.
    my_mcount will provide a entry point _mcount,
-   which will save all register to gparms. 
-   Note that _mcount need to restore lr to original value,
-   therefor use ctr to return.  
+   which will save all parameter registers to gparms.
+   Note that _mcount needs to restore lr to original value,
+   therefore use ctr to return.
 */
 
-void __attribute__((no_instrument_function))
-my_mcount() 
+extern void my_mcount (void) asm ("_mcount");
+void __attribute__((no_instrument_function, no_split_stack))
+my_mcount (void)
 {
-  asm volatile (".type	_mcount,@function\n\t"
-		".globl	_mcount\n\t"
-		"_mcount:\n\t"
-                "mflr 0\n\t"
-                "mtctr 0\n\t"
-                "ld 0,16(1)\n\t"
+  asm volatile ("mflr 12\n\t"
+		"mtctr 12\n\t"
 		"mtlr 0\n\t"
-		"ld 11,gparms@got(2)\n\t" 
-		"std 3,0(11)\n\t"		
-		"std 4,8(11)\n\t"
-		"std 5,16(11)\n\t"	
-		"std 6,24(11)\n\t"	
-		"std 7,32(11)\n\t"	
-		"std 8,40(11)\n\t"	
-		"std 9,48(11)\n\t"	
-		"std 10,56(11)\n\t"   
-		"stfd 1,64(11)\n\t"	
-		"stfd 2,72(11)\n\t"	
-		"stfd 3,80(11)\n\t"	
-		"stfd 4,88(11)\n\t"	
-		"stfd 5,96(11)\n\t"	
-		"stfd 6,104(11)\n\t"	
-		"stfd 7,112(11)\n\t"	
-		"stfd 8,120(11)\n\t"	
-		"stfd 9,128(11)\n\t"	
-		"stfd 10,136(11)\n\t"	
-		"stfd 11,144(11)\n\t"	
-		"stfd 12,152(11)\n\t" 
-		"stfd 13,160(11)\n\t" 
-		"li 3,176\n\t"        
-		"stvx 2,3,11\n\t"	
-		"addi 3,3,16\n\t" 
-		"stvx 3,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 4,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 5,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 6,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 7,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 8,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 9,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 10,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 11,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 12,3,11\n\t"	
-		"addi 3,3,16\n\t"     
-		"stvx 13,3,11\n\t"	
-		"ld 3,0(11)\n\t"
+		"addis 12,2,gparms@got@ha\n\t"
+		"ld 12,gparms@got@l(12)\n\t"
+		"std 3,0(12)\n\t"
+		"std 4,8(12)\n\t"
+		"std 5,16(12)\n\t"
+		"std 6,24(12)\n\t"
+		"std 7,32(12)\n\t"
+		"std 8,40(12)\n\t"
+		"std 9,48(12)\n\t"
+		"std 10,56(12)\n\t"
+		"stfd 1,64(12)\n\t"
+		"stfd 2,72(12)\n\t"
+		"stfd 3,80(12)\n\t"
+		"stfd 4,88(12)\n\t"
+		"stfd 5,96(12)\n\t"
+		"stfd 6,104(12)\n\t"
+		"stfd 7,112(12)\n\t"
+		"stfd 8,120(12)\n\t"
+		"stfd 9,128(12)\n\t"
+		"stfd 10,136(12)\n\t"
+		"stfd 11,144(12)\n\t"
+		"stfd 12,152(12)\n\t"
+		"stfd 13,160(12)\n\t"
+		"li 0,176\n\t"
+		"stvx 2,12,0\n\t"
+		"li 0,192\n\t"
+		"stvx 3,12,0\n\t"
+		"li 0,208\n\t"
+		"stvx 4,12,0\n\t"
+		"li 0,224\n\t"
+		"stvx 5,12,0\n\t"
+		"li 0,240\n\t"
+		"stvx 6,12,0\n\t"
+		"li 0,256\n\t"
+		"stvx 7,12,0\n\t"
+		"li 0,272\n\t"
+		"stvx 8,12,0\n\t"
+		"li 0,288\n\t"
+		"stvx 9,12,0\n\t"
+		"li 0,304\n\t"
+		"stvx 10,12,0\n\t"
+		"li 0,320\n\t"
+		"stvx 11,12,0\n\t"
+		"li 0,336\n\t"
+		"stvx 12,12,0\n\t"
+		"li 0,352\n\t"
+		"stvx 13,12,0\n\t"
 		"bctr");
 }
 
@@ -198,7 +195,7 @@ fcivv (char *s, int i, vector int v, vector int w)
     abort ();
 
   a = vec_add (v,w);
-  
+
   if (!vec_all_eq (a, c))
     abort ();
 }
@@ -226,14 +223,14 @@ fcevv (char *s, ...)
   v = va_arg(arg, vector int);
   w = va_arg(arg, vector int);
   a = vec_add (v,w);
-  
+
   if (!vec_all_eq (a, c))
     abort ();
 
   /* Go back one frame.  */
   sp = __builtin_frame_address(0);
   sp = sp->backchain;
-  
+
   if (sp->slot[2].l != MAKE_SLOT (1, 2)
       || sp->slot[4].l !=  MAKE_SLOT (5, 6))
     abort();
@@ -265,17 +262,17 @@ fciievv (char *s, int i, int j, ...)
 
   if ((long) j != lparms.gprs[2])
     abort();
-  
+
   v = va_arg(arg, vector int);
   w = va_arg(arg, vector int);
   a = vec_add (v,w);
-  
+
   if (!vec_all_eq (a, c))
     abort ();
 
   sp = __builtin_frame_address(0);
   sp = sp->backchain;
-  
+
   if (sp->slot[4].l != MAKE_SLOT (1, 2)
       || sp->slot[6].l !=  MAKE_SLOT (5, 6))
     abort();
@@ -291,31 +288,31 @@ fcvevv (char *s, vector int x, ...)
   va_list arg;
 
   va_start (arg, x);
-  
+
   v = va_arg(arg, vector int);
   w = va_arg(arg, vector int);
 
   a = vec_add (v,w);
   a = vec_add (a, x);
- 
+
   if (!vec_all_eq (a, c))
     abort ();
 
   sp = __builtin_frame_address(0);
   sp = sp->backchain;
-  
+
   if (sp->slot[4].l != MAKE_SLOT (1, 2)
       || sp->slot[6].l !=  MAKE_SLOT (5, 6))
     abort();
 }
 
 int __attribute__((no_instrument_function, noinline))
-main1() 
-{   
+main1()
+{
   char *s = "vv";
   vector int v = {1, 2, 3, 4};
   vector int w = {5, 6, 7, 8};
- 
+
   fcvi (s, v, 2);
   fcvv (s, v, w);
   fcivv (s, 1, v, w);
@@ -325,7 +322,7 @@ main1()
   return 0;
 }
 
-int __attribute__((no_instrument_function)) 
+int __attribute__((no_instrument_function))
 main()
 {
   /* Exit on systems without altivec.  */
@@ -370,12 +367,12 @@ fnp_cvvvv (char *s, vector int v, vector int w,
     abort ();
 
   a = vec_add (v,w);
-  a = vec_add (a,x);  
-  a = vec_add (a,y);  
-  
+  a = vec_add (a,x);
+  a = vec_add (a,y);
+
   if (!vec_all_eq (a, c))
     abort ();
-  
+
   v0.v = lparms.vrs[0];
   v1.v = lparms.vrs[1];
   v2.v = lparms.vrs[2];
@@ -401,11 +398,10 @@ fnp_cvvvv (char *s, vector int v, vector int w,
 
   sp = __builtin_frame_address(0);
   sp = sp->backchain;
-  
+
   if (sp->slot[8].l != v3.l[0])
     abort ();
 
   if (sp->slot[9].l != v3.l[1])
     abort ();
-}  
-  
+}

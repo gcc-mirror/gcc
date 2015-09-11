@@ -20,38 +20,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "options.h"
 #include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
-#include "hashtab.h"
-#include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -69,18 +49,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "langhooks.h"
 #include "target.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
-#include "bitmap.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "tree-pass.h"
@@ -88,67 +61,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "diagnostic.h"
 #include "gimple-pretty-print.h"
-#include "lto-streamer.h"
-#include "data-streamer.h"
 #include "tree-streamer.h"
 #include "params.h"
 #include "ipa-utils.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "builtins.h"
-
-/* Intermediate information that we get from alias analysis about a particular
-   parameter in a particular basic_block.  When a parameter or the memory it
-   references is marked modified, we use that information in all dominatd
-   blocks without cosulting alias analysis oracle.  */
-
-struct param_aa_status
-{
-  /* Set when this structure contains meaningful information.  If not, the
-     structure describing a dominating BB should be used instead.  */
-  bool valid;
-
-  /* Whether we have seen something which might have modified the data in
-     question.  PARM is for the parameter itself, REF is for data it points to
-     but using the alias type of individual accesses and PT is the same thing
-     but for computing aggregate pass-through functions using a very inclusive
-     ao_ref.  */
-  bool parm_modified, ref_modified, pt_modified;
-};
-
-/* Information related to a given BB that used only when looking at function
-   body.  */
-
-struct ipa_bb_info
-{
-  /* Call graph edges going out of this BB.  */
-  vec<cgraph_edge *> cg_edges;
-  /* Alias analysis statuses of each formal parameter at this bb.  */
-  vec<param_aa_status> param_aa_statuses;
-};
-
-/* Structure with global information that is only used when looking at function
-   body. */
-
-struct func_body_info
-{
-  /* The node that is being analyzed.  */
-  cgraph_node *node;
-
-  /* Its info.  */
-  struct ipa_node_params *info;
-
-  /* Information about individual BBs. */
-  vec<ipa_bb_info> bb_infos;
-
-  /* Number of parameters.  */
-  int param_count;
-
-  /* Number of statements already walked by when analyzing this function.  */
-  unsigned int aa_walked;
-};
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -176,7 +94,8 @@ struct ipa_cst_ref_desc
 
 /* Allocation pool for reference descriptions.  */
 
-static alloc_pool ipa_refdesc_pool;
+static object_allocator<ipa_cst_ref_desc> ipa_refdesc_pool
+  ("IPA-PROP ref descriptions", 32);
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
    with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
@@ -351,7 +270,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
       else if (type == IPA_JF_ANCESTOR)
 	{
 	  fprintf (f, "ANCESTOR: ");
-	  fprintf (f, "%d, offset "HOST_WIDE_INT_PRINT_DEC,
+	  fprintf (f, "%d, offset " HOST_WIDE_INT_PRINT_DEC,
 		   jump_func->value.ancestor.formal_id,
 		   jump_func->value.ancestor.offset);
 	  if (jump_func->value.ancestor.agg_preserved)
@@ -508,11 +427,8 @@ ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant,
       && TREE_CODE (TREE_OPERAND (constant, 0)) == FUNCTION_DECL)
     {
       struct ipa_cst_ref_desc *rdesc;
-      if (!ipa_refdesc_pool)
-	ipa_refdesc_pool = create_alloc_pool ("IPA-PROP ref descriptions",
-					sizeof (struct ipa_cst_ref_desc), 32);
 
-      rdesc = (struct ipa_cst_ref_desc *) pool_alloc (ipa_refdesc_pool);
+      rdesc = ipa_refdesc_pool.allocate ();
       rdesc->cs = cs;
       rdesc->next_duplicate = NULL;
       rdesc->refcount = 1;
@@ -563,7 +479,7 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
    of this function body.  */
 
 static struct ipa_bb_info *
-ipa_get_bb_info (struct func_body_info *fbi, basic_block bb)
+ipa_get_bb_info (struct ipa_func_body_info *fbi, basic_block bb)
 {
   gcc_checking_assert (fbi);
   return &fbi->bb_infos[bb->index];
@@ -704,7 +620,7 @@ param_type_may_change_p (tree function, tree arg, gimple call)
       /* Normal (non-THIS) argument.  */
       if ((SSA_NAME_VAR (arg) != DECL_ARGUMENTS (function)
 	   || TREE_CODE (TREE_TYPE (function)) != METHOD_TYPE)
-	  /* THIS pointer of an method - here we we want to watch constructors
+	  /* THIS pointer of an method - here we want to watch constructors
 	     and destructors as those definitely may change the dynamic
 	     type.  */
 	  || (TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE
@@ -715,18 +631,8 @@ param_type_may_change_p (tree function, tree arg, gimple call)
 	  /* Walk the inline stack and watch out for ctors/dtors.  */
 	  for (tree block = gimple_block (call); block && TREE_CODE (block) == BLOCK;
 	       block = BLOCK_SUPERCONTEXT (block))
-	    if (BLOCK_ABSTRACT_ORIGIN (block)
-	        && TREE_CODE (BLOCK_ABSTRACT_ORIGIN (block)) == FUNCTION_DECL)
-	      {
-		tree fn = BLOCK_ABSTRACT_ORIGIN (block);
-
-		if (flags_from_decl_or_type (fn) & (ECF_PURE | ECF_CONST))
-		  continue;
-		if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
-		    && (DECL_CXX_CONSTRUCTOR_P (fn)
-		        || DECL_CXX_DESTRUCTOR_P (fn)))
-		  return true;
-	      }
+	    if (inlined_polymorphic_ctor_dtor_block_p (block, false))
+	      return true;
 	  return false;
 	}
     }
@@ -848,7 +754,7 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
    should really just start giving up.  */
 
 static bool
-aa_overwalked (struct func_body_info *fbi)
+aa_overwalked (struct ipa_func_body_info *fbi)
 {
   gcc_checking_assert (fbi);
   return fbi->aa_walked > (unsigned) PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
@@ -857,8 +763,8 @@ aa_overwalked (struct func_body_info *fbi)
 /* Find the nearest valid aa status for parameter specified by INDEX that
    dominates BB.  */
 
-static struct param_aa_status *
-find_dominating_aa_status (struct func_body_info *fbi, basic_block bb,
+static struct ipa_param_aa_status *
+find_dominating_aa_status (struct ipa_func_body_info *fbi, basic_block bb,
 			   int index)
 {
   while (true)
@@ -877,21 +783,21 @@ find_dominating_aa_status (struct func_body_info *fbi, basic_block bb,
    structures and/or intialize the result with a dominating description as
    necessary.  */
 
-static struct param_aa_status *
-parm_bb_aa_status_for_bb (struct func_body_info *fbi, basic_block bb,
+static struct ipa_param_aa_status *
+parm_bb_aa_status_for_bb (struct ipa_func_body_info *fbi, basic_block bb,
 			  int index)
 {
   gcc_checking_assert (fbi);
   struct ipa_bb_info *bi = ipa_get_bb_info (fbi, bb);
   if (bi->param_aa_statuses.is_empty ())
     bi->param_aa_statuses.safe_grow_cleared (fbi->param_count);
-  struct param_aa_status *paa = &bi->param_aa_statuses[index];
+  struct ipa_param_aa_status *paa = &bi->param_aa_statuses[index];
   if (!paa->valid)
     {
       gcc_checking_assert (!paa->parm_modified
 			   && !paa->ref_modified
 			   && !paa->pt_modified);
-      struct param_aa_status *dom_paa;
+      struct ipa_param_aa_status *dom_paa;
       dom_paa = find_dominating_aa_status (fbi, bb, index);
       if (dom_paa)
 	*paa = *dom_paa;
@@ -908,10 +814,10 @@ parm_bb_aa_status_for_bb (struct func_body_info *fbi, basic_block bb,
    gathered but do not survive the summary building stage.  */
 
 static bool
-parm_preserved_before_stmt_p (struct func_body_info *fbi, int index,
+parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
 			      gimple stmt, tree parm_load)
 {
-  struct param_aa_status *paa;
+  struct ipa_param_aa_status *paa;
   bool modified = false;
   ao_ref refd;
 
@@ -947,7 +853,7 @@ parm_preserved_before_stmt_p (struct func_body_info *fbi, int index,
    modified.  Otherwise return -1.  */
 
 static int
-load_from_unmodified_param (struct func_body_info *fbi,
+load_from_unmodified_param (struct ipa_func_body_info *fbi,
 			    vec<ipa_param_descriptor> descriptors,
 			    gimple stmt)
 {
@@ -974,10 +880,10 @@ load_from_unmodified_param (struct func_body_info *fbi,
    before reaching statement STMT.  */
 
 static bool
-parm_ref_data_preserved_p (struct func_body_info *fbi,
+parm_ref_data_preserved_p (struct ipa_func_body_info *fbi,
 			   int index, gimple stmt, tree ref)
 {
-  struct param_aa_status *paa;
+  struct ipa_param_aa_status *paa;
   bool modified = false;
   ao_ref refd;
 
@@ -1013,7 +919,7 @@ parm_ref_data_preserved_p (struct func_body_info *fbi,
    CALL into which it is passed.  FBI describes the function body.  */
 
 static bool
-parm_ref_data_pass_through_p (struct func_body_info *fbi, int index,
+parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
 			      gimple call, tree parm)
 {
   bool modified = false;
@@ -1027,8 +933,9 @@ parm_ref_data_pass_through_p (struct func_body_info *fbi, int index,
       || aa_overwalked (fbi))
     return false;
 
-  struct param_aa_status *paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (call),
-							  index);
+  struct ipa_param_aa_status *paa = parm_bb_aa_status_for_bb (fbi,
+							      gimple_bb (call),
+							      index);
   if (paa->pt_modified)
     return false;
 
@@ -1051,12 +958,12 @@ parm_ref_data_pass_through_p (struct func_body_info *fbi, int index,
    within the aggregate and whether it is a load from a value passed by
    reference respectively.  */
 
-static bool
-ipa_load_from_parm_agg_1 (struct func_body_info *fbi,
-			  vec<ipa_param_descriptor> descriptors,
-			  gimple stmt, tree op, int *index_p,
-			  HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
-			  bool *by_ref_p)
+bool
+ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
+			vec<ipa_param_descriptor> descriptors,
+			gimple stmt, tree op, int *index_p,
+			HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
+			bool *by_ref_p)
 {
   int index;
   HOST_WIDE_INT size, max_size;
@@ -1123,18 +1030,6 @@ ipa_load_from_parm_agg_1 (struct func_body_info *fbi,
   return false;
 }
 
-/* Just like the previous function, just without the param_analysis_info
-   pointer, for users outside of this file.  */
-
-bool
-ipa_load_from_parm_agg (struct ipa_node_params *info, gimple stmt,
-			tree op, int *index_p, HOST_WIDE_INT *offset_p,
-			bool *by_ref_p)
-{
-  return ipa_load_from_parm_agg_1 (NULL, info->descriptors, stmt, op, index_p,
-				   offset_p, NULL, by_ref_p);
-}
-
 /* Given that an actual argument is an SSA_NAME (given in NAME) and is a result
    of an assignment statement STMT, try to determine whether we are actually
    handling any of the following cases and construct an appropriate jump
@@ -1189,7 +1084,7 @@ ipa_load_from_parm_agg (struct ipa_node_params *info, gimple stmt,
    only needed for intraprocedural analysis.  */
 
 static void
-compute_complex_assign_jump_func (struct func_body_info *fbi,
+compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 				  struct ipa_node_params *info,
 				  struct ipa_jump_func *jfunc,
 				  gcall *call, gimple stmt, tree name,
@@ -1331,7 +1226,7 @@ get_ancestor_addr_info (gimple assign, tree *obj_p, HOST_WIDE_INT *offset)
      return D.1879_6;  */
 
 static void
-compute_complex_ancestor_jump_func (struct func_body_info *fbi,
+compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
 				    struct ipa_node_params *info,
 				    struct ipa_jump_func *jfunc,
 				    gcall *call, gphi *phi)
@@ -1713,7 +1608,7 @@ ipa_get_callee_param_type (struct cgraph_edge *e, int i)
    to this callsite.  */
 
 static void
-ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
+ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 				     struct cgraph_edge *cs)
 {
   struct ipa_node_params *info = IPA_NODE_REF (cs->caller);
@@ -1836,7 +1731,7 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
    from BB.  */
 
 static void
-ipa_compute_jump_functions_for_bb (struct func_body_info *fbi, basic_block bb)
+ipa_compute_jump_functions_for_bb (struct ipa_func_body_info *fbi, basic_block bb)
 {
   struct ipa_bb_info *bi = ipa_get_bb_info (fbi, bb);
   int i;
@@ -1999,7 +1894,7 @@ ipa_note_param_call (struct cgraph_node *node, int param_index,
    passed by value or reference.  */
 
 static void
-ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gcall *call,
+ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
 				tree target)
 {
   struct ipa_node_params *info = fbi->info;
@@ -2018,9 +1913,9 @@ ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gcall *call,
   int index;
   gimple def = SSA_NAME_DEF_STMT (target);
   if (gimple_assign_single_p (def)
-      && ipa_load_from_parm_agg_1 (fbi, info->descriptors, def,
-				   gimple_assign_rhs1 (def), &index, &offset,
-				   NULL, &by_ref))
+      && ipa_load_from_parm_agg (fbi, info->descriptors, def,
+				 gimple_assign_rhs1 (def), &index, &offset,
+				 NULL, &by_ref))
     {
       struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
       cs->indirect_info->offset = offset;
@@ -2137,7 +2032,7 @@ ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gcall *call,
    statement.  */
 
 static void
-ipa_analyze_virtual_call_uses (struct func_body_info *fbi,
+ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
 			       gcall *call, tree target)
 {
   tree obj = OBJ_TYPE_REF_OBJECT (target);
@@ -2194,7 +2089,7 @@ ipa_analyze_virtual_call_uses (struct func_body_info *fbi,
    containing intermediate information about each formal parameter.  */
 
 static void
-ipa_analyze_call_uses (struct func_body_info *fbi, gcall *call)
+ipa_analyze_call_uses (struct ipa_func_body_info *fbi, gcall *call)
 {
   tree target = gimple_call_fn (call);
 
@@ -2240,7 +2135,7 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gcall *call)
    formal parameters are called.  */
 
 static void
-ipa_analyze_stmt_uses (struct func_body_info *fbi, gimple stmt)
+ipa_analyze_stmt_uses (struct ipa_func_body_info *fbi, gimple stmt)
 {
   if (is_gimple_call (stmt))
     ipa_analyze_call_uses (fbi, as_a <gcall *> (stmt));
@@ -2273,7 +2168,7 @@ visit_ref_for_mod_analysis (gimple, tree op, tree, void *data)
    the function being analyzed.  */
 
 static void
-ipa_analyze_params_uses_in_bb (struct func_body_info *fbi, basic_block bb)
+ipa_analyze_params_uses_in_bb (struct ipa_func_body_info *fbi, basic_block bb)
 {
   gimple_stmt_iterator gsi;
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2355,13 +2250,13 @@ free_ipa_bb_info (struct ipa_bb_info *bi)
 class analysis_dom_walker : public dom_walker
 {
 public:
-  analysis_dom_walker (struct func_body_info *fbi)
+  analysis_dom_walker (struct ipa_func_body_info *fbi)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi) {}
 
   virtual void before_dom_children (basic_block);
 
 private:
-  struct func_body_info *m_fbi;
+  struct ipa_func_body_info *m_fbi;
 };
 
 void
@@ -2371,14 +2266,14 @@ analysis_dom_walker::before_dom_children (basic_block bb)
   ipa_compute_jump_functions_for_bb (m_fbi, bb);
 }
 
-/* Initialize the array describing properties of of formal parameters
+/* Initialize the array describing properties of formal parameters
    of NODE, analyze their uses and compute jump functions associated
    with actual arguments of calls from within NODE.  */
 
 void
 ipa_analyze_node (struct cgraph_node *node)
 {
-  struct func_body_info fbi;
+  struct ipa_func_body_info fbi;
   struct ipa_node_params *info;
 
   ipa_check_create_node_params ();
@@ -2482,11 +2377,15 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      ctx.offset_by (dst->value.ancestor.offset);
 	      if (!ctx.useless_p ())
 		{
-		  vec_safe_grow_cleared (args->polymorphic_call_contexts,
-					 count);
-		  dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
+		  if (!dst_ctx)
+		    {
+		      vec_safe_grow_cleared (args->polymorphic_call_contexts,
+					     count);
+		      dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
+		    }
+
+		  dst_ctx->combine_with (ctx);
 		}
-	      dst_ctx->combine_with (ctx);
 	    }
 
 	  if (src->agg.items
@@ -2636,9 +2535,29 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
       target = canonicalize_constructor_val (target, NULL);
       if (!target || TREE_CODE (target) != FUNCTION_DECL)
 	{
-	  if (ie->indirect_info->member_ptr)
-	    /* Member pointer call that goes through a VMT lookup.  */
-	    return NULL;
+	  /* Member pointer call that goes through a VMT lookup.  */
+	  if (ie->indirect_info->member_ptr
+	      /* Or if target is not an invariant expression and we do not
+		 know if it will evaulate to function at runtime.
+		 This can happen when folding through &VAR, where &VAR
+		 is IP invariant, but VAR itself is not.
+
+		 TODO: Revisit this when GCC 5 is branched.  It seems that
+		 member_ptr check is not needed and that we may try to fold
+		 the expression and see if VAR is readonly.  */
+	      || !is_gimple_ip_invariant (target))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  location_t loc = gimple_location_safe (ie->call_stmt);
+		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+				   "discovered direct call non-invariant "
+				   "%s/%i\n",
+				   ie->caller->name (), ie->caller->order);
+		}
+	      return NULL;
+	    }
+
 
           if (dump_enabled_p ())
 	    {
@@ -2985,7 +2904,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (t)))
 		{
-		  /* Do not speculate builtin_unreachable, it is stpid!  */
+		  /* Do not speculate builtin_unreachable, it is stupid!  */
 		  if (!ie->indirect_info->vptr_changed)
 		    target = ipa_impossible_devirt_target (ie, target);
 		}
@@ -3013,6 +2932,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
      ctx, &final);
   if (final && targets.length () <= 1)
     {
+      speculative = false;
       if (targets.length () == 1)
 	target = targets[0]->decl;
       else
@@ -3074,6 +2994,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       struct cgraph_indirect_call_info *ici = ie->indirect_info;
       struct ipa_jump_func *jfunc;
       int param_index;
+      cgraph_node *spec_target = NULL;
 
       next_ie = ie->next_callee;
 
@@ -3090,6 +3011,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
 
+      if (ie->speculative)
+	{
+	  struct cgraph_edge *de;
+          struct ipa_ref *ref;
+	  ie->speculative_call_info (de, ie, ref);
+	  spec_target = de->callee;
+	}
+
       if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;
       else if (ici->polymorphic)
@@ -3102,11 +3031,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
 							    new_root_info);
       /* If speculation was removed, then we need to do nothing.  */
-      if (new_direct_edge && new_direct_edge != ie)
+      if (new_direct_edge && new_direct_edge != ie
+	  && new_direct_edge->callee == spec_target)
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
 	  top = IPA_EDGE_REF (cs);
 	  res = true;
+	  if (!new_direct_edge->speculative)
+	    continue;
 	}
       else if (new_direct_edge)
 	{
@@ -3122,29 +3054,39 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	      res = true;
 	    }
 	  top = IPA_EDGE_REF (cs);
+	  /* If speculative edge was introduced we still need to update
+	     call info of the indirect edge.  */
+	  if (!new_direct_edge->speculative)
+	    continue;
 	}
-      else if (jfunc->type == IPA_JF_PASS_THROUGH
-	       && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
+      if (jfunc->type == IPA_JF_PASS_THROUGH
+          && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
 	{
-	  if ((ici->agg_contents
-	       && !ipa_get_jf_pass_through_agg_preserved (jfunc))
-	      || (ici->polymorphic
-		  && !ipa_get_jf_pass_through_type_preserved (jfunc)))
+	  if (ici->agg_contents
+	      && !ipa_get_jf_pass_through_agg_preserved (jfunc)
+	      && !ici->polymorphic)
 	    ici->param_index = -1;
 	  else
-	    ici->param_index = ipa_get_jf_pass_through_formal_id (jfunc);
+	    {
+	      ici->param_index = ipa_get_jf_pass_through_formal_id (jfunc);
+	      if (ici->polymorphic
+		  && !ipa_get_jf_pass_through_type_preserved (jfunc))
+		ici->vptr_changed = true;
+	    }
 	}
       else if (jfunc->type == IPA_JF_ANCESTOR)
 	{
-	  if ((ici->agg_contents
-	       && !ipa_get_jf_ancestor_agg_preserved (jfunc))
-	      || (ici->polymorphic
-		  && !ipa_get_jf_ancestor_type_preserved (jfunc)))
+	  if (ici->agg_contents
+	      && !ipa_get_jf_ancestor_agg_preserved (jfunc)
+	      && !ici->polymorphic)
 	    ici->param_index = -1;
 	  else
 	    {
 	      ici->param_index = ipa_get_jf_ancestor_formal_id (jfunc);
 	      ici->offset += ipa_get_jf_ancestor_offset (jfunc);
+	      if (ici->polymorphic
+		  && !ipa_get_jf_ancestor_type_preserved (jfunc))
+		ici->vptr_changed = true;
 	    }
 	}
       else
@@ -3484,9 +3426,7 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	      gcc_checking_assert (ref);
 	      dst->caller->clone_reference (ref, ref->stmt);
 
-	      gcc_checking_assert (ipa_refdesc_pool);
-	      struct ipa_cst_ref_desc *dst_rdesc
-		= (struct ipa_cst_ref_desc *) pool_alloc (ipa_refdesc_pool);
+	      struct ipa_cst_ref_desc *dst_rdesc = ipa_refdesc_pool.allocate ();
 	      dst_rdesc->cs = dst;
 	      dst_rdesc->refcount = src_rdesc->refcount;
 	      dst_rdesc->next_duplicate = NULL;
@@ -3494,10 +3434,7 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	    }
 	  else if (src_rdesc->cs == src)
 	    {
-	      struct ipa_cst_ref_desc *dst_rdesc;
-	      gcc_checking_assert (ipa_refdesc_pool);
-	      dst_rdesc
-		= (struct ipa_cst_ref_desc *) pool_alloc (ipa_refdesc_pool);
+	      struct ipa_cst_ref_desc *dst_rdesc = ipa_refdesc_pool.allocate ();
 	      dst_rdesc->cs = dst;
 	      dst_rdesc->refcount = src_rdesc->refcount;
 	      dst_rdesc->next_duplicate = src_rdesc->next_duplicate;
@@ -3643,13 +3580,12 @@ ipa_free_all_structures_after_ipa_cp (void)
     {
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();
-      free_alloc_pool (ipcp_sources_pool);
-      free_alloc_pool (ipcp_cst_values_pool);
-      free_alloc_pool (ipcp_poly_ctx_values_pool);
-      free_alloc_pool (ipcp_agg_lattice_pool);
+      ipcp_sources_pool.release ();
+      ipcp_cst_values_pool.release ();
+      ipcp_poly_ctx_values_pool.release ();
+      ipcp_agg_lattice_pool.release ();
       ipa_unregister_cgraph_hooks ();
-      if (ipa_refdesc_pool)
-	free_alloc_pool (ipa_refdesc_pool);
+      ipa_refdesc_pool.release ();
     }
 }
 
@@ -3662,16 +3598,11 @@ ipa_free_all_structures_after_iinln (void)
   ipa_free_all_edge_args ();
   ipa_free_all_node_params ();
   ipa_unregister_cgraph_hooks ();
-  if (ipcp_sources_pool)
-    free_alloc_pool (ipcp_sources_pool);
-  if (ipcp_cst_values_pool)
-    free_alloc_pool (ipcp_cst_values_pool);
-  if (ipcp_poly_ctx_values_pool)
-    free_alloc_pool (ipcp_poly_ctx_values_pool);
-  if (ipcp_agg_lattice_pool)
-    free_alloc_pool (ipcp_agg_lattice_pool);
-  if (ipa_refdesc_pool)
-    free_alloc_pool (ipa_refdesc_pool);
+  ipcp_sources_pool.release ();
+  ipcp_cst_values_pool.release ();
+  ipcp_poly_ctx_values_pool.release ();
+  ipcp_agg_lattice_pool.release ();
+  ipa_refdesc_pool.release ();
 }
 
 /* Print ipa_tree_map data structures of all functions in the
@@ -4845,7 +4776,7 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size);
+			   header->main_size, file_data->mode_table);
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
@@ -5066,7 +4997,7 @@ read_replacements_section (struct lto_file_decl_data *file_data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size);
+			   header->main_size, file_data->mode_table);
 
   data_in = lto_data_in_create (file_data, (const char *) data + string_offset,
 				header->string_size, vNULL);
@@ -5150,7 +5081,7 @@ adjust_agg_replacement_values (struct cgraph_node *node,
 class ipcp_modif_dom_walker : public dom_walker
 {
 public:
-  ipcp_modif_dom_walker (struct func_body_info *fbi,
+  ipcp_modif_dom_walker (struct ipa_func_body_info *fbi,
 			 vec<ipa_param_descriptor> descs,
 			 struct ipa_agg_replacement_value *av,
 			 bool *sc, bool *cc)
@@ -5160,7 +5091,7 @@ public:
   virtual void before_dom_children (basic_block);
 
 private:
-  struct func_body_info *m_fbi;
+  struct ipa_func_body_info *m_fbi;
   vec<ipa_param_descriptor> m_descriptors;
   struct ipa_agg_replacement_value *m_aggval;
   bool *m_something_changed, *m_cfg_changed;
@@ -5201,8 +5132,8 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
       if (vce)
 	continue;
 
-      if (!ipa_load_from_parm_agg_1 (m_fbi, m_descriptors, stmt, rhs, &index,
-				     &offset, &size, &by_ref))
+      if (!ipa_load_from_parm_agg (m_fbi, m_descriptors, stmt, rhs, &index,
+				   &offset, &size, &by_ref))
 	continue;
       for (v = m_aggval; v; v = v->next)
 	if (v->index == index
@@ -5318,7 +5249,7 @@ unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
   vec<ipa_param_descriptor> descriptors = vNULL;
-  struct func_body_info fbi;
+  struct ipa_func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
   int param_count;
   bool cfg_changed = false, something_changed = false;

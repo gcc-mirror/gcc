@@ -190,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_map(const unordered_map& __umap,
 		    const allocator_type& __a)
-	: _M_h(__umap._M_h, __a)
+      : _M_h(__umap._M_h, __a)
       { }
 
       /*
@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_map(unordered_map&& __umap,
 		    const allocator_type& __a)
-	: _M_h(std::move(__umap._M_h), __a)
+      : _M_h(std::move(__umap._M_h), __a)
       { }
 
       /**
@@ -219,7 +219,42 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-	: _M_h(__l, __n, __hf, __eql, __a)
+      : _M_h(__l, __n, __hf, __eql, __a)
+      { }
+
+      unordered_map(size_type __n, const allocator_type& __a)
+      : unordered_map(__n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_map(size_type __n, const hasher& __hf,
+		    const allocator_type& __a)
+      : unordered_map(__n, __hf, key_equal(), __a)
+      { }
+
+      template<typename _InputIterator>
+	unordered_map(_InputIterator __first, _InputIterator __last,
+		      size_type __n,
+		      const allocator_type& __a)
+	: unordered_map(__first, __last, __n, hasher(), key_equal(), __a)
+	{ }
+
+      template<typename _InputIterator>
+	unordered_map(_InputIterator __first, _InputIterator __last,
+		      size_type __n, const hasher& __hf,
+		      const allocator_type& __a)
+	  : unordered_map(__first, __last, __n, __hf, key_equal(), __a)
+	{ }
+
+      unordered_map(initializer_list<value_type> __l,
+		    size_type __n,
+		    const allocator_type& __a)
+      : unordered_map(__l, __n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_map(initializer_list<value_type> __l,
+		    size_type __n, const hasher& __hf,
+		    const allocator_type& __a)
+      : unordered_map(__l, __n, __hf, key_equal(), __a)
       { }
 
       /// Copy assignment operator.
@@ -320,7 +355,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // modifiers.
 
       /**
-       *  @brief Attempts to build and insert a std::pair into the %unordered_map.
+       *  @brief Attempts to build and insert a std::pair into the
+       *  %unordered_map.
        *
        *  @param __args  Arguments used to generate a new pair instance (see
        *	        std::piecewise_contruct for passing arguments to each
@@ -344,7 +380,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ return _M_h.emplace(std::forward<_Args>(__args)...); }
 
       /**
-       *  @brief Attempts to build and insert a std::pair into the %unordered_map.
+       *  @brief Attempts to build and insert a std::pair into the
+       *  %unordered_map.
        *
        *  @param  __pos  An iterator that serves as a hint as to where the pair
        *                should be inserted.
@@ -372,6 +409,123 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	iterator
 	emplace_hint(const_iterator __pos, _Args&&... __args)
 	{ return _M_h.emplace_hint(__pos, std::forward<_Args>(__args)...); }
+
+
+#if __cplusplus > 201402L
+#define __cpp_lib_unordered_map_try_emplace 201411
+      /**
+       *  @brief Attempts to build and insert a std::pair into the
+       *  %unordered_map.
+       *
+       *  @param __k    Key to use for finding a possibly existing pair in
+       *                the unordered_map.
+       *  @param __args  Arguments used to generate the .second for a 
+       *                new pair instance.
+       *
+       *  @return  A pair, of which the first element is an iterator that points
+       *           to the possibly inserted pair, and the second is a bool that
+       *           is true if the pair was actually inserted.
+       *
+       *  This function attempts to build and insert a (key, value) %pair into
+       *  the %unordered_map.
+       *  An %unordered_map relies on unique keys and thus a %pair is only
+       *  inserted if its first element (the key) is not already present in the
+       *  %unordered_map.
+       *  If a %pair is not inserted, this function has no effect.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template <typename... _Args>
+        pair<iterator, bool>
+        try_emplace(const key_type& __k, _Args&&... __args)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            {
+              __i = emplace(std::piecewise_construct,
+                            std::forward_as_tuple(__k),
+                            std::forward_as_tuple(
+                              std::forward<_Args>(__args)...))
+                .first;
+              return {__i, true};
+            }
+          return {__i, false};
+        }
+
+      // move-capable overload
+      template <typename... _Args>
+        pair<iterator, bool>
+        try_emplace(key_type&& __k, _Args&&... __args)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            {
+              __i = emplace(std::piecewise_construct,
+                            std::forward_as_tuple(std::move(__k)),
+                            std::forward_as_tuple(
+                              std::forward<_Args>(__args)...))
+                .first;
+              return {__i, true};
+            }
+          return {__i, false};
+        }
+
+      /**
+       *  @brief Attempts to build and insert a std::pair into the
+       *  %unordered_map.
+       *
+       *  @param  __hint  An iterator that serves as a hint as to where the pair
+       *                should be inserted.
+       *  @param __k    Key to use for finding a possibly existing pair in
+       *                the unordered_map.
+       *  @param __args  Arguments used to generate the .second for a 
+       *                new pair instance.
+       *  @return An iterator that points to the element with key of the
+       *          std::pair built from @a __args (may or may not be that
+       *          std::pair).
+       *
+       *  This function is not concerned about whether the insertion took place,
+       *  and thus does not return a boolean like the single-argument emplace()
+       *  does. However, if insertion did not take place,
+       *  this function has no effect.
+       *  Note that the first parameter is only a hint and can potentially
+       *  improve the performance of the insertion process. A bad hint would
+       *  cause no gains in efficiency.
+       *
+       *  See
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
+       *  for more on @a hinting.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template <typename... _Args>
+        iterator
+        try_emplace(const_iterator __hint, const key_type& __k,
+                    _Args&&... __args)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            __i = emplace_hint(__hint, std::piecewise_construct,
+                               std::forward_as_tuple(__k),
+                               std::forward_as_tuple(
+                                 std::forward<_Args>(__args)...));
+          return __i;
+        }
+
+      // move-capable overload
+      template <typename... _Args>
+        iterator
+        try_emplace(const_iterator __hint, key_type&& __k, _Args&&... __args)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            __i = emplace_hint(__hint, std::piecewise_construct,
+                               std::forward_as_tuple(std::move(__k)),
+                               std::forward_as_tuple(
+                                 std::forward<_Args>(__args)...));
+          return __i;
+        }
+#endif
 
       //@{
       /**
@@ -462,6 +616,125 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(initializer_list<value_type> __l)
       { _M_h.insert(__l); }
 
+
+#if __cplusplus > 201402L
+#define __cpp_lib_unordered_map_insertion 201411
+      /**
+       *  @brief Attempts to insert a std::pair into the %unordered_map.
+       *  @param __k    Key to use for finding a possibly existing pair in
+       *                the map.
+       *  @param __obj  Argument used to generate the .second for a pair 
+       *                instance.
+       *
+       *  @return  A pair, of which the first element is an iterator that 
+       *           points to the possibly inserted pair, and the second is 
+       *           a bool that is true if the pair was actually inserted.
+       *
+       *  This function attempts to insert a (key, value) %pair into the
+       *  %unordered_map. An %unordered_map relies on unique keys and thus a
+       *  %pair is only inserted if its first element (the key) is not already
+       *  present in the %unordered_map.
+       *  If the %pair was already in the %unordered_map, the .second of 
+       *  the %pair is assigned from __obj.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template <typename _Obj>
+        pair<iterator, bool>
+        insert_or_assign(const key_type& __k, _Obj&& __obj)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            {
+              __i = emplace(std::piecewise_construct,
+                            std::forward_as_tuple(__k),
+                            std::forward_as_tuple(std::forward<_Obj>(__obj)))
+                .first;
+              return {__i, true};
+            }
+          (*__i).second = std::forward<_Obj>(__obj);
+          return {__i, false};
+        }
+
+      // move-capable overload
+      template <typename _Obj>
+        pair<iterator, bool>
+        insert_or_assign(key_type&& __k, _Obj&& __obj)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            {
+              __i = emplace(std::piecewise_construct,
+                            std::forward_as_tuple(std::move(__k)),
+                            std::forward_as_tuple(std::forward<_Obj>(__obj)))
+                .first;
+              return {__i, true};
+            }
+          (*__i).second = std::forward<_Obj>(__obj);
+          return {__i, false};
+        }
+
+      /**
+       *  @brief Attempts to insert a std::pair into the %unordered_map.
+       *  @param  __hint  An iterator that serves as a hint as to where the
+       *                  pair should be inserted.
+       *  @param __k    Key to use for finding a possibly existing pair in
+       *                the unordered_map.
+       *  @param __obj  Argument used to generate the .second for a pair 
+       *                instance.
+       *  @return An iterator that points to the element with key of
+       *           @a __x (may or may not be the %pair passed in).
+       *
+       *  This function is not concerned about whether the insertion took place,
+       *  and thus does not return a boolean like the single-argument insert()
+       *  does.         
+       *  If the %pair was already in the %unordered map, the .second of
+       *  the %pair is assigned from __obj.
+       *  Note that the first parameter is only a hint and can
+       *  potentially improve the performance of the insertion process.  A bad
+       *  hint would cause no gains in efficiency.
+       *
+       *  See
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
+       *  for more on @a hinting.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template <typename _Obj>
+        iterator
+        insert_or_assign(const_iterator __hint, const key_type& __k,
+                         _Obj&& __obj)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            {
+              return emplace_hint(__hint, std::piecewise_construct,
+                                  std::forward_as_tuple(__k),
+                                  std::forward_as_tuple(
+                                    std::forward<_Obj>(__obj)));
+            }
+          (*__i).second = std::forward<_Obj>(__obj);
+          return __i;
+        }
+
+      // move-capable overload
+      template <typename _Obj>
+        iterator
+        insert_or_assign(const_iterator __hint, key_type&& __k, _Obj&& __obj)
+        {
+          iterator __i = find(__k);
+          if (__i == end())
+            {
+              return emplace_hint(__hint, std::piecewise_construct,
+                                  std::forward_as_tuple(std::move(__k)),
+                                  std::forward_as_tuple(
+                                    std::forward<_Obj>(__obj)));
+            }
+          (*__i).second = std::forward<_Obj>(__obj);
+          return __i;
+        }
+#endif
+
       //@{
       /**
        *  @brief Erases an element from an %unordered_map.
@@ -535,7 +808,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __x  An %unordered_map of the same element and allocator
        *  types.
        *
-       *  This exchanges the elements between two %unordered_map in constant time.
+       *  This exchanges the elements between two %unordered_map in constant
+       *  time.
        *  Note that the global std::swap() function is specialized such that
        *  std::swap(m1,m2) will feed to this function.
        */
@@ -895,7 +1169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       unordered_multimap(const allocator_type& __a)
-	: _M_h(__a)
+      : _M_h(__a)
       { }
 
       /*
@@ -905,7 +1179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_multimap(const unordered_multimap& __ummap,
 			 const allocator_type& __a)
-	: _M_h(__ummap._M_h, __a)
+      : _M_h(__ummap._M_h, __a)
       { }
 
       /*
@@ -915,7 +1189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_multimap(unordered_multimap&& __ummap,
 			 const allocator_type& __a)
-	: _M_h(std::move(__ummap._M_h), __a)
+      : _M_h(std::move(__ummap._M_h), __a)
       { }
 
       /**
@@ -934,7 +1208,42 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
-	: _M_h(__l, __n, __hf, __eql, __a)
+      : _M_h(__l, __n, __hf, __eql, __a)
+      { }
+
+      unordered_multimap(size_type __n, const allocator_type& __a)
+      : unordered_multimap(__n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_multimap(size_type __n, const hasher& __hf,
+			 const allocator_type& __a)
+      : unordered_multimap(__n, __hf, key_equal(), __a)
+      { }
+
+      template<typename _InputIterator>
+	unordered_multimap(_InputIterator __first, _InputIterator __last,
+			   size_type __n,
+			   const allocator_type& __a)
+	: unordered_multimap(__first, __last, __n, hasher(), key_equal(), __a)
+	{ }
+
+      template<typename _InputIterator>
+	unordered_multimap(_InputIterator __first, _InputIterator __last,
+			   size_type __n, const hasher& __hf,
+			   const allocator_type& __a)
+	: unordered_multimap(__first, __last, __n, __hf, key_equal(), __a)
+	{ }
+
+      unordered_multimap(initializer_list<value_type> __l,
+			 size_type __n,
+			 const allocator_type& __a)
+      : unordered_multimap(__l, __n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_multimap(initializer_list<value_type> __l,
+			 size_type __n, const hasher& __hf,
+			 const allocator_type& __a)
+      : unordered_multimap(__l, __n, __hf, key_equal(), __a)
       { }
 
       /// Copy assignment operator.
@@ -1055,7 +1364,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ return _M_h.emplace(std::forward<_Args>(__args)...); }
 
       /**
-       *  @brief Attempts to build and insert a std::pair into the %unordered_multimap.
+       *  @brief Attempts to build and insert a std::pair into the
+       *  %unordered_multimap.
        *
        *  @param  __pos  An iterator that serves as a hint as to where the pair
        *                should be inserted.
@@ -1443,12 +1753,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline void
     swap(unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
     inline void
     swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>

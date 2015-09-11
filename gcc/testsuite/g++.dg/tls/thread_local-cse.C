@@ -5,7 +5,6 @@
 // { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
 // { dg-final { scan-assembler-times "call *_ZTW2ir" 1 { xfail *-*-* } } }
-// { dg-final cleanup-saved-temps }
 
 // XFAILed until the back end supports a way to mark a function as cseable
 // though not pure.

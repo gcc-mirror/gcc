@@ -18,4 +18,3 @@ void test_vuzpu8 (void)
 }
 
 /* { dg-final { scan-assembler "vuzp\.8\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

@@ -11,4 +11,3 @@ test(int c)
 /* Array bounds says the loop will not roll much.  */
 /* { dg-final { scan-tree-dump "loop with 3 iterations completely unrolled" "cunrolli"} } */
 /* { dg-final { scan-tree-dump "Last iteration exit edge was proved true." "cunrolli"} } */
-/* { dg-final { cleanup-tree-dump "cunrolli" } } */

@@ -52,4 +52,3 @@ test_vsha1su1q_u32 (uint32x4_t tw0_3, uint32x4_t w12_15)
 
 /* { dg-final { scan-assembler-times "sha1su1\\tv" 1 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

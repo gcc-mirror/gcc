@@ -391,7 +391,7 @@ proc go-gc-tests { } {
 	}
 
 	# Handle certain tests in a target-dependant way.
-	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] || [istarget "powerpc*-*-*"] } {
+	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] || [istarget "powerpc*-*-*"] || [istarget "s390*-*-*"] } {
 	    if { [string match "*go.test/test/nilptr.go" $test] } {
 		untested $test
 		continue
@@ -414,7 +414,8 @@ proc go-gc-tests { } {
 
 	if { ( [file tail $test] == "select2.go" \
 		   || [file tail $test] == "stack.go" \
-		   || [file tail $test] == "peano.go" ) \
+		   || [file tail $test] == "peano.go" \
+		   || [file tail $test] == "nilptr2.go" ) \
 		 && ! [check_effective_target_split_stack] } {
 	    # These tests fails on targets without split stack.
 	    untested $name
@@ -613,6 +614,7 @@ proc go-gc-tests { } {
 		    pass "$name execution"
 		    regsub "\\.go$" $test ".out" expect
 		    filecmp $expect $base.p "$name compare"
+		    file delete $output_file
 		}
 		file delete $base.p
 	    } else {

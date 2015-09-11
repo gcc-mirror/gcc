@@ -14,4 +14,3 @@ A sum(A a,A b)
 }
 
 /* { dg-final { scan-tree-dump-times "not vectorized: more than one data ref in stmt" 0 "slp2" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

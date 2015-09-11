@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,8 +253,18 @@ package body Ada.Strings.Wide_Wide_Search is
 
       --  Here if no token found
 
-      First := Source'First;
-      Last  := 0;
+      --  RM 2005 A.4.3 (68/1) specifies that an exception must be raised if
+      --  Source'First is not positive and is assigned to First. Formulation
+      --  is slightly different in RM 2012, but the intent seems similar, so
+      --  we check explicitly for that condition.
+
+      if Source'First not in Positive then
+         raise Constraint_Error;
+
+      else
+         First := Source'First;
+         Last  := 0;
+      end if;
    end Find_Token;
 
    -----------

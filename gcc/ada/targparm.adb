@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,7 +154,10 @@ package body Targparm is
    procedure Get_Target_Parameters
      (Make_Id : Make_Id_Type := null;
       Make_SC : Make_SC_Type := null;
-      Set_RND : Set_RND_Type := null)
+      Set_NOD : Set_NOD_Type := null;
+      Set_NSA : Set_NSA_Type := null;
+      Set_NUA : Set_NUA_Type := null;
+      Set_NUP : Set_NUP_Type := null)
    is
       Text : Source_Buffer_Ptr;
       Hi   : Source_Ptr;
@@ -181,7 +184,10 @@ package body Targparm is
          Source_Last  => Hi,
          Make_Id      => Make_Id,
          Make_SC      => Make_SC,
-         Set_RND      => Set_RND);
+         Set_NOD      => Set_NOD,
+         Set_NSA      => Set_NSA,
+         Set_NUA      => Set_NUA,
+         Set_NUP      => Set_NUP);
    end Get_Target_Parameters;
 
    --  Version where caller supplies system.ads text
@@ -192,7 +198,10 @@ package body Targparm is
       Source_Last  : Source_Ptr;
       Make_Id      : Make_Id_Type := null;
       Make_SC      : Make_SC_Type := null;
-      Set_RND      : Set_RND_Type := null)
+      Set_NOD      : Set_NOD_Type := null;
+      Set_NSA      : Set_NSA_Type := null;
+      Set_NUA      : Set_NUA_Type := null;
+      Set_NUP      : Set_NUP_Type := null)
    is
       P : Source_Ptr;
       --  Scans source buffer containing source of system.ads
@@ -202,6 +211,48 @@ package body Targparm is
 
       Result : Boolean;
       --  Records boolean from system line
+
+      OK : Boolean;
+      --  Status result from Set_NUP/NSA/NUA call
+
+      PR_Start : Source_Ptr;
+      --  Pointer to ( following pragma Restrictions
+
+      procedure Collect_Name;
+      --  Scan a name starting at System_Text (P), and put Name in Name_Buffer,
+      --  with Name_Len being length, folded to lower case. On return, P points
+      --  just past the last character (which should be a right paren).
+
+      ------------------
+      -- Collect_Name --
+      ------------------
+
+      procedure Collect_Name is
+      begin
+         Name_Len := 0;
+         loop
+            if System_Text (P) in 'a' .. 'z'
+              or else
+                System_Text (P) = '_'
+              or else
+                System_Text (P) in '0' .. '9'
+            then
+               Name_Buffer (Name_Len + 1) := System_Text (P);
+
+            elsif System_Text (P) in 'A' .. 'Z' then
+               Name_Buffer (Name_Len + 1) :=
+                 Character'Val (Character'Pos (System_Text (P)) + 32);
+
+            else
+               exit;
+            end if;
+
+            P := P + 1;
+            Name_Len := Name_Len + 1;
+         end loop;
+      end Collect_Name;
+
+   --  Start of processing for Get_Target_Parameters
 
    begin
       if Parameters_Obtained then
@@ -261,6 +312,9 @@ package body Targparm is
 
          elsif System_Text (P .. P + 20) = "pragma Restrictions (" then
             P := P + 21;
+            PR_Start := P - 1;
+
+            --  Boolean restrictions
 
             Rloop : for K in All_Boolean_Restrictions loop
                declare
@@ -285,7 +339,9 @@ package body Targparm is
                null;
             end loop Rloop;
 
-            Ploop : for K in All_Parameter_Restrictions loop
+            --  Restrictions taking integer parameter
+
+            Ploop : for K in Integer_Parameter_Restrictions loop
                declare
                   Rname : constant String :=
                             All_Parameter_Restrictions'Image (K);
@@ -400,23 +456,119 @@ package body Targparm is
                      P := P + 1;
                   end loop;
 
-                  Set_RND (Unit);
+                  Set_NOD (Unit);
                   goto Line_Loop_Continue;
                end;
+
+            --  No_Specification_Of_Aspect case
+
+            elsif System_Text (P .. P + 29) = "No_Specification_Of_Aspect => "
+            then
+               P := P + 30;
+
+               --  Skip this processing (and simply ignore the pragma), if
+               --  caller did not supply the subprogram we need to process
+               --  such lines.
+
+               if Set_NSA = null then
+                  goto Line_Loop_Continue;
+               end if;
+
+               --  We have scanned
+               --    "pragma Restrictions (No_Specification_Of_Aspect =>"
+
+               Collect_Name;
+
+               if System_Text (P) /= ')' then
+                  goto Bad_Restrictions_Pragma;
+
+               else
+                  Set_NSA (Name_Find, OK);
+
+                  if OK then
+                     goto Line_Loop_Continue;
+                  else
+                     goto Bad_Restrictions_Pragma;
+                  end if;
+               end if;
+
+            --  No_Use_Of_Attribute case
+
+            elsif System_Text (P .. P + 22) = "No_Use_Of_Attribute => " then
+               P := P + 23;
+
+               --  Skip this processing (and simply ignore No_Use_Of_Attribute
+               --  lines) if caller did not supply the subprogram we need to
+               --  process such lines.
+
+               if Set_NUA = null then
+                  goto Line_Loop_Continue;
+               end if;
+
+               --  We have scanned
+               --    "pragma Restrictions (No_Use_Of_Attribute =>"
+
+               Collect_Name;
+
+               if System_Text (P) /= ')' then
+                  goto Bad_Restrictions_Pragma;
+
+               else
+                  Set_NUA (Name_Find, OK);
+
+                  if OK then
+                     goto Line_Loop_Continue;
+                  else
+                     goto Bad_Restrictions_Pragma;
+                  end if;
+               end if;
+
+            --  No_Use_Of_Pragma case
+
+            elsif System_Text (P .. P + 19) = "No_Use_Of_Pragma => " then
+               P := P + 20;
+
+               --  Skip this processing (and simply ignore No_Use_Of_Pragma
+               --  lines) if caller did not supply the subprogram we need to
+               --  process such lines.
+
+               if Set_NUP = null then
+                  goto Line_Loop_Continue;
+               end if;
+
+               --  We have scanned
+               --    "pragma Restrictions (No_Use_Of_Pragma =>"
+
+               Collect_Name;
+
+               if System_Text (P) /= ')' then
+                  goto Bad_Restrictions_Pragma;
+
+               else
+                  Set_NUP (Name_Find, OK);
+
+                  if OK then
+                     goto Line_Loop_Continue;
+                  else
+                     goto Bad_Restrictions_Pragma;
+                  end if;
+               end if;
             end if;
 
             --  Here if unrecognizable restrictions pragma form
+
+            <<Bad_Restrictions_Pragma>>
 
             Set_Standard_Error;
             Write_Line
                ("fatal error: system.ads is incorrectly formatted");
             Write_Str ("unrecognized or incorrect restrictions pragma: ");
 
-            while System_Text (P) /= ')'
-                    and then
-                  System_Text (P) /= ASCII.LF
+            P := PR_Start;
             loop
+               exit when System_Text (P) = ASCII.LF;
                Write_Char (System_Text (P));
+               exit when System_Text (P) = ')';
                P := P + 1;
             end loop;
 

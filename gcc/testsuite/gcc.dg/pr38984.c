@@ -12,6 +12,5 @@ int f(int *p)
 
 /* { dg-final { scan-tree-dump-times "\\\*p" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return 1" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 
 

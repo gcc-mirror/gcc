@@ -22,4 +22,3 @@ quantum_foo(float _Complex a)
 
 /* { dg-final { scan-tree-dump-times "REALPART_EXPR" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "IMAGPART_EXPR" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

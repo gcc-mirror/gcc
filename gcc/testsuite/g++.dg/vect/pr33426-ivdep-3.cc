@@ -17,9 +17,6 @@ void foo(int *a) {
 
 /* { dg-message "loop vectorized" "" { target *-*-* } 0 } */
 /* { dg-bogus " version\[^\n\r]* alias" "" { target *-*-* } 0 } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 
 /* { dg-final { scan-tree-dump-times "ANNOTATE_EXPR " 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
 /* { dg-final { scan-tree-dump-times "ANNOTATE " 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

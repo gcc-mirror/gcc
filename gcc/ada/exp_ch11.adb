@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Errout;   use Errout;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Intr; use Exp_Intr;
 with Exp_Util; use Exp_Util;
+with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -1189,14 +1190,12 @@ package body Exp_Ch11 is
    --     end if;
 
    procedure Expand_N_Exception_Declaration (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Id      : constant Entity_Id  := Defining_Identifier (N);
-      L       : List_Id             := New_List;
+      GM      : constant Ghost_Mode_Type := Ghost_Mode;
+      Id      : constant Entity_Id       := Defining_Identifier (N);
+      Loc     : constant Source_Ptr      := Sloc (N);
+      Ex_Id   : Entity_Id;
       Flag_Id : Entity_Id;
-
-      Name_Exname : constant Name_Id := New_External_Name (Chars (Id), 'E');
-      Exname      : constant Node_Id :=
-                      Make_Defining_Identifier (Loc, Name_Exname);
+      L       : List_Id;
 
       procedure Force_Static_Allocation_Of_Referenced_Objects
         (Aggregate : Node_Id);
@@ -1280,22 +1279,32 @@ package body Exp_Ch11 is
          return;
       end if;
 
+      --  The exception declaration may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  Definition of the external name: nam : constant String := "A.B.NAME";
+
+      Ex_Id :=
+        Make_Defining_Identifier (Loc, New_External_Name (Chars (Id), 'E'));
 
       Insert_Action (N,
         Make_Object_Declaration (Loc,
-          Defining_Identifier => Exname,
+          Defining_Identifier => Ex_Id,
           Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
           Expression          =>
             Make_String_Literal (Loc,
               Strval => Fully_Qualified_Name_String (Id))));
 
-      Set_Is_Statically_Allocated (Exname);
+      Set_Is_Statically_Allocated (Ex_Id);
 
       --  Create the aggregate list for type Standard.Exception_Type:
       --  Handled_By_Other component: False
 
+      L := Empty_List;
       Append_To (L, New_Occurrence_Of (Standard_False, Loc));
 
       --  Lang component: 'A'
@@ -1309,14 +1318,14 @@ package body Exp_Ch11 is
 
       Append_To (L,
         Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Exname, Loc),
+          Prefix         => New_Occurrence_Of (Ex_Id, Loc),
           Attribute_Name => Name_Length));
 
       --  Full_Name component: Standard.A_Char!(Nam'Address)
 
       Append_To (L, Unchecked_Convert_To (Standard_A_Char,
         Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (Exname, Loc),
+          Prefix         => New_Occurrence_Of (Ex_Id, Loc),
           Attribute_Name => Name_Address)));
 
       --  HTable_Ptr component: null
@@ -1342,19 +1351,21 @@ package body Exp_Ch11 is
         and then not Restriction_Active (No_Exception_Registration)
       then
          L := New_List (
-                Make_Procedure_Call_Statement (Loc,
-                  Name => New_Occurrence_Of (RTE (RE_Register_Exception), Loc),
-                  Parameter_Associations => New_List (
-                    Unchecked_Convert_To (RTE (RE_Exception_Data_Ptr),
-                      Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Id, Loc),
-                        Attribute_Name => Name_Unrestricted_Access)))));
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Register_Exception), Loc),
+             Parameter_Associations => New_List (
+               Unchecked_Convert_To (RTE (RE_Exception_Data_Ptr),
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Id, Loc),
+                   Attribute_Name => Name_Unrestricted_Access)))));
 
          Set_Register_Exception_Call (Id, First (L));
 
          if not Is_Library_Level_Entity (Id) then
-            Flag_Id :=  Make_Defining_Identifier (Loc,
-                          New_External_Name (Chars (Id), 'F'));
+            Flag_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Id), 'F'));
 
             Insert_Action (N,
               Make_Object_Declaration (Loc,
@@ -1380,6 +1391,11 @@ package body Exp_Ch11 is
             Insert_List_After_And_Analyze (N, L);
          end if;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Exception_Declaration;
 
    ---------------------------------------------

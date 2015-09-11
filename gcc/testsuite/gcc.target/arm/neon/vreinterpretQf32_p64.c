@@ -16,4 +16,3 @@ void test_vreinterpretQf32_p64 (void)
   out_float32x4_t = vreinterpretq_f32_p64 (arg0_poly64x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

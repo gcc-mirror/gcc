@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -46,8 +46,12 @@
 #include "coi/coi_client.h"
 
 // MIC engines.
-extern Engine*  mic_engines;
-extern uint32_t mic_engines_total;
+DLL_LOCAL extern Engine*  mic_engines;
+DLL_LOCAL extern uint32_t mic_engines_total;
+
+// DMA channel count used by COI and set via
+// OFFLOAD_DMA_CHANNEL_COUNT environment variable
+DLL_LOCAL extern uint32_t mic_dma_channel_count;
 
 //! The target image is packed as follows.
 /*!      1. 8 bytes containing the size of the target binary          */
@@ -64,6 +68,13 @@ struct Image {
 class OffloadDescriptor
 {
 public:
+    enum  OmpAsyncLastEventType {
+        c_last_not,     // not last event
+        c_last_write,   // the last event that is write
+        c_last_read,    // the last event that is read
+        c_last_runfunc  // the last event that is runfunction
+    };
+    
     OffloadDescriptor(
         int index,
         _Offload_status *status,
@@ -71,7 +82,7 @@ public:
         bool is_openmp,
         OffloadHostTimerData * timer_data
     ) :
-        m_device(mic_engines[index % mic_engines_total]),
+        m_device(mic_engines[index == -1 ? 0 : index % mic_engines_total]),
         m_is_mandatory(is_mandatory),
         m_is_openmp(is_openmp),
         m_inout_buf(0),
@@ -79,13 +90,22 @@ public:
         m_func_desc_size(0),
         m_in_deps(0),
         m_in_deps_total(0),
+        m_in_deps_allocated(0),        
         m_out_deps(0),
         m_out_deps_total(0),
+        m_out_deps_allocated(0),
         m_vars(0),
         m_vars_extra(0),
         m_status(status),
-        m_timer_data(timer_data)
-    {}
+        m_timer_data(timer_data),
+        m_out_with_preallocated(false),
+        m_preallocated_alloc(false),
+        m_traceback_called(false),
+        m_stream(-1),
+        m_omp_async_last_event_type(c_last_not)
+    {
+        m_wait_all_devices = index == -1;
+    }
 
     ~OffloadDescriptor()
     {
@@ -107,8 +127,10 @@ public:
     bool offload(const char *name, bool is_empty,
                  VarDesc *vars, VarDesc2 *vars2, int vars_total,
                  const void **waits, int num_waits, const void **signal,
-                 int entry_id, const void *stack_addr);
-    bool offload_finish();
+                 int entry_id, const void *stack_addr,
+                 OffloadFlags offload_flags);
+
+    bool offload_finish(bool is_traceback);
 
     bool is_signaled();
 
@@ -116,36 +138,60 @@ public:
         return m_timer_data;
     }
 
+    void set_stream(_Offload_stream stream) {
+        m_stream = stream;
+    }
+
+    _Offload_stream get_stream() {
+        return(m_stream);
+    }
+
 private:
-    bool wait_dependencies(const void **waits, int num_waits);
+    bool offload_wrap(const char *name, bool is_empty,
+                 VarDesc *vars, VarDesc2 *vars2, int vars_total,
+                 const void **waits, int num_waits, const void **signal,
+                 int entry_id, const void *stack_addr,
+                 OffloadFlags offload_flags);
+    bool wait_dependencies(const void **waits, int num_waits,
+                           _Offload_stream stream);
     bool setup_descriptors(VarDesc *vars, VarDesc2 *vars2, int vars_total,
                            int entry_id, const void *stack_addr);
     bool setup_misc_data(const char *name);
-    bool send_pointer_data(bool is_async);
+    bool send_pointer_data(bool is_async, void* info);
     bool send_noncontiguous_pointer_data(
         int i,
         PtrData* src_buf,
         PtrData* dst_buf,
-        COIEVENT *event);
-    bool recieve_noncontiguous_pointer_data(
+        COIEVENT *event,
+        uint64_t  &sent_data,
+        uint32_t in_deps_amount,
+        COIEVENT *in_deps
+        );
+    bool receive_noncontiguous_pointer_data(
         int i,
-        char* src_data,
         COIBUFFER dst_buf,
-        COIEVENT *event);
+        COIEVENT *event,
+        uint64_t  &received_data,
+        uint32_t in_deps_amount,
+        COIEVENT *in_deps
+        );
 
     bool gather_copyin_data();
 
-    bool compute();
+    bool compute(void *);
 
-    bool receive_pointer_data(bool is_async);
+    bool receive_pointer_data(bool is_async, bool first_run, void * info);
     bool scatter_copyout_data();
 
     void cleanup();
 
     bool find_ptr_data(PtrData* &ptr_data, void *base, int64_t disp,
-                       int64_t length, bool error_does_not_exist = true);
+                       int64_t length, bool is_targptr,
+                       bool error_does_not_exist = true);
     bool alloc_ptr_data(PtrData* &ptr_data, void *base, int64_t disp,
-                        int64_t length, int64_t alloc_disp, int align);
+                        int64_t length, int64_t alloc_disp, int align,
+                        bool is_targptr, bool is_prealloc, bool pin);
+    bool create_preallocated_buffer(PtrData* ptr_data, void *base);
     bool init_static_ptr_data(PtrData *ptr_data);
     bool init_mic_address(PtrData *ptr_data);
     bool offload_stack_memory_manager(const void * stack_begin, int routine_id,
@@ -154,9 +200,15 @@ private:
 
     bool gen_var_descs_for_pointer_array(int i);
 
+    void get_stream_in_dependencies(uint32_t &in_deps_amount,
+                                    COIEVENT* &in_deps);
+
     void report_coi_error(error_types msg, COIRESULT res);
     _Offload_result translate_coi_error(COIRESULT res) const;
-
+    
+    void setup_omp_async_info();
+    void register_omp_event_call_back(const COIEVENT *event, const void *info);
+    
 private:
     typedef std::list<COIBUFFER> BufferList;
 
@@ -167,10 +219,12 @@ private:
         AutoData* auto_data;
         int64_t cpu_disp;
         int64_t cpu_offset;
+        void *alloc;
         CeanReadRanges *read_rng_src;
         CeanReadRanges *read_rng_dst;
         int64_t ptr_arr_offset;
         bool is_arr_ptr_el;
+        OmpAsyncLastEventType omp_last_event_type;
     };
 
     template<typename T> class ReadArrElements {
@@ -230,6 +284,9 @@ private:
     // Engine
     Engine& m_device;
 
+    // true for offload_wait target(mic) stream(0)
+    bool m_wait_all_devices;
+
     // if true offload is mandatory
     bool m_is_mandatory;
 
@@ -266,8 +323,13 @@ private:
     // Dependencies
     COIEVENT *m_in_deps;
     uint32_t  m_in_deps_total;
+    uint32_t  m_in_deps_allocated;    
     COIEVENT *m_out_deps;
     uint32_t  m_out_deps_total;
+    uint32_t  m_out_deps_allocated;     
+
+    // Stream
+    _Offload_stream m_stream;
 
     // Timer data
     OffloadHostTimerData *m_timer_data;
@@ -279,6 +341,25 @@ private:
     // a boolean value calculated in setup_descriptors. If true we need to do
     // a run function on the target. Otherwise it may be optimized away.
     bool m_need_runfunction;
+
+    // initialized value of m_need_runfunction;
+    // is used to recognize offload_transfer
+    bool m_initial_need_runfunction;
+
+    // a Boolean value set to true when OUT clauses with preallocated targetptr
+    // is encountered to indicate that call receive_pointer_data needs to be
+    // invoked again after call to scatter_copyout_data.
+    bool m_out_with_preallocated;
+
+    // a Boolean value set to true if an alloc_if(1) is used with preallocated
+    // targetptr to indicate the need to scatter_copyout_data even for
+    // async offload
+    bool m_preallocated_alloc;
+
+    // a Boolean value set to true if traceback routine is called
+    bool m_traceback_called;  
+
+    OmpAsyncLastEventType m_omp_async_last_event_type;
 };
 
 // Initialization types for MIC
@@ -288,46 +369,60 @@ enum OffloadInitType {
     c_init_on_offload_all    // all devices before starting the first offload
 };
 
+// Determines if MIC code is an executable or a shared library
+extern "C" bool __offload_target_image_is_executable(const void *target_image);
+
 // Initializes library and registers specified offload image.
-extern "C" void __offload_register_image(const void* image);
+extern "C" bool __offload_register_image(const void* image);
 extern "C" void __offload_unregister_image(const void* image);
 
 // Initializes offload runtime library.
-extern int __offload_init_library(void);
+DLL_LOCAL extern int __offload_init_library(void);
 
 // thread data for associating pipelines with threads
-extern pthread_key_t mic_thread_key;
+DLL_LOCAL extern pthread_key_t mic_thread_key;
+
+// location of offload_main executable
+// To be used if the main application has no offload and is not built
+// with -offload but dynamic library linked in has offload pragma
+DLL_LOCAL extern char* mic_device_main;
 
 // Environment variables for devices
-extern MicEnvVar mic_env_vars;
+DLL_LOCAL extern MicEnvVar mic_env_vars;
 
 // CPU frequency
-extern uint64_t cpu_frequency;
+DLL_LOCAL extern uint64_t cpu_frequency;
 
 // LD_LIBRARY_PATH for MIC libraries
-extern char* mic_library_path;
+DLL_LOCAL extern char* mic_library_path;
 
 // stack size for target
-extern uint32_t mic_stack_size;
+DLL_LOCAL extern uint32_t mic_stack_size;
 
 // Preallocated memory size for buffers on MIC
-extern uint64_t mic_buffer_size;
+DLL_LOCAL extern uint64_t mic_buffer_size;
+
+// Preallocated 4K page memory size for buffers on MIC
+DLL_LOCAL extern uint64_t mic_4k_buffer_size;
+
+// Preallocated 2M page memory size for buffers on MIC
+DLL_LOCAL extern uint64_t mic_2m_buffer_size;
 
 // Setting controlling inout proxy
-extern bool  mic_proxy_io;
-extern char* mic_proxy_fs_root;
+DLL_LOCAL extern bool  mic_proxy_io;
+DLL_LOCAL extern char* mic_proxy_fs_root;
 
 // Threshold for creating buffers with large pages
-extern uint64_t __offload_use_2mb_buffers;
+DLL_LOCAL extern uint64_t __offload_use_2mb_buffers;
 
 // offload initialization type
-extern OffloadInitType __offload_init_type;
+DLL_LOCAL extern OffloadInitType __offload_init_type;
 
 // Device number to offload to when device is not explicitly specified.
-extern int __omp_device_num;
+DLL_LOCAL extern int __omp_device_num;
 
 // target executable
-extern TargetImage* __target_exe;
+DLL_LOCAL extern TargetImage* __target_exe;
 
 // IDB support
 

@@ -53,22 +53,13 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "diagnostic.h"
 #include "tree-iterator.h"
-#include "vec.h"
 
 /* Creates a FOR_STMT with INIT, COND, INCR and BODY as the initializer,
    condition, increment expression and the loop-body, respectively.  */
@@ -95,7 +86,7 @@ make_triplet_val_inv (tree *value)
 {
   if (TREE_CODE (*value) != INTEGER_CST
       && TREE_CODE (*value) != PARM_DECL
-      && TREE_CODE (*value) != VAR_DECL)
+      && !VAR_P (*value))
     *value = get_temp_regvar (ptrdiff_type_node, *value);
 }
 
@@ -205,7 +196,7 @@ replace_invariant_exprs (tree *node)
 
 /* Replace array notation's built-in function passed in AN_BUILTIN_FN with
    the appropriate loop and computation (all stored in variable LOOP of type
-   tree node).  The output of the function function is always a scalar and that
+   tree node).  The output of the function is always a scalar and that
    result is returned in *NEW_VAR.  *NEW_VAR is NULL_TREE if the function is
    __sec_reduce_mutating.  */
 
@@ -353,7 +344,7 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
     array_ind_value = get_temp_regvar (TREE_TYPE (func_parm), func_parm);
 
   array_op0 = (*array_operand)[0];
-  if (TREE_CODE (array_op0) == INDIRECT_REF)
+  if (INDIRECT_REF_P (array_op0))
     array_op0 = TREE_OPERAND (array_op0, 0);
   switch (an_type)
     {

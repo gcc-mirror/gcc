@@ -26,4 +26,3 @@ foo (int y)
 
 /* { dg-final { scan-tree-dump-times "bar \\(" 1 "pre" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "bar2 \\(" 1 "pre" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

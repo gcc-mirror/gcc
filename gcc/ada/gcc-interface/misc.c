@@ -29,16 +29,10 @@
 #include "opts.h"
 #include "options.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "inchash.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "print-tree.h"
@@ -51,14 +45,9 @@
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "plugin.h"
-#include "real.h"
 #include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"	/* For pass_by_reference.  */
+#include "calls.h"	/* For pass_by_reference.  */
 #include "dwarf2out.h"
 
 #include "ada.h"
@@ -122,6 +111,9 @@ gnat_parse_file (void)
 
   /* Call the front end.  */
   _ada_gnat1drv ();
+
+  /* Write the global declarations.  */
+  gnat_write_global_declarations ();
 }
 
 /* Return language mask for option processing.  */
@@ -269,9 +261,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     sorry ("-fexcess-precision=standard for Ada");
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
 
-  /* ??? The warning machinery is outsmarted by Ada.  */
-  warn_unused_parameter = 0;
-
   /* No psABI change warnings for Ada.  */
   warn_psabi = 0;
 
@@ -369,8 +358,6 @@ gnat_init (void)
 
   sbitsize_one_node = sbitsize_int (1);
   sbitsize_unit_node = sbitsize_int (BITS_PER_UNIT);
-
-  ptr_void_type_node = build_pointer_type (void_type_node);
 
   /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
   internal_reference_types ();
@@ -606,8 +593,7 @@ gnat_get_alias_set (tree type)
       get_alias_set (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (type)))));
 
   /* If the type can alias any other types, return the alias set 0.  */
-  else if (TYPE_P (type)
-	   && TYPE_UNIVERSAL_ALIASING_P (TYPE_MAIN_VARIANT (type)))
+  else if (TYPE_P (type) && TYPE_UNIVERSAL_ALIASING_P (type))
     return 0;
 
   return -1;
@@ -850,7 +836,12 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 	      || fmt == &ieee_extended_intel_96_format
 	      || fmt == &ieee_extended_intel_96_round_53_format
 	      || fmt == &ieee_extended_intel_128_format)
-	    fp_arith_may_widen = true;
+	    {
+#ifdef TARGET_FPMATH_DEFAULT
+	      if (TARGET_FPMATH_DEFAULT == FPMATH_387)
+#endif
+		fp_arith_may_widen = true;
+	    }
 
 	  if (fmt->b == 2)
 	    digs = (fmt->p - 1) * 1233 / 4096; /* scale by log (2) */
@@ -972,8 +963,6 @@ gnat_init_ts (void)
 #define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
 #undef  LANG_HOOKS_PUSHDECL
 #define LANG_HOOKS_PUSHDECL		gnat_return_tree
-#undef  LANG_HOOKS_WRITE_GLOBALS
-#define LANG_HOOKS_WRITE_GLOBALS	gnat_write_global_declarations
 #undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
 #undef  LANG_HOOKS_PRINT_DECL
@@ -1010,6 +999,8 @@ gnat_init_ts (void)
 #define LANG_HOOKS_DEEP_UNSHARING	true
 #undef  LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS		gnat_init_ts
+#undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
+#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL hook_bool_const_tree_false
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

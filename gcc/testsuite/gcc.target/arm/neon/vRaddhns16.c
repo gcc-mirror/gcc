@@ -18,4 +18,3 @@ void test_vRaddhns16 (void)
 }
 
 /* { dg-final { scan-assembler "vraddhn\.i16\[ 	\]+\[dD\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

@@ -351,6 +351,10 @@ func printStackRecord(w io.Writer, stk []uintptr, allFrames bool) {
 			if !show && !strings.Contains(name, ".") && strings.HasPrefix(name, "__go_") {
 				continue
 			}
+			if !show && name == "" {
+				// This can happen due to http://gcc.gnu.org/PR65797.
+				continue
+			}
 			show = true
 			fmt.Fprintf(w, "#\t%#x\t%s+%#x\t%s:%d\n", pc, name, pc-f.Entry(), file, line)
 		}

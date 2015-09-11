@@ -15,4 +15,3 @@ void foo (struct struct_t* sp, int start, int end)
 }
 
 /* { dg-final { scan-tree-dump-times "Simplify PEELED_CHREC into POLYNOMIAL_CHREC" 1 "sccp" } } */
-/* { dg-final { cleanup-tree-dump "sccp" } } */

@@ -172,11 +172,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return   Nothing.
   */
   template<typename _Tp>
-    inline void
-    swap(_Tp& __a, _Tp& __b)
+    inline
 #if __cplusplus >= 201103L
+    typename enable_if<__and_<is_move_constructible<_Tp>,
+			      is_move_assignable<_Tp>>::value>::type
+    swap(_Tp& __a, _Tp& __b)
     noexcept(__and_<is_nothrow_move_constructible<_Tp>,
 	            is_nothrow_move_assignable<_Tp>>::value)
+#else
+    void
+    swap(_Tp& __a, _Tp& __b)
 #endif
     {
       // concept requirements
@@ -191,10 +196,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // DR 809. std::swap should be overloaded for array types.
   /// Swap the contents of two arrays.
   template<typename _Tp, size_t _Nm>
-    inline void
-    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
+    inline
 #if __cplusplus >= 201103L
+    typename enable_if<__is_swappable_impl::__is_swappable<_Tp>::value>::type
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
     noexcept(noexcept(swap(*__a, *__b)))
+#else
+    void
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
 #endif
     {
       for (size_t __n = 0; __n < _Nm; ++__n)

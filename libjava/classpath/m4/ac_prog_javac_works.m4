@@ -7,7 +7,7 @@ dnl programs. It is VERY IMPORTANT that you download the whole set,
 dnl some macros depend on other. Unfortunately, the autoconf archive
 dnl does not support the concept of set of macros, so I had to break it
 dnl for submission. The general documentation, as well as the sample
-dnl configure.in, is included in the AC_PROG_JAVA macro.
+dnl configure.ac, is included in the AC_PROG_JAVA macro.
 dnl
 dnl @category Java
 dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>

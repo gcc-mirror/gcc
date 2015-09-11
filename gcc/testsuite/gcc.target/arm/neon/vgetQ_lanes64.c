@@ -17,4 +17,3 @@ void test_vgetQ_lanes64 (void)
 }
 
 /* { dg-final { scan-assembler "((vmov)|(fmrrd))\[ 	\]+\[rR\]\[0-9\]+, \[rR\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

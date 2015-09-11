@@ -24,4 +24,3 @@ void fun(A* a, B* b)
 
 /* { dg-final { scan-tree-dump-times "A::foo" 2 "original"  } } */
 /* { dg-final { scan-tree-dump-times "B::foo" 2 "original"  } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

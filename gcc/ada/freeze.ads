@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,12 +174,9 @@ package Freeze is
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
 
-   function Is_Atomic_Aggregate
-     (E   : Entity_Id;
-      Typ : Entity_Id) return Boolean;
-
-   --  If an atomic object is initialized with an aggregate or is assigned an
-   --  aggregate, we have to prevent a piecemeal access or assignment to the
+   function Is_Atomic_VFA_Aggregate (N : Node_Id) return Boolean;
+   --  If an atomic/VFA object is initialized with an aggregate or is assigned
+   --  an aggregate, we have to prevent a piecemeal access or assignment to the
    --  object, even if the aggregate is to be expanded. We create a temporary
    --  for the aggregate, and assign the temporary instead, so that the back
    --  end can generate an atomic move for it. This is only done in the context

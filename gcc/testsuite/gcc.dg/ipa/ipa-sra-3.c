@@ -36,4 +36,3 @@ void caller (void)
 
 /* { dg-final { scan-tree-dump "base: z, remove_param" "eipa_sra"  } } */
 /* { dg-final { scan-tree-dump "base: calf, remove_param" "eipa_sra"  } } */
-/* { dg-final { cleanup-tree-dump "eipa_sra" } } */

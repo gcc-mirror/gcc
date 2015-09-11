@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,8 +55,9 @@ package body Sem_Ch11 is
    -----------------------------------
 
    procedure Analyze_Exception_Declaration (N : Node_Id) is
-      Id : constant Entity_Id := Defining_Identifier (N);
-      PF : constant Boolean   := Is_Pure (Current_Scope);
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+      Id : constant Entity_Id       := Defining_Identifier (N);
+      PF : constant Boolean         := Is_Pure (Current_Scope);
 
    begin
       --  The exception declaration may be subject to pragma Ghost with policy
@@ -82,6 +83,11 @@ package body Sem_Ch11 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Exception_Declaration;
 
    --------------------------------

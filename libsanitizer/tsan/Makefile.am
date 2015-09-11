@@ -37,13 +37,15 @@ tsan_files = \
 	tsan_stat.cc \
 	tsan_suppressions.cc \
 	tsan_symbolize.cc \
-	tsan_sync.cc \
-	tsan_rtl_amd64.S
+	tsan_sync.cc 
 
-libtsan_la_SOURCES = $(tsan_files) 
-libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
+libtsan_la_SOURCES = $(tsan_files)
+EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S
+libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(TSAN_TARGET_DEPENDENT_OBJECTS)
+libtsan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(TSAN_TARGET_DEPENDENT_OBJECTS)
 if LIBBACKTRACE_SUPPORTED
 libtsan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
+libtsan_la_DEPENDENCIES +=$(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 endif
 libtsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libtsan)

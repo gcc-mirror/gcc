@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2007-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,11 +47,16 @@
 --  Generator type itself suffices for this purpose. The parameter modes on
 --  Reset procedures better reflect the effect of these routines.
 
+--  Note: this package is marked SPARK_Mode Off, because functions Random work
+--  by side-effect to change the value of the generator, hence they should not
+--  be called from SPARK code.
+
 with System.Random_Numbers;
 with Interfaces; use Interfaces;
 
-package GNAT.Random_Numbers is
-
+package GNAT.Random_Numbers with
+  SPARK_Mode => Off
+is
    type Generator is limited private;
    subtype Initialization_Vector is
      System.Random_Numbers.Initialization_Vector;

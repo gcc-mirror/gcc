@@ -8,4 +8,3 @@ f (char *cp)
 }
 
 /* { dg-final { scan-tree-dump-times "#pragma acc parallel map\\(alloc:\\*\\(cp \\+ 6\\) \\\[len: 8]\\) map\\(alloc:cp \\\[pointer assign, bias: 6]\\)" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

@@ -15,6 +15,5 @@ t_frame_run (test2)
 
 
 /* { dg-final { scan-assembler-times "stp\tx19, x30, \\\[sp, -\[0-9\]+\\\]!" 1 } } */
-/* { dg-final { scan-assembler-times "ldp\tx19, x30, \\\[sp\\\], \[0-9\]+" 2 } } */
+/* { dg-final { scan-assembler-times "ldp\tx19, x30, \\\[sp\\\], \[0-9\]+" 1 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

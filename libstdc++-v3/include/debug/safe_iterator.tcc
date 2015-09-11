@@ -38,12 +38,14 @@ namespace __gnu_debug
     {
       if (this->_M_singular())
 	return false;
+
       if (__n == 0)
 	return true;
+
       if (__n < 0)
 	{
 	  std::pair<difference_type, _Distance_precision> __dist =
-	    __get_distance(_M_get_sequence()->_M_base().begin(), base());
+	    __get_distance_from_begin(*this);
 	  bool __ok =  ((__dist.second == __dp_exact && __dist.first >= -__n)
 			|| (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
@@ -51,7 +53,7 @@ namespace __gnu_debug
       else
 	{
 	  std::pair<difference_type, _Distance_precision> __dist =
-	    __get_distance(base(), _M_get_sequence()->_M_base().end());
+	    __get_distance_to_end(*this);
 	  bool __ok = ((__dist.second == __dp_exact && __dist.first >= __n)
 		       || (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
@@ -61,37 +63,31 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence>
     bool
     _Safe_iterator<_Iterator, _Sequence>::
-    _M_valid_range(const _Safe_iterator& __rhs) const
+    _M_valid_range(const _Safe_iterator& __rhs,
+		   std::pair<difference_type, _Distance_precision>& __dist,
+		   bool __check_dereferenceable) const
     {
       if (!_M_can_compare(__rhs))
 	return false;
 
-      /* Determine if we can order the iterators without the help of
-	 the container */
-      std::pair<difference_type, _Distance_precision> __dist =
-	__get_distance(base(), __rhs.base());
-      switch (__dist.second) {
-      case __dp_equality:
-	if (__dist.first == 0)
-	  return true;
-	break;
+      /* Determine iterators order */
+      __dist = __get_distance(*this, __rhs);
+      switch (__dist.second)
+	{
+	case __dp_equality:
+	  if (__dist.first == 0)
+	    return true;
+	  break;
 
-      case __dp_sign:
-      case __dp_exact:
-	return __dist.first >= 0;
-      }
+	case __dp_sign:
+	case __dp_exact:
+	  // If range is not empty first iterator must be dereferenceable.
+	  if (__dist.first > 0)
+	    return !__check_dereferenceable || _M_dereferenceable();
+	  return __dist.first == 0;
+	}
 
-      /* We can only test for equality, but check if one of the
-	 iterators is at an extreme. */
-      /* Optim for classic [begin, it) or [it, end) ranges, limit checks
-       * when code is valid.  Note, for the special case of forward_list,
-       * before_begin replaces the role of begin.  */ 
-      if (_M_is_beginnest() || __rhs._M_is_end())
-	return true;
-      if (_M_is_end() || __rhs._M_is_beginnest())
-	return false;
-
-      // Assume that this is a valid range; we can't check anything else
+      // Assume that this is a valid range; we can't check anything else.
       return true;
     }
 } // namespace __gnu_debug

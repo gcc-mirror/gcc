@@ -34,4 +34,3 @@ int main() {
 
 /* We should devirtualize call to D::Run */
 /* { dg-final { scan-tree-dump-times "D::Run \\(" 1 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

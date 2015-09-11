@@ -52,7 +52,7 @@ void test01()
   typedef std::unordered_set<T, hash, equal_to, alloc_type> test_type;
   test_type v(alloc_type{});
   v.insert(T());
-  VERIFY( v.max_size() == traits_type::max_size(v.get_allocator()) );
+  VERIFY( v.max_size() < traits_type::max_size(v.get_allocator()) );
 }
 
 int main()

@@ -139,6 +139,8 @@ proc fixed_host_execute {args} {
     global text
     global spawn_id
 
+    verbose "fixed_host_execute: $args"
+
     set timeoutmsg "Timed out: Never got started, "
     set timeout 100
     set file all
@@ -148,9 +150,8 @@ proc fixed_host_execute {args} {
     if { [llength $args] == 0} {
 	set executable $args
     } else {
-	set executable [string trimleft [lindex [split $args " "] 0] "\{"]
-	set params [string trimleft [lindex [split $args " "] 1] "\{"]
-	set params [string trimright $params "\}"]
+	set executable [lindex $args 0]
+	set params [lindex $args 1]
     }
 
     verbose "The executable is $executable" 2
@@ -158,6 +159,8 @@ proc fixed_host_execute {args} {
 	perror "The executable, \"$executable\" is missing" 0
 	return "No source file found"
     }
+
+    verbose "params: $params" 2
 
     # spawn the executable and look for the DejaGnu output messages from the
     # test case.
@@ -305,10 +308,14 @@ verbose "tests: $tests"
 proc is_testcase_meant_to_generate_a_reproducer {name} {
     # We expect most testcases to generate a reproducer.
     # The exceptions are the tutorials (which don't have a "test-"
-    # prefix), and test-threads.c (which is unique).
+    # prefix), and test-threads.c and test-benchmark.c (which are each
+    # unique).
     verbose "is_testcase_meant_to_generate_a_reproducer: $name"
     if { [string match "*test-*" $name] } {
 	if { [string match "*test-threads.c" $name] } {
+	    return 0
+	}
+	if { [string match "*test-benchmark.c" $name] } {
 	    return 0
 	}
 	return 1
@@ -328,6 +335,39 @@ proc get_path_of_driver {} {
     return [file dirname $binary]
 }
 
+# Expand "SRCDIR" within ARG to the location of the top-level
+# src directory
+
+proc jit-expand-vars {arg} {
+    verbose "jit-expand-vars: $arg"
+    global srcdir
+    verbose " srcdir: $srcdir"
+    # "srcdir" is that of the gcc/testsuite directory, so
+    # we need to go up two levels.
+    set arg [string map [list "SRCDIR" $srcdir/../..] $arg]
+    verbose " new arg: $arg"
+    return $arg
+}
+
+# Parameters used when invoking the executables built from the test cases.
+
+global jit-exe-params
+set jit-exe-params {}
+
+# Set "jit-exe-params", expanding "SRCDIR" in each arg to the location of
+# the top-level srcdir.
+
+proc dg-jit-set-exe-params { args } {
+    verbose "dg-jit-set-exe-params: $args"
+
+    global jit-exe-params
+    set jit-exe-params {}
+    # Skip initial arg (line number)
+    foreach arg [lrange $args 1 [llength $args] ] {
+	lappend jit-exe-params [jit-expand-vars $arg]
+    }
+}
+
 proc jit-dg-test { prog do_what extra_tool_flags } {
     verbose "within jit-dg-test..."
     verbose "  prog: $prog"
@@ -337,6 +377,14 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     # test-threads.c needs to be linked against pthreads
     if {[string match "*test-threads.c" $prog]} {
 	append extra_tool_flags " -lpthread"
+    }
+
+    # Any test case that uses jit-verify-output-file-was-created
+    # needs to call jit-setup-compile-to-file here.
+    # (is there a better way to handle setup/finish pairs in dg?)
+    set tmp [grep $prog "jit-verify-output-file-was-created"]
+    if {![string match "" $tmp]} {
+	jit-setup-compile-to-file $prog
     }
 
     # Determine what to name the built executable.
@@ -464,7 +512,12 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     #  http://lists.gnu.org/archive/html/dejagnu/2014-10/msg00000.html
     # We instead call a patched local copy, "fixed_host_execute", defined
     # above.
-    set result [fixed_host_execute $output_file]
+
+    global jit-exe-params
+    set args ${jit-exe-params}
+    set jit-exe-params {}
+
+    set result [fixed_host_execute $output_file $args ]
     verbose "result: $result"
 
     # Restore PATH
@@ -528,6 +581,279 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     }
 
     return [list $comp_output $output_file]
+}
+
+# Given source file PROG, scrape out the value of
+#   #define OUTPUT_FILENAME
+# failing if it's not found.
+
+proc jit-get-output-filename {prog} {
+    set tmp [grep $prog "#define OUTPUT_FILENAME (.*)"]
+    if {![string match "" $tmp]} {
+	foreach i $tmp {
+	    verbose "i: $i"
+	    if {[regexp "^\#define OUTPUT_FILENAME\[ \t\]\+\"(.*)\"$" $i i group] } {
+		verbose "group: '$group'"
+		return $group
+	    } else {
+		fail "Unable to parse line: $i"
+	    }
+	}
+    }
+    fail "Unable to locate OUTPUT_FILENAME"
+    return ""
+}
+
+# For testcases that use jit-verify-output-file-was-created
+# delete OUTPUT_FILENAME beforehand, to ensure that the
+# testcase is indeed creating it.
+
+proc jit-setup-compile-to-file { prog } {
+    verbose "jit-setup-compile-to-file: $prog"
+    set output_filename [jit-get-output-filename $prog]
+    verbose "  output_filename: $output_filename"
+    if {![string match "" $output_filename]} {
+	verbose "  deleting any $output_filename"
+	catch "exec rm -f $output_filename"
+    }
+}
+
+proc jit-verify-output-file-was-created { args } {
+    verbose "jit-verify-output-file-was-created: $args"
+
+    upvar 2 prog prog
+    verbose "prog: $prog"
+    set output_filename [jit-get-output-filename $prog]
+    verbose "  output_filename: $output_filename"
+
+    # Verify that the expected file was written out
+    if { [file exists $output_filename] == 1} {
+	pass "$output_filename exists"
+    } else {
+	fail "$output_filename does not exist"
+    }
+}
+
+# Verify that the given file exists, and is executable.
+# Attempt to execute it, and verify that its stdout matches
+# the given regex.
+
+proc jit-run-executable { args } {
+    verbose "jit-run-executable: $args"
+
+    set executable-name [lindex $args 0]
+    verbose "executable-name: ${executable-name}"
+
+    set dg-output-text [lindex $args 1]
+    verbose "dg-output-text: ${dg-output-text}"
+
+    if { [file executable ${executable-name}] } {
+	pass "${executable-name} has executable bit set"
+    } else {
+	fail "${executable-name} does not have executable bit set"
+    }
+
+    # Attempt to run the executable; adapted from dg.exp's dg-test
+    set status -1
+    set result [jit_load ./${executable-name}]
+    set status [lindex $result 0]
+    set output [lindex $result 1]
+    verbose "  status: $status"
+    verbose "  output: $output"
+    # send_user "After exec, status: $status\n"
+    if { "$status" == "pass" } {
+	pass "${executable-name} execution test"
+	verbose "Exec succeeded." 3
+	set texttmp ${dg-output-text}
+	if { ![regexp $texttmp ${output}] } {
+	    fail "${executable-name} output pattern test, is ${output}, should match $texttmp"
+	    verbose "Failed test for output pattern $texttmp" 3
+	} else {
+	    pass "${executable-name} output pattern test, $texttmp"
+	    verbose "Passed test for output pattern $texttmp" 3
+	}
+	unset texttmp
+    } elseif { "$status" == "fail" } {
+	# It would be nice to get some info out of errorCode.
+	if {[info exists errorCode]} {
+	    verbose "Exec failed, errorCode: $errorCode" 3
+	} else {
+	    verbose "Exec failed, errorCode not defined!" 3
+	}
+	fail "${executable-name} execution test"
+    } else {
+	$status "${executable-name} execution test"
+    }
+}
+
+# Assuming that a .s file has been written out named
+# OUTPUT_FILENAME, invoke the driver to try to turn it into
+# an executable, and try to run the result.
+# For use by the test-compile-to-assembler.c testcase.
+proc jit-verify-assembler { args } {
+    verbose "jit-verify-assembler: $args"
+
+    set dg-output-text [lindex $args 0]
+    verbose "dg-output-text: ${dg-output-text}"
+
+    upvar 2 name name
+    verbose "name: $name"
+
+    upvar 2 prog prog
+    verbose "prog: $prog"
+    set asm_filename [jit-get-output-filename $prog]
+    verbose "  asm_filename: ${asm_filename}"
+
+    # Name the built executable as OUTPUT_FILENAME with
+    # ".exe" appended.
+    set executable_from_asm ${asm_filename}.exe
+    verbose "  executable_from_asm: ${executable_from_asm}"
+
+    # Invoke the driver to assemble/link the .s file to the .exe
+    set comp_output [gcc_target_compile \
+			 ${asm_filename} \
+			 ${executable_from_asm} \
+			 "executable" \
+			 "{}"]
+    if ![jit_check_compile \
+	     "$name" \
+	     "assemble/link of ${asm_filename}" \
+	     ${executable_from_asm} \
+	     $comp_output] then {
+      return
+    }
+
+    # Verify that the executable was created.
+    if { [file exists $executable_from_asm] == 1} {
+	pass "$executable_from_asm exists"
+    } else {
+	fail "$executable_from_asm does not exist"
+    }
+
+    # Run it and verify that the output matches the regex.
+    jit-run-executable ${executable_from_asm} ${dg-output-text}
+}
+
+# Assuming that a .o file has been written out named
+# OUTPUT_FILENAME, invoke the driver to try to turn it into
+# an executable, and try to run the result.
+# For use by the test-compile-to-object.c testcase.
+proc jit-verify-object { args } {
+    verbose "jit-verify-object: $args"
+
+    set dg-output-text [lindex $args 0]
+    verbose "dg-output-text: ${dg-output-text}"
+
+    upvar 2 name name
+    verbose "name: $name"
+
+    upvar 2 prog prog
+    verbose "prog: $prog"
+    set obj_filename [jit-get-output-filename $prog]
+    verbose "  obj_filename: ${obj_filename}"
+
+    # Name the linked executable as OUTPUT_FILENAME with
+    # ".exe" appended.
+    set executable_from_obj ${obj_filename}.exe
+    verbose "  executable_from_obj: ${executable_from_obj}"
+
+    # Invoke the driver to link the .o file to the .exe
+    set comp_output [gcc_target_compile \
+			 ${obj_filename} \
+			 ${executable_from_obj} \
+			 "executable" \
+			 "{}"]
+    if ![jit_check_compile \
+	     "$name" \
+	     "link of ${obj_filename}" \
+	     ${executable_from_obj} \
+	     $comp_output] then {
+      return
+    }
+
+    # Verify that the executable was created.
+    if { [file exists $executable_from_obj] == 1} {
+	pass "$executable_from_obj exists"
+    } else {
+	fail "$executable_from_obj does not exist"
+    }
+
+    # Run it and verify that the output matches the regex.
+    jit-run-executable ${executable_from_obj} ${dg-output-text}
+}
+
+# Assuming that a .so file has been written out named
+# OUTPUT_FILENAME, build a test executable to use it,
+# and try to run the result.
+# For use by the test-compile-to-dynamic-library.c testcase.
+proc jit-verify-dynamic-library { args } {
+    verbose "jit-verify-object: $args"
+
+    global srcdir
+    global subdir
+
+    set dg-output-text [lindex $args 0]
+    verbose "dg-output-text: ${dg-output-text}"
+
+    upvar 2 name name
+    verbose "name: $name"
+
+    upvar 2 prog prog
+    verbose "prog: $prog"
+    set obj_filename [jit-get-output-filename $prog]
+    verbose "  obj_filename: ${obj_filename}"
+
+    # Build a test executable from
+    # verify-dynamic-library.c
+    set test_src "verify-dynamic-library.c"
+    set test_executable ${test_src}.exe
+    verbose "  test_executable: ${test_executable}"
+
+    # Invoke the driver to build the test executable
+    set comp_output [gcc_target_compile \
+			 $srcdir/$subdir/${test_src} \
+			 ${test_executable} \
+			 "executable" \
+			 "{additional_flags=-ldl}"]
+    if ![jit_check_compile \
+	     "$name" \
+	     "build of ${test_executable}" \
+	     ${test_executable} \
+	     $comp_output] then {
+      return
+    }
+
+    # Verify that the test executable was created.
+    if { [file exists $test_executable] == 1} {
+	pass "$test_executable exists"
+    } else {
+	fail "$test_executable does not exist"
+    }
+
+    # Run it and verify that the output matches the regex.
+    jit-run-executable ${test_executable} ${dg-output-text}
+}
+
+# A way to invoke "jit-run-executable" with the given regex,
+# using OUTPUT_FILENAME within the testcase to determine
+# the name of the executable to run.
+# For use by the test-compile-to-executable.c testcase.
+
+proc jit-verify-executable { args } {
+    verbose "jit-verify-executable: $args"
+
+    set dg-output-text [lindex $args 0]
+    verbose "dg-output-text: ${dg-output-text}"
+
+    upvar 2 name name
+    verbose "name: $name"
+
+    upvar 2 prog prog
+    verbose "prog: $prog"
+    set output_filename [jit-get-output-filename $prog]
+    verbose "  output_filename: $output_filename"
+
+    jit-run-executable $output_filename ${dg-output-text}
 }
 
 # We need to link with --export-dynamic for test-calling-external-function.c

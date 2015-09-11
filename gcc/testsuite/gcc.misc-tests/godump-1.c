@@ -871,3 +871,5 @@ extern uint32_t func1(uint8_t c);
 
 typedef int8_t (*func_t)(void *p);
 /* { dg-final { scan-file godump-1.out "(?n)^type _func_t func\[(\]\\*byte\[)\] int\[0-9\]*$" } } */
+
+/* { dg-final { remove-build-file "godump-1.out" } } */

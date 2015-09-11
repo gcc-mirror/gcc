@@ -45,4 +45,3 @@ main()
 } 
 /* Even if function is huge, inlining it will save code.  */
 /* { dg-final { scan-ipa-dump-times "Inlined into" 2 "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

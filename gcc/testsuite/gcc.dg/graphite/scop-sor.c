@@ -15,4 +15,3 @@ void sor(int N1, int N2){
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

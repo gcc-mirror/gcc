@@ -1,6 +1,6 @@
 /* PR middle-end/29215 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-gimple" } */
+/* { dg-options "-O2 -fdump-tree-ccp1" } */
 
 char buf[5 * sizeof (int) + 1] __attribute__((aligned (__alignof__ (int))));
 
@@ -29,5 +29,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "memcpy" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */
+/* { dg-final { scan-tree-dump-not "memcpy" "ccp1" } } */

@@ -1223,7 +1223,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /*  Define this macro to nonzero if the addresses of local variable slots
     are at negative offsets from the frame pointer.  */
@@ -1813,7 +1813,7 @@ struct sh_args {
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
    will either zero-extend or sign-extend.  The value of this macro should
@@ -1827,7 +1827,7 @@ struct sh_args {
   : (MODE) != SImode ? SIGN_EXTEND : UNKNOWN)
 
 /* Define if loading short immediate values into registers sign extends.  */
-#define SHORT_IMMEDIATES_SIGN_EXTEND
+#define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1
@@ -2244,9 +2244,6 @@ extern int current_function_interrupt;
 
 #define EPILOGUE_USES(REGNO) ((TARGET_SH2E || TARGET_SH4) \
 			      && (REGNO) == FPSCR_REG)
-
-#define MD_CAN_REDIRECT_BRANCH(INSN, SEQ) \
-  sh_can_redirect_branch ((INSN), (SEQ))
 
 #define DWARF_FRAME_RETURN_COLUMN \
   (TARGET_SH5 ? DWARF_FRAME_REGNUM (PR_MEDIA_REG) : DWARF_FRAME_REGNUM (PR_REG))

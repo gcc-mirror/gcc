@@ -71,8 +71,8 @@ typedef struct _var_map
 extern var_map init_var_map (int);
 extern void delete_var_map (var_map);
 extern int var_union (var_map, tree, tree);
-extern void partition_view_normal (var_map, bool);
-extern void partition_view_bitmap (var_map, bitmap, bool);
+extern void partition_view_normal (var_map);
+extern void partition_view_bitmap (var_map, bitmap);
 extern void dump_scope_blocks (FILE *, int);
 extern void debug_scope_block (tree, int);
 extern void debug_scope_blocks (int);
@@ -242,6 +242,10 @@ typedef struct tree_live_info_d
 
   /* Top of workstack.  */
   int *stack_top;
+
+  /* Obstacks to allocate the bitmaps on.  */
+  bitmap_obstack livein_obstack;
+  bitmap_obstack liveout_obstack;
 } *tree_live_info_p;
 
 
@@ -249,8 +253,7 @@ typedef struct tree_live_info_d
 #define LIVEDUMP_EXIT	0x02
 #define LIVEDUMP_ALL	(LIVEDUMP_ENTRY | LIVEDUMP_EXIT)
 extern void delete_tree_live_info (tree_live_info_p);
-extern void calculate_live_on_exit (tree_live_info_p);
-extern tree_live_info_p calculate_live_ranges (var_map);
+extern tree_live_info_p calculate_live_ranges (var_map, bool);
 extern void debug (tree_live_info_d &ref);
 extern void debug (tree_live_info_d *ptr);
 extern void dump_live_info (FILE *, tree_live_info_p, int);

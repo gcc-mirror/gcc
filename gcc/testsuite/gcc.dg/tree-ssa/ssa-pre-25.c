@@ -20,4 +20,3 @@ int foo (int x)
 /* We should eliminate the load from p for a PHI node with values 1 and 2.  */
 
 /* { dg-final { scan-tree-dump "Eliminated: 1" "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

@@ -21,4 +21,3 @@ bar (int i)
 }
 
 /* { dg-final { scan-tree-dump-times "if" 0 "ssa" } } */
-/* { dg-final { cleanup-tree-dump "ssa" } } */

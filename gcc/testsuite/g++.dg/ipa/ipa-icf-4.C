@@ -43,6 +43,5 @@ int main()
   return 123;
 }
 
-/* { dg-final { scan-ipa-dump "\(Varpool alias has been created\)|\(Symbol aliases are not supported by target\)" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Equal symbols: 6" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */
+/* { dg-final { scan-ipa-dump "\(Unified; Variable alias has been created\)|\(Symbol aliases are not supported by target\)" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Equal symbols: \[67\]" "icf"  } } */

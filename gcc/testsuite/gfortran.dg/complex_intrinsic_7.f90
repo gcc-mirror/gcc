@@ -41,4 +41,3 @@ if (abs(tanh(z81_1) - cmplx(1.0839233273386946_8,0.27175258531951174_8,8)) > eps
 
 end
 ! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

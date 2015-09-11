@@ -34,6 +34,8 @@
 #include <limits>
 #include <algorithm>
 #include <vector>
+#include <cstdlib>	// std::free
+#include <string.h>	// ::strdup
 
 #include <backward/auto_ptr.h>
 #include <ext/concurrence.h>
@@ -139,28 +141,28 @@ namespace
   }
 
   const char*
-  get_glibc_msg(__c_locale __attribute__((unused)) __locale_messages,
+  get_glibc_msg(__c_locale __locale_messages __attribute__((unused)),
+		const char* __name_messages __attribute__((unused)),
 		const char* __domainname,
 		const char* __dfault)
   {
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     std::__c_locale __old = __uselocale(__locale_messages);
-    const char* __msg =
-      const_cast<const char*>(dgettext(__domainname, __dfault));
-      __uselocale(__old);
-#else
-      char* __old = setlocale(LC_ALL, 0);
-      const size_t __len = strlen(__old) + 1;
-      char* __sav = new char[__len];
-      memcpy(__sav, __old, __len);
-      setlocale(LC_ALL, _M_name_messages);
     const char* __msg = dgettext(__domainname, __dfault);
-      setlocale(LC_ALL, __sav);
-      delete [] __sav;
-#endif
-
+    __uselocale(__old);
     return __msg;
-    }
+#else
+    if (char* __sav = strdup(setlocale(LC_ALL, 0)))
+      {
+	setlocale(LC_ALL, __name_messages);
+	const char* __msg = dgettext(__domainname, __dfault);
+	setlocale(LC_ALL, __sav);
+	free(__sav);
+	return __msg;
+      }
+    return __dfault;
+#endif
+  }
 }
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -172,14 +174,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename messages<char>::catalog
     messages<char>::do_open(const basic_string<char>& __s,
 			    const locale& __l) const
-  {
-    typedef codecvt<char, char, mbstate_t> __codecvt_t;
-    const __codecvt_t& __codecvt = use_facet<__codecvt_t>(__l);
+    {
+      typedef codecvt<char, char, mbstate_t> __codecvt_t;
+      const __codecvt_t& __codecvt = use_facet<__codecvt_t>(__l);
 
-    bind_textdomain_codeset(__s.c_str(),
-	__nl_langinfo_l(CODESET, __codecvt._M_c_locale_codecvt));
-    return get_catalogs()._M_add(__s, __l);
-  }
+      bind_textdomain_codeset(__s.c_str(),
+	  __nl_langinfo_l(CODESET, __codecvt._M_c_locale_codecvt));
+      return get_catalogs()._M_add(__s, __l);
+    }
 
   template<>
     void
@@ -199,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (!__cat_info)
 	return __dfault;
 
-      return get_glibc_msg(_M_c_locale_messages,
+      return get_glibc_msg(_M_c_locale_messages, _M_name_messages,
 			   __cat_info->_M_domain.c_str(),
 			   __dfault.c_str());
     }
@@ -209,15 +211,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename messages<wchar_t>::catalog
     messages<wchar_t>::do_open(const basic_string<char>& __s,
 			       const locale& __l) const
-  {
-    typedef codecvt<wchar_t, char, mbstate_t> __codecvt_t;
-    const __codecvt_t& __codecvt = use_facet<__codecvt_t>(__l);
+    {
+      typedef codecvt<wchar_t, char, mbstate_t> __codecvt_t;
+      const __codecvt_t& __codecvt = use_facet<__codecvt_t>(__l);
 
-    bind_textdomain_codeset(__s.c_str(),
-	__nl_langinfo_l(CODESET, __codecvt._M_c_locale_codecvt));
+      bind_textdomain_codeset(__s.c_str(),
+	  __nl_langinfo_l(CODESET, __codecvt._M_c_locale_codecvt));
 
-    return get_catalogs()._M_add(__s, __l);
-  }
+      return get_catalogs()._M_add(__s, __l);
+    }
 
   template<>
     void
@@ -257,15 +259,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// Make sure string passed to dgettext is \0 terminated.
 	*__dfault_next = '\0';
-	__translation
-	  = get_glibc_msg(_M_c_locale_messages,
-			  __cat_info->_M_domain.c_str(), __dfault);
+	__translation = get_glibc_msg(_M_c_locale_messages, _M_name_messages,
+				      __cat_info->_M_domain.c_str(), __dfault);
 
 	// If we end up getting default value back we can simply return original
 	// default value.
 	if (__translation == __dfault)
 	  return __wdfault;
-    }
+      }
 
       __builtin_memset(&__state, 0, sizeof(mbstate_t));
       size_t __size = __builtin_strlen(__translation);

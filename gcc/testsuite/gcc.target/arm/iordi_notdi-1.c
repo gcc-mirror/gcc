@@ -62,4 +62,3 @@ int main ()
 
 /* { dg-final { scan-assembler-times "orn\t" 6 { target arm_thumb2 } } } */
 
-/* { dg-final { cleanup-saved-temps } } */

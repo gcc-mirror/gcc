@@ -12,4 +12,3 @@ void foo (int *srcdata, int *dstdata)
 }
 
 /* { dg-final { scan-tree-dump "Moving statement" "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

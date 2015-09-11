@@ -7,168 +7,97 @@
 
 #define vl 32
 
-int
-main(void)
+#define DO_PRAGMA(x) _Pragma (#x)
+
+#define check_reduction_op(type, op, init, b)	\
+  {						\
+    type res, vres;				\
+    res = (init);				\
+DO_PRAGMA (acc parallel vector_length (vl))\
+DO_PRAGMA (acc loop reduction (op:res))\
+    for (i = 0; i < n; i++)			\
+      res = res op (b);				\
+						\
+    vres = (init);				\
+    for (i = 0; i < n; i++)			\
+      vres = vres op (b);			\
+						\
+    if (res != vres)				\
+      abort ();					\
+  }
+
+static void
+test_reductions_int (void)
 {
   const int n = 1000;
   int i;
-  int vresult, result, array[n];
-  bool lvresult, lresult;
+  int array[n];
 
   for (i = 0; i < n; i++)
     array[i] = i;
 
-  result = 0;
-  vresult = 0;
+  check_reduction_op (int, +, 0, array[i]);
+  check_reduction_op (int, *, 1, array[i]);
+  check_reduction_op (int, &, -1, array[i]);
+  check_reduction_op (int, |, 0, array[i]);
+  check_reduction_op (int, ^, 0, array[i]);
+}
 
-  /* '+' reductions.  */
-#pragma acc parallel vector_length (vl)
-#pragma acc loop reduction (+:result)
+static void
+test_reductions_bool (void)
+{
+  const int n = 1000;
+  int i;
+  int array[n];
+  int cmp_val;
+
   for (i = 0; i < n; i++)
-    result += array[i];
+    array[i] = i;
 
-  /* Verify the reduction.  */
+  cmp_val = 5;
+  check_reduction_op (bool, &&, true, (cmp_val > array[i]));
+  check_reduction_op (bool, ||, false, (cmp_val > array[i]));
+}
+
+#define check_reduction_macro(type, op, init, b)	\
+  {							\
+    type res, vres;					\
+    res = (init);					\
+DO_PRAGMA (acc parallel vector_length (vl))\
+DO_PRAGMA (acc loop reduction (op:res))\
+    for (i = 0; i < n; i++)				\
+      res = op (res, (b));				\
+							\
+    vres = (init);					\
+    for (i = 0; i < n; i++)				\
+      vres = op (vres, (b));				\
+							\
+    if (res != vres)					\
+      abort ();						\
+  }
+
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+
+static void
+test_reductions_minmax (void)
+{
+  const int n = 1000;
+  int i;
+  int array[n];
+
   for (i = 0; i < n; i++)
-    vresult += array[i];
+    array[i] = i;
 
-  if (result != vresult)
-    abort ();
+  check_reduction_macro (int, min, n + 1, array[i]);
+  check_reduction_macro (int, max, -1, array[i]);
+}
 
-  result = 0;
-  vresult = 0;
-
-  /* '*' reductions.  */
-#pragma acc parallel vector_length (vl)
-#pragma acc loop reduction (*:result)
-  for (i = 0; i < n; i++)
-    result *= array[i];
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult *= array[i];
-
-  if (result != vresult)
-    abort ();
-
-//   result = 0;
-//   vresult = 0;
-// 
-//   /* 'max' reductions.  */
-// #pragma acc parallel vector_length (vl)
-// #pragma acc loop reduction (+:result)
-//   for (i = 0; i < n; i++)
-//       result = result > array[i] ? result : array[i];
-// 
-//   /* Verify the reduction.  */
-//   for (i = 0; i < n; i++)
-//       vresult = vresult > array[i] ? vresult : array[i];
-// 
-//   printf("%d != %d\n", result, vresult);
-//   if (result != vresult)
-//     abort ();
-// 
-//   result = 0;
-//   vresult = 0;
-// 
-//   /* 'min' reductions.  */
-// #pragma acc parallel vector_length (vl)
-// #pragma acc loop reduction (+:result)
-//   for (i = 0; i < n; i++)
-//       result = result < array[i] ? result : array[i];
-// 
-//   /* Verify the reduction.  */
-//   for (i = 0; i < n; i++)
-//       vresult = vresult < array[i] ? vresult : array[i];
-// 
-//   printf("%d != %d\n", result, vresult);
-//   if (result != vresult)
-//     abort ();
-
-  result = 0;
-  vresult = 0;
-
-  /* '&' reductions.  */
-#pragma acc parallel vector_length (vl)
-#pragma acc loop reduction (&:result)
-  for (i = 0; i < n; i++)
-    result &= array[i];
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult &= array[i];
-
-  if (result != vresult)
-    abort ();
-
-  result = 0;
-  vresult = 0;
-
-  /* '|' reductions.  */
-#pragma acc parallel vector_length (vl)
-#pragma acc loop reduction (|:result)
-  for (i = 0; i < n; i++)
-    result |= array[i];
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult |= array[i];
-
-  if (result != vresult)
-    abort ();
-
-  result = 0;
-  vresult = 0;
-
-  /* '^' reductions.  */
-#pragma acc parallel vector_length (vl)
-#pragma acc loop reduction (^:result)
-  for (i = 0; i < n; i++)
-    result ^= array[i];
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult ^= array[i];
-
-  if (result != vresult)
-    abort ();
-
-  result = 5;
-  vresult = 5;
-
-  lresult = false;
-  lvresult = false;
-
-  /* '&&' reductions.  */
-#pragma acc parallel vector_length (vl)
-#pragma acc loop reduction (&&:lresult)
-  for (i = 0; i < n; i++)
-    lresult = lresult && (result > array[i]);
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    lvresult = lresult && (result > array[i]);
-
-  if (lresult != lvresult)
-    abort ();
-
-  result = 5;
-  vresult = 5;
-
-  lresult = false;
-  lvresult = false;
-
-  /* '||' reductions.  */
-#pragma acc parallel vector_length (vl)
-#pragma acc loop reduction (||:lresult)
-  for (i = 0; i < n; i++)
-    lresult = lresult || (result > array[i]);
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    lvresult = lresult || (result > array[i]);
-
-  if (lresult != lvresult)
-    abort ();
-
+int
+main (void)
+{
+  test_reductions_int ();
+  test_reductions_bool ();
+  test_reductions_minmax ();
   return 0;
 }

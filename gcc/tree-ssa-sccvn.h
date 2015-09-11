@@ -188,7 +188,7 @@ typedef struct vn_ssa_aux
   unsigned needs_insertion : 1;
 } *vn_ssa_aux_t;
 
-typedef enum { VN_NOWALK, VN_WALK, VN_WALKREWRITE } vn_lookup_kind;
+enum vn_lookup_kind { VN_NOWALK, VN_WALK, VN_WALKREWRITE };
 
 /* Return the value numbering info for an SSA_NAME.  */
 extern vn_ssa_aux_t VN_INFO (tree);

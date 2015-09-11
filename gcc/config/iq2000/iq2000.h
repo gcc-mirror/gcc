@@ -230,7 +230,7 @@ enum reg_class
 
 /* Basic Stack Layout.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 0
 
@@ -541,7 +541,7 @@ while (0)
 
 #define CASE_VECTOR_MODE SImode
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 

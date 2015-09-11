@@ -4,7 +4,7 @@
 struct U {
   U();
 private:
-  U(U const&);			// { dg-error "private" }
+  U(U const&);			// { dg-message "private" }
 };
 
 struct X {

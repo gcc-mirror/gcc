@@ -6,7 +6,7 @@
 namespace {
 
 struct A {
-  virtual ~A();
+  virtual ~A(); // { dg-warning "used but never defined" }
 };
 
 struct B : public A {

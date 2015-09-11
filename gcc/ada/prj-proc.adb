@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,8 @@ package body Prj.Proc is
       Hash       => Prj.Hash,
       Equal      => "=");
    --  Stores the default values of 'Runtime names for the various languages
+
+   package Name_Ids is new Ada.Containers.Vectors (Positive, Name_Id);
 
    procedure Add (To_Exp : in out Name_Id; Str : Name_Id);
    --  Concatenate two strings and returns another string if both
@@ -539,15 +541,15 @@ package body Prj.Proc is
       The_Term := First_Term;
       while Present (The_Term) loop
          The_Current_Term := Current_Term (The_Term, From_Project_Node_Tree);
-         Current_Term_Kind :=
-           Kind_Of (The_Current_Term, From_Project_Node_Tree);
 
-         case Current_Term_Kind is
+         if The_Current_Term /= Empty_Node then
+            Current_Term_Kind :=
+              Kind_Of (The_Current_Term, From_Project_Node_Tree);
+
+            case Current_Term_Kind is
 
             when N_Literal_String =>
-
                case Kind is
-
                   when Undefined =>
 
                      --  Should never happen
@@ -578,7 +580,7 @@ package body Prj.Proc is
                      else
                         Shared.String_Elements.Table
                           (Last).Next := String_Element_Table.Last
-                                       (Shared.String_Elements);
+                                           (Shared.String_Elements);
                      end if;
 
                      Last := String_Element_Table.Last
@@ -586,8 +588,8 @@ package body Prj.Proc is
 
                      Shared.String_Elements.Table (Last) :=
                        (Value         => String_Value_Of
-                                           (The_Current_Term,
-                                            From_Project_Node_Tree),
+                          (The_Current_Term,
+                           From_Project_Node_Tree),
                         Index         => Source_Index_Of
                                            (The_Current_Term,
                                             From_Project_Node_Tree),
@@ -600,7 +602,6 @@ package body Prj.Proc is
                end case;
 
             when N_Literal_String_List =>
-
                declare
                   String_Node : Project_Node_Id :=
                                   First_Expression_In_List
@@ -695,7 +696,6 @@ package body Prj.Proc is
                end;
 
             when N_Variable_Reference | N_Attribute_Reference =>
-
                declare
                   The_Project     : Project_Id  := Project;
                   The_Package     : Package_Id  := Pkg;
@@ -743,7 +743,7 @@ package body Prj.Proc is
                      The_Package := The_Project.Decl.Packages;
                      while The_Package /= No_Package
                        and then Shared.Packages.Table (The_Package).Name /=
-                          The_Name
+                                The_Name
                      loop
                         The_Package :=
                           Shared.Packages.Table (The_Package).Next;
@@ -753,7 +753,7 @@ package body Prj.Proc is
                        (The_Package /= No_Package, "package not found.");
 
                   elsif Kind_Of (The_Current_Term, From_Project_Node_Tree) =
-                                                        N_Attribute_Reference
+                        N_Attribute_Reference
                   then
                      The_Package := No_Package;
                   end if;
@@ -886,8 +886,8 @@ package body Prj.Proc is
 
                         else
                            if Expression_Kind_Of
-                                (The_Current_Term, From_Project_Node_Tree) =
-                                                                        List
+                               (The_Current_Term, From_Project_Node_Tree) =
+                                                                       List
                            then
                               The_Variable :=
                                 (Project  => Project,
@@ -1047,8 +1047,8 @@ package body Prj.Proc is
 
                               else
                                  Shared.String_Elements.Table (Last).Next :=
-                                     String_Element_Table.Last
-                                       (Shared.String_Elements);
+                                   String_Element_Table.Last
+                                     (Shared.String_Elements);
                               end if;
 
                               Last :=
@@ -1059,8 +1059,8 @@ package body Prj.Proc is
                                 (Value         => The_Variable.Value,
                                  Display_Value => No_Name,
                                  Location      => Location_Of
-                                                    (The_Current_Term,
-                                                     From_Project_Node_Tree),
+                                                   (The_Current_Term,
+                                                    From_Project_Node_Tree),
                                  Flag          => False,
                                  Next          => Nil_String,
                                  Index         => 0);
@@ -1108,7 +1108,7 @@ package body Prj.Proc is
                                        Index        => 0);
 
                                     The_List := Shared.String_Elements.Table
-                                        (The_List).Next;
+                                                              (The_List).Next;
                                  end loop;
                               end;
                         end case;
@@ -1334,10 +1334,10 @@ package body Prj.Proc is
                                     String_Element_Table.Increment_Last
                                       (Shared.String_Elements);
                                     Shared.String_Elements.Table (Last).Next :=
-                                        String_Element_Table.Last
-                                          (Shared.String_Elements);
+                                         String_Element_Table.Last
+                                           (Shared.String_Elements);
                                     Last := String_Element_Table.Last
-                                        (Shared.String_Elements);
+                                              (Shared.String_Elements);
                                  end if;
                               end loop;
 
@@ -1366,7 +1366,8 @@ package body Prj.Proc is
                   "illegal node kind in an expression");
                raise Program_Error;
 
-         end case;
+            end case;
+         end if;
 
          The_Term := Next_Term (The_Term, From_Project_Node_Tree);
       end loop;
@@ -2194,8 +2195,6 @@ package body Prj.Proc is
          if Is_Attribute and then Name = Snames.Name_Project_Path then
             if In_Tree.Is_Root_Tree then
                declare
-                  package Name_Ids is
-                    new Ada.Containers.Vectors (Positive, Name_Id);
                   Val  : String_List_Id := New_Value.Values;
                   List : Name_Ids.Vector;
                begin
@@ -2364,13 +2363,17 @@ package body Prj.Proc is
             end if;
 
             if Var_Id = No_Variable then
+               if Node_Tree.Incomplete_With then
+                  return;
 
                --  Should never happen, because this has already been checked
                --  during parsing.
 
-               Write_Line
-                 ("variable """ & Get_Name_String (Name) & """ not found");
-               raise Program_Error;
+               else
+                  Write_Line
+                    ("variable """ & Get_Name_String (Name) & """ not found");
+                  raise Program_Error;
+               end if;
             end if;
 
             --  Get the case variable

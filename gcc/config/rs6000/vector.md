@@ -36,13 +36,14 @@
 (define_mode_iterator VEC_K [V16QI V8HI V4SI V4SF])
 
 ;; Vector logical modes
-(define_mode_iterator VEC_L [V16QI V8HI V4SI V2DI V4SF V2DF V1TI TI])
+(define_mode_iterator VEC_L [V16QI V8HI V4SI V2DI V4SF V2DF V1TI TI KF TF])
 
-;; Vector modes for moves.  Don't do TImode here.
-(define_mode_iterator VEC_M [V16QI V8HI V4SI V2DI V4SF V2DF V1TI])
+;; Vector modes for moves.  Don't do TImode or TFmode here, since their
+;; moves are handled elsewhere.
+(define_mode_iterator VEC_M [V16QI V8HI V4SI V2DI V4SF V2DF V1TI KF])
 
 ;; Vector modes for types that don't need a realignment under VSX
-(define_mode_iterator VEC_N [V4SI V4SF V2DI V2DF V1TI])
+(define_mode_iterator VEC_N [V4SI V4SF V2DI V2DF V1TI KF TF])
 
 ;; Vector comparison modes
 (define_mode_iterator VEC_C [V16QI V8HI V4SI V2DI V4SF V2DF])
@@ -95,12 +96,19 @@
 {
   if (can_create_pseudo_p ())
     {
-      if (CONSTANT_P (operands[1])
-	  && !easy_vector_constant (operands[1], <MODE>mode))
-	operands[1] = force_const_mem (<MODE>mode, operands[1]);
+      if (CONSTANT_P (operands[1]))
+	{
+	  if (FLOAT128_VECTOR_P (<MODE>mode))
+	    {
+	      if (!easy_fp_constant (operands[1], <MODE>mode))
+		operands[1] = force_const_mem (<MODE>mode, operands[1]);
+	    }
+	  else if (!easy_vector_constant (operands[1], <MODE>mode))
+	    operands[1] = force_const_mem (<MODE>mode, operands[1]);
+	}
 
-      else if (!vlogical_operand (operands[0], <MODE>mode)
-	       && !vlogical_operand (operands[1], <MODE>mode))
+      if (!vlogical_operand (operands[0], <MODE>mode)
+	  && !vlogical_operand (operands[1], <MODE>mode))
 	operands[1] = force_reg (<MODE>mode, operands[1]);
     }
   if (!BYTES_BIG_ENDIAN
@@ -446,11 +454,24 @@
   "")
 
 (define_expand "vector_ge<mode>"
-  [(set (match_operand:VEC_C 0 "vlogical_operand" "")
-	(ge:VEC_C (match_operand:VEC_C 1 "vlogical_operand" "")
-		  (match_operand:VEC_C 2 "vlogical_operand" "")))]
+  [(set (match_operand:VEC_F 0 "vlogical_operand" "")
+	(ge:VEC_F (match_operand:VEC_F 1 "vlogical_operand" "")
+		  (match_operand:VEC_F 2 "vlogical_operand" "")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
+
+; >= for integer vectors: swap operands and apply not-greater-than
+(define_expand "vector_nlt<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gt:VEC_I (match_operand:VEC_I 2 "vlogical_operand" "")
+		  (match_operand:VEC_I 1 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
 
 (define_expand "vector_gtu<mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
@@ -459,12 +480,50 @@
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
+; >= for integer vectors: swap operands and apply not-greater-than
+(define_expand "vector_nltu<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gtu:VEC_I (match_operand:VEC_I 2 "vlogical_operand" "")
+	 	   (match_operand:VEC_I 1 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
+
 (define_expand "vector_geu<mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(geu:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 		   (match_operand:VEC_I 2 "vint_operand" "")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
+
+; <= for integer vectors: apply not-greater-than
+(define_expand "vector_ngt<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gt:VEC_I (match_operand:VEC_I 1 "vlogical_operand" "")
+		  (match_operand:VEC_I 2 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
+
+(define_expand "vector_ngtu<mode>"
+  [(set (match_operand:VEC_I 3 "vlogical_operand" "")
+	(gtu:VEC_I (match_operand:VEC_I 1 "vlogical_operand" "")
+	 	   (match_operand:VEC_I 2 "vlogical_operand" "")))
+   (set (match_operand:VEC_I 0 "vlogical_operand" "")
+        (not:VEC_I (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  operands[3] = gen_reg_rtx_and_attrs (operands[0]);
+}")
 
 (define_insn_and_split "*vector_uneq<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
@@ -918,6 +977,8 @@
 ;; General shift amounts can be supported using vsro + vsr. We're
 ;; not expecting to see these yet (the vectorizer currently
 ;; generates only shifts by a whole number of vector elements).
+;; Note that the vec_shr operation is actually defined as 
+;; 'shift toward element 0' so is a shr for LE and shl for BE.
 (define_expand "vec_shr_<mode>"
   [(match_operand:VEC_L 0 "vlogical_operand" "")
    (match_operand:VEC_L 1 "vlogical_operand" "")
@@ -928,6 +989,7 @@
   rtx bitshift = operands[2];
   rtx shift;
   rtx insn;
+  rtx zero_reg, op1, op2;
   HOST_WIDE_INT bitshift_val;
   HOST_WIDE_INT byteshift_val;
 
@@ -937,19 +999,29 @@
   if (bitshift_val & 0x7)
     FAIL;
   byteshift_val = (bitshift_val >> 3);
+  zero_reg = gen_reg_rtx (<MODE>mode);
+  emit_move_insn (zero_reg, CONST0_RTX (<MODE>mode));
   if (!BYTES_BIG_ENDIAN)
-    byteshift_val = 16 - byteshift_val;
+    {
+      byteshift_val = 16 - byteshift_val;
+      op1 = zero_reg;
+      op2 = operands[1];
+    }
+  else
+    {
+      op1 = operands[1];
+      op2 = zero_reg;
+    }
+
   if (TARGET_VSX && (byteshift_val & 0x3) == 0)
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
-      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], operands[1],
-				     shift);
+      insn = gen_vsx_xxsldwi_<mode> (operands[0], op1, op2, shift);
     }
   else
     {
       shift = gen_rtx_CONST_INT (QImode, byteshift_val);
-      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
-					shift);
+      insn = gen_altivec_vsldoi_<mode> (operands[0], op1, op2, shift);
     }
 
   emit_insn (insn);
@@ -1049,7 +1121,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_PLUS (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);
@@ -1069,7 +1141,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_MINUS (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);
@@ -1089,7 +1161,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_MULT (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);
@@ -1109,7 +1181,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_DIV (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);

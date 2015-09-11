@@ -16,6 +16,7 @@ VARIANT (int32, , 2, _s32, STRUCT)	\
 VARIANT (int64, , 1, _s64, STRUCT)	\
 VARIANT (poly8, , 8, _p8, STRUCT)	\
 VARIANT (poly16, , 4, _p16, STRUCT)	\
+VARIANT (float16, , 4, _f16, STRUCT)	\
 VARIANT (float32, , 2, _f32, STRUCT)	\
 VARIANT (float64, , 1, _f64, STRUCT)	\
 VARIANT (uint8, q, 16, _u8, STRUCT)	\
@@ -28,6 +29,7 @@ VARIANT (int32, q, 4, _s32, STRUCT)	\
 VARIANT (int64, q, 2, _s64, STRUCT)	\
 VARIANT (poly8, q, 16, _p8, STRUCT)	\
 VARIANT (poly16, q, 8, _p16, STRUCT)	\
+VARIANT (float16, q, 8, _f16, STRUCT)	\
 VARIANT (float32, q, 4, _f32, STRUCT)	\
 VARIANT (float64, q, 2, _f64, STRUCT)
 
@@ -74,6 +76,7 @@ main (int argc, char **argv)
   int64_t *int64_data = (int64_t *)uint64_data;
   poly8_t poly8_data[4] = { 0, 7, 13, 18, };
   poly16_t poly16_data[4] = { 11111, 2222, 333, 44 };
+  float16_t float16_data[4] = { 1.0625, 3.125, 0.03125, 7.75 };
   float32_t float32_data[4] = { 3.14159, 2.718, 1.414, 100.0 };
   float64_t float64_data[4] = { 1.010010001, 12345.6789, -9876.54321, 1.618 };
 

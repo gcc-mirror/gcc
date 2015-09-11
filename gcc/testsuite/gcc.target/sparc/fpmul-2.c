@@ -45,4 +45,3 @@ vec16 foo3 () {
 }
 /* { dg-final { scan-assembler-not "fmul8x16al\t%" } } */
 /* { dg-final { scan-tree-dump "{ 2, 4, 6, 8 }" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

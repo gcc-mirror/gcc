@@ -215,7 +215,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       // Concept requirements.
       typedef typename _Alloc::value_type                _Alloc_value_type;
+#if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+#endif
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
       
       typedef _Vector_base<_Tp, _Alloc>			 _Base;
@@ -450,8 +452,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         constexpr bool __move_storage =
           _Alloc_traits::_S_propagate_on_move_assign()
           || _Alloc_traits::_S_always_equal();
-        _M_move_assign(std::move(__x),
-                       integral_constant<bool, __move_storage>());
+        _M_move_assign(std::move(__x), __bool_constant<__move_storage>());
 	return *this;
       }
 
@@ -1191,10 +1192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  std::swap(v1,v2) will feed to this function.
        */
       void
-      swap(vector& __x)
-#if __cplusplus >= 201103L
-      noexcept(_Alloc_traits::_S_nothrow_swap())
-#endif
+      swap(vector& __x) _GLIBCXX_NOEXCEPT
       {
 	this->_M_impl._M_swap_data(__x._M_impl);
 	_Alloc_traits::_S_on_swap(_M_get_Tp_allocator(),
@@ -1557,6 +1555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     inline void
     swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

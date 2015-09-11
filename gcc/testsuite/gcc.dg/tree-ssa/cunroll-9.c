@@ -21,4 +21,3 @@ t (int n)
   return sum;
 }
 /* { dg-final { scan-tree-dump-times "Removed pointless exit:" 1 "cunrolli" } } */
-/* { dg-final { cleanup-tree-dump "cunrolli" } } */

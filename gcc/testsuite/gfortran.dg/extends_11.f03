@@ -38,4 +38,3 @@
 end
 
 ! { dg-final { scan-tree-dump-times " +recruit\\.service\\.education\\.person\\.ss =" 8 "original"} }
-! { dg-final { cleanup-tree-dump "original" } }

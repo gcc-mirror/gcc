@@ -69,9 +69,9 @@ template < class Tr, class Derived, class Element, class Previous, class Triangu
   Mesher_level(Previous_level& previous)
     : previous_level(previous)
   { }
-  Vertex_handle insert(Point p, Zone& z) ;
-  Zone conflicts_zone(const Point& p, Element e) ;
-  Element get_next_element() ;
+  Vertex_handle insert(Point p, Zone& z) ; // { dg-warning "used but never defined" }
+  Zone conflicts_zone(const Point& p, Element e) ; // { dg-warning "used but never defined" }
+  Element get_next_element() ; // { dg-warning "used but never defined" }
   template <class Mesh_visitor> void before_insertion(Element& e, const Point& p, Zone& zone, Mesh_visitor visitor) {
     visitor.before_insertion(e, p, zone);
   }
@@ -171,7 +171,7 @@ template <typename Tr> struct Triangulation_mesher_level_traits_3
       tr.is_infinite(f) ;
       new_facet<false>(f);
     }
-    template <bool remove_from_complex_if_not_in_restricted_Delaunay> void new_facet (const Facet& f) ;
+    template <bool remove_from_complex_if_not_in_restricted_Delaunay> void new_facet (const Facet& f) ; // { dg-warning "used but never defined" }
     void after_insertion_handle_opposite_facet (const Facet& f) {
       after_insertion_handle_incident_facet (f);
     }

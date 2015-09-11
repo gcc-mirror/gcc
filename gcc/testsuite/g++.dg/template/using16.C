@@ -11,7 +11,7 @@ struct B
 {
     class type
     {
-	type(); // { dg-error "private" }
+	type(); // { dg-message "private" }
     };
 };
 

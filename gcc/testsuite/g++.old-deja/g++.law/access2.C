@@ -10,7 +10,7 @@ template <class T> class Foo
 {
 private:
     friend class Bar; // To avoid warning.
-      Foo(const T &v) {}; // { dg-error "" } private
+      Foo(const T &v) {}; // { dg-message "" } private
 };
 
 

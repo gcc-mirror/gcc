@@ -28,8 +28,8 @@ struct container2
 struct container3
 {
 private:
-    int *begin(); // { dg-error "is private" }
-    int *end(); // { dg-error "is private" }
+    int *begin(); // { dg-message "private" }
+    int *end(); // { dg-message "private" }
 };
 
 struct container4
@@ -70,7 +70,7 @@ struct container8
 struct private_callable
 {
 private:
-    int *operator()(); // { dg-error "is private" }
+    int *operator()(); // { dg-message "private" }
 };
 
 struct container9

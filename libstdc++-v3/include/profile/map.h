@@ -405,9 +405,7 @@ namespace __profile
 
       void
       swap(map& __x)
-#if __cplusplus >= 201103L
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
-#endif
+      _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -429,6 +427,18 @@ namespace __profile
 	return iterator(_Base::find(__x), this);
       }
 
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	iterator
+	find(const _Kt& __x)
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  return { _Base::find(__x), this };
+	}
+#endif
+
       const_iterator
       find(const key_type& __x) const
       {
@@ -436,12 +446,36 @@ namespace __profile
 	return const_iterator(_Base::find(__x), this);
       }
 
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	find(const _Kt& __x) const
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  return { _Base::find(__x), this };
+	}
+#endif
+
       size_type
       count(const key_type& __x) const
       {
 	__profcxx_map2umap_find(this->_M_map2umap_info, this->size());
 	return _Base::count(__x);
       }
+
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	size_type
+	count(const _Kt& __x) const
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  return _Base::count(__x);
+	}
+#endif
 
       iterator
       lower_bound(const key_type& __x)
@@ -451,6 +485,19 @@ namespace __profile
 	return iterator(_Base::lower_bound(__x), this);
       }
 
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	iterator
+	lower_bound(const _Kt& __x)
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  __profcxx_map2umap_invalidate(this->_M_map2umap_info);
+	  return { _Base::lower_bound(__x), this };
+	}
+#endif
+
       const_iterator
       lower_bound(const key_type& __x) const
       {
@@ -458,6 +505,19 @@ namespace __profile
 	__profcxx_map2umap_invalidate(this->_M_map2umap_info);
 	return const_iterator(_Base::lower_bound(__x), this);
       }
+
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	lower_bound(const _Kt& __x) const
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  __profcxx_map2umap_invalidate(this->_M_map2umap_info);
+	  return { _Base::lower_bound(__x), this };
+	}
+#endif
 
       iterator
       upper_bound(const key_type& __x)
@@ -467,6 +527,19 @@ namespace __profile
 	return iterator(_Base::upper_bound(__x), this);
       }
 
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	iterator
+	upper_bound(const _Kt& __x)
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  __profcxx_map2umap_invalidate(this->_M_map2umap_info);
+	  return { _Base::upper_bound(__x), this };
+	}
+#endif
+
       const_iterator
       upper_bound(const key_type& __x) const
       {
@@ -474,6 +547,19 @@ namespace __profile
 	__profcxx_map2umap_invalidate(this->_M_map2umap_info);
 	return const_iterator(_Base::upper_bound(__x), this);
       }
+
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	upper_bound(const _Kt& __x) const
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  __profcxx_map2umap_invalidate(this->_M_map2umap_info);
+	  return { _Base::upper_bound(__x), this };
+	}
+#endif
 
       std::pair<iterator,iterator>
       equal_range(const key_type& __x)
@@ -485,6 +571,19 @@ namespace __profile
 			      iterator(__base_ret.second, this));
       }
 
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	std::pair<iterator, iterator>
+	equal_range(const _Kt& __x)
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  auto __res = _Base::equal_range(__x);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+#endif
+
       std::pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       {
@@ -494,6 +593,19 @@ namespace __profile
 	return std::make_pair(const_iterator(__base_ret.first, this),
 			      const_iterator(__base_ret.second, this));
       }
+
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	std::pair<const_iterator, const_iterator>
+	equal_range(const _Kt& __x) const
+	{
+	  __profcxx_map2umap_find(this->_M_map2umap_info, this->size());
+	  auto __res = _Base::equal_range(__x);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+#endif
 
       _Base&
       _M_base() _GLIBCXX_NOEXCEPT	{ return *this; }
@@ -584,6 +696,7 @@ namespace __profile
     inline void
     swap(map<_Key, _Tp, _Compare, _Allocator>& __lhs,
 	 map<_Key, _Tp, _Compare, _Allocator>& __rhs)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
 } // namespace __profile

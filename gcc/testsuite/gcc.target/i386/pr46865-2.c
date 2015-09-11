@@ -29,4 +29,3 @@ bar (void)
 }
 
 /* { dg-final { scan-assembler-times "asmnop" 2 } } */
-/* { dg-final { cleanup-saved-temps } } */

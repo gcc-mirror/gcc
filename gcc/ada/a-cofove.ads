@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -61,7 +61,7 @@ is
      Count_Type range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
 
    type Vector (Capacity : Capacity_Range) is limited private with
-     Default_Initial_Condition;
+     Default_Initial_Condition => Is_Empty (Vector);
    --  In the bounded case, Capacity is the capacity of the container, which
    --  never changes. In the unbounded case, Capacity is the initial capacity
    --  of the container, and operations such as Reserve_Capacity and Append can

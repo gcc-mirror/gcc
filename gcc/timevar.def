@@ -31,11 +31,17 @@
 
 /* The total execution time.  */
 DEFTIMEVAR (TV_TOTAL                 , "total time")
-/* The compiler phases.  These must be mutually exclusive.
-   Ideally, they would sum to near the total time.  */
+/* The compiler phases.
+
+   These must be mutually exclusive, and the NAME field must begin
+   with "phase".
+
+   Also, their sum must be within a millionth of the total time (see
+   validate_phases).  */
 DEFTIMEVAR (TV_PHASE_SETUP           , "phase setup")
 DEFTIMEVAR (TV_PHASE_PARSING         , "phase parsing")
 DEFTIMEVAR (TV_PHASE_DEFERRED        , "phase lang. deferred")
+DEFTIMEVAR (TV_PHASE_LATE_PARSING_CLEANUPS, "phase late parsing cleanups")
 DEFTIMEVAR (TV_PHASE_OPT_GEN         , "phase opt and generate")
 DEFTIMEVAR (TV_PHASE_DBGINFO         , "phase debug info")
 DEFTIMEVAR (TV_PHASE_CHECK_DBGINFO   , "phase check & debug info")
@@ -268,6 +274,8 @@ DEFTIMEVAR (TV_PLUGIN_RUN            , "plugin execution")
 DEFTIMEVAR (TV_GIMPLE_SLSR           , "straight-line strength reduction")
 DEFTIMEVAR (TV_VTABLE_VERIFICATION   , "vtable verification")
 DEFTIMEVAR (TV_TREE_UBSAN            , "tree ubsan")
+DEFTIMEVAR (TV_INITIALIZE_RTL        , "initialize rtl")
+DEFTIMEVAR (TV_GIMPLE_LADDRESS       , "address lowering")
 
 /* Everything else in rest_of_compilation not included above.  */
 DEFTIMEVAR (TV_EARLY_LOCAL	     , "early local passes")
@@ -288,3 +296,5 @@ DEFTIMEVAR (TV_JIT_REPLAY	     , "replay of JIT client activity")
 DEFTIMEVAR (TV_ASSEMBLE	     , "assemble JIT code")
 DEFTIMEVAR (TV_LINK		     , "link JIT code")
 DEFTIMEVAR (TV_LOAD		     , "load JIT result")
+DEFTIMEVAR (TV_JIT_ACQUIRING_MUTEX   , "acquiring JIT mutex")
+DEFTIMEVAR (TV_JIT_CLIENT_CODE   , "JIT client code")

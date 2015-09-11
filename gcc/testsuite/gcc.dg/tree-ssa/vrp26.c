@@ -9,8 +9,7 @@ foo(int a)
 }
 
 /* VRP should optimize this to a trivial "return 1".   */
-/* { dg-final { scan-tree-dump-times "return 1" 1 "vrp1" } } * /
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "return 1" 1 "vrp1" } } */
 
 
 

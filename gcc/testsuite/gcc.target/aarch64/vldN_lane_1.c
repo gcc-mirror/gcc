@@ -16,6 +16,7 @@ VARIANT (int32, , 2, _s32, 0, STRUCT)	\
 VARIANT (int64, , 1, _s64, 0, STRUCT)	\
 VARIANT (poly8, , 8, _p8, 7, STRUCT)	\
 VARIANT (poly16, , 4, _p16, 1, STRUCT)	\
+VARIANT (float16, , 4, _f16, 3, STRUCT)	\
 VARIANT (float32, , 2, _f32, 1, STRUCT)	\
 VARIANT (float64, , 1, _f64, 0, STRUCT)	\
 VARIANT (uint8, q, 16, _u8, 14, STRUCT)	\
@@ -28,6 +29,7 @@ VARIANT (int32, q, 4, _s32, 2, STRUCT)	\
 VARIANT (int64, q, 2, _s64, 1, STRUCT)	\
 VARIANT (poly8, q, 16, _p8, 12, STRUCT)	\
 VARIANT (poly16, q, 8, _p16, 5, STRUCT)	\
+VARIANT (float16, q, 8, _f16, 7, STRUCT)\
 VARIANT (float32, q, 4, _f32, 1, STRUCT)\
 VARIANT (float64, q, 2, _f64, 0, STRUCT)
 
@@ -54,11 +56,11 @@ test_vld##STRUCT##Q##_lane##SUFFIX (const BASE##_t *data,		\
 }
 
 
-/* Tests of vld2_dup and vld2q_dup.  */
+/* Tests of vld2_lane and vld2q_lane.  */
 VARIANTS (TESTMETH, 2)
-/* Tests of vld3_dup and vld3q_dup.  */
+/* Tests of vld3_lane and vld3q_lane.  */
 VARIANTS (TESTMETH, 3)
-/* Tests of vld4_dup and vld4q_dup.  */
+/* Tests of vld4_lane and vld4q_lane.  */
 VARIANTS (TESTMETH, 4)
 
 #define CHECK(BASE, Q, ELTS, SUFFIX, LANE, STRUCT)			\
@@ -71,7 +73,7 @@ main (int argc, char **argv)
 {
   /* Original data for all vector formats.  */
   uint64_t orig_data[8] = {0x1234567890abcdefULL, 0x13579bdf02468aceULL,
-			   0x012389ab4567cdefULL, 0xfeeddadacafe0431ULL,
+			   0x012389ab4567cdefULL, 0xdeeddadacafe0431ULL,
 			   0x1032547698badcfeULL, 0xbadbadbadbad0badULL,
 			   0x0102030405060708ULL, 0x0f0e0d0c0b0a0908ULL};
 
@@ -87,6 +89,7 @@ main (int argc, char **argv)
   int64_t *int64_data = (int64_t *)uint64_data;
   poly8_t poly8_data[4] = { 0, 7, 13, 18, };
   poly16_t poly16_data[4] = { 11111, 2222, 333, 44 };
+  float16_t float16_data[4] = { 0.8125, 7.5, 19, 0.046875 };
   float32_t float32_data[4] = { 3.14159, 2.718, 1.414, 100.0 };
   float64_t float64_data[4] = { 1.010010001, 12345.6789, -9876.54321, 1.618 };
 

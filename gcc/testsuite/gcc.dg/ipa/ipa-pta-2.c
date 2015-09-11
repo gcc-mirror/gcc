@@ -22,4 +22,3 @@ int main()
    are properly adjusted.  */
 
 /* { dg-final { scan-ipa-dump "foo.arg0 = { ESCAPED NONLOCAL }" "pta" } } */
-/* { dg-final { cleanup-ipa-dump "pta" } } */

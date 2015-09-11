@@ -48,4 +48,3 @@ int longest_match(IPos cur_match)
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 0" 1 "graphite"} } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

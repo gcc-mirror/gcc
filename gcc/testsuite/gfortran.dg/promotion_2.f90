@@ -13,4 +13,3 @@ end program test
 
 ! { dg-final { scan-tree-dump-times "sgemm_" 0 "original" } }
 ! { dg-final { scan-tree-dump-times "dgemm_" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

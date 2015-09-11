@@ -30,13 +30,13 @@ void
 foo (int i, int *ip, double d)
 {
   tformatprintf ("%d", i);
-  tformatprintf ("%"); /* { dg-warning "18:format" "attribute format printf" } */
+  tformatprintf ("%"); /* { dg-warning "19:format" "attribute format printf" } */
   tformat__printf__ ("%d", i);
   tformat__printf__ ("%"); /* { dg-warning "format" "attribute format __printf__" } */
   tformatscanf ("%d", ip);
   tformatscanf ("%"); /* { dg-warning "format" "attribute format scanf" } */
   tformat__scanf__ ("%d", ip);
-  tformat__scanf__ ("%"); /* { dg-warning "format" "attribute format __scanf__" } */
+  tformat__scanf__ ("%"); /* { dg-warning "22:format" "attribute format __scanf__" } */
   tformatstrftime ("%a");
   tformatstrftime ("%"); /* { dg-warning "format" "attribute format strftime" } */
   tformat__strftime__ ("%a");

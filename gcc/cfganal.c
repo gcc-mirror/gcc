@@ -22,21 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
-#include "bitmap.h"
-#include "sbitmap.h"
 #include "timevar.h"
 
 /* Store the data structures necessary for depth-first search.  */
@@ -936,7 +925,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 	pre_order[pre_order_num] = ENTRY_BLOCK;
       pre_order_num++;
       if (rev_post_order)
-	rev_post_order[rev_post_order_num--] = ENTRY_BLOCK;
+	rev_post_order[rev_post_order_num--] = EXIT_BLOCK;
     }
   else
     rev_post_order_num -= NUM_FIXED_BLOCKS;
@@ -1007,7 +996,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 	pre_order[pre_order_num] = EXIT_BLOCK;
       pre_order_num++;
       if (rev_post_order)
-	rev_post_order[rev_post_order_num--] = EXIT_BLOCK;
+	rev_post_order[rev_post_order_num--] = ENTRY_BLOCK;
     }
 
   return pre_order_num;

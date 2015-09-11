@@ -37,4 +37,3 @@ end program
 !
 ! { dg-final { scan-tree-dump-times "foo *\\\(\\\)" 5 "original" } }
 ! { dg-final { scan-tree-dump-times "bar *\\\(\\\)" 5 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

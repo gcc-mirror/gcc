@@ -6,6 +6,9 @@ int test ()
   int i;
 
   for (i = 0; i < N; i++)
+    a[i] += 32;
+
+  for (i = 0; i < N; i++)
     {
       a[i] = i + 12;
 
@@ -28,4 +31,3 @@ int test ()
   return a[20];
 }
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

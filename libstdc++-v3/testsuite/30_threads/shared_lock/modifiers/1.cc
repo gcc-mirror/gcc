@@ -1,7 +1,7 @@
-// { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* powerpc-ibm-aix* } }
+// { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
 // { dg-options " -std=gnu++14 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* powerpc-ibm-aix* } }
 // { dg-options " -std=gnu++14 -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++14 " { target *-*-cygwin *-*-darwin* } }
+// { dg-options " -std=gnu++14 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
@@ -55,7 +55,7 @@ int main()
       VERIFY( !(bool)l1 );
       VERIFY( (bool)l2 );
     }
-  catch (const std::system_error& e)
+  catch (const std::system_error&)
     {
       VERIFY( false );
     }

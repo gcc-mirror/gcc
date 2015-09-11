@@ -17,4 +17,3 @@ unsigned int foo(volatile int *mem)
 }
 
 /* { dg-final { scan-tree-dump-times "foo_read" 5 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

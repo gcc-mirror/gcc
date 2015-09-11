@@ -1,0 +1,57 @@
+2015-07-16  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* configure.ac: Remove link_mpx.
+	* libmpx.spec.in: Likewise.
+	* configure: Regenerate.
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* mpxrt/Makefile.in: Likewise.
+	* mpxwrap/Makefile.in: Likewise.
+
+2015-04-27  Steven Noonan <steven@uplinklabs.net>
+
+	* configure.ac: Drop AC_PROG_CXX and friends, since libmpx has no C++
+	sources.
+	* configure: Regenerate.
+
+2015-04-09  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* mpxwrap/mpx_wrappers.c (__mpx_wrapper_memmove): Add
+	zero length check.
+
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR driver/65444
+	* configure.ac: Add check for '-z bndplt' support
+	by linker. Add link_mpx output variable.
+	* libmpx.spec.in (link_mpx): New.
+	* configure: Regenerate.
+
+2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR other/65384
+	* configure.ac: Fix x32 test.
+	* configure: Regenerate.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* Makefile.am (SUBDIRS): Add mpxwrap when used
+	AS supports MPX.
+	(MAKEOVERRIDES): New.
+	* Makefile.in: Regenerate.
+	* configure.ac: Check AS supports MPX.  Add
+	mpxintr/Makefile to config files.
+	* configure: Regenerate.
+	* mpxwrap/Makefile.am: New.
+	* mpxwrap/Makefile.in: New.
+	* mpxwrap/libtool-version: New.
+	* mpxwrap/mpx_wrappers.cc: New.
+	* mpxwrap/libmpxwrappers.map: New.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Initial commit.

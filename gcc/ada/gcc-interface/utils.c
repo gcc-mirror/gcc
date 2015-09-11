@@ -27,16 +27,10 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "inchash.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -53,12 +47,8 @@
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "timevar.h"
@@ -233,9 +223,6 @@ static GTY(()) vec<tree, va_gc> *global_decls;
 /* An array of builtin function declarations.  */
 static GTY(()) vec<tree, va_gc> *builtin_decls;
 
-/* An array of global renaming pointers.  */
-static GTY(()) vec<tree, va_gc> *global_renaming_pointers;
-
 /* A chain of unused BLOCK nodes. */
 static GTY((deletable)) tree free_block_chain;
 
@@ -247,11 +234,11 @@ struct GTY((for_user)) pad_type_hash {
   tree type;
 };
 
-struct pad_type_hasher : ggc_cache_hasher<pad_type_hash *>
+struct pad_type_hasher : ggc_cache_ptr_hash<pad_type_hash>
 {
   static inline hashval_t hash (pad_type_hash *t) { return t->hash; }
   static bool equal (pad_type_hash *a, pad_type_hash *b);
-  static void handle_cache_entry (pad_type_hash *&);
+  static int keep_cache_entry (pad_type_hash *&);
 };
 
 static GTY ((cache))
@@ -322,9 +309,6 @@ destroy_gnat_utils (void)
   /* Destroy the hash table of padded types.  */
   pad_type_hash_table->empty ();
   pad_type_hash_table = NULL;
-
-  /* Invalidate the global renaming pointers.   */
-  invalidate_global_renaming_pointers ();
 }
 
 /* GNAT_ENTITY is a GNAT tree node for an entity.  Associate GNU_DECL, a GCC
@@ -678,7 +662,10 @@ static tree
 get_global_context (void)
 {
   if (!global_context)
-    global_context = build_translation_unit_decl (NULL_TREE);
+    {
+      global_context = build_translation_unit_decl (NULL_TREE);
+      debug_hooks->register_main_translation_unit (global_context);
+    }
   return global_context;
 }
 
@@ -773,68 +760,80 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	}
     }
 
-  /* For the declaration of a type, set its name if it either is not already
+  /* For the declaration of a type, set its name either if it isn't already
      set or if the previous type name was not derived from a source name.
      We'd rather have the type named with a real name and all the pointer
-     types to the same object have the same POINTER_TYPE node.  Code in the
-     equivalent function of c-decl.c makes a copy of the type node here, but
-     that may cause us trouble with incomplete types.  We make an exception
-     for fat pointer types because the compiler automatically builds them
-     for unconstrained array types and the debugger uses them to represent
-     both these and pointers to these.  */
+     types to the same object have the same node, except when the names are
+     both derived from source names.  */
   if (TREE_CODE (decl) == TYPE_DECL && DECL_NAME (decl))
     {
       tree t = TREE_TYPE (decl);
 
-      if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
+      /* Array and pointer types aren't tagged types in the C sense so we need
+	 to generate a typedef in DWARF for them and make sure it is preserved,
+	 unless the type is artificial.  */
+      if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
+	  && ((TREE_CODE (t) != ARRAY_TYPE && TREE_CODE (t) != POINTER_TYPE)
+	      || DECL_ARTIFICIAL (decl)))
+	;
+      /* For array and pointer types, create the DECL_ORIGINAL_TYPE that will
+	 generate the typedef in DWARF.  Also do that for fat pointer types
+	 because, even though they are tagged types in the C sense, they are
+	 still XUP types attached to the base array type at this point.  */
+      else if (!DECL_ARTIFICIAL (decl)
+	       && (TREE_CODE (t) == ARRAY_TYPE
+		   || TREE_CODE (t) == POINTER_TYPE
+		   || TYPE_IS_FAT_POINTER_P (t)))
 	{
-	  /* Array and pointer types aren't "tagged" types so we force the
-	     type to be associated with its typedef in the DWARF back-end,
-	     in order to make sure that the latter is always preserved.  */
-	  if (!DECL_ARTIFICIAL (decl)
-	      && (TREE_CODE (t) == ARRAY_TYPE
-		  || TREE_CODE (t) == POINTER_TYPE))
+	  tree tt;
+	  /* ??? Copy and original type are not supposed to be variant but we
+	     really need a variant for the placeholder machinery to work.  */
+	  if (TYPE_IS_FAT_POINTER_P (t))
+	    tt = build_variant_type_copy (t);
+	  else
 	    {
-	      tree tt = build_distinct_type_copy (t);
+	      /* TYPE_NEXT_PTR_TO is a chain of main variants.  */
+	      tt = build_distinct_type_copy (TYPE_MAIN_VARIANT (t));
 	      if (TREE_CODE (t) == POINTER_TYPE)
-		TYPE_NEXT_PTR_TO (t) = tt;
-	      TYPE_NAME (tt) = DECL_NAME (decl);
-	      defer_or_set_type_context (tt,
-					 DECL_CONTEXT (decl),
-					 deferred_decl_context);
-	      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (t);
-	      DECL_ORIGINAL_TYPE (decl) = tt;
+		TYPE_NEXT_PTR_TO (TYPE_MAIN_VARIANT (t)) = tt;
+	      tt = build_qualified_type (tt, TYPE_QUALS (t));
 	    }
-	}
-      else if (TYPE_IS_FAT_POINTER_P (t))
-	{
-	  /* We need a variant for the placeholder machinery to work.  */
-	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
 	  defer_or_set_type_context (tt,
 				     DECL_CONTEXT (decl),
 				     deferred_decl_context);
 	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
-	  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
+	  if (TYPE_NAME (t)
+	      && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
+	      && DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
 	    DECL_ORIGINAL_TYPE (decl) = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
 	  else
 	    DECL_ORIGINAL_TYPE (decl) = t;
-	  DECL_ARTIFICIAL (decl) = 0;
+	  /* Array types need to have a name so that they can be related to
+	     their GNAT encodings.  */
+	  if (TREE_CODE (t) == ARRAY_TYPE && !TYPE_NAME (t))
+	    TYPE_NAME (t) = DECL_NAME (decl);
 	  t = NULL_TREE;
 	}
-      else if (DECL_ARTIFICIAL (TYPE_NAME (t)) && !DECL_ARTIFICIAL (decl))
+      else if (TYPE_NAME (t)
+	       && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
+	       && DECL_ARTIFICIAL (TYPE_NAME (t)) && !DECL_ARTIFICIAL (decl))
 	;
       else
 	t = NULL_TREE;
 
-      /* Propagate the name to all the anonymous variants.  This is needed
-	 for the type qualifiers machinery to work properly.  Also propagate
-	 the context to them.  Note that the context will be propagated to all
-	 parallel types too thanks to gnat_set_type_context.  */
+      /* Propagate the name to all the variants, this is needed for the type
+	 qualifiers machinery to work properly (see check_qualified_type).
+	 Also propagate the context to them.  Note that it will be propagated
+	 to all parallel types too thanks to gnat_set_type_context.  */
       if (t)
 	for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
-	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
+	  /* ??? Because of the previous kludge, we can have variants of fat
+	     pointer types with different names.  */
+	  if (!(TYPE_IS_FAT_POINTER_P (t)
+		&& TYPE_NAME (t)
+		&& TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	    {
 	      TYPE_NAME (t) = decl;
 	      defer_or_set_type_context (t,
@@ -1163,16 +1162,10 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
 /* See if the data pointed to by the hash table slot is marked.  */
 
-void
-pad_type_hasher::handle_cache_entry (pad_type_hash *&t)
+int
+pad_type_hasher::keep_cache_entry (pad_type_hash *&t)
 {
-  extern void gt_ggc_mx (pad_type_hash *&);
-  if (t == HTAB_EMPTY_ENTRY || t == HTAB_DELETED_ENTRY)
-    return;
-  else if (ggc_marked_p (t->type))
-    gt_ggc_mx (t);
-  else
-    t = static_cast<pad_type_hash *> (HTAB_DELETED_ENTRY);
+  return ggc_marked_p (t->type);
 }
 
 /* Return true iff the padded types are equivalent.  */
@@ -1337,8 +1330,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   /* Now create the field with the original size.  */
-  field  = create_field_decl (get_identifier ("F"), type, record, orig_size,
-			      bitsize_zero_node, 0, 1);
+  field = create_field_decl (get_identifier ("F"), type, record, orig_size,
+			     bitsize_zero_node, 0, 1);
   DECL_INTERNAL_P (field) = 1;
 
   /* Do not emit debug info until after the auxiliary record is built.  */
@@ -1372,8 +1365,25 @@ maybe_pad_type (tree type, tree size, unsigned int align,
       && !(TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	   && DECL_IGNORED_P (TYPE_NAME (type))))
     {
-      tree marker = make_node (RECORD_TYPE);
       tree name = TYPE_IDENTIFIER (record);
+      tree size_unit = TYPE_SIZE_UNIT (record);
+
+      /* A variable that holds the size is required even with no encoding since
+	 it will be referenced by debugging information attributes.  At global
+	 level, we need a single variable across all translation units.  */
+      if (size
+	  && TREE_CODE (size) != INTEGER_CST
+	  && (definition || global_bindings_p ()))
+	{
+	  size_unit
+	    = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
+			      size_unit, true, global_bindings_p (),
+			      !definition && global_bindings_p (), false,
+			      true, true, NULL, gnat_entity);
+	  TYPE_SIZE_UNIT (record) = size_unit;
+	}
+
+      tree marker = make_node (RECORD_TYPE);
       tree orig_name = TYPE_IDENTIFIER (type);
 
       TYPE_NAME (marker) = concat_name (name, "XVS");
@@ -1383,14 +1393,9 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 					     marker, NULL_TREE, NULL_TREE,
 					     0, 0),
 			  0, true);
+      TYPE_SIZE_UNIT (marker) = size_unit;
 
       add_parallel_type (record, marker);
-
-      if (definition && size && TREE_CODE (size) != INTEGER_CST)
-	TYPE_SIZE_UNIT (marker)
-	  = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
-			     TYPE_SIZE_UNIT (record), false, false, false,
-			     false, NULL, gnat_entity);
     }
 
   rest_of_record_type_compilation (record);
@@ -1412,7 +1417,7 @@ built:
   if (CONTAINS_PLACEHOLDER_P (orig_size))
     orig_size = max_size (orig_size, true);
 
-  if (align)
+  if (align && AGGREGATE_TYPE_P (type))
     orig_size = round_up (orig_size, align);
 
   if (!operand_equal_p (size, orig_size, 0)
@@ -1532,7 +1537,7 @@ relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
 }
 
 /* Record TYPE as a builtin type for Ada.  NAME is the name of the type.
-   ARTIFICIAL_P is true if it's a type that was generated by the compiler.  */
+   ARTIFICIAL_P is true if the type was generated by the compiler.  */
 
 void
 record_builtin_type (const char *name, tree type, bool artificial_p)
@@ -2185,6 +2190,7 @@ copy_type (tree type)
   TYPE_REFERENCE_TO (new_type) = 0;
   TYPE_MAIN_VARIANT (new_type) = new_type;
   TYPE_NEXT_VARIANT (new_type) = 0;
+  TYPE_CANONICAL (new_type) = new_type;
 
   return new_type;
 }
@@ -2228,34 +2234,31 @@ create_range_type (tree type, tree min, tree max)
   return range_type;
 }
 
-/* Return a TYPE_DECL node suitable for the TYPE_STUB_DECL field of a type.
-   TYPE_NAME gives the name of the type and TYPE is a ..._TYPE node giving
-   its data type.  */
+/* Return a TYPE_DECL node suitable for the TYPE_STUB_DECL field of TYPE.
+   NAME gives the name of the type to be used in the declaration.  */
 
 tree
-create_type_stub_decl (tree type_name, tree type)
+create_type_stub_decl (tree name, tree type)
 {
-  /* Using a named TYPE_DECL ensures that a type name marker is emitted in
-     STABS while setting DECL_ARTIFICIAL ensures that no DW_TAG_typedef is
-     emitted in DWARF.  */
-  tree type_decl = build_decl (input_location, TYPE_DECL, type_name, type);
+  tree type_decl = build_decl (input_location, TYPE_DECL, name, type);
   DECL_ARTIFICIAL (type_decl) = 1;
   TYPE_ARTIFICIAL (type) = 1;
   return type_decl;
 }
 
-/* Return a TYPE_DECL node.  TYPE_NAME gives the name of the type and TYPE
-   is a ..._TYPE node giving its data type.  ARTIFICIAL_P is true if this
-   is a declaration that was generated by the compiler.  DEBUG_INFO_P is
-   true if we need to write debug information about this type.  GNAT_NODE
-   is used for the position of the decl.  */
+/* Return a TYPE_DECL node for TYPE.  NAME gives the name of the type to be
+   used in the declaration.  ARTIFICIAL_P is true if the declaration was
+   generated by the compiler.  DEBUG_INFO_P is true if we need to write
+   debug information about this type.  GNAT_NODE is used for the position
+   of the decl.  */
 
 tree
-create_type_decl (tree type_name, tree type, bool artificial_p,
-		  bool debug_info_p, Node_Id gnat_node)
+create_type_decl (tree name, tree type, bool artificial_p, bool debug_info_p,
+		  Node_Id gnat_node)
 {
   enum tree_code code = TREE_CODE (type);
-  bool named = TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL;
+  bool is_named
+    = TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL;
   tree type_decl;
 
   /* Only the builtin TYPE_STUB_DECL should be used for dummy types.  */
@@ -2263,13 +2266,13 @@ create_type_decl (tree type_name, tree type, bool artificial_p,
 
   /* If the type hasn't been named yet, we're naming it; preserve an existing
      TYPE_STUB_DECL that has been attached to it for some purpose.  */
-  if (!named && TYPE_STUB_DECL (type))
+  if (!is_named && TYPE_STUB_DECL (type))
     {
       type_decl = TYPE_STUB_DECL (type);
-      DECL_NAME (type_decl) = type_name;
+      DECL_NAME (type_decl) = name;
     }
   else
-    type_decl = build_decl (input_location, TYPE_DECL, type_name, type);
+    type_decl = build_decl (input_location, TYPE_DECL, name, type);
 
   DECL_ARTIFICIAL (type_decl) = artificial_p;
   TYPE_ARTIFICIAL (type) = artificial_p;
@@ -2277,11 +2280,16 @@ create_type_decl (tree type_name, tree type, bool artificial_p,
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (type_decl, gnat_node);
 
-  /* If we're naming the type, equate the TYPE_STUB_DECL to the name.
-     This causes the name to be also viewed as a "tag" by the debug
-     back-end, with the advantage that no DW_TAG_typedef is emitted
-     for artificial "tagged" types in DWARF.  */
-  if (!named)
+  /* If we're naming the type, equate the TYPE_STUB_DECL to the name.  This
+     causes the name to be also viewed as a "tag" by the debug back-end, with
+     the advantage that no DW_TAG_typedef is emitted for artificial "tagged"
+     types in DWARF.
+
+     Note that if "type" is used as a DECL_ORIGINAL_TYPE, it may be referenced
+     from multiple contexts, and "type_decl" references a copy of it: in such a
+     case, do not mess TYPE_STUB_DECL: we do not want to re-use the TYPE_DECL
+     with the mechanism above.  */
+  if (!is_named && type != DECL_ORIGINAL_TYPE (type_decl))
     TYPE_STUB_DECL (type) = type_decl;
 
   /* Do not generate debug info for UNCONSTRAINED_ARRAY_TYPE that the
@@ -2294,8 +2302,8 @@ create_type_decl (tree type_name, tree type, bool artificial_p,
 
 /* Return a VAR_DECL or CONST_DECL node.
 
-   VAR_NAME gives the name of the variable.  ASM_NAME is its assembler name
-   (if provided).  TYPE is its data type (a GCC ..._TYPE node).  VAR_INIT is
+   NAME gives the name of the variable.  ASM_NAME is its assembler name
+   (if provided).  TYPE is its data type (a GCC ..._TYPE node).  INIT is
    the GCC tree for an optional initial expression; NULL_TREE if none.
 
    CONST_FLAG is true if this variable is constant, in which case we might
@@ -2311,13 +2319,18 @@ create_type_decl (tree type_name, tree type, bool artificial_p,
    STATIC_FLAG is only relevant when not at top level.  In that case
    it indicates whether to always allocate storage to the variable.
 
+   ARTIFICIAL_P is true if the variable was generated by the compiler.
+
+   DEBUG_INFO_P is true if we need to write debug information for it.
+
    GNAT_NODE is used for the position of the decl.  */
 
 tree
-create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
-		   bool const_flag, bool public_flag, bool extern_flag,
-		   bool static_flag, bool const_decl_allowed_p,
-		   struct attrib *attr_list, Node_Id gnat_node)
+create_var_decl (tree name, tree asm_name, tree type, tree init,
+		 bool const_flag, bool public_flag, bool extern_flag,
+		 bool static_flag, bool artificial_p, bool debug_info_p,
+		 struct attrib *attr_list, Node_Id gnat_node,
+		 bool const_decl_allowed_p)
 {
   /* Whether the object has static storage duration, either explicitly or by
      virtue of being declared at the global level.  */
@@ -2328,12 +2341,12 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
      constant expression for initializing a static variable; otherwise, we
      only check that it is constant.  */
   const bool init_const
-    = (var_init
-       && gnat_types_compatible_p (type, TREE_TYPE (var_init))
+    = (init
+       && gnat_types_compatible_p (type, TREE_TYPE (init))
        && (extern_flag || static_storage
-	   ? initializer_constant_valid_p (var_init, TREE_TYPE (var_init))
+	   ? initializer_constant_valid_p (init, TREE_TYPE (init))
 	     != NULL_TREE
-	   : TREE_CONSTANT (var_init)));
+	   : TREE_CONSTANT (init)));
 
   /* Whether we will make TREE_CONSTANT the DECL we produce here, in which
      case the initializer may be used in lieu of the DECL node (as done in
@@ -2350,7 +2363,7 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
     = build_decl (input_location,
 		  (constant_p && const_decl_allowed_p
 		   && !AGGREGATE_TYPE_P (type)) ? CONST_DECL : VAR_DECL,
-		  var_name, type);
+		  name, type);
 
   /* If this is external, throw away any initializations (they will be done
      elsewhere) unless this is a constant for which we would like to remain
@@ -2359,19 +2372,23 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
      elaboration routine.  If we are just annotating types, throw away the
      initialization if it isn't a constant.  */
   if ((extern_flag && !constant_p)
-      || (type_annotate_only && var_init && !TREE_CONSTANT (var_init)))
-    var_init = NULL_TREE;
+      || (type_annotate_only && init && !TREE_CONSTANT (init)))
+    init = NULL_TREE;
 
   /* At the global level, a non-constant initializer generates elaboration
      statements.  Check that such statements are allowed, that is to say,
      not violating a No_Elaboration_Code restriction.  */
-  if (var_init && !init_const && global_bindings_p ())
+  if (init && !init_const && global_bindings_p ())
     Check_Elaboration_Code_Allowed (gnat_node);
 
-  DECL_INITIAL  (var_decl) = var_init;
-  TREE_READONLY (var_decl) = const_flag;
+  /* Attach the initializer, if any.  */
+  DECL_INITIAL (var_decl) = init;
+
+  /* Directly set some flags.  */
+  DECL_ARTIFICIAL (var_decl) = artificial_p;
   DECL_EXTERNAL (var_decl) = extern_flag;
   TREE_CONSTANT (var_decl) = constant_p;
+  TREE_READONLY (var_decl) = const_flag;
 
   /* We need to allocate static storage for an object with static storage
      duration if it isn't external.  */
@@ -2391,14 +2408,18 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
       && !have_global_bss_p ())
     DECL_COMMON (var_decl) = 1;
 
-  /* For an external constant whose initializer is not absolute, do not emit
-     debug info.  In DWARF this would mean a global relocation in a read-only
-     section which runs afoul of the PE-COFF run-time relocation mechanism.  */
-  if (extern_flag
-      && constant_p
-      && var_init
-      && initializer_constant_valid_p (var_init, TREE_TYPE (var_init))
-	 != null_pointer_node)
+  /* Do not emit debug info for a CONST_DECL if optimization isn't enabled,
+     since we will create an associated variable.  Likewise for an external
+     constant whose initializer is not absolute, because this would mean a
+     global relocation in a read-only section which runs afoul of the PE-COFF
+     run-time relocation mechanism.  */
+  if (!debug_info_p
+      || (TREE_CODE (var_decl) == CONST_DECL && !optimize)
+      || (extern_flag
+	  && constant_p
+	  && init
+	  && initializer_constant_valid_p (init, TREE_TYPE (init))
+	     != null_pointer_node))
     DECL_IGNORED_P (var_decl) = 1;
 
   if (TYPE_VOLATILE (type))
@@ -2414,13 +2435,13 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (var_decl, gnat_node);
 
-  if (TREE_CODE (var_decl) == VAR_DECL)
+  if (TREE_CODE (var_decl) == VAR_DECL && asm_name)
     {
-      if (asm_name)
-	SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
+      /* Let the target mangle the name if this isn't a verbatim asm.  */
+      if (*IDENTIFIER_POINTER (asm_name) != '*')
+	asm_name = targetm.mangle_decl_assembler_name (var_decl, asm_name);
 
-      if (global_bindings_p ())
-	rest_of_decl_compilation (var_decl, true, 0);
+      SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
     }
 
   return var_decl;
@@ -2453,23 +2474,22 @@ aggregate_type_contains_array_p (tree type)
     }
 }
 
-/* Return a FIELD_DECL node.  FIELD_NAME is the field's name, FIELD_TYPE is
-   its type and RECORD_TYPE is the type of the enclosing record.  If SIZE is
-   nonzero, it is the specified size of the field.  If POS is nonzero, it is
-   the bit position.  PACKED is 1 if the enclosing record is packed, -1 if it
-   has Component_Alignment of Storage_Unit.  If ADDRESSABLE is nonzero, it
+/* Return a FIELD_DECL node.  NAME is the field's name, TYPE is its type and
+   RECORD_TYPE is the type of the enclosing record.  If SIZE is nonzero, it
+   is the specified size of the field.  If POS is nonzero, it is the bit
+   position.  PACKED is 1 if the enclosing record is packed, -1 if it has
+   Component_Alignment of Storage_Unit.  If ADDRESSABLE is nonzero, it
    means we are allowed to take the address of the field; if it is negative,
    we should not make a bitfield, which is used by make_aligning_type.  */
 
 tree
-create_field_decl (tree field_name, tree field_type, tree record_type,
-                   tree size, tree pos, int packed, int addressable)
+create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
+		   int packed, int addressable)
 {
-  tree field_decl = build_decl (input_location,
-				FIELD_DECL, field_name, field_type);
+  tree field_decl = build_decl (input_location, FIELD_DECL, name, type);
 
   DECL_CONTEXT (field_decl) = record_type;
-  TREE_READONLY (field_decl) = TYPE_READONLY (field_type);
+  TREE_READONLY (field_decl) = TYPE_READONLY (type);
 
   /* If FIELD_TYPE is BLKmode, we must ensure this is aligned to at least a
      byte boundary since GCC cannot handle less-aligned BLKmode bitfields.
@@ -2477,10 +2497,10 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
      array, because in this case slices of variable length of this array
      must be handled by GCC and variable-sized objects need to be aligned
      to at least a byte boundary.  */
-  if (packed && (TYPE_MODE (field_type) == BLKmode
+  if (packed && (TYPE_MODE (type) == BLKmode
 		 || (!pos
-		     && AGGREGATE_TYPE_P (field_type)
-		     && aggregate_type_contains_array_p (field_type))))
+		     && AGGREGATE_TYPE_P (type)
+		     && aggregate_type_contains_array_p (type))))
     DECL_ALIGN (field_decl) = BITS_PER_UNIT;
 
   /* If a size is specified, use it.  Otherwise, if the record type is packed
@@ -2492,8 +2512,8 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
     size = convert (bitsizetype, size);
   else if (packed == 1)
     {
-      size = rm_size (field_type);
-      if (TYPE_MODE (field_type) == BLKmode)
+      size = rm_size (type);
+      if (TYPE_MODE (type) == BLKmode)
 	size = round_up (size, BITS_PER_UNIT);
     }
 
@@ -2515,22 +2535,22 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
   if (addressable >= 0
       && size
       && TREE_CODE (size) == INTEGER_CST
-      && TREE_CODE (TYPE_SIZE (field_type)) == INTEGER_CST
-      && (!tree_int_cst_equal (size, TYPE_SIZE (field_type))
-	  || (pos && !value_factor_p (pos, TYPE_ALIGN (field_type)))
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+      && (!tree_int_cst_equal (size, TYPE_SIZE (type))
+	  || (pos && !value_factor_p (pos, TYPE_ALIGN (type)))
 	  || packed
 	  || (TYPE_ALIGN (record_type) != 0
-	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (field_type))))
+	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (type))))
     {
       DECL_BIT_FIELD (field_decl) = 1;
       DECL_SIZE (field_decl) = size;
       if (!packed && !pos)
 	{
 	  if (TYPE_ALIGN (record_type) != 0
-	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (field_type))
+	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (type))
 	    DECL_ALIGN (field_decl) = TYPE_ALIGN (record_type);
 	  else
-	    DECL_ALIGN (field_decl) = TYPE_ALIGN (field_type);
+	    DECL_ALIGN (field_decl) = TYPE_ALIGN (type);
 	}
     }
 
@@ -2543,14 +2563,14 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
   {
     unsigned int bit_align
       = (DECL_BIT_FIELD (field_decl) ? 1
-	 : packed && TYPE_MODE (field_type) != BLKmode ? BITS_PER_UNIT : 0);
+	 : packed && TYPE_MODE (type) != BLKmode ? BITS_PER_UNIT : 0);
 
     if (bit_align > DECL_ALIGN (field_decl))
       DECL_ALIGN (field_decl) = bit_align;
-    else if (!bit_align && TYPE_ALIGN (field_type) > DECL_ALIGN (field_decl))
+    else if (!bit_align && TYPE_ALIGN (type) > DECL_ALIGN (field_decl))
       {
-	DECL_ALIGN (field_decl) = TYPE_ALIGN (field_type);
-	DECL_USER_ALIGN (field_decl) = TYPE_USER_ALIGN (field_type);
+	DECL_ALIGN (field_decl) = TYPE_ALIGN (type);
+	DECL_USER_ALIGN (field_decl) = TYPE_USER_ALIGN (type);
       }
   }
 
@@ -2588,7 +2608,7 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
      of a copy.  This is the case for true bitfields, but the DECL_BIT_FIELD
      value we have at this point is not accurate enough, so we don't account
      for this here and let finish_record_type decide.  */
-  if (!addressable && !type_for_nonaliased_component_p (field_type))
+  if (!addressable && !type_for_nonaliased_component_p (type))
     addressable = 1;
 
   DECL_NONADDRESSABLE_P (field_decl) = !addressable;
@@ -2596,40 +2616,39 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
   return field_decl;
 }
 
-/* Return a PARM_DECL node.  PARAM_NAME is the name of the parameter and
-   PARAM_TYPE is its type.  READONLY is true if the parameter is readonly
-   (either an In parameter or an address of a pass-by-ref parameter).  */
+/* Return a PARM_DECL node.  NAME is the name of the parameter and TYPE is
+   its type.  READONLY is true if the parameter is readonly (either an In
+   parameter or an address of a pass-by-ref parameter).  */
 
 tree
-create_param_decl (tree param_name, tree param_type, bool readonly)
+create_param_decl (tree name, tree type, bool readonly)
 {
-  tree param_decl = build_decl (input_location,
-				PARM_DECL, param_name, param_type);
+  tree param_decl = build_decl (input_location, PARM_DECL, name, type);
 
   /* Honor TARGET_PROMOTE_PROTOTYPES like the C compiler, as not doing so
      can lead to various ABI violations.  */
   if (targetm.calls.promote_prototypes (NULL_TREE)
-      && INTEGRAL_TYPE_P (param_type)
-      && TYPE_PRECISION (param_type) < TYPE_PRECISION (integer_type_node))
+      && INTEGRAL_TYPE_P (type)
+      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
     {
       /* We have to be careful about biased types here.  Make a subtype
 	 of integer_type_node with the proper biasing.  */
-      if (TREE_CODE (param_type) == INTEGER_TYPE
-	  && TYPE_BIASED_REPRESENTATION_P (param_type))
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TYPE_BIASED_REPRESENTATION_P (type))
 	{
 	  tree subtype
 	    = make_unsigned_type (TYPE_PRECISION (integer_type_node));
 	  TREE_TYPE (subtype) = integer_type_node;
 	  TYPE_BIASED_REPRESENTATION_P (subtype) = 1;
-	  SET_TYPE_RM_MIN_VALUE (subtype, TYPE_MIN_VALUE (param_type));
-	  SET_TYPE_RM_MAX_VALUE (subtype, TYPE_MAX_VALUE (param_type));
-	  param_type = subtype;
+	  SET_TYPE_RM_MIN_VALUE (subtype, TYPE_MIN_VALUE (type));
+	  SET_TYPE_RM_MAX_VALUE (subtype, TYPE_MAX_VALUE (type));
+	  type = subtype;
 	}
       else
-	param_type = integer_type_node;
+	type = integer_type_node;
     }
 
-  DECL_ARG_TYPE (param_decl) = param_type;
+  DECL_ARG_TYPE (param_decl) = type;
   TREE_READONLY (param_decl) = readonly;
   return param_decl;
 }
@@ -2697,36 +2716,6 @@ process_attributes (tree *node, struct attrib **attr_list, bool in_place,
       }
 
   *attr_list = NULL;
-}
-
-/* Record DECL as a global renaming pointer.  */
-
-void
-record_global_renaming_pointer (tree decl)
-{
-  gcc_assert (!DECL_LOOP_PARM_P (decl) && DECL_RENAMED_OBJECT (decl));
-  vec_safe_push (global_renaming_pointers, decl);
-}
-
-/* Invalidate the global renaming pointers that are not constant, lest their
-   renamed object contains SAVE_EXPRs tied to an elaboration routine.  Note
-   that we should not blindly invalidate everything here because of the need
-   to propagate constant values through renaming.  */
-
-void
-invalidate_global_renaming_pointers (void)
-{
-  unsigned int i;
-  tree iter;
-
-  if (global_renaming_pointers == NULL)
-    return;
-
-  FOR_EACH_VEC_ELT (*global_renaming_pointers, i, iter)
-    if (!TREE_CONSTANT (DECL_RENAMED_OBJECT (iter)))
-      SET_DECL_RENAMED_OBJECT (iter, NULL_TREE);
-
-  vec_free (global_renaming_pointers);
 }
 
 /* Return true if VALUE is a known to be a multiple of FACTOR, which must be
@@ -2921,7 +2910,24 @@ process_deferred_decl_context (bool force)
 static unsigned int
 scale_by_factor_of (tree expr, unsigned int value)
 {
+  unsigned HOST_WIDE_INT addend = 0;
+  unsigned HOST_WIDE_INT factor = 1;
+
+  /* Peel conversions around EXPR and try to extract bodies from function
+     calls: it is possible to get the scale factor from size functions.  */
   expr = remove_conversions (expr, true);
+  if (TREE_CODE (expr) == CALL_EXPR)
+    expr = maybe_inline_call_in_expr (expr);
+
+  /* Sometimes we get PLUS_EXPR (BIT_AND_EXPR (..., X), Y), where Y is a
+     multiple of the scale factor we are looking for.  */
+  if (TREE_CODE (expr) == PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
+      && tree_fits_uhwi_p (TREE_OPERAND (expr, 1)))
+    {
+      addend = TREE_INT_CST_LOW (TREE_OPERAND (expr, 1));
+      expr = TREE_OPERAND (expr, 0);
+    }
 
   /* An expression which is a bitwise AND with a mask has a power-of-2 factor
      corresponding to the number of trailing zeros of the mask.  */
@@ -2934,12 +2940,21 @@ scale_by_factor_of (tree expr, unsigned int value)
       while ((mask & 1) == 0 && i < HOST_BITS_PER_WIDE_INT)
 	{
 	  mask >>= 1;
-	  value *= 2;
+	  factor *= 2;
 	  i++;
 	}
     }
 
-  return value;
+  /* If the addend is not a multiple of the factor we found, give up.  In
+     theory we could find a smaller common factor but it's useless for our
+     needs.  This situation arises when dealing with a field F1 with no
+     alignment requirement but that is following a field F2 with such
+     requirements.  As long as we have F2's offset, we don't need alignment
+     information to compute F1's.  */
+  if (addend % factor != 0)
+    factor = 1;
+
+  return factor * value;
 }
 
 /* Given two consecutive field decls PREV_FIELD and CURR_FIELD, return true
@@ -2988,14 +3003,14 @@ potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
   return true;
 }
 
-/* Return a LABEL_DECL with LABEL_NAME.  GNAT_NODE is used for the position
-   of the decl.  */
+/* Return a LABEL_DECL with NAME.  GNAT_NODE is used for the position of
+   the decl.  */
 
 tree
-create_label_decl (tree label_name, Node_Id gnat_node)
+create_label_decl (tree name, Node_Id gnat_node)
 {
   tree label_decl
-    = build_decl (input_location, LABEL_DECL, label_name, void_type_node);
+    = build_decl (input_location, LABEL_DECL, name, void_type_node);
 
   DECL_MODE (label_decl) = VOIDmode;
 
@@ -3005,28 +3020,32 @@ create_label_decl (tree label_name, Node_Id gnat_node)
   return label_decl;
 }
 
-/* Return a FUNCTION_DECL node.  SUBPROG_NAME is the name of the subprogram,
-   ASM_NAME is its assembler name, SUBPROG_TYPE is its type (a FUNCTION_TYPE
-   node), PARAM_DECL_LIST is the list of the subprogram arguments (a list of
-   PARM_DECL nodes chained through the DECL_CHAIN field).
+/* Return a FUNCTION_DECL node.  NAME is the name of the subprogram, ASM_NAME
+   its assembler name, TYPE its type (a FUNCTION_TYPE node), PARAM_DECL_LIST
+   the list of its parameters (a list of PARM_DECL nodes chained through the
+   DECL_CHAIN field).
 
-   INLINE_STATUS, PUBLIC_FLAG, EXTERN_FLAG, ARTIFICIAL_FLAG and ATTR_LIST are
-   used to set the appropriate fields in the FUNCTION_DECL.  GNAT_NODE is
-   used for the position of the decl.  */
+   INLINE_STATUS, PUBLIC_FLAG, EXTERN_FLAG and ATTR_LIST are used to set the
+   appropriate fields in the FUNCTION_DECL.
+
+   ARTIFICIAL_P is true if the subprogram was generated by the compiler.
+
+   DEBUG_INFO_P is true if we need to write debug information for it.
+
+   GNAT_NODE is used for the position of the decl.  */
 
 tree
-create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
- 		     tree param_decl_list, enum inline_status_t inline_status,
-		     bool public_flag, bool extern_flag, bool artificial_flag,
+create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
+		     enum inline_status_t inline_status, bool public_flag,
+		     bool extern_flag, bool artificial_p, bool debug_info_p,
 		     struct attrib *attr_list, Node_Id gnat_node)
 {
-  tree subprog_decl = build_decl (input_location, FUNCTION_DECL, subprog_name,
-				  subprog_type);
-  tree result_decl = build_decl (input_location, RESULT_DECL, NULL_TREE,
-				 TREE_TYPE (subprog_type));
+  tree subprog_decl = build_decl (input_location, FUNCTION_DECL, name, type);
+  tree result_decl
+    = build_decl (input_location, RESULT_DECL, NULL_TREE, TREE_TYPE (type));
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
 
-  DECL_ARTIFICIAL (subprog_decl) = artificial_flag;
+  DECL_ARTIFICIAL (subprog_decl) = artificial_p;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
 
   switch (inline_status)
@@ -3049,25 +3068,37 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
 
     case is_enabled:
       DECL_DECLARED_INLINE_P (subprog_decl) = 1;
-      DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_flag;
+      DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_p;
       break;
 
     default:
       gcc_unreachable ();
     }
 
+  if (!debug_info_p)
+    DECL_IGNORED_P (subprog_decl) = 1;
+
   TREE_PUBLIC (subprog_decl) = public_flag;
-  TREE_READONLY (subprog_decl) = TYPE_READONLY (subprog_type);
-  TREE_THIS_VOLATILE (subprog_decl) = TYPE_VOLATILE (subprog_type);
-  TREE_SIDE_EFFECTS (subprog_decl) = TYPE_VOLATILE (subprog_type);
+  TREE_READONLY (subprog_decl) = TYPE_READONLY (type);
+  TREE_THIS_VOLATILE (subprog_decl) = TYPE_VOLATILE (type);
+  TREE_SIDE_EFFECTS (subprog_decl) = TYPE_VOLATILE (type);
 
   DECL_ARTIFICIAL (result_decl) = 1;
   DECL_IGNORED_P (result_decl) = 1;
-  DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (subprog_type);
+  DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (type);
   DECL_RESULT (subprog_decl) = result_decl;
+
+  process_attributes (&subprog_decl, &attr_list, true, gnat_node);
+
+  /* Add this decl to the current binding level.  */
+  gnat_pushdecl (subprog_decl, gnat_node);
 
   if (asm_name)
     {
+      /* Let the target mangle the name if this isn't a verbatim asm.  */
+      if (*IDENTIFIER_POINTER (asm_name) != '*')
+	asm_name = targetm.mangle_decl_assembler_name (subprog_decl, asm_name);
+
       SET_DECL_ASSEMBLER_NAME (subprog_decl, asm_name);
 
       /* The expand_main_function circuitry expects "main_identifier_node" to
@@ -3079,11 +3110,6 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
       if (asm_name == main_identifier_node)
 	DECL_NAME (subprog_decl) = main_identifier_node;
     }
-
-  process_attributes (&subprog_decl, &attr_list, true, gnat_node);
-
-  /* Add this decl to the current binding level.  */
-  gnat_pushdecl (subprog_decl, gnat_node);
 
   /* Output the assembler code and/or RTL for the declaration.  */
   rest_of_decl_compilation (subprog_decl, global_bindings_p (), 0);
@@ -3104,6 +3130,11 @@ begin_subprog_body (tree subprog_decl)
 
   /* This function is being defined.  */
   TREE_STATIC (subprog_decl) = 1;
+
+  /* The failure of this assertion will likely come from a wrong context for
+     the subprogram body, e.g. another procedure for a procedure declared at
+     library level.  */
+  gcc_assert (current_function_decl == decl_function_context (subprog_decl));
 
   current_function_decl = subprog_decl;
 
@@ -3457,9 +3488,23 @@ max_size (tree exp, bool max_p)
 	if ((code == MINUS_EXPR || code == PLUS_EXPR)
 	    && TREE_CODE (lhs) == INTEGER_CST
 	    && TREE_OVERFLOW (lhs)
-	    && !TREE_CONSTANT (rhs))
+	    && TREE_CODE (rhs) != INTEGER_CST)
 	  return lhs;
 
+	/* If we are going to subtract a "negative" value in an unsigned type,
+	   do the operation as an addition of the negated value, in order to
+	   avoid creating a spurious overflow below.  */
+	if (code == MINUS_EXPR
+	    && TYPE_UNSIGNED (type)
+	    && TREE_CODE (rhs) == INTEGER_CST
+	    && !TREE_OVERFLOW (rhs)
+	    && tree_int_cst_sign_bit (rhs) != 0)
+	  {
+	    rhs = fold_build1 (NEGATE_EXPR, type, rhs);
+	    code = PLUS_EXPR;
+	  }
+
+	/* We need to detect overflows so we call size_binop here.  */
 	return size_binop (code, lhs, rhs);
       }
 
@@ -4046,10 +4091,8 @@ convert (tree type, tree expr)
 
       /* If we have just converted to this padded type, just get the
 	 inner expression.  */
-      if (TREE_CODE (expr) == CONSTRUCTOR
-	  && !vec_safe_is_empty (CONSTRUCTOR_ELTS (expr))
-	  && (*CONSTRUCTOR_ELTS (expr))[0].index == TYPE_FIELDS (etype))
-	unpadded = (*CONSTRUCTOR_ELTS (expr))[0].value;
+      if (TREE_CODE (expr) == CONSTRUCTOR)
+	unpadded = CONSTRUCTOR_ELT (expr, 0)->value;
 
       /* Otherwise, build an explicit component reference.  */
       else
@@ -4094,8 +4137,9 @@ convert (tree type, tree expr)
       CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
 			      build_template (TREE_TYPE (TYPE_FIELDS (type)),
 					      obj_type, NULL_TREE));
-      CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)),
-			      convert (obj_type, expr));
+      if (expr)
+	CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)),
+				convert (obj_type, expr));
       return gnat_build_constructor (type, v);
     }
 
@@ -4611,7 +4655,7 @@ remove_conversions (tree exp, bool true_address)
 	  && TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	  && TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (exp)))
 	return
-	  remove_conversions ((*CONSTRUCTOR_ELTS (exp))[0].value, true);
+	  remove_conversions (CONSTRUCTOR_ELT (exp, 0)->value, true);
       break;
 
     case COMPONENT_REF:
@@ -4701,14 +4745,13 @@ maybe_unconstrained_array (tree exp)
 
       if (TYPE_CONTAINS_TEMPLATE_P (type))
 	{
-	  exp = build_component_ref (exp, NULL_TREE,
-				     DECL_CHAIN (TYPE_FIELDS (type)),
-				     false);
-	  type = TREE_TYPE (exp);
+	  exp = build_simple_component_ref (exp, NULL_TREE,
+					    DECL_CHAIN (TYPE_FIELDS (type)),
+					    false);
 
 	  /* If the array type is padded, convert to the unpadded type.  */
-	  if (TYPE_IS_PADDING_P (type))
-	    exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
+	  if (exp && TYPE_IS_PADDING_P (TREE_TYPE (exp)))
+	    exp = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
 	}
       break;
 
@@ -4783,7 +4826,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   if (etype == type)
     return expr;
 
-  /* If both types types are integral just do a normal conversion.
+  /* If both types are integral just do a normal conversion.
      Likewise for a conversion to an unconstrained array.  */
   if (((INTEGRAL_TYPE_P (type)
 	|| (POINTER_TYPE_P (type) && !TYPE_IS_THIN_POINTER_P (type))
@@ -5147,7 +5190,7 @@ smaller_form_type_p (tree type, tree orig_type)
   return tree_int_cst_lt (size, osize) != 0;
 }
 
-/* Perform final processing on global variables.  */
+/* Perform final processing on global declarations.  */
 
 static GTY (()) tree dummy_global;
 
@@ -5158,8 +5201,9 @@ gnat_write_global_declarations (void)
   tree iter;
 
   /* If we have declared types as used at the global level, insert them in
-     the global hash table.  We use a dummy variable for this purpose.  */
-  if (types_used_by_cur_var_decl && !types_used_by_cur_var_decl->is_empty ())
+     the global hash table.  We use a dummy variable for this purpose, but
+     we need to build it unconditionally to avoid -fcompare-debug issues.  */
+  if (first_global_object_name)
     {
       struct varpool_node *node;
       char *label;
@@ -5174,11 +5218,12 @@ gnat_write_global_declarations (void)
       node->definition = 1;
       node->force_output = 1;
 
-      while (!types_used_by_cur_var_decl->is_empty ())
-	{
-	  tree t = types_used_by_cur_var_decl->pop ();
-	  types_used_by_var_decl_insert (t, dummy_global);
-	}
+      if (types_used_by_cur_var_decl)
+	while (!types_used_by_cur_var_decl->is_empty ())
+	  {
+	    tree t = types_used_by_cur_var_decl->pop ();
+	    types_used_by_var_decl_insert (t, dummy_global);
+	  }
     }
 
   /* Output debug information for all global type declarations first.  This
@@ -5187,21 +5232,13 @@ gnat_write_global_declarations (void)
      finalized in the right context.  */
   FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
     if (TREE_CODE (iter) == TYPE_DECL && !DECL_IGNORED_P (iter))
-      debug_hooks->global_decl (iter);
+      debug_hooks->type_decl (iter, false);
 
-  /* Proceed to optimize and emit assembly. */
-  symtab->finalize_compilation_unit ();
-
-  /* After cgraph has had a chance to emit everything that's going to
-     be emitted, output debug information for the rest of globals.  */
-  if (!seen_error ())
-    {
-      timevar_push (TV_SYMOUT);
-      FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
-	if (TREE_CODE (iter) != TYPE_DECL && !DECL_IGNORED_P (iter))
-	  debug_hooks->global_decl (iter);
-      timevar_pop (TV_SYMOUT);
-    }
+  /* Then output the global variables.  We need to do that after the debug
+     information for global types is emitted so that they are finalized.  */
+  FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
+    if (TREE_CODE (iter) == VAR_DECL)
+      rest_of_decl_compilation (iter, true, 0);
 }
 
 /* ************************************************************************
@@ -5211,7 +5248,7 @@ gnat_write_global_declarations (void)
 /* The general scheme is fairly simple:
 
    For each builtin function/type to be declared, gnat_install_builtins calls
-   internal facilities which eventually get to gnat_push_decl, which in turn
+   internal facilities which eventually get to gnat_pushdecl, which in turn
    tracks the so declared builtin function decls in the 'builtin_decls' global
    datastructure. When an Intrinsic subprogram declaration is processed, we
    search this global datastructure to retrieve the associated BUILT_IN DECL
@@ -5338,13 +5375,11 @@ enum c_builtin_type
 #define DEF_FUNCTION_TYPE_VAR_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
 #define DEF_FUNCTION_TYPE_VAR_4(NAME, RETURN, ARG1, ARG2, ARG3, ARG4) NAME,
 #define DEF_FUNCTION_TYPE_VAR_5(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
-  NAME,
-#define DEF_FUNCTION_TYPE_VAR_8(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				ARG6, ARG7, ARG8)			\
-  NAME,
-#define DEF_FUNCTION_TYPE_VAR_12(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) \
-  NAME,
+				NAME,
+#define DEF_FUNCTION_TYPE_VAR_7(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				ARG6, ARG7) NAME,
+#define DEF_FUNCTION_TYPE_VAR_11(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) NAME,
 #define DEF_POINTER_TYPE(NAME, TYPE) NAME,
 #include "builtin-types.def"
 #undef DEF_PRIMITIVE_TYPE
@@ -5363,8 +5398,8 @@ enum c_builtin_type
 #undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_FUNCTION_TYPE_VAR_4
 #undef DEF_FUNCTION_TYPE_VAR_5
-#undef DEF_FUNCTION_TYPE_VAR_8
-#undef DEF_FUNCTION_TYPE_VAR_12
+#undef DEF_FUNCTION_TYPE_VAR_7
+#undef DEF_FUNCTION_TYPE_VAR_11
 #undef DEF_POINTER_TYPE
   BT_LAST
 };
@@ -5470,14 +5505,13 @@ install_builtin_function_types (void)
   def_fn_type (ENUM, RETURN, 1, 4, ARG1, ARG2, ARG3, ARG4);
 #define DEF_FUNCTION_TYPE_VAR_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
   def_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, ARG4, ARG5);
-#define DEF_FUNCTION_TYPE_VAR_8(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				ARG6, ARG7, ARG8)			\
-  def_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
-	       ARG7, ARG8);
-#define DEF_FUNCTION_TYPE_VAR_12(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) \
-  def_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
-	       ARG7, ARG8, ARG9, ARG10, ARG11, ARG12);
+#define DEF_FUNCTION_TYPE_VAR_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				ARG6, ARG7)				\
+  def_fn_type (ENUM, RETURN, 1, 7, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
+#define DEF_FUNCTION_TYPE_VAR_11(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) \
+  def_fn_type (ENUM, RETURN, 1, 11, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6,	\
+	       ARG7, ARG8, ARG9, ARG10, ARG11);
 #define DEF_POINTER_TYPE(ENUM, TYPE) \
   builtin_types[(int) ENUM] = build_pointer_type (builtin_types[(int) TYPE]);
 
@@ -5499,8 +5533,8 @@ install_builtin_function_types (void)
 #undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_FUNCTION_TYPE_VAR_4
 #undef DEF_FUNCTION_TYPE_VAR_5
-#undef DEF_FUNCTION_TYPE_VAR_8
-#undef DEF_FUNCTION_TYPE_VAR_12
+#undef DEF_FUNCTION_TYPE_VAR_7
+#undef DEF_FUNCTION_TYPE_VAR_11
 #undef DEF_POINTER_TYPE
   builtin_types[(int) BT_LAST] = NULL_TREE;
 }

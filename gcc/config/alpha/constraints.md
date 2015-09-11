@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;    ABCDEF               V  YZ
+;;;    ABCDEF H             V  YZ
 ;;;       de ghijkl   pq  tu wxyz
 
 ;; Integer register constraints.
@@ -84,22 +84,20 @@
   (and (match_code "const_int")
        (match_test "ival == 1 || ival == 2 || ival == 3")))
 
-(define_constraint "H"
-  "A valid operand of a ZAP insn, when building with 32-bit HOST_WIDE_INT"
-  (and (match_code "const_double")
-       (match_test "mode == VOIDmode && zap_mask (hval) && zap_mask (lval)")))
-
 ;; Floating-point constant constraints.
 (define_constraint "G"
   "The floating point zero constant"
   (and (match_code "const_double")
-       (match_test "GET_MODE_CLASS (mode) == MODE_FLOAT
-		    && op == CONST0_RTX (mode)")))
+       (match_test "op == CONST0_RTX (mode)")))
 
 ;; "Extra" constraints.
-(define_constraint "Q"
+
+;; A memory location that is not a reference
+;; (using an AND) to an unaligned location.
+(define_memory_constraint "Q"
   "@internal A normal_memory_operand"
-  (match_operand 0 "normal_memory_operand"))
+  (and (match_code "mem")
+       (not (match_code "and" "0"))))
 
 (define_constraint "R"
   "@internal A direct_call_operand"

@@ -28,4 +28,7 @@ test01()
   std::valarray<double> va{1.0, 2.0, 3.0};
   std::begin(va);
   std::end(va);
+  const auto& cva = va;
+  std::begin(cva);
+  std::end(cva);
 }

@@ -16,4 +16,3 @@ void test_vreinterpretQp8_u64 (void)
   out_poly8x16_t = vreinterpretq_p8_u64 (arg0_uint64x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

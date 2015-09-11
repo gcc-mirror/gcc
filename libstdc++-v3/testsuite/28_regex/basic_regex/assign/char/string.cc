@@ -1,4 +1,3 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++11" }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
@@ -29,6 +28,7 @@
 // Tests C++ string assignment of the basic_regex class.  
 void test01()
 {
+  bool test __attribute__((unused)) = true;
   typedef std::basic_regex<char> test_type;
 
   std::string s("a*b");
@@ -36,9 +36,27 @@ void test01()
   re.assign(s);
 }
 
+// libstdc++/64584
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+  std::regex re("", std::regex_constants::extended);
+  auto flags = re.flags();
+  try
+    {
+      re.assign("(", std::regex_constants::icase);
+      VERIFY(false);
+    }
+  catch (const std::regex_error& e)
+    {
+      VERIFY(flags == re.flags());
+    }
+}
+
 int
 main()
 { 
   test01();
+  test02();
   return 0;
 }

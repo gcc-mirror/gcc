@@ -35,7 +35,7 @@
 
 (define_predicate "const_immlsa_operand"
   (and (match_code "const_int")
-         (match_test "IN_RANGE (exact_log2 (INTVAL (op)), 1, 4)")))
+         (match_test "IN_RANGE (INTVAL (op), 1, 4)")))
 
 (define_predicate "const_uimm6_operand"
   (and (match_code "const_int")
@@ -475,7 +475,18 @@
   (match_code "eq,ne,lt,ltu,ge,geu"))
 
 (define_predicate "order_operator"
-  (match_code "lt,ltu,le,leu,ge,geu,gt,gtu"))
+  (match_code "lt,ltu,le,leu,ge,geu,gt,gtu")
+{
+  if (XEXP (op, 1) == const0_rtx)
+    return true;
+
+  if (TARGET_CB_MAYBE
+      && (GET_CODE (op) == LT || GET_CODE (op) == LTU
+	  || GET_CODE (op) == GE || GET_CODE (op) == GEU))
+    return true;
+
+  return false;
+})
 
 ;; For NE, cstore uses sltu instructions in which the first operand is $0.
 ;; This isn't possible in mips16 code.

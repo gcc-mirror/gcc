@@ -41,5 +41,3 @@ int test1 (void)
 
 /* { dg-final { scan-ipa-dump "ipa-prop: Discovered an indirect call to a known target"  "cp"  } } */
 /* { dg-final { scan-ipa-dump "hooray1\[^\\n\]*inline copy in hiphip1"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

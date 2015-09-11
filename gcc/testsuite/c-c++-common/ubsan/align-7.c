@@ -28,6 +28,5 @@ main ()
   return 0;
 }
 
-/* { dg-output "\.c:16:\[0-9]*: \[^\n\r]*member access within misaligned address 0x\[0-9a-fA-F]* for type 'struct S', which requires \[48] byte alignment.*" } */
+/* { dg-output "\.c:16:\[0-9]*: \[^\n\r]*member access within misaligned address 0x\[0-9a-fA-F]* for type 'struct S', which requires \[48] byte alignment" } */
 /* { dg-final { scan-tree-dump-times "Optimizing" 4 "sanopt"} } */
-/* { dg-final { cleanup-tree-dump "sanopt" } } */

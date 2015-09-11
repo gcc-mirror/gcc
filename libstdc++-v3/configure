@@ -638,6 +638,8 @@ DOT
 DOXYGEN
 BUILD_INFO_FALSE
 BUILD_INFO_TRUE
+ENABLE_FILESYSTEM_TS_FALSE
+ENABLE_FILESYSTEM_TS_TRUE
 baseline_subdir_switch
 baseline_dir
 HWCAP_FLAGS
@@ -671,6 +673,8 @@ SECTION_LDFLAGS
 GLIBCXX_LIBS
 ENABLE_VTABLE_VERIFY_FALSE
 ENABLE_VTABLE_VERIFY_TRUE
+VTV_CYGMIN_FALSE
+VTV_CYGMIN_TRUE
 VTV_CXXLINKFLAGS
 VTV_PCH_CXXFLAGS
 VTV_CXXFLAGS
@@ -858,7 +862,6 @@ with_gnu_ld
 enable_libtool_lock
 enable_hosted_libstdcxx
 enable_libstdcxx_verbose
-enable_sjlj_exceptions
 enable_libstdcxx_pch
 enable_cstdio
 enable_clocale
@@ -888,6 +891,7 @@ enable_libstdcxx_visibility
 enable_libstdcxx_dual_abi
 with_default_libstdcxx_abi
 enable_libstdcxx_threads
+enable_libstdcxx_filesystem_ts
 with_gxx_include_dir
 enable_version_specific_runtime_libs
 '
@@ -1537,9 +1541,6 @@ Optional Features:
                           only build freestanding C++ runtime support
   --disable-libstdcxx-verbose
                           disable termination messages to standard error
-  --enable-sjlj-exceptions
-                          force use of builtin_setjmp for exceptions
-                          [default=auto]
   --enable-libstdcxx-pch  build pre-compiled libstdc++ headers
                           [default=$is_hosted]
   --enable-cstdio[=PACKAGE]
@@ -1586,6 +1587,8 @@ Optional Features:
                           support two versions of std::string [default=yes]
   --enable-libstdcxx-threads
                           enable C++11 threads support [default=auto]
+  --enable-libstdcxx-filesystem-ts
+                          turns on ISO/IEC TS 18822 support [default=auto]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -2496,6 +2499,60 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
 
 } # ac_fn_c_check_type
+
+# ac_fn_cxx_check_type LINENO TYPE VAR INCLUDES
+# ---------------------------------------------
+# Tests whether TYPE exists after having included INCLUDES, setting cache
+# variable VAR accordingly.
+ac_fn_cxx_check_type ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  eval "$3=no"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof ($2))
+	 return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof (($2)))
+	    return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+else
+  eval "$3=yes"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+
+} # ac_fn_cxx_check_type
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -3548,11 +3605,11 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
-# Always define AMTAR for backward compatibility.
+# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AMTAR='$${TAR-tar}'
 
-AMTAR=${AMTAR-"${am_missing_run}tar"}
-
-am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
+am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
@@ -4895,7 +4952,7 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
 
-  SUBDIRS='include libsupc++ python src src/c++98 src/c++11 doc po testsuite'
+  SUBDIRS='include libsupc++ src src/c++98 src/c++11 src/filesystem doc po testsuite python'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -11537,7 +11594,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11540 "configure"
+#line 11597 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11643,7 +11700,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11646 "configure"
+#line 11703 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15033,92 +15090,6 @@ _ACEOF
 
 # Enable compiler support that doesn't require linking.
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exception model to use" >&5
-$as_echo_n "checking for exception model to use... " >&6; }
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-   # Check whether --enable-sjlj-exceptions was given.
-if test "${enable_sjlj_exceptions+set}" = set; then :
-  enableval=$enable_sjlj_exceptions;
-      case "$enableval" in
-       yes|no|auto) ;;
-       *) as_fn_error "Unknown argument to enable/disable sjlj-exceptions" "$LINENO" 5 ;;
-	  	        esac
-
-else
-  enable_sjlj_exceptions=auto
-fi
-
-
-
-  if test $enable_sjlj_exceptions = auto; then
-    # Botheration.  Now we've got to detect the exception model.  Link tests
-    # against libgcc.a are problematic since we've not been given proper -L
-    # bits for single-tree newlib and libgloss.
-    #
-    # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
-    cat > conftest.$ac_ext << EOF
-#line 15066 "configure"
-struct S { ~S(); };
-void bar();
-void foo()
-{
-  S s;
-  bar();
-}
-EOF
-    old_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS=-S
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-      if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=yes
-      elif grep _Unwind_SjLj_Register conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=yes
-      elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=no
-      elif grep __cxa_end_cleanup conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=no
-      fi
-    fi
-    CXXFLAGS="$old_CXXFLAGS"
-    rm -f conftest*
-  fi
-
-  # This is a tad weird, for hysterical raisins.  We have to map
-  # enable/disable to two different models.
-  case $enable_sjlj_exceptions in
-    yes)
-
-$as_echo "#define _GLIBCXX_SJLJ_EXCEPTIONS 1" >>confdefs.h
-
-      ac_exception_model_name=sjlj
-      ;;
-    no)
-      ac_exception_model_name="call frame"
-      ;;
-    *)
-      as_fn_error "unable to detect exception model" "$LINENO" 5
-      ;;
-  esac
- ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_exception_model_name" >&5
-$as_echo "$ac_exception_model_name" >&6; }
-
-
    # Check whether --enable-libstdcxx-pch was given.
 if test "${enable_libstdcxx_pch+set}" = set; then :
   enableval=$enable_libstdcxx_pch;
@@ -15415,7 +15386,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15418 "configure"
+#line 15389 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15450,7 +15421,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15453 "configure"
+#line 15424 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15485,7 +15456,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15488 "configure"
+#line 15459 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15521,7 +15492,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15524 "configure"
+#line 15495 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15600,7 +15571,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15603 "configure"
+#line 15574 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15642,7 +15613,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15645 "configure"
+#line 15616 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15676,7 +15647,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15679 "configure"
+#line 15650 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16015,17 +15986,17 @@ $as_echo "darwin or freebsd" >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: dragonfly" >&5
 $as_echo "dragonfly" >&6; }
 
-      CLOCALE_H=config/locale/generic/c_locale.h
+      CLOCALE_H=config/locale/dragonfly/c_locale.h
       CLOCALE_CC=config/locale/dragonfly/c_locale.cc
-      CCODECVT_CC=config/locale/generic/codecvt_members.cc
-      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCODECVT_CC=config/locale/dragonfly/codecvt_members.cc
+      CCOLLATE_CC=config/locale/dragonfly/collate_members.cc
       CCTYPE_CC=config/locale/dragonfly/ctype_members.cc
       CMESSAGES_H=config/locale/generic/messages_members.h
       CMESSAGES_CC=config/locale/generic/messages_members.cc
-      CMONEY_CC=config/locale/generic/monetary_members.cc
-      CNUMERIC_CC=config/locale/generic/numeric_members.cc
-      CTIME_H=config/locale/generic/time_members.h
-      CTIME_CC=config/locale/generic/time_members.cc
+      CMONEY_CC=config/locale/dragonfly/monetary_members.cc
+      CNUMERIC_CC=config/locale/dragonfly/numeric_members.cc
+      CTIME_H=config/locale/dragonfly/time_members.h
+      CTIME_CC=config/locale/dragonfly/time_members.cc
       CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
 
@@ -17457,10 +17428,24 @@ $as_echo_n "checking for vtable verify support... " >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_vtable_verify" >&5
 $as_echo "$enable_vtable_verify" >&6; }
 
+  vtv_cygmin=no
   if test $enable_vtable_verify = yes; then
-    VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+    case ${target_os} in
+      cygwin*|mingw32*)
+        VTV_CXXFLAGS="-fvtable-verify=std -Wl,-lvtv,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+        VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,--rpath -Wl,${toplevel_builddir}/libvtv/.libs"
+        vtv_cygmin=yes
+        ;;
+      darwin*)
+        VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u,_vtable_map_vars_start -Wl,-u,_vtable_map_vars_end"
+        VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,-rpath,${toplevel_builddir}/libvtv/.libs"
+        ;;
+      *)
+        VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+        VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,--rpath -Wl,${toplevel_builddir}/libvtv/.libs"
+        ;;
+    esac
     VTV_PCH_CXXFLAGS="-fvtable-verify=std"
-    VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,--rpath -Wl,${toplevel_builddir}/libvtv/.libs"
   else
     VTV_CXXFLAGS=
     VTV_PCH_CXXFLAGS=
@@ -17469,6 +17454,14 @@ $as_echo "$enable_vtable_verify" >&6; }
 
 
 
+
+   if test x$vtv_cygmin = xyes; then
+  VTV_CYGMIN_TRUE=
+  VTV_CYGMIN_FALSE='#'
+else
+  VTV_CYGMIN_TRUE='#'
+  VTV_CYGMIN_FALSE=
+fi
 
 
 
@@ -18153,6 +18146,87 @@ if test x"$glibcxx_cv_system_error19" = x"yes"; then
 $as_echo "#define HAVE_EWOULDBLOCK 1" >>confdefs.h
 
 fi
+
+
+
+
+  # Test uchar.h.
+  for ac_header in uchar.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "uchar.h" "ac_cv_header_uchar_h" "$ac_includes_default"
+if test "x$ac_cv_header_uchar_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UCHAR_H 1
+_ACEOF
+ ac_has_uchar_h=yes
+else
+  ac_has_uchar_h=no
+fi
+
+done
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++11"
+
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C11 support for <uchar.h>" >&5
+$as_echo_n "checking for ISO C11 support for <uchar.h>... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <uchar.h>
+		    #ifdef __STDC_UTF_16__
+		    long i = __STDC_UTF_16__;
+		    #endif
+		    #ifdef __STDC_UTF_32__
+		    long j = __STDC_UTF_32__;
+		    #endif
+		    namespace test
+		    {
+		      using ::c16rtomb;
+		      using ::c32rtomb;
+		      using ::mbrtoc16;
+		      using ::mbrtoc32;
+		    }
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_c11_uchar_cxx11=yes
+else
+  ac_c11_uchar_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  else
+    ac_c11_uchar_cxx11=no
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_c11_uchar_cxx11" >&5
+$as_echo "$ac_c11_uchar_cxx11" >&6; }
+  if test x"$ac_c11_uchar_cxx11" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_C11_UCHAR_CXX11 1" >>confdefs.h
+
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
@@ -19532,7 +19606,7 @@ $as_echo "$glibcxx_glibc217" >&6; }
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
-      freebsd*|netbsd*)
+      freebsd*|netbsd*|dragonfly*)
         ac_has_clock_monotonic=yes
         ac_has_clock_realtime=yes
         ac_has_nanosleep=yes
@@ -27609,31 +27683,6 @@ fi
 
 
 
-          am_save_CPPFLAGS="$CPPFLAGS"
-
-  for element in $INCICONV; do
-    haveit=
-    for x in $CPPFLAGS; do
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-  eval x=\"$x\"
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-      if test "X$x" = "X$element"; then
-        haveit=yes
-        break
-      fi
-    done
-    if test -z "$haveit"; then
-      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
-    fi
-  done
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
 $as_echo_n "checking for iconv... " >&6; }
 if test "${am_cv_func_iconv+set}" = set; then :
@@ -27642,6 +27691,8 @@ else
 
     am_cv_func_iconv="no, consider installing GNU libiconv"
     am_cv_lib_iconv=no
+                    am_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $INCICONV"
     if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
@@ -27664,8 +27715,52 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+    CPPFLAGS="$am_save_CPPFLAGS"
+
+    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
+      for _libs in .libs _libs; do
+        am_save_CPPFLAGS="$CPPFLAGS"
+        am_save_LIBS="$LIBS"
+        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
+        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
+        if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <iconv.h>
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+           iconv(cd,NULL,NULL,NULL,NULL);
+           iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  INCICONV="-I../libiconv/include"
+          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
+          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
+          am_cv_lib_iconv=yes
+          am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        CPPFLAGS="$am_save_CPPFLAGS"
+        LIBS="$am_save_LIBS"
+        if test "$am_cv_func_iconv" = "yes"; then
+          break
+        fi
+      done
+    fi
+
     if test "$am_cv_func_iconv" != yes; then
+      am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
+      CPPFLAGS="$LIBS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -27690,6 +27785,7 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS="$am_save_CPPFLAGS"
       LIBS="$am_save_LIBS"
     fi
 
@@ -27702,12 +27798,34 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
 
   fi
   if test "$am_cv_lib_iconv" = yes; then
+
+  for element in $INCICONV; do
+    haveit=
+    for x in $CPPFLAGS; do
+
+  acl_save_prefix="$prefix"
+  prefix="$acl_final_prefix"
+  acl_save_exec_prefix="$exec_prefix"
+  exec_prefix="$acl_final_exec_prefix"
+  eval x=\"$x\"
+  exec_prefix="$acl_save_exec_prefix"
+  prefix="$acl_save_prefix"
+
+      if test "X$x" = "X$element"; then
+        haveit=yes
+        break
+      fi
+    done
+    if test -z "$haveit"; then
+      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
+    fi
+  done
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
 $as_echo_n "checking how to link with libiconv... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
 $as_echo "$LIBICONV" >&6; }
   else
-            CPPFLAGS="$am_save_CPPFLAGS"
     LIBICONV=
     LTLIBICONV=
   fi
@@ -39840,31 +39958,6 @@ done
 
 
 
-          am_save_CPPFLAGS="$CPPFLAGS"
-
-  for element in $INCICONV; do
-    haveit=
-    for x in $CPPFLAGS; do
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-  eval x=\"$x\"
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-      if test "X$x" = "X$element"; then
-        haveit=yes
-        break
-      fi
-    done
-    if test -z "$haveit"; then
-      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
-    fi
-  done
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
 $as_echo_n "checking for iconv... " >&6; }
 if test "${am_cv_func_iconv+set}" = set; then :
@@ -39873,6 +39966,8 @@ else
 
     am_cv_func_iconv="no, consider installing GNU libiconv"
     am_cv_lib_iconv=no
+                    am_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $INCICONV"
     if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
@@ -39895,8 +39990,52 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+    CPPFLAGS="$am_save_CPPFLAGS"
+
+    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
+      for _libs in .libs _libs; do
+        am_save_CPPFLAGS="$CPPFLAGS"
+        am_save_LIBS="$LIBS"
+        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
+        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
+        if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <iconv.h>
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+           iconv(cd,NULL,NULL,NULL,NULL);
+           iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  INCICONV="-I../libiconv/include"
+          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
+          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
+          am_cv_lib_iconv=yes
+          am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        CPPFLAGS="$am_save_CPPFLAGS"
+        LIBS="$am_save_LIBS"
+        if test "$am_cv_func_iconv" = "yes"; then
+          break
+        fi
+      done
+    fi
+
     if test "$am_cv_func_iconv" != yes; then
+      am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
+      CPPFLAGS="$LIBS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -39921,6 +40060,7 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS="$am_save_CPPFLAGS"
       LIBS="$am_save_LIBS"
     fi
 
@@ -39933,12 +40073,34 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
 
   fi
   if test "$am_cv_lib_iconv" = yes; then
+
+  for element in $INCICONV; do
+    haveit=
+    for x in $CPPFLAGS; do
+
+  acl_save_prefix="$prefix"
+  prefix="$acl_final_prefix"
+  acl_save_exec_prefix="$exec_prefix"
+  exec_prefix="$acl_final_exec_prefix"
+  eval x=\"$x\"
+  exec_prefix="$acl_save_exec_prefix"
+  prefix="$acl_save_prefix"
+
+      if test "X$x" = "X$element"; then
+        haveit=yes
+        break
+      fi
+    done
+    if test -z "$haveit"; then
+      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
+    fi
+  done
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
 $as_echo_n "checking how to link with libiconv... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
 $as_echo "$LIBICONV" >&6; }
   else
-            CPPFLAGS="$am_save_CPPFLAGS"
     LIBICONV=
     LTLIBICONV=
   fi
@@ -45920,31 +46082,6 @@ done
 
 
 
-          am_save_CPPFLAGS="$CPPFLAGS"
-
-  for element in $INCICONV; do
-    haveit=
-    for x in $CPPFLAGS; do
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-  eval x=\"$x\"
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-      if test "X$x" = "X$element"; then
-        haveit=yes
-        break
-      fi
-    done
-    if test -z "$haveit"; then
-      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
-    fi
-  done
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
 $as_echo_n "checking for iconv... " >&6; }
 if test "${am_cv_func_iconv+set}" = set; then :
@@ -45953,6 +46090,8 @@ else
 
     am_cv_func_iconv="no, consider installing GNU libiconv"
     am_cv_lib_iconv=no
+                    am_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $INCICONV"
     if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
@@ -45975,8 +46114,52 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+    CPPFLAGS="$am_save_CPPFLAGS"
+
+    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
+      for _libs in .libs _libs; do
+        am_save_CPPFLAGS="$CPPFLAGS"
+        am_save_LIBS="$LIBS"
+        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
+        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
+        if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <iconv.h>
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+           iconv(cd,NULL,NULL,NULL,NULL);
+           iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  INCICONV="-I../libiconv/include"
+          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
+          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
+          am_cv_lib_iconv=yes
+          am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        CPPFLAGS="$am_save_CPPFLAGS"
+        LIBS="$am_save_LIBS"
+        if test "$am_cv_func_iconv" = "yes"; then
+          break
+        fi
+      done
+    fi
+
     if test "$am_cv_func_iconv" != yes; then
+      am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
+      CPPFLAGS="$LIBS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -46001,6 +46184,7 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS="$am_save_CPPFLAGS"
       LIBS="$am_save_LIBS"
     fi
 
@@ -46013,12 +46197,34 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
 
   fi
   if test "$am_cv_lib_iconv" = yes; then
+
+  for element in $INCICONV; do
+    haveit=
+    for x in $CPPFLAGS; do
+
+  acl_save_prefix="$prefix"
+  prefix="$acl_final_prefix"
+  acl_save_exec_prefix="$exec_prefix"
+  exec_prefix="$acl_final_exec_prefix"
+  eval x=\"$x\"
+  exec_prefix="$acl_save_exec_prefix"
+  prefix="$acl_save_prefix"
+
+      if test "X$x" = "X$element"; then
+        haveit=yes
+        break
+      fi
+    done
+    if test -z "$haveit"; then
+      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
+    fi
+  done
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
 $as_echo_n "checking how to link with libiconv... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
 $as_echo "$LIBICONV" >&6; }
   else
-            CPPFLAGS="$am_save_CPPFLAGS"
     LIBICONV=
     LTLIBICONV=
   fi
@@ -58692,31 +58898,6 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
 
 
-          am_save_CPPFLAGS="$CPPFLAGS"
-
-  for element in $INCICONV; do
-    haveit=
-    for x in $CPPFLAGS; do
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-  eval x=\"$x\"
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-      if test "X$x" = "X$element"; then
-        haveit=yes
-        break
-      fi
-    done
-    if test -z "$haveit"; then
-      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
-    fi
-  done
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
 $as_echo_n "checking for iconv... " >&6; }
 if test "${am_cv_func_iconv+set}" = set; then :
@@ -58725,6 +58906,8 @@ else
 
     am_cv_func_iconv="no, consider installing GNU libiconv"
     am_cv_lib_iconv=no
+                    am_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $INCICONV"
     if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
@@ -58747,8 +58930,52 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+    CPPFLAGS="$am_save_CPPFLAGS"
+
+    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
+      for _libs in .libs _libs; do
+        am_save_CPPFLAGS="$CPPFLAGS"
+        am_save_LIBS="$LIBS"
+        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
+        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
+        if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <iconv.h>
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+           iconv(cd,NULL,NULL,NULL,NULL);
+           iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  INCICONV="-I../libiconv/include"
+          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
+          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
+          am_cv_lib_iconv=yes
+          am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        CPPFLAGS="$am_save_CPPFLAGS"
+        LIBS="$am_save_LIBS"
+        if test "$am_cv_func_iconv" = "yes"; then
+          break
+        fi
+      done
+    fi
+
     if test "$am_cv_func_iconv" != yes; then
+      am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
+      CPPFLAGS="$LIBS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -58773,6 +59000,7 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS="$am_save_CPPFLAGS"
       LIBS="$am_save_LIBS"
     fi
 
@@ -58785,12 +59013,34 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
 
   fi
   if test "$am_cv_lib_iconv" = yes; then
+
+  for element in $INCICONV; do
+    haveit=
+    for x in $CPPFLAGS; do
+
+  acl_save_prefix="$prefix"
+  prefix="$acl_final_prefix"
+  acl_save_exec_prefix="$exec_prefix"
+  exec_prefix="$acl_final_exec_prefix"
+  eval x=\"$x\"
+  exec_prefix="$acl_save_exec_prefix"
+  prefix="$acl_save_prefix"
+
+      if test "X$x" = "X$element"; then
+        haveit=yes
+        break
+      fi
+    done
+    if test -z "$haveit"; then
+      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
+    fi
+  done
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
 $as_echo_n "checking how to link with libiconv... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
 $as_echo "$LIBICONV" >&6; }
   else
-            CPPFLAGS="$am_save_CPPFLAGS"
     LIBICONV=
     LTLIBICONV=
   fi
@@ -77953,7 +78203,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:21:0
+libtool_VERSION=6:22:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -78185,10 +78435,14 @@ else
 fi
 
 
+  if test x$enable_symvers = xgnu-versioned-namespace; then
+    # gnu-versioned-namespace is incompatible with the dual ABI.
+    enable_libstdcxx_dual_abi="no"
+  fi
   if test x"$enable_libstdcxx_dual_abi" != xyes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: dual ABI is disabled" >&5
 $as_echo "$as_me: dual ABI is disabled" >&6;}
-    default_libstdcxx_abi="c++98"
+    default_libstdcxx_abi="gcc4-compatible"
   fi
 
 
@@ -78200,18 +78454,20 @@ $as_echo_n "checking for default std::string ABI to use... " >&6; }
 # Check whether --with-default-libstdcxx-abi was given.
 if test "${with_default_libstdcxx_abi+set}" = set; then :
   withval=$with_default_libstdcxx_abi; case "$withval" in
-      c++98|gnu++98|c++03|gnu++03)  default_libstdcxx_abi="c++98" ;;
-      c++1?|gnu++1?)  default_libstdcxx_abi="c++11" ;;
-      *)  as_fn_error "Invalid argument for --with-default-libstdcxx-abi" "$LINENO" 5 ;;
+      gcc4-compatible)  default_libstdcxx_abi="gcc4-compatible" ;;
+      new|cxx11)  default_libstdcxx_abi="new" ;;
+      c++*|gnu++*) as_fn_error "Supported arguments for --with-default-libstdcxx-abi have changed, use \"new\" or \"gcc4-compatible\"" "$LINENO" 5 ;;
+      *) as_fn_error "Invalid argument for --with-default-libstdcxx-abi" "$LINENO" 5 ;;
      esac
+
 else
-  default_libstdcxx_abi="c++11"
+  default_libstdcxx_abi="new"
 fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${default_libstdcxx_abi}" >&5
 $as_echo "${default_libstdcxx_abi}" >&6; }
   fi
-  if test $default_libstdcxx_abi = "c++11"; then
+  if test $default_libstdcxx_abi = "new"; then
     glibcxx_cxx11_abi=1
     glibcxx_cxx98_abi=0
   else
@@ -78767,8 +79023,520 @@ $as_echo "$ac_has_gthreads" >&6; }
 
 $as_echo "#define _GLIBCXX_HAS_GTHREADS 1" >>confdefs.h
 
+
+    # Also check for pthread_rwlock_t for std::shared_timed_mutex in C++14
+    ac_fn_cxx_check_type "$LINENO" "pthread_rwlock_t" "ac_cv_type_pthread_rwlock_t" "#include \"gthr.h\"
+"
+if test "x$ac_cv_type_pthread_rwlock_t" = x""yes; then :
+
+$as_echo "#define _GLIBCXX_USE_PTHREAD_RWLOCK_T 1" >>confdefs.h
+
+fi
+
   fi
 
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+# For Filesystem TS.
+for ac_header in fcntl.h dirent.h sys/statvfs.h utime.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+eval as_val=\$$as_ac_Header
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+   # Check whether --enable-libstdcxx-filesystem-ts was given.
+if test "${enable_libstdcxx_filesystem_ts+set}" = set; then :
+  enableval=$enable_libstdcxx_filesystem_ts;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error "Unknown argument to enable/disable libstdcxx-filesystem-ts" "$LINENO" 5 ;;
+	  	        esac
+
+else
+  enable_libstdcxx_filesystem_ts=auto
+fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build Filesystem TS support" >&5
+$as_echo_n "checking whether to build Filesystem TS support... " >&6; }
+  if test x"$ac_cv_header_dirent_h" != x"yes"; then
+    enable_libstdcxx_filesystem_ts=no
+  fi
+  if test x"$enable_libstdcxx_filesystem_ts" = x"auto"; then
+    case "${target_os}" in
+      freebsd*|netbsd*|openbsd*|dragonfly*|darwin*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      solaris*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      *)
+        enable_libstdcxx_filesystem_ts=no
+        ;;
+    esac
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_filesystem_ts" >&5
+$as_echo "$enable_libstdcxx_filesystem_ts" >&6; }
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct dirent.d_type" >&5
+$as_echo_n "checking for struct dirent.d_type... " >&6; }
+  if test "${glibcxx_cv_dirent_d_type+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_dirent_d_type=yes
+else
+  glibcxx_cv_dirent_d_type=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_dirent_d_type=yes
+else
+  glibcxx_cv_dirent_d_type=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_dirent_d_type = yes; then
+
+$as_echo "#define _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
+$as_echo "$glibcxx_cv_dirent_d_type" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for realpath" >&5
+$as_echo_n "checking for realpath... " >&6; }
+  if test "${glibcxx_cv_realpath+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+char *tmp = realpath((const char*)NULL, (char*)NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_realpath=yes
+else
+  glibcxx_cv_realpath=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+char *tmp = realpath((const char*)NULL, (char*)NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_realpath=yes
+else
+  glibcxx_cv_realpath=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_realpath = yes; then
+
+$as_echo "#define _GLIBCXX_USE_REALPATH 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_realpath" >&5
+$as_echo "$glibcxx_cv_realpath" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utimensat" >&5
+$as_echo_n "checking for utimensat... " >&6; }
+  if test "${glibcxx_cv_utimensat+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #include <fcntl.h>
+        #include <sys/stat.h>
+
+int
+main ()
+{
+
+        struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+        int i = utimensat(AT_FDCWD, "path", ts, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_utimensat=yes
+else
+  glibcxx_cv_utimensat=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #include <fcntl.h>
+        #include <sys/stat.h>
+
+int
+main ()
+{
+
+        struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+        int i = utimensat(AT_FDCWD, "path", ts, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_utimensat=yes
+else
+  glibcxx_cv_utimensat=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_utimensat = yes; then
+
+$as_echo "#define _GLIBCXX_USE_UTIMENSAT 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utimensat" >&5
+$as_echo "$glibcxx_cv_utimensat" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct stat.st_mtim.tv_nsec" >&5
+$as_echo_n "checking for struct stat.st_mtim.tv_nsec... " >&6; }
+  if test "${glibcxx_cv_st_mtim+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+ #include <sys/stat.h>
+int
+main ()
+{
+
+        struct stat st;
+        return st.st_mtim.tv_nsec;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_st_mtim=yes
+else
+  glibcxx_cv_st_mtim=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+ #include <sys/stat.h>
+int
+main ()
+{
+
+        struct stat st;
+        return st.st_mtim.tv_nsec;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_st_mtim=yes
+else
+  glibcxx_cv_st_mtim=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_st_mtim = yes; then
+
+$as_echo "#define _GLIBCXX_USE_ST_MTIM 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_st_mtim" >&5
+$as_echo "$glibcxx_cv_st_mtim" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmod" >&5
+$as_echo_n "checking for fchmod... " >&6; }
+  if test "${glibcxx_cv_fchmod+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/stat.h>
+int
+main ()
+{
+fchmod(1, S_IWUSR);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_fchmod=yes
+else
+  glibcxx_cv_fchmod=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/stat.h>
+int
+main ()
+{
+fchmod(1, S_IWUSR);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_fchmod=yes
+else
+  glibcxx_cv_fchmod=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_fchmod = yes; then
+
+$as_echo "#define _GLIBCXX_USE_FCHMOD 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmod" >&5
+$as_echo "$glibcxx_cv_fchmod" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmodat" >&5
+$as_echo_n "checking for fchmodat... " >&6; }
+  if test "${glibcxx_cv_fchmodat+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #include <fcntl.h>
+        #include <sys/stat.h>
+
+int
+main ()
+{
+fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_fchmodat=yes
+else
+  glibcxx_cv_fchmodat=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #include <fcntl.h>
+        #include <sys/stat.h>
+
+int
+main ()
+{
+fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_fchmodat=yes
+else
+  glibcxx_cv_fchmodat=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_fchmodat = yes; then
+
+$as_echo "#define _GLIBCXX_USE_FCHMODAT 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmodat" >&5
+$as_echo "$glibcxx_cv_fchmodat" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sendfile that can copy files" >&5
+$as_echo_n "checking for sendfile that can copy files... " >&6; }
+  if test "${glibcxx_cv_sendfile+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      case "${target_os}" in
+      gnu* | linux* | solaris*)
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/sendfile.h>
+int
+main ()
+{
+sendfile(1, 2, (off_t*)NULL, sizeof 1);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_sendfile=yes
+else
+  glibcxx_cv_sendfile=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/sendfile.h>
+int
+main ()
+{
+sendfile(1, 2, (off_t*)NULL, sizeof 1);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_sendfile=yes
+else
+  glibcxx_cv_sendfile=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+        ;;
+      *)
+        glibcxx_cv_sendfile=no
+        ;;
+    esac
+
+fi
+
+  if test $glibcxx_cv_sendfile = yes; then
+
+$as_echo "#define _GLIBCXX_USE_SENDFILE 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_sendfile" >&5
+$as_echo "$glibcxx_cv_sendfile" >&6; }
   CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -79401,6 +80169,15 @@ else
 fi
 
 
+    if test $enable_libstdcxx_filesystem_ts = yes; then
+  ENABLE_FILESYSTEM_TS_TRUE=
+  ENABLE_FILESYSTEM_TS_FALSE='#'
+else
+  ENABLE_FILESYSTEM_TS_TRUE='#'
+  ENABLE_FILESYSTEM_TS_FALSE=
+fi
+
+
 
 
 cat >confcache <<\_ACEOF
@@ -79626,7 +80403,7 @@ ac_config_files="$ac_config_files doc/xsl/customization.xsl"
 # append it here.  Only modify Makefiles that have just been created.
 #
 # Also, get rid of this simulated-VPATH thing that automake does.
-ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile python/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile doc/Makefile po/Makefile testsuite/Makefile"
+ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile src/filesystem/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
 
 
 ac_config_commands="$ac_config_commands generate-headers"
@@ -79781,6 +80558,10 @@ if test -z "${ENABLE_WERROR_TRUE}" && test -z "${ENABLE_WERROR_FALSE}"; then
   as_fn_error "conditional \"ENABLE_WERROR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${VTV_CYGMIN_TRUE}" && test -z "${VTV_CYGMIN_FALSE}"; then
+  as_fn_error "conditional \"VTV_CYGMIN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${ENABLE_VTABLE_VERIFY_TRUE}" && test -z "${ENABLE_VTABLE_VERIFY_FALSE}"; then
   as_fn_error "conditional \"ENABLE_VTABLE_VERIFY\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -79819,6 +80600,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_LDBL_COMPAT_TRUE}" && test -z "${GLIBCXX_LDBL_COMPAT_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_LDBL_COMPAT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_FILESYSTEM_TS_TRUE}" && test -z "${ENABLE_FILESYSTEM_TS_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_FILESYSTEM_TS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_INFO_TRUE}" && test -z "${BUILD_INFO_FALSE}"; then
@@ -80839,13 +81624,14 @@ do
     "doc/xsl/customization.xsl") CONFIG_FILES="$CONFIG_FILES doc/xsl/customization.xsl" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "libsupc++/Makefile") CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
-    "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/c++98/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++98/Makefile" ;;
     "src/c++11/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++11/Makefile" ;;
+    "src/filesystem/Makefile") CONFIG_FILES="$CONFIG_FILES src/filesystem/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "po/Makefile") CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
+    "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "generate-headers") CONFIG_COMMANDS="$CONFIG_COMMANDS generate-headers" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -82645,17 +83431,6 @@ _EOF
    . ${multi_basedir}/config-ml.in
    { ml_norecursion=; unset ml_norecursion;}
  ;;
-    "python/Makefile":F) cat > vpsed$$ << \_EOF
-s!`test -f '$<' || echo '$(srcdir)/'`!!
-_EOF
-   sed -f vpsed$$ $ac_file > tmp$$
-   mv tmp$$ $ac_file
-   rm vpsed$$
-   echo 'MULTISUBDIR =' >> $ac_file
-   ml_norecursion=yes
-   . ${multi_basedir}/config-ml.in
-   { ml_norecursion=; unset ml_norecursion;}
- ;;
     "src/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
@@ -82689,6 +83464,17 @@ _EOF
    . ${multi_basedir}/config-ml.in
    { ml_norecursion=; unset ml_norecursion;}
  ;;
+    "src/filesystem/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
     "doc/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
@@ -82712,6 +83498,17 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "testsuite/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "python/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$

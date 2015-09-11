@@ -21,14 +21,6 @@ along with GCC; see the file COPYING3.	If not see
 #ifndef GCC_LRA_INT_H
 #define GCC_LRA_INT_H
 
-#include "lra.h"
-#include "bitmap.h"
-#include "recog.h"
-#include "insn-attr.h"
-#include "insn-codes.h"
-#include "insn-config.h"
-#include "regs.h"
-
 #define lra_assert(c) gcc_checking_assert (c)
 
 /* The parameter used to prevent infinite reloading for an insn.  Each
@@ -229,9 +221,11 @@ struct lra_insn_recog_data
      duplication numbers: */
   rtx **operand_loc; /* The operand locations, NULL if no operands.  */
   rtx **dup_loc; /* The dup locations, NULL if no dups.	 */
-  /* Number of hard registers implicitly used in given call insn.  The
-     value can be NULL or points to array of the hard register numbers
-     ending with a negative value.  */
+  /* Number of hard registers implicitly used/clobbered in given call
+     insn.  The value can be NULL or points to array of the hard
+     register numbers ending with a negative value.  To differ
+     clobbered and used hard regs, clobbered hard regs are incremented
+     by FIRST_PSEUDO_REGISTER.  */
   int *arg_hard_regs;
   /* Cached value of get_preferred_alternatives.  */
   alternative_mask preferred_alternatives;
@@ -271,6 +265,14 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 #error wrong LRA_MAX_INHERITANCE_PASSES value
 #endif
 
+/* Analogous macro to the above one but for rematerialization.  */
+#define LRA_MAX_REMATERIALIZATION_PASSES 2
+
+#if LRA_MAX_REMATERIALIZATION_PASSES <= 0 \
+    || LRA_MAX_REMATERIALIZATION_PASSES >= LRA_MAX_ASSIGNMENT_ITERATION_NUMBER - 8
+#error wrong LRA_MAX_REMATERIALIZATION_PASSES value
+#endif
+
 /* lra.c: */
 
 extern FILE *lra_dump_file;
@@ -304,8 +306,8 @@ extern void lra_update_dups (lra_insn_recog_data_t, signed char *);
 extern void lra_process_new_insns (rtx_insn *, rtx_insn *, rtx_insn *,
 				   const char *);
 
-extern bool lra_substitute_pseudo (rtx *, int, rtx);
-extern bool lra_substitute_pseudo_within_insn (rtx_insn *, int, rtx);
+extern bool lra_substitute_pseudo (rtx *, int, rtx, bool);
+extern bool lra_substitute_pseudo_within_insn (rtx_insn *, int, rtx, bool);
 
 extern lra_insn_recog_data_t lra_set_insn_recog_data (rtx_insn *);
 extern lra_insn_recog_data_t lra_update_insn_recog_data (rtx_insn *);
@@ -321,9 +323,11 @@ extern void lra_create_copy (int, int, int);
 extern lra_copy_t lra_get_copy (int);
 extern bool lra_former_scratch_p (int);
 extern bool lra_former_scratch_operand_p (rtx_insn *, int);
+extern void lra_register_new_scratch_op (rtx_insn *, int);
 
 extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;
+extern int lra_bad_spill_regno_start;
 extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;
 extern bitmap_head lra_subreg_reload_pseudos;
@@ -391,6 +395,7 @@ extern void lra_final_code_change (void);
 
 /* lra-remat.c:  */
 
+extern int lra_rematerialization_iter;
 extern bool lra_remat (void);
 
 /* lra-elimination.c: */

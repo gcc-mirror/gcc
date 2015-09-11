@@ -6,7 +6,7 @@ struct A {
   A() = default;
 
 private:
-  A(A const&) = default;	// { dg-error "private" }
+  A(A const&) = default;	// { dg-message "private" }
 };
 
 int f(...) { }

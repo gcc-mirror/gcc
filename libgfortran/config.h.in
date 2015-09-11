@@ -75,9 +75,6 @@
 /* Define to 1 if the target supports __attribute__((alias(...))). */
 #undef HAVE_ATTRIBUTE_ALIAS
 
-/* Define to 1 if the target supports __attribute__((dllexport)). */
-#undef HAVE_ATTRIBUTE_DLLEXPORT
-
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
@@ -219,9 +216,6 @@
 /* Define to 1 if you have the `clogl' function. */
 #undef HAVE_CLOGL
 
-/* Define to 1 if you have the `close' function. */
-#undef HAVE_CLOSE
-
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
 
@@ -315,9 +309,6 @@
 /* Define to 1 if you have the `dup' function. */
 #undef HAVE_DUP
 
-/* Define to 1 if you have the `dup2' function. */
-#undef HAVE_DUP2
-
 /* Define to 1 if you have the `erf' function. */
 #undef HAVE_ERF
 
@@ -332,15 +323,6 @@
 
 /* Define to 1 if you have the `erff' function. */
 #undef HAVE_ERFF
-
-/* Define to 1 if you have the `erfl' function. */
-#undef HAVE_ERFL
-
-/* Define to 1 if you have the `execl' function. */
-#undef HAVE_EXECL
-
-/* Define to 1 if you have the `execve' function. */
-#undef HAVE_EXECVE
 
 /* Define to 1 if you have the `exp' function. */
 #undef HAVE_EXP
@@ -462,26 +444,17 @@
 /* Define to 1 if you have the `gethostname' function. */
 #undef HAVE_GETHOSTNAME
 
-/* Define if _Unwind_GetIPInfo is available. */
-#undef HAVE_GETIPINFO
-
 /* Define to 1 if you have the `getlogin' function. */
 #undef HAVE_GETLOGIN
 
 /* Define to 1 if you have the `getpid' function. */
 #undef HAVE_GETPID
 
-/* Define to 1 if you have the `getppid' function. */
-#undef HAVE_GETPPID
-
 /* Define to 1 if you have the `getpwuid' function. */
 #undef HAVE_GETPWUID
 
 /* Define to 1 if you have the `getpwuid_r' function. */
 #undef HAVE_GETPWUID_R
-
-/* Define to 1 if you have the `getrlimit' function. */
-#undef HAVE_GETRLIMIT
 
 /* Define to 1 if you have the `getrusage' function. */
 #undef HAVE_GETRUSAGE
@@ -519,17 +492,11 @@
 /* Define to 1 if you have the `j0f' function. */
 #undef HAVE_J0F
 
-/* Define to 1 if you have the `j0l' function. */
-#undef HAVE_J0L
-
 /* Define to 1 if you have the `j1' function. */
 #undef HAVE_J1
 
 /* Define to 1 if you have the `j1f' function. */
 #undef HAVE_J1F
-
-/* Define to 1 if you have the `j1l' function. */
-#undef HAVE_J1L
 
 /* Define to 1 if you have the `jn' function. */
 #undef HAVE_JN
@@ -557,9 +524,6 @@
 
 /* Define to 1 if you have the `lgammaf' function. */
 #undef HAVE_LGAMMAF
-
-/* Define to 1 if you have the `lgammal' function. */
-#undef HAVE_LGAMMAL
 
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
@@ -636,9 +600,6 @@
 /* Define to 1 if you have the `nextafterl' function. */
 #undef HAVE_NEXTAFTERL
 
-/* Define to 1 if you have the `pipe' function. */
-#undef HAVE_PIPE
-
 /* Define to 1 if we have POSIX getpwuid_r which takes 5 arguments. */
 #undef HAVE_POSIX_GETPWUID_R
 
@@ -648,17 +609,11 @@
 /* Define to 1 if you have the `powf' function. */
 #undef HAVE_POWF
 
-/* Define to 1 if you have the `powl' function. */
-#undef HAVE_POWL
-
 /* Define to 1 if the system has the type `ptrdiff_t'. */
 #undef HAVE_PTRDIFF_T
 
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
-
-/* Define to 1 if you have the `readlink' function. */
-#undef HAVE_READLINK
 
 /* Define to 1 if you have the `round' function. */
 #undef HAVE_ROUND
@@ -726,9 +681,6 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define to 1 if you have the `strcasestr' function. */
-#undef HAVE_STRCASESTR
-
 /* Define to 1 if you have the `strerror_l' function. */
 #undef HAVE_STRERROR_L
 
@@ -752,9 +704,6 @@
 
 /* Define to 1 if you have the `strtof' function. */
 #undef HAVE_STRTOF
-
-/* Define to 1 if you have the `strtok_r' function. */
-#undef HAVE_STRTOK_R
 
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
@@ -816,9 +765,6 @@
 /* Define to 1 if you have the `tgammaf' function. */
 #undef HAVE_TGAMMAF
 
-/* Define to 1 if you have the `tgammal' function. */
-#undef HAVE_TGAMMAL
-
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
 
@@ -855,9 +801,6 @@
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
-/* Define to 1 if you have the `wait' function. */
-#undef HAVE_WAIT
-
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
 
@@ -870,17 +813,11 @@
 /* Define to 1 if you have the `y0f' function. */
 #undef HAVE_Y0F
 
-/* Define to 1 if you have the `y0l' function. */
-#undef HAVE_Y0L
-
 /* Define to 1 if you have the `y1' function. */
 #undef HAVE_Y1
 
 /* Define to 1 if you have the `y1f' function. */
 #undef HAVE_Y1F
-
-/* Define to 1 if you have the `y1l' function. */
-#undef HAVE_Y1L
 
 /* Define to 1 if you have the `yn' function. */
 #undef HAVE_YN
@@ -939,6 +876,9 @@
 
 /* Define to 1 if the target supports #pragma weak */
 #undef SUPPORTS_WEAK
+
+/* Define to 1 if the target supports weakref */
+#undef SUPPORTS_WEAKREF
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE

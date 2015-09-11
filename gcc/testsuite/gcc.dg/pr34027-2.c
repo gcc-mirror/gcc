@@ -7,4 +7,3 @@ long foo(long n, long m)
 }
 
 /* { dg-final { scan-tree-dump "n % m" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

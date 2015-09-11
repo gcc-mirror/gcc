@@ -1366,8 +1366,8 @@ Target supports a vector misalign access.
 @item vect_no_align
 Target does not support a vector alignment mechanism.
 
-@item vect_no_int_max
-Target does not support a vector max instruction on @code{int}.
+@item vect_no_int_min_max
+Target does not support a vector min and max instruction on @code{int}.
 
 @item vect_no_int_add
 Target does not support a vector add instruction on @code{int}.
@@ -1527,6 +1527,9 @@ Some multilibs may be incompatible with this option.
 @item arm_neon
 ARM target supports generating NEON instructions.
 
+@item arm_tune_string_ops_prefer_neon
+Test CPU tune supports inlining string operations with NEON instructions.
+
 @item arm_neon_hw
 Test system supports executing NEON instructions.
 
@@ -1546,7 +1549,12 @@ options.  Some multilibs may be incompatible with these options.
 @item arm_neon_fp16_ok
 @anchor{arm_neon_fp16_ok}
 ARM Target supports @code{-mfpu=neon-fp16 -mfloat-abi=softfp} or compatible
-options.  Some multilibs may be incompatible with these options.
+options, including @code{-mfp16-format=ieee} if necessary to obtain the
+@code{__fp16} type.  Some multilibs may be incompatible with these options.
+
+@item arm_neon_fp16_hw
+Test system supports executing Neon half-precision float instructions.
+(Implies previous.)
 
 @item arm_thumb1_ok
 ARM target generates Thumb-1 code for @code{-mthumb}.
@@ -1574,6 +1582,25 @@ Some multilibs may be incompatible with these options.
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
+
+@end table
+
+@subsubsection AArch64-specific attributes
+
+@table @code
+@item aarch64_tiny
+AArch64 target which generates instruction sequences for tiny memory model.
+@item aarch64_small
+AArch64 target which generates instruction sequences for small memory model.
+@item aarch64_large
+AArch64 target which generates instruction sequences for large memory model.
+@item aarch64_little_endian
+AArch64 target which generates instruction sequences for little endian.
+@item aarch64_big_endian
+AArch64 target which generates instruction sequences for big endian.
+@item aarch64_small_fpic
+Binutils installed on test system supports relocation types required by -fpic
+for AArch64 small memory model.
 
 @end table
 
@@ -1691,6 +1718,9 @@ Target supports FPU instructions.
 
 @item non_strict_align
 Target does not require strict alignment.
+
+@item sqrt_insn
+Target has a square root instruction that the compiler can generate.
 
 @item sse
 Target supports compiling @code{sse} instructions.
@@ -1884,6 +1914,9 @@ Target uses natural alignment (aligned to type size) for types of
 @item nonpic
 Target does not generate PIC by default.
 
+@item pie_enabled
+Target generates PIE by default.
+
 @item pcc_bitfield_type_matters
 Target defines @code{PCC_BITFIELD_TYPE_MATTERS}.
 
@@ -1930,6 +1963,9 @@ Target supports @code{wchar_t} that is compatible with @code{char16_t}.
 
 @item wchar_t_char32_t_compatible
 Target supports @code{wchar_t} that is compatible with @code{char32_t}.
+
+@item comdat_group
+Target uses comdat groups.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}
@@ -2004,7 +2040,7 @@ keyword}.
 @item arm_neon_fp16
 NEON and half-precision floating point support.  Only ARM targets
 support this feature, and only then in certain modes; see
-the @ref{arm_neon_ok,,arm_neon_fp16_ok effective target keyword}.
+the @ref{arm_neon_fp16_ok,,arm_neon_fp16_ok effective target keyword}.
 
 @item arm_vfp3
 arm vfp3 floating point support; see
@@ -2201,12 +2237,16 @@ Check branch and/or call counts, in addition to line counts, in
 
 @subsubsection Clean up generated test files
 
+Usually the test-framework removes files that were generated during
+testing. If a testcase, for example, uses any dumping mechanism to
+inspect a passes dump file, the testsuite recognized the dump option
+passed to the tool and schedules a final cleanup to remove these files.
+
+There are, however, following additional cleanup directives that can be
+used to annotate a testcase "manually".
 @table @code
 @item cleanup-coverage-files
 Removes coverage data files generated for this test.
-
-@item cleanup-ipa-dump @var{suffix}
-Removes IPA dump files generated for this test.
 
 @item cleanup-modules "@var{list-of-extra-modules}"
 Removes Fortran module files generated for this test, excluding the
@@ -2242,21 +2282,23 @@ end module keep2
 ! @{ dg-final @{ keep-modules "" @} @} ! keep all
 @end smallexample
 
+@item dg-keep-saved-temps "@var{list-of-suffixes-not-to-delete}"
+Whitespace separated list of suffixes that should not be deleted
+automatically in a testcase that uses @option{-save-temps}.
+@smallexample
+// @{ dg-options "-save-temps -fpch-preprocess -I." @}
+int main() @{ return 0; @}
+// @{ dg-keep-saved-temps ".s" @} ! just keep assembler file
+// @{ dg-keep-saved-temps ".s" ".i" @} ! ... and .i
+// @{ dg-keep-saved-temps ".ii" ".o" @} ! or just .ii and .o
+@end smallexample
+
 @item cleanup-profile-file
 Removes profiling files generated for this test.
 
 @item cleanup-repo-files
 Removes files generated for this test for @option{-frepo}.
 
-@item cleanup-rtl-dump @var{suffix}
-Removes RTL dump files generated for this test.
-
-@item cleanup-saved-temps
-Removes files for the current test which were kept for @option{-save-temps}.
-
-@item cleanup-tree-dump @var{suffix}
-Removes tree dump files matching @var{suffix} which were generated for
-this test.
 @end table
 
 @node Ada Tests

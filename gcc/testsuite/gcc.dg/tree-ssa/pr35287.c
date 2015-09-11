@@ -12,4 +12,3 @@ int foo(int p)
 
 /* We will eliminate one load of gp and one indirect load of *gp. */
 /* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

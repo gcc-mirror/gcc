@@ -366,38 +366,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "regs.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
 #include "rtl.h"
+#include "df.h"
+#include "regs.h"
+#include "alias.h"
 #include "tm_p.h"
 #include "target.h"
 #include "flags.h"
-#include "obstack.h"
-#include "bitmap.h"
-#include "hard-reg-set.h"
-#include "predict.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "basic-block.h"
-#include "df.h"
-#include "hashtab.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -407,14 +387,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "recog.h"
 #include "params.h"
 #include "tree-pass.h"
 #include "output.h"
 #include "except.h"
 #include "reload.h"
 #include "diagnostic-core.h"
-#include "ggc.h"
+#include "cfgloop.h"
+#include "ira.h"
+#include "alloc-pool.h"
 #include "ira-int.h"
 #include "lra.h"
 #include "dce.h"
@@ -1395,9 +1376,8 @@ setup_reg_class_relations (void)
 
 /* Output all uniform and important classes into file F.  */
 static void
-print_unform_and_important_classes (FILE *f)
+print_uniform_and_important_classes (FILE *f)
 {
-  static const char *const reg_class_names[] = REG_CLASS_NAMES;
   int i, cl;
 
   fprintf (f, "Uniform classes:\n");
@@ -1422,7 +1402,6 @@ print_translated_classes (FILE *f, bool pressure_p)
   enum reg_class *class_translate = (pressure_p
 				     ? ira_pressure_class_translate
 				     : ira_allocno_class_translate);
-  static const char *const reg_class_names[] = REG_CLASS_NAMES;
   int i;
 
   fprintf (f, "%s classes:\n", pressure_p ? "Pressure" : "Allocno");
@@ -1439,7 +1418,7 @@ print_translated_classes (FILE *f, bool pressure_p)
 void
 ira_debug_allocno_classes (void)
 {
-  print_unform_and_important_classes (stderr);
+  print_uniform_and_important_classes (stderr);
   print_translated_classes (stderr, false);
   print_translated_classes (stderr, true);
 }
@@ -1767,9 +1746,9 @@ setup_prohibited_mode_move_regs (void)
   if (ira_prohibited_mode_move_regs_initialized_p)
     return;
   ira_prohibited_mode_move_regs_initialized_p = true;
-  test_reg1 = gen_rtx_REG (VOIDmode, 0);
-  test_reg2 = gen_rtx_REG (VOIDmode, 0);
-  move_pat = gen_rtx_SET (VOIDmode, test_reg1, test_reg2);
+  test_reg1 = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
+  test_reg2 = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 2);
+  move_pat = gen_rtx_SET (test_reg1, test_reg2);
   move_insn = gen_rtx_INSN (VOIDmode, 0, 0, 0, move_pat, 0, -1, 0);
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
@@ -1778,10 +1757,8 @@ setup_prohibited_mode_move_regs (void)
 	{
 	  if (! HARD_REGNO_MODE_OK (j, (machine_mode) i))
 	    continue;
-	  SET_REGNO_RAW (test_reg1, j);
-	  PUT_MODE (test_reg1, (machine_mode) i);
-	  SET_REGNO_RAW (test_reg2, j);
-	  PUT_MODE (test_reg2, (machine_mode) i);
+	  set_mode_and_regno (test_reg1, (machine_mode) i, j);
+	  set_mode_and_regno (test_reg2, (machine_mode) i, j);
 	  INSN_CODE (move_insn) = -1;
 	  recog_memoized (move_insn);
 	  if (INSN_CODE (move_insn) < 0)
@@ -1808,7 +1785,6 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
   int nop, nalt;
   bool curr_swapped;
   const char *p;
-  rtx op;
   int commutative = -1;
 
   extract_insn (insn);
@@ -1850,7 +1826,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	    {
 	      int c, len;
 
-	      op = recog_data.operand[nop];
+	      rtx op = recog_data.operand[nop];
 	      p = insn_constraints[nop * recog_data.n_alternatives + nalt];
 	      if (*p == 0 || *p == ',')
 		continue;
@@ -1923,10 +1899,8 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	break;
       if (curr_swapped)
 	break;
-      op = recog_data.operand[commutative];
-      recog_data.operand[commutative] = recog_data.operand[commutative + 1];
-      recog_data.operand[commutative + 1] = op;
-
+      std::swap (recog_data.operand[commutative],
+		 recog_data.operand[commutative + 1]);
     }
 }
 
@@ -2045,8 +2019,8 @@ decrease_live_ranges_number (void)
 {
   basic_block bb;
   rtx_insn *insn;
-  rtx set, src, dest, dest_death, q, note;
-  rtx_insn *p;
+  rtx set, src, dest, dest_death, note;
+  rtx_insn *p, *q;
   int sregno, dregno;
 
   if (! flag_expensive_optimizations)
@@ -2341,19 +2315,20 @@ ira_setup_eliminable_regset (void)
       else
 	df_set_regs_ever_live (eliminables[i].from, true);
     }
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
+  if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
     {
-      SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
-      if (frame_pointer_needed)
-	SET_HARD_REG_BIT (ira_no_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+      if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
+	{
+	  SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
+	  if (frame_pointer_needed)
+	    SET_HARD_REG_BIT (ira_no_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+	}
+      else if (frame_pointer_needed)
+	error ("%s cannot be used in asm here",
+	       reg_names[HARD_FRAME_POINTER_REGNUM]);
+      else
+	df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
     }
-  else if (frame_pointer_needed)
-    error ("%s cannot be used in asm here",
-	   reg_names[HARD_FRAME_POINTER_REGNUM]);
-  else
-    df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
-#endif
 
 #else
   if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
@@ -2505,12 +2480,12 @@ calculate_allocation_cost (void)
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     {
       fprintf (ira_dump_file,
-	       "+++Costs: overall %"PRId64
-	       ", reg %"PRId64
-	       ", mem %"PRId64
-	       ", ld %"PRId64
-	       ", st %"PRId64
-	       ", move %"PRId64,
+	       "+++Costs: overall %" PRId64
+	       ", reg %" PRId64
+	       ", mem %" PRId64
+	       ", ld %" PRId64
+	       ", st %" PRId64
+	       ", move %" PRId64,
 	       ira_overall_cost, ira_reg_cost, ira_mem_cost,
 	       ira_load_cost, ira_store_cost, ira_shuffle_cost);
       fprintf (ira_dump_file, "\n+++       move loops %d, new jumps %d\n",
@@ -2708,20 +2683,22 @@ fix_reg_equiv_init (void)
 {
   int max_regno = max_reg_num ();
   int i, new_regno, max;
-  rtx x, prev, next, insn, set;
+  rtx set;
+  rtx_insn_list *x, *next, *prev;
+  rtx_insn *insn;
 
   if (max_regno_before_ira < max_regno)
     {
       max = vec_safe_length (reg_equivs);
       grow_reg_equivs ();
       for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
-	for (prev = NULL_RTX, x = reg_equiv_init (i);
+	for (prev = NULL, x = reg_equiv_init (i);
 	     x != NULL_RTX;
 	     x = next)
 	  {
-	    next = XEXP (x, 1);
-	    insn = XEXP (x, 0);
-	    set = single_set (as_a <rtx_insn *> (insn));
+	    next = x->next ();
+	    insn = x->insn ();
+	    set = single_set (insn);
 	    ira_assert (set != NULL_RTX
 			&& (REG_P (SET_DEST (set)) || REG_P (SET_SRC (set))));
 	    if (REG_P (SET_DEST (set))
@@ -4380,7 +4357,7 @@ rtx_moveable_p (rtx *loc, enum op_type type)
       return rtx_moveable_p (&SET_DEST (x), OP_OUT);
 
     case UNSPEC_VOLATILE:
-      /* It is a bad idea to consider insns with with such rtl
+      /* It is a bad idea to consider insns with such rtl
 	 as moveable ones.  The insn scheduler also considers them as barrier
 	 for a reason.  */
       return false;
@@ -4641,15 +4618,14 @@ find_moveable_pseudos (void)
 			   ? " (no unique first use)" : "");
 		continue;
 	      }
-#ifdef HAVE_cc0
-	    if (reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
+	    if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
 	      {
 		if (dump_file)
 		  fprintf (dump_file, "Reg %d: closest user uses cc0\n",
 			   regno);
 		continue;
 	      }
-#endif
+
 	    bitmap_set_bit (&interesting, regno);
 	    /* If we get here, we know closest_use is a non-NULL insn
 	       (as opposed to const_0_rtx).  */
@@ -4724,10 +4700,7 @@ find_moveable_pseudos (void)
 	    {
 	      if (bitmap_bit_p (def_bb_moveable, regno)
 		  && !control_flow_insn_p (use_insn)
-#ifdef HAVE_cc0
-		  && !sets_cc0_p (use_insn)
-#endif
-		  )
+		  && (!HAVE_cc0 || !sets_cc0_p (use_insn)))
 		{
 		  if (modified_between_p (DF_REF_REG (use), def_insn, use_insn))
 		    {
@@ -4994,7 +4967,7 @@ split_live_ranges_for_shrink_wrap (void)
 
       if (newreg)
 	{
-	  rtx new_move = gen_move_insn (newreg, dest);
+	  rtx_insn *new_move = gen_move_insn (newreg, dest);
 	  emit_insn_after (new_move, bb_note (call_dom));
 	  if (dump_file)
 	    {
@@ -5443,7 +5416,7 @@ do_reload (void)
 
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL
       && overall_cost_before != ira_overall_cost)
-    fprintf (ira_dump_file, "+++Overall after reload %"PRId64 "\n",
+    fprintf (ira_dump_file, "+++Overall after reload %" PRId64 "\n",
 	     ira_overall_cost);
 
   flag_ira_share_spill_slots = saved_flag_ira_share_spill_slots;

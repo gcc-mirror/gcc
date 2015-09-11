@@ -25,4 +25,3 @@ void tuned_STREAM_Copy()
 /* { dg-final { scan-tree-dump-times "MEM.(base: &|symbol: )a," 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "MEM.(base: &|symbol: )c," 2 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */

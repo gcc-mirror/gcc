@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <stdbool.h>
 
 #include "libgccjit.h"
 
@@ -16,7 +17,7 @@ create_overflow_fn (gcc_jit_context *ctxt,
   /* Create the equivalent of this C:
 
        int
-       test_overflow_T_OP (T x, T y, int *ovf)
+       test_overflow_T_OP (T x, T y, bool *ovf)
        {
 	 T result;
 	 result = x OP y;
@@ -129,16 +130,16 @@ verify_int_overflow_fn (gcc_jit_result *jit_result,
 			const char *funcname,
 			int x, int y,
 			int expected_result,
-			int expected_ovf)
+			bool expected_ovf)
 {
   CHECK_NON_NULL (jit_result);
-  typedef int (*overflow_fn_type) (int, int, int *);
+  typedef int (*overflow_fn_type) (int, int, bool *);
   overflow_fn_type fn =
     (overflow_fn_type)gcc_jit_result_get_code (jit_result, funcname);
   CHECK_NON_NULL (fn);
 
   /* Call the function:  */
-  int actual_ovf = 0;
+  bool actual_ovf = 0;
   int actual_result = fn (x, y, &actual_ovf);
   note ("%s (%d, %d) returned: %d with ovf: %d",
 	funcname, x, y, actual_result, actual_ovf);
@@ -151,16 +152,17 @@ verify_uint_overflow_fn (gcc_jit_result *jit_result,
 			 const char *funcname,
 			 unsigned int x, unsigned int y,
 			 unsigned int expected_result,
-			 int expected_ovf)
+			 bool expected_ovf)
 {
   CHECK_NON_NULL (jit_result);
-  typedef unsigned int (*overflow_fn_type) (unsigned int, unsigned int, int *);
+  typedef unsigned int (*overflow_fn_type) (unsigned int, unsigned int,
+					    bool *);
   overflow_fn_type fn =
     (overflow_fn_type)gcc_jit_result_get_code (jit_result, funcname);
   CHECK_NON_NULL (fn);
 
   /* Call the function:  */
-  int actual_ovf = 0;
+  bool actual_ovf = 0;
   unsigned int actual_result = fn (x, y, &actual_ovf);
   note ("%s (%d, %d) returned: %d with ovf: %d",
 	funcname, x, y, actual_result, actual_ovf);

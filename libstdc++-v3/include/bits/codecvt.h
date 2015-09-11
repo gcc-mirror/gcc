@@ -594,10 +594,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
+#if __cplusplus >= 201103L
+      explicit
+      codecvt_byname(const string& __s, size_t __refs = 0)
+      : codecvt_byname(__s.c_str(), __refs) { }
+#endif
+
     protected:
       virtual
       ~codecvt_byname() { }
     };
+
+#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+  template<>
+    class codecvt_byname<char16_t, char, mbstate_t>
+    : public codecvt<char16_t, char, mbstate_t>
+    {
+    public:
+      explicit
+      codecvt_byname(const char* __s, size_t __refs = 0)
+      : codecvt<char16_t, char, mbstate_t>(__refs) { }
+
+      explicit
+      codecvt_byname(const string& __s, size_t __refs = 0)
+      : codecvt_byname(__s.c_str(), __refs) { }
+
+    protected:
+      virtual
+      ~codecvt_byname() { }
+    };
+
+  template<>
+    class codecvt_byname<char32_t, char, mbstate_t>
+    : public codecvt<char32_t, char, mbstate_t>
+    {
+    public:
+      explicit
+      codecvt_byname(const char* __s, size_t __refs = 0)
+      : codecvt<char32_t, char, mbstate_t>(__refs) { }
+
+      explicit
+      codecvt_byname(const string& __s, size_t __refs = 0)
+      : codecvt_byname(__s.c_str(), __refs) { }
+
+    protected:
+      virtual
+      ~codecvt_byname() { }
+    };
+#endif
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
@@ -623,6 +667,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     has_facet<codecvt<wchar_t, char, mbstate_t> >(const locale&);
 #endif
+
+#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+  extern template class codecvt_byname<char16_t, char, mbstate_t>;
+  extern template class codecvt_byname<char32_t, char, mbstate_t>;
+#endif
+
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

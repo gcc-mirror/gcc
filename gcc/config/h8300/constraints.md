@@ -45,7 +45,7 @@
 ;;     before reload so that register allocator will pick the second
 ;;     alternative.
 
-;;   - we would like 'D' to be be NO_REGS when the frame pointer isn't
+;;   - we would like 'D' to be NO_REGS when the frame pointer isn't
 ;;     live, but we the frame pointer may turn out to be needed after
 ;;     we start reload, and then we may have already decided we don't
 ;;     have a choice, so we can't do that.  Forcing the register
@@ -171,10 +171,14 @@
 (define_constraint "U"
   "An operand valid for a bset destination."
   (ior (and (match_code "reg")
-	    (match_test "REG_OK_FOR_BASE_P (op)"))
+	    (match_test "(reload_in_progress || reload_completed)
+			 ? REG_OK_FOR_BASE_STRICT_P (op)
+			 : REG_OK_FOR_BASE_P (op)"))
        (and (match_code "mem")
 	    (match_code "reg" "0")
-	    (match_test "REG_OK_FOR_BASE_P (XEXP (op, 0))"))
+	    (match_test "(reload_in_progress || reload_completed)
+			 ? REG_OK_FOR_BASE_STRICT_P (XEXP (op, 0))
+			 : REG_OK_FOR_BASE_P (XEXP (op, 0))"))
        (and (match_code "mem")
 	    (match_code "symbol_ref" "0")
 	    (match_test "TARGET_H8300S"))
@@ -184,7 +188,7 @@
 	    (match_code "symbol_ref" "000")
 	    (match_code "const_int" "001")
 	    (ior (match_test "TARGET_H8300S")
-		 (match_test "SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (op, 0), 0), 0))")))
+		 (match_test "(SYMBOL_REF_FLAGS (XEXP (XEXP (XEXP (op, 0), 0), 0)) & SYMBOL_FLAG_EIGHTBIT_DATA) != 0")))
        (and (match_code "mem")
 	    (match_test "h8300_eightbit_constant_address_p (XEXP (op, 0))"))
        (and (match_code "mem")

@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-#include "diagnostic-core.h"
+#include "coretypes.h"
 
 #if GCC_VERSION < 3004
 

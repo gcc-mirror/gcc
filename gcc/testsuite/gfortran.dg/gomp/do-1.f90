@@ -23,4 +23,3 @@ end subroutine bar
 
 ! { dg-final { scan-tree-dump-times "GOMP_parallel_loop_dynamic_start" 2 "omplower" { xfail *-*-* } } }
 ! { dg-final { scan-tree-dump-times "GOMP_parallel_loop_guided_start" 2 "omplower" { xfail *-*-* } } }
-! { dg-final { cleanup-tree-dump "omplower" } }

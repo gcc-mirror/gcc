@@ -24,15 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "varasm.h"
@@ -40,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "target.h"
 #include "gimplify.h"
-#include "wide-int.h"
 #include "c-family/c-ubsan.h"
 
 static bool begin_init_stmts (tree *, tree *);
@@ -288,7 +279,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
       /* Build a constructor to contain the initializations.  */
       init = build_constructor (type, v);
     }
-  else if (TREE_CODE (type) == VECTOR_TYPE)
+  else if (VECTOR_TYPE_P (type))
     init = build_zero_cst (type);
   else
     gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
@@ -330,7 +321,7 @@ build_value_init (tree type, tsubst_flags_t complain)
 
      - if T is a class type (clause 9) with either no default constructor
        (12.1) or a default constructor that is user-provided or deleted,
-       then then the object is default-initialized;
+       then the object is default-initialized;
 
      - if T is a (possibly cv-qualified) class type without a user-provided
        or deleted default constructor, then the object is zero-initialized
@@ -548,6 +539,7 @@ get_nsdmi (tree member, bool in_ctor)
   tree init;
   tree save_ccp = current_class_ptr;
   tree save_ccr = current_class_ref;
+  
   if (!in_ctor)
     {
       /* Use a PLACEHOLDER_EXPR when we don't have a 'this' parameter to
@@ -555,22 +547,40 @@ get_nsdmi (tree member, bool in_ctor)
       current_class_ref = build0 (PLACEHOLDER_EXPR, DECL_CONTEXT (member));
       current_class_ptr = build_address (current_class_ref);
     }
+
   if (DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
     {
-      /* Do deferred instantiation of the NSDMI.  */
-      init = (tsubst_copy_and_build
-	      (DECL_INITIAL (DECL_TI_TEMPLATE (member)),
-	       DECL_TI_ARGS (member),
-	       tf_warning_or_error, member, /*function_p=*/false,
-	       /*integral_constant_expression_p=*/false));
+      init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
+      if (TREE_CODE (init) == DEFAULT_ARG)
+	goto unparsed;
 
-      init = digest_nsdmi_init (member, init);
+      /* Check recursive instantiation.  */
+      if (DECL_INSTANTIATING_NSDMI_P (member))
+	{
+	  error ("recursive instantiation of non-static data member "
+		 "initializer for %qD", member);
+	  init = error_mark_node;
+	}
+      else
+	{
+	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
+	  
+	  /* Do deferred instantiation of the NSDMI.  */
+	  init = (tsubst_copy_and_build
+		  (init, DECL_TI_ARGS (member),
+		   tf_warning_or_error, member, /*function_p=*/false,
+		   /*integral_constant_expression_p=*/false));
+	  init = digest_nsdmi_init (member, init);
+	  
+	  DECL_INSTANTIATING_NSDMI_P (member) = 0;
+	}
     }
   else
     {
       init = DECL_INITIAL (member);
       if (init && TREE_CODE (init) == DEFAULT_ARG)
 	{
+	unparsed:
 	  error ("constructor required before non-static data member "
 		 "for %qD has been parsed", member);
 	  DECL_INITIAL (member) = error_mark_node;
@@ -625,6 +635,9 @@ perform_member_init (tree member, tree init)
       && TREE_CHAIN (init) == NULL_TREE)
     {
       tree val = TREE_VALUE (init);
+      /* Handle references.  */
+      if (REFERENCE_REF_P (val))
+	val = TREE_OPERAND (val, 0);
       if (TREE_CODE (val) == COMPONENT_REF && TREE_OPERAND (val, 1) == member
 	  && TREE_OPERAND (val, 0) == current_class_ref)
 	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
@@ -923,13 +936,15 @@ sort_mem_initializers (tree t, tree mem_inits)
       if (warn_reorder && !subobject_init)
 	{
 	  if (TREE_CODE (TREE_PURPOSE (next_subobject)) == FIELD_DECL)
-	    warning (OPT_Wreorder, "%q+D will be initialized after",
-		     TREE_PURPOSE (next_subobject));
+	    warning_at (DECL_SOURCE_LOCATION (TREE_PURPOSE (next_subobject)),
+			OPT_Wreorder, "%qD will be initialized after",
+			TREE_PURPOSE (next_subobject));
 	  else
 	    warning (OPT_Wreorder, "base %qT will be initialized after",
 		     TREE_PURPOSE (next_subobject));
 	  if (TREE_CODE (subobject) == FIELD_DECL)
-	    warning (OPT_Wreorder, "  %q+#D", subobject);
+	    warning_at (DECL_SOURCE_LOCATION (subobject),
+			OPT_Wreorder, "  %q#D", subobject);
 	  else
 	    warning (OPT_Wreorder, "  base %qT", subobject);
 	  warning_at (DECL_SOURCE_LOCATION (current_function_decl),
@@ -1618,7 +1633,10 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       && CP_AGGREGATE_TYPE_P (type))
     /* A brace-enclosed initializer for an aggregate.  In C++0x this can
        happen for direct-initialization, too.  */
-    init = digest_init (type, init, complain);
+    {
+      init = reshape_init (type, init, complain);
+      init = digest_init (type, init, complain);
+    }
 
   /* A CONSTRUCTOR of the target's type is a previously digested
      initializer, whether that happened just above or in
@@ -2032,7 +2050,7 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	 specialization, we must instantiate it here.  The
 	 initializer for the static data member is not processed
 	 until needed; we need it now.  */
-      mark_used (decl);
+      mark_used (decl, tf_none);
       mark_rvalue_use (decl);
       init = DECL_INITIAL (decl);
       if (init == error_mark_node)
@@ -3367,6 +3385,18 @@ get_temp_regvar (tree type, tree init)
   return decl;
 }
 
+/* Subroutine of build_vec_init.  Returns true if assigning to an array of
+   INNER_ELT_TYPE from INIT is trivial.  */
+
+static bool
+vec_copy_assign_is_trivial (tree inner_elt_type, tree init)
+{
+  tree fromtype = inner_elt_type;
+  if (real_lvalue_p (init))
+    fromtype = cp_build_reference_type (fromtype, /*rval*/false);
+  return is_trivially_xible (MODIFY_EXPR, inner_elt_type, fromtype);
+}
+
 /* `build_vec_init' returns tree structure that performs
    initialization of a vector of aggregate types.
 
@@ -3443,8 +3473,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       && TREE_CODE (atype) == ARRAY_TYPE
       && TREE_CONSTANT (maxindex)
       && (from_array == 2
-	  ? (!CLASS_TYPE_P (inner_elt_type)
-	     || !TYPE_HAS_COMPLEX_COPY_ASSIGN (inner_elt_type))
+	  ? vec_copy_assign_is_trivial (inner_elt_type, init)
 	  : !TYPE_NEEDS_CONSTRUCTING (type))
       && ((TREE_CODE (init) == CONSTRUCTOR
 	   /* Don't do this if the CONSTRUCTOR might contain something
@@ -3539,7 +3568,9 @@ build_vec_init (tree base, tree maxindex, tree init,
   /* Should we try to create a constant initializer?  */
   bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
 		    && TREE_CONSTANT (maxindex)
-		    && init && TREE_CODE (init) == CONSTRUCTOR
+		    && (init ? TREE_CODE (init) == CONSTRUCTOR
+			: (type_has_constexpr_default_constructor
+			   (inner_elt_type)))
 		    && (literal_type_p (inner_elt_type)
 			|| TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
   vec<constructor_elt, va_gc> *const_vec = NULL;
@@ -3570,7 +3601,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       if (length_check)
 	{
-	  tree nelts = size_int (CONSTRUCTOR_NELTS (init) - 1);
+	  tree nelts = build_int_cst (ptrdiff_type_node,
+				      CONSTRUCTOR_NELTS (init) - 1);
 	  if (TREE_CODE (atype) != ARRAY_TYPE)
 	    {
 	      if (flag_exceptions)
@@ -3677,6 +3709,12 @@ build_vec_init (tree base, tree maxindex, tree init,
 
      We do need to keep going if we're copying an array.  */
 
+  if (try_const && !init)
+    /* With a constexpr default constructor, which we checked for when
+       setting try_const above, default-initialization is equivalent to
+       value-initialization, and build_value_init gives us something more
+       friendly to maybe_constant_init.  */
+    explicit_value_init_p = true;
   if (from_array
       || ((type_build_ctor_call (type) || init || explicit_value_init_p)
 	  && ! (tree_fits_shwi_p (maxindex)
@@ -3708,12 +3746,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	{
 	  if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
 	    {
-	      if (BRACE_ENCLOSED_INITIALIZER_P (init)
-		  && CONSTRUCTOR_NELTS (init) == 0)
-		/* Reuse it.  */;
-	      else
-		init = build_constructor (init_list_type_node, NULL);
-	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	      init = build_constructor (init_list_type_node, NULL);
 	    }
 	  else
 	    {
@@ -3781,6 +3814,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       if (try_const)
 	{
+	  /* FIXME refs to earlier elts */
 	  tree e = maybe_constant_init (elt_init);
 	  if (reduced_constant_expression_p (e))
 	    {
@@ -3795,6 +3829,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      saw_non_const = true;
 	      if (do_static_init)
 		e = build_zero_init (TREE_TYPE (e), NULL_TREE, true);
+	      else
+		e = NULL_TREE;
 	    }
 
 	  if (e)

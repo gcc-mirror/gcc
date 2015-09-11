@@ -2,7 +2,7 @@
 
 class foo
 {
-  typedef int memfun;  // { dg-error "private" }
+  typedef int memfun;  // { dg-message "private" }
 };
 
 template<foo::memfun> // { dg-error "context" }

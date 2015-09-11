@@ -25,5 +25,3 @@ end subroutine eval
 ! { dg-final { scan-tree-dump "in all uses of countm1\[^\n\]* / " "pre" } }
 ! There should be only one load from n left
 ! { dg-final { scan-tree-dump-times "\\*n_" 1 "fre1" } }
-! { dg-final { cleanup-tree-dump "fre1" } }
-! { dg-final { cleanup-tree-dump "pre" } }

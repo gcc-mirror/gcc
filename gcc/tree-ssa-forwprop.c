@@ -20,49 +20,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "tm_p.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "gimple-pretty-print.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
-#include "hashtab.h"
-#include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -2141,6 +2117,7 @@ pass_forwprop::execute (function *fun)
   lattice.quick_grow_cleared (num_ssa_names);
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
   int postorder_num = inverted_post_order_compute (postorder);
+  auto_vec<gimple, 4> to_fixup;
   to_purge = BITMAP_ALLOC (NULL);
   for (int i = 0; i < postorder_num; ++i)
     {
@@ -2274,6 +2251,8 @@ pass_forwprop::execute (function *fun)
 			= gimple_build_assign (gimple_assign_lhs (use_stmt),
 					       new_rhs);
 
+		      location_t loc = gimple_location (use_stmt);
+		      gimple_set_location (new_stmt, loc);
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
 		      unlink_stmt_vdef (use_stmt);
 		      gsi_remove (&gsi2, true);
@@ -2305,6 +2284,8 @@ pass_forwprop::execute (function *fun)
 					 TREE_TYPE (TREE_TYPE (use_lhs)),
 					 unshare_expr (use_lhs));
 		  gimple new_stmt = gimple_build_assign (new_lhs, rhs);
+		  location_t loc = gimple_location (use_stmt);
+		  gimple_set_location (new_stmt, loc);
 		  gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
 		  gimple_set_vdef (new_stmt, make_ssa_name (gimple_vop (cfun)));
 		  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
@@ -2336,6 +2317,8 @@ pass_forwprop::execute (function *fun)
 	  gimple stmt = gsi_stmt (gsi);
 	  gimple orig_stmt = stmt;
 	  bool changed = false;
+	  bool was_noreturn = (is_gimple_call (stmt)
+			       && gimple_call_noreturn_p (stmt));
 
 	  /* Mark stmt as potentially needing revisiting.  */
 	  gimple_set_plf (stmt, GF_PLF_1, false);
@@ -2346,6 +2329,9 @@ pass_forwprop::execute (function *fun)
 	      stmt = gsi_stmt (gsi);
 	      if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
 		bitmap_set_bit (to_purge, bb->index);
+	      if (!was_noreturn
+		  && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
+		to_fixup.safe_push (stmt);
 	      /* Cleanup the CFG if we simplified a condition to
 	         true or false.  */
 	      if (gcond *cond = dyn_cast <gcond *> (stmt))
@@ -2465,6 +2451,22 @@ pass_forwprop::execute (function *fun)
     }
   free (postorder);
   lattice.release ();
+
+  /* Fixup stmts that became noreturn calls.  This may require splitting
+     blocks and thus isn't possible during the walk.  Do this
+     in reverse order so we don't inadvertedly remove a stmt we want to
+     fixup by visiting a dominating now noreturn call first.  */
+  while (!to_fixup.is_empty ())
+    {
+      gimple stmt = to_fixup.pop ();
+      if (dump_file && dump_flags & TDF_DETAILS)
+	{
+	  fprintf (dump_file, "Fixing up noreturn call ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  fprintf (dump_file, "\n");
+	}
+      cfg_changed |= fixup_noreturn_call (stmt);
+    }
 
   cfg_changed |= gimple_purge_all_dead_eh_edges (to_purge);
   BITMAP_FREE (to_purge);

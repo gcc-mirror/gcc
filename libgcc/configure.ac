@@ -10,6 +10,7 @@ sinclude(../config/picflag.m4)
 sinclude(../config/dfp.m4)
 sinclude(../config/unwind_ipinfo.m4)
 sinclude(../config/gthr.m4)
+sinclude(../config/sjlj.m4)
 
 AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
@@ -197,6 +198,11 @@ AS_VAR_ARITH([long_double_type_size], [$ac_cv_sizeof_long_double \* 8])
 AC_SUBST(double_type_size)
 AC_SUBST(long_double_type_size)
 
+AC_CHECK_HEADERS(inttypes.h stdint.h stdlib.h ftw.h \
+	unistd.h sys/stat.h sys/types.h \
+	string.h strings.h memory.h)
+AC_HEADER_STDC
+
 # Check for decimal float support.
 AC_CACHE_CHECK([whether decimal floating point is supported], [libgcc_cv_dfp],
 	       [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -225,59 +231,8 @@ AC_SUBST(fixed_point)
 # config.gcc also contains tests of with_system_libunwind.
 GCC_CHECK_UNWIND_GETIPINFO
 
-# The sjlj test is almost duplicated here and in libgo/configure.ac (for C),
-# libstdc++-v3/acinclude.m4 and libjava/configure.ac (for C++), and
-# libobjc/configure.ac (for Objective-C).
-# FIXME: This should be centralized in config/sjlj.m4.
-AC_ARG_ENABLE(sjlj-exceptions,
-  AC_HELP_STRING([--enable-sjlj-exceptions],
-		 [force use of builtin_setjmp for exceptions]),
-  [case "$enableval" in
-   yes|no|auto) ;;
-   *) AC_MSG_ERROR([unknown argument to --enable-sjlj-exceptions]) ;;
-   esac],
-  [enable_sjlj_exceptions=auto])
-
-AC_CACHE_CHECK([whether to use setjmp/longjmp exceptions],
-[libgcc_cv_lib_sjlj_exceptions],
-[AC_LANG_CONFTEST(
-  [AC_LANG_SOURCE([
-void bar ();
-void clean (int *);
-void foo ()
-{
-  int i __attribute__ ((cleanup (clean)));
-  bar();
-}
-])])
-CFLAGS_hold=$CFLAGS
-CFLAGS="--save-temps -fexceptions"
-libgcc_cv_lib_sjlj_exceptions=unknown
-AS_IF([ac_fn_c_try_compile],
-  [if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1; then
-    libgcc_cv_lib_sjlj_exceptions=yes
-  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1; then
-    libgcc_cv_lib_sjlj_exceptions=no
-  fi])
-CFLAGS=$CFLAGS_hold
-rm -f conftest*
-])
-
-if test "$enable_sjlj_exceptions" = "auto"; then
-  enable_sjlj_exceptions=$libgcc_cv_lib_sjlj_exceptions
-fi
-
-case $enable_sjlj_exceptions in
-yes)
-  AC_DEFINE(LIBGCC_SJLJ_EXCEPTIONS, 1,
-	[Define if the C compiler is configured for setjmp/longjmp exceptions.])
-  ;;
-no)
-  ;;
-*)
-  AC_MSG_ERROR([unable to detect exception model])
-  ;;
-esac
+# Check if the compiler is configured for setjmp/longjmp exceptions.
+GCC_CHECK_SJLJ_EXCEPTIONS
 
 AC_ARG_ENABLE([explicit-exception-frame-registration],
   [AC_HELP_STRING([--enable-explicit-exception-frame-registration],
@@ -286,9 +241,9 @@ AC_ARG_ENABLE([explicit-exception-frame-registration],
 [
 force_explicit_eh_registry=
 if test "$enable_explicit_exception_frame_registration" = yes; then
-  if test "$enable_sjlj_exceptions" = yes; then
-    AC_MSG_ERROR([Can't enable both of --enable-sjlj-exceptions
-                  and --enable-explicit-exception-frame-registration])
+  if test $ac_cv_sjlj_exceptions = yes; then
+    AC_MSG_ERROR([Can't --enable-explicit-exception-frame-registration
+                  with setjmp/longjmp exceptions])
   fi
   force_explicit_eh_registry=-DUSE_EH_FRAME_REGISTRY_ALWAYS
 fi
@@ -398,16 +353,13 @@ esac
 
 # Used for constructing correct paths for offload compilers.
 accel_dir_suffix=
+real_host_noncanonical=${host_noncanonical}
 if test x"$enable_as_accelerator_for" != x; then
   accel_dir_suffix=/accel/${target_noncanonical}
-  case "${target_noncanonical}" in
-    *-intelmicemul-*)
-      # In this case we expect offload compiler to be built as native, so we
-      # need to change install directory for driver to be able to find libgcc.
-      host_noncanonical=${enable_as_accelerator_for} ;;
-  esac
+  real_host_noncanonical=${enable_as_accelerator_for}
 fi
 AC_SUBST(accel_dir_suffix)
+AC_SUBST(real_host_noncanonical)
 
 if test x"$enable_offload_targets" != x; then
   extra_parts="${extra_parts} crtoffloadbegin.o crtoffloadend.o"
@@ -427,6 +379,22 @@ i?86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
 EOF
   if AC_TRY_COMMAND(${CC-cc} -shared -nostartfiles -nodefaultlibs -o conftest.so conftest.s 1>&AS_MESSAGE_LOG_FD); then
       tmake_file="${tmake_file} i386/t-crtstuff"
+  fi
+  ;;
+esac
+
+# Check if xtensa target is configured for windowed ABI and thus needs to use
+# custom unwind code.
+# This is after config.host so we can augment tmake_file.
+case ${host} in
+xtensa*-*)
+  cat > conftest.c <<EOF
+	#ifdef __XTENSA_CALL0_ABI__
+	#error
+	#endif
+EOF
+  if AC_TRY_COMMAND(${CC-cc} -E -o conftest.i conftest.c 1>&AS_MESSAGE_LOG_FD); then
+      tmake_file="${tmake_file} xtensa/t-windowed"
   fi
   ;;
 esac

@@ -28,5 +28,3 @@ bar (void)
 
 /* { dg-final { scan-ipa-dump "Adjusting alignment of param" "cp" } } */
 /* { dg-final { scan-tree-dump-not "fail_the_test" "optimized" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

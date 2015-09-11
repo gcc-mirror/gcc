@@ -102,7 +102,7 @@ f4 (void)
 /* { dg-output "\[^\n\r]*store to address \[^\n\r]* with insufficient space for an object of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*note: pointer points here\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*\\^\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*\\^" } */
 
 __attribute__((noinline, noclone)) void
 f5 (int *p)

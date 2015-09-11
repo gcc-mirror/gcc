@@ -4,7 +4,7 @@
 struct B
 {
 protected:
-  template <class T> void f (); // { dg-error "protected" }
+  template <class T> void f (); // { dg-message "protected" }
 };
 
 struct D : public B

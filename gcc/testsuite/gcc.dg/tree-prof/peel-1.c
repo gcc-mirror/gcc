@@ -23,4 +23,3 @@ main()
 /* { dg-final-use { scan-tree-dump "Peeled loop ., 2 times" "cunroll" } } */
 /* In fact one peeling is enough; we however mispredict number of iterations of the loop
    at least until loop_ch is schedule ahead of profiling pass.  */
-/* { dg-final-use { cleanup-tree-dump "cunroll" } } */

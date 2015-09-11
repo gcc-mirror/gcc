@@ -10,4 +10,3 @@ f (vec *a)
 }
 
 /* { dg-final { scan-tree-dump "<< 5" "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

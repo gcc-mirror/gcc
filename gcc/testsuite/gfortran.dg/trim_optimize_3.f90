@@ -13,4 +13,3 @@ program main
   if (b4 /= 4_'bcdx') call abort
 end
 ! { dg-final { scan-tree-dump-times "string_len_trim" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

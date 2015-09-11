@@ -82,7 +82,8 @@ extensions, be aware of two things:
       They can be enabled at configure time with
       <link linkend="manual.intro.setup.configure"><literal>--enable-concept-checks</literal></link>.
       You can enable them on a per-translation-unit basis with
-      <code>#define _GLIBCXX_CONCEPT_CHECKS</code> for GCC 3.4 and higher
+      <link linkend="manual.intro.using.macros"><code>#define
+      _GLIBCXX_CONCEPT_CHECKS</code></link> for GCC 3.4 and higher
       (or with <code>#define _GLIBCPP_CONCEPT_CHECKS</code> for versions
       3.1, 3.2 and 3.3).
    </para>

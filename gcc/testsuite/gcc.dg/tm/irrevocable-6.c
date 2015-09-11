@@ -31,4 +31,3 @@ void wildthing()
 /* { dg-final { scan-ipa-dump-times "bb 7 goes irr" 1 "tmipa" } } */
 /* { dg-final { scan-ipa-dump-times "bb 8 goes irr" 1 "tmipa" } } */
 /* { dg-final { scan-ipa-dump-times "bb 9 goes irr" 1 "tmipa" } } */
-/* { dg-final { cleanup-ipa-dump "tmipa" } } */

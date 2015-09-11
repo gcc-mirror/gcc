@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,8 +40,8 @@ extern char **environ;
 char **tmp_dirs;
 unsigned tmp_dirs_num = 0;
 
-/* Number of KNC engines.  */
-long knc_engines_num;
+/* Number of emulated MIC engines.  */
+long num_engines;
 
 /* Mutex to sync parallel execution.  */
 pthread_mutex_t mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -116,8 +116,7 @@ __attribute__((constructor))
 static void
 init ()
 {
-  if (read_long_env (OFFLOAD_EMUL_KNC_NUM_ENV, &knc_engines_num, 1)
-      == COI_ERROR)
+  if (read_long_env (OFFLOAD_EMUL_NUM_ENV, &num_engines, 1) == COI_ERROR)
     exit (0);
 }
 
@@ -665,10 +664,10 @@ SYMBOL_VERSION (COIEngineGetCount, 1) (COI_ISA_TYPE isa,
   COITRACE ("COIEngineGetCount");
 
   /* Features of liboffload.  */
-  assert (isa == COI_ISA_KNC);
+  assert (isa == COI_ISA_MIC);
 
   /* Prepare output arguments.  */
-  *count = knc_engines_num;
+  *count = num_engines;
 
   return COI_SUCCESS;
 }
@@ -684,10 +683,10 @@ SYMBOL_VERSION (COIEngineGetHandle, 1) (COI_ISA_TYPE isa,
   Engine *engine;
 
   /* Features of liboffload.  */
-  assert (isa == COI_ISA_KNC);
+  assert (isa == COI_ISA_MIC);
 
   /* Check engine index.  */
-  if (index >= knc_engines_num)
+  if (index >= num_engines)
     COIERROR ("Wrong engine index.");
 
   /* Create engine handle.  */
@@ -889,7 +888,7 @@ SYMBOL_VERSION (COIProcessCreateFromMemory, 1) (COIENGINE engine,
 
   /* Create directory for pipes to prevent names collision.  */
   MALLOC (char *, pipes_path, strlen (PIPES_PATH) + strlen (eng->dir) + 1);
-  sprintf (pipes_path, "%s"PIPES_PATH, eng->dir);
+  sprintf (pipes_path, "%s" PIPES_PATH, eng->dir);
   if (mkdir (pipes_path, S_IRWXU) < 0)
     COIERROR ("Cannot create folder %s.", pipes_path);
 
@@ -900,8 +899,8 @@ SYMBOL_VERSION (COIProcessCreateFromMemory, 1) (COIENGINE engine,
 	  strlen (PIPE_TARGET_PATH) + strlen (eng->dir) + 1);
   if (pipe_target_path == NULL)
     COIERROR ("Cannot allocate memory.");
-  sprintf (pipe_host_path, "%s"PIPE_HOST_PATH, eng->dir);
-  sprintf (pipe_target_path, "%s"PIPE_TARGET_PATH, eng->dir);
+  sprintf (pipe_host_path, "%s" PIPE_HOST_PATH, eng->dir);
+  sprintf (pipe_target_path, "%s" PIPE_TARGET_PATH, eng->dir);
   if (mkfifo (pipe_host_path, S_IRUSR | S_IWUSR) < 0)
     COIERROR ("Cannot create pipe %s.", pipe_host_path);
   if (mkfifo (pipe_target_path, S_IRUSR | S_IWUSR) < 0)
@@ -1019,6 +1018,27 @@ SYMBOL_VERSION (COIProcessCreateFromMemory, 1) (COIENGINE engine,
 
 
 COIRESULT
+SYMBOL_VERSION (COIProcessCreateFromFile, 1) (COIENGINE in_Engine,
+					      const char *in_pBinaryName,
+					      int in_Argc,
+					      const char **in_ppArgv,
+					      uint8_t in_DupEnv,
+					      const char **in_ppAdditionalEnv,
+					      uint8_t in_ProxyActive,
+					      const char *in_Reserved,
+					      uint64_t in_BufferSpace,
+					      const char *in_LibrarySearchPath,
+					      COIPROCESS *out_pProcess)
+{
+  COITRACE ("COIProcessCreateFromFile");
+
+  /* liboffloadmic with GCC compiled binaries should never go here.  */
+  assert (false);
+  return COI_ERROR;
+}
+
+
+COIRESULT
 SYMBOL_VERSION (COIProcessDestroy, 1) (COIPROCESS process,
 				       int32_t wait_timeout,      // Ignored
 				       uint8_t force,
@@ -1129,38 +1149,39 @@ SYMBOL_VERSION (COIProcessGetFunctionHandles, 1) (COIPROCESS process,
 
 
 COIRESULT
-SYMBOL_VERSION (COIProcessLoadLibraryFromMemory, 2) (COIPROCESS process,
-						     const void *lib_buffer,
-						     uint64_t lib_buffer_len,
-						     const char *lib_name,
-						     const char *lib_search_path,
-						     const char *file_of_origin,	// Ignored
-						     uint64_t file_from_origin_offset,  // Ignored
-						     uint32_t flags,			// Ignored
-						     COILIBRARY *library)		// Ignored
+SYMBOL_VERSION (COIProcessLoadLibraryFromMemory, 2) (COIPROCESS in_Process,
+						     const void *in_pLibraryBuffer,
+						     uint64_t in_LibraryBufferLength,
+						     const char *in_pLibraryName,
+						     const char *in_LibrarySearchPath,	// Ignored
+						     const char *in_FileOfOrigin,	// Ignored
+						     uint64_t in_FileOfOriginOffset,	// Ignored
+						     uint32_t in_Flags,			// Ignored
+						     COILIBRARY *out_pLibrary)
 {
   COITRACE ("COIProcessLoadLibraryFromMemory");
 
+  const cmd_t cmd = CMD_OPEN_LIBRARY;
   char *lib_path;
-  cmd_t cmd = CMD_OPEN_LIBRARY;
   int fd;
   FILE *file;
   size_t len;
 
   /* Convert input arguments.  */
-  Process *proc = (Process *) process;
+  Process *proc = (Process *) in_Process;
 
   /* Create target library file.  */
   MALLOC (char *, lib_path,
-	  strlen (proc->engine->dir) + strlen (lib_name) + 2);
-  sprintf (lib_path, "%s/%s", proc->engine->dir, lib_name);
+	  strlen (proc->engine->dir) + strlen (in_pLibraryName) + 2);
+  sprintf (lib_path, "%s/%s", proc->engine->dir, in_pLibraryName);
   fd = open (lib_path, O_CLOEXEC | O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
   if (fd < 0)
     COIERROR ("Cannot create file %s.", lib_path);
   file = fdopen (fd, "wb");
   if (file == NULL)
     COIERROR ("Cannot associate stream with file descriptor.");
-  if (fwrite (lib_buffer, 1, lib_buffer_len, file) != lib_buffer_len)
+  if (fwrite (in_pLibraryBuffer, 1, in_LibraryBufferLength, file)
+      != in_LibraryBufferLength)
     COIERROR ("Cannot write in file %s.", lib_path);
   if (fclose (file) != 0)
     COIERROR ("Cannot close file %s.", lib_path);
@@ -1176,6 +1197,10 @@ SYMBOL_VERSION (COIProcessLoadLibraryFromMemory, 2) (COIPROCESS process,
   WRITE (proc->pipeline->pipe_target, &len, sizeof (size_t));
   WRITE (proc->pipeline->pipe_target, lib_path, len);
 
+  /* Receive data from target.  */
+  void *handle;
+  READ (proc->pipeline->pipe_host, &handle, sizeof (void *));
+
   /* Finish critical section.  */
   if (pthread_mutex_unlock (&mutex) != 0)
     COIERROR ("Cannot unlock mutex.");
@@ -1183,6 +1208,7 @@ SYMBOL_VERSION (COIProcessLoadLibraryFromMemory, 2) (COIPROCESS process,
   /* Clean up.  */
   free (lib_path);
 
+  *out_pLibrary = (COILIBRARY) handle;
   return COI_SUCCESS;
 }
 
@@ -1202,12 +1228,85 @@ SYMBOL_VERSION (COIProcessRegisterLibraries, 1) (uint32_t libraries_num,
 }
 
 
+COIRESULT
+SYMBOL_VERSION (COIProcessUnloadLibrary, 1) (COIPROCESS in_Process,
+					     COILIBRARY in_Library)
+{
+  COITRACE ("COIProcessUnloadLibrary");
+
+  const cmd_t cmd = CMD_CLOSE_LIBRARY;
+
+  /* Convert input arguments.  */
+  Process *proc = (Process *) in_Process;
+
+  /* Start critical section.  */
+  if (pthread_mutex_lock (&mutex) != 0)
+    COIERROR ("Cannot lock mutex.");
+
+  /* Make target close library.  */
+  WRITE (proc->pipeline->pipe_target, &cmd, sizeof (cmd_t));
+  WRITE (proc->pipeline->pipe_target, &in_Library, sizeof (void *));
+
+  /* Finish critical section.  */
+  if (pthread_mutex_unlock (&mutex) != 0)
+    COIERROR ("Cannot unlock mutex.");
+
+  return COI_SUCCESS;
+}
+
+
 uint64_t
 SYMBOL_VERSION (COIPerfGetCycleFrequency, 1) ()
 {
   COITRACE ("COIPerfGetCycleFrequency");
 
   return (uint64_t) CYCLE_FREQUENCY;
+}
+
+
+COIRESULT
+SYMBOL_VERSION (COIPipelineClearCPUMask, 1) (COI_CPU_MASK *in_Mask)
+{
+  COITRACE ("COIPipelineClearCPUMask");
+
+  /* Looks like we have nothing to do here.  */
+
+  return COI_SUCCESS;
+}
+
+
+COIRESULT
+SYMBOL_VERSION (COIPipelineSetCPUMask, 1) (COIPROCESS in_Process,
+					   uint32_t in_CoreID,
+					   uint8_t in_ThreadID,
+					   COI_CPU_MASK *out_pMask)
+{
+  COITRACE ("COIPipelineSetCPUMask");
+
+  /* Looks like we have nothing to do here.  */
+
+  return COI_SUCCESS;
+}
+
+
+COIRESULT
+SYMBOL_VERSION (COIEngineGetInfo, 1) (COIENGINE in_EngineHandle,
+				      uint32_t in_EngineInfoSize,
+				      COI_ENGINE_INFO *out_pEngineInfo)
+{
+  COITRACE ("COIEngineGetInfo");
+
+  out_pEngineInfo->ISA = COI_ISA_x86_64;
+  out_pEngineInfo->NumCores = 1;
+  out_pEngineInfo->NumThreads = 8;
+  out_pEngineInfo->CoreMaxFrequency = SYMBOL_VERSION(COIPerfGetCycleFrequency,1)() / 1000000;
+  out_pEngineInfo->PhysicalMemory = 1024;
+  out_pEngineInfo->PhysicalMemoryFree = 1024;
+  out_pEngineInfo->SwapMemory = 1024;
+  out_pEngineInfo->SwapMemoryFree = 1024;
+  out_pEngineInfo->MiscFlags = COI_ENG_ECC_DISABLED;
+
+  return COI_SUCCESS;
 }
 
 } // extern "C"

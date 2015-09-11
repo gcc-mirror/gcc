@@ -22,10 +22,25 @@
 
 #include <memory>
 
+template<typename T>
+struct P1
+{
+  using element_type = T;
+  using difference_type = long;
+  template<typename U> using rebind = P1<U>;
+  static P1 pointer_to(T&) { return {}; }
+};
+
+template<typename T>
+struct P2
+{
+  static P2 pointer_to(T&) { return {}; }
+};
+
 namespace std
 {
   typedef short test_type;
   template struct pointer_traits<test_type*>;
-  template struct pointer_traits<shared_ptr<test_type>>;
-  template struct pointer_traits<unique_ptr<test_type>>;
+  template struct pointer_traits<P1<test_type>>;
+  template struct pointer_traits<P2<test_type>>;
 }

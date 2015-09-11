@@ -24,13 +24,14 @@
       all required macros to a compilation (if any such flags are
       required then you must provide the flag for all compilations not
       just linking) and link-library additions and/or replacements at
-      link time.  The documentation is weak.  Here is a quick summary
-      to display how ad hoc this is: On Solaris, both -pthreads and
-      -threads (with subtly different meanings) are honored.  
-      On GNU/Linux x86, -pthread is honored.  On FreeBSD,
-      -pthread is honored.  Some other ports use other switches.
-      AFAIK, none of this is properly documented anywhere other than
-      in ``gcc -dumpspecs'' (look at lib and cpp entries).
+      link time.  The documentation is weak.  On several targets (including
+      GNU/Linux, Solaris and various BSDs) -pthread is honored.
+      Some other ports use other switches.
+      This is not well documented anywhere other than
+      in "gcc -dumpspecs" (look at the 'lib' and 'cpp' entries).
+   </p><p>
+     Some uses of <code class="classname">std::atomic</code> also require linking
+     to <code class="filename">libatomic</code>.
    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.thread_safety"></a>Thread Safety</h3></div></div></div><p>
 In the terms of the 2011 C++ standard a thread-safe program is one which
 does not perform any conflicting non-atomic operations on memory locations
@@ -59,11 +60,16 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 Requisite command-line flags are used for atomic operations
 	 and threading. Examples of this include <code class="code">-pthread</code>
 	 and <code class="code">-march=native</code>, although specifics vary
-	 depending on the host environment. See <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html" target="_top">Machine
+	 depending on the host environment. See
+	 <a class="link" href="using.html#manual.intro.using.flags" title="Command Options">Command Options</a> and
+	 <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html" target="_top">Machine
 	 Dependent Options</a>.
        </p></li><li class="listitem"><p>
-	   An implementation of atomicity.h functions
-	   exists for the architecture in question. See the internals documentation for more <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">details</a>.
+	   An implementation of the
+	   <code class="filename">atomicity.h</code> functions
+	   exists for the architecture in question. See the
+	   <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">internals
+	   documentation</a> for more details.
        </p></li></ul></div><p>The user code must guard against concurrent function calls which
          access any particular library object's state when one or more of
          those accesses modifies the state. An object will be modified by

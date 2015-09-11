@@ -9,4 +9,3 @@ int f(int n){
 }
 
 /* { dg-final { scan-tree-dump " == 9" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -5,6 +5,4 @@
 #include "ipa-split-5.c"
 
 /* { dg-final { scan-tree-dump-times "Splitting function" 1 "fnsplit"} } */
-/* { dg-final { cleanup-tree-dump "fnsplit" } } */
 /* { dg-final { scan-tree-dump "part" "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

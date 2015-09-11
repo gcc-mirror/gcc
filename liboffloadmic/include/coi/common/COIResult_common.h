@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -110,12 +110,13 @@ typedef enum COIRESULT
                                       ///< Offload Infrastructure on the host
                                       ///< is not compatible with the version
                                       ///< on the device.
-    COI_BAD_PORT,                     ///< The port that the host is set to 
+    COI_BAD_PORT,                     ///< The port that the host is set to
                                       ///< connect to is invalid.
     COI_AUTHENTICATION_FAILURE,       ///< The daemon was unable to authenticate
                                       ///< the user that requested an engine.
                                       ///< Only reported if daemon is set up for
-                                      ///< authorization.
+                                      ///< authorization. Is also reported in
+                                      ///< Windows if host can not find user.
     COI_NUM_RESULTS                   ///< Reserved, do not use.
 }
 COIRESULT;

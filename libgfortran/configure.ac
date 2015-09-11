@@ -273,21 +273,24 @@ GCC_HEADER_STDINT(gstdint.h)
 
 AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_blocks, struct stat.st_rdev])
 
+case "${host}--x${with_newlib}" in
+  mips*--xyes)
+    hardwire_newlib=1;;
+esac
+
 # Check for library functions.
-if test "x${with_newlib}" = "xyes"; then
+if test "${hardwire_newlib:-0}" -eq 1; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
    # may not work correctly, because the compiler may not be able to
    # link executables.
    AC_DEFINE(HAVE_MKSTEMP, 1, [Define if you have mkstemp.])
    AC_DEFINE(HAVE_STRTOF, 1, [Define if you have strtof.])
    AC_DEFINE(HAVE_SNPRINTF, 1, [Define if you have snprintf.])
-   AC_DEFINE(HAVE_STRCASESTR, 1, [Define if you have strcasestr.])
    AC_DEFINE(HAVE_VSNPRINTF, 1, [Define if you have vsnprintf.])
    AC_DEFINE(HAVE_LOCALTIME_R, 1, [Define if you have localtime_r.])
    AC_DEFINE(HAVE_GMTIME_R, 1, [Define if you have gmtime_r.])
    AC_DEFINE(HAVE_STRNLEN, 1, [Define if you have strnlen.])
    AC_DEFINE(HAVE_STRNDUP, 1, [Define if you have strndup.])
-   AC_DEFINE(HAVE_STRTOK_R, 1, [Define if you have strtok_r.])
 
    # At some point, we should differentiate between architectures
    # like x86, which have long double versions, and alpha/powerpc/etc.,
@@ -298,11 +301,11 @@ if test "x${with_newlib}" = "xyes"; then
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
-   alarm access fork execl wait setmode execve pipe dup2 close fcntl \
-   strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
+   alarm access fork setmode fcntl \
+   gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
-   readlink getgid getpid getppid getuid geteuid umask getegid \
-   secure_getenv __secure_getenv mkostemp strnlen strndup strtok_r newlocale \
+   getgid getpid getuid geteuid umask getegid \
+   secure_getenv __secure_getenv mkostemp strnlen strndup newlocale \
    freelocale uselocale strerror_l)
 fi
 
@@ -396,7 +399,6 @@ GCC_CHECK_MATH_FUNC([nextafter])
 GCC_CHECK_MATH_FUNC([nextafterl])
 GCC_CHECK_MATH_FUNC([powf])
 GCC_CHECK_MATH_FUNC([pow])
-GCC_CHECK_MATH_FUNC([powl])
 GCC_CHECK_MATH_FUNC([cpowf])
 GCC_CHECK_MATH_FUNC([cpow])
 GCC_CHECK_MATH_FUNC([cpowl])
@@ -447,34 +449,27 @@ GCC_CHECK_MATH_FUNC([trunc])
 GCC_CHECK_MATH_FUNC([truncl])
 GCC_CHECK_MATH_FUNC([erff])
 GCC_CHECK_MATH_FUNC([erf])
-GCC_CHECK_MATH_FUNC([erfl])
 GCC_CHECK_MATH_FUNC([erfcf])
 GCC_CHECK_MATH_FUNC([erfc])
 GCC_CHECK_MATH_FUNC([erfcl])
 GCC_CHECK_MATH_FUNC([j0f])
 GCC_CHECK_MATH_FUNC([j0])
-GCC_CHECK_MATH_FUNC([j0l])
 GCC_CHECK_MATH_FUNC([j1f])
 GCC_CHECK_MATH_FUNC([j1])
-GCC_CHECK_MATH_FUNC([j1l])
 GCC_CHECK_MATH_FUNC([jnf])
 GCC_CHECK_MATH_FUNC([jn])
 GCC_CHECK_MATH_FUNC([jnl])
 GCC_CHECK_MATH_FUNC([y0f])
 GCC_CHECK_MATH_FUNC([y0])
-GCC_CHECK_MATH_FUNC([y0l])
 GCC_CHECK_MATH_FUNC([y1f])
 GCC_CHECK_MATH_FUNC([y1])
-GCC_CHECK_MATH_FUNC([y1l])
 GCC_CHECK_MATH_FUNC([ynf])
 GCC_CHECK_MATH_FUNC([yn])
 GCC_CHECK_MATH_FUNC([ynl])
 GCC_CHECK_MATH_FUNC([tgamma])
 GCC_CHECK_MATH_FUNC([tgammaf])
-GCC_CHECK_MATH_FUNC([tgammal])
 GCC_CHECK_MATH_FUNC([lgamma])
 GCC_CHECK_MATH_FUNC([lgammaf])
-GCC_CHECK_MATH_FUNC([lgammal])
 
 # Check for GFORTRAN_C99_1.1 funcs
 GCC_CHECK_MATH_FUNC([cacos])
@@ -595,7 +590,6 @@ fi
 
 # Check out attribute support.
 LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY
-LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT
 LIBGFOR_CHECK_ATTRIBUTE_ALIAS
 
 # Check out sync builtins support.
@@ -604,14 +598,14 @@ LIBGFOR_CHECK_SYNC_FETCH_AND_ADD
 # Check out #pragma weak.
 LIBGFOR_GTHREAD_WEAK
 
+# Check out weakref support.
+LIBGFOR_CHECK_WEAKREF
+
 # Various other checks on target
 LIBGFOR_CHECK_UNLINK_OPEN_FILE
 
 # Check whether line terminator is LF or CRLF
 LIBGFOR_CHECK_CRLF
-
-# Check whether we have _Unwind_GetIPInfo for backtrace
-GCC_CHECK_UNWIND_GETIPINFO
 
 AC_CACHE_SAVE
 

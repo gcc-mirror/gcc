@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_HASHER_H
 #define GCC_TREE_HASHER_H 1
 
-#include "hash-table.h"
-
 struct int_tree_map {
   unsigned int uid;
   tree to;
@@ -34,7 +32,6 @@ struct int_tree_hasher
 {
   typedef int_tree_map value_type;
   typedef int_tree_map compare_type;
-  typedef int store_values_directly;
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
   static bool is_deleted (const value_type &v)

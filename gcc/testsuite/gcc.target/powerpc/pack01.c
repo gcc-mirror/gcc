@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <altivec.h>
+#include <string.h>
 
 #ifdef DEBUG
 #include <stdio.h>

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,7 +36,7 @@
 namespace ORSL {
 
 static bool            is_enabled = false;
-static const ORSLTag   my_tag = "Offload";
+static const ORSLTag   my_tag = (const ORSLTag) "Offload";
 
 void init()
 {

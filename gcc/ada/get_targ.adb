@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,12 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Version for use with gcc
+--  Version for use with GCC
 
 package body Get_Targ is
 
-   --  Functions returning individual runtime. For the standard (GCC) back
-   --  end these come from C interface functions (one for each value).
+   --  Functions returning individual run-time values. For the standard (GCC)
+   --  back end, these come from C interface functions (one for each value).
 
    -----------------------
    -- Get_Bits_Per_Unit --
@@ -157,7 +157,7 @@ package body Get_Targ is
    function Get_Float_Words_BE return Nat is
       function C_Get_Float_Words_BE return Nat;
       pragma Import (C, C_Get_Float_Words_BE,
-                        "get_float_words_be");
+                        "get_target_float_words_be");
    begin
       return C_Get_Float_Words_BE;
    end Get_Float_Words_BE;
@@ -169,7 +169,7 @@ package body Get_Targ is
    function Get_Words_BE return Nat is
       function C_Get_Words_BE return Nat;
       pragma Import (C, C_Get_Words_BE,
-                        "get_words_be");
+                        "get_target_words_be");
    begin
       return C_Get_Words_BE;
    end Get_Words_BE;
@@ -181,7 +181,7 @@ package body Get_Targ is
    function Get_Bytes_BE return Nat is
       function C_Get_Bytes_BE return Nat;
       pragma Import (C, C_Get_Bytes_BE,
-                        "get_bytes_be");
+                        "get_target_bytes_be");
    begin
       return C_Get_Bytes_BE;
    end Get_Bytes_BE;
@@ -193,7 +193,7 @@ package body Get_Targ is
    function Get_Bits_BE return Nat is
       function C_Get_Bits_BE return Nat;
       pragma Import (C, C_Get_Bits_BE,
-                        "get_bits_be");
+                        "get_target_bits_be");
    begin
       return C_Get_Bits_BE;
    end Get_Bits_BE;
@@ -306,7 +306,7 @@ package body Get_Targ is
    -- Width_From_Size --
    ---------------------
 
-   function Width_From_Size  (Size : Pos) return Pos is
+   function Width_From_Size (Size : Pos) return Pos is
    begin
       case Size is
          when  8     => return  4;

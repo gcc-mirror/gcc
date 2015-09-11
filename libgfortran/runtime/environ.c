@@ -33,32 +33,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 
-/* Environment scanner.  Examine the environment for controlling minor
- * aspects of the program's execution.  Our philosophy here that the
- * environment should not prevent the program from running, so an
- * environment variable with a messed-up value will be interpreted in
- * the default way.
- *
- * Most of the environment is checked early in the startup sequence,
- * but other variables are checked during execution of the user's
- * program. */
-
-options_t options;
-
-
-typedef struct variable
-{
-  const char *name;
-  int value, *var;
-  void (*init) (struct variable *);
-  void (*show) (struct variable *);
-  const char *desc;
-  int bad;
-}
-variable;
-
-static void init_unformatted (variable *);
-
+/* Implementation of secure_getenv() for targets where it is not
+   provided. */
 
 #ifdef FALLBACK_SECURE_GETENV
 char *
@@ -72,43 +48,27 @@ secure_getenv (const char *name)
 #endif
 
 
-/* print_spaces()-- Print a particular number of spaces.  */
 
-static void
-print_spaces (int n)
+/* Examine the environment for controlling aspects of the program's
+   execution.  Our philosophy here that the environment should not prevent
+   the program from running, so any invalid value will be ignored.  */
+
+
+options_t options;
+
+typedef struct variable
 {
-  char buffer[80];
-  int i;
-
-  if (n <= 0)
-    return;
-
-  for (i = 0; i < n; i++)
-    buffer[i] = ' ';
-
-  buffer[i] = '\0';
-
-  estr_write (buffer);
+  const char *name;
+  int default_value;
+  int *var;           
+  void (*init) (struct variable *);
 }
+variable;
+
+static void init_unformatted (variable *);
 
 
-/* var_source()-- Return a string that describes where the value of a
- * variable comes from */
-
-static const char *
-var_source (variable * v)
-{
-  if (getenv (v->name) == NULL)
-    return "Default";
-
-  if (v->bad)
-    return "Bad    ";
-
-  return "Set    ";
-}
-
-
-/* init_integer()-- Initialize an integer environment variable.  */
+/* Initialize an integer environment variable.  */
 
 static void
 init_integer (variable * v)
@@ -117,26 +77,17 @@ init_integer (variable * v)
 
   p = getenv (v->name);
   if (p == NULL)
-    goto set_default;
+    return;
 
   for (q = p; *q; q++)
     if (!isdigit (*q) && (p != q || *q != '-'))
-      {
-	v->bad = 1;
-	goto set_default;
-      }
+      return;
 
   *v->var = atoi (p);
-  return;
-
- set_default:
-  *v->var = v->value;
-  return;
 }
 
 
-/* init_unsigned_integer()-- Initialize an integer environment variable
-   which has to be positive.  */
+/* Initialize an integer environment variable which has to be positive.  */
 
 static void
 init_unsigned_integer (variable * v)
@@ -145,35 +96,18 @@ init_unsigned_integer (variable * v)
 
   p = getenv (v->name);
   if (p == NULL)
-    goto set_default;
+    return;
 
   for (q = p; *q; q++)
     if (!isdigit (*q))
-      {
-	v->bad = 1;
-	goto set_default;
-      }
+      return;
 
   *v->var = atoi (p);
-  return;
-
- set_default:
-  *v->var = v->value;
-  return;
 }
 
 
-/* show_integer()-- Show an integer environment variable */
-
-static void
-show_integer (variable * v)
-{
-  st_printf ("%s  %d\n", var_source (v), *v->var);
-}
-
-
-/* init_boolean()-- Initialize a boolean environment variable.  We
- * only look at the first letter of the variable. */
+/* Initialize a boolean environment variable. We only look at the first
+   letter of the value. */
 
 static void
 init_boolean (variable * v)
@@ -182,36 +116,17 @@ init_boolean (variable * v)
 
   p = getenv (v->name);
   if (p == NULL)
-    goto set_default;
+    return;
 
   if (*p == '1' || *p == 'Y' || *p == 'y')
-    {
-      *v->var = 1;
-      return;
-    }
-
-  if (*p == '0' || *p == 'N' || *p == 'n')
-    {
-      *v->var = 0;
-      return;
-    }
-
-  v->bad = 1;
-
-set_default:
-  *v->var = v->value;
-  return;
+    *v->var = 1;
+  else if (*p == '0' || *p == 'N' || *p == 'n')
+    *v->var = 0;
 }
 
 
-/* show_boolean()-- Show a boolean environment variable */
-
-static void
-show_boolean (variable * v)
-{
-  st_printf ("%s  %s\n", var_source (v), *v->var ? "Yes" : "No");
-}
-
+/* Initialize a list output separator.  It may contain any number of spaces
+   and at most one comma.  */
 
 static void
 init_sep (variable * v)
@@ -223,7 +138,6 @@ init_sep (variable * v)
   if (p == NULL)
     goto set_default;
 
-  v->bad = 1;
   options.separator = p;
   options.separator_len = strlen (p);
 
@@ -248,7 +162,6 @@ init_sep (variable * v)
 	goto set_default;
     }
 
-  v->bad = 0;
   return;
 
 set_default:
@@ -257,92 +170,51 @@ set_default:
 }
 
 
-static void
-show_sep (variable * v)
-{
-  st_printf ("%s  \"%s\"\n", var_source (v), options.separator);
-}
-
-
-static void
-init_string (variable * v __attribute__ ((unused)))
-{
-}
-
-static void
-show_string (variable * v)
-{
-  const char *p;
-
-  p = getenv (v->name);
-  if (p == NULL)
-    p = "";
-
-  estr_write (var_source (v));
-  estr_write ("  \"");
-  estr_write (p);
-  estr_write ("\"\n");
-}
-
-
 static variable variable_table[] = {
-  {"GFORTRAN_STDIN_UNIT", GFC_STDIN_UNIT_NUMBER, &options.stdin_unit,
-   init_integer, show_integer,
-   "Unit number that will be preconnected to standard input\n"
-   "(No preconnection if negative)", 0},
 
-  {"GFORTRAN_STDOUT_UNIT", GFC_STDOUT_UNIT_NUMBER, &options.stdout_unit,
-   init_integer, show_integer,
-   "Unit number that will be preconnected to standard output\n"
-   "(No preconnection if negative)", 0},
+  /* Unit number that will be preconnected to standard input */
+  { "GFORTRAN_STDIN_UNIT", GFC_STDIN_UNIT_NUMBER, &options.stdin_unit,
+    init_integer },
 
-  {"GFORTRAN_STDERR_UNIT", GFC_STDERR_UNIT_NUMBER, &options.stderr_unit,
-   init_integer, show_integer,
-   "Unit number that will be preconnected to standard error\n"
-   "(No preconnection if negative)", 0},
+  /* Unit number that will be preconnected to standard output */
+  { "GFORTRAN_STDOUT_UNIT", GFC_STDOUT_UNIT_NUMBER, &options.stdout_unit,
+    init_integer },
 
-  {"TMPDIR", 0, NULL, init_string, show_string,
-   "Directory for scratch files.", 0},
+  /* Unit number that will be preconnected to standard error */
+  { "GFORTRAN_STDERR_UNIT", GFC_STDERR_UNIT_NUMBER, &options.stderr_unit,
+    init_integer },
 
-  {"GFORTRAN_UNBUFFERED_ALL", 0, &options.all_unbuffered, init_boolean,
-   show_boolean,
-   "If TRUE, all output is unbuffered.  This will slow down large writes "
-   "but can be\nuseful for forcing data to be displayed immediately.", 0},
+  /* If TRUE, all output will be unbuffered */
+  { "GFORTRAN_UNBUFFERED_ALL", 0, &options.all_unbuffered, init_boolean },
 
-  {"GFORTRAN_UNBUFFERED_PRECONNECTED", 0, &options.unbuffered_preconnected,
-   init_boolean, show_boolean,
-   "If TRUE, output to preconnected units is unbuffered.", 0},
+  /* If TRUE, output to preconnected units will be unbuffered */
+  { "GFORTRAN_UNBUFFERED_PRECONNECTED", 0, &options.unbuffered_preconnected,
+    init_boolean },
 
-  {"GFORTRAN_SHOW_LOCUS", 1, &options.locus, init_boolean, show_boolean,
-   "If TRUE, print filename and line number where runtime errors happen.", 0},
+  /* Whether to print filename and line number on runtime error */
+  { "GFORTRAN_SHOW_LOCUS", 1, &options.locus, init_boolean },
 
-  {"GFORTRAN_OPTIONAL_PLUS", 0, &options.optional_plus, init_boolean, show_boolean,
-   "Print optional plus signs in numbers where permitted.  Default FALSE.", 0},
+  /* Print optional plus signs in numbers where permitted */
+  { "GFORTRAN_OPTIONAL_PLUS", 0, &options.optional_plus, init_boolean },
 
-  {"GFORTRAN_DEFAULT_RECL", DEFAULT_RECL, &options.default_recl,
-   init_unsigned_integer, show_integer,
-   "Default maximum record length for sequential files.  Most useful for\n"
-   "adjusting line length of preconnected units.  Default "
-   stringize (DEFAULT_RECL), 0},
+  /* Default maximum record length for sequential files */
+  { "GFORTRAN_DEFAULT_RECL", DEFAULT_RECL, &options.default_recl,
+    init_unsigned_integer },
 
-  {"GFORTRAN_LIST_SEPARATOR", 0, NULL, init_sep, show_sep,
-   "Separator to use when writing list output.  May contain any number of "
-   "spaces\nand at most one comma.  Default is a single space.", 0},
+  /* Separator to use when writing list output */
+  { "GFORTRAN_LIST_SEPARATOR", 0, NULL, init_sep },
 
-  /* GFORTRAN_CONVERT_UNIT - Set the default data conversion for
-   unformatted I/O.  */
-  {"GFORTRAN_CONVERT_UNIT", 0, 0, init_unformatted, show_string,
-   "Set format for unformatted files", 0},
+  /* Set the default data conversion for unformatted I/O */
+  { "GFORTRAN_CONVERT_UNIT", 0, 0, init_unformatted },
 
-  {"GFORTRAN_ERROR_BACKTRACE", -1, &options.backtrace,
-    init_boolean, show_boolean,
-    "Print out a backtrace (if possible) on runtime error", -1},
+  /* Print out a backtrace if possible on runtime error */
+  { "GFORTRAN_ERROR_BACKTRACE", -1, &options.backtrace, init_boolean },
 
-  {NULL, 0, NULL, NULL, NULL, NULL, 0}
+  { NULL, 0, NULL, NULL }
 };
 
 
-/* init_variables()-- Initialize most runtime variables from
+/* Initialize most runtime variables from
  * environment variables. */
 
 void
@@ -351,56 +223,13 @@ init_variables (void)
   variable *v;
 
   for (v = variable_table; v->name; v++)
-    v->init (v);
-}
-
-
-void
-show_variables (void)
-{
-  variable *v;
-  int n;
-
-  /* TODO: print version number.  */
-  estr_write ("GNU Fortran runtime library version "
-	     "UNKNOWN" "\n\n");
-
-  estr_write ("Environment variables:\n");
-  estr_write ("----------------------\n");
-
-  for (v = variable_table; v->name; v++)
     {
-      n = estr_write (v->name);
-      print_spaces (25 - n);
-
-      if (v->show == show_integer)
-	estr_write ("Integer ");
-      else if (v->show == show_boolean)
-	estr_write ("Boolean ");
-      else
-	estr_write ("String  ");
-
-      v->show (v);
-      estr_write (v->desc);
-      estr_write ("\n\n");
+      if (v->var)
+	*v->var = v->default_value;
+      v->init (v);
     }
-
-  /* System error codes */
-
-  estr_write ("\nRuntime error codes:");
-  estr_write ("\n--------------------\n");
-
-  for (n = LIBERROR_FIRST + 1; n < LIBERROR_LAST; n++)
-    if (n < 0 || n > 9)
-      st_printf ("%d  %s\n", n, translate_error (n));
-    else
-      st_printf (" %d  %s\n", n, translate_error (n));
-
-  estr_write ("\nCommand line arguments:\n");
-  estr_write ("  --help               Print this list\n");
-
-  exit (0);
 }
+
 
 /* This is the handling of the GFORTRAN_CONVERT_UNITS environment variable.
    It is called from environ.c to parse this variable, and from
@@ -509,7 +338,6 @@ match_word (const char *word, int tok)
   else
     res = ILLEGAL;
   return res;
-
 }
 
 /* Match an integer and store its value in unit_num.  This only works
@@ -523,7 +351,6 @@ match_integer (void)
   while (isdigit (*p))
     unit_num = unit_num * 10 + (*p++ - '0');
   return INTEGER;
-
 }
 
 /* This reads the next token from the GFORTRAN_CONVERT_UNITS variable.

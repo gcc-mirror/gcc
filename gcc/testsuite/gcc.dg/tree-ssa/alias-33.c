@@ -17,4 +17,3 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump "Replaced j with 0" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -32,37 +32,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
-#include "hard-reg-set.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "regs.h"
 #include "insn-config.h"
 #include "flags.h"
 #include "recog.h"
 #include "diagnostic-core.h"
+#include "alloc-pool.h"
 #include "cselib.h"
 #include "params.h"
 #include "tm_p.h"
 #include "target.h"
-#include "hashtab.h"
-#include "function.h" /* For inline functions in emit-rtl.h they need crtl.  */
 #include "emit-rtl.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
-#include "function.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -70,15 +58,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "df.h"
 #include "dce.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
@@ -190,7 +173,8 @@ try_simplify_condjump (basic_block cbranch_block)
     return false;
 
   /* Invert the conditional branch.  */
-  if (!invert_jump (cbranch_insn, block_label (jump_dest_block), 0))
+  if (!invert_jump (as_a <rtx_jump_insn *> (cbranch_insn),
+		    block_label (jump_dest_block), 0))
     return false;
 
   if (dump_file)
@@ -222,23 +206,15 @@ try_simplify_condjump (basic_block cbranch_block)
 static bool
 mark_effect (rtx exp, regset nonequal)
 {
-  int regno;
   rtx dest;
   switch (GET_CODE (exp))
     {
       /* In case we do clobber the register, mark it as equal, as we know the
 	 value is dead so it don't have to match.  */
     case CLOBBER:
-      if (REG_P (XEXP (exp, 0)))
-	{
-	  dest = XEXP (exp, 0);
-	  regno = REGNO (dest);
-	  if (HARD_REGISTER_NUM_P (regno))
-	    bitmap_clear_range (nonequal, regno,
-				hard_regno_nregs[regno][GET_MODE (dest)]);
-	  else
-	    bitmap_clear_bit (nonequal, regno);
-	}
+      dest = XEXP (exp, 0);
+      if (REG_P (dest))
+	bitmap_clear_range (nonequal, REGNO (dest), REG_NREGS (dest));
       return false;
 
     case SET:
@@ -249,12 +225,7 @@ mark_effect (rtx exp, regset nonequal)
 	return false;
       if (!REG_P (dest))
 	return true;
-      regno = REGNO (dest);
-      if (HARD_REGISTER_NUM_P (regno))
-	bitmap_set_range (nonequal, regno,
-			  hard_regno_nregs[regno][GET_MODE (dest)]);
-      else
-	bitmap_set_bit (nonequal, regno);
+      bitmap_set_range (nonequal, REGNO (dest), REG_NREGS (dest));
       return false;
 
     default:
@@ -272,16 +243,10 @@ mentions_nonequal_regs (const_rtx x, regset nonequal)
       const_rtx x = *iter;
       if (REG_P (x))
 	{
-	  unsigned int regno = REGNO (x);
-	  if (REGNO_REG_SET_P (nonequal, regno))
-	    return true;
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      int n = hard_regno_nregs[regno][GET_MODE (x)];
-	      while (--n > 0)
-		if (REGNO_REG_SET_P (nonequal, regno + n))
-		  return true;
-	    }
+	  unsigned int end_regno = END_REGNO (x);
+	  for (unsigned int regno = REGNO (x); regno < end_regno; ++regno)
+	    if (REGNO_REG_SET_P (nonequal, regno))
+	      return true;
 	}
     }
   return false;
@@ -1032,10 +997,49 @@ equal_different_set_p (rtx p1, rtx s1, rtx p2, rtx s2)
           ? rtx_renumbered_equal_p (e1, e2) : rtx_equal_p (e1, e2))
         continue;
 
-        return false;
+      return false;
     }
 
   return true;
+}
+
+
+/* NOTE1 is the REG_EQUAL note, if any, attached to an insn
+   that is a single_set with a SET_SRC of SRC1.  Similarly
+   for NOTE2/SRC2.
+
+   So effectively NOTE1/NOTE2 are an alternate form of 
+   SRC1/SRC2 respectively.
+
+   Return nonzero if SRC1 or NOTE1 has the same constant
+   integer value as SRC2 or NOTE2.   Else return zero.  */
+static int
+values_equal_p (rtx note1, rtx note2, rtx src1, rtx src2)
+{
+  if (note1
+      && note2
+      && CONST_INT_P (XEXP (note1, 0))
+      && rtx_equal_p (XEXP (note1, 0), XEXP (note2, 0)))
+    return 1;
+
+  if (!note1
+      && !note2
+      && CONST_INT_P (src1)
+      && CONST_INT_P (src2)
+      && rtx_equal_p (src1, src2))
+    return 1;
+
+  if (note1
+      && CONST_INT_P (src2)
+      && rtx_equal_p (XEXP (note1, 0), src2))
+    return 1;
+
+  if (note2
+      && CONST_INT_P (src1)
+      && rtx_equal_p (XEXP (note2, 0), src1))
+    return 1;
+
+  return 0;
 }
 
 /* Examine register notes on I1 and I2 and return:
@@ -1066,8 +1070,11 @@ can_replace_by (rtx_insn *i1, rtx_insn *i2)
      set dest to the same value.  */
   note1 = find_reg_equal_equiv_note (i1);
   note2 = find_reg_equal_equiv_note (i2);
-  if (!note1 || !note2 || !rtx_equal_p (XEXP (note1, 0), XEXP (note2, 0))
-      || !CONST_INT_P (XEXP (note1, 0)))
+
+  src1 = SET_SRC (s1);
+  src2 = SET_SRC (s2);
+
+  if (!values_equal_p (note1, note2, src1, src2))
     return dir_none;
 
   if (!equal_different_set_p (PATTERN (i1), s1, PATTERN (i2), s2))
@@ -1079,8 +1086,6 @@ can_replace_by (rtx_insn *i1, rtx_insn *i2)
        (set (dest) (reg))
      because we don't know if the reg is live and has the same value at the
      location of replacement.  */
-  src1 = SET_SRC (s1);
-  src2 = SET_SRC (s2);
   c1 = CONST_INT_P (src1);
   c2 = CONST_INT_P (src2);
   if (c1 && c2)
@@ -1416,12 +1421,11 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx_insn **f1,
       i2 = PREV_INSN (i2);
     }
 
-#ifdef HAVE_cc0
   /* Don't allow the insn after a compare to be shared by
      cross-jumping unless the compare is also shared.  */
-  if (ninsns && reg_mentioned_p (cc0_rtx, last1) && ! sets_cc0_p (last1))
+  if (HAVE_cc0 && ninsns && reg_mentioned_p (cc0_rtx, last1)
+      && ! sets_cc0_p (last1))
     last1 = afterlast1, last2 = afterlast2, last_dir = afterlast_dir, ninsns--;
-#endif
 
   /* Include preceding notes and labels in the cross-jump.  One,
      this may bring us to the head of the blocks as requested above.
@@ -1539,12 +1543,11 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx_insn **f
       i2 = NEXT_INSN (i2);
     }
 
-#ifdef HAVE_cc0
   /* Don't allow a compare to be shared by cross-jumping unless the insn
      after the compare is also shared.  */
-  if (ninsns && reg_mentioned_p (cc0_rtx, last1) && sets_cc0_p (last1))
+  if (HAVE_cc0 && ninsns && reg_mentioned_p (cc0_rtx, last1)
+      && sets_cc0_p (last1))
     last1 = beforelast1, last2 = beforelast2, ninsns--;
-#endif
 
   if (ninsns)
     {
@@ -2001,7 +2004,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
      If we have tablejumps in the end of SRC1 and SRC2
      they have been already compared for equivalence in outgoing_edges_match ()
      so replace the references to TABLE1 by references to TABLE2.  */
-    {
+  {
       rtx label1, label2;
       rtx_jump_table_data *table1, *table2;
 
@@ -2021,7 +2024,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 		replace_label_in_insn (insn, label1, label2, true);
 	    }
 	}
-    }
+  }
 
   /* Avoid splitting if possible.  We must always split when SRC2 has
      EH predecessor edges, or we may end up with basic blocks with both
@@ -2330,11 +2333,9 @@ try_head_merge_bb (basic_block bb)
   cond = get_condition (jump, &move_before, true, false);
   if (cond == NULL_RTX)
     {
-#ifdef HAVE_cc0
-      if (reg_mentioned_p (cc0_rtx, jump))
+      if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
 	move_before = prev_nonnote_nondebug_insn (jump);
       else
-#endif
 	move_before = jump;
     }
 
@@ -2499,11 +2500,9 @@ try_head_merge_bb (basic_block bb)
       cond = get_condition (jump, &move_before, true, false);
       if (cond == NULL_RTX)
 	{
-#ifdef HAVE_cc0
-	  if (reg_mentioned_p (cc0_rtx, jump))
+	  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
 	    move_before = prev_nonnote_nondebug_insn (jump);
 	  else
-#endif
 	    move_before = jump;
 	}
     }
@@ -2522,12 +2521,10 @@ try_head_merge_bb (basic_block bb)
 	  /* Try again, using a different insertion point.  */
 	  move_before = jump;
 
-#ifdef HAVE_cc0
 	  /* Don't try moving before a cc0 user, as that may invalidate
 	     the cc0.  */
-	  if (reg_mentioned_p (cc0_rtx, jump))
+	  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
 	    break;
-#endif
 
 	  continue;
 	}
@@ -2582,12 +2579,10 @@ try_head_merge_bb (basic_block bb)
 	  /* For the unmerged insns, try a different insertion point.  */
 	  move_before = jump;
 
-#ifdef HAVE_cc0
 	  /* Don't try moving before a cc0 user, as that may invalidate
 	     the cc0.  */
-	  if (reg_mentioned_p (cc0_rtx, jump))
+	  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
 	    break;
-#endif
 
 	  for (ix = 0; ix < nedges; ix++)
 	    currptr[ix] = headptr[ix] = nextptr[ix];

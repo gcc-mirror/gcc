@@ -28,5 +28,4 @@ Program Main
 End Program Main
 
 ! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

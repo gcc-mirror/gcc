@@ -31,4 +31,3 @@ int main (int argc, char *argv[])
 }
 
 /* { dg-final { scan-tree-dump-times "foo " 1 "eipa_sra"  } } */
-/* { dg-final { cleanup-tree-dump "eipa_sra" } } */

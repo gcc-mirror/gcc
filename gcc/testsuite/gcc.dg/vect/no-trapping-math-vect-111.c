@@ -36,4 +36,3 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target powerpc*-*-* } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target i?86-*-* x86_64-*-* ia64-*-* } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

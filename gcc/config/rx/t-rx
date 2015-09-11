@@ -20,13 +20,16 @@
 
 # Enable multilibs:
 
-MULTILIB_OPTIONS    = m64bit-doubles  nofpu        mbig-endian-data  mpid
+MULTILIB_OPTIONS    = m64bit-doubles  mnofpu        mbig-endian-data  mpid
 MULTILIB_DIRNAMES   =  64-bit-double  no-fpu-libs   big-endian-data   pid
 
 # If necessary uncomment the next two lines to generate multilibs
 # using the old, broken, ABI.
 # MULTILIB_OPTIONS    += mgcc-abi
 # MULTILIB_DIRNAMES   +=  gcc-abi
+
+MULTILIB_OPTIONS   += mno-allow-string-insns
+MULTILIB_DIRNAMES  += no-strings
 
 MULTILIB_MATCHES    = nofpu=mnofpu  nofpu=mcpu?rx200  nofpu=mcpu?rx100
 

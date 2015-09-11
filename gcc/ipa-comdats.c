@@ -52,24 +52,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "vec.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-pass.h"
 
@@ -142,12 +128,14 @@ propagate_comdat_group (struct symtab_node *symbol,
       {
 	struct symtab_node *symbol2 = edge->caller;
 
-	/* If we see inline clone, its comdat group actually
-	   corresponds to the comdat group of the function it is inlined
-	   to.  */
-
 	if (cgraph_node * cn = dyn_cast <cgraph_node *> (symbol2))
 	  {
+	    /* Thunks can not call across section boundary.  */
+	    if (cn->thunk.thunk_p)
+	      newgroup = propagate_comdat_group (symbol2, newgroup, map);
+	    /* If we see inline clone, its comdat group actually
+	       corresponds to the comdat group of the function it
+	       is inlined to.  */
 	    if (cn->global.inlined_to)
 	      symbol2 = cn->global.inlined_to;
 	  }
@@ -182,6 +170,10 @@ enqueue_references (symtab_node **first,
   for (i = 0; symbol->iterate_reference (i, ref); i++)
     {
       symtab_node *node = ref->referred->ultimate_alias_target ();
+
+      /* Always keep thunks in same sections as target function.  */
+      if (is_a <cgraph_node *>(node))
+	node = dyn_cast <cgraph_node *> (node)->function_symbol ();
       if (!node->aux && node->definition)
 	{
 	   node->aux = *first;
@@ -199,6 +191,10 @@ enqueue_references (symtab_node **first,
 	else
 	  {
 	    symtab_node *node = edge->callee->ultimate_alias_target ();
+
+	    /* Always keep thunks in same sections as target function.  */
+	    if (is_a <cgraph_node *>(node))
+	      node = dyn_cast <cgraph_node *> (node)->function_symbol ();
 	    if (!node->aux && node->definition)
 	      {
 		 node->aux = *first;
@@ -209,7 +205,7 @@ enqueue_references (symtab_node **first,
 }
 
 /* Set comdat group of SYMBOL to GROUP.
-   Callback for symtab_for_node_and_aliases.  */
+   Callback for for_node_and_aliases.  */
 
 bool
 set_comdat_group (symtab_node *symbol,
@@ -221,6 +217,16 @@ set_comdat_group (symtab_node *symbol,
   symbol->set_comdat_group (head->get_comdat_group ());
   symbol->add_to_same_comdat_group (head);
   return false;
+}
+
+/* Set comdat group of SYMBOL to GROUP.
+   Callback for for_node_thunks_and_aliases.  */
+
+bool
+set_comdat_group_1 (cgraph_node *symbol,
+		    void *head_p)
+{
+  return set_comdat_group (symbol, head_p);
 }
 
 /* The actual pass with the main dataflow loop.  */
@@ -263,7 +269,12 @@ ipa_comdats (void)
 		 && (DECL_STATIC_CONSTRUCTOR (symbol->decl)
 		     || DECL_STATIC_DESTRUCTOR (symbol->decl))))
       {
-	map.put (symbol->ultimate_alias_target (), error_mark_node);
+	symtab_node *target = symbol->ultimate_alias_target ();
+
+	/* Always keep thunks in same sections as target function.  */
+	if (is_a <cgraph_node *>(target))
+	  target = dyn_cast <cgraph_node *> (target)->function_symbol ();
+	map.put (target, error_mark_node);
 
 	/* Mark the symbol so we won't waste time visiting it for dataflow.  */
 	symbol->aux = (symtab_node *) (void *) 1;
@@ -328,9 +339,12 @@ ipa_comdats (void)
 
   FOR_EACH_DEFINED_SYMBOL (symbol)
     {
+      struct cgraph_node *fun;
       symbol->aux = NULL; 
       if (!symbol->get_comdat_group ()
 	  && !symbol->alias
+	  && (!(fun = dyn_cast <cgraph_node *> (symbol))
+	      || !fun->thunk.thunk_p)
 	  && symbol->real_symbol_p ())
 	{
 	  tree *val = map.get (symbol);
@@ -350,9 +364,16 @@ ipa_comdats (void)
 	      symbol->dump (dump_file);
 	      fprintf (dump_file, "To group: %s\n", IDENTIFIER_POINTER (group));
 	    }
-	  symbol->call_for_symbol_and_aliases (set_comdat_group,
-					     *comdat_head_map.get (group),
-					     true);
+	  if (is_a <cgraph_node *> (symbol))
+	   dyn_cast <cgraph_node *>(symbol)->call_for_symbol_thunks_and_aliases
+		  (set_comdat_group_1,
+		   *comdat_head_map.get (group),
+		   true);
+	  else
+	   symbol->call_for_symbol_and_aliases
+		  (set_comdat_group,
+		   *comdat_head_map.get (group),
+		   true);
 	}
     }
   return 0;

@@ -39,4 +39,3 @@ void test (void)
 /* { dg-final { scan-tree-dump "vi7 ={v} 0\[^\(\)\]*vi8 ={v} 0" "fab1"} } */
 /* { dg-final { scan-tree-dump "vi8.*putchar.*vi9" "fab1"} } */
 /* { dg-final { scan-tree-dump "vi9.*puts.*\"hello\\\\n\".*via" "fab1"} } */
-/* { dg-final { cleanup-tree-dump "fab1" } } */

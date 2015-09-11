@@ -2,7 +2,7 @@
 
 template<typename T> class A
 {
-  static int i; // { dg-error "is private" }
+  static int i; // { dg-message "private" }
   friend int T::foo(); // { dg-error "does not match" }
 };
 

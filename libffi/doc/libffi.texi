@@ -748,11 +748,6 @@ Variadic closures.
 There is no support for bit fields in structures.
 
 @item
-The closure API is
-
-@c FIXME: ...
-
-@item
 The ``raw'' API is undocumented.
 @c argument promotion?
 @c unions?

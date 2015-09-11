@@ -7,7 +7,7 @@
 
 template<class T> class A
 {
-  void f ();			// { dg-error "private" }
+  void f ();			// { dg-message "private" }
 };
 
 template<class T> class B

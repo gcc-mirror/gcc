@@ -83,4 +83,3 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

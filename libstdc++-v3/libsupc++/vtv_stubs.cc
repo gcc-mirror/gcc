@@ -37,6 +37,39 @@
 
 #include <cstddef>
 
+/* weak symbols on Windows work differently than on Linux. To be able
+   to switch vtv on and off on Windows two dlls are built. One with
+   the sources from libvtv, the other from these stubs. Depending on
+   which dll is placed in the folder of the executable the functions
+   from libvtv or the stubs functions are used. */
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+extern "C"
+void
+__VLTChangePermission(int);
+
+void
+__VLTRegisterSet(void**, const void*, std::size_t, std::size_t,
+		 void**);
+
+void
+__VLTRegisterPair(void**, const void*, std::size_t,
+		  const void*);
+
+const void*
+__VLTVerifyVtablePointer(void**, const void*);
+
+void
+__VLTRegisterSetDebug(void**, const void*, std::size_t, std::size_t,
+		      void**);
+
+void
+__VLTRegisterPairDebug(void**, const void*, std::size_t, const void*,
+		       const char*, const char*);
+
+const void*
+__VLTVerifyVtablePointerDebug(void**, const void*, const char*,
+			      const char*);
+#else
 // Declare as weak for libsupc++, strong definitions are in libvtv.
 #if __GXX_WEAK__
 extern "C"
@@ -65,6 +98,7 @@ __VLTRegisterPairDebug(void**, const void*, std::size_t, const void*,
 const void*
 __VLTVerifyVtablePointerDebug(void**, const void*, const char*,
 			      const char*) __attribute__((weak));
+#endif
 #endif
 
 // Stub definitions.

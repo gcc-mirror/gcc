@@ -18,4 +18,3 @@ end subroutine init
 
 ! { dg-final { scan-ipa-dump "Creating a specialized node of init" "cp" } }
 ! { dg-final { scan-ipa-dump-times "Aggregate replacements" 2 "cp" } }
-! { dg-final { cleanup-ipa-dump "cp" } }

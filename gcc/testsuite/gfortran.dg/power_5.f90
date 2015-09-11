@@ -33,4 +33,3 @@ program main
 
 end program main
 ! { dg-final { scan-tree-dump-times "_gfortran_pow_i4_i4" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

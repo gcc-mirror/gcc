@@ -11,4 +11,3 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "!= 0" 5 "ivopts" } }  */
-/* { dg-final { cleanup-tree-dump "ivopts" } }  */

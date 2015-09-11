@@ -12,4 +12,3 @@ f0a (int8_t * __restrict__ arg1)
   return result;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

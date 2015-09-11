@@ -18,4 +18,3 @@ void test_vaddws16 (void)
 }
 
 /* { dg-final { scan-assembler "vaddw\.s16\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

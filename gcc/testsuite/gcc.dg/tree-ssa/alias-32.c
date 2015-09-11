@@ -17,4 +17,3 @@ int bar (short *p)
 
 /* { dg-final { scan-tree-dump-times "\\\*\[^ \]" 1 "cddce1" } } */
 /* { dg-final { scan-tree-dump-not "aligned_alloc" "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

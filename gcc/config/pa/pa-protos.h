@@ -85,6 +85,7 @@ extern int pa_and_mask_p (unsigned HOST_WIDE_INT);
 extern int pa_cint_ok_for_move (HOST_WIDE_INT);
 extern int pa_ior_mask_p (unsigned HOST_WIDE_INT);
 extern int pa_ldil_cint_p (HOST_WIDE_INT);
+extern int pa_mem_shadd_constant_p (int);
 extern int pa_shadd_constant_p (int);
 extern int pa_zdepi_cint_p (unsigned HOST_WIDE_INT);
 

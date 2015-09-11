@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,31 +33,122 @@ with Types;  use Types;
 
 package Sem_Prag is
 
+   --  The following table lists all pragmas that emulate an Ada 2012 aspect
+
+   Aspect_Specifying_Pragma : constant array (Pragma_Id) of Boolean :=
+     (Pragma_Abstract_State               => True,
+      Pragma_All_Calls_Remote             => True,
+      Pragma_Annotate                     => True,
+      Pragma_Async_Readers                => True,
+      Pragma_Async_Writers                => True,
+      Pragma_Asynchronous                 => True,
+      Pragma_Atomic                       => True,
+      Pragma_Atomic_Components            => True,
+      Pragma_Attach_Handler               => True,
+      Pragma_Contract_Cases               => True,
+      Pragma_Convention                   => True,
+      Pragma_CPU                          => True,
+      Pragma_Default_Initial_Condition    => True,
+      Pragma_Default_Storage_Pool         => True,
+      Pragma_Depends                      => True,
+      Pragma_Discard_Names                => True,
+      Pragma_Dispatching_Domain           => True,
+      Pragma_Effective_Reads              => True,
+      Pragma_Effective_Writes             => True,
+      Pragma_Elaborate_Body               => True,
+      Pragma_Export                       => True,
+      Pragma_Extensions_Visible           => True,
+      Pragma_Favor_Top_Level              => True,
+      Pragma_Ghost                        => True,
+      Pragma_Global                       => True,
+      Pragma_Import                       => True,
+      Pragma_Independent                  => True,
+      Pragma_Independent_Components       => True,
+      Pragma_Initial_Condition            => True,
+      Pragma_Initializes                  => True,
+      Pragma_Inline                       => True,
+      Pragma_Inline_Always                => True,
+      Pragma_Interrupt_Handler            => True,
+      Pragma_Interrupt_Priority           => True,
+      Pragma_Invariant                    => True,
+      Pragma_Linker_Section               => True,
+      Pragma_Lock_Free                    => True,
+      Pragma_No_Elaboration_Code_All      => True,
+      Pragma_No_Return                    => True,
+      Pragma_Obsolescent                  => True,
+      Pragma_Pack                         => True,
+      Pragma_Part_Of                      => True,
+      Pragma_Persistent_BSS               => True,
+      Pragma_Post                         => True,
+      Pragma_Post_Class                   => True,
+      Pragma_Postcondition                => True,
+      Pragma_Pre                          => True,
+      Pragma_Pre_Class                    => True,
+      Pragma_Precondition                 => True,
+      Pragma_Predicate                    => True,
+      Pragma_Preelaborable_Initialization => True,
+      Pragma_Preelaborate                 => True,
+      Pragma_Priority                     => True,
+      Pragma_Pure                         => True,
+      Pragma_Pure_Function                => True,
+      Pragma_Refined_Depends              => True,
+      Pragma_Refined_Global               => True,
+      Pragma_Refined_Post                 => True,
+      Pragma_Refined_State                => True,
+      Pragma_Relative_Deadline            => True,
+      Pragma_Remote_Access_Type           => True,
+      Pragma_Remote_Call_Interface        => True,
+      Pragma_Remote_Types                 => True,
+      Pragma_Shared                       => True,
+      Pragma_Shared_Passive               => True,
+      Pragma_Simple_Storage_Pool_Type     => True,
+      Pragma_SPARK_Mode                   => True,
+      Pragma_Storage_Size                 => True,
+      Pragma_Suppress                     => True,
+      Pragma_Suppress_Debug_Info          => True,
+      Pragma_Suppress_Initialization      => True,
+      Pragma_Test_Case                    => True,
+      Pragma_Thread_Local_Storage         => True,
+      Pragma_Type_Invariant               => True,
+      Pragma_Unchecked_Union              => True,
+      Pragma_Universal_Aliasing           => True,
+      Pragma_Universal_Data               => True,
+      Pragma_Unmodified                   => True,
+      Pragma_Unreferenced                 => True,
+      Pragma_Unreferenced_Objects         => True,
+      Pragma_Unsuppress                   => True,
+      Pragma_Volatile                     => True,
+      Pragma_Volatile_Components          => True,
+      Pragma_Volatile_Full_Access         => True,
+      Pragma_Warnings                     => True,
+      others                              => False);
+
    --  The following table lists all pragmas that act as an assertion
    --  expression.
 
    Assertion_Expression_Pragma : constant array (Pragma_Id) of Boolean :=
-     (Pragma_Assert               => True,
-      Pragma_Assert_And_Cut       => True,
-      Pragma_Assume               => True,
-      Pragma_Check                => True,
-      Pragma_Contract_Cases       => True,
-      Pragma_Initial_Condition    => True,
-      Pragma_Invariant            => True,
-      Pragma_Loop_Invariant       => True,
-      Pragma_Loop_Variant         => True,
-      Pragma_Post                 => True,
-      Pragma_Post_Class           => True,
-      Pragma_Postcondition        => True,
-      Pragma_Pre                  => True,
-      Pragma_Pre_Class            => True,
-      Pragma_Precondition         => True,
-      Pragma_Predicate            => True,
-      Pragma_Refined_Post         => True,
-      Pragma_Test_Case            => True,
-      Pragma_Type_Invariant       => True,
-      Pragma_Type_Invariant_Class => True,
-      others                      => False);
+     (Pragma_Assert                    => True,
+      Pragma_Assert_And_Cut            => True,
+      Pragma_Assume                    => True,
+      Pragma_Check                     => True,
+      Pragma_Contract_Cases            => True,
+      Pragma_Default_Initial_Condition => True,
+      Pragma_Initial_Condition         => True,
+      Pragma_Invariant                 => True,
+      Pragma_Loop_Invariant            => True,
+      Pragma_Loop_Variant              => True,
+      Pragma_Post                      => True,
+      Pragma_Post_Class                => True,
+      Pragma_Postcondition             => True,
+      Pragma_Pre                       => True,
+      Pragma_Pre_Class                 => True,
+      Pragma_Precondition              => True,
+      Pragma_Predicate                 => True,
+      Pragma_Refined_Post              => True,
+      Pragma_Test_Case                 => True,
+      Pragma_Type_Invariant            => True,
+      Pragma_Type_Invariant_Class      => True,
+      others                           => False);
 
    --  The following table lists all the implementation-defined pragmas that
    --  may apply to a body stub (no language defined pragmas apply). The table
@@ -103,14 +194,9 @@ package Sem_Prag is
    procedure Analyze_Initializes_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Initializes
 
-   procedure Analyze_Pre_Post_Condition_In_Decl_Part
-     (Prag    : Node_Id;
-      Subp_Id : Entity_Id);
-   --  Perform preanalysis of a [refined] precondition or postcondition that
-   --  appears on a subprogram declaration or body [stub]. Prag denotes the
-   --  pragma, Subp_Id is the entity of the related subprogram. The preanalysis
-   --  of the expression is done as "spec expression" (see section "Handling
-   --  of Default and Per-Object Expressions in Sem).
+   procedure Analyze_Pre_Post_Condition_In_Decl_Part (N : Node_Id);
+   --  Perform preanalysis of [refined] precondition or postcondition pragma
+   --  N that appears on a subprogram declaration or body [stub].
 
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id);
    --  Preform full analysis of delayed pragma Refined_Depends. This routine
@@ -125,12 +211,8 @@ package Sem_Prag is
    procedure Analyze_Refined_State_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Refined_State
 
-   procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id; S : Entity_Id);
-   --  Perform preanalysis of pragma Test_Case that applies to a subprogram
-   --  declaration. Parameter N denotes the pragma, S is the entity of the
-   --  related subprogram. The preanalysis of the expression is done as "spec
-   --  expression" (see section "Handling of Default and Per-Object Expressions
-   --  in Sem).
+   procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id);
+   --  Perform preanalysis of pragma Test_Case
 
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
@@ -165,6 +247,25 @@ package Sem_Prag is
    --  is the related variable or state. Ensure legality of the combination and
    --  issue an error for an illegal combination.
 
+   function Check_Kind (Nam : Name_Id) return Name_Id;
+   --  This function is used in connection with pragmas Assert, Check,
+   --  and assertion aspects and pragmas, to determine if Check pragmas
+   --  (or corresponding assertion aspects or pragmas) are currently active
+   --  as determined by the presence of -gnata on the command line (which
+   --  sets the default), and the appearance of pragmas Check_Policy and
+   --  Assertion_Policy as configuration pragmas either in a configuration
+   --  pragma file, or at the start of the current unit, or locally given
+   --  Check_Policy and Assertion_Policy pragmas that are currently active.
+   --
+   --  The value returned is one of the names Check, Ignore, Disable (On
+   --  returns Check, and Off returns Ignore).
+   --
+   --  Note: for assertion kinds Pre'Class, Post'Class, Invariant'Class,
+   --  and Type_Invariant'Class, the name passed is Name_uPre, Name_uPost,
+   --  Name_uInvariant, or Name_uType_Invariant, which corresponds to _Pre,
+   --  _Post, _Invariant, or _Type_Invariant, which are special names used
+   --  in identifiers to represent these attribute references.
+
    procedure Check_Missing_Part_Of (Item_Id : Entity_Id);
    --  Determine whether the placement within the state space of an abstract
    --  state, variable or package instantiation denoted by Item_Id requires the
@@ -181,9 +282,10 @@ package Sem_Prag is
    --  inputs and outputs of subprogram Subp_Id in lists Subp_Inputs (inputs)
    --  and Subp_Outputs (outputs). The inputs and outputs are gathered from:
    --    1) The formal parameters of the subprogram
-   --    2) The items of pragma [Refined_]Global
+   --    2) The generic formal parameters of the generic subprogram
+   --    3) The items of pragma [Refined_]Global
    --         or
-   --    3) The items of pragma [Refined_]Depends if there is no pragma
+   --    4) The items of pragma [Refined_]Depends if there is no pragma
    --       [Refined_]Global present and flag Synthesize is set to True.
    --  If the subprogram has no inputs and/or outputs, then the returned list
    --  is No_Elist. Flag Global_Seen is set when the related subprogram has
@@ -198,6 +300,47 @@ package Sem_Prag is
    --  function and in Frontend pragmas where Delay_Config_Pragma_Analyze is
    --  True have their analysis delayed until after the main program is parsed
    --  and analyzed.
+
+   function Find_Related_Package_Or_Body
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id;
+   --  Subsidiary to the analysis of pragmas Abstract_State, Initial_Condition,
+   --  Initializes and Refined_State. Find the declaration of the related
+   --  package [body] subject to pragma Prag. The return value is either
+   --  N_Package_Declaration, N_Package_Body or Empty if the placement of
+   --  the pragma is illegal. If flag Do_Checks is set, the routine reports
+   --  duplicate pragmas.
+
+   function Find_Related_Subprogram_Or_Body
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id;
+   --  Subsidiary to the analysis of pragmas Contract_Cases, Depends, Global,
+   --  Refined_Depends, Refined_Global and Refined_Post and attribute 'Result.
+   --  Find the declaration of the related subprogram [body or stub] subject
+   --  to pragma Prag. If flag Do_Checks is set, the routine reports duplicate
+   --  pragmas and detects improper use of refinement pragmas in stand alone
+   --  expression functions. The returned value depends on the related pragma
+   --  as follows:
+   --    1) Pragmas Contract_Cases, Depends and Global yield the corresponding
+   --       N_Subprogram_Declaration node or if the pragma applies to a stand
+   --       alone body, the N_Subprogram_Body node or Empty if illegal.
+   --    2) Pragmas Refined_Depends, Refined_Global and Refined_Post yield
+   --       N_Subprogram_Body or N_Subprogram_Body_Stub nodes or Empty if
+   --       illegal.
+
+   function Get_Argument
+     (Prag       : Node_Id;
+      Context_Id : Node_Id := Empty) return Node_Id;
+   --  Obtain the argument of pragma Prag depending on context and the nature
+   --  of the pragma. The argument is extracted in the following manner:
+   --
+   --    When the pragma is generated from an aspect, return the corresponding
+   --    aspect for ASIS or when Context_Id denotes a generic unit.
+   --
+   --    Otherwise return the first argument of Prag
+   --
+   --  Context denotes the entity of the function, package or procedure where
+   --  Prag resides.
 
    function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type;
    --  Given a pragma SPARK_Mode node, return corresponding mode id
@@ -244,14 +387,8 @@ package Sem_Prag is
    --  Returns True if Nam is one of the names recognized as a valid assertion
    --  kind by the Assertion_Policy pragma. Note that the 'Class cases are
    --  represented by the corresponding special names Name_uPre, Name_uPost,
-   --  Name_uInviarnat, and Name_uType_Invariant (_Pre, _Post, _Invariant,
+   --  Name_uInvariant, and Name_uType_Invariant (_Pre, _Post, _Invariant,
    --  and _Type_Invariant).
-
-   procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id);
-   --  This routine makes aspects from precondition or postcondition pragmas
-   --  that appear within a generic subprogram declaration. Decl is the generic
-   --  subprogram declaration node. Note that the aspects are attached to the
-   --  generic copy and also to the orginal tree.
 
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any
@@ -275,5 +412,24 @@ package Sem_Prag is
    --  S contains a name that is a valid C identifier, then S is simply set as
    --  the value of the Interface_Name. Otherwise it is encoded as needed by
    --  particular operating systems. See the body for details of the encoding.
+
+   function Test_Case_Arg
+     (Prag        : Node_Id;
+      Arg_Nam     : Name_Id;
+      From_Aspect : Boolean := False) return Node_Id;
+   --  Obtain argument "Name", "Mode", "Ensures" or "Requires" from Test_Case
+   --  pragma Prag as denoted by Arg_Nam. When From_Aspect is set, an attempt
+   --  is made to retrieve the argument from the corresponding aspect if there
+   --  is one. The returned argument has several formats:
+   --
+   --    N_Pragma_Argument_Association if retrieved directly from the pragma
+   --
+   --    N_Component_Association if retrieved from the corresponding aspect and
+   --    the argument appears in a named association form.
+   --
+   --    An arbitrary expression if retrieved from the corresponding aspect and
+   --    the argument appears in positional form.
+   --
+   --    Empty if there is no such argument
 
 end Sem_Prag;

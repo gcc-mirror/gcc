@@ -12,5 +12,4 @@ int foo(char *b)
    not identical and thus collapsed the function into a trivial
    "return 0".  */
 /* { dg-final { scan-tree-dump-times "return 0" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
 

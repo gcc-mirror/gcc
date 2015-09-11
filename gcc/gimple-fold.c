@@ -21,27 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "predict.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "stringpool.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
-#include "function.h"
+#include "gimple.h"
 #include "rtl.h"
+#include "ssa.h"
+#include "alias.h"
+#include "fold-const.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -53,28 +41,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "stor-layout.h"
 #include "dumpfile.h"
-#include "bitmap.h"
-#include "predict.h"
 #include "dominance.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "tree-ssanames.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "target.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "ipa-utils.h"
 #include "gimple-pretty-print.h"
@@ -86,8 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tree-eh.h"
 #include "gimple-match.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -439,106 +413,14 @@ fold_gimple_assign (gimple_stmt_iterator *si)
       break;
 
     case GIMPLE_BINARY_RHS:
-      /* Try to canonicalize for boolean-typed X the comparisons
-	 X == 0, X == 1, X != 0, and X != 1.  */
-      if (gimple_assign_rhs_code (stmt) == EQ_EXPR
-	  || gimple_assign_rhs_code (stmt) == NE_EXPR)
-        {
-	  tree lhs = gimple_assign_lhs (stmt);
-	  tree op1 = gimple_assign_rhs1 (stmt);
-	  tree op2 = gimple_assign_rhs2 (stmt);
-	  tree type = TREE_TYPE (op1);
-
-	  /* Check whether the comparison operands are of the same boolean
-	     type as the result type is.
-	     Check that second operand is an integer-constant with value
-	     one or zero.  */
-	  if (TREE_CODE (op2) == INTEGER_CST
-	      && (integer_zerop (op2) || integer_onep (op2))
-	      && useless_type_conversion_p (TREE_TYPE (lhs), type))
-	    {
-	      enum tree_code cmp_code = gimple_assign_rhs_code (stmt);
-	      bool is_logical_not = false;
-
-	      /* X == 0 and X != 1 is a logical-not.of X
-	         X == 1 and X != 0 is X  */
-	      if ((cmp_code == EQ_EXPR && integer_zerop (op2))
-	          || (cmp_code == NE_EXPR && integer_onep (op2)))
-	        is_logical_not = true;
-
-	      if (is_logical_not == false)
-	        result = op1;
-	      /* Only for one-bit precision typed X the transformation
-	         !X -> ~X is valied.  */
-	      else if (TYPE_PRECISION (type) == 1)
-		result = build1_loc (gimple_location (stmt), BIT_NOT_EXPR,
-				     type, op1);
-	      /* Otherwise we use !X -> X ^ 1.  */
-	      else
-	        result = build2_loc (gimple_location (stmt), BIT_XOR_EXPR,
-				     type, op1, build_int_cst (type, 1));
-	     
-	    }
-	}
-
-      if (!result)
-        result = fold_binary_loc (loc, subcode,
-				  TREE_TYPE (gimple_assign_lhs (stmt)),
-				  gimple_assign_rhs1 (stmt),
-				  gimple_assign_rhs2 (stmt));
-
-      if (result)
-        {
-          STRIP_USELESS_TYPE_CONVERSION (result);
-          if (valid_gimple_rhs_p (result))
-	    return result;
-        }
       break;
 
     case GIMPLE_TERNARY_RHS:
-      /* Try to fold a conditional expression.  */
-      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
-	{
-	  tree op0 = gimple_assign_rhs1 (stmt);
-	  tree tem;
-	  bool set = false;
-	  location_t cond_loc = gimple_location (stmt);
-
-	  if (COMPARISON_CLASS_P (op0))
-	    {
-	      fold_defer_overflow_warnings ();
-	      tem = fold_binary_loc (cond_loc,
-				     TREE_CODE (op0), TREE_TYPE (op0),
-				     TREE_OPERAND (op0, 0),
-				     TREE_OPERAND (op0, 1));
-	      /* This is actually a conditional expression, not a GIMPLE
-		 conditional statement, however, the valid_gimple_rhs_p
-		 test still applies.  */
-	      set = (tem && is_gimple_condexpr (tem)
-		     && valid_gimple_rhs_p (tem));
-	      fold_undefer_overflow_warnings (set, stmt, 0);
-	    }
-	  else if (is_gimple_min_invariant (op0))
-	    {
-	      tem = op0;
-	      set = true;
-	    }
-	  else
-	    return NULL_TREE;
-
-	  if (set)
-	    result = fold_build3_loc (cond_loc, COND_EXPR,
-				      TREE_TYPE (gimple_assign_lhs (stmt)), tem,
-				      gimple_assign_rhs2 (stmt),
-				      gimple_assign_rhs3 (stmt));
-	}
-
-      if (!result)
-	result = fold_ternary_loc (loc, subcode,
-				   TREE_TYPE (gimple_assign_lhs (stmt)),
-				   gimple_assign_rhs1 (stmt),
-				   gimple_assign_rhs2 (stmt),
-				   gimple_assign_rhs3 (stmt));
+      result = fold_ternary_loc (loc, subcode,
+				 TREE_TYPE (gimple_assign_lhs (stmt)),
+				 gimple_assign_rhs1 (stmt),
+				 gimple_assign_rhs2 (stmt),
+				 gimple_assign_rhs3 (stmt));
 
       if (result)
         {
@@ -553,33 +435,6 @@ fold_gimple_assign (gimple_stmt_iterator *si)
     }
 
   return NULL_TREE;
-}
-
-/* Attempt to fold a conditional statement. Return true if any changes were
-   made. We only attempt to fold the condition expression, and do not perform
-   any transformation that would require alteration of the cfg.  It is
-   assumed that the operands have been previously folded.  */
-
-static bool
-fold_gimple_cond (gcond *stmt)
-{
-  tree result = fold_binary_loc (gimple_location (stmt),
-			     gimple_cond_code (stmt),
-                             boolean_type_node,
-                             gimple_cond_lhs (stmt),
-                             gimple_cond_rhs (stmt));
-
-  if (result)
-    {
-      STRIP_USELESS_TYPE_CONVERSION (result);
-      if (is_gimple_condexpr (result) && valid_gimple_rhs_p (result))
-        {
-          gimple_cond_set_condition_from_tree (stmt, result);
-          return true;
-        }
-    }
-
-  return false;
 }
 
 
@@ -769,7 +624,7 @@ var_decl_component_p (tree var)
 }
 
 /* Fold function call to builtin mem{{,p}cpy,move}.  Return
-   NULL_TREE if no simplification can be made.
+   false if no simplification can be made.
    If ENDP is 0, return DEST (like memcpy).
    If ENDP is 1, return DEST+LEN (like mempcpy).
    If ENDP is 2, return DEST+LEN-1 (like stpcpy).
@@ -2530,7 +2385,7 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
 	return false;
 
       tree orig_len = get_maxval_strlen (orig, 0);
-      if (!orig_len)
+      if (!orig_len || TREE_CODE (orig_len) != INTEGER_CST)
 	return false;
 
       /* We could expand this as
@@ -3120,6 +2975,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 			}
 		      gimple_call_set_lhs (stmt, NULL_TREE);
 		    }
+		  maybe_remove_unused_call_args (cfun, stmt);
 		}
 	      else
 		{
@@ -3332,6 +3188,19 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 }
 
 
+/* Return true whether NAME has a use on STMT.  */
+
+static bool
+has_use_on_stmt (tree name, gimple stmt)
+{
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    if (USE_STMT (use_p) == stmt)
+      return true;
+  return false;
+}
+
 /* Worker for fold_stmt_1 dispatch to pattern based folding with
    gimple_simplify.
 
@@ -3347,15 +3216,20 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
   gimple stmt = gsi_stmt (*gsi);
 
   /* Play safe and do not allow abnormals to be mentioned in
-     newly created statements.  See also maybe_push_res_to_seq.  */
+     newly created statements.  See also maybe_push_res_to_seq.
+     As an exception allow such uses if there was a use of the
+     same SSA name on the old stmt.  */
   if ((TREE_CODE (ops[0]) == SSA_NAME
-       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[0]))
+       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[0])
+       && !has_use_on_stmt (ops[0], stmt))
       || (ops[1]
 	  && TREE_CODE (ops[1]) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[1]))
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[1])
+	  && !has_use_on_stmt (ops[1], stmt))
       || (ops[2]
 	  && TREE_CODE (ops[2]) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])))
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])
+	  && !has_use_on_stmt (ops[2], stmt)))
     return false;
 
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
@@ -3422,6 +3296,20 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	  gsi_insert_seq_before (gsi, *seq, GSI_SAME_STMT);
 	  return true;
 	}
+    }
+  else if (rcode.is_fn_code ()
+	   && gimple_call_builtin_p (stmt, rcode))
+    {
+      unsigned i;
+      for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	{
+	  gcc_assert (ops[i] != NULL_TREE);
+	  gimple_call_set_arg (stmt, i, ops[i]);
+	}
+      if (i < 3)
+	gcc_assert (ops[i] == NULL_TREE);
+      gcc_assert (gimple_seq_empty_p (*seq));
+      return true;
     }
   else if (!inplace)
     {
@@ -3543,7 +3431,8 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
      after propagation.
      ???  This shouldn't be done in generic folding but in the
      propagation helpers which also know whether an address was
-     propagated.  */
+     propagated.
+     Also canonicalize operand order.  */
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
@@ -3558,6 +3447,27 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (REFERENCE_CLASS_P (*lhs)
 	      && maybe_canonicalize_mem_ref_addr (lhs))
 	    changed = true;
+	}
+      else
+	{
+	  /* Canonicalize operand order.  */
+	  enum tree_code code = gimple_assign_rhs_code (stmt);
+	  if (TREE_CODE_CLASS (code) == tcc_comparison
+	      || commutative_tree_code (code)
+	      || commutative_ternary_tree_code (code))
+	    {
+	      tree rhs1 = gimple_assign_rhs1 (stmt);
+	      tree rhs2 = gimple_assign_rhs2 (stmt);
+	      if (tree_swap_operands_p (rhs1, rhs2, false))
+		{
+		  gimple_assign_set_rhs1 (stmt, rhs2);
+		  gimple_assign_set_rhs2 (stmt, rhs1);
+		  if (TREE_CODE_CLASS (code) == tcc_comparison)
+		    gimple_assign_set_rhs_code (stmt,
+						swap_tree_comparison (code));
+		  changed = true;
+		}
+	    }
 	}
       break;
     case GIMPLE_CALL:
@@ -3609,6 +3519,21 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	    changed = true;
 	}
       break;
+    case GIMPLE_COND:
+      {
+	/* Canonicalize operand order.  */
+	tree lhs = gimple_cond_lhs (stmt);
+	tree rhs = gimple_cond_rhs (stmt);
+	if (tree_swap_operands_p (lhs, rhs, false))
+	  {
+	    gcond *gc = as_a <gcond *> (stmt);
+	    gimple_cond_set_lhs (gc, rhs);
+	    gimple_cond_set_rhs (gc, lhs);
+	    gimple_cond_set_code (gc,
+				  swap_tree_comparison (gimple_cond_code (gc)));
+	    changed = true;
+	  }
+      }
     default:;
     }
 
@@ -3620,7 +3545,8 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
       gimple_seq seq = NULL;
       code_helper rcode;
       tree ops[3] = {};
-      if (gimple_simplify (stmt, &rcode, ops, inplace ? NULL : &seq, valueize))
+      if (gimple_simplify (stmt, &rcode, ops, inplace ? NULL : &seq,
+			   valueize, valueize))
 	{
 	  if (replace_stmt_with_simplification (gsi, rcode, ops, &seq, inplace))
 	    changed = true;
@@ -3636,23 +3562,51 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
     {
     case GIMPLE_ASSIGN:
       {
-	unsigned old_num_ops = gimple_num_ops (stmt);
-	enum tree_code subcode = gimple_assign_rhs_code (stmt);
-	tree lhs = gimple_assign_lhs (stmt);
-	tree new_rhs;
-	/* First canonicalize operand order.  This avoids building new
-	   trees if this is the only thing fold would later do.  */
-	if ((commutative_tree_code (subcode)
-	     || commutative_ternary_tree_code (subcode))
-	    && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
-				     gimple_assign_rhs2 (stmt), false))
+	/* Try to canonicalize for boolean-typed X the comparisons
+	   X == 0, X == 1, X != 0, and X != 1.  */
+	if (gimple_assign_rhs_code (stmt) == EQ_EXPR
+	    || gimple_assign_rhs_code (stmt) == NE_EXPR)
 	  {
-	    tree tem = gimple_assign_rhs1 (stmt);
-	    gimple_assign_set_rhs1 (stmt, gimple_assign_rhs2 (stmt));
-	    gimple_assign_set_rhs2 (stmt, tem);
-	    changed = true;
+	    tree lhs = gimple_assign_lhs (stmt);
+	    tree op1 = gimple_assign_rhs1 (stmt);
+	    tree op2 = gimple_assign_rhs2 (stmt);
+	    tree type = TREE_TYPE (op1);
+
+	    /* Check whether the comparison operands are of the same boolean
+	       type as the result type is.
+	       Check that second operand is an integer-constant with value
+	       one or zero.  */
+	    if (TREE_CODE (op2) == INTEGER_CST
+		&& (integer_zerop (op2) || integer_onep (op2))
+		&& useless_type_conversion_p (TREE_TYPE (lhs), type))
+	      {
+		enum tree_code cmp_code = gimple_assign_rhs_code (stmt);
+		bool is_logical_not = false;
+
+		/* X == 0 and X != 1 is a logical-not.of X
+		   X == 1 and X != 0 is X  */
+		if ((cmp_code == EQ_EXPR && integer_zerop (op2))
+		    || (cmp_code == NE_EXPR && integer_onep (op2)))
+		  is_logical_not = true;
+
+		if (is_logical_not == false)
+		  gimple_assign_set_rhs_with_ops (gsi, TREE_CODE (op1), op1);
+		/* Only for one-bit precision typed X the transformation
+		   !X -> ~X is valied.  */
+		else if (TYPE_PRECISION (type) == 1)
+		  gimple_assign_set_rhs_with_ops (gsi, BIT_NOT_EXPR, op1);
+		/* Otherwise we use !X -> X ^ 1.  */
+		else
+		  gimple_assign_set_rhs_with_ops (gsi, BIT_XOR_EXPR, op1,
+						  build_int_cst (type, 1));
+		changed = true;
+		break;
+	      }
 	  }
-	new_rhs = fold_gimple_assign (gsi);
+
+	unsigned old_num_ops = gimple_num_ops (stmt);
+	tree lhs = gimple_assign_lhs (stmt);
+	tree new_rhs = fold_gimple_assign (gsi);
 	if (new_rhs
 	    && !useless_type_conversion_p (TREE_TYPE (lhs),
 					   TREE_TYPE (new_rhs)))
@@ -3666,10 +3620,6 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  }
 	break;
       }
-
-    case GIMPLE_COND:
-      changed |= fold_gimple_cond (as_a <gcond *> (stmt));
-      break;
 
     case GIMPLE_CALL:
       changed |= gimple_fold_call (gsi, inplace);
@@ -3844,7 +3794,7 @@ canonicalize_bool (tree expr, bool invert)
       else if (TREE_CODE (expr) == SSA_NAME)
 	return fold_build2 (EQ_EXPR, boolean_type_node, expr,
 			    build_int_cst (TREE_TYPE (expr), 0));
-      else if (TREE_CODE_CLASS (TREE_CODE (expr)) == tcc_comparison)
+      else if (COMPARISON_CLASS_P (expr))
 	return fold_build2 (invert_tree_comparison (TREE_CODE (expr), false),
 			    boolean_type_node,
 			    TREE_OPERAND (expr, 0),
@@ -3863,7 +3813,7 @@ canonicalize_bool (tree expr, bool invert)
       else if (TREE_CODE (expr) == SSA_NAME)
 	return fold_build2 (NE_EXPR, boolean_type_node, expr,
 			    build_int_cst (TREE_TYPE (expr), 0));
-      else if (TREE_CODE_CLASS (TREE_CODE (expr)) == tcc_comparison)
+      else if (COMPARISON_CLASS_P (expr))
 	return fold_build2 (TREE_CODE (expr),
 			    boolean_type_node,
 			    TREE_OPERAND (expr, 0),
@@ -3944,12 +3894,12 @@ same_bool_result_p (const_tree op1, const_tree op2)
   /* Check the cases where at least one of the operands is a comparison.
      These are a bit smarter than operand_equal_p in that they apply some
      identifies on SSA_NAMEs.  */
-  if (TREE_CODE_CLASS (TREE_CODE (op2)) == tcc_comparison
+  if (COMPARISON_CLASS_P (op2)
       && same_bool_comparison_p (op1, TREE_CODE (op2),
 				 TREE_OPERAND (op2, 0),
 				 TREE_OPERAND (op2, 1)))
     return true;
-  if (TREE_CODE_CLASS (TREE_CODE (op1)) == tcc_comparison
+  if (COMPARISON_CLASS_P (op1)
       && same_bool_comparison_p (op2, TREE_CODE (op1),
 				 TREE_OPERAND (op1, 0),
 				 TREE_OPERAND (op1, 1)))
@@ -4927,7 +4877,7 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
      edges if there are intermediate VARYING defs.  For this reason
      do not follow SSA edges here even though SCCVN can technically
      just deal fine with that.  */
-  if (gimple_simplify (stmt, &rcode, ops, NULL, gvalueize)
+  if (gimple_simplify (stmt, &rcode, ops, NULL, gvalueize, valueize)
       && rcode.is_tree_code ()
       && (TREE_CODE_LENGTH ((tree_code) rcode) == 0
 	  || ((tree_code) rcode) == ADDR_EXPR)
@@ -5059,28 +5009,48 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
 	    return NULL_TREE;
 
           case GIMPLE_BINARY_RHS:
-            {
-              /* Handle binary operators that can appear in GIMPLE form.  */
-              tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
-              tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
-
-	      /* Translate &x + CST into an invariant form suitable for
-	         further propagation.  */
-	      if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
-		  && TREE_CODE (op0) == ADDR_EXPR
-		  && TREE_CODE (op1) == INTEGER_CST)
-		{
-		  tree off = fold_convert (ptr_type_node, op1);
-		  return build_fold_addr_expr_loc
-			   (loc,
-			    fold_build2 (MEM_REF,
-					 TREE_TYPE (TREE_TYPE (op0)),
-					 unshare_expr (op0), off));
-		}
-
-              return fold_binary_loc (loc, subcode,
-				      gimple_expr_type (stmt), op0, op1);
-            }
+	    /* Translate &x + CST into an invariant form suitable for
+	       further propagation.  */
+	    if (subcode == POINTER_PLUS_EXPR)
+	      {
+		tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
+		tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
+		if (TREE_CODE (op0) == ADDR_EXPR
+		    && TREE_CODE (op1) == INTEGER_CST)
+		  {
+		    tree off = fold_convert (ptr_type_node, op1);
+		    return build_fold_addr_expr_loc
+			(loc,
+			 fold_build2 (MEM_REF,
+				      TREE_TYPE (TREE_TYPE (op0)),
+				      unshare_expr (op0), off));
+		  }
+	      }
+	    /* Canonicalize bool != 0 and bool == 0 appearing after
+	       valueization.  While gimple_simplify handles this
+	       it can get confused by the ~X == 1 -> X == 0 transform
+	       which we cant reduce to a SSA name or a constant
+	       (and we have no way to tell gimple_simplify to not
+	       consider those transforms in the first place).  */
+	    else if (subcode == EQ_EXPR
+		     || subcode == NE_EXPR)
+	      {
+		tree lhs = gimple_assign_lhs (stmt);
+		tree op0 = gimple_assign_rhs1 (stmt);
+		if (useless_type_conversion_p (TREE_TYPE (lhs),
+					       TREE_TYPE (op0)))
+		  {
+		    tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
+		    op0 = (*valueize) (op0);
+		    if (TREE_CODE (op0) == INTEGER_CST)
+		      std::swap (op0, op1);
+		    if (TREE_CODE (op1) == INTEGER_CST
+			&& ((subcode == NE_EXPR && integer_zerop (op1))
+			    || (subcode == EQ_EXPR && integer_onep (op1))))
+		      return op0;
+		  }
+	      }
+	    return NULL_TREE;
 
           case GIMPLE_TERNARY_RHS:
             {
@@ -5088,20 +5058,6 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree),
               tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
               tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
               tree op2 = (*valueize) (gimple_assign_rhs3 (stmt));
-
-	      /* Fold embedded expressions in ternary codes.  */
-	      if ((subcode == COND_EXPR
-		   || subcode == VEC_COND_EXPR)
-		  && COMPARISON_CLASS_P (op0))
-		{
-		  tree op00 = (*valueize) (TREE_OPERAND (op0, 0));
-		  tree op01 = (*valueize) (TREE_OPERAND (op0, 1));
-		  tree tem = fold_binary_loc (loc, TREE_CODE (op0),
-					      TREE_TYPE (op0), op00, op01);
-		  if (tem)
-		    op0 = tem;
-		}
-
               return fold_ternary_loc (loc, subcode,
 				       gimple_expr_type (stmt), op0, op1, op2);
             }
@@ -5471,7 +5427,7 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
       ret = canonicalize_constructor_val (unshare_expr (ctor), from_decl);
       ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);
       if (ret)
-	STRIP_NOPS (ret);
+	STRIP_USELESS_TYPE_CONVERSION (ret);
       return ret;
     }
   /* For constants and byte-aligned/sized reads try to go through
@@ -5516,7 +5472,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
   if (TREE_THIS_VOLATILE (t))
     return NULL_TREE;
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
+  if (DECL_P (t))
     return get_symbol_constant_value (t);
 
   tem = fold_read_from_constant_string (t);
@@ -5649,7 +5605,6 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   if (TREE_CODE (v) != VAR_DECL
       || !DECL_VIRTUAL_P (v))
     {
-      gcc_assert (in_lto_p);
       /* Pass down that we lost track of the target.  */
       if (can_refer)
 	*can_refer = false;
@@ -6078,18 +6033,28 @@ rewrite_to_defined_overflow (gimple stmt)
 }
 
 
+/* The valueization hook we use for the gimple_build API simplification.
+   This makes us match fold_buildN behavior by only combining with
+   statements in the sequence(s) we are currently building.  */
+
+static tree
+gimple_build_valueize (tree op)
+{
+  if (gimple_bb (SSA_NAME_DEF_STMT (op)) == NULL)
+    return op;
+  return NULL_TREE;
+}
+
 /* Build the expression CODE OP0 of type TYPE with location LOC,
-   simplifying it first if possible using VALUEIZE if not NULL.
-   OP0 is expected to be valueized already.  Returns the built
+   simplifying it first if possible.  Returns the built
    expression value and appends statements possibly defining it
    to SEQ.  */
 
 tree
 gimple_build (gimple_seq *seq, location_t loc,
-	      enum tree_code code, tree type, tree op0,
-	      tree (*valueize)(tree))
+	      enum tree_code code, tree type, tree op0)
 {
-  tree res = gimple_simplify (code, type, op0, seq, valueize);
+  tree res = gimple_simplify (code, type, op0, seq, gimple_build_valueize);
   if (!res)
     {
       if (gimple_in_ssa_p (cfun))
@@ -6110,17 +6075,15 @@ gimple_build (gimple_seq *seq, location_t loc,
 }
 
 /* Build the expression OP0 CODE OP1 of type TYPE with location LOC,
-   simplifying it first if possible using VALUEIZE if not NULL.
-   OP0 and OP1 are expected to be valueized already.  Returns the built
+   simplifying it first if possible.  Returns the built
    expression value and appends statements possibly defining it
    to SEQ.  */
 
 tree
 gimple_build (gimple_seq *seq, location_t loc,
-	      enum tree_code code, tree type, tree op0, tree op1,
-	      tree (*valueize)(tree))
+	      enum tree_code code, tree type, tree op0, tree op1)
 {
-  tree res = gimple_simplify (code, type, op0, op1, seq, valueize);
+  tree res = gimple_simplify (code, type, op0, op1, seq, gimple_build_valueize);
   if (!res)
     {
       if (gimple_in_ssa_p (cfun))
@@ -6135,18 +6098,16 @@ gimple_build (gimple_seq *seq, location_t loc,
 }
 
 /* Build the expression (CODE OP0 OP1 OP2) of type TYPE with location LOC,
-   simplifying it first if possible using VALUEIZE if not NULL.
-   OP0, OP1 and OP2 are expected to be valueized already.  Returns the built
+   simplifying it first if possible.  Returns the built
    expression value and appends statements possibly defining it
    to SEQ.  */
 
 tree
 gimple_build (gimple_seq *seq, location_t loc,
-	      enum tree_code code, tree type, tree op0, tree op1, tree op2,
-	      tree (*valueize)(tree))
+	      enum tree_code code, tree type, tree op0, tree op1, tree op2)
 {
   tree res = gimple_simplify (code, type, op0, op1, op2,
-			      seq, valueize);
+			      seq, gimple_build_valueize);
   if (!res)
     {
       if (gimple_in_ssa_p (cfun))
@@ -6167,17 +6128,15 @@ gimple_build (gimple_seq *seq, location_t loc,
 
 /* Build the call FN (ARG0) with a result of type TYPE
    (or no result if TYPE is void) with location LOC,
-   simplifying it first if possible using VALUEIZE if not NULL.
-   ARG0 is expected to be valueized already.  Returns the built
+   simplifying it first if possible.  Returns the built
    expression value (or NULL_TREE if TYPE is void) and appends
    statements possibly defining it to SEQ.  */
 
 tree
 gimple_build (gimple_seq *seq, location_t loc,
-	      enum built_in_function fn, tree type, tree arg0,
-	      tree (*valueize)(tree))
+	      enum built_in_function fn, tree type, tree arg0)
 {
-  tree res = gimple_simplify (fn, type, arg0, seq, valueize);
+  tree res = gimple_simplify (fn, type, arg0, seq, gimple_build_valueize);
   if (!res)
     {
       tree decl = builtin_decl_implicit (fn);
@@ -6198,17 +6157,15 @@ gimple_build (gimple_seq *seq, location_t loc,
 
 /* Build the call FN (ARG0, ARG1) with a result of type TYPE
    (or no result if TYPE is void) with location LOC,
-   simplifying it first if possible using VALUEIZE if not NULL.
-   ARG0 is expected to be valueized already.  Returns the built
+   simplifying it first if possible.  Returns the built
    expression value (or NULL_TREE if TYPE is void) and appends
    statements possibly defining it to SEQ.  */
 
 tree
 gimple_build (gimple_seq *seq, location_t loc,
-	      enum built_in_function fn, tree type, tree arg0, tree arg1,
-	      tree (*valueize)(tree))
+	      enum built_in_function fn, tree type, tree arg0, tree arg1)
 {
-  tree res = gimple_simplify (fn, type, arg0, arg1, seq, valueize);
+  tree res = gimple_simplify (fn, type, arg0, arg1, seq, gimple_build_valueize);
   if (!res)
     {
       tree decl = builtin_decl_implicit (fn);
@@ -6229,18 +6186,17 @@ gimple_build (gimple_seq *seq, location_t loc,
 
 /* Build the call FN (ARG0, ARG1, ARG2) with a result of type TYPE
    (or no result if TYPE is void) with location LOC,
-   simplifying it first if possible using VALUEIZE if not NULL.
-   ARG0 is expected to be valueized already.  Returns the built
+   simplifying it first if possible.  Returns the built
    expression value (or NULL_TREE if TYPE is void) and appends
    statements possibly defining it to SEQ.  */
 
 tree
 gimple_build (gimple_seq *seq, location_t loc,
 	      enum built_in_function fn, tree type,
-	      tree arg0, tree arg1, tree arg2,
-	      tree (*valueize)(tree))
+	      tree arg0, tree arg1, tree arg2)
 {
-  tree res = gimple_simplify (fn, type, arg0, arg1, arg2, seq, valueize);
+  tree res = gimple_simplify (fn, type, arg0, arg1, arg2,
+			      seq, gimple_build_valueize);
   if (!res)
     {
       tree decl = builtin_decl_implicit (fn);

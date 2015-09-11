@@ -36,4 +36,3 @@ norm ()
   f = 0;
 }
 
-// { dg-final { cleanup-tree-dump "vect" } }

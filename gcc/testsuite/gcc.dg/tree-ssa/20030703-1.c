@@ -20,4 +20,3 @@ foo(int index)
 /* There should be exactly one IF conditional.  */
 /* { dg-final { scan-tree-dump-times "if " 1 "dom2"} } */
 
-/* { dg-final { cleanup-tree-dump "dom2" } } */

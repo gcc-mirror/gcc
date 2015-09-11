@@ -24,23 +24,16 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
-#include "rtl.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "insn-config.h"	/* Required by recog.h.  */
 #include "conditions.h"
 #include "output.h"
@@ -48,11 +41,6 @@
 #include "insn-codes.h"		/* For CODE_FOR_xxx.  */
 #include "reload.h"		/* For push_reload().  */
 #include "flags.h"
-#include "function.h"
-#include "hashtab.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -62,23 +50,16 @@
 #include "expr.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "df.h"
 #include "tm_p.h"
 #include "tm-constrs.h"
 #include "optabs.h"		/* For GEN_FCN.  */
 #include "target.h"
-#include "target-def.h"
 #include "langhooks.h"		/* For add_builtin_function().  */
-#include "ggc.h"
 #include "builtins.h"
 
 /* ------------------------------------------------------------------------ */
@@ -604,8 +585,8 @@ nds32_output_stack_push (rtx par_rtx)
 			    + NDS32_MAX_GPR_REGS_FOR_ARGS
 			    - 1;
   /* Pick up callee-saved first regno and last regno for further use.  */
-  int rb_callee_saved = cfun->machine->callee_saved_regs_first_regno;
-  int re_callee_saved = cfun->machine->callee_saved_regs_last_regno;
+  int rb_callee_saved = cfun->machine->callee_saved_first_gpr_regno;
+  int re_callee_saved = cfun->machine->callee_saved_last_gpr_regno;
 
   /* First we need to check if we are pushing argument registers not used
      for the named arguments.  If so, we have to create 'smw.adm' (push.s)
@@ -644,7 +625,7 @@ nds32_output_stack_push (rtx par_rtx)
          otherwise, generate 'push25 Re,0'.  */
       sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_padding_bytes;
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
       if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
 	  && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust))
 	operands[1] = GEN_INT (sp_adjust);
@@ -712,8 +693,8 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
   /* The operands array which will be used in output_asm_insn().  */
   rtx operands[3];
   /* Pick up callee-saved first regno and last regno for further use.  */
-  int rb_callee_saved = cfun->machine->callee_saved_regs_first_regno;
-  int re_callee_saved = cfun->machine->callee_saved_regs_last_regno;
+  int rb_callee_saved = cfun->machine->callee_saved_first_gpr_regno;
+  int re_callee_saved = cfun->machine->callee_saved_last_gpr_regno;
 
   /* If we step here, we are going to do v3pop or multiple pop operation.  */
 
@@ -742,7 +723,7 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
          and then use 'pop25 Re,0'.  */
       sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_padding_bytes;
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
       if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
 	  && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust)
 	  && !cfun->calls_alloca)

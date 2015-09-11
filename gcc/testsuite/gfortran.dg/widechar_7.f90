@@ -16,4 +16,3 @@ program test
 end program test
 
 ! { dg-final { scan-tree-dump-times "memmove" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

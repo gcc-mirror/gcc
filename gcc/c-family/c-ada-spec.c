@@ -23,24 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "fold-const.h"
 #include "dumpfile.h"
 #include "c-ada-spec.h"
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "cpp-id-data.h"
-#include "wide-int.h"
 
 /* Local functions, macros and variables.  */
 static int dump_generic_ada_node (pretty_printer *, tree, tree, int, int,
@@ -257,6 +248,7 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
 		  case CPP_WCHAR:
 		  case CPP_CHAR16:
 		  case CPP_CHAR32:
+		  case CPP_UTF8CHAR:
 		  case CPP_NAME:
 		  case CPP_STRING:
 		  case CPP_NUMBER:
@@ -601,9 +593,12 @@ collect_ada_nodes (tree t, const char *source_file)
   tree n;
   int i = to_dump_count;
 
-  /* Count the likely relevant nodes.  */
+  /* Count the likely relevant nodes: do not dump builtins (they are irrelevant
+     in the context of bindings) and namespaces (we do not handle them properly
+     yet).  */
   for (n = t; n; n = TREE_CHAIN (n))
     if (!DECL_IS_BUILTIN (n)
+	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump_count++;
 
@@ -613,6 +608,7 @@ collect_ada_nodes (tree t, const char *source_file)
   /* Store the relevant nodes.  */
   for (n = t; n; n = TREE_CHAIN (n))
     if (!DECL_IS_BUILTIN (n)
+	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump[i++] = n;
 }
@@ -960,8 +956,11 @@ is_tagged_type (const_tree type)
   if (!type || !RECORD_OR_UNION_TYPE_P (type))
     return false;
 
+  /* TYPE_METHODS is only set on the main variant.  */
+  type = TYPE_MAIN_VARIANT (type);
+
   for (tmp = TYPE_METHODS (type); tmp; tmp = TREE_CHAIN (tmp))
-    if (DECL_VINDEX (tmp))
+    if (TREE_CODE (tmp) == FUNCTION_DECL && DECL_VINDEX (tmp))
       return true;
 
   return false;
@@ -987,6 +986,9 @@ has_nontrivial_methods (tree type)
   /* A non-trivial type has non-trivial special methods.  */
   if (!cpp_check (type, IS_TRIVIAL))
     return true;
+
+  /* TYPE_METHODS is only set on the main variant.  */
+  type = TYPE_MAIN_VARIANT (type);
 
   /* If there are user-defined methods, they are deemed non-trivial.  */
   for (tmp = TYPE_METHODS (type); tmp; tmp = TREE_CHAIN (tmp))
@@ -1390,7 +1392,7 @@ dump_ada_double_name (pretty_printer *buffer, tree t1, tree t2, const char *s)
 
   pp_underscore (buffer);
 
-  if (DECL_NAME (t1))
+  if (DECL_NAME (t2))
     pp_ada_tree_identifier (buffer, DECL_NAME (t2), t2, false);
   else
     {
@@ -1629,7 +1631,7 @@ dump_sloc (pretty_printer *buffer, tree node)
 
   xloc.file = NULL;
 
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == tcc_declaration)
+  if (DECL_P (node))
     xloc = expand_location (DECL_SOURCE_LOCATION (node));
   else if (EXPR_HAS_LOCATION (node))
     xloc = expand_location (EXPR_LOCATION (node));
@@ -1730,10 +1732,15 @@ dump_template_types (pretty_printer *buffer, tree types, int spc)
 static int
 dump_ada_template (pretty_printer *buffer, tree t, int spc)
 {
-  /* DECL_VINDEX is DECL_TEMPLATE_INSTANTIATIONS in this context.  */
-  tree inst = DECL_VINDEX (t);
-  /* DECL_RESULT_FLD is DECL_TEMPLATE_RESULT in this context.  */
-  tree result = DECL_RESULT_FLD (t);
+  /* DECL_SIZE_UNIT is DECL_TEMPLATE_INSTANTIATIONS in this context.  */
+  tree inst = DECL_SIZE_UNIT (t);
+  /* This emulates DECL_TEMPLATE_RESULT in this context.  */
+  struct tree_template_decl {
+    struct tree_decl_common common;
+    tree arguments;
+    tree result;
+  };
+  tree result = ((struct tree_template_decl *) t)->result;
   int num_inst = 0;
 
   /* Don't look at template declarations declaring something coming from
@@ -1742,7 +1749,7 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
       != LOCATION_FILE (decl_sloc (t, false)))
     return 0;
 
-  while (inst && inst != error_mark_node)
+  for (; inst && inst != error_mark_node; inst = TREE_CHAIN (inst))
     {
       tree types = TREE_PURPOSE (inst);
       tree instance = TREE_VALUE (inst);
@@ -1750,8 +1757,15 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
       if (TREE_VEC_LENGTH (types) == 0)
 	break;
 
-      if (!TYPE_P (instance) || !TYPE_METHODS (instance))
+      if (!RECORD_OR_UNION_TYPE_P (instance) || !TYPE_METHODS (instance))
 	break;
+
+      /* We are interested in concrete template instantiations only: skip
+	 partially specialized nodes.  */
+      if ((TREE_CODE (instance) == RECORD_TYPE
+	   || TREE_CODE (instance) == UNION_TYPE)
+	  && cpp_check && cpp_check (instance, HAS_DEPENDENT_TEMPLATE_ARGS))
+	continue;
 
       num_inst++;
       INDENT (spc);
@@ -1788,8 +1802,6 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
       pp_semicolon (buffer);
       pp_newline (buffer);
       pp_newline (buffer);
-
-      inst = TREE_CHAIN (inst);
     }
 
   return num_inst > 0;
@@ -1822,7 +1834,6 @@ is_simple_enum (tree node)
   return true;
 }
 
-static bool in_function = true;
 static bool bitfield_used = false;
 
 /* Recursively dump in BUFFER Ada declarations corresponding to NODE of type
@@ -2001,7 +2012,6 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	{
 	  tree fnode = TREE_TYPE (node);
 	  bool is_function;
-	  bool prev_in_function = in_function;
 
 	  if (VOID_TYPE_P (TREE_TYPE (fnode)))
 	    {
@@ -2014,10 +2024,8 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	      pp_string (buffer, "access function");
 	    }
 
-	  in_function = is_function;
 	  dump_ada_function_declaration
 	    (buffer, node, false, false, false, spc + INDENT_INCR);
-	  in_function = prev_in_function;
 
 	  if (is_function)
 	    {
@@ -2136,11 +2144,6 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 			}
 		      else if (quals & TYPE_QUAL_CONST)
 			pp_string (buffer, "in ");
-		      else if (in_function)
-			{
-			  is_access = true;
-			  pp_string (buffer, "access ");
-			}
 		      else
 			{
 			  is_access = true;
@@ -2311,27 +2314,119 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 }
 
 /* Dump in BUFFER NODE's methods.  SPC is the indentation level.  Return 1 if
-   methods were printed, 0 otherwise.  */
+   methods were printed, 0 otherwise.
+
+   We do it in 2 passes: first, the regular methods, i.e. non-static member
+   functions, are output immediately within the package created for the class
+   so that they are considered as primitive operations in Ada; second, the
+   static member functions are output in a nested package so that they are
+   _not_ considered as primitive operations in Ada.
+
+   This approach is necessary because the formers have the implicit 'this'
+   pointer whereas the latters don't and, on 32-bit x86/Windows, the calling
+   conventions for the 'this' pointer are special.  Therefore, the compiler
+   needs to be able to differentiate regular methods (with 'this' pointer)
+   from static member functions that take a pointer to the class as first
+   parameter.  */
 
 static int
 print_ada_methods (pretty_printer *buffer, tree node, int spc)
 {
-  int res = 1;
-  tree tmp;
+  bool has_static_methods = false;
+  tree t;
+  int res;
 
   if (!has_nontrivial_methods (node))
     return 0;
 
   pp_semicolon (buffer);
 
-  for (tmp = TYPE_METHODS (node); tmp; tmp = TREE_CHAIN (tmp))
+  /* First pass: the regular methods.  */
+  res = 1;
+  for (t = TYPE_METHODS (node); t; t = TREE_CHAIN (t))
     {
+      if (TREE_CODE (TREE_TYPE (t)) != METHOD_TYPE)
+	{
+	  has_static_methods = true;
+	  continue;
+	}
+
       if (res)
 	{
 	  pp_newline (buffer);
 	  pp_newline (buffer);
 	}
-      res = print_ada_declaration (buffer, tmp, node, spc);
+
+      res = print_ada_declaration (buffer, t, node, spc);
+    }
+
+  if (!has_static_methods)
+    return 1;
+
+  pp_newline (buffer);
+  newline_and_indent (buffer, spc);
+
+  /* Second pass: the static member functions.  */
+  pp_string (buffer, "package Static is");
+  pp_newline (buffer);
+  spc += INDENT_INCR;
+
+  res = 0;
+  for (t = TYPE_METHODS (node); t; t = TREE_CHAIN (t))
+    {
+      if (TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)
+	continue;
+
+      if (res)
+	{
+	  pp_newline (buffer);
+	  pp_newline (buffer);
+	}
+
+      res = print_ada_declaration (buffer, t, node, spc);
+    }
+
+  spc -= INDENT_INCR;
+  newline_and_indent (buffer, spc);
+  pp_string (buffer, "end;");
+
+  /* In order to save the clients from adding a second use clause for the
+     nested package, we generate renamings for the static member functions
+     in the package created for the class.  */
+  for (t = TYPE_METHODS (node); t; t = TREE_CHAIN (t))
+    {
+      bool is_function;
+
+      if (TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)
+	continue;
+
+      pp_newline (buffer);
+      newline_and_indent (buffer, spc);
+
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (t))))
+	{
+	  pp_string (buffer, "procedure ");
+	  is_function = false;
+	}
+      else
+	{
+	  pp_string (buffer, "function ");
+	  is_function = true;
+	}
+
+      dump_ada_decl_name (buffer, t, false);
+      dump_ada_function_declaration (buffer, t, false, false, false, spc);
+
+      if (is_function)
+	{
+	  pp_string (buffer, " return ");
+	  dump_generic_ada_node (buffer, TREE_TYPE (TREE_TYPE (t)), node,
+				 spc, false, true);
+	}
+
+       pp_string (buffer, " renames Static.");
+       dump_ada_decl_name (buffer, t, false);
+       pp_semicolon (buffer);
     }
 
   return 1;
@@ -2536,18 +2631,9 @@ static void
 print_destructor (pretty_printer *buffer, tree t)
 {
   tree decl_name = DECL_NAME (DECL_ORIGIN (t));
-  const char *s = IDENTIFIER_POINTER (decl_name);
 
-  if (*s == '_')
-    {
-      for (s += 2; *s != ' '; s++)
-	pp_character (buffer, *s);
-    }
-  else
-    {
-      pp_string (buffer, "Delete_");
-      pp_ada_tree_identifier (buffer, decl_name, t, false);
-    }
+  pp_string (buffer, "Delete_");
+  pp_ada_tree_identifier (buffer, decl_name, t, false);
 }
 
 /* Return the name of type T.  */
@@ -2740,7 +2826,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
     }
   else
     {
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && decl_name
 	  && *IDENTIFIER_POINTER (decl_name) == '_')
 	return 0;
@@ -2800,11 +2886,11 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_function, is_abstract_class = false;
       bool is_method = TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE;
       tree decl_name = DECL_NAME (t);
-      int prev_in_function = in_function;
       bool is_abstract = false;
       bool is_constructor = false;
       bool is_destructor = false;
       bool is_copy_constructor = false;
+      bool is_move_constructor = false;
 
       if (!decl_name)
 	return 0;
@@ -2815,15 +2901,20 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  is_constructor = cpp_check (t, IS_CONSTRUCTOR);
 	  is_destructor = cpp_check (t, IS_DESTRUCTOR);
 	  is_copy_constructor = cpp_check (t, IS_COPY_CONSTRUCTOR);
+	  is_move_constructor = cpp_check (t, IS_MOVE_CONSTRUCTOR);
 	}
 
-      /* Skip copy constructors: some are internal only, and those that are
-	 not cannot be called easily from Ada anyway.  */
-      if (is_copy_constructor)
+      /* Skip copy constructors and C++11 move constructors: some are internal
+	 only and those that are not cannot be called easily from Ada.  */
+      if (is_copy_constructor || is_move_constructor)
 	return 0;
 
       if (is_constructor || is_destructor)
 	{
+	  /* ??? Skip implicit constructors/destructors for now.  */
+	  if (DECL_ARTIFICIAL (t))
+	    return 0;
+
 	  /* Only consider constructors/destructors for complete objects.  */
 	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__comp", 6) != 0)
 	    return 0;
@@ -2852,8 +2943,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  is_function = true;
 	}
 
-      in_function = is_function;
-
       if (is_constructor)
 	print_constructor (buffer, t);
       else if (is_destructor)
@@ -2863,7 +2952,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
       dump_ada_function_declaration
 	(buffer, t, is_method, is_constructor, is_destructor, spc);
-      in_function = prev_in_function;
 
       if (is_function)
 	{
@@ -2960,9 +3048,12 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  if (num_fields == 1)
 	    is_interface = 1;
 
-	  /* Also check that there are only virtual methods.  */
+	  /* Also check that there are only pure virtual methods.  Since the
+	     class is empty, we can skip implicit constructors/destructors.  */
 	  for (tmp = TYPE_METHODS (TREE_TYPE (t)); tmp; tmp = TREE_CHAIN (tmp))
 	    {
+	      if (DECL_ARTIFICIAL (tmp))
+		continue;
 	      if (cpp_check (tmp, IS_ABSTRACT))
 		is_abstract_record = 1;
 	      else
@@ -3052,7 +3143,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
   if (is_class)
     {
-      spc -= 3;
+      spc -= INDENT_INCR;
       newline_and_indent (buffer, spc);
       pp_string (buffer, "end;");
       newline_and_indent (buffer, spc);

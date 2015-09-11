@@ -27,17 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
 #include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stringpool.h"
@@ -45,12 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "output.h"
 #include "regs.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -60,24 +46,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "toplev.h"
 #include "tm_p.h"
-#include "ggc.h"
 #include "coverage.h"
 #include "langhooks.h"
-#include "hash-table.h"
 #include "tree-iterator.h"
 #include "context.h"
 #include "pass_manager.h"
 #include "tree-pass.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "diagnostic-core.h"
@@ -101,7 +77,7 @@ struct GTY((chain_next ("%h.next"))) coverage_data
 };
 
 /* Counts information for a function.  */
-typedef struct counts_entry
+typedef struct counts_entry : pointer_hash <counts_entry>
 {
   /* We hash by  */
   unsigned ident;
@@ -114,11 +90,9 @@ typedef struct counts_entry
   struct gcov_ctr_summary summary;
 
   /* hash_table support.  */
-  typedef counts_entry value_type;
-  typedef counts_entry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static int equal (const value_type *, const compare_type *);
-  static void remove (value_type *);
+  static inline hashval_t hash (const counts_entry *);
+  static int equal (const counts_entry *, const counts_entry *);
+  static void remove (counts_entry *);
 } counts_entry_t;
 
 static GTY(()) struct coverage_data *functions_head = 0;
@@ -197,20 +171,19 @@ get_gcov_unsigned_t (void)
 }
 
 inline hashval_t
-counts_entry::hash (const value_type *entry)
+counts_entry::hash (const counts_entry *entry)
 {
   return entry->ident * GCOV_COUNTERS + entry->ctr;
 }
 
 inline int
-counts_entry::equal (const value_type *entry1,
-		     const compare_type *entry2)
+counts_entry::equal (const counts_entry *entry1, const counts_entry *entry2)
 {
   return entry1->ident == entry2->ident && entry1->ctr == entry2->ctr;
 }
 
 inline void
-counts_entry::remove (value_type *entry)
+counts_entry::remove (counts_entry *entry)
 {
   free (entry->counts);
   free (entry);
@@ -1142,9 +1115,10 @@ coverage_obj_init (void)
   /* Build the info and fn_info types.  These are mutually recursive.  */
   gcov_info_type = lang_hooks.types.make_type (RECORD_TYPE);
   gcov_fn_info_type = lang_hooks.types.make_type (RECORD_TYPE);
+  build_fn_info_type (gcov_fn_info_type, n_counters, gcov_info_type);
+  gcov_info_type = lang_hooks.types.make_type (RECORD_TYPE);
   gcov_fn_info_ptr_type = build_pointer_type
     (build_qualified_type (gcov_fn_info_type, TYPE_QUAL_CONST));
-  build_fn_info_type (gcov_fn_info_type, n_counters, gcov_info_type);
   build_info_type (gcov_info_type, gcov_fn_info_ptr_type);
   
   /* Build the gcov info var, this is referred to in its own

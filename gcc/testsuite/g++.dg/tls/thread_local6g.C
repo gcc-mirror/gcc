@@ -2,6 +2,7 @@
 
 // { dg-do run { target c++11 } }
 // { dg-add-options tls }
+// { dg-require-effective-target unwrapped }
 // { dg-require-effective-target tls_runtime }
 // { dg-require-cxa-atexit "" }
 

@@ -13,4 +13,3 @@ foo()
 }
 
 /* { dg-final { scan-tree-dump-times "readOnly" 1 "tmedge" } } */
-/* { dg-final { cleanup-tree-dump "tmedge" } } */

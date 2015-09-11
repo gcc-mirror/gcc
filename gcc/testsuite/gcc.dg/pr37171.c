@@ -16,4 +16,3 @@ unsigned int f4 (void)
 /* { dg-final { scan-tree-dump-times "= f1 \\(\\)" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "= f2 \\(\\)" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "= f3 \\(\\)" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

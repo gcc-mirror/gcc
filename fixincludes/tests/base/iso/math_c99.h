@@ -75,3 +75,14 @@
 #undef	isunordered
 #define	isunordered(x, y)	__builtin_isunordered(x, y)
 #endif  /* SOLARIS_MATH_9_CHECK */
+
+
+#if defined( SOLARIS_MATH_11_CHECK )
+/* @(#)math_c99.h	1.14	13/03/27 */
+#undef	signbit
+#define	signbit(x)	(sizeof(x) == sizeof(float) \
+			   ? __builtin_signbitf(x) \
+			   : sizeof(x) == sizeof(long double) \
+			     ? __builtin_signbitl(x) \
+			     : __builtin_signbit(x))
+#endif  /* SOLARIS_MATH_11_CHECK */

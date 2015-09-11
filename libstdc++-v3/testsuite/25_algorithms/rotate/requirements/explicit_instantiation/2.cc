@@ -30,5 +30,5 @@ namespace std
   typedef NonDefaultConstructible 		value_type;
   typedef value_type* 		iterator_type;
 
-  template void rotate(iterator_type, iterator_type, iterator_type);
+  template iterator_type rotate(iterator_type, iterator_type, iterator_type);
 } 

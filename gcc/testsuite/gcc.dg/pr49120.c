@@ -1,6 +1,7 @@
 /* PR c/49120 */
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
+/* { dg-require-effective-target alloca } */
 
 int
 main ()

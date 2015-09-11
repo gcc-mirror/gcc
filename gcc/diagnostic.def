@@ -45,3 +45,6 @@ DEFINE_DIAGNOSTIC_KIND (DK_PERMERROR, "permerror: ", NULL)
 /* This one is just for counting DK_WARNING promoted to DK_ERROR
    due to -Werror and -Werror=warning.  */
 DEFINE_DIAGNOSTIC_KIND (DK_WERROR, "error: ", NULL)
+/* This is like DK_ICE, but backtrace is not printed.  Used in the driver
+   when reporting fatal signal in the compiler.  */
+DEFINE_DIAGNOSTIC_KIND (DK_ICE_NOBT, "internal compiler error: ", "error")

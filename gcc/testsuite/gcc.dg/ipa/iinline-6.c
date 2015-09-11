@@ -69,4 +69,3 @@ int main (int argc, char **argv)
 
 
 /* { dg-final { scan-ipa-dump-not "wrong_target\[^\\n\]*inline copy in" "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

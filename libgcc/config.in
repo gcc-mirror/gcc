@@ -3,6 +3,9 @@
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 
+/* Define to 1 if you have the <ftw.h> header file. */
+#undef HAVE_FTW_H
+
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 
@@ -35,9 +38,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define if the C compiler is configured for setjmp/longjmp exceptions. */
-#undef LIBGCC_SJLJ_EXCEPTIONS
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

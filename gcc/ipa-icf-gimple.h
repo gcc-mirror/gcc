@@ -75,7 +75,7 @@ static inline bool
 return_with_result (bool result, const char *func, unsigned int line)
 {
   if (!result && dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  false returned (%s:%u)\n", func, line);
+    fprintf (dump_file, "  false returned: (%s:%u)\n", func, line);
 
   return result;
 }
@@ -226,12 +226,16 @@ public:
   /* Verifies that trees T1 and T2 do correspond.  */
   bool compare_variable_decl (tree t1, tree t2);
 
+  /* Return true if types are compatible for polymorphic call analysis.
+     COMPARE_PTR indicates if polymorphic type comparsion should be
+     done for pointers, too.  */
+  static bool compatible_polymorphic_types_p (tree t1, tree t2,
+					      bool compare_ptr);
+
   /* Return true if types are compatible from perspective of ICF.
      FIRST_ARGUMENT indicates if the comparison is called for
      first parameter of a function.  */
-  static bool compatible_types_p (tree t1, tree t2,
-				  bool compare_polymorphic = true,
-				  bool first_argument = false);
+  static bool compatible_types_p (tree t1, tree t2);
 
 
 private:

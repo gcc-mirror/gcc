@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ package body Exception_Data is
    --           o--
    --  (B_E_I)  |  Exception_Name: <exception name> (as in Exception_Name)
    --           |  Message: <message> (or a null line if no message)
-   --           |  PID=nnnn (if != 0)
+   --           |  PID=nnnn (if nonzero)
    --           o--
    --  (U_E_TB) |  Call stack traceback locations:
    --           |  <0xyyyyyyyy 0xyyyyyyyy ...>
@@ -284,7 +284,7 @@ package body Exception_Data is
          end if;
       end if;
 
-      --  Output PID line if non-zero
+      --  Output PID line if nonzero
 
       if X.Pid /= 0 then
          Append_Info_String (BEI_PID_Header, Info, Ptr);

@@ -18,4 +18,3 @@ void test_vcleQs8 (void)
 }
 
 /* { dg-final { scan-assembler "vcge\.s8\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

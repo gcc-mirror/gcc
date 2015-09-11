@@ -37,4 +37,3 @@ main (void)
   return 0;
 }
 
-/* { dg-final { cleanup-saved-temps } } */

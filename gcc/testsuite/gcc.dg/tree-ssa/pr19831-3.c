@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-optimized" } */
 
 void test2(void)
 {
@@ -36,4 +36,3 @@ void test6(void)
 
 /* { dg-final { scan-tree-dump-times "free" 3 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "malloc" 3 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

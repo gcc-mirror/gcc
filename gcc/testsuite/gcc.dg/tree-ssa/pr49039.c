@@ -28,4 +28,3 @@ foo (unsigned int x, unsigned int y)
 /* { dg-final { scan-tree-dump "Folding predicate minv_\[0-9\]* == 6 to 0" "vrp1" } } */
 /* { dg-final { scan-tree-dump "Folding predicate maxv_\[0-9\]* == 5 to 0" "vrp1" } } */
 /* { dg-final { scan-tree-dump "Folding predicate maxv_\[0-9\]* == 6 to 0" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

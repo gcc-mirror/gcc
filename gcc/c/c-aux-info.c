@@ -25,23 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "flags.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "symtab.h"
-#include "input.h"
-#include "alias.h"
-#include "double-int.h"
-#include "machmode.h"
-#include "inchash.h"
 #include "tree.h"
+#include "alias.h"
 #include "c-tree.h"
 
-enum formals_style_enum {
+enum formals_style {
   ansi,
   k_and_r_names,
   k_and_r_decls
 };
-typedef enum formals_style_enum formals_style;
 
 
 static const char *data_type;
@@ -319,7 +311,7 @@ gen_type (const char *ret_val, tree t, formals_style style)
 	  else
 	    {
 	      char buff[23];
-	      sprintf (buff, "["HOST_WIDE_INT_PRINT_DEC"]",
+	      sprintf (buff, "[" HOST_WIDE_INT_PRINT_DEC"]",
 		       int_size_in_bytes (t)
 		       / int_size_in_bytes (TREE_TYPE (t)));
 	      ret_val = gen_type (concat (ret_val, buff, NULL),

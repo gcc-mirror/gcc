@@ -10,4 +10,3 @@
 /* { dg-final { scan-assembler "cvttps2dq" } } */
 /* { dg-final { scan-assembler "cvtdq2pd" } } */
 /* { dg-final { scan-assembler "cvtpd2ps" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

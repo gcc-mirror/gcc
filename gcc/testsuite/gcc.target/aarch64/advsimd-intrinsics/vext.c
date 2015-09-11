@@ -113,7 +113,7 @@ void exec_vext (void)
   TEST_VEXT(q, poly, p, 16, 8, 6);
   TEST_VEXT(q, float, f, 32, 4, 3);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK_RESULTS_NO_FP16 (TEST_MSG, "");
 }
 
 int main (void)

@@ -18,7 +18,7 @@ void FNNAME (INSN_NAME) (void)
   /* vector_res = OP(vector1,vector2), then store the result.  */
 
 #define TEST_BINARY_SAT_OP1(INSN, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
-  Set_Neon_Cumulative_Sat(0);						\
+  Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##Q##_##T2##W(VECT_VAR(vector1, T1, W, N),			\
 		      VECT_VAR(vector2, T1, W, N));			\
@@ -76,7 +76,22 @@ void FNNAME (INSN_NAME) (void)
   TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 32, 4, expected_cumulative_sat, "");
   TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, expected_cumulative_sat, "");
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 64, 1, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected, "");
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
 
 #ifdef EXTRA_TESTS
   EXTRA_TESTS();

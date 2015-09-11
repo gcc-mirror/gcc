@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -321,6 +321,8 @@ extern "C" void __offload_unregister_tables(
     VarList::Node *var_table
 )
 {
+    OFFLOAD_DEBUG_TRACE(2, "Unregistering offload function entry table %p\n",
+                           entry_table);
     __offload_entries.remove_table(entry_table);
 
     OFFLOAD_DEBUG_TRACE(2, "Unregistering function table %p\n", func_table);
@@ -329,3 +331,219 @@ extern "C" void __offload_unregister_tables(
     OFFLOAD_DEBUG_TRACE(2, "Unregistering var table %p\n", var_table);
     __offload_vars.remove_table(var_table);
 }
+
+#ifdef MYO_SUPPORT
+
+MYOVarTableList  __offload_myo_var_tables;
+MYOVarTableList  __offload_myo_vtable_tables;
+MYOFuncTableList __offload_myo_func_tables;
+MYOInitTableList __offload_myo_init_tables;
+
+// Debugging dump
+void MYOVarTableList::dump(void)
+{
+    OFFLOAD_DEBUG_TRACE(2, "MYO Var tables:\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        OFFLOAD_DEBUG_TRACE(2, "    MYO Var table:\n");
+        for (const Table::Entry *e = n->table.entries;
+             e->varName != MYO_TABLE_END_MARKER(); e++) {
+#ifdef TARGET_WINNT
+            if (e->varName == 0) {
+                continue;
+            }
+#endif // TARGET_WINNT
+            OFFLOAD_DEBUG_TRACE(2, "        %s %p\n",
+                e->varName, e->sharedAddr);
+        }
+    }
+
+    m_lock.unlock();
+}
+
+// check if any shared variables
+bool MYOVarTableList::is_empty()
+{
+    OFFLOAD_DEBUG_TRACE(3, "Are MYO Var tables empty?\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        for (const Table::Entry *e = n->table.entries;
+             e->varName != MYO_TABLE_END_MARKER(); e++) {
+#ifdef TARGET_WINNT
+            if (e->varName == 0) {
+                continue;
+            }
+#endif // TARGET_WINNT
+            m_lock.unlock();
+            OFFLOAD_DEBUG_TRACE(3, "No\n");
+            return false;
+        }
+    }
+
+    m_lock.unlock();
+    OFFLOAD_DEBUG_TRACE(3, "Yes\n");
+    return true;
+}
+
+void MYOFuncTableList::dump(void)
+{
+    OFFLOAD_DEBUG_TRACE(2, "MYO Func tables:\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        OFFLOAD_DEBUG_TRACE(2, "    MYO Func table:\n");
+        for (const Table::Entry *e = n->table.entries;
+             e->funcName != MYO_TABLE_END_MARKER(); e++) {
+#ifdef TARGET_WINNT
+            if (e->funcName == 0) {
+                continue;
+            }
+#endif // TARGET_WINNT
+#if HOST_LIBRARY
+            OFFLOAD_DEBUG_TRACE(2, "        %s %p %p\n",
+                e->funcName, e->funcAddr, e->localThunkAddr);
+#else // HOST_LIBRARY
+            OFFLOAD_DEBUG_TRACE(2, "        %s %p %p %p\n",
+                e->funcName, e->funcAddr, e->wrapFuncAddr, e->localThunkAddr);
+#endif // HOST_LIBRARY
+        }
+    }
+
+    m_lock.unlock();
+}
+
+// check if any shared functions
+bool MYOFuncTableList::is_empty()
+{
+    OFFLOAD_DEBUG_TRACE(3, "Are MYO Func tables empty?\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        int count = 0;
+        for (const Table::Entry *e = n->table.entries;
+             e->funcName != MYO_TABLE_END_MARKER(); e++) {
+#ifdef TARGET_WINNT
+            if (e->funcName == 0) {
+                continue;
+            }
+#endif // TARGET_WINNT
+            count++;
+            if (count > 1) {
+                m_lock.unlock();
+                OFFLOAD_DEBUG_TRACE(3, "No\n");
+                return false;
+            }
+        }
+    }
+
+    m_lock.unlock();
+    OFFLOAD_DEBUG_TRACE(3, "Yes\n");
+    return true;
+}
+
+void MYOInitTableList::dump(void)
+{
+    OFFLOAD_DEBUG_TRACE(2, "MYO Init tables:\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        OFFLOAD_DEBUG_TRACE(2, "    MYO Init table:\n");
+        for (const Table::Entry *e = n->table.entries;
+#ifdef TARGET_WINNT
+             e->funcName != MYO_TABLE_END_MARKER(); e++) {
+            if (e->funcName == 0) {
+                continue;
+            }
+            OFFLOAD_DEBUG_TRACE(2, "        %s %p\n", e->funcName, e->func);
+#else // TARGET_WINNT
+             e->func != 0; e++) {
+            OFFLOAD_DEBUG_TRACE(2, "        %p\n", e->func);
+#endif // TARGET_WINNT
+        }
+    }
+
+    m_lock.unlock();
+}
+
+// check if any shared functions
+bool MYOInitTableList::is_empty()
+{
+    OFFLOAD_DEBUG_TRACE(3, "Are MYO Init tables empty?\n");
+
+    m_lock.lock();
+
+    for (Node *n = m_head; n != 0; n = n->next) {
+        for (const Table::Entry *e = n->table.entries;
+#ifdef TARGET_WINNT
+             e->funcName != MYO_TABLE_END_MARKER(); e++) {
+            if (e->funcName == 0) {
+                continue;
+            }
+            m_lock.unlock();
+            OFFLOAD_DEBUG_TRACE(3, "No\n");
+            return false;
+#else // TARGET_WINNT
+             e->func != 0; e++) {
+#endif // TARGET_WINNT
+        }
+    }
+
+    m_lock.unlock();
+    OFFLOAD_DEBUG_TRACE(3, "Yes\n");
+    return true;
+}
+
+extern "C" void __offload_myoRegisterTables1(
+    MYOInitTableList::Node *init_table,
+    MYOVarTableList::Node  *shared_table,
+    MYOVarTableList::Node  *shared_vtable,
+    MYOFuncTableList::Node *fptr_table
+)
+{
+    OFFLOAD_DEBUG_TRACE(2, "Registering MYO shared var table %p\n",
+                        shared_table);
+    __offload_myo_var_tables.add_table(shared_table);
+
+    OFFLOAD_DEBUG_TRACE(2, "Registering MYO shared vtable table %p\n",
+                        shared_vtable);
+    __offload_myo_vtable_tables.add_table(shared_vtable);
+
+    OFFLOAD_DEBUG_TRACE(2, "Registering MYO function table %p\n", fptr_table);
+    __offload_myo_func_tables.add_table(fptr_table);
+
+    OFFLOAD_DEBUG_TRACE(2, "Registering MYO init table %p\n", init_table);
+    __offload_myo_init_tables.add_table(init_table);
+}
+
+extern "C" void __offload_myoRemoveTables(
+    MYOInitTableList::Node *init_table,
+    MYOVarTableList::Node  *shared_table,
+    MYOVarTableList::Node  *shared_vtable,
+    MYOFuncTableList::Node *fptr_table
+)
+{
+    OFFLOAD_DEBUG_TRACE(3, "%s\n", __func__);
+
+    OFFLOAD_DEBUG_TRACE(2, "Removing MYO shared var table %p\n",
+                        shared_table);
+    __offload_myo_var_tables.remove_table(shared_table);
+
+    OFFLOAD_DEBUG_TRACE(2, "Removing MYO shared vtable table %p\n",
+                        shared_vtable);
+    __offload_myo_vtable_tables.remove_table(shared_vtable);
+
+    OFFLOAD_DEBUG_TRACE(2, "Removing MYO function table %p\n", fptr_table);
+    __offload_myo_func_tables.remove_table(fptr_table);
+
+    OFFLOAD_DEBUG_TRACE(2, "Removing MYO init table %p\n", init_table);
+    __offload_myo_init_tables.remove_table(init_table);
+}
+
+#endif // MYO_SUPPORT

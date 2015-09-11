@@ -22,4 +22,3 @@ contains
   end function get_d
 end program test
 
-! { dg-final { cleanup-tree-dump "vect" } }

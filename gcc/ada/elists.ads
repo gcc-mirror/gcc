@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,6 +106,9 @@ package Elists is
    pragma Inline (Last_Elmt);
    --  Obtains the last element of the given element list or, if the list has
    --  no items, then No_Elmt is returned.
+
+   function List_Length (List : Elist_Id) return Nat;
+   --  Returns number of elements in given List (zero if List = No_Elist)
 
    function Next_Elmt (Elmt : Elmt_Id) return Elmt_Id;
    pragma Inline (Next_Elmt);

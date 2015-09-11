@@ -51,4 +51,3 @@ main ()
 }
 #endif
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

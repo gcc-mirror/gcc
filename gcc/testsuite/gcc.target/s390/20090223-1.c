@@ -3,7 +3,7 @@
    register asm ("0").  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -Wno-attributes" } */
+/* { dg-options "-O2 -Wno-attributes -Wno-implicit-function-declaration" } */
 
 extern void abort (void);
 

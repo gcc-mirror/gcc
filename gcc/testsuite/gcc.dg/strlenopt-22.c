@@ -36,5 +36,4 @@ main ()
 /* { dg-final { scan-tree-dump-times "strcpy \\(" 1 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strchr \\(" 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } *
-/* { dg-final { cleanup-tree-dump "strlen" } } */
+/* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */

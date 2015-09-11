@@ -49,35 +49,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "obstack.h"
-#include "ggc.h"
-#include "hash-table.h"
+#include "backend.h"
 #include "alloc-pool.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "cfghooks.h"
 #include "tree.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "cfganal.h"
-#include "basic-block.h"
 #include "df.h"
+#include "options.h"
+#include "cfganal.h"
 #include "cfgloop.h" /* FIXME: For struct loop.  */
 #include "dumpfile.h"
 
@@ -508,7 +488,7 @@ dump_edge_info (FILE *file, edge e, int flags, int do_succ)
   if (e->count && do_details)
     {
       fputs (" count:", file);
-      fprintf (file, "%"PRId64, e->count);
+      fprintf (file, "%" PRId64, e->count);
     }
 
   if (e->flags && do_details)
@@ -756,7 +736,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
       if (flags & TDF_DETAILS)
 	{
 	  struct function *fun = DECL_STRUCT_FUNCTION (current_function_decl);
-	  fprintf (outf, ", count " "%"PRId64,
+	  fprintf (outf, ", count " "%" PRId64,
 		   (int64_t) bb->count);
 	  fprintf (outf, ", freq %i", bb->frequency);
 	  if (maybe_hot_bb_p (fun, bb))
@@ -1037,23 +1017,22 @@ struct htab_bb_copy_original_entry
   int index2;
 };
 
-struct bb_copy_hasher : typed_noop_remove <htab_bb_copy_original_entry>
+struct bb_copy_hasher : nofree_ptr_hash <htab_bb_copy_original_entry>
 {
-  typedef htab_bb_copy_original_entry value_type;
-  typedef htab_bb_copy_original_entry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *existing,
-			    const compare_type * candidate);
+  static inline hashval_t hash (const htab_bb_copy_original_entry *);
+  static inline bool equal (const htab_bb_copy_original_entry *existing,
+			    const htab_bb_copy_original_entry * candidate);
 };
 
 inline hashval_t
-bb_copy_hasher::hash (const value_type *data)
+bb_copy_hasher::hash (const htab_bb_copy_original_entry *data)
 {
   return data->index1;
 }
 
 inline bool
-bb_copy_hasher::equal (const value_type *data, const compare_type *data2)
+bb_copy_hasher::equal (const htab_bb_copy_original_entry *data,
+		       const htab_bb_copy_original_entry *data2)
 {
   return data->index1 == data2->index1;
 }
@@ -1065,18 +1044,15 @@ static hash_table<bb_copy_hasher> *bb_copy;
 
 /* And between loops and copies.  */
 static hash_table<bb_copy_hasher> *loop_copy;
-static alloc_pool original_copy_bb_pool;
-
+static object_allocator<htab_bb_copy_original_entry> *original_copy_bb_pool;
 
 /* Initialize the data structures to maintain mapping between blocks
    and its copies.  */
 void
 initialize_original_copy_tables (void)
 {
-  gcc_assert (!original_copy_bb_pool);
-  original_copy_bb_pool
-    = create_alloc_pool ("original_copy",
-			 sizeof (struct htab_bb_copy_original_entry), 10);
+  original_copy_bb_pool = new object_allocator<htab_bb_copy_original_entry>
+    ("original_copy", 10);
   bb_original = new hash_table<bb_copy_hasher> (10);
   bb_copy = new hash_table<bb_copy_hasher> (10);
   loop_copy = new hash_table<bb_copy_hasher> (10);
@@ -1094,7 +1070,7 @@ free_original_copy_tables (void)
   bb_copy = NULL;
   delete loop_copy;
   loop_copy = NULL;
-  free_alloc_pool (original_copy_bb_pool);
+  delete original_copy_bb_pool;
   original_copy_bb_pool = NULL;
 }
 
@@ -1116,7 +1092,7 @@ copy_original_table_clear (hash_table<bb_copy_hasher> *tab, unsigned obj)
 
   elt = *slot;
   tab->clear_slot (slot);
-  pool_free (original_copy_bb_pool, elt);
+  original_copy_bb_pool->remove (elt);
 }
 
 /* Sets the value associated with OBJ in table TAB to VAL.
@@ -1136,8 +1112,7 @@ copy_original_table_set (hash_table<bb_copy_hasher> *tab,
   slot = tab->find_slot (&key, INSERT);
   if (!*slot)
     {
-      *slot = (struct htab_bb_copy_original_entry *)
-		pool_alloc (original_copy_bb_pool);
+      *slot = original_copy_bb_pool->allocate ();
       (*slot)->index1 = obj;
     }
   (*slot)->index2 = val;

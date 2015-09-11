@@ -22,39 +22,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
-#include "bitmap.h"
+#include "hard-reg-set.h"
+#include "options.h"
+#include "fold-const.h"
+#include "internal-fn.h"
 #include "flags.h"
 #include "opts.h"
 #include "options.h"
 #include "common/common-target.h"
 #include "diagnostic.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
+#include "target.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "toplev.h"
@@ -165,6 +147,14 @@ lto_write_options (void)
       && !global_options.x_flag_strict_overflow)
     append_to_collect_gcc_options (&temporary_obstack, &first_p,
 			       "-fno-strict-overflow");
+
+  if (!global_options_set.x_flag_openmp
+      && !global_options.x_flag_openmp)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fno-openmp");
+  if (!global_options_set.x_flag_openacc
+      && !global_options.x_flag_openacc)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				   "-fno-openacc");
 
   /* Append options from target hook and store them to offload_lto section.  */
   if (lto_stream_offload_p)

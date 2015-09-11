@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,7 +212,7 @@ package body Lib.Load is
         Dynamic_Elab      => False,
         Error_Location    => Sloc (With_Node),
         Expected_Unit     => Spec_Name,
-        Fatal_Error       => True,
+        Fatal_Error       => Error_Detected,
         Generate_Code     => False,
         Has_RACW          => False,
         Filler            => False,
@@ -319,7 +319,7 @@ package body Lib.Load is
            Dynamic_Elab      => False,
            Error_Location    => No_Location,
            Expected_Unit     => No_Unit_Name,
-           Fatal_Error       => False,
+           Fatal_Error       => None,
            Generate_Code     => False,
            Has_RACW          => False,
            Filler            => False,
@@ -683,7 +683,7 @@ package body Lib.Load is
               Dynamic_Elab      => False,
               Error_Location    => Sloc (Error_Node),
               Expected_Unit     => Uname_Actual,
-              Fatal_Error       => False,
+              Fatal_Error       => None,
               Generate_Code     => False,
               Has_RACW          => False,
               Filler            => False,
@@ -740,12 +740,30 @@ package body Lib.Load is
                goto Done;
             end if;
 
-            --  If loaded unit had a fatal error, then caller inherits it
+            --  If loaded unit had an error, then caller inherits setting
 
-            if Units.Table (Unum).Fatal_Error
-              and then Present (Error_Node)
-            then
-               Units.Table (Calling_Unit).Fatal_Error := True;
+            if Present (Error_Node) then
+               case Units.Table (Unum).Fatal_Error is
+
+                  --  Nothing to do if with'ed unit had no error
+
+                  when None =>
+                     null;
+
+                  --  If with'ed unit had a detected fatal error, propagate it
+
+                  when Error_Detected =>
+                     Units.Table (Calling_Unit).Fatal_Error := Error_Detected;
+
+                  --  If with'ed unit had an ignored error, then propagate it
+                  --  but do not overide an existring setting.
+
+                  when Error_Ignored =>
+                     if Units.Table (Calling_Unit).Fatal_Error = None then
+                        Units.Table (Calling_Unit).Fatal_Error :=
+                                                               Error_Ignored;
+                     end if;
+               end case;
             end if;
 
             --  Remove load stack entry and return the entry in the file table

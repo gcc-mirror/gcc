@@ -50,26 +50,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
+#include "gimple.h"
 #include "rtl.h"
 #include "flags.h"
 #include "regs.h"
-#include "symtab.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -79,27 +67,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
 #include "diagnostic-core.h"
 #include "coverage.h"
 #include "value-prof.h"
 #include "fold-const.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "dumpfile.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 
 #include "profile.h"
@@ -276,7 +253,7 @@ get_working_sets (void)
           ws_info = &gcov_working_sets[ws_ix];
           /* Print out the percentage using int arithmatic to avoid float.  */
           fprintf (dump_file, "\t\t%u.%02u%%: num counts=%u, min counter="
-                   "%"PRId64 "\n",
+                   "%" PRId64 "\n",
                    pct / 100, pct - (pct / 100 * 100),
                    ws_info->num_counters,
                    (int64_t)ws_info->min_counter);
@@ -357,7 +334,7 @@ is_edge_inconsistent (vec<edge, va_gc> *edges)
 	      if (dump_file)
 		{
 		  fprintf (dump_file,
-		  	   "Edge %i->%i is inconsistent, count%"PRId64,
+		  	   "Edge %i->%i is inconsistent, count%" PRId64,
 			   e->src->index, e->dest->index, e->count);
 		  dump_bb (dump_file, e->src, 0, TDF_DETAILS);
 		  dump_bb (dump_file, e->dest, 0, TDF_DETAILS);
@@ -406,7 +383,7 @@ is_inconsistent (void)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count is negative "
-		       "%"PRId64,
+		       "%" PRId64,
 		       bb->index,
 		       bb->count);
 	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
@@ -418,7 +395,7 @@ is_inconsistent (void)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count does not match sum of incoming edges "
-		       "%"PRId64" should be %"PRId64,
+		       "%" PRId64" should be %" PRId64,
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->preds));
@@ -433,7 +410,7 @@ is_inconsistent (void)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count does not match sum of outgoing edges "
-		       "%"PRId64" should be %"PRId64,
+		       "%" PRId64" should be %" PRId64,
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->succs));
@@ -510,7 +487,7 @@ read_profile_edge_counts (gcov_type *exec_counts)
 	      {
 		fprintf (dump_file, "\nRead edge from %i to %i, count:",
 			 bb->index, e->dest->index);
-		fprintf (dump_file, "%"PRId64,
+		fprintf (dump_file, "%" PRId64,
 			 (int64_t) e->count);
 	      }
 	  }

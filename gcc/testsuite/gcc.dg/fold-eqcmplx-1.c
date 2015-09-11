@@ -7,4 +7,3 @@ int foo(float x, float y)
 }
 
 /* { dg-final { scan-tree-dump-times "x == y" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

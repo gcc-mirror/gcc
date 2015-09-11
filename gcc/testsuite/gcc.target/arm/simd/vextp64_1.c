@@ -1,6 +1,5 @@
 /* Test the `vextp64' ARM Neon intrinsic.  */
 
-/* { dg-do run } */
 /* { dg-require-effective-target arm_crypto_ok } */
 /* { dg-options "-save-temps -O3 -fno-inline" } */
 /* { dg-add-options arm_crypto } */
@@ -22,5 +21,4 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* Don't scan assembler for vext - it can be optimized into a move from r0.
-/* { dg-final { cleanup-saved-temps } } */
+/* Don't scan assembler for vext - it can be optimized into a move from r0. */

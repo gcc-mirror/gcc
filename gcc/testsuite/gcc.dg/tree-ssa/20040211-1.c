@@ -36,4 +36,3 @@ com (rtx insn, int blah)
 /* Cddce cannot remove possibly infinite loops and there is no way how to
    determine whether the loop in can_move_up ends.  */
 /* { dg-final { scan-tree-dump "if " "cddce2"} } */
-/* { dg-final { cleanup-tree-dump "cddce2" } } */

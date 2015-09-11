@@ -21,27 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "varasm.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
-#include "function.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -53,23 +41,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "diagnostic-core.h"
+#include "alloc-pool.h"
 #include "cselib.h"
-#include "hash-map.h"
 #include "langhooks.h"
 #include "timevar.h"
 #include "dumpfile.h"
 #include "target.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "df.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-ssa.h"
 #include "rtl-iter.h"
 
@@ -153,39 +132,11 @@ along with GCC; see the file COPYING3.  If not see
    However, this is no actual entry for alias set zero.  It is an
    error to attempt to explicitly construct a subset of zero.  */
 
-struct alias_set_traits : default_hashmap_traits
-{
-  template<typename T>
-  static bool
-  is_empty (T &e)
-  {
-    return e.m_key == INT_MIN;
-  }
-
-  template<typename  T>
-  static bool
-  is_deleted (T &e)
-  {
-    return e.m_key == (INT_MIN + 1);
-  }
-
-  template<typename T> static void mark_empty (T &e) { e.m_key = INT_MIN; }
-
-  template<typename T>
-  static void
-  mark_deleted (T &e)
-  {
-    e.m_key = INT_MIN + 1;
-  }
-};
+struct alias_set_hash : int_hash <int, INT_MIN, INT_MIN + 1> {};
 
 struct GTY(()) alias_set_entry_d {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
   alias_set_type alias_set;
-
-  /* Nonzero if would have a child of zero: this effectively makes this
-     alias set the same as alias set zero.  */
-  int has_zero_child;
 
   /* The children of the alias set.  These are not just the immediate
      children, but, in fact, all descendants.  So, if we have:
@@ -194,7 +145,18 @@ struct GTY(()) alias_set_entry_d {
 
      continuing our example above, the children here will be all of
      `int', `double', `float', and `struct S'.  */
-  hash_map<int, int, alias_set_traits> *children;
+  hash_map<alias_set_hash, int> *children;
+
+  /* Nonzero if would have a child of zero: this effectively makes this
+     alias set the same as alias set zero.  */
+  bool has_zero_child;
+  /* Nonzero if alias set corresponds to pointer type itself (i.e. not to
+     aggregate contaiing pointer.
+     This is used for a special case where we need an universal pointer type
+     compatible with all other pointer types.  */
+  bool is_pointer;
+  /* Nonzero if is_pointer or if one of childs have has_pointer set.  */
+  bool has_pointer;
 };
 typedef struct alias_set_entry_d *alias_set_entry;
 
@@ -212,6 +174,20 @@ static int write_dependence_p (const_rtx,
 			       bool, bool, bool);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
+
+/* Query statistics for the different low-level disambiguators.
+   A high-level query may trigger multiple of them.  */
+
+static struct {
+  unsigned long long num_alias_zero;
+  unsigned long long num_same_alias_set;
+  unsigned long long num_same_objects;
+  unsigned long long num_volatile;
+  unsigned long long num_dag;
+  unsigned long long num_universal;
+  unsigned long long num_disambiguated;
+} alias_stats;
+
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -441,18 +417,58 @@ mems_in_disjoint_alias_sets_p (const_rtx mem1, const_rtx mem2)
 bool
 alias_set_subset_of (alias_set_type set1, alias_set_type set2)
 {
-  alias_set_entry ase;
+  alias_set_entry ase2;
 
   /* Everything is a subset of the "aliases everything" set.  */
   if (set2 == 0)
     return true;
 
-  /* Otherwise, check if set1 is a subset of set2.  */
-  ase = get_alias_set_entry (set2);
-  if (ase != 0
-      && (ase->has_zero_child
-	  || ase->children->get (set1)))
+  /* Check if set1 is a subset of set2.  */
+  ase2 = get_alias_set_entry (set2);
+  if (ase2 != 0
+      && (ase2->has_zero_child
+	  || (ase2->children && ase2->children->get (set1))))
     return true;
+
+  /* As a special case we consider alias set of "void *" to be both subset
+     and superset of every alias set of a pointer.  This extra symmetry does
+     not matter for alias_sets_conflict_p but it makes aliasing_component_refs_p
+     to return true on the following testcase:
+
+     void *ptr;
+     char **ptr2=(char **)&ptr;
+     *ptr2 = ...
+
+     Additionally if a set contains universal pointer, we consider every pointer
+     to be a subset of it, but we do not represent this explicitely - doing so
+     would require us to update transitive closure each time we introduce new
+     pointer type.  This makes aliasing_component_refs_p to return true
+     on the following testcase:
+
+     struct a {void *ptr;}
+     char **ptr = (char **)&a.ptr;
+     ptr = ...
+
+     This makes void * truly universal pointer type.  See pointer handling in
+     get_alias_set for more details.  */
+  if (ase2 && ase2->has_pointer)
+    {
+      alias_set_entry ase1 = get_alias_set_entry (set1);
+
+      if (ase1 && ase1->is_pointer)
+	{
+          alias_set_type voidptr_set = TYPE_ALIAS_SET (ptr_type_node);
+	  /* If one is ptr_type_node and other is pointer, then we consider
+ 	     them subset of each other.  */
+	  if (set1 == voidptr_set || set2 == voidptr_set)
+	    return true;
+	  /* If SET2 contains universal pointer's alias set, then we consdier
+ 	     every (non-universal) pointer.  */
+	  if (ase2->children && set1 != voidptr_set
+	      && ase2->children->get (voidptr_set))
+	    return true;
+	}
+    }
   return false;
 }
 
@@ -461,25 +477,69 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
 int
 alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 {
-  alias_set_entry ase;
+  alias_set_entry ase1;
+  alias_set_entry ase2;
 
   /* The easy case.  */
   if (alias_sets_must_conflict_p (set1, set2))
     return 1;
 
   /* See if the first alias set is a subset of the second.  */
-  ase = get_alias_set_entry (set1);
-  if (ase != 0
-      && (ase->has_zero_child
-	  || ase->children->get (set2)))
-    return 1;
+  ase1 = get_alias_set_entry (set1);
+  if (ase1 != 0
+      && ase1->children && ase1->children->get (set2))
+    {
+      ++alias_stats.num_dag;
+      return 1;
+    }
 
   /* Now do the same, but with the alias sets reversed.  */
-  ase = get_alias_set_entry (set2);
-  if (ase != 0
-      && (ase->has_zero_child
-	  || ase->children->get (set1)))
-    return 1;
+  ase2 = get_alias_set_entry (set2);
+  if (ase2 != 0
+      && ase2->children && ase2->children->get (set1))
+    {
+      ++alias_stats.num_dag;
+      return 1;
+    }
+
+  /* We want void * to be compatible with any other pointer without
+     really dropping it to alias set 0. Doing so would make it
+     compatible with all non-pointer types too.
+
+     This is not strictly necessary by the C/C++ language
+     standards, but avoids common type punning mistakes.  In
+     addition to that, we need the existence of such universal
+     pointer to implement Fortran's C_PTR type (which is defined as
+     type compatible with all C pointers).  */
+  if (ase1 && ase2 && ase1->has_pointer && ase2->has_pointer)
+    {
+      alias_set_type voidptr_set = TYPE_ALIAS_SET (ptr_type_node);
+
+      /* If one of the sets corresponds to universal pointer,
+ 	 we consider it to conflict with anything that is
+	 or contains pointer.  */
+      if (set1 == voidptr_set || set2 == voidptr_set)
+	{
+	  ++alias_stats.num_universal;
+	  return true;
+	}
+     /* If one of sets is (non-universal) pointer and the other
+ 	contains universal pointer, we also get conflict.  */
+     if (ase1->is_pointer && set2 != voidptr_set
+	 && ase2->children && ase2->children->get (voidptr_set))
+	{
+	  ++alias_stats.num_universal;
+	  return true;
+	}
+     if (ase2->is_pointer && set1 != voidptr_set
+	 && ase1->children && ase1->children->get (voidptr_set))
+	{
+	  ++alias_stats.num_universal;
+	  return true;
+	}
+    }
+
+  ++alias_stats.num_disambiguated;
 
   /* The two alias sets are distinct and neither one is the
      child of the other.  Therefore, they cannot conflict.  */
@@ -491,8 +551,16 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 int
 alias_sets_must_conflict_p (alias_set_type set1, alias_set_type set2)
 {
-  if (set1 == 0 || set2 == 0 || set1 == set2)
-    return 1;
+  if (set1 == 0 || set2 == 0)
+    {
+      ++alias_stats.num_alias_zero;
+      return 1;
+    }
+  if (set1 == set2)
+    {
+      ++alias_stats.num_same_alias_set;
+      return 1;
+    }
 
   return 0;
 }
@@ -514,10 +582,17 @@ objects_must_conflict_p (tree t1, tree t2)
     return 0;
 
   /* If they are the same type, they must conflict.  */
-  if (t1 == t2
-      /* Likewise if both are volatile.  */
-      || (t1 != 0 && TYPE_VOLATILE (t1) && t2 != 0 && TYPE_VOLATILE (t2)))
-    return 1;
+  if (t1 == t2)
+    {
+      ++alias_stats.num_same_objects;
+      return 1;
+    }
+  /* Likewise if both are volatile.  */
+  if (t1 != 0 && TYPE_VOLATILE (t1) && t2 != 0 && TYPE_VOLATILE (t2))
+    {
+      ++alias_stats.num_volatile;
+      return 1;
+    }
 
   set1 = t1 ? get_alias_set (t1) : 0;
   set2 = t2 ? get_alias_set (t2) : 0;
@@ -731,6 +806,22 @@ alias_ptr_types_compatible_p (tree t1, tree t2)
 	  == TYPE_MAIN_VARIANT (TREE_TYPE (t2)));
 }
 
+/* Create emptry alias set entry.  */
+
+alias_set_entry
+init_alias_set_entry (alias_set_type set)
+{
+  alias_set_entry ase = ggc_alloc<alias_set_entry_d> ();
+  ase->alias_set = set;
+  ase->children = NULL;
+  ase->has_zero_child = false;
+  ase->is_pointer = false;
+  ase->has_pointer = false;
+  gcc_checking_assert (!get_alias_set_entry (set));
+  (*alias_sets)[set] = ase;
+  return ase;
+}
+
 /* Return the alias set for T, which may be either a type or an
    expression.  Call language-specific routine for help, if needed.  */
 
@@ -870,36 +961,79 @@ get_alias_set (tree t)
      the pointed-to types.  This issue has been reported to the
      C++ committee.
 
-     In addition to the above canonicalization issue, with LTO
-     we should also canonicalize `T (*)[]' to `T *' avoiding
-     alias issues with pointer-to element types and pointer-to
-     array types.
+     For this reason go to canonical type of the unqalified pointer type.
+     Until GCC 6 this code set all pointers sets to have alias set of
+     ptr_type_node but that is a bad idea, because it prevents disabiguations
+     in between pointers.  For Firefox this accounts about 20% of all
+     disambiguations in the program.  */
+  else if (POINTER_TYPE_P (t) && t != ptr_type_node && !in_lto_p)
+    {
+      tree p;
+      auto_vec <bool, 8> reference;
 
-     Likewise we need to deal with the situation of incomplete
-     pointed-to types and make `*(struct X **)&a' and
-     `*(struct X {} **)&a' alias.  Otherwise we will have to
-     guarantee that all pointer-to incomplete type variants
-     will be replaced by pointer-to complete type variants if
-     they are available.
+      /* Unnest all pointers and references.
+         We also want to make pointer to array equivalent to pointer to its
+         element. So skip all array types, too.  */
+      for (p = t; POINTER_TYPE_P (p)
+	   || (TREE_CODE (p) == ARRAY_TYPE && !TYPE_NONALIASED_COMPONENT (p));
+	   p = TREE_TYPE (p))
+	{
+	  if (TREE_CODE (p) == REFERENCE_TYPE)
+	    reference.safe_push (true);
+	  if (TREE_CODE (p) == POINTER_TYPE)
+	    reference.safe_push (false);
+	}
+      p = TYPE_MAIN_VARIANT (p);
 
-     With LTO the convenient situation of using `void *' to
-     access and store any pointer type will also become
-     more apparent (and `void *' is just another pointer-to
-     incomplete type).  Assigning alias-set zero to `void *'
-     and all pointer-to incomplete types is a not appealing
-     solution.  Assigning an effective alias-set zero only
-     affecting pointers might be - by recording proper subset
-     relationships of all pointer alias-sets.
+      /* Make void * compatible with char * and also void **.
+	 Programs are commonly violating TBAA by this.
 
-     Pointer-to function types are another grey area which
-     needs caution.  Globbing them all into one alias-set
-     or the above effective zero set would work.
+	 We also make void * to conflict with every pointer
+	 (see record_component_aliases) and thus it is safe it to use it for
+	 pointers to types with TYPE_STRUCTURAL_EQUALITY_P.  */
+      if (TREE_CODE (p) == VOID_TYPE || TYPE_STRUCTURAL_EQUALITY_P (p))
+	set = get_alias_set (ptr_type_node);
+      else
+	{
+	  /* Rebuild pointer type from starting from canonical types using
+	     unqualified pointers and references only.  This way all such
+	     pointers will have the same alias set and will conflict with
+	     each other.
 
-     For now just assign the same alias-set to all pointers.
-     That's simple and avoids all the above problems.  */
+	     Most of time we already have pointers or references of a given type.
+	     If not we build new one just to be sure that if someone later
+	     (probably only middle-end can, as we should assign all alias
+	     classes only after finishing translation unit) builds the pointer
+	     type, the canonical type will match.  */
+	  p = TYPE_CANONICAL (p);
+	  while (!reference.is_empty ())
+	    {
+	      if (reference.pop ())
+		p = build_reference_type (p);
+	      else
+		p = build_pointer_type (p);
+	      p = TYPE_CANONICAL (TYPE_MAIN_VARIANT (p));
+	    }
+          gcc_checking_assert (TYPE_CANONICAL (p) == p);
+
+	  /* Assign the alias set to both p and t.
+	     We can not call get_alias_set (p) here as that would trigger
+	     infinite recursion when p == t.  In other cases it would just
+	     trigger unnecesary legwork of rebuilding the pointer again.  */
+	  if (TYPE_ALIAS_SET_KNOWN_P (p))
+	    set = TYPE_ALIAS_SET (p);
+	  else
+	    {
+	      set = new_alias_set ();
+	      TYPE_ALIAS_SET (p) = set;
+	    }
+	}
+    }
+  /* In LTO the rules above needs to be part of canonical type machinery.
+     For now just punt.  */
   else if (POINTER_TYPE_P (t)
-	   && t != ptr_type_node)
-    set = get_alias_set (ptr_type_node);
+	   && t != TYPE_CANONICAL (ptr_type_node) && in_lto_p)
+    set = get_alias_set (TYPE_CANONICAL (ptr_type_node));
 
   /* Otherwise make a new alias set for this type.  */
   else
@@ -919,6 +1053,16 @@ get_alias_set (tree t)
      component aliasing information.  */
   if (AGGREGATE_TYPE_P (t) || TREE_CODE (t) == COMPLEX_TYPE)
     record_component_aliases (t);
+
+  /* We treat pointer types specially in alias_set_subset_of.  */
+  if (POINTER_TYPE_P (t) && set)
+    {
+      alias_set_entry ase = get_alias_set_entry (set);
+      if (!ase)
+	ase = init_alias_set_entry (set);
+      ase->is_pointer = true;
+      ase->has_pointer = true;
+    }
 
   return set;
 }
@@ -970,12 +1114,7 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
     {
       /* Create an entry for the SUPERSET, so that we have a place to
 	 attach the SUBSET.  */
-      superset_entry = ggc_cleared_alloc<alias_set_entry_d> ();
-      superset_entry->alias_set = superset;
-      superset_entry->children
-	= hash_map<int, int, alias_set_traits>::create_ggc (64);
-      superset_entry->has_zero_child = 0;
-      (*alias_sets)[superset] = superset_entry;
+      superset_entry = init_alias_set_entry (superset);
     }
 
   if (subset == 0)
@@ -983,17 +1122,25 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
   else
     {
       subset_entry = get_alias_set_entry (subset);
+      if (!superset_entry->children)
+	superset_entry->children
+	  = hash_map<alias_set_hash, int>::create_ggc (64);
       /* If there is an entry for the subset, enter all of its children
 	 (if they are not already present) as children of the SUPERSET.  */
       if (subset_entry)
 	{
 	  if (subset_entry->has_zero_child)
-	    superset_entry->has_zero_child = 1;
+	    superset_entry->has_zero_child = true;
+          if (subset_entry->has_pointer)
+	    superset_entry->has_pointer = true;
 
-	  hash_map<int, int, alias_set_traits>::iterator iter
-	    = subset_entry->children->begin ();
-	  for (; iter != subset_entry->children->end (); ++iter)
-	    superset_entry->children->put ((*iter).first, (*iter).second);
+	  if (subset_entry->children)
+	    {
+	      hash_map<alias_set_hash, int>::iterator iter
+		= subset_entry->children->begin ();
+	      for (; iter != subset_entry->children->end (); ++iter)
+		superset_entry->children->put ((*iter).first, (*iter).second);
+	    }
 	}
 
       /* Enter the SUBSET itself as a child of the SUPERSET.  */
@@ -1300,12 +1447,7 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
 
   gcc_checking_assert (regno < reg_base_value->length ());
 
-  /* If this spans multiple hard registers, then we must indicate that every
-     register has an unusable value.  */
-  if (regno < FIRST_PSEUDO_REGISTER)
-    n = hard_regno_nregs[regno][GET_MODE (dest)];
-  else
-    n = 1;
+  n = REG_NREGS (dest);
   if (n != 1)
     {
       while (--n >= 0)
@@ -2086,12 +2228,24 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       rtx x0 = XEXP (x, 0);
       rtx x1 = XEXP (x, 1);
 
+      /* However, VALUEs might end up in different positions even in
+	 canonical PLUSes.  Comparing their addresses is enough.  */
+      if (x0 == y)
+	return memrefs_conflict_p (xsize, x1, ysize, const0_rtx, c);
+      else if (x1 == y)
+	return memrefs_conflict_p (xsize, x0, ysize, const0_rtx, c);
+
       if (GET_CODE (y) == PLUS)
 	{
 	  /* The fact that Y is canonicalized means that this
 	     PLUS rtx is canonicalized.  */
 	  rtx y0 = XEXP (y, 0);
 	  rtx y1 = XEXP (y, 1);
+
+	  if (x0 == y1)
+	    return memrefs_conflict_p (xsize, x1, ysize, y0, c);
+	  if (x1 == y0)
+	    return memrefs_conflict_p (xsize, x0, ysize, y1, c);
 
 	  if (rtx_equal_for_memref_p (x1, y1))
 	    return memrefs_conflict_p (xsize, x0, ysize, y0, c);
@@ -2120,6 +2274,11 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	 PLUS rtx is canonicalized.  */
       rtx y0 = XEXP (y, 0);
       rtx y1 = XEXP (y, 1);
+
+      if (x == y0)
+	return memrefs_conflict_p (xsize, const0_rtx, ysize, y1, c);
+      if (x == y1)
+	return memrefs_conflict_p (xsize, const0_rtx, ysize, y0, c);
 
       if (CONST_INT_P (y1))
 	return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
@@ -2324,7 +2483,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   rtx basex, basey;
   bool moffsetx_known_p, moffsety_known_p;
   HOST_WIDE_INT moffsetx = 0, moffsety = 0;
-  HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey, tem;
+  HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey;
 
   /* Unless both have exprs, we can't tell anything.  */
   if (exprx == 0 || expry == 0)
@@ -2364,6 +2523,23 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
   if (! DECL_P (exprx) || ! DECL_P (expry))
     return 0;
+
+  /* If we refer to different gimple registers, or one gimple register
+     and one non-gimple-register, we know they can't overlap.  First,
+     gimple registers don't have their addresses taken.  Now, there
+     could be more than one stack slot for (different versions of) the
+     same gimple register, but we can presumably tell they don't
+     overlap based on offsets from stack base addresses elsewhere.
+     It's important that we don't proceed to DECL_RTL, because gimple
+     registers may not pass DECL_RTL_SET_P, and make_decl_rtl won't be
+     able to do anything about them since no SSA information will have
+     remained to guide it.  */
+  if (is_gimple_reg (exprx) || is_gimple_reg (expry))
+    return exprx != expry
+      || (moffsetx_known_p && moffsety_known_p
+	  && MEM_SIZE_KNOWN_P (x) && MEM_SIZE_KNOWN_P (y)
+	  && !offset_overlap_p (moffsety - moffsetx,
+				MEM_SIZE (x), MEM_SIZE (y)));
 
   /* With invalid code we can end up storing into the constant pool.
      Bail out to avoid ICEing when creating RTL for this.
@@ -2441,8 +2617,8 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   /* Put the values of the memref with the lower offset in X's values.  */
   if (offsetx > offsety)
     {
-      tem = offsetx, offsetx = offsety, offsety = tem;
-      tem = sizex, sizex = sizey, sizey = tem;
+      std::swap (offsetx, offsety);
+      std::swap (sizex, sizey);
     }
 
   /* If we don't know the size of the lower-offset value, we can't tell
@@ -2765,10 +2941,9 @@ init_alias_target (void)
     = unique_base_value (UNIQUE_BASE_VALUE_ARGP);
   static_reg_base_value[FRAME_POINTER_REGNUM]
     = unique_base_value (UNIQUE_BASE_VALUE_FP);
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-  static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
-    = unique_base_value (UNIQUE_BASE_VALUE_HFP);
-#endif
+  if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
+    static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
+      = unique_base_value (UNIQUE_BASE_VALUE_HFP);
 }
 
 /* Set MEMORY_MODIFIED when X modifies DATA (that is assumed
@@ -2888,6 +3063,14 @@ init_alias_analysis (void)
   rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
 
+  /* The prologue/epilogue insns are not threaded onto the
+     insn chain until after reload has completed.  Thus,
+     there is no sense wasting time checking if INSN is in
+     the prologue/epilogue until after reload has completed.  */
+  bool could_be_prologue_epilogue = ((targetm.have_prologue ()
+				      || targetm.have_epilogue ())
+				     && reload_completed);
+
   pass = 0;
   do
     {
@@ -2926,15 +3109,9 @@ init_alias_analysis (void)
 		{
 		  rtx note, set;
 
-#if defined (HAVE_prologue) || defined (HAVE_epilogue)
-		  /* The prologue/epilogue insns are not threaded onto the
-		     insn chain until after reload has completed.  Thus,
-		     there is no sense wasting time checking if INSN is in
-		     the prologue/epilogue until after reload has completed.  */
-		  if (reload_completed
+		  if (could_be_prologue_epilogue
 		      && prologue_epilogue_contains (insn))
 		    continue;
-#endif
 
 		  /* If this insn has a noalias note, process it,  Otherwise,
 		     scan for sets.  A simple set will have no side effects
@@ -3047,4 +3224,23 @@ end_alias_analysis (void)
   sbitmap_free (reg_known_equiv_p);
 }
 
+void
+dump_alias_stats_in_alias_c (FILE *s)
+{
+  fprintf (s, "  TBAA oracle: %llu disambiguations %llu queries\n"
+	      "               %llu are in alias set 0\n"
+	      "               %llu queries asked about the same object\n"
+	      "               %llu queries asked about the same alias set\n"
+	      "               %llu access volatile\n"
+	      "               %llu are dependent in the DAG\n"
+	      "               %llu are aritificially in conflict with void *\n",
+	   alias_stats.num_disambiguated,
+	   alias_stats.num_alias_zero + alias_stats.num_same_alias_set
+	   + alias_stats.num_same_objects + alias_stats.num_volatile
+	   + alias_stats.num_dag + alias_stats.num_disambiguated
+	   + alias_stats.num_universal,
+	   alias_stats.num_alias_zero, alias_stats.num_same_alias_set,
+	   alias_stats.num_same_objects, alias_stats.num_volatile,
+	   alias_stats.num_dag, alias_stats.num_universal);
+}
 #include "gt-alias.h"

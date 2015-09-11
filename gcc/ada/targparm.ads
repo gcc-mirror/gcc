@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -362,13 +362,13 @@ package Targparm is
    ---------------------
 
    --  By default, type Duration is a 64-bit fixed-point type with a delta
-   --  and small of 10**(-9) (i.e. it is a count in nanoseconds. This flag
+   --  and small of 10**(-9) (i.e. it is a count in nanoseconds). This flag
    --  allows that standard format to be modified.
 
    Duration_32_Bits_On_Target : Boolean := False;
    --  If True, then Duration is represented in 32 bits and the delta and
    --  small values are set to 20.0*(10**(-3)) (i.e. it is a count in units
-   --  of 20 milliseconds.
+   --  of 20 milliseconds).
 
    ------------------------------------
    -- Back-End Code Generation Flags --
@@ -615,9 +615,24 @@ package Targparm is
    --  selected component with Sloc value System_Location and given Prefix
    --  (Pre) and Selector (Sel) values.
 
-   type Set_RND_Type is access procedure (Unit : Node_Id);
+   type Set_NOD_Type is access procedure (Unit : Node_Id);
    --  Parameter type for Get_Target_Parameters that records a Restriction
    --  No_Dependence for the given unit (identifier or selected component).
+
+   type Set_NSA_Type is access procedure (Asp : Name_Id; OK : out Boolean);
+   --  Parameter type for Get_Target_Parameters that records a Restriction
+   --  No_Specification_Of_Aspect. Asp is the aspect name. OK is set True
+   --  if this is an OK aspect name, and False if it is not an aspect name.
+
+   type Set_NUA_Type is access procedure (Attr : Name_Id; OK : out Boolean);
+   --  Parameter type for Get_Target_Parameters that records a Restriction
+   --  No_Use_Of_Attribute. Attr is the attribute name. OK is set True if
+   --  this is an OK attribute name, and False if it is not an attribute name.
+
+   type Set_NUP_Type is access procedure (Prag : Name_Id; OK : out Boolean);
+   --  Parameter type for Get_Target_Parameters that records a Restriction
+   --  No_Use_Of_Pragma. Prag is the pragma name. OK is set True if this is
+   --  an OK pragma name, and False if it is not a recognized pragma name.
 
    procedure Get_Target_Parameters
      (System_Text  : Source_Buffer_Ptr;
@@ -625,18 +640,28 @@ package Targparm is
       Source_Last  : Source_Ptr;
       Make_Id      : Make_Id_Type := null;
       Make_SC      : Make_SC_Type := null;
-      Set_RND      : Set_RND_Type := null);
-   --  Called at the start of execution to obtain target parameters from
-   --  the source of package System. The parameters provide the source
-   --  text to be scanned (in System_Text (Source_First .. Source_Last)).
-   --  if the three subprograms are left at their default value of null,
-   --  Get_Target_Parameters will ignore pragma Restrictions No_Dependence
-   --  lines, otherwise it will use these three subprograms to record them.
+      Set_NOD      : Set_NOD_Type := null;
+      Set_NSA      : Set_NSA_Type := null;
+      Set_NUA      : Set_NUA_Type := null;
+      Set_NUP      : Set_NUP_Type := null);
+   --  Called at the start of execution to obtain target parameters from the
+   --  source of package System. The parameters provide the source text to be
+   --  scanned (in System_Text (Source_First .. Source_Last)). If the three
+   --  subprograms Make_Id, Make_SC, and Set_NOD are left at their default
+   --  value of null, Get_Target_Parameters will ignore pragma Restrictions
+   --  (No_Dependence) lines; otherwise it will use these three subprograms to
+   --  record them. Similarly, if Set_NUP is left at its default value of null,
+   --  then any occurrences of pragma Restrictions (No_Use_Of_Pragma => XXX)
+   --  will be ignored; otherwise it will use this procedure to record the
+   --  pragma. Similarly for the NSA and NUA cases.
 
    procedure Get_Target_Parameters
      (Make_Id : Make_Id_Type := null;
       Make_SC : Make_SC_Type := null;
-      Set_RND : Set_RND_Type := null);
+      Set_NOD : Set_NOD_Type := null;
+      Set_NSA : Set_NSA_Type := null;
+      Set_NUA : Set_NUA_Type := null;
+      Set_NUP : Set_NUP_Type := null);
    --  This version reads in system.ads using Osint. The idea is that the
    --  caller uses the first version if they have to read system.ads anyway
    --  (e.g. the compiler) and uses this simpler interface if system.ads is

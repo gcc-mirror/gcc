@@ -11,5 +11,4 @@ long long foo (long long *__restrict a,  int *__restrict b, int *__restrict c )
   return sum;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

@@ -12,8 +12,6 @@ int toto()
         b[i+j] = b[i+j-1] + 2;
 
       if (i * 2 == i + 8)
-        bar ();
-      else 
 	a[i][i] = 2;
 
       for (k = 1; k < 100; k++)
@@ -23,5 +21,4 @@ int toto()
   return a[3][5] + b[1];
 }
 
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite"} } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */

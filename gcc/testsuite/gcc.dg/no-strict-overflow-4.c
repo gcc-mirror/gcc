@@ -13,4 +13,3 @@ foo (int i)
 }
 
 /* { dg-final { scan-tree-dump "\[^ \]*_.(\\\(D\\\))? (>|<) \[^ \]*_." "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

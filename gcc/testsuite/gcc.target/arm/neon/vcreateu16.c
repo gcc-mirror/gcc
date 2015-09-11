@@ -16,4 +16,3 @@ void test_vcreateu16 (void)
   out_uint16x4_t = vcreate_u16 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

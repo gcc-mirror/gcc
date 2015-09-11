@@ -2,7 +2,6 @@
 /* { dg-require-effective-target mpx } */
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-chkp" } */
 /* { dg-final { scan-tree-dump-not "bndret" "chkp" } } */
-/* { dg-final { cleanup-tree-dump "chkp" } } */
 
 #include "string.h"
 

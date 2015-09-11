@@ -20,4 +20,3 @@ program main
   print *,a
 end program main
 ! { dg-final { scan-tree-dump-times "purefunc" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

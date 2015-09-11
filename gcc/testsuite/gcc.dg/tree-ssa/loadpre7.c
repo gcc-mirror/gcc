@@ -17,4 +17,3 @@ enormlz (x)
     }
 }
 /* { dg-final { scan-tree-dump-not "Eliminated:" "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

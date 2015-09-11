@@ -21,32 +21,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "rtl-error.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "insn-attr.h"
-#include "hard-reg-set.h"
 #include "recog.h"
 #include "regs.h"
 #include "addresses.h"
-#include "hashtab.h"
-#include "function.h"
-#include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -55,38 +43,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "basic-block.h"
 #include "reload.h"
 #include "target.h"
 #include "tree-pass.h"
-#include "df.h"
 #include "insn-codes.h"
 
-#ifndef STACK_PUSH_CODE
-#ifdef STACK_GROWS_DOWNWARD
-#define STACK_PUSH_CODE PRE_DEC
-#else
-#define STACK_PUSH_CODE PRE_INC
-#endif
-#endif
-
 #ifndef STACK_POP_CODE
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 #define STACK_POP_CODE POST_INC
 #else
 #define STACK_POP_CODE POST_DEC
 #endif
 #endif
 
-static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx, bool);
+static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx_insn *, bool);
 static void validate_replace_src_1 (rtx *, void *);
-static rtx split_insn (rtx_insn *);
+static rtx_insn *split_insn (rtx_insn *);
 
 struct target_recog default_target_recog;
 #if SWITCHABLE_TARGET
@@ -213,14 +188,14 @@ check_asm_operands (rtx x)
 
 /* Static data for the next two routines.  */
 
-typedef struct change_t
+struct change_t
 {
   rtx object;
   int old_code;
   rtx *loc;
   rtx old;
   bool unshare;
-} change_t;
+};
 
 static change_t *changes;
 static int changes_allocated;
@@ -319,7 +294,7 @@ validate_unshare_change (rtx object, rtx *loc, rtx new_rtx, bool in_group)
 
    Return true if anything was changed.  */
 bool
-canonicalize_change_group (rtx insn, rtx x)
+canonicalize_change_group (rtx_insn *insn, rtx x)
 {
   if (COMMUTATIVE_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
@@ -585,20 +560,11 @@ cancel_changes (int num)
 }
 
 /* Reduce conditional compilation elsewhere.  */
-#ifndef HAVE_extv
-#define HAVE_extv	0
-#define CODE_FOR_extv	CODE_FOR_nothing
-#endif
-#ifndef HAVE_extzv
-#define HAVE_extzv	0
-#define CODE_FOR_extzv	CODE_FOR_nothing
-#endif
-
 /* A subroutine of validate_replace_rtx_1 that tries to simplify the resulting
    rtx.  */
 
 static void
-simplify_while_replacing (rtx *loc, rtx to, rtx object,
+simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
                           machine_mode op0_mode)
 {
   rtx x = *loc;
@@ -709,15 +675,15 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
 	  machine_mode is_mode = GET_MODE (XEXP (x, 0));
 	  int pos = INTVAL (XEXP (x, 2));
 
-	  if (GET_CODE (x) == ZERO_EXTRACT && HAVE_extzv)
+	  if (GET_CODE (x) == ZERO_EXTRACT && targetm.have_extzv ())
 	    {
-	      wanted_mode = insn_data[CODE_FOR_extzv].operand[1].mode;
+	      wanted_mode = insn_data[targetm.code_for_extzv].operand[1].mode;
 	      if (wanted_mode == VOIDmode)
 		wanted_mode = word_mode;
 	    }
-	  else if (GET_CODE (x) == SIGN_EXTRACT && HAVE_extv)
+	  else if (GET_CODE (x) == SIGN_EXTRACT && targetm.have_extv ())
 	    {
-	      wanted_mode = insn_data[CODE_FOR_extv].operand[1].mode;
+	      wanted_mode = insn_data[targetm.code_for_extv].operand[1].mode;
 	      if (wanted_mode == VOIDmode)
 		wanted_mode = word_mode;
 	    }
@@ -758,7 +724,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
    validate_change passing OBJECT.  */
 
 static void
-validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
+validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx_insn *object,
                         bool simplify)
 {
   int i, j;
@@ -847,7 +813,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
    if INSN is still valid.  */
 
 int
-validate_replace_rtx_subexp (rtx from, rtx to, rtx insn, rtx *loc)
+validate_replace_rtx_subexp (rtx from, rtx to, rtx_insn *insn, rtx *loc)
 {
   validate_replace_rtx_1 (loc, from, to, insn, true);
   return apply_change_group ();
@@ -857,7 +823,7 @@ validate_replace_rtx_subexp (rtx from, rtx to, rtx insn, rtx *loc)
    changes have been made, validate by seeing if INSN is still valid.  */
 
 int
-validate_replace_rtx (rtx from, rtx to, rtx insn)
+validate_replace_rtx (rtx from, rtx to, rtx_insn *insn)
 {
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn, true);
   return apply_change_group ();
@@ -870,7 +836,7 @@ validate_replace_rtx (rtx from, rtx to, rtx insn)
    validate_replace_rtx_part (from, to, &PATTERN (insn), insn).  */
 
 int
-validate_replace_rtx_part (rtx from, rtx to, rtx *where, rtx insn)
+validate_replace_rtx_part (rtx from, rtx to, rtx *where, rtx_insn *insn)
 {
   validate_replace_rtx_1 (where, from, to, insn, true);
   return apply_change_group ();
@@ -879,7 +845,7 @@ validate_replace_rtx_part (rtx from, rtx to, rtx *where, rtx insn)
 /* Same as above, but do not simplify rtx afterwards.  */
 int
 validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where,
-                                      rtx insn)
+				      rtx_insn *insn)
 {
   validate_replace_rtx_1 (where, from, to, insn, false);
   return apply_change_group ();
@@ -890,7 +856,7 @@ validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where,
    will replace in REG_EQUAL and REG_EQUIV notes.  */
 
 void
-validate_replace_rtx_group (rtx from, rtx to, rtx insn)
+validate_replace_rtx_group (rtx from, rtx to, rtx_insn *insn)
 {
   rtx note;
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn, true);
@@ -905,7 +871,7 @@ struct validate_replace_src_data
 {
   rtx from;			/* Old RTX */
   rtx to;			/* New RTX */
-  rtx insn;			/* Insn in which substitution is occurring.  */
+  rtx_insn *insn;			/* Insn in which substitution is occurring.  */
 };
 
 static void
@@ -921,7 +887,7 @@ validate_replace_src_1 (rtx *x, void *data)
    SET_DESTs.  */
 
 void
-validate_replace_src_group (rtx from, rtx to, rtx insn)
+validate_replace_src_group (rtx from, rtx to, rtx_insn *insn)
 {
   struct validate_replace_src_data d;
 
@@ -936,7 +902,7 @@ validate_replace_src_group (rtx from, rtx to, rtx insn)
    pattern and return true if something was simplified.  */
 
 bool
-validate_simplify_insn (rtx insn)
+validate_simplify_insn (rtx_insn *insn)
 {
   int i;
   rtx pat = NULL;
@@ -971,15 +937,14 @@ validate_simplify_insn (rtx insn)
   return ((num_changes_pending () > 0) && (apply_change_group () > 0));
 }
 
-#ifdef HAVE_cc0
 /* Return 1 if the insn using CC0 set by INSN does not contain
    any ordered tests applied to the condition codes.
    EQ and NE tests do not count.  */
 
 int
-next_insn_tests_no_inequality (rtx insn)
+next_insn_tests_no_inequality (rtx_insn *insn)
 {
-  rtx next = next_cc0_user (insn);
+  rtx_insn *next = next_cc0_user (insn);
 
   /* If there is no next insn, we have to take the conservative choice.  */
   if (next == 0)
@@ -988,7 +953,6 @@ next_insn_tests_no_inequality (rtx insn)
   return (INSN_P (next)
 	  && ! inequality_comparisons_p (PATTERN (next)));
 }
-#endif
 
 /* Return 1 if OP is a valid general operand for machine mode MODE.
    This is either a register reference, a memory reference,
@@ -1334,12 +1298,8 @@ push_operand (rtx op, machine_mode mode)
 	  || GET_CODE (XEXP (op, 1)) != PLUS
 	  || XEXP (XEXP (op, 1), 0) != XEXP (op, 0)
 	  || !CONST_INT_P (XEXP (XEXP (op, 1), 1))
-#ifdef STACK_GROWS_DOWNWARD
-	  || INTVAL (XEXP (XEXP (op, 1), 1)) != - (int) rounded_size
-#else
-	  || INTVAL (XEXP (XEXP (op, 1), 1)) != (int) rounded_size
-#endif
-	  )
+	  || INTVAL (XEXP (XEXP (op, 1), 1))
+	     != ((STACK_GROWS_DOWNWARD ? -1 : 1) * (int) rounded_size))
 	return 0;
     }
 
@@ -1745,9 +1705,7 @@ int
 asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 {
   int result = 0;
-#ifdef AUTO_INC_DEC
   bool incdec_ok = false;
-#endif
 
   /* Use constrain_operands after reload.  */
   gcc_assert (!reload_completed);
@@ -1815,7 +1773,6 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	    result = 1;
 	  break;
 
-#ifdef AUTO_INC_DEC
 	case '<':
 	case '>':
 	  /* ??? Before auto-inc-dec, auto inc/dec insns are not supposed
@@ -1825,7 +1782,6 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
 	     Match any memory and hope things are resolved after reload.  */
 	  incdec_ok = true;
-#endif
 	default:
 	  cn = lookup_constraint (constraint);
 	  switch (get_constraint_type (cn))
@@ -1869,9 +1825,8 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	return 0;
     }
 
-#ifdef AUTO_INC_DEC
   /* For operands without < or > constraints reject side-effects.  */
-  if (!incdec_ok && result && MEM_P (op))
+  if (AUTO_INC_DEC && !incdec_ok && result && MEM_P (op))
     switch (GET_CODE (XEXP (op, 0)))
       {
       case PRE_INC:
@@ -1884,7 +1839,6 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
       default:
 	break;
       }
-#endif
 
   return result;
 }
@@ -2126,7 +2080,7 @@ get_bool_attr_mask_uncached (rtx_insn *insn, bool_attr attr)
      that the insn operands are already cached.  As above, the attribute
      mustn't depend on the values of operands, so we don't provide their
      real values here.  */
-  rtx old_insn = recog_data.insn;
+  rtx_insn *old_insn = recog_data.insn;
   int old_alternative = which_alternative;
 
   recog_data.insn = insn;
@@ -2487,9 +2441,9 @@ preprocess_constraints (int n_operands, int n_alternatives,
    instruction ICODE.  */
 
 const operand_alternative *
-preprocess_insn_constraints (int icode)
+preprocess_insn_constraints (unsigned int icode)
 {
-  gcc_checking_assert (IN_RANGE (icode, 0, LAST_INSN_CODE));
+  gcc_checking_assert (IN_RANGE (icode, 0, NUM_INSN_CODES - 1));
   if (this_target_recog->x_op_alt[icode])
     return this_target_recog->x_op_alt[icode];
 
@@ -2519,7 +2473,7 @@ preprocess_insn_constraints (int icode)
    The collected data is stored in recog_op_alt.  */
 
 void
-preprocess_constraints (rtx insn)
+preprocess_constraints (rtx_insn *insn)
 {
   int icode = INSN_CODE (insn);
   if (icode >= 0)
@@ -2773,8 +2727,12 @@ constrain_operands (int strict, alternative_mask alternatives)
 			   /* Every memory operand can be reloaded to fit.  */
 			   && ((strict < 0 && MEM_P (op))
 			       /* Before reload, accept what reload can turn
-				  into mem.  */
+				  into a mem.  */
 			       || (strict < 0 && CONSTANT_P (op))
+			       /* Before reload, accept a pseudo,
+				  since LRA can turn it into a mem.  */
+			       || (strict < 0 && targetm.lra_p () && REG_P (op)
+				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			       /* During reload, accept a pseudo  */
 			       || (reload_in_progress && REG_P (op)
 				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)))
@@ -2843,9 +2801,8 @@ constrain_operands (int strict, alternative_mask alternatives)
 		    = recog_data.operand[funny_match[funny_match_index].this_op];
 		}
 
-#ifdef AUTO_INC_DEC
 	      /* For operands without < or > constraints reject side-effects.  */
-	      if (recog_data.is_asm)
+	      if (AUTO_INC_DEC && recog_data.is_asm)
 		{
 		  for (opno = 0; opno < recog_data.n_operands; opno++)
 		    if (MEM_P (recog_data.operand[opno]))
@@ -2866,7 +2823,7 @@ constrain_operands (int strict, alternative_mask alternatives)
 			  break;
 			}
 		}
-#endif
+
 	      return 1;
 	    }
 	}
@@ -2909,7 +2866,7 @@ reg_fits_class_p (const_rtx operand, reg_class_t cl, int offset,
    split_all_insns_noflow.  Return last insn in the sequence if successful,
    or NULL if unsuccessful.  */
 
-static rtx
+static rtx_insn *
 split_insn (rtx_insn *insn)
 {
   /* Split insns here to get max fine-grain parallelism.  */
@@ -2918,7 +2875,7 @@ split_insn (rtx_insn *insn)
   rtx insn_set, last_set, note;
 
   if (last == insn)
-    return NULL_RTX;
+    return NULL;
 
   /* If the original instruction was a single set that was known to be
      equivalent to a constant, see if we can say the same about the last
@@ -3061,10 +3018,9 @@ split_all_insns_noflow (void)
   return 0;
 }
 
-#ifdef HAVE_peephole2
 struct peep2_insn_data
 {
-  rtx insn;
+  rtx_insn *insn;
   regset live_before;
 };
 
@@ -3077,10 +3033,9 @@ static bool peep2_do_cleanup_cfg;
 /* The number of instructions available to match a peep2.  */
 int peep2_current_count;
 
-/* A non-insn marker indicating the last insn of the block.
-   The live_before regset for this element is correct, indicating
-   DF_LIVE_OUT for the block.  */
-#define PEEP2_EOB	pc_rtx
+/* A marker indicating the last insn of the block.  The live_before regset
+   for this element is correct, indicating DF_LIVE_OUT for the block.  */
+#define PEEP2_EOB invalid_insn_rtx
 
 /* Wrap N to fit into the peep2_insn_data buffer.  */
 
@@ -3096,7 +3051,7 @@ peep2_buf_position (int n)
    does not exist.  Used by the recognizer to find the next insn to match
    in a multi-insn pattern.  */
 
-rtx
+rtx_insn *
 peep2_next_insn (int n)
 {
   gcc_assert (n <= peep2_current_count);
@@ -3126,18 +3081,15 @@ peep2_regno_dead_p (int ofs, int regno)
 int
 peep2_reg_dead_p (int ofs, rtx reg)
 {
-  int regno, n;
-
   gcc_assert (ofs < MAX_INSNS_PER_PEEP2 + 1);
 
   ofs = peep2_buf_position (peep2_current + ofs);
 
   gcc_assert (peep2_insn_data[ofs].insn != NULL_RTX);
 
-  regno = REGNO (reg);
-  n = hard_regno_nregs[regno][GET_MODE (reg)];
-  while (--n >= 0)
-    if (REGNO_REG_SET_P (peep2_insn_data[ofs].live_before, regno + n))
+  unsigned int end_regno = END_REGNO (reg);
+  for (unsigned int regno = REGNO (reg); regno < end_regno; ++regno)
+    if (REGNO_REG_SET_P (peep2_insn_data[ofs].live_before, regno))
       return 0;
   return 1;
 }
@@ -3283,7 +3235,7 @@ peep2_reinit_state (regset live)
 
   /* Indicate that all slots except the last holds invalid data.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2; ++i)
-    peep2_insn_data[i].insn = NULL_RTX;
+    peep2_insn_data[i].insn = NULL;
   peep2_current_count = 0;
 
   /* Indicate that the last slot contains live_after data.  */
@@ -3299,9 +3251,8 @@ peep2_reinit_state (regset live)
    if the replacement is rejected.  */
 
 static rtx_insn *
-peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt)
+peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   int i;
   rtx_insn *last, *before_try, *x;
   rtx eh_note, as_note;
@@ -3311,7 +3262,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
 
   /* If we are splitting an RTX_FRAME_RELATED_P insn, do not allow it to
      match more than one insn, or to be split into more than one insn.  */
-  old_insn = as_a <rtx_insn *> (peep2_insn_data[peep2_current].insn);
+  old_insn = peep2_insn_data[peep2_current].insn;
   if (RTX_FRAME_RELATED_P (old_insn))
     {
       bool any_note = false;
@@ -3399,7 +3350,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
       rtx note;
 
       j = peep2_buf_position (peep2_current + i);
-      old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
+      old_insn = peep2_insn_data[j].insn;
       if (!CALL_P (old_insn))
 	continue;
       was_call = true;
@@ -3438,7 +3389,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
       while (++i <= match_len)
 	{
 	  j = peep2_buf_position (peep2_current + i);
-	  old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
+	  old_insn = peep2_insn_data[j].insn;
 	  gcc_assert (!CALL_P (old_insn));
 	}
       break;
@@ -3450,7 +3401,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
   for (i = match_len; i >= 0; --i)
     {
       int j = peep2_buf_position (peep2_current + i);
-      old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
+      old_insn = peep2_insn_data[j].insn;
 
       as_note = find_reg_note (old_insn, REG_ARGS_SIZE, NULL);
       if (as_note)
@@ -3461,7 +3412,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
   eh_note = find_reg_note (peep2_insn_data[i].insn, REG_EH_REGION, NULL_RTX);
 
   /* Replace the old sequence with the new.  */
-  rtx_insn *peepinsn = as_a <rtx_insn *> (peep2_insn_data[i].insn);
+  rtx_insn *peepinsn = peep2_insn_data[i].insn;
   last = emit_insn_after_setloc (attempt,
 				 peep2_insn_data[i].insn,
 				 INSN_LOCATION (peepinsn));
@@ -3578,7 +3529,7 @@ peep2_update_life (basic_block bb, int match_len, rtx_insn *last,
    add more instructions to the buffer.  */
 
 static bool
-peep2_fill_buffer (basic_block bb, rtx insn, regset live)
+peep2_fill_buffer (basic_block bb, rtx_insn *insn, regset live)
 {
   int pos;
 
@@ -3604,7 +3555,7 @@ peep2_fill_buffer (basic_block bb, rtx insn, regset live)
   COPY_REG_SET (peep2_insn_data[pos].live_before, live);
   peep2_current_count++;
 
-  df_simulate_one_insn_forwards (bb, as_a <rtx_insn *> (insn), live);
+  df_simulate_one_insn_forwards (bb, insn, live);
   return true;
 }
 
@@ -3646,8 +3597,7 @@ peephole2_optimize (void)
       insn = BB_HEAD (bb);
       for (;;)
 	{
-	  rtx_insn *attempt;
-	  rtx head;
+	  rtx_insn *attempt, *head;
 	  int match_len;
 
 	  if (!past_end && !NONDEBUG_INSN_P (insn))
@@ -3674,8 +3624,7 @@ peephole2_optimize (void)
 
 	  /* Match the peephole.  */
 	  head = peep2_insn_data[peep2_current].insn;
-	  attempt = safe_as_a <rtx_insn *> (
-		      peephole2_insns (PATTERN (head), head, &match_len));
+	  attempt = peephole2_insns (PATTERN (head), head, &match_len);
 	  if (attempt != NULL)
 	    {
 	      rtx_insn *last = peep2_attempt (bb, head, match_len, attempt);
@@ -3701,7 +3650,6 @@ peephole2_optimize (void)
   if (peep2_do_cleanup_cfg)
     cleanup_cfg (CLEANUP_CFG_CHANGED);
 }
-#endif /* HAVE_peephole2 */
 
 /* Common predicates for use with define_bypass.  */
 
@@ -3854,9 +3802,9 @@ if_test_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 static unsigned int
 rest_of_handle_peephole2 (void)
 {
-#ifdef HAVE_peephole2
-  peephole2_optimize ();
-#endif
+  if (HAVE_peephole2)
+    peephole2_optimize ();
+
   return 0;
 }
 
@@ -4170,7 +4118,7 @@ recog_init ()
     }
   memset (this_target_recog->x_bool_attr_masks, 0,
 	  sizeof (this_target_recog->x_bool_attr_masks));
-  for (int i = 0; i < LAST_INSN_CODE; ++i)
+  for (unsigned int i = 0; i < NUM_INSN_CODES; ++i)
     if (this_target_recog->x_op_alt[i])
       {
 	free (this_target_recog->x_op_alt[i]);

@@ -17,6 +17,8 @@
 
 // 20.4.5 Template class auto_ptr [lib.auto.ptr]
 
+// { dg-options "-std=c++98" }
+
 #include <memory>
 #include <testsuite_hooks.h>
 

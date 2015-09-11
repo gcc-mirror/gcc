@@ -745,6 +745,7 @@ class GCCCmdLine (CmdLine):
         # libsanitiser is imported from upstream.
         self.add_dir ('libssp')
         self.add_dir ('libstdc++-v3', LibStdCxxFilter())
+        self.add_dir ('libvtv')
         self.add_dir ('lto-plugin')
         # zlib is imported from upstream.
 

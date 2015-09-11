@@ -5,9 +5,9 @@ struct B { B(); };
 struct C { C(); C(const C&); };
 struct D { D& operator=(const D&); };
 
-class E { private: E(); public: E(int); };	// { dg-error "private" }
-class F { private: F(const F&); public: F(); };	// { dg-error "private" }
-class G { private: G& operator=(const G&); };	// { dg-error "private" }
+class E { private: E(); public: E(int); };	// { dg-message "private" }
+class F { private: F(const F&); public: F(); };	// { dg-message "private" }
+class G { private: G& operator=(const G&); };	// { dg-message "private" }
 
 void bar();
 void foo()

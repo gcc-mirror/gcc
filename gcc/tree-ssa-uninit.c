@@ -21,38 +21,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "gimple-pretty-print.h"
-#include "bitmap.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
 #include "tree-ssa.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
@@ -277,7 +257,7 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 /* Checks if the operand OPND of PHI is defined by
    another phi with one operand defined by this PHI,
    but the rest operands are all defined. If yes,
-   returns true to skip this this operand as being
+   returns true to skip this operand as being
    redundant. Can be enhanced to be more general.  */
 
 static bool
@@ -503,13 +483,13 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
 
 /* The type to represent a simple predicate  */
 
-typedef struct use_def_pred_info
+struct pred_info
 {
   tree pred_lhs;
   tree pred_rhs;
   enum tree_code cond_code;
   bool invert;
-} pred_info;
+};
 
 /* The type to represent a sequence of predicates grouped
   with .AND. operation.  */
@@ -820,7 +800,7 @@ dump_predicates (gimple usestmt, pred_chain_union preds,
 {
   size_t i, j;
   pred_chain one_pred_chain = vNULL;
-  fprintf (dump_file, msg);
+  fprintf (dump_file, "%s", msg);
   print_gimple_stmt (dump_file, usestmt, 0, 0);
   fprintf (dump_file, "is guarded by :\n\n");
   size_t num_preds = preds.length ();
@@ -1000,6 +980,7 @@ is_use_properly_guarded (gimple use_stmt,
                          basic_block use_bb,
                          gphi *phi,
                          unsigned uninit_opnds,
+			 pred_chain_union *def_preds,
                          hash_set<gphi *> *visited_phis);
 
 /* Returns true if all uninitialized opnds are pruned. Returns false
@@ -1118,14 +1099,19 @@ prune_uninit_phi_opnds_in_unrealizable_paths (gphi *phi,
               edge opnd_edge;
               unsigned uninit_opnds2
                   = compute_uninit_opnds_pos (opnd_def_phi);
+              pred_chain_union def_preds = vNULL;
+              bool ok;
               gcc_assert (!MASK_EMPTY (uninit_opnds2));
               opnd_edge = gimple_phi_arg_edge (phi, i);
-              if (!is_use_properly_guarded (phi,
-                                            opnd_edge->src,
-                                            opnd_def_phi,
-                                            uninit_opnds2,
-                                            visited_phis))
-                  return false;
+              ok = is_use_properly_guarded (phi,
+					    opnd_edge->src,
+					    opnd_def_phi,
+					    uninit_opnds2,
+					    &def_preds,
+					    visited_phis);
+	      destroy_predicate_vecs (def_preds);
+	      if (!ok)
+		return false;
             }
           else
             return false;
@@ -1310,7 +1296,8 @@ pred_equal_p (pred_info x1, pred_info x2)
     return false;
 
   c1 = x1.cond_code;
-  if (x1.invert != x2.invert)
+  if (x1.invert != x2.invert
+      && TREE_CODE_CLASS (x2.cond_code) == tcc_comparison)
     c2 = invert_tree_comparison (x2.cond_code, false);
   else
     c2 = x2.cond_code;
@@ -1377,7 +1364,8 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (expr2.invert)
     code2 = invert_tree_comparison (code2, false);
 
-  if (code1 == EQ_EXPR && code2 == BIT_AND_EXPR)
+  if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR)
+      && code2 == BIT_AND_EXPR)
     return wi::eq_p (expr1.pred_rhs,
 		     wi::bit_and (expr1.pred_rhs, expr2.pred_rhs));
 
@@ -2177,23 +2165,31 @@ normalize_preds (pred_chain_union preds, gimple use_or_def, bool is_use)
    true if it can be determined that the use of PHI's def in
    USE_STMT is guarded with a predicate set not overlapping with
    predicate sets of all runtime paths that do not have a definition.
+
    Returns false if it is not or it can not be determined. USE_BB is
    the bb of the use (for phi operand use, the bb is not the bb of
-   the phi stmt, but the src bb of the operand edge). UNINIT_OPNDS
-   is a bit vector. If an operand of PHI is uninitialized, the
-   corresponding bit in the vector is 1.  VISIED_PHIS is a pointer
-   set of phis being visted.  */
+   the phi stmt, but the src bb of the operand edge).
+
+   UNINIT_OPNDS is a bit vector. If an operand of PHI is uninitialized, the
+   corresponding bit in the vector is 1.  VISITED_PHIS is a pointer
+   set of phis being visited.
+
+   *DEF_PREDS contains the (memoized) defining predicate chains of PHI.
+   If *DEF_PREDS is the empty vector, the defining predicate chains of
+   PHI will be computed and stored into *DEF_PREDS as needed.
+
+   VISITED_PHIS is a pointer set of phis being visited.  */
 
 static bool
 is_use_properly_guarded (gimple use_stmt,
                          basic_block use_bb,
                          gphi *phi,
                          unsigned uninit_opnds,
+			 pred_chain_union *def_preds,
                          hash_set<gphi *> *visited_phis)
 {
   basic_block phi_bb;
   pred_chain_union preds = vNULL;
-  pred_chain_union def_preds = vNULL;
   bool has_valid_preds = false;
   bool is_properly_guarded = false;
 
@@ -2224,25 +2220,26 @@ is_use_properly_guarded (gimple use_stmt,
       return true;
     }
 
-  has_valid_preds = find_def_preds (&def_preds, phi);
-
-  if (!has_valid_preds)
+  if (def_preds->is_empty ())
     {
-      destroy_predicate_vecs (preds);
-      destroy_predicate_vecs (def_preds);
-      return false;
+      has_valid_preds = find_def_preds (def_preds, phi);
+
+      if (!has_valid_preds)
+	{
+	  destroy_predicate_vecs (preds);
+	  return false;
+	}
+
+      simplify_preds (def_preds, phi, false);
+      *def_preds = normalize_preds (*def_preds, phi, false);
     }
 
   simplify_preds (&preds, use_stmt, true);
   preds = normalize_preds (preds, use_stmt, true);
 
-  simplify_preds (&def_preds, phi, false);
-  def_preds = normalize_preds (def_preds, phi, false);
-
-  is_properly_guarded = is_superset_of (def_preds, preds);
+  is_properly_guarded = is_superset_of (*def_preds, preds);
 
   destroy_predicate_vecs (preds);
-  destroy_predicate_vecs (def_preds);
   return is_properly_guarded;
 }
 
@@ -2264,6 +2261,8 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
   use_operand_p use_p;
   gimple use_stmt;
   imm_use_iterator iter;
+  pred_chain_union def_preds = vNULL;
+  gimple ret = NULL;
 
   phi_result = gimple_phi_result (phi);
 
@@ -2283,7 +2282,7 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
 
       hash_set<gphi *> visited_phis;
       if (is_use_properly_guarded (use_stmt, use_bb, phi, uninit_opnds,
-                                   &visited_phis))
+				   &def_preds, &visited_phis))
 	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2293,7 +2292,10 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
         }
       /* Found one real use, return.  */
       if (gimple_code (use_stmt) != GIMPLE_PHI)
-        return use_stmt;
+	{
+	  ret = use_stmt;
+	  break;
+	}
 
       /* Found a phi use that is not guarded,
          add the phi to the worklist.  */
@@ -2310,7 +2312,8 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
         }
     }
 
-  return NULL;
+  destroy_predicate_vecs (def_preds);
+  return ret;
 }
 
 /* Look for inputs to PHI that are SSA_NAMEs that have empty definitions

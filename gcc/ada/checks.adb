@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2417,30 +2417,94 @@ package body Checks is
       Subp_Decl : Node_Id;
 
       procedure Add_Validity_Check
-        (Context    : Entity_Id;
-         PPC_Nam    : Name_Id;
+        (Formal     : Entity_Id;
+         Prag_Nam   : Name_Id;
          For_Result : Boolean := False);
       --  Add a single 'Valid[_Scalar] check which verifies the initialization
-      --  of Context. PPC_Nam denotes the pre or post condition pragma name.
+      --  of Formal. Prag_Nam denotes the pre or post condition pragma name.
       --  Set flag For_Result when to verify the result of a function.
-
-      procedure Build_PPC_Pragma (PPC_Nam : Name_Id; Check : Node_Id);
-      --  Create a pre or post condition pragma with name PPC_Nam which
-      --  tests expression Check.
 
       ------------------------
       -- Add_Validity_Check --
       ------------------------
 
       procedure Add_Validity_Check
-        (Context    : Entity_Id;
-         PPC_Nam    : Name_Id;
+        (Formal     : Entity_Id;
+         Prag_Nam   : Name_Id;
          For_Result : Boolean := False)
       is
+         procedure Build_Pre_Post_Condition (Expr : Node_Id);
+         --  Create a pre/postcondition pragma that tests expression Expr
+
+         ------------------------------
+         -- Build_Pre_Post_Condition --
+         ------------------------------
+
+         procedure Build_Pre_Post_Condition (Expr : Node_Id) is
+            Loc   : constant Source_Ptr := Sloc (Subp);
+            Decls : List_Id;
+            Prag  : Node_Id;
+
+         begin
+            Prag :=
+              Make_Pragma (Loc,
+                Pragma_Identifier            =>
+                  Make_Identifier (Loc, Prag_Nam),
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Chars      => Name_Check,
+                    Expression => Expr)));
+
+            --  Add a message unless exception messages are suppressed
+
+            if not Exception_Locations_Suppressed then
+               Append_To (Pragma_Argument_Associations (Prag),
+                 Make_Pragma_Argument_Association (Loc,
+                   Chars      => Name_Message,
+                   Expression =>
+                     Make_String_Literal (Loc,
+                       Strval => "failed "
+                                 & Get_Name_String (Prag_Nam)
+                                 & " from "
+                                 & Build_Location_String (Loc))));
+            end if;
+
+            --  Insert the pragma in the tree
+
+            if Nkind (Parent (Subp_Decl)) = N_Compilation_Unit then
+               Add_Global_Declaration (Prag);
+               Analyze (Prag);
+
+            --  PPC pragmas associated with subprogram bodies must be inserted
+            --  in the declarative part of the body.
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body then
+               Decls := Declarations (Subp_Decl);
+
+               if No (Decls) then
+                  Decls := New_List;
+                  Set_Declarations (Subp_Decl, Decls);
+               end if;
+
+               Prepend_To (Decls, Prag);
+               Analyze (Prag);
+
+            --  For subprogram declarations insert the PPC pragma right after
+            --  the declarative node.
+
+            else
+               Insert_After_And_Analyze (Subp_Decl, Prag);
+            end if;
+         end Build_Pre_Post_Condition;
+
+         --  Local variables
+
          Loc   : constant Source_Ptr := Sloc (Subp);
-         Typ   : constant Entity_Id  := Etype (Context);
+         Typ   : constant Entity_Id  := Etype (Formal);
          Check : Node_Id;
          Nam   : Name_Id;
+
+      --  Start of processing for Add_Validity_Check
 
       begin
          --  For scalars, generate 'Valid test
@@ -2462,7 +2526,7 @@ package body Checks is
          --  Step 1: Create the expression to verify the validity of the
          --  context.
 
-         Check := New_Occurrence_Of (Context, Loc);
+         Check := New_Occurrence_Of (Formal, Loc);
 
          --  When processing a function result, use 'Result. Generate
          --    Context'Result
@@ -2484,72 +2548,8 @@ package body Checks is
 
          --  Step 2: Create a pre or post condition pragma
 
-         Build_PPC_Pragma (PPC_Nam, Check);
+         Build_Pre_Post_Condition (Check);
       end Add_Validity_Check;
-
-      ----------------------
-      -- Build_PPC_Pragma --
-      ----------------------
-
-      procedure Build_PPC_Pragma (PPC_Nam : Name_Id; Check : Node_Id) is
-         Loc   : constant Source_Ptr := Sloc (Subp);
-         Decls : List_Id;
-         Prag  : Node_Id;
-
-      begin
-         Prag :=
-           Make_Pragma (Loc,
-             Pragma_Identifier            => Make_Identifier (Loc, PPC_Nam),
-             Pragma_Argument_Associations => New_List (
-               Make_Pragma_Argument_Association (Loc,
-                 Chars      => Name_Check,
-                 Expression => Check)));
-
-         --  Add a message unless exception messages are suppressed
-
-         if not Exception_Locations_Suppressed then
-            Append_To (Pragma_Argument_Associations (Prag),
-              Make_Pragma_Argument_Association (Loc,
-                Chars      => Name_Message,
-                Expression =>
-                  Make_String_Literal (Loc,
-                    Strval => "failed " & Get_Name_String (PPC_Nam) &
-                               " from " & Build_Location_String (Loc))));
-         end if;
-
-         --  Insert the pragma in the tree
-
-         if Nkind (Parent (Subp_Decl)) = N_Compilation_Unit then
-            Add_Global_Declaration (Prag);
-            Analyze (Prag);
-
-         --  PPC pragmas associated with subprogram bodies must be inserted in
-         --  the declarative part of the body.
-
-         elsif Nkind (Subp_Decl) = N_Subprogram_Body then
-            Decls := Declarations (Subp_Decl);
-
-            if No (Decls) then
-               Decls := New_List;
-               Set_Declarations (Subp_Decl, Decls);
-            end if;
-
-            Prepend_To (Decls, Prag);
-
-            --  Ensure the proper visibility of the subprogram body and its
-            --  parameters.
-
-            Push_Scope (Subp);
-            Analyze (Prag);
-            Pop_Scope;
-
-         --  For subprogram declarations insert the PPC pragma right after the
-         --  declarative node.
-
-         else
-            Insert_After_And_Analyze (Subp_Decl, Prag);
-         end if;
-      end Build_PPC_Pragma;
 
       --  Local variables
 
@@ -2576,7 +2576,7 @@ package body Checks is
 
         or else Is_Formal_Subprogram (Subp)
 
-        --  Do not process imported subprograms since pre and post conditions
+        --  Do not process imported subprograms since pre and postconditions
         --  are never verified on routines coming from a different language.
 
         or else Is_Imported (Subp)
@@ -5521,10 +5521,14 @@ package body Checks is
                   return;
                end if;
 
-            --  Ditto if the prefix is an explicit dereference whose designated
-            --  type is unconstrained.
+            --  Ditto if prefix is simply an unconstrained array. We used
+            --  to think this case was OK, if the prefix was not an explicit
+            --  dereference, but we have now seen a case where this is not
+            --  true, so it is safer to just suppress the optimization in this
+            --  case. The back end is getting better at eliminating redundant
+            --  checks in any case, so the loss won't be important.
 
-            elsif Nkind (Prefix (P)) = N_Explicit_Dereference
+            elsif Is_Array_Type (Atyp)
               and then not Is_Constrained (Atyp)
             then
                Activate_Range_Check (N);
@@ -7785,9 +7789,9 @@ package body Checks is
 
          Analyze_And_Resolve (N, Typ);
 
-         Scope_Suppress.Suppress (Overflow_Check)  := Svo;
-         Scope_Suppress.Overflow_Mode_General    := Svg;
-         Scope_Suppress.Overflow_Mode_Assertions := Sva;
+         Scope_Suppress.Suppress (Overflow_Check) := Svo;
+         Scope_Suppress.Overflow_Mode_General     := Svg;
+         Scope_Suppress.Overflow_Mode_Assertions  := Sva;
       end Reanalyze;
 
       --------------
@@ -7813,9 +7817,9 @@ package body Checks is
 
          Expand (N);
 
-         Scope_Suppress.Suppress (Overflow_Check)  := Svo;
-         Scope_Suppress.Overflow_Mode_General    := Svg;
-         Scope_Suppress.Overflow_Mode_Assertions := Sva;
+         Scope_Suppress.Suppress (Overflow_Check) := Svo;
+         Scope_Suppress.Overflow_Mode_General     := Svg;
+         Scope_Suppress.Overflow_Mode_Assertions  := Sva;
       end Reexpand;
 
    --  Start of processing for Minimize_Eliminate_Overflows

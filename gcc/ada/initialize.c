@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -86,7 +86,7 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 /******************************************/
 
 #elif defined (__Lynx__) || defined (__FreeBSD__) || defined(__NetBSD__) \
-  || defined (__OpenBSD__)
+  || defined (__OpenBSD__) || defined (__DragonFly__)
 
 void
 __gnat_initialize (void *eh ATTRIBUTE_UNUSED)

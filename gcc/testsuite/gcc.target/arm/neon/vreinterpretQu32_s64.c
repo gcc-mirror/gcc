@@ -16,4 +16,3 @@ void test_vreinterpretQu32_s64 (void)
   out_uint32x4_t = vreinterpretq_u32_s64 (arg0_int64x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

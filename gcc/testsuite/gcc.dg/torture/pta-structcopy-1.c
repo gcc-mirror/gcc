@@ -33,4 +33,3 @@ int main()
 
 /* { dg-final { scan-tree-dump "y.* = { i }" "ealias" } } */
 /* { dg-final { scan-tree-dump "y.*, points-to vars: { D..... }" "ealias" } } */
-/* { dg-final { cleanup-tree-dump "ealias" } } */

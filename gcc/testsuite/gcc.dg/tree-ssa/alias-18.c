@@ -86,5 +86,3 @@ int test8 (struct A *p, int *q)
 /* { dg-final { scan-tree-dump-not "return 6;" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return 7;" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return -1;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

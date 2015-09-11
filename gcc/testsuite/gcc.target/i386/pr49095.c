@@ -70,4 +70,5 @@ G (short)
 G (int)
 G (long)
 
-/* { dg-final { scan-assembler-not "test\[lq\]" } } */
+/* See PR61225 for the XFAIL.  */
+/* { dg-final { scan-assembler-not "test\[lq\]" { xfail { ia32 } } } } */

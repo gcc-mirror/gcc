@@ -32,4 +32,3 @@ test (unsigned short *b)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

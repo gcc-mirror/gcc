@@ -128,6 +128,8 @@ mwarn-multiple-fast-interrupts
 Target Report Var(rx_warn_multiple_fast_interrupts) Init(1) Warning
 Warn when multiple, different, fast interrupt handlers are in the compilation unit.
 
+;---------------------------------------------------
+
 mgcc-abi
 Target RejectNegative Report Mask(GCC_ABI)
 Enable the use of the old, broken, ABI where all stacked function arguments are aligned to 32-bits.
@@ -136,6 +138,14 @@ mrx-abi
 Target RejectNegative Report InverseMask(GCC_ABI)
 Enable the use the standard RX ABI where all stacked function arguments are naturally aligned.  This is the default.
 
+;---------------------------------------------------
+
 mlra
 Target Report Mask(ENABLE_LRA)
 Enable the use of the LRA register allocator.
+
+;---------------------------------------------------
+
+mallow-string-insns
+Target Report Var(rx_allow_string_insns) Init(1)
+Enables or disables the use of the SMOVF, SMOVB, SMOVU, SUNTIL, SWHILE and RMPA instructions.  Enabled by default.

@@ -401,4 +401,3 @@ main ()
 /* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.4s, v\[0-9\]+\.s\\\[0\\\]" 2 } } */
 /* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.4s, v\[0-9\]+\.s\\\[1\\\]" 2 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

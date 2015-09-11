@@ -47,4 +47,3 @@ internals::compute_s (void)
 {
   bend.compute_s ();
 }
-/* { dg-final { cleanup-tree-dump "vect" } } */

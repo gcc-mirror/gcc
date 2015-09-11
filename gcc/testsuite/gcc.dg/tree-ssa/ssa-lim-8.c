@@ -17,4 +17,3 @@ void foo (int n, int m)
 }
 
 /* { dg-final { scan-tree-dump-times "Moving PHI node" 1 "lim1"  } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

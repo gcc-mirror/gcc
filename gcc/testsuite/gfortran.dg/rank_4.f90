@@ -16,4 +16,3 @@ program test_rank
 end program test_rank
 
 ! { dg-final { scan-tree-dump-times "not_existing" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

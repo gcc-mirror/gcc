@@ -23,4 +23,3 @@ int main() {
 }
 
 /* { dg-final-use { scan-ipa-dump "Single value 8 stringop transformation on bzero" "profile" } } */
-/* { dg-final-use { cleanup-ipa-dump "profile" } } */

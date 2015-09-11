@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O1" } */
+/* { dg-options "-O1 -ftree-parallelize-loops=0" } */
 /* { dg-additional-options "-flto" { target lto } } */
 
 #include <stdlib.h>

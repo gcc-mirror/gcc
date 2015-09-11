@@ -65,6 +65,10 @@ Boston, MA 02110-1301, USA.  */
 #define CLOCKS_PER_SEC 1
 #endif
 
+#ifndef RUSAGE_SELF
+#define RUSAGE_SELF 0
+#endif
+
 #ifdef _SC_CLK_TCK
 #define GNU_HZ  sysconf(_SC_CLK_TCK)
 #else
@@ -95,7 +99,7 @@ get_run_time (void)
 #if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
   struct rusage rusage;
 
-  getrusage (0, &rusage);
+  getrusage (RUSAGE_SELF, &rusage);
   return (rusage.ru_utime.tv_sec * 1000000 + rusage.ru_utime.tv_usec
 	  + rusage.ru_stime.tv_sec * 1000000 + rusage.ru_stime.tv_usec);
 #else /* ! HAVE_GETRUSAGE */

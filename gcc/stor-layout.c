@@ -22,15 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
@@ -40,12 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "hard-reg-set.h"
 #include "function.h"
-#include "hashtab.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -59,10 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "regs.h"
 #include "params.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "tree-dump.h"
@@ -85,10 +68,8 @@ static tree self_referential_size (tree);
 static void finalize_record_size (record_layout_info);
 static void finalize_type_size (tree);
 static void place_union_field (record_layout_info, tree);
-#if defined (PCC_BITFIELD_TYPE_MATTERS) || defined (BITFIELD_NBYTES_LIMITED)
 static int excess_unit_span (HOST_WIDE_INT, HOST_WIDE_INT, HOST_WIDE_INT,
 			     HOST_WIDE_INT, tree);
-#endif
 extern void debug_rli (record_layout_info);
 
 /* Show that REFERENCE_TYPES are internal and should use address_mode.
@@ -127,6 +108,20 @@ variable_size (tree size)
 /* An array of functions used for self-referential size computation.  */
 static GTY(()) vec<tree, va_gc> *size_functions;
 
+/* Return true if T is a self-referential component reference.  */
+
+static bool
+self_referential_component_ref_p (tree t)
+{
+  if (TREE_CODE (t) != COMPONENT_REF)
+    return false;
+
+  while (REFERENCE_CLASS_P (t))
+    t = TREE_OPERAND (t, 0);
+
+  return (TREE_CODE (t) == PLACEHOLDER_EXPR);
+}
+
 /* Similar to copy_tree_r but do not copy component references involving
    PLACEHOLDER_EXPRs.  These nodes are spotted in find_placeholder_in_expr
    and substituted in substitute_in_expr.  */
@@ -154,19 +149,10 @@ copy_self_referential_tree_r (tree *tp, int *walk_subtrees, void *data)
     }
 
   /* Default case: the component reference.  */
-  else if (code == COMPONENT_REF)
+  else if (self_referential_component_ref_p (*tp))
     {
-      tree inner;
-      for (inner = TREE_OPERAND (*tp, 0);
-	   REFERENCE_CLASS_P (inner);
-	   inner = TREE_OPERAND (inner, 0))
-	;
-
-      if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
-	{
-	  *walk_subtrees = 0;
-	  return NULL_TREE;
-	}
+      *walk_subtrees = 0;
+      return NULL_TREE;
     }
 
   /* We're not supposed to have them in self-referential size trees
@@ -199,7 +185,7 @@ self_referential_size (tree size)
 
   /* Do not factor out simple operations.  */
   t = skip_simple_constant_arithmetic (size);
-  if (TREE_CODE (t) == CALL_EXPR)
+  if (TREE_CODE (t) == CALL_EXPR || self_referential_component_ref_p (t))
     return size;
 
   /* Collect the list of self-references in the expression.  */
@@ -262,7 +248,7 @@ self_referential_size (tree size)
   fntype = build_function_type (return_type, param_type_list);
 
   /* Build the function declaration.  */
-  sprintf (buf, "SZ"HOST_WIDE_INT_PRINT_UNSIGNED, fnno++);
+  sprintf (buf, "SZ" HOST_WIDE_INT_PRINT_UNSIGNED, fnno++);
   fnname = get_file_function_name (buf);
   fndecl = build_decl (input_location, FUNCTION_DECL, fnname, fntype);
   for (t = param_decl_list; t; t = DECL_CHAIN (t))
@@ -318,7 +304,6 @@ finalize_size_functions (void)
       set_cfun (NULL);
       dump_function (TDI_original, fndecl);
       gimplify_function_tree (fndecl);
-      dump_function (TDI_generic, fndecl);
       cgraph_node::finalize_function (fndecl, false);
     }
 
@@ -506,7 +491,7 @@ bitwise_type_for_mode (machine_mode mode)
   if (COMPLEX_MODE_P (mode))
     return build_complex_type (inner_type);
 
-  gcc_checking_assert (GET_MODE_INNER (mode) == VOIDmode);
+  gcc_checking_assert (GET_MODE_INNER (mode) == mode);
   return inner_type;
 }
 
@@ -561,18 +546,6 @@ unsigned int
 get_mode_alignment (machine_mode mode)
 {
   return MIN (BIGGEST_ALIGNMENT, MAX (1, mode_base_align[mode]*BITS_PER_UNIT));
-}
-
-/* Return the precision of the mode, or for a complex or vector mode the
-   precision of the mode of its elements.  */
-
-unsigned int
-element_precision (machine_mode mode)
-{
-  if (COMPLEX_MODE_P (mode) || VECTOR_MODE_P (mode))
-    mode = GET_MODE_INNER (mode);
-
-  return GET_MODE_PRECISION (mode);
 }
 
 /* Return the natural mode of an array, given that it is SIZE bytes in
@@ -698,11 +671,9 @@ layout_decl (tree decl, unsigned int known_align)
 	    {
 	      zero_bitfield = true;
 	      packed_p = false;
-#ifdef PCC_BITFIELD_TYPE_MATTERS
 	      if (PCC_BITFIELD_TYPE_MATTERS)
 		do_type_align (type, decl);
 	      else
-#endif
 		{
 #ifdef EMPTY_FIELD_BOUNDARY
 		  if (EMPTY_FIELD_BOUNDARY > DECL_ALIGN (decl))
@@ -811,7 +782,8 @@ layout_decl (tree decl, unsigned int known_align)
     {
       PUT_MODE (rtl, DECL_MODE (decl));
       SET_DECL_RTL (decl, 0);
-      set_mem_attributes (rtl, decl, 1);
+      if (MEM_P (rtl))
+	set_mem_attributes (rtl, decl, 1);
       SET_DECL_RTL (decl, rtl);
     }
 }
@@ -1066,7 +1038,6 @@ update_alignment_for_field (record_layout_info rli, tree field,
 	  rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
 	}
     }
-#ifdef PCC_BITFIELD_TYPE_MATTERS
   else if (is_bitfield && PCC_BITFIELD_TYPE_MATTERS)
     {
       /* Named bit-fields cause the entire structure to have the
@@ -1109,7 +1080,6 @@ update_alignment_for_field (record_layout_info rli, tree field,
 	  user_align |= TYPE_USER_ALIGN (type);
 	}
     }
-#endif
   else
     {
       rli->record_align = MAX (rli->record_align, desired_align);
@@ -1147,7 +1117,6 @@ place_union_field (record_layout_info rli, tree field)
 			       DECL_SIZE_UNIT (field), rli->offset);
 }
 
-#if defined (PCC_BITFIELD_TYPE_MATTERS) || defined (BITFIELD_NBYTES_LIMITED)
 /* A bitfield of SIZE with a required access alignment of ALIGN is allocated
    at BYTE_OFFSET / BIT_OFFSET.  Return nonzero if the field would span more
    units of alignment than the underlying TYPE.  */
@@ -1163,7 +1132,6 @@ excess_unit_span (HOST_WIDE_INT byte_offset, HOST_WIDE_INT bit_offset,
   return ((offset + size + align - 1) / align
 	  > tree_to_uhwi (TYPE_SIZE (type)) / align);
 }
-#endif
 
 /* RLI contains information about the layout of a RECORD_TYPE.  FIELD
    is a FIELD_DECL to be added after those fields already present in
@@ -1290,7 +1258,6 @@ place_field (record_layout_info rli, tree field)
 
   /* Handle compatibility with PCC.  Note that if the record has any
      variable-sized fields, we need not worry about compatibility.  */
-#ifdef PCC_BITFIELD_TYPE_MATTERS
   if (PCC_BITFIELD_TYPE_MATTERS
       && ! targetm.ms_bitfield_layout_p (rli->t)
       && TREE_CODE (field) == FIELD_DECL
@@ -1335,7 +1302,6 @@ place_field (record_layout_info rli, tree field)
       if (! DECL_PACKED (field))
 	TYPE_USER_ALIGN (rli->t) |= TYPE_USER_ALIGN (type);
     }
-#endif
 
 #ifdef BITFIELD_NBYTES_LIMITED
   if (BITFIELD_NBYTES_LIMITED
@@ -1627,11 +1593,6 @@ finalize_record_size (record_layout_info rli)
     unpadded_size_unit
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
-  if (TREE_CODE (unpadded_size_unit) == INTEGER_CST
-      && !TREE_OVERFLOW (unpadded_size_unit)
-      && !valid_constant_size_p (unpadded_size_unit))
-    error ("type %qT is too large", rli->t);
-
   /* Round the size up to be a multiple of the required alignment.  */
   TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t)
@@ -1767,12 +1728,9 @@ finalize_type_size (tree type)
      However, where strict alignment is not required, avoid
      over-aligning structures, since most compilers do not do this
      alignment.  */
-
-  if (TYPE_MODE (type) != BLKmode && TYPE_MODE (type) != VOIDmode
-      && (STRICT_ALIGNMENT
-	  || (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
-	      && TREE_CODE (type) != QUAL_UNION_TYPE
-	      && TREE_CODE (type) != ARRAY_TYPE)))
+  if (TYPE_MODE (type) != BLKmode
+      && TYPE_MODE (type) != VOIDmode
+      && (STRICT_ALIGNMENT || !AGGREGATE_TYPE_P (type)))
     {
       unsigned mode_align = GET_MODE_ALIGNMENT (TYPE_MODE (type));
 
@@ -1836,9 +1794,13 @@ finalize_type_size (tree type)
 	{
 	  TYPE_SIZE (variant) = size;
 	  TYPE_SIZE_UNIT (variant) = size_unit;
-	  TYPE_ALIGN (variant) = align;
+	  unsigned valign = align;
+	  if (TYPE_USER_ALIGN (variant))
+	    valign = MAX (valign, TYPE_ALIGN (variant));
+	  else
+	    TYPE_USER_ALIGN (variant) = user_align;
+	  TYPE_ALIGN (variant) = valign;
 	  TYPE_PRECISION (variant) = precision;
-	  TYPE_USER_ALIGN (variant) = user_align;
 	  SET_TYPE_MODE (variant, mode);
 	}
     }
@@ -2159,6 +2121,10 @@ layout_type (tree type)
   if (type == error_mark_node)
     return;
 
+  /* We don't want finalize_type_size to copy an alignment attribute to
+     variants that don't have it.  */
+  type = TYPE_MAIN_VARIANT (type);
+
   /* Do nothing if type has been laid out before.  */
   if (TYPE_SIZE (type))
     return;
@@ -2355,13 +2321,17 @@ layout_type (tree type)
 	/* Now round the alignment and size,
 	   using machine-dependent criteria if any.  */
 
+	unsigned align = TYPE_ALIGN (element);
+	if (TYPE_USER_ALIGN (type))
+	  align = MAX (align, TYPE_ALIGN (type));
+	else
+	  TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
 #ifdef ROUND_TYPE_ALIGN
-	TYPE_ALIGN (type)
-	  = ROUND_TYPE_ALIGN (type, TYPE_ALIGN (element), BITS_PER_UNIT);
+	align = ROUND_TYPE_ALIGN (type, align, BITS_PER_UNIT);
 #else
-	TYPE_ALIGN (type) = MAX (TYPE_ALIGN (element), BITS_PER_UNIT);
+	align = MAX (align, BITS_PER_UNIT);
 #endif
-	TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
+	TYPE_ALIGN (type) = align;
 	SET_TYPE_MODE (type, BLKmode);
 	if (TYPE_SIZE (type) != 0
 	    && ! targetm.member_type_forces_blk (type, VOIDmode)
@@ -2429,9 +2399,7 @@ layout_type (tree type)
   /* Compute the final TYPE_SIZE, TYPE_ALIGN, etc. for TYPE.  For
      records and unions, finish_record_layout already called this
      function.  */
-  if (TREE_CODE (type) != RECORD_TYPE
-      && TREE_CODE (type) != UNION_TYPE
-      && TREE_CODE (type) != QUAL_UNION_TYPE)
+  if (!RECORD_OR_UNION_TYPE_P (type))
     finalize_type_size (type);
 
   /* We should never see alias sets on incomplete aggregates.  And we

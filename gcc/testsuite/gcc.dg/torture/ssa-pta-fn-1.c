@@ -59,4 +59,3 @@ int main()
 /* { dg-final { scan-tree-dump "q_const_. = { NONLOCAL i }" "alias" } } */
 /* { dg-final { scan-tree-dump "q_pure_. = { ESCAPED NONLOCAL i }" "alias" } } */
 /* { dg-final { scan-tree-dump "q_normal_. = { ESCAPED NONLOCAL }" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

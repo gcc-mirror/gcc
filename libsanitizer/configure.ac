@@ -5,6 +5,8 @@ AC_PREREQ([2.64])
 AC_INIT(package-unused, version-unused, libsanitizer)
 AC_CONFIG_SRCDIR([include/sanitizer/common_interface_defs.h])
 
+AM_ENABLE_MULTILIB(, ..)
+
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
 [  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
@@ -26,7 +28,6 @@ AC_SUBST(target_alias)
 GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
 AM_INIT_AUTOMAKE(foreign no-dist)
-AM_ENABLE_MULTILIB(, ..)
 AM_MAINTAINER_MODE
 
 # Calculate toolexeclibdir
@@ -311,6 +312,24 @@ if test "$have_getexecname" = "yes"; then
   AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
 fi
 
+# Check for rpc/xdr.h
+AC_CHECK_HEADERS(rpc/xdr.h)
+if test x"$ac_cv_header_rpc_xdr_h" = xyes; then
+  rpc_defs="$rpc_defs -DHAVE_RPC_XDR_H=1"
+else
+  rpc_defs="$rpc_defs -DHAVE_RPC_XDR_H=0"
+fi
+
+# Check for tirpc/rpc/xdr.h
+AC_CHECK_HEADERS(tirpc/rpc/xdr.h)
+if test x"$ac_cv_header_tirpc_rpc_xdr_h" = xyes; then
+  rpc_defs="$rpc_defs -DHAVE_TIRPC_RPC_XDR_H=1"
+else
+  rpc_defs="$rpc_defs -DHAVE_TIRPC_RPC_XDR_H=0"
+fi
+
+AC_SUBST([RPC_DEFS], [$rpc_defs])
+
 AM_CONDITIONAL(LIBBACKTRACE_SUPPORTED,
 	       [test "x${BACKTRACE_SUPPORTED}x${BACKTRACE_USES_MALLOC}" = "x1x0"])
 
@@ -345,5 +364,7 @@ _EOF
     AS_UNSET([ml_norecursion])
 ])
 fi
+
+AC_SUBST([TSAN_TARGET_DEPENDENT_OBJECTS])
 
 AC_OUTPUT

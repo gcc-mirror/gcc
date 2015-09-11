@@ -4,7 +4,7 @@ struct tuple {
   static const int value = 0;
 };
 
-template<typename T, template<class T> class... Metafunctions>
+template<typename T, template<class U> class... Metafunctions>
 struct tuple<Metafunctions<T>...> {
   static const int value = 1;
 };

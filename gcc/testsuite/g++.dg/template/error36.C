@@ -2,7 +2,7 @@
 
 template <typename T>
 class foo {
-    void bar() throw(int); // { dg-error "throw \\(int\\)" }
+    void bar() throw(int); // { dg-message "throw \\(int\\)" }
 };
 
 template <>

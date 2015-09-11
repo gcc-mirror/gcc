@@ -14,4 +14,3 @@ void test02(unsigned int a, unsigned int b)
 }
 
 /* { dg-final { scan-tree-dump-times "link_error" 0 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

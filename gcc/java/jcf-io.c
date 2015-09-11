@@ -28,19 +28,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 
 #include "jcf.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "java-tree.h"
-#include "hash-table.h"
 #include <dirent.h>
 
 #include "zlib.h"
@@ -280,36 +271,11 @@ find_classfile (char *filename, JCF *jcf, const char *dep_name)
   return open_class (filename, jcf, fd, dep_name);
 }
 
-
-/* Hash table helper.  */
-
-struct charstar_hash : typed_noop_remove <char>
-{
-  typedef const char value_type;
-  typedef const char compare_type;
-  static inline hashval_t hash (const value_type *candidate);
-  static inline bool equal (const value_type *existing,
-			    const compare_type *candidate);
-};
-
-inline hashval_t
-charstar_hash::hash (const value_type *candidate)
-{
-  return htab_hash_string (candidate);
-}
-
-inline bool
-charstar_hash::equal (const value_type *existing, const compare_type *candidate)
-{
-  return strcmp (existing, candidate) == 0;
-}
-
-
 /* A hash table keeping track of class names that were not found
    during class lookup.  (There is no need to cache the values
    associated with names that were found; they are saved in
    IDENTIFIER_CLASS_VALUE.)  */
-static hash_table<charstar_hash> *memoized_class_lookups;
+static hash_table<nofree_string_hash> *memoized_class_lookups;
 
 /* Returns a freshly malloc'd string with the fully qualified pathname
    of the .class file for the class CLASSNAME.  CLASSNAME must be
@@ -332,11 +298,11 @@ find_class (const char *classname, int classname_length, JCF *jcf)
 
   /* Create the hash table, if it does not already exist.  */
   if (!memoized_class_lookups)
-    memoized_class_lookups = new hash_table<charstar_hash> (37);
+    memoized_class_lookups = new hash_table<nofree_string_hash> (37);
 
   /* Loop for this class in the hashtable.  If it is present, we've
      already looked for this class and failed to find it.  */
-  hash = charstar_hash::hash (classname);
+  hash = nofree_string_hash::hash (classname);
   if (memoized_class_lookups->find_with_hash (classname, hash))
     return NULL;
 

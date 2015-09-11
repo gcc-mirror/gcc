@@ -103,7 +103,8 @@ ifeq ($(enable_shared),yes)
 	fi
 endif
 	echo '#endif' >> $@
-else ifneq ($(softfp_wrap_start),)
+else
+ifneq ($(softfp_wrap_start),)
 softfp_file_list := $(addsuffix .c,$(softfp_func_list))
 
 $(softfp_file_list):
@@ -113,6 +114,7 @@ $(softfp_file_list):
 else
 softfp_file_list := \
   $(addsuffix .c,$(addprefix $(srcdir)/soft-fp/,$(softfp_func_list)))
+endif
 endif
 
 # Disable missing prototype and type limit warnings.  The prototypes

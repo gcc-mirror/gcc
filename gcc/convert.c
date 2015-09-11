@@ -25,17 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
@@ -920,7 +910,9 @@ convert_to_integer (tree type, tree expr)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert between vector values of different size");
+	  error ("can%'t convert a vector of type %qT"
+		 " to type %qT which has different size",
+		 TREE_TYPE (expr), type);
 	  return error_mark_node;
 	}
       return build1 (VIEW_CONVERT_EXPR, type, expr);
@@ -1004,7 +996,9 @@ convert_to_vector (tree type, tree expr)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert between vector values of different size");
+	  error ("can%'t convert a value of type %qT"
+		 " to vector type %qT which has different size",
+		 TREE_TYPE (expr), type);
 	  return error_mark_node;
 	}
       return build1 (VIEW_CONVERT_EXPR, type, expr);

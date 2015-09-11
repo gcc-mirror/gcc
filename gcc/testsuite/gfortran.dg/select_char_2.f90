@@ -42,4 +42,3 @@ contains
 end
 
 ! { dg-final { scan-tree-dump-not "_gfortran_select_string" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

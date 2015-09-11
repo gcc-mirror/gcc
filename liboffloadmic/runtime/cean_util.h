@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,9 +32,10 @@
 #define CEAN_UTIL_H_INCLUDED
 
 #include <stdint.h>
+#include "offload_util.h"
 
 // CEAN expression representation
-struct dim_desc {
+struct Dim_Desc {
     int64_t size;       // Length of data type
     int64_t lindex;     // Lower index
     int64_t lower;      // Lower section bound
@@ -42,10 +43,10 @@ struct dim_desc {
     int64_t stride;     // Stride
 };
 
-struct arr_desc {
+struct Arr_Desc {
     int64_t base;       // Base address
     int64_t rank;       // Rank of array
-    dim_desc dim[1];
+    Dim_Desc dim[1];
 };
 
 struct CeanReadDim {
@@ -55,6 +56,7 @@ struct CeanReadDim {
 };
 
 struct CeanReadRanges {
+    Arr_Desc* arr_desc;
     void *  ptr;
     int64_t current_number;   // the number of ranges read
     int64_t range_max_number; // number of contiguous ranges
@@ -66,23 +68,23 @@ struct CeanReadRanges {
 
 // array descriptor length
 #define __arr_desc_length(rank) \
-    (sizeof(int64_t) + sizeof(dim_desc) * (rank))
+    (sizeof(int64_t) + sizeof(Dim_Desc) * (rank))
 
 // returns offset and length of the data to be transferred
-void __arr_data_offset_and_length(const arr_desc *adp,
+DLL_LOCAL void __arr_data_offset_and_length(const Arr_Desc *adp,
                                   int64_t &offset,
                                   int64_t &length);
 
 // define if data array described by argument is contiguous one
-bool is_arr_desc_contiguous(const arr_desc *ap);
+DLL_LOCAL bool is_arr_desc_contiguous(const Arr_Desc *ap);
 
 // allocate element of CeanReadRanges type initialized
 // to read consequently contiguous ranges described by "ap" argument
-CeanReadRanges * init_read_ranges_arr_desc(const arr_desc *ap);
+DLL_LOCAL CeanReadRanges * init_read_ranges_arr_desc(const Arr_Desc *ap);
 
-// check if ranges described by 1 argument could be transfered into ranges
+// check if ranges described by 1 argument could be transferred into ranges
 // described by 2-nd one
-bool cean_ranges_match(
+DLL_LOCAL bool cean_ranges_match(
     CeanReadRanges * read_rng1,
     CeanReadRanges * read_rng2
 );
@@ -90,27 +92,27 @@ bool cean_ranges_match(
 // first argument - returned value by call to init_read_ranges_arr_desc.
 // returns true if offset and length of next range is set successfuly.
 // returns false if the ranges is over.
-bool get_next_range(
+DLL_LOCAL bool get_next_range(
     CeanReadRanges * read_rng,
     int64_t *offset
 );
 
-// returns number of transfered bytes
-int64_t cean_get_transf_size(CeanReadRanges * read_rng);
+// returns number of transferred bytes
+DLL_LOCAL int64_t cean_get_transf_size(CeanReadRanges * read_rng);
 
 #if OFFLOAD_DEBUG > 0
 // prints array descriptor contents to stderr
-void    __arr_desc_dump(
+DLL_LOCAL void    __arr_desc_dump(
     const char *spaces,
     const char *name,
-    const arr_desc *adp,
-    bool dereference);
+    const Arr_Desc *adp,
+    bool dereference,
+    bool print_values);
+#define ARRAY_DESC_DUMP(spaces, name, adp, dereference, print_values) \
+    if (console_enabled >= 2) \
+        __arr_desc_dump(spaces, name, adp, dereference, print_values);
 #else
-#define __arr_desc_dump(
-    spaces,
-    name,
-    adp,
-    dereference)
+#define ARRAY_DESC_DUMP(spaces, name, adp, dereference, print_values)
 #endif // OFFLOAD_DEBUG
 
 #endif // CEAN_UTIL_H_INCLUDED

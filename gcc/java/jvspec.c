@@ -392,16 +392,17 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     }
 
   if (saw_D && ! main_class_name)
-    fatal_error ("can%'t specify %<-D%> without %<--main%>");
+    fatal_error (input_location, "can%'t specify %<-D%> without %<--main%>");
 
   if (main_class_name && ! verify_class_name (main_class_name))
-    fatal_error ("%qs is not a valid class name", main_class_name);
+    fatal_error (input_location,
+		 "%qs is not a valid class name", main_class_name);
 
   num_args = argc + added;
   if (saw_resource)
     {
       if (! saw_o)
-	fatal_error ("--resource requires -o");
+	fatal_error (input_location, "--resource requires -o");
     }
   if (saw_C)
     {
@@ -415,7 +416,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	}
       num_args += 2;  /* For -o NONE. */
       if (saw_o)
-	fatal_error ("cannot specify both -C and -o");
+	fatal_error (input_location, "cannot specify both -C and -o");
     }
   if ((saw_o && java_files_count + class_files_count + zip_files_count > 1)
       || (saw_C && java_files_count > 1)
@@ -427,7 +428,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     {
       filelist_filename = make_temp_file ("jx");
       if (filelist_filename == NULL)
-	fatal_error ("cannot create temporary file");
+	fatal_error (input_location, "cannot create temporary file");
       record_temp_file (filelist_filename, ! saw_save_temps, 0);
       filelist_file = fopen (filelist_filename, "w");
       if (filelist_file == NULL)
@@ -449,7 +450,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if (combine_inputs || indirect_files_count > 0)
     num_args += 1; /* for "-ffilelist-file" */
   if (combine_inputs && indirect_files_count > 0)
-    fatal_error ("using both @FILE with multiple files not implemented");
+    fatal_error (input_location,
+		 "using both @FILE with multiple files not implemented");
 
   /* There's no point adding -shared-libgcc if we don't have a shared
      libgcc.  */
@@ -533,7 +535,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
 	case OPT_fmain_:
 	  if (! will_link)
-	    fatal_error ("cannot specify %<main%> class when not linking");
+	    fatal_error (input_location,
+			 "cannot specify %<main%> class when not linking");
 	  --j;
 	  continue;
 	}

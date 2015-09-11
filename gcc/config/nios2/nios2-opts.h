@@ -77,5 +77,12 @@ enum nios2_ccs_code
   CCS_BUILTIN_CALL
 };
 
+/* Supported Nios II Architectures.  */
+enum nios2_arch_type
+{
+  ARCH_R1=1,
+  ARCH_R2
+};
+
 #endif
 

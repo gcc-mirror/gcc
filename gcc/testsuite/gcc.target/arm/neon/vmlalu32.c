@@ -19,4 +19,3 @@ void test_vmlalu32 (void)
 }
 
 /* { dg-final { scan-assembler "vmlal\.u32\[ 	\]+\[qQ\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

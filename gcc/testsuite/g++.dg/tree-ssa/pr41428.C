@@ -12,4 +12,3 @@ int foo(void)
 }
 
 /* { dg-final { scan-tree-dump "Folded into: if \\\(1 != 0\\\)" "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

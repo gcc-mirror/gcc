@@ -2,7 +2,7 @@
 // GROUPS passed visibility
 class A {
 public:
-        void aMethod(void) {};// { dg-error "" } .*
+        void aMethod(void) {};// { dg-message "" } .*
 };
 
 class AA : A { };

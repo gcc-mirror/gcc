@@ -64,7 +64,7 @@
 ;; Returns TRUE if OP is a valid operand of a DImode operation.
 
 (define_predicate "di_operand"
-  (match_code "const_int,const_double,reg,mem")
+  (match_code "const_int,const_double,reg,subreg,mem")
 {
   if (register_operand (op, mode))
     return TRUE;
@@ -92,7 +92,7 @@
 ;; Returns TRUE if OP is a DImode register or MEM.
 
 (define_predicate "nonimmediate_di_operand"
-  (match_code "reg,mem")
+  (match_code "reg,subreg,mem")
 {
   if (register_operand (op, mode))
     return TRUE;

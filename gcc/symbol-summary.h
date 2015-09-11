@@ -81,6 +81,11 @@ public:
     m_symtab_insertion_hook = NULL;
     m_symtab_removal_hook = NULL;
     m_symtab_duplication_hook = NULL;
+
+    /* Release all summaries.  */
+    typedef typename hash_map <map_hash, T *>::iterator map_iterator;
+    for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
+      release ((*it).second);
   }
 
   /* Traverses all summarys with a function F called with
@@ -104,6 +109,18 @@ public:
   T* allocate_new ()
   {
     return m_ggc ? new (ggc_alloc <T> ()) T() : new T () ;
+  }
+
+  /* Release an item that is stored within map.  */
+  void release (T *item)
+  {
+    if (m_ggc)
+      {
+	item->~T ();
+	ggc_free (item);
+      }
+    else
+      delete item;
   }
 
   /* Getter for summary callgraph node pointer.  */
@@ -183,45 +200,7 @@ protected:
   bool m_ggc;
 
 private:
-  struct summary_hashmap_traits: default_hashmap_traits
-  {
-    static const int deleted_value = -1;
-    static const int empty_value = 0;
-
-    static hashval_t
-    hash (const int v)
-    {
-      return (hashval_t)v;
-    }
-
-    template<typename Type>
-    static bool
-    is_deleted (Type &e)
-    {
-      return e.m_key == deleted_value;
-    }
-
-    template<typename Type>
-    static bool
-    is_empty (Type &e)
-    {
-      return e.m_key == empty_value;
-    }
-
-    template<typename Type>
-    static void
-    mark_deleted (Type &e)
-    {
-      e.m_key = deleted_value;
-    }
-
-    template<typename Type>
-    static void
-    mark_empty (Type &e)
-    {
-      e.m_key = empty_value;
-    }
-  };
+  typedef int_hash <int, 0, -1> map_hash;
 
   /* Getter for summary callgraph ID.  */
   T* get (int uid)
@@ -235,7 +214,7 @@ private:
   }
 
   /* Main summary store, where summary ID is used as key.  */
-  hash_map <int, T *, summary_hashmap_traits> m_map;
+  hash_map <map_hash, T *> m_map;
   /* Internal summary insertion hook pointer.  */
   cgraph_node_hook_list *m_symtab_insertion_hook;
   /* Internal summary removal hook pointer.  */

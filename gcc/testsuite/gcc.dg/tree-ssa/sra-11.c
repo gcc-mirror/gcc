@@ -30,4 +30,3 @@ int foo2 (void)
 
 /* { dg-final { scan-tree-dump-times "Created a replacement for s1" 0 "esra"} } */
 /* { dg-final { scan-tree-dump-times "Created a replacement for s2" 1 "esra"} } */
-/* { dg-final { cleanup-tree-dump "esra" } } */

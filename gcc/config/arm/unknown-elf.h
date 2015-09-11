@@ -32,7 +32,9 @@
 #define UNKNOWN_ELF_STARTFILE_SPEC	" crti%O%s crtbegin%O%s crt0%O%s"
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC	UNKNOWN_ELF_STARTFILE_SPEC
+#define STARTFILE_SPEC	\
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} "	\
+  UNKNOWN_ELF_STARTFILE_SPEC
 
 #define UNKNOWN_ELF_ENDFILE_SPEC	"crtend%O%s crtn%O%s"
 
@@ -80,7 +82,9 @@
 									\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
-      fprintf (FILE, "\t.space\t%d\n", SIZE ? (int)(SIZE) : 1);		\
+      fprintf (FILE, "\t.space\t%d\n", SIZE ? (int) SIZE : 1);		\
+      fprintf (FILE, "\t.size\t%s, %d\n",				\
+	       NAME, SIZE ? (int) SIZE : 1);				\
     }									\
   while (0)
 

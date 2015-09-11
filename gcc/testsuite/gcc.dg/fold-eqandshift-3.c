@@ -26,4 +26,3 @@ int test2 (unsigned long b)
 
 /* { dg-final { scan-tree-dump-times "\\(a \& 1073741824\\) != 0" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "\\(b \& 1073741824\\) != 0" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

@@ -20,4 +20,3 @@ foo (int i, int n)
 
 /* { dg-final { scan-tree-dump "distributed: split to 0 loops and 2 library calls" "ldist" } } */
 /* { dg-final { scan-tree-dump-times "generated memset zero" 2 "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

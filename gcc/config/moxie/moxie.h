@@ -212,12 +212,6 @@ enum reg_class
 #define ASM_OUTPUT_ALIGN(STREAM,POWER) \
 	fprintf (STREAM, "\t.p2align\t%d\n", POWER);
 
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand X.  */
-#define PRINT_OPERAND(STREAM, X, CODE) moxie_print_operand (STREAM, X, CODE)
-
-#define PRINT_OPERAND_ADDRESS(STREAM ,X) moxie_print_operand_address (STREAM, X)
-
 /* Output and Generation of Labels */
 
 #define GLOBAL_ASM_OP "\t.global\t"
@@ -247,7 +241,7 @@ enum reg_class
 
 /* Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0
 
@@ -450,30 +444,6 @@ enum reg_class
 /* An alias for a machine mode name.  This is the machine mode that
    elements of a jump-table should have.  */
 #define CASE_VECTOR_MODE SImode
-
-/* A C compound statement with a conditional `goto LABEL;' executed
-   if X (an RTX) is a legitimate memory address on the target machine
-   for a memory operand of mode MODE.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE,X,LABEL)		\
-  do {                                                  \
-    if (GET_CODE(X) == PLUS)				\
-      {							\
-	rtx op1,op2;					\
-	op1 = XEXP(X,0);				\
-	op2 = XEXP(X,1);				\
-	if (GET_CODE(op1) == REG			\
-	    && GET_CODE(op2) == CONST_INT 		\
-	    && IN_RANGE (INTVAL (op2), -32768, 32767)	\
-	    && REGNO_OK_FOR_BASE_P(REGNO(op1)))		\
-	  goto LABEL;					\
-      }							\
-    if (REG_P (X) && REGNO_OK_FOR_BASE_P (REGNO (X)))	\
-      goto LABEL;					\
-    if (GET_CODE (X) == SYMBOL_REF			\
-	|| GET_CODE (X) == LABEL_REF			\
-	|| GET_CODE (X) == CONST)			\
-      goto LABEL;					\
-  } while (0)
 
 /* Run-time Target Specification */
 

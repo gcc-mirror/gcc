@@ -13,4 +13,3 @@ void ReadRLEImage (unsigned char *p)
     *p++ = background_color[j];
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -31,4 +31,3 @@ int main()
 
 /* { dg-final { scan-tree-dump "split to 1 loops and 1 library call" "ldist" } } */
 /* { dg-final { scan-tree-dump "generated memcpy" "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

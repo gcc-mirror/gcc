@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 compile_options_t compile_options;
 
 #ifndef LIBGFOR_MINIMAL
-volatile sig_atomic_t fatal_error_in_progress = 0;
+static volatile sig_atomic_t fatal_error_in_progress = 0;
 
 
 /* Helper function for backtrace_handler to write information about the
@@ -126,7 +126,7 @@ backtrace_handler (int signum)
 
   show_signal (signum);
   estr_write ("\nBacktrace for this error:\n");
-  backtrace ();
+  show_backtrace (true);
 
   /* Now reraise the signal.  We reactivate the signal's
      default handling, which is to terminate the process.
@@ -135,16 +135,6 @@ backtrace_handler (int signum)
      from the process correctly. */
   signal (signum, SIG_DFL);
   raise (signum);
-}
-
-
-/* Helper function for set_options because we need to access the
-   global variable options which is not seen in set_options.  */
-static void
-maybe_find_addr2line (void)
-{
-  if (options.backtrace == -1)
-    find_addr2line ();
 }
 #endif
 
@@ -161,7 +151,7 @@ set_options (int num, int options[])
     compile_options.allow_std = options[1];
   if (num >= 3)
     compile_options.pedantic = options[2];
-  /* options[3] is the removed -fdump-core option. It's place in the
+  /* options[3] is the removed -fdump-core option. Its place in the
      options array is retained due to ABI compatibility. Remove when
      bumping the library ABI.  */
   if (num >= 5)
@@ -172,7 +162,7 @@ set_options (int num, int options[])
     compile_options.bounds_check = options[6];
   /* options[7] is the -frange-check option, which no longer affects
      the library behavior; range checking is now always done when
-     parsing integers. It's place in the options array is retained due
+     parsing integers. Its place in the options array is retained due
      to ABI compatibility. Remove when bumping the library ABI.  */
   if (num >= 9)
     compile_options.fpe_summary = options[8];
@@ -211,8 +201,6 @@ set_options (int num, int options[])
 #if defined(SIGXFSZ)
       signal (SIGXFSZ, backtrace_handler);
 #endif
-
-      maybe_find_addr2line ();
     }
 #endif
 }

@@ -56,7 +56,8 @@ along with GCC; see the file COPYING3.  If not see
    to pass PIC code generation options.  */
 
 #undef ASM_SPEC
-#define ASM_SPEC "%(asm_cpu_spec) %{fpic|fpie:-k} %{fPIC|fPIE:-k -K}"
+#define ASM_SPEC \
+  "%(asm_cpu_spec) %{" FPIE1_OR_FPIC1_SPEC ":-k} %{" FPIE2_OR_FPIC2_SPEC ":-k -K}"
 
 /* Provide a LINK_SPEC appropriate for a NetBSD/m68k ELF target.  */
 

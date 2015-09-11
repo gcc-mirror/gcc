@@ -36,4 +36,3 @@ main()
 /* { dg-final { scan-tree-dump-times "do_something3" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "do_something \\(5\\)" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-not "do_something \\(70\\)" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -25,10 +25,6 @@
 #undef	DEFAULT_ASM_ENDIAN
 #define	DEFAULT_ASM_ENDIAN " -mlittle"
 
-#undef	LINK_TARGET_SPEC
-#define	LINK_TARGET_SPEC \
-  ENDIAN_SELECT(" --oformat elf32-powerpc", "", "")
-
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mlittle", "mcall-sysv" }
 

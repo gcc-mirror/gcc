@@ -26,4 +26,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: \[\h+,256\] surounds2 \[\h+,\+257\]" } */
+/* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] surrounds2 \\\[\[0-9a-fA-FxX\]+,\\\+257\\\]" } */
+/* { dg-shouldfail "" } */

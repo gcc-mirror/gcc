@@ -17,4 +17,3 @@ void test_vabsf32 (void)
 }
 
 /* { dg-final { scan-assembler "vabs\.f32\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

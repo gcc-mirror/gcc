@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_EH_H
 #define GCC_TREE_EH_H
 
-#include "hash-map.h"
 
 typedef struct eh_region_d *eh_region;
 

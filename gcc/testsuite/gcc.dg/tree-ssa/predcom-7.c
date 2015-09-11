@@ -15,4 +15,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump "Executing predictive commoning" "pcom" } } */
-/* { dg-final { cleanup-tree-dump "pcom" } } */

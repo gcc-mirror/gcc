@@ -8,7 +8,7 @@ template <class T> struct A {
 };
 
 class B {
-  template <class T> class X {};	// { dg-error "private" }
+  template <class T> class X {};	// { dg-message "private" }
 };
 
 int main()

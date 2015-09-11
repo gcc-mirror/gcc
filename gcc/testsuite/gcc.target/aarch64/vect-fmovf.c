@@ -14,4 +14,3 @@ foo (float *output)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-assembler "fmov\\tv\[0-9\]+\\.\[24\]s, 4\\.25" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

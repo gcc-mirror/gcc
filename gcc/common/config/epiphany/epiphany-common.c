@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "common/common-target.h"
 #include "opts.h"
-#include "flags.h"
+#include "options.h"
 
 #define TARGET_OPTION_OPTIMIZATION_TABLE epiphany_option_optimization_table
 

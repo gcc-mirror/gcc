@@ -167,7 +167,7 @@ check-f95-subtargets : check-gfortran-subtargets
 check-fortran-subtargets : check-gfortran-subtargets
 lang_checks += check-gfortran
 lang_checks_parallelized += check-gfortran
-# For description see comment above check_gcc_parallelize in gcc/Makefile.in.
+# For description see the check_$lang_parallelize comment in gcc/Makefile.in.
 check_gfortran_parallelize = 10000
 
 # GFORTRAN documentation.
@@ -275,7 +275,7 @@ fortran.uninstall:
 # We just have to delete files specific to us.
 
 fortran.mostlyclean:
-	-rm -f f951$(exeext)
+	-rm -f gfortran$(exeext) gfortran-cross$(exeext) f951$(exeext)
 	-rm -f fortran/*.o
 
 fortran.clean:

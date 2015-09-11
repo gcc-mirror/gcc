@@ -59,4 +59,3 @@ f6 (S *x, S *y)
   return x->p[0];
 }
 
-// { dg-final { cleanup-tree-dump "optimized" } }

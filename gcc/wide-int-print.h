@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #define WIDE_INT_PRINT_H
 
 #include <stdio.h>
-#include "wide-int.h"
 
 #define WIDE_INT_PRINT_BUFFER_SIZE (WIDE_INT_MAX_PRECISION / 4 + 4)
 

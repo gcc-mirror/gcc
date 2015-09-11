@@ -16,4 +16,3 @@ __attribute__((regparm(1))) void foo (int a, int b)
  }
 
 /* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue" } } */
-/* { dg-final { cleanup-rtl-dump "pro_and_epilogue" } } */

@@ -35,4 +35,3 @@ main()
 /* { dg-final { scan-ipa-dump "builtin_unreachable" "whole-program"} } */
 /* { dg-final { scan-ipa-dump-not "A::foo" "whole-program"} } */
 /* { dg-final { scan-ipa-dump-not "A::foo" "whole-program"} } */
-/* { dg-final { cleanup-ipa-dump "whole-program" } } */

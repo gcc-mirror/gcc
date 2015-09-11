@@ -23,4 +23,3 @@ program test
 end program test
 ! { dg-final { scan-tree-dump-times "__builtin_cos" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_sin" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

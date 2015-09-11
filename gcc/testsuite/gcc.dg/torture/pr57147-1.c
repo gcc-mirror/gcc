@@ -18,4 +18,3 @@ void TestSyscall(void)
 }
 
 /* { dg-final { scan-tree-dump-not "builtin_unreachable" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

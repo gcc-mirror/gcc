@@ -26,4 +26,3 @@ int islessequal (float f1, float f2)
 }
 
 /* { dg-final { scan-rtl-dump-not "__unordsf2" "final" } } */
-/* { dg-final { cleanup-rtl-dump "final" } } */

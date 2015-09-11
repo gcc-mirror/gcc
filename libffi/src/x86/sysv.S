@@ -65,7 +65,7 @@
    actual table.  The entry points into the table are all 8 bytes.
    The use of ORG asserts that we're at the correct location.  */
 /* ??? The clang assembler doesn't handle .org with symbolic expressions.  */
-#if defined(__clang__) || defined(__APPLE__)
+#if defined(__clang__) || defined(__APPLE__) || (defined (__sun__) && defined(__svr4__))
 # define E(BASE, X)	.balign 8
 #else
 # define E(BASE, X)	.balign 8; .org BASE + X * 8
@@ -793,7 +793,7 @@ ENDF(C(ffi_closure_raw_THISCALL))
         .section __TEXT,__textcoal_nt,coalesced,pure_instructions;	\
         .weak_definition X;						\
         .private_extern X
-#elif defined __ELF__
+#elif defined __ELF__ && !(defined(__sun__) && defined(__svr4__))
 # define COMDAT(X)							\
 	.section .text.X,"axG",@progbits,X,comdat;			\
 	.globl	X;							\
@@ -822,10 +822,12 @@ ENDF(C(__x86.get_pc_thunk.dx))
 #ifdef __APPLE__
 .section __TEXT,__eh_frame,coalesced,no_toc+strip_static_syms+live_support
 EHFrame0:
+#elif defined(X86_WIN32)
+.section .eh_frame,"r"
 #elif defined(HAVE_AS_X86_64_UNWIND_SECTION_TYPE)
-.section .eh_frame,"a",@unwind
+.section .eh_frame,EH_FRAME_FLAGS,@unwind
 #else
-.section .eh_frame,"a",@progbits
+.section .eh_frame,EH_FRAME_FLAGS,@progbits
 #endif
 
 #ifdef HAVE_AS_X86_PCREL

@@ -1,9 +1,7 @@
 /* -*- c -*-
    Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
-   Copyright (C) 1992, 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1992-2015 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -406,6 +404,13 @@ DW_AT (DW_AT_VMS_rtnbeg_pd_address, 0x2201)
    See http://gcc.gnu.org/wiki/DW_AT_GNAT_descriptive_type .  */
 DW_AT (DW_AT_use_GNAT_descriptive_type, 0x2301)
 DW_AT (DW_AT_GNAT_descriptive_type, 0x2302)
+/* Rational constant extension.
+   See https://gcc.gnu.org/wiki/DW_AT_GNU_numerator_denominator .  */
+DW_TAG (DW_AT_GNU_numerator, 0x2303)
+DW_TAG (DW_AT_GNU_denominator, 0x2304)
+/* Biased integer extension.
+   See https://gcc.gnu.org/wiki/DW_AT_GNU_bias .  */
+DW_TAG (DW_AT_GNU_bias, 0x2305)
 /* UPC extension.  */
 DW_AT (DW_AT_upc_threads_scaled, 0x3210)
 /* PGI (STMicroelectronics) extensions.  */

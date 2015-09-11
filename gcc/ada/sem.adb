@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1440,9 +1440,13 @@ package body Sem is
 
            (Operating_Mode = Generate_Code
 
-             --  or if special debug flag -gnatdx is set
+             --  Or if special debug flag -gnatdx is set
 
              or else Debug_Flag_X
+
+             --  Or if we are generating C code
+
+             or else Generate_C_Code
 
              --  Or if in configuration run-time mode. We do this so we get
              --  error messages about missing entities in the run-time even

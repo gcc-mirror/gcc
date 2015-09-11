@@ -12,4 +12,3 @@
 
 /* { dg-final { scan-assembler-not "stp\tx29, x30, \\\[sp, -\[0-9\]+\\\]!" } } */
 
-/* { dg-final { cleanup-saved-temps } } */

@@ -20,45 +20,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "real.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
-#include "hash-table.h"
-#include "hash-map.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
 #include "domwalk.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "tree-hash-traits.h"
+#include "bitmap.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
+#include "tree-ssa-live.h"
+#include "tree-ssa-coalesce.h"
 
 /* The basic structure describing an equivalency created by traversing
    an edge.  Traversing the edge effectively means that we can assume
@@ -303,24 +287,10 @@ struct equiv_hash_elt
 
 /* Value to ssa name equivalence hashtable helpers.  */
 
-struct val_ssa_equiv_hash_traits : default_hashmap_traits
+struct val_ssa_equiv_hash_traits : simple_hashmap_traits <tree_operand_hash>
 {
-  static inline hashval_t hash (tree);
-  static inline bool equal_keys (tree, tree);
   template<typename T> static inline void remove (T &);
 };
-
-inline hashval_t
-val_ssa_equiv_hash_traits::hash (tree value)
-{
-  return iterative_hash_expr (value, 0);
-}
-
-inline bool
-val_ssa_equiv_hash_traits::equal_keys (tree value1, tree value2)
-{
-  return operand_equal_p (value1, value2, 0);
-}
 
 /* Free an instance of equiv_hash_elt.  */
 

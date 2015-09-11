@@ -12,7 +12,7 @@ adds_si_test1 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int
@@ -24,7 +24,7 @@ adds_si_test2 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int
@@ -36,7 +36,7 @@ adds_si_test3 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 typedef long long s64;
@@ -50,7 +50,7 @@ adds_di_test1 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 s64
@@ -62,7 +62,7 @@ adds_di_test2 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 s64
@@ -74,7 +74,7 @@ adds_di_test3 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int main ()
@@ -83,67 +83,66 @@ int main ()
   s64 y;
 
   x = adds_si_test1 (29, 4, 5);
-  if (x != 42)
+  if (x != (29 + 4))
     abort ();
 
-  x = adds_si_test1 (5, 2, 20);
-  if (x != 29)
+  x = adds_si_test1 (5, 2, -5);
+  if (x != 7)
     abort ();
 
   x = adds_si_test2 (29, 4, 5);
-  if (x != 293)
+  if (x != (29 + 0xff))
     abort ();
 
-  x = adds_si_test2 (1024, 2, 20);
-  if (x != 1301)
+  x = adds_si_test2 (-255, 2, 20);
+  if (x != -235)
     abort ();
 
   x = adds_si_test3 (35, 4, 5);
-  if (x != 76)
+  if (x != (35 + (4 << 3)))
     abort ();
 
-  x = adds_si_test3 (5, 2, 20);
-  if (x != 43)
+  x = adds_si_test3 (-(2 << 3), 2, 20);
+  if (x != (20 - (2 << 3)))
     abort ();
 
   y = adds_di_test1 (0x130000029ll,
 		     0x320000004ll,
 		     0x505050505ll);
 
-  if (y != 0xc75050536)
+  if (y != (0x130000029ll + 0x320000004ll))
     abort ();
 
   y = adds_di_test1 (0x5000500050005ll,
-		     0x2111211121112ll,
+		     -0x5000500050005ll,
 		     0x0000000002020ll);
-  if (y != 0x9222922294249)
+  if (y != (0x5000500050005ll + 0x0000000002020ll))
     abort ();
 
   y = adds_di_test2 (0x130000029ll,
 		     0x320000004ll,
 		     0x505050505ll);
-  if (y != 0x955050631)
+  if (y != (0x130000029ll + 0xff))
     abort ();
 
-  y = adds_di_test2 (0x130002900ll,
+  y = adds_di_test2 (-0xff,
 		     0x320000004ll,
 		     0x505050505ll);
-  if (y != 0x955052f08)
+  if (y != (0x505050505ll - 0xff))
     abort ();
 
   y = adds_di_test3 (0x130000029ll,
 		     0x064000008ll,
 		     0x505050505ll);
-  if (y != 0x9b9050576)
+  if (y != (0x130000029ll + (0x064000008ll << 3)))
     abort ();
 
   y = adds_di_test3 (0x130002900ll,
-		     0x088000008ll,
+		     -(0x130002900ll >> 3),
 		     0x505050505ll);
-  if (y != 0xafd052e4d)
+  if (y != (0x130002900ll + 0x505050505ll))
     abort ();
 
   return 0;
 }
 
-/* { dg-final { cleanup-saved-temps } } */

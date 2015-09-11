@@ -9,4 +9,3 @@ set_integer (void *dest, int value, int length)
 }
 
 /* { dg-final { scan-tree-dump-not "tail call" "tailc" } } */
-/* { dg-final { cleanup-tree-dump "tailc" } } */

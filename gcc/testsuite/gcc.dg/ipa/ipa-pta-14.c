@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fipa-pta -fno-tree-fre -fno-tree-sra -fdump-ipa-pta-details" } */
+/* { dg-options "-O2 -fipa-pta -fno-tree-fre -fno-tree-sra -fdump-ipa-pta-details -fdelete-null-pointer-checks" } */
 
 struct X {
     int i;
@@ -29,4 +29,3 @@ int main()
   return 0;
 }
 
-/* { dg-final { cleanup-ipa-dump "pta" } } */

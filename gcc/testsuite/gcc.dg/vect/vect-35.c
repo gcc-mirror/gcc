@@ -47,4 +47,3 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect"  { xfail { ia64-*-* sparc*-*-* } } } } */
 /* { dg-final { scan-tree-dump "can't determine dependence between" "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

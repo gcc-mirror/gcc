@@ -18,4 +18,3 @@ int bar(void)
    the latter is an ssa temporary.  */
 /* { dg-final { scan-tree-dump "= a.0.;" "optimized" } } */
 /* { dg-final { scan-tree-dump "= \\*\[^\r\n\]*_.;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

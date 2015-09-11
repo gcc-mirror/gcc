@@ -19,4 +19,3 @@ void test_vmlaQs8 (void)
 }
 
 /* { dg-final { scan-assembler "vmla\.i8\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

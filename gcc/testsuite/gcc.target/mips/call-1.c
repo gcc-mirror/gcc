@@ -1,12 +1,12 @@
 /* { dg-options "-mrelax-pic-calls -mshared -foptimize-sibling-calls -mabi=32" } */
 /* { dg-skip-if "requires -foptimize-sibling-calls" { *-*-* } { "-O0" } { "" } } */
-/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,normal\n1:\tjalrs?\t" } } */
-/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,normal2\n1:\tjalrs?\t" } } */
-/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,staticfunc\n1:\tjalrs?\t" } } */
-/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail\n1:\tjr\t" } } */
-/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail2\n1:\tjr\t" } } */
-/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail3\n1:\tjr\t" } } */
-/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail4\n1:\tjr\t" } } */
+/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,normal\n1:\tjalrc?s?\t" } } */
+/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,normal2\n1:\tjalrc?s?\t" } } */
+/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,staticfunc\n1:\tjalrc?s?\t" } } */
+/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail\n1:\tjrc?\t" } } */
+/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail2\n1:\tjrc?\t" } } */
+/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail3\n1:\tjrc?\t" } } */
+/* { dg-final { scan-assembler "\\.reloc\t1f,R_MIPS_JALR,tail4\n1:\tjrc?\t" } } */
 
 __attribute__ ((noinline)) static void staticfunc () { asm (""); }
 int normal ();

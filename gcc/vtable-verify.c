@@ -135,37 +135,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "options.h"
+#include "fold-const.h"
+#include "internal-fn.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
 
@@ -268,14 +247,15 @@ vtbl_map_node_registration_insert (struct vtbl_map_node *node,
 /* Hashtable functions for vtable_registration hashtables.  */
 
 inline hashval_t
-registration_hasher::hash (const value_type *p)
+registration_hasher::hash (const vtable_registration *p)
 {
   const struct vtable_registration *n = (const struct vtable_registration *) p;
   return (hashval_t) (DECL_UID (n->vtable_decl));
 }
 
 inline bool
-registration_hasher::equal (const value_type *p1, const compare_type *p2)
+registration_hasher::equal (const vtable_registration *p1,
+			    const vtable_registration *p2)
 {
   const struct vtable_registration *n1 =
                                     (const struct vtable_registration *) p1;
@@ -290,18 +270,16 @@ registration_hasher::equal (const value_type *p1, const compare_type *p2)
 
 /* Hashtable definition and functions for vtbl_map_hash.  */
 
-struct vtbl_map_hasher : typed_noop_remove <struct vtbl_map_node>
+struct vtbl_map_hasher : nofree_ptr_hash <struct vtbl_map_node>
 {
-  typedef struct vtbl_map_node value_type;
-  typedef struct vtbl_map_node compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const vtbl_map_node *);
+  static inline bool equal (const vtbl_map_node *, const vtbl_map_node *);
 };
 
 /* Returns a hash code for P.  */
 
 inline hashval_t
-vtbl_map_hasher::hash (const value_type *p)
+vtbl_map_hasher::hash (const vtbl_map_node *p)
 {
   const struct vtbl_map_node n = *((const struct vtbl_map_node *) p);
   return (hashval_t) IDENTIFIER_HASH_VALUE (n.class_name);
@@ -310,7 +288,7 @@ vtbl_map_hasher::hash (const value_type *p)
 /* Returns nonzero if P1 and P2 are equal.  */
 
 inline bool
-vtbl_map_hasher::equal (const value_type *p1, const compare_type *p2)
+vtbl_map_hasher::equal (const vtbl_map_node *p1, const vtbl_map_node *p2)
 {
   const struct vtbl_map_node n1 = *((const struct vtbl_map_node *) p1);
   const struct vtbl_map_node n2 = *((const struct vtbl_map_node *) p2);
@@ -331,6 +309,70 @@ static vtbl_map_table_type *vtbl_map_hash;
 
 /* Vtable map variable nodes stored in a vector.  */
 vec<struct vtbl_map_node *> vtbl_map_nodes_vec;
+
+/* Vector of mangled names for anonymous classes.  */
+extern GTY(()) vec<tree, va_gc> *vtbl_mangled_name_types;
+extern GTY(()) vec<tree, va_gc> *vtbl_mangled_name_ids;
+vec<tree, va_gc> *vtbl_mangled_name_types;
+vec<tree, va_gc> *vtbl_mangled_name_ids;
+
+/* Look up class_type (a type decl for record types) in the vtbl_mangled_names_*
+   vectors.  This is a linear lookup.  Return the associated mangled name for
+   the class type.  This is for handling types from anonymous namespaces, whose
+   DECL_ASSEMBLER_NAME ends up being "<anon>", which is useless for our
+   purposes.
+
+   We use two vectors of trees to keep track of the mangled names:  One is a
+   vector of class types and the other is a vector of the mangled names.  The
+   assumption is that these two vectors are kept in perfect lock-step so that
+   vtbl_mangled_name_ids[i] is the mangled name for
+   vtbl_mangled_name_types[i].  */
+
+static tree
+vtbl_find_mangled_name (tree class_type)
+{
+  tree result = NULL_TREE;
+  unsigned i;
+
+  if (!vtbl_mangled_name_types or !vtbl_mangled_name_ids)
+    return result;
+
+  if (vtbl_mangled_name_types->length() != vtbl_mangled_name_ids->length())
+    return result;
+
+  for (i = 0; i < vtbl_mangled_name_types->length(); ++i)
+    if ((*vtbl_mangled_name_types)[i] == class_type)
+      {
+	result = (*vtbl_mangled_name_ids)[i];
+	break;
+      }
+
+  return result;
+}
+
+/* Store a class type decl and its mangled name, for an anonymous RECORD_TYPE,
+   in the vtbl_mangled_names vector.  Make sure there is not already an
+   entry for the class type before adding it.  */
+
+void
+vtbl_register_mangled_name (tree class_type, tree mangled_name)
+{
+  if (!vtbl_mangled_name_types)
+    vec_alloc (vtbl_mangled_name_types, 10);
+
+  if (!vtbl_mangled_name_ids)
+    vec_alloc (vtbl_mangled_name_ids, 10);
+
+  gcc_assert (vtbl_mangled_name_types->length() ==
+	      vtbl_mangled_name_ids->length());
+    
+
+  if (vtbl_find_mangled_name (class_type) == NULL_TREE)
+    {
+      vec_safe_push (vtbl_mangled_name_types, class_type);
+      vec_safe_push (vtbl_mangled_name_ids, mangled_name);
+    }
+}
 
 /* Return vtbl_map node for CLASS_NAME  without creating a new one.  */
 
@@ -360,6 +402,9 @@ vtbl_map_get_node (tree class_type)
   /* Get the mangled name for the unqualified type.  */
   gcc_assert (HAS_DECL_ASSEMBLER_NAME_P (class_type_decl));
   class_name = DECL_ASSEMBLER_NAME (class_type_decl);
+
+  if (strstr (IDENTIFIER_POINTER (class_name), "<anon>") != NULL)
+    class_name = vtbl_find_mangled_name (class_type_decl);
 
   key.class_name = class_name;
   slot = (struct vtbl_map_node **) vtbl_map_hash->find_slot (&key, NO_INSERT);
@@ -392,6 +437,10 @@ find_or_create_vtbl_map_node (tree base_class_type)
 
   gcc_assert (HAS_DECL_ASSEMBLER_NAME_P (class_type_decl));
   key.class_name = DECL_ASSEMBLER_NAME (class_type_decl);
+
+  if (strstr (IDENTIFIER_POINTER (key.class_name), "<anon>") != NULL)
+    key.class_name = vtbl_find_mangled_name (class_type_decl);
+
   slot = (struct vtbl_map_node **) vtbl_map_hash->find_slot (&key, INSERT);
 
   if (*slot)
@@ -504,7 +553,8 @@ extract_object_class_type (tree rhs)
    the use chain.  */
 
 static bool
-var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
+var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth,
+				int *recursion_depth)
 {
   imm_use_iterator imm_iter;
   bool found_vcall = false;
@@ -515,6 +565,14 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
 
   if (*mem_ref_depth > 2)
     return false;
+
+  if (*recursion_depth > 25)
+    /* If we've recursed this far the chances are pretty good that
+       we're not going to find what we're looking for, and that we've
+       gone down a recursion black hole. Time to stop.  */
+    return false;
+
+  *recursion_depth = *recursion_depth + 1;
 
   /* Iterate through the immediate uses of the current variable.  If
      it's a virtual function call, we're done.  Otherwise, if there's
@@ -538,7 +596,8 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
         {
           found_vcall = var_is_used_for_virtual_call_p
 	                                            (gimple_phi_result (stmt2),
-	                                             mem_ref_depth);
+	                                             mem_ref_depth,
+						     recursion_depth);
         }
       else if (is_gimple_assign (stmt2))
         {
@@ -560,7 +619,8 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
 	  if (*mem_ref_depth < 3)
 	    found_vcall = var_is_used_for_virtual_call_p
 	                                            (gimple_assign_lhs (stmt2),
-						     mem_ref_depth);
+						     mem_ref_depth,
+						     recursion_depth);
         }
 
       else
@@ -617,9 +677,11 @@ verify_bb_vtables (basic_block bb)
           tree tmp0;
           bool found;
 	  int mem_ref_depth = 0;
+	  int recursion_depth = 0;
 
           /* Make sure this vptr field access is for a virtual call.  */
-          if (!var_is_used_for_virtual_call_p (lhs, &mem_ref_depth))
+          if (!var_is_used_for_virtual_call_p (lhs, &mem_ref_depth,
+					       &recursion_depth))
             continue;
 
           /* Now we have found the virtual method dispatch and

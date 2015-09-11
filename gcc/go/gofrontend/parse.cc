@@ -50,8 +50,7 @@ Parse::Parse(Lex* lex, Gogo* gogo)
     break_stack_(NULL),
     continue_stack_(NULL),
     iota_(0),
-    enclosing_vars_(),
-    type_switch_vars_()
+    enclosing_vars_()
 {
 }
 
@@ -788,9 +787,11 @@ Parse::parameters(Typed_identifier_list** pparams, bool* is_varargs)
   // The optional trailing comma is picked up in parameter_list.
 
   if (!token->is_op(OPERATOR_RPAREN))
-    error_at(this->location(), "expected %<)%>");
-  else
-    this->advance_token();
+    {
+      error_at(this->location(), "expected %<)%>");
+      return false;
+    }
+  this->advance_token();
 
   if (saw_error)
     return false;
@@ -1044,7 +1045,8 @@ Parse::parameter_decl(bool parameters_have_names,
 	    {
 	      *mix_error = true;
 	      while (!this->peek_token()->is_op(OPERATOR_COMMA)
-		     && !this->peek_token()->is_op(OPERATOR_RPAREN))
+		     && !this->peek_token()->is_op(OPERATOR_RPAREN)
+                     && !this->peek_token()->is_eof())
 		this->advance_token();
 	    }
 	}
@@ -1226,7 +1228,11 @@ Parse::interface_type(bool record)
       methods = NULL;
     }
 
-  Interface_type* ret = Type::make_interface_type(methods, location);
+  Interface_type* ret;
+  if (methods == NULL)
+    ret = Type::make_empty_interface_type(location);
+  else
+    ret = Type::make_interface_type(methods, location);
   if (record)
     this->gogo_->record_interface_type(ret);
   return ret;
@@ -1735,6 +1741,14 @@ Parse::init_vars_from_call(const Typed_identifier_list* vars, Type* type,
 	    first_var = no;
 	  else
 	    {
+              // If the current object is a redefinition of another object, we
+              // might have already recorded the dependency relationship between
+              // it and the first variable.  Either way, an error will be
+              // reported for the redefinition and we don't need to properly
+              // record dependency information for an invalid program.
+              if (no->is_redefinition())
+                continue;
+
 	      // The subsequent vars have an implicit dependency on
 	      // the first one, so that everything gets initialized in
 	      // the right order and so that we detect cycles
@@ -2226,9 +2240,11 @@ Parse::function_decl(bool saw_nointerface)
   std::string extern_name = this->lex_->extern_name();
   const Token* token = this->advance_token();
 
+  bool expected_receiver = false;
   Typed_identifier* rec = NULL;
   if (token->is_op(OPERATOR_LPAREN))
     {
+      expected_receiver = true;
       rec = this->receiver();
       token = this->peek_token();
     }
@@ -2297,9 +2313,22 @@ Parse::function_decl(bool saw_nointerface)
 
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     {
-      if (named_object == NULL && !Gogo::is_sink_name(name))
+      if (named_object == NULL)
 	{
-	  if (fntype == NULL)
+          // Function declarations with the blank identifier as a name are
+          // mostly ignored since they cannot be called.  We make an object
+          // for this declaration for type-checking purposes.
+          if (Gogo::is_sink_name(name))
+            {
+              static int count;
+              char buf[30];
+              snprintf(buf, sizeof buf, ".$sinkfndecl%d", count);
+              ++count;
+              name = std::string(buf);
+            }
+
+	  if (fntype == NULL
+              || (expected_receiver && rec == NULL))
 	    this->gogo_->add_erroneous_name(name);
 	  else
 	    {
@@ -2450,7 +2479,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 	    && (named_object->is_variable()
 		|| named_object->is_result_variable()))
 	  return this->enclosing_var_reference(in_function, named_object,
-					       location);
+					       may_be_sink, location);
 
 	switch (named_object->classification())
 	  {
@@ -2591,11 +2620,14 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 
 Expression*
 Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
-			       Location location)
+			       bool may_be_sink, Location location)
 {
   go_assert(var->is_variable() || var->is_result_variable());
 
-  this->mark_var_used(var);
+  // Any left-hand-side can be a sink, so if this can not be
+  // a sink, then it must be a use of the variable.
+  if (!may_be_sink)
+    this->mark_var_used(var);
 
   Named_object* this_function = this->gogo_->current_function();
   Named_object* closure = this_function->func_value()->closure_var();
@@ -2912,7 +2944,7 @@ Parse::create_closure(Named_object* function, Enclosing_vars* enclosing_vars,
 	ref = Expression::make_var_reference(var, location);
       else
 	ref = this->enclosing_var_reference(ev[i].in_function(), var,
-					    location);
+					    true, location);
       Expression* refaddr = Expression::make_unary(OPERATOR_AND, ref,
 						   location);
       initializer->push_back(refaddr);
@@ -3215,7 +3247,7 @@ Parse::id_to_expression(const std::string& name, Location location,
   if (in_function != NULL
       && in_function != this->gogo_->current_function()
       && (named_object->is_variable() || named_object->is_result_variable()))
-    return this->enclosing_var_reference(in_function, named_object,
+    return this->enclosing_var_reference(in_function, named_object, is_lhs,
 					 location);
 
   switch (named_object->classification())
@@ -3733,6 +3765,17 @@ Parse::labeled_stmt(const std::string& label_name, Location location)
 
   if (!this->statement_may_start_here())
     {
+      if (this->peek_token()->is_keyword(KEYWORD_FALLTHROUGH))
+	{
+	  // We don't treat the fallthrough keyword as a statement,
+	  // because it can't appear most places where a statement is
+	  // permitted, but it may have a label.  We introduce a
+	  // semicolon because the caller expects to see a statement.
+	  this->unget_token(Token::make_operator_token(OPERATOR_SEMICOLON,
+						       location));
+	  return;
+	}
+
       // Mark the label as used to avoid a useless error about an
       // unused label.
       if (label != NULL)
@@ -4008,6 +4051,16 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
 
   token = this->advance_token();
 
+  if (lhs == NULL)
+    return;
+
+  // Map expressions act differently when they are lvalues.
+  for (Expression_list::iterator plv = lhs->begin();
+       plv != lhs->end();
+       ++plv)
+    if ((*plv)->index_expression() != NULL)
+      (*plv)->index_expression()->set_is_lvalue();
+
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
       if (op != OPERATOR_EQ)
@@ -4020,7 +4073,7 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
 						may_be_composite_lit);
 
   // We've parsed everything; check for errors.
-  if (lhs == NULL || vals == NULL)
+  if (vals == NULL)
     return;
   for (Expression_list::const_iterator pe = lhs->begin();
        pe != lhs->end();
@@ -4038,13 +4091,6 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
       if ((*pe)->is_error_expression())
 	return;
     }
-
-  // Map expressions act differently when they are lvalues.
-  for (Expression_list::iterator plv = lhs->begin();
-       plv != lhs->end();
-       ++plv)
-    if ((*plv)->index_expression() != NULL)
-      (*plv)->index_expression()->set_is_lvalue();
 
   Call_expression* call;
   Index_expression* map_index;
@@ -4590,32 +4636,33 @@ Statement*
 Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 			Location location)
 {
-  Named_object* switch_no = NULL;
-  if (!type_switch.name.empty())
+  Expression* init = type_switch.expr;
+  std::string var_name = type_switch.name;
+  if (!var_name.empty())
     {
-      if (Gogo::is_sink_name(type_switch.name))
-	error_at(type_switch.location,
-		 "no new variables on left side of %<:=%>");
+      if (Gogo::is_sink_name(var_name))
+        {
+          error_at(type_switch.location,
+                   "no new variables on left side of %<:=%>");
+          var_name.clear();
+        }
       else
 	{
-	  Variable* switch_var = new Variable(NULL, type_switch.expr, false,
-					      false, false,
-					      type_switch.location);
-	  switch_no = this->gogo_->add_variable(type_switch.name, switch_var);
+          Location loc = type_switch.location;
+	  Temporary_statement* switch_temp =
+              Statement::make_temporary(NULL, init, loc);
+	  this->gogo_->add_statement(switch_temp);
+          init = Expression::make_temporary_reference(switch_temp, loc);
 	}
     }
 
   Type_switch_statement* statement =
-    Statement::make_type_switch_statement(switch_no,
-					  (switch_no == NULL
-					   ? type_switch.expr
-					   : NULL),
-					  location);
-
+      Statement::make_type_switch_statement(var_name, init, location);
   this->push_break_statement(statement, label);
 
   Type_case_clauses* case_clauses = new Type_case_clauses();
   bool saw_default = false;
+  std::vector<Named_object*> implicit_vars;
   while (!this->peek_token()->is_op(OPERATOR_RCURLY))
     {
       if (this->peek_token()->is_eof())
@@ -4623,7 +4670,8 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 	  error_at(this->location(), "missing %<}%>");
 	  return NULL;
 	}
-      this->type_case_clause(switch_no, case_clauses, &saw_default);
+      this->type_case_clause(var_name, init, case_clauses, &saw_default,
+                             &implicit_vars);
     }
   this->advance_token();
 
@@ -4631,14 +4679,36 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 
   this->pop_break_statement();
 
+  // If there is a type switch variable implicitly declared in each case clause,
+  // check that it is used in at least one of the cases.
+  if (!var_name.empty())
+    {
+      bool used = false;
+      for (std::vector<Named_object*>::iterator p = implicit_vars.begin();
+	   p != implicit_vars.end();
+	   ++p)
+	{
+	  if ((*p)->var_value()->is_used())
+	    {
+	      used = true;
+	      break;
+	    }
+	}
+      if (!used)
+	error_at(type_switch.location, "%qs declared and not used",
+		 Gogo::message_name(var_name).c_str());
+    }
   return statement;
 }
 
 // TypeCaseClause  = TypeSwitchCase ":" [ StatementList ] .
+// IMPLICIT_VARS is the list of variables implicitly declared for each type
+// case if there is a type switch variable declared.
 
 void
-Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses,
-			bool* saw_default)
+Parse::type_case_clause(const std::string& var_name, Expression* init,
+                        Type_case_clauses* clauses, bool* saw_default,
+			std::vector<Named_object*>* implicit_vars)
 {
   Location location = this->location();
 
@@ -4655,24 +4725,21 @@ Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses,
   if (this->statement_list_may_start_here())
     {
       this->gogo_->start_block(this->location());
-      if (switch_no != NULL && types.size() == 1)
+      if (!var_name.empty())
 	{
-	  Type* type = types.front();
-	  Expression* init = Expression::make_var_reference(switch_no,
-							    location);
-	  init = Expression::make_type_guard(init, type, location);
-	  Variable* v = new Variable(type, init, false, false, false,
-				     location);
-	  v->set_is_type_switch_var();
-	  Named_object* no = this->gogo_->add_variable(switch_no->name(), v);
+	  Type* type = NULL;
+          Location var_loc = init->location();
+	  if (types.size() == 1)
+	    {
+	      type = types.front();
+	      init = Expression::make_type_guard(init, type, location);
+	    }
 
-	  // We don't want to issue an error if the compiler
-	  // introduced special variable is not used.  Instead we want
-	  // to issue an error if the variable defined by the switch
-	  // is not used.  That is handled via type_switch_vars_ and
-	  // Parse::mark_var_used.
+	  Variable* v = new Variable(type, init, false, false, false,
+				     var_loc);
 	  v->set_is_used();
-	  this->type_switch_vars_[no] = switch_no;
+	  v->set_is_type_switch_var();
+	  implicit_vars->push_back(this->gogo_->add_variable(var_name, v));
 	}
       this->statement_list();
       statements = this->gogo_->finish_block(this->location());
@@ -5722,6 +5789,20 @@ Parse::verify_not_sink(Expression* expr)
   Var_expression* ve = expr->var_expression();
   if (ve != NULL)
     this->mark_var_used(ve->named_object());
+  else if (expr->deref()->field_reference_expression() != NULL
+	   && this->gogo_->current_function() != NULL)
+    {
+      // We could be looking at a variable referenced from a closure.
+      // If so, we need to get the enclosed variable and mark it as used.
+      Function* this_function = this->gogo_->current_function()->func_value();
+      Named_object* closure = this_function->closure_var();
+      if (closure != NULL)
+	{
+	  unsigned int var_index =
+	    expr->deref()->field_reference_expression()->field_index();
+	  this->mark_var_used(this_function->enclosing_var(var_index - 1));
+	}
+    }
 
   return expr;
 }
@@ -5732,15 +5813,5 @@ void
 Parse::mark_var_used(Named_object* no)
 {
   if (no->is_variable())
-    {
-      no->var_value()->set_is_used();
-
-      // When a type switch uses := to define a variable, then for
-      // each case with a single type we introduce a new variable with
-      // the appropriate type.  When we do, if the newly introduced
-      // variable is used, then the type switch variable is used.
-      Type_switch_vars::iterator p = this->type_switch_vars_.find(no);
-      if (p != this->type_switch_vars_.end())
-	p->second->var_value()->set_is_used();
-    }
+    no->var_value()->set_is_used();
 }

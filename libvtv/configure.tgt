@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2013 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2015 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,12 @@ case "${target}" in
   *-*-*android*)
 	;;
   x86_64-*-linux* | i?86-*-linux*)
+	VTV_SUPPORTED=yes
+	;;
+  x86_64-*-cygwin* | i?86-*-cygwin*)
+	VTV_SUPPORTED=yes
+	;;
+  x86_64-*-mingw* | i?86-*-mingw*)
 	VTV_SUPPORTED=yes
 	;;
   powerpc*-*-linux*)

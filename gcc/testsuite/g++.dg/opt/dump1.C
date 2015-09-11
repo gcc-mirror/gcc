@@ -1,7 +1,7 @@
 // PR c++/57102
 // { dg-options "-O2 -fno-inline -fdump-final-insns" }
 // { dg-do compile { target c++11 } }
-// { dg-final cleanup-saved-temps }
+// { dg-final cleanup-final-insns-dump }
 
 namespace std
 {
@@ -311,7 +311,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
     typename __add_ref<
                       typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
-    get(tuple<_Elements...>& __t) noexcept;
+    get(tuple<_Elements...>& __t) noexcept; // { dg-warning "used but never defined" }
   template<std::size_t... _Indexes>
     struct _Index_tuple
     {};
@@ -386,7 +386,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
     };
   template<typename _Callable, typename... _Args>
     typename _Bind_simple_helper<_Callable, _Args...>::__type
-    __bind_simple(_Callable&& __callable, _Args&&... __args)
+    __bind_simple(_Callable&& __callable, _Args&&... __args)  // { dg-warning "used but never defined" }
   ;
   union _Any_data
   ;
@@ -403,7 +403,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
       {
       protected:
  static _Functor*
- _M_get_pointer(const _Any_data& __source)
+ _M_get_pointer(const _Any_data& __source)  // { dg-warning "used but never defined" }
  ;
       };
   };
@@ -510,7 +510,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
         _S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
  { ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
       static pointer
-      allocate(_Alloc& __a, size_type __n)
+      allocate(_Alloc& __a, size_type __n)  // { dg-warning "used but never defined" }
       ;
       template<typename _Tp, typename... _Args>
  static auto construct(_Alloc& __a, _Tp* __p, _Args&&... __args)

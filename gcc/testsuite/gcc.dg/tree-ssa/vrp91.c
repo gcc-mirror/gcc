@@ -19,4 +19,3 @@ void foo ()
 }
 
 /* { dg-final { scan-tree-dump "\\\[0, 7\\\]" "vrp2" } } */
-/* { dg-final { cleanup-tree-dump "vrp2" } } */

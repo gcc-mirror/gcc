@@ -111,40 +111,34 @@ struct decl_addr_value
   tree address;
 };
 
-struct decl_addr_hasher : typed_free_remove<decl_addr_value>
+struct decl_addr_hasher : free_ptr_hash<decl_addr_value>
 {
-  typedef decl_addr_value value_type;
-  typedef decl_addr_value compare_type;
-
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const decl_addr_value *);
+  static inline bool equal (const decl_addr_value *, const decl_addr_value *);
 };
 
 inline hashval_t
-decl_addr_hasher::hash (const value_type *e)
+decl_addr_hasher::hash (const decl_addr_value *e)
 {
   return IDENTIFIER_HASH_VALUE (DECL_NAME (e->decl));
 }
 
 inline bool
-decl_addr_hasher::equal (const value_type *p1, const compare_type *p2)
+decl_addr_hasher::equal (const decl_addr_value *p1, const decl_addr_value *p2)
 {
   return p1->decl == p2->decl;
 }
 
 
 
-struct string_hasher : typed_noop_remove<char>
+struct string_hasher : nofree_ptr_hash<const char>
 {
-  typedef char value_type;
-  typedef char compare_type;
-
-  static inline hashval_t hash (const value_type *s)
+  static inline hashval_t hash (const char *s)
   {
     return htab_hash_string (s);
   }
 
-  static inline bool equal (const value_type *p1, const value_type *p2)
+  static inline bool equal (const char *p1, const char *p2)
   {
     return strcmp (p1, p2) == 0;
   }
@@ -176,7 +170,7 @@ struct plugin_context : public cc1_plugin::connection
   hash_table<decl_addr_hasher> address_map;
 
   // A collection of trees that are preserved for the GC.
-  hash_table< pointer_hash<tree_node> > preserved;
+  hash_table< nofree_ptr_hash<tree_node> > preserved;
 
   // File name cache.
   hash_table<string_hasher> file_names;
@@ -210,7 +204,7 @@ private:
   // Add a file name to FILE_NAMES and return the canonical copy.
   const char *intern_filename (const char *filename)
   {
-    char **slot = file_names.find_slot (filename, INSERT);
+    const char **slot = file_names.find_slot (filename, INSERT);
     if (*slot == NULL)
       {
 	/* The file name must live as long as the line map, which
@@ -245,9 +239,8 @@ plugin_context::mark ()
       ggc_mark ((*it)->address);
     }
 
-  for (hash_table< pointer_hash<tree_node> >::iterator it = preserved.begin ();
-       it != preserved.end ();
-       ++it)
+  for (hash_table< nofree_ptr_hash<tree_node> >::iterator
+	 it = preserved.begin (); it != preserved.end (); ++it)
     ggc_mark (&*it);
 }
 
@@ -836,13 +829,15 @@ plugin_init (struct plugin_name_args *plugin_info,
 	  errno = 0;
 	  fd = strtol (plugin_info->argv[i].value, &tail, 0);
 	  if (*tail != '\0' || errno != 0)
-	    fatal_error ("%s: invalid file descriptor argument to plugin",
+	    fatal_error (input_location,
+			 "%s: invalid file descriptor argument to plugin",
 			 plugin_info->base_name);
 	  break;
 	}
     }
   if (fd == -1)
-    fatal_error ("%s: required plugin argument %<fd%> is missing",
+    fatal_error (input_location,
+		 "%s: required plugin argument %<fd%> is missing",
 		 plugin_info->base_name);
 
   current_context = new plugin_context (fd);
@@ -851,9 +846,11 @@ plugin_init (struct plugin_name_args *plugin_info,
   cc1_plugin::protocol_int version;
   if (!current_context->require ('H')
       || ! ::cc1_plugin::unmarshall (current_context, &version))
-    fatal_error ("%s: handshake failed", plugin_info->base_name);
+    fatal_error (input_location,
+		 "%s: handshake failed", plugin_info->base_name);
   if (version != GCC_C_FE_VERSION_0)
-    fatal_error ("%s: unknown version in handshake", plugin_info->base_name);
+    fatal_error (input_location,
+		 "%s: unknown version in handshake", plugin_info->base_name);
 
   register_callback (plugin_info->base_name, PLUGIN_PRAGMAS,
 		     plugin_init_extra_pragmas, NULL);

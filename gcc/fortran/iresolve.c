@@ -29,17 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "stringpool.h"
 #include "gfortran.h"
 #include "intrinsic.h"
@@ -218,6 +210,9 @@ gfc_resolve_adjustl (gfc_expr *f, gfc_expr *string)
 {
   f->ts.type = BT_CHARACTER;
   f->ts.kind = string->ts.kind;
+  if (string->ts.u.cl)
+    f->ts.u.cl = gfc_new_charlen (gfc_current_ns, string->ts.u.cl);
+
   f->value.function.name = gfc_get_string ("__adjustl_s%d", f->ts.kind);
 }
 
@@ -227,6 +222,9 @@ gfc_resolve_adjustr (gfc_expr *f, gfc_expr *string)
 {
   f->ts.type = BT_CHARACTER;
   f->ts.kind = string->ts.kind;
+  if (string->ts.u.cl)
+    f->ts.u.cl = gfc_new_charlen (gfc_current_ns, string->ts.u.cl);
+
   f->value.function.name = gfc_get_string ("__adjustr_s%d", f->ts.kind);
 }
 
@@ -1507,25 +1505,6 @@ gfc_resolve_logical (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 
 
 void
-gfc_resolve_malloc (gfc_expr *f, gfc_expr *size)
-{
-  if (size->ts.kind < gfc_index_integer_kind)
-    {
-      gfc_typespec ts;
-      gfc_clear_ts (&ts);
-
-      ts.type = BT_INTEGER;
-      ts.kind = gfc_index_integer_kind;
-      gfc_convert_type_warn (size, &ts, 2, 0);
-    }
-
-  f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_index_integer_kind;
-  f->value.function.name = gfc_get_string (PREFIX ("malloc"));
-}
-
-
-void
 gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 {
   gfc_expr temp;
@@ -2197,6 +2176,19 @@ gfc_resolve_rrspacing (gfc_expr *f, gfc_expr *x)
   f->value.function.name = gfc_get_string ("__rrspacing_%d", x->ts.kind);
 }
 
+void
+gfc_resolve_fe_runtime_error (gfc_code *c)
+{
+  const char *name;
+  gfc_actual_arglist *a;
+
+  name = gfc_get_string (PREFIX ("runtime_error"));
+
+  for (a = c->ext.actual->next; a; a = a->next)
+    a->name = "%VAL";
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
 
 void
 gfc_resolve_scale (gfc_expr *f, gfc_expr *x, gfc_expr *i ATTRIBUTE_UNUSED)
@@ -3371,23 +3363,6 @@ gfc_resolve_flush (gfc_code *c)
 
   name = gfc_get_string (PREFIX ("flush_i%d"), ts.kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
-}
-
-
-void
-gfc_resolve_free (gfc_code *c)
-{
-  gfc_typespec ts;
-  gfc_expr *n;
-  gfc_clear_ts (&ts);
-
-  ts.type = BT_INTEGER;
-  ts.kind = gfc_index_integer_kind;
-  n = c->ext.actual->expr;
-  if (n->ts.kind != ts.kind)
-    gfc_convert_type (n, &ts, 2);
-
-  c->resolved_sym = gfc_get_intrinsic_sub_symbol (PREFIX ("free"));
 }
 
 

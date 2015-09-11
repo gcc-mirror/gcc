@@ -25,4 +25,3 @@ contains
   end
 end
 ! { dg-final { scan-tree-dump-times "__builtin_free" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

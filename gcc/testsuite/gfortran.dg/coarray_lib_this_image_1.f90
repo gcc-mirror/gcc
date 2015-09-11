@@ -24,4 +24,3 @@ end
 ! { dg-final { scan-tree-dump-times "mythis_image = _gfortran_caf_this_image \\(0\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "bar \\(x, caf_token.., 0\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_init \\(&argc, &argv\\);" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

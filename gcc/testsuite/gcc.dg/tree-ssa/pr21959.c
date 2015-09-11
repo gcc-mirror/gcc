@@ -17,4 +17,3 @@ void f(void)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate " 0 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

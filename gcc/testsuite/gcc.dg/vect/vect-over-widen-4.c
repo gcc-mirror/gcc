@@ -67,5 +67,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 4 "vect" { target { { ! vect_sizes_32B_16B } && { ! vect_widen_shift } } } } } */
 /* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 8 "vect" { target vect_sizes_32B_16B } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

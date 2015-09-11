@@ -2,6 +2,7 @@
 
 // { dg-do run }
 // { dg-require-effective-target c++11 }
+// { dg-require-effective-target unwrapped }
 // { dg-require-effective-target tls_runtime }
 // { dg-require-effective-target pthread }
 // { dg-options -pthread }

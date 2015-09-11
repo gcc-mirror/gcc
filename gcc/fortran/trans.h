@@ -49,6 +49,10 @@ typedef struct gfc_se
   /* The length of a character string value.  */
   tree string_length;
 
+  /* When expr is a reference to a class object, store its vptr access
+     here.  */
+  tree class_vptr;
+
   /* If set gfc_conv_variable will return an expression for the array
      descriptor. When set, want_pointer should also be set.
      If not set scalarizing variables will be substituted.  */
@@ -103,15 +107,14 @@ gfc_se;
 
 /* Denotes different types of coarray.
    Please keep in sync with libgfortran/caf/libcaf.h.  */
-typedef enum
+enum gfc_coarray_type
 {
   GFC_CAF_COARRAY_STATIC,
   GFC_CAF_COARRAY_ALLOC,
   GFC_CAF_LOCK_STATIC,
   GFC_CAF_LOCK_ALLOC,
   GFC_CAF_CRITICAL
-}
-gfc_coarray_type;
+};
 
 
 /* The array-specific scalarization information.  The array members of
@@ -144,7 +147,7 @@ typedef struct gfc_array_info
 }
 gfc_array_info;
 
-typedef enum
+enum gfc_ss_type
 {
   /* A scalar value.  This will be evaluated before entering the
      scalarization loop.  */
@@ -186,8 +189,7 @@ typedef enum
 
   /* A component of a derived type.  */
   GFC_SS_COMPONENT
-}
-gfc_ss_type;
+};
 
 
 typedef struct gfc_ss_info
@@ -202,6 +204,9 @@ typedef struct gfc_ss_info
     /* If type is GFC_SS_SCALAR or GFC_SS_REFERENCE.  */
     struct
     {
+      /* If the scalar is passed as actual argument to an (elemental) procedure,
+	 this is the symbol of the corresponding dummy argument.  */
+      gfc_symbol *dummy_arg;
       tree value;
     }
     scalar;
@@ -225,6 +230,10 @@ typedef struct gfc_ss_info
 
   /* Suppresses precalculation of scalars in WHERE assignments.  */
   unsigned where:1;
+
+  /* This set for an elemental function that contains expressions for
+     external arrays, thereby triggering creation of a temporary.  */
+  unsigned array_outer_dependency:1;
 
   /* Tells whether the SS is for an actual argument which can be a NULL
      reference.  In other words, the associated dummy argument is OPTIONAL.
@@ -346,19 +355,31 @@ typedef struct
 gfc_wrapped_block;
 
 /* Class API functions.  */
+tree gfc_class_set_static_fields (tree, tree, tree);
 tree gfc_class_data_get (tree);
 tree gfc_class_vptr_get (tree);
+tree gfc_class_len_get (tree);
+gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *);
+/* Get an accessor to the class' vtab's * field, when a class handle is
+   available.  */
+tree gfc_class_vtab_hash_get (tree);
+tree gfc_class_vtab_size_get (tree);
+tree gfc_class_vtab_extends_get (tree);
+tree gfc_class_vtab_def_init_get (tree);
+tree gfc_class_vtab_copy_get (tree);
+tree gfc_class_vtab_final_get (tree);
+/* Get an accessor to the vtab's * field, when a vptr handle is present.  */
+tree gfc_vtpr_hash_get (tree);
+tree gfc_vptr_size_get (tree);
+tree gfc_vptr_extends_get (tree);
+tree gfc_vptr_def_init_get (tree);
+tree gfc_vptr_copy_get (tree);
+tree gfc_vptr_final_get (tree);
 void gfc_reset_vptr (stmtblock_t *, gfc_expr *);
-tree gfc_class_set_static_fields (tree, tree, tree);
-tree gfc_vtable_hash_get (tree);
-tree gfc_vtable_size_get (tree);
-tree gfc_vtable_extends_get (tree);
-tree gfc_vtable_def_init_get (tree);
-tree gfc_vtable_copy_get (tree);
-tree gfc_vtable_final_get (tree);
+void gfc_reset_len (stmtblock_t *, gfc_expr *);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree);
-tree gfc_copy_class_to_class (tree, tree, tree);
+tree gfc_copy_class_to_class (tree, tree, tree, bool);
 bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
 
@@ -455,8 +476,7 @@ int gfc_conv_procedure_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
 void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool);
 
 /* Generate code for a scalar assignment.  */
-tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool,
-			      bool);
+tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool);
 
 /* Translate COMMON blocks.  */
 void gfc_trans_common (gfc_namespace *);
@@ -512,7 +532,7 @@ tree gfc_get_function_decl (gfc_symbol *);
 tree gfc_build_addr_expr (tree, tree);
 
 /* Build an ARRAY_REF.  */
-tree gfc_build_array_ref (tree, tree, tree);
+tree gfc_build_array_ref (tree, tree, tree, tree vptr = NULL_TREE);
 
 /* Creates a label.  Decl is artificial if label_id == NULL_TREE.  */
 tree gfc_build_label_decl (tree);
@@ -575,7 +595,7 @@ void gfc_generate_module_vars (gfc_namespace *);
 /* Get the appropriate return statement for a procedure.  */
 tree gfc_generate_return (void);
 
-struct module_decl_hasher : ggc_hasher<tree_node *>
+struct module_decl_hasher : ggc_ptr_hash<tree_node>
 {
   typedef const char *compare_type;
 
@@ -622,7 +642,7 @@ void gfc_trans_runtime_check (bool, bool, tree, stmtblock_t *, locus *,
 void gfc_trans_same_strlen_check (const char*, locus*, tree, tree,
 				  stmtblock_t*);
 
-/* Generate a call to free() after checking that its arg is non-NULL.  */
+/* Generate a call to free().  */
 tree gfc_call_free (tree);
 
 /* Allocate memory after performing a few checks.  */
@@ -645,6 +665,9 @@ tree gfc_deallocate_scalar_with_status (tree, tree, bool, gfc_expr*, gfc_typespe
 
 /* Generate code to call realloc().  */
 tree gfc_call_realloc (stmtblock_t *, tree, tree);
+
+/* Assign a derived type constructor to a variable.  */
+tree gfc_trans_structure_assign (tree, gfc_expr *, bool);
 
 /* Generate code for an assignment, includes scalarization.  */
 tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool);
@@ -730,6 +753,7 @@ extern GTY(()) tree gfor_fndecl_caf_get;
 extern GTY(()) tree gfor_fndecl_caf_send;
 extern GTY(()) tree gfor_fndecl_caf_sendget;
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
+extern GTY(()) tree gfor_fndecl_caf_sync_memory;
 extern GTY(()) tree gfor_fndecl_caf_sync_images;
 extern GTY(()) tree gfor_fndecl_caf_error_stop;
 extern GTY(()) tree gfor_fndecl_caf_error_stop_str;

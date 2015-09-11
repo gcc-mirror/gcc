@@ -13,4 +13,3 @@ void foo (int j)
 }
 
 /* { dg-final { scan-tree-dump "MEM\\\[.*&i\\\]\\\[j.*\\\] =.* 1;" "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop?" } } */

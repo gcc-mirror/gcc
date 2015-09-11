@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
    IPA_JF_ANCESTOR is a special pass-through jump function, which means that
    the result is an address of a part of the object pointed to by the formal
    parameter to which the function refers.  It is mainly intended to represent
-   getting addresses of of ancestor fields in C++
+   getting addresses of ancestor fields in C++
    (e.g. &this_1(D)->D.1766.D.1756).  Note that if the original pointer is
    NULL, ancestor jump function must behave like a simple pass-through.
 
@@ -330,6 +330,61 @@ struct ipa_node_params
   /* Node has been completely replaced by clones and will be removed after
      ipa-cp is finished.  */
   unsigned node_dead : 1;
+  /* Node is involved in a recursion, potentionally indirect.  */
+  unsigned node_within_scc : 1;
+  /* Node is calling a private function called only once.  */
+  unsigned node_calling_single_call : 1;
+};
+
+/* Intermediate information that we get from alias analysis about a particular
+   parameter in a particular basic_block.  When a parameter or the memory it
+   references is marked modified, we use that information in all dominated
+   blocks without consulting alias analysis oracle.  */
+
+struct ipa_param_aa_status
+{
+  /* Set when this structure contains meaningful information.  If not, the
+     structure describing a dominating BB should be used instead.  */
+  bool valid;
+
+  /* Whether we have seen something which might have modified the data in
+     question.  PARM is for the parameter itself, REF is for data it points to
+     but using the alias type of individual accesses and PT is the same thing
+     but for computing aggregate pass-through functions using a very inclusive
+     ao_ref.  */
+  bool parm_modified, ref_modified, pt_modified;
+};
+
+/* Information related to a given BB that used only when looking at function
+   body.  */
+
+struct ipa_bb_info
+{
+  /* Call graph edges going out of this BB.  */
+  vec<cgraph_edge *> cg_edges;
+  /* Alias analysis statuses of each formal parameter at this bb.  */
+  vec<ipa_param_aa_status> param_aa_statuses;
+};
+
+/* Structure with global information that is only used when looking at function
+   body. */
+
+struct ipa_func_body_info
+{
+  /* The node that is being analyzed.  */
+  cgraph_node *node;
+
+  /* Its info.  */
+  struct ipa_node_params *info;
+
+  /* Information about individual BBs. */
+  vec<ipa_bb_info> bb_infos;
+
+  /* Number of parameters.  */
+  int param_count;
+
+  /* Number of statements already walked by when analyzing this function.  */
+  unsigned int aa_walked;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that
@@ -581,8 +636,9 @@ void ipa_analyze_node (struct cgraph_node *);
 /* Aggregate jump function related functions.  */
 tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *, HOST_WIDE_INT,
 				 bool);
-bool ipa_load_from_parm_agg (struct ipa_node_params *, gimple, tree, int *,
-			     HOST_WIDE_INT *, bool *);
+bool ipa_load_from_parm_agg (struct ipa_func_body_info *,
+			     vec<ipa_param_descriptor>, gimple, tree, int *,
+			     HOST_WIDE_INT *, HOST_WIDE_INT *, bool *);
 
 /* Debugging interface.  */
 void ipa_print_node_params (FILE *, struct cgraph_node *node);
@@ -591,10 +647,21 @@ void ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node);
 void ipa_print_all_jump_functions (FILE * f);
 void ipcp_verify_propagated_values (void);
 
-extern alloc_pool ipcp_cst_values_pool;
-extern alloc_pool ipcp_poly_ctx_values_pool;
-extern alloc_pool ipcp_sources_pool;
-extern alloc_pool ipcp_agg_lattice_pool;
+template <typename value>
+class ipcp_value;
+
+extern object_allocator<ipcp_value<tree> > ipcp_cst_values_pool;
+extern object_allocator<ipcp_value<ipa_polymorphic_call_context> >
+  ipcp_poly_ctx_values_pool;
+
+template <typename valtype>
+class ipcp_value_source;
+
+extern object_allocator<ipcp_value_source<tree> > ipcp_sources_pool;
+
+class ipcp_agg_lattice;
+
+extern object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool;
 
 /* Operation to be performed for the parameter in ipa_parm_adjustment
    below.  */

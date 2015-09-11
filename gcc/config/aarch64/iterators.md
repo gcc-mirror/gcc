@@ -38,6 +38,12 @@
 ;; Iterator for General Purpose Floating-point registers (32- and 64-bit modes)
 (define_mode_iterator GPF [SF DF])
 
+;; Iterator for all scalar floating point modes (HF, SF, DF and TF)
+(define_mode_iterator GPF_TF_F16 [HF SF DF TF])
+
+;; Double vector modes.
+(define_mode_iterator VDF [V2SF V4HF])
+
 ;; Integer vector modes.
 (define_mode_iterator VDQ_I [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
 
@@ -49,7 +55,7 @@
 (define_mode_iterator VSDQ_I_DI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI DI])
 
 ;; Double vector modes.
-(define_mode_iterator VD [V8QI V4HI V2SI V2SF])
+(define_mode_iterator VD [V8QI V4HI V4HF V2SI V2SF])
 
 ;; vector, 64-bit container, all integer modes
 (define_mode_iterator VD_BHSI [V8QI V4HI V2SI])
@@ -58,10 +64,10 @@
 (define_mode_iterator VDQ_BHSI [V8QI V16QI V4HI V8HI V2SI V4SI])
 
 ;; Quad vector modes.
-(define_mode_iterator VQ [V16QI V8HI V4SI V2DI V4SF V2DF])
+(define_mode_iterator VQ [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
 
 ;; VQ without 2 element modes.
-(define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V4SF])
+(define_mode_iterator VQ_NO2E [V16QI V8HI V4SI V8HF V4SF])
 
 ;; Quad vector with only 2 element modes.
 (define_mode_iterator VQ_2E [V2DI V2DF])
@@ -76,7 +82,10 @@
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
 (define_mode_iterator PTR [(SI "ptr_mode == SImode") (DI "ptr_mode == DImode")])
 
-;; Vector Float modes.
+;; Vector Float modes suitable for moving, loading and storing.
+(define_mode_iterator VDQF_F16 [V4HF V8HF V2SF V4SF V2DF])
+
+;; Vector Float modes, barring HF modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
 
 ;; Vector Float modes, and DF.
@@ -84,6 +93,9 @@
 
 ;; Vector single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
+
+;; Quad vector Float modes with half/single elements.
+(define_mode_iterator VQ_HSF [V8HF V4SF])
 
 ;; Modes suitable to use as the return type of a vcond expression.
 (define_mode_iterator VDQF_COND [V2SF V2SI V4SF V4SI V2DF V2DI])
@@ -94,15 +106,23 @@
 ;; Vector Float modes with 2 elements.
 (define_mode_iterator V2F [V2SF V2DF])
 
-;; All modes.
+;; All vector modes on which we support any arithmetic operations.
 (define_mode_iterator VALL [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF])
 
-;; All vector modes and DI.
+;; All vector modes suitable for moving, loading, and storing.
+(define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
+				V4HF V8HF V2SF V4SF V2DF])
+
+;; All vector modes barring HF modes, plus DI.
 (define_mode_iterator VALLDI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF DI])
 
-;; All vector modes and DI and DF.
+;; All vector modes and DI.
+(define_mode_iterator VALLDI_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
+				  V4HF V8HF V2SF V4SF V2DF DI])
+
+;; All vector modes, plus DI and DF.
 (define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI
-			       V2DI V2SF V4SF V2DF DI DF])
+			       V2DI V4HF V8HF V2SF V4SF V2DF DI DF])
 
 ;; Vector modes for Integer reduction across lanes.
 (define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI V2DI])
@@ -123,7 +143,7 @@
 (define_mode_iterator VQW [V16QI V8HI V4SI])
 
 ;; Double vector modes for combines.
-(define_mode_iterator VDC [V8QI V4HI V2SI V2SF DI DF])
+(define_mode_iterator VDC [V8QI V4HI V4HF V2SI V2SF DI DF])
 
 ;; Vector modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
@@ -184,6 +204,7 @@
  [
     UNSPEC_ASHIFT_SIGNED	; Used in aarch-simd.md.
     UNSPEC_ASHIFT_UNSIGNED	; Used in aarch64-simd.md.
+    UNSPEC_ABS		; Used in aarch64-simd.md.
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMAXNMV	; Used in aarch64-simd.md.
     UNSPEC_FMAXV	; Used in aarch64-simd.md.
@@ -276,6 +297,8 @@
     UNSPEC_SHA256SU1    ; Used in aarch64-simd.md.
     UNSPEC_PMULL        ; Used in aarch64-simd.md.
     UNSPEC_PMULL2       ; Used in aarch64-simd.md.
+    UNSPEC_REV_REGLIST  ; Used in aarch64-simd.md.
+    UNSPEC_VEC_SHR      ; Used in aarch64-simd.md.
 ])
 
 ;; -------------------------------------------------------------------
@@ -339,9 +362,6 @@
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
 
-;; Attribute to describe constants acceptable in atomic logical operations
-(define_mode_attr lconst_atomic [(QI "K") (HI "K") (SI "K") (DI "L")])
-
 ;; Map a mode to a specific constraint character.
 (define_mode_attr cmode [(QI "q") (HI "h") (SI "s") (DI "d")])
 
@@ -350,7 +370,8 @@
                          (V2SI "2s") (V4SI  "4s")
                          (DI   "1d") (DF    "1d")
                          (V2DI "2d") (V2SF "2s")
-			 (V4SF "4s") (V2DF "2d")])
+			 (V4SF "4s") (V2DF "2d")
+			 (V4HF "4h") (V8HF "8h")])
 
 (define_mode_attr Vrevsuff [(V4HI "16") (V8HI "16") (V2SI "32")
                             (V4SI "32") (V2DI "64")])
@@ -358,7 +379,8 @@
 (define_mode_attr Vmtype [(V8QI ".8b") (V16QI ".16b")
 			 (V4HI ".4h") (V8HI  ".8h")
 			 (V2SI ".2s") (V4SI  ".4s")
-			 (V2DI ".2d") (V2SF ".2s")
+			 (V2DI ".2d") (V4HF ".4h")
+			 (V8HF ".8h") (V2SF ".2s")
 			 (V4SF ".4s") (V2DF ".2d")
 			 (DI   "")    (SI   "")
 			 (HI   "")    (QI   "")
@@ -375,7 +397,8 @@
 (define_mode_attr Vetype [(V8QI "b") (V16QI "b")
 			  (V4HI "h") (V8HI  "h")
                           (V2SI "s") (V4SI  "s")
-			  (V2DI "d") (V2SF  "s")
+			  (V2DI "d") (V4HF "h")
+			  (V8HF "h") (V2SF  "s")
 			  (V4SF "s") (V2DF  "d")
 			  (SF   "s") (DF  "d")
 			  (QI "b")   (HI "h")
@@ -385,7 +408,8 @@
 (define_mode_attr Vbtype [(V8QI "8b")  (V16QI "16b")
 			  (V4HI "8b") (V8HI  "16b")
 			  (V2SI "8b") (V4SI  "16b")
-			  (V2DI "16b") (V2SF  "8b")
+			  (V2DI "16b") (V4HF "8b")
+			  (V8HF "16b") (V2SF  "8b")
 			  (V4SF "16b") (V2DF  "16b")
 			  (DI   "8b")  (DF    "8b")
 			  (SI   "8b")])
@@ -395,6 +419,7 @@
 			(V4HI "HI") (V8HI "HI")
                         (V2SI "SI") (V4SI "SI")
                         (DI "DI")   (V2DI "DI")
+                        (V4HF "HF") (V8HF "HF")
                         (V2SF "SF") (V4SF "SF")
                         (V2DF "DF") (DF "DF")
 			(SI   "SI") (HI   "HI")
@@ -413,6 +438,7 @@
 			 (V4HI "V8HI") (V8HI "V8HI")
 			 (V2SI "V4SI") (V4SI "V4SI")
 			 (DI   "V2DI") (V2DI "V2DI")
+			 (V4HF "V8HF") (V8HF "V8HF")
 			 (V2SF "V2SF") (V4SF "V4SF")
 			 (V2DF "V2DF") (SI   "V4SI")
 			 (HI   "V8HI") (QI   "V16QI")])
@@ -422,16 +448,22 @@
 			 (V4HI "V2HI")  (V8HI  "V4HI")
 			 (V2SI "SI")    (V4SI  "V2SI")
 			 (V2DI "DI")    (V2SF  "SF")
-			 (V4SF "V2SF")  (V2DF  "DF")])
+			 (V4SF "V2SF")  (V4HF "V2HF")
+			 (V8HF "V4HF")  (V2DF  "DF")])
 
 ;; Double modes of vector modes.
 (define_mode_attr VDBL [(V8QI "V16QI") (V4HI "V8HI")
+			(V4HF "V8HF")
 			(V2SI "V4SI")  (V2SF "V4SF")
 			(SI   "V2SI")  (DI   "V2DI")
 			(DF   "V2DF")])
 
+;; Register suffix for double-length mode.
+(define_mode_attr Vdtype [(V4HF "8h") (V2SF "4s")])
+
 ;; Double modes of vector modes (lower case).
 (define_mode_attr Vdbl [(V8QI "v16qi") (V4HI "v8hi")
+			(V4HF "v8hf")
 			(V2SI "v4si")  (V2SF "v4sf")
 			(SI   "v2si")  (DI   "v2di")
 			(DF   "v2df")])
@@ -462,24 +494,31 @@
 (define_mode_attr VWIDE [(V8QI "V8HI") (V4HI "V4SI")
 			 (V2SI "V2DI") (V16QI "V8HI") 
 			 (V8HI "V4SI") (V4SI "V2DI")
-			 (HI "SI")     (SI "DI")]
-
+			 (HI "SI")     (SI "DI")
+			 (V8HF "V4SF") (V4SF "V2DF")
+			 (V4HF "V4SF") (V2SF "V2DF")]
 )
 
-;; Widened mode register suffixes for VD_BHSI/VQW.
+;; Widened modes of vector modes, lowercase
+(define_mode_attr Vwide [(V2SF "v2df") (V4HF "v4sf")])
+
+;; Widened mode register suffixes for VD_BHSI/VQW/VQ_HSF.
 (define_mode_attr Vwtype [(V8QI "8h") (V4HI "4s")
 			  (V2SI "2d") (V16QI "8h") 
-			  (V8HI "4s") (V4SI "2d")])
+			  (V8HI "4s") (V4SI "2d")
+			  (V8HF "4s") (V4SF "2d")])
 
 ;; Widened mode register suffixes for VDW/VQW.
 (define_mode_attr Vmwtype [(V8QI ".8h") (V4HI ".4s")
 			   (V2SI ".2d") (V16QI ".8h") 
 			   (V8HI ".4s") (V4SI ".2d")
+			   (V4HF ".4s") (V2SF ".2d")
 			   (SI   "")    (HI   "")])
 
-;; Lower part register suffixes for VQW.
+;; Lower part register suffixes for VQW/VQ_HSF.
 (define_mode_attr Vhalftype [(V16QI "8b") (V8HI "4h")
-			     (V4SI "2s")])
+			     (V4SI "2s") (V8HF "4h")
+			     (V4SF "2s")])
 
 ;; Define corresponding core/FP element mode for each vector mode.
 (define_mode_attr vw   [(V8QI "w") (V16QI "w")
@@ -506,6 +545,7 @@
 				(V4HI "V4HI") (V8HI  "V8HI")
 				(V2SI "V2SI") (V4SI  "V4SI")
 				(DI   "DI")   (V2DI  "V2DI")
+				(V4HF "V4HI") (V8HF  "V8HI")
 				(V2SF "V2SI") (V4SF  "V4SI")
 				(V2DF "V2DI") (DF    "DI")
 				(SF   "SI")])
@@ -515,6 +555,7 @@
 				(V4HI "v4hi") (V8HI  "v8hi")
 				(V2SI "v2si") (V4SI  "v4si")
 				(DI   "di")   (V2DI  "v2di")
+				(V4HF "v4hi") (V8HF  "v8hi")
 				(V2SF "v2si") (V4SF  "v4si")
 				(V2DF "v2di") (DF    "di")
 				(SF   "si")])
@@ -536,25 +577,19 @@
 (define_mode_attr nregs [(OI "2") (CI "3") (XI "4")])
 
 (define_mode_attr VRL2 [(V8QI "V32QI") (V4HI "V16HI")
+			(V4HF "V16HF")
 			(V2SI "V8SI")  (V2SF "V8SF")
-			(DI   "V4DI")  (DF   "V4DF")
-			(V16QI "V32QI") (V8HI "V16HI")
-			(V4SI "V8SI")  (V4SF "V8SF")
-			(V2DI "V4DI")  (V2DF "V4DF")])
+			(DI   "V4DI")  (DF   "V4DF")])
 
 (define_mode_attr VRL3 [(V8QI "V48QI") (V4HI "V24HI")
+			(V4HF "V24HF")
 			(V2SI "V12SI")  (V2SF "V12SF")
-			(DI   "V6DI")  (DF   "V6DF")
-			(V16QI "V48QI") (V8HI "V24HI")
-			(V4SI "V12SI")  (V4SF "V12SF")
-			(V2DI "V6DI")  (V2DF "V6DF")])
+			(DI   "V6DI")  (DF   "V6DF")])
 
 (define_mode_attr VRL4 [(V8QI "V64QI") (V4HI "V32HI")
+			(V4HF "V32HF")
 			(V2SI "V16SI")  (V2SF "V16SF")
-			(DI   "V8DI")  (DF   "V8DF")
-			(V16QI "V64QI") (V8HI "V32HI")
-			(V4SI "V16SI")  (V4SF "V16SF")
-			(V2DI "V8DI")  (V2DF "V8DF")])
+			(DI   "V8DI")  (DF   "V8DF")])
 
 (define_mode_attr VSTRUCT_DREG [(OI "TI") (CI "EI") (XI "OI")])
 
@@ -565,6 +600,7 @@
                               (V2SI "V2SI") (V4SI "V2SI")
                               (DI "V2DI")   (V2DI "V2DI")
                               (V2SF "V2SF") (V4SF "V2SF")
+                              (V4HF "SF") (V8HF "SF")
                               (DF "V2DI")   (V2DF "V2DI")])
 
 ;; Similar, for three elements.
@@ -573,6 +609,7 @@
                                 (V2SI "BLK") (V4SI "BLK")
                                 (DI "EI")    (V2DI "EI")
                                 (V2SF "BLK") (V4SF "BLK")
+                                (V4HF "BLK") (V8HF "BLK")
                                 (DF "EI")    (V2DF "EI")])
 
 ;; Similar, for four elements.
@@ -581,6 +618,7 @@
                                (V2SI "V4SI") (V4SI "V4SI")
                                (DI "OI")     (V2DI "OI")
                                (V2SF "V4SF") (V4SF "V4SF")
+                               (V4HF "V4HF") (V8HF "V4HF")
                                (DF "OI")     (V2DF "OI")])
 
 
@@ -600,12 +638,14 @@
 				(V2SI "V4SI") (V4SI  "V2SI")
 				(DI   "V2DI") (V2DI  "DI")
 				(V2SF "V4SF") (V4SF  "V2SF")
+				(V4HF "V8HF") (V8HF  "V4HF")
 				(DF   "V2DF") (V2DF  "DF")])
 
 (define_mode_attr vswap_width_name [(V8QI "to_128") (V16QI "to_64")
 				    (V4HI "to_128") (V8HI  "to_64")
 				    (V2SI "to_128") (V4SI  "to_64")
 				    (DI   "to_128") (V2DI  "to_64")
+				    (V4HF "to_128") (V8HF  "to_64")
 				    (V2SF "to_128") (V4SF  "to_64")
 				    (DF   "to_128") (V2DF  "to_64")])
 
@@ -639,6 +679,7 @@
 		     (V4HI "") (V8HI  "_q")
 		     (V2SI "") (V4SI  "_q")
 		     (DI   "") (V2DI  "_q")
+		     (V4HF "") (V8HF "_q")
 		     (V2SF "") (V4SF  "_q")
 			       (V2DF  "_q")
 		     (QI "") (HI "") (SI "") (DI "") (SF "") (DF "")])
@@ -651,6 +692,12 @@
 
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
+
+(define_mode_attr insn_count [(OI "8") (CI "12") (XI "16")])
+
+;; -fpic small model GOT reloc modifers: gotpage_lo15/lo14 for ILP64/32.
+;; No need of iterator for -fPIC as it use got_lo12 for both modes.
+(define_mode_attr got_modifier [(SI "gotpage_lo14") (DI "gotpage_lo15")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
@@ -811,11 +858,20 @@
 		      (smax "s") (umax "u")
 		      (smin "s") (umin "u")])
 
+;; Emit conditional branch instructions.
+(define_code_attr bcond [(eq "beq") (ne "bne") (lt "bne") (ge "beq")])
+
 ;; Emit cbz/cbnz depending on comparison type.
 (define_code_attr cbz [(eq "cbz") (ne "cbnz") (lt "cbnz") (ge "cbz")])
 
+;; Emit inverted cbz/cbnz depending on comparison type.
+(define_code_attr inv_cb [(eq "cbnz") (ne "cbz") (lt "cbz") (ge "cbnz")])
+
 ;; Emit tbz/tbnz depending on comparison type.
 (define_code_attr tbz [(eq "tbz") (ne "tbnz") (lt "tbnz") (ge "tbz")])
+
+;; Emit inverted tbz/tbnz depending on comparison type.
+(define_code_attr inv_tb [(eq "tbnz") (ne "tbz") (lt "tbz") (ge "tbnz")])
 
 ;; Max/min attributes.
 (define_code_attr maxmin [(smax "max")
@@ -836,6 +892,16 @@
    (and "aarch64_logical_operand")
    (plus "aarch64_plus_operand")
    (minus "aarch64_plus_operand")])
+
+;; Constants acceptable for atomic operations.
+;; This definition must appear in this file before the iterators it refers to.
+(define_code_attr const_atomic
+ [(plus "IJ") (minus "IJ")
+  (xor "<lconst_atomic>") (ior "<lconst_atomic>")
+  (and "<lconst_atomic>")])
+
+;; Attribute to describe constants acceptable in atomic logical operations
+(define_mode_attr lconst_atomic [(QI "K") (HI "K") (SI "K") (DI "L")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators.

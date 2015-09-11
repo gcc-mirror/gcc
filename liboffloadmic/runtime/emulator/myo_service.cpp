@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -154,6 +154,50 @@ SYMBOL_VERSION (myoiTargetFptrTableRegister, 1) (void *table,
 
   return MYO_ERROR;
 }
+
+
+MYOACCESSAPI MyoError
+SYMBOL_VERSION (myoArenaRelease, 1) (MyoArena in_Arena)
+{
+  MYOTRACE ("myoArenaRelease");
+
+  assert (false);
+
+  return MYO_ERROR;
+}
+
+
+MYOACCESSAPI MyoError
+SYMBOL_VERSION (myoArenaAcquire, 1) (MyoArena in_Arena)
+{
+  MYOTRACE ("myoArenaAcquire");
+
+  assert (false);
+
+  return MYO_ERROR;
+}
+
+
+MYOACCESSAPI void
+SYMBOL_VERSION (myoArenaAlignedFree, 1) (MyoArena in_Arena, void *in_pPtr)
+{
+  MYOTRACE ("myoArenaAlignedFree");
+
+  assert (false);
+}
+
+
+MYOACCESSAPI void *
+SYMBOL_VERSION (myoArenaAlignedMalloc, 1) (MyoArena in_Arena, size_t in_Size,
+					   size_t in_Alignment)
+{
+  MYOTRACE ("myoArenaAlignedMalloc");
+
+  assert (false);
+
+  return 0;
+}
+
 
 } // extern "C"
 

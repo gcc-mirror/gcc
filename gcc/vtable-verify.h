@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define VTABLE_VERIFY_H
 
 #include "sbitmap.h"
-#include "hash-table.h"
 
 /* The function decl used to create calls to __VLTVtableVerify.  It must
    be global because it needs to be initialized in the C++ front end, but
@@ -56,12 +55,11 @@ struct vtable_registration
   vec<unsigned> offsets;       /* The offsets array.                        */
 };
 
-struct registration_hasher : typed_noop_remove <struct vtable_registration>
+struct registration_hasher : nofree_ptr_hash <struct vtable_registration>
 {
-  typedef struct vtable_registration value_type;
-  typedef struct vtable_registration compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const vtable_registration *);
+  static inline bool equal (const vtable_registration *,
+			    const vtable_registration *);
 };
 
 typedef hash_table<registration_hasher> register_table_type;
@@ -129,6 +127,11 @@ extern bool vtv_debug;
 /* The global vector of vtbl_map_nodes.  */
 extern vec<struct vtbl_map_node *> vtbl_map_nodes_vec;
 
+/*  The global vectors for mangled class names for anonymous classes.  */
+extern GTY(()) vec<tree, va_gc> *vtbl_mangled_name_types;
+extern GTY(()) vec<tree, va_gc> *vtbl_mangled_name_ids;
+
+extern void vtbl_register_mangled_name (tree, tree);
 extern struct vtbl_map_node *vtbl_map_get_node (tree);
 extern struct vtbl_map_node *find_or_create_vtbl_map_node (tree);
 extern void vtbl_map_node_class_insert (struct vtbl_map_node *, unsigned);

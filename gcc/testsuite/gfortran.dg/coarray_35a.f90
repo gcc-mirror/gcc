@@ -26,3 +26,4 @@ end program testmod
 
 ! Check for the symbol of the coarray token (w/o system-dependend prefix)
 ! { dg-final { scan-assembler "caf_token__global_coarrays_MOD_b" } }
+! { dg-final { cleanup-modules "global_coarrays" } }

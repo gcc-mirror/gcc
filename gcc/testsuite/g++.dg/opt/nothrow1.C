@@ -22,4 +22,3 @@ int main()
 
 // The catch block should be optimized away.
 // { dg-final { scan-tree-dump-times "-42" 0 "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

@@ -17,4 +17,3 @@ if (c_float128_complex >= 0 .and. c_float128_complex /= 16) call unreachable()
 end
 
 ! { dg-final { scan-tree-dump-times "unreachable" 0 "optimized" } }
-! { dg-final { cleanup-tree-dump "optimized" } }

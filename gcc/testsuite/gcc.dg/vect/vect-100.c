@@ -76,5 +76,4 @@ int main (void)
 
 /* Requires versioning.  */
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 0 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

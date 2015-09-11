@@ -119,6 +119,7 @@ struct _cpp_file;
   TK(WCHAR,		LITERAL) /* L'char' */				\
   TK(CHAR16,		LITERAL) /* u'char' */				\
   TK(CHAR32,		LITERAL) /* U'char' */				\
+  TK(UTF8CHAR,		LITERAL) /* u8'char' */				\
   TK(OTHER,		LITERAL) /* stray punctuation */		\
 									\
   TK(STRING,		LITERAL) /* "string" */				\
@@ -133,6 +134,7 @@ struct _cpp_file;
   TK(WCHAR_USERDEF,	LITERAL) /* L'char'_suffix - C++-0x */		\
   TK(CHAR16_USERDEF,	LITERAL) /* u'char'_suffix - C++-0x */		\
   TK(CHAR32_USERDEF,	LITERAL) /* U'char'_suffix - C++-0x */		\
+  TK(UTF8CHAR_USERDEF,	LITERAL) /* u8'char'_suffix - C++-0x */		\
   TK(STRING_USERDEF,	LITERAL) /* "string"_suffix - C++-0x */		\
   TK(WSTRING_USERDEF,	LITERAL) /* L"string"_suffix - C++-0x */	\
   TK(STRING16_USERDEF,	LITERAL) /* u"string"_suffix - C++-0x */	\
@@ -339,6 +341,9 @@ struct cpp_options
   /* Nonzero means process u/U prefix literals (UTF-16/32).  */
   unsigned char uliterals;
 
+  /* Nonzero means process u8 prefixed character literals (UTF-8).  */
+  unsigned char utf8_char_literals;
+
   /* Nonzero means process r/R raw strings.  If this is set, uliterals
      must be set as well.  */
   unsigned char rliterals;
@@ -484,6 +489,9 @@ struct cpp_options
   /* True if warn about differences between C90 and C99.  */
   signed char cpp_warn_c90_c99_compat;
 
+  /* True if warn about differences between C++98 and C++11.  */
+  bool cpp_warn_cxx11_compat;
+
   /* Dependency generation.  */
   struct
   {
@@ -546,7 +554,7 @@ struct cpp_callbacks
      The line_map is for the new file.  It is NULL if there is no new file.
      (In C this happens when done with <built-in>+<command line> and also
      when done with a main file.)  This can be used for resource cleanup.  */
-  void (*file_change) (cpp_reader *, const struct line_map *);
+  void (*file_change) (cpp_reader *, const line_map_ordinary *);
 
   void (*dir_change) (cpp_reader *, const char *);
   void (*include) (cpp_reader *, source_location, const unsigned char *,
@@ -960,7 +968,8 @@ enum {
   CPP_W_LITERAL_SUFFIX,
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
-  CPP_W_C90_C99_COMPAT
+  CPP_W_C90_C99_COMPAT,
+  CPP_W_CXX11_COMPAT
 };
 
 /* Output a diagnostic of some kind.  */

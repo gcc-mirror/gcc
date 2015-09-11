@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dom1-details" } */
 /* { dg-final { scan-tree-dump-times "FSM" 19 "dom1" } } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */
 
 enum STATE {
   S0=0,

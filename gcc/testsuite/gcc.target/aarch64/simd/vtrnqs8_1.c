@@ -8,4 +8,3 @@
 
 /* { dg-final { scan-assembler-times "trn1\[ \t\]+v\[0-9\]+\.16b, ?v\[0-9\]+\.16b, ?v\[0-9\]+\.16b!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
 /* { dg-final { scan-assembler-times "trn2\[ \t\]+v\[0-9\]+\.16b, ?v\[0-9\]+\.16b, ?v\[0-9\]+\.16b!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

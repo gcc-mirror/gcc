@@ -26,17 +26,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -46,7 +38,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "convert.h"
 #include "diagnostic-core.h"
-#include "ggc.h"
 
 static tree convert_ieee_real_to_integer (tree, tree);
 static tree parse_signature_type (const unsigned char **,

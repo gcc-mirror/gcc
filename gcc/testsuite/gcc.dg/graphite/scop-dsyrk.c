@@ -19,4 +19,3 @@ void dsyrk(long N)
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

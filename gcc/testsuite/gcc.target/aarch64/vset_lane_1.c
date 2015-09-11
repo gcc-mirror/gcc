@@ -16,6 +16,7 @@ VARIANT (int32_t, , 2, int32x2_t, _s32, 0)	\
 VARIANT (int64_t, , 1, int64x1_t, _s64, 0)	\
 VARIANT (poly8_t, , 8, poly8x8_t, _p8, 6)	\
 VARIANT (poly16_t, , 4, poly16x4_t, _p16, 2)	\
+VARIANT (float16_t, , 4, float16x4_t, _f16, 3)	\
 VARIANT (float32_t, , 2, float32x2_t, _f32, 1)	\
 VARIANT (float64_t, , 1, float64x1_t, _f64, 0)	\
 VARIANT (uint8_t, q, 16, uint8x16_t, _u8, 11)	\
@@ -28,6 +29,7 @@ VARIANT (int32_t, q, 4, int32x4_t, _s32, 3)	\
 VARIANT (int64_t, q, 2, int64x2_t, _s64, 0)	\
 VARIANT (poly8_t, q, 16, poly8x16_t, _p8, 14)	\
 VARIANT (poly16_t, q, 8, poly16x8_t, _p16, 6)	\
+VARIANT (float16_t, q, 8, float16x8_t, _f16, 6)	\
 VARIANT (float32_t, q, 4, float32x4_t, _f32, 2) \
 VARIANT (float64_t, q, 2, float64x2_t, _f64, 1)
 
@@ -76,6 +78,9 @@ main (int argc, char **argv)
   poly8_t poly8_t_data[16] =
       { 0, 7, 13, 18, 22, 25, 27, 28, 29, 31, 34, 38, 43, 49, 56, 64 };
   poly16_t poly16_t_data[8] = { 11111, 2222, 333, 44, 5, 65432, 54321, 43210 };
+  float16_t float16_t_data[8] = { 1.25, 4.5, 7.875, 2.3125, 5.675, 8.875,
+      3.6875, 6.75};
+
   float32_t float32_t_data[4] = { 3.14159, 2.718, 1.414, 100.0 };
   float64_t float64_t_data[2] = { 1.01001000100001, 12345.6789 };
 

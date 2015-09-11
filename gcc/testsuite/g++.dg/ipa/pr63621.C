@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-effective-target named_sections }
  class A
 {
 	public:

@@ -21,16 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "real.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "flags.h"
@@ -55,12 +46,12 @@ enum format_type { printf_format_type, asm_fprintf_format_type,
 		   gcc_objc_string_format_type,
 		   format_type_error = -1};
 
-typedef struct function_format_info
+struct function_format_info
 {
   int format_type;			/* type of format (printf, scanf, etc.) */
   unsigned HOST_WIDE_INT format_num;	/* number of format argument */
   unsigned HOST_WIDE_INT first_arg_num;	/* number of first arg (zero for varargs) */
-} function_format_info;
+};
 
 static bool decode_format_attr (tree, function_format_info *, int);
 static int decode_format_type (const char *);
@@ -77,6 +68,80 @@ static bool cmp_attribs (const char *tattr_name, const char *attr_name);
 static int first_target_format_type;
 static const char *format_name (int format_num);
 static int format_flags (int format_num);
+
+/* Given a string S of length LINE_WIDTH, find the visual column
+   corresponding to OFFSET bytes.   */
+
+static unsigned int
+location_column_from_byte_offset (const char *s, int line_width,
+				  unsigned int offset)
+{
+  const char * c = s;
+  if (*c != '"')
+    return 0;
+
+  c++, offset--;
+  while (offset > 0)
+    {
+      if (c - s >= line_width)
+	return 0;
+
+      switch (*c)
+	{
+	case '\\':
+	  c++;
+	  if (c - s >= line_width)
+	    return 0;
+	  switch (*c)
+	    {
+	    case '\\': case '\'': case '"': case '?':
+	    case '(': case '{': case '[': case '%':
+	    case 'a': case 'b': case 'f': case 'n':
+	    case 'r': case 't': case 'v': 
+	    case 'e': case 'E':
+	      c++, offset--;
+	      break;
+
+	    default:
+	      return 0;
+	    }
+	  break;
+
+	case '"':
+	  /* We found the end of the string too early.  */
+	  return 0;
+	  
+	default:
+	  c++, offset--;
+	  break;
+	}
+    }
+  return c - s;
+}
+
+/* Return a location that encodes the same location as LOC but shifted
+   by OFFSET bytes.  */
+
+static location_t
+location_from_offset (location_t loc, int offset)
+{
+  gcc_checking_assert (offset >= 0);
+  if (linemap_location_from_macro_expansion_p (line_table, loc)
+      || offset < 0)
+    return loc;
+
+  expanded_location s = expand_location_to_spelling_point (loc);
+  int line_width;
+  const char *line = location_get_source_line (s, &line_width);
+  if (line == NULL)
+    return loc;
+  line += s.column - 1 ;
+  line_width -= s.column - 1;
+  unsigned int column =
+    location_column_from_byte_offset (line, line_width, (unsigned) offset);
+
+  return linemap_position_for_loc_and_offset (line_table, loc, column);
+}
 
 /* Check that we have a pointer to a string suitable for use as a format.
    The default is to check for a char type.
@@ -119,7 +184,7 @@ handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
   if (prototype_p (type))
     {
       /* The format arg can be any string reference valid for the language and
-         target.  We cannot be more specific in this case.  */
+	target.  We cannot be more specific in this case.  */
       if (!check_format_string (type, format_num, flags, no_add_attrs, -1))
 	return NULL_TREE;
     }
@@ -360,7 +425,7 @@ static const char *kind_descriptions[] = {
 
 /* Structure describing details of a type expected in format checking,
    and the type to check against it.  */
-typedef struct format_wanted_type
+struct format_wanted_type
 {
   /* The type wanted.  */
   tree wanted_type;
@@ -390,9 +455,12 @@ typedef struct format_wanted_type
   tree param;
   /* The argument number of that parameter.  */
   int arg_num;
+  /* The offset location of this argument with respect to the format
+     string location.  */
+  unsigned int offset_loc;
   /* The next type to check for this format conversion, or NULL if none.  */
   struct format_wanted_type *next;
-} format_wanted_type;
+};
 
 /* Convenience macro for format_length_info meaning unused.  */
 #define NO_FMT NULL, FMT_LEN_none, STD_C89
@@ -897,7 +965,7 @@ static int n_format_types = ARRAY_SIZE (format_types_orig);
 /* Structure detailing the results of checking a format function call
    where the format expression may be a conditional expression with
    many leaves resulting from nested conditional expressions.  */
-typedef struct
+struct format_check_results
 {
   /* Number of leaves of the format argument that could not be checked
      as they were not string literals.  */
@@ -922,14 +990,14 @@ typedef struct
   int number_other;
   /* Location of the format string.  */
   location_t format_string_loc;
-} format_check_results;
+};
 
-typedef struct
+struct format_check_context
 {
   format_check_results *res;
   function_format_info *info;
   tree params;
-} format_check_context;
+};
 
 /* Return the format name (as specified in the original table) for the format
    type indicated by format_num.  */
@@ -956,7 +1024,8 @@ static void check_format_arg (void *, tree, unsigned HOST_WIDE_INT);
 static void check_format_info_main (format_check_results *,
 				    function_format_info *,
 				    const char *, int, tree,
-                                    unsigned HOST_WIDE_INT, alloc_pool);
+				    unsigned HOST_WIDE_INT,
+				    object_allocator<format_wanted_type> &);
 
 static void init_dollar_format_checking (int, tree);
 static int maybe_read_dollar_number (const char **, int,
@@ -1358,8 +1427,6 @@ check_format_info (function_format_info *info, tree params)
 				    format_tree, arg_num);
 
   location_t loc = format_ctx.res->format_string_loc;
-  if (res.extra_arg_loc == UNKNOWN_LOCATION)
-    res.extra_arg_loc = loc;
 
   if (res.number_non_literal > 0)
     {
@@ -1405,8 +1472,12 @@ check_format_info (function_format_info *info, tree params)
      case of extra format arguments.  */
   if (res.number_extra_args > 0 && res.number_non_literal == 0
       && res.number_other == 0)
-    warning_at (res.extra_arg_loc, OPT_Wformat_extra_args,
-		"too many arguments for format");
+    {
+      if (res.extra_arg_loc == UNKNOWN_LOCATION)
+	res.extra_arg_loc = loc;
+      warning_at (res.extra_arg_loc, OPT_Wformat_extra_args,
+		  "too many arguments for format");
+    }
   if (res.number_dollar_extra_args > 0 && res.number_non_literal == 0
       && res.number_other == 0)
     warning_at (loc, OPT_Wformat_extra_args, "unused arguments in $-style format");
@@ -1441,7 +1512,13 @@ check_format_arg (void *ctx, tree format_tree,
   const char *format_chars;
   tree array_size = 0;
   tree array_init;
-  alloc_pool fwt_pool;
+
+  if (VAR_P (format_tree))
+    {
+      /* Pull out a constant value if the front end didn't.  */
+      format_tree = decl_constant_value (format_tree);
+      STRIP_NOPS (format_tree);
+    }
 
   if (integer_zerop (format_tree))
     {
@@ -1503,7 +1580,7 @@ check_format_arg (void *ctx, tree format_tree,
     {
       bool objc_str = (info->format_type == gcc_objc_string_format_type);
       /* We cannot examine this string here - but we can check that it is
-         a valid type.  */
+	 a valid type.  */
       if (TREE_CODE (format_tree) != CONST_DECL
 	  || !((objc_str && objc_string_ref_type_p (TREE_TYPE (format_tree)))
 		|| (*targetcm.string_object_ref_type_p) 
@@ -1521,9 +1598,9 @@ check_format_arg (void *ctx, tree format_tree,
 	  ++arg_num;
 	}
       /* So, we have a valid literal string object and one or more params.
-         We need to use an external helper to parse the string into format
-         info.  For Objective-C variants we provide the resource within the
-         objc tree, for target variants, via a hook.  */
+	 We need to use an external helper to parse the string into format
+	 info.  For Objective-C variants we provide the resource within the
+	 objc tree, for target variants, via a hook.  */
       if (objc_str)
 	objc_check_format_arg (format_tree, params);
       else if (targetcm.check_string_object_format_arg)
@@ -1540,7 +1617,7 @@ check_format_arg (void *ctx, tree format_tree,
       res->number_non_literal++;
       return;
     }
-  if (TREE_CODE (format_tree) == VAR_DECL
+  if (VAR_P (format_tree)
       && TREE_CODE (TREE_TYPE (format_tree)) == ARRAY_TYPE
       && (array_init = decl_constant_value (format_tree)) != format_tree
       && TREE_CODE (array_init) == STRING_CST)
@@ -1610,11 +1687,10 @@ check_format_arg (void *ctx, tree format_tree,
      will decrement it if it finds there are extra arguments, but this way
      need not adjust it for every return.  */
   res->number_other++;
-  fwt_pool = create_alloc_pool ("format_wanted_type pool",
-                                sizeof (format_wanted_type), 10);
+  object_allocator <format_wanted_type> fwt_pool ("format_wanted_type pool",
+						  10);
   check_format_info_main (res, info, format_chars, format_length,
-                          params, arg_num, fwt_pool);
-  free_alloc_pool (fwt_pool);
+			  params, arg_num, fwt_pool);
 }
 
 
@@ -1629,7 +1705,8 @@ static void
 check_format_info_main (format_check_results *res,
 			function_format_info *info, const char *format_chars,
 			int format_length, tree params,
-                        unsigned HOST_WIDE_INT arg_num, alloc_pool fwt_pool)
+			unsigned HOST_WIDE_INT arg_num,
+			object_allocator <format_wanted_type> &fwt_pool)
 {
   const char *orig_format_chars = format_chars;
   tree first_fillin_param = params;
@@ -1675,7 +1752,9 @@ check_format_info_main (format_check_results *res,
 	continue;
       if (*format_chars == 0)
 	{
-          warning_at (format_string_loc, OPT_Wformat_,
+          warning_at (location_from_offset (format_string_loc,
+					    format_chars - orig_format_chars),
+		      OPT_Wformat_,
 		      "spurious trailing %<%%%> in format");
 	  continue;
 	}
@@ -1720,7 +1799,10 @@ check_format_info_main (format_check_results *res,
 						     *format_chars, NULL);
 	  if (strchr (flag_chars, *format_chars) != 0)
 	    {
-	      warning_at (format_string_loc, OPT_Wformat_,
+	      warning_at (location_from_offset (format_string_loc,
+						format_chars + 1
+						- orig_format_chars),
+			  OPT_Wformat_,
 			  "repeated %s in format", _(s->name));
 	    }
 	  else
@@ -1800,6 +1882,8 @@ check_format_info_main (format_check_results *res,
 		  width_wanted_type.format_length = 1;
 		  width_wanted_type.param = cur_param;
 		  width_wanted_type.arg_num = arg_num;
+		  width_wanted_type.offset_loc =
+		    format_chars - orig_format_chars;
 		  width_wanted_type.next = NULL;
 		  if (last_wanted_type != 0)
 		    last_wanted_type->next = &width_wanted_type;
@@ -1842,7 +1926,9 @@ check_format_info_main (format_check_results *res,
 	  flag_chars[i++] = fki->left_precision_char;
 	  flag_chars[i] = 0;
 	  if (!ISDIGIT (*format_chars))
-	    warning_at (format_string_loc, OPT_Wformat_,
+	    warning_at (location_from_offset (format_string_loc,
+					      format_chars - orig_format_chars),
+			OPT_Wformat_,
 			"empty left precision in %s format", fki->name);
 	  while (ISDIGIT (*format_chars))
 	    ++format_chars;
@@ -1907,6 +1993,8 @@ check_format_info_main (format_check_results *res,
 		  precision_wanted_type.format_start = format_chars - 2;
 		  precision_wanted_type.format_length = 2;
 		  precision_wanted_type.arg_num = arg_num;
+		  precision_wanted_type.offset_loc =
+		    format_chars - orig_format_chars;
 		  precision_wanted_type.next = NULL;
 		  if (last_wanted_type != 0)
 		    last_wanted_type->next = &precision_wanted_type;
@@ -1919,7 +2007,9 @@ check_format_info_main (format_check_results *res,
 	    {
 	      if (!(fki->flags & (int) FMT_FLAG_EMPTY_PREC_OK)
 		  && !ISDIGIT (*format_chars))
-		warning_at (format_string_loc, OPT_Wformat_,
+		warning_at (location_from_offset (format_string_loc,
+						  format_chars - orig_format_chars),
+			    OPT_Wformat_,
 			    "empty precision in %s format", fki->name);
 	      while (ISDIGIT (*format_chars))
 		++format_chars;
@@ -2005,7 +2095,10 @@ check_format_info_main (format_check_results *res,
 		{
 		  const format_flag_spec *s = get_flag_spec (flag_specs,
 							     *format_chars, NULL);
-		  warning_at (format_string_loc, OPT_Wformat_,
+		  warning_at (location_from_offset (format_string_loc,
+						    format_chars 
+						    - orig_format_chars),
+			      OPT_Wformat_,
 			      "repeated %s in format", _(s->name));
 		}
 	      else
@@ -2023,7 +2116,9 @@ check_format_info_main (format_check_results *res,
 	  || (!(fki->flags & (int) FMT_FLAG_FANCY_PERCENT_OK)
 	      && format_char == '%'))
 	{
-	  warning_at (format_string_loc, OPT_Wformat_,
+	  warning_at (location_from_offset (format_string_loc,
+					    format_chars - orig_format_chars),
+		      OPT_Wformat_,
 		      "conversion lacks type at end of format");
 	  continue;
 	}
@@ -2035,11 +2130,15 @@ check_format_info_main (format_check_results *res,
       if (fci->format_chars == 0)
 	{
 	  if (ISGRAPH (format_char))
-	    warning_at (format_string_loc, OPT_Wformat_,
+	    warning_at (location_from_offset (format_string_loc,
+					      format_chars - orig_format_chars),
+			OPT_Wformat_,
 			"unknown conversion type character %qc in format",
 			format_char);
 	  else
-	    warning_at (format_string_loc, OPT_Wformat_,
+	    warning_at (location_from_offset (format_string_loc,
+					      format_chars - orig_format_chars),
+			OPT_Wformat_,
 			"unknown conversion type character 0x%x in format",
 			format_char);
 	  continue;
@@ -2047,7 +2146,9 @@ check_format_info_main (format_check_results *res,
       if (pedantic)
 	{
 	  if (ADJ_STD (fci->std) > C_STD_VER)
-	    warning_at (format_string_loc, OPT_Wformat_,
+	    warning_at (location_from_offset (format_string_loc,
+					      format_chars - orig_format_chars),
+			OPT_Wformat_,
 			"%s does not support the %<%%%c%> %s format",
 			C_STD_NAME (fci->std), format_char, fki->name);
 	}
@@ -2064,8 +2165,10 @@ check_format_info_main (format_check_results *res,
 	      continue;
 	    if (strchr (fci->flag_chars, flag_chars[i]) == 0)
 	      {
-		warning_at (format_string_loc, 
-                            OPT_Wformat_, "%s used with %<%%%c%> %s format",
+		warning_at (location_from_offset (format_string_loc,
+						  format_chars 
+						  - orig_format_chars),
+			    OPT_Wformat_, "%s used with %<%%%c%> %s format",
 			    _(s->name), format_char, fki->name);
 		d++;
 		continue;
@@ -2179,7 +2282,9 @@ check_format_info_main (format_check_results *res,
 	    ++format_chars;
 	  if (*format_chars != ']')
 	    /* The end of the format string was reached.  */
-	    warning_at (format_string_loc, OPT_Wformat_,
+	    warning_at (location_from_offset (format_string_loc,
+					      format_chars - orig_format_chars),
+			OPT_Wformat_,
 			"no closing %<]%> for %<%%[%> format");
 	}
 
@@ -2193,8 +2298,11 @@ check_format_info_main (format_check_results *res,
 	  wanted_type_std = fci->types[length_chars_val].std;
 	  if (wanted_type == 0)
 	    {
-	      warning_at (format_string_loc, OPT_Wformat_,
-			  "use of %qs length modifier with %qc type character",
+	      warning_at (location_from_offset (format_string_loc,
+						format_chars - orig_format_chars),
+			  OPT_Wformat_,
+			  "use of %qs length modifier with %qc type character"
+			  " has either no effect or undefined behavior",
 			  length_chars, format_char);
 	      /* Heuristic: skip one argument when an invalid length/type
 		 combination is encountered.  */
@@ -2211,7 +2319,9 @@ check_format_info_main (format_check_results *res,
 		   && ADJ_STD (wanted_type_std) > ADJ_STD (fci->std))
 	    {
 	      if (ADJ_STD (wanted_type_std) > C_STD_VER)
-		warning_at (format_string_loc, OPT_Wformat_,
+		warning_at (location_from_offset (format_string_loc,
+						  format_chars - orig_format_chars),
+			    OPT_Wformat_,
 			    "%s does not support the %<%%%s%c%> %s format",
 			    C_STD_NAME (wanted_type_std), length_chars,
 			    format_char, fki->name);
@@ -2296,6 +2406,7 @@ check_format_info_main (format_check_results *res,
 	      wanted_type_ptr->arg_num = arg_num;
 	      wanted_type_ptr->format_start = format_start;
 	      wanted_type_ptr->format_length = format_chars - format_start;
+	      wanted_type_ptr->offset_loc = format_chars - orig_format_chars;
 	      wanted_type_ptr->next = NULL;
 	      if (last_wanted_type != 0)
 		last_wanted_type->next = wanted_type_ptr;
@@ -2306,8 +2417,7 @@ check_format_info_main (format_check_results *res,
 	      fci = fci->chain;
 	      if (fci)
 		{
-                  wanted_type_ptr = (format_wanted_type *)
-                      pool_alloc (fwt_pool);
+		  wanted_type_ptr = fwt_pool.allocate ();
 		  arg_num++;
 		  wanted_type = *fci->types[length_chars_val].type;
 		  wanted_type_name = fci->types[length_chars_val].name;
@@ -2320,7 +2430,9 @@ check_format_info_main (format_check_results *res,
     }
 
   if (format_chars - orig_format_chars != format_length)
-    warning_at (format_string_loc, OPT_Wformat_contains_nul,
+    warning_at (location_from_offset (format_string_loc,
+				      format_chars + 1 - orig_format_chars),
+		OPT_Wformat_contains_nul,
 		"embedded %<\\0%> in format");
   if (info->first_arg_num != 0 && params != 0
       && has_operand_number <= 0)
@@ -2449,8 +2561,7 @@ check_format_types (location_t loc, format_wanted_type *types)
       cur_type = TYPE_MAIN_VARIANT (cur_type);
 
       /* Check whether the argument type is a character type.  This leniency
-	 only applies to certain formats, flagged with 'c'.
-      */
+	 only applies to certain formats, flagged with 'c'.  */
       if (types->char_lenient_flag)
 	char_type_flag = (cur_type == char_type_node
 			  || cur_type == signed_char_type_node
@@ -2479,6 +2590,21 @@ check_format_types (location_t loc, format_wanted_type *types)
 	      ? wanted_type == c_common_unsigned_type (cur_type)
 	      : wanted_type == c_common_signed_type (cur_type)))
 	continue;
+      /* Don't warn about differences merely in signedness if we know
+	 that the current type is integer-promoted and its original type
+	 was unsigned such as that it is in the range of WANTED_TYPE.  */
+      if (TREE_CODE (wanted_type) == INTEGER_TYPE
+	  && TREE_CODE (cur_type) == INTEGER_TYPE
+	  && warn_format_signedness
+	  && TYPE_UNSIGNED (wanted_type)
+	  && cur_param != NULL_TREE
+	  && TREE_CODE (cur_param) == NOP_EXPR)
+	{
+	  tree t = TREE_TYPE (TREE_OPERAND (cur_param, 0));
+	  if (TYPE_UNSIGNED (t)
+	      && cur_type == lang_hooks.types.type_promotes_to (t))
+	    continue;
+	}
       /* Likewise, "signed char", "unsigned char" and "char" are
 	 equivalent but the above test won't consider them equivalent.  */
       if (wanted_type == char_type_node
@@ -2514,6 +2640,7 @@ format_type_warning (location_t loc, format_wanted_type *type,
   int format_length = type->format_length;
   int pointer_count = type->pointer_count;
   int arg_num = type->arg_num;
+  unsigned int offset_loc = type->offset_loc;
 
   char *p;
   /* If ARG_TYPE is a typedef with a misleading name (for example,
@@ -2547,6 +2674,8 @@ format_type_warning (location_t loc, format_wanted_type *type,
       p[pointer_count + 1] = 0;
     }
 
+  loc = location_from_offset (loc, offset_loc);
+		      
   if (wanted_type_name)
     {
       if (arg_type)

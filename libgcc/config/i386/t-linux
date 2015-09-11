@@ -3,4 +3,4 @@
 # t-slibgcc-elf-ver and t-linux
 SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/i386/libgcc-glibc.ver
 
-HOST_LIBGCC2_CFLAGS += -mlong-double-80
+HOST_LIBGCC2_CFLAGS += -mlong-double-80 -DUSE_ELF_SYMVER

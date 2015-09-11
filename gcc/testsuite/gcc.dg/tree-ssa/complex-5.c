@@ -9,4 +9,3 @@ int f(void)
 }
 
 /* { dg-final { scan-tree-dump-times "__complex__" 0 "optimized" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -145,11 +145,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
 	   bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_lookahead(_State<_TraitsT> __state)
+    _M_lookahead(_StateIdT __next)
     {
       _ResultsVec __what(_M_cur_results.size());
       _Executor __sub(_M_current, _M_end, __what, _M_re, _M_flags);
-      __sub._M_states._M_start = __state._M_alt;
+      __sub._M_states._M_start = __next;
       if (__sub._M_search_from_first())
 	{
 	  for (size_t __i = 0; __i < __what.size(); __i++)
@@ -203,7 +203,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto& __state = _M_nfa[__i];
       // Every change on _M_cur_results and _M_current will be rolled back after
       // finishing the recursion step.
-      switch (__state._M_opcode)
+      switch (__state._M_opcode())
 	{
 	// _M_alt branch is "match once more", while _M_next is "get me out
 	// of this quantifier". Executing _M_next first or _M_alt first don't
@@ -280,7 +280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Here __state._M_alt offers a single start node for a sub-NFA.
 	// We recursively invoke our algorithm to match the sub-NFA.
 	case _S_opcode_subexpr_lookahead:
-	  if (_M_lookahead(__state) == !__state._M_neg)
+	  if (_M_lookahead(__state._M_alt) == !__state._M_neg)
 	    _M_dfs(__match_mode, __state._M_next);
 	  break;
 	case _S_opcode_match:
@@ -305,7 +305,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// If matched, keep going; else just return and try another state.
 	case _S_opcode_backref:
 	  {
-	    _GLIBCXX_DEBUG_ASSERT(__dfs_mode);
+	    __glibcxx_assert(__dfs_mode);
 	    auto& __submatch = _M_cur_results[__state._M_backref_index];
 	    if (!__submatch.matched)
 	      break;
@@ -333,7 +333,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_opcode_accept:
 	  if (__dfs_mode)
 	    {
-	      _GLIBCXX_DEBUG_ASSERT(!_M_has_sol);
+	      __glibcxx_assert(!_M_has_sol);
 	      if (__match_mode == _Match_mode::_Exact)
 		_M_has_sol = _M_current == _M_end;
 	      else
@@ -347,7 +347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    _M_results = _M_cur_results;
 		  else // POSIX
 		    {
-		      _GLIBCXX_DEBUG_ASSERT(_M_states._M_get_sol_pos());
+		      __glibcxx_assert(_M_states._M_get_sol_pos());
 		      // Here's POSIX's logic: match the longest one. However
 		      // we never know which one (lhs or rhs of "|") is longer
 		      // unless we try both of them and compare the results.
@@ -382,8 +382,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_opcode_alternative:
 	  if (_M_nfa._M_flags & regex_constants::ECMAScript)
 	    {
-	      // TODO: Let BFS support ECMAScript's alternative operation.
-	      _GLIBCXX_DEBUG_ASSERT(__dfs_mode);
+	      // TODO: Fix BFS support. It is wrong.
 	      _M_dfs(__match_mode, __state._M_alt);
 	      // Pick lhs if it matches. Only try rhs if it doesn't.
 	      if (!_M_has_sol)
@@ -401,7 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  break;
 	default:
-	  _GLIBCXX_DEBUG_ASSERT(false);
+	  __glibcxx_assert(false);
 	}
     }
 

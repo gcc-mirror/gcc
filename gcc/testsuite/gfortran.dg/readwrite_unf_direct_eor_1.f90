@@ -10,4 +10,5 @@
       read (10,  rec=1, err=20) i, j
       call abort()
  20   continue
+      close (10, status="delete")
       end

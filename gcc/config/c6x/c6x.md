@@ -775,7 +775,7 @@
 		       UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_INSNS_64"
 {
-  if (memory_operand (operands[0], <MODE>mode))
+  if (MEM_P (operands[0]))
     {
       emit_insn (gen_movmisalign<mode>_store (operands[0], operands[1]));
       DONE;
@@ -1224,7 +1224,7 @@
       rtx tmpreg = gen_reg_rtx (SImode);
       rtx t = gen_rtx_fmt_ee (reverse_condition (GET_CODE (operands[1])),
 			      SImode, operands[2], operands[3]);
-      emit_insn (gen_rtx_SET (VOIDmode, tmpreg, t));
+      emit_insn (gen_rtx_SET (tmpreg, t));
       emit_insn (gen_scmpsi_insn (operands[0],
 				  gen_rtx_fmt_ee (EQ, SImode, tmpreg, const0_rtx),
 				  tmpreg, const0_rtx));
@@ -1519,7 +1519,7 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "real_jump"
-  [(unspec [(match_operand 0 "c6x_jump_operand" "a,b,s") (const_int 0)]
+  [(unspec [(match_operand 0 "c6x_jump_operand" "a,b,S3") (const_int 0)]
 	   UNSPEC_REAL_JUMP)]
   ""
 {

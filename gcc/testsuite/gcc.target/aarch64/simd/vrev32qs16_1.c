@@ -7,4 +7,3 @@
 #include "vrev32qs16.x"
 
 /* { dg-final { scan-assembler-times "rev32\[ \t\]+v\[0-9\]+.8h, ?v\[0-9\]+.8h!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

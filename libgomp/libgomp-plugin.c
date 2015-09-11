@@ -55,7 +55,7 @@ GOMP_PLUGIN_debug (int kind, const char *msg, ...)
   va_list ap;
 
   va_start (ap, msg);
-  gomp_debug (kind, msg, ap);
+  gomp_vdebug (kind, msg, ap);
   va_end (ap);
 }
 

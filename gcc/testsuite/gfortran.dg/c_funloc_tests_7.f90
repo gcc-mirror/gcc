@@ -18,5 +18,4 @@ end
 
 ! { dg-final { scan-tree-dump-times "cfp =\[^;\]+ nocsub;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "fint =\[^;\]+ cfp;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

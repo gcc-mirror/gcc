@@ -25,7 +25,7 @@
 /* The various cores that implement AArch64.  */
 enum aarch64_processor
 {
-#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS) \
+#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
   INTERNAL_IDENT,
 #include "aarch64-cores.def"
 #undef AARCH64_CORE
@@ -33,6 +33,15 @@ enum aarch64_processor
   generic,
   /* Used to mark the end of the processor table.  */
   aarch64_none
+};
+
+enum aarch64_arch
+{
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
+  AARCH64_ARCH_##ARCH_IDENT,
+#include "aarch64-arches.def"
+#undef AARCH64_ARCH
+  aarch64_no_arch
 };
 
 /* TLS types.  */
@@ -56,6 +65,9 @@ enum aarch64_code_model {
   /* Static code, data and GOT/PLT fit within a 4GB region.
      The default PIC code model.  */
   AARCH64_CMODEL_SMALL_PIC,
+  /* -fpic for small memory model.
+     GOT size to 28KiB (4K*8-4K) or 3580 entries.  */
+  AARCH64_CMODEL_SMALL_SPIC,
   /* No assumptions about addresses of code and data.
      The PIC variant is not yet implemented.  */
   AARCH64_CMODEL_LARGE

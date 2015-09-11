@@ -42,8 +42,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined HAVE_LD_PIE
 #define GNU_USER_TARGET_STARTFILE_SPEC \
-  "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
+  "%{!shared: %{pg|p|profile:gcrt1.o%s;: \
+    %{" PIE_SPEC ":Scrt1.o%s} %{" NO_PIE_SPEC ":crt1.o%s}}} \
+   crti.o%s %{static:crtbeginT.o%s;: %{shared:crtbeginS.o%s} \
+	      %{" PIE_SPEC ":crtbeginS.o%s} \
+	      %{" NO_PIE_SPEC ":crtbegin.o%s}} \
    %{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
      fvtable-verify=std:vtv_start.o%s}"
@@ -64,11 +67,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    object constructed before entering `main', followed by a normal
    GNU userspace "finalizer" file, `crtn.o'.  */
 
+#if defined HAVE_LD_PIE
+#define GNU_USER_TARGET_ENDFILE_SPEC \
+  "%{fvtable-verify=none:%s; \
+     fvtable-verify=preinit:vtv_end_preinit.o%s; \
+     fvtable-verify=std:vtv_end.o%s} \
+   %{shared:crtendS.o%s;: %{" PIE_SPEC ":crtendS.o%s} \
+   %{" NO_PIE_SPEC ":crtend.o%s}} crtn.o%s"
+#else
 #define GNU_USER_TARGET_ENDFILE_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s} \
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+#endif
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC GNU_USER_TARGET_ENDFILE_SPEC
 
@@ -113,7 +125,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Link -lasan early on the command line.  For -static-libasan, don't link
    it for -shared link, the executable should be compiled with -static-libasan
-   in that case, and for executable link link with --{,no-}whole-archive around
+   in that case, and for executable link with --{,no-}whole-archive around
    it to force everything into the executable.  And similarly for -ltsan
    and -llsan.  */
 #if defined(HAVE_LD_STATIC_DYNAMIC)

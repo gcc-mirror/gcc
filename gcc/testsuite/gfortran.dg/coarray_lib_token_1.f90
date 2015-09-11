@@ -85,4 +85,3 @@ end program main
 !
 ! { dg-final { scan-tree-dump-times "sub_opt \\(.integer.kind=4. .. caf, caf_token.\[0-9\]+, 0\\)" 1 "original" } }
 !
-! { dg-final { cleanup-tree-dump "original" } }

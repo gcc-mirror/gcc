@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdelete-null-pointer-checks" } */
 
 struct A
 {
@@ -20,7 +20,6 @@ foo (struct A *p, struct A *q)
   if (p)
     return x + p->b;
 }
-/* Target with fno-delete-null-pointer-checks should not fold check */
+/* Target disabling -fdelete-null-pointer-checks should not fold check */
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 0 "vrp1" { target {   keeps_null_pointer_checks } } } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

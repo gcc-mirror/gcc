@@ -6,7 +6,7 @@
 
 class A {
 protected:
-  void foo() {}			// { dg-error "protected" }
+  void foo() {}			// { dg-message "protected" }
 public:
   A();
 };

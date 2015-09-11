@@ -21,26 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-table.h"
-#include "hard-reg-set.h"
+#include "backend.h"
+#include "predict.h"
 #include "rtl.h"
-#include "symtab.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
-#include "flags.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
-#include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "flags.h"
+#include "alias.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -51,17 +37,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "tm_p.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "regs.h"
 #include "addresses.h"
-#include "recog.h"
 #include "reload.h"
 #include "diagnostic-core.h"
 #include "target.h"
 #include "params.h"
+#include "cfgloop.h"
+#include "ira.h"
+#include "alloc-pool.h"
 #include "ira-int.h"
 
 /* The flags is set up every time when we calculate pseudo register
@@ -159,25 +143,23 @@ static cost_classes_t *regno_cost_classes;
 
 /* Helper for cost_classes hashing.  */
 
-struct cost_classes_hasher
+struct cost_classes_hasher : pointer_hash <cost_classes>
 {
-  typedef cost_classes value_type;
-  typedef cost_classes compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  static inline hashval_t hash (const cost_classes *);
+  static inline bool equal (const cost_classes *, const cost_classes *);
+  static inline void remove (cost_classes *);
 };
 
 /* Returns hash value for cost classes info HV.  */
 inline hashval_t
-cost_classes_hasher::hash (const value_type *hv)
+cost_classes_hasher::hash (const cost_classes *hv)
 {
   return iterative_hash (&hv->classes, sizeof (enum reg_class) * hv->num, 0);
 }
 
 /* Compares cost classes info HV1 and HV2.  */
 inline bool
-cost_classes_hasher::equal (const value_type *hv1, const compare_type *hv2)
+cost_classes_hasher::equal (const cost_classes *hv1, const cost_classes *hv2)
 {
   return (hv1->num == hv2->num
 	  && memcmp (hv1->classes, hv2->classes,
@@ -186,7 +168,7 @@ cost_classes_hasher::equal (const value_type *hv1, const compare_type *hv2)
 
 /* Delete cost classes info V from the hash table.  */
 inline void
-cost_classes_hasher::remove (value_type *v)
+cost_classes_hasher::remove (cost_classes *v)
 {
   ira_free (v);
 }
@@ -589,7 +571,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  while (*p == '%' || *p == '=' || *p == '+' || *p == '&')
 	    p++;
 
-	  if (p[0] >= '0' && p[0] <= '0' + i && (p[1] == ',' || p[1] == 0))
+	  if (p[0] >= '0' && p[0] <= '0' + i)
 	    {
 	      /* Copy class and whether memory is allowed from the
 		 matching alternative.  Then perform any needed cost
@@ -754,14 +736,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		      && ! find_reg_note (insn, REG_DEAD, op))
 		    alt_cost += 2;
 
-		  /* This is in place of ordinary cost computation for
-		     this operand, so skip to the end of the
-		     alternative (should be just one character).  */
-		  while (*p && *p++ != ',')
-		    ;
-
-		  constraints[i] = p;
-		  continue;
+		  p++;
 		}
 	    }
 
@@ -1387,8 +1362,6 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
 
-      dest = SET_DEST (set);
-      src = SET_SRC (set);
       if (GET_CODE (dest) == SUBREG
 	  && (GET_MODE_SIZE (GET_MODE (dest))
 	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
@@ -1645,7 +1618,7 @@ find_costs_and_classes (FILE *dump_file)
   int i, k, start, max_cost_classes_num;
   int pass;
   basic_block bb;
-  enum reg_class *regno_best_class;
+  enum reg_class *regno_best_class, new_class;
 
   init_recog ();
   regno_best_class
@@ -1862,7 +1835,8 @@ find_costs_and_classes (FILE *dump_file)
 		alt_class = reg_class_subunion[alt_class][rclass];
 	    }
 	  alt_class = ira_allocno_class_translate[alt_class];
-	  if (best_cost > i_mem_cost)
+	  if (best_cost > i_mem_cost
+	      && ! non_spilled_static_chain_regno_p (i))
 	    regno_aclass[i] = NO_REGS;
 	  else if (!optimize && !targetm.class_likely_spilled_p (best))
 	    /* Registers in the alternative class are likely to need
@@ -1887,9 +1861,24 @@ find_costs_and_classes (FILE *dump_file)
 	      ira_assert (regno_aclass[i] != NO_REGS
 			  && ira_reg_allocno_class_p[regno_aclass[i]]);
 	    }
+	  if ((new_class
+	       = (reg_class) (targetm.ira_change_pseudo_allocno_class
+			      (i, regno_aclass[i]))) != regno_aclass[i])
+	    {
+	      regno_aclass[i] = new_class;
+	      if (hard_reg_set_subset_p (reg_class_contents[new_class],
+					 reg_class_contents[best]))
+		best = new_class;
+	      if (hard_reg_set_subset_p (reg_class_contents[new_class],
+					 reg_class_contents[alt_class]))
+		alt_class = new_class;
+	    }
 	  if (pass == flag_expensive_optimizations)
 	    {
-	      if (best_cost > i_mem_cost)
+	      if (best_cost > i_mem_cost
+		  /* Do not assign NO_REGS to static chain pointer
+		     pseudo when non-local goto is used.  */
+		  && ! non_spilled_static_chain_regno_p (i))
 		best = alt_class = NO_REGS;
 	      else if (best == alt_class)
 		alt_class = NO_REGS;
@@ -1904,7 +1893,9 @@ find_costs_and_classes (FILE *dump_file)
 	  regno_best_class[i] = best;
 	  if (! allocno_p)
 	    {
-	      pref[i] = best_cost > i_mem_cost ? NO_REGS : best;
+	      pref[i] = (best_cost > i_mem_cost
+			 && ! non_spilled_static_chain_regno_p (i)
+			 ? NO_REGS : best);
 	      continue;
 	    }
 	  for (a = ira_regno_allocno_map[i];

@@ -112,4 +112,3 @@ end subroutine sub6NoIso
 ! { dg-final { scan-tree-dump "master.3.sub6noiso .0, 0B, 0B, 0B, b, a, 0, 0, 1, 1\\);" "original" } }
 ! { dg-final { scan-tree-dump "master.3.sub6noiso .1, z, y, x, 0B, 0B, 1, 1, 0, 0\\);" "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +51,10 @@ package Osint is
    Ada_Objects_Path          : constant String := "ADA_OBJECTS_PATH";
    Project_Include_Path_File : constant String := "ADA_PRJ_INCLUDE_FILE";
    Project_Objects_Path_File : constant String := "ADA_PRJ_OBJECTS_FILE";
+
+   Output_FD : File_Descriptor;
+   --  File descriptor for current library info, list, tree, C, H, or binder
+   --  output. Only one of these is open at a time, so we need only one FD.
 
    procedure Initialize;
    --  Initialize internal tables
@@ -692,9 +696,6 @@ private
    Target_Object_Suffix : constant String := Get_Target_Object_Suffix.all;
    --  The suffix used for the target object files
 
-   Output_FD : File_Descriptor;
-   --  File descriptor for current library info, list, tree, or binder output
-
    Output_File_Name : File_Name_Type;
    --  File_Name_Type for name of open file whose FD is in Output_FD, the name
    --  stored does not include the trailing NUL character.
@@ -759,8 +760,7 @@ private
    --  for this file. This routine merely constructs the name.
 
    procedure Write_Info (Info : String);
-   --  Implementation of Write_Binder_Info, Write_Debug_Info and
-   --  Write_Library_Info (identical)
+   --  Implement Write_Binder_Info, Write_Debug_Info, and Write_Library_Info
 
    procedure Write_With_Check (A : Address; N  : Integer);
    --  Writes N bytes from buffer starting at address A to file whose FD is

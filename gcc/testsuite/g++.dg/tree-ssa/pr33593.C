@@ -16,4 +16,3 @@ main (void)
 // The expression 1 / 0 should not be propagated into the call to foo() if it
 // may trap.
 // { dg-final { scan-tree-dump-times "foo \\(1 \\/ 0\\)" 0 "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

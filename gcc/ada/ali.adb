@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1704,6 +1704,7 @@ package body ALI is
             UL.Shared_Passive           := False;
             UL.RCI                      := False;
             UL.Remote_Types             := False;
+            UL.Serious_Errors           := False;
             UL.Has_RACW                 := False;
             UL.Init_Scalars             := False;
             UL.Is_Generic               := False;
@@ -1956,10 +1957,14 @@ package body ALI is
 
                Check_At_End_Of_Field;
 
+            --  SE/SP/SU parameters
+
             elsif C = 'S' then
                C := Getc;
 
-               if C = 'P' then
+               if C = 'E' then
+                  Units.Table (Units.Last).Serious_Errors := True;
+               elsif C = 'P' then
                   Units.Table (Units.Last).Shared_Passive := True;
                elsif C = 'U' then
                   Units.Table (Units.Last).Unit_Kind := 's';

@@ -27,4 +27,3 @@ end program
 !   -- plus as many times as the function is called
 !
 ! { dg-final { scan-tree-dump-times "foo *\\\(\\\)" 7 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

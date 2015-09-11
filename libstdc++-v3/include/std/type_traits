@@ -92,6 +92,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool __v>
     using __bool_constant = integral_constant<bool, __v>;
 
+#if __cplusplus > 201402L
+// TODO: #define __cpp_lib_bool_constant 201505
+  template<bool __v>
+    using bool_constant = integral_constant<bool, __v>;
+#endif
+
   // Meta programming helper types.
 
   template<bool, typename, typename>
@@ -1739,13 +1745,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
       static const bool __b1 = sizeof(_Tp) <= sizeof(unsigned short);
       static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned int);
-      typedef conditional<__b2, unsigned int, unsigned long> __cond2;
+      static const bool __b3 = sizeof(_Tp) <= sizeof(unsigned long);
+      typedef conditional<__b3, unsigned long, unsigned long long> __cond3;
+      typedef typename __cond3::type __cond3_type;
+      typedef conditional<__b2, unsigned int, __cond3_type> __cond2;
       typedef typename __cond2::type __cond2_type;
       typedef conditional<__b1, unsigned short, __cond2_type> __cond1;
       typedef typename __cond1::type __cond1_type;
 
+      typedef typename conditional<__b0, __smallest, __cond1_type>::type
+	__unsigned_type;
+      typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
+
     public:
-      typedef typename conditional<__b0, __smallest, __cond1_type>::type __type;
+      typedef typename __cv_unsigned::__type __type;
     };
 
   // Given an integral/enum type, return the corresponding unsigned
@@ -1846,18 +1859,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class __make_signed_selector<_Tp, false, true>
     {
-      // With -fshort-enums, an enum may be as small as a char.
-      typedef signed char __smallest;
-      static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
-      static const bool __b1 = sizeof(_Tp) <= sizeof(signed short);
-      static const bool __b2 = sizeof(_Tp) <= sizeof(signed int);
-      typedef conditional<__b2, signed int, signed long> __cond2;
-      typedef typename __cond2::type __cond2_type;
-      typedef conditional<__b1, signed short, __cond2_type> __cond1;
-      typedef typename __cond1::type __cond1_type;
+      typedef typename __make_unsigned_selector<_Tp>::__type __unsigned_type;
 
     public:
-      typedef typename conditional<__b0, __smallest, __cond1_type>::type __type;
+      typedef typename __make_signed_selector<__unsigned_type>::__type __type;
     };
 
   // Given an integral/enum type, return the corresponding signed
@@ -2406,6 +2411,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename...> using __void_t = void;
 
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+#define __cpp_lib_void_t 201411
+  /// A metafunction that always yields void, used for detecting valid types.
+  template<typename...> using void_t = void;
+#endif
+
+  /// Implementation of the detection idiom (negative case).
+  template<typename _Default, typename _AlwaysVoid,
+	   template<typename...> class _Op, typename... _Args>
+    struct __detector
+    {
+      using value_t = false_type;
+      using type = _Default;
+    };
+
+  /// Implementation of the detection idiom (positive case).
+  template<typename _Default, template<typename...> class _Op,
+	    typename... _Args>
+    struct __detector<_Default, __void_t<_Op<_Args...>>, _Op, _Args...>
+    {
+      using value_t = true_type;
+      using type = _Op<_Args...>;
+    };
+
+  // Detect whether _Op<_Args...> is a valid type, use _Default if not.
+  template<typename _Default, template<typename...> class _Op,
+	   typename... _Args>
+    using __detected_or = __detector<_Default, void, _Op, _Args...>;
+
+  // _Op<_Args...> if that is a valid type, otherwise _Default.
+  template<typename _Default, template<typename...> class _Op,
+	   typename... _Args>
+    using __detected_or_t
+      = typename __detected_or<_Default, _Op, _Args...>::type;
+
+  // _Op<_Args...> if that is a valid type, otherwise _Default<_Args...>.
+  template<template<typename...> class _Default,
+	   template<typename...> class _Op, typename... _Args>
+    using __detected_or_t_ =
+      __detected_or_t<_Default<_Args...>, _Op, _Args...>;
+
   /// @} group metaprogramming
 
   /**
@@ -2420,6 +2466,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>						\
     struct __has_##_NTYPE<_Tp, __void_t<typename _Tp::_NTYPE>>		\
     : true_type								\
+    { };
+
+
+   namespace __is_swappable_impl {
+     template <typename _Tp, typename=void>
+     struct __is_swappable : public false_type
+     { };
+   }
+
+  template<typename _Tp>
+    inline
+    typename enable_if<__and_<is_move_constructible<_Tp>,
+			      is_move_assignable<_Tp>>::value>::type
+    swap(_Tp&, _Tp&)
+    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
+	            is_nothrow_move_assignable<_Tp>>::value);
+
+  template<typename _Tp, size_t _Nm>
+    inline
+    typename enable_if<__is_swappable_impl::__is_swappable<_Tp>::value>::type
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
+    noexcept(noexcept(swap(*__a, *__b)));
+
+  namespace __is_swappable_impl {
+    using std::swap;
+
+    template <typename _Tp>
+    struct __is_swappable<_Tp, __void_t<decltype(swap(declval<_Tp&>(),
+                                                      declval<_Tp&>()))>>
+    : public true_type
+    { };
+  }
+
+  template <bool, typename _Tp>
+    struct __is_nothrow_swappable_impl
+    : public __bool_constant<noexcept(swap(declval<_Tp&>(), declval<_Tp&>()))>
+    { };
+
+  template <typename _Tp>
+    struct __is_nothrow_swappable_impl<false, _Tp> : public false_type
+    { };
+
+  template <typename _Tp>
+    struct __is_nothrow_swappable
+    : public __is_nothrow_swappable_impl<
+               __is_swappable_impl::__is_swappable<_Tp>::value, _Tp>
     { };
 
 _GLIBCXX_END_NAMESPACE_VERSION

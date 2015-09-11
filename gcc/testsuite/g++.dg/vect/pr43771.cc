@@ -11,4 +11,3 @@ void KWayNodeRefine__(int nparts, int *gpwgts, int *badminpwgt, int
    }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

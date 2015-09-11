@@ -81,7 +81,9 @@ const struct cpu_cost_table generic_extra_costs =
     1,			/* stm_regs_per_insn_subsequent.  */
     COSTS_N_INSNS (2),	/* storef.  */
     COSTS_N_INSNS (3),	/* stored.  */
-    COSTS_N_INSNS (1)  /* store_unaligned.  */
+    COSTS_N_INSNS (1),	/* store_unaligned.  */
+    COSTS_N_INSNS (1),	/* loadv.  */
+    COSTS_N_INSNS (1)	/* storev.  */
   },
   {
     /* FP SFmode */
@@ -130,12 +132,12 @@ const struct cpu_cost_table cortexa53_extra_costs =
     0,			/* arith.  */
     0,			/* logical.  */
     COSTS_N_INSNS (1),	/* shift.  */
-    COSTS_N_INSNS (2),	/* shift_reg.  */
+    0,			/* shift_reg.  */
     COSTS_N_INSNS (1),	/* arith_shift.  */
-    COSTS_N_INSNS (2),	/* arith_shift_reg.  */
+    COSTS_N_INSNS (1),	/* arith_shift_reg.  */
     COSTS_N_INSNS (1),	/* log_shift.  */
-    COSTS_N_INSNS (2),	/* log_shift_reg.  */
-    0,			/* extend.  */
+    COSTS_N_INSNS (1),	/* log_shift_reg.  */
+    COSTS_N_INSNS (1),	/* extend.  */
     COSTS_N_INSNS (1),	/* extend_arith.  */
     COSTS_N_INSNS (1),	/* bfi.  */
     COSTS_N_INSNS (1),	/* bfx.  */
@@ -182,7 +184,9 @@ const struct cpu_cost_table cortexa53_extra_costs =
     2,				/* stm_regs_per_insn_subsequent.  */
     0,				/* storef.  */
     0,				/* stored.  */
-    COSTS_N_INSNS (1)		/* store_unaligned.  */
+    COSTS_N_INSNS (1),		/* store_unaligned.  */
+    COSTS_N_INSNS (1),		/* loadv.  */
+    COSTS_N_INSNS (1)		/* storev.  */
   },
   {
     /* FP SFmode */
@@ -283,7 +287,9 @@ const struct cpu_cost_table cortexa57_extra_costs =
     2,                         /* stm_regs_per_insn_subsequent.  */
     0,                         /* storef.  */
     0,                         /* stored.  */
-    COSTS_N_INSNS (1)          /* store_unaligned.  */
+    COSTS_N_INSNS (1),         /* store_unaligned.  */
+    COSTS_N_INSNS (1),         /* loadv.  */
+    COSTS_N_INSNS (1)          /* storev.  */
   },
   {
     /* FP SFmode */
@@ -385,6 +391,8 @@ const struct cpu_cost_table xgene1_extra_costs =
     0,                         /* storef.  */
     0,                         /* stored.  */
     0,                         /* store_unaligned.  */
+    COSTS_N_INSNS (1),         /* loadv.  */
+    COSTS_N_INSNS (1)          /* storev.  */
   },
   {
     /* FP SFmode */

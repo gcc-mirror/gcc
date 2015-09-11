@@ -26,4 +26,3 @@ void* g(void)
 /* { dg-final { scan-tree-dump-times "calloc" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-not "malloc" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "memset" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -18,4 +18,3 @@ int foo(unsigned n)
 
 /* { dg-final { scan-tree-dump-not "Invalid sum" "aprefetch"} } */
 /* { dg-final { scan-tree-dump-not "SUCC: 7 .100.0%" "aprefetch"} } */
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */

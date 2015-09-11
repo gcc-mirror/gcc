@@ -42,12 +42,12 @@
 "%{mno-pack:\
    %{!mhard-float:-msoft-float}\
    %{!mmedia:-mno-media}}\
- %{!mfdpic:%{fpic|fPIC: -multilib-library-pic}}\
+ %{!mfdpic:%{" FPIC_SPEC ": -multilib-library-pic}}\
  %{mfdpic:%{!fpic:%{!fpie:%{!fPIC:%{!fPIE:\
    	    %{!fno-pic:%{!fno-pie:%{!fno-PIC:%{!fno-PIE:-fPIE}}}}}}}} \
-	  %{!mno-inline-plt:%{O*:%{!O0:%{!Os:%{fpic|fPIC:-minline-plt} \
-                    %{!fpic:%{!fPIC:%{!O:%{!O1:%{!O2:-minline-plt}}}}}}}}} \
-	  %{!mno-gprel-ro:%{!fpic:%{!fpie:-mgprel-ro}}}} \
+	  %{!mno-inline-plt:%{O*:%{!O0:%{!Os:%{" FPIC_SPEC ":-minline-plt} \
+                    %{" NO_FPIC_SPEC ":%{!O:%{!O1:%{!O2:-minline-plt}}}}}}}} \
+	  %{!mno-gprel-ro:%{" NO_FPIE1_AND_FPIC1_SPEC ":-mgprel-ro}}} \
 "
 #ifndef SUBTARGET_DRIVER_SELF_SPECS
 # define SUBTARGET_DRIVER_SELF_SPECS
@@ -67,7 +67,7 @@
     %{mmuladd} %{mno-muladd} \
     %{mpack} %{mno-pack} \
     %{mno-fdpic:-mnopic} %{mfdpic} \
-    %{fpic|fpie: -mpic} %{fPIC|fPIE: -mPIC} %{mlibrary-pic}}"
+    %{" FPIE1_OR_FPIC1_SPEC ":-mpic} %{" FPIE2_OR_FPIC2_SPEC ":-mPIC} %{mlibrary-pic}}"
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0%O%s frvbegin%O%s"
@@ -1539,7 +1539,7 @@ __asm__("\n"								\
 
 /* Define this macro if it is as good or better to call a constant function
    address than to call an address kept in a register.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 
 /* Dividing the output into sections.  */
@@ -1882,7 +1882,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* Define this macro if operations between registers with integral mode smaller
    than a word are always performed on the entire register.  Most RISC machines
    have this property and most CISC machines do not.  */
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Define this macro to be a C expression indicating when insns that read
    memory in MODE, an integral mode narrower than a word, set the bits outside
@@ -1899,7 +1899,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
 
 /* Define if loading short immediate values into registers sign extends.  */
-#define SHORT_IMMEDIATES_SIGN_EXTEND
+#define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */
@@ -2124,10 +2124,5 @@ enum frv_builtins
 #define MD_CALL_PROTOTYPES 1
 
 #define CPU_UNITS_QUERY 1
-
-#ifdef __FRV_FDPIC__
-#define CRT_GET_RFIB_DATA(dbase) \
-  ({ extern void *_GLOBAL_OFFSET_TABLE_; (dbase) = &_GLOBAL_OFFSET_TABLE_; })
-#endif
 
 #endif /* __FRV_H__ */

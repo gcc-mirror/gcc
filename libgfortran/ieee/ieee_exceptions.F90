@@ -57,9 +57,15 @@ module IEEE_EXCEPTIONS
   end type
 
   interface IEEE_SUPPORT_FLAG
-    module procedure IEEE_SUPPORT_FLAG_NOARG, &
-                     IEEE_SUPPORT_FLAG_4, &
-                     IEEE_SUPPORT_FLAG_8
+    module procedure IEEE_SUPPORT_FLAG_4, &
+                     IEEE_SUPPORT_FLAG_8, &
+#ifdef HAVE_GFC_REAL_10
+                     IEEE_SUPPORT_FLAG_10, &
+#endif
+#ifdef HAVE_GFC_REAL_16
+                     IEEE_SUPPORT_FLAG_16, &
+#endif
+                     IEEE_SUPPORT_FLAG_NOARG
   end interface IEEE_SUPPORT_FLAG
 
   public :: IEEE_SUPPORT_FLAG, IEEE_SUPPORT_HALTING
@@ -214,5 +220,23 @@ contains
     real(kind=8), intent(in) :: X
     res = IEEE_SUPPORT_FLAG_NOARG(FLAG)
   end function
+
+#ifdef HAVE_GFC_REAL_10
+  pure logical function IEEE_SUPPORT_FLAG_10 (FLAG, X) result(res)
+    implicit none
+    type(IEEE_FLAG_TYPE), intent(in) :: FLAG
+    real(kind=10), intent(in) :: X
+    res = IEEE_SUPPORT_FLAG_NOARG(FLAG)
+  end function
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+  pure logical function IEEE_SUPPORT_FLAG_16 (FLAG, X) result(res)
+    implicit none
+    type(IEEE_FLAG_TYPE), intent(in) :: FLAG
+    real(kind=16), intent(in) :: X
+    res = IEEE_SUPPORT_FLAG_NOARG(FLAG)
+  end function
+#endif
 
 end module IEEE_EXCEPTIONS

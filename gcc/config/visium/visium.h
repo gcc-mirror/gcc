@@ -29,10 +29,8 @@
 #define CPP_SPEC "%{mcpu=gr6:-D__gr6__; :-D__gr5__}"
 
 /* Targets of a link */
-#define LIB_SPEC "\
-%{msim   : --start-group -lc -lsim --end-group   ; \
-  mdebug : --start-group -lc -ldebug --end-group ; \
-         : -lc -lnosys }"
+#define LIB_SPEC \
+  "--start-group -lc %{msim:-lsim; mdebug:-ldebug; :-lserial} --end-group"
 
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 #define STARTFILE_SPEC "crti.o%s crtbegin.o%s crt0.o%s"
@@ -1717,14 +1715,14 @@ do									\
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)      \
 ( fputs ("\n\t.comm  ", (STREAM)),                        \
   assemble_name ((STREAM), (NAME)),                         \
-  fprintf ((STREAM), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", ROUNDED))
+  fprintf ((STREAM), "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", ROUNDED))
 
 /* This says how to output assembler code to declare an
    unitialised internal linkage data object. */
 #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)     \
 ( fputs ("\n\t.lcomm ", (STREAM)),                      \
   assemble_name ((STREAM), (NAME)),                     \
-  fprintf ((STREAM), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", ROUNDED))
+  fprintf ((STREAM), "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", ROUNDED))
 
 /* Prettify the assembly.  */
 extern int visium_indent_opcode;

@@ -3,7 +3,7 @@
 
 class C {
 private:
-  static int f(int); // { dg-error "private" }
+  static int f(int); // { dg-message "private" }
   static int f(char);
 };
 

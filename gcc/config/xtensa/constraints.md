@@ -19,7 +19,7 @@
 
 ;; Register constraints.
 
-(define_register_constraint "a" "GR_REGS"
+(define_register_constraint "a" "TARGET_WINDOWED_ABI ? GR_REGS : AR_REGS"
  "General-purpose AR registers @code{a0}-@code{a15},
   except @code{a1} (@code{sp}).")
 
@@ -36,7 +36,7 @@
  "Floating-point registers @code{f0}-@code{f15}; only available if the
   Xtensa Floating-Pointer Coprocessor is configured.")
 
-(define_register_constraint "q" "SP_REG"
+(define_register_constraint "q" "TARGET_WINDOWED_ABI ? SP_REG : NO_REGS"
  "@internal
   The stack pointer (register @code{a1}).")
 
@@ -53,7 +53,7 @@
   General-purpose AR registers, but only if the Xtensa 16-Bit Integer
   Multiply Option is configured.")
 
-(define_register_constraint "D" "TARGET_DENSITY ? GR_REGS: NO_REGS"
+(define_register_constraint "D" "TARGET_DENSITY ? (TARGET_WINDOWED_ABI ? GR_REGS : AR_REGS) : NO_REGS"
  "@internal
   General-purpose AR registers, but only if the Xtensa Code Density
   Option is configured.")
@@ -110,6 +110,11 @@
   instruction."
  (and (match_code "const_int")
       (match_test "xtensa_mask_immediate (ival)")))
+
+(define_constraint "Y"
+ "A constant that can be used in relaxed MOVI instructions."
+ (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
+      (match_test "TARGET_AUTO_LITPOOLS")))
 
 ;; Memory constraints.  Do not use define_memory_constraint here.  Doing so
 ;; causes reload to force some constants into the constant pool, but since

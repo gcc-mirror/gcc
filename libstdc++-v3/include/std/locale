@@ -39,5 +39,8 @@
 #include <bits/locale_classes.h>
 #include <bits/locale_facets.h>
 #include <bits/locale_facets_nonio.h>
+#if __cplusplus >= 201103L
+#  include <bits/locale_conv.h>
+#endif
 
 #endif /* _GLIBCXX_LOCALE */

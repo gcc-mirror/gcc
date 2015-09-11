@@ -19,4 +19,3 @@ void g (double x)
    The transformation would also be legal with -ftrapping-math.  */
 
 /* { dg-final { scan-tree-dump "optimizing.* < " "ifcombine" } } */
-/* { dg-final { cleanup-tree-dump "ifcombine" } } */

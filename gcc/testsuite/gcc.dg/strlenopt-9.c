@@ -104,6 +104,4 @@ main ()
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strchr \\(" 3 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
-/* { dg-final { cleanup-tree-dump "strlen" } } */
 /* { dg-final { scan-tree-dump-times "return 4;" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

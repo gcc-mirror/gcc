@@ -12,4 +12,3 @@ void foo (void)
 }
 
 /* { dg-final { scan-tree-dump-not "bar" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

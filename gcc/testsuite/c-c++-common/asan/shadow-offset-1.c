@@ -8,4 +8,3 @@ int f (int *p)
 }
 
 /* { dg-final { scan-tree-dump "12345" "sanopt" }  } */
-/* { dg-final { cleanup-tree-dump "sanopt" } } */

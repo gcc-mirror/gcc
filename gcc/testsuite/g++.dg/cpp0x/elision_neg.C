@@ -12,7 +12,7 @@ struct two   {char x[2];};
 
 class move_only
 {
-    move_only(const move_only&); // { dg-error "is private" }
+    move_only(const move_only&); // { dg-message "private" }
     move_only& operator=(const move_only&);
 public:
     move_only() {}

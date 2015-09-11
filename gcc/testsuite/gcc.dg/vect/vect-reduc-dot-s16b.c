@@ -53,5 +53,4 @@ main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! vect_short_mult } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { { ! vect_widen_sum_hi_to_si } && { ! vect_unpack } } } } } */
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

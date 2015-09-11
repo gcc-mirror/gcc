@@ -16,4 +16,3 @@ foo (ArrT Arr, int Idx)
 }
 
 /* { dg-final { scan-tree-dump-not "WIDEN_MULT_PLUS_EXPR" "widening_mul" } } */
-/* { dg-final { cleanup-tree-dump "widening_mul" } } */

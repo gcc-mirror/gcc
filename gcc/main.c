@@ -33,7 +33,8 @@ int main (int argc, char **argv);
 int
 main (int argc, char **argv)
 {
-  toplev toplev (true);
+  toplev toplev (NULL, /* external_timer */
+		 true /* init_signals */);
 
   return toplev.main (argc, argv);
 }

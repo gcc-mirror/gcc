@@ -30,4 +30,3 @@ int test5(int e)
 /* { dg-final { scan-tree-dump-times "\\(c \& 1\\) == 0" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "\\(d \& 1\\) == 0" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "\\(e \& 1\\) == 0" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

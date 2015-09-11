@@ -57,6 +57,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct hash;
 
+  // Helper struct for SFINAE-poisoning non-enum types.
+  template<typename _Tp, bool = is_enum<_Tp>::value>
+    struct __hash_enum
+    {
+    private:
+      // Private rather than deleted to be non-trivially-copyable.
+      __hash_enum(__hash_enum&&);
+      ~__hash_enum();
+    };
+
+  // Helper struct for hash with enum types.
+  template<typename _Tp>
+    struct __hash_enum<_Tp, true> : public __hash_base<size_t, _Tp>
+    {
+      size_t
+      operator()(_Tp __val) const noexcept
+      {
+       using __type = typename underlying_type<_Tp>::type;
+       return hash<__type>{}(static_cast<__type>(__val));
+      }
+    };
+
+  /// Primary class template hash, usable for enum types only.
+  // Use with non-enum types still SFINAES.
+  template<typename _Tp>
+    struct hash : __hash_enum<_Tp>
+    { };
+
   /// Partial specializations for pointer types.
   template<typename _Tp>
     struct hash<_Tp*> : public __hash_base<size_t, _Tp*>
@@ -120,6 +148,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Explicit specialization for unsigned long long.
   _Cxx_hashtable_define_trivial_hash(unsigned long long)
+
+#ifdef __GLIBCXX_TYPE_INT_N_0
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0 unsigned)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_1
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1 unsigned)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_2
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2 unsigned)
+#endif
+#ifdef __GLIBCXX_TYPE_INT_N_3
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3)
+  _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3 unsigned)
+#endif
 
 #undef _Cxx_hashtable_define_trivial_hash
 

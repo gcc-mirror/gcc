@@ -33,4 +33,3 @@ middle:
 
 /* There should be no calls to strlen.  */
 /* { dg-final { scan-tree-dump-times "strlen" 0 "fab1"} } */
-/* { dg-final { cleanup-tree-dump "fab1" } } */

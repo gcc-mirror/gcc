@@ -7,4 +7,3 @@
 #include "extq_s64.x"
 
 /* { dg-final { scan-assembler-times "ext\[ \t\]+\[vV\]\[0-9\]+\.16\[bB\], ?\[vV\]\[0-9\]+\.16\[bB\], ?\[vV\]\[0-9\]+\.16\[bB\], ?#\[0-9\]+\(?:.8\)?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

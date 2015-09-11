@@ -14,4 +14,3 @@ FUNCTION f( x, dist ) RESULT(s)
   IF( x < 0 ) s = -s
 END FUNCTION f
 
-! { dg-final { cleanup-tree-dump "vect" } }

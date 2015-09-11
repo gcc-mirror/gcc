@@ -5,7 +5,7 @@
 
 class Q {
 	template<class T>
-	class X {		// { dg-error "" } Q::X private
+	class X {		// { dg-message "" } Q::X private
 	};
 };
 template<template<class> class XX>

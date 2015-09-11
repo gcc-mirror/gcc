@@ -52,5 +52,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_udot_qi } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_mult_qi_to_hi && vect_widen_sum_qi_to_si } } } } */
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

@@ -4,6 +4,8 @@
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
 /* { dg-final { scan-assembler-times "rotcr" 24 } } */
 /* { dg-final { scan-assembler-times "shll\t" 1 } } */
+/* { dg-final { scan-assembler-not "and\t#1" } }  */
+/* { dg-final { scan-assembler-not "cmp/pl" } }  */
 
 typedef char bool;
 

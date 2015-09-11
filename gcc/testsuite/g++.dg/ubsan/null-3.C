@@ -17,4 +17,4 @@ main (void)
 // { dg-output "\[^\n\r]*reference binding to null pointer of type 'int'(\n|\r\n|\r)" }
 // { dg-output "\[^\n\r]*reference binding to null pointer of type 'int'(\n|\r\n|\r)" }
 // { dg-output "\[^\n\r]*reference binding to null pointer of type 'int'(\n|\r\n|\r)" }
-// { dg-output "\[^\n\r]*reference binding to null pointer of type 'int'(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*reference binding to null pointer of type 'int'" }

@@ -17,4 +17,3 @@ void test_vsubs64 (void)
   out_int64x1_t = vsub_s64 (arg0_int64x1_t, arg1_int64x1_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

@@ -1,3 +1,40 @@
+2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Remove manual SJLJ check.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* exception.c: Replace SJLJ_EXCEPTIONS by __USING_SJLJ_EXCEPTIONS__.
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* aclocal.m4: Regenerated with automake-1.11.6.
+
+2015-05-04  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* configure: Regenerate.
+
+2015-05-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* acinclude.m4: Include bitfields.m4.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Invoke gt_BITFIELD_TYPE_MATTERS.
+	* encoding.c: Check HAVE_BITFIELD_TYPE_MATTERS.
+
+2015-04-29  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* encoding.c (objc_layout_structure_next_member): Check the value of
+	PCC_BITFIELD_TYPE_MATTERS not if it is defined.
+
+2015-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libobjc/63765
+	* thr.c (_XOPEN_SOURCE): Remove.
+
+2015-01-27  Matthias Klose  <doko@ubuntu.com>
+
+	* sendmsg.c: Add prototypes for __objc_get_forward_imp and get_imp.
+
 2015-01-09  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	PR libobjc/51891

@@ -20,4 +20,3 @@ foo (int a)
 /* { dg-final { scan-tree-dump-times "goto" 0 "fab1" } } */
 /* { dg-final { scan-tree-dump-times "L1:" 0 "fab1" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_unreachable" 0 "fab1" } } */
-/* { dg-final { cleanup-tree-dump "fab1" } } */

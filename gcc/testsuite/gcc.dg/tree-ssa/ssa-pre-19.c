@@ -36,4 +36,3 @@ int foo (int i, int j, int k, int b)
 
 /* All three loads should be eliminated.  */
 /* { dg-final { scan-tree-dump "Eliminated: 3" "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

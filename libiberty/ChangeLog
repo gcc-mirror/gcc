@@ -1,3 +1,145 @@
+2015-08-15  Ian Lance Taylor  <iant@google.com>
+
+	* cp-demangle.c (d_abi_tags): Preserve di->last_name across any
+	ABI tags.
+
+2015-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_real): Remove call to strtod.
+	(strtod): Remove declaration.
+	* testsuite/d-demangle-expected: Update float and complex literal
+	tests to check correct hexadecimal demangling.
+
+2015-07-13  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* cp-demangle.c (d_dump): Fix syntax error.
+	(d_identifier): Adjust type of len to match d_source_name.
+	(d_expression_1): Fix out-of-bounds access.  Check code variable for
+	NULL before dereferencing it.
+	(d_find_pack): Do not recurse for FIXED_TYPE, DEFAULT_ARG and NUMBER.
+	(d_print_comp_inner): Add NULL pointer check.
+	* cp-demangle.h (d_peek_next_char): Define as inline function when
+	CHECK_DEMANGLER is defined.
+	(d_advance): Likewise.
+	* testsuite/demangle-expected: Add new testcases.
+
+2015-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* getruntime.c (RUSAGE_SELF): Define if not already defined.
+	(get_runtime): Use RUSAGE_SELF as argument 1 of getrusage call.
+
+2015-06-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_type): Handle arguments to vendor
+	extended qualifier.
+
+2015-05-22  Yunlian Jiang  <yunlian@google.com>
+
+	* configure.ac: Add AC_GNU_SOURCE.
+	* Makefile.in (COMPILE.c): Add -D_GNU_SOURCE.
+	* configure, config.in: Rebuild.
+	* floatformat.c (_GNU_SOURCE): Don't define if already defined.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_symbol_kinds): New enum.
+	(dlang_parse_symbol): Update signature.  Handle an ambiguity between
+	pascal functions and template value arguments.  Only check for a type
+	if parsing a function, or at the top level.  Return failure if the
+	entire symbol was not successfully demangled.
+	(dlang_identifier): Update signature.  Handle an ambiguity between two
+	adjacent digits in a mangled symbol string.
+	(dlang_type): Update call to dlang_parse_symbol.
+	(dlang_template_args): Likewise.
+	(dlang_parse_template): Likewise.
+	(dlang_demangle): Likewise.
+	* testsuite/d-demangle-expected: Fix bad tests found, and add problematic
+	examples to the unittests.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_template_args): Skip over specialized template
+	parameters in mangled symbol.
+	* testsuite/d-demangle-expected: Add coverage and unittest for specialized
+	template parameters.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_type): Handle cent and ucent types.
+	* testsuite/d-demangle-expected: Add coverage tests for cent and ucent.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_attributes): Handle return attributes, ignoring
+	return parameters in the mangled string.  Return NULL if have encountered
+	an unknown attribute.
+	(dlang_function_args): Handle return parameters in the mangled string.
+	* testsuite/d-demangle-expected: Add coverage tests for functions with
+	return parameters and return attributes.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_identifier): Check encoded length of identifier
+	to verify strncmp matches entire string.
+	* testsuite/d-demangle-expected: Fix wrong test for postblit symbol.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_type_modifiers): New function.
+	(dlang_type_modifier_p): New function.
+	(dlang_call_convention_p): Ignore any kind of type modifier.
+	(dlang_type): Handle and emit the type modifier after delegate types.
+	(dlang_parse_symbol): Handle and emit the type modifier after the symbol.
+	* testsuite/d-demangle-expected: Add coverage tests for all valid
+	usages of function symbols with type modifiers.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_call_convention): Return NULL if have reached the
+	end of the symbol, but expected something to read.
+	(dlang_attributes): Likewise.
+	(dlang_function_type): Likewise.
+	(dlang_type): Likewise.
+	(dlang_identifier): Likewise.
+	(dlang_value): Likewise.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_string): Represent embedded whitespace or
+	non-printable characters as hex or escape sequences.
+	* testsuite/d-demangle-expected: Add test for templates with tabs and
+	newlines embedded into the signature.
+
+2015-05-08  Joel Brobecker  <brobecker@adacore.com>
+
+	* mkstemps.c: #include <time.h> if HAVE_TIME_H is defined
+	but not HAVE_SYS_TIME_H.
+
+2015-04-22  Eli Zaretskii  <eliz@gnu.org>
+
+	* setenv.c <environ>: Declare only if not a macro.
+
+2015-04-14  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* testsuite/Makefile.in (LIBCFLAGS): Add LDFLAGS.
+
+2015-04-10  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
+2015-01-19  Eli Zaretskii  <eliz@gnu.org>
+
+	* strerror.c <sys_nerr, sys_errlist>: Declare only if they aren't
+	macros.
+
 2014-12-24  Uros Bizjak  <ubizjak@gmail.com>
 	    Ben Elliston  <bje@au.ibm.com>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>

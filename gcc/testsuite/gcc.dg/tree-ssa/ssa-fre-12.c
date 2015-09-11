@@ -23,4 +23,3 @@ foo (int y)
 }
 
 /* { dg-final { scan-tree-dump "Replaced S\\\[5\\\].x with 4" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

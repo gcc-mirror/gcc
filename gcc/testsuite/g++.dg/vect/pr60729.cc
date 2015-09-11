@@ -7,4 +7,3 @@ void doSomething(int dim, double *Y, double *A)
     Y[k] += __builtin_fabs (A[k]);
 }
 
-// { dg-final { cleanup-tree-dump "vect" } }

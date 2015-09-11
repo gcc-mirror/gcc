@@ -36,6 +36,10 @@ CC_MODE (CC_DLTU);
 CC_MODE (CC_DGEU);
 CC_MODE (CC_DGTU);
 
+/* Half-precision floating point for __fp16.  */
+FLOAT_MODE (HF, 2, 0);
+ADJUST_FLOAT_FORMAT (HF, &ieee_half_format);
+
 /* Vector modes.  */
 VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI.  */
 VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI.  */

@@ -18,4 +18,3 @@ main ()
 
 /* { dg-final { scan-tree-dump-times "ASAN_" 1 "asan0" } }  */
 /* { dg-final { scan-tree-dump "ASAN_CHECK \\(.*, 4\\);" "asan0" } }  */
-/* { dg-final { cleanup-tree-dump "asan0" } } */

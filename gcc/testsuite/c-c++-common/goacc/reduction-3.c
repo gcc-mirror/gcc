@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alloca } */
 /* double reductions.  */
 
 #define vl 32

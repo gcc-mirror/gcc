@@ -11,4 +11,3 @@ void foo()
   bar();
 }
 /* { dg-final { scan-tree-dump-times "function body can be overwritten at link time" 1 "einline" } } */
-/* { dg-final { cleanup-tree-dump "einline" } } */

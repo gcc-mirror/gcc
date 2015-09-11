@@ -23,28 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "stringpool.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -55,31 +42,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "params.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
 #include "except.h"
 #include "lto-symtab.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
-#include "lto-streamer.h"
-#include "data-streamer.h"
+#include "target.h"
 #include "gimple-streamer.h"
-#include "tree-streamer.h"
-#include "streamer-hooks.h"
 #include "cfgloop.h"
 #include "builtins.h"
 #include "gomp-constants.h"
@@ -207,8 +178,10 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
   expanded_location xloc;
 
   loc = LOCATION_LOCUS (loc);
-  bp_pack_value (bp, loc == UNKNOWN_LOCATION, 1);
-  if (loc == UNKNOWN_LOCATION)
+  bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT,
+		        loc < RESERVED_LOCATION_COUNT
+			? loc : RESERVED_LOCATION_COUNT);
+  if (loc < RESERVED_LOCATION_COUNT)
     return;
 
   xloc = expand_location (loc);
@@ -218,8 +191,12 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
   bp_pack_value (bp, ob->current_col != xloc.column, 1);
 
   if (ob->current_file != xloc.file)
-    bp_pack_string (ob, bp, xloc.file, true);
+    {
+      bp_pack_string (ob, bp, xloc.file, true);
+      bp_pack_value (bp, xloc.sysp, 1);
+    }
   ob->current_file = xloc.file;
+  ob->current_sysp = xloc.sysp;
 
   if (ob->current_line != xloc.line)
     bp_pack_var_len_unsigned (bp, xloc.line);
@@ -385,9 +362,7 @@ lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
 {
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
-  bitpack_d bp = bitpack_create (ob->main_stream);
-  streamer_pack_tree_bitfields (ob, &bp, expr);
-  streamer_write_bitpack (&bp);
+  streamer_write_tree_bitfields (ob, expr);
 
   /* Write all the pointer fields in EXPR.  */
   streamer_write_tree_body (ob, expr, ref_p);
@@ -426,9 +401,9 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_zero (ob);
 }
 
-/* Emit the physical representation of tree node EXPR to output block
-   OB.  If THIS_REF_P is true, the leaves of EXPR are emitted as references
-   via lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
+/* Emit the physical representation of tree node EXPR to output block OB,
+   If THIS_REF_P is true, the leaves of EXPR are emitted as references via
+   lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
 
 static void
 lto_output_tree_1 (struct output_block *ob, tree expr, hashval_t hash,
@@ -487,31 +462,229 @@ private:
     unsigned int dfsnum;
     unsigned int low;
   };
+  struct worklist
+  {
+    tree expr;
+    sccs *from_state;
+    sccs *cstate;
+    bool ref_p;
+    bool this_ref_p;
+  };
 
   static int scc_entry_compare (const void *, const void *);
 
   void DFS_write_tree_body (struct output_block *ob,
-			    tree expr, sccs *expr_state, bool ref_p,
-			    bool single_p);
+			    tree expr, sccs *expr_state, bool ref_p);
 
   void DFS_write_tree (struct output_block *ob, sccs *from_state,
-		       tree expr, bool ref_p, bool this_ref_p,
-		       bool single_p);
-  hashval_t
-  hash_scc (struct output_block *ob, unsigned first, unsigned size);
+		       tree expr, bool ref_p, bool this_ref_p);
 
-  unsigned int next_dfs_num;
+  hashval_t
+  hash_scc (struct output_block *ob, unsigned first, unsigned size,
+	    bool ref_p, bool this_ref_p);
+
   hash_map<tree, sccs *> sccstate;
+  vec<worklist> worklist_vec;
   struct obstack sccstate_obstack;
 };
+
+/* Emit the physical representation of tree node EXPR to output block OB,
+   using depth-first search on the subgraph.  If THIS_REF_P is true, the
+   leaves of EXPR are emitted as references via lto_output_tree_ref.
+   REF_P is used for streaming siblings of EXPR.  If SINGLE_P is true,
+   this is for a rewalk of a single leaf SCC.  */
 
 DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  bool single_p)
 {
+  unsigned int next_dfs_num = 1;
   sccstack.create (0);
   gcc_obstack_init (&sccstate_obstack);
-  next_dfs_num = 1;
-  DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p, single_p);
+  worklist_vec = vNULL;
+  DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p);
+  while (!worklist_vec.is_empty ())
+    {
+      worklist &w = worklist_vec.last ();
+      expr = w.expr;
+      sccs *from_state = w.from_state;
+      sccs *cstate = w.cstate;
+      ref_p = w.ref_p;
+      this_ref_p = w.this_ref_p;
+      if (cstate == NULL)
+	{
+	  sccs **slot = &sccstate.get_or_insert (expr);
+	  cstate = *slot;
+	  if (cstate)
+	    {
+	      gcc_checking_assert (from_state);
+	      if (cstate->dfsnum < from_state->dfsnum)
+		from_state->low = MIN (cstate->dfsnum, from_state->low);
+	      worklist_vec.pop ();
+	      continue;
+	    }
+
+	  scc_entry e = { expr, 0 };
+	  /* Not yet visited.  DFS recurse and push it onto the stack.  */
+	  *slot = cstate = XOBNEW (&sccstate_obstack, struct sccs);
+	  sccstack.safe_push (e);
+	  cstate->dfsnum = next_dfs_num++;
+	  cstate->low = cstate->dfsnum;
+	  w.cstate = cstate;
+
+	  if (streamer_handle_as_builtin_p (expr))
+	    ;
+	  else if (TREE_CODE (expr) == INTEGER_CST
+		   && !TREE_OVERFLOW (expr))
+	    DFS_write_tree (ob, cstate, TREE_TYPE (expr), ref_p, ref_p);
+	  else
+	    {
+	      DFS_write_tree_body (ob, expr, cstate, ref_p);
+
+	      /* Walk any LTO-specific edges.  */
+	      if (DECL_P (expr)
+		  && TREE_CODE (expr) != FUNCTION_DECL
+		  && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
+		{
+		  /* Handle DECL_INITIAL for symbols.  */
+		  tree initial
+		    = get_symbol_initial_value (ob->decl_state->symtab_node_encoder,
+						expr);
+		  DFS_write_tree (ob, cstate, initial, ref_p, ref_p);
+		}
+	    }
+	  continue;
+	}
+
+      /* See if we found an SCC.  */
+      if (cstate->low == cstate->dfsnum)
+	{
+	  unsigned first, size;
+	  tree x;
+
+	  /* If we are re-walking a single leaf SCC just pop it,
+	     let earlier worklist item access the sccstack.  */
+	  if (single_p)
+	    {
+	      worklist_vec.pop ();
+	      continue;
+	    }
+
+	  /* Pop the SCC and compute its size.  */
+	  first = sccstack.length ();
+	  do
+	    {
+	      x = sccstack[--first].t;
+	    }
+	  while (x != expr);
+	  size = sccstack.length () - first;
+
+	  /* No need to compute hashes for LTRANS units, we don't perform
+	     any merging there.  */
+	  hashval_t scc_hash = 0;
+	  unsigned scc_entry_len = 0;
+	  if (!flag_wpa)
+	    {
+	      scc_hash = hash_scc (ob, first, size, ref_p, this_ref_p);
+
+	      /* Put the entries with the least number of collisions first.  */
+	      unsigned entry_start = 0;
+	      scc_entry_len = size + 1;
+	      for (unsigned i = 0; i < size;)
+		{
+		  unsigned from = i;
+		  for (i = i + 1; i < size
+		       && (sccstack[first + i].hash
+			   == sccstack[first + from].hash); ++i)
+		    ;
+		  if (i - from < scc_entry_len)
+		    {
+		      scc_entry_len = i - from;
+		      entry_start = from;
+		    }
+		}
+	      for (unsigned i = 0; i < scc_entry_len; ++i)
+		std::swap (sccstack[first + i],
+			   sccstack[first + entry_start + i]);
+
+	      if (scc_entry_len == 1)
+		; /* We already sorted SCC deterministically in hash_scc.  */
+	      else
+		/* Check that we have only one SCC.
+		   Naturally we may have conflicts if hash function is not
+ 		   strong enough.  Lets see how far this gets.  */
+		{
+#ifdef ENABLE_CHECKING
+		  gcc_unreachable ();
+#endif
+		}
+	    }
+
+	  /* Write LTO_tree_scc.  */
+	  streamer_write_record_start (ob, LTO_tree_scc);
+	  streamer_write_uhwi (ob, size);
+	  streamer_write_uhwi (ob, scc_hash);
+
+	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
+	     All INTEGER_CSTs need to be handled this way as we need
+	     their type to materialize them.  Also builtins are handled
+	     this way.
+	     ???  We still wrap these in LTO_tree_scc so at the
+	     input side we can properly identify the tree we want
+	     to ultimatively return.  */
+	  if (size == 1)
+	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
+	  else
+	    {
+	      /* Write the size of the SCC entry candidates.  */
+	      streamer_write_uhwi (ob, scc_entry_len);
+
+	      /* Write all headers and populate the streamer cache.  */
+	      for (unsigned i = 0; i < size; ++i)
+		{
+		  hashval_t hash = sccstack[first+i].hash;
+		  tree t = sccstack[first+i].t;
+		  bool exists_p = streamer_tree_cache_insert (ob->writer_cache,
+							      t, hash, NULL);
+		  gcc_assert (!exists_p);
+
+		  if (!lto_is_streamable (t))
+		    internal_error ("tree code %qs is not supported "
+				    "in LTO streams",
+				    get_tree_code_name (TREE_CODE (t)));
+
+		  gcc_checking_assert (!streamer_handle_as_builtin_p (t));
+
+		  /* Write the header, containing everything needed to
+		     materialize EXPR on the reading side.  */
+		  streamer_write_tree_header (ob, t);
+		}
+
+	      /* Write the bitpacks and tree references.  */
+	      for (unsigned i = 0; i < size; ++i)
+		{
+		  lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
+
+		  /* Mark the end of the tree.  */
+		  streamer_write_zero (ob);
+		}
+	    }
+
+	  /* Finally truncate the vector.  */
+	  sccstack.truncate (first);
+
+	  if (from_state)
+	    from_state->low = MIN (from_state->low, cstate->low);
+	  worklist_vec.pop ();
+	  continue;
+	}
+
+      gcc_checking_assert (from_state);
+      from_state->low = MIN (from_state->low, cstate->low);
+      if (cstate->dfsnum < from_state->dfsnum)
+	from_state->low = MIN (cstate->dfsnum, from_state->low);
+      worklist_vec.pop ();
+    }
+  worklist_vec.release ();
 }
 
 DFS::~DFS ()
@@ -525,11 +698,10 @@ DFS::~DFS ()
 
 void
 DFS::DFS_write_tree_body (struct output_block *ob,
-			  tree expr, sccs *expr_state, bool ref_p,
-			  bool single_p)
+			  tree expr, sccs *expr_state, bool ref_p)
 {
 #define DFS_follow_tree_edge(DEST) \
-  DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p, single_p)
+  DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p)
 
   enum tree_code code;
 
@@ -558,7 +730,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (expr)
 	  && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
-	  && ANON_AGGRNAME_P (DECL_NAME (expr)))
+	  && anon_aggrname_p (DECL_NAME (expr)))
 	;
       else
 	DFS_follow_tree_edge (DECL_NAME (expr));
@@ -682,7 +854,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	  /* We have to stream externals in the block chain as
 	     non-references.  See also
 	     tree-streamer-out.c:streamer_write_chain.  */
-	  DFS_write_tree (ob, expr_state, t, ref_p, false, single_p);
+	  DFS_write_tree (ob, expr_state, t, ref_p, false);
 	else
 	  DFS_follow_tree_edge (t);
 
@@ -937,7 +1109,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     {
       hstate.add_wide_int (TYPE_MODE (t));
       hstate.add_flag (TYPE_STRING_FLAG (t));
-      hstate.add_flag (TYPE_NO_FORCE_BLK (t));
+      /* TYPE_NO_FORCE_BLK is private to stor-layout and need
+ 	 no streaming.  */
       hstate.add_flag (TYPE_NEEDS_CONSTRUCTING (t));
       hstate.add_flag (TYPE_PACKED (t));
       hstate.add_flag (TYPE_RESTRICT (t));
@@ -998,7 +1171,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (t)
 	  && TREE_CODE (DECL_NAME (t)) == IDENTIFIER_NODE
-	  && ANON_AGGRNAME_P (DECL_NAME (t)))
+	  && anon_aggrname_p (DECL_NAME (t)))
 	;
       else
 	visit (DECL_NAME (t));
@@ -1186,54 +1359,53 @@ DFS::scc_entry_compare (const void *p1_, const void *p2_)
   return 0;
 }
 
-/* Return a hash value for the SCC on the SCC stack from FIRST with
-   size SIZE.  */
+/* Return a hash value for the SCC on the SCC stack from FIRST with SIZE.
+   THIS_REF_P and REF_P are as passed to lto_output_tree for FIRST.  */
 
 hashval_t
-DFS::hash_scc (struct output_block *ob,
-	       unsigned first, unsigned size)
+DFS::hash_scc (struct output_block *ob, unsigned first, unsigned size,
+	       bool ref_p, bool this_ref_p)
 {
   unsigned int last_classes = 0, iterations = 0;
 
   /* Compute hash values for the SCC members.  */
   for (unsigned i = 0; i < size; ++i)
-    sccstack[first+i].hash = hash_tree (ob->writer_cache, NULL,
-					sccstack[first+i].t);
+    sccstack[first+i].hash
+      = hash_tree (ob->writer_cache, NULL, sccstack[first+i].t);
 
   if (size == 1)
     return sccstack[first].hash;
 
   /* We aim to get unique hash for every tree within SCC and compute hash value
-     of the whole SCC by combing all values together in an stable (entry point
+     of the whole SCC by combining all values together in a stable (entry-point
      independent) order.  This guarantees that the same SCC regions within
      different translation units will get the same hash values and therefore
      will be merged at WPA time.
 
-     Often the hashes are already unique.  In that case we compute scc hash
+     Often the hashes are already unique.  In that case we compute the SCC hash
      by combining individual hash values in an increasing order.
 
-     If thre are duplicates we seek at least one tree with unique hash (and
-     pick one with minimal hash and this property).  Then we obtain stable
-     order by DFS walk starting from this unique tree and then use index
+     If there are duplicates, we seek at least one tree with unique hash (and
+     pick one with minimal hash and this property).  Then we obtain a stable
+     order by DFS walk starting from this unique tree and then use the index
      within this order to make individual hash values unique.
 
      If there is no tree with unique hash, we iteratively propagate the hash
      values across the internal edges of SCC.  This usually quickly leads
      to unique hashes.  Consider, for example, an SCC containing two pointers
-     that are identical except for type they point and assume that these
-     types are also part of the SCC.
-     The propagation will add the points-to type information into their hash
-     values.  */
+     that are identical except for the types they point to and assume that
+     these types are also part of the SCC.  The propagation will add the
+     points-to type information into their hash values.  */
   do
     {
-      /* Sort the SCC so we can easily see check for uniqueness.  */
+      /* Sort the SCC so we can easily check for uniqueness.  */
       qsort (&sccstack[first], size, sizeof (scc_entry), scc_entry_compare);
 
       unsigned int classes = 1;
       int firstunique = -1;
 
-      /* Find tree with lowest unique hash (if it exists) and compute
-	 number of equivalence classes.  */
+      /* Find the tree with lowest unique hash (if it exists) and compute
+	 the number of equivalence classes.  */
       if (sccstack[first].hash != sccstack[first+1].hash)
 	firstunique = 0;
       for (unsigned i = 1; i < size; ++i)
@@ -1246,7 +1418,7 @@ DFS::hash_scc (struct output_block *ob,
 	      firstunique = i;
 	  }
 
-      /* If we found tree with unique hash; stop the iteration.  */
+      /* If we found a tree with unique hash, stop the iteration.  */
       if (firstunique != -1
 	  /* Also terminate if we run out of iterations or if the number of
 	     equivalence classes is no longer increasing.
@@ -1258,17 +1430,18 @@ DFS::hash_scc (struct output_block *ob,
           hashval_t scc_hash;
 
 	  /* If some hashes are not unique (CLASSES != SIZE), use the DFS walk
-	     starting from FIRSTUNIQUE to obstain stable order.  */
+	     starting from FIRSTUNIQUE to obtain a stable order.  */
 	  if (classes != size && firstunique != -1)
 	    {
 	      hash_map <tree, hashval_t> map(size*2);
 
 	      /* Store hash values into a map, so we can associate them with
-		 reordered SCC.  */
+		 the reordered SCC.  */
 	      for (unsigned i = 0; i < size; ++i)
 		map.put (sccstack[first+i].t, sccstack[first+i].hash);
 
-	      DFS again (ob, sccstack[first+firstunique].t, false, false, true);
+	      DFS again (ob, sccstack[first+firstunique].t, ref_p, this_ref_p,
+			 true);
 	      gcc_assert (again.sccstack.length () == size);
 
 	      memcpy (sccstack.address () + first,
@@ -1277,8 +1450,8 @@ DFS::hash_scc (struct output_block *ob,
 
 	      /* Update hash values of individual members by hashing in the
 		 index within the stable order.  This ensures uniqueness.
-		 Also compute the scc_hash by mixing in all hash values in the
-		 stable order we obtained.  */
+		 Also compute the SCC hash by mixing in all hash values in
+		 the stable order we obtained.  */
 	      sccstack[first].hash = *map.get (sccstack[first].t);
 	      scc_hash = sccstack[first].hash;
 	      for (unsigned i = 1; i < size; ++i)
@@ -1286,31 +1459,33 @@ DFS::hash_scc (struct output_block *ob,
 		  sccstack[first+i].hash
 		    = iterative_hash_hashval_t (i,
 						*map.get (sccstack[first+i].t));
-		  scc_hash = iterative_hash_hashval_t (scc_hash,
-						       sccstack[first+i].hash);
+		  scc_hash
+		    = iterative_hash_hashval_t (scc_hash,
+						sccstack[first+i].hash);
 		}
 	    }
-	  /* If we got unique hash values for each tree, then sort already
-	     ensured entry point independent order.  Only compute the final
-	     scc hash.
+	  /* If we got a unique hash value for each tree, then sort already
+	     ensured entry-point independent order.  Only compute the final
+	     SCC hash.
 
 	     If we failed to find the unique entry point, we go by the same
-	     route. We will eventually introduce unwanted hash conflicts.  */
+	     route.  We will eventually introduce unwanted hash conflicts.  */
 	  else
 	    {
 	      scc_hash = sccstack[first].hash;
 	      for (unsigned i = 1; i < size; ++i)
-		scc_hash = iterative_hash_hashval_t (scc_hash,
-						     sccstack[first+i].hash);
-	      /* We can not 100% guarantee that the hash will not conflict in
-		 in a way so the unique hash is not found.  This however
-		 should be extremely rare situation.  ICE for now so possible
-		 issues are found and evaulated.  */
+		scc_hash
+		  = iterative_hash_hashval_t (scc_hash, sccstack[first+i].hash);
+
+	      /* We cannot 100% guarantee that the hash won't conflict so as
+		 to make it impossible to find a unique hash.  This however
+		 should be an extremely rare case.  ICE for now so possible
+		 issues are found and evaluated.  */
 	      gcc_checking_assert (classes == size);
 	    }
 
-	  /* To avoid conflicts across SCCs iteratively hash the whole SCC
-	     hash into the hash of each of the elements.  */
+	  /* To avoid conflicts across SCCs, iteratively hash the whole SCC
+	     hash into the hash of each element.  */
 	  for (unsigned i = 0; i < size; ++i)
 	    sccstack[first+i].hash
 	      = iterative_hash_hashval_t (sccstack[first+i].hash, scc_hash);
@@ -1322,15 +1497,14 @@ DFS::hash_scc (struct output_block *ob,
 
       /* We failed to identify the entry point; propagate hash values across
 	 the edges.  */
-      {
-	hash_map <tree, hashval_t> map(size*2);
-	for (unsigned i = 0; i < size; ++i)
-	  map.put (sccstack[first+i].t, sccstack[first+i].hash);
+      hash_map <tree, hashval_t> map(size*2);
 
-	for (unsigned i = 0; i < size; i++)
-	  sccstack[first+i].hash = hash_tree (ob->writer_cache, &map,
-					      sccstack[first+i].t);
-      }
+      for (unsigned i = 0; i < size; ++i)
+	map.put (sccstack[first+i].t, sccstack[first+i].hash);
+
+      for (unsigned i = 0; i < size; i++)
+	sccstack[first+i].hash
+	  = hash_tree (ob->writer_cache, &map, sccstack[first+i].t);
     }
   while (true);
 }
@@ -1341,10 +1515,8 @@ DFS::hash_scc (struct output_block *ob,
 
 void
 DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
-		     tree expr, bool ref_p, bool this_ref_p, bool single_p)
+		     tree expr, bool ref_p, bool this_ref_p)
 {
-  unsigned ix;
-
   /* Handle special cases.  */
   if (expr == NULL_TREE)
     return;
@@ -1354,175 +1526,22 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
     return;
 
   /* Check if we already streamed EXPR.  */
-  if (streamer_tree_cache_lookup (ob->writer_cache, expr, &ix))
+  if (streamer_tree_cache_lookup (ob->writer_cache, expr, NULL))
     return;
 
-  sccs **slot = &sccstate.get_or_insert (expr);
-  sccs *cstate = *slot;
-  if (!cstate)
-    {
-      scc_entry e = { expr, 0 };
-      /* Not yet visited.  DFS recurse and push it onto the stack.  */
-      *slot = cstate = XOBNEW (&sccstate_obstack, struct sccs);
-      sccstack.safe_push (e);
-      cstate->dfsnum = next_dfs_num++;
-      cstate->low = cstate->dfsnum;
-
-      if (streamer_handle_as_builtin_p (expr))
-	;
-      else if (TREE_CODE (expr) == INTEGER_CST
-	       && !TREE_OVERFLOW (expr))
-	DFS_write_tree (ob, cstate, TREE_TYPE (expr), ref_p, ref_p, single_p);
-      else
-	{
-	  DFS_write_tree_body (ob, expr, cstate, ref_p, single_p);
-
-	  /* Walk any LTO-specific edges.  */
-	  if (DECL_P (expr)
-	      && TREE_CODE (expr) != FUNCTION_DECL
-	      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-	    {
-	      /* Handle DECL_INITIAL for symbols.  */
-	      tree initial = get_symbol_initial_value (ob->decl_state->symtab_node_encoder,
-						       expr);
-	      DFS_write_tree (ob, cstate, initial, ref_p, ref_p, single_p);
-	    }
-	}
-
-      /* See if we found an SCC.  */
-      if (cstate->low == cstate->dfsnum)
-	{
-	  unsigned first, size;
-	  tree x;
-
-	  /* If we are re-walking a single leaf-SCC just return and
-	     let the caller access the sccstack.  */
-	  if (single_p)
-	    return;
-
-	  /* Pop the SCC and compute its size.  */
-	  first = sccstack.length ();
-	  do
-	    {
-	      x = sccstack[--first].t;
-	    }
-	  while (x != expr);
-	  size = sccstack.length () - first;
-
-	  /* No need to compute hashes for LTRANS units, we don't perform
-	     any merging there.  */
-	  hashval_t scc_hash = 0;
-	  unsigned scc_entry_len = 0;
-	  if (!flag_wpa)
-	    {
-	      scc_hash = hash_scc (ob, first, size);
-
-	      /* Put the entries with the least number of collisions first.  */
-	      unsigned entry_start = 0;
-	      scc_entry_len = size + 1;
-	      for (unsigned i = 0; i < size;)
-		{
-		  unsigned from = i;
-		  for (i = i + 1; i < size
-		       && (sccstack[first + i].hash
-			   == sccstack[first + from].hash); ++i)
-		    ;
-		  if (i - from < scc_entry_len)
-		    {
-		      scc_entry_len = i - from;
-		      entry_start = from;
-		    }
-		}
-	      for (unsigned i = 0; i < scc_entry_len; ++i)
-		{
-		  scc_entry tem = sccstack[first + i];
-		  sccstack[first + i] = sccstack[first + entry_start + i];
-		  sccstack[first + entry_start + i] = tem;
-		}
-
-	      if (scc_entry_len == 1)
-		; /* We already sorted SCC deterministically in hash_scc.  */
-	      else
-		/* Check that we have only one SCC.
-		   Naturally we may have conflicts if hash function is not
- 		   strong enough.  Lets see how far this gets.  */
-		{
-#ifdef ENABLE_CHECKING
-		  gcc_unreachable ();
-#endif
-		}
-	    }
-
-	  /* Write LTO_tree_scc.  */
-	  streamer_write_record_start (ob, LTO_tree_scc);
-	  streamer_write_uhwi (ob, size);
-	  streamer_write_uhwi (ob, scc_hash);
-
-	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
-	     All INTEGER_CSTs need to be handled this way as we need
-	     their type to materialize them.  Also builtins are handled
-	     this way.
-	     ???  We still wrap these in LTO_tree_scc so at the
-	     input side we can properly identify the tree we want
-	     to ultimatively return.  */
-	  if (size == 1)
-	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
-	  else
-	    {
-	      /* Write the size of the SCC entry candidates.  */
-	      streamer_write_uhwi (ob, scc_entry_len);
-
-	      /* Write all headers and populate the streamer cache.  */
-	      for (unsigned i = 0; i < size; ++i)
-		{
-		  hashval_t hash = sccstack[first+i].hash;
-		  tree t = sccstack[first+i].t;
-		  bool exists_p = streamer_tree_cache_insert (ob->writer_cache,
-							      t, hash, &ix);
-		  gcc_assert (!exists_p);
-
-		  if (!lto_is_streamable (t))
-		    internal_error ("tree code %qs is not supported "
-				    "in LTO streams",
-				    get_tree_code_name (TREE_CODE (t)));
-
-		  gcc_checking_assert (!streamer_handle_as_builtin_p (t));
-
-		  /* Write the header, containing everything needed to
-		     materialize EXPR on the reading side.  */
-		  streamer_write_tree_header (ob, t);
-		}
-
-	      /* Write the bitpacks and tree references.  */
-	      for (unsigned i = 0; i < size; ++i)
-		{
-		  lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
-
-		  /* Mark the end of the tree.  */
-		  streamer_write_zero (ob);
-		}
-	    }
-
-	  /* Finally truncate the vector.  */
-	  sccstack.truncate (first);
-
-	  if (from_state)
-	    from_state->low = MIN (from_state->low, cstate->low);
-	  return;
-	}
-
-      if (from_state)
-	from_state->low = MIN (from_state->low, cstate->low);
-    }
-  gcc_checking_assert (from_state);
-  if (cstate->dfsnum < from_state->dfsnum)
-    from_state->low = MIN (cstate->dfsnum, from_state->low);
+  worklist w;
+  w.expr = expr;
+  w.from_state = from_state;
+  w.cstate = NULL;
+  w.ref_p = ref_p;
+  w.this_ref_p = this_ref_p;
+  worklist_vec.safe_push (w);
 }
 
 
-/* Emit the physical representation of tree node EXPR to output block
-   OB.  If THIS_REF_P is true, the leaves of EXPR are emitted as references
-   via lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
+/* Emit the physical representation of tree node EXPR to output block OB.
+   If THIS_REF_P is true, the leaves of EXPR are emitted as references via
+   lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
 
 void
 lto_output_tree (struct output_block *ob, tree expr,
@@ -2644,6 +2663,96 @@ produce_symtab (struct output_block *ob)
 }
 
 
+/* Init the streamer_mode_table for output, where we collect info on what
+   machine_mode values have been streamed.  */
+void
+lto_output_init_mode_table (void)
+{
+  memset (streamer_mode_table, '\0', MAX_MACHINE_MODE);
+}
+
+
+/* Write the mode table.  */
+static void
+lto_write_mode_table (void)
+{
+  struct output_block *ob;
+  ob = create_output_block (LTO_section_mode_table);
+  bitpack_d bp = bitpack_create (ob->main_stream);
+
+  /* Ensure that for GET_MODE_INNER (m) != m we have
+     also the inner mode marked.  */
+  for (int i = 0; i < (int) MAX_MACHINE_MODE; i++)
+    if (streamer_mode_table[i])
+      {
+	machine_mode m = (machine_mode) i;
+	if (GET_MODE_INNER (m) != m)
+	  streamer_mode_table[(int) GET_MODE_INNER (m)] = 1;
+      }
+  /* First stream modes that have GET_MODE_INNER (m) == m,
+     so that we can refer to them afterwards.  */
+  for (int pass = 0; pass < 2; pass++)
+    for (int i = 0; i < (int) MAX_MACHINE_MODE; i++)
+      if (streamer_mode_table[i] && i != (int) VOIDmode && i != (int) BLKmode)
+	{
+	  machine_mode m = (machine_mode) i;
+	  if ((GET_MODE_INNER (m) == m) ^ (pass == 0))
+	    continue;
+	  bp_pack_value (&bp, m, 8);
+	  bp_pack_enum (&bp, mode_class, MAX_MODE_CLASS, GET_MODE_CLASS (m));
+	  bp_pack_value (&bp, GET_MODE_SIZE (m), 8);
+	  bp_pack_value (&bp, GET_MODE_PRECISION (m), 16);
+	  bp_pack_value (&bp, GET_MODE_INNER (m), 8);
+	  bp_pack_value (&bp, GET_MODE_NUNITS (m), 8);
+	  switch (GET_MODE_CLASS (m))
+	    {
+	    case MODE_FRACT:
+	    case MODE_UFRACT:
+	    case MODE_ACCUM:
+	    case MODE_UACCUM:
+	      bp_pack_value (&bp, GET_MODE_IBIT (m), 8);
+	      bp_pack_value (&bp, GET_MODE_FBIT (m), 8);
+	      break;
+	    case MODE_FLOAT:
+	    case MODE_DECIMAL_FLOAT:
+	      bp_pack_string (ob, &bp, REAL_MODE_FORMAT (m)->name, true);
+	      break;
+	    default:
+	      break;
+	    }
+	  bp_pack_string (ob, &bp, GET_MODE_NAME (m), true);
+	}
+  bp_pack_value (&bp, VOIDmode, 8);
+
+  streamer_write_bitpack (&bp);
+
+  char *section_name
+    = lto_get_section_name (LTO_section_mode_table, NULL, NULL);
+  lto_begin_section (section_name, !flag_wpa);
+  free (section_name);
+
+  /* The entire header stream is computed here.  */
+  struct lto_simple_header_with_strings header;
+  memset (&header, 0, sizeof (header));
+
+  /* Write the header.  */
+  header.major_version = LTO_major_version;
+  header.minor_version = LTO_minor_version;
+
+  header.main_size = ob->main_stream->total_size;
+  header.string_size = ob->string_stream->total_size;
+  lto_write_data (&header, sizeof header);
+
+  /* Put all of the gimple and the string table out the asm file as a
+     block of text.  */
+  lto_write_stream (ob->main_stream);
+  lto_write_stream (ob->string_stream);
+
+  lto_end_section ();
+  destroy_output_block (ob);
+}
+
+
 /* This pass is run after all of the functions are serialized and all
    of the IPA passes have written their serialized forms.  This pass
    causes the vector of all of the global decls and types used from
@@ -2751,4 +2860,6 @@ produce_asm_for_decls (void)
   lto_symtab_encoder_delete (ob->decl_state->symtab_node_encoder);
   lto_function_decl_states.release ();
   destroy_output_block (ob);
+  if (lto_stream_offload_p)
+    lto_write_mode_table ();
 }

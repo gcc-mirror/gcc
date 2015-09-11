@@ -16,4 +16,3 @@ extern double testit()
 }
 
 /* { dg-final { scan-tree-dump "pow" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

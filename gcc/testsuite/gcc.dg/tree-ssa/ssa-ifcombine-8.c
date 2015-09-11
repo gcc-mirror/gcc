@@ -22,4 +22,3 @@ plouf:
    Instead we get u<=, which is acceptable with -fno-trapping-math.  */
 
 /* { dg-final { scan-tree-dump " u<= " "ifcombine" } } */
-/* { dg-final { cleanup-tree-dump "ifcombine" } } */

@@ -76,6 +76,12 @@ Enum(processor_type) String(z196) Value(PROCESSOR_2817_Z196)
 EnumValue
 Enum(processor_type) String(zEC12) Value(PROCESSOR_2827_ZEC12)
 
+EnumValue
+Enum(processor_type) String(z13) Value(PROCESSOR_2964_Z13)
+
+EnumValue
+Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
+
 mbackchain
 Target Report Mask(BACKCHAIN)
 Maintain backchain pointer
@@ -96,13 +102,15 @@ mhard-float
 Target Report RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Enable hardware floating point
 
-mhotpatch
-Target Report Var(s390_deferred_options) Defer
-Prepend the function label with 12 two-byte Nop instructions, and add a four byte Nop instruction after the label for hotpatching.
-
 mhotpatch=
 Target RejectNegative Report Joined Var(s390_deferred_options) Defer
-Prepend the function label with the given number of two-byte Nop instructions, and add a four byte Nop instruction after the label for hotpatching.
+Takes two non-negative integer numbers separated by a comma.
+Prepend the function label with the number of two-byte Nop
+instructions indicated by the first.  Append Nop instructions
+covering the number of halfwords indicated by the second after the
+label.  Nop instructions of the largest possible size are used
+(six, four or two bytes), beginning with the largest possible
+size.  Using 0 for both values disables hotpatching.
 
 mlong-double-128
 Target Report RejectNegative Negative(mlong-double-64) Mask(LONG_DOUBLE_128)
@@ -115,6 +123,10 @@ Use 64-bit long double
 mhtm
 Target Report Mask(OPT_HTM)
 Use hardware transactional execution instructions
+
+mvx
+Target Report Mask(OPT_VX)
+Use hardware vector facility instructions and enable the vector ABI
 
 mpacked-stack
 Target Report Mask(PACKED_STACK)
@@ -143,6 +155,11 @@ Schedule code for given CPU
 mmvcle
 Target Report Mask(MVCLE)
 mvcle use
+
+mzvector
+Target Report Mask(ZVECTOR)
+Enable the z vector language extension providing the context-sensitive
+vector macro and enable the Altivec-style builtins in vecintrin.h
 
 mwarn-dynamicstack
 Target RejectNegative Var(s390_warn_dynamicstack_p)

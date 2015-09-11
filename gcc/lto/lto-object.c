@@ -21,36 +21,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
 #include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
+#include "predict.h"
 #include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
+#include "tree.h"
 #include "gimple.h"
+#include "hard-reg-set.h"
+#include "options.h"
+#include "fold-const.h"
+#include "internal-fn.h"
 #include "diagnostic-core.h"
 #include "lto.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
-#include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "simple-object.h"
 
@@ -208,9 +192,9 @@ lto_obj_file_close (lto_file *file)
       if (errmsg != NULL)
 	{
 	  if (err == 0)
-	    fatal_error ("%s", errmsg);
+	    fatal_error (input_location, "%s", errmsg);
 	  else
-	    fatal_error ("%s: %s", errmsg, xstrerror (err));
+	    fatal_error (input_location, "%s: %s", errmsg, xstrerror (err));
 	}
 
       simple_object_release_write (lo->sobj_w);
@@ -219,7 +203,7 @@ lto_obj_file_close (lto_file *file)
   if (lo->fd != -1)
     {
       if (close (lo->fd) < 0)
-	fatal_error ("close: %s", xstrerror (errno));
+	fatal_error (input_location, "close: %s", xstrerror (errno));
     }
 }
 
@@ -362,9 +346,9 @@ lto_obj_begin_section (const char *name)
   if (lo->section == NULL)
     {
       if (err == 0)
-	fatal_error ("%s", errmsg);
+	fatal_error (input_location, "%s", errmsg);
       else
-	fatal_error ("%s: %s", errmsg, xstrerror (errno));
+	fatal_error (input_location, "%s: %s", errmsg, xstrerror (errno));
     }
 }
 
@@ -386,9 +370,9 @@ lto_obj_append_data (const void *data, size_t len, void *)
   if (errmsg != NULL)
     {
       if (err == 0)
-	fatal_error ("%s", errmsg);
+	fatal_error (input_location, "%s", errmsg);
       else
-	fatal_error ("%s: %s", errmsg, xstrerror (errno));
+	fatal_error (input_location, "%s: %s", errmsg, xstrerror (errno));
     }
 }
 

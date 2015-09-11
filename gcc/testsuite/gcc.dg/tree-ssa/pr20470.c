@@ -12,4 +12,3 @@ void f1()
 }
 
 /* { dg-final { scan-tree-dump-times "ABS_EXPR" 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

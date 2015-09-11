@@ -25,16 +25,15 @@ along with GCC; see the file COPYING3.  If not see
    An early description of this pass can be found in the GCC Summit'06
    paper "GRAPHITE: Polyhedral Analyses and Optimizations for GCC".
    The wiki page http://gcc.gnu.org/wiki/Graphite contains pointers to
-   the related work.
-
-   One important document to read is CLooG's internal manual:
-   http://repo.or.cz/w/cloog-ppl.git?a=blob_plain;f=doc/cloog.texi;hb=HEAD
-   that describes the data structure of loops used in this file, and
-   the functions that are used for transforming the code.  */
+   the related work.  */
 
 #include "config.h"
 
 #ifdef HAVE_isl
+/* Workaround for GMP 5.1.3 bug, see PR56019.  */
+#include <stddef.h>
+
+#include <isl/constraint.h>
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/options.h>
@@ -43,49 +42,26 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "system.h"
 #include "coretypes.h"
+#include "backend.h"
 #include "diagnostic-core.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "cfgloop.h"
+#include "tree-pass.h"
+#include "params.h"
+
+#ifdef HAVE_isl
+#include "cfghooks.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
+#include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop.h"
-#include "tree-dump.h"
-#include "cfgloop.h"
-#include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "sese.h"
+#include "graphite-poly.h"
 #include "dbgcnt.h"
 #include "tree-parloops.h"
-#include "tree-pass.h"
 #include "tree-cfgcleanup.h"
-
-#ifdef HAVE_isl
-
-#include "graphite-poly.h"
 #include "graphite-scop-detection.h"
 #include "graphite-isl-ast-to-gimple.h"
 #include "graphite-sese-to-poly.h"
@@ -305,6 +281,9 @@ graphite_transform_loops (void)
 	scop->ctx = ctx;
 	build_poly_scop (scop);
 
+	if (dump_file && dump_flags)
+	  print_scop (dump_file, scop, 3);
+
 	if (POLY_SCOP_P (scop)
 	    && apply_poly_transforms (scop)
 	    && graphite_regenerate_ast_isl (scop))
@@ -345,13 +324,9 @@ gate_graphite_transforms (void)
 {
   /* Enable -fgraphite pass if any one of the graphite optimization flags
      is turned on.  */
-  if (flag_loop_block
-      || flag_loop_interchange
-      || flag_loop_strip_mine
-      || flag_graphite_identity
+  if (flag_graphite_identity
       || flag_loop_parallelize_all
-      || flag_loop_optimize_isl
-      || flag_loop_unroll_jam)
+      || flag_loop_optimize_isl)
     flag_graphite = 1;
 
   return flag_graphite != 0;

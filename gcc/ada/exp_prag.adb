@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,8 @@ with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
+with Ghost;    use Ghost;
+with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -155,9 +157,425 @@ package body Exp_Prag is
       end if;
    end Arg3;
 
-   ---------------------------
-   -- Expand_Contract_Cases --
-   ---------------------------
+   ---------------------
+   -- Expand_N_Pragma --
+   ---------------------
+
+   procedure Expand_N_Pragma (N : Node_Id) is
+      Pname : constant Name_Id := Pragma_Name (N);
+
+   begin
+      --  Rewrite pragma ignored by Ignore_Pragma to null statement, so that
+      --  the back end or the expander here does not get overenthusiastic and
+      --  start processing such a pragma!
+
+      if Get_Name_Table_Boolean3 (Pname) then
+         Rewrite (N, Make_Null_Statement (Sloc (N)));
+         return;
+      end if;
+
+      --  Note: we may have a pragma whose Pragma_Identifier field is not a
+      --  recognized pragma, and we must ignore it at this stage.
+
+      if Is_Pragma_Name (Pname) then
+         case Get_Pragma_Id (Pname) is
+
+            --  Pragmas requiring special expander action
+
+            when Pragma_Abort_Defer =>
+               Expand_Pragma_Abort_Defer (N);
+
+            when Pragma_Check =>
+               Expand_Pragma_Check (N);
+
+            when Pragma_Common_Object =>
+               Expand_Pragma_Common_Object (N);
+
+            when Pragma_Import =>
+               Expand_Pragma_Import_Or_Interface (N);
+
+            when Pragma_Inspection_Point =>
+               Expand_Pragma_Inspection_Point (N);
+
+            when Pragma_Interface =>
+               Expand_Pragma_Import_Or_Interface (N);
+
+            when Pragma_Interrupt_Priority =>
+               Expand_Pragma_Interrupt_Priority (N);
+
+            when Pragma_Loop_Variant =>
+               Expand_Pragma_Loop_Variant (N);
+
+            when Pragma_Psect_Object =>
+               Expand_Pragma_Psect_Object (N);
+
+            when Pragma_Relative_Deadline =>
+               Expand_Pragma_Relative_Deadline (N);
+
+            when Pragma_Suppress_Initialization =>
+               Expand_Pragma_Suppress_Initialization (N);
+
+            --  All other pragmas need no expander action
+
+            when others => null;
+         end case;
+      end if;
+
+   end Expand_N_Pragma;
+
+   -------------------------------
+   -- Expand_Pragma_Abort_Defer --
+   -------------------------------
+
+   --  An Abort_Defer pragma appears as the first statement in a handled
+   --  statement sequence (right after the begin). It defers aborts for
+   --  the entire statement sequence, but not for any declarations or
+   --  handlers (if any) associated with this statement sequence.
+
+   --  The transformation is to transform
+
+   --    pragma Abort_Defer;
+   --    statements;
+
+   --  into
+
+   --    begin
+   --       Abort_Defer.all;
+   --       statements
+   --    exception
+   --       when all others =>
+   --          Abort_Undefer.all;
+   --          raise;
+   --    at end
+   --       Abort_Undefer_Direct;
+   --    end;
+
+   procedure Expand_Pragma_Abort_Defer (N : Node_Id) is
+   begin
+      --  Abort_Defer has no useful effect if Abort's are not allowed
+
+      if not Abort_Allowed then
+         return;
+      end if;
+
+      --  Normal case where abort is possible
+
+      declare
+         Loc  : constant Source_Ptr := Sloc (N);
+         Stm  : Node_Id;
+         Stms : List_Id;
+         HSS  : Node_Id;
+         Blk  : constant Entity_Id :=
+                  New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
+         AUD  : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
+
+      begin
+         Stms := New_List (Build_Runtime_Call (Loc, RE_Abort_Defer));
+         loop
+            Stm := Remove_Next (N);
+            exit when No (Stm);
+            Append (Stm, Stms);
+         end loop;
+
+         HSS :=
+           Make_Handled_Sequence_Of_Statements (Loc,
+             Statements  => Stms,
+             At_End_Proc => New_Occurrence_Of (AUD, Loc));
+
+         --  Present the Abort_Undefer_Direct function to the backend so that
+         --  it can inline the call to the function.
+
+         Add_Inlined_Body (AUD, N);
+
+         Rewrite (N,
+           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS));
+
+         Set_Scope (Blk, Current_Scope);
+         Set_Etype (Blk, Standard_Void_Type);
+         Set_Identifier (N, New_Occurrence_Of (Blk, Sloc (N)));
+         Expand_At_End_Handler (HSS, Blk);
+         Analyze (N);
+      end;
+   end Expand_Pragma_Abort_Defer;
+
+   --------------------------
+   -- Expand_Pragma_Check --
+   --------------------------
+
+   procedure Expand_Pragma_Check (N : Node_Id) is
+      GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Cond : constant Node_Id         := Arg2 (N);
+      Nam  : constant Name_Id         := Chars (Arg1 (N));
+      Msg  : Node_Id;
+
+      Loc : constant Source_Ptr := Sloc (First_Node (Cond));
+      --  Source location used in the case of a failed assertion: point to the
+      --  failing condition, not Loc. Note that the source location of the
+      --  expression is not usually the best choice here, because it points to
+      --  the location of the topmost tree node, which may be an operator in
+      --  the middle of the source text of the expression. For example, it gets
+      --  located on the last AND keyword in a chain of boolean expressiond
+      --  AND'ed together. It is best to put the message on the first character
+      --  of the condition, which is the effect of the First_Node call here.
+      --  This source location is used to build the default exception message,
+      --  and also as the sloc of the call to the runtime subprogram raising
+      --  Assert_Failure, so that coverage analysis tools can relate the
+      --  call to the failed check.
+
+   begin
+      --  Nothing to do if pragma is ignored
+
+      if Is_Ignored (N) then
+         return;
+      end if;
+
+      --  Set the Ghost mode in effect from the pragma. In general both the
+      --  assertion policy and the Ghost policy of pragma Check must agree,
+      --  but there are cases where this can be circumvented. For instance,
+      --  a living subtype with an ignored predicate may be declared in one
+      --  packade, an ignored Ghost object in another and the compilation may
+      --  use -gnata to enable assertions.
+      --  ??? Ghost predicates are under redesign
+
+      Set_Ghost_Mode (N);
+
+      --  Since this check is active, we rewrite the pragma into a
+      --  corresponding if statement, and then analyze the statement.
+
+      --  The normal case expansion transforms:
+
+      --    pragma Check (name, condition [,message]);
+
+      --  into
+
+      --    if not condition then
+      --       System.Assertions.Raise_Assert_Failure (Str);
+      --    end if;
+
+      --  where Str is the message if one is present, or the default of
+      --  name failed at file:line if no message is given (the "name failed
+      --  at" is omitted for name = Assertion, since it is redundant, given
+      --  that the name of the exception is Assert_Failure.)
+
+      --  Also, instead of "XXX failed at", we generate slightly
+      --  different messages for some of the contract assertions (see
+      --  code below for details).
+
+      --  An alternative expansion is used when the No_Exception_Propagation
+      --  restriction is active and there is a local Assert_Failure handler.
+      --  This is not a common combination of circumstances, but it occurs in
+      --  the context of Aunit and the zero footprint profile. In this case we
+      --  generate:
+
+      --    if not condition then
+      --       raise Assert_Failure;
+      --    end if;
+
+      --  This will then be transformed into a goto, and the local handler will
+      --  be able to handle the assert error (which would not be the case if a
+      --  call is made to the Raise_Assert_Failure procedure).
+
+      --  We also generate the direct raise if the Suppress_Exception_Locations
+      --  is active, since we don't want to generate messages in this case.
+
+      --  Note that the reason we do not always generate a direct raise is that
+      --  the form in which the procedure is called allows for more efficient
+      --  breakpointing of assertion errors.
+
+      --  Generate the appropriate if statement. Note that we consider this to
+      --  be an explicit conditional in the source, not an implicit if, so we
+      --  do not call Make_Implicit_If_Statement.
+
+      --  Case where we generate a direct raise
+
+      if ((Debug_Flag_Dot_G
+            or else Restriction_Active (No_Exception_Propagation))
+           and then Present (Find_Local_Handler (RTE (RE_Assert_Failure), N)))
+        or else (Opt.Exception_Locations_Suppressed and then No (Arg3 (N)))
+      then
+         Rewrite (N,
+           Make_If_Statement (Loc,
+             Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
+             Then_Statements => New_List (
+               Make_Raise_Statement (Loc,
+                 Name => New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
+
+      --  Case where we call the procedure
+
+      else
+         --  If we have a message given, use it
+
+         if Present (Arg3 (N)) then
+            Msg := Get_Pragma_Arg (Arg3 (N));
+
+         --  Here we have no string, so prepare one
+
+         else
+            declare
+               Loc_Str : constant String := Build_Location_String (Loc);
+
+            begin
+               Name_Len := 0;
+
+               --  For Assert, we just use the location
+
+               if Nam = Name_Assert then
+                  null;
+
+               --  For predicate, we generate the string "predicate failed at
+               --  yyy". We prefer all lower case for predicate.
+
+               elsif Nam = Name_Predicate then
+                  Add_Str_To_Name_Buffer ("predicate failed at ");
+
+               --  For special case of Precondition/Postcondition the string is
+               --  "failed xx from yy" where xx is precondition/postcondition
+               --  in all lower case. The reason for this different wording is
+               --  that the failure is not at the point of occurrence of the
+               --  pragma, unlike the other Check cases.
+
+               elsif Nam_In (Nam, Name_Precondition, Name_Postcondition) then
+                  Get_Name_String (Nam);
+                  Insert_Str_In_Name_Buffer ("failed ", 1);
+                  Add_Str_To_Name_Buffer (" from ");
+
+               --  For special case of Invariant, the string is "failed
+               --  invariant from yy", to be consistent with the string that is
+               --  generated for the aspect case (the code later on checks for
+               --  this specific string to modify it in some cases, so this is
+               --  functionally important).
+
+               elsif Nam = Name_Invariant then
+                  Add_Str_To_Name_Buffer ("failed invariant from ");
+
+               --  For all other checks, the string is "xxx failed at yyy"
+               --  where xxx is the check name with current source file casing.
+
+               else
+                  Get_Name_String (Nam);
+                  Set_Casing (Identifier_Casing (Current_Source_File));
+                  Add_Str_To_Name_Buffer (" failed at ");
+               end if;
+
+               --  In all cases, add location string
+
+               Add_Str_To_Name_Buffer (Loc_Str);
+
+               --  Build the message
+
+               Msg := Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
+            end;
+         end if;
+
+         --  Now rewrite as an if statement
+
+         Rewrite (N,
+           Make_If_Statement (Loc,
+             Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
+             Then_Statements => New_List (
+               Make_Procedure_Call_Statement (Loc,
+                 Name                   =>
+                   New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
+                 Parameter_Associations => New_List (Relocate_Node (Msg))))));
+      end if;
+
+      Analyze (N);
+
+      --  If new condition is always false, give a warning
+
+      if Warn_On_Assertion_Failure
+        and then Nkind (N) = N_Procedure_Call_Statement
+        and then Is_RTE (Entity (Name (N)), RE_Raise_Assert_Failure)
+      then
+         --  If original condition was a Standard.False, we assume that this is
+         --  indeed intended to raise assert error and no warning is required.
+
+         if Is_Entity_Name (Original_Node (Cond))
+           and then Entity (Original_Node (Cond)) = Standard_False
+         then
+            return;
+
+         elsif Nam = Name_Assert then
+            Error_Msg_N ("?A?assertion will fail at run time", N);
+         else
+
+            Error_Msg_N ("?A?check will fail at run time", N);
+         end if;
+      end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
+   end Expand_Pragma_Check;
+
+   ---------------------------------
+   -- Expand_Pragma_Common_Object --
+   ---------------------------------
+
+   --  Use a machine attribute to replicate semantic effect in DEC Ada
+
+   --    pragma Machine_Attribute (intern_name, "common_object", extern_name);
+
+   --  For now we do nothing with the size attribute ???
+
+   --  Note: Psect_Object shares this processing
+
+   procedure Expand_Pragma_Common_Object (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Internal : constant Node_Id := Arg1 (N);
+      External : constant Node_Id := Arg2 (N);
+
+      Psect : Node_Id;
+      --  Psect value upper cased as string literal
+
+      Iloc : constant Source_Ptr := Sloc (Internal);
+      Eloc : constant Source_Ptr := Sloc (External);
+      Ploc : Source_Ptr;
+
+   begin
+      --  Acquire Psect value and fold to upper case
+
+      if Present (External) then
+         if Nkind (External) = N_String_Literal then
+            String_To_Name_Buffer (Strval (External));
+         else
+            Get_Name_String (Chars (External));
+         end if;
+
+         Set_All_Upper_Case;
+
+         Psect :=
+           Make_String_Literal (Eloc, Strval => String_From_Name_Buffer);
+
+      else
+         Get_Name_String (Chars (Internal));
+         Set_All_Upper_Case;
+         Psect :=
+           Make_String_Literal (Iloc, Strval => String_From_Name_Buffer);
+      end if;
+
+      Ploc := Sloc (Psect);
+
+      --  Insert the pragma
+
+      Insert_After_And_Analyze (N,
+        Make_Pragma (Loc,
+          Chars                        => Name_Machine_Attribute,
+          Pragma_Argument_Associations => New_List (
+            Make_Pragma_Argument_Association (Iloc,
+              Expression => New_Copy_Tree (Internal)),
+            Make_Pragma_Argument_Association (Eloc,
+              Expression =>
+                Make_String_Literal (Sloc => Ploc, Strval => "common_object")),
+            Make_Pragma_Argument_Association (Ploc,
+              Expression => New_Copy_Tree (Psect)))));
+   end Expand_Pragma_Common_Object;
+
+   ----------------------------------
+   -- Expand_Pragma_Contract_Cases --
+   ----------------------------------
 
    --  Pragma Contract_Cases is expanded in the following manner:
 
@@ -236,7 +654,7 @@ package body Exp_Prag is
    --       . . .
    --    end S;
 
-   procedure Expand_Contract_Cases
+   procedure Expand_Pragma_Contract_Cases
      (CCs     : Node_Id;
       Subp_Id : Entity_Id;
       Decls   : List_Id;
@@ -273,18 +691,20 @@ package body Exp_Prag is
       --  Given the entity Id of a boolean flag, generate:
       --    Id : Boolean := False;
 
-      procedure Expand_Old_In_Consequence
+      procedure Expand_Attributes_In_Consequence
         (Decls  : List_Id;
          Evals  : in out Node_Id;
          Flag   : Entity_Id;
          Conseq : Node_Id);
       --  Perform specialized expansion of all attribute 'Old references found
       --  in consequence Conseq such that at runtime only prefixes coming from
-      --  the selected consequence are evaluated. Any temporaries generated in
-      --  the process are added to declarative list Decls. Evals is a complex
-      --  if statement tasked with the evaluation of all prefixes coming from
-      --  a selected consequence. Flag is the corresponding case guard flag.
-      --  Conseq is the consequence expression.
+      --  the selected consequence are evaluated. Similarly expand attribute
+      --  'Result references by replacing them with identifier _result which
+      --  resolves to the sole formal parameter of procedure _Postconditions.
+      --  Any temporaries generated in the process are added to declarations
+      --  Decls. Evals is a complex if statement tasked with the evaluation of
+      --  all prefixes coming from a single selected consequence. Flag is the
+      --  corresponding case guard flag. Conseq is the consequence expression.
 
       function Increment (Id : Entity_Id) return Node_Id;
       --  Given the entity Id of a numerical variable, generate:
@@ -408,11 +828,11 @@ package body Exp_Prag is
              Expression          => New_Occurrence_Of (Standard_False, Loc));
       end Declaration_Of;
 
-      -------------------------------
-      -- Expand_Old_In_Consequence --
-      -------------------------------
+      --------------------------------------
+      -- Expand_Attributes_In_Consequence --
+      --------------------------------------
 
-      procedure Expand_Old_In_Consequence
+      procedure Expand_Attributes_In_Consequence
         (Decls  : List_Id;
          Evals  : in out Node_Id;
          Flag   : Entity_Id;
@@ -422,20 +842,22 @@ package body Exp_Prag is
          --  The evaluation sequence expressed as assignment statements of all
          --  prefixes of attribute 'Old found in the current consequence.
 
-         function Expand_Old (N : Node_Id) return Traverse_Result;
-         --  Determine whether an arbitrary node denotes attribute 'Old and if
-         --  it does, perform all expansion-related actions.
+         function Expand_Attributes (N : Node_Id) return Traverse_Result;
+         --  Determine whether an arbitrary node denotes attribute 'Old or
+         --  'Result and if it does, perform all expansion-related actions.
 
-         ----------------
-         -- Expand_Old --
-         ----------------
+         -----------------------
+         -- Expand_Attributes --
+         -----------------------
 
-         function Expand_Old (N : Node_Id) return Traverse_Result is
+         function Expand_Attributes (N : Node_Id) return Traverse_Result is
             Decl : Node_Id;
             Pref : Node_Id;
             Temp : Entity_Id;
 
          begin
+            --  Attribute 'Old
+
             if Nkind (N) = N_Attribute_Reference
               and then Attribute_Name (N) = Name_Old
             then
@@ -457,6 +879,7 @@ package body Exp_Prag is
                Set_No_Initialization (Decl);
 
                Prepend_To (Decls, Decl);
+               Analyze (Decl);
 
                --  Evaluate the prefix, generate:
                --    Temp := <Pref>;
@@ -480,20 +903,32 @@ package body Exp_Prag is
                --  generated temporary.
 
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
+
+            --  Attribute 'Result
+
+            elsif Is_Attribute_Result (N) then
+               Rewrite (N, Make_Identifier (Loc, Name_uResult));
             end if;
 
             return OK;
-         end Expand_Old;
+         end Expand_Attributes;
 
-         procedure Expand_Olds is new Traverse_Proc (Expand_Old);
+         procedure Expand_Attributes_In is
+           new Traverse_Proc (Expand_Attributes);
 
-      --  Start of processing for Expand_Old_In_Consequence
+      --  Start of processing for Expand_Attributes_In_Consequence
 
       begin
-         --  Inspect the consequence and expand any attribute 'Old references
-         --  found within.
+         --  Inspect the consequence and expand any attribute 'Old and 'Result
+         --  references found within.
 
-         Expand_Olds (Conseq);
+         Expand_Attributes_In (Conseq);
+
+         --  The consequence does not contain any attribute 'Old references
+
+         if No (Eval_Stmts) then
+            return;
+         end if;
 
          --  Augment the machinery to trigger the evaluation of all prefixes
          --  found in the step above. If Eval is empty, then this is the first
@@ -524,7 +959,7 @@ package body Exp_Prag is
                 Condition       => New_Occurrence_Of (Flag, Loc),
                 Then_Statements => Eval_Stmts));
          end if;
-      end Expand_Old_In_Consequence;
+      end Expand_Attributes_In_Consequence;
 
       ---------------
       -- Increment --
@@ -555,24 +990,29 @@ package body Exp_Prag is
 
       --  Local variables
 
-      Aggr          : constant Node_Id :=
-                        Expression (First
-                          (Pragma_Argument_Associations (CCs)));
+      Aggr : constant Node_Id :=
+               Expression (First (Pragma_Argument_Associations (CCs)));
+      GM   : constant Ghost_Mode_Type := Ghost_Mode;
+
       Case_Guard    : Node_Id;
       CG_Checks     : Node_Id;
       CG_Stmts      : List_Id;
       Conseq        : Node_Id;
       Conseq_Checks : Node_Id   := Empty;
       Count         : Entity_Id;
+      Count_Decl    : Node_Id;
       Error_Decls   : List_Id;
       Flag          : Entity_Id;
+      Flag_Decl     : Node_Id;
+      If_Stmt       : Node_Id;
       Msg_Str       : Entity_Id;
       Multiple_PCs  : Boolean;
       Old_Evals     : Node_Id   := Empty;
+      Others_Decl   : Node_Id;
       Others_Flag   : Entity_Id := Empty;
       Post_Case     : Node_Id;
 
-   --  Start of processing for Expand_Contract_Cases
+   --  Start of processing for Expand_Pragma_Contract_Cases
 
    begin
       --  Do nothing if pragma is not enabled. If pragma is disabled, it has
@@ -587,6 +1027,12 @@ package body Exp_Prag is
          return;
       end if;
 
+      --  The contract cases may be subject to pragma Ghost with policy Ignore.
+      --  Set the mode now to ensure that any nodes generated during expansion
+      --  are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (CCs);
+
       Multiple_PCs := List_Length (Component_Associations (Aggr)) > 1;
 
       --  Create the counter which tracks the number of case guards that
@@ -595,12 +1041,14 @@ package body Exp_Prag is
       --    Count : Natural := 0;
 
       Count := Make_Temporary (Loc, 'C');
-
-      Prepend_To (Decls,
+      Count_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Count,
           Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc),
-          Expression          => Make_Integer_Literal (Loc, 0)));
+          Expression          => Make_Integer_Literal (Loc, 0));
+
+      Prepend_To (Decls, Count_Decl);
+      Analyze (Count_Decl);
 
       --  Create the base error message for multiple overlapping case guards
 
@@ -633,7 +1081,10 @@ package body Exp_Prag is
 
          if Nkind (Case_Guard) = N_Others_Choice then
             Others_Flag := Make_Temporary (Loc, 'F');
-            Prepend_To (Decls, Declaration_Of (Others_Flag));
+            Others_Decl := Declaration_Of (Others_Flag);
+
+            Prepend_To (Decls, Others_Decl);
+            Analyze (Others_Decl);
 
             --  Check possible overlap between a case guard and "others"
 
@@ -646,9 +1097,9 @@ package body Exp_Prag is
             end if;
 
             --  Inspect the consequence and perform special expansion of any
-            --  attribute 'Old references found within.
+            --  attribute 'Old and 'Result references found within.
 
-            Expand_Old_In_Consequence
+            Expand_Attributes_In_Consequence
               (Decls  => Decls,
                Evals  => Old_Evals,
                Flag   => Others_Flag,
@@ -668,7 +1119,10 @@ package body Exp_Prag is
             --  guard.
 
             Flag := Make_Temporary (Loc, 'F');
-            Prepend_To (Decls, Declaration_Of (Flag));
+            Flag_Decl := Declaration_Of (Flag);
+
+            Prepend_To (Decls, Flag_Decl);
+            Analyze (Flag_Decl);
 
             --  The flag is set when the case guard is evaluated to True
             --    if Case_Guard then
@@ -676,12 +1130,15 @@ package body Exp_Prag is
             --       Count := Count + 1;
             --    end if;
 
-            Append_To (Decls,
+            If_Stmt :=
               Make_Implicit_If_Statement (CCs,
                 Condition       => Relocate_Node (Case_Guard),
                 Then_Statements => New_List (
                   Set (Flag),
-                  Increment (Count))));
+                  Increment (Count)));
+
+            Append_To (Decls, If_Stmt);
+            Analyze (If_Stmt);
 
             --  Check whether this case guard overlaps with another one
 
@@ -694,9 +1151,9 @@ package body Exp_Prag is
             end if;
 
             --  Inspect the consequence and perform special expansion of any
-            --  attribute 'Old references found within.
+            --  attribute 'Old and 'Result references found within.
 
-            Expand_Old_In_Consequence
+            Expand_Attributes_In_Consequence
               (Decls  => Decls,
                Evals  => Old_Evals,
                Flag   => Flag,
@@ -782,11 +1239,15 @@ package body Exp_Prag is
       end if;
 
       Append_To (Decls, CG_Checks);
+      Analyze (CG_Checks);
 
       --  Once all case guards are evaluated and checked, evaluate any prefixes
       --  of attribute 'Old founds in the selected consequence.
 
-      Append_To (Decls, Old_Evals);
+      if Present (Old_Evals) then
+         Append_To (Decls, Old_Evals);
+         Analyze (Old_Evals);
+      end if;
 
       --  Raise Assertion_Error when the corresponding consequence of a case
       --  guard that evaluated to True fails.
@@ -796,391 +1257,19 @@ package body Exp_Prag is
       end if;
 
       Append_To (Stmts, Conseq_Checks);
-   end Expand_Contract_Cases;
 
-   ---------------------
-   -- Expand_N_Pragma --
-   ---------------------
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
 
-   procedure Expand_N_Pragma (N : Node_Id) is
-      Pname : constant Name_Id := Pragma_Name (N);
-
-   begin
-      --  Note: we may have a pragma whose Pragma_Identifier field is not a
-      --  recognized pragma, and we must ignore it at this stage.
-
-      if Is_Pragma_Name (Pname) then
-         case Get_Pragma_Id (Pname) is
-
-            --  Pragmas requiring special expander action
-
-            when Pragma_Abort_Defer =>
-               Expand_Pragma_Abort_Defer (N);
-
-            when Pragma_Check =>
-               Expand_Pragma_Check (N);
-
-            when Pragma_Common_Object =>
-               Expand_Pragma_Common_Object (N);
-
-            when Pragma_Import =>
-               Expand_Pragma_Import_Or_Interface (N);
-
-            when Pragma_Inspection_Point =>
-               Expand_Pragma_Inspection_Point (N);
-
-            when Pragma_Interface =>
-               Expand_Pragma_Import_Or_Interface (N);
-
-            when Pragma_Interrupt_Priority =>
-               Expand_Pragma_Interrupt_Priority (N);
-
-            when Pragma_Loop_Variant =>
-               Expand_Pragma_Loop_Variant (N);
-
-            when Pragma_Psect_Object =>
-               Expand_Pragma_Psect_Object (N);
-
-            when Pragma_Relative_Deadline =>
-               Expand_Pragma_Relative_Deadline (N);
-
-            when Pragma_Suppress_Initialization =>
-               Expand_Pragma_Suppress_Initialization (N);
-
-            --  All other pragmas need no expander action
-
-            when others => null;
-         end case;
-      end if;
-
-   end Expand_N_Pragma;
-
-   -------------------------------
-   -- Expand_Pragma_Abort_Defer --
-   -------------------------------
-
-   --  An Abort_Defer pragma appears as the first statement in a handled
-   --  statement sequence (right after the begin). It defers aborts for
-   --  the entire statement sequence, but not for any declarations or
-   --  handlers (if any) associated with this statement sequence.
-
-   --  The transformation is to transform
-
-   --    pragma Abort_Defer;
-   --    statements;
-
-   --  into
-
-   --    begin
-   --       Abort_Defer.all;
-   --       statements
-   --    exception
-   --       when all others =>
-   --          Abort_Undefer.all;
-   --          raise;
-   --    at end
-   --       Abort_Undefer_Direct;
-   --    end;
-
-   procedure Expand_Pragma_Abort_Defer (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Stm  : Node_Id;
-      Stms : List_Id;
-      HSS  : Node_Id;
-      Blk  : constant Entity_Id :=
-        New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
-
-   begin
-      Stms := New_List (Build_Runtime_Call (Loc, RE_Abort_Defer));
-
-      loop
-         Stm := Remove_Next (N);
-         exit when No (Stm);
-         Append (Stm, Stms);
-      end loop;
-
-      HSS :=
-        Make_Handled_Sequence_Of_Statements (Loc,
-          Statements => Stms,
-          At_End_Proc =>
-            New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
-
-      Rewrite (N,
-        Make_Block_Statement (Loc,
-          Handled_Statement_Sequence => HSS));
-
-      Set_Scope (Blk, Current_Scope);
-      Set_Etype (Blk, Standard_Void_Type);
-      Set_Identifier (N, New_Occurrence_Of (Blk, Sloc (N)));
-      Expand_At_End_Handler (HSS, Blk);
-      Analyze (N);
-   end Expand_Pragma_Abort_Defer;
-
-   --------------------------
-   -- Expand_Pragma_Check --
-   --------------------------
-
-   procedure Expand_Pragma_Check (N : Node_Id) is
-      Cond : constant Node_Id := Arg2 (N);
-      Nam  : constant Name_Id := Chars (Arg1 (N));
-      Msg  : Node_Id;
-
-      Loc : constant Source_Ptr := Sloc (First_Node (Cond));
-      --  Source location used in the case of a failed assertion: point to the
-      --  failing condition, not Loc. Note that the source location of the
-      --  expression is not usually the best choice here, because it points to
-      --  the location of the topmost tree node, which may be an operator in
-      --  the middle of the source text of the expression. For example, it gets
-      --  located on the last AND keyword in a chain of boolean expressiond
-      --  AND'ed together. It is best to put the message on the first character
-      --  of the condition, which is the effect of the First_Node call here.
-      --  This source location is used to build the default exception message,
-      --  and also as the sloc of the call to the runtime subprogram raising
-      --  Assert_Failure, so that coverage analysis tools can relate the
-      --  call to the failed check.
-
-   begin
-      --  Nothing to do if pragma is ignored
-
-      if Is_Ignored (N) then
-         return;
-      end if;
-
-      --  Since this check is active, we rewrite the pragma into a
-      --  corresponding if statement, and then analyze the statement
-
-      --  The normal case expansion transforms:
-
-      --    pragma Check (name, condition [,message]);
-
-      --  into
-
-      --    if not condition then
-      --       System.Assertions.Raise_Assert_Failure (Str);
-      --    end if;
-
-      --  where Str is the message if one is present, or the default of
-      --  name failed at file:line if no message is given (the "name failed
-      --  at" is omitted for name = Assertion, since it is redundant, given
-      --  that the name of the exception is Assert_Failure.)
-
-      --  Also, instead of "XXX failed at", we generate slightly
-      --  different messages for some of the contract assertions (see
-      --  code below for details).
-
-      --  An alternative expansion is used when the No_Exception_Propagation
-      --  restriction is active and there is a local Assert_Failure handler.
-      --  This is not a common combination of circumstances, but it occurs in
-      --  the context of Aunit and the zero footprint profile. In this case we
-      --  generate:
-
-      --    if not condition then
-      --       raise Assert_Failure;
-      --    end if;
-
-      --  This will then be transformed into a goto, and the local handler will
-      --  be able to handle the assert error (which would not be the case if a
-      --  call is made to the Raise_Assert_Failure procedure).
-
-      --  We also generate the direct raise if the Suppress_Exception_Locations
-      --  is active, since we don't want to generate messages in this case.
-
-      --  Note that the reason we do not always generate a direct raise is that
-      --  the form in which the procedure is called allows for more efficient
-      --  breakpointing of assertion errors.
-
-      --  Generate the appropriate if statement. Note that we consider this to
-      --  be an explicit conditional in the source, not an implicit if, so we
-      --  do not call Make_Implicit_If_Statement.
-
-      --  Case where we generate a direct raise
-
-      if ((Debug_Flag_Dot_G
-             or else Restriction_Active (No_Exception_Propagation))
-           and then Present (Find_Local_Handler (RTE (RE_Assert_Failure), N)))
-        or else (Opt.Exception_Locations_Suppressed and then No (Arg3 (N)))
-      then
-         Rewrite (N,
-           Make_If_Statement (Loc,
-             Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
-             Then_Statements => New_List (
-               Make_Raise_Statement (Loc,
-                 Name => New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
-
-      --  Case where we call the procedure
-
-      else
-         --  If we have a message given, use it
-
-         if Present (Arg3 (N)) then
-            Msg := Get_Pragma_Arg (Arg3 (N));
-
-         --  Here we have no string, so prepare one
-
-         else
-            declare
-               Loc_Str : constant String := Build_Location_String (Loc);
-
-            begin
-               Name_Len := 0;
-
-               --  For Assert, we just use the location
-
-               if Nam = Name_Assert then
-                  null;
-
-               --  For predicate, we generate the string "predicate failed
-               --  at yyy". We prefer all lower case for predicate.
-
-               elsif Nam = Name_Predicate then
-                  Add_Str_To_Name_Buffer ("predicate failed at ");
-
-               --  For special case of Precondition/Postcondition the string is
-               --  "failed xx from yy" where xx is precondition/postcondition
-               --  in all lower case. The reason for this different wording is
-               --  that the failure is not at the point of occurrence of the
-               --  pragma, unlike the other Check cases.
-
-               elsif Nam_In (Nam, Name_Precondition, Name_Postcondition) then
-                  Get_Name_String (Nam);
-                  Insert_Str_In_Name_Buffer ("failed ", 1);
-                  Add_Str_To_Name_Buffer (" from ");
-
-               --  For special case of Invariant, the string is "failed
-               --  invariant from yy", to be consistent with the string that is
-               --  generated for the aspect case (the code later on checks for
-               --  this specific string to modify it in some cases, so this is
-               --  functionally important).
-
-               elsif Nam = Name_Invariant then
-                  Add_Str_To_Name_Buffer ("failed invariant from ");
-
-               --  For all other checks, the string is "xxx failed at yyy"
-               --  where xxx is the check name with current source file casing.
-
-               else
-                  Get_Name_String (Nam);
-                  Set_Casing (Identifier_Casing (Current_Source_File));
-                  Add_Str_To_Name_Buffer (" failed at ");
-               end if;
-
-               --  In all cases, add location string
-
-               Add_Str_To_Name_Buffer (Loc_Str);
-
-               --  Build the message
-
-               Msg := Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
-            end;
-         end if;
-
-         --  Now rewrite as an if statement
-
-         Rewrite (N,
-           Make_If_Statement (Loc,
-             Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name                   =>
-                   New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
-                 Parameter_Associations => New_List (Relocate_Node (Msg))))));
-      end if;
-
-      Analyze (N);
-
-      --  If new condition is always false, give a warning
-
-      if Warn_On_Assertion_Failure
-        and then Nkind (N) = N_Procedure_Call_Statement
-        and then Is_RTE (Entity (Name (N)), RE_Raise_Assert_Failure)
-      then
-         --  If original condition was a Standard.False, we assume that this is
-         --  indeed intended to raise assert error and no warning is required.
-
-         if Is_Entity_Name (Original_Node (Cond))
-           and then Entity (Original_Node (Cond)) = Standard_False
-         then
-            return;
-
-         elsif Nam = Name_Assert then
-            Error_Msg_N ("?A?assertion will fail at run time", N);
-         else
-
-            Error_Msg_N ("?A?check will fail at run time", N);
-         end if;
-      end if;
-   end Expand_Pragma_Check;
-
-   ---------------------------------
-   -- Expand_Pragma_Common_Object --
-   ---------------------------------
-
-   --  Use a machine attribute to replicate semantic effect in DEC Ada
-
-   --    pragma Machine_Attribute (intern_name, "common_object", extern_name);
-
-   --  For now we do nothing with the size attribute ???
-
-   --  Note: Psect_Object shares this processing
-
-   procedure Expand_Pragma_Common_Object (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
-      Internal : constant Node_Id := Arg1 (N);
-      External : constant Node_Id := Arg2 (N);
-
-      Psect : Node_Id;
-      --  Psect value upper cased as string literal
-
-      Iloc : constant Source_Ptr := Sloc (Internal);
-      Eloc : constant Source_Ptr := Sloc (External);
-      Ploc : Source_Ptr;
-
-   begin
-      --  Acquire Psect value and fold to upper case
-
-      if Present (External) then
-         if Nkind (External) = N_String_Literal then
-            String_To_Name_Buffer (Strval (External));
-         else
-            Get_Name_String (Chars (External));
-         end if;
-
-         Set_All_Upper_Case;
-
-         Psect :=
-           Make_String_Literal (Eloc, Strval => String_From_Name_Buffer);
-
-      else
-         Get_Name_String (Chars (Internal));
-         Set_All_Upper_Case;
-         Psect :=
-           Make_String_Literal (Iloc, Strval => String_From_Name_Buffer);
-      end if;
-
-      Ploc := Sloc (Psect);
-
-      --  Insert the pragma
-
-      Insert_After_And_Analyze (N,
-        Make_Pragma (Loc,
-          Chars                        => Name_Machine_Attribute,
-          Pragma_Argument_Associations => New_List (
-            Make_Pragma_Argument_Association (Iloc,
-              Expression => New_Copy_Tree (Internal)),
-            Make_Pragma_Argument_Association (Eloc,
-              Expression =>
-                Make_String_Literal (Sloc => Ploc, Strval => "common_object")),
-            Make_Pragma_Argument_Association (Ploc,
-              Expression => New_Copy_Tree (Psect)))));
-   end Expand_Pragma_Common_Object;
+      Ghost_Mode := GM;
+   end Expand_Pragma_Contract_Cases;
 
    ---------------------------------------
    -- Expand_Pragma_Import_Or_Interface --
    ---------------------------------------
 
    procedure Expand_Pragma_Import_Or_Interface (N : Node_Id) is
-      Def_Id    : Entity_Id;
+      Def_Id : Entity_Id;
 
    begin
       --  In Relaxed_RM_Semantics, support old Ada 83 style:
@@ -1272,12 +1361,30 @@ package body Exp_Prag is
    -------------------------------------
 
    procedure Expand_Pragma_Initial_Condition (Spec_Or_Body : Node_Id) is
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
       Loc       : constant Source_Ptr := Sloc (Spec_Or_Body);
       Check     : Node_Id;
       Expr      : Node_Id;
       Init_Cond : Node_Id;
       List      : List_Id;
       Pack_Id   : Entity_Id;
+
+   --  Start of processing for Expand_Pragma_Initial_Condition
 
    begin
       if Nkind (Spec_Or_Body) = N_Package_Body then
@@ -1317,6 +1424,12 @@ package body Exp_Prag is
 
       Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
 
+      --  The initial condition be subject to pragma Ghost with policy Ignore.
+      --  Set the mode now to ensure that any nodes generated during expansion
+      --  are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (Init_Cond);
+
       --  The caller should check whether the package is subject to pragma
       --  Initial_Condition.
 
@@ -1329,6 +1442,7 @@ package body Exp_Prag is
       --  runtime check as it will repeat the illegality.
 
       if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
+         Restore_Globals;
          return;
       end if;
 
@@ -1341,12 +1455,13 @@ package body Exp_Prag is
           Pragma_Argument_Associations => New_List (
             Make_Pragma_Argument_Association (Loc,
               Expression => Make_Identifier (Loc, Name_Initial_Condition)),
-
             Make_Pragma_Argument_Association (Loc,
               Expression => New_Copy_Tree (Expr))));
 
       Append_To (List, Check);
       Analyze (Check);
+
+      Restore_Globals;
    end Expand_Pragma_Initial_Condition;
 
    ------------------------------------
@@ -1400,7 +1515,6 @@ package body Exp_Prag is
       --  Are there other pragmas that may require this ???
 
       Assoc := First (Pragma_Argument_Associations (N));
-
       while Present (Assoc) loop
          Expand (Expression (Assoc));
          Next (Assoc);
@@ -1415,14 +1529,13 @@ package body Exp_Prag is
 
    procedure Expand_Pragma_Interrupt_Priority (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
-
    begin
       if No (Pragma_Argument_Associations (N)) then
          Set_Pragma_Argument_Associations (N, New_List (
            Make_Pragma_Argument_Association (Loc,
              Expression =>
                Make_Attribute_Reference (Loc,
-                 Prefix =>
+                 Prefix         =>
                    New_Occurrence_Of (RTE (RE_Interrupt_Priority), Loc),
                  Attribute_Name => Name_Last))));
       end if;
@@ -1477,14 +1590,14 @@ package body Exp_Prag is
    --     end loop;
 
    procedure Expand_Pragma_Loop_Variant (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc      : constant Source_Ptr := Sloc (N);
+      Last_Var : constant Node_Id    :=
+                   Last (Pragma_Argument_Associations (N));
 
-      Last_Var : constant Node_Id := Last (Pragma_Argument_Associations (N));
-
-      Curr_Assign : List_Id             := No_List;
-      Flag_Id     : Entity_Id           := Empty;
-      If_Stmt     : Node_Id             := Empty;
-      Old_Assign  : List_Id             := No_List;
+      Curr_Assign : List_Id   := No_List;
+      Flag_Id     : Entity_Id := Empty;
+      If_Stmt     : Node_Id   := Empty;
+      Old_Assign  : List_Id   := No_List;
       Loop_Scop   : Entity_Id;
       Loop_Stmt   : Node_Id;
       Variant     : Node_Id;
@@ -1696,6 +1809,10 @@ package body Exp_Prag is
          end if;
       end Process_Variant;
 
+      --  Local variables
+
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+
    --  Start of processing for Expand_Pragma_Loop_Variant
 
    begin
@@ -1707,6 +1824,12 @@ package body Exp_Prag is
          Analyze (N);
          return;
       end if;
+
+      --  The loop variant may be subject to pragma Ghost with policy Ignore.
+      --  Set the mode now to ensure that any nodes generated during expansion
+      --  are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  Locate the enclosing loop for which this assertion applies. In the
       --  case of Ada 2012 array iteration, we might be dealing with nested
@@ -1730,7 +1853,6 @@ package body Exp_Prag is
       Variant := First (Pragma_Argument_Associations (N));
       while Present (Variant) loop
          Process_Variant (Variant, Is_Last => Variant = Last_Var);
-
          Next (Variant);
       end loop;
 
@@ -1770,6 +1892,10 @@ package body Exp_Prag is
       --  corresponding declarations and statements. We leave it in the tree
       --  for documentation purposes. It will be ignored by the backend.
 
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_Pragma_Loop_Variant;
 
    --------------------------------
@@ -1807,8 +1933,9 @@ package body Exp_Prag is
                     Left_Opnd  =>
                       Make_Function_Call (Loc,
                         New_Occurrence_Of (RTE (RO_RT_To_Duration), Loc),
-                        New_List (Make_Function_Call (Loc,
-                          New_Occurrence_Of (RTE (RE_Clock), Loc)))),
+                        New_List
+                          (Make_Function_Call
+                             (Loc, New_Occurrence_Of (RTE (RE_Clock), Loc)))),
                     Right_Opnd  =>
                       Unchecked_Convert_To (Standard_Duration, Arg1 (N)))))));
 

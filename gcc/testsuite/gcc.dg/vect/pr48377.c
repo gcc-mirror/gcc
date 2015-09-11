@@ -22,4 +22,3 @@ main (void)
   return foo (buf + 1, 26) != 26;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -116,4 +116,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: unknown async \d" } */
+/* { dg-output "unknown async \[0-9\]+" } */
+/* { dg-shouldfail "" } */

@@ -35,4 +35,5 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final-use { cleanup-saved-temps } } */
+/* { dg-final-use { scan-assembler "foo\[._\]+cold\[\._\]+0" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use { scan-assembler "size\[ \ta-zA-Z0-0\]+foo\[._\]+cold\[\._\]+0" { target *-*-linux* *-*-gnu* } } } */

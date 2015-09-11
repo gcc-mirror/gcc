@@ -59,6 +59,9 @@ internal_proto(fbuf_alloc);
 extern int fbuf_flush (gfc_unit *, unit_mode);
 internal_proto(fbuf_flush);
 
+extern int fbuf_flush_list (gfc_unit *, unit_mode);
+internal_proto(fbuf_flush_list);
+
 extern int fbuf_seek (gfc_unit *, int, int);
 internal_proto(fbuf_seek);
 

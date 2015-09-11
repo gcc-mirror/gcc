@@ -80,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     union {
       __str _M_s;
-      char _M_bytes[sizeof(_M_s)];
+      char _M_bytes[sizeof(__str)];
     };
 
     __sso_string() _GLIBCXX_USE_NOEXCEPT;

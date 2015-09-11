@@ -57,8 +57,7 @@ extern gimple_seq rewrite_to_defined_overflow (gimple);
    int the provided sequence, matching and simplifying them on-the-fly.
    Supposed to replace force_gimple_operand (fold_buildN (...), ...).  */
 extern tree gimple_build (gimple_seq *, location_t,
-			  enum tree_code, tree, tree,
-			  tree (*valueize) (tree) = NULL);
+			  enum tree_code, tree, tree);
 inline tree
 gimple_build (gimple_seq *seq,
 	      enum tree_code code, tree type, tree op0)
@@ -66,8 +65,7 @@ gimple_build (gimple_seq *seq,
   return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0);
 }
 extern tree gimple_build (gimple_seq *, location_t,
-			  enum tree_code, tree, tree, tree,
-			  tree (*valueize) (tree) = NULL);
+			  enum tree_code, tree, tree, tree);
 inline tree
 gimple_build (gimple_seq *seq,
 	      enum tree_code code, tree type, tree op0, tree op1)
@@ -75,8 +73,7 @@ gimple_build (gimple_seq *seq,
   return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1);
 }
 extern tree gimple_build (gimple_seq *, location_t,
-			  enum tree_code, tree, tree, tree, tree,
-			  tree (*valueize) (tree) = NULL);
+			  enum tree_code, tree, tree, tree, tree);
 inline tree
 gimple_build (gimple_seq *seq,
 	      enum tree_code code, tree type, tree op0, tree op1, tree op2)
@@ -84,8 +81,7 @@ gimple_build (gimple_seq *seq,
   return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1, op2);
 }
 extern tree gimple_build (gimple_seq *, location_t,
-			  enum built_in_function, tree, tree,
-			  tree (*valueize) (tree) = NULL);
+			  enum built_in_function, tree, tree);
 inline tree
 gimple_build (gimple_seq *seq,
 	      enum built_in_function fn, tree type, tree arg0)
@@ -93,8 +89,7 @@ gimple_build (gimple_seq *seq,
   return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0);
 }
 extern tree gimple_build (gimple_seq *, location_t,
-			  enum built_in_function, tree, tree, tree,
-			  tree (*valueize) (tree) = NULL);
+			  enum built_in_function, tree, tree, tree);
 inline tree
 gimple_build (gimple_seq *seq,
 	      enum built_in_function fn, tree type, tree arg0, tree arg1)
@@ -102,8 +97,7 @@ gimple_build (gimple_seq *seq,
   return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0, arg1);
 }
 extern tree gimple_build (gimple_seq *, location_t,
-			  enum built_in_function, tree, tree, tree, tree,
-			  tree (*valueize) (tree) = NULL);
+			  enum built_in_function, tree, tree, tree, tree);
 inline tree
 gimple_build (gimple_seq *seq,
 	      enum built_in_function fn, tree type,

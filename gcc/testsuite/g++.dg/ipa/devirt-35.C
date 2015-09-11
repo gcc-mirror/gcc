@@ -18,6 +18,4 @@ m(struct B *b)
 /* { dg-final { scan-tree-dump "converting indirect call to function virtual int B::t"  "fre1"  } } */
 /* { dg-final { scan-ipa-dump "to virtual int B::t"  "devirt"  } } */
 /* { dg-final { scan-ipa-dump "1 speculatively devirtualized"  "devirt"  } } */
-/* { dg-final { cleanup-ipa-dump "devirt" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */
 

@@ -18,4 +18,3 @@ f(int NumberOfSideSets, int *ssNumDFperSide, float *ssDF)
     newssDF[nextDF++] = ssDF[i];
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

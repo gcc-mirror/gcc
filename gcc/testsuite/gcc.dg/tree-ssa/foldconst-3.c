@@ -75,4 +75,3 @@ int_fits_type_p (const_tree c, const_tree type)
 }
 /* The switch should be switch converted and later constant propagated.  */
 /* { dg-final { scan-tree-dump-not "tree_code_type" "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

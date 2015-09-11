@@ -13,4 +13,3 @@ int f(__m128d x){
 }
 
 /* { dg-final { scan-tree-dump "return 1;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

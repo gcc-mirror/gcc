@@ -12,4 +12,3 @@ end
 ! { dg-final { scan-tree-dump-not "__builtin_powif"  "optimized" } }
 ! { dg-final { scan-tree-dump "powi_cond_\[0-9\] = k_\[0-9\]\\(D\\) & 1;"  "optimized" } }
 ! { dg-final { scan-tree-dump "powi_\[0-9\] = powi_cond_\[0-9\] \\? -1.0e\\+0 : 1.0e\\+0;"  "optimized" } }
-! { dg-final { cleanup-tree-dump "optimized" } }

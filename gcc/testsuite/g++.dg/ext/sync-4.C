@@ -1,6 +1,7 @@
 /* { dg-do run { target hppa*-*-hpux* *-*-linux* *-*-gnu* powerpc*-*-darwin* *-*-darwin[912]* } } */
 /* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
+/* { dg-additional-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 /* Verify that the builtin functions are correctly marked as trapping
    when using -fnon-call-exceptions.  */

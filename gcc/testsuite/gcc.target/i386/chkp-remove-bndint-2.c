@@ -3,7 +3,6 @@
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-optimized -Wchkp" } */
 /* { dg-final { scan-tree-dump-not "bndint" "optimized" } } */
 
-
 struct S
 {
   int a;

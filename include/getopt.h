@@ -1,6 +1,5 @@
 /* Declarations for getopt.
-   Copyright 1989, 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 2000,
-   2002 Free Software Foundation, Inc.
+   Copyright (C) 1989-2015 Free Software Foundation, Inc.
 
    NOTE: The canonical source of this file is maintained with the GNU C Library.
    Bugs can be reported to bug-glibc@gnu.org.

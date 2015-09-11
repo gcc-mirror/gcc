@@ -258,7 +258,9 @@ match_add_op (void)
 static match
 match_mult_operand (gfc_expr **result)
 {
-  gfc_expr *e, *exp, *r;
+  /* Workaround -Wmaybe-uninitialized false positive during
+     profiledbootstrap by initializing them.  */
+  gfc_expr *e = NULL, *exp, *r;
   locus where;
   match m;
 
@@ -319,7 +321,7 @@ match_ext_mult_operand (gfc_expr **result)
       return MATCH_ERROR;
     }
   else
-    gfc_warning ("Extension: Unary operator following "
+    gfc_warning (0, "Extension: Unary operator following "
 		 "arithmetic operator (use parentheses) at %C");
 
   m = match_ext_mult_operand (&e);
@@ -428,7 +430,7 @@ match_ext_add_operand (gfc_expr **result)
       return MATCH_ERROR;
     }
   else
-    gfc_warning ("Extension: Unary operator following "
+    gfc_warning (0, "Extension: Unary operator following "
 		"arithmetic operator (use parentheses) at %C");
 
   m = match_ext_add_operand (&e);

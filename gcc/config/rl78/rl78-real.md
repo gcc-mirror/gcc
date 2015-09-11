@@ -27,9 +27,17 @@
 ;; patterns - other than the constraints - so that the operand info is
 ;; properly set up for the alloc pass.
 
+;; This attribute reflects how the insn alters the Z flag,
+;; based upon the value of the it's output.  The default is NO
+;; for no change, but other possibilities are UPDATE_Z if it changes
+;; the Z flag and CLOBBER if the state of the flag is indeterminate.
+;; The CY and AC flags are not set in the same way as the Z flag, so
+;; their values are not tracked.
+(define_attr "update_Z" "no,update_Z,clobber" (const_string "no"))
+
 ;;---------- Moving ------------------------
 
-(define_insn "movqi_es"
+(define_insn "movqi_to_es"
   [(set (reg:QI ES_REG)
 	(match_operand:QI 0 "register_operand" "a"))]
   ""
@@ -51,8 +59,8 @@
 )
 
 (define_insn "*movqi_real"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=g,RaxbcWab,RaxbcWab,a,                          bcx,R, WabWd2WhlWh1WhbWbcWs1v, bcx")
-	(match_operand    1 "general_operand"      "0,K,        M,       RInt8sJvWabWdeWd2WhlWh1WhbWbcWs1,Wab,aInt8J,a,                      R"))]
+  [(set (match_operand:QI 0 "rl78_nonimmediate_operand" "=Rv,RaxbcWab,RaxbcWab,a,                               bcx,R,     WabWd2WhlWh1WhbWbcWs1v, bcx,WsaWsf")
+	(match_operand    1 "rl78_general_operand"      "0,K,        M,       RInt8sJvWabWdeWd2WhlWh1WhbWbcWs1,Wab,aInt8J,a,                      R,  i"))]
   "rl78_real_insns_ok ()"
   "@
    ; mov\t%0, %1
@@ -62,12 +70,13 @@
    mov\t%0, %1
    mov\t%0, %1
    mov\t%0, %1
-   mov\t%0, %S1"
+   mov\t%0, %S1
+   mov\t%0, %1"
 )
 
 (define_insn "*movhi_real"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=g,AB,AB,RSv,A,BDTvSWabWd2WdeWhlWh1WbcWs1, BDT,ABDT,v")
-	(match_operand:HI 1 "general_operand"      " 0,K, M, i,  BDTvSWabWd2WdeWh1WhlWbcWs1,A, BDT,vS,  ABDT"))]
+  [(set (match_operand:HI 0 "rl78_nonimmediate_operand" "=Rv,AB,AB,RSv,A,BDTvSWabWd2WdeWhlWh1WbcWs1, BDT,ABDT,v")
+	(match_operand:HI 1 "rl78_general_operand"      " 0,K, M, i,  BDTvSWabWd2WdeWh1WhlWbcWs1,A, BDT,vS,  ABDT"))]
   "rl78_real_insns_ok ()"
   "@
    ; movw\t%0, %1
@@ -84,7 +93,7 @@
 ;;---------- Conversions ------------------------
 
 (define_insn "*zero_extendqihi2_real"
-  [(set (match_operand:HI                 0 "nonimmediate_operand" "=rv,A")
+  [(set (match_operand:HI                 0 "nonimmediate_operand" "=Rv,A")
 	(zero_extend:HI (match_operand:QI 1 "general_operand" "0,a")))]
   "rl78_real_insns_ok ()"
   "@
@@ -104,60 +113,66 @@
 ;;---------- Arithmetic ------------------------
 
 (define_insn "*addqi3_real"
-  [(set (match_operand:QI          0 "nonimmediate_operand"  "=rvWabWhlWh1,rvWabWhlWh1,a,*bcdehl")
-	(plus:QI (match_operand:QI 1 "general_operand"  "%0,0,0,0")
-		 (match_operand:QI 2 "general_operand" "K,L,RWhlWh1Wabi,a")))
+  [(set (match_operand:QI          0 "rl78_nonimmediate_operand"  "=RvWabWhlWh1Wsa,RvWabWhlWh1Wsa,a,*bcdehl,Wsa")
+	(plus:QI (match_operand:QI 1 "rl78_general_operand"  "%0,0,0,0,0")
+		 (match_operand:QI 2 "rl78_general_operand" "K,L,RWhlWh1Wabi,a,i")))
    ]
   "rl78_real_insns_ok ()"
   "@
-    inc\t%0
-    dec\t%0
+    inc\t%p0
+    dec\t%p0
+    add\t%0, %2
     add\t%0, %2
     add\t%0, %2"
+  [(set (attr "update_Z") (const_string "update_Z"))]
 )
 
 (define_insn "*addhi3_real"
-  [(set (match_operand:HI          0 "nonimmediate_operand"  "=vABDTWh1Wab,vABDTWh1Wab,v,v,A,S,S,A")
-	(plus:HI (match_operand:HI 1 "general_operand"  "%0,0,0,0,0,0,0,S")
-		 (match_operand:HI 2 "general_operand" "K,L,N,O,RWh1WhlWabiv,Int8,J,Ri")))
+  [(set (match_operand:HI          0 "rl78_nonimmediate_operand"  "=vABDTWhlWh1WabWsa,vABDTWhlWh1WabWsa,v,v,A,S,S,A")
+	(plus:HI (match_operand:HI 1 "rl78_general_operand"  "%0,0,0,0,0,0,0,S")
+		 (match_operand:HI 2 "" "K,L,N,O,RWh1WhlWabiv,Int8Qs8,J,Ri")))
    ]
   "rl78_real_insns_ok ()"
   "@
-   incw\t%0
-   decw\t%0
+   incw\t%p0
+   decw\t%p0
    incw\t%0 \;incw\t%0
    decw\t%0 \;decw\t%0
    addw\t%0, %p2
    addw\t%0, %2
    subw\t%0, %m2
    movw\t%0, %1 \;addw\t%0, %2"
+  [(set_attr "update_Z" "*,*,*,*,update_Z,update_Z,update_Z,update_Z")]
 )
 
 (define_insn "*addqihi3a_real"
-  [(set (match_operand:HI                          0 "register_operand" "=r")
-	(plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "r"))
+  [(set (match_operand:HI                          0 "register_operand" "=R")
+	(plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "R"))
 		 (match_operand:HI                 2 "register_operand"  "0")))
    ]
   "rl78_real_insns_ok ()"
   "add\t%q0, %q1 \;addc\t%Q0, #0"
+  [(set (attr "update_Z") (const_string "update_Z"))]
 )
 
 (define_insn "*subqi3_real"
   [(set (match_operand:QI           0 "nonimmediate_operand"  "=a,R,v")
 	(minus:QI (match_operand:QI 1 "general_operand"  "0,0,0")
-		  (match_operand:QI 2 "general_operand" "RiWabWhbWh1Whl,a,i")))
+		  (match_operand:QI 2 "rl78_general_operand" "RiWabWhbWh1Whl,a,i")))
    ]
   "rl78_real_insns_ok ()"
   "sub\t%0, %2"
+  [(set (attr "update_Z") (const_string "update_Z"))]
 )
 
 (define_insn "*subhi3_real"
   [(set (match_operand:HI           0 "nonimmediate_operand"  "=A,S")
 	(minus:HI (match_operand:HI 1 "general_operand"  "0,0")
-		  (match_operand:HI 2 "general_operand" "iBDTWabWh1v,i")))
+		  (match_operand:HI 2 "rl78_general_operand" "iBDTWabWh1v,i")))
    ]
   "rl78_real_insns_ok ()"
   "subw\t%0, %2"
+  [(set (attr "update_Z") (const_string "update_Z"))]
 )
 
 (define_insn "*umulhi3_shift_real"
@@ -179,30 +194,41 @@
 )
 
 (define_insn "*andqi3_real"
-  [(set (match_operand:QI         0 "nonimmediate_operand"  "=A,R,v")
-	(and:QI (match_operand:QI 1 "general_operand"       "%0,0,0")
-		(match_operand:QI 2 "general_operand"       "iRvWabWhbWh1Whl,A,i")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand"  "=WsfWsaWhlWab,A,R,vWsa")
+	(and:QI (match_operand:QI 1 "rl78_general_operand"       "%0,0,0,0")
+		(match_operand:QI 2 "rl78_general_operand"       "IBqi,iRvWabWhbWh1Whl,A,i")))
    ]
   "rl78_real_insns_ok ()"
-  "and\t%0, %2"
+  "@
+   clr1\t%0.%B2
+   and\t%0, %2
+   and\t%0, %2
+   and\t%0, %2"
+  [(set_attr "update_Z" "*,update_Z,update_Z,update_Z")]
 )
 
 (define_insn "*iorqi3_real"
-  [(set (match_operand:QI         0 "nonimmediate_operand"  "=A,R,v")
-	(ior:QI (match_operand:QI 1 "general_operand"       "%0,0,0")
-		(match_operand:QI 2 "general_operand"       "iRvWabWhbWh1Whl,A,i")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand"  "=WsfWsaWhlWab,A,R,vWsa")
+	(ior:QI (match_operand:QI 1 "rl78_general_operand"       "%0,0,0,0")
+		(match_operand:QI 2 "rl78_general_operand"       "Ibqi,iRvWabWhbWh1Whl,A,i")))
    ]
   "rl78_real_insns_ok ()"
-  "or\t%0, %2"
+  "@
+   set1\t%0.%B2
+   or\t%0, %2
+   or\t%0, %2
+   or\t%0, %2"
+  [(set_attr "update_Z" "*,update_Z,update_Z,update_Z")]
 )
 
 (define_insn "*xorqi3_real"
-  [(set (match_operand:QI         0 "nonimmediate_operand"  "=A,R,v")
-	(xor:QI (match_operand:QI 1 "general_operand"       "%0,0,0")
-		(match_operand    2 "general_operand"       "iRvWabWhbWh1Whl,A,i")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand"  "=A,R,vWsa")
+	(xor:QI (match_operand:QI 1 "rl78_general_operand"       "%0,0,0")
+		(match_operand    2 "rl78_general_operand"       "iRvWabWhbWh1Whl,A,i")))
    ]
   "rl78_real_insns_ok ()"
   "xor\t%0, %2"
+  [(set (attr "update_Z") (const_string "update_Z"))]
 )
 
 ;;---------- Shifts ------------------------
@@ -217,6 +243,7 @@
    shl\t%0, %u2
    cmp0 %2\; bz $2f\; 1: shl\t%0, 1 \;dec %2 \;bnz $1b\;2:
    inc %2\;dec %2\;bz $2f\;1: shl\t%0, 1 \;dec %2 \;bnz $1b\;2:"
+  [(set_attr "update_Z" "*,clobber,clobber")]
 )
 
 (define_insn "*ashlhi3_real"
@@ -229,6 +256,7 @@
    shlw\t%0, %u2
    cmp0 %2\; bz $2f\; 1: shlw\t%0, 1 \;dec %2 \;bnz $1b\;2:
    inc %2\;dec %2\;bz $2f\;1: shlw\t%0, 1 \;dec %2 \;bnz $1b\;2:"
+  [(set_attr "update_Z" "*,clobber,clobber")]
 )
 
 ;;----------
@@ -243,6 +271,7 @@
    sar\t%0, %u2
    cmp0 %2\; bz $2f\; 1: sar\t%0, 1 \;dec %2 \;bnz $1b\;2:
    inc %2\;dec %2\;bz $2f\;1: sar\t%0, 1\;dec %2 \;bnz $1b\;2:"
+  [(set_attr "update_Z" "*,clobber,clobber")]
 )
 
 (define_insn "*ashrhi3_real"
@@ -255,6 +284,7 @@
    sarw\t%0, %u2
    cmp0 %2\; bz $2f\; 1: sarw\t%0, 1 \;dec %2 \;bnz $1b\;2:
    inc %2\;dec %2\;bz $2f\;1: sarw\t%0, 1\;dec %2\;bnz $1b\;2:"
+  [(set_attr "update_Z" "*,clobber,clobber")]
 )
 
 ;;----------
@@ -269,6 +299,7 @@
    shr\t%0, %u2
    cmp0 %2\; bz $2f\; 1: shr\t%0, 1 \;dec %2 \;bnz $1b\;2:
    inc %2\;dec %2\;bz $2f\;1: shr\t%0, 1\;dec %2\;bnz $1b\;2:"
+  [(set_attr "update_Z" "*,clobber,clobber")]
 )
 
 (define_insn "*lshrhi3_real"
@@ -281,6 +312,7 @@
    shrw\t%0, %u2
    cmp0 %2\; bz $2f\; 1: shrw\t%0, 1 \;dec %2 \;bnz $1b\;2:
    inc %2\;dec %2\;bz $2f\;1: shrw\t%0, 1\;dec %2\;bnz $1b\;2:"
+  [(set_attr "update_Z" "*,clobber,clobber")]
 )
 
 ;;---------- Branching ------------------------
@@ -307,7 +339,27 @@
   "@
    call\t!!%A0
    call\t%A0"
+  [(set (attr "update_Z") (const_string "clobber"))]
   )
+
+;; Peephole to match:
+;;
+;;	(set (reg1) (reg2))
+;;	(call (mem (reg1)))
+;;
+;;  and replace it with:
+;;
+;;	(call (mem (reg2)))
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand") (match_operand:HI 1 "register_operand"))
+   (call (mem:HI (match_dup 0))(const_int 0))
+  ]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))
+   && REGNO (operands[1]) < 8"
+  [(call (mem:HI (match_dup 1))(const_int 0))
+  ]
+)
 
 (define_insn "*call_value_real"
   [(set (match_operand 0 "register_operand" "=v,v")
@@ -317,35 +369,71 @@
   "@
    call\t!!%A1
    call\t%A1"
+  [(set (attr "update_Z") (const_string "clobber"))]
   )
+
+;; Peephole to match:
+;;
+;;	(set (reg1) (reg2))
+;;	(set (reg3) (call (mem (reg1))))
+;;
+;;  and replace it with:
+;;
+;;	(set (reg3) (call (mem (reg2))))
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand") (match_operand:HI 1 "register_operand"))
+   (set (match_operand:HI 2 "register_operand") (call (mem:HI (match_dup 0))(const_int 0)))
+  ]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))
+   && REGNO (operands[1]) < 8"
+  [(set (match_dup 2) (call (mem:HI (match_dup 1))(const_int 0)))
+  ]
+)
 
 (define_insn "*cbranchqi4_real_signed"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_signed"
-			      [(match_operand:QI 1 "general_operand" "A,A,A")
-			       (match_operand:QI 2 "general_operand" "ISqi,i,v")])
+			      [(match_operand:QI 1 "general_operand" "A,A,A,A,Wsa")
+			       (match_operand:QI 2 "general_operand" "M,ISqi,i,v,i")])
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_real_insns_ok ()"
-  "@
-   cmp\t%1, %2 \;xor1 CY,%1.7\;not1 CY\;sk%C0 \;br\t!!%3
-   cmp\t%1, %2 \;xor1 CY,%1.7\;sk%C0 \;br\t!!%3
-   cmp\t%1, %2 \;xor1 CY,%1.7\;xor1 CY,%2.7\;sk%C0 \;br\t!!%3"
+  {
+    gcc_assert (GET_CODE (operands[0]) != EQ && GET_CODE (operands[0]) != NE);
+
+    switch (which_alternative)
+    {
+    case 0: return "cmp0\t%1\; xor1\tCY, %1.7\; sk%C0\; br\t!!%3";
+    case 1: return "cmp\t%1, %2\; xor1\tCY, %1.7\; not1\tCY\; sk%C0\; br\t!!%3";
+    case 4:
+    case 2: return "cmp\t%1, %2\; xor1\tCY, %1.7\; sk%C0\; br\t!!%3";
+    case 3: return "cmp\t%1, %2\; xor1\tCY, %1.7\; xor1\tCY, %2.7\; sk%C0\; br\t!!%3";
+    default: gcc_unreachable ();
+    }
+  }   
+  [(set (attr "update_Z") (const_string "clobber"))] ;; FIXME: flags are set based on %1 vs %2
   )
 
 (define_insn "*cbranchqi4_real"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_real"
-			      [(match_operand:QI 1 "general_operand" "Wabvaxbc,a,              v,bcdehl")
-			       (match_operand:QI 2 "general_operand" "M,       irvWabWhlWh1Whb,i,a")])
+			      [(match_operand:QI 1 "rl78_general_operand" "Wabvaxbc,a,              vWsaWab,bcdehl")
+			       (match_operand:QI 2 "rl78_general_operand" "M,       iRvWabWhlWh1Whb,i,a")])
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_real_insns_ok ()"
-  "@
-   cmp0\t%1 \;sk%C0 \;br\t!!%3
-   cmp\t%1, %2 \;sk%C0 \;br\t!!%3
-   cmp\t%1, %2 \;sk%C0 \;br\t!!%3
-   cmp\t%1, %2 \;sk%C0 \;br\t!!%3"
+  {
+    if (which_alternative == 0)
+      {
+        if (rl78_flags_already_set (operands[0], operands[1]))
+          return "sk%C0\; br\t!!%3\; # zero-comparison eliminated";
+	else
+	  return "cmp0\t%1\; sk%C0\; br\t!!%3";
+      }
+    return "cmp\t%1, %2\; sk%C0\; br\t!!%3";
+  }
+  [(set (attr "update_Z") (const_string "clobber"))] ;; FIXME: alt 0: flags are set based on %1 vs %2
   )
 
 (define_insn "*cbranchhi4_real_signed"
@@ -357,39 +445,59 @@
 	      (pc)))]
   "rl78_real_insns_ok ()"
   "@
-   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;not1 CY\;sk%C0 \;br\t!!%3
-   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;sk%C0 \;br\t!!%3
-   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;xor1 CY,%Q2.7\;sk%C0 \;br\t!!%3
+   cmpw\t%1, %2\; xor1\tCY, %Q1.7\; not1\tCY\; sk%C0\; br\t!!%3
+   cmpw\t%1, %2\; xor1\tCY, %Q1.7\; sk%C0\; br\t!!%3
+   cmpw\t%1, %2\; xor1\tCY, %Q1.7\; xor1\tCY, %Q2.7\; sk%C0\; br\t!!%3
    %z0\t!!%3"
+  [(set_attr "update_Z" "clobber,clobber,clobber,*")]
   )
 
 (define_insn "cbranchhi4_real"
   [(set (pc) (if_then_else
 	      (match_operator                    0 "rl78_cmp_operator_real"
-			      [(match_operand:HI 1 "general_operand" "A,vR")
-			       (match_operand:HI 2 "general_operand" "iBDTvWabWhlWh1,1")])
+			      [(match_operand:HI 1 "general_operand" "A,A,vR")
+			       (match_operand:HI 2 "rl78_general_operand" "M,iBDTvWabWhlWh1,1")])
               (label_ref (match_operand          3 "" ""))
 	      (pc)))]
   "rl78_real_insns_ok ()"
-  "@
-  cmpw\t%1, %2 \;sk%C0 \;br\t!!%3
-  %z0\t!!%3"
+  {
+    switch (which_alternative)
+      {
+      case 0:
+        if (rl78_flags_already_set (operands[0], operands[1]))
+	  return "sk%C0\; br\t!!%3\; # cmpw eliminated";
+	/* else fall through.  */
+      case 1:
+	return "cmpw\t%1, %2\; sk%C0\; br\t!!%3";
+      case 2:
+        return "%z0\t!!%3";
+      default:
+        gcc_unreachable ();
+      }
+  }
+  [(set (attr "update_Z") (const_string "clobber"))] ;; FIXME: Z might be set based on %1 vs %2
   )
 
 (define_insn "cbranchhi4_real_inverted"  
   [(set (pc) (if_then_else
 	      (match_operator                    0 "rl78_cmp_operator_real"
-			      [(match_operand:HI 1 "general_operand" "A")
-			       (match_operand:HI 2 "general_operand" "iBDTvWabWhlWh1")])
+			      [(match_operand:HI 1 "general_operand" "A,A")
+			       (match_operand:HI 2 "rl78_general_operand" "M,iBDTvWabWhlWh1")])
 	      (pc)
               (label_ref (match_operand          3 "" ""))))]
   "rl78_real_insns_ok ()"
-  "cmpw\t%1, %2 \;sk%C0 \;br\t!!%3"
+  {
+    if (which_alternative == 0 && rl78_flags_already_set (operands[0], operands[1]))
+      return "sk%C0\; br\t!!%3\; # inverted cmpw eliminated";
+    else
+      return "cmpw\t%1, %2\; sk%C0\; br\t!!%3";
+  }
+  [(set (attr "update_Z") (const_string "clobber"))] ;; FIXME: flags are set based on %1 vs %2
   )
 
 (define_insn "*cbranchsi4_real_lt"
   [(set (pc) (if_then_else
-	      (lt (match_operand:SI 0 "general_operand" "U,vWabWhlWh1")
+	      (lt (match_operand:SI 0 "rl78_general_operand" "U,vWabWhlWh1")
 		  (const_int 0))
               (label_ref (match_operand 1 "" ""))
 	      (pc)))
@@ -397,13 +505,13 @@
    ]
   "rl78_real_insns_ok ()"
   "@
-   mov a, %E0 \;mov1 CY,a.7 \;sknc \;br\t!!%1
-   mov1 CY,%E0.7 \;sknc \;br\t!!%1"
+   mov\ta, %E0\; mov1\tCY, a.7\; sknc\; br\t!!%1
+   mov1\tCY, %E0.7\; sknc\; br\t!!%1"
   )
 
 (define_insn "*cbranchsi4_real_ge"
   [(set (pc) (if_then_else
-	      (ge (match_operand:SI 0 "general_operand" "U,vWabWhlWh1")
+	      (ge (match_operand:SI 0 "rl78_general_operand" "U,vWabWhlWh1")
 		  (const_int 0))
               (label_ref (match_operand 1 "" ""))
 	      (pc)))
@@ -411,8 +519,8 @@
    ]
   "rl78_real_insns_ok ()"
   "@
-   mov a, %E0 \;mov1 CY,a.7 \;skc \;br\t!!%1
-   mov1 CY,%E0.7 \;skc \;br\t!!%1"
+   mov\ta, %E0\; mov1\tCY, a.7\; skc\; br\t!!%1
+   mov1\tCY, %E0.7\; skc\; br\t!!%1"
   )
 
 (define_insn "*cbranchsi4_real_signed"
@@ -426,11 +534,12 @@
    ]
   "rl78_real_insns_ok ()"
   "@
-   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;not1 CY\;      movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
-   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;               movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
-   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;xor1 CY,%E2.7\;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
-   movw ax, %H1\; cmpw  ax, %H2\; xor1 CY, a.7\; not1 CY\; movw ax, %h1 \;sknz\; cmpw  ax, %h2 \;sk%0 \;br\t!!%3
-   movw ax, %H1\; cmpw  ax, %H2\; xor1 CY, a.7\; movw ax, %h1\; sknz\; cmpw ax, %h2\; sk%0\; br\t!!%3"
+   movw\tax, %H1\; cmpw\tax, %H2\; xor1\tCY, a.7\; not1\tCY\; movw\tax, %h1\; sknz\; cmpw\tax, %h2\; sk%C0\; br\t!!%3
+   movw\tax, %H1\; cmpw\tax, %H2\; xor1\tCY, a.7\; movw\tax, %h1\; sknz\; cmpw\tax, %h2\; sk%C0\; br\t!!%3
+   movw\tax, %H1\; cmpw\tax, %H2\; xor1\tCY, a.7\; xor1\tCY, %E2.7\; movw\tax, %h1\; sknz\; cmpw\tax, %h2\; sk%C0\; br\t!!%3
+   movw\tax, %H1\; cmpw\tax, %H2\; xor1\tCY, a.7\; not1\tCY\; movw\tax, %h1\; sknz\; cmpw\tax, %h2\; sk%0\; br\t!!%3
+   movw\tax, %H1\; cmpw\tax, %H2\; xor1\tCY, a.7\; movw\tax, %h1\; sknz\; cmpw\tax, %h2\; sk%0\; br\t!!%3"
+  [(set (attr "update_Z") (const_string "clobber"))]
   )
 
 (define_insn "*cbranchsi4_real"
@@ -443,7 +552,8 @@
    (clobber (reg:HI AX_REG))
    ]
   "rl78_real_insns_ok ()"
-  "movw ax,%H1 \;cmpw  ax, %H2 \;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3"
+  "movw\tax, %H1\; cmpw\tax, %H2\; movw\tax, %h1\; sknz\; cmpw\tax, %h2\; sk%C0\; br\t!!%3"
+  [(set (attr "update_Z") (const_string "clobber"))]
   )
 
 ;; Peephole to match:
@@ -480,6 +590,7 @@
 		      (pc)))]
   ""
   "bf\tA.%B0, $%1"
+  [(set (attr "update_Z") (const_string "clobber"))]
 )
 
 (define_insn "bt"
@@ -491,6 +602,7 @@
 		      (pc)))]
   ""
   "bt\tA.%B0, $%1"
+  [(set (attr "update_Z") (const_string "clobber"))]
 )
 
 ;; NOTE: These peepholes are fragile.  They rely upon GCC generating
@@ -565,4 +677,5 @@
    ]
   "rl78_real_insns_ok ()"
   "xor a, #0xff @ xch a, x @ xor a, #0xff @ xch a, x @ addw ax, #1 @ and a, %Q2 @ xch a, x @ and a, %q2 @ xch a, x"
+  [(set (attr "update_Z") (const_string "clobber"))]
 )

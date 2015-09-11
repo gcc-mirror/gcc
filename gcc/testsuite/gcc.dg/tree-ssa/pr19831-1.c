@@ -29,4 +29,3 @@ void test4(int b)
 
 /* { dg-final { scan-tree-dump-times "free" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "malloc" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

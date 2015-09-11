@@ -21,6 +21,10 @@ create_code (gcc_jit_context *ctxt, void *user_data)
      Unset it.  */
   gcc_jit_context_set_str_option (ctxt, GCC_JIT_STR_OPTION_PROGNAME, NULL);
 
+  /* By default, we use an embedded copy of the driver.
+     Opt-in to using an external copy of the driver.  */
+  gcc_jit_context_set_bool_use_external_driver (ctxt, 1);
+
   /* Break PATH, so that the driver can't be found
      by gcc::jit::playback::context::compile ()
      within gcc_jit_context_compile.  */

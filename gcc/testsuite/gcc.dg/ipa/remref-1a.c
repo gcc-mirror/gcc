@@ -30,5 +30,3 @@ int main (void)
 
 /* { dg-final { scan-ipa-dump "ipa-prop: Removed a reference"  "inline"  } } */
 /* { dg-final { scan-tree-dump-not "hooray"  "optimized"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

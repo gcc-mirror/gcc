@@ -24,4 +24,3 @@ foo (){
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -20,31 +20,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "target.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "rtl.h"
+#include "df.h"
+#include "target.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgcleanup.h"
-#include "basic-block.h"
 #include "tm_p.h"
 #include "tree-pass.h"
-#include "df.h"
 #include "emit-rtl.h"
 
 /* We want target macros for the mode switching code to be able to refer
@@ -131,7 +121,7 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
 	  HARD_REG_SET live_at_edge;
 	  basic_block src_bb = eg->src;
 	  int cur_mode = info[src_bb->index].mode_out;
-	  rtx mode_set;
+	  rtx_insn *mode_set;
 
 	  REG_SET_TO_HARD_REG_SET (live_at_edge, df_get_live_out (src_bb));
 
@@ -145,7 +135,7 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
 	  default_rtl_profile ();
 
 	  /* Do not bother to insert empty sequence.  */
-	  if (mode_set == NULL_RTX)
+	  if (mode_set == NULL)
 	    continue;
 
 	  /* We should not get an abnormal edge here.  */
@@ -267,7 +257,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    && GET_CODE ((ret_reg = XEXP (PATTERN (last_insn), 0))) == REG)
 	  {
 	    int ret_start = REGNO (ret_reg);
-	    int nregs = hard_regno_nregs[ret_start][GET_MODE (ret_reg)];
+	    int nregs = REG_NREGS (ret_reg);
 	    int ret_end = ret_start + nregs;
 	    bool short_block = false;
 	    bool multi_reg_return = false;

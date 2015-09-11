@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "flags.h"
+#include "options.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "target-memory.h"
@@ -551,7 +551,7 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
 
   if (val == ARITH_ASYMMETRIC)
     {
-      gfc_warning (gfc_arith_error (val), &x->where);
+      gfc_warning (0, gfc_arith_error (val), &x->where);
       val = ARITH_OK;
     }
 
@@ -731,8 +731,28 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	  break;
 	}
 
-      mpz_tdiv_q (result->value.integer, op1->value.integer,
-		  op2->value.integer);
+      if (warn_integer_division)
+	{
+	  mpz_t r;
+	  mpz_init (r);
+	  mpz_tdiv_qr (result->value.integer, r, op1->value.integer,
+		       op2->value.integer);
+
+	  if (mpz_cmp_si (r, 0) != 0)
+	    {
+	      char *p;
+	      p = mpz_get_str (NULL, 10, result->value.integer);
+	      gfc_warning_now (OPT_Winteger_division, "Integer division "
+			       "truncated to constant %qs at %L", p,
+			       &op1->where);
+	      free (p);
+	    }
+	  mpz_clear (r);
+	}
+      else
+	mpz_tdiv_q (result->value.integer, op1->value.integer,
+		    op2->value.integer);
+
       break;
 
     case BT_REAL:
@@ -1521,7 +1541,7 @@ eval_intrinsic (gfc_intrinsic_op op,
       temp.value.op.op1 = op1;
       temp.value.op.op2 = op2;
 
-      gfc_type_convert_binary (&temp, 0);
+      gfc_type_convert_binary (&temp, warn_conversion || warn_conversion_extra);
 
       if (op == INTRINSIC_EQ || op == INTRINSIC_NE
 	  || op == INTRINSIC_GE || op == INTRINSIC_GT
@@ -1949,6 +1969,42 @@ arith_error (arith rc, gfc_typespec *from, gfc_typespec *to, locus *where)
      NaN, etc.  */
 }
 
+/* Returns true if significant bits were lost when converting real
+   constant r from from_kind to to_kind.  */
+
+static bool
+wprecision_real_real (mpfr_t r, int from_kind, int to_kind)
+{
+  mpfr_t rv, diff;
+  bool ret;
+
+  gfc_set_model_kind (to_kind);
+  mpfr_init (rv);
+  gfc_set_model_kind (from_kind);
+  mpfr_init (diff);
+
+  mpfr_set (rv, r, GFC_RND_MODE);
+  mpfr_sub (diff, rv, r, GFC_RND_MODE);
+
+  ret = ! mpfr_zero_p (diff);
+  mpfr_clear (rv);
+  mpfr_clear (diff);
+  return ret;
+}
+
+/* Return true if conversion from an integer to a real loses precision.  */
+
+static bool
+wprecision_int_real (mpz_t n, mpfr_t r)
+{
+  mpz_t i;
+  mpz_init (i);
+  mpfr_get_z (i, r, GFC_RND_MODE);
+  mpz_sub (i, i, n);
+  return mpz_cmp_si (i, 0) != 0;
+  mpz_clear (i);
+
+}
 
 /* Convert integers to integers.  */
 
@@ -1966,7 +2022,7 @@ gfc_int2int (gfc_expr *src, int kind)
     {
       if (rc == ARITH_ASYMMETRIC)
 	{
-	  gfc_warning (gfc_arith_error (rc), &src->where);
+	  gfc_warning (0, gfc_arith_error (rc), &src->where);
 	}
       else
 	{
@@ -1985,8 +2041,12 @@ gfc_int2int (gfc_expr *src, int kind)
       k = gfc_validate_kind (BT_INTEGER, kind, false);
       gfc_convert_mpz_to_signed (result->value.integer,
 				 gfc_integer_kinds[k].bit_size);
-    }
 
+      if (warn_conversion && kind < src->ts.kind)
+	gfc_warning_now (OPT_Wconversion, "Conversion from %qs to %qs at %L",
+			 gfc_typename (&src->ts), gfc_typename (&result->ts),
+			 &src->where);
+    }
   return result;
 }
 
@@ -2009,6 +2069,14 @@ gfc_int2real (gfc_expr *src, int kind)
       gfc_free_expr (result);
       return NULL;
     }
+
+  if (warn_conversion
+      && wprecision_int_real (src->value.integer, result->value.real))
+    gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
+		     "from %qs to %qs at %L",
+		     gfc_typename (&src->ts),
+		     gfc_typename (&result->ts),
+		     &src->where);
 
   return result;
 }
@@ -2034,6 +2102,15 @@ gfc_int2complex (gfc_expr *src, int kind)
       return NULL;
     }
 
+  if (warn_conversion
+      && wprecision_int_real (src->value.integer,
+			      mpc_realref (result->value.complex)))
+      gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
+		       "from %qs to %qs at %L",
+		       gfc_typename (&src->ts),
+		       gfc_typename (&result->ts),
+		       &src->where);
+
   return result;
 }
 
@@ -2045,6 +2122,7 @@ gfc_real2int (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
+  bool did_warn = false;
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
 
@@ -2055,6 +2133,28 @@ gfc_real2int (gfc_expr *src, int kind)
       arith_error (rc, &src->ts, &result->ts, &src->where);
       gfc_free_expr (result);
       return NULL;
+    }
+
+  /* If there was a fractional part, warn about this.  */
+
+  if (warn_conversion)
+    {
+      mpfr_t f;
+      mpfr_init (f);
+      mpfr_frac (f, src->value.real, GFC_RND_MODE);
+      if (mpfr_cmp_si (f, 0) != 0)
+	{
+	  gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
+			   "from %qs to %qs at %L", gfc_typename (&src->ts),
+			   gfc_typename (&result->ts), &src->where);
+	  did_warn = true;
+	}
+    }
+  if (!did_warn && warn_conversion_extra)
+    {
+      gfc_warning_now (OPT_Wconversion_extra, "Conversion from %qs to %qs "
+		       "at %L", gfc_typename (&src->ts),
+		       gfc_typename (&result->ts), &src->where);
     }
 
   return result;
@@ -2068,6 +2168,7 @@ gfc_real2real (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
+  bool did_warn = false;
 
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
@@ -2088,6 +2189,33 @@ gfc_real2real (gfc_expr *src, int kind)
       return NULL;
     }
 
+  /* As a special bonus, don't warn about REAL values which are not changed by
+     the conversion if -Wconversion is specified and -Wconversion-extra is
+     not.  */
+
+  if ((warn_conversion || warn_conversion_extra) && src->ts.kind > kind)
+    {
+      int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
+      
+      /* Calculate the difference between the constant and the rounded
+	 value and check it against zero.  */
+
+      if (wprecision_real_real (src->value.real, src->ts.kind, kind))
+	{
+	  gfc_warning_now (w, "Change of value in conversion from "
+			   "%qs to %qs at %L",
+			   gfc_typename (&src->ts), gfc_typename (&result->ts),
+			   &src->where);
+	  /* Make sure the conversion warning is not emitted again.  */
+	  did_warn = true;
+	}
+    }
+
+    if (!did_warn && warn_conversion_extra)
+      gfc_warning_now (OPT_Wconversion_extra, "Conversion from %qs to %qs "
+		       "at %L", gfc_typename(&src->ts),
+		       gfc_typename(&result->ts), &src->where);
+
   return result;
 }
 
@@ -2099,6 +2227,7 @@ gfc_real2complex (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
+  bool did_warn = false;
 
   result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
 
@@ -2119,6 +2248,26 @@ gfc_real2complex (gfc_expr *src, int kind)
       return NULL;
     }
 
+  if ((warn_conversion || warn_conversion_extra) && src->ts.kind > kind)
+    {
+      int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
+
+      if (wprecision_real_real (src->value.real, src->ts.kind, kind))
+	{
+	  gfc_warning_now (w, "Change of value in conversion from "
+			   "%qs to %qs at %L",
+			   gfc_typename (&src->ts), gfc_typename (&result->ts),
+			   &src->where);
+	  /* Make sure the conversion warning is not emitted again.  */
+	  did_warn = true;
+	}
+    }
+
+  if (!did_warn && warn_conversion_extra)
+    gfc_warning_now (OPT_Wconversion_extra, "Conversion from %qs to %qs "
+		     "at %L", gfc_typename(&src->ts),
+		     gfc_typename(&result->ts), &src->where);
+
   return result;
 }
 
@@ -2130,6 +2279,7 @@ gfc_complex2int (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
+  bool did_warn = false;
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
 
@@ -2143,6 +2293,43 @@ gfc_complex2int (gfc_expr *src, int kind)
       return NULL;
     }
 
+  if (warn_conversion || warn_conversion_extra)
+    {
+      int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
+
+      /* See if we discarded an imaginary part.  */
+      if (mpfr_cmp_si (mpc_imagref (src->value.complex), 0) != 0)
+	{
+	  gfc_warning_now (w, "Non-zero imaginary part discarded "
+			   "in conversion from %qs to %qs at %L",
+			   gfc_typename(&src->ts), gfc_typename (&result->ts),
+			   &src->where);
+	  did_warn = true;
+	}
+
+      else {
+	mpfr_t f;
+
+	mpfr_init (f);
+	mpfr_frac (f, src->value.real, GFC_RND_MODE);
+	if (mpfr_cmp_si (f, 0) != 0)
+	  {
+	    gfc_warning_now (w, "Change of value in conversion from "
+			     "%qs to %qs at %L", gfc_typename (&src->ts),
+			     gfc_typename (&result->ts), &src->where);
+	    did_warn = true;
+	  }
+	mpfr_clear (f);
+      }
+
+      if (!did_warn && warn_conversion_extra)
+	{
+	  gfc_warning_now (OPT_Wconversion_extra, "Conversion from %qs to %qs "
+			   "at %L", gfc_typename (&src->ts),
+			   gfc_typename (&result->ts), &src->where);
+	}
+    }
+
   return result;
 }
 
@@ -2154,6 +2341,7 @@ gfc_complex2real (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
+  bool did_warn = false;
 
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
@@ -2174,6 +2362,41 @@ gfc_complex2real (gfc_expr *src, int kind)
       return NULL;
     }
 
+  if (warn_conversion || warn_conversion_extra)
+    {
+      int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
+
+      /* See if we discarded an imaginary part.  */
+      if (mpfr_cmp_si (mpc_imagref (src->value.complex), 0) != 0)
+	{
+	  gfc_warning_now (w, "Non-zero imaginary part discarded "
+			   "in conversion from %qs to %qs at %L",
+			   gfc_typename(&src->ts), gfc_typename (&result->ts),
+			   &src->where);
+	  did_warn = true;
+	}
+
+      /* Calculate the difference between the real constant and the rounded
+	 value and check it against zero.  */
+      
+      if (kind > src->ts.kind
+	  && wprecision_real_real (mpc_realref (src->value.complex),
+				   src->ts.kind, kind))
+	{
+	  gfc_warning_now (w, "Change of value in conversion from "
+			   "%qs to %qs at %L",
+			   gfc_typename (&src->ts), gfc_typename (&result->ts),
+			   &src->where);
+	  /* Make sure the conversion warning is not emitted again.  */
+	  did_warn = true;
+	}
+    }
+
+  if (!did_warn && warn_conversion_extra)
+    gfc_warning_now (OPT_Wconversion, "Conversion from %qs to %qs at %L",
+		     gfc_typename(&src->ts), gfc_typename (&result->ts),
+		     &src->where);
+
   return result;
 }
 
@@ -2185,6 +2408,7 @@ gfc_complex2complex (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
+  bool did_warn = false;
 
   result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
 
@@ -2219,6 +2443,26 @@ gfc_complex2complex (gfc_expr *src, int kind)
       gfc_free_expr (result);
       return NULL;
     }
+
+  if ((warn_conversion || warn_conversion_extra) && src->ts.kind > kind
+      && (wprecision_real_real (mpc_realref (src->value.complex),
+				src->ts.kind, kind)
+	  || wprecision_real_real (mpc_imagref (src->value.complex),
+				   src->ts.kind, kind)))
+    {
+      int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
+
+      gfc_warning_now (w, "Change of value in conversion from "
+		       " %qs to %qs at %L",
+		       gfc_typename (&src->ts), gfc_typename (&result->ts),
+		       &src->where);
+      did_warn = true;
+    }
+
+  if (!did_warn && warn_conversion_extra && src->ts.kind != kind)
+    gfc_warning_now (OPT_Wconversion_extra, "Conversion from %qs to %qs "
+		     "at %L", gfc_typename(&src->ts),
+		     gfc_typename (&result->ts), &src->where);
 
   return result;
 }
@@ -2280,7 +2524,8 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 
   if (src_len > result_len)
     {
-      gfc_warning ("The Hollerith constant at %L is too long to convert to %qs",
+      gfc_warning (0,
+		   "The Hollerith constant at %L is too long to convert to %qs",
 		   &src->where, gfc_typename(&result->ts));
     }
 

@@ -21,4 +21,3 @@ int foo(int argc)
   return q + a();
 }
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

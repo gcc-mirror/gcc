@@ -12,4 +12,3 @@ foo (int ko)
 
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump "Unknown def-use cycle pattern." "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

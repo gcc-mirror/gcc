@@ -24,23 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "real.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "realmpfr.h"
 #include "diagnostic-core.h"	/* For fatal_error.  */
-#include "double-int.h"
 #include "trans.h"
 #include "trans-const.h"
 #include "trans-types.h"
@@ -332,7 +322,7 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 			gfc_build_string_const (expr->representation.length,
 						expr->representation.string));
 	  if (!integer_zerop (tmp) && !integer_onep (tmp))
-	    gfc_warning ("Assigning value other than 0 or 1 to LOGICAL"
+	    gfc_warning (0, "Assigning value other than 0 or 1 to LOGICAL"
 			 " has undefined result at %L", &expr->where);
 	  return fold_convert (gfc_get_logical_type (expr->ts.kind), tmp);
 	}
@@ -368,7 +358,8 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 				     expr->representation.string);
 
     default:
-      fatal_error ("gfc_conv_constant_to_tree(): invalid type: %s",
+      fatal_error (input_location,
+		   "gfc_conv_constant_to_tree(): invalid type: %s",
 		   gfc_typename (&expr->ts));
     }
 }

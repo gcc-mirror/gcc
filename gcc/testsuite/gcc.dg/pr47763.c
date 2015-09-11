@@ -7,4 +7,3 @@ foo()
 }
 
 /* { dg-final { scan-rtl-dump-not "Web oldreg" "web" } } */
-/* { dg-final { cleanup-rtl-dump "web" } } */

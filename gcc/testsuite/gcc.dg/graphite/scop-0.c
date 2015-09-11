@@ -9,7 +9,7 @@ int toto()
   int b[100];
   int N = foo ();
 
-  for (i = 0; i < 2*N+ 100; i++)
+  for (i = 0; i < N+ 100; i++)
     for (j = 0; j < 200; j++)
       a[j][i] = a[j+1][10] + 2;
 
@@ -18,5 +18,4 @@ int toto()
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */
 

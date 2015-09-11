@@ -3,45 +3,15 @@
 #include "compute-ref-data.h"
 
 /* Expected results.  */
-VECT_VAR_DECL(expected,int,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-				       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,int,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,int,32,2) [] = { 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,uint,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,uint,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,uint,32,2) [] = { 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
 VECT_VAR_DECL(expected,int,16,8) [] = { 0xfff6, 0xfff7, 0xfff8, 0xfff9,
 					0xfffa, 0xfffb, 0xfffc, 0xfffd };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0x16, 0x17, 0x18, 0x19 };
 VECT_VAR_DECL(expected,int,64,2) [] = { 0x20, 0x21 };
-VECT_VAR_DECL(expected,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
 VECT_VAR_DECL(expected,uint,16,8) [] = { 0x53, 0x54, 0x55, 0x56,
 					 0x57, 0x58, 0x59, 0x5a };
 VECT_VAR_DECL(expected,uint,32,4) [] = { 0x907, 0x908, 0x909, 0x90a };
 VECT_VAR_DECL(expected,uint,64,2) [] = { 0xffffffe7,
 					 0xffffffe8 };
-VECT_VAR_DECL(expected,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-					   0x33333333, 0x33333333 };
 
 /* Expected results for cases with input values chosen to test
    possible intermediate overflow.  */
@@ -121,7 +91,12 @@ void exec_vabal (void)
   TEST_VABAL(uint, u, 16, 32, 4);
   TEST_VABAL(uint, u, 32, 64, 2);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
 
   /* Use values that could lead to overflow intermediate
    * calculations.  */

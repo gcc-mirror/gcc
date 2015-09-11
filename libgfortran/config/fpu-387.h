@@ -215,11 +215,12 @@ set_fpu (void)
 int
 get_fpu_trap_exceptions (void)
 {
-  int res = 0;
   unsigned short cw;
+  int mask;
+  int res = 0;
 
   __asm__ __volatile__ ("fstcw\t%0" : "=m" (cw));
-  cw &= _FPU_MASK_ALL;
+  mask = cw;
 
   if (has_sse())
     {
@@ -228,15 +229,17 @@ get_fpu_trap_exceptions (void)
       __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
 
       /* The SSE exception masks are shifted by 7 bits.  */
-      cw = cw | ((cw_sse >> 7) & _FPU_MASK_ALL);
+      mask |= (cw_sse >> 7);
     }
 
-  if (~cw & _FPU_MASK_IM) res |= GFC_FPE_INVALID;
-  if (~cw & _FPU_MASK_DM) res |= GFC_FPE_DENORMAL;
-  if (~cw & _FPU_MASK_ZM) res |= GFC_FPE_ZERO;
-  if (~cw & _FPU_MASK_OM) res |= GFC_FPE_OVERFLOW;
-  if (~cw & _FPU_MASK_UM) res |= GFC_FPE_UNDERFLOW;
-  if (~cw & _FPU_MASK_PM) res |= GFC_FPE_INEXACT;
+  mask = ~mask & _FPU_MASK_ALL;
+
+  if (mask & _FPU_MASK_IM) res |= GFC_FPE_INVALID;
+  if (mask & _FPU_MASK_DM) res |= GFC_FPE_DENORMAL;
+  if (mask & _FPU_MASK_ZM) res |= GFC_FPE_ZERO;
+  if (mask & _FPU_MASK_OM) res |= GFC_FPE_OVERFLOW;
+  if (mask & _FPU_MASK_UM) res |= GFC_FPE_UNDERFLOW;
+  if (mask & _FPU_MASK_PM) res |= GFC_FPE_INEXACT;
 
   return res;
 }
@@ -252,7 +255,7 @@ get_fpu_except_flags (void)
 {
   unsigned short cw;
   int excepts;
-  int result = 0;
+  int res = 0;
 
   __asm__ __volatile__ ("fnstsw\t%0" : "=am" (cw));
   excepts = cw;
@@ -267,14 +270,14 @@ get_fpu_except_flags (void)
 
   excepts &= _FPU_EX_ALL;
 
-  if (excepts & _FPU_MASK_IM) result |= GFC_FPE_INVALID;
-  if (excepts & _FPU_MASK_DM) result |= GFC_FPE_DENORMAL;
-  if (excepts & _FPU_MASK_ZM) result |= GFC_FPE_ZERO;
-  if (excepts & _FPU_MASK_OM) result |= GFC_FPE_OVERFLOW;
-  if (excepts & _FPU_MASK_UM) result |= GFC_FPE_UNDERFLOW;
-  if (excepts & _FPU_MASK_PM) result |= GFC_FPE_INEXACT;
+  if (excepts & _FPU_MASK_IM) res |= GFC_FPE_INVALID;
+  if (excepts & _FPU_MASK_DM) res |= GFC_FPE_DENORMAL;
+  if (excepts & _FPU_MASK_ZM) res |= GFC_FPE_ZERO;
+  if (excepts & _FPU_MASK_OM) res |= GFC_FPE_OVERFLOW;
+  if (excepts & _FPU_MASK_UM) res |= GFC_FPE_UNDERFLOW;
+  if (excepts & _FPU_MASK_PM) res |= GFC_FPE_INEXACT;
 
-  return result;
+  return res;
 }
 
 void

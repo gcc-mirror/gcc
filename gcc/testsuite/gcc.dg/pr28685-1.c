@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" }  */
+/* { dg-options "-O2 -fdump-tree-optimized -fno-ipa-icf" }  */
 
 /* Should produce <=.  */
 int test1 (int a, int b)
@@ -47,4 +47,3 @@ int test5 (int a, int b)
 /* { dg-final { scan-tree-dump-times "return 0" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-not " < " "optimized" } } */
 /* { dg-final { scan-tree-dump-not " == " "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

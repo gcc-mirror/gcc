@@ -13,4 +13,3 @@ foo  (int *a, char *b, char *c)
 
 /* { dg-final { scan-tree-dump-times "& 7" 1 "sanopt" } } */
 /* { dg-final { scan-tree-dump-times "__builtin___asan_report_load4" 1 "sanopt" } } */
-/* { dg-final { cleanup-tree-dump "sanopt" } } */

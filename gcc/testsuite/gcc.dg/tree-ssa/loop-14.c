@@ -16,4 +16,3 @@ int bla(void)
 }
 
 /* { dg-final { scan-tree-dump-times "\\+ 100" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

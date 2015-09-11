@@ -96,4 +96,3 @@ main ()
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 4 "vect" { target { vect_call_copysignf && vect_call_sqrtf } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" { target { vect_call_copysignf && vect_call_sqrtf } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

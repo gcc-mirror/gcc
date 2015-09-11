@@ -31,6 +31,11 @@
 			      V1TI
 			      (TI	"VECTOR_MEM_VSX_P (TImode)")])
 
+;; Mode iterator to handle swapping words on little endian for the 128-bit
+;; types that goes in a single vector register.
+(define_mode_iterator VSX_LE_128 [(KF   "FLOAT128_VECTOR_P (KFmode)")
+				  (TF   "FLOAT128_VECTOR_P (TFmode)")])
+
 ;; Iterator for the 2 32-bit vector types
 (define_mode_iterator VSX_W [V4SF V4SI])
 
@@ -41,11 +46,31 @@
 (define_mode_iterator VSX_F [V4SF V2DF])
 
 ;; Iterator for logical types supported by VSX
-(define_mode_iterator VSX_L [V16QI V8HI V4SI V2DI V4SF V2DF V1TI TI])
+;; Note, IFmode won't actually be used since it isn't a VSX type, but it simplifies
+;; the code by using 128-bit iterators for floating point.
+(define_mode_iterator VSX_L [V16QI
+			     V8HI
+			     V4SI
+			     V2DI
+			     V4SF
+			     V2DF
+			     V1TI
+			     TI
+			     (KF	"FLOAT128_VECTOR_P (KFmode)")
+			     (TF	"FLOAT128_VECTOR_P (TFmode)")
+			     (IF	"FLOAT128_VECTOR_P (IFmode)")])
 
 ;; Iterator for memory move.  Handle TImode specially to allow
 ;; it to use gprs as well as vsx registers.
-(define_mode_iterator VSX_M [V16QI V8HI V4SI V2DI V4SF V2DF V1TI])
+(define_mode_iterator VSX_M [V16QI
+			     V8HI
+			     V4SI
+			     V2DI
+			     V4SF
+			     V2DF
+			     V1TI
+			     (KF	"FLOAT128_VECTOR_P (KFmode)")
+			     (TF	"FLOAT128_VECTOR_P (TFmode)")])
 
 (define_mode_iterator VSX_M2 [V16QI
 			      V8HI
@@ -54,6 +79,8 @@
 			      V4SF
 			      V2DF
 			      V1TI
+			      (KF	"FLOAT128_VECTOR_P (KFmode)")
+			      (TF	"FLOAT128_VECTOR_P (TFmode)")
 			      (TI	"TARGET_VSX_TIMODE")])
 
 ;; Map into the appropriate load/store name based on the type
@@ -64,6 +91,8 @@
 			(V2DF  "vd2")
 			(V2DI  "vd2")
 			(DF    "d")
+			(TF    "vd2")
+			(KF    "vd2")
 			(V1TI  "vd2")
 			(TI    "vd2")])
 
@@ -76,6 +105,8 @@
 			 (V2DI  "dp")
 			 (DF    "dp")
 			 (SF	"sp")
+			 (TF    "dp")
+			 (KF    "dp")
 			 (V1TI  "dp")
 			 (TI    "dp")])
 
@@ -89,6 +120,8 @@
 			 (DI	"wi")
 			 (DF    "ws")
 			 (SF	"ww")
+			 (TF	"wp")
+			 (KF	"wq")
 			 (V1TI  "v")
 			 (TI    "wt")])
 
@@ -132,7 +165,9 @@
 			 (DF    "ws")
 			 (SF	"ww")
 			 (V1TI	"wa")
-			 (TI    "wt")])
+			 (TI    "wt")
+			 (TF	"wp")
+			 (KF	"wq")])
 
 ;; Same size integer type for floating point data
 (define_mode_attr VSi [(V4SF  "v4si")
@@ -157,7 +192,8 @@
 			 (V2DI  "v")
 			 (V2DF  "v")
 			 (V1TI  "v")
-			 (DF    "s")])
+			 (DF    "s")
+			 (KF	"v")])
 
 ;; Appropriate type for add ops (and other simple FP ops)
 (define_mode_attr VStype_simple	[(V2DF "vecdouble")
@@ -623,6 +659,105 @@
                      (const_int 6) (const_int 7)])))]
   "")
 
+;; Little endian word swapping for 128-bit types that are either scalars or the
+;; special V1TI container class, which it is not appropriate to use vec_select
+;; for the type.
+(define_insn "*vsx_le_permute_<mode>"
+  [(set (match_operand:VSX_LE_128 0 "nonimmediate_operand" "=<VSa>,<VSa>,Z")
+	(rotate:VSX_LE_128
+	 (match_operand:VSX_LE_128 1 "input_operand" "<VSa>,Z,<VSa>")
+	 (const_int 64)))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "@
+   xxpermdi %x0,%x1,%x1,2
+   lxvd2x %x0,%y1
+   stxvd2x %x1,%y0"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecperm,vecload,vecstore")])
+
+(define_insn_and_split "*vsx_le_undo_permute_<mode>"
+  [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>,<VSa>")
+	(rotate:VSX_LE_128
+	 (rotate:VSX_LE_128
+	  (match_operand:VSX_LE_128 1 "vsx_register_operand" "0,<VSa>")
+	  (const_int 64))
+	 (const_int 64)))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "@
+   #
+   xxlor %x0,%x1"
+  ""
+  [(set (match_dup 0) (match_dup 1))]
+{
+  if (reload_completed && REGNO (operands[0]) == REGNO (operands[1]))
+    {
+      emit_note (NOTE_INSN_DELETED);
+      DONE;
+    }
+}
+  [(set_attr "length" "0,4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn_and_split "*vsx_le_perm_load_<mode>"
+  [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>")
+        (match_operand:VSX_LE_128 1 "memory_operand" "Z"))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "#"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  [(set (match_dup 2)
+	(rotate:VSX_LE_128 (match_dup 1)
+			   (const_int 64)))
+   (set (match_dup 0)
+	(rotate:VSX_LE_128 (match_dup 2)
+			   (const_int 64)))]
+  "
+{
+  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
+                                       : operands[0];
+}
+  "
+  [(set_attr "type" "vecload")
+   (set_attr "length" "8")])
+
+(define_insn "*vsx_le_perm_store_<mode>"
+  [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z")
+        (match_operand:VSX_LE_128 1 "vsx_register_operand" "+<VSa>"))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "#"
+  [(set_attr "type" "vecstore")
+   (set_attr "length" "12")])
+
+(define_split
+  [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
+        (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
+  [(set (match_dup 2)
+	(rotate:VSX_LE_128 (match_dup 1)
+			   (const_int 64)))
+   (set (match_dup 0)
+	(rotate:VSX_LE_128 (match_dup 2)
+			   (const_int 64)))]
+{
+  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
+                                       : operands[0];
+})
+
+;; The post-reload split requires that we re-permute the source
+;; register in case it is still live.
+(define_split
+  [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
+        (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  [(set (match_dup 1)
+	(rotate:VSX_LE_128 (match_dup 1)
+			   (const_int 64)))
+   (set (match_dup 0)
+	(rotate:VSX_LE_128 (match_dup 1)
+			   (const_int 64)))
+   (set (match_dup 1)
+	(rotate:VSX_LE_128 (match_dup 1)
+			   (const_int 64)))]
+  "")
 
 (define_insn "*vsx_mov<mode>"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?<VSa>,?<VSa>,wQ,?&r,??Y,??r,??r,<VSr>,?<VSa>,*r,v,wZ, v")
@@ -780,6 +915,7 @@
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
   emit_insn (gen_muldi3 (op3, op3, op4));
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+  DONE;
 }"
   [(set_attr "type" "mul")])
 
@@ -817,6 +953,7 @@
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
   emit_insn (gen_divdi3 (op3, op3, op4));
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+  DONE;
 }"
   [(set_attr "type" "div")])
 
@@ -844,6 +981,7 @@
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
   emit_insn (gen_udivdi3 (op3, op3, op4));
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+  DONE;
 }"
   [(set_attr "type" "div")])
 
@@ -1196,7 +1334,8 @@
 ;; the fprs because we don't want to add the altivec registers to movdi/movsi.
 ;; For the unsigned tests, there isn't a generic double -> unsigned conversion
 ;; in rs6000.md so don't test VECTOR_UNIT_VSX_P, just test against VSX.
-;; Don't use vsx_register_operand here, use gpc_reg_operand to match rs6000.md.
+;; Don't use vsx_register_operand here, use gpc_reg_operand to match rs6000.md
+;; in allowing virtual registers.
 (define_insn "vsx_float<VSi><mode>2"
   [(set (match_operand:VSX_F 0 "gpc_reg_operand" "=<VSr>,?<VSa>")
 	(float:VSX_F (match_operand:<VSI> 1 "gpc_reg_operand" "<VSr2>,<VSr3>")))]
@@ -1863,7 +2002,7 @@
 (define_insn_and_split "vsx_extract_v4sf"
   [(set (match_operand:SF 0 "vsx_register_operand" "=f,f")
 	(vec_select:SF
-	 (match_operand:V4SF 1 "vsx_register_operand" "<VSa>,<VSa>")
+	 (match_operand:V4SF 1 "vsx_register_operand" "wa,wa")
 	 (parallel [(match_operand:QI 2 "u5bit_cint_operand" "O,i")])))
    (clobber (match_scratch:V4SF 3 "=X,0"))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
@@ -2014,7 +2153,7 @@
     }
 
   x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
 })
 
@@ -2040,7 +2179,7 @@
     }
 
   x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
 })
 

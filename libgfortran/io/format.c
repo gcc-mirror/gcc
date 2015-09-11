@@ -243,6 +243,18 @@ get_fnode (format_data *fmt, fnode **head, fnode **tail, format_token t)
 }
 
 
+/* free_format()-- Free allocated format string.  */
+void
+free_format (st_parameter_dt *dtp)
+{
+  if ((dtp->common.flags & IOPARM_DT_HAS_FORMAT) && dtp->format)
+    {
+      free (dtp->format);
+      dtp->format = NULL;
+    }
+}
+
+
 /* free_format_data()-- Free all allocated format data.  */
 
 void
@@ -612,6 +624,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       get_fnode (fmt, &head, &tail, FMT_LPAREN);
       tail->repeat = -2;  /* Signifies unlimited format.  */
       tail->u.child = parse_format_list (dtp, &seen_data_desc);
+      *seen_dd = seen_data_desc;
       if (fmt->error != NULL)
 	goto finished;
       if (!seen_data_desc)
@@ -839,6 +852,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
   switch (t)
     {
     case FMT_L:
+      *seen_dd = true;
       t = format_lex (fmt);
       if (t != FMT_POSINT)
 	{
@@ -861,6 +875,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       break;
 
     case FMT_A:
+      *seen_dd = true;
       t = format_lex (fmt);
       if (t == FMT_ZERO)
 	{
@@ -885,12 +900,14 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
     case FMT_G:
     case FMT_EN:
     case FMT_ES:
+      *seen_dd = true;
       get_fnode (fmt, &head, &tail, t);
       tail->repeat = repeat;
 
       u = format_lex (fmt);
       if (t == FMT_G && u == FMT_ZERO)
 	{
+	  *seen_dd = true;
 	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
 	      || dtp->u.p.mode == READING)
 	    {
@@ -916,6 +933,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	}
       if (t == FMT_F && dtp->u.p.mode == WRITING)
 	{
+	  *seen_dd = true;
 	  if (u != FMT_POSINT && u != FMT_ZERO)
 	    {
 	      fmt->error = nonneg_required;
@@ -957,8 +975,10 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       tail->u.real.e = -1;
 
       if (t2 == FMT_D || t2 == FMT_F)
-	break;
-
+	{
+	  *seen_dd = true;
+	  break;
+	}
 
       /* Look for optional exponent */
       t = format_lex (fmt);
@@ -999,6 +1019,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
     case FMT_B:
     case FMT_O:
     case FMT_Z:
+      *seen_dd = true;
       get_fnode (fmt, &head, &tail, t);
       tail->repeat = repeat;
 
@@ -1145,7 +1166,8 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
 
   p = strchr (buffer, '\0');
 
-  memcpy (p, dtp->format, width);
+  if (dtp->format)
+    memcpy (p, dtp->format, width);
 
   p += width;
   *p++ = '\n';
@@ -1157,6 +1179,26 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
 
   *p++ = '^';
   *p = '\0';
+
+  /* Cleanup any left over memory allocations before calling generate
+     error.  */
+  if (is_internal_unit (dtp))
+    {
+      if (dtp->format != NULL)
+	{
+	  free (dtp->format);
+	  dtp->format = NULL;
+	}
+
+      /* Leave these alone if IOSTAT was given because execution will
+	 return from generate error in those cases.  */
+      if (!(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	{
+	  free (dtp->u.p.fmt);
+	  free_format_hash_table (dtp->u.p.current_unit);
+	  free_internal_unit (dtp);
+	}
+    }
 
   generate_error (&dtp->common, LIBERROR_FORMAT, buffer);
 }
@@ -1218,13 +1260,8 @@ parse_format (st_parameter_dt *dtp)
 
   /* Not found so proceed as follows.  */
 
-  if (format_cache_ok)
-    {
-      char *fmt_string = xmalloc (dtp->format_len + 1);
-      memcpy (fmt_string, dtp->format, dtp->format_len);
-      dtp->format = fmt_string;
-      dtp->format[dtp->format_len] = '\0';
-    }
+  char *fmt_string = fc_strdup_notrim (dtp->format, dtp->format_len);
+  dtp->format = fmt_string;
 
   dtp->u.p.fmt = fmt = xmalloc (sizeof (format_data));
   fmt->format_string = dtp->format;
@@ -1256,19 +1293,13 @@ parse_format (st_parameter_dt *dtp)
   else
     fmt->error = "Missing initial left parenthesis in format";
 
-  if (fmt->error)
-    {
-      format_error (dtp, NULL, fmt->error);
-      if (format_cache_ok)
-	free (dtp->format);
-      free_format_hash_table (dtp->u.p.current_unit);
-      return;
-    }
-
   if (format_cache_ok)
     save_parsed_format (dtp);
   else
     dtp->u.p.format_not_saved = 1;
+
+  if (fmt->error)
+    format_error (dtp, NULL, fmt->error);
 }
 
 

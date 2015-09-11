@@ -20,11 +20,6 @@
 #ifndef GCC_REAL_H
 #define GCC_REAL_H
 
-#include "machmode.h"
-#include "signop.h"
-#include "wide-int.h"
-#include "insn-modes.h"
-
 /* An expanded form of the represented number.  */
 
 /* Enumerate the special cases of numbers that we encounter.  */
@@ -155,6 +150,7 @@ struct real_format
   bool has_signed_zero;
   bool qnan_msb_set;
   bool canonical_nan_lsbs_set;
+  const char *name;
 };
 
 

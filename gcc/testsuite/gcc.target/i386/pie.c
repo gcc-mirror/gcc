@@ -1,4 +1,4 @@
-/* { dg-do compile { target pie } } */
+/* { dg-do compile { target pie_enabled } } */
 /* { dg-options "-O2" } */
 
 int foo (void);

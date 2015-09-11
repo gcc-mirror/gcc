@@ -19,4 +19,3 @@ int f1()
 }
 
 /* { dg-final { scan-tree-dump-times "ITM_RU" 2 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

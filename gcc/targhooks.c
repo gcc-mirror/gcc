@@ -50,27 +50,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "machmode.h"
 #include "rtl.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
 #include "function.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -83,7 +70,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "target.h"
 #include "tm_p.h"
-#include "target-def.h"
 #include "regs.h"
 #include "reload.h"
 #include "insn-codes.h"
@@ -914,6 +900,13 @@ default_branch_target_register_class (void)
   return NO_REGS;
 }
 
+reg_class_t
+default_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
+					 reg_class_t cl)
+{
+  return cl;
+}
+
 extern bool
 default_lra_p (void)
 {
@@ -1344,10 +1337,6 @@ default_target_can_inline_p (tree caller, tree callee)
   return ret;
 }
 
-#ifndef HAVE_casesi
-# define HAVE_casesi 0
-#endif
-
 /* If the machine does not have a case insn that compares the bounds,
    this means extra overhead for dispatch tables, which raises the
    threshold for using them.  */
@@ -1355,17 +1344,13 @@ default_target_can_inline_p (tree caller, tree callee)
 unsigned int
 default_case_values_threshold (void)
 {
-  return (HAVE_casesi ? 4 : 5);
+  return (targetm.have_casesi () ? 4 : 5);
 }
 
 bool
 default_have_conditional_execution (void)
 {
-#ifdef HAVE_conditional_execution
   return HAVE_conditional_execution;
-#else
-  return false;
-#endif
 }
 
 /* By default we assume that c99 functions are present at the runtime,
@@ -1786,12 +1771,11 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   unsigned HOST_WIDE_INT align, boundary;
   bool indirect;
 
-#ifdef ARGS_GROW_DOWNWARD
   /* All of the alignment and movement below is for args-grow-up machines.
      As of 2004, there are only 3 ARGS_GROW_DOWNWARD targets, and they all
      implement their own specialized gimplify_va_arg_expr routines.  */
-  gcc_unreachable ();
-#endif
+  if (ARGS_GROW_DOWNWARD)
+    gcc_unreachable ();
 
   indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
   if (indirect)

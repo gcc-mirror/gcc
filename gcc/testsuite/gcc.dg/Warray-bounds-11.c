@@ -92,5 +92,11 @@ void foo(int (*a)[3])
 	bar(c);
 	bar(e);
 	bar(f.f);
+	bar(h1->j);
+	bar(h3->j);
+	bar(h3b->j);
+	bar(h1b->j);
+	bar(h->j);
+	bar(h0->j);
 }
 

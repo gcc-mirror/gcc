@@ -44,41 +44,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "cfganal.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "options.h"
+#include "fold-const.h"
+#include "cfganal.h"
+#include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "stor-layout.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
@@ -1369,9 +1349,7 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	if (rdg_vertex_for_stmt (rdg, DR_STMT (dr1))
 	    > rdg_vertex_for_stmt (rdg, DR_STMT (dr2)))
 	  {
-	    data_reference_p tem = dr1;
-	    dr1 = dr2;
-	    dr2 = tem;
+	    std::swap (dr1, dr2);
 	    this_dir = -this_dir;
 	  }
 	ddr = initialize_data_dependence_relation (dr1, dr2, loops);
@@ -1382,9 +1360,7 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	  {
 	    if (DDR_REVERSED_P (ddr))
 	      {
-		data_reference_p tem = dr1;
-		dr1 = dr2;
-		dr2 = tem;
+		std::swap (dr1, dr2);
 		this_dir = -this_dir;
 	      }
 	    /* Known dependences can still be unordered througout the

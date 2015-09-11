@@ -92,5 +92,4 @@ L7:
    as the only way to reach the tests is when n_sets <= 1 and the only
    value which satisfies both conditions is n_sets == 1.  */
 /* { dg-final { scan-tree-dump-times "Simplified relational" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

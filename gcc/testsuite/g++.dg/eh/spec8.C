@@ -2,7 +2,7 @@
 
 struct exception {};
 
-template <typename T> void foo() throw(exception); // { dg-error "declaration" }
+template <typename T> void foo() throw(exception); // { dg-message "declaration" }
 template <typename T> void foo(); // { dg-error "exception" }
 
 struct bar

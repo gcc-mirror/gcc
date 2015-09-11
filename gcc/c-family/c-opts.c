@@ -21,16 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "options.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
+#include "tm.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "c-common.h"
 #include "c-pragma.h"
@@ -47,11 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"		/* For PLUGIN_INCLUDE_FILE event.  */
 #include "mkdeps.h"
 #include "c-target.h"
-#include "tm.h"			/* For BYTES_BIG_ENDIAN,
-				   DOLLARS_IN_IDENTIFIERS,
-				   STDC_0_IN_SYSTEM_HEADERS,
-				   TARGET_FLT_EVAL_METHOD_NON_DEFAULT and
-				   TARGET_OPTF.  */
 #include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
 #include "dumpfile.h"
 
@@ -135,7 +122,7 @@ static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
 static void add_prefixed_path (const char *, size_t);
 static void push_command_line_include (void);
-static void cb_file_change (cpp_reader *, const struct line_map *);
+static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_dir_change (cpp_reader *, const char *);
 static void c_finish_options (void);
 
@@ -866,6 +853,15 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_int == -1)
     warn_implicit_int = flag_isoc99;
 
+  /* -Wshift-overflow is enabled by default in C99 and C++11 modes.  */
+  if (warn_shift_overflow == -1)
+    warn_shift_overflow = cxx_dialect >= cxx11 || flag_isoc99;
+
+  /* -Wshift-negative-value is enabled by -Wextra in C99 and C++11 modes.  */
+  if (warn_shift_negative_value == -1)
+    warn_shift_negative_value = (extra_warnings
+				 && (cxx_dialect >= cxx11 || flag_isoc99));
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
@@ -886,11 +882,21 @@ c_common_post_options (const char **pfilename)
 	warn_abi = false;
     }
 
+  /* Change flag_abi_version to be the actual current ABI level for the
+     benefit of c_cpp_builtins.  */
+  if (flag_abi_version == 0)
+    flag_abi_version = 10;
+
+  /* Set C++ standard to C++14 if not specified on the command line.  */
+  if (c_dialect_cxx () && cxx_dialect == cxx_unset)
+    set_std_cxx14 (/*ISO*/false);
+
   if (cxx_dialect >= cxx11)
     {
       /* If we're allowing C++0x constructs, don't warn about C++98
 	 identifiers which are keywords in C++0x.  */
-      warn_cxx0x_compat = 0;
+      warn_cxx11_compat = 0;
+      cpp_opts->cpp_warn_cxx11_compat = 0;
 
       if (warn_narrowing == -1)
 	warn_narrowing = 1;
@@ -928,7 +934,7 @@ c_common_post_options (const char **pfilename)
 
       if (out_stream == NULL)
 	{
-	  fatal_error ("opening output file %s: %m", out_fname);
+	  fatal_error (input_location, "opening output file %s: %m", out_fname);
 	  return false;
 	}
 
@@ -1075,6 +1081,8 @@ c_common_parse_file (void)
       if (!this_input_filename)
 	break;
     }
+
+  c_parse_final_cleanups ();
 }
 
 /* Returns the appropriate dump file for PHASE to dump with FLAGS.  */
@@ -1111,7 +1119,8 @@ c_common_finish (void)
 	{
 	  deps_stream = fopen (deps_file, deps_append ? "a": "w");
 	  if (!deps_stream)
-	    fatal_error ("opening dependency file %s: %m", deps_file);
+	    fatal_error (input_location, "opening dependency file %s: %m",
+			 deps_file);
 	}
     }
 
@@ -1121,10 +1130,10 @@ c_common_finish (void)
 
   if (deps_stream && deps_stream != out_stream
       && (ferror (deps_stream) || fclose (deps_stream)))
-    fatal_error ("closing dependency file %s: %m", deps_file);
+    fatal_error (input_location, "closing dependency file %s: %m", deps_file);
 
   if (out_stream && (ferror (out_stream) || fclose (out_stream)))
-    fatal_error ("when writing output to %s: %m", out_fname);
+    fatal_error (input_location, "when writing output to %s: %m", out_fname);
 }
 
 /* Either of two environment variables can specify output of
@@ -1290,8 +1299,10 @@ c_finish_options (void)
       size_t i;
 
       cb_file_change (parse_in,
-		      linemap_add (line_table, LC_RENAME, 0,
-				   _("<built-in>"), 0));
+		      linemap_check_ordinary (linemap_add (line_table,
+							   LC_RENAME, 0,
+							   _("<built-in>"),
+							   0)));
       /* Make sure all of the builtins about to be declared have
 	 BUILTINS_LOCATION has their source_location.  */
       source_location builtins_loc = BUILTINS_LOCATION;
@@ -1314,8 +1325,8 @@ c_finish_options (void)
       cpp_opts->warn_dollars = (cpp_opts->cpp_pedantic && !cpp_opts->c99);
 
       cb_file_change (parse_in,
-		      linemap_add (line_table, LC_RENAME, 0,
-				   _("<command-line>"), 0));
+		      linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+							   _("<command-line>"), 0)));
 
       for (i = 0; i < deferred_count; i++)
 	{
@@ -1418,7 +1429,7 @@ push_command_line_include (void)
 /* File change callback.  Has to handle -include files.  */
 static void
 cb_file_change (cpp_reader * ARG_UNUSED (pfile),
-		const struct line_map *new_map)
+		const line_map_ordinary *new_map)
 {
   if (flag_preprocess_only)
     pp_file_change (new_map);
@@ -1547,6 +1558,8 @@ set_std_cxx1z (int iso)
   /* C++11 includes the C99 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
+  /* Enable concepts by default. */
+  flag_concepts = 1;
   flag_isoc11 = 1;
   cxx_dialect = cxx1z;
   lang_hooks.name = "GNU C++14"; /* Pretend C++14 till standarization.  */

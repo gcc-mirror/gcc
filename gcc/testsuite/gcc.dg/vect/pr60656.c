@@ -44,4 +44,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_widen_mult_si_to_di_pattern } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -25,4 +25,3 @@ int test(void)
 /* The call to b->foo() is perfectly devirtualizable because C can not be in construction
    when &c was used.  */
 /* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "ccp1"  } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

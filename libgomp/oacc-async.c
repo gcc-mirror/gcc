@@ -26,7 +26,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-
+#include <assert.h>
 #include "openacc.h"
 #include "libgomp.h"
 #include "oacc-int.h"
@@ -37,13 +37,23 @@ acc_async_test (int async)
   if (async < acc_async_sync)
     gomp_fatal ("invalid async argument: %d", async);
 
-  return base_dev->openacc.async_test_func (async);
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (!thr || !thr->dev)
+    gomp_fatal ("no device active");
+
+  return thr->dev->openacc.async_test_func (async);
 }
 
 int
 acc_async_test_all (void)
 {
-  return base_dev->openacc.async_test_all_func ();
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (!thr || !thr->dev)
+    gomp_fatal ("no device active");
+
+  return thr->dev->openacc.async_test_all_func ();
 }
 
 void
@@ -52,19 +62,34 @@ acc_wait (int async)
   if (async < acc_async_sync)
     gomp_fatal ("invalid async argument: %d", async);
 
-  base_dev->openacc.async_wait_func (async);
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (!thr || !thr->dev)
+    gomp_fatal ("no device active");
+
+  thr->dev->openacc.async_wait_func (async);
 }
 
 void
 acc_wait_async (int async1, int async2)
 {
-  base_dev->openacc.async_wait_async_func (async1, async2);
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (!thr || !thr->dev)
+    gomp_fatal ("no device active");
+
+  thr->dev->openacc.async_wait_async_func (async1, async2);
 }
 
 void
 acc_wait_all (void)
 {
-  base_dev->openacc.async_wait_all_func ();
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (!thr || !thr->dev)
+    gomp_fatal ("no device active");
+
+  thr->dev->openacc.async_wait_all_func ();
 }
 
 void
@@ -73,5 +98,10 @@ acc_wait_all_async (int async)
   if (async < acc_async_sync)
     gomp_fatal ("invalid async argument: %d", async);
 
-  base_dev->openacc.async_wait_all_async_func (async);
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (!thr || !thr->dev)
+    gomp_fatal ("no device active");
+
+  thr->dev->openacc.async_wait_all_async_func (async);
 }

@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-options "-Os" } */
 /* { dg-final { scan-assembler-not "cmov" } } */
 

@@ -32,6 +32,11 @@ extern bool shift_return_value (machine_mode, bool, rtx);
 extern rtx expand_call (tree, rtx, int);
 extern void fixup_tail_calls (void);
 
+extern bool pass_by_reference (CUMULATIVE_ARGS *, machine_mode,
+			       tree, bool);
+extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
+				     tree, bool);
+
 
 
 #endif // GCC_CALLS_H

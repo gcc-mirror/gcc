@@ -15,4 +15,3 @@ foo (unsigned char x, unsigned short y)
    as in (x ^ (char) y) & 1.  */
 
 /* { dg-final { scan-tree-dump-times " & " 1 "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

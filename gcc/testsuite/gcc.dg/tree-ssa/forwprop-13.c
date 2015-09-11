@@ -13,4 +13,3 @@ foo (struct B *b)
 }
 
 /* { dg-final { scan-tree-dump-not "\\\(unsigned" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

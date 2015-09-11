@@ -216,22 +216,22 @@ class Backend
   is_circular_pointer_type(Btype*) = 0;
 
   // Return the size of a type.
-  virtual size_t
+  virtual int64_t
   type_size(Btype*) = 0;
 
   // Return the alignment of a type.
-  virtual size_t
+  virtual int64_t
   type_alignment(Btype*) = 0;
 
   // Return the alignment of a struct field of this type.  This is
   // normally the same as type_alignment, but not always.
-  virtual size_t
+  virtual int64_t
   type_field_alignment(Btype*) = 0;
 
   // Return the offset of field INDEX in a struct type.  INDEX is the
   // entry in the FIELDS std::vector parameter of struct_type or
   // set_placeholder_struct_type.
-  virtual size_t
+  virtual int64_t
   type_field_offset(Btype*, size_t index) = 0;
 
   // Expressions.
@@ -375,7 +375,11 @@ class Backend
   // Create an expression for a call to FN with ARGS.
   virtual Bexpression*
   call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
-                  Location) = 0;
+		  Bexpression* static_chain, Location) = 0;
+
+  // Return an expression that allocates SIZE bytes on the stack.
+  virtual Bexpression*
+  stack_allocation_expression(int64_t size, Location) = 0;
 
   // Statements.
 
@@ -529,6 +533,11 @@ class Backend
 		     Btype* type, bool is_address_taken,
 		     Location location) = 0;
 
+  // Create a static chain parameter.  This is the closure parameter.
+  virtual Bvariable*
+  static_chain_variable(Bfunction* function, const std::string& name,
+		        Btype* type, Location location) = 0;
+
   // Create a temporary variable.  A temporary variable has no name,
   // just a type.  We pass in FUNCTION and BLOCK in case they are
   // needed.  If INIT is not NULL, the variable should be initialized
@@ -570,7 +579,7 @@ class Backend
   // If ALIGNMENT is not zero, it is the desired alignment of the variable.
   virtual Bvariable*
   implicit_variable(const std::string& name, Btype* type, bool is_hidden,
-		    bool is_constant, bool is_common, size_t alignment) = 0;
+		    bool is_constant, bool is_common, int64_t alignment) = 0;
 
 
   // Set the initial value of a variable created by implicit_variable.
@@ -649,7 +658,7 @@ class Backend
   
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
-  // where the the label is defined.
+  // where the label is defined.
   virtual Blabel*
   label(Bfunction*, const std::string& name, Location) = 0;
 

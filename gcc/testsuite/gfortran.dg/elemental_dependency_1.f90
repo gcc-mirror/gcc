@@ -80,4 +80,3 @@ CONTAINS
 END PROGRAM main
 
 ! { dg-final { scan-tree-dump-times "_gfortran_internal_unpack" 3 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

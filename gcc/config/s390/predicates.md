@@ -24,16 +24,20 @@
 
 ;; operands --------------------------------------------------------------
 
-;; Return true if OP a (const_int 0) operand.
-
+;; Return true if OP a const 0 operand (int/float/vector).
 (define_predicate "const0_operand"
-  (and (match_code "const_int, const_double")
+  (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
+
+;; Return true if OP an all ones operand (int/float/vector).
+(define_predicate "constm1_operand"
+  (and (match_code "const_int, const_double,const_vector")
+       (match_test "op == CONSTM1_RTX (mode)")))
 
 ;; Return true if OP is constant.
 
 (define_special_predicate "consttable_operand"
-  (and (match_code "symbol_ref, label_ref, const, const_int, const_double")
+  (and (match_code "symbol_ref, label_ref, const, const_int, const_double, const_vector")
        (match_test "CONSTANT_P (op)")))
 
 ;; Return true if OP is a valid S-type operand.
@@ -75,13 +79,17 @@
        (and (match_test "mode == Pmode")
 	    (match_test "!legitimate_la_operand_p (op)"))))
 
-;; Return true if OP is a valid operand as shift count or setmem.
+;; Return true if OP is a valid operand as scalar shift count or setmem.
 
 (define_predicate "shift_count_or_setmem_operand"
   (match_code "reg, subreg, plus, const_int")
 {
   HOST_WIDE_INT offset;
   rtx base;
+
+  if (GET_MODE (op) != VOIDmode
+      && GET_MODE_CLASS (GET_MODE (op)) != MODE_INT)
+    return false;
 
   /* Extract base register and offset.  */
   if (!s390_decompose_shift_count (op, &base, &offset))

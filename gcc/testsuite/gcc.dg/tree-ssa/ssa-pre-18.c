@@ -18,4 +18,3 @@ int bar (int b)
 }
 
 /* { dg-final { scan-tree-dump "Replaced foo \\(f.y\\)" "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

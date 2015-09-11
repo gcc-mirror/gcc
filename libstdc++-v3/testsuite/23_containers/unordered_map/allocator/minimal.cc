@@ -53,7 +53,7 @@ void test01()
   test_type v(alloc_type{});
   v.emplace(std::piecewise_construct,
 	    std::make_tuple(T()), std::make_tuple(T()));
-  VERIFY( v.max_size() == traits_type::max_size(v.get_allocator()) );
+  VERIFY( v.max_size() < traits_type::max_size(v.get_allocator()) );
 }
 
 int main()

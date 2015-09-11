@@ -12,4 +12,3 @@ unsigned foo1 (unsigned a, unsigned b)
 }
 /* We should eliminate both 4*b and 4*a from the main body of the loop */
 /* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

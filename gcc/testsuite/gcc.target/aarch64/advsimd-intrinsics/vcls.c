@@ -6,16 +6,6 @@
 VECT_VAR_DECL(expected,int,8,8) [] = { 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6 };
 VECT_VAR_DECL(expected,int,16,4) [] = { 0x2, 0x2, 0x2, 0x2 };
 VECT_VAR_DECL(expected,int,32,2) [] = { 0x19, 0x19 };
-VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,uint,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,uint,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,uint,32,2) [] = { 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0x7, 0x7, 0x7, 0x7,
 					0x7, 0x7, 0x7, 0x7,
 					0x7, 0x7, 0x7, 0x7,
@@ -23,45 +13,12 @@ VECT_VAR_DECL(expected,int,8,16) [] = { 0x7, 0x7, 0x7, 0x7,
 VECT_VAR_DECL(expected,int,16,8) [] = { 0x2, 0x2, 0x2, 0x2,
 					0x2, 0x2, 0x2, 0x2 };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0x14, 0x14, 0x14, 0x14 };
-VECT_VAR_DECL(expected,int,64,2) [] = { 0x3333333333333333,
-					0x3333333333333333 };
-VECT_VAR_DECL(expected,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,uint,32,4) [] = { 0x33333333, 0x33333333,
-					 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,uint,64,2) [] = { 0x3333333333333333,
-					 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-					   0x33333333, 0x33333333 };
 
 /* Expected results with negative input.  */
 VECT_VAR_DECL(expected_with_negative,int,8,8) [] = { 0x7, 0x7, 0x7, 0x7,
 						     0x7, 0x7, 0x7, 0x7 };
 VECT_VAR_DECL(expected_with_negative,int,16,4) [] = { 0x1, 0x1, 0x1, 0x1 };
 VECT_VAR_DECL(expected_with_negative,int,32,2) [] = { 0x1, 0x1 };
-VECT_VAR_DECL(expected_with_negative,int,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected_with_negative,uint,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-						      0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_with_negative,uint,16,4) [] = { 0x3333, 0x3333,
-						       0x3333, 0x3333 };
-VECT_VAR_DECL(expected_with_negative,uint,32,2) [] = { 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_with_negative,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected_with_negative,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-						      0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_with_negative,poly,16,4) [] = { 0x3333, 0x3333,
-						       0x3333, 0x3333 };
-VECT_VAR_DECL(expected_with_negative,hfloat,32,2) [] = { 0x33333333,
-							 0x33333333 };
 VECT_VAR_DECL(expected_with_negative,int,8,16) [] = { 0x0, 0x0, 0x0, 0x0,
 						      0x0, 0x0, 0x0, 0x0,
 						      0x0, 0x0, 0x0, 0x0,
@@ -69,32 +26,6 @@ VECT_VAR_DECL(expected_with_negative,int,8,16) [] = { 0x0, 0x0, 0x0, 0x0,
 VECT_VAR_DECL(expected_with_negative,int,16,8) [] = { 0x2, 0x2, 0x2, 0x2,
 						      0x2, 0x2, 0x2, 0x2 };
 VECT_VAR_DECL(expected_with_negative,int,32,4) [] = { 0x0, 0x0, 0x0, 0x0 };
-VECT_VAR_DECL(expected_with_negative,int,64,2) [] = { 0x3333333333333333,
-						      0x3333333333333333 };
-VECT_VAR_DECL(expected_with_negative,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						       0x33, 0x33, 0x33, 0x33,
-						       0x33, 0x33, 0x33, 0x33,
-						       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_with_negative,uint,16,8) [] = { 0x3333, 0x3333,
-						       0x3333, 0x3333,
-						       0x3333, 0x3333,
-						       0x3333, 0x3333 };
-VECT_VAR_DECL(expected_with_negative,uint,32,4) [] = { 0x33333333, 0x33333333,
-						       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_with_negative,uint,64,2) [] = { 0x3333333333333333,
-						       0x3333333333333333 };
-VECT_VAR_DECL(expected_with_negative,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						       0x33, 0x33, 0x33, 0x33,
-						       0x33, 0x33, 0x33, 0x33,
-						       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_with_negative,poly,16,8) [] = { 0x3333, 0x3333,
-						       0x3333, 0x3333,
-						       0x3333, 0x3333,
-						       0x3333, 0x3333 };
-VECT_VAR_DECL(expected_with_negative,hfloat,32,4) [] = { 0x33333333,
-							 0x33333333,
-							 0x33333333,
-							 0x33333333 };
 
 #define INSN_NAME vcls
 #define TEST_MSG "VCLS/VCLSQ"
@@ -146,7 +77,13 @@ FNNAME (INSN_NAME)
   TEST_UNARY_OP(INSN_NAME, q, int, s, 16, 8);
   TEST_UNARY_OP(INSN_NAME, q, int, s, 32, 4);
 
-  CHECK_RESULTS (TEST_MSG, " (positive input)");
+#define MSG_POSITIVE " (positive input)"
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, MSG_POSITIVE);
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, MSG_POSITIVE);
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, MSG_POSITIVE);
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, MSG_POSITIVE);
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, MSG_POSITIVE);
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, MSG_POSITIVE);
 
   /* Fill input vector with arbitrary values (negative).  */
   VDUP(vector, , int, s, 8, 8, 0xFF);
@@ -164,7 +101,13 @@ FNNAME (INSN_NAME)
   TEST_UNARY_OP(INSN_NAME, q, int, s, 16, 8);
   TEST_UNARY_OP(INSN_NAME, q, int, s, 32, 4);
 
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_with_negative, " (negative input)");
+#define MSG_NEGATIVE " (negative input)"
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_with_negative, MSG_NEGATIVE);
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_with_negative, MSG_NEGATIVE);
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected_with_negative, MSG_NEGATIVE);
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_with_negative, MSG_NEGATIVE);
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_with_negative, MSG_NEGATIVE);
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_with_negative, MSG_NEGATIVE);
 }
 
 int main (void)

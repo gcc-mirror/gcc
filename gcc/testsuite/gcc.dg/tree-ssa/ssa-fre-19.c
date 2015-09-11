@@ -28,4 +28,3 @@ int f(struct a *c)
 /* We should have CSEd the load from c->a.  */
 
 /* { dg-final { scan-tree-dump-times "c_.*\\\.a" 1 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

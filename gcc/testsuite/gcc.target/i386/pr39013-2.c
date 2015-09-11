@@ -1,5 +1,6 @@
 /* PR target/39013 */
-/* { dg-do compile { target *-*-linux* *-*-gnu* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target pie } */
 /* { dg-options "-O2 -fpie -std=gnu99" } */
 
 inline int foo (void);		/* { dg-warning "declared but never defined" } */

@@ -4,11 +4,18 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
-/* { dg-final { scan-assembler-times "addc" 37 } } */
-/* { dg-final { scan-assembler-times "shlr" 23 } } */
+/* { dg-final { scan-assembler-times "addc" 36 } } */
+/* { dg-final { scan-assembler-times "shlr" 22 } } */
 /* { dg-final { scan-assembler-times "shll" 14 } } */
-/* { dg-final { scan-assembler-times "add\t" 12 } } */
+/* { dg-final { scan-assembler-times "add\tr" 12 } } */
 /* { dg-final { scan-assembler-not "movt" } } */
+
+/* { dg-final { scan-assembler-times "add\t#1" 1 } } */
+
+/* { dg-final { scan-assembler-times "mov\t#-2" 1 { target { ! sh2a } } } } */
+/* { dg-final { scan-assembler-times "and\tr" 1 { target { ! sh2a } } } } */
+
+/* { dg-final { scan-assembler-times "bclr\t#0" 1 { target { sh2a } } } } */
 
 int
 test_000 (int a, int c, int b, int d)
@@ -125,7 +132,8 @@ test_015 (int a, int c, int b, int d)
 int
 test_016 (int a, int b, int c, int d)
 {
-  // 1x shlr, 1x addc
+  // non-SH2A: 1x add #1, 1x mov #-2, 1x and
+  // SH2A: 1x add #1, 1x bclr #0
   return a + (a & 1);
 }
 

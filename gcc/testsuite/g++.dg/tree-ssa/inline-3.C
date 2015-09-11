@@ -26,4 +26,3 @@ int main(int argc, char **argv)
 
 /* { dg-final { scan-tree-dump-times "Inlining void inline_me\\(" 1 "einline"} } */
 /* { dg-final { scan-tree-dump-times "Inlining void inline_me_too\\(" 1 "einline"} } */
-/* { dg-final { cleanup-tree-dump "einline" } } */

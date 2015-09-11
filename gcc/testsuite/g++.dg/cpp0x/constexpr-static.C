@@ -12,7 +12,6 @@ struct A
 A a(42);	    // constexpr constructor allows constant initialization
 A ar[3] = { { 1 }, { 2 }, { 3 } };
 // { dg-final { scan-assembler-not "static_initialization" } }
-// { dg-final cleanup-saved-temps }
 
 int main()
 {

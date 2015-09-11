@@ -25,7 +25,7 @@
 
 language="jit"
 
-compilers="libgccjit.so"
+compilers=""
 
 target_libs=""
 

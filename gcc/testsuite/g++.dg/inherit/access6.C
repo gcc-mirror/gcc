@@ -1,9 +1,9 @@
 // PR c++/28588
 
 class Foo { 
-  static void f(); // { dg-error "private" }
+  static void f(); // { dg-message "private" }
   static void f(int);
-  static void g(); // { dg-error "private" }
+  static void g(); // { dg-message "private" }
 };
 
 void h()

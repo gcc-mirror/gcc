@@ -21,37 +21,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
 #include "stringpool.h"
-#include "rtl.h"
 #include "regs.h"
-#include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
-#include "function.h"
 #include "insn-codes.h"
 #include "optabs.h"
-#include "hashtab.h"
-#include "statistics.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -63,18 +51,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "df.h"
 #include "langhooks.h"
-#include "ggc.h"
 #include "tm-constrs.h"
 #include "tree-pass.h"	/* for current_pass */
 #include "context.h"
@@ -590,7 +572,7 @@ sfunc_symbol (const char *name)
 }
 
 /* X and Y are two things to compare using CODE in IN_MODE.
-   Emit the compare insn, construct the the proper cc reg in the proper
+   Emit the compare insn, construct the proper cc reg in the proper
    mode, and return the rtx for the cc reg comparison in CMODE.  */
 
 rtx
@@ -669,7 +651,7 @@ gen_compare_reg (machine_mode cmode, enum rtx_code code,
   else
     x = force_reg (in_mode, x);
 
-  pat = gen_rtx_SET (VOIDmode, cc_reg, gen_rtx_COMPARE (mode, x, y));
+  pat = gen_rtx_SET (cc_reg, gen_rtx_COMPARE (mode, x, y));
   if (mode == CC_FP_EQmode || mode == CC_FP_GTEmode)
     {
       const char *name = mode == CC_FP_EQmode ? "__eqsf2" : "__gtesf2";
@@ -784,9 +766,12 @@ epiphany_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+epiphany_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		    int opno ATTRIBUTE_UNUSED,
 		    int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
       /* Small integers in the right context are as cheap as registers.  */
@@ -827,7 +812,7 @@ epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case COMPARE:
-      switch (GET_MODE (x))
+      switch (mode)
 	{
 	/* There are a number of single-insn combiner patterns that use
 	   the flag side effects of arithmetic.  */
@@ -1570,7 +1555,7 @@ frame_subreg_note (rtx set, int offset)
   rtx src = simplify_gen_subreg (SImode, SET_SRC (set), DImode, offset);
   rtx dst = simplify_gen_subreg (SImode, SET_DEST (set), DImode, offset);
 
-  set = gen_rtx_SET (VOIDmode, dst ,src);
+  set = gen_rtx_SET (dst ,src);
   RTX_FRAME_RELATED_P (set) = 1;
   return set;
 }
@@ -1625,7 +1610,7 @@ frame_insn (rtx x)
 static rtx_insn *
 frame_move_insn (rtx to, rtx from)
 {
-  return frame_insn (gen_rtx_SET (VOIDmode, to, from));
+  return frame_insn (gen_rtx_SET (to, from));
 }
 
 /* Generate a MEM referring to a varargs argument slot.  */
@@ -1867,11 +1852,10 @@ epiphany_expand_prologue (void)
       /* Instruction scheduling can separate the instruction setting IP from
 	 INSN so that dwarf2out_frame_debug_expr becomes confused what the
 	 temporary register is.  Example: _gcov.o  */
-      note = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+      note = gen_rtx_SET (stack_pointer_rtx,
 			  gen_rtx_PLUS (Pmode, stack_pointer_rtx, off));
       note = gen_rtx_PARALLEL (VOIDmode,
-			       gen_rtvec (2, gen_rtx_SET (VOIDmode, mem2, reg),
-					  note));
+			       gen_rtvec (2, gen_rtx_SET (mem2, reg), note));
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
     }
   /* If there is only one or no register to save, yet we have a large frame,

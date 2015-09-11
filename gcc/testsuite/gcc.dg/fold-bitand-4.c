@@ -13,4 +13,3 @@ unsigned bar (unsigned i)
 
 /* { dg-final { scan-tree-dump-times "\\\&" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "\\\& 4;" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

@@ -21,10 +21,13 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
+#include "gimple.h"
 #include "rtl.h"
+#include "df.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-flags.h"
@@ -34,26 +37,11 @@
 #include "recog.h"
 #include "reload.h"
 #include "diagnostic-core.h"
-#include "obstack.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
-#include "hashtab.h"
-#include "function.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -63,31 +51,22 @@
 #include "insn-codes.h"
 #include "optabs.h"
 #include "except.h"
-#include "ggc.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
-#include "hash-table.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
-#include "df.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* Prototypes */
 
@@ -144,6 +123,7 @@ static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
 #define DEBUG1 1
 
 #if DEBUG0
+#include "print-tree.h"
 /* This is needed by some of the commented-out debug statements
    below.  */
 static char const *class_names[LIM_REG_CLASSES] = REG_CLASS_NAMES;
@@ -290,7 +270,6 @@ encode_pattern_1 (rtx x)
       fprintf (stderr, "can't encode pattern %s\n",
 	       GET_RTX_NAME (GET_CODE (x)));
       debug_rtx (x);
-      gcc_unreachable ();
 #endif
       break;
     }
@@ -682,8 +661,6 @@ m32c_regno_ok_for_base_p (int regno)
   return 0;
 }
 
-#define DEBUG_RELOAD 0
-
 /* Implements TARGET_PREFERRED_RELOAD_CLASS.  In general, prefer general
    registers of the appropriate size.  */
 
@@ -695,7 +672,7 @@ m32c_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   reg_class_t newclass = rclass;
 
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, "\npreferred_reload_class for %s is ",
 	   class_names[rclass]);
 #endif
@@ -726,7 +703,7 @@ m32c_preferred_reload_class (rtx x, reg_class_t rclass)
   if (GET_MODE (x) == QImode)
     rclass = reduce_class (rclass, HL_REGS, rclass);
 
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, "%s\n", class_names[rclass]);
   debug_rtx (x);
 
@@ -755,7 +732,7 @@ m32c_preferred_output_reload_class (rtx x, reg_class_t rclass)
 int
 m32c_limit_reload_class (machine_mode mode, int rclass)
 {
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, "limit_reload_class for %s: %s ->",
 	   mode_name[mode], class_names[rclass]);
 #endif
@@ -770,7 +747,7 @@ m32c_limit_reload_class (machine_mode mode, int rclass)
   if (rclass != A_REGS)
     rclass = reduce_class (rclass, DI_REGS, rclass);
 
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, " %s\n", class_names[rclass]);
 #endif
   return rclass;
@@ -1217,8 +1194,7 @@ m32c_pushm_popm (Push_Pop_Type ppt)
 	    addr = gen_rtx_PLUS (GET_MODE (addr), addr, GEN_INT (byte_count));
 
 	  dwarf_set[n_dwarfs++] =
-	    gen_rtx_SET (VOIDmode,
-			 gen_rtx_MEM (mode, addr),
+	    gen_rtx_SET (gen_rtx_MEM (mode, addr),
 			 gen_rtx_REG (mode, pushm_info[i].reg1));
 	  F (dwarf_set[n_dwarfs - 1]);
 
@@ -1249,8 +1225,7 @@ m32c_pushm_popm (Push_Pop_Type ppt)
       if (reg_mask)
 	{
 	  XVECEXP (note, 0, 0)
-	    = gen_rtx_SET (VOIDmode,
-			   stack_pointer_rtx,
+	    = gen_rtx_SET (stack_pointer_rtx,
 			   gen_rtx_PLUS (GET_MODE (stack_pointer_rtx),
 					 stack_pointer_rtx,
 					 GEN_INT (-byte_count)));
@@ -1368,7 +1343,7 @@ m32c_function_arg (cumulative_args_t ca_v,
 #if DEBUG0
   fprintf (stderr, "func_arg %d (%s, %d)\n",
 	   ca->parm_num, mode_name[mode], named);
-  debug_tree (type);
+  debug_tree ((tree)type);
 #endif
 
   if (mode == VOIDmode)
@@ -1887,7 +1862,7 @@ m32c_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       /* reload FB to A_REGS */
       rtx temp = gen_reg_rtx (Pmode);
       x = copy_rtx (x);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, XEXP (x, 0)));
+      emit_insn (gen_rtx_SET (temp, XEXP (x, 0)));
       XEXP (x, 0) = temp;
     }
 
@@ -1950,6 +1925,14 @@ m32c_legitimize_reload_address (rtx * x,
 	type = RELOAD_FOR_OTHER_ADDRESS;
       push_reload (XEXP (*x, 0), NULL_RTX, &XEXP (*x, 0), NULL,
 		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
+		   (enum reload_type) type);
+      return 1;
+    }
+
+  if (TARGET_A24 && GET_MODE (*x) == PSImode)
+    {
+      push_reload (*x, NULL_RTX, x, NULL,
+		   A_REGS, PSImode, VOIDmode, 0, 0, opnum,
 		   (enum reload_type) type);
       return 1;
     }
@@ -2239,9 +2222,11 @@ m32c_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32c_rtx_costs
 static bool
-m32c_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+m32c_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
   switch (code)
     {
     case REG:
@@ -2309,7 +2294,7 @@ m32c_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
     default:
       /* Reasonable default.  */
-      if (TARGET_A16 && GET_MODE(x) == SImode)
+      if (TARGET_A16 && mode == SImode)
 	*total += COSTS_N_INSNS (2);
       break;
     }
@@ -3063,26 +3048,14 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
     }	
 }
 
-
-struct pragma_traits : default_hashmap_traits
-{
-  static hashval_t hash (const char *str) { return htab_hash_string (str); }
-  static bool
-  equal_keys (const char *a, const char *b)
-  {
-    return !strcmp (a, b);
-  }
-};
-
 /* Hash table of pragma info.  */
-static GTY(()) hash_map<const char *, unsigned, pragma_traits> *pragma_htab;
+static GTY(()) hash_map<nofree_string_hash, unsigned> *pragma_htab;
 
 void
 m32c_note_pragma_address (const char *varname, unsigned address)
 {
   if (!pragma_htab)
-    pragma_htab
-      = hash_map<const char *, unsigned, pragma_traits>::create_ggc (31);
+    pragma_htab = hash_map<nofree_string_hash, unsigned>::create_ggc (31);
 
   const char *name = ggc_strdup (varname);
   unsigned int *slot = &pragma_htab->get_or_insert (name);
@@ -3374,7 +3347,7 @@ m32c_prepare_move (rtx * operands, machine_mode mode)
       rtx dest_reg = XEXP (pmv, 0);
       rtx dest_mod = XEXP (pmv, 1);
 
-      emit_insn (gen_rtx_SET (Pmode, dest_reg, dest_mod));
+      emit_insn (gen_rtx_SET (dest_reg, dest_mod));
       operands[0] = gen_rtx_MEM (mode, dest_reg);
     }
   if (can_create_pseudo_p () && MEM_P (operands[0]) && MEM_P (operands[1]))
@@ -4050,24 +4023,11 @@ m32c_encode_section_info (tree decl, rtx rtl, int first)
 static int
 m32c_leaf_function_p (void)
 {
-  rtx_insn *saved_first, *saved_last;
-  struct sequence_stack *seq;
   int rv;
 
-  saved_first = crtl->emit.x_first_insn;
-  saved_last = crtl->emit.x_last_insn;
-  for (seq = crtl->emit.sequence_stack; seq && seq->next; seq = seq->next)
-    ;
-  if (seq)
-    {
-      crtl->emit.x_first_insn = seq->first;
-      crtl->emit.x_last_insn = seq->last;
-    }
-
+  push_topmost_sequence ();
   rv = leaf_function_p ();
-
-  crtl->emit.x_first_insn = saved_first;
-  crtl->emit.x_last_insn = saved_last;
+  pop_topmost_sequence ();
   return rv;
 }
 
@@ -4078,23 +4038,17 @@ static bool
 m32c_function_needs_enter (void)
 {
   rtx_insn *insn;
-  struct sequence_stack *seq;
   rtx sp = gen_rtx_REG (Pmode, SP_REGNO);
   rtx fb = gen_rtx_REG (Pmode, FB_REGNO);
 
-  insn = get_insns ();
-  for (seq = crtl->emit.sequence_stack;
-       seq;
-       insn = seq->first, seq = seq->next);
-
-  while (insn)
-    {
-      if (reg_mentioned_p (sp, insn))
-	return true;
-      if (reg_mentioned_p (fb, insn))
-	return true;
-      insn = NEXT_INSN (insn);
-    }
+  for (insn = get_topmost_sequence ()->first; insn; insn = NEXT_INSN (insn))
+    if (NONDEBUG_INSN_P (insn))
+      {
+	if (reg_mentioned_p (sp, insn))
+	  return true;
+	if (reg_mentioned_p (fb, insn))
+	  return true;
+      }
   return false;
 }
 
@@ -4152,6 +4106,9 @@ m32c_emit_prologue (void)
       && !m32c_function_needs_enter ())
     cfun->machine->use_rts = 1;
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = frame_size;
+  
   if (frame_size > 254)
     {
       extra_frame_size = frame_size - 254;

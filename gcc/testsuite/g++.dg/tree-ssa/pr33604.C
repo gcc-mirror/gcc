@@ -46,4 +46,3 @@ int main(int argc, char *argv[])
    after optimization.  */
 
 /* { dg-final { scan-tree-dump-times ".MEM_\[0-9\]*\\\(D\\\)" 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <utility> // for std::pair
 
+#include "timevar.h"
+
 #include "jit-recording.h"
 
 namespace gcc {
@@ -34,6 +36,12 @@ namespace jit {
  **********************************************************************/
 
 namespace playback {
+
+/* playback::context is an abstract base class.
+
+   The two concrete subclasses are:
+   - playback::compile_to_memory
+   - playback::compile_to_file.  */
 
 class context : public log_user
 {
@@ -169,12 +177,18 @@ public:
     return m_recording_ctxt->get_bool_option (opt);
   }
 
+  int
+  get_inner_bool_option (enum inner_bool_option opt) const
+  {
+    return m_recording_ctxt->get_inner_bool_option (opt);
+  }
+
   builtins_manager *get_builtins_manager () const
   {
     return m_recording_ctxt->get_builtins_manager ();
   }
 
-  result *
+  void
   compile ();
 
   void
@@ -207,9 +221,7 @@ public:
     return m_recording_ctxt->errors_occurred ();
   }
 
-  /* For use by jit_langhook_write_globals.  */
-  void write_global_decls_1 ();
-  void write_global_decls_2 ();
+  timer *get_timer () const { return m_recording_ctxt->get_timer (); }
 
 private:
   void dump_generated_code ();
@@ -252,11 +264,35 @@ private:
   char *
   read_dump_file (const char *path);
 
+  virtual void postprocess (const char *ctxt_progname) = 0;
+
+protected:
+  tempdir *get_tempdir () { return m_tempdir; }
+
   void
   convert_to_dso (const char *ctxt_progname);
 
+  void
+  invoke_driver (const char *ctxt_progname,
+		 const char *input_file,
+		 const char *output_file,
+		 timevar_id_t tv_id,
+		 bool shared,
+		 bool run_linker);
+
+  void
+  add_multilib_driver_arguments (vec <char *> *argvec);
+
   result *
   dlopen_built_dso ();
+
+ private:
+  void
+  invoke_embedded_driver (const vec <char *> *argvec);
+
+  void
+  invoke_external_driver (const char *ctxt_progname,
+			  vec <char *> *argvec);
 
 private:
   ::gcc::jit::recording::context *m_recording_ctxt;
@@ -273,6 +309,37 @@ private:
 
   auto_vec<std::pair<tree, location *> > m_cached_locations;
 };
+
+class compile_to_memory : public context
+{
+ public:
+  compile_to_memory (recording::context *ctxt);
+  void postprocess (const char *ctxt_progname);
+
+  result *get_result_obj () const { return m_result; }
+
+ private:
+  result *m_result;
+};
+
+class compile_to_file : public context
+{
+ public:
+  compile_to_file (recording::context *ctxt,
+		   enum gcc_jit_output_kind output_kind,
+		   const char *output_path);
+  void postprocess (const char *ctxt_progname);
+
+ private:
+  void
+  copy_file (const char *src_path,
+	     const char *dst_path);
+
+ private:
+  enum gcc_jit_output_kind m_output_kind;
+  const char *m_output_path;
+};
+
 
 /* A temporary wrapper object.
    These objects are (mostly) only valid during replay.
@@ -389,6 +456,19 @@ private:
   vec<block *> m_blocks;
 };
 
+struct case_
+{
+  case_ (rvalue *min_value, rvalue *max_value, block *dest_block)
+  : m_min_value (min_value),
+    m_max_value (max_value),
+    m_dest_block (dest_block)
+  {}
+
+  rvalue *m_min_value;
+  rvalue *m_max_value;
+  block *m_dest_block;
+};
+
 class block : public wrapper
 {
 public:
@@ -398,6 +478,8 @@ public:
   void finalizer ();
 
   tree as_label_decl () const { return m_label_decl; }
+
+  function *get_function () const { return m_func; }
 
   void
   add_eval (location *loc,
@@ -429,6 +511,12 @@ public:
   void
   add_return (location *loc,
 	      rvalue *rvalue);
+
+  void
+  add_switch (location *loc,
+	      rvalue *expr,
+	      block *default_block,
+	      const auto_vec <case_> *cases);
 
 private:
   void

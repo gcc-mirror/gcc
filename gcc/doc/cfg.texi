@@ -543,7 +543,7 @@ When changes need to be applied to a function in its @code{GIMPLE}
 representation, @dfn{GIMPLE statement iterators} should be used.  These
 iterators provide an integrated abstraction of the flow graph and the
 instruction stream.  Block statement iterators are constructed using
-the @code{gimple_stmt_iterator} data structure and several modifier are
+the @code{gimple_stmt_iterator} data structure and several modifiers are
 available, including the following:
 
 @ftable @code

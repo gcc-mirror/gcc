@@ -47,7 +47,5 @@ main ()
 /* { dg-final { scan-tree-dump-times "strchr \\(" 1 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "\\*r_\[0-9\]* = 0;" 1 "strlen" } } */
-/* { dg-final { cleanup-tree-dump "strlen" } } */
 /* { dg-final { scan-tree-dump-times "return 3;" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "return 0;" 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

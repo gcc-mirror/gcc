@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target alloca } */
 
 int
 zzz (char *s1, char *s2, int len, int *q)

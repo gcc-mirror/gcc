@@ -1,3 +1,328 @@
+2015-09-01  James Bowman  <james.bowman@ftdichip.com>
+
+	* MAINTAINERS (ft32 port): Add myself.
+
+2015-08-28  David Sherwood  <david.sherwood@arm.com>
+
+	* MAINTAINERS: Add myself.
+
+2015-08-27  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/54572
+	* Makefile.def: Make libgfortran depend on libbacktrace.
+	* Makefile.in: Regenerate.
+
+2015-08-20  Simon Dardis  <simon.dardis@imgtec.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-08-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/67092
+	* configure.ac: Remove --with_host_libstdcxx support.
+	* configure: Regenerate.
+
+2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (noconfigdirs): Don't add "target-libgomp" for target
+	nvptx*-*-*.
+	* configure: Regenerate.
+
+2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* Makefile.def (libiconv): Define bootstrap=true.
+	Mark pdf/html/info as missing.
+	(configure-gcc): Depend on all-libiconv.
+	(all-gcc): Ditto.
+	(configure-libcpp): Ditto.
+	(all-libcpp): Ditto.
+	(configure-intl): Ditto.
+	(all-intl): Ditto.
+	* Makefile.in: Regenerate.
+
+2015-08-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* MAINTAINERS (loop ivopts): Add the entry and myself.
+
+2015-07-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* MAINTAINERS (nvptx): Add self.
+
+2015-07-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/iterators.md (VRL2, VRL3, VRL4): Remove values for
+	128-bit vector modes.
+
+2015-07-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-07-28  Ben Elliston  <bje@gnu.org>  
+
+	* config.sub, config.guess: Import from upstream.
+
+2015-07-24  Michael Darling  <darlingm@gmail.com>
+
+	PR other/66259
+	* config-ml.in: Reflects renaming of configure.in to configure.ac
+	* configure: Likewise
+	* configure.ac: Likewise
+
+2015-07-23  Bernd Schmidt  <bernds_cb1@t-online.de>
+
+	* MAINTAINERS: Update my email address.
+
+2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
+	2015-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (target_configdirs): Exclude target-zlib if
+	target-libjava isn't built.
+	* configure: Regenerated.
+
+2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
+	2015-05-13  John David Anglin  <dave.anglin@bell.net>
+
+	* configure.ac: Disable configuration of GDB for HPUX targets.
+	* configure: Regenerate.
+
+	2015-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Add --with-system-zlib.
+	* configure: Regenerated.
+
+	2015-01-28  James Bowman  <james.bowman@ftdichip.com>
+
+	* configure.ac: Add FT32 support.
+	* configure: Regenerate.
+
+	2015-01-12  Anthony Green  <green@moxielogic.com>
+
+	* configure.ac: Don't disable gprof for moxie.
+	* configure: Rebuild.
+
+2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
+	2015-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ld/18355
+	* Makefile.def: Add extra_configure_flags to host zlib.
+	* configure.ac (extra_host_zlib_configure_flags): New.  Set
+	to --enable-host-shared When bfd is to be built as shared
+	library.  AC_SUBST.
+	* Makefile.in: Regenerated.
+
+2015-07-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Sync with src:
+	2015-03-30  H.J. Lu  <hongjiu.lu@intel.com>
+	* Makefile.def (dependencies): Add all-zlib to all-bfd.
+	* Makefile.in: Regenerated.
+
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (ospace_frag): Enable for i?86*-*-elfiamcu
+	target.
+	* configure: Regenerate.
+
+2015-06-23  Ludovic Courtès  <ludo@gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-06-22  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself.
+	(Various Maintainers): Remove myself from libffi testsuite.
+
+2015-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS (gen* on machine desc): Add self.
+
+2015-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/66319
+	* configure.ac: Use -std=gnu++98.
+
+2015-06-02  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-05-28  Mike Frysinger  <vapier@gentoo.org>
+
+	* configure.ac (--vtable-verify): Use AS_HELP_STRING for help.
+	* configure: Regenerate.
+
+2015-05-26  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: When bootstrapping with GCC, add -std=c++98 to CXX.
+	* configure: Regenerate.
+
+2015-05-16  James Bowman  <james.bowman@ftdichip.com>
+
+	* configure.ac: FT32 target added.
+	* configure: Regenerated.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-05-11  Paulo Matos  <paulo@matos-sorge.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-05-11  Paulo Matos  <paulo@matos-sorge.com>
+
+	* configure.ac: Fix typo.
+	* configure: Regenerate.
+
+2015-05-10  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-05-03  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Match $host configured with triplets.
+	* configure: Regenerate.
+
+2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* Makefile.tpl: Remove surplus whitespace throughout.
+	* Makefile.in: Regenerate.
+
+2015-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* MAINTAINERS (Various Maintainers): Add myself as instruction
+	combiner maintainer.
+
+2015-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/62077
+	* configure.ac (--enable-stage1-checking): Default to
+	release,misc,gimple,rtlflag,tree,types if --disable-checking
+	or --enable-checking is not specified and DEV-PHASE is not
+	experimental.
+	* configure: Regenerated.
+
+2015-04-14  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* Makefile.tpl (EXTRA_HOST_EXPORTS): New variables.
+	(EXTRA_BOOTSTRAP_FLAGS): Likewise.
+	(check-[+module+]): Add EXTRA_HOST_EXPORTS and EXTRA_BOOTSTRAP_FLAGS.
+	* Makefile.in: Regenerate.
+
+2015-04-08  Cary Coutant  <ccoutant@gmail.com>
+
+	* MAINTAINERS: Update my email address.
+
+2015-04-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* MAINTAINERS: Add myself as a reviewer for the AArch64 port.
+
+2015-04-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS: Add myself as an arm port reviewer.
+
+2015-03-25  Martin Liska  <mliska@suse.cz>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* Makefile.in: Fix ln source location for vimrc file.
+	* Makefile.tpl: Likewise.
+
+2015-03-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR bootstrap/25672
+	* configure.ac: Do not initialize CFLAGS_FOR_TARGET from CFLAGS if
+	cross-compiling.  Similarly for CXX_FOR_TARGET.
+	* configure: Regenerate.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* Makefile.def: Add libmpx.
+	* configure.ac: Add libmpx.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2015-03-06  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself
+	i386 vector ISA extns mantainer.
+
+2015-03-13  Jeff Law  <law@redhat.com>
+
+	* MAINTAINERS: Remove Paul Brook as a Fortran and ARM
+	maintainer.
+	Remove Richard Henderson as a maintainer for the x86 port.
+
+2015-03-03  Joern Rennecke  <gnu@amylaar.uk>
+
+	* MAINTAINERS (CPU Port Maintainers): Update my email address.
+
+2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as libmpx,
+	pointer bounds checker and i386 MPX maintainer.
+
+2015-02-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* MAINTAINERS (Various Maintainers): Add self as docs co-maintainer.
+
+2015-02-26  Martin Sebor  <msebor@redhat.com>
+
+	* MAINTAINERS (Various Maintainers): Add self.
+
+2015-02-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac [--enable-as-accelerator-for] (enable_languages):
+	Make sure it contains lto.
+	* configure: Regenerate.
+
+2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure: Regenerate.
+
+2015-02-06  Diego Novillo  <dnovillo@google.com>
+
+	* MAINTAINERS (Global Reviewers, Plugin, LTO, tree-ssa,
+	middle-end, docstring): Remove myself.
+	(Write After Approval): Add myself.
+
+2015-02-02  Janis Johnson  <janis.marie.johnson@gmail.com>
+
+	* MAINTAINERS (Various Maintainers: testsuite): Remove myself.
+	(Write After Approval): Update address.
+
+2015-01-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64780
+	* configure.ac: Require the user to explicitly specify
+	--enable-host-shared if the jit is enabled.
+	* configure: Regenerate.
+
+2015-01-27  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-01-25  Tom de Vries  <tom@codesourcery.com>
+
+	* MAINTAINERS: Make whitespace consistent.
+
+2015-01-23  Braden Obrzut  <admin@maniacsvault.net>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-01-20  Andre Vehreschild  <vehre@gmx.de>
+
+	* MAINTAINERS: (Write After Approval): Add myself.
+
 2015-01-15  Martin Uecker  <uecker@eecs.berkeley.edu>
 
 	* MAINTAINERS: (Write After Approval): Add myself.
@@ -236,7 +561,6 @@
 
 2014-11-11  Tobias Burnus  <burnus@net-b.de>
 
-	* config/cloog.m4: Remove.
 	* Makefile.def: Remove CLooG.
 	* Makefile.tpl: Ditto.
 	* configure.ac: Ditto.

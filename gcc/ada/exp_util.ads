@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -450,6 +450,10 @@ package Exp_Util is
    --  declarations and/or allocations when the type is indefinite (including
    --  class-wide).
 
+   function Finalize_Address (Typ : Entity_Id) return Entity_Id;
+   --  Locate TSS primitive Finalize_Address in type Typ. Return Empty if the
+   --  subprogram is not available.
+
    function Find_Interface_ADT
      (T     : Entity_Id;
       Iface : Entity_Id) return Elmt_Id;
@@ -464,13 +468,11 @@ package Exp_Util is
    --  return the record component containing the tag of Iface.
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
-   --  Find the first primitive operation of type T whose name is 'Name'.
+   --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
-   --  directly visible. If T is a class wide type, then the reference is
-   --  to an operation of the corresponding root type. Raises Program_Error
-   --  exception if no primitive operation is found. This is normally an
-   --  internal error, but in some cases is an expected consequence of
-   --  illegalities elsewhere.
+   --  directly visible. If T is a class wide type, then the reference is to an
+   --  operation of the corresponding root type. It is an error if no primitive
+   --  operation with the given name is found.
 
    function Find_Prim_Op
      (T    : Entity_Id;
@@ -480,16 +482,19 @@ package Exp_Util is
    --  with the indicated suffix). This function allows use of a primitive
    --  operation which is not directly visible. If T is a class wide type,
    --  then the reference is to an operation of the corresponding root type.
-   --  Raises Program_Error exception if no primitive operation is found.
-   --  This is normally an internal error, but in some cases is an expected
-   --  consequence of illegalities elsewhere.
+
+   function Find_Optional_Prim_Op
+     (T : Entity_Id; Name : Name_Id) return Entity_Id;
+   function Find_Optional_Prim_Op
+     (T    : Entity_Id;
+      Name : TSS_Name_Type) return Entity_Id;
+   --  Same as Find_Prim_Op, except returns Empty if not found
 
    function Find_Protection_Object (Scop : Entity_Id) return Entity_Id;
-   --  Traverse the scope stack starting from Scop and look for an entry,
-   --  entry family, or a subprogram that has a Protection_Object and return
-   --  it. Raises Program_Error if no such entity is found since the context
-   --  in which this routine is invoked should always have a protection
-   --  object.
+   --  Traverse the scope stack starting from Scop and look for an entry, entry
+   --  family, or a subprogram that has a Protection_Object and return it. Must
+   --  always return a value since the context in which this routine is invoked
+   --  should always have a protection object.
 
    function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id;
    --  Given a protected type or its corresponding record, find the type of
@@ -516,15 +521,26 @@ package Exp_Util is
    --  like a potential bug ???
 
    procedure Force_Evaluation
-     (Exp      : Node_Id;
-      Name_Req : Boolean := False);
+     (Exp           : Node_Id;
+      Name_Req      : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False);
    --  Force the evaluation of the expression right away. Similar behavior
    --  to Remove_Side_Effects when Variable_Ref is set to TRUE. That is to
-   --  say, it removes the side-effects and captures the values of the
+   --  say, it removes the side effects and captures the values of the
    --  variables. Remove_Side_Effects guarantees that multiple evaluations
    --  of the same expression won't generate multiple side effects, whereas
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result.
+   --
+   --  Related_Id denotes the entity of the context where Expr appears. Flags
+   --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
+   --  is the low or the high bound of a range. These three optional arguments
+   --  signal Remove_Side_Effects to create an external symbol of the form
+   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, then exactly one
+   --  of the Is_xxx_Bound flags must be set. For use of these parameters see
+   --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    function Fully_Qualified_Name_String
      (E          : Entity_Id;
@@ -620,7 +636,7 @@ package Exp_Util is
       Rel_Node : Node_Id) return Boolean;
    --  Determine whether declaration Decl denotes a controlled transient which
    --  should be finalized. Rel_Node is the related context. Even though some
-   --  transient are controlled, they may act as renamings of other objects or
+   --  transients are controlled, they may act as renamings of other objects or
    --  function calls.
 
    function Is_Fully_Repped_Tagged_Type (T : Entity_Id) return Boolean;
@@ -856,8 +872,8 @@ package Exp_Util is
    --  call and is analyzed and resolved on return. Name_Req may only be set to
    --  True if Exp has the form of a name, and the effect is to guarantee that
    --  any replacement maintains the form of name. If Renaming_Req is set to
-   --  TRUE, the routine produces an object renaming reclaration capturing the
-   --  expression. If Variable_Ref is set to TRUE, a variable is considered as
+   --  True, the routine produces an object renaming reclaration capturing the
+   --  expression. If Variable_Ref is set to True, a variable is considered as
    --  side effect (used in implementing Force_Evaluation). Note: after call to
    --  Remove_Side_Effects, it is safe to call New_Copy_Tree to obtain a copy
    --  of the resulting expression.
@@ -866,9 +882,29 @@ package Exp_Util is
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
    --  is the low or the high bound of a range. These three optional arguments
    --  signal Remove_Side_Effects to create an external symbol of the form
-   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, the exactly one
+   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, then exactly one
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
+   --
+   --  The side effects are captured using one of the following methods:
+   --
+   --    1) a constant initialized with the value of the subexpression
+   --    2) a renaming of the subexpression
+   --    3) a reference to the subexpression
+   --
+   --  For elementary types, methods 1) and 2) are used; for composite types,
+   --  methods 2) and 3) are used. The renaming (method 2) is used only when
+   --  the subexpression denotes a name, so that it can be elaborated by gigi
+   --  without evaluating the subexpression.
+   --
+   --  Historical note: the reference (method 3) used to be the common fallback
+   --  method but it gives rise to aliasing issues if the subexpression denotes
+   --  a name that is not aliased, since it is equivalent to taking the address
+   --  in this case. The renaming (method 2) used to be applied to any objects
+   --  in the RM sense, that is to say to the cases where a renaming is legal
+   --  in Ada. But for some of these cases, most notably functions calls, the
+   --  renaming cannot be elaborated without evaluating the subexpression, so
+   --  gigi would resort to method 1) or 3) under the hood for them.
 
    function Represented_As_Scalar (T : Entity_Id) return Boolean;
    --  Returns True iff the implementation of this type in code generation

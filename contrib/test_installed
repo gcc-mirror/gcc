@@ -46,7 +46,7 @@ while true; do
   case "$1" in
   --with-testsuite=*) testsuite=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --srcdir=*) srcdir=`echo "$1" | sed 's/[^=]*=//'`; shift;;
-
+  --target=*) target=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --prefix=*) prefix=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-gcc=*) GCC_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-g++=*) GXX_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
@@ -70,6 +70,9 @@ Supported arguments:
 --with-testsuite=/some/dir/gcc/testsuite   specify the testsuite directory
 --srcdir=/some/dir            same as --with-testsuite=/some/dir/gcc/testsuite
                               [deduced from shell-script pathname]
+
+--target=triplet              The target architecture of the compiler being
+                              tested if different than the host.
 
 --prefix=/some/dir            use gcc, g++ and gfortran from /some/dir/bin [PATH]
 --with-gcc=/some/dir/bin/gcc  use specified gcc program [gcc]
@@ -112,6 +115,10 @@ set GXX_UNDER_TEST "${GXX_UNDER_TEST-${prefix}${prefix+/bin/}g++}"
 set GFORTRAN_UNDER_TEST "${GFORTRAN_UNDER_TEST-${prefix}${prefix+/bin/}gfortran}"
 set OBJC_UNDER_TEST "${OBJC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
 EOF
+if test x${target} != x; then
+  echo "set target_triplet $target" >> site.exp
+  echo "set target_alias $target" >> site.exp
+fi
 
 test x"${GCC_UNDER_TEST}" = x"no" || runtest --tool gcc ${1+"$@"}
 test x"${GXX_UNDER_TEST}" = x"no" || runtest --tool g++ ${1+"$@"}

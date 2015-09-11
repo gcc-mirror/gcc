@@ -7,7 +7,9 @@
 #include <inttypes.h>
 
 /* helper type, to help write floating point results in integer form.  */
+typedef uint16_t hfloat16_t;
 typedef uint32_t hfloat32_t;
+typedef uint64_t hfloat64_t;
 
 extern void abort(void);
 extern void *memset(void *, int, size_t);
@@ -79,6 +81,7 @@ extern size_t strlen(const char *);
 	  abort();							\
 	}								\
       }									\
+    fprintf(stderr, "CHECKED %s\n", MSG);				\
   }
 
 /* Floating-point variant.  */
@@ -107,6 +110,7 @@ extern size_t strlen(const char *);
 	  abort();							\
 	}								\
       }									\
+    fprintf(stderr, "CHECKED %s\n", MSG);				\
   }
 
 /* Clean buffer with a non-zero pattern to help diagnose buffer
@@ -129,6 +133,9 @@ static ARRAY(result, uint, 32, 2);
 static ARRAY(result, uint, 64, 1);
 static ARRAY(result, poly, 8, 8);
 static ARRAY(result, poly, 16, 4);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+static ARRAY(result, float, 16, 4);
+#endif
 static ARRAY(result, float, 32, 2);
 static ARRAY(result, int, 8, 16);
 static ARRAY(result, int, 16, 8);
@@ -140,7 +147,13 @@ static ARRAY(result, uint, 32, 4);
 static ARRAY(result, uint, 64, 2);
 static ARRAY(result, poly, 8, 16);
 static ARRAY(result, poly, 16, 8);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+static ARRAY(result, float, 16, 8);
+#endif
 static ARRAY(result, float, 32, 4);
+#ifdef __aarch64__
+static ARRAY(result, float, 64, 2);
+#endif
 
 /* Declare expected results, one of each size. They are defined and
    initialized in each test file.  */
@@ -154,6 +167,7 @@ extern ARRAY(expected, uint, 32, 2);
 extern ARRAY(expected, uint, 64, 1);
 extern ARRAY(expected, poly, 8, 8);
 extern ARRAY(expected, poly, 16, 4);
+extern ARRAY(expected, hfloat, 16, 4);
 extern ARRAY(expected, hfloat, 32, 2);
 extern ARRAY(expected, int, 8, 16);
 extern ARRAY(expected, int, 16, 8);
@@ -165,37 +179,11 @@ extern ARRAY(expected, uint, 32, 4);
 extern ARRAY(expected, uint, 64, 2);
 extern ARRAY(expected, poly, 8, 16);
 extern ARRAY(expected, poly, 16, 8);
+extern ARRAY(expected, hfloat, 16, 8);
 extern ARRAY(expected, hfloat, 32, 4);
+extern ARRAY(expected, hfloat, 64, 2);
 
-/* Check results. Operates on all possible vector types.  */
-#define CHECK_RESULTS(test_name,comment)				\
-  {									\
-    CHECK(test_name, int, 8, 8, PRIx8, expected, comment);		\
-    CHECK(test_name, int, 16, 4, PRIx16, expected, comment);		\
-    CHECK(test_name, int, 32, 2, PRIx32, expected, comment);		\
-    CHECK(test_name, int, 64, 1, PRIx64, expected, comment);		\
-    CHECK(test_name, uint, 8, 8, PRIx8, expected, comment);		\
-    CHECK(test_name, uint, 16, 4, PRIx16, expected, comment);		\
-    CHECK(test_name, uint, 32, 2, PRIx32, expected, comment);		\
-    CHECK(test_name, uint, 64, 1, PRIx64, expected, comment);		\
-    CHECK(test_name, poly, 8, 8, PRIx8, expected, comment);		\
-    CHECK(test_name, poly, 16, 4, PRIx16, expected, comment);		\
-    CHECK_FP(test_name, float, 32, 2, PRIx32, expected, comment);	\
-									\
-    CHECK(test_name, int, 8, 16, PRIx8, expected, comment);		\
-    CHECK(test_name, int, 16, 8, PRIx16, expected, comment);		\
-    CHECK(test_name, int, 32, 4, PRIx32, expected, comment);		\
-    CHECK(test_name, int, 64, 2, PRIx64, expected, comment);		\
-    CHECK(test_name, uint, 8, 16, PRIx8, expected, comment);		\
-    CHECK(test_name, uint, 16, 8, PRIx16, expected, comment);		\
-    CHECK(test_name, uint, 32, 4, PRIx32, expected, comment);		\
-    CHECK(test_name, uint, 64, 2, PRIx64, expected, comment);		\
-    CHECK(test_name, poly, 8, 16, PRIx8, expected, comment);		\
-    CHECK(test_name, poly, 16, 8, PRIx16, expected, comment);		\
-    CHECK_FP(test_name, float, 32, 4, PRIx32, expected, comment);	\
-  }									\
-
-#define CHECK_RESULTS_NAMED(test_name,EXPECTED,comment)			\
+#define CHECK_RESULTS_NAMED_NO_FP16(test_name,EXPECTED,comment)		\
   {									\
     CHECK(test_name, int, 8, 8, PRIx8, EXPECTED, comment);		\
     CHECK(test_name, int, 16, 4, PRIx16, EXPECTED, comment);		\
@@ -222,13 +210,34 @@ extern ARRAY(expected, hfloat, 32, 4);
     CHECK_FP(test_name, float, 32, 4, PRIx32, EXPECTED, comment);	\
   }									\
 
+/* Check results against EXPECTED.  Operates on all possible vector types.  */
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#define CHECK_RESULTS_NAMED(test_name,EXPECTED,comment)			\
+  {									\
+    CHECK_RESULTS_NAMED_NO_FP16(test_name, EXPECTED, comment)		\
+    CHECK_FP(test_name, float, 16, 4, PRIx16, EXPECTED, comment);	\
+    CHECK_FP(test_name, float, 16, 8, PRIx16, EXPECTED, comment);	\
+  }
+#else
+#define CHECK_RESULTS_NAMED(test_name,EXPECTED,comment)		\
+  CHECK_RESULTS_NAMED_NO_FP16(test_name, EXPECTED, comment)
+#endif
+
+#define CHECK_RESULTS_NO_FP16(test_name,comment)			\
+  CHECK_RESULTS_NAMED_NO_FP16(test_name, expected, comment)
+
+#define CHECK_RESULTS(test_name,comment)		\
+  CHECK_RESULTS_NAMED(test_name, expected, comment)
 
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
 typedef union {
   struct {
-    int _xxx:27;
+    int _xxx:24;
+    unsigned int FZ:1;
+    unsigned int DN:1;
+    unsigned int AHP:1;
     unsigned int QC:1;
     int V:1;
     int C:1;
@@ -247,7 +256,10 @@ typedef union {
     int C:1;
     int V:1;
     unsigned int QC:1;
-    int _dnm:27;
+    unsigned int AHP:1;
+    unsigned int DN:1;
+    unsigned int FZ:1;
+    int _dnm:24;
   } b;
   unsigned int word;
 } _ARM_FPSCR;
@@ -255,7 +267,11 @@ typedef union {
 #endif /* __ORDER_BIG_ENDIAN__ */
 
 #define Neon_Cumulative_Sat  __read_neon_cumulative_sat()
-#define Set_Neon_Cumulative_Sat(x)  __set_neon_cumulative_sat((x))
+/* We need a fake dependency to ensure correct ordering of asm
+   statements to preset the QC flag value, and Neon operators writing
+   to QC. */
+#define Set_Neon_Cumulative_Sat(x, depend)	\
+  __set_neon_cumulative_sat((x), (depend))
 
 #if defined(__aarch64__)
 static volatile int __read_neon_cumulative_sat (void) {
@@ -263,13 +279,12 @@ static volatile int __read_neon_cumulative_sat (void) {
     asm volatile ("mrs %0,fpsr" : "=r" (_afpscr_for_qc));
     return _afpscr_for_qc.b.QC;
 }
-static void __set_neon_cumulative_sat (int x) {
-    _ARM_FPSCR _afpscr_for_qc;
-    asm volatile ("mrs %0,fpsr" : "=r" (_afpscr_for_qc));
-    _afpscr_for_qc.b.QC = x;
-    asm volatile ("msr fpsr,%0" : : "r" (_afpscr_for_qc));
-    return;
-}
+#define __set_neon_cumulative_sat(x, depend) {				\
+    _ARM_FPSCR _afpscr_for_qc;						\
+    asm volatile ("mrs %0,fpsr" : "=r" (_afpscr_for_qc));		\
+    _afpscr_for_qc.b.QC = x;						\
+    asm volatile ("msr fpsr,%1" : "=X" (depend) : "r" (_afpscr_for_qc)); \
+  }
 #else
 static volatile int __read_neon_cumulative_sat (void) {
     _ARM_FPSCR _afpscr_for_qc;
@@ -277,13 +292,12 @@ static volatile int __read_neon_cumulative_sat (void) {
     return _afpscr_for_qc.b.QC;
 }
 
-static void __set_neon_cumulative_sat (int x) {
-    _ARM_FPSCR _afpscr_for_qc;
-    asm volatile ("vmrs %0,fpscr" : "=r" (_afpscr_for_qc));
-    _afpscr_for_qc.b.QC = x;
-    asm volatile ("vmsr fpscr,%0" : : "r" (_afpscr_for_qc));
-    return;
-}
+#define __set_neon_cumulative_sat(x, depend) {				\
+    _ARM_FPSCR _afpscr_for_qc;						\
+    asm volatile ("vmrs %0,fpscr" : "=r" (_afpscr_for_qc));		\
+    _afpscr_for_qc.b.QC = x;						\
+    asm volatile ("vmsr fpscr,%1" : "=X" (depend) : "r" (_afpscr_for_qc)); \
+  }
 #endif
 
 /* Declare expected cumulative saturation results, one for each
@@ -321,6 +335,7 @@ extern int VECT_VAR(expected_cumulative_sat, uint, 64, 2);
 	      strlen(COMMENT) > 0 ? " " COMMENT : "");			\
       abort();								\
     }									\
+    fprintf(stderr, "CHECKED CUMULATIVE SAT %s\n", MSG);		\
   }
 
 #define CHECK_CUMULATIVE_SAT_NAMED(test_name,EXPECTED,comment)		\
@@ -364,6 +379,9 @@ static void clean_results (void)
   CLEAN(result, uint, 64, 1);
   CLEAN(result, poly, 8, 8);
   CLEAN(result, poly, 16, 4);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  CLEAN(result, float, 16, 4);
+#endif
   CLEAN(result, float, 32, 2);
 
   CLEAN(result, int, 8, 16);
@@ -376,7 +394,24 @@ static void clean_results (void)
   CLEAN(result, uint, 64, 2);
   CLEAN(result, poly, 8, 16);
   CLEAN(result, poly, 16, 8);
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+  CLEAN(result, float, 16, 8);
+#endif
   CLEAN(result, float, 32, 4);
+
+#if defined(__aarch64__)
+  /* On AArch64, make sure to return DefaultNaN to have the same
+     results as on AArch32.  */
+  _ARM_FPSCR _afpscr;
+  asm volatile ("mrs %0,fpcr" : "=r" (_afpscr));
+  _afpscr.b.DN = 1;
+
+  /* On AArch64, make sure to flush to zero by default, as on
+     AArch32. */
+  _afpscr.b.FZ = 1;
+
+  asm volatile ("msr fpcr,%0" : : "r" (_afpscr));
+#endif
 }
 
 
@@ -413,21 +448,40 @@ static void clean_results (void)
   DECL_VARIABLE(VAR, uint, 64, 2)
 
 /* Declare all 64 bits variants.  */
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#define DECL_VARIABLE_64BITS_VARIANTS(VAR)	\
+  DECL_VARIABLE_64BITS_SIGNED_VARIANTS(VAR);	\
+  DECL_VARIABLE_64BITS_UNSIGNED_VARIANTS(VAR);	\
+  DECL_VARIABLE(VAR, poly, 8, 8);		\
+  DECL_VARIABLE(VAR, poly, 16, 4);		\
+  DECL_VARIABLE(VAR, float, 16, 4);		\
+  DECL_VARIABLE(VAR, float, 32, 2)
+#else
 #define DECL_VARIABLE_64BITS_VARIANTS(VAR)	\
   DECL_VARIABLE_64BITS_SIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE_64BITS_UNSIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE(VAR, poly, 8, 8);		\
   DECL_VARIABLE(VAR, poly, 16, 4);		\
   DECL_VARIABLE(VAR, float, 32, 2)
+#endif
 
 /* Declare all 128 bits variants.  */
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#define DECL_VARIABLE_128BITS_VARIANTS(VAR)	\
+  DECL_VARIABLE_128BITS_SIGNED_VARIANTS(VAR);	\
+  DECL_VARIABLE_128BITS_UNSIGNED_VARIANTS(VAR);	\
+  DECL_VARIABLE(VAR, poly, 8, 16);		\
+  DECL_VARIABLE(VAR, poly, 16, 8);		\
+  DECL_VARIABLE(VAR, float, 16, 8);		\
+  DECL_VARIABLE(VAR, float, 32, 4)
+#else
 #define DECL_VARIABLE_128BITS_VARIANTS(VAR)	\
   DECL_VARIABLE_128BITS_SIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE_128BITS_UNSIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE(VAR, poly, 8, 16);		\
   DECL_VARIABLE(VAR, poly, 16, 8);		\
   DECL_VARIABLE(VAR, float, 32, 4)
-
+#endif
 /* Declare all variants.  */
 #define DECL_VARIABLE_ALL_VARIANTS(VAR)		\
   DECL_VARIABLE_64BITS_VARIANTS(VAR);		\
@@ -446,6 +500,15 @@ static void clean_results (void)
 /* Helpers to initialize vectors.  */
 #define VDUP(VAR, Q, T1, T2, W, N, V)			\
   VECT_VAR(VAR, T1, W, N) = vdup##Q##_n_##T2##W(V)
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+/* Work around that there is no vdup_n_f16 intrinsic.  */
+#define vdup_n_f16(VAL)		\
+  __extension__			\
+    ({				\
+      float16_t f = VAL;	\
+      vld1_dup_f16(&f);		\
+    })
+#endif
 
 #define VSET_LANE(VAR, Q, T1, T2, W, N, L, V)				\
   VECT_VAR(VAR, T1, W, N) = vset##Q##_lane_##T2##W(V,			\

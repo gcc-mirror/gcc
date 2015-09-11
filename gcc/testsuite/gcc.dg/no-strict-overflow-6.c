@@ -18,4 +18,3 @@ foo ()
 }
 
 /* { dg-final { scan-tree-dump "return bits" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

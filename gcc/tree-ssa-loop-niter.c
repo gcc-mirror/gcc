@@ -20,27 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "alias.h"
+#include "stor-layout.h"
 #include "fold-const.h"
 #include "calls.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -50,23 +39,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "tm_p.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "intl.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
@@ -79,12 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "wide-int-print.h"
 
-
-#define SWAP(X, Y) do { affine_iv *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
 
 /* The maximum number of dominator BBs we search for conditions
    of loop header copies we use for simplifying a conditional
@@ -99,10 +73,10 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Bounds on some value, BELOW <= X <= UP.  */
 
-typedef struct
+struct bounds
 {
   mpz_t below, up;
-} bounds;
+};
 
 
 /* Splits expression EXPR to a variable part VAR and constant OFFSET.  */
@@ -148,6 +122,237 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
     }
 }
 
+/* From condition C0 CMP C1 derives information regarding the value range
+   of VAR, which is of TYPE.  Results are stored in to BELOW and UP.  */
+
+static void
+refine_value_range_using_guard (tree type, tree var,
+				tree c0, enum tree_code cmp, tree c1,
+				mpz_t below, mpz_t up)
+{
+  tree varc0, varc1, ctype;
+  mpz_t offc0, offc1;
+  mpz_t mint, maxt, minc1, maxc1;
+  wide_int minv, maxv;
+  bool no_wrap = nowrap_type_p (type);
+  bool c0_ok, c1_ok;
+  signop sgn = TYPE_SIGN (type);
+
+  switch (cmp)
+    {
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+      STRIP_SIGN_NOPS (c0);
+      STRIP_SIGN_NOPS (c1);
+      ctype = TREE_TYPE (c0);
+      if (!useless_type_conversion_p (ctype, type))
+	return;
+
+      break;
+
+    case EQ_EXPR:
+      /* We could derive quite precise information from EQ_EXPR, however,
+	 such a guard is unlikely to appear, so we do not bother with
+	 handling it.  */
+      return;
+
+    case NE_EXPR:
+      /* NE_EXPR comparisons do not contain much of useful information,
+	 except for cases of comparing with bounds.  */
+      if (TREE_CODE (c1) != INTEGER_CST
+	  || !INTEGRAL_TYPE_P (type))
+	return;
+
+      /* Ensure that the condition speaks about an expression in the same
+	 type as X and Y.  */
+      ctype = TREE_TYPE (c0);
+      if (TYPE_PRECISION (ctype) != TYPE_PRECISION (type))
+	return;
+      c0 = fold_convert (type, c0);
+      c1 = fold_convert (type, c1);
+
+      if (operand_equal_p (var, c0, 0))
+	{
+	  mpz_t valc1;
+
+	  /* Case of comparing VAR with its below/up bounds.  */
+	  mpz_init (valc1);
+	  wi::to_mpz (c1, valc1, TYPE_SIGN (type));
+	  if (mpz_cmp (valc1, below) == 0)
+	    cmp = GT_EXPR;
+	  if (mpz_cmp (valc1, up) == 0)
+	    cmp = LT_EXPR;
+
+	  mpz_clear (valc1);
+	}
+      else
+	{
+	  /* Case of comparing with the bounds of the type.  */
+	  wide_int min = wi::min_value (type);
+	  wide_int max = wi::max_value (type);
+
+	  if (wi::eq_p (c1, min))
+	    cmp = GT_EXPR;
+	  if (wi::eq_p (c1, max))
+	    cmp = LT_EXPR;
+	}
+
+      /* Quick return if no useful information.  */
+      if (cmp == NE_EXPR)
+	return;
+
+      break;
+
+    default:
+      return;
+    }
+
+  mpz_init (offc0);
+  mpz_init (offc1);
+  split_to_var_and_offset (expand_simple_operations (c0), &varc0, offc0);
+  split_to_var_and_offset (expand_simple_operations (c1), &varc1, offc1);
+
+  /* We are only interested in comparisons of expressions based on VAR.  */
+  if (operand_equal_p (var, varc1, 0))
+    {
+      std::swap (varc0, varc1);
+      mpz_swap (offc0, offc1);
+      cmp = swap_tree_comparison (cmp);
+    }
+  else if (!operand_equal_p (var, varc0, 0))
+    {
+      mpz_clear (offc0);
+      mpz_clear (offc1);
+      return;
+    }
+
+  mpz_init (mint);
+  mpz_init (maxt);
+  get_type_static_bounds (type, mint, maxt);
+  mpz_init (minc1);
+  mpz_init (maxc1);
+  /* Setup range information for varc1.  */
+  if (integer_zerop (varc1))
+    {
+      wi::to_mpz (integer_zero_node, minc1, TYPE_SIGN (type));
+      wi::to_mpz (integer_zero_node, maxc1, TYPE_SIGN (type));
+    }
+  else if (TREE_CODE (varc1) == SSA_NAME
+	   && INTEGRAL_TYPE_P (type)
+	   && get_range_info (varc1, &minv, &maxv) == VR_RANGE)
+    {
+      gcc_assert (wi::le_p (minv, maxv, sgn));
+      wi::to_mpz (minv, minc1, sgn);
+      wi::to_mpz (maxv, maxc1, sgn);
+    }
+  else
+    {
+      mpz_set (minc1, mint);
+      mpz_set (maxc1, maxt);
+    }
+
+  /* Compute valid range information for varc1 + offc1.  Note nothing
+     useful can be derived if it overflows or underflows.  Overflow or
+     underflow could happen when:
+
+       offc1 > 0 && varc1 + offc1 > MAX_VAL (type)
+       offc1 < 0 && varc1 + offc1 < MIN_VAL (type).  */
+  mpz_add (minc1, minc1, offc1);
+  mpz_add (maxc1, maxc1, offc1);
+  c1_ok = (no_wrap
+	   || mpz_sgn (offc1) == 0
+	   || (mpz_sgn (offc1) < 0 && mpz_cmp (minc1, mint) >= 0)
+	   || (mpz_sgn (offc1) > 0 && mpz_cmp (maxc1, maxt) <= 0));
+  if (!c1_ok)
+    goto end;
+
+  if (mpz_cmp (minc1, mint) < 0)
+    mpz_set (minc1, mint);
+  if (mpz_cmp (maxc1, maxt) > 0)
+    mpz_set (maxc1, maxt);
+
+  if (cmp == LT_EXPR)
+    {
+      cmp = LE_EXPR;
+      mpz_sub_ui (maxc1, maxc1, 1);
+    }
+  if (cmp == GT_EXPR)
+    {
+      cmp = GE_EXPR;
+      mpz_add_ui (minc1, minc1, 1);
+    }
+
+  /* Compute range information for varc0.  If there is no overflow,
+     the condition implied that
+
+       (varc0) cmp (varc1 + offc1 - offc0)
+
+     We can possibly improve the upper bound of varc0 if cmp is LE_EXPR,
+     or the below bound if cmp is GE_EXPR.
+
+     To prove there is no overflow/underflow, we need to check below
+     four cases:
+       1) cmp == LE_EXPR && offc0 > 0
+
+	    (varc0 + offc0) doesn't overflow
+	    && (varc1 + offc1 - offc0) doesn't underflow
+
+       2) cmp == LE_EXPR && offc0 < 0
+
+	    (varc0 + offc0) doesn't underflow
+	    && (varc1 + offc1 - offc0) doesn't overfloe
+
+	  In this case, (varc0 + offc0) will never underflow if we can
+	  prove (varc1 + offc1 - offc0) doesn't overflow.
+
+       3) cmp == GE_EXPR && offc0 < 0
+
+	    (varc0 + offc0) doesn't underflow
+	    && (varc1 + offc1 - offc0) doesn't overflow
+
+       4) cmp == GE_EXPR && offc0 > 0
+
+	    (varc0 + offc0) doesn't overflow
+	    && (varc1 + offc1 - offc0) doesn't underflow
+
+	  In this case, (varc0 + offc0) will never overflow if we can
+	  prove (varc1 + offc1 - offc0) doesn't underflow.
+
+     Note we only handle case 2 and 4 in below code.  */
+
+  mpz_sub (minc1, minc1, offc0);
+  mpz_sub (maxc1, maxc1, offc0);
+  c0_ok = (no_wrap
+	   || mpz_sgn (offc0) == 0
+	   || (cmp == LE_EXPR
+	       && mpz_sgn (offc0) < 0 && mpz_cmp (maxc1, maxt) <= 0)
+	   || (cmp == GE_EXPR
+	       && mpz_sgn (offc0) > 0 && mpz_cmp (minc1, mint) >= 0));
+  if (!c0_ok)
+    goto end;
+
+  if (cmp == LE_EXPR)
+    {
+      if (mpz_cmp (up, maxc1) > 0)
+	mpz_set (up, maxc1);
+    }
+  else
+    {
+      if (mpz_cmp (below, minc1) < 0)
+	mpz_set (below, minc1);
+    }
+
+end:
+  mpz_clear (mint);
+  mpz_clear (maxt);
+  mpz_clear (minc1);
+  mpz_clear (maxc1);
+  mpz_clear (offc0);
+  mpz_clear (offc1);
+}
+
 /* Stores estimate on the minimum/maximum value of the expression VAR + OFF
    in TYPE to MIN and MAX.  */
 
@@ -155,6 +360,9 @@ static void
 determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		       mpz_t min, mpz_t max)
 {
+  int cnt = 0;
+  mpz_t minm, maxm;
+  basic_block bb;
   wide_int minv, maxv;
   enum value_range_type rtype = VR_VARYING;
 
@@ -209,35 +417,69 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		}
 	    }
 	}
-      if (rtype == VR_RANGE)
+      mpz_init (minm);
+      mpz_init (maxm);
+      if (rtype != VR_RANGE)
 	{
-	  mpz_t minm, maxm;
+	  mpz_set (minm, min);
+	  mpz_set (maxm, max);
+	}
+      else
+	{
 	  gcc_assert (wi::le_p (minv, maxv, sgn));
-	  mpz_init (minm);
-	  mpz_init (maxm);
 	  wi::to_mpz (minv, minm, sgn);
 	  wi::to_mpz (maxv, maxm, sgn);
-	  mpz_add (minm, minm, off);
-	  mpz_add (maxm, maxm, off);
-	  /* If the computation may not wrap or off is zero, then this
-	     is always fine.  If off is negative and minv + off isn't
-	     smaller than type's minimum, or off is positive and
-	     maxv + off isn't bigger than type's maximum, use the more
-	     precise range too.  */
-	  if (nowrap_type_p (type)
-	      || mpz_sgn (off) == 0
-	      || (mpz_sgn (off) < 0 && mpz_cmp (minm, min) >= 0)
-	      || (mpz_sgn (off) > 0 && mpz_cmp (maxm, max) <= 0))
-	    {
-	      mpz_set (min, minm);
-	      mpz_set (max, maxm);
-	      mpz_clear (minm);
-	      mpz_clear (maxm);
-	      return;
-	    }
+	}
+      /* Now walk the dominators of the loop header and use the entry
+	 guards to refine the estimates.  */
+      for (bb = loop->header;
+	   bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
+	   bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+	{
+	  edge e;
+	  tree c0, c1;
+	  gimple cond;
+	  enum tree_code cmp;
+
+	  if (!single_pred_p (bb))
+	    continue;
+	  e = single_pred_edge (bb);
+
+	  if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
+	    continue;
+
+	  cond = last_stmt (e->src);
+	  c0 = gimple_cond_lhs (cond);
+	  cmp = gimple_cond_code (cond);
+	  c1 = gimple_cond_rhs (cond);
+
+	  if (e->flags & EDGE_FALSE_VALUE)
+	    cmp = invert_tree_comparison (cmp, false);
+
+	  refine_value_range_using_guard (type, var, c0, cmp, c1, minm, maxm);
+	  ++cnt;
+	}
+
+      mpz_add (minm, minm, off);
+      mpz_add (maxm, maxm, off);
+      /* If the computation may not wrap or off is zero, then this
+	 is always fine.  If off is negative and minv + off isn't
+	 smaller than type's minimum, or off is positive and
+	 maxv + off isn't bigger than type's maximum, use the more
+	 precise range too.  */
+      if (nowrap_type_p (type)
+	  || mpz_sgn (off) == 0
+	  || (mpz_sgn (off) < 0 && mpz_cmp (minm, min) >= 0)
+	  || (mpz_sgn (off) > 0 && mpz_cmp (maxm, max) <= 0))
+	{
+	  mpz_set (min, minm);
+	  mpz_set (max, maxm);
 	  mpz_clear (minm);
 	  mpz_clear (maxm);
+	  return;
 	}
+      mpz_clear (minm);
+      mpz_clear (maxm);
     }
 
   /* If the computation may wrap, we know nothing about the value, except for
@@ -312,7 +554,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
 			   tree c0, enum tree_code cmp, tree c1,
 			   bounds *bnds)
 {
-  tree varc0, varc1, tmp, ctype;
+  tree varc0, varc1, ctype;
   mpz_t offc0, offc1, loffx, loffy, bnd;
   bool lbound = false;
   bool no_wrap = nowrap_type_p (type);
@@ -382,7 +624,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
 
   if (operand_equal_p (varx, varc1, 0))
     {
-      tmp = varc0; varc0 = varc1; varc1 = tmp;
+      std::swap (varc0, varc1);
       mpz_swap (offc0, offc1);
       cmp = swap_tree_comparison (cmp);
     }
@@ -396,7 +638,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
 
   if (cmp == GT_EXPR || cmp == GE_EXPR)
     {
-      tmp = varx; varx = vary; vary = tmp;
+      std::swap (varx, vary);
       mpz_swap (offc0, offc1);
       mpz_swap (loffx, loffy);
       cmp = swap_tree_comparison (cmp);
@@ -1184,6 +1426,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
       niter->niter = delta;
       niter->max = widest_int::from (wi::from_mpz (niter_type, bnds->up, false),
 				     TYPE_SIGN (niter_type));
+      niter->control.no_overflow = true;
       return true;
     }
 
@@ -1375,7 +1618,7 @@ number_of_iterations_cond (struct loop *loop,
   if (code == GE_EXPR || code == GT_EXPR
       || (code == NE_EXPR && integer_zerop (iv0->step)))
     {
-      SWAP (iv0, iv1);
+      std::swap (iv0, iv1);
       code = swap_tree_comparison (code);
     }
 
@@ -1563,10 +1806,11 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
 }
 
 /* Expand definitions of ssa names in EXPR as long as they are simple
-   enough, and return the new expression.  */
+   enough, and return the new expression.  If STOP is specified, stop
+   expanding if EXPR equals to it.  */
 
 tree
-expand_simple_operations (tree expr)
+expand_simple_operations (tree expr, tree stop)
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, ee, e1;
@@ -1586,7 +1830,7 @@ expand_simple_operations (tree expr)
       for (i = 0; i < n; i++)
 	{
 	  e = TREE_OPERAND (expr, i);
-	  ee = expand_simple_operations (e);
+	  ee = expand_simple_operations (e, stop);
 	  if (e == ee)
 	    continue;
 
@@ -1605,7 +1849,8 @@ expand_simple_operations (tree expr)
       return ret;
     }
 
-  if (TREE_CODE (expr) != SSA_NAME)
+  /* Stop if it's not ssa name or the one we don't want to expand.  */
+  if (TREE_CODE (expr) != SSA_NAME || expr == stop)
     return expr;
 
   stmt = SSA_NAME_DEF_STMT (expr);
@@ -1625,7 +1870,7 @@ expand_simple_operations (tree expr)
 	  && src->loop_father != dest->loop_father)
 	return expr;
 
-      return expand_simple_operations (e);
+      return expand_simple_operations (e, stop);
     }
   if (gimple_code (stmt) != GIMPLE_ASSIGN)
     return expr;
@@ -1645,7 +1890,7 @@ expand_simple_operations (tree expr)
 	return e;
 
       if (code == SSA_NAME)
-	return expand_simple_operations (e);
+	return expand_simple_operations (e, stop);
 
       return expr;
     }
@@ -1654,7 +1899,7 @@ expand_simple_operations (tree expr)
     {
     CASE_CONVERT:
       /* Casts are simple.  */
-      ee = expand_simple_operations (e);
+      ee = expand_simple_operations (e, stop);
       return fold_build1 (code, TREE_TYPE (expr), ee);
 
     case PLUS_EXPR:
@@ -1669,7 +1914,7 @@ expand_simple_operations (tree expr)
       if (!is_gimple_min_invariant (e1))
 	return expr;
 
-      ee = expand_simple_operations (e);
+      ee = expand_simple_operations (e, stop);
       return fold_build2 (code, TREE_TYPE (expr), ee, e1);
 
     default:
@@ -1838,6 +2083,10 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
       if (e->flags & EDGE_FALSE_VALUE)
 	cond = invert_truthvalue (cond);
       expr = tree_simplify_using_condition (cond, expr);
+      /* Break if EXPR is simplified to const values.  */
+      if (expr && (integer_zerop (expr) || integer_nonzerop (expr)))
+	break;
+
       ++cnt;
     }
 
@@ -1963,6 +2212,9 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return false;
 
   niter->assumptions = boolean_false_node;
+  niter->control.base = NULL_TREE;
+  niter->control.step = NULL_TREE;
+  niter->control.no_overflow = false;
   last = last_stmt (exit->src);
   if (!last)
     return false;
@@ -2563,7 +2815,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	  cst = -cst;
 	  /* Avoid CST == 0x80000...  */
 	  if (wi::neg_p (cst))
-	    return max;;
+	    return max;
 
 	  /* OP0 + CST.  We need to check that
 	     BND <= MAX (type) - CST.  */
@@ -2742,6 +2994,29 @@ record_estimate (struct loop *loop, tree bound, const widest_int &i_bound,
   record_niter_bound (loop, new_i_bound, realistic, upper);
 }
 
+/* Records the control iv analyzed in NITER for LOOP if the iv is valid
+   and doesn't overflow.  */
+
+static void
+record_control_iv (struct loop *loop, struct tree_niter_desc *niter)
+{
+  struct control_iv *iv;
+
+  if (!niter->control.base || !niter->control.step)
+    return;
+
+  if (!integer_onep (niter->assumptions) || !niter->control.no_overflow)
+    return;
+
+  iv = ggc_alloc<control_iv> ();
+  iv->base = niter->control.base;
+  iv->step = niter->control.step;
+  iv->next = loop->control_ivs;
+  loop->control_ivs = iv;
+
+  return;
+}
+
 /* Record the estimate on number of iterations of LOOP based on the fact that
    the induction variable BASE + STEP * i evaluated in STMT does not wrap and
    its values belong to the range <LOW, HIGH>.  REALISTIC is true if the
@@ -2754,6 +3029,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
 {
   tree niter_bound, extreme, delta;
   tree type = TREE_TYPE (base), unsigned_type;
+  tree orig_base = base;
 
   if (TREE_CODE (step) != INTEGER_CST || integer_zerop (step))
     return;
@@ -2777,16 +3053,30 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
 
   if (tree_int_cst_sign_bit (step))
     {
+      wide_int min, max;
       extreme = fold_convert (unsigned_type, low);
-      if (TREE_CODE (base) != INTEGER_CST)
+      if (TREE_CODE (orig_base) == SSA_NAME
+	  && TREE_CODE (high) == INTEGER_CST
+	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
+	  && get_range_info (orig_base, &min, &max) == VR_RANGE
+	  && wi::gts_p (high, max))
+	base = wide_int_to_tree (unsigned_type, max);
+      else if (TREE_CODE (base) != INTEGER_CST)
 	base = fold_convert (unsigned_type, high);
       delta = fold_build2 (MINUS_EXPR, unsigned_type, base, extreme);
       step = fold_build1 (NEGATE_EXPR, unsigned_type, step);
     }
   else
     {
+      wide_int min, max;
       extreme = fold_convert (unsigned_type, high);
-      if (TREE_CODE (base) != INTEGER_CST)
+      if (TREE_CODE (orig_base) == SSA_NAME
+	  && TREE_CODE (low) == INTEGER_CST
+	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
+	  && get_range_info (orig_base, &min, &max) == VR_RANGE
+	  && wi::gts_p (min, low))
+	base = wide_int_to_tree (unsigned_type, min);
+      else if (TREE_CODE (base) != INTEGER_CST)
 	base = fold_convert (unsigned_type, low);
       delta = fold_build2 (MINUS_EXPR, unsigned_type, extreme, base);
     }
@@ -3312,7 +3602,6 @@ maybe_lower_iteration_bound (struct loop *loop)
   struct nb_iter_bound *elt;
   bool found_exit = false;
   vec<basic_block> queue = vNULL;
-  vec<gimple> problem_stmts = vNULL;
   bitmap visited;
 
   /* Collect all statements with interesting (i.e. lower than
@@ -3358,7 +3647,6 @@ maybe_lower_iteration_bound (struct loop *loop)
 	  if (not_executed_last_iteration->contains (stmt))
 	    {
 	      stmt_found = true;
-	      problem_stmts.safe_push (stmt);
 	      break;
 	    }
 	  if (gimple_has_side_effects (stmt))
@@ -3402,53 +3690,10 @@ maybe_lower_iteration_bound (struct loop *loop)
 		 "undefined statement must be executed at the last iteration.\n");
       record_niter_bound (loop, loop->nb_iterations_upper_bound - 1,
 			  false, true);
-
-      if (warn_aggressive_loop_optimizations)
-	{
-	  bool exit_warned = false;
-	  for (elt = loop->bounds; elt; elt = elt->next)
-	    {
-	      if (elt->is_exit
-		  && wi::gtu_p (elt->bound, loop->nb_iterations_upper_bound))
-		{
-		  basic_block bb = gimple_bb (elt->stmt);
-		  edge exit_edge = EDGE_SUCC (bb, 0);
-		  struct tree_niter_desc niter;
-
-		  if (!loop_exit_edge_p (loop, exit_edge))
-		    exit_edge = EDGE_SUCC (bb, 1);
-
-		  if(number_of_iterations_exit (loop, exit_edge,
-						&niter, false, false)
-		     && integer_onep (niter.assumptions)
-		     && integer_zerop (niter.may_be_zero)
-		     && niter.niter
-		     && TREE_CODE (niter.niter) == INTEGER_CST
-		     && wi::ltu_p (loop->nb_iterations_upper_bound,
-				   wi::to_widest (niter.niter)))
-		   {
-		     if (warning_at (gimple_location (elt->stmt),
-				     OPT_Waggressive_loop_optimizations,
-				     "loop exit may only be reached after undefined behavior"))
-		       exit_warned = true;
-		   }
-		}
-	    }
-
-	  if (exit_warned && !problem_stmts.is_empty ())
-	    {
-	      gimple stmt;
-	      int index;
-	      FOR_EACH_VEC_ELT (problem_stmts, index, stmt)
-		inform (gimple_location (stmt),
-			"possible undefined statement is here");
-	    }
-      }
     }
 
   BITMAP_FREE (visited);
   queue.release ();
-  problem_stmts.release ();
   delete not_executed_last_iteration;
 }
 
@@ -3495,6 +3740,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
       record_estimate (loop, niter, niter_desc.max,
 		       last_stmt (ex->src),
 		       true, ex == likely_exit, true);
+      record_control_iv (loop, &niter_desc);
     }
   exits.release ();
 
@@ -3801,6 +4047,208 @@ nowrap_type_p (tree type)
   return false;
 }
 
+/* Return true if we can prove LOOP is exited before evolution of induction
+   variabled {BASE, STEP} overflows with respect to its type bound.  */
+
+static bool
+loop_exits_before_overflow (tree base, tree step,
+			    gimple at_stmt, struct loop *loop)
+{
+  widest_int niter;
+  struct control_iv *civ;
+  struct nb_iter_bound *bound;
+  tree e, delta, step_abs, unsigned_base;
+  tree type = TREE_TYPE (step);
+  tree unsigned_type, valid_niter;
+
+  /* Don't issue signed overflow warnings.  */
+  fold_defer_overflow_warnings ();
+
+  /* Compute the number of iterations before we reach the bound of the
+     type, and verify that the loop is exited before this occurs.  */
+  unsigned_type = unsigned_type_for (type);
+  unsigned_base = fold_convert (unsigned_type, base);
+
+  if (tree_int_cst_sign_bit (step))
+    {
+      tree extreme = fold_convert (unsigned_type,
+				   lower_bound_in_type (type, type));
+      delta = fold_build2 (MINUS_EXPR, unsigned_type, unsigned_base, extreme);
+      step_abs = fold_build1 (NEGATE_EXPR, unsigned_type,
+			      fold_convert (unsigned_type, step));
+    }
+  else
+    {
+      tree extreme = fold_convert (unsigned_type,
+				   upper_bound_in_type (type, type));
+      delta = fold_build2 (MINUS_EXPR, unsigned_type, extreme, unsigned_base);
+      step_abs = fold_convert (unsigned_type, step);
+    }
+
+  valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
+
+  estimate_numbers_of_iterations_loop (loop);
+
+  if (max_loop_iterations (loop, &niter)
+      && wi::fits_to_tree_p (niter, TREE_TYPE (valid_niter))
+      && (e = fold_binary (GT_EXPR, boolean_type_node, valid_niter,
+			   wide_int_to_tree (TREE_TYPE (valid_niter),
+					     niter))) != NULL
+      && integer_nonzerop (e))
+    {
+      fold_undefer_and_ignore_overflow_warnings ();
+      return true;
+    }
+  if (at_stmt)
+    for (bound = loop->bounds; bound; bound = bound->next)
+      {
+	if (n_of_executions_at_most (at_stmt, bound, valid_niter))
+	  {
+	    fold_undefer_and_ignore_overflow_warnings ();
+	    return true;
+	  }
+      }
+  fold_undefer_and_ignore_overflow_warnings ();
+
+  /* Try to prove loop is exited before {base, step} overflows with the
+     help of analyzed loop control IV.  This is done only for IVs with
+     constant step because otherwise we don't have the information.  */
+  if (TREE_CODE (step) == INTEGER_CST)
+    for (civ = loop->control_ivs; civ; civ = civ->next)
+      {
+	enum tree_code code;
+	tree stepped, extreme, civ_type = TREE_TYPE (civ->step);
+
+	/* Have to consider type difference because operand_equal_p ignores
+	   that for constants.  */
+	if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (civ_type)
+	    || element_precision (type) != element_precision (civ_type))
+	  continue;
+
+	/* Only consider control IV with same step.  */
+	if (!operand_equal_p (step, civ->step, 0))
+	  continue;
+
+	/* Done proving if this is a no-overflow control IV.  */
+	if (operand_equal_p (base, civ->base, 0))
+	  return true;
+
+	/* If this is a before stepping control IV, in other words, we have
+
+	     {civ_base, step} = {base + step, step}
+
+	   Because civ {base + step, step} doesn't overflow during loop
+	   iterations, {base, step} will not overflow if we can prove the
+	   operation "base + step" does not overflow.  Specifically, we try
+	   to prove below conditions are satisfied:
+
+	     base <= UPPER_BOUND (type) - step  ;;step > 0
+	     base >= LOWER_BOUND (type) - step  ;;step < 0
+
+	   by proving the reverse conditions are false using loop's initial
+	   condition.  */
+	if (POINTER_TYPE_P (TREE_TYPE (base)))
+	  code = POINTER_PLUS_EXPR;
+	else
+	  code = PLUS_EXPR;
+
+	stepped = fold_build2 (code, TREE_TYPE (base), base, step);
+	if (operand_equal_p (stepped, civ->base, 0))
+	  {
+	    if (tree_int_cst_sign_bit (step))
+	      {
+		code = LT_EXPR;
+		extreme = lower_bound_in_type (type, type);
+	      }
+	    else
+	      {
+		code = GT_EXPR;
+		extreme = upper_bound_in_type (type, type);
+	      }
+	    extreme = fold_build2 (MINUS_EXPR, type, extreme, step);
+	    e = fold_build2 (code, boolean_type_node, base, extreme);
+	    e = simplify_using_initial_conditions (loop, e);
+	    if (integer_zerop (e))
+	      return true;
+
+	    continue;
+	  }
+
+	/* Similar to above, only in this case we have:
+
+	     {civ_base, step} = {(signed T)((unsigned T)base + step), step}
+	     && TREE_TYPE (civ_base) = signed T.
+
+	   We prove that below condition is satisfied:
+
+	     (signed T)((unsigned T)base + step)
+	       == (signed T)(unsigned T)base + step
+	       == base + step
+
+	   because of exact the same reason as above.  This also proves
+	   there is no overflow in the operation "base + step", thus the
+	   induction variable {base, step} during loop iterations.
+
+	   This is necessary to handle cases as below:
+
+	     int foo (int *a, signed char s, signed char l)
+	       {
+		 signed char i;
+		 for (i = s; i < l; i++)
+		   a[i] = 0;
+		 return 0;
+	       }
+
+	   The variable I is firstly converted to type unsigned char,
+	   incremented, then converted back to type signed char.  */
+	if (!CONVERT_EXPR_P (civ->base) || TREE_TYPE (civ->base) != type)
+	  continue;
+	e = TREE_OPERAND (civ->base, 0);
+	if (TREE_CODE (e) != PLUS_EXPR
+	    || TREE_CODE (TREE_OPERAND (e, 1)) != INTEGER_CST
+	    || !operand_equal_p (step,
+				 fold_convert (type,
+					       TREE_OPERAND (e, 1)), 0))
+	  continue;
+	e = TREE_OPERAND (e, 0);
+	if (!CONVERT_EXPR_P (e) || !operand_equal_p (e, unsigned_base, 0))
+	  continue;
+	e = TREE_OPERAND (e, 0);
+	/* It may still be possible to prove no overflow even if condition
+	   "operand_equal_p (e, base, 0)" isn't satisfied here, like below
+	   example:
+
+	     e             : ssa_var                 ; unsigned long type
+	     base          : (int) ssa_var
+	     unsigned_base : (unsigned int) ssa_var
+
+	   Unfortunately this is a rare case observed during GCC profiled
+	   bootstrap.  See PR66638 for more information.
+
+	   For now, we just skip the possibility.  */
+	if (!operand_equal_p (e, base, 0))
+	  continue;
+
+	if (tree_int_cst_sign_bit (step))
+	  {
+	    code = LT_EXPR;
+	    extreme = lower_bound_in_type (type, type);
+	  }
+	else
+	  {
+	    code = GT_EXPR;
+	    extreme = upper_bound_in_type (type, type);
+	  }
+	extreme = fold_build2 (MINUS_EXPR, type, extreme, step);
+	e = fold_build2 (code, boolean_type_node, base, extreme);
+	e = simplify_using_initial_conditions (loop, e);
+	if (integer_zerop (e))
+	  return true;
+      }
+
+  return false;
+}
+
 /* Return false only when the induction variable BASE + STEP * I is
    known to not overflow: i.e. when the number of iterations is small
    enough with respect to the step and initial condition in order to
@@ -3816,13 +4264,6 @@ scev_probably_wraps_p (tree base, tree step,
 		       gimple at_stmt, struct loop *loop,
 		       bool use_overflow_semantics)
 {
-  tree delta, step_abs;
-  tree unsigned_type, valid_niter;
-  tree type = TREE_TYPE (step);
-  tree e;
-  widest_int niter;
-  struct nb_iter_bound *bound;
-
   /* FIXME: We really need something like
      http://gcc.gnu.org/ml/gcc-patches/2005-06/msg02025.html.
 
@@ -3856,56 +4297,8 @@ scev_probably_wraps_p (tree base, tree step,
   if (TREE_CODE (step) != INTEGER_CST)
     return true;
 
-  /* Don't issue signed overflow warnings.  */
-  fold_defer_overflow_warnings ();
-
-  /* Otherwise, compute the number of iterations before we reach the
-     bound of the type, and verify that the loop is exited before this
-     occurs.  */
-  unsigned_type = unsigned_type_for (type);
-  base = fold_convert (unsigned_type, base);
-
-  if (tree_int_cst_sign_bit (step))
-    {
-      tree extreme = fold_convert (unsigned_type,
-				   lower_bound_in_type (type, type));
-      delta = fold_build2 (MINUS_EXPR, unsigned_type, base, extreme);
-      step_abs = fold_build1 (NEGATE_EXPR, unsigned_type,
-			      fold_convert (unsigned_type, step));
-    }
-  else
-    {
-      tree extreme = fold_convert (unsigned_type,
-				   upper_bound_in_type (type, type));
-      delta = fold_build2 (MINUS_EXPR, unsigned_type, extreme, base);
-      step_abs = fold_convert (unsigned_type, step);
-    }
-
-  valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
-
-  estimate_numbers_of_iterations_loop (loop);
-
-  if (max_loop_iterations (loop, &niter)
-      && wi::fits_to_tree_p (niter, TREE_TYPE (valid_niter))
-      && (e = fold_binary (GT_EXPR, boolean_type_node, valid_niter,
-			   wide_int_to_tree (TREE_TYPE (valid_niter),
-					     niter))) != NULL
-      && integer_nonzerop (e))
-    {
-      fold_undefer_and_ignore_overflow_warnings ();
-      return false;
-    }
-  if (at_stmt)
-    for (bound = loop->bounds; bound; bound = bound->next)
-      {
-	if (n_of_executions_at_most (at_stmt, bound, valid_niter))
-	  {
-	    fold_undefer_and_ignore_overflow_warnings ();
-	    return false;
-	  }
-      }
-
-  fold_undefer_and_ignore_overflow_warnings ();
+  if (loop_exits_before_overflow (base, step, at_stmt, loop))
+    return false;
 
   /* At this point we still don't have a proof that the iv does not
      overflow: give up.  */
@@ -3917,17 +4310,26 @@ scev_probably_wraps_p (tree base, tree step,
 void
 free_numbers_of_iterations_estimates_loop (struct loop *loop)
 {
-  struct nb_iter_bound *bound, *next;
+  struct control_iv *civ;
+  struct nb_iter_bound *bound;
 
   loop->nb_iterations = NULL;
   loop->estimate_state = EST_NOT_COMPUTED;
-  for (bound = loop->bounds; bound; bound = next)
+  for (bound = loop->bounds; bound;)
     {
-      next = bound->next;
+      struct nb_iter_bound *next = bound->next;
       ggc_free (bound);
+      bound = next;
     }
-
   loop->bounds = NULL;
+
+  for (civ = loop->control_ivs; civ;)
+    {
+      struct control_iv *next = civ->next;
+      ggc_free (civ);
+      civ = next;
+    }
+  loop->control_ivs = NULL;
 }
 
 /* Frees the information on upper bounds on numbers of iterations of loops.  */

@@ -103,36 +103,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "hash-map.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "fold-const.h"
 #include "gimple-fold.h"
 #include "gimple-expr.h"
 #include "target.h"
+#include "backend.h"
 #include "predict.h"
-#include "basic-block.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
-#include "bitmap.h"
 #include "tree-pass.h"
 #include "flags.h"
 #include "diagnostic.h"
@@ -266,7 +250,7 @@ class ipcp_param_lattices
 public:
   /* Lattice describing the value of the parameter itself.  */
   ipcp_lattice<tree> itself;
-  /* Lattice describing the the polymorphic contexts of a parameter.  */
+  /* Lattice describing the polymorphic contexts of a parameter.  */
   ipcp_lattice<ipa_polymorphic_call_context> ctxlat;
   /* Lattices describing aggregate parts.  */
   ipcp_agg_lattice *aggs;
@@ -291,10 +275,17 @@ public:
 
 /* Allocation pools for values and their sources in ipa-cp.  */
 
-alloc_pool ipcp_cst_values_pool;
-alloc_pool ipcp_poly_ctx_values_pool;
-alloc_pool ipcp_sources_pool;
-alloc_pool ipcp_agg_lattice_pool;
+object_allocator<ipcp_value<tree> > ipcp_cst_values_pool
+  ("IPA-CP constant values", 32);
+
+object_allocator<ipcp_value<ipa_polymorphic_call_context> >
+  ipcp_poly_ctx_values_pool ("IPA-CP polymorphic contexts", 32);
+
+object_allocator<ipcp_value_source<tree> > ipcp_sources_pool
+  ("IPA-CP value sources", 64);
+
+object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
+  ("IPA_CP aggregate lattices", 32);
 
 /* Maximal count found in program.  */
 
@@ -560,10 +551,7 @@ gather_caller_stats (struct cgraph_node *node, void *data)
   struct cgraph_edge *cs;
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (cs->caller->thunk.thunk_p)
-      cs->caller->call_for_symbol_thunks_and_aliases (gather_caller_stats,
-						    stats, false);
-    else
+    if (!cs->caller->thunk.thunk_p)
       {
 	stats->count_sum += cs->count;
 	stats->freq_sum += cs->frequency;
@@ -814,6 +802,40 @@ set_all_contains_variable (struct ipcp_param_lattices *plats)
   return ret;
 }
 
+/* Worker of call_for_symbol_thunks_and_aliases, increment the integer DATA
+   points to by the number of callers to NODE.  */
+
+static bool
+count_callers (cgraph_node *node, void *data)
+{
+  int *caller_count = (int *) data;
+
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    /* Local thunks can be handled transparently, but if the thunk can not
+       be optimized out, count it as a real use.  */
+    if (!cs->caller->thunk.thunk_p || !cs->caller->local.local)
+      ++*caller_count;
+  return false;
+}
+
+/* Worker of call_for_symbol_thunks_and_aliases, it is supposed to be called on
+   the one caller of some other node.  Set the caller's corresponding flag.  */
+
+static bool
+set_single_call_flag (cgraph_node *node, void *)
+{
+  cgraph_edge *cs = node->callers;
+  /* Local thunks can be handled transparently, skip them.  */
+  while (cs && cs->caller->thunk.thunk_p && cs->caller->local.local)
+    cs = cs->next_caller;
+  if (cs)
+    {
+      IPA_NODE_REF (cs->caller)->node_calling_single_call = true;
+      return true;
+    }
+  return false;
+}
+
 /* Initialize ipcp_lattices.  */
 
 static void
@@ -825,7 +847,17 @@ initialize_node_lattices (struct cgraph_node *node)
   int i;
 
   gcc_checking_assert (node->has_gimple_body_p ());
-  if (!cgraph_local_p (node))
+  if (cgraph_local_p (node))
+    {
+      int caller_count = 0;
+      node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
+						true);
+      gcc_checking_assert (caller_count > 0);
+      if (caller_count == 1)
+	node->call_for_symbol_thunks_and_aliases (set_single_call_flag,
+						  NULL, true);
+    }
+  else
     {
       /* When cloning is allowed, we can assume that externally visible
 	 functions are not called.  We will compensate this by cloning
@@ -942,7 +974,8 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
 	{
 	  ipcp_lattice<tree> *lat;
 
-	  if (!info->lattices)
+	  if (!info->lattices
+	      || idx >= ipa_get_param_count (info))
 	    return NULL_TREE;
 	  lat = ipa_get_scalar_lat (info, idx);
 	  if (!lat->is_single_const ())
@@ -1004,7 +1037,8 @@ ipa_context_from_jfunc (ipa_node_params *info, cgraph_edge *cs, int csidx,
 	}
       else
 	{
-	  if (!info->lattices)
+	  if (!info->lattices
+	      || srcidx >= ipa_get_param_count (info))
 	    return ctx;
 	  ipcp_lattice<ipa_polymorphic_call_context> *lat;
 	  lat = ipa_get_poly_ctx_lat (info, srcidx);
@@ -1104,7 +1138,7 @@ ipcp_value<valtype>::add_source (cgraph_edge *cs, ipcp_value *src_val,
 {
   ipcp_value_source<valtype> *src;
 
-  src = new (pool_alloc (ipcp_sources_pool)) ipcp_value_source<valtype>;
+  src = new (ipcp_sources_pool.allocate ()) ipcp_value_source<valtype>;
   src->offset = offset;
   src->cs = cs;
   src->val = src_val;
@@ -1122,7 +1156,7 @@ allocate_and_init_ipcp_value (tree source)
 {
   ipcp_value<tree> *val;
 
-  val = new (pool_alloc (ipcp_cst_values_pool)) ipcp_value<tree>;
+  val = ipcp_cst_values_pool.allocate ();
   memset (val, 0, sizeof (*val));
   val->value = source;
   return val;
@@ -1136,8 +1170,8 @@ allocate_and_init_ipcp_value (ipa_polymorphic_call_context source)
 {
   ipcp_value<ipa_polymorphic_call_context> *val;
 
-  val = new (pool_alloc (ipcp_poly_ctx_values_pool))
-    ipcp_value<ipa_polymorphic_call_context>;
+  // TODO
+  val = ipcp_poly_ctx_values_pool.allocate ();
   memset (val, 0, sizeof (*val));
   val->value = source;
   return val;
@@ -1179,14 +1213,14 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
   if (values_count == PARAM_VALUE (PARAM_IPA_CP_VALUE_LIST_SIZE))
     {
       /* We can only free sources, not the values themselves, because sources
-	 of other values in this this SCC might point to them.   */
+	 of other values in this SCC might point to them.   */
       for (val = values; val; val = val->next)
 	{
 	  while (val->sources)
 	    {
 	      ipcp_value_source<valtype> *src = val->sources;
 	      val->sources = src->next;
-	      pool_free (ipcp_sources_pool, src);
+	      ipcp_sources_pool.remove ((ipcp_value_source<tree>*)src);
 	    }
 	}
 
@@ -1439,8 +1473,7 @@ propagate_alignment_accross_jump_function (struct cgraph_edge *cs,
 	  if (op != NOP_EXPR)
 	    {
 	      if (op != POINTER_PLUS_EXPR
-		  && op != PLUS_EXPR
-		  && op != MINUS_EXPR)
+		  && op != PLUS_EXPR)
 		goto prop_fail;
 	      tree operand = ipa_get_jf_pass_through_operand (jfunc);
 	      if (!tree_fits_shwi_p (operand))
@@ -1452,7 +1485,7 @@ propagate_alignment_accross_jump_function (struct cgraph_edge *cs,
       else
 	{
 	  src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
-	  offset = ipa_get_jf_ancestor_offset (jfunc);
+	  offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;;
 	}
 
       src_lats = ipa_get_parm_lattices (caller_info, src_idx);
@@ -1557,7 +1590,7 @@ merge_agg_lats_step (struct ipcp_param_lattices *dest_plats,
       if (dest_plats->aggs_count == PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS))
 	return false;
       dest_plats->aggs_count++;
-      new_al = (struct ipcp_agg_lattice *) pool_alloc (ipcp_agg_lattice_pool);
+      new_al = ipcp_agg_lattice_pool.allocate ();
       memset (new_al, 0, sizeof (*new_al));
 
       new_al->offset = offset;
@@ -1975,8 +2008,13 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	}
     }
   else if (t)
-    context = ipa_polymorphic_call_context (t, ie->indirect_info->otr_type,
-					    anc_offset);
+    {
+      context = ipa_polymorphic_call_context (t, ie->indirect_info->otr_type,
+					      anc_offset);
+      if (ie->indirect_info->vptr_changed)
+	context.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
+					      ie->indirect_info->otr_type);
+    }
   else
     return NULL_TREE;
 
@@ -2102,6 +2140,24 @@ hint_time_bonus (inline_hints hints)
   return result;
 }
 
+/* If there is a reason to penalize the function described by INFO in the
+   cloning goodness evaluation, do so.  */
+
+static inline int64_t
+incorporate_penalties (ipa_node_params *info, int64_t evaluation)
+{
+  if (info->node_within_scc)
+    evaluation = (evaluation
+		  * (100 - PARAM_VALUE (PARAM_IPA_CP_RECURSION_PENALTY))) / 100;
+
+  if (info->node_calling_single_call)
+    evaluation = (evaluation
+		  * (100 - PARAM_VALUE (PARAM_IPA_CP_SINGLE_CALL_PENALTY)))
+      / 100;
+
+  return evaluation;
+}
+
 /* Return true if cloning NODE is a good idea, given the estimated TIME_BENEFIT
    and SIZE_COST and with the sum of frequencies of incoming edges to the
    potential new clone in FREQUENCIES.  */
@@ -2117,18 +2173,22 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 
   gcc_assert (size_cost > 0);
 
+  struct ipa_node_params *info = IPA_NODE_REF (node);
   if (max_count)
     {
       int factor = (count_sum * 1000) / max_count;
       int64_t evaluation = (((int64_t) time_benefit * factor)
 				    / size_cost);
+      evaluation = incorporate_penalties (info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
 		 "size: %i, count_sum: " HOST_WIDE_INT_PRINT_DEC
-		 ") -> evaluation: " "%"PRId64
+		 "%s%s) -> evaluation: " "%" PRId64
 		 ", threshold: %i\n",
 		 time_benefit, size_cost, (HOST_WIDE_INT) count_sum,
+		 info->node_within_scc ? ", scc" : "",
+		 info->node_calling_single_call ? ", single_call" : "",
 		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
 
       return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
@@ -2137,13 +2197,16 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
     {
       int64_t evaluation = (((int64_t) time_benefit * freq_sum)
 				    / size_cost);
+      evaluation = incorporate_penalties (info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
-		 "size: %i, freq_sum: %i) -> evaluation: "
-		 "%"PRId64 ", threshold: %i\n",
-		 time_benefit, size_cost, freq_sum, evaluation,
-		 PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
+		 "size: %i, freq_sum: %i%s%s) -> evaluation: "
+		 "%" PRId64 ", threshold: %i\n",
+		 time_benefit, size_cost, freq_sum,
+		 info->node_within_scc ? ", scc" : "",
+		 info->node_calling_single_call ? ", single_call" : "",
+		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
 
       return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
     }
@@ -2634,9 +2697,12 @@ propagate_constants_topo (struct ipa_topo_info *topo)
 	  struct cgraph_edge *cs;
 
 	  for (cs = v->callees; cs; cs = cs->next_callee)
-	    if (ipa_edge_within_scc (cs)
-		&& propagate_constants_accross_call (cs))
-	      push_node_to_stack (topo, cs->callee);
+	    if (ipa_edge_within_scc (cs))
+	      {
+		IPA_NODE_REF (v)->node_within_scc = true;
+		if (propagate_constants_accross_call (cs))
+		  push_node_to_stack (topo, cs->callee->function_symbol ());
+	      }
 	  v = pop_node_from_stack (topo);
 	}
 
@@ -3893,7 +3959,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 /* Given an original NODE and a VAL for which we have already created a
    specialized clone, look whether there are incoming edges that still lead
    into the old node but now also bring the requested value and also conform to
-   all other criteria such that they can be redirected the the special node.
+   all other criteria such that they can be redirected the special node.
    This function can therefore redirect the final edge in a SCC.  */
 
 template <typename valtype>
@@ -4319,6 +4385,15 @@ ipcp_store_alignment_results (void)
     bool dumped_sth = false;
     bool found_useful_result = false;
 
+    if (!opt_for_fn (node->decl, flag_ipa_cp_alignment))
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Not considering %s for alignment discovery "
+		   "and propagate; -fipa-cp-alignment: disabled.\n",
+		   node->name ());
+	continue;
+      }
+
    if (info->ipcp_orig_node)
       info = IPA_NODE_REF (info->ipcp_orig_node);
 
@@ -4379,16 +4454,6 @@ ipcp_driver (void)
   edge_removal_hook_holder =
     symtab->add_edge_removal_hook (&ipcp_edge_removal_hook, NULL);
 
-  ipcp_cst_values_pool = create_alloc_pool ("IPA-CP constant values",
-					    sizeof (ipcp_value<tree>), 32);
-  ipcp_poly_ctx_values_pool = create_alloc_pool
-    ("IPA-CP polymorphic contexts",
-     sizeof (ipcp_value<ipa_polymorphic_call_context>), 32);
-  ipcp_sources_pool = create_alloc_pool ("IPA-CP value sources",
-					 sizeof (ipcp_value_source<tree>), 64);
-  ipcp_agg_lattice_pool = create_alloc_pool ("IPA_CP aggregate lattices",
-					     sizeof (struct ipcp_agg_lattice),
-					     32);
   if (dump_file)
     {
       fprintf (dump_file, "\nIPA structures before propagation:\n");
@@ -4409,6 +4474,7 @@ ipcp_driver (void)
   /* Free all IPCP structures.  */
   free_toporder_info (&topo);
   next_edge_clone.release ();
+  prev_edge_clone.release ();
   symtab->remove_edge_removal_hook (edge_removal_hook_holder);
   symtab->remove_edge_duplication_hook (edge_duplication_hook_holder);
   ipa_free_all_structures_after_ipa_cp ();

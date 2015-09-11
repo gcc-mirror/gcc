@@ -676,7 +676,7 @@ symbols any static data members that lack definitions.
 
 
 @node Name lookup
-@subsection Name lookup, templates, and accessing members of base classes
+@subsection Name Lookup, Templates, and Accessing Members of Base Classes
 
 @cindex base class members
 @cindex two-stage name lookup

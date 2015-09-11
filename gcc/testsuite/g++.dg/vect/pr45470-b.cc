@@ -49,4 +49,3 @@ struct LoadGraph
 LoadGraph::LoadGraph (int)
 {}
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

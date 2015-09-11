@@ -31,4 +31,3 @@ int main(int argc, char **argv)
 
 /* { dg-final { scan-ipa-dump "Semantic equality hit:funkce->ferda" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

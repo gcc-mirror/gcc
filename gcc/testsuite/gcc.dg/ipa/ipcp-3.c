@@ -66,5 +66,4 @@ int main()
 
 
 /* { dg-final { scan-ipa-dump "Creating a specialized node of mark_cell" "cp" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
 

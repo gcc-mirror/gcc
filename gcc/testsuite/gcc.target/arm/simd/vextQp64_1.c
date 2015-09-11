@@ -1,6 +1,5 @@
 /* Test the `vextQp64' ARM Neon intrinsic.  */
 
-/* { dg-do run } */
 /* { dg-require-effective-target arm_crypto_ok } */
 /* { dg-options "-save-temps -O3 -fno-inline" } */
 /* { dg-add-options arm_crypto } */
@@ -30,4 +29,3 @@ main (int argc, char **argv)
 }
 
 /* { dg-final { scan-assembler-times "vext\.64\[ \t\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, #\[0-9\]+!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

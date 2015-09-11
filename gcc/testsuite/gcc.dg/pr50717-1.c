@@ -23,4 +23,3 @@ h (char a, char b, int c)
 }
 
 /* { dg-final { scan-tree-dump-times "WIDEN_MULT_PLUS_EXPR" 0 "widening_mul" } } */
-/* { dg-final { cleanup-tree-dump "widening_mul" } } */

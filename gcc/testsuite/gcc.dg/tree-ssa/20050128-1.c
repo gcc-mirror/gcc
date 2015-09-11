@@ -11,4 +11,3 @@ foo (int align)
 /* We should have optimized away the mod operator before we gimpleized
    the code.  */
 /* { dg-final { scan-tree-dump-times "%" 0 "gimple"} } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

@@ -40,41 +40,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
-#include "hard-reg-set.h"
-#include "predict.h"
-#include "hashtab.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "basic-block.h"
 #include "bb-reorder.h"
 #include "regs.h"
 #include "flags.h"
 #include "except.h"
 #include "rtl-error.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "insn-attr.h"
 #include "insn-config.h"
-#include "rtl.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -86,9 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "common/common-target.h"
 #include "cfgloop.h"
-#include "ggc.h"
 #include "tree-pass.h"
-#include "df.h"
 
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
@@ -97,7 +78,6 @@ static GTY(()) rtx_insn *cfg_layout_function_header;
 
 static rtx_insn *skip_insns_after_block (basic_block);
 static void record_effective_endpoints (void);
-static rtx label_for_bb (basic_block);
 static void fixup_reorder_chain (void);
 
 void verify_insn_chain (void);
@@ -145,7 +125,7 @@ can_delete_label_p (const rtx_code_label *label)
   return (!LABEL_PRESERVE_P (label)
 	  /* User declared labels must be preserved.  */
 	  && LABEL_NAME (label) == 0
-	  && !in_expr_list_p (forced_labels, label));
+	  && !in_insn_list_p (forced_labels, label));
 }
 
 /* Delete INSN by patching it out.  */
@@ -893,10 +873,9 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
       del_first = a_end;
 
-#ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
-      if (only_sets_cc0_p (prev))
+      if (HAVE_cc0 && only_sets_cc0_p (prev))
 	{
 	  rtx_insn *tmp = prev;
 
@@ -905,7 +884,6 @@ rtl_merge_blocks (basic_block a, basic_block b)
 	    prev = BB_HEAD (a);
 	  del_first = tmp;
 	}
-#endif
 
       a_end = PREV_INSN (del_first);
     }
@@ -1001,18 +979,18 @@ rtl_can_merge_blocks (basic_block a, basic_block b)
 /* Return the label in the head of basic block BLOCK.  Create one if it doesn't
    exist.  */
 
-rtx
+rtx_code_label *
 block_label (basic_block block)
 {
   if (block == EXIT_BLOCK_PTR_FOR_FN (cfun))
-    return NULL_RTX;
+    return NULL;
 
   if (!LABEL_P (BB_HEAD (block)))
     {
       BB_HEAD (block) = emit_label_before (gen_label_rtx (), BB_HEAD (block));
     }
 
-  return BB_HEAD (block);
+  return as_a <rtx_code_label *> (BB_HEAD (block));
 }
 
 /* Attempt to perform edge redirection by replacing possibly complex jump
@@ -1064,11 +1042,9 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   /* In case we zap a conditional jump, we'll need to kill
      the cc0 setter too.  */
   kill_from = insn;
-#ifdef HAVE_cc0
-  if (reg_mentioned_p (cc0_rtx, PATTERN (insn))
+  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, PATTERN (insn))
       && only_sets_cc0_p (PREV_INSN (insn)))
     kill_from = PREV_INSN (insn);
-#endif
 
   /* See if we can create the fallthru edge.  */
   if (in_cfglayout || can_fallthru (src, target))
@@ -1114,7 +1090,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       if (dump_file)
 	fprintf (dump_file, "Redirecting jump %i from %i to %i.\n",
 		 INSN_UID (insn), e->dest->index, target->index);
-      if (!redirect_jump (insn, block_label (target), 0))
+      if (!redirect_jump (as_a <rtx_jump_insn *> (insn),
+			  block_label (target), 0))
 	{
 	  gcc_assert (target == EXIT_BLOCK_PTR_FOR_FN (cfun));
 	  return NULL;
@@ -1128,12 +1105,12 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   /* Or replace possibly complicated jump insn by simple jump insn.  */
   else
     {
-      rtx target_label = block_label (target);
+      rtx_code_label *target_label = block_label (target);
       rtx_insn *barrier;
       rtx label;
       rtx_jump_table_data *table;
 
-      emit_jump_insn_after_noloc (gen_jump (target_label), insn);
+      emit_jump_insn_after_noloc (targetm.gen_jump (target_label), insn);
       JUMP_LABEL (BB_END (src)) = target_label;
       LABEL_NUSES (target_label)++;
       if (dump_file)
@@ -1211,7 +1188,7 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
     {
       rtvec vec;
       int j;
-      rtx new_label = block_label (new_bb);
+      rtx_code_label *new_label = block_label (new_bb);
 
       if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
@@ -1241,11 +1218,11 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
   else if ((tmp = extract_asm_operands (PATTERN (insn))) != NULL)
     {
       int i, n = ASM_OPERANDS_LABEL_LENGTH (tmp);
-      rtx new_label, note;
+      rtx note;
 
       if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
-      new_label = block_label (new_bb);
+      rtx_code_label *new_label = block_label (new_bb);
 
       for (i = 0; i < n; ++i)
 	{
@@ -1298,7 +1275,8 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
 	  /* If the substitution doesn't succeed, die.  This can happen
 	     if the back end emitted unrecognizable instructions or if
 	     target is exit block on some arches.  */
-	  if (!redirect_jump (insn, block_label (new_bb), 0))
+	  if (!redirect_jump (as_a <rtx_jump_insn *> (insn),
+			      block_label (new_bb), 0))
 	    {
 	      gcc_assert (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun));
 	      return false;
@@ -1326,7 +1304,7 @@ redirect_branch_edge (edge e, basic_block target)
 
   if (!currently_expanding_to_rtl)
     {
-      if (!patch_jump_insn (insn, old_label, target))
+      if (!patch_jump_insn (as_a <rtx_jump_insn *> (insn), old_label, target))
 	return NULL;
     }
   else
@@ -1334,7 +1312,8 @@ redirect_branch_edge (edge e, basic_block target)
        jumps (i.e. not yet split by find_many_sub_basic_blocks).
        Redirect all of those that match our label.  */
     FOR_BB_INSNS (src, insn)
-      if (JUMP_P (insn) && !patch_jump_insn (insn, old_label, target))
+      if (JUMP_P (insn) && !patch_jump_insn (as_a <rtx_jump_insn *> (insn),
+					     old_label, target))
 	return NULL;
 
   if (dump_file)
@@ -1525,7 +1504,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       edge b = unchecked_make_edge (e->src, target, 0);
       bool redirected;
 
-      redirected = redirect_jump (BB_END (e->src), block_label (target), 0);
+      redirected = redirect_jump (as_a <rtx_jump_insn *> (BB_END (e->src)),
+				  block_label (target), 0);
       gcc_assert (redirected);
 
       note = find_reg_note (BB_END (e->src), REG_BR_PROB, NULL_RTX);
@@ -1708,29 +1688,21 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       if (jump_label == ret_rtx)
-	{
-#ifdef HAVE_return
-	  emit_jump_insn_after_setloc (gen_return (), BB_END (jump_block), loc);
-#else
-	  gcc_unreachable ();
-#endif
-	}
+	emit_jump_insn_after_setloc (targetm.gen_return (),
+				     BB_END (jump_block), loc);
       else
 	{
 	  gcc_assert (jump_label == simple_return_rtx);
-#ifdef HAVE_simple_return
-	  emit_jump_insn_after_setloc (gen_simple_return (),
+	  emit_jump_insn_after_setloc (targetm.gen_simple_return (),
 				       BB_END (jump_block), loc);
-#else
-	  gcc_unreachable ();
-#endif
 	}
       set_return_jump_label (BB_END (jump_block));
     }
   else
     {
-      rtx label = block_label (target);
-      emit_jump_insn_after_setloc (gen_jump (label), BB_END (jump_block), loc);
+      rtx_code_label *label = block_label (target);
+      emit_jump_insn_after_setloc (targetm.gen_jump (label),
+				   BB_END (jump_block), loc);
       JUMP_LABEL (BB_END (jump_block)) = label;
       LABEL_NUSES (label)++;
     }
@@ -1825,12 +1797,10 @@ rtl_tidy_fallthru_edge (edge e)
 	  delete_insn (table);
 	}
 
-#ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
-      if (any_condjump_p (q) && only_sets_cc0_p (PREV_INSN (q)))
+      if (HAVE_cc0 && any_condjump_p (q) && only_sets_cc0_p (PREV_INSN (q)))
 	q = PREV_INSN (q);
-#endif
 
       q = PREV_INSN (q);
     }
@@ -1928,7 +1898,7 @@ rtl_split_edge (edge edge_in)
               && (edge_in->flags & EDGE_CROSSING))
             {
               after = last_bb_in_partition (edge_in->src);
-              before = NEXT_INSN (BB_END (after));
+              before = get_last_bb_insn (after);
               /* The instruction following the last bb in partition should
                  be a barrier, since it cannot end in a fall-through.  */
               gcc_checking_assert (BARRIER_P (before));
@@ -3473,10 +3443,10 @@ skip_insns_after_block (basic_block bb)
 
 /* Locate or create a label for a given basic block.  */
 
-static rtx
+static rtx_insn *
 label_for_bb (basic_block bb)
 {
-  rtx label = BB_HEAD (bb);
+  rtx_insn *label = BB_HEAD (bb);
 
   if (!LABEL_P (label))
     {
@@ -3783,10 +3753,10 @@ fixup_reorder_chain (void)
 	  e_taken = e;
 
       bb_end_insn = BB_END (bb);
-      if (JUMP_P (bb_end_insn))
+      if (rtx_jump_insn *bb_end_jump = dyn_cast <rtx_jump_insn *> (bb_end_insn))
 	{
-	  ret_label = JUMP_LABEL (bb_end_insn);
-	  if (any_condjump_p (bb_end_insn))
+	  ret_label = JUMP_LABEL (bb_end_jump);
+	  if (any_condjump_p (bb_end_jump))
 	    {
 	      /* This might happen if the conditional jump has side
 		 effects and could therefore not be optimized away.
@@ -3794,10 +3764,10 @@ fixup_reorder_chain (void)
 		 to prevent rtl_verify_flow_info from complaining.  */
 	      if (!e_fall)
 		{
-		  gcc_assert (!onlyjump_p (bb_end_insn)
-			      || returnjump_p (bb_end_insn)
+		  gcc_assert (!onlyjump_p (bb_end_jump)
+			      || returnjump_p (bb_end_jump)
                               || (e_taken->flags & EDGE_CROSSING));
-		  emit_barrier_after (bb_end_insn);
+		  emit_barrier_after (bb_end_jump);
 		  continue;
 		}
 
@@ -3819,11 +3789,11 @@ fixup_reorder_chain (void)
 		 edge based on known or assumed probability.  */
 	      else if (bb->aux != e_taken->dest)
 		{
-		  rtx note = find_reg_note (bb_end_insn, REG_BR_PROB, 0);
+		  rtx note = find_reg_note (bb_end_jump, REG_BR_PROB, 0);
 
 		  if (note
 		      && XINT (note, 0) < REG_BR_PROB_BASE / 2
-		      && invert_jump (bb_end_insn,
+		      && invert_jump (bb_end_jump,
 				      (e_fall->dest
 				       == EXIT_BLOCK_PTR_FOR_FN (cfun)
 				       ? NULL_RTX
@@ -3846,7 +3816,7 @@ fixup_reorder_chain (void)
 
 	      /* Otherwise we can try to invert the jump.  This will
 		 basically never fail, however, keep up the pretense.  */
-	      else if (invert_jump (bb_end_insn,
+	      else if (invert_jump (bb_end_jump,
 				    (e_fall->dest
 				     == EXIT_BLOCK_PTR_FOR_FN (cfun)
 				     ? NULL_RTX
@@ -4047,7 +4017,7 @@ fixup_fallthru_exit_predecessor (void)
 	 edge, we have to split that block.  */
       if (c == bb)
 	{
-	  bb = split_block (bb, NULL)->dest;
+	  bb = split_block_after_labels (bb)->dest;
 	  bb->aux = c->aux;
 	  c->aux = bb;
 	  BB_FOOTER (bb) = BB_FOOTER (c);
@@ -4217,6 +4187,7 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
 	      break;
 
 	    case NOTE_INSN_EPILOGUE_BEG:
+	    case NOTE_INSN_UPDATE_SJLJ_CONTEXT:
 	      emit_note_copy (as_a <rtx_note *> (insn));
 	      break;
 
@@ -4347,11 +4318,7 @@ cfg_layout_finalize (void)
 #endif
   force_one_exit_fallthru ();
   rtl_register_cfg_hooks ();
-  if (reload_completed
-#ifdef HAVE_epilogue
-      && !HAVE_epilogue
-#endif
-      )
+  if (reload_completed && !targetm.have_epilogue ())
     fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
 
@@ -4967,7 +4934,7 @@ rtl_lv_add_condition_to_bb (basic_block first_head ,
 			    basic_block second_head ATTRIBUTE_UNUSED,
 			    basic_block cond_bb, void *comp_rtx)
 {
-  rtx label;
+  rtx_code_label *label;
   rtx_insn *seq, *jump;
   rtx op0 = XEXP ((rtx)comp_rtx, 0);
   rtx op1 = XEXP ((rtx)comp_rtx, 1);
@@ -4983,8 +4950,7 @@ rtl_lv_add_condition_to_bb (basic_block first_head ,
   start_sequence ();
   op0 = force_operand (op0, NULL_RTX);
   op1 = force_operand (op1, NULL_RTX);
-  do_compare_rtx_and_jump (op0, op1, comp, 0,
-			   mode, NULL_RTX, NULL_RTX, label, -1);
+  do_compare_rtx_and_jump (op0, op1, comp, 0, mode, NULL_RTX, NULL, label, -1);
   jump = get_last_insn ();
   JUMP_LABEL (jump) = label;
   LABEL_NUSES (label)++;

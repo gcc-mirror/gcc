@@ -16,4 +16,3 @@ void test_vreinterpretQu32_p16 (void)
   out_uint32x4_t = vreinterpretq_u32_p16 (arg0_poly16x8_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

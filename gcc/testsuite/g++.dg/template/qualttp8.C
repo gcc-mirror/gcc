@@ -11,7 +11,7 @@ template <class T> struct D {
 
 struct E {
 	private:
-	template <class T> class B {}; // { dg-error "private" }
+	template <class T> class B {}; // { dg-message "private" }
 };
 
 D<E> d; // { dg-message "required" }

@@ -11,4 +11,3 @@ test()
   return a.a+b[c];
 }
 /* { dg-final { scan-tree-dump "return 0;" "ccp2" } } */
-/* { dg-final { cleanup-tree-dump "ccp2" } } */

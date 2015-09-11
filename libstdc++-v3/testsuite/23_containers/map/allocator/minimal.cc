@@ -42,7 +42,7 @@ void test01()
   typedef std::map<T, U, Cmp, alloc_type> test_type;
   test_type v(alloc_type{});
   v = { test_type::value_type{} };
-  VERIFY( v.max_size() == traits_type::max_size(v.get_allocator()) );
+  VERIFY( v.max_size() < traits_type::max_size(v.get_allocator()) );
 }
 
 int main()

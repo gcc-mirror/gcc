@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -finline-functions" } */
+/* { dg-options "-O2 -finline-functions -fno-ipa-icf" } */
 
 extern int t();
 

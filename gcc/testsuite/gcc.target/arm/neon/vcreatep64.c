@@ -16,4 +16,3 @@ void test_vcreatep64 (void)
   out_poly64x1_t = vcreate_p64 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001-2014 Free Software Foundation.
+# Copyright (c) 2001-2015 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -109,33 +109,49 @@ build_sources() {
 
     ${SVN} -q co "${SVNROOT}/${SVNBRANCH}" "`basename ${SOURCE_DIRECTORY}`" ||\
            error "Could not check out release sources"
-    for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
+    svnciargs=""
+    for x in `changedir ${SOURCE_DIRECTORY} && \
+	      find . -name ChangeLog`; do
       # Update this ChangeLog file only if it does not yet contain the
       # entry we are going to add.  (This is a safety net for repeated
       # runs of this script for the same release.)
-      if ! grep "GCC ${RELEASE} released." ${x} > /dev/null ; then       
-        cat - ${x} > ${x}.new <<EOF
+      if ! grep "GCC ${RELEASE} released." ${SOURCE_DIRECTORY}/${x} > /dev/null ; then       
+	cat - ${SOURCE_DIRECTORY}/${x} > ${SOURCE_DIRECTORY}/${x}.new <<EOF
 ${LONG_DATE}  Release Manager
 
 	* GCC ${RELEASE} released.
 
 EOF
-        mv ${x}.new ${x} || \
-            error "Could not update ${x}"
-        (changedir `dirname ${x}` && \
-            ${SVN} -q ci -m 'Mark ChangeLog' `basename ${x}`) || \
-            error "Could not commit ${x}"
+	mv ${SOURCE_DIRECTORY}/${x}.new ${SOURCE_DIRECTORY}/${x} \
+	  || error "Could not update ${x}"
+	svnciargs="${svnciargs} ${x}"
       fi
     done
 
     # Update gcc/DEV-PHASE.
 
-    [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` = ${RELEASE} ] || \
-    error "Release number ${RELEASE} does not match BASE-VER"
+    if [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` != ${RELEASE} ]; then
+      [ ${RELEASE_MAJOR} -lt 5 ] && \
+	error "Release number ${RELEASE} does not match BASE-VER"
+      if [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` \
+	   = ${RELEASE_MAJOR}.`expr ${RELEASE_MINOR} - 1`.1 \
+	   -a x${RELEASE_REVISION} = x0 ]; then
+	(changedir ${SOURCE_DIRECTORY}/gcc && \
+	 echo ${RELEASE} > BASE-VER) || \
+	error "Could not update BASE-VER"
+	svnciargs="${svnciargs} gcc/BASE-VER"
+      else
+	error "Release number ${RELEASE} does not immediately follow BASE-VER"
+      fi
+    fi
     (changedir ${SOURCE_DIRECTORY}/gcc && \
-     : > DEV-PHASE && \
-     ${SVN} -q ci -m 'Mark as release' DEV-PHASE) || \
+     : > DEV-PHASE) || \
     error "Could not update DEV-PHASE"
+    svnciargs="${svnciargs} gcc/DEV-PHASE"
+
+    (changedir ${SOURCE_DIRECTORY} && \
+     ${SVN} -q ci -m 'Update ChangeLog and version files for release' ${svnciargs}) || \
+    error "Could not commit ChangeLog and version file updates"
 
     # Make sure we tag the sources for a final release.
     TAG="tags/gcc_`echo ${RELEASE} | tr . _`_release"
@@ -605,7 +621,11 @@ if [ $SNAPSHOT -eq 0 ]; then
 
   # Compute the name of the branch, which is based solely on the major
   # and minor release numbers.
-  SVNBRANCH="branches/gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+  if [ ${RELEASE_MAJOR} -ge 5 ]; then
+    SVNBRANCH="branches/gcc-${RELEASE_MAJOR}-branch"
+  else
+    SVNBRANCH="branches/gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+  fi
 
   # If this is not a final release, set various parameters accordingly.
   if [ ${FINAL} -ne 1 ]; then

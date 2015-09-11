@@ -17,4 +17,3 @@ void test_vcombineu32 (void)
   out_uint32x4_t = vcombine_u32 (arg0_uint32x2_t, arg1_uint32x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

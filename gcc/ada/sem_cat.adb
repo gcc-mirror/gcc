@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,21 +440,17 @@ package body Sem_Cat is
       Nam          : TSS_Name_Type;
       At_Any_Place : Boolean := False) return Boolean
    is
-      Rep_Item  : Node_Id;
-      Full_Type : Entity_Id := Typ;
+      Rep_Item : Node_Id;
+
+      Real_Rep : Node_Id;
+      --  The stream operation may be specified by an attribute definition
+      --  clause in the source, or by an aspect that generates such an
+      --  attribute definition. For an aspect, the generated attribute
+      --  definition may be placed at the freeze point of the full view of
+      --  the type, but the aspect specification makes the operation visible
+      --  to a client wherever the partial view is visible.
 
    begin
-      --  In the case of a type derived from a private view, any specified
-      --  stream attributes will be attached to the derived type's underlying
-      --  type rather the derived type entity itself (which is itself private).
-
-      if Is_Private_Type (Typ)
-        and then Is_Derived_Type (Typ)
-        and then Present (Full_View (Typ))
-      then
-         Full_Type := Underlying_Type (Typ);
-      end if;
-
       --  We start from the declaration node and then loop until the end of
       --  the list until we find the requested attribute definition clause.
       --  In Ada 2005 mode, clauses are ignored if they are not currently
@@ -462,10 +458,19 @@ package body Sem_Cat is
       --  inserted by the expander at the point where the clause occurs),
       --  unless At_Any_Place is true.
 
-      Rep_Item := First_Rep_Item (Full_Type);
+      Rep_Item := First_Rep_Item (Typ);
       while Present (Rep_Item) loop
-         if Nkind (Rep_Item) = N_Attribute_Definition_Clause then
-            case Chars (Rep_Item) is
+         Real_Rep := Rep_Item;
+
+         --  If the representation item is an aspect specification, retrieve
+         --  the corresponding pragma or attribute definition.
+
+         if Nkind (Rep_Item) = N_Aspect_Specification then
+            Real_Rep := Aspect_Rep_Item (Rep_Item);
+         end if;
+
+         if Nkind (Real_Rep) = N_Attribute_Definition_Clause then
+            case Chars (Real_Rep) is
                when Name_Read =>
                   exit when Nam = TSS_Stream_Read;
 
@@ -487,14 +492,29 @@ package body Sem_Cat is
          Next_Rep_Item (Rep_Item);
       end loop;
 
-      --  If At_Any_Place is true, return True if the attribute is available
-      --  at any place; if it is false, return True only if the attribute is
-      --  currently visible.
+      --  If not found, and the type is derived from a private view, check
+      --  for a stream attribute inherited from parent. Any specified stream
+      --  attributes will be attached to the derived type's underlying type
+      --  rather the derived type entity itself (which is itself private).
 
-      return Present (Rep_Item)
-        and then (Ada_Version < Ada_2005
-                   or else At_Any_Place
-                   or else not Is_Hidden (Entity (Rep_Item)));
+      if No (Rep_Item)
+        and then Is_Private_Type (Typ)
+        and then Is_Derived_Type (Typ)
+        and then Present (Full_View (Typ))
+      then
+         return Has_Stream_Attribute_Definition
+            (Underlying_Type (Typ), Nam, At_Any_Place);
+
+      --  Otherwise, if At_Any_Place is true, return True if the attribute is
+      --  available at any place; if it is false, return True only if the
+      --  attribute is currently visible.
+
+      else
+         return Present (Rep_Item)
+           and then (Ada_Version < Ada_2005
+                      or else At_Any_Place
+                      or else not Is_Hidden (Entity (Rep_Item)));
+      end if;
    end Has_Stream_Attribute_Definition;
 
    ----------------------------

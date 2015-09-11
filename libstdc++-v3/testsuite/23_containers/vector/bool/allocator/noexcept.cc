@@ -23,15 +23,6 @@
 
 using T = bool;
 
-namespace __gnu_test
-{
-  template<typename U>
-    inline void
-    swap(propagating_allocator<U, true>& l, propagating_allocator<U, true>& r)
-    noexcept(false)
-    { }
-}
-
 using __gnu_test::propagating_allocator;
 
 void test01()
@@ -62,5 +53,5 @@ void test03()
   test_type v1(alloc_type(1));
   test_type v2(alloc_type(2));
   static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
-  static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
+  static_assert( noexcept( v1.swap(v2) ), "Swap cannot throw" );
 }

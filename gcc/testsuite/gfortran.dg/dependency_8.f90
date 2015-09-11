@@ -10,4 +10,3 @@ subroutine foo(a,i,j)
   endwhere
 end subroutine
 ! { dg-final { scan-tree-dump-times "temp" 3 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

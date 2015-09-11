@@ -6,4 +6,3 @@ void f (void)
 {
 }
 
-/* { dg-final { cleanup-rtl-dump "*" } } */

@@ -39,5 +39,4 @@
 
 ! { dg-final { scan-tree-dump-times "_gfortran_internal_pack" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_internal_unpack" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

@@ -20,4 +20,3 @@ end program testit
 
 ! { dg-final { scan-tree-dump-times "bound" 0 "original" } }
 ! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

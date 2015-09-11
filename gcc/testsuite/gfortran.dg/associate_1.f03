@@ -84,8 +84,7 @@ PROGRAM main
   IF (tp%comp /= 5) CALL abort ()
 
   ! Association to character variables.
-  ! FIXME: Enable character test, once this works.
-  !CALL test_char (5)
+  CALL test_char (5)
 
 CONTAINS
 
@@ -94,7 +93,6 @@ CONTAINS
     func = (/ 1, 3, 5 /)
   END FUNCTION func
 
-#if 0
   ! Test association to character variable with automatic length.
   SUBROUTINE test_char (n)
     INTEGER, INTENT(IN) :: n
@@ -109,6 +107,5 @@ CONTAINS
     END ASSOCIATE
     IF (str /= "abcde") CALL abort ()
   END SUBROUTINE test_char
-#endif
 
 END PROGRAM main

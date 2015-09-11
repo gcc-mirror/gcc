@@ -20,38 +20,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stmt.h"
 #include "print-tree.h"
 #include "flags.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "gimple-pretty-print.h"
-#include "bitmap.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
-#include "gimple-ssa.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-inline.h"
 #include "timevar.h"
 #include "dumpfile.h"
@@ -1324,22 +1304,6 @@ unlink_stmt_vdef (gimple stmt)
     SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 1;
 }
 
-
-/* Return true if the var whose chain of uses starts at PTR has no
-   nondebug uses.  */
-bool
-has_zero_uses_1 (const ssa_use_operand_t *head)
-{
-  const ssa_use_operand_t *ptr;
-
-  for (ptr = head->next; ptr != head; ptr = ptr->next)
-    if (!is_gimple_debug (USE_STMT (ptr)))
-      return false;
-
-  return true;
-}
-
-
 /* Return true if the var whose chain of uses starts at PTR has a
    single nondebug use.  Set USE_P and STMT to that single nondebug
    use, if so, or to NULL otherwise.  */
@@ -1350,7 +1314,7 @@ single_imm_use_1 (const ssa_use_operand_t *head,
   ssa_use_operand_t *ptr, *single_use = 0;
 
   for (ptr = head->next; ptr != head; ptr = ptr->next)
-    if (!is_gimple_debug (USE_STMT (ptr)))
+    if (USE_STMT(ptr) && !is_gimple_debug (USE_STMT (ptr)))
       {
 	if (single_use)
 	  {
@@ -1368,3 +1332,4 @@ single_imm_use_1 (const ssa_use_operand_t *head,
 
   return single_use;
 }
+

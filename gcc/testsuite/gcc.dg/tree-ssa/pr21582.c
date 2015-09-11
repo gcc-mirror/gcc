@@ -28,4 +28,3 @@ main()
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*" 0 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

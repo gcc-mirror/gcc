@@ -12,9 +12,6 @@
 /* Make sure that all objects have debug headers */
 #undef DBG_HDRS_ALL
 
-/* No description */
-#undef DGUX_THREADS
-
 /* Target is ECOS */
 #undef ECOS
 
@@ -23,9 +20,6 @@
 
 /* support for Mac OS X pthreads */
 #undef GC_DARWIN_THREADS
-
-/* support for DB/UX on I386 threads */
-#undef GC_DGUX386_THREADS
 
 /* support FreeBSD threads */
 #undef GC_FREEBSD_THREADS
@@ -90,7 +84,7 @@
 /* Define to 1 if you have the `pthread_getattr_np' function. */
 #undef HAVE_PTHREAD_GETATTR_NP
 
-/* Define to 1 if you have the `pthread_get_stackaddr_np_np' function. */
+/* Define to 1 if you have the `pthread_get_stackaddr_np' function. */
 #undef HAVE_PTHREAD_GET_STACKADDR_NP
 
 /* Define to 1 if you have the <stdint.h> header file. */

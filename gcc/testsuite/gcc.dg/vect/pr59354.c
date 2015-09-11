@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 
 #include "tree-vect.h"
@@ -8,11 +7,10 @@ void abort (void);
 unsigned int a[256];
 unsigned char b[256];
 
-int main()
+__attribute__ ((noinline)) void
+main1()
 {
   int i, z, x, y;
-
-  check_vect ();
 
   for(i = 0; i < 256; i++)
     {
@@ -27,9 +25,15 @@ int main()
 
   if (b[4] != 1)
     abort ();
+}
+
+int main (void)
+{
+  check_vect ();
+
+  main1 ();
 
   return 0;
 }
 
 /* { dg-final { scan-tree-dump "vectorized 1 loop" "vect" { target { vect_pack_trunc } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

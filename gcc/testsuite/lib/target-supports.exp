@@ -41,6 +41,14 @@ proc check_compile {basename type contents args} {
     global tool
     verbose "check_compile tool: $tool for $basename" 
 
+    # Save additional_sources to avoid compiling testsuite's sources
+    # against check_compile's source.
+    global additional_sources
+    if [info exists additional_sources] {
+	set tmp_additional_sources "$additional_sources"
+	set additional_sources ""
+    }
+
     if { [llength $args] > 0 } {
 	set options [list "additional_flags=[lindex $args 0]"]
     } else {
@@ -86,6 +94,11 @@ proc check_compile {basename type contents args} {
 	file delete $output
     }
 
+    # Restore additional_sources.
+    if [info exists additional_sources] {
+	set additional_sources "$tmp_additional_sources"
+    }
+
     return [list $lines $scan_output]
 }
 
@@ -104,6 +117,7 @@ proc current_target_name { } {
 
 proc check_cached_effective_target { prop args } {
     global et_cache
+    global et_prop_list
 
     set target [current_target_name]
     if {![info exists et_cache($prop,target)]
@@ -111,10 +125,38 @@ proc check_cached_effective_target { prop args } {
 	verbose "check_cached_effective_target $prop: checking $target" 2
 	set et_cache($prop,target) $target
 	set et_cache($prop,value) [uplevel eval $args]
+	if {![info exists et_prop_list]
+	    || [lsearch $et_prop_list $prop] < 0} {
+	    lappend et_prop_list $prop
+	}
+	verbose "check_cached_effective_target cached list is now: $et_prop_list" 2
     }
     set value $et_cache($prop,value)
     verbose "check_cached_effective_target $prop: returning $value for $target" 2
     return $value
+}
+
+# Clear effective-target cache. This is useful after testing
+# effective-target features and overriding TEST_ALWAYS_FLAGS and/or
+# ALWAYS_CXXFLAGS.
+# If one changes ALWAYS_CXXFLAGS or TEST_ALWAYS_FLAGS then they should
+# do a clear_effective_target_cache at the end as the target cache can
+# make decisions based upon the flags, and those decisions need to be
+# redone when the flags change. An example of this is the
+# asan_init/asan_finish pair.
+
+proc clear_effective_target_cache { } {
+    global et_cache
+    global et_prop_list
+
+    if {[info exists et_prop_list]} {
+	verbose "clear_effective_target_cache: $et_prop_list" 2
+	foreach prop $et_prop_list {
+	    unset et_cache($prop,value)
+	    unset et_cache($prop,target)
+	}
+	unset et_prop_list
+    }
 }
 
 # Like check_compile, but delete the output file and return true if the
@@ -445,9 +487,11 @@ proc check_effective_target_trampolines { } {
 }
 
 # Return 1 if according to target_info struct and explicit target list
-# target is supposed to keep null pointer checks. This could be due to 
-# use of option fno-delete-null-pointer-checks or hardwired in target.
- 
+# target disables -fdelete-null-pointer-checks.  Targets should return 0
+# if they simply default to -fno-delete-null-pointer-checks but obey
+# -fdelete-null-pointer-checks when passed explicitly (and tests that 
+# depend on this option should do that).
+
 proc check_effective_target_keeps_null_pointer_checks { } {
     if [target_info exists keeps_null_pointer_checks] {
       return 1
@@ -565,7 +609,10 @@ proc check_profiling_available { test_what } {
 # in Section 4 of C99 standard. Effectively, it is a target which supports no
 # extra headers or libraries other than what is considered essential.
 proc check_effective_target_freestanding { } {
-	return 0
+    if { [istarget nvptx-*-*] } {
+	return 1
+    }
+    return 0
 }
 
 # Return 1 if target has packed layout of structure members by
@@ -623,6 +670,15 @@ proc check_effective_target_indirect_jumps {} {
 # Return 1 if nonlocal goto is supported, 0 otherwise.
 
 proc check_effective_target_nonlocal_goto {} {
+    if { [istarget nvptx-*-*] } {
+	return 0
+    }
+    return 1
+}
+
+# Return 1 if global constructors are supported, 0 otherwise.
+
+proc check_effective_target_global_constructor {} {
     if { [istarget nvptx-*-*] } {
 	return 0
     }
@@ -792,6 +848,10 @@ proc check_effective_target_fgraphite {} {
 # code, 0 otherwise.
 
 proc check_effective_target_fopenacc {} {
+    # nvptx can be built with the device-side bits of openacc, but it
+    # does not make sense to test it as an openacc host.
+    if [istarget nvptx-*-*] { return 0 }
+
     return [check_no_compiler_messages fopenacc object {
 	void foo (void) { }
     } "-fopenacc"]
@@ -801,6 +861,10 @@ proc check_effective_target_fopenacc {} {
 # code, 0 otherwise.
 
 proc check_effective_target_fopenmp {} {
+    # nvptx can be built with the device-side bits of libgomp, but it
+    # does not make sense to test it as an openmp host.
+    if [istarget nvptx-*-*] { return 0 }
+
     return [check_no_compiler_messages fopenmp object {
 	void foo (void) { }
     } "-fopenmp"]
@@ -922,6 +986,43 @@ proc check_effective_target_fpic { } {
     return 0
 }
 
+# On AArch64, if -fpic is not supported, then we will fall back to -fPIC
+# silently.  So, we can't rely on above "check_effective_target_fpic" as it
+# assumes compiler will give warning if -fpic not supported.  Here we check
+# whether binutils supports those new -fpic relocation modifiers, and assume
+# -fpic is supported if there is binutils support.  GCC configuration will
+# enable -fpic for AArch64 in this case.
+#
+# "check_effective_target_aarch64_small_fpic" is dedicated for checking small
+# memory model -fpic relocation types.
+
+proc check_effective_target_aarch64_small_fpic { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_small_fpic object {
+	    void foo (void) { asm ("ldr	x0, [x2, #:gotpage_lo15:globalsym]"); }
+	}]
+    } else {
+	return 0
+    }
+}
+
+# On AArch64, instruction sequence for TLS LE under -mtls-size=32 will utilize
+# the relocation modifier "tprel_g0_nc" together with MOVK, it's only supported
+# in binutils since 2015-03-04 as PR gas/17843.
+#
+# This test directive make sure binutils support all features needed by TLS LE
+# under -mtls-size=32 on AArch64.
+
+proc check_effective_target_aarch64_tlsle32 { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_tlsle32 object {
+	    void foo (void) { asm ("movk x1,#:tprel_g0_nc:t1"); }
+	}]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if -shared is supported, as in no warnings or errors
 # emitted, 0 otherwise.
 
@@ -939,6 +1040,8 @@ proc check_effective_target_shared { } {
 
 proc check_effective_target_pie { } {
     if { [istarget *-*-darwin\[912\]*]
+	 || [istarget *-*-dragonfly*]
+	 || [istarget *-*-freebsd*]
 	 || [istarget *-*-linux*]
 	 || [istarget *-*-gnu*] } {
 	return 1;
@@ -1100,11 +1203,22 @@ proc check_effective_target_nonpic { } {
 
 # Return 1 if the current multilib generates PIE by default.
 
-proc check_effective_target_pie { } {
-    return [check_no_compiler_messages pie assembly {
+proc check_effective_target_pie_enabled { } {
+    return [check_no_compiler_messages pie_enabled assembly {
 	#ifndef __PIE__
 	#error unsupported
 	#endif
+    }]
+}
+
+# Return 1 if the target generates -fstack-protector by default.
+
+proc check_effective_target_fstack_protector_enabled {} {
+    return [ check_no_compiler_messages fstack_protector_enabled assembly {
+    #if !defined(__SSP__) && !defined(__SSP_ALL__) && \
+      !defined(__SSP_STRONG__) && !defined(__SSP_EXPICIT__)
+    #error unsupported
+    #endif
     }]
 }
 
@@ -2360,6 +2474,10 @@ proc check_effective_target_aarch64_big_endian { } {
 
 # Return 1 if this is a AArch64 target supporting little endian
 proc check_effective_target_aarch64_little_endian { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages aarch64_little_endian assembly {
         #if !defined(__aarch64__) || defined(__AARCH64EB__)
         #error FOO
@@ -2369,6 +2487,10 @@ proc check_effective_target_aarch64_little_endian { } {
 
 # Return 1 if this is an arm target using 32-bit instructions
 proc check_effective_target_arm32 { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm32 assembly {
 	#if !defined(__arm__) || (defined(__thumb__) && !defined(__thumb2__))
 	#error !__arm || __thumb__ && !__thumb2__
@@ -2378,6 +2500,10 @@ proc check_effective_target_arm32 { } {
 
 # Return 1 if this is an arm target not using Thumb
 proc check_effective_target_arm_nothumb { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm_nothumb assembly {
 	#if !defined(__arm__) || (defined(__thumb__) || defined(__thumb2__))
 	#error !__arm__ || __thumb || __thumb2__
@@ -2387,6 +2513,10 @@ proc check_effective_target_arm_nothumb { } {
 
 # Return 1 if this is a little-endian ARM target
 proc check_effective_target_arm_little_endian { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm_little_endian assembly {
 	#if !defined(__arm__) || !defined(__ARMEL__)
 	#error !__arm__ || !__ARMEL__
@@ -2396,6 +2526,10 @@ proc check_effective_target_arm_little_endian { } {
 
 # Return 1 if this is an ARM target that only supports aligned vector accesses
 proc check_effective_target_arm_vect_no_misalign { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm_vect_no_misalign assembly {
 	#if !defined(__arm__) \
 	    || (defined(__ARM_FEATURE_UNALIGNED) \
@@ -2646,7 +2780,11 @@ proc check_effective_target_arm_neon_fp16_ok_nocache { } {
     set et_arm_neon_fp16_flags ""
     if { [check_effective_target_arm32] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-fp16"
-	               "-mfpu=neon-fp16 -mfloat-abi=softfp"} {
+		       "-mfpu=neon-fp16 -mfloat-abi=softfp"
+		       "-mfp16-format=ieee"
+		       "-mfloat-abi=softfp -mfp16-format=ieee"
+		       "-mfpu=neon-fp16 -mfp16-format=ieee"
+		       "-mfpu=neon-fp16 -mfloat-abi=softfp -mfp16-format=ieee"} {
 	    if { [check_no_compiler_messages_nocache arm_neon_fp_16_ok object {
 		#include "arm_neon.h"
 		float16x4_t
@@ -2667,6 +2805,21 @@ proc check_effective_target_arm_neon_fp16_ok_nocache { } {
 proc check_effective_target_arm_neon_fp16_ok { } {
     return [check_cached_effective_target arm_neon_fp16_ok \
 		check_effective_target_arm_neon_fp16_ok_nocache]
+}
+
+proc check_effective_target_arm_neon_fp16_hw { } {
+    if {! [check_effective_target_arm_neon_fp16_ok] } {
+	return 0
+    }
+    global et_arm_neon_fp16_flags
+    check_runtime_nocache arm_neon_fp16_hw {
+	int
+	main (int argc, char **argv)
+	{
+	  asm ("vcvt.f32.f16 q1, d0");
+	  return 0;
+	}
+    } $et_arm_neon_fp16_flags
 }
 
 proc add_options_for_arm_neon_fp16 { flags } {
@@ -2941,6 +3094,14 @@ proc check_effective_target_arm_cortex_m { } {
     } "-mthumb"]
 }
 
+# Return 1 if this compilation turns on string_ops_prefer_neon on.
+
+proc check_effective_target_arm_tune_string_ops_prefer_neon { } {
+    return [check_no_messages_and_pattern arm_tune_string_ops_prefer_neon "@string_ops_prefer_neon:\t1" assembly {
+	int foo (void) { return 0; }
+    } "-O2 -mprint-tune-info" ]
+}
+
 # Return 1 if the target supports executing NEON instructions, 0
 # otherwise.  Cache the result.
 
@@ -3034,6 +3195,15 @@ proc check_effective_target_mips_loongson { } {
 	#error !__mips_loongson_vector_rev
 	#endif
     }]
+}
+
+# Return 1 if this is a MIPS target that supports the legacy NAN.
+
+proc check_effective_target_mips_nanlegacy { } {
+    return [check_no_compiler_messages nanlegacy assembly {
+	#include <stdlib.h>
+	int main () { return 0; }
+    } "-mnan=legacy"]
 }
 
 # Return 1 if this is an ARM target that adheres to the ABI for the ARM
@@ -3229,6 +3399,25 @@ proc check_effective_target_powerpc_htm_ok { } {
     }
 }
 
+# Return 1 if the target supports executing HTM hardware instructions,
+# 0 otherwise.  Cache the result.
+
+proc check_htm_hw_available { } {
+    return [check_cached_effective_target htm_hw_available {
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    check_runtime_nocache htm_hw_available {
+		int main()
+		{
+		  __builtin_ttest ();
+		  return 0;
+		}
+	    } "-mhtm"
+	}
+    }]
+}
 # Return 1 if this is a PowerPC target supporting -mcpu=cell.
 
 proc check_effective_target_powerpc_ppu_ok { } {
@@ -3566,6 +3755,8 @@ proc check_effective_target_vect_double { } {
 	    }
 	} elseif { [istarget spu-*-*] } {
 	   set et_vect_double_saved 1
+	} elseif { [istarget powerpc*-*-*] && [check_vsx_hw_available] } {
+	   set et_vect_double_saved 1
 	}
     }
 
@@ -3599,23 +3790,23 @@ proc check_effective_target_vect_long_long { } {
 #
 # This won't change for different subtargets so cache the result.
 
-proc check_effective_target_vect_no_int_max { } {
-    global et_vect_no_int_max_saved
+proc check_effective_target_vect_no_int_min_max { } {
+    global et_vect_no_int_min_max_saved
 
-    if [info exists et_vect_no_int_max_saved] {
-	verbose "check_effective_target_vect_no_int_max: using cached result" 2
+    if [info exists et_vect_no_int_min_max_saved] {
+	verbose "check_effective_target_vect_no_int_min_max: using cached result" 2
     } else {
-	set et_vect_no_int_max_saved 0
+	set et_vect_no_int_min_max_saved 0
 	if { [istarget sparc*-*-*]
 	     || [istarget spu-*-*]
 	     || [istarget alpha*-*-*]
 	     || ([istarget mips*-*-*]
 		 && [check_effective_target_mips_loongson]) } {
-	    set et_vect_no_int_max_saved 1
+	    set et_vect_no_int_min_max_saved 1
 	}
     }
-    verbose "check_effective_target_vect_no_int_max: returning $et_vect_no_int_max_saved" 2
-    return $et_vect_no_int_max_saved
+    verbose "check_effective_target_vect_no_int_min_max: returning $et_vect_no_int_min_max_saved" 2
+    return $et_vect_no_int_min_max_saved
 }
 
 # Return 1 if the target plus current options does not support a vector
@@ -4164,6 +4355,7 @@ proc check_effective_target_vect_no_align { } {
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [check_effective_target_arm_vect_no_misalign]
+	     || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	     || ([istarget mips*-*-*]
 		 && [check_effective_target_mips_loongson]) } {
 	    set et_vect_no_align_saved 1
@@ -4185,6 +4377,7 @@ proc check_effective_target_vect_hw_misalign { } {
     } else {
         set et_vect_hw_misalign_saved 0
        if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+            || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	    || [istarget aarch64*-*-*] } {
           set et_vect_hw_misalign_saved 1
        }
@@ -4276,7 +4469,8 @@ proc check_effective_target_vect_natural_alignment { } {
     } else {
         set et_vect_natural_alignment_saved 1
         if { [check_effective_target_arm_eabi]
-	     || [istarget nvptx-*-*] } {
+	     || [istarget nvptx-*-*]
+	     || [istarget s390*-*-*] } {
             set et_vect_natural_alignment_saved 0
         }
     }
@@ -4401,7 +4595,8 @@ proc check_effective_target_vect_char_mult { } {
 	if { [istarget aarch64*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
-            || [check_effective_target_arm32] } {
+             || [check_effective_target_arm32]
+	     || [check_effective_target_powerpc_altivec] } {
 	   set et_vect_char_mult_saved 1
 	}
     }
@@ -4566,7 +4761,8 @@ proc check_effective_target_vect64 { } {
         set et_vect64_saved 0
         if { ([istarget arm*-*-*]
 	      && [check_effective_target_arm_neon_ok]
-	      && [check_effective_target_arm_little_endian]) } {
+	      && [check_effective_target_arm_little_endian])
+             || [istarget sparc*-*-*] } {
            set et_vect64_saved 1
         }
     }
@@ -4592,6 +4788,27 @@ proc check_effective_target_vect_call_copysignf { } {
 
     verbose "check_effective_target_vect_call_copysignf: returning $et_vect_call_copysignf_saved" 2
     return $et_vect_call_copysignf_saved
+}
+
+# Return 1 if the target supports hardware square root instructions.
+
+proc check_effective_target_sqrt_insn { } {
+    global et_sqrt_insn_saved
+
+    if [info exists et_sqrt_insn_saved] {
+	verbose "check_effective_target_hw_sqrt: using cached result" 2
+    } else {
+	set et_sqrt_insn_saved 0
+	if { [istarget x86_64-*-*]
+	     || [istarget powerpc*-*-*]
+	     || [istarget aarch64*-*-*]
+	     || ([istarget arm*-*-*] && [check_effective_target_arm_vfp_ok]) } {
+	   set et_sqrt_insn_saved 1
+	}
+    }
+
+    verbose "check_effective_target_hw_sqrt: returning et_sqrt_insn_saved" 2
+    return $et_sqrt_insn_saved
 }
 
 # Return 1 if the target supports vector sqrtf calls.
@@ -5039,18 +5256,11 @@ proc check_effective_target_bswap32 { } {
 proc check_effective_target_bswap64 { } {
     global et_bswap64_saved
 
-    if [info exists et_bswap64_saved] {
-        verbose "check_effective_target_bswap64: using cached result" 2
-    } else {
-	set et_bswap64_saved 0
-	if { [is-effective-target bswap]
-	     && [is-effective-target lp64] } {
-	   set et_bswap64_saved 1
-	}
+    # expand_unop can expand 64-bit byte swap on 32-bit targets
+    if { [is-effective-target bswap] && [is-effective-target int32plus] } {
+	return 1
     }
-
-    verbose "check_effective_target_bswap64: returning $et_bswap64_saved" 2
-    return $et_bswap64_saved
+    return 0
 }
 
 # Return 1 if the target supports atomic operations on "int" and "long".
@@ -5234,6 +5444,7 @@ proc is-effective-target { arg } {
 	  "p8vector_hw"    { set selected [check_p8vector_hw_available] }
 	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
 	  "dfp_hw"         { set selected [check_dfp_hw_available] }
+	  "htm_hw"         { set selected [check_htm_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
@@ -5257,6 +5468,7 @@ proc is-effective-target-keyword { arg } {
 	  "p8vector_hw"    { return 1 }
 	  "ppc_recip_hw"   { return 1 }
 	  "dfp_hw"         { return 1 }
+	  "htm_hw"         { return 1 }
 	  "named_sections" { return 1 }
 	  "gc_sections"    { return 1 }
 	  "cxa_atexit"     { return 1 }
@@ -5823,15 +6035,23 @@ proc check_effective_target_c++ { } {
  return 0
 }
 
+set cxx_default "c++14"
 # Check whether the current active language standard supports the features
-# of C++11/C++14 by checking for the presence of one of the -std
-# flags.  This assumes that the default for the compiler is C++98, and that
+# of C++11/C++14 by checking for the presence of one of the -std flags.
+# This assumes that the default for the compiler is $cxx_default, and that
 # there will never be multiple -std= arguments on the command line.
 proc check_effective_target_c++11_only { } {
+    global cxx_default
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }]
+    if [check-flags { { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }] {
+	return 1
+    }
+    if { $cxx_default == "c++11" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
 }
 proc check_effective_target_c++11 { } {
     if [check_effective_target_c++11_only] {
@@ -5843,14 +6063,21 @@ proc check_effective_target_c++11_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return ![check_effective_target_c++14]
+    return [expr ![check_effective_target_c++14] ]
 }
 
 proc check_effective_target_c++14_only { } {
+    global cxx_default
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { -std=c++14 -std=gnu++14 -std=c++14 -std=gnu++14 } }]
+    if [check-flags { { } { } { -std=c++14 -std=gnu++14 -std=c++14 -std=gnu++14 } }] {
+	return 1
+    }
+    if { $cxx_default == "c++14" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
 }
 
 proc check_effective_target_c++14 { } {
@@ -5863,21 +6090,35 @@ proc check_effective_target_c++14_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return ![check_effective_target_c++1z]
+    return [expr ![check_effective_target_c++1z] ]
 }
 
 proc check_effective_target_c++98_only { } {
+    global cxx_default
     if ![check_effective_target_c++] {
 	return 0
     }
-    return ![check_effective_target_c++11]
+    if [check-flags { { } { } { -std=c++98 -std=gnu++98 -std=c++03 -std=gnu++03 } }] {
+	return 1
+    }
+    if { $cxx_default == "c++98" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
 }
 
 proc check_effective_target_c++1z_only { } {
+    global cxx_default
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { -std=c++1z -std=gnu++1z } }]
+    if [check-flags { { } { } { -std=c++17 -std=gnu++17 -std=c++1z -std=gnu++1z } }] {
+	return 1
+    }
+    if { $cxx_default == "c++17" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
 }
 proc check_effective_target_c++1z { } {
     return [check_effective_target_c++1z_only]
@@ -5929,7 +6170,7 @@ proc check_vect_support_and_set_flags { } {
 
         lappend DEFAULT_VECTCFLAGS "-maltivec"
         if [check_p8vector_hw_available] {
-            lappend DEFAULT_VECTCFLAGS "-mpower8-vector" "-mno-allow-movmisalign"
+            lappend DEFAULT_VECTCFLAGS "-mpower8-vector"
         } elseif [check_vsx_hw_available] {
             lappend DEFAULT_VECTCFLAGS "-mvsx" "-mno-allow-movmisalign"
         }
@@ -6197,4 +6438,14 @@ proc check_effective_target_pie_copyreloc { } {
     }
 
     return $pie_copyreloc_available_saved
+}
+
+# Return 1 if the target uses comdat groups.
+
+proc check_effective_target_comdat_group {} {
+    return [check_no_messages_and_pattern comdat_group "\.section\[^\n\r]*,comdat" assembly {
+	// C++
+	inline int foo () { return 1; }
+	int (*fn) () = foo;
+    }]
 }

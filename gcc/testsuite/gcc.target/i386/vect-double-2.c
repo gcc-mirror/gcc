@@ -32,4 +32,3 @@ sse2_test (void)
 }
 
 /* { dg-final { scan-tree-dump-not "vectorized 1 loops" "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

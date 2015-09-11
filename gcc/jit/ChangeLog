@@ -1,3 +1,721 @@
+2015-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/contexts.rst
+	(gccjit::context::set_bool_use_external_driver): New.
+	* docs/internals/test-hello-world.exe.log.txt: Update.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_5): New.
+	* docs/topics/contexts.rst
+	(gcc_jit_context_set_bool_use_external_driver): New.
+	* jit-common.h (enum inner_bool_option): Add
+	INNER_BOOL_OPTION_USE_EXTERNAL_DRIVER.
+	* jit-playback.c (gcc_driver_name): New global.
+	(gcc:jit::playback::context::invoke_driver): Split out second
+	half into...
+	(gcc::jit::playback::context::invoke_embedded_driver): ...this new
+	function, and...
+	(gcc::jit::playback::context::invoke_external_driver): ...this new
+	function.
+	* jit-playback.h
+	(gcc::jit::playback::context::get_inner_bool_option): New.
+	(gcc::jit::playback::context::invoke_embedded_driver): New.
+	(gcc::jit::playback::context::invoke_external_driver): New.
+	* jit-recording.c (inner_bool_option_reproducer_strings):
+	Add entry for INNER_BOOL_OPTION_USE_EXTERNAL_DRIVER.
+	* libgccjit++.h
+	(gccjit::context::set_bool_use_external_driver): New.
+	* libgccjit.c (gcc_jit_context_set_bool_use_external_driver): New.
+	* libgccjit.h (gcc_jit_context_set_bool_use_external_driver): New.
+	(LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver):
+	New.
+	* libgccjit.map (LIBGCCJIT_ABI_5): New.
+	* notes.txt: Show invocation of embedded copy of driver.
+	* docs/internals/test-hello-world.exe.log.txt: Update
+
+2015-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (invoke_driver): On OS X, add
+	"-Wl,-undefined,dynamic_lookup" to the driver arguments.
+
+2015-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_4): New.
+	* docs/topics/contexts.rst (GCC_JIT_BOOL_OPTION_DUMP_SUMMARY):
+	We no longer show a profile.
+	* docs/topics/index.rst (Topic Reference): Add performance.rst.
+	* docs/topics/performance.rst: New file.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::context::compile): Add timer
+	param when constructing the "toplev" instance.
+	(gcc::jit::playback::context::acquire_mutex): Add timer param when
+	constructing auto_timevar instance.
+	(gcc::jit::playback::context::make_fake_args): If we have a timer,
+	add "-ftime-report".
+	(gcc::jit::playback::context::invoke_driver): Add timer param when
+	constructing auto_timevar instance.
+	(gcc::jit::playback::context::dlopen_built_dso): Likewise.
+	* jit-playback.h (gcc::jit::playback::context::get_timer): New accessor.
+	* jit-recording.c: Include timevar.h.
+	(gcc::jit::recording::context::context): Initialize field "m_timer".
+	* jit-recording.h: Add forward declaration of class timer.
+	(gcc::jit::recording::context::set_timer): New method.
+	(gcc::jit::recording::context::get_timer): New method.
+	(gcc::jit::recording::context::m_timer): New field.
+	* libgccjit++.h (gccjit::timer): New class.
+	(gccjit::auto_time): New class.
+	(gccjit::context::set_timer): New method.
+	(gccjit::context::get_timer): New.
+	(gccjit::timer::timer): New.
+	(gccjit::timer::push): New.
+	(gccjit::timer::pop): New.
+	(timer::print): New.
+	(timer::get_inner_timer): New.
+	(timer::release): New.
+	(auto_time::auto_time): New.
+	(auto_time::~auto_time): New.
+	* libgccjit.c: Include timevar.h.
+	(struct gcc_jit_timer): New.
+	(gcc_jit_timer_new): New function.
+	(gcc_jit_timer_release): New function.
+	(gcc_jit_context_set_timer): New function.
+	(gcc_jit_context_get_timer): New function.
+	(gcc_jit_timer_push): New function.
+	(gcc_jit_timer_pop): New function.
+	(gcc_jit_timer_print): New function.
+	* libgccjit.h (LIBGCCJIT_HAVE_TIMING_API): New macro.
+	(gcc_jit_timer): New typedef.
+	(gcc_jit_timer_new): New function.
+	(gcc_jit_timer_release): New function.
+	(gcc_jit_context_set_timer): New function.
+	(gcc_jit_context_get_timer): New function.
+	(gcc_jit_timer_push): New function.
+	(gcc_jit_timer_pop): New function.
+	(gcc_jit_timer_print): New function.
+	* libgccjit.map (LIBGCCJIT_ABI_4): New.
+	(gcc_jit_timer_new): New function.
+	(gcc_jit_timer_release): New function.
+	(gcc_jit_context_set_timer): New function.
+	(gcc_jit_context_get_timer): New function.
+	(gcc_jit_timer_push): New function.
+	(gcc_jit_timer_pop): New function.
+	(gcc_jit_timer_print): New function.
+
+2015-07-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c (invoke_driver): Convert local "argvec"
+	to an auto_argvec, so that it owns copies of the strings,
+	rather than borrows them, updating ADD_ARG to use xstrdup
+	and special-casing the NULL terminator to avoid
+	xstrdup (NULL).  Call add_multilib_driver_arguments at the front
+	of the arguments.
+	(MULTILIB_DEFAULTS): Provide a default definition.
+	(multilib_defaults_raw): New constant array.
+	(gcc::jit::playback::context::add_multilib_driver_arguments): New
+	method.
+	* jit-playback.h
+	(gcc::jit::playback::context::add_multilib_driver_arguments): New
+	method.
+	* docs/internals/test-hello-world.exe.log.txt: Update.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Overview of code structure): Add note
+	that the implementation is in C++, despite the .c extension.
+	(Submitting patches): New subsection.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c: Adjust includes for flags.h changes.
+	* jit-common.h: Likewise.
+	* jit-playback.c: Likewise.
+
+2015-07-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66783
+	* libgccjit.c (gcc_jit_context_new_field): Show name of field in
+	"unknown size" error message.
+	(gcc_jit_struct_set_fields): Show name of struct in error message.
+	(gcc_jit_context_new_global): Show name of global in
+	"unknown size" error message.
+	(gcc_jit_function_new_local): Likewise for local.
+
+2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c: Adjust includes.
+	* jit-common.h: Likewise.
+	* jit-playback.c: Likewise.
+
+2015-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66783
+	* jit-recording.h: Within namespace gcc:jit::recording...
+	(type::has_known_size): New virtual function.
+	(struct_has_known_size): New function.
+	* libgccjit.c (gcc_jit_context_new_field): Verify that the type
+	has a known size.
+	(gcc_jit_context_new_global): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+
+2015-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66779
+	* dummy-frontend.c (jit_langhook_type_for_mode): Ensure that we
+	handle modes QI, HI, SI, DI, TI.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66700
+	* jit-playback.c (jit_mark_addressable): New function.
+	(gcc::jit::playback::lvalue::get_address): Call
+	jit_mark_addressable on the underlying tree.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/types.rst (gcc_jit_context_new_union_type): Add
+	documentation.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/contexts.rst (gcc_jit_context_set_bool_option):
+	Clarify lack of lifetime requirements on (const char *) parameter.
+	* docs/topics/expressions.rst
+	(gcc_jit_context_new_string_literal): Likewise.
+	(gcc_jit_context_new_global): Likewise.
+	* docs/topics/functions.rst (gcc_jit_context_new_param): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_function_new_block): Likewise.
+	(gcc_jit_block_add_comment): Likewise.
+	* docs/topics/locations.rst (gcc_jit_context_new_location):
+	Likewise.
+	* docs/topics/types.rst (gcc_jit_context_new_field): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/functions.rst (Blocks): Add switch statements to
+	list of ways to terminate a block.
+	(gccjit::block::end_with_switch): Add function description.
+	(gccjit::case_): Add class.
+	(gccjit::context::new_case): Add function description.
+	* docs/cp/topics/objects.rst: Add "case_" to class hierarchy.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_3): New.
+	* docs/topics/functions.rst (Blocks): Add switch statements to
+	list of ways to terminate a block.
+	(gcc_jit_block_end_with_switch): Add function description.
+	(gcc_jit_case): Add type.
+	(gcc_jit_context_new_case): Add function description.
+	(gcc_jit_case_as_object): Add function description.
+	* docs/topics/objects.rst: Add gcc_jit_case to class hierarchy.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::recording::case_): Add forward decl.
+	(gcc::jit::playback::case_): Add forward decl.
+	* jit-playback.c (add_case): New function.
+	(gcc::jit::playback::block::add_switch): New function.
+	* jit-playback.h (gcc::jit::playback::case_): New struct.
+	(gcc::jit::playback::block::get_function): New method.
+	(gcc::jit::playback::block::add_switch): New method.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::new_case): New method.
+	(recording::function::validate): Update for change to
+	get_successor_blocks.
+	(recording::block::end_with_switch): New method.
+	(recording::block::get_successor_blocks): Update to support an
+	arbitrary number of successor blocks.
+	(recording::block::dump_edges_to_dot): Likewise.
+	(memento_of_new_rvalue_from_const <int>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <long>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <double>::get_wide_int): New.
+	(memento_of_new_rvalue_from_const <void *>::get_wide_int): New.
+	(recording::statement::get_successor_blocks): Update to support an
+	arbitrary number of successor blocks.
+	(recording::conditional::get_successor_blocks): Likewise.
+	(recording::jump::get_successor_blocks): Likewise.
+	(recording::return_::get_successor_blocks): Likewise.
+	(recording::case_::write_reproducer): New.
+	(recording::case_::make_debug_string): New.
+	(recording::switch_::switch_): New.
+	(recording::switch_::replay_into): New.
+	(recording::switch_::get_successor_blocks): New.
+	(recording::switch_::make_debug_string): New.
+	(recording::switch_::write_reproducer): New.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(context::new_case): New.
+	(rvalue::is_constant): New.
+	(rvalue::get_wide_int): New.
+	(block::end_with_switch): New.
+	(block::get_successor_blocks): Update to support an arbitrary
+	number of successor blocks.
+	(memento_of_new_rvalue_from_const::is_constant): New.
+	(memento_of_new_rvalue_from_const::get_wide_int): New.
+	(statement::get_successor_blocks): Update to support an arbitrary
+	number of successor blocks.
+	(conditional::get_successor_blocks): Likewise.
+	(jump::get_successor_blocks): Likewise.
+	(return_::get_successor_blocks): Likewise.
+	(case_): New subclass of memento.
+	(switch_): New subclass of statement.
+	* libgccjit++.h (gccjit::case_): New subclass of gccjit::object.
+	(gccjit::context::new_case): New method.
+	(gccjit::block::end_with_switch): New method.
+	(gccjit::case_::case): New ctors.
+	(gccjit::case_::get_inner_case): New method.
+	* libgccjit.c: Include "typed-splay-tree.h"
+	(struct gcc_jit_case): New.
+	(gcc_jit_context_new_case): New function.
+	(gcc_jit_case_as_object): New function.
+	(valid_dest_for_switch): New function.
+	(valid_case_for_switch): New function.
+	(class api_call_validator): New class.
+	(class case_range_validator): New class.
+	(case_range_validator::case_range_validator): New.
+	(case_range_validator::validate): New.
+	(case_range_validator::case_compare): New.
+	(case_range_validator::get_wide_int): new.
+	(gcc_jit_block_end_with_switch): New.
+	* libgccjit.h: Add gcc_jit_case to class hierarchy comment.
+	(gcc_jit_case): New typedef.
+	(gcc_jit_context_new_case): New function.
+	(gcc_jit_case_as_object): New function.
+	(gcc_jit_block_end_with_switch): New function.
+	(LIBGCCJIT_HAVE_SWITCH_STATEMENTS): New.
+	* libgccjit.map: Add gcc_jit_block_end_with_switch,
+	gcc_jit_case_as_object and gcc_jit_context_new_case.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66546
+	* docs/cp/topics/contexts.rst
+	(gccjit::context::set_bool_allow_unreachable_blocks): New.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_2): New.
+	* docs/topics/contexts.rst (Options): Add notes discussing the
+	transition from enums to entrypoints for new options.
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): New.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::inner_bool_option): New enum.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::context): Handle m_inner_bool_options.
+	(recording::context::set_inner_bool_option): New.
+	(inner_bool_option_reproducer_strings): New.
+	(recording::context::log_all_options): Log the "inner" bool
+	options.
+	(recording::context::log_inner_bool_option): New.
+	(recording::context::dump_reproducer_to_file): Write initializers
+	for "inner" bool options.
+	(recording::function::validate): Don't check for block
+	reachability if INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS is set.
+	* jit-recording.h: Within namespace gcc::jit...
+	(recording::context::set_inner_bool_option): New.
+	(recording::context::get_inner_bool_option): New.
+	(recording::context::log_inner_bool_option): New.
+	(recording::context::m_inner_bool_options): New.
+	* libgccjit++.h
+	(gccjit::context::set_bool_allow_unreachable_blocks): New.
+	* libgccjit.c
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): New.
+	* libgccjit.h: Add note about options present in the
+	initial release of libgccjit.
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): New API
+	entrypoint.
+	(LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks):
+	New macro.
+	* libgccjit.map (LIBGCCJIT_ABI_2): New, containing...
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): ...this new
+	entrypoint.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66628
+	* docs/cp/topics/contexts.rst (Additional command-line options):
+	New section.
+	* docs/topics/compatibility.rst: New file.
+	* docs/topics/contexts.rst (Additional command-line options): New
+	section.
+	* docs/topics/index.rst: Add compatibility.rst.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (make_fake_args): Add call to
+	append_command_line_options.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::~context): Free the optnames within
+	m_command_line_options.
+	(recording::context::set_bool_option): Likewise.
+	(recording::context::add_command_line_option): New method.
+	(recording::context::append_command_line_options): New method.
+	(recording::context::dump_reproducer_to_file): Add command-line
+	options.
+	* jit-recording.h: Within namespace gcc::jit...
+	(recording::context::add_command_line_option): New method.
+	(recording::context::append_command_line_options): New method.
+	(recording::context::m_command_line_options): New field.
+	* libgccjit++.h (gccjit::context::add_command_line_option): New
+	method.
+	* libgccjit.c (gcc_jit_context_add_command_line_option): New API
+	entrypoint.
+	* libgccjit.h (gcc_jit_context_add_command_line_option): New API
+	entrypoint.
+	(LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option): New
+	macro.
+	* libgccjit.map: Put existing symbols within LIBGCCJIT_ABI_0; add
+	LIBGCCJIT_ABI_1 and gcc_jit_context_add_command_line_option.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c
+	(gcc::jit::recording::context::dump_reproducer_to_file):
+	Add pragma to generated reproducers to disable -Wunused-variable.
+	Fix handling of NULL string options.
+
+2015-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/expressions.rst: Remove stray semicolon.
+	* docs/cp/topics/functions.rst: Remove stray backslash.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* jit-playback.c: Likewise.
+
+2015-06-25  Andrew Macleod  <amacleod@redhat.com>
+
+	* jit-common.h: Don't include alias.h.
+
+2015-06-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.c (gcc_jit_lvalue_access_field): Verify that the field
+	is for the correct struct.
+	(gcc_jit_rvalue_access_field): Likewise.
+
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c: Do not include input.h, line-map.h or is-a.h.
+	* jit-common.h: Likewise.
+	* jit-playback.c: Likewise.
+
+2015-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/66539
+	* jit-recording.c: Within namespace gcc::jit::recording::
+	(rvalue::get_debug_string_parens): New function.
+	(binary_op::make_debug_string): Update to mimic C precedence
+	rules.
+	(binary_op_precedence): New array.
+	(binary_op::get_precedence): New function.
+	(comparison::make_debug_string): Update to mimic C precedence
+	rules.
+	(comparison_precedence): New array.
+	(comparison::get_precedence): New function.
+	(cast::make_debug_string): Update to mimic C precedence rules.
+	(call::make_debug_string): Likewise.
+	(call_through_ptr::make_debug_string): Likewise.
+	(array_access::make_debug_string): Likewise.
+	(access_field_of_lvalue::make_debug_string): Likewise.
+	(access_field_rvalue::make_debug_string): Likewise.
+	(dereference_field_rvalue::make_debug_string): Likewise.
+	(dereference_rvalue::make_debug_string): Likewise.
+	(get_address_of_lvalue::make_debug_string): Likewise.
+	* jit-recording.h: Within namespace gcc::jit::recording::
+	(precedence): New enum.
+	(rvalue::rvalue): Initialize field "m_parenthesized_string".
+	(rvalue::get_debug_string_parens): New method.
+	(rvalue::get_precedence): New pure virtual function.
+	(rvalue::m_parenthesized_string): New field.
+	(param::get_precedence): New function.
+	(global::get_precedence): New function.
+	(memento_of_new_rvalue_from_const::get_precedence): New function.
+	(memento_of_new_string_literal::get_precedence): New function.
+	(unary_op::get_precedence): New function.
+	(binary_op::get_precedence): New function.
+	(comparison::get_precedence): New function.
+	(cast::get_precedence): New function.
+	(call::get_precedence): New function.
+	(call_through_ptr::get_precedence): New function.
+	(array_access::get_precedence): New function.
+	(access_field_of_lvalue::get_precedence): New function.
+	(access_field_rvalue::get_precedence): New function.
+	(dereference_field_rvalue::get_precedence): New function.
+	(dereference_rvalue::get_precedence): New function.
+	(get_address_of_lvalue::get_precedence): New function.
+	(local::get_precedence): New function.
+
+2015-06-09  Matthias Klose  <doko@ubuntu.com>
+
+	* Make-lang.in (jit.install-common): Install headers using INSTALL_DATA.
+
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c : Adjust include files.
+	* jit-common.h : Likewise.
+	* jit-playback.c : Likewise.
+
+2015-06-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c
+	(jit_langhook_post_compilation_parsing_cleanups): Remove.
+	(LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS): Remove
+	* jit-playback.c (gcc::jit::playback::context::new_global): Add
+	call to varpool_node::finalize_decl.
+	(gcc::jit::playback::context::finalize_global_decls): Remove.
+	* jit-playback.h
+	(gcc::jit::playback::context::finalize_global_decls): Remove.
+
+2015-06-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c (jit_langhook_write_globals): Rename to...
+	(jit_langhook_post_compilation_parsing_cleanups): ...this, and
+	eliminate calls to finalize_compilation_unit and
+	write_global_decls_2.
+	(LANG_HOOKS_WRITE_GLOBALS): Rename to...
+	(LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS): ...this and
+	redirect from jit_langhook_write_globals to
+	jit_langhook_post_compilation_parsing_cleanups.
+	* jit-playback.c
+	(gcc::jit::playback::context::write_global_decls_1): Rename to...
+	(gcc::jit::playback::context::finalize_global_decls): ...this.
+	(gcc::jit::playback::context::write_global_decls_1): Delete.
+	* jit-playback.h
+	(gcc::jit::playback::context::write_global_decls_1): Rename to...
+	(gcc::jit::playback::context::finalize_global_decls): ...this.
+	(gcc::jit::playback::context::write_global_decls_1): Delete.
+
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c: Adjust includes for restructured coretypes.h.
+	* jit-common.h: Likewise.
+	* jit-playback.c: Likewise.
+
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-builtins.c: Include vec.h before target.h.
+
+2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (jit.mostlyclean): Remove shared libraries and object
+	files.
+
+2015-04-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/65691
+	* docs/cp/topics/expressions.rst (Simple expressions): Fix copy
+	and paste error in description of gccjit::context::one.
+	* docs/topics/expressions.rst (Simple expressions): Likewise in
+	description of gcc_jit_context_one.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* jit-recording.c (dump::write): Also check vasprintf return value.
+	(recording::context::add_error_va): Ditto.
+	(recording::string::from_printf): Ditto.
+
+2015-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Packaging notes): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-03-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/intro/tutorial03.rst: Add missing arguments to
+	gccjit::block::end_with_conditional call.  Add on_true/on_false
+	comments.  Tweak the wording.
+	* docs/intro/tutorial03.rst: Add missing arguments to
+	gcc_jit_block_end_with_conditional call.  Add some clarifying
+	comments.
+	* docs/topics/compilation.rst: Tweak the wording to avoid an
+	ambiguous use of "this".
+	* docs/topics/contexts.rst: Fix a typo.
+	* docs/topics/expressions.rst (GCC_JIT_BINARY_OP_MINUS): Remove
+	a stray backtick.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/64625
+	* jit-builtins.c (DEF_FUNCTION_TYPE_VAR_8)
+	(DEF_FUNCTION_TYPE_VAR_12): Remove macros.
+	(DEF_FUNCTION_TYPE_VAR_7, DEF_FUNCTION_TYPE_VAR_11): New macros.
+	* jit-builtins.h (DEF_FUNCTION_TYPE_VAR_8)
+	(DEF_FUNCTION_TYPE_VAR_12): Remove macros.
+	(DEF_FUNCTION_TYPE_VAR_7, DEF_FUNCTION_TYPE_VAR_11): New macros.
+
+2015-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64257
+	* docs/conf.py (html_theme): Change from 'pyramid'
+	to 'sphinxdoc'.
+
+2015-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/contexts.rst (gcc_jit_context_acquire): Fix
+	typo.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-logging.h (gcc::jit::log_user::log): Make const.
+	* jit-recording.c (gcc::jit::recording::context::set_str_option):
+	Log the new value of the option.
+	(gcc::jit::recording::context::set_int_option): Likewise.
+	(gcc::jit::recording::context::set_bool_option): Likewise.
+	(gcc::jit::recording::context::compile): Log the value of all
+	options.
+	(gcc::jit::recording::context::compile_to_file): Likewise.
+	(gcc::jit::recording::context::log_all_options): New function.
+	(gcc::jit::recording::context::log_str_option): New function.
+	(gcc::jit::recording::context::log_int_option): New function.
+	(gcc::jit::recording::context::log_bool_option): New function.
+	* jit-recording.h (gcc::jit::recording::context::log_all_options):
+	New function.
+	(gcc::jit::recording::context::log_str_option): New function.
+	(gcc::jit::recording::context::log_int_option): New function.
+	(gcc::jit::recording::context::log_bool_option): New function.
+	* docs/internals/test-hello-world.exe.log.txt: Update for above
+	changes.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* Make-lang.in (jit_OBJS): Add jit/jit-spec.o and gcc.o.
+	(LIBGCCJIT_FILENAME): Add EXTRA_GCC_OBJS.
+	* jit-playback.c: Include gcc.h.
+	(gcc::jit::playback::context::compile): Move mutex acquisition
+	to before the call to make_fake_args.
+	(append_arg_from_driver): New function.
+	(gcc::jit::playback::context::make_fake_args): On the first call,
+	call into driver_get_configure_time_options to get configure-time
+	default options and cache them.  Add them to the args for
+	toplev::main.
+	* jit-spec.c: New source file.
+	* docs/internals/test-hello-world.exe.log.txt: Update to reflect
+	above changes.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* dummy-frontend.c (jit_langhook_type_for_mode): Support
+	TYPE_MODE (long_long_integer_type_node).
+
+2015-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/test-hello-world.exe.log.txt: Add example version
+	lines.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::dump::get_file): New accessor.
+	* jit-logging.c: Include toplev.h.
+	(gcc::jit::logger::logger): Log the GCC version.
+	* jit-recording.c: Include toplev.h.
+	(gcc:jit::recording::context::dump_reproducer_to_file): Log the
+	GCC version.
+
+2015-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/compilation.rst (gcc_jit_result_get_code): Fix typo.
+	* docs/topics/contexts.rst (gcc_jit_context_get_last_error): The
+	error buffer is only valid until the next call to the context.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* libgccjit.h (gcc_jit_context_get_first_error): Reword the
+	comment to omit mention of compiling.
+	(gcc_jit_context_get_last_error): The error buffer is only valid
+	until the next call to the context.
+
+2015-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64708
+	* config-lang.in (compilers): Drop "libgccjit.so".
+
+2015-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64721
+	* jit-playback.c (gcc::jit::playback::context::compile): Construct
+	toplev instances with init_signals=false.
+
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/results.rst: Rename to...
+	* docs/cp/topics/compilation.rst: ...this, and add section on
+	ahead-of-time compilation.
+	* docs/cp/topics/index.rst: Update for renaming of results.rst
+	to compilation.rst.
+	* docs/examples/emit-alphabet.bf: New file, a sample "brainf"
+	script.
+	* docs/examples/tut05-bf.c: New file, implementing a compiler
+	for "brainf".
+	* docs/internals/test-hello-world.exe.log.txt: Update to reflect
+	changes to logger output.
+	* docs/intro/index.rst: Add tutorial05.rst
+	* docs/intro/tutorial05.rst: New file.
+	* docs/topics/results.rst: Rename to...
+	* docs/topics/compilation.rst: ...this, and add section on
+	ahead-of-time compilation.
+	* docs/topics/index.rst: Update for renaming of results.rst to
+	compilation.rst.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::context::compile): Convert
+	return type from result * to void.  Move the code to convert to
+	dso and dlopen the result to a new pure virtual "postprocess"
+	method.
+	(gcc::jit::playback::compile_to_memory::compile_to_memory): New
+	function.
+	(gcc::jit::playback::compile_to_memory::postprocess): New
+	function, based on playback::context::compile.
+	(gcc::jit::playback::compile_to_file::compile_to_file): New
+	function.
+	(gcc::jit::playback::compile_to_file::postprocess): New function.
+	(gcc::jit::playback::compile_to_file::copy_file): New function.
+	(gcc::jit::playback::context::convert_to_dso): Move internals
+	to...
+	(gcc::jit::playback::context::invoke_driver): New method.  Add
+	"-shared" and "-c" options to driver's argv as needed.
+	* jit-playback.h: Include "timevar.h".
+	(gcc::jit::playback::context::compile): Convert return type from
+	result * to void.
+	(gcc::jit::playback::context::postprocess): New pure virtual
+	function, making this an abstract base class.
+	(gcc::jit::playback::context::get_tempdir): New accessor.
+	(gcc::jit::playback::context::invoke_driver): New function.
+	(class gcc::jit::playback::compile_to_memory): New subclass of
+	playback::context.
+	(class gcc::jit::playback::compile_to_file): Likewise.
+	* jit-recording.c (gcc::jit::recording::context::compile): Use a
+	playback::compile_to_memory, and extract its result.
+	(gcc::jit::recording::context::compile_to_file): New function.
+	* jit-recording.h (gcc::jit::recording::context::compile_to_file):
+	New function.
+	* libgccjit++.h (gccjit::context::compile_to_file): New method.
+	* libgccjit.c (gcc_jit_context_compile): Update log message to
+	clarify that this is an in-memory compile.
+	(gcc_jit_context_compile_to_file): New function.
+	* libgccjit.h (gcc_jit_context): Clarify that you can compile
+	a context more than once, and that you can compile to a file
+	as well as to memory.
+	(gcc_jit_result): Clarify that this is the result of an
+	in-memory compilation.
+	(gcc_jit_context_compile): Clarify that you can compile, and that
+	this is an in-memory compilation.
+	(enum gcc_jit_output_kind): New enum.
+	(gcc_jit_context_compile_to_file): New function.
+	(gcc_jit_context_enable_dump): Clarify comment to cover both forms
+	of compilation.
+	* libgccjit.map (gcc_jit_context_compile_to_file): New API
+	entrypoint.
+	* notes.txt: Update to show the playback::context::postprocess
+	virtual function.
+
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c
+	(gcc::jit::recording::memento_of_new_string_literal::make_debug_string):
+	Add missing format string.
+
+2015-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (lang_checks_parallelized): Add "check-jit".
+	(check_jit_parallelize): Set this to an arbitrary value (10).
+
 2015-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* jit-builtins.h (DEF_FUNCTION_TYPE_VAR_5): Fix spelling of

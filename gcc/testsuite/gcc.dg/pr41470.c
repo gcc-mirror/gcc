@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fexceptions" } */
+/* { dg-require-effective-target alloca } */
 
 void cf (void *);
 

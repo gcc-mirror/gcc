@@ -15,4 +15,3 @@ int foo(int *a, int argc)
   return d + e;
 }
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

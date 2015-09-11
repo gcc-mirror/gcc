@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
 
 #include <string.h>
 #include <stdlib.h>
@@ -40,4 +40,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: invalid device address" } */
+/* { dg-output "invalid device address" } */
+/* { dg-shouldfail "" } */

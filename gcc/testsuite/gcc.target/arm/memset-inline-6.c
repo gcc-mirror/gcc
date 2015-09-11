@@ -1,6 +1,5 @@
 /* { dg-do run } */
-/* { dg-skip-if "Don't inline memset using neon instructions on cortex-a9" { *-*-* } { "-mcpu=cortex-a9" } { "" } } */
-/* { dg-skip-if "Don't inline memset using neon instructions on cortex-a9" { *-*-* } { "-mtune=cortex-a9" } { "" } } */
+/* { dg-skip-if "Don't inline memset using neon instructions" { ! arm_tune_string_ops_prefer_neon } } */
 /* { dg-options "-save-temps -O2 -fno-inline" } */
 /* { dg-add-options "arm_neon" } */
 
@@ -63,6 +62,5 @@ main(void)
 /* { dg-final { scan-assembler-not "bl?\[ \t\]+memset" { target { arm_little_endian && arm_neon } } } } */
 /* { dg-final { scan-assembler-times "vst1" 3 { target { arm_little_endian && arm_neon } } } } */
 /* { dg-final { scan-assembler-times "vstr" 4 { target { arm_little_endian && arm_neon } } } } */
-/* { dg-final { cleanup-saved-temps } } */
 
 

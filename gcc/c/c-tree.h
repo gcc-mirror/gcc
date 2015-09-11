@@ -355,12 +355,12 @@ enum c_declarator_kind {
   cdk_attrs
 };
 
-typedef struct c_arg_tag_d {
+struct c_arg_tag {
   /* The argument name.  */
   tree id;
   /* The type of the argument.  */
   tree type;
-} c_arg_tag;
+};
 
 
 /* Information about the parameters in a function declarator.  */
@@ -671,10 +671,6 @@ extern int current_function_returns_null;
 
 extern int current_function_returns_abnormally;
 
-/* Mode used to build pointers (VOIDmode means ptr_mode).  */
-
-extern machine_mode c_default_pointer_mode;
-
 /* In c-decl.c */
 
 /* Tell the binding oracle what kind of binding we are looking for.  */
@@ -699,7 +695,6 @@ typedef void c_binding_oracle_function (enum c_oracle_request, tree identifier);
 extern c_binding_oracle_function *c_binding_oracle;
 
 extern void c_finish_incomplete_decl (tree);
-extern void c_write_global_declarations (void);
 extern tree c_omp_reduction_id (enum tree_code, tree);
 extern tree c_omp_reduction_decl (tree);
 extern tree c_omp_reduction_lookup (tree, tree);

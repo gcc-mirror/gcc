@@ -23,5 +23,3 @@ void test()
 /* { dg-final { scan-assembler "movnti" } } */
 /* { dg-final { scan-assembler-times "mfence" 1 } } */
 
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

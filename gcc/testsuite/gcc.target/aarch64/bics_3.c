@@ -66,4 +66,3 @@ main (void)
 /* { dg-final { scan-assembler-times "bics\txzr, x\[0-9\]+, x\[0-9\]+" 2 } } */
 /* { dg-final { scan-assembler-times "bics\txzr, x\[0-9\]+, x\[0-9\]+, lsl 2" 1 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

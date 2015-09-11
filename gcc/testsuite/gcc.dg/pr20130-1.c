@@ -12,4 +12,3 @@ int y (int a) {
 	return -(-1 * -a);
 }
 /* { dg-final { scan-tree-dump-times "-a" 3 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

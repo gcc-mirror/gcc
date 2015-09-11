@@ -19,4 +19,3 @@ int bar(char c)
 }
 
 /* { dg-final { scan-tree-dump-times "return 0;" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

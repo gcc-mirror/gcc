@@ -14,4 +14,3 @@ int foo()
 }
 
 /* { dg-final { scan-tree-dump "a.0. ={v} 1;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

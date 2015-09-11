@@ -15,4 +15,3 @@ main(void)
 
 /* The VDEF comes from the initial assignment, the asm, and the clobber.  */
 /* { dg-final { scan-tree-dump-times "DEF" 3 "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

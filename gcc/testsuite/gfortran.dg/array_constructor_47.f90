@@ -20,5 +20,4 @@ program main
   end function eleven_ones
 end program main
 ! { dg-final { scan-tree-dump-times "while" 4 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

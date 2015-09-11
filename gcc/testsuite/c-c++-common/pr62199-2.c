@@ -11,10 +11,10 @@ bool r;
 void
 foo (bool b)
 {
-  r = !b == 1; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
-  r = !b != 1; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
-  r = !b > 1; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
-  r = !b >= 1; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
-  r = !b < 1; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
-  r = !b <= 1; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
+  r = !b == 1; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
+  r = !b != 1; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
+  r = !b > 1; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
+  r = !b >= 1; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
+  r = !b < 1; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
+  r = !b <= 1; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
 }

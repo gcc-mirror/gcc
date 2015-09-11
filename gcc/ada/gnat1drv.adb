@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,10 +130,23 @@ procedure Gnat1drv is
          Relaxed_RM_Semantics := True;
       end if;
 
+      --  -gnatd.1 enables unnesting of subprograms
+
+      if Debug_Flag_Dot_1 then
+         Unnest_Subprogram_Mode := True;
+      end if;
+
       --  -gnatd.V or -gnatd.u enables special C expansion mode
 
       if Debug_Flag_Dot_VV or Debug_Flag_Dot_U then
          Modify_Tree_For_C := True;
+      end if;
+
+      --  Other flags set if we are generating C code
+
+      if Debug_Flag_Dot_VV then
+         Generate_C_Code := True;
+         Unnest_Subprogram_Mode := True;
       end if;
 
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
@@ -188,6 +201,16 @@ procedure Gnat1drv is
 
          GNATprove_Mode := False;
          Debug_Flag_Dot_FF := False;
+
+         --  Turn off C tree generation, not compatible with CodePeer mode. We
+         --  do not expect this to happen in normal use, since both modes are
+         --  enabled by special tools, but it is useful to turn off these flags
+         --  this way when we are doing CodePeer tests on existing test suites
+         --  that may have -gnatd.V set, to avoid the need for special casing.
+
+         Modify_Tree_For_C := False;
+         Generate_C_Code := False;
+         Unnest_Subprogram_Mode := False;
 
          --  Turn off inlining, confuses CodePeer output and gains nothing
 
@@ -559,6 +582,14 @@ procedure Gnat1drv is
       Suppress_Options.Suppress (Atomic_Synchronization) :=
         not Atomic_Sync_Default_On_Target;
 
+      --  Set default for Alignment_Check, if we are on a machine with non-
+      --  strict alignment, then we suppress this check, since it is over-
+      --  zealous for such machines.
+
+      if not Ttypes.Target_Strict_Alignment then
+         Suppress_Options.Suppress (Alignment_Check) := True;
+      end if;
+
       --  Set switch indicating if back end can handle limited types, and
       --  guarantee that no incorrect copies are made (e.g. in the context
       --  of an if or case expression).
@@ -609,13 +640,9 @@ procedure Gnat1drv is
 
       Back_End_Inlining :=
 
-        --  No back end inlining if inlining is suppressed
-
-        not Suppress_All_Inlining
-
         --  No back end inlining available for VM targets
 
-        and then VM_Target = No_VM
+        VM_Target = No_VM
 
         --  No back end inlining available on AAMP
 
@@ -837,10 +864,14 @@ procedure Gnat1drv is
 
       Sem_Ch13.Validate_Address_Clauses;
 
-      --  Validate independence pragmas (again using values annotated by
-      --  the back end for component layout etc.)
+      --  Validate independence pragmas (again using values annotated by the
+      --  back end for component layout where possible) but only for non-GCC
+      --  back ends, as this is done a priori for GCC back ends.
 
-      Sem_Ch13.Validate_Independence;
+      if VM_Target /= No_VM or else AAMP_On_Target then
+         Sem_Ch13.Validate_Independence;
+      end if;
+
    end Post_Compilation_Validation_Checks;
 
 --  Start of processing for Gnat1drv
@@ -923,13 +954,20 @@ begin
                System_Source_File_Index := S;
             end if;
 
+            --  Call to get target parameters. Note that the actual interface
+            --  routines are in Tbuild. They can't be in this procedure because
+            --  of accessibility issues.
+
             Targparm.Get_Target_Parameters
               (System_Text  => Source_Text  (S),
                Source_First => Source_First (S),
                Source_Last  => Source_Last  (S),
                Make_Id      => Tbuild.Make_Id'Access,
                Make_SC      => Tbuild.Make_SC'Access,
-               Set_RND      => Tbuild.Set_RND'Access);
+               Set_NOD      => Tbuild.Set_NOD'Access,
+               Set_NSA      => Tbuild.Set_NSA'Access,
+               Set_NUA      => Tbuild.Set_NUA'Access,
+               Set_NUP      => Tbuild.Set_NUP'Access);
 
             --  Acquire configuration pragma information from Targparm
 
@@ -1242,8 +1280,8 @@ begin
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Kind = N_Subunit
-            or else Targparm.Frontend_Layout_On_Target
-            or else Targparm.VM_Target /= No_VM)
+            or else Frontend_Layout_On_Target
+            or else VM_Target /= No_VM)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);

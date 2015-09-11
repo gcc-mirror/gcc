@@ -162,7 +162,7 @@ namespace __gnu_pbds
 	  empty_entry_status,
 	  valid_entry_status,
 	  erased_entry_status
-	} __attribute__ ((packed));
+	} __attribute__ ((__packed__));
 
       struct entry : public traits_base::stored_data_type
       {

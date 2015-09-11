@@ -26,13 +26,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "intl.h"
 #include "obstack.h"
-#include "hashtab.h"
 #include "demangle.h"
 #include "collect2.h"
 #include "collect-utils.h"
 #include "filenames.h"
 #include "diagnostic-core.h"
-#include "vec.h"
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT
@@ -486,9 +484,9 @@ recompile_files (void)
 	 the new file name already exists.  Therefore, we explicitly
 	 remove the old file first.  */
       if (remove (f->key) == -1)
-	fatal_error ("removing .rpo file: %m");
+	fatal_error (input_location, "removing .rpo file: %m");
       if (rename (outname, f->key) == -1)
-	fatal_error ("renaming .rpo file: %m");
+	fatal_error (input_location, "renaming .rpo file: %m");
 
       if (!f->args)
 	{

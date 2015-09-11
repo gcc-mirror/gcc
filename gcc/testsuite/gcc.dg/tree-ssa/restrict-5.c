@@ -21,4 +21,3 @@ void g(int *r, int a[16][16], int b[16][16], int i, int j)
 /* We should apply store motion to the store to *r.  */
 
 /* { dg-final { scan-tree-dump "Executing store motion of \\\*r" "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

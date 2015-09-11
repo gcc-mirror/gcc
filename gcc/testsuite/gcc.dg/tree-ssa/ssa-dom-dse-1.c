@@ -16,4 +16,3 @@ bar (int i)
 }
 
 /* { dg-final { scan-tree-dump-not "x =" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -29,5 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <htmintrin.h>
 #endif
 
+#ifdef __VEC__
+#include <vecintrin.h>
+#endif
 
 #endif /* _S390INTRIN_H*/

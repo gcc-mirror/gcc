@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define if the type of bitfields effects alignment. */
+#undef HAVE_BITFIELD_TYPE_MATTERS
+
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 
@@ -63,9 +66,6 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
-
-/* Define if the compiler is configured for setjmp/longjmp exceptions. */
-#undef SJLJ_EXCEPTIONS
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

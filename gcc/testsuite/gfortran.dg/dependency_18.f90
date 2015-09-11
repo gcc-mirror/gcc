@@ -17,4 +17,3 @@ subroutine foo(a,i,j,k)
   a(k:k+2) = a(k+1:k+3)
 end subroutine
 ! { dg-final { scan-tree-dump-times "malloc" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

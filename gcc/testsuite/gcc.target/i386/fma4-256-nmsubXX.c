@@ -1,3 +1,4 @@
+/* { dg-do run } */
 /* { dg-require-effective-target fma4 } */
 /* { dg-options "-O2 -mfma4" } */
 

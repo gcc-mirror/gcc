@@ -9,6 +9,11 @@
 
 
 
+#if defined( AIX_STRTOF_CONST_CHECK )
+extern float    strtof(const char *, char **);
+#endif  /* AIX_STRTOF_CONST_CHECK */
+
+
 #if defined( HPUX11_ABS_CHECK )
 #if !defined(_MATH_INCLUDED) || defined(__GNUG__)
 #endif  /* HPUX11_ABS_CHECK */

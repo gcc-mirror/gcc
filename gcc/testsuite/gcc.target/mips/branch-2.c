@@ -5,7 +5,7 @@
 
 #include "branch-helper.h"
 
-NOMIPS16 void
+NOCOMPRESSION void
 foo (volatile int *x)
 {
   if (__builtin_expect (*x == 0, 1))

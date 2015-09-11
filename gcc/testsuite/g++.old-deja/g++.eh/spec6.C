@@ -43,32 +43,32 @@ void baz3() throw(Int, char){}       // typedefs are the same type ...
 void baz4() throw(int, Int, char);   // ... so this is a duplicate
 void baz4() throw(Int, char){}
 
-void fna() throw(int, char);  // { dg-error "" } to previous declaration
+void fna() throw(int, char);  // { dg-message "" } to previous declaration
 void fna() throw(int const, char);  // { dg-error "" } declaration  different exceptions // ERROR - to previous declaration
 void fna() throw(int){}       // { dg-error "" } declaration  different exceptions
 
-void fnb() throw(int, char);  // { dg-error "" } to previous declaration
+void fnb() throw(int, char);  // { dg-message "" } to previous declaration
 void fnb() throw(char){}      // { dg-error "" } declaration  different exceptions
 
-void fnc() throw(int, char);  // { dg-error "" } to previous declaration
+void fnc() throw(int, char);  // { dg-message "" } to previous declaration
 void fnc() throw(char, int, float){}  // { dg-error "" } declaration  different exceptions
 
-void fnd() throw();           // { dg-error "" } to previous declaration
+void fnd() throw();           // { dg-message "" } to previous declaration
 void fnd() throw(char){}      // { dg-error "" } declaration  different exceptions
 
-void fne() throw(char);       // { dg-error "" } to previous declaration
+void fne() throw(char);       // { dg-message "" } to previous declaration
 void fne() throw(){}          // { dg-error "" } declaration  different exceptions
 
-void fnf();                   // { dg-error "" } to previous declaration
+void fnf();                   // { dg-message "" } to previous declaration
 void fnf() throw(char){}      // { dg-error "" } declaration  different exceptions
 
-void fng() throw(char);       // { dg-error "" } to previous declaration
+void fng() throw(char);       // { dg-message "" } to previous declaration
 void fng(){}                  // { dg-error "" } declaration  different exceptions
 
-void fnh() throw(int, char);  // { dg-error "" } to previous declaration
+void fnh() throw(int, char);  // { dg-message "" } to previous declaration
 void fnh() throw(int, float){}   // { dg-error "" } declaration  different exceptions
 
-void fni() throw(int, char);  // { dg-error "" } to previous declaration
+void fni() throw(int, char);  // { dg-message "" } to previous declaration
 void fni() throw(float, char){}  // { dg-error "" } declaration  different exceptions
 
 // [except.spec] 3, virtual function overriders shall throw a subset of the

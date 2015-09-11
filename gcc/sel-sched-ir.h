@@ -22,14 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SEL_SCHED_IR_H
 
 /* For state_t.  */
-#include "insn-attr.h"
-#include "regset.h"
 /* For reg_note.  */
-#include "rtl.h"
-#include "ggc.h"
-#include "bitmap.h"
-#include "sched-int.h"
-#include "cfgloop.h"
 
 /* tc_t is a short for target context.  This is a state of the target
    backend.  */
@@ -364,12 +357,12 @@ struct _list_node
 /* _list_t functions.
    All of _*list_* functions are used through accessor macros, thus
    we can't move them in sel-sched-ir.c.  */
-extern alloc_pool sched_lists_pool;
+extern object_allocator<_list_node> sched_lists_pool;
 
 static inline _list_t
 _list_alloc (void)
 {
-  return (_list_t) pool_alloc (sched_lists_pool);
+  return sched_lists_pool.allocate ();
 }
 
 static inline void
@@ -395,7 +388,7 @@ _list_remove (_list_t *lp)
   _list_t n = *lp;
 
   *lp = _LIST_NEXT (n);
-  pool_free (sched_lists_pool, n);
+  sched_lists_pool.remove (n);
 }
 
 static inline void

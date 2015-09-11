@@ -175,4 +175,3 @@ end
 ! { dg-final { scan-tree-dump-times "sub_array_shape \\(&array_class_t1_alloc._data," 1 "original" } }
 ! { dg-final { scan-tree-dump-times "sub_array_shape \\(&array_class_t1_ptr._data," 1 "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

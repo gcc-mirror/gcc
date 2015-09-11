@@ -15,4 +15,3 @@ int foo(struct bar *x)
 }
 
 /* { dg-final { scan-tree-dump "Replaced .p_. < q_.. with .1." "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

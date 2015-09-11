@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,12 +33,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions fully supports both Ada 95 and Ada 2005.
---  It is used in all situations except for the build of the compiler and
---  other basic tools. For these latter builds, we use an Ada 95-only version.
+--  This version of Ada.Exceptions fully supports Ada 95 and later language
+--  versions.  It is used in all situations except for the build of the
+--  compiler and other basic tools. For these latter builds, we use an
+--  Ada 95-only version.
 
---  The reason for this splitting off of a separate version is that bootstrap
---  compilers often will be used that do not support Ada 2005 features, and
+--  The reason for this splitting off of a separate version is to support
+--  older bootstrap compilers that do not support Ada 2005 features, and
 --  Ada.Exceptions is part of the compiler sources.
 
 pragma Polling (Off);

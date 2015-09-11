@@ -32,4 +32,3 @@ end
 ! But copy "ii" and "CAF":
 ! { dg-final { scan-tree-dump-times "__builtin_memcpy|= MEM" 2 "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

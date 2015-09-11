@@ -4,7 +4,7 @@
 namespace
 {
   struct A {
-    static int bar ();
+    static int bar ();		// { dg-error "used but never defined" "" }
     static int i;		// { dg-error "used, but not defined" "" { xfail *-*-* } }
     static int j;
     static int k;

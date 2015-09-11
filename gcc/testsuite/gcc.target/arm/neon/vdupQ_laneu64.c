@@ -16,4 +16,3 @@ void test_vdupQ_laneu64 (void)
   out_uint64x2_t = vdupq_lane_u64 (arg0_uint64x1_t, 0);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

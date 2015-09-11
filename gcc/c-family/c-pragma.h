@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Pragma identifiers built in to the front end parsers.  Identifiers
    for ancillary handlers will follow these.  */
-typedef enum pragma_kind {
+enum pragma_kind {
   PRAGMA_NONE = 0,
 
   PRAGMA_OACC_CACHE,
@@ -71,12 +71,12 @@ typedef enum pragma_kind {
   PRAGMA_IVDEP,
 
   PRAGMA_FIRST_EXTERNAL
-} pragma_kind;
+};
 
 
 /* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, and 4.0.
    Used internally by both C and C++ parsers.  */
-typedef enum pragma_omp_clause {
+enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_NONE = 0,
 
   PRAGMA_OMP_CLAUSE_ALIGNED,
@@ -159,7 +159,7 @@ typedef enum pragma_omp_clause {
   PRAGMA_OACC_CLAUSE_IF = PRAGMA_OMP_CLAUSE_IF,
   PRAGMA_OACC_CLAUSE_PRIVATE = PRAGMA_OMP_CLAUSE_PRIVATE,
   PRAGMA_OACC_CLAUSE_REDUCTION = PRAGMA_OMP_CLAUSE_REDUCTION
-} pragma_omp_clause;
+};
 
 extern struct cpp_reader* parse_in;
 
@@ -183,7 +183,7 @@ union gen_pragma_handler {
   pragma_handler_2arg handler_2arg;
 };
 /* Internally used to keep the data of the handler.  */
-struct internal_pragma_handler_d {
+struct internal_pragma_handler {
   union gen_pragma_handler handler;
   /* Permits to know if handler is a pragma_handler_1arg (extra_data is false)
      or a pragma_handler_2arg (extra_data is true).  */
@@ -191,7 +191,6 @@ struct internal_pragma_handler_d {
   /* A data field which can be used when extra_data is true.  */
   void * data;
 };
-typedef struct internal_pragma_handler_d internal_pragma_handler;
 
 extern void c_register_pragma (const char *space, const char *name,
                                pragma_handler_1arg handler);

@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-effective-target vect_double }
 
 #include <vector>
 #include <complex>
@@ -49,4 +50,3 @@ main(int argc, char** argv)
 }
 
 // { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" } }
-// { dg-final { cleanup-tree-dump "vect" } }

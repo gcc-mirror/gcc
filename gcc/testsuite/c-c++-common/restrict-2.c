@@ -11,4 +11,3 @@ void foo (float * __restrict__ a, float * __restrict__ b, int n, int j)
 /* We should move the RHS of the store out of the loop.  */
 
 /* { dg-final { scan-tree-dump-times "Moving statement" 11 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

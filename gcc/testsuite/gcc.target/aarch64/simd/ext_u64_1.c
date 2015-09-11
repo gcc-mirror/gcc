@@ -23,4 +23,3 @@ main (int argc, char **argv)
 
 /* Do not scan-assembler.  An EXT instruction could be emitted, but would merely
    return its first argument, so it is legitimate to optimize it out.  */
-/* { dg-final { cleanup-saved-temps } } */

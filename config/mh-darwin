@@ -1,18 +1,29 @@
 # The -mdynamic-no-pic ensures that the compiler executable is built without
 # position-independent-code -- the usual default on Darwin. This fix speeds
-# compiles by 3-5%.
-BOOT_CFLAGS += \
+# compiles by 3-5%.  Don't add it if the compiler doesn't also support
+# -mno-dynamic-no-pic to undo it.
+DARWIN_MDYNAMIC_NO_PIC := \
 `case ${host} in i?86-*-darwin* | powerpc-*-darwin*) \
-                 echo -mdynamic-no-pic ;; esac;`
+   $(CC) -S -xc /dev/null -o /dev/null -mno-dynamic-no-pic 2>/dev/null \
+   && echo -mdynamic-no-pic ;; esac`
+DARWIN_GCC_MDYNAMIC_NO_PIC := \
+`case ${host} in i?86-*-darwin* | powerpc-*-darwin*) \
+   $(CC) -S -xc /dev/null -o /dev/null -mno-dynamic-no-pic 2>/dev/null \
+   || echo -mdynamic-no-pic ;; esac`
 
 # ld on Darwin versions >= 10.7 defaults to PIE executables. Disable this for
 # gcc components, since it is incompatible with our pch implementation.
-BOOT_LDFLAGS += \
-`case ${host} in *-*-darwin[1][1-9]*) echo -Wl,-no_pie ;; esac;`
+DARWIN_NO_PIE := `case ${host} in *-*-darwin[1][1-9]*) echo -Wl,-no_pie ;; esac;`
+
+BOOT_CFLAGS += $(DARWIN_MDYNAMIC_NO_PIC)
+BOOT_LDFLAGS += $(DARWIN_NO_PIE)
 
 # Similarly, for cross-compilation.
-STAGE1_CFLAGS += \
-`case ${host} in i?86-*-darwin* | powerpc-*-darwin*)\
-                 echo -mdynamic-no-pic ;; esac;`
-STAGE1_LDFLAGS += \
-`case ${host} in *-*-darwin[1][1-9]*) echo -Wl,-no_pie ;; esac;`
+STAGE1_CFLAGS += $(DARWIN_MDYNAMIC_NO_PIC)
+STAGE1_LDFLAGS += $(DARWIN_NO_PIE)
+
+# Without -mno-dynamic-no-pic support, add -mdynamic-no-pic just to later
+# stages when we know it is built with gcc.
+STAGE2_CFLAGS += $(DARWIN_GCC_MDYNAMIC_NO_PIC)
+STAGE3_CFLAGS += $(DARWIN_GCC_MDYNAMIC_NO_PIC)
+STAGE4_CFLAGS += $(DARWIN_GCC_MDYNAMIC_NO_PIC)

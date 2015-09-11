@@ -8,4 +8,3 @@ int main(int a, int b, int c, int d)
   return e & f;
 }
 /* { dg-final { scan-tree-dump-times "\\\& " 3 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

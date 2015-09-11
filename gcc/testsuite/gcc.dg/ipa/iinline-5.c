@@ -1,7 +1,7 @@
 /* Verify that simple indirect calls are inlined even without early
    inlining..  */
 /* { dg-do run } */
-/* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining"  } */
+/* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining -fno-ipa-icf"  } */
 
 extern void abort (void);
 
@@ -121,4 +121,3 @@ int main (int argc, char **argv)
 
 
 /* { dg-final { scan-ipa-dump-not "wrong_target\[^\\n\]*inline copy in" "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

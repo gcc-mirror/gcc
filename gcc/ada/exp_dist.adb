@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5437,7 +5437,7 @@ package body Exp_Dist is
       return Out_Present (Parameter)
         and then Has_Discriminants (Etyp)
         and then not Is_Constrained (Etyp)
-        and then not Is_Indefinite_Subtype (Etyp);
+        and then Is_Definite_Subtype (Etyp);
    end Need_Extra_Constrained;
 
    ------------------------------------

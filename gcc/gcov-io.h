@@ -199,7 +199,7 @@ typedef uint64_t gcov_type_unsigned;
 #define gcov_nonruntime_assert(EXPR) ((void)(0 && (EXPR)))
 #else
 #define gcov_nonruntime_assert(EXPR) gcc_assert (EXPR)
-#define gcov_error(...) fatal_error (__VA_ARGS__)
+#define gcov_error(...) fatal_error (input_location, __VA_ARGS__)
 #endif
 
 /* File suffixes.  */

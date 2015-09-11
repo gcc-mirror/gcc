@@ -11,4 +11,3 @@ int t (int a, int b)
   return 1;
 }
 /* { dg-final { scan-tree-dump "\&" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

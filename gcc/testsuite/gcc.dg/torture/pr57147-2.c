@@ -20,4 +20,3 @@ void TestSyscall(void)
 }
 
 /* { dg-final { scan-tree-dump "setjmp" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

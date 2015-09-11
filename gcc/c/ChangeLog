@@ -1,3 +1,478 @@
+2015-09-09  Mark Wielaard  <mjw@redhat.com>
+
+	* c-typeck.c (build_binary_op): Check and warn when nonnull arg
+	parm against NULL.
+
+2015-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67502
+	* c-parser.c (c_parser_omp_for_loop): Emit DECL_EXPR stmts
+	into OMP_FOR_PRE_BODY rather than before the loop.
+
+2015-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67501
+	* c-parser.c (c_parser_oacc_all_clauses,
+	c_parser_omp_all_clauses): Remove invalid clause from
+	list of clauses even if parser->error is set.
+
+	PR c/67500
+	* c-parser.c (c_parser_omp_clause_aligned,
+	c_parser_omp_clause_safelen, c_parser_omp_clause_simdlen): Fix up
+	test for errors.
+	* c-decl.c (temp_pop_parm_decls): Allow b->decl equal to
+	error_mark_node.
+
+	PR c/67495
+	* c-parser.c (c_parser_omp_atomic): Use c_parser_cast_expression
+	instead of c_parser_unary_expression.  If the result is !lvalue_p,
+	wrap the result of c_fully_fold into NON_LVALUE_EXPR.
+
+2015-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/67279
+	* c-typeck.c (build_binary_op): Don't instrument static initializers.
+
+2015-09-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66516
+	* c-typeck.c (convert_arguments, parser_build_unary_op,
+	build_conditional_expr, c_cast_expr, convert_for_assignment,
+	build_binary_op, _objc_common_truthvalue_conversion): Call
+	reject_gcc_builtin.
+	(c_decl_implicit): Define.
+
+2015-09-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67432
+	* c-parser.c (c_parser_enum_specifier): Give a better error for
+	an empty enum.
+
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* c-aux-info.c, c-parser.c, c-tree.h: Remove useless typedefs.
+
+2015-08-12  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (grokdeclarator): Call error_at instead of error and pass
+	LOC to it.
+
+2015-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67088
+	* c-decl.c (check_bitfield_type_and_width): Add location parameter.
+	Use it.
+	(grokdeclarator): Pass LOC down to check_bitfield_type_and_width.
+
+2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* c-parser.c (c_parser_if_body): Take token_indent_info
+	argument. Call warn_for_misleading_indentation even when the
+	body is a semicolon.  Extract token_indent_infos corresponding
+	to the guard, body and next tokens.  Adjust call to
+	warn_for_misleading_indentation accordingly.
+	(c_parser_else_body): Likewise.
+	(c_parser_if_statement): Likewise.
+	(c_parser_while_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+
+2015-07-28  Luis Felipe Strano Moraes  <luis.strano@gmail.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-decl.c (get_parm_info): Remove static var. Update warning
+	message.
+
+2015-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66555
+	PR c/54979
+	* c-typeck.c (parser_build_binary_op): Call warn_tautological_cmp.
+
+2015-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/55095
+	* c-typeck.c (digest_init): Pass OPT_Wpedantic to pedwarn_init.
+	(build_binary_op): Warn about left shift overflows.
+
+2015-07-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Adjust includes for flags.h changes.
+	* c-objc-common.c: Likewise.
+
+2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Adjust includes.
+	* c-aux-info.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+
+2015-06-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/66605
+	* c-decl.c (finish_function): Call do_warn_unused_parameter.
+
+2015-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66322
+	* c-typeck.c (struct c_switch): Add BOOL_COND_P and OUTSIDE_RANGE_P.
+	(c_start_case): Set BOOL_COND_P and OUTSIDE_RANGE_P.  Don't warn
+	about -Wswitch-bool here.
+	(do_case): Update c_add_case_label call.
+	(c_finish_case): Update c_do_switch_warnings call.
+
+2015-06-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c: Use VECTOR_TYPE_P throughout.
+
+2015-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* c-array-notation.c (fix_builtin_array_notation_fn): Use
+	INDIRECT_REF_P.
+	* c-typeck.c (array_to_pointer_conversion): Likewise.
+	(build_unary_op): Likewise.
+	(c_finish_return): Likewise.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Remove ipa-ref.h and plugin-api.h from include list.
+	* c-parser.c: Likewise.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.c (detect_field_duplicates_hash): Use nofree_ptr_hash
+	instead of pointer_hash.
+	(detect_field_duplicates): Likewise.
+
+2015-06-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-array-notation.c: Use VAR_P throughout.
+	* c-decl.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+
+2015-06-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c: Use is_global_var throughout.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Do not include input.h, line-map.h or is-a.h.
+	* c-aux-info.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+
+2015-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/66325
+	* c-decl.c (start_enum): Set TYPE_PACKED consistently among type
+	variants.
+
+2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* c-decl.c (pop_scope): Register the main translation unit
+	through the new debug hook.
+
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c : Adjust include files.
+	* c-aux-info.c : Likewise.
+	* c-convert.c : Likewise.
+	* c-decl.c : Likewise.
+	* c-errors.c : Likewise.
+	* c-lang.c : Likewise.
+	* c-lang.h : Likewise.
+	* c-objc-common.c : Likewise.
+	* c-parser.c : Likewise.
+	* c-typeck.c : Likewise.
+
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-decl.c (finish_struct): Save C_TYPE_INCOMPLETE_VARS and
+	immediately clobber it.
+	(c_write_global_declarations_1): Remove call to
+	check_global_declaration_1.
+	(c_write_global_declarations_2): Remove.
+	(c_write_final_cleanups): Rename from c_write_global_declarations.
+	Remove call to finalize_compilation_unit.
+	Remove calls to debugging hooks.
+	* c-objc-common.c: Adjust comment for c_warn_unused_global_decl.
+	* c-objc-common.h: Remove LANG_HOOKS_WRITE_GLOBALS.
+	* c-tree.h: Remove c_write_global_declarations.
+
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Adjust includes for restructured coretypes.h.
+	* c-aux-info.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+
+2015-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66341
+	* c-typeck.c (build_c_cast): Wrap VALUE into NON_LVALUE_EXPR if
+	it is a lvalue.
+
+2015-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* c-decl.c (warn_cxx_compat_finish_struct): New parameters code, record_loc.
+	Warn for empty struct.
+	(finish_struct): Pass TREE_CODE(t) and loc to warn_cxx_compat_finish_struct.
+
+2015-06-02  Andres Tiraboschi  <andres.tiraboschi@tallertechnologies.com>
+
+	* c-decl.c (start_function): Call plugin before parsing.
+	(finish_function): Call plugin after parsing.
+
+2015-06-02  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/49551
+	* c-decl.c (merge_decls): Merge DECL_COMMON.
+
+2015-05-22  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (check_gcc_pallelize): Define.
+
+2015-05-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/47043
+	* c-parser.c (c_parser_enum_specifier): Parse and apply enumerator
+	attributes.
+
+2015-05-21  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (inform_declaration): Use DECL_IS_BUILTIN instead of
+	DECL_BUILT_IN.
+
+2015-05-20  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c: Use VAR_OR_FUNCTION_DECL_P throughout.
+	* c-typeck.c: Likewise.
+
+2015-05-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (start_init): Use AGGREGATE_TYPE_P.
+
+2015-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66199
+	* c-parser.c (c_parser_omp_for_loop): Don't add
+	OMP_CLAUSE_SHARED to OMP_PARALLEL_CLAUSES when moving
+	OMP_CLAUSE_LASTPRIVATE clause to OMP_FOR_CLAUSES.
+	(c_parser_omp_teams): Set OMP_TEAMS_COMBINED for combined
+	constructs.
+
+2015-05-19  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* c-typeck.c (build_array_ref): Use std::swap instead of explicit
+	swaps.
+
+2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* c-objc-common.c (c_tree_printer): Replace locus pointer with
+	accessor function.
+
+2015-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66066
+	PR c/66127
+	* c-typeck.c (digest_init): Call pedwarn_init with OPT_Wpedantic
+	rather than with 0.
+
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_if_body): Add param "if_loc", use it
+	to add a call to warn_for_misleading_indentation.
+	(c_parser_else_body): Likewise, adding param "else_loc".
+	(c_parser_if_statement): Check for misleading indentation.
+	(c_parser_while_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+
+2015-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64918
+	* c-typeck.c (add_pending_init): Use OPT_Woverride_init_side_effects.
+	(output_init_element): Likewise.
+
+2015-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65179
+	* c-typeck.c (build_binary_op): Warn when left shifting a negative
+	value.
+
+2015-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (set_init_label): Call error_at instead of error and
+	pass LOC to it.
+
+	* c-typeck.c (c_incomplete_type_error): Refactor to use %qT.  Print
+	the type of a decl.
+
+	* c-typeck.c (c_build_va_arg): Clarify the error message.
+
+2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_enter_exit_data): Use
+	OMP_STANDALONE_CLAUSES.
+
+2015-04-28  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_binary_expression): Remove duplicate line.
+
+2015-04-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65901
+	* c-typeck.c (c_build_va_arg): Require TYPE be a complete type.
+
+2015-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/52085
+	* c-decl.c (finish_enum): Copy over TYPE_ALIGN.  Also check for "mode"
+	attribute.
+
+2015-04-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65345
+	* c-decl.c (set_labels_context_r): New function.
+	(store_parm_decls): Call it via walk_tree_without_duplicates.
+	* c-typeck.c (convert_lvalue_to_rvalue): Use create_tmp_var_raw
+	instead of create_tmp_var.  Build TARGET_EXPR instead of
+	COMPOUND_EXPR.
+	(build_atomic_assign): Use create_tmp_var_raw instead of
+	create_tmp_var.  Build TARGET_EXPRs instead of MODIFY_EXPR.
+
+2015-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* c-parser.c (c_parser_oacc_enter_exit_data): Remove excess semicolon.
+	(c_parser_omp_target_update): Add missed %> to error_at ().
+
+2015-04-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR target/55143
+	* c-decl.c (c_default_pointer_mode): Remove definition.
+	* c-tree.h (c_default_pointer_mode): Remove declaration.
+
+2015-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/65586
+	* c-parser.c (c_parser_skip_to_pragma_eol): Optionally, don't
+	error out.
+	(c_parser_omp_for, c_parser_omp_parallel, c_parser_omp_distribute,
+	c_parser_omp_teams, c_parser_omp_target, c_parser_omp_declare):
+	Update calls to not error for skipped omp pragmas with -fopenmp-simd.
+
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (c_decl_attributes): Also add "omp declare target"
+	attribute for DECL_EXTERNAL VAR_DECLs.
+
+2015-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parse_init): Don't call xstrdup on get_identifier
+	argument.
+
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-typeck.c (parser_build_binary_op): Check for tcc_comparison
+	before preparing arguments to warn_logical_not_parentheses.
+
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-typeck.c (parser_build_binary_op): Don't warn for
+	!!x == y or !b == y where b is _Bool.
+
+2015-03-09  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.c (convert): Make use of do_ubsan_in_current_function.
+	* c-decl.c (grokdeclarator): Likewise.
+	* c-typeck.c (build_binary_op): Likewise.
+
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65228
+	* c-decl.c (start_decl): Return NULL_TREE if decl is an error node.
+
+2015-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64768
+	* c-decl.c (grokdeclarator): Set the range of a flexible array member
+	declared through a typedef name.
+
+2015-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65050
+	* c-decl.c (grokdeclarator): Print also the type when giving
+	the error message about array's incomplete element type.
+
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64824
+	* c-parser.c (c_parser_binary_expression): Fix OpenMP stack[sp].prec
+	check in the POP macro.
+
+2015-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64856
+	* c-typeck.c (process_init_element): Don't always wrap
+	COMPOUND_LITERAL_EXPR in a SAVE_EXPR in C99 mode when
+	initializing a range of elements.
+
+2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64824
+	PR c/64868
+	* c-parser.c (c_parser_omp_atomic): Handle RDIV_EXPR.
+
+2015-02-02  Bruno Loff  <bruno.loff@gmail.com>
+
+	* c-parser.c (c_parser_declspecs): Call invoke_plugin_callbacks after
+	processing enum declaration.
+
+2015-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64709
+	* c-typeck.c (pop_init_level): If constructor_elements has
+	exactly one element with integer_zerop value, set constructor_zeroinit
+	to 1.  Remove braces around warning_init call.
+
+2015-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64766
+	* c-typeck.c (store_init_value): Don't overwrite DECL_INITIAL
+	of FUNCTION_DECLs with error_mark_node.
+
+2015-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64778
+	* c-typeck.c (convert_arguments): Return -1 if there are
+	error_args, even if we've diagnosed too many arguments.
+
+2015-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64313
+	* c-decl.c (merge_decls): Call set_builtin_decl_declared_p
+	for builtins the user declared correctly.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>

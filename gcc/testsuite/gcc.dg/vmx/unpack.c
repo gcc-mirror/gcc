@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-shift-overflow" } */
+
 #include "harness.h"
 
 #define BIG 4294967295

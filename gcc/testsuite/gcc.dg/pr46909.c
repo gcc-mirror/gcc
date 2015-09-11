@@ -17,4 +17,3 @@ foo (unsigned int x)
 /* { dg-final { scan-tree-dump-times "x_\[0-9\]+\\(D\\) != 6" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "x_\[0-9\]+\\(D\\) == 2" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "x_\[0-9\]+\\(D\\) == 6" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

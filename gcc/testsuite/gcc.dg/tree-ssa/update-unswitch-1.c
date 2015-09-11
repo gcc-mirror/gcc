@@ -21,4 +21,3 @@ int bla(int p)
 
 /* { dg-final { scan-tree-dump-not "Invalid sum" "unswitch"} } */
 /* { dg-final { scan-tree-dump-not "SUCC: 3 .100.0%" "unswitch"} } */
-/* { dg-final { cleanup-tree-dump "unswitch" } } */

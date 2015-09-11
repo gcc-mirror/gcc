@@ -18,4 +18,3 @@ int foo(Foo& f)
 }
 
 /* { dg-final { scan-tree-dump "f_..D.->x;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

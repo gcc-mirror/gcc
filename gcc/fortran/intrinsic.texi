@@ -2713,7 +2713,7 @@ end program test_btest
 
 @table @asis
 @item @emph{Description}:
-@code{C_ASSOCIATED(c_prt_1[, c_ptr_2])} determines the status of the C pointer
+@code{C_ASSOCIATED(c_ptr_1[, c_ptr_2])} determines the status of the C pointer
 @var{c_ptr_1} or if @var{c_ptr_1} is associated with the target @var{c_ptr_2}.
 
 @item @emph{Standard}:
@@ -2723,7 +2723,7 @@ Fortran 2003 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = C_ASSOCIATED(c_prt_1[, c_ptr_2])}
+@code{RESULT = C_ASSOCIATED(c_ptr_1[, c_ptr_2])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3321,7 +3321,7 @@ Collective subroutine
 @item @var{A}            @tab INTENT(INOUT) argument; shall have the same
 dynamic type and type paramters on all images of the current team. If it
 is an array, it shall have the same shape on all images.
-@item @var{SOURCE_IMAGE} @tab (optional) a scalar integer expression.
+@item @var{SOURCE_IMAGE} @tab a scalar integer expression.
 It shall have the same the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable
@@ -8712,7 +8712,7 @@ Elemental function
 The return value is of type @code{REAL} or @code{COMPLEX}.
 The kind type parameter is the same as @var{X}.
 If @var{X} is @code{COMPLEX}, the imaginary part @math{\omega} is in the range
-@math{-\pi \leq \omega \leq \pi}.
+@math{-\pi < \omega \leq \pi}.
 
 @item @emph{Example}:
 @smallexample

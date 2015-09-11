@@ -8,4 +8,4 @@ template<typename> struct A
   A();
 };
 
-A<X> a;
+A<X> a;	       // { dg-warning "ignoring attributes on template argument" }

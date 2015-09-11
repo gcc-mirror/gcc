@@ -11,6 +11,10 @@ foo (int bar, int n, int k)
     if (i == k)
       a[i] = bar;
 
+  for (i = 0; i < n; i++)
+    if (i == k)
+      a[i] = bar;
+
   return a[bar];
 }
 
@@ -23,4 +27,3 @@ foo (int bar, int n, int k)
 */
 
 /* { dg-final { scan-tree-dump-times "loop_1" 0 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

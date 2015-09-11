@@ -490,7 +490,7 @@ extern rtx hppa_pic_save_rtx (void);
 /* #define STACK_GROWS_DOWNWARD */
 
 /* Believe it or not.  */
-#define ARGS_GROW_DOWNWARD
+#define ARGS_GROW_DOWNWARD 1
 
 /* Define this to nonzero if the nominal address of the stack frame
    is at the high-address end of the local variables;
@@ -572,7 +572,7 @@ extern rtx hppa_pic_save_rtx (void);
    The INCOMING field tracks whether this is an "incoming" or
    "outgoing" argument.
    
-   The INDIRECT field indicates whether this is is an indirect
+   The INDIRECT field indicates whether this is an indirect
    call or not.
    
    The NARGS_PROTOTYPE field indicates that an argument does not
@@ -1011,7 +1011,7 @@ do {									     \
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
    will either zero-extend or sign-extend.  The value of this macro should
@@ -1048,7 +1048,7 @@ do {									     \
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
    but a CALL with constant address is cheap.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */
@@ -1210,7 +1210,7 @@ do {									     \
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.blockz "HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\
+  fprintf (FILE, "\t.blockz " HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\
 	   (unsigned HOST_WIDE_INT)(SIZE))
 
 /* This says how to output an assembler line to define an uninitialized

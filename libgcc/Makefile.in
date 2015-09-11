@@ -45,6 +45,7 @@ fixed_point = @fixed_point@
 with_aix_soname = @with_aix_soname@
 
 host_noncanonical = @host_noncanonical@
+real_host_noncanonical = @real_host_noncanonical@
 target_noncanonical = @target_noncanonical@
 
 # List of extra object files that should be compiled for this target machine.
@@ -185,7 +186,7 @@ STRIP = @STRIP@
 STRIP_FOR_TARGET = $(STRIP)
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(host_noncanonical)/$(version)@accel_dir_suffix@
+libsubdir = $(libdir)/gcc/$(real_host_noncanonical)/$(version)@accel_dir_suffix@
 # Used to install the shared libgcc.
 slibdir = @slibdir@
 # Maybe used for DLLs on Windows targets.
@@ -284,7 +285,7 @@ INTERNAL_CFLAGS = $(CFLAGS) $(LIBGCC2_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
 
 # Options to use when compiling crtbegin/end.
 CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-  -finhibit-size-directive -fno-inline -fno-exceptions \
+  $(NO_PIE_CFLAGS) -finhibit-size-directive -fno-inline -fno-exceptions \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
   -fbuilding-libgcc -fno-stack-protector $(FORCE_EXPLICIT_EH_REGISTRY) \
   $(INHIBIT_LIBC_CFLAGS)
@@ -909,17 +910,14 @@ all: libgcc.a libgcov.a
 
 ifneq ($(LIBUNWIND),)
 all: libunwind.a
-libgcc_s$(SHLIB_EXT): libunwind$(SHLIB_EXT)
 endif
 
 ifeq ($(enable_shared),yes)
 all: libgcc_eh.a libgcc_s$(SHLIB_EXT)
 ifneq ($(LIBUNWIND),)
 all: libunwind$(SHLIB_EXT)
+libgcc_s$(SHLIB_EXT): libunwind$(SHLIB_EXT)
 endif
-endif
-
-ifeq ($(enable_shared),yes)
 
 # Map-file generation.
 ifneq ($(SHLIB_MKMAP),)
@@ -1003,6 +1001,7 @@ crtoffloadbegin$(objext): $(srcdir)/offloadstuff.c
 
 crtoffloadend$(objext): $(srcdir)/offloadstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_END
+endif
 
 ifeq ($(enable_vtable_verify),yes)
 # These are used in vtable verification; see comments in source files for
@@ -1018,7 +1017,6 @@ vtv_start_preinit$(objext): $(srcdir)/vtv_start_preinit.c
 
 vtv_end_preinit$(objext): $(srcdir)/vtv_end_preinit.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $(srcdir)/vtv_end_preinit.c
-endif
 endif
 
 ifeq ($(CUSTOM_CRTIN),)

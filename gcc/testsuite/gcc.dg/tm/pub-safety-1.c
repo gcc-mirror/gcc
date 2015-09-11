@@ -21,4 +21,3 @@ void reader()
 }
 
 /* { dg-final { scan-tree-dump-times "Cannot hoist.*DATA_DATA because it is in a transaction" 1 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

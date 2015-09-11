@@ -51,4 +51,3 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 
 /* This cannot be if-converted because the stores are to aggregate types.  */
 /* { dg-final { scan-tree-dump-times "Applying if-conversion" 0 "ifcvt" } } */
-/* { dg-final { cleanup-tree-dump "ifcvt" } } */

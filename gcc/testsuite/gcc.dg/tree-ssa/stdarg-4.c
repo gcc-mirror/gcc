@@ -91,4 +91,3 @@ f4 (int i, ...)
 /* { dg-final { scan-tree-dump "f4: va_list escapes 0, needs to save \[148\] GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f4: va_list escapes 0, needs to save \[148\] GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f4: va_list escapes 0, needs to save \[148\] GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
-/* { dg-final { cleanup-tree-dump "stdarg" } } */

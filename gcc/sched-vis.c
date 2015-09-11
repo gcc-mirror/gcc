@@ -26,29 +26,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
 #include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"	/* FIXME: To dump INSN_VAR_LOCATION_DECL.  */
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
+#include "tree.h"
 #include "dumpfile.h"	/* for the TDF_* flags */
 #include "pretty-print.h"
 
@@ -67,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    pointer, via str_pattern_slim, but this usage is discouraged.  */
 
 /* For insns we print patterns, and for some patterns we print insns...  */
-static void print_insn_with_notes (pretty_printer *, const_rtx);
+static void print_insn_with_notes (pretty_printer *, const rtx_insn *);
 
 /* This recognizes rtx'en classified as expressions.  These are always
    represent some action on values or results of other expression, that
@@ -669,7 +650,7 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
    with their INSN_UIDs.  */
 
 void
-print_insn (pretty_printer *pp, const_rtx x, int verbose)
+print_insn (pretty_printer *pp, const rtx_insn *x, int verbose)
 {
   if (verbose)
     {
@@ -787,7 +768,7 @@ print_insn (pretty_printer *pp, const_rtx x, int verbose)
    note attached to the instruction.  */
 
 static void
-print_insn_with_notes (pretty_printer *pp, const_rtx x)
+print_insn_with_notes (pretty_printer *pp, const rtx_insn *x)
 {
   pp_string (pp, print_rtx_head);
   print_insn (pp, x, 1);
@@ -823,7 +804,7 @@ dump_value_slim (FILE *f, const_rtx x, int verbose)
 /* Emit a slim dump of X (an insn) to the file F, including any register
    note attached to the instruction.  */
 void
-dump_insn_slim (FILE *f, const_rtx x)
+dump_insn_slim (FILE *f, const rtx_insn *x)
 {
   pretty_printer rtl_slim_pp;
   rtl_slim_pp.buffer->stream = f;
@@ -893,9 +874,9 @@ str_pattern_slim (const_rtx x)
 }
 
 /* Emit a slim dump of X (an insn) to stderr.  */
-extern void debug_insn_slim (const_rtx);
+extern void debug_insn_slim (const rtx_insn *);
 DEBUG_FUNCTION void
-debug_insn_slim (const_rtx x)
+debug_insn_slim (const rtx_insn *x)
 {
   dump_insn_slim (stderr, x);
 }

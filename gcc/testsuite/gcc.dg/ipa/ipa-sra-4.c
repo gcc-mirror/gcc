@@ -65,4 +65,3 @@ void caller (void)
 /* { dg-final { scan-tree-dump "About to replace expr \\*l_.*D. with ISRA" "eipa_sra"  } } */
 /* { dg-final { scan-tree-dump-times "About to replace expr \*j_.*D. with ISRA" 0 "eipa_sra"  } } */
 /* { dg-final { scan-tree-dump-times "About to replace expr \*k_.*D. with ISRA" 0 "eipa_sra"  } } */
-/* { dg-final { cleanup-tree-dump "eipa_sra" } } */

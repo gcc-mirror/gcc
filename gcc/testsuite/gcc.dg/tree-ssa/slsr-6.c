@@ -22,4 +22,3 @@ f (int s, char *c, char *x1, char *x2, char *x3)
 
 /* There will be four ' * ' instances for the parms, one in the code.  */
 /* { dg-final { scan-tree-dump-times " \\* " 5 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

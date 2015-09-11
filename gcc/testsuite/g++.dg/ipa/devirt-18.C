@@ -34,4 +34,3 @@ main()
 /* { dg-final { scan-tree-dump-not "A::foo" "ssa"} } */
 /* { dg-final { scan-tree-dump-not "B::foo" "ssa"} } */
 /* { dg-final { scan-tree-dump "builtin_unreachable" "ssa"} } */
-/* { dg-final { cleanup-tree-dump "ssa" } } */

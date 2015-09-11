@@ -20,16 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "symtab.h"
-#include "input.h"
-#include "alias.h"
-#include "double-int.h"
-#include "machmode.h"
-#include "flags.h"
-#include "inchash.h"
 #include "tree.h"
+#include "alias.h"
 #include "c-tree.h"
 #include "intl.h"
 #include "c-family/c-pretty-print.h"
@@ -51,7 +43,7 @@ c_missing_noreturn_ok_p (tree decl)
   return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
 }
 
-/* Called from check_global_declarations.  */
+/* Called from check_global_declaration.  */
 
 bool
 c_warn_unused_global_decl (const_tree decl)
@@ -108,14 +100,14 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   if (*spec != 'v')
     {
       t = va_arg (*text->args_ptr, tree);
-      if (set_locus && text->locus)
-	*text->locus = DECL_SOURCE_LOCATION (t);
+      if (set_locus)
+	text->set_location (0, DECL_SOURCE_LOCATION (t));
     }
 
   switch (*spec)
     {
     case 'D':
-      if (TREE_CODE (t) == VAR_DECL && DECL_HAS_DEBUG_EXPR_P (t))
+      if (VAR_P (t) && DECL_HAS_DEBUG_EXPR_P (t))
 	{
 	  t = DECL_DEBUG_EXPR (t);
 	  if (!DECL_P (t))

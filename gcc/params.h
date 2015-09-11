@@ -81,10 +81,7 @@ extern void set_param_value (const char *name, int value,
 
 enum compiler_param
 {
-#define DEFPARAM(enumerator, option, msgid, default, min, max) \
-  enumerator,
-#include "params.def"
-#undef DEFPARAM
+#include "params.list"
   LAST_PARAM
 };
 
@@ -202,6 +199,8 @@ extern void init_param_values (int *params);
   PARAM_VALUE (PARAM_IRA_LOOP_RESERVED_REGS)
 #define LRA_MAX_CONSIDERED_RELOAD_PSEUDOS \
   PARAM_VALUE (PARAM_LRA_MAX_CONSIDERED_RELOAD_PSEUDOS)
+#define LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF \
+  PARAM_VALUE (PARAM_LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF)
 #define SWITCH_CONVERSION_BRANCH_RATIO \
   PARAM_VALUE (PARAM_SWITCH_CONVERSION_BRANCH_RATIO)
 #define LOOP_INVARIANT_MAX_BBS_IN_LOOP \

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,11 +25,13 @@
 
 --  This package deals with the implementation of the Restrictions pragma
 
-with Namet;  use Namet;
-with Rident; use Rident;
+with Aspects; use Aspects;
+with Namet;   use Namet;
+with Rident;  use Rident;
+with Snames;  use Snames;
 with Table;
-with Types;  use Types;
-with Uintp;  use Uintp;
+with Types;   use Types;
+with Uintp;   use Uintp;
 
 package Restrict is
 
@@ -463,12 +465,18 @@ package Restrict is
    --  case of a Restriction_Warnings pragma specifying this restriction and
    --  False for a Restrictions pragma specifying this restriction.
 
+   procedure Set_Restriction_No_Specification_Of_Aspect (A_Id : Aspect_Id);
+   --  Version used by Get_Target_Parameters (via Tbuild)
+
    procedure Set_Restriction_No_Use_Of_Attribute
      (N       : Node_Id;
       Warning : Boolean);
    --  N is the node id for the identifier in a pragma Restrictions for
    --  No_Use_Of_Attribute. Caller has verified that this is a valid attribute
    --  designator.
+
+   procedure Set_Restriction_No_Use_Of_Attribute (A_Id : Attribute_Id);
+   --  Version used by Get_Target_Parameters (via Tbuild)
 
    procedure Set_Restriction_No_Use_Of_Entity
      (Entity  : Node_Id;
@@ -487,6 +495,9 @@ package Restrict is
       Warning : Boolean);
    --  N is the node id for the identifier in a pragma Restrictions for
    --  No_Use_Of_Pragma. Caller has verified that this is a valid pragma id.
+
+   procedure Set_Restriction_No_Use_Of_Pragma (A_Id : Pragma_Id);
+   --  Version used in call from Get_Target_Parameters (via Tbuild).
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);

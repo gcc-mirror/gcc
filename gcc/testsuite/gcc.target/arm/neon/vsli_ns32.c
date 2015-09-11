@@ -18,4 +18,3 @@ void test_vsli_ns32 (void)
 }
 
 /* { dg-final { scan-assembler "vsli\.32\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

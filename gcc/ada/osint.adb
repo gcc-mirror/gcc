@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3284,12 +3284,9 @@ package body Osint is
 
    procedure Write_With_Check (A  : Address; N  : Integer) is
       Ignore : Boolean;
-      pragma Warnings (Off, Ignore);
-
    begin
       if N = Write (Output_FD, A, N) then
          return;
-
       else
          Write_Str ("error: disk full writing ");
          Write_Name_Decoded (Output_File_Name);

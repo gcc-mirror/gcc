@@ -58,4 +58,4 @@
 /* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" { target int128 } } */
 /* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" { target int128 } } */
 /* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" { target int128 } } */
-/* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" { target int128 } } */
+/* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type '__int128 unsigned'" { target int128 } } */

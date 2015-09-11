@@ -16,4 +16,3 @@ void test_vreinterpretp8_s32 (void)
   out_poly8x8_t = vreinterpret_p8_s32 (arg0_int32x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

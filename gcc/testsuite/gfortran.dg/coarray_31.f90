@@ -19,4 +19,3 @@ end
 ! { dg-final { scan-tree-dump "a.y.x.data = D.\[0-9\]+.y.x.data;" "original" } }
 ! { dg-final { scan-tree-dump "a.y.z._data.data = D.\[0-9\]+.y.z._data.data;" "original" } }
 ! { dg-final { scan-tree-dump "a.y.d._data.data = D.\[0-9\]+.y.d._data.data;" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

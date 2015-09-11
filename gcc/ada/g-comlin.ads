@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2014, AdaCore                     --
+--                     Copyright (C) 1999-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -502,7 +502,7 @@ package GNAT.Command_Line is
    -- Expansion of command line arguments --
    -----------------------------------------
 
-   --  These subprograms take care of of expanding globbing patterns on the
+   --  These subprograms take care of expanding globbing patterns on the
    --  command line. On Unix, such expansion is done by the shell before your
    --  application is called. But on Windows you must do this expansion
    --  yourself.

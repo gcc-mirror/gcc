@@ -111,6 +111,8 @@ extern GTY(()) rtx v850_compare_op1;
 #define ASM_SPEC "%{m850es:-mv850e1}%{!mv850es:%{mv*:-mv%*}} \
 %{mrelax:-mrelax} \
 %{m8byte-align:-m8byte-align} \
+%{msoft-float:-msoft-float} \
+%{mhard-float:-mhard-float} \
 %{mgcc-abi:-mgcc-abi}"
 
 #define LINK_SPEC "%{mgcc-abi:-m v850}"
@@ -409,7 +411,7 @@ enum reg_class
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /* Define this to nonzero if the nominal address of the stack frame
    is at the high-address end of the local variables;
@@ -547,12 +549,6 @@ struct cum_arg { int nbytes; };
 
 #define FUNCTION_ARG_REGNO_P(N) (N >= 6 && N <= 9)
 
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-
-#define LIBCALL_VALUE(MODE) \
-  gen_rtx_REG (MODE, 10)
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
@@ -590,88 +586,6 @@ struct cum_arg { int nbytes; };
 /* Maximum number of registers that can appear in a valid memory address.  */
 
 #define MAX_REGS_PER_ADDRESS 1
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
-
-#ifndef REG_OK_STRICT
-
-/* Nonzero if X is a hard reg that can be used as an index
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X) 0
-/* Nonzero if X is a hard reg that can be used as a base reg
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X) 1
-#define REG_OK_FOR_INDEX_P_STRICT(X) 0
-#define REG_OK_FOR_BASE_P_STRICT(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#define STRICT 0
-
-#else
-
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) 0
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#define STRICT 1
-
-#endif
-
-
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
-
-   The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
-   except for CONSTANT_ADDRESS_P which is actually
-   machine-independent.  */
-
-/* Accept either REG or SUBREG where a register is valid.  */
-  
-#define RTX_OK_FOR_BASE_P(X)						\
-  ((REG_P (X) && REG_OK_FOR_BASE_P (X))					\
-   || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))			\
-       && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
-do {									\
-  if (RTX_OK_FOR_BASE_P (X)) 						\
-    goto ADDR;								\
-  if (CONSTANT_ADDRESS_P (X)						\
-      && (MODE == QImode || INTVAL (X) % 2 == 0)			\
-      && (GET_MODE_SIZE (MODE) <= 4 || INTVAL (X) % 4 == 0))		\
-    goto ADDR;								\
-  if (GET_CODE (X) == LO_SUM						\
-      && REG_P (XEXP (X, 0))						\
-      && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
-      && CONSTANT_P (XEXP (X, 1))					\
-      && (GET_CODE (XEXP (X, 1)) != CONST_INT				\
-	  || ((MODE == QImode || INTVAL (XEXP (X, 1)) % 2 == 0)		\
-	      && CONST_OK_FOR_K (INTVAL (XEXP (X, 1)))))		\
-      && GET_MODE_SIZE (MODE) <= GET_MODE_SIZE (word_mode))		\
-    goto ADDR;								\
-  if (special_symbolref_operand (X, MODE)				\
-      && (GET_MODE_SIZE (MODE) <= GET_MODE_SIZE (word_mode)))		\
-     goto ADDR;								\
-  if (GET_CODE (X) == PLUS						\
-      && RTX_OK_FOR_BASE_P (XEXP (X, 0)) 				\
-      && constraint_satisfied_p (XEXP (X,1), CONSTRAINT_K)		\
-      && ((MODE == QImode || INTVAL (XEXP (X, 1)) % 2 == 0)		\
-	   && CONST_OK_FOR_K (INTVAL (XEXP (X, 1)) 			\
-                              + (GET_MODE_NUNITS (MODE) * UNITS_PER_WORD)))) \
-    goto ADDR;			\
-} while (0)
-
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.
@@ -708,7 +622,7 @@ do {									\
 
 /* Indirect calls are expensive, never turn a direct call
    into an indirect call.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* The four different data regions on the v850.  */
 typedef enum 
@@ -862,7 +776,7 @@ typedef enum
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE) \
   ASM_OUTPUT_ALIGN ((FILE), (TARGET_BIG_SWITCH ? 2 : 1));
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Byte and short loads sign extend the value to a word.  */
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND

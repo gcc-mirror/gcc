@@ -2754,8 +2754,7 @@
 	  reg1 = reg0;
 	}
 
-      emit_insn (gen_rtx_SET (SImode, reg0,
-			  gen_rtx_AND (SImode, reg1, operands[2])));
+      emit_insn (gen_rtx_SET (reg0, gen_rtx_AND (SImode, reg1, operands[2])));
 
       /* Make sure we get the right *final* destination.  */
       if (! REG_P (operands[0]))
@@ -2856,8 +2855,7 @@
 	  reg1 = reg0;
 	}
 
-      emit_insn (gen_rtx_SET (HImode, reg0,
-			  gen_rtx_AND (HImode, reg1, operands[2])));
+      emit_insn (gen_rtx_SET (reg0, gen_rtx_AND (HImode, reg1, operands[2])));
 
       /* Make sure we get the right destination.  */
       if (! REG_P (operands[0]))
@@ -3520,14 +3518,12 @@
 
 (define_expand "prologue"
   [(const_int 0)]
-  "TARGET_PROLOGUE_EPILOGUE"
+  ""
   "cris_expand_prologue (); DONE;")
 
-;; Note that the (return) from the expander itself is always the last
-;; insn in the epilogue.
 (define_expand "epilogue"
   [(const_int 0)]
-  "TARGET_PROLOGUE_EPILOGUE"
+  ""
   "cris_expand_epilogue (); DONE;")
 
 ;; Conditional branches.

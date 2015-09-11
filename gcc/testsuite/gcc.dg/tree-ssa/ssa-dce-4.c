@@ -17,4 +17,3 @@ int foo(int b)
 /* Verify DCE removes all accesses to a but the last store and the
    read from a[2].  */
 /* { dg-final { scan-tree-dump-times "a\\\[\[^\n\]\\\]" 2 "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

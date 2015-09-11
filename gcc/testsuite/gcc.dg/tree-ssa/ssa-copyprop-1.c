@@ -9,4 +9,3 @@ int foo(A *a, int i)
 }
 
 /* { dg-final { scan-tree-dump "return i" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -254,6 +254,11 @@ package System.Rident is
      Restriction_Id range
        No_Specification_Of_Aspect .. Max_Storage_At_Blocking;
    --  All restrictions that take a parameter
+
+   subtype Integer_Parameter_Restrictions is
+     Restriction_Id range
+       Max_Protected_Entries .. Max_Storage_At_Blocking;
+   --  All restrictions taking an integer parameter
 
    subtype Checked_Parameter_Restrictions is
      All_Parameter_Restrictions range

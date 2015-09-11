@@ -31,4 +31,3 @@ int main()
 /* { dg-final { scan-tree-dump "b = A;" "fre1" } } */
 /* Verify we have propagated the element read all the way to the return.  */
 /* { dg-final { scan-tree-dump "return 2" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

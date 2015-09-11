@@ -1,6 +1,7 @@
 #! /bin/sh
 # Script to generate SYSROOT_SUFFIX_SPEC equivalent to MULTILIB_OSDIRNAMES
-# Arguments are MULTILIB_OSDIRNAMES, MULTILIB_OPTIONS and MULTILIB_MATCHES.
+# Arguments are MULTILIB_OSDIRNAMES, MULTILIB_OPTIONS, MULTILIB_MATCHES,
+# and MULTILIB_REUSE.
 
 # Copyright (C) 2009-2015 Free Software Foundation, Inc.
 
@@ -29,10 +30,11 @@
 #          MULTILIB_OSDIRNAMES \
 #          MULTILIB_OPTIONS \
 #          MULTILIB_MATCHES \
+#          MULTILIB_REUSE
 #      > t-sysroot-suffix.h
 
-# The three options exactly correspond to the variables of the same
-# names defined in the tmake_file fragments.
+# The four options exactly correspond to the variables of the same
+# names defined in the t-sysroot-suffix tmake_file fragment.
 
 # Example:
 #   sh ./gcc/config/print-sysroot-suffix.sh "a=A" "a b/c/d" ""
@@ -54,6 +56,7 @@ set -e
 dirnames="$1"
 options="$2"
 matches="$3"
+reuse="$4"
 
 cat > print-sysroot-suffix3.sh <<\EOF
 #! /bin/sh
@@ -80,7 +83,14 @@ shift 2
 n="\" \\
 $padding\""
 if [ $# = 0 ]; then
+  case $optstring in
 EOF
+for x in $reuse; do
+  l=`echo $x | sed -e 's/=.*$//' -e 's/\./=/g'`
+  r=`echo $x | sed -e 's/^.*=//' -e 's/\./=/g'`
+  echo "/$r/) optstring=\"/$l/\" ;;" >> print-sysroot-suffix2.sh
+done
+echo "  esac" >> print-sysroot-suffix2.sh
 
 pat=
 for x in $dirnames; do

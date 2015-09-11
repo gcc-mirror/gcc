@@ -27,8 +27,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 
 #ifndef LIBFFI_ASM
+#ifdef __ILP32__
+#define FFI_SIZEOF_ARG 8
+typedef unsigned long long ffi_arg;
+typedef signed long long ffi_sarg;
+#else
 typedef unsigned long ffi_arg;
 typedef signed long ffi_sarg;
+#endif
 
 typedef enum ffi_abi
   {
@@ -42,7 +48,13 @@ typedef enum ffi_abi
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
+#if defined (__APPLE__)
+#define FFI_TRAMPOLINE_SIZE 20
+#define FFI_TRAMPOLINE_CLOSURE_OFFSET 16
+#else
 #define FFI_TRAMPOLINE_SIZE 24
+#define FFI_TRAMPOLINE_CLOSURE_OFFSET FFI_TRAMPOLINE_SIZE
+#endif
 #define FFI_NATIVE_RAW_API 0
 
 /* ---- Internal ---- */

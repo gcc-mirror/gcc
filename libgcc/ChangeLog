@@ -1,3 +1,449 @@
+2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/gthr-rtems.h (__GTHREADS_CXX0X): New.
+	(__GTHREAD_HAS_COND): Likewise.
+	(__gthread_t): Likewise.
+	(__gthread_cond_t): Likewise.
+	(__gthread_time_t): Likewise.
+	(__GTHREAD_MUTEX_INIT): Likewise.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT): Likewise.
+	(__GTHREAD_COND_INIT): Likewise.
+	(__GTHREAD_COND_INIT_FUNCTION): Likewise.
+	(__GTHREAD_TIME_INIT): Likewise.
+	(__gthread_create): Likewise.
+	(__gthread_join): Likewise.
+	(__gthread_detach): Likewise.
+	(__gthread_equal): Likewise.
+	(__gthread_self): Likewise.
+	(__gthread_yield): Likewise.
+	(__gthread_cond_broadcast): Likewise.
+	(__gthread_cond_signal): Likewise.
+	(__gthread_cond_wait): Likewise.
+	(__gthread_cond_timedwait): Likewise.
+	(__gthread_cond_wait_recursive): Likewise.
+	(__gthread_cond_destroy): Likewise.
+	(rtems_gxx_once): Delete.
+	(rtems_gxx_key_create): Likewise.
+	(rtems_gxx_key_delete): Likewise.
+	(rtems_gxx_getspecific): Likewise.
+	(rtems_gxx_setspecific): Likewise.
+	(rtems_gxx_mutex_init): Likewise.
+	(rtems_gxx_mutex_destroy): Likewise.
+	(rtems_gxx_mutex_lock): Likewise.
+	(rtems_gxx_mutex_trylock): Likewise.
+	(rtems_gxx_mutex_unlock): Likewise.
+	(rtems_gxx_recursive_mutex_init): Likewise.
+	(rtems_gxx_recursive_mutex_lock): Likewise.
+	(rtems_gxx_recursive_mutex_trylock): Likewise.
+	(rtems_gxx_recursive_mutex_unlock): Likewise.
+	(__GTHREAD_ONCE_INIT): Use <pthread.h> initializer.
+	(__GTHREAD_MUTEX_INIT_FUNCTION): Use <pthread.h> function.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION): Likewise.
+	(__gthread_once): Likewise.
+	(__gthread_key_create): Likewise.
+	(__gthread_key_delete): Likewise.
+	(__gthread_getspecific): Likewise.
+	(__gthread_setspecific): Likewise.
+	(__gthread_key_t): Use <pthread.h> type.
+	(__gthread_once_t): Likewise
+	(__gthread_mutex_t): Use <sys/lock.h> type.
+	(__gthread_recursive_mutex_t): Likewise
+	(__gthread_mutex_lock): Use <sys/lock.h> function.
+	(__gthread_mutex_trylock): Likewise.
+	(__gthread_mutex_timedlock): Likewise.
+	(__gthread_mutex_unlock): Likewise.
+	(__gthread_mutex_destroy): Likewise.
+	(__gthread_recursive_mutex_lock): Likewise.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_recursive_mutex_timedlock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_destroy): Likewise.
+
+2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/unwind-dw2-xtensa.c (_Unwind_GetCFA): Return
+	context->sp instead of context->cfa.
+
+2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/t-windowed (LIB2ADDEH): Replace unwind-dw2-fde
+	with unwind-dw2-fde-dip.
+
+2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/lib2funcs.S (__xtensa_libgcc_window_spill): Use
+	CALL12 followed by series of ENTRY to spill windowed registers.
+	(__xtensa_nonlocal_goto): Call __xtensa_libgcc_window_spill
+	instead of making linux spill syscall.
+
+2015-08-14  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/cpuinfo.c (enum processor_subtypes): Add skylake.
+	(get_intel_cpu): Likewise.
+
+2015-08-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (processor_types): Add INTEL_KNL.
+	(get_intel_cpu): Add Knights Landing support.
+
+2015-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66954
+	* config/i386/cpuinfo.c (enum processor_features): Add FEATURE_PCLMUL.
+	(get_available_features): Handle FEATURE_PCLMUL.
+
+2015-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Treat model == 0x4f as
+	Broadwell.
+
+2015-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66954
+	* config/i386/cpuinfo.c (enum processor_features): Add FEATURE_AES.
+	(get_available_features): Handle FEATURE_AES.
+
+2015-07-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/linux-atomic.c (<asm/unistd.h>): Remove #include.
+	(EFAULT,EBUSY,ENOSYS): Delete unused #defines.
+
+2015-07-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* offloadstuff.c: Constify host data.
+
+2015-07-17  Jan Beulich  <jbeulich@suse.com>
+
+	* config/t-softfp: Split up "else ifneq".
+
+2015-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/tramp.c (MOVHI, ORI, JMP): Conditionalize
+	for __nios2_arch__ level.
+
+2015-07-13  John Marino  <gnugcc@marino.st>
+
+	* config/i386/t-dragonfly: New.
+
+2015-07-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg): Reorder arguments to
+	better match light-weight syscall argument order.
+	(__kernel_cmpxchg2): Likewise.
+	Adjust callers.
+
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.host: Support i[34567]86-*-elfiamcu target.
+	* config/t-softfp-sfdftf: New file.
+	* config/i386/32/t-iamcu: Likewise.
+	* configure: Regenerated.
+
+2015-06-23  James Lemke  <jwlemke@codesourcery.com>
+
+	libgcc/config/arm/
+	* lib1funcs.S (aeabi_idiv0, aeabi_ldiv0): Add CFI entries.
+
+2015-05-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (CRTSTUFF_CFLAGS): Add $(NO_PIE_CFLAGS).
+
+2015-05-27  John Marino <gnugcc@marino.st>
+
+	* config.host (i[34567]86-*-freebsd*, x86_64-*-freebsd*): Set
+	md_unwind_header
+	* config/i386/freebsd-unwind.h: New.
+
+2015-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.host (i[34567]-*-*, x86_64-*-*): Add t-crtfm instead of
+	i386/t-crtfm to tmake_file.
+	* config/i386/crtfastmath.c (set_fast_math_sse): New function.
+	(set_fast_math): Use set_fast_math_sse for SSE targets.
+	* config/i386/t-crtfm: Remove.
+
+2015-05-21  Alan Modra  <amodra@gmail.com>
+
+	PR libgcc/66225
+	* config/rs6000/morestack.S: Remove ".abiversion 1".
+
+2015-05-20  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S: New.
+	* config/rs6000/t-stack-rs6000: New.
+	* config.host (powerpc*-*-linux*): Add t-stack and t-stack-rs6000
+	to tmake_file.
+	* generic-morestack.c: Don't build for powerpc 32-bit.
+
+2015-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (LIBUNWIND): Move dependency for shared libgcc.
+	Remove useless endif/ifneq ($(enable_shared),yes) pair.
+
+2015-05-16  James Bowman  <james.bowman@ftdichip.com>
+
+	* config.host: FT32 target added.
+	* config/ft32/*: New files for FT32 target.
+
+2015-05-15  Martin Galvan  <martin.galvan@tallertechnologies.com>
+
+        * config/arm/lib1funcs.S (CFI_START_FUNCTION, CFI_END_FUNCTION):
+        New macros.
+        * config/arm/ieee754-df.S: Add CFI directives.
+        * config/arm/ieee754-sf.S: Add CFI directives.
+
+2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Include config/sjlj.m4.
+	Remove manual SJLJ check, add GCC_CHECK_SJLJ_EXCEPTIONS and adjust.
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* config.host: Replace enable_sjlj_exceptions by ac_cv_sjlj_exceptions.
+
+2015-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libgcov-util.c: Add space between string literal and macro name.
+
+2015-05-06  Sandra Loosemore  <sandra@codesourcery.com>
+	    Chris Jones  <chrisj@nvidia.com>
+	    Joshua Conner  <jconner@nvidia.com>
+
+	* config.host (arm*-*-linux*): Add support for crtfastmath.o.
+	(arm*-*-uclinux*): Likewise.
+	(arm*-*-eabi* | arm*-*-rtems*): Likewise.
+	* config/arm/crtfastmath.c: New file.
+
+2014-04-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* Makefile.in (real_host_noncanonical): New variable.
+	(libsubdir): Use it.
+	* configure.ac (real_host_noncanonical): Compute.  Remove special
+	case for intelmicemul.
+	* configure: Regenerate.
+
+2015-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/frv/elf-lib.h: New file.
+	(CRT_GET_RFIB_DATA): Move definition from gcc/config/frv/frv.h.
+	* libgcc/config.host (frv-*elf, frv-*-*linux*): Add frv/elf-lib.h
+	to tm_file.
+
+2015-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/frv/frvbengin.c: Do not include defaults.h
+	* config/frv/frvend.c: Ditto.
+
+2015-04-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host: Add h8300-*-linux
+	* config/h8300/t-linux: New file.
+	* config/h8300/lib1funs.s: Change symbol prefix.
+	* config/h8300/sfp-machine.h: 64bit double support.
+
+2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* unwind-dw2-fde-dip.c (USE_PT_GNU_EH_FRAME): Define it on
+	Linux if target provides dl_iterate_phdr.
+
+2015-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65612
+	* config.host (tmake_file): Add t-slibgcc-libgcc for Linux/x86.
+	* config/i386/cpuinfo.c (__cpu_model): Initialize.
+	(__cpu_indicator_init@GCC_4.8.0): New.
+	(__cpu_model@GCC_4.8.0): Likewise.
+	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): Add
+	-DUSE_ELF_SYMVER.
+
+2015-04-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/divmodhi.S: Add G14 and G13 versions of the __divhi3
+	and __modhi3 functions.
+	* config/rl78/divmodso.S: Add G14 and G13 versions of the
+	__divsi3, __udivsi3, __modsi3 and __umodsi3 functions.
+
+2015-04-15  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* gthr-single.h (__GTHREAD_MUTEX_INIT_FUNCTION): Use empty
+	do-while loop as macro body to avoid warnings.
+
+2015-04-10  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
+2015-03-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config.host (nios2-*-linux*): Remove 'extra_parts' setting.
+
+2015-03-03  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Implement call0 ABI for xtensa
+	* config/xtensa/lib2funcs.S (__xtensa_libgcc_window_spill,
+	__xtensa_nonlocal_goto): Don't compile for call0 ABI.
+	(__xtensa_sync_caches): Only use entry and retw in windowed ABI,
+	use ret in call0 ABI.
+	* config/xtensa/t-windowed: New file.
+	* libgcc/config/xtensa/t-xtensa (LIB2ADDEH): Move to t-windowed.
+	* libgcc/configure: Regenerated.
+	* libgcc/configure.ac: Check if xtensa target is configured for
+	windowed ABI and thus needs to use custom unwind code.
+
+2015-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libgcc/64885
+	* gthr-single.h: Use __unused__ attribute instead of unused.
+	* config/gthr-vxworks.h: Likewise.
+	* config/i386/gthr-win32.h: Likewise.
+
+2015-02-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/65038
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* configure.ac (AC_HEADER_STDC): Added explicit.
+	(AC_CHECK_HEADERS): Check for default headers  plus
+	for ftw.h header.
+	* libgcov-util.c (gcov_read_profile_dir): Disable use
+	of ftw-function, if header is not found.
+	(ftw_read_file): Likewise.
+
+2015-02-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/65181
+	* config/nvptx/t-nvptx (INHIBIT_LIBC_CFLAGS): Define to
+	-Dinhibit_libc.
+
+2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/arm/bpabi.S (test_div_by_zero): Make label names
+	consistent between thumb2 and arm mode cases.  Separate the
+	signed comparison on the high word of the numerator from the
+	unsigned comparison on the low word.
+	* config/arm/bpabi-v6m.S (test_div_by_zero): Similarly separate
+	signed comparison.
+
+2015-02-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/nvptx/realloc.c: Include <stddef.h> instead of <stdlib.h>
+	and <string.h>.
+	(__nvptx_realloc): Call __builtin_memcpy instead of memcpy.
+
+2015-02-10  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	PR gcov-profile/61889
+	* libgcov-driver-system.c: undefine clashing macro for mkdir.
+
+2015-02-02  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/fpmath-sf.S (__rl78_int_pack_a_r8): Fix edge case
+	rounding up the fraction.
+
+2015-01-31  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg2): Change declaration of
+	oldval and newval to const void *.  Fix typo.
+	(FETCH_AND_OP_2): Use __atomic_load_n to load value.
+	(FETCH_AND_OP_WORD): Likewise.
+	(OP_AND_FETCH_WORD): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(__sync_val_compare_and_swap_4): Likewise.
+	(__sync_lock_test_and_set_4): Likewise.
+	(SYNC_LOCK_RELEASE_2): Likewise.
+	Remove support for long long atomic operations.
+
+2015-01-27  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* Makefile.in: Move rules to build vtv_*.o out of the check
+	for CUSTOM_CRTSTUFF.
+	* config.host (i[34567]86-*-cygwin*, x86_64-*-cygwin*,
+	i[34567]86-*-mingw*)
+	 (x86_64-*-mingw*): Only add vtv_*.o to extra_parts if
+	enable_vtable_verify.
+
+2015-01-27  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/cmpsi2.S: Use function start and end macros.
+	(__gcc_bcmp): New function.
+	* config/rl78/lshrsi3.S: Use function start and end macros.
+	* config/rl78/mulsi3.S: Add support for G10.
+	(__mulqi3): New function for G10.
+	* config/rl78/signbit.S: Use function start and end macros.
+	* config/rl78/t-rl78 (LIB2ADD): Add bit-count.S, fpbit-sf.S and
+	fpmath-sf.S.
+	(LIB2FUNCS_EXCLUDE): Define.
+	(LIB2FUNCS_ST): Define.
+	* config/rl78/trampoline.S: Use function start and end macros.
+	* config/rl78/vregs.h (START_FUNC): New macro.
+	(START_ANOTHER_FUNC): New macro.
+	(END_FUNC): New macro.
+	(END_ANOTHER_FUNC): New macro.
+	* config/rl78/bit-count.S: New file.  Contains assembler
+	implementations of the bit counting functions: ___clzhi2,
+	__clzsi2, ctzhi2, ctzsi2, ffshi2, ffssi2, __partityhi2,
+	__paritysi2, __popcounthi2 and __popcountsi2.
+	* config/rl78/fpbit-sf.S: New file.  Contains assembler
+	implementationas of the math functions: __negsf2, __cmpsf2,
+	__eqsf2, __nesf2, __lesf2, __ltsf2, __gesf2, gtsf2, __unordsf2,
+	__fixsfsi,  __fixunssfsi, __floatsisf and __floatunssisf.
+	* config/rl78/fpmath-sf.S: New file.  Contains assembler
+	implementations of the math functions: __subsf3, __addsf3,
+	__mulsf3 and __divsf3
+
+2015-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*):
+	Add i386/elf-lib.h to tm_file.
+	* config/i386/elf-lib.h: Fix comment.
+	* unwind-dw2-fde-dip.c (_Unwind_IteratePhdrCallback) [__x86_64__
+	&& __sun__ && __svr4__]: Remove workaround.
+
+2015-01-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	* config/i386/cpuinfo.c (enum processor_features): Add FEATURE_BMI and
+	FEATURE_BMI2.
+	(get_available_features): Detect FEATURE_BMI and FEATURE_BMI2.
+
+2015-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (processor_subtypes): Add
+	INTEL_COREI7_BROADWELL.
+	(get_intel_cpu): Support new Silvermont, Haswell and Broadwell
+	model numbers.
+
+2015-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/elf-lib.h: New file.
+	(CRT_GET_RFIB_DATA): Move definition from gcc/config/i386/gnu-user.h.
+	Wrap definition in #ifdef __i386__.
+	* libgcc/config.host (i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu)
+	(i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*)
+	(i[34567]86-*-kopensolaris*-gnu, x86_64-*-linux*)
+	(x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu): Add i386/elf-lib.h
+	to tm_file.
+
+2015-01-22  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* unwind-dw2-fde.h (last_fde): Use "(const fde *)" instead of
+	"(char *)" to avoid qualifier warning by 'xgcc' compiling.
+
+2015-01-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/linux-unwind.h (nios2_fallback_frame_state):
+	Update rt_sigframe format and address for current Nios II
+	Linux conventions.
+
 2015-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.host (arm*-*-freebsd*): Add new configuration for
@@ -87,7 +533,7 @@
 	(SUBWORD_BOOL_CAS): Likewise.
 	(FETCH_AND_OP_WORD): Update.
 	Consistently use signed types.
-	
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
@@ -755,7 +1201,7 @@
 	(__gcov_delta_counter_op): Process delta profile counter values.
 	(__gcov_single_counter_op): Process single  profile counter values.
 	(fp_scale): Callback function for float-point scaling.
-	(int_scale): Callback function for integer fraction scaling. 
+	(int_scale): Callback function for integer fraction scaling.
 	(gcov_profile_scale): Scaling profile counters.
 	(gcov_profile_normalize): Normalize profile counters.
 	* libgcov.h: Add headers and functions for gcov-tool use.
@@ -1184,7 +1630,7 @@
 	(gcov_exit_merge_summary): Ditto.
 	(gcov_exit_dump_gcov): Ditto.
 
-2014-01-08  Rong Xu  <xur@google.com> 
+2014-01-08  Rong Xu  <xur@google.com>
 
 	* libgcov-driver.c: Use libgcov.h.
 	(buffer_fn_data): Use xmalloc instead of malloc.
@@ -2074,7 +2520,7 @@
 	* config/mips/crtn.S (fini, init): New labels.
 
 2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
-	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000 
+	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000
 	as dividend.
 
 2013-02-16  Alan Modra  <amodra@gmail.com>

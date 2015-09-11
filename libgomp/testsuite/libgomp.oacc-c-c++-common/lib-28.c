@@ -23,4 +23,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: \[\(nil\),256\] is not mapped" } */
+/* { dg-output "\\\[\[^\n\r]*,256\\\] is not mapped" } */
+/* { dg-shouldfail "" } */

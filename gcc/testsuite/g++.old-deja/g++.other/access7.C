@@ -4,8 +4,8 @@
 
 
 class A {
-  static int I1;		// { dg-error "" } private
-  struct B1 { };		// { dg-error "" } private
+  static int I1;		// { dg-message "" } private
+  struct B1 { };		// { dg-message "" } private
 public:
   static int I2;
   struct B2 { };

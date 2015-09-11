@@ -10,7 +10,7 @@ void f();
 
 SA(!noexcept(f()));
 
-void g() throw (int);		// { dg-error "previous declaration" }
+void g() throw (int);		// { dg-message "previous declaration" }
 void g() noexcept(false);	// { dg-error "different exception" }
 void g();
 
@@ -20,7 +20,7 @@ void h() throw();
 void h() noexcept;
 
 template <class T>
-void g (T) noexcept(noexcept(T())); // { dg-error "previous declaration" }
+void g (T) noexcept(noexcept(T())); // { dg-message "previous declaration" }
 template <class T>
 void g (T) noexcept(noexcept(T(0))); // { dg-error "different exception" }
 

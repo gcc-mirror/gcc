@@ -115,18 +115,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "output.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "vtable-verify.h"
@@ -566,11 +557,11 @@ register_construction_vtables (tree base_class, tree record_type,
                   if (TREE_OPERAND (value, 0))
                     val_vtbl_decl = TREE_OPERAND (value, 0);
 
-                  while (TREE_CODE (val_vtbl_decl) != VAR_DECL
+                  while (!VAR_P (val_vtbl_decl)
                          && TREE_OPERAND (val_vtbl_decl, 0))
                     val_vtbl_decl = TREE_OPERAND (val_vtbl_decl, 0);
 
-                  gcc_assert (TREE_CODE (val_vtbl_decl) == VAR_DECL);
+		  gcc_assert (VAR_P (val_vtbl_decl));
 
                   /* Check to see if we already have this vtable pointer in
                      our valid set for this base class.  */
@@ -885,7 +876,7 @@ output_set_info (tree record_type, vec<tree> vtbl_ptr_array)
           if (TREE_CODE (arg0) == ADDR_EXPR)
             arg0 = TREE_OPERAND (arg0, 0);
 
-          if (TREE_CODE (arg0) == VAR_DECL)
+	  if (VAR_P (arg0))
             vptr_name = IDENTIFIER_POINTER (DECL_NAME (arg0));
 
           if (TREE_CODE (arg1) == INTEGER_CST)
@@ -1194,7 +1185,11 @@ vtv_generate_init_routine (void)
       TREE_STATIC (vtv_fndecl) = 1;
       TREE_USED (vtv_fndecl) = 1;
       DECL_PRESERVE_P (vtv_fndecl) = 1;
+#if defined (TARGET_PECOFF)
+      if (flag_vtable_verify == VTV_PREINIT_PRIORITY && !TARGET_PECOFF)
+#else
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY)
+#endif
         DECL_STATIC_CONSTRUCTOR (vtv_fndecl) = 0;
 
       gimplify_function_tree (vtv_fndecl);
@@ -1202,7 +1197,11 @@ vtv_generate_init_routine (void)
 
       symtab->process_new_functions ();
 
+#if defined (TARGET_PECOFF)
+      if (flag_vtable_verify == VTV_PREINIT_PRIORITY && !TARGET_PECOFF)
+#else
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY)
+#endif
         assemble_vtv_preinit_initializer (vtv_fndecl);
 
     }

@@ -8,7 +8,7 @@ class foo {
 public:
    foo() {}
 protected:
-   ~foo() {} // { dg-error "~foo" }
+   ~foo() {} // { dg-message "protected" }
 };
 
 int main()

@@ -23,15 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-table.h"
-#include "ggc.h"
 #include "ggc-internal.h"
 #include "diagnostic-core.h"
 #include "params.h"
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 #include "plugin.h"
-#include "vec.h"
 #include "timevar.h"
 
 /* When set, ggc_collect will do collection.  */
@@ -240,22 +237,21 @@ struct ptr_data
 
 /* Helper for hashing saving_htab.  */
 
-struct saving_hasher : typed_free_remove <ptr_data>
+struct saving_hasher : free_ptr_hash <ptr_data>
 {
-  typedef ptr_data value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef void *compare_type;
+  static inline hashval_t hash (const ptr_data *);
+  static inline bool equal (const ptr_data *, const void *);
 };
 
 inline hashval_t
-saving_hasher::hash (const value_type *p)
+saving_hasher::hash (const ptr_data *p)
 {
   return POINTER_HASH (p->obj);
 }
 
 inline bool
-saving_hasher::equal (const value_type *p1, const compare_type *p2)
+saving_hasher::equal (const ptr_data *p1, const void *p2)
 {
   return p1->obj == p2;
 }
@@ -395,7 +391,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 	    {
 	      if (fwrite (&ptr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error ("can%'t write PCH file: %m");
+		fatal_error (input_location, "can%'t write PCH file: %m");
 	    }
 	  else
 	    {
@@ -403,7 +399,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 		saving_htab->find_with_hash (ptr, POINTER_HASH (ptr));
 	      if (fwrite (&new_ptr->new_addr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error ("can%'t write PCH file: %m");
+		fatal_error (input_location, "can%'t write PCH file: %m");
 	    }
 	}
 }
@@ -472,7 +468,7 @@ gt_pch_save (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fwrite (rti->base, rti->stride, 1, f) != 1)
-	fatal_error ("can%'t write PCH file: %m");
+	fatal_error (input_location, "can%'t write PCH file: %m");
 
   /* Write out all the global pointers, after translation.  */
   write_pch_globals (gt_ggc_rtab, &state);
@@ -483,17 +479,17 @@ gt_pch_save (FILE *f)
     long o;
     o = ftell (state.f) + sizeof (mmi);
     if (o == -1)
-      fatal_error ("can%'t get position in PCH file: %m");
+      fatal_error (input_location, "can%'t get position in PCH file: %m");
     mmi.offset = mmap_offset_alignment - o % mmap_offset_alignment;
     if (mmi.offset == mmap_offset_alignment)
       mmi.offset = 0;
     mmi.offset += o;
   }
   if (fwrite (&mmi, sizeof (mmi), 1, state.f) != 1)
-    fatal_error ("can%'t write PCH file: %m");
+    fatal_error (input_location, "can%'t write PCH file: %m");
   if (mmi.offset != 0
       && fseek (state.f, mmi.offset, SEEK_SET) != 0)
-    fatal_error ("can%'t write padding to PCH file: %m");
+    fatal_error (input_location, "can%'t write padding to PCH file: %m");
 
   ggc_pch_prepare_write (state.d, state.f);
 
@@ -615,7 +611,7 @@ gt_pch_restore (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fread (rti->base, rti->stride, 1, f) != 1)
-	fatal_error ("can%'t read PCH file: %m");
+	fatal_error (input_location, "can%'t read PCH file: %m");
 
   /* Read in all the global pointers, in 6 easy loops.  */
   for (rt = gt_ggc_rtab; *rt; rt++)
@@ -623,23 +619,23 @@ gt_pch_restore (FILE *f)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,
 		   sizeof (void *), 1, f) != 1)
-	  fatal_error ("can%'t read PCH file: %m");
+	  fatal_error (input_location, "can%'t read PCH file: %m");
 
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
-    fatal_error ("can%'t read PCH file: %m");
+    fatal_error (input_location, "can%'t read PCH file: %m");
 
   result = host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size,
 					  fileno (f), mmi.offset);
   if (result < 0)
-    fatal_error ("had to relocate PCH");
+    fatal_error (input_location, "had to relocate PCH");
   if (result == 0)
     {
       if (fseek (f, mmi.offset, SEEK_SET) != 0
 	  || fread (mmi.preferred_base, mmi.size, 1, f) != 1)
-	fatal_error ("can%'t read PCH file: %m");
+	fatal_error (input_location, "can%'t read PCH file: %m");
     }
   else if (fseek (f, mmi.offset + mmi.size, SEEK_SET) != 0)
-    fatal_error ("can%'t read PCH file: %m");
+    fatal_error (input_location, "can%'t read PCH file: %m");
 
   ggc_pch_read (f, mmi.preferred_base);
 
@@ -830,136 +826,177 @@ init_ggc_heuristics (void)
 #endif
 }
 
-/* Datastructure used to store per-call-site statistics.  */
-struct ggc_loc_descriptor
+/* GGC memory usage.  */
+struct ggc_usage: public mem_usage
 {
-  const char *file;
-  int line;
-  const char *function;
-  int times;
-  size_t allocated;
-  size_t overhead;
-  size_t freed;
-  size_t collected;
+  /* Default constructor.  */
+  ggc_usage (): m_freed (0), m_collected (0), m_overhead (0) {}
+  /* Constructor.  */
+  ggc_usage (size_t allocated, size_t times, size_t peak,
+	     size_t freed, size_t collected, size_t overhead)
+    : mem_usage (allocated, times, peak),
+    m_freed (freed), m_collected (collected), m_overhead (overhead) {}
+
+  /* Comparison operator.  */
+  inline bool
+  operator< (const ggc_usage &second) const
+  {
+    return (get_balance () == second.get_balance () ?
+	    (m_peak == second.m_peak ? m_times < second.m_times
+	     : m_peak < second.m_peak)
+	      : get_balance () < second.get_balance ());
+  }
+
+  /* Register overhead of ALLOCATED and OVERHEAD bytes.  */
+  inline void
+  register_overhead (size_t allocated, size_t overhead)
+  {
+    m_allocated += allocated;
+    m_overhead += overhead;
+    m_times++;
+  }
+
+  /* Release overhead of SIZE bytes.  */
+  inline void
+  release_overhead (size_t size)
+  {
+    m_freed += size;
+  }
+
+  /* Sum the usage with SECOND usage.  */
+  ggc_usage
+  operator+ (const ggc_usage &second)
+  {
+    return ggc_usage (m_allocated + second.m_allocated,
+		      m_times + second.m_times,
+		      m_peak + second.m_peak,
+		      m_freed + second.m_freed,
+		      m_collected + second.m_collected,
+		      m_overhead + second.m_overhead);
+  }
+
+  /* Dump usage with PREFIX, where TOTAL is sum of all rows.  */
+  inline void
+  dump (const char *prefix, ggc_usage &total) const
+  {
+    long balance = get_balance ();
+    fprintf (stderr,
+	     "%-48s %10li:%5.1f%%%10li:%5.1f%%"
+	     "%10li:%5.1f%%%10li:%5.1f%%%10li\n",
+	     prefix, (long)m_collected,
+	     get_percent (m_collected, total.m_collected),
+	     (long)m_freed, get_percent (m_freed, total.m_freed),
+	     (long)balance, get_percent (balance, total.get_balance ()),
+	     (long)m_overhead, get_percent (m_overhead, total.m_overhead),
+	     (long)m_times);
+  }
+
+  /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
+  inline void
+  dump (mem_location *loc, ggc_usage &total) const
+  {
+    char *location_string = loc->to_string ();
+
+    dump (location_string, total);
+
+    free (location_string);
+  }
+
+  /* Dump footer.  */
+  inline void
+  dump_footer ()
+  {
+    print_dash_line ();
+    dump ("Total", *this);
+    print_dash_line ();
+  }
+
+  /* Get balance which is GGC allocation leak.  */
+  inline long
+  get_balance () const
+  {
+    return m_allocated + m_overhead - m_collected - m_freed;
+  }
+
+  typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
+
+  /* Compare wrapper used by qsort method.  */
+  static int
+  compare (const void *first, const void *second)
+  {
+    const mem_pair_t f = *(const mem_pair_t *)first;
+    const mem_pair_t s = *(const mem_pair_t *)second;
+
+    return (*f.second) < (*s.second);
+  }
+
+  /* Compare rows in final GGC summary dump.  */
+  static int
+  compare_final (const void *first, const void *second)
+  {
+    typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
+
+    const ggc_usage *f = ((const mem_pair_t *)first)->second;
+    const ggc_usage *s = ((const mem_pair_t *)second)->second;
+
+    size_t a = f->m_allocated + f->m_overhead - f->m_freed;
+    size_t b = s->m_allocated + s->m_overhead - s->m_freed;
+
+    return a == b ? 0 : (a < b ? 1 : -1);
+  }
+
+  /* Dump header with NAME.  */
+  static inline void
+  dump_header (const char *name)
+  {
+    fprintf (stderr, "%-48s %11s%17s%17s%16s%17s\n", name, "Garbage", "Freed",
+	     "Leak", "Overhead", "Times");
+    print_dash_line ();
+  }
+
+  /* Freed memory in bytes.  */
+  size_t m_freed;
+  /* Collected memory in bytes.  */
+  size_t m_collected;
+  /* Overhead memory in bytes.  */
+  size_t m_overhead;
 };
 
-/* Hash table helper.  */
+/* GCC memory description.  */
+static mem_alloc_description<ggc_usage> ggc_mem_desc;
 
-struct ggc_loc_desc_hasher : typed_noop_remove <ggc_loc_descriptor>
+/* Dump per-site memory statistics.  */
+
+void
+dump_ggc_loc_statistics (bool final)
 {
-  typedef ggc_loc_descriptor value_type;
-  typedef ggc_loc_descriptor compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-};
+  if (! GATHER_STATISTICS)
+    return;
 
-inline hashval_t
-ggc_loc_desc_hasher::hash (const value_type *d)
-{
-  return htab_hash_pointer (d->function) | d->line;
-}
+  ggc_force_collect = true;
+  ggc_collect ();
 
-inline bool
-ggc_loc_desc_hasher::equal (const value_type *d, const compare_type *d2)
-{
-  return (d->file == d2->file && d->line == d2->line
-	  && d->function == d2->function);
-}
+  ggc_mem_desc.dump (GGC_ORIGIN, final ? ggc_usage::compare_final : NULL);
 
-/* Hashtable used for statistics.  */
-static hash_table<ggc_loc_desc_hasher> *loc_hash;
-
-struct ggc_ptr_hash_entry
-{
-  void *ptr;
-  struct ggc_loc_descriptor *loc;
-  size_t size;
-};
-
-/* Helper for ptr_hash table.  */
-
-struct ptr_hash_hasher : typed_noop_remove <ggc_ptr_hash_entry>
-{
-  typedef ggc_ptr_hash_entry value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-};
-
-inline hashval_t
-ptr_hash_hasher::hash (const value_type *d)
-{
-  return htab_hash_pointer (d->ptr);
-}
-
-inline bool
-ptr_hash_hasher::equal (const value_type *p, const compare_type *p2)
-{
-  return (p->ptr == p2);
-}
-
-/* Hashtable converting address of allocated field to loc descriptor.  */
-static hash_table<ptr_hash_hasher> *ptr_hash;
-
-/* Return descriptor for given call site, create new one if needed.  */
-static struct ggc_loc_descriptor *
-make_loc_descriptor (const char *name, int line, const char *function)
-{
-  struct ggc_loc_descriptor loc;
-  struct ggc_loc_descriptor **slot;
-
-  loc.file = name;
-  loc.line = line;
-  loc.function = function;
-  if (!loc_hash)
-    loc_hash = new hash_table<ggc_loc_desc_hasher> (10);
-
-  slot = loc_hash->find_slot (&loc, INSERT);
-  if (*slot)
-    return *slot;
-  *slot = XCNEW (struct ggc_loc_descriptor);
-  (*slot)->file = name;
-  (*slot)->line = line;
-  (*slot)->function = function;
-  return *slot;
+  ggc_force_collect = false;
 }
 
 /* Record ALLOCATED and OVERHEAD bytes to descriptor NAME:LINE (FUNCTION).  */
 void
-ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
-		     const char *name, int line, const char *function)
+ggc_record_overhead (size_t allocated, size_t overhead, void *ptr MEM_STAT_DECL)
 {
-  struct ggc_loc_descriptor *loc = make_loc_descriptor (name, line, function);
-  struct ggc_ptr_hash_entry *p = XNEW (struct ggc_ptr_hash_entry);
-  ggc_ptr_hash_entry **slot;
+  ggc_usage *usage = ggc_mem_desc.register_descriptor (ptr, GGC_ORIGIN, false
+						       FINAL_PASS_MEM_STAT);
 
-  p->ptr = ptr;
-  p->loc = loc;
-  p->size = allocated + overhead;
-  if (!ptr_hash)
-    ptr_hash = new hash_table<ptr_hash_hasher> (10);
-  slot = ptr_hash->find_slot_with_hash (ptr, htab_hash_pointer (ptr), INSERT);
-  gcc_assert (!*slot);
-  *slot = p;
-
-  loc->times++;
-  loc->allocated+=allocated;
-  loc->overhead+=overhead;
+  ggc_mem_desc.register_object_overhead (usage, allocated + overhead, ptr);
+  usage->register_overhead (allocated, overhead);
 }
 
-/* Helper function for prune_overhead_list.  See if SLOT is still marked and
-   remove it from hashtable if it is not.  */
-int
-ggc_prune_ptr (ggc_ptr_hash_entry **slot, void *b ATTRIBUTE_UNUSED)
+/* Notice that the pointer has been freed.  */
+void
+ggc_free_overhead (void *ptr)
 {
-  struct ggc_ptr_hash_entry *p = *slot;
-  if (!ggc_marked_p (p->ptr))
-    {
-      p->loc->collected += p->size;
-      ptr_hash->clear_slot (slot);
-      free (p);
-    }
-  return 1;
+  ggc_mem_desc.release_object_overhead (ptr);
 }
 
 /* After live values has been marked, walk all recorded pointers and see if
@@ -967,134 +1004,14 @@ ggc_prune_ptr (ggc_ptr_hash_entry **slot, void *b ATTRIBUTE_UNUSED)
 void
 ggc_prune_overhead_list (void)
 {
-  ptr_hash->traverse <void *, ggc_prune_ptr> (NULL);
-}
+  typedef hash_map<const void *, std::pair<ggc_usage *, size_t > > map_t;
 
-/* Notice that the pointer has been freed.  */
-void
-ggc_free_overhead (void *ptr)
-{
-  ggc_ptr_hash_entry **slot
-    = ptr_hash->find_slot_with_hash (ptr, htab_hash_pointer (ptr), NO_INSERT);
-  struct ggc_ptr_hash_entry *p;
-  /* The pointer might be not found if a PCH read happened between allocation
-     and ggc_free () call.  FIXME: account memory properly in the presence of
-     PCH. */
-  if (!slot)
-      return;
-  p = (struct ggc_ptr_hash_entry *) *slot;
-  p->loc->freed += p->size;
-  ptr_hash->clear_slot (slot);
-  free (p);
-}
+  map_t::iterator it = ggc_mem_desc.m_reverse_object_map->begin ();
 
-/* Helper for qsort; sort descriptors by amount of memory consumed.  */
-static int
-final_cmp_statistic (const void *loc1, const void *loc2)
-{
-  const struct ggc_loc_descriptor *const l1 =
-    *(const struct ggc_loc_descriptor *const *) loc1;
-  const struct ggc_loc_descriptor *const l2 =
-    *(const struct ggc_loc_descriptor *const *) loc2;
-  long diff;
-  diff = ((long)(l1->allocated + l1->overhead - l1->freed) -
-	  (l2->allocated + l2->overhead - l2->freed));
-  return diff > 0 ? 1 : diff < 0 ? -1 : 0;
-}
+  for (; it != ggc_mem_desc.m_reverse_object_map->end (); ++it)
+    if (!ggc_marked_p ((*it).first))
+      (*it).second.first->m_collected += (*it).second.second;
 
-/* Helper for qsort; sort descriptors by amount of memory consumed.  */
-static int
-cmp_statistic (const void *loc1, const void *loc2)
-{
-  const struct ggc_loc_descriptor *const l1 =
-    *(const struct ggc_loc_descriptor *const *) loc1;
-  const struct ggc_loc_descriptor *const l2 =
-    *(const struct ggc_loc_descriptor *const *) loc2;
-  long diff;
-
-  diff = ((long)(l1->allocated + l1->overhead - l1->freed - l1->collected) -
-	  (l2->allocated + l2->overhead - l2->freed - l2->collected));
-  if (diff)
-    return diff > 0 ? 1 : diff < 0 ? -1 : 0;
-  diff =  ((long)(l1->allocated + l1->overhead - l1->freed) -
-	   (l2->allocated + l2->overhead - l2->freed));
-  return diff > 0 ? 1 : diff < 0 ? -1 : 0;
-}
-
-/* Collect array of the descriptors from hashtable.  */
-static struct ggc_loc_descriptor **loc_array;
-int
-ggc_add_statistics (ggc_loc_descriptor **slot, int *n)
-{
-  loc_array[*n] = *slot;
-  (*n)++;
-  return 1;
-}
-
-/* Dump per-site memory statistics.  */
-
-void
-dump_ggc_loc_statistics (bool final)
-{
-  int nentries = 0;
-  char s[4096];
-  size_t collected = 0, freed = 0, allocated = 0, overhead = 0, times = 0;
-  int i;
-
-  if (! GATHER_STATISTICS)
-    return;
-
-  ggc_force_collect = true;
-  ggc_collect ();
-
-  loc_array = XCNEWVEC (struct ggc_loc_descriptor *,
-			loc_hash->elements_with_deleted ());
-  fprintf (stderr, "-------------------------------------------------------\n");
-  fprintf (stderr, "\n%-48s %10s       %10s       %10s       %10s       %10s\n",
-	   "source location", "Garbage", "Freed", "Leak", "Overhead", "Times");
-  fprintf (stderr, "-------------------------------------------------------\n");
-  loc_hash->traverse <int *, ggc_add_statistics> (&nentries);
-  qsort (loc_array, nentries, sizeof (*loc_array),
-	 final ? final_cmp_statistic : cmp_statistic);
-  for (i = 0; i < nentries; i++)
-    {
-      struct ggc_loc_descriptor *d = loc_array[i];
-      allocated += d->allocated;
-      times += d->times;
-      freed += d->freed;
-      collected += d->collected;
-      overhead += d->overhead;
-    }
-  for (i = 0; i < nentries; i++)
-    {
-      struct ggc_loc_descriptor *d = loc_array[i];
-      if (d->allocated)
-	{
-	  const char *s1 = d->file;
-	  const char *s2;
-	  while ((s2 = strstr (s1, "gcc/")))
-	    s1 = s2 + 4;
-	  sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
-	  s[48] = 0;
-	  fprintf (stderr, "%-48s %10li:%4.1f%% %10li:%4.1f%% %10li:%4.1f%% %10li:%4.1f%% %10li\n", s,
-		   (long)d->collected,
-		   (d->collected) * 100.0 / collected,
-		   (long)d->freed,
-		   (d->freed) * 100.0 / freed,
-		   (long)(d->allocated + d->overhead - d->freed - d->collected),
-		   (d->allocated + d->overhead - d->freed - d->collected) * 100.0
-		   / (allocated + overhead - freed - collected),
-		   (long)d->overhead,
-		   d->overhead * 100.0 / overhead,
-		   (long)d->times);
-	}
-    }
-  fprintf (stderr, "%-48s %10ld       %10ld       %10ld       %10ld       %10ld\n",
-	   "Total", (long)collected, (long)freed,
-	   (long)(allocated + overhead - freed - collected), (long)overhead,
-	   (long)times);
-  fprintf (stderr, "%-48s %10s       %10s       %10s       %10s       %10s\n",
-	   "source location", "Garbage", "Freed", "Leak", "Overhead", "Times");
-  fprintf (stderr, "-------------------------------------------------------\n");
-  ggc_force_collect = false;
+  delete ggc_mem_desc.m_reverse_object_map;
+  ggc_mem_desc.m_reverse_object_map = new map_t (13, false, false);
 }

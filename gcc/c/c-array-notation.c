@@ -68,16 +68,8 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "symtab.h"
-#include "input.h"
-#include "alias.h"
-#include "double-int.h"
-#include "machmode.h"
-#include "flags.h"
-#include "inchash.h"
 #include "tree.h"
+#include "alias.h"
 #include "c-tree.h"
 #include "gimple-expr.h"
 #include "tree-iterator.h"
@@ -93,7 +85,7 @@ make_triplet_val_inv (location_t loc, tree *value)
   tree var, new_exp;
   if (TREE_CODE (*value) != INTEGER_CST
       && TREE_CODE (*value) != PARM_DECL
-      && TREE_CODE (*value) != VAR_DECL)
+      && !VAR_P (*value))
     {
       var = build_decl (loc, VAR_DECL, NULL_TREE, integer_type_node);
       new_exp = build_modify_expr (loc, var, TREE_TYPE (var), NOP_EXPR, loc,
@@ -330,7 +322,7 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
     array_ind_value = build_decl (location, VAR_DECL, NULL_TREE, 
 				  TREE_TYPE (func_parm));
   array_op0 = (*array_operand)[0];
-  if (TREE_CODE (array_op0) == INDIRECT_REF)
+  if (INDIRECT_REF_P (array_op0))
     array_op0 = TREE_OPERAND (array_op0, 0);
   switch (an_type)
     {

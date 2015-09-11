@@ -16,4 +16,3 @@ t_frame_run (test12)
 /* Check epilogue using write-back.  */
 /* { dg-final { scan-assembler-times "ldp\tx29, x30, \\\[sp\\\], \[0-9\]+" 3 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

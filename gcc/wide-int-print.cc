@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hwint.h"
-#include "wide-int.h"
 #include "wide-int-print.h"
 
 /*
@@ -127,7 +126,7 @@ print_hex (const wide_int_ref &wi, char *buf)
 
 	}
       else
-	buf += sprintf (buf, "0x"HOST_WIDE_INT_PRINT_HEX_PURE, wi.elt (--i));
+	buf += sprintf (buf, "0x" HOST_WIDE_INT_PRINT_HEX_PURE, wi.elt (--i));
 
       while (--i >= 0)
 	buf += sprintf (buf, HOST_WIDE_INT_PRINT_PADDED_HEX, wi.elt (i));

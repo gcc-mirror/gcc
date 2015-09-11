@@ -33,4 +33,3 @@ int main()
    we should have i, r and s in ESCAPED as well.  */
 
 /* { dg-final { scan-ipa-dump "ESCAPED = { ESCAPED NONLOCAL l k }" "pta" } } */
-/* { dg-final { cleanup-ipa-dump "pta" } } */

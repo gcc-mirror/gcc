@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1060,6 +1060,9 @@ package Exp_Dbug is
 
    --    ttt is the name of the original declared array
    --    nnn is the component size in bits (1-31)
+
+   --  Note that if the packed array is not bit-packed, the name will simply
+   --  be tttP.
 
    --  When the debugger sees that an object is of a type that is encoded in
    --  this manner, it can use the original type to determine the bounds and

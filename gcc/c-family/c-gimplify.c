@@ -27,32 +27,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "function.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "c-common.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimplify.h"
 #include "tree-inline.h"
 #include "diagnostic-core.h"
@@ -61,9 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "dumpfile.h"
 #include "c-pretty-print.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "cilk.h"
 #include "c-ubsan.h"
@@ -264,7 +245,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	   We should get rid of this conversion when we have a proper
 	   type demotion/promotion pass.  */
 	tree *op1_p = &TREE_OPERAND (*expr_p, 1);
-	if (TREE_CODE (TREE_TYPE (*op1_p)) != VECTOR_TYPE
+	if (!VECTOR_TYPE_P (TREE_TYPE (*op1_p))
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
 				    unsigned_type_node)
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
@@ -277,7 +258,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
       /* This is handled mostly by gimplify.c, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off
 	 this warning but only if warn_init_self is zero.  */
-      if (TREE_CODE (DECL_EXPR_DECL (*expr_p)) == VAR_DECL
+      if (VAR_P (DECL_EXPR_DECL (*expr_p))
 	  && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
 	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
 	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
@@ -307,8 +288,10 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 
       /* If errors are seen, then just process it as a CALL_EXPR.  */
       if (!seen_error ())
-	return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-
+	{
+	  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
+	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
+	}
     case MODIFY_EXPR:
     case INIT_EXPR:
     case CALL_EXPR:
@@ -318,7 +301,10 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	     original expression (MODIFY/INIT/CALL_EXPR) is processes as
 	     it is supposed to be.  */
 	  && !seen_error ())
-	return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
+	{
+	  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
+	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
+	}
 
     default:;
     }

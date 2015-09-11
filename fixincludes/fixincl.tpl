@@ -1,6 +1,9 @@
 [= AutoGen5 Template -*- Mode: C -*-
 x=fixincl.x =]
-[= (dne " * " "/* ")=]
+[=
+ (if (version-compare >= autogen-version "5.18")
+     (dne "-D" " * " "/* ")
+     (dne " * " "/* ") ) =]
  */
 /* DO NOT SVN-MERGE THIS FILE, EITHER [=
    (define re-ct 0) (define max-mach 0) (define ct 0)
@@ -63,32 +66,32 @@ tSCC z[=(. Hack)=]Name[] =
  *  File name selection pattern
  */[=
 
-  IF (exist? "files")=]
+  IF (exist? "files")   =]
 tSCC z[=(. Hack)=]List[] =
   "[=  (join "\\0" (stack "files")) =]\0";[=
 
-  ELSE =]
+  ELSE                  =]
 #define z[=(. Hack)=]List (char*)NULL[=
   ENDIF (exist? "files") =]
 /*
  *  Machine/OS name selection pattern
  */[=
 
-  IF (exist? "mach")=]
+  IF (exist? "mach")    =]
 tSCC* apz[=(. Hack)=]Machs[] = {[=
     (set! ct 0) =][=
 
-    FOR mach =]
+    FOR mach            =]
         [=
       (set! tmp (get "mach"))
       (set! ct (+ ct (string-length tmp) 5))
       (kr-string tmp)=],[=
-    ENDFOR=]
+    ENDFOR              =]
         (const char*)NULL };[=
 
     (if (> ct max-mach) (set! max-mach ct)) =][=
 
-  ELSE =]
+  ELSE                  =]
 #define apz[=(. Hack)=]Machs (const char**)NULL[=
   ENDIF (exist? "mach") =][=
 
@@ -97,43 +100,57 @@ tSCC* apz[=(. Hack)=]Machs[] = {[=
 /*
  *  content selection pattern - do fix if pattern found
  */[=
-    FOR select =]
+    FOR select          =]
 tSCC z[=(. Hack)=]Select[=(for-index)=][] =
        [=(kr-string (get "select"))=];[=
-    ENDFOR select =][=
-  ENDIF =][=
+    ENDFOR select       =][=
+  ENDIF                 =][=
 
-  IF (exist? "bypass")=]
+  IF (exist? "bypass")  =]
 
 /*
  *  content bypass pattern - skip fix if pattern found
  */[=
-    FOR bypass =]
+    FOR bypass          =]
 tSCC z[=(. Hack)=]Bypass[=(for-index)=][] =
        [=(kr-string (get "bypass"))=];[=
-    ENDFOR bypass =][=
-  ENDIF =][=
+    ENDFOR bypass       =][=
+  ENDIF                 =][=
 
-  IF (exist? "test")=]
+  IF (exist? "sum")=][=
+     (if (not (exist? "files"))
+         (error "specifying a 'sum' requires specifying 'files'"))
+     =]
+
+/*
+ *  file selection - do fix if checksum matches
+ */[=
+    FOR sum             =]
+tSCC z[=(. Hack)=]Sum[=(for-index)=][] =
+       [=(kr-string (get "sum"))=];[=
+    ENDFOR sum          =][=
+  ENDIF                 =][=
+
+  IF (exist? "test")    =]
 
 /*
  *  perform the 'test' shell command - do fix on success
  */[=
-    FOR test =]
+    FOR test            =]
 tSCC z[=(. Hack)=]Test[=(for-index)=][] =
        [=(kr-string (get "test"))=];[=
-    ENDFOR  =][=
-  ENDIF     =][=
+    ENDFOR              =][=
+  ENDIF                 =][=
 
-  IF (exist? "c_test")=]
+  IF (exist? "c_test")  =]
 
 /*
  *  perform the C function call test
  */[=
-    FOR c_test =]
+    FOR c_test          =]
 tSCC z[=(. Hack)=]FTst[=(for-index)=][] = "[=c_test=]";[=
-    ENDFOR c_test =][=
-  ENDIF =][=
+    ENDFOR c_test       =][=
+  ENDIF                 =][=
 
   IF (set! ct (+ (count "select") (count "bypass") 
               (count "test") (count "c_test")))
@@ -145,24 +162,28 @@ tSCC z[=(. Hack)=]FTst[=(for-index)=][] = "[=c_test=]";[=
   ELSE =]
 
 #define    [=(. HACK)=]_TEST_CT  [=(. ct)=][=
-	(set! re-ct (+ re-ct (count "select") (count "bypass"))) =]
+        (set! re-ct (+ re-ct (count "select") (count "bypass"))) =]
 static tTestDesc a[=(. Hack)=]Tests[] = {[=
 
-    FOR test =]
+    FOR test            =]
   { TT_TEST,     z[=(. Hack)=]Test[=(for-index)=],   0 /* unused */ },[=
-    ENDFOR test =][=
+    ENDFOR test         =][=
 
-    FOR c_test =]
+    FOR c_test          =]
   { TT_FUNCTION, z[=(. Hack)=]FTst[=(for-index)=],   0 /* unused */ },[=
-    ENDFOR c_test =][=
+    ENDFOR c_test       =][=
 
-    FOR bypass =]
+    FOR bypass          =]
   { TT_NEGREP,   z[=(. Hack)=]Bypass[=(for-index)=], (regex_t*)NULL },[=
-    ENDFOR bypass =][=
+    ENDFOR bypass       =][=
 
-    FOR select =]
+    FOR select          =]
   { TT_EGREP,    z[=(. Hack)=]Select[=(for-index)=], (regex_t*)NULL },[=
-    ENDFOR select =] };[=
+    ENDFOR select       =][=
+
+    FOR sum             =]
+  { TT_CKSUM,    z[=(. Hack)=]Sum[=(for-index)=], 0 /* unused */ },[=
+    ENDFOR sum          =] };[=
   ENDIF =]
 
 /*

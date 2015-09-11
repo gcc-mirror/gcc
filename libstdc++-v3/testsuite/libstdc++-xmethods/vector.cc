@@ -83,6 +83,19 @@ main ()
 // { dg-final { note-test bv3.at(63) true } }
 // { dg-final { note-test bv3.at(64) false } }
 
+// { dg-final { whatis-test v0.empty() bool } }
+// { dg-final { whatis-test v0.size() std::size_t } }
+// { dg-final { whatis-test v1.front() int } }
+// { dg-final { whatis-test v1.back() int } }
+// { dg-final { whatis-test v1\[0\] int } }
+// { dg-final { whatis-test v1.at(1) int } }
+// { dg-final { whatis-test bv0.empty() bool } }
+// { dg-final { whatis-test bv0.size() std::size_t } }
+// { dg-final { whatis-test bv1.front() bool } }
+// { dg-final { whatis-test bv1.back() bool } }
+// { dg-final { whatis-test bv1\[0\] bool } }
+// { dg-final { whatis-test bv1.at(1) bool } }
+
   return 0;  // Mark SPOT
 }
 

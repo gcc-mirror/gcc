@@ -26,4 +26,3 @@ void foo (int *x1, int *x2, int *x3, int *x4, int *y)
 }
 
 /* { dg-final { scan-tree-dump-times "Use predicate of bb" 8 "ifcvt" } } */
-/* { dg-final { cleanup-tree-dump "ifcvt" } } */

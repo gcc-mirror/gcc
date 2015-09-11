@@ -15,4 +15,3 @@ foo (long a)
 }
 
 /* { dg-final { scan-tree-dump "Replaced \\\(short int\\\) c_.*with b_" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

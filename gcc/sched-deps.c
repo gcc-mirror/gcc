@@ -23,39 +23,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "diagnostic-core.h"
+#include "backend.h"
+#include "tree.h"
 #include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
+#include "df.h"
+#include "diagnostic-core.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"		/* FIXME: Used by call_may_noreturn_p.  */
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "regs.h"
-#include "input.h"
-#include "function.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
-#include "recog.h"
 #include "emit-rtl.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgbuild.h"
-#include "predict.h"
-#include "basic-block.h"
 #include "sched-int.h"
 #include "params.h"
+#include "alloc-pool.h"
 #include "cselib.h"
 #include "ira.h"
+#include "ira-int.h"
 #include "target.h"
 
 #ifdef INSN_SCHEDULING
@@ -334,7 +321,7 @@ dep_link_is_detached_p (dep_link_t link)
 }
 
 /* Pool to hold all dependency nodes (dep_node_t).  */
-static alloc_pool dn_pool;
+static object_allocator<_dep_node> *dn_pool;
 
 /* Number of dep_nodes out there.  */
 static int dn_pool_diff = 0;
@@ -343,7 +330,7 @@ static int dn_pool_diff = 0;
 static dep_node_t
 create_dep_node (void)
 {
-  dep_node_t n = (dep_node_t) pool_alloc (dn_pool);
+  dep_node_t n = dn_pool->allocate ();
   dep_link_t back = DEP_NODE_BACK (n);
   dep_link_t forw = DEP_NODE_FORW (n);
 
@@ -371,11 +358,11 @@ delete_dep_node (dep_node_t n)
 
   --dn_pool_diff;
 
-  pool_free (dn_pool, n);
+  dn_pool->remove (n);
 }
 
 /* Pool to hold dependencies lists (deps_list_t).  */
-static alloc_pool dl_pool;
+static object_allocator<_deps_list> *dl_pool;
 
 /* Number of deps_lists out there.  */
 static int dl_pool_diff = 0;
@@ -393,7 +380,7 @@ deps_list_empty_p (deps_list_t l)
 static deps_list_t
 create_deps_list (void)
 {
-  deps_list_t l = (deps_list_t) pool_alloc (dl_pool);
+  deps_list_t l = dl_pool->allocate ();
 
   DEPS_LIST_FIRST (l) = NULL;
   DEPS_LIST_N_LINKS (l) = 0;
@@ -410,7 +397,7 @@ free_deps_list (deps_list_t l)
 
   --dl_pool_diff;
 
-  pool_free (dl_pool, l);
+  dl_pool->remove (l);
 }
 
 /* Return true if there is no dep_nodes and deps_lists out there.
@@ -503,7 +490,7 @@ static void add_dependence_list (rtx_insn *, rtx_insn_list *, int,
 static void add_dependence_list_and_free (struct deps_desc *, rtx_insn *,
 					  rtx_insn_list **, int, enum reg_note,
 					  bool);
-static void delete_all_dependences (rtx);
+static void delete_all_dependences (rtx_insn *);
 static void chain_to_prev_insn (rtx_insn *);
 
 static void flush_pending_lists (struct deps_desc *, rtx_insn *, int, int);
@@ -814,7 +801,7 @@ sd_lists_empty_p (const_rtx insn, sd_list_types_def list_types)
 
 /* Initialize data for INSN.  */
 void
-sd_init_insn (rtx insn)
+sd_init_insn (rtx_insn *insn)
 {
   INSN_HARD_BACK_DEPS (insn) = create_deps_list ();
   INSN_SPEC_BACK_DEPS (insn) = create_deps_list ();
@@ -827,7 +814,7 @@ sd_init_insn (rtx insn)
 
 /* Free data for INSN.  */
 void
-sd_finish_insn (rtx insn)
+sd_finish_insn (rtx_insn *insn)
 {
   /* ??? It would be nice to deallocate dependency caches here.  */
 
@@ -1621,7 +1608,7 @@ add_dependence_list_and_free (struct deps_desc *deps, rtx_insn *insn,
    occurrences removed.  */
 
 static int
-remove_from_dependence_list (rtx insn, rtx_insn_list **listp)
+remove_from_dependence_list (rtx_insn *insn, rtx_insn_list **listp)
 {
   int removed = 0;
 
@@ -1642,7 +1629,7 @@ remove_from_dependence_list (rtx insn, rtx_insn_list **listp)
 
 /* Same as above, but process two lists at once.  */
 static int
-remove_from_both_dependence_lists (rtx insn,
+remove_from_both_dependence_lists (rtx_insn *insn,
 				   rtx_insn_list **listp,
 				   rtx_expr_list **exprp)
 {
@@ -1667,7 +1654,7 @@ remove_from_both_dependence_lists (rtx insn,
 
 /* Clear all dependencies for an insn.  */
 static void
-delete_all_dependences (rtx insn)
+delete_all_dependences (rtx_insn *insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -2125,8 +2112,7 @@ mark_insn_reg_birth (rtx insn, rtx reg, bool clobber_p, bool unused_p)
 
   regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
-    mark_insn_hard_regno_birth (insn, regno,
-				hard_regno_nregs[regno][GET_MODE (reg)],
+    mark_insn_hard_regno_birth (insn, regno, REG_NREGS (reg),
 				clobber_p, unused_p);
   else
     mark_insn_pseudo_birth (insn, regno, clobber_p, unused_p);
@@ -2185,7 +2171,7 @@ mark_reg_death (rtx reg)
 
   regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
-    mark_hard_regno_death (regno, hard_regno_nregs[regno][GET_MODE (reg)]);
+    mark_hard_regno_death (regno, REG_NREGS (reg));
   else
     mark_pseudo_death (regno);
 }
@@ -2211,7 +2197,7 @@ mark_insn_reg_clobber (rtx reg, const_rtx setter, void *data)
 
 /* Set up reg pressure info related to INSN.  */
 void
-init_insn_reg_pressure_info (rtx insn)
+init_insn_reg_pressure_info (rtx_insn *insn)
 {
   int i, len;
   enum reg_class cl;
@@ -2236,11 +2222,10 @@ init_insn_reg_pressure_info (rtx insn)
 
   note_stores (PATTERN (insn), mark_insn_reg_store, insn);
 
-#ifdef AUTO_INC_DEC
-  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    if (REG_NOTE_KIND (link) == REG_INC)
-      mark_insn_reg_store (XEXP (link, 0), NULL_RTX, insn);
-#endif
+  if (AUTO_INC_DEC)
+    for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+      if (REG_NOTE_KIND (link) == REG_INC)
+	mark_insn_reg_store (XEXP (link, 0), NULL_RTX, insn);
 
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_DEAD)
@@ -2608,8 +2593,10 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
       return;
 
-#ifdef HAVE_cc0
     case CC0:
+      if (!HAVE_cc0)
+	gcc_unreachable ();
+
       /* User of CC0 depends on immediately preceding insn.  */
       SCHED_GROUP_P (insn) = 1;
        /* Don't move CC0 setter to another block (it can set up the
@@ -2620,7 +2607,6 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	sched_deps_info->finish_rhs ();
 
       return;
-#endif
 
     case REG:
       {
@@ -2649,7 +2635,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     case MEM:
       {
 	/* Reading memory.  */
-	rtx u;
+	rtx_insn_list *u;
 	rtx_insn_list *pending;
 	rtx_expr_list *pending_mem;
 	rtx t = x;
@@ -2700,11 +2686,10 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		pending_mem = pending_mem->next ();
 	      }
 
-	    for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	      add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)),
-			      REG_DEP_ANTI);
+	    for (u = deps->last_pending_memory_flush; u; u = u->next ())
+	      add_dependence (insn, u->insn (), REG_DEP_ANTI);
 
-	    for (u = deps->pending_jump_insns; u; u = XEXP (u, 1))
+	    for (u = deps->pending_jump_insns; u; u = u->next ())
 	      if (deps_may_trap_p (x))
 		{
 		  if ((sched_deps_info->generate_spec_deps)
@@ -2713,11 +2698,10 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		      ds_t ds = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
 					      MAX_DEP_WEAK);
 		      
-		      note_dep (as_a <rtx_insn *> (XEXP (u, 0)), ds);
+		      note_dep (u->insn (), ds);
 		    }
 		  else
-		    add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)),
-				    REG_DEP_CONTROL);
+		    add_dependence (insn, u->insn (), REG_DEP_CONTROL);
 		}
 	  }
 
@@ -2855,7 +2839,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     sched_deps_info->finish_rhs ();
 }
 
-/* Try to group two fuseable insns together to prevent scheduler
+/* Try to group two fusible insns together to prevent scheduler
    from scheduling them apart.  */
 
 static void
@@ -2907,7 +2891,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
       extract_insn (insn);
       preprocess_constraints (insn);
-      ira_implicitly_set_insn_hard_regs (&temp);
+      alternative_mask prefrred = get_preferred_alternatives (insn);
+      ira_implicitly_set_insn_hard_regs (&temp, prefrred);
       AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
       IOR_HARD_REG_SET (implicit_reg_pending_clobbers, temp);
     }
@@ -3007,8 +2992,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
   if (JUMP_P (insn))
     {
-      rtx next;
-      next = next_nonnote_nondebug_insn (insn);
+      rtx_insn *next = next_nonnote_nondebug_insn (insn);
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else
@@ -3088,7 +3072,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
   if (DEBUG_INSN_P (insn))
     {
       rtx_insn *prev = deps->last_debug_insn;
-      rtx u;
+      rtx_insn_list *u;
 
       if (!deps->readonly)
 	deps->last_debug_insn = insn;
@@ -3100,8 +3084,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 			   REG_DEP_ANTI, false);
 
       if (!sel_sched_p ())
-	for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	  add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)), REG_DEP_ANTI);
+	for (u = deps->last_pending_memory_flush; u; u = u->next ())
+	  add_dependence (insn, u->insn (), REG_DEP_ANTI);
 
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
 	{
@@ -3530,7 +3514,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 /* FIXME: Why can't this function just use flags_from_decl_or_type and
    test for ECF_NORETURN?  */
 static bool
-call_may_noreturn_p (rtx insn)
+call_may_noreturn_p (rtx_insn *insn)
 {
   rtx call;
 
@@ -3593,10 +3577,8 @@ call_may_noreturn_p (rtx insn)
    instruction of that group.  */
 
 static bool
-chain_to_prev_insn_p (rtx insn)
+chain_to_prev_insn_p (rtx_insn *insn)
 {
-  rtx prev, x;
-
   /* INSN forms a group with the previous instruction.  */
   if (SCHED_GROUP_P (insn))
     return true;
@@ -3605,13 +3587,13 @@ chain_to_prev_insn_p (rtx insn)
      part of R, the clobber was added specifically to help us track the
      liveness of R.  There's no point scheduling the clobber and leaving
      INSN behind, especially if we move the clobber to another block.  */
-  prev = prev_nonnote_nondebug_insn (insn);
+  rtx_insn *prev = prev_nonnote_nondebug_insn (insn);
   if (prev
       && INSN_P (prev)
       && BLOCK_FOR_INSN (prev) == BLOCK_FOR_INSN (insn)
       && GET_CODE (PATTERN (prev)) == CLOBBER)
     {
-      x = XEXP (PATTERN (prev), 0);
+      rtx x = XEXP (PATTERN (prev), 0);
       if (set_of (x, insn))
 	return true;
     }
@@ -3644,7 +3626,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
 	  rtx_insn_list *cond_deps = NULL;
 	  t = XEXP (t, 0);
 	  regno = REGNO (t);
-	  nregs = hard_regno_nregs[regno][GET_MODE (t)];
+	  nregs = REG_NREGS (t);
 	  while (nregs-- > 0)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[regno + nregs];
@@ -3843,7 +3825,7 @@ sched_analyze (struct deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 /* Helper for sched_free_deps ().
    Delete INSN's (RESOLVED_P) backward dependencies.  */
 static void
-delete_dep_nodes_in_back_deps (rtx insn, bool resolved_p)
+delete_dep_nodes_in_back_deps (rtx_insn *insn, bool resolved_p)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -4077,10 +4059,10 @@ sched_deps_init (bool global_p)
 
   if (global_p)
     {
-      dl_pool = create_alloc_pool ("deps_list", sizeof (struct _deps_list),
+      dl_pool = new object_allocator<_deps_list> ("deps_list",
                                    /* Allocate lists for one block at a time.  */
                                    insns_in_block);
-      dn_pool = create_alloc_pool ("dep_node", sizeof (struct _dep_node),
+      dn_pool = new object_allocator<_dep_node> ("dep_node",
                                    /* Allocate nodes for one block at a time.
                                       We assume that average insn has
                                       5 producers.  */
@@ -4130,9 +4112,10 @@ void
 sched_deps_finish (void)
 {
   gcc_assert (deps_pools_are_empty_p ());
-  free_alloc_pool_if_empty (&dn_pool);
-  free_alloc_pool_if_empty (&dl_pool);
-  gcc_assert (dn_pool == NULL && dl_pool == NULL);
+  dn_pool->release_if_empty ();
+  dn_pool = NULL;
+  dl_pool->release_if_empty ();
+  dl_pool = NULL;
 
   h_d_i_d.release ();
   cache_size = 0;
@@ -4736,11 +4719,10 @@ parse_add_or_inc (struct mem_inc_info *mii, rtx_insn *insn, bool before_mem)
   if (regs_equal && REGNO (SET_DEST (pat)) == STACK_POINTER_REGNUM)
     {
       /* Note that the sign has already been reversed for !before_mem.  */
-#ifdef STACK_GROWS_DOWNWARD
-      return mii->inc_constant > 0;
-#else
-      return mii->inc_constant < 0;
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	return mii->inc_constant > 0;
+      else
+	return mii->inc_constant < 0;
     }
   return true;
 }

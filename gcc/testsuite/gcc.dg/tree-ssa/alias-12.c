@@ -14,5 +14,4 @@ int foo(int i)
 }
 
 /* { dg-final { scan-tree-dump "VDEF" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */
 

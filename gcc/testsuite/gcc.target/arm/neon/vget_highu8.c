@@ -16,4 +16,3 @@ void test_vget_highu8 (void)
   out_uint8x8_t = vget_high_u8 (arg0_uint8x16_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

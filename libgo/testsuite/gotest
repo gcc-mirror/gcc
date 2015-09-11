@@ -504,6 +504,7 @@ xno)
 	fi
 	${GL} *.o ${GOLIBS}
 
+	set +e
 	if test "$bench" = ""; then
 		if test "$trace" = "true"; then
 		    echo ./a.out -test.short -test.timeout=${timeout}s "$@"
@@ -518,7 +519,12 @@ xno)
 		wait $pid
 		status=$?
 		if ! test -f gotest-timeout; then
+		    sleeppid=`ps -o pid,ppid,cmd | grep " $alarmpid " | grep sleep | sed -e 's/ *\([0-9]*\) .*$/\1/'`
 		    kill $alarmpid
+		    wait $alarmpid
+		    if test "$sleeppid" != ""; then
+			kill $sleeppid
+		    fi
 		fi
 	else
 		if test "$trace" = "true"; then

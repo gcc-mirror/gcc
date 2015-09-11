@@ -36,17 +36,20 @@ extern "C" {
    the API below.
 
    Invoking gcc_jit_context_compile on it gives you a gcc_jit_result *
-   (or NULL).
+   (or NULL), representing in-memory machine code.
 
    You can call gcc_jit_context_compile repeatedly on one context, giving
    multiple independent results.
 
+   Similarly, you can call gcc_jit_context_compile_to_file on a context
+   to compile to disk.
+
    Eventually you can call gcc_jit_context_release to clean up the
-   context; any results created from it are still usable, and should be
-   cleaned up via gcc_jit_result_release.  */
+   context; any in-memory results created from it are still usable, and
+   should be cleaned up via gcc_jit_result_release.  */
 typedef struct gcc_jit_context gcc_jit_context;
 
-/* A gcc_jit_result encapsulates the result of a compilation.  */
+/* A gcc_jit_result encapsulates the result of an in-memory compilation.  */
 typedef struct gcc_jit_result gcc_jit_result;
 
 /* An object created within a context.  Such objects are automatically
@@ -64,6 +67,7 @@ typedef struct gcc_jit_result gcc_jit_result;
 	 +- gcc_jit_rvalue
 	     +- gcc_jit_lvalue
 		 +- gcc_jit_param
+	 +- gcc_jit_case
 */
 typedef struct gcc_jit_object gcc_jit_object;
 
@@ -128,6 +132,12 @@ typedef struct gcc_jit_lvalue gcc_jit_lvalue;
    rvalue); use gcc_jit_param_as_lvalue to convert.  */
 typedef struct gcc_jit_param gcc_jit_param;
 
+/* A gcc_jit_case is for use when building multiway branches via
+   gcc_jit_block_end_with_switch and represents a range of integer
+   values (or an individual integer value) together with an associated
+   destination block.  */
+typedef struct gcc_jit_case gcc_jit_case;
+
 /* Acquire a JIT-compilation context.  */
 extern gcc_jit_context *
 gcc_jit_context_acquire (void);
@@ -136,6 +146,9 @@ gcc_jit_context_acquire (void);
    the ctxt.  */
 extern void
 gcc_jit_context_release (gcc_jit_context *ctxt);
+
+/* Options present in the initial release of libgccjit.
+   These were handled using enums.  */
 
 /* Options taking string values. */
 enum gcc_jit_str_option
@@ -240,11 +253,113 @@ gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 				 enum gcc_jit_bool_option opt,
 				 int value);
 
-/* This actually calls into GCC and runs the build, all
-   in a mutex for now.  The result is a wrapper around a .so file.
-   It can only be called once on a given context.  */
+/* Options added after the initial release of libgccjit.
+   These are handled by providing an entrypoint per option,
+   rather than by extending the enum gcc_jit_*_option,
+   so that client code that use these new options can be identified
+   from binary metadata.  */
+
+/* By default, libgccjit will issue an error about unreachable blocks
+   within a function.
+
+   This option can be used to disable that error.
+
+   This entrypoint was added in LIBGCCJIT_ABI_2; you can test for
+   its presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+*/
+
+extern void
+gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
+						   int bool_value);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_context_set_bool_allow_unreachable_blocks.  This can be
+   tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+
+/* Implementation detail:
+   libgccjit internally generates assembler, and uses "driver" code
+   for converting it to other formats (e.g. shared libraries).
+
+   By default, libgccjit will use an embedded copy of the driver
+   code.
+
+   This option can be used to instead invoke an external driver executable
+   as a subprocess.
+
+   This entrypoint was added in LIBGCCJIT_ABI_5; you can test for
+   its presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver
+*/
+
+extern void
+gcc_jit_context_set_bool_use_external_driver (gcc_jit_context *ctxt,
+					      int bool_value);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_context_set_bool_use_external_driver.  This can be
+   tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver
+
+/* Add an arbitrary gcc command-line option to the context.
+   The context takes a copy of the string, so the
+   (const char *) optname is not needed anymore after the call
+   returns.
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   optimization and code-generation are likely to be useful.
+
+   This entrypoint was added in LIBGCCJIT_ABI_1; you can test for
+   its presence using
+   #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
+*/
+
+extern void
+gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,
+					 const char *optname);
+
+/* Pre-canned feature-test macro for detecting the presence of
+   gcc_jit_context_add_command_line_option within libgccjit.h.  */
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
+
+/* Compile the context to in-memory machine code.
+
+   This can be called more that once on a given context,
+   although any errors that occur will block further compilation.  */
+
 extern gcc_jit_result *
 gcc_jit_context_compile (gcc_jit_context *ctxt);
+
+/* Kinds of ahead-of-time compilation, for use with
+   gcc_jit_context_compile_to_file.  */
+
+enum gcc_jit_output_kind
+{
+  /* Compile the context to an assembler file.  */
+  GCC_JIT_OUTPUT_KIND_ASSEMBLER,
+
+  /* Compile the context to an object file.  */
+  GCC_JIT_OUTPUT_KIND_OBJECT_FILE,
+
+  /* Compile the context to a dynamic library.  */
+  GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY,
+
+  /* Compile the context to an executable.  */
+  GCC_JIT_OUTPUT_KIND_EXECUTABLE
+};
+
+/* Compile the context to a file of the given kind.
+
+   This can be called more that once on a given context,
+   although any errors that occur will block further compilation.  */
+
+extern void
+gcc_jit_context_compile_to_file (gcc_jit_context *ctxt,
+				 enum gcc_jit_output_kind output_kind,
+				 const char *output_path);
 
 /* To help with debugging: dump a C-like representation to the given path,
    describing what's been set up on the context.
@@ -272,7 +387,7 @@ gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
 			     int flags,
 			     int verbosity);
 
-/* To be called after a compile, this gives the first error message
+/* To be called after any API call, this gives the first error message
    that occurred on the context.
 
    The returned string is valid for the rest of the lifetime of the
@@ -282,13 +397,13 @@ gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
 extern const char *
 gcc_jit_context_get_first_error (gcc_jit_context *ctxt);
 
-/* To be called after a compile, this gives the last error message
+/* To be called after any API call, this gives the last error message
    that occurred on the context.
 
-   The returned string is valid for the rest of the lifetime of the
-   context.
+   If no errors occurred, this will be NULL.
 
-   If no errors occurred, this will be NULL.  */
+   If non-NULL, the returned string is only guaranteed to be valid until
+   the next call to libgccjit relating to this context. */
 extern const char *
 gcc_jit_context_get_last_error (gcc_jit_context *ctxt);
 
@@ -1013,6 +1128,81 @@ extern void
 gcc_jit_block_end_with_void_return (gcc_jit_block *block,
 				    gcc_jit_location *loc);
 
+/* Create a new gcc_jit_case instance for use in a switch statement.
+   min_value and max_value must be constants of integer type.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_3; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+*/
+extern gcc_jit_case *
+gcc_jit_context_new_case (gcc_jit_context *ctxt,
+			  gcc_jit_rvalue *min_value,
+			  gcc_jit_rvalue *max_value,
+			  gcc_jit_block *dest_block);
+
+/* Upcasting from case to object.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_3; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+*/
+
+extern gcc_jit_object *
+gcc_jit_case_as_object (gcc_jit_case *case_);
+
+/* Terminate a block by adding evalation of an rvalue, then performing
+   a multiway branch.
+
+   This is roughly equivalent to this C code:
+
+     switch (expr)
+       {
+       default:
+	 goto default_block;
+
+       case C0.min_value ... C0.max_value:
+	 goto C0.dest_block;
+
+       case C1.min_value ... C1.max_value:
+	 goto C1.dest_block;
+
+       ...etc...
+
+       case C[N - 1].min_value ... C[N - 1].max_value:
+	 goto C[N - 1].dest_block;
+     }
+
+   block, expr, default_block and cases must all be non-NULL.
+
+   expr must be of the same integer type as all of the min_value
+   and max_value within the cases.
+
+   num_cases must be >= 0.
+
+   The ranges of the cases must not overlap (or have duplicate
+   values).
+
+   This API entrypoint was added in LIBGCCJIT_ABI_3; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+*/
+
+extern void
+gcc_jit_block_end_with_switch (gcc_jit_block *block,
+			       gcc_jit_location *loc,
+			       gcc_jit_rvalue *expr,
+			       gcc_jit_block *default_block,
+			       int num_cases,
+			       gcc_jit_case **cases);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_block_end_with_switch, gcc_jit_case_as_object, and
+   gcc_jit_context_new_case.
+
+   This can be tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_SWITCH_STATEMENTS
+
 /**********************************************************************
  Nested contexts.
  **********************************************************************/
@@ -1079,14 +1269,15 @@ gcc_jit_context_dump_reproducer_to_file (gcc_jit_context *ctxt,
    The context directly stores the dumpname as a (const char *), so the
    passed string must outlive the context.
 
-   gcc_jit_context_compile will capture the dump as a
-   dynamically-allocated buffer, writing it to ``*out_ptr``.
+   gcc_jit_context_compile and gcc_jit_context_to_file
+   will capture the dump as a dynamically-allocated buffer, writing
+   it to ``*out_ptr``.
 
    The caller becomes responsible for calling
       free (*out_ptr)
-   each time that gcc_jit_context_compile is called.  *out_ptr will be
-   written to, either with the address of a buffer, or with NULL if an
-   error occurred.
+   each time that gcc_jit_context_compile or gcc_jit_context_to_file
+   are called.  *out_ptr will be written to, either with the address of a
+   buffer, or with NULL if an error occurred.
 
    This API entrypoint is likely to be less stable than the others.
    In particular, both the precise dumpnames, and the format and content
@@ -1098,6 +1289,90 @@ extern void
 gcc_jit_context_enable_dump (gcc_jit_context *ctxt,
 			     const char *dumpname,
 			     char **out_ptr);
+
+/**********************************************************************
+ Timing support.
+ **********************************************************************/
+
+/* The timing API was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+#define LIBGCCJIT_HAVE_TIMING_API
+
+typedef struct gcc_jit_timer gcc_jit_timer;
+
+/* Create a gcc_jit_timer instance, and start timing.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+extern gcc_jit_timer *
+gcc_jit_timer_new (void);
+
+/* Release a gcc_jit_timer instance.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+extern void
+gcc_jit_timer_release (gcc_jit_timer *timer);
+
+/* Associate a gcc_jit_timer instance with a context.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+extern void
+gcc_jit_context_set_timer (gcc_jit_context *ctxt,
+			   gcc_jit_timer *timer);
+
+/* Get the timer associated with a context (if any).
+
+   This API entrypoint was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+
+extern gcc_jit_timer *
+gcc_jit_context_get_timer (gcc_jit_context *ctxt);
+
+/* Push the given item onto the timing stack.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+
+extern void
+gcc_jit_timer_push (gcc_jit_timer *timer,
+		    const char *item_name);
+
+/* Pop the top item from the timing stack.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+
+extern void
+gcc_jit_timer_pop (gcc_jit_timer *timer,
+		   const char *item_name);
+
+/* Print timing information to the given stream about activity since
+   the timer was started.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_4; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TIMING_API
+*/
+
+extern void
+gcc_jit_timer_print (gcc_jit_timer *timer,
+		     FILE *f_out);
 
 #ifdef __cplusplus
 }

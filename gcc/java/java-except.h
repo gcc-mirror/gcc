@@ -36,7 +36,7 @@ struct eh_range
     /* Surrounding handler, if any. */
     struct eh_range *outer;
 
-    /* The first child range.  It is is nested inside this range
+    /* The first child range.  It is nested inside this range
        (i.e. this.start_pc <= first_child.end_pc
        && this.end_pc >= first_child.end_pc).
        The children are linked together using next_sibling, and are sorted

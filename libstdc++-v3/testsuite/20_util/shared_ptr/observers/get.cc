@@ -63,11 +63,24 @@ test03()
   VERIFY( &p->i == &a->i );
 }
 
+void
+test04()
+{
+  bool test __attribute__((unused)) = true;
+
+#if !(defined _GLIBCXX_DEBUG && defined _GLIBCXX_DEBUG_PEDANTIC)
+  std::shared_ptr<int> p;
+  auto np = p.operator->();
+  VERIFY( np == nullptr );
+#endif
+}
+
 int 
 main()
 {
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }

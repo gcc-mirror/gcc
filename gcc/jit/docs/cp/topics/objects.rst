@@ -46,6 +46,7 @@ The C++ class hierarchy within the ``gccjit`` namespace looks like this::
       +- rvalue
           +- lvalue
              +- param
+      +- case_
 
 The :class:`gccjit::object` base class has the following operations:
 

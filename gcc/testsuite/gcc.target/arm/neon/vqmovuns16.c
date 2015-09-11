@@ -17,4 +17,3 @@ void test_vqmovuns16 (void)
 }
 
 /* { dg-final { scan-assembler "vqmovun\.s16\[ 	\]+\[dD\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

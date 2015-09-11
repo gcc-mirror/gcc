@@ -45,4 +45,3 @@ void foo(int16_t runs[], uint8_t alpha[], int x, int count)
 
 /* We should not sink the next_runs = runs + x calculation after the loop.  */
 /* { dg-final { scan-tree-dump-times "Sunk statements:" 0 "sink" } } */
-/* { dg-final { cleanup-tree-dump "sink" } } */

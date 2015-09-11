@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -352,6 +352,45 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    begin
       return Node.Color;
    end Color;
+
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return Constant_Reference_Type
+   is
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error with
+           "Position cursor designates wrong container";
+      end if;
+
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Constant_Reference");
+
+      --  Note: in predefined container units, the creation of a reference
+      --  increments the busy bit of the container, and its finalization
+      --  decrements it. In the absence of control machinery, this tampering
+      --  protection is missing.
+
+      declare
+         T : Tree_Type renames Container.Tree'Unrestricted_Access.all;
+         pragma Unreferenced (T);
+      begin
+         return R : constant Constant_Reference_Type :=
+           (Element => Position.Node.Element,
+            Control => (Container => Container'Unrestricted_Access))
+         do
+            null;
+         end return;
+      end;
+   end Constant_Reference;
 
    --------------
    -- Contains --
@@ -1730,6 +1769,14 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       raise Program_Error with "attempt to stream set cursor";
    end Read;
 
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
    ---------------------
    -- Replace_Element --
    ---------------------
@@ -2055,4 +2102,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       raise Program_Error with "attempt to stream set cursor";
    end Write;
 
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
 end Ada.Containers.Indefinite_Ordered_Multisets;

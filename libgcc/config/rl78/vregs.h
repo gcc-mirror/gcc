@@ -55,17 +55,25 @@ r23	=	0xffeef
 
 #endif
 
-    /* Start a function in its own section, so that it
-       can be subject to linker garbage collection.  */
-.macro START_FUNC name
-	.pushsection .text.\name,"ax",@progbits
+.macro START_ANOTHER_FUNC name
 	.global \name
 	.type \name , @function
 \name:
 .endm
+    
+    /* Start a function in its own section, so that it
+       can be subject to linker garbage collection.  */
+.macro START_FUNC name
+	.pushsection .text.\name,"ax",@progbits
+	START_ANOTHER_FUNC \name
+.endm
+
+.macro END_ANOTHER_FUNC name	
+	.size \name , . - \name
+.endm
 
     /* End the function.  Set the size.  */
 .macro END_FUNC name	
-	.size \name , . - \name
+	END_ANOTHER_FUNC \name
 	.popsection
 .endm

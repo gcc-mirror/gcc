@@ -33,4 +33,3 @@ hprofStartupp (char *outputFileName, char *ctx)
 
 /* { dg-final { scan-tree-dump-times "myfree \\(" 1 "pre"} } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

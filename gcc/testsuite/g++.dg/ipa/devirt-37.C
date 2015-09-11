@@ -1,4 +1,4 @@
-/* { dg-options "-fpermissive -O2 -fno-indirect-inlining -fno-devirtualize-speculatively -fdump-tree-fre2-details"  } */
+/* { dg-options "-fpermissive -O2 -fno-indirect-inlining -fno-devirtualize-speculatively -fdump-tree-fre2-details -fno-early-inlining"  } */
 #include <stdlib.h>
 struct A {virtual void test() {abort ();}};
 struct B:A
@@ -34,4 +34,3 @@ t()
 /* { dg-final { scan-tree-dump "Checking vtbl store:"  "fre2"  } } */
 /* { dg-final { scan-tree-dump "Function call may change dynamic type:extcall"  "fre2"  } } */
 /* { dg-final { scan-tree-dump "converting indirect call to function virtual void"  "fre2"  } } */
-/* { dg-final { cleanup-tree-dump "fre2" } } */

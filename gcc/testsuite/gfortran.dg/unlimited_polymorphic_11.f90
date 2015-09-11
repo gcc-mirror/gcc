@@ -11,4 +11,3 @@
 end
 
 ! { dg-final { scan-tree-dump "\\(struct __vtype__STAR \\*\\) c._vptr = \\(struct __vtype__STAR \\*\\) a._vptr;" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

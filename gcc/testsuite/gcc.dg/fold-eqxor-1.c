@@ -25,4 +25,3 @@ unsigned int test4(unsigned int g, unsigned int h)
 /* { dg-final { scan-tree-dump-times "c != d" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "e == f" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "g != h" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

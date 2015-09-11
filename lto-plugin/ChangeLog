@@ -1,3 +1,44 @@
+2015-07-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS.
+	* configure: Regenerate.
+	* config.h.in: Ditto.
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.am: Drop 'by automake version' from top-level comment.
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
+2015-02-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lto-plugin.c (release_input_file): Removed.
+	(claim_file_handler): Don't call release_input_file.
+	(onload): Don't set release_input_file.
+
+2015-02-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lto-plugin.c (claim_file_handler): Pass handle to
+	release_input_file.
+
+2015-02-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lto-plugin.c (claim_file_handler): Call release_input_file only
+	if file is claimed.
+
+2015-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lto-plugin.c (claim_file_handler): Call release_input_file only
+	if it is not NULL.
+
+2015-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/64837
+	* lto-plugin.c (release_input_file): New.
+	(claim_file_handler): Call release_input_file.
+	(onload): Set release_input_file.
+
 2014-12-09  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* lto-plugin.c (offload_files, num_offload_files): New static variables.

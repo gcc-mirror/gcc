@@ -4014,7 +4014,7 @@ selb\t%0,%4,%0,%3"
 	(unspec [(match_operand 1 "spu_reg_operand" "r")] UNSPEC_EXTEND_CMP))]
   ""
   {
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+    emit_insn (gen_rtx_SET (operands[0],
 			    gen_rtx_UNSPEC (GET_MODE (operands[0]),
 			                    gen_rtvec (1, operands[1]),
 					    UNSPEC_EXTEND_CMP)));
@@ -4516,7 +4516,7 @@ selb\t%0,%4,%0,%3"
      emit_move_insn (s0, gen_rtx_PLUS (SImode, s0, GEN_INT (-1)));
      bcomp = gen_rtx_NE(SImode, s0, const0_rtx);
      loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
-     emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+     emit_jump_insn (gen_rtx_SET (pc_rtx,
                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
                                                         loc_ref, pc_rtx)));
 
@@ -5078,9 +5078,9 @@ DONE;
 
   loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[2]);
 
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
-                                                         loc_ref, pc_rtx)));
+  emit_jump_insn (gen_rtx_SET (pc_rtx,
+                               gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
+                                                     loc_ref, pc_rtx)));
 
   DONE;
 })

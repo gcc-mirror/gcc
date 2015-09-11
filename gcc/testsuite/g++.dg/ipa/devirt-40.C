@@ -20,4 +20,3 @@ A::m_fn1 (UnicodeString &, int &p2, UErrorCode &) const
 }
 
 /* { dg-final { scan-tree-dump-not "\\n  OBJ_TYPE_REF" "fre2"  } } */
-/* { dg-final { cleanup-tree-dump "fre2" } } */

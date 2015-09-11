@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,6 +244,10 @@ package Prj.Util is
    --  needed (because the unit is generic or contains some inline pragmas)
    --  are handled. This routine must be called only when the project has
    --  been built successfully.
+
+   function Relative_Path (Pathname : String; To : String) return String;
+   --  Returns the relative pathname which corresponds to Pathname when
+   --  starting from directory to. Both Pathname and To must be absolute paths.
 
 private
    type Text_File_Data is record

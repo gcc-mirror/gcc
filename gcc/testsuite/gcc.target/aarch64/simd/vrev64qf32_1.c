@@ -7,4 +7,3 @@
 #include "vrev64qf32.x"
 
 /* { dg-final { scan-assembler-times "rev64\[ \t\]+v\[0-9\]+.4s, ?v\[0-9\]+.4s!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

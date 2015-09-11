@@ -27,4 +27,3 @@ int main()
    stuff through it.  */
 
 /* { dg-final { scan-ipa-dump "ESCAPED = { (ESCAPED )?(NONLOCAL )?}" "pta" } } */
-/* { dg-final { cleanup-ipa-dump "pta" } } */

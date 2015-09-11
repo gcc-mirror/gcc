@@ -11,4 +11,3 @@ long foo (int i)
 }
 
 /* { dg-final { scan-tree-dump-times "return 2;" 2 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

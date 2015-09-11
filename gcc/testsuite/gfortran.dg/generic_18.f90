@@ -50,4 +50,3 @@ PROGRAM MakeAChoice
 END PROGRAM MakeAChoice
 ! { dg-final { scan-tree-dump-times "specproc" 3 "original" } }
 ! { dg-final { scan-tree-dump-times "elemproc" 3 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

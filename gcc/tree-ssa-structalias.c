@@ -21,50 +21,20 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "obstack.h"
-#include "bitmap.h"
-#include "sbitmap.h"
-#include "flags.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "double-int.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "flags.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stmt.h"
-#include "hash-table.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-into-ssa.h"
-#include "rtl.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -80,8 +50,6 @@
 #include "alloc-pool.h"
 #include "splay-tree.h"
 #include "params.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
 #include "tree-pretty-print.h"
 #include "gimple-walk.h"
 
@@ -354,7 +322,8 @@ static varinfo_t lookup_vi_for_tree (tree);
 static inline bool type_can_have_subvars (const_tree);
 
 /* Pool of variable info structures.  */
-static alloc_pool variable_info_pool;
+static object_allocator<variable_info> variable_info_pool
+  ("Variable info pool", 30);
 
 /* Map varinfo to final pt_solution.  */
 static hash_map<varinfo_t, pt_solution *> *final_solutions;
@@ -395,7 +364,7 @@ static varinfo_t
 new_var_info (tree t, const char *name)
 {
   unsigned index = varmap.length ();
-  varinfo_t ret = (varinfo_t) pool_alloc (variable_info_pool);
+  varinfo_t ret = variable_info_pool.allocate ();
 
   ret->id = index;
   ret->name = name;
@@ -409,6 +378,7 @@ new_var_info (tree t, const char *name)
   ret->may_have_pointers = true;
   ret->only_restrict_pointers = false;
   ret->is_restrict_var = false;
+  ret->ruid = 0;
   ret->is_global_var = (t == NULL_TREE);
   ret->is_fn_info = false;
   if (t && DECL_P (t))
@@ -509,7 +479,7 @@ get_call_clobber_vi (gcall *call)
 }
 
 
-typedef enum {SCALAR, DEREF, ADDRESSOF} constraint_expr_type;
+enum constraint_expr_type {SCALAR, DEREF, ADDRESSOF};
 
 /* An expression that appears in a constraint.  */
 
@@ -553,7 +523,7 @@ struct constraint
 /* List of constraints that we use to build the constraint graph from.  */
 
 static vec<constraint_t> constraints;
-static alloc_pool constraint_pool;
+static object_allocator<constraint> constraint_pool ("Constraint pool", 30);
 
 /* The constraint graph is represented as an array of bitmaps
    containing successor nodes.  */
@@ -675,7 +645,7 @@ static constraint_t
 new_constraint (const struct constraint_expr lhs,
 		const struct constraint_expr rhs)
 {
-  constraint_t ret = (constraint_t) pool_alloc (constraint_pool);
+  constraint_t ret = constraint_pool.allocate ();
   ret->lhs = lhs;
   ret->rhs = rhs;
   return ret;
@@ -1937,18 +1907,17 @@ typedef const struct equiv_class_label *const_equiv_class_label_t;
 
 /* Equiv_class_label hashtable helpers.  */
 
-struct equiv_class_hasher : typed_free_remove <equiv_class_label>
+struct equiv_class_hasher : free_ptr_hash <equiv_class_label>
 {
-  typedef equiv_class_label value_type;
-  typedef equiv_class_label compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const equiv_class_label *);
+  static inline bool equal (const equiv_class_label *,
+			    const equiv_class_label *);
 };
 
 /* Hash function for a equiv_class_label_t */
 
 inline hashval_t
-equiv_class_hasher::hash (const value_type *ecl)
+equiv_class_hasher::hash (const equiv_class_label *ecl)
 {
   return ecl->hashcode;
 }
@@ -1956,7 +1925,8 @@ equiv_class_hasher::hash (const value_type *ecl)
 /* Equality function for two equiv_class_label_t's.  */
 
 inline bool
-equiv_class_hasher::equal (const value_type *eql1, const compare_type *eql2)
+equiv_class_hasher::equal (const equiv_class_label *eql1,
+			   const equiv_class_label *eql2)
 {
   return (eql1->hashcode == eql2->hashcode
 	  && bitmap_equal_p (eql1->labels, eql2->labels));
@@ -3491,6 +3461,9 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
 	  case ARRAY_REF:
 	  case ARRAY_RANGE_REF:
 	  case COMPONENT_REF:
+	  case IMAGPART_EXPR:
+	  case REALPART_EXPR:
+	  case BIT_FIELD_REF:
 	    get_constraint_for_component_ref (t, results, address_p, lhs_p);
 	    return;
 	  case VIEW_CONVERT_EXPR:
@@ -4711,11 +4684,7 @@ find_func_aliases (struct function *fn, gimple origt)
 
 	  get_constraint_for (lhsop, &lhsc);
 
-	  if (FLOAT_TYPE_P (TREE_TYPE (lhsop)))
-	    /* If the operation produces a floating point result then
-	       assume the value is not produced to transfer a pointer.  */
-	    ;
-	  else if (code == POINTER_PLUS_EXPR)
+	  if (code == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
 	  else if (code == BIT_AND_EXPR
@@ -4744,7 +4713,7 @@ find_func_aliases (struct function *fn, gimple origt)
 	    }
 	  else if (truth_value_p (code))
 	    /* Truth value results are not pointer (parts).  Or at least
-	       very very unreasonable obfuscation of a part.  */
+	       very unreasonable obfuscation of a part.  */
 	    ;
 	  else
 	    {
@@ -5166,7 +5135,7 @@ first_vi_for_offset (varinfo_t start, unsigned HOST_WIDE_INT offset)
   while (start)
     {
       /* We may not find a variable in the field list with the actual
-	 offset when when we have glommed a structure to a variable.
+	 offset when we have glommed a structure to a variable.
 	 In that case, however, offset should still be within the size
 	 of the variable. */
       if (offset >= start->offset
@@ -5193,7 +5162,7 @@ first_or_preceding_vi_for_offset (varinfo_t start,
     start = get_varinfo (start->head);
 
   /* We may not find a variable in the field list with the actual
-     offset when when we have glommed a structure to a variable.
+     offset when we have glommed a structure to a variable.
      In that case, however, offset should still be within the size
      of the variable.
      If we got beyond the offset we look for return the field
@@ -5650,7 +5619,6 @@ create_variable_info_for_1 (tree decl, const char *name)
   auto_vec<fieldoff_s> fieldstack;
   fieldoff_s *fo;
   unsigned int i;
-  varpool_node *vnode;
 
   if (!declsize
       || !tree_fits_uhwi_p (declsize))
@@ -5668,12 +5636,10 @@ create_variable_info_for_1 (tree decl, const char *name)
   /* Collect field information.  */
   if (use_field_sensitive
       && var_can_have_subvars (decl)
-      /* ???  Force us to not use subfields for global initializers
-	 in IPA mode.  Else we'd have to parse arbitrary initializers.  */
+      /* ???  Force us to not use subfields for globals in IPA mode.
+	 Else we'd have to parse arbitrary initializers.  */
       && !(in_ipa_mode
-	   && is_global_var (decl)
-	   && (vnode = varpool_node::get (decl))
-	   && vnode->get_constructor ()))
+	   && is_global_var (decl)))
     {
       fieldoff_s *fo = NULL;
       bool notokay = false;
@@ -5805,13 +5771,13 @@ create_variable_info_for (tree decl, const char *name)
 
 	  /* If this is a global variable with an initializer and we are in
 	     IPA mode generate constraints for it.  */
-	  if (vnode->get_constructor ()
-	      && vnode->definition)
+	  ipa_ref *ref;
+	  for (unsigned idx = 0; vnode->iterate_reference (idx, ref); ++idx)
 	    {
 	      auto_vec<ce_s> rhsc;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
-	      get_constraint_for_rhs (vnode->get_constructor (), &rhsc);
+	      get_constraint_for_address_of (ref->referred->decl, &rhsc);
 	      lhs.var = vi->id;
 	      lhs.offset = 0;
 	      lhs.type = SCALAR;
@@ -5961,18 +5927,17 @@ typedef const struct shared_bitmap_info *const_shared_bitmap_info_t;
 
 /* Shared_bitmap hashtable helpers.  */
 
-struct shared_bitmap_hasher : typed_free_remove <shared_bitmap_info>
+struct shared_bitmap_hasher : free_ptr_hash <shared_bitmap_info>
 {
-  typedef shared_bitmap_info value_type;
-  typedef shared_bitmap_info compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const shared_bitmap_info *);
+  static inline bool equal (const shared_bitmap_info *,
+			    const shared_bitmap_info *);
 };
 
 /* Hash function for a shared_bitmap_info_t */
 
 inline hashval_t
-shared_bitmap_hasher::hash (const value_type *bi)
+shared_bitmap_hasher::hash (const shared_bitmap_info *bi)
 {
   return bi->hashcode;
 }
@@ -5980,7 +5945,8 @@ shared_bitmap_hasher::hash (const value_type *bi)
 /* Equality function for two shared_bitmap_info_t's. */
 
 inline bool
-shared_bitmap_hasher::equal (const value_type *sbi1, const compare_type *sbi2)
+shared_bitmap_hasher::equal (const shared_bitmap_info *sbi1,
+			     const shared_bitmap_info *sbi2)
 {
   return bitmap_equal_p (sbi1->pt_vars, sbi2->pt_vars);
 }
@@ -6677,10 +6643,6 @@ init_alias_vars (void)
   bitmap_obstack_initialize (&oldpta_obstack);
   bitmap_obstack_initialize (&predbitmap_obstack);
 
-  constraint_pool = create_alloc_pool ("Constraint pool",
-				       sizeof (struct constraint), 30);
-  variable_info_pool = create_alloc_pool ("Variable info pool",
-					  sizeof (struct variable_info), 30);
   constraints.create (8);
   varmap.create (8);
   vi_for_tree = new hash_map<tree, varinfo_t>;
@@ -6960,8 +6922,8 @@ delete_points_to_sets (void)
   free (graph);
 
   varmap.release ();
-  free_alloc_pool (variable_info_pool);
-  free_alloc_pool (constraint_pool);
+  variable_info_pool.release ();
+  constraint_pool.release ();
 
   obstack_free (&fake_var_decl_obstack, NULL);
 
@@ -7368,7 +7330,8 @@ ipa_pta_execute (void)
 	 constraints for parameters.  */
       if (node->used_from_other_partition
 	  || node->externally_visible
-	  || node->force_output)
+	  || node->force_output
+	  || node->address_taken)
 	{
 	  intra_create_variable_infos (func);
 

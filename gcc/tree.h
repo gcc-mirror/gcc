@@ -428,7 +428,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CONVERT_EXPR_CODE_P(CODE)				\
   ((CODE) == NOP_EXPR || (CODE) == CONVERT_EXPR)
 
-/* Similarly, but accept an expressions instead of a tree code.  */
+/* Similarly, but accept an expression instead of a tree code.  */
 #define CONVERT_EXPR_P(EXP)	CONVERT_EXPR_CODE_P (TREE_CODE (EXP))
 
 /* Generate case for NOP_EXPR, CONVERT_EXPR.  */
@@ -1197,10 +1197,16 @@ extern void protected_set_expr_location (tree, location_t);
 
 /* OpenMP and OpenACC directive and clause accessors.  */
 
+/* Generic accessors for OMP nodes that keep the body as operand 0, and clauses
+   as operand 1.  */
 #define OMP_BODY(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_CRITICAL), 0)
 #define OMP_CLAUSES(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_SINGLE), 1)
+
+/* Generic accessors for OMP nodes that keep clauses as operand 0.  */
+#define OMP_STANDALONE_CLAUSES(NODE) \
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_CACHE, OMP_TARGET_UPDATE), 0)
 
 #define OACC_PARALLEL_BODY(NODE) \
   TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 0)
@@ -1319,6 +1325,11 @@ extern void protected_set_expr_location (tree, location_t);
    combined parallel work-sharing constructs.  */
 #define OMP_PARALLEL_COMBINED(NODE) \
   (OMP_PARALLEL_CHECK (NODE)->base.private_flag)
+
+/* True on an OMP_TEAMS statement if it represents an explicit
+   combined teams distribute constructs.  */
+#define OMP_TEAMS_COMBINED(NODE) \
+  (OMP_TEAMS_CHECK (NODE)->base.private_flag)
 
 /* True if OMP_ATOMIC* is supposed to be sequentially consistent
    as opposed to relaxed.  */
@@ -1578,6 +1589,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define BLOCK_CHAIN(NODE) (BLOCK_CHECK (NODE)->block.chain)
 #define BLOCK_ABSTRACT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.abstract_origin)
 #define BLOCK_ABSTRACT(NODE) (BLOCK_CHECK (NODE)->block.abstract_flag)
+#define BLOCK_DIE(NODE) (BLOCK_CHECK (NODE)->block.die)
 
 /* True if BLOCK has the same ranges as its BLOCK_SUPERCONTEXT.  */
 #define BLOCK_SAME_RANGE(NODE) (BLOCK_CHECK (NODE)->base.u.bits.nameless_flag)
@@ -2815,7 +2827,7 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
   (STATEMENT_LIST_CHECK (NODE)->stmt_list.tail)
 
 #define TREE_OPTIMIZATION(NODE) \
-  (&OPTIMIZATION_NODE_CHECK (NODE)->optimization.opts)
+  (OPTIMIZATION_NODE_CHECK (NODE)->optimization.opts)
 
 #define TREE_OPTIMIZATION_OPTABS(NODE) \
   (OPTIMIZATION_NODE_CHECK (NODE)->optimization.optabs)
@@ -2827,7 +2839,7 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 extern tree build_optimization_node (struct gcc_options *opts);
 
 #define TREE_TARGET_OPTION(NODE) \
-  (&TARGET_OPTION_NODE_CHECK (NODE)->target_option.opts)
+  (TARGET_OPTION_NODE_CHECK (NODE)->target_option.opts)
 
 #define TREE_TARGET_GLOBALS(NODE) \
   (TARGET_OPTION_NODE_CHECK (NODE)->target_option.globals)
@@ -3050,6 +3062,13 @@ tree_int_cst_elt_check (tree __t, int __i,
   return &CONST_CAST_TREE (__t)->int_cst.val[__i];
 }
 
+/* Workaround -Wstrict-overflow false positive during profiledbootstrap.  */
+
+# if GCC_VERSION >= 4006
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
+
 inline tree *
 tree_vec_elt_check (tree __t, int __i,
                     const char *__f, int __l, const char *__g)
@@ -3060,6 +3079,10 @@ tree_vec_elt_check (tree __t, int __i,
     tree_vec_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
   return &CONST_CAST_TREE (__t)->vec.a[__i];
 }
+
+# if GCC_VERSION >= 4006
+#pragma GCC diagnostic pop
+#endif
 
 inline tree *
 omp_clause_elt_check (tree __t, int __i,
@@ -3267,6 +3290,11 @@ non_type_check (const_tree __t, const char *__f, int __l, const char *__g)
   return __t;
 }
 
+# if GCC_VERSION >= 4006
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
+
 inline const_tree *
 tree_vec_elt_check (const_tree __t, int __i,
                     const char *__f, int __l, const char *__g)
@@ -3278,6 +3306,10 @@ tree_vec_elt_check (const_tree __t, int __i,
   return CONST_CAST (const_tree *, &__t->vec.a[__i]);
   //return &__t->vec.a[__i];
 }
+
+# if GCC_VERSION >= 4006
+#pragma GCC diagnostic pop
+#endif
 
 inline const_tree *
 omp_clause_elt_check (const_tree __t, int __i,
@@ -3740,6 +3772,7 @@ extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_va (tree, int, ...);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_complex (tree, tree, tree);
+extern tree build_each_one_cst (tree);
 extern tree build_one_cst (tree);
 extern tree build_minus_one_cst (tree);
 extern tree build_all_ones_cst (tree);
@@ -3868,6 +3901,8 @@ extern tree build_type_attribute_variant (tree, tree);
 extern tree build_decl_attribute_variant (tree, tree);
 extern tree build_type_attribute_qual_variant (tree, tree, int);
 
+extern bool attribute_value_equal (const_tree, const_tree);
+
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */
@@ -3954,14 +3989,12 @@ extern tree remove_attribute (const char *, tree);
 
 extern tree merge_attributes (tree, tree);
 
-#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 /* Given two Windows decl attributes lists, possibly including
    dllimport, return a list of their union .  */
 extern tree merge_dllimport_decl_attributes (tree, tree);
 
 /* Handle a "dllimport" or "dllexport" attribute.  */
 extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
-#endif
 
 /* Returns true iff unqualified CAND and BASE are equivalent.  */
 
@@ -4075,6 +4108,10 @@ extern tree uniform_vector_p (const_tree);
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 
 extern vec<tree, va_gc> *ctor_to_vec (tree);
+
+/* zerop (tree x) is nonzero if X is a constant of value 0.  */
+
+extern int zerop (const_tree);
 
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0.  */
 
@@ -4336,15 +4373,17 @@ extern int type_num_arguments (const_tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
 extern bool commutative_ternary_tree_code (enum tree_code);
+extern bool operation_can_overflow (enum tree_code);
+extern bool operation_no_trapping_overflow (tree, enum tree_code);
 extern tree upper_bound_in_type (tree, tree);
 extern tree lower_bound_in_type (tree, tree);
 extern int operand_equal_for_phi_arg_p (const_tree, const_tree);
 extern tree create_artificial_label (location_t);
 extern const char *get_name (tree);
 extern bool stdarg_p (const_tree);
-extern bool prototype_p (tree);
-extern bool is_typedef_decl (tree x);
-extern bool typedef_variant_p (tree);
+extern bool prototype_p (const_tree);
+extern bool is_typedef_decl (const_tree x);
+extern bool typedef_variant_p (const_tree);
 extern bool auto_var_in_fn_p (const_tree, const_tree);
 extern tree build_low_bits_mask (tree, unsigned);
 extern bool tree_nop_conversion_p (const_tree, const_tree);
@@ -4355,6 +4394,69 @@ extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_neeeded (tree);
 extern void warn_deprecated_use (tree, tree);
 extern void cache_integer_cst (tree);
+
+/* Return the memory model from a host integer.  */
+static inline enum memmodel
+memmodel_from_int (unsigned HOST_WIDE_INT val)
+{
+  return (enum memmodel) (val & MEMMODEL_MASK);
+}
+
+/* Return the base memory model from a host integer.  */
+static inline enum memmodel
+memmodel_base (unsigned HOST_WIDE_INT val)
+{
+  return (enum memmodel) (val & MEMMODEL_BASE_MASK);
+}
+
+/* Return TRUE if the memory model is RELAXED.  */
+static inline bool
+is_mm_relaxed (enum memmodel model)
+{
+  return (model & MEMMODEL_BASE_MASK) == MEMMODEL_RELAXED;
+}
+
+/* Return TRUE if the memory model is CONSUME.  */
+static inline bool
+is_mm_consume (enum memmodel model)
+{
+  return (model & MEMMODEL_BASE_MASK) == MEMMODEL_CONSUME;
+}
+
+/* Return TRUE if the memory model is ACQUIRE.  */
+static inline bool
+is_mm_acquire (enum memmodel model)
+{
+  return (model & MEMMODEL_BASE_MASK) == MEMMODEL_ACQUIRE;
+}
+
+/* Return TRUE if the memory model is RELEASE.  */
+static inline bool
+is_mm_release (enum memmodel model)
+{
+  return (model & MEMMODEL_BASE_MASK) == MEMMODEL_RELEASE;
+}
+
+/* Return TRUE if the memory model is ACQ_REL.  */
+static inline bool
+is_mm_acq_rel (enum memmodel model)
+{
+  return (model & MEMMODEL_BASE_MASK) == MEMMODEL_ACQ_REL;
+}
+
+/* Return TRUE if the memory model is SEQ_CST.  */
+static inline bool
+is_mm_seq_cst (enum memmodel model)
+{
+  return (model & MEMMODEL_BASE_MASK) == MEMMODEL_SEQ_CST;
+}
+
+/* Return TRUE if the memory model is a SYNC variant.  */
+static inline bool
+is_mm_sync (enum memmodel model)
+{
+  return (model & MEMMODEL_SYNC);
+}
 
 /* Compare and hash for any structure which begins with a canonical
    pointer.  Assumes all pointers are interchangeable, which is sort
@@ -4448,11 +4550,11 @@ extern location_t *block_nonartificial_location (tree);
 extern location_t tree_nonartificial_location (tree);
 extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
-extern bool virtual_method_call_p (tree);
-extern tree obj_type_ref_class (tree ref);
-extern bool types_same_for_odr (const_tree type1, const_tree type2);
+extern bool virtual_method_call_p (const_tree);
+extern tree obj_type_ref_class (const_tree ref);
+extern bool types_same_for_odr (const_tree type1, const_tree type2,
+				bool strict=false);
 extern bool contains_bitfld_component_ref_p (const_tree);
-extern bool type_in_anonymous_namespace_p (const_tree);
 extern bool block_may_fallthru (const_tree);
 extern void using_eh_for_cleanups (void);
 extern bool using_eh_for_cleanups_p (void);
@@ -4467,11 +4569,61 @@ extern tree walk_tree_without_duplicates_1 (tree*, walk_tree_fn, void*,
 #define walk_tree_without_duplicates(a,b,c) \
 	walk_tree_without_duplicates_1 (a, b, c, NULL)
 
-extern tree get_base_address (tree t);
 extern tree drop_tree_overflow (tree);
+
+/* Given a memory reference expression T, return its base address.
+   The base address of a memory reference expression is the main
+   object being referenced.  */
+extern tree get_base_address (tree t);
+
+/* Return a tree of sizetype representing the size, in bytes, of the element
+   of EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_element_size (tree);
+
+/* Return a tree representing the upper bound of the array mentioned in
+   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_up_bound (tree);
+
+/* Return a tree representing the lower bound of the array mentioned in
+   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_low_bound (tree);
+
+/* Returns true if REF is an array reference to an array at the end of
+   a structure.  If this is the case, the array may be allocated larger
+   than its upper bound implies.  */
+extern bool array_at_struct_end_p (tree);
+
+/* Return a tree representing the offset, in bytes, of the field referenced
+   by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
+extern tree component_ref_field_offset (tree);
+
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
 extern int tree_map_base_marked_p (const void *);
+extern void DEBUG_FUNCTION verify_type (const_tree t);
+extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
+						 bool trust_type_canonical = true);
+/* Return simplified tree code of type that is used for canonical type merging.  */
+inline enum tree_code
+tree_code_for_canonical_type_merging (enum tree_code code)
+{
+  /* By C standard, each enumerated type shall be compatible with char,
+     a signed integer, or an unsigned integer.  The choice of type is
+     implementation defined (in our case it depends on -fshort-enum).
+
+     For this reason we make no distinction between ENUMERAL_TYPE and INTEGER
+     type and compare only by their signedness and precision.  */
+  if (code == ENUMERAL_TYPE)
+    return INTEGER_TYPE;
+  /* To allow inter-operability between languages having references and
+     C, we consider reference types and pointers alike.  Note that this is
+     not strictly necessary for C-Fortran 2008 interoperability because
+     Fortran define C_PTR type that needs to be compatible with C pointers
+     and we handle this one as ptr_type_node.  */
+  if (code == REFERENCE_TYPE)
+    return POINTER_TYPE;
+  return code;
+}
 
 #define tree_map_eq tree_map_base_eq
 extern unsigned int tree_map_hash (const void *);
@@ -4481,7 +4633,7 @@ extern unsigned int tree_map_hash (const void *);
 extern unsigned int tree_decl_map_hash (const void *);
 #define tree_decl_map_marked_p tree_map_base_marked_p
 
-struct tree_decl_map_cache_hasher : ggc_cache_hasher<tree_decl_map *>
+struct tree_decl_map_cache_hasher : ggc_cache_ptr_hash<tree_decl_map>
 {
   static hashval_t hash (tree_decl_map *m) { return tree_decl_map_hash (m); }
   static bool
@@ -4490,16 +4642,10 @@ struct tree_decl_map_cache_hasher : ggc_cache_hasher<tree_decl_map *>
     return tree_decl_map_eq (a, b);
   }
 
-  static void
-  handle_cache_entry (tree_decl_map *&m)
+  static int
+  keep_cache_entry (tree_decl_map *&m)
   {
-    extern void gt_ggc_mx (tree_decl_map *&);
-    if (m == HTAB_EMPTY_ENTRY || m == HTAB_DELETED_ENTRY)
-      return;
-    else if (ggc_marked_p (m->base.from))
-      gt_ggc_mx (m);
-    else
-      m = static_cast<tree_decl_map *> (HTAB_DELETED_ENTRY);
+    return ggc_marked_p (m->base.from);
   }
 };
 
@@ -4591,7 +4737,7 @@ more_call_expr_args_p (const call_expr_arg_iterator *iter)
 
 /* Return true if tree node T is a language-specific node.  */
 static inline bool
-is_lang_specific (tree t)
+is_lang_specific (const_tree t)
 {
   return TREE_CODE (t) == LANG_TYPE || TREE_CODE (t) >= NUM_TREE_CODES;
 }
@@ -4606,7 +4752,7 @@ builtin_decl_explicit (enum built_in_function fncode)
 {
   gcc_checking_assert (BUILTIN_VALID_P (fncode));
 
-  return builtin_info.decl[(size_t)fncode];
+  return builtin_info[(size_t)fncode].decl;
 }
 
 /* Return the tree node for an implicit builtin function or NULL.  */
@@ -4616,10 +4762,10 @@ builtin_decl_implicit (enum built_in_function fncode)
   size_t uns_fncode = (size_t)fncode;
   gcc_checking_assert (BUILTIN_VALID_P (fncode));
 
-  if (!builtin_info.implicit_p[uns_fncode])
+  if (!builtin_info[uns_fncode].implicit_p)
     return NULL_TREE;
 
-  return builtin_info.decl[uns_fncode];
+  return builtin_info[uns_fncode].decl;
 }
 
 /* Set explicit builtin function nodes and whether it is an implicit
@@ -4633,8 +4779,9 @@ set_builtin_decl (enum built_in_function fncode, tree decl, bool implicit_p)
   gcc_checking_assert (BUILTIN_VALID_P (fncode)
 		       && (decl != NULL_TREE || !implicit_p));
 
-  builtin_info.decl[ufncode] = decl;
-  builtin_info.implicit_p[ufncode] = implicit_p;
+  builtin_info[ufncode].decl = decl;
+  builtin_info[ufncode].implicit_p = implicit_p;
+  builtin_info[ufncode].declared_p = false;
 }
 
 /* Set the implicit flag for a builtin function.  */
@@ -4645,9 +4792,22 @@ set_builtin_decl_implicit_p (enum built_in_function fncode, bool implicit_p)
   size_t uns_fncode = (size_t)fncode;
 
   gcc_checking_assert (BUILTIN_VALID_P (fncode)
-		       && builtin_info.decl[uns_fncode] != NULL_TREE);
+		       && builtin_info[uns_fncode].decl != NULL_TREE);
 
-  builtin_info.implicit_p[uns_fncode] = implicit_p;
+  builtin_info[uns_fncode].implicit_p = implicit_p;
+}
+
+/* Set the declared flag for a builtin function.  */
+
+static inline void
+set_builtin_decl_declared_p (enum built_in_function fncode, bool declared_p)
+{
+  size_t uns_fncode = (size_t)fncode;
+
+  gcc_checking_assert (BUILTIN_VALID_P (fncode)
+		       && builtin_info[uns_fncode].decl != NULL_TREE);
+
+  builtin_info[uns_fncode].declared_p = declared_p;
 }
 
 /* Return whether the standard builtin function can be used as an explicit
@@ -4657,7 +4817,7 @@ static inline bool
 builtin_decl_explicit_p (enum built_in_function fncode)
 {
   gcc_checking_assert (BUILTIN_VALID_P (fncode));
-  return (builtin_info.decl[(size_t)fncode] != NULL_TREE);
+  return (builtin_info[(size_t)fncode].decl != NULL_TREE);
 }
 
 /* Return whether the standard builtin function can be used implicitly.  */
@@ -4668,8 +4828,20 @@ builtin_decl_implicit_p (enum built_in_function fncode)
   size_t uns_fncode = (size_t)fncode;
 
   gcc_checking_assert (BUILTIN_VALID_P (fncode));
-  return (builtin_info.decl[uns_fncode] != NULL_TREE
-	  && builtin_info.implicit_p[uns_fncode]);
+  return (builtin_info[uns_fncode].decl != NULL_TREE
+	  && builtin_info[uns_fncode].implicit_p);
+}
+
+/* Return whether the standard builtin function was declared.  */
+
+static inline bool
+builtin_decl_declared_p (enum built_in_function fncode)
+{
+  size_t uns_fncode = (size_t)fncode;
+
+  gcc_checking_assert (BUILTIN_VALID_P (fncode));
+  return (builtin_info[uns_fncode].decl != NULL_TREE
+	  && builtin_info[uns_fncode].declared_p);
 }
 
 /* Return true if T (assumed to be a DECL) is a global variable.
@@ -4726,23 +4898,8 @@ target_opts_for_fn (const_tree fndecl)
 /* For anonymous aggregate types, we need some sort of name to
    hold on to.  In practice, this should not appear, but it should
    not be harmful if it does.  */
-#ifndef NO_DOT_IN_LABEL
-#define ANON_AGGRNAME_FORMAT "._%d"
-#define ANON_AGGRNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '.' \
-				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_')
-#else /* NO_DOT_IN_LABEL */
-#ifndef NO_DOLLAR_IN_LABEL
-#define ANON_AGGRNAME_FORMAT "$_%d"
-#define ANON_AGGRNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '$' \
-				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_')
-#else /* NO_DOLLAR_IN_LABEL */
-#define ANON_AGGRNAME_PREFIX "__anon_"
-#define ANON_AGGRNAME_P(ID_NODE) \
-  (!strncmp (IDENTIFIER_POINTER (ID_NODE), ANON_AGGRNAME_PREFIX, \
-	     sizeof (ANON_AGGRNAME_PREFIX) - 1))
-#define ANON_AGGRNAME_FORMAT "__anon_%d"
-#endif	/* NO_DOLLAR_IN_LABEL */
-#endif	/* NO_DOT_IN_LABEL */
+extern const char *anon_aggrname_format();
+extern bool anon_aggrname_p (const_tree);
 
 /* The tree and const_tree overload templates.   */
 namespace wi
@@ -4926,12 +5083,6 @@ tree_int_cst_compare (const_tree t1, const_tree t2)
 extern void set_decl_rtl (tree, rtx);
 extern bool complete_ctor_at_level_p (const_tree, HOST_WIDE_INT, const_tree);
 
-/* Return a tree representing the upper bound of the array mentioned in
-   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
-extern tree array_ref_up_bound (tree);
-
-extern tree build_personality_function (const char *);
-
 /* Given an expression EXP that is a handled_component_p,
    look for the ultimate containing object, which is returned and specify
    the access position and size.  */
@@ -4939,10 +5090,7 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				 tree *, machine_mode *, int *, int *,
 				 bool);
 
-/* Return a tree representing the lower bound of the array mentioned in
-   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
-extern tree array_ref_low_bound (tree);
-
+extern tree build_personality_function (const char *);
 
 struct GTY(()) int_n_trees_t {
   /* These parts are initialized at runtime */
@@ -4965,8 +5113,30 @@ int_bit_position (const_tree field)
 	  + wi::to_offset (DECL_FIELD_BIT_OFFSET (field))).to_shwi ();
 }
 
+/* Return true if it makes sense to consider alias set for a type T.  */
+
+inline bool
+type_with_alias_set_p (const_tree t)
+{
+  /* Function and method types are never accessed as memory locations.  */
+  if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
+    return false;
+
+  if (COMPLETE_TYPE_P (t))
+    return true;
+
+  /* Incomplete types can not be accessed in general except for arrays
+     where we can fetch its element despite we have no array bounds.  */
+  if (TREE_CODE (t) == ARRAY_TYPE && COMPLETE_TYPE_P (TREE_TYPE (t)))
+    return true;
+
+  return false;
+}
+
 extern void gt_ggc_mx (tree &);
 extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
+
+extern bool nonnull_arg_p (const_tree);
 
 #endif  /* GCC_TREE_H  */

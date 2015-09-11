@@ -104,7 +104,7 @@ typedef enum optab_tag {
 #define OPTAB_DC(o, p, c)          { #o, p, NS, ZS, NS, o, c, c, 4 },
 #define OPTAB_D(o, p)  { #o, p, NS, ZS, NS, o, UNKNOWN, UNKNOWN, 4 },
 
-typedef struct optab_def_d
+struct optab_def
 {
   const char *name;
   const char *pattern;
@@ -115,7 +115,7 @@ typedef struct optab_def_d
   enum rtx_code fcode;
   enum rtx_code rcode;
   unsigned int kind;
-} optab_def;
+};
 
 static optab_def optabs[] = {
   { "unknown_optab", NULL, NS, ZS, NS, unknown_optab, UNKNOWN, UNKNOWN, 0 },
@@ -136,13 +136,13 @@ static optab_def optabs[] = {
 
 /* Vector in which to collect insns that match.  */
 
-typedef struct pattern_d
+struct pattern
 {
   const char *name;
   unsigned int op;
   unsigned int m1, m2;
   unsigned int sort_num;
-} pattern;
+};
 
 
 static vec<pattern> patterns;
@@ -243,8 +243,9 @@ match_pattern (pattern *p, const char *name, const char *pat)
 }
 
 static void
-gen_insn (rtx insn)
+gen_insn (md_rtx_info *info)
 {
+  rtx insn = info->def;
   const char *name = XSTR (insn, 0);
   pattern p;
   unsigned pindex;
@@ -346,15 +347,18 @@ main (int argc, char **argv)
   s_file = open_outfile (source_file_name);
 
   /* Read the machine description.  */
-  while (1)
-    {
-      int line_no, insn_code_number = 0;
-      rtx desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+      case DEFINE_EXPAND:
+	gen_insn (&info);
 	break;
-      if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	gen_insn (desc);
-    }
+
+      default:
+	break;
+      }
 
   /* Sort the collected patterns.  */
   patterns.qsort (pattern_cmp);
@@ -464,31 +468,17 @@ main (int argc, char **argv)
 	   "#include \"config.h\"\n"
 	   "#include \"system.h\"\n"
 	   "#include \"coretypes.h\"\n"
-	   "#include \"tm.h\"\n"
-	   "#include \"hash-set.h\"\n"
-	   "#include \"machmode.h\"\n"
-	   "#include \"vec.h\"\n"
-	   "#include \"double-int.h\"\n"
-	   "#include \"input.h\"\n"
-	   "#include \"alias.h\"\n"
-	   "#include \"symtab.h\"\n"
-	   "#include \"wide-int.h\"\n"
-	   "#include \"inchash.h\"\n"
+	   "#include \"backend.h\"\n"
+	   "#include \"predict.h\"\n"
 	   "#include \"tree.h\"\n"
+	   "#include \"rtl.h\"\n"
+	   "#include \"alias.h\"\n"
 	   "#include \"varasm.h\"\n"
 	   "#include \"stor-layout.h\"\n"
 	   "#include \"calls.h\"\n"
-	   "#include \"rtl.h\"\n"
-	   "#include \"predict.h\"\n"
 	   "#include \"tm_p.h\"\n"
 	   "#include \"flags.h\"\n"
 	   "#include \"insn-config.h\"\n"
-	   "#include \"hashtab.h\"\n"
-	   "#include \"hard-reg-set.h\"\n"
-	   "#include \"function.h\"\n"
-	   "#include \"statistics.h\"\n"
-	   "#include \"real.h\"\n"
-	   "#include \"fixed-value.h\"\n"
 	   "#include \"expmed.h\"\n"
 	   "#include \"dojump.h\"\n"
 	   "#include \"explow.h\"\n"

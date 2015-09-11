@@ -10,4 +10,3 @@ f1 (int i, ...)
 {
 }
 /* { dg-final { scan-tree-dump "f1: va_list escapes 0, needs to save 0 GPR units and 0 FPR units" "stdarg" } } */
-/* { dg-final { cleanup-tree-dump "stdarg" } } */

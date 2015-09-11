@@ -107,10 +107,29 @@
 # endif
 #endif
 
+// udi16 syscalls can only be used when the following conditions are
+// met:
+// * target is one of arm32, x86-32, sparc32, sh or m68k
+// * libc version is libc5, glibc-2.0, glibc-2.1 or glibc-2.2 to 2.15
+//   built against > linux-2.2 kernel headers
+// Since we don't want to include libc headers here, we check the
+// target only.
+#if defined(__arm__) || SANITIZER_X32 || defined(__sparc__)
+#define SANITIZER_USES_UID16_SYSCALLS 1
+#else
+#define SANITIZER_USES_UID16_SYSCALLS 0
+#endif
+
 #ifdef __mips__
 # define SANITIZER_POINTER_FORMAT_LENGTH FIRST_32_SECOND_64(8, 10)
 #else
 # define SANITIZER_POINTER_FORMAT_LENGTH FIRST_32_SECOND_64(8, 12)
+#endif
+
+// Assume obsolete RPC headers are available by default
+#if !defined(HAVE_RPC_XDR_H) && !defined(HAVE_TIRPC_RPC_XDR_H)
+# define HAVE_RPC_XDR_H (SANITIZER_LINUX && !SANITIZER_ANDROID)
+# define HAVE_TIRPC_RPC_XDR_H 0
 #endif
 
 #endif // SANITIZER_PLATFORM_H

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-madx -O2" } */
-/* { dg-final { scan-assembler-times "adcx" 2 } } */
+/* { dg-final { scan-assembler-times "adc\[xl\]" 2 } } */
 /* { dg-final { scan-assembler-times "sbbl" 1 } } */
 
 #include <x86intrin.h>

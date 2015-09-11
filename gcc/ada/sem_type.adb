@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -954,16 +954,43 @@ package body Sem_Type is
             --  Note: test for presence of E is defense against previous error.
 
             if No (E) then
-               Check_Error_Detected;
+
+               --  If expansion is disabled the Corresponding_Record_Type may
+               --  not be available yet, so use the interface list in the
+               --  declaration directly.
+
+               if ASIS_Mode
+                 and then Nkind (Parent (BT2)) = N_Protected_Type_Declaration
+                 and then Present (Interface_List (Parent (BT2)))
+               then
+                  declare
+                     Intf : Node_Id := First (Interface_List (Parent (BT2)));
+                  begin
+                     while Present (Intf) loop
+                        if Is_Ancestor (Etype (T1), Entity (Intf)) then
+                           return True;
+                        else
+                           Next (Intf);
+                        end if;
+                     end loop;
+                  end;
+
+                  return False;
+
+               else
+                  Check_Error_Detected;
+               end if;
+
+            --  Here we have a corresponding record type
 
             elsif Present (Interfaces (E)) then
                Elmt := First_Elmt (Interfaces (E));
                while Present (Elmt) loop
                   if Is_Ancestor (Etype (T1), Node (Elmt)) then
                      return True;
+                  else
+                     Next_Elmt (Elmt);
                   end if;
-
-                  Next_Elmt (Elmt);
                end loop;
             end if;
 
@@ -1200,15 +1227,8 @@ package body Sem_Type is
          --  expression may have the limited view. If that one in turn is
          --  incomplete, get full view if available.
 
-         if Is_Incomplete_Type (T1) then
-            return Covers (Get_Full_View (Non_Limited_View (T1)), T2);
-
-         elsif Ekind (T1) = E_Class_Wide_Type then
-            return
-              Covers (Class_Wide_Type (Non_Limited_View (Etype (T1))), T2);
-         else
-            return False;
-         end if;
+         return Has_Non_Limited_View (T1)
+           and then Covers (Get_Full_View (Non_Limited_View (T1)), T2);
 
       elsif From_Limited_With (T2) then
 
@@ -1216,17 +1236,8 @@ package body Sem_Type is
          --  either type might have a limited view. Checks performed elsewhere
          --  verify that the context type is the nonlimited view.
 
-         if Is_Incomplete_Type (T2) then
-            return Covers (T1, Get_Full_View (Non_Limited_View (T2)));
-
-         elsif Ekind (T2) = E_Class_Wide_Type then
-            return
-              Present (Non_Limited_View (Etype (T2)))
-                and then
-                  Covers (T1, Class_Wide_Type (Non_Limited_View (Etype (T2))));
-         else
-            return False;
-         end if;
+         return Has_Non_Limited_View (T2)
+           and then Covers (T1, Get_Full_View (Non_Limited_View (T2)));
 
       --  Ada 2005 (AI-412): Coverage for regular incomplete subtypes
 
@@ -1539,6 +1550,8 @@ package body Sem_Type is
 
                if Nkind (Act1) in N_Op
                  and then Is_Overloaded (Act1)
+                 and then Nkind_In (Left_Opnd (Act1), N_Integer_Literal,
+                                                      N_Real_Literal)
                  and then Nkind_In (Right_Opnd (Act1), N_Integer_Literal,
                                                        N_Real_Literal)
                  and then Has_Compatible_Type (Act1, Standard_Boolean)
@@ -3497,23 +3510,25 @@ package body Sem_Type is
       Write_Str ("Overloads: ");
       Print_Node_Briefly (N);
 
-      if Nkind (N) not in N_Has_Entity then
-         return;
-      end if;
-
       if not Is_Overloaded (N) then
-         Write_Str ("Non-overloaded entity ");
-         Write_Eol;
+         Write_Line ("Non-overloaded entity ");
          Write_Entity_Info (Entity (N), " ");
+
+      elsif Nkind (N) not in N_Has_Entity then
+         Get_First_Interp (N, I, It);
+         while Present (It.Nam) loop
+            Write_Int (Int (It.Typ));
+            Write_Str ("   ");
+            Write_Name (Chars (It.Typ));
+            Write_Eol;
+            Get_Next_Interp (I, It);
+         end loop;
 
       else
          Get_First_Interp (N, I, It);
-         Write_Str ("Overloaded entity ");
-         Write_Eol;
-         Write_Str ("      Name           Type           Abstract Op");
-         Write_Eol;
-         Write_Str ("===============================================");
-         Write_Eol;
+         Write_Line ("Overloaded entity ");
+         Write_Line ("      Name           Type           Abstract Op");
+         Write_Line ("===============================================");
          Nam := It.Nam;
 
          while Present (Nam) loop

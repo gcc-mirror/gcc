@@ -16,4 +16,3 @@ void test_vget_laneu64 (void)
   out_uint64_t = vget_lane_u64 (arg0_uint64x1_t, 0);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

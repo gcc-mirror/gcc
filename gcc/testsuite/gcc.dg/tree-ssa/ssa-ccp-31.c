@@ -18,4 +18,3 @@ int g (int i, int j)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

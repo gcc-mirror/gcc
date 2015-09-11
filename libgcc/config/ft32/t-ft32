@@ -1,0 +1,4 @@
+LIB2ADD = $(srcdir)/config/ft32/epilog.S $(srcdir)/config/ft32/prolog.S
+
+crti-hw.o: $(srcdir)/config/ft32/crti-hw.S
+	$(crt_compile) -c -x assembler-with-cpp $<

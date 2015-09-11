@@ -15,4 +15,3 @@
   call foo (ot(0:time_steps)) ! Was an unnecessary temporary
   end
 ! { dg-final { scan-tree-dump-times "unpack" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

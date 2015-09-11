@@ -30,4 +30,3 @@ void foo1 (int n)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

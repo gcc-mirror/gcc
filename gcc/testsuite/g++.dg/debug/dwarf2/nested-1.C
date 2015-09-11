@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/40109
 // { dg-do compile }
-// { dg-options  "-g -dA -O0" }
+// { dg-options  "-gdwarf-2 -dA -O0" }
 
 namespace A
 {

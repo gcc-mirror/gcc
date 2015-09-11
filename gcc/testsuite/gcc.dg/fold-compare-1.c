@@ -49,5 +49,4 @@ int test8(int l)
 /* { dg-final { scan-tree-dump-times "j >= i" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "k >= -3" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "l < -2" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
 

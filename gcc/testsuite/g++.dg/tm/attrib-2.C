@@ -19,4 +19,3 @@ void Tcall::f() { }
 // { dg-final { scan-tree-dump-times "_ZN5Tcall1fEv" 1 "optimized" } }
 // { dg-final { scan-tree-dump-times "_ZGTtN5Tsafe1fEv" 1 "optimized" } }
 // { dg-final { scan-tree-dump-times "_ZGTtN5Tcall1fEv" 1 "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

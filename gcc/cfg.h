@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CFG_H
 #define GCC_CFG_H
 
+#include "dominance.h"
+
 /* What sort of profiling information we have.  */
 enum profile_status_d
 {

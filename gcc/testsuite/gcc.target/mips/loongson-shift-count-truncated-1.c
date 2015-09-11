@@ -1,6 +1,6 @@
 /* Test case for SHIFT_COUNT_TRUNCATED on Loongson.  */
 
-/* { dg-do run } */
+/* { dg-do run { target { ! { mips*-mti-linux* mips*-img-linux* } } } } */
 /* loongson.h does not handle or check for MIPS16ness.  There doesn't
    seem any good reason for it to, given that the Loongson processors
    do not support MIPS16.  */

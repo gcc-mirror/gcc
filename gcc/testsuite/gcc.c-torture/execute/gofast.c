@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires io" { freestanding } { "*" } { "" } }  */
+
 /* Program to test gcc's usage of the gofast library.  */
 
 /* The main guiding themes are to make it trivial to add test cases over time

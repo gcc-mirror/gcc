@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -213,7 +213,7 @@ package Exp_Tss is
    --  case arises for concurrent types. Such types do not themselves have an
    --  init proc TSS, but initialization is required. The init proc used is
    --  the one for the corresponding record type (see Base_Init_Proc). If
-   --  Ref is present it is call to a subprogram whose profile matches the
+   --  Ref is present it is a call to a subprogram whose profile matches the
    --  profile of the required constructor (this argument is used to handle
    --  non-default CPP constructors).
 

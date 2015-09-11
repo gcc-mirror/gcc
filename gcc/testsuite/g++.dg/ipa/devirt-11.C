@@ -43,4 +43,3 @@ bar ()
   c + d;
 }
 /* { dg-final { scan-ipa-dump "Discovered a virtual call to a known target" "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

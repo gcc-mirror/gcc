@@ -221,7 +221,7 @@ enum reg_class
 
 /* Stack layout; function entry, exit and calling.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 #define STARTING_FRAME_OFFSET 0
 
@@ -331,7 +331,7 @@ enum reg_class
 #define CLEAR_RATIO(speed) ((speed) ? 15 : TILEPRO_CALL_RATIO)
 #define SET_RATIO(speed) ((speed) ? 15 : TILEPRO_CALL_RATIO)
 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
@@ -346,7 +346,7 @@ enum reg_class
 
 #define SHIFT_COUNT_TRUNCATED 1
 
-#define SHORT_IMMEDIATES_SIGN_EXTEND
+#define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 

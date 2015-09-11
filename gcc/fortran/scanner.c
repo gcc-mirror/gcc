@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "toplev.h"	/* For set_src_pwd.  */
 #include "debug.h"
-#include "flags.h"
+#include "options.h"
 #include "cpp.h"
 #include "scanner.h"
 
@@ -327,7 +327,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   if (stat (q, &st))
     {
       if (errno != ENOENT)
-	gfc_warning_now ("Include directory %qs: %s", path,
+	gfc_warning_now (0, "Include directory %qs: %s", path,
 			 xstrerror(errno));
       else if (warn)
 	gfc_warning_now (OPT_Wmissing_include_dirs,
@@ -336,7 +336,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
     }
   else if (!S_ISDIR (st.st_mode))
     {
-      gfc_warning_now ("%qs is not a directory", path);
+      gfc_warning_now (0, "%qs is not a directory", path);
       return;
     }
 
@@ -739,7 +739,7 @@ skip_oacc_attribute (locus start, locus old_loc, bool continue_flag)
 	}
       else
 	{
-	  gfc_warning_now ("!$ACC at %C starts a commented "
+	  gfc_warning_now (0, "!$ACC at %C starts a commented "
 			   "line as it neither is followed "
 			   "by a space nor is a "
 			   "continuation line");
@@ -779,7 +779,7 @@ skip_omp_attribute (locus start, locus old_loc, bool continue_flag)
 	}
       else
 	{
-	  gfc_warning_now ("!$OMP at %C starts a commented "
+	  gfc_warning_now (0, "!$OMP at %C starts a commented "
 			   "line as it neither is followed "
 			   "by a space nor is a "
 			   "continuation line");
@@ -1268,7 +1268,9 @@ restart:
 	c = next_char ();
 
       /* Character constants to be continued cannot have commentary
-	 after the '&'.  */
+	 after the '&'. However, there are cases where we may think we
+	 are still in a string and we are looking for a possible
+	 doubled quote and we end up here. See PR64506.  */
 
       if (in_string && c != '\n')
 	{
@@ -1306,7 +1308,7 @@ restart:
 	  if (++continue_count == gfc_option.max_continue_free)
 	    {
 	      if (gfc_notification_std (GFC_STD_GNU) || pedantic)
-		gfc_warning ("Limit of %d continuations exceeded in "
+		gfc_warning (0, "Limit of %d continuations exceeded in "
 			     "statement at %C", gfc_option.max_continue_free);
 	    }
 	}
@@ -1380,6 +1382,8 @@ restart:
 			     "Missing %<&%> in continued character "
 			     "constant at %C");
 	    }
+	  else if (!in_string && (c == '\'' || c == '"'))
+	      goto done;
 	  /* Both !$omp and !$ -fopenmp continuation lines have & on the
 	     continuation line only optionally.  */
 	  else if (openmp_flag || openacc_flag || openmp_cond_flag)
@@ -1395,7 +1399,7 @@ restart:
   else /* Fixed form.  */
     {
       /* Fixed form continuation.  */
-      if (!in_string && c == '!')
+      if (in_string != INSTRING_WARN && c == '!')
 	{
 	  /* Skip comment at end of line.  */
 	  do
@@ -1477,7 +1481,7 @@ restart:
 	  if (++continue_count == gfc_option.max_continue_fixed)
 	    {
 	      if (gfc_notification_std (GFC_STD_GNU) || pedantic)
-		gfc_warning ("Limit of %d continuations exceeded in "
+		gfc_warning (0, "Limit of %d continuations exceeded in "
 			     "statement at %C",
 			     gfc_option.max_continue_fixed);
 	    }
@@ -1718,7 +1722,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 		gfc_error_now ("%<&%> not allowed by itself in line %d",
 			       current_line);
 	      else
-		gfc_warning_now ("%<&%> not allowed by itself in line %d",
+		gfc_warning_now (0, "%<&%> not allowed by itself in line %d",
 				 current_line);
 	    }
 	  break;
@@ -2002,9 +2006,13 @@ preprocessor_line (gfc_char_t *c)
       if (!current_file->up
 	  || filename_cmp (current_file->up->filename, filename) != 0)
 	{
-	  gfc_warning_now_1 ("%s:%d: file %s left but not entered",
-			     current_file->filename, current_file->line,
-			     filename);
+	  linemap_line_start (line_table, current_file->line, 80);
+	  /* ??? One could compute the exact column where the filename
+	     starts and compute the exact location here.  */
+	  gfc_warning_now_at (linemap_position_for_column (line_table, 1),
+			      0, "file %qs left but not entered",
+			      filename);
+	  current_file->line++;
 	  if (unescape)
 	    free (wide_filename);
 	  free (filename);
@@ -2036,8 +2044,11 @@ preprocessor_line (gfc_char_t *c)
   return;
 
  bad_cpp_line:
-  gfc_warning_now_1 ("%s:%d: Illegal preprocessor directive",
-		   current_file->filename, current_file->line);
+  linemap_line_start (line_table, current_file->line, 80);
+  /* ??? One could compute the exact column where the directive
+     starts and compute the exact location here.  */
+  gfc_warning_now_at (linemap_position_for_column (line_table, 2), 0,
+		      "Illegal preprocessor directive");
   current_file->line++;
 }
 

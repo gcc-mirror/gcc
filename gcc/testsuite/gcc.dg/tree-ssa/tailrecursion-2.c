@@ -10,4 +10,3 @@ t(char *a)
 		return 0;
 }
 /* { dg-final { scan-tree-dump-times "Eliminated tail recursion" 1 "tailr1"} } */
-/* { dg-final { cleanup-tree-dump "tailr1" } } */

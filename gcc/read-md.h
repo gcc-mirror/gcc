@@ -21,7 +21,18 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_READ_MD_H
 
 #include "obstack.h"
-#include "hashtab.h"
+
+/* Records a position in the file.  */
+struct file_location {
+  file_location () {}
+  file_location (const char *, int);
+
+  const char *filename;
+  int lineno;
+};
+
+inline file_location::file_location (const char *filename_in, int lineno_in)
+  : filename (filename_in), lineno (lineno_in) {}
 
 /* Holds one symbol or number in the .md file.  */
 struct md_name {
@@ -80,10 +91,10 @@ struct enum_type {
 };
 
 /* A callback that handles a single .md-file directive, up to but not
-   including the closing ')'.  It takes two arguments: the line number on
-   which the directive started, and the name of the directive.  The next
+   including the closing ')'.  It takes two arguments: the file position
+   at which the directive started, and the name of the directive.  The next
    unread character is the optional space after the directive name.  */
-typedef void (*directive_handler_t) (int, const char *);
+typedef void (*directive_handler_t) (file_location, const char *);
 
 extern const char *in_fname;
 extern FILE *read_md_file;
@@ -123,8 +134,9 @@ extern void fprint_md_ptr_loc (FILE *, const void *);
 extern const char *join_c_conditions (const char *, const char *);
 extern void print_c_condition (const char *);
 extern void fprint_c_condition (FILE *, const char *);
-extern void message_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void error_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern void message_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern void error_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern void fatal_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void fatal_with_file_and_line (const char *, ...)
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;
@@ -132,7 +144,6 @@ extern int read_skip_spaces (void);
 extern void read_name (struct md_name *);
 extern char *read_quoted_string (void);
 extern char *read_string (int);
-extern void read_skip_construct (int, int);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
 extern void upcase_string (char *);

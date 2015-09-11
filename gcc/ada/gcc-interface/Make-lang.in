@@ -174,7 +174,7 @@ else
   # Build is different from host so we are either building a canadian cross
   # or a cross-native compiler. We provide defaults for tools targeting the
   # host platform, but they can be overriden by just setting <tool>_FOR_HOST
-  # variables. 
+  # variables.
   GNATMAKE_FOR_HOST=$(host)-gnatmake
   GNATBIND_FOR_HOST=$(host)-gnatbind
   GNATLINK_FOR_HOST=$(host)-gnatlink
@@ -282,6 +282,7 @@ GNAT_ADA_OBJS =	\
  ada/exp_smem.o	\
  ada/exp_strm.o	\
  ada/exp_tss.o	\
+ ada/exp_unst.o \
  ada/exp_util.o	\
  ada/expander.o	\
  ada/fmap.o	\
@@ -810,6 +811,7 @@ ada.mostlyclean:
 	-$(RM) ada/*$(coverageexts)
 	-$(RM) ada/sdefault.adb ada/stamp-sdefault ada/stamp-snames
 	-$(RMDIR) ada/tools
+	-$(RM) gnatbind$(exeext) gnat1$(exeext)
 ada.clean:
 ada.distclean:
 	-$(RM) ada/Makefile

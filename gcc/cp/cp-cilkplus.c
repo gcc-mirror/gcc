@@ -27,7 +27,6 @@
 #include "diagnostic-core.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"  /* for copy_tree_body_r.  */
-#include "ggc.h"
 #include "cilk.h"
 
 /* Callback for cp_walk_tree to validate the body of a pragma simd loop

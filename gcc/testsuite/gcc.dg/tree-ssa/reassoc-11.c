@@ -8,4 +8,3 @@ int main(int a, int b, int c, int d)
   return e ^ f;
 }
 /* { dg-final { scan-tree-dump-times "= 0" 1 "reassoc1"} } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

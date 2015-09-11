@@ -19,4 +19,3 @@ int test(int v)
 /* This should be unrolled and optimized into conditional set of return value "v < 0".  */
 
 /* { dg-final { scan-tree-dump-not "if \\(" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -47,10 +47,6 @@ int main(void)
 }
 
 /* Check that parallel code generation part make the right answer.  */
-/* { dg-final { scan-tree-dump-times "1 loops carried no dependency" 1 "graphite" } } */
 /* { dg-final { scan-tree-dump-times "2 loops carried no dependency" 1 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */
 /* { dg-final { scan-tree-dump-times "loopfn.0" 4 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "loopfn.1" 4 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "parloops" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

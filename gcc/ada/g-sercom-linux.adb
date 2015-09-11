@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2013, AdaCore                      --
+--                    Copyright (C) 2007-2015, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,7 +58,12 @@ package body GNAT.Serial_Communications is
    pragma Import (C, fcntl, "fcntl");
 
    C_Data_Rate : constant array (Data_Rate) of unsigned :=
-                   (B1200   => OSC.B1200,
+                   (B75     => OSC.B75,
+                    B110    => OSC.B110,
+                    B150    => OSC.B150,
+                    B300    => OSC.B300,
+                    B600    => OSC.B600,
+                    B1200   => OSC.B1200,
                     B2400   => OSC.B2400,
                     B4800   => OSC.B4800,
                     B9600   => OSC.B9600,

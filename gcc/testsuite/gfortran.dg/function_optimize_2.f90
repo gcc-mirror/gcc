@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O -faggressive-function-elimination -fdump-tree-original" }
+! { dg-options "-O -finline-matmul-limit=0 -faggressive-function-elimination -fdump-tree-original" }
 program main
   implicit none
   real, dimension(2,2) :: a, b, c, d
@@ -44,4 +44,3 @@ end program main
 ! { dg-final { scan-tree-dump-times "element" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "mypure" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "elem_impure" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

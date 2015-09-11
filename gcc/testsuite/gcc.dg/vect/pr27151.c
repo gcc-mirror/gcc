@@ -13,4 +13,3 @@ void vis_clear_data ()
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

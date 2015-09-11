@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-ccp1" } */
+/* { dg-require-effective-target alloca } */
 
 int g (int *);
 
@@ -31,4 +32,3 @@ f (int n)
 }
 
 /* { dg-final { scan-tree-dump-times "CLOBBER" 2 "ccp1"} } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

@@ -25,15 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "trans-mem.h"
@@ -304,7 +296,8 @@ decl_is_java_type (tree decl, int err)
 
 	  if (jthrow_node == NULL_TREE)
 	    fatal_error
-	      ("call to Java %<catch%> or %<throw%> with %<jthrowable%> undefined");
+	      (input_location,
+	       "call to Java %<catch%> or %<throw%> with %<jthrowable%> undefined");
 
 	  jthrow_node = TREE_TYPE (TREE_TYPE (jthrow_node));
 
@@ -578,7 +571,11 @@ expand_end_catch_block (void)
   if (in_function_try_handler
       && (DECL_CONSTRUCTOR_P (current_function_decl)
 	  || DECL_DESTRUCTOR_P (current_function_decl)))
-    finish_expr_stmt (build_throw (NULL_TREE));
+    {
+      tree rethrow = build_throw (NULL_TREE);
+      TREE_NO_WARNING (rethrow) = true;
+      finish_expr_stmt (rethrow);
+    }
 }
 
 tree
@@ -1147,7 +1144,7 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
 {
   tree t = *tp;
   enum tree_code code = TREE_CODE (t);
-  if (code == CALL_EXPR
+  if ((code == CALL_EXPR && CALL_EXPR_FN (t))
       || code == AGGR_INIT_EXPR)
     {
       /* We can only use the exception specification of the called function
@@ -1158,7 +1155,9 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
       tree fn = (code == AGGR_INIT_EXPR
 		 ? AGGR_INIT_EXPR_FN (t) : CALL_EXPR_FN (t));
-      tree type = TREE_TYPE (TREE_TYPE (fn));
+      tree type = TREE_TYPE (fn);
+      gcc_assert (POINTER_TYPE_P (type));
+      type = TREE_TYPE (type);
 
       STRIP_NOPS (fn);
       if (TREE_CODE (fn) == ADDR_EXPR)
@@ -1187,10 +1186,10 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
 /* If a function that causes a noexcept-expression to be false isn't
    defined yet, remember it and check it for TREE_NOTHROW again at EOF.  */
 
-typedef struct GTY(()) pending_noexcept {
+struct GTY(()) pending_noexcept {
   tree fn;
   location_t loc;
-} pending_noexcept;
+};
 static GTY(()) vec<pending_noexcept, va_gc> *pending_noexcept_checks;
 
 /* FN is a FUNCTION_DECL that caused a noexcept-expr to be false.  Warn if
@@ -1203,8 +1202,9 @@ maybe_noexcept_warning (tree fn)
     {
       warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
 	       "because of a call to %qD", fn);
-      warning (OPT_Wnoexcept, "but %q+D does not throw; perhaps "
-	       "it should be declared %<noexcept%>", fn);
+      warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wnoexcept,
+		  "but %qD does not throw; perhaps "
+		  "it should be declared %<noexcept%>", fn);
     }
 }
 

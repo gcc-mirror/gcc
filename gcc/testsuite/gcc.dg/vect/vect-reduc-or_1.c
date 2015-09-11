@@ -31,5 +31,4 @@ main (unsigned char argc, char **argv)
 }
 
 /* { dg-final { scan-tree-dump "Reduce using vector shifts" "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

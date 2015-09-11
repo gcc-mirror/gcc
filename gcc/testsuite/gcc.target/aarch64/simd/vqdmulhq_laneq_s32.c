@@ -12,4 +12,3 @@ t_vqdmulhq_laneq_s32 (int32x4_t a, int32x4_t b)
 }
 
 /* { dg-final { scan-assembler-times "sqdmulh\[ \t\]+\[vV\]\[0-9\]+\.4\[sS\], ?\[vV\]\[0-9\]+\.4\[sS\], ?\[vV\]\[0-9\]+\.\[sS\]\\\[0\\\]\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

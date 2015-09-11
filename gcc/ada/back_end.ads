@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 --  Call the back end with all the information needed
+
 --  Note: there are multiple bodies/variants of this package, so do not
 --  modify this spec without coordination.
 
@@ -65,7 +66,8 @@ package Back_End is
    --  This routine is expected to set the following to True if necessary (the
    --  default for all of these in Opt is False).
    --
-   --    Opt.Suppress_All_Inlining
+   --    Opt.Disable_FE_Inline
+   --    Opt.Disable_FE_Inline_Always
    --    Opt.Suppress_Control_Float_Optimizations
    --    Opt.Generate_SCO
    --    Opt.Generate_SCO_Instance_Table

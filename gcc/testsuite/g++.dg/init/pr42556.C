@@ -7,4 +7,3 @@ void foo (int a, int b, int c, int d)
 }
 
 // { dg-final { scan-tree-dump-not "v = {}"  "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

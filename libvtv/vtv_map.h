@@ -1,5 +1,4 @@
-/* Copyright (C) 2012-2013
-   Free Software Foundation
+/* Copyright (C) 2012-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -26,7 +25,13 @@
 #define _VTV_MAP_H 1
 
 #include <string.h>
+
+#ifdef __MINGW32__
+#include <stdint.h>
+#include "vtv_utils.h"
+#else
 #include <vtv_utils.h>
+#endif
 
 inline uint64_t
 load8bytes (const void *p)

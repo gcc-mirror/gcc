@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-additional-options "-fno-builtin-acc_on_device" } */
 
 #include <openacc.h>
 #include <stdlib.h>

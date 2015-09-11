@@ -35,4 +35,3 @@ end
 
 
 ! { dg-final { scan-tree-dump-not "abort" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

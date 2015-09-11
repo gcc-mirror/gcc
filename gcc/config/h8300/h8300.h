@@ -39,17 +39,7 @@ extern const char * const *h8_reg_names;
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
     {							\
-      if (TARGET_H8300H)				\
-	{						\
-	  builtin_define ("__H8300H__");		\
-	  builtin_assert ("cpu=h8300h");		\
-	  builtin_assert ("machine=h8300h");		\
-	  if (TARGET_NORMAL_MODE)			\
-	    {						\
-	      builtin_define ("__NORMAL_MODE__");	\
-	    }						\
-	}						\
-      else if (TARGET_H8300SX)				\
+      if (TARGET_H8300SX)				\
 	{						\
 	  builtin_define ("__H8300SX__");		\
 	  if (TARGET_NORMAL_MODE)			\
@@ -62,6 +52,16 @@ extern const char * const *h8_reg_names;
 	  builtin_define ("__H8300S__");		\
 	  builtin_assert ("cpu=h8300s");		\
 	  builtin_assert ("machine=h8300s");		\
+	  if (TARGET_NORMAL_MODE)			\
+	    {						\
+	      builtin_define ("__NORMAL_MODE__");	\
+	    }						\
+	}						\
+      else if (TARGET_H8300H)				\
+	{						\
+	  builtin_define ("__H8300H__");		\
+	  builtin_assert ("cpu=h8300h");		\
+	  builtin_assert ("machine=h8300h");		\
 	  if (TARGET_NORMAL_MODE)			\
 	    {						\
 	      builtin_define ("__NORMAL_MODE__");	\
@@ -136,7 +136,7 @@ extern const char * const *h8_reg_names;
    Calls through a register are cheaper than calls to named
    functions; however, the register pressure this causes makes
    CSEing of function addresses generally a lose.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Target machine storage layout */
 
@@ -360,7 +360,7 @@ enum reg_class {
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /* Define this to nonzero if the nominal address of the stack frame
    is at the high-address end of the local variables;

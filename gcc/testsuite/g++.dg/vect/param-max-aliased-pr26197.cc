@@ -21,4 +21,3 @@ void bar()
   g(&b);
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

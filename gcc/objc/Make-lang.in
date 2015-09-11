@@ -114,6 +114,7 @@ objc.uninstall:
 objc.mostlyclean:
 	-rm -f objc/*$(objext) objc/xforward objc/fflags
 	-rm -f objc/*$(coverageexts)
+	-rm -f cc1obj$(exeext)
 objc.clean: objc.mostlyclean
 	-rm -rf objc-headers
 objc.distclean:

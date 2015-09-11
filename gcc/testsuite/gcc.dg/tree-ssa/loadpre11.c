@@ -10,5 +10,4 @@ int f(int tt)
     return g(*t1);
 } 
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */
 

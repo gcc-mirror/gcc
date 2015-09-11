@@ -2,18 +2,18 @@
    is shifted by a constant amount.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" }  */
-/* { dg-final { scan-assembler-not "and|shl|sha|exts" { xfail *-*-* } } }  */
+/* { dg-final { scan-assembler-not "and|shl|sha|exts" } }  */
 
-/* { dg-final { scan-assembler-times "tst\t#7,r0" 3 { xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "tst\t#12,r0" 1 { xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "tst\t#24,r0" 6 { xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "tst\t#13,r0" 3 { xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "tst\t#242,r0" 3 { xfail *-*-* } } }  */
+/* { dg-final { scan-assembler-times "tst\t#7,r0" 3 } }  */
+/* { dg-final { scan-assembler-times "tst\t#12,r0" 1 } }  */
+/* { dg-final { scan-assembler-times "tst\t#24,r0" 6 } }  */
+/* { dg-final { scan-assembler-times "tst\t#13,r0" 3 } }  */
+/* { dg-final { scan-assembler-times "tst\t#242,r0" 3 } }  */
 /* { dg-final { scan-assembler-times "tst\t#252,r0" 1 } }  */
 
-/* { dg-final { scan-assembler-times "tst\t#64,r0" 6 { target { ! sh2a } xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "tst\t#64,r0" 4 { target { sh2a } xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "bld\t#6" 2 { target { sh2a } xfail *-*-* } } }  */
+/* { dg-final { scan-assembler-times "tst\t#64,r0" 6 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "tst\t#64,r0" 4 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "bld\t#6" 2 { target { sh2a } } } }  */
 
 int
 test_00 (unsigned char* x, int y, int z)

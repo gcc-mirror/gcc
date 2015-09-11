@@ -32,4 +32,3 @@ void sched_init (uintptr_t __ptr)
   }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

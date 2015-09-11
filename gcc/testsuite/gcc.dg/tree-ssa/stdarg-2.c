@@ -290,9 +290,11 @@ f15 (int i, ...)
 }
 /* { dg-final { scan-tree-dump "f15: va_list escapes 0, needs to save \[148\] GPR units and \[1-9\]\[0-9\]* FPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 || llp64 } } } } } } */
 /* { dg-final { scan-tree-dump "f15: va_list escapes 0, needs to save \[148\] GPR units and \[1-9\]\[0-9\]* FPR units" "stdarg" { target { powerpc*-*-linux* && { powerpc_fprs && ilp32 } } } } } */
-/* { dg-final { scan-tree-dump "f15: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f15: va_list escapes 0, needs to save 1 GPR units and 2 FPR units" "stdarg" { target s390*-*-linux* } } } */
+
+/* We may be able to improve upon this after fixing PR66010/PR66013.  */
+/* { dg-final { scan-tree-dump "f15: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
+
 /* { dg-final { scan-tree-dump-not "f15: va_list escapes 0, needs to save 0 GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump-not "f15: va_list escapes 0, needs to save 0 GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump-not "f15: va_list escapes 0, needs to save 0 GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
-/* { dg-final { cleanup-tree-dump "stdarg" } } */

@@ -23,6 +23,8 @@ AC_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
 ACX_NONCANONICAL_TARGET
 
+AM_ENABLE_MULTILIB(, ..)
+
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 
@@ -60,7 +62,6 @@ AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
 AM_MAINTAINER_MODE
-AM_ENABLE_MULTILIB(, ..)
 
 AC_LANG_C
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.

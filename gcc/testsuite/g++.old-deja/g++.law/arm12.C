@@ -22,7 +22,7 @@ public:
   Y();
 };
 
-X::X() // { dg-error "is private" }
+X::X() // { dg-message "private" }
 {
   std::cout << "X::X()" << std::endl;
 }

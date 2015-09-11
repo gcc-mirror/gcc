@@ -101,16 +101,25 @@ enum gomp_map_kind
 
 /* Device codes.  Keep in sync with
    libgomp/{openacc.h,openacc.f90,openacc_lib.h}:acc_device_t as well as
-   libgomp/libgomp_target.h.  */
+   libgomp/libgomp-plugin.h.  */
 #define GOMP_DEVICE_NONE		0
 #define GOMP_DEVICE_DEFAULT		1
 #define GOMP_DEVICE_HOST		2
-#define GOMP_DEVICE_HOST_NONSHM		3
+/* #define GOMP_DEVICE_HOST_NONSHM	3 removed.  */
 #define GOMP_DEVICE_NOT_HOST		4
 #define GOMP_DEVICE_NVIDIA_PTX		5
 #define GOMP_DEVICE_INTEL_MIC		6
 
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
+
+/* Versions of libgomp and device-specific plugins.  */
+#define GOMP_VERSION	0
+#define GOMP_VERSION_NVIDIA_PTX 0
+#define GOMP_VERSION_INTEL_MIC 0
+
+#define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
+#define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)
+#define GOMP_VERSION_DEV(PACK) ((PACK) & 0xffff)
 
 #endif

@@ -23,40 +23,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
 #include "toplev.h"
 #include "flags.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "fold-const.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
-#include "bitmap.h"
 #include "diagnostic-core.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-streamer.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
-#include "streamer-hooks.h"
 
 /* Statistics gathered during LTO, WPA and LTRANS.  */
 struct lto_stats_d lto_stats;
@@ -291,10 +271,8 @@ struct tree_hash_entry
   intptr_t value;
 };
 
-struct tree_entry_hasher : typed_noop_remove <tree_hash_entry>
+struct tree_entry_hasher : nofree_ptr_hash <tree_hash_entry>
 {
-  typedef tree_hash_entry value_type;
-  typedef tree_hash_entry compare_type;
   static inline hashval_t hash (const value_type *);
   static inline bool equal (const value_type *, const compare_type *);
 };
@@ -319,11 +297,13 @@ static hash_table<tree_hash_entry> *tree_htab;
 void
 lto_streamer_init (void)
 {
+#ifdef ENABLE_CHECKING
   /* Check that all the TS_* handled by the reader and writer routines
      match exactly the structures defined in treestruct.def.  When a
      new TS_* astructure is added, the streamer should be updated to
      handle it.  */
   streamer_check_handled_ts_structures ();
+#endif
 
 #ifdef LTO_STREAMER_DEBUG
   tree_htab = new hash_table<tree_hash_entry> (31);
@@ -406,7 +386,8 @@ void
 lto_check_version (int major, int minor)
 {
   if (major != LTO_major_version || minor != LTO_minor_version)
-    fatal_error ("bytecode stream generated with LTO version %d.%d instead "
+    fatal_error (input_location,
+		 "bytecode stream generated with LTO version %d.%d instead "
 	         "of the expected %d.%d",
 		 major, minor,
 		 LTO_major_version, LTO_minor_version);

@@ -28,11 +28,15 @@
 #define _GCC_ARM_ACLE_H
 
 #include <stdint.h>
+
+#pragma GCC push_options
+
+#pragma GCC target ("+nothing+crc")
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef __ARM_FEATURE_CRC32
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 __crc32b (uint32_t __a, uint8_t __b)
 {
@@ -81,10 +85,10 @@ __crc32d (uint32_t __a, uint64_t __b)
   return __builtin_aarch64_crc32x (__a, __b);
 }
 
-#endif
-
 #ifdef __cplusplus
 }
 #endif
+
+#pragma GCC pop_options
 
 #endif

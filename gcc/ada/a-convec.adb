@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,13 @@ package body Ada.Containers.Vectors is
      (Object   : Iterator;
       Position : Cursor) return Cursor;
 
+   procedure Append_Slow_Path
+     (Container : in out Vector;
+      New_Item  : Element_Type;
+      Count     : Count_Type);
+   --  This is the slow path for Append. This is split out to minimize the size
+   --  of Append, because we have Inline (Append).
+
    ---------
    -- "&" --
    ---------
@@ -91,7 +98,7 @@ package body Ada.Containers.Vectors is
             Elements : constant Elements_Access :=
                          new Elements_Type'(Right.Last, RE);
          begin
-            return (Controlled with Elements, Right.Last, 0, 0);
+            return (Controlled with Elements, Right.Last, others => <>);
          end;
       end if;
 
@@ -102,7 +109,7 @@ package body Ada.Containers.Vectors is
             Elements : constant Elements_Access :=
                          new Elements_Type'(Left.Last, LE);
          begin
-            return (Controlled with Elements, Left.Last, 0, 0);
+            return (Controlled with Elements, Left.Last, others => <>);
          end;
 
       end if;
@@ -129,7 +136,7 @@ package body Ada.Containers.Vectors is
       --  exceed Index_Type'Last. We use the wider of Index_Type'Base and
       --  Count_Type'Base as the type for intermediate values.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
 
          --  We perform a two-part test. First we determine whether the
          --  computed Last value lies in the base range of the type, and then
@@ -202,7 +209,7 @@ package body Ada.Containers.Vectors is
          Elements : constant Elements_Access :=
                       new Elements_Type'(Last, LE & RE);
       begin
-         return (Controlled with Elements, Last, 0, 0);
+         return (Controlled with Elements, Last, others => <>);
       end;
    end "&";
 
@@ -223,7 +230,7 @@ package body Ada.Containers.Vectors is
                  EA   => (others => Right));
 
          begin
-            return (Controlled with Elements, Index_Type'First, 0, 0);
+            return (Controlled with Elements, Index_Type'First, others => <>);
          end;
       end if;
 
@@ -248,7 +255,7 @@ package body Ada.Containers.Vectors is
          Elements : constant Elements_Access :=
                       new Elements_Type'(Last => Last, EA => LE & Right);
       begin
-         return (Controlled with Elements, Last, 0, 0);
+         return (Controlled with Elements, Last, others => <>);
       end;
    end "&";
 
@@ -268,7 +275,7 @@ package body Ada.Containers.Vectors is
                 (Last => Index_Type'First,
                  EA   => (others => Left));
          begin
-            return (Controlled with Elements, Index_Type'First, 0, 0);
+            return (Controlled with Elements, Index_Type'First, others => <>);
          end;
       end if;
 
@@ -298,7 +305,7 @@ package body Ada.Containers.Vectors is
               EA   => Left & RE);
 
       begin
-         return (Controlled with Elements, Last, 0, 0);
+         return (Controlled with Elements, Last, others => <>);
       end;
    end "&";
 
@@ -328,7 +335,7 @@ package body Ada.Containers.Vectors is
               EA   => (Left, Right));
 
       begin
-         return (Controlled with Elements, Last, 0, 0);
+         return (Controlled with Elements, Last, others => <>);
       end;
    end "&";
 
@@ -457,6 +464,45 @@ package body Ada.Containers.Vectors is
       Count     : Count_Type := 1)
    is
    begin
+      --  In the general case, we pass the buck to Insert, but for efficiency,
+      --  we check for the usual case where Count = 1 and the vector has enough
+      --  room for at least one more element.
+
+      if Count = 1
+        and then Container.Elements /= null
+        and then Container.Last /= Container.Elements.Last
+      then
+         if Container.Busy > 0 then
+            raise Program_Error with
+              "attempt to tamper with cursors (vector is busy)";
+         end if;
+
+         --  Increment Container.Last after assigning the New_Item, so we
+         --  leave the Container unmodified in case Finalize/Adjust raises
+         --  an exception.
+
+         declare
+            New_Last : constant Index_Type := Container.Last + 1;
+         begin
+            Container.Elements.EA (New_Last) := New_Item;
+            Container.Last := New_Last;
+         end;
+
+      else
+         Append_Slow_Path (Container, New_Item, Count);
+      end if;
+   end Append;
+
+   ----------------------
+   -- Append_Slow_Path --
+   ----------------------
+
+   procedure Append_Slow_Path
+     (Container : in out Vector;
+      New_Item  : Element_Type;
+      Count     : Count_Type)
+   is
+   begin
       if Count = 0 then
          return;
       elsif Container.Last = Index_Type'Last then
@@ -464,7 +510,7 @@ package body Ada.Containers.Vectors is
       else
          Insert (Container, Container.Last + 1, New_Item, Count);
       end if;
-   end Append;
+   end Append_Slow_Path;
 
    ------------
    -- Assign --
@@ -705,7 +751,7 @@ package body Ada.Containers.Vectors is
       --  index value New_Last is the last index value of their new home, and
       --  index value J is the first index of their old home.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
          New_Last := Old_Last - Index_Type'Base (Count);
          J := Index + Index_Type'Base (Count);
       else
@@ -814,7 +860,7 @@ package body Ada.Containers.Vectors is
       if Count >= Container.Length then
          Container.Last := No_Index;
 
-      elsif Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      elsif Index_Type'Base'Last >= Count_Type_Last then
          Container.Last := Container.Last - Index_Type'Base (Count);
 
       else
@@ -858,14 +904,14 @@ package body Ada.Containers.Vectors is
       X : Elements_Access := Container.Elements;
 
    begin
+      Container.Elements := null;
+      Container.Last := No_Index;
+
+      Free (X);
+
       if Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors (vector is busy)";
-
-      else
-         Container.Elements := null;
-         Container.Last := No_Index;
-         Free (X);
       end if;
    end Finalize;
 
@@ -1269,6 +1315,16 @@ package body Ada.Containers.Vectors is
 
    end Generic_Sorting;
 
+   ------------------------
+   -- Get_Element_Access --
+   ------------------------
+
+   function Get_Element_Access
+     (Position : Cursor) return not null Element_Access is
+   begin
+      return Position.Container.Elements.EA (Position.Index)'Access;
+   end Get_Element_Access;
+
    -----------------
    -- Has_Element --
    -----------------
@@ -1324,7 +1380,7 @@ package body Ada.Containers.Vectors is
       --  deeper flaw in the caller's algorithm, so that case is treated as a
       --  proper error.)
 
-      if Before > Container.Last and then Before > Container.Last + 1 then
+      if Before > Container.Last + 1 then
          raise Constraint_Error with
            "Before index is out of range (too large)";
       end if;
@@ -1357,7 +1413,7 @@ package body Ada.Containers.Vectors is
       --  compare the new length to the maximum length. If the new length is
       --  acceptable, then we compute the new last index from that.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
 
          --  We have to handle the case when there might be more values in the
          --  range of Index_Type than in the range of Count_Type.
@@ -1392,9 +1448,8 @@ package body Ada.Containers.Vectors is
             --  worry about if No_Index were less than 0, but that case is
             --  handled above).
 
-            if Index_Type'Last - No_Index >=
-                 Count_Type'Pos (Count_Type'Last)
-            then
+            if Index_Type'Last - No_Index >= Count_Type_Last then
+
                --  We have determined that range of Index_Type has at least as
                --  many values as in Count_Type, so Count_Type'Last is the
                --  maximum number of items that are allowed.
@@ -1459,7 +1514,7 @@ package body Ada.Containers.Vectors is
       --  insertion.  Use the wider of Index_Type'Base and Count_Type'Base to
       --  compute its value from the New_Length.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
          New_Last := No_Index + Index_Type'Base (New_Length);
       else
          New_Last := Index_Type'Base (Count_Type'Base (No_Index) + New_Length);
@@ -1527,7 +1582,7 @@ package body Ada.Containers.Vectors is
                --  new home. We use the wider of Index_Type'Base and
                --  Count_Type'Base as the type for intermediate index values.
 
-               if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+               if Index_Type'Base'Last >= Count_Type_Last then
                   Index := Before + Index_Type'Base (Count);
                else
                   Index := Index_Type'Base (Count_Type'Base (Before) + Count);
@@ -1573,7 +1628,7 @@ package body Ada.Containers.Vectors is
       --  We have computed the length of the new internal array (and this is
       --  what "vector capacity" means), so use that to compute its last index.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
          Dst_Last := No_Index + Index_Type'Base (New_Capacity);
       else
          Dst_Last :=
@@ -1606,7 +1661,7 @@ package body Ada.Containers.Vectors is
             --  The new items are being inserted before some existing elements,
             --  so we must slide the existing elements up to their new home.
 
-            if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+            if Index_Type'Base'Last >= Count_Type_Last then
                Index := Before + Index_Type'Base (Count);
             else
                Index := Index_Type'Base (Count_Type'Base (Before) + Count);
@@ -1669,7 +1724,7 @@ package body Ada.Containers.Vectors is
       --  We calculate the last index value of the destination slice using the
       --  wider of Index_Type'Base and count_Type'Base.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
          J := (Before - 1) + Index_Type'Base (N);
       else
          J := Index_Type'Base (Count_Type'Base (Before - 1) + N);
@@ -1712,7 +1767,7 @@ package body Ada.Containers.Vectors is
          --  equals Index_Type'First, then this first source slice will be
          --  empty, which is harmless.)
 
-         if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         if Index_Type'Base'Last >= Count_Type_Last then
             K := L + Index_Type'Base (Src'Length);
          else
             K := Index_Type'Base (Count_Type'Base (L) + Src'Length);
@@ -1755,7 +1810,7 @@ package body Ada.Containers.Vectors is
          --  destination that receives this slice of the source. (For the
          --  reasons given above, this slice is guaranteed to be non-empty.)
 
-         if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         if Index_Type'Base'Last >= Count_Type_Last then
             K := F - Index_Type'Base (Src'Length);
          else
             K := Index_Type'Base (Count_Type'Base (F) - Src'Length);
@@ -1986,7 +2041,7 @@ package body Ada.Containers.Vectors is
       --  deeper flaw in the caller's algorithm, so that case is treated as a
       --  proper error.)
 
-      if Before > Container.Last and then Before > Container.Last + 1 then
+      if Before > Container.Last + 1 then
          raise Constraint_Error with
            "Before index is out of range (too large)";
       end if;
@@ -2019,7 +2074,7 @@ package body Ada.Containers.Vectors is
       --  compare the new length to the maximum length. If the new length is
       --  acceptable, then we compute the new last index from that.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
 
          --  We have to handle the case when there might be more values in the
          --  range of Index_Type than in the range of Count_Type.
@@ -2054,9 +2109,8 @@ package body Ada.Containers.Vectors is
             --  worry about if No_Index were less than 0, but that case is
             --  handled above).
 
-            if Index_Type'Last - No_Index >=
-                 Count_Type'Pos (Count_Type'Last)
-            then
+            if Index_Type'Last - No_Index >= Count_Type_Last then
+
                --  We have determined that range of Index_Type has at least as
                --  many values as in Count_Type, so Count_Type'Last is the
                --  maximum number of items that are allowed.
@@ -2121,7 +2175,7 @@ package body Ada.Containers.Vectors is
       --  insertion.  Use the wider of Index_Type'Base and Count_Type'Base to
       --  compute its value from the New_Length.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
          New_Last := No_Index + Index_Type'Base (New_Length);
       else
          New_Last := Index_Type'Base (Count_Type'Base (No_Index) + New_Length);
@@ -2182,7 +2236,7 @@ package body Ada.Containers.Vectors is
                --  home. We use the wider of Index_Type'Base and
                --  Count_Type'Base as the type for intermediate index values.
 
-               if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+               if Index_Type'Base'Last >= Count_Type_Last then
                   Index := Before + Index_Type'Base (Count);
 
                else
@@ -2228,7 +2282,7 @@ package body Ada.Containers.Vectors is
       --  We have computed the length of the new internal array (and this is
       --  what "vector capacity" means), so use that to compute its last index.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
          Dst_Last := No_Index + Index_Type'Base (New_Capacity);
       else
          Dst_Last :=
@@ -2259,7 +2313,7 @@ package body Ada.Containers.Vectors is
             --  The space is being inserted before some existing elements, so
             --  we must slide the existing elements up to their new home.
 
-            if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+            if Index_Type'Base'Last >= Count_Type_Last then
                Index := Before + Index_Type'Base (Count);
             else
                Index := Index_Type'Base (Count_Type'Base (Before) + Count);
@@ -2673,6 +2727,25 @@ package body Ada.Containers.Vectors is
       end if;
    end Previous;
 
+   ----------------------
+   -- Pseudo_Reference --
+   ----------------------
+
+   function Pseudo_Reference
+     (Container : aliased Vector'Class) return Reference_Control_Type
+   is
+      C : constant Vector_Access := Container'Unrestricted_Access;
+      B : Natural renames C.Busy;
+      L : Natural renames C.Lock;
+   begin
+      return R : constant Reference_Control_Type :=
+        (Controlled with C)
+      do
+         B := B + 1;
+         L := L + 1;
+      end return;
+   end Pseudo_Reference;
+
    -------------------
    -- Query_Element --
    -------------------
@@ -2982,7 +3055,7 @@ package body Ada.Containers.Vectors is
       --  the Last index value of the new internal array, in a way that avoids
       --  any possibility of overflow.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
 
          --  We perform a two-part test. First we determine whether the
          --  computed Last value lies in the base range of the type, and then
@@ -3499,7 +3572,7 @@ package body Ada.Containers.Vectors is
       --  index).  We must therefore check whether the specified Length would
       --  create a Last index value greater than Index_Type'Last.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
 
          --  We perform a two-part test. First we determine whether the
          --  computed Last value lies in the base range of the type, and then
@@ -3566,7 +3639,7 @@ package body Ada.Containers.Vectors is
 
       Elements := new Elements_Type (Last);
 
-      return Vector'(Controlled with Elements, Last, 0, 0);
+      return Vector'(Controlled with Elements, Last, others => <>);
    end To_Vector;
 
    function To_Vector
@@ -3589,7 +3662,7 @@ package body Ada.Containers.Vectors is
       --  index). We must therefore check whether the specified Length would
       --  create a Last index value greater than Index_Type'Last.
 
-      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type_Last then
 
          --  We perform a two-part test. First we determine whether the
          --  computed Last value lies in the base range of the type, and then
@@ -3656,7 +3729,7 @@ package body Ada.Containers.Vectors is
 
       Elements := new Elements_Type'(Last, EA => (others => New_Item));
 
-      return Vector'(Controlled with Elements, Last, 0, 0);
+      return Vector'(Controlled with Elements, Last, others => <>);
    end To_Vector;
 
    --------------------

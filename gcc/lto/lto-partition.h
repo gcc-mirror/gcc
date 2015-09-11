@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "hash-set.h"
 
 /* Structure describing ltrans partitions.  */
 
@@ -26,6 +25,7 @@ struct ltrans_partition_def
   lto_symtab_encoder_t encoder;
   const char * name;
   int insns;
+  int symbols;
   hash_set<symtab_node *> *initializers_visited;
 };
 

@@ -33,6 +33,16 @@ internal_proto(ieee_class_helper_4);
 extern int ieee_class_helper_8 (GFC_REAL_8 *);
 internal_proto(ieee_class_helper_8);
 
+#ifdef HAVE_GFC_REAL_10
+extern int ieee_class_helper_10 (GFC_REAL_10 *);
+internal_proto(ieee_class_helper_10);
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+extern int ieee_class_helper_16 (GFC_REAL_16 *);
+internal_proto(ieee_class_helper_16);
+#endif
+
 /* Enumeration of the possible floating-point types. These values
    correspond to the hidden arguments of the IEEE_CLASS_TYPE
    derived-type of IEEE_ARITHMETIC.  */
@@ -73,6 +83,14 @@ enum { IEEE_OTHER_VALUE = 0, IEEE_SIGNALING_NAN, IEEE_QUIET_NAN,
 
 CLASSMACRO(4)
 CLASSMACRO(8)
+
+#ifdef HAVE_GFC_REAL_10
+CLASSMACRO(10)
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+CLASSMACRO(16)
+#endif
 
 
 #define GFC_FPE_ALL (GFC_FPE_INVALID | GFC_FPE_DENORMAL | \

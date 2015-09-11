@@ -24,4 +24,3 @@ void* g(int m1, int m2)
 /* { dg-final { scan-tree-dump-times "malloc" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "calloc" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "memset" 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

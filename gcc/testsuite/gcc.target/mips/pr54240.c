@@ -25,4 +25,3 @@ NOMIPS16 int foo(S *s)
 }
 
 /* { dg-final { scan-tree-dump "Hoisting adjacent loads" "phiopt1" } } */
-/* { dg-final { cleanup-tree-dump "phiopt1" } } */

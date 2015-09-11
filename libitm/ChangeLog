@@ -1,3 +1,53 @@
+2015-08-20  Gleb Fotengauer-Malinovskiy  <glebfm@altlinux.org>  (tiny change)
+
+	PR libitm/61164
+	* local_atomic (__always_inline): Rename to...
+	(__libitm_always_inline): ... this.
+
+2015-07-03  Carlos Sánchez de La Lama  <csanchezdll@gmail.com>
+
+	PR target/52482
+	* config/powerpc/sjlj.S: Port to Xcode 2.5.
+
+2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex_bits.h (sys_futex0) [__x86_64__]: Change
+	operands "op" and "val" to int.
+
+2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/sh/futex_bits.h (sys_futex0) Change operands
+	"op" and "val" to int.
+
+2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/alpha/futex_bits.h (sys_futex0) Change operands
+	"op" and "val" to int.
+
+2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/futex.cc (gtm_futex_wait, gtm_futex_wake):
+	Declare as static int.
+	(FUTEX_PRIVATE_FLAG): Remove L suffix.
+	* config/linux/futex_bits.h (sys_futex0) Change operand "op" to int.
+
+2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex_bits.h (sys_futex0) [__PIC__]: Remove
+	sys_futex0 function.
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
+
+	* config/arm/hwcap.cc: Use fcntl.h instead of sys/fcntl.h.
+	* config/linux/x86/tls.h: Only use __GLIBC_PREREQ if defined.
+
 2015-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libitm/64360

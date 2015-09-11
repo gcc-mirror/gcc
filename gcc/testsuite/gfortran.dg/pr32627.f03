@@ -18,7 +18,7 @@ program main
   type( c_ptr )               :: x
   type( A ), pointer          :: fptr
   type( A ), target           :: my_a_type
-  character( len=9 ), pointer :: strptr
+  character( len=8 ), pointer :: strptr
 
   fptr => my_a_type
 

@@ -19,5 +19,4 @@ int bar()
 }
 
 /* { dg-final { scan-tree-dump-times "return 1;" 2 "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */
 

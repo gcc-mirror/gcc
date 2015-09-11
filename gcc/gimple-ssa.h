@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_SSA_H
 #define GCC_GIMPLE_SSA_H
 
-#include "hash-map.h"
-#include "tree-hasher.h"
 #include "tree-ssa-operands.h"
 
 /* This structure is used to map a gimple statement to a label,
@@ -35,7 +33,7 @@ struct GTY((for_user)) tm_restart_node {
 
 /* Hasher for tm_restart_node.  */
 
-struct tm_restart_hasher : ggc_hasher<tm_restart_node *>
+struct tm_restart_hasher : ggc_ptr_hash<tm_restart_node>
 {
   static hashval_t hash (tm_restart_node *n) { return htab_hash_pointer (n); }
 
@@ -46,7 +44,7 @@ struct tm_restart_hasher : ggc_hasher<tm_restart_node *>
   }
 };
 
-struct ssa_name_hasher : ggc_hasher<tree>
+struct ssa_name_hasher : ggc_ptr_hash<tree_node>
 {
   /* Hash a tree in a uid_decl_map.  */
 

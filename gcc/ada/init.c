@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,9 +38,9 @@
     installed by this file are used to catch the resulting signals that come
     from these probes failing (i.e. touching protected pages).  */
 
-/* This file should be kept synchronized with 2sinit.ads, 2sinit.adb,
-   s-init-ae653-cert.adb and s-init-xi-sparc.adb.  All these files implement
-   the required functionality for different targets.  */
+/* This file should be kept synchronized with s-init.ads, s-init.adb and the
+   s-init-*.adb variants. All these files implement the required functionality
+   for different targets.  */
 
 /* The following include is here to meet the published VxWorks requirement
    that the __vxworks header appear before any other include.  */
@@ -49,7 +49,7 @@
 #endif
 
 #ifdef __ANDROID__
-#undef linux
+#undef __linux__
 #endif
 
 #ifdef IN_RTS
@@ -403,7 +403,7 @@ __gnat_install_handler (void)
 /* GNU/Linux Section */
 /*********************/
 
-#elif defined (linux)
+#elif defined (__linux__)
 
 #include <signal.h>
 
@@ -452,7 +452,7 @@ void fake_linux_sigemptyset (sigset_t *set)
 
 #endif
 
-#if defined (i386) || defined (__x86_64__) || defined (__ia64__) \
+#if defined (__i386__) || defined (__x86_64__) || defined (__ia64__) \
     || defined (__ARMEL__)
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
@@ -480,7 +480,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
      The stack checking code guarantees that this address is unused by the
      time this happens.  */
 
-#if defined (i386)
+#if defined (__i386__)
   unsigned long *pc = (unsigned long *)mcontext->gregs[REG_EIP];
   /* The pattern is "orl $0x0,(%esp)" for a probe in 32-bit mode.  */
   if (signo == SIGSEGV && pc && *pc == 0x00240c83)
@@ -674,7 +674,7 @@ __gnat_error_handler (int sig)
       msg = "unhandled signal";
     }
 
-    Raise_From_Signal_Handler(exception, msg);
+    Raise_From_Signal_Handler (exception, msg);
 }
 
 void
@@ -703,7 +703,7 @@ __gnat_install_handler(void)
 /* Solaris Section */
 /*******************/
 
-#elif defined (sun) && defined (__SVR4) && !defined (__vxworks)
+#elif defined (__sun__) && !defined (__vxworks)
 
 #include <signal.h>
 #include <siginfo.h>
@@ -1229,7 +1229,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	                     unsigned int acmode);
 
       /* If SS$_CONTROLC has been imported as an exception, it will take
-	 priority over a a Ctrl/C handler.  See above.  SIGINT has a
+	 priority over a Ctrl/C handler.  See above.  SIGINT has a
 	 different condition value due to it's DECCCRTL roots and it's
 	 the condition that gets raised for a "kill -INT".  */
       if ((ctrlc_match || sigint_match) && __gnat_ctrl_c_handler)
@@ -1628,7 +1628,7 @@ __gnat_is_vms_v7 (void)
 /* FreeBSD Section */
 /*******************/
 
-#elif defined (__FreeBSD__)
+#elif defined (__FreeBSD__) || defined (__DragonFly__)
 
 #include <signal.h>
 #include <sys/ucontext.h>
@@ -1673,7 +1673,7 @@ __gnat_error_handler (int sig,
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -1694,14 +1694,17 @@ __gnat_install_handler ()
   __gnat_handler_installed = 1;
 }
 
-/*******************/
-/* VxWorks Section */
-/*******************/
+/*************************************/
+/* VxWorks Section (including Vx653) */
+/*************************************/
 
 #elif defined(__vxworks)
 
 #include <signal.h>
 #include <taskLib.h>
+#if defined (__i386__) && !defined (VTHREADS)
+#include <sysLib.h>
+#endif
 
 #ifndef __RTP__
 #include <intLib.h>
@@ -1758,8 +1761,8 @@ __gnat_clear_exception_count (void)
 }
 
 /* Handle different SIGnal to exception mappings in different VxWorks
-   versions.   */
-static void
+   versions.  */
+void
 __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
 		   void *sc ATTRIBUTE_UNUSED)
 {
@@ -1895,6 +1898,13 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
   Raise_From_Signal_Handler (exception, msg);
 }
 
+#if defined (__i386__) && !defined (VTHREADS)
+extern void
+__gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
+
+static int is_vxsim = 0;
+#endif
+
 /* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
    propagation after the required low level adjustments.  */
 
@@ -1911,13 +1921,21 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if defined (__ARMEL__) || defined (__PPC__)
-  /* On PowerPC, kernel mode, we process signals through a Call Frame Info
-     trampoline, voiding the need for myriads of fallback_frame_state
+#if defined (__ARMEL__) || defined (__PPC__) || defined (__i386__)
+  /* On certain targets, kernel mode, we process signals through a Call Frame
+     Info trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX
      from SJLJ here, so we do this for SJLJ as well even though this is not
      necessary.  This only incurs a few extra instructions and a tiny
      amount of extra stack usage.  */
+
+#if defined (__i386__) && !defined (VTHREADS)
+   /* On x86, the vxsim signal context is subtly different and is processeed
+      by a handler compiled especially for vxsim.  */
+
+  if (is_vxsim)
+    __gnat_vxsim_error_handler (sig, si, sc);
+#endif
 
   #include "sigtramp.h"
 
@@ -1952,6 +1970,7 @@ void
 __gnat_install_handler (void)
 {
   struct sigaction act;
+  char *model ATTRIBUTE_UNUSED;
 
   /* Setup signal handler to map synchronous signals to appropriate
      exceptions.  Make sure that the handler isn't interrupted by another
@@ -2002,6 +2021,15 @@ __gnat_install_handler (void)
   trap_0_entry->inst_fourth = 0xa1480000;
 #endif
 
+#if defined (__i386__) && !defined (VTHREADS)
+  /*  By experiment, found that sysModel () returns the following string
+      prefix for vxsim when running on Linux and Windows.  */
+  model = sysModel ();
+  if ((strncmp (model, "Linux", 5) == 0)
+      || (strncmp (model, "Windows", 7) == 0))
+    is_vxsim = 1;
+#endif
+
   __gnat_handler_installed = 1;
 }
 
@@ -2017,11 +2045,8 @@ __gnat_init_float (void)
 #if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && (!defined (VTHREADS) || defined (__VXWORKSMILS__))
 #if defined (__SPE__)
   {
-     const unsigned long spefscr_mask = 0xfffffff3;
-     unsigned long spefscr;
-     asm ("mfspr  %0, 512" : "=r" (spefscr));
-     spefscr = spefscr & spefscr_mask;
-     asm ("mtspr 512, %0\n\tisync" : : "r" (spefscr));
+    /* For e500v2, do nothing and leave the responsibility to install the
+       handler and enable the exceptions to the BSP.  */
   }
 #else
   asm ("mtfsb0 25");
@@ -2029,7 +2054,7 @@ __gnat_init_float (void)
 #endif
 #endif
 
-#if (defined (__i386__) || defined (i386)) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS)
   /* This is used to properly initialize the FPU on an x86 for each
      process thread.  */
   asm ("finit");
@@ -2100,7 +2125,7 @@ __gnat_error_handler (int sig)
       msg = "unhandled signal";
     }
 
-    Raise_From_Signal_Handler(exception, msg);
+    Raise_From_Signal_Handler (exception, msg);
 }
 
 void
@@ -2163,7 +2188,7 @@ __gnat_error_handler (int sig)
       msg = "unhandled signal";
     }
 
-    Raise_From_Signal_Handler(exception, msg);
+    Raise_From_Signal_Handler (exception, msg);
 }
 
 void
@@ -2498,14 +2523,14 @@ __gnat_install_handler (void)
 
 #if defined (_WIN32) || defined (__INTERIX) \
   || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__) \
-  || defined (__OpenBSD__)
+  || defined (__OpenBSD__) || defined (__DragonFly__)
 
 #define HAVE_GNAT_INIT_FLOAT
 
 void
 __gnat_init_float (void)
 {
-#if defined (__i386__) || defined (i386) || defined (__x86_64)
+#if defined (__i386__) || defined (__x86_64__)
 
   /* This is used to properly initialize the FPU on an x86 for each
      process thread.  */

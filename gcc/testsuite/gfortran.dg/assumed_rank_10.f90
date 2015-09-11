@@ -103,4 +103,3 @@ end program test
 ! { dg-final { scan-tree-dump-times "iia = .integer.kind=4. .. desc.\[0-9\]+.data;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "jjp = .struct t .. desc.\[0-9\]+.data;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "jja = .struct t .. desc.\[0-9\]+.data;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

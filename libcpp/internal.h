@@ -68,7 +68,7 @@ struct cset_converter
 
 #define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
     const struct line_maps *line_table = PFILE->line_table; \
-    const struct line_map *map = \
+    const struct line_map_ordinary *map = \
       LINEMAPS_LAST_ORDINARY_MAP (line_table); \
     linenum_type line = SOURCE_LINE (map, line_table->highest_line); \
     linemap_line_start (PFILE->line_table, line + 1, COLS_HINT); \
@@ -421,6 +421,11 @@ struct cpp_reader
      macro invocation.  */
   source_location invocation_location;
 
+  /* This is the node representing the macro being expanded at
+     top-level.  The value of this data member is valid iff
+     in_macro_expansion_p() returns TRUE.  */
+  cpp_hashnode *top_most_macro_node;
+
   /* Nonzero if we are about to expand a macro.  Note that if we are
      really expanding a macro, the function macro_of_context returns
      the macro being expanded and this flag is set to false.  Client
@@ -703,7 +708,7 @@ extern void _cpp_preprocess_dir_only (cpp_reader *,
 				      const struct _cpp_dir_only_callbacks *);
 
 /* In traditional.c.  */
-extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *);
+extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
 extern void _cpp_overlay_buffer (cpp_reader *pfile, const unsigned char *,
 				 size_t);
@@ -739,9 +744,10 @@ struct normalize_state
 #define NORMALIZE_STATE_UPDATE_IDNUM(st, c)	\
   ((st)->previous = (c), (st)->prev_class = 0)
 
-extern cppchar_t _cpp_valid_ucn (cpp_reader *, const unsigned char **,
-				 const unsigned char *, int,
-				 struct normalize_state *state);
+extern bool _cpp_valid_ucn (cpp_reader *, const unsigned char **,
+			    const unsigned char *, int,
+			    struct normalize_state *state,
+			    cppchar_t *);
 extern void _cpp_destroy_iconv (cpp_reader *);
 extern unsigned char *_cpp_convert_input (cpp_reader *, const char *,
 					  unsigned char *, size_t, size_t,
@@ -828,10 +834,10 @@ ufputs (const unsigned char *s, FILE *f)
    of the macro, rather than the the location of the first character
    of the macro.  NUM_TOKENS is the number of tokens that are part of
    the replacement-list of MACRO.  */
-const struct line_map *linemap_enter_macro (struct line_maps *,
-					    struct cpp_hashnode*,
-					    source_location,
-					    unsigned int);
+const line_map_macro *linemap_enter_macro (struct line_maps *,
+					   struct cpp_hashnode*,
+					   source_location,
+					   unsigned int);
 
 /* Create and return a virtual location for a token that is part of a
    macro expansion-list at a macro expansion point.  See the comment
@@ -855,7 +861,7 @@ const struct line_map *linemap_enter_macro (struct line_maps *,
    MACRO_DEFINITION_LOC is the location in the macro definition,
    either of the token itself or of a macro parameter that it
    replaces.  */
-source_location linemap_add_macro_token (const struct line_map *,
+source_location linemap_add_macro_token (const line_map_macro *,
 					 unsigned int,
 					 source_location,
 					 source_location);

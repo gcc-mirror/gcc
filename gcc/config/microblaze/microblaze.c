@@ -22,34 +22,22 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
 #include "rtl.h"
+#include "df.h"
 #include "regs.h"
-#include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-flags.h"
 #include "insn-attr.h"
 #include "recog.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "function.h"
-#include "hashtab.h"
 #include "flags.h"
-#include "statistics.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -58,31 +46,23 @@
 #include "expr.h"
 #include "reload.h"
 #include "output.h"
-#include "ggc.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm_p.h"
 #include "gstab.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "df.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 #define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
 
@@ -592,7 +572,7 @@ load_tls_operand (rtx x, rtx reg)
 
   tmp = gen_rtx_CONST (Pmode, x);
 
-  emit_insn (gen_rtx_SET (VOIDmode, reg,
+  emit_insn (gen_rtx_SET (reg,
                           gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp)));
 
   return reg;
@@ -681,7 +661,7 @@ microblaze_classify_unspec (struct microblaze_address_info *info, rtx x)
   else if (XINT (x, 1) == UNSPEC_TLS)
     {
       info->type = ADDRESS_TLS;
-      info->tls_type = tls_reloc INTVAL(XVECEXP(x, 0, 1));
+      info->tls_type = tls_reloc (INTVAL (XVECEXP (x, 0, 1)));
     }
   else
     {
@@ -866,7 +846,7 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
       }
     case CONST_INT:
       {
-	info->regA = gen_rtx_raw_REG (mode, 0);
+	info->regA = gen_raw_REG (mode, 0);
 	info->type = ADDRESS_CONST_INT;
 	info->offset = x;
 	return true;
@@ -878,13 +858,13 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
 	info->type = ADDRESS_SYMBOLIC;
 	info->symbol_type = SYMBOL_TYPE_GENERAL;
 	info->symbol = x;
-	info->regA = gen_rtx_raw_REG (mode, get_base_reg (x));
+	info->regA = gen_raw_REG (mode, get_base_reg (x));
 
 	if (GET_CODE (x) == CONST)
 	  {
 	    if (GET_CODE (XEXP (x, 0)) == UNSPEC)
 	     {
-		info->regA = gen_rtx_raw_REG (mode,
+		info->regA = gen_raw_REG (mode,
 				  get_base_reg (XVECEXP (XEXP (x,0), 0, 0)));
 		return microblaze_classify_unspec (info, XEXP (x, 0));
 	     }
@@ -1023,8 +1003,7 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
 	  emit_move_insn (int_reg, GEN_INT (INTVAL (xplus1) & ~0x7fff));
 
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  ptr_reg,
+	  emit_insn (gen_rtx_SET (ptr_reg,
 				  gen_rtx_PLUS (Pmode, xplus0, int_reg)));
 
 	  result = gen_rtx_PLUS (Pmode, ptr_reg,
@@ -1253,11 +1232,11 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 }
 
 static bool
-microblaze_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+microblaze_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 		      int opno ATTRIBUTE_UNUSED, int *total,
 		      bool speed ATTRIBUTE_UNUSED)
 {
-  machine_mode mode = GET_MODE (x);
+  int code = GET_CODE (x);
 
   switch (code)
     {
@@ -3471,6 +3450,51 @@ microblaze_expand_conditional_branch (machine_mode mode, rtx operands[])
     }
 }
 
+void
+microblaze_expand_conditional_branch_reg (enum machine_mode mode,
+                                          rtx operands[])
+{
+  enum rtx_code code = GET_CODE (operands[0]);
+  rtx cmp_op0 = operands[1];
+  rtx cmp_op1 = operands[2];
+  rtx label1 = operands[3];
+  rtx comp_reg = gen_reg_rtx (SImode);
+  rtx condition;
+
+  gcc_assert ((GET_CODE (cmp_op0) == REG)
+               || (GET_CODE (cmp_op0) == SUBREG));
+
+  /* If comparing against zero, just test source reg.  */
+  if (cmp_op1 == const0_rtx)
+    {
+      comp_reg = cmp_op0;
+      condition = gen_rtx_fmt_ee (signed_condition (code),
+                                  SImode, comp_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (condition, label1));
+    }
+  else if (code == EQ)
+    {
+      emit_insn (gen_seq_internal_pat (comp_reg,
+                                       cmp_op0, cmp_op1));
+      condition = gen_rtx_EQ (SImode, comp_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (condition, label1));
+    }
+  else if (code == NE)
+    {
+      emit_insn (gen_sne_internal_pat (comp_reg, cmp_op0,
+                                       cmp_op1));
+      condition = gen_rtx_NE (SImode, comp_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (condition, label1));
+    }
+  else
+    {
+      /* Generate compare and branch in single instruction. */
+      cmp_op1 = force_reg (mode, cmp_op1);
+      condition = gen_rtx_fmt_ee (code, mode, cmp_op0, cmp_op1);
+      emit_jump_insn (gen_branch_compare (condition, cmp_op0,
+                                         cmp_op1, label1));
+    }
+}
 
 void
 microblaze_expand_conditional_branch_sf (rtx operands[])

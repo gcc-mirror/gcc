@@ -37,7 +37,7 @@
 #include <bits/atomic_lockfree_defines.h>
 
 #ifndef _GLIBCXX_ALWAYS_INLINE
-#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((always_inline))
+#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -118,120 +118,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Base types for atomics.
   template<typename _IntTp>
     struct __atomic_base;
-
-  /// atomic_char
-  typedef __atomic_base<char>  	       		atomic_char;
-
-  /// atomic_schar
-  typedef __atomic_base<signed char>	     	atomic_schar;
-
-  /// atomic_uchar
-  typedef __atomic_base<unsigned char>		atomic_uchar;
-
-  /// atomic_short
-  typedef __atomic_base<short>			atomic_short;
-
-  /// atomic_ushort
-  typedef __atomic_base<unsigned short>	 	atomic_ushort;
-
-  /// atomic_int
-  typedef __atomic_base<int>  	       		atomic_int;
-
-  /// atomic_uint
-  typedef __atomic_base<unsigned int>	     	atomic_uint;
-
-  /// atomic_long
-  typedef __atomic_base<long>  	       		atomic_long;
-
-  /// atomic_ulong
-  typedef __atomic_base<unsigned long>		atomic_ulong;
-
-  /// atomic_llong
-  typedef __atomic_base<long long>  		atomic_llong;
-
-  /// atomic_ullong
-  typedef __atomic_base<unsigned long long> 	atomic_ullong;
-
-  /// atomic_wchar_t
-  typedef __atomic_base<wchar_t>  		atomic_wchar_t;
-
-  /// atomic_char16_t
-  typedef __atomic_base<char16_t>  		atomic_char16_t;
-
-  /// atomic_char32_t
-  typedef __atomic_base<char32_t>  		atomic_char32_t;
-
-  /// atomic_char32_t
-  typedef __atomic_base<char32_t>  		atomic_char32_t;
-
-
-  /// atomic_int_least8_t
-  typedef __atomic_base<int_least8_t>  		atomic_int_least8_t;
-
-  /// atomic_uint_least8_t
-  typedef __atomic_base<uint_least8_t>	       	atomic_uint_least8_t;
-
-  /// atomic_int_least16_t
-  typedef __atomic_base<int_least16_t>	       	atomic_int_least16_t;
-
-  /// atomic_uint_least16_t
-  typedef __atomic_base<uint_least16_t>	       	atomic_uint_least16_t;
-
-  /// atomic_int_least32_t
-  typedef __atomic_base<int_least32_t>	       	atomic_int_least32_t;
-
-  /// atomic_uint_least32_t
-  typedef __atomic_base<uint_least32_t>	       	atomic_uint_least32_t;
-
-  /// atomic_int_least64_t
-  typedef __atomic_base<int_least64_t>	       	atomic_int_least64_t;
-
-  /// atomic_uint_least64_t
-  typedef __atomic_base<uint_least64_t>	       	atomic_uint_least64_t;
-
-
-  /// atomic_int_fast8_t
-  typedef __atomic_base<int_fast8_t>  		atomic_int_fast8_t;
-
-  /// atomic_uint_fast8_t
-  typedef __atomic_base<uint_fast8_t>	      	atomic_uint_fast8_t;
-
-  /// atomic_int_fast16_t
-  typedef __atomic_base<int_fast16_t>	      	atomic_int_fast16_t;
-
-  /// atomic_uint_fast16_t
-  typedef __atomic_base<uint_fast16_t>	      	atomic_uint_fast16_t;
-
-  /// atomic_int_fast32_t
-  typedef __atomic_base<int_fast32_t>	      	atomic_int_fast32_t;
-
-  /// atomic_uint_fast32_t
-  typedef __atomic_base<uint_fast32_t>	      	atomic_uint_fast32_t;
-
-  /// atomic_int_fast64_t
-  typedef __atomic_base<int_fast64_t>	      	atomic_int_fast64_t;
-
-  /// atomic_uint_fast64_t
-  typedef __atomic_base<uint_fast64_t>	      	atomic_uint_fast64_t;
-
-
-  /// atomic_intptr_t
-  typedef __atomic_base<intptr_t>  	       	atomic_intptr_t;
-
-  /// atomic_uintptr_t
-  typedef __atomic_base<uintptr_t>  	       	atomic_uintptr_t;
-
-  /// atomic_size_t
-  typedef __atomic_base<size_t>	 	       	atomic_size_t;
-
-  /// atomic_intmax_t
-  typedef __atomic_base<intmax_t>  	       	atomic_intmax_t;
-
-  /// atomic_uintmax_t
-  typedef __atomic_base<uintmax_t>  	       	atomic_uintmax_t;
-
-  /// atomic_ptrdiff_t
-  typedef __atomic_base<ptrdiff_t>  	       	atomic_ptrdiff_t;
 
 
 #define ATOMIC_VAR_INIT(_VI) { _VI }
@@ -354,7 +240,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       typedef _ITp 	__int_type;
 
-      __int_type 	_M_i;
+      static constexpr int _S_alignment =
+	sizeof(_ITp) > alignof(_ITp) ? sizeof(_ITp) : alignof(_ITp);
+
+      alignas(_S_alignment) __int_type _M_i;
 
     public:
       __atomic_base() noexcept = default;
@@ -460,11 +349,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free(sizeof(_M_i), nullptr); }
+      {
+	// Produce a fake, minimally aligned pointer.
+	void *__a = reinterpret_cast<void *>(-__alignof(_M_i));
+	return __atomic_is_lock_free(sizeof(_M_i), __a);
+      }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free(sizeof(_M_i), nullptr); }
+      {
+	// Produce a fake, minimally aligned pointer.
+	void *__a = reinterpret_cast<void *>(-__alignof(_M_i));
+	return __atomic_is_lock_free(sizeof(_M_i), __a);
+      }
 
       _GLIBCXX_ALWAYS_INLINE void
       store(__int_type __i, memory_order __m = memory_order_seq_cst) noexcept
@@ -767,11 +664,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free(sizeof(__pointer_type), nullptr); }
+      {
+	// Produce a fake, minimally aligned pointer.
+	void *__a = reinterpret_cast<void *>(-__alignof(_M_p));
+	return __atomic_is_lock_free(sizeof(_M_p), __a);
+      }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free(sizeof(__pointer_type), nullptr); }
+      {
+	// Produce a fake, minimally aligned pointer.
+	void *__a = reinterpret_cast<void *>(-__alignof(_M_p));
+	return __atomic_is_lock_free(sizeof(_M_p), __a);
+      }
 
       _GLIBCXX_ALWAYS_INLINE void
       store(__pointer_type __p,

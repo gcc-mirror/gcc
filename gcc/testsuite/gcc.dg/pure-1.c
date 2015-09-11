@@ -13,4 +13,3 @@ int func_a(struct test_a *a)
 }
 
 /* { dg-final { scan-ipa-dump-not "found to be pure: func_a" "pure-const" } } */
-/* { dg-final { cleanup-ipa-dump "pure-const" } } */

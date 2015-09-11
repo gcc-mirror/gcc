@@ -48,4 +48,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "note: vectorized 1 loops" 1 "vect" { target avx_runtime } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

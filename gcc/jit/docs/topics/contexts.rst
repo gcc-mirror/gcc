@@ -39,7 +39,7 @@ cleanup of such objects is done for you when the context is released.
 
 .. function:: gcc_jit_context *gcc_jit_context_acquire (void)
 
-  This function acquires a new :c:type:`gcc_jit_object *` instance,
+  This function acquires a new :c:type:`gcc_jit_context *` instance,
   which is independent of any others that may be present within this
   process.
 
@@ -138,7 +138,7 @@ be responsible for all of the rest:
    If no errors occurred, this will be NULL.
 
 If you are wrapping the C API for a higher-level language that supports
-exception-handling, you may instead by interested in the last error that
+exception-handling, you may instead be interested in the last error that
 occurred on the context, so that you can embed this in an exception:
 
 .. function:: const char *\
@@ -146,10 +146,10 @@ occurred on the context, so that you can embed this in an exception:
 
    Returns the last error message that occurred on the context.
 
-   The returned string is valid for the rest of the lifetime of the
-   context.
-
    If no errors occurred, this will be NULL.
+
+   If non-NULL, the returned string is only guaranteed to be valid until
+   the next call to libgccjit relating to this context.
 
 Debugging
 ---------
@@ -293,6 +293,15 @@ future activies on a context to the given `FILE *`.
 Options
 -------
 
+Options present in the initial release of libgccjit were handled using
+enums, whereas those added subsequently have their own per-option API
+entrypoints.
+
+Adding entrypoints for each new option means that client code that use
+the new options can be identified directly from binary metadata, which
+would not be possible if we instead extended the various
+``enum gcc_jit_*_option``.
+
 String Options
 **************
 
@@ -304,7 +313,11 @@ String Options
 
    .. type:: enum gcc_jit_str_option
 
-   There is currently just one string option:
+   The parameter ``value`` can be NULL.   If non-NULL, the call takes a
+   copy of the underlying string, so it is valid to pass in a pointer to
+   an on-stack buffer.
+
+   There is just one string option specified this way:
 
    .. macro:: GCC_JIT_STR_OPTION_PROGNAME
 
@@ -417,8 +430,7 @@ Boolean options
   .. macro:: GCC_JIT_BOOL_OPTION_DUMP_SUMMARY
 
      If true, :func:`gcc_jit_context_compile` will print information to stderr
-     on the actions it is performing, followed by a profile showing
-     the time taken and memory usage of each phase.
+     on the actions it is performing.
 
   .. macro:: GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING
 
@@ -441,6 +453,42 @@ Boolean options
      If true, the :type:`gcc_jit_context` will not clean up intermediate files
      written to the filesystem, and will display their location on stderr.
 
+.. function:: void \
+              gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt, \
+                                                                 int bool_value)
+
+   By default, libgccjit will issue an error about unreachable blocks
+   within a function.
+
+   This entrypoint can be used to disable that error.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_2`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
+
+.. function:: void \
+              gcc_jit_context_set_bool_use_external_driver (gcc_jit_context *ctxt, \
+                                                            int bool_value)
+
+   libgccjit internally generates assembler, and uses "driver" code
+   for converting it to other formats (e.g. shared libraries).
+
+   By default, libgccjit will use an embedded copy of the driver
+   code.
+
+   This option can be used to instead invoke an external driver executable
+   as a subprocess.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_5`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver
+
 Integer options
 ***************
 
@@ -452,7 +500,7 @@ Integer options
 
   .. type:: enum gcc_jit_int_option
 
-  There is currently just one integer option:
+  There is just one integer option specified this way:
 
   .. macro:: GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL
 
@@ -462,3 +510,39 @@ Integer options
      -O0 through -O3.
 
      The default value is 0 (unoptimized).
+
+Additional command-line options
+*******************************
+
+.. function:: void gcc_jit_context_add_command_line_option (gcc_jit_context *ctxt,\
+                                                            const char *optname)
+
+   Add an arbitrary gcc command-line option to the context, for use
+   by :func:`gcc_jit_context_compile` and
+   :func:`gcc_jit_context_compile_to_file`.
+
+   The parameter ``optname`` must be non-NULL.  The underlying buffer is
+   copied, so that it does not need to outlive the call.
+
+   Extra options added by `gcc_jit_context_add_command_line_option` are
+   applied *after* the regular options above, potentially overriding them.
+   Options from parent contexts are inherited by child contexts; options
+   from the parent are applied *before* those from the child.
+
+   For example:
+
+   .. code-block:: c
+
+      gcc_jit_context_add_command_line_option (ctxt, "-ffast-math");
+      gcc_jit_context_add_command_line_option (ctxt, "-fverbose-asm");
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   optimization and code-generation are likely to be useful.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_1`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option

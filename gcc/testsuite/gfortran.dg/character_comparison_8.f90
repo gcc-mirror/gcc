@@ -10,5 +10,4 @@ program main
   if (LGT(a,a)) call abort
 end program main
 ! { dg-final { scan-tree-dump-times "gfortran_compare_string" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

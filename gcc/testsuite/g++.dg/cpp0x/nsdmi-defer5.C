@@ -5,6 +5,9 @@ template<typename T, typename U>
 struct tuple
 {
   tuple(T, U) { }
+
+  static const int x = 3;
+  int var = tuple<T,U>::x;
 };
 
 struct Y

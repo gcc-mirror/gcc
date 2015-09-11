@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +29,7 @@
 
 
 #if HOST_LIBRARY
-#include "offload_host.h"
+#include "offload_table.h"
 #include "offload_myo_host.h"
 #else
 #include "offload_target.h"
@@ -69,29 +69,42 @@ static VarTable::Entry __offload_var_table_end = { (const char*)-1 };
 ALLOCATE(OFFLOAD_MYO_SHARED_TABLE_SECTION_END)
 #ifdef TARGET_WINNT
 __declspec(align(sizeof(SharedTableEntry)))
-static SharedTableEntry __offload_myo_shared_table_end = { (const char*)-1, 0 };
+static MYOVarTable::Entry __offload_myo_shared_var_end =
+    { (const char*)-1, 0 };
 #else // TARGET_WINNT
-static SharedTableEntry __offload_myo_shared_table_end = { 0 };
+static MYOVarTable::Entry __offload_myo_shared_var_end = { 0 };
 #endif // TARGET_WINNT
 
-#if HOST_LIBRARY
+// offload myo shared vtable section epilog
+ALLOCATE(OFFLOAD_MYO_SHARED_VTABLE_SECTION_END)
+#ifdef TARGET_WINNT
+__declspec(align(sizeof(SharedTableEntry)))
+static MYOVarTable::Entry __offload_myo_shared_vtable_end =
+    { (const char*)-1, 0 };
+#else // TARGET_WINNT
+static MYOVarTable::Entry __offload_myo_shared_vtable_end = { 0 };
+#endif // TARGET_WINNT
+
+//#if HOST_LIBRARY
 // offload myo shared var init section epilog
 ALLOCATE(OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_END)
 #ifdef TARGET_WINNT
 __declspec(align(sizeof(InitTableEntry)))
-static InitTableEntry __offload_myo_shared_init_table_end = { (const char*)-1, 0 };
+static MYOInitTable::Entry __offload_myo_init_table_end =
+    { (const char*)-1, 0 };
 #else // TARGET_WINNT
-static InitTableEntry __offload_myo_shared_init_table_end = { 0 };
+static MYOInitTable::Entry __offload_myo_init_table_end = { 0 };
 #endif // TARGET_WINNT
-#endif // HOST_LIBRARY
+//#endif // HOST_LIBRARY
 
 // offload myo fptr section epilog
 ALLOCATE(OFFLOAD_MYO_FPTR_TABLE_SECTION_END)
 #ifdef TARGET_WINNT
 __declspec(align(sizeof(FptrTableEntry)))
-static FptrTableEntry __offload_myo_fptr_table_end = { (const char*)-1, 0, 0 };
+static MYOFuncTable::Entry __offload_myo_fptr_table_end =
+    { (const char*)-1, 0, 0 };
 #else // TARGET_WINNT
-static FptrTableEntry __offload_myo_fptr_table_end = { 0 };
+static MYOFuncTable::Entry __offload_myo_fptr_table_end = { 0 };
 #endif // TARGET_WINNT
 
 #endif // MYO_SUPPORT

@@ -41,6 +41,7 @@
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Extension to use iconv for dealing with character encodings.
@@ -207,13 +208,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // associated fpos<encoding_state> for the position type, all other
   // bits equivalent to the required char_traits instantiations.
   template<typename _CharT>
-    struct encoding_char_traits : public std::char_traits<_CharT>
+    struct encoding_char_traits
+    : public std::char_traits<_CharT>
     {
       typedef encoding_state				state_type;
       typedef typename std::fpos<state_type>		pos_type;
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION
+_GLIBCXX_END_NAMESPACE_CXX11
 } // namespace
 
 

@@ -33,4 +33,3 @@ int main1 ()
 
 
 /* { dg-final { scan-tree-dump-times "Applying if-conversion" 1 "ifcvt" } } */
-/* { dg-final { cleanup-tree-dump "ifcvt" } } */

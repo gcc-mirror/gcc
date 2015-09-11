@@ -24,4 +24,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "Inlining get_data_for into main" "einline" } } */
-/* { dg-final { cleanup-tree-dump "einline" } } */

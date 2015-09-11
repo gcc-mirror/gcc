@@ -21,39 +21,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
 #include "rtl.h"
+#include "df.h"
 #include "regs.h"
-#include "hard-reg-set.h"
-#include "hashtab.h"
 #include "insn-config.h"
 #include "output.h"
-#include "predict.h"
-#include "vec.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "basic-block.h"
 #include "flags.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "alias.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -63,15 +47,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "recog.h"
-#include "ggc.h"
 #include "dwarf2.h"
 #include "debug.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
-#include "df.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* First some local helper definitions.  */
 #define MMIX_FIRST_GLOBAL_REGNUM 32
@@ -166,7 +150,7 @@ static void mmix_setup_incoming_varargs
   (cumulative_args_t, machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
-static bool mmix_rtx_costs (rtx, int, int, int, int *, bool);
+static bool mmix_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int mmix_register_move_cost (machine_mode,
 				    reg_class_t, reg_class_t);
 static rtx mmix_struct_value_rtx (tree, int);
@@ -1191,7 +1175,7 @@ mmix_reversible_cc_mode (machine_mode mode)
 
 static bool
 mmix_rtx_costs (rtx x ATTRIBUTE_UNUSED,
-		int code ATTRIBUTE_UNUSED,
+		machine_mode mode ATTRIBUTE_UNUSED,
 		int outer_code ATTRIBUTE_UNUSED,
 		int opno ATTRIBUTE_UNUSED,
 		int *total ATTRIBUTE_UNUSED,
@@ -1654,7 +1638,7 @@ mmix_print_operand (FILE *stream, rtx x, int code)
 	  fatal_insn ("MMIX Internal: Bad value for 'm', not a CONST_INT",
 		      x);
 	}
-      fprintf (stream, "%"PRId64,
+      fprintf (stream, "%" PRId64,
 	       (int64_t) (mmix_intval (x) - 1));
       return;
 
@@ -2102,8 +2086,7 @@ mmix_expand_prologue (void)
 			     tmpreg);
       RTX_FRAME_RELATED_P (insn) = 1;
       add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (VOIDmode,
-				 gen_rtx_MEM (DImode,
+		    gen_rtx_SET (gen_rtx_MEM (DImode,
 					      plus_constant (Pmode,
 							     stack_pointer_rtx,
 							     offset)),
@@ -2327,7 +2310,7 @@ mmix_output_register_setting (FILE *stream,
     fprintf (stream, "\t");
 
   if (insn_const_int_ok_for_constraint (value, CONSTRAINT_K))
-    fprintf (stream, "NEGU %s,0,%"PRId64, reg_names[regno], -value);
+    fprintf (stream, "NEGU %s,0,%" PRId64, reg_names[regno], -value);
   else if (mmix_shiftable_wyde_value ((uint64_t) value))
     {
       /* First, the one-insn cases.  */
@@ -2521,7 +2504,7 @@ mmix_output_shiftvalue_op_from_str (FILE *stream,
   if (! mmix_shiftable_wyde_value (value))
     {
       char s[sizeof ("0xffffffffffffffff")];
-      sprintf (s, "%#"PRIx64, value);
+      sprintf (s, "%#" PRIx64, value);
       internal_error ("MMIX Internal: %s is not a shiftable int", s);
     }
 
@@ -2563,7 +2546,7 @@ mmix_output_octa (FILE *stream, int64_t value, int do_begin_end)
     fprintf (stream, "#" HOST_WIDE_INT_PRINT_HEX_PURE,
 	     (HOST_WIDE_INT) value);
   else /* Need to avoid the hex output; there's no ...WIDEST...HEX_PURE.  */
-    fprintf (stream, "%"PRIu64, value);
+    fprintf (stream, "%" PRIu64, value);
 
   if (do_begin_end)
     fprintf (stream, "\n");
@@ -2580,7 +2563,7 @@ mmix_output_shifted_value (FILE *stream, int64_t value)
   if (! mmix_shiftable_wyde_value (value))
     {
       char s[16+2+1];
-      sprintf (s, "%#"PRIx64, value);
+      sprintf (s, "%#" PRIx64, value);
       internal_error ("MMIX Internal: %s is not a shiftable int", s);
     }
 

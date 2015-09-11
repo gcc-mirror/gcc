@@ -23,4 +23,3 @@ swap64_c (uint64_t x)
 
 
 /* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 1 "bswap" } } */
-/* { dg-final { cleanup-tree-dump "bswap" } } */

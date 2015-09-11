@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-forwprop -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fno-tree-forwprop -fno-tree-ccp -fdump-tree-fre1-details" } */
 
 _Complex float m;
 
@@ -27,4 +27,3 @@ bar (_Complex float x)
 
 /* We should CSE all the way to replace the stored value with x.  */
 /* { dg-final { scan-tree-dump-times "m = x_\\d\+\\(D\\);" 2 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

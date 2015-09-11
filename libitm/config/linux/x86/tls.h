@@ -25,16 +25,19 @@
 #ifndef LIBITM_X86_TLS_H
 #define LIBITM_X86_TLS_H 1
 
-#if defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 10)
+#if defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 10)
 /* Use slots in the TCB head rather than __thread lookups.
    GLIBC has reserved words 10 through 13 for TM.  */
 #define HAVE_ARCH_GTM_THREAD 1
 #define HAVE_ARCH_GTM_THREAD_DISP 1
 #endif
+#endif
 
 #include "config/generic/tls.h"
 
-#if defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 10)
+#if defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 10)
 namespace GTM HIDDEN {
 
 #ifdef __x86_64__
@@ -101,5 +104,6 @@ static inline void set_abi_disp(struct abi_dispatch *x)
 
 } // namespace GTM
 #endif /* >= GLIBC 2.10 */
+#endif
 
 #endif // LIBITM_X86_TLS_H

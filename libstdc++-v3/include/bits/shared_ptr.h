@@ -588,7 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					 const enable_shared_from_this* __pe,
 					 const _Tp1* __px) noexcept
 	{
-	  if (__pe != 0)
+	  if (__pe != nullptr)
 	    __pe->_M_weak_assign(const_cast<_Tp1*>(__px), __pn);
 	}
 

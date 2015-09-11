@@ -40,4 +40,3 @@ end module m_string
   print *, t%char3 (["g","h","i"])
   print *, char1 (["j","k","l"])
 end
-! { dg-final { cleanup-tree-dump "m_string" } }

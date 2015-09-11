@@ -8,7 +8,7 @@
 
 class A {
 protected:
-    int a; // { dg-error "" } protected
+    int a; // { dg-message "" } protected
 };
 
 class B : public A {

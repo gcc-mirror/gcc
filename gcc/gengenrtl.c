@@ -113,7 +113,16 @@ special_format (const char *fmt)
   return (strchr (fmt, '*') != 0
 	  || strchr (fmt, 'V') != 0
 	  || strchr (fmt, 'S') != 0
-	  || strchr (fmt, 'n') != 0);
+	  || strchr (fmt, 'n') != 0
+	  || strchr (fmt, 'r') != 0);
+}
+
+/* Return true if CODE always has VOIDmode.  */
+
+static inline bool
+always_void_p (int idx)
+{
+  return strcmp (defs[idx].enumname, "SET") == 0;
 }
 
 /* Return nonzero if the RTL code given by index IDX is one that we should
@@ -181,6 +190,7 @@ static void
 genmacro (int idx)
 {
   const char *p;
+  const char *sep = "";
   int i;
 
   /* We write a macro that defines gen_rtx_RTLCODE to be an equivalent to
@@ -190,15 +200,25 @@ genmacro (int idx)
     /* Don't define a macro for this code.  */
     return;
 
-  printf ("#define gen_rtx_%s%s(MODE",
+  bool has_mode_p = !always_void_p (idx);
+  printf ("#define gen_rtx_%s%s(",
 	   special_rtx (idx) ? "raw_" : "", defs[idx].enumname);
+  if (has_mode_p)
+    {
+      printf ("MODE");
+      sep = ", ";
+    }
 
   for (p = defs[idx].format, i = 0; *p != 0; p++)
     if (*p != '0')
-      printf (", ARG%d", i++);
+      {
+	printf ("%sARG%d", sep, i++);
+	sep = ", ";
+      }
 
-  printf (") \\\n  gen_rtx_fmt_%s (%s, (MODE)",
-	  defs[idx].format, defs[idx].enumname);
+  printf (") \\\n  gen_rtx_fmt_%s (%s, %s",
+	  defs[idx].format, defs[idx].enumname,
+	  has_mode_p ? "(MODE)" : "VOIDmode");
 
   for (p = defs[idx].format, i = 0; *p != 0; p++)
     if (*p != '0')
@@ -232,7 +252,7 @@ gendef (const char *format)
   puts ("  rtx rt;");
   puts ("  rt = rtx_alloc_stat (code PASS_MEM_STAT);\n");
 
-  puts ("  PUT_MODE (rt, mode);");
+  puts ("  PUT_MODE_RAW (rt, mode);");
 
   for (p = format, i = j = 0; *p ; ++p, ++i)
     if (*p != '0')

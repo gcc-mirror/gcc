@@ -12,4 +12,3 @@ int g (_Complex float a) {
 }
 
 /* { dg-final { scan-tree-dump-times "ABS" 0 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

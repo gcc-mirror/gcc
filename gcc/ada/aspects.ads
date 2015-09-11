@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,6 +140,7 @@ package Aspects is
       Aspect_Synchronization,
       Aspect_Test_Case,                     -- GNAT
       Aspect_Type_Invariant,
+      Aspect_Unimplemented,                 -- GNAT
       Aspect_Unsuppress,
       Aspect_Value_Size,                    -- GNAT
       Aspect_Variable_Indexing,
@@ -170,6 +171,7 @@ package Aspects is
       Aspect_Asynchronous,
       Aspect_Atomic,
       Aspect_Atomic_Components,
+      Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
       Aspect_Effective_Reads,               -- GNAT
       Aspect_Effective_Writes,              -- GNAT
@@ -200,7 +202,8 @@ package Aspects is
       Aspect_Unreferenced,                  -- GNAT
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
-      Aspect_Volatile_Components);
+      Aspect_Volatile_Components,
+      Aspect_Volatile_Full_Access);         -- GNAT
 
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
@@ -369,6 +372,7 @@ package Aspects is
       Aspect_Synchronization           => Name,
       Aspect_Test_Case                 => Expression,
       Aspect_Type_Invariant            => Expression,
+      Aspect_Unimplemented             => Optional_Expression,
       Aspect_Unsuppress                => Name,
       Aspect_Value_Size                => Expression,
       Aspect_Variable_Indexing         => Name,
@@ -411,6 +415,7 @@ package Aspects is
       Aspect_Depends                      => Name_Depends,
       Aspect_Dimension                    => Name_Dimension,
       Aspect_Dimension_System             => Name_Dimension_System,
+      Aspect_Disable_Controlled           => Name_Disable_Controlled,
       Aspect_Discard_Names                => Name_Discard_Names,
       Aspect_Dispatching_Domain           => Name_Dispatching_Domain,
       Aspect_Dynamic_Predicate            => Name_Dynamic_Predicate,
@@ -490,6 +495,7 @@ package Aspects is
       Aspect_Test_Case                    => Name_Test_Case,
       Aspect_Type_Invariant               => Name_Type_Invariant,
       Aspect_Unchecked_Union              => Name_Unchecked_Union,
+      Aspect_Unimplemented                => Name_Unimplemented,
       Aspect_Universal_Aliasing           => Name_Universal_Aliasing,
       Aspect_Universal_Data               => Name_Universal_Data,
       Aspect_Unmodified                   => Name_Unmodified,
@@ -500,6 +506,7 @@ package Aspects is
       Aspect_Variable_Indexing            => Name_Variable_Indexing,
       Aspect_Volatile                     => Name_Volatile,
       Aspect_Volatile_Components          => Name_Volatile_Components,
+      Aspect_Volatile_Full_Access         => Name_Volatile_Full_Access,
       Aspect_Warnings                     => Name_Warnings,
       Aspect_Write                        => Name_Write);
 
@@ -699,6 +706,7 @@ package Aspects is
       Aspect_Depends                      => Never_Delay,
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
+      Aspect_Disable_Controlled           => Never_Delay,
       Aspect_Effective_Reads              => Never_Delay,
       Aspect_Effective_Writes             => Never_Delay,
       Aspect_Extensions_Visible           => Never_Delay,
@@ -717,6 +725,7 @@ package Aspects is
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
+      Aspect_Unimplemented                => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
 
       Aspect_Alignment                    => Rep_Aspect,
@@ -733,7 +742,8 @@ package Aspects is
       Aspect_Storage_Size                 => Rep_Aspect,
       Aspect_Value_Size                   => Rep_Aspect,
       Aspect_Volatile                     => Rep_Aspect,
-      Aspect_Volatile_Components          => Rep_Aspect);
+      Aspect_Volatile_Components          => Rep_Aspect,
+      Aspect_Volatile_Full_Access         => Rep_Aspect);
 
    ------------------------------------------------
    -- Handling of Aspect Specifications on Stubs --

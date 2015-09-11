@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,7 +101,7 @@ package body Debug is
    --  d.h  Minimize the creation of public internal symbols for concatenation
    --  d.i  Ignore Warnings pragmas
    --  d.j  Generate listing of frontend inlined calls
-   --  d.k
+   --  d.k  Kill referenced run-time library unit line numbers
    --  d.l  Use Ada 95 semantics for limited function returns
    --  d.m  For -gnatl, print full source only for main unit
    --  d.n  Print source file names
@@ -155,9 +155,9 @@ package body Debug is
    --  d8   Force opposite endianness in packed stuff
    --  d9   Allow lock free implementation
 
-   --  d.1
-   --  d.2
-   --  d.3
+   --  d.1  Enable unnesting of nested procedures
+   --  d.2  Allow statements in declarative part
+   --  d.3  Output debugging information from Exp_Unst
    --  d.4
    --  d.5
    --  d.6
@@ -534,6 +534,9 @@ package body Debug is
    --       be used in particular to disable Warnings (Off) to check if any of
    --       these statements are inappropriate.
 
+   --  d.k  If an error message contains a reference to a location in an
+   --       internal unit, then suppress the line number in this reference.
+
    --  d.j  Generate listing of frontend inlined calls and inline calls passed
    --       to the backend. This is useful to locate skipped calls that must be
    --       inlined by the frontend.
@@ -689,11 +692,11 @@ package body Debug is
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.
 
-   --  d.X  A previous version of GNAT allowed indexing aspects to be
-   --       redefined on derived container types, while the default iterator
-   --       was inherited from the aprent type. This non-standard extension
-   --       is preserved temporarily for use by the modelling project under
-   --       debug flag d.X.
+   --  d.X  A previous version of GNAT allowed indexing aspects to be redefined
+   --       on derived container types, while the default iterator was
+   --       inherited from the aprent type. This non-standard extension is
+   --       preserved temporarily for use by the modelling project under debug
+   --       flag d.X.
 
    --  d.Z  Normally we always enable expansion in configurable run-time mode
    --       to make sure we get error messages about unsupported features even
@@ -745,6 +748,18 @@ package body Debug is
 
    --  d9   This allows lock free implementation for protected objects
    --       (see Exp_Ch9).
+
+   --  d.1  Sets Opt.Unnest_Subprogram_Mode to enable unnesting of subprograms.
+   --       This special pass does not actually unnest things, but it ensures
+   --       that a nested procedure does not contain any uplevel references.
+   --       See spec of Exp_Unst for full details.
+
+   --  d.2  Allow statements within declarative parts. This is not usually
+   --       allowed, but in some debugging contexts (e.g. testing the circuit
+   --       for unnesting of procedures), it is useful to allow this.
+
+   --  d.3  Output debugging information from Exp_Unst, including the name of
+   --       any unreachable subprograms that get deleted.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

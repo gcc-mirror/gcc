@@ -76,5 +76,3 @@ main (void)
 /* { dg-final { scan-tree-dump-not "= unexpanded_var_list;" "fre1" } } */
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
 /* { dg-final { scan-tree-dump-times "Insertions: 2" 1 "pre" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

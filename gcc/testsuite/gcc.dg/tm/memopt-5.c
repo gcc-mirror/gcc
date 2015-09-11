@@ -21,4 +21,3 @@ int f()
 }
 
 /* { dg-final { scan-tree-dump-times "ITM_LU\[0-9\] \\\(&lala.x\\\[55\\\]" 1 "tmedge" } } */
-/* { dg-final { cleanup-tree-dump "tmedge" } } */

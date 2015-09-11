@@ -63,4 +63,3 @@ function_and_variable_visibility (unsigned char whole_program)
 }
 
 /* { dg-final { scan-tree-dump-not "& 255" "forwprop1"} } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

@@ -79,6 +79,10 @@ AC_CACHE_CHECK([for socket libraries], gotools_cv_lib_sockets,
 NET_LIBS="$gotools_cv_lib_sockets"
 AC_SUBST(NET_LIBS)
 
+dnl Test if -lrt is required for sched_yield and/or nanosleep.
+AC_SEARCH_LIBS([sched_yield], [rt])
+AC_SEARCH_LIBS([nanosleep], [rt])
+
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT

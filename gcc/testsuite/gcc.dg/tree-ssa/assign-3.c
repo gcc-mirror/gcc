@@ -21,4 +21,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times " = count;" 3 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

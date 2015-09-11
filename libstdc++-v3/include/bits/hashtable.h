@@ -179,15 +179,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __detail::_Equality<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 				 _H1, _H2, _Hash, _RehashPolicy, _Traits>,
       private __detail::_Hashtable_alloc<
-	typename __alloctr_rebind<_Alloc,
-	  __detail::_Hash_node<_Value,
-			       _Traits::__hash_cached::value> >::__type>
+	__alloc_rebind<_Alloc,
+		       __detail::_Hash_node<_Value,
+					    _Traits::__hash_cached::value>>>
     {
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
       using __node_type = __detail::_Hash_node<_Value, __hash_cached::value>;
-      using __node_alloc_type =
-	typename __alloctr_rebind<_Alloc, __node_type>::__type;
+      using __node_alloc_type = __alloc_rebind<_Alloc, __node_type>;
 
       using __hashtable_alloc = __detail::_Hashtable_alloc<__node_alloc_type>;
 
@@ -451,13 +450,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Hashtable&
       operator=(_Hashtable&& __ht)
-      noexcept(__node_alloc_traits::_S_nothrow_move())
+      noexcept(__node_alloc_traits::_S_nothrow_move()
+	       && is_nothrow_move_assignable<_H1>::value
+	       && is_nothrow_move_assignable<_Equal>::value)
       {
         constexpr bool __move_storage =
-          __node_alloc_traits::_S_propagate_on_move_assign()
-          || __node_alloc_traits::_S_always_equal();
-        _M_move_assign(std::move(__ht),
-                       integral_constant<bool, __move_storage>());
+	  __node_alloc_traits::_S_propagate_on_move_assign()
+	  || __node_alloc_traits::_S_always_equal();
+	_M_move_assign(std::move(__ht), __bool_constant<__move_storage>());
 	return *this;
       }
 
@@ -475,7 +475,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(_Hashtable&)
-      noexcept(__node_alloc_traits::_S_nothrow_swap());
+      noexcept(__is_nothrow_swappable<_H1>::value
+	       && __is_nothrow_swappable<_Equal>::value);
 
       // Basic container operations
       iterator
@@ -592,7 +593,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_rehash_policy; }
 
       void
-      __rehash_policy(const _RehashPolicy&);
+      __rehash_policy(const _RehashPolicy& __pol)
+      { _M_rehash_policy = __pol; }
 
       // Lookup.
       iterator
@@ -1234,7 +1236,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     swap(_Hashtable& __x)
-    noexcept(__node_alloc_traits::_S_nothrow_swap())
+    noexcept(__is_nothrow_swappable<_H1>::value
+	     && __is_nothrow_swappable<_Equal>::value)
     {
       // The only base class with member variables is hash_code_base.
       // We define _Hash_code_base::_M_swap because different
@@ -1274,22 +1277,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__x._M_begin())
 	__x._M_buckets[__x._M_bucket_index(__x._M_begin())]
 	  = &__x._M_before_begin;
-    }
-
-  template<typename _Key, typename _Value,
-	   typename _Alloc, typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
-	   typename _Traits>
-    void
-    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    __rehash_policy(const _RehashPolicy& __pol)
-    {
-      auto __do_rehash =
-	__pol._M_need_rehash(_M_bucket_count, _M_element_count, 0);
-      if (__do_rehash.first)
-	_M_rehash(__do_rehash.second, _M_rehash_policy._M_state());
-      _M_rehash_policy = __pol;
     }
 
   template<typename _Key, typename _Value,

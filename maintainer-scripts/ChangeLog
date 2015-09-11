@@ -1,3 +1,62 @@
+2015-06-23  Richard Biener  <rguenther@suse.de>
+
+	* update_version_svn: Add gcc-4_8-branch to IGNORE_BRANCHES.
+
+2015-06-14  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Disable snapshots from the 4.8 branch.
+
+2015-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_version_svn: Update DATESTAMP also on
+	branches/gcc-[0-9]+-branch.
+
+	* gcc_release: Fix up thinko in the last commit, improve error
+	message.  Commit all ChangeLog, DEV-PHASE and BASE-VER changes
+	together, rather than doing dozens of separate commits.
+
+2015-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release: For RELEASE_MAJOR 5+ only use the major
+	number in branch name.  When doing final release of 5+,
+	if BASE-VER doesn't match release, but is *.*.1 for the
+	one smaller minor version, bump BASE-VER.
+
+	* crontab: Enable snapshots from gcc-5-branch.
+
+2015-04-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_libstdcxx_svn (FILTER): Introduce.
+	Use to filter output of the copying process.
+
+2015-02-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* update_web_docs_svn: Preserve gcc/ada/*.png. Update comments.
+
+2015-02-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* update_web_docs_svn: Add -I gcc/gcc/ada/doc/gnat_ugn for gnat_ugn
+
+2015-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64257
+	* update_web_docs_svn: When copying up files for the built jit
+	documentation, also copy up .txt files.
+
+2015-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64257
+	* update_web_docs_svn: Update build of jit docs to use EPEL6
+	variant install of sphinx 1.0.8, rather than 0.6.6.
+
+2015-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64257
+	* update_web_docs_svn: Don't delete gcc/jit/docs or
+	gcc/jit/jit-common.h, gcc/jit/notes.txt. Special case the
+	building of the JIT docs (using sphinx-build).  Special case
+	copying them up.
+
 2014-08-14  Richard Biener  <rguenther@suse.de>
 
 	* crontab: Change trunk snapshots from 4.10 to 5.

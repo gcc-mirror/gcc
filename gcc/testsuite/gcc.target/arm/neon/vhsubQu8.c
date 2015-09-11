@@ -18,4 +18,3 @@ void test_vhsubQu8 (void)
 }
 
 /* { dg-final { scan-assembler "vhsub\.u8\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

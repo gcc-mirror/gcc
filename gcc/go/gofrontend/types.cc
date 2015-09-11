@@ -772,16 +772,16 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     }
 
   // An unsafe.Pointer type may be converted to any pointer type or to
-  // uintptr, and vice-versa.
+  // a type whose underlying type is uintptr, and vice-versa.
   if (lhs->is_unsafe_pointer_type()
       && (rhs->points_to() != NULL
 	  || (rhs->integer_type() != NULL
-	      && rhs->forwarded() == Type::lookup_integer_type("uintptr"))))
+	      && rhs->integer_type() == Type::lookup_integer_type("uintptr")->real_type())))
     return true;
   if (rhs->is_unsafe_pointer_type()
       && (lhs->points_to() != NULL
 	  || (lhs->integer_type() != NULL
-	      && lhs->forwarded() == Type::lookup_integer_type("uintptr"))))
+	      && lhs->integer_type() == Type::lookup_integer_type("uintptr")->real_type())))
     return true;
 
   // Give a better error message.
@@ -2253,22 +2253,7 @@ Type::uncommon_type_constructor(Gogo* gogo, Type* uncommon_type,
 	  const std::string& pkgpath(package == NULL
 				     ? gogo->pkgpath()
 				     : package->pkgpath());
-	  n.assign(pkgpath);
-	  unsigned int index;
-	  const Named_object* in_function = name->in_function(&index);
-	  if (in_function != NULL)
-	    {
-	      n.append(1, '.');
-	      n.append(Gogo::unpack_hidden_name(in_function->name()));
-	      if (index > 0)
-		{
-		  char buf[30];
-		  snprintf(buf, sizeof buf, "%u", index);
-		  n.append(1, '.');
-		  n.append(buf);
-		}
-	    }
-	  s = Expression::make_string(n, bloc);
+	  s = Expression::make_string(pkgpath, bloc);
 	  vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 	}
     }
@@ -2533,15 +2518,26 @@ Type::is_backend_type_size_known(Gogo* gogo)
 // the backend.
 
 bool
-Type::backend_type_size(Gogo* gogo, unsigned long *psize)
+Type::backend_type_size(Gogo* gogo, int64_t *psize)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t size = gogo->backend()->type_size(bt);
-  *psize = static_cast<unsigned long>(size);
-  if (*psize != size)
-    return false;
+  *psize = gogo->backend()->type_size(bt);
+  if (*psize == -1)
+    {
+      if (this->named_type() != NULL)
+        error_at(this->named_type()->location(),
+                 "type %s larger than address space",
+                 Gogo::message_name(this->named_type()->name()).c_str());
+      else
+        error("type %s larger than address space",
+              this->reflection(gogo).c_str());
+
+      // Make this an error type to avoid knock-on errors.
+      this->classification_ = TYPE_ERROR;
+      return false;
+    }
   return true;
 }
 
@@ -2549,15 +2545,12 @@ Type::backend_type_size(Gogo* gogo, unsigned long *psize)
 // the alignment in bytes and return true.  Otherwise, return false.
 
 bool
-Type::backend_type_align(Gogo* gogo, unsigned long *palign)
+Type::backend_type_align(Gogo* gogo, int64_t *palign)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t align = gogo->backend()->type_alignment(bt);
-  *palign = static_cast<unsigned long>(align);
-  if (*palign != align)
-    return false;
+  *palign = gogo->backend()->type_alignment(bt);
   return true;
 }
 
@@ -2565,15 +2558,12 @@ Type::backend_type_align(Gogo* gogo, unsigned long *palign)
 // field.
 
 bool
-Type::backend_type_field_align(Gogo* gogo, unsigned long *palign)
+Type::backend_type_field_align(Gogo* gogo, int64_t *palign)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t a = gogo->backend()->type_field_alignment(bt);
-  *palign = static_cast<unsigned long>(a);
-  if (*palign != a)
-    return false;
+  *palign = gogo->backend()->type_field_alignment(bt);
   return true;
 }
 
@@ -4780,7 +4770,7 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
     return true;
-  unsigned long offset = 0;
+  int64_t offset = 0;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf)
@@ -4791,7 +4781,7 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
       if (!pf->type()->compare_is_identity(gogo))
 	return false;
 
-      unsigned long field_align;
+      int64_t field_align;
       if (!pf->type()->backend_type_align(gogo, &field_align))
 	return false;
       if ((offset & (field_align - 1)) != 0)
@@ -4802,13 +4792,13 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
 	  return false;
 	}
 
-      unsigned long field_size;
+      int64_t field_size;
       if (!pf->type()->backend_type_size(gogo, &field_size))
 	return false;
       offset += field_size;
     }
 
-  unsigned long struct_size;
+  int64_t struct_size;
   if (!this->backend_type_size(gogo, &struct_size))
     return false;
   if (offset != struct_size)
@@ -5571,15 +5561,12 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 
 bool
 Struct_type::backend_field_offset(Gogo* gogo, unsigned int index,
-				  unsigned int* poffset)
+				  int64_t* poffset)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t offset = gogo->backend()->type_field_offset(bt, index);
-  *poffset = static_cast<unsigned int>(offset);
-  if (*poffset != offset)
-    return false;
+  *poffset = gogo->backend()->type_field_offset(bt, index);
   return true;
 }
 
@@ -5764,10 +5751,17 @@ Array_type::verify_length()
       return false;
     }
 
+  Type* int_type = Type::lookup_integer_type("int");
+  unsigned int tbits = int_type->integer_type()->bits();
   unsigned long val;
   switch (nc.to_unsigned_long(&val))
     {
     case Numeric_constant::NC_UL_VALID:
+      if (sizeof(val) >= tbits / 8 && val >> (tbits - 1) != 0)
+	{
+	  error_at(this->length_->location(), "array bound overflows");
+	  return false;
+	}
       break;
     case Numeric_constant::NC_UL_NOTINT:
       error_at(this->length_->location(), "array bound truncated to integer");
@@ -5776,19 +5770,21 @@ Array_type::verify_length()
       error_at(this->length_->location(), "negative array bound");
       return false;
     case Numeric_constant::NC_UL_BIG:
-      error_at(this->length_->location(), "array bound overflows");
-      return false;
+      {
+	mpz_t val;
+	if (!nc.to_int(&val))
+	  go_unreachable();
+	unsigned int bits = mpz_sizeinbase(val, 2);
+	mpz_clear(val);
+	if (bits >= tbits)
+	  {
+	    error_at(this->length_->location(), "array bound overflows");
+	    return false;
+	  }
+      }
+      break;
     default:
       go_unreachable();
-    }
-
-  Type* int_type = Type::lookup_integer_type("int");
-  unsigned int tbits = int_type->integer_type()->bits();
-  if (sizeof(val) <= tbits * 8
-      && val >> (tbits - 1) != 0)
-    {
-      error_at(this->length_->location(), "array bound overflows");
-      return false;
     }
 
   return true;
@@ -5799,6 +5795,8 @@ Array_type::verify_length()
 bool
 Array_type::do_verify()
 {
+  if (this->element_type()->is_error_type())
+    return false;
   if (!this->verify_length())
     this->length_ = Expression::make_error(this->length_->location());
   return true;
@@ -5820,8 +5818,8 @@ Array_type::do_compare_is_identity(Gogo* gogo)
     return false;
 
   // If there is any padding, then we can't use memcmp.
-  unsigned long size;
-  unsigned long align;
+  int64_t size;
+  int64_t align;
   if (!this->element_type_->backend_type_size(gogo, &size)
       || !this->element_type_->backend_type_align(gogo, &align))
     return false;
@@ -6416,8 +6414,12 @@ Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
 
   // Differentiate between slices with zero-length and non-zero-length values.
   Type* element_type = this->element_type();
-  Btype* ebtype = element_type->get_backend(gogo);
-  size_t element_size = gogo->backend()->type_size(ebtype);
+  int64_t element_size;
+  bool ok = element_type->backend_type_size(gogo, &element_size);
+  if (!ok) {
+    go_assert(saw_errors());
+    element_size = 4;
+  }
 
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   unsigned long opval = element_size == 0 ? GC_APTR : GC_SLICE;
@@ -6441,11 +6443,20 @@ Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
   unsigned long bound;
   if (!this->length_->numeric_constant_value(&nc)
       || nc.to_unsigned_long(&bound) == Numeric_constant::NC_UL_NOTINT)
-    go_assert(saw_errors());
+    {
+      go_assert(saw_errors());
+      return;
+    }
 
   Btype* pbtype = gogo->backend()->pointer_type(gogo->backend()->void_type());
-  size_t pwidth = gogo->backend()->type_size(pbtype);
-  size_t iwidth = gogo->backend()->type_size(this->get_backend(gogo));
+  int64_t pwidth = gogo->backend()->type_size(pbtype);
+  int64_t iwidth;
+  bool ok = this->backend_type_size(gogo, &iwidth);
+  if (!ok)
+    {
+      go_assert(saw_errors());
+      iwidth = 4;
+    }
 
   Type* element_type = this->element_type();
   if (bound < 1 || !element_type->has_pointer())
@@ -9105,22 +9116,17 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
     }
   if (!this->is_builtin())
     {
-      // We handle -fgo-prefix and -fgo-pkgpath differently here for
-      // compatibility with how the compiler worked before
-      // -fgo-pkgpath was introduced.  When -fgo-pkgpath is specified,
-      // we use it to make a unique reflection string, so that the
-      // type canonicalization in the reflect package will work.  In
-      // order to be compatible with the gc compiler, we put tabs into
-      // the package path, so that the reflect methods can discard it.
+      // When -fgo-pkgpath or -fgo-prefix is specified, we use it to
+      // make a unique reflection string, so that the type
+      // canonicalization in the reflect package will work.  In order
+      // to be compatible with the gc compiler, we put tabs into the
+      // package path, so that the reflect methods can discard it.
       const Package* package = this->named_object_->package();
-      if (gogo->pkgpath_from_option())
-	{
-	  ret->push_back('\t');
-	  ret->append(package != NULL
-		      ? package->pkgpath_symbol()
-		      : gogo->pkgpath_symbol());
-	  ret->push_back('\t');
-	}
+      ret->push_back('\t');
+      ret->append(package != NULL
+		  ? package->pkgpath_symbol()
+		  : gogo->pkgpath_symbol());
+      ret->push_back('\t');
       ret->append(package != NULL
 		  ? package->package_name()
 		  : gogo->package_name());
@@ -9129,6 +9135,14 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
   if (this->in_function_ != NULL)
     {
       ret->push_back('\t');
+      const Typed_identifier* rcvr =
+	this->in_function_->func_value()->type()->receiver();
+      if (rcvr != NULL)
+	{
+	  Named_type* rcvr_type = rcvr->type()->deref()->named_type();
+	  ret->append(Gogo::unpack_hidden_name(rcvr_type->name()));
+	  ret->push_back('.');
+	}
       ret->append(Gogo::unpack_hidden_name(this->in_function_->name()));
       ret->push_back('$');
       if (this->in_function_index_ > 0)

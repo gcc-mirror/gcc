@@ -97,4 +97,3 @@ f6 (void)
 /* There should not be a GOMP_parallel_{loop,sections}* call.  */
 /* { dg-final { scan-tree-dump-times "GOMP_parallel_loop" 0 "ompexp"} } */
 /* { dg-final { scan-tree-dump-times "GOMP_parallel_sections" 0 "ompexp"} } */
-/* { dg-final { cleanup-tree-dump "ompexp" } } */

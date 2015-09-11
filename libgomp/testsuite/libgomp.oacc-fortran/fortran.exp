@@ -73,10 +73,13 @@ if { $lang_test_file_found } {
 	    host {
 		set acc_mem_shared 1
 	    }
-	    host_nonshm {
-		set acc_mem_shared 0
-	    }
 	    nvidia {
+		if { ![check_effective_target_openacc_nvidia_accel_present] } {
+		    # Don't bother; execution testing is going to FAIL.
+		    untested "$subdir $offload_target_openacc offloading"
+		    continue
+		}
+
 		set acc_mem_shared 0
 	    }
 	    default {

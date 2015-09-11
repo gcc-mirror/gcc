@@ -107,6 +107,10 @@ proc libstdc++_init { testfile } {
     setenv LC_ALL C
     setenv LANG C
 
+    # LANGUAGE changes the behavior of GNU gettext(3) and causes
+    # std::messages tests to fail.
+    array unset env LANGUAGE
+
     # Many hosts now default to a non-ASCII C locale, however, so
     # they can set a charset encoding here if they need.
     if { [ishost "*-*-cygwin*"] } {
@@ -486,12 +490,7 @@ proc v3_target_compile { source dest type options } {
     lappend options "timeout=[timeout_value]"
 
     set comp_output [target_compile $source $dest $type $options]
-    set unsupported_message [${tool}_check_unsupported_p $comp_output]
 
-    if { $unsupported_message != "" } {
-      unsupported "$dest: $unsupported_message"
-      return ""
-    }
     return $comp_output
 }
 
@@ -562,12 +561,7 @@ proc v3_target_compile_as_c { source dest type options } {
     lappend options "timeout=[timeout_value]"
 
     set comp_output [target_compile $source $dest $type $options]
-    set unsupported_message [${tool}_check_unsupported_p $comp_output]
 
-    if { $unsupported_message != "" } {
-      unsupported "$dest: $unsupported_message"
-      return ""
-    }
     return $comp_output
 }
 
@@ -674,7 +668,7 @@ proc v3-build_support { } {
 	    # Compile with "-w" so that warnings issued by the compiler
 	    # do not prevent compilation.
 	    if { [v3_target_compile $srcdir/util/$f $object_file "sharedlib" \
-	     [list "incdir=$srcdir" "additional_flags=-fno-inline -w -shared -fPIC -DPIC"]]
+	     [list "incdir=$srcdir" "additional_flags=-fno-inline -w -shared -fPIC -DPIC -std=gnu++98"]]
 		 != "" } {
 		error "could not compile $f"
 	    }
@@ -911,6 +905,11 @@ proc check_v3_target_namedlocale { args } {
       puts $f "using namespace std;"	
       puts $f "int main (int argc, char** argv)"
       puts $f "{"
+      puts $f "  if (argc < 2)"
+      puts $f "  {"
+      puts $f "    printf(\"locale support test not supported\\n\");"
+      puts $f "    return 1;"
+      puts $f "  }"	
       puts $f "  try"	
       puts $f "  {"
       puts $f "    locale(*(argv + 1));"
@@ -1229,6 +1228,62 @@ proc check_v3_target_cmath { } {
     }
     verbose "check_v3_target_c99_math: $et_c99_math" 2
     return $et_c99_math
+}
+
+proc check_v3_target_thread_fence { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_thread_fence
+
+    global tool
+
+    if { ![info exists et_thread_fence_target_name] } {
+	set et_thread_fence_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_thread_fence_target_name } {
+	verbose "check_v3_target_thread_fence: `$et_thread_fence_target_name'" 2
+	set et_thread_fence_target_name $current_target
+	if [info exists et_thread_fence] {
+	    verbose "check_v3_target_thread_fence: removing cached result" 2
+	    unset et_thread_fence
+	}
+    }
+
+    if [info exists et_thread_fence] {
+	verbose "check_v3_target_thread_fence: using cached result" 2
+    } else {
+	set et_thread_fence 0
+
+	# Set up and preprocess a C++11 test program that depends
+	# on the thread fence to be available.
+	set src thread_fence[pid].cc
+
+	set f [open $src "w"]
+	puts $f "int main() {"
+	puts $f "__atomic_thread_fence (__ATOMIC_SEQ_CST);"
+	puts $f "return 0;"
+	puts $f "}"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
+
+	set lines [v3_target_compile $src /dev/null executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, linking succeeded.
+	    set et_thread_fence 1
+	} else {
+	    verbose "check_v3_target_thread_fence: compilation failed" 2
+	}
+    }
+    verbose "check_v3_target_thread_fence: $et_thread_fence" 2
+    return $et_thread_fence
 }
 
 proc check_v3_target_atomic_builtins { } {
@@ -1842,6 +1897,59 @@ proc check_v3_target_little_endian { } {
     }
     verbose "check_v3_target_little_endian: $et_little_endian" 2
     return $et_little_endian
+}
+
+proc check_v3_target_filesystem_ts { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_filesystem_ts
+    global tool
+
+    if { ![info exists et_filesystem_ts_target_name] } {
+	set et_filesystem_ts_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_filesystem_ts_target_name } {
+	verbose "check_v3_target_filesystem_ts: `$et_filesystem_ts_target_name'" 2
+	set et_filesystem_ts_target_name $current_target
+	if [info exists et_filesystem_ts] {
+	    verbose "check_v3_target_filesystem_ts: removing cached result" 2
+	    unset et_filesystem_ts
+	}
+    }
+
+    if [info exists et_filesystem_ts] {
+	verbose "check_v3_target_filesystem_ts: using cached result" 2
+    } else {
+	set et_filesystem_ts 0
+
+	# Set up and preprocess a C++ test program that depends
+	# on debug mode activated.
+	set src filesystem_ts[pid].cc
+
+	set f [open $src "w"]
+	puts $f "#include <experimental/filesystem>"
+	puts $f "#if ! __cpp_lib_experimental_filesystem"
+	puts $f "#  error No Filesystem TS support"
+	puts $f "#endif"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
+
+	set lines [v3_target_compile $src /dev/null preprocess ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, preprocessing succeeded.
+	    set et_filesystem_ts 1
+	}
+    }
+    verbose "check_v3_target_filesystem_ts: $et_filesystem_ts" 2
+    return $et_filesystem_ts
 }
 
 set additional_prunes ""

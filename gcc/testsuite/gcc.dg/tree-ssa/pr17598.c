@@ -39,4 +39,3 @@ int foobar2(struct g *x)
 /* { dg-final { scan-tree-dump-times "x == &y" 2 "gimple" } } */
 /* { dg-final { scan-tree-dump "x->k" "gimple" } } */
 /* { dg-final { scan-tree-dump "yy.k" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

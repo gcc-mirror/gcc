@@ -28,30 +28,18 @@ along with GCC; see the file COPYING3.	If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hard-reg-set.h"
+#include "backend.h"
+#include "predict.h"
+#include "tree.h"
 #include "rtl.h"
+#include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
 #include "regs.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
-#include "symtab.h"
 #include "flags.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -60,15 +48,13 @@ along with GCC; see the file COPYING3.	If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
 #include "except.h"
-#include "df.h"
 #include "ira.h"
 #include "sparseset.h"
+#include "lra.h"
+#include "insn-attr.h"
+#include "insn-codes.h"
 #include "lra-int.h"
 
 /* Program points are enumerated by numbers from range
@@ -121,14 +107,8 @@ static sparseset unused_set, dead_set;
 static bitmap_head temp_bitmap;
 
 /* Pool for pseudo live ranges.	 */
-static alloc_pool live_range_pool;
-
-/* Free live range LR.	*/
-static void
-free_live_range (lra_live_range_t lr)
-{
-  pool_free (live_range_pool, lr);
-}
+static object_allocator<lra_live_range> lra_live_range_pool
+  ("live ranges", 100);
 
 /* Free live range list LR.  */
 static void
@@ -139,7 +119,7 @@ free_live_range_list (lra_live_range_t lr)
   while (lr != NULL)
     {
       next = lr->next;
-      free_live_range (lr);
+      delete lr;
       lr = next;
     }
 }
@@ -148,9 +128,7 @@ free_live_range_list (lra_live_range_t lr)
 static lra_live_range_t
 create_live_range (int regno, int start, int finish, lra_live_range_t next)
 {
-  lra_live_range_t p;
-
-  p = (lra_live_range_t) pool_alloc (live_range_pool);
+  lra_live_range_t p = new lra_live_range;
   p->regno = regno;
   p->start = start;
   p->finish = finish;
@@ -162,11 +140,7 @@ create_live_range (int regno, int start, int finish, lra_live_range_t next)
 static lra_live_range_t
 copy_live_range (lra_live_range_t r)
 {
-  lra_live_range_t p;
-
-  p = (lra_live_range_t) pool_alloc (live_range_pool);
-  *p = *r;
-  return p;
+  return new lra_live_range (*r);
 }
 
 /* Copy live range list given by its head R and return the result.  */
@@ -192,7 +166,7 @@ lra_copy_live_range_list (lra_live_range_t r)
 lra_live_range_t
 lra_merge_live_ranges (lra_live_range_t r1, lra_live_range_t r2)
 {
-  lra_live_range_t first, last, temp;
+  lra_live_range_t first, last;
 
   if (r1 == NULL)
     return r2;
@@ -201,18 +175,15 @@ lra_merge_live_ranges (lra_live_range_t r1, lra_live_range_t r2)
   for (first = last = NULL; r1 != NULL && r2 != NULL;)
     {
       if (r1->start < r2->start)
-	{
-	  temp = r1;
-	  r1 = r2;
-	  r2 = temp;
-	}
+	std::swap (r1, r2);
+
       if (r1->start == r2->finish + 1)
 	{
 	  /* Joint ranges: merge r1 and r2 into r1.  */
 	  r1->start = r2->start;
-	  temp = r2;
+	  lra_live_range_t temp = r2;
 	  r2 = r2->next;
-	  pool_free (live_range_pool, temp);
+	  delete temp;
 	}
       else
 	{
@@ -264,10 +235,12 @@ lra_intersected_live_ranges_p (lra_live_range_t r1, lra_live_range_t r2)
 }
 
 /* The function processing birth of hard register REGNO.  It updates
-   living hard regs, conflict hard regs for living pseudos, and
-   START_LIVING.  */
+   living hard regs, START_LIVING, and conflict hard regs for living
+   pseudos.  Conflict hard regs for the pic pseudo is not updated if
+   REGNO is REAL_PIC_OFFSET_TABLE_REGNUM and CHECK_PIC_PSEUDO_P is
+   true.  */
 static void
-make_hard_regno_born (int regno)
+make_hard_regno_born (int regno, bool check_pic_pseudo_p ATTRIBUTE_UNUSED)
 {
   unsigned int i;
 
@@ -277,7 +250,13 @@ make_hard_regno_born (int regno)
   SET_HARD_REG_BIT (hard_regs_live, regno);
   sparseset_set_bit (start_living, regno);
   EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, i)
-    SET_HARD_REG_BIT (lra_reg_info[i].conflict_hard_regs, regno);
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
+    if (! check_pic_pseudo_p
+	|| regno != REAL_PIC_OFFSET_TABLE_REGNUM
+	|| pic_offset_table_rtx == NULL
+	|| i != REGNO (pic_offset_table_rtx))
+#endif
+      SET_HARD_REG_BIT (lra_reg_info[i].conflict_hard_regs, regno);
 }
 
 /* Process the death of hard register REGNO.  This updates
@@ -352,7 +331,7 @@ mark_regno_live (int regno, machine_mode mode, int point)
       for (last = regno + hard_regno_nregs[regno][mode];
 	   regno < last;
 	   regno++)
-	make_hard_regno_born (regno);
+	make_hard_regno_born (regno, false);
     }
   else
     {
@@ -475,7 +454,7 @@ live_con_fun_n (edge e)
   basic_block dest = e->dest;
   bitmap bb_liveout = df_get_live_out (bb);
   bitmap dest_livein = df_get_live_in (dest);
-  
+
   return bitmap_ior_and_compl_into (bb_liveout,
 				    dest_livein, &all_hard_regs_bitmap);
 }
@@ -530,22 +509,6 @@ static lra_insn_recog_data_t curr_id;
 /* The insn static data.  */
 static struct lra_static_insn_data *curr_static_id;
 
-/* Return true when one of the predecessor edges of BB is marked with
-   EDGE_ABNORMAL_CALL or EDGE_EH.  */
-static bool
-bb_has_abnormal_call_pred (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-	return true;
-    }
-  return false;
-}
-
 /* Vec containing execution frequencies of program points.  */
 static vec<int> point_freq_vec;
 
@@ -591,16 +554,10 @@ lra_setup_reload_pseudo_preferenced_hard_reg (int regno,
       && (lra_reg_info[regno].preferred_hard_regno_profit2
 	  > lra_reg_info[regno].preferred_hard_regno_profit1))
     {
-      int temp;
-
-      temp = lra_reg_info[regno].preferred_hard_regno1;
-      lra_reg_info[regno].preferred_hard_regno1
-	= lra_reg_info[regno].preferred_hard_regno2;
-      lra_reg_info[regno].preferred_hard_regno2 = temp;
-      temp = lra_reg_info[regno].preferred_hard_regno_profit1;
-      lra_reg_info[regno].preferred_hard_regno_profit1
-	= lra_reg_info[regno].preferred_hard_regno_profit2;
-      lra_reg_info[regno].preferred_hard_regno_profit2 = temp;
+      std::swap (lra_reg_info[regno].preferred_hard_regno1,
+		 lra_reg_info[regno].preferred_hard_regno2);
+      std::swap (lra_reg_info[regno].preferred_hard_regno_profit1,
+		 lra_reg_info[regno].preferred_hard_regno_profit2);
     }
   if (lra_dump_file != NULL)
     {
@@ -751,7 +708,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		    {
 		      insn = lra_insn_recog_data[uid]->insn;
 		      lra_substitute_pseudo_within_insn (insn, dst_regno,
-							 SET_SRC (set));
+							 SET_SRC (set), true);
 		      lra_update_insn_regno_info (insn);
 		    }
 		}
@@ -769,31 +726,44 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  lra_hard_reg_usage[reg->regno] += freq;
 
       call_p = CALL_P (curr_insn);
+      src_regno = (set != NULL_RTX && REG_P (SET_SRC (set))
+		   ? REGNO (SET_SRC (set)) : -1);
+      dst_regno = (set != NULL_RTX && REG_P (SET_DEST (set))
+		   ? REGNO (SET_DEST (set)) : -1);
       if (complete_info_p
-	  && set != NULL_RTX
-	  && REG_P (SET_DEST (set)) && REG_P (SET_SRC (set))
+	  && src_regno >= 0 && dst_regno >= 0
 	  /* Check that source regno does not conflict with
 	     destination regno to exclude most impossible
 	     preferences.  */
-	  && ((((src_regno = REGNO (SET_SRC (set))) >= FIRST_PSEUDO_REGISTER
-		&& ! sparseset_bit_p (pseudos_live, src_regno))
+	  && (((src_regno >= FIRST_PSEUDO_REGISTER
+		&& (! sparseset_bit_p (pseudos_live, src_regno)
+		    || (dst_regno >= FIRST_PSEUDO_REGISTER
+			&& lra_reg_val_equal_p (src_regno,
+						lra_reg_info[dst_regno].val,
+						lra_reg_info[dst_regno].offset))))
 	       || (src_regno < FIRST_PSEUDO_REGISTER
 		   && ! TEST_HARD_REG_BIT (hard_regs_live, src_regno)))
 	      /* It might be 'inheritance pseudo <- reload pseudo'.  */
 	      || (src_regno >= lra_constraint_new_regno_start
-		  && ((int) REGNO (SET_DEST (set))
-		      >= lra_constraint_new_regno_start)
+		  && dst_regno >= lra_constraint_new_regno_start
 		  /* Remember to skip special cases where src/dest regnos are
 		     the same, e.g. insn SET pattern has matching constraints
 		     like =r,0.  */
-		  && src_regno != (int) REGNO (SET_DEST (set)))))
+		  && src_regno != dst_regno)))
 	{
 	  int hard_regno = -1, regno = -1;
 
-	  dst_regno = REGNO (SET_DEST (set));
 	  if (dst_regno >= lra_constraint_new_regno_start
 	      && src_regno >= lra_constraint_new_regno_start)
-	    lra_create_copy (dst_regno, src_regno, freq);
+	    {
+	      /* It might be still an original (non-reload) insn with
+		 one unused output and a constraint requiring to use
+		 the same reg for input/output operands. In this case
+		 dst_regno and src_regno have the same value, we don't
+		 need a misleading copy for this case.  */
+	      if (dst_regno != src_regno)
+		lra_create_copy (dst_regno, src_regno, freq);
+	    }
 	  else if (dst_regno >= lra_constraint_new_regno_start)
 	    {
 	      if ((hard_regno = src_regno) >= FIRST_PSEUDO_REGISTER)
@@ -833,7 +803,13 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type != OP_IN)
-	  make_hard_regno_born (reg->regno);
+	  make_hard_regno_born (reg->regno, false);
+
+      if (curr_id->arg_hard_regs != NULL)
+	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    /* It is a clobber.  */
+	    make_hard_regno_born (regno - FIRST_PSEUDO_REGISTER, false);
 
       sparseset_copy (unused_set, start_living);
 
@@ -849,6 +825,12 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type == OP_OUT && ! reg->early_clobber && ! reg->subreg_p)
 	  make_hard_regno_dead (reg->regno);
+
+      if (curr_id->arg_hard_regs != NULL)
+	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    /* It is a clobber.  */
+	    make_hard_regno_dead (regno - FIRST_PSEUDO_REGISTER);
 
       if (call_p)
 	{
@@ -892,12 +874,14 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type == OP_IN)
-	  make_hard_regno_born (reg->regno);
+	  make_hard_regno_born (reg->regno, false);
 
       if (curr_id->arg_hard_regs != NULL)
-	/* Make argument hard registers live.  */
+	/* Make argument hard registers live.  Don't create conflict
+	   of used REAL_PIC_OFFSET_TABLE_REGNUM and the pic pseudo.  */
 	for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
-	  make_hard_regno_born (regno);
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    make_hard_regno_born (regno, true);
 
       sparseset_and_compl (dead_set, start_living, start_dying);
 
@@ -945,7 +929,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	add_reg_note (curr_insn, REG_UNUSED, regno_reg_rtx[j]);
     }
 
-#ifdef EH_RETURN_DATA_REGNO
   if (bb_has_eh_pred (bb))
     for (j = 0; ; ++j)
       {
@@ -953,9 +936,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
 	if (regno == INVALID_REGNUM)
 	  break;
-	make_hard_regno_born (regno);
+	make_hard_regno_born (regno, false);
       }
-#endif
 
   /* Pseudos can't go in stack regs at the start of a basic block that
      is reached by an abnormal edge. Likewise for call clobbered regs,
@@ -968,15 +950,27 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, px)
 	lra_reg_info[px].no_stack_p = true;
       for (px = FIRST_STACK_REG; px <= LAST_STACK_REG; px++)
-	make_hard_regno_born (px);
+	make_hard_regno_born (px, false);
 #endif
       /* No need to record conflicts for call clobbered regs if we
 	 have nonlocal labels around, as we don't ever try to
 	 allocate such regs in this case.  */
-      if (!cfun->has_nonlocal_label && bb_has_abnormal_call_pred (bb))
+      if (!cfun->has_nonlocal_label
+	  && has_abnormal_call_or_eh_pred_edge_p (bb))
 	for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
-	  if (call_used_regs[px])
-	    make_hard_regno_born (px);
+	  if (call_used_regs[px]
+#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
+	      /* We should create a conflict of PIC pseudo with PIC
+		 hard reg as PIC hard reg can have a wrong value after
+		 jump described by the abnormal edge.  In this case we
+		 can not allocate PIC hard reg to PIC pseudo as PIC
+		 pseudo will also have a wrong value.  */
+	      || (px == REAL_PIC_OFFSET_TABLE_REGNUM
+		  && pic_offset_table_rtx != NULL_RTX
+		  && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
+#endif
+	      )
+	    make_hard_regno_born (px, false);
     }
 
   bool live_change_p = false;
@@ -1020,7 +1014,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       if (sparseset_bit_p (pseudos_live_through_calls, j))
 	check_pseudos_live_through_calls (j);
     }
-  
+
   if (need_curr_point_incr)
     next_program_point (curr_point, freq);
 
@@ -1105,7 +1099,7 @@ remove_some_program_points_and_update_live_ranges (void)
 		}
 	      prev_r->start = r->start;
 	      prev_r->next = next_r;
-	      free_live_range (r);
+	      delete r;
 	    }
 	}
     }
@@ -1248,7 +1242,7 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	}
     }
   lra_free_copies ();
- 
+
   /* Under some circumstances, we can have functions without pseudo
      registers.  For such functions, lra_live_max_point will be 0,
      see e.g. PR55604, and there's nothing more to do for us here.  */
@@ -1376,8 +1370,6 @@ lra_clear_live_ranges (void)
 void
 lra_live_ranges_init (void)
 {
-  live_range_pool = create_alloc_pool ("live ranges",
-				       sizeof (struct lra_live_range), 100);
   bitmap_initialize (&temp_bitmap, &reg_obstack);
   initiate_live_solver ();
 }
@@ -1388,5 +1380,5 @@ lra_live_ranges_finish (void)
 {
   finish_live_solver ();
   bitmap_clear (&temp_bitmap);
-  free_alloc_pool (live_range_pool);
+  lra_live_range_pool.release ();
 }

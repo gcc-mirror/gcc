@@ -12,4 +12,3 @@ double test (double x)
 
 /* { dg-final { scan-tree-dump "__builtin_cexpi" "gimple" } } */
 /* { dg-final { scan-tree-dump-not "sincos" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

@@ -22,4 +22,3 @@ foo (void)
 }
 
 /* { dg-final { scan-tree-dump-times "__atomic_fetch_add" 4 "ompexp" } } */
-/* { dg-final { cleanup-tree-dump "ompexp" } } */

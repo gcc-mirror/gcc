@@ -138,7 +138,6 @@ let emit_epilogue chan features regexps =
      else
        ()
     );
-    Printf.fprintf chan "/* { dg-final { cleanup-saved-temps } } */\n"
 
 (* Check a list of C types to determine which ones are pointers and which
    ones are const.  *)

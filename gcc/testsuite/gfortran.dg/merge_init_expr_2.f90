@@ -55,4 +55,3 @@ end subroutine test
 ! { dg-final { scan-tree-dump-times "check1 = 1275069467;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "check2 = 1;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_memmove ..void .. &three, .void .. &one, 3.;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

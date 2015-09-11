@@ -21,7 +21,7 @@
 ;; The following register constraints have been used:
 ;; - in ARM/Thumb-2 state: t, w, x, y, z
 ;; - in Thumb state: h, b
-;; - in both states: l, c, k, q, US
+;; - in both states: l, c, k, q, Cs, Ts, US
 ;; In ARM state, 'l' is an alias for 'r'
 ;; 'f' and 'v' were previously used for FPA and MAVERICK registers.
 
@@ -67,7 +67,8 @@
 (define_constraint "j"
  "A constant suitable for a MOVW instruction. (ARM/Thumb-2)"
  (and (match_test "TARGET_32BIT && arm_arch_thumb2")
-      (ior (match_code "high")
+      (ior (and (match_code "high")
+		(match_test "arm_valid_symbolic_address_p (XEXP (op, 0))"))
 	   (and (match_code "const_int")
                 (match_test "(ival & 0xffff0000) == 0")))))
 

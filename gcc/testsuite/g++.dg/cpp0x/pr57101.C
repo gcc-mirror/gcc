@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-fcompare-debug" }
 
-typedef long unsigned size_t;
+typedef __SIZE_TYPE__ size_t;
 namespace
 {
   template < typename _Tp, _Tp __v > struct integral_constant
@@ -160,7 +160,7 @@ namespace std
     typedef _Alloc allocator_type;
     template < typename _Key_compare > struct _Rb_tree_impl
     {
-      _Rb_tree_impl (_Key_compare, _Node_allocator);
+      _Rb_tree_impl (_Key_compare, _Node_allocator); // { dg-warning "used but never defined" }
     };
     _Rb_tree_impl < _Compare > _M_impl;
   _Rb_tree (_Compare __comp, allocator_type __a):

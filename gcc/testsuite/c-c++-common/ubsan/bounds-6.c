@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-fsanitize=bounds -Wall -Wextra" } */
+/* { dg-do run } */
+/* { dg-options "-fsanitize=bounds -Wall -Wextra -Wno-array-bounds" } */
 
 /* Test off-by-one.  */
 
@@ -24,7 +24,7 @@ main (void)
   a = &u[4].a[10]; // Error
   a = &u[3].a[9]; // OK
   a = &u[3].a[10]; // OK
-  a = &u[3].a[11]; // Error
+  a = &u[3].a[11]; // Error, warns with -Warray-bounds, but only if VRP runs
 
   return 0;
 }

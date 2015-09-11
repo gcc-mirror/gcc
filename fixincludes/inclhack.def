@@ -597,6 +597,56 @@ fix = {
 };
 
 /*
+ *  On AIX some headers are not properly guarded by 'extern "C"'.
+ */
+fix = {
+  hackname  = aix_externc;
+  mach      = "*-*-aix*";
+  files     = ctype.h;
+  files     = fcntl.h;
+  files     = langinfo.h;
+  files     = ldfcn.h;
+  files     = sys/localedef.h;
+  files     = sys/times.h;
+  bypass    = "extern \"C\"";
+  c_fix     = wrap;
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "extern \"C\" {\n"
+              "#endif\n";
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "}\n"
+              "#endif\n";
+  test_text = "extern int __n_pthreads;\n";
+};
+
+/*
+ *  On AIX sys/socket.h assumes C++.
+ */
+fix = {
+  hackname  = aix_externcpp1;
+  mach      = "*-*-aix*";
+  files     = "sys/socket.h";
+  select    = "#ifdef __cplusplus";
+  c_fix     = format;
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "extern \"C++\" {";
+  test_text = "#ifdef __cplusplus";
+
+};
+
+fix = {
+  hackname  = aix_externcpp2;
+  mach      = "*-*-aix*";
+  files     = "sys/socket.h";
+  select    = "#else  /\\* __cplusplus \\*/";
+  c_fix     = format;
+  c_fix_arg = "} /* extern \"C++\" */\n"
+              "#else  /* __cplusplus */";
+  test_text = "#else  /* __cplusplus */";
+
+};
+
+/*
  *  malloc.h on AIX6 uses XLC++ specific builtin syntax
  */
 fix = {
@@ -727,7 +777,7 @@ fix = {
 fix = {
     hackname  = aix_pthread;
     files     = "pthread.h";
-    select    = "(#define [A-Za-z_0-9]+)(\\\\\n[^A-Za-z_0-9 \t\n(])";
+    select    = "(#define[\t ][A-Za-z_0-9]+)(\\\\\n[^A-Za-z_0-9 \t\n(])";
     c_fix     = format;
     c_fix_arg = "%1 %2";
     test_text = "#define PTHREAD_MUTEX_INITIALIZER\\\\\n"
@@ -842,11 +892,46 @@ fix = {
 };
 
 /*
+ * stdio.h on AIX defines ferror, clearerr and feof as C++ inline, which
+   produces wrong code with G++.
+ */
+fix = {
+    hackname  = aix_stdio_inline;
+    mach      = "*-*-aix*";
+    files     = stdio.h;
+    select    = "#ifdef __cplusplus\\\n"
+                "}\\\n\\\n"
+                "#ifdef ferror\\\n";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\n"
+                "}\n"
+                "#endif\n\n"
+                "#if (defined(__cplusplus) && defined(__IBMCPP__))\n"
+                "#ifdef ferror\n";
+    test_text = "#ifdef __cplusplus\n}\n\n#ifdef ferror";
+};
+
+
+/*
+ * stdlib.h on AIX 4.3 declares strtof() with a non-const first argument.
+ */
+fix = {
+    hackname  = aix_strtof_const;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "((extern[ \t]+)?float[ \t]+strtof)\\(char \\*, char \\*\\*\\);";
+    c_fix     = format;
+    c_fix_arg = "%1(const char *, char **);";
+    test_text = "extern float    strtof(char *, char **);";
+};
+
+/*
  *  sys/machine.h on AIX 4.3.3 puts whitespace between a \ and a newline
  *  in an otherwise harmless (and #ifed out) macro definition
  */
 fix = {
     hackname  = aix_sysmachine;
+    mach      = "*-*-aix*";
     files     = sys/machine.h;
     select    = "\\\\ +\n";
     c_fix     = format;
@@ -861,6 +946,7 @@ fix = {
  */
 fix = {
     hackname  = aix_syswait_2;
+    mach      = "*-*-aix*";
     files     = sys/wait.h;
     select    = '\? (\(\(\(\(unsigned[^)]*\)[^)]*\) >> [^)]*\) \& 0xff\) : -1)';
     c_fix     = format;
@@ -877,6 +963,7 @@ fix = {
  */
 fix = {
     hackname  = aix_volatile;
+    mach      = "*-*-aix*";
     files     = sys/signal.h;
     select    = "typedef volatile int sig_atomic_t";
     c_fix     = format;
@@ -2059,6 +2146,19 @@ fix = {
     c_fix     = format;
     c_fix_arg = "if !defined(_MATH_INCLUDED) || defined(__GNUG__)";
     test_text = "#ifndef _MATH_INCLUDED";
+};
+
+/*
+ *  Fix hpux11 __LWP_RWLOCK_VALID define
+ */
+fix = {
+    hackname  = hpux11_lwp_rwlock_valid;
+    mach      = "*-hp-hpux11*";
+    files     = sys/pthread.h;
+    select    = "#define __LWP_RWLOCK_VALID[ \t]*0x8c91";
+    c_fix     = format;
+    c_fix_arg = "#define __LWP_RWLOCK_VALID              -29551";
+    test_text = "#define __LWP_RWLOCK_VALID 0x8c91";
 };
 
 /*
@@ -3546,6 +3646,58 @@ fix = {
     "#define	islessgreater(x, y)	((x) __builtin_islessgreater(y))\n"
     "#undef	isunordered\n"
     "#define	isunordered(x, y)	((x) __builtin_isunordered(y))";
+};
+
+/*
+ * Newer Solaris 10/11 GCC signbit implementations cause strict-aliasing
+ * warnings.
+ */
+fix = {
+    hackname = solaris_math_11;
+    select = '@\(#\)math_c99\.h' "[ \t]+1\\.[0-9]+[ \t]+[0-9/]+ ";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = << _EOArg_
+#undef	signbit
+#define	signbit(x)	(sizeof(x) == sizeof(float) \
+			   ? __builtin_signbitf(x) \
+			   : sizeof(x) == sizeof(long double) \
+			     ? __builtin_signbitl(x) \
+			     : __builtin_signbit(x))
+_EOArg_;
+    c_fix_arg = << _EOArg_
+^#undef[ 	]+signbit
+#if defined\(__sparc\)
+#define[ 	]+signbit\(x\)[ 	]+__extension__\( \\
+[ 	]+\{[ 	]*__typeof\(x\)[ 	]*__x_s[ 	]*=[ 	]*\(x\);[ 	]*\\
+[ 	]+\(int\)[ 	]*\(\*\(unsigned[ 	]*\*\)[ 	]*\&__x_s[ 	]*>>[ 	]*31\);[ 	]*\}\)
+#elif defined\(__i386\) \|\| defined\(__amd64\)
+#define[ 	]+signbit\(x\)[ 	]+__extension__\( \\
+[ 	]+\{ __typeof\(x\) __x_s = \(x\); \\
+[ 	]+\(sizeof \(__x_s\) == sizeof \(float\) \? \\
+[ 	]+\(int\) \(\*\(unsigned \*\) \&__x_s >> 31\) : \\
+[ 	]+sizeof \(__x_s\) == sizeof \(double\) \? \\
+[ 	]+\(int\) \(\(\(unsigned \*\) \&__x_s\)\[1\] >> 31\) : \\
+[ 	]+\(int\) \(\(\(unsigned short \*\) \&__x_s\)\[4\] >> 15\)\); \}\)
+#endif
+_EOArg_;
+    test_text = << _EOText_
+/* @(#)math_c99.h	1.14	13/03/27 */
+#undef	signbit
+#if defined(__sparc)
+#define	signbit(x)	__extension__( \\
+				{ __typeof(x) __x_s = (x); \\
+				(int) (*(unsigned *) &__x_s >> 31); })
+#elif defined(__i386) || defined(__amd64)
+#define	signbit(x)	__extension__( \\
+			{ __typeof(x) __x_s = (x); \\
+			(sizeof (__x_s) == sizeof (float) ? \\
+			(int) (*(unsigned *) &__x_s >> 31) : \\
+			sizeof (__x_s) == sizeof (double) ? \\
+			(int) (((unsigned *) &__x_s)[1] >> 31) : \\
+			(int) (((unsigned short *) &__x_s)[4] >> 15)); })
+#endif
+_EOText_;
 };
 
 /*

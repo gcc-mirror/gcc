@@ -17,4 +17,3 @@ int foo8 (void) { return &x.u.i == &x.u.s; }
 
 /* { dg-final { scan-tree-dump-times "= 0" 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "= 1" 7 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

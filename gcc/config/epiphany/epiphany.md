@@ -1870,7 +1870,7 @@
     {
       if (operands[3] != const0_rtx)
 	operands[2] = gen_rtx_MINUS (SImode, operands[2], operands[3]);
-      operands[2] = gen_rtx_SET (VOIDmode, operands[0], operands[2]);
+      operands[2] = gen_rtx_SET (operands[0], operands[2]);
       operands[3] = operands[0];
     }
   operands[4] = gen_rtx_fmt_ee (cmp_code, SImode,
@@ -2269,7 +2269,7 @@
 	(gen_rtx_PARALLEL
 	  (VOIDmode,
 	   gen_rtvec (2, gen_rtx_SET
-			   (VOIDmode, operands[0],
+			   (operands[0],
 			    gen_rtx_CALL (VOIDmode, operands[1], operands[2])),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_REG (SImode, GPR_LR)))));
@@ -2312,7 +2312,7 @@
 	(gen_rtx_PARALLEL
 	  (VOIDmode,
 	   gen_rtvec (2, gen_rtx_SET
-			   (VOIDmode, operands[0],
+			   (operands[0],
 			    gen_rtx_CALL (VOIDmode, operands[1], operands[2])),
 			 ret_rtx)));
       emit_insn (target_uninterruptible ? gen_gie (): gen_gid ());
@@ -2628,7 +2628,7 @@
 	(VOIDmode,
 	 gen_rtvec
 	  (4,
-	   gen_rtx_SET (VOIDmode, operands[5],
+	   gen_rtx_SET (operands[5],
 			gen_rtx_MULT (SImode, operands[6], operands[4])),
 	   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CC_FPmode, CCFP_REGNUM)),
 	   operands[9], operands[10])));
@@ -2640,7 +2640,7 @@
 	(VOIDmode,
 	 gen_rtvec
 	  (4,
-	   gen_rtx_SET (VOIDmode, operands[7],
+	   gen_rtx_SET (operands[7],
 			gen_rtx_MULT (SImode, operands[8], operands[4])),
 	   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CC_FPmode, CCFP_REGNUM)),
 	   operands[9], operands[10])));

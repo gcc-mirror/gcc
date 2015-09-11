@@ -19,4 +19,3 @@ void test2(void)
    the rhs of the store to b by 1.  */
 
 /* { dg-final { scan-tree-dump "Replaced\[^\\n\]*with 1" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

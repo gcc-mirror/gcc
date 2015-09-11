@@ -7,4 +7,3 @@ subroutine foo(a,b)
   if (a(1:) /= a(1:)) call do_not_use
 end subroutine foo
 ! { dg-final { scan-tree-dump-times "do_not_use" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -20,4 +20,3 @@ end
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "\\*bb = \\*aa" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "\\*dd = \\*cc" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -120,4 +120,3 @@ void bar()
 /* { dg-final { scan-tree-dump-times "cpowf" 12 "original" { target { spu*-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "cpow " 18 "original" } } */
 /* { dg-final { scan-tree-dump-times "cpowl" 18 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

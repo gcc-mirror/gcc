@@ -243,6 +243,7 @@ set mips_option_groups {
     mips16 "-mips16|-mno-mips16|-mflip-mips16"
     mips3d "-mips3d|-mno-mips3d"
     pic "-f(no-|)(pic|PIC)"
+    cb "-mcompact-branches=.*"
     profiling "-pg"
     small-data "-G[0-9]+"
     warnings "-w"
@@ -254,6 +255,7 @@ set mips_option_groups {
     madd "HAS_MADD"
     maddps "HAS_MADDPS"
     lsa "(|!)HAS_LSA"
+    section_start "-Wl,--section-start=.*"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
@@ -1044,6 +1046,7 @@ proc mips-dg-options { args } {
     set arch [mips_option options arch]
     set isa [mips_arch_info $arch isa]
     set isa_rev [mips_arch_info $arch isa_rev]
+    set orig_isa_rev $isa_rev
 
     # If the test forces a 32-bit architecture, force -mgp32.
     # Force the current -mgp setting otherwise; if we don't,
@@ -1066,8 +1069,10 @@ proc mips-dg-options { args } {
 	# We need a revision 6 or better ISA for:
 	#
 	#   - When the LSA instruction is required
+	#   - When only using compact branches
 	if { $isa_rev < 6
-	     && ([mips_have_test_option_p options "HAS_LSA"]) } {
+	     && ([mips_have_test_option_p options "HAS_LSA"]
+		 || [mips_have_test_option_p options "-mcompact-branches=always"]) } {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32r6"
 	    } else {
@@ -1162,6 +1167,9 @@ proc mips-dg-options { args } {
 		mips_make_test_option options "-mips64r5"
 	    }
 	    mips_make_test_option options "-mnan=2008"
+	    if { [mips_have_option_p options "-mcompact-branches=always"] } {
+		mips_make_test_option options "-mcompact-branches=optimal"
+	    }
 	# Check whether we need to switch from a 32-bit processor to the
 	# "nearest" 64-bit processor.
 	} elseif { $gp_size == 64 && [mips_32bit_arch_p $arch] } {
@@ -1188,6 +1196,7 @@ proc mips-dg-options { args } {
 
     # Re-calculate the isa_rev for use in the abi handling code below
     set arch [mips_option options arch]
+    set isa [mips_arch_info $arch isa]
     set isa_rev [mips_arch_info $arch isa_rev]
 
     # Set an appropriate ABI, handling dependencies between the pre-abi
@@ -1278,8 +1287,11 @@ proc mips-dg-options { args } {
     }
 
     # Handle dependencies between the arch option and the post-arch options.
-    # This should mirror the arch and pre-arch code above.
-    if { $arch_test_option_p } {
+    # This should mirror the arch and pre-arch code above.  For pre-r6
+    # architectures this only needs to be done when we've moved down
+    # to a lower architecture and might need to turn features off,
+    # but moving up from pre-r6 to r6 can remove features too.
+    if { $arch_test_option_p || ($orig_isa_rev < 6 && $isa_rev >= 6) } {
 	if { $isa < 2 } {
 	    mips_make_test_option options "-mno-branch-likely"
 	    mips_make_test_option options "-mno-fix-r10000"
@@ -1300,6 +1312,12 @@ proc mips-dg-options { args } {
 	    mips_make_test_option options "-mno-dsp"
 	    mips_make_test_option options "-mno-synci"
 	    mips_make_test_option options "-mno-micromips"
+	    mips_make_test_option options "-mnan=legacy"
+	}
+	if { $isa_rev < 6 } {
+	    if { [mips_have_option_p options "-mcompact-branches=always"] } {
+		mips_make_test_option options "-mcompact-branches=optimal"
+	    }
 	}
         if { $isa_rev > 5 } {
 	    mips_make_test_option options "-mno-dsp"

@@ -218,15 +218,17 @@ struct GTY(()) machine_function
   /* Number of bytes on the stack for saving $lp.  */
   int lp_size;
 
-  /* Number of bytes on the stack for saving callee-saved registers.  */
-  int callee_saved_regs_size;
-  /* The padding bytes in callee-saved area may be required.  */
-  int callee_saved_area_padding_bytes;
+  /* Number of bytes on the stack for saving general purpose
+     callee-saved registers.  */
+  int callee_saved_gpr_regs_size;
 
-  /* The first required callee-saved register.  */
-  int callee_saved_regs_first_regno;
-  /* The last required callee-saved register.  */
-  int callee_saved_regs_last_regno;
+  /* The padding bytes in callee-saved area may be required.  */
+  int callee_saved_area_gpr_padding_bytes;
+
+  /* The first required general purpose callee-saved register.  */
+  int callee_saved_first_gpr_regno;
+  /* The last required general purpose callee-saved register.  */
+  int callee_saved_last_gpr_regno;
 
   /* The padding bytes in varargs area may be required.  */
   int va_args_area_padding_bytes;
@@ -694,7 +696,7 @@ enum reg_class
 
 /* Stack Layout and Calling Conventions.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 1
 
@@ -829,7 +831,7 @@ enum reg_class
 
 #define SLOW_BYTE_ACCESS 1
 
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 
 /* Adjusting the Instruction Scheduler.  */
@@ -999,7 +1001,7 @@ enum reg_class
 
 /* Define this macro if operations between registers with integral mode
    smaller than a word are always performed on the entire register.  */
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* A C expression indicating when insns that read memory in mem_mode,
    an integral mode narrower than a word, set the bits outside of mem_mode

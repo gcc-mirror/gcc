@@ -1,6 +1,6 @@
 // PR debug/54508
 // { dg-do compile }
-// { dg-options "-g2 -dA -fno-merge-debug-strings" }
+// { dg-options "-gdwarf-2 -g2 -dA -fno-merge-debug-strings" }
 
 // { dg-final { scan-assembler "\"cbase\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
 // { dg-final { scan-assembler "\"OPCODE\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }

@@ -16,4 +16,3 @@ int foo11 (int c)
 /* { dg-final { scan-tree-dump-times "local1 = " 1 "dse1"} } */
 /* { dg-final { scan-tree-dump-times "local2 = " 1 "dse1"} } */
 
-/* { dg-final { cleanup-tree-dump "dse1" } } */

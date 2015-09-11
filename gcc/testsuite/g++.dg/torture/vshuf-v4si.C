@@ -1,4 +1,5 @@
-// { dg-do run { target c++11 } }
+// { dg-options "-std=c++11" }
+// { dg-do run }
 
 #if __SIZEOF_INT__ == 4
 typedef unsigned int V __attribute__((vector_size(16)));

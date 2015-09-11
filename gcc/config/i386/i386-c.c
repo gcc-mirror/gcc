@@ -21,23 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "c-family/c-common.h"
-#include "ggc.h"
 #include "target.h"
-#include "target-def.h"
 #include "cpplib.h"
 #include "c-family/c-pragma.h"
 
@@ -73,6 +63,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__i486");
       def_or_undef (parse_in, "__i486__");
       break;
+    case PROCESSOR_IAMCU:
+      /* Intel MCU is based on Intel Pentium CPU.  */
     case PROCESSOR_PENTIUM:
       def_or_undef (parse_in, "__i586");
       def_or_undef (parse_in, "__i586__");
@@ -294,6 +286,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__tune_knl__");
       break;
+    case PROCESSOR_IAMCU:
+      def_or_undef (parse_in, "__tune_iamcu__");
+      break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
       break;
@@ -432,6 +427,13 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__PCOMMIT__");
   if (isa_flag & OPTION_MASK_ISA_CLWB)
     def_or_undef (parse_in, "__CLWB__");
+  if (isa_flag & OPTION_MASK_ISA_MWAITX)
+    def_or_undef (parse_in, "__MWAITX__");
+  if (TARGET_IAMCU)
+    {
+      def_or_undef (parse_in, "__iamcu");
+      def_or_undef (parse_in, "__iamcu__");
+    }
 }
 
 
@@ -566,6 +568,8 @@ ix86_target_macros (void)
 
   cpp_define_formatted (parse_in, "__ATOMIC_HLE_ACQUIRE=%d", IX86_HLE_ACQUIRE);
   cpp_define_formatted (parse_in, "__ATOMIC_HLE_RELEASE=%d", IX86_HLE_RELEASE);
+
+  cpp_define (parse_in, "__GCC_ASM_FLAG_OUTPUTS__");
 
   ix86_target_macros_internal (ix86_isa_flags,
 			       ix86_arch,

@@ -26,6 +26,7 @@
 // 28.7 (8) Class template regex_traits [re.traits]
 
 #include <regex>
+#include <forward_list>
 #include <testsuite_hooks.h>
 
 void
@@ -40,8 +41,19 @@ test01()
   VERIFY(t.lookup_collatename(name, name+sizeof(name)-1) == "~");
 }
 
+// Test forward iterator.
+void
+test02()
+{
+  const char strlit[] = "tilde";
+  std::forward_list<char> s(strlit, strlit + strlen(strlit));
+  std::regex_traits<char> traits;
+  VERIFY(traits.lookup_collatename(s.begin(), s.end()) == "~");
+}
+
 int main()
 {
 	test01();
+	test02();
 	return 0;
 }

@@ -90,7 +90,7 @@ void exec_vdup_lane (void)
   TEST_VDUP_LANE(q, poly, p, 16, 8, 4, 1);
   TEST_VDUP_LANE(q, float, f, 32, 4, 2, 1);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK_RESULTS_NO_FP16 (TEST_MSG, "");
 }
 
 int main (void)

@@ -3,7 +3,6 @@
 /* { dg-require-effective-target mempcpy } */
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-strlen -D_GNU_SOURCE" } */
 /* { dg-final { scan-tree-dump-times "strlen" 1 "strlen" } } */
-/* { dg-final { cleanup-tree-dump "strlen" } } */
 
 #include "string.h"
 

@@ -8,7 +8,7 @@ namespace
 {
   struct A
   {
-    virtual C foo ();
+    virtual C foo (); // { dg-warning "used but never defined" }
     C bar () { return foo (); }
   };
 }

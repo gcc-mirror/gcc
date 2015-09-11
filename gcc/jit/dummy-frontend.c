@@ -21,29 +21,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "opts.h"
-#include "signop.h"
-#include "hash-set.h"
-#include "fixed-value.h"
 #include "alias.h"
-#include "flags.h"
-#include "symtab.h"
-#include "tree-core.h"
+#include "tree.h"
 #include "stor-layout.h"
 #include "inchash.h"
-#include "tree.h"
 #include "debug.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
 #include "vec.h"
 #include "hashtab.h"
-#include "machmode.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "dumpfile.h"
 #include "cgraph.h"
 
@@ -161,11 +151,25 @@ jit_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (double_type_node))
     return double_type_node;
 
+  if (mode == TYPE_MODE (intQI_type_node))
+    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
+  if (mode == TYPE_MODE (intHI_type_node))
+    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
+  if (mode == TYPE_MODE (intSI_type_node))
+    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
+  if (mode == TYPE_MODE (intDI_type_node))
+    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
+  if (mode == TYPE_MODE (intTI_type_node))
+    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
+
   if (mode == TYPE_MODE (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
 
   if (mode == TYPE_MODE (long_integer_type_node))
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
+
+  if (mode == TYPE_MODE (long_long_integer_type_node))
+    return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
 
   if (COMPLEX_MODE_P (mode))
     {
@@ -218,21 +222,6 @@ jit_langhook_getdecls (void)
   return NULL;
 }
 
-static void
-jit_langhook_write_globals (void)
-{
-  gcc::jit::playback::context *ctxt = gcc::jit::active_playback_ctxt;
-  gcc_assert (ctxt);
-  JIT_LOG_SCOPE (ctxt->get_logger ());
-
-  ctxt->write_global_decls_1 ();
-
-  /* This is the hook that runs the middle and backends: */
-  symtab->finalize_compilation_unit ();
-
-  ctxt->write_global_decls_2 ();
-}
-
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME		"libgccjit"
 
@@ -259,9 +248,6 @@ jit_langhook_write_globals (void)
 
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		jit_langhook_getdecls
-
-#undef LANG_HOOKS_WRITE_GLOBALS
-#define LANG_HOOKS_WRITE_GLOBALS	jit_langhook_write_globals
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

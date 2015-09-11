@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2684,11 +2684,11 @@ package body Layout is
 
          elsif Is_Array_Type (E) then
 
-            --  For arrays that are required to be atomic, we do the same
+            --  For arrays that are required to be atomic/VFA, we do the same
             --  processing as described above for short records, since we
             --  really need to have the alignment set for the whole array.
 
-            if Is_Atomic (E) and then not Debug_Flag_Q then
+            if Is_Atomic_Or_VFA (E) and then not Debug_Flag_Q then
                Set_Composite_Alignment (E);
             end if;
 
@@ -2903,11 +2903,19 @@ package body Layout is
         and then Is_Record_Type (E)
         and then Is_Packed (E)
       then
-         --  No effect for record with atomic components
+         --  No effect for record with atomic/VFA components
 
-         if Is_Atomic (E) then
+         if Is_Atomic_Or_VFA (E) then
             Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
-            Error_Msg_N ("\pragma ignored for atomic record??", E);
+
+            if Is_Atomic (E) then
+               Error_Msg_N
+                 ("\pragma ignored for atomic record??", E);
+            else
+               Error_Msg_N
+                 ("\pragma ignored for bolatile full access record??", E);
+            end if;
+
             return;
          end if;
 
@@ -2920,20 +2928,30 @@ package body Layout is
             return;
          end if;
 
-         --  No effect if any component is atomic or is a by reference type
+         --  No effect if any component is atomic/VFA or is a by-reference type
 
          declare
             Ent : Entity_Id;
+
          begin
             Ent := First_Component_Or_Discriminant (E);
             while Present (Ent) loop
                if Is_By_Reference_Type (Etype (Ent))
-                 or else Is_Atomic (Etype (Ent))
-                 or else Is_Atomic (Ent)
+                 or else Is_Atomic_Or_VFA (Etype (Ent))
+                 or else Is_Atomic_Or_VFA (Ent)
                then
                   Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
-                  Error_Msg_N
-                    ("\pragma is ignored if atomic components present??", E);
+
+                  if Is_Atomic (Etype (Ent)) or else Is_Atomic (Ent) then
+                     Error_Msg_N
+                       ("\pragma is ignored if atomic "
+                        & "components present??", E);
+                  else
+                     Error_Msg_N
+                       ("\pragma is ignored if bolatile full access "
+                        & "components present??", E);
+                  end if;
+
                   return;
                else
                   Next_Component_Or_Discriminant (Ent);
@@ -3026,9 +3044,9 @@ package body Layout is
 
       --  Further processing for record types only to reduce the alignment
       --  set by the above processing in some specific cases. We do not
-      --  do this for atomic records, since we need max alignment there,
+      --  do this for atomic/VFA records, since we need max alignment there,
 
-      if Is_Record_Type (E) and then not Is_Atomic (E) then
+      if Is_Record_Type (E) and then not Is_Atomic_Or_VFA (E) then
 
          --  For records, there is generally no point in setting alignment
          --  higher than word size since we cannot do better than move by

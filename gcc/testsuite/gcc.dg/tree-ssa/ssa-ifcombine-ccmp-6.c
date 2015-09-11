@@ -10,4 +10,3 @@ int t (int a, int b, int c)
   return 1;
 }
 /* { dg-final { scan-tree-dump-times "\\|" 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

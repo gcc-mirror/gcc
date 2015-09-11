@@ -1,0 +1,23 @@
+LIBMPXWRAPPERS_1.0
+{
+  global:
+	__mpx_wrapper_malloc;
+	__mpx_wrapper_mmap;
+	__mpx_wrapper_realloc;
+	__mpx_wrapper_calloc;
+	__mpx_wrapper_memset;
+	__mpx_wrapper_bzero;
+	__mpx_wrapper_memmove;
+	__mpx_wrapper_memcpy;
+	__mpx_wrapper_mempcpy;
+	__mpx_wrapper_strncat;
+	__mpx_wrapper_strcat;
+	__mpx_wrapper_stpcpy;
+	__mpx_wrapper_stpncpy;
+	__mpx_wrapper_strcpy;
+	__mpx_wrapper_strncpy;
+	__mpx_wrapper_strlen;
+
+  local:
+	*;
+};

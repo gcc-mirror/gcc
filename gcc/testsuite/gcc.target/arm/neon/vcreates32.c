@@ -16,4 +16,3 @@ void test_vcreates32 (void)
   out_int32x2_t = vcreate_s32 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

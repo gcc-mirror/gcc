@@ -10,4 +10,3 @@ void foo(int n)
 }
 
 /* { dg-final { scan-tree-dump "Eliminated: 3" "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

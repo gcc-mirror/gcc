@@ -24,4 +24,3 @@ int test (void)
 
 /* { dg-final { scan-ipa-dump "indirect_call"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray\[^\\n\]*inline copy in test"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

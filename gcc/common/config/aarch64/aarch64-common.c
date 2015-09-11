@@ -27,6 +27,7 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "diagnostic.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
@@ -59,7 +60,7 @@ static const struct default_options aarch_option_optimization_table[] =
    respective component of -mcpu.  This logic is implemented
    in config/aarch64/aarch64.c:aarch64_override_options.  */
 
-static bool
+bool
 aarch64_handle_option (struct gcc_options *opts,
 		       struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		       const struct cl_decoded_option *decoded,
@@ -67,6 +68,7 @@ aarch64_handle_option (struct gcc_options *opts,
 {
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
+  int val = decoded->value;
 
   switch (code)
     {
@@ -82,6 +84,22 @@ aarch64_handle_option (struct gcc_options *opts,
       opts->x_aarch64_tune_string = arg;
       return true;
 
+    case OPT_mgeneral_regs_only:
+      opts->x_target_flags |= MASK_GENERAL_REGS_ONLY;
+      return true;
+
+    case OPT_mfix_cortex_a53_835769:
+      opts->x_aarch64_fix_a53_err835769 = val;
+      return true;
+
+    case OPT_mstrict_align:
+      opts->x_target_flags |= MASK_STRICT_ALIGN;
+      return true;
+
+    case OPT_momit_leaf_frame_pointer:
+      opts->x_flag_omit_frame_pointer = val;
+      return true;
+
     default:
       return true;
     }
@@ -89,25 +107,134 @@ aarch64_handle_option (struct gcc_options *opts,
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
 
-#define AARCH64_CPU_NAME_LENGTH 20
+/* An ISA extension in the co-processor and main instruction set space.  */
+struct aarch64_option_extension
+{
+  const char *const name;
+  const unsigned long flags_on;
+  const unsigned long flags_off;
+};
 
-/* Truncate NAME at the first '.' character seen, or return
-   NAME unmodified.  */
+/* ISA extensions in AArch64.  */
+static const struct aarch64_option_extension all_extensions[] =
+{
+#define AARCH64_OPT_EXTENSION(NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
+  {NAME, FLAGS_ON, FLAGS_OFF},
+#include "config/aarch64/aarch64-option-extensions.def"
+#undef AARCH64_OPT_EXTENSION
+  {NULL, 0, 0}
+};
+
+struct processor_name_to_arch
+{
+  const std::string processor_name;
+  const enum aarch64_arch arch;
+  const unsigned long flags;
+};
+
+struct arch_to_arch_name
+{
+  const enum aarch64_arch arch;
+  const std::string arch_name;
+};
+
+/* Map processor names to the architecture revision they implement and
+   the default set of architectural feature flags they support.  */
+static const struct processor_name_to_arch all_cores[] =
+{
+#define AARCH64_CORE(NAME, X, IDENT, ARCH_IDENT, FLAGS, COSTS, IMP, PART) \
+  {NAME, AARCH64_ARCH_##ARCH_IDENT, FLAGS},
+#include "config/aarch64/aarch64-cores.def"
+#undef AARCH64_CORE
+  {"generic", AARCH64_ARCH_8A, AARCH64_FL_FOR_ARCH8},
+  {"", aarch64_no_arch, 0}
+};
+
+/* Map architecture revisions to their string representation.  */
+static const struct arch_to_arch_name all_architectures[] =
+{
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH, FLAGS) \
+  {AARCH64_ARCH_##ARCH_IDENT, NAME},
+#include "config/aarch64/aarch64-arches.def"
+#undef AARCH64_ARCH
+  {aarch64_no_arch, ""}
+};
+
+/* Return a string representation of ISA_FLAGS.  */
+
+std::string
+aarch64_get_extension_string_for_isa_flags (unsigned long isa_flags)
+{
+  const struct aarch64_option_extension *opt = NULL;
+  std::string outstr = "";
+
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    if ((isa_flags & opt->flags_on) == opt->flags_on)
+      {
+	outstr += "+";
+	outstr += opt->name;
+      }
+  return outstr;
+}
+
+/* Attempt to rewrite NAME, which has been passed on the command line
+   as a -mcpu option to an equivalent -march value.  If we can do so,
+   return the new string, otherwise return an error.  */
 
 const char *
 aarch64_rewrite_selected_cpu (const char *name)
 {
-  static char output_buf[AARCH64_CPU_NAME_LENGTH + 1] = {0};
-  char *arg_pos;
+  std::string original_string (name);
+  std::string extensions;
+  std::string processor;
+  size_t extension_pos = original_string.find_first_of ('+');
 
-  strncpy (output_buf, name, AARCH64_CPU_NAME_LENGTH);
-  arg_pos = strchr (output_buf, '.');
+  /* Strip and save the extension string.  */
+  if (extension_pos != std::string::npos)
+    {
+      processor = original_string.substr (0, extension_pos);
+      extensions = original_string.substr (extension_pos,
+					std::string::npos);
+    }
+  else
+    {
+      /* No extensions.  */
+      processor = original_string;
+    }
 
-  /* If we found a '.' truncate the entry at that point.  */
-  if (arg_pos)
-    *arg_pos = '\0';
+  const struct processor_name_to_arch* p_to_a;
+  for (p_to_a = all_cores;
+       p_to_a->arch != aarch64_no_arch;
+       p_to_a++)
+    {
+      if (p_to_a->processor_name == processor)
+	break;
+    }
 
-  return output_buf;
+  const struct arch_to_arch_name* a_to_an;
+  for (a_to_an = all_architectures;
+       a_to_an->arch != aarch64_no_arch;
+       a_to_an++)
+    {
+      if (a_to_an->arch == p_to_a->arch)
+	break;
+    }
+
+  /* We couldn't find that proceesor name, or the processor name we
+     found does not map to an architecture we understand.  */
+  if (p_to_a->arch == aarch64_no_arch
+      || a_to_an->arch == aarch64_no_arch)
+    fatal_error (input_location, "unknown value %qs for -mcpu", name);
+
+  std::string outstr = a_to_an->arch_name
+	+ aarch64_get_extension_string_for_isa_flags (p_to_a->flags)
+	+ extensions;
+
+  /* We are going to memory leak here, nobody elsewhere
+     in the callchain is going to clean up after us.  The alternative is
+     to allocate a static buffer, and assert that it is big enough for our
+     modified string, which seems much worse!  */
+  return xstrdup (outstr.c_str ());
 }
 
 /* Called by the driver to rewrite a name passed to the -mcpu

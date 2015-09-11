@@ -21,4 +21,3 @@ main (int argc, char **argv)
   exit (0);
 }
 /* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -3,7 +3,7 @@
 @c For copying conditions, see the file gcc.texi.
 
 @node C Implementation
-@chapter C Implementation-defined behavior
+@chapter C Implementation-Defined Behavior
 @cindex implementation-defined behavior, C language
 
 A conforming implementation of ISO C is required to document its
@@ -279,7 +279,7 @@ truncated towards zero.
 @end itemize
 
 @node Floating point implementation
-@section Floating point
+@section Floating Point
 
 @itemize @bullet
 @item
@@ -375,7 +375,7 @@ defined by GCC itself.
 @end itemize
 
 @node Arrays and pointers implementation
-@section Arrays and pointers
+@section Arrays and Pointers
 
 @itemize @bullet
 @item
@@ -455,7 +455,7 @@ used to determine if a function has not been inlined and why not.
 @end itemize
 
 @node Structures unions enumerations and bit-fields implementation
-@section Structures, unions, enumerations, and bit-fields
+@section Structures, Unions, Enumerations, and Bit-Fields
 
 @itemize @bullet
 @item
@@ -601,7 +601,7 @@ GCC is only limited by available memory.
 @end itemize
 
 @node Preprocessing directives implementation
-@section Preprocessing directives
+@section Preprocessing Directives
 
 @xref{Implementation-defined behavior, , Implementation-defined
 behavior, cpp, The C Preprocessor}, for details of these aspects of
@@ -665,7 +665,7 @@ respectively, the date and time of translation are not available (C90
 @end itemize
 
 @node Library functions implementation
-@section Library functions
+@section Library Functions
 
 The behavior of most of these points are dependent on the implementation
 of the C library, and are not defined by GCC itself.
@@ -732,7 +732,7 @@ Determined by ABI@.
 @end itemize
 
 @node Locale-specific behavior implementation
-@section Locale-specific behavior
+@section Locale-Specific Behavior
 
 The behavior of these points are dependent on the implementation
 of the C library, and are not defined by GCC itself.

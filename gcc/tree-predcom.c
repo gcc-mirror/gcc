@@ -187,51 +187,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "predict.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "tm_p.h"
 #include "cfgloop.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
-#include "gimple-ssa.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
-#include "hashtab.h"
-#include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -1745,9 +1721,8 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
   if (chain->combined)
     {
       /* For combined chains, just remove the statements that are used to
-	 compute the values of the expression (except for the root one).  */
-      for (i = 1; chain->refs.iterate (i, &a); i++)
-	remove_stmt (a->stmt);
+	 compute the values of the expression (except for the root one).
+	 We delay this until after all chains are processed.  */
     }
   else
     {
@@ -1776,8 +1751,20 @@ determine_unroll_factor (vec<chain_p> chains)
 
   FOR_EACH_VEC_ELT (chains, i, chain)
     {
-      if (chain->type == CT_INVARIANT || chain->combined)
+      if (chain->type == CT_INVARIANT)
 	continue;
+
+      if (chain->combined)
+	{
+	  /* For combined chains, we can't handle unrolling if we replace
+	     looparound PHIs.  */
+	  dref a;
+	  unsigned j;
+	  for (j = 1; chain->refs.iterate (j, &a); j++)
+	    if (gimple_code (a->stmt) == GIMPLE_PHI)
+	      return 1;
+	  continue;
+	}
 
       /* The best unroll factor for this chain is equal to the number of
 	 temporary variables that we create for it.  */
@@ -1809,6 +1796,21 @@ execute_pred_commoning (struct loop *loop, vec<chain_p> chains,
 	execute_load_motion (loop, chain, tmp_vars);
       else
 	execute_pred_commoning_chain (loop, chain, tmp_vars);
+    }
+
+  FOR_EACH_VEC_ELT (chains, i, chain)
+    {
+      if (chain->type == CT_INVARIANT)
+	;
+      else if (chain->combined)
+	{
+	  /* For combined chains, just remove the statements that are used to
+	     compute the values of the expression (except for the root one).  */
+	  dref a;
+	  unsigned j;
+	  for (j = 1; chain->refs.iterate (j, &a); j++)
+	    remove_stmt (a->stmt);
+	}
     }
 
   update_ssa (TODO_update_ssa_only_virtuals);
@@ -2287,11 +2289,7 @@ combine_chains (chain_p ch1, chain_p ch2)
     }
 
   if (swap)
-    {
-      chain_p tmp = ch1;
-      ch1 = ch2;
-      ch2 = tmp;
-    }
+    std::swap (ch1, ch2);
 
   new_chain = XCNEW (struct chain);
   new_chain->type = CT_COMBINATION;

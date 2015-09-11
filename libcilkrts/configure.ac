@@ -43,6 +43,8 @@ AM_INIT_AUTOMAKE(foreign no-dist)
 
 AM_MAINTAINER_MODE
 
+AM_ENABLE_MULTILIB(, ..)
+
 # Build a DLL on Windows
 # AC_LIBTOOL_WIN32_DLL
 AC_PROG_CC
@@ -50,7 +52,6 @@ AC_PROG_CXX
 # AC_PROG_LIBTOOL
 # AC_CONFIG_MACRO_DIR([..])
 AC_CONFIG_FILES([Makefile libcilkrts.spec])
-AM_ENABLE_MULTILIB(, ..)
 AC_FUNC_ALLOCA
 
 # Check whether the target supports protected visibility.

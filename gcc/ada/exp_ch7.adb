@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -128,7 +129,7 @@ package body Exp_Ch7 is
 
    function Find_Node_To_Be_Wrapped (N : Node_Id) return Node_Id;
    --  N is a node which may generate a transient scope. Loop over the parent
-   --  pointers of N until it find the appropriate node to wrap. If it returns
+   --  pointers of N until we find the appropriate node to wrap. If it returns
    --  Empty, it means that no transient scope is needed in this context.
 
    procedure Insert_Actions_In_Scope_Around
@@ -764,13 +765,41 @@ package body Exp_Ch7 is
    -------------------------------
 
    procedure Build_Finalization_Master
-     (Typ        : Entity_Id;
-      Ins_Node   : Node_Id := Empty;
-      Encl_Scope : Entity_Id := Empty)
+     (Typ            : Entity_Id;
+      For_Anonymous  : Boolean   := False;
+      For_Private    : Boolean   := False;
+      Context_Scope  : Entity_Id := Empty;
+      Insertion_Node : Node_Id   := Empty)
    is
+      procedure Add_Pending_Access_Type
+        (Typ     : Entity_Id;
+         Ptr_Typ : Entity_Id);
+      --  Add access type Ptr_Typ to the pending access type list for type Typ
+
       function In_Deallocation_Instance (E : Entity_Id) return Boolean;
       --  Determine whether entity E is inside a wrapper package created for
       --  an instance of Ada.Unchecked_Deallocation.
+
+      -----------------------------
+      -- Add_Pending_Access_Type --
+      -----------------------------
+
+      procedure Add_Pending_Access_Type
+        (Typ     : Entity_Id;
+         Ptr_Typ : Entity_Id)
+      is
+         List : Elist_Id;
+
+      begin
+         if Present (Pending_Access_Types (Typ)) then
+            List := Pending_Access_Types (Typ);
+         else
+            List := New_Elmt_List;
+            Set_Pending_Access_Types (Typ, List);
+         end if;
+
+         Prepend_Elmt (Ptr_Typ, List);
+      end Add_Pending_Access_Type;
 
       ------------------------------
       -- In_Deallocation_Instance --
@@ -799,7 +828,7 @@ package body Exp_Ch7 is
 
       --  Local variables
 
-      Desig_Typ : constant Entity_Id := Directly_Designated_Type (Typ);
+      Desig_Typ : constant Entity_Id := Designated_Type (Typ);
 
       Ptr_Typ : constant Entity_Id := Root_Type_Of_Full_View (Base_Type (Typ));
       --  A finalization master created for a named access type is associated
@@ -855,7 +884,7 @@ package body Exp_Ch7 is
       --  requires a finalization master.
 
       elsif Ekind (Ptr_Typ) = E_Anonymous_Access_Type
-        and then No (Ins_Node)
+        and then not For_Anonymous
       then
          return;
 
@@ -874,25 +903,21 @@ package body Exp_Ch7 is
       elsif VM_Target /= No_VM and then not Is_Controlled (Desig_Typ) then
          return;
 
-      --  Do not create finalization masters in SPARK mode because they result
-      --  in unwanted expansion.
-
-      --  More detail would be useful here ???
+      --  Do not create finalization masters in GNATprove mode because this
+      --  unwanted extra expansion. A compilation in this mode keeps the tree
+      --  as close as possible to the original sources.
 
       elsif GNATprove_Mode then
          return;
       end if;
 
       declare
+         Actions    : constant List_Id    := New_List;
          Loc        : constant Source_Ptr := Sloc (Ptr_Typ);
-         Actions    : constant List_Id := New_List;
          Fin_Mas_Id : Entity_Id;
          Pool_Id    : Entity_Id;
 
       begin
-         --  Generate:
-         --    Fnn : aliased Finalization_Master;
-
          --  Source access types use fixed master names since the master is
          --  inserted in the same source unit only once. The only exception to
          --  this are instances using the same access type as generic actual.
@@ -910,6 +935,11 @@ package body Exp_Ch7 is
             Fin_Mas_Id := Make_Temporary (Loc, 'F');
          end if;
 
+         Set_Finalization_Master (Ptr_Typ, Fin_Mas_Id);
+
+         --  Generate:
+         --    <Ptr_Typ>FM : aliased Finalization_Master;
+
          Append_To (Actions,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Fin_Mas_Id,
@@ -917,19 +947,18 @@ package body Exp_Ch7 is
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_Finalization_Master), Loc)));
 
-         --  Storage pool selection and attribute decoration of the generated
-         --  master. Since .NET/JVM compilers do not support pools, this step
-         --  is skipped.
+         --  Set the associated pool and primitive Finalize_Address of the new
+         --  finalization master. This step is skipped on .NET/JVM because the
+         --  target does not support storage pools or address arithmetic.
 
          if VM_Target = No_VM then
 
-            --  If the access type has a user-defined pool, use it as the base
-            --  storage medium for the finalization pool.
+            --  The access type has a user-defined storage pool, use it
 
             if Present (Associated_Storage_Pool (Ptr_Typ)) then
                Pool_Id := Associated_Storage_Pool (Ptr_Typ);
 
-            --  The default choice is the global pool
+            --  Otherwise the default choice is the global storage pool
 
             else
                Pool_Id := RTE (RE_Global_Pool_Object);
@@ -937,7 +966,7 @@ package body Exp_Ch7 is
             end if;
 
             --  Generate:
-            --    Set_Base_Pool (Fnn, Pool_Id'Unchecked_Access);
+            --    Set_Base_Pool (<Ptr_Typ>FM, Pool_Id'Unchecked_Access);
 
             Append_To (Actions,
               Make_Procedure_Call_Statement (Loc,
@@ -948,67 +977,90 @@ package body Exp_Ch7 is
                   Make_Attribute_Reference (Loc,
                     Prefix         => New_Occurrence_Of (Pool_Id, Loc),
                     Attribute_Name => Name_Unrestricted_Access))));
+
+            --  Finalize_Address is not generated in CodePeer mode because the
+            --  body contains address arithmetic. Skip this step.
+
+            if CodePeer_Mode then
+               null;
+
+            --  Associate the Finalize_Address primitive of the designated type
+            --  with the finalization master of the access type. The designated
+            --  type must be forzen as Finalize_Address is generated when the
+            --  freeze node is expanded.
+
+            elsif Is_Frozen (Desig_Typ)
+              and then Present (Finalize_Address (Desig_Typ))
+
+              --  The finalization master of an anonymous access type may need
+              --  to be inserted in a specific place in the tree. For instance:
+
+              --    type Comp_Typ;
+
+              --    <finalization master of "access Comp_Typ">
+
+              --    type Rec_Typ is record
+              --       Comp : access Comp_Typ;
+              --    end record;
+
+              --    <freeze node for Comp_Typ>
+              --    <freeze node for Rec_Typ>
+
+              --  Due to this oddity, the anonymous access type is stored for
+              --  later processing (see below).
+
+              and then Ekind (Ptr_Typ) /= E_Anonymous_Access_Type
+            then
+               --  Generate:
+               --    Set_Finalize_Address
+               --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
+
+               Append_To (Actions,
+                 Make_Set_Finalize_Address_Call
+                   (Loc     => Loc,
+                    Ptr_Typ => Ptr_Typ));
+
+            --  Otherwise the designated type is either anonymous access or a
+            --  Taft-amendment type and has not been frozen. Store the access
+            --  type for later processing (see Freeze_Type).
+
+            else
+               Add_Pending_Access_Type (Desig_Typ, Ptr_Typ);
+            end if;
          end if;
 
-         Set_Finalization_Master (Ptr_Typ, Fin_Mas_Id);
+         --  A finalization master created for an anonymous access type or an
+         --  access designating a type with private components must be inserted
+         --  before a context-dependent node.
 
-         --  A finalization master created for an anonymous access type must be
-         --  inserted before a context-dependent node.
+         if For_Anonymous or For_Private then
 
-         if Present (Ins_Node) then
-            Push_Scope (Encl_Scope);
+            --  At this point both the scope of the context and the insertion
+            --  mode must be known.
+
+            pragma Assert (Present (Context_Scope));
+            pragma Assert (Present (Insertion_Node));
+
+            Push_Scope (Context_Scope);
 
             --  Treat use clauses as declarations and insert directly in front
             --  of them.
 
-            if Nkind_In (Ins_Node, N_Use_Package_Clause,
-                                   N_Use_Type_Clause)
+            if Nkind_In (Insertion_Node, N_Use_Package_Clause,
+                                         N_Use_Type_Clause)
             then
-               Insert_List_Before_And_Analyze (Ins_Node, Actions);
+               Insert_List_Before_And_Analyze (Insertion_Node, Actions);
             else
-               Insert_Actions (Ins_Node, Actions);
+               Insert_Actions (Insertion_Node, Actions);
             end if;
 
             Pop_Scope;
 
-         elsif Ekind (Desig_Typ) = E_Incomplete_Type
-           and then Has_Completion_In_Body (Desig_Typ)
-         then
-            Insert_Actions (Parent (Ptr_Typ), Actions);
-
-         --  If the designated type is not yet frozen, then append the actions
-         --  to that type's freeze actions. The actions need to be appended to
-         --  whichever type is frozen later, similarly to what Freeze_Type does
-         --  for appending the storage pool declaration for an access type.
-         --  Otherwise, the call to Set_Storage_Pool_Ptr might reference the
-         --  pool object before it's declared. However, it's not clear that
-         --  this is exactly the right test to accomplish that here. ???
-
-         elsif Present (Freeze_Node (Desig_Typ))
-           and then not Analyzed (Freeze_Node (Desig_Typ))
-         then
-            Append_Freeze_Actions (Desig_Typ, Actions);
-
-         elsif Present (Freeze_Node (Ptr_Typ))
-           and then not Analyzed (Freeze_Node (Ptr_Typ))
-         then
-            Append_Freeze_Actions (Ptr_Typ, Actions);
-
-         --  If there's a pool created locally for the access type, then we
-         --  need to ensure that the master gets created after the pool object,
-         --  because otherwise we can have a forward reference, so we force the
-         --  master actions to be inserted and analyzed after the pool entity.
-         --  Note that both the access type and its designated type may have
-         --  already been frozen and had their freezing actions analyzed at
-         --  this point. (This seems a little unclean.???)
-
-         elsif VM_Target = No_VM
-           and then Scope (Pool_Id) = Scope (Ptr_Typ)
-         then
-            Insert_List_After_And_Analyze (Parent (Pool_Id), Actions);
+         --  Otherwise the finalization master and its initialization become a
+         --  part of the freeze node.
 
          else
-            Insert_Actions (Parent (Ptr_Typ), Actions);
+            Append_Freeze_Actions (Ptr_Typ, Actions);
          end if;
       end;
    end Build_Finalization_Master;
@@ -1388,6 +1440,13 @@ package body Exp_Ch7 is
             --  resides, there is no need for elaboration checks.
 
             Set_Kill_Elaboration_Checks (Fin_Id);
+
+            --  Inlining the finalizer produces a substantial speedup at -O2.
+            --  It is inlined by default at -O3. Either way, it is called
+            --  exactly twice (once on the normal path, and once for
+            --  exceptions/abort), so this won't bloat the code too much.
+
+            Set_Is_Inlined  (Fin_Id);
          end if;
 
          --  Step 2: Creation of the finalizer specification
@@ -2355,7 +2414,7 @@ package body Exp_Ch7 is
                   --  Primitive Initialize
 
                   if Is_Controlled (Typ) then
-                     Prim_Init := Find_Prim_Op (Typ, Name_Initialize);
+                     Prim_Init := Find_Optional_Prim_Op (Typ, Name_Initialize);
 
                      if Present (Prim_Init) then
                         Prim_Init := Ultimate_Alias (Prim_Init);
@@ -3620,7 +3679,7 @@ package body Exp_Ch7 is
          --  is from a private type that is not visibly controlled.
 
          Parent_Type := Etype (Typ);
-         Op := Find_Prim_Op (Parent_Type, Name_Of (Prim));
+         Op := Find_Optional_Prim_Op (Parent_Type, Name_Of (Prim));
 
          if Present (Op) then
             E := Op;
@@ -3900,8 +3959,9 @@ package body Exp_Ch7 is
       -----------------------
 
       procedure Wrap_HSS_In_Block is
-         Block   : Node_Id;
-         End_Lab : Node_Id;
+         Block    : Node_Id;
+         Block_Id : Entity_Id;
+         End_Lab  : Node_Id;
 
       begin
          --  Preserve end label to provide proper cross-reference information
@@ -3909,6 +3969,11 @@ package body Exp_Ch7 is
          End_Lab := End_Label (HSS);
          Block :=
            Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
+
+         Block_Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         Set_Identifier (Block, New_Occurrence_Of (Block_Id, Loc));
+         Set_Etype (Block_Id, Standard_Void_Type);
+         Set_Block_Node (Block_Id, Identifier (Block));
 
          --  Signal the finalization machinery that this particular block
          --  contains the original context.
@@ -4112,10 +4177,17 @@ package body Exp_Ch7 is
    --  Encode entity names in package body
 
    procedure Expand_N_Package_Body (N : Node_Id) is
+      GM       : constant Ghost_Mode_Type := Ghost_Mode;
       Spec_Ent : constant Entity_Id := Corresponding_Spec (N);
       Fin_Id   : Entity_Id;
 
    begin
+      --  The package body may be subject to pragma Ghost with policy Ignore.
+      --  Set the mode now to ensure that any nodes generated during expansion
+      --  are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  This is done only for non-generic packages
 
       if Ekind (Spec_Ent) = E_Package then
@@ -4171,6 +4243,11 @@ package body Exp_Ch7 is
             end;
          end if;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Package_Body;
 
    ----------------------------------
@@ -4183,6 +4260,7 @@ package body Exp_Ch7 is
    --  appear.
 
    procedure Expand_N_Package_Declaration (N : Node_Id) is
+      GM     : constant Ghost_Mode_Type := Ghost_Mode;
       Id     : constant Entity_Id := Defining_Entity (N);
       Spec   : constant Node_Id   := Specification (N);
       Decls  : List_Id;
@@ -4225,6 +4303,12 @@ package body Exp_Ch7 is
       then
          return;
       end if;
+
+      --  The package declaration may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  For a package declaration that implies no associated body, generate
       --  task activation call and RACW supporting bodies now (since we won't
@@ -4299,6 +4383,11 @@ package body Exp_Ch7 is
 
          Set_Finalizer (Id, Fin_Id);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Package_Declaration;
 
    -----------------------------
@@ -5053,7 +5142,7 @@ package body Exp_Ch7 is
       if Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
-               Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+               Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
             else
                Adj_Id := TSS (Utyp, TSS_Deep_Adjust);
             end if;
@@ -5066,7 +5155,7 @@ package body Exp_Ch7 is
         or else Has_Controlled_Component (Utyp)
       then
          if Is_Tagged_Type (Utyp) then
-            Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+            Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
          else
             Adj_Id := TSS (Utyp, TSS_Deep_Adjust);
          end if;
@@ -5075,15 +5164,15 @@ package body Exp_Ch7 is
 
       elsif Is_Controlled (Utyp) then
          if Has_Controlled_Component (Utyp) then
-            Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+            Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
          else
-            Adj_Id := Find_Prim_Op (Utyp, Name_Of (Adjust_Case));
+            Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
          end if;
 
       --  Tagged types
 
       elsif Is_Tagged_Type (Utyp) then
-         Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+         Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
 
       else
          raise Program_Error;
@@ -6440,7 +6529,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Prim_Op (Typ, Name_Adjust);
+               Proc := Find_Optional_Prim_Op (Typ, Name_Adjust);
 
                --  Generate:
                --    if F then
@@ -6948,7 +7037,7 @@ package body Exp_Ch7 is
          --       end if;
          --       ...
 
-         --  When Deep_Finalize is invokes for field _parent, a value of False
+         --  When Deep_Finalize is invoked for field _parent, a value of False
          --  is provided for the flag:
 
          --    Deep_Finalize (Obj._parent, False);
@@ -7014,7 +7103,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Prim_Op (Typ, Name_Finalize);
+               Proc := Find_Optional_Prim_Op (Typ, Name_Finalize);
 
                --  Generate:
                --    if F then
@@ -7285,7 +7374,7 @@ package body Exp_Ch7 is
       if Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
-               Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+               Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
             else
                Fin_Id := TSS (Utyp, TSS_Deep_Finalize);
             end if;
@@ -7298,7 +7387,7 @@ package body Exp_Ch7 is
         or else Has_Controlled_Component (Utyp)
       then
          if Is_Tagged_Type (Utyp) then
-            Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+            Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
          else
             Fin_Id := TSS (Utyp, TSS_Deep_Finalize);
          end if;
@@ -7307,15 +7396,15 @@ package body Exp_Ch7 is
 
       elsif Is_Controlled (Utyp) then
          if Has_Controlled_Component (Utyp) then
-            Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+            Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
          else
-            Fin_Id := Find_Prim_Op (Utyp, Name_Of (Finalize_Case));
+            Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
          end if;
 
       --  Tagged types
 
       elsif Is_Tagged_Type (Utyp) then
-         Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+         Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
 
       else
          raise Program_Error;
@@ -7397,7 +7486,6 @@ package body Exp_Ch7 is
       --  do not need the Finalize_Address primitive.
 
       elsif not Needs_Finalization (Typ)
-        or else Is_Abstract_Type (Typ)
         or else Present (TSS (Typ, TSS_Finalize_Address))
         or else
           (Is_Class_Wide_Type (Typ)
@@ -7801,85 +7889,39 @@ package body Exp_Ch7 is
 
    function Make_Set_Finalize_Address_Call
      (Loc     : Source_Ptr;
-      Typ     : Entity_Id;
       Ptr_Typ : Entity_Id) return Node_Id
    is
-      Desig_Typ   : constant Entity_Id :=
-                      Available_View (Designated_Type (Ptr_Typ));
-      Fin_Mas_Id  : constant Entity_Id := Finalization_Master (Ptr_Typ);
-      Fin_Mas_Ref : Node_Id;
-      Utyp        : Entity_Id;
+      --  It is possible for Ptr_Typ to be a partial view, if the access type
+      --  is a full view declared in the private part of a nested package, and
+      --  the finalization actions take place when completing analysis of the
+      --  enclosing unit. For this reason use Underlying_Type twice below.
+
+      Desig_Typ : constant Entity_Id :=
+                    Available_View
+                      (Designated_Type (Underlying_Type (Ptr_Typ)));
+      Fin_Addr  : constant Entity_Id := Finalize_Address (Desig_Typ);
+      Fin_Mas   : constant Entity_Id :=
+                    Finalization_Master (Underlying_Type (Ptr_Typ));
 
    begin
-      --  If the context is a class-wide allocator, we use the class-wide type
-      --  to obtain the proper Finalize_Address routine.
+      --  Both the finalization master and primitive Finalize_Address must be
+      --  available.
 
-      if Is_Class_Wide_Type (Desig_Typ) then
-         Utyp := Desig_Typ;
-
-      else
-         Utyp := Typ;
-
-         if Is_Private_Type (Utyp) and then Present (Full_View (Utyp)) then
-            Utyp := Full_View (Utyp);
-         end if;
-
-         if Is_Concurrent_Type (Utyp) then
-            Utyp := Corresponding_Record_Type (Utyp);
-         end if;
-      end if;
-
-      Utyp := Underlying_Type (Base_Type (Utyp));
-
-      --  Deal with untagged derivation of private views. If the parent is
-      --  now known to be protected, the finalization routine is the one
-      --  defined on the corresponding record of the ancestor (corresponding
-      --  records do not automatically inherit operations, but maybe they
-      --  should???)
-
-      if Is_Untagged_Derivation (Typ) then
-         if Is_Protected_Type (Typ) then
-            Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
-         else
-            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
-
-            if Is_Protected_Type (Utyp) then
-               Utyp := Corresponding_Record_Type (Utyp);
-            end if;
-         end if;
-      end if;
-
-      --  If the underlying_type is a subtype, we are dealing with the
-      --  completion of a private type. We need to access the base type and
-      --  generate a conversion to it.
-
-      if Utyp /= Base_Type (Utyp) then
-         pragma Assert (Is_Private_Type (Typ));
-
-         Utyp := Base_Type (Utyp);
-      end if;
-
-      Fin_Mas_Ref := New_Occurrence_Of (Fin_Mas_Id, Loc);
-
-      --  If the call is from a build-in-place function, the Master parameter
-      --  is actually a pointer. Dereference it for the call.
-
-      if Is_Access_Type (Etype (Fin_Mas_Id)) then
-         Fin_Mas_Ref := Make_Explicit_Dereference (Loc, Fin_Mas_Ref);
-      end if;
+      pragma Assert (Present (Fin_Addr) and Present (Fin_Mas));
 
       --  Generate:
-      --    Set_Finalize_Address (<Ptr_Typ>FM, <Utyp>FD'Unrestricted_Access);
+      --    Set_Finalize_Address
+      --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
 
       return
         Make_Procedure_Call_Statement (Loc,
           Name                   =>
             New_Occurrence_Of (RTE (RE_Set_Finalize_Address), Loc),
           Parameter_Associations => New_List (
-            Fin_Mas_Ref,
+            New_Occurrence_Of (Fin_Mas, Loc),
+
             Make_Attribute_Reference (Loc,
-              Prefix         =>
-                New_Occurrence_Of (TSS (Utyp, TSS_Finalize_Address), Loc),
+              Prefix         => New_Occurrence_Of (Fin_Addr, Loc),
               Attribute_Name => Name_Unrestricted_Access)));
    end Make_Set_Finalize_Address_Call;
 

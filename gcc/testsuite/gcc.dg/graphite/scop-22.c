@@ -7,6 +7,9 @@ void foo(int N, int *res)
   double sum = 0.0;
 
   for (i = 0; i < N; i++)
+    sum += u[i];
+
+  for (i = 0; i < N; i++)
     {
       a = u[i];
       u[i] = i * i;
@@ -18,4 +21,3 @@ void foo(int N, int *res)
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

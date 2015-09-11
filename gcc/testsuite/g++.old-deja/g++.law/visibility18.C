@@ -7,7 +7,7 @@
 // Message-ID: <9308061142.AA08533@iiserv>
 struct T1 { int i; };
 
-struct T2 { int j; }; // { dg-error "" } private
+struct T2 { int j; }; // { dg-message "" } private
 
 struct T3 : public T1, private T2 {
 } x;

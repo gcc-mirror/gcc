@@ -34,4 +34,3 @@ void a2 (struct s1 sv, int i)
 
 /* { dg-final { scan-tree-dump-times "sv_\[0-9\]\\\(D\\\)->i" 2 "fre1" } } */
 /* { dg-final { scan-tree-dump-times "sv.i" 2 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

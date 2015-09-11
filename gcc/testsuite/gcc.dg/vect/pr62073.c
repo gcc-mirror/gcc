@@ -37,4 +37,3 @@ int foo (long long p_56, int * p_57)
   return *l_77;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

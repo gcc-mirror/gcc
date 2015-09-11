@@ -24,7 +24,7 @@ tree gfc_array_deallocate (tree, tree, tree, tree, tree, gfc_expr*);
 /* Generate code to initialize and allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
 bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree, tree,
-			 tree, tree *, gfc_expr *, gfc_typespec *);
+			 tree, tree *, gfc_expr *, tree, bool);
 
 /* Allow the bounds of a loop to be set from a callee's array spec.  */
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,
@@ -46,7 +46,7 @@ tree gfc_trans_dealloc_allocated (tree, bool, gfc_expr *);
 
 tree gfc_full_array_size (stmtblock_t *, tree, int);
 
-tree gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank);
+tree gfc_duplicate_allocatable (tree, tree, tree, int, tree);
 
 tree gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank);
 
@@ -63,8 +63,6 @@ tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int);
 tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
 
 tree gfc_alloc_allocatable_for_assignment (gfc_loopinfo*, gfc_expr*, gfc_expr*);
-
-bool gfc_is_reallocatable_lhs (gfc_expr *);
 
 /* Add initialization for deferred arrays.  */
 void gfc_trans_deferred_array (gfc_symbol *, gfc_wrapped_block *);
@@ -104,6 +102,8 @@ gfc_ss *gfc_get_array_ss (gfc_ss *, gfc_expr *, int, gfc_ss_type);
 gfc_ss *gfc_get_temp_ss (tree, tree, int);
 /* Allocate a new scalar type ss.  */
 gfc_ss *gfc_get_scalar_ss (gfc_ss *, gfc_expr *);
+
+bool gfc_scalar_elemental_arg_saved_as_reference (gfc_ss_info *);
 
 /* Calculates the lower bound and stride of array sections.  */
 void gfc_conv_ss_startstride (gfc_loopinfo *);

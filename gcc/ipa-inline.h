@@ -126,6 +126,12 @@ struct GTY(()) inline_summary
 
   /* False when there something makes inlining impossible (such as va_arg).  */
   unsigned inlinable : 1;
+  /* True when function contains cilk spawn (and thus we can not inline
+     into it).  */
+  unsigned contains_cilk_spawn : 1;
+  /* True wen there is only one caller of the function before small function
+     inlining.  */
+  unsigned int single_caller : 1;
 
   /* Information about function that will result after applying all the
      inline decisions present in the callgraph.  Generally kept up to
@@ -256,6 +262,8 @@ void free_growth_caches (void);
 void compute_inline_parameters (struct cgraph_node *, bool);
 bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
 unsigned int early_inliner (function *fun);
+bool inline_account_function_p (struct cgraph_node *node);
+
 
 /* In ipa-inline-transform.c  */
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge *> *, int *, bool,

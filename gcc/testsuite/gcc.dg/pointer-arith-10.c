@@ -7,4 +7,3 @@ char *foo(char *p, __UINTPTR_TYPE__ i)
 }
 
 /* { dg-final { scan-tree-dump "p +" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

@@ -8,4 +8,3 @@ main ()
   __builtin_printf ("%d %s\n", t, s);
 }
 
-/* { dg-final { cleanup-rtl-dump "reload" } } */

@@ -143,6 +143,9 @@ cpu_include_dir=cpu/${try_cpu}
 # Set specific CPU overrides for cpu_defines_dir. Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
+  arm*)
+    cpu_defines_dir=cpu/arm
+    ;;
   powerpc* | rs6000)
     cpu_defines_dir=cpu/powerpc
     ;;
@@ -153,20 +156,11 @@ esac
 # Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
-  alpha*)
-    atomic_word_dir=cpu/alpha
-    ;;
   cris*)
     atomic_word_dir=cpu/cris
     ;;
-  ia64)
-    atomic_word_dir=cpu/ia64
-    ;;
   i[4567]86 | x86_64)
     atomic_flags="-march=native"
-    ;;
-  powerpc* | rs6000)
-    atomic_word_dir=cpu/powerpc
     ;;
   sparc* | ultrasparc)
     atomic_word_dir=cpu/sparc
@@ -216,7 +210,6 @@ case "${host_os}" in
     # Newer versions of AIX only support PowerPC architecture, so use
     # atomic instructions directly.
     os_include_dir="os/aix"
-    atomic_word_dir="os/aix"
     ;;
   aix4.[3456789]*)
     # We set os_include_dir to os/aix only on AIX 4.3 and newer, but
@@ -224,12 +217,10 @@ case "${host_os}" in
     # explicitly duplicate the directory for 4.[<3].
     os_include_dir="os/aix"
     atomicity_dir="os/aix"
-    atomic_word_dir="os/aix"
     ;;
   aix4.*)
     os_include_dir="os/generic"
     atomicity_dir="os/aix"
-    atomic_word_dir="os/aix"
     ;;
   aix*)
     os_include_dir="os/generic"
@@ -270,6 +261,9 @@ case "${host_os}" in
     ;;
   freebsd*)
     os_include_dir="os/bsd/freebsd"
+    ;;
+  linux-musl*)
+    os_include_dir="os/generic"
     ;;
   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
     if [ "$uclibc" = "yes" ]; then

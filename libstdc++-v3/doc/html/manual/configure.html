@@ -22,11 +22,6 @@
 	libstdc++ built many different ways:  "-msoft-float"
 	and not, etc.  A different libstdc++ will be built for each of
 	the different multilib versions.  This option is on by default.
-     </p></dd><dt><span class="term"><code class="code">--enable-sjlj-exceptions</code></span></dt><dd><p>Forces old, set-jump/long-jump exception handling model.  If
-	at all possible, the new, frame unwinding exception handling routines
-	should be used instead, as they significantly reduce both
-	runtime memory usage and executable size. This option can
-	change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-version-specific-runtime-libs</code></span></dt><dd><p>Specify that run-time libraries should be installed in the
 	compiler-specific subdirectory (i.e.,
 	<code class="code">${libdir}/gcc-lib/${target_alias}/${gcc_version}</code>)
@@ -174,10 +169,12 @@
 	Mostly useful together with shared memory allocators, see PR
 	libstdc++/16612 for details.
      </p></dd><dt><span class="term"><code class="code">--enable-concept-checks</code></span></dt><dd><p>This turns on additional compile-time checks for instantiated
-	library templates, in the form of specialized templates,
-	<a class="link" href="concept_checking.html" title="Concept Checking">described here</a>.  They
+	library templates, in the form of specialized templates described in
+        the <a class="link" href="concept_checking.html" title="Concept Checking">Concept
+        Checking</a> section.  They
 	can help users discover when they break the rules of the STL, before
-	their programs run.
+	their programs run. These checks are based on C++03 rules and some of
+	them are not compatible with correct C++11 code.
      </p></dd><dt><span class="term"><code class="code">--enable-symvers[=style]</code></span></dt><dd><p>In 3.1 and later, tries to turn on symbol versioning in the
 	shared library (if a shared library has been
 	requested). Values for 'style' that are currently supported
@@ -228,13 +225,18 @@
      when standard error is not available.  This option disables those
      messages.  This option does not change the library ABI.
    </p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-dual-abi</code></span></dt><dd><p>
-     Disable support for the new, C++11-conforming <code class="code">std::string</code>
-     implementation.  This option changes the library ABI.
-   </p></dd><dt><span class="term"><code class="code">--with-default-libstdcxx-abi</code></span></dt><dd><p>
-     By default, the new <code class="code">std::string</code> implementation will be
-     declared and a macro must be defined to declare the old implementation
-     instead. That default can be reversed by configuring the library with
-     <code class="code">--with-default-libstdcxx-abi=c++98</code>.
+     Disable support for the new, C++11-conforming implementations of
+     <code class="code">std::string</code>, <code class="code">std::list</code> etc. so that the
+     library only provides definitions of types using the old ABI
+     (see <a class="xref" href="using_dual_abi.html" title="Dual ABI">Dual ABI</a>).
+     This option changes the library ABI.
+   </p></dd><dt><span class="term"><code class="code">--with-default-libstdcxx-abi=</code><em class="replaceable"><code>OPTION</code></em></span></dt><dd><p>
+     Set the default value for the <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span>
+     macro (see <a class="xref" href="using_macros.html" title="Macros">Macros</a>).
+     The default is <code class="option">OPTION=new</code> which sets the macro to
+     <code class="literal">1</code>,
+     use <code class="option">OPTION=gcc4-compatible</code> to set it to
+     <code class="literal">0</code>.
      This option does not change the library ABI.
    </p></dd><dt><span class="term"><code class="code">--enable-vtable-verify</code>[default]</span></dt><dd><p>Use <code class="code">-fvtable-verify=std</code> to compile the C++
     runtime with instrumentation for vtable verification. All virtual

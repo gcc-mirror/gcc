@@ -27,15 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "symtab.h"
-#include "input.h"
-#include "alias.h"
-#include "double-int.h"
-#include "machmode.h"
-#include "inchash.h"
 #include "tree.h"
+#include "alias.h"
 #include "flags.h"
 #include "convert.h"
 #include "c-family/c-common.h"
@@ -121,9 +114,7 @@ convert (tree type, tree expr)
       if (flag_sanitize & SANITIZE_FLOAT_CAST
 	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
 	  && COMPLETE_TYPE_P (type)
-	  && current_function_decl != NULL_TREE
-	  && !lookup_attribute ("no_sanitize_undefined",
-				DECL_ATTRIBUTES (current_function_decl)))
+	  && do_ubsan_in_current_function ())
 	{
 	  tree arg;
 	  if (in_late_binary_op)

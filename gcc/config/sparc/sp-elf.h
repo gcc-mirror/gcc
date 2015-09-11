@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_SPEC
 #define ASM_SPEC \
   "-s \
-   %{fpic|fpie|fPIC|fPIE:-K PIC} %(asm_cpu)"
+   %{" FPIE_OR_FPIC_SPEC ":-K PIC} %(asm_cpu)"
 
 /* Use the default.  */
 #undef LINK_SPEC

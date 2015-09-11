@@ -18,4 +18,3 @@ void test_vminu8 (void)
 }
 
 /* { dg-final { scan-assembler "vmin\.u8\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

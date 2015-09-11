@@ -4,7 +4,6 @@
 /* { dg-final { scan-tree-dump-not "bndcl" "chkpopt" } } */
 /* { dg-final { scan-tree-dump-not "bndcu" "chkpopt" } } */
 
-
 int test (int *p)
 {
   p = (int *)__builtin___bnd_set_ptr_bounds (p, sizeof (int));

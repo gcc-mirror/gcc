@@ -45,16 +45,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Weakref trickery for clock_gettime().  On Glibc <= 2.16,
    clock_gettime() requires us to link in librt, which also pulls in
    libpthread.  In order to avoid this by default, only call
-   clock_gettime() through a weak reference.
-
-   Some targets don't support weak undefined references; on these
-   GTHREAD_USE_WEAK is 0. So we need to define it to 1 on other
-   targets.  */
-#ifndef GTHREAD_USE_WEAK
-#define GTHREAD_USE_WEAK 1
-#endif
-
-#if SUPPORTS_WEAK && GTHREAD_USE_WEAK && defined(HAVE_CLOCK_GETTIME_LIBRT)
+   clock_gettime() through a weak reference.  */
+#if SUPPORTS_WEAKREF && defined(HAVE_CLOCK_GETTIME_LIBRT)
 static int weak_gettime (clockid_t, struct timespec *) 
   __attribute__((__weakref__("clock_gettime")));
 #endif
@@ -90,7 +82,7 @@ gf_gettime_mono (time_t * secs, long * fracsecs, long * tck)
   *fracsecs = ts.tv_nsec;
   return err;
 #else
-#if defined(HAVE_CLOCK_GETTIME_LIBRT) && SUPPORTS_WEAK && GTHREAD_USE_WEAK
+#if SUPPORTS_WEAKREF && defined(HAVE_CLOCK_GETTIME_LIBRT)
   if (weak_gettime)
     {
       struct timespec ts;
@@ -109,10 +101,14 @@ gf_gettime_mono (time_t * secs, long * fracsecs, long * tck)
 
 #endif /* !__MINGW32 && !__CYGWIN__  */
 
-extern void system_clock_4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
+extern void
+system_clock_4 (GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
+		GFC_INTEGER_4 *count_max);
 export_proto(system_clock_4);
 
-extern void system_clock_8 (GFC_INTEGER_8 *, GFC_INTEGER_8 *, GFC_INTEGER_8 *);
+extern void
+system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
+		GFC_INTEGER_8 *count_max);
 export_proto(system_clock_8);
 
 
@@ -122,10 +118,10 @@ export_proto(system_clock_8);
    for COUNT.  */
 
 void
-system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
+system_clock_4 (GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	       GFC_INTEGER_4 *count_max)
 {
-#if defined(__MINGW32__) || defined(__CYGWIN__) 
+#if defined(__MINGW32__) || defined(__CYGWIN__)
   if (count)
     {
       /* Use GetTickCount here as the resolution and range is
@@ -176,7 +172,7 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 
 void
 system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
-		GFC_INTEGER_8 *count_max)
+		 GFC_INTEGER_8 *count_max)
 {
 #if defined(__MINGW32__) || defined(__CYGWIN__) 
   LARGE_INTEGER cnt;

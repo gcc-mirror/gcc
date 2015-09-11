@@ -7,6 +7,7 @@
 #ifndef GO_IMPORT_H
 #define GO_IMPORT_H
 
+#include "escape.h"
 #include "export.h"
 #include "go-linemap.h"
 
@@ -197,6 +198,10 @@ class Import
   Type*
   read_type();
 
+  // Read escape information.
+  Node::Escapement_lattice
+  read_escape_info();
+
  private:
   static Stream*
   try_package_in_directory(const std::string&, Location);
@@ -219,6 +224,10 @@ class Import
   static Stream*
   find_archive_export_data(const std::string& filename, int fd,
 			   Location);
+
+  // Read a package line.
+  void
+  read_one_package();
 
   // Read an import line.
   void

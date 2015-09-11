@@ -27,6 +27,4 @@ int h(int t, int *a)
   return f(t, a) + g(t, a);
 }
 
-/* { dg-final { scan-ipa-dump "different operand volatility" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 0" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

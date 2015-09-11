@@ -1,3 +1,115 @@
+2015-09-10  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::type_size): Return -1 for
+	unrepresentable size.
+
+2015-08-24  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/67284
+	* go-gcc.cc (Gcc_backend::define_builtin): Add NORETURN_P parameter.
+	Set TREE_THIS_VOLATILE.
+	(Gcc_backend::Gcc_backend): Mark __builtin_trap as a noreturn call.
+	Pass false to the rest of define_builtin calls.
+
+2015-07-31  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* go-lang.c (go_langhook_init_options_struct): Don't set
+	x_flag_split_stack.
+	(go_langhook_post_options): Set it here instead.
+
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gofrontend/backend.h: Fix double word typos.
+        * gofrontend/expressions.cc: Same.
+	* gospec.c: Same.
+
+2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-backend.c: Adjust includes.
+	* go-gcc.cc: Likewise.
+	* go-lang.c: Likewise.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-gcc.cc: Remove ipa-ref.h and plugin-api.h from include list.
+
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-backend.c: Do not include input.h, line-map.h or is-a.h.
+	* go-gcc.cc: Likewise.
+	* go-lang.c: Likewise.
+	* go-system.h: Likewise.
+
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-backend.c : Adjust include files.
+	* go-gcc.cc : Likewise.
+	* go-lang.c : Likewise.
+
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* go-gcc.cc (write_global_definitions): Remove call to
+	finalize_compilation_unit.
+	Remove Go specific debug generation.
+	* go-lang.c (go_langhook_parse_file): Call go_write_globals.
+	(go_langhook_write_globals): Remove.
+	Remove LANG_HOOKS_WRITE_GLOBALS everywhere.
+
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-backend.c: Adjust includes for restructured coretypes.h.
+	* go-c.h: Likewise.
+	* go-gcc.cc: Likewise.
+	* go-lang.c: Likewise.
+
+2015-04-30  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::stack_allocation_expression): New
+	method.
+
+2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (go.mostlyclean): Remove gccgo, gccgo-cross, and go1.
+
+2015-04-17  Chris Manghane  <cmang@google.com>
+
+	* Make-lang.in (GO_OBJS): Add go/escape.o.
+
+2015-02-02  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64836
+	PR go/64838
+	* go-gcc.cc (Gcc_backend::type_size): Change return type to
+	int64_t.
+	(Gcc_backend::type_alignment): Likewise.
+	(Gcc_backend::type_field_alignment): Likewise.
+	(Gcc_backend::type_field_offset): Likewise.
+	(Gcc_backend::implicit_variable): Change alignment parameter type
+	to int64_t.
+
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
+	PR go/63565
+	* gccgo.texi (Invoking gccgo): Mention that Go programs should not
+	be stripped.
+
+	* gccgo.texi (C Interoperability): Mention that people should use
+	cgo.
+
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64595
+	* go-lang.c (go_langhook_init_options_struct): Set default
+	debug_info_level.
+	(go_langhook_post_options): If debug_info_level is still the
+	default, make sure write_symbols is set.
+	* gccgo.texi (Invoking gccgo): Document that -g1 is the default.
+
+2015-01-16  Richard Henderson  <rth@redhat.com>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Add chain_expr argument.
+	(Gcc_backend::static_chain_variable): New method.
+
 2015-01-09  Ian Lance Taylor  <iant@google.com>
 
 	* config-lang.in (lang_dirs): Define.

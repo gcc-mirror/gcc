@@ -6,7 +6,12 @@
 /* { dg-do compile }  */
 /* { dg-options "-O2 -mpretend-cmove" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
-/* { dg-final { scan-assembler-times "div0s" 25 } } */
+/* { dg-final { scan-assembler-times "div0s" 32 } } */
 /* { dg-final { scan-assembler-not "tst" } } */
+/* { dg-final { scan-assembler-not "not\t" } }  */
+/* { dg-final { scan-assembler-not "nott" } }  */
+
+/* { dg-final { scan-assembler-times "negc" 9 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "movrt" 9 { target { sh2a } } } }  */
 
 #include "pr52933-1.c"

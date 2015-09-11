@@ -1,3 +1,74 @@
+2015-08-24  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* iconv.m4 (AM_ICONV_LINK): Use in-tree libiconv when present.
+
+2015-07-24  Micahel Darling  <darlingm@gmail.com>
+
+	PR other/66259
+	* gettext.m4: Reflects renaming of configure.in to configure.ac
+	* po.m4: Likewise
+	* stdint.m4: Likewise
+	* tcl.m4: Likewise
+
+2015-07-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* zlib.m4: Sync with binutils-gdb.
+
+2015-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* dfp.m4 (enable_decimal_float): Also set to yes for
+	i?86*-*-elfiamcu target.
+
+2015-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/66304
+	* warnings.m4 (ACX_PROG_CXX_WARNING_OPTS)
+	(ACX_PROG_CXX_WARNINGS_ARE_ERRORS)
+	(ACX_PROG_CXX_WARNING_ALMOST_PEDANTIC): New.
+	(ACX_PROG_CC_WARNING_OPTS, ACX_PROG_CC_WARNING_ALMOST_PEDANTIC)
+	(ACX_PROG_CC_WARNINGS_ARE_ERRORS): Push into C language context.
+
+2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sjlj.m4: New file.
+
+2015-05-04  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bitfields.m4: Change int to long long, and use bitfields of
+	width 1 instead of 0.
+
+2015-05-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bitfields.m4: New file.
+
+2015-04-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bootstrap-mpx.mk: New file.
+
+2015-04-10  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* mh-darwin: Only apply -mdynamic-no-pic for m32 Darwin when the
+	compiler in use supports -mno-dynamic-no-pic.
+	* picflag.m4: Only append -mno-dynamic-no-pic for Darwin when
+	-mdynamic-no-pic is present in CFLAGS.
+
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* picflag.m4: Append -mno-dynamic-no-pic for Darwin.
+
+2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/65537
+	* bootstrap-lto-noplugin.mk: New build configuration.
+
+2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* elf.m4 (ACX_ELF_TARGET_IFELSE): nvptx-*-none isn't ELF.
+
 2014-11-17  Bob Dunlop  <bob.dunlop@xyzzy.org.uk>
 
 	* mt-ospace (CFLAGS_FOR_TARGET): Append -g -Os rather than
@@ -12,6 +83,10 @@
 2014-11-13  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* target-posix: New file.
+
+2014-11-11  Tobias Burnus  <burnus@net-b.de>
+
+	* cloog.m4: Remove.
 
 2014-10-27  Tom Tromey  <tromey@redhat.com>
 

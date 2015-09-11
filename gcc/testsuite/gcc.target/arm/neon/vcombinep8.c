@@ -17,4 +17,3 @@ void test_vcombinep8 (void)
   out_poly8x16_t = vcombine_p8 (arg0_poly8x8_t, arg1_poly8x8_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

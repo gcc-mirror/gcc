@@ -12,4 +12,3 @@ t_vqdmulhq_laneq_s16 (int16x8_t a, int16x8_t b)
 }
 
 /* { dg-final { scan-assembler-times "sqdmulh\[ \t\]+\[vV\]\[0-9\]+\.8\[hH\], ?\[vV\]\[0-9\]+\.8\[hH\], ?\[vV\]\[0-9\]+\.\[hH\]\\\[0\\\]\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

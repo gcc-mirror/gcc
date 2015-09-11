@@ -20,5 +20,3 @@ void bah() {foh(&r.s); }
 
 /* { dg-final { scan-ipa-dump "Discovered a virtual call to a known target.*S::xyzzy" "cp"  } } */
 /* { dg-final { scan-tree-dump-times "OBJ_TYPE_REF" 0 "optimized"} } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

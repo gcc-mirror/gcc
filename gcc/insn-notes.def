@@ -87,4 +87,8 @@ INSN_NOTE (CFI)
    label that should be emitted.  */
 INSN_NOTE (CFI_LABEL)
 
+/* This note indicates that the function context must be updated if
+   the Setjmp/Longjmp exception mechanism is used.  */
+INSN_NOTE (UPDATE_SJLJ_CONTEXT)
+
 #undef INSN_NOTE

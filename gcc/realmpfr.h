@@ -23,7 +23,6 @@
 
 #include <mpfr.h>
 #include <mpc.h>
-#include "real.h"
 
 /* Convert between MPFR and REAL_VALUE_TYPE.  The caller is
    responsible for initializing and clearing the MPFR parameter.  */

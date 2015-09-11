@@ -39,4 +39,3 @@ bar (int *a, int i)
 
 /* { dg-final { scan-tree-dump-times "GOMP_parallel_loop_dynamic_start" 4 "ompexp" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "GOMP_parallel_loop_guided_start" 4 "ompexp" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "ompexp" } } */

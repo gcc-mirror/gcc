@@ -33,4 +33,3 @@ main (void)
 
 /* { dg-final { scan-tree-dump-not "% 2123" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "0 / " "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,6 @@
 */
 
 
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,7 +54,7 @@
         va_copy(args, args_p);
         buf[0] = '\n';
         vsnprintf(buf + 1, sizeof(buf) - 2,
-                  MESSAGE_TABLE_NAME[ msgCode ], args);
+            MESSAGE_TABLE_NAME[ msgCode ], args);
         strcat(buf, "\n");
         va_end(args);
         fputs(buf, file);

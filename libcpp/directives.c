@@ -346,7 +346,7 @@ prepare_directive_trad (cpp_reader *pfile)
 
       if (no_expand)
 	pfile->state.prevent_expansion++;
-      _cpp_scan_out_logical_line (pfile, NULL);
+      _cpp_scan_out_logical_line (pfile, NULL, false);
       if (no_expand)
 	pfile->state.prevent_expansion--;
 
@@ -911,8 +911,8 @@ strtolinenum (const uchar *str, size_t len, linenum_type *nump, bool *wrapped)
 static void
 do_line (cpp_reader *pfile)
 {
-  const struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  struct line_maps *line_table = pfile->line_table;
+  const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
 
   /* skip_rest_of_line() may cause line table to be realloc()ed so note down
      sysp right now.  */
@@ -965,6 +965,7 @@ do_line (cpp_reader *pfile)
   skip_rest_of_line (pfile);
   _cpp_do_file_change (pfile, LC_RENAME_VERBATIM, new_file, new_lineno,
 		       map_sysp);
+  line_table->seen_line_directive = true;
 }
 
 /* Interpret the # 44 "file" [flags] notation, which has slightly
@@ -973,8 +974,8 @@ do_line (cpp_reader *pfile)
 static void
 do_linemarker (cpp_reader *pfile)
 {
-  const struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  struct line_maps *line_table = pfile->line_table;
+  const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   const cpp_token *token;
   const char *new_file = ORDINARY_MAP_FILE_NAME (map);
   linenum_type new_lineno;
@@ -1052,6 +1053,7 @@ do_linemarker (cpp_reader *pfile)
   pfile->line_table->highest_location--;
 
   _cpp_do_file_change (pfile, reason, new_file, new_lineno, new_sysp);
+  line_table->seen_line_directive = true;
 }
 
 /* Arrange the file_change callback.  pfile->line has changed to
@@ -1063,15 +1065,20 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 		     const char *to_file, linenum_type file_line,
 		     unsigned int sysp)
 {
+  linemap_assert (reason != LC_ENTER_MACRO);
   const struct line_map *map = linemap_add (pfile->line_table, reason, sysp,
 					    to_file, file_line);
+  const line_map_ordinary *ord_map = NULL;
   if (map != NULL)
-    linemap_line_start (pfile->line_table,
-			ORDINARY_MAP_STARTING_LINE_NUMBER (map),
-			127);
+    {
+      ord_map = linemap_check_ordinary (map);
+      linemap_line_start (pfile->line_table,
+			  ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map),
+			  127);
+    }
 
   if (pfile->cb.file_change)
-    pfile->cb.file_change (pfile, map);
+    pfile->cb.file_change (pfile, ord_map);
 }
 
 /* Report a warning or error detected by the program we are
@@ -2036,23 +2043,16 @@ do_elif (cpp_reader *pfile)
 	}
       ifs->type = T_ELIF;
 
-      if (! ifs->was_skipping)
+      /* See DR#412: "Only the first group whose control condition
+	 evaluates to true (nonzero) is processed; any following groups
+	 are skipped and their controlling directives are processed as
+	 if they were in a group that is skipped."  */
+      if (ifs->skip_elses)
+	pfile->state.skipping = 1;
+      else
 	{
-	  bool value;
-	  /* The standard mandates that the expression be parsed even
-	     if we are skipping elses at this point -- the lexical
-	     restrictions on #elif only apply to skipped groups, but
-	     this group is not being skipped.  Temporarily set
-	     skipping to false to get lexer warnings.  */
-	  pfile->state.skipping = 0;
-	  value = _cpp_parse_expr (pfile, false);
-	  if (ifs->skip_elses)
-	    pfile->state.skipping = 1;
-	  else
-	    {
-	      pfile->state.skipping = ! value;
-	      ifs->skip_elses = value;
-	    }
+	  pfile->state.skipping = ! _cpp_parse_expr (pfile, false);
+	  ifs->skip_elses = ! pfile->state.skipping;
 	}
 
       /* Invalidate any controlling macro.  */

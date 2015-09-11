@@ -22,7 +22,7 @@
    efficiently.
 
    This program should be compiled by a c++ compiler.  If it's
-   compiled with with -DTILEPRO, it generates the multiply table for
+   compiled with -DTILEPRO, it generates the multiply table for
    TILEPro; otherwise it generates the multiply table for TILE-Gx.
    Running the program produces the table in stdout.
 
@@ -1255,25 +1255,11 @@ main ()
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
-  printf ("#include \"symtab.h\"\n");
-  printf ("#include \"hashtab.h\"\n");
-  printf ("#include \"hash-set.h\"\n");
-  printf ("#include \"vec.h\"\n");
-  printf ("#include \"machmode.h\"\n");
-  printf ("#include \"tm.h\"\n");
-  printf ("#include \"hard-reg-set.h\"\n");
-  printf ("#include \"input.h\"\n");
-  printf ("#include \"function.h\"\n");
+  printf ("#include \"backend.h\"\n");
+  printf ("#include \"tree.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"flags.h\"\n");
-  printf ("#include \"statistics.h\"\n");
-  printf ("#include \"double-int.h\"\n");
-  printf ("#include \"real.h\"\n");
-  printf ("#include \"fixed-value.h\"\n");
   printf ("#include \"alias.h\"\n");
-  printf ("#include \"wide-int.h\"\n");
-  printf ("#include \"inchash.h\"\n");
-  printf ("#include \"tree.h\"\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"expmed.h\"\n");
   printf ("#include \"dojump.h\"\n");

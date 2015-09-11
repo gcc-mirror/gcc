@@ -71,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _ForwardIterator __cur = __result;
 	  __try
 	    {
-	      for (; __first != __last; ++__first, ++__cur)
+	      for (; __first != __last; ++__first, (void)++__cur)
 		std::_Construct(std::__addressof(*__cur), *__first);
 	      return __cur;
 	    }
@@ -263,7 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __try
 	{
 	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __first != __last; ++__first, ++__cur)
+	  for (; __first != __last; ++__first, (void)++__cur)
 	    __traits::construct(__alloc, std::__addressof(*__cur), *__first);
 	  return __cur;
 	}

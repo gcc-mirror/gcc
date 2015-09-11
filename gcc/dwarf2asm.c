@@ -23,16 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "flags.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "real.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "varasm.h"
@@ -41,8 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "dwarf2asm.h"
 #include "dwarf2.h"
-#include "hash-map.h"
-#include "ggc.h"
 #include "tm_p.h"
 
 
@@ -159,6 +148,7 @@ dw2_asm_output_delta (int size, const char *lab1, const char *lab2,
   va_end (ap);
 }
 
+#ifdef ASM_OUTPUT_DWARF_VMS_DELTA
 /* Output the difference between two symbols in instruction units
    in a given size.  */
 
@@ -171,11 +161,6 @@ dw2_asm_output_vms_delta (int size ATTRIBUTE_UNUSED,
 
   va_start (ap, comment);
 
-#ifndef ASM_OUTPUT_DWARF_VMS_DELTA
-  /* VMS Delta is only special on ia64-vms, but this function also gets
-     called on alpha-vms so it has to do something sane.  */
-  dw2_asm_output_delta (size, lab1, lab2, comment);
-#else
   ASM_OUTPUT_DWARF_VMS_DELTA (asm_out_file, size, lab1, lab2);
   if (flag_debug_asm && comment)
     {
@@ -183,10 +168,10 @@ dw2_asm_output_vms_delta (int size ATTRIBUTE_UNUSED,
       vfprintf (asm_out_file, comment, ap);
     }
   fputc ('\n', asm_out_file);
-#endif
 
   va_end (ap);
 }
+#endif
 
 /* Output a section-relative reference to a LABEL, which was placed in
    BASE.  In general this can only be done for debugging symbols.
@@ -935,9 +920,9 @@ dw2_output_indirect_constants (void)
        iter != indirect_pool->end (); ++iter)
     temp.quick_push (*iter);
 
-    temp.qsort (compare_strings);
+  temp.qsort (compare_strings);
 
-    for (unsigned int i = 0; i < temp.length (); i++)
+  for (unsigned int i = 0; i < temp.length (); i++)
     dw2_output_indirect_constant_1 (temp[i].first, temp[i].second);
 }
 

@@ -25,4 +25,3 @@ Perl_do_sv_dump()
 }
 
 /* { dg-final { scan-tree-dump-times "ASAN_CHECK" 2 "asan1" } } */
-/* { dg-final { cleanup-tree-dump "asan1" } } */

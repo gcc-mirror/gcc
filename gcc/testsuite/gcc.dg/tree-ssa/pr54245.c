@@ -46,4 +46,3 @@ int main(void)
    take place in a smaller type than originally.  This test may be deleted
    in future when this case is handled more precisely.  */
 /* { dg-final { scan-tree-dump-times "Inserting initializer" 0 "slsr" { target { ! int16 } } } } */
-/* { dg-final { cleanup-tree-dump "slsr" } } */

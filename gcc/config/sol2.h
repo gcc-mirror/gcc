@@ -127,7 +127,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_SPEC_BASE \
 "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s %(asm_cpu)"
 
-#define ASM_PIC_SPEC " %{fpic|fpie|fPIC|fPIE:-K PIC}"
+#define ASM_PIC_SPEC " %{" FPIE_OR_FPIC_SPEC ":-K PIC}"
 
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC \

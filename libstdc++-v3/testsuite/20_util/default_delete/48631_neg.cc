@@ -26,6 +26,5 @@ struct D : B { };
 // libstdc++/48631
 D d;
 std::default_delete<B[]> db;
-typedef decltype(db(&d)) type; // { dg-error "use of deleted function" }
-// { dg-prune-output "declared" }
-// { dg-prune-output "invalid" }
+typedef decltype(db(&d)) type; // { dg-error "no match" }
+// { dg-error "no type" "" { target *-*-* } 106 }

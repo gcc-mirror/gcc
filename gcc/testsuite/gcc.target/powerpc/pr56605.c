@@ -11,4 +11,3 @@ void foo (short* __restrict sb, int* __restrict ia)
 }
 
 /* { dg-final { scan-rtl-dump-times "\\\(compare:CC \\\(subreg:SI \\\(reg:DI" 1 "loop2_doloop" } } */
-/* { dg-final { cleanup-rtl-dump "loop2_doloop" } } */

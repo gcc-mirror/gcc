@@ -9,4 +9,3 @@ void foo (int *p, int b)
 }
 
 /* { dg-final { scan-tree-dump-times "\\\*p" 1 "dse1" } } */
-/* { dg-final { cleanup-tree-dump "dse1" } } */

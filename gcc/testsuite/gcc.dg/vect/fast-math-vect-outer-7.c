@@ -20,4 +20,3 @@ void test2 (float x)
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 2 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

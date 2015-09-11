@@ -377,32 +377,20 @@ are write-only operations.
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
 #include "rtl.h"
+#include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "regs.h"
 #include "alloc-pool.h"
 #include "flags.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
-#include "sbitmap.h"
-#include "bitmap.h"
-#include "df.h"
 #include "tree-pass.h"
 #include "params.h"
 #include "cfgloop.h"
+#include "emit-rtl.h"
 
 static void *df_get_bb_info (struct dataflow *, unsigned int);
 static void df_set_bb_info (struct dataflow *, unsigned int, void *);
@@ -642,7 +630,6 @@ void
 df_finish_pass (bool verify ATTRIBUTE_UNUSED)
 {
   int i;
-  int removed = 0;
 
 #ifdef ENABLE_DF_CHECKING
   int saved_flags;
@@ -658,21 +645,15 @@ df_finish_pass (bool verify ATTRIBUTE_UNUSED)
   saved_flags = df->changeable_flags;
 #endif
 
-  for (i = 0; i < df->num_problems_defined; i++)
+  /* We iterate over problems by index as each problem removed will
+     lead to problems_in_order to be reordered.  */
+  for (i = 0; i < DF_LAST_PROBLEM_PLUS1; i++)
     {
-      struct dataflow *dflow = df->problems_in_order[i];
-      struct df_problem *problem = dflow->problem;
+      struct dataflow *dflow = df->problems_by_index[i];
 
-      if (dflow->optional_p)
-	{
-	  gcc_assert (problem->remove_problem_fun);
-	  (problem->remove_problem_fun) ();
-	  df->problems_in_order[i] = NULL;
-	  df->problems_by_index[problem->id] = NULL;
-	  removed++;
-	}
+      if (dflow && dflow->optional_p)
+	df_remove_problem (dflow);
     }
-  df->num_problems_defined -= removed;
 
   /* Clear all of the flags.  */
   df->changeable_flags = 0;
@@ -1054,10 +1035,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
       bitmap_iterator bi;
       unsigned int index;
 
-      /* Swap pending and worklist. */
-      bitmap temp = worklist;
-      worklist = pending;
-      pending = temp;
+      std::swap (pending, worklist);
 
       EXECUTE_IF_SET_IN_BITMAP (worklist, 0, index, bi)
 	{

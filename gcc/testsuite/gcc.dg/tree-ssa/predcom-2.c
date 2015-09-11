@@ -44,4 +44,3 @@ int main(void)
 
 /* Verify that both loops were transformed and unrolled.  */
 /* { dg-final { scan-tree-dump-times "Unrolling 2 times." 2 "pcom"} } */
-/* { dg-final { cleanup-tree-dump "pcom" } } */

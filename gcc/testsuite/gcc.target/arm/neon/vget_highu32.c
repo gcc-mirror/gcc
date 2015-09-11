@@ -16,4 +16,3 @@ void test_vget_highu32 (void)
   out_uint32x2_t = vget_high_u32 (arg0_uint32x4_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

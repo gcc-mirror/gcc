@@ -22,4 +22,3 @@ void f3 ()
 }
 
 // { dg-final { scan-tree-dump-times "GOMP_barrier" 2 "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

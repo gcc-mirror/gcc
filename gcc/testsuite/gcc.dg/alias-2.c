@@ -11,6 +11,6 @@ struct foo {
 int
 sub1 (long long int foobar)
 {
-  struct foo *tmp = (struct foo *) &foobar; // { dg-warning "type-punned pointer might" "" }
+  struct foo *tmp = (struct foo *) &foobar; // { dg-warning "type-punned pointer will" "" }
   return tmp->i;
 }

@@ -18,4 +18,3 @@ int test2 (void)
 
 /* { dg-final { scan-ipa-dump-not "found to be pure: test1" "pure-const" } } */
 /* { dg-final { scan-ipa-dump-not "found to be pure: test2" "pure-const" } } */
-/* { dg-final { cleanup-ipa-dump "pure-const" } } */

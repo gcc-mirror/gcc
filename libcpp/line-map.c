@@ -1,4 +1,4 @@
-/* Map logical line numbers to (source file, line number) pairs.
+/* Map (unsigned int) keys to (source file, line, column) triples.
    Copyright (C) 2001-2015 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -26,25 +26,37 @@ along with this program; see the file COPYING3.  If not see
 #include "internal.h"
 #include "hashtab.h"
 
-static void trace_include (const struct line_maps *, const struct line_map *);
-static const struct line_map * linemap_ordinary_map_lookup (struct line_maps *,
-							    source_location);
-static const struct line_map* linemap_macro_map_lookup (struct line_maps *,
-							source_location);
+/* Do not track column numbers higher than this one.  As a result, the
+   range of column_bits is [7, 18] (or 0 if column numbers are
+   disabled).  */
+const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 17);
+
+/* Do not track column numbers if locations get higher than this.  */
+const source_location LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
+
+/* Highest possible source location encoded within an ordinary or
+   macro map.  */
+const source_location LINE_MAP_MAX_SOURCE_LOCATION = 0x70000000;
+
+static void trace_include (const struct line_maps *, const line_map_ordinary *);
+static const line_map_ordinary * linemap_ordinary_map_lookup (struct line_maps *,
+							      source_location);
+static const line_map_macro* linemap_macro_map_lookup (struct line_maps *,
+						       source_location);
 static source_location linemap_macro_map_loc_to_def_point
-(const struct line_map*, source_location);
+(const line_map_macro *, source_location);
 static source_location linemap_macro_map_loc_unwind_toward_spelling
-(const struct line_map*, source_location);
+(const line_map_macro *, source_location);
 static source_location linemap_macro_map_loc_to_exp_point
-(const struct line_map*, source_location);
+(const line_map_macro *, source_location);
 static source_location linemap_macro_loc_to_spelling_point
-(struct line_maps *, source_location, const struct line_map **);
+(struct line_maps *, source_location, const line_map_ordinary **);
 static source_location linemap_macro_loc_to_def_point (struct line_maps *,
 						       source_location,
-						       const struct line_map **);
+						       const line_map_ordinary **);
 static source_location linemap_macro_loc_to_exp_point (struct line_maps *,
 						       source_location,
-						       const struct line_map **);
+						       const line_map_ordinary **);
 
 /* Counters defined in macro.c.  */
 extern unsigned num_expanded_macros_counter;
@@ -191,7 +203,7 @@ linemap_init (struct line_maps *set,
 void
 linemap_check_files_exited (struct line_maps *set)
 {
-  struct line_map *map;
+  const line_map_ordinary *map;
   /* Depending upon whether we are handling preprocessed input or
      not, this can be a user error or an ICE.  */
   for (map = LINEMAPS_LAST_ORDINARY_MAP (set);
@@ -227,6 +239,10 @@ new_linemap (struct line_maps *set,
       line_map_round_alloc_size_func round_alloc_size =
 	set->round_alloc_size;
 
+      size_t map_size = (macro_map_p
+			 ? sizeof (line_map_macro)
+			 : sizeof (line_map_ordinary));
+
       /* We are going to execute some dance to try to reduce the
 	 overhead of the memory allocator, in case we are using the
 	 ggc-page.c one.
@@ -237,7 +253,7 @@ new_linemap (struct line_maps *set,
 
       alloc_size =
 	(2 * LINEMAPS_ALLOCATED (set, macro_map_p) +  256)
-	* sizeof (struct line_map);
+	* map_size;
 
       /* Get the actual size of memory that is going to be allocated
 	 by the allocator.  */
@@ -248,25 +264,37 @@ new_linemap (struct line_maps *set,
 	 Let's get back to the number of macro map that amounts
 	 to.  */
       LINEMAPS_ALLOCATED (set, macro_map_p) =
-	alloc_size / (sizeof (struct line_map));
+	alloc_size / map_size;
 
       /* And now let's really do the re-allocation.  */
-      LINEMAPS_MAPS (set, macro_map_p) =
-	(struct line_map *) (*reallocator)
-	(LINEMAPS_MAPS (set, macro_map_p),
-	 (LINEMAPS_ALLOCATED (set, macro_map_p)
-	  * sizeof (struct line_map)));
-
-      result =
-	&LINEMAPS_MAPS (set, macro_map_p)[LINEMAPS_USED (set, macro_map_p)];
+      if (macro_map_p)
+	{
+	  set->info_macro.maps
+	    = (line_map_macro *) (*reallocator) (set->info_macro.maps,
+						 (LINEMAPS_ALLOCATED (set, macro_map_p)
+						  * map_size));
+	  result = &set->info_macro.maps[LINEMAPS_USED (set, macro_map_p)];
+	}
+      else
+	{
+	  set->info_ordinary.maps =
+	    (line_map_ordinary *) (*reallocator) (set->info_ordinary.maps,
+						  (LINEMAPS_ALLOCATED (set, macro_map_p)
+						   * map_size));
+	  result = &set->info_ordinary.maps[LINEMAPS_USED (set, macro_map_p)];
+	}
       memset (result, 0,
 	      ((LINEMAPS_ALLOCATED (set, macro_map_p)
 		- LINEMAPS_USED (set, macro_map_p))
-	       * sizeof (struct line_map)));
+	       * map_size));
     }
   else
-    result =
-      &LINEMAPS_MAPS (set, macro_map_p)[LINEMAPS_USED (set, macro_map_p)];
+    {
+      if (macro_map_p)
+	result = &set->info_macro.maps[LINEMAPS_USED (set, macro_map_p)];
+      else
+	result = &set->info_ordinary.maps[LINEMAPS_USED (set, macro_map_p)];
+    }
 
   LINEMAPS_USED (set, macro_map_p)++;
 
@@ -291,7 +319,6 @@ const struct line_map *
 linemap_add (struct line_maps *set, enum lc_reason reason,
 	     unsigned int sysp, const char *to_file, linenum_type to_line)
 {
-  struct line_map *map;
   source_location start_location = set->highest_location + 1;
 
   linemap_assert (!(LINEMAPS_ORDINARY_USED (set)
@@ -311,7 +338,8 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
       return NULL;
     }
 
-  map = new_linemap (set, reason);
+  linemap_assert (reason != LC_ENTER_MACRO);
+  line_map_ordinary *map = linemap_check_ordinary (new_linemap (set, reason));
 
   if (to_file && *to_file == '\0' && reason != LC_RENAME_VERBATIM)
     to_file = "<stdin>";
@@ -325,7 +353,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 	 location inside the "includer" right after the #include
 	 "included", this variable points the map in use right before the
 	 #include "included", inside the same "includer" file.  */
-      struct line_map *from;
+      line_map_ordinary *from;
       bool error;
 
       if (MAIN_FILE_P (map - 1))
@@ -365,32 +393,30 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 	}
     }
 
-  linemap_assert (reason != LC_ENTER_MACRO);
-  ORDINARY_MAP_IN_SYSTEM_HEADER_P (map) = sysp;
-  MAP_START_LOCATION (map) = start_location;
-  ORDINARY_MAP_FILE_NAME (map) = to_file;
-  ORDINARY_MAP_STARTING_LINE_NUMBER (map) = to_line;
+  map->sysp = sysp;
+  map->start_location = start_location;
+  map->to_file = to_file;
+  map->to_line = to_line;
   LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
-  ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) = 0;
+  map->column_bits = 0;
   set->highest_location = start_location;
   set->highest_line = start_location;
   set->max_column_hint = 0;
 
   if (reason == LC_ENTER)
     {
-      ORDINARY_MAP_INCLUDER_FILE_INDEX (map) = 
+      map->included_from =
 	set->depth == 0 ? -1 : (int) (LINEMAPS_ORDINARY_USED (set) - 2);
       set->depth++;
       if (set->trace_includes)
 	trace_include (set, map);
     }
   else if (reason == LC_RENAME)
-    ORDINARY_MAP_INCLUDER_FILE_INDEX (map) =
-      ORDINARY_MAP_INCLUDER_FILE_INDEX (&map[-1]);
+    map->included_from = ORDINARY_MAP_INCLUDER_FILE_INDEX (&map[-1]);
   else if (reason == LC_LEAVE)
     {
       set->depth--;
-      ORDINARY_MAP_INCLUDER_FILE_INDEX (map) =
+      map->included_from =
 	ORDINARY_MAP_INCLUDER_FILE_INDEX (INCLUDED_FROM (set, map - 1));
     }
 
@@ -429,11 +455,11 @@ linemap_tracks_macro_expansion_locs_p (struct line_maps *set)
    this function cannot encode {line,column} pairs into locations of
    macro tokens anymore.  */
 
-const struct line_map *
+const line_map_macro *
 linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
 		     source_location expansion, unsigned int num_tokens)
 {
-  struct line_map *map;
+  line_map_macro *map;
   source_location start_location;
   /* Cast away extern "C" from the type of xrealloc.  */
   line_map_realloc reallocator = (set->reallocator
@@ -447,16 +473,16 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
     /* We ran out of macro map space.   */
     return NULL;
 
-  map = new_linemap (set, LC_ENTER_MACRO);
+  map = linemap_check_macro (new_linemap (set, LC_ENTER_MACRO));
 
-  MAP_START_LOCATION (map) = start_location;
-  MACRO_MAP_MACRO (map) = macro_node;
-  MACRO_MAP_NUM_MACRO_TOKENS (map) = num_tokens;
-  MACRO_MAP_LOCATIONS (map)
+  map->start_location = start_location;
+  map->macro = macro_node;
+  map->n_tokens = num_tokens;
+  map->macro_locations
     = (source_location*) reallocator (NULL,
 				      2 * num_tokens
 				      * sizeof (source_location));
-  MACRO_MAP_EXPANSION_POINT_LOCATION (map) = expansion;
+  map->expansion = expansion;
   memset (MACRO_MAP_LOCATIONS (map), 0,
 	  num_tokens * sizeof (source_location));
 
@@ -489,7 +515,7 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
    replaces.  */
 
 source_location
-linemap_add_macro_token (const struct line_map *map,
+linemap_add_macro_token (const line_map_macro *map,
 			 unsigned int token_no,
 			 source_location orig_loc,
 			 source_location orig_parm_replacement_loc)
@@ -516,7 +542,7 @@ source_location
 linemap_line_start (struct line_maps *set, linenum_type to_line,
 		    unsigned int max_column_hint)
 {
-  struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (set);
+  line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
   source_location highest = set->highest_location;
   source_location r;
   linenum_type last_line =
@@ -530,22 +556,23 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
       || (max_column_hint >= (1U << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map)))
       || (max_column_hint <= 80
 	  && ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) >= 10)
-      || (highest > 0x60000000
-	  && (set->max_column_hint || highest > 0x70000000)))
+      || (highest > LINE_MAP_MAX_LOCATION_WITH_COLS
+	  && (set->max_column_hint || highest >= LINE_MAP_MAX_SOURCE_LOCATION)))
     add_map = true;
   else
     max_column_hint = set->max_column_hint;
   if (add_map)
     {
       int column_bits;
-      if (max_column_hint > 100000 || highest > 0x60000000)
+      if (max_column_hint > LINE_MAP_MAX_COLUMN_NUMBER
+	  || highest > LINE_MAP_MAX_LOCATION_WITH_COLS)
 	{
 	  /* If the column number is ridiculous or we've allocated a huge
 	     number of source_locations, give up on column numbers. */
 	  max_column_hint = 0;
-	  if (highest > 0x70000000)
-	    return 0;
 	  column_bits = 0;
+	  if (highest > LINE_MAP_MAX_SOURCE_LOCATION)
+	    return 0;
 	}
       else
 	{
@@ -559,12 +586,13 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
       if (line_delta < 0
 	  || last_line != ORDINARY_MAP_STARTING_LINE_NUMBER (map)
 	  || SOURCE_COLUMN (map, highest) >= (1U << column_bits))
-	map = (struct line_map *) linemap_add (set, LC_RENAME,
-					       ORDINARY_MAP_IN_SYSTEM_HEADER_P
-					       (map),
-					       ORDINARY_MAP_FILE_NAME (map),
-					       to_line);
-      ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) = column_bits;
+	map = linemap_check_ordinary
+	        (const_cast <line_map *>
+		  (linemap_add (set, LC_RENAME,
+				ORDINARY_MAP_IN_SYSTEM_HEADER_P (map),
+				ORDINARY_MAP_FILE_NAME (map),
+				to_line)));
+      map->column_bits = column_bits;
       r = (MAP_START_LOCATION (map)
 	   + ((to_line - ORDINARY_MAP_STARTING_LINE_NUMBER (map))
 	      << column_bits));
@@ -600,14 +628,15 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
 
   if (to_column >= set->max_column_hint)
     {
-      if (r >= 0xC000000 || to_column > 100000)
+      if (r > LINE_MAP_MAX_LOCATION_WITH_COLS
+	  || to_column > LINE_MAP_MAX_COLUMN_NUMBER)
 	{
 	  /* Running low on source_locations - disable column numbers.  */
 	  return r;
 	}
       else
 	{
-	  struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (set);
+	  line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
 	  r = linemap_line_start (set, SOURCE_LINE (map, r), to_column + 50);
 	}
     }
@@ -621,16 +650,16 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
    column.  */
 
 source_location
-linemap_position_for_line_and_column (const struct line_map *map,
+linemap_position_for_line_and_column (const line_map_ordinary *ord_map,
 				      linenum_type line,
 				      unsigned column)
 {
-  linemap_assert (ORDINARY_MAP_STARTING_LINE_NUMBER (map) <= line);
+  linemap_assert (ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map) <= line);
 
-  return (MAP_START_LOCATION (map)
-	  + ((line - ORDINARY_MAP_STARTING_LINE_NUMBER (map))
-	     << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map))
-	  + (column & ((1 << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map)) - 1)));
+  return (MAP_START_LOCATION (ord_map)
+	  + ((line - ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map))
+	     << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (ord_map))
+	  + (column & ((1 << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (ord_map)) - 1)));
 }
 
 /* Encode and return a source_location starting from location LOC and
@@ -642,7 +671,7 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
 				     source_location loc,
 				     unsigned int offset)
 {
-  const struct line_map * map = NULL;
+  const line_map_ordinary * map = NULL;
 
   /* This function does not support virtual locations yet.  */
   if (linemap_assert_fails
@@ -659,19 +688,22 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
   /* We find the real location and shift it.  */
   loc = linemap_resolve_location (set, loc, LRK_SPELLING_LOCATION, &map);
   /* The new location (loc + offset) should be higher than the first
-     location encoded by MAP.  */
-  if (linemap_assert_fails (MAP_START_LOCATION (map) < loc + offset))
+     location encoded by MAP.
+     FIXME: We used to linemap_assert_fails here and in the if below,
+     but that led to PR66415.  So give up for now.  */
+  if ((MAP_START_LOCATION (map) >= loc + offset))
     return loc;
 
   /* If MAP is not the last line map of its set, then the new location
      (loc + offset) should be less than the first location encoded by
      the next line map of the set.  */
   if (map != LINEMAPS_LAST_ORDINARY_MAP (set))
-    if (linemap_assert_fails (loc + offset < MAP_START_LOCATION (&map[1])))
+    if ((loc + offset >= MAP_START_LOCATION (&map[1])))
       return loc;
 
   offset += SOURCE_COLUMN (map, loc);
-  if (linemap_assert_fails (offset < (1u << map->d.ordinary.column_bits)))
+  if (linemap_assert_fails
+        (offset < (1u << map->column_bits)))
     return loc;
 
   source_location r = 
@@ -703,11 +735,11 @@ linemap_lookup (struct line_maps *set, source_location line)
    monotonic increasing, and so the list is sorted and we can use a
    binary search.  */
 
-static const struct line_map *
+static const line_map_ordinary *
 linemap_ordinary_map_lookup (struct line_maps *set, source_location line)
 {
   unsigned int md, mn, mx;
-  const struct line_map *cached, *result;
+  const line_map_ordinary *cached, *result;
 
   if (IS_ADHOC_LOC (line))
     line = set->location_adhoc_data_map.data[line & MAX_SOURCE_LOCATION].locus;
@@ -751,11 +783,11 @@ linemap_ordinary_map_lookup (struct line_maps *set, source_location line)
    monotonic decreasing, and so the list is sorted and we can use a
    binary search.  */
 
-static const struct line_map*
+static const line_map_macro *
 linemap_macro_map_lookup (struct line_maps *set, source_location line)
 {
   unsigned int md, mn, mx;
-  const struct line_map *cached, *result;
+  const struct line_map_macro *cached, *result;
 
   if (IS_ADHOC_LOC (line))
     line = set->location_adhoc_data_map.data[line & MAX_SOURCE_LOCATION].locus;
@@ -811,7 +843,7 @@ linemap_macro_expansion_map_p (const struct line_map *map)
    line-map.h to understand what a macro expansion point is.  */
 
 static source_location
-linemap_macro_map_loc_to_exp_point (const struct line_map *map,
+linemap_macro_map_loc_to_exp_point (const line_map_macro *map,
 				    source_location location ATTRIBUTE_UNUSED)
 {
   linemap_assert (linemap_macro_expansion_map_p (map)
@@ -831,7 +863,7 @@ linemap_macro_map_loc_to_exp_point (const struct line_map *map,
    macro.  */
 
 static source_location
-linemap_macro_map_loc_to_def_point (const struct line_map *map,
+linemap_macro_map_loc_to_def_point (const line_map_macro *map,
 				    source_location location)
 {
   unsigned token_no;
@@ -855,7 +887,7 @@ linemap_macro_map_loc_to_def_point (const struct line_map *map,
    In other words, this returns the xI location presented in the
    comments of line_map_macro above.  */
 source_location
-linemap_macro_map_loc_unwind_toward_spelling (const struct line_map* map,
+linemap_macro_map_loc_unwind_toward_spelling (const line_map_macro* map,
 					      source_location location)
 {
   unsigned token_no;
@@ -882,7 +914,7 @@ int
 linemap_get_expansion_line (struct line_maps *set,
 			    source_location location)
 {
-  const struct line_map *map = NULL;
+  const line_map_ordinary *map = NULL;
 
   if (IS_ADHOC_LOC (location))
     location = set->location_adhoc_data_map.data[location
@@ -910,7 +942,7 @@ const char*
 linemap_get_expansion_filename (struct line_maps *set,
 				source_location location)
 {
-  const struct line_map *map = NULL;
+  const struct line_map_ordinary *map = NULL;
 
   if (IS_ADHOC_LOC (location))
     location = set->location_adhoc_data_map.data[location
@@ -928,7 +960,7 @@ linemap_get_expansion_filename (struct line_maps *set,
 /* Return the name of the macro associated to MACRO_MAP.  */
 
 const char*
-linemap_map_get_macro_name (const struct line_map* macro_map)
+linemap_map_get_macro_name (const line_map_macro *macro_map)
 {
   linemap_assert (macro_map && linemap_macro_expansion_map_p (macro_map));
   return (const char*) NODE_NAME (MACRO_MAP_MACRO (macro_map));
@@ -965,16 +997,18 @@ linemap_location_in_system_header_p (struct line_maps *set,
 	{
 	  if (!linemap_macro_expansion_map_p (map))
 	    /* It's a normal token.  */
-	    return LINEMAP_SYSP (map);
+	    return LINEMAP_SYSP (linemap_check_ordinary (map));
 	  else
 	    {
+	      const line_map_macro *macro_map = linemap_check_macro (map);
+
 	      /* It's a token resulting from a macro expansion.  */
 	      source_location loc =
-		linemap_macro_map_loc_unwind_toward_spelling (map, location);
+		linemap_macro_map_loc_unwind_toward_spelling (macro_map, location);
 	      if (loc < RESERVED_LOCATION_COUNT)
 		/* This token might come from a built-in macro.  Let's
 		   look at where that macro got expanded.  */
-		location = linemap_macro_map_loc_to_exp_point (map, location);
+		location = linemap_macro_map_loc_to_exp_point (macro_map, location);
 	      else
 		location = loc;
 	    }
@@ -1025,12 +1059,14 @@ first_map_in_common_1 (struct line_maps *set,
     {
       if (MAP_START_LOCATION (map0) < MAP_START_LOCATION (map1))
 	{
-	  l0 = linemap_macro_map_loc_to_exp_point (map0, l0);
+	  l0 = linemap_macro_map_loc_to_exp_point (linemap_check_macro (map0),
+						   l0);
 	  map0 = linemap_lookup (set, l0);
 	}
       else
 	{
-	  l1 = linemap_macro_map_loc_to_exp_point (map1, l1);
+	  l1 = linemap_macro_map_loc_to_exp_point (linemap_check_macro (map1),
+						   l1);
 	  map1 = linemap_lookup (set, l1);
 	}
     }
@@ -1120,7 +1156,7 @@ linemap_compare_locations (struct line_maps *set,
 /* Print an include trace, for e.g. the -H option of the preprocessor.  */
 
 static void
-trace_include (const struct line_maps *set, const struct line_map *map)
+trace_include (const struct line_maps *set, const line_map_ordinary *map)
 {
   unsigned int i = set->depth;
 
@@ -1138,7 +1174,7 @@ trace_include (const struct line_maps *set, const struct line_map *map)
 static source_location
 linemap_macro_loc_to_spelling_point (struct line_maps *set,
 				     source_location location,
-				     const struct line_map **original_map)
+				     const line_map_ordinary **original_map)
 {
   struct line_map *map;
 
@@ -1150,16 +1186,18 @@ linemap_macro_loc_to_spelling_point (struct line_maps *set,
 
   while (true)
     {
-      map = (struct line_map*) linemap_lookup (set, location);
+      map = const_cast <line_map *> (linemap_lookup (set, location));
       if (!linemap_macro_expansion_map_p (map))
 	break;
 
-      location =
-	linemap_macro_map_loc_unwind_toward_spelling (map, location);
+      location
+	= linemap_macro_map_loc_unwind_toward_spelling
+	    (linemap_check_macro (map),
+	     location);
     }
 
   if (original_map)
-    *original_map = map;
+    *original_map = linemap_check_ordinary (map);
   return location;
 }
 
@@ -1176,7 +1214,7 @@ linemap_macro_loc_to_spelling_point (struct line_maps *set,
 static source_location
 linemap_macro_loc_to_def_point (struct line_maps *set,
 				source_location location,
-				const struct line_map **original_map)
+				const line_map_ordinary **original_map)
 {
   struct line_map *map;
 
@@ -1188,16 +1226,17 @@ linemap_macro_loc_to_def_point (struct line_maps *set,
 
   while (true)
     {
-      map = (struct line_map*) linemap_lookup (set, location);
+      map = const_cast <line_map *> (linemap_lookup (set, location));
       if (!linemap_macro_expansion_map_p (map))
 	break;
 
       location =
-	linemap_macro_map_loc_to_def_point (map, location);
+	linemap_macro_map_loc_to_def_point (linemap_check_macro (map),
+					    location);
     }
 
   if (original_map)
-    *original_map = map;
+    *original_map = linemap_check_ordinary (map);
   return location;
 }
 
@@ -1218,7 +1257,7 @@ linemap_macro_loc_to_def_point (struct line_maps *set,
 static source_location
 linemap_macro_loc_to_exp_point (struct line_maps *set,
 				source_location location,
-				const struct line_map **original_map)
+				const line_map_ordinary **original_map)
 {
   struct line_map *map;
 
@@ -1230,14 +1269,15 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
 
   while (true)
     {
-      map = (struct line_map*) linemap_lookup (set, location);
+      map = const_cast <line_map *> (linemap_lookup (set, location));
       if (!linemap_macro_expansion_map_p (map))
 	break;
-      location = linemap_macro_map_loc_to_exp_point (map, location);
+      location = linemap_macro_map_loc_to_exp_point (linemap_check_macro (map),
+						     location);
     }
 
   if (original_map)
-    *original_map = map;
+    *original_map = linemap_check_ordinary (map);
   return location;
 }
 
@@ -1293,7 +1333,7 @@ source_location
 linemap_resolve_location (struct line_maps *set,
 			  source_location loc,
 			  enum location_resolution_kind lrk,
-			  const struct line_map **map)
+			  const line_map_ordinary **map)
 {
   if (IS_ADHOC_LOC (loc))
     loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
@@ -1343,18 +1383,19 @@ linemap_unwind_toward_expansion (struct line_maps *set,
 				 const struct line_map **map)
 {
   source_location resolved_location;
+  const line_map_macro *macro_map = linemap_check_macro (*map);
   const struct line_map *resolved_map;
 
   if (IS_ADHOC_LOC (loc))
     loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
 
   resolved_location =
-    linemap_macro_map_loc_unwind_toward_spelling (*map, loc);
+    linemap_macro_map_loc_unwind_toward_spelling (macro_map, loc);
   resolved_map = linemap_lookup (set, resolved_location);
 
   if (!linemap_macro_expansion_map_p (resolved_map))
     {
-      resolved_location = linemap_macro_map_loc_to_exp_point (*map, loc);
+      resolved_location = linemap_macro_map_loc_to_exp_point (macro_map, loc);
       resolved_map = linemap_lookup (set, resolved_location);
     }
 
@@ -1382,7 +1423,8 @@ linemap_unwind_to_first_non_reserved_loc (struct line_maps *set,
 					  const struct line_map **map)
 {
   source_location resolved_loc;
-  const struct line_map *map0 = NULL, *map1 = NULL;
+  const struct line_map *map0 = NULL;
+  const line_map_ordinary *map1 = NULL;
 
   if (IS_ADHOC_LOC (loc))
     loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
@@ -1453,10 +1495,12 @@ linemap_expand_location (struct line_maps *set,
       if (linemap_location_from_macro_expansion_p (set, loc))
 	abort ();
 
-      xloc.file = LINEMAP_FILE (map);
-      xloc.line = SOURCE_LINE (map, loc);
-      xloc.column = SOURCE_COLUMN (map, loc);
-      xloc.sysp = LINEMAP_SYSP (map) != 0;
+      const line_map_ordinary *ord_map = linemap_check_ordinary (map);
+
+      xloc.file = LINEMAP_FILE (ord_map);
+      xloc.line = SOURCE_LINE (ord_map, loc);
+      xloc.column = SOURCE_COLUMN (ord_map, loc);
+      xloc.sysp = LINEMAP_SYSP (ord_map) != 0;
     }
 
   return xloc;
@@ -1474,7 +1518,7 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
       = { "LC_ENTER", "LC_LEAVE", "LC_RENAME", "LC_RENAME_VERBATIM",
 	  "LC_ENTER_MACRO" };
   const char *reason;
-  struct line_map *map;
+  const line_map *map;
 
   if (stream == NULL)
     stream = stderr;
@@ -1488,26 +1532,32 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
 
   fprintf (stream, "Map #%u [%p] - LOC: %u - REASON: %s - SYSP: %s\n",
 	   ix, (void *) map, map->start_location, reason,
-	   (!is_macro && ORDINARY_MAP_IN_SYSTEM_HEADER_P (map)) ? "yes" : "no");
+	   ((!is_macro
+	     && ORDINARY_MAP_IN_SYSTEM_HEADER_P (linemap_check_ordinary (map)))
+	    ? "yes" : "no"));
   if (!is_macro)
     {
+      const line_map_ordinary *ord_map = linemap_check_ordinary (map);
       unsigned includer_ix;
-      struct line_map *includer_map;
+      const line_map_ordinary *includer_map;
 
-      includer_ix = ORDINARY_MAP_INCLUDER_FILE_INDEX (map);
+      includer_ix = ORDINARY_MAP_INCLUDER_FILE_INDEX (ord_map);
       includer_map = includer_ix < LINEMAPS_ORDINARY_USED (set)
 		     ? LINEMAPS_ORDINARY_MAP_AT (set, includer_ix)
 		     : NULL;
 
-      fprintf (stream, "File: %s:%d\n", ORDINARY_MAP_FILE_NAME (map),
-	       ORDINARY_MAP_STARTING_LINE_NUMBER (map));
+      fprintf (stream, "File: %s:%d\n", ORDINARY_MAP_FILE_NAME (ord_map),
+	       ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map));
       fprintf (stream, "Included from: [%d] %s\n", includer_ix,
 	       includer_map ? ORDINARY_MAP_FILE_NAME (includer_map) : "None");
     }
   else
-    fprintf (stream, "Macro: %s (%u tokens)\n",
-	     linemap_map_get_macro_name (map),
-	     MACRO_MAP_NUM_MACRO_TOKENS (map));
+    {
+      const line_map_macro *macro_map = linemap_check_macro (map);
+      fprintf (stream, "Macro: %s (%u tokens)\n",
+	       linemap_map_get_macro_name (macro_map),
+	       MACRO_MAP_NUM_MACRO_TOKENS (macro_map));
+    }
 
   fprintf (stream, "\n");
 }
@@ -1521,7 +1571,7 @@ linemap_dump_location (struct line_maps *set,
 		       source_location loc,
 		       FILE *stream)
 {
-  const struct line_map *map;
+  const line_map_ordinary *map;
   source_location location;
   const char *path = "", *from = "";
   int l = -1, c = -1, s = -1, e = -1;
@@ -1578,7 +1628,7 @@ linemap_get_file_highest_location (struct line_maps *set,
   int i;
   for (i = set->info_ordinary.used - 1; i >= 0; --i)
     {
-      const char *fname = set->info_ordinary.maps[i].d.ordinary.to_file;
+      const char *fname = set->info_ordinary.maps[i].to_file;
       if (fname && !filename_cmp (fname, file_name))
 	break;
     }
@@ -1610,16 +1660,16 @@ linemap_get_statistics (struct line_maps *set,
     macro_maps_allocated_size, macro_maps_used_size,
     macro_maps_locations_size = 0, duplicated_macro_maps_locations_size = 0;
 
-  struct line_map *cur_map;
+  const line_map_macro *cur_map;
 
   ordinary_maps_allocated_size =
-    LINEMAPS_ORDINARY_ALLOCATED (set) * sizeof (struct line_map);
+    LINEMAPS_ORDINARY_ALLOCATED (set) * sizeof (struct line_map_ordinary);
 
   ordinary_maps_used_size =
-    LINEMAPS_ORDINARY_USED (set) * sizeof (struct line_map);
+    LINEMAPS_ORDINARY_USED (set) * sizeof (struct line_map_ordinary);
 
   macro_maps_allocated_size =
-    LINEMAPS_MACRO_ALLOCATED (set) * sizeof (struct line_map);
+    LINEMAPS_MACRO_ALLOCATED (set) * sizeof (struct line_map_macro);
 
   for (cur_map = LINEMAPS_MACRO_MAPS (set);
        cur_map && cur_map <= LINEMAPS_LAST_MACRO_MAP (set);
@@ -1642,7 +1692,7 @@ linemap_get_statistics (struct line_maps *set,
     }
 
   macro_maps_used_size =
-    LINEMAPS_MACRO_USED (set) * sizeof (struct line_map);
+    LINEMAPS_MACRO_USED (set) * sizeof (struct line_map_macro);
 
   s->num_ordinary_maps_allocated = LINEMAPS_ORDINARY_ALLOCATED (set);
   s->num_ordinary_maps_used = LINEMAPS_ORDINARY_USED (set);

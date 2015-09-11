@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -248,7 +248,7 @@ package Sem_Eval is
    --  Determines whether a subtype fits the definition of an Ada static
    --  subtype as given in (RM 4.9(26)) with the additional check that neither
    --  bound raises constraint error (meaning that Expr_Value[_R|S] can be used
-   --  on these bounds. Important note: This check does not include the Ada
+   --  on these bounds). Important note: This check does not include the Ada
    --  2012 case of a non-static predicate which results in an otherwise static
    --  subtype being non-static. Such a subtype will return True for this test,
    --  so if the distinction is important, the caller must deal with this.

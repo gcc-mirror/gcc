@@ -21,17 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "flags.h"
 #include "intl.h"
 #include "opts.h"
@@ -43,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpp.h"
 #include "diagnostic.h"	/* For global_dc.  */
 #include "tm.h"
+#include "langhooks.h"
 
 gfc_option_t gfc_option;
 
@@ -114,7 +107,7 @@ gfc_init_options (unsigned int decoded_options_count,
      enabled by default in Fortran.  Ideally, we should express this
      in .opt, but that is not supported yet.  */
   if (!global_options_set.x_cpp_warn_missing_include_dirs)
-    global_options.x_cpp_warn_missing_include_dirs = 1;;
+    global_options.x_cpp_warn_missing_include_dirs = 1;
 
   set_default_std_flags ();
 
@@ -300,7 +293,7 @@ gfc_post_options (const char **pfilename)
       if (gfc_current_form == FORM_UNKNOWN)
 	{
 	  gfc_current_form = FORM_FREE;
-	  gfc_warning_now ("Reading file %qs as free form", 
+	  gfc_warning_now (0, "Reading file %qs as free form", 
 			   (filename[0] == '\0') ? "<stdin>" : filename);
 	}
     }
@@ -310,10 +303,10 @@ gfc_post_options (const char **pfilename)
   if (gfc_current_form == FORM_FREE)
     {
       if (gfc_option.flag_d_lines == 0)
-	gfc_warning_now ("%<-fd-lines-as-comments%> has no effect "
+	gfc_warning_now (0, "%<-fd-lines-as-comments%> has no effect "
 			   "in free form");
       else if (gfc_option.flag_d_lines == 1)
-	gfc_warning_now ("%<-fd-lines-as-code%> has no effect in free form");
+	gfc_warning_now (0, "%<-fd-lines-as-code%> has no effect in free form");
 
       if (warn_line_truncation == -1)
 	  warn_line_truncation = 1;
@@ -344,18 +337,18 @@ gfc_post_options (const char **pfilename)
 
   if (!flag_automatic && flag_max_stack_var_size != -2
       && flag_max_stack_var_size != 0)
-    gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
+    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
   else if (!flag_automatic && flag_recursive)
-    gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%>");
+    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%>");
   else if (!flag_automatic && flag_openmp)
-    gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
+    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
 		     "%<-fopenmp%>");
   else if (flag_max_stack_var_size != -2 && flag_recursive)
-    gfc_warning_now ("Flag %<-frecursive%> overwrites %<-fmax-stack-var-size=%d%>",
+    gfc_warning_now (0, "Flag %<-frecursive%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
   else if (flag_max_stack_var_size != -2 && flag_openmp)
-    gfc_warning_now ("Flag %<-fmax-stack-var-size=%d%> overwrites %<-frecursive%> "
+    gfc_warning_now (0, "Flag %<-fmax-stack-var-size=%d%> overwrites %<-frecursive%> "
 		     "implied by %<-fopenmp%>", flag_max_stack_var_size);
 
   /* Implement -frecursive as -fmax-stack-var-size=-1.  */
@@ -377,6 +370,11 @@ gfc_post_options (const char **pfilename)
   if (!flag_automatic)
     flag_max_stack_var_size = 0;
   
+  /* If we call BLAS directly, only inline up to the BLAS limit.  */
+
+  if (flag_external_blas && flag_inline_matmul_limit < 0)
+    flag_inline_matmul_limit = flag_blas_matmul_limit;
+
   /* Optimization implies front end optimization, unless the user
      specified it directly.  */
 
@@ -397,6 +395,11 @@ gfc_post_options (const char **pfilename)
 		     MAX_SUBRECORD_LENGTH);
 
   gfc_cpp_post_options ();
+
+  if (gfc_option.allow_std & GFC_STD_F2008)
+    lang_hooks.name = "GNU Fortran2008";
+  else if (gfc_option.allow_std & GFC_STD_F2003)
+    lang_hooks.name = "GNU Fortran2003";
 
   return gfc_cpp_preprocess_only ();
 }

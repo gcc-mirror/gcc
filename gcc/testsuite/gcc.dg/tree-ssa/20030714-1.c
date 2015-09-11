@@ -43,4 +43,3 @@ find_base_value_wrapper (src)
 /* There should be no casts to short unsigned int.  */
 /* { dg-final { scan-tree-dump-times "\\(short unsigned int\\)" 0 "dom2"} } */
 
-/* { dg-final { cleanup-tree-dump "dom2" } } */

@@ -32,7 +32,7 @@ namespace __gnu_test
 
     counter() : _M_count(0), _M_throw(true) { }
     
-    ~counter()
+    ~counter() throw (counter_error)
     {
       if (_M_throw && _M_count != 0)
 	throw counter_error();

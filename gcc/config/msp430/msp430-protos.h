@@ -21,6 +21,7 @@
 #ifndef GCC_MSP430_PROTOS_H
 #define GCC_MSP430_PROTOS_H
 
+bool	msp430_do_not_relax_short_jumps (void);
 rtx	msp430_eh_return_stackadj_rtx (void);
 void	msp430_expand_eh_return (rtx);
 void	msp430_expand_epilogue (int);
@@ -40,6 +41,7 @@ bool    msp430_is_interrupt_func (void);
 const char * msp430x_logical_shift_right (rtx);
 const char * msp430_mcu_name (void);
 bool	msp430_modes_tieable_p (machine_mode, machine_mode);
+void    msp430_output_aligned_decl_common (FILE *, const tree, const char *, unsigned HOST_WIDE_INT, unsigned);
 void	msp430_output_labelref (FILE *, const char *);
 void	msp430_register_pragmas (void);
 rtx	msp430_return_addr_rtx (int);

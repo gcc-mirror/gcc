@@ -29,8 +29,9 @@ along with GCC; see the file COPYING3.  If not see
    list in diagnostic.def.  */
 struct diagnostic_info
 {
+  /* Text to be formatted. It also contains the location(s) for this
+     diagnostic.  */
   text_info message;
-  location_t location;
   unsigned int override_column;
   /* Auxiliary data for client.  */
   void *x_data;
@@ -105,8 +106,8 @@ struct diagnostic_context
   /* Maximum width of the source line printed.  */
   int caret_max_width;
 
-  /* Character used for caret diagnostics.  */
-  char caret_char;
+  /* Characters used for caret diagnostics.  */
+  char caret_chars[MAX_LOCATIONS_PER_MESSAGE];
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
@@ -300,17 +301,52 @@ void diagnostic_file_cache_fini (void);
 
 int get_terminal_width (void);
 
-/* Expand the location of this diagnostic. Use this function for consistency. */
+/* Return the location associated to this diagnostic. Parameter WHICH
+   specifies which location. By default, expand the first one.  */
+
+static inline location_t
+diagnostic_location (const diagnostic_info * diagnostic, int which = 0)
+{
+  return diagnostic->message.get_location (which);
+}
+
+/* Expand the location of this diagnostic. Use this function for
+   consistency.  Parameter WHICH specifies which location. By default,
+   expand the first one.  */
 
 static inline expanded_location
-diagnostic_expand_location (const diagnostic_info * diagnostic)
+diagnostic_expand_location (const diagnostic_info * diagnostic, int which = 0)
 {
   expanded_location s
-    = expand_location_to_spelling_point (diagnostic->location);
-  if (diagnostic->override_column)
+    = expand_location_to_spelling_point (diagnostic_location (diagnostic,
+							      which));
+  if (which == 0 && diagnostic->override_column)
     s.column = diagnostic->override_column;
   return s;
 }
+
+/* This is somehow the right-side margin of a caret line, that is, we
+   print at least these many characters after the position pointed at
+   by the caret.  */
+#define CARET_LINE_MARGIN 10
+
+/* Return true if the two locations can be represented within the same
+   caret line.  This is used to build a prefix and also to determine
+   whether to print one or two caret lines.  */
+
+static inline bool
+diagnostic_same_line (const diagnostic_context *context,
+		       expanded_location s1, expanded_location s2)
+{
+  return s2.column && s1.line == s2.line 
+    && context->caret_max_width - CARET_LINE_MARGIN > abs (s1.column - s2.column);
+}
+
+void
+diagnostic_print_caret_line (diagnostic_context * context,
+			     expanded_location xloc1,
+			     expanded_location xloc2,
+			     char caret1, char caret2);
 
 /* Pure text formatting support functions.  */
 extern char *file_name_as_prefix (diagnostic_context *, const char *);

@@ -37,4 +37,3 @@ int test(unsigned char *d)
 }
 
 /* { dg-final { scan-tree-dump-not "r.dst" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

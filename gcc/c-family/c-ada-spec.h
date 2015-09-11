@@ -24,14 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 
 /* In c-ada-spec.c  */
 
-typedef enum {
+enum cpp_operation {
+  HAS_DEPENDENT_TEMPLATE_ARGS,
   IS_ABSTRACT,
   IS_CONSTRUCTOR,
   IS_DESTRUCTOR,
   IS_COPY_CONSTRUCTOR,
+  IS_MOVE_CONSTRUCTOR,
   IS_TEMPLATE,
   IS_TRIVIAL
-} cpp_operation;
+};
 
 extern location_t decl_sloc (const_tree, bool);
 extern void collect_ada_nodes (tree, const char *);

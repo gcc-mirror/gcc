@@ -13,7 +13,7 @@ public:
 protected:
   class nested_protected { int x; };
 private:
-  class nested_private { int x; }; // { dg-error "" } private
+  class nested_private { int x; }; // { dg-message "" } private
 };
 
 class derived : public enclose {

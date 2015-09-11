@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_LOOP_H
 #define GCC_TREE_SSA_LOOP_H
 
-#include "wide-int.h"
 
 /* Affine iv.  */
 
@@ -66,7 +65,7 @@ struct tree_niter_desc
 
 extern bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 extern char *get_lsm_tmp_name (tree ref, unsigned n, const char *suffix = NULL);
-extern unsigned tree_num_loop_insns (struct loop *, struct eni_weights_d *);
+extern unsigned tree_num_loop_insns (struct loop *, struct eni_weights *);
 
 /* Returns the loop of the statement STMT.  */
 

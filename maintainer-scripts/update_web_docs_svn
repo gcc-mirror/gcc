@@ -107,15 +107,21 @@ else
   svn -q export $SVNROOT/tags/$RELEASE gcc
 fi
 
-# Remove all unwanted files.  This is needed (a) to build the Ada
-# generator programs with the installed library, not the new one and
-# (b) to avoid packaging all the sources instead of only documentation
-# sources.
+# Remove all unwanted files.  This is needed to avoid packaging all the
+# sources instead of only documentation sources.
+# Note that we have to preserve gcc/jit/docs since the jit docs are
+# not .texi files (Makefile, .rst and .png), and the jit docs use
+# include directives to pull in content from jit/jit-common.h and
+# jit/notes.txt, so we have to preserve those also.
 find gcc -type f \( -name '*.texi' \
   -o -path gcc/gcc/doc/install.texi2html \
   -o -path gcc/gcc/doc/include/texinfo.tex \
   -o -path gcc/gcc/BASE-VER \
   -o -path gcc/gcc/DEV-PHASE \
+  -o -path "gcc/gcc/ada/doc/gnat_ugn/*.png" \
+  -o -path "gcc/gcc/jit/docs/*" \
+  -o -path "gcc/gcc/jit/jit-common.h" \
+  -o -path "gcc/gcc/jit/notes.txt" \
   -o -print0 \) | xargs -0 rm -f
 
 # Build a tarball of the sources.
@@ -148,7 +154,7 @@ for file in $MANUALS; do
   if [ "${filename}" ]; then
     includes="-I ${includedir} -I `dirname ${filename}`"
     if [ "$file" = "gnat_ugn" ]; then
-      includes="$includes -I gcc/gcc/ada"
+      includes="$includes -I gcc/gcc/ada -I gcc/gcc/ada/doc/gnat_ugn"
     fi
     makeinfo --html $includes -o ${file} ${filename}
     tar cf ${file}-html.tar ${file}/*.html
@@ -157,6 +163,26 @@ for file in $MANUALS; do
     mkdir -p $DOCSDIR/$file
   fi
 done
+
+# The jit is a special-case, using sphinx rather than texinfo.
+# Specifically, the jit docs need sphinx 1.0 or later.
+#
+# The jit/docs Makefile uses the executable $(SPHINXBUILD),
+# defaulting to "sphinx-build".
+#
+# sphinx is packaged in Fedora and EPEL 6 within "python-sphinx",
+# and in openSUSE within "python-Sphinx".
+#
+# For EPEL6, python-sphinx is sphinx 0.6.6, which is missing various
+# directives (e.g. ":c:macro:"), so we need the variant
+# python-sphinx10 package.  The latter installs its executable as
+#   /usr/bin/sphinx-1.0-build
+# so we need to override SPHINXBUILD with this when invoking "make".
+pushd gcc/gcc/jit/docs
+make SPHINXBUILD=/usr/bin/sphinx-1.0-build html
+popd
+cp -a gcc/gcc/jit/docs/_build/html jit
+mkdir -p $DOCSDIR/jit
 
 # Work around makeinfo generated file names and references with
 # "_002d" instead of "-".
@@ -203,6 +229,21 @@ for file in */*.html *.ps *.pdf *.tar; do
     cp $file.gz $DOCSDIR/$file.gz
   fi
 done
+
+# Again, the jit is a special case, with nested subdirectories
+# below "jit", and with some non-HTML files (.png images from us,
+# plus .css and .js supplied by sphinx, and source files, renamed
+# from .rst to .txt).
+find jit \
+    -name "*.html" -o -name "*.png" \
+    -o -name "*.css" -o -name "*.js" \
+    -o -name "*.txt" |
+  while read file ; do
+    # Note that $file here will contain path fragments beginning
+    # with "jit/", e.g. "jit/cp/topics/functions.html"
+    mkdir -p $(dirname $DOCSDIR/$file)
+    cp $file $DOCSDIR/$file
+  done
 
 cd $DOCSDIR
 

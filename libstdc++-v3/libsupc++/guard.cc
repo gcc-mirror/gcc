@@ -107,22 +107,33 @@ namespace
 # endif
 
 # ifndef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
+
+// Test the guard variable with a memory load with
+// acquire semantics.
+
 inline bool
 __test_and_acquire (__cxxabiv1::__guard *g)
 {
-  bool b = _GLIBCXX_GUARD_TEST (g);
-  _GLIBCXX_READ_MEM_BARRIER;
-  return b;
+  unsigned char __c;
+  unsigned char *__p = reinterpret_cast<unsigned char *>(g);
+  __atomic_load (__p, &__c,  __ATOMIC_ACQUIRE);
+  (void) __p;
+  return _GLIBCXX_GUARD_TEST(&__c);
 }
 #  define _GLIBCXX_GUARD_TEST_AND_ACQUIRE(G) __test_and_acquire (G)
 # endif
 
 # ifndef _GLIBCXX_GUARD_SET_AND_RELEASE
+
+// Set the guard variable to 1 with memory order release semantics.
+
 inline void
 __set_and_release (__cxxabiv1::__guard *g)
 {
-  _GLIBCXX_WRITE_MEM_BARRIER;
-  _GLIBCXX_GUARD_SET (g);
+  unsigned char *__p = reinterpret_cast<unsigned char *>(g);
+  unsigned char val = 1;
+  __atomic_store (__p, &val, __ATOMIC_RELEASE);
+  (void) __p;
 }
 #  define _GLIBCXX_GUARD_SET_AND_RELEASE(G) __set_and_release (G)
 # endif

@@ -55,6 +55,7 @@ ADJUST_ALIGNMENT (XF, TARGET_128BIT_LONG_DOUBLE ? 16 : 4);
    Add CCA to indicate that only the Above flag is valid.
    Add CCC to indicate that only the Carry flag is valid.
    Add CCO to indicate that only the Overflow flag is valid.
+   Add CCP to indicate that only the Parity flag is valid.
    Add CCS to indicate that only the Sign flag is valid.
    Add CCZ to indicate that only the Zero flag is valid.  */
 
@@ -64,6 +65,7 @@ CC_MODE (CCNO);
 CC_MODE (CCA);
 CC_MODE (CCC);
 CC_MODE (CCO);
+CC_MODE (CCP);
 CC_MODE (CCS);
 CC_MODE (CCZ);
 CC_MODE (CCFP);

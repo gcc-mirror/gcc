@@ -30,4 +30,3 @@ void fillit(int *tot)
 }
 
 /* { dg-final { scan-tree-dump-not "special_add.constprop" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

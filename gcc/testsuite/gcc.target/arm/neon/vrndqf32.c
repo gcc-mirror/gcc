@@ -17,4 +17,3 @@ void test_vrndqf32 (void)
 }
 
 /* { dg-final { scan-assembler "vrintz\.f32\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

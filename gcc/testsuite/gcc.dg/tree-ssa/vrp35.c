@@ -12,4 +12,3 @@ int test1(int i, int k)
 }
 
 /* { dg-final { scan-tree-dump "Folding predicate j_.* == 10 to 0" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

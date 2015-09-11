@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2014, AdaCore                     --
+--                     Copyright (C) 1995-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,6 +123,16 @@ package body Ada.Real_Time is
       pragma Unsuppress (Overflow_Check);
       pragma Unsuppress (Division_Check);
    begin
+      --  Even though checks are unsuppressed, we need an explicit check for
+      --  the case of largest negative integer divided by minus one, since
+      --  some library routines we use fail to catch this case. This will be
+      --  fixed at the compiler level in the future, at which point this test
+      --  can be removed.
+
+      if Left = Time_Span_First and then Right = -1 then
+         raise Constraint_Error with "overflow";
+      end if;
+
       return Time_Span (Duration (Left) / Right);
    end "/";
 
@@ -217,56 +227,119 @@ package body Ada.Real_Time is
    -------------
 
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time is
+      pragma Suppress (Overflow_Check);
+      pragma Suppress (Range_Check);
+      --  We do all our own checks for this function
+
+      --  This is not such a simple case, since TS is already 64 bits, and
+      --  so we can't just promote everything to a wider type to ensure proper
+      --  testing for overflow. The situation is that Seconds_Count is a MUCH
+      --  wider type than Time_Span and Time (both of which have the underlying
+      --  type Duration).
+
+      --         <------------------- Seconds_Count -------------------->
+      --                            <-- Duration -->
+
+      --  Now it is possible for an SC value outside the Duration range to
+      --  be "brought back into range" by an appropriate TS value, but there
+      --  are also clearly SC values that are completely out of range. Note
+      --  that the above diagram is wildly out of scale, the difference in
+      --  ranges is much greater than shown.
+
+      --  We can't just go generating out of range Duration values to test for
+      --  overflow, since Duration is a full range type, so we follow the steps
+      --  shown below.
+
+      SC_Lo : constant Seconds_Count :=
+                Seconds_Count (Duration (Time_Span_First) + Duration'(0.5));
+      SC_Hi : constant Seconds_Count :=
+                Seconds_Count (Duration (Time_Span_Last)  - Duration'(0.5));
+      --  These are the maximum values of the seconds (integer) part of the
+      --  Duration range. Used to compute and check the seconds in the result.
+
+      TS_SC : Seconds_Count;
+      --  Seconds part of input value
+
+      TS_Fraction : Duration;
+      --  Fractional part of input value, may be negative
+
+      Result_SC : Seconds_Count;
+      --  Seconds value for result
+
+      Fudge : constant Seconds_Count := 10;
+      --  Fudge value used to do end point checks far from end point
+
+      FudgeD : constant Duration := Duration (Fudge);
+      --  Fudge value as Duration
+
+      Fudged_Result : Duration;
+      --  Result fudged up or down by FudgeD
+
+      procedure Out_Of_Range;
+      pragma No_Return (Out_Of_Range);
+      --  Raise exception for result out of range
+
+      ------------------
+      -- Out_Of_Range --
+      ------------------
+
+      procedure Out_Of_Range is
+      begin
+         raise Constraint_Error with
+           "result for Ada.Real_Time.Time_Of is out of range";
+      end Out_Of_Range;
+
+   --  Start of processing for Time_Of
+
    begin
-      --  We want to return Time (SC) + TS. To avoid spurious overflows in
-      --  the intermediate result Time (SC) we take advantage of the different
-      --  signs in SC and TS (when that is the case).
+      --  If SC is so far out of range that there is no possibility of the
+      --  addition of TS getting it back in range, raise an exception right
+      --  away. That way we don't have to worry about SC values overflowing.
 
-      --  If the signs of SC and TS are different then we avoid converting SC
-      --  to Time (as we do in the else part). The reason for that is that SC
-      --  converted to Time may overflow the range of Time, while the addition
-      --  of SC plus TS does not overflow (because of their different signs).
-      --  The approach is to add and remove the greatest value of time
-      --  (greatest absolute value) to both SC and TS. SC and TS have different
-      --  signs, so we add the positive constant to the negative value, and the
-      --  negative constant to the positive value, to prevent overflows.
+      if SC < 3 * SC_Lo or else SC > 3 * SC_Hi then
+         Out_Of_Range;
+      end if;
 
-      if (SC > 0 and then TS < 0.0) or else (SC < 0 and then TS > 0.0) then
-         declare
-            Closest_Boundary : constant Seconds_Count :=
-              (if TS >= 0.0 then
-                  Seconds_Count (Time_Span_Last  - Time_Span (0.5))
-               else
-                  Seconds_Count (Time_Span_First + Time_Span (0.5)));
-            --  Value representing the integer part of the Time_Span boundary
-            --  closest to TS (its number of seconds). Truncate towards zero
-            --  to be sure that transforming this value back into Time cannot
-            --  overflow (when SC is equal to 0). The sign of Closest_Boundary
-            --  is always different from the sign of SC, hence avoiding
-            --  overflow in the expression Time (SC + Closest_Boundary)
-            --  which is part of the return statement.
+      --  Decompose input TS value
 
-            Dist_To_Boundary : constant Time_Span :=
-              TS - Time_Span (Closest_Boundary);
-            --  Distance between TS and Closest_Boundary expressed in Time_Span
-            --  Both operands in the substraction have the same sign, hence
-            --  avoiding overflow.
+      TS_SC := Seconds_Count (Duration (TS));
+      TS_Fraction := Duration (TS) - Duration (TS_SC);
 
-         begin
-            --  Both operands in the inner addition have different signs,
-            --  hence avoiding overflow. The Time () conversion and the outer
-            --  addition can overflow only if SC + TC is not within Time'Range.
+      --  Compute result seconds. If clearly out of range, raise error now
 
-            return Time (SC + Closest_Boundary) + Dist_To_Boundary;
-         end;
+      Result_SC := SC + TS_SC;
 
-      --  Both operands have the same sign, so we can convert SC into Time
-      --  right away; if this conversion overflows then the result of adding SC
-      --  and TS would overflow anyway (so we would just be detecting the
-      --  overflow a bit earlier).
+      if Result_SC < (SC_Lo - 1) or else Result_SC > (SC_Hi + 1) then
+         Out_Of_Range;
+      end if;
+
+      --  Now the result is simply Result_SC + TS_Fraction, but we can't just
+      --  go computing that since it might be out of range. So what we do is
+      --  to compute a value fudged down or up by 10.0 (arbitrary value, but
+      --  that will do fine), and check that fudged value, and if in range
+      --  unfudge it and return the result.
+
+      --  Fudge positive result down, and check high bound
+
+      if Result_SC > 0 then
+         Fudged_Result := Duration (Result_SC - Fudge) + TS_Fraction;
+
+         if Fudged_Result <= Duration'Last - FudgeD then
+            return Time (Fudged_Result + FudgeD);
+         else
+            Out_Of_Range;
+         end if;
+
+      --  Same for negative values of seconds, fudge up and check low bound
 
       else
-         return Time (SC) + TS;
+         Fudged_Result := Duration (Result_SC + Fudge) + TS_Fraction;
+
+         if Fudged_Result >= Duration'First + FudgeD then
+            return Time (Fudged_Result - FudgeD);
+         else
+            Out_Of_Range;
+         end if;
       end if;
    end Time_Of;
 

@@ -114,6 +114,14 @@ _D8demangle4testFwZv
 demangle.test(dchar)
 #
 --format=dlang
+_D8demangle4testFziZv
+demangle.test(cent)
+#
+--format=dlang
+_D8demangle4testFzkZv
+demangle.test(ucent)
+#
+--format=dlang
 _D8demangle4testFOaZv
 demangle.test(shared(char))
 #
@@ -314,6 +322,14 @@ _D8demangle4testFMaZv
 demangle.test(scope char)
 #
 --format=dlang
+_D8demangle4testFNjaZv
+demangle.test(char)
+#
+--format=dlang
+_D8demangle4testFNkaZv
+demangle.test(return char)
+#
+--format=dlang
 _D8demangle4testFaXv
 demangle.test(char...)
 #
@@ -434,6 +450,22 @@ _D8demangle4testFDFNdNfNaZaZv
 demangle.test(char() @property @safe pure delegate)
 #
 --format=dlang
+_D8demangle4testFNjDFZaZv
+demangle.test(char() delegate)
+#
+--format=dlang
+_D8demangle4testFNkDFZaZv
+demangle.test(return char() delegate)
+#
+--format=dlang
+_D8demangle4testFDFNjZaZv
+demangle.test(char() return delegate)
+#
+--format=dlang
+_D8demangle4testFNjNkDFNjZaZv
+demangle.test(return char() return delegate)
+#
+--format=dlang
 _D8demangle4testFFNaZaZv
 demangle.test(char() pure function)
 #
@@ -474,6 +506,22 @@ _D8demangle4testFFNdNfNaZaZv
 demangle.test(char() @property @safe pure function)
 #
 --format=dlang
+_D8demangle4testFNjFZaZv
+demangle.test(char() function)
+#
+--format=dlang
+_D8demangle4testFNkFZaZv
+demangle.test(return char() function)
+#
+--format=dlang
+_D8demangle4testFFNjZaZv
+demangle.test(char() return function)
+#
+--format=dlang
+_D8demangle4testFNjNkFNjZaZv
+demangle.test(return char() return function)
+#
+--format=dlang
 _D8demangle4test6__initZ
 demangle.test.init$
 #
@@ -502,7 +550,7 @@ _D8demangle4test6__dtorMFZv
 demangle.test.~this()
 #
 --format=dlang
-_D8demangle4test6__postblitMFZv
+_D8demangle4test10__postblitMFZv
 demangle.test.this(this)
 #
 --format=dlang
@@ -566,12 +614,12 @@ _D8demangle17__T4testS6symbolZv
 demangle.test!(symbol)
 #
 --format=dlang
-_D8demangle21__T4testS6symbol3fooZv
+_D8demangle23__T4testS116symbol3fooZv
 demangle.test!(symbol.foo)
 #
 --format=dlang
-_D8demangle25__T4testS6symbol3foo3barZv
-demangle.test!(symbol.foo.bar)
+_D8demangle32__T4testS20_D6symbol3foo3barFZvZv
+demangle.test!(symbol.foo.bar())
 #
 --format=dlang
 _D8demangle19__T4testTaS6symbolZv
@@ -580,6 +628,10 @@ demangle.test!(char, symbol)
 --format=dlang
 _D8demangle19__T4testS6symbolTaZv
 demangle.test!(symbol, char)
+#
+--format=dlang
+_D8demangle12__T4testHTaZv
+demangle.test!(char)
 #
 --format=dlang
 _D8demangle13__T4testVPinZv
@@ -667,19 +719,19 @@ demangle.test!('\U000186a0')
 #
 --format=dlang
 _D8demangle17__T4testVde0A8P6Zv
-demangle.test!(42.0000)
+demangle.test!(0x0.A8p6)
 #
 --format=dlang
 _D8demangle16__T4testVdeA8P2Zv
-demangle.test!(42.0000)
+demangle.test!(0xA.8p2)
 #
 --format=dlang
 _D8demangle18__T4testVdeN0A8P6Zv
-demangle.test!(-42.0000)
+demangle.test!(-0x0.A8p6)
 #
 --format=dlang
 _D8demangle31__T4testVde0F6E978D4FDF3B646P7Zv
-demangle.test!(123.456)
+demangle.test!(0x0.F6E978D4FDF3B646p7)
 #
 --format=dlang
 _D8demangle15__T4testVdeNANZv
@@ -695,27 +747,27 @@ demangle.test!(-Inf)
 #
 --format=dlang
 _D8demangle23__T4testVfe0FFFFFFP128Zv
-demangle.test!(3.40282e+38)
+demangle.test!(0x0.FFFFFFp128)
 #
 --format=dlang
 _D8demangle32__T4testVde0FFFFFFFFFFFFF8P1024Zv
-demangle.test!(1.79769e+308)
+demangle.test!(0x0.FFFFFFFFFFFFF8p1024)
 #
 --format=dlang
 _D8demangle19__T4testVfe08PN125Zv
-demangle.test!(1.17549e-38)
+demangle.test!(0x0.8p-125)
 #
 --format=dlang
 _D8demangle20__T4testVde08PN1021Zv
-demangle.test!(2.22507e-308)
+demangle.test!(0x0.8p-1021)
 #
 --format=dlang
 _D8demangle51__T4testVrc0C4CCCCCCCCCCCCCDP4c0B666666666666666P6Zv
-demangle.test!(12.3000+45.6000i)
+demangle.test!(0x0.C4CCCCCCCCCCCCCDp4+0x0.B666666666666666p6i)
 #
 --format=dlang
 _D8demangle52__T4testVrcN0C4CCCCCCCCCCCCCDP4c0B666666666666666P6Zv
-demangle.test!(-12.3000+45.6000i)
+demangle.test!(-0x0.C4CCCCCCCCCCCCCDp4+0x0.B666666666666666p6i)
 #
 --format=dlang
 _D8demangle22__T4testVG3ua3_616263Zv
@@ -735,7 +787,7 @@ demangle.test!([1, 2, 3, 4])
 #
 --format=dlang
 _D8demangle25__T4testVAdA2e08P1eN08P1Zv
-demangle.test!([1.00000, -1.00000])
+demangle.test!([0x0.8p1, -0x0.8p1])
 #
 --format=dlang
 _D8demangle23__T4testVHiiA2i1i2i3i4Zv
@@ -752,6 +804,70 @@ demangle.test!(demangle.S(1, 2))
 --format=dlang
 _D8demangle35__T4testVS8demangle1SS2i1a3_616263Zv
 demangle.test!(demangle.S(1, "abc"))
+#
+--format=dlang
+_D8demangle4testMxFZv
+demangle.test() const
+#
+--format=dlang
+_D8demangle4testMyFZv
+demangle.test() immutable
+#
+--format=dlang
+_D8demangle4testMNgFZv
+demangle.test() inout
+#
+--format=dlang
+_D8demangle4testMNgxFZv
+demangle.test() inout const
+#
+--format=dlang
+_D8demangle4testMOFZv
+demangle.test() shared
+#
+--format=dlang
+_D8demangle4testMOxFZv
+demangle.test() shared const
+#
+--format=dlang
+_D8demangle4testMONgFZv
+demangle.test() shared inout
+#
+--format=dlang
+_D8demangle4testMONgxFZv
+demangle.test() shared inout const
+#
+--format=dlang
+_D8demangle4testFDxFZaZv
+demangle.test(char() delegate const)
+#
+--format=dlang
+_D8demangle4testFDyFZaZv
+demangle.test(char() delegate immutable)
+#
+--format=dlang
+_D8demangle4testFDNgFZaZv
+demangle.test(char() delegate inout)
+#
+--format=dlang
+_D8demangle4testFDNgxFZaZv
+demangle.test(char() delegate inout const)
+#
+--format=dlang
+_D8demangle4testFDOFZaZv
+demangle.test(char() delegate shared)
+#
+--format=dlang
+_D8demangle4testFDOxFZaZv
+demangle.test(char() delegate shared const)
+#
+--format=dlang
+_D8demangle4testFDONgFZaZv
+demangle.test(char() delegate shared inout)
+#
+--format=dlang
+_D8demangle4testFDONgxFZaZv
+demangle.test(char() delegate shared inout const)
 #
 # Unittests
 #
@@ -816,19 +932,19 @@ _D6plugin8generateFiiZAOa
 plugin.generate(int, int)
 #
 --format=dlang
-_D8demangle3fnAFZv3fnBMFZv
+_D8demangle3fnAFZ3fnBMFZv
 demangle.fnA().fnB()
 #
 --format=dlang
-_D8demangle4mainFZv1S3fnCFZv
+_D8demangle4mainFZ1S3fnCMFZv
 demangle.main().S.fnC()
 #
 --format=dlang
-_D8demangle4mainFZv1S3fnDMFZv
+_D8demangle4mainFZ1S3fnDMFZv
 demangle.main().S.fnD()
 #
 --format=dlang
-_D8demangle4mainFZv5localMFZi
+_D8demangle4mainFZ5localMFZi
 demangle.main().local()
 #
 --format=dlang
@@ -872,7 +988,7 @@ _D6object14TypeInfo_Array8argTypesMFNbNfJC8TypeInfoJC8TypeInfoZi
 object.TypeInfo_Array.argTypes(out TypeInfo, out TypeInfo)
 #
 --format=dlang
-_D2rt6dmain211_d_run_mainUiPPaPUAAaZiZi7tryExecMFMDFZvZv
+_D2rt6dmain211_d_run_mainUiPPaPUAAaZiZ7tryExecMFMDFZvZv
 rt.dmain2._d_run_main(int, char**, extern(C) int(char[][]) function*).tryExec(scope void() delegate)
 #
 --format=dlang
@@ -928,9 +1044,37 @@ _D2gc11gctemplates56__T8mkBitmapTS3std5range13__T4iotaTiTiZ4iotaFiiZ6ResultZ8mkB
 gc.gctemplates.mkBitmap!(std.range.iota!(int, int).iota(int, int).Result).mkBitmap(ulong*, ulong)
 #
 --format=dlang
-_D8serenity9persister6Sqlite70__T15SqlitePersisterTS8serenity9persister6Sqlite11__unittest6FZv4TestZ15SqlitePersister12__T7opIndexZ7opIndexMFmZS8serenity9persister6Sqlite11__unittest6FZv4Test
+_D8serenity9persister6Sqlite69__T15SqlitePersisterTS8serenity9persister6Sqlite11__unittest6FZ4TestZ15SqlitePersister12__T7opIndexZ7opIndexMFmZS8serenity9persister6Sqlite11__unittest6FZ4Test
 serenity.persister.Sqlite.SqlitePersister!(serenity.persister.Sqlite.__unittest6().Test).SqlitePersister.opIndex!().opIndex(ulong)
 #
 --format=dlang
-_D4test4mainFZv5localMFZi
-test.main().local()
+_D3std6socket12InternetHost221__T13getHostNoSyncVAyaa96_0a09202020206175746f2078203d2068746f6e6c28706172616d293b0a09202020206175746f206865203d20676574686f73746279616464722826782c20342c206361737428696e74294164647265737346616d696c792e494e4554293b0a09TkZ13getHostNoSyncMFkZb
+std.socket.InternetHost.getHostNoSync!("\n\t    auto x = htonl(param);\n\t    auto he = gethostbyaddr(&x, 4, cast(int)AddressFamily.INET);\n\t", uint).getHostNoSync(uint)
+#
+--format=dlang
+_D2gc6config13__T5parseHTfZ5parseFNbNiAxaKAxaKfZb
+gc.config.parse!(float).parse(const(char)[], ref const(char)[], ref float)
+#
+--format=dlang
+_D3std11parallelism273__T4TaskS213std11parallelism3runTDFS3std9algorithm87__T9MapResultS27_D4test4mainFZ7getTermMFiZeTS3std5range13__T4iotaTiTiZ4iotaFiiZ6ResultZ9MapResultmmZeTS3std9algorithm87__T9MapResultS27_D4test4mainFZ7getTermMFiZeTS3std5range13__T4iotaTiTiZ4iotaFiiZ6ResultZ9MapResultTmTmZ4Task4implFPvZv
+std.parallelism.Task!(std.parallelism.run, real(std.algorithm.MapResult!(test.main().getTerm(int), std.range.iota!(int, int).iota(int, int).Result).MapResult, ulong, ulong) delegate, std.algorithm.MapResult!(test.main().getTerm(int), std.range.iota!(int, int).iota(int, int).Result).MapResult, ulong, ulong).Task.impl(void*)
+#
+--format=dlang
+_D2rt5minfo16__unittestL518_6FZ12UTModuleInfo6__ctorMFNckZS2rt5minfo16__unittestL518_6FZ12UTModuleInfo
+rt.minfo.__unittestL518_6().UTModuleInfo.this(uint)
+#
+--format=dlang
+_D3std6traits37__T7fqnTypeTC6ObjectVbi0Vbi0Vbi0Vbi0Z13addQualifiersFAyabbbbZAya
+std.traits.fqnType!(Object, false, false, false, false).addQualifiers(immutable(char)[], bool, bool, bool, bool)
+#
+--format=dlang
+_D3std9algorithm117__T9MapResultS153std5range4onlyTS3std9algorithm53__T12FilterResultS28_D3std3uni7isUpperFNaNbNfwZbTAyaZ12FilterResultZ9MapResult5frontMFNaNdNfZS3std5range22__T10OnlyResultTwVmi1Z10OnlyResult
+std.algorithm.MapResult!(std.range.only, std.algorithm.FilterResult!(std.uni.isUpper(dchar), immutable(char)[]).FilterResult).MapResult.front()
+#
+--format=dlang
+_D3std6traits17__T6fqnSymS43stdZ11adjustIdentFAyaZAya
+std.traits.fqnSym!(std).adjustIdent(immutable(char)[])
+#
+--format=dlang
+_D2rt8lifetime36__T14_d_newarrayOpTS13_d_newarrayiTZ14_d_newarrayOpTFNaNbxC8TypeInfomPmZAv
+rt.lifetime._d_newarrayOpT!(_d_newarrayiT)._d_newarrayOpT(const(TypeInfo), ulong, ulong*)

@@ -21,21 +21,21 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = march=avr2/march=avr25/march=avr3/march=avr31/march=avr35/march=avr4/march=avr5/march=avr51/march=avr6/march=avrxmega2/march=avrxmega4/march=avrxmega5/march=avrxmega6/march=avrxmega7/march=avrtiny msp8
+MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6/mmcu=avrxmega2/mmcu=avrxmega4/mmcu=avrxmega5/mmcu=avrxmega6/mmcu=avrxmega7/mmcu=avrtiny msp8
 
 MULTILIB_DIRNAMES =  avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6 avrxmega2 avrxmega4 avrxmega5 avrxmega6 avrxmega7 avrtiny tiny-stack avr25/tiny-stack
 
 MULTILIB_EXCEPTIONS = \
-	march=avr3/msp8 \
-	march=avr31/msp8 \
-	march=avr35/msp8 \
-	march=avr4/msp8 \
-	march=avr5/msp8 \
-	march=avr51/msp8 \
-	march=avr6/msp8 \
-	march=avrxmega2/msp8 \
-	march=avrxmega4/msp8 \
-	march=avrxmega5/msp8 \
-	march=avrxmega6/msp8 \
-	march=avrxmega7/msp8 \
-	march=avrtiny/msp8
+	mmcu=avr3/msp8 \
+	mmcu=avr31/msp8 \
+	mmcu=avr35/msp8 \
+	mmcu=avr4/msp8 \
+	mmcu=avr5/msp8 \
+	mmcu=avr51/msp8 \
+	mmcu=avr6/msp8 \
+	mmcu=avrxmega2/msp8 \
+	mmcu=avrxmega4/msp8 \
+	mmcu=avrxmega5/msp8 \
+	mmcu=avrxmega6/msp8 \
+	mmcu=avrxmega7/msp8 \
+	mmcu=avrtiny/msp8

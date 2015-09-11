@@ -26,5 +26,4 @@ unsigned int test4(unsigned int d)
 /* { dg-final { scan-tree-dump-times "\\+ b" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "\\+ c" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "\\+ d" 0 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
 

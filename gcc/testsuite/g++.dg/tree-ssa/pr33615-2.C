@@ -17,4 +17,3 @@ foo (double a, int x)
 // The expression 1.0 / 0.0 should not be treated as a loop invariant
 // if it may throw an exception.
 // { dg-final { scan-tree-dump-times "Replaced 1\\\.0e\\\+0 / 0\\\.0" 0 "pre" } }
-// { dg-final { cleanup-tree-dump "pre" } }

@@ -106,17 +106,6 @@ extern enum cmodel sparc_cmodel;
 
 #define SPARC_DEFAULT_CMODEL CM_32
 
-/* The SPARC-V9 architecture defines a relaxed memory ordering model (RMO)
-   which requires the following macro to be true if enabled.  Prior to V9,
-   there are no instructions to even talk about memory synchronization.
-   Note that the UltraSPARC III processors don't implement RMO, unlike the
-   UltraSPARC II processors.  Niagara, Niagara-2, and Niagara-3 do not
-   implement RMO either.
-
-   Default to false; for example, Solaris never enables RMO, only ever uses
-   total memory ordering (TMO).  */
-#define SPARC_RELAXED_ORDERING false
-
 /* Do not use the .note.GNU-stack convention by default.  */
 #define NEED_INDICATE_EXEC_STACK 0
 
@@ -380,7 +369,7 @@ extern enum cmodel sparc_cmodel;
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
 #define ASM_SPEC "\
-%{!pg:%{!p:%{fpic|fPIC|fpie|fPIE:-k}}} %{keep-local-as-symbols:-L} \
+%{!pg:%{!p:%{" FPIE_OR_FPIC_SPEC ":-k}}} %{keep-local-as-symbols:-L} \
 %(asm_cpu) %(asm_relax)"
 
 /* This macro defines names of additional specifications to put in the specs
@@ -426,22 +415,20 @@ extern enum cmodel sparc_cmodel;
 #define WCHAR_TYPE_SIZE 16
 
 /* Mask of all CPU selection flags.  */
-#define MASK_ISA \
-(MASK_V8 + MASK_SPARCLITE + MASK_SPARCLET + MASK_V9 + MASK_DEPRECATED_V8_INSNS)
+#define MASK_ISA					\
+  (MASK_SPARCLITE + MASK_SPARCLET			\
+   + MASK_V8 + MASK_V9 + MASK_DEPRECATED_V8_INSNS)
 
-/* TARGET_HARD_MUL: Use hardware multiply instructions but not %y.
-   TARGET_HARD_MUL32: Use hardware multiply instructions with rd %y
-   to get high 32 bits.  False in V8+ or V9 because multiply stores
+/* TARGET_HARD_MUL: Use 32-bit hardware multiply instructions but not %y.  */
+#define TARGET_HARD_MUL				\
+  (TARGET_SPARCLITE || TARGET_SPARCLET		\
+   || TARGET_V8 || TARGET_DEPRECATED_V8_INSNS)
+
+/* TARGET_HARD_MUL32: Use 32-bit hardware multiply instructions with %y
+   to get high 32 bits.  False in 64-bit or V8+ because multiply stores
    a 64-bit result in a register.  */
-
-#define TARGET_HARD_MUL32				\
-  ((TARGET_V8 || TARGET_SPARCLITE			\
-    || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS)	\
-   && ! TARGET_V8PLUS && TARGET_ARCH32)
-
-#define TARGET_HARD_MUL					\
-  (TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET	\
-   || TARGET_DEPRECATED_V8_INSNS || TARGET_V8PLUS)
+#define TARGET_HARD_MUL32 \
+  (TARGET_HARD_MUL && TARGET_ARCH32 && !TARGET_V8PLUS)
 
 /* MASK_APP_REGS must always be the default because that's what
    FIXED_REGISTERS is set to and -ffixed- is processed before
@@ -1076,7 +1063,7 @@ extern char leaf_reg_remap[];
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /* Define this to nonzero if the nominal address of the stack frame
    is at the high-address end of the local variables;
@@ -1295,7 +1282,7 @@ do {									\
    access it from the current frame pointer.  We can access it from the
    previous frame pointer though by reading a value from the register window
    save area.  */
-#define RETURN_ADDR_IN_PREVIOUS_FRAME
+#define RETURN_ADDR_IN_PREVIOUS_FRAME 1
 
 /* This is the offset of the return address to the true next instruction to be
    executed for the current function.  */
@@ -1473,7 +1460,7 @@ do {									   \
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 
 /* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
    will either zero-extend or sign-extend.  The value of this macro should
@@ -1520,7 +1507,7 @@ do {									   \
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
    but a CALL with constant address is cheap.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* The _Q_* comparison libcalls return booleans.  */
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
@@ -1696,7 +1683,7 @@ do {									\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.skip "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
+  fprintf (FILE, "\t.skip " HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1704,7 +1691,7 @@ do {									\
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\t.common ", (FILE)),		\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",\"bss\"\n", (SIZE)))
+  fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",\"bss\"\n", (SIZE)))
 
 /* This says how to output an assembler line to define a local common
    symbol.  */
@@ -1712,7 +1699,7 @@ do {									\
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGNED)		\
 ( fputs ("\t.reserve ", (FILE)),					\
   assemble_name ((FILE), (NAME)),					\
-  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",\"bss\",%u\n",	\
+  fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",\"bss\",%u\n",	\
 	   (SIZE), ((ALIGNED) / BITS_PER_UNIT)))
 
 /* A C statement (sans semicolon) to output to the stdio stream

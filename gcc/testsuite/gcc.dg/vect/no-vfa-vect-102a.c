@@ -55,5 +55,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 1 "vect" { target { ! vect_multiple_sizes } } } } */
 /* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 2 "vect" { target vect_multiple_sizes } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

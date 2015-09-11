@@ -333,12 +333,12 @@ hook_bool_uintp_uintp_false (unsigned int *a ATTRIBUTE_UNUSED,
 }
 
 bool
-hook_bool_rtx_int_int_int_intp_bool_false (rtx a ATTRIBUTE_UNUSED,
-					   int b ATTRIBUTE_UNUSED,
-					   int c ATTRIBUTE_UNUSED,
-					   int d ATTRIBUTE_UNUSED,
-					   int *e ATTRIBUTE_UNUSED,
-					   bool speed_p ATTRIBUTE_UNUSED)
+hook_bool_rtx_mode_int_int_intp_bool_false (rtx a ATTRIBUTE_UNUSED,
+					    machine_mode b ATTRIBUTE_UNUSED,
+					    int c ATTRIBUTE_UNUSED,
+					    int d ATTRIBUTE_UNUSED,
+					    int *e ATTRIBUTE_UNUSED,
+					    bool speed_p ATTRIBUTE_UNUSED)
 {
   return false;
 }
@@ -376,14 +376,6 @@ unsigned int
 hook_uint_mode_0 (machine_mode m ATTRIBUTE_UNUSED)
 {
   return 0;
-}
-
-/* Generic hook that takes three trees and returns the last one as is.  */
-tree
-hook_tree_tree_tree_tree_3rd_identity (tree a ATTRIBUTE_UNUSED,
-				       tree b ATTRIBUTE_UNUSED, tree c)
-{
-  return c;
 }
 
 /* Generic hook that takes no arguments and returns a NULL const string.  */

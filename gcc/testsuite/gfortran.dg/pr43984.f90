@@ -53,4 +53,3 @@ end
 ! There should be three loads from iyz.data, not four.
 
 ! { dg-final { scan-tree-dump-times "= iyz.data" 3 "pre" } }
-! { dg-final { cleanup-tree-dump "pre" } }

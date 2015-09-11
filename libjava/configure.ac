@@ -1,4 +1,7 @@
 dnl # Process this with autoconf to create configure
+
+sinclude(../config/sjlj.m4)
+
 AC_PREREQ(2.64)
 # Still use "libjava" here to placate dejagnu.
 AC_INIT([libjava], [version-unused],, [libjava])
@@ -699,58 +702,10 @@ INTERPRETER="$libgcj_interpreter"
 AC_SUBST(INTERPRETER)
 AM_CONDITIONAL(INTERPRETER, test "$libgcj_interpreter" = yes)
 
-AC_MSG_CHECKING([for exception model to use])
-AC_LANG_PUSH(C++)
-AC_ARG_ENABLE(sjlj-exceptions,
-  AS_HELP_STRING([--enable-sjlj-exceptions],
-                 [force use of builtin_setjmp for exceptions]),
-[:],
-[dnl Botheration.  Now we've got to detect the exception model.
-dnl Link tests against libgcc.a are problematic since -- at least
-dnl as of this writing -- we've not been given proper -L bits for
-dnl single-tree newlib and libgloss.
-dnl
-dnl This is what AC_TRY_COMPILE would do if it didn't delete the
-dnl conftest files before we got a change to grep them first.
-cat > conftest.$ac_ext << EOF
-[#]line __oline__ "configure"
-struct S { ~S(); };
-void bar();
-void foo()
-{
-  S s;
-  bar();
-}
-EOF
-old_CXXFLAGS="$CXXFLAGS"  
-CXXFLAGS=-S
-if AC_TRY_EVAL(ac_compile); then
-  if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
-    enable_sjlj_exceptions=yes
-  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
-    enable_sjlj_exceptions=no
-  elif grep __cxa_end_cleanup conftest.s >/dev/null 2>&1 ; then
-    # ARM EH ABI.
-    enable_sjlj_exceptions=no
-  fi
-fi
-CXXFLAGS="$old_CXXFLAGS"
-rm -f conftest*])
-if test x$enable_sjlj_exceptions = xyes; then
-  AC_DEFINE(SJLJ_EXCEPTIONS, 1,
-	[Define if the compiler is configured for setjmp/longjmp exceptions.])
-  ac_exception_model_name=sjlj
-elif test x$enable_sjlj_exceptions = xno; then
-  ac_exception_model_name="call frame"
-else
-  AC_MSG_ERROR([unable to detect exception model])
-fi
-AC_LANG_POP(C++)
-AC_MSG_RESULT($ac_exception_model_name)
-
-# If we are non using SJLJ exceptions, and this host does not have support 
+# If we are not using SJLJ exceptions, and this host does not have support 
 # for unwinding from a signal handler, enable checked dereferences and divides.
-if test $can_unwind_signal = no && test $enable_sjlj_exceptions = no; then
+GCC_CHECK_SJLJ_EXCEPTIONS
+if test $ac_cv_sjlj_exceptions = no && test $can_unwind_signal = no; then
   CHECKREFSPEC=-fcheck-references
   DIVIDESPEC=-fuse-divide-subroutine
   EXCEPTIONSPEC=
@@ -1755,13 +1710,16 @@ case "${host}" in
  powerpc*-*-aix*)
     SIGNAL_HANDLER=include/aix-signal.h
     ;;
+ i?86-*-freebsd* | x86_64-*-freebsd*)
+    SIGNAL_HANDLER=include/freebsd-signal.h
+    ;;
  *)
     SIGNAL_HANDLER=include/default-signal.h
     ;;
 esac
 
 # If we're using sjlj exceptions, forget what we just learned.
-if test "$enable_sjlj_exceptions" = yes; then
+if test "$ac_cv_sjlj_exceptions" = yes; then
    SIGNAL_HANDLER=include/default-signal.h
    SIGNAL_HANDLER_AUX=
 fi

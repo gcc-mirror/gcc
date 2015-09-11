@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -37,6 +37,10 @@ with System.Task_Primitives.Operations;
 pragma Elaborate_All (System.Task_Primitives.Operations);
 
 package Ada.Real_Time is
+
+   pragma Compile_Time_Error
+     (Duration'Size /= 64,
+      "this version of Ada.Real_Time requires 64-bit Duration");
 
    type Time is private;
    Time_First : constant Time;
@@ -91,18 +95,23 @@ package Ada.Real_Time is
    pragma Ada_05 (Minutes);
 
    type Seconds_Count is new Long_Long_Integer;
-   --  Seconds_Count needs 64 bits, since Time has the full range of
+   --  Seconds_Count needs 64 bits, since the type Time has the full range of
    --  Duration. The delta of Duration is 10 ** (-9), so the maximum number of
    --  seconds is 2**63/10**9 = 8*10**9 which does not quite fit in 32 bits.
    --  However, rather than make this explicitly 64-bits we derive from
-   --  Long_Long_Integer. In normal usage this will have the same effect.
-   --  But in the case of CodePeer with a target configuration file with a
-   --  maximum integer size of 32, it allows analysis of this unit.
+   --  Long_Long_Integer. In normal usage this will have the same effect. But
+   --  in the case of CodePeer with a target configuration file with a maximum
+   --  integer size of 32, it allows analysis of this unit.
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
 
 private
+   --  Time and Time_Span are represented in 64-bit Duration value in
+   --  nanoseconds. For example, 1 second and 1 nanosecond is represented
+   --  as the stored integer 1_000_000_001. This is for the 64-bit Duration
+   --  case, not clear if this also is used for 32-bit Duration values.
+
    type Time is new Duration;
 
    Time_First : constant Time := Time'First;
@@ -121,10 +130,6 @@ private
 
    Tick : constant Time_Span :=
             Time_Span (System.Task_Primitives.Operations.RT_Resolution);
-
-   --  Time and Time_Span are represented in 64-bit Duration value in
-   --  nanoseconds. For example, 1 second and 1 nanosecond is represented
-   --  as the stored integer 1_000_000_001.
 
    pragma Import (Intrinsic, "<");
    pragma Import (Intrinsic, "<=");

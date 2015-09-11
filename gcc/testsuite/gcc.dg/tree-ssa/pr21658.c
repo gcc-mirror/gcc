@@ -18,4 +18,3 @@ f (void)
 }
 
 /* { dg-final { scan-tree-dump-times "Folded into: if " 1 "ccp1"} } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

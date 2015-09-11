@@ -853,7 +853,6 @@ pp_printf (pretty_printer *pp, const char *msg, ...)
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = msg;
-  text.locus = NULL;
   pp_format (pp, &text);
   pp_output_formatted_text (pp);
   va_end (ap);
@@ -871,7 +870,6 @@ pp_verbatim (pretty_printer *pp, const char *msg, ...)
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = msg;
-  text.locus = NULL;
   pp_format_verbatim (pp, &text);
   va_end (ap);
 }

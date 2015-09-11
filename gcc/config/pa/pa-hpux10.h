@@ -24,7 +24,9 @@ along with GCC; see the file COPYING3.  If not see
    the definition of __cplusplus.  We define _INCLUDE_LONGLONG
    to prevent nlist.h from defining __STDC_32_MODE__ (no longlong
    support).  We define __STDCPP__ to get certain system headers
-   (notably assert.h) to assume standard preprocessor behavior in C++.  */
+   (notably assert.h) to assume standard preprocessor behavior in C++.
+   We define _XOPEN_SOURCE_EXTENDED when we define _HPUX_SOURCE to avoid
+   non standard hpux variants in _INCLUDE_XOPEN_SOURCE_EXTENDED.  */
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
@@ -44,8 +46,20 @@ along with GCC; see the file COPYING3.  If not see
 	    builtin_define ("_REENTRANT");				\
 	    builtin_define ("_INCLUDE_LONGLONG");			\
 	    builtin_define ("__STDCPP__");				\
+	    builtin_define ("_LARGEFILE_SOURCE");			\
+	    builtin_define ("_LARGEFILE64_SOURCE");			\
+	    if (flag_pa_unix >= 1995)					\
+	      {								\
+		builtin_define ("_XOPEN_UNIX");				\
+		builtin_define ("_XOPEN_SOURCE_EXTENDED");		\
+	      }								\
 	  }								\
-	else if (!flag_iso)						\
+	else if (flag_iso)						\
+	  {								\
+	    if (flag_isoc94)						\
+	      builtin_define ("_INCLUDE__STDC_A1_SOURCE");		\
+	  }								\
+	else								\
 	  {								\
 	    builtin_define ("_HPUX_SOURCE");				\
 	    builtin_define ("_REENTRANT");				\
@@ -59,11 +73,11 @@ along with GCC; see the file COPYING3.  If not see
 		builtin_define ("_PWB");				\
 		builtin_define ("PWB");					\
 	      }								\
-	  }								\
-	if (flag_pa_unix >= 1995)					\
-	  {								\
-	    builtin_define ("_XOPEN_UNIX");				\
-	    builtin_define ("_XOPEN_SOURCE_EXTENDED");			\
+	    if (flag_pa_unix >= 1995)					\
+	      {								\
+		builtin_define ("_XOPEN_UNIX");				\
+		builtin_define ("_XOPEN_SOURCE_EXTENDED");		\
+	      }								\
 	  }								\
 	if (TARGET_SIO)							\
 	  builtin_define ("_SIO");					\

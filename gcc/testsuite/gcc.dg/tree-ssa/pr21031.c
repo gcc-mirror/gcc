@@ -3,7 +3,7 @@
    Make sure that a != 0 is propagated into the "if" statement.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-forwprop1-details" } */
+/* { dg-options "-O1 -fdump-tree-forwprop1" } */
 
 int
 foo (int a)
@@ -16,5 +16,4 @@ foo (int a)
     return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Replaced" 2 "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
+/* { dg-final { scan-tree-dump "if \\(a_\[0-9\]+\\(D\\) != 0\\)" "forwprop1" } } */

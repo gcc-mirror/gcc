@@ -55,7 +55,7 @@
 
 #undef SUBTARGET_EXTRA_ASM_SPEC
 #define SUBTARGET_EXTRA_ASM_SPEC	\
-  "-matpcs %{fpic|fpie:-k} %{fPIC|fPIE:-k}"
+  "-matpcs %{" FPIE_OR_FPIC_SPEC ":-k}"
 
 /* Default to full VFP if -mfloat-abi=hard is specified.  */
 #undef SUBTARGET_ASM_FLOAT_SPEC

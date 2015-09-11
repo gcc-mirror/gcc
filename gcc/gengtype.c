@@ -27,7 +27,6 @@
 #include "errors.h"		/* for fatal */
 #include "getopt.h"
 #include "version.h"		/* for version_string & pkgversion_string.  */
-#include "hashtab.h"
 #include "xregex.h"
 #include "obstack.h"
 #include "gengtype.h"
@@ -1241,6 +1240,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    case 'i':
 	    case 'n':
 	    case 'w':
+	    case 'r':
 	      t = scalar_tp;
 	      subname = "rt_int";
 	      break;
@@ -1268,8 +1268,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == DEBUG_EXPR && aindex == 0)
 		t = tree_tp, subname = "rt_tree";
-	      else if (i == REG && aindex == 1)
-		t = reg_attrs_tp, subname = "rt_reg";
 	      else if (i == SYMBOL_REF && aindex == 1)
 		t = symbol_union_tp, subname = "";
 	      else if (i == JUMP_TABLE_DATA && aindex >= 4)
@@ -1343,6 +1341,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      create_string_option (subfields->opt, "desc",
 				    "CONSTANT_POOL_ADDRESS_P (&%0)");
 	}
+
+      if (i == REG)
+	subfields = create_field (subfields, reg_attrs_tp, "reg.attrs");
 
       if (i == SYMBOL_REF)
 	{
@@ -1709,23 +1710,13 @@ open_base_files (void)
   {
     /* The order of files here matters very much.  */
     static const char *const ifiles[] = {
-      "config.h", "system.h", "coretypes.h", "tm.h", "insn-codes.h",
-      "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
-      "hash-set.h", "machmode.h", "vec.h", "double-int.h", "input.h",
-      "alias.h", "symtab.h", "options.h", 
-      "wide-int.h", "inchash.h",
-      "tree.h", "fold-const.h", "rtl.h",
-      "machmode.h", "tm.h", "hard-reg-set.h", "input.h", "predict.h",
-      "function.h", "insn-config.h", "flags.h", "statistics.h",
-      "real.h", "fixed-value.h", "tree.h", "expmed.h", "dojump.h",
+      "config.h", "system.h", "coretypes.h", "backend.h", "predict.h", "tree.h",
+      "rtl.h", "gimple.h", "fold-const.h", "insn-codes.h", "splay-tree.h",
+      "alias.h", "insn-config.h", "flags.h", "expmed.h", "dojump.h",
       "explow.h", "calls.h", "emit-rtl.h", "varasm.h", "stmt.h",
-      "expr.h", "alloc-pool.h",
-      "basic-block.h", "cselib.h", "insn-addr.h",
-      "optabs.h", "libfuncs.h", "debug.h", "ggc.h", 
-      "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
-      "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
-      "gimple-expr.h", "is-a.h",
-      "gimple.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",
+      "expr.h", "alloc-pool.h", "cselib.h", "insn-addr.h", "optabs.h",
+      "libfuncs.h", "debug.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
+      "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",
       "tree-phinodes.h", "ssa-iterators.h", "stringpool.h", "tree-ssanames.h",
       "tree-ssa-loop.h", "tree-ssa-loop-ivopts.h", "tree-ssa-loop-manip.h",
       "tree-ssa-loop-niter.h", "tree-into-ssa.h", "tree-dfa.h", 
@@ -4717,33 +4708,6 @@ write_roots (pair_p variables, bool emit_pch)
    guaranteee for somewhat increased readability.  If name conflicts do happen,
    this funcion will have to be adjusted to be more like
    output_mangled_typename.  */
-
-static void
-output_typename (outf_p of, const_type_p t)
-{
-  switch (t->kind)
-    {
-    case TYPE_STRING:
-      oprintf (of, "str");
-      break;
-    case TYPE_SCALAR:
-      oprintf (of, "scalar");
-      break;
-    case TYPE_POINTER:
-      output_typename (of, t->u.p);
-      break;
-    case TYPE_STRUCT:
-    case TYPE_USER_STRUCT:
-    case TYPE_UNION:
-    case TYPE_LANG_STRUCT:
-      oprintf (of, "%s", t->u.s.tag);
-      break;
-    case TYPE_NONE:
-    case TYPE_UNDEFINED:
-    case TYPE_ARRAY:
-      gcc_unreachable ();
-    }
-}
 
 #define INDENT 2
 

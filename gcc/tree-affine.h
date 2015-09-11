@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_AFFINE_H
 #define GCC_TREE_AFFINE_H
 
-#include "hash-map.h"
-#include "wide-int.h"
 
 #define MAX_AFF_ELTS 8
 

@@ -28,7 +28,6 @@
 #define LIBFFI_ASM
 #include <fficonfig.h>
 #include <ffi.h>
-#include <ffi_cfi.h>
 #include "internal.h"
 
 #ifndef SPARC64
@@ -48,11 +47,10 @@
 #ifndef __GNUC__
         .align 8
 	.globl	C(ffi_flush_icache)
-	.type	C(ffi_flush_icache),@function
+	.type	C(ffi_flush_icache),#function
 	FFI_HIDDEN(C(ffi_flush_icache))
 
 C(ffi_flush_icache):
-	cfi_startproc
 1:	iflush %o0
 	iflush %o+8
 	nop
@@ -62,27 +60,25 @@ C(ffi_flush_icache):
 	nop
 	retl
 	 nop
-	cfi_endproc
 	.size	C(ffi_flush_icache), . - C(ffi_flush_icache)
 #endif
 
-.macro E index
-	.align	16
-	.org	2b + \index * 16
-.endm
+#if defined(__sun__) && defined(__svr4__)
+# define E(INDEX)	.align 16
+#else
+# define E(INDEX)	.align 16; .org 2b + INDEX * 16
+#endif
 
         .align 8
 	.globl	C(ffi_call_v8)
-	.type	C(ffi_call_v8),@function
+	.type	C(ffi_call_v8),#function
 	FFI_HIDDEN(C(ffi_call_v8))
 
 C(ffi_call_v8):
-	cfi_startproc
+.LUW0:
 	! Allocate a stack frame sized by ffi_call.
 	save	%sp, %o4, %sp
-	cfi_def_cfa_register(%fp)
-	cfi_window_save
-
+.LUW1:
 	mov	%i0, %o0		! copy cif
 	add	%sp, 64+32, %o1		! load args area
 	mov	%i2, %o2		! copy rvalue
@@ -114,71 +110,71 @@ C(ffi_call_v8):
 	! Note that each entry is 4 insns, enforced by the E macro.
 	.align	16
 2:
-E SPARC_RET_VOID
+E(SPARC_RET_VOID)
 	ret
 	 restore
-E SPARC_RET_STRUCT
+E(SPARC_RET_STRUCT)
 	unimp
-E SPARC_RET_UINT8
+E(SPARC_RET_UINT8)
 	and	%o0, 0xff, %o0
 	st	%o0, [%i2]
 	ret
 	 restore
-E SPARC_RET_SINT8
+E(SPARC_RET_SINT8)
 	sll	%o0, 24, %o0
 	b	7f
 	 sra	%o0, 24, %o0
-E SPARC_RET_UINT16
+E(SPARC_RET_UINT16)
 	sll	%o0, 16, %o0
 	b	7f
 	 srl	%o0, 16, %o0
-E SPARC_RET_SINT16
+E(SPARC_RET_SINT16)
 	sll	%o0, 16, %o0
 	b	7f
 	 sra	%o0, 16, %o0
-E SPARC_RET_UINT32
+E(SPARC_RET_UINT32)
 7:	st	%o0, [%i2]
 	ret
 	 restore
-E SP_V8_RET_CPLX16
+E(SP_V8_RET_CPLX16)
 	sth	%o0, [%i2+2]
 	b	9f
 	 srl	%o0, 16, %o0
-E SPARC_RET_INT64
+E(SPARC_RET_INT64)
 	st	%o0, [%i2]
 	st	%o1, [%i2+4]
 	ret
 	 restore
-E SPARC_RET_INT128
+E(SPARC_RET_INT128)
 	std	%o0, [%i2]
 	std	%o2, [%i2+8]
 	ret
 	 restore
-E SPARC_RET_F_8
+E(SPARC_RET_F_8)
 	st	%f7, [%i2+7*4]
 	nop
 	st	%f6, [%i2+6*4]
 	nop
-E SPARC_RET_F_6
+E(SPARC_RET_F_6)
 	st	%f5, [%i2+5*4]
 	nop
 	st	%f4, [%i2+4*4]
 	nop
-E SPARC_RET_F_4
+E(SPARC_RET_F_4)
 	st	%f3, [%i2+3*4]
 	nop
 	st	%f2, [%i2+2*4]
 	nop
-E SPARC_RET_F_2
+E(SPARC_RET_F_2)
 	st	%f1, [%i2+4]
 	st	%f0, [%i2]
 	ret
 	 restore
-E SP_V8_RET_CPLX8
+E(SP_V8_RET_CPLX8)
 	stb	%o0, [%i2+1]
-	b	10f
+	b	0f
 	 srl	%o0, 8, %o0
-E SPARC_RET_F_1
+E(SPARC_RET_F_1)
 	st	%f0, [%i2]
 	ret
 	 restore
@@ -188,7 +184,7 @@ E SPARC_RET_F_1
 	ret
 	 restore
 	.align	8
-10:	stb	%o0, [%i2]
+0:	stb	%o0, [%i2]
 	ret
 	 restore
 
@@ -201,19 +197,37 @@ E SPARC_RET_F_1
 	 sll	%l1, 2, %l0			! size * 4
 1:	sll	%l1, 4, %l1			! size * 16
 	add	%l0, %l1, %l0			! size * 20
-	add	%o7, %l0, %o7			! o7 = 0b + size*20
+	add	%o7, %l0, %o7			! o7 = 8b + size*20
 	jmp	%o7+(2f-8b)
 	 mov	%i5, %g2			! load static chain
 2:
-.rept	0x1000
-	call	%i1
-	 nop
-	unimp	(. - 2b) / 20
-	ret
-	 restore
-.endr
 
-	cfi_endproc
+/* The Sun assembler doesn't understand .rept 0x1000.  */
+#define rept1			\
+	call	%i1;		\
+	 nop;			\
+	unimp	(. - 2b) / 20;	\
+	ret;			\
+	 restore
+
+#define rept16				\
+	rept1; rept1; rept1; rept1;	\
+	rept1; rept1; rept1; rept1;	\
+	rept1; rept1; rept1; rept1;	\
+	rept1; rept1; rept1; rept1
+
+#define rept256				\
+	rept16; rept16; rept16; rept16;	\
+	rept16; rept16; rept16; rept16;	\
+	rept16; rept16; rept16; rept16;	\
+	rept16; rept16; rept16; rept16
+
+	rept256; rept256; rept256; rept256
+	rept256; rept256; rept256; rept256
+	rept256; rept256; rept256; rept256
+	rept256; rept256; rept256; rept256
+
+.LUW2:
 	.size	C(ffi_call_v8),. - C(ffi_call_v8)
 
 
@@ -231,33 +245,29 @@ E SPARC_RET_F_1
 
 	.align 8
 	.globl	C(ffi_go_closure_v8)
-	.type	C(ffi_go_closure_v8),@function
+	.type	C(ffi_go_closure_v8),#function
 	FFI_HIDDEN(C(ffi_go_closure_v8))
 
 C(ffi_go_closure_v8):
-	cfi_startproc
+.LUW3:
 	save	%sp, -STACKFRAME, %sp
-	cfi_def_cfa_register(%fp)
-	cfi_window_save
-
+.LUW4:
 	ld	[%g2+4], %o0			! load cif
 	ld	[%g2+8], %o1			! load fun
 	b	0f
 	 mov	%g2, %o2			! load user_data
-	cfi_endproc
+.LUW5:
 	.size	C(ffi_go_closure_v8), . - C(ffi_go_closure_v8)
 
 	.align 8
 	.globl	C(ffi_closure_v8)
-	.type	C(ffi_closure_v8),@function
+	.type	C(ffi_closure_v8),#function
 	FFI_HIDDEN(C(ffi_closure_v8))
 
 C(ffi_closure_v8):
-	cfi_startproc
+.LUW6:
 	save	%sp, -STACKFRAME, %sp
-	cfi_def_cfa_register(%fp)
-	cfi_window_save
-
+.LUW7:
 	ld	[%g2+FFI_TRAMPOLINE_SIZE], %o0		! load cif
 	ld	[%g2+FFI_TRAMPOLINE_SIZE+4], %o1	! load fun
 	ld	[%g2+FFI_TRAMPOLINE_SIZE+8], %o2	! load user_data
@@ -285,76 +295,148 @@ C(ffi_closure_v8):
 	! Note that each entry is 4 insns, enforced by the E macro.
 	.align	16
 2:
-E SPARC_RET_VOID
+E(SPARC_RET_VOID)
 	ret
 	 restore
-E SPARC_RET_STRUCT
+E(SPARC_RET_STRUCT)
 	ld	[%i2], %i0
 	jmp	%i7+12
 	 restore
-E SPARC_RET_UINT8
+E(SPARC_RET_UINT8)
 	ldub	[%i2+3], %i0
 	ret
 	 restore
-E SPARC_RET_SINT8
+E(SPARC_RET_SINT8)
 	ldsb	[%i2+3], %i0
 	ret
 	 restore
-E SPARC_RET_UINT16
+E(SPARC_RET_UINT16)
 	lduh	[%i2+2], %i0
 	ret
 	 restore
-E SPARC_RET_SINT16
+E(SPARC_RET_SINT16)
 	ldsh	[%i2+2], %i0
 	ret
 	 restore
-E SPARC_RET_UINT32
+E(SPARC_RET_UINT32)
 	ld	[%i2], %i0
 	ret
 	 restore
-E SP_V8_RET_CPLX16
+E(SP_V8_RET_CPLX16)
 	ld	[%i2], %i0
 	ret
 	 restore
-E SPARC_RET_INT64
+E(SPARC_RET_INT64)
 	ldd	[%i2], %i0
 	ret
 	 restore
-E SPARC_RET_INT128
+E(SPARC_RET_INT128)
 	ldd	[%i2], %i0
 	ldd	[%i2+8], %i2
 	ret
 	 restore
-E SPARC_RET_F_8
+E(SPARC_RET_F_8)
 	ld	[%i2+7*4], %f7
 	nop
 	ld	[%i2+6*4], %f6
 	nop
-E SPARC_RET_F_6
+E(SPARC_RET_F_6)
 	ld	[%i2+5*4], %f5
 	nop
 	ld	[%i2+4*4], %f4
 	nop
-E SPARC_RET_F_4
+E(SPARC_RET_F_4)
 	ld	[%i2+3*4], %f3
 	nop
 	ld	[%i2+2*4], %f2
 	nop
-E SPARC_RET_F_2
+E(SPARC_RET_F_2)
 	ldd	[%i2], %f0
 	ret
 	 restore
-E SP_V8_RET_CPLX8
+E(SP_V8_RET_CPLX8)
 	lduh	[%i2], %i0
 	ret
 	 restore
-E SPARC_RET_F_1
+E(SPARC_RET_F_1)
 	ld	[%i2], %f0
 	ret
 	 restore
 
-	cfi_endproc
+.LUW8:
 	.size	C(ffi_closure_v8), . - C(ffi_closure_v8)
+
+#ifdef HAVE_RO_EH_FRAME
+        .section        ".eh_frame",#alloc
+#else
+        .section        ".eh_frame",#alloc,#write
+#endif
+
+#ifdef HAVE_AS_SPARC_UA_PCREL
+# define FDE_ADDR(X)	%r_disp32(X)
+#else
+# define FDE_ADDR(X)	X
+#endif
+
+	.align 4
+.LCIE:
+	.long	.LECIE - .LSCIE		! CIE Length
+.LSCIE:
+	.long	0			! CIE Identifier Tag
+	.byte	1			! CIE Version
+	.ascii	"zR\0"			! CIE Augmentation
+	.byte	4			! CIE Code Alignment Factor
+	.byte	0x7c			! CIE Data Alignment Factor
+	.byte	15			! CIE RA Column
+	.byte	1			! Augmentation size
+#ifdef HAVE_AS_SPARC_UA_PCREL
+	.byte	0x1b			! FDE Encoding (pcrel sdata4)
+#else
+	.byte	0x50			! FDE Encoding (aligned absolute)
+#endif
+	.byte	0xc, 14, 0		! DW_CFA_def_cfa, %o6, offset 0
+	.align	4
+.LECIE:
+
+	.long	.LEFDE1 - .LSFDE1	! FDE Length
+.LSFDE1:
+	.long	.LSFDE1 - .LCIE		! FDE CIE offset
+	.long	FDE_ADDR(.LUW0)		! Initial location
+	.long	.LUW2 - .LUW0		! Address range
+	.byte	0			! Augmentation size
+	.byte	0x40+1			! DW_CFA_advance_loc 4
+	.byte	0xd, 30			! DW_CFA_def_cfa_register, %i6
+	.byte	0x2d			! DW_CFA_GNU_window_save
+	.byte	0x9, 15, 31		! DW_CFA_register, %o7, %i7
+	.align	4
+.LEFDE1:
+
+	.long	.LEFDE2 - .LSFDE2	! FDE Length
+.LSFDE2:
+	.long	.LSFDE2 - .LCIE		! FDE CIE offset
+	.long	FDE_ADDR(.LUW3)		! Initial location
+	.long	.LUW5 - .LUW3		! Address range
+	.byte	0			! Augmentation size
+	.byte	0x40+1			! DW_CFA_advance_loc 4
+	.byte	0xd, 30			! DW_CFA_def_cfa_register, %i6
+	.byte	0x2d			! DW_CFA_GNU_window_save
+	.byte	0x9, 15, 31		! DW_CFA_register, %o7, %i7
+	.align	4
+.LEFDE2:
+
+	.long	.LEFDE3 - .LSFDE3	! FDE Length
+.LSFDE3:
+	.long	.LSFDE3 - .LCIE		! FDE CIE offset
+	.long	FDE_ADDR(.LUW6)		! Initial location
+	.long	.LUW8 - .LUW6		! Address range
+	.byte	0			! Augmentation size
+	.byte	0x40+1			! DW_CFA_advance_loc 4
+	.byte	0xd, 30			! DW_CFA_def_cfa_register, %i6
+	.byte	0x2d			! DW_CFA_GNU_window_save
+	.byte	0x9, 15, 31		! DW_CFA_register, %o7, %i7
+	.align	4
+.LEFDE3:
+
 #endif /* !SPARC64 */
 #if defined __ELF__ && defined __linux__
 	.section	.note.GNU-stack,"",@progbits

@@ -3,870 +3,923 @@
 # This file is distributed under the same license as the gcc package.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012, 2013.
-# Mario Blättermann <mario.blaettermann@gmail.com>, 2014.
+# Mario Blättermann <mario.blaettermann@gmail.com>, 2014, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.9-b20140202\n"
+"Project-Id-Version: cpplib 5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2014-02-02 17:35+0000\n"
-"PO-Revision-Date: 2014-03-18 15:18+0100\n"
+"POT-Creation-Date: 2015-04-13 20:12+0000\n"
+"PO-Revision-Date: 2015-02-12 21:24+0100\n"
 "Last-Translator: Mario Blättermann <mario.blaettermann@gmail.com>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.7.3\n"
 
-#: charset.c:673
+#: charset.c:674
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "Konvertierung von %s nach %s wird von iconv nicht unterstützt"
 
-#: charset.c:676
+#: charset.c:677
 msgid "iconv_open"
 msgstr "iconv_open"
 
-#: charset.c:684
+#: charset.c:685
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "keine Implementation für iconv, es kann nicht von %s nach %s konvertiert werden"
 
-#: charset.c:780
+#: charset.c:781
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "Zeichen 0x%lx ist nicht im regulären Quellzeichensatz\n"
 
-#: charset.c:797 charset.c:1447
+#: charset.c:798 charset.c:1452
 msgid "converting to execution character set"
 msgstr "Konvertierung in Zeichensatz der Ausführung"
 
-#: charset.c:803
+#: charset.c:804
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "Zeichen 0x%lx ist kein Unibyte im Ausführungs-Zeichensatz"
 
-#: charset.c:997
+#: charset.c:998
 msgid "universal character names are only valid in C++ and C99"
 msgstr "universelle Zeichennamen sind nur in C++ und C99 gültig"
 
-#: charset.c:1000
+#: charset.c:1002
+msgid "C99's universal character names are incompatible with C90"
+msgstr "universelle Zeichennamen in C99 sind zu C90 inkompatibel"
+
+#: charset.c:1005
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "die Bedeutung von »\\%c« ist in traditionellem C anders"
 
-#: charset.c:1009
+#: charset.c:1014
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "In _cpp_valid_ucn, aber kein UCN"
 
-#: charset.c:1034
+#: charset.c:1039
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "unvollständiger Universal-Zeichenname %.*s"
 
-#: charset.c:1049
+#: charset.c:1054
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "»%.*s« ist kein gültiges universelles Zeichen"
 
-#: charset.c:1059 lex.c:1126
+#: charset.c:1064 lex.c:1218
 msgid "'$' in identifier or number"
 msgstr "»$« in Bezeichner oder Zahl"
 
-#: charset.c:1069
+#: charset.c:1074
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "universelles Zeichen %.*s ist nicht gültig in Bezeichner"
 
-#: charset.c:1073
+#: charset.c:1078
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universelles Zeichen %.*s ist nicht gültig am Anfang eines Bezeichners"
 
-#: charset.c:1105 charset.c:1677
+#: charset.c:1110 charset.c:1682
 msgid "converting UCN to source character set"
 msgstr "UCN wird in Quellzeichensatz konvertiert"
 
-#: charset.c:1109
+#: charset.c:1114
 msgid "converting UCN to execution character set"
 msgstr "UCN wird in Ausführungszeichensatz konvertiert"
 
-#: charset.c:1181
+#: charset.c:1186
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "die Bedeutung von »\\x« ist in traditionellem C anders"
 
-#: charset.c:1198
+#: charset.c:1203
 msgid "\\x used with no following hex digits"
 msgstr "\\x ohne folgende Hex-Ziffern verwendet"
 
 # http://de.wikipedia.org/wiki/Escape-Sequenz
-#: charset.c:1205
+#: charset.c:1210
 msgid "hex escape sequence out of range"
 msgstr "Hex-Escape-Sequenz außerhalb des Wertebereiches"
 
 # http://de.wikipedia.org/wiki/Escape-Sequenz
-#: charset.c:1243
+#: charset.c:1248
 msgid "octal escape sequence out of range"
 msgstr "Oktal-Escape-Sequenz außerhalb des Wertebereiches"
 
-#: charset.c:1309
+#: charset.c:1314
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "die Bedeutung von »\\a« ist in traditionellem C anders"
 
-#: charset.c:1316
+#: charset.c:1321
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "nicht-ISO-standardkonforme Escape-Sequenz »\\%c«"
 
-#: charset.c:1324
+#: charset.c:1329
 #, c-format
 msgid "unknown escape sequence: '\\%c'"
 msgstr "unbekannte Escape-Sequenz: »\\%c«"
 
-#: charset.c:1332
+#: charset.c:1337
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "unbekannte Escape-Sequenz: »\\%s«"
 
-#: charset.c:1339
+#: charset.c:1344
 msgid "converting escape sequence to execution character set"
 msgstr "Escape-Sequenz wird in Zeichensatz der Ausführung konvertiert"
 
-#: charset.c:1512 charset.c:1576
+#: charset.c:1517 charset.c:1581
 msgid "character constant too long for its type"
 msgstr "Zeichenkonstante zu lang für ihren Typ"
 
-#: charset.c:1515
+#: charset.c:1520
 msgid "multi-character character constant"
 msgstr "Zeichenkonstante mit mehreren Zeichen"
 
-#: charset.c:1615
+#: charset.c:1620
 msgid "empty character constant"
 msgstr "Leere Zeichenkonstante"
 
-#: charset.c:1724
+#: charset.c:1729
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "Fehler beim Konvertieren von %s nach %s"
 
-#: directives.c:224 directives.c:250
+#: directives.c:224 directives.c:267
 #, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr "mehrere Token am Ende der Direktive #%s"
 
-#: directives.c:357
+#: directives.c:374
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%s ist eine GCC-Erweiterung"
 
-#: directives.c:362
+#: directives.c:379
 #, c-format
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s ist eine veraltete GCC-Erweiterung"
 
-#: directives.c:375
+#: directives.c:392
 msgid "suggest not using #elif in traditional C"
 msgstr "es wird empfohlen, in traditionellem C nicht #elif zu verwenden"
 
-#: directives.c:378
+#: directives.c:395
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "traditionelles C ignoriert #%s mit eingerücktem #"
 
-#: directives.c:382
+#: directives.c:399
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "es wird empfohlen, #%s vor traditionellem C mit # zu verbergen"
 
-#: directives.c:408
+#: directives.c:425
 msgid "embedding a directive within macro arguments is not portable"
 msgstr "das Einbetten einer Direktive innerhalb von Makroargumenten ist nicht portierbar"
 
-#: directives.c:428
+#: directives.c:445
 msgid "style of line directive is a GCC extension"
 msgstr "der Stil der line-Direktive ist eine GCC-Erweiterung"
 
-#: directives.c:483
+#: directives.c:500
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "ungültige Präprozessordirektive #%s"
 
-#: directives.c:551
+#: directives.c:568
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "»defined« kann nicht als Makroname verwendet werden"
 
-#: directives.c:557
+#: directives.c:573
+msgid "\"__has_include__\" cannot be used as a macro name"
+msgstr "»__has_include__« kann nicht als Makroname verwendet werden"
+
+#: directives.c:579
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "»%s« kann nicht als Makroname verwendet werden, da es ein Operator in C++ ist"
 
-#: directives.c:560
+#: directives.c:582
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr "kein Makroname in Direktive #%s angegeben"
 
-#: directives.c:563
+#: directives.c:585
 msgid "macro names must be identifiers"
 msgstr "Makronamen müssen Bezeichner sein"
 
-#: directives.c:612
+#: directives.c:634 directives.c:639
 #, c-format
 msgid "undefining \"%s\""
 msgstr "»%s« wird un-definiert"
 
-#: directives.c:667
+#: directives.c:694
 msgid "missing terminating > character"
 msgstr "fehlendes abschließendes »>«-Zeichen"
 
-#: directives.c:726
+#: directives.c:753
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s erwartet \"DATEINAME\" oder <DATEINAME>"
 
-#: directives.c:772
+#: directives.c:799
 #, c-format
 msgid "empty filename in #%s"
 msgstr "leerer Dateiname in #%s"
 
-#: directives.c:782
+#: directives.c:809
 msgid "#include nested too deeply"
 msgstr "#include ist zu tief geschachtelt"
 
-#: directives.c:823
+#: directives.c:850
 msgid "#include_next in primary source file"
 msgstr "#include_next in erster Quelldatei"
 
-#: directives.c:849
+#: directives.c:876
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "ungültiges Kennzeichen »%s« in line-Direktive"
 
-#: directives.c:909
+#: directives.c:936
 msgid "unexpected end of file after #line"
 msgstr "unerwartetes Dateiende nach #line"
 
-#: directives.c:912
+#: directives.c:939
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "»%s« hinter #line ist keine positive Ganzzahl"
 
-#: directives.c:918 directives.c:920
+#: directives.c:945 directives.c:947
 msgid "line number out of range"
 msgstr "Zeilennummer ist außerhalb des Wertebereiches"
 
-#: directives.c:933 directives.c:1013
+#: directives.c:960 directives.c:1040
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "»%s« ist kein gültiger Dateiname"
 
-#: directives.c:973
+#: directives.c:1000
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "»%s« hinter # ist keine positive Ganzzahl"
 
-#: directives.c:1068 directives.c:1070 directives.c:1072 directives.c:1658
+#: directives.c:1095 directives.c:1097 directives.c:1099 directives.c:1685
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1096
+#: directives.c:1123
 #, c-format
 msgid "invalid #%s directive"
 msgstr "ungültige #%s-Direktive"
 
-#: directives.c:1159
+#: directives.c:1186
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "Pragmas im Namensraum »%s« werden ohne passende Namensauflösung registriert"
 
-#: directives.c:1168
+#: directives.c:1195
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "Pragma »%s« wird mit Namensauflösung und ohne Namensraum registriert"
 
-#: directives.c:1186
+#: directives.c:1213
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "»%s« wird sowohl als Pragma als auch als Pragma-Namensraum registriert"
 
-#: directives.c:1189
+#: directives.c:1216
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s ist bereits registriert"
 
-#: directives.c:1192
+#: directives.c:1219
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s ist bereits registriert"
 
-#: directives.c:1222
+#: directives.c:1249
 msgid "registering pragma with NULL handler"
 msgstr "Pragma mit NULL-Handler wird registriert"
 
-#: directives.c:1439
+#: directives.c:1466
 msgid "#pragma once in main file"
 msgstr "#pragma once in Hauptdatei"
 
-#: directives.c:1462
+#: directives.c:1489
 msgid "invalid #pragma push_macro directive"
 msgstr "ungültige #pragma push_macro Direktive"
 
-#: directives.c:1517
+#: directives.c:1544
 msgid "invalid #pragma pop_macro directive"
 msgstr "ungültige #pragma pop_macro Direktive"
 
-#: directives.c:1572
+#: directives.c:1599
 msgid "invalid #pragma GCC poison directive"
 msgstr "ungültige #pragma GCC Poison Direktive"
 
-#: directives.c:1581
+#: directives.c:1608
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "schlechtes existierendes Makro »%s«"
 
-#: directives.c:1600
+#: directives.c:1627
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header außerhalb include-Datei ignoriert"
 
-#: directives.c:1625
+#: directives.c:1652
 #, c-format
 msgid "cannot find source file %s"
 msgstr "Quelldatei %s kann nicht gefunden werden"
 
-#: directives.c:1629
+#: directives.c:1656
 #, c-format
 msgid "current file is older than %s"
 msgstr "aktuelle Datei ist älter als %s"
 
-#: directives.c:1653
+#: directives.c:1680
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "ungültige »#pragma GCC %s« Direktive"
 
-#: directives.c:1847
+#: directives.c:1874
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma nimmt ein geklammertes Zeichenkettenliteral"
 
-#: directives.c:1968
+#: directives.c:1995
 msgid "#else without #if"
 msgstr "#else ohne #if"
 
-#: directives.c:1973
+#: directives.c:2000
 msgid "#else after #else"
 msgstr "#else hinter #else"
 
-#: directives.c:1975 directives.c:2008
+#: directives.c:2002 directives.c:2035
 msgid "the conditional began here"
 msgstr "die Bedingung begann hier"
 
-#: directives.c:2001
+#: directives.c:2028
 msgid "#elif without #if"
 msgstr "#elif ohne #if"
 
-#: directives.c:2006
+#: directives.c:2033
 msgid "#elif after #else"
 msgstr "#elif hinter #else"
 
-#: directives.c:2044
+#: directives.c:2064
 msgid "#endif without #if"
 msgstr "#endif ohne #if"
 
-#: directives.c:2124
+#: directives.c:2144
 msgid "missing '(' after predicate"
 msgstr "fehlende »(« hinter Prädikat"
 
-#: directives.c:2139
+#: directives.c:2159
 msgid "missing ')' to complete answer"
 msgstr "fehlende »)«, um Antwort abzuschließen"
 
-#: directives.c:2159
+#: directives.c:2179
 msgid "predicate's answer is empty"
 msgstr "Prädikatantwort ist leer"
 
-#: directives.c:2186
+#: directives.c:2206
 msgid "assertion without predicate"
 msgstr "Behauptung ohne Prädikat"
 
-#: directives.c:2189
+#: directives.c:2209
 msgid "predicate must be an identifier"
 msgstr "Prädikat muss ein Bezeichner sein"
 
-#: directives.c:2275
+#: directives.c:2295
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "»%s« wieder behauptet"
 
-#: directives.c:2567
+#: directives.c:2587
 #, c-format
 msgid "unterminated #%s"
 msgstr "unbeendetes #%s"
 
-#: directives-only.c:221 lex.c:2311 traditional.c:162
+#: directives-only.c:221 lex.c:2433 traditional.c:167
 msgid "unterminated comment"
 msgstr "nicht beendeter Kommentar"
 
-#: errors.c:234
+#: errors.c:231
 msgid "stdout"
 msgstr "Standardausgabe"
 
-#: errors.c:236
+#: errors.c:233
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: expr.c:510 expr.c:620
+#: expr.c:512 expr.c:629
 msgid "fixed-point constants are a GCC extension"
 msgstr "Festkommakonstanten sind eine GCC-Erweiterung"
 
-#: expr.c:535
+#: expr.c:537
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ungültiges Präfix »0b« für Gleitkommakonstante"
 
-#: expr.c:545
+#: expr.c:550
+msgid "use of C++11 hexadecimal floating constant"
+msgstr "Verwendung von hexadezimaler C++11-Gleitkommakonstante"
+
+#: expr.c:553
 msgid "use of C99 hexadecimal floating constant"
 msgstr "Verwendung von hexadezimaler C99-Gleitkommakonstante"
 
-#: expr.c:588
+#: expr.c:597
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "ungültiges Suffix »%.*s« an Gleitkommakonstante"
 
-#: expr.c:599 expr.c:659
+#: expr.c:608 expr.c:668
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditionelles C lehnt das Suffix »%.*s« ab"
 
-#: expr.c:607
+#: expr.c:616
 msgid "suffix for double constant is a GCC extension"
 msgstr "Suffix an Gleitkommakonstante ist eine GCC-Erweiterung"
 
-#: expr.c:613
+#: expr.c:622
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ungültiges Suffix »%.*s« mit hexadezimaler Gleitkommakonstante"
 
-#: expr.c:624
+#: expr.c:633
 msgid "decimal float constants are a GCC extension"
 msgstr "dezimale Gleitkommakonstanten sind eine GCC-Erweiterung"
 
-#: expr.c:642
+#: expr.c:651
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "ungültiges Suffix »%.*s« an Ganzzahlkonstante"
 
-#: expr.c:667
+#: expr.c:676
 msgid "use of C++11 long long integer constant"
 msgstr "C++11 long long Ganzzahlkonstante verwendet"
 
-#: expr.c:668
+#: expr.c:677
 msgid "use of C99 long long integer constant"
 msgstr "C99 long long Ganzzahlkonstante verwendet"
 
-#: expr.c:684
+#: expr.c:693
 msgid "imaginary constants are a GCC extension"
 msgstr "imaginäre Konstanten sind eine GCC-Erweiterung"
 
-#: expr.c:690
-msgid "binary constants are a C++1y feature or GCC extension"
-msgstr "binäre Konstanten sind ein C++1y-Funktionsmerkmal oder eine GCC-Erweiterung"
+#: expr.c:699
+msgid "binary constants are a C++14 feature or GCC extension"
+msgstr "binäre Konstanten sind ein C++14-Funktionsmerkmal oder eine GCC-Erweiterung"
 
-#: expr.c:787
+#: expr.c:701
+msgid "binary constants are a GCC extension"
+msgstr "binäre Konstanten sind eine GCC-Erweiterung"
+
+#: expr.c:796
 msgid "integer constant is too large for its type"
 msgstr "Ganzzahlkonstante ist zu groß für ihren Typ"
 
-#: expr.c:818
+#: expr.c:827
 msgid "integer constant is so large that it is unsigned"
 msgstr "Ganzzahlkonstante ist so groß, dass sie vorzeichenlos ist"
 
-#: expr.c:913
+#: expr.c:922
 msgid "missing ')' after \"defined\""
 msgstr "fehlende »)« hinter »defined«"
 
-#: expr.c:920
+#: expr.c:929
 msgid "operator \"defined\" requires an identifier"
 msgstr "Operator »defined« erfordert einen Bezeichner"
 
-#: expr.c:928
+#: expr.c:937
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(»%s« ist ein alternatives Token for »%s« in C++)"
 
-#: expr.c:938
+#: expr.c:947
 msgid "this use of \"defined\" may not be portable"
 msgstr "diese Verwendung von »defined« könnte nicht portierbar sein"
 
-#: expr.c:998
+#: expr.c:1007
 msgid "user-defined literal in preprocessor expression"
 msgstr "benutzerdefiniertes Symbol in Präprozessorausdruck"
 
-#: expr.c:1003
+#: expr.c:1012
 msgid "floating constant in preprocessor expression"
 msgstr "Gleitkommakonstante in Präprozessorausdruck"
 
-#: expr.c:1009
+#: expr.c:1018
 msgid "imaginary number in preprocessor expression"
 msgstr "imaginäre Zahl in Präprozessorausdruck"
 
-#: expr.c:1057
+#: expr.c:1070
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "»%s« ist nicht definiert"
 
-#: expr.c:1070
+#: expr.c:1083
 msgid "assertions are a GCC extension"
 msgstr "Assertions sind eine GCC-Erweiterung"
 
-#: expr.c:1073
+#: expr.c:1086
 msgid "assertions are a deprecated extension"
 msgstr "Assertions sind eine veraltete Erweiterung"
 
-#: expr.c:1318
+#: expr.c:1331
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "unausgeglichener Keller in %s"
 
-#: expr.c:1338
+#: expr.c:1351
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "unmöglicher Operator »%u«"
 
-#: expr.c:1439
+#: expr.c:1452
 msgid "missing ')' in expression"
 msgstr "fehlende »)« in Ausdruck"
 
-#: expr.c:1468
+#: expr.c:1481
 msgid "'?' without following ':'"
 msgstr "»?« ohne folgenden »:«"
 
-#: expr.c:1478
+#: expr.c:1491
 msgid "integer overflow in preprocessor expression"
 msgstr "Ganzzahlüberlauf in Präprozessorausdruck"
 
-#: expr.c:1483
+#: expr.c:1496
 msgid "missing '(' in expression"
 msgstr "fehlende »(« in Ausdruck"
 
-#: expr.c:1515
+#: expr.c:1528
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "der linke Operand von »%s« ändert bei der Weitergabe das Vorzeichen"
 
-#: expr.c:1520
+#: expr.c:1533
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "der rechte Operand von »%s« ändert bei der Weitergabe das Vorzeichen"
 
-#: expr.c:1779
+#: expr.c:1792
 msgid "traditional C rejects the unary plus operator"
 msgstr "traditionelles C weist den unären Plus-Operator zurück"
 
-#: expr.c:1877
+#: expr.c:1890
 msgid "comma operator in operand of #if"
 msgstr "Kommaoperator in Operand von #if"
 
-#: expr.c:2013
+#: expr.c:2026
 msgid "division by zero in #if"
 msgstr "Division durch Null in #if"
 
-#: files.c:505
+#: expr.c:2123
+msgid "operator \"__has_include__\" requires a header string"
+msgstr "Operator »__has_include__« erfordert eine Header-Zeichenkette"
+
+#: expr.c:2139
+msgid "missing ')' after \"__has_include__\""
+msgstr "fehlende »)« hinter »__has_include__«"
+
+#: files.c:513
 msgid "NULL directory in find_file"
 msgstr "NULL-Verzeichnis in find_file"
 
-#: files.c:553
+#: files.c:561
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "eine oder mehrere PCH-Dateien wurden gefunden, aber sie sind ungültig"
 
-#: files.c:556
+#: files.c:564
 msgid "use -Winvalid-pch for more information"
 msgstr "-Winvalid-pch für mehr Informationen verwenden"
 
-#: files.c:660
+#: files.c:668
 #, c-format
 msgid "%s is a block device"
 msgstr "%s ist ein blockorientertes Gerät"
 
-#: files.c:677
+#: files.c:685
 #, c-format
 msgid "%s is too large"
 msgstr "%s ist zu groß"
 
-#: files.c:717
+#: files.c:725
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s ist kürzer als erwartet"
 
-#: files.c:953
+#: files.c:961
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "kein Include-Pfad, um %s zu finden"
 
-#: files.c:1389
+#: files.c:1411
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Mehrere Include-Wächter könnten nützlich sein für:\n"
 
-#: init.c:536
+#: init.c:546
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t muss ein vorzeichenloser Typ sein"
 
-#: init.c:540
+#: init.c:550
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "Präprozessorarithmetik hat maximale Präzision von %lu Bits; Ziel erfordert %lu Bits"
 
-#: init.c:547
+#: init.c:557
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "CPP-Arithmetik muss mindestens so genau sein wie das Ziel int"
 
-#: init.c:550
+#: init.c:560
 msgid "target char is less than 8 bits wide"
 msgstr "Ziel-char ist weniger als 8 Bits breit"
 
-#: init.c:554
+#: init.c:564
 msgid "target wchar_t is narrower than target char"
 msgstr "Ziel-wchar_t ist schmaler als Ziel-char"
 
-#: init.c:558
+#: init.c:568
 msgid "target int is narrower than target char"
 msgstr "Ziel-int ist schmaler als Ziel-char"
 
-#: init.c:563
+#: init.c:573
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP Halb-Ganzzahl ist schmaler als CPP-Zeichen"
 
-#: init.c:567
+#: init.c:577
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP kann auf diesem Computer keine Wide-Zeichenkonstanten über %lu Bits Breite behandeln, das Ziel benötigt %lu Bits"
 
-#: lex.c:919
+#: lex.c:1011
 msgid "backslash and newline separated by space"
 msgstr "Backslash und Newline durch Leerzeichen getrennt"
 
-#: lex.c:924
+#: lex.c:1016
 msgid "backslash-newline at end of file"
 msgstr "Backslash-Newline am Dateiende"
 
-#: lex.c:940
+#: lex.c:1032
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "Trigraph ??%c in %c konvertiert"
 
-#: lex.c:948
+#: lex.c:1040
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "Trigraph ??%c ignoriert, -trigraphs zum Aktivieren verwenden"
 
-#: lex.c:997
+#: lex.c:1089
 msgid "\"/*\" within comment"
 msgstr "»/*« innerhalb des Kommentars"
 
-#: lex.c:1055
+#: lex.c:1147
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s in Präprozessordirektive"
 
-#: lex.c:1064
+#: lex.c:1156
 msgid "null character(s) ignored"
 msgstr "Null-Zeichen ignoriert"
 
-#: lex.c:1101
+#: lex.c:1193
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "»%.*s« ist nicht in NFKC"
 
-#: lex.c:1104
+#: lex.c:1196
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "»%.*s« ist nicht in NFC"
 
-#: lex.c:1173 lex.c:1253
+#: lex.c:1265 lex.c:1354
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "Versuch, schlechtes »%s« zu verwenden"
 
-#: lex.c:1181 lex.c:1261
+#: lex.c:1275 lex.c:1364
+msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
+msgstr "__VA_ARGS__ kann nur in Erweiterung eines variadischen C++11-Makros auftreten"
+
+#: lex.c:1279 lex.c:1368
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ kann nur in Erweiterung eines variadischen C99-Makros auftreten"
 
-#: lex.c:1187 lex.c:1267
+#: lex.c:1286 lex.c:1375
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "Bezeichner »%s« ist ein besonderer Operatorname in C++"
 
-#: lex.c:1554
+#: lex.c:1665
 msgid "raw string delimiter longer than 16 characters"
 msgstr "Roh-Zeichenketten-Trennsymbol länger als 16 Zeichen"
 
-#: lex.c:1558
+#: lex.c:1669
 msgid "invalid new-line in raw string delimiter"
 msgstr "ungültiger Zeilenumbruch (neue Zeile) in Roh-Zeichenketten-Trennsymbol"
 
-#: lex.c:1562
+#: lex.c:1673
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "ungültiges Zeichen »%c« in Roh-Zeichenketten-Trennsymbol"
 
-#: lex.c:1611 lex.c:1633
+#: lex.c:1722 lex.c:1744
 msgid "unterminated raw string"
 msgstr "unbeendete Roh-Zeichenkette"
 
-#: lex.c:1654 lex.c:1783
+#: lex.c:1765 lex.c:1894
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "ungültiges Suffix an Literal; C++11 erfordert Leerzeichen zwischen Literal und Zeichenketten-Makro"
 
-#: lex.c:1765
+#: lex.c:1876
 msgid "null character(s) preserved in literal"
 msgstr "Null-Zeichen im Literal erhalten"
 
-#: lex.c:1768
+#: lex.c:1879
 #, c-format
 msgid "missing terminating %c character"
 msgstr "fehlendes abschließendes Zeichen %c"
 
-#: lex.c:2322
+#: lex.c:2447 lex.c:2481
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++-Stil-Kommentare sind in ISO-C90 nicht erlaubt"
 
-#: lex.c:2324
+#: lex.c:2449 lex.c:2460 lex.c:2483
 msgid "(this will be reported only once per input file)"
 msgstr "(dies wird nur einmal pro Eingabedatei gemeldet)"
 
-#: lex.c:2329
+#: lex.c:2458
+msgid "C++ style comments are incompatible with C90"
+msgstr "C++-Stil-Kommentare sind zu C90 inkompatibel"
+
+#: lex.c:2489
 msgid "multi-line comment"
 msgstr "mehrzeiliger Kommentar"
 
-#: lex.c:2660
+#: lex.c:2833
 #, c-format
 msgid "unspellable token %s"
 msgstr "nicht buchstabierbares Token %s"
 
-#: macro.c:191
+#: macro.c:200
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "Makro »%s« wird nicht benutzt"
 
-#: macro.c:229 macro.c:433
+#: macro.c:238 macro.c:470
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "ungültiges eingebautes Makro »%s«"
 
-#: macro.c:236 macro.c:333
+#: macro.c:245 macro.c:342
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr "Das Makro »%s« könnte reproduzierbare Builds verhindern"
 
-#: macro.c:267
+#: macro.c:276
 msgid "could not determine file timestamp"
 msgstr "Zeitstempel der Datei konnte nicht ermittelt werden"
 
-#: macro.c:368
+#: macro.c:377
 msgid "could not determine date and time"
 msgstr "Datum und Zeit konnten nicht bestimmt werden"
 
-#: macro.c:384
+#: macro.c:393
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ innerhalb von Anweisung mit -fdirectives-only expandiert"
 
-#: macro.c:542
+#: macro.c:581
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "ungültiges Zeichenkettenliteral, abschließendes »\\« wird ignoriert"
 
-#: macro.c:604
+#: macro.c:643
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "das Einfügen von »%s« und »%s« ergibt kein gültiges Präprozessor-Token"
 
-#: macro.c:726
-msgid "ISO C99 requires rest arguments to be used"
-msgstr "ISO-C99 erfordert, dass Restargumente verwendet werden"
+#: macro.c:767
+msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
+msgstr "ISO-C++11 erfordert mindestens ein Argument für »...« in einem variadischen Makro"
 
-#: macro.c:731
+#: macro.c:771
+msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
+msgstr "ISO-C99 erfordert mindestens ein Argument für »...« in einem variadischen Makro"
+
+#: macro.c:778
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "Makro »%s« erfordert %u Argumente, aber nur %u wurden angegeben"
 
-#: macro.c:736
+#: macro.c:783
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "dem Makro »%s« wurden %u Argumente übergeben, aber es akzeptiert nur %u"
 
-#: macro.c:930 traditional.c:680
+#: macro.c:977 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "unvollendete Argumentliste beim Makroaufruf »%s«"
 
-#: macro.c:1081
+#: macro.c:1128
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "funktionsähnliches Makro »%s« muss mit Argumenten in traditionellem C verwendet werden"
 
-#: macro.c:1753
+#: macro.c:1814
 #, c-format
-msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr "Beim Ausführen des Arguments %2$d des Makros %1$s: Leere Makroargumente sind nach ISO-C90 und ISO-C++98 unbestimmt"
+msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
+msgstr "Beim Ausführen des Arguments %2$d des Makros %1$s: Leere Makroargumente sind nach ISO-C++98 unbestimmt"
 
-#: macro.c:2715
+#: macro.c:1822 macro.c:1831
+#, c-format
+msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
+msgstr "Beim Ausführen des Arguments %2$d des Makros %1$s: Leere Makroargumente sind nach ISO-C90 unbestimmt"
+
+#: macro.c:2800
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "doppelter Makroparameter »%s«"
 
-#: macro.c:2761
+#: macro.c:2849
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "»%s« darf nicht in Makroparameterliste auftreten"
 
-#: macro.c:2769
+#: macro.c:2857
 msgid "macro parameters must be comma-separated"
 msgstr "Makroparameter müssen mit Komma getrennt sein"
 
-#: macro.c:2786
+#: macro.c:2875
 msgid "parameter name missing"
 msgstr "Parametername fehlt"
 
-#: macro.c:2804
+#: macro.c:2896
+msgid "anonymous variadic macros were introduced in C++11"
+msgstr "anonyme variadische Makros wurden in C++11 eingeführt"
+
+#: macro.c:2900 macro.c:2905
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonyme variadische Makros wurden in C99 eingeführt"
 
-#: macro.c:2809
+#: macro.c:2912
+msgid "ISO C++ does not permit named variadic macros"
+msgstr "ISO-C++ erlaubt keine benannten variadischen Makros"
+
+#: macro.c:2915
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO-C erlaubt keine benannten variadischen Makros"
 
-#: macro.c:2818
+#: macro.c:2925
 msgid "missing ')' in macro parameter list"
 msgstr "fehlendes »)« in Makroparameterliste"
 
-#: macro.c:2867
+#: macro.c:2976
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "»##« kann nicht an den Enden einer Makroexpansion auftreten"
 
-#: macro.c:2902
+#: macro.c:3013
+msgid "ISO C++11 requires whitespace after the macro name"
+msgstr "ISO-C++11 erfordert Leerzeichen hinter Makroname"
+
+#: macro.c:3016
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO-C99 erfordert Leerzeichen hinter Makroname"
 
-#: macro.c:2926
+#: macro.c:3041
 msgid "missing whitespace after the macro name"
 msgstr "Leerzeichen hinter Makroname fehlt"
 
-#: macro.c:2960
+#: macro.c:3075
 msgid "'#' is not followed by a macro parameter"
 msgstr "»#« wird nicht von einem Makroparameter gefolgt"
 
-#: macro.c:3118
+#: macro.c:3236
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "»%s« redefiniert"
 
-#: macro.c:3124
+#: macro.c:3241
 msgid "this is the location of the previous definition"
 msgstr "dies ist die Stelle der vorherigen Definition"
 
-#: macro.c:3185
+#: macro.c:3302
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "Makroargument »%s« würde in traditionellem C zur Zeichenkette umgewandelt werden"
 
-#: macro.c:3212
+#: macro.c:3329
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "ungültiger Hash-Typ %d in cpp_macro_definition"
@@ -900,2990 +953,15 @@ msgstr "%s: nicht verwendet, da »%s« definiert ist"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: nicht verwendet, da »__COUNTER__« ungültig ist"
 
-#: pch.c:723 pch.c:898
+#: pch.c:723 pch.c:900
 msgid "while reading precompiled header"
 msgstr "beim Lesen des vorkompilierten Headers"
 
-#: traditional.c:750
+#: traditional.c:889
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
 msgstr "Rekursion bei Expansion des Makros »%s« entdeckt"
 
-#: traditional.c:968
+#: traditional.c:1108
 msgid "syntax error in macro parameter list"
 msgstr "Syntaxfehler in Makroparameterliste"
-
-#~ msgid "Character %x might not be NFKC"
-#~ msgstr "Zeichen %x ist nicht in NFKC"
-
-#~ msgid "too many decimal points in number"
-#~ msgstr "zu viele Dezimalpunkte in Zahl"
-
-#~ msgid "invalid digit \"%c\" in binary constant"
-#~ msgstr "ungültige Ziffer »%c« in binärer Konstante"
-
-#~ msgid "invalid digit \"%c\" in octal constant"
-#~ msgstr "ungültige Ziffer »%c« in Oktal-Konstante"
-
-#~ msgid "no digits in hexadecimal floating constant"
-#~ msgstr "keine Ziffern in hexadezimaler Gleitkommakonstante"
-
-#~ msgid "exponent has no digits"
-#~ msgstr "Exponent hat keine Ziffern"
-
-#~ msgid "hexadecimal floating constants require an exponent"
-#~ msgstr "hexadezimale Gleitkommakonstanten benötigen Exponenten"
-
-#~ msgid "missing binary operator before token \"%s\""
-#~ msgstr "fehlender binärer Operator vor Token »%s«"
-
-#~ msgid "token \"%s\" is not valid in preprocessor expressions"
-#~ msgstr "Token »%s« ist nicht gültig in Präprozessorausdrücken"
-
-#~ msgid "missing expression between '(' and ')'"
-#~ msgstr "fehlender Ausdruck zwischen '(' und ')'"
-
-#~ msgid "%s with no expression"
-#~ msgstr "%s ohne Ausdruck"
-
-#~ msgid "operator '%s' has no right operand"
-#~ msgstr "Operator »%s« hat keinen rechten Operanden"
-
-#~ msgid "operator '%s' has no left operand"
-#~ msgstr "Operator »%s« hat keinen linken Operanden"
-
-#~ msgid " ':' without preceding '?'"
-#~ msgstr " ':' ohne vorangehendes '?'"
-
-#~ msgid "warning: "
-#~ msgstr "Warnung: "
-
-#~ msgid "internal error: "
-#~ msgstr "interner Fehler: "
-
-#~ msgid "error: "
-#~ msgstr "Fehler: "
-
-#~ msgid "In file included from %s:%u"
-#~ msgstr "In Datei, eingefügt von %s:%u"
-
-#~ msgid ""
-#~ ",\n"
-#~ "                 from %s:%u"
-#~ msgstr ""
-#~ ",\n"
-#~ "                 von %s:%u"
-
-#~ msgid "no newline at end of file"
-#~ msgstr "Kein Newline am Dateiende"
-
-#~ msgid "unknown escape sequence: '\\%03o'"
-#~ msgstr "unbekannte Escape-Sequenz: '\\%03o'"
-
-#~ msgid "`%s' attribute directive ignored"
-#~ msgstr "Attribut-Anweisung »%s« wird ignoriert"
-
-#~ msgid "wrong number of arguments specified for `%s' attribute"
-#~ msgstr "falsche Anzahl an Argumenten für das Attribut »%s« angegeben"
-
-#~ msgid "`%s' attribute does not apply to types"
-#~ msgstr "Attribut »%s« kann nicht auf Typen angewandt werden"
-
-#~ msgid "`%s' attribute only applies to function types"
-#~ msgstr "Attribut »%s« kann nur auf Funktionstypen angewandt werden"
-
-#~ msgid "`%s' attribute ignored"
-#~ msgstr "Attribut »%s« wird ignoriert"
-
-#~ msgid "offset outside bounds of constant string"
-#~ msgstr "Adressabstand ist außerhalb der Grenzen der konstanten Zeichenkette"
-
-#~ msgid "second arg to `__builtin_prefetch' must be a constant"
-#~ msgstr "zweites Argument für »__builtin_prefetch« muss eine Konstante sein"
-
-#~ msgid "invalid second arg to __builtin_prefetch; using zero"
-#~ msgstr "ungültiges zweites Argument für »__builtin_prefetch«; es wird Null verwendet"
-
-#~ msgid "third arg to `__builtin_prefetch' must be a constant"
-#~ msgstr "drittes Argument für »__builtin_prefetch« muss eine Konstante sein"
-
-#~ msgid "invalid third arg to __builtin_prefetch; using zero"
-#~ msgstr "ungültiges drittes Argument für »__builtin_prefetch«; es wird Null verwendet"
-
-#~ msgid "argument of `__builtin_args_info' must be constant"
-#~ msgstr "Argument von »__builtin_args_info« muss konstant sein"
-
-#~ msgid "argument of `__builtin_args_info' out of range"
-#~ msgstr "Argument von »__builtin_args_info« außerhalb des Wertebereichs"
-
-#~ msgid "missing argument in `__builtin_args_info'"
-#~ msgstr "fehlendes Argument in »__builtin_args_info«"
-
-#~ msgid "`va_start' used in function with fixed args"
-#~ msgstr "»va_start« in Funktion mit fester Parameterzahl verwendet"
-
-#~ msgid "second parameter of `va_start' not last named argument"
-#~ msgstr "zweiter Parameter von »va_start« ist nicht letztgenanntes Argument"
-
-#~ msgid "`__builtin_next_arg' called without an argument"
-#~ msgstr "»__builtin_next_arg« ohne Argument gerufen"
-
-#~ msgid "too many arguments to function `va_start'"
-#~ msgstr "zu viele Argumente für »va_start«"
-
-#~ msgid "first argument to `va_arg' not of type `va_list'"
-#~ msgstr "erstes Argument für »va_arg« nicht vom Typ »va_list«"
-
-#~ msgid "`%s' is promoted to `%s' when passed through `...'"
-#~ msgstr "»%s« auf »%s« gesetzt beim Durchlaufen von »...«"
-
-#~ msgid "(so you should pass `%s' not `%s' to `va_arg')"
-#~ msgstr "(Sie sollten also »%s« statt »%s« an »va_arg« übergeben)"
-
-#~ msgid "invalid arg to `__builtin_frame_address'"
-#~ msgstr "ungültiges Argument für »__builtin_frame_address«"
-
-#~ msgid "invalid arg to `__builtin_return_address'"
-#~ msgstr "ungültiges Argument für »__builtin_return_address«"
-
-#~ msgid "unsupported arg to `__builtin_frame_address'"
-#~ msgstr "nicht unterstütztes Argument für »__builtin_frame_address«"
-
-#~ msgid "unsupported arg to `__builtin_return_address'"
-#~ msgstr "nicht unterstütztes Argument für »__builtin_return_address«"
-
-#~ msgid "second arg to `__builtin_expect' must be a constant"
-#~ msgstr "zweites Argument für »__builtin_expect« muss eine Konstante sein"
-
-#~ msgid "__builtin_longjmp second argument must be 1"
-#~ msgstr "zweites Argument für __builtin_longjmp muss 1 sein"
-
-#~ msgid "built-in function `%s' not currently supported"
-#~ msgstr "eingebaute Funktion »%s« gegenwärtig nicht unterstützt"
-
-#~ msgid "target format does not support infinity"
-#~ msgstr "Zielformat unterstützt nicht »unendlich«"
-
-#~ msgid "%Hsuggest explicit braces to avoid ambiguous `else'"
-#~ msgstr "%Hes wird empfohlen, explizite geschweifte Klammern zu setzen, um mehrdeutiges »else« zu vermeiden"
-
-#~ msgid "%J'%D' is not defined outside of function scope"
-#~ msgstr "%J»%D« ist außerhalb des Funktionsgültigkeitsbereiches nicht definiert"
-
-#~ msgid "string length `%d' is greater than the length `%d' ISO C%d compilers are required to support"
-#~ msgstr "Zeichenkettenlänge »%d« ist größer als die Länge »%d«, die von ISO-C%d-Compilern unterstützt werden muss"
-
-#~ msgid "overflow in constant expression"
-#~ msgstr "Überlauf in Konstanten-Ausdruck"
-
-#~ msgid "integer overflow in expression"
-#~ msgstr "Ganzzahlüberlauf in Ausdruck"
-
-#~ msgid "floating point overflow in expression"
-#~ msgstr "Gleitkommaüberlauf in Ausdruck"
-
-#~ msgid "vector overflow in expression"
-#~ msgstr "Vektorüberlauf in Ausdruck"
-
-#~ msgid "large integer implicitly truncated to unsigned type"
-#~ msgstr "große Ganzzahl implizit auf vorzeichenlosen Typen abgeschnitten"
-
-#~ msgid "negative integer implicitly converted to unsigned type"
-#~ msgstr "negative Ganzzahl implizit in vorzeichenlosen Typen konvertiert"
-
-#~ msgid "overflow in implicit constant conversion"
-#~ msgstr "Überlauf in impliziter Konstantenkonvertierung"
-
-#~ msgid "operation on `%s' may be undefined"
-#~ msgstr "Operation auf »%s« könnte undefiniert sein"
-
-#~ msgid "expression statement has incomplete type"
-#~ msgstr "Ausdrucksanweisung hat unvollständigen Typ"
-
-#~ msgid "case label does not reduce to an integer constant"
-#~ msgstr "case-Marke reduziert nicht auf Ganzzahlkonstante"
-
-#~ msgid "invalid truth-value expression"
-#~ msgstr "ungültiger Wahrheitswert-Ausdruck"
-
-#~ msgid "invalid operands to binary %s"
-#~ msgstr "ungültige Operanden für binäres %s"
-
-#~ msgid "comparison is always false due to limited range of data type"
-#~ msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »unwahr«"
-
-#~ msgid "comparison is always true due to limited range of data type"
-#~ msgstr "Vergleich ist durch beschränkten Wertebereich des Datentyps stets »wahr«"
-
-#~ msgid "comparison of unsigned expression >= 0 is always true"
-#~ msgstr "Vergleich eines vorzeichenlosen Ausdrucks >= 0 ist stets »wahr«"
-
-#~ msgid "comparison of unsigned expression < 0 is always false"
-#~ msgstr "Vergleich eines vorzeichenlosen Ausdrucks < 0 ist stets »unwahr«"
-
-#~ msgid "pointer of type `void *' used in arithmetic"
-#~ msgstr "Zeiger auf Typen »void *« in Arithmetik verwendet"
-
-#~ msgid "pointer to a function used in arithmetic"
-#~ msgstr "Zeiger auf Funktion in Arithmetik verwendet"
-
-#~ msgid "pointer to member function used in arithmetic"
-#~ msgstr "Zeiger auf Elementfunktion in Arithmetik verwendet"
-
-#~ msgid "pointer to a member used in arithmetic"
-#~ msgstr "Zeiger auf Element in Arithmetik verwendet"
-
-#~ msgid "struct type value used where scalar is required"
-#~ msgstr "Wert eines struct-Typs anstelle des geforderten Skalars verwendet"
-
-#~ msgid "union type value used where scalar is required"
-#~ msgstr "Wert eines union-Typs anstelle des geforderten Skalars verwendet"
-
-#~ msgid "array type value used where scalar is required"
-#~ msgstr "Wert eines array-Typs anstelle des geforderten Skalars verwendet"
-
-#~ msgid "the address of `%D', will always evaluate as `true'"
-#~ msgstr "die Adresse von »%D« wird immer zu »true« auswerten"
-
-#~ msgid "suggest parentheses around assignment used as truth value"
-#~ msgstr "um Zuweisung, die als Wahrheitswert verwendet wird, werden Klammern vorgeschlagen"
-
-#~ msgid "invalid use of `restrict'"
-#~ msgstr "ungültige Verwendung von »restrict«"
-
-#~ msgid "invalid application of `sizeof' to a function type"
-#~ msgstr "ungültige Anwendung von »sizeof« auf einen Funktionstypen"
-
-#~ msgid "invalid application of `%s' to a void type"
-#~ msgstr "ungültige Anwendung von »%s« auf einen void-Typen"
-
-#~ msgid "invalid application of `%s' to an incomplete type"
-#~ msgstr "ungültige Anwendung von »%s« auf einen unvollständigen Typen"
-
-#~ msgid "`__alignof' applied to a bit-field"
-#~ msgstr "»__alignof« auf Bitfeld angewandt"
-
-#~ msgid "cannot disable built-in function `%s'"
-#~ msgstr "kann eingebaute Funktion »%s« nicht abschalten"
-
-#~ msgid "too few arguments to function `%s'"
-#~ msgstr "zu wenig Argumente für Funktion »%s«"
-
-#~ msgid "too many arguments to function `%s'"
-#~ msgstr "zu viele Argumente für Funktion »%s«"
-
-#~ msgid "non-floating-point argument to function `%s'"
-#~ msgstr "nicht-Gleitkomma-Argument für Funktion »%s«"
-
-#~ msgid "pointers are not permitted as case values"
-#~ msgstr "Zeiger sind nicht als case-Werte zugelassen"
-
-#~ msgid "range expressions in switch statements are non-standard"
-#~ msgstr "Wertebereichsausdrücke in switch-Anweisungen sind nicht standardkonform"
-
-#~ msgid "empty range specified"
-#~ msgstr "leerer Wertebereich angegeben"
-
-#~ msgid "duplicate (or overlapping) case value"
-#~ msgstr "doppelte (oder sich überschneidende) case-Werte"
-
-#~ msgid "%Jthis is the first entry overlapping that value"
-#~ msgstr "%Jdies ist der erste Eintrag, der diesen Wert überschneidet"
-
-#~ msgid "duplicate case value"
-#~ msgstr "doppelter case-Wert"
-
-#~ msgid "%Jpreviously used here"
-#~ msgstr "%Jbereits hier verwendet"
-
-#~ msgid "multiple default labels in one switch"
-#~ msgstr "mehrere Standardmarken in einem »switch«"
-
-#~ msgid "%Jthis is the first default label"
-#~ msgstr "%Jdies ist die erste Standardmarke"
-
-#~ msgid "taking the address of a label is non-standard"
-#~ msgstr "das Ermitteln der Adresse einer Marke ist nicht standardkonform"
-
-#~ msgid "%Hignoring return value of `%D', declared with attribute warn_unused_result"
-#~ msgstr "%Hder Rückgabewert von »%D« mit dem Attribut warn_unused_result wird ignoriert"
-
-#~ msgid "%Hignoring return value of function declared with attribute warn_unused_result"
-#~ msgstr "%Hder Rückgabewert der Funktion, die mit dem Attribut warn_unused_result deklariert wurde, wird ignoriert"
-
-#~ msgid "declaration of \"%s\" shadows a parameter"
-#~ msgstr "Deklaration von »%s« überdeckt einen Parameter"
-
-#~ msgid "declaration of \"%s\" shadows a previous local"
-#~ msgstr "Deklaration von »%s« überdeckt einen vorhergehenden lokalen Bezeichner"
-
-#~ msgid "declaration of \"%s\" shadows a global declaration"
-#~ msgstr "Deklaration von »%s« überdeckt eine globale Deklaration"
-
-#~ msgid "%Jshadowed declaration is here"
-#~ msgstr "%Jverdeckte Deklaration ist hier"
-
-#~ msgid "unknown machine mode `%s'"
-#~ msgstr "unbekannter Maschinenzustand »%s«"
-
-#~ msgid "no data type for mode `%s'"
-#~ msgstr "kein Datentyp für Zustand »%s«"
-
-#~ msgid "invalid pointer mode `%s'"
-#~ msgstr "ungültiger Zeigermodus »%s«"
-
-#~ msgid "unable to emulate '%s'"
-#~ msgstr "»%s« kann nicht emuliert werden"
-
-#~ msgid "%Jsection attribute cannot be specified for local variables"
-#~ msgstr "%JAbschnitts-Attribut kann nicht für lokale Variablen angegeben werden"
-
-#~ msgid "%Jsection of '%D' conflicts with previous declaration"
-#~ msgstr "%JAbschnitt von »%D« in Konflikt mit vorheriger Deklaration"
-
-#~ msgid "%Jsection attribute not allowed for '%D'"
-#~ msgstr "%JAbschnitts-Attribute nicht erlaubt für »%D«"
-
-#~ msgid "%Jsection attributes are not supported for this target"
-#~ msgstr "%JAbschnitts-Attribute werden für dieses Ziel nicht unterstützt"
-
-#~ msgid "requested alignment is not a constant"
-#~ msgstr "verlangte Ausrichtung ist keine Konstante"
-
-#~ msgid "requested alignment is not a power of 2"
-#~ msgstr "verlangte Ausrichtung ist keine Zweierpotenz"
-
-#~ msgid "requested alignment is too large"
-#~ msgstr "verlangte Ausrichtung ist zu groß"
-
-#~ msgid "%Jalignment may not be specified for '%D'"
-#~ msgstr "%Jfür »%D« darf keine Ausrichtung angegeben werden"
-
-#~ msgid "%J'%D' defined both normally and as an alias"
-#~ msgstr "%J»%D« sowohl normal als auch als Alias definiert"
-
-#~ msgid "alias arg not a string"
-#~ msgstr "Alias-Argument ist keine Zeichenkette"
-
-#~ msgid "visibility arg not a string"
-#~ msgstr "Sichtbarkeitsargument ist keine Zeichenkette"
-
-#~ msgid "visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
-#~ msgstr "Sichtbarkeitsargument muss »default«, »hidden«, »protected« oder »internal« sein"
-
-#~ msgid "tls_model arg not a string"
-#~ msgstr "Argument für tls_model ist keine Zeichenkette"
-
-#~ msgid "tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-#~ msgstr "Argument für tls_model muss »local-exec«, »initial-exec«, »local-dynamic« oder »global-dynamic« sein"
-
-#~ msgid "%J'%E' attribute applies only to functions"
-#~ msgstr "%JAttribut »%E« kann nur auf Funktionen angewandt werden"
-
-#~ msgid "%Jcan't set '%E' attribute after definition"
-#~ msgstr "%Jkann Attribut »%E« nicht nach der Definition setzen"
-
-#~ msgid "`%s' attribute ignored for `%s'"
-#~ msgstr "Attribut »%s« ignoriert für »%s«"
-
-#~ msgid "invalid vector type for attribute `%s'"
-#~ msgstr "ungültiger Vektortyp für Attribut »%s«"
-
-#~ msgid "no vector mode with the size and type specified could be found"
-#~ msgstr "Vektorzustand mit der angegebenen Größe und dem angegebenen Typ konnte nicht gefunden werden"
-
-#~ msgid "nonnull attribute without arguments on a non-prototype"
-#~ msgstr "Nicht-Null-Attribut ohne Argumente für einen Nicht-Prototyp"
-
-#~ msgid "nonnull argument has invalid operand number (arg %lu)"
-#~ msgstr "Nicht-Null-Argument hat ungültige Operandenzahl (Argument %lu)"
-
-#~ msgid "nonnull argument with out-of-range operand number (arg %lu, operand %lu)"
-#~ msgstr "Nicht-Null-Argument mit Operandenzahl außerhalb des Wertebereiches (Argument %lu, Operand %lu)"
-
-#~ msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
-#~ msgstr "Nicht-Null-Argument referenziert Nicht-Zeiger-Operanden (Argument %lu, Operand %lu)"
-
-#~ msgid "null argument where non-null required (arg %lu)"
-#~ msgstr "Null-Argument, wo Nicht-Null erwartet (Argument %lu)"
-
-#~ msgid "cleanup arg not an identifier"
-#~ msgstr "Argument für cleanup ist kein Bezeichner"
-
-#~ msgid "cleanup arg not a function"
-#~ msgstr "Argument für cleanup ist keine Funktion"
-
-#~ msgid "%s at end of input"
-#~ msgstr "%s am Ende der Eingabe"
-
-#~ msgid "%s before %s'%c'"
-#~ msgstr "%s vor %s'%c'"
-
-#~ msgid "%s before %s'\\x%x'"
-#~ msgstr "%s vor %s'\\x%x'"
-
-#~ msgid "%s before string constant"
-#~ msgstr "%s vor Zeichenkettenkonstante"
-
-#~ msgid "%s before numeric constant"
-#~ msgstr "%s vor numerischer Konstante"
-
-#~ msgid "%s before \"%s\""
-#~ msgstr "%s vor \"%s\""
-
-#~ msgid "%s before '%s' token"
-#~ msgstr "%s vor »%s«"
-
-#~ msgid "void value not ignored as it ought to be"
-#~ msgstr "void-Wert nicht ignoriert wie es sein sollte"
-
-#~ msgid "conversion to non-scalar type requested"
-#~ msgstr "Konvertierung zu Nicht-Skalar-Typ verlangt"
-
-#~ msgid "%Jarray '%D' assumed to have one element"
-#~ msgstr "%JFeld »%D« als einelementig betrachtet"
-
-#~ msgid "%Jlabel `%D' used but not defined"
-#~ msgstr "%JMarke »%D« verwendet, aber nicht definiert"
-
-#~ msgid "%Jlabel `%D' defined but not used"
-#~ msgstr "%JMarke »%D« definiert aber nicht verwendet"
-
-#~ msgid "%Jlabel `%D' declared but not defined"
-#~ msgstr "%JMarke »%D« deklariert, aber nicht definiert"
-
-#~ msgid "%Junused variable `%D'"
-#~ msgstr "%JVariable »%D« wird nicht verwendet"
-
-#~ msgid "a parameter list with an ellipsis can't match an empty parameter name list declaration"
-#~ msgstr "eine Parameterliste mit Auslassung passt nicht zu einer leeren Parameternamenslistendeklaration"
-
-#~ msgid "an argument type that has a default promotion can't match an empty parameter name list declaration"
-#~ msgstr "ein Argumenttyp mit Standard-Promotion passt nicht zu leerer Parameternamenslistendeklaration"
-
-#~ msgid "%Jprototype for '%D' declares more arguments than previous old-style definition"
-#~ msgstr "%JPrototyp für »%D« deklariert mehr Argumente als vorherige Definition im alten Stil"
-
-#~ msgid "%Jprototype for '%D' declares fewer arguments than previous old-style definition"
-#~ msgstr "%JPrototyp für »%D« deklariert weniger Argumente als vorherige Definition im alten Stil"
-
-#~ msgid "%Jprototype for '%D' declares arg %d with incompatible type"
-#~ msgstr "%JPrototyp für »%D« deklariert Argument %d mit inkompatiblem Typen"
-
-#~ msgid "%Jprototype for '%D' follows non-prototype definition"
-#~ msgstr "%JPrototyp für »%D« folgt einer Nicht-Prototyp-Definition"
-
-#~ msgid "%Jprevious definition of '%D' was here"
-#~ msgstr "%Jvorherige Definition von »%D« war hier"
-
-#~ msgid "%Jprevious implicit declaration of '%D' was here"
-#~ msgstr "%Jvorherige implizite Deklaration von »%D« war hier"
-
-#~ msgid "%Jprevious declaration of '%D' was here"
-#~ msgstr "%Jvorherige Deklaration von »%D« war hier"
-
-#~ msgid "%J'%D' redeclared as different kind of symbol"
-#~ msgstr "%J»%D« redeklariert als andere Symbolart"
-
-#~ msgid "%Jbuilt-in function '%D' declared as non-function"
-#~ msgstr "%Jeingebaute Funktion »%D« als Nicht-Funktion deklariert"
-
-#~ msgid "%Jshadowing built-in function '%D'"
-#~ msgstr "%Jeingebaute Funktion »%D« überdeckt"
-
-#~ msgid "%Jconflicting types for built-in function '%D'"
-#~ msgstr "%Jin Konflikt stehende Typen für eingebaute Funktion »%D«"
-
-#~ msgid "%Jconflicting types for '%D'"
-#~ msgstr "%Jin Konflikt stehende Typen für »%D«"
-
-#~ msgid "%Jredefinition of typedef '%D'"
-#~ msgstr "%JRedefinition des typedef »%D«"
-
-#~ msgid "%Jredefinition of '%D'"
-#~ msgstr "%JRedefinition von »%D«"
-
-#~ msgid "%Jstatic declaration of '%D' follows non-static declaration"
-#~ msgstr "%Jstatische Deklaration von »%D« folgt Nicht-statischer Deklaration"
-
-#~ msgid "%Jnon-static declaration of '%D' follows static declaration"
-#~ msgstr "%JNicht-statische-Deklaration von »%D« folgt statischer Deklaration"
-
-#~ msgid "%Jthread-local declaration of '%D' follows non-thread-local declaration"
-#~ msgstr "%JThread-lokale Deklaration von »%D« folgt nicht-Thread-lokaler Deklaration"
-
-#~ msgid "%Jnon-thread-local declaration of '%D' follows thread-local declaration"
-#~ msgstr "%JNicht-Thread-lokale Deklaration von »%D« folgt Thread-lokaler Deklaration"
-
-#~ msgid "%Jextern declaration of '%D' follows declaration with no linkage"
-#~ msgstr "%Jextern-Deklaration von »%D« folgt Deklaration ohne Bindung"
-
-#~ msgid "%Jdeclaration of '%D' with no linkage follows extern declaration"
-#~ msgstr "%JDeklaration von »%D« ohne Bindung folgt einer externen Deklaration"
-
-#~ msgid "%Jredeclaration of '%D' with no linkage"
-#~ msgstr "%JRedeklarationen von »%D« ohne Bindung"
-
-#~ msgid "%Jredeclaration of '%D' with different visibility (old visibility preserved)"
-#~ msgstr "%JRedeklaration von »%D« mit anderer Sichtbarkeit (alte Sichtbarkeit beibehalten)"
-
-#~ msgid "%Jinline declaration of '%D' follows declaration with attribute noinline"
-#~ msgstr "%Jinline-Deklaration von »%D« folgt Deklaration mit Attribut noinline"
-
-#~ msgid "%Jdeclaration of '%D' with attribute noinline follows inline declaration "
-#~ msgstr "%JDeklaration von »%D« mit Attribut noinline folgt inline-Deklaration "
-
-#~ msgid "%J'%D' declared inline after being called"
-#~ msgstr "%J»%D« als inline deklariert nachdem es aufgerufen wurde"
-
-#~ msgid "%J'%D' declared inline after its definition"
-#~ msgstr "%J»%D« nach der Definition als inline deklariert"
-
-#~ msgid "%Jvolatile declaration of '%D' follows non-volatile declaration"
-#~ msgstr "%J»volatile«-Deklaration von »%D« folgt nicht-»volatile«-Deklaration"
-
-#~ msgid "%Jnon-volatile declaration of '%D' follows volatile declaration"
-#~ msgstr "%JNicht-»volatile«-Deklaration von »%D« folgt »volatile«-Deklaration"
-
-#~ msgid "%Jconst declaration of '%D' follows non-const declaration"
-#~ msgstr "%Jconst-Deklaration für »%D« folgt Nicht-const Deklaration"
-
-#~ msgid "%Jnon-const declaration of '%D' follows const declaration"
-#~ msgstr "%JNicht-const-Deklaration von »%D« folgt const-Deklaration"
-
-#~ msgid "%Jredundant redeclaration of '%D'"
-#~ msgstr "%Jredundante Redeklaration von »%D«"
-
-#~ msgid "nested extern declaration of `%s'"
-#~ msgstr "geschachtelte extern-Deklaration von »%s«"
-
-#~ msgid "%Jprevious declaration of '%D'"
-#~ msgstr "%Jvorherige Deklaration von »%D«"
-
-#~ msgid "implicit declaration of function `%s'"
-#~ msgstr "implizite Deklaration der Funktion »%s«"
-
-#~ msgid "`%s' undeclared here (not in a function)"
-#~ msgstr "»%s« ist hier nicht deklariert (nicht in einer Funktion)"
-
-#~ msgid "`%s' undeclared (first use in this function)"
-#~ msgstr "»%s« nicht deklariert (erste Benutzung in dieser Funktion)"
-
-#~ msgid "(Each undeclared identifier is reported only once"
-#~ msgstr "(Jeder nicht deklarierte Bezeichner wird nur einmal aufgeführt"
-
-#~ msgid "for each function it appears in.)"
-#~ msgstr "für jede Funktion in der er auftritt.)"
-
-#~ msgid "label %s referenced outside of any function"
-#~ msgstr "Marke %s außerhalb einer Funktion referenziert"
-
-#~ msgid "duplicate label declaration `%s'"
-#~ msgstr "doppelte Markendeklaration »%s«"
-
-#~ msgid "%Jthis is a previous declaration"
-#~ msgstr "%Jdies ist eine vorherige Deklaration"
-
-#~ msgid "%Hduplicate label `%D'"
-#~ msgstr "%Hdoppelte Marke »%D«"
-
-#~ msgid "%J`%D' previously defined here"
-#~ msgstr "%J»%D« bereits hier definiert"
-
-#~ msgid "%J`%D' previously declared here"
-#~ msgstr "%J»%D« bereits hier deklariert"
-
-#~ msgid "%Htraditional C lacks a separate namespace for labels, identifier `%s' conflicts"
-#~ msgstr "%Htraditionelles C bietet keinen separaten Namespace für Marken an, Bezeichner »%s« steht in Konflikt"
-
-#~ msgid "%H`%s' defined as wrong kind of tag"
-#~ msgstr "%H»%s« definiert als falsche Symbolart"
-
-#~ msgid "unnamed struct/union that defines no instances"
-#~ msgstr "unbenannte struct/union, die keine Instanzen definiert"
-
-#~ msgid "useless keyword or type name in empty declaration"
-#~ msgstr "nutzloses Schlüsselwort oder Typenname in leerer Deklaration"
-
-#~ msgid "two types specified in one empty declaration"
-#~ msgstr "zwei Typen in einer leeren Deklaration angegeben"
-
-#~ msgid "empty declaration"
-#~ msgstr "leere Deklaration"
-
-#~ msgid "ISO C90 does not support `static' or type qualifiers in parameter array declarators"
-#~ msgstr "ISO-C90 unterstützt kein »static« oder Typkennzeichner in Parameterfelddeklaratoren"
-
-#~ msgid "ISO C90 does not support `[*]' array declarators"
-#~ msgstr "ISO-C90 unterstützt nicht »[*]«-Felddeklaratoren"
-
-#~ msgid "GCC does not yet properly implement `[*]' array declarators"
-#~ msgstr "GCC implementiert noch keine richtigen »[*]«-Felddeklaratoren"
-
-#~ msgid "static or type qualifiers in abstract declarator"
-#~ msgstr "static oder Typkennzeichner in abstraktem Deklarator"
-
-#~ msgid "%J'%D' is usually a function"
-#~ msgstr "%J»%D« ist üblicherweise eine Funktion"
-
-#~ msgid "typedef `%s' is initialized (use __typeof__ instead)"
-#~ msgstr "typedef »%s« ist initialisiert (benutzen Sie stattdessen __typeof__)"
-
-#~ msgid "function `%s' is initialized like a variable"
-#~ msgstr "Funktion »%s« ist wie eine Variable initialisiert"
-
-#~ msgid "parameter `%s' is initialized"
-#~ msgstr "Parameter »%s« ist initialisiert"
-
-#~ msgid "variable-sized object may not be initialized"
-#~ msgstr "Objekt variabler Größe darf nicht initialisiert werden"
-
-#~ msgid "variable `%s' has initializer but incomplete type"
-#~ msgstr "Variable »%s« hat Initialisierung, aber unvollständigen Typ"
-
-#~ msgid "elements of array `%s' have incomplete type"
-#~ msgstr "Elemente des Feldes »%s« haben unvollständigen Typ"
-
-#~ msgid "%Jinline function '%D' given attribute noinline"
-#~ msgstr "%Jinline-Funktion »%D« wurde das Attribut »noinline« gegeben"
-
-#~ msgid "%Jinitializer fails to determine size of '%D'"
-#~ msgstr "%JInitialisierung scheitert an Größenbestimmung von »%D«"
-
-#~ msgid "%Jarray size missing in '%D'"
-#~ msgstr "%JFeldgröße in »%D« fehlt"
-
-#~ msgid "%Jzero or negative size array '%D'"
-#~ msgstr "%JFeldgröße von »%D« ist null oder negativ"
-
-#~ msgid "%Jstorage size of '%D' isn't known"
-#~ msgstr "%JSpeichergröße von »%D« ist unbekannt"
-
-#~ msgid "%Jstorage size of '%D' isn't constant"
-#~ msgstr "%JSpeichergröße von »%D« ist nicht konstant"
-
-#~ msgid "%Jignoring asm-specifier for non-static local variable '%D'"
-#~ msgstr "%Jasm-Symbol für nicht-statische lokale Variable »%D« wird ignoriert"
-
-#~ msgid "ISO C forbids forward parameter declarations"
-#~ msgstr "ISO-C verbietet Vorwärtsdeklaration für Parameter"
-
-#~ msgid "<anonymous>"
-#~ msgstr "<anonym>"
-
-#~ msgid "bit-field `%s' width not an integer constant"
-#~ msgstr "Breite des Bitfeldes »%s« ist keine Ganzzahlkonstante"
-
-#~ msgid "negative width in bit-field `%s'"
-#~ msgstr "negative Breite in Bitfeld »%s«"
-
-#~ msgid "zero width for bit-field `%s'"
-#~ msgstr "Breite null für Bitfeld »%s«"
-
-#~ msgid "bit-field `%s' has invalid type"
-#~ msgstr "Bitfeld »%s« hat ungültigen Typen"
-
-#~ msgid "type of bit-field `%s' is a GCC extension"
-#~ msgstr "der Typ des Bitfeldes »%s« ist eine Erweiterung des GCC"
-
-#~ msgid "width of `%s' exceeds its type"
-#~ msgstr "Breite von »%s« überschreitet dessen Typen"
-
-#~ msgid "`%s' is narrower than values of its type"
-#~ msgstr "»%s« ist schmaler als die Werte seines Typs"
-
-#~ msgid "`long long long' is too long for GCC"
-#~ msgstr "»long long long« ist für GCC zu lang"
-
-#~ msgid "ISO C90 does not support `long long'"
-#~ msgstr "ISO-C90 unterstützt nicht »long long«"
-
-#~ msgid "duplicate `%s'"
-#~ msgstr "doppeltes »%s«"
-
-#~ msgid "`__thread' before `extern'"
-#~ msgstr "»__thread« vor »extern«"
-
-#~ msgid "`__thread' before `static'"
-#~ msgstr "»__thread« vor »static«"
-
-#~ msgid "two or more data types in declaration of `%s'"
-#~ msgstr "zwei oder mehr Datentypen in Deklaration von »%s«"
-
-#~ msgid "`%s' fails to be a typedef or built in type"
-#~ msgstr "»%s« ist kein typedef oder eingebauter Typ"
-
-#~ msgid "type defaults to `int' in declaration of `%s'"
-#~ msgstr "»int« ist Standardtyp in Deklaration von »%s«"
-
-#~ msgid "both long and short specified for `%s'"
-#~ msgstr "sowohl »long« als auch »short« für »%s« angegeben"
-
-#~ msgid "long or short specified with char for `%s'"
-#~ msgstr "»long« oder »short« mit »char« für »%s« angegeben"
-
-#~ msgid "long or short specified with floating type for `%s'"
-#~ msgstr "»long« oder »short« mit Gleitkommatyp für »%s« angegeben"
-
-#~ msgid "the only valid combination is `long double'"
-#~ msgstr "die einzig gültige Kombination ist »long double«"
-
-#~ msgid "both signed and unsigned specified for `%s'"
-#~ msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
-
-#~ msgid "long, short, signed or unsigned invalid for `%s'"
-#~ msgstr "long, short, signed oder unsigned ist ungültig für »%s«"
-
-#~ msgid "long, short, signed or unsigned used invalidly for `%s'"
-#~ msgstr "long, short, signed oder unsigned ungültig verwendet für »%s«"
-
-#~ msgid "complex invalid for `%s'"
-#~ msgstr "complex ungültig für »%s«"
-
-#~ msgid "ISO C90 does not support complex types"
-#~ msgstr "ISO-C90 unterstützt nicht komplexe Typen"
-
-#~ msgid "ISO C does not support plain `complex' meaning `double complex'"
-#~ msgstr "ISO-C unterstützt nicht »double complex« bedeutendes »complex«"
-
-#~ msgid "ISO C does not support complex integer types"
-#~ msgstr "ISO-C unterstützt keine komplexen Ganzzahltypen"
-
-#~ msgid "duplicate `const'"
-#~ msgstr "doppeltes »const«"
-
-#~ msgid "duplicate `restrict'"
-#~ msgstr "doppeltes »restrict«"
-
-#~ msgid "duplicate `volatile'"
-#~ msgstr "doppeltes »volatile«"
-
-#~ msgid "multiple storage classes in declaration of `%s'"
-#~ msgstr "mehrere Speicherklassen in Deklaration von »%s«"
-
-#~ msgid "function definition declared `auto'"
-#~ msgstr "Funktionsdefinition deklarierte »auto«"
-
-#~ msgid "function definition declared `register'"
-#~ msgstr "Funktionsdefinition deklarierte »register«"
-
-#~ msgid "function definition declared `typedef'"
-#~ msgstr "Funktionsdefinition deklarierte »typedef«"
-
-#~ msgid "function definition declared `__thread'"
-#~ msgstr "Funktionsdefinition deklarierte »__thread«"
-
-#~ msgid "storage class specified for structure field `%s'"
-#~ msgstr "Speicherklasse für Strukturfeld »%s« angegeben"
-
-#~ msgid "storage class specified for parameter `%s'"
-#~ msgstr "Speicherklasse für Parameter »%s« angegeben"
-
-#~ msgid "storage class specified for typename"
-#~ msgstr "Speicherklasse für Typnamen angegeben"
-
-#~ msgid "`%s' initialized and declared `extern'"
-#~ msgstr "»%s« initialisiert und als »extern« deklariert"
-
-#~ msgid "`%s' has both `extern' and initializer"
-#~ msgstr "»%s« hat sowohl »extern« als auch Initialisierung"
-
-#~ msgid "file-scope declaration of `%s' specifies `auto'"
-#~ msgstr "Deklaration von »%s« in Datei-Sichtbarkeitsbereich spezifiziert »auto«"
-
-#~ msgid "nested function `%s' declared `extern'"
-#~ msgstr "geschachtelte Funktion »%s« als »extern« deklariert"
-
-#~ msgid "function-scope `%s' implicitly auto and declared `__thread'"
-#~ msgstr "Funktions-Gültigkeitsbereich »%s« ist implizit auto und deklarierte »__thread«"
-
-#~ msgid "static or type qualifiers in non-parameter array declarator"
-#~ msgstr "»static« oder Typkennzeichner in Nicht-Parameter-Felddeklarator"
-
-#~ msgid "declaration of `%s' as array of voids"
-#~ msgstr "Deklaration von »%s« als Feld von voids"
-
-#~ msgid "declaration of `%s' as array of functions"
-#~ msgstr "Deklaration von »%s« als Feld von Funtionen"
-
-#~ msgid "invalid use of structure with flexible array member"
-#~ msgstr "ungültige Verwendung einer Struktur mit flexiblem Feldelement"
-
-#~ msgid "size of array `%s' has non-integer type"
-#~ msgstr "Feldgröße von »%s« hat Nicht-Ganzzahltyp"
-
-#~ msgid "ISO C forbids zero-size array `%s'"
-#~ msgstr "ISO-C verbietet Feld »%s« der Größe null"
-
-#~ msgid "size of array `%s' is negative"
-#~ msgstr "Feldgröße von »%s« ist negativ"
-
-#~ msgid "ISO C90 forbids array `%s' whose size can't be evaluated"
-#~ msgstr "ISO-C90 verbietet Feld »%s«, dessen Größe nicht ausgewertet werden kann"
-
-#~ msgid "ISO C90 forbids variable-size array `%s'"
-#~ msgstr "ISO-C90 verbietet Feld »%s« variabler Größe"
-
-#~ msgid "size of array `%s' is too large"
-#~ msgstr "Feldgröße von »%s« ist zu groß"
-
-#~ msgid "ISO C90 does not support flexible array members"
-#~ msgstr "ISO-C90 unterstützt keine flexiblen Felder als Elemente"
-
-#~ msgid "array type has incomplete element type"
-#~ msgstr "Feldtyp hat unvollständigen Elementtypen"
-
-#~ msgid "`%s' declared as function returning a function"
-#~ msgstr "»%s« als Funktion, die eine Funktion zurückgibt, deklariert"
-
-#~ msgid "`%s' declared as function returning an array"
-#~ msgstr "»%s« als Funktion, die ein Feld zurückgibt, deklariert"
-
-#~ msgid "ISO C forbids qualified void function return type"
-#~ msgstr "ISO-C verbietet qualifiziertes void als Funktions-Rückgabetypen"
-
-#~ msgid "type qualifiers ignored on function return type"
-#~ msgstr "Typkennzeichner ignoriert an Funktions-Rückgabewert"
-
-#~ msgid "ISO C forbids qualified function types"
-#~ msgstr "ISO-C verbietet qualifizierte Funktionstypen"
-
-#~ msgid "invalid type modifier within pointer declarator"
-#~ msgstr "ungültiger Typmodifizierer innerhalb Zeigerdeklarator"
-
-#~ msgid "ISO C forbids const or volatile function types"
-#~ msgstr "ISO-C verbietet const- oder volatile-Funktionstypen"
-
-#~ msgid "variable or field `%s' declared void"
-#~ msgstr "Variable oder Feld »%s« als »void« deklariert"
-
-#~ msgid "attributes in parameter array declarator ignored"
-#~ msgstr "Attribute in Parameterfelddeklarator ignoriert"
-
-#~ msgid "invalid type modifier within array declarator"
-#~ msgstr "ungültiger Typmodifizierer in Felddeklarator"
-
-#~ msgid "field `%s' declared as a function"
-#~ msgstr "Feld »%s« als Funktion deklariert"
-
-#~ msgid "field `%s' has incomplete type"
-#~ msgstr "Feld »%s« hat unvollständigen Typen"
-
-#~ msgid "invalid storage class for function `%s'"
-#~ msgstr "ungültige Speicherklasse für Funktion »%s«"
-
-#~ msgid "`noreturn' function returns non-void value"
-#~ msgstr "»noreturn«-Funktion gibt nicht-void-Wert zurück"
-
-#~ msgid "cannot inline function `main'"
-#~ msgstr "»main« ist nicht als »inline« möglich"
-
-#~ msgid "variable previously declared `static' redeclared `extern'"
-#~ msgstr "als »extern« redeklarierte Variable war bereits als »static« deklariert"
-
-#~ msgid "%Jvariable '%D' declared `inline'"
-#~ msgstr "%JVariable »%D« als »inline« deklariert"
-
-#~ msgid "thread-local storage not supported for this target"
-#~ msgstr "Thread-lokaler Speicher wird für dieses Ziel nicht unterstützt"
-
-#~ msgid "function declaration isn't a prototype"
-#~ msgstr "Funktionsdeklaration ist kein Prototyp"
-
-#~ msgid "parameter names (without types) in function declaration"
-#~ msgstr "Parameternamen (ohne Typen) in Funktionsdeklaration"
-
-#~ msgid "parameter `%s' has incomplete type"
-#~ msgstr "Parameter »%s« hat unvollständigen Typen"
-
-#~ msgid "parameter has incomplete type"
-#~ msgstr "Parameter hat unvollständigen Typen"
-
-#~ msgid "\"void\" as only parameter may not be qualified"
-#~ msgstr "\"void\" kann als einziger Parameter nicht qualifiziert werden"
-
-#~ msgid "\"void\" must be the only parameter"
-#~ msgstr "\"void\" muss der einzige Parameter sein"
-
-#~ msgid "%Jparameter \"%D\" has just a forward declaration"
-#~ msgstr "%JParameter »%D« hat nur eine Vorwärtsdeklaration"
-
-#~ msgid "\"%s %s\" declared inside parameter list"
-#~ msgstr "\"%s %s\" innerhalb Parameterliste deklariert"
-
-#~ msgid "anonymous %s declared inside parameter list"
-#~ msgstr "anonymes %s innerhalb Parameterliste deklariert"
-
-#~ msgid "its scope is only this definition or declaration, which is probably not what you want"
-#~ msgstr "sein Gültigkeitsbereich umfasst nur diese Definition bzw. Deklaration, was Sie wahrscheinlich nicht wollten"
-
-#~ msgid "redefinition of `union %s'"
-#~ msgstr "Redefinition von »union %s«"
-
-#~ msgid "redefinition of `struct %s'"
-#~ msgstr "Redefinition von »struct %s«"
-
-#~ msgid "declaration does not declare anything"
-#~ msgstr "Deklaration deklariert nichts"
-
-#~ msgid "%Jduplicate member '%D'"
-#~ msgstr "%Jdoppeltes Element »%D«"
-
-#~ msgid "%s defined inside parms"
-#~ msgstr "%s innerhalb Parameter definiert"
-
-#~ msgid "union"
-#~ msgstr "Union"
-
-#~ msgid "structure"
-#~ msgstr "Struktur"
-
-#~ msgid "%s has no %s"
-#~ msgstr "%s hat kein %s"
-
-#~ msgid "struct"
-#~ msgstr "struct"
-
-#~ msgid "named members"
-#~ msgstr "benannte Elemente"
-
-#~ msgid "members"
-#~ msgstr "Elemente"
-
-#~ msgid "nested redefinition of `%s'"
-#~ msgstr "Verschachtelte Redefinition von »%s«"
-
-#~ msgid "%Jflexible array member in union"
-#~ msgstr "%Jflexibles Feldelement in Union"
-
-#~ msgid "%Jflexible array member not at end of struct"
-#~ msgstr "%Jflexibles Feld-Element nicht am Ende von struct"
-
-#~ msgid "%Jflexible array member in otherwise empty struct"
-#~ msgstr "%Jlexibler Feld-Element in ansonsten leerem struct"
-
-#~ msgid "%Jinvalid use of structure with flexible array member"
-#~ msgstr "%Jungültige Verwendung einer Struktur mit flexiblem Feld-Element"
-
-#~ msgid "union cannot be made transparent"
-#~ msgstr "union kann nicht transparent gemacht werden"
-
-#~ msgid "redeclaration of `enum %s'"
-#~ msgstr "Redeklaration von »enum %s«"
-
-#~ msgid "enum defined inside parms"
-#~ msgstr "enum innerhalb von Parametern definiert"
-
-#~ msgid "enumeration values exceed range of largest integer"
-#~ msgstr "Aufzählungswerte überschreiten Wertebereich des größten Ganzzahltypen"
-
-#~ msgid "enumerator value for `%s' not integer constant"
-#~ msgstr "Aufzählungswert für »%s« ist keine Ganzzahlkonstante"
-
-#~ msgid "overflow in enumeration values"
-#~ msgstr "Überlauf in Aufzählungswerten"
-
-#~ msgid "ISO C restricts enumerator values to range of `int'"
-#~ msgstr "ISO-C beschränkt Aufzählungswerte auf Bereich von »int«"
-
-#~ msgid "return type is an incomplete type"
-#~ msgstr "Rückgabetyp ist unvollständig"
-
-#~ msgid "return type defaults to `int'"
-#~ msgstr "Rückgabetyp ist auf »int« voreingestellt"
-
-#~ msgid "%Jno previous prototype for '%D'"
-#~ msgstr "%Jkein vorheriger Prototyp für »%D«"
-
-#~ msgid "%J'%D' was used with no prototype before its definition"
-#~ msgstr "%J»%D« wurde vor seiner Definition ohne Prototyp verwendet"
-
-#~ msgid "%Jno previous declaration for '%D'"
-#~ msgstr "%Jkeine vorherige Deklaration für »%D«"
-
-#~ msgid "%J`%D' was used with no declaration before its definition"
-#~ msgstr "%J»%D« wurde vor seiner Definition ohne Deklaration verwendet"
-
-#~ msgid "%Jreturn type of '%D' is not `int'"
-#~ msgstr "%JRückgabetyp von »%D« ist nicht »int«"
-
-#~ msgid "%Jfirst argument of '%D' should be `int'"
-#~ msgstr "%Jerstes Argument von »%D« sollte »int« sein"
-
-#~ msgid "%Jsecond argument of '%D' should be 'char **'"
-#~ msgstr "%Jzweites Argument von »%D« sollte »char **« sein"
-
-#~ msgid "%Jthird argument of '%D' should probably be 'char **'"
-#~ msgstr "%Jdrittes Argument von »%D« sollte wahrscheinlich »char **« sein"
-
-#~ msgid "%J'%D' takes only zero or two arguments"
-#~ msgstr "%J»%D« benötigt entweder null oder zwei Argumente"
-
-#~ msgid "%J'%D' is normally a non-static function"
-#~ msgstr "%J»%D« ist normalerweise eine Nicht-static-Funktion"
-
-#~ msgid "%Jold-style parameter declarations in prototyped function definition"
-#~ msgstr "%JParameterdeklarationen alten Stils in Prototyp-Funktionsdeklaration"
-
-#~ msgid "%Jparameter name omitted"
-#~ msgstr "%JParametername ausgelassen"
-
-#~ msgid "%Jparameter name missing from parameter list"
-#~ msgstr "%JParametername fehlt in Parameterliste"
-
-#~ msgid "%J\"%D\" declared as a non-parameter"
-#~ msgstr "%J\"%D\" als Nicht-Parameter deklariert"
-
-#~ msgid "%Jmultiple parameters named \"%D\""
-#~ msgstr "%Jmehrere Parameter wurden »%D« genannt"
-
-#~ msgid "%Jparameter \"%D\" declared void"
-#~ msgstr "%JParameter »%D« als void deklariert"
-
-#~ msgid "%Jtype of \"%D\" defaults to \"int\""
-#~ msgstr "%JTyp von »%D« ist auf »int« voreingestellt"
-
-#~ msgid "%Jparameter \"%D\" has incomplete type"
-#~ msgstr "%JParameter \"%D\" hat unvollständigen Typen"
-
-#~ msgid "%Jdeclaration for parameter \"%D\" but no such parameter"
-#~ msgstr "%Jnicht vorhandener Parameter »%D« deklariert"
-
-#~ msgid "number of arguments doesn't match prototype"
-#~ msgstr "Anzahl der Argumente passt nicht zum Prototypen"
-
-#~ msgid "%Hprototype declaration"
-#~ msgstr "%HPrototyp-Deklaration"
-
-#~ msgid "promoted argument \"%D\" doesn't match prototype"
-#~ msgstr "weitergegebenes Argument »%D« passt nicht zum Prototypen"
-
-#~ msgid "argument \"%D\" doesn't match prototype"
-#~ msgstr "Argument »%D« passt nicht zum Prototypen"
-
-#~ msgid "no return statement in function returning non-void"
-#~ msgstr "keine return-Anweisung in nicht void zurückgebender Funktion"
-
-#~ msgid "this function may return with or without a value"
-#~ msgstr "diese Funktion kann mit oder ohne Wert zurückkehren"
-
-#~ msgid "'for' loop initial declaration used outside C99 mode"
-#~ msgstr "Anfangsdeklaration in »for«-Schleife außerhalb C99-Modus verwendet"
-
-#~ msgid "'struct %s' declared in 'for' loop initial declaration"
-#~ msgstr "»struct %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
-
-#~ msgid "'union %s' declared in 'for' loop initial declaration"
-#~ msgstr "»union %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
-
-#~ msgid "'enum %s' declared in 'for' loop initial declaration"
-#~ msgstr "»enum %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
-
-#~ msgid "%Jdeclaration of non-variable '%D' in 'for' loop initial declaration"
-#~ msgstr "%JDeklaration der Nicht-Variablen »%D« in Anfangsdeklaration einer »for«-Schleife"
-
-#~ msgid "%Jdeclaration of static variable '%D' in 'for' loop initial declaration"
-#~ msgstr "%JDeklaration der »static«-Variablen »%D« in Anfangsdeklaration einer »for«-Schleife"
-
-#~ msgid "%Jdeclaration of 'extern' variable '%D' in 'for' loop initial declaration"
-#~ msgstr "%JDeklaration der »extern«-Variablen »%D« in Anfangsdeklaration einer »for«-Schleife"
-
-#~ msgid "%Jredefinition of global '%D'"
-#~ msgstr "%JRedefinition des globalen »%D«"
-
-#~ msgid "%J'%D' previously defined here"
-#~ msgstr "%J»%D« bereits hier verwendet"
-
-#~ msgid "format string has invalid operand number"
-#~ msgstr "Formatzeichenkette hat ungültige Operandenzahl"
-
-#~ msgid "function does not return string type"
-#~ msgstr "Funktion gibt keinen Zeichenkettentypen zurück"
-
-#~ msgid "format string arg not a string type"
-#~ msgstr "Format-Zeichenkettenargument ist kein Zeichenkettentyp"
-
-#~ msgid "unrecognized format specifier"
-#~ msgstr "unerkannte Formatangabe"
-
-#~ msgid "`%s' is an unrecognized format function type"
-#~ msgstr "»%s« ist ein nicht erkannter Formatfunktionstyp"
-
-#~ msgid "'...' has invalid operand number"
-#~ msgstr "»...« hat ungültige Operandenzahl"
-
-#~ msgid "format string arg follows the args to be formatted"
-#~ msgstr "Format-Zeichenkettenargument folgt den zu formatierenden Argumenten"
-
-#~ msgid "` ' flag"
-#~ msgstr "» «-Kennzeichen"
-
-#~ msgid "the ` ' printf flag"
-#~ msgstr "das » «-printf-Kennzeichen"
-
-#~ msgid "`+' flag"
-#~ msgstr "»+«-Kennzeichen"
-
-#~ msgid "the `+' printf flag"
-#~ msgstr "das »+«-printf-Kennzeichen"
-
-#~ msgid "`#' flag"
-#~ msgstr "»#«-Kennzeichen"
-
-#~ msgid "the `#' printf flag"
-#~ msgstr "das »#«-printf-Kennzeichen"
-
-#~ msgid "`0' flag"
-#~ msgstr "»0«-Kennzeichen"
-
-#~ msgid "the `0' printf flag"
-#~ msgstr "das »0«-printf-Kennzeichen"
-
-#~ msgid "`-' flag"
-#~ msgstr "»-«-Kennzeichen"
-
-#~ msgid "the `-' printf flag"
-#~ msgstr "das »-«-printf-Kennzeichen"
-
-#~ msgid "`'' flag"
-#~ msgstr "»'«-Kennzeichen"
-
-#~ msgid "the `'' printf flag"
-#~ msgstr "das »'«-printf-Kennzeichen"
-
-#~ msgid "`I' flag"
-#~ msgstr "»I«-Kennzeichen"
-
-#~ msgid "the `I' printf flag"
-#~ msgstr "das »I«-printf-Kennzeichen"
-
-#~ msgid "field width"
-#~ msgstr "Feldbreite"
-
-#~ msgid "field width in printf format"
-#~ msgstr "Feldbreite im printf-Format"
-
-#~ msgid "precision"
-#~ msgstr "Genauigkeit"
-
-#~ msgid "precision in printf format"
-#~ msgstr "Genauigkeit im printf-Format"
-
-#~ msgid "length modifier"
-#~ msgstr "Längenmodifizierer"
-
-#~ msgid "length modifier in printf format"
-#~ msgstr "Längenmodifizierer im printf-Format"
-
-#~ msgid "assignment suppression"
-#~ msgstr "Zuweisungsunterdrückung"
-
-#~ msgid "the assignment suppression scanf feature"
-#~ msgstr "das scanf-Merkmal der Zuweisungsunterdrückung"
-
-#~ msgid "`a' flag"
-#~ msgstr "»a«-Kennzeichen"
-
-#~ msgid "the `a' scanf flag"
-#~ msgstr "das »a«-scanf-Kennzeichen"
-
-#~ msgid "field width in scanf format"
-#~ msgstr "Feldbreite im scanf-Format"
-
-#~ msgid "length modifier in scanf format"
-#~ msgstr "Längenmodifizierer im scanf-Format"
-
-#~ msgid "the `'' scanf flag"
-#~ msgstr "das »'«-scanf-Kennzeichen"
-
-#~ msgid "the `I' scanf flag"
-#~ msgstr "das »I«-scanf-Kennzeichen"
-
-#~ msgid "`_' flag"
-#~ msgstr "»_«-Kennzeichen"
-
-#~ msgid "the `_' strftime flag"
-#~ msgstr "das »_«-strftime-Kennzeichen"
-
-#~ msgid "the `-' strftime flag"
-#~ msgstr "das »-«-strftime-Kennzeichen"
-
-#~ msgid "the `0' strftime flag"
-#~ msgstr "das »0«-strftime-Kennzeichen"
-
-#~ msgid "`^' flag"
-#~ msgstr "»^«-Kennzeichen"
-
-#~ msgid "the `^' strftime flag"
-#~ msgstr "das »^«-strftime-Kennzeichen"
-
-#~ msgid "the `#' strftime flag"
-#~ msgstr "das »#«-strftime-Kennzeichen"
-
-#~ msgid "field width in strftime format"
-#~ msgstr "Feldbreite im strftime-Format"
-
-#~ msgid "`E' modifier"
-#~ msgstr "»E«-Modifizierer"
-
-#~ msgid "the `E' strftime modifier"
-#~ msgstr "der »E«-strftime-Modifizierer"
-
-#~ msgid "`O' modifier"
-#~ msgstr "»O«-Modifizierer"
-
-#~ msgid "the `O' strftime modifier"
-#~ msgstr "der »O«-strftime-Modifizierer"
-
-#~ msgid "the `O' modifier"
-#~ msgstr "der »O«-Modifizierer"
-
-#~ msgid "fill character"
-#~ msgstr "Füllzeichen"
-
-#~ msgid "fill character in strfmon format"
-#~ msgstr "Füllzeichen im strfmon-Format"
-
-#~ msgid "the `^' strfmon flag"
-#~ msgstr "das »^«-strfmon-Kennzeichen"
-
-#~ msgid "the `+' strfmon flag"
-#~ msgstr "das »+«-strfmon-Kennzeichen"
-
-#~ msgid "`(' flag"
-#~ msgstr "»(«-Kennzeichen"
-
-#~ msgid "the `(' strfmon flag"
-#~ msgstr "das »(«-strfmon-Kennzeichen"
-
-#~ msgid "`!' flag"
-#~ msgstr "»!«-Kennzeichen"
-
-#~ msgid "the `!' strfmon flag"
-#~ msgstr "das »!«-strfmon-Kennzeichen"
-
-#~ msgid "the `-' strfmon flag"
-#~ msgstr "das »-«-strfmon-Kennzeichen"
-
-#~ msgid "field width in strfmon format"
-#~ msgstr "Feldbreite im strfmon-Format"
-
-#~ msgid "left precision"
-#~ msgstr "linke Präzision"
-
-#~ msgid "left precision in strfmon format"
-#~ msgstr "linke Präzision im strfmon-Format"
-
-#~ msgid "right precision"
-#~ msgstr "rechte Präzision"
-
-#~ msgid "right precision in strfmon format"
-#~ msgstr "rechte Präzision im strfmon-Format"
-
-#~ msgid "length modifier in strfmon format"
-#~ msgstr "Längenmodifizierer im strfmon-Format"
-
-#~ msgid "function might be possible candidate for `%s' format attribute"
-#~ msgstr "Funktion könnte möglicher Kandidat für Formatattribut »%s« sein"
-
-#~ msgid "missing $ operand number in format"
-#~ msgstr "fehlende $-Operandennummer im Format"
-
-#~ msgid "%s does not support %%n$ operand number formats"
-#~ msgstr "%s unterstützt nicht %%n$-Operandennummerformate"
-
-#~ msgid "operand number out of range in format"
-#~ msgstr "Operandennummer außerhalb des Wertebereiches im Format"
-
-#~ msgid "format argument %d used more than once in %s format"
-#~ msgstr "Formatargument %d mehr als einmal im %s-Format verwendet"
-
-#~ msgid "format argument %d unused before used argument %d in $-style format"
-#~ msgstr "Formatargument %d nicht verwendet vor benutztem Argument %d im $-Stil-Format"
-
-#~ msgid "format not a string literal, format string not checked"
-#~ msgstr "Format ist kein Zeichenkettenliteral, Formatzeichenkette ungeprüft"
-
-#~ msgid "format not a string literal and no format arguments"
-#~ msgstr "Format ist kein Zeichenkettenliteral, und keine Formatargumente"
-
-#~ msgid "format not a string literal, argument types not checked"
-#~ msgstr "Format ist kein Zeichenkettenliteral, Argumenttypen ungeprüft"
-
-#~ msgid "too many arguments for format"
-#~ msgstr "zu viele Argumente für Format"
-
-#~ msgid "unused arguments in $-style format"
-#~ msgstr "unbenutzte Argumente in $-Stil-Format"
-
-#~ msgid "zero-length %s format string"
-#~ msgstr "Format-Zeichenkette %s der Länge null"
-
-#~ msgid "format is a wide character string"
-#~ msgstr "Format ist »wide character«-Zeichenkette"
-
-#~ msgid "embedded `\\0' in format"
-#~ msgstr "eingebettetes »\\0« im Format"
-
-#~ msgid "spurious trailing `%%' in format"
-#~ msgstr "störendes letztes »%%« im Format"
-
-#~ msgid "repeated %s in format"
-#~ msgstr "wiederholtes %s im Format"
-
-#~ msgid "missing fill character at end of strfmon format"
-#~ msgstr "fehlendes Füllzeichen am Ende des strfmon-Formates"
-
-#~ msgid "too few arguments for format"
-#~ msgstr "zu wenig Argumente für Format"
-
-#~ msgid "zero width in %s format"
-#~ msgstr "Breite null im Format %s"
-
-#~ msgid "empty left precision in %s format"
-#~ msgstr "leere linke Präzision im Format %s"
-
-#~ msgid "field precision"
-#~ msgstr "Feldpräzision"
-
-#~ msgid "empty precision in %s format"
-#~ msgstr "fehlende Präzision im Format %s"
-
-#~ msgid "%s does not support the `%s' %s length modifier"
-#~ msgstr "%s unterstützt nicht den Längenmodifizierer »%s« %s"
-
-#~ msgid "conversion lacks type at end of format"
-#~ msgstr "Konvertierung fehlt der Typ am Ende des Formates"
-
-#~ msgid "unknown conversion type character `%c' in format"
-#~ msgstr "unbekanntes Konvertierungstyp-Zeichen »%c« im Format"
-
-#~ msgid "unknown conversion type character 0x%x in format"
-#~ msgstr "unbekanntes Konvertierungstyp-Zeichen 0x%x im Format"
-
-#~ msgid "%s does not support the `%%%c' %s format"
-#~ msgstr "%s unterstützt nicht das Format »%%%c« %s"
-
-#~ msgid "%s used with `%%%c' %s format"
-#~ msgstr "%s verwendet mit Format »%%%c« %s"
-
-#~ msgid "%s does not support %s"
-#~ msgstr "%s unterstützt nicht %s"
-
-#~ msgid "%s does not support %s with the `%%%c' %s format"
-#~ msgstr "%s unterstützt nicht %s mit dem Format »%%%c« %s"
-
-#~ msgid "%s ignored with %s and `%%%c' %s format"
-#~ msgstr "%s ignoriert mit %s und Format »%%%c« %s"
-
-#~ msgid "%s ignored with %s in %s format"
-#~ msgstr "%s ignoriert mit %s im Format %s"
-
-#~ msgid "use of %s and %s together with `%%%c' %s format"
-#~ msgstr "Verwendung von %s und %s zusammen mit Format »%%%c« %s"
-
-#~ msgid "use of %s and %s together in %s format"
-#~ msgstr "Verwendung von %s und %s zusammen im Format %s"
-
-#~ msgid "`%%%c' yields only last 2 digits of year in some locales"
-#~ msgstr "»%%%c« liefert in manchen Locales nur die letzten 2 Ziffern des Jahres"
-
-#~ msgid "`%%%c' yields only last 2 digits of year"
-#~ msgstr "»%%%c« liefert nur die letzten 2 Ziffern des Jahres"
-
-#~ msgid "no closing `]' for `%%[' format"
-#~ msgstr "kein schließendes »]« für »%%[«-Format"
-
-#~ msgid "use of `%s' length modifier with `%c' type character"
-#~ msgstr "Verwendung des »%s«-Längenmodifizierers mit »%c«-Typ-Zeichen"
-
-#~ msgid "%s does not support the `%%%s%c' %s format"
-#~ msgstr "%s unterstützt nicht das Format »%%%s%c« %s"
-
-#~ msgid "operand number specified with suppressed assignment"
-#~ msgstr "Operandennummer mit unterdrückter Zuweisung angegeben"
-
-#~ msgid "operand number specified for format taking no argument"
-#~ msgstr "Operandennummer für Format ohne Argumente angegeben"
-
-#~ msgid "writing through null pointer (arg %d)"
-#~ msgstr "Schreiben mit Null-Zeiger (Argument %d)"
-
-#~ msgid "reading through null pointer (arg %d)"
-#~ msgstr "Lesen mit Null-Zeiger (Argument %d)"
-
-#~ msgid "writing into constant object (arg %d)"
-#~ msgstr "Schreiben in konstantes Objekt (Argument %d)"
-
-#~ msgid "extra type qualifiers in format argument (arg %d)"
-#~ msgstr "zusätzliche Typqualifizierer in Format-Argument (Argument %d)"
-
-#~ msgid "format argument is not a pointer (arg %d)"
-#~ msgstr "Format-Argument ist kein Zeiger (Argument %d)"
-
-#~ msgid "format argument is not a pointer to a pointer (arg %d)"
-#~ msgstr "Format-Argument ist kein Zeiger auf einen Zeiger (Argument %d)"
-
-#~ msgid "pointer"
-#~ msgstr "Zeiger"
-
-#~ msgid "different type"
-#~ msgstr "anderer Typ"
-
-#~ msgid "%s is not type %s (arg %d)"
-#~ msgstr "%s ist nicht vom Typ %s (Argument %d)"
-
-#~ msgid "%s format, %s arg (arg %d)"
-#~ msgstr "%s Format, %s Argument (Argument %d)"
-
-#~ msgid "args to be formatted is not '...'"
-#~ msgstr "zu formatierendes Argument ist nicht »...«"
-
-#~ msgid "strftime formats cannot format arguments"
-#~ msgstr "strftime-Formate können keine Argumente formatieren"
-
-#~ msgid "ignoring duplicate directory \"%s\"\n"
-#~ msgstr "doppeltes Verzeichnis »%s« wird ignoriert\n"
-
-#~ msgid "  as it is a non-system directory that duplicates a system directory\n"
-#~ msgstr "  da es ein Nicht-Systemverzeichnis ist, das ein Systemverzeichnis dupliziert\n"
-
-#~ msgid "ignoring nonexistent directory \"%s\"\n"
-#~ msgstr "nicht vorhandenes Verzeichnis »%s« wird ignoriert\n"
-
-#~ msgid "#include \"...\" search starts here:\n"
-#~ msgstr "#include \"...\" - Suche beginnt hier:\n"
-
-#~ msgid "#include <...> search starts here:\n"
-#~ msgstr "#include <...> - Suche beginnt hier:\n"
-
-#~ msgid "End of search list.\n"
-#~ msgstr "Ende der Suchliste.\n"
-
-#~ msgid "badly nested C headers from preprocessor"
-#~ msgstr "schlecht geschachtelte C-Header vom Präprozessor"
-
-#~ msgid "ignoring #pragma %s %s"
-#~ msgstr "ignoriere #pragma %s %s"
-
-#~ msgid "%Hstray '@' in program"
-#~ msgstr "%Hverirrtes »@« im Programm"
-
-#~ msgid "stray '%c' in program"
-#~ msgstr "verirrtes »%c« im Programm"
-
-#~ msgid "stray '\\%o' in program"
-#~ msgstr "verirrtes »\\%o« im Programm"
-
-#~ msgid "this decimal constant is unsigned only in ISO C90"
-#~ msgstr "diese Dezimalkonstante ist nur in ISO-C90 vorzeichenlos"
-
-#~ msgid "this decimal constant would be unsigned in ISO C90"
-#~ msgstr "diese Dezimalkonstante wäre in ISO-C90 vorzeichenlos"
-
-#~ msgid "integer constant is too large for \"%s\" type"
-#~ msgstr "Ganzzahlkonstante ist zu groß für »%s«-Typ"
-
-#~ msgid "floating constant exceeds range of \"%s\""
-#~ msgstr "Gleitkommakonstante überschreitet Wertebereich von »%s«"
-
-#~ msgid "traditional C rejects string constant concatenation"
-#~ msgstr "traditionelles C weist Stringkonstantenverkettung zurück"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it is supressed using -fno-inline"
-#~ msgstr "%JFunktion »%F« kann nie inline sein, da dies mit -fno-inline unterdrückt wird"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it might not be bound within this unit of translation"
-#~ msgstr "%JFunktion »%F« kann nie inline sein, da sie nicht in diese Übersetzungseinheit gebunden wird"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it uses attributes conflicting with inlining"
-#~ msgstr "%JFunktion »%F« kann nie inline sein, da sie mit inline in Konflikt stehende Attribute hat"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it has pending sizes"
-#~ msgstr "%JFunktion »%F« kann nie inline sein, da sie noch offene Größen hat"
-
-#~ msgid "%Jnested function '%F' can never be inlined because it has possibly saved pending sizes"
-#~ msgstr "%Jdie geschachtelte Funktion »%F« kann nie inline sein, da sie möglicherweise gespeicherte, noch offene Größen hat"
-
-#~ msgid "no class name specified with \"%s\""
-#~ msgstr "kein Klassenname mit \"%s\" angegeben"
-
-#~ msgid "assertion missing after \"%s\""
-#~ msgstr "Behauptung fehlt hinter \"%s\""
-
-#~ msgid "macro name missing after \"%s\""
-#~ msgstr "Makroname fehlt hinter \"%s\""
-
-#~ msgid "missing path after \"%s\""
-#~ msgstr "fehlender Pfad hinter \"%s\""
-
-#~ msgid "missing filename after \"%s\""
-#~ msgstr "fehlender Dateiname hinter \"%s\""
-
-#~ msgid "missing makefile target after \"%s\""
-#~ msgstr "fehlendes Makefile-Ziel hinter \"%s\""
-
-#~ msgid "-I- specified twice"
-#~ msgstr "-I- doppelt angegeben"
-
-#~ msgid "switch \"%s\" is no longer supported"
-#~ msgstr "Option »%s« wird nicht mehr unterstützt"
-
-#~ msgid "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)"
-#~ msgstr "-fhandle-exceptions wurde in -fexceptions umbenannt (und ist nun voreingestellt)"
-
-#~ msgid "output filename specified twice"
-#~ msgstr "Ausgabedatei doppelt angegeben"
-
-#~ msgid "-Wformat-y2k ignored without -Wformat"
-#~ msgstr "-Wformat-y2k wird ohne -Wformat ignoriert"
-
-#~ msgid "-Wformat-extra-args ignored without -Wformat"
-#~ msgstr "-Wformat-extra-args wird ohne -Wformat ignoriert"
-
-#~ msgid "-Wformat-zero-length ignored without -Wformat"
-#~ msgstr "-Wformat-zero-length wird ohne -Wformat ignoriert"
-
-#~ msgid "-Wformat-nonliteral ignored without -Wformat"
-#~ msgstr "-Wformat-nonliteral wird ohne -Wformat ignoriert"
-
-#~ msgid "-Wformat-security ignored without -Wformat"
-#~ msgstr "-Wformat-security wird ohne -Wformat ignoriert"
-
-#~ msgid "-Wmissing-format-attribute ignored without -Wformat"
-#~ msgstr "-Wmissing-format-attribute wird ohne -Wformat ignoriert"
-
-#~ msgid "opening output file %s: %m"
-#~ msgstr "Ausgabedatei »%s« wird geöffnet: %m"
-
-#~ msgid "too many filenames given.  Type %s --help for usage"
-#~ msgstr "zu viele Dateinamen angegeben. Geben sie »%s --help« für Hilfe ein"
-
-#~ msgid "YYDEBUG not defined"
-#~ msgstr "YYDEBUG ist nicht definiert"
-
-#~ msgid "opening dependency file %s: %m"
-#~ msgstr "Abhängigkeitsdatei »%s« wird geöffnet: %m"
-
-#~ msgid "closing dependency file %s: %m"
-#~ msgstr "Abhängigkeitsdatei »%s« wird geschlossen: %m"
-
-#~ msgid "when writing output to %s: %m"
-#~ msgstr "beim Schreiben der Ausgabe nach %s: %m"
-
-#~ msgid "to generate dependencies you must specify either -M or -MM"
-#~ msgstr "um Abhängigkeiten zu erzeugen, müssen Sie entweder -M oder -MM angeben"
-
-#~ msgid "<built-in>"
-#~ msgstr "<eingebaut>"
-
-#~ msgid "<command line>"
-#~ msgstr "<Kommandozeile>"
-
-#~ msgid "too late for # directive to set debug directory"
-#~ msgstr "zu spät für »#«-Direktive, um Debug-Verzeichnis festzulegen"
-
-#~ msgid "syntax error"
-#~ msgstr "Syntaxfehler"
-
-#~ msgid "syntax error: cannot back up"
-#~ msgstr "Syntaxfehler: es kann nicht zurückgesetzt werden"
-
-#~ msgid "ISO C forbids an empty source file"
-#~ msgstr "ISO-C erlaubt keine leeren Quelldateien"
-
-#~ msgid "argument of `asm' is not a constant string"
-#~ msgstr "Argument von »asm« ist keine konstante Zeichenkette"
-
-#~ msgid "ISO C forbids data definition with no type or storage class"
-#~ msgstr "ISO-C verbietet Datendefinition ohne Typ und Speicherklasse"
-
-#~ msgid "data definition has no type or storage class"
-#~ msgstr "Datendefinition hat keinen Typ oder Speicherklasse"
-
-#~ msgid "ISO C does not allow extra `;' outside of a function"
-#~ msgstr "ISO-C erlaubt kein extra »;« außerhalb einer Funktion"
-
-#~ msgid "`sizeof' applied to a bit-field"
-#~ msgstr "»sizeof«-Operator auf ein Bitfeld angewandt"
-
-#~ msgid "ISO C forbids omitting the middle term of a ?: expression"
-#~ msgstr "ISO-C verbietet das Weglassen des mittleren Terms eines ?:-Ausdruckes"
-
-#~ msgid "ISO C89 forbids compound literals"
-#~ msgstr "ISO-C89 verbietet zusammengesetzte Literale"
-
-#~ msgid "ISO C forbids braced-groups within expressions"
-#~ msgstr "ISO-C verbietet geklammerte Gruppen innerhalb von Ausdrücken"
-
-#~ msgid "first argument to __builtin_choose_expr not a constant"
-#~ msgstr "das erste Argument für __builtin_choose_expr ist keine Konstante"
-
-#~ msgid "traditional C rejects ISO C style function definitions"
-#~ msgstr "traditionelles C weist Funktionsdefinitionen im ISO-C-Stil zurück"
-
-#~ msgid "old-style parameter declaration"
-#~ msgstr "Parameterdeklaration alten Stils"
-
-#~ msgid "`%s' is not at beginning of declaration"
-#~ msgstr "»%s« ist nicht am Beginn einer Deklaration"
-
-#~ msgid "`typeof' applied to a bit-field"
-#~ msgstr "»typeof« auf ein Bitfeld angewandt"
-
-#~ msgid "ISO C forbids empty initializer braces"
-#~ msgstr "ISO-C verbietet leere Initialisierungsklammern"
-
-#~ msgid "ISO C89 forbids specifying subobject to initialize"
-#~ msgstr "ISO-C89 verbietet die Angabe von zu initialisierenden Unterobjekten"
-
-#~ msgid "obsolete use of designated initializer without `='"
-#~ msgstr "veraltete Verwendung einer bestimmten Initialisierung ohne »=«"
-
-#~ msgid "obsolete use of designated initializer with `:'"
-#~ msgstr "veraltete Verwendung einer bestimmten Initialisierung mit »:«"
-
-#~ msgid "ISO C forbids specifying range of elements to initialize"
-#~ msgstr "ISO-C verbietet die Angabe eines zu initialisierenden Wertebereiches"
-
-#~ msgid "ISO C forbids nested functions"
-#~ msgstr "ISO-C verbietet verschachtelte Funktionen"
-
-#~ msgid "ISO C forbids forward references to `enum' types"
-#~ msgstr "ISO-C verbietet Vorwärts-Referenzen auf »enum«-Typen"
-
-#~ msgid "comma at end of enumerator list"
-#~ msgstr "Komma am Ende der Aufzählungsliste"
-
-#~ msgid "no semicolon at end of struct or union"
-#~ msgstr "kein Semikolon am Ende von »struct« oder »union«"
-
-#~ msgid "extra semicolon in struct or union specified"
-#~ msgstr "zusätzliches Semikolon in »struct« oder »union« angegeben"
-
-#~ msgid "ISO C doesn't support unnamed structs/unions"
-#~ msgstr "ISO-C unterstützt keine namenlosen structs/unions"
-
-#~ msgid "ISO C forbids member declarations with no members"
-#~ msgstr "ISO-C verbietet Elementdeklarationen ohne Elemente"
-
-#~ msgid "label at end of compound statement"
-#~ msgstr "Marke am Ende einer Verbundanweisung"
-
-#~ msgid "ISO C90 forbids mixed declarations and code"
-#~ msgstr "ISO-C90 verbietet gemischte Deklarationen und Code"
-
-#~ msgid "ISO C forbids label declarations"
-#~ msgstr "ISO-C verbietet Markendeklarationen"
-
-#~ msgid "braced-group within expression allowed only inside a function"
-#~ msgstr "geklammerte Gruppe innerhalb eines Ausdrucks nur in Funktion erlaubt"
-
-#~ msgid "empty body in an else-statement"
-#~ msgstr "leerer Körper in einer else-Anweisung"
-
-#~ msgid "%Hempty body in an if-statement"
-#~ msgstr "%Hleerer Körper in einer if-Anweisung"
-
-#~ msgid "break statement not within loop or switch"
-#~ msgstr "break-Anweisung nicht innerhalb einer Schleife oder »switch«"
-
-#~ msgid "continue statement not within a loop"
-#~ msgstr "continue-Anweisung nicht innerhalb einer Schleife"
-
-#~ msgid "ISO C forbids `goto *expr;'"
-#~ msgstr "ISO-C verbietet »goto *expr;«"
-
-#~ msgid "ISO C requires a named argument before `...'"
-#~ msgstr "ISO-C erfordert ein benanntes Argument vor »...«"
-
-#~ msgid "`...' in old-style identifier list"
-#~ msgstr "»...« in einer Bezeichnerliste alten Stils"
-
-#~ msgid "syntax error; also virtual memory exhausted"
-#~ msgstr "Syntaxfehler; auch virtueller Speicher verbraucht"
-
-#~ msgid "parser stack overflow"
-#~ msgstr "Parser-Keller-Überlauf"
-
-#~ msgid "syntax error at '%s' token"
-#~ msgstr "Syntaxfehler beim Token »%s«"
-
-#~ msgid "can't create precompiled header %s: %m"
-#~ msgstr "der vorkompilierte Header »%s« kann nicht erzeugt werden: %m"
-
-#~ msgid "can't write to %s: %m"
-#~ msgstr "in %s kann nicht geschrieben werden: %m"
-
-#~ msgid "`%s' is not a valid output file"
-#~ msgstr "»%s« ist keine gültige Ausgabedatei"
-
-#~ msgid "can't write %s: %m"
-#~ msgstr "%s kann nicht geschrieben werden: %m"
-
-#~ msgid "can't seek in %s: %m"
-#~ msgstr "in %s kann nicht positioniert werden: %m"
-
-#~ msgid "can't read %s: %m"
-#~ msgstr "%s kann nicht gelesen werden: %m"
-
-#~ msgid "%s: not compatible with this GCC version"
-#~ msgstr "%s: nicht kompatibel mit dieser Version des GCC"
-
-#~ msgid "%s: not for %s"
-#~ msgstr "%s: nicht für %s"
-
-#~ msgid "%s: not a PCH file"
-#~ msgstr "%s: keine PCH-Datei"
-
-#~ msgid "%s: created on host `%.*s', but used on host `%s'"
-#~ msgstr "%s: auf Rechner »%.*s« erzeugt, aber auf Rechner »%s« verwendet"
-
-#~ msgid "%s: created for target `%.*s', but used for target `%s'"
-#~ msgstr "%s: für das Ziel »%.*s« erzeugt, aber für das Ziel »%s« verwendet"
-
-#~ msgid "%s: created by version `%.*s', but this is version `%s'"
-#~ msgstr "%s: durch Version »%.*s« erzeugt, aber dies ist Version »%s«"
-
-#~ msgid "%s: created with -g%s, but used with -g%s"
-#~ msgstr "%s: mit -g%s erzeugt, aber mit -g%s verwendet"
-
-#~ msgid "%s: had text segment at different address"
-#~ msgstr "%s: Textsegment trat an anderer Adresse auf"
-
-#~ msgid "calling fdopen"
-#~ msgstr "fdopen wird aufgerufen"
-
-#~ msgid "reading"
-#~ msgstr "Lesen"
-
-#~ msgid "#pragma pack (pop) encountered without matching #pragma pack (push, <n>)"
-#~ msgstr "#pragma pack (pop) gefunden ohne passendes #pragma pack (push, <n>)"
-
-#~ msgid "#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s, <n>)"
-#~ msgstr "#pragma pack(pop, %s) gefunden ohne passendes #pragma pack(push, %s, <n>)"
-
-#~ msgid "#pragma pack(push[, id], <n>) is not supported on this target"
-#~ msgstr "#pragma pack(push[, id], <n>) wird von diesem Ziel nicht unterstützt"
-
-#~ msgid "#pragma pack(pop[, id], <n>) is not supported on this target"
-#~ msgstr "#pragma pack(pop[, id], <n>) wird von diesem Ziel nicht unterstützt"
-
-#~ msgid "missing '(' after '#pragma pack' - ignored"
-#~ msgstr "fehlendes »(« hinter »#pragma pack« - ignoriert"
-
-#~ msgid "malformed '#pragma pack' - ignored"
-#~ msgstr "falsch geformtes »#pragma pack« - ignoriert"
-
-#~ msgid "malformed '#pragma pack(push[, id], <n>)' - ignored"
-#~ msgstr "falsch geformtes »#pragma pack(push[, id], <n>)« - ignoriert"
-
-#~ msgid "malformed '#pragma pack(pop[, id])' - ignored"
-#~ msgstr "falsch geformtes »#pragma pack(pop[, id])« - ignoriert"
-
-#~ msgid "unknown action '%s' for '#pragma pack' - ignored"
-#~ msgstr "unbekannte Aktion »%s« für »#pragma pack« - ignoriert"
-
-#~ msgid "junk at end of '#pragma pack'"
-#~ msgstr "Ausschuss am Ende von »#pragma pack«"
-
-#~ msgid "alignment must be a small power of two, not %d"
-#~ msgstr "Ausrichtung muss eine kleine Zweierpotenz sein, nicht %d"
-
-#~ msgid "%Japplying #pragma weak '%D' after first use results in unspecified behavior"
-#~ msgstr "%JAnwendung von #pragma weak »%D« nach erster Benutzung führt zu nicht spezifiziertem Verhalten"
-
-#~ msgid "malformed #pragma weak, ignored"
-#~ msgstr "falsch geformtes #pragma weak, ignoriert"
-
-#~ msgid "junk at end of #pragma weak"
-#~ msgstr "Ausschuss am Ende von #pragma weak"
-
-#~ msgid "malformed #pragma redefine_extname, ignored"
-#~ msgstr "falsch geformtes #pragma redefine_extname, ignoriert"
-
-#~ msgid "junk at end of #pragma redefine_extname"
-#~ msgstr "Ausschuss am Ende von #pragma redefine_extname"
-
-#~ msgid "#pragma redefine_extname conflicts with declaration"
-#~ msgstr "#pragma redefine_extname steht in Konflikt mit Deklaration"
-
-#~ msgid "malformed #pragma extern_prefix, ignored"
-#~ msgstr "falsch geformtes #pragma extern_prefix, ignoriert"
-
-#~ msgid "junk at end of #pragma extern_prefix"
-#~ msgstr "Ausschuss am Ende von #pragma extern_prefix"
-
-#~ msgid "asm declaration conflicts with previous rename"
-#~ msgstr "asm-Deklaration steht in Konflikt mit vorheriger Umbenennung"
-
-#~ msgid "destructor needed for `%D'"
-#~ msgstr "Destruktor für »%D« benötigt"
-
-#~ msgid "where case label appears here"
-#~ msgstr "wobei die case-Marke hier auftritt"
-
-#~ msgid "(enclose actions of previous case statements requiring destructors in their own scope.)"
-#~ msgstr "(schließen Sie Aktionen vorheriger case-Anweisungen, die Destruktoren benötigen, in ihrem eigenen Gültigkeitsbereich ein)"
-
-#~ msgid "%s qualifier ignored on asm"
-#~ msgstr "%s-Qualifizierer für asm ignoriert"
-
-#~ msgid "will never be executed"
-#~ msgstr "wird niemals ausgeführt"
-
-#~ msgid "`%s' has an incomplete type"
-#~ msgstr "»%s« hat unvollständigen Typ"
-
-#~ msgid "invalid use of void expression"
-#~ msgstr "falsche Benutzung eines void-Ausdruckes"
-
-#~ msgid "invalid use of flexible array member"
-#~ msgstr "falsche Benutzung eines flexiblen Feldelements"
-
-#~ msgid "invalid use of array with unspecified bounds"
-#~ msgstr "falsche Benutzung eines Feldes mit unbekannten Grenzen"
-
-#~ msgid "invalid use of undefined type `%s %s'"
-#~ msgstr "falsche Benutzung des undefinierten Typs »%s %s«"
-
-#~ msgid "invalid use of incomplete typedef `%s'"
-#~ msgstr "falsche Benutzung des unvollständigen typedef »%s«"
-
-#~ msgid "function types not truly compatible in ISO C"
-#~ msgstr "Funktionstypen nicht wirklich kompatibel in ISO-C"
-
-#~ msgid "types are not quite compatible"
-#~ msgstr "Typen nicht sehr kompatibel"
-
-#~ msgid "function return types not compatible due to `volatile'"
-#~ msgstr "Funktionsrückgabetypen nicht kompatibel wegen »volatile«"
-
-#~ msgid "arithmetic on pointer to an incomplete type"
-#~ msgstr "Arithmetik mit Zeiger auf unvollständigen Typen"
-
-#~ msgid "%s has no member named `%s'"
-#~ msgstr "%s hat kein Element namens »%s«"
-
-#~ msgid "request for member `%s' in something not a structure or union"
-#~ msgstr "Anfrage nach Element »%s« in etwas, was keine Struktur oder Variante ist"
-
-#~ msgid "dereferencing pointer to incomplete type"
-#~ msgstr "Dereferenzierung eines Zeigers auf unvollständigen Typen"
-
-#~ msgid "dereferencing `void *' pointer"
-#~ msgstr "Dereferenzierung eines »void *«-Zeigers"
-
-#~ msgid "invalid type argument of `%s'"
-#~ msgstr "falsches Typ-Argument von »%s«"
-
-#~ msgid "subscript missing in array reference"
-#~ msgstr "Index fehlt in Feldreferenz"
-
-#~ msgid "array subscript has type `char'"
-#~ msgstr "Feldindex hat Typ »char«"
-
-#~ msgid "array subscript is not an integer"
-#~ msgstr "Feldindex ist keine Ganzzahl"
-
-#~ msgid "ISO C forbids subscripting `register' array"
-#~ msgstr "ISO-C verbietet, ein »register«-Array zu indizieren"
-
-#~ msgid "ISO C90 forbids subscripting non-lvalue array"
-#~ msgstr "ISO-C90 verbietet, ein Nicht-L-Wert-Feld zu indizieren"
-
-#~ msgid "subscript has type `char'"
-#~ msgstr "Index hat Typ »char«"
-
-#~ msgid "subscripted value is neither array nor pointer"
-#~ msgstr "indizierter Wert ist weder ein Feld noch ein Zeiger"
-
-#~ msgid "local declaration of `%s' hides instance variable"
-#~ msgstr "lokale Deklaration von »%s« verdeckt Instanzvariable"
-
-#~ msgid "called object is not a function"
-#~ msgstr "gerufenes Objekt ist keine Funktion"
-
-#~ msgid "function called through a non-compatible type"
-#~ msgstr "Funktion über nicht kompatiblen Typen aufgerufen"
-
-#~ msgid "too many arguments to function"
-#~ msgstr "zu viele Argumente für Funktion"
-
-#~ msgid "type of formal parameter %d is incomplete"
-#~ msgstr "Typ des formalen Parameters %d ist unvollständig"
-
-#~ msgid "%s as integer rather than floating due to prototype"
-#~ msgstr "%s als Ganzzahl statt Gleitkomma aufgrund des Prototyps"
-
-#~ msgid "%s as integer rather than complex due to prototype"
-#~ msgstr "%s als Ganzzahl statt komplex aufgrund des Prototyps"
-
-#~ msgid "%s as complex rather than floating due to prototype"
-#~ msgstr "%s als komplex statt Gleitkomma aufgrund des Prototyps"
-
-#~ msgid "%s as floating rather than integer due to prototype"
-#~ msgstr "%s als Gleitkomma statt Ganzzahl aufgrund des Prototyps"
-
-#~ msgid "%s as complex rather than integer due to prototype"
-#~ msgstr "%s als komplex statt Ganzzahl aufgrund des Prototyps"
-
-#~ msgid "%s as floating rather than complex due to prototype"
-#~ msgstr "%s als Gleitkomma statt komplex aufgrund des Prototyps"
-
-#~ msgid "%s as `float' rather than `double' due to prototype"
-#~ msgstr "%s als »float« statt »double« aufgrund des Prototyps"
-
-#~ msgid "%s with different width due to prototype"
-#~ msgstr "%s mit anderer Breite aufgrund des Prototyps"
-
-#~ msgid "%s as unsigned due to prototype"
-#~ msgstr "%s als vorzeichenlos aufgrund des Prototyps"
-
-#~ msgid "%s as signed due to prototype"
-#~ msgstr "%s als vorzeichenbehaftet aufgrund des Prototyps"
-
-#~ msgid "too few arguments to function"
-#~ msgstr "zu wenige Argumente für Funktion"
-
-#~ msgid "suggest parentheses around + or - inside shift"
-#~ msgstr "Klammern um + oder - innerhalb von Schiebeoperation empfohlen"
-
-#~ msgid "suggest parentheses around && within ||"
-#~ msgstr "Klammern um && innerhalb von || empfohlen"
-
-#~ msgid "suggest parentheses around arithmetic in operand of |"
-#~ msgstr "Klammern um Arithmetik in Operand von | empfohlen"
-
-#~ msgid "suggest parentheses around comparison in operand of |"
-#~ msgstr "Klammern um Vergleich in Operand von | empfohlen"
-
-#~ msgid "suggest parentheses around arithmetic in operand of ^"
-#~ msgstr "Klammern um Arithmetik in Operand von ^ empfohlen"
-
-#~ msgid "suggest parentheses around comparison in operand of ^"
-#~ msgstr "Klammern um Vergleich in Operand von ^ empfohlen"
-
-#~ msgid "suggest parentheses around + or - in operand of &"
-#~ msgstr "Klammern um + oder - in Operand von & empfohlen"
-
-#~ msgid "suggest parentheses around comparison in operand of &"
-#~ msgstr "Klammern um Vergleich in Operand von & empfohlen"
-
-#~ msgid "comparisons like X<=Y<=Z do not have their mathematical meaning"
-#~ msgstr "Vergleiche wie X<=Y<=Z haben nicht ihre mathematische Bedeutung"
-
-#~ msgid "pointer of type `void *' used in subtraction"
-#~ msgstr "Zeiger des Typs »void *« in Subtraktion verwendet"
-
-#~ msgid "pointer to a function used in subtraction"
-#~ msgstr "Zeiger auf eine Funktion in Subtraktion verwendet"
-
-#~ msgid "wrong type argument to unary plus"
-#~ msgstr "Argument falschen Typs für unäres Plus"
-
-#~ msgid "wrong type argument to unary minus"
-#~ msgstr "Argument falschen Typs für unäres Minus"
-
-#~ msgid "ISO C does not support `~' for complex conjugation"
-#~ msgstr "ISO-C unterstützt nicht »~« für komplexe Konjugation"
-
-#~ msgid "wrong type argument to bit-complement"
-#~ msgstr "Argument falschen Typs für Bit-Komplement"
-
-#~ msgid "wrong type argument to abs"
-#~ msgstr "Argument falschen Typs für abs"
-
-#~ msgid "wrong type argument to conjugation"
-#~ msgstr "Argument falschen Typs für Konjugation"
-
-#~ msgid "wrong type argument to unary exclamation mark"
-#~ msgstr "Argument falschen Typs für unäres Ausrufungszeichen"
-
-#~ msgid "ISO C does not support `++' and `--' on complex types"
-#~ msgstr "ISO-C unterstützt kein »++« und »--« für komplexe Typen"
-
-#~ msgid "wrong type argument to increment"
-#~ msgstr "Argument falschen Typs für Inkrementierung"
-
-#~ msgid "wrong type argument to decrement"
-#~ msgstr "Argument falschen Typs für Dekrementierung"
-
-#~ msgid "increment of pointer to unknown structure"
-#~ msgstr "Erhöhung eines Zeigers auf unbekannte Struktur"
-
-#~ msgid "decrement of pointer to unknown structure"
-#~ msgstr "Verminderung eines Zeigers auf unbekannte Struktur"
-
-#~ msgid "invalid lvalue in unary `&'"
-#~ msgstr "ungültiger L-Wert in unärem »&«"
-
-#~ msgid "attempt to take address of bit-field structure member `%s'"
-#~ msgstr "Versuch, die Adresse des Bitfeld-Element »%s« einer Struktur zu verwenden"
-
-#~ msgid "use of conditional expressions as lvalues is deprecated"
-#~ msgstr "die Verwendung bedingter Ausdrücke als L-Werte ist veraltet"
-
-#~ msgid "use of compound expressions as lvalues is deprecated"
-#~ msgstr "Verwendung zusammengesetzter Ausdrücke als L-Werte ist veraltet"
-
-#~ msgid "use of cast expressions as lvalues is deprecated"
-#~ msgstr "die Verwendung von cast-Ausdrücken als L-Werte ist veraltet"
-
-#~ msgid "%s of read-only member `%s'"
-#~ msgstr "%s des schreibgeschützten Elementes »%s«"
-
-#~ msgid "%s of read-only variable `%s'"
-#~ msgstr "%s der schreibgeschützten Variable »%s«"
-
-#~ msgid "%s of read-only location"
-#~ msgstr "%s der schreibgeschützten Speicherstelle"
-
-#~ msgid "cannot take address of bit-field `%s'"
-#~ msgstr "die Adresse des Bit-Feldes »%s« kann nicht ermittelt werden"
-
-#~ msgid "global register variable `%s' used in nested function"
-#~ msgstr "globale Register-Variable »%s« in verschachtelter Funktion verwendet"
-
-#~ msgid "register variable `%s' used in nested function"
-#~ msgstr "Register-Variable »%s« in verschachtelter Funktion verwendet"
-
-#~ msgid "address of global register variable `%s' requested"
-#~ msgstr "Adresse der globalen Variable »%s« angefordert"
-
-#~ msgid "cannot put object with volatile field into register"
-#~ msgstr "kann kein Objekt mit volatile-Feld in Register laden"
-
-#~ msgid "address of register variable `%s' requested"
-#~ msgstr "Adresse der Register-Variablen »%s« angefordert"
-
-#~ msgid "signed and unsigned type in conditional expression"
-#~ msgstr "Vorzeichenloser und -behafteter Typ in bedingtem Ausdruck"
-
-#~ msgid "ISO C forbids conditional expr with only one void side"
-#~ msgstr "ISO-C verbietet bedingten Ausdruck mit nur einer void-Seite"
-
-#~ msgid "ISO C forbids conditional expr between `void *' and function pointer"
-#~ msgstr "ISO-C verbietet bedingten Ausdruck zwischen »void *« und Funktionszeiger"
-
-#~ msgid "pointer type mismatch in conditional expression"
-#~ msgstr "Zeigertyp passt nicht in bedingtem Ausdruck"
-
-#~ msgid "pointer/integer type mismatch in conditional expression"
-#~ msgstr "Zeiger-/Ganzzahltyp passt nicht in bedingtem Ausdruck"
-
-#~ msgid "type mismatch in conditional expression"
-#~ msgstr "Typ passt nicht in bedingtem Ausdruck"
-
-#~ msgid "left-hand operand of comma expression has no effect"
-#~ msgstr "linker Operand des Komma-Ausdrucks hat keinen Effekt"
-
-#~ msgid "cast specifies array type"
-#~ msgstr "Typkonvertierung gibt Feldtyp an"
-
-#~ msgid "cast specifies function type"
-#~ msgstr "Typkonvertierung gibt Funktionstyp an"
-
-#~ msgid "ISO C forbids casting nonscalar to the same type"
-#~ msgstr "ISO-C verbietet Typkonvertierung von Nicht-Skalar auf selben Typen"
-
-#~ msgid "ISO C forbids casts to union type"
-#~ msgstr "ISO-C verbietet Typkonvertierung auf union-Typ"
-
-#~ msgid "cast to union type from type not present in union"
-#~ msgstr "Typkonvertierung in union-Typ von nicht in union vorhandenem Typen"
-
-#~ msgid "cast adds new qualifiers to function type"
-#~ msgstr "Typkonvertierung fügt neue Typqualifizierer zu Funktionstypen hinzu"
-
-#~ msgid "cast discards qualifiers from pointer target type"
-#~ msgstr "Typkonvertierung streicht Qualifizierer von Zeiger-Zieltyp"
-
-#~ msgid "cast increases required alignment of target type"
-#~ msgstr "Typkonvertierung erfordert Ausrichtung des Zieltyps"
-
-#~ msgid "cast from pointer to integer of different size"
-#~ msgstr "Typkonvertierung von Zeiger auf Ganzzahl anderer Breite"
-
-#~ msgid "cast does not match function type"
-#~ msgstr "Typkonvertierung passt nicht zum Funktionstypen"
-
-#~ msgid "cast to pointer from integer of different size"
-#~ msgstr "Typkonvertierung in Zeiger von Ganzzahl anderer Breite"
-
-#~ msgid "type-punning to incomplete type might break strict-aliasing rules"
-#~ msgstr "Type-Punning auf unvollständigen Typen kann strict-aliasing-Regeln verletzen"
-
-#~ msgid "dereferencing type-punned pointer will break strict-aliasing rules"
-#~ msgstr "Dereferenzierung eines Type-Pun-Zeigers verletzt strict-aliasing-Regeln"
-
-#~ msgid "ISO C forbids conversion of function pointer to object pointer type"
-#~ msgstr "ISO-C verbietet Konvertierung von Funktionszeigern in Objektzeigertyp"
-
-#~ msgid "ISO C forbids conversion of object pointer to function pointer type"
-#~ msgstr "ISO-C verbietet Konvertierung von Objektzeigertypen in Funktionszeigertyp"
-
-#~ msgid "invalid lvalue in assignment"
-#~ msgstr "ungültiger L-Wert in Zuweisung"
-
-#~ msgid "assignment"
-#~ msgstr "Zuweisung"
-
-#~ msgid "cannot pass rvalue to reference parameter"
-#~ msgstr "kann R-Wert nicht an Referenzparameter übergeben"
-
-#~ msgid "%s makes qualified function pointer from unqualified"
-#~ msgstr "%s erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
-
-#~ msgid "%s discards qualifiers from pointer target type"
-#~ msgstr "%s streicht Qualifizierer von Zeiger-Zieltypen"
-
-#~ msgid "ISO C prohibits argument conversion to union type"
-#~ msgstr "ISO-C verbietet Argumentkonvertierung in union-Typ"
-
-#~ msgid "ISO C forbids %s between function pointer and `void *'"
-#~ msgstr "ISO-C verbietet %s zwischen Funktionszeiger und »void *«"
-
-#~ msgid "pointer targets in %s differ in signedness"
-#~ msgstr "Zeigerziele in %s unterscheiden sich im Vorzeichenbesitz"
-
-#~ msgid "%s from incompatible pointer type"
-#~ msgstr "%s von inkompatiblem Zeigertyp"
-
-#~ msgid "invalid use of non-lvalue array"
-#~ msgstr "ungültige Verwendung eines Nicht-L-Wert-Feldes"
-
-#~ msgid "%s makes pointer from integer without a cast"
-#~ msgstr "%s erzeugt Zeiger von Ganzzahl ohne Typkonvertierung"
-
-#~ msgid "%s makes integer from pointer without a cast"
-#~ msgstr "%s erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"
-
-#~ msgid "incompatible type for argument %d of `%s'"
-#~ msgstr "inkompatibler Typ für Argument %d von »%s«"
-
-#~ msgid "incompatible type for argument %d of indirect function call"
-#~ msgstr "inkompatibler Typ für Argument %d eines indirekten Funktionsaufrufes"
-
-#~ msgid "incompatible types in %s"
-#~ msgstr "inkompatible Typen in %s"
-
-#~ msgid "passing arg of `%s'"
-#~ msgstr "Verarbeiten des Argumentes von »%s«"
-
-#~ msgid "passing arg of pointer to function"
-#~ msgstr "Verarbeiten des Zeigerargumentes an Funktion"
-
-#~ msgid "passing arg %d of `%s'"
-#~ msgstr "Verarbeiten des Argumentes %d von »%s«"
-
-#~ msgid "passing arg %d of pointer to function"
-#~ msgstr "Verarbeiten des Argumentes %d von Zeiger auf Funktion"
-
-#~ msgid "traditional C rejects automatic aggregate initialization"
-#~ msgstr "traditionelles C lehnt automatische Gesamt-Initialisierung ab"
-
-#~ msgid "(near initialization for `%s')"
-#~ msgstr "(nahe der Initialisierung für »%s«)"
-
-#~ msgid "char-array initialized from wide string"
-#~ msgstr "char-Feld mit wide-Zeichenkette initialisiert"
-
-#~ msgid "int-array initialized from non-wide string"
-#~ msgstr "int-Feld mit Nicht-wide-Zeichenkette initialisiert"
-
-#~ msgid "initializer-string for array of chars is too long"
-#~ msgstr "Initialisierungs-Zeichenkette für char-Feld ist zu lang"
-
-#~ msgid "array initialized from non-constant array expression"
-#~ msgstr "Feld mit nicht konstantem Feldausdruck initialisiert"
-
-#~ msgid "initializer element is not constant"
-#~ msgstr "Initialisierungselement ist nicht konstant"
-
-#~ msgid "initialization"
-#~ msgstr "Initialisierung"
-
-#~ msgid "initializer element is not computable at load time"
-#~ msgstr "Initialisierungs-Element ist zur Lade-Zeit nicht berechenbar"
-
-#~ msgid "invalid initializer"
-#~ msgstr "ungültige Initialisierung"
-
-#~ msgid "opaque vector types cannot be initialized"
-#~ msgstr "opake Vektortypen können nicht initialisiert werden"
-
-#~ msgid "extra brace group at end of initializer"
-#~ msgstr "zusätzliche geschweifte Klammern am Ende der Initialisierung"
-
-#~ msgid "missing braces around initializer"
-#~ msgstr "geschweifte Klammern fehlen um Initialisierung"
-
-#~ msgid "braces around scalar initializer"
-#~ msgstr "geschweifte Klammern um Skalar-Initialisierung"
-
-#~ msgid "initialization of flexible array member in a nested context"
-#~ msgstr "Initialisierung eines flexiblen Feld-Elements in geschachteltem Kontext"
-
-#~ msgid "initialization of a flexible array member"
-#~ msgstr "Initialisierung eines flexiblen Feld-Elements"
-
-#~ msgid "missing initializer"
-#~ msgstr "fehlende Initialisierung"
-
-#~ msgid "empty scalar initializer"
-#~ msgstr "leere Skalar-Initialisierung"
-
-#~ msgid "extra elements in scalar initializer"
-#~ msgstr "zusätzliche Elemente in Skalar-Initialisierung"
-
-#~ msgid "initialization designators may not nest"
-#~ msgstr "Initialisierungs-Bezeichner dürfen nicht geschachtelt werden"
-
-#~ msgid "array index in non-array initializer"
-#~ msgstr "Feldindex in Nicht-Feld-Initialisierung"
-
-#~ msgid "field name not in record or union initializer"
-#~ msgstr "Feldname nicht in Datensatz- oder union-Initialisierung"
-
-#~ msgid "nonconstant array index in initializer"
-#~ msgstr "nichtkonstanter Feldindex in Initialisierung"
-
-#~ msgid "array index in initializer exceeds array bounds"
-#~ msgstr "Feldindex in Initialisierung überschreitet Feldgrenzen"
-
-#~ msgid "empty index range in initializer"
-#~ msgstr "leerer Indexbereich in Initialisierung"
-
-#~ msgid "array index range in initializer exceeds array bounds"
-#~ msgstr "Feldindexbereich in Initialisierung überschreitet Feldgrenzen"
-
-#~ msgid "unknown field `%s' specified in initializer"
-#~ msgstr "unbekanntes Feld »%s« in Initialisierung angegeben"
-
-#~ msgid "initialized field with side-effects overwritten"
-#~ msgstr "initialisiertes Feld mit Seiteneffekten überschrieben"
-
-#~ msgid "excess elements in char array initializer"
-#~ msgstr "Elementüberschreitung in char-Feld-Initialisierung"
-
-#~ msgid "excess elements in struct initializer"
-#~ msgstr "Elementüberschreitung in struct-Initialisierung"
-
-#~ msgid "non-static initialization of a flexible array member"
-#~ msgstr "nicht-statische Initialisierung eines flexiblen Feldelements"
-
-#~ msgid "excess elements in union initializer"
-#~ msgstr "Elementüberschreitung in union-Initialisierung"
-
-#~ msgid "traditional C rejects initialization of unions"
-#~ msgstr "traditionelles C lehnt Initialisierung von unions ab"
-
-#~ msgid "excess elements in array initializer"
-#~ msgstr "Elementüberschreitung in Feldinitialisierung"
-
-#~ msgid "excess elements in vector initializer"
-#~ msgstr "Elementüberschreitung in Vektorinitialisierung"
-
-#~ msgid "excess elements in scalar initializer"
-#~ msgstr "Elementüberschreitung in Skalar-Initialisierung"
-
-#~ msgid "asm template is not a string constant"
-#~ msgstr "asm-Template ist keine Zeichenkettenkonstante"
-
-#~ msgid "invalid lvalue in asm statement"
-#~ msgstr "ungültiger L-Wert in asm-Anweisung"
-
-#~ msgid "modification by `asm'"
-#~ msgstr "Modifizierung durch »asm«"
-
-#~ msgid "function declared `noreturn' has a `return' statement"
-#~ msgstr "als »noreturn« deklarierte Funktion hat »return«-Anweisung"
-
-#~ msgid "`return' with no value, in function returning non-void"
-#~ msgstr "»return« ohne Wert in nicht void zurückgebender Funktion"
-
-#~ msgid "`return' with a value, in function returning void"
-#~ msgstr "»return« mit Wert in void zurückgebender Funktion"
-
-#~ msgid "return"
-#~ msgstr "return"
-
-#~ msgid "function returns address of local variable"
-#~ msgstr "Funktion liefert Adresse einer lokalen Variablen zurück"
-
-#~ msgid "switch quantity not an integer"
-#~ msgstr "switch-Größe keine Ganzzahl"
-
-#~ msgid "`long' switch expression not converted to `int' in ISO C"
-#~ msgstr "»long« switch-Ausdruck nicht nach »int« konvertiert in ISO C"
-
-#~ msgid "case label not within a switch statement"
-#~ msgstr "case-Marke nicht innerhalb einer switch-Anweisung"
-
-#~ msgid "`default' label not within a switch statement"
-#~ msgstr "»default«-Marke nicht innerhalb einer switch-Anweisung"
-
-#~ msgid "division by zero"
-#~ msgstr "Teilung durch Null"
-
-#~ msgid "right shift count is negative"
-#~ msgstr "Rechts-Schiebe-Weite ist negativ"
-
-#~ msgid "right shift count >= width of type"
-#~ msgstr "Rechts-Schiebe-Weite >= Breite des Typs"
-
-#~ msgid "left shift count is negative"
-#~ msgstr "Links-Schiebe-Weite ist negativ"
-
-#~ msgid "left shift count >= width of type"
-#~ msgstr "Links-Schiebe-Weite >= Breite des Typs"
-
-#~ msgid "shift count is negative"
-#~ msgstr "Schiebeweite ist negativ"
-
-#~ msgid "shift count >= width of type"
-#~ msgstr "Schiebeweite >= Breite des Typs"
-
-#~ msgid "comparing floating point with == or != is unsafe"
-#~ msgstr "Vergleich von Gleitkomma mit == oder != ist unsicher"
-
-#~ msgid "ISO C forbids comparison of `void *' with function pointer"
-#~ msgstr "ISO-C verbietet Vergleich von »void *« mit Funktionszeiger"
-
-#~ msgid "comparison of distinct pointer types lacks a cast"
-#~ msgstr "in Vergleich verschiedener Zeigertypen fehlt Typkonvertierung"
-
-#~ msgid "comparison between pointer and integer"
-#~ msgstr "Vergleich zwischen Zeiger und Ganzzahl"
-
-#~ msgid "ISO C forbids ordered comparisons of pointers to functions"
-#~ msgstr "ISO-C verbietet geordnete Vergleiche zwischen Zeigern auf Funktionen"
-
-#~ msgid "comparison of complete and incomplete pointers"
-#~ msgstr "Vergleich von vollständigen und unvollständigen Zeigern"
-
-#~ msgid "ordered comparison of pointer with integer zero"
-#~ msgstr "geordneter Vergleich von Zeiger mit Ganzzahlnull"
-
-#~ msgid "unordered comparison on non-floating point argument"
-#~ msgstr "ungeordneter Vergleich mit Nicht-Gleitkomma-Argument"
-
-#~ msgid "comparison between signed and unsigned"
-#~ msgstr "Vergleich zwischen vorzeichenbehaftet und vorzeichenlos"
-
-#~ msgid "comparison of promoted ~unsigned with constant"
-#~ msgstr "Vergleich von weitergegebenem ~unsigned mit Konstante"
-
-#~ msgid "comparison of promoted ~unsigned with unsigned"
-#~ msgstr "Vergleich von weitergegebenem ~unsigned mit unsigned"
-
-#~ msgid "%Jinlining failed in call to '%F'"
-#~ msgstr "%J»inline« beim Aufruf von »%F« gescheitert"
-
-#~ msgid "called from here"
-#~ msgstr "von hier aufgerufen"
-
-#~ msgid "%Jcan't inline call to '%F'"
-#~ msgstr "%JAufruf von »%F« kann nicht »inline« erfolgen"
-
-#~ msgid "ignoring return value of `%D', declared with attribute warn_unused_result"
-#~ msgstr "Rückgabewert von »%D«, das mit dem Attribut warn_unused_result definiert wurde, wird ignoriert"
-
-#~ msgid "ignoring return value of function declared with attribute warn_unused_result"
-#~ msgstr "Rückgabewert der mit dem Attribut warn_unused_result definierten Funktion wird ignoriert"
-
-#~ msgid "function call has aggregate value"
-#~ msgstr "Funktionsaufruf hat zusammengesetzten Wert"
-
-#~ msgid "bb %d on wrong place"
-#~ msgstr "bb %d an falscher Stelle"
-
-#~ msgid "prev_bb of %d should be %d, not %d"
-#~ msgstr "prev_bb von %d sollte %d sein, nicht %d"
-
-#~ msgid "verify_flow_info: Wrong count of block %i %i"
-#~ msgstr "verify_flow_info: Falsche Blockzahl %i %i"
-
-#~ msgid "verify_flow_info: Wrong frequency of block %i %i"
-#~ msgstr "verify_flow_info: Falsche Blockfrequenz %i %i"
-
-#~ msgid "verify_flow_info: Duplicate edge %i->%i"
-#~ msgstr "verify_flow_info: Doppelte Kante %i->%i"
-
-#~ msgid "verify_flow_info: Wrong probability of edge %i->%i %i"
-#~ msgstr "verify_flow_info: Falsche Wahrscheinlichkeit der Kante %i->%i %i"
-
-#~ msgid "verify_flow_info: Wrong count of edge %i->%i %i"
-#~ msgstr "verify_flow_info: Falsche Kantenzahl %i->%i %i"
-
-#~ msgid "verify_flow_info: Basic block %d succ edge is corrupted"
-#~ msgstr "verify_flow_info: Nachfolgekante des Basis-Blocks %d ist beschädigt"
-
-#~ msgid "Wrong amount of branch edges after unconditional jump %i"
-#~ msgstr "Falsche Summe der Zweig-Kanten nach unbedingtem Sprung %i"
-
-#~ msgid "basic block %d pred edge is corrupted"
-#~ msgstr "Vorgänger des Basis-Blocks %d ist beschädigt"
-
-#~ msgid "basic block %i edge lists are corrupted"
-#~ msgstr "Kantenlisten des Basis-Blockes %i sind beschädigt"
-
-#~ msgid "verify_flow_info failed"
-#~ msgstr "verify_flow_info gescheitert"
-
-#~ msgid "Size of loop %d should be %d, not %d."
-#~ msgstr "Größe der Schleife %d sollte %d sein, nicht %d"
-
-#~ msgid "Bb %d do not belong to loop %d."
-#~ msgstr "Bb %d gehört nicht zur Schleife %d."
-
-#~ msgid "Loop %d's header does not have exactly 2 entries."
-#~ msgstr "Kopf der Schleife %d hat nicht genau 2 Einträge."
-
-#~ msgid "Loop %d's latch does not have exactly 1 successor."
-#~ msgstr "Falle der Schleife %d hat nicht genau einen Nachfolger."
-
-#~ msgid "Loop %d's latch does not have header as successor."
-#~ msgstr "Falle der Schleife %d hat nicht den Kopf als Nachfolger."
-
-#~ msgid "Loop %d's latch does not belong directly to it."
-#~ msgstr "Falle der Schleife %d gehört nicht direkt zu ihr."
-
-#~ msgid "Loop %d's header does not belong directly to it."
-#~ msgstr "Kopf der Schleife %d gehört nicht direkt zu ihr."
-
-#~ msgid "Loop %d's latch is marked as part of irreducible region."
-#~ msgstr "Falle der Schleife %d ist als Teil einer irreduziblen Region markiert."
-
-#~ msgid "Basic block %d should be marked irreducible."
-#~ msgstr "Basisblock %d sollte als irreduzibel markiert werden."
-
-#~ msgid "Basic block %d should not be marked irreducible."
-#~ msgstr "Basisblock %d sollte nicht als irreduzibel markiert werden."
-
-#~ msgid "Edge from %d to %d should be marked irreducible."
-#~ msgstr "Kante von %d nach %d sollte als irreduzibel markiert werden."
-
-#~ msgid "Edge from %d to %d should not be marked irreducible."
-#~ msgstr "Kante von %d nach %d sollte nicht als irreduzibel markiert werden."
-
-#~ msgid "end insn %d for block %d not found in the insn stream"
-#~ msgstr "Ende-insn %d für Block %d nicht im insn-Stream gefunden"
-
-#~ msgid "insn %d is in multiple basic blocks (%d and %d)"
-#~ msgstr "insn %d ist in mehreren Basisblöcken (%d und %d)"
-
-#~ msgid "head insn %d for block %d not found in the insn stream"
-#~ msgstr "Kopf-insn %d für Block %d nicht im insn-Stream gefunden"
-
-#~ msgid "verify_flow_info: REG_BR_PROB does not match cfg %wi %i"
-#~ msgstr "verify_flow_info: REG_BR_PROB passt nicht zu cfg %wi %i"
-
-#~ msgid "Missing REG_EH_REGION note in the end of bb %i"
-#~ msgstr "Fehlender Vermerk von REG_EH_REGION am Ende vom bb %i"
-
-#~ msgid "Too many outgoing branch edges from bb %i"
-#~ msgstr "Zu viele abgehende Zweig-Kanten vom bb %i"
-
-#~ msgid "Fallthru edge after unconditional jump %i"
-#~ msgstr "Fallthru-Kante nach unbedingtem Sprung %i"
-
-#~ msgid "Wrong amount of branch edges after conditional jump %i"
-#~ msgstr "Falsche Summe der Zweig-Kanten nach bedingtem Sprung %i"
-
-#~ msgid "Call edges for non-call insn in bb %i"
-#~ msgstr "Ruf-Kanten für Nicht-Aufruf-insn im bb %i"
-
-#~ msgid "Abnormal edges for no purpose in bb %i"
-#~ msgstr "Abnormale Kanten ohne Grund in bb %i"
-
-#~ msgid "insn %d inside basic block %d but block_for_insn is NULL"
-#~ msgstr "insn %d innerhalb des Basis-Blockes %d, aber block_for_insn ist NULL"
-
-#~ msgid "insn %d inside basic block %d but block_for_insn is %i"
-#~ msgstr "insn %d innerhalb Basis-Blockes %d, aber block_for_insn ist %i"
-
-#~ msgid "NOTE_INSN_BASIC_BLOCK is missing for block %d"
-#~ msgstr "NOTE_INSN_BASIC_BLOCK fehlt für Block %d"
-
-#~ msgid "NOTE_INSN_BASIC_BLOCK %d in middle of basic block %d"
-#~ msgstr "NOTE_INSN_BASIC_BLOCK %d in der Mitte des Basis-Blocks %d"
-
-#~ msgid "in basic block %d:"
-#~ msgstr "im Basis-Block %d:"
-
-#~ msgid "flow control insn inside a basic block"
-#~ msgstr "Flusskontroll-insn innerhalb eines Basis-Blockes"
-
-#~ msgid "missing barrier after block %i"
-#~ msgstr "fehlende Sperre nach Block %i"
-
-#~ msgid "verify_flow_info: Incorrect blocks for fallthru %i->%i"
-#~ msgstr "verify_flow_info: Falsche Blöcke für »fallthru« %i->%i"
-
-#~ msgid "verify_flow_info: Incorrect fallthru %i->%i"
-#~ msgstr "verify_flow_info: Falsches »fallthru« %i->%i"
-
-#~ msgid "wrong insn in the fallthru edge"
-#~ msgstr "falsche insn in »fallthru«-Kante"
-
-#~ msgid "basic blocks not laid down consecutively"
-#~ msgstr "Basis-Blöcke sind nicht fortlaufend"
-
-#~ msgid "insn outside basic block"
-#~ msgstr "insn außerhalb eines Basis-Blockes"
-
-#~ msgid "return not followed by barrier"
-#~ msgstr "»return« nicht gefolgt von Sperre"
-
-#~ msgid "number of bb notes in insn chain (%d) != n_basic_blocks (%d)"
-#~ msgstr "Anzahl der bb-Vermerke in insn-Kette (%d) != n_basic_blocks (%d)"
-
-#~ msgid "function body not available"
-#~ msgstr "Funktionskörper nicht verfügbar"
-
-#~ msgid "redefined extern inline functions are not considered for inlining"
-#~ msgstr "redefinierte »extern inline«-Funktionen kommen nicht als »inline« in Betracht"
-
-#~ msgid "function not considered for inlining"
-#~ msgstr "Funktion kommt nicht für »inline« in Betracht"
-
-#~ msgid "function not inlinable"
-#~ msgstr "Funktion kann nicht »inline« sein"
-
-#~ msgid "%D renamed after being referenced in assembly"
-#~ msgstr "%D nach Referenzierung in Assemblierung umbenannt"
-
-#~ msgid "--param large-function-growth limit reached"
-#~ msgstr "--param large-function-growth: Limit erreicht"
-
-#~ msgid "--param large-function-growth limit reached while inlining the caller"
-#~ msgstr "--param large-function-growth: Limit bei »inline« des Aufrufers erreicht"
-
-#~ msgid "--param max-inline-insns-single limit reached"
-#~ msgstr "--param max-inline-insns-single: Limit erreicht"
-
-#~ msgid "--param max-inline-insns-single limit reached after inlining into the callee"
-#~ msgstr "--param max-inline-insns-single: Limit nach »inline« im Aufgerufenen erreicht"
-
-#~ msgid "--param inline-unit-growth limit reached"
-#~ msgstr "--param inline-unit-growth: Limit erreicht"
-
-#~ msgid "recursive inlining"
-#~ msgstr "rekursives inline"
-
-#~ msgid "internal error"
-#~ msgstr "interner Fehler"
-
-#~ msgid "no arguments"
-#~ msgstr "Keiner Argumente"
-
-#~ msgid "fopen %s"
-#~ msgstr "fopen %s"
-
-#~ msgid "fclose %s"
-#~ msgstr "fclose %s"
-
-#~ msgid "collect2 version %s"
-#~ msgstr "collect2-Version %s"
-
-#~ msgid "%d constructor(s) found\n"
-#~ msgstr "%d Konstruktor(en) gefunden\n"
-
-#~ msgid "%d destructor(s)  found\n"
-#~ msgstr "%d Destruktor(en) gefunden\n"
-
-#~ msgid "%d frame table(s) found\n"
-#~ msgstr "%d Rahmentabelle(n) gefunden\n"
-
-#~ msgid "%s terminated with signal %d [%s]%s"
-#~ msgstr "%s mit Signal %d [%s]%s beendet"
-
-#~ msgid "%s returned %d exit status"
-#~ msgstr "%s gab Ende-Status %d zurück"
-
-#~ msgid "[cannot find %s]"
-#~ msgstr "[kann %s nicht finden]"
-
-#~ msgid "cannot find `%s'"
-#~ msgstr "kann »%s« nicht finden"
-
-#~ msgid "redirecting stdout: %s"
-#~ msgstr "leite Standardausgabe um: %s"
-
-#~ msgid "[Leaving %s]\n"
-#~ msgstr "[Verlasse %s]\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "write_c_file - output name is %s, prefix is %s\n"
-#~ msgstr ""
-#~ "\n"
-#~ "write_c_file - Ausgabename ist %s, Präfix ist %s\n"
-
-#~ msgid "cannot find `nm'"
-#~ msgstr "kann »nm« nicht finden"
-
-#~ msgid "pipe"
-#~ msgstr "Pipe"
-
-#~ msgid "fdopen"
-#~ msgstr "fdopen"
-
-#~ msgid "dup2 %d 1"
-#~ msgstr "dup2 %d 1"
-
-#~ msgid "close %d"
-#~ msgstr "close %d"
-
-#~ msgid "execv %s"
-#~ msgstr "execv %s"
-
-#~ msgid "init function found in object %s"
-#~ msgstr "init-Funktion im Objekt %s gefunden"
-
-#~ msgid "fini function found in object %s"
-#~ msgstr "fini-Funktion im Objekt %s gefunden"
-
-#~ msgid "fclose"
-#~ msgstr "fclose"
-
-#~ msgid "unable to open file '%s'"
-#~ msgstr "kann Datei »%s« nicht öffnen"
-
-#~ msgid "unable to stat file '%s'"
-#~ msgstr "kann Dateistatus für »%s« nicht ermitteln"
-
-#~ msgid "unable to mmap file '%s'"
-#~ msgstr "kann mmap nicht auf Datei »%s« anwenden"
-
-#~ msgid "not found\n"
-#~ msgstr "nicht gefunden\n"
-
-#~ msgid "dynamic dependency %s not found"
-#~ msgstr "dynamische Abhängigkeit %s nicht gefunden"
-
-#~ msgid "bad magic number in file '%s'"
-#~ msgstr "Falsche magische Zahl in Datei »%s«"
-
-#~ msgid "dynamic dependencies.\n"
-#~ msgstr "dynamische Abhängigkeiten.\n"
-
-#~ msgid "cannot find `ldd'"
-#~ msgstr "kann »ldd« nicht finden"
-
-#~ msgid ""
-#~ "\n"
-#~ "ldd output with constructors/destructors.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Ausgabe von ldd mit Konstruktoren/Destruktoren.\n"
-
-#~ msgid "unable to open dynamic dependency '%s'"
-#~ msgstr "kann dynamische Abhängigkeit »%s« nicht öffnen"
-
-#~ msgid "%s: not a COFF file"
-#~ msgstr "%s: keine COFF-Datei"
-
-#~ msgid "%s: cannot open as COFF file"
-#~ msgstr "kann %s nicht als COFF-Datei öffnen"
-
-#~ msgid "library lib%s not found"
-#~ msgstr "Bibliothek lib%s nicht gefunden"
-
-#~ msgid ""
-#~ ";; Combiner statistics: %d attempts, %d substitutions (%d requiring new space),\n"
-#~ ";; %d successes.\n"
-#~ "\n"
-#~ msgstr ""
-#~ ";; Kombinierer-Statistik: %d Versuche, %d Ersetzungen (%d benötigten neuen Platz),\n"
-#~ ";; %d Erfolge.\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "\n"
-#~ ";; Combiner totals: %d attempts, %d substitutions (%d requiring new space),\n"
-#~ ";; %d successes.\n"
-#~ msgstr ""
-#~ "\n"
-#~ ";; Kombinierer-Gesamtwerte: %d Versuche, %d Ersetzungen (%d benötigten neuen Platz),\n"
-#~ ";; %d Erfolge.\n"
-
-#~ msgid "cannot convert to a pointer type"
-#~ msgstr "kann nicht in Zeigertyp konvertieren"
-
-#~ msgid "pointer value used where a floating point value was expected"
-#~ msgstr "Zeigerwert verwendet, wo Gleitkommawert erwartet wurde"
-
-#~ msgid "aggregate value used where a float was expected"
-#~ msgstr "zusammengesetzten Wert verwendet, wo Gleitkomma erwartet wurde"
-
-#~ msgid "conversion to incomplete type"
-#~ msgstr "Konvertierung in unvollständigen Typen"
-
-#~ msgid "can't convert between vector values of different size"
-#~ msgstr "kann nicht zwischen Vektorwerten verschiedener Größen konvertieren"
-
-#~ msgid "aggregate value used where an integer was expected"
-#~ msgstr "zusammengesetzter Wert verwendet, wo Ganzzahl erwartet wurde"
-
-#~ msgid "pointer value used where a complex was expected"
-#~ msgstr "Zeigerwert verwendet, wo »complex« erwartet wurde"
-
-#~ msgid "aggregate value used where a complex was expected"
-#~ msgstr "zusammengesetzer Wert verwendet, wo »complex« erwartet wurde"
-
-#~ msgid "can't convert value to a vector"
-#~ msgstr "kann Wert nicht in Vektor konvertieren"
-
-#~ msgid "`%s' is not a gcov data file"
-#~ msgstr "»%s« ist keine gcov-Datei"
-
-#~ msgid "`%s' is version `%.4s', expected version `%.4s'"
-#~ msgstr "»%s« hat Version »%.4s«, Version »%.4s« erwartet"
-
-#~ msgid "coverage mismatch for function %u while reading execution counters."
-#~ msgstr "Überdeckung passt nicht für Funktion %u beim Lesen der Ausführungszähler."
-
-#~ msgid "checksum is %x instead of %x"
-#~ msgstr "Prüfsumme ist %x statt %x"
-
-#~ msgid "number of counters is %d instead of %d"
-#~ msgstr "Zahl der Zähler ist %d statt %d"
-
-#~ msgid "cannot merge separate %s counters for function %u"
-#~ msgstr "separate %s Zähler für die Funktion %u können nicht verschmolzen werden"
-
-#~ msgid "`%s' has overflowed"
-#~ msgstr "»%s« übergelaufen"
-
-#~ msgid "`%s' is corrupted"
-#~ msgstr "»%s« ist beschädigt"
-
-#~ msgid "file %s not found, execution counts assumed to be zero"
-#~ msgstr "Datei %s nicht gefunden, Ausführungszähler als null angenommen"
-
-#~ msgid "no coverage for function '%s' found."
-#~ msgstr "keine Überdeckung für Funktion »%s« gefunden."
-
-#~ msgid "coverage mismatch for function '%s' while reading counter '%s'."
-#~ msgstr "Überdeckung passt nicht bei Funktion »%s« beim Lesen des Zählers »%s«."
-
-#~ msgid "cannot open %s"
-#~ msgstr "Es ist nicht möglich, »%s« zu öffnen"
-
-#~ msgid "error writing `%s'"
-#~ msgstr "Fehler beim Schreiben der Datei »%s«"
-
-#~ msgid "\"%s\" is not a valid option to the preprocessor"
-#~ msgstr "»%s« ist keine gültige Präprozessoroption"
-
-#~ msgid "too many input files"
-#~ msgstr "zu viele Eingabedateien"
-
-#~ msgid ";; Processing block from %d to %d, %d sets.\n"
-#~ msgstr ";; Bearbeite Block von %d bis %d, %d Sets.\n"
-
-#~ msgid "%s:%d: confused by earlier errors, bailing out\n"
-#~ msgstr "%s:%d: durch frühere Fehler verwirrt, Abbruch\n"
-
-#~ msgid "compilation terminated.\n"
-#~ msgstr "Kompilierung beendet.\n"
-
-#~ msgid "Internal compiler error: Error reporting routines re-entered.\n"
-#~ msgstr "Interner Compilerfehler: Fehlerbehandlungsroutinen doppelt betreten.\n"
-
-#~ msgid "in %s, at %s:%d"
-#~ msgstr "in %s, bei %s:%d"
-
-#~ msgid "dominator of %d should be %d, not %d"
-#~ msgstr "Herrscher über %d sollte %d sein, nicht %d"
-
-#~ msgid "DW_LOC_OP %s not implemented\n"
-#~ msgstr "DW_LOC_OP %s nicht implementiert\n"
-
-#~ msgid "can't access real part of complex value in hard register"
-#~ msgstr "kann nicht auf realen Teil des komplexen Wertes im festen Register zugreifen"
-
-#~ msgid "can't access imaginary part of complex value in hard register"
-#~ msgstr "kann nicht auf imaginären Teil des komplexen Wertes im festen Register zugreifen"
-
-#~ msgid "Invalid rtl sharing found in the insn"
-#~ msgstr "ungültige gemeinsame rtl-Benutzung in insn gefunden"
-
-#~ msgid "Shared rtx"
-#~ msgstr "Gemeinsames rtx"
-
-#~ msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
-#~ msgstr "ICE: emit_insn verwendet, wo emit_jump_insn erforderlich:\n"
-
-#~ msgid "abort in %s, at %s:%d"
-#~ msgstr "Abbruch in %s, bei %s:%d"
-
-#~ msgid "exception handling disabled, use -fexceptions to enable"
-#~ msgstr "Ausnahmebehandlung ausgeschaltet, benutzen Sie -fexeptions zum Anschalten"
-
-#~ msgid "argument of `__builtin_eh_return_regno' must be constant"
-#~ msgstr "Argument für »__builtin_eh_return_regno« muss konstant sein"
-
-#~ msgid "__builtin_eh_return not supported on this target"
-#~ msgstr "__builtin_eh_return für dieses Ziel nicht unterstützt"
-
-#~ msgid "stack limits not supported on this target"
-#~ msgstr "Kellergrenzen nicht für dieses Ziel unterstützt"
-
-#~ msgid "function using short complex types cannot be inline"
-#~ msgstr "Funktion, die komplexe »short«-Typen verwendet, kann nicht »inline« sein"
-
-#~ msgid "%Jprior parameter's size depends on '%D'"
-#~ msgstr "%Jvorherige Parametergröße hängt von »%D« ab"
-
-#~ msgid "returned value in block_exit_expr"
-#~ msgstr "zurückgelieferter Wert in block_exit_expr"
-
-#~ msgid "cannot take the address of an unaligned member"
-#~ msgstr "die Adresse eines nicht ausgerichteten Elements kann nicht ermittelt werden"
-
-#~ msgid "negative insn length"
-#~ msgstr "negative insn-Länge"
-
-#~ msgid "could not split insn"
-#~ msgstr "insn kann nicht aufgeteilt werden"
-
-#~ msgid "invalid `asm': "
-#~ msgstr "ungültiges »asm«: "
-
-#~ msgid "nested assembly dialect alternatives"
-#~ msgstr "geschachtelte Assemblerdialekt-Alternativen"
-
-#~ msgid "unterminated assembly dialect alternative"
-#~ msgstr "unbeendete Assemblerdialekt-Alternative"
-
-#~ msgid "operand number missing after %%-letter"
-#~ msgstr "Operandenzahl fehlt hinter %%-Buchstabe"
-
-#~ msgid "operand number out of range"
-#~ msgstr "Operandenzahl außerhalb des Wertebereiches"
-
-#~ msgid "invalid %%-code"
-#~ msgstr "ungültiger %%-Code"
-
-#~ msgid "`%%l' operand isn't a label"
-#~ msgstr "»%%l«-Operand ist keine Marke"
-
-#~ msgid "floating constant misused"
-#~ msgstr "Gleitkommakonstante falsch benutzt"
-
-#~ msgid "invalid expression as operand"
-#~ msgstr "ungültiger Ausdruck als Operand"
-
-#~ msgid "function might be possible candidate for attribute `noreturn'"
-#~ msgstr "Funktion könnte möglicher Kandidat für Attribut »noreturn« sein"
-
-#~ msgid "`noreturn' function does return"
-#~ msgstr "»noreturn«-Funktion kehrt zurück"
-
-#~ msgid "control reaches end of non-void function"
-#~ msgstr "Kontrollfluss erreicht Ende einer Nicht-void-Funktion"
-
-#~ msgid "Attempt to delete prologue/epilogue insn:"
-#~ msgstr "Versuch, Prolog/Epilog-insn zu löschen"
-
-#~ msgid "comparison is always %d due to width of bit-field"
-#~ msgstr "Vergleich ist immer %d wegen Breite des Bitfeldes"
-
-#~ msgid "comparison is always %d"
-#~ msgstr "Vergleich ist immer %d"
-
-#~ msgid "`or' of unmatched not-equal tests is always 1"
-#~ msgstr "»oder« nicht passender Ungleichheits-Tests ist immer 1"
-
-#~ msgid "`and' of mutually exclusive equal-tests is always 0"
-#~ msgstr "»und« gegenseitig ausschließender Gleichheits-Tests ist immer 0"
-
-#~ msgid "fold check: original tree changed by fold"
-#~ msgstr "Faltungstest: ursprünglicher Baum durch Faltung geändert"
-
-#~ msgid "%Jsize of variable '%D' is too large"
-#~ msgstr "%JGröße der Variable »%D« ist zu hoch"
-
-#~ msgid "impossible constraint in `asm'"
-#~ msgstr "unmögliche Bedingung in »asm«"
-
-#~ msgid "%J'%D' might be used uninitialized in this function"
-#~ msgstr "%J»%D« könnte in dieser Funktion uninitialisiert bleiben"
-
-#~ msgid "%Jvariable '%D' might be clobbered by `longjmp' or `vfork'"
-#~ msgstr "%JVariable »%D« könnte von »longjmp« oder »vfork« zerstört werden"
-
-#~ msgid "%Jargument '%D' might be clobbered by `longjmp' or `vfork'"
-#~ msgstr "%JArgument »%D« könnte von »longjmp« oder »vfork« zerstört werden"
-
-#~ msgid "function returns an aggregate"
-#~ msgstr "Funktion gibt Aggregat zurück"
-
-#~ msgid "%Junused parameter '%D'"
-#~ msgstr "%Jnicht benutzter Parameter »%D«"
-
-#~ msgid "ambiguous abbreviation %s"
-#~ msgstr "mehrdeutige Abkürzung %s"
-
-#~ msgid "incomplete `%s' option"
-#~ msgstr "unvollständige »%s«-Option"
-
-#~ msgid "missing argument to `%s' option"
-#~ msgstr "fehlendes Argument für »%s«-Option"
-
-#~ msgid "extraneous argument to `%s' option"
-#~ msgstr "zusätzliches (belangloses) Argument für »%s«-Option"
-
-#~ msgid "Using built-in specs.\n"
-#~ msgstr "Benutze eingebaute Spezifikationen.\n"
-
-#~ msgid ""
-#~ "Setting spec %s to '%s'\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Setze Spezifikation %s auf '%s'\n"
-#~ "\n"
-
-#~ msgid "Reading specs from %s\n"
-#~ msgstr "Lese Spezifikationen von %s\n"
-
-#~ msgid "specs %%include syntax malformed after %ld characters"
-#~ msgstr "falsche %%include-Syntax für Spezifikationen nach %ld Zeichen"
-
-#~ msgid "could not find specs file %s\n"
-#~ msgstr "konnte Spezifikationsdatei %s nicht finden\n"
-
-#~ msgid "specs %%rename syntax malformed after %ld characters"
-#~ msgstr "falsche %%rename-Syntax für Spezifikationen nach %ld Zeichen"
-
-#~ msgid "specs %s spec was not found to be renamed"
-#~ msgstr "keine %s-Spezifikation zum Umbenennen gefunden"
-
-#~ msgid "%s: attempt to rename spec '%s' to already defined spec '%s'"
-#~ msgstr "%s: Versuch, Spezifikation »%s« in bereits definierte Spezifikation »%s« umzubenennen"
-
-#~ msgid "rename spec %s to %s\n"
-#~ msgstr "benenne Spezifikation %s nach %s um\n"
-
-#~ msgid ""
-#~ "spec is '%s'\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Spezifikation ist '%s'\n"
-#~ "\n"
-
-#~ msgid "specs unknown %% command after %ld characters"
-#~ msgstr "Spezifikation: unbekannter %%-Befehl nach %ld Zeichen"
-
-#~ msgid "specs file malformed after %ld characters"
-#~ msgstr "Fehler in Spezifikationsdatei nach %ld Zeichen"
-
-#~ msgid "spec file has no spec for linking"
-#~ msgstr "Spezifikationsdatei hat keine Spezifikation zum Binden"
-
-#~ msgid "-pipe not supported"
-#~ msgstr "-pipe wird nicht unterstützt"

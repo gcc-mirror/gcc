@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_EXCEPT_H
 #define GCC_EXCEPT_H
 
-#include "hash-map.h"
-#include "hashtab.h"
 
 struct function;
 struct eh_region_d;
@@ -252,6 +250,7 @@ extern hash_map<void *, void *> *duplicate_eh_regions
   (struct function *, eh_region, int, duplicate_eh_regions_map, void *);
 
 extern void sjlj_emit_function_exit_after (rtx_insn *);
+extern void update_sjlj_context (void);
 
 extern eh_region gen_eh_region_cleanup (eh_region);
 extern eh_region gen_eh_region_try (eh_region);
@@ -270,8 +269,8 @@ extern eh_region get_eh_region_from_lp_number (int);
 
 extern eh_region eh_region_outermost (struct function *, eh_region, eh_region);
 
-extern void make_reg_eh_region_note (rtx insn, int ecf_flags, int lp_nr);
-extern void make_reg_eh_region_note_nothrow_nononlocal (rtx);
+extern void make_reg_eh_region_note (rtx_insn *insn, int ecf_flags, int lp_nr);
+extern void make_reg_eh_region_note_nothrow_nononlocal (rtx_insn *);
 
 extern void verify_eh_tree (struct function *);
 extern void dump_eh_tree (FILE *, struct function *);

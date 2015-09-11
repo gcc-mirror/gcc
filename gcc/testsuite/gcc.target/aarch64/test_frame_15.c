@@ -16,4 +16,3 @@ t_frame_run (test15)
 
 /* { dg-final { scan-assembler-times "sub\tsp, sp, #\[0-9\]+" 1 } } */
 /* { dg-final { scan-assembler-times "stp\tx29, x30, \\\[sp, -\[0-9\]+\\\]!" 3 } } */
-/* { dg-final { cleanup-saved-temps } } */

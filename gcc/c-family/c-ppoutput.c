@@ -21,17 +21,9 @@
 #include "coretypes.h"
 #include "cpplib.h"
 #include "../libcpp/internal.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "c-common.h"		/* For flags.  */
 #include "c-pragma.h"		/* For parse_in.  */
 
@@ -52,13 +44,13 @@ static struct
 
 /* Defined and undefined macros being queued for output with -dU at
    the next newline.  */
-typedef struct macro_queue
+struct macro_queue
 {
   struct macro_queue *next;	/* Next macro in the list.  */
   char *macro;			/* The name of the macro if not
 				   defined, the full definition if
 				   defined.  */
-} macro_queue;
+};
 static macro_queue *define_queue, *undef_queue;
 
 /* General output routines.  */
@@ -502,7 +494,7 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 static void
 cb_define (cpp_reader *pfile, source_location line, cpp_hashnode *node)
 {
-  const struct line_map *map;
+  const line_map_ordinary *map;
 
   maybe_print_line (line);
   fputs ("#define ", print.outf);
@@ -642,7 +634,7 @@ pp_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
    described in MAP.  */
 
 void
-pp_file_change (const struct line_map *map)
+pp_file_change (const line_map_ordinary *map)
 {
   const char *flags = "";
 
@@ -664,7 +656,7 @@ pp_file_change (const struct line_map *map)
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
 	    {
-	      const struct line_map *from = INCLUDED_FROM (line_table, map);
+	      const line_map_ordinary *from = INCLUDED_FROM (line_table, map);
 	      maybe_print_line (LAST_SOURCE_LINE_LOCATION (from));
 	    }
 	  if (map->reason == LC_ENTER)

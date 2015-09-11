@@ -11,4 +11,3 @@ foo (_Bool a, _Bool b, _Bool c)
 
 /* { dg-final { scan-tree-dump-times " == " 0 "forwprop1" } } */
 /* { dg-final { scan-tree-dump-times " != " 0 "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1-details" } */
 
 extern void abort ();
 extern void arf ();
@@ -50,5 +50,4 @@ L9:
    both totally subsumed by earlier tests and thus should be folded
    away using VRP.  */
 /* { dg-final { scan-tree-dump-times "Folding predicate" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

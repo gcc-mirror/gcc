@@ -295,6 +295,10 @@ Wbool-compare
 C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about boolean expression compared with an integer value different from true/false
 
+Wframe-address
+C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn when __builtin_frame_address or __builtin_return_address is used unsafely
+
 Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACRO_REDEFINED) Var(cpp_warn_builtin_macro_redefined) Init(1) Warning
 Warn when a built-in preprocessor macro is undefined or redefined
@@ -312,11 +316,10 @@ C ObjC Var(warn_cxx_compat) CPP(warn_cxx_operator_names) CppReason(CPP_W_CXX_OPE
 Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
-C++ ObjC++ Var(warn_cxx0x_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
-Deprecated in favor of -Wc++11-compat
+C++ ObjC++ Warning Alias(Wc++11-compat) Undocumented
 
 Wc++11-compat
-C++ ObjC++ Warning Alias(Wc++0x-compat)
+C++ ObjC++ Var(warn_cxx11_compat) Warning LangEnabledBy(C++ ObjC++,Wall) Init(0) CPP(cpp_warn_cxx11_compat) CppReason(CPP_W_CXX11_COMPAT)
 Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 2011
 
 Wc++14-compat
@@ -332,7 +335,7 @@ C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ Obj
 Warn about subscripts whose type is \"char\"
 
 Wchkp
-C ObjC C++ ObjC++ Var(warn_chkp) Warning EnabledBy(Wall)
+C ObjC C++ ObjC++ Var(warn_chkp) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about memory access errors found by Pointer Bounds Checker
 
 Wclobbered
@@ -456,7 +459,7 @@ C ObjC C++ ObjC++ Var(warn_format_security) Warning LangEnabledBy(C ObjC C++ Obj
 Warn about possible security problems with format functions
 
 Wformat-signedness
-C ObjC C++ ObjC++ Var(warn_format_signedness) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
+C ObjC C++ ObjC++ Var(warn_format_signedness) Warning
 Warn about sign differences with format functions
 
 Wformat-y2k
@@ -554,6 +557,10 @@ Wmemset-transposed-args
 C ObjC C++ ObjC++ Var(warn_memset_transposed_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not
 
+Wmisleading-indentation
+C C++ Common Var(warn_misleading_indentation) Warning
+Warn when the indentation of the code does not reflect the block structure
+
 Wmissing-braces
 C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
 Warn about possibly missing braces around initializers
@@ -627,7 +634,7 @@ C ObjC C++ ObjC++ CPP(warn_multichar) CppReason(CPP_W_MULTICHAR) Var(cpp_warn_mu
 Warn about use of multi-character character constants
 
 Wnarrowing
-C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall || Wc++0x-compat)
+C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall || Wc++11-compat)
 Warn about narrowing conversions within { } that are ill-formed in C++11
 
 Wnested-externs
@@ -709,6 +716,10 @@ Woverride-init
 C ObjC Var(warn_override_init) Warning EnabledBy(Wextra)
 Warn about overriding initializers without side effects
 
+Woverride-init-side-effects
+C ObjC Var(warn_override_init_side_effects) Init(1) Warning
+Warn about overriding initializers with side effects
+
 Wpacked-bitfield-compat
 C ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(-1) Warning
 Warn about packed bit-fields whose offset changed in GCC 4.4
@@ -773,6 +784,14 @@ Wshadow-ivar
 ObjC ObjC++ Var(warn_shadow_ivar) EnabledBy(Wshadow) Init(1) Warning
 Warn if a local declaration hides an instance variable
 
+Wshift-overflow
+C ObjC C++ ObjC++ Warning Alias(Wshift-overflow=, 1, 0)
+Warn if left shift of a signed value overflows
+
+Wshift-overflow=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_shift_overflow) Init(-1) Warning
+Warn if left shift of a signed value overflows
+
 Wshift-count-negative
 C ObjC C++ ObjC++ Var(warn_shift_count_negative) Init(1) Warning
 Warn if shift count is negative
@@ -780,6 +799,10 @@ Warn if shift count is negative
 Wshift-count-overflow
 C ObjC C++ ObjC++ Var(warn_shift_count_overflow) Init(1) Warning
 Warn if shift count >= width of type
+
+Wshift-negative-value
+C ObjC C++ ObjC++ Var(warn_shift_negative_value) Init(-1) Warning
+Warn if left shifting a negative value
 
 Wsign-compare
 C ObjC C++ ObjC++ Var(warn_sign_compare) Warning LangEnabledBy(C++ ObjC++,Wall)
@@ -828,6 +851,14 @@ Deprecated.  This switch has no effect
 Wsystem-headers
 C ObjC C++ ObjC++ Warning
 ; Documented in common.opt
+
+Wtautological-compare
+C ObjC C++ ObjC++ Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn if a comparison always evaluates to true or false
+
+Wterminate
+C++ ObjC++ Warning Var(warn_terminate) Init(1)
+Warn if a throw expression will always result in a call to terminate()
 
 Wtraditional
 C ObjC CPP(cpp_warn_traditional) CppReason(CPP_W_TRADITIONAL) Var(warn_traditional) Init(0) Warning
@@ -913,6 +944,11 @@ Wuseless-cast
 C++ ObjC++ Var(warn_useless_cast) Warning
 Warn about useless casts
 
+Wsubobject-linkage
+C++ ObjC++ Var(warn_subobject_linkage) Warning Init(1)
+Warn if a class type has a base or a field whose type uses the anonymous
+namespace or depends on a type with no linkage
+
 ansi
 C ObjC C++ ObjC++
 A synonym for -std=c89 (for C) or -std=c++98 (for C++)
@@ -964,32 +1000,32 @@ C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
 fcheck-pointer-bounds
-Common Report Var(flag_check_pointer_bounds)
+C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds)
 Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
 control instrumentation.  Currently available for C, C++ and ObjC.
 
 fchkp-check-incomplete-type
-C ObjC C++ ObjC++ Report Var(flag_chkp_incomplete_type) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_incomplete_type) Init(1)
 Generate pointer bounds checks for variables with incomplete type
 
 fchkp-zero-input-bounds-for-main
-C ObjC C++ ObjC++ Report Var(flag_chkp_zero_input_bounds_for_main) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_input_bounds_for_main) Init(0)
 Use zero bounds for all incoming arguments in 'main' function.  It helps when
 instrumented binaries are used with legacy libs.
 
 fchkp-first-field-has-own-bounds
-C ObjC C++ ObjC++ RejectNegative Report Var(flag_chkp_first_field_has_own_bounds)
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_first_field_has_own_bounds)
 Forces Pointer Bounds Checker to use narrowed bounds for address of the first
 field in the structure.  By default pointer to the first field has the same
 bounds as pointer to the whole structure.
 
 fchkp-narrow-bounds
-C ObjC C++ ObjC++ Report Var(flag_chkp_narrow_bounds) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_narrow_bounds) Init(1)
 Control how Pointer Bounds Checker handle pointers to object fields.  When
 narrowing is on, field bounds are used.  Otherwise full object bounds are used.
 
 fchkp-narrow-to-innermost-array
-C ObjC C++ ObjC++ RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
 Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of
 nested static arryas access.  By default outermost array is used.
 
@@ -1007,17 +1043,17 @@ C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_nochk_string_functions) Init(0)
 Allow to use *_nochk versions of string functions by Pointer Bounds Checker.
 
 fchkp-use-static-bounds
-C ObjC C++ ObjC++ Report Var(flag_chkp_use_static_bounds) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_bounds) Init(1)
 Use statically initialized variable for vars bounds instead of
 generating them each time it is required.
 
 fchkp-use-static-const-bounds
-C ObjC C++ ObjC++ Report Var(flag_chkp_use_static_const_bounds) Init(-1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_const_bounds) Init(-1)
 Use statically initialized variable for constant bounds instead of
 generating them each time it is required.
 
 fchkp-treat-zero-dynamic-size-as-infinite
-C ObjC C++ ObjC++ Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0)
 With this option zero size obtained dynamically for objects with
 incomplete type will be treated as infinite.
 
@@ -1041,9 +1077,23 @@ fchkp-instrument-marked-only
 C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_marked_only) Init(0)
 Instrument only functions marked with bnd_instrument attribute.
 
+fchkp-use-wrappers
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_wrappers) Init(1)
+Transform instrumented builtin calls into calls to wrappers.
+
+static-libmpx
+Driver
+
+static-libmpxwrappers
+Driver
+
 fcilkplus
 C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)
 Enable Cilk Plus
+
+fconcepts
+C++ ObjC++ Var(flag_concepts)
+Enable support for C++ concepts
 
 fcond-mismatch
 C ObjC C++ ObjC++
@@ -1284,11 +1334,11 @@ ObjC ObjC++ Var(flag_objc1_only)
 Conform to the Objective-C 1.0 language as implemented in GCC 4.0
 
 fopenacc
-C ObjC C++ ObjC++ Var(flag_openacc)
+C ObjC C++ ObjC++ LTO Var(flag_openacc)
 Enable OpenACC
 
 fopenmp
-C ObjC C++ ObjC++ Var(flag_openmp)
+C ObjC C++ ObjC++ LTO Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran)
 
 fopenmp-simd
@@ -1570,8 +1620,8 @@ C++ ObjC++ Alias(std=c++14) Undocumented
 Deprecated in favor of -std=c++14
 
 std=c++14
-C++ ObjC++ Undocumented
-Conform to the ISO 2014 C++ standard (experimental and incomplete support)
+C++ ObjC++
+Conform to the ISO 2014 C++ standard
 
 std=c++1z
 C++ ObjC++
@@ -1619,11 +1669,12 @@ C++ ObjC++
 Conform to the ISO 2011 C++ standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++0x
-C++ ObjC++ Alias(std=gnu++11)
+C++ ObjC++ Alias(std=gnu++11) Undocumented
 Deprecated in favor of -std=gnu++11
 
 std=gnu++1y
 C++ ObjC++ Alias(std=gnu++14) Undocumented
+Deprecated in favor of -std=gnu++14
 
 std=gnu++14
 C++ ObjC++

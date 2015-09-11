@@ -170,28 +170,37 @@ AC_SUBST(libtool_VERSION)
 AC_STDC_HEADERS
 AC_HEADER_TIME
 ACX_HEADER_STRING
-AC_CHECK_HEADERS(unistd.h semaphore.h sys/loadavg.h sys/time.h sys/time.h)
+AC_CHECK_HEADERS(pthread.h unistd.h semaphore.h sys/loadavg.h sys/sysctl.h sys/time.h)
 
 GCC_HEADER_STDINT(gstdint.h)
 
-# Check to see if -pthread or -lpthread is needed.  Prefer the former.
-# In case the pthread.h system header is not found, this test will fail.
 XPCFLAGS=""
-CFLAGS="$CFLAGS -pthread"
-AC_LINK_IFELSE(
- [AC_LANG_PROGRAM(
-  [#include <pthread.h>
-   void *g(void *d) { return NULL; }],
-  [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
- [XPCFLAGS=" -Wc,-pthread"],
- [CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
-  AC_LINK_IFELSE(
-   [AC_LANG_PROGRAM(
-    [#include <pthread.h>
-     void *g(void *d) { return NULL; }],
-    [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
-   [],
-   [AC_MSG_ERROR([Pthreads are required to build libgomp])])])
+case "$host" in
+  *-*-rtems*)
+    # RTEMS supports Pthreads, but the library is not available at GCC build time.
+    ;;
+  nvptx*-*-*)
+    # NVPTX does not support Pthreads, has its own code replacement.
+    ;;
+  *)
+    # Check to see if -pthread or -lpthread is needed.  Prefer the former.
+    # In case the pthread.h system header is not found, this test will fail.
+    CFLAGS="$CFLAGS -pthread"
+    AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM(
+      [#include <pthread.h>
+       void *g(void *d) { return NULL; }],
+      [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
+     [XPCFLAGS=" -Wc,-pthread"],
+     [CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
+      AC_LINK_IFELSE(
+       [AC_LANG_PROGRAM(
+        [#include <pthread.h>
+         void *g(void *d) { return NULL; }],
+        [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
+       [],
+       [AC_MSG_ERROR([Pthreads are required to build libgomp])])])
+esac
 
 m4_include([plugin/configfrag.ac])
 
@@ -204,6 +213,13 @@ case "$host" in
   *-darwin*)
     AC_DEFINE(HAVE_BROKEN_POSIX_SEMAPHORES, 1,
 	Define if the POSIX Semaphores do not work on your system.)
+    ;;
+esac
+
+# RTEMS specific checks
+case "$host" in
+  *-*-rtems*)
+    AC_CHECK_TYPES([struct _Mutex_Control],[],[],[#include <sys/lock.h>])
     ;;
 esac
 

@@ -1,3 +1,4 @@
+/* { dg-skip-if "ptxas seg faults" { nvptx-*-* } { "-O1" } { "" } } */
 /* Testcase by Martin Michlmayr <tbm@cyrius.com> */
 /* Used to segfault due to cselim not marking the complex temp var
    as GIMPLE reg.  */

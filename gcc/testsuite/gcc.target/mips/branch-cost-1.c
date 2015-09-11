@@ -6,4 +6,4 @@ foo (int x, int y, int z, int k)
   return x == k ? x + y : z - x;
 }
 /* { dg-final { scan-assembler-not "\t(movz|movn)\t" } } */
-/* { dg-final { scan-assembler "\t(bne|beq)\t" } } */
+/* { dg-final { scan-assembler "\t(bnec?|beqc?)\t" } } */

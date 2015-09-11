@@ -72,4 +72,3 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { target vect_widen_mult_hi_to_si } } } */
 /* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -6,7 +6,8 @@
 #include "avx512f-helper.h"
 
 #include <math.h>
-#include <values.h>
+#include <limits.h>
+#include <float.h>
 #define SIZE (AVX512F_LEN / 64)
 #include "avx512f-mask-type.h"
 
@@ -21,7 +22,7 @@ int check_fp_class_dp (double src, int imm)
   int PInf_res = (isinf (src) == 1);
   int NInf_res = (isinf (src) == -1);
   int Denorm_res = (fpclassify (src) == FP_SUBNORMAL);
-  int FinNeg_res = finite (src) && (src < 0);
+  int FinNeg_res = __builtin_finite (src) && (src < 0);
 
   int result = (((imm & 1) && qNaN_res)
 		|| (((imm >> 1) & 1) && Pzero_res)

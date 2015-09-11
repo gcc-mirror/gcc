@@ -52,4 +52,3 @@ baz (void)
 /* { dg-final { scan-tree-dump-not "t = D" "gimple"} } */
 /* { dg-final { scan-tree-dump-not "t\.c\.h\[12\] = D" "gimple"} } */
 /* { dg-final { scan-tree-dump-not "\.g\[12\] = D" "gimple"} } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

@@ -7,7 +7,7 @@
 // Message-ID: <m0nof3E-0021ifC@jts.com
 class t1 {
 protected:
-    int a; // { dg-error "" } protected
+    int a; // { dg-message "" } protected
 };
 
 

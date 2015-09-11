@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "obstack.h"
 #include "bitmap.h"
-#include "vec.h"
 #include "graphds.h"
 
 /* Dumps graph G into F.  */

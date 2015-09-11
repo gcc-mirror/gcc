@@ -19,5 +19,4 @@ int main (int argc, char *argv[]) {
    return vidx(short, r1, 0);
 }
 
-/* { dg-final { scan-tree-dump-times ">> k.\[0-9_\]*" 1 "veclower21" } } */
-/* { dg-final { cleanup-tree-dump "veclower21" } } */
+/* { dg-final { scan-tree-dump-times ">> _\[0-9\]*" 1 "veclower21" } } */

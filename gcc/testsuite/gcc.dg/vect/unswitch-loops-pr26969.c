@@ -12,4 +12,3 @@ ruby_re_compile_fastmap (char *fastmap, int options)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

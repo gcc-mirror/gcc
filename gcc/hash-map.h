@@ -21,92 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_map_h
 #define hash_map_h
 
-#include <new>
-#include <utility>
-#include "hash-table.h"
-
-/* implement default behavior for traits when types allow it.  */
-
-struct default_hashmap_traits
-{
-  /* Hashes the passed in key.  */
-
-  template<typename T>
-  static hashval_t
-  hash (T *p)
-    {
-      return uintptr_t(p) >> 3;
-    }
-
-  /* If the value converts to hashval_t just use it.  */
-
-  template<typename T> static hashval_t hash (T v) { return v; }
-
-  /* Return true if the two keys passed as arguments are equal.  */
-
-  template<typename T>
-  static bool
-  equal_keys (const T &a, const T &b)
-    {
-      return a == b;
-    }
-
-  /* Called to dispose of the key and value before marking the entry as
-     deleted.  */
-
-  template<typename T> static void remove (T &v) { v.~T (); }
-
-  /* Mark the passed in entry as being deleted.  */
-
-  template<typename T>
-  static void
-  mark_deleted (T &e)
-    {
-      mark_key_deleted (e.m_key);
-    }
-
-  /* Mark the passed in entry as being empty.  */
-
-  template<typename T>
-  static void
-  mark_empty (T &e)
-    {
-      mark_key_empty (e.m_key);
-    }
-
-  /* Return true if the passed in entry is marked as deleted.  */
-
-  template<typename T>
-  static bool
-  is_deleted (T &e)
-    {
-      return e.m_key == (void *)1;
-    }
-
-  /* Return true if the passed in entry is marked as empty.  */
-
-  template<typename T> static bool is_empty (T &e) { return e.m_key == NULL; }
-
-private:
-  template<typename T>
-  static void
-  mark_key_deleted (T *&k)
-    {
-      k = reinterpret_cast<T *> (1);
-    }
-
-  template<typename T>
-  static void
-  mark_key_empty (T *&k)
-    {
-      k = static_cast<T *> (0);
-    }
-};
-
-template<typename Key, typename Value,
-	 typename Traits = default_hashmap_traits>
+template<typename KeyId, typename Value,
+	 typename Traits>
 class GTY((user)) hash_map
 {
+  typedef typename Traits::key_type Key;
   struct hash_entry
   {
     Key m_key;
@@ -114,7 +33,6 @@ class GTY((user)) hash_map
 
     typedef hash_entry value_type;
     typedef Key compare_type;
-    typedef int store_values_directly;
 
     static hashval_t hash (const hash_entry &e)
       {
@@ -188,13 +106,16 @@ class GTY((user)) hash_map
   };
 
 public:
-  explicit hash_map (size_t n = 13, bool ggc = false) : m_table (n, ggc) {}
+  explicit hash_map (size_t n = 13, bool ggc = false,
+		     bool gather_mem_stats = true CXX_MEM_STAT_INFO)
+    : m_table (n, ggc, gather_mem_stats, HASH_MAP_ORIGIN PASS_MEM_STAT) {}
 
   /* Create a hash_map in ggc memory.  */
-  static hash_map *create_ggc (size_t size)
+  static hash_map *create_ggc (size_t size, bool gather_mem_stats = true
+			       CXX_MEM_STAT_INFO)
     {
       hash_map *map = ggc_alloc<hash_map> ();
-      new (map) hash_map (size, true);
+      new (map) hash_map (size, true, gather_mem_stats PASS_MEM_STAT);
       return map;
     }
 
@@ -248,7 +169,8 @@ public:
   /* Call the call back on each pair of key and value with the passed in
      arg.  */
 
-  template<typename Arg, bool (*f)(const Key &, const Value &, Arg)>
+  template<typename Arg, bool (*f)(const typename Traits::key_type &,
+				   const Value &, Arg)>
   void traverse (Arg a) const
     {
       for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();
@@ -256,7 +178,8 @@ public:
 	f ((*iter).m_key, (*iter).m_value, a);
     }
 
-  template<typename Arg, bool (*f)(const Key &, Value *, Arg)>
+  template<typename Arg, bool (*f)(const typename Traits::key_type &,
+				   Value *, Arg)>
   void traverse (Arg a) const
     {
       for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();

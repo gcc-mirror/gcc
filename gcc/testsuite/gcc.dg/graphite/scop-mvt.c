@@ -8,17 +8,16 @@ void mvt(long N) {
 
     for (i=0; i<N; i++) {
         for (j=0; j<N; j++) {
-            x1[i] = x1[i] + a[i][j] * y_1[j];
+            x1[j] = x1[j] + a[i][j] * y_1[j];
         }
     }
     
     for (i=0; i<N; i++) {
         for (j=0; j<N; j++) {
-            x2[i] = x2[i] + a[j][i] * y_2[j];
+            x2[j] = x2[j] + a[j][i] * y_2[j];
         }
     }
 }
 
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" } } */
 

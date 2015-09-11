@@ -7,8 +7,8 @@ program main
   complex(8), parameter :: z = cmplx (0.5, 0.5)  ! { dg-warning "Conversion" }
   real :: r1, r2
   r1 = 2.3d0 ! { dg-warning "Change of value in conversion" }
-  r2 = 2.5d0 ! No warning because the value does not change
+  r2 = 2.5d0 ! { dg-warning "Conversion" }
   d1 = .13 ! { dg-warning "Conversion" }
   d2 = .13d0
-  d1 = z     ! { dg-warning "change of value in conversion" }
+  d1 = z     ! { dg-warning "Non-zero imaginary part" }
 end program main

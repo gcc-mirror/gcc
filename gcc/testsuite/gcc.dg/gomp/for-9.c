@@ -14,4 +14,3 @@ void foo (int n)
 
 /* { dg-final { scan-tree-dump-times "GOMP_loop_ordered_guided_start" 1 "ompexp" } } */
 /* { dg-final { scan-tree-dump-times "GOMP_loop_ordered_guided_next" 1 "ompexp" } } */
-/* { dg-final { cleanup-tree-dump "ompexp" } } */

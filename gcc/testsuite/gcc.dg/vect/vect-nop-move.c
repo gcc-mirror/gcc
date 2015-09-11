@@ -78,5 +78,3 @@ main ()
 }
 
 /* { dg-final { scan-rtl-dump "deleting noop move" "combine" { target aarch64*-*-* } } } */
-/* { dg-final { cleanup-rtl-dump "combine" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

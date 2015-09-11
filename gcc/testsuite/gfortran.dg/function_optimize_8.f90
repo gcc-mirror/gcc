@@ -32,4 +32,3 @@ program main
 end program main
 ! { dg-final { scan-tree-dump-times "myfunc" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "mychar" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

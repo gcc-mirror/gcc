@@ -13,4 +13,3 @@ void foo()
 }
 
 /* { dg-final { scan-tree-dump-times "c =.* { 6, 8, 10, 12 }" 1 "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

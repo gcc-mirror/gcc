@@ -17,4 +17,3 @@ void test_vorrs64 (void)
   out_int64x1_t = vorr_s64 (arg0_int64x1_t, arg1_int64x1_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

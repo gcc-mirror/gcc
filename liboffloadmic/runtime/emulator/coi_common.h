@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -62,8 +62,8 @@
 /* Environment variable for target executable run command.  */
 #define OFFLOAD_EMUL_RUN_ENV      "OFFLOAD_EMUL_RUN"
 
-/* Environment variable for number ok KNC devices.  */
-#define OFFLOAD_EMUL_KNC_NUM_ENV  "OFFLOAD_EMUL_KNC_NUM"
+/* Environment variable for number of emulated devices.  */
+#define OFFLOAD_EMUL_NUM_ENV	  "OFFLOAD_EMUL_NUM"
 
 
 /* Path to engine directory.  */
@@ -133,6 +133,7 @@ typedef enum
   CMD_BUFFER_UNMAP,
   CMD_GET_FUNCTION_HANDLE,
   CMD_OPEN_LIBRARY,
+  CMD_CLOSE_LIBRARY,
   CMD_RUN_FUNCTION,
   CMD_SHUTDOWN
 } cmd_t;

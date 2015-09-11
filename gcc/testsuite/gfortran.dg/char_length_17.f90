@@ -12,4 +12,3 @@ program main
   if (c(i+1:i+1) /= 'b') call abort ()
 end program main
 ! { dg-final { scan-tree-dump-times "gfortran_compare_string" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -21,5 +21,4 @@ int main(void) {
 }
 
 /* { dg-final { scan-rtl-dump "copy needed" "ree" } } */
-/* { dg-final { cleanup-rtl-dump "ree" } } */
 

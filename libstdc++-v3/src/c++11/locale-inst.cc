@@ -192,6 +192,9 @@ _GLIBCXX_END_NAMESPACE_LDBL
   template struct __timepunct_cache<C>;
   template class time_put<C, ostreambuf_iterator<C> >;
   template class time_put_byname<C, ostreambuf_iterator<C> >;
+#else
+  // Instantiate constructor taking __cxx11::string
+  template time_put_byname<C>::time_put_byname(const string&, size_t);
 #endif
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class time_get<C, istreambuf_iterator<C> >;
@@ -205,6 +208,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_CXX11
   
   // ctype
+  ctype_byname<C>::ctype_byname(const string& __s, size_t __refs)
+  : ctype_byname(__s.c_str(), __refs) { }
+
 #if ! _GLIBCXX_USE_CXX11_ABI
   inline template class __ctype_abstract_base<C>;
   template class ctype_byname<C>;
@@ -214,6 +220,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if ! _GLIBCXX_USE_CXX11_ABI
   inline template class __codecvt_abstract_base<C, char, mbstate_t>;
   template class codecvt_byname<C, char, mbstate_t>;
+#else
+  // Instantiate constructor taking __cxx11::string
+  template codecvt_byname<C, char, mbstate_t>::codecvt_byname(const string&, size_t);
 #endif
 
   // collate

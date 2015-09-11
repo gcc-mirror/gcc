@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,30 +78,10 @@ package body Sem_Aux is
 
    function Available_View (Ent : Entity_Id) return Entity_Id is
    begin
-      --  Obtain the non-limited (non-abstract) view of a state or variable
+      --  Obtain the non-limited view (if available)
 
-      if Ekind (Ent) = E_Abstract_State
-        and then Present (Non_Limited_View (Ent))
-      then
-         return Non_Limited_View (Ent);
-
-      --  The non-limited view of an incomplete type may itself be incomplete
-      --  in which case obtain its full view.
-
-      elsif Is_Incomplete_Type (Ent)
-        and then Present (Non_Limited_View (Ent))
-      then
+      if Has_Non_Limited_View (Ent) then
          return Get_Full_View (Non_Limited_View (Ent));
-
-      --  If it is class_wide, check whether the specific type comes from a
-      --  limited_with.
-
-      elsif Is_Class_Wide_Type (Ent)
-        and then Is_Incomplete_Type (Etype (Ent))
-        and then From_Limited_With (Etype (Ent))
-        and then Present (Non_Limited_View (Etype (Ent)))
-      then
-         return Class_Wide_Type (Non_Limited_View (Etype (Ent)));
 
       --  In all other cases, return entity unchanged
 
@@ -266,7 +246,12 @@ package body Sem_Aux is
          Ent := Next_Entity (Ent);
       end loop;
 
-      pragma Assert (Ekind (Ent) = E_Discriminant);
+      --  Call may be on a private type with unknown discriminants, in which
+      --  case Ent is Empty, and as per the spec, we return Empty in this case.
+
+      --  Historical note: The assertion in previous versions that Ent is a
+      --  discriminant was overly cautious and prevented convenient application
+      --  of this function in the gnatprove context.
 
       return Ent;
    end First_Discriminant;
@@ -491,6 +476,19 @@ package body Sem_Aux is
             raise Program_Error;
       end case;
    end Get_Binary_Nkind;
+
+   -------------------
+   -- Get_Low_Bound --
+   -------------------
+
+   function Get_Low_Bound (E : Entity_Id) return Node_Id is
+   begin
+      if Ekind (E) = E_String_Literal_Subtype then
+         return String_Literal_Low_Bound (E);
+      else
+         return Type_Low_Bound (E);
+      end if;
+   end Get_Low_Bound;
 
    ------------------
    -- Get_Rep_Item --
@@ -970,6 +968,35 @@ package body Sem_Aux is
       end if;
    end Is_By_Reference_Type;
 
+   -------------------------
+   -- Is_Definite_Subtype --
+   -------------------------
+
+   function Is_Definite_Subtype (T : Entity_Id) return Boolean is
+      pragma Assert (Is_Type (T));
+      K : constant Entity_Kind := Ekind (T);
+
+   begin
+      if Is_Constrained (T) then
+         return True;
+
+      elsif K in Array_Kind
+        or else K in Class_Wide_Kind
+        or else Has_Unknown_Discriminants (T)
+      then
+         return False;
+
+      --  Known discriminants: definite if there are default values. Note that
+      --  if any discriminant has a default, they all do.
+
+      elsif Has_Discriminants (T) then
+         return Present (Discriminant_Default_Value (First_Discriminant (T)));
+
+      else
+         return True;
+      end if;
+   end Is_Definite_Subtype;
+
    ---------------------
    -- Is_Derived_Type --
    ---------------------
@@ -981,6 +1008,12 @@ package body Sem_Aux is
       if Is_Type (Ent)
         and then Base_Type (Ent) /= Root_Type (Ent)
         and then not Is_Class_Wide_Type (Ent)
+
+        --  An access_to_subprogram whose result type is a limited view can
+        --  appear in a return statement, without the full view of the result
+        --  type being available. Do not interpret this as a derived type.
+
+        and then Ekind (Ent) /= E_Subprogram_Type
       then
          if not Is_Numeric_Type (Root_Type (Ent)) then
             return True;
@@ -1074,38 +1107,6 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Immutably_Limited_Type;
-
-   ---------------------------
-   -- Is_Indefinite_Subtype --
-   ---------------------------
-
-   function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean is
-      K : constant Entity_Kind := Ekind (Ent);
-
-   begin
-      if Is_Constrained (Ent) then
-         return False;
-
-      elsif K in Array_Kind
-        or else K in Class_Wide_Kind
-        or else Has_Unknown_Discriminants (Ent)
-      then
-         return True;
-
-      --  Known discriminants: indefinite if there are no default values
-
-      elsif K in Record_Kind
-        or else Is_Incomplete_Or_Private_Type (Ent)
-        or else Is_Concurrent_Type (Ent)
-      then
-         return (Has_Discriminants (Ent)
-           and then
-             No (Discriminant_Default_Value (First_Discriminant (Ent))));
-
-      else
-         return False;
-      end if;
-   end Is_Indefinite_Subtype;
 
    ---------------------
    -- Is_Limited_Type --
@@ -1375,6 +1376,35 @@ package body Sem_Aux is
       return Empty;
    end Next_Tag_Component;
 
+   -----------------------
+   -- Number_Components --
+   -----------------------
+
+   function Number_Components (Typ : Entity_Id) return Pos is
+      N    : Int;
+      Comp : Entity_Id;
+
+   begin
+      N := 0;
+
+      --  We do not call Einfo.First_Component_Or_Discriminant, as this
+      --  function does not skip completely hidden discriminants, which we
+      --  want to skip here.
+
+      if Has_Discriminants (Typ) then
+         Comp := First_Discriminant (Typ);
+      else
+         Comp := First_Component (Typ);
+      end if;
+
+      while Present (Comp) loop
+         N := N + 1;
+         Comp := Next_Component_Or_Discriminant (Comp);
+      end loop;
+
+      return N;
+   end Number_Components;
+
    --------------------------
    -- Number_Discriminants --
    --------------------------
@@ -1413,25 +1443,160 @@ package body Sem_Aux is
                   and then Has_Discriminants (Typ));
    end Object_Type_Has_Constrained_Partial_View;
 
+   ------------------
+   -- Package_Body --
+   ------------------
+
+   function Package_Body (E : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      if Ekind (E) = E_Package_Body then
+         N := Parent (E);
+
+         if Nkind (N) = N_Defining_Program_Unit_Name then
+            N := Parent (N);
+         end if;
+
+      else
+         N := Package_Spec (E);
+
+         if Present (Corresponding_Body (N)) then
+            N := Parent (Corresponding_Body (N));
+
+            if Nkind (N) = N_Defining_Program_Unit_Name then
+               N := Parent (N);
+            end if;
+         else
+            N := Empty;
+         end if;
+      end if;
+
+      return N;
+   end Package_Body;
+
+   ------------------
+   -- Package_Spec --
+   ------------------
+
+   function Package_Spec (E : Entity_Id) return Node_Id is
+   begin
+      return Parent (Package_Specification (E));
+   end Package_Spec;
+
    ---------------------------
    -- Package_Specification --
    ---------------------------
 
-   function Package_Specification (Pack_Id : Entity_Id) return Node_Id is
+   function Package_Specification (E : Entity_Id) return Node_Id is
       N : Node_Id;
 
    begin
-      N := Parent (Pack_Id);
-      while Nkind (N) /= N_Package_Specification loop
-         N := Parent (N);
+      N := Parent (E);
 
-         if No (N) then
-            raise Program_Error;
-         end if;
-      end loop;
+      if Nkind (N) = N_Defining_Program_Unit_Name then
+         N := Parent (N);
+      end if;
 
       return N;
    end Package_Specification;
+
+   ---------------------
+   -- Subprogram_Body --
+   ---------------------
+
+   function Subprogram_Body (E : Entity_Id) return Node_Id is
+      Body_E : constant Entity_Id := Subprogram_Body_Entity (E);
+
+   begin
+      if No (Body_E) then
+         return Empty;
+      else
+         return Parent (Subprogram_Specification (Body_E));
+      end if;
+   end Subprogram_Body;
+
+   ----------------------------
+   -- Subprogram_Body_Entity --
+   ----------------------------
+
+   function Subprogram_Body_Entity (E : Entity_Id) return Entity_Id is
+      N : Node_Id;
+
+   begin
+      --  Retrieve the declaration for E
+
+      N := Parent (Subprogram_Specification (E));
+
+      --  If this declaration is not a subprogram body, then it must be a
+      --  subprogram declaration or body stub, from which we can retrieve the
+      --  entity for the corresponding subprogram body if any, or an abstract
+      --  subprogram declaration, for which we return Empty.
+
+      case Nkind (N) is
+         when N_Subprogram_Body =>
+            return E;
+
+         when N_Subprogram_Declaration | N_Subprogram_Body_Stub =>
+            return Corresponding_Body (N);
+
+         when others =>
+            return Empty;
+      end case;
+   end Subprogram_Body_Entity;
+
+   ---------------------
+   -- Subprogram_Spec --
+   ---------------------
+
+   function Subprogram_Spec (E : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      --  Retrieve the declaration for E
+
+      N := Parent (Subprogram_Specification (E));
+
+      --  This declaration is either subprogram declaration or a subprogram
+      --  body, in which case return Empty.
+
+      if Nkind (N) = N_Subprogram_Declaration then
+         return N;
+      else
+         return Empty;
+      end if;
+   end Subprogram_Spec;
+
+   ------------------------------
+   -- Subprogram_Specification --
+   ------------------------------
+
+   function Subprogram_Specification (E : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      N := Parent (E);
+
+      if Nkind (N) = N_Defining_Program_Unit_Name then
+         N := Parent (N);
+      end if;
+
+      --  If the Parent pointer of E is not a subprogram specification node
+      --  (going through an intermediate N_Defining_Program_Unit_Name node
+      --  for subprogram units), then E is an inherited operation. Its parent
+      --  points to the type derivation that produces the inheritance: that's
+      --  the node that generates the subprogram specification. Its alias
+      --  is the parent subprogram, and that one points to a subprogram
+      --  declaration, or to another type declaration if this is a hierarchy
+      --  of derivations.
+
+      if Nkind (N) not in N_Subprogram_Specification then
+         pragma Assert (Present (Alias (E)));
+         N := Subprogram_Specification (Alias (E));
+      end if;
+
+      return N;
+   end Subprogram_Specification;
 
    ---------------
    -- Tree_Read --

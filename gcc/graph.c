@@ -23,20 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic-core.h" /* for fatal_error */
-#include "sbitmap.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
 #include "cfgloop.h"
 #include "graph.h"
 #include "dumpfile.h"
@@ -63,7 +53,7 @@ open_graph_file (const char *base, const char *mode)
 
   fp = fopen (buf, mode);
   if (fp == NULL)
-    fatal_error ("can%'t open %s: %m", buf);
+    fatal_error (input_location, "can%'t open %s: %m", buf);
 
   return fp;
 }
@@ -292,9 +282,10 @@ print_graph_cfg (const char *base, struct function *fun)
   pretty_printer graph_slim_pp;
   graph_slim_pp.buffer->stream = fp;
   pretty_printer *const pp = &graph_slim_pp;
-  pp_printf (pp, "subgraph \"%s\" {\n"
-	         "\tcolor=\"black\";\n"
-		 "\tlabel=\"%s\";\n",
+  pp_printf (pp, "subgraph \"cluster_%s\" {\n"
+		 "\tstyle=\"dashed\";\n"
+		 "\tcolor=\"black\";\n"
+		 "\tlabel=\"%s ()\";\n",
 		 funcname, funcname);
   draw_cfg_nodes (pp, fun);
   draw_cfg_edges (pp, fun);

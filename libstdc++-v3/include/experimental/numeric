@@ -1,0 +1,88 @@
+// <experimental/numeric> -*- C++ -*-
+
+// Copyright (C) 2015 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file experimental/numeric
+ *  This is a TS C++ Library header.
+ */
+
+//
+// N4336 Working Draft, C++ Extensions for Library Fundamentals, Version 2
+//
+
+#ifndef _GLIBCXX_EXPERIMENTAL_NUMERIC
+#define _GLIBCXX_EXPERIMENTAL_NUMERIC 1
+
+#pragma GCC system_header
+
+#if __cplusplus <= 201103L
+# include <bits/c++14_warning.h>
+#else
+
+#include <experimental/type_traits>
+#include <cmath>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace experimental
+{
+inline namespace fundamentals_v2
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define __cpp_lib_experimental_gcd_lcm 201411
+
+  // Greatest common divisor
+  template<typename _Mn, typename _Nn>
+    constexpr common_type_t<_Mn, _Nn>
+    gcd(_Mn __m, _Nn __n)
+    {
+      static_assert(is_integral<_Mn>::value, "arguments to gcd are integers");
+      static_assert(is_integral<_Nn>::value, "arguments to gcd are integers");
+
+      return __m == 0 ? std::abs(__n)
+	: __n == 0 ? std::abs(__m)
+	: fundamentals_v2::gcd(__n, __m % __n);
+    }
+
+  // Least common multiple
+  template<typename _Mn, typename _Nn>
+    constexpr common_type_t<_Mn, _Nn>
+    lcm(_Mn __m, _Nn __n)
+    {
+      static_assert(is_integral<_Mn>::value, "arguments to lcm are integers");
+      static_assert(is_integral<_Nn>::value, "arguments to lcm are integers");
+
+      return (__m != 0 && __n != 0)
+	? (std::abs(__m) / fundamentals_v2::gcd(__m, __n)) * std::abs(__n)
+	: 0;
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace fundamentals_v2
+} // namespace experimental
+} // namespace std
+
+#endif // __cplusplus <= 201103L
+
+#endif // _GLIBCXX_EXPERIMENTAL_NUMERIC

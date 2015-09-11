@@ -24,6 +24,9 @@
 (define_register_constraint "Ucs" "CALLER_SAVE_REGS"
   "@internal The caller save registers.")
 
+(define_register_constraint "Uc0" "FIXED_REG0"
+  "@internal Represent X0/W0.")
+
 (define_register_constraint "w" "FP_REGS"
   "Floating point and SIMD vector registers.")
 
@@ -101,8 +104,9 @@
        (match_test "(unsigned HOST_WIDE_INT) ival < 64")))
 
 (define_constraint "Usf"
-  "@internal Usf is a symbol reference."
-  (match_code "symbol_ref"))
+  "@internal Usf is a symbol reference under the context where plt stub allowed."
+  (and (match_code "symbol_ref")
+       (match_test "!aarch64_is_noplt_call_p (op)")))
 
 (define_constraint "UsM"
   "@internal

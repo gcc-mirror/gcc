@@ -658,6 +658,7 @@ CXX
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
+am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
@@ -3169,11 +3170,11 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
-# Always define AMTAR for backward compatibility.
+# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AMTAR='$${TAR-tar}'
 
-AMTAR=${AMTAR-"${am_missing_run}tar"}
-
-am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
+am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
@@ -4110,6 +4111,7 @@ fi
 if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
   AMDEPBACKSLASH='\'
+  am__nodep='_no'
 fi
  if test "x$enable_dependency_tracking" != xno; then
   AMDEP_TRUE=
@@ -4134,6 +4136,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -4193,7 +4196,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -4518,6 +4521,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -4577,7 +4581,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -4658,6 +4662,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -4715,7 +4720,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -11370,7 +11375,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11373 "configure"
+#line 11378 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11476,7 +11481,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11479 "configure"
+#line 11484 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15643,7 +15648,8 @@ $as_echo "#define HAVE_AS_CFI_PSEUDO_OP 1" >>confdefs.h
  fi
 
 
-if test x$TARGET = xSPARC; then
+case "$TARGET" in
+  SPARC)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler and linker support unaligned pc related relocs" >&5
 $as_echo_n "checking assembler and linker support unaligned pc related relocs... " >&6; }
 if test "${libffi_cv_as_sparc_ua_pcrel+set}" = set; then :
@@ -15717,9 +15723,9 @@ $as_echo "$libffi_cv_as_register_pseudo_op" >&6; }
 $as_echo "#define HAVE_AS_REGISTER_PSEUDO_OP 1" >>confdefs.h
 
     fi
-fi
+    ;;
 
-if test x$TARGET = xX86 || test x$TARGET = xX86_WIN32 || test x$TARGET = xX86_64; then
+  X86*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler supports pc related relocs" >&5
 $as_echo_n "checking assembler supports pc related relocs... " >&6; }
 if test "${libffi_cv_as_x86_pcrel+set}" = set; then :
@@ -15740,79 +15746,9 @@ $as_echo "$libffi_cv_as_x86_pcrel" >&6; }
 $as_echo "#define HAVE_AS_X86_PCREL 1" >>confdefs.h
 
     fi
+    ;;
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler .ascii pseudo-op support" >&5
-$as_echo_n "checking assembler .ascii pseudo-op support... " >&6; }
-if test "${libffi_cv_as_ascii_pseudo_op+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-       libffi_cv_as_ascii_pseudo_op=unknown
-       # Check if we have .ascii
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-asm (".ascii \\"string\\"");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  libffi_cv_as_ascii_pseudo_op=yes
-else
-  libffi_cv_as_ascii_pseudo_op=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_ascii_pseudo_op" >&5
-$as_echo "$libffi_cv_as_ascii_pseudo_op" >&6; }
-    if test "x$libffi_cv_as_ascii_pseudo_op" = xyes; then
-
-$as_echo "#define HAVE_AS_ASCII_PSEUDO_OP 1" >>confdefs.h
-
-    fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler .string pseudo-op support" >&5
-$as_echo_n "checking assembler .string pseudo-op support... " >&6; }
-if test "${libffi_cv_as_string_pseudo_op+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-       libffi_cv_as_string_pseudo_op=unknown
-       # Check if we have .string
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-asm (".string \\"string\\"");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  libffi_cv_as_string_pseudo_op=yes
-else
-  libffi_cv_as_string_pseudo_op=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_string_pseudo_op" >&5
-$as_echo "$libffi_cv_as_string_pseudo_op" >&6; }
-    if test "x$libffi_cv_as_string_pseudo_op" = xyes; then
-
-$as_echo "#define HAVE_AS_STRING_PSEUDO_OP 1" >>confdefs.h
-
-    fi
-fi
-
-if test x$TARGET = xS390; then
+  S390)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler uses zarch features" >&5
 $as_echo_n "checking compiler uses zarch features... " >&6; }
 if test "${libffi_cv_as_s390_zarch+set}" = set; then :
@@ -15835,7 +15771,8 @@ $as_echo "$libffi_cv_as_s390_zarch" >&6; }
 $as_echo "#define HAVE_AS_S390_ZARCH 1" >>confdefs.h
 
     fi
-fi
+    ;;
+esac
 
 # On PaX enable kernels that have MPROTECT enable we can't use PROT_EXEC.
 # Check whether --enable-pax_emutramp was given.
@@ -15850,7 +15787,7 @@ fi
 
 FFI_EXEC_TRAMPOLINE_TABLE=0
 case "$target" in
-     *arm*-apple-darwin*)
+     *arm*-apple-darwin* | aarch64-apple-darwin*)
        FFI_EXEC_TRAMPOLINE_TABLE=1
 
 $as_echo "#define FFI_EXEC_TRAMPOLINE_TABLE 1" >>confdefs.h

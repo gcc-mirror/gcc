@@ -9,7 +9,7 @@ public:
         operator T&() { return value; }
 private:
         template< class U >
-        explicit_t( U t ); /* { dg-error "with U = char, T = int|is private" } */
+        explicit_t( U t ); /* { dg-message "with U = char, T = int|private" } */
         T value;
 };
 

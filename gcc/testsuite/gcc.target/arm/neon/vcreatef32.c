@@ -16,4 +16,3 @@ void test_vcreatef32 (void)
   out_float32x2_t = vcreate_f32 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

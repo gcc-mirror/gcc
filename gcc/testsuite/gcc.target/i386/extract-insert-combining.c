@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target sse4 } */
 /* { dg-options "-msse4.2 -O3" } */
 /* { dg-final { scan-assembler-times "(?:vmovd|movd)\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]" 3 } } */
 /* { dg-final { scan-assembler-times "(?:vpaddd|paddd)\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]" 2 } } */

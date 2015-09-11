@@ -89,8 +89,8 @@
   (and (not (match_code "const_int,const_double"))
        (match_test "mmix_constant_address_p (op)")
        (ior (match_test "!TARGET_BASE_ADDRESSES")
-	    (match_code "LABEL_REF")
-	    (and (match_code "SYMBOL_REF")
+	    (match_code "label_ref")
+	    (and (match_code "symbol_ref")
 		 (match_test "SYMBOL_REF_FLAG (op)")))))
 
 ;; FIXME: L (or S) is redundant.

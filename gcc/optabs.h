@@ -364,7 +364,6 @@ extern void emit_indirect_jump (rtx);
 #error "insn-config.h must be included before optabs.h"
 #endif
 
-#ifdef HAVE_conditional_move
 /* Emit a conditional move operation.  */
 rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			   rtx, rtx, machine_mode, int);
@@ -372,20 +371,19 @@ rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, machine_mode,
 /* Return nonzero if the conditional move is supported.  */
 int can_conditionally_move_p (machine_mode mode);
 
-#endif
 rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			  rtx, rtx, machine_mode, int);
 
 /* Create but don't emit one rtl instruction to perform certain operations.
    Modes must match; operands must meet the operation's predicates.
    Likewise for subtraction and for just copying.  */
-extern rtx gen_add2_insn (rtx, rtx);
-extern rtx gen_add3_insn (rtx, rtx, rtx);
+extern rtx_insn *gen_add2_insn (rtx, rtx);
+extern rtx_insn *gen_add3_insn (rtx, rtx, rtx);
 extern int have_add2_insn (rtx, rtx);
-extern rtx gen_addptr3_insn (rtx, rtx, rtx);
+extern rtx_insn *gen_addptr3_insn (rtx, rtx, rtx);
 extern int have_addptr3_insn (rtx, rtx, rtx);
-extern rtx gen_sub2_insn (rtx, rtx);
-extern rtx gen_sub3_insn (rtx, rtx, rtx);
+extern rtx_insn *gen_sub2_insn (rtx, rtx);
+extern rtx_insn *gen_sub3_insn (rtx, rtx, rtx);
 extern int have_sub2_insn (rtx, rtx);
 
 /* Return the INSN_CODE to use for an extend operation.  */
@@ -393,8 +391,7 @@ extern enum insn_code can_extend_p (machine_mode, machine_mode, int);
 
 /* Generate the body of an insn to extend Y (with mode MFROM)
    into X (with mode MTO).  Do zero-extension if UNSIGNEDP is nonzero.  */
-extern rtx gen_extend_insn (rtx, rtx, machine_mode,
-			    machine_mode, int);
+extern rtx_insn *gen_extend_insn (rtx, rtx, machine_mode, machine_mode, int);
 
 /* Return the insn_code for a FLOAT_EXPR.  */
 enum insn_code can_float_p (machine_mode, machine_mode, int);
@@ -490,7 +487,7 @@ extern void init_tree_optimization_optabs (tree);
 extern void init_sync_libfuncs (int max);
 
 /* Generate a conditional trap instruction.  */
-extern rtx gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
+extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 
 /* Return true if target supports vector operations for VEC_PERM_EXPR.  */
 extern bool can_vec_perm_p (machine_mode, bool, const unsigned char *);
@@ -541,8 +538,8 @@ extern void create_convert_operand_from_type (struct expand_operand *op,
 extern bool maybe_legitimize_operands (enum insn_code icode,
 				       unsigned int opno, unsigned int nops,
 				       struct expand_operand *ops);
-extern rtx maybe_gen_insn (enum insn_code icode, unsigned int nops,
-			   struct expand_operand *ops);
+extern rtx_insn *maybe_gen_insn (enum insn_code icode, unsigned int nops,
+				 struct expand_operand *ops);
 extern bool maybe_expand_insn (enum insn_code icode, unsigned int nops,
 			       struct expand_operand *ops);
 extern bool maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,

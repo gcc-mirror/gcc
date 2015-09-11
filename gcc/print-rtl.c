@@ -33,25 +33,16 @@ along with GCC; see the file COPYING3.  If not see
 /* These headers all define things which are not available in
    generator programs.  */
 #ifndef GENERATOR_FILE
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "print-tree.h"
 #include "flags.h"
-#include "hard-reg-set.h"
 #include "predict.h"
-#include "input.h"
 #include "function.h"
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
+#include "alloc-pool.h"
 #include "cselib.h"
 #include "dumpfile.h"	/* for dump_flags */
 #include "dwarf2out.h"
@@ -462,54 +453,11 @@ print_rtx (const_rtx in_rtx)
 	    int value = XINT (in_rtx, i);
 	    const char *name;
 
-#ifndef GENERATOR_FILE
-	    if (REG_P (in_rtx) && (unsigned) value < FIRST_PSEUDO_REGISTER)
-	      fprintf (outfile, " %d %s", value, reg_names[value]);
-	    else if (REG_P (in_rtx)
-		     && (unsigned) value <= LAST_VIRTUAL_REGISTER)
-	      {
-		if (value == VIRTUAL_INCOMING_ARGS_REGNUM)
-		  fprintf (outfile, " %d virtual-incoming-args", value);
-		else if (value == VIRTUAL_STACK_VARS_REGNUM)
-		  fprintf (outfile, " %d virtual-stack-vars", value);
-		else if (value == VIRTUAL_STACK_DYNAMIC_REGNUM)
-		  fprintf (outfile, " %d virtual-stack-dynamic", value);
-		else if (value == VIRTUAL_OUTGOING_ARGS_REGNUM)
-		  fprintf (outfile, " %d virtual-outgoing-args", value);
-		else if (value == VIRTUAL_CFA_REGNUM)
-		  fprintf (outfile, " %d virtual-cfa", value);
-		else if (value == VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM)
-		  fprintf (outfile, " %d virtual-preferred-stack-boundary",
-			   value);
-		else
-		  fprintf (outfile, " %d virtual-reg-%d", value,
-			   value-FIRST_VIRTUAL_REGISTER);
-	      }
-	    else
-#endif
-	      if (flag_dump_unnumbered
-		     && (is_insn || NOTE_P (in_rtx)))
+	    if (flag_dump_unnumbered
+		&& (is_insn || NOTE_P (in_rtx)))
 	      fputc ('#', outfile);
 	    else
 	      fprintf (outfile, " %d", value);
-
-#ifndef GENERATOR_FILE
-	    if (REG_P (in_rtx) && REG_ATTRS (in_rtx))
-	      {
-		fputs (" [", outfile);
-		if (ORIGINAL_REGNO (in_rtx) != REGNO (in_rtx))
-		  fprintf (outfile, "orig:%i", ORIGINAL_REGNO (in_rtx));
-		if (REG_EXPR (in_rtx))
-		  print_mem_expr (outfile, REG_EXPR (in_rtx));
-
-		if (REG_OFFSET (in_rtx))
-		  fprintf (outfile, "+" HOST_WIDE_INT_PRINT_DEC,
-			   REG_OFFSET (in_rtx));
-		fputs (" ]", outfile);
-	      }
-	    if (REG_P (in_rtx) && REGNO (in_rtx) != ORIGINAL_REGNO (in_rtx))
-	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
-#endif
 
 	    if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
 		&& XINT (in_rtx, i) >= 0
@@ -518,6 +466,58 @@ print_rtx (const_rtx in_rtx)
 	    sawclose = 0;
 	  }
 	break;
+
+      case 'r':
+	{
+	  unsigned int regno = REGNO (in_rtx);
+#ifndef GENERATOR_FILE
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    fprintf (outfile, " %d %s", regno, reg_names[regno]);
+	  else if (regno <= LAST_VIRTUAL_REGISTER)
+	    {
+	      if (regno == VIRTUAL_INCOMING_ARGS_REGNUM)
+		fprintf (outfile, " %d virtual-incoming-args", regno);
+	      else if (regno == VIRTUAL_STACK_VARS_REGNUM)
+		fprintf (outfile, " %d virtual-stack-vars", regno);
+	      else if (regno == VIRTUAL_STACK_DYNAMIC_REGNUM)
+		fprintf (outfile, " %d virtual-stack-dynamic", regno);
+	      else if (regno == VIRTUAL_OUTGOING_ARGS_REGNUM)
+		fprintf (outfile, " %d virtual-outgoing-args", regno);
+	      else if (regno == VIRTUAL_CFA_REGNUM)
+		fprintf (outfile, " %d virtual-cfa", regno);
+	      else if (regno == VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM)
+		fprintf (outfile, " %d virtual-preferred-stack-boundary",
+			 regno);
+	      else
+		fprintf (outfile, " %d virtual-reg-%d", regno,
+			 regno-FIRST_VIRTUAL_REGISTER);
+	    }
+	  else
+#endif
+	    if (flag_dump_unnumbered && is_insn)
+	      fputc ('#', outfile);
+	    else
+	      fprintf (outfile, " %d", regno);
+
+#ifndef GENERATOR_FILE
+	  if (REG_ATTRS (in_rtx))
+	    {
+	      fputs (" [", outfile);
+	      if (regno != ORIGINAL_REGNO (in_rtx))
+		fprintf (outfile, "orig:%i", ORIGINAL_REGNO (in_rtx));
+	      if (REG_EXPR (in_rtx))
+		print_mem_expr (outfile, REG_EXPR (in_rtx));
+
+	      if (REG_OFFSET (in_rtx))
+		fprintf (outfile, "+" HOST_WIDE_INT_PRINT_DEC,
+			 REG_OFFSET (in_rtx));
+	      fputs (" ]", outfile);
+	    }
+	  if (regno != ORIGINAL_REGNO (in_rtx))
+	    fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
+#endif
+	  break;
+	}
 
       /* Print NOTE_INSN names rather than integer codes.  */
 
@@ -550,7 +550,7 @@ print_rtx (const_rtx in_rtx)
 	      }
 
 	    if (flag_dump_unnumbered
-		|| (flag_dump_unnumbered_links && (i == 1 || i == 2)
+		|| (flag_dump_unnumbered_links && i <= 1
 		    && (INSN_P (in_rtx) || NOTE_P (in_rtx)
 			|| LABEL_P (in_rtx) || BARRIER_P (in_rtx))))
 	      fputs (" #", outfile);
@@ -762,7 +762,7 @@ debug_rtx_range (const rtx_insn *start, const rtx_insn *end)
    and then call debug_rtx_list to print it, using DEBUG_RTX_COUNT.
    The found insn is returned to enable further debugging analysis.  */
 
-DEBUG_FUNCTION const_rtx
+DEBUG_FUNCTION const rtx_insn *
 debug_rtx_find (const rtx_insn *x, int uid)
 {
   while (x != 0 && INSN_UID (x) != uid)

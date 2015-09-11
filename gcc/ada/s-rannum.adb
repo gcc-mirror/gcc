@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,9 +94,11 @@ with Interfaces; use Interfaces;
 
 use Ada;
 
-package body System.Random_Numbers is
-
+package body System.Random_Numbers with
+  SPARK_Mode => Off
+is
    Image_Numeral_Length : constant := Max_Image_Width / N;
+
    subtype Image_String is String (1 .. Max_Image_Width);
 
    ----------------------------
@@ -239,7 +241,7 @@ package body System.Random_Numbers is
       --  integers. Assuming that Real'Machine_Radix = 2, it can deliver all
       --  machine values of type Real (as implied by Real'Machine_Mantissa and
       --  Real'Machine_Emin), which is not true of the standard method (to
-      --  which we fall back for non-binary radix): computing Real(<random
+      --  which we fall back for nonbinary radix): computing Real(<random
       --  integer>) / (<max random integer>+1). To do so, we first extract an
       --  (M-1)-bit significand (where M is Real'Machine_Mantissa), and then
       --  decide on a normalized exponent by repeated coin flips, decrementing

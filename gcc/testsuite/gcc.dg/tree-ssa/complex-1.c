@@ -10,4 +10,3 @@ C foo(C x, float y)
 }
 
 /* { dg-final { scan-tree-dump-times "__mul" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

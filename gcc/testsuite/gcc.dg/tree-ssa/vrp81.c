@@ -33,6 +33,5 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vrp_keep \\(" 2 "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 
 

@@ -43,4 +43,3 @@ XMLExcepts::AttrList_BadIndex, getMemoryManager());
 /* Mistake in branch prediction caused us to split away real body of the function keeping
    only throw () invokation.   This is bad idea.  */
 /* { dg-final { scan-tree-dump-not "Splitting function" "fnsplit"} } */
-/* { dg-final { cleanup-tree-dump "fnsplit" } } */

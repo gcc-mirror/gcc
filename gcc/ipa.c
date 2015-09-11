@@ -20,33 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "alias.h"
+#include "options.h"
 #include "fold-const.h"
 #include "calls.h"
 #include "stringpool.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "gimple-expr.h"
 #include "gimplify.h"
 #include "flags.h"
 #include "target.h"
@@ -60,8 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 #include "params.h"
 #include "internal-fn.h"
-#include "tree-ssa-alias.h"
-#include "gimple.h"
 #include "dbgcnt.h"
 
 
@@ -197,7 +179,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	     unused.  */
 	  if (TREE_CODE (TREE_TYPE (n->decl)) == METHOD_TYPE
 	      && type_in_anonymous_namespace_p
-		    (method_class_type (TREE_TYPE (n->decl))))
+		    (TYPE_METHOD_BASETYPE (TREE_TYPE (n->decl))))
 	    continue;
 
 	   symtab_node *body = n->function_symbol ();
@@ -383,7 +365,11 @@ symbol_table::remove_unreachable_nodes (FILE *file)
       /* If we are processing symbol in boundary, mark its AUX pointer for
 	 possible later re-processing in enqueue_node.  */
       if (in_boundary_p)
-	node->aux = (void *)2;
+	{
+	  node->aux = (void *)2;
+	  if (node->alias && node->analyzed)
+	    enqueue_node (node->get_alias_target (), &first, &reachable);
+	}
       else
 	{
 	  if (TREE_CODE (node->decl) == FUNCTION_DECL
@@ -472,6 +458,20 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      if (cnode->global.inlined_to)
 	        body_needed_for_clonning.add (cnode->decl);
 
+	      /* For instrumentation clones we always need original
+		 function node for proper LTO privatization.  */
+	      if (cnode->instrumentation_clone
+		  && cnode->definition)
+		{
+		  gcc_assert (cnode->instrumented_version || in_lto_p);
+		  if (cnode->instrumented_version)
+		    {
+		      enqueue_node (cnode->instrumented_version, &first,
+				    &reachable);
+		      reachable.add (cnode->instrumented_version);
+		    }
+		}
+
 	      /* For non-inline clones, force their origins to the boundary and ensure
 		 that body is not removed.  */
 	      while (cnode->clone_of)
@@ -486,6 +486,9 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		}
 
 	    }
+	  else if (cnode->thunk.thunk_p)
+	    enqueue_node (cnode->callees->callee, &first, &reachable);
+
 	  /* If any reachable function has simd clones, mark them as
 	     reachable as well.  */
 	  if (cnode->simd_clones)
@@ -530,11 +533,17 @@ symbol_table::remove_unreachable_nodes (FILE *file)
       /* If node is unreachable, remove its body.  */
       else if (!reachable.contains (node))
         {
-	  if (!body_needed_for_clonning.contains (node->decl))
+	  /* We keep definitions of thunks and aliases in the boundary so
+	     we can walk to the ultimate alias targets and function symbols
+	     reliably.  */
+	  if (node->alias || node->thunk.thunk_p)
+	    ;
+	  else if (!body_needed_for_clonning.contains (node->decl)
+	      && !node->alias && !node->thunk.thunk_p)
 	    node->release_body ();
 	  else if (!node->clone_of)
 	    gcc_assert (in_lto_p || DECL_RESULT (node->decl));
-	  if (node->definition)
+	  if (node->definition && !node->alias && !node->thunk.thunk_p)
 	    {
 	      if (file)
 		fprintf (file, " %s/%i", node->name (), node->order);
@@ -554,7 +563,6 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      if (!node->in_other_partition)
 		node->local.local = false;
 	      node->remove_callees ();
-	      node->remove_from_same_comdat_group ();
 	      node->remove_all_references ();
 	      changed = true;
 	      if (node->thunk.thunk_p
@@ -597,12 +605,24 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	     or not.  */
 	  && (!flag_ltrans || !DECL_EXTERNAL (vnode->decl)))
 	{
+	  struct ipa_ref *ref = NULL;
+
+	  /* First remove the aliases, so varpool::remove can possibly lookup
+	     the constructor and save it for future use.  */
+	  while (vnode->iterate_direct_aliases (0, ref))
+	    {
+	      if (file)
+		fprintf (file, " %s/%i", ref->referred->name (),
+			 ref->referred->order);
+	      ref->referring->remove ();
+	    }
 	  if (file)
 	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
+          vnext = next_variable (vnode);
 	  vnode->remove ();
 	  changed = true;
 	}
-      else if (!reachable.contains (vnode))
+      else if (!reachable.contains (vnode) && !vnode->alias)
         {
 	  tree init;
 	  if (vnode->definition)
@@ -637,7 +657,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
     if (node->address_taken
 	&& !node->used_from_other_partition)
       {
-	if (!node->call_for_symbol_thunks_and_aliases
+	if (!node->call_for_symbol_and_aliases
 	    (has_addr_references_p, NULL, true)
 	    && (!node->instrumentation_clone
 		|| !node->instrumented_version
@@ -784,8 +804,8 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	  {
 	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
-	    vnode->call_for_node_and_aliases (clear_addressable_bit, NULL,
-					      true);
+	    vnode->call_for_symbol_and_aliases (clear_addressable_bit, NULL,
+					        true);
 	  }
 	if (!address_taken && !written
 	    /* Making variable in explicit section readonly can cause section
@@ -795,14 +815,14 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	  {
 	    if (!TREE_READONLY (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (read-only)", vnode->name ());
-	    vnode->call_for_node_and_aliases (set_readonly_bit, NULL, true);
+	    vnode->call_for_symbol_and_aliases (set_readonly_bit, NULL, true);
 	  }
 	if (!vnode->writeonly && !read && !address_taken && written)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, " %s (write-only)", vnode->name ());
-	    vnode->call_for_node_and_aliases (set_writeonly_bit, &remove_p, 
-					     true);
+	    vnode->call_for_symbol_and_aliases (set_writeonly_bit, &remove_p, 
+					        true);
 	  }
       }
   if (dump_file)
@@ -897,6 +917,7 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
   DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
   DECL_SAVED_TREE (decl) = body;
   if (!targetm.have_ctors_dtors && final)
@@ -1319,9 +1340,8 @@ ipa_single_use (void)
 	  single_user_map.put (var, user);
 
 	  /* Enqueue all aliases for re-processing.  */
-	  for (i = 0; var->iterate_referring (i, ref); i++)
-	    if (ref->use == IPA_REF_ALIAS
-		&& !ref->referring->aux)
+	  for (i = 0; var->iterate_direct_aliases (i, ref); i++)
+	    if (!ref->referring->aux)
 	      {
 		ref->referring->aux = first;
 		first = dyn_cast <varpool_node *> (ref->referring);

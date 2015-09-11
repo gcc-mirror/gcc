@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 2014, Free Software Foundation, Inc.            --
+--          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,11 @@
 
 with System.Parameters; use System.Parameters;
 with System.Tasking.Initialization; use System.Tasking.Initialization;
+with System.Task_Primitives.Operations;
 
 package body System.Tasking.Task_Attributes is
+
+   package STPO renames System.Task_Primitives.Operations;
 
    type Index_Info is record
       Used : Boolean;
@@ -51,7 +54,8 @@ package body System.Tasking.Task_Attributes is
    --  System.Address type and Initial_Value is 0 (or null for an access type).
 
    function Next_Index (Require_Finalization : Boolean) return Integer is
-      Self_Id : constant Task_Id := Self;
+      Self_Id : constant Task_Id := STPO.Self;
+
    begin
       Task_Lock (Self_Id);
 
@@ -73,7 +77,7 @@ package body System.Tasking.Task_Attributes is
    --------------
 
    procedure Finalize (Index : Integer) is
-      Self_Id : constant Task_Id := Self;
+      Self_Id : constant Task_Id := STPO.Self;
    begin
       pragma Assert (Index in Index_Array'Range);
       Task_Lock (Self_Id);

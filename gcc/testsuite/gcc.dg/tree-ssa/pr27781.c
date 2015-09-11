@@ -14,4 +14,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "func \\(\\);" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

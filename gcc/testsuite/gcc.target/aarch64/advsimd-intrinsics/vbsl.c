@@ -114,7 +114,7 @@ void exec_vbsl (void)
   TEST_VBSL(uint, , float, f, 32, 2);
   TEST_VBSL(uint, q, float, f, 32, 4);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK_RESULTS_NO_FP16 (TEST_MSG, "");
 }
 
 int main (void)

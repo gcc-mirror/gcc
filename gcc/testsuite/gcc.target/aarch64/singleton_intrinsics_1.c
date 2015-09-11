@@ -235,8 +235,8 @@ test_vrshl_u64 (uint64x1_t a, int64x1_t b)
   return vrshl_u64 (a, b);
 }
 
-/* For int64x1_t, sshr...#63 is output instead of the equivalent cmlt...#0.  */
-/* { dg-final { scan-assembler-times "\\tsshr\\td\[0-9\]+" 2 } } */
+/* For int64x1_t, sshr...#63 is equivalent to cmlt...#0.  */
+/* { dg-final { scan-assembler-times "\\t(?:sshr|cmlt)\\td\[0-9\]+" 2 } } */
 
 int64x1_t
 test_vshr_n_s64 (int64x1_t a)
@@ -400,5 +400,4 @@ test_vsri_n_u64 (uint64x1_t a, uint64x1_t b)
   return vsri_n_u64 (a, b, 9);
 }
 
-/* { dg-final { cleanup-saved-temps } } */
 

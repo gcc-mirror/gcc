@@ -17,4 +17,3 @@ void test_vqshl_nu64 (void)
 }
 
 /* { dg-final { scan-assembler "vqshl\.u64\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

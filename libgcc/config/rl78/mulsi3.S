@@ -33,6 +33,18 @@
 ; DE	count	(resL-tmp)
 ; HL	[sp+4]
 
+; Register use (G10):
+;	
+; AX	    op2L
+; BC	    op2H
+; DE	    count
+; HL	    [sp+4]
+; r8/r9	    res32L
+; r10/r11   (resH)
+; r12/r13   (resL-tmp)
+; r16/r17   res32H
+; r18/r19   op1
+
 START_FUNC ___mulsi3
 	;; A is at [sp+4]
 	;; B is at [sp+8]
@@ -159,7 +171,7 @@ START_FUNC ___mulsi3
 	sknc
 	incw	ax
 	addw	ax, r_2
-.Lmul_hisi_no_add:	
+.Lmul_hisi_no_add:
 	sel	rb1
 	shlw	bc, 1
 	sel	rb0
@@ -267,3 +279,45 @@ START_FUNC ___mulhi3
 .Lmul_hi_done:
 	ret
 END_FUNC ___mulhi3
+
+;;; --------------------------------------
+#ifdef __RL78_G10__
+	START_FUNC ___mulqi3
+
+       	mov	a, [sp+4]
+       	mov	r9, a
+       	mov	a, [sp+6]
+       	mov	r10, a
+       	mov	a, #9
+       	mov	r11, a
+       	clrb	a
+       	mov	r8, a
+.L2:
+    	cmp0	r10
+    	skz
+    	dec	r11
+    	sknz
+    	ret
+    	mov	a, r10
+    	and	a, #1
+    	mov	r12, a
+    	cmp0	r12
+    	sknz
+    	br	!!.L3
+    	mov	a, r9
+    	mov	l, a
+    	mov	a, r8
+    	add	a, l
+    	mov	r8, a
+.L3:
+       	mov	a, r9
+       	add	a, a
+       	mov	r9, a
+       	mov	a, r10
+       	shr	a, 1
+       	mov	r10, a
+       	br	!!.L2
+
+	END_FUNC   ___mulqi3
+#endif	
+

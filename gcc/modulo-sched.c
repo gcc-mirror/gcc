@@ -22,43 +22,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "diagnostic-core.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
 #include "rtl.h"
+#include "df.h"
+#include "diagnostic-core.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "regs.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
 #include "profile.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
 #include "recog.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
-#include "predict.h"
-#include "basic-block.h"
 #include "sched-int.h"
 #include "target.h"
 #include "cfgloop.h"
-#include "double-int.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "insn-codes.h"
 #include "optabs.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -69,8 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "params.h"
 #include "gcov-io.h"
-#include "sbitmap.h"
-#include "df.h"
 #include "ddg.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
@@ -189,8 +171,6 @@ struct ps_reg_move_info
   rtx_insn *insn;
 };
 
-typedef struct ps_reg_move_info ps_reg_move_info;
-
 /* Holds the partial schedule as an array of II rows.  Each entry of the
    array points to a linked list of PS_INSNs, which represents the
    instructions that are scheduled for that row.  */
@@ -275,8 +255,6 @@ typedef struct node_sched_params
      u will precede v if column (u) < column (v).  */
   int column;
 } *node_sched_params_ptr;
-
-typedef struct node_sched_params node_sched_params;
 
 /* The following three functions are copied from the current scheduler
    code in order to use sched_analyze() for computing the dependencies.
@@ -373,13 +351,15 @@ ps_num_consecutive_stages (partial_schedule_ptr ps, int id)
    more than one occurrence in the loop besides the control part or the
    do-loop pattern is not of the form we expect.  */
 static rtx
-doloop_register_get (rtx_insn *head ATTRIBUTE_UNUSED, rtx_insn *tail ATTRIBUTE_UNUSED)
+doloop_register_get (rtx_insn *head, rtx_insn *tail)
 {
-#ifdef HAVE_doloop_end
   rtx reg, condition;
   rtx_insn *insn, *first_insn_not_to_check;
 
   if (!JUMP_P (tail))
+    return NULL_RTX;
+
+  if (!targetm.code_for_doloop_end)
     return NULL_RTX;
 
   /* TODO: Free SMS's dependence on doloop_condition_get.  */
@@ -417,9 +397,6 @@ doloop_register_get (rtx_insn *head ATTRIBUTE_UNUSED, rtx_insn *tail ATTRIBUTE_U
       }
 
   return reg;
-#else
-  return NULL_RTX;
-#endif
 }
 
 /* Check if COUNT_REG is set to a constant in the PRE_HEADER block, so
@@ -790,8 +767,7 @@ schedule_reg_moves (partial_schedule_ptr ps)
 	  move->old_reg = old_reg;
 	  move->new_reg = gen_reg_rtx (GET_MODE (prev_reg));
 	  move->num_consecutive_stages = distances[0] && distances[1] ? 2 : 1;
-	  move->insn = as_a <rtx_insn *> (gen_move_insn (move->new_reg,
-							 copy_rtx (prev_reg)));
+	  move->insn = gen_move_insn (move->new_reg, copy_rtx (prev_reg));
 	  bitmap_clear (move->uses);
 
 	  prev_reg = move->new_reg;
@@ -1482,15 +1458,15 @@ sms_schedule (void)
 	      if (profile_info && flag_branch_probabilities)
 	    	{
 	      	  fprintf (dump_file, "SMS loop-count ");
-	      	  fprintf (dump_file, "%"PRId64,
+	      	  fprintf (dump_file, "%" PRId64,
 	             	   (int64_t) bb->count);
 	      	  fprintf (dump_file, "\n");
                   fprintf (dump_file, "SMS trip-count ");
-                  fprintf (dump_file, "%"PRId64,
+                  fprintf (dump_file, "%" PRId64,
                            (int64_t) trip_count);
                   fprintf (dump_file, "\n");
 	      	  fprintf (dump_file, "SMS profile-sum-max ");
-	      	  fprintf (dump_file, "%"PRId64,
+	      	  fprintf (dump_file, "%" PRId64,
 	          	   (int64_t) profile_info->sum_max);
 	      	  fprintf (dump_file, "\n");
 	    	}
@@ -1604,11 +1580,11 @@ sms_schedule (void)
 	  if (profile_info && flag_branch_probabilities)
 	    {
 	      fprintf (dump_file, "SMS loop-count ");
-	      fprintf (dump_file, "%"PRId64,
+	      fprintf (dump_file, "%" PRId64,
 	               (int64_t) bb->count);
 	      fprintf (dump_file, "\n");
 	      fprintf (dump_file, "SMS profile-sum-max ");
-	      fprintf (dump_file, "%"PRId64,
+	      fprintf (dump_file, "%" PRId64,
 	               (int64_t) profile_info->sum_max);
 	      fprintf (dump_file, "\n");
 	    }
@@ -1635,7 +1611,7 @@ sms_schedule (void)
       if (dump_file && count_init)
         {
           fprintf (dump_file, "SMS const-doloop ");
-          fprintf (dump_file, "%"PRId64,
+          fprintf (dump_file, "%" PRId64,
 		     loop_count);
           fprintf (dump_file, "\n");
         }
@@ -1696,9 +1672,9 @@ sms_schedule (void)
 		  fprintf (dump_file, "SMS failed... \n");
 		  fprintf (dump_file, "SMS sched-failed (stage-count=%d,"
 			   " loop-count=", stage_count);
-		  fprintf (dump_file, "%"PRId64, loop_count);
+		  fprintf (dump_file, "%" PRId64, loop_count);
 		  fprintf (dump_file, ", trip-count=");
-		  fprintf (dump_file, "%"PRId64, trip_count);
+		  fprintf (dump_file, "%" PRId64, trip_count);
 		  fprintf (dump_file, ")\n");
 		}
 	      break;
@@ -2018,9 +1994,7 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
      node close to its successors.  */
   if (pss_not_empty && count_succs >= count_preds)
     {
-      int tmp = end;
-      end = start;
-      start = tmp;
+      std::swap (start, end);
       step = -1;
     }
 
@@ -2203,7 +2177,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 	{
 	  int u = nodes_order[i];
   	  ddg_node_ptr u_node = &ps->g->nodes[u];
-	  rtx insn = u_node->insn;
+	  rtx_insn *insn = u_node->insn;
 
 	  if (!NONDEBUG_INSN_P (insn))
 	    {

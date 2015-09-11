@@ -31,6 +31,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int,
 #endif /* TREE_CODE */
 
 extern bool easy_altivec_constant (rtx, machine_mode);
+extern int vspltis_shifted (rtx);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
 extern bool macho_lo_sum_memory_operand (rtx, machine_mode);
 extern int num_insns_constant (rtx, machine_mode);
@@ -53,6 +54,7 @@ extern const char *output_vec_const_move (rtx *);
 extern const char *rs6000_output_move_128bit (rtx *);
 extern bool rs6000_move_128bit_ok_p (rtx []);
 extern bool rs6000_split_128bit_ok_p (rtx []);
+extern void rs6000_expand_float128_convert (rtx, rtx, bool);
 extern void rs6000_expand_vector_init (rtx, rtx);
 extern void paired_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
@@ -66,15 +68,18 @@ extern void altivec_expand_stvex_be (rtx, rtx, machine_mode, unsigned);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
-extern void build_mask64_2_operands (rtx, rtx *);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern const char * rs6000_output_load_multiple (rtx[]);
-extern int includes_lshift_p (rtx, rtx);
-extern int includes_rshift_p (rtx, rtx);
-extern int includes_rldic_lshift_p (rtx, rtx);
-extern int includes_rldicr_lshift_p (rtx, rtx);
-extern int insvdi_rshift_rlwimi_p (rtx, rtx, rtx);
+extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
+extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
+extern bool rs6000_is_valid_shift_mask (rtx, rtx, machine_mode);
+extern bool rs6000_is_valid_insert_mask (rtx, rtx, machine_mode);
+extern const char *rs6000_insn_for_and_mask (machine_mode, rtx *, bool);
+extern const char *rs6000_insn_for_shift_mask (machine_mode, rtx *, bool);
+extern const char *rs6000_insn_for_insert_mask (machine_mode, rtx *, bool);
+extern bool rs6000_is_valid_2insn_and (rtx, machine_mode);
+extern void rs6000_emit_2insn_and (machine_mode, rtx *, bool, int);
 extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int mems_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);
@@ -102,8 +107,6 @@ extern void paired_expand_vector_move (rtx operands[]);
 
 
 extern int ccr_bit (rtx, int);
-extern int extract_MB (rtx);
-extern int extract_ME (rtx);
 extern void rs6000_output_function_entry (FILE *, const char *);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
@@ -133,8 +136,7 @@ extern void rs6000_split_multireg_move (rtx, rtx);
 extern void rs6000_emit_le_vsx_move (rtx, rtx, machine_mode);
 extern void rs6000_emit_move (rtx, rtx, machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (machine_mode);
-extern machine_mode rs6000_secondary_memory_needed_mode (enum
-							      machine_mode);
+extern machine_mode rs6000_secondary_memory_needed_mode (machine_mode);
 extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode,
 						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,
@@ -191,6 +193,8 @@ extern void rs6000_emit_prologue (void);
 extern void rs6000_emit_load_toc_table (int);
 extern unsigned int rs6000_dbx_register_number (unsigned int, unsigned int);
 extern void rs6000_emit_epilogue (int);
+extern void rs6000_expand_split_stack_prologue (void);
+extern void rs6000_split_stack_space_check (rtx, rtx);
 extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern const char * output_isel (rtx *);
 extern void rs6000_call_aix (rtx, rtx, rtx, rtx);

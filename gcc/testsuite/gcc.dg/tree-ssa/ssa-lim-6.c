@@ -11,4 +11,3 @@ void foo(void)
 }
 
 /* { dg-final { scan-tree-dump "Executing store motion of y" "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

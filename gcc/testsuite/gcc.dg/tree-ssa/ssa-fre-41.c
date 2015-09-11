@@ -9,4 +9,3 @@ int foo (void)
 }
 
 /* { dg-final { scan-tree-dump-not "ffs" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

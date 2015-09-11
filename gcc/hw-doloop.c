@@ -21,25 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "flags.h"
-#include "symtab.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
-#include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "rtl.h"
+#include "df.h"
+#include "flags.h"
+#include "alias.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -50,20 +37,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "regs.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
-#include "basic-block.h"
 #include "tm_p.h"
-#include "df.h"
 #include "cfgloop.h"
 #include "recog.h"
 #include "target.h"
 #include "hw-doloop.h"
 #include "dumpfile.h"
-
-#ifdef HAVE_doloop_end
 
 /* Dump information collected in LOOPS.  */
 static void
@@ -696,4 +676,3 @@ reorg_loops (bool do_reorder, struct hw_doloop_hooks *hooks)
   if (dump_file)
     print_rtl (dump_file, get_insns ());
 }
-#endif

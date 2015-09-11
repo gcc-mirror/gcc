@@ -58,4 +58,3 @@ sort_pointers (size_t n, void **pointers, void **work)
 }
 
 /* { dg-final { scan-tree-dump-not "base \[^\\n\]*&MEM\\\[" "ivopts" } }  */
-/* { dg-final { cleanup-tree-dump "ivopts" } }  */

@@ -29,4 +29,3 @@ int foo (int invariant)
 /* { dg-final { scan-ipa-dump "Inlined 1 calls, eliminated 0 functions"  "inline"  } } */
 /* Call to work_hard should be detected as optimized out.  */
 /* { dg-final { scan-ipa-dump-times "predicate: .false." 8 "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

@@ -18,4 +18,3 @@ void baz(void)
 }
 
 /* { dg-final { scan-tree-dump-times "asm\[^\\r\\n\]*xyzzy" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

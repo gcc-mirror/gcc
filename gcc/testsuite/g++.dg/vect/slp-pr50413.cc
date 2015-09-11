@@ -161,5 +161,4 @@ void shift(unsigned char t)
 }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 0 "slp2" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */
 

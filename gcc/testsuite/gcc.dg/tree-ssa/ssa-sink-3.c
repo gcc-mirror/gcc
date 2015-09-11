@@ -13,4 +13,3 @@ main (int argc)
 }
 /* We should sink the a = argc + 1 calculation into the if branch  */
 /* { dg-final { scan-tree-dump-times "Sunk statements: 1" 1 "sink" } } */
-/* { dg-final { cleanup-tree-dump "sink" } } */

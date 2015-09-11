@@ -17,4 +17,3 @@ foo (int a)
 
 /* { dg-final { scan-tree-dump "Folding predicate a_. > 2 to 1" "vrp1" } } */
 /* { dg-final { scan-tree-dump "Folding predicate a_. <= 5 to 1" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

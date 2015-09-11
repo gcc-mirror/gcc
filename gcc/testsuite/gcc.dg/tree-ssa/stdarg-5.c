@@ -116,4 +116,3 @@ f7 (int i, ...)
 /* { dg-final { scan-tree-dump "f7: va_list escapes 0, needs to save 0 GPR units and 64 FPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 || llp64 } } } } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 0, needs to save 32 GPR units and 2" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 0, needs to save 2 GPR units and 0 FPR units" "stdarg" { target s390*-*-linux* } } } */
-/* { dg-final { cleanup-tree-dump "stdarg" } } */

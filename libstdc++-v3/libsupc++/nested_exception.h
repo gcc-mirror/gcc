@@ -108,7 +108,7 @@ namespace std
 	{ throw static_cast<_Up&&>(__t); }
     };
 
-  template<typename _Tp, bool = __is_class(_Tp)>
+  template<typename _Tp, bool = __is_class(_Tp) && !__is_final(_Tp)>
     struct _Throw_with_nested_helper : _Throw_with_nested_impl<_Tp>
     { };
 

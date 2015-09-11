@@ -14,4 +14,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "GTMA_HAVE_STORE" 1 "tmlower" } } */
-/* { dg-final { cleanup-tree-dump "tmlower" } } */

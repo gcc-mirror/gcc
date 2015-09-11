@@ -5,7 +5,7 @@ enum bar {};
 void operator+ (int, int);// { dg-error "" } .*
 void operator+ (bar&, int);
 
-template <class T> void operator+ (int b, T& t) { return b; }
+template <class T> void operator+ (int b, T& t) { (void) T::bogus; }
 void operator+ (int, bar&);
 
 template <class T> class foo

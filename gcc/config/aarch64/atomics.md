@@ -26,6 +26,7 @@
     UNSPECV_STL				; Represent an atomic store or store-release.
     UNSPECV_ATOMIC_CMPSW		; Represent an atomic compare swap.
     UNSPECV_ATOMIC_EXCHG		; Represent an atomic exchange.
+    UNSPECV_ATOMIC_CAS			; Represent an atomic CAS.
     UNSPECV_ATOMIC_OP			; Represent an atomic operation.
 ])
 
@@ -45,10 +46,10 @@
   }
 )
 
-(define_insn_and_split "atomic_compare_and_swap<mode>_1"
+(define_insn_and_split "aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
-   (set (match_operand:SI 0 "register_operand" "=&r")		;; val out
+   (set (match_operand:SI 0 "register_operand" "=&r")	   ;; val out
     (zero_extend:SI
       (match_operand:SHORT 1 "aarch64_sync_memory_operand" "+Q"))) ;; memory
    (set (match_dup 1)
@@ -57,6 +58,30 @@
        (match_operand:SHORT 3 "register_operand" "r")	;; desired
        (match_operand:SI 4 "const_int_operand")		;; is_weak
        (match_operand:SI 5 "const_int_operand")		;; mod_s
+       (match_operand:SI 6 "const_int_operand")]	;; mod_f
+      UNSPECV_ATOMIC_CMPSW))
+   (clobber (match_scratch:SI 7 "=&r"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_split_compare_and_swap (operands);
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_compare_and_swap<mode>"
+  [(set (reg:CC CC_REGNUM)					;; bool out
+    (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
+   (set (match_operand:GPI 0 "register_operand" "=&r")		;; val out
+    (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q"))   ;; memory
+   (set (match_dup 1)
+    (unspec_volatile:GPI
+      [(match_operand:GPI 2 "aarch64_plus_operand" "rI")	;; expect
+       (match_operand:GPI 3 "register_operand" "r")		;; desired
+       (match_operand:SI 4 "const_int_operand")			;; is_weak
+       (match_operand:SI 5 "const_int_operand")			;; mod_s
        (match_operand:SI 6 "const_int_operand")]		;; mod_f
       UNSPECV_ATOMIC_CMPSW))
    (clobber (match_scratch:SI 7 "=&r"))]
@@ -70,26 +95,53 @@
   }
 )
 
-(define_insn_and_split "atomic_compare_and_swap<mode>_1"
+(define_insn_and_split "aarch64_compare_and_swap<mode>_lse"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
-   (set (match_operand:GPI 0 "register_operand" "=&r")		;; val out
-    (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q")) ;; memory
+   (set (match_operand:SI 0 "register_operand" "=&r")		;; val out
+    (zero_extend:SI
+      (match_operand:SHORT 1 "aarch64_sync_memory_operand" "+Q"))) ;; memory
    (set (match_dup 1)
-    (unspec_volatile:GPI
-      [(match_operand:GPI 2 "aarch64_plus_operand" "rI")	;; expect
-       (match_operand:GPI 3 "register_operand" "r")		;; desired
+    (unspec_volatile:SHORT
+      [(match_operand:SI 2 "aarch64_plus_operand" "rI")	;; expected
+       (match_operand:SHORT 3 "register_operand" "r")	;; desired
        (match_operand:SI 4 "const_int_operand")		;; is_weak
        (match_operand:SI 5 "const_int_operand")		;; mod_s
-       (match_operand:SI 6 "const_int_operand")]		;; mod_f
-      UNSPECV_ATOMIC_CMPSW))
-   (clobber (match_scratch:SI 7 "=&r"))]
-  ""
+       (match_operand:SI 6 "const_int_operand")]	;; mod_f
+      UNSPECV_ATOMIC_CMPSW))]
+  "TARGET_LSE"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   {
-    aarch64_split_compare_and_swap (operands);
+    aarch64_gen_atomic_cas (operands[0], operands[1],
+			    operands[2], operands[3],
+			    operands[5]);
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_compare_and_swap<mode>_lse"
+  [(set (reg:CC CC_REGNUM)					;; bool out
+    (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
+   (set (match_operand:GPI 0 "register_operand" "=&r")		;; val out
+    (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q"))   ;; memory
+   (set (match_dup 1)
+    (unspec_volatile:GPI
+      [(match_operand:GPI 2 "aarch64_plus_operand" "rI")	;; expect
+       (match_operand:GPI 3 "register_operand" "r")		;; desired
+       (match_operand:SI 4 "const_int_operand")			;; is_weak
+       (match_operand:SI 5 "const_int_operand")			;; mod_s
+       (match_operand:SI 6 "const_int_operand")]		;; mod_f
+      UNSPECV_ATOMIC_CMPSW))]
+  "TARGET_LSE "
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_gen_atomic_cas (operands[0], operands[1],
+			    operands[2], operands[3],
+			    operands[5]);
     DONE;
   }
 )
@@ -119,7 +171,7 @@
   [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "+Q")
     (unspec_volatile:ALLI
       [(atomic_op:ALLI (match_dup 0)
-	(match_operand:ALLI 1 "<atomic_op_operand>" "r<lconst_atomic>"))
+	(match_operand:ALLI 1 "<atomic_op_operand>" "r<const_atomic>"))
        (match_operand:SI 2 "const_int_operand")]		;; model
       UNSPECV_ATOMIC_OP))
        (clobber (reg:CC CC_REGNUM))
@@ -164,7 +216,7 @@
    (set (match_dup 1)
     (unspec_volatile:ALLI
       [(atomic_op:ALLI (match_dup 1)
-	(match_operand:ALLI 2 "<atomic_op_operand>" "r<lconst_atomic>"))
+	(match_operand:ALLI 2 "<atomic_op_operand>" "r<const_atomic>"))
        (match_operand:SI 3 "const_int_operand")]		;; model
       UNSPECV_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
@@ -209,7 +261,7 @@
   [(set (match_operand:ALLI 0 "register_operand" "=&r")
     (atomic_op:ALLI
       (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q")
-      (match_operand:ALLI 2 "<atomic_op_operand>" "r<lconst_atomic>")))
+      (match_operand:ALLI 2 "<atomic_op_operand>" "r<const_atomic>")))
    (set (match_dup 1)
     (unspec_volatile:ALLI
       [(match_dup 1) (match_dup 2)
@@ -260,10 +312,8 @@
       UNSPECV_LDA))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_RELEASE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
       return "ldr<atomic_sfx>\t%<w>0, %1";
     else
       return "ldar<atomic_sfx>\t%<w>0, %1";
@@ -278,10 +328,8 @@
       UNSPECV_STL))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_ACQUIRE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
       return "str<atomic_sfx>\t%<w>1, %0";
     else
       return "stlr<atomic_sfx>\t%<w>1, %0";
@@ -297,10 +345,8 @@
 	UNSPECV_LX)))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_RELEASE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
       return "ldxr<atomic_sfx>\t%w0, %1";
     else
       return "ldaxr<atomic_sfx>\t%w0, %1";
@@ -315,10 +361,8 @@
       UNSPECV_LX))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_RELEASE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
       return "ldxr\t%<w>0, %1";
     else
       return "ldaxr\t%<w>0, %1";
@@ -335,10 +379,8 @@
       UNSPECV_SX))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[3]);
-    if (model == MEMMODEL_RELAXED
-	|| model == MEMMODEL_CONSUME
-	|| model == MEMMODEL_ACQUIRE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
       return "stxr<atomic_sfx>\t%w0, %<w>2, %1";
     else
       return "stlxr<atomic_sfx>\t%w0, %<w>2, %1";
@@ -349,8 +391,8 @@
   [(match_operand:SI 0 "const_int_operand" "")]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[0]);
-    if (model != MEMMODEL_RELAXED && model != MEMMODEL_CONSUME)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[0]));
+    if (!(is_mm_relaxed (model) || is_mm_consume (model)))
       emit_insn (gen_dmb (operands[0]));
     DONE;
   }
@@ -373,10 +415,61 @@
      UNSPEC_MB))]
   ""
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[1]);
-    if (model == MEMMODEL_ACQUIRE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[1]));
+    if (is_mm_acquire (model))
       return "dmb\\tishld";
     else
       return "dmb\\tish";
   }
 )
+
+;; ARMv8.1 LSE instructions.
+
+;; Atomic compare-and-swap: HI and smaller modes.
+
+(define_insn "aarch64_atomic_cas<mode>"
+ [(set (match_operand:SI 0 "register_operand" "+&r")		  ;; out
+   (zero_extend:SI
+    (match_operand:SHORT 1 "aarch64_sync_memory_operand" "+Q")))  ;; memory.
+  (set (match_dup 1)
+   (unspec_volatile:SHORT
+    [(match_dup 0)
+     (match_operand:SHORT 2 "register_operand" "r")	;; value.
+     (match_operand:SI 3 "const_int_operand" "")]	;; model.
+    UNSPECV_ATOMIC_CAS))]
+ "TARGET_LSE && reload_completed"
+{
+  enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+  if (is_mm_relaxed (model))
+    return "cas<atomic_sfx>\t%<w>0, %<w>2, %1";
+  else if (is_mm_acquire (model) || is_mm_consume (model))
+    return "casa<atomic_sfx>\t%<w>0, %<w>2, %1";
+  else if (is_mm_release (model))
+    return "casl<atomic_sfx>\t%<w>0, %<w>2, %1";
+  else
+    return "casal<atomic_sfx>\t%<w>0, %<w>2, %1";
+})
+
+;; Atomic compare-and-swap: SI and larger modes.
+
+(define_insn "aarch64_atomic_cas<mode>"
+ [(set (match_operand:GPI 0 "register_operand" "+&r")	      ;; out
+   (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q"))  ;; memory.
+  (set (match_dup 1)
+   (unspec_volatile:GPI
+    [(match_dup 0)
+     (match_operand:GPI 2 "register_operand" "r")	;; value.
+     (match_operand:SI 3 "const_int_operand" "")]	;; model.
+    UNSPECV_ATOMIC_CAS))]
+  "TARGET_LSE && reload_completed"
+{
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model))
+      return "cas<atomic_sfx>\t%<w>0, %<w>2, %1";
+    else if (is_mm_acquire (model) || is_mm_consume (model))
+      return "casa<atomic_sfx>\t%<w>0, %<w>2, %1";
+    else if (is_mm_release (model))
+      return "casl<atomic_sfx>\t%<w>0, %<w>2, %1";
+    else
+      return "casal<atomic_sfx>\t%<w>0, %<w>2, %1";
+})

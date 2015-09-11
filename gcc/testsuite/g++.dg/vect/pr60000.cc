@@ -10,4 +10,3 @@ void foo (bool* a, int* b)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

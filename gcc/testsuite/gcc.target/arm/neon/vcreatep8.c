@@ -16,4 +16,3 @@ void test_vcreatep8 (void)
   out_poly8x8_t = vcreate_p8 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

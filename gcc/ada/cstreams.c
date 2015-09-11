@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -69,7 +69,7 @@ extern "C" {
 #include <unixlib.h>
 #endif
 
-#ifdef linux
+#ifdef __linux__
 /* Don't use macros on GNU/Linux since they cause incompatible changes between
    glibc 2.0 and 2.1 */
 
@@ -192,7 +192,7 @@ __gnat_full_name (char *nam, char *buffer)
 	  *p = '\\';
     }
 
-#elif defined (__FreeBSD__)
+#elif defined (__FreeBSD__) || defined (__DragonFly__) || defined (__OpenBSD__)
 
   /* Use realpath function which resolves links and references to . and ..
      on those Unix systems that support it. Note that GNU/Linux provides it but
@@ -277,8 +277,8 @@ __gnat_fseek64 (FILE *stream, __int64 offset, int origin)
   return _fseeki64 (stream, offset, origin);
 }
 
-#elif defined(linux) || defined(sun) \
-  || defined (__FreeBSD__) || defined(__APPLE__)
+#elif defined (__linux__) || defined (__sun__) || defined (__FreeBSD__) \
+  || defined (__APPLE__)
 /* section for platforms having ftello/fseeko */
 
 __int64

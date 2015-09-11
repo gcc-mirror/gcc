@@ -5,8 +5,8 @@
 
 class A
 {
-  A();				// { dg-error "" } private
-  ~A();				// { dg-error "" } private
+  A();				// { dg-message "" } private
+  ~A();				// { dg-message "" } private
 };
 
 static A a;			// { dg-error "" } here

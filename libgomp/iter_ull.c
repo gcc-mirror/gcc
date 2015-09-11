@@ -219,7 +219,7 @@ gomp_iter_ull_dynamic_next (gomp_ull *pstart, gomp_ull *pend)
 	}
     }
 
-  start = ws->next_ull;
+  start = __atomic_load_n (&ws->next_ull, MEMMODEL_RELAXED);
   while (1)
     {
       gomp_ull left = end - start;
@@ -305,7 +305,7 @@ gomp_iter_ull_guided_next (gomp_ull *pstart, gomp_ull *pend)
   gomp_ull start, end, nend, incr;
   gomp_ull chunk_size;
 
-  start = ws->next_ull;
+  start = __atomic_load_n (&ws->next_ull, MEMMODEL_RELAXED);
   end = ws->end_ull;
   incr = ws->incr_ull;
   chunk_size = ws->chunk_size_ull;

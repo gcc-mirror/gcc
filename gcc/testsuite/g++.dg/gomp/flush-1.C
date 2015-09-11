@@ -22,4 +22,3 @@ void f2(bool p)
 }
 
 /* { dg-final { scan-tree-dump-times "__sync_synchronize" 3 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

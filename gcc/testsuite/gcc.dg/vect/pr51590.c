@@ -32,4 +32,3 @@ foo (const char *x, struct S *y)
   bar (&d);
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

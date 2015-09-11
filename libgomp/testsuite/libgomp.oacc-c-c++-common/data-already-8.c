@@ -12,5 +12,5 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-shouldfail "" }
-   { dg-output "Trying to map into device .* object when .* is already mapped" } */
+/* { dg-output "Trying to map into device \\\[\[0-9a-fA-FxX\]+..\[0-9a-fA-FxX\]+\\\) object when \\\[\[0-9a-fA-FxX\]+..\[0-9a-fA-FxX\]+\\\) is already mapped" } */
+/* { dg-shouldfail "" } */

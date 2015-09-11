@@ -13,4 +13,3 @@ double test2 (double x)
 
 /* { dg-final { scan-tree-dump "cos" "gimple" } } */
 /* { dg-final { scan-tree-dump "sin" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

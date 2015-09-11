@@ -16,6 +16,7 @@ VARIANT (int32, , 2, _s32, 0)	\
 VARIANT (int64, , 1, _s64, 0)	\
 VARIANT (poly8, , 8, _p8, 7)	\
 VARIANT (poly16, , 4, _p16, 2)	\
+VARIANT (float16, , 4, _f16, 3)	\
 VARIANT (float32, , 2, _f32, 1)	\
 VARIANT (float64, , 1, _f64, 0)	\
 VARIANT (uint8, q, 16, _u8, 13)	\
@@ -28,6 +29,7 @@ VARIANT (int32, q, 4, _s32, 1)	\
 VARIANT (int64, q, 2, _s64, 1)	\
 VARIANT (poly8, q, 16, _p8, 7)	\
 VARIANT (poly16, q, 8, _p16, 4)	\
+VARIANT (float16, q, 8, _f16, 3)\
 VARIANT (float32, q, 4, _f32, 2)\
 VARIANT (float64, q, 2, _f64, 1)
 
@@ -56,7 +58,7 @@ VARIANTS (TESTMETH)
 
 #define CHECK(BASE, Q, ELTS, SUFFIX, LANE)			\
   if (test_vld1##Q##_lane##SUFFIX ((const BASE##_t *)orig_data,	\
-				   BASE##_data) != 0)	\
+				   & BASE##_data) != 0)	\
     abort ();
 
 int
@@ -65,20 +67,20 @@ main (int argc, char **argv)
   /* Original data for all vector formats.  */
   uint64_t orig_data[2] = {0x1234567890abcdefULL, 0x13579bdf02468aceULL};
 
-  /* Data with which vldN_lane will overwrite some of previous.  */
-  uint8_t uint8_data[4] = { 7, 11, 13, 17 };
-  uint16_t uint16_data[4] = { 257, 263, 269, 271 };
-  uint32_t uint32_data[4] = { 65537, 65539, 65543, 65551 };
-  uint64_t uint64_data[4] = { 0xdeadbeefcafebabeULL, 0x0123456789abcdefULL,
-			      0xfedcba9876543210LL, 0xdeadbabecafebeefLL };
-  int8_t int8_data[4] = { -1, 3, -5, 7 };
-  int16_t int16_data[4] = { 257, -259, 261, -263 };
-  int32_t int32_data[4] = { 123456789, -987654321, -135792468, 975318642 };
-  int64_t *int64_data = (int64_t *)uint64_data;
-  poly8_t poly8_data[4] = { 0, 7, 13, 18, };
-  poly16_t poly16_data[4] = { 11111, 2222, 333, 44 };
-  float32_t float32_data[4] = { 3.14159, 2.718, 1.414, 100.0 };
-  float64_t float64_data[4] = { 1.010010001, 12345.6789, -9876.54321, 1.618 };
+  /* Data with which vld1_lane will overwrite one element of previous.  */
+  uint8_t uint8_data = 7;
+  uint16_t uint16_data = 257;
+  uint32_t uint32_data = 65537;
+  uint64_t uint64_data = 0xdeadbeefcafebabeULL;
+  int8_t int8_data = -1;
+  int16_t int16_data = -259;
+  int32_t int32_data = -987654321;
+  int64_t int64_data = 0x1234567890abcdefLL;
+  poly8_t poly8_data = 13;
+  poly16_t poly16_data = 11111;
+  float16_t float16_data = 8.75;
+  float32_t float32_data = 3.14159;
+  float64_t float64_data = 1.010010001;
 
   VARIANTS (CHECK);
   return 0;

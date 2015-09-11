@@ -55,4 +55,3 @@ main (void)
 /* Needs interleaving support.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_strided2 } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { xfail  vect_strided2 } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

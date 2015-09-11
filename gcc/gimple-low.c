@@ -21,30 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "tree-nested.h"
 #include "calls.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
@@ -361,7 +346,8 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 		return;
 	      }
 	    else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_POSIX_MEMALIGN
-		     && flag_tree_bit_ccp)
+		     && flag_tree_bit_ccp
+		     && gimple_builtin_call_types_compatible_p (stmt, decl))
 	      {
 		lower_builtin_posix_memalign (gsi);
 		return;

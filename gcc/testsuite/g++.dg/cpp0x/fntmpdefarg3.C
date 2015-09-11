@@ -8,7 +8,7 @@ template <class T, class = typename T::I> void j(T) {} // { dg-error "this conte
 
 class A
 {
-  typedef int I;		// { dg-error "private" }
+  typedef int I;		// { dg-message "private" }
   template <class T, class> friend void f(T);
   friend void g<A,I>(A);
   friend void h<A>(A);

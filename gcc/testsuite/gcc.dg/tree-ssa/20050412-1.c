@@ -13,4 +13,3 @@ void foo (int a) {
 /* Make sure we do not have an assignment a = 0 in the resulting
    optimized dump.  */
 /* { dg-final { scan-tree-dump-times "a.* = 0;" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -125,29 +125,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "diagnostic-core.h"
-#include "hard-reg-set.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "rtl.h"
+#include "df.h"
+#include "diagnostic-core.h"
 #include "tm_p.h"
 #include "regs.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
 #include "recog.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
-#include "predict.h"
-#include "basic-block.h"
 #include "sched-int.h"
 #include "target.h"
 #include "common/common-target.h"
@@ -156,7 +147,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ira.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
-#include "hash-table.h"
 #include "dumpfile.h"
 
 #ifdef INSN_SCHEDULING
@@ -249,6 +239,10 @@ struct common_sched_info_def *common_sched_info;
 #define INVALID_TICK (-(max_insn_queue_index + 1))
 /* The minimal value of the INSN_TICK of an instruction.  */
 #define MIN_TICK (-max_insn_queue_index)
+
+/* Original order of insns in the ready list.
+   Used to keep order of normal insns while separating DEBUG_INSNs.  */
+#define INSN_RFS_DEBUG_ORIG_ORDER(INSN) (HID (INSN)->rfs_debug_orig_order)
 
 /* The deciding reason for INSN's place in the ready list.  */
 #define INSN_LAST_RFS_WIN(INSN) (HID (INSN)->last_rfs_win)
@@ -615,18 +609,17 @@ struct delay_pair
 
 /* Helpers for delay hashing.  */
 
-struct delay_i1_hasher : typed_noop_remove <delay_pair>
+struct delay_i1_hasher : nofree_ptr_hash <delay_pair>
 {
-  typedef delay_pair value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef void *compare_type;
+  static inline hashval_t hash (const delay_pair *);
+  static inline bool equal (const delay_pair *, const void *);
 };
 
 /* Returns a hash value for X, based on hashing just I1.  */
 
 inline hashval_t
-delay_i1_hasher::hash (const value_type *x)
+delay_i1_hasher::hash (const delay_pair *x)
 {
   return htab_hash_pointer (x->i1);
 }
@@ -634,23 +627,22 @@ delay_i1_hasher::hash (const value_type *x)
 /* Return true if I1 of pair X is the same as that of pair Y.  */
 
 inline bool
-delay_i1_hasher::equal (const value_type *x, const compare_type *y)
+delay_i1_hasher::equal (const delay_pair *x, const void *y)
 {
   return x->i1 == y;
 }
 
-struct delay_i2_hasher : typed_free_remove <delay_pair>
+struct delay_i2_hasher : free_ptr_hash <delay_pair>
 {
-  typedef delay_pair value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef void *compare_type;
+  static inline hashval_t hash (const delay_pair *);
+  static inline bool equal (const delay_pair *, const void *);
 };
 
 /* Returns a hash value for X, based on hashing just I2.  */
 
 inline hashval_t
-delay_i2_hasher::hash (const value_type *x)
+delay_i2_hasher::hash (const delay_pair *x)
 {
   return htab_hash_pointer (x->i2);
 }
@@ -658,7 +650,7 @@ delay_i2_hasher::hash (const value_type *x)
 /* Return true if I2 of pair X is the same as that of pair Y.  */
 
 inline bool
-delay_i2_hasher::equal (const value_type *x, const compare_type *y)
+delay_i2_hasher::equal (const delay_pair *x, const void *y)
 {
   return x->i2 == y;
 }
@@ -841,6 +833,7 @@ add_delay_dependencies (rtx_insn *insn)
 /* Forward declarations.  */
 
 static int priority (rtx_insn *);
+static int autopref_rank_for_schedule (const rtx_insn *, const rtx_insn *);
 static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx_insn **, int);
 static void queue_insn (rtx_insn *, int, const char *);
@@ -876,7 +869,7 @@ static int early_queue_to_ready (state_t, struct ready_list *);
 /* The following functions are used to implement multi-pass scheduling
    on the first cycle.  */
 static rtx_insn *ready_remove (struct ready_list *, int);
-static void ready_remove_insn (rtx);
+static void ready_remove_insn (rtx_insn *);
 
 static void fix_inter_tick (rtx_insn *, rtx_insn *);
 static int fix_tick_ready (rtx_insn *);
@@ -889,7 +882,7 @@ static void extend_h_i_d (void);
 static void init_h_i_d (rtx_insn *);
 static int haifa_speculate_insn (rtx_insn *, ds_t, rtx *);
 static void generate_recovery_code (rtx_insn *);
-static void process_insn_forw_deps_be_in_spec (rtx, rtx_insn *, ds_t);
+static void process_insn_forw_deps_be_in_spec (rtx_insn *, rtx_insn *, ds_t);
 static void begin_speculative_block (rtx_insn *);
 static void add_to_speculative_block (rtx_insn *);
 static void init_before_recovery (basic_block *);
@@ -1027,18 +1020,13 @@ initiate_reg_pressure_info (bitmap live)
 static void
 setup_ref_regs (rtx x)
 {
-  int i, j, regno;
+  int i, j;
   const RTX_CODE code = GET_CODE (x);
   const char *fmt;
 
   if (REG_P (x))
     {
-      regno = REGNO (x);
-      if (HARD_REGISTER_NUM_P (regno))
-	bitmap_set_range (region_ref_regs, regno,
-			  hard_regno_nregs[regno][GET_MODE (x)]);
-      else
-	bitmap_set_bit (region_ref_regs, REGNO (x));
+      bitmap_set_range (region_ref_regs, REGNO (x), REG_NREGS (x));
       return;
     }
   fmt = GET_RTX_FORMAT (code);
@@ -1065,7 +1053,6 @@ initiate_bb_reg_pressure_info (basic_block bb)
       if (NONDEBUG_INSN_P (insn))
 	setup_ref_regs (PATTERN (insn));
   initiate_reg_pressure_info (df_get_live_in (bb));
-#ifdef EH_RETURN_DATA_REGNO
   if (bb_has_eh_pred (bb))
     for (i = 0; ; ++i)
       {
@@ -1077,7 +1064,6 @@ initiate_bb_reg_pressure_info (basic_block bb)
 	  mark_regno_birth_or_death (curr_reg_live, curr_reg_pressure,
 				     regno, true);
       }
-#endif
 }
 
 /* Save current register pressure related info.  */
@@ -1184,6 +1170,12 @@ update_insn_after_change (rtx_insn *insn)
   INSN_COST (insn) = -1;
   /* Invalidate INSN_TICK, so it'll be recalculated.  */
   INSN_TICK (insn) = INVALID_TICK;
+
+  /* Invalidate autoprefetch data entry.  */
+  INSN_AUTOPREF_MULTIPASS_DATA (insn)[0].status
+    = AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
+  INSN_AUTOPREF_MULTIPASS_DATA (insn)[1].status
+    = AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
 }
 
 
@@ -1220,6 +1212,11 @@ recompute_todo_spec (rtx_insn *next, bool for_backtrack)
     return 0;
 
   if (!sd_lists_empty_p (next, SD_LIST_HARD_BACK))
+    return HARD_DEP;
+
+  /* If NEXT is intended to sit adjacent to this instruction, we don't
+     want to try to break any dependencies.  Treat it as a HARD_DEP.  */
+  if (SCHED_GROUP_P (next))
     return HARD_DEP;
 
   /* Now we've got NEXT with speculative deps only.
@@ -1376,7 +1373,7 @@ static rtx_insn *last_scheduled_insn;
    block, or the prev_head of the scheduling block.  Used by
    rank_for_schedule, so that insns independent of the last scheduled
    insn will be preferred over dependent instructions.  */
-static rtx last_nondebug_scheduled_insn;
+static rtx_insn *last_nondebug_scheduled_insn;
 
 /* Pointer that iterates through the list of unscheduled insns if we
    have a dbg_cnt enabled.  It always points at an insn prior to the
@@ -1584,7 +1581,7 @@ contributes_to_priority_p (dep_t dep)
 /* Compute the number of nondebug deps in list LIST for INSN.  */
 
 static int
-dep_list_size (rtx insn, sd_list_types_def list)
+dep_list_size (rtx_insn *insn, sd_list_types_def list)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -2557,7 +2554,7 @@ model_set_excess_costs (rtx_insn **insns, int count)
 
 /* Enum of rank_for_schedule heuristic decisions.  */
 enum rfs_decision {
-  RFS_DEBUG, RFS_LIVE_RANGE_SHRINK1, RFS_LIVE_RANGE_SHRINK2,
+  RFS_LIVE_RANGE_SHRINK1, RFS_LIVE_RANGE_SHRINK2,
   RFS_SCHED_GROUP, RFS_PRESSURE_DELAY, RFS_PRESSURE_TICK,
   RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_SPECULATION,
   RFS_SCHED_RANK, RFS_LAST_INSN, RFS_PRESSURE_INDEX,
@@ -2565,14 +2562,14 @@ enum rfs_decision {
 
 /* Corresponding strings for print outs.  */
 static const char *rfs_str[RFS_N] = {
-  "RFS_DEBUG", "RFS_LIVE_RANGE_SHRINK1", "RFS_LIVE_RANGE_SHRINK2",
+  "RFS_LIVE_RANGE_SHRINK1", "RFS_LIVE_RANGE_SHRINK2",
   "RFS_SCHED_GROUP", "RFS_PRESSURE_DELAY", "RFS_PRESSURE_TICK",
   "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_SPECULATION",
   "RFS_SCHED_RANK", "RFS_LAST_INSN", "RFS_PRESSURE_INDEX",
   "RFS_DEP_COUNT", "RFS_TIE", "RFS_FUSION" };
 
 /* Statistical breakdown of rank_for_schedule decisions.  */
-typedef struct { unsigned stats[RFS_N]; } rank_for_schedule_stats_t;
+struct rank_for_schedule_stats_t { unsigned stats[RFS_N]; };
 static rank_for_schedule_stats_t rank_for_schedule_stats;
 
 /* Return the result of comparing insns TMP and TMP2 and update
@@ -2590,6 +2587,26 @@ rfs_result (enum rfs_decision decision, int result, rtx tmp, rtx tmp2)
   return result;
 }
 
+/* Sorting predicate to move DEBUG_INSNs to the top of ready list, while
+   keeping normal insns in original order.  */
+
+static int
+rank_for_schedule_debug (const void *x, const void *y)
+{
+  rtx_insn *tmp = *(rtx_insn * const *) y;
+  rtx_insn *tmp2 = *(rtx_insn * const *) x;
+
+  /* Schedule debug insns as early as possible.  */
+  if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
+    return -1;
+  else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
+    return 1;
+  else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
+    return INSN_LUID (tmp) - INSN_LUID (tmp2);
+  else
+    return INSN_RFS_DEBUG_ORIG_ORDER (tmp2) - INSN_RFS_DEBUG_ORIG_ORDER (tmp);
+}
+
 /* Returns a positive value if x is preferred; returns a negative value if
    y is preferred.  Should never return 0, since that will make the sort
    unstable.  */
@@ -2601,18 +2618,6 @@ rank_for_schedule (const void *x, const void *y)
   rtx_insn *tmp2 = *(rtx_insn * const *) x;
   int tmp_class, tmp2_class;
   int val, priority_val, info_val, diff;
-
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      /* Schedule debug insns as early as possible.  */
-      if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, -1, tmp, tmp2);
-      else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, 1, tmp, tmp2);
-      else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, INSN_LUID (tmp) - INSN_LUID (tmp2),
-			   tmp, tmp2);
-    }
 
   if (live_range_shrinkage_p)
     {
@@ -2724,6 +2729,13 @@ rank_for_schedule (const void *x, const void *y)
   if (flag_sched_critical_path_heuristic && priority_val)
     return rfs_result (RFS_PRIORITY, priority_val, tmp, tmp2);
 
+  if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) >= 0)
+    {
+      int autopref = autopref_rank_for_schedule (tmp, tmp2);
+      if (autopref != 0)
+	return autopref;
+    }
+
   /* Prefer speculative insn with greater dependencies weakness.  */
   if (flag_sched_spec_insn_heuristic && spec_info)
     {
@@ -2758,7 +2770,7 @@ rank_for_schedule (const void *x, const void *y)
     {
       dep_t dep1;
       dep_t dep2;
-      rtx last = last_nondebug_scheduled_insn;
+      rtx_insn *last = last_nondebug_scheduled_insn;
 
       /* Classify the instructions into three classes:
          1) Data dependent on last schedule insn.
@@ -3003,7 +3015,7 @@ ready_remove (struct ready_list *ready, int index)
 
 /* Remove INSN from the ready list.  */
 static void
-ready_remove_insn (rtx insn)
+ready_remove_insn (rtx_insn *insn)
 {
   int i;
 
@@ -3053,39 +3065,61 @@ print_rank_for_schedule_stats (const char *prefix,
       }
 }
 
-/* Sort the ready list READY by ascending priority, using the SCHED_SORT
-   macro.  */
-
-void
-ready_sort (struct ready_list *ready)
+/* Separate DEBUG_INSNS from normal insns.  DEBUG_INSNs go to the end
+   of array.  */
+static void
+ready_sort_debug (struct ready_list *ready)
 {
   int i;
   rtx_insn **first = ready_lastpos (ready);
 
+  for (i = 0; i < ready->n_ready; ++i)
+    if (!DEBUG_INSN_P (first[i]))
+      INSN_RFS_DEBUG_ORIG_ORDER (first[i]) = i;
+
+  qsort (first, ready->n_ready, sizeof (rtx), rank_for_schedule_debug);
+}
+
+/* Sort non-debug insns in the ready list READY by ascending priority.
+   Assumes that all debug insns are separated from the real insns.  */
+static void
+ready_sort_real (struct ready_list *ready)
+{
+  int i;
+  rtx_insn **first = ready_lastpos (ready);
+  int n_ready_real = ready->n_ready - ready->n_debug;
+
   if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
-    {
-      for (i = 0; i < ready->n_ready; i++)
-	if (!DEBUG_INSN_P (first[i]))
-	  setup_insn_reg_pressure_info (first[i]);
-    }
-  if (sched_pressure == SCHED_PRESSURE_MODEL
-      && model_curr_point < model_num_insns)
-    model_set_excess_costs (first, ready->n_ready);
+    for (i = 0; i < n_ready_real; ++i)
+      setup_insn_reg_pressure_info (first[i]);
+  else if (sched_pressure == SCHED_PRESSURE_MODEL
+	   && model_curr_point < model_num_insns)
+    model_set_excess_costs (first, n_ready_real);
 
   rank_for_schedule_stats_t stats1;
   if (sched_verbose >= 4)
     stats1 = rank_for_schedule_stats;
 
-  if (ready->n_ready == 2)
-    swap_sort (first, ready->n_ready);
-  else if (ready->n_ready > 2)
-    qsort (first, ready->n_ready, sizeof (rtx), rank_for_schedule);
+  if (n_ready_real == 2)
+    swap_sort (first, n_ready_real);
+  else if (n_ready_real > 2)
+    qsort (first, n_ready_real, sizeof (rtx), rank_for_schedule);
 
   if (sched_verbose >= 4)
     {
       rank_for_schedule_stats_diff (&stats1, &rank_for_schedule_stats);
       print_rank_for_schedule_stats (";;\t\t", &stats1, ready);
     }
+}
+
+/* Sort the ready list READY by ascending priority.  */
+static void
+ready_sort (struct ready_list *ready)
+{
+  if (ready->n_debug > 0)
+    ready_sort_debug (ready);
+  else
+    ready_sort_real (ready);
 }
 
 /* PREV is an insn that is ready to execute.  Adjust its priority if that
@@ -3236,7 +3270,7 @@ sched_setup_bb_reg_pressure_info (basic_block bb, rtx_insn *after)
    only be scheduled once their control dependency is resolved.  */
 
 static void
-check_clobbered_conditions (rtx insn)
+check_clobbered_conditions (rtx_insn *insn)
 {
   HARD_REG_SET t;
   int i;
@@ -4258,7 +4292,7 @@ struct haifa_saved_data
   state_t curr_state;
 
   rtx_insn *last_scheduled_insn;
-  rtx last_nondebug_scheduled_insn;
+  rtx_insn *last_nondebug_scheduled_insn;
   rtx_insn *nonscheduled_insns_begin;
   int cycle_issued_insns;
 
@@ -4288,7 +4322,7 @@ static struct haifa_saved_data *backtrack_queue;
 /* For every dependency of INSN, set the FEEDS_BACKTRACK_INSN bit according
    to SET_P.  */
 static void
-mark_backtrack_feeds (rtx insn, int set_p)
+mark_backtrack_feeds (rtx_insn *insn, int set_p)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -4434,7 +4468,7 @@ undo_replacements_for_backtrack (struct haifa_saved_data *save)
    queued nowhere.  */
 
 static void
-unschedule_insns_until (rtx insn)
+unschedule_insns_until (rtx_insn *insn)
 {
   auto_vec<rtx_insn *> recompute_vec;
 
@@ -5082,7 +5116,7 @@ queue_to_ready (struct ready_list *ready)
 {
   rtx_insn *insn;
   rtx_insn_list *link;
-  rtx skip_insn;
+  rtx_insn *skip_insn;
 
   q_ptr = NEXT_Q (q_ptr);
 
@@ -5091,7 +5125,7 @@ queue_to_ready (struct ready_list *ready)
        nonscheduled insn.  */
     skip_insn = first_nonscheduled_insn ();
   else
-    skip_insn = NULL_RTX;
+    skip_insn = NULL;
 
   /* Add all pending insns that can be scheduled without stalls to the
      ready list.  */
@@ -5186,11 +5220,10 @@ queue_to_ready (struct ready_list *ready)
    addition) depending on user flags and target hooks.  */
 
 static bool
-ok_for_early_queue_removal (rtx insn)
+ok_for_early_queue_removal (rtx_insn *insn)
 {
   if (targetm.sched.is_costly_dependence)
     {
-      rtx prev_insn;
       int n_cycles;
       int i = scheduled_insns.length ();
       for (n_cycles = flag_sched_stalled_insns_dep; n_cycles; n_cycles--)
@@ -5199,7 +5232,7 @@ ok_for_early_queue_removal (rtx insn)
 	    {
 	      int cost;
 
-	      prev_insn = scheduled_insns[i];
+	      rtx_insn *prev_insn = scheduled_insns[i];
 
 	      if (!NOTE_P (prev_insn))
 		{
@@ -5498,6 +5531,241 @@ insn_finishes_cycle_p (rtx_insn *insn)
     return true;
 
   return false;
+}
+
+/* Functions to model cache auto-prefetcher.
+
+   Some of the CPUs have cache auto-prefetcher, which /seems/ to initiate
+   memory prefetches if it sees instructions with consequitive memory accesses
+   in the instruction stream.  Details of such hardware units are not published,
+   so we can only guess what exactly is going on there.
+   In the scheduler, we model abstract auto-prefetcher.  If there are memory
+   insns in the ready list (or the queue) that have same memory base, but
+   different offsets, then we delay the insns with larger offsets until insns
+   with smaller offsets get scheduled.  If PARAM_SCHED_AUTOPREF_QUEUE_DEPTH
+   is "1", then we look at the ready list; if it is N>1, then we also look
+   through N-1 queue entries.
+   If the param is N>=0, then rank_for_schedule will consider auto-prefetching
+   among its heuristics.
+   Param value of "-1" disables modelling of the auto-prefetcher.  */
+
+/* Initialize autoprefetcher model data for INSN.  */
+static void
+autopref_multipass_init (const rtx_insn *insn, int write)
+{
+  autopref_multipass_data_t data = &INSN_AUTOPREF_MULTIPASS_DATA (insn)[write];
+
+  gcc_assert (data->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED);
+  data->base = NULL_RTX;
+  data->offset = 0;
+  /* Set insn entry initialized, but not relevant for auto-prefetcher.  */
+  data->status = AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
+
+  rtx set = single_set (insn);
+  if (set == NULL_RTX)
+    return;
+
+  rtx mem = write ? SET_DEST (set) : SET_SRC (set);
+  if (!MEM_P (mem))
+    return;
+
+  struct address_info info;
+  decompose_mem_address (&info, mem);
+
+  /* TODO: Currently only (base+const) addressing is supported.  */
+  if (info.base == NULL || !REG_P (*info.base)
+      || (info.disp != NULL && !CONST_INT_P (*info.disp)))
+    return;
+
+  /* This insn is relevant for auto-prefetcher.  */
+  data->base = *info.base;
+  data->offset = info.disp ? INTVAL (*info.disp) : 0;
+  data->status = AUTOPREF_MULTIPASS_DATA_NORMAL;
+}
+
+/* Helper function for rank_for_schedule sorting.  */
+static int
+autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
+{
+  for (int write = 0; write < 2; ++write)
+    {
+      autopref_multipass_data_t data1
+	= &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
+      autopref_multipass_data_t data2
+	= &INSN_AUTOPREF_MULTIPASS_DATA (insn2)[write];
+
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+	autopref_multipass_init (insn1, write);
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+	continue;
+
+      if (data2->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+	autopref_multipass_init (insn2, write);
+      if (data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+	continue;
+
+      if (!rtx_equal_p (data1->base, data2->base))
+	continue;
+
+      return data1->offset - data2->offset;
+    }
+
+  return 0;
+}
+
+/* True if header of debug dump was printed.  */
+static bool autopref_multipass_dfa_lookahead_guard_started_dump_p;
+
+/* Helper for autopref_multipass_dfa_lookahead_guard.
+   Return "1" if INSN1 should be delayed in favor of INSN2.  */
+static int
+autopref_multipass_dfa_lookahead_guard_1 (const rtx_insn *insn1,
+					  const rtx_insn *insn2, int write)
+{
+  autopref_multipass_data_t data1
+    = &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
+  autopref_multipass_data_t data2
+    = &INSN_AUTOPREF_MULTIPASS_DATA (insn2)[write];
+
+  if (data2->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+    autopref_multipass_init (insn2, write);
+  if (data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+    return 0;
+
+  if (rtx_equal_p (data1->base, data2->base)
+      && data1->offset > data2->offset)
+    {
+      if (sched_verbose >= 2)
+	{
+          if (!autopref_multipass_dfa_lookahead_guard_started_dump_p)
+	    {
+	      fprintf (sched_dump,
+		       ";;\t\tnot trying in max_issue due to autoprefetch "
+		       "model: ");
+	      autopref_multipass_dfa_lookahead_guard_started_dump_p = true;
+	    }
+
+	  fprintf (sched_dump, " %d(%d)", INSN_UID (insn1), INSN_UID (insn2));
+	}
+
+      return 1;
+    }
+
+  return 0;
+}
+
+/* General note:
+
+   We could have also hooked autoprefetcher model into
+   first_cycle_multipass_backtrack / first_cycle_multipass_issue hooks
+   to enable intelligent selection of "[r1+0]=r2; [r1+4]=r3" on the same cycle
+   (e.g., once "[r1+0]=r2" is issued in max_issue(), "[r1+4]=r3" gets
+   unblocked).  We don't bother about this yet because target of interest
+   (ARM Cortex-A15) can issue only 1 memory operation per cycle.  */
+
+/* Implementation of first_cycle_multipass_dfa_lookahead_guard hook.
+   Return "1" if INSN1 should not be considered in max_issue due to
+   auto-prefetcher considerations.  */
+int
+autopref_multipass_dfa_lookahead_guard (rtx_insn *insn1, int ready_index)
+{
+  int r = 0;
+
+  if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) <= 0)
+    return 0;
+
+  if (sched_verbose >= 2 && ready_index == 0)
+    autopref_multipass_dfa_lookahead_guard_started_dump_p = false;
+
+  for (int write = 0; write < 2; ++write)
+    {
+      autopref_multipass_data_t data1
+	= &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
+
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+	autopref_multipass_init (insn1, write);
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+	continue;
+
+      if (ready_index == 0
+	  && data1->status == AUTOPREF_MULTIPASS_DATA_DONT_DELAY)
+	/* We allow only a single delay on priviledged instructions.
+	   Doing otherwise would cause infinite loop.  */
+	{
+	  if (sched_verbose >= 2)
+	    {
+	      if (!autopref_multipass_dfa_lookahead_guard_started_dump_p)
+		{
+		  fprintf (sched_dump,
+			   ";;\t\tnot trying in max_issue due to autoprefetch "
+			   "model: ");
+		  autopref_multipass_dfa_lookahead_guard_started_dump_p = true;
+		}
+
+	      fprintf (sched_dump, " *%d*", INSN_UID (insn1));
+	    }
+	  continue;
+	}
+
+      for (int i2 = 0; i2 < ready.n_ready; ++i2)
+	{
+	  rtx_insn *insn2 = get_ready_element (i2);
+	  if (insn1 == insn2)
+	    continue;
+	  r = autopref_multipass_dfa_lookahead_guard_1 (insn1, insn2, write);
+	  if (r)
+	    {
+	      if (ready_index == 0)
+		{
+		  r = -1;
+		  data1->status = AUTOPREF_MULTIPASS_DATA_DONT_DELAY;
+		}
+	      goto finish;
+	    }
+	}
+
+      if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) == 1)
+	continue;
+
+      /* Everything from the current queue slot should have been moved to
+	 the ready list.  */
+      gcc_assert (insn_queue[NEXT_Q_AFTER (q_ptr, 0)] == NULL_RTX);
+
+      int n_stalls = PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) - 1;
+      if (n_stalls > max_insn_queue_index)
+	n_stalls = max_insn_queue_index;
+
+      for (int stalls = 1; stalls <= n_stalls; ++stalls)
+	{
+	  for (rtx_insn_list *link = insn_queue[NEXT_Q_AFTER (q_ptr, stalls)];
+	       link != NULL_RTX;
+	       link = link->next ())
+	    {
+	      rtx_insn *insn2 = link->insn ();
+	      r = autopref_multipass_dfa_lookahead_guard_1 (insn1, insn2,
+							    write);
+	      if (r)
+		{
+		  /* Queue INSN1 until INSN2 can issue.  */
+		  r = -stalls;
+		  if (ready_index == 0)
+		    data1->status = AUTOPREF_MULTIPASS_DATA_DONT_DELAY;
+		  goto finish;
+		}
+	    }
+	}
+    }
+
+    finish:
+  if (sched_verbose >= 2
+      && autopref_multipass_dfa_lookahead_guard_started_dump_p
+      && (ready_index == ready.n_ready - 1 || r < 0))
+    /* This does not /always/ trigger.  We don't output EOL if the last
+       insn is not recognized (INSN_CODE < 0) and lookahead_guard is not
+       called.  We can live with this.  */
+    fprintf (sched_dump, "\n");
+
+  return r;
 }
 
 /* Define type for target data used in multipass scheduling.  */
@@ -6014,7 +6282,15 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 	      if (SCHED_GROUP_P (insn) && cost > min_cost_group)
 		min_cost_group = cost;
 	      ready_remove (&ready, i);
-	      queue_insn (insn, cost, reason);
+	      /* Normally we'd want to queue INSN for COST cycles.  However,
+		 if SCHED_GROUP_P is set, then we must ensure that nothing
+		 else comes between INSN and its predecessor.  If there is
+		 some other insn ready to fire on the next cycle, then that
+		 invariant would be broken.
+
+		 So when SCHED_GROUP_P is set, just queue this insn for a
+		 single cycle.  */
+	      queue_insn (insn, SCHED_GROUP_P (insn) ? 1 : cost, reason);
 	      if (i + 1 < n)
 		break;
 	    }
@@ -6174,7 +6450,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 
   /* We start inserting insns after PREV_HEAD.  */
   last_scheduled_insn = prev_head;
-  last_nondebug_scheduled_insn = NULL_RTX;
+  last_nondebug_scheduled_insn = NULL;
   nonscheduled_insns_begin = NULL;
 
   gcc_assert ((NOTE_P (last_scheduled_insn)
@@ -6205,7 +6481,8 @@ schedule_block (basic_block *target_bb, state_t init_state)
   if (!reload_completed
       && ready.n_ready - ready.n_debug > MAX_SCHED_READY_INSNS)
     {
-      ready_sort (&ready);
+      ready_sort_debug (&ready);
+      ready_sort_real (&ready);
 
       /* Find first free-standing insn past MAX_SCHED_READY_INSNS.
          If there are debug insns, we know they're first.  */
@@ -6216,7 +6493,8 @@ schedule_block (basic_block *target_bb, state_t init_state)
       if (sched_verbose >= 2)
 	{
 	  fprintf (sched_dump,
-		   ";;\t\tReady list on entry: %d insns\n", ready.n_ready);
+		   ";;\t\tReady list on entry: %d insns:  ", ready.n_ready);
+	  debug_ready_list (&ready);
 	  fprintf (sched_dump,
 		   ";;\t\t before reload => truncated to %d insns\n", i);
 	}
@@ -6888,9 +7166,8 @@ void
 sched_init (void)
 {
   /* Disable speculative loads in their presence if cc0 defined.  */
-#ifdef HAVE_cc0
+  if (HAVE_cc0)
   flag_schedule_speculative_load = 0;
-#endif
 
   if (targetm.sched.dispatch (NULL, IS_DISPATCH_ON))
     targetm.sched.dispatch_do (NULL, DISPATCH_INIT);
@@ -7505,7 +7782,7 @@ generate_recovery_code (rtx_insn *insn)
    Tries to add speculative dependencies of type FS between instructions
    in deps_list L and TWIN.  */
 static void
-process_insn_forw_deps_be_in_spec (rtx insn, rtx_insn *twin, ds_t fs)
+process_insn_forw_deps_be_in_spec (rtx_insn *insn, rtx_insn *twin, ds_t fs)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -7808,8 +8085,6 @@ init_before_recovery (basic_block *before_recovery_ptr)
          Between these two blocks recovery blocks will be emitted.  */
 
       basic_block single, empty;
-      rtx_insn *x;
-      rtx label;
 
       /* If the fallthrough edge to exit we've found is from the block we've
 	 created before, don't do anything more.  */
@@ -7840,8 +8115,9 @@ init_before_recovery (basic_block *before_recovery_ptr)
       make_single_succ_edge (empty, EXIT_BLOCK_PTR_FOR_FN (cfun),
 			     EDGE_FALLTHRU);
 
-      label = block_label (empty);
-      x = emit_jump_insn_after (gen_jump (label), BB_END (single));
+      rtx_code_label *label = block_label (empty);
+      rtx_jump_insn *x = emit_jump_insn_after (targetm.gen_jump (label),
+					       BB_END (single));
       JUMP_LABEL (x) = label;
       LABEL_NUSES (label)++;
       haifa_init_insn (x);
@@ -7872,7 +8148,6 @@ init_before_recovery (basic_block *before_recovery_ptr)
 basic_block
 sched_create_recovery_block (basic_block *before_recovery_ptr)
 {
-  rtx label;
   rtx_insn *barrier;
   basic_block rec;
 
@@ -7884,7 +8159,7 @@ sched_create_recovery_block (basic_block *before_recovery_ptr)
   barrier = get_last_bb_insn (before_recovery);
   gcc_assert (BARRIER_P (barrier));
 
-  label = emit_label_after (gen_label_rtx (), barrier);
+  rtx_insn *label = emit_label_after (gen_label_rtx (), barrier);
 
   rec = create_basic_block (label, label, before_recovery);
 
@@ -7907,8 +8182,6 @@ void
 sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 			     basic_block second_bb)
 {
-  rtx label;
-  rtx jump;
   int edge_flags;
 
   /* This is fixing of incoming edge.  */
@@ -7920,8 +8193,9 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
     edge_flags = 0;
 
   make_edge (first_bb, rec, edge_flags);
-  label = block_label (second_bb);
-  jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
+  rtx_code_label *label = block_label (second_bb);
+  rtx_jump_insn *jump = emit_jump_insn_after (targetm.gen_jump (label),
+					      BB_END (rec));
   JUMP_LABEL (jump) = label;
   LABEL_NUSES (label)++;
 
@@ -8710,6 +8984,10 @@ init_h_i_d (rtx_insn *insn)
       INSN_EXACT_TICK (insn) = INVALID_TICK;
       INTER_TICK (insn) = INVALID_TICK;
       TODO_SPEC (insn) = HARD_DEP;
+      INSN_AUTOPREF_MULTIPASS_DATA (insn)[0].status
+	= AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
+      INSN_AUTOPREF_MULTIPASS_DATA (insn)[1].status
+	= AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
     }
 }
 

@@ -23,15 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "stringpool.h"
@@ -72,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
    translation, when we are emitting the type info objects.  */
 
 /* Auxiliary data we hold for each type_info derived object we need.  */
-typedef struct GTY (()) tinfo_s {
+struct GTY (()) tinfo_s {
   tree type;  /* The RECORD_TYPE for this type_info object */
 
   tree vtable; /* The VAR_DECL of the vtable.  Only filled at end of
@@ -80,10 +72,10 @@ typedef struct GTY (()) tinfo_s {
 
   tree name;  /* IDENTIFIER_NODE for the ABI specified name of
 		 the type_info derived type.  */
-} tinfo_s;
+};
 
 
-typedef enum tinfo_kind
+enum tinfo_kind
 {
   TK_TYPE_INFO_TYPE,    /* abi::__type_info_pseudo */
   TK_BASE_TYPE,		/* abi::__base_class_type_info */
@@ -97,7 +89,7 @@ typedef enum tinfo_kind
   TK_SI_CLASS_TYPE,	/* abi::__si_class_type_info */
   TK_FIXED		/* end of fixed descriptors. */
   /* ...		   abi::__vmi_type_info<I> */
-} tinfo_kind;
+};
 
 /* Helper macro to get maximum scalar-width of pointer or of the 'long'-type.
    This of interest for llp64 targets.  */
@@ -708,10 +700,12 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  target_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 	  static_type = TYPE_MAIN_VARIANT (TREE_TYPE (exprtype));
 	  td2 = get_tinfo_decl (target_type);
-	  mark_used (td2);
+	  if (!mark_used (td2, complain) && !(complain & tf_error))
+	    return error_mark_node;
 	  td2 = cp_build_addr_expr (td2, complain);
 	  td3 = get_tinfo_decl (static_type);
-	  mark_used (td3);
+	  if (!mark_used (td3, complain) && !(complain & tf_error))
+	    return error_mark_node;
 	  td3 = cp_build_addr_expr (td3, complain);
 
 	  /* Determine how T and V are related.  */

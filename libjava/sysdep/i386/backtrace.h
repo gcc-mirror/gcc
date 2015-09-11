@@ -36,7 +36,7 @@ struct _Unwind_Context
   _Jv_uintptr_t ret_addr;
 };
 
-#ifdef SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
 
 #undef _Unwind_GetIPInfo
 #define _Unwind_GetIPInfo(ctx,ip_before_insn) \
@@ -50,7 +50,7 @@ struct _Unwind_Context
 #define _Unwind_Backtrace(trace_fn,state_ptr) \
   (fallback_backtrace (trace_fn, state_ptr))
 
-#endif /* SJLJ_EXCEPTIONS */
+#endif /* __USING_SJLJ_EXCEPTIONS__ */
 
 /* Unwind through the call stack calling TRACE_FN with STATE for each stack
    frame.  Returns the reason why the unwinding was stopped.  */

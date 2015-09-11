@@ -16,4 +16,3 @@ f (int i, float j, int i2, float j2)
 /* { dg-final { scan-tree-dump-times { if } 2 "forwprop1"} } */
 /* { dg-final { scan-tree-dump {builtin_expect[^\n]*, 0\);\n[^\n]*if} "forwprop1"} } */
 /* { dg-final { scan-tree-dump {builtin_expect[^\n]*, 1\);\n[^\n]*if} "forwprop1"} } */
-/* { dg-final { cleanup-tree-dump "forwprop?" } } */

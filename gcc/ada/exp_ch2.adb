@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -396,7 +396,8 @@ package body Exp_Ch2 is
          Write_Eol;
       end if;
 
-      --  Set Atomic_Sync_Required if necessary for atomic variable
+      --  Set Atomic_Sync_Required if necessary for atomic variable. Note that
+      --  this processing does NOT apply to Volatile_Full_Access variables.
 
       if Nkind_In (N, N_Identifier, N_Expanded_Name)
         and then Ekind (E) = E_Variable

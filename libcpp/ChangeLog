@@ -1,3 +1,418 @@
+2015-09-07  Marek Polacek  <polacek@redhat.com>
+
+	* system.h (INTTYPE_MINIMUM): Rewrite to avoid shift warning.
+
+2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* configure: Regenerate.
+
+2015-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* include/line-map.h (RESERVED_LOCATION_COUNT): Change type to
+	source_location.
+
+2015-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR preprocessor/53690
+	* charset.c (_cpp_valid_ucn): Add cppchar_t * parameter and change
+	return type to bool.  Fix encoding of \u0000 and \U00000000 in C++.
+	(convert_ucn): Adjust call.
+	* lex.c (forms_identifier_p): Likewise.
+	* internal.h (_cpp_valid_ucn): Adjust declaration.
+
+2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N4197 - Adding u8 character literals
+	* include/cpplib.h (UTF8CHAR, UTF8CHAR_USERDEF): New cpp tokens;
+	(struct cpp_options): Add utf8_char_literals.
+	* init.c (struct lang_flags): Add utf8_char_literals;
+	(struct lang_flags lang_defaults): Add column for utf8_char_literals.
+	* macro.c (stringify_arg()): Treat CPP_UTF8CHAR token;
+	* expr.c (cpp_userdef_char_remove_type(), cpp_userdef_char_add_type()):
+	Treat CPP_UTF8CHAR_USERDEF, CPP_UTF8CHAR tokens;
+	(cpp_userdef_char_p()): Treat CPP_UTF8CHAR_USERDEF token;
+	(eval_token(), _cpp_parse_expr()): Treat CPP_UTF8CHAR token.
+	* lex.c (lex_string(), _cpp_lex_direct()): Include CPP_UTF8CHAR tokens.
+	* charset.c (converter_for_type(), cpp_interpret_charconst()):
+	Treat CPP_UTF8CHAR token.
+
+2015-06-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lex.c (search_line_sse42) [__GCC_ASM_FLAG_OUTPUTS__]: New main
+	loop using asm flag outputs.
+
+2015-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66415
+	* line-map.c (linemap_position_for_loc_and_offset): Remove
+	linemap_assert_fails; reverse conditions.
+
+2015-05-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* line-map.c (LINE_MAP_MAX_COLUMN_NUMBER
+	LINE_MAP_MAX_LOCATION_WITH_COLS,LINE_MAP_MAX_SOURCE_LOCATION):
+	New constants.
+	(linemap_line_start): Use them.
+	(linemap_position_for_column): Use them.
+
+2015-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (MAP_START_LOCATION): Eliminate the non-const
+	variant, and tweak comment for the const variant.
+	(ORDINARY_MAP_STARTING_LINE_NUMBER): Drop the non-const variant.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Likewise.
+	(ORDINARY_MAP_IN_SYSTEM_HEADER_P): Likewise.
+	(SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): Delete.
+	(ORDINARY_MAP_FILE_NAME): Drop the non-const variant.
+	(MACRO_MAP_MACRO): Likewise.
+	(MACRO_MAP_NUM_MACRO_TOKENS): Likewise.
+	(MACRO_MAP_LOCATIONS): Likewise.
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Likewise.
+	* line-map.c (linemap_add): Replace writes through macros with
+	direct field accesses.
+	(linemap_enter_macro): Likewise.
+	(linemap_line_start): Likewise.
+
+2015-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (do_line): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(do_linemarker): Likewise.
+	(_cpp_do_file_change): Assert that we're not dealing with
+	a macro map.  Introduce local "ord_map" via a call to
+	linemap_check_ordinary, guarded within the check for
+	non-NULL.  Use it for typesafety.
+	* files.c (cpp_make_system_header): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	* include/cpplib.h (struct cpp_callbacks): Likewise for second
+	parameter of "file_change" callback.
+	* include/line-map.h (struct line_map): Convert from a struct
+	containing a union to a base class.
+	(struct line_map_ordinary): Convert to a subclass of line_map.
+	(struct line_map_macro): Likewise.
+	(linemap_check_ordinary): Strengthen return type from line_map *
+	to line_map_ordinary *, and add a const-variant.
+	(linemap_check_macro): New pair of functions.
+	(ORDINARY_MAP_STARTING_LINE_NUMBER): Strengthen param from
+	const line_map * to const line_map_ordinary *, eliminating call
+	to linemap_check_ordinary.  Likewise for the non-const variant.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Likewise.
+	(ORDINARY_MAP_IN_SYSTEM_HEADER_P): Likewise.
+	(ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): Likewise.
+	(ORDINARY_MAP_FILE_NAME): Likewise.
+	(MACRO_MAP_MACRO): Strengthen param from const line_map * to
+	const line_map_macro *.  Likewise for the non-const variant.
+	(MACRO_MAP_NUM_MACRO_TOKENS): Likewise.
+	(MACRO_MAP_LOCATIONS): Likewise.
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Likewise.
+	(struct maps_info): Replace with...
+	(struct maps_info_ordinary):...this and...
+	(struct maps_info_macro): ...this.
+	(struct line_maps): Convert fields "info_ordinary" and
+	"info_macro" to the above new structs.
+	(LINEMAPS_MAP_INFO): Delete both functions.
+	(LINEMAPS_MAPS): Likewise.
+	(LINEMAPS_ALLOCATED): Rewrite both variants to avoid using
+	LINEMAPS_MAP_INFO.
+	(LINEMAPS_USED): Likewise.
+	(LINEMAPS_CACHE): Likewise.
+	(LINEMAPS_MAP_AT): Likewise.
+	(LINEMAPS_ORDINARY_MAPS): Strengthen return type from line_map *
+	to line_map_ordinary *.
+	(LINEMAPS_ORDINARY_MAP_AT): Likewise.
+	(LINEMAPS_LAST_ORDINARY_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP): Likewise.
+	(LINEMAPS_MACRO_MAPS): Strengthen return type from line_map * to
+	line_map_macro *.
+	(LINEMAPS_MACRO_MAP_AT): Likewise.
+	(LINEMAPS_LAST_MACRO_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_MACRO_MAP): Likewise.
+	(linemap_map_get_macro_name): Strengthen param from
+	const line_map * to const line_map_macro *.
+	(SOURCE_LINE): Strengthen first param from const line_map * to
+	const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(SOURCE_COLUMN): Likewise.
+	(LAST_SOURCE_LINE_LOCATION): Likewise.
+	(LAST_SOURCE_LINE): Strengthen first param from const line_map *
+	to const line_map_ordinary *.
+	(LAST_SOURCE_COLUMN): Likewise.
+	(INCLUDED_FROM): Strengthen return type from line_map * to
+	line_map_ordinary *., and second param from const line_map *
+	to const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(MAIN_FILE_P): Strengthen param from const line_map * to
+	const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(linemap_position_for_line_and_column): Strengthen param from
+	const line_map * to const line_map_ordinary *.
+	(LINEMAP_FILE): Strengthen param from const line_map * to
+	const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(LINEMAP_LINE): Likewise.
+	(LINEMAP_SYSP): Likewise.
+	(linemap_resolve_location): Strengthen final param from
+	const line_map ** to const line_map_ordinary **.
+	* internal.h (CPP_INCREMENT_LINE): Likewise for local "map".
+	(linemap_enter_macro): Strengthen return type from
+	const line_map * to const line_map_macro *.
+	(linemap_add_macro_token): Likewise for first param.
+	* line-map.c (linemap_check_files_exited): Strengthen local "map"
+	from const line_map * to const line_map_ordinary *.
+	(new_linemap): Introduce local "map_size" and use it when
+	calculating how large the buffer should be.  Rewrite based
+	on change of info_macro and info_ordinary into distinct types.
+	(linemap_add): Strengthen locals "map" and "from" from line_map *
+	to line_map_ordinary *.
+	(linemap_enter_macro): Strengthen return type from
+	const line_map * to const line_map_macro *, and local "map" from
+	line_map * to line_map_macro *.
+	(linemap_add_macro_token): Strengthen param "map" from
+	const line_map * to const line_map_macro *.
+	(linemap_line_start): Strengthen local "map" from line_map * to
+	line_map_ordinary *.
+	(linemap_position_for_column): Likewise.
+	(linemap_position_for_line_and_column): Strengthen first param
+	from const line_map * to const line_map_ordinary *.
+	(linemap_position_for_loc_and_offset): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(linemap_ordinary_map_lookup): Likewise for return type and locals
+	"cached" and "result".
+	(linemap_macro_map_lookup): Strengthen return type and locals
+	"cached" and "result" from const line_map * to
+	const line_map_macro *.
+	(linemap_macro_map_loc_to_exp_point): Likewise for param "map".
+	(linemap_macro_map_loc_to_def_point): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_get_expansion_line): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(linemap_get_expansion_filename): Likewise.
+	(linemap_map_get_macro_name): Strengthen param from
+	const line_map * to const line_map_macro *.
+	(linemap_location_in_system_header_p): Add call to
+	linemap_check_ordinary in region guarded by
+	!linemap_macro_expansion_map_p.  Introduce local "macro_map" via
+	linemap_check_macro in other region, using it in place of "map"
+	for typesafety.
+	(first_map_in_common_1): Add calls to linemap_check_macro.
+	(trace_include): Strengthen param "map" from const line_map * to
+	const line_map_ordinary *.
+	(linemap_macro_loc_to_spelling_point): Strengthen final param from
+	const line_map ** to const line_map_ordinary **.  Replace a
+	C-style cast with a const_cast, and add calls to
+	linemap_check_macro and linemap_check_ordinary.
+	(linemap_macro_loc_to_def_point): Likewise.
+	(linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_resolve_location): Strengthen final param from
+	const line_map ** to const line_map_ordinary **.
+	(linemap_unwind_toward_expansion): Introduce local "macro_map" via
+	a checked cast and use it in place of *map.
+	(linemap_unwind_to_first_non_reserved_loc): Strengthen local
+	"map1" from const line_map * to const line_map_ordinary *.
+	(linemap_expand_location): Introduce local "ord_map" via a checked
+	cast and use it in place of map.
+	(linemap_dump): Make local "map" const.  Strengthen local
+	"includer_map" from line_map * to const line_map_ordinary *.
+	Introduce locals "ord_map" and "macro_map" via checked casts and
+	use them in place of "map" for typesafety.
+	(linemap_dump_location): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(linemap_get_file_highest_location): Update for elimination of
+	union.
+	(linemap_get_statistics): Strengthen local "cur_map" from
+	line_map * to const line_map_macro *.  Update uses of sizeof to
+	use the appropriate line_map subclasses.
+	* macro.c (_cpp_warn_if_unused_macro): Add call to
+	linemap_check_ordinary.
+	(builtin_macro): Strengthen local "map" from const line_map * to
+	const line_map_macro *.
+	(enter_macro_context): Likewise.
+	(replace_args): Likewise.
+	(tokens_buff_put_token_to): Likewise for param "map".
+	(tokens_buff_add_token): Likewise.
+
+2015-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (source_location): Add a reference to
+	location-example.txt to the descriptive comment.
+	* location-example.txt: New file.
+
+2015-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (MAX_SOURCE_LOCATION): Convert from a macro
+	to a const source_location.
+	(RESERVED_LOCATION_COUNT): Likewise.
+	(linemap_check_ordinary): Convert from a macro to a pair of inline
+	functions, for const/non-const arguments.
+	(MAP_START_LOCATION): Likewise.
+	(ORDINARY_MAP_STARTING_LINE_NUMBER): Likewise.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Likewise.
+	(ORDINARY_MAP_IN_SYSTEM_HEADER_P): Likewise.
+	(ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): Convert from a macro to a
+	pair of inline functions, for const/non-const arguments, where the
+	latter is named...
+	(SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): New function.
+	(ORDINARY_MAP_FILE_NAME): Convert from a macro to a pair of inline
+	functions, for const/non-const arguments.
+	(MACRO_MAP_MACRO): Likewise.
+	(MACRO_MAP_NUM_MACRO_TOKENS): Likewise.
+	(MACRO_MAP_LOCATIONS): Likewise.
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Likewise.
+	(LINEMAPS_MAP_INFO): Likewise.
+	(LINEMAPS_MAPS): Likewise.
+	(LINEMAPS_ALLOCATED): Likewise.
+	(LINEMAPS_USED): Likewise.
+	(LINEMAPS_CACHE): Likewise.
+	(LINEMAPS_ORDINARY_CACHE): Likewise.
+	(LINEMAPS_MACRO_CACHE): Likewise.
+	(LINEMAPS_MAP_AT): Convert from a macro to an inline function.
+	(LINEMAPS_LAST_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_MAP): Likewise.
+	(LINEMAPS_ORDINARY_MAPS): Likewise.
+	(LINEMAPS_ORDINARY_MAP_AT): Likewise.
+	(LINEMAPS_ORDINARY_ALLOCATED): Likewise.
+	(LINEMAPS_ORDINARY_USED): Likewise.
+	(LINEMAPS_LAST_ORDINARY_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP): Likewise.
+	(LINEMAPS_MACRO_MAPS): Likewise.
+	(LINEMAPS_MACRO_MAP_AT): Likewise.
+	(LINEMAPS_MACRO_ALLOCATED): Likewise.
+	(LINEMAPS_MACRO_USED): Likewise.
+	(LINEMAPS_MACRO_LOWEST_LOCATION): Likewise.
+	(LINEMAPS_LAST_MACRO_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_MACRO_MAP): Likewise.
+	(IS_ADHOC_LOC): Likewise.
+	(COMBINE_LOCATION_DATA): Likewise.
+	(SOURCE_LINE): Likewise.
+	(SOURCE_COLUMN): Likewise.
+	(LAST_SOURCE_LINE_LOCATION): Likewise.
+	(LAST_SOURCE_LINE): Likewise.
+	(LAST_SOURCE_COLUMN): Likewise.
+	(LAST_SOURCE_LINE_LOCATION)
+	(INCLUDED_FROM): Likewise.
+	(MAIN_FILE_P): Likewise.
+	(LINEMAP_FILE): Likewise.
+	(LINEMAP_LINE): Likewise.
+	(LINEMAP_SYSP): Likewise.
+	(linemap_location_before_p): Likewise.
+	* line-map.c (linemap_check_files_exited): Make local "map" const.
+	(linemap_add): Use SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS.
+	(linemap_line_start): Likewise.
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* aclocal.m4: Regenerated with automake-1.11.6.
+
+2015-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (linemap_assert): Move up within the file to
+	before all of the map accessor macros.
+	(linemap_assert_fails): Likewise.
+	(linemap_check_ordinary): Likewise.
+	(linemap_macro_expansion_map_p): Likewise.
+
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (do_line): Set seen_line_directive on line_table.
+	(do_linemarker): Likewise.
+	* include/line-map.h (struct line_maps): Add new field
+	"seen_line_directive".
+
+2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h: Add CPP_W_CXX11_COMPAT.
+	(struct cpp_options): Add cpp_warn_cxx11_compat.
+	* init.c (cpp_create_reader): Initialize it.
+	* lex.c (lex_string): Add -Wc++11-compat warning.
+
+2015-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* pch.c (cpp_valid_state): Fix indentation so that it reflects the
+	block structure.
+
+2015-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h: Fix comment at the top of the file.
+	(source_location): Rewrite and expand the comment for this
+	typedef, adding an ascii-art table to clarify how source_location
+	values are allocated.
+	* line-map.c: Fix comment at the top of the file.
+
+2015-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR pch/65550
+	* files.c (pch_open_file): Allow main and pre-included files
+	when trying to open a PCH.
+
+2015-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/61977
+	* lex.c (cpp_peek_token): If peektok is CPP_EOF, back it up
+	with all tokens peeked by the current function.
+
+2015-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/61977
+	* lex.c (cpp_peek_token): Temporarily clear pfile->cb.line_change.
+
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/65238
+	* internal.h (_cpp_scan_out_logical_line): Add third argument.
+	* directives.c (prepare_directive_trad): Pass false to it.
+	* traditional.c (_cpp_read_logical_line_trad,
+	_cpp_create_trad_definition): Likewise.
+	(struct fun_macro): Add paramc field.
+	(fun_like_macro): New function.
+	(maybe_start_funlike): Handle NODE_BUILTIN macros.  Initialize
+	macro->paramc field.
+	(save_argument): Use macro->paramc instead of
+	macro->node->value.macro->paramc.
+	(push_replacement_text): Formatting fix.
+	(recursive_macro): Use fun_like_macro helper.
+	(_cpp_scan_out_logical_line): Likewise.  Add BUILTIN_MACRO_ARG
+	argument.  Initialize fmacro.paramc field.  Handle builtin
+	function-like macros.
+
+2015-03-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/64626
+	* lex.c (lex_number): If a number ends with digit-seps (') skip back
+	and let lex_string take them.
+
+2015-03-02  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR target/65261
+	* lex.c (search_line_fast): Silence ubsan errors.
+
+2015-02-03    <dodji@redhat.com>
+
+	PR preprocessor/64803
+	* internal.h (cpp_reader::top_most_macro_node): New data member.
+	* macro.c (enter_macro_context): Pass the location of the end of
+	the top-most invocation of the function-like macro, or the
+	location of the expansion point of the top-most object-like macro.
+	(cpp_get_token_1): Store the top-most macro node in the new
+	pfile->top_most_macro_node data member.
+	(_cpp_pop_context): Clear the new cpp_reader::top_most_macro_node
+	data member.
+
+2015-01-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* lex.c (search_line_fast): Change __ARM_NEON__ to __ARM_NEON.
+
+2015-01-23  Marek Polacek  <polacek@redhat.com>
+
+	DR#412
+	PR preprocessor/60570
+	* directives.c (do_elif): Don't evaluate #elif conditionals
+	when they don't need to be.
+
+2015-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (cpp_classify_number): Add N_() around ?: string
+	literals used in cpp_error_with_line call as format string.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

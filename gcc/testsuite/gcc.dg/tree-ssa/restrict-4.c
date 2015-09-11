@@ -23,4 +23,3 @@ bar (int *x, int y)
 }
 
 /* { dg-final { scan-tree-dump-times "return 1;" 2 "optimized" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

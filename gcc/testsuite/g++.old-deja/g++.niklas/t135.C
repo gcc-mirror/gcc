@@ -8,7 +8,7 @@ public:
 
 class C2
 {
-	int data_member; // { dg-error "" }
+	int data_member; // { dg-message "" }
   friend class C1; // { dg-error "" }
 };
 

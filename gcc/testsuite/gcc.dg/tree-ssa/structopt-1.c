@@ -12,4 +12,3 @@ int foo() {
 
 /* { dg-final { scan-tree-dump-times "Executing store motion of global.y" 1 "lim1" } } */
 /* XXX: We should also check for the load motion of global.x, but there is no easy way to do this.  */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

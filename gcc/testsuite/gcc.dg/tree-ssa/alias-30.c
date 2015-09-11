@@ -19,4 +19,3 @@ int foo (float *p)
 /* We should be able to CSE the load from *p in the return stmt.  */
 
 /* { dg-final { scan-tree-dump "Replaced \\\*p" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

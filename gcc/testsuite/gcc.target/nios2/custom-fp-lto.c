@@ -26,4 +26,3 @@ main (int argc, char *argv[])
 }
 
 /* { dg-final { scan-lto-assembler "custom\\t224, " } } */
-/* { dg-final { cleanup-saved-temps } } */

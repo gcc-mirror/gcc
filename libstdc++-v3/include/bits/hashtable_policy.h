@@ -495,8 +495,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_reset(_State __state)
     { _M_next_resize = __state; }
 
-    enum { _S_n_primes = sizeof(unsigned long) != 8 ? 256 : 256 + 48 };
-
     static const std::size_t _S_growth_factor = 2;
 
     float		_M_max_load_factor;

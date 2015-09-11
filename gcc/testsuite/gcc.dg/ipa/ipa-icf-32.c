@@ -1,8 +1,8 @@
 /* { dg-do run } */
-/* { dg-options "-O0 -fipa-icf -fdump-ipa-icf-details" } */
+/* { dg-options "-O1 -fipa-icf -fdump-ipa-icf-details" } */
 
 int
-__attribute__((optimize("O0"), noinline, noclone))
+__attribute__((optimize("Os"), noinline, noclone))
 foo(int a)
 {
   return a * a;
@@ -21,4 +21,3 @@ int main()
 
 /* { dg-final { scan-ipa-dump "optimization flags are different" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 0" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

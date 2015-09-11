@@ -29,4 +29,3 @@ main()
 /* { dg-final { scan-ipa-dump "Second type is base of first" "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*A::foo" 1 "inline"  } } */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*B::foo" 1 "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

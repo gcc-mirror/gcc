@@ -25,3 +25,5 @@ main (void)
   int z = foo (0, 1, 2, 3, 4);
   return !(z == 191);
 }
+
+/* { dg-final { cleanup-profile-file } } */

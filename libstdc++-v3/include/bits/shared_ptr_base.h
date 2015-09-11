@@ -49,6 +49,7 @@
 #ifndef _SHARED_PTR_BASE_H
 #define _SHARED_PTR_BASE_H 1
 
+#include <typeinfo>
 #include <bits/allocated_ptr.h>
 #include <ext/aligned_buffer.h>
 
@@ -67,8 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class bad_weak_ptr : public std::exception
   {
   public:
-    virtual char const*
-    what() const noexcept;
+    virtual char const* what() const noexcept;
 
     virtual ~bad_weak_ptr() noexcept;    
   };
@@ -154,8 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // See http://gcc.gnu.org/ml/libstdc++/2005-11/msg00136.html
 	    if (_Mutex_base<_Lp>::_S_need_barriers)
 	      {
-	        _GLIBCXX_READ_MEM_BARRIER;
-	        _GLIBCXX_WRITE_MEM_BARRIER;
+		__atomic_thread_fence (__ATOMIC_ACQ_REL);
 	      }
 
             // Be race-detector-friendly.  For more info see bits/c++config.
@@ -185,8 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      {
 	        // See _M_release(),
 	        // destroy() must observe results of dispose()
-	        _GLIBCXX_READ_MEM_BARRIER;
-	        _GLIBCXX_WRITE_MEM_BARRIER;
+		__atomic_thread_fence (__ATOMIC_ACQ_REL);
 	      }
 	    _M_destroy();
 	  }
@@ -632,6 +630,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         explicit
 	__shared_count(std::unique_ptr<_Tp, _Del>&& __r) : _M_pi(0)
 	{
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 2415. Inconsistency between unique_ptr and shared_ptr
+	  if (__r.get() == nullptr)
+	    return;
+
 	  using _Ptr = typename unique_ptr<_Tp, _Del>::pointer;
 	  using _Del2 = typename conditional<is_reference<_Del>::value,
 	      reference_wrapper<typename remove_reference<_Del>::type>,
@@ -1026,7 +1029,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	reset(_Tp1* __p) // _Tp1 must be complete.
 	{
 	  // Catch self-reset errors.
-	  _GLIBCXX_DEBUG_ASSERT(__p == 0 || __p != _M_ptr);
+	  __glibcxx_assert(__p == 0 || __p != _M_ptr);
 	  __shared_ptr(__p).swap(*this);
 	}
 
@@ -1044,14 +1047,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename std::add_lvalue_reference<_Tp>::type
       operator*() const noexcept
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	__glibcxx_assert(_M_ptr != 0);
 	return *_M_ptr;
       }
 
       _Tp*
       operator->() const noexcept
       {
-	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
+	_GLIBCXX_DEBUG_PEDASSERT(_M_ptr != 0);
 	return _M_ptr;
       }
 
@@ -1465,8 +1468,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_assign(_Tp* __ptr, const __shared_count<_Lp>& __refcount) noexcept
       {
-	_M_ptr = __ptr;
-	_M_refcount = __refcount;
+	if (use_count() == 0)
+	  {
+	    _M_ptr = __ptr;
+	    _M_refcount = __refcount;
+	  }
       }
 
       template<typename _Tp1, _Lock_policy _Lp1> friend class __shared_ptr;
@@ -1546,7 +1552,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					 const __enable_shared_from_this* __pe,
 					 const _Tp1* __px) noexcept
 	{
-	  if (__pe != 0)
+	  if (__pe != nullptr)
 	    __pe->_M_weak_assign(const_cast<_Tp1*>(__px), __pn);
 	}
 

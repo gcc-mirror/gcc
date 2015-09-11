@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=c++98 -fno-show-column" }
+
 // 2.2.3 Class template shared_ptr [tr.util.smartptr.shared]
 
 #include <tr1/memory>
@@ -30,8 +32,8 @@ void test01()
 {
   X* px = 0;
   std::tr1::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 556 }
+  // { dg-error "incomplete" "" { target *-*-* } 554 }
 
   std::tr1::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 595 }
+  // { dg-error "incomplete" "" { target *-*-* } 593 }
 }

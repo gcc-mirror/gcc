@@ -383,11 +383,11 @@ installed but it is not in your default library search path, the
 @option{--with-mpc} configure option should be used.  See also
 @option{--with-mpc-lib} and @option{--with-mpc-include}.
 
-@item ISL Library version 0.14 (or 0.12.2)
+@item ISL Library version 0.15, 0.14, 0.13, or 0.12.2
 
 Necessary to build GCC with the Graphite loop optimizations.
-It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}
-as @file{isl-0.12.2.tar.bz2}.  If an ISL source distribution is found
+It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
+If an ISL source distribution is found
 in a subdirectory of your GCC sources named @file{isl}, it will be
 built together with GCC.  Alternatively, the @option{--with-isl} configure
 option should be used if ISL is not installed in your default library
@@ -403,7 +403,7 @@ search path.
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.
 
-@item automake version 1.11.1
+@item automake version 1.11.6
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -414,7 +414,7 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 as any of their subdirectories.
 
 For directories that use automake, GCC requires the latest release in
-the 1.11 series, which is currently 1.11.1.  When regenerating a directory
+the 1.11 series, which is currently 1.11.6.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.11
 to the latest released version.
 
@@ -565,7 +565,10 @@ components of the binutils you intend to build alongside the compiler
 @file{opcodes}, @dots{}) to the directory containing the GCC sources.
 
 Likewise the GMP, MPFR and MPC libraries can be automatically built
-together with GCC.  Unpack the GMP, MPFR and/or MPC source
+together with GCC.  You may simply run the
+./contrib/download_prerequisites script in the GCC source directory
+to set up everything.
+Otherwise unpack the GMP, MPFR and/or MPC source
 distributions in the directory containing the GCC sources and rename
 their directories to @file{gmp}, @file{mpfr} and @file{mpc},
 respectively (or use symbolic links with the same name).
@@ -1058,7 +1061,7 @@ if the files are found.  The auto detection is enabled for native builds,
 and for cross builds configured with @option{--with-sysroot}, and without
 @option{--with-native-system-header-dir}.
 More documentation about multiarch can be found at
-@uref{http://wiki.debian.org/Multiarch}.
+@uref{https://wiki.debian.org/Multiarch}.
 
 @item --enable-vtable-verify
 Specify whether to enable or disable the vtable verification feature.
@@ -1544,15 +1547,17 @@ their runtime libraries should be built.  For a list of valid values for
 @var{langN} you can issue the following command in the
 @file{gcc} directory of your GCC source tree:@*
 @smallexample
-grep language= */config-lang.in
+grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
 @code{all}, @code{ada}, @code{c}, @code{c++}, @code{fortran},
-@code{go}, @code{java}, @code{objc}, @code{obj-c++}.
+@code{go}, @code{java}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{all}, then all
 default languages available in the @file{gcc} sub-tree will be configured.
-Ada, Go and Objective-C++ are not default languages; the rest are.
+Ada, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
+default language, but is built by default because @option{--enable-lto} is
+enabled by default.  The other languages are default languages.
 
 @item --enable-stage1-languages=@var{lang1},@var{lang2},@dots{}
 Specify that a particular subset of compilers and their runtime
@@ -1605,6 +1610,14 @@ should not be built.
 Specify that the compiler should
 use DWARF 2 debugging information as the default.
 
+@item --with-advance-toolchain=@var{at}
+On 64-bit PowerPC Linux systems, configure the compiler to use the
+header files, library files, and the dynamic linker from the Advance
+Toolchain release @var{at} instead of the default versions that are
+provided by the Linux distribution.  In general, this option is
+intended for the developers of GCC, and it is not intended for general
+use.
+
 @item --enable-targets=all
 @itemx --enable-targets=@var{target_list}
 Some GCC targets, e.g.@: powerpc64-linux, build bi-arch compilers.
@@ -1619,6 +1632,9 @@ defaulted to o32.
 Currently, this option only affects sparc-linux, powerpc-linux, x86-linux,
 mips-linux and s390-linux.
 
+@item --enable-default-pie
+Turn on @option{-fPIE} and @option{-pie} by default.
+
 @item --enable-secureplt
 This option enables @option{-msecure-plt} by default for powerpc-linux.
 @ifnothtml
@@ -1628,6 +1644,9 @@ Using the GNU Compiler Collection (GCC)},
 @ifhtml
 See ``RS/6000 and PowerPC Options'' in the main manual
 @end ifhtml
+
+@item --enable-default-ssp
+Turn on @option{-fstack-protector-strong} by default.
 
 @item --enable-cld
 This option enables @option{-mcld} by default for 32-bit x86 targets.
@@ -1840,36 +1859,27 @@ include and lib options directly.
 These flags are applicable to the host platform only.  When building
 a cross compiler, they will not be used to configure target libraries.
 
-@item --with-host-libstdcxx=@var{linker-args}
-If you are linking with a static copy of PPL, you can use this option
-to specify how the linker should find the standard C++ library used
-internally by PPL.  Typical values of @var{linker-args} might be
-@samp{-lstdc++} or @samp{-Wl,-Bstatic,-lstdc++,-Bdynamic -lm}.  If you are
-linking with a shared copy of PPL, you probably do not need this
-option; shared library dependencies will cause the linker to search
-for the standard C++ library automatically.
-
 @item --with-stage1-ldflags=@var{flags}
 This option may be used to set linker flags to be used when linking
 stage 1 of GCC.  These are also used when linking GCC if configured with
-@option{--disable-bootstrap}.  By default no special flags are used.
+@option{--disable-bootstrap}.  If @option{–with-stage1-libs} is not set to a
+value, then the default is @samp{-static-libstdc++ -static-libgcc}, if
+supported.
 
 @item --with-stage1-libs=@var{libs}
 This option may be used to set libraries to be used when linking stage 1
 of GCC.  These are also used when linking GCC if configured with
-@option{--disable-bootstrap}.  The default is the argument to
-@option{--with-host-libstdcxx}, if specified.
+@option{--disable-bootstrap}.
 
 @item --with-boot-ldflags=@var{flags}
 This option may be used to set linker flags to be used when linking
-stage 2 and later when bootstrapping GCC.  If neither --with-boot-libs
-nor --with-host-libstdcxx is set to a value, then the default is
+stage 2 and later when bootstrapping GCC.  If --with-boot-libs
+is not is set to a value, then the default is
 @samp{-static-libstdc++ -static-libgcc}.
 
 @item --with-boot-libs=@var{libs}
 This option may be used to set libraries to be used when linking stage 2
-and later when bootstrapping GCC.  The default is the argument to
-@option{--with-host-libstdcxx}, if specified.
+and later when bootstrapping GCC.
 
 @item --with-debug-prefix-map=@var{map}
 Convert source directory names using @option{-fdebug-prefix-map} when
@@ -2095,7 +2105,7 @@ machine.  In general, if the Java front end is enabled, the GCJ
 libraries will be enabled too, unless they're known to not work on
 the target platform.  If GCJ is enabled but @samp{libgcj} isn't built, you
 may need to port it; in this case, before modifying the top-level
-@file{configure.in} so that @samp{libgcj} is enabled by default on this platform,
+@file{configure.ac} so that @samp{libgcj} is enabled by default on this platform,
 you may use @option{--enable-libgcj} to override the default.
 
 @end table
@@ -2519,7 +2529,16 @@ Analogous to @code{bootstrap-O1}.
 @item @samp{bootstrap-lto}
 Enables Link-Time Optimization for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding
-@option{-flto} to @samp{BOOT_CFLAGS}.
+@option{-flto} to @samp{BOOT_CFLAGS}.  This option assumes that the host
+supports the linker plugin (e.g. GNU ld version 2.21 or later or GNU gold
+version 2.21 or later).
+
+@item @samp{bootstrap-lto-noplugin}
+This option is similar to @code{bootstrap-lto}, but is intended for
+hosts that do not support the linker plugin.  Without the linker plugin 
+static libraries are not compiled with link-time optimizations.  Since 
+the GCC middle end and back end are in @file{libbackend.a} this means
+that only the front end is actually LTO optimized.
 
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
@@ -3137,35 +3156,23 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://www.bullfreeware.com,,Bull's Freeware and Shareware Archive for AIX};
+@uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
+for AIX 5L and AIX 6};
 
 @item
-@uref{http://pware.hvcc.edu,,Hudson Valley Community College Open Source Software for IBM System p};
-
-@item
-@uref{http://www.perzl.org/aix/,,AIX 5L and 6 Open Source Packages}.
+@uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
+AIX 7.1)}.
 @end itemize
 
 @item
 DOS---@uref{http://www.delorie.com/djgpp/,,DJGPP}.
 
 @item
-Renesas H8/300[HS]---@uref{http://h8300-hms.sourceforge.net/,,GNU
-Development Tools for the Renesas H8/300[HS] Series}.
-
-@item
 HP-UX:
 @itemize
 @item
 @uref{http://hpux.connect.org.uk/,,HP-UX Porting Center};
-
-@item
-@uref{ftp://sunsite.informatik.rwth-aachen.de/pub/packages/gcc_hpux/,,Binaries for HP-UX 11.00 at Aachen University of Technology}.
 @end itemize
-
-@item
-@uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO
-OpenServer/Unixware}.
 
 @item
 Solaris 2 (SPARC, Intel):
@@ -3183,16 +3190,9 @@ Microsoft Windows:
 @item
 The @uref{http://sourceware.org/cygwin/,,Cygwin} project;
 @item
-The @uref{http://www.mingw.org/,,MinGW} project.
+The @uref{http://www.mingw.org/,,MinGW} and
+@uref{http://mingw-w64.org/,,mingw-w64} projects.
 @end itemize
-
-@item
-@uref{ftp://ftp.thewrittenword.com/packages/by-name/,,The
-Written Word} offers binaries for
-AIX 4.3.3, 5.1 and 5.2,
-GNU/Linux (i386),
-HP-UX 10.20, 11.00, and 11.11, and
-Solaris/SPARC 2.5.1, 2.6, 7, 8, 9 and 10.
 
 @item
 @uref{http://www.openpkg.org/,,OpenPKG} offers binaries for quite a
@@ -3237,6 +3237,8 @@ information have to.
 
 @ifhtml
 @itemize
+@item
+@uref{#aarch64-x-x,,aarch64*-*-*}
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
@@ -3301,6 +3303,8 @@ information have to.
 @uref{#nds32le-x-elf,,nds32le-*-elf}
 @item
 @uref{#nds32be-x-elf,,nds32be-*-elf}
+@item
+@uref{#nvptx-x-none,,nvptx-*-none}
 @item
 @uref{#powerpc-x-x,,powerpc*-*-*}
 @item
@@ -3384,6 +3388,36 @@ information have to.
 
 @html
 <!-- -------- host/target specific issues start here ---------------- -->
+<hr />
+@end html
+@anchor{aarch64-x-x}
+@heading aarch64*-*-*
+Binutils pre 2.24 does not have support for selecting @option{-mabi} and
+does not support ILP32.  If it is used to build GCC 4.9 or later, GCC will
+not support option @option{-mabi=ilp32}.
+
+To enable a workaround for the Cortex-A53 erratum number 835769 by default
+(for all CPUs regardless of -mcpu option given) at configure time use the
+@option{--enable-fix-cortex-a53-835769} option.  This will enable the fix by
+default and can be explicitly disabled during compilation by passing the
+@option{-mno-fix-cortex-a53-835769} option.  Conversely,
+@option{--disable-fix-cortex-a53-835769} will disable the workaround by
+default.  The workaround is disabled by default if neither of
+@option{--enable-fix-cortex-a53-835769} or
+@option{--disable-fix-cortex-a53-835769} is given at configure time.
+
+To enable a workaround for the Cortex-A53 erratum number 843419 by default
+(for all CPUs regardless of -mcpu option given) at configure time use the
+@option{--enable-fix-cortex-a53-843419} option.  This workaround is applied at
+link time.  Enabling the workaround will cause GCC to pass the relevant option
+to the linker.  It can be explicitly disabled during compilation by passing the
+@option{-mno-fix-cortex-a53-843419} option.  Conversely,
+@option{--disable-fix-cortex-a53-843419} will disable the workaround by default.
+The workaround is disabled by default if neither of
+@option{--enable-fix-cortex-a53-843419} or
+@option{--disable-fix-cortex-a53-843419} is given at configure time.
+
+@html
 <hr />
 @end html
 @anchor{alpha-x-x}
@@ -3616,6 +3650,14 @@ been known to enable additional features and improve overall testsuite
 results.  However, it is currently known that boehm-gc (which itself
 is required for java) may not configure properly on FreeBSD prior to
 the FreeBSD 7.0 release with GNU binutils after 2.16.1.
+
+@html
+<hr />
+@end html
+@anchor{ft32-x-elf}
+@heading ft32-*-elf
+The FT32 processor.
+This configuration is intended for embedded systems.
 
 @html
 <hr />
@@ -3894,25 +3936,6 @@ GCC versions 3.2.3 and earlier, @option{--enable-libunwind-exceptions}
 is required to build GCC@.  For GCC 3.3 and later, this is the default.
 For gcc 3.4.3 and later, @option{--enable-libunwind-exceptions} is
 removed and the system libunwind library will always be used.
-
-@html
-<hr />
-@end html
-@anchor{aarch64-x-x}
-@heading aarch64*-*-*
-Binutils pre 2.24 does not have support for selecting @option{-mabi} and
-does not support ILP32.  If it is used to build GCC 4.9 or later, GCC will
-not support option @option{-mabi=ilp32}.
-
-To enable a workaround for the Cortex-A53 erratum number 835769 by default
-(for all CPUs regardless of -mcpu option given) at configure time use the
-@option{--enable-fix-cortex-a53-835769} option.  This will enable the fix by
-default and can be explicitly disabled during during compilation by passing the
-@option{-mno-fix-cortex-a53-835769} option.  Conversely,
-@option{--disable-fix-cortex-a53-835769} will disable the workaround by
-default.  The workaround is disabled by default if neither of
-@option{--enable-fix-cortex-a53-835769} or
-@option{--disable-fix-cortex-a53-835769} is given at configure time.
 
 @html
 <hr />
@@ -4265,6 +4288,27 @@ Andes NDS32 target in little endian mode.
 @anchor{nds32be-x-elf}
 @heading nds32be-*-elf
 Andes NDS32 target in big endian mode.
+
+@html
+<hr />
+@end html
+@anchor{nvptx-x-none}
+@heading nvptx-*-none
+Nvidia PTX target.
+
+Instead of GNU binutils, you will need to install
+@uref{https://github.com/MentorEmbedded/nvptx-tools/,,nvptx-tools}.
+Tell GCC where to find it:
+@option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
+
+A nvptx port of newlib is available at
+@uref{https://github.com/MentorEmbedded/nvptx-newlib/,,nvptx-newlib}.
+It can be automatically built together with GCC@.  For this, add a
+symbolic link to nvptx-newlib's @file{newlib} directory to the
+directory containing the GCC sources.
+
+Use the @option{--disable-sjlj-exceptions} and
+@option{--enable-newlib-io-long-long} options when configuring.
 
 @html
 <hr />

@@ -18,7 +18,7 @@ template<typename Q>
 class F1
 {
     friend class A<Q>::B;
-    enum { foo = 0 };	// { dg-error "private" }
+    enum { foo = 0 };	// { dg-message "private" }
 };
 
 template<typename Q>

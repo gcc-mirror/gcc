@@ -39,4 +39,3 @@ void func(void)
 }
 
 /* { dg-final { scan-tree-dump-not "call_func" "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

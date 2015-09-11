@@ -13,4 +13,3 @@ foo (char *p)
 }
 
 /* { dg-final { scan-tree-dump-times "__builtin___asan_report_store1" 1 "sanopt" } } */
-/* { dg-final { cleanup-tree-dump "sanopt" } } */

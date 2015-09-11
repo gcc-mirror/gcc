@@ -11,4 +11,3 @@ int bar (int i)
 }
 
 /* { dg-final { scan-tree-dump "return 1;" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

@@ -79,6 +79,8 @@ asan_red_zone_size (unsigned int size)
 
 extern bool set_asan_shadow_offset (const char *);
 
+extern void set_sanitized_sections (const char *);
+
 /* Return TRUE if builtin with given FCODE will be intercepted by
    libasan.  */
 

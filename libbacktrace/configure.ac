@@ -34,6 +34,10 @@ AC_INIT(package-unused, version-unused,, libbacktrace)
 AC_CONFIG_SRCDIR(backtrace.h)
 AC_CONFIG_HEADER(config.h)
 
+if test -n "${with_target_subdir}"; then
+  AM_ENABLE_MULTILIB(, ..)
+fi
+
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 
@@ -75,7 +79,7 @@ case "$AWK" in
 "") AC_MSG_ERROR([can't build without awk]) ;;
 esac
 
-LT_INIT([disable-shared])
+LT_INIT
 AM_PROG_LIBTOOL
 
 backtrace_supported=yes
@@ -83,7 +87,6 @@ backtrace_supported=yes
 if test -n "${with_target_subdir}"; then
   # We are compiling a GCC library.  We can assume that the unwind
   # library exists.
-  AM_ENABLE_MULTILIB(, ..)
   BACKTRACE_FILE="backtrace.lo simple.lo"
 else
   AC_CHECK_HEADER([unwind.h],
@@ -158,18 +161,11 @@ else
   fi
 fi
 
-# When building as a target library, shared libraries may want to link
-# this in.  We don't want to provide another shared library to
-# complicate dependencies.  Instead, we just compile with -fPIC.
-PIC_FLAG=
-if test -n "${with_target_subdir}"; then
-  PIC_FLAG=-fPIC
-fi
-# Similarly, use -fPIC with --enable-host-shared:
+# Enable --enable-host-shared.
 AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
 		[build host code as shared libraries])],
-[PIC_FLAG=-fPIC], [])
+[PIC_FLAG=-fPIC], [PIC_FLAG=])
 AC_SUBST(PIC_FLAG)
 
 # Test for __sync support.
@@ -226,8 +222,12 @@ libbacktrace_cv_sys_filetype=$filetype])
 
 # Match the file type to decide what files to compile.
 FORMAT_FILE=
+backtrace_supports_data=yes
 case "$libbacktrace_cv_sys_filetype" in
 elf*) FORMAT_FILE="elf.lo" ;;
+pecoff) FORMAT_FILE="pecoff.lo"
+        backtrace_supports_data=no
+	;;
 *) AC_MSG_WARN([could not determine output file type])
    FORMAT_FILE="unknown.lo"
    backtrace_supported=no
@@ -240,6 +240,7 @@ elfsize=
 case "$libbacktrace_cv_sys_filetype" in
 elf32) elfsize=32 ;;
 elf64) elfsize=64 ;;
+*)     elfsize=unused
 esac
 AC_DEFINE_UNQUOTED([BACKTRACE_ELF_SIZE], [$elfsize], [ELF size: 32 or 64])
 
@@ -248,6 +249,12 @@ if test "$backtrace_supported" = "yes"; then
   BACKTRACE_SUPPORTED=1
 fi
 AC_SUBST(BACKTRACE_SUPPORTED)
+
+BACKTRACE_SUPPORTS_DATA=0
+if test "$backtrace_supports_data" = "yes"; then
+  BACKTRACE_SUPPORTS_DATA=1
+fi
+AC_SUBST(BACKTRACE_SUPPORTS_DATA)
 
 GCC_HEADER_STDINT(gstdint.h)
 
@@ -259,6 +266,12 @@ else
     # When built as a GCC target library, we can't do a link test.  We
     # simply assume that if we have mman.h, we have mmap.
     have_mmap=yes
+    case "${host}" in
+    spu-*-*)
+        # The SPU does not have mmap, but it has a sys/mman.h header file
+        # containing "mmap_eaddr" and the mmap flags, confusing the test.
+	have_mmap=no ;;
+    esac
   else
     AC_CHECK_FUNC(mmap, [have_mmap=yes], [have_mmap=no])
   fi
@@ -312,6 +325,7 @@ fi
 if test -n "${with_target_subdir}"; then
    case "${host}" in
    *-*-mingw*) have_fcntl=no ;;
+   spu-*-*) have_fcntl=no ;;
    *) have_fcntl=yes ;;
    esac
 else

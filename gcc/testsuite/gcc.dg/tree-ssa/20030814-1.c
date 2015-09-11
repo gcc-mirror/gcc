@@ -20,4 +20,3 @@ com(int *blah)
    more than one, then the dominator optimizations failed.  */
 /* { dg-final { scan-tree-dump-times "\\*blah" 1 "dom2"} } */
   
-/* { dg-final { cleanup-tree-dump "dom2" } } */

@@ -30,4 +30,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: \[\h+,\+256\] not mapped" } */
+/* { dg-output "\\\[\[0-9a-fA-FxX\]+,\\\+256\\\] not mapped" } */
+/* { dg-shouldfail "" } */

@@ -36,4 +36,3 @@ void bench_test()
 // The one in the instrumented code path is not.
 // { dg-final { scan-tree-dump-times "ITM_commitTransaction.*tail call" 1 "tmedge" } }
 
-// { dg-final { cleanup-tree-dump "tmedge" } }

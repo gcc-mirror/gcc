@@ -3,6 +3,7 @@
    targets, where each addition is a library call.  */
 /* { dg-require-effective-target hard_float } */
 /* { dg-options "-O2 -funroll-loops --fast-math -fvariable-expansion-in-unroller -fdump-rtl-loop2_unroll" } */
+/* { dg-additional-options "--param max-completely-peel-times=16  --param max-unroll-times=8" { target s390*-*-* } } */
 
 extern void abort (void);
 
@@ -25,4 +26,3 @@ int main (void)
 }
 
 /* { dg-final { scan-rtl-dump "Expanding Accumulator" "loop2_unroll" } } */
-/* { dg-final { cleanup-rtl-dump "loop2_unroll" } } */

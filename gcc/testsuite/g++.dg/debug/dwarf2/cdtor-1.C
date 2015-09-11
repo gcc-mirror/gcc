@@ -1,5 +1,5 @@
 // origin PR debug/49047
-// { dg-options "-g -dA -fno-merge-debug-strings" }
+// { dg-options "-gdwarf-2 -dA -fno-merge-debug-strings" }
 // { dg-do compile }
 
 struct K

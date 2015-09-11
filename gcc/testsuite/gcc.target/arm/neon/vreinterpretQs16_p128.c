@@ -16,4 +16,3 @@ void test_vreinterpretQs16_p128 (void)
   out_int16x8_t = vreinterpretq_s16_p128 (arg0_poly128_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

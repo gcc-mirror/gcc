@@ -13,4 +13,3 @@ pixel foo () {
 
 /* { dg-final { scan-assembler-not "fpmerge\t%" } } */
 /* { dg-final { scan-tree-dump "{ 1, 2, 3, 4, 5, 6, 7, 8 }" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

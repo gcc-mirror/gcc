@@ -17,4 +17,3 @@ void f(float *__restrict__ qa, float *__restrict__ qb,
   }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

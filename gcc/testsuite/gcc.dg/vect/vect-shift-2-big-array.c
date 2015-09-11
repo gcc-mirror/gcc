@@ -1,3 +1,4 @@
+/* { dg-options "-Wno-shift-overflow" } */
 /* { dg-require-effective-target vect_shift } */
 /* { dg-require-effective-target vect_int } */
 /* Check the standard integer types for left and right shifts to see if the
@@ -187,4 +188,3 @@ int main ()
   return 0;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

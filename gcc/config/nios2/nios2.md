@@ -30,6 +30,7 @@
 
    (TP_REGNO              23)	; Thread pointer register
    (GP_REGNO	          26)	; Global pointer register
+   (SP_REGNO	          27)	; Stack pointer register
    (FP_REGNO	          28)	; Frame pointer register
    (EA_REGNO	          29)	; Exception return address register
    (RA_REGNO              31)	; Return address register
@@ -61,6 +62,15 @@
   UNSPECV_CUSTOM_XNXX
   UNSPECV_LDXIO
   UNSPECV_STXIO
+  UNSPECV_RDPRS
+  UNSPECV_FLUSHD
+  UNSPECV_FLUSHDA
+  UNSPECV_WRPIE
+  UNSPECV_ENI
+  UNSPECV_LDEX
+  UNSPECV_LDSEX
+  UNSPECV_STEX
+  UNSPECV_STSEX
 ])
 
 (define_c_enum "unspec" [
@@ -92,9 +102,14 @@
 ; incuring a stall.
 
 ; length of an instruction (in bytes)
-(define_attr "length" "" (const_int 4))
+(define_attr "length" ""
+  (if_then_else (match_test "nios2_cdx_narrow_form_p (insn)")
+    (const_int 2)
+    (const_int 4)))
+
 (define_attr "type" 
-  "unknown,complex,control,alu,cond_alu,st,ld,shift,mul,div,custom" 
+  "unknown,complex,control,alu,cond_alu,st,ld,stwm,ldwm,push,pop,mul,div,\
+   custom,add,sub,mov,and,or,xor,neg,not,sll,srl,sra,rol,ror,nop"
   (const_string "complex"))
 
 (define_asm_attributes
@@ -118,11 +133,11 @@
   "cpu")
 
 (define_insn_reservation "control" 1
-  (eq_attr "type" "control")
+  (eq_attr "type" "control,pop")
   "cpu")
 
 (define_insn_reservation "alu" 1
-  (eq_attr "type" "alu")
+  (eq_attr "type" "alu,add,sub,mov,and,or,xor,neg,not")
   "cpu")
 
 (define_insn_reservation "cond_alu" 1
@@ -130,7 +145,7 @@
   "cpu")
 
 (define_insn_reservation "st" 1
-  (eq_attr "type" "st")
+  (eq_attr "type" "st,stwm,push")
   "cpu")
   
 (define_insn_reservation "custom" 1
@@ -139,11 +154,11 @@
 
 ; shifts, muls and lds have three cycle latency
 (define_insn_reservation "ld" 3
-  (eq_attr "type" "ld")
+  (eq_attr "type" "ld,ldwm")
   "cpu")
 
 (define_insn_reservation "shift" 3
-  (eq_attr "type" "shift")
+  (eq_attr "type" "sll,srl,sra,rol,ror")
   "cpu")
 
 (define_insn_reservation "mul" 3
@@ -171,46 +186,90 @@
     DONE;
 })
 
+(define_insn "*high"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (high:SI (match_operand:SI 1 "immediate_operand" "i")))]
+  ""
+  "movhi\\t%0, %H1"
+  [(set_attr "type" "alu")])
+
+(define_insn "*lo_sum"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (lo_sum:SI (match_operand:SI 1 "register_operand"  "r")
+                   (match_operand:SI 2 "immediate_operand" "i")))]
+  ""
+  "addi\\t%0, %1, %L2"
+  [(set_attr "type" "alu")])
+
 (define_insn "movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=m, r,r, r")
-        (match_operand:QI 1 "general_operand"       "rM,m,rM,I"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=m, r,r")
+        (match_operand:QI 1 "general_operand"       "rM,m,rI"))]
   "(register_operand (operands[0], QImode)
     || reg_or_0_operand (operands[1], QImode))"
-  "@
-    stb%o0\\t%z1, %0
-    ldbu%o1\\t%0, %1
-    mov\\t%0, %z1
-    movi\\t%0, %1"
-  [(set_attr "type" "st,ld,alu,alu")])
+  {
+    switch (which_alternative)
+      {
+      case 0:
+	if (get_attr_length (insn) != 2)
+	  return "stb%o0\\t%z1, %0";
+	else if (const_0_operand (operands[1], QImode))
+	  return "stbz.n\\t%z1, %0";
+	else
+	  return "stb.n\\t%z1, %0";
+      case 1:
+	return "ldbu%o1%.\\t%0, %1";
+      case 2:
+	return "mov%i1%.\\t%0, %z1";
+      default:
+	gcc_unreachable ();
+      }
+  }
+  [(set_attr "type" "st,ld,mov")])
 
 (define_insn "movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=m, r,r, r")
-        (match_operand:HI 1 "general_operand"       "rM,m,rM,I"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=m, r,r")
+        (match_operand:HI 1 "general_operand"       "rM,m,rI"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))"
   "@
-    sth%o0\\t%z1, %0
-    ldhu%o1\\t%0, %1
-    mov\\t%0, %z1
-    movi\\t%0, %1"
-  [(set_attr "type" "st,ld,alu,alu")])
+    sth%o0%.\\t%z1, %0
+    ldhu%o1%.\\t%0, %1
+    mov%i1%.\\t%0, %z1"
+  [(set_attr "type" "st,ld,mov")])
 
 (define_insn "movsi_internal"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=m, r,r, r,r,r,r,r")
-        (match_operand:SI 1 "general_operand"       "rM,m,rM,I,J,K,S,i"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=m, r,r,   r")
+        (match_operand:SI 1 "general_operand"       "rM,m,rIJK,S"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))"
-  "@
-    stw%o0\\t%z1, %0
-    ldw%o1\\t%0, %1
-    mov\\t%0, %z1
-    movi\\t%0, %1
-    movui\\t%0, %1
-    movhi\\t%0, %H1
-    addi\\t%0, gp, %%gprel(%1)
-    movhi\\t%0, %H1\;addi\\t%0, %0, %L1"
-  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu,alu")
-   (set_attr "length" "4,4,4,4,4,4,4,8")])
+  {
+    switch (which_alternative)
+      {
+      case 0:
+	if (get_attr_length (insn) != 2)
+	  return "stw%o0\\t%z1, %0";
+	else if (stack_memory_operand (operands[0], SImode))
+	  return "stwsp.n\\t%z1, %0";
+	else if (const_0_operand (operands[1], SImode))
+	  return "stwz.n\\t%z1, %0";
+	else
+	  return "stw.n\\t%z1, %0";
+      case 1:
+	if (get_attr_length (insn) != 2)
+	  return "ldw%o1\\t%0, %1";
+	else if (stack_memory_operand (operands[1], SImode))
+	  return "ldwsp.n\\t%0, %1";
+	else
+	  return "ldw.n\\t%0, %1";
+      case 2:
+	return "mov%i1%.\\t%0, %z1";
+      case 3:
+	return "addi\\t%0, gp, %%gprel(%1)";
+      default:
+	gcc_unreachable ();
+      }
+  }
+  [(set_attr "type" "st,ld,mov,alu")])
 
 (define_mode_iterator BH [QI HI])
 (define_mode_iterator BHW [QI HI SI])
@@ -221,14 +280,14 @@
 (define_insn "ld<bhw_uns>io"
   [(set (match_operand:BHW 0 "register_operand" "=r")
         (unspec_volatile:BHW
-          [(match_operand:BHW 1 "memory_operand" "m")] UNSPECV_LDXIO))]
+          [(match_operand:BHW 1 "ldstio_memory_operand" "w")] UNSPECV_LDXIO))]
   ""
   "ld<bhw_uns>io\\t%0, %1"
   [(set_attr "type" "ld")])
 
 (define_expand "ld<bh>io"
   [(set (match_operand:BH 0 "register_operand" "=r")
-        (match_operand:BH 1 "memory_operand"    "m"))]
+        (match_operand:BH 1 "ldstio_memory_operand" "w"))]
   ""
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -241,13 +300,13 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (sign_extend:SI
           (unspec_volatile:BH
-            [(match_operand:BH 1 "memory_operand" "m")] UNSPECV_LDXIO)))]
+            [(match_operand:BH 1 "ldstio_memory_operand" "w")] UNSPECV_LDXIO)))]
   ""
   "ld<bh>io\\t%0, %1"
   [(set_attr "type" "ld")])
 
 (define_insn "st<bhw>io"
-  [(set (match_operand:BHW 0 "memory_operand" "=m")
+  [(set (match_operand:BHW 0 "ldstio_memory_operand" "=w")
         (unspec_volatile:BHW
           [(match_operand:BHW 1 "reg_or_0_operand" "rM")] UNSPECV_STXIO))]
   ""
@@ -264,18 +323,18 @@
         (zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
-    andi\\t%0, %1, 0xffff
-    ldhu%o1\\t%0, %1"
-  [(set_attr "type"     "alu,ld")])
+    andi%.\\t%0, %1, 0xffff
+    ldhu%o1%.\\t%0, %1"
+  [(set_attr "type"     "and,ld")])
 
 (define_insn "zero_extendqi<mode>2"
   [(set (match_operand:QX 0 "register_operand" "=r,r")
         (zero_extend:QX (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
-    andi\\t%0, %1, 0xff
-    ldbu%o1\\t%0, %1"
-  [(set_attr "type"     "alu,ld")])
+    andi%.\\t%0, %1, 0xff
+    ldbu%o1%.\\t%0, %1"
+  [(set_attr "type"     "and,ld")])
 
 ;; Sign extension patterns
 
@@ -285,7 +344,7 @@
   ""
   "@
    #
-   ldh%o1\\t%0, %1"
+   ldh%o1%.\\t%0, %1"
   [(set_attr "type" "alu,ld")])
 
 (define_insn "extendqi<mode>2"
@@ -294,7 +353,7 @@
   ""
   "@
    #
-   ldb%o1\\t%0, %1"
+   ldb%o1%.\\t%0, %1"
   [(set_attr "type" "alu,ld")])
 
 ;; Split patterns for register alternative cases.
@@ -331,16 +390,18 @@
         (plus:SI (match_operand:SI 1 "register_operand"   "%r")
                  (match_operand:SI 2 "add_regimm_operand" "rIT")))]
   ""
-  "add%i2\\t%0, %1, %z2"
-  [(set_attr "type" "alu")])
+{
+  return nios2_add_insn_asm (insn, operands);
+}
+  [(set_attr "type" "add")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand"           "=r")
         (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rM")
                   (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "sub\\t%0, %z1, %2"
-  [(set_attr "type" "alu")])
+  "sub%.\\t%0, %z1, %2"
+  [(set_attr "type" "sub")])
 
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand"          "=r")
@@ -422,32 +483,47 @@
   [(set (match_operand:SI 0 "register_operand"        "=r")
         (neg:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sub\\t%0, zero, %1"
-  [(set_attr "type" "alu")])
+{
+  if (get_attr_length (insn) == 2)
+    return "neg.n\\t%0, %1";
+  else
+    return "sub\\t%0, zero, %1";
+}
+  [(set_attr "type" "neg")])
 
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "register_operand"        "=r")
         (not:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "nor\\t%0, zero, %1"
-  [(set_attr "type" "alu")])
+{
+  if (get_attr_length (insn) == 2)
+    return "not.n\\t%0, %1";
+  else
+    return "nor\\t%0, zero, %1";
+}
+  [(set_attr "type" "not")])
 
 
 ;;  Integer logical Operations
 
-(define_code_iterator LOGICAL [and ior xor])
-(define_code_attr logical_asm [(and "and") (ior "or") (xor "xor")])
+(define_insn "andsi3"
+  [(set (match_operand:SI 0 "register_operand"          "=r")
+        (and:SI (match_operand:SI 1 "register_operand"  "%r")
+                (match_operand:SI 2 "and_operand"     "rJKP")))]
+  ""
+  "and%x2%.\\t%0, %1, %y2"
+  [(set_attr "type" "and")])
+
+(define_code_iterator LOGICAL [ior xor])
+(define_code_attr logical_asm [(ior "or") (xor "xor")])
 
 (define_insn "<code>si3"
-  [(set (match_operand:SI 0 "register_operand"             "=r,r,r")
-        (LOGICAL:SI (match_operand:SI 1 "register_operand" "%r,r,r")
-                    (match_operand:SI 2 "logical_operand"  "rM,J,K")))]
+  [(set (match_operand:SI 0 "register_operand"             "=r")
+        (LOGICAL:SI (match_operand:SI 1 "register_operand" "%r")
+                    (match_operand:SI 2 "logical_operand" "rJK")))]
   ""
-  "@
-    <logical_asm>\\t%0, %1, %z2
-    <logical_asm>%i2\\t%0, %1, %2
-    <logical_asm>h%i2\\t%0, %1, %U2"
-  [(set_attr "type" "alu")])
+  "<logical_asm>%x2%.\\t%0, %1, %y2"
+  [(set_attr "type" "<logical_asm>")])
 
 (define_insn "*norsi3"
   [(set (match_operand:SI 0 "register_operand"                 "=r")
@@ -471,8 +547,8 @@
         (SHIFT:SI (match_operand:SI 1 "register_operand" "r")
                   (match_operand:SI 2 "shift_operand"    "rL")))]
   ""
-  "<shift_asm>%i2\\t%0, %1, %z2"
-  [(set_attr "type" "shift")])
+  "<shift_asm>%i2%.\\t%0, %1, %z2"
+  [(set_attr "type" "<shift_asm>")])
 
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "register_operand"             "=r")
@@ -480,7 +556,48 @@
                      (match_operand:SI 2 "register_operand" "r")))]
   ""
   "ror\\t%0, %1, %2"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "ror")])
+
+;; Nios II R2 Bit Manipulation Extension (BMX), provides
+;; bit merge/insertion/extraction instructions.
+
+(define_insn "*merge"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand"   "+r")
+			 (match_operand:SI 1 "const_shift_operand" "L")
+			 (match_operand:SI 2 "const_shift_operand" "L"))
+        (zero_extract:SI (match_operand:SI 3 "register_operand"    "r")
+                         (match_dup 1) (match_dup 2)))]
+  "TARGET_HAS_BMX"
+{
+  operands[4] = GEN_INT (INTVAL (operands[1]) + INTVAL (operands[2]) - 1);
+  return "merge\\t%0, %3, %4, %2";
+}
+  [(set_attr "type" "alu")])
+
+(define_insn "extzv"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (zero_extract:SI (match_operand:SI 1 "register_operand"    "r")
+                         (match_operand:SI 2 "const_shift_operand" "L")
+                         (match_operand:SI 3 "const_shift_operand" "L")))]
+  "TARGET_HAS_BMX"
+{
+  operands[4] = GEN_INT (INTVAL (operands[2]) + INTVAL (operands[3]) - 1);
+  return "extract\\t%0, %1, %4, %3";
+}
+  [(set_attr "type" "alu")])
+
+(define_insn "insv"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand"   "+r")
+			 (match_operand:SI 1 "const_shift_operand" "L")
+			 (match_operand:SI 2 "const_shift_operand" "L"))
+	(match_operand:SI 3 "reg_or_0_operand" "rM"))]
+  "TARGET_HAS_BMX"
+{
+  operands[4] = GEN_INT (INTVAL (operands[1]) + INTVAL (operands[2]) - 1);
+  return "insert\\t%0, %z3, %4, %2";
+}
+  [(set_attr "type" "alu")])
+
 
 
 ;; Floating point instructions
@@ -635,15 +752,19 @@
   DONE;
 })
 
-(define_insn "return"
+(define_expand "return"
   [(simple_return)]
   "nios2_can_use_return_insn ()"
-  "ret")
+{
+  if (nios2_expand_return ())
+    DONE;
+})
 
 (define_insn "simple_return"
   [(simple_return)]
   ""
-  "ret")
+  "ret%."
+  [(set_attr "type" "control")])
 
 ;; Block any insns from being moved before this point, since the
 ;; profiling call to mcount can use various registers that aren't
@@ -697,9 +818,9 @@
 ; check or adjust for overflow.
 
 (define_insn "indirect_jump"
-  [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
+  [(set (pc) (match_operand:SI 0 "register_operand" "c"))]
   ""
-  "jmp\\t%0"
+  "jmp%!\\t%0"
   [(set_attr "type" "control")])
 
 (define_insn "jump"
@@ -707,7 +828,9 @@
         (label_ref (match_operand 0 "" "")))]
   ""
   {
-    if (flag_pic || get_attr_length (insn) == 4)
+    if (get_attr_length (insn) == 2)
+      return "br.n\\t%0";
+    else if (get_attr_length (insn) == 4)
       return "br\\t%0";
     else
       return "jmpi\\t%0";
@@ -715,18 +838,23 @@
   [(set_attr "type" "control")
    (set (attr "length") 
         (if_then_else
-	    (and (ge (minus (match_dup 0) (pc)) (const_int -32768))
-	         (le (minus (match_dup 0) (pc)) (const_int 32764)))
-	    (const_int 4)
-	    (const_int 8)))])
-
+	    (and (match_test "TARGET_HAS_CDX")
+	         (and (ge (minus (match_dup 0) (pc)) (const_int -1022))
+	              (le (minus (match_dup 0) (pc)) (const_int 1022))))
+	    (const_int 2)
+	    (if_then_else
+	        (ior (match_test "flag_pic")
+	             (and (ge (minus (match_dup 0) (pc)) (const_int -32764))
+	                  (le (minus (match_dup 0) (pc)) (const_int 32764))))
+	        (const_int 4)
+	        (const_int 8))))])
 
 (define_expand "call"
   [(parallel [(call (match_operand 0 "" "")
                     (match_operand 1 "" ""))
               (clobber (reg:SI RA_REGNO))])]
   ""
-  "nios2_adjust_call_address (&operands[0]);")
+  "nios2_adjust_call_address (&operands[0], NULL_RTX);")
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -734,7 +862,7 @@
                          (match_operand 2 "" "")))
               (clobber (reg:SI RA_REGNO))])]
   ""
-  "nios2_adjust_call_address (&operands[1]);")
+  "nios2_adjust_call_address (&operands[1], NULL_RTX);")
 
 (define_insn "*call"
   [(call (mem:QI (match_operand:SI 0 "call_operand" "i,r"))
@@ -743,7 +871,7 @@
   ""
   "@
    call\\t%0
-   callr\\t%0"
+   callr%.\\t%0"
   [(set_attr "type" "control")])
 
 (define_insn "*call_value"
@@ -754,7 +882,7 @@
   ""
   "@
    call\\t%1
-   callr\\t%1"
+   callr%.\\t%1"
   [(set_attr "type" "control")])
 
 (define_expand "sibcall"
@@ -762,7 +890,7 @@
                     (match_operand 1 "" ""))
               (return)])]
   ""
-  "nios2_adjust_call_address (&operands[0]);")
+  "nios2_adjust_call_address (&operands[0], NULL_RTX);")
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -770,19 +898,19 @@
                          (match_operand 2 "" "")))
               (return)])]
   ""
-  "nios2_adjust_call_address (&operands[1]);")
+  "nios2_adjust_call_address (&operands[1], NULL_RTX);")
 
-(define_insn "*sibcall"
+(define_insn "sibcall_internal"
  [(call (mem:QI (match_operand:SI 0 "call_operand" "i,j"))
         (match_operand 1 "" ""))
   (return)]
   ""
   "@
    jmpi\\t%0
-   jmp\\t%0"
+   jmp%!\\t%0"
   [(set_attr "type" "control")])
 
-(define_insn "*sibcall_value"
+(define_insn "sibcall_value_internal"
  [(set (match_operand 0 "register_operand" "")
        (call (mem:QI (match_operand:SI 1 "call_operand" "i,j"))
              (match_operand 2 "" "")))
@@ -790,7 +918,7 @@
   ""
   "@
    jmpi\\t%1
-   jmp\\t%1"
+   jmp%!\\t%1"
   [(set_attr "type" "control")])
 
 (define_expand "tablejump"
@@ -811,10 +939,10 @@
 
 (define_insn "*tablejump"
   [(set (pc)
-        (match_operand:SI 0 "register_operand" "r"))
+        (match_operand:SI 0 "register_operand" "c"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "jmp\\t%0"
+  "jmp%!\\t%0"
   [(set_attr "type" "control")])
 
 
@@ -868,18 +996,30 @@
        (label_ref (match_operand 3 "" ""))
        (pc)))]
   ""
-  {
-    if (flag_pic || get_attr_length (insn) == 4)
-      return "b%0\t%z1, %z2, %l3";
-    else
-      return "b%R0\t%z1, %z2, .+8;jmpi\t%l3";
-  }
+{
+  if (get_attr_length (insn) == 2)
+    return "b%0z.n\t%z1, %l3";
+  else if (get_attr_length (insn) == 4)
+    return "b%0\t%z1, %z2, %l3";
+  else if (get_attr_length (insn) == 6)
+    return "b%R0z.n\t%z1, .+6;jmpi\t%l3";
+  else
+    return "b%R0\t%z1, %z2, .+8;jmpi\t%l3";
+}
   [(set_attr "type" "control")
    (set (attr "length") 
-        (if_then_else
-	    (and (ge (minus (match_dup 3) (pc)) (const_int -32768))
-	         (le (minus (match_dup 3) (pc)) (const_int 32764)))
-	    (const_int 4) (const_int 8)))])
+        (cond
+         [(and (match_test "nios2_cdx_narrow_form_p (insn)")
+               (ge (minus (match_dup 3) (pc)) (const_int -126))
+               (le (minus (match_dup 3) (pc)) (const_int 126)))
+          (const_int 2)
+          (ior (match_test "flag_pic")
+               (and (ge (minus (match_dup 3) (pc)) (const_int -32764))
+                    (le (minus (match_dup 3) (pc)) (const_int 32764))))
+          (const_int 4)
+          (match_test "nios2_cdx_narrow_form_p (insn)")
+          (const_int 6)]
+         (const_int 8)))])
 
 ;; Floating point comparisons
 (define_code_iterator FCMP [eq ne gt ge le lt])
@@ -917,7 +1057,7 @@
         (UCMP:SI (match_operand:SI 1 "reg_or_0_operand"  "rM")
                  (match_operand:SI 2 "uns_arith_operand" "rJ")))]
   ""
-  "cmp<code>%i2\\t%0, %z1, %z2"
+  "cmp<code>%u2\\t%0, %z1, %z2"
   [(set_attr "type" "alu")])
 
 
@@ -951,8 +1091,8 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "nop"
-  [(set_attr "type" "alu")])
+  "nop%."
+  [(set_attr "type" "nop")])
 
 ;; Connect 'sync' to 'memory_barrier' standard expand name
 (define_expand "memory_barrier"
@@ -996,11 +1136,53 @@
   "wrctl\\tctl%0, %z1"
   [(set_attr "type" "control")])
 
+(define_insn "rdprs"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec_volatile:SI [(match_operand:SI 1 "rdwrctl_operand" "O")
+                             (match_operand:SI 2 "arith_operand"   "U")]
+         UNSPECV_RDPRS))]
+  ""
+  "rdprs\\t%0, %1, %2"
+  [(set_attr "type" "control")])
+
+;; Cache Instructions
+
+(define_insn "flushd"
+  [(unspec_volatile:SI [(match_operand:SI 0 "ldstio_memory_operand" "w")]
+  		        UNSPECV_FLUSHD)]
+  ""
+  "flushd\\t%0"
+  [(set_attr "type" "control")])
+
+(define_insn "flushda"
+  [(unspec_volatile:SI [(match_operand:SI 0 "ldstio_memory_operand" "w")]
+  		        UNSPECV_FLUSHDA)]
+  ""
+  "flushda\\t%0"
+  [(set_attr "type" "control")])
+
+;; R2 Instructions
+
+(define_insn "wrpie"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec_volatile:SI [(match_operand:SI 1 "register_operand" "r")]
+		 	     UNSPECV_WRPIE))]
+  "TARGET_ARCH_R2"
+  "wrpie\\t%0, %1"
+  [(set_attr "type" "control")])
+
+(define_insn "eni"
+  [(unspec:VOID [(match_operand 0 "const_int_operand" "i")]
+  		 UNSPECV_ENI)]
+  "TARGET_ARCH_R2"
+  "eni\\t%0"
+  [(set_attr "type" "control")])
+
 ;; Trap patterns
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 3))]
   ""
-  "break\\t3"
+  "trap%.\\t3"
   [(set_attr "type" "control")])
 
 (define_insn "ctrapsi4"
@@ -1009,9 +1191,16 @@
                (match_operand:SI 2 "reg_or_0_operand" "rM")])
             (match_operand 3 "const_int_operand" "i"))]
   ""
-  "b%R0\\t%z1, %z2, 1f\;break\\t%3\;1:"
+{
+  if (get_attr_length (insn) == 6)
+    return "b%R0\\t%z1, %z2, 1f\;trap.n\\t%3\;1:";
+  else
+    return "b%R0\\t%z1, %z2, 1f\;trap\\t%3\;1:";
+}
   [(set_attr "type" "control")
-   (set_attr "length" "8")])
+   (set (attr "length")
+        (if_then_else (match_test "nios2_cdx_narrow_form_p (insn)")
+                      (const_int 6) (const_int 8)))])
   
 ;; Load the GOT register.
 (define_insn "load_got_register"
@@ -1034,3 +1223,10 @@
   emit_move_insn (operands[0], gen_rtx_REG (Pmode, TP_REGNO));
   DONE;
 })
+
+;; Synchronization Primitives
+(include "sync.md")
+
+;; Include the ldwm/stwm/push.n/pop.n patterns and peepholes.
+(include "ldstwm.md")
+

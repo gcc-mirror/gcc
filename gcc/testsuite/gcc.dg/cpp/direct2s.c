@@ -41,4 +41,3 @@ void f ()
   int j = Y;    /* { dg-error "undeclared|for each" "no macro Y" } */
 }
 
-/* { dg-final { cleanup-saved-temps } } */

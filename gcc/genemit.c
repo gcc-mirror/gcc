@@ -28,9 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gensupport.h"
 
 
-static int insn_code_number;
-static int insn_index_number;
-
 /* Data structure for recording the patterns of insns that have CLOBBERs.
    We use this to output a function that adds these CLOBBERs to a
    previously-allocated PARALLEL expression.  */
@@ -52,14 +49,6 @@ struct clobber_ent
   struct clobber_ent *next;
 };
 
-static void print_code			(RTX_CODE);
-static void gen_exp			(rtx, enum rtx_code, char *);
-static void gen_insn			(rtx, int);
-static void gen_expand			(rtx);
-static void gen_split			(rtx);
-static void output_add_clobbers		(void);
-static void output_added_clobbers_hard_reg_p (void);
-static void gen_rtx_scratch		(rtx, enum rtx_code);
 static void output_peephole2_scratches	(rtx);
 
 
@@ -94,6 +83,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
   int i;
   int len;
   const char *fmt;
+  const char *sep = "";
 
   if (x == 0)
     {
@@ -215,7 +205,12 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 
   printf ("gen_rtx_");
   print_code (code);
-  printf (" (%smode", GET_MODE_NAME (GET_MODE (x)));
+  printf (" (");
+  if (!always_void_p (code))
+    {
+      printf ("%smode", GET_MODE_NAME (GET_MODE (x)));
+      sep = ",\n\t";
+    }
 
   fmt = GET_RTX_FORMAT (code);
   len = GET_RTX_LENGTH (code);
@@ -223,7 +218,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     {
       if (fmt[i] == '0')
 	break;
-      printf (",\n\t");
+      fputs (sep, stdout);
       switch (fmt[i])
 	{
 	case 'e': case 'u':
@@ -232,6 +227,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 
 	case 'i':
 	  printf ("%u", XINT (x, i));
+	  break;
+
+	case 'r':
+	  printf ("%u", REGNO (x));
 	  break;
 
 	case 's':
@@ -254,14 +253,42 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 	default:
 	  gcc_unreachable ();
 	}
+      sep = ",\n\t";
     }
   printf (")");
+}
+
+/* Output code to emit the instruction patterns in VEC, with each element
+   becoming a separate instruction.  USED is as for gen_exp.  */
+
+static void
+gen_emit_seq (rtvec vec, char *used)
+{
+  for (int i = 0, len = GET_NUM_ELEM (vec); i < len; ++i)
+    {
+      bool last_p = (i == len - 1);
+      rtx next = RTVEC_ELT (vec, i);
+      if (const char *name = get_emit_function (next))
+	{
+	  printf ("  %s (", name);
+	  gen_exp (next, DEFINE_EXPAND, used);
+	  printf (");\n");
+	  if (!last_p && needs_barrier_p (next))
+	    printf ("  emit_barrier ();");
+	}
+      else
+	{
+	  printf ("  emit (");
+	  gen_exp (next, DEFINE_EXPAND, used);
+	  printf (", %s);\n", last_p ? "false" : "true");
+	}
+    }
 }
 
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
 
 static void
-gen_insn (rtx insn, int lineno)
+gen_insn (md_rtx_info *info)
 {
   struct pattern_stats stats;
   int i;
@@ -270,6 +297,7 @@ gen_insn (rtx insn, int lineno)
      registers or MATCH_SCRATCHes.  If so, store away the information for
      later.  */
 
+  rtx insn = info->def;
   if (XVEC (insn, 1))
     {
       int has_hard_reg = 0;
@@ -291,7 +319,7 @@ gen_insn (rtx insn, int lineno)
 	  struct clobber_ent *link = XNEW (struct clobber_ent);
 	  int j;
 
-	  link->code_number = insn_code_number;
+	  link->code_number = info->index;
 
 	  /* See if any previous CLOBBER_LIST entry is the same as this
 	     one.  */
@@ -345,12 +373,12 @@ gen_insn (rtx insn, int lineno)
   if (XSTR (insn, 0)[0] == 0 || XSTR (insn, 0)[0] == '*')
     return;
 
-  printf ("/* %s:%d */\n", read_md_filename, lineno);
+  printf ("/* %s:%d */\n", info->loc.filename, info->loc.lineno);
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (insn, 1));
   if (stats.max_dup_opno > stats.max_opno)
-    fatal ("match_dup operand number has no match_operand");
+    fatal_at (info->loc, "match_dup operand number has no match_operand");
 
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (insn, 0));
@@ -367,42 +395,32 @@ gen_insn (rtx insn, int lineno)
 
   /* Output code to construct and return the rtl for the instruction body.  */
 
-  if (XVECLEN (insn, 1) == 1)
-    {
-      printf ("  return ");
-      gen_exp (XVECEXP (insn, 1, 0), DEFINE_INSN, NULL);
-      printf (";\n}\n\n");
-    }
-  else
-    {
-      char *used = XCNEWVEC (char, stats.num_generator_args);
-
-      printf ("  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (%d",
-	      XVECLEN (insn, 1));
-
-      for (i = 0; i < XVECLEN (insn, 1); i++)
-	{
-	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (insn, 1, i), DEFINE_INSN, used);
-	}
-      printf ("));\n}\n\n");
-      XDELETEVEC (used);
-    }
+  rtx pattern = add_implicit_parallel (XVEC (insn, 1));
+  /* ??? This is the traditional behavior, but seems suspect.  */
+  char *used = (XVECLEN (insn, 1) == 1
+		? NULL
+		: XCNEWVEC (char, stats.num_generator_args));
+  printf ("  return ");
+  gen_exp (pattern, DEFINE_INSN, used);
+  printf (";\n}\n\n");
+  XDELETEVEC (used);
 }
 
 /* Generate the `gen_...' function for a DEFINE_EXPAND.  */
 
 static void
-gen_expand (rtx expand)
+gen_expand (md_rtx_info *info)
 {
   struct pattern_stats stats;
   int i;
   char *used;
 
+  rtx expand = info->def;
   if (strlen (XSTR (expand, 0)) == 0)
-    fatal ("define_expand lacks a name");
+    fatal_at (info->loc, "define_expand lacks a name");
   if (XVEC (expand, 1) == 0)
-    fatal ("define_expand for %s lacks a pattern", XSTR (expand, 0));
+    fatal_at (info->loc, "define_expand for %s lacks a pattern",
+	      XSTR (expand, 0));
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (expand, 1));
@@ -439,7 +457,7 @@ gen_expand (rtx expand)
     printf ("  rtx operand%d;\n", i);
   for (; i <= stats.max_scratch_opno; i++)
     printf ("  rtx operand%d ATTRIBUTE_UNUSED;\n", i);
-  printf ("  rtx _val = 0;\n");
+  printf ("  rtx_insn *_val = 0;\n");
   printf ("  start_sequence ();\n");
 
   /* The fourth operand of DEFINE_EXPAND is some code to be executed
@@ -476,49 +494,8 @@ gen_expand (rtx expand)
       printf ("  }\n");
     }
 
-  /* Output code to construct the rtl for the instruction bodies.
-     Use emit_insn to add them to the sequence being accumulated.
-     But don't do this if the user's code has set `no_more' nonzero.  */
-
   used = XCNEWVEC (char, stats.num_operand_vars);
-
-  for (i = 0; i < XVECLEN (expand, 1); i++)
-    {
-      rtx next = XVECEXP (expand, 1, i);
-      if ((GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC)
-	  || (GET_CODE (next) == PARALLEL
-	      && ((GET_CODE (XVECEXP (next, 0, 0)) == SET
-		   && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
-		  || ANY_RETURN_P (XVECEXP (next, 0, 0))))
-	  || ANY_RETURN_P (next))
-	printf ("  emit_jump_insn (");
-      else if ((GET_CODE (next) == SET && GET_CODE (SET_SRC (next)) == CALL)
-	       || GET_CODE (next) == CALL
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == SET
-		   && GET_CODE (SET_SRC (XVECEXP (next, 0, 0))) == CALL)
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == CALL))
-	printf ("  emit_call_insn (");
-      else if (LABEL_P (next))
-	printf ("  emit_label (");
-      else if (GET_CODE (next) == MATCH_OPERAND
-	       || GET_CODE (next) == MATCH_DUP
-	       || GET_CODE (next) == MATCH_OPERATOR
-	       || GET_CODE (next) == MATCH_OP_DUP
-	       || GET_CODE (next) == MATCH_PARALLEL
-	       || GET_CODE (next) == MATCH_PAR_DUP
-	       || GET_CODE (next) == PARALLEL)
-	printf ("  emit (");
-      else
-	printf ("  emit_insn (");
-      gen_exp (next, DEFINE_EXPAND, used);
-      printf (");\n");
-      if (GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC
-	  && GET_CODE (SET_SRC (next)) == LABEL_REF)
-	printf ("  emit_barrier ();");
-    }
-
+  gen_emit_seq (XVEC (expand, 1), used);
   XDELETEVEC (used);
 
   /* Call `get_insns' to extract the list of all the
@@ -532,21 +509,22 @@ gen_expand (rtx expand)
 /* Like gen_expand, but generates insns resulting from splitting SPLIT.  */
 
 static void
-gen_split (rtx split)
+gen_split (md_rtx_info *info)
 {
   struct pattern_stats stats;
   int i;
+  rtx split = info->def;
   const char *const name =
     ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");
   const char *unused;
   char *used;
 
   if (XVEC (split, 0) == 0)
-    fatal ("define_%s (definition %d) lacks a pattern", name,
-	   insn_index_number);
+    fatal_at (info->loc, "%s lacks a pattern",
+	      GET_RTX_NAME (GET_CODE (split)));
   else if (XVEC (split, 2) == 0)
-    fatal ("define_%s (definition %d) lacks a replacement pattern", name,
-	   insn_index_number);
+    fatal_at (info->loc, "%s lacks a replacement pattern",
+	      GET_RTX_NAME (GET_CODE (split)));
 
   /* Find out how many operands this function has.  */
 
@@ -557,30 +535,33 @@ gen_split (rtx split)
   /* Output the prototype, function name and argument declarations.  */
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     {
-      printf ("extern rtx gen_%s_%d (rtx_insn *, rtx *);\n",
-	      name, insn_code_number);
-      printf ("rtx\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
-	      name, insn_code_number, unused);
+      printf ("extern rtx_insn *gen_%s_%d (rtx_insn *, rtx *);\n",
+	      name, info->index);
+      printf ("rtx_insn *\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED,"
+	      " rtx *operands%s)\n",
+	      name, info->index, unused);
     }
   else
     {
-      printf ("extern rtx gen_split_%d (rtx_insn *, rtx *);\n", insn_code_number);
-      printf ("rtx\ngen_split_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
-	      insn_code_number, unused);
+      printf ("extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
+	      info->index);
+      printf ("rtx_insn *\ngen_split_%d "
+	      "(rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
+	      info->index, unused);
     }
   printf ("{\n");
 
   /* Declare all local variables.  */
   for (i = 0; i < stats.num_operand_vars; i++)
     printf ("  rtx operand%d;\n", i);
-  printf ("  rtx _val = 0;\n");
+  printf ("  rtx_insn *_val = NULL;\n");
 
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     output_peephole2_scratches (split);
 
   printf ("  if (dump_file)\n");
   printf ("    fprintf (dump_file, \"Splitting with gen_%s_%d\\n\");\n",
-	  name, insn_code_number);
+	  name, info->index);
 
   printf ("  start_sequence ();\n");
 
@@ -600,44 +581,7 @@ gen_split (rtx split)
       printf ("  (void) operand%d;\n", i);
     }
 
-  /* Output code to construct the rtl for the instruction bodies.
-     Use emit_insn to add them to the sequence being accumulated.
-     But don't do this if the user's code has set `no_more' nonzero.  */
-
-  for (i = 0; i < XVECLEN (split, 2); i++)
-    {
-      rtx next = XVECEXP (split, 2, i);
-      if ((GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC)
-	  || (GET_CODE (next) == PARALLEL
-	      && GET_CODE (XVECEXP (next, 0, 0)) == SET
-	      && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
-	  || ANY_RETURN_P (next))
-	printf ("  emit_jump_insn (");
-      else if ((GET_CODE (next) == SET && GET_CODE (SET_SRC (next)) == CALL)
-	       || GET_CODE (next) == CALL
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == SET
-		   && GET_CODE (SET_SRC (XVECEXP (next, 0, 0))) == CALL)
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == CALL))
-	printf ("  emit_call_insn (");
-      else if (LABEL_P (next))
-	printf ("  emit_label (");
-      else if (GET_CODE (next) == MATCH_OPERAND
-	       || GET_CODE (next) == MATCH_OPERATOR
-	       || GET_CODE (next) == MATCH_PARALLEL
-	       || GET_CODE (next) == MATCH_OP_DUP
-	       || GET_CODE (next) == MATCH_DUP
-	       || GET_CODE (next) == PARALLEL)
-	printf ("  emit (");
-      else
-	printf ("  emit_insn (");
-      gen_exp (next, GET_CODE (split), used);
-      printf (");\n");
-      if (GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC
-	  && GET_CODE (SET_SRC (next)) == LABEL_REF)
-	printf ("  emit_barrier ();");
-    }
+  gen_emit_seq (XVEC (split, 2), used);
 
   /* Call `get_insns' to make a list of all the
      insns emitted within this gen_... function.  */
@@ -775,8 +719,6 @@ output_peephole2_scratches (rtx split)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-
   progname = "genemit";
 
   if (!init_rtx_reader_args (argc, argv))
@@ -785,38 +727,22 @@ main (int argc, char **argv)
   /* Assign sequential codes to all entries in the machine description
      in parallel with the tables in insn-output.c.  */
 
-  insn_code_number = 0;
-  insn_index_number = 0;
-
   printf ("/* Generated automatically by the program `genemit'\n\
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
-  printf ("#include \"tm.h\"\n");
-  printf ("#include \"hash-set.h\"\n");
-  printf ("#include \"machmode.h\"\n");
-  printf ("#include \"vec.h\"\n");
-  printf ("#include \"double-int.h\"\n");
-  printf ("#include \"input.h\"\n");
-  printf ("#include \"alias.h\"\n");
-  printf ("#include \"symtab.h\"\n");
-  printf ("#include \"wide-int.h\"\n");
-  printf ("#include \"inchash.h\"\n");
+  printf ("#include \"backend.h\"\n");
+  printf ("#include \"predict.h\"\n");
   printf ("#include \"tree.h\"\n");
+  printf ("#include \"rtl.h\"\n");
+  printf ("#include \"alias.h\"\n");
   printf ("#include \"varasm.h\"\n");
   printf ("#include \"stor-layout.h\"\n");
   printf ("#include \"calls.h\"\n");
-  printf ("#include \"rtl.h\"\n");
   printf ("#include \"tm_p.h\"\n");
-  printf ("#include \"hashtab.h\"\n");
-  printf ("#include \"hard-reg-set.h\"\n");
-  printf ("#include \"function.h\"\n");
   printf ("#include \"flags.h\"\n");
-  printf ("#include \"statistics.h\"\n");
-  printf ("#include \"real.h\"\n");
-  printf ("#include \"fixed-value.h\"\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"expmed.h\"\n");
   printf ("#include \"dojump.h\"\n");
@@ -829,15 +755,13 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"dfp.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"recog.h\"\n");
-  printf ("#include \"predict.h\"\n");
-  printf ("#include \"basic-block.h\"\n");
+  printf ("#include \"df.h\"\n");
   printf ("#include \"resource.h\"\n");
   printf ("#include \"reload.h\"\n");
   printf ("#include \"diagnostic-core.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"tm-constrs.h\"\n");
   printf ("#include \"ggc.h\"\n");
-  printf ("#include \"basic-block.h\"\n");
   printf ("#include \"dumpfile.h\"\n");
   printf ("#include \"target.h\"\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");
@@ -845,40 +769,32 @@ from the machine description file `md'.  */\n\n");
 
   /* Read the machine description.  */
 
-  while (1)
-    {
-      int line_no;
-
-      desc = read_md_rtx (&line_no, &insn_code_number);
-      if (desc == NULL)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+	gen_insn (&info);
 	break;
 
-      switch (GET_CODE (desc))
-	{
-	case DEFINE_INSN:
-	  gen_insn (desc, line_no);
-	  break;
+      case DEFINE_EXPAND:
+	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
+	gen_expand (&info);
+	break;
 
-	case DEFINE_EXPAND:
-	  printf ("/* %s:%d */\n", read_md_filename, line_no);
-	  gen_expand (desc);
-	  break;
+      case DEFINE_SPLIT:
+	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
+	gen_split (&info);
+	break;
 
-	case DEFINE_SPLIT:
-	  printf ("/* %s:%d */\n", read_md_filename, line_no);
-	  gen_split (desc);
-	  break;
+      case DEFINE_PEEPHOLE2:
+	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
+	gen_split (&info);
+	break;
 
-	case DEFINE_PEEPHOLE2:
-	  printf ("/* %s:%d */\n", read_md_filename, line_no);
-	  gen_split (desc);
-	  break;
-
-	default:
-	  break;
-	}
-      ++insn_index_number;
-    }
+      default:
+	break;
+      }
 
   /* Write out the routines to add CLOBBERs to a pattern and say whether they
      clobber a hard reg.  */

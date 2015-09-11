@@ -1,6 +1,5 @@
 /* Prefetching when the step is loop invariant.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-options "-O3 -msse2 -fprefetch-loop-arrays -fdump-tree-aprefetch-details --param min-insn-to-prefetch-ratio=3 --param simultaneous-prefetches=10 -fdump-tree-aprefetch-details" } */
 
 
@@ -25,4 +24,3 @@ void prefetch_when_non_constant_step_is_invariant(int step, int n)
 /* { dg-final { scan-tree-dump "Issued prefetch" "aprefetch" } } */
 /* { dg-final { scan-assembler "prefetcht0" } } */
 
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */

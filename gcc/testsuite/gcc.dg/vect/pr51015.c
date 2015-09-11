@@ -16,4 +16,3 @@ void e2fsck_pass1()
  }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

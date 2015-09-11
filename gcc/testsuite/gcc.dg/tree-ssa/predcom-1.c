@@ -48,4 +48,3 @@ int main(void)
 /* Also check that we undid the transformation previously made by PRE.  */
 /* { dg-final { scan-tree-dump-times "looparound ref" 1 "pcom"} } */
 
-/* { dg-final { cleanup-tree-dump "pcom" } } */

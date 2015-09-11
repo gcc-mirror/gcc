@@ -79,6 +79,9 @@ gcc_docdir = @srcdir@/doc
 abs_srcdir = @abs_srcdir@
 abs_docdir = @abs_srcdir@/doc
 
+# Directory where sources are, relative to here.
+top_srcdir = @top_srcdir@
+
 # Top build directory for this package, relative to here.
 top_builddir = .
 
@@ -177,6 +180,8 @@ NOCOMMON_FLAG = @nocommon_flag@
 
 NOEXCEPTION_FLAGS = @noexception_flags@
 
+ALIASING_FLAGS = @aliasing_flags@
+
 # This is set by --disable-maintainer-mode (default) to "#"
 # FIXME: 'MAINT' will always be set to an empty string, no matter if
 # --disable-maintainer-mode is used or not.  This is because the
@@ -211,6 +216,7 @@ libgcov-driver-tool.o-warn = -Wno-error
 libgcov-merge-tool.o-warn = -Wno-error
 gimple-match.o-warn = -Wno-unused
 generic-match.o-warn = -Wno-unused
+dfp.o-warn = -Wno-strict-aliasing
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
@@ -251,6 +257,12 @@ else
 LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
 endif
+
+# We don't want to compile the compilers with -fPIE, it make PCH fail.
+COMPILER += @NO_PIE_CFLAGS@
+
+# Link with -no-pie since we compile the compiler with -fno-PIE.
+LINKER += @NO_PIE_FLAG@
 
 # Like LINKER, but use a mutex for serializing front end links.
 ifeq (@DO_LINK_MUTEX@,true)
@@ -527,10 +539,6 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-# Upper limit to which it is useful to parallelize this lang target.
-# It doesn't make sense to try e.g. 128 goals for small testsuites
-# like objc or go.
-check_gcc_parallelize=10000
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
@@ -749,6 +757,8 @@ CC_FOR_BUILD = @CC_FOR_BUILD@
 CXX_FOR_BUILD = @CXX_FOR_BUILD@
 BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
 BUILD_CXXFLAGS = @BUILD_CXXFLAGS@ -DGENERATOR_FILE
+BUILD_CFLAGS += @NO_PIE_CFLAGS@
+BUILD_CXXFLAGS += @NO_PIE_CFLAGS@
 
 # Native compiler that we use.  This may be C++ some day.
 COMPILER_FOR_BUILD = $(CXX_FOR_BUILD)
@@ -760,6 +770,7 @@ BUILD_LINKERFLAGS = $(BUILD_CXXFLAGS)
 
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@
+BUILD_LDFLAGS += @NO_PIE_FLAG@
 BUILD_CPPFLAGS= -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 		-I$(srcdir)/../include @INCINTL@ $(CPPINC) $(CPPFLAGS)
 
@@ -828,14 +839,20 @@ endif
 
 version     := $(BASEVER_c)
 
+PATCHLEVEL_c := \
+  $(shell echo $(BASEVER_c) | sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\)$$/\1/')
+
+
 # For use in version.c - double quoted strings, with appropriate
 # surrounding punctuation and spaces, and with the datestamp and
 # development phase collapsed to the empty string in release mode
-# (i.e. if DEVPHASE_c is empty).  The space immediately after the
-# comma in the $(if ...) constructs is significant - do not remove it.
+# (i.e. if DEVPHASE_c is empty and PATCHLEVEL_c is 0).  The space
+# immediately after the comma in the $(if ...) constructs is
+# significant - do not remove it.
 BASEVER_s   := "\"$(BASEVER_c)\""
 DEVPHASE_s  := "\"$(if $(DEVPHASE_c), ($(DEVPHASE_c)))\""
-DATESTAMP_s := "\"$(if $(DEVPHASE_c), $(DATESTAMP_c))\""
+DATESTAMP_s := \
+  "\"$(if $(DEVPHASE_c)$(filter-out 0,$(PATCHLEVEL_c)), $(DATESTAMP_c))\""
 PKGVERSION_s:= "\"@PKGVERSION@\""
 BUGURL_s    := "\"@REPORT_BUGS_TO@\""
 
@@ -843,7 +860,8 @@ PKGVERSION  := @PKGVERSION@
 BUGURL_TEXI := @REPORT_BUGS_TEXI@
 
 ifdef REVISION_c
-REVISION_s  := "\"$(if $(DEVPHASE_c), $(REVISION_c))\""
+REVISION_s  := \
+  "\"$(if $(DEVPHASE_c)$(filter-out 0,$(PATCHLEVEL_c)), $(REVISION_c))\""
 else
 REVISION_s  := "\"\""
 endif
@@ -853,7 +871,7 @@ DUMPFILE_H = $(srcdir)/../libcpp/include/line-map.h dumpfile.h
 VEC_H = vec.h statistics.h $(GGC_H)
 HASH_TABLE_H = $(HASHTAB_H) hash-table.h
 EXCEPT_H = except.h $(HASHTAB_H)
-TARGET_DEF = target.def target-hooks-macros.h
+TARGET_DEF = target.def target-hooks-macros.h target-insns.def
 C_TARGET_DEF = c-family/c-target.def target-hooks-macros.h
 COMMON_TARGET_DEF = common/common-target.def target-hooks-macros.h
 TARGET_H = $(TM_H) target.h $(TARGET_DEF) insn-modes.h insn-codes.h
@@ -970,7 +988,8 @@ ALL_CFLAGS = $(T_CFLAGS) $(CFLAGS-$@) \
 
 # The C++ version.
 ALL_CXXFLAGS = $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS) $(INTERNAL_CFLAGS) \
-  $(COVERAGE_FLAGS) $(NOEXCEPTION_FLAGS) $(WARN_CXXFLAGS) @DEFS@
+  $(COVERAGE_FLAGS) $(ALIASING_FLAGS) $(NOEXCEPTION_FLAGS) \
+  $(WARN_CXXFLAGS) @DEFS@
 
 # Likewise.  Put INCLUDES at the beginning: this way, if some autoconf macro
 # puts -I options in CPPFLAGS, our include files in the srcdir will always
@@ -1024,7 +1043,7 @@ BUILD_LIBS = $(BUILD_LIBIBERTY)
 
 BUILD_RTL = build/rtl.o build/read-rtl.o build/ggc-none.o \
 	    build/vec.o build/min-insn-modes.o build/gensupport.o \
-	    build/print-rtl.o
+	    build/print-rtl.o build/hash-table.o
 BUILD_MD = build/read-md.o
 BUILD_ERRORS = build/errors.o
 
@@ -1132,24 +1151,26 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
 
 # Object files for gcc many-languages driver.
-GCC_OBJS = gcc.o ggc-none.o
+GCC_OBJS = gcc.o gcc-main.o ggc-none.o
 
 c-family-warn = $(STRICT_WARN)
 
 # Language-specific object files shared by all C-family front ends.
 C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
-  c-family/c-format.o c-family/c-gimplify.o c-family/c-lex.o \
-  c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
+  c-family/c-format.o c-family/c-gimplify.o c-family/c-indentation.o \
+  c-family/c-lex.o c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/c-cilkplus.o \
   c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o
 
 # Language-independent object files.
-# We put the insn-*.o files first so that a parallel make will build
-# them sooner, because they are large and otherwise tend to be the
-# last objects to finish building.
+# We put the *-match.o and insn-*.o files first so that a parallel make
+# will build them sooner, because they are large and otherwise tend to be
+# the last objects to finish building.
 OBJS = \
+	gimple-match.o \
+	generic-match.o \
 	insn-attrtab.o \
 	insn-automata.o \
 	insn-dfatab.o \
@@ -1235,15 +1256,15 @@ OBJS = \
 	function.o \
 	fwprop.o \
 	gcse.o \
+	gcse-common.o \
 	ggc-common.o \
 	gimple.o \
 	gimple-builder.o \
 	gimple-expr.o \
 	gimple-iterator.o \
 	gimple-fold.o \
+	gimple-laddress.o \
 	gimple-low.o \
-	gimple-match.o \
-	generic-match.o \
 	gimple-pretty-print.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-strength-reduction.o \
@@ -1256,10 +1277,8 @@ OBJS = \
 	graph.o \
 	graphds.o \
 	graphite.o \
-	graphite-blocking.o \
 	graphite-isl-ast-to-gimple.o \
 	graphite-dependences.o \
-	graphite-interchange.o \
 	graphite-optimize-isl.o \
 	graphite-poly.o \
 	graphite-scop-detection.o \
@@ -1329,7 +1348,6 @@ OBJS = \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
-	omega.o \
 	omp-low.o \
 	optabs.o \
 	options-save.o \
@@ -1427,7 +1445,6 @@ OBJS = \
 	tree-ssa-ccp.o \
 	tree-ssa-coalesce.o \
 	tree-ssa-copy.o \
-	tree-ssa-copyrename.o \
 	tree-ssa-dce.o \
 	tree-ssa-dom.o \
 	tree-ssa-dse.o \
@@ -1451,6 +1468,7 @@ OBJS = \
 	tree-ssa-propagate.o \
 	tree-ssa-reassoc.o \
 	tree-ssa-sccvn.o \
+	tree-ssa-scopedtables.o \
 	tree-ssa-sink.o \
 	tree-ssa-strlen.o \
 	tree-ssa-structalias.o \
@@ -1495,7 +1513,7 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o \
-	vec.o  input.o version.o
+	vec.o input.o version.o hash-table.o ggc-none.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -1507,7 +1525,7 @@ OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
-  $(OBJS-libcommon-target) @TREEBROWSER@ main.o c-family/cppspec.o \
+  $(OBJS-libcommon-target) main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
   $(GCOV_TOOL_OBJS) $(GENGTYPE_OBJS) gcc-ar.o gcc-nm.o gcc-ranlib.o \
   lto-wrapper.o collect-utils.o
@@ -1516,7 +1534,7 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
 # compilation or not.
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
-BACKEND = libbackend.a main.o @TREEBROWSER@ libcommon-target.a libcommon.a \
+BACKEND = libbackend.a main.o libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER)
 
 # This is defined to "yes" if Tree checking is enabled, which roughly means
@@ -1854,6 +1872,12 @@ libgcc.mvars: config.status Makefile specs xgcc$(exeext)
 	echo GCC_CFLAGS = '$(GCC_CFLAGS)' >> tmp-libgcc.mvars
 	echo INHIBIT_LIBC_CFLAGS = '$(INHIBIT_LIBC_CFLAGS)' >> tmp-libgcc.mvars
 	echo TARGET_SYSTEM_ROOT = '$(TARGET_SYSTEM_ROOT)' >> tmp-libgcc.mvars
+	if test @enable_default_pie@ = yes; then \
+	  NO_PIE_CFLAGS="-fno-PIE"; \
+	else \
+	  NO_PIE_CFLAGS=; \
+	fi; \
+	echo NO_PIE_CFLAGS = "$$NO_PIE_CFLAGS" >> tmp-libgcc.mvars
 
 	mv tmp-libgcc.mvars libgcc.mvars
 
@@ -1931,7 +1955,7 @@ gcc-nm.c: gcc-ar.c
 	cp $^ $@
 
 COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o \
-  collect-utils.o file-find.o
+  collect-utils.o file-find.o hash-table.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
@@ -2057,7 +2081,8 @@ $(common_out_object_file): $(common_out_file)
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h insn-constants.h \
   insn-emit.c insn-recog.c insn-extract.c insn-output.c insn-peep.c \
   insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
-  insn-latencytab.c insn-preds.c gimple-match.c generic-match.c
+  insn-latencytab.c insn-preds.c gimple-match.c generic-match.c \
+  insn-target-def.h
 
 # Dependencies for the md file.  The first time through, we just assume
 # the md file itself and the generated dependency file (in order to get
@@ -2078,7 +2103,7 @@ s-mddeps: $(md_file) $(MD_INCLUDES) build/genmddeps$(build_exeext)
 # the target file.
 
 simple_rtl_generated_h	= insn-attr.h insn-attr-common.h insn-codes.h \
-			  insn-config.h insn-flags.h
+			  insn-config.h insn-flags.h insn-target-def.h
 
 simple_rtl_generated_c	= insn-automata.c insn-emit.c \
 			  insn-extract.c insn-output.c \
@@ -2300,7 +2325,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/dwarf2cfi.c \
   $(srcdir)/dwarf2out.c \
   $(srcdir)/tree-vect-generic.c \
-  $(srcdir)/dojump.c \
+  $(srcdir)/dojump.c $(srcdir)/emit-rtl.h \
   $(srcdir)/emit-rtl.c $(srcdir)/except.h $(srcdir)/explow.c $(srcdir)/expr.c \
   $(srcdir)/expr.h \
   $(srcdir)/function.c $(srcdir)/except.c \
@@ -2321,7 +2346,6 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-scalar-evolution.c \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
-  $(srcdir)/tree-parloops.c \
   $(srcdir)/omp-low.c \
   $(srcdir)/omp-low.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
@@ -2391,7 +2415,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       c-family/c-target-hooks-def.h
+       c-family/c-target-hooks-def.h params.list
 
 #
 # How to compile object files to run on the build machine.
@@ -2433,6 +2457,8 @@ build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H)	\
    $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/hash-table.o : hash-table.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h  \
    $(HASH_TABLE_H) $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
+build/inchash.o : inchash.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h  \
+   $(HASHTAB_H) inchash.h
 build/gencondmd.o : build/gencondmd.c $(BCONFIG_H) $(SYSTEM_H)		\
   coretypes.h $(GTM_H) insn-constants.h					\
   $(filter-out insn-flags.h, $(RTL_H) $(TM_P_H) $(FUNCTION_H) $(REGS_H) \
@@ -2476,6 +2502,9 @@ build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
 build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+build/gentarget-def.o : gentarget-def.c $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) $(RTL_BASE_H) errors.h $(READ_MD_H) gensupport.h	\
+  $(HASH_TABLE_H) target-insns.def
 build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 
 # The gengtype generator program is special: Two versions are built.
@@ -2524,7 +2553,8 @@ build/genpeep.o : genpeep.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
 build/genpreds.o : genpreds.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h $(OBSTACK_H)
 build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h		\
+  $(HASH_TABLE_H) inchash.h
 build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
   $(COMMON_TARGET_DEF) $(BCONFIG_H) $(SYSTEM_H) errors.h
 build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
@@ -2539,7 +2569,7 @@ build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
 
 # All these programs use the RTL reader ($(BUILD_RTL)).
 genprogrtl = attr attr-common attrtab automata codes conditions config emit \
-	     extract flags opinit output peep preds recog mddump
+	     extract flags mddump opinit output peep preds recog target-def
 $(genprogrtl:%=build/gen%$(build_exeext)): $(BUILD_RTL)
 
 # All these programs use the MD reader ($(BUILD_MD)).
@@ -2555,6 +2585,8 @@ genprog = $(genprogerr) check checksum condmd match
 
 # These programs need libs over and above what they get from the above list.
 build/genautomata$(build_exeext) : BUILD_LIBS += -lm
+
+build/genrecog$(build_exeext) : build/hash-table.o build/inchash.o
 
 # For stage1 and when cross-compiling use the build libcpp which is
 # built with NLS disabled.  For stage2+ use the host library and
@@ -2641,10 +2673,12 @@ s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
 
 GCOV_OBJS = gcov.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) \
+		hash-table.o ggc-none.o $(LIBS) -o $@
 GCOV_DUMP_OBJS = gcov-dump.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
+		hash-table.o ggc-none.o\
 		$(LIBS) -o $@
 
 GCOV_TOOL_DEP_FILES = $(srcdir)/../libgcc/libgcov-util.c gcov-io.c $(GCOV_IO_H) \
@@ -3037,7 +3071,7 @@ doc/%.7: %.pod
 	$(STAMP) $@
 	-$(TEXI2POD) -DBUGURL="$(BUGURL_TEXI)" $< > $@
 
-.INTERMEDIATE: cpp.pod gcc.pod gfdl.pod fsf-funding.pod
+.INTERMEDIATE: cpp.pod gcc.pod gfdl.pod fsf-funding.pod gpl.pod
 cpp.pod: cpp.texi cppenv.texi cppopts.texi
 
 # These next rules exist because the output name is not the same as
@@ -3202,6 +3236,12 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
 
+params.list: s-params.list; @true
+s-params.list: $(srcdir)/params-list.h $(srcdir)/params.def
+	$(CPP) $(srcdir)/params-list.h | sed 's/^#.*//;/^$$/d' > tmp-params.list
+	$(SHELL) $(srcdir)/../move-if-change tmp-params.list params.list
+	$(STAMP) s-params.list
+
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \
   tree-ssa-alias.h $(INTERNAL_FN_H) gimple-fold.h tree-eh.h gimple-expr.h \
@@ -3255,7 +3295,7 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 # We keep the directory structure for files in config or c-family and .def
 # files. All other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
-	headers=`echo $(PLUGIN_HEADERS) | tr ' ' '\012' | sort -u`; \
+	headers=`echo $(PLUGIN_HEADERS) $$(cd $(srcdir); echo *.h *.def) | tr ' ' '\012' | sort -u`; \
 	srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
 	for file in $$headers; do \
 	  if [ -f $$file ] ; then \
@@ -3729,7 +3769,9 @@ check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
 #
 # To parallelize some language check, add the corresponding check-$lang
 # to lang_checks_parallelized variable and define check_$lang_parallelize
-# variable (see above check_gcc_parallelize description).
+# variable.  This is the upper limit to which it is useful to parallelize the
+# check-$lang target.  It doesn't make sense to try e.g. 128 goals for small
+# testsuites like objc or go.
 $(lang_checks_parallelized): check-% : site.exp
 	-rm -rf $(TESTSUITEDIR)/$*-parallel
 	@if [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \

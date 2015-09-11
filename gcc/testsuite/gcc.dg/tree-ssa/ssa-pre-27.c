@@ -25,4 +25,3 @@ int foo2 (int i, int j, int b)
 }
 
 /* { dg-final { scan-tree-dump-times "# prephitmp" 2 "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

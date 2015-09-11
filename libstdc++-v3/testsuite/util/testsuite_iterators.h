@@ -170,6 +170,14 @@ namespace __gnu_test
       return tmp;
     }
 
+#if __cplusplus >= 201103L
+    template<typename U>
+      void operator,(const U&) const = delete;
+#else
+  private:
+    template<typename U>
+      void operator,(const U&) const;
+#endif
   };
 
   /**
@@ -251,6 +259,15 @@ namespace __gnu_test
     {
       ++*this;
     }
+
+#if __cplusplus >= 201103L
+    template<typename U>
+      void operator,(const U&) const = delete;
+#else
+  private:
+    template<typename U>
+      void operator,(const U&) const;
+#endif
   };
 
 
@@ -306,7 +323,7 @@ namespace __gnu_test
       ++*this;
       return tmp;
     }
-   };
+  };
 
   /**
    * @brief bidirectional_iterator wrapper for pointer
@@ -370,7 +387,7 @@ namespace __gnu_test
       --*this;
       return tmp;
     }
-   };
+  };
 
   /**
    * @brief random_access_iterator wrapper for pointer
@@ -498,7 +515,7 @@ namespace __gnu_test
     {
       return !(*this > in);
     }
-   };
+  };
 
   template<typename T>
     random_access_iterator_wrapper<T>

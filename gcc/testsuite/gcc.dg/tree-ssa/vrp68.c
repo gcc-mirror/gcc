@@ -15,4 +15,3 @@ int main() { }
 /* VRP will arbitrarily choose ~[1, 1] when merging [2, 6] with ~[1, 7].  */
 
 /* { dg-final { scan-tree-dump-times "link_error" 0 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

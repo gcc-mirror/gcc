@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -459,11 +459,37 @@ extern MyoError myoiTargetSharedMallocTableRegister(
  *          return -1;
  *      }
  *      @endcode
- *      This intialization is required only in the client/host side 
- *      of the application. The server/card side executable should be 
- *      executed only on the second card in this case.
+ * This intialization is required only in the client/host side
+ * of the application. The server/card side executable should be
+ * executed only on the second card in this case.
  *
- * @param userInitFunc Shared variables and remote funtions are 
+ * Another capability for the MyoiUserParams structure in MYO is specifying
+ * a remote procedure call to be executed on the host or card, immediately after
+ * myoiLibInit() completes. This capability is useful because some calls in
+ * MYO return immediately, but do not actually complete until after the MYO
+ * library is completely initialized on all peers.  An example follows,
+ * showing how to cause MYO to execute the registered function named
+ * "PostMyoLibInitFunction" on the first card only:
+ *      @code
+ *      MyoiUserParams UserParas[64];
+ *      UserParas[0].type = MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC;
+ *      UserParas[0].nodeid = 1;
+ *      SetPostLibInitFuncName(UserParas[1], "PostMyoLibInitFunction");
+ *      UserParas[2].type = MYOI_USERPARAMS_LAST_MSG;
+ *      if(MYO_SUCCESS != myoiLibInit(&UserParas, (void*)&myoiUserInit)) {
+ *          printf("Failed to initialize MYO runtime\n");
+ *          return -1;
+ *      }
+ *      @endcode
+ *
+ * Note, to cause PostMyoLibInitFunction to be executed on ALL cards,
+ * specify: MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_ALL_NODES for the nodeid.
+ * That is:
+ *      @code
+ *      UserParas[0].nodeid = MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_ALL_NODES;
+ *      @endcode
+ *
+ * @param userInitFunc Shared variables and remote functions are
  * registered in this routine, which is called by the runtime during
  * library initialization. 
  * @return
@@ -472,6 +498,22 @@ extern MyoError myoiTargetSharedMallocTableRegister(
  **/
 MYOACCESSAPI
 MyoError myoiLibInit(void * in_args, void *userInitFunc /*userInitFunc must be: MyoError (*userInitFunc)(void) */);
+
+/** @fn extern MyoError myoiSupportsFeature(MyoFeatureType myoFeature)
+ * @brief Supports runtime query to determine whether a feature is supported
+ * by the myo that is installed on the system. This function is intended to
+ * support client code to query the myo library to determine whether its set
+ * of capabilities are able to support the client's needs.
+ *
+ * @param myoFeature The feature that is to be inquired about.
+ * @return
+ *      MYO_SUCCESS; if the feature is supported.
+ *      MYO_FEATURE_NOT_IMPLEMENTED if the feature is not supported.
+ *
+ * (For more information, please also see the declaration of the MyoFeatureType enum declaration.)
+ **/
+MYOACCESSAPI
+MyoError myoiSupportsFeature(MyoFeatureType myoFeature);
 
 /** @fn void myoiLibFini()
  * @brief Finalize the MYO library, all resources held by the runtime are 
@@ -519,17 +561,56 @@ MyoError myoiSetMemConsistent(void *in_pAddr, size_t in_Size);
 EXTERN_C MYOACCESSAPI unsigned int myoiMyId; /* MYO_MYID if on accelerators */
 EXTERN_C MYOACCESSAPI volatile int myoiInitFlag;
 
-
- //! Structure of the array element that is passed to myoiLibInit() to initialize a subset of the available cards.
-typedef struct{
-    //!type = MYOI_USERPARAMS_DEVID for each element in the array except the last element ; type = MYOI_USERPARAMS_LAST_MSG for the last element in the array.
+ //! Structure of the array element that is passed to myoiLibInit() to initialize a subset of the available cards, or
+ //! to specify a remote call function to be called after successful myo library initialization:
+typedef struct {
+    //!type = MYOI_USERPARAMS_DEVID or  MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC for each element in the array except
+    //!the last element, type should be: MYOI_USERPARAMS_LAST_MSG.
     int type;
-    //!nodeid refers to the card index.
+    //! nodeid refers to the 'one-based' card index.  Specifying, 1 represents the first card, mic0, 2 represents the
+    // second card, mic1, 3 represents the third card, mic2, ....).
+    // NOTE: for type == MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC, specifying MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_ALL_NODES
+    // for nodeid, will execute the named function, on each card in the system, mic0, mic1, mic2, .... micn.
     int nodeid;
-}MyoiUserParams;
+} MyoiUserParams;
 
-#define MYOI_USERPARAMS_DEVID    1
-#define MYOI_USERPARAMS_LAST_MSG  -1
+//!The following two types are dealt with entirely with just one MyoiUserParams structure:
+//!MYOI_USERPARAMS_DEVID maps node ids.
+#define MYOI_USERPARAMS_DEVID                             1
+//!MYOI_USERPARAMS_LAST_MSG terminates the array of MyoiUserParams.
+#define MYOI_USERPARAMS_LAST_MSG                         -1
+
+//!The following type requires setting the node id in a MyoiUserParams structure, and then following the struct
+//!with a MyoiUserParamsPostLibInit union:
+#define MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC            2
+//!nodeid can be one of the following macros, or a number >=1, corresponding to the card number (1 == mic0,
+//!2 == mic1, 3 == mic2, ....)
+//!Setting nodeid to MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_ALL_NODES causes the function to be called on all
+//!cards:
+#define MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_ALL_NODES  0
+//!Setting nodeid to MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_HOST_NODE causes the function to be called on the
+//!host instead of the card:
+#define MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_HOST_NODE -1
+
+//!The postLibInit union contains two members that serves two different purposes:
+//!1. It can be used to stipulate the name of the function to be remotely called from host to card, on successful
+//!myo library initialization, (member postLibInitRemoveFuncName) using the type:
+//!MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC.   OR
+//!2. It can be an actual function pointer (member name: postLibInitHostFuncAddress) that will be called on the host,
+//!on successful myo library initialization, using the type: MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC, with nodeid:
+//!MYOI_USERPARAMS_POST_MYO_LIB_INIT_FUNC_HOST_NODE
+typedef union {
+   const char *postLibInitRemoveFuncName;
+   void (*postLibInitHostFuncAddress)(void);
+} MyoiUserParamsPostLibInit;
+
+/* These are two macros to help get the information in a MyoiUserParamsPostLibInit union from a MyoiUserParams struct; */
+#define GetPostLibInitFuncName(USERPARAMS) ((MyoiUserParamsPostLibInit *) (& (USERPARAMS)))->postLibInitRemoveFuncName
+#define GetPostLibInitFuncAddr(USERPARAMS) ((MyoiUserParamsPostLibInit *) (& (USERPARAMS)))->postLibInitHostFuncAddress
+
+/* These are two macros to help set the information in a MyoiUserParamsPostLibInit union from a MyoiUserParams struct; */
+#define SetPostLibInitFuncName(USERPARAMS,FUNC_NAME) GetPostLibInitFuncName(USERPARAMS) = FUNC_NAME
+#define SetPostLibInitFuncAddr(USERPARAMS,FUNC_ADDR) GetPostLibInitFuncAddr(USERPARAMS) = FUNC_ADDR
 
 #ifdef __cplusplus
 }

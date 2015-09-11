@@ -56,10 +56,6 @@ case $build in
   hppa2*-*-hpux11* )
     build_install_headers_dir=install-headers-cpio
     ;;
-  i370-*-opened* | i370-*-mvs* )
-    # IBM 360/370/390 Architecture
-    build_xm_defines='FATAL_EXIT_CODE=12'
-    ;;
   i[34567]86-*-cygwin* | x86_64-*-cygwin* )
     build_xm_file=i386/xm-cygwin.h
     build_exeext=.exe
@@ -76,31 +72,6 @@ case $build in
   i[34567]86-pc-msdosdjgpp*)
     build_xm_file=i386/xm-djgpp.h
     build_exeext=.exe
-    ;;
-  i[34567]86-*-sco3.2v5*) 
-    # 80386 running SCO Open Server 5
-    build_install_headers_dir=install-headers-cpio
-    ;;
-  i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4* )
-    build_install_headers_dir=install-headers-cpio
-    ;;
-  i[34567]86-*-sysv4*) 
-    # Intel x86 running system V r4
-    build_install_headers_dir=install-headers-cpio
-    ;;
-  i[34567]86-*-udk*) 
-    # Intel x86 on SCO UW/OSR5 Dev Kit
-    build_install_headers_dir=install-headers-cpio
-    ;;
-  i[34567]86-*-uwin*)
-    build_exeext=.exe
-    ;;
-  i386-*-vsta) 
-    # Intel 80386's running VSTa kernel
-    ;;
-  m68000-hp-hpux* | m68k-hp-hpux*) 
-    # HP 9000 series 300
-    build_install_headers_dir=install-headers-cpio
     ;;
   *-*-sysv*)
     # All other System V variants.

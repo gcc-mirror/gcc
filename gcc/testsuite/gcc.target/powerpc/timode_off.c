@@ -55,4 +55,3 @@ TImode r20 (void *x) { return *(TImode *) (x + 32748); }
 
 /* { dg-final { object-size text <= 700 } } */
 /* { dg-final { scan-assembler-not "(st|l)fd" } } */
-/* { dg-final { cleanup-saved-temps "timode_off" } } */

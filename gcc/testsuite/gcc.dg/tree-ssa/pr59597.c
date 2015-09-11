@@ -55,5 +55,4 @@ main (int argc, char argv[])
 }
 
 /* { dg-final { scan-tree-dump "Cancelling" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

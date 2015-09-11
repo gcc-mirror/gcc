@@ -43,21 +43,6 @@ AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY], [
       [Define to 1 if the target supports __attribute__((visibility(...))).])
   fi])
 
-dnl Check whether the target supports dllexport
-AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT], [
-  AC_CACHE_CHECK([whether the target supports dllexport],
-		 libgfor_cv_have_attribute_dllexport, [
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -Werror"
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void __attribute__((dllexport)) foo(void) { }]], [])],
-		    libgfor_cv_have_attribute_dllexport=yes,
-		    libgfor_cv_have_attribute_dllexport=no)
-  CFLAGS="$save_CFLAGS"])
-  if test $libgfor_cv_have_attribute_dllexport = yes; then
-    AC_DEFINE(HAVE_ATTRIBUTE_DLLEXPORT, 1,
-      [Define to 1 if the target supports __attribute__((dllexport)).])
-  fi])
-
 dnl Check whether the target supports symbol aliases.
 AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_ALIAS], [
   AC_CACHE_CHECK([whether the target supports symbol aliases],
@@ -100,11 +85,27 @@ void foo (void);
 	      [Define to 1 if the target supports #pragma weak])
   fi
   case "$host" in
-    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* )
+    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* | *-*-musl* )
       AC_DEFINE(GTHREAD_USE_WEAK, 0,
 		[Define to 0 if the target shouldn't use #pragma weak])
       ;;
   esac])
+
+dnl Check whether target effectively supports weakref
+AC_DEFUN([LIBGFOR_CHECK_WEAKREF], [
+  AC_CACHE_CHECK([whether the target supports weakref],
+		 libgfor_cv_have_weakref, [
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Wunknown-pragmas -Werror"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+static int mytoto (int) __attribute__((__weakref__("toto")));
+]], [[return (mytoto != 0);]])],
+		 libgfor_cv_have_weakref=yes, libgfor_cv_have_weakref=no)
+  CFLAGS="$save_CFLAGS"])
+  if test $libgfor_cv_have_weakref = yes; then
+    AC_DEFINE(SUPPORTS_WEAKREF, 1,
+	      [Define to 1 if the target supports weakref])
+  fi])
 
 dnl Check whether target can unlink a file still open.
 AC_DEFUN([LIBGFOR_CHECK_UNLINK_OPEN_FILE], [

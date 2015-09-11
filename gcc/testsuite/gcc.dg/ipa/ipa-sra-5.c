@@ -17,4 +17,3 @@ int *caller (void)
   return ox (&a, &b);
 }
 /* { dg-final { scan-tree-dump-times "base: j, remove_param" 0 "eipa_sra"  } } */
-/* { dg-final { cleanup-tree-dump "eipa_sra" } } */

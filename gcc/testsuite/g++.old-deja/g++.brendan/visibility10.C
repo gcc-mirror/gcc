@@ -3,7 +3,7 @@
 struct base
 {
     protected:
-        void base_func() {}// { dg-error "" } .*is protected.*
+        void base_func() {}// { dg-message "" } .*protected.*
 };
 
 struct derived : public base

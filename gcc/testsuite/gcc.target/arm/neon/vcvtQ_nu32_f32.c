@@ -17,4 +17,3 @@ void test_vcvtQ_nu32_f32 (void)
 }
 
 /* { dg-final { scan-assembler "vcvt\.u32.f32\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

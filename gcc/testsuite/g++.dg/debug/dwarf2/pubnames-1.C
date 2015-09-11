@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/39706
 // { dg-do compile { target *-*-darwin* } }
-// { dg-options "-g -dA -fno-merge-debug-strings" }
+// { dg-options "-gdwarf-2 -dA -fno-merge-debug-strings" }
 //
 // There should be one debug_pubnames section generated.
 // { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubnames" 1 } }

@@ -11,5 +11,3 @@ void t(void)
 // { dg-final { scan-tree-dump-not "fallible" "gimple" } }
 // Whole constructor should be optimized away.
 // { dg-final { scan-tree-dump-not "int" "optimized" } }
-// { dg-final { cleanup-tree-dump "gimple" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

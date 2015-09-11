@@ -21,5 +21,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "will be loop blocked" "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */
+/* { dg-final { scan-tree-dump-times "tiled by" 1 "graphite" } } */

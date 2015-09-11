@@ -24,4 +24,3 @@ void foo (int base, int bound)
 }
 
 /* { dg-final { scan-tree-dump-not "loop iv compare heuristics" "profile_estimate"} } */
-/* { dg-final { cleanup-tree-dump "profile_estimate" } } */

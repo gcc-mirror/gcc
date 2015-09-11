@@ -66,6 +66,9 @@ create_file_directory (char *filename)
 #ifdef TARGET_POSIX_IO
             && mkdir (filename, 0755) == -1
 #else
+#ifdef mkdir
+#undef mkdir
+#endif
             && mkdir (filename) == -1
 #endif
             /* The directory might have been made by another process.  */

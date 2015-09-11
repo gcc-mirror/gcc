@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,6 +56,10 @@ package body Sinfo is
    ----------------------------
    -- Field Access Functions --
    ----------------------------
+
+   --  Note: The use of Assert (False or else ...) is just a device to allow
+   --  uniform format of the conditions following this. Note that csinfo
+   --  expects this uniform format.
 
    function ABE_Is_Certain
       (N : Node_Id) return Boolean is
@@ -1871,6 +1875,22 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       return Flag4 (N);
    end Is_Folded_In_Parser;
+
+   function Is_Generic_Contract_Pragma
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag2 (N);
+   end Is_Generic_Contract_Pragma;
+
+   function Is_Ghost_Pragma
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag3 (N);
+   end Is_Ghost_Pragma;
 
    function Is_Ignored
       (N : Node_Id) return Boolean is
@@ -5068,6 +5088,22 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       Set_Flag4 (N, Val);
    end Set_Is_Folded_In_Parser;
+
+   procedure Set_Is_Generic_Contract_Pragma
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag2 (N, Val);
+   end Set_Is_Generic_Contract_Pragma;
+
+   procedure Set_Is_Ghost_Pragma
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag3 (N, Val);
+   end Set_Is_Ghost_Pragma;
 
    procedure Set_Is_Ignored
       (N : Node_Id; Val : Boolean := True) is

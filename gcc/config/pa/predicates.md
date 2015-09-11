@@ -581,6 +581,10 @@
 ;; Return 1 if OP is a CONST_INT with the value 2, 4, or 8.  These are
 ;; the valid constants for shadd instructions.
 
+(define_predicate "mem_shadd_operand"
+  (and (match_code "const_int")
+       (match_test "pa_mem_shadd_constant_p (INTVAL (op))")))
+
 (define_predicate "shadd_operand"
   (and (match_code "const_int")
        (match_test "pa_shadd_constant_p (INTVAL (op))")))

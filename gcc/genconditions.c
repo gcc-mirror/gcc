@@ -31,7 +31,6 @@
 #include "tm.h"
 #include "rtl.h"
 #include "errors.h"
-#include "hashtab.h"
 #include "read-md.h"
 #include "gensupport.h"
 
@@ -70,13 +69,11 @@ write_header (void)
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
 #include \"insn-constants.h\"\n\
-#include \"ggc.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
-#include \"hashtab.h\"\n\
-#include \"hash-set.h\"\n\
 #include \"hard-reg-set.h\"\n\
 #include \"function.h\"\n\
+#include \"emit-rtl.h\"\n\
 \n\
 /* Fake - insn-config.h doesn't exist yet.  */\n\
 #define MAX_RECOG_OPERANDS 10\n\
@@ -90,6 +87,8 @@ write_header (void)
 #include \"hard-reg-set.h\"\n\
 #include \"predict.h\"\n\
 #include \"basic-block.h\"\n\
+#include \"bitmap.h\"\n\
+#include \"df.h\"\n\
 #include \"resource.h\"\n\
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\
@@ -213,42 +212,28 @@ write_writer (void)
 int
 main (int argc, char **argv)
 {
-  rtx desc;
-  int pattern_lineno; /* not used */
-  int code;
-
   progname = "genconditions";
 
   if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   /* Read the machine description.  */
-  while (1)
+  md_rtx_info info;
+  while (read_md_rtx (&info))
     {
-      desc = read_md_rtx (&pattern_lineno, &code);
-      if (desc == NULL)
-	break;
-
-      /* N.B. define_insn_and_split, define_cond_exec are handled
-	 entirely within read_md_rtx; we never see them.  */
-      switch (GET_CODE (desc))
+      rtx def = info.def;
+      add_c_test (get_c_test (def), -1);
+      switch (GET_CODE (def))
 	{
-	default:
-	  break;
-
 	case DEFINE_INSN:
 	case DEFINE_EXPAND:
-	  add_c_test (XSTR (desc, 2), -1);
 	  /* except.h needs to know whether there is an eh_return
 	     pattern in the machine description.  */
-	  if (!strcmp (XSTR (desc, 0), "eh_return"))
+	  if (!strcmp (XSTR (def, 0), "eh_return"))
 	    saw_eh_return = 1;
 	  break;
 
-	case DEFINE_SPLIT:
-	case DEFINE_PEEPHOLE:
-	case DEFINE_PEEPHOLE2:
-	  add_c_test (XSTR (desc, 1), -1);
+	default:
 	  break;
 	}
     }

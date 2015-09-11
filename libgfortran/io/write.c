@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "io.h"
+#include "fbuf.h"
 #include "format.h"
 #include "unix.h"
 #include <assert.h>
@@ -1031,47 +1032,6 @@ ztoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
   return buffer;
 }
 
-/* gfc_itoa()-- Integer to decimal conversion.
-   The itoa function is a widespread non-standard extension to standard
-   C, often declared in <stdlib.h>.  Even though the itoa defined here
-   is a static function we take care not to conflict with any prior
-   non-static declaration.  Hence the 'gfc_' prefix, which is normally
-   reserved for functions with external linkage.  */
-
-static const char *
-gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
-{
-  int negative;
-  char *p;
-  GFC_UINTEGER_LARGEST t;
-
-  assert (len >= GFC_ITOA_BUF_SIZE);
-
-  if (n == 0)
-    return "0";
-
-  negative = 0;
-  t = n;
-  if (n < 0)
-    {
-      negative = 1;
-      t = -n; /*must use unsigned to protect from overflow*/
-    }
-
-  p = buffer + GFC_ITOA_BUF_SIZE - 1;
-  *p = '\0';
-
-  while (t != 0)
-    {
-      *--p = '0' + (t % 10);
-      t /= 10;
-    }
-
-  if (negative)
-    *--p = '-';
-  return p;
-}
-
 
 void
 write_i (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
@@ -1585,6 +1545,7 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
       internal_error (&dtp->common, "list_formatted_write(): Bad type");
     }
 
+  fbuf_flush_list (dtp->u.p.current_unit, LIST_WRITING);
   dtp->u.p.char_flag = (type == BT_CHARACTER);
 }
 
@@ -1702,10 +1663,11 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   size_t clen;
   index_type elem_ctr;
   size_t obj_name_len;
-  void * p ;
+  void * p;
   char cup;
   char * obj_name;
   char * ext_name;
+  char * q;
   size_t ext_name_len;
   char rep_buff[NML_DIGITS];
   namelist_info * cmp;
@@ -1743,6 +1705,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
       for (dim_i = len; dim_i < clen; dim_i++)
 	{
 	  cup = toupper ((int) obj->var_name[dim_i]);
+	  if (cup == '+')
+	    cup = '%';
 	  write_character (dtp, &cup, 1, 1, NODELIM);
 	}
       write_character (dtp, "=", 1, 1, NODELIM);
@@ -1892,6 +1856,9 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		}
 
 	      ext_name[tot_len] = '\0';
+	      for (q = ext_name; *q; q++)
+		if (*q == '+')
+		  *q = '%';
 
 	      /* Now obj_name.  */
 

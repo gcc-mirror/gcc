@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Einfo;    use Einfo;
@@ -35,7 +34,6 @@ with Lib;      use Lib;
 with Opt;      use Opt;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
-with Snames;   use Snames;
 with Stand;    use Stand;
 with Uname;    use Uname;
 
@@ -111,6 +109,8 @@ package body Restrict is
 
    No_Use_Of_Pragma : array (Pragma_Id) of Source_Ptr :=
                         (others => No_Location);
+   --  Source location of pragma No_Use_Of_Pragma for given pragma, a value
+   --  of System_Location indicates occurrence in system.ads.
 
    No_Use_Of_Pragma_Warning : array (Pragma_Id) of Boolean :=
                                 (others => False);
@@ -1569,6 +1569,13 @@ package body Restrict is
       No_Specification_Of_Aspect_Set := True;
    end Set_Restriction_No_Specification_Of_Aspect;
 
+   procedure Set_Restriction_No_Specification_Of_Aspect (A_Id : Aspect_Id) is
+   begin
+      No_Specification_Of_Aspect_Set := True;
+      No_Specification_Of_Aspects (A_Id) := System_Location;
+      No_Specification_Of_Aspect_Warning (A_Id) := False;
+   end Set_Restriction_No_Specification_Of_Aspect;
+
    -----------------------------------------
    -- Set_Restriction_No_Use_Of_Attribute --
    -----------------------------------------
@@ -1588,6 +1595,13 @@ package body Restrict is
       end if;
    end Set_Restriction_No_Use_Of_Attribute;
 
+   procedure Set_Restriction_No_Use_Of_Attribute (A_Id : Attribute_Id) is
+   begin
+      No_Use_Of_Attribute_Set := True;
+      No_Use_Of_Attribute (A_Id) := System_Location;
+      No_Use_Of_Attribute_Warning (A_Id) := False;
+   end Set_Restriction_No_Use_Of_Attribute;
+
    --------------------------------------
    -- Set_Restriction_No_Use_Of_Pragma --
    --------------------------------------
@@ -1605,6 +1619,13 @@ package body Restrict is
       if Warning = False then
          No_Use_Of_Pragma_Warning (A_Id) := False;
       end if;
+   end Set_Restriction_No_Use_Of_Pragma;
+
+   procedure Set_Restriction_No_Use_Of_Pragma (A_Id : Pragma_Id) is
+   begin
+      No_Use_Of_Pragma_Set := True;
+      No_Use_Of_Pragma (A_Id) := System_Location;
+      No_Use_Of_Pragma_Warning (A_Id) := False;
    end Set_Restriction_No_Use_Of_Pragma;
 
    --------------------------------

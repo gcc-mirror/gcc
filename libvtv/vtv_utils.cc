@@ -1,5 +1,4 @@
-/* Copyright (C) 2012-2013
-   Free Software Foundation
+/* Copyright (C) 2012-2015 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -33,7 +32,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+#include <windows.h>
+#else
 #include <execinfo.h>
+#endif
+
 #include <unistd.h>
 #include <errno.h>
 
@@ -64,8 +68,12 @@ __vtv_open_log (const char *name)
 {
   char log_name[1024];
   char log_dir[512];
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  pid_t process_id = GetCurrentProcessId ();
+#else
   uid_t user_id = getuid ();
   pid_t process_id = getpid ();
+#endif
   char *logs_prefix;
   bool logs_dir_specified = false;
   int fd = -1;
@@ -74,14 +82,29 @@ __vtv_open_log (const char *name)
   if (logs_prefix && strlen (logs_prefix) > 0)
     {
       logs_dir_specified = true;
+#ifdef __MINGW32__
+      mkdir (logs_prefix);
+#else
       mkdir (logs_prefix, S_IRWXU);
-      snprintf (log_dir, sizeof (log_dir), "%s/vtv_logs", logs_prefix);
-      mkdir (log_dir, S_IRWXU);
+#endif
 
+      snprintf (log_dir, sizeof (log_dir), "%s/vtv_logs", logs_prefix);
+
+#ifdef __MINGW32__
+      mkdir (log_dir);
+#else
+      mkdir (log_dir, S_IRWXU);
+#endif
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+      snprintf (log_name, sizeof (log_name), "%s_%d_%s", log_dir,
+		(unsigned) process_id, name);
+      fd = open (log_name, O_WRONLY | O_APPEND | O_CREAT, S_IRWXU);
+#else
       snprintf (log_name, sizeof (log_name), "%s/%d_%d_%s", log_dir,
 		(unsigned) user_id, (unsigned) process_id, name);
       fd = open (log_name, O_WRONLY | O_APPEND | O_CREAT | O_NOFOLLOW,
 		 S_IRWXU);
+#endif
     }
   else
     fd = dup (2);
@@ -125,8 +148,12 @@ __vtv_add_to_log (int log_file, const char * format, ...)
   va_list ap;
   va_start (ap, format);
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  snprintf (output, sizeof (output), "VTV: PID=%ld ", GetCurrentProcessId ());
+#else
   snprintf (output, sizeof (output), "VTV: PID=%d PPID=%d ", getpid (),
             getppid ());
+#endif
   vtv_log_write (log_file, output);
   vsnprintf (output, sizeof (output), format, ap);
   vtv_log_write (log_file, output);
@@ -151,6 +178,7 @@ __vtv_log_verification_failure (const char *log_msg, bool generate_backtrace)
 
   __vtv_add_to_log (vtv_failures_log_fd, "%s", log_msg);
 
+#if !defined (__CYGWIN__) && !defined (__MINGW32__)
   if (generate_backtrace)
     {
 #define STACK_DEPTH 20
@@ -158,4 +186,5 @@ __vtv_log_verification_failure (const char *log_msg, bool generate_backtrace)
       int actual_depth = backtrace (callers, STACK_DEPTH);
       backtrace_symbols_fd (callers, actual_depth, vtv_failures_log_fd);
     }
+#endif
 }

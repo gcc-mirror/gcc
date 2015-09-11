@@ -25,4 +25,3 @@ SUBROUTINE check_dnucint_ana (dcore)
   END IF
 END SUBROUTINE check_dnucint_ana
 
-! { dg-final { cleanup-tree-dump "vect" } } 

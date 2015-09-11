@@ -36,12 +36,13 @@
 #else
 
 #include <chrono>
-#include <mutex>
+#include <bits/mutex.h>
 #include <ext/concurrence.h>
 #include <bits/alloc_traits.h>
 #include <bits/allocator.h>
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
+#include <bits/cxxabi_forced.h>
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 

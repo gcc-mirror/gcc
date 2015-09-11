@@ -19,4 +19,3 @@ int foo (int * __restrict__ ia,
 }
 
 /* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 0 "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

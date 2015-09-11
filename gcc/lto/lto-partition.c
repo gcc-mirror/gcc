@@ -21,42 +21,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "toplev.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
 #include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
+#include "predict.h"
 #include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
+#include "tree.h"
 #include "gimple.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
+#include "hard-reg-set.h"
+#include "options.h"
+#include "fold-const.h"
+#include "internal-fn.h"
 #include "cgraph.h"
+#include "target.h"
+#include "alloc-pool.h"
 #include "lto-streamer.h"
 #include "timevar.h"
 #include "params.h"
-#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
 #include "lto-partition.h"
+#include "stringpool.h"
 
 vec<ltrans_partition> ltrans_partitions;
 
@@ -72,6 +59,7 @@ new_partition (const char *name)
   part->encoder = lto_symtab_encoder_new (false);
   part->name = name;
   part->insns = 0;
+  part->symbols = 0;
   ltrans_partitions.safe_push (part);
   return part;
 }
@@ -155,6 +143,8 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
      or add external symbol.  */
   gcc_assert (c != SYMBOL_EXTERNAL
 	      && (c == SYMBOL_DUPLICATE || !symbol_partitioned_p (node)));
+
+  part->symbols++;
 
   lto_set_symtab_encoder_in_partition (part->encoder, node);
 
@@ -273,6 +263,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
     {
       symtab_node *node = lto_symtab_encoder_deref (partition->encoder,
 						   n_nodes);
+      partition->symbols--;
       cgraph_node *cnode;
 
       /* After UNDO we no longer know what was visited.  */
@@ -461,7 +452,7 @@ lto_balanced_map (int n_lto_partitions)
   auto_vec<varpool_node *> varpool_order;
   int i;
   struct cgraph_node *node;
-  int total_size = 0, best_total_size = 0;
+  int original_total_size, total_size = 0, best_total_size = 0;
   int partition_size;
   ltrans_partition partition;
   int last_visited_node = 0;
@@ -486,6 +477,8 @@ lto_balanced_map (int n_lto_partitions)
 	if (!node->alias)
 	  total_size += inline_summaries->get (node)->size;
       }
+
+  original_total_size = total_size;
 
   /* Streaming works best when the source units do not cross partition
      boundaries much.  This is because importing function from a source
@@ -781,31 +774,31 @@ lto_balanced_map (int n_lto_partitions)
   add_sorted_nodes (next_nodes, partition);
 
   free (order);
+
+  if (symtab->dump_file)
+    {
+      fprintf (symtab->dump_file, "\nPartition sizes:\n");
+      unsigned partitions = ltrans_partitions.length ();
+
+      for (unsigned i = 0; i < partitions ; i++)
+	{
+	  ltrans_partition p = ltrans_partitions[i];
+	  fprintf (symtab->dump_file, "partition %d contains %d (%2.2f%%)"
+		   " symbols and %d (%2.2f%%) insns\n", i, p->symbols,
+		   100.0 * p->symbols / n_nodes, p->insns,
+		   100.0 * p->insns / original_total_size);
+	}
+
+      fprintf (symtab->dump_file, "\n");
+    }
 }
 
-/* Mangle NODE symbol name into a local name.  
-   This is necessary to do
-   1) if two or more static vars of same assembler name
-      are merged into single ltrans unit.
-   2) if prevoiusly static var was promoted hidden to avoid possible conflict
-      with symbols defined out of the LTO world.
-*/
+/* Return true if we must not change the name of the NODE.  The name as
+   extracted from the corresponding decl should be passed in NAME.  */
 
 static bool
-privatize_symbol_name (symtab_node *node)
+must_not_rename (symtab_node *node, const char *name)
 {
-  tree decl = node->decl;
-  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
-  const char *name;
-
-  /* If we want to privatize instrumentation clone
-     then we need to change original function name
-     which is used via transparent alias chain.  */
-  if (cnode && cnode->instrumentation_clone)
-    decl = cnode->orig_decl;
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
   /* Our renaming machinery do not handle more than one change of assembler name.
      We should not need more than one anyway.  */
   if (node->lto_file_data
@@ -813,9 +806,9 @@ privatize_symbol_name (symtab_node *node)
     {
       if (symtab->dump_file)
 	fprintf (symtab->dump_file,
-		"Not privatizing symbol name: %s. It privatized already.\n",
-		name);
-      return false;
+		 "Not privatizing symbol name: %s. It privatized already.\n",
+		 name);
+      return true;
     }
   /* Avoid mangling of already mangled clones. 
      ???  should have a flag whether a symbol has a 'private' name already,
@@ -825,37 +818,140 @@ privatize_symbol_name (symtab_node *node)
     {
       if (symtab->dump_file)
 	fprintf (symtab->dump_file,
-		"Not privatizing symbol name: %s. Has unique name.\n",
-		name);
-      return false;
+		 "Not privatizing symbol name: %s. Has unique name.\n",
+		 name);
+      return true;
     }
+  return false;
+}
+
+/* If we are an offload compiler, we may have to rewrite symbols to be
+   valid on this target.  Return either PTR or a modified version of it.  */
+
+static const char *
+maybe_rewrite_identifier (const char *ptr)
+{
+#if defined ACCEL_COMPILER && (defined NO_DOT_IN_LABEL || defined NO_DOLLAR_IN_LABEL)
+#ifndef NO_DOT_IN_LABEL
+  char valid = '.';
+  const char reject[] = "$";
+#elif !defined NO_DOLLAR_IN_LABEL
+  char valid = '$';
+  const char reject[] = ".";
+#else
+  char valid = '_';
+  const char reject[] = ".$";
+#endif
+
+  char *copy = NULL;
+  const char *match = ptr;
+  for (;;)
+    {
+      size_t off = strcspn (match, reject);
+      if (match[off] == '\0')
+	break;
+      if (copy == NULL)
+	{
+	  copy = xstrdup (ptr);
+	  match = copy;
+	}
+      copy[off] = valid;
+    }
+  return match;
+#else
+  return ptr;
+#endif
+}
+
+/* Ensure that the symbol in NODE is valid for the target, and if not,
+   rewrite it.  */
+
+static void
+validize_symbol_for_target (symtab_node *node)
+{
+  tree decl = node->decl;
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  if (must_not_rename (node, name))
+    return;
+
+  const char *name2 = maybe_rewrite_identifier (name);
+  if (name2 != name)
+    {
+      symtab->change_decl_assembler_name (decl, get_identifier (name2));
+      if (node->lto_file_data)
+	lto_record_renamed_decl (node->lto_file_data, name,
+				 IDENTIFIER_POINTER
+				 (DECL_ASSEMBLER_NAME (decl)));
+    }
+}
+
+/* Helper for privatize_symbol_name.  Mangle NODE symbol name
+   represented by DECL.  */
+
+static bool
+privatize_symbol_name_1 (symtab_node *node, tree decl)
+{
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  if (must_not_rename (node, name))
+    return false;
+
+  name = maybe_rewrite_identifier (name);
   symtab->change_decl_assembler_name (decl,
-				      clone_function_name (decl, "lto_priv"));
+				      clone_function_name_1 (name,
+							     "lto_priv"));
+
   if (node->lto_file_data)
     lto_record_renamed_decl (node->lto_file_data, name,
 			     IDENTIFIER_POINTER
 			     (DECL_ASSEMBLER_NAME (decl)));
+
+  if (symtab->dump_file)
+    fprintf (symtab->dump_file,
+	     "Privatizing symbol name: %s -> %s\n",
+	     name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+
+  return true;
+}
+
+/* Mangle NODE symbol name into a local name.
+   This is necessary to do
+   1) if two or more static vars of same assembler name
+      are merged into single ltrans unit.
+   2) if previously static var was promoted hidden to avoid possible conflict
+      with symbols defined out of the LTO world.  */
+
+static bool
+privatize_symbol_name (symtab_node *node)
+{
+  if (!privatize_symbol_name_1 (node, node->decl))
+    return false;
+
   /* We could change name which is a target of transparent alias
      chain of instrumented function name.  Fix alias chain if so  .*/
-  if (cnode)
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     {
       tree iname = NULL_TREE;
       if (cnode->instrumentation_clone)
-	iname = DECL_ASSEMBLER_NAME (cnode->decl);
-      else if (cnode->instrumented_version
-	       && cnode->instrumented_version->orig_decl == decl)
-	iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
-
-      if (iname)
 	{
-	  gcc_assert (IDENTIFIER_TRANSPARENT_ALIAS (iname));
-	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (decl);
+	  /* If we want to privatize instrumentation clone
+	     then we also need to privatize original function.  */
+	  if (cnode->instrumented_version)
+	    privatize_symbol_name (cnode->instrumented_version);
+	  else
+	    privatize_symbol_name_1 (cnode, cnode->orig_decl);
+	  iname = DECL_ASSEMBLER_NAME (cnode->decl);
+	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (cnode->orig_decl);
+	}
+      else if (cnode->instrumented_version
+	       && cnode->instrumented_version->orig_decl == cnode->decl)
+	{
+	  iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
+	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (cnode->decl);
 	}
     }
-  if (symtab->dump_file)
-    fprintf (symtab->dump_file,
-	    "Privatizing symbol name: %s -> %s\n",
-	    name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+
   return true;
 }
 
@@ -868,7 +964,10 @@ promote_symbol (symtab_node *node)
   if (DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN
       && DECL_VISIBILITY_SPECIFIED (node->decl)
       && TREE_PUBLIC (node->decl))
-    return;
+    {
+      validize_symbol_for_target (node);
+      return;
+    }
 
   gcc_checking_assert (!TREE_PUBLIC (node->decl)
 		       && !DECL_EXTERNAL (node->decl));
@@ -1007,7 +1106,10 @@ lto_promote_cross_file_statics (void)
 	      /* ... or if we do not partition it. This mean that it will
 		 appear in every partition refernecing it.  */
 	      || node->get_partitioning_class () != SYMBOL_PARTITION)
-	    continue;
+	    {
+	      validize_symbol_for_target (node);
+	      continue;
+	    }
 
           promote_symbol (node);
         }
@@ -1022,5 +1124,8 @@ lto_promote_statics_nonwpa (void)
 {
   symtab_node *node;
   FOR_EACH_SYMBOL (node)
-    rename_statics (NULL, node);
+    {
+      rename_statics (NULL, node);
+      validize_symbol_for_target (node);
+    }
 }

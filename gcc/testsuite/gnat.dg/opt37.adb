@@ -39,4 +39,3 @@ package body Opt37 is
 end Opt37;
 
 -- { dg-final { scan-tree-dump-not "alloca" "optimized" } }
--- { dg-final { cleanup-tree-dump "optimized" } }

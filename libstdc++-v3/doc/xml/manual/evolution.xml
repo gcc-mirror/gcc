@@ -618,7 +618,7 @@ Python pretty-printers are added for use with appropriately-advanced versions of
 </para>
 
 <para>
-Audit for application of function attributes notrow, const, pure, and noreturn.
+Audit for application of function attributes nothrow, const, pure, and noreturn.
 </para>
 
 <para>
@@ -631,4 +631,134 @@ now defaults to zero.
 </para>
 </section>
 
+<section xml:id="api.rel_460"><info><title><constant>4.6</constant></title></info>
+
+<para>
+  Use constexpr and nullptr where appropriate throughout the library.
+</para>
+
+<para>
+  The library was updated to avoid including
+  <filename class="headerfile">stddef.h</filename> in order
+  to reduce namespace pollution.
+</para>
+
+<para>Reference-count annotations to assist data race detectors.
+</para>
+
+<para>
+  Added <function>make_exception_ptr</function> as an alias of
+  <function>copy_exception</function>.
+</para>
+
+</section>
+
+<section xml:id="api.rel_470"><info><title><constant>4.7</constant></title></info>
+
+<para>Use of noexcept throughout library.</para>
+
+<para>Partial support for C++11 allocators first appears.</para>
+
+<para>
+  <classname>monotonic_clock</classname> renamed to
+  <classname>steady_clock</classname> as required by the final C++11
+  standard.
+</para>
+
+<para>A new clocale model for newlib is available.</para>
+
+<para>
+  The library was updated to avoid including
+  <filename class="headerfile">unistd.h</filename> in order
+  to reduce namespace pollution.
+</para>
+
+<para>Debug Mode was improved for unordered containers. </para>
+
+</section>
+
+<section xml:id="api.rel_480"><info><title><constant>4.8</constant></title></info>
+
+<para>
+  New random number engines and distributions.
+  Optimisations for random.
+</para>
+
+<para>New --enable-libstdcxx-verbose configure option</para>
+
+<para>
+  The --enable-libstdcxx-time configure option becomes unnecessary given a
+  sufficiently recent glibc.
+</para>
+
+</section>
+
+<section xml:id="api.rel_490"><info><title><constant>4.9</constant></title></info>
+
+<para> Implementation of <classname>regex</classname> completed. </para>
+
+<para> C++14 library and TS implementations are added. </para>
+
+<para> <function>copy_exception</function> deprecated. </para>
+
+<para> <classname>__gnu_cxx::array_allocator</classname> deprecated. </para>
+
+</section>
+
+<section xml:id="api.rel_50"><info><title><constant>5</constant></title></info>
+
+<para>
+  ABI transition adds new implementations of several components, using the
+  <code>abi_tag</code> attribute and the <code>__cxx11</code> inline
+  namespace to distinguish the new entities from the old ones.
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+    Use of the new or old ABI can be selected per-translation unit with the
+    <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro.
+  </para>
+</listitem>
+<listitem>
+  <para>
+    New non-reference-counted <classname>string</classname> implementation.
+  </para>
+</listitem>
+<listitem>
+  <para>
+    New <classname>list</classname> implementation containing a new
+    data member in order to provide O(1) <function>size()</function>.
+  </para>
+</listitem>
+</itemizedlist>
+
+<para>
+  C++11 support completed (movable iostreams, new I/O manipulators,
+  Unicode conversion utilities, atomic operations for
+  <classname>shared_ptr</classname>, functions for notifying condition
+  variables and making futures ready at thread exit).
+</para>
+
+<para>
+   Changed formatting of floating point types when
+   <code>ios_base::fixed|ios_base::scientific</code> is set in a stream's
+   format flags.
+</para>
+
+<para> Improved C++14 support and TS implementations. </para>
+
+<para> New random number engines and distributions. </para>
+
+<para>
+  GDB Xmethods for containers and <classname>unique_ptr</classname> added.
+</para>
+
+<para>
+  <classname>has_trivial_default_constructor</classname>,
+  <classname>has_trivial_copy_constructor</classname> and
+  <classname>has_trivial_copy_assign</classname> deprecated.
+</para>
+
+</section>
 </section>

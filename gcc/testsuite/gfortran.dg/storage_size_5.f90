@@ -41,4 +41,3 @@ end subroutine test2
 
 ! { dg-final { scan-tree-dump-times "k1 = \\(integer\\(kind=1\\)\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "k2 = \\(integer\\(kind=2\\)\\)" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

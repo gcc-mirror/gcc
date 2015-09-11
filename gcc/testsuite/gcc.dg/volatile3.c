@@ -10,4 +10,3 @@ void foo(int i)
 }
 
 /* { dg-final { scan-tree-dump-not "{v}" "ssa" } } */
-/* { dg-final { cleanup-tree-dump "ssa" } } */

@@ -19,4 +19,3 @@ libvector_AccSquareNorm_ref (unsigned int *acc,
 }
 
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { vect_extract_even_odd } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

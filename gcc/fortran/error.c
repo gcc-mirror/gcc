@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "flags.h"
+#include "options.h"
 #include "gfortran.h"
 
 #include "diagnostic.h"
@@ -40,12 +40,12 @@ static int suppress_errors = 0;
 
 static bool warnings_not_errors = false;
 
-static int terminal_width, errors, warnings;
-
-static gfc_error_buf error_buffer, warning_buffer, *cur_error_buffer;
+static int terminal_width;
 
 /* True if the error/warnings should be buffered.  */
 static bool buffered_p;
+
+static gfc_error_buffer error_buffer;
 /* These are always buffered buffers (.flush_p == false) to be used by
    the pretty-printer.  */
 static output_buffer *pp_error_buffer, *pp_warning_buffer;
@@ -100,8 +100,6 @@ void
 gfc_error_init_1 (void)
 {
   terminal_width = gfc_get_terminal_width ();
-  errors = 0;
-  warnings = 0;
   gfc_buffer_error (false);
 }
 
@@ -119,42 +117,9 @@ gfc_buffer_error (bool flag)
    buffered_p.  */
 
 static void
-error_char (char c)
+error_char (char)
 {
-  if (buffered_p)
-    {
-      if (cur_error_buffer->index >= cur_error_buffer->allocated)
-	{
-	  cur_error_buffer->allocated = cur_error_buffer->allocated
-				      ? cur_error_buffer->allocated * 2 : 1000;
-	  cur_error_buffer->message = XRESIZEVEC (char, cur_error_buffer->message,
-						  cur_error_buffer->allocated);
-	}
-      cur_error_buffer->message[cur_error_buffer->index++] = c;
-    }
-  else
-    {
-      if (c != 0)
-	{
-	  /* We build up complete lines before handing things
-	     over to the library in order to speed up error printing.  */
-	  static char *line;
-	  static size_t allocated = 0, index = 0;
-
-	  if (index + 1 >= allocated)
-	    {
-	      allocated = allocated ? allocated * 2 : 1000;
-	      line = XRESIZEVEC (char, line, allocated);
-	    }
-	  line[index++] = c;
-	  if (c == '\n')
-	    {
-	      line[index] = '\0';
-	      fputs (line, stderr);
-	      index = 0;
-	    }
-	}
-    }
+  /* FIXME: Unused function to be removed in a subsequent patch.  */
 }
 
 
@@ -782,18 +747,6 @@ error_printf (const char *gmsgid, ...)
 }
 
 
-/* Increment the number of errors, and check whether too many have 
-   been printed.  */
-
-static void
-gfc_increment_error_count (void)
-{
-  errors++;
-  if ((gfc_option.max_errors != 0) && (errors >= gfc_option.max_errors))
-    gfc_fatal_error ("Error count reached limit of %d.", gfc_option.max_errors);
-}
-
-
 /* Clear any output buffered in a pretty-print output_buffer.  */
 
 static void
@@ -804,37 +757,9 @@ gfc_clear_pp_buffer (output_buffer *this_buffer)
   pp->buffer = this_buffer;
   pp_clear_output_area (pp);
   pp->buffer = tmp_buffer;
-}
-
-
-/* Issue a warning.  */
-/* Use gfc_warning instead, unless two locations are used in the same
-   warning or for scanner.c, if the location is not properly set up.  */
-
-void
-gfc_warning_1 (const char *gmsgid, ...)
-{
-  va_list argp;
-
-  if (inhibit_warnings)
-    return;
-
-  warning_buffer.flag = 1;
-  warning_buffer.index = 0;
-  cur_error_buffer = &warning_buffer;
-
-  va_start (argp, gmsgid);
-  error_print (_("Warning:"), _(gmsgid), argp);
-  va_end (argp);
-
-  error_char ('\0');
-
-  if (!buffered_p)
-  {
-    warnings++;
-    if (warnings_are_errors)
-      gfc_increment_error_count();
-  }
+  /* We need to reset last_location, otherwise we may skip caret lines
+     when we actually give a diagnostic.  */
+  global_dc->last_location = UNKNOWN_LOCATION;
 }
 
 
@@ -889,9 +814,6 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
 }
 
 /* Issue a warning.  */
-/* This function uses the common diagnostics, but does not support
-   two locations; when being used in scanner.c, ensure that the location
-   is properly setup. Otherwise, use gfc_warning_1.   */
 
 bool
 gfc_warning (int opt, const char *gmsgid, ...)
@@ -900,17 +822,6 @@ gfc_warning (int opt, const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   bool ret = gfc_warning (opt, gmsgid, argp);
-  va_end (argp);
-  return ret;
-}
-
-bool
-gfc_warning (const char *gmsgid, ...)
-{
-  va_list argp;
-
-  va_start (argp, gmsgid);
-  bool ret = gfc_warning (0, gmsgid, argp);
   va_end (argp);
   return ret;
 }
@@ -936,84 +847,6 @@ gfc_notification_std (int std)
    feature.  An error/warning will be issued if the currently selected
    standard does not contain the requested bits.  Return false if
    an error is generated.  */
-
-bool
-gfc_notify_std_1 (int std, const char *gmsgid, ...)
-{
-  va_list argp;
-  bool warning;
-  const char *msg1, *msg2;
-  char *buffer;
-
-  warning = ((gfc_option.warn_std & std) != 0) && !inhibit_warnings;
-  if ((gfc_option.allow_std & std) != 0 && !warning)
-    return true;
-
-  if (suppress_errors)
-    return warning ? true : false;
-
-  cur_error_buffer = warning ? &warning_buffer : &error_buffer;
-  cur_error_buffer->flag = 1;
-  cur_error_buffer->index = 0;
-
-  if (warning)
-    msg1 = _("Warning:");
-  else
-    msg1 = _("Error:");
-  
-  switch (std)
-  {
-    case GFC_STD_F2008_TS:
-      msg2 = "TS 29113/TS 18508:";
-      break;
-    case GFC_STD_F2008_OBS:
-      msg2 = _("Fortran 2008 obsolescent feature:");
-      break;
-    case GFC_STD_F2008:
-      msg2 = "Fortran 2008:";
-      break;
-    case GFC_STD_F2003:
-      msg2 = "Fortran 2003:";
-      break;
-    case GFC_STD_GNU:
-      msg2 = _("GNU Extension:");
-      break;
-    case GFC_STD_LEGACY:
-      msg2 = _("Legacy Extension:");
-      break;
-    case GFC_STD_F95_OBS:
-      msg2 = _("Obsolescent feature:");
-      break;
-    case GFC_STD_F95_DEL:
-      msg2 = _("Deleted feature:");
-      break;
-    default:
-      gcc_unreachable ();
-  }
-
-  buffer = (char *) alloca (strlen (msg1) + strlen (msg2) + 2);
-  strcpy (buffer, msg1);
-  strcat (buffer, " ");
-  strcat (buffer, msg2);
-
-  va_start (argp, gmsgid);
-  error_print (buffer, _(gmsgid), argp);
-  va_end (argp);
-
-  error_char ('\0');
-
-  if (!buffered_p)
-    {
-      if (warning && !warnings_are_errors)
-	warnings++;
-      else
-	gfc_increment_error_count();
-      cur_error_buffer->flag = 0;
-    }
-
-  return (warning && !warnings_are_errors) ? true : false;
-}
-
 
 bool
 gfc_notify_std (int std, const char *gmsgid, ...)
@@ -1077,35 +910,6 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 }
 
 
-/* Immediate warning (i.e. do not buffer the warning).  */
-/* Use gfc_warning_now instead, unless two locations are used in the same
-   warning or for scanner.c, if the location is not properly set up.  */
-
-void
-gfc_warning_now_1 (const char *gmsgid, ...)
-{
-  va_list argp;
-  bool buffered_p_saved;
-
-  if (inhibit_warnings)
-    return;
-
-  buffered_p_saved = buffered_p;
-  buffered_p = false;
-  warnings++;
-
-  va_start (argp, gmsgid);
-  error_print (_("Warning:"), _(gmsgid), argp);
-  va_end (argp);
-
-  error_char ('\0');
-
-  if (warnings_are_errors)
-    gfc_increment_error_count();
-
-  buffered_p = buffered_p_saved;
-}
-
 /* Called from output_format -- during diagnostic message processing
    to handle Fortran specific format specifiers with the following meanings:
 
@@ -1123,7 +927,7 @@ gfc_format_decoder (pretty_printer *pp,
     case 'C':
     case 'L':
       {
-	static const char *result = "(1)";
+	static const char *result[2] = { "(1)", "(2)" };
 	locus *loc;
 	if (*spec == 'C')
 	  loc = &gfc_current_locus;
@@ -1131,13 +935,14 @@ gfc_format_decoder (pretty_printer *pp,
 	  loc = va_arg (*text->args_ptr, locus *);
 	gcc_assert (loc->nextc - loc->lb->line >= 0);
 	unsigned int offset = loc->nextc - loc->lb->line;
-	gcc_assert (text->locus);
-	*text->locus
-	  = linemap_position_for_loc_and_offset (line_table,
-						 loc->lb->location,
-						 offset);
-	global_dc->caret_char = '1';
-	pp_string (pp, result);
+	/* If location[0] != UNKNOWN_LOCATION means that we already
+	   processed one of %C/%L.  */
+	int loc_num = text->get_location (0) == UNKNOWN_LOCATION ? 0 : 1;
+	text->set_location (loc_num,
+			    linemap_position_for_loc_and_offset (line_table,
+								 loc->lb->location,
+								 offset));
+	pp_string (pp, result[loc_num]);
 	return true;
       }
     default:
@@ -1145,11 +950,11 @@ gfc_format_decoder (pretty_printer *pp,
     }
 }
 
-/* Return a malloc'd string describing a location.  The caller is
-   responsible for freeing the memory.  */
+/* Return a malloc'd string describing the kind of diagnostic.  The
+   caller is responsible for freeing the memory.  */
 static char *
-gfc_diagnostic_build_prefix (diagnostic_context *context,
-			     const diagnostic_info *diagnostic)
+gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
+				  const diagnostic_info *diagnostic)
 {
   static const char *const diagnostic_kind_text[] = {
 #define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
@@ -1181,12 +986,11 @@ gfc_diagnostic_build_prefix (diagnostic_context *context,
    responsible for freeing the memory.  */
 static char *
 gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
-				   const diagnostic_info *diagnostic)
+				   expanded_location s)
 {
   pretty_printer *pp = context->printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
-  expanded_location s = diagnostic_expand_location (diagnostic);
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
 	  : !strcmp (s.file, N_("<built-in>"))
@@ -1197,35 +1001,160 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 	  : build_message_string ("%s%s:%d:%s", locus_cs, s.file, s.line, locus_ce));
 }
 
-static void
+/* Return a malloc'd string describing two locations.  The caller is
+   responsible for freeing the memory.  */
+static char *
+gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
+				   expanded_location s, expanded_location s2)
+{
+  pretty_printer *pp = context->printer;
+  const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
+  const char *locus_ce = colorize_stop (pp_show_color (pp));
+
+  return (s.file == NULL
+	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
+	  : !strcmp (s.file, N_("<built-in>"))
+	  ? build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce)
+	  : context->show_column
+	  ? build_message_string ("%s%s:%d:%d-%d:%s", locus_cs, s.file, s.line,
+				  MIN (s.column, s2.column),
+				  MAX (s.column, s2.column), locus_ce)
+	  : build_message_string ("%s%s:%d:%s", locus_cs, s.file, s.line,
+				  locus_ce));
+}
+
+/* This function prints the locus (file:line:column), the diagnostic kind
+   (Error, Warning) and (optionally) the caret line (a source line
+   with '1' and/or '2' below it).
+
+   With -fdiagnostic-show-caret (the default) and for valid locations,
+   it prints for one location:
+
+       [locus]:
+       
+          some code
+                 1
+       Error: Some error at (1)
+        
+   for two locations that fit in the same locus line:
+
+       [locus]:
+       
+         some code and some more code
+                1       2
+       Error: Some error at (1) and (2)
+
+   and for two locations that do not fit in the same locus line:
+
+       [locus]:
+       
+         some code
+                1
+       [locus2]:
+       
+         some other code
+           2
+       Error: Some error at (1) and (2)
+       
+  With -fno-diagnostic-show-caret or if one of the locations is not
+  valid, it prints for one location (or for two locations that fit in
+  the same locus line):
+
+       [locus]: Error: Some error at (1) and (2)
+
+   and for two locations that do not fit in the same locus line:
+
+       [name]:[locus]: Error: (1)
+       [name]:[locus2]: Error: Some error at (1) and (2)
+*/
+static void 
 gfc_diagnostic_starter (diagnostic_context *context,
 			diagnostic_info *diagnostic)
 {
-  char * locus_prefix = gfc_diagnostic_build_locus_prefix (context, diagnostic);
-  char * prefix = gfc_diagnostic_build_prefix (context, diagnostic);
-  /* First we assume there is a caret line.  */
-  pp_set_prefix (context->printer, NULL);
-  if (pp_needs_newline (context->printer))
-    pp_newline (context->printer);
-  pp_verbatim (context->printer, locus_prefix);
-  /* Fortran uses an empty line between locus and caret line.  */
-  pp_newline (context->printer);
-  diagnostic_show_locus (context, diagnostic);
-  if (pp_needs_newline (context->printer))
+  char * kind_prefix = gfc_diagnostic_build_kind_prefix (context, diagnostic);
+
+  expanded_location s1 = diagnostic_expand_location (diagnostic);
+  expanded_location s2;
+  bool one_locus = diagnostic_location (diagnostic, 1) == UNKNOWN_LOCATION;
+  bool same_locus = false;
+
+  if (!one_locus) 
     {
+      s2 = diagnostic_expand_location (diagnostic, 1);
+      same_locus = diagnostic_same_line (context, s1, s2);
+    }
+
+  char * locus_prefix = (one_locus || !same_locus)
+    ? gfc_diagnostic_build_locus_prefix (context, s1)
+    : gfc_diagnostic_build_locus_prefix (context, s1, s2);
+
+  if (!context->show_caret
+      || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
+      || diagnostic_location (diagnostic, 0) == context->last_location)
+    {
+      pp_set_prefix (context->printer,
+		     concat (locus_prefix, " ", kind_prefix, NULL));
+      free (locus_prefix);
+
+      if (one_locus || same_locus)
+	{
+	  free (kind_prefix);
+	  return;
+	}
+      /* In this case, we print the previous locus and prefix as:
+
+	  [locus]:[prefix]: (1)
+
+	 and we flush with a new line before setting the new prefix.  */
+      pp_string (context->printer, "(1)");
+      pp_newline (context->printer);
+      locus_prefix = gfc_diagnostic_build_locus_prefix (context, s2);
+      pp_set_prefix (context->printer,
+		     concat (locus_prefix, " ", kind_prefix, NULL));
+      free (kind_prefix);
+      free (locus_prefix);
+    }
+  else
+    {
+      pp_verbatim (context->printer, locus_prefix);
+      free (locus_prefix);
+      /* Fortran uses an empty line between locus and caret line.  */
+      pp_newline (context->printer);
+      diagnostic_show_locus (context, diagnostic);
       pp_newline (context->printer);
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */
-      pp_set_prefix (context->printer, prefix);
+      pp_set_prefix (context->printer, kind_prefix);
+
+      if (one_locus || same_locus)
+	  return;
+
+      locus_prefix = gfc_diagnostic_build_locus_prefix (context, s2);
+      if (diagnostic_location (diagnostic, 1) <= BUILTINS_LOCATION)
+	{
+	  /* No caret line for the second location. Override the previous
+	     prefix with [locus2]:[prefix].  */
+	  pp_set_prefix (context->printer,
+			 concat (locus_prefix, " ", kind_prefix, NULL));
+	  free (kind_prefix);
+	  free (locus_prefix);
+	}
+      else
+	{
+	  /* We print the caret for the second location.  */
+	  pp_verbatim (context->printer, locus_prefix);
+	  free (locus_prefix);
+	  /* Fortran uses an empty line between locus and caret line.  */
+	  pp_newline (context->printer);
+	  s1.column = 0; /* Print only a caret line for s2.  */
+	  diagnostic_print_caret_line (context, s2, s1,
+				       context->caret_chars[1], '\0');
+	  pp_newline (context->printer);
+	  /* If the caret line was shown, the prefix does not contain the
+	     locus.  */
+	  pp_set_prefix (context->printer, kind_prefix);
+	}
     }
-  else 
-    {
-      /* Otherwise, start again.  */
-      pp_clear_output_area(context->printer);
-      pp_set_prefix (context->printer, concat (locus_prefix, " ", prefix, NULL));
-      free (prefix);
-    }
-  free (locus_prefix);
 }
 
 static void
@@ -1236,10 +1165,25 @@ gfc_diagnostic_finalizer (diagnostic_context *context,
   pp_newline_and_flush (context->printer);
 }
 
+/* Immediate warning (i.e. do not buffer the warning) with an explicit
+   location.  */
+
+bool
+gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+  bool ret;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, loc, DK_WARNING);
+  diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
+  va_end (argp);
+  return ret;
+}
+
 /* Immediate warning (i.e. do not buffer the warning).  */
-/* This function uses the common diagnostics, but does not support
-   two locations; when being used in scanner.c, ensure that the location
-   is properly setup. Otherwise, use gfc_warning_now_1.   */
 
 bool
 gfc_warning_now (int opt, const char *gmsgid, ...)
@@ -1257,37 +1201,16 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   return ret;
 }
 
-/* Immediate warning (i.e. do not buffer the warning).  */
-/* This function uses the common diagnostics, but does not support
-   two locations; when being used in scanner.c, ensure that the location
-   is properly setup. Otherwise, use gfc_warning_now_1.   */
-
-bool
-gfc_warning_now (const char *gmsgid, ...)
-{
-  va_list argp;
-  diagnostic_info diagnostic;
-  bool ret;
-
-  va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
-		       DK_WARNING);
-  ret = report_diagnostic (&diagnostic);
-  va_end (argp);
-  return ret;
-}
-
 
 /* Immediate error (i.e. do not buffer).  */
-/* This function uses the common diagnostics, but does not support
-   two locations; when being used in scanner.c, ensure that the location
-   is properly setup. Otherwise, use gfc_error_now_1.   */
 
 void
 gfc_error_now (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
+
+  error_buffer.flag = true;
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ERROR);
@@ -1317,8 +1240,6 @@ gfc_fatal_error (const char *gmsgid, ...)
 void
 gfc_clear_warning (void)
 {
-  warning_buffer.flag = 0;
-
   gfc_clear_pp_buffer (pp_warning_buffer);
   warningcount_buffered = 0;
   werrorcount_buffered = 0;
@@ -1331,15 +1252,7 @@ gfc_clear_warning (void)
 void
 gfc_warning_check (void)
 {
-  if (warning_buffer.flag)
-    {
-      warnings++;
-      if (warning_buffer.message != NULL)
-	fputs (warning_buffer.message, stderr);
-      gfc_clear_warning ();
-    }
-  /* This is for the new diagnostics machinery.  */
-  else if (! gfc_output_buffer_empty_p (pp_warning_buffer))
+  if (! gfc_output_buffer_empty_p (pp_warning_buffer))
     {
       pretty_printer *pp = global_dc->printer;
       output_buffer *tmp_buffer = pp->buffer;
@@ -1348,71 +1261,15 @@ gfc_warning_check (void)
       warningcount += warningcount_buffered;
       werrorcount += werrorcount_buffered;
       gcc_assert (warningcount_buffered + werrorcount_buffered == 1);
+      pp->buffer = tmp_buffer;
       diagnostic_action_after_output (global_dc, 
 				      warningcount_buffered 
 				      ? DK_WARNING : DK_ERROR);
-      pp->buffer = tmp_buffer;
     }
 }
 
 
 /* Issue an error.  */
-/* Use gfc_error instead, unless two locations are used in the same
-   warning or for scanner.c, if the location is not properly set up.  */
-
-void
-gfc_error_1 (const char *gmsgid, ...)
-{
-  va_list argp;
-
-  if (warnings_not_errors)
-    goto warning;
-
-  if (suppress_errors)
-    return;
-
-  error_buffer.flag = 1;
-  error_buffer.index = 0;
-  cur_error_buffer = &error_buffer;
-
-  va_start (argp, gmsgid);
-  error_print (_("Error:"), _(gmsgid), argp);
-  va_end (argp);
-
-  error_char ('\0');
-
-  if (!buffered_p)
-    gfc_increment_error_count();
-
-  return;
-
-warning:
-
-  if (inhibit_warnings)
-    return;
-
-  warning_buffer.flag = 1;
-  warning_buffer.index = 0;
-  cur_error_buffer = &warning_buffer;
-
-  va_start (argp, gmsgid);
-  error_print (_("Warning:"), _(gmsgid), argp);
-  va_end (argp);
-
-  error_char ('\0');
-
-  if (!buffered_p)
-  {
-    warnings++;
-    if (warnings_are_errors)
-      gfc_increment_error_count();
-  }
-}
-
-/* Issue an error.  */
-/* This function uses the common diagnostics, but does not support
-   two locations; when being used in scanner.c, ensure that the location
-   is properly setup. Otherwise, use gfc_error_1.   */
 
 static void
 gfc_error (const char *gmsgid, va_list ap)
@@ -1472,38 +1329,6 @@ gfc_error (const char *gmsgid, ...)
 }
 
 
-/* Immediate error.  */
-/* Use gfc_error_now instead, unless two locations are used in the same
-   warning or for scanner.c, if the location is not properly set up.  */
-
-void
-gfc_error_now_1 (const char *gmsgid, ...)
-{
-  va_list argp;
-  bool buffered_p_saved;
-
-  error_buffer.flag = 1;
-  error_buffer.index = 0;
-  cur_error_buffer = &error_buffer;
-
-  buffered_p_saved = buffered_p;
-  buffered_p = false;
-
-  va_start (argp, gmsgid);
-  error_print (_("Error:"), _(gmsgid), argp);
-  va_end (argp);
-
-  error_char ('\0');
-
-  gfc_increment_error_count();
-
-  buffered_p = buffered_p_saved;
-
-  if (flag_fatal_errors)
-    exit (FATAL_EXIT_CODE);
-}
-
-
 /* This shouldn't happen... but sometimes does.  */
 
 void
@@ -1548,35 +1373,22 @@ gfc_error_flag_test (void)
 bool
 gfc_error_check (void)
 {
-  bool error_raised = (bool) error_buffer.flag;
-
-  if (error_raised)
+  if (error_buffer.flag
+      || ! gfc_output_buffer_empty_p (pp_error_buffer))
     {
-      if (error_buffer.message != NULL)
-	fputs (error_buffer.message, stderr);
-      error_buffer.flag = 0;
-      gfc_clear_pp_buffer (pp_error_buffer);
-
-      gfc_increment_error_count();
-
-      if (flag_fatal_errors)
-	exit (FATAL_EXIT_CODE);
-    }
-  /* This is for the new diagnostics machinery.  */
-  else if (! gfc_output_buffer_empty_p (pp_error_buffer))
-    {
-      error_raised = true;
+      error_buffer.flag = false;
       pretty_printer *pp = global_dc->printer;
       output_buffer *tmp_buffer = pp->buffer;
       pp->buffer = pp_error_buffer;
       pp_really_flush (pp);
       ++errorcount;
       gcc_assert (gfc_output_buffer_empty_p (pp_error_buffer));
-      diagnostic_action_after_output (global_dc, DK_ERROR);
       pp->buffer = tmp_buffer;
+      diagnostic_action_after_output (global_dc, DK_ERROR);
+      return true;
     }
 
-  return error_raised;
+  return false;
 }
 
 /* Move the text buffered from FROM to TO, then clear
@@ -1584,8 +1396,15 @@ gfc_error_check (void)
    cleared. */
 
 static void
-gfc_move_output_buffer_from_to (output_buffer *from, output_buffer *to)
+gfc_move_error_buffer_from_to (gfc_error_buffer * buffer_from,
+			       gfc_error_buffer * buffer_to)
 {
+  output_buffer * from = &(buffer_from->buffer);
+  output_buffer * to =  &(buffer_to->buffer);
+
+  buffer_to->flag = buffer_from->flag;
+  buffer_from->flag = false;
+
   gfc_clear_pp_buffer (to);
   /* We make sure this is always buffered.  */
   to->flush_p = false;
@@ -1601,46 +1420,27 @@ gfc_move_output_buffer_from_to (output_buffer *from, output_buffer *to)
 /* Save the existing error state.  */
 
 void
-gfc_push_error (output_buffer *buffer_err, gfc_error_buf *err)
+gfc_push_error (gfc_error_buffer *err)
 {
-  err->flag = error_buffer.flag;
-  if (error_buffer.flag)
-    err->message = xstrdup (error_buffer.message);
-
-  error_buffer.flag = 0;
-
-  /* This part uses the common diagnostics.  */
-  gfc_move_output_buffer_from_to (pp_error_buffer, buffer_err);
+  gfc_move_error_buffer_from_to (&error_buffer, err);
 }
 
 
 /* Restore a previous pushed error state.  */
 
 void
-gfc_pop_error (output_buffer *buffer_err, gfc_error_buf *err)
+gfc_pop_error (gfc_error_buffer *err)
 {
-  error_buffer.flag = err->flag;
-  if (error_buffer.flag)
-    {
-      size_t len = strlen (err->message) + 1;
-      gcc_assert (len <= error_buffer.allocated);
-      memcpy (error_buffer.message, err->message, len);
-      free (err->message);
-    }
-  /* This part uses the common diagnostics.  */
-  gfc_move_output_buffer_from_to (buffer_err, pp_error_buffer);
+  gfc_move_error_buffer_from_to (err, &error_buffer);
 }
 
 
 /* Free a pushed error state, but keep the current error state.  */
 
 void
-gfc_free_error (output_buffer *buffer_err, gfc_error_buf *err)
+gfc_free_error (gfc_error_buffer *err)
 {
-  if (err->flag)
-    free (err->message);
-
-  gfc_clear_pp_buffer (buffer_err);
+  gfc_clear_pp_buffer (&(err->buffer));
 }
 
 
@@ -1650,9 +1450,9 @@ void
 gfc_get_errors (int *w, int *e)
 {
   if (w != NULL)
-    *w = warnings + warningcount + werrorcount;
+    *w = warningcount + werrorcount;
   if (e != NULL)
-    *e = errors + errorcount + sorrycount + werrorcount;
+    *e = errorcount + sorrycount + werrorcount;
 }
 
 
@@ -1670,10 +1470,13 @@ gfc_diagnostics_init (void)
   diagnostic_starter (global_dc) = gfc_diagnostic_starter;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = gfc_format_decoder;
-  global_dc->caret_char = '^';
+  global_dc->caret_chars[0] = '1';
+  global_dc->caret_chars[1] = '2';
   pp_warning_buffer = new (XNEW (output_buffer)) output_buffer ();
   pp_warning_buffer->flush_p = false;
-  pp_error_buffer = new (XNEW (output_buffer)) output_buffer ();
+  /* pp_error_buffer is statically allocated.  This simplifies memory
+     management when using gfc_push/pop_error. */
+  pp_error_buffer = &(error_buffer.buffer);
   pp_error_buffer->flush_p = false;
 }
 
@@ -1685,5 +1488,6 @@ gfc_diagnostics_finish (void)
      defaults.  */
   diagnostic_starter (global_dc) = gfc_diagnostic_starter;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
-  global_dc->caret_char = '^';
+  global_dc->caret_chars[0] = '^';
+  global_dc->caret_chars[1] = '^';
 }

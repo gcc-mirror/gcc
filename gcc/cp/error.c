@@ -21,15 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "cp-tree.h"
@@ -54,8 +46,8 @@ along with GCC; see the file COPYING3.  If not see
    tree -> string functions that are occasionally called from the
    debugger or by the front-end for things like
    __PRETTY_FUNCTION__.  */
-static cxx_pretty_printer scratch_pretty_printer;
-static cxx_pretty_printer * cxx_pp = &scratch_pretty_printer;
+static cxx_pretty_printer actual_pretty_printer;
+static cxx_pretty_printer * const cxx_pp = &actual_pretty_printer;
 
 /* Translate if being used for diagnostics, but not for dump files or
    __PRETTY_FUNCTION.  */
@@ -138,16 +130,6 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   diagnostic_starter (context) = cp_diagnostic_starter;
   /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
   diagnostic_format_decoder (context) = cp_printer;
-}
-
-/* Initialize the global cxx_pp that is used as the memory store for
-   the string representation of C++ AST.  See the description of
-   cxx_pp above.  */
-
-void
-init_error (void)
-{
-  new (cxx_pp) cxx_pretty_printer ();
 }
 
 /* Dump a scope, if deemed necessary.  */
@@ -355,6 +337,11 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
   /* Don't try to print typenames when we're processing a clone.  */
   if (current_function_decl
       && !DECL_LANG_SPECIFIC (current_function_decl))
+    return;
+
+  /* Don't try to do this once cgraph starts throwing away front-end
+     information.  */
+  if (at_eof >= 2)
     return;
 
   FOR_EACH_VEC_SAFE_ELT (typenames, i, t)
@@ -694,7 +681,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
       name = DECL_NAME (name);
     }
 
-  if (name == 0 || ANON_AGGRNAME_P (name))
+  if (name == 0 || anon_aggrname_p (name))
     {
       if (flags & TFF_CLASS_KEY_OR_ENUM)
 	pp_string (pp, M_("<anonymous>"));
@@ -1082,7 +1069,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       dump_simple_decl (pp, t, TREE_TYPE (t), flags);
 
       /* Handle variable template specializations.  */
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && DECL_LANG_SPECIFIC (t)
 	  && DECL_TEMPLATE_INFO (t)
 	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t)))
@@ -1230,7 +1217,8 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	if (args == error_mark_node)
 	  pp_string (pp, M_("<template arguments error>"));
 	else if (args)
-	  dump_template_argument_list (pp, args, flags);
+	  dump_template_argument_list
+	    (pp, args, flags|TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS);
       	pp_cxx_end_template_argument_list (pp);
       }
       break;
@@ -1313,6 +1301,14 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  tree inner_parms = INNERMOST_TEMPLATE_PARMS (parms);
 	  int len = TREE_VEC_LENGTH (inner_parms);
 
+	  if (len == 0)
+	    {
+	      /* Skip over the dummy template levels of a template template
+		 parm.  */
+	      gcc_assert (TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TEMPLATE_PARM);
+	      continue;
+	    }
+
 	  pp_cxx_ws_string (pp, "template");
 	  pp_cxx_begin_template_argument_list (pp);
 
@@ -1342,6 +1338,15 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
 	    pp_cxx_ws_string (pp, "...");
 	}
     }
+
+  if (flag_concepts)
+    if (tree ci = get_constraints (t))
+      if (check_constraint_info (ci))
+        if (tree reqs = CI_TEMPLATE_REQS (ci))
+	  {
+	    pp_cxx_requires_clause (pp, reqs);
+	    pp_cxx_whitespace (pp);
+	  }
 
   if (DECL_CLASS_TEMPLATE_P (t))
     dump_type (pp, TREE_TYPE (t),
@@ -1573,6 +1578,11 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 
       if (show_return)
 	dump_type_suffix (pp, TREE_TYPE (fntype), flags);
+
+      if (flag_concepts)
+        if (tree ci = get_constraints (t))
+          if (tree reqs = CI_DECLARATOR_REQS (ci))
+            pp_cxx_requires_clause (pp, reqs);
 
       dump_substitution (pp, t, template_parms, template_args, flags);
     }
@@ -2699,6 +2709,38 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_paren (pp);
       break;
 
+    case REQUIRES_EXPR:
+      pp_cxx_requires_expr (cxx_pp, t);
+      break;
+
+    case SIMPLE_REQ:
+      pp_cxx_simple_requirement (cxx_pp, t);
+      break;
+
+    case TYPE_REQ:
+      pp_cxx_type_requirement (cxx_pp, t);
+      break;
+
+    case COMPOUND_REQ:
+      pp_cxx_compound_requirement (cxx_pp, t);
+      break;
+
+    case NESTED_REQ:
+      pp_cxx_nested_requirement (cxx_pp, t);
+      break;
+
+    case PRED_CONSTR:
+    case EXPR_CONSTR:
+    case TYPE_CONSTR:
+    case ICONV_CONSTR:
+    case DEDUCT_CONSTR:
+    case EXCEPT_CONSTR:
+    case PARM_CONSTR:
+    case CONJ_CONSTR:
+    case DISJ_CONSTR:
+      pp_cxx_constraint (cxx_pp, t);
+      break;
+
     case PLACEHOLDER_EXPR:
       pp_string (pp, M_("*this"));
       break;
@@ -3104,7 +3146,7 @@ static void
 cp_diagnostic_starter (diagnostic_context *context,
 		       diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context, diagnostic->location);
+  diagnostic_report_current_module (context, diagnostic_location (diagnostic));
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
   maybe_print_constexpr_context (context);
@@ -3125,7 +3167,7 @@ cp_print_error_function (diagnostic_context *context,
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       const char *old_prefix = context->printer->prefix;
-      const char *file = LOCATION_FILE (diagnostic->location);
+      const char *file = LOCATION_FILE (diagnostic_location (diagnostic));
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
 			 ? file_name_as_prefix (context, file) : NULL;
@@ -3471,9 +3513,6 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
   if (precision != 0 || wide)
     return false;
 
-  if (text->locus == NULL)
-    set_locus = false;
-
   switch (*spec)
     {
     case 'A': result = args_to_string (next_tree, verbose);	break;
@@ -3515,7 +3554,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 
   pp_string (pp, result);
   if (set_locus && t != NULL)
-    *text->locus = location_of (t);
+    text->set_location (0, location_of (t));
   return true;
 #undef next_tree
 #undef next_tcode

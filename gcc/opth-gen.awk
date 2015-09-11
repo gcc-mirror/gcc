@@ -132,14 +132,14 @@ print "/* Structure to save/restore optimization and target specific options.  *
 print "struct GTY(()) cl_optimization";
 print "{";
 
-n_opt_char = 2;
+n_opt_char = 3;
 n_opt_short = 0;
 n_opt_int = 0;
-n_opt_enum = 1;
+n_opt_enum = 0;
 n_opt_other = 0;
 var_opt_char[0] = "unsigned char x_optimize";
 var_opt_char[1] = "unsigned char x_optimize_size";
-var_opt_enum[0] = "enum fp_contract_mode x_flag_fp_contract_mode";
+var_opt_char[2] = "unsigned char x_optimize_debug";
 
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Optimization", flags[i])) {
@@ -308,9 +308,8 @@ print "";
 print "/* Hash optimization from a structure.  */";
 print "extern hashval_t cl_optimization_hash (const struct cl_optimization *);";
 print "";
-print "/* Anything that includes tm.h, does not necessarily need this.  */"
-print "#if !defined(GCC_TM_H)"
-print "#include \"input.h\" /* for location_t */"
+print "/* Generator files may not have access to location_t, and don't need these.  */"
+print "#if defined(UNKNOWN_LOCATION)"
 print "bool                                                                  "
 print "common_handle_option_auto (struct gcc_options *opts,                  "
 print "                           struct gcc_options *opts_set,              "

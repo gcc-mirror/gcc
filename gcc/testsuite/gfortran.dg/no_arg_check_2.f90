@@ -150,4 +150,3 @@ end
 ! { dg-final { scan-tree-dump-times "sub_array_assumed \\(\\(struct t1.0:. . restrict\\) array_class_t1_alloc._data.data\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "sub_array_assumed \\(\\(struct t1.0:. .\\) array_class_t1_ptr._data.data\\);" 1 "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

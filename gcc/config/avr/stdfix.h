@@ -233,4 +233,13 @@ typedef long long unsigned int uint_uk_t;
 #define roundfx   __builtin_avr_roundfx
 #define countlsfx __builtin_avr_countlsfx
 
+
+/* Hook in stuff from AVR-Libc.  */
+
+#if (defined (__WITH_AVRLIBC__)                 \
+     && defined (__has_include)                 \
+     && __has_include (<stdfix-avrlibc.h>))
+#include <stdfix-avrlibc.h>
+#endif
+
 #endif /* _AVRGCC_STDFIX_H */

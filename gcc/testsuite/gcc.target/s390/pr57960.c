@@ -1,7 +1,7 @@
 /* PR rtl-optimization/57960  */
 
 /* { dg-do compile } */
-/* { dg-options "-march=z10 -m64 -mzarch  -O1" } */
+/* { dg-options "-march=z10 -mzarch  -O1" } */
 
 typedef union
 {

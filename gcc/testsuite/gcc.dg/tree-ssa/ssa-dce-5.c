@@ -12,4 +12,3 @@ struct X foo(int b)
 }
 
 /* { dg-final { scan-tree-dump-times "x.i =" 1 "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

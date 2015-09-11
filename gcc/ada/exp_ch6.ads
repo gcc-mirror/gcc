@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,17 +41,11 @@ package Exp_Ch6 is
    --  This procedure contains common processing for Expand_N_Function_Call,
    --  Expand_N_Procedure_Statement, and Expand_N_Entry_Call.
 
-   procedure Expand_Subprogram_Contract
-     (N       : Node_Id;
-      Spec_Id : Entity_Id;
-      Body_Id : Entity_Id);
+   procedure Expand_Subprogram_Contract (N : Node_Id);
    --  Expand the contracts of a subprogram body and its correspoding spec (if
    --  any). This routine processes all [refined] pre- and postconditions as
-   --  well as Contract_Cases, invariants and predicates. N is the body of the
-   --  subprogram. Spec_Id denotes the entity of its specification. Body_Id
-   --  denotes the entity of the subprogram body. This routine is not a "pure"
-   --  expansion mechanism as it is invoked during analysis and may perform
-   --  actions for generic subprograms or set up contract assertions for ASIS.
+   --  well as Contract_Cases, invariants and predicates. N denotes the body of
+   --  the subprogram.
 
    procedure Freeze_Subprogram (N : Node_Id);
    --  generate the appropriate expansions related to Subprogram freeze
@@ -103,6 +97,13 @@ package Exp_Ch6 is
       --
       --  ??? We might also need to be able to pass in a constrained flag.
 
+   procedure Add_Extra_Actual_To_Call
+     (Subprogram_Call : Node_Id;
+      Extra_Formal    : Entity_Id;
+      Extra_Actual    : Node_Id);
+   --  Adds Extra_Actual as a named parameter association for the formal
+   --  Extra_Formal in Subprogram_Call.
+
    function BIP_Formal_Suffix (Kind : BIP_Formal_Kind) return String;
    --  Ada 2005 (AI-318-02): Returns a string to be used as the suffix of names
    --  for build-in-place formal parameters of the given kind.
@@ -114,6 +115,9 @@ package Exp_Ch6 is
    --  build-in-place formal parameter of the given kind associated with the
    --  function Func, and returns its Entity_Id. It is a bug if not found; the
    --  caller should ensure this is called only when the extra formal exists.
+
+   procedure Initialize;
+   --  Initialize internal tables
 
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E denotes a function, generic
@@ -207,11 +211,9 @@ package Exp_Ch6 is
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
 
-   procedure Add_Extra_Actual_To_Call
-     (Subprogram_Call : Node_Id;
-      Extra_Formal    : Entity_Id;
-      Extra_Actual    : Node_Id);
-   --  Adds Extra_Actual as a named parameter association for the formal
-   --  Extra_Formal in Subprogram_Call.
+   procedure Unnest_Subprograms;
+   --  Called to unnest subprograms. If we are in unnest subprogram mode, and
+   --  subprograms have been gathered in the Unest_Bodies table, this is the
+   --  call that causes them to be processed for unnesting.
 
 end Exp_Ch6;

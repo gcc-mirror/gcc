@@ -591,7 +591,7 @@ collected at that point to be dumped to @file{.gcda} output files.
 @c man end
 
 @node Gcov Data Files
-@section Brief description of @command{gcov} data files
+@section Brief Description of @command{gcov} Data Files
 
 @command{gcov} uses two files for profiling.  The names of these files
 are derived from the original @emph{object} file by substituting the
@@ -618,7 +618,7 @@ and functions provided in that header file should be used to access the
 coverage files.
 
 @node Cross-profiling
-@section Data file relocation to support cross-profiling
+@section Data File Relocation to Support Cross-Profiling
 
 Running the program will cause profile output to be generated.  For each
 source file compiled with @option{-fprofile-arcs}, an accompanying @file{.gcda}

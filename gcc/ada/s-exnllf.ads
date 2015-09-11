@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Long_Long_Float exponentiation (checks off)
+--  [Long_[Long_]]Float exponentiation (checks off)
 
 package System.Exn_LLF is
    pragma Pure;
+
+   function Exn_Float
+     (Left  : Float;
+      Right : Integer) return Float;
+
+   function Exn_Long_Float
+     (Left  : Long_Float;
+      Right : Integer) return Long_Float;
 
    function Exn_Long_Long_Float
      (Left  : Long_Long_Float;

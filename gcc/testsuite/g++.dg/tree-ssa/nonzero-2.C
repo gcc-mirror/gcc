@@ -13,4 +13,3 @@ int m()
   return q != 0;
 }
 /* { dg-final { scan-tree-dump "return 1" "ccp1"} } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

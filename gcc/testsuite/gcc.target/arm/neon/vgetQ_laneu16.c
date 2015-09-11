@@ -17,4 +17,3 @@ void test_vgetQ_laneu16 (void)
 }
 
 /* { dg-final { scan-assembler "vmov\.u16\[ 	\]+\[rR\]\[0-9\]+, \[dD\]\[0-9\]+\\\[\[0-9\]+\\\]!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

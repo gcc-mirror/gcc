@@ -17,4 +17,3 @@ void testcase(void)
    to globals and thus the store not optimized away.  */
 
 /* { dg-final { scan-tree-dump "->preempt_count =" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

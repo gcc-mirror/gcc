@@ -45,6 +45,9 @@ namespace gccjit
     class rvalue;
      class lvalue;
        class param;
+    class case_;
+  class timer;
+  class auto_time;
 
   /* Errors within the API become C++ exceptions of this class.  */
   class error
@@ -99,6 +102,9 @@ namespace gccjit
 
     gcc_jit_result *compile ();
 
+    void compile_to_file (enum gcc_jit_output_kind output_kind,
+			  const char *output_path);
+
     void dump_to_file (const std::string &path,
 		       bool update_locations);
 
@@ -116,6 +122,14 @@ namespace gccjit
 
     void set_bool_option (enum gcc_jit_bool_option opt,
 			  int value);
+
+    void set_bool_allow_unreachable_blocks (int bool_value);
+    void set_bool_use_external_driver (int bool_value);
+
+    void add_command_line_option (const char *optname);
+
+    void set_timer (gccjit::timer t);
+    gccjit::timer get_timer () const;
 
     location
     new_location (const std::string &filename,
@@ -290,6 +304,10 @@ namespace gccjit
 			     rvalue index,
 			     location loc = location ());
 
+    case_ new_case (rvalue min_value,
+		    rvalue max_value,
+		    block dest_block);
+
   private:
     gcc_jit_context *m_inner_ctxt;
   };
@@ -414,6 +432,10 @@ namespace gccjit
 			  location loc = location ());
     void end_with_return (location loc = location ());
 
+    void end_with_switch (rvalue expr,
+			  block default_block,
+			  std::vector <case_> cases,
+			  location loc = location ());
   };
 
   class rvalue : public object
@@ -464,6 +486,14 @@ namespace gccjit
     gcc_jit_param *get_inner_param () const;
   };
 
+  class case_ : public object
+  {
+  public:
+    case_ ();
+    case_ (gcc_jit_case *inner);
+
+    gcc_jit_case *get_inner_case () const;
+  };
 
   /* Overloaded operators, for those who want the most terse API
      (at the possible risk of being a little too magical).
@@ -499,6 +529,36 @@ namespace gccjit
 
   /* Dereferencing. */
   lvalue operator* (rvalue ptr);
+
+  class timer
+  {
+  public:
+    timer ();
+    timer (gcc_jit_timer *inner_timer);
+
+    void push (const char *item_name);
+    void pop (const char *item_name);
+    void print (FILE *f_out) const;
+
+    void release ();
+
+    gcc_jit_timer *get_inner_timer () const;
+
+  private:
+    gcc_jit_timer *m_inner_timer;
+  };
+
+  class auto_time
+  {
+  public:
+    auto_time (timer t, const char *item_name);
+    auto_time (context ctxt, const char *item_name);
+    ~auto_time ();
+
+  private:
+    timer m_timer;
+    const char *m_item_name;
+  };
 }
 
 /****************************************************************************
@@ -538,6 +598,15 @@ context::compile ()
   if (!result)
     throw error ();
   return result;
+}
+
+inline void
+context::compile_to_file (enum gcc_jit_output_kind output_kind,
+			  const char *output_path)
+{
+  gcc_jit_context_compile_to_file (m_inner_ctxt,
+				   output_kind,
+				   output_path);
 }
 
 inline void
@@ -588,8 +657,40 @@ context::set_bool_option (enum gcc_jit_bool_option opt,
 			  int value)
 {
   gcc_jit_context_set_bool_option (m_inner_ctxt, opt, value);
-
 }
+
+inline void
+context::set_bool_allow_unreachable_blocks (int bool_value)
+{
+  gcc_jit_context_set_bool_allow_unreachable_blocks (m_inner_ctxt,
+						     bool_value);
+}
+
+inline void
+context::set_bool_use_external_driver (int bool_value)
+{
+  gcc_jit_context_set_bool_use_external_driver (m_inner_ctxt,
+						bool_value);
+}
+
+inline void
+context::add_command_line_option (const char *optname)
+{
+  gcc_jit_context_add_command_line_option (m_inner_ctxt, optname);
+}
+
+inline void
+context::set_timer (gccjit::timer t)
+{
+  gcc_jit_context_set_timer (m_inner_ctxt, t.get_inner_timer ());
+}
+
+inline gccjit::timer
+context::get_timer () const
+{
+  return gccjit::timer (gcc_jit_context_get_timer (m_inner_ctxt));
+}
+
 
 inline location
 context::new_location (const std::string &filename,
@@ -1096,6 +1197,17 @@ context::new_array_access (rvalue ptr,
 						   index.get_inner_rvalue ()));
 }
 
+inline case_
+context::new_case (rvalue min_value,
+		   rvalue max_value,
+		   block dest_block)
+{
+  return case_ (gcc_jit_context_new_case (m_inner_ctxt,
+					  min_value.get_inner_rvalue (),
+					  max_value.get_inner_rvalue (),
+					  dest_block.get_inner_block ()));
+}
+
 // class object
 inline context
 object::get_context () const
@@ -1343,6 +1455,27 @@ block::end_with_return (location loc)
 				      loc.get_inner_location ());
 }
 
+inline void
+block::end_with_switch (rvalue expr,
+			block default_block,
+			std::vector <case_> cases,
+			location loc)
+{
+  /* Treat std::vector as an array, relying on it not being resized: */
+  case_ *as_array_of_wrappers = &cases[0];
+
+  /* Treat the array as being of the underlying pointers, relying on
+     the wrapper type being such a pointer internally.	*/
+  gcc_jit_case **as_array_of_ptrs =
+    reinterpret_cast<gcc_jit_case **> (as_array_of_wrappers);
+  gcc_jit_block_end_with_switch (get_inner_block (),
+				 loc.get_inner_location (),
+				 expr.get_inner_rvalue (),
+				 default_block.get_inner_block (),
+				 cases.size (),
+				 as_array_of_ptrs);
+}
+
 inline rvalue
 block::add_call (function other,
 		 location loc)
@@ -1533,6 +1666,20 @@ inline param::param (gcc_jit_param *inner)
   : lvalue (gcc_jit_param_as_lvalue (inner))
 {}
 
+// class case_ : public object
+inline case_::case_ () : object () {}
+inline case_::case_ (gcc_jit_case *inner)
+  : object (gcc_jit_case_as_object (inner))
+{
+}
+
+inline gcc_jit_case *
+case_::get_inner_case () const
+{
+  /* Manual downcast: */
+  return reinterpret_cast<gcc_jit_case *> (get_inner_object ());
+}
+
 /* Overloaded operators.  */
 // Unary operators
 inline rvalue operator- (rvalue a)
@@ -1620,6 +1767,75 @@ inline rvalue operator>= (rvalue a, rvalue b)
 inline lvalue operator* (rvalue ptr)
 {
   return ptr.dereference ();
+}
+
+// class timer
+inline
+timer::timer ()
+{
+  m_inner_timer = gcc_jit_timer_new ();
+}
+
+inline
+timer::timer (gcc_jit_timer *inner_timer)
+{
+  m_inner_timer = inner_timer;
+}
+
+inline void
+timer::push (const char *item_name)
+{
+  gcc_jit_timer_push (m_inner_timer, item_name);
+
+}
+
+inline void
+timer::pop (const char *item_name)
+{
+  gcc_jit_timer_pop (m_inner_timer, item_name);
+}
+
+inline void
+timer::print (FILE *f_out) const
+{
+  gcc_jit_timer_print (m_inner_timer, f_out);
+}
+
+inline gcc_jit_timer *
+timer::get_inner_timer () const
+{
+  return m_inner_timer;
+}
+
+inline void
+timer::release ()
+{
+  gcc_jit_timer_release (m_inner_timer);
+  m_inner_timer = NULL;
+}
+
+// class auto_time
+
+inline
+auto_time::auto_time (timer t, const char *item_name)
+  : m_timer (t),
+    m_item_name (item_name)
+{
+  t.push (item_name);
+}
+
+inline
+auto_time::auto_time (context ctxt, const char *item_name)
+  : m_timer (ctxt.get_timer ()),
+    m_item_name (item_name)
+{
+  m_timer.push (item_name);
+}
+
+inline
+auto_time::~auto_time ()
+{
+  m_timer.pop (m_item_name);
 }
 
 } // namespace gccjit

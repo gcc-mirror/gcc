@@ -16,4 +16,3 @@ void bar(struct Foo f, int * __restrict__ q)
 }
 
 /* { dg-final { scan-tree-dump "Executing store motion" "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

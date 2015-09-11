@@ -20,6 +20,10 @@ if test $gcc_cv_have_tls = yes ; then
     *-*-linux* | *-*-gnu*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec"
 	;;
+
+    *-*-rtems*)
+	XCFLAGS="${XCFLAGS} -ftls-model=local-exec"
+	;;
   esac
 fi
 
@@ -113,6 +117,7 @@ fi
 case "${target}" in
 
   *-*-hpux*)
+	config_path="hpux posix"
 	case "${target}" in
 	  *-*-hpux11*)
 	     # HPUX v11.x requires -lrt to resolve sem_init in libgomp.la
@@ -132,12 +137,29 @@ case "${target}" in
 	;;
 
   *-*-darwin*)
-	config_path="bsd posix"
+	config_path="bsd darwin posix"
 	;;
 
   *-*-freebsd*)
 	# Need to link with -lpthread so libgomp.so is self-contained.
 	XLDFLAGS="${XLDFLAGS} -lpthread"
+	;;
+
+  *-*-aix*)
+	config_path="posix"
+	# Need to link with -lpthread so libgomp.so is self-contained.
+	XLDFLAGS="${XLDFLAGS} -lpthread"
+	;;
+
+  nvptx*-*-*)
+	config_path="nvptx"
+	;;
+
+  *-*-rtems*)
+	# Use self-contained synchronization objects if provided by Newlib
+	if test "x$ac_cv_type_struct__Mutex_Control" = xyes ; then
+	    config_path="rtems posix"
+	fi
 	;;
 
   *)

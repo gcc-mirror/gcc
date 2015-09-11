@@ -49,4 +49,3 @@ int main (void)
 /* The initialization loop in main also gets vectorized.  */
 /* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected" 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target { vect_short_mult && vect_widen_sum_hi_to_si } } } } */ 
-/* { dg-final { cleanup-tree-dump "vect" } } */

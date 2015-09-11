@@ -116,4 +116,3 @@ subroutine pr54992  ! This test remains as the original.
   if (loc (b) .ne. loc(bh%hostNode)) call abort
 end
 ! { dg-final { scan-tree-dump-times "builtin_free" 12 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

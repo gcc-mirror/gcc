@@ -16,4 +16,3 @@ bar (int i)
 }
 
 /* { dg-final { scan-tree-dump-times "resx" 1 "eh" } } */
-/* { dg-final { cleanup-tree-dump "eh" } } */

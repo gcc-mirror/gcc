@@ -25,4 +25,3 @@ void foo (void)
 /* { dg-final { scan-tree-dump-times "GOMP_critical_end" 2 "omplower" } } */
 /* { dg-final { scan-tree-dump-times "GOMP_critical_name_start" 2 "omplower" } } */
 /* { dg-final { scan-tree-dump-times "GOMP_critical_name_end" 2 "omplower" } } */
-/* { dg-final { cleanup-tree-dump "omplower" } } */

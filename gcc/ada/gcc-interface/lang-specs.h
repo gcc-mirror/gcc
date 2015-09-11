@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 1992-2012, Free Software Foundation, Inc.        *
+ *           Copyright (C) 1992-2015, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,10 +38,10 @@
     %{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}%{!c:%{!S:-auxbase %b}} \
     %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} %{f*}\
     %{coverage:-fprofile-arcs -ftest-coverage} "
-   "%{gnatea:-gnatez} %{g*&m*} "
 #if defined(TARGET_VXWORKS_RTP)
-   "%{fRTS=rtp:-mrtp} %{fRTS=rtp-smp:-mrtp} %{fRTS=ravenscar-cert-rtp:-mrtp}"
+   "%{fRTS=rtp|fRTS=rtp-smp|fRTS=ravenscar-cert-rtp:-mrtp} "
 #endif
+   "%{gnatea:-gnatez} %{g*&m*} "
    "%1 %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
     %{gnatc*|gnats*: -o %j} %{-param*} \

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -448,6 +448,12 @@ extern Node_Id Current_Error_Node;
 #define Field33(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.field9)
 #define Field34(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.field10)
 #define Field35(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.X.field11)
+#define Field36(N)    (Nodes_Ptr[(N) - First_Node_Id + 6].V.EX.field6)
+#define Field37(N)    (Nodes_Ptr[(N) - First_Node_Id + 6].V.EX.field7)
+#define Field38(N)    (Nodes_Ptr[(N) - First_Node_Id + 6].V.EX.field8)
+#define Field39(N)    (Nodes_Ptr[(N) - First_Node_Id + 6].V.EX.field9)
+#define Field40(N)    (Nodes_Ptr[(N) - First_Node_Id + 6].V.EX.field10)
+#define Field41(N)    (Nodes_Ptr[(N) - First_Node_Id + 6].V.EX.X.field11)
 
 #define Node1(N)      Field1  (N)
 #define Node2(N)      Field2  (N)
@@ -485,6 +491,11 @@ extern Node_Id Current_Error_Node;
 #define Node34(N)     Field34 (N)
 #define Node35(N)     Field35 (N)
 #define Node36(N)     Field36 (N)
+#define Node37(N)     Field37 (N)
+#define Node38(N)     Field38 (N)
+#define Node39(N)     Field39 (N)
+#define Node40(N)     Field40 (N)
+#define Node41(N)     Field41 (N)
 
 #define List1(N)      Field1  (N)
 #define List2(N)      Field2  (N)
@@ -535,6 +546,7 @@ extern Node_Id Current_Error_Node;
 #define Uint16(N)     ((Field16 (N) == 0) ? Uint_0 : Field16 (N))
 #define Uint17(N)     ((Field17 (N) == 0) ? Uint_0 : Field17 (N))
 #define Uint22(N)     ((Field22 (N) == 0) ? Uint_0 : Field22 (N))
+#define Uint24(N)     ((Field24 (N) == 0) ? Uint_0 : Field24 (N))
 
 #define Ureal3(N)     Field3  (N)
 #define Ureal18(N)    Field18 (N)
@@ -846,6 +858,29 @@ extern Node_Id Current_Error_Node;
 #define Flag284(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag284)
 #define Flag285(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag285)
 #define Flag286(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag286)
+#define Flag287(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.in_list)
+#define Flag288(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.has_aspects)
+#define Flag289(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.rewrite_ins)
+#define Flag290(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.analyzed
+#define Flag291(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.c_f_s)
+#define Flag292(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.error_posted)
+#define Flag293(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag4)
+#define Flag294(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag5)
+#define Flag295(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag6)
+#define Flag296(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag7)
+#define Flag297(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag8)
+#define Flag298(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag9)
+#define Flag299(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag10)
+#define Flag300(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag11)
+#define Flag301(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag12)
+#define Flag302(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag13)
+#define Flag303(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag14)
+#define Flag304(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag15)
+#define Flag305(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag16)
+#define Flag306(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag17)
+#define Flag307(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag18)
+#define Flag308(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.pflag1)
+#define Flag309(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.pflag2)
 
 #ifdef __cplusplus
 }

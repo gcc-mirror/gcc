@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,10 +40,6 @@
 #include <string.h>
 #include <memory.h>
 
-#if (defined(LINUX) || defined(FREEBSD)) && !defined(__INTEL_COMPILER)
-#include <mm_malloc.h>
-#endif
-
 #include "offload.h"
 #include "offload_table.h"
 #include "offload_trace.h"
@@ -65,22 +61,24 @@
 // The debug routines
 
 // Host console and file logging
-extern int console_enabled;
-extern int offload_report_level;
+DLL_LOCAL extern int console_enabled;
+DLL_LOCAL extern int offload_report_level;
 
-#define OFFLOAD_DO_TRACE (offload_report_level == 3)
 
-extern const char *prefix;
-extern int offload_number;
+DLL_LOCAL extern const char *prefix;
+DLL_LOCAL extern int offload_number;
 #if !HOST_LIBRARY
-extern int mic_index;
+DLL_LOCAL extern int mic_index;
+#define OFFLOAD_DO_TRACE (offload_report_level == 3)
+#else
+#define OFFLOAD_DO_TRACE (offload_report_enabled && (offload_report_level == 3))
 #endif
 
 #if HOST_LIBRARY
-void Offload_Report_Prolog(OffloadHostTimerData* timer_data);
-void Offload_Report_Epilog(OffloadHostTimerData* timer_data);
-void offload_report_free_data(OffloadHostTimerData * timer_data);
-void Offload_Timer_Print(void);
+DLL_LOCAL void Offload_Report_Prolog(OffloadHostTimerData* timer_data);
+DLL_LOCAL void Offload_Report_Epilog(OffloadHostTimerData* timer_data);
+DLL_LOCAL void offload_report_free_data(OffloadHostTimerData * timer_data);
+DLL_LOCAL void Offload_Timer_Print(void);
 
 #ifndef TARGET_WINNT
 #define OFFLOAD_DEBUG_INCR_OFLD_NUM() \
@@ -130,7 +128,7 @@ void Offload_Timer_Print(void);
 #define OFFLOAD_DEBUG_DUMP_BYTES(level, a, b) \
     __dump_bytes(level, a, b)
 
-extern void __dump_bytes(
+DLL_LOCAL extern void __dump_bytes(
     int level,
     const void *data,
     int len
@@ -155,6 +153,17 @@ extern void __dump_bytes(
 extern void *OFFLOAD_MALLOC(size_t size, size_t align);
 
 // The Marshaller
+
+// Flags describing an offload
+
+//! Flags describing an offload
+union OffloadFlags{
+    uint32_t flags;
+    struct {
+        uint32_t fortran_traceback : 1; //!< Fortran traceback requested
+        uint32_t omp_async         : 1; //!< OpenMP asynchronous offload
+    } bits;
+};
 
 //! \enum Indicator for the type of entry on an offload item list.
 enum OffloadItemType {
@@ -203,6 +212,44 @@ enum OffloadParameterType {
     c_parameter_inout         //!< Variable listed in "inout" clause
 };
 
+
+//! Flags describing an offloaded variable
+union varDescFlags {
+    struct {
+        //! source variable has persistent storage
+        uint32_t is_static : 1;
+        //! destination variable has persistent storage
+        uint32_t is_static_dstn : 1;
+        //! has length for c_dv && c_dv_ptr
+        uint32_t has_length : 1;
+        //! persisted local scalar is in stack buffer
+        uint32_t is_stack_buf : 1;
+        //! "targetptr" modifier used
+        uint32_t targetptr : 1;
+        //! "preallocated" modifier used
+        uint32_t preallocated : 1;
+        //! Needs documentation
+        uint32_t is_pointer : 1;
+
+        //! buffer address is sent in data
+        uint32_t sink_addr : 1;
+        //! alloc displacement is sent in data
+        uint32_t alloc_disp : 1;
+        //! source data is noncontiguous
+        uint32_t is_noncont_src : 1;
+        //! destination data is noncontiguous
+        uint32_t is_noncont_dst : 1;
+
+        //! "OpenMP always" modifier used
+        uint32_t always_copy : 1;
+        //! "OpenMP delete" modifier used
+        uint32_t always_delete : 1;
+        //! CPU memory pinning/unpinning operation
+        uint32_t pin : 1;
+    };
+    uint32_t bits;
+};
+
 //! An Offload Variable descriptor
 struct VarDesc {
     //! OffloadItemTypes of source and destination
@@ -230,27 +277,7 @@ struct VarDesc {
     /*! Used by runtime as offset to data from start of MIC buffer */
     uint32_t mic_offset;
     //! Flags describing this variable
-    union {
-        struct {
-            //! source variable has persistent storage
-            uint32_t is_static : 1;
-            //! destination variable has persistent storage
-            uint32_t is_static_dstn : 1;
-            //! has length for c_dv && c_dv_ptr
-            uint32_t has_length : 1;
-            //! persisted local scalar is in stack buffer
-            uint32_t is_stack_buf : 1;
-            //! buffer address is sent in data
-            uint32_t sink_addr : 1;
-            //! alloc displacement is sent in data
-            uint32_t alloc_disp : 1;
-            //! source data is noncontiguous
-            uint32_t is_noncont_src : 1;
-            //! destination data is noncontiguous
-            uint32_t is_noncont_dst : 1;
-        };
-        uint32_t bits;
-    } flags;
+    varDescFlags flags;
     //! Not used by compiler; set to 0
     /*! Used by runtime as offset to base from data stored in a buffer */
     int64_t offset;
@@ -471,5 +498,17 @@ struct FunctionDescriptor
 // typedef OFFLOAD.
 // Pointer to OffloadDescriptor.
 typedef struct OffloadDescriptor *OFFLOAD;
+
+// Use for setting affinity of a stream
+enum affinity_type {
+    affinity_compact,
+    affinity_scatter
+};
+struct affinity_spec {
+    uint64_t sink_mask[16];
+    int affinity_type;
+    int num_cores;
+    int num_threads;
+};
 
 #endif // OFFLOAD_COMMON_H_INCLUDED

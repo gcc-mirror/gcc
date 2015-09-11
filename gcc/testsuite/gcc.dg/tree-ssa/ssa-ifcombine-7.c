@@ -12,4 +12,3 @@ int test1 (int i, int j)
 /* The above should be optimized to a i > j test by ifcombine.  */
 
 /* { dg-final { scan-tree-dump " > " "ifcombine" } } */
-/* { dg-final { cleanup-tree-dump "ifcombine" } } */

@@ -131,7 +131,11 @@
 #include <netax25/ax25.h>
 #include <netipx/ipx.h>
 #include <netrom/netrom.h>
-#include <rpc/xdr.h>
+#if HAVE_RPC_XDR_H
+# include <rpc/xdr.h>
+#elif HAVE_TIRPC_RPC_XDR_H
+# include <tirpc/rpc/xdr.h>
+#endif
 #include <scsi/scsi.h>
 #include <sys/mtio.h>
 #include <sys/kd.h>
@@ -1003,8 +1007,12 @@ CHECK_SIZE_AND_OFFSET(__sysctl_args, newlen);
 
 CHECK_TYPE_SIZE(__kernel_uid_t);
 CHECK_TYPE_SIZE(__kernel_gid_t);
+
+#if SANITIZER_USES_UID16_SYSCALLS
 CHECK_TYPE_SIZE(__kernel_old_uid_t);
 CHECK_TYPE_SIZE(__kernel_old_gid_t);
+#endif
+
 CHECK_TYPE_SIZE(__kernel_off_t);
 CHECK_TYPE_SIZE(__kernel_loff_t);
 CHECK_TYPE_SIZE(__kernel_fd_set);
@@ -1055,7 +1063,13 @@ CHECK_SIZE_AND_OFFSET(ipc_perm, uid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, gid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, cuid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, cgid);
+#ifndef __GLIBC_PREREQ
+#define __GLIBC_PREREQ(x, y) 0
+#endif
+#if !defined(__aarch64__) || !SANITIZER_LINUX || __GLIBC_PREREQ (2, 21)
+/* On aarch64 glibc 2.20 and earlier provided incorrect mode field.  */
 CHECK_SIZE_AND_OFFSET(ipc_perm, mode);
+#endif
 
 CHECK_TYPE_SIZE(shmid_ds);
 CHECK_SIZE_AND_OFFSET(shmid_ds, shm_perm);
@@ -1137,7 +1151,7 @@ CHECK_SIZE_AND_OFFSET(group, gr_passwd);
 CHECK_SIZE_AND_OFFSET(group, gr_gid);
 CHECK_SIZE_AND_OFFSET(group, gr_mem);
 
-#if SANITIZER_LINUX && !SANITIZER_ANDROID
+#if HAVE_RPC_XDR_H || HAVE_TIRPC_RPC_XDR_H
 CHECK_TYPE_SIZE(XDR);
 CHECK_SIZE_AND_OFFSET(XDR, x_op);
 CHECK_SIZE_AND_OFFSET(XDR, x_ops);

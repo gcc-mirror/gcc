@@ -1,6 +1,5 @@
-
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "-O0 -Wno-implicit-function-declaration" } */
 
 typedef char* __char_ptr32 __attribute__ (( mode (SI) ));
 typedef __char_ptr32 *__char_ptr_char_ptr32 __attribute__ ((mode (SI)));

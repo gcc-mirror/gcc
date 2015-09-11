@@ -16,4 +16,3 @@ caller(void (*func) (void))
 }
 
 /* { dg-final-use { scan-ipa-dump "hist->count 1 hist->all 1" "profile" } } */
-/* { dg-final-use { cleanup-ipa-dump "profile" } } */

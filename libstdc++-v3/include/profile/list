@@ -145,6 +145,12 @@ namespace __profile
       list(initializer_list<value_type> __l,
 	   const allocator_type& __a = allocator_type())
       : _Base(__l, __a) { }
+
+      list(const list& __x, const allocator_type& __a)
+      : _Base(__x, __a) { }
+
+      list(list&& __x, const allocator_type& __a)
+      : _Base(std::move(__x), __a) { }
 #endif
 
       explicit
@@ -153,8 +159,8 @@ namespace __profile
 
 #if __cplusplus >= 201103L
       explicit
-      list(size_type __n)
-      : _Base(__n) { }
+      list(size_type __n, const allocator_type& __a = allocator_type())
+      : _Base(__n, __a) { }
 
       list(size_type __n, const _Tp& __value,
 	   const _Allocator& __a = _Allocator())
@@ -405,9 +411,7 @@ namespace __profile
 
       void
       swap(list& __x)
-#if __cplusplus >= 201103L
-	noexcept( noexcept(declval<_Base>().swap(__x)) )
-#endif
+      _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -637,6 +641,7 @@ namespace __profile
   template<typename _Tp, typename _Alloc>
     inline void
     swap(list<_Tp, _Alloc>& __lhs, list<_Tp, _Alloc>& __rhs)
+    _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
 } // namespace __profile

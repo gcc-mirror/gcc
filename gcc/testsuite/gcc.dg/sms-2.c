@@ -33,4 +33,3 @@ fun (nb)
 }
 
 /* { dg-final { scan-rtl-dump-times "SMS loop many exits" 1 "sms" { target spu-*-* powerpc*-*-* } } } */
-/* { dg-final { cleanup-rtl-dump "sms" } } */

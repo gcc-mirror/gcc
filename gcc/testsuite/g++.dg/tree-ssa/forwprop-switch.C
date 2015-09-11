@@ -21,4 +21,3 @@ int Test(Scale s)
 
 // { dg-final { scan-tree-dump-not "\\\(int\\\)" "cddce1" } }
 // { dg-final { scan-tree-dump "switch \\\(s_.\\\(D\\\)\\\)" "cddce1" } }
-// { dg-final { cleanup-tree-dump "cddce1" } }

@@ -14,4 +14,3 @@ test_vrndxq_f32 (float32x4_t in)
 }
 
 /* { dg-final { scan-assembler "vrintx\.f32\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

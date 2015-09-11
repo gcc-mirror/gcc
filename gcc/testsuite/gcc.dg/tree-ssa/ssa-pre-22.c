@@ -10,4 +10,3 @@ int foo (int i, int b)
 }
 
 /* { dg-final { scan-tree-dump "Eliminated: 1" "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

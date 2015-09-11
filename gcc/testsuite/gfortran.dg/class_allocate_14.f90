@@ -27,5 +27,4 @@ end
 
 ! { dg-final { scan-tree-dump-times "static struct __class_m_T_1_0a b = {._data={.data=0B}, ._vptr=&__vtab_m_T};" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "static struct __class_m_T_a y = {._data=0B, ._vptr=&__vtab_m_T};" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

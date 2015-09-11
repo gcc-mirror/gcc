@@ -183,4 +183,3 @@ contains
     end subroutine
 end program
 ! { dg-final { scan-file fmt_en.res "All kinds rounded to nearest" { xfail hppa*-*-hpux* } } }
-! { dg-final { cleanup-saved-temps } }

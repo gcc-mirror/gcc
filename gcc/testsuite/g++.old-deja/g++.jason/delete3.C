@@ -6,7 +6,7 @@ public:
   A();
   ~A();
 protected:
-  void operator delete(void *);	// { dg-error "" } protected
+  void operator delete(void *);	// { dg-message "" } protected
 };
 
 A::~A()

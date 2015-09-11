@@ -14,4 +14,3 @@ int foo(int a)
 /* One comparison and one extension to int.  */
 /* { dg-final { scan-tree-dump " = a_..D. > 0;" "optimized" } } */
 /* { dg-final { scan-tree-dump "e_. = \\\(int\\\)" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

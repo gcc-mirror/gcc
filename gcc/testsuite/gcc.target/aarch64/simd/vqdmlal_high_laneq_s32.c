@@ -12,4 +12,3 @@ t_vqdmlal_high_laneq_s32 (int64x2_t a, int32x4_t b, int32x4_t c)
 }
 
 /* { dg-final { scan-assembler-times "sqdmlal2\[ \t\]+\[vV\]\[0-9\]+\.2\[dD\], ?\[vV\]\[0-9\]+\.4\[sS\], ?\[vV\]\[0-9\]+\.\[sS\]\\\[0\\\]\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

@@ -17,4 +17,3 @@ subroutine pr51058(n, u, v, w, z)
   end do
 end subroutine
 
-! { dg-final { cleanup-tree-dump "vect" } }

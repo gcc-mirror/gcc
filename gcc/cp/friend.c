@@ -21,15 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
@@ -164,11 +156,9 @@ add_friend (tree type, tree decl, bool complain)
 		}
 	    }
 
-	  maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
-
 	  TREE_VALUE (list) = tree_cons (NULL_TREE, decl,
 					 TREE_VALUE (list));
-	  return;
+	  break;
 	}
       list = TREE_CHAIN (list);
     }
@@ -180,9 +170,10 @@ add_friend (tree type, tree decl, bool complain)
 
   maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
 
-  DECL_FRIENDLIST (typedecl)
-    = tree_cons (DECL_NAME (decl), build_tree_list (NULL_TREE, decl),
-		 DECL_FRIENDLIST (typedecl));
+  if (!list)
+    DECL_FRIENDLIST (typedecl)
+      = tree_cons (DECL_NAME (decl), build_tree_list (NULL_TREE, decl),
+		   DECL_FRIENDLIST (typedecl));
   if (!uses_template_parms (type))
     DECL_BEFRIENDING_CLASSES (decl)
       = tree_cons (NULL_TREE, type,
@@ -337,7 +328,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		{
 		  error ("%qT is not a member class template of %qT",
 			 name, ctype);
-		  inform (input_location, "%q+D declared here", decl);
+		  inform (DECL_SOURCE_LOCATION (decl),
+			  "%qD declared here", decl);
 		  return;
 		}
 	      if (!template_member_p && (TREE_CODE (decl) != TYPE_DECL
@@ -345,7 +337,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		{
 		  error ("%qT is not a nested class of %qT",
 			 name, ctype);
-		  inform (input_location, "%q+D declared here", decl);
+		  inform (DECL_SOURCE_LOCATION (decl),
+			  "%qD declared here", decl);
 		  return;
 		}
 

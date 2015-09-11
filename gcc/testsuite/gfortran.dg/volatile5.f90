@@ -39,4 +39,3 @@ end program main
 ! { dg-final { scan-tree-dump "bStillPresent" "optimized" } }
 ! { dg-final { scan-tree-dump-not "cPresent" "optimized" } }
 ! { dg-final { scan-tree-dump-not "cStillPresent" "optimized" } }
-! { dg-final { cleanup-tree-dump "optimized" } }

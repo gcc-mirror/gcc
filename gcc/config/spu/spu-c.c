@@ -19,15 +19,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "cpplib.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "c-family/c-common.h"
@@ -203,7 +195,8 @@ spu_cpu_cpp_builtins (struct cpp_reader *pfile)
   cpp_assert (pfile, "machine=spu");
   if (spu_arch == PROCESSOR_CELLEDP)
     cpp_define (pfile, "__SPU_EDP__");
-  cpp_define (pfile, "__vector=__attribute__((__spu_vector__))");
+  if (cpp_get_options (pfile)->lang != CLK_ASM)
+    cpp_define (pfile, "__vector=__attribute__((__spu_vector__))");
   switch (spu_ea_model)
     {
     case 32:
@@ -216,7 +209,7 @@ spu_cpu_cpp_builtins (struct cpp_reader *pfile)
        gcc_unreachable ();
     }
 
-  if (!flag_iso)
+  if (!flag_iso && cpp_get_options (pfile)->lang != CLK_ASM)
     {
       /* Define this when supporting context-sensitive keywords.  */
       cpp_define (pfile, "__VECTOR_KEYWORD_SUPPORTED__");

@@ -31,10 +31,12 @@
 #include "libgomp_g.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>  /* For PRIu64.  */
+#endif
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <alloca.h>
 
 static int
 find_pset (int pos, size_t mapnum, unsigned short *kinds)
@@ -47,36 +49,10 @@ find_pset (int pos, size_t mapnum, unsigned short *kinds)
   return kind == GOMP_MAP_TO_PSET;
 }
 
-
-/* Ensure that the target device for DEVICE_TYPE is initialised (and that
-   plugins have been loaded if appropriate).  The ACC_dev variable for the
-   current thread will be set appropriately for the given device type on
-   return.  */
-
-attribute_hidden void
-select_acc_device (int device_type)
-{
-  goacc_lazy_initialize ();
-
-  if (device_type == GOMP_DEVICE_HOST_FALLBACK)
-    return;
-
-  if (device_type == acc_device_none)
-    device_type = acc_device_host;
-
-  if (device_type >= 0)
-    {
-      /* NOTE: this will go badly if the surrounding data environment is set up
-         to use a different device type.  We'll just have to trust that users
-	 know what they're doing...  */
-      acc_set_device_type (device_type);
-    }
-}
-
 static void goacc_wait (int async, int num_waits, va_list ap);
 
 void
-GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
+GOACC_parallel (int device, void (*fn) (void *),
 		size_t mapnum, void **hostaddrs, size_t *sizes,
 		unsigned short *kinds,
 		int num_gangs, int num_workers, int vector_length,
@@ -100,10 +76,16 @@ GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
     gomp_fatal ("num_workers (%d) different from one is not yet supported",
 		num_workers);
 
-  gomp_debug (0, "%s: mapnum=%zd, hostaddrs=%p, sizes=%p, kinds=%p, async=%d\n",
-	      __FUNCTION__, mapnum, hostaddrs, sizes, kinds, async);
-
-  select_acc_device (device);
+#ifdef HAVE_INTTYPES_H
+  gomp_debug (0, "%s: mapnum=%"PRIu64", hostaddrs=%p, size=%p, kinds=%p, "
+		 "async = %d\n",
+	      __FUNCTION__, (uint64_t) mapnum, hostaddrs, sizes, kinds, async);
+#else
+  gomp_debug (0, "%s: mapnum=%lu, hostaddrs=%p, sizes=%p, kinds=%p, async=%d\n",
+	      __FUNCTION__, (unsigned long) mapnum, hostaddrs, sizes, kinds,
+	      async);
+#endif
+  goacc_lazy_initialize ();
 
   thr = goacc_thread ();
   acc_dev = thr->dev;
@@ -123,27 +105,27 @@ GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
       return;
     }
 
-  va_start (ap, num_waits);
+  if (num_waits)
+    {
+      va_start (ap, num_waits);
+      goacc_wait (async, num_waits, ap);
+      va_end (ap);
+    }
   
-  if (num_waits > 0)
-    goacc_wait (async, num_waits, ap);
-
-  va_end (ap);
-
   acc_dev->openacc.async_set_async_func (async);
 
   if (!(acc_dev->capabilities & GOMP_OFFLOAD_CAP_NATIVE_EXEC))
     {
       k.host_start = (uintptr_t) fn;
       k.host_end = k.host_start + 1;
-      gomp_mutex_lock (&acc_dev->mem_map.lock);
-      tgt_fn_key = splay_tree_lookup (&acc_dev->mem_map.splay_tree, &k);
-      gomp_mutex_unlock (&acc_dev->mem_map.lock);
+      gomp_mutex_lock (&acc_dev->lock);
+      tgt_fn_key = splay_tree_lookup (&acc_dev->mem_map, &k);
+      gomp_mutex_unlock (&acc_dev->lock);
 
       if (tgt_fn_key == NULL)
 	gomp_fatal ("target function wasn't mapped");
 
-      tgt_fn = (void (*)) tgt_fn_key->tgt->tgt_start;
+      tgt_fn = (void (*)) tgt_fn_key->tgt_offset;
     }
   else
     tgt_fn = (void (*)) fn;
@@ -151,7 +133,7 @@ GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
   tgt = gomp_map_vars (acc_dev, mapnum, hostaddrs, NULL, sizes, kinds, true,
 		       false);
 
-  devaddrs = alloca (sizeof (void *) * mapnum);
+  devaddrs = gomp_alloca (sizeof (void *) * mapnum);
   for (i = 0; i < mapnum; i++)
     devaddrs[i] = (void *) (tgt->list[i]->tgt->tgt_start
 			    + tgt->list[i]->tgt_offset);
@@ -173,16 +155,21 @@ GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
 }
 
 void
-GOACC_data_start (int device, const void *offload_table, size_t mapnum,
+GOACC_data_start (int device, size_t mapnum,
 		  void **hostaddrs, size_t *sizes, unsigned short *kinds)
 {
   bool host_fallback = device == GOMP_DEVICE_HOST_FALLBACK;
   struct target_mem_desc *tgt;
 
-  gomp_debug (0, "%s: mapnum=%zd, hostaddrs=%p, sizes=%p, kinds=%p\n",
-	      __FUNCTION__, mapnum, hostaddrs, sizes, kinds);
+#ifdef HAVE_INTTYPES_H
+  gomp_debug (0, "%s: mapnum=%"PRIu64", hostaddrs=%p, size=%p, kinds=%p\n",
+	      __FUNCTION__, (uint64_t) mapnum, hostaddrs, sizes, kinds);
+#else
+  gomp_debug (0, "%s: mapnum=%lu, hostaddrs=%p, sizes=%p, kinds=%p\n",
+	      __FUNCTION__, (unsigned long) mapnum, hostaddrs, sizes, kinds);
+#endif
 
-  select_acc_device (device);
+  goacc_lazy_initialize ();
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
@@ -219,7 +206,7 @@ GOACC_data_end (void)
 }
 
 void
-GOACC_enter_exit_data (int device, const void *offload_table, size_t mapnum,
+GOACC_enter_exit_data (int device, size_t mapnum,
 		       void **hostaddrs, size_t *sizes, unsigned short *kinds,
 		       int async, int num_waits, ...)
 {
@@ -229,7 +216,7 @@ GOACC_enter_exit_data (int device, const void *offload_table, size_t mapnum,
   bool data_enter = false;
   size_t i;
 
-  select_acc_device (device);
+  goacc_lazy_initialize ();
 
   thr = goacc_thread ();
   acc_dev = thr->dev;
@@ -238,14 +225,12 @@ GOACC_enter_exit_data (int device, const void *offload_table, size_t mapnum,
       || host_fallback)
     return;
 
-  if (num_waits > 0)
+  if (num_waits)
     {
       va_list ap;
 
       va_start (ap, num_waits);
-
       goacc_wait (async, num_waits, ap);
-
       va_end (ap);
     }
 
@@ -363,60 +348,34 @@ goacc_wait (int async, int num_waits, va_list ap)
 {
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
-  int i;
 
-  assert (num_waits >= 0);
-
-  if (async == acc_async_sync && num_waits == 0)
-    {
-      acc_wait_all ();
-      return;
-    }
-
-  if (async == acc_async_sync && num_waits)
-    {
-      for (i = 0; i < num_waits; i++)
-        {
-          int qid = va_arg (ap, int);
-
-          if (acc_async_test (qid))
-            continue;
-
-          acc_wait (qid);
-        }
-      return;
-    }
-
-  if (async == acc_async_noval && num_waits == 0)
-    {
-      acc_dev->openacc.async_wait_all_async_func (acc_async_noval);
-      return;
-    }
-
-  for (i = 0; i < num_waits; i++)
+  while (num_waits--)
     {
       int qid = va_arg (ap, int);
 
       if (acc_async_test (qid))
 	continue;
 
-      /* If we're waiting on the same asynchronous queue as we're launching on,
-         the queue itself will order work as required, so there's no need to
-	 wait explicitly.  */
-      if (qid != async)
+      if (async == acc_async_sync)
+	acc_wait (qid);
+      else if (qid == async)
+	;/* If we're waiting on the same asynchronous queue as we're
+	    launching on, the queue itself will order work as
+	    required, so there's no need to wait explicitly.  */
+      else
 	acc_dev->openacc.async_wait_async_func (qid, async);
     }
 }
 
 void
-GOACC_update (int device, const void *offload_table, size_t mapnum,
+GOACC_update (int device, size_t mapnum,
 	      void **hostaddrs, size_t *sizes, unsigned short *kinds,
 	      int async, int num_waits, ...)
 {
   bool host_fallback = device == GOMP_DEVICE_HOST_FALLBACK;
   size_t i;
 
-  select_acc_device (device);
+  goacc_lazy_initialize ();
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
@@ -425,14 +384,12 @@ GOACC_update (int device, const void *offload_table, size_t mapnum,
       || host_fallback)
     return;
 
-  if (num_waits > 0)
+  if (num_waits)
     {
       va_list ap;
 
       va_start (ap, num_waits);
-
       goacc_wait (async, num_waits, ap);
-
       va_end (ap);
     }
 
@@ -468,13 +425,18 @@ GOACC_update (int device, const void *offload_table, size_t mapnum,
 void
 GOACC_wait (int async, int num_waits, ...)
 {
-  va_list ap;
+  if (num_waits)
+    {
+      va_list ap;
 
-  va_start (ap, num_waits);
-
-  goacc_wait (async, num_waits, ap);
-
-  va_end (ap);
+      va_start (ap, num_waits);
+      goacc_wait (async, num_waits, ap);
+      va_end (ap);
+    }
+  else if (async == acc_async_sync)
+    acc_wait_all ();
+  else if (async == acc_async_noval)
+    goacc_thread ()->dev->openacc.async_wait_all_async_func (acc_async_noval);
 }
 
 int

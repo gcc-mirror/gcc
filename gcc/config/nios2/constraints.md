@@ -20,13 +20,20 @@
 
 ;; We use the following constraint letters for constants
 ;;
-;;  I: -32768 to -32767
+;;  I: -32768 to 32767
 ;;  J: 0 to 65535
 ;;  K: $nnnn0000 for some nnnn
+;;  P: Under R2, $nnnnffff or $ffffnnnn for some nnnn
 ;;  L: 0 to 31 (for shift counts)
 ;;  M: 0
 ;;  N: 0 to 255 (for custom instruction numbers)
 ;;  O: 0 to 31 (for control register numbers)
+;;  U: -32768 to 32767 under R1, -2048 to 2047 under R2
+;;
+;; We use the following constraint letters for memory constraints
+;;
+;;  v: memory operands for R2 load/store exclusive instructions
+;;  w: memory operands for load/store IO and cache instructions
 ;;
 ;; We use the following built-in register classes:
 ;;
@@ -38,6 +45,9 @@
 ;;  S: symbol that is in the "small data" area
 
 ;; Register constraints
+
+(define_register_constraint "c" "IJMP_REGS"
+  "A register suitable for an indirect jump.")
 
 (define_register_constraint "j" "SIB_REGS"
   "A register suitable for an indirect sibcall.")
@@ -79,11 +89,30 @@
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 31")))
 
+(define_constraint "P"
+  "An immediate operand for R2 andchi/andci instructions."
+  (and (match_code "const_int")
+       (match_test "TARGET_ARCH_R2 && ANDCLEAR_INT (ival)")))
+
 (define_constraint "S"
   "An immediate stored in small data, accessible by GP."
-  (and (match_code "symbol_ref")
-       (match_test "nios2_symbol_ref_in_small_data_p (op)")))
+  (match_test "gprel_constant_p (op)"))
 
 (define_constraint "T"
   "A constant unspec offset representing a relocation."
   (match_test "nios2_unspec_reloc_p (op)"))
+
+(define_constraint "U"
+  "A 12-bit or 16-bit constant (for RDPRS and DCACHE)."
+  (and (match_code "const_int")
+       (if_then_else (match_test "TARGET_ARCH_R2")
+                     (match_test "SMALL_INT12 (ival)")
+                     (match_test "SMALL_INT (ival)"))))
+
+(define_memory_constraint "v"
+  "A memory operand suitable for R2 load/store exclusive instructions."
+  (match_operand 0 "ldstex_memory_operand"))
+
+(define_memory_constraint "w"
+  "A memory operand suitable for load/store IO and cache instructions."
+  (match_operand 0 "ldstio_memory_operand"))

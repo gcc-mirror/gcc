@@ -76,23 +76,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "calls.h"
@@ -101,17 +88,18 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
-bool
-cgraph_node::non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+static bool
+non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
-   /* FIXME: Aliases can be local, but i386 gets thunks wrong then.  */
-   return !(node->only_called_directly_or_aliased_p ()
-	    && !node->has_aliases_p ()
-	    && node->definition
-	    && !DECL_EXTERNAL (node->decl)
-	    && !node->externally_visible
-	    && !node->used_from_other_partition
-	    && !node->in_other_partition);
+  return !(node->only_called_directly_or_aliased_p ()
+	   /* i386 would need update to output thunk with locak calling
+	      ocnvetions.  */
+	   && !node->thunk.thunk_p
+	   && node->definition
+	   && !DECL_EXTERNAL (node->decl)
+	   && !node->externally_visible
+	   && !node->used_from_other_partition
+	   && !node->in_other_partition);
 }
 
 /* Return true when function can be marked local.  */
@@ -121,34 +109,11 @@ cgraph_node::local_p (void)
 {
    cgraph_node *n = ultimate_alias_target ();
 
-   /* FIXME: thunks can be considered local, but we need prevent i386
-      from attempting to change calling convention of them.  */
    if (n->thunk.thunk_p)
-     return false;
-   return !n->call_for_symbol_thunks_and_aliases (cgraph_node::non_local_p,
-						NULL, true);
+     return n->callees->callee->local_p ();
+   return !n->call_for_symbol_thunks_and_aliases (non_local_p,
+						  NULL, true);
 					
-}
-
-/* Return true when there is a reference to node and it is not vtable.  */
-
-bool
-symtab_node::address_taken_from_non_vtable_p (void)
-{
-  int i;
-  struct ipa_ref *ref = NULL;
-
-  for (i = 0; iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ADDR)
-      {
-	varpool_node *node;
-	if (is_a <cgraph_node *> (ref->referring))
-	  return true;
-	node = dyn_cast <varpool_node *> (ref->referring);
-	if (!DECL_VIRTUAL_P (node->decl))
-	  return true;
-      }
-  return false;
 }
 
 /* A helper for comdat_can_be_unshared_p.  */
@@ -158,16 +123,14 @@ comdat_can_be_unshared_p_1 (symtab_node *node)
 {
   if (!node->externally_visible)
     return true;
-  /* When address is taken, we don't know if equality comparison won't
-     break eventually. Exception are virutal functions, C++
-     constructors/destructors and vtables, where this is not possible by
-     language standard.  */
-  if (!DECL_VIRTUAL_P (node->decl)
-      && (TREE_CODE (node->decl) != FUNCTION_DECL
-	  || (!DECL_CXX_CONSTRUCTOR_P (node->decl)
-	      && !DECL_CXX_DESTRUCTOR_P (node->decl)))
-      && node->address_taken_from_non_vtable_p ())
-    return false;
+  if (node->address_can_be_compared_p ())
+    {
+      struct ipa_ref *ref;
+
+      for (unsigned int i = 0; node->iterate_referring (i, ref); i++)
+	if (ref->address_matters_p ())
+	  return false;
+    }
 
   /* If the symbol is used in some weird way, better to not touch it.  */
   if (node->force_output)
@@ -388,7 +351,8 @@ can_replace_by_local_alias_in_vtable (symtab_node *node)
 /* walk_tree callback that rewrites initializer references.   */
 
 static tree
-update_vtable_references (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+update_vtable_references (tree *tp, int *walk_subtrees,
+			  void *data ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (*tp) == VAR_DECL
       || TREE_CODE (*tp) == FUNCTION_DECL)
@@ -425,11 +389,19 @@ update_visibility_by_resolution_info (symtab_node * node)
   if (node->same_comdat_group)
     for (symtab_node *next = node->same_comdat_group;
 	 next != node; next = next->same_comdat_group)
-      gcc_assert (!next->externally_visible
-		  || define == (next->resolution == LDPR_PREVAILING_DEF_IRONLY
-			        || next->resolution == LDPR_PREVAILING_DEF
-			        || next->resolution == LDPR_UNDEF
-			        || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP));
+      {
+	if (!next->externally_visible)
+	  continue;
+
+	bool same_def
+	  = define == (next->resolution == LDPR_PREVAILING_DEF_IRONLY
+		       || next->resolution == LDPR_PREVAILING_DEF
+		       || next->resolution == LDPR_UNDEF
+		       || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
+	gcc_assert (in_lto_p || same_def);
+	if (!same_def)
+	  return;
+      }
 
   if (node->same_comdat_group)
     for (symtab_node *next = node->same_comdat_group;
@@ -588,7 +560,8 @@ function_and_variable_visibility (bool whole_program)
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      node->local.local |= node->local_p ();
+      if (!node->local.local)
+        node->local.local |= node->local_p ();
 
       /* If we know that function can not be overwritten by a different semantics
 	 and moreover its section can not be discarded, replace all direct calls

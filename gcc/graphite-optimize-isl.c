@@ -21,53 +21,34 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 
 #ifdef HAVE_isl
+/* Workaround for GMP 5.1.3 bug, see PR56019.  */
+#include <stddef.h>
+
+#include <isl/constraint.h>
 #include <isl/set.h>
+#include <isl/union_set.h>
 #include <isl/map.h>
 #include <isl/union_map.h>
 #include <isl/schedule.h>
 #include <isl/band.h>
 #include <isl/aff.h>
 #include <isl/options.h>
-#endif
+#include <isl/ctx.h>
 
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
+#include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop.h"
-#include "dumpfile.h"
 #include "cfgloop.h"
-#include "tree-chrec.h"
 #include "tree-data-ref.h"
-#include "tree-scalar-evolution.h"
-#include "sese.h"
-
-#ifdef HAVE_isl
 #include "graphite-poly.h"
+#include "params.h"
+#include "dumpfile.h"
 
 static isl_union_set *
 scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
@@ -193,17 +174,26 @@ getScheduleForBand (isl_band *Band, int *Dimensions)
   PartialSchedule = isl_band_get_partial_schedule (Band);
   *Dimensions = isl_band_n_member (Band);
 
-  if (DisableTiling || flag_loop_unroll_jam)
+  if (DisableTiling)
     return PartialSchedule;
 
   /* It does not make any sense to tile a band with just one dimension.  */
   if (*Dimensions == 1)
-    return PartialSchedule;
+    {
+      if (dump_file && dump_flags)
+	fprintf (dump_file, "not tiled\n");
+      return PartialSchedule;
+    }
+
+  if (dump_file && dump_flags)
+    fprintf (dump_file, "tiled by %d\n",
+	     PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE));
 
   ctx = isl_union_map_get_ctx (PartialSchedule);
   Space = isl_union_map_get_space (PartialSchedule);
 
-  TileMap = getTileMap (ctx, *Dimensions, 32);
+  TileMap = getTileMap (ctx, *Dimensions,
+			PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE));
   TileUMap = isl_union_map_from_map (isl_map_from_basic_map (TileMap));
   TileUMap = isl_union_map_align_params (TileUMap, Space);
   *Dimensions = 2 * *Dimensions;
@@ -248,9 +238,7 @@ getScheduleForBand (isl_band *Band, int *Dimensions)
    constant number of iterations, if the number of loop iterations at
    DimToVectorize can be devided by VectorWidth. The default VectorWidth is
    currently constant and not yet target specific. This function does not reason
-   about parallelism.
-
-  */
+   about parallelism.  */
 static isl_map *
 getPrevectorMap (isl_ctx *ctx, int DimToVectorize,
 		 int ScheduleDimensions,
@@ -317,109 +305,15 @@ getPrevectorMap (isl_ctx *ctx, int DimToVectorize,
   return TilingMap;
 }
 
-/* Compute an auxiliary map to getPrevectorMap, for computing the separating 
-   class defined by full tiles.  Used in graphite_isl_ast_to_gimple.c to set the 
-   corresponding option for AST build.
-
-   The map (for VectorWidth=4):
-
-   [i,j] -> [it,j,ip] : it % 4 = 0 and it <= ip <= it + 3 and it + 3 = i and
-                        ip >= 0
-
-   The image of this map is the separation class. The range of this map includes
-   all the i multiple of 4 in the domain such as i + 3 is in the domain too.
-    
- */ 
-static isl_map *
-getPrevectorMap_full (isl_ctx *ctx, int DimToVectorize,
-		 int ScheduleDimensions,
-		 int VectorWidth)
-{
-  isl_space *Space;
-  isl_local_space *LocalSpace, *LocalSpaceRange;
-  isl_set *Modulo;
-  isl_map *TilingMap;
-  isl_constraint *c;
-  isl_aff *Aff;
-  int PointDimension; /* ip */
-  int TileDimension;  /* it */
-  isl_val *VectorWidthMP;
-  int i;
-
-  /* assert (0 <= DimToVectorize && DimToVectorize < ScheduleDimensions);*/
-
-  Space = isl_space_alloc (ctx, 0, ScheduleDimensions, ScheduleDimensions + 1);
-  TilingMap = isl_map_universe (isl_space_copy (Space));
-  LocalSpace = isl_local_space_from_space (Space);
-  PointDimension = ScheduleDimensions;
-  TileDimension = DimToVectorize;
-
-  /* Create an identity map for everything except DimToVectorize and the 
-     point loop. */
-  for (i = 0; i < ScheduleDimensions; i++)
-    {
-      if (i == DimToVectorize)
-        continue;
-
-      c = isl_equality_alloc (isl_local_space_copy (LocalSpace));
-
-      isl_constraint_set_coefficient_si (c, isl_dim_in, i, -1);
-      isl_constraint_set_coefficient_si (c, isl_dim_out, i, 1);
-
-      TilingMap = isl_map_add_constraint (TilingMap, c);
-    }
-
-  /* it % 'VectorWidth' = 0  */
-  LocalSpaceRange = isl_local_space_range (isl_local_space_copy (LocalSpace));
-  Aff = isl_aff_zero_on_domain (LocalSpaceRange);
-  Aff = isl_aff_set_constant_si (Aff, VectorWidth);
-  Aff = isl_aff_set_coefficient_si (Aff, isl_dim_in, TileDimension, 1);
-
-  VectorWidthMP = isl_val_int_from_si (ctx, VectorWidth);
-  Aff = isl_aff_mod_val (Aff, VectorWidthMP);
-  Modulo = isl_pw_aff_zero_set (isl_pw_aff_from_aff (Aff));
-  TilingMap = isl_map_intersect_range (TilingMap, Modulo);
-
-  /* it + ('VectorWidth' - 1) = i0  */
-  c = isl_equality_alloc (isl_local_space_copy(LocalSpace));
-  isl_constraint_set_coefficient_si (c, isl_dim_out, TileDimension,-1);
-  isl_constraint_set_coefficient_si (c, isl_dim_in, TileDimension, 1);
-  isl_constraint_set_constant_si (c, -VectorWidth + 1);
-  TilingMap = isl_map_add_constraint (TilingMap, c);
-
-  /* ip >= 0 */
-  c = isl_inequality_alloc (isl_local_space_copy (LocalSpace));
-  isl_constraint_set_coefficient_si (c, isl_dim_out, PointDimension, 1);
-  isl_constraint_set_constant_si (c, 0);
-  TilingMap = isl_map_add_constraint (TilingMap, c);
-
-  /* it <= ip */
-  c = isl_inequality_alloc (isl_local_space_copy (LocalSpace));
-  isl_constraint_set_coefficient_si (c, isl_dim_out, TileDimension, -1);
-  isl_constraint_set_coefficient_si (c, isl_dim_out, PointDimension, 1);
-  TilingMap = isl_map_add_constraint (TilingMap, c);
-
-  /* ip <= it + ('VectorWidth' - 1) */
-  c = isl_inequality_alloc (LocalSpace);
-  isl_constraint_set_coefficient_si (c, isl_dim_out, TileDimension, 1);
-  isl_constraint_set_coefficient_si (c, isl_dim_out, PointDimension, -1);
-  isl_constraint_set_constant_si (c, VectorWidth - 1);
-  TilingMap = isl_map_add_constraint (TilingMap, c);
-
-  return TilingMap;
-}
-
 static bool EnablePollyVector = false;
 
 /* getScheduleForBandList - Get the scheduling map for a list of bands.
-    
+
    We walk recursively the forest of bands to combine the schedules of the
    individual bands to the overall schedule. In case tiling is requested,
-   the individual bands are tiled.
-   For unroll and jam the map the schedule for full tiles of the unrolled
-   dimnesion is computed.  */
+   the individual bands are tiled.  */
 static isl_union_map *
-getScheduleForBandList (isl_band_list *BandList, isl_union_map **map_sepcl)
+getScheduleForBandList (isl_band_list *BandList)
 {
   int NumBands, i;
   isl_union_map *Schedule;
@@ -436,13 +330,9 @@ getScheduleForBandList (isl_band_list *BandList, isl_union_map **map_sepcl)
       int ScheduleDimensions;
       isl_space *Space;
 
-      isl_union_map *PartialSchedule_f;
-
       Band = isl_band_list_get_band (BandList, i);
       PartialSchedule = getScheduleForBand (Band, &ScheduleDimensions);
       Space = isl_union_map_get_space (PartialSchedule);
-
-      PartialSchedule_f = NULL;
 
       if (isl_band_has_children (Band))
 	{
@@ -450,23 +340,15 @@ getScheduleForBandList (isl_band_list *BandList, isl_union_map **map_sepcl)
 	  isl_union_map *SuffixSchedule;
 
 	  Children = isl_band_get_children (Band);
-	  SuffixSchedule = getScheduleForBandList (Children, map_sepcl);
+	  SuffixSchedule = getScheduleForBandList (Children);
 	  PartialSchedule = isl_union_map_flat_range_product (PartialSchedule,
 							      SuffixSchedule);
 	  isl_band_list_free (Children);
 	}
-      else if (EnablePollyVector || flag_loop_unroll_jam)
+      else if (EnablePollyVector)
 	{
-	  int i;
-	  int depth;
- 
- 	  depth = PARAM_VALUE (PARAM_LOOP_UNROLL_JAM_DEPTH);
-  
 	  for (i = ScheduleDimensions - 1 ;  i >= 0 ; i--)
 	    {
-	      if (flag_loop_unroll_jam && (i != (ScheduleDimensions - depth)))
-		continue;
-
 #ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
 	      if (isl_band_member_is_coincident (Band, i))
 #else
@@ -475,19 +357,8 @@ getScheduleForBandList (isl_band_list *BandList, isl_union_map **map_sepcl)
 		{
 		  isl_map *TileMap;
 		  isl_union_map *TileUMap;
-		  int stride;
 
-                  stride = PARAM_VALUE (PARAM_LOOP_UNROLL_JAM_SIZE);    
-
-		  TileMap = getPrevectorMap_full (ctx, i, ScheduleDimensions, 
-						  stride); 
- 		  TileUMap = isl_union_map_from_map (TileMap);
-		  TileUMap = isl_union_map_align_params
-		    (TileUMap, isl_space_copy (Space));
-		  PartialSchedule_f = isl_union_map_apply_range
-		    (isl_union_map_copy (PartialSchedule), TileUMap);
-
-		  TileMap = getPrevectorMap (ctx, i, ScheduleDimensions, stride);
+		  TileMap = getPrevectorMap (ctx, i, ScheduleDimensions, 4);
 		  TileUMap = isl_union_map_from_map (TileMap);
 		  TileUMap = isl_union_map_align_params
 		    (TileUMap, isl_space_copy (Space));
@@ -497,50 +368,36 @@ getScheduleForBandList (isl_band_list *BandList, isl_union_map **map_sepcl)
 		}	
 	    }
 	}
-      Schedule = isl_union_map_union (Schedule, 
-                                      isl_union_map_copy(PartialSchedule));
+
+      Schedule = isl_union_map_union (Schedule, PartialSchedule);
 
       isl_band_free (Band);
       isl_space_free (Space);
-
-      if (!flag_loop_unroll_jam)
-	{
-          isl_union_map_free (PartialSchedule);
-          continue;
-	}
-
-      if (PartialSchedule_f)
-	{
-	  *map_sepcl = isl_union_map_union (*map_sepcl, PartialSchedule_f);
-          isl_union_map_free (PartialSchedule);
-	}
-      else
-        *map_sepcl = isl_union_map_union (*map_sepcl, PartialSchedule);
     }
 
   return Schedule;
 }
 
 static isl_union_map *
-getScheduleMap (isl_schedule *Schedule, isl_union_map **map_sepcl)
+getScheduleMap (isl_schedule *Schedule)
 {
   isl_band_list *BandList = isl_schedule_get_band_forest (Schedule);
-  isl_union_map *ScheduleMap = getScheduleForBandList (BandList, map_sepcl);
+  isl_union_map *ScheduleMap = getScheduleForBandList (BandList);
   isl_band_list_free (BandList);
   return ScheduleMap;
 }
 
-static int
+static isl_stat
 getSingleMap (__isl_take isl_map *map, void *user)
 {
   isl_map **singleMap = (isl_map **) user;
   *singleMap = map;
 
-  return 0;
+  return isl_stat_ok;
 }
 
 static void
-apply_schedule_map_to_scop (scop_p scop, isl_union_map *schedule_map, bool sepcl)
+apply_schedule_map_to_scop (scop_p scop, isl_union_map *schedule_map)
 {
   int i;
   poly_bb_p pbb;
@@ -555,15 +412,8 @@ apply_schedule_map_to_scop (scop_p scop, isl_union_map *schedule_map, bool sepcl
 	(isl_union_map_copy (schedule_map),
 	 isl_union_set_from_set (domain));
       isl_union_map_foreach_map (stmtBand, getSingleMap, &stmtSchedule);
-
-      if (!sepcl)
-	{
-	  isl_map_free (pbb->transformed);
-	  pbb->transformed = stmtSchedule;
-	}
-      else
-	  pbb->map_sepclass = stmtSchedule;
-
+      isl_map_free (pbb->transformed);
+      pbb->transformed = stmtSchedule;
       isl_union_map_free (stmtBand);
     }
 }
@@ -573,27 +423,25 @@ static const int CONSTANT_BOUND = 20;
 bool
 optimize_isl (scop_p scop)
 {
-
-  isl_schedule *schedule;
-#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
-  isl_schedule_constraints *schedule_constraints;
+#ifdef HAVE_ISL_CTX_MAX_OPERATIONS
+  int old_max_operations = isl_ctx_get_max_operations(scop->ctx);
+  int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
+  if (max_operations)
+    isl_ctx_set_max_operations(scop->ctx, max_operations);
 #endif
-  isl_union_set *domain;
-  isl_union_map *validity, *proximity, *dependences;
-  isl_union_map *schedule_map;
-  isl_union_map *schedule_map_f;
+  isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_CONTINUE);
 
-  domain = scop_get_domains (scop);
-  dependences = scop_get_dependences (scop);
+  isl_union_set *domain = scop_get_domains (scop);
+  isl_union_map *dependences = scop_get_dependences (scop);
   dependences = isl_union_map_gist_domain (dependences,
 					   isl_union_set_copy (domain));
   dependences = isl_union_map_gist_range (dependences,
 					  isl_union_set_copy (domain));
-  validity = dependences;
-
-  proximity = isl_union_map_copy (validity);
+  isl_union_map *validity = dependences;
+  isl_union_map *proximity = isl_union_map_copy (validity);
 
 #ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
+  isl_schedule_constraints *schedule_constraints;
   schedule_constraints = isl_schedule_constraints_on_domain (domain);
   schedule_constraints
 	= isl_schedule_constraints_set_proximity (schedule_constraints,
@@ -608,32 +456,45 @@ optimize_isl (scop_p scop)
 
   isl_options_set_schedule_max_constant_term (scop->ctx, CONSTANT_BOUND);
   isl_options_set_schedule_maximize_band_depth (scop->ctx, 1);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  isl_options_set_schedule_serialize_sccs (scop->ctx, 1);
+#else
   isl_options_set_schedule_fuse (scop->ctx, ISL_SCHEDULE_FUSE_MIN);
-  isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_CONTINUE);
+#endif
 
 #ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
-  schedule = isl_schedule_constraints_compute_schedule(schedule_constraints);
+  isl_schedule *schedule
+    = isl_schedule_constraints_compute_schedule (schedule_constraints);
 #else
-  schedule = isl_union_set_compute_schedule (domain, validity, proximity);
+  isl_schedule *schedule
+    = isl_union_set_compute_schedule (domain, validity, proximity);
 #endif
 
   isl_options_set_on_error (scop->ctx, ISL_ON_ERROR_ABORT);
 
+#ifdef HAVE_ISL_CTX_MAX_OPERATIONS
+  isl_ctx_reset_operations(scop->ctx);
+  isl_ctx_set_max_operations(scop->ctx, old_max_operations);
+  if (!schedule || isl_ctx_last_error (scop->ctx) == isl_error_quota)
+    {
+      if (dump_file && dump_flags)
+	fprintf (dump_file, "ISL timed out at %d operations\n",
+		 max_operations);
+      if (schedule)
+	isl_schedule_free (schedule);
+      return false;
+    }
+#else
   if (!schedule)
     return false;
+#endif
 
-  schedule_map_f = isl_union_map_empty (isl_space_params_alloc (scop->ctx, 0));
-  schedule_map = getScheduleMap (schedule, &schedule_map_f);
-
-  apply_schedule_map_to_scop (scop, schedule_map, false);
-  if (!isl_union_map_is_empty (schedule_map_f))
-    apply_schedule_map_to_scop (scop, schedule_map_f, true);
-  isl_union_map_free (schedule_map_f);
+  isl_union_map *schedule_map = getScheduleMap (schedule);
+  apply_schedule_map_to_scop (scop, schedule_map);
 
   isl_schedule_free (schedule);
   isl_union_map_free (schedule_map);
-
   return true;
 }
 
-#endif
+#endif  /* HAVE_isl */

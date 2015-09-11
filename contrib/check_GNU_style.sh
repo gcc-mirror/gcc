@@ -36,61 +36,169 @@ EOF
 }
 
 test $# -eq 0 && usage
+nfiles=$#
+files="$*"
+
+stdin=false
+stdin_tmp=""
+if [ $nfiles -eq 1 ] && [ "$files" = "-" ]; then
+    stdin=true
+
+    # By putting stdin into a temp file, we can handle it just like any other
+    # file.  F.i., we can cat it twice, which we can't do with stdin.
+    stdin_tmp=check_GNU_style.stdin
+    cat - > $stdin_tmp
+    files=$stdin_tmp
+else
+    for f in $files; do
+	if [ "$f" = "-" ]; then
+	    # Let's keep things simple.  Either we read from stdin, or we read
+	    # from files specified on the command line, not both.
+	    usage
+	fi
+	if [ ! -f "$f" ]; then
+	    echo "error: could not read file: $f"
+	    exit 1
+	fi
+    done
+fi
 
 inp=check_GNU_style.inp
 tmp=check_GNU_style.tmp
+tmp2=check_GNU_style.2.tmp
+tmp3=check_GNU_style.3.tmp
 
 # Remove $tmp on exit and various signals.
-trap "rm -f $inp $tmp" 0
-trap "rm -f $inp $tmp ; exit 1" 1 2 3 5 9 13 15
+trap "rm -f $inp $tmp $tmp2 $tmp3 $stdin_tmp" 0
+trap "rm -f $inp $tmp $tmp2 $tmp3 $stdin_tmp; exit 1" 1 2 3 5 9 13 15
 
-grep -nH '^+' $* \
-	| grep -v ':+++' \
-	> $inp
+if [ $nfiles -eq 1 ]; then
+    # There's no need for the file prefix if we're dealing only with one file.
+    format="-n"
+else
+    format="-nH"
+fi
+grep $format '^+' $files \
+    | grep -v ':+++' \
+    > $inp
+
+cat_with_prefix ()
+{
+    local f="$1"
+
+    if [ "$prefix" = "" ]; then
+	cat "$f"
+    else
+	awk "{printf \"%s%s\n\", \"$prefix\", \$0}" $f
+    fi
+}
 
 # Grep
 g (){
-    msg="$1"
-    arg="$2"
+    local msg="$1"
+    local arg="$2"
+
+    local found=false
     cat $inp \
 	| egrep --color=always -- "$arg" \
-	> $tmp && printf "\n$msg\n"
-    cat $tmp
+	> "$tmp" && found=true
+
+    if $found; then
+	printf "\n$msg\n"
+	cat "$tmp"
+    fi
 }
 
 # And Grep
 ag (){
-    msg="$1"
-    arg1="$2"
-    arg2="$3"
+    local msg="$1"
+    local arg1="$2"
+    local arg2="$3"
+
+    local found=false
     cat $inp \
 	| egrep --color=always -- "$arg1" \
 	| egrep --color=always -- "$arg2" \
-	> $tmp && printf "\n$msg\n"
-    cat $tmp
+	> "$tmp" && found=true
+
+    if $found; then
+	printf "\n$msg\n"
+	cat "$tmp"
+    fi
 }
 
 # reVerse Grep
 vg (){
-    msg="$1"
-    varg="$2"
-    arg="$3"
+    local msg="$1"
+    local varg="$2"
+    local arg="$3"
+
+    local found=false
     cat $inp \
 	| egrep -v -- "$varg" \
 	| egrep --color=always -- "$arg" \
-	> $tmp && printf "\n$msg\n"
-    cat $tmp
+	> "$tmp" && found=true
+
+    if $found; then
+	printf "\n$msg\n"
+	cat "$tmp"
+    fi
 }
 
 col (){
-    msg="$1"
-    cat $inp \
-	| awk -F':\\+' '{ if (length($2) > 80) print $0}' \
-	> $tmp
-    if [ -s $tmp ]; then
-	printf "\n$msg\n"
-	cat $tmp
-    fi
+    local msg="$1"
+
+    local first=true
+    local f
+    for f in $files; do
+	prefix=""
+	if [ $nfiles -ne 1 ]; then
+	    prefix="$f:"
+	fi
+
+	# Don't reuse $inp, which may be generated using -H and thus contain a
+	# file prefix.
+	grep -n '^+' $f \
+	    | grep -v ':+++' \
+	    > $tmp
+
+	# Keep only line number prefix and patch modifier '+'.
+	cat "$tmp" \
+	    | sed 's/\(^[0-9][0-9]*:+\).*/\1/' \
+	    > "$tmp2"
+
+	# Remove line number prefix and patch modifier '+'.
+	# Expand tabs to spaces according to tab positions.
+	# Keep long lines, make short lines empty.  Print the part past 80 chars
+	# in red.
+	cat "$tmp" \
+	    | sed 's/^[0-9]*:+//' \
+	    | expand \
+	    | awk '{ \
+		     if (length($0) > 80) \
+		       printf "%s\033[1;31m%s\033[0m\n", \
+			      substr($0,1,80), \
+			      substr($0,81); \
+		     else \
+		       print "" \
+		   }' \
+	    > "$tmp3"
+
+	# Combine prefix back with long lines.
+	# Filter out empty lines.
+	local found=false
+	paste -d '' "$tmp2" "$tmp3" \
+	    | grep -v '^[0-9][0-9]*:+$' \
+	    > "$tmp" && found=true
+
+	if $found; then
+	    if $first; then
+		printf "\n$msg\n"
+		first=false
+	    fi
+	    cat_with_prefix "$tmp"
+	fi
+    done
 }
 
 col 'Lines should not exceed 80 characters.'
@@ -114,11 +222,12 @@ g 'Sentences should end with a dot.  Dot, space, space, end of the comment.' \
     '[[:alnum:]][[:blank:]]*\*/'
 
 vg 'There should be exactly one space between function name and parentheses.' \
-    '\#define' '[[:alnum:]]([[:blank:]]{2,})?\('
+    '\#define' \
+    '[[:alnum:]]([[:blank:]]{2,})?\('
 
 g 'There should be no space before closing parentheses.' \
     '[[:graph:]][[:blank:]]+\)'
 
 ag 'Braces should be on a separate line.' \
-    '\{' 'if[[:blank:]]\(|while[[:blank:]]\(|switch[[:blank:]]\('
-
+    '\{' \
+    'if[[:blank:]]\(|while[[:blank:]]\(|switch[[:blank:]]\('

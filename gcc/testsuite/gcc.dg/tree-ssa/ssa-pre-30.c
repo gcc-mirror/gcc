@@ -25,4 +25,3 @@ bar (int b, int x)
    are using different types (of the same size).  */
 
 /* { dg-final { scan-tree-dump-times "Replaced MEM" 2 "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

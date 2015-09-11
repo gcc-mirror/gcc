@@ -1,4 +1,4 @@
-/* { dg-do compile { target sse2 } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -fno-common -msse2" } */
 
 unsigned short b[1024] = { 0 };

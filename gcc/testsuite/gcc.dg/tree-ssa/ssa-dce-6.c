@@ -21,4 +21,3 @@ void t(int x)
 /* The global store should not prevent deleting the store to p->field.  */
 
 /* { dg-final { scan-tree-dump-not "p_.->field" "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

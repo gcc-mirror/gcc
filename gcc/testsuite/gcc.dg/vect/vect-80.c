@@ -53,4 +53,3 @@ int main (void)
  dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail vect_no_align } } 
  dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" { target vect_no_align } } 
 */
-/* { dg-final { cleanup-tree-dump "vect" } } */

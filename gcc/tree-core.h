@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_CORE_H
 #define GCC_TREE_CORE_H
 
+#include "symtab.h"
+
 /* This file contains all the data structures that define the 'tree' type.
    There are no accessor macros nor functions in this file. Only the
    basic data structures, extern declarations and type definitions.  */
@@ -158,10 +160,14 @@ enum built_in_function {
   BEGIN_CHKP_BUILTINS,
 
 #undef DEF_BUILTIN
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) ENUM##_CHKP,
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
+#undef DEF_BUILTIN_CHKP
+#define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
+  ENUM##_CHKP = ENUM + BEGIN_CHKP_BUILTINS + 1,
 #include "builtins.def"
+#undef DEF_BUILTIN_CHKP
 
-  END_CHKP_BUILTINS,
+  END_CHKP_BUILTINS = BEGIN_CHKP_BUILTINS * 2 + 1,
 
   /* Complex division routines in libgcc.  These are done via builtins
      because emit_library_call_value can't handle complex values.  */
@@ -427,17 +433,6 @@ enum cv_qualifier {
   TYPE_QUAL_ATOMIC   = 0x8
 };
 
-/* Enumerate visibility settings.  */
-#ifndef SYMBOL_VISIBILITY_DEFINED
-#define SYMBOL_VISIBILITY_DEFINED
-enum symbol_visibility {
-  VISIBILITY_DEFAULT,
-  VISIBILITY_PROTECTED,
-  VISIBILITY_HIDDEN,
-  VISIBILITY_INTERNAL
-};
-#endif  // SYMBOL_VISIBILITY_DEFINED
-
 /* Standard named or nameless data types of the C compiler.  */
 enum tree_index {
   TI_ERROR_MARK,
@@ -696,7 +691,8 @@ enum size_type_kind {
 enum operand_equal_flag {
   OEP_ONLY_CONST = 1,
   OEP_PURE_SAME = 2,
-  OEP_CONSTANT_ADDRESS_OF = 4
+  OEP_CONSTANT_ADDRESS_OF = 4,
+  OEP_ADDRESS_OF = 8
 };
 
 /* Enum and arrays used for tree allocation stats.
@@ -1092,7 +1088,7 @@ struct GTY(()) tree_base {
        TREE_THIS_NOTRAP in
           INDIRECT_REF, MEM_REF, TARGET_MEM_REF, ARRAY_REF, ARRAY_RANGE_REF
 
-       SSA_NAME_IN_FREELIST in
+       SSA_NAME_IN_FREE_LIST in
           SSA_NAME
 
        DECL_NONALIASED in
@@ -1329,6 +1325,9 @@ struct GTY(()) tree_block {
   tree abstract_origin;
   tree fragment_origin;
   tree fragment_chain;
+
+  /* Pointer to the DWARF lexical block.  */
+  struct die_struct *die;
 };
 
 struct GTY(()) tree_type_common {
@@ -1644,7 +1643,7 @@ struct GTY(()) tree_optimization_option {
   struct tree_common common;
 
   /* The optimization options used by the user.  */
-  struct cl_optimization opts;
+  struct cl_optimization *opts;
 
   /* Target optabs for this set of optimization options.  This is of
      type `struct target_optabs *'.  */
@@ -1668,7 +1667,7 @@ struct GTY(()) tree_target_option {
   struct target_globals *globals;
 
   /* The optimization options used by the user.  */
-  struct cl_target_option opts;
+  struct cl_target_option *opts;
 };
 
 /* Define the overall contents of a tree node.
@@ -1853,11 +1852,14 @@ struct const_call_expr_arg_iterator {
 };
 
 /* The builtin_info structure holds the FUNCTION_DECL of the standard builtin
-   function, and a flag that says if the function is available implicitly, or
-   whether the user has to code explicit calls to __builtin_<xxx>.  */
+   function, and flags.  */
 struct GTY(()) builtin_info_type {
-  tree decl[(int)END_BUILTINS];
-  bool implicit_p[(int)END_BUILTINS];
+  tree decl;
+  /* Whether the user can use <xxx> instead of explicitly using calls
+     to __builtin_<xxx>.  */
+  unsigned implicit_p : 1;
+  /* Whether the user has provided a declaration of <xxx>.  */
+  unsigned declared_p : 1;
 };
 
 
@@ -1913,7 +1915,7 @@ extern int tree_node_sizes[];
 extern bool in_gimple_form;
 
 /* Functional interface to the builtin functions.  */
-extern GTY(()) builtin_info_type builtin_info;
+extern GTY(()) builtin_info_type builtin_info[(int)END_BUILTINS];
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits,  */
 extern unsigned int maximum_field_alignment;

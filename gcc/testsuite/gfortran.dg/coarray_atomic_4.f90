@@ -66,4 +66,3 @@ end
 ! All calls should have a stat=0
 ! { dg-final { scan-tree-dump-times "stat = 0;" 14 "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

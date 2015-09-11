@@ -97,7 +97,7 @@ BEGIN {
 	cores[n_cores] = core
 	n_cores++
 	tiny_stack[core] = 0
-	option[core] = "march=" core
+	option[core] = "mmcu=" core
 
 	next
     }

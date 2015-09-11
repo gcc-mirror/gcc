@@ -1,6 +1,6 @@
 /* PR middle-end/39154 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=gnu99" } */
+/* { dg-additional-options "-std=gnu99" } */
 
 extern void abort (void);
 

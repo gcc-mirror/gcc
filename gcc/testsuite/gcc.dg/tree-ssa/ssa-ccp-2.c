@@ -169,4 +169,3 @@ int test99999 (void)
 /* There should be not link_error calls, if there is any the
    optimization has failed */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

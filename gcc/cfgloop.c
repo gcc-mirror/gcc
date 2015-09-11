@@ -20,32 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
+#include "gimple.h"
 #include "rtl.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "symtab.h"
-#include "inchash.h"
-#include "machmode.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
 #include "cfgloop.h"
 #include "diagnostic-core.h"
 #include "flags.h"
-#include "tree.h"
 #include "fold-const.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "dumpfile.h"
@@ -959,7 +944,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 	    }
 	}
 
-      gcc_assert (i >= vc);
+      gcc_assert (i > vc);
 
       bb = blocks[vc++];
     }
@@ -1346,6 +1331,16 @@ verify_loop_structure (void)
     calculate_dominance_info (CDI_DOMINATORS);
   else
     verify_dominators (CDI_DOMINATORS);
+
+  /* Check the loop tree root.  */
+  if (current_loops->tree_root->header != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || current_loops->tree_root->latch != EXIT_BLOCK_PTR_FOR_FN (cfun)
+      || (current_loops->tree_root->num_nodes
+	  != (unsigned) n_basic_blocks_for_fn (cfun)))
+    {
+      error ("corrupt loop tree root");
+      err = 1;
+    }
 
   /* Check the headers.  */
   FOR_EACH_BB_FN (bb, cfun)

@@ -62,6 +62,9 @@ struct fun_macro
   /* The line the macro name appeared on.  */
   source_location line;
 
+  /* Number of parameters.  */
+  unsigned int paramc;
+
   /* Zero-based index of argument being currently lexed.  */
   unsigned int argc;
 };
@@ -304,24 +307,41 @@ _cpp_read_logical_line_trad (cpp_reader *pfile)
       if (pfile->buffer->need_line && !_cpp_get_fresh_line (pfile))
 	return false;
     }
-  while (!_cpp_scan_out_logical_line (pfile, NULL) || pfile->state.skipping);
+  while (!_cpp_scan_out_logical_line (pfile, NULL, false)
+	 || pfile->state.skipping);
 
   return pfile->buffer != NULL;
+}
+
+/* Return true if NODE is a fun_like macro.  */
+static inline bool
+fun_like_macro (cpp_hashnode *node)
+{
+  if (node->flags & NODE_BUILTIN)
+    return node->value.builtin == BT_HAS_ATTRIBUTE;
+  else
+    return node->value.macro->fun_like;
 }
 
 /* Set up state for finding the opening '(' of a function-like
    macro.  */
 static void
-maybe_start_funlike (cpp_reader *pfile, cpp_hashnode *node, const uchar *start, struct fun_macro *macro)
+maybe_start_funlike (cpp_reader *pfile, cpp_hashnode *node, const uchar *start,
+		     struct fun_macro *macro)
 {
-  unsigned int n = node->value.macro->paramc + 1;
+  unsigned int n;
+  if (node->flags & NODE_BUILTIN)
+    n = 1;
+  else
+    n = node->value.macro->paramc;
 
   if (macro->buff)
     _cpp_release_buff (pfile, macro->buff);
-  macro->buff = _cpp_get_buff (pfile, n * sizeof (size_t));
+  macro->buff = _cpp_get_buff (pfile, (n + 1) * sizeof (size_t));
   macro->args = (size_t *) BUFF_FRONT (macro->buff);
   macro->node = node;
   macro->offset = start - pfile->out.base;
+  macro->paramc = n;
   macro->argc = 0;
 }
 
@@ -330,7 +350,7 @@ static void
 save_argument (struct fun_macro *macro, size_t offset)
 {
   macro->argc++;
-  if (macro->argc <= macro->node->value.macro->paramc)
+  if (macro->argc <= macro->paramc)
     macro->args[macro->argc] = offset;
 }
 
@@ -340,9 +360,13 @@ save_argument (struct fun_macro *macro, size_t offset)
 
    If MACRO is non-NULL, then we are scanning the replacement list of
    MACRO, and we call save_replacement_text() every time we meet an
-   argument.  */
+   argument.
+
+   If BUILTIN_MACRO_ARG is true, this is called to macro expand
+   arguments of builtin function-like macros.  */
 bool
-_cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
+_cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
+			    bool builtin_macro_arg)
 {
   bool result = true;
   cpp_context *context;
@@ -359,14 +383,18 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
   fmacro.node = NULL;
   fmacro.offset = 0;
   fmacro.line = 0;
+  fmacro.paramc = 0;
   fmacro.argc = 0;
 
   quote = 0;
   header_ok = pfile->state.angled_headers;
   CUR (pfile->context) = pfile->buffer->cur;
   RLIMIT (pfile->context) = pfile->buffer->rlimit;
-  pfile->out.cur = pfile->out.base;
-  pfile->out.first_line = pfile->line_table->highest_line;
+  if (!builtin_macro_arg)
+    {
+      pfile->out.cur = pfile->out.base;
+      pfile->out.first_line = pfile->line_table->highest_line;
+    }
   /* start_of_input_line is needed to make sure that directives really,
      really start at the first character of the line.  */
   start_of_input_line = pfile->buffer->cur;
@@ -379,6 +407,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
   for (;;)
     {
       if (!context->prev
+	  && !builtin_macro_arg
 	  && cur >= pfile->buffer->notes[pfile->buffer->cur_note].pos)
 	{
 	  pfile->buffer->cur = cur;
@@ -410,6 +439,8 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 	  /* Omit the newline from the output buffer.  */
 	  pfile->out.cur = out - 1;
 	  pfile->buffer->cur = cur;
+	  if (builtin_macro_arg)
+	    goto done;
 	  pfile->buffer->need_line = true;
 	  CPP_INCREMENT_LINE (pfile, 0);
 
@@ -489,8 +520,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 		{
 		  /* Macros invalidate MI optimization.  */
 		  pfile->mi_valid = false;
-		  if (! (node->flags & NODE_BUILTIN)
-		      && node->value.macro->fun_like)
+		  if (fun_like_macro (node))
 		    {
 		      maybe_start_funlike (pfile, node, out_start, &fmacro);
 		      lex_state = ls_fun_open;
@@ -572,6 +602,103 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 	      paren_depth--;
 	      if (lex_state == ls_fun_close && paren_depth == 0)
 		{
+		  if (fmacro.node->flags & NODE_BUILTIN)
+		    {
+		      /* Handle builtin function-like macros like
+			 __has_attribute.  The already parsed arguments
+			 are put into a buffer, which is then preprocessed
+			 and the result is fed to _cpp_push_text_context
+			 with disabled expansion, where the ISO preprocessor
+			 parses it.  While in traditional preprocessing
+			 macro arguments aren't immediately expanded, they in
+			 the end are because the macro with replaced arguments
+			 is preprocessed again.  For the builtin function-like
+			 macros we need the argument immediately though,
+			 if we don't preprocess them, they would behave
+			 very differently from ISO preprocessor handling
+			 of those builtin macros.  So, this handling is
+			 more similar to traditional preprocessing of
+			 #if directives, where we also keep preprocessing
+			 until everything is expanded, and then feed the
+			 result with disabled expansion to ISO preprocessor
+			 for handling the directives.  */
+		      lex_state = ls_none;
+		      save_argument (&fmacro, out - pfile->out.base);
+		      cpp_macro m;
+		      memset (&m, '\0', sizeof (m));
+		      m.paramc = fmacro.paramc;
+		      if (_cpp_arguments_ok (pfile, &m, fmacro.node,
+					     fmacro.argc))
+			{
+			  size_t len = fmacro.args[1] - fmacro.args[0];
+			  uchar *buf;
+
+			  /* Remove the macro's invocation from the
+			     output, and push its replacement text.  */
+			  pfile->out.cur = pfile->out.base + fmacro.offset;
+			  CUR (context) = cur;
+			  buf = _cpp_unaligned_alloc (pfile, len + 2);
+			  buf[0] = '(';
+			  memcpy (buf + 1, pfile->out.base + fmacro.args[0],
+				  len);
+			  buf[len + 1] = '\n';
+
+			  const unsigned char *ctx_rlimit = RLIMIT (context);
+			  const unsigned char *saved_cur = pfile->buffer->cur;
+			  const unsigned char *saved_rlimit
+			    = pfile->buffer->rlimit;
+			  const unsigned char *saved_line_base
+			    = pfile->buffer->line_base;
+			  bool saved_need_line = pfile->buffer->need_line;
+			  cpp_buffer *saved_overlaid_buffer
+			    = pfile->overlaid_buffer;
+			  pfile->buffer->cur = buf;
+			  pfile->buffer->line_base = buf;
+			  pfile->buffer->rlimit = buf + len + 1;
+			  pfile->buffer->need_line = false;
+			  pfile->overlaid_buffer = pfile->buffer;
+			  bool saved_in_directive = pfile->state.in_directive;
+			  pfile->state.in_directive = true;
+			  cpp_context *saved_prev_context = context->prev;
+			  context->prev = NULL;
+
+			  _cpp_scan_out_logical_line (pfile, NULL, true);
+
+			  pfile->state.in_directive = saved_in_directive;
+			  check_output_buffer (pfile, 1);
+			  *pfile->out.cur = '\n';
+			  pfile->buffer->cur = pfile->out.base + fmacro.offset;
+			  pfile->buffer->line_base = pfile->buffer->cur;
+			  pfile->buffer->rlimit = pfile->out.cur;
+			  CUR (context) = pfile->buffer->cur;
+			  RLIMIT (context) = pfile->buffer->rlimit;
+
+			  pfile->state.prevent_expansion++;
+			  const uchar *text
+			    = _cpp_builtin_macro_text (pfile, fmacro.node);
+			  pfile->state.prevent_expansion--;
+
+			  context->prev = saved_prev_context;
+			  pfile->buffer->cur = saved_cur;
+			  pfile->buffer->rlimit = saved_rlimit;
+			  pfile->buffer->line_base = saved_line_base;
+			  pfile->buffer->need_line = saved_need_line;
+			  pfile->overlaid_buffer = saved_overlaid_buffer;
+			  pfile->out.cur = pfile->out.base + fmacro.offset;
+			  CUR (context) = cur;
+			  RLIMIT (context) = ctx_rlimit;
+			  len = ustrlen (text);
+			  buf = _cpp_unaligned_alloc (pfile, len + 1);
+			  memcpy (buf, text, len);
+			  buf[len] = '\n';
+			  text = buf;
+			  _cpp_push_text_context (pfile, fmacro.node,
+						  text, len);
+			  goto new_context;
+			}
+		      break;
+		    }
+
 		  cpp_macro *m = fmacro.node->value.macro;
 
 		  m->used = 1;
@@ -588,8 +715,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 		    {
 		      /* Remove the macro's invocation from the
 			 output, and push its replacement text.  */
-		      pfile->out.cur = (pfile->out.base
-					     + fmacro.offset);
+		      pfile->out.cur = pfile->out.base + fmacro.offset;
 		      CUR (context) = cur;
 		      replace_args_and_push (pfile, &fmacro);
 		      goto new_context;
@@ -711,7 +837,7 @@ push_replacement_text (cpp_reader *pfile, cpp_hashnode *node)
       len = ustrlen (text);
       buf = _cpp_unaligned_alloc (pfile, len + 1);
       memcpy (buf, text, len);
-      buf[len]='\n';
+      buf[len] = '\n';
       text = buf;
     }
   else
@@ -742,7 +868,7 @@ recursive_macro (cpp_reader *pfile, cpp_hashnode *node)
      detect true recursion; instead we assume any expansion more than
      20 deep since the first invocation of this macro must be
      recursing.  */
-  if (recursing && node->value.macro->fun_like)
+  if (recursing && fun_like_macro (node))
     {
       size_t depth = 0;
       cpp_context *context = pfile->context;
@@ -1080,7 +1206,7 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
 		       CPP_OPTION (pfile, discard_comments_in_macro_exp));
 
   pfile->state.prevent_expansion++;
-  _cpp_scan_out_logical_line (pfile, macro);
+  _cpp_scan_out_logical_line (pfile, macro, false);
   pfile->state.prevent_expansion--;
 
   if (!macro)

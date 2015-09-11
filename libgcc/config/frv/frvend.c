@@ -23,7 +23,6 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "defaults.h"
 #include <stddef.h>
 #include "../libgcc/unwind-dw2-fde.h"
 

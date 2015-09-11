@@ -1,0 +1,364 @@
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="status.iso.201z" xreflabel="Status C++ 201z">
+<?dbhtml filename="status_iso_cxx201z.html"?>
+
+<info><title>C++ 201z</title>
+  <keywordset>
+    <keyword>ISO C++</keyword>
+    <keyword>201z</keyword>
+  </keywordset>
+</info>
+
+<para>
+In this implementation the <literal>-std=gnu++1z</literal> or
+<literal>-std=c++1z</literal> flag must be used to enable language
+and library
+features. See <link linkend="manual.intro.using.flags">dialect</link>
+options. The pre-defined symbol
+<constant>__cplusplus</constant> is used to check for the
+presence of the required flag.
+</para>
+
+<para>
+This page describes the C++1z and library TS support in mainline GCC SVN,
+not in any particular release.
+</para>
+
+<table frame="all" xml:id="table.cxx1z_status">
+<title>C++ 201z Implementation Status</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+  <thead>
+    <row>
+      <entry>Paper</entry>
+      <entry>Title</entry>
+      <entry>Status</entry>
+      <entry>Comments</entry>
+    </row>
+  </thead>
+
+  <tbody>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2014/n4259.pdf">
+	  N4259
+	</link>
+      </entry>
+      <entry>Wording for <code>std::uncaught_exceptions</code></entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4190.htm">
+	  N4190
+	</link>
+      </entry>
+      <entry>
+        Removing <code>auto_ptr</code>, <code>random_shuffle()</code>,
+        And Old <code>&lt;functional&gt;</code> Stuff
+      </entry>
+      <entry>N</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4284.htm">
+	  N4284
+	</link>
+      </entry>
+      <entry>Contiguous Iterators </entry>
+      <entry>Y</entry>
+      <entry>No code changes required</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4089.pdf">
+	  N4089
+	</link>
+      </entry>
+      <entry>Safe conversions in <code>unique_ptr&lt;T[]&gt;</code> </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4277.html">
+	  N4277
+	</link>
+      </entry>
+      <entry>TriviallyCopyable <code>reference_wrapper</code> </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4258.pdf">
+	  N4258
+	</link>
+      </entry>
+      <entry>Cleaning-up noexcept in the Library</entry>
+      <entry>Partial</entry>
+      <entry>Changes to basic_string not complete.</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4279.html">
+	  N4279
+	</link>
+      </entry>
+      <entry>Improved insertion interface for unique-key maps</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2014/n3911.pdf">
+	  N3911
+	</link>
+      </entry>
+      <entry>Transformation Trait Alias <code>void_t</code></entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4169.html">
+	  N4169
+	</link>
+      </entry>
+      <entry>A proposal to add invoke function template</entry>
+      <entry>N</entry>
+      <entry>In progress</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4280.pdf">
+	  N4280
+	</link>
+      </entry>
+      <entry>Non-member size() and more</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4366.html">
+	  N4366
+	</link>
+      </entry>
+      <entry>
+        LWG 2228: Missing SFINAE rule in unique_ptr templated assignment
+      </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4387.html">
+	  N4387
+	</link>
+      </entry>
+      <entry> Improving pair and tuple, revision 3 </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4389.html">
+	  N4389
+	</link>
+      </entry>
+      <entry> Wording for bool_constant, revision 1 </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4508.html">
+	  N4508
+	</link>
+      </entry>
+      <entry>A proposal to add shared_mutex (untimed) (Revision 4)</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4510.html">
+	  N4510
+	</link>
+      </entry>
+      <entry>
+        Minimal incomplete type support for standard containers, revision 4
+      </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+  </tbody>
+</tgroup>
+</table>
+
+
+<table frame="all" xml:id="table.cxx1z_ts_status">
+<title>C++ Technical Specifications Implementation Status</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+  <thead>
+    <row>
+      <entry>Paper</entry>
+      <entry>Title</entry>
+      <entry>Status</entry>
+      <entry>Comments</entry>
+    </row>
+  </thead>
+
+  <tbody>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2014/n4076.html">
+	  N4076
+	</link>
+      </entry>
+      <entry>A generalized callable negator</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2014/n4273.htm">
+	  N4273
+	</link>
+      </entry>
+      <entry>Uniform Container Erasure</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4061.pdf">
+	  N4061
+	</link>
+      </entry>
+      <entry>Greatest Common Divisor and Least Common Multiple</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4066.htm">
+	  N4066
+	</link>
+      </entry>
+      <entry>Delimited iterators</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4282.pdf">
+	  N4282
+	</link>
+      </entry>
+      <entry>The World's Dumbest Smart Pointer</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4388.html">
+	  N4388
+	</link>
+      </entry>
+      <entry>Const-Propagating Wrapper</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4391.html">
+	  N4391
+	</link>
+      </entry>
+      <entry> <code>make_array</code>, revision 4 </entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4502.pdf">
+	  N4502
+	</link>
+      </entry>
+      <entry> Support for the C++ Detection Idiom, V2 </entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4519.pdf">
+	  N4519
+	</link>
+      </entry>
+      <entry> Source-Code Information Capture </entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4521.html">
+	  N4521
+	</link>
+      </entry>
+      <entry> Merge Fundamentals V1 into V2 </entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+
+
+  </tbody>
+</tgroup>
+</table>
+
+</section>

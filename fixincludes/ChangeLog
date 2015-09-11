@@ -1,3 +1,76 @@
+2015-08-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_stdio_inline): New fix.
+	(aix_strtof_const): Limit to *-*-aix*.
+	(aix_sysmachine): Same.
+	(aix_syswait_2): Same.
+	(aix_volatile): Same.
+	* fixincl.x: Regenerated.
+	* test/base/stdio.h [AIX_STDIO_INLINE]: New test.
+
+2015-07-28  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	* check.tpl: Ignore .DS_Store directories.
+
+2015-05-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_externc): New fix.
+	(aix_externcpp[12]): New fix.
+	* fixincl.x: Regenerate.
+	* test/base/ctype.h [AIX_EXTERNC_CHECK]: New test.
+	* test/base/sys/socket.h [AIX_EXTERNCPP[12]_CHECK]: New test.
+	* test/base/fcntl.h: New file.
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* aclocal.m4: Regenerated with automake-1.11.6.
+
+2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
+
+	* mkfixinc.sh: Add *-musl* with no fixes.
+
+2015-03-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libstdc++/65500
+	* inclhack.def (hpux11_lwp_rwlock_valid): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/pthread.h [HPUX11_LWP_RWLOCK_VALID_CHECK]: New test.
+
+2015-02-16  Daniel Richard G.  <skunk@iskunk.org>
+
+	PR bootstrap/48009
+	PR bootstrap/53348
+	* inclhack.def (aix_strtof_const): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/stdlib.h: New test.
+
+2015-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_math_11): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/iso/math_c99.h [SOLARIS_MATH_11_CHECK]: New test.
+
+2015-02-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR bootstrap/53348
+	* inclhack.def (aix_pthread): Accept tab after define.
+	* fixincl.x: Regenerate.
+
+2015-01-24  Bruce Korb  <bkorb@gnu.org>
+
+	* README: add some clarification on use of test_text
+
+2014-12-21  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincludes/fixincl.tpl: add handling for "sum" selection
+	criteria and clean up layout
+	* fixincludes/fixlib.h: enumerate TT_CKSUM test type
+	* fixincludes/fixincl.c (fix_applies): add code to handle
+	the new test type
+	(cksum_test): function to handle it
+	* fixincludes/README: doc it and remove explanations from
+	more than a decade ago.
+
 2014-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* server.c (server_setup): Check return value of

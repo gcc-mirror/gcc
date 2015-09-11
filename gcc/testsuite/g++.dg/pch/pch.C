@@ -5,5 +5,4 @@ int main()
 {
   return 0;
 }
-
-// { dg-final { cleanup-saved-temps ".s" } }
+// { dg-keep-saved-temps ".s" }

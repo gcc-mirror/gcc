@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -213,6 +213,14 @@ package Sem_Warn is
    --  the index is of the form of a literal or Name'Length [- literal], then
    --  a warning is generated that the subscripting operation is possibly
    --  incorrectly assuming a lower bound of 1.
+
+   procedure Warn_On_Suspicious_Update (N : Node_Id);
+   --  N is a semantically analyzed attribute reference Prefix'Update. Issue
+   --  a warning if Warn_On_Suspicious_Contract is set, and N is the left-hand
+   --  side or right-hand side of an equality or inequality of the form:
+   --    Prefix = Prefix'Update(...)
+   --  or
+   --    Prefix'Update(...) = Prefix
 
    procedure Warn_On_Unassigned_Out_Parameter
      (Return_Node : Node_Id;

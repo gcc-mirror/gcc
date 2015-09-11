@@ -27,7 +27,7 @@
 // Basic test for LFS support.
 void test01()
 {
-#ifdef _GLIBCXX_USE_LFS
+#if defined (_GLIBCXX_USE_LFS) && defined (_GLIBCXX_HAVE_LIMIT_FSIZE)
   using namespace std;
   bool test __attribute__((unused)) = true;
 

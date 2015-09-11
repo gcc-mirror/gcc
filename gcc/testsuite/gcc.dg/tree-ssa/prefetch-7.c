@@ -44,5 +44,3 @@ void test(int *p)
 /* { dg-final { scan-assembler-times "prefetcht" 1 } } */
 /* { dg-final { scan-assembler-times "prefetchnta" 1 } } */
 
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

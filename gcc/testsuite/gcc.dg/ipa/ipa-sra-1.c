@@ -37,4 +37,3 @@ main (int argc, char *argv[])
 }
 
 /* { dg-final { scan-tree-dump-times "About to replace expr" 2 "eipa_sra" } } */
-/* { dg-final { cleanup-tree-dump "eipa_sra" } } */

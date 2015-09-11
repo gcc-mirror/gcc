@@ -40,4 +40,3 @@ int main (void)
 
 /* Versioning to align the store is used. Overhead of versioning is not too high.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target {! vector_alignment_reachable} } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

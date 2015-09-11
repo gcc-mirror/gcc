@@ -291,11 +291,13 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 
   /* If the file is not included as first include from either the toplevel
      file or the command-line it is not a valid use of PCH.  */
-  if (pfile->all_files
-      && pfile->all_files->next_file
-      && !(pfile->all_files->implicit_preinclude
-	   || pfile->all_files->next_file->implicit_preinclude))
-    return false;
+  for (_cpp_file *f = pfile->all_files; f; f = f->next_file)
+    if (f->implicit_preinclude)
+      continue;
+    else if (f->main_file)
+      break;
+    else
+      return false;
 
   flen = strlen (path);
   len = flen + sizeof (extension);
@@ -1324,7 +1326,7 @@ cpp_make_system_header (cpp_reader *pfile, int syshdr, int externc)
 {
   int flags = 0;
   const struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   /* 1 = system header, 2 = system header to be treated as C.  */
   if (syshdr)
     flags = 1 + (externc != 0);

@@ -450,15 +450,33 @@ search_line_sse42 (const uchar *s, const uchar *end)
       s = (const uchar *)((si + 16) & -16);
     }
 
-  /* Main loop, processing 16 bytes at a time.  By doing the whole loop
-     in inline assembly, we can make proper use of the flags set.  */
-  __asm (      "sub $16, %1\n"
-	"	.balign 16\n"
+  /* Main loop, processing 16 bytes at a time.  */
+#ifdef __GCC_ASM_FLAG_OUTPUTS__
+  while (1)
+    {
+      char f;
+
+      /* By using inline assembly instead of the builtin,
+	 we can use the result, as well as the flags set.  */
+      __asm ("%vpcmpestri\t$0, %2, %3"
+	     : "=c"(index), "=@ccc"(f)
+	     : "m"(*s), "x"(search), "a"(4), "d"(16));
+      if (f)
+	break;
+      
+      s += 16;
+    }
+#else
+  s -= 16;
+  /* By doing the whole loop in inline assembly,
+     we can make proper use of the flags set.  */
+  __asm (      ".balign 16\n"
 	"0:	add $16, %1\n"
-	"	%vpcmpestri $0, (%1), %2\n"
+	"	%vpcmpestri\t$0, (%1), %2\n"
 	"	jnc 0b"
 	: "=&c"(index), "+r"(s)
 	: "x"(search), "a"(4), "d"(16));
+#endif
 
  found:
   return s + index;
@@ -519,6 +537,7 @@ init_vectorized_lexer (void)
    and VSX unaligned loads (when VSX is available).  This is otherwise
    the same as the pre-GCC 5 version.  */
 
+ATTRIBUTE_NO_SANITIZE_UNDEFINED
 static const uchar *
 search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
@@ -731,7 +750,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   }
 }
 
-#elif defined (__ARM_NEON__)
+#elif defined (__ARM_NEON)
 #include "arm_neon.h"
 
 static const uchar *
@@ -1225,9 +1244,10 @@ forms_identifier_p (cpp_reader *pfile, int first,
       && *buffer->cur == '\\'
       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
     {
+      cppchar_t s;
       buffer->cur += 2;
       if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
-			  state))
+			  state, &s))
 	return true;
       buffer->cur -= 2;
     }
@@ -1399,6 +1419,9 @@ lex_number (cpp_reader *pfile, cpp_string *number,
 	  NORMALIZE_STATE_UPDATE_IDNUM (nst, *cur);
 	  cur++;
 	}
+      /* A number can't end with a digit separator.  */
+      while (cur > pfile->buffer->cur && DIGIT_SEP (cur[-1]))
+	--cur;
 
       pfile->buffer->cur = cur;
     }
@@ -1836,7 +1859,8 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
   else if (terminator == '\'')
     type = (*base == 'L' ? CPP_WCHAR :
 	    *base == 'U' ? CPP_CHAR32 :
-	    *base == 'u' ? CPP_CHAR16 : CPP_CHAR);
+	    *base == 'u' ? (base[1] == '8' ? CPP_UTF8CHAR : CPP_CHAR16)
+			 : CPP_CHAR);
   else
     terminator = '>', type = CPP_HEADER_NAME;
 
@@ -1901,6 +1925,12 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	    ++cur;
 	}
     }
+  else if (CPP_OPTION (pfile, cpp_warn_cxx11_compat)
+	   && is_macro (pfile, cur)
+	   && !pfile->state.skipping)
+    cpp_warning_with_line (pfile, CPP_W_CXX11_COMPAT,
+			   token->src_loc, 0, "C++11 requires a space "
+			   "between string literal and macro");
 
   pfile->buffer->cur = cur;
   create_literal (pfile, token, base, cur - base, type);
@@ -2076,16 +2106,26 @@ cpp_peek_token (cpp_reader *pfile, int index)
   count = index;
   pfile->keep_tokens++;
 
+  /* For peeked tokens temporarily disable line_change reporting,
+     until the tokens are parsed for real.  */
+  void (*line_change) (cpp_reader *, const cpp_token *, int)
+    = pfile->cb.line_change;
+  pfile->cb.line_change = NULL;
+
   do
     {
       peektok = _cpp_lex_token (pfile);
       if (peektok->type == CPP_EOF)
-	return peektok;
+	{
+	  index--;
+	  break;
+	}
     }
   while (index--);
 
-  _cpp_backup_tokens_direct (pfile, count + 1);
+  _cpp_backup_tokens_direct (pfile, count - index);
   pfile->keep_tokens--;
+  pfile->cb.line_change = line_change;
 
   return peektok;
 }
@@ -2365,7 +2405,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 		  && CPP_OPTION (pfile, rliterals))
 	      || (*buffer->cur == '8'
 		  && c == 'u'
-		  && (buffer->cur[1] == '"'
+		  && ((buffer->cur[1] == '"' || (buffer->cur[1] == '\''
+				&& CPP_OPTION (pfile, utf8_char_literals)))
 		      || (buffer->cur[1] == 'R' && buffer->cur[2] == '"'
 			  && CPP_OPTION (pfile, rliterals)))))
 	    {

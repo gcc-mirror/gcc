@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,10 @@ package body Ch13 is
       function Possible_Misspelled_Aspect return Boolean;
       --  Returns True, if Token_Name is a misspelling of some aspect name
 
+      function With_Present return Boolean;
+      --  Returns True if WITH is present, indicating presence of aspect
+      --  specifications. Also allows incorrect use of WHEN in place of WITH.
+
       --------------------------------
       -- Possible_Misspelled_Aspect --
       --------------------------------
@@ -62,6 +66,43 @@ package body Ch13 is
 
          return False;
       end Possible_Misspelled_Aspect;
+
+      ------------------
+      -- With_Present --
+      ------------------
+
+      function With_Present return Boolean is
+      begin
+         if Token = Tok_With then
+            return True;
+
+         --  Check for WHEN used in place of WITH
+
+         elsif Token = Tok_When then
+            declare
+               Scan_State : Saved_Scan_State;
+
+            begin
+               Save_Scan_State (Scan_State);
+               Scan; -- past WHEN
+
+               if Token = Tok_Identifier
+                 and then Get_Aspect_Id (Token_Name) /= No_Aspect
+               then
+                  Error_Msg_SC ("WHEN should be WITH");
+                  Restore_Scan_State (Scan_State);
+                  return True;
+
+               else
+                  Restore_Scan_State (Scan_State);
+                  return False;
+               end if;
+            end;
+
+         else
+            return False;
+         end if;
+      end With_Present;
 
    --  Start of processing for Aspect_Specifications_Present
 
@@ -79,14 +120,15 @@ package body Ch13 is
       --  be too expensive. Instead we pick up the aspect specifications later
       --  as a bogus declaration, and diagnose the semicolon at that point.
 
-      if Token /= Tok_With then
+      if not With_Present then
          return False;
       end if;
 
-      --  Have a WITH, see if it looks like an aspect specification
+      --  Have a WITH or some token that we accept as a legitimate bad attempt
+      --  at writing WITH. See if it looks like an aspect specification
 
       Save_Scan_State (Scan_State);
-      Scan; -- past WITH
+      Scan; -- past WITH (or WHEN or other bad keyword)
 
       --  If no identifier, then consider that we definitely do not have an
       --  aspect specification.
@@ -193,7 +235,7 @@ package body Ch13 is
          return Aspects;
       end if;
 
-      Scan; -- past WITH
+      Scan; -- past WITH (or possible WHEN after error)
       Aspects := Empty_List;
 
       --  Loop to scan aspects

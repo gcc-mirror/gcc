@@ -23,22 +23,12 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "diagnostic-core.h"
-#include "real.h"
 #include "realmpfr.h"
 #include "tm_p.h"
 #include "dfp.h"
-#include "wide-int.h"
 #include "rtl.h"
 #include "options.h"
 
@@ -2075,7 +2065,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	     because the hex digits used in real_from_mpfr did not
 	     start with a digit 8 to f, but the exponent bounds above
 	     should have avoided underflow or overflow.  */
-	  gcc_assert (r->cl = rvc_normal);
+	  gcc_assert (r->cl == rvc_normal);
 	  /* Set a sticky bit if mpfr_strtofr was inexact.  */
 	  r->sig[0] |= inexact;
 	  mpfr_clear (m);
@@ -3031,7 +3021,8 @@ const struct real_format ieee_single_format =
     true,
     true,
     true,
-    false
+    false,
+    "ieee_single"
   };
 
 const struct real_format mips_single_format =
@@ -3052,7 +3043,8 @@ const struct real_format mips_single_format =
     true,
     true,
     false,
-    true
+    true,
+    "mips_single"
   };
 
 const struct real_format motorola_single_format =
@@ -3073,7 +3065,8 @@ const struct real_format motorola_single_format =
     true,
     true,
     true,
-    true
+    true,
+    "motorola_single"
   };
 
 /*  SPU Single Precision (Extended-Range Mode) format is the same as IEEE
@@ -3105,7 +3098,8 @@ const struct real_format spu_single_format =
     true,
     true,
     false,
-    false
+    false,
+    "spu_single"
   };
 
 /* IEEE double-precision format.  */
@@ -3314,7 +3308,8 @@ const struct real_format ieee_double_format =
     true,
     true,
     true,
-    false
+    false,
+    "ieee_double"
   };
 
 const struct real_format mips_double_format =
@@ -3335,7 +3330,8 @@ const struct real_format mips_double_format =
     true,
     true,
     false,
-    true
+    true,
+    "mips_double"
   };
 
 const struct real_format motorola_double_format =
@@ -3356,7 +3352,8 @@ const struct real_format motorola_double_format =
     true,
     true,
     true,
-    true
+    true,
+    "motorola_double"
   };
 
 /* IEEE extended real format.  This comes in three flavors: Intel's as
@@ -3700,7 +3697,8 @@ const struct real_format ieee_extended_motorola_format =
     true,
     true,
     true,
-    true
+    true,
+    "ieee_extended_motorola"
   };
 
 const struct real_format ieee_extended_intel_96_format =
@@ -3721,7 +3719,8 @@ const struct real_format ieee_extended_intel_96_format =
     true,
     true,
     true,
-    false
+    false,
+    "ieee_extended_intel_96"
   };
 
 const struct real_format ieee_extended_intel_128_format =
@@ -3742,7 +3741,8 @@ const struct real_format ieee_extended_intel_128_format =
     true,
     true,
     true,
-    false
+    false,
+    "ieee_extended_intel_128"
   };
 
 /* The following caters to i386 systems that set the rounding precision
@@ -3765,7 +3765,8 @@ const struct real_format ieee_extended_intel_96_round_53_format =
     true,
     true,
     true,
-    false
+    false,
+    "ieee_extended_intel_96_round_53"
   };
 
 /* IBM 128-bit extended precision format: a pair of IEEE double precision
@@ -3853,7 +3854,8 @@ const struct real_format ibm_extended_format =
     true,
     true,
     true,
-    false
+    false,
+    "ibm_extended"
   };
 
 const struct real_format mips_extended_format =
@@ -3874,7 +3876,8 @@ const struct real_format mips_extended_format =
     true,
     true,
     false,
-    true
+    true,
+    "mips_extended"
   };
 
 
@@ -4137,7 +4140,8 @@ const struct real_format ieee_quad_format =
     true,
     true,
     true,
-    false
+    false,
+    "ieee_quad"
   };
 
 const struct real_format mips_quad_format =
@@ -4158,7 +4162,8 @@ const struct real_format mips_quad_format =
     true,
     true,
     false,
-    true
+    true,
+    "mips_quad"
   };
 
 /* Descriptions of VAX floating point formats can be found beginning at
@@ -4458,7 +4463,8 @@ const struct real_format vax_f_format =
     false,
     false,
     false,
-    false
+    false,
+    "vax_f"
   };
 
 const struct real_format vax_d_format =
@@ -4479,7 +4485,8 @@ const struct real_format vax_d_format =
     false,
     false,
     false,
-    false
+    false,
+    "vax_d"
   };
 
 const struct real_format vax_g_format =
@@ -4500,7 +4507,8 @@ const struct real_format vax_g_format =
     false,
     false,
     false,
-    false
+    false,
+    "vax_g"
   };
 
 /* Encode real R into a single precision DFP value in BUF.  */
@@ -4576,7 +4584,8 @@ const struct real_format decimal_single_format =
     true,
     true,
     true,
-    false
+    false,
+    "decimal_single"
   };
 
 /* Double precision decimal floating point (IEEE 754). */
@@ -4598,7 +4607,8 @@ const struct real_format decimal_double_format =
     true,
     true,
     true,
-    false
+    false,
+    "decimal_double"
   };
 
 /* Quad precision decimal floating point (IEEE 754). */
@@ -4620,7 +4630,8 @@ const struct real_format decimal_quad_format =
     true,
     true,
     true,
-    false
+    false,
+    "decimal_quad"
   };
 
 /* Encode half-precision floats.  This routine is used both for the IEEE
@@ -4757,7 +4768,8 @@ const struct real_format ieee_half_format =
     true,
     true,
     true,
-    false
+    false,
+    "ieee_half"
   };
 
 /* ARM's alternative half-precision format, similar to IEEE but with
@@ -4781,7 +4793,8 @@ const struct real_format arm_half_format =
     true,
     true,
     false,
-    false
+    false,
+    "arm_half"
   };
 
 /* A synthetic "format" for internal arithmetic.  It's the size of the
@@ -4826,7 +4839,8 @@ const struct real_format real_internal_format =
     false,
     true,
     true,
-    false
+    false,
+    "real_internal"
   };
 
 /* Calculate X raised to the integer exponent N in mode MODE and store

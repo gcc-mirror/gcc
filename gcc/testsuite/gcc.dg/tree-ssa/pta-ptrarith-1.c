@@ -23,4 +23,3 @@ foo(int i, int j, int k, int off)
 }
 
 /* { dg-final { scan-tree-dump "q_. = { k }" "ealias" } } */
-/* { dg-final { cleanup-tree-dump "ealias" } } */

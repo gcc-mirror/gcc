@@ -1,5 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O3 -fschedule-insns -fschedule-insns2 -fselective-scheduling2 -fsel-sched-pipelining -funroll-loops -fprefetch-loop-arrays" } */
+/* { dg-additional-options "-march=i686 -msse" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 void main1 (float *pa, float *pc)
 {

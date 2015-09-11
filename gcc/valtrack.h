@@ -22,11 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VALTRACK_H
 #define GCC_VALTRACK_H
 
-#include "bitmap.h"
-#include "df.h"
-#include "rtl.h"
-#include "hash-table.h"
-
 /* Debug uses of dead regs.  */
 
 /* Entry that maps a dead pseudo (REG) used in a debug insns that dies
@@ -42,38 +37,28 @@ struct dead_debug_global_entry
 /* Descriptor for hash_table to hash by dead_debug_global_entry's REG
    and map to DTEMP.  */
 
-struct dead_debug_hash_descr
+struct dead_debug_hash_descr : free_ptr_hash <dead_debug_global_entry>
 {
-  /* The hash table contains pointers to entries of this type.  */
-  typedef struct dead_debug_global_entry value_type;
-  typedef struct dead_debug_global_entry compare_type;
   /* Hash on the pseudo number.  */
-  static inline hashval_t hash (const value_type *my);
+  static inline hashval_t hash (const dead_debug_global_entry *my);
   /* Entries are identical if they refer to the same pseudo.  */
-  static inline bool equal (const value_type *my, const compare_type *other);
-  /* Release entries when they're removed.  */
-  static inline void remove (value_type *p);
+  static inline bool equal (const dead_debug_global_entry *my,
+			    const dead_debug_global_entry *other);
 };
 
 /* Hash on the pseudo number.  */
 inline hashval_t
-dead_debug_hash_descr::hash (const value_type *my)
+dead_debug_hash_descr::hash (const dead_debug_global_entry *my)
 {
   return REGNO (my->reg);
 }
 
 /* Entries are identical if they refer to the same pseudo.  */
 inline bool
-dead_debug_hash_descr::equal (const value_type *my, const compare_type *other)
+dead_debug_hash_descr::equal (const dead_debug_global_entry *my,
+			      const dead_debug_global_entry *other)
 {
   return my->reg == other->reg;
-}
-
-/* Release entries when they're removed.  */
-inline void
-dead_debug_hash_descr::remove (value_type *p)
-{
-  XDELETE (p);
 }
 
 /* Maintain a global table of pseudos used in debug insns after their

@@ -36,4 +36,3 @@ void j (vec *x, vec *y)
 /* { dg-final { scan-tree-dump "MIN_EXPR" "gimple" } } */
 /* { dg-final { scan-tree-dump "MAX_EXPR" "gimple" } } */
 /* { dg-final { scan-tree-dump-not "VEC_COND_EXPR" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

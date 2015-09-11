@@ -19,7 +19,7 @@
 
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
 ;; Returns true if OP is either the constant zero or a register.
@@ -66,13 +66,13 @@
 ;; Return 1 if the operand is a non-symbolic constant operand that
 ;; does not satisfy add_operand.
 (define_predicate "non_add_const_operand"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (not (match_operand 0 "add_operand"))))
 
 ;; Return 1 if the operand is a non-symbolic, nonzero constant operand.
 (define_predicate "non_zero_const_operand"
-  (and (match_code "const_int,const_double,const_vector")
-       (match_test "op != CONST0_RTX (mode)")))
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
+       (not (match_test "op == CONST0_RTX (mode)"))))
 
 ;; Return 1 if OP is the constant 4 or 8.
 (define_predicate "const48_operand"
@@ -85,11 +85,7 @@
     (match_test "(unsigned HOST_WIDE_INT) INTVAL (op) < 0x100
 		 || (unsigned HOST_WIDE_INT) ~ INTVAL (op) < 0x100
 		 || zap_mask (INTVAL (op))")
-    (if_then_else (match_code "const_double")
-      (match_test "GET_MODE (op) == VOIDmode
-		   && zap_mask (CONST_DOUBLE_LOW (op))
-		   && zap_mask (CONST_DOUBLE_HIGH (op))")
-      (match_operand 0 "register_operand"))))
+    (match_operand 0 "register_operand")))
 
 ;; Return 1 if OP is a valid first operand to an IOR or XOR insn.
 (define_predicate "or_operand"
@@ -110,26 +106,19 @@
 ;; Return 1 if OP is a constant that is a mask of ones of width of an
 ;; integral machine mode not larger than DImode.
 (define_predicate "mode_mask_operand"
-  (match_code "const_int,const_double")
+  (match_code "const_int")
 {
-  if (CONST_INT_P (op))
-    {
-      HOST_WIDE_INT value = INTVAL (op);
+  HOST_WIDE_INT value = INTVAL (op);
 
-      if (value == 0xff)
-	return 1;
-      if (value == 0xffff)
-	return 1;
-      if (value == 0xffffffff)
-	return 1;
-      if (value == -1)
-	return 1;
-    }
-  else if (HOST_BITS_PER_WIDE_INT == 32 && GET_CODE (op) == CONST_DOUBLE)
-    {
-      if (CONST_DOUBLE_LOW (op) == 0xffffffff && CONST_DOUBLE_HIGH (op) == 0)
-	return 1;
-    }
+  if (value == 0xff)
+    return 1;
+  if (value == 0xffff)
+    return 1;
+  if (value == 0xffffffff)
+    return 1;
+  if (value == -1)
+    return 1;
+
   return 0;
 })
 
@@ -145,7 +134,7 @@
 (define_predicate "hard_fp_register_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   return REGNO_REG_CLASS (REGNO (op)) == FLOAT_REGS;
 })
@@ -154,29 +143,14 @@
 (define_predicate "hard_int_register_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   return REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS;
 })
 
-;; Return 1 if OP is something that can be reloaded into a register;
-;; if it is a MEM, it need not be valid.
-(define_predicate "some_operand"
-  (ior (match_code "reg,mem,const_int,const_double,const_vector,
-		    label_ref,symbol_ref,const,high")
-       (and (match_code "subreg")
-	    (match_test "some_operand (SUBREG_REG (op), VOIDmode)"))))
-
-;; Likewise, but don't accept constants.
-(define_predicate "some_ni_operand"
-  (ior (match_code "reg,mem")
-       (and (match_code "subreg")
-	    (match_test "some_ni_operand (SUBREG_REG (op), VOIDmode)"))))
-
 ;; Return 1 if OP is a valid operand for the source of a move insn.
 (define_predicate "input_operand"
-  (match_code "label_ref,symbol_ref,const,high,reg,subreg,mem,
-	       const_double,const_vector,const_int")
+  (match_operand 0 "general_operand")
 {
   switch (GET_CODE (op))
     {
@@ -212,6 +186,7 @@
       return ((TARGET_BWX || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));
 
+    case CONST_WIDE_INT:
     case CONST_DOUBLE:
       return op == CONST0_RTX (mode);
 
@@ -297,8 +272,8 @@
 (define_predicate "call_operand"
   (ior (match_code "symbol_ref")
        (and (match_code "reg")
-	    (ior (match_test "!TARGET_ABI_OSF")
-		 (match_test "!HARD_REGISTER_P (op)")
+	    (ior (not (match_test "TARGET_ABI_OSF"))
+		 (not (match_test "HARD_REGISTER_P (op)"))
 		 (match_test "REGNO (op) == R27_REG")))))
 
 ;; Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
@@ -395,10 +370,9 @@
 (define_predicate "symbolic_operand"
   (ior (match_code "symbol_ref,label_ref")
        (and (match_code "const")
-	    (match_test "GET_CODE (XEXP (op,0)) == PLUS
-			 && (GET_CODE (XEXP (XEXP (op,0), 0)) == SYMBOL_REF
-			     || GET_CODE (XEXP (XEXP (op,0), 0)) == LABEL_REF)
-			 && CONST_INT_P (XEXP (XEXP (op,0), 1))"))))
+	    (match_code "plus" "0")
+	    (match_code "symbol_ref,label_ref" "00")
+	    (match_code "const_int" "01"))))
 
 ;; Return true if OP is valid for 16-bit DTP relative relocations.
 (define_predicate "dtp16_symbolic_operand"
@@ -532,7 +506,7 @@
 (define_special_predicate "any_memory_operand"
   (match_code "mem,reg,subreg")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
   if (MEM_P (op))
@@ -549,14 +523,6 @@
   return false;
 })
 
-;; Return 1 is OP is a memory location that is not a reference
-;; (using an AND) to an unaligned location.  Take into account
-;; what reload will do.
-(define_special_predicate "normal_memory_operand"
-  (ior (match_test "op = resolve_reload_operand (op), 0")
-       (and (match_code "mem")
-	    (match_test "GET_CODE (XEXP (op, 0)) != AND"))))
-
 ;; Returns 1 if OP is not an eliminable register.
 ;;
 ;; This exists to cure a pathological failure in the s8addq (et al) patterns,
@@ -571,7 +537,7 @@
 (define_predicate "reg_not_elim_operand"
   (match_operand 0 "register_operand")
 {
-  if (GET_CODE (op) == SUBREG)
+  if (SUBREG_P (op))
     op = SUBREG_REG (op);
   return op != frame_pointer_rtx && op != arg_pointer_rtx;
 })

@@ -1,4 +1,5 @@
 /* PR target/53416 */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mrdrnd" } */
 
 int test (void)

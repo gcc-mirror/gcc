@@ -39,7 +39,7 @@ APIs are introduced.
 @deftypefnx {GIMPLE function} tree gimple_simplify (enum tree_code, tree, tree, tree, tree, gimple_seq *, tree (*)(tree))
 @deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, gimple_seq *, tree (*)(tree))
 @deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, tree, gimple_seq *, tree (*)(tree))
-@deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, tree, gimple_seq *, tree (*)(tree))
+@deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, tree, tree, gimple_seq *, tree (*)(tree))
 The main GIMPLE API entry to the expression simplifications mimicing
 that of the GENERIC fold_@{unary,binary,ternary@} functions.
 @end deftypefn
@@ -64,6 +64,7 @@ Ontop of these a @code{fold_buildN}-like API for GIMPLE is introduced:
 @deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum tree_code, tree, tree, tree, tree, tree (*valueize) (tree) = NULL);
 @deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum built_in_function, tree, tree, tree (*valueize) (tree) = NULL);
 @deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum built_in_function, tree, tree, tree, tree (*valueize) (tree) = NULL);
+@deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum built_in_function, tree, tree, tree, tree, tree (*valueize) (tree) = NULL);
 @deftypefnx {GIMPLE function} tree gimple_convert (gimple_seq *, location_t, tree, tree);
 @end deftypefn
 

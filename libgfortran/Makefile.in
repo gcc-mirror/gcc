@@ -132,7 +132,6 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
-	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/acx.m4 \
@@ -175,10 +174,9 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
-	"$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"
-LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(myexeclib_LTLIBRARIES) \
-	$(toolexeclib_LTLIBRARIES)
+	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(fincludedir)"
+LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libcaf_single_la_LIBADD =
 am_libcaf_single_la_OBJECTS = single.lo
 libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
@@ -261,7 +259,8 @@ am__objects_23 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
 	transpose_r4.lo transpose_r8.lo transpose_r10.lo \
 	transpose_r16.lo transpose_c4.lo transpose_c8.lo \
 	transpose_c10.lo transpose_c16.lo
-am__objects_24 = shape_i4.lo shape_i8.lo shape_i16.lo
+am__objects_24 = shape_i1.lo shape_i2.lo shape_i4.lo shape_i8.lo \
+	shape_i16.lo
 am__objects_25 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
 am__objects_26 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
 am__objects_27 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
@@ -394,9 +393,6 @@ am__objects_54 = $(am__objects_3) $(am__objects_42) $(am__objects_44) \
 @onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_54)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
-libgfortranbegin_la_LIBADD =
-am_libgfortranbegin_la_OBJECTS = fmain.lo
-libgfortranbegin_la_OBJECTS = $(am_libgfortranbegin_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -422,8 +418,7 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LTFCCOMPILE = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES) \
-	$(libgfortranbegin_la_SOURCES)
+SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -603,15 +598,11 @@ toolexeclib_LTLIBRARIES = libgfortran.la
 toolexeclib_DATA = libgfortran.spec
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
-	$(LTLDFLAGS) $(LIBQUADLIB) -lm $(extra_ldflags_libgfortran) \
+	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
+	-lm $(extra_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
-myexeclib_LTLIBRARIES = libgfortranbegin.la
-myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
-libgfortranbegin_la_SOURCES = fmain.c
-libgfortranbegin_la_LDFLAGS = -static
-libgfortranbegin_la_LINK = $(LINK) $(libgfortranbegin_la_LDFLAGS)
 cafexeclib_LTLIBRARIES = libcaf_single.la
 cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_single_la_SOURCES = caf/single.c
@@ -624,7 +615,10 @@ AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config $(LIBQUADINCLUDE) \
 	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../libgcc \
-	      -I$(MULTIBUILDTOP)../libgcc
+	      -I$(MULTIBUILDTOP)../libgcc \
+	      -I$(srcdir)/$(MULTISRCTOP)../libbacktrace \
+	      -I$(MULTIBUILDTOP)../libbacktrace \
+	      -I../libbacktrace
 
 gfor_io_src = io/size_from_kind.c $(am__append_2)
 gfor_io_headers = \
@@ -923,6 +917,8 @@ $(srcdir)/generated/transpose_c10.c \
 $(srcdir)/generated/transpose_c16.c
 
 i_shape_c = \
+$(srcdir)/generated/shape_i1.c \
+$(srcdir)/generated/shape_i2.c \
 $(srcdir)/generated/shape_i4.c \
 $(srcdir)/generated/shape_i8.c \
 $(srcdir)/generated/shape_i16.c
@@ -1399,38 +1395,6 @@ clean-cafexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-install-myexeclibLTLIBRARIES: $(myexeclib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	@list='$(myexeclib_LTLIBRARIES)'; test -n "$(myexeclibdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(myexeclibdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(myexeclibdir)" || exit 1; \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(myexeclibdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(myexeclibdir)"; \
-	}
-
-uninstall-myexeclibLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(myexeclib_LTLIBRARIES)'; test -n "$(myexeclibdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(myexeclibdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(myexeclibdir)/$$f"; \
-	done
-
-clean-myexeclibLTLIBRARIES:
-	-test -z "$(myexeclib_LTLIBRARIES)" || rm -f $(myexeclib_LTLIBRARIES)
-	@list='$(myexeclib_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
@@ -1467,8 +1431,6 @@ libcaf_single.la: $(libcaf_single_la_OBJECTS) $(libcaf_single_la_DEPENDENCIES) $
 	$(libcaf_single_la_LINK) -rpath $(cafexeclibdir) $(libcaf_single_la_OBJECTS) $(libcaf_single_la_LIBADD) $(LIBS)
 libgfortran.la: $(libgfortran_la_OBJECTS) $(libgfortran_la_DEPENDENCIES) $(EXTRA_libgfortran_la_DEPENDENCIES) 
 	$(libgfortran_la_LINK) -rpath $(toolexeclibdir) $(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD) $(LIBS)
-libgfortranbegin.la: $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_DEPENDENCIES) $(EXTRA_libgfortranbegin_la_DEPENDENCIES) 
-	$(libgfortranbegin_la_LINK) -rpath $(myexeclibdir) $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1552,7 +1514,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/extends_type_of.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fbuf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_pos.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fmain.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fnum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/format.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fpu.Plo@am__quote@
@@ -1868,7 +1829,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal.Plo@am__quote@
@@ -4058,6 +4021,20 @@ transpose_c16.lo: $(srcdir)/generated/transpose_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_c16.lo `test -f '$(srcdir)/generated/transpose_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/transpose_c16.c
 
+shape_i1.lo: $(srcdir)/generated/shape_i1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shape_i1.lo -MD -MP -MF $(DEPDIR)/shape_i1.Tpo -c -o shape_i1.lo `test -f '$(srcdir)/generated/shape_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/shape_i1.Tpo $(DEPDIR)/shape_i1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/shape_i1.c' object='shape_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shape_i1.lo `test -f '$(srcdir)/generated/shape_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i1.c
+
+shape_i2.lo: $(srcdir)/generated/shape_i2.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shape_i2.lo -MD -MP -MF $(DEPDIR)/shape_i2.Tpo -c -o shape_i2.lo `test -f '$(srcdir)/generated/shape_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i2.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/shape_i2.Tpo $(DEPDIR)/shape_i2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/shape_i2.c' object='shape_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shape_i2.lo `test -f '$(srcdir)/generated/shape_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i2.c
+
 shape_i4.lo: $(srcdir)/generated/shape_i4.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shape_i4.lo -MD -MP -MF $(DEPDIR)/shape_i4.Tpo -c -o shape_i4.lo `test -f '$(srcdir)/generated/shape_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/shape_i4.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/shape_i4.Tpo $(DEPDIR)/shape_i4.Plo
@@ -5831,7 +5808,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) all-multi $(DATA) $(HEADERS) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"; do \
+	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -5869,8 +5846,7 @@ maintainer-clean-generic:
 clean: clean-am clean-multi
 
 clean-am: clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
-	clean-myexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am distclean-multi
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -5898,8 +5874,7 @@ install-dvi: install-dvi-am
 install-dvi-am:
 
 install-exec-am: install-cafexeclibLTLIBRARIES install-multi \
-	install-myexeclibLTLIBRARIES install-toolexeclibDATA \
-	install-toolexeclibLTLIBRARIES
+	install-toolexeclibDATA install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -5942,7 +5917,6 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-cafexeclibLTLIBRARIES \
-	uninstall-myexeclibLTLIBRARIES \
 	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
@@ -5952,15 +5926,14 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES \
 
 .PHONY: CTAGS GTAGS all all-am all-multi am--refresh check check-am \
 	clean clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
-	clean-multi clean-myexeclibLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-hdr distclean-libtool \
-	distclean-multi distclean-tags dvi dvi-am html html-am info \
-	info-am install install-am install-cafexeclibLTLIBRARIES \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-multi \
-	install-myexeclibLTLIBRARIES install-nodist_fincludeHEADERS \
+	clean-multi clean-toolexeclibLTLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-multi distclean-tags dvi dvi-am \
+	html html-am info info-am install install-am \
+	install-cafexeclibLTLIBRARIES install-data install-data-am \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-multi install-nodist_fincludeHEADERS \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
@@ -5968,7 +5941,7 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES \
 	maintainer-clean-multi mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
 	pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-cafexeclibLTLIBRARIES uninstall-myexeclibLTLIBRARIES \
+	uninstall-cafexeclibLTLIBRARIES \
 	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 

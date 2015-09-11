@@ -35,4 +35,3 @@ PROGRAM main
   END ASSOCIATE
 END PROGRAM main
 ! { dg-final { scan-tree-dump-times "func" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

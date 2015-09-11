@@ -1,5 +1,4 @@
-// Copyright (C) 2012-2013
-// Free Software Foundation
+// Copyright (C) 2012-2015 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -94,5 +93,12 @@ extern void __vtv_malloc_unprotect (void);
 extern void __vtv_malloc_stats (void);
 extern void __vtv_malloc_dump_stats (void);
 extern int __vtv_count_mmapped_pages (void);
+
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+extern "C" int mprotect (void *addr, int len, int prot);
+
+  #define PROT_READ 0x1
+  #define PROT_WRITE 0x2
+#endif
 
 #endif /* vtv_malloc.h */

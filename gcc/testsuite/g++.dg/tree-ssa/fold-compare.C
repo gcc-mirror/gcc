@@ -24,5 +24,4 @@ int f(const ExtentsBase &e1) {
 }
 
 /* { dg-final { scan-tree-dump-not "&my_extents" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

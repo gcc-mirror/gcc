@@ -12,7 +12,7 @@ struct S {
 namespace NS {
   class X {
       friend class S;
-      static int *i;	// { dg-error "private" }
+      static int *i;	// { dg-message "private" }
   };
 }
 

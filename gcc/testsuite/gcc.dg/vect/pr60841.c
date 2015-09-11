@@ -180,4 +180,3 @@ foo (struct T *p, struct T *q, int x, int w)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

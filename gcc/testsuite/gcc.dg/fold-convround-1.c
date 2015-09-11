@@ -26,5 +26,4 @@ unsigned long long test3(double x)
 /* { dg-final { scan-tree-dump-times "__builtin_llfloor" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_lceil" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_llceil" 0 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
 

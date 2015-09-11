@@ -16,4 +16,3 @@ void test_vget_highp8 (void)
   out_poly8x8_t = vget_high_p8 (arg0_poly8x16_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

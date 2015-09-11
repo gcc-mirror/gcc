@@ -100,8 +100,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // concept requirements
       typedef typename _Sequence::value_type _Sequence_value_type;
+#if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
       __glibcxx_class_requires(_Sequence, _BackInsertionSequenceConcept)
+#endif
       __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
 
       template<typename _Tp1, typename _Seq1>
@@ -111,6 +113,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp1, typename _Seq1>
         friend bool
         operator<(const stack<_Tp1, _Seq1>&, const stack<_Tp1, _Seq1>&);
+
+#if __cplusplus >= 201103L
+      template<typename _Alloc>
+	using _Uses = typename
+	  enable_if<uses_allocator<_Sequence, _Alloc>::value>::type;
+#endif
 
     public:
       typedef typename _Sequence::value_type                value_type;
@@ -140,6 +148,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit
       stack(_Sequence&& __c = _Sequence())
       : c(std::move(__c)) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	explicit
+	stack(const _Alloc& __a)
+	: c(__a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(const _Sequence& __c, const _Alloc& __a)
+	: c(__c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(_Sequence&& __c, const _Alloc& __a)
+	: c(std::move(__c), __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(const stack& __q, const _Alloc& __a)
+	: c(__q.c, __a) { }
+
+      template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
+	stack(stack&& __q, const _Alloc& __a)
+	: c(std::move(__q.c), __a) { }
 #endif
 
       /**
@@ -221,7 +250,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       void
       swap(stack& __s)
-      noexcept(noexcept(swap(c, __s.c)))
+      noexcept(__is_nothrow_swappable<_Tp>::value)
       {
 	using std::swap;
 	swap(c, __s.c);

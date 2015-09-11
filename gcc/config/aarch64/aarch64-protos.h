@@ -22,6 +22,8 @@
 #ifndef GCC_AARCH64_PROTOS_H
 #define GCC_AARCH64_PROTOS_H
 
+#include "input.h"
+
 /*
   SYMBOL_CONTEXT_ADR
   The symbol is used in a load-address operation.
@@ -49,23 +51,35 @@ enum aarch64_symbol_context
 
    This corresponds to the small code model of the compiler.
 
-   SYMBOL_SMALL_GOT: Similar to the one above but this
+   SYMBOL_SMALL_GOT_4G: Similar to the one above but this
    gives us the GOT entry of the symbol being referred to :
    Thus calculating the GOT entry for foo is done using the
    following sequence of instructions.  The ADRP instruction
    gets us to the page containing the GOT entry of the symbol
-   and the got_lo12 gets us the actual offset in it.
+   and the got_lo12 gets us the actual offset in it, together
+   the base and offset, we can address 4G size GOT table.
 
    adrp  x0, :got:foo
    ldr   x0, [x0, :gotoff_lo12:foo]
 
    This corresponds to the small PIC model of the compiler.
 
+   SYMBOL_SMALL_GOT_28K: Similar to SYMBOL_SMALL_GOT_4G, but used for symbol
+   restricted within 28K GOT table size.
+
+   ldr reg, [gp, #:gotpage_lo15:sym]
+
+   This corresponds to -fpic model for small memory model of the compiler.
+
    SYMBOL_SMALL_TLSGD
    SYMBOL_SMALL_TLSDESC
-   SYMBOL_SMALL_GOTTPREL
-   SYMBOL_SMALL_TPREL
-   Each of of these represents a thread-local symbol, and corresponds to the
+   SYMBOL_SMALL_TLSIE
+   SYMBOL_TINY_TLSIE
+   SYMBOL_TLSLE12
+   SYMBOL_TLSLE24
+   SYMBOL_TLSLE32
+   SYMBOL_TLSLE48
+   Each of these represents a thread-local symbol, and corresponds to the
    thread local storage relocation operator for the symbol being referred to.
 
    SYMBOL_TINY_ABSOLUTE
@@ -94,13 +108,18 @@ enum aarch64_symbol_context
 enum aarch64_symbol_type
 {
   SYMBOL_SMALL_ABSOLUTE,
-  SYMBOL_SMALL_GOT,
+  SYMBOL_SMALL_GOT_28K,
+  SYMBOL_SMALL_GOT_4G,
   SYMBOL_SMALL_TLSGD,
   SYMBOL_SMALL_TLSDESC,
-  SYMBOL_SMALL_GOTTPREL,
-  SYMBOL_SMALL_TPREL,
+  SYMBOL_SMALL_TLSIE,
   SYMBOL_TINY_ABSOLUTE,
   SYMBOL_TINY_GOT,
+  SYMBOL_TINY_TLSIE,
+  SYMBOL_TLSLE12,
+  SYMBOL_TLSLE24,
+  SYMBOL_TLSLE32,
+  SYMBOL_TLSLE48,
   SYMBOL_FORCE_TO_MEM
 };
 
@@ -162,29 +181,83 @@ struct cpu_vector_cost
   const int cond_not_taken_branch_cost;  /* Cost of not taken branch.  */
 };
 
+/* Branch costs.  */
+struct cpu_branch_cost
+{
+  const int predictable;    /* Predictable branch or optimizing for size.  */
+  const int unpredictable;  /* Unpredictable branch or optimizing for speed.  */
+};
+
 struct tune_params
 {
-  const struct cpu_cost_table *const insn_extra_cost;
-  const struct cpu_addrcost_table *const addr_cost;
-  const struct cpu_regmove_cost *const regmove_cost;
-  const struct cpu_vector_cost *const vec_costs;
-  const int memmov_cost;
-  const int issue_rate;
-  const unsigned int fuseable_ops;
-  const int function_align;
-  const int jump_align;
-  const int loop_align;
-  const int int_reassoc_width;
-  const int fp_reassoc_width;
-  const int vec_reassoc_width;
+  const struct cpu_cost_table *insn_extra_cost;
+  const struct cpu_addrcost_table *addr_cost;
+  const struct cpu_regmove_cost *regmove_cost;
+  const struct cpu_vector_cost *vec_costs;
+  const struct cpu_branch_cost *branch_costs;
+  int memmov_cost;
+  int issue_rate;
+  unsigned int fusible_ops;
+  int function_align;
+  int jump_align;
+  int loop_align;
+  int int_reassoc_width;
+  int fp_reassoc_width;
+  int vec_reassoc_width;
+  int min_div_recip_mul_sf;
+  int min_div_recip_mul_df;
+  unsigned int extra_tuning_flags;
 };
+
+#define AARCH64_FUSION_PAIR(x, name) \
+  AARCH64_FUSE_##name##_index, 
+/* Supported fusion operations.  */
+enum aarch64_fusion_pairs_index
+{
+#include "aarch64-fusion-pairs.def"
+  AARCH64_FUSE_index_END
+};
+#undef AARCH64_FUSION_PAIR
+
+#define AARCH64_FUSION_PAIR(x, name) \
+  AARCH64_FUSE_##name = (1u << AARCH64_FUSE_##name##_index),
+/* Supported fusion operations.  */
+enum aarch64_fusion_pairs
+{
+  AARCH64_FUSE_NOTHING = 0,
+#include "aarch64-fusion-pairs.def"
+  AARCH64_FUSE_ALL = (1u << AARCH64_FUSE_index_END) - 1
+};
+#undef AARCH64_FUSION_PAIR
+
+#define AARCH64_EXTRA_TUNING_OPTION(x, name) \
+  AARCH64_EXTRA_TUNE_##name##_index,
+/* Supported tuning flags indexes.  */
+enum aarch64_extra_tuning_flags_index
+{
+#include "aarch64-tuning-flags.def"
+  AARCH64_EXTRA_TUNE_index_END
+};
+#undef AARCH64_EXTRA_TUNING_OPTION
+
+
+#define AARCH64_EXTRA_TUNING_OPTION(x, name) \
+  AARCH64_EXTRA_TUNE_##name = (1u << AARCH64_EXTRA_TUNE_##name##_index),
+/* Supported tuning flags.  */
+enum aarch64_extra_tuning_flags
+{
+  AARCH64_EXTRA_TUNE_NONE = 0,
+#include "aarch64-tuning-flags.def"
+  AARCH64_EXTRA_TUNE_ALL = (1u << AARCH64_EXTRA_TUNE_index_END) - 1
+};
+#undef AARCH64_EXTRA_TUNING_OPTION
+
+extern struct tune_params aarch64_tune_params;
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
-bool aarch64_cannot_change_mode_class (machine_mode,
-				       machine_mode,
-				       enum reg_class);
+int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type
 aarch64_classify_symbolic_expression (rtx, enum aarch64_symbol_context);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
@@ -194,15 +267,21 @@ bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
 bool aarch64_gen_movmemqi (rtx *);
 bool aarch64_gimple_fold_builtin (gimple_stmt_iterator *);
+bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
+			     const struct cl_decoded_option *, location_t);
 bool aarch64_is_extend_from_extract (machine_mode, rtx, rtx);
 bool aarch64_is_long_call_p (rtx);
+bool aarch64_is_noplt_call_p (rtx);
 bool aarch64_label_mentioned_p (rtx);
+void aarch64_declare_function_name (FILE *, const char*, tree);
 bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_modes_tieable_p (machine_mode mode1,
 			      machine_mode mode2);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
 			    machine_mode);
+int aarch64_simd_attr_length_rglist (enum machine_mode);
+rtx aarch64_reverse_mask (enum machine_mode);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, machine_mode);
 char *aarch64_output_simd_mov_immediate (rtx, machine_mode, unsigned);
@@ -244,11 +323,15 @@ rtx aarch64_simd_gen_const_vector_dup (machine_mode, int);
 bool aarch64_simd_mem_operand_p (rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, bool);
 rtx aarch64_tls_get_addr (void);
+std::string aarch64_get_extension_string_for_isa_flags (unsigned long);
 tree aarch64_fold_builtin (tree, int, tree *, bool);
 unsigned aarch64_dbx_register_number (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
+void aarch64_cpu_cpp_builtins (cpp_reader *);
 void aarch64_elf_asm_named_section (const char *, unsigned, tree);
+const char * aarch64_gen_far_branch (rtx *, int, const char *, const char *);
+void aarch64_err_no_fpadvsimd (machine_mode, const char *);
 void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx);
 void aarch64_expand_prologue (void);
@@ -256,20 +339,18 @@ void aarch64_expand_vector_init (rtx, rtx);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 				   const_tree, unsigned);
 void aarch64_init_expanders (void);
+void aarch64_init_simd_builtins (void);
 void aarch64_print_operand (FILE *, rtx, char);
 void aarch64_print_operand_address (FILE *, rtx);
 void aarch64_emit_call_insn (rtx);
+void aarch64_register_pragmas (void);
+void aarch64_relayout_simd_types (void);
+void aarch64_reset_previous_fndecl (void);
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
 
-void aarch64_simd_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
-
-/* Emit code to place a AdvSIMD pair result in memory locations (with equal
-   registers).  */
-void aarch64_simd_emit_pair_result_insn (machine_mode,
-					 rtx (*intfn) (rtx, rtx, rtx), rtx,
-					 rtx);
+void aarch64_simd_emit_reg_reg_move (rtx *, enum machine_mode, unsigned int);
 
 /* Expand builtins for SIMD intrinsics.  */
 rtx aarch64_simd_expand_builtin (int, tree, rtx);
@@ -296,12 +377,17 @@ rtx aarch64_load_tp (rtx);
 
 void aarch64_expand_compare_and_swap (rtx op[]);
 void aarch64_split_compare_and_swap (rtx op[]);
+void aarch64_gen_atomic_cas (rtx, rtx, rtx, rtx, rtx);
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
 bool aarch64_gen_adjusted_ldpstp (rtx *, bool, enum machine_mode, RTX_CODE);
 #endif /* RTX_CODE */
 
 void aarch64_init_builtins (void);
+
+bool aarch64_process_target_attr (tree, const char*);
+void aarch64_override_options_internal (struct gcc_options *);
+
 rtx aarch64_expand_builtin (tree exp,
 			    rtx target,
 			    rtx subtarget ATTRIBUTE_UNUSED,

@@ -29,4 +29,12 @@ enum msp430_hwmult_types
   F5SERIES
 };
 
+enum msp430_regions
+{
+  ANY,
+  EITHER,
+  LOWER,
+  UPPER
+};
+
 #endif

@@ -38,4 +38,3 @@ test2 (double *out1, double *out2, double *out3, double *in1,
 }
 
 /* { dg-final { scan-tree-dump-not "__builtin_assume_aligned" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

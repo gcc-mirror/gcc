@@ -9,7 +9,7 @@
 
 class X {
   private:
-    enum E1 {a1, b1}; // { dg-error "" } private
+    enum E1 {a1, b1}; // { dg-message "" } private
   public:
     enum E2 {a2, b2};
     };

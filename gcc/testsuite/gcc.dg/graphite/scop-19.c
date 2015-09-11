@@ -31,6 +31,6 @@ d_growable_string_append_buffer (struct d_growable_string *dgs,
   if (need > dgs->alc)
     d_growable_string_resize (dgs, need);
 }
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 0" 2 "graphite"} } */ 
-/* { dg-final { cleanup-tree-dump "graphite" } } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 0" 2 "graphite" { target nonpic } } } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 0" 1 "graphite" { target { ! nonpic } } } } */
 

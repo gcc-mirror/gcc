@@ -20,4 +20,3 @@ void foo(void)
 }
 
 /* { dg-final { scan-rtl-dump-not "abort" "cse1" { target i?86-*-* x86_64-*-* } } } */
-/* { dg-final { cleanup-rtl-dump "cse1" } } */

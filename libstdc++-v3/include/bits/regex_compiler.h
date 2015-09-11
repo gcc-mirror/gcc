@@ -59,7 +59,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Compiler(_IterT __b, _IterT __e,
 		const typename _TraitsT::locale_type& __traits, _FlagT __flags);
 
-      std::shared_ptr<_RegexT>
+      shared_ptr<const _RegexT>
       _M_get_nfa()
       { return std::move(_M_nfa); }
 
@@ -116,8 +116,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_insert_bracket_matcher(bool __neg);
 
+      // Returns true if successfully matched one term and should continue.
+      // Returns false if the compiler should move on.
       template<bool __icase, bool __collate>
-	void
+	bool
 	_M_expression_term(pair<bool, _CharT>& __last_char,
 			   _BracketMatcher<_TraitsT, __icase, __collate>&
 			   __matcher);
@@ -145,15 +147,62 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _CtypeT&      _M_ctype;
     };
 
-  template<typename _TraitsT>
-    inline std::shared_ptr<_NFA<_TraitsT>>
-    __compile_nfa(const typename _TraitsT::char_type* __first,
-		  const typename _TraitsT::char_type* __last,
+  template<typename _Tp>
+    struct __has_contiguous_iter : std::false_type { };
+
+  template<typename _Ch, typename _Tr, typename _Alloc>
+    struct __has_contiguous_iter<std::basic_string<_Ch, _Tr, _Alloc>>
+    : std::true_type
+    { };
+
+  template<typename _Tp, typename _Alloc>
+    struct __has_contiguous_iter<std::vector<_Tp, _Alloc>>
+    : std::true_type
+    { };
+
+  template<typename _Tp>
+    struct __is_contiguous_normal_iter : std::false_type { };
+
+  template<typename _CharT>
+    struct __is_contiguous_normal_iter<_CharT*> : std::true_type { };
+
+  template<typename _Tp, typename _Cont>
+    struct
+    __is_contiguous_normal_iter<__gnu_cxx::__normal_iterator<_Tp, _Cont>>
+    : __has_contiguous_iter<_Cont>::type
+    { };
+
+  template<typename _Iter, typename _TraitsT>
+    using __enable_if_contiguous_normal_iter
+      = typename enable_if< __is_contiguous_normal_iter<_Iter>::value,
+                           std::shared_ptr<const _NFA<_TraitsT>> >::type;
+
+  template<typename _Iter, typename _TraitsT>
+    using __disable_if_contiguous_normal_iter
+      = typename enable_if< !__is_contiguous_normal_iter<_Iter>::value,
+                           std::shared_ptr<const _NFA<_TraitsT>> >::type;
+
+  template<typename _FwdIter, typename _TraitsT>
+    inline __enable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
+    __compile_nfa(_FwdIter __first, _FwdIter __last,
 		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags)
     {
+      size_t __len = __last - __first;
+      const auto* __cfirst = __len ? std::__addressof(*__first) : nullptr;
       using _Cmplr = _Compiler<_TraitsT>;
-      return _Cmplr(__first, __last, __loc, __flags)._M_get_nfa();
+      return _Cmplr(__cfirst, __cfirst + __len, __loc, __flags)._M_get_nfa();
+    }
+
+  template<typename _FwdIter, typename _TraitsT>
+    inline __disable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
+    __compile_nfa(_FwdIter __first, _FwdIter __last,
+		  const typename _TraitsT::locale_type& __loc,
+		  regex_constants::syntax_option_type __flags)
+    {
+      basic_string<typename _TraitsT::char_type> __str(__first, __last);
+      return __compile_nfa(__str.data(), __str.data() + __str.size(), __loc,
+          __flags);
     }
 
   // [28.13.14]
@@ -321,9 +370,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      const _TraitsT& __traits)
       : _M_class_set(0), _M_translator(__traits), _M_traits(__traits),
       _M_is_non_matching(__is_non_matching)
-#ifdef _GLIBCXX_DEBUG
-      , _M_is_ready(false)
-#endif
       { }
 
       bool
@@ -337,22 +383,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_add_char(_CharT __c)
       {
 	_M_char_set.push_back(_M_translator._M_translate(__c));
-#ifdef _GLIBCXX_DEBUG
-	_M_is_ready = false;
-#endif
+	_GLIBCXX_DEBUG_ONLY(_M_is_ready = false);
       }
 
-      void
-      _M_add_collating_element(const _StringT& __s)
+      _StringT
+      _M_add_collate_element(const _StringT& __s)
       {
 	auto __st = _M_traits.lookup_collatename(__s.data(),
 						 __s.data() + __s.size());
 	if (__st.empty())
 	  __throw_regex_error(regex_constants::error_collate);
 	_M_char_set.push_back(_M_translator._M_translate(__st[0]));
-#ifdef _GLIBCXX_DEBUG
-	_M_is_ready = false;
-#endif
+	_GLIBCXX_DEBUG_ONLY(_M_is_ready = false);
+	return __st;
       }
 
       void
@@ -365,9 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__st = _M_traits.transform_primary(__st.data(),
 					   __st.data() + __st.size());
 	_M_equiv_set.push_back(__st);
-#ifdef _GLIBCXX_DEBUG
-	_M_is_ready = false;
-#endif
+	_GLIBCXX_DEBUG_ONLY(_M_is_ready = false);
       }
 
       // __neg should be true for \D, \S and \W only.
@@ -383,9 +424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_class_set |= __mask;
 	else
 	  _M_neg_class_set.push_back(__mask);
-#ifdef _GLIBCXX_DEBUG
-	_M_is_ready = false;
-#endif
+	_GLIBCXX_DEBUG_ONLY(_M_is_ready = false);
       }
 
       void
@@ -395,9 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __throw_regex_error(regex_constants::error_range);
 	_M_range_set.push_back(make_pair(_M_translator._M_transform(__l),
 					 _M_translator._M_transform(__r)));
-#ifdef _GLIBCXX_DEBUG
-	_M_is_ready = false;
-#endif
+	_GLIBCXX_DEBUG_ONLY(_M_is_ready = false);
       }
 
       void
@@ -407,9 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __end = std::unique(_M_char_set.begin(), _M_char_set.end());
 	_M_char_set.erase(__end, _M_char_set.end());
 	_M_make_cache(_UseCache());
-#ifdef _GLIBCXX_DEBUG
-	_M_is_ready = true;
-#endif
+	_GLIBCXX_DEBUG_ONLY(_M_is_ready = true);
       }
 
     private:
@@ -457,7 +492,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool                                      _M_is_non_matching;
       _CacheT					_M_cache;
 #ifdef _GLIBCXX_DEBUG
-      bool                                      _M_is_ready;
+      bool                                      _M_is_ready = false;
 #endif
     };
 

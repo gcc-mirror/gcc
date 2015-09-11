@@ -166,7 +166,7 @@ extern bool msp430x;
 #define HAS_LONG_UNCOND_BRANCH		0
 
 #define LOAD_EXTEND_OP(M)		ZERO_EXTEND
-/*#define WORD_REGISTER_OPERATIONS	1*/
+#define WORD_REGISTER_OPERATIONS	1
 
 #define MOVE_MAX 			8
 #define STARTING_FRAME_OFFSET		0
@@ -404,3 +404,9 @@ typedef struct
   msp430_start_function ((FILE), (NAME), (DECL))
 
 #define TARGET_HAS_NO_HW_DIVIDE (! TARGET_HWMULT)
+
+#undef  USE_SELECT_SECTION_FOR_FUNCTIONS
+#define USE_SELECT_SECTION_FOR_FUNCTIONS 1
+
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
+  msp430_output_aligned_decl_common ((FILE), (DECL), (NAME), (SIZE), (ALIGN))

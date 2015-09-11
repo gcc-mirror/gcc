@@ -195,7 +195,6 @@ struct	Location
 
 struct	G
 {
-	void*	closure;	// Closure value.
 	Defer*	defer;
 	Panic*	panic;
 	void*	exception;	// current exception being thrown
@@ -509,6 +508,9 @@ extern 	void	(*runtime_sysargs)(int32, uint8**);
 extern	uint32	runtime_Hchansize;
 extern	DebugVars	runtime_debug;
 extern	uintptr	runtime_maxstacksize;
+
+extern	bool	runtime_isstarted;
+extern	bool	runtime_isarchive;
 
 /*
  * common functions and data
@@ -833,9 +835,6 @@ int32 getproccount(void);
 
 #define PREFETCH(p) __builtin_prefetch(p)
 
-void	__go_set_closure(void*);
-void*	__go_get_closure(void);
-
 bool	runtime_gcwaiting(void);
 void	runtime_badsignal(int);
 Defer*	runtime_newdefer(void);
@@ -849,3 +848,9 @@ struct time_now_ret
 
 struct time_now_ret now() __asm__ (GOSYM_PREFIX "time.now")
   __attribute__ ((no_split_stack));
+
+extern void _cgo_wait_runtime_init_done (void);
+extern void _cgo_notify_runtime_init_done (void);
+extern _Bool runtime_iscgo;
+extern _Bool runtime_cgoHasExtraM;
+extern Hchan *runtime_main_init_done;

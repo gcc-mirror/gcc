@@ -30,4 +30,3 @@ int z(double i)
   return (i + (-2.0)) <= i;
 }
 /* { dg-final { scan-tree-dump-times " = 1" 6 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

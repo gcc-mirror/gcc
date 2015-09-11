@@ -18,4 +18,3 @@ void bar (void)
 
 /* Everything except for the "i = 0" assignment should get removed.  */
 /* { dg-final { scan-tree-dump-times "if" 0 "optimized" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

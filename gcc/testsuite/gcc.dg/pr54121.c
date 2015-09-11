@@ -3,6 +3,7 @@
 
 /* { dg-do compile { target fpic } } */
 /* { dg-options "-std=gnu99 -O -fPIC -fprofile-generate" } */
+/* { dg-require-profiling "-fprofile-generate" } */
 
 typedef __SIZE_TYPE__ size_t;
 typedef unsigned char uint8_t;

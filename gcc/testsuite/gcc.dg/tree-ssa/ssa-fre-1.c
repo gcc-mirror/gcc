@@ -12,4 +12,3 @@ int f(int *a)
 }
 
 /* { dg-final { scan-tree-dump "Replaced \\\*\[ac\]_\[^\n\].*with t_" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -39,4 +39,3 @@ main ()
 /* { dg-final { scan-tree-dump "__ubsan_\[a-z_\]*_abort" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "__ubsan_\[a-z_\]*\[^et\] " "optimized" } } */
 /* { dg-final { scan-tree-dump "UBSAN_CHECK_" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

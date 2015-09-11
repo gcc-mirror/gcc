@@ -20,31 +20,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "hard-reg-set.h"
-#include "obstack.h"
+#include "backend.h"
 #include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
+#include "rtl.h"
 #include "cfgloop.h"
-#include "symtab.h"
-#include "flags.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
-#include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "flags.h"
+#include "alias.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -336,9 +318,9 @@ init_set_costs (void)
 {
   int speed;
   rtx_insn *seq;
-  rtx reg1 = gen_raw_REG (SImode, FIRST_PSEUDO_REGISTER);
-  rtx reg2 = gen_raw_REG (SImode, FIRST_PSEUDO_REGISTER + 1);
-  rtx addr = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER + 2);
+  rtx reg1 = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 1);
+  rtx reg2 = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 2);
+  rtx addr = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 3);
   rtx mem = validize_mem (gen_rtx_MEM (SImode, addr));
   unsigned i;
 

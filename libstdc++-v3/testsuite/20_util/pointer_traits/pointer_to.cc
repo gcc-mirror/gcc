@@ -26,6 +26,8 @@ struct Ptr
   typedef bool element_type;
   bool* value;
 
+  template<typename> using rebind = Ptr;
+
   static Ptr pointer_to(bool& b) { return Ptr{&b}; }
 };
 

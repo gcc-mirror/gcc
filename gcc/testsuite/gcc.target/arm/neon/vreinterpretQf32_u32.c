@@ -16,4 +16,3 @@ void test_vreinterpretQf32_u32 (void)
   out_float32x4_t = vreinterpretq_f32_u32 (arg0_uint32x4_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

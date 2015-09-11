@@ -148,6 +148,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _StateIdT
     _NFA<_TraitsT>::_M_insert_backref(size_t __index)
     {
+      if (this->_M_flags & regex_constants::__polynomial)
+	__throw_regex_error(regex_constants::error_complexity);
       // To figure out whether a backref is valid, a stack is used to store
       // unfinished sub-expressions. For example, when parsing
       // "(a(b)(c\\1(d)))" at '\\1', _M_subexpr_count is 3, indicating that 3
@@ -172,13 +174,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       for (auto& __it : *this)
 	{
-	  while (__it._M_next >= 0 && (*this)[__it._M_next]._M_opcode
+	  while (__it._M_next >= 0 && (*this)[__it._M_next]._M_opcode()
 		 == _S_opcode_dummy)
 	    __it._M_next = (*this)[__it._M_next]._M_next;
-	  if (__it._M_opcode == _S_opcode_alternative
-	      || __it._M_opcode == _S_opcode_repeat
-	      || __it._M_opcode == _S_opcode_subexpr_lookahead)
-	    while (__it._M_alt >= 0 && (*this)[__it._M_alt]._M_opcode
+	  if (__it._M_has_alt())
+	    while (__it._M_alt >= 0 && (*this)[__it._M_alt]._M_opcode()
 		   == _S_opcode_dummy)
 	      __it._M_alt = (*this)[__it._M_alt]._M_next;
 	}
@@ -198,11 +198,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __stack.pop();
 	  auto __dup = _M_nfa[__u];
 	  // _M_insert_state() never return -1
-	  auto __id = _M_nfa._M_insert_state(__dup);
+	  auto __id = _M_nfa._M_insert_state(std::move(__dup));
 	  __m[__u] = __id;
-	  if (__dup._M_opcode == _S_opcode_alternative
-	      || __dup._M_opcode == _S_opcode_repeat
-	      || __dup._M_opcode == _S_opcode_subexpr_lookahead)
+	  if (__dup._M_has_alt())
 	    if (__dup._M_alt != _S_invalid_state_id
 		&& __m.count(__dup._M_alt) == 0)
 	      __stack.push(__dup._M_alt);
@@ -218,15 +216,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto& __ref = _M_nfa[__v];
 	  if (__ref._M_next != _S_invalid_state_id)
 	    {
-	      _GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_next) > 0);
+	      __glibcxx_assert(__m.count(__ref._M_next) > 0);
 	      __ref._M_next = __m[__ref._M_next];
 	    }
-	  if (__ref._M_opcode == _S_opcode_alternative
-	      || __ref._M_opcode == _S_opcode_repeat
-	      || __ref._M_opcode == _S_opcode_subexpr_lookahead)
+	  if (__ref._M_has_alt())
 	    if (__ref._M_alt != _S_invalid_state_id)
 	      {
-		_GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_alt) > 0);
+		__glibcxx_assert(__m.count(__ref._M_alt) > 0);
 		__ref._M_alt = __m[__ref._M_alt];
 	      }
 	}

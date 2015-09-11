@@ -53,37 +53,18 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <list>
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
-#include "hashtab.h"
 #include "rtl.h"
+#include "ssa.h"
+#include "options.h"
+#include "fold-const.h"
+#include "internal-fn.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -94,17 +75,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "tree-phinodes.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-dfa.h"
 #include "tree-pass.h"
 #include "gimple-pretty-print.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
@@ -112,20 +86,62 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "except.h"
-#include "hash-table.h"
 #include "coverage.h"
 #include "attribs.h"
 #include "print-tree.h"
-#include "lto-streamer.h"
+#include "target.h"
 #include "data-streamer.h"
 #include "ipa-utils.h"
-#include <list>
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
+#include "stor-layout.h"
+#include "dbgcnt.h"
 
 using namespace ipa_icf_gimple;
 
 namespace ipa_icf {
+
+/* Initialization and computation of symtab node hash, there data
+   are propagated later on.  */
+
+static sem_item_optimizer *optimizer = NULL;
+
+/* Constructor.  */
+
+symbol_compare_collection::symbol_compare_collection (symtab_node *node)
+{
+  m_references.create (0);
+  m_interposables.create (0);
+
+  ipa_ref *ref;
+
+  if (is_a <varpool_node *> (node) && DECL_VIRTUAL_P (node->decl))
+    return;
+
+  for (unsigned i = 0; node->iterate_reference (i, ref); i++)
+    {
+      if (ref->address_matters_p ())
+	m_references.safe_push (ref->referred);
+
+      if (ref->referred->get_availability () <= AVAIL_INTERPOSABLE)
+        {
+	  if (ref->address_matters_p ())
+	    m_references.safe_push (ref->referred);
+	  else
+	    m_interposables.safe_push (ref->referred);
+	}
+    }
+
+  if (is_a <cgraph_node *> (node))
+    {
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+
+      for (cgraph_edge *e = cnode->callees; e; e = e->next_callee)
+	if (e->callee->get_availability () <= AVAIL_INTERPOSABLE)
+	  m_interposables.safe_push (e->callee);
+    }
+}
+
 /* Constructor for key value pair, where _ITEM is key and _INDEX is a target.  */
 
 sem_usage_pair::sem_usage_pair (sem_item *_item, unsigned int _index):
@@ -200,12 +216,12 @@ sem_item::dump (void)
   if (dump_file)
     {
       fprintf (dump_file, "[%s] %s (%u) (tree:%p)\n", type == FUNC ? "func" : "var",
-	       name(), node->order, (void *) node->decl);
+	       node->name(), node->order, (void *) node->decl);
       fprintf (dump_file, "  hash: %u\n", get_hash ());
       fprintf (dump_file, "  references: ");
 
       for (unsigned i = 0; i < refs.length (); i++)
-	fprintf (dump_file, "%s%s ", refs[i]->name (),
+	fprintf (dump_file, "%s%s ", refs[i]->node->name (),
 		 i < refs.length() - 1 ? "," : "");
 
       fprintf (dump_file, "\n");
@@ -229,7 +245,6 @@ sem_item::target_supports_symbol_aliases_p (void)
 sem_function::sem_function (bitmap_obstack *stack): sem_item (FUNC, stack),
   m_checker (NULL), m_compared_func (NULL)
 {
-  arg_types.create (0);
   bb_sizes.create (0);
   bb_sorted.create (0);
 }
@@ -241,7 +256,6 @@ sem_function::sem_function (cgraph_node *node, hashval_t hash,
   sem_item (FUNC, node, hash, stack),
   m_checker (NULL), m_compared_func (NULL)
 {
-  arg_types.create (0);
   bb_sizes.create (0);
   bb_sorted.create (0);
 }
@@ -251,7 +265,6 @@ sem_function::~sem_function ()
   for (unsigned i = 0; i < bb_sorted.length (); i++)
     delete (bb_sorted[i]);
 
-  arg_types.release ();
   bb_sizes.release ();
   bb_sorted.release ();
 }
@@ -289,25 +302,228 @@ sem_function::get_hash (void)
       for (unsigned i = 0; i < bb_sizes.length (); i++)
 	hstate.add_int (bb_sizes[i]);
 
+
+      /* Add common features of declaration itself.  */
+      if (DECL_FUNCTION_SPECIFIC_TARGET (decl))
+        hstate.add_wide_int
+	 (cl_target_option_hash
+	   (TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (decl))));
+      if (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))
+	 (cl_optimization_hash
+	   (TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))));
+      hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
+      hstate.add_flag (DECL_CXX_DESTRUCTOR_P (decl));
+
       hash = hstate.end ();
     }
 
   return hash;
 }
 
-/* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
-   point to a same function. Comparison can be skipped if IGNORED_NODES
-   contains these nodes.  */
+/* Return ture if A1 and A2 represent equivalent function attribute lists.
+   Based on comp_type_attributes.  */
 
 bool
-sem_function::compare_cgraph_references (hash_map <symtab_node *, sem_item *>
-    &ignored_nodes,
-    symtab_node *n1, symtab_node *n2)
+sem_item::compare_attributes (const_tree a1, const_tree a2)
 {
-  if (n1 == n2 || (ignored_nodes.get (n1) && ignored_nodes.get (n2)))
+  const_tree a;
+  if (a1 == a2)
+    return true;
+  for (a = a1; a != NULL_TREE; a = TREE_CHAIN (a))
+    {
+      const struct attribute_spec *as;
+      const_tree attr;
+
+      as = lookup_attribute_spec (get_attribute_name (a));
+      /* TODO: We can introduce as->affects_decl_identity
+	 and as->affects_decl_reference_identity if attribute mismatch
+	 gets a common reason to give up on merging.  It may not be worth
+	 the effort.
+	 For example returns_nonnull affects only references, while
+	 optimize attribute can be ignored because it is already lowered
+	 into flags representation and compared separately.  */
+      if (!as)
+        continue;
+
+      attr = lookup_attribute (as->name, CONST_CAST_TREE (a2));
+      if (!attr || !attribute_value_equal (a, attr))
+        break;
+    }
+  if (!a)
+    {
+      for (a = a2; a != NULL_TREE; a = TREE_CHAIN (a))
+	{
+	  const struct attribute_spec *as;
+
+	  as = lookup_attribute_spec (get_attribute_name (a));
+	  if (!as)
+	    continue;
+
+	  if (!lookup_attribute (as->name, CONST_CAST_TREE (a1)))
+	    break;
+	  /* We don't need to compare trees again, as we did this
+	     already in first loop.  */
+	}
+      if (!a)
+        return true;
+    }
+  /* TODO: As in comp_type_attributes we may want to introduce target hook.  */
+  return false;
+}
+
+/* Compare properties of symbols N1 and N2 that does not affect semantics of
+   symbol itself but affects semantics of its references from USED_BY (which
+   may be NULL if it is unknown).  If comparsion is false, symbols
+   can still be merged but any symbols referring them can't.
+
+   If ADDRESS is true, do extra checking needed for IPA_REF_ADDR.
+
+   TODO: We can also split attributes to those that determine codegen of
+   a function body/variable constructor itself and those that are used when
+   referring to it.  */
+
+bool
+sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
+						symtab_node *n1,
+						symtab_node *n2,
+						bool address)
+{
+  if (is_a <cgraph_node *> (n1))
+    {
+      /* Inline properties matters: we do now want to merge uses of inline
+	 function to uses of normal function because inline hint would be lost.
+	 We however can merge inline function to noinline because the alias
+	 will keep its DECL_DECLARED_INLINE flag.
+
+	 Also ignore inline flag when optimizing for size or when function
+	 is known to not be inlinable.
+
+	 TODO: the optimize_size checks can also be assumed to be true if
+	 unit has no !optimize_size functions. */
+
+      if ((!used_by || address || !is_a <cgraph_node *> (used_by)
+	   || !opt_for_fn (used_by->decl, optimize_size))
+	  && !opt_for_fn (n1->decl, optimize_size)
+	  && n1->get_availability () > AVAIL_INTERPOSABLE
+	  && (!DECL_UNINLINABLE (n1->decl) || !DECL_UNINLINABLE (n2->decl)))
+	{
+	  if (DECL_DISREGARD_INLINE_LIMITS (n1->decl)
+	      != DECL_DISREGARD_INLINE_LIMITS (n2->decl))
+	    return return_false_with_msg
+		     ("DECL_DISREGARD_INLINE_LIMITS are different");
+
+	  if (DECL_DECLARED_INLINE_P (n1->decl)
+	      != DECL_DECLARED_INLINE_P (n2->decl))
+	    return return_false_with_msg ("inline attributes are different");
+	}
+
+      if (DECL_IS_OPERATOR_NEW (n1->decl)
+	  != DECL_IS_OPERATOR_NEW (n2->decl))
+	return return_false_with_msg ("operator new flags are different");
+    }
+
+  /* Merging two definitions with a reference to equivalent vtables, but
+     belonging to a different type may result in ipa-polymorphic-call analysis
+     giving a wrong answer about the dynamic type of instance.  */
+  if (is_a <varpool_node *> (n1))
+    {
+      if ((DECL_VIRTUAL_P (n1->decl) || DECL_VIRTUAL_P (n2->decl))
+	  && (DECL_VIRTUAL_P (n1->decl) != DECL_VIRTUAL_P (n2->decl)
+	      || !types_must_be_same_for_odr (DECL_CONTEXT (n1->decl),
+					      DECL_CONTEXT (n2->decl)))
+	  && (!used_by || !is_a <cgraph_node *> (used_by) || address
+	      || opt_for_fn (used_by->decl, flag_devirtualize)))
+	return return_false_with_msg
+		 ("references to virtual tables can not be merged");
+
+      if (address && DECL_ALIGN (n1->decl) != DECL_ALIGN (n2->decl))
+	return return_false_with_msg ("alignment mismatch");
+
+      /* For functions we compare attributes in equals_wpa, because we do
+	 not know what attributes may cause codegen differences, but for
+	 variables just compare attributes for references - the codegen
+	 for constructors is affected only by those attributes that we lower
+	 to explicit representation (such as DECL_ALIGN or DECL_SECTION).  */
+      if (!compare_attributes (DECL_ATTRIBUTES (n1->decl),
+			       DECL_ATTRIBUTES (n2->decl)))
+	return return_false_with_msg ("different var decl attributes");
+      if (comp_type_attributes (TREE_TYPE (n1->decl),
+				TREE_TYPE (n2->decl)) != 1)
+	return return_false_with_msg ("different var type attributes");
+    }
+
+  /* When matching virtual tables, be sure to also match information
+     relevant for polymorphic call analysis.  */
+  if (used_by && is_a <varpool_node *> (used_by)
+      && DECL_VIRTUAL_P (used_by->decl))
+    {
+      if (DECL_VIRTUAL_P (n1->decl) != DECL_VIRTUAL_P (n2->decl))
+	return return_false_with_msg ("virtual flag mismatch");
+      if (DECL_VIRTUAL_P (n1->decl) && is_a <cgraph_node *> (n1)
+	  && (DECL_FINAL_P (n1->decl) != DECL_FINAL_P (n2->decl)))
+	return return_false_with_msg ("final flag mismatch");
+    }
+  return true;
+}
+
+/* Hash properties that are compared by compare_referenced_symbol_properties. */
+
+void
+sem_item::hash_referenced_symbol_properties (symtab_node *ref,
+					     inchash::hash &hstate,
+					     bool address)
+{
+  if (is_a <cgraph_node *> (ref))
+    {
+      if ((type != FUNC || address || !opt_for_fn (decl, optimize_size))
+	  && !opt_for_fn (ref->decl, optimize_size)
+	  && !DECL_UNINLINABLE (ref->decl))
+	{
+	  hstate.add_flag (DECL_DISREGARD_INLINE_LIMITS (ref->decl));
+	  hstate.add_flag (DECL_DECLARED_INLINE_P (ref->decl));
+	}
+      hstate.add_flag (DECL_IS_OPERATOR_NEW (ref->decl));
+    }
+  else if (is_a <varpool_node *> (ref))
+    {
+      hstate.add_flag (DECL_VIRTUAL_P (ref->decl));
+      if (address)
+	hstate.add_int (DECL_ALIGN (ref->decl));
+    }
+}
+
+
+/* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
+   point to a same function. Comparison can be skipped if IGNORED_NODES
+   contains these nodes.  ADDRESS indicate if address is taken.  */
+
+bool
+sem_item::compare_symbol_references (
+    hash_map <symtab_node *, sem_item *> &ignored_nodes,
+    symtab_node *n1, symtab_node *n2, bool address)
+{
+  enum availability avail1, avail2;
+
+  if (n1 == n2)
     return true;
 
-  /* TODO: add more precise comparison for weakrefs, etc.  */
+  /* Never match variable and function.  */
+  if (is_a <varpool_node *> (n1) != is_a <varpool_node *> (n2))
+    return false;
+
+  if (!compare_referenced_symbol_properties (node, n1, n2, address))
+    return false;
+  if (address && n1->equal_address_to (n2) == 1)
+    return true;
+  if (!address && n1->semantically_equivalent_p (n2))
+    return true;
+
+  n1 = n1->ultimate_alias_target (&avail1);
+  n2 = n2->ultimate_alias_target (&avail2);
+
+  if (avail1 >= AVAIL_INTERPOSABLE && ignored_nodes.get (n1)
+      && avail2 >= AVAIL_INTERPOSABLE && ignored_nodes.get (n2))
+    return true;
 
   return return_false_with_msg ("different references");
 }
@@ -331,6 +547,47 @@ bool sem_function::compare_edge_flags (cgraph_edge *e1, cgraph_edge *e2)
   return true;
 }
 
+/* Return true if parameter I may be used.  */
+
+bool
+sem_function::param_used_p (unsigned int i)
+{
+  if (ipa_node_params_sum == NULL)
+    return false;
+
+  struct ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
+
+  if (parms_info->descriptors.is_empty ()
+      || parms_info->descriptors.length () <= i)
+     return true;
+
+  return ipa_is_param_used (IPA_NODE_REF (get_node ()), i);
+}
+
+/* Perform additional check needed to match types function parameters that are
+   used.  Unlike for normal decls it matters if type is TYPE_RESTRICT and we
+   make an assumption that REFERENCE_TYPE parameters are always non-NULL.  */
+
+bool
+sem_function::compatible_parm_types_p (tree parm1, tree parm2)
+{
+  /* Be sure that parameters are TBAA compatible.  */
+  if (!func_checker::compatible_types_p (parm1, parm2))
+    return return_false_with_msg ("parameter type is not compatible");
+
+  if (POINTER_TYPE_P (parm1)
+      && (TYPE_RESTRICT (parm1) != TYPE_RESTRICT (parm2)))
+    return return_false_with_msg ("argument restrict flag mismatch");
+
+  /* nonnull_arg_p implies non-zero range to REFERENCE types.  */
+  if (POINTER_TYPE_P (parm1)
+      && TREE_CODE (parm1) != TREE_CODE (parm2)
+      && opt_for_fn (decl, flag_delete_null_pointer_checks))
+    return return_false_with_msg ("pointer wrt reference mismatch");
+
+  return true;
+}
+
 /* Fast equality function based on knowledge known in WPA.  */
 
 bool
@@ -338,43 +595,172 @@ sem_function::equals_wpa (sem_item *item,
 			  hash_map <symtab_node *, sem_item *> &ignored_nodes)
 {
   gcc_assert (item->type == FUNC);
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  cgraph_node *cnode2 = dyn_cast <cgraph_node *> (item->node);
 
   m_compared_func = static_cast<sem_function *> (item);
 
-  if (arg_types.length () != m_compared_func->arg_types.length ())
-    return return_false_with_msg ("different number of arguments");
+  if (cnode->thunk.thunk_p != cnode2->thunk.thunk_p)
+    return return_false_with_msg ("thunk_p mismatch");
 
-  /* Checking types of arguments.  */
-  for (unsigned i = 0; i < arg_types.length (); i++)
+  if (cnode->thunk.thunk_p)
     {
-      /* This guard is here for function pointer with attributes (pr59927.c).  */
-      if (!arg_types[i] || !m_compared_func->arg_types[i])
-	return return_false_with_msg ("NULL argument type");
+      if (cnode->thunk.fixed_offset != cnode2->thunk.fixed_offset)
+        return return_false_with_msg ("thunk fixed_offset mismatch");
+      if (cnode->thunk.virtual_value != cnode2->thunk.virtual_value)
+        return return_false_with_msg ("thunk virtual_value mismatch");
+      if (cnode->thunk.this_adjusting != cnode2->thunk.this_adjusting)
+        return return_false_with_msg ("thunk this_adjusting mismatch");
+      if (cnode->thunk.virtual_offset_p != cnode2->thunk.virtual_offset_p)
+        return return_false_with_msg ("thunk virtual_offset_p mismatch");
+      if (cnode->thunk.add_pointer_bounds_args
+	  != cnode2->thunk.add_pointer_bounds_args)
+        return return_false_with_msg ("thunk add_pointer_bounds_args mismatch");
+    }
 
-      /* Polymorphic comparison is executed just for non-leaf functions.  */
-      bool is_not_leaf = get_node ()->callees != NULL
-			 || get_node ()->indirect_calls != NULL;
+  /* Compare special function DECL attributes.  */
+  if (DECL_FUNCTION_PERSONALITY (decl)
+      != DECL_FUNCTION_PERSONALITY (item->decl))
+    return return_false_with_msg ("function personalities are different");
 
-      if (!func_checker::compatible_types_p (arg_types[i],
-					     m_compared_func->arg_types[i],
-					     is_not_leaf, i == 0))
-	return return_false_with_msg ("argument type is different");
+  if (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl)
+       != DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (item->decl))
+    return return_false_with_msg ("intrument function entry exit "
+				  "attributes are different");
+
+  if (DECL_NO_LIMIT_STACK (decl) != DECL_NO_LIMIT_STACK (item->decl))
+    return return_false_with_msg ("no stack limit attributes are different");
+
+  if (DECL_CXX_CONSTRUCTOR_P (decl) != DECL_CXX_CONSTRUCTOR_P (item->decl))
+    return return_false_with_msg ("DECL_CXX_CONSTRUCTOR mismatch");
+
+  if (DECL_CXX_DESTRUCTOR_P (decl) != DECL_CXX_DESTRUCTOR_P (item->decl))
+    return return_false_with_msg ("DECL_CXX_DESTRUCTOR mismatch");
+
+  /* TODO: pure/const flags mostly matters only for references, except for
+     the fact that codegen takes LOOPING flag as a hint that loops are
+     finite.  We may arrange the code to always pick leader that has least
+     specified flags and then this can go into comparing symbol properties.  */
+  if (flags_from_decl_or_type (decl) != flags_from_decl_or_type (item->decl))
+    return return_false_with_msg ("decl_or_type flags are different");
+
+  /* Do not match polymorphic constructors of different types.  They calls
+     type memory location for ipa-polymorphic-call and we do not want
+     it to get confused by wrong type.  */
+  if (DECL_CXX_CONSTRUCTOR_P (decl)
+      && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
+    {
+      if (TREE_CODE (TREE_TYPE (item->decl)) != METHOD_TYPE)
+        return return_false_with_msg ("DECL_CXX_CONSTURCTOR type mismatch");
+      else if (!func_checker::compatible_polymorphic_types_p
+		 (TYPE_METHOD_BASETYPE (TREE_TYPE (decl)),
+		  TYPE_METHOD_BASETYPE (TREE_TYPE (item->decl)), false))
+        return return_false_with_msg ("ctor polymorphic type mismatch");
+    }
+
+  /* Checking function TARGET and OPTIMIZATION flags.  */
+  cl_target_option *tar1 = target_opts_for_fn (decl);
+  cl_target_option *tar2 = target_opts_for_fn (item->decl);
+
+  if (tar1 != tar2 && !cl_target_option_eq (tar1, tar2))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "target flags difference");
+	  cl_target_option_print_diff (dump_file, 2, tar1, tar2);
+	}
+
+      return return_false_with_msg ("Target flags are different");
+    }
+
+  cl_optimization *opt1 = opts_for_fn (decl);
+  cl_optimization *opt2 = opts_for_fn (item->decl);
+
+  if (opt1 != opt2 && memcmp (opt1, opt2, sizeof(cl_optimization)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "optimization flags difference");
+	  cl_optimization_print_diff (dump_file, 2, opt1, opt2);
+	}
+
+      return return_false_with_msg ("optimization flags are different");
     }
 
   /* Result type checking.  */
-  if (!func_checker::compatible_types_p (result_type,
-					 m_compared_func->result_type))
+  if (!func_checker::compatible_types_p
+	 (TREE_TYPE (TREE_TYPE (decl)),
+	  TREE_TYPE (TREE_TYPE (m_compared_func->decl))))
     return return_false_with_msg ("result types are different");
+
+  /* Checking types of arguments.  */
+  tree list1 = TYPE_ARG_TYPES (TREE_TYPE (decl)),
+       list2 = TYPE_ARG_TYPES (TREE_TYPE (m_compared_func->decl));
+  for (unsigned i = 0; list1 && list2;
+       list1 = TREE_CHAIN (list1), list2 = TREE_CHAIN (list2), i++)
+    {
+      tree parm1 = TREE_VALUE (list1);
+      tree parm2 = TREE_VALUE (list2);
+
+      /* This guard is here for function pointer with attributes (pr59927.c).  */
+      if (!parm1 || !parm2)
+	return return_false_with_msg ("NULL argument type");
+
+      /* Verify that types are compatible to ensure that both functions
+	 have same calling conventions.  */
+      if (!types_compatible_p (parm1, parm2))
+	return return_false_with_msg ("parameter types are not compatible");
+
+      if (!param_used_p (i))
+	continue;
+
+      /* Perform additional checks for used parameters.  */
+      if (!compatible_parm_types_p (parm1, parm2))
+	return false;
+    }
+
+  if (list1 || list2)
+    return return_false_with_msg ("Mismatched number of parameters");
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");
+
+  /* Checking function attributes.
+     This is quadratic in number of attributes  */
+  if (comp_type_attributes (TREE_TYPE (decl),
+			    TREE_TYPE (item->decl)) != 1)
+    return return_false_with_msg ("different type attributes");
+  if (!compare_attributes (DECL_ATTRIBUTES (decl),
+			   DECL_ATTRIBUTES (item->decl)))
+    return return_false_with_msg ("different decl attributes");
+
+  /* The type of THIS pointer type memory location for
+     ipa-polymorphic-call-analysis.  */
+  if (opt_for_fn (decl, flag_devirtualize)
+      && (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
+          || TREE_CODE (TREE_TYPE (item->decl)) == METHOD_TYPE)
+      && param_used_p (0)
+      && compare_polymorphic_p ())
+    {
+      if (TREE_CODE (TREE_TYPE (decl)) != TREE_CODE (TREE_TYPE (item->decl)))
+	return return_false_with_msg ("METHOD_TYPE and FUNCTION_TYPE mismatch");
+      if (!func_checker::compatible_polymorphic_types_p
+	   (TYPE_METHOD_BASETYPE (TREE_TYPE (decl)),
+	    TYPE_METHOD_BASETYPE (TREE_TYPE (item->decl)), false))
+	return return_false_with_msg ("THIS pointer ODR type mismatch");
+    }
 
   ipa_ref *ref = NULL, *ref2 = NULL;
   for (unsigned i = 0; node->iterate_reference (i, ref); i++)
     {
       item->node->iterate_reference (i, ref2);
 
-      if (!compare_cgraph_references (ignored_nodes, ref->referred, ref2->referred))
+      if (ref->use != ref2->use)
+	return return_false_with_msg ("reference use mismatch");
+
+      if (!compare_symbol_references (ignored_nodes, ref->referred,
+				      ref2->referred,
+				      ref->address_matters_p ()))
 	return false;
     }
 
@@ -383,7 +769,10 @@ sem_function::equals_wpa (sem_item *item,
 
   while (e1 && e2)
     {
-      if (!compare_cgraph_references (ignored_nodes, e1->callee, e2->callee))
+      if (!compare_symbol_references (ignored_nodes, e1->callee,
+				      e2->callee, false))
+	return false;
+      if (!compare_edge_flags (e1, e2))
 	return false;
 
       e1 = e1->next_callee;
@@ -391,19 +780,105 @@ sem_function::equals_wpa (sem_item *item,
     }
 
   if (e1 || e2)
-    return return_false_with_msg ("different number of edges");
+    return return_false_with_msg ("different number of calls");
+
+  e1 = dyn_cast <cgraph_node *> (node)->indirect_calls;
+  e2 = dyn_cast <cgraph_node *> (item->node)->indirect_calls;
+
+  while (e1 && e2)
+    {
+      if (!compare_edge_flags (e1, e2))
+	return false;
+
+      e1 = e1->next_callee;
+      e2 = e2->next_callee;
+    }
+
+  if (e1 || e2)
+    return return_false_with_msg ("different number of indirect calls");
 
   return true;
+}
+
+/* Update hash by address sensitive references. We iterate over all
+   sensitive references (address_matters_p) and we hash ultime alias
+   target of these nodes, which can improve a semantic item hash.
+
+   Also hash in referenced symbols properties.  This can be done at any time
+   (as the properties should not change), but it is convenient to do it here
+   while we walk the references anyway.  */
+
+void
+sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
+				    sem_item *> &m_symtab_node_map)
+{
+  ipa_ref* ref;
+  inchash::hash hstate (hash);
+
+  for (unsigned i = 0; node->iterate_reference (i, ref); i++)
+    {
+      hstate.add_int (ref->use);
+      hash_referenced_symbol_properties (ref->referred, hstate,
+					 ref->use == IPA_REF_ADDR);
+      if (ref->address_matters_p () || !m_symtab_node_map.get (ref->referred))
+	hstate.add_int (ref->referred->ultimate_alias_target ()->order);
+    }
+
+  if (is_a <cgraph_node *> (node))
+    {
+      for (cgraph_edge *e = dyn_cast <cgraph_node *> (node)->callers; e;
+	   e = e->next_caller)
+	{
+	  sem_item **result = m_symtab_node_map.get (e->callee);
+	  hash_referenced_symbol_properties (e->callee, hstate, false);
+	  if (!result)
+	    hstate.add_int (e->callee->ultimate_alias_target ()->order);
+	}
+    }
+
+  hash = hstate.end ();
+}
+
+/* Update hash by computed local hash values taken from different
+   semantic items.
+   TODO: stronger SCC based hashing would be desirable here.  */
+
+void
+sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
+				     sem_item *> &m_symtab_node_map)
+{
+  ipa_ref* ref;
+  inchash::hash state (hash);
+
+  for (unsigned j = 0; node->iterate_reference (j, ref); j++)
+    {
+      sem_item **result = m_symtab_node_map.get (ref->referring);
+      if (result)
+	state.merge_hash ((*result)->hash);
+    }
+
+  if (type == FUNC)
+    {
+      for (cgraph_edge *e = dyn_cast <cgraph_node *> (node)->callees; e;
+	   e = e->next_callee)
+	{
+	  sem_item **result = m_symtab_node_map.get (e->caller);
+	  if (result)
+	    state.merge_hash ((*result)->hash);
+	}
+    }
+
+  global_hash = state.end ();
 }
 
 /* Returns true if the item equals to ITEM given as argument.  */
 
 bool
 sem_function::equals (sem_item *item,
-		      hash_map <symtab_node *, sem_item *> &ignored_nodes)
+		      hash_map <symtab_node *, sem_item *> &)
 {
   gcc_assert (item->type == FUNC);
-  bool eq = equals_private (item, ignored_nodes);
+  bool eq = equals_private (item);
 
   if (m_checker != NULL)
     {
@@ -414,8 +889,13 @@ sem_function::equals (sem_item *item,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
 	     "Equals called for:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
-	     name(), item->name (), node->order, item->node->order, asm_name (),
-	     item->asm_name (), eq ? "true" : "false");
+	     xstrdup_for_dump (node->name()),
+	     xstrdup_for_dump (item->node->name ()),
+	     node->order,
+	     item->node->order,
+	     xstrdup_for_dump (node->asm_name ()),
+	     xstrdup_for_dump (item->node->asm_name ()),
+	     eq ? "true" : "false");
 
   return eq;
 }
@@ -423,8 +903,7 @@ sem_function::equals (sem_item *item,
 /* Processes function equality comparison.  */
 
 bool
-sem_function::equals_private (sem_item *item,
-			      hash_map <symtab_node *, sem_item *> &ignored_nodes)
+sem_function::equals_private (sem_item *item)
 {
   if (item->type != FUNC)
     return false;
@@ -444,93 +923,31 @@ sem_function::equals_private (sem_item *item,
       || cfg_checksum != m_compared_func->cfg_checksum)
     return return_false ();
 
-  if (!equals_wpa (item, ignored_nodes))
-    return false;
-
-  /* Checking function TARGET and OPTIMIZATION flags.  */
-  cl_target_option *tar1 = target_opts_for_fn (decl);
-  cl_target_option *tar2 = target_opts_for_fn (m_compared_func->decl);
-
-  if (tar1 != NULL && tar2 != NULL)
-    {
-      if (!cl_target_option_eq (tar1, tar2))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "target flags difference");
-	      cl_target_option_print_diff (dump_file, 2, tar1, tar2);
-	    }
-
-	  return return_false_with_msg ("Target flags are different");
-	}
-    }
-  else if (tar1 != NULL || tar2 != NULL)
-    return return_false_with_msg ("Target flags are different");
-
-  cl_optimization *opt1 = opts_for_fn (decl);
-  cl_optimization *opt2 = opts_for_fn (m_compared_func->decl);
-
-  if (opt1 != NULL && opt2 != NULL)
-    {
-      if (memcmp (opt1, opt2, sizeof(cl_optimization)))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "optimization flags difference");
-	      cl_optimization_print_diff (dump_file, 2, opt1, opt2);
-	    }
-
-	  return return_false_with_msg ("optimization flags are different");
-	}
-    }
-  else if (opt1 != NULL || opt2 != NULL)
-    return return_false_with_msg ("optimization flags are different");
-
-  /* Checking function arguments.  */
-  tree decl1 = DECL_ATTRIBUTES (decl);
-  tree decl2 = DECL_ATTRIBUTES (m_compared_func->decl);
-
   m_checker = new func_checker (decl, m_compared_func->decl,
 				compare_polymorphic_p (),
 				false,
 				&refs_set,
 				&m_compared_func->refs_set);
-  while (decl1)
+  arg1 = DECL_ARGUMENTS (decl);
+  arg2 = DECL_ARGUMENTS (m_compared_func->decl);
+  for (unsigned i = 0;
+       arg1 && arg2; arg1 = DECL_CHAIN (arg1), arg2 = DECL_CHAIN (arg2), i++)
     {
-      if (decl2 == NULL)
-	return return_false ();
-
-      if (get_attribute_name (decl1) != get_attribute_name (decl2))
-	return return_false ();
-
-      tree attr_value1 = TREE_VALUE (decl1);
-      tree attr_value2 = TREE_VALUE (decl2);
-
-      if (attr_value1 && attr_value2)
-	{
-	  bool ret = m_checker->compare_operand (TREE_VALUE (attr_value1),
-						 TREE_VALUE (attr_value2));
-	  if (!ret)
-	    return return_false_with_msg ("attribute values are different");
-	}
-      else if (!attr_value1 && !attr_value2)
-	{}
-      else
-	return return_false ();
-
-      decl1 = TREE_CHAIN (decl1);
-      decl2 = TREE_CHAIN (decl2);
+      if (!types_compatible_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
+	return return_false_with_msg ("argument types are not compatible");
+      if (!param_used_p (i))
+	continue;
+      /* Perform additional checks for used parameters.  */
+      if (!compatible_parm_types_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
+	return false;
+      if (!m_checker->compare_decl (arg1, arg2))
+        return return_false ();
     }
+  if (arg1 || arg2)
+    return return_false_with_msg ("Mismatched number of arguments");
 
-  if (decl1 != decl2)
-    return return_false();
-
-
-  for (arg1 = DECL_ARGUMENTS (decl),
-       arg2 = DECL_ARGUMENTS (m_compared_func->decl);
-       arg1; arg1 = DECL_CHAIN (arg1), arg2 = DECL_CHAIN (arg2))
-    if (!m_checker->compare_decl (arg1, arg2))
-      return return_false ();
+  if (!dyn_cast <cgraph_node *> (node)->has_gimple_body_p ())
+    return true;
 
   /* Fill-up label dictionary.  */
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
@@ -563,10 +980,10 @@ sem_function::equals_private (sem_item *item,
 	  if (e1->flags != e2->flags)
 	    return return_false_with_msg ("flags comparison returns false");
 
-	  if (!bb_dict_test (bb_dict, e1->src->index, e2->src->index))
+	  if (!bb_dict_test (&bb_dict, e1->src->index, e2->src->index))
 	    return return_false_with_msg ("edge comparison returns false");
 
-	  if (!bb_dict_test (bb_dict, e1->dest->index, e2->dest->index))
+	  if (!bb_dict_test (&bb_dict, e1->dest->index, e2->dest->index))
 	    return return_false_with_msg ("BB comparison returns false");
 
 	  if (!m_checker->compare_edge (e1, e2))
@@ -584,8 +1001,88 @@ sem_function::equals_private (sem_item *item,
   return result;
 }
 
+/* Set LOCAL_P of NODE to true if DATA is non-NULL.
+   Helper for call_for_symbol_thunks_and_aliases.  */
+
+static bool
+set_local (cgraph_node *node, void *data)
+{
+  node->local.local = data != NULL;
+  return false;
+}
+
+/* TREE_ADDRESSABLE of NODE to true.
+   Helper for call_for_symbol_thunks_and_aliases.  */
+
+static bool
+set_addressable (varpool_node *node, void *)
+{
+  TREE_ADDRESSABLE (node->decl) = 1;
+  return false;
+}
+
+/* Clear DECL_RTL of NODE. 
+   Helper for call_for_symbol_thunks_and_aliases.  */
+
+static bool
+clear_decl_rtl (symtab_node *node, void *)
+{
+  SET_DECL_RTL (node->decl, NULL);
+  return false;
+}
+
+/* Redirect all callers of N and its aliases to TO.  Remove aliases if
+   possible.  Return number of redirections made.  */
+
+static int
+redirect_all_callers (cgraph_node *n, cgraph_node *to)
+{
+  int nredirected = 0;
+  ipa_ref *ref;
+  cgraph_edge *e = n->callers;
+
+  while (e)
+    {
+      /* Redirecting thunks to interposable symbols or symbols in other sections
+	 may not be supported by target output code.  Play safe for now and
+	 punt on redirection.  */
+      if (!e->caller->thunk.thunk_p)
+	{
+	  struct cgraph_edge *nexte = e->next_caller;
+          e->redirect_callee (to);
+	  e = nexte;
+          nredirected++;
+	}
+      else
+	e = e->next_callee;
+    }
+  for (unsigned i = 0; n->iterate_direct_aliases (i, ref);)
+    {
+      bool removed = false;
+      cgraph_node *n_alias = dyn_cast <cgraph_node *> (ref->referring);
+
+      if ((DECL_COMDAT_GROUP (n->decl)
+	   && (DECL_COMDAT_GROUP (n->decl)
+	       == DECL_COMDAT_GROUP (n_alias->decl)))
+	  || (n_alias->get_availability () > AVAIL_INTERPOSABLE
+	      && n->get_availability () > AVAIL_INTERPOSABLE))
+	{
+	  nredirected += redirect_all_callers (n_alias, to);
+	  if (n_alias->can_remove_if_no_direct_calls_p ()
+	      && !n_alias->call_for_symbol_and_aliases (cgraph_node::has_thunk_p,
+							NULL, true)
+	      && !n_alias->has_aliases_p ())
+	    n_alias->remove ();
+	}
+      if (!removed)
+	i++;
+    }
+  return nredirected;
+}
+
 /* Merges instance with an ALIAS_ITEM, where alias, thunk or redirection can
    be applied.  */
+
 bool
 sem_function::merge (sem_item *alias_item)
 {
@@ -594,15 +1091,36 @@ sem_function::merge (sem_item *alias_item)
   sem_function *alias_func = static_cast<sem_function *> (alias_item);
 
   cgraph_node *original = get_node ();
-  cgraph_node *local_original = original;
+  cgraph_node *local_original = NULL;
   cgraph_node *alias = alias_func->get_node ();
-  bool original_address_matters;
-  bool alias_address_matters;
 
-  bool create_thunk = false;
+  bool create_wrapper = false;
   bool create_alias = false;
   bool redirect_callers = false;
+  bool remove = false;
+
   bool original_discardable = false;
+  bool original_discarded = false;
+
+  bool original_address_matters = original->address_matters_p ();
+  bool alias_address_matters = alias->address_matters_p ();
+
+  if (DECL_EXTERNAL (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias is external.\n\n");
+      return false;
+    }
+
+  if (DECL_NO_INLINE_WARNING_P (original->decl)
+      != DECL_NO_INLINE_WARNING_P (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; "
+		 "DECL_NO_INLINE_WARNING mismatch.\n\n");
+      return false;
+    }
 
   /* Do not attempt to mix functions from different user sections;
      we do not know what user intends with those.  */
@@ -612,116 +1130,197 @@ sem_function::merge (sem_item *alias_item)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "Not unifying; original and alias are in different sections.\n\n");
+		 "Not unifying; "
+		 "original and alias are in different sections.\n\n");
       return false;
     }
 
   /* See if original is in a section that can be discarded if the main
      symbol is not used.  */
-  if (DECL_EXTERNAL (original->decl))
-    original_discardable = true;
-  if (original->resolution == LDPR_PREEMPTED_REG
-      || original->resolution == LDPR_PREEMPTED_IR)
-    original_discardable = true;
+
   if (original->can_be_discarded_p ())
     original_discardable = true;
+  /* Also consider case where we have resolution info and we know that
+     original's definition is not going to be used.  In this case we can not
+     create alias to original.  */
+  if (node->resolution != LDPR_UNKNOWN
+      && !decl_binds_to_current_def_p (node->decl))
+    original_discardable = original_discarded = true;
 
-  /* See if original and/or alias address can be compared for equality.  */
-  original_address_matters
-    = (!DECL_VIRTUAL_P (original->decl)
-       && (original->externally_visible
-	   || original->address_taken_from_non_vtable_p ()));
-  alias_address_matters
-    = (!DECL_VIRTUAL_P (alias->decl)
-       && (alias->externally_visible
-	   || alias->address_taken_from_non_vtable_p ()));
+  /* Creating a symtab alias is the optimal way to merge.
+     It however can not be used in the following cases:
 
-  /* If alias and original can be compared for address equality, we need
-     to create a thunk.  Also we can not create extra aliases into discardable
-     section (or we risk link failures when section is discarded).  */
-  if ((original_address_matters
-       && alias_address_matters)
-      || original_discardable)
+     1) if ORIGINAL and ALIAS may be possibly compared for address equality.
+     2) if ORIGINAL is in a section that may be discarded by linker or if
+	it is an external functions where we can not create an alias
+	(ORIGINAL_DISCARDABLE)
+     3) if target do not support symbol aliases.
+     4) original and alias lie in different comdat groups.
+
+     If we can not produce alias, we will turn ALIAS into WRAPPER of ORIGINAL
+     and/or redirect all callers from ALIAS to ORIGINAL.  */
+  if ((original_address_matters && alias_address_matters)
+      || (original_discardable
+	  && (!DECL_COMDAT_GROUP (alias->decl)
+	      || (DECL_COMDAT_GROUP (alias->decl)
+		  != DECL_COMDAT_GROUP (original->decl))))
+      || original_discarded
+      || !sem_item::target_supports_symbol_aliases_p ()
+      || DECL_COMDAT_GROUP (alias->decl) != DECL_COMDAT_GROUP (original->decl))
     {
-      create_thunk = !stdarg_p (TREE_TYPE (alias->decl));
-      create_alias = false;
-      /* When both alias and original are not overwritable, we can save
-         the extra thunk wrapper for direct calls.  */
+      /* First see if we can produce wrapper.  */
+
+      /* Symbol properties that matter for references must be preserved.
+	 TODO: We can produce wrapper, but we need to produce alias of ORIGINAL
+	 with proper properties.  */
+      if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,
+							   alias->address_taken))
+        {
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Wrapper cannot be created because referenced symbol "
+		     "properties mismatch\n");
+        }
+      /* Do not turn function in one comdat group into wrapper to another
+	 comdat group. Other compiler producing the body of the
+	 another comdat group may make opossite decision and with unfortunate
+	 linker choices this may close a loop.  */
+      else if (DECL_COMDAT_GROUP (original->decl)
+	       && DECL_COMDAT_GROUP (alias->decl)
+	       && (DECL_COMDAT_GROUP (alias->decl)
+		   != DECL_COMDAT_GROUP (original->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Wrapper cannot be created because of COMDAT\n");
+	}
+      else if (DECL_STATIC_CHAIN (alias->decl))
+        {
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Can not create wrapper of nested functions.\n");
+        }
+      /* TODO: We can also deal with variadic functions never calling
+	 VA_START.  */
+      else if (stdarg_p (TREE_TYPE (alias->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "can not create wrapper of stdarg function.\n");
+	}
+      else if (inline_summaries
+	       && inline_summaries->get (alias)->self_size <= 2)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Wrapper creation is not "
+		     "profitable (function is too small).\n");
+	}
+      /* If user paid attention to mark function noinline, assume it is
+	 somewhat special and do not try to turn it into a wrapper that can
+	 not be undone by inliner.  */
+      else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (alias->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Wrappers are not created for noinline.\n");
+	}
+      else
+        create_wrapper = true;
+
+      /* We can redirect local calls in the case both alias and orignal
+	 are not interposable.  */
       redirect_callers
-	= (!original_discardable
-	   && alias->get_availability () > AVAIL_INTERPOSABLE
-	   && original->get_availability () > AVAIL_INTERPOSABLE
-	   && !alias->instrumented_version);
+	= alias->get_availability () > AVAIL_INTERPOSABLE
+	  && original->get_availability () > AVAIL_INTERPOSABLE
+	  && !alias->instrumented_version;
+      /* TODO: We can redirect, but we need to produce alias of ORIGINAL
+	 with proper properties.  */
+      if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,
+							   alias->address_taken))
+	redirect_callers = false;
+
+      if (!redirect_callers && !create_wrapper)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; can not redirect callers nor "
+		     "produce wrapper\n\n");
+	  return false;
+	}
+
+      /* Work out the symbol the wrapper should call.
+	 If ORIGINAL is interposable, we need to call a local alias.
+	 Also produce local alias (if possible) as an optimization.
+
+	 Local aliases can not be created inside comdat groups because that
+	 prevents inlining.  */
+      if (!original_discardable && !original->get_comdat_group ())
+	{
+	  local_original
+	    = dyn_cast <cgraph_node *> (original->noninterposable_alias ());
+	  if (!local_original
+	      && original->get_availability () > AVAIL_INTERPOSABLE)
+	    local_original = original;
+	}
+      /* If we can not use local alias, fallback to the original
+	 when possible.  */
+      else if (original->get_availability () > AVAIL_INTERPOSABLE)
+	local_original = original;
+
+      /* If original is COMDAT local, we can not really redirect calls outside
+	 of its comdat group to it.  */
+      if (original->comdat_local_p ())
+        redirect_callers = false;
+      if (!local_original)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; "
+		     "can not produce local alias.\n\n");
+	  return false;
+	}
+
+      if (!redirect_callers && !create_wrapper)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; "
+		     "can not redirect callers nor produce a wrapper\n\n");
+	  return false;
+	}
+      if (!create_wrapper
+	  && !alias->call_for_symbol_and_aliases (cgraph_node::has_thunk_p,
+						  NULL, true)
+	  && !alias->can_remove_if_no_direct_calls_p ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; can not make wrapper and "
+		     "function has other uses than direct calls\n\n");
+	  return false;
+	}
     }
   else
-    {
-      create_alias = true;
-      create_thunk = false;
-      redirect_callers = false;
-    }
-
-  if (create_alias && (DECL_COMDAT_GROUP (alias->decl)
-		       || !sem_item::target_supports_symbol_aliases_p ()))
-    {
-      create_alias = false;
-      create_thunk = true;
-    }
-
-  /* We want thunk to always jump to the local function body
-     unless the body is comdat and may be optimized out.  */
-  if ((create_thunk || redirect_callers)
-      && (!original_discardable
-	  || (DECL_COMDAT_GROUP (original->decl)
-	      && (DECL_COMDAT_GROUP (original->decl)
-		  == DECL_COMDAT_GROUP (alias->decl)))))
-    local_original
-      = dyn_cast <cgraph_node *> (original->noninterposable_alias ());
-
-    if (!local_original)
-      {
-	if (dump_file)
-	  fprintf (dump_file, "Noninterposable alias cannot be created.\n\n");
-
-	return false;
-      }
-
-  if (!decl_binds_to_current_def_p (alias->decl))
-    {
-      if (dump_file)
-	fprintf (dump_file, "Declaration does not bind to currect definition.\n\n");
-      return false;
-    }
+    create_alias = true;
 
   if (redirect_callers)
     {
-      /* If alias is non-overwritable then
-         all direct calls are safe to be redirected to the original.  */
-      bool redirected = false;
-      while (alias->callers)
+      int nredirected = redirect_all_callers (alias, local_original);
+
+      if (nredirected)
 	{
-	  cgraph_edge *e = alias->callers;
-	  e->redirect_callee (local_original);
-	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
+	  alias->icf_merged = true;
+	  local_original->icf_merged = true;
 
-	  if (e->call_stmt)
-	    e->redirect_call_stmt_to_callee ();
-
-	  pop_cfun ();
-	  redirected = true;
+	  if (dump_file && nredirected)
+	    fprintf (dump_file, "%i local calls have been "
+		     "redirected.\n", nredirected);
 	}
 
-      alias->icf_merged = true;
-
-      /* The alias function is removed if symbol address
-         does not matter.  */
-      if (!alias_address_matters)
-	alias->remove ();
-
-      if (dump_file && redirected)
-	fprintf (dump_file, "Callgraph local calls have been redirected.\n\n");
+      /* If all callers was redirected, do not produce wrapper.  */
+      if (alias->can_remove_if_no_direct_calls_p ()
+	  && !alias->has_aliases_p ())
+	{
+	  create_wrapper = false;
+	  remove = true;
+	}
+      gcc_assert (!create_alias);
     }
-  /* If the condtion above is not met, we are lucky and can turn the
-     function into real alias.  */
   else if (create_alias)
     {
       alias->icf_merged = true;
@@ -730,46 +1329,53 @@ sem_function::merge (sem_item *alias_item)
       ipa_merge_profiles (original, alias);
       alias->release_body (true);
       alias->reset ();
+      /* Notice global symbol possibly produced RTL.  */
+      ((symtab_node *)alias)->call_for_symbol_and_aliases (clear_decl_rtl,
+							   NULL, true);
 
       /* Create the alias.  */
       cgraph_node::create_alias (alias_func->decl, decl);
       alias->resolve_alias (original);
 
-      /* Workaround for PR63566 that forces equal calling convention
-       to be used.  */
-      alias->local.local = false;
-      original->local.local = false;
+      original->call_for_symbol_thunks_and_aliases
+	 (set_local, (void *)(size_t) original->local_p (), true);
 
       if (dump_file)
-	fprintf (dump_file, "Callgraph alias has been created.\n\n");
+	fprintf (dump_file, "Unified; Function alias has been created.\n\n");
     }
-  else if (create_thunk)
+  if (create_wrapper)
     {
-      if (DECL_COMDAT_GROUP (alias->decl))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Callgraph thunk cannot be created because of COMDAT\n");
-
-	  return 0;
-	}
-
-      if (DECL_STATIC_CHAIN (alias->decl))
-        {
-         if (dump_file)
-           fprintf (dump_file, "Thunk creation is risky for static-chain functions.\n\n");
-
-         return 0;
-        }
-
+      gcc_assert (!create_alias);
       alias->icf_merged = true;
-      ipa_merge_profiles (local_original, alias);
+      local_original->icf_merged = true;
+
+      ipa_merge_profiles (local_original, alias, true);
       alias->create_wrapper (local_original);
 
       if (dump_file)
-	fprintf (dump_file, "Callgraph thunk has been created.\n\n");
+	fprintf (dump_file, "Unified; Wrapper has been created.\n\n");
     }
-  else if (dump_file)
-    fprintf (dump_file, "Callgraph merge operation cannot be performed.\n\n");
+
+  /* It's possible that redirection can hit thunks that block
+     redirection opportunities.  */
+  gcc_assert (alias->icf_merged || remove || redirect_callers);
+  original->icf_merged = true;
+
+  /* Inform the inliner about cross-module merging.  */
+  if ((original->lto_file_data || alias->lto_file_data)
+      && original->lto_file_data != alias->lto_file_data)
+    local_original->merged = original->merged = true;
+
+  if (remove)
+    {
+      ipa_merge_profiles (original, alias);
+      alias->release_body ();
+      alias->reset ();
+      alias->body_removed = true;
+      alias->icf_merged = true;
+      if (dump_file)
+	fprintf (dump_file, "Unified; Function body was removed.\n");
+    }
 
   return true;
 }
@@ -798,91 +1404,263 @@ sem_function::init (void)
   arg_count = count_formal_params (fndecl);
 
   edge_count = n_edges_for_fn (func);
-  cfg_checksum = coverage_compute_cfg_checksum (func);
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  if (!cnode->thunk.thunk_p)
+    {
+      cfg_checksum = coverage_compute_cfg_checksum (func);
 
-  inchash::hash hstate;
+      inchash::hash hstate;
 
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, func)
-  {
-    unsigned nondbg_stmt_count = 0;
-
-    edge e;
-    for (edge_iterator ei = ei_start (bb->preds); ei_cond (ei, &e); ei_next (&ei))
-      cfg_checksum = iterative_hash_host_wide_int (e->flags,
-		     cfg_checksum);
-
-    for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-	 gsi_next (&gsi))
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, func)
       {
-	gimple stmt = gsi_stmt (gsi);
+	unsigned nondbg_stmt_count = 0;
 
-	if (gimple_code (stmt) != GIMPLE_DEBUG)
+	edge e;
+	for (edge_iterator ei = ei_start (bb->preds); ei_cond (ei, &e);
+	     ei_next (&ei))
+	  cfg_checksum = iterative_hash_host_wide_int (e->flags,
+			 cfg_checksum);
+
+	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	     gsi_next (&gsi))
 	  {
-	    hash_stmt (&hstate, stmt);
-	    nondbg_stmt_count++;
+	    gimple stmt = gsi_stmt (gsi);
+
+	    if (gimple_code (stmt) != GIMPLE_DEBUG
+		&& gimple_code (stmt) != GIMPLE_PREDICT)
+	      {
+		hash_stmt (stmt, hstate);
+		nondbg_stmt_count++;
+	      }
 	  }
+
+	gcode_hash = hstate.end ();
+	bb_sizes.safe_push (nondbg_stmt_count);
+
+	/* Inserting basic block to hash table.  */
+	sem_bb *semantic_bb = new sem_bb (bb, nondbg_stmt_count,
+					  EDGE_COUNT (bb->preds)
+					  + EDGE_COUNT (bb->succs));
+
+	bb_sorted.safe_push (semantic_bb);
       }
+    }
+  else
+    {
+      cfg_checksum = 0;
+      inchash::hash hstate;
+      hstate.add_wide_int (cnode->thunk.fixed_offset);
+      hstate.add_wide_int (cnode->thunk.virtual_value);
+      hstate.add_flag (cnode->thunk.this_adjusting);
+      hstate.add_flag (cnode->thunk.virtual_offset_p);
+      hstate.add_flag (cnode->thunk.add_pointer_bounds_args);
+      gcode_hash = hstate.end ();
+    }
+}
 
-    gcode_hash = hstate.end ();
-    bb_sizes.safe_push (nondbg_stmt_count);
+/* Accumulate to HSTATE a hash of expression EXP.
+   Identical to inchash::add_expr, but guaranteed to be stable across LTO
+   and DECL equality classes.  */
 
-    /* Inserting basic block to hash table.  */
-    sem_bb *semantic_bb = new sem_bb (bb, nondbg_stmt_count,
-				      EDGE_COUNT (bb->preds) + EDGE_COUNT (bb->succs));
+void
+sem_item::add_expr (const_tree exp, inchash::hash &hstate)
+{
+  if (exp == NULL_TREE)
+    {
+      hstate.merge_hash (0);
+      return;
+    }
 
-    bb_sorted.safe_push (semantic_bb);
-  }
+  /* Handled component can be matched in a cureful way proving equivalence
+     even if they syntactically differ.  Just skip them.  */
+  STRIP_NOPS (exp);
+  while (handled_component_p (exp))
+    exp = TREE_OPERAND (exp, 0);
 
-  parse_tree_args ();
+  enum tree_code code = TREE_CODE (exp);
+  hstate.add_int (code);
+
+  switch (code)
+    {
+    /* Use inchash::add_expr for everything that is LTO stable.  */
+    case VOID_CST:
+    case INTEGER_CST:
+    case REAL_CST:
+    case FIXED_CST:
+    case STRING_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
+      inchash::add_expr (exp, hstate);
+      break;
+    case CONSTRUCTOR:
+      {
+	unsigned HOST_WIDE_INT idx;
+	tree value;
+
+	hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
+	  if (value)
+	    add_expr (value, hstate);
+	break;
+      }
+    case ADDR_EXPR:
+    case FDESC_EXPR:
+      add_expr (get_base_address (TREE_OPERAND (exp, 0)), hstate);
+      break;
+    case SSA_NAME:
+    case VAR_DECL:
+    case CONST_DECL:
+    case PARM_DECL:
+      hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+      break;
+    case MEM_REF:
+    case POINTER_PLUS_EXPR:
+    case MINUS_EXPR:
+    case RANGE_EXPR:
+      add_expr (TREE_OPERAND (exp, 0), hstate);
+      add_expr (TREE_OPERAND (exp, 1), hstate);
+      break;
+    case PLUS_EXPR:
+      {
+	inchash::hash one, two;
+	add_expr (TREE_OPERAND (exp, 0), one);
+	add_expr (TREE_OPERAND (exp, 1), two);
+	hstate.add_commutative (one, two);
+      }
+      break;
+    CASE_CONVERT:
+      hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+      return add_expr (TREE_OPERAND (exp, 0), hstate);
+    default:
+      break;
+    }
+}
+
+/* Accumulate to HSTATE a hash of type t.
+   TYpes that may end up being compatible after LTO type merging needs to have
+   the same hash.  */
+
+void
+sem_item::add_type (const_tree type, inchash::hash &hstate)
+{
+  if (type == NULL_TREE)
+    {
+      hstate.merge_hash (0);
+      return;
+    }
+
+  type = TYPE_MAIN_VARIANT (type);
+  if (TYPE_CANONICAL (type))
+    type = TYPE_CANONICAL (type);
+
+  if (!AGGREGATE_TYPE_P (type))
+    hstate.add_int (TYPE_MODE (type));
+
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      hstate.add_int (COMPLEX_TYPE);
+      sem_item::add_type (TREE_TYPE (type), hstate);
+    }
+  else if (INTEGRAL_TYPE_P (type))
+    {
+      hstate.add_int (INTEGER_TYPE);
+      hstate.add_flag (TYPE_UNSIGNED (type));
+      hstate.add_int (TYPE_PRECISION (type));
+    }
+  else if (VECTOR_TYPE_P (type))
+    {
+      hstate.add_int (VECTOR_TYPE);
+      hstate.add_int (TYPE_PRECISION (type));
+      sem_item::add_type (TREE_TYPE (type), hstate);
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      hstate.add_int (ARRAY_TYPE);
+      /* Do not hash size, so complete and incomplete types can match.  */
+      sem_item::add_type (TREE_TYPE (type), hstate);
+    }
+  else if (RECORD_OR_UNION_TYPE_P (type))
+    {
+      hashval_t *val = optimizer->m_type_hash_cache.get (type);
+
+      if (!val)
+	{
+	  inchash::hash hstate2;
+	  unsigned nf;
+	  tree f;
+	  hashval_t hash;
+
+	  hstate2.add_int (RECORD_TYPE);
+	  gcc_assert (COMPLETE_TYPE_P (type));
+
+	  for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
+	    if (TREE_CODE (f) == FIELD_DECL)
+	      {
+		add_type (TREE_TYPE (f), hstate2);
+		nf++;
+	      }
+
+	  hstate2.add_int (nf);
+	  hash = hstate2.end ();
+	  hstate.add_wide_int (hash);
+	  optimizer->m_type_hash_cache.put (type, hash);
+	}
+      else
+        hstate.add_wide_int (*val);
+    }
 }
 
 /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */
 
 void
-sem_function::hash_stmt (inchash::hash *hstate, gimple stmt)
+sem_function::hash_stmt (gimple stmt, inchash::hash &hstate)
 {
   enum gimple_code code = gimple_code (stmt);
 
-  hstate->add_int (code);
+  hstate.add_int (code);
 
-  if (code == GIMPLE_CALL)
+  switch (code)
     {
-      /* Checking of argument.  */
-      for (unsigned i = 0; i < gimple_call_num_args (stmt); ++i)
+    case GIMPLE_SWITCH:
+      add_expr (gimple_switch_index (as_a <gswitch *> (stmt)), hstate);
+      break;
+    case GIMPLE_ASSIGN:
+      hstate.add_int (gimple_assign_rhs_code (stmt));
+      if (commutative_tree_code (gimple_assign_rhs_code (stmt))
+	  || commutative_ternary_tree_code (gimple_assign_rhs_code (stmt)))
 	{
-	  tree argument = gimple_call_arg (stmt, i);
+	  inchash::hash one, two;
 
-	  switch (TREE_CODE (argument))
+	  add_expr (gimple_assign_rhs1 (stmt), one);
+	  add_type (TREE_TYPE (gimple_assign_rhs1 (stmt)), one);
+	  add_expr (gimple_assign_rhs2 (stmt), two);
+	  hstate.add_commutative (one, two);
+	  if (commutative_ternary_tree_code (gimple_assign_rhs_code (stmt)))
 	    {
-	    case INTEGER_CST:
-	      if (tree_fits_shwi_p (argument))
-		hstate->add_wide_int (tree_to_shwi (argument));
-	      else if (tree_fits_uhwi_p (argument))
-		hstate->add_wide_int (tree_to_uhwi (argument));
-	      break;
-	    case REAL_CST:
-	      REAL_VALUE_TYPE c;
-	      HOST_WIDE_INT n;
-
-	      c = TREE_REAL_CST (argument);
-	      n = real_to_integer (&c);
-
-	      hstate->add_wide_int (n);
-	      break;
-	    case ADDR_EXPR:
-	      {
-		tree addr_operand = TREE_OPERAND (argument, 0);
-
-		if (TREE_CODE (addr_operand) == STRING_CST)
-		  hstate->add (TREE_STRING_POINTER (addr_operand),
-			       TREE_STRING_LENGTH (addr_operand));
-		break;
-	      }
-	    default:
-	      break;
+	      add_expr (gimple_assign_rhs3 (stmt), hstate);
+	      add_type (TREE_TYPE (gimple_assign_rhs3 (stmt)), hstate);
 	    }
+	  add_expr (gimple_assign_lhs (stmt), hstate);
+	  add_type (TREE_TYPE (gimple_assign_lhs (stmt)), two);
+	  break;
 	}
+      /* ... fall through ... */
+    case GIMPLE_CALL:
+    case GIMPLE_ASM:
+    case GIMPLE_COND:
+    case GIMPLE_GOTO:
+    case GIMPLE_RETURN:
+      /* All these statements are equivalent if their operands are.  */
+      for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
+	{
+	  add_expr (gimple_op (stmt, i), hstate);
+	  if (gimple_op (stmt, i))
+	    add_type (TREE_TYPE (gimple_op (stmt, i)), hstate);
+	}
+    default:
+      break;
     }
 }
 
@@ -892,10 +1670,19 @@ sem_function::hash_stmt (inchash::hash *hstate, gimple stmt)
 bool
 sem_function::compare_polymorphic_p (void)
 {
-  return get_node ()->callees != NULL
-	 || get_node ()->indirect_calls != NULL
-	 || m_compared_func->get_node ()->callees != NULL
-	 || m_compared_func->get_node ()->indirect_calls != NULL;
+  struct cgraph_edge *e;
+
+  if (!opt_for_fn (get_node ()->decl, flag_devirtualize))
+    return false;
+  if (get_node ()->indirect_calls != NULL)
+    return true;
+  /* TODO: We can do simple propagation determining what calls may lead to
+     a polymorphic call.  */
+  for (e = get_node ()->callees; e; e = e->next_callee)
+    if (e->callee->definition
+	&& opt_for_fn (e->callee->decl, flag_devirtualize))
+      return true;
+  return false;
 }
 
 /* For a given call graph NODE, the function constructs new
@@ -907,9 +1694,7 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
   tree fndecl = node->decl;
   function *func = DECL_STRUCT_FUNCTION (fndecl);
 
-  /* TODO: add support for thunks and aliases.  */
-
-  if (!func || !node->has_gimple_body_p ())
+  if (!func || (!node->has_gimple_body_p () && !node->thunk.thunk_p))
     return NULL;
 
   if (lookup_attribute_by_prefix ("omp ", DECL_ATTRIBUTES (node->decl)) != NULL)
@@ -920,37 +1705,6 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
   f->init ();
 
   return f;
-}
-
-/* Parses function arguments and result type.  */
-
-void
-sem_function::parse_tree_args (void)
-{
-  tree result;
-
-  if (arg_types.exists ())
-    arg_types.release ();
-
-  arg_types.create (4);
-  tree fnargs = DECL_ARGUMENTS (decl);
-
-  for (tree parm = fnargs; parm; parm = DECL_CHAIN (parm))
-    arg_types.safe_push (DECL_ARG_TYPE (parm));
-
-  /* Function result type.  */
-  result = DECL_RESULT (decl);
-  result_type = result ? TREE_TYPE (result) : NULL;
-
-  /* During WPA, we can get arguments by following method.  */
-  if (!fnargs)
-    {
-      tree type = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      for (tree parm = type; parm; parm = TREE_CHAIN (parm))
-	arg_types.safe_push (TYPE_CANONICAL (TREE_VALUE (parm)));
-
-      result_type = TREE_TYPE (TREE_TYPE (decl));
-    }
 }
 
 /* For given basic blocks BB1 and BB2 (from functions FUNC1 and FUNC),
@@ -1024,65 +1778,29 @@ sem_function::icf_handled_component_p (tree t)
 {
   tree_code tc = TREE_CODE (t);
 
-  return ((handled_component_p (t))
-	  || tc == ADDR_EXPR || tc == MEM_REF || tc == REALPART_EXPR
-	  || tc == IMAGPART_EXPR || tc == OBJ_TYPE_REF);
+  return (handled_component_p (t)
+	  || tc == ADDR_EXPR || tc == MEM_REF || tc == OBJ_TYPE_REF);
 }
 
 /* Basic blocks dictionary BB_DICT returns true if SOURCE index BB
    corresponds to TARGET.  */
 
 bool
-sem_function::bb_dict_test (auto_vec<int> bb_dict, int source, int target)
+sem_function::bb_dict_test (vec<int> *bb_dict, int source, int target)
 {
   source++;
   target++;
 
-  if (bb_dict.length () <= (unsigned)source)
-    bb_dict.safe_grow_cleared (source + 1);
+  if (bb_dict->length () <= (unsigned)source)
+    bb_dict->safe_grow_cleared (source + 1);
 
-  if (bb_dict[source] == 0)
+  if ((*bb_dict)[source] == 0)
     {
-      bb_dict[source] = target;
+      (*bb_dict)[source] = target;
       return true;
     }
   else
-    return bb_dict[source] == target;
-}
-
-/* Iterates all tree types in T1 and T2 and returns true if all types
-   are compatible. If COMPARE_POLYMORPHIC is set to true,
-   more strict comparison is executed.  */
-
-bool
-sem_function::compare_type_list (tree t1, tree t2, bool compare_polymorphic)
-{
-  tree tv1, tv2;
-  tree_code tc1, tc2;
-
-  if (!t1 && !t2)
-    return true;
-
-  while (t1 != NULL && t2 != NULL)
-    {
-      tv1 = TREE_VALUE (t1);
-      tv2 = TREE_VALUE (t2);
-
-      tc1 = TREE_CODE (tv1);
-      tc2 = TREE_CODE (tv2);
-
-      if (tc1 == NOP_EXPR && tc2 == NOP_EXPR)
-	{}
-      else if (tc1 == NOP_EXPR || tc2 == NOP_EXPR)
-	return false;
-      else if (!func_checker::compatible_types_p (tv1, tv2, compare_polymorphic))
-	return false;
-
-      t1 = TREE_CHAIN (t1);
-      t2 = TREE_CHAIN (t2);
-    }
-
-  return !(t1 || t2);
+    return (*bb_dict)[source] == target;
 }
 
 
@@ -1103,20 +1821,90 @@ sem_variable::sem_variable (varpool_node *node, hashval_t _hash,
   gcc_checking_assert (get_node ());
 }
 
+/* Fast equality function based on knowledge known in WPA.  */
+
+bool
+sem_variable::equals_wpa (sem_item *item,
+			  hash_map <symtab_node *, sem_item *> &ignored_nodes)
+{
+  gcc_assert (item->type == VAR);
+
+  if (node->num_references () != item->node->num_references ())
+    return return_false_with_msg ("different number of references");
+
+  if (DECL_TLS_MODEL (decl) || DECL_TLS_MODEL (item->decl))
+    return return_false_with_msg ("TLS model");
+
+  /* DECL_ALIGN is safe to merge, because we will always chose the largest
+     alignment out of all aliases.  */
+
+  if (DECL_VIRTUAL_P (decl) != DECL_VIRTUAL_P (item->decl))
+    return return_false_with_msg ("Virtual flag mismatch");
+
+  if (DECL_SIZE (decl) != DECL_SIZE (item->decl)
+      && ((!DECL_SIZE (decl) || !DECL_SIZE (item->decl))
+	  || !operand_equal_p (DECL_SIZE (decl),
+			       DECL_SIZE (item->decl), OEP_ONLY_CONST)))
+    return return_false_with_msg ("size mismatch");
+
+  /* Do not attempt to mix data from different user sections;
+     we do not know what user intends with those.  */
+  if (((DECL_SECTION_NAME (decl) && !node->implicit_section)
+       || (DECL_SECTION_NAME (item->decl) && !item->node->implicit_section))
+      && DECL_SECTION_NAME (decl) != DECL_SECTION_NAME (item->decl))
+    return return_false_with_msg ("user section mismatch");
+
+  if (DECL_IN_TEXT_SECTION (decl) != DECL_IN_TEXT_SECTION (item->decl))
+    return return_false_with_msg ("text section");
+
+  ipa_ref *ref = NULL, *ref2 = NULL;
+  for (unsigned i = 0; node->iterate_reference (i, ref); i++)
+    {
+      item->node->iterate_reference (i, ref2);
+
+      if (ref->use != ref2->use)
+	return return_false_with_msg ("reference use mismatch");
+
+      if (!compare_symbol_references (ignored_nodes,
+				      ref->referred, ref2->referred,
+				      ref->address_matters_p ()))
+	return false;
+    }
+
+  return true;
+}
+
 /* Returns true if the item equals to ITEM given as argument.  */
 
 bool
 sem_variable::equals (sem_item *item,
-		      hash_map <symtab_node *, sem_item *> & ARG_UNUSED (ignored_nodes))
+		      hash_map <symtab_node *, sem_item *> &)
 {
   gcc_assert (item->type == VAR);
+  bool ret;
 
-  sem_variable *v = static_cast<sem_variable *>(item);
+  if (DECL_INITIAL (decl) == error_mark_node && in_lto_p)
+    dyn_cast <varpool_node *>(node)->get_constructor ();
+  if (DECL_INITIAL (item->decl) == error_mark_node && in_lto_p)
+    dyn_cast <varpool_node *>(item->node)->get_constructor ();
 
-  if (!ctor || !v->ctor)
-    return return_false_with_msg ("ctor is missing for semantic variable");
+  /* As seen in PR ipa/65303 we have to compare variables types.  */
+  if (!func_checker::compatible_types_p (TREE_TYPE (decl),
+					 TREE_TYPE (item->decl)))
+    return return_false_with_msg ("variables types are different");
 
-  return sem_variable::equals (ctor, v->ctor);
+  ret = sem_variable::equals (DECL_INITIAL (decl),
+			      DECL_INITIAL (item->node->decl));
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	     "Equals called for vars:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
+	     xstrdup_for_dump (node->name()),
+	     xstrdup_for_dump (item->node->name ()),
+	     node->order, item->node->order,
+	     xstrdup_for_dump (node->asm_name ()),
+	     xstrdup_for_dump (item->node->asm_name ()), ret ? "true" : "false");
+
+  return ret;
 }
 
 /* Compares trees T1 and T2 for semantic equality.  */
@@ -1124,28 +1912,57 @@ sem_variable::equals (sem_item *item,
 bool
 sem_variable::equals (tree t1, tree t2)
 {
+  if (!t1 || !t2)
+    return return_with_debug (t1 == t2);
+  if (t1 == t2)
+    return true;
   tree_code tc1 = TREE_CODE (t1);
   tree_code tc2 = TREE_CODE (t2);
 
   if (tc1 != tc2)
-    return false;
+    return return_false_with_msg ("TREE_CODE mismatch");
 
   switch (tc1)
     {
     case CONSTRUCTOR:
       {
-	unsigned len1 = vec_safe_length (CONSTRUCTOR_ELTS (t1));
-	unsigned len2 = vec_safe_length (CONSTRUCTOR_ELTS (t2));
+	vec<constructor_elt, va_gc> *v1, *v2;
+	unsigned HOST_WIDE_INT idx;
 
-	if (len1 != len2)
-	  return false;
+	enum tree_code typecode = TREE_CODE (TREE_TYPE (t1));
+	if (typecode != TREE_CODE (TREE_TYPE (t2)))
+	  return return_false_with_msg ("constructor type mismatch");
 
-	for (unsigned i = 0; i < len1; i++)
-	  if (!sem_variable::equals (CONSTRUCTOR_ELT (t1, i)->value,
-				     CONSTRUCTOR_ELT (t2, i)->value)
-	      || CONSTRUCTOR_ELT (t1, i)->index != CONSTRUCTOR_ELT (t2, i)->index)
-	    return false;
+	if (typecode == ARRAY_TYPE)
+	  {
+	    HOST_WIDE_INT size_1 = int_size_in_bytes (TREE_TYPE (t1));
+	    /* For arrays, check that the sizes all match.  */
+	    if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
+		|| size_1 == -1
+		|| size_1 != int_size_in_bytes (TREE_TYPE (t2)))
+	      return return_false_with_msg ("constructor array size mismatch");
+	  }
+	else if (!func_checker::compatible_types_p (TREE_TYPE (t1),
+						    TREE_TYPE (t2)))
+	  return return_false_with_msg ("constructor type incompatible");
 
+	v1 = CONSTRUCTOR_ELTS (t1);
+	v2 = CONSTRUCTOR_ELTS (t2);
+	if (vec_safe_length (v1) != vec_safe_length (v2))
+	  return return_false_with_msg ("constructor number of elts mismatch");
+
+	for (idx = 0; idx < vec_safe_length (v1); ++idx)
+	  {
+	    constructor_elt *c1 = &(*v1)[idx];
+	    constructor_elt *c2 = &(*v2)[idx];
+
+	    /* Check that each value is the same...  */
+	    if (!sem_variable::equals (c1->value, c2->value))
+	      return false;
+	    /* ... and that they apply to the same fields!  */
+	    if (!sem_variable::equals (c1->index, c2->index))
+	      return false;
+	  }
 	return true;
       }
     case MEM_REF:
@@ -1155,37 +1972,104 @@ sem_variable::equals (tree t1, tree t2)
 	tree y1 = TREE_OPERAND (t1, 1);
 	tree y2 = TREE_OPERAND (t2, 1);
 
-	if (!func_checker::compatible_types_p (TREE_TYPE (x1), TREE_TYPE (x2),
-					       true))
+	if (!func_checker::compatible_types_p (TREE_TYPE (x1), TREE_TYPE (x2)))
 	  return return_false ();
 
 	/* Type of the offset on MEM_REF does not matter.  */
-	return sem_variable::equals (x1, x2)
-	       && wi::to_offset  (y1) == wi::to_offset  (y2);
+	return return_with_debug (sem_variable::equals (x1, x2)
+			          && wi::to_offset  (y1)
+				     == wi::to_offset  (y2));
       }
-    case NOP_EXPR:
     case ADDR_EXPR:
+    case FDESC_EXPR:
       {
 	tree op1 = TREE_OPERAND (t1, 0);
 	tree op2 = TREE_OPERAND (t2, 0);
 	return sem_variable::equals (op1, op2);
       }
+    /* References to other vars/decls are compared using ipa-ref.  */
     case FUNCTION_DECL:
     case VAR_DECL:
+      if (decl_in_symtab_p (t1) && decl_in_symtab_p (t2))
+	return true;
+      return return_false_with_msg ("Declaration mismatch");
+    case CONST_DECL:
+      /* TODO: We can check CONST_DECL by its DECL_INITIAL, but for that we
+	 need to process its VAR/FUNCTION references without relying on ipa-ref
+	 compare.  */
     case FIELD_DECL:
     case LABEL_DECL:
-      return t1 == t2;
+      return return_false_with_msg ("Declaration mismatch");
     case INTEGER_CST:
-      return func_checker::compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
-	     true)
-	     && wi::to_offset (t1) == wi::to_offset (t2);
+      /* Integer constants are the same only if the same width of type.  */
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
+        return return_false_with_msg ("INTEGER_CST precision mismatch");
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+        return return_false_with_msg ("INTEGER_CST mode mismatch");
+      return return_with_debug (tree_int_cst_equal (t1, t2));
     case STRING_CST:
-    case REAL_CST:
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+        return return_false_with_msg ("STRING_CST mode mismatch");
+      if (TREE_STRING_LENGTH (t1) != TREE_STRING_LENGTH (t2))
+	return return_false_with_msg ("STRING_CST length mismatch");
+      if (memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+		    TREE_STRING_LENGTH (t1)))
+	return return_false_with_msg ("STRING_CST mismatch");
+      return true;
+    case FIXED_CST:
+      /* Fixed constants are the same only if the same width of type.  */
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
+        return return_false_with_msg ("FIXED_CST precision mismatch");
+
+      return return_with_debug (FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1),
+							TREE_FIXED_CST (t2)));
     case COMPLEX_CST:
-      return operand_equal_p (t1, t2, OEP_ONLY_CONST);
-    case COMPONENT_REF:
+      return (sem_variable::equals (TREE_REALPART (t1), TREE_REALPART (t2))
+	      && sem_variable::equals (TREE_IMAGPART (t1), TREE_IMAGPART (t2)));
+    case REAL_CST:
+      /* Real constants are the same only if the same width of type.  */
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
+        return return_false_with_msg ("REAL_CST precision mismatch");
+      return return_with_debug (REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1),
+						       TREE_REAL_CST (t2)));
+    case VECTOR_CST:
+      {
+	unsigned i;
+
+        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
+          return return_false_with_msg ("VECTOR_CST nelts mismatch");
+
+	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
+	  if (!sem_variable::equals (VECTOR_CST_ELT (t1, i),
+				     VECTOR_CST_ELT (t2, i)))
+	    return 0;
+
+	return 1;
+      }
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      {
+	tree x1 = TREE_OPERAND (t1, 0);
+	tree x2 = TREE_OPERAND (t2, 0);
+	tree y1 = TREE_OPERAND (t1, 1);
+	tree y2 = TREE_OPERAND (t2, 1);
+
+	if (!sem_variable::equals (x1, x2) || !sem_variable::equals (y1, y2))
+	  return false;
+	if (!sem_variable::equals (array_ref_low_bound (t1),
+				   array_ref_low_bound (t2)))
+	  return false;
+        if (!sem_variable::equals (array_ref_element_size (t1),
+			           array_ref_element_size (t2)))
+	  return false;
+	return true;
+      }
+     
+    case COMPONENT_REF:
     case POINTER_PLUS_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case RANGE_EXPR:
       {
 	tree x1 = TREE_OPERAND (t1, 0);
 	tree x2 = TREE_OPERAND (t2, 0);
@@ -1194,6 +2078,12 @@ sem_variable::equals (tree t1, tree t2)
 
 	return sem_variable::equals (x1, x2) && sem_variable::equals (y1, y2);
       }
+
+    CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
+      if (!func_checker::compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	  return return_false ();
+      return sem_variable::equals (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
     case ERROR_MARK:
       return return_false_with_msg ("ERROR_MARK");
     default:
@@ -1206,21 +2096,8 @@ sem_variable::equals (tree t1, tree t2)
 sem_variable *
 sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 {
-  tree decl = node->decl;
-
-  bool readonly = TYPE_P (decl) ? TYPE_READONLY (decl) : TREE_READONLY (decl);
-  if (!readonly)
-    return NULL;
-
-  bool can_handle = DECL_VIRTUAL_P (decl)
-		    || flag_merge_constants >= 2
-		    || (!TREE_ADDRESSABLE (decl) && !node->externally_visible);
-
-  if (!can_handle || DECL_EXTERNAL (decl))
-    return NULL;
-
-  tree ctor = ctor_for_folding (decl);
-  if (!ctor)
+  if (TREE_THIS_VOLATILE (node->decl) || DECL_HARD_REGISTER (node->decl)
+      || node->alias)
     return NULL;
 
   sem_variable *v = new sem_variable (node, 0, stack);
@@ -1238,17 +2115,17 @@ sem_variable::get_hash (void)
   if (hash)
     return hash;
 
+  /* All WPA streamed in symbols should have their hashes computed at compile
+     time.  At this point, the constructor may not be in memory at all.
+     DECL_INITIAL (decl) would be error_mark_node in that case.  */
+  gcc_assert (!node->lto_file_data);
+  tree ctor = DECL_INITIAL (decl);
   inchash::hash hstate;
 
   hstate.add_int (456346417);
-  hstate.add_int (TREE_CODE (ctor));
-
-  if (TREE_CODE (ctor) == CONSTRUCTOR)
-    {
-      unsigned length = vec_safe_length (CONSTRUCTOR_ELTS (ctor));
-      hstate.add_int (length);
-    }
-
+  if (DECL_SIZE (decl) && tree_fits_shwi_p (DECL_SIZE (decl)))
+    hstate.add_wide_int (tree_to_shwi (DECL_SIZE (decl)));
+  add_expr (ctor, hstate);
   hash = hstate.end ();
 
   return hash;
@@ -1265,7 +2142,15 @@ sem_variable::merge (sem_item *alias_item)
   if (!sem_item::target_supports_symbol_aliases_p ())
     {
       if (dump_file)
-	fprintf (dump_file, "Symbol aliases are not supported by target\n\n");
+	fprintf (dump_file, "Not unifying; "
+		 "Symbol aliases are not supported by target\n\n");
+      return false;
+    }
+
+  if (DECL_EXTERNAL (alias_item->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias is external.\n\n");
       return false;
     }
 
@@ -1275,71 +2160,98 @@ sem_variable::merge (sem_item *alias_item)
   varpool_node *alias = alias_var->get_node ();
   bool original_discardable = false;
 
+  bool original_address_matters = original->address_matters_p ();
+  bool alias_address_matters = alias->address_matters_p ();
+
   /* See if original is in a section that can be discarded if the main
-     symbol is not used.  */
-  if (DECL_EXTERNAL (original->decl))
-    original_discardable = true;
-  if (original->resolution == LDPR_PREEMPTED_REG
-      || original->resolution == LDPR_PREEMPTED_IR)
-    original_discardable = true;
-  if (original->can_be_discarded_p ())
+     symbol is not used.
+     Also consider case where we have resolution info and we know that
+     original's definition is not going to be used.  In this case we can not
+     create alias to original.  */
+  if (original->can_be_discarded_p ()
+      || (node->resolution != LDPR_UNKNOWN
+	  && !decl_binds_to_current_def_p (node->decl)))
     original_discardable = true;
 
   gcc_assert (!TREE_ASM_WRITTEN (alias->decl));
 
-  if (original_discardable || DECL_EXTERNAL (alias_var->decl) ||
-      !compare_sections (alias_var))
+  /* Constant pool machinery is not quite ready for aliases.
+     TODO: varasm code contains logic for merging DECL_IN_CONSTANT_POOL.
+     For LTO merging does not happen that is an important missing feature.
+     We can enable merging with LTO if the DECL_IN_CONSTANT_POOL
+     flag is dropped and non-local symbol name is assigned.  */
+  if (DECL_IN_CONSTANT_POOL (alias->decl)
+      || DECL_IN_CONSTANT_POOL (original->decl))
     {
       if (dump_file)
-	fprintf (dump_file, "Varpool alias cannot be created\n\n");
+	fprintf (dump_file,
+		 "Not unifying; constant pool variables.\n\n");
+      return false;
+    }
+
+  /* Do not attempt to mix functions from different user sections;
+     we do not know what user intends with those.  */
+  if (((DECL_SECTION_NAME (original->decl) && !original->implicit_section)
+       || (DECL_SECTION_NAME (alias->decl) && !alias->implicit_section))
+      && DECL_SECTION_NAME (original->decl) != DECL_SECTION_NAME (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; "
+		 "original and alias are in different sections.\n\n");
+      return false;
+    }
+
+  /* We can not merge if address comparsion metters.  */
+  if (original_address_matters && alias_address_matters
+      && flag_merge_constants < 2)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; "
+		 "adress of original and alias may be compared.\n\n");
+      return false;
+    }
+  if (DECL_COMDAT_GROUP (original->decl) != DECL_COMDAT_GROUP (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias cannot be created; "
+		 "across comdat group boundary\n\n");
+
+      return false;
+    }
+
+  if (original_discardable)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias cannot be created; "
+		 "target is discardable\n\n");
 
       return false;
     }
   else
     {
-      // alias cycle creation check
-      varpool_node *n = original;
-
-      while (n->alias)
-	{
-	  n = n->get_alias_target ();
-	  if (n == alias)
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Varpool alias cannot be created (alias cycle).\n\n");
-
-	      return false;
-	    }
-	}
+      gcc_assert (!original->alias);
+      gcc_assert (!alias->alias);
 
       alias->analyzed = false;
 
       DECL_INITIAL (alias->decl) = NULL;
+      ((symtab_node *)alias)->call_for_symbol_and_aliases (clear_decl_rtl,
+							   NULL, true);
       alias->need_bounds_init = false;
       alias->remove_all_references ();
+      if (TREE_ADDRESSABLE (alias->decl))
+        original->call_for_symbol_and_aliases (set_addressable, NULL, true);
 
       varpool_node::create_alias (alias_var->decl, decl);
       alias->resolve_alias (original);
 
       if (dump_file)
-	fprintf (dump_file, "Varpool alias has been created.\n\n");
+	fprintf (dump_file, "Unified; Variable alias has been created.\n\n");
 
       return true;
     }
-}
-
-bool
-sem_variable::compare_sections (sem_variable *alias)
-{
-  const char *source = node->get_section ();
-  const char *target = alias->node->get_section();
-
-  if (source == NULL && target == NULL)
-    return true;
-  else if(!source || !target)
-    return false;
-  else
-    return strcmp (source, target) == 0;
 }
 
 /* Dump symbol to FILE.  */
@@ -1351,40 +2263,6 @@ sem_variable::dump_to_file (FILE *file)
 
   print_node (file, "", decl, 0);
   fprintf (file, "\n\n");
-}
-
-/* Iterates though a constructor and identifies tree references
-   we are interested in semantic function equality.  */
-
-void
-sem_variable::parse_tree_refs (tree t)
-{
-  switch (TREE_CODE (t))
-    {
-    case CONSTRUCTOR:
-      {
-	unsigned length = vec_safe_length (CONSTRUCTOR_ELTS (t));
-
-	for (unsigned i = 0; i < length; i++)
-	  parse_tree_refs(CONSTRUCTOR_ELT (t, i)->value);
-
-	break;
-      }
-    case NOP_EXPR:
-    case ADDR_EXPR:
-      {
-	tree op = TREE_OPERAND (t, 0);
-	parse_tree_refs (op);
-	break;
-      }
-    case FUNCTION_DECL:
-      {
-	tree_refs.safe_push (t);
-	break;
-      }
-    default:
-      break;
-    }
 }
 
 unsigned int sem_item_optimizer::class_id = 0;
@@ -1480,7 +2358,7 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset, 0,
-			   header->main_size);
+			   header->main_size, file_data->mode_table);
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
@@ -1503,8 +2381,8 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
       gcc_assert (node->definition);
 
       if (dump_file)
-	fprintf (dump_file, "Symbol added:%s (tree: %p, uid:%u)\n", node->asm_name (),
-		 (void *) node->decl, node->order);
+	fprintf (dump_file, "Symbol added:%s (tree: %p, uid:%u)\n",
+		 node->asm_name (), (void *) node->decl, node->order);
 
       if (is_a<cgraph_node *> (node))
 	{
@@ -1525,7 +2403,7 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
   lto_data_in_delete (data_in);
 }
 
-/* Read IPA IPA ICF summary for symbols.  */
+/* Read IPA ICF summary for symbols.  */
 
 void
 sem_item_optimizer::read_summary (void)
@@ -1550,11 +2428,13 @@ sem_item_optimizer::read_summary (void)
 void
 sem_item_optimizer::register_hooks (void)
 {
-  m_cgraph_node_hooks = symtab->add_cgraph_removal_hook
-			(&sem_item_optimizer::cgraph_removal_hook, this);
+  if (!m_cgraph_node_hooks)
+    m_cgraph_node_hooks = symtab->add_cgraph_removal_hook
+			  (&sem_item_optimizer::cgraph_removal_hook, this);
 
-  m_varpool_node_hooks = symtab->add_varpool_removal_hook
-			 (&sem_item_optimizer::varpool_removal_hook, this);
+  if (!m_varpool_node_hooks)
+    m_varpool_node_hooks = symtab->add_varpool_removal_hook
+			   (&sem_item_optimizer::varpool_removal_hook, this);
 }
 
 /* Unregister callgraph and varpool hooks.  */
@@ -1652,39 +2532,35 @@ sem_item_optimizer::filter_removed_items (void)
     {
       sem_item *item = m_items[i];
 
-      if (!flag_ipa_icf_functions && item->type == FUNC)
-	{
+      if (m_removed_items_set.contains (item->node))
+        {
 	  remove_item (item);
 	  continue;
-	}
-
-      if (!flag_ipa_icf_variables && item->type == VAR)
-	{
-	  remove_item (item);
-	  continue;
-	}
-
-      bool no_body_function = false;
+        }
 
       if (item->type == FUNC)
-	{
+        {
 	  cgraph_node *cnode = static_cast <sem_function *>(item)->get_node ();
 
-	  no_body_function = in_lto_p && (cnode->alias || cnode->body_removed);
-	}
-
-      if(!m_removed_items_set.contains (m_items[i]->node)
-	  && !no_body_function)
-	{
-	  if (item->type == VAR || (!DECL_CXX_CONSTRUCTOR_P (item->decl)
-				    && !DECL_CXX_DESTRUCTOR_P (item->decl)))
+	  if (in_lto_p && (cnode->alias || cnode->body_removed))
+	    remove_item (item);
+	  else
+	    filtered.safe_push (item);
+        }
+      else /* VAR.  */
+        {
+	  if (!flag_ipa_icf_variables)
+	    remove_item (item);
+	  else
 	    {
-	      filtered.safe_push (m_items[i]);
-	      continue;
+	      /* Filter out non-readonly variables.  */
+	      tree decl = item->decl;
+	      if (TREE_READONLY (decl))
+		filtered.safe_push (item);
+	      else
+		remove_item (item);
 	    }
-	}
-
-      remove_item (item);
+        }
     }
 
   /* Clean-up of released semantic items.  */
@@ -1694,12 +2570,18 @@ sem_item_optimizer::filter_removed_items (void)
     m_items.safe_push (filtered[i]);
 }
 
-/* Optimizer entry point.  */
+/* Optimizer entry point which returns true in case it processes
+   a merge operation. True is returned if there's a merge operation
+   processed.  */
 
-void
+bool
 sem_item_optimizer::execute (void)
 {
   filter_removed_items ();
+  unregister_hooks ();
+
+  build_graph ();
+  update_hash_by_addr_refs ();
   build_hash_based_classes ();
 
   if (dump_file)
@@ -1708,8 +2590,6 @@ sem_item_optimizer::execute (void)
 
   for (unsigned int i = 0; i < m_items.length(); i++)
     m_items[i]->init_wpa ();
-
-  build_graph ();
 
   subdivide_classes_by_equality (true);
 
@@ -1739,10 +2619,12 @@ sem_item_optimizer::execute (void)
   process_cong_reduction ();
   dump_cong_classes ();
   verify_classes ();
-  merge_classes (prev_class_count);
+  bool merged_p = merge_classes (prev_class_count);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     symtab_node::dump_table (dump_file);
+
+  return merged_p;
 }
 
 /* Function responsible for visiting all potential functions and
@@ -1763,7 +2645,7 @@ sem_item_optimizer::parse_funcs_and_vars (void)
 	  m_symtab_node_map.put (cnode, f);
 
 	  if (dump_file)
-	    fprintf (dump_file, "Parsed function:%s\n", f->asm_name ());
+	    fprintf (dump_file, "Parsed function:%s\n", f->node->asm_name ());
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    f->dump_to_file (dump_file);
@@ -1797,6 +2679,53 @@ sem_item_optimizer::add_item_to_class (congruence_class *cls, sem_item *item)
   item->cls = cls;
 }
 
+/* For each semantic item, append hash values of references.  */
+
+void
+sem_item_optimizer::update_hash_by_addr_refs ()
+{
+  /* First, append to hash sensitive references and class type if it need to
+     be matched for ODR.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    {
+      m_items[i]->update_hash_by_addr_refs (m_symtab_node_map);
+      if (m_items[i]->type == FUNC)
+	{
+	  if (TREE_CODE (TREE_TYPE (m_items[i]->decl)) == METHOD_TYPE
+	      && contains_polymorphic_type_p
+		   (TYPE_METHOD_BASETYPE (TREE_TYPE (m_items[i]->decl)))
+	      && (DECL_CXX_CONSTRUCTOR_P (m_items[i]->decl)
+		  || (static_cast<sem_function *> (m_items[i])->param_used_p (0)
+		      && static_cast<sem_function *> (m_items[i])
+			   ->compare_polymorphic_p ())))
+	     {
+	        tree class_type
+		  = TYPE_METHOD_BASETYPE (TREE_TYPE (m_items[i]->decl));
+		inchash::hash hstate (m_items[i]->hash);
+
+		if (TYPE_NAME (class_type)
+		     && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (class_type)))
+		  hstate.add_wide_int
+		    (IDENTIFIER_HASH_VALUE
+		       (DECL_ASSEMBLER_NAME (TYPE_NAME (class_type))));
+
+		m_items[i]->hash = hstate.end ();
+	     }
+	}
+    }
+
+  /* Once all symbols have enhanced hash value, we can append
+     hash values of symbols that are seen by IPA ICF and are
+     references by a semantic item. Newly computed values
+     are saved to global_hash member variable.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->update_hash_by_local_refs (m_symtab_node_map);
+
+  /* Global hash value replace current hash values.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->hash = m_items[i]->global_hash;
+}
+
 /* Congruence classes are built by hash value.  */
 
 void
@@ -1806,7 +2735,7 @@ sem_item_optimizer::build_hash_based_classes (void)
     {
       sem_item *item = m_items[i];
 
-      congruence_class_group *group = get_group_by_hash (item->get_hash (),
+      congruence_class_group *group = get_group_by_hash (item->hash,
 				      item->type);
 
       if (!group->classes.length ())
@@ -1841,7 +2770,8 @@ sem_item_optimizer::build_graph (void)
 	  cgraph_edge *e = cnode->callees;
 	  while (e)
 	    {
-	      sem_item **slot = m_symtab_node_map.get (e->callee);
+	      sem_item **slot = m_symtab_node_map.get
+		(e->callee->ultimate_alias_target ());
 	      if (slot)
 		item->add_reference (*slot);
 
@@ -1852,7 +2782,8 @@ sem_item_optimizer::build_graph (void)
       ipa_ref *ref = NULL;
       for (unsigned i = 0; item->node->iterate_reference (i, ref); i++)
 	{
-	  sem_item **slot = m_symtab_node_map.get (ref->referred);
+	  sem_item **slot = m_symtab_node_map.get
+	    (ref->referred->ultimate_alias_target ());
 	  if (slot)
 	    item->add_reference (*slot);
 	}
@@ -1953,6 +2884,97 @@ sem_item_optimizer::subdivide_classes_by_equality (bool in_wpa)
     }
 
   verify_classes ();
+}
+
+/* Subdivide classes by address references that members of the class
+   reference. Example can be a pair of functions that have an address
+   taken from a function. If these addresses are different the class
+   is split.  */
+
+unsigned
+sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
+{
+  typedef hash_map <symbol_compare_hash, vec <sem_item *> > subdivide_hash_map;
+
+  unsigned newly_created_classes = 0;
+
+  for (hash_table <congruence_class_group_hash>::iterator it = m_classes.begin ();
+       it != m_classes.end (); ++it)
+    {
+      unsigned int class_count = (*it)->classes.length ();
+      auto_vec<congruence_class *> new_classes;
+
+      for (unsigned i = 0; i < class_count; i++)
+	{
+	  congruence_class *c = (*it)->classes [i];
+
+	  if (c->members.length() > 1)
+	    {
+	      subdivide_hash_map split_map;
+
+	      for (unsigned j = 0; j < c->members.length (); j++)
+	        {
+		  sem_item *source_node = c->members[j];
+
+		  symbol_compare_collection *collection = new symbol_compare_collection (source_node->node);
+
+		  bool existed;
+		  vec <sem_item *> *slot = &split_map.get_or_insert (collection,
+								     &existed);
+		  gcc_checking_assert (slot);
+
+		  slot->safe_push (source_node);
+
+		  if (existed)
+		    delete collection;
+	        }
+
+	       /* If the map contains more than one key, we have to split the map
+		  appropriately.  */
+	      if (split_map.elements () != 1)
+	        {
+		  bool first_class = true;
+
+		  for (subdivide_hash_map::iterator it2 = split_map.begin ();
+		       it2 != split_map.end (); ++it2)
+		    {
+		      congruence_class *new_cls;
+		      new_cls = new congruence_class (class_id++);
+
+		      for (unsigned k = 0; k < (*it2).second.length (); k++)
+			add_item_to_class (new_cls, (*it2).second[k]);
+
+		      worklist_push (new_cls);
+		      newly_created_classes++;
+
+		      if (first_class)
+		        {
+			  (*it)->classes[i] = new_cls;
+			  first_class = false;
+			}
+		      else
+		        {
+		          new_classes.safe_push (new_cls);
+			  m_classes_count++;
+		        }
+		    }
+		}
+
+	      /* Release memory.  */
+	      for (subdivide_hash_map::iterator it2 = split_map.begin ();
+		   it2 != split_map.end (); ++it2)
+		{
+		  delete (*it2).first;
+		  (*it2).second.release ();
+		}
+	    }
+	  }
+
+	for (unsigned i = 0; i < new_classes.length (); i++)
+	  (*it)->classes.safe_push (new_classes[i]);
+    }
+
+  return newly_created_classes;
 }
 
 /* Verify congruence classes if checking is enabled.  */
@@ -2171,7 +3193,7 @@ sem_item_optimizer::do_congruence_step (congruence_class *cls)
   EXECUTE_IF_SET_IN_BITMAP (usage, 0, i, bi)
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
-      fprintf (dump_file, "  processing congruece step for class: %u, index: %u\n",
+      fprintf (dump_file, "  processing congruence step for class: %u, index: %u\n",
 	       cls->id, i);
 
     do_congruence_step_for_index (cls, i);
@@ -2244,8 +3266,17 @@ sem_item_optimizer::process_cong_reduction (void)
     fprintf (dump_file, "Congruence class reduction\n");
 
   congruence_class *cls;
+
+  /* Process complete congruence reduction.  */
   while ((cls = worklist_pop ()) != NULL)
     do_congruence_step (cls);
+
+  /* Subdivide newly created classes according to references.  */
+  unsigned new_classes = subdivide_classes_by_sensitive_refs ();
+
+  if (dump_file)
+    fprintf (dump_file, "Address reference subdivision created: %u "
+	     "new classes.\n", new_classes);
 }
 
 /* Debug function prints all informations about congruence classes.  */
@@ -2306,9 +3337,10 @@ sem_item_optimizer::dump_cong_classes (void)
 
 /* After reduction is done, we can declare all items in a group
    to be equal. PREV_CLASS_COUNT is start number of classes
-   before reduction.  */
+   before reduction. True is returned if there's a merge operation
+   processed. */
 
-void
+bool
 sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 {
   unsigned int item_count = m_items.length ();
@@ -2317,6 +3349,8 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 
   unsigned int non_singular_classes_count = 0;
   unsigned int non_singular_classes_sum = 0;
+
+  bool merged_p = false;
 
   for (hash_table<congruence_class_group_hash>::iterator it = m_classes.begin ();
        it != m_classes.end (); ++it)
@@ -2367,9 +3401,21 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Semantic equality hit:%s->%s\n",
-			 source->name (), alias->name ());
+			 xstrdup_for_dump (source->node->name ()),
+			 xstrdup_for_dump (alias->node->name ()));
 		fprintf (dump_file, "Assembler symbol names:%s->%s\n",
-			 source->asm_name (), alias->asm_name ());
+			 xstrdup_for_dump (source->node->asm_name ()),
+			 xstrdup_for_dump (alias->node->asm_name ()));
+	      }
+
+	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
+	      {
+	        if (dump_file)
+		  fprintf (dump_file,
+			   "Merge operation is skipped due to no_icf "
+			   "attribute.\n\n");
+
+		continue;
 	      }
 
 	    if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2378,9 +3424,12 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 		alias->dump_to_file (dump_file);
 	      }
 
-	    source->merge (alias);
+	    if (dbg_cnt (merged_ipa_icf))
+	      merged_p |= source->merge (alias);
 	  }
       }
+
+  return merged_p;
 }
 
 /* Dump function prints all class members to a FILE with an INDENT.  */
@@ -2393,7 +3442,8 @@ congruence_class::dump (FILE *file, unsigned int indent) const
 
   FPUTS_SPACES (file, indent + 2, "");
   for (unsigned i = 0; i < members.length (); i++)
-    fprintf (file, "%s(%p/%u) ", members[i]->asm_name (), (void *) members[i]->decl,
+    fprintf (file, "%s(%p/%u) ", members[i]->node->asm_name (),
+	     (void *) members[i]->decl,
 	     members[i]->node->order);
 
   fprintf (file, "\n");
@@ -2411,11 +3461,6 @@ congruence_class::is_class_used (void)
   return false;
 }
 
-/* Initialization and computation of symtab node hash, there data
-   are propagated later on.  */
-
-static sem_item_optimizer *optimizer = NULL;
-
 /* Generate pass summary for IPA ICF pass.  */
 
 static void
@@ -2424,6 +3469,7 @@ ipa_icf_generate_summary (void)
   if (!optimizer)
     optimizer = new sem_item_optimizer ();
 
+  optimizer->register_hooks ();
   optimizer->parse_funcs_and_vars ();
 }
 
@@ -2456,13 +3502,12 @@ ipa_icf_driver (void)
 {
   gcc_assert (optimizer);
 
-  optimizer->execute ();
-  optimizer->unregister_hooks ();
+  bool merged_p = optimizer->execute ();
 
   delete optimizer;
   optimizer = NULL;
 
-  return 0;
+  return merged_p ? TODO_remove_functions : 0;
 }
 
 const pass_data pass_data_ipa_icf =
@@ -2499,7 +3544,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
   {
-    return flag_ipa_icf_variables || flag_ipa_icf_functions;
+    return in_lto_p || flag_ipa_icf_variables || flag_ipa_icf_functions;
   }
 
   virtual unsigned int execute (function *)

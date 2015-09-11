@@ -22,6 +22,12 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* Systems using musl libc should use this header and make sure
+   OPTION_MUSL is defined correctly before using the TYPE macros. */
+#ifndef OPTION_MUSL
+#define OPTION_MUSL 0
+#endif
+
 #define SIG_ATOMIC_TYPE "int"
 
 #define INT8_TYPE "signed char"
@@ -43,12 +49,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define UINT_LEAST64_TYPE (LONG_TYPE_SIZE == 64 ? "long unsigned int" : "long long unsigned int")
 
 #define INT_FAST8_TYPE "signed char"
-#define INT_FAST16_TYPE (LONG_TYPE_SIZE == 64 ? "long int" : "int")
-#define INT_FAST32_TYPE (LONG_TYPE_SIZE == 64 ? "long int" : "int")
+#define INT_FAST16_TYPE (LONG_TYPE_SIZE == 64 && !OPTION_MUSL ? "long int" : "int")
+#define INT_FAST32_TYPE (LONG_TYPE_SIZE == 64 && !OPTION_MUSL ? "long int" : "int")
 #define INT_FAST64_TYPE (LONG_TYPE_SIZE == 64 ? "long int" : "long long int")
 #define UINT_FAST8_TYPE "unsigned char"
-#define UINT_FAST16_TYPE (LONG_TYPE_SIZE == 64 ? "long unsigned int" : "unsigned int")
-#define UINT_FAST32_TYPE (LONG_TYPE_SIZE == 64 ? "long unsigned int" : "unsigned int")
+#define UINT_FAST16_TYPE (LONG_TYPE_SIZE == 64 && !OPTION_MUSL ? "long unsigned int" : "unsigned int")
+#define UINT_FAST32_TYPE (LONG_TYPE_SIZE == 64 && !OPTION_MUSL ? "long unsigned int" : "unsigned int")
 #define UINT_FAST64_TYPE (LONG_TYPE_SIZE == 64 ? "long unsigned int" : "long long unsigned int")
 
 #define INTPTR_TYPE (LONG_TYPE_SIZE == 64 ? "long int" : "int")

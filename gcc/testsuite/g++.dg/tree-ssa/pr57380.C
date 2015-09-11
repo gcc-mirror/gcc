@@ -19,4 +19,3 @@ int f(my_array a, my_array b) {
 }
 
 /* { dg-final { scan-tree-dump "MAX_EXPR" "phiopt1" } } */
-/* { dg-final { cleanup-tree-dump "phiopt1" } } */

@@ -20,4 +20,3 @@ foo (double x)
 }
 
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

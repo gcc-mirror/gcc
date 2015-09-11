@@ -39,4 +39,3 @@ end program test
 ! Check c_f_procpointer
 ! { dg-final { scan-tree-dump-times "  fprocptr = .integer.kind=4. .\\*<.*>. ... cfunptr;" 1 "original" } }
 !
-! { dg-final { cleanup-tree-dump "original" } }

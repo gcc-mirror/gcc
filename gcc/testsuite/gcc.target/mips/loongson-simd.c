@@ -18,10 +18,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* { dg-do run } */
+/* { dg-do run { target { ! { mips*-mti-linux* mips*-img-linux* } } } } */
 /* loongson.h does not handle or check for MIPS16ness or
    microMIPSness.  There doesn't seem any good reason for it to, given
-   that the Loongson processors do not support either.  */
+   that the Loongson processors do not support either.  The effective target
+   mips_nanlegacy is required for a toolchain without the legacy NaN support
+   because inclusion of some system headers e.g. stdint.h will fail due to not
+   finding stubs-o32_hard.h.  */
+/* { dg-require-effective-target mips_nanlegacy } */
 /* { dg-options "isa=loongson -mhard-float -mno-micromips -mno-mips16 -flax-vector-conversions" } */
 
 #include "loongson.h"

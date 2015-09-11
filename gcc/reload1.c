@@ -20,31 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "predict.h"
+#include "tree.h"
+#include "rtl.h"
+#include "df.h"
 
-#include "machmode.h"
-#include "hard-reg-set.h"
 #include "rtl-error.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "insn-config.h"
-#include "ggc.h"
 #include "flags.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "input.h"
-#include "function.h"
-#include "symtab.h"
-#include "rtl.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -57,13 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "regs.h"
 #include "addresses.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
-#include "basic-block.h"
-#include "df.h"
 #include "reload.h"
 #include "recog.h"
 #include "except.h"
@@ -436,9 +417,7 @@ static void delete_output_reload (rtx_insn *, int, int, rtx);
 static void delete_address_reloads (rtx_insn *, rtx_insn *);
 static void delete_address_reloads_1 (rtx_insn *, rtx, rtx_insn *);
 static void inc_for_reload (rtx, rtx, rtx, int);
-#ifdef AUTO_INC_DEC
 static void add_auto_inc_notes (rtx_insn *, rtx);
-#endif
 static void substitute (rtx *, const_rtx, rtx);
 static bool gen_reload_chain_without_interm_reg_p (int, int);
 static int reloads_conflict (int, int);
@@ -914,10 +893,9 @@ reload (rtx_insn *first, int global)
 	spill_hard_reg (from, 1);
     }
 
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-  if (frame_pointer_needed)
+  if (!HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed)
     spill_hard_reg (HARD_FRAME_POINTER_REGNUM, 1);
-#endif
+
   finish_spills (global);
 
   /* From now on, we may need to generate moves differently.  We may also
@@ -1270,9 +1248,8 @@ reload (rtx_insn *first, int global)
 	      pnote = &XEXP (*pnote, 1);
 	  }
 
-#ifdef AUTO_INC_DEC
-	add_auto_inc_notes (insn, PATTERN (insn));
-#endif
+	if (AUTO_INC_DEC)
+	  add_auto_inc_notes (insn, PATTERN (insn));
 
 	/* Simplify (subreg (reg)) if it appears as an operand.  */
 	cleanup_subreg_operands (insn);
@@ -1655,12 +1632,14 @@ calculate_elim_costs_all_insns (void)
 		      || reg_equiv_invariant (REGNO (SET_DEST (set)))))
 		{
 		  unsigned regno = REGNO (SET_DEST (set));
-		  rtx init = reg_equiv_init (regno);
+		  rtx_insn_list *init = reg_equiv_init (regno);
 		  if (init)
 		    {
 		      rtx t = eliminate_regs_1 (SET_SRC (set), VOIDmode, insn,
 						false, true);
-		      int cost = set_src_cost (t, optimize_bb_for_speed_p (bb));
+		      machine_mode mode = GET_MODE (SET_DEST (set));
+		      int cost = set_src_cost (t, mode,
+					       optimize_bb_for_speed_p (bb));
 		      int freq = REG_FREQ_FROM_BB (bb);
 
 		      reg_equiv_init_cost[regno] = cost * freq;
@@ -2532,7 +2511,8 @@ note_reg_elim_costly (const_rtx x, rtx insn)
 	{
 	  rtx t = reg_equiv_invariant (REGNO (x));
 	  rtx new_rtx = eliminate_regs_1 (t, Pmode, insn, true, true);
-	  int cost = set_src_cost (new_rtx, optimize_bb_for_speed_p (elim_bb));
+	  int cost = set_src_cost (new_rtx, Pmode,
+				   optimize_bb_for_speed_p (elim_bb));
 	  int freq = REG_FREQ_FROM_BB (elim_bb);
 
 	  if (cost != 0)
@@ -2620,7 +2600,7 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 			             mem_mode, insn, true, for_costs);
 	  /* There exists at least one use of REGNO that cannot be
 	     eliminated.  Prevent the defining insn from being deleted.  */
-	  reg_equiv_init (regno) = NULL_RTX;
+	  reg_equiv_init (regno) = NULL;
 	  if (!for_costs)
 	    alter_reg (regno, -1, true);
 	}
@@ -2882,7 +2862,7 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 
 	  if (MEM_P (new_rtx)
 	      && ((x_size < new_size
-#ifdef WORD_REGISTER_OPERATIONS
+#if WORD_REGISTER_OPERATIONS
 		   /* On these machines, combine can create rtl of the form
 		      (set (subreg:m1 (reg:m2 R) 0) ...)
 		      where m1 < m2, and expects something interesting to
@@ -3281,13 +3261,13 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->from_rtx == SET_DEST (old_set) && ep->can_eliminate)
 	  {
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
 	    /* If this is setting the frame pointer register to the
 	       hardware frame pointer register and this is an elimination
 	       that will be done (tested above), this insn is really
 	       adjusting the frame pointer downward to compensate for
 	       the adjustment done before a nonlocal goto.  */
-	    if (ep->from == FRAME_POINTER_REGNUM
+	    if (!HARD_FRAME_POINTER_IS_FRAME_POINTER
+		&& ep->from == FRAME_POINTER_REGNUM
 		&& ep->to == HARD_FRAME_POINTER_REGNUM)
 	      {
 		rtx base = SET_SRC (old_set);
@@ -3347,7 +3327,6 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
 		    goto done;
 		  }
 	      }
-#endif
 
 	    /* In this case this insn isn't serving a useful purpose.  We
 	       will delete it in reload_as_needed once we know that this
@@ -3454,8 +3433,7 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
 		   the INSN_CODE the same and let reload fix it up.  */
 		if (!validate_change (insn, &SET_SRC (old_set), new_src, 0))
 		  {
-		    rtx new_pat = gen_rtx_SET (VOIDmode,
-					       SET_DEST (old_set), new_src);
+		    rtx new_pat = gen_rtx_SET (SET_DEST (old_set), new_src);
 
 		    if (!validate_change (insn, &PATTERN (insn), new_pat, 0))
 		      SET_SRC (old_set) = new_src;
@@ -3658,6 +3636,8 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
    eliminations in its operands and record cases where eliminating a reg with
    an invariant equivalence would add extra cost.  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 static void
 elimination_costs_in_insn (rtx_insn *insn)
 {
@@ -3730,10 +3710,12 @@ elimination_costs_in_insn (rtx_insn *insn)
   /* Eliminate all eliminable registers occurring in operands that
      can be handled by reload.  */
   extract_insn (insn);
-  for (i = 0; i < recog_data.n_dups; i++)
+  int n_dups = recog_data.n_dups;
+  for (i = 0; i < n_dups; i++)
     orig_dup[i] = *recog_data.dup_loc[i];
 
-  for (i = 0; i < recog_data.n_operands; i++)
+  int n_operands = recog_data.n_operands;
+  for (i = 0; i < n_operands; i++)
     {
       orig_operand[i] = recog_data.operand[i];
 
@@ -3778,7 +3760,7 @@ elimination_costs_in_insn (rtx_insn *insn)
 	}
     }
 
-  for (i = 0; i < recog_data.n_dups; i++)
+  for (i = 0; i < n_dups; i++)
     *recog_data.dup_loc[i]
       = *recog_data.operand_loc[(int) recog_data.dup_num[i]];
 
@@ -3786,9 +3768,9 @@ elimination_costs_in_insn (rtx_insn *insn)
   check_eliminable_occurrences (old_body);
 
   /* Restore the old body.  */
-  for (i = 0; i < recog_data.n_operands; i++)
+  for (i = 0; i < n_operands; i++)
     *recog_data.operand_loc[i] = orig_operand[i];
-  for (i = 0; i < recog_data.n_dups; i++)
+  for (i = 0; i < n_dups; i++)
     *recog_data.dup_loc[i] = orig_dup[i];
 
   /* Update all elimination pairs to reflect the status after the current
@@ -3805,6 +3787,7 @@ elimination_costs_in_insn (rtx_insn *insn)
 
   return;
 }
+#pragma GCC diagnostic pop
 
 /* Loop through all elimination pairs.
    Recalculate the number not at initial offset.
@@ -4254,17 +4237,17 @@ init_eliminable_invariants (rtx_insn *first, bool do_subregs)
 		    {
 		      reg_equiv_memory_loc (i) = force_const_mem (mode, x);
 		      if (! reg_equiv_memory_loc (i))
-			reg_equiv_init (i) = NULL_RTX;
+			reg_equiv_init (i) = NULL;
 		    }
 		}
 	      else
 		{
-		  reg_equiv_init (i) = NULL_RTX;
+		  reg_equiv_init (i) = NULL;
 		  continue;
 		}
 	    }
 	  else
-	    reg_equiv_init (i) = NULL_RTX;
+	    reg_equiv_init (i) = NULL;
 	}
     }
 
@@ -4600,7 +4583,7 @@ static void
 reload_as_needed (int live_known)
 {
   struct insn_chain *chain;
-#if defined (AUTO_INC_DEC)
+#if AUTO_INC_DEC
   int i;
 #endif
   rtx_note *marker;
@@ -4623,7 +4606,7 @@ reload_as_needed (int live_known)
       rtx_insn *prev = 0;
       rtx_insn *insn = chain->insn;
       rtx_insn *old_next = NEXT_INSN (insn);
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
       rtx_insn *old_prev = PREV_INSN (insn);
 #endif
 
@@ -4768,7 +4751,7 @@ reload_as_needed (int live_known)
 	    if (NONJUMP_INSN_P (x) && GET_CODE (PATTERN (x)) == CLOBBER)
 	      note_stores (PATTERN (x), forget_old_reloads_1, NULL);
 
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	  /* Likewise for regs altered by auto-increment in this insn.
 	     REG_INC notes have been changed by reloading:
 	     find_reloads_address_1 records substitutions for them,
@@ -5627,11 +5610,7 @@ reloads_unique_chain_p (int r1, int r2)
 
   /* The following loop assumes that r1 is the reload that feeds r2.  */
   if (r1 > r2)
-    {
-      int tmp = r2;
-      r2 = r1;
-      r1 = tmp;
-    }
+    std::swap (r1, r2);
 
   for (i = 0; i < n_reloads; i ++)
     /* Look for input reloads that aren't our two */
@@ -5710,18 +5689,15 @@ gen_reload_chain_without_interm_reg_p (int r1, int r2)
   /* Assume other cases in gen_reload are not possible for
      chain reloads or do need an intermediate hard registers.  */
   bool result = true;
-  int regno, n, code;
+  int regno, code;
   rtx out, in;
   rtx_insn *insn;
   rtx_insn *last = get_last_insn ();
 
   /* Make r2 a component of r1.  */
   if (reg_mentioned_p (rld[r1].in, rld[r2].in))
-    {
-      n = r1;
-      r1 = r2;
-      r2 = n;
-    }
+    std::swap (r1, r2);
+
   gcc_assert (reg_mentioned_p (rld[r2].in, rld[r1].in));
   regno = rld[r1].regno >= 0 ? rld[r1].regno : rld[r2].regno;
   gcc_assert (regno >= 0);
@@ -5742,7 +5718,7 @@ gen_reload_chain_without_interm_reg_p (int r1, int r2)
 	  || CONSTANT_P (XEXP (in, 1))
 	  || MEM_P (XEXP (in, 1))))
     {
-      insn = emit_insn (gen_rtx_SET (VOIDmode, out, in));
+      insn = emit_insn (gen_rtx_SET (out, in));
       code = recog_memoized (insn);
       result = false;
 
@@ -6632,7 +6608,7 @@ choose_reload_regs (struct insn_chain *chain)
 		    }
 		  mode = GET_MODE (rld[r].in_reg);
 		}
-#ifdef AUTO_INC_DEC
+#if AUTO_INC_DEC
 	      else if (GET_RTX_CLASS (GET_CODE (rld[r].in_reg)) == RTX_AUTOINC
 		       && REG_P (XEXP (rld[r].in_reg, 0)))
 		{
@@ -7423,10 +7399,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	     is ill-formed and we must reject this optimization.  */
 	  extract_insn (temp);
 	  if (constrain_operands (1, get_enabled_alternatives (temp))
-#ifdef AUTO_INC_DEC
-	      && ! find_reg_note (temp, REG_INC, reloadreg)
-#endif
-	      )
+	      && (!AUTO_INC_DEC || ! find_reg_note (temp, REG_INC, reloadreg)))
 	    {
 	      /* If the previous insn is an output reload, the source is
 		 a reload register, and its spill_reg_store entry will
@@ -8237,7 +8210,7 @@ emit_reload_insns (struct insn_chain *chain)
 
   for (j = 0; j < reload_n_operands; j++)
     {
-      rtx x = emit_insn_after (outaddr_address_reload_insns[j], insn);
+      rtx_insn *x = emit_insn_after (outaddr_address_reload_insns[j], insn);
       x = emit_insn_after (output_address_reload_insns[j], x);
       x = emit_insn_after (output_reload_insns[j], x);
       emit_insn_after (other_output_reload_insns[j], x);
@@ -8712,7 +8685,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       if (op0 != XEXP (in, 0) || op1 != XEXP (in, 1))
 	in = gen_rtx_PLUS (GET_MODE (in), op0, op1);
 
-      insn = emit_insn_if_valid_for_reload (gen_rtx_SET (VOIDmode, out, in));
+      insn = emit_insn_if_valid_for_reload (gen_rtx_SET (out, in));
       if (insn)
 	return insn;
 
@@ -8801,7 +8774,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 	in = gen_rtx_fmt_e (GET_CODE (in), GET_MODE (in), op1);
 
       /* First, try a plain SET.  */
-      set = emit_insn_if_valid_for_reload (gen_rtx_SET (VOIDmode, out, in));
+      set = emit_insn_if_valid_for_reload (gen_rtx_SET (out, in));
       if (set)
 	return set;
 
@@ -8816,10 +8789,8 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 
       gen_reload (out_moded, op1, opnum, type);
 
-      insn
-	= gen_rtx_SET (VOIDmode, out,
-		       gen_rtx_fmt_e (GET_CODE (in), GET_MODE (in),
-				      out_moded));
+      insn = gen_rtx_SET (out, gen_rtx_fmt_e (GET_CODE (in), GET_MODE (in),
+					      out_moded));
       insn = emit_insn_if_valid_for_reload (insn);
       if (insn)
 	{
@@ -8837,14 +8808,12 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       mark_jump_label (in, tem, 0);
     }
 
-#ifdef HAVE_reload_load_address
-  else if (HAVE_reload_load_address)
-    emit_insn (gen_reload_load_address (out, in));
-#endif
+  else if (targetm.have_reload_load_address ())
+    emit_insn (targetm.gen_reload_load_address (out, in));
 
   /* Otherwise, just write (set OUT IN) and hope for the best.  */
   else
-    emit_insn (gen_rtx_SET (VOIDmode, out, in));
+    emit_insn (gen_rtx_SET (out, in));
 
   /* Return the first insn emitted.
      We can not just return get_last_insn, because there may have
@@ -8898,10 +8867,10 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
 	continue;
       if (MEM_P (reg2) || reload_override_in[k])
 	reg2 = rld[k].in_reg;
-#ifdef AUTO_INC_DEC
-      if (rld[k].out && ! rld[k].out_reg)
+
+      if (AUTO_INC_DEC && rld[k].out && ! rld[k].out_reg)
 	reg2 = XEXP (rld[k].in_reg, 0);
-#endif
+
       while (GET_CODE (reg2) == SUBREG)
 	reg2 = SUBREG_REG (reg2);
       if (rtx_equal_p (reg2, reg))
@@ -9238,7 +9207,7 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
 	 that in gen_reload.  */
 
       last = get_last_insn ();
-      add_insn = emit_insn (gen_rtx_SET (VOIDmode, incloc,
+      add_insn = emit_insn (gen_rtx_SET (incloc,
 					 gen_rtx_PLUS (GET_MODE (incloc),
 						       incloc, inc)));
 
@@ -9294,7 +9263,6 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
     }
 }
 
-#ifdef AUTO_INC_DEC
 static void
 add_auto_inc_notes (rtx_insn *insn, rtx x)
 {
@@ -9319,4 +9287,3 @@ add_auto_inc_notes (rtx_insn *insn, rtx x)
 	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
     }
 }
-#endif

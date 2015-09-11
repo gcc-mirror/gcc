@@ -6,7 +6,7 @@
 
 class A {
 private:
-  void f();		// { dg-error "private" }
+  void f();		// { dg-message "private" }
 };
 
 class B {

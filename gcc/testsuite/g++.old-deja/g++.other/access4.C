@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 
-struct A { // { dg-error "" } inaccessible
+struct A { // { dg-message "" } inaccessible
   static int i;
 };
 

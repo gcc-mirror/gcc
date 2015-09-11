@@ -49,4 +49,3 @@ int main (int argc, char *argv[])
 /* { dg-final { scan-tree-dump "About to replace expr cow_.*D.->green with ISRA" "eipa_sra"  } } */
 /* { dg-final { scan-tree-dump "About to replace expr calf_.*D.->red with \\*ISRA" "eipa_sra"  } } */
 /* { dg-final { scan-tree-dump "About to replace expr calf_.*D.->green with ISRA" "eipa_sra"  } } */
-/* { dg-final { cleanup-tree-dump "eipa_sra" } } */

@@ -16,4 +16,3 @@ void test_vget_highs64 (void)
   out_int64x1_t = vget_high_s64 (arg0_int64x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

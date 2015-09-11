@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Intel Corporation.
+ * Copyright 2010-2015 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -73,8 +73,8 @@ typedef struct coimapinst  * COIMAPINSTANCE;
 
 typedef uint64_t COI_CPU_MASK[16];
 
-/** 
- *  On Windows, coi_wchar_t is a uint32_t. On Windows, wchar_t is 16 bits wide, and on Linux it is 32 bits wide, so uint32_t is used for portability.
+/**
+ * On Windows, coi_wchar_t is a uint32_t. On Windows, wchar_t is 16 bits wide, and on Linux it is 32 bits wide, so uint32_t is used for portability.
  */
 typedef wchar_t  coi_wchar_t;
 

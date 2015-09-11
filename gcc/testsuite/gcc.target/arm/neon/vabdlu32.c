@@ -18,4 +18,3 @@ void test_vabdlu32 (void)
 }
 
 /* { dg-final { scan-assembler "vabdl\.u32\[ 	\]+\[qQ\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

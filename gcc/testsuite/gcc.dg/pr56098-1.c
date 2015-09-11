@@ -13,4 +13,3 @@ foo (int x)
 }
 
 /* { dg-final { scan-tree-dump-not "=\[^\n\r]*\\*p" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

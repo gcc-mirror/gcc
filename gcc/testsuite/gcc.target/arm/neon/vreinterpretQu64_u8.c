@@ -16,4 +16,3 @@ void test_vreinterpretQu64_u8 (void)
   out_uint64x2_t = vreinterpretq_u64_u8 (arg0_uint8x16_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

@@ -33,4 +33,3 @@ foo (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "Removing basic block" 0 "mergephi1"} } */
-/* { dg-final { cleanup-tree-dump "mergephi1" } } */

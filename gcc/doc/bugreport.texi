@@ -82,7 +82,7 @@ suggestions for improvement of GCC are welcome in any case.
 @end itemize
 
 @node Bug Reporting
-@section How and where to Report Bugs
+@section How and Where to Report Bugs
 @cindex compiler bugs, reporting
 
 Bugs should be reported to the bug database at @value{BUGURL}.

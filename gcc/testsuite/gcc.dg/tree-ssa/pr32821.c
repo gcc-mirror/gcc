@@ -12,4 +12,3 @@ main1 (int *arr, int n, int a, int b)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "ifcvt" } } */

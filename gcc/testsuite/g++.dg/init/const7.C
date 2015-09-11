@@ -10,4 +10,3 @@ short offsets[1] = {
 void fn() { }
 
 // { dg-final { scan-tree-dump-not "initialization"  "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

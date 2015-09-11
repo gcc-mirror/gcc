@@ -20,4 +20,3 @@ main(void)
 }
 /* { dg-final { scan-tree-dump-times "Splitting function at:" 1 "fnsplit"} } */
 
-/* { dg-final { cleanup-tree-dump "fnsplit" } } */

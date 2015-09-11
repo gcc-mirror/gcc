@@ -61,4 +61,3 @@ subroutine l3(a)
 end subroutine
 
 ! { dg-final { scan-tree-dump-times "memset" 12 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

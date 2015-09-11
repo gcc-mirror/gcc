@@ -12,4 +12,3 @@ long f (long d, long e)
 
 
 /* { dg-final { scan-tree-dump-not "BIT_FIELD_REF" "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

@@ -20,9 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FLAGS_H
 #define GCC_FLAGS_H
 
-#include "flag-types.h"
-#include "options.h"
-
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 
 /* Names of debug_info_type, for error messages.  */

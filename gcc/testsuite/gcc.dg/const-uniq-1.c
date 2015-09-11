@@ -21,4 +21,3 @@ int lookup2 (int i)
 }
 
 /* { dg-final { scan-tree-dump-times "L\\\$?C\\\.*0" 2 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

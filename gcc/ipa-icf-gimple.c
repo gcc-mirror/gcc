@@ -22,34 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
 #include "gimple.h"
-#include "hashtab.h"
 #include "rtl.h"
+#include "ssa.h"
+#include "options.h"
+#include "fold-const.h"
+#include "internal-fn.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -60,23 +42,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "stringpool.h"
 #include "tree-dfa.h"
 #include "tree-pass.h"
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
 #include "except.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "data-streamer.h"
 #include "ipa-utils.h"
 #include <list>
-#include "tree-ssanames.h"
 #include "tree-eh.h"
+#include "builtins.h"
 
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
@@ -199,8 +176,22 @@ func_checker::compare_decl (tree t1, tree t2)
       && DECL_BY_REFERENCE (t1) != DECL_BY_REFERENCE (t2))
     return return_false_with_msg ("DECL_BY_REFERENCE flags are different");
 
-  if (!compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
-			   m_compare_polymorphic))
+  if (!compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+    return return_false ();
+
+  /* TODO: we are actually too strict here.  We only need to compare if
+     T1 can be used in polymorphic call.  */
+  if (TREE_ADDRESSABLE (t1)
+      && m_compare_polymorphic
+      && !compatible_polymorphic_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
+					  false))
+    return return_false ();
+
+  if ((t == VAR_DECL || t == PARM_DECL || t == RESULT_DECL)
+      && DECL_BY_REFERENCE (t1)
+      && m_compare_polymorphic
+      && !compatible_polymorphic_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
+					  true))
     return return_false ();
 
   bool existed_p;
@@ -214,11 +205,41 @@ func_checker::compare_decl (tree t1, tree t2)
   return true;
 }
 
+/* Return true if T1 and T2 are same for purposes of ipa-polymorphic-call
+   analysis.  COMPARE_PTR indicates if types of pointers needs to be
+   considered.  */
+
+bool
+func_checker::compatible_polymorphic_types_p (tree t1, tree t2,
+					      bool compare_ptr)
+{
+  gcc_assert (TREE_CODE (t1) != FUNCTION_TYPE && TREE_CODE (t1) != METHOD_TYPE);
+
+  /* Pointer types generally give no information.  */
+  if (POINTER_TYPE_P (t1))
+    {
+      if (!compare_ptr)
+	return true;
+      return func_checker::compatible_polymorphic_types_p (TREE_TYPE (t1),
+							   TREE_TYPE (t2),
+							   false);
+    }
+
+  /* If types contain a polymorphic types, match them.  */
+  bool c1 = contains_polymorphic_type_p (t1);
+  bool c2 = contains_polymorphic_type_p (t2);
+  if (!c1 && !c2)
+    return true;
+  if (!c1 || !c2)
+    return return_false_with_msg ("one type is not polymorphic");
+  if (!types_must_be_same_for_odr (t1, t2))
+    return return_false_with_msg ("types are not same for ODR");
+  return true;
+}
+
 /* Return true if types are compatible from perspective of ICF.  */
 bool
-func_checker::compatible_types_p (tree t1, tree t2,
-				  bool compare_polymorphic,
-				  bool first_argument)
+func_checker::compatible_types_p (tree t1, tree t2)
 {
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return return_false_with_msg ("different tree types");
@@ -231,23 +252,6 @@ func_checker::compatible_types_p (tree t1, tree t2,
 
   if (get_alias_set (t1) != get_alias_set (t2))
     return return_false_with_msg ("alias sets are different");
-
-  /* We call contains_polymorphic_type_p with this pointer type.  */
-  if (first_argument && TREE_CODE (t1) == POINTER_TYPE)
-    {
-      t1 = TREE_TYPE (t1);
-      t2 = TREE_TYPE (t2);
-    }
-
-  if (compare_polymorphic)
-    if (contains_polymorphic_type_p (t1) || contains_polymorphic_type_p (t2))
-      {
-	if (!contains_polymorphic_type_p (t1) || !contains_polymorphic_type_p (t2))
-	  return return_false_with_msg ("one type is not polymorphic");
-
-	if (!types_must_be_same_for_odr (t1, t2))
-	  return return_false_with_msg ("types are not same for ODR");
-      }
 
   return true;
 }
@@ -286,6 +290,41 @@ func_checker::compare_memory_operand (tree t1, tree t2)
       if (ao_ref_alias_set (&r1) != ao_ref_alias_set (&r2)
 	  || ao_ref_base_alias_set (&r1) != ao_ref_base_alias_set (&r2))
 	return return_false_with_msg ("ao alias sets are different");
+
+      /* We can't simply use get_object_alignment_1 on the full
+         reference as for accesses with variable indexes this reports
+	 too conservative alignment.  We also can't use the ao_ref_base
+	 base objects as ao_ref_base happily strips MEM_REFs around
+	 decls even though that may carry alignment info.  */
+      b1 = t1;
+      while (handled_component_p (b1))
+	b1 = TREE_OPERAND (b1, 0);
+      b2 = t2;
+      while (handled_component_p (b2))
+	b2 = TREE_OPERAND (b2, 0);
+      unsigned int align1, align2;
+      unsigned HOST_WIDE_INT tem;
+      get_object_alignment_1 (b1, &align1, &tem);
+      get_object_alignment_1 (b2, &align2, &tem);
+      if (align1 != align2)
+	return return_false_with_msg ("different access alignment");
+
+      /* Similarly we have to compare dependence info where equality
+         tells us we are safe (even some unequal values would be safe
+	 but then we have to maintain a map of bases and cliques).  */
+      unsigned short clique1 = 0, base1 = 0, clique2 = 0, base2 = 0;
+      if (TREE_CODE (b1) == MEM_REF)
+	{
+	  clique1 = MR_DEPENDENCE_CLIQUE (b1);
+	  base1 = MR_DEPENDENCE_BASE (b1);
+	}
+      if (TREE_CODE (b2) == MEM_REF)
+	{
+	  clique2 = MR_DEPENDENCE_CLIQUE (b2);
+	  base2 = MR_DEPENDENCE_BASE (b2);
+	}
+      if (clique1 != clique2 || base1 != base2)
+	return return_false_with_msg ("different dependence info");
     }
 
   return compare_operand (t1, t2);
@@ -312,10 +351,9 @@ func_checker::compare_cst_or_decl (tree t1, tree t2)
 	return return_with_debug (ret);
       }
     case FUNCTION_DECL:
-      {
-	ret = compare_function_decl (t1, t2);
-	return return_with_debug (ret);
-      }
+      /* All function decls are in the symbol table and known to match
+	 before we start comparing bodies.  */
+      return true;
     case VAR_DECL:
       return return_with_debug (compare_variable_decl (t1, t2));
     case FIELD_DECL:
@@ -448,18 +486,23 @@ func_checker::compare_operand (tree t1, tree t2)
     /* Virtual table call.  */
     case OBJ_TYPE_REF:
       {
-	x1 = TREE_OPERAND (t1, 0);
-	x2 = TREE_OPERAND (t2, 0);
-	y1 = TREE_OPERAND (t1, 1);
-	y2 = TREE_OPERAND (t2, 1);
-	z1 = TREE_OPERAND (t1, 2);
-	z2 = TREE_OPERAND (t2, 2);
+	if (!compare_ssa_name (OBJ_TYPE_REF_EXPR (t1), OBJ_TYPE_REF_EXPR (t2)))
+	  return return_false ();
+	if (opt_for_fn (m_source_func_decl, flag_devirtualize)
+	    && virtual_method_call_p (t1))
+	  {
+	    if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (t1))
+		!= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF token mismatch");
+	    if (!types_same_for_odr (obj_type_ref_class (t1),
+				     obj_type_ref_class (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF OTR type mismatch");
+	    if (!compare_operand (OBJ_TYPE_REF_OBJECT (t1),
+				  OBJ_TYPE_REF_OBJECT (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF object mismatch");
+	  }
 
-	ret = compare_ssa_name (x1, x2)
-	      && compare_ssa_name (y1, y2)
-	      && compare_cst_or_decl (z1, z2);
-
-	return return_with_debug (ret);
+	return return_with_debug (true);
       }
     case IMAGPART_EXPR:
     case REALPART_EXPR:
@@ -532,39 +575,6 @@ func_checker::compare_tree_list_operand (tree t1, tree t2)
   return true;
 }
 
-/* Verifies that trees T1 and T2, representing function declarations
-   are equivalent from perspective of ICF.  */
-
-bool
-func_checker::compare_function_decl (tree t1, tree t2)
-{
-  bool ret = false;
-
-  if (t1 == t2)
-    return true;
-
-  symtab_node *n1 = symtab_node::get (t1);
-  symtab_node *n2 = symtab_node::get (t2);
-
-  if (m_ignored_source_nodes != NULL && m_ignored_target_nodes != NULL)
-    {
-      ret = m_ignored_source_nodes->contains (n1)
-	    && m_ignored_target_nodes->contains (n2);
-
-      if (ret)
-	return true;
-    }
-
-  /* If function decl is WEAKREF, we compare targets.  */
-  cgraph_node *f1 = cgraph_node::get (t1);
-  cgraph_node *f2 = cgraph_node::get (t2);
-
-  if(f1 && f2 && f1->weakref && f2->weakref)
-    ret = f1->alias_target == f2->alias_target;
-
-  return ret;
-}
-
 /* Verifies that trees T1 and T2 do correspond.  */
 
 bool
@@ -575,20 +585,20 @@ func_checker::compare_variable_decl (tree t1, tree t2)
   if (t1 == t2)
     return true;
 
-  if (TREE_CODE (t1) == VAR_DECL && (DECL_EXTERNAL (t1) || TREE_STATIC (t1)))
-    {
-      symtab_node *n1 = symtab_node::get (t1);
-      symtab_node *n2 = symtab_node::get (t2);
+  if (DECL_ALIGN (t1) != DECL_ALIGN (t2))
+    return return_false_with_msg ("alignments are different");
 
-      if (m_ignored_source_nodes != NULL && m_ignored_target_nodes != NULL)
-	{
-	  ret = m_ignored_source_nodes->contains (n1)
-		&& m_ignored_target_nodes->contains (n2);
+  if (DECL_HARD_REGISTER (t1) != DECL_HARD_REGISTER (t2))
+    return return_false_with_msg ("DECL_HARD_REGISTER are different");
 
-	  if (ret)
-	    return true;
-	}
-    }
+  if (DECL_HARD_REGISTER (t1)
+      && DECL_ASSEMBLER_NAME (t1) != DECL_ASSEMBLER_NAME (t2))
+    return return_false_with_msg ("HARD REGISTERS are different");
+
+  /* Symbol table variables are known to match before we start comparing
+     bodies.  */
+  if (decl_in_symtab_p (t1))
+    return decl_in_symtab_p (t2);
   ret = compare_decl (t1, t2);
 
   return return_with_debug (ret);
@@ -672,7 +682,11 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
 	    return return_different_stmts (s1, s2, "GIMPLE_SWITCH");
 	  break;
 	case GIMPLE_DEBUG:
+	  break;
 	case GIMPLE_EH_DISPATCH:
+	  if (gimple_eh_dispatch_region (as_a <geh_dispatch *> (s1))
+	      != gimple_eh_dispatch_region (as_a <geh_dispatch *> (s2)))
+	    return return_different_stmts (s1, s2, "GIMPLE_EH_DISPATCH");
 	  break;
 	case GIMPLE_RESX:
 	  if (!compare_gimple_resx (as_a <gresx *> (s1),
@@ -700,7 +714,7 @@ func_checker::compare_bb (sem_bb *bb1, sem_bb *bb2)
 	  break;
 	case GIMPLE_PREDICT:
 	case GIMPLE_NOP:
-	  return true;
+	  break;
 	default:
 	  return return_false_with_msg ("Unknown GIMPLE code reached");
 	}

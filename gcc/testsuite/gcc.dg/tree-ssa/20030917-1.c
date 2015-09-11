@@ -16,4 +16,3 @@ findbestextension (int blah, int blah2)
 
 /* The argument to "foo" should be a variable, not a constant.  */
 /* { dg-final { scan-tree-dump-times "foo .defval" 1 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

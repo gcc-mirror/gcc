@@ -20,4 +20,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: mem free failed 1" } */
+/* { dg-output "invalid device address" } */
+/* { dg-shouldfail "" } */

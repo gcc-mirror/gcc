@@ -597,6 +597,63 @@ egrep_test (char* pz_data, tTestDesc* p_test)
   return SKIP_FIX;
 }
 
+/* * * * * * * * * * * * *
+
+  cksum_test   check the sum of the candidate file
+  Input:  the original file contents and the file name
+  Result: APPLY_FIX if the check sum matches, SKIP_FIX otherwise
+
+  The caller may choose to reverse meaning if the sense of the test
+  is inverted.  */
+
+static int
+cksum_test (char * pz_data, tTestDesc * p_test, char * fname)
+{
+  unsigned int cksum;
+
+  /*
+   * Testing is off in normal operation mode.
+   * So, in testing mode, APPLY_FIX is always returned.
+   */
+  if (fixinc_mode != TESTING_OFF)
+    return APPLY_FIX;
+
+  {
+    char * fnm = strrchr(fname, '/');
+    if (fnm != NULL)
+      fname = fnm + 1;
+    
+    errno = 0;
+    cksum = (unsigned int)strtoul(p_test->pz_test_text, &fnm, 10);
+    if (errno != 0)
+      return SKIP_FIX;
+
+    if (! ISSPACE(*fnm++))
+      return SKIP_FIX;
+    while (ISSPACE(*fnm)) fnm++;
+
+    if (! ISDIGIT(*fnm++))
+      return SKIP_FIX;
+    while (ISDIGIT(*fnm)) fnm++;
+
+    if (! ISSPACE(*fnm++))
+      return SKIP_FIX;
+    while (ISSPACE(*fnm)) fnm++;
+
+    if (strcmp(fnm, fname) != 0)
+      return SKIP_FIX;
+  }
+
+  {
+    unsigned int sum = 0;
+    while (*pz_data != NUL) {
+      sum = (sum >> 1) + ((sum & 1) << 15) + (unsigned)(*pz_data++);
+      sum &= 0xFFFF;
+    }
+
+    return (sum == cksum) ? APPLY_FIX : SKIP_FIX;
+  }
+}
 
 /* * * * * * * * * * * * *
 
@@ -794,7 +851,7 @@ fix_with_system (tFixDesc* p_fixd,
   if (p_fixd->fd_flags & FD_SUBROUTINE)
     {
       static const char z_applyfix_prog[] =
-	"/../fixincludes/applyfix" EXE_EXT;
+        "/../fixincludes/applyfix" EXE_EXT;
 
       struct stat buf;
       argsize = 32
@@ -812,12 +869,12 @@ fix_with_system (tFixDesc* p_fixd,
       strcpy (pz_scan, z_applyfix_prog);
 
       /* IF we can't find the "applyfix" executable file at the first guess,
-	 try one level higher up  */
+         try one level higher up  */
       if (stat (pz_cmd, &buf) == -1)
-	{
-	  strcpy (pz_scan, "/..");
-	  strcpy (pz_scan+3, z_applyfix_prog);
-	}
+        {
+          strcpy (pz_scan, "/..");
+          strcpy (pz_scan+3, z_applyfix_prog);
+        }
 
       pz_scan += strlen (pz_scan);
 
@@ -825,7 +882,7 @@ fix_with_system (tFixDesc* p_fixd,
        *  Now add the fix number and file names that may be needed
        */
       sprintf (pz_scan, " %ld '%s' '%s' '%s'", (long) (p_fixd - fixDescList),
-	       pz_fix_file, pz_file_source, pz_temp_file);
+               pz_fix_file, pz_file_source, pz_temp_file);
     }
   else /* NOT an "internal" fix: */
     {
@@ -899,25 +956,25 @@ fix_with_system (tFixDesc* p_fixd,
       for (;;)
         {
           tCC*   pArg = *(ppArgs++);
-	  char*  pz_scan_save;
+          char*  pz_scan_save;
           if (pArg == NULL)
             break;
           *(pz_scan++) = ' ';
           pz_scan = make_raw_shell_str( pz_scan_save = pz_scan, pArg,
-					parg_size - (pz_scan - pz_cmd) );
-	  /*
-	   *  Make sure we don't overflow the buffer due to sloppy
-	   *  size estimation.
-	   */
-	  while (pz_scan == (char*)NULL)
-	    {
-	      size_t already_filled = pz_scan_save - pz_cmd;
-	      pz_cmd = xrealloc (pz_cmd, argsize += 100);
-	      pz_scan_save = pz_scan = pz_cmd + already_filled;
-	      parg_size += 100;
-	      pz_scan = make_raw_shell_str( pz_scan, pArg,
-					    parg_size - (pz_scan - pz_cmd) );
-	    }
+                                        parg_size - (pz_scan - pz_cmd) );
+          /*
+           *  Make sure we don't overflow the buffer due to sloppy
+           *  size estimation.
+           */
+          while (pz_scan == (char*)NULL)
+            {
+              size_t already_filled = pz_scan_save - pz_cmd;
+              pz_cmd = xrealloc (pz_cmd, argsize += 100);
+              pz_scan_save = pz_scan = pz_cmd + already_filled;
+              parg_size += 100;
+              pz_scan = make_raw_shell_str( pz_scan, pArg,
+                                            parg_size - (pz_scan - pz_cmd) );
+            }
         }
 
       /*
@@ -960,7 +1017,7 @@ start_fixer (int read_fd, tFixDesc* p_fixd, char* pz_fix_file)
     {
       tSCC z_cmd_fmt[] = "file='%s'\n%s";
       pz_cmd = XNEWVEC (char, strlen (p_fixd->patch_args[2])
-			+ sizeof (z_cmd_fmt) + strlen (pz_fix_file));
+                        + sizeof (z_cmd_fmt) + strlen (pz_fix_file));
       sprintf (pz_cmd, z_cmd_fmt, pz_fix_file, p_fixd->patch_args[2]);
       pz_cmd_save = p_fixd->patch_args[2];
       p_fixd->patch_args[2] = pz_cmd;
@@ -1007,7 +1064,15 @@ start_fixer (int read_fd, tFixDesc* p_fixd, char* pz_fix_file)
   return read_fd;
 }
 #endif
-
+#ifdef DEBUG
+# define NOTE_SKIP(_ttyp)  do {                                         \
+            if (VLEVEL( VERB_EVERYTHING ))                              \
+              fprintf (stderr, z_failed, _ttyp, p_fixd->fix_name,       \
+                       pz_fname, p_fixd->test_ct - test_ct);            \
+          } while (0)
+#else
+# define NOTE_SKIP(_ttyp)
+#endif
 
 /* * * * * * * * * * * * *
  *
@@ -1022,6 +1087,8 @@ fix_applies (tFixDesc* p_fixd)
   const char *pz_scan = p_fixd->file_list;
   int test_ct;
   tTestDesc *p_test;
+  t_bool saw_sum_test   = BOOL_FALSE;
+  t_bool one_sum_passed = BOOL_FALSE;
 
 #ifdef SEPARATE_FIX_PROC
   /*
@@ -1055,6 +1122,7 @@ fix_applies (tFixDesc* p_fixd)
     }
 
   /*  FOR each test, see if it fails.
+      "sum" fails only if all "sum" tests fail.
       IF it does fail, then we go on to the next test */
 
   for (p_test = p_fixd->p_test_desc, test_ct = p_fixd->test_ct;
@@ -1065,51 +1133,50 @@ fix_applies (tFixDesc* p_fixd)
         {
         case TT_TEST:
           if (test_test (p_test, pz_curr_file) != APPLY_FIX) {
-#ifdef DEBUG
-            if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, "TEST", p_fixd->fix_name,
-                       pz_fname, p_fixd->test_ct - test_ct);
-#endif
+            NOTE_SKIP("TEST");
             return BOOL_FALSE;
           }
           break;
 
         case TT_EGREP:
           if (egrep_test (pz_curr_data, p_test) != APPLY_FIX) {
-#ifdef DEBUG
-            if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, "EGREP", p_fixd->fix_name,
-                       pz_fname, p_fixd->test_ct - test_ct);
-#endif
+            NOTE_SKIP("EGREP");
             return BOOL_FALSE;
           }
           break;
 
         case TT_NEGREP:
           if (egrep_test (pz_curr_data, p_test) == APPLY_FIX) {
-#ifdef DEBUG
-            if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, "NEGREP", p_fixd->fix_name,
-                       pz_fname, p_fixd->test_ct - test_ct);
-#endif
+            NOTE_SKIP("NEGREP");
             /*  Negated sense  */
             return BOOL_FALSE;
+          }
+          break;
+
+        case TT_CKSUM:
+	  if (one_sum_passed)
+	    break; /*  No need to check any more  */
+
+          saw_sum_test = BOOL_TRUE;
+          if (cksum_test (pz_curr_data, p_test, pz_curr_file) != APPLY_FIX) {
+            NOTE_SKIP("CKSUM");
+          } else {
+            one_sum_passed = BOOL_TRUE;
           }
           break;
 
         case TT_FUNCTION:
           if (run_test (p_test->pz_test_text, pz_curr_file, pz_curr_data)
               != APPLY_FIX) {
-#ifdef DEBUG
-            if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, "FTEST", p_fixd->fix_name,
-                       pz_fname, p_fixd->test_ct - test_ct);
-#endif
+            NOTE_SKIP("FTEST");
             return BOOL_FALSE;
           }
           break;
         }
     }
+
+  if (saw_sum_test)
+    return one_sum_passed;
 
   return BOOL_TRUE;
 }
@@ -1185,7 +1252,7 @@ test_for_changes (int read_fd)
           /*  IF there are matched data, write the matched part now. */
           if ((char*)pz_cmp != pz_curr_data)
             fwrite (pz_curr_data, (size_t)((char*)pz_cmp - pz_curr_data),
-					1, out_fp);
+                    1, out_fp);
 
           /*  Emit the current unmatching character */
           putc (ch, out_fp);
@@ -1248,7 +1315,7 @@ process (void)
 #endif
   if (VLEVEL( VERB_PROGRESS ) && have_tty)
     fprintf (stderr, "%6lu %-50s   \r",
-	     (unsigned long) data_map_size, pz_curr_file);
+             (unsigned long) data_map_size, pz_curr_file);
 
 # ifndef SEPARATE_FIX_PROC
   process_chain_head = NOPROCESS;

@@ -14,5 +14,4 @@ end subroutine matrix_multiply
 
 ! { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" { xfail *-*-* } } }
 ! { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } }
-! { dg-final { cleanup-tree-dump "graphite" } }
 

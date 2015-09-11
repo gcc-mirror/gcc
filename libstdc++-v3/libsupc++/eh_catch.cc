@@ -136,6 +136,21 @@ __cxxabiv1::__cxa_end_catch ()
 bool
 std::uncaught_exception() throw()
 {
+#if __cpp_exceptions
   __cxa_eh_globals *globals = __cxa_get_globals ();
   return globals->uncaughtExceptions != 0;
+#else
+  return false;
+#endif
+}
+
+int
+std::uncaught_exceptions() throw()
+{
+#if __cpp_exceptions
+  __cxa_eh_globals *globals = __cxa_get_globals ();
+  return globals->uncaughtExceptions;
+#else
+  return 0;
+#endif
 }

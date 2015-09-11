@@ -100,6 +100,8 @@
    typed builtins.  */
 #define vec_vaddfp __builtin_vec_vaddfp
 #define vec_addc __builtin_vec_addc
+#define vec_adde __builtin_vec_adde
+#define vec_addec __builtin_vec_addec
 #define vec_vaddsws __builtin_vec_vaddsws
 #define vec_vaddshs __builtin_vec_vaddshs
 #define vec_vaddsbs __builtin_vec_vaddsbs
@@ -125,6 +127,7 @@
 #define vec_cts __builtin_vec_cts
 #define vec_ctu __builtin_vec_ctu
 #define vec_cpsgn __builtin_vec_copysign
+#define vec_double __builtin_vec_double
 #define vec_expte __builtin_vec_expte
 #define vec_floor __builtin_vec_floor
 #define vec_loge __builtin_vec_loge
@@ -205,6 +208,8 @@
 #define vec_lvebx __builtin_vec_lvebx
 #define vec_lvehx __builtin_vec_lvehx
 #define vec_lvewx __builtin_vec_lvewx
+#define vec_pmsum_be __builtin_vec_vpmsum
+#define vec_shasigma_be __builtin_crypto_vshasigma
 /* Cell only intrinsics.  */
 #ifdef __PPU__
 #define vec_lvlx __builtin_vec_lvlx
@@ -340,6 +345,7 @@
 #define vec_vaddudm __builtin_vec_vaddudm
 #define vec_vadduqm __builtin_vec_vadduqm
 #define vec_vbpermq __builtin_vec_vbpermq
+#define vec_bperm __builtin_vec_vbpermq
 #define vec_vclz __builtin_vec_vclz
 #define vec_cntlz __builtin_vec_vclz
 #define vec_vclzb __builtin_vec_vclzb
@@ -351,6 +357,7 @@
 #define vec_vsubecuq __builtin_vec_vsubecuq
 #define vec_vsubeuqm __builtin_vec_vsubeuqm
 #define vec_vgbbd __builtin_vec_vgbbd
+#define vec_gb __builtin_vec_vgbbd
 #define vec_vmaxsd __builtin_vec_vmaxsd
 #define vec_vmaxud __builtin_vec_vmaxud
 #define vec_vminsd __builtin_vec_vminsd

@@ -164,7 +164,7 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 
   if (len > end - start)
     {
-      gfc_warning_now ("Initialization string starting at %L was "
+      gfc_warning_now (0, "Initialization string starting at %L was "
 		       "truncated to fit the variable (%d/%d)",
 		       &rvalue->where, end - start, len);
       len = end - start;
@@ -253,9 +253,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 
 	  if (init && expr->expr_type != EXPR_ARRAY)
 	    {
-	      gfc_error_1 ("'%s' at %L already is initialized at %L",
-			   lvalue->symtree->n.sym->name, &lvalue->where,
-			   &init->where);
+	      gfc_error ("%qs at %L already is initialized at %L",
+			 lvalue->symtree->n.sym->name, &lvalue->where,
+			 &init->where);
 	      goto abort;
 	    }
 

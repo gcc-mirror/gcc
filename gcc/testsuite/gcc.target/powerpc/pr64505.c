@@ -1,4 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
+/* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
 /* { dg-options "-O2 -mpowerpc64" } */
 
 /*

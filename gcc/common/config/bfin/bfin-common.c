@@ -22,7 +22,6 @@
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "tm.h"
-#include "machmode.h"
 #include "tm_p.h"
 #include "common/common-target.h"
 #include "common/common-target-def.h"

@@ -3,14 +3,14 @@
 
 class A
 {
-  A() = default;   // { dg-error "private" }
+  A() = default;   // { dg-message "private" }
 };
 
 A a;               // { dg-error "context" }
 
 class B
 {
-  ~B() = default;  // { dg-error "private" }
+  ~B() = default;  // { dg-message "private" }
 };
 
 B b;               // { dg-error "context" }

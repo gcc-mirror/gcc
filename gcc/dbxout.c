@@ -70,15 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "varasm.h"
@@ -93,18 +85,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "tm_p.h"
-#include "ggc.h"
 #include "debug.h"
-#include "hashtab.h"
-#include "hard-reg-set.h"
 #include "function.h"
 #include "target.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "obstack.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -112,10 +98,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "stmt.h"
 #include "expr.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "stringpool.h"
 
@@ -350,7 +332,8 @@ static int dbxout_symbol_location (tree, tree, const char *, rtx);
 static void dbxout_symbol_name (tree, const char *, int);
 static void dbxout_common_name (tree, const char *, stab_code_type);
 static const char *dbxout_common_check (tree, int *);
-static void dbxout_global_decl (tree);
+static void dbxout_early_global_decl (tree);
+static void dbxout_late_global_decl (tree);
 static void dbxout_type_decl (tree, int);
 static void dbxout_handle_pch (unsigned);
 static void debug_free_queue (void);
@@ -372,6 +355,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_init,
   dbxout_finish,
   debug_nothing_void,
+  debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   dbxout_start_source_file,
@@ -390,8 +374,10 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_tree,		         /* begin_function */
 #endif
   debug_nothing_int,		         /* end_function */
+  debug_nothing_tree,			 /* register_main_translation_unit */
   dbxout_function_decl,
-  dbxout_global_decl,		         /* global_decl */
+  dbxout_early_global_decl,		 /* early_global_decl */
+  dbxout_late_global_decl,		 /* late_global_decl */
   dbxout_type_decl,			 /* type_decl */
   debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
@@ -412,6 +398,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   dbxout_init,
   dbxout_finish,
   debug_nothing_void,
+  debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   dbxout_start_source_file,
@@ -426,8 +413,10 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   xcoffout_end_epilogue,
   debug_nothing_tree,		         /* begin_function */
   xcoffout_end_function,
+  debug_nothing_tree,			 /* register_main_translation_unit */
   debug_nothing_tree,		         /* function_decl */
-  dbxout_global_decl,		         /* global_decl */
+  dbxout_early_global_decl,		 /* early_global_decl */
+  dbxout_late_global_decl,		 /* late_global_decl */
   dbxout_type_decl,			 /* type_decl */
   debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
@@ -967,7 +956,7 @@ get_lang_number (void)
     return N_SO_CC;
   else if (strcmp (language_string, "GNU F77") == 0)
     return N_SO_FORTRAN;
-  else if (strcmp (language_string, "GNU Fortran") == 0)
+  else if (lang_GNU_Fortran ())
     return N_SO_FORTRAN90; /* CHECKME */
   else if (strcmp (language_string, "GNU Pascal") == 0)
     return N_SO_PASCAL;
@@ -1341,10 +1330,16 @@ dbxout_function_decl (tree decl)
 
 #endif /* DBX_DEBUGGING_INFO  */
 
+static void
+dbxout_early_global_decl (tree decl ATTRIBUTE_UNUSED)
+{
+  /* NYI for non-dwarf.  */
+}
+
 /* Debug information for a global DECL.  Called from toplev.c after
    compilation proper has finished.  */
 static void
-dbxout_global_decl (tree decl)
+dbxout_late_global_decl (tree decl)
 {
   if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
@@ -2414,8 +2409,8 @@ dbxout_type_name (tree type)
   stabstr_I (t);
 }
 
-/* Output leading leading struct or class names needed for qualifying
-   type whose scope is limited to a struct or class.  */
+/* Output leading struct or class names needed for qualifying type
+   whose scope is limited to a struct or class.  */
 
 static void
 dbxout_class_name_qualifiers (tree decl)

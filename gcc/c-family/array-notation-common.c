@@ -24,17 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h" 
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "langhooks.h" 
 #include "tree-iterator.h"
 #include "c-family/c-common.h"
@@ -235,10 +227,10 @@ find_rank (location_t loc, tree orig_expr, tree expr, bool ignore_builtin_fn,
 	      ii_tree = ARRAY_NOTATION_ARRAY (ii_tree);
 	    }
 	  else if (handled_component_p (ii_tree)
-		   || TREE_CODE (ii_tree) == INDIRECT_REF)
+		   || INDIRECT_REF_P (ii_tree))
 	    ii_tree = TREE_OPERAND (ii_tree, 0);
 	  else if (TREE_CODE (ii_tree) == PARM_DECL
-		   || TREE_CODE (ii_tree) == VAR_DECL)
+		   || VAR_P (ii_tree))
 	    break;
 	  else
 	    gcc_unreachable ();

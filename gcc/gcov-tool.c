@@ -35,7 +35,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#if HAVE_FTW_H
 #include <ftw.h>
+#endif
 #include <getopt.h>
 
 extern int gcov_profile_merge (struct gcov_info*, struct gcov_info*, int, int);
@@ -48,6 +50,8 @@ extern void gcov_set_verbose (void);
 
 /* Set to verbose output mode.  */
 static bool verbose;
+
+#if HAVE_FTW_H
 
 /* Remove file NAME if it has a gcda suffix. */
 
@@ -65,17 +69,22 @@ unlink_gcda_file (const char *name,
     ret = remove (name);
 
   if (ret)
-    fatal_error ("error in removing %s\n", name);
+    fatal_error (input_location, "error in removing %s\n", name);
 
   return ret;
 }
+#endif
 
 /* Remove the gcda files in PATH recursively.  */
 
 static int
-unlink_profile_dir (const char *path)
+unlink_profile_dir (const char *path ATTRIBUTE_UNUSED)
 {
+#if HAVE_FTW_H
     return nftw(path, unlink_gcda_file, 64, FTW_DEPTH | FTW_PHYS);
+#else
+    return -1;
+#endif
 }
 
 /* Output GCOV_INFO lists PROFILE to directory OUT. Note that
@@ -90,12 +99,8 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   /* Try to make directory if it doesn't already exist.  */
   if (access (out, F_OK) == -1)
     {
-#if !defined(_WIN32)
       if (mkdir (out, S_IRWXU | S_IRWXG | S_IRWXO) == -1 && errno != EEXIST)
-#else
-      if (mkdir (out) == -1 && errno != EEXIST)
-#endif
-        fatal_error ("Cannot make directory %s", out);
+        fatal_error (input_location, "Cannot make directory %s", out);
     } else
       unlink_profile_dir (out);
 
@@ -103,17 +108,17 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   pwd = getcwd (NULL, 0);
 
   if (pwd == NULL)
-    fatal_error ("Cannot get current directory name");
+    fatal_error (input_location, "Cannot get current directory name");
 
   ret = chdir (out);
   if (ret)
-    fatal_error ("Cannot change directory to %s", out);
+    fatal_error (input_location, "Cannot change directory to %s", out);
 
   gcov_do_dump (profile, 0);
 
   ret = chdir (pwd);
   if (ret)
-    fatal_error ("Cannot change directory to %s", pwd);
+    fatal_error (input_location, "Cannot change directory to %s", pwd);
 
   free (pwd);
 }
@@ -188,7 +193,6 @@ static int
 do_merge (int argc, char **argv)
 {
   int opt;
-  int ret;
   const char *output_dir = 0;
   int w1 = 1, w2 = 1;
 
@@ -207,7 +211,7 @@ do_merge (int argc, char **argv)
         case 'w':
           sscanf (optarg, "%d,%d", &w1, &w2);
           if (w1 < 0 || w2 < 0)
-            fatal_error ("weights need to be non-negative\n");
+            fatal_error (input_location, "weights need to be non-negative\n");
           break;
         default:
           merge_usage ();
@@ -217,12 +221,10 @@ do_merge (int argc, char **argv)
   if (output_dir == NULL)
     output_dir = "merged_profile";
 
-  if (argc - optind == 2)
-    ret = profile_merge (argv[optind], argv[optind+1], output_dir, w1, w2);
-  else
+  if (argc - optind != 2)
     merge_usage ();
 
-  return ret;
+  return profile_merge (argv[optind], argv[optind+1], output_dir, w1, w2);
 }
 
 /* If N_VAL is no-zero, normalize the profile by setting the largest counter
@@ -350,7 +352,7 @@ do_rewrite (int argc, char **argv)
             }
 
           if (scale < 0.0)
-            fatal_error ("scale needs to be non-negative\n");
+            fatal_error (input_location, "scale needs to be non-negative\n");
 
           if (normalize_val != 0)
             {

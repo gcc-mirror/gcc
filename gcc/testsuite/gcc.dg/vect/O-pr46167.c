@@ -8,4 +8,3 @@ int foo (char c, int i)
   return s;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

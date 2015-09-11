@@ -26,22 +26,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"			/* For INT_TYPE_SIZE,
-				   TARGET_VTABLE_USES_DESCRIPTORS,
-				   BITS_PER_UNIT,
-				   MODIFY_JNI_METHOD_CALL and
-				   PARM_BOUNDARY.  */
-				   
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
+#include "tm.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "real.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stringpool.h"
@@ -54,7 +40,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-except.h"
 #include "parse.h"
 #include "diagnostic-core.h"
-#include "ggc.h"
 #include "tree-iterator.h"
 #include "target.h"
 
@@ -2253,7 +2238,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 	  if (method == meth)
 	    break;
 	  if (meth == NULL_TREE)
-	    fatal_error ("method '%s' not found in class",
+	    fatal_error (input_location, "method '%s' not found in class",
 			 IDENTIFIER_POINTER (DECL_NAME (method)));
 	  method_index++;
 	}
@@ -2445,7 +2430,7 @@ expand_invoke (int opcode, int method_ref_index, int nargs ATTRIBUTE_UNUSED)
       load_class (self_type, 1);
       safe_layout_class (self_type);
       if (TREE_CODE (TYPE_SIZE (self_type)) == ERROR_MARK)
-	fatal_error ("failed to find class '%s'", self_name);
+	fatal_error (input_location, "failed to find class '%s'", self_name);
     }
   layout_class_methods (self_type);
 

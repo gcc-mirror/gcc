@@ -26,4 +26,3 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump-times "Optimizing range tests .* 26" 1 "reassoc1"} }*/
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

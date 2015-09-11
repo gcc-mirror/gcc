@@ -191,4 +191,3 @@ int main(int argc, char **argv)
 /* { dg-final { scan-ipa-dump "Semantic equality hit:nsd_different_result2->nsd_different_result" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:nsd->gcd" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 3" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

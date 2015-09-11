@@ -13,8 +13,6 @@ char f(char *a)
 
 /* test_function should be called twice as the inline-asm changes memory. */
 /* { dg-final { scan-tree-dump-times "test_function" 2 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 
 /* There should a VDEF for the inline-asm.  */
 /* { dg-final { scan-tree-dump-times "VDEF" 1 "alias"} } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

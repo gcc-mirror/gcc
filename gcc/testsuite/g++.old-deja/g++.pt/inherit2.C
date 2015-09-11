@@ -24,7 +24,7 @@ template <class T> class B
   static T value_AC;
 };
 template <typename T> T B<T>::valueA_AA;
-template <typename T> T B<T>::valueA_AC;// { dg-error "" "" } private - 
+template <typename T> T B<T>::valueA_AC;// { dg-message "" "" } private - 
 template <typename T> T B<T>::value_AC;	// { dg-bogus "" "" }  - 
 
 // this one is a friend

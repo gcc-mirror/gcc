@@ -63,4 +63,3 @@ main ()
 
 /* { dg-final { scan-assembler-times "ngc\tw\[0-9\]+, w\[0-9\]+" 2 } } */
 /* { dg-final { scan-assembler-times "ngc\tx\[0-9\]+, x\[0-9\]+" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

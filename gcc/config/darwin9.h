@@ -35,8 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
-#undef PIE_SPEC
-#define PIE_SPEC \
+#undef DARWIN_PIE_SPEC
+#define DARWIN_PIE_SPEC \
   "%{fpie|pie|fPIE: \
      %{mdynamic-no-pic: %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
       :-pie}}"
@@ -54,7 +54,7 @@ along with GCC; see the file COPYING3.  If not see
     fprintf ((FILE), "\t.comm ");						\
     assemble_name ((FILE), (NAME));					\
     if (_new_size == 0) _new_size = 1;					\
-    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
+    fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
 	     _new_size, floor_log2 ((ALIGN) / BITS_PER_UNIT));		\
   } while (0)
 

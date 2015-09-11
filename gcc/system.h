@@ -307,7 +307,7 @@ extern int errno;
 /* The outer cast is needed to work around a bug in Cray C 5.0.3.0.
    It is necessary at least when t == time_t.  */
 #define INTTYPE_MINIMUM(t) ((t) (INTTYPE_SIGNED (t) \
-                             ? ~ (t) 0 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
+			    ? (t) 1 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
 #define INTTYPE_MAXIMUM(t) ((t) (~ (t) 0 - INTTYPE_MINIMUM (t)))
 
 /* Use that infrastructure to provide a few constants.  */
@@ -465,12 +465,20 @@ extern char *getwd (char *);
 extern void *sbrk (int);
 #endif
 
+#if defined (HAVE_DECL_SETENV) && !HAVE_DECL_SETENV
+int setenv(const char *, const char *, int);
+#endif
+
 #if defined (HAVE_DECL_STRSTR) && !HAVE_DECL_STRSTR
 extern char *strstr (const char *, const char *);
 #endif
 
 #if defined (HAVE_DECL_STPCPY) && !HAVE_DECL_STPCPY
 extern char *stpcpy (char *, const char *);
+#endif
+
+#if defined (HAVE_DECL_UNSETENV) && !HAVE_DECL_UNSETENV
+int unsetenv(const char *);
 #endif
 
 #ifdef __cplusplus
@@ -964,6 +972,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	TARGET_HANDLE_PRAGMA_EXTERN_PREFIX \
 	TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN \
 	TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD \
+	TARGET_MD_ASM_CLOBBERS TARGET_RELAXED_ORDERING
 
 /* Arrays that were deleted in favor of a functional interface.  */
  #pragma GCC poison built_in_decls implicit_built_in_decls

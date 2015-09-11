@@ -15,4 +15,3 @@ void fum(void *to)
 }
 
 /* { dg-final { scan-tree-dump "foo \\\(void \\\* from, void \\\* to\\\)" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

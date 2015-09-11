@@ -14,7 +14,7 @@
 /* Constructed examples; input/output (same register), output, input, and
    input and output (different registers).  */
 
-/* The long longs are used to test overlap overlap for multi-register
+/* The long longs are used to test overlap for multi-register
    registers.  REG2 and REG4 must be the second halves (defined as
    higher-numbered parts) of REG1 and REG3 respectively when two registers
    are needed.  */
@@ -42,7 +42,7 @@
 	|| defined (__ppc)
 # define REG1 "6"
 # define REG2 "7"
-# if !defined(__powerpc64__) && !defined(__LP64__)
+# if !defined(_ARCH_PPC64)
 #  define REG3 "8"
 #  define REG4 "9"
 # endif

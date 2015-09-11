@@ -26,32 +26,17 @@ along with GCC; see the file COPYING3.  If not see
 #include <set>
 
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "predict.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "options.h"
 #include "fold-const.h"
 #include "tree-pass.h"
 #include "flags.h"
-#include "predict.h"
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "diagnostic-core.h"
 #include "gcov-io.h"
 #include "profile.h"
@@ -59,20 +44,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
-#include "tree-ssa-alias.h"
 #include "tree-cfg.h"
 #include "tree-cfgcleanup.h"
-#include "tree-ssa-operands.h"
 #include "tree-into-ssa.h"
 #include "internal-fn.h"
-#include "is-a.h"
-#include "gimple-expr.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "hash-map.h"
-#include "plugin-api.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "value-prof.h"
 #include "coverage.h"
@@ -82,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
-#include "stringpool.h"
 #include "auto-profile.h"
 
 /* The following routines implements AutoFDO optimization.
@@ -107,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
      standalone symbol, or a clone of a function that is inlined into another
      function.
 
-   Phase 2: Early inline + valur profile transformation.
+   Phase 2: Early inline + value profile transformation.
      Early inline uses autofdo_source_profile to find if a callsite is:
         * inlined in the profiled binary.
         * callee body is hot in the profiling run.
@@ -372,7 +347,7 @@ get_original_name (const char *name)
 
 /* Return the combined location, which is a 32bit integer in which
    higher 16 bits stores the line offset of LOC to the start lineno
-   of DECL, The lower 16 bits stores the discrimnator.  */
+   of DECL, The lower 16 bits stores the discriminator.  */
 
 static unsigned
 get_combined_location (location_t loc, tree decl)
@@ -435,7 +410,7 @@ get_inline_stack (location_t locus, inline_stack *stack)
 
 /* Return STMT's combined location, which is a 32bit integer in which
    higher 16 bits stores the line offset of LOC to the start lineno
-   of DECL, The lower 16 bits stores the discrimnator.  */
+   of DECL, The lower 16 bits stores the discriminator.  */
 
 static unsigned
 get_relative_location_for_stmt (gimple stmt)
@@ -492,8 +467,8 @@ string_table::get_index (const char *name) const
   string_index_map::const_iterator iter = map_.find (name);
   if (iter == map_.end ())
     return -1;
-  else
-    return iter->second;
+
+  return iter->second;
 }
 
 /* Return the index of a given function DECL. Return -1 if DECL is not 
@@ -513,8 +488,8 @@ string_table::get_index_by_decl (tree decl) const
     return ret;
   if (DECL_ABSTRACT_ORIGIN (decl))
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
-  else
-    return -1;
+
+  return -1;
 }
 
 /* Return the function name of a given INDEX.  */
@@ -580,8 +555,8 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
     }
   if (DECL_ABSTRACT_ORIGIN (decl))
     return get_function_instance_by_decl (lineno, DECL_ABSTRACT_ORIGIN (decl));
-  else
-    return NULL;
+
+  return NULL;
 }
 
 /* Store the profile info for LOC in INFO. Return TRUE if profile info
@@ -608,7 +583,7 @@ function_instance::mark_annotated (location_t loc)
   iter->second.annotated = true;
 }
 
-/* Read the inlinied indirect call target profile for STMT and store it in
+/* Read the inlined indirect call target profile for STMT and store it in
    MAP, return the total count for all inlined indirect calls.  */
 
 gcov_type
@@ -835,8 +810,8 @@ autofdo_source_profile::get_callsite_total_count (
       || afdo_string_table->get_index (IDENTIFIER_POINTER (
              DECL_ASSEMBLER_NAME (edge->callee->decl))) != s->name ())
     return 0;
-  else
-    return s->total_count ();
+
+  return s->total_count ();
 }
 
 /* Read AutoFDO profile and returns TRUE on success.  */
@@ -967,9 +942,9 @@ read_profile (void)
    histograms for indirect-call optimization.
 
    This function is actually served for 2 purposes:
-     * before annotation, we need to mark histogram, promote and inline
-     * after annotation, we just need to mark, and let follow-up logic to
-       decide if it needs to promote and inline.  */
+     * before annotation, we need to mark histogram, promote and inline
+     * after annotation, we just need to mark, and let follow-up logic to
+       decide if it needs to promote and inline.  */
 
 static void
 afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
@@ -1065,7 +1040,7 @@ set_edge_annotated (edge e, edge_set *annotated)
 }
 
 /* For a given BB, set its execution count. Attach value profile if a stmt
-   is not in PROMOTED, because we only want to promot an indirect call once.
+   is not in PROMOTED, because we only want to promote an indirect call once.
    Return TRUE if BB is annotated.  */
 
 static bool
@@ -1143,28 +1118,28 @@ afdo_find_equiv_class (bb_set *annotated_bb)
     bb->aux = bb;
     dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
     FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
-    if (bb1->aux == NULL && dominated_by_p (CDI_POST_DOMINATORS, bb, bb1)
-        && bb1->loop_father == bb->loop_father)
-      {
-        bb1->aux = bb;
-        if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
-          {
-            bb->count = MAX (bb->count, bb1->count);
-            set_bb_annotated (bb, annotated_bb);
-          }
-      }
+      if (bb1->aux == NULL && dominated_by_p (CDI_POST_DOMINATORS, bb, bb1)
+	  && bb1->loop_father == bb->loop_father)
+	{
+	  bb1->aux = bb;
+	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
+	    {
+	      bb->count = bb1->count;
+	      set_bb_annotated (bb, annotated_bb);
+	    }
+	}
     dom_bbs = get_dominated_by (CDI_POST_DOMINATORS, bb);
     FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
-    if (bb1->aux == NULL && dominated_by_p (CDI_DOMINATORS, bb, bb1)
-        && bb1->loop_father == bb->loop_father)
-      {
-        bb1->aux = bb;
-        if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
-          {
-            bb->count = MAX (bb->count, bb1->count);
-            set_bb_annotated (bb, annotated_bb);
-          }
-      }
+      if (bb1->aux == NULL && dominated_by_p (CDI_DOMINATORS, bb, bb1)
+	  && bb1->loop_father == bb->loop_father)
+	{
+	  bb1->aux = bb;
+	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
+	    {
+	      bb->count = bb1->count;
+	      set_bb_annotated (bb, annotated_bb);
+	    }
+	}
   }
 }
 
@@ -1191,10 +1166,10 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
     gcov_type total_known_count = 0;
 
     FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
-    if (!is_edge_annotated (e, *annotated_edge))
-      num_unknown_edge++, unknown_edge = e;
-    else
-      total_known_count += e->count;
+      if (!is_edge_annotated (e, *annotated_edge))
+	num_unknown_edge++, unknown_edge = e;
+      else
+	total_known_count += e->count;
 
     if (num_unknown_edge == 0)
       {
@@ -1365,8 +1340,13 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
   bool has_sample = false;
 
   FOR_EACH_BB_FN (bb, cfun)
-  if (bb->count > 0)
-    has_sample = true;
+  {
+    if (bb->count > 0)
+      {
+	has_sample = true;
+	break;
+      }
+  }
 
   if (!has_sample)
     return;
@@ -1404,7 +1384,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
     edge_iterator ei;
 
     FOR_EACH_EDGE (e, ei, bb->succs)
-    e->count = (double)bb->count * e->probability / REG_BR_PROB_BASE;
+      e->count = (double)bb->count * e->probability / REG_BR_PROB_BASE;
     bb->aux = NULL;
   }
 
@@ -1466,13 +1446,14 @@ afdo_vpt_for_early_inline (stmt_set *promoted_stmts)
           }
       }
   }
+
   if (has_vpt)
     {
       optimize_inline_calls (current_function_decl);
       return true;
     }
-  else
-    return false;
+
+  return false;
 }
 
 /* Annotate auto profile to the control flow graph. Do not annotate value
@@ -1501,7 +1482,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
 
     bb->count = 0;
     FOR_EACH_EDGE (e, ei, bb->succs)
-    e->count = 0;
+      e->count = 0;
 
     if (afdo_set_bb_count (bb, promoted_stmts))
       set_bb_annotated (bb, &annotated_bb);
@@ -1667,19 +1648,20 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
 {
   gcov_type count
       = autofdo::afdo_source_profile->get_callsite_total_count (edge);
+
   if (count > 0)
     {
       bool is_hot;
       const struct gcov_ctr_summary *saved_profile_info = profile_info;
-      /* At earling inline stage, profile_info is not set yet. We need to
+      /* At early inline stage, profile_info is not set yet. We need to
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;
       is_hot = maybe_hot_count_p (NULL, count);
       profile_info = saved_profile_info;
       return is_hot;
     }
-  else
-    return false;
+
+  return false;
 }
 
 namespace

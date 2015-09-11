@@ -22,5 +22,3 @@ int f(int t, int c)
 /* { dg-final { scan-tree-dump-not "if" "phiopt1" } } */
 /* { dg-final { scan-tree-dump "g .t_\[0-9\]*.D.," "optimized" } } */
 /* { dg-final { scan-tree-dump-not "PHI" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "phiopt1" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

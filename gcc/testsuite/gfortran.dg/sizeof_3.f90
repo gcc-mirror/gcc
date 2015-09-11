@@ -42,4 +42,3 @@ end
 ! { dg-final { scan-tree-dump-times "m2test = 1;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "iii = 100;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "jjj = 160;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

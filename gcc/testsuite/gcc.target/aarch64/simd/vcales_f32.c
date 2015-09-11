@@ -33,4 +33,3 @@ main (void)
 }
 
 /* { dg-final { scan-assembler "facge\[ \t\]+\[sS\]\[0-9\]+, ?\[sS\]\[0-9\]+, ?\[sS\]\[0-9\]+\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

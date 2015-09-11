@@ -17,4 +17,3 @@ void test_vcombineu16 (void)
   out_uint16x8_t = vcombine_u16 (arg0_uint16x4_t, arg1_uint16x4_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

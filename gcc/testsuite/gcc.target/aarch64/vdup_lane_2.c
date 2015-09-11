@@ -338,6 +338,5 @@ main ()
 
 /* Asm check for vdupd_lane_f64, vdupd_lane_s64, vdupd_lane_u64.  */
 /* Attempts to make the compiler generate vdupd are not practical.  */
-/* { dg-final { scan-assembler-not "dup\\td\[0-9\]+, v\[0-9\]+\.d\\\[0\\\]" } }
+/* { dg-final { scan-assembler-not "dup\\td\[0-9\]+, v\[0-9\]+\.d\\\[0\\\]" } } */
 
-/* { dg-final { cleanup-saved-temps } } */

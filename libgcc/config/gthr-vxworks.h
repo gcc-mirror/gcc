@@ -36,7 +36,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __cplusplus
 #define UNUSED(x)
 #else
-#define UNUSED(x) x __attribute__((unused))
+#define UNUSED(x) x __attribute__((__unused__))
 #endif
 
 #ifdef __cplusplus

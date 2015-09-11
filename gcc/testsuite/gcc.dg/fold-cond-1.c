@@ -26,4 +26,3 @@ _Bool test4(int g, int h)
 /* { dg-final { scan-tree-dump-times "e == 0 \&\& f != 0" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "g == 0 \\? h != 0 : 1" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "g != 0 \\? 1 : h != 0" 0 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

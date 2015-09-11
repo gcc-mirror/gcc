@@ -17,4 +17,3 @@ contains
 end program test
 ! { dg-prune-output "unimplemented" }
 ! { dg-final { scan-tree-dump-times "pragma acc declare map\\(force_tofrom:i\\)" 2 "original" } } 
-! { dg-final { cleanup-tree-dump "original" } } 

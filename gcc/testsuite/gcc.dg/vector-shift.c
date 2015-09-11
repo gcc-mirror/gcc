@@ -10,4 +10,3 @@ f (vec *x)
 }
 
 /* { dg-final { scan-tree-dump "<< 7" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

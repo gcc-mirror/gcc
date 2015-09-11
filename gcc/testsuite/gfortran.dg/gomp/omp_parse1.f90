@@ -17,4 +17,3 @@ call bar
 end
 
 ! { dg-final { scan-tree-dump-times "pragma omp parallel" 3 "omplower" } }
-! { dg-final { cleanup-tree-dump "omplower" } }

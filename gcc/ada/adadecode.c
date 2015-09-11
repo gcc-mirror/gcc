@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2012, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2015, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -368,7 +368,7 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
 extern "C" {
 #endif
 
-#ifdef IN_GCC
+#ifdef IN_RTS
 char *
 ada_demangle (const char *coded_name)
 {

@@ -24,4 +24,3 @@ int loop1 (int k)
    similar memory accesses.  */
 /* { dg-final { scan-tree-dump "similar memory accesses" "ldist" } } */
 /* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 0 "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

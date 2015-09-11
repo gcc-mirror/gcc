@@ -29,4 +29,3 @@ f (int n, int x, int stride)
 
 /* { dg-final { scan-tree-dump-times " \\* stride" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times " \\* 3" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

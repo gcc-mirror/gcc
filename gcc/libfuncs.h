@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_LIBFUNCS_H
 #define GCC_LIBFUNCS_H
 
-#include "hashtab.h"
 
 /* Enumeration of indexes into libfunc_table.  */
 enum libfunc_index
@@ -62,7 +61,7 @@ struct GTY((for_user)) libfunc_entry {
 
 /* Descriptor for libfunc_entry.  */
 
-struct libfunc_hasher : ggc_hasher<libfunc_entry *>
+struct libfunc_hasher : ggc_ptr_hash<libfunc_entry>
 {
   static hashval_t hash (libfunc_entry *);
   static bool equal (libfunc_entry *, libfunc_entry *);

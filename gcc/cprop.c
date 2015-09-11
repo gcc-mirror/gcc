@@ -20,39 +20,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
+#include "rtl.h"
+#include "df.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
-#include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "tm_p.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
-#include "predict.h"
-#include "hashtab.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgcleanup.h"
-#include "basic-block.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -63,11 +47,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "except.h"
 #include "params.h"
+#include "alloc-pool.h"
 #include "cselib.h"
 #include "intl.h"
-#include "obstack.h"
 #include "tree-pass.h"
-#include "df.h"
 #include "dbgcnt.h"
 #include "target.h"
 #include "cfgloop.h"
@@ -285,6 +268,15 @@ cprop_constant_p (const_rtx x)
   return CONSTANT_P (x) && (GET_CODE (x) != CONST || shared_const_p (x));
 }
 
+/* Determine whether the rtx X should be treated as a register that can
+   be propagated.  Any pseudo-register is fine.  */
+
+static bool
+cprop_reg_p (const_rtx x)
+{
+  return REG_P (x) && !HARD_REGISTER_P (x);
+}
+
 /* Scan SET present in INSN and add an entry to the hash TABLE.
    IMPLICIT is true if it's an implicit set, false otherwise.  */
 
@@ -295,8 +287,7 @@ hash_scan_set (rtx set, rtx_insn *insn, struct hash_table_d *table,
   rtx src = SET_SRC (set);
   rtx dest = SET_DEST (set);
 
-  if (REG_P (dest)
-      && ! HARD_REGISTER_P (dest)
+  if (cprop_reg_p (dest)
       && reg_available_p (dest, insn)
       && can_copy_p (GET_MODE (dest)))
     {
@@ -318,12 +309,11 @@ hash_scan_set (rtx set, rtx_insn *insn, struct hash_table_d *table,
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
 	  && cprop_constant_p (XEXP (note, 0)))
-	src = XEXP (note, 0), set = gen_rtx_SET (VOIDmode, dest, src);
+	src = XEXP (note, 0), set = gen_rtx_SET (dest, src);
 
       /* Record sets for constant/copy propagation.  */
-      if ((REG_P (src)
+      if ((cprop_reg_p (src)
 	   && src != dest
-	   && ! HARD_REGISTER_P (src)
 	   && reg_available_p (src, insn))
 	  || cprop_constant_p (src))
 	insert_set_in_table (dest, src, insn, table, implicit);
@@ -758,12 +748,38 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
   int success = 0;
   rtx set = single_set (insn);
 
+  bool check_rtx_costs = true;
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+  int old_cost = set ? set_rtx_cost (set, speed) : 0;
+
+  if (!set
+      || CONSTANT_P (SET_SRC (set))
+      || (note != 0
+	  && REG_NOTE_KIND (note) == REG_EQUAL
+	  && (GET_CODE (XEXP (note, 0)) == CONST
+	      || CONSTANT_P (XEXP (note, 0)))))
+    check_rtx_costs = false;
+
   /* Usually we substitute easy stuff, so we won't copy everything.
      We however need to take care to not duplicate non-trivial CONST
      expressions.  */
   to = copy_rtx (to);
 
   validate_replace_src_group (from, to, insn);
+
+  /* If TO is a constant, check the cost of the set after propagation
+     to the cost of the set before the propagation.  If the cost is
+     higher, then do not replace FROM with TO.  */
+
+  if (check_rtx_costs
+      && CONSTANT_P (to)
+      && set_rtx_cost (set, speed) > old_cost)
+    {
+      cancel_changes (0);
+      return false;
+    }
+
+
   if (num_changes_pending () && apply_change_group ())
     success = 1;
 
@@ -821,15 +837,15 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
   return success;
 }
 
-/* Find a set of REGNOs that are available on entry to INSN's block.  Return
-   NULL no such set is found.  */
+/* Find a set of REGNOs that are available on entry to INSN's block.  If found,
+   SET_RET[0] will be assigned a set with a register source and SET_RET[1] a
+   set with a constant source.  If not found the corresponding entry is set to
+   NULL.  */
 
-static struct cprop_expr *
-find_avail_set (int regno, rtx_insn *insn)
+static void
+find_avail_set (int regno, rtx_insn *insn, struct cprop_expr *set_ret[2])
 {
-  /* SET1 contains the last set found that can be returned to the caller for
-     use in a substitution.  */
-  struct cprop_expr *set1 = 0;
+  set_ret[0] = set_ret[1] = NULL;
 
   /* Loops are not possible here.  To get a loop we would need two sets
      available at the start of the block containing INSN.  i.e. we would
@@ -869,8 +885,10 @@ find_avail_set (int regno, rtx_insn *insn)
          If the source operand changed, we may still use it for the next
          iteration of this loop, but we may not use it for substitutions.  */
 
-      if (cprop_constant_p (src) || reg_not_set_p (src, insn))
-	set1 = set;
+      if (cprop_constant_p (src))
+	set_ret[1] = set;
+      else if (reg_not_set_p (src, insn))
+	set_ret[0] = set;
 
       /* If the source of the set is anything except a register, then
 	 we have reached the end of the copy chain.  */
@@ -881,10 +899,6 @@ find_avail_set (int regno, rtx_insn *insn)
 	 and see if we have an available copy into SRC.  */
       regno = REGNO (src);
     }
-
-  /* SET1 holds the last set that was available and anticipatable at
-     INSN.  */
-  return set1;
 }
 
 /* Subroutine of cprop_insn that tries to propagate constants into
@@ -965,11 +979,9 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
 	remove_note (jump, note);
      }
 
-#ifdef HAVE_cc0
   /* Delete the cc0 setter.  */
-  if (setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
+  if (HAVE_cc0 && setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
     delete_insn (setcc);
-#endif
 
   global_const_prop_count++;
   if (dump_file != NULL)
@@ -1050,40 +1062,40 @@ cprop_insn (rtx_insn *insn)
   int changed = 0, changed_this_round;
   rtx note;
 
-retry:
-  changed_this_round = 0;
-  reg_use_count = 0;
-  note_uses (&PATTERN (insn), find_used_regs, NULL);
-
-  /* We may win even when propagating constants into notes.  */
-  note = find_reg_equal_equiv_note (insn);
-  if (note)
-    find_used_regs (&XEXP (note, 0), NULL);
-
-  for (i = 0; i < reg_use_count; i++)
+  do
     {
-      rtx reg_used = reg_use_table[i];
-      unsigned int regno = REGNO (reg_used);
-      rtx src;
-      struct cprop_expr *set;
+      changed_this_round = 0;
+      reg_use_count = 0;
+      note_uses (&PATTERN (insn), find_used_regs, NULL);
 
-      /* If the register has already been set in this block, there's
-	 nothing we can do.  */
-      if (! reg_not_set_p (reg_used, insn))
-	continue;
+      /* We may win even when propagating constants into notes.  */
+      note = find_reg_equal_equiv_note (insn);
+      if (note)
+	find_used_regs (&XEXP (note, 0), NULL);
 
-      /* Find an assignment that sets reg_used and is available
-	 at the start of the block.  */
-      set = find_avail_set (regno, insn);
-      if (! set)
-	continue;
-
-      src = set->src;
-
-      /* Constant propagation.  */
-      if (cprop_constant_p (src))
+      for (i = 0; i < reg_use_count; i++)
 	{
-          if (constprop_register (reg_used, src, insn))
+	  rtx reg_used = reg_use_table[i];
+	  unsigned int regno = REGNO (reg_used);
+	  rtx src_cst = NULL, src_reg = NULL;
+	  struct cprop_expr *set[2];
+
+	  /* If the register has already been set in this block, there's
+	     nothing we can do.  */
+	  if (! reg_not_set_p (reg_used, insn))
+	    continue;
+
+	  /* Find an assignment that sets reg_used and is available
+	     at the start of the block.  */
+	  find_avail_set (regno, insn, set);
+	  if (set[0])
+	    src_reg = set[0]->src;
+	  if (set[1])
+	    src_cst = set[1]->src;
+
+	  /* Constant propagation.  */
+	  if (src_cst && cprop_constant_p (src_cst)
+	      && constprop_register (reg_used, src_cst, insn))
 	    {
 	      changed_this_round = changed = 1;
 	      global_const_prop_count++;
@@ -1093,18 +1105,16 @@ retry:
 			   "GLOBAL CONST-PROP: Replacing reg %d in ", regno);
 		  fprintf (dump_file, "insn %d with constant ",
 			   INSN_UID (insn));
-		  print_rtl (dump_file, src);
+		  print_rtl (dump_file, src_cst);
 		  fprintf (dump_file, "\n");
 		}
 	      if (insn->deleted ())
 		return 1;
 	    }
-	}
-      else if (REG_P (src)
-	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
-	       && REGNO (src) != regno)
-	{
-	  if (try_replace_reg (reg_used, src, insn))
+	  /* Copy propagation.  */
+	  else if (src_reg && cprop_reg_p (src_reg)
+		   && REGNO (src_reg) != regno
+		   && try_replace_reg (reg_used, src_reg, insn))
 	    {
 	      changed_this_round = changed = 1;
 	      global_copy_prop_count++;
@@ -1113,7 +1123,7 @@ retry:
 		  fprintf (dump_file,
 			   "GLOBAL COPY-PROP: Replacing reg %d in insn %d",
 			   regno, INSN_UID (insn));
-		  fprintf (dump_file, " with reg %d\n", REGNO (src));
+		  fprintf (dump_file, " with reg %d\n", REGNO (src_reg));
 		}
 
 	      /* The original insn setting reg_used may or may not now be
@@ -1123,12 +1133,10 @@ retry:
 		 and made things worse.  */
 	    }
 	}
-
-      /* If try_replace_reg simplified the insn, the regs found
-	 by find_used_regs may not be valid anymore.  Start over.  */
-      if (changed_this_round)
-	goto retry;
     }
+  /* If try_replace_reg simplified the insn, the regs found by find_used_regs
+     may not be valid anymore.  Start over.  */
+  while (changed_this_round);
 
   if (changed && DEBUG_INSN_P (insn))
     return 0;
@@ -1191,7 +1199,7 @@ do_local_cprop (rtx x, rtx_insn *insn)
   /* Rule out USE instructions and ASM statements as we don't want to
      change the hard registers mentioned.  */
   if (REG_P (x)
-      && (REGNO (x) >= FIRST_PSEUDO_REGISTER
+      && (cprop_reg_p (x)
           || (GET_CODE (PATTERN (insn)) != USE
 	      && asm_noperands (PATTERN (insn)) < 0)))
     {
@@ -1207,7 +1215,7 @@ do_local_cprop (rtx x, rtx_insn *insn)
 
 	  if (cprop_constant_p (this_rtx))
 	    newcnst = this_rtx;
-	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER
+	  if (cprop_reg_p (this_rtx)
 	      /* Don't copy propagate if it has attached REG_EQUIV note.
 		 At this point this only function parameters should have
 		 REG_EQUIV notes and if the argument slot is used somewhere
@@ -1328,9 +1336,8 @@ implicit_set_cond_p (const_rtx cond)
   if (GET_CODE (cond) != EQ && GET_CODE (cond) != NE)
     return false;
 
-  /* The first operand of COND must be a pseudo-reg.  */
-  if (! REG_P (XEXP (cond, 0))
-      || HARD_REGISTER_P (XEXP (cond, 0)))
+  /* The first operand of COND must be a register we can propagate.  */
+  if (!cprop_reg_p (XEXP (cond, 0)))
     return false;
 
   /* The second operand of COND must be a suitable constant.  */
@@ -1422,8 +1429,7 @@ find_implicit_sets (void)
 		(implicit_sets_size - old_implicit_sets_size) * sizeof (rtx));
       }
 
-      new_rtx = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
-			     XEXP (cond, 1));
+      new_rtx = gen_rtx_SET (XEXP (cond, 0), XEXP (cond, 1));
       implicit_sets[dest->index] = new_rtx;
       if (dump_file)
 	{

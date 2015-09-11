@@ -17,4 +17,3 @@ int bar (int i)
 
 /* { dg-final { scan-tree-dump "i \\\* 4 \\\+ 2" "original" } } */
 /* { dg-final { scan-tree-dump "\\\(i \\\+ 2\\\) \\\* 2" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

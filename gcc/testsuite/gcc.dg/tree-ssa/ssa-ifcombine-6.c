@@ -34,4 +34,3 @@ foo2 (unsigned int a)
 
 /* { dg-final { scan-tree-dump "optimizing bits or bits test" "ifcombine" } } */
 /* { dg-final { scan-tree-dump "optimizing double bit test" "ifcombine" } } */
-/* { dg-final { cleanup-tree-dump "ifcombine" } } */

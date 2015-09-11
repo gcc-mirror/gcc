@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Program to construct C header file a-einfo.h (C version of einfo.ads spec)
+--  Program to construct C header file einfo.h (C version of einfo.ads spec)
 --  for use by Gigi. This header file contains all definitions and access
 --  functions, but does not contain set procedures, since Gigi is not allowed
---  to modify the GNAT tree)
+--  to modify the GNAT tree.
 
 --    Input files:
 
@@ -35,12 +35,12 @@
 
 --    Output files:
 
---       a-einfo.h     Corresponding c header file
+--       einfo.h       corresponding C header file
 
 --  Note: It is assumed that the input files have been compiled without errors
 
 --  An optional argument allows the specification of an output file name to
---  override the default a-einfo.h file name for the generated output file.
+--  override the default einfo.h file name for the generated output file.
 
 --  Most, but not all of the functions in Einfo can be inlined in the C header.
 --  They are the functions identified by pragma Inline in the spec. Functions
@@ -129,6 +129,7 @@ procedure XEinfo is
    Get_B1   : constant Pattern := BreakX (' ') * A & " in " & Rest * B;
    Get_B2   : constant Pattern := BreakX (' ') * A & " = " & Rest * B;
    Get_B3   : constant Pattern := BreakX (' ') * A & " /= " & Rest * B;
+   Get_B4   : constant Pattern := BreakX (' ') * A & " or else " & Rest * B;
    To_Paren : constant Pattern := wsp * Filler & '(';
    Get_Fml  : constant Pattern := Break (" :") * Formal & wsp & ':' & wsp
                                   & BreakX (" );") * Formaltyp;
@@ -253,7 +254,7 @@ begin
    if Argument_Count > 0 then
       Create (Ofile, Out_File, Argument (1));
    else
-      Create (Ofile, Out_File, "a-einfo.h");
+      Create (Ofile, Out_File, "einfo.h");
    end if;
 
    Open (InB, In_File, "einfo.adb");
@@ -489,6 +490,8 @@ begin
          Replace (M, A & " == " & B);
          Match (Expr, Get_B3, M);
          Replace (M, A & " != " & B);
+         Match (Expr, Get_B4, M);
+         Replace (M, A & " || " & B);
          Put_Line (Ofile, "");
          Sethead (Fline, "");
          Put_Line (Ofile, C & "   { return " & Expr & "; }");

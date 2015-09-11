@@ -810,6 +810,7 @@ CXXDEPMODE
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
+am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
@@ -949,7 +950,6 @@ enable_reduced_reflection
 with_win32_nlsapi
 enable_gc_debug
 enable_interpreter
-enable_sjlj_exceptions
 enable_java_net
 with_libffi
 enable_jvmpi
@@ -1644,8 +1644,6 @@ Optional Features:
                           building portions of libgcj
   --enable-gc-debug       include full support for pointer backtracing etc.
   --enable-interpreter    enable interpreter
-  --enable-sjlj-exceptions
-                          force use of builtin_setjmp for exceptions
   --disable-java-net      disable java.net
   --disable-jvmpi         disable JVMPI support
   --enable-java-gc=TYPE   choose garbage collector (default is boehm)
@@ -4908,6 +4906,7 @@ fi
 if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
   AMDEPBACKSLASH='\'
+  am__nodep='_no'
 fi
  if test "x$enable_dependency_tracking" != xno; then
   AMDEP_TRUE=
@@ -4970,11 +4969,11 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
-# Always define AMTAR for backward compatibility.
+# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AMTAR='$${TAR-tar}'
 
-AMTAR=${AMTAR-"${am_missing_run}tar"}
-
-am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
+am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
@@ -4992,6 +4991,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -5051,7 +5051,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -5119,6 +5119,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -5178,7 +5179,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -13388,7 +13389,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13391 "configure"
+#line 13392 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13494,7 +13495,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13497 "configure"
+#line 13498 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16898,6 +16899,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -16955,7 +16957,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -17130,6 +17132,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -17187,7 +17190,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -19476,70 +19479,36 @@ else
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for exception model to use" >&5
-$as_echo_n "checking for exception model to use... " >&6; }
-ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-# Check whether --enable-sjlj-exceptions was given.
-if test "${enable_sjlj_exceptions+set}" = set; then :
-  enableval=$enable_sjlj_exceptions; :
-else
-  cat > conftest.$ac_ext << EOF
-#line 19492 "configure"
-struct S { ~S(); };
-void bar();
-void foo()
-{
-  S s;
-  bar();
-}
-EOF
-old_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS=-S
-if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
-    enable_sjlj_exceptions=yes
-  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
-    enable_sjlj_exceptions=no
-  elif grep __cxa_end_cleanup conftest.s >/dev/null 2>&1 ; then
-    # ARM EH ABI.
-    enable_sjlj_exceptions=no
-  fi
-fi
-CXXFLAGS="$old_CXXFLAGS"
-rm -f conftest*
-fi
-
-if test x$enable_sjlj_exceptions = xyes; then
-
-$as_echo "#define SJLJ_EXCEPTIONS 1" >>confdefs.h
-
-  ac_exception_model_name=sjlj
-elif test x$enable_sjlj_exceptions = xno; then
-  ac_exception_model_name="call frame"
-else
-  as_fn_error "unable to detect exception model" "$LINENO" 5
-fi
-ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_exception_model_name" >&5
-$as_echo "$ac_exception_model_name" >&6; }
-
-# If we are non using SJLJ exceptions, and this host does not have support
+# If we are not using SJLJ exceptions, and this host does not have support
 # for unwinding from a signal handler, enable checked dereferences and divides.
-if test $can_unwind_signal = no && test $enable_sjlj_exceptions = no; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the compiler is configured for setjmp/longjmp exceptions" >&5
+$as_echo_n "checking whether the compiler is configured for setjmp/longjmp exceptions... " >&6; }
+if test "${ac_cv_sjlj_exceptions+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#ifdef __USING_SJLJ_EXCEPTIONS__
+          this will fail
+          #endif
+int
+main ()
+{
+int i;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sjlj_exceptions=no
+else
+  ac_cv_sjlj_exceptions=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sjlj_exceptions" >&5
+$as_echo "$ac_cv_sjlj_exceptions" >&6; }
+if test $ac_cv_sjlj_exceptions = no && test $can_unwind_signal = no; then
   CHECKREFSPEC=-fcheck-references
   DIVIDESPEC=-fuse-divide-subroutine
   EXCEPTIONSPEC=
@@ -23529,6 +23498,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -23586,7 +23556,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -24442,13 +24412,16 @@ case "${host}" in
  powerpc*-*-aix*)
     SIGNAL_HANDLER=include/aix-signal.h
     ;;
+ i?86-*-freebsd* | x86_64-*-freebsd*)
+    SIGNAL_HANDLER=include/freebsd-signal.h
+    ;;
  *)
     SIGNAL_HANDLER=include/default-signal.h
     ;;
 esac
 
 # If we're using sjlj exceptions, forget what we just learned.
-if test "$enable_sjlj_exceptions" = yes; then
+if test "$ac_cv_sjlj_exceptions" = yes; then
    SIGNAL_HANDLER=include/default-signal.h
    SIGNAL_HANDLER_AUX=
 fi
@@ -28302,7 +28275,7 @@ ac_abs_srcdir=$ac_abs_top_srcdir$ac_dir_suffix
       ac_sub_configure=$ac_srcdir/configure.gnu
     elif test -f "$ac_srcdir/configure"; then
       ac_sub_configure=$ac_srcdir/configure
-    elif test -f "$ac_srcdir/configure.in"; then
+    elif test -f "$ac_srcdir/configure.ac"; then
       # This should be Cygnus configure.
       ac_sub_configure=$ac_aux_dir/configure
     else

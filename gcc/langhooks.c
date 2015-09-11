@@ -24,15 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "tm.h"
 #include "toplev.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -46,13 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
-#include "hash-map.h"
-#include "is-a.h"
-#include "plugin-api.h"
-#include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
-#include "ipa-ref.h"
 #include "cgraph.h"
 #include "timevar.h"
 #include "output.h"
@@ -139,12 +125,12 @@ lhd_print_tree_nothing (FILE * ARG_UNUSED (file),
 {
 }
 
-/* Called from check_global_declarations.  */
+/* Called from check_global_declaration.  */
 
 bool
 lhd_warn_unused_global_decl (const_tree decl)
 {
-  /* This is what used to exist in check_global_declarations.  Probably
+  /* This is what used to exist in check_global_declaration.  Probably
      not many of these actually apply to non-C languages.  */
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
@@ -311,14 +297,17 @@ lhd_decl_ok_for_sibcall (const_tree decl ATTRIBUTE_UNUSED)
   return true;
 }
 
-/* lang_hooks.decls.final_write_globals: perform final processing on
-   global variables.  */
+/* Generic global declaration processing.  This is meant to be called
+   by the front-ends at the end of parsing.  C/C++ do their own thing,
+   but other front-ends may call this.  */
+
 void
-write_global_declarations (void)
+global_decl_processing (void)
 {
   tree globals, decl, *vec;
   int len, i;
 
+  timevar_stop (TV_PHASE_PARSING);
   timevar_start (TV_PHASE_DEFERRED);
   /* Really define vars that have had only a tentative definition.
      Really output inline functions that must actually be callable
@@ -335,20 +324,9 @@ write_global_declarations (void)
     vec[len - i - 1] = decl;
 
   wrapup_global_declarations (vec, len);
-  check_global_declarations (vec, len);
   timevar_stop (TV_PHASE_DEFERRED);
 
-  timevar_start (TV_PHASE_OPT_GEN);
-  /* This lang hook is dual-purposed, and also finalizes the
-     compilation unit.  */
-  symtab->finalize_compilation_unit ();
-  timevar_stop (TV_PHASE_OPT_GEN);
-
-  timevar_start (TV_PHASE_DBGINFO);
-  emit_debug_global_declarations (vec, len);
-  timevar_stop (TV_PHASE_DBGINFO);
-
-  /* Clean up.  */
+  timevar_start (TV_PHASE_PARSING);
   free (vec);
 }
 
@@ -730,4 +708,12 @@ bool
 lang_GNU_CXX (void)
 {
   return strncmp (lang_hooks.name, "GNU C++", 7) == 0;
+}
+
+/* Returns true if the current lang_hooks represents the GNU Fortran frontend.  */
+
+bool
+lang_GNU_Fortran (void)
+{
+  return strncmp (lang_hooks.name, "GNU Fortran", 11) == 0;
 }

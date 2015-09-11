@@ -1995,22 +1995,20 @@
 
   start_sequence ();
 
-  emit_insn (gen_rtx_SET (VOIDmode, icr,
-			  gen_rtx_LT (CC_CCRmode, icc, const0_rtx)));
+  emit_insn (gen_rtx_SET (icr, gen_rtx_LT (CC_CCRmode, icc, const0_rtx)));
 
   emit_insn (gen_movsi (dest, const1_rtx));
 
   emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				gen_rtx_NE (CC_CCRmode, icr, const0_rtx),
-				gen_rtx_SET (VOIDmode, dest,
+				gen_rtx_SET (dest,
 					     gen_rtx_NEG (SImode, dest))));
 
-  emit_insn (gen_rtx_SET (VOIDmode, icr,
-			  gen_rtx_EQ (CC_CCRmode, icc, const0_rtx)));
+  emit_insn (gen_rtx_SET (icr, gen_rtx_EQ (CC_CCRmode, icc, const0_rtx)));
 
   emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				gen_rtx_NE (CC_CCRmode, icr, const0_rtx),
-				gen_rtx_SET (VOIDmode, dest, const0_rtx)));
+				gen_rtx_SET (dest, const0_rtx)));
 
   operands[3] = get_insns ();
   end_sequence ();
@@ -2063,8 +2061,7 @@
 
   start_sequence ();
 
-  emit_insn (gen_rtx_SET (VOIDmode, icr,
-			  gen_rtx_GTU (CC_CCRmode, icc, const0_rtx)));
+  emit_insn (gen_rtx_SET (icr, gen_rtx_GTU (CC_CCRmode, icc, const0_rtx)));
 
   emit_insn (gen_movsi (dest, const1_rtx));
 
@@ -2072,12 +2069,11 @@
 				gen_rtx_NE (CC_CCRmode, icr, const0_rtx),
 				gen_addsi3 (dest, dest, dest)));
 
-  emit_insn (gen_rtx_SET (VOIDmode, icr,
-			  gen_rtx_LTU (CC_CCRmode, icc, const0_rtx)));
+  emit_insn (gen_rtx_SET (icr, gen_rtx_LTU (CC_CCRmode, icc, const0_rtx)));
 
   emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				gen_rtx_NE (CC_CCRmode, icr, const0_rtx),
-				gen_rtx_SET (VOIDmode, dest, const0_rtx)));
+				gen_rtx_SET (dest, const0_rtx)));
 
   operands[3] = get_insns ();
   end_sequence ();
@@ -2332,8 +2328,7 @@
 				gen_rtx_EQ (CC_CCRmode,
 					    operands[1],
 					    const0_rtx),
-				gen_rtx_SET (VOIDmode, int_op0,
-					     const0_rtx)));
+				gen_rtx_SET (int_op0, const0_rtx)));
 
   operands[2] = get_insns ();
   end_sequence ();

@@ -93,9 +93,12 @@ host_modules= { module= libiberty-linker-plugin; bootstrap=true;
 		extra_make_flags='@extra_linker_plugin_flags@'; };
 // We abuse missing to avoid installing anything for libiconv.
 host_modules= { module= libiconv;
+		bootstrap=true;
 		extra_configure_flags='--disable-shared';
 		no_install= true;
-		missing= install-info;
+		missing= pdf;
+		missing= html;
+		missing= info;
 		missing= install-pdf;
 		missing= install-html;
 		missing= install-info; };
@@ -104,7 +107,9 @@ host_modules= { module= readline; };
 host_modules= { module= sid; };
 host_modules= { module= sim; };
 host_modules= { module= texinfo; no_install= true; };
-host_modules= { module= zlib; no_install=true; no_check=true; bootstrap=true; };
+host_modules= { module= zlib; no_install=true; no_check=true;
+		bootstrap=true;
+	        extra_configure_flags='@extra_host_zlib_configure_flags@';};
 host_modules= { module= gdb; };
 host_modules= { module= expect; };
 host_modules= { module= guile; };
@@ -130,6 +135,9 @@ target_modules = { module= libsanitizer;
 		   bootstrap=true;
 		   lib_path=.libs;
 		   raw_cxx=true; };
+target_modules = { module= libmpx;
+		   bootstrap=true;
+		   lib_path=.libs; };
 target_modules = { module= libvtv;
 		   bootstrap=true;
 		   lib_path=.libs;
@@ -319,6 +327,7 @@ dependencies = { module=configure-gcc; on=all-gas; };
 dependencies = { module=configure-gcc; on=all-ld; };
 dependencies = { module=configure-gcc; on=all-gold; };
 dependencies = { module=configure-gcc; on=all-libelf; };
+dependencies = { module=configure-gcc; on=all-libiconv; };
 dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
 dependencies = { module=all-gcc; on=all-intl; };
 dependencies = { module=all-gcc; on=all-mpfr; };
@@ -337,6 +346,7 @@ dependencies = { module=all-gcc; on=all-libdecnumber; hard=true; };
 dependencies = { module=all-gcc; on=all-libiberty; };
 dependencies = { module=all-gcc; on=all-fixincludes; };
 dependencies = { module=all-gcc; on=all-lto-plugin; };
+dependencies = { module=all-gcc; on=all-libiconv; };
 dependencies = { module=info-gcc; on=all-build-libiberty; };
 dependencies = { module=dvi-gcc; on=all-build-libiberty; };
 dependencies = { module=pdf-gcc; on=all-build-libiberty; };
@@ -348,8 +358,10 @@ dependencies = { module=install-strip-gcc ; on=install-strip-lto-plugin; };
 
 dependencies = { module=configure-libcpp; on=configure-libiberty; hard=true; };
 dependencies = { module=configure-libcpp; on=configure-intl; };
+dependencies = { module=configure-libcpp; on=all-libiconv; };
 dependencies = { module=all-libcpp; on=all-libiberty; hard=true; };
 dependencies = { module=all-libcpp; on=all-intl; };
+dependencies = { module=all-libcpp; on=all-libiconv; };
 
 dependencies = { module=all-fixincludes; on=all-libiberty; };
 
@@ -368,9 +380,11 @@ dependencies = { module=all-gotools; on=all-target-libgo; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
 
+dependencies = { module=configure-intl; on=all-libiconv; };
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };
 dependencies = { module=configure-isl; on=all-gmp; };
+dependencies = { module=all-intl; on=all-libiconv; };
 
 // Host modules specific to gdb.
 dependencies = { module=configure-gdb; on=all-intl; };
@@ -399,6 +413,7 @@ dependencies = { module=configure-bfd; on=configure-libiberty; hard=true; };
 dependencies = { module=configure-bfd; on=configure-intl; };
 dependencies = { module=all-bfd; on=all-libiberty; };
 dependencies = { module=all-bfd; on=all-intl; };
+dependencies = { module=all-bfd; on=all-zlib; };
 dependencies = { module=configure-opcodes; on=configure-libiberty; hard=true; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
 
@@ -582,6 +597,7 @@ dependencies = { module=all-target-winsup; on=all-target-libtermcap; };
 dependencies = { module=configure-target-newlib; on=all-binutils; };
 dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
+dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;

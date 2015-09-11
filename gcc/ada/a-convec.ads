@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -352,6 +352,7 @@ package Ada.Containers.Vectors is
 
 private
 
+   pragma Inline (Append);
    pragma Inline (First_Index);
    pragma Inline (Last_Index);
    pragma Inline (Element);
@@ -368,24 +369,23 @@ private
    type Elements_Array is array (Index_Type range <>) of aliased Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   type Elements_Type (Last : Index_Type) is limited record
+   type Elements_Type (Last : Extended_Index) is limited record
       EA : Elements_Array (Index_Type'First .. Last);
    end record;
 
-   type Elements_Access is access Elements_Type;
+   type Elements_Access is access all Elements_Type;
 
    use Ada.Finalization;
    use Ada.Streams;
 
    type Vector is new Controlled with record
-      Elements : Elements_Access;
+      Elements : Elements_Access := null;
       Last     : Extended_Index := No_Index;
       Busy     : Natural := 0;
       Lock     : Natural := 0;
    end record;
 
    overriding procedure Adjust (Container : in out Vector);
-
    overriding procedure Finalize (Container : in out Vector);
 
    procedure Write
@@ -432,9 +432,13 @@ private
    pragma Inline (Finalize);
 
    type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is
+     (Element : not null access constant Element_Type) is
       record
-         Control : Reference_Control_Type;
+         Control : Reference_Control_Type :=
+           raise Program_Error with "uninitialized reference";
+         --  The RM says, "The default initialization of an object of
+         --  type Constant_Reference_Type or Reference_Type propagates
+         --  Program_Error."
       end record;
 
    procedure Write
@@ -450,9 +454,13 @@ private
    for Constant_Reference_Type'Read use Read;
 
    type Reference_Type
-      (Element : not null access Element_Type) is
+     (Element : not null access Element_Type) is
       record
-         Control : Reference_Control_Type;
+         Control : Reference_Control_Type :=
+           raise Program_Error with "uninitialized reference";
+         --  The RM says, "The default initialization of an object of
+         --  type Constant_Reference_Type or Reference_Type propagates
+         --  Program_Error."
       end record;
 
    procedure Write
@@ -467,8 +475,30 @@ private
 
    for Reference_Type'Read use Read;
 
+   --  Three operations are used to optimize in the expansion of "for ... of"
+   --  loops: the Next(Cursor) procedure in the visible part, and the following
+   --  Pseudo_Reference and Get_Element_Access functions. See Sem_Ch5 for
+   --  details.
+
+   function Pseudo_Reference
+     (Container : aliased Vector'Class) return Reference_Control_Type;
+   pragma Inline (Pseudo_Reference);
+   --  Creates an object of type Reference_Control_Type pointing to the
+   --  container, and increments the Lock. Finalization of this object will
+   --  decrement the Lock.
+
+   type Element_Access is access all Element_Type;
+
+   function Get_Element_Access
+     (Position : Cursor) return not null Element_Access;
+   --  Returns a pointer to the element designated by Position.
+
    No_Element   : constant Cursor := Cursor'(null, Index_Type'First);
 
-   Empty_Vector : constant Vector := (Controlled with null, No_Index, 0, 0);
+   Empty_Vector : constant Vector := (Controlled with others => <>);
+
+   Count_Type_Last : constant := Count_Type'Last;
+   --  Count_Type'Last as a universal_integer, so we can compare Index_Type
+   --  values against this without type conversions that might overflow.
 
 end Ada.Containers.Vectors;

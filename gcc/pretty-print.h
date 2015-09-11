@@ -22,11 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_H
 
 #include "obstack.h"
-#include "input.h"
 #include "wide-int-print.h"
 
 /* Maximum number of format string arguments.  */
 #define PP_NL_ARGMAX   30
+
+/* Maximum number of locations associated to each message.  If
+   location 'i' is UNKNOWN_LOCATION, then location 'i+1' is not
+   valid.  */
+#define MAX_LOCATIONS_PER_MESSAGE 2
 
 /* The type of a text to be formatted according a format specification
    along with a list of things.  */
@@ -35,8 +39,22 @@ struct text_info
   const char *format_spec;
   va_list *args_ptr;
   int err_no;  /* for %m */
-  location_t *locus;
   void **x_data;
+
+  inline void set_location (unsigned int index_of_location, location_t loc)
+  {
+    gcc_checking_assert (index_of_location < MAX_LOCATIONS_PER_MESSAGE);
+    this->locations[index_of_location] = loc;
+  }
+
+  inline location_t get_location (unsigned int index_of_location) const
+  {
+    gcc_checking_assert (index_of_location < MAX_LOCATIONS_PER_MESSAGE);
+    return this->locations[index_of_location];
+  }
+
+private:
+  location_t locations[MAX_LOCATIONS_PER_MESSAGE];
 };
 
 /* How often diagnostics are prefixed by their locations:
@@ -169,7 +187,7 @@ struct pp_wrapping_mode_t
 /* Get or set the wrapping mode as a single entity.  */
 #define pp_wrapping_mode(PP) (PP)->wrapping
 
-/* The type of a hook that formats client-specific data onto a pretty_pinter.
+/* The type of a hook that formats client-specific data onto a pretty_printer.
    A client-supplied formatter returns true if everything goes well,
    otherwise it returns false.  */
 typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,

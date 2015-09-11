@@ -20,4 +20,3 @@ int f1()
 
 /* { dg-final { scan-tree-dump-times "eh_must_not_throw" 0 "tmlower" } } */
 /* { dg-final { scan-tree-dump-times "__transaction_atomic" 1 "tmlower" } } */
-/* { dg-final { cleanup-tree-dump "tmlower" } } */

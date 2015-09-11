@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,7 +35,6 @@
 #ifndef OFFLOAD_TABLE_H_INCLUDED
 #define OFFLOAD_TABLE_H_INCLUDED
 
-#include <iterator>
 #include "offload_util.h"
 
 // Template representing double linked list of tables
@@ -56,7 +55,6 @@ public:
 
     void add_table(Node *node) {
         m_lock.lock();
-
         if (m_head != 0) {
             node->next = m_head;
             m_head->prev = node;
@@ -67,8 +65,6 @@ public:
     }
 
     void remove_table(Node *node) {
-        m_lock.lock();
-
         if (node->next != 0) {
             node->next->prev = node->prev;
         }
@@ -78,8 +74,6 @@ public:
         if (m_head == node) {
             m_head = node->next;
         }
-
-        m_lock.unlock();
     }
 
 protected:
@@ -109,7 +103,7 @@ struct FuncTable {
 };
 
 // Function table
-class FuncList : public TableList<FuncTable> {
+class DLL_LOCAL FuncList : public TableList<FuncTable> {
 public:
     explicit FuncList(Node *node = 0) : TableList<Table>(node),
                                         m_max_name_len(-1)
@@ -172,7 +166,7 @@ struct VarTable {
 };
 
 // List of var tables
-class VarList : public TableList<VarTable> {
+class DLL_LOCAL VarList : public TableList<VarTable> {
 public:
     VarList() : TableList<Table>()
     {}
@@ -181,69 +175,9 @@ public:
     void dump();
 
 public:
-    // var table list iterator
-    class Iterator : public std::iterator<std::input_iterator_tag,
-                                          Table::Entry> {
-    public:
-        Iterator() : m_node(0), m_entry(0) {}
 
-        explicit Iterator(Node *node) {
-            new_node(node);
-        }
-
-        Iterator& operator++() {
-            if (m_entry != 0) {
-                m_entry++;
-                while (m_entry->name == 0) {
-                    m_entry++;
-                }
-                if (m_entry->name == reinterpret_cast<const char*>(-1)) {
-                    new_node(m_node->next);
-                }
-            }
-            return *this;
-        }
-
-        bool operator==(const Iterator &other) const {
-            return m_entry == other.m_entry;
-        }
-
-        bool operator!=(const Iterator &other) const {
-            return m_entry != other.m_entry;
-        }
-
-        const Table::Entry* operator*() const {
-            return m_entry;
-        }
-
-    private:
-        void new_node(Node *node) {
-            m_node = node;
-            m_entry = 0;
-            while (m_node != 0) {
-                m_entry = m_node->table.entries;
-                while (m_entry->name == 0) {
-                    m_entry++;
-                }
-                if (m_entry->name != reinterpret_cast<const char*>(-1)) {
-                    break;
-                }
-                m_node = m_node->next;
-                m_entry = 0;
-            }
-        }
-
-    private:
-        Node                *m_node;
-        const Table::Entry  *m_entry;
-    };
-
-    Iterator begin() const {
-        return Iterator(m_head);
-    }
-
-    Iterator end() const {
-        return Iterator();
+    Node * get_head() {
+        return m_head;
     }
 
 public:
@@ -265,9 +199,9 @@ public:
     static void table_patch_names(void *buf, int64_t nelems);
 };
 
-extern FuncList __offload_entries;
-extern FuncList __offload_funcs;
-extern VarList  __offload_vars;
+DLL_LOCAL extern FuncList __offload_entries;
+DLL_LOCAL extern FuncList __offload_funcs;
+DLL_LOCAL extern VarList  __offload_vars;
 
 // Section names where the lookup tables are stored
 #ifdef TARGET_WINNT
@@ -318,4 +252,206 @@ extern "C" void __offload_unregister_tables(
     FuncList::Node *func_table,
     VarList::Node *var_table
 );
+
+
+#ifdef MYO_SUPPORT
+
+#include <myotypes.h>
+#include <myoimpl.h>
+#include <myo.h>
+
+#ifdef TARGET_WINNT
+#define MYO_TABLE_END_MARKER() reinterpret_cast<const char*>(-1)
+#else // TARGET_WINNT
+#define MYO_TABLE_END_MARKER() reinterpret_cast<const char*>(0)
+#endif // TARGET_WINNT
+
+// Host and Target-side MYO shared variable table entry layout
+typedef MyoiSharedVarEntry SharedTableEntry;
+
+#if HOST_LIBRARY
+
+// Host-side MYO function table entry layout
+typedef struct {
+    //! Function Name
+    const char *funcName;
+    //! Function Address
+    void *funcAddr;
+    //! Local Thunk Address
+    void *localThunkAddr;
+#ifdef TARGET_WINNT
+    // Dummy to pad up to 32 bytes
+    void *dummy;
+#endif // TARGET_WINNT
+} FptrTableEntry;
+
+// Host-side MYO init routine table entry layout
+typedef struct {
+#ifdef TARGET_WINNT
+    // Dummy to pad up to 16 bytes
+    // Function Name
+    const char *funcName;
+#endif // TARGET_WINNT
+    void (*func)(MyoArena);
+} InitTableEntry;
+
+#else // HOST_LIBRARY
+
+// Target-side MYO function table entry layout
+typedef MyoiTargetSharedFptrEntry   FptrTableEntry;
+
+// Target-side MYO init routine table entry layout
+struct InitTableEntry {
+    void (*func)(void);
+};
+
+#endif // HOST_LIBRARY
+
+#ifdef TARGET_WINNT
+
+#define OFFLOAD_MYO_SHARED_TABLE_SECTION_START          ".MyoSharedTable$a"
+#define OFFLOAD_MYO_SHARED_TABLE_SECTION_END            ".MyoSharedTable$z"
+
+#define OFFLOAD_MYO_SHARED_VTABLE_SECTION_START         ".MyoSharedVTable$a"
+#define OFFLOAD_MYO_SHARED_VTABLE_SECTION_END           ".MyoSharedVTable$z"
+
+#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_START     ".MyoSharedInitTable$a"
+#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_END       ".MyoSharedInitTable$z"
+
+#define OFFLOAD_MYO_FPTR_TABLE_SECTION_START            ".MyoFptrTable$a"
+#define OFFLOAD_MYO_FPTR_TABLE_SECTION_END              ".MyoFptrTable$z"
+
+#else  // TARGET_WINNT
+
+#define OFFLOAD_MYO_SHARED_TABLE_SECTION_START          ".MyoSharedTable."
+#define OFFLOAD_MYO_SHARED_TABLE_SECTION_END            ".MyoSharedTable."
+
+#define OFFLOAD_MYO_SHARED_VTABLE_SECTION_START         ".MyoSharedVTable."
+#define OFFLOAD_MYO_SHARED_VTABLE_SECTION_END           ".MyoSharedVTable."
+
+#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_START     ".MyoSharedInitTable."
+#define OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_END       ".MyoSharedInitTable."
+
+#define OFFLOAD_MYO_FPTR_TABLE_SECTION_START            ".MyoFptrTable."
+#define OFFLOAD_MYO_FPTR_TABLE_SECTION_END              ".MyoFptrTable."
+
+#endif // TARGET_WINNT
+
+#pragma section(OFFLOAD_MYO_SHARED_TABLE_SECTION_START, read, write)
+#pragma section(OFFLOAD_MYO_SHARED_TABLE_SECTION_END, read, write)
+
+#pragma section(OFFLOAD_MYO_SHARED_VTABLE_SECTION_START, read, write)
+#pragma section(OFFLOAD_MYO_SHARED_VTABLE_SECTION_END, read, write)
+
+#pragma section(OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_START, read, write)
+#pragma section(OFFLOAD_MYO_SHARED_INIT_TABLE_SECTION_END, read, write)
+
+#pragma section(OFFLOAD_MYO_FPTR_TABLE_SECTION_START, read, write)
+#pragma section(OFFLOAD_MYO_FPTR_TABLE_SECTION_END, read, write)
+
+// List of MYO shared variable tables
+struct MYOVarTable {
+    typedef SharedTableEntry Entry;
+    const Entry *entries;
+};
+
+class MYOVarTableList : public TableList<MYOVarTable> {
+public:
+    MYOVarTableList() : TableList<Table>()
+    {}
+
+    // add table to the list
+    void add_table(Node *node) {
+        // add table
+        TableList<Table>::add_table(node);
+    }
+
+    // debug dump
+    void dump(void);
+
+    // check if any shared variables
+    bool is_empty();
+
+    // process the table contents for ordinary variables
+    void process();
+
+    // process the table contents for vtable objects
+    void process_vtable();
+};
+
+// List of MYO shared function tables
+struct MYOFuncTable {
+    typedef FptrTableEntry Entry;
+    const Entry *entries;
+};
+
+class MYOFuncTableList : public TableList<MYOFuncTable> {
+public:
+    MYOFuncTableList() : TableList<Table>()
+    {}
+
+    // add table to the list
+    void add_table(Node *node) {
+        // add table
+        TableList<Table>::add_table(node);
+    }
+
+    // debug dump
+    void dump(void);
+
+    // check if any shared functions
+    bool is_empty();
+
+    // process the table contents
+    void process();
+};
+
+// List of MYO shared variable initialization routine tables
+struct MYOInitTable {
+    typedef InitTableEntry Entry;
+    const Entry *entries;
+};
+
+class MYOInitTableList : public TableList<MYOInitTable> {
+public:
+    MYOInitTableList() : TableList<Table>()
+    {}
+
+    // add table to the list
+    void add_table(Node *node) {
+        // add table
+        TableList<Table>::add_table(node);
+    }
+
+    // debug dump
+    void dump(void);
+
+    // check if any init routines
+    bool is_empty();
+
+    // process the table contents
+    void process();
+};
+
+extern MYOVarTableList  __offload_myo_var_tables;
+extern MYOVarTableList  __offload_myo_vtable_tables;
+extern MYOFuncTableList __offload_myo_func_tables;
+extern MYOInitTableList __offload_myo_init_tables;
+
+extern "C" void __offload_myoRegisterTables1(
+    MYOInitTableList::Node *init_table,
+    MYOVarTableList::Node  *shared_table,
+    MYOVarTableList::Node  *shared_vtable,
+    MYOFuncTableList::Node *fptr_table
+); 
+
+extern "C" void __offload_myoRemoveTables(
+    MYOInitTableList::Node *init_table,
+    MYOVarTableList::Node  *shared_table,
+    MYOVarTableList::Node  *shared_vtable,
+    MYOFuncTableList::Node *fptr_table
+);
+
+#endif // MYO_SUPPORT
+
 #endif  // OFFLOAD_TABLE_H_INCLUDED

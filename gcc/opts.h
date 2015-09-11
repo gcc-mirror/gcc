@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OPTS_H
 #define GCC_OPTS_H
 
-#include "input.h"
-#include "vec.h"
 #include "obstack.h"
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */

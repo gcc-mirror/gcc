@@ -21,4 +21,3 @@ bar (int a)
 
 /* { dg-final { scan-tree-dump-not "& 3" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "& -4" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

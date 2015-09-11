@@ -85,5 +85,4 @@ test_8 (int code)
    we do that we even generate better code on x86 at least.  */
 
 /* { dg-final { scan-tree-dump-times "simplified to if \\\(\[^ ]* <" 4 "forwprop1"} } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
 

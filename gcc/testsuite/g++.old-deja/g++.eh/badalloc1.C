@@ -12,21 +12,24 @@ typedef __SIZE_TYPE__ size_t;
 extern "C" void abort();
 extern "C" void *memcpy(void *, const void *, size_t);
 
+// libstdc++ requires a large initialization time allocation for the
+// emergency EH allocation pool.  Add that to the arena size.
+
 // Assume that STACK_SIZE defined implies a system that does not have a
 // large data space either, and additionally that we're not linking against
 // a shared libstdc++ (which requires quite a bit more initialization space).
 #ifdef STACK_SIZE
-const int arena_size = 256;
+const int arena_size = 256 + 8 * 128;
 #else
 #if defined(__FreeBSD__) || defined(__sun__) || defined(__hpux__)
 // FreeBSD, Solaris and HP-UX require even more space at initialization time.
 // FreeBSD 5 now requires over 131072 bytes.
-const int arena_size = 262144;
+const int arena_size = 262144 + 72 * 1024;
 #else
 // Because pointers make up the bulk of our exception-initialization
 // allocations, we scale by the pointer size from the original
 // 32-bit-systems-based estimate.
-const int arena_size = 32768 * ((sizeof (void *) + 3)/4);
+const int arena_size = 32768 * ((sizeof (void *) + 3)/4) + 72 * 1024;
 #endif
 #endif
 

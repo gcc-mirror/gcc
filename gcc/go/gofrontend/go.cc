@@ -63,7 +63,8 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 	{
 	  file = fopen(filename, "r");
 	  if (file == NULL)
-	    fatal_error("cannot open %s: %m", filename);
+	    fatal_error(Linemap::unknown_location(),
+			"cannot open %s: %m", filename);
 	}
 
       Lex lexer(filename, file, ::gogo->linemap());
@@ -108,6 +109,10 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 
   if (only_check_syntax)
     return;
+
+  // Consider escape analysis information when deciding if a variable should
+  // live on the heap or on the stack.
+  ::gogo->optimize_allocations(filenames);
 
   // Export global identifiers as appropriate.
   ::gogo->do_exports();

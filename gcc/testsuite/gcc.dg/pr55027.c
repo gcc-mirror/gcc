@@ -9,4 +9,3 @@ void f (v2df *x)
 }
 
 /* { dg-final { scan-tree-dump-not "gimple_assign" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

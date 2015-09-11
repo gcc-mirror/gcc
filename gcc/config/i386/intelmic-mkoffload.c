@@ -22,13 +22,13 @@
 
 #include "config.h"
 #include <libgen.h>
-#include "libgomp-plugin.h"
 #include "system.h"
 #include "coretypes.h"
 #include "obstack.h"
 #include "intl.h"
 #include "diagnostic.h"
 #include "collect-utils.h"
+#include "intelmic-offload.h"
 
 const char tool_name[] = "intelmic mkoffload";
 
@@ -158,10 +158,21 @@ find_target_compiler (const char *name)
   bool found = false;
   char **paths = NULL;
   unsigned n_paths, i;
-  const char *collect_path = dirname (ASTRDUP (getenv ("COLLECT_GCC")));
-  size_t len = strlen (collect_path) + 1 + strlen (name) + 1;
-  char *target_compiler = XNEWVEC (char, len);
-  sprintf (target_compiler, "%s/%s", collect_path, name);
+  char *target_compiler;
+  const char *collect_gcc = getenv ("COLLECT_GCC");
+  const char *gcc_path = dirname (ASTRDUP (collect_gcc));
+  const char *gcc_exec = basename (ASTRDUP (collect_gcc));
+
+  if (strcmp (gcc_exec, collect_gcc) == 0)
+    {
+      /* collect_gcc has no path, so it was found in PATH.  Make sure we also
+	 find accel-gcc in PATH.  */
+      target_compiler = XDUPVEC (char, name, strlen (name) + 1);
+      found = true;
+      goto out;
+    }
+
+  target_compiler = concat (gcc_path, "/", name, NULL);
   if (access_check (target_compiler, X_OK) == 0)
     {
       found = true;
@@ -171,7 +182,7 @@ find_target_compiler (const char *name)
   n_paths = parse_env_var (getenv ("COMPILER_PATH"), &paths);
   for (i = 0; i < n_paths; i++)
     {
-      len = strlen (paths[i]) + 1 + strlen (name) + 1;
+      size_t len = strlen (paths[i]) + 1 + strlen (name) + 1;
       target_compiler = XRESIZEVEC (char, target_compiler, len);
       sprintf (target_compiler, "%s/%s", paths[i], name);
       if (access_check (target_compiler, X_OK) == 0)
@@ -227,21 +238,21 @@ generate_target_descr_file (const char *target_compiler)
   FILE *src_file = fopen (src_filename, "w");
 
   if (!src_file)
-    fatal_error ("cannot open '%s'", src_filename);
+    fatal_error (input_location, "cannot open '%s'", src_filename);
 
   fprintf (src_file,
-	   "extern void *__offload_funcs_end[];\n"
-	   "extern void *__offload_vars_end[];\n\n"
+	   "extern const void *const __offload_funcs_end[];\n"
+	   "extern const void *const __offload_vars_end[];\n\n"
 
-	   "void *__offload_func_table[0]\n"
+	   "const void *const __offload_func_table[0]\n"
 	   "__attribute__ ((__used__, visibility (\"hidden\"),\n"
 	   "section (\".gnu.offload_funcs\"))) = { };\n\n"
 
-	   "void *__offload_var_table[0]\n"
+	   "const void *const __offload_var_table[0]\n"
 	   "__attribute__ ((__used__, visibility (\"hidden\"),\n"
 	   "section (\".gnu.offload_vars\"))) = { };\n\n"
 
-	   "void *__OFFLOAD_TARGET_TABLE__[]\n"
+	   "const void *const __OFFLOAD_TARGET_TABLE__[]\n"
 	   "__attribute__ ((__used__, visibility (\"hidden\"))) = {\n"
 	   "  &__offload_func_table, &__offload_funcs_end,\n"
 	   "  &__offload_var_table, &__offload_vars_end\n"
@@ -287,14 +298,14 @@ generate_target_offloadend_file (const char *target_compiler)
   FILE *src_file = fopen (src_filename, "w");
 
   if (!src_file)
-    fatal_error ("cannot open '%s'", src_filename);
+    fatal_error (input_location, "cannot open '%s'", src_filename);
 
   fprintf (src_file,
-	   "void *__offload_funcs_end[0]\n"
+	   "const void *const __offload_funcs_end[0]\n"
 	   "__attribute__ ((__used__, visibility (\"hidden\"),\n"
 	   "section (\".gnu.offload_funcs\"))) = { };\n\n"
 
-	   "void *__offload_vars_end[0]\n"
+	   "const void *const __offload_vars_end[0]\n"
 	   "__attribute__ ((__used__, visibility (\"hidden\"),\n"
 	   "section (\".gnu.offload_vars\"))) = { };\n");
   fclose (src_file);
@@ -324,14 +335,14 @@ generate_host_descr_file (const char *host_compiler)
   FILE *src_file = fopen (src_filename, "w");
 
   if (!src_file)
-    fatal_error ("cannot open '%s'", src_filename);
+    fatal_error (input_location, "cannot open '%s'", src_filename);
 
   fprintf (src_file,
-	   "extern void *__OFFLOAD_TABLE__;\n"
-	   "extern void *__offload_image_intelmic_start;\n"
-	   "extern void *__offload_image_intelmic_end;\n\n"
+	   "extern const void *const __OFFLOAD_TABLE__;\n"
+	   "extern const void *const __offload_image_intelmic_start;\n"
+	   "extern const void *const __offload_image_intelmic_end;\n\n"
 
-	   "static const void *__offload_target_data[] = {\n"
+	   "static const void *const __offload_target_data[] = {\n"
 	   "  &__offload_image_intelmic_start, &__offload_image_intelmic_end\n"
 	   "};\n\n");
 
@@ -339,14 +350,27 @@ generate_host_descr_file (const char *host_compiler)
 	   "#ifdef __cplusplus\n"
 	   "extern \"C\"\n"
 	   "#endif\n"
-	   "void GOMP_offload_register (void *, int, void *);\n\n"
+	   "void GOMP_offload_register (const void *, int, const void *);\n"
+	   "#ifdef __cplusplus\n"
+	   "extern \"C\"\n"
+	   "#endif\n"
+	   "void GOMP_offload_unregister (const void *, int, const void *);\n\n"
 
 	   "__attribute__((constructor))\n"
 	   "static void\n"
 	   "init (void)\n"
 	   "{\n"
 	   "  GOMP_offload_register (&__OFFLOAD_TABLE__, %d, __offload_target_data);\n"
-	   "}\n", OFFLOAD_TARGET_TYPE_INTEL_MIC);
+	   "}\n\n", GOMP_DEVICE_INTEL_MIC);
+
+  fprintf (src_file,
+	   "__attribute__((destructor))\n"
+	   "static void\n"
+	   "fini (void)\n"
+	   "{\n"
+	   "  GOMP_offload_unregister (&__OFFLOAD_TABLE__, %d, __offload_target_data);\n"
+	   "}\n", GOMP_DEVICE_INTEL_MIC);
+
   fclose (src_file);
 
   unsigned new_argc = 0;
@@ -401,7 +425,7 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
 	obstack_ptr_grow (&argv_obstack, argv[i]);
     }
   if (!out_obj_filename)
-    fatal_error ("output file not specified");
+    fatal_error (input_location, "output file not specified");
   obstack_ptr_grow (&argv_obstack, opt2);
   obstack_ptr_grow (&argv_obstack, "-o");
   obstack_ptr_grow (&argv_obstack, target_so_filename);
@@ -429,17 +453,18 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   fork_execute (objcopy_argv[0], CONST_CAST (char **, objcopy_argv), false);
 
   /* Objcopy has created symbols, containing the input file name with
-     special characters replaced with '_'.  We are going to rename these
-     new symbols.  */
+     non-alphanumeric characters replaced by underscores.
+     We are going to rename these new symbols.  */
   size_t symbol_name_len = strlen (target_so_filename);
   char *symbol_name = XALLOCAVEC (char, symbol_name_len + 1);
-  for (size_t i = 0; i <= symbol_name_len; i++)
+  for (size_t i = 0; i < symbol_name_len; i++)
     {
       char c = target_so_filename[i];
-      if ((c == '/') || (c == '.'))
+      if (!ISALNUM (c))
 	c = '_';
       symbol_name[i] = c;
     }
+  symbol_name[symbol_name_len] = '\0';
 
   char *opt_for_objcopy[3];
   opt_for_objcopy[0] = XALLOCAVEC (char, sizeof ("_binary__start=")
@@ -477,17 +502,17 @@ main (int argc, char **argv)
   diagnostic_initialize (global_dc, 0);
 
   if (atexit (mkoffload_atexit) != 0)
-    fatal_error ("atexit failed");
+    fatal_error (input_location, "atexit failed");
 
   const char *host_compiler = getenv ("COLLECT_GCC");
   if (!host_compiler)
-    fatal_error ("COLLECT_GCC must be set");
+    fatal_error (input_location, "COLLECT_GCC must be set");
 
-  const char *target_driver_name
-    = DEFAULT_REAL_TARGET_MACHINE "-accel-" DEFAULT_TARGET_MACHINE "-gcc";
+  const char *target_driver_name = GCC_INSTALL_NAME;
   char *target_compiler = find_target_compiler (target_driver_name);
   if (target_compiler == NULL)
-    fatal_error ("offload compiler %s not found", target_driver_name);
+    fatal_error (input_location, "offload compiler %s not found",
+		 target_driver_name);
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */
@@ -500,7 +525,8 @@ main (int argc, char **argv)
 	if (strstr (argv[i], "ilp32"))
 	  target_ilp32 = true;
 	else if (!strstr (argv[i], "lp64"))
-	  fatal_error ("unrecognizable argument of option -foffload-abi");
+	  fatal_error (input_location,
+		       "unrecognizable argument of option -foffload-abi");
 	break;
       }
 

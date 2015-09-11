@@ -9,4 +9,3 @@ begin
 end;
 
 -- { dg-final { scan-tree-dump-not "trace_inlined" "optimized" } }
--- { dg-final { cleanup-tree-dump "optimized" } }

@@ -155,6 +155,9 @@ Driver
 pthread
 Driver
 
+rdynamic
+Driver
+
 seg_addr_table
 Driver Separate Alias(Zseg_addr_table)
 

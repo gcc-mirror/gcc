@@ -51,8 +51,11 @@ namespace __profile
       typedef typename _Base::const_iterator	const_iterator;
 
       // 23.2.3.1 construct/copy/destroy:
+
+      forward_list() = default;
+
       explicit
-      forward_list(const _Alloc& __al = _Alloc())
+      forward_list(const _Alloc& __al) noexcept
       : _Base(__al) { }
 
       forward_list(const forward_list& __list, const _Alloc& __al)
@@ -105,7 +108,7 @@ namespace __profile
 
       void
       swap(forward_list& __fl)
-	noexcept( noexcept(declval<_Base>().swap(__fl)) )
+	noexcept( noexcept(declval<_Base&>().swap(__fl)) )
       { _Base::swap(__fl); }
 
       void
@@ -205,6 +208,7 @@ namespace __profile
     inline void
     swap(forward_list<_Tp, _Alloc>& __lx,
 	 forward_list<_Tp, _Alloc>& __ly)
+    noexcept(noexcept(__lx.swap(__ly)))
     { __lx.swap(__ly); }
 
 } // namespace __profile

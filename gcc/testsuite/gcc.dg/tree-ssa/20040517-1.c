@@ -19,4 +19,3 @@ void bar (void)
    Hence, we must have a VDEF for a before and after the call to foo().
    And one after the call to abort().  */
 /* { dg-final { scan-tree-dump-times "VDEF" 3 "alias"} } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

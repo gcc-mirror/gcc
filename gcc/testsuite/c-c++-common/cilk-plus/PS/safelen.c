@@ -11,4 +11,3 @@ void foo()
 }
 
 /* { dg-final { scan-tree-dump-times "safelen\\(8\\)" 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

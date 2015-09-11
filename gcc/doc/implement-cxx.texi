@@ -3,7 +3,7 @@
 @c For copying conditions, see the file gcc.texi.
 
 @node C++ Implementation
-@chapter C++ Implementation-defined behavior
+@chapter C++ Implementation-Defined Behavior
 @cindex implementation-defined behavior, C++ language
 
 A conforming implementation of ISO C++ is required to document its
@@ -31,7 +31,7 @@ environment); refer to their documentation for details.
 @end menu
 
 @node Conditionally-supported behavior
-@section Conditionally-supported behavior
+@section Conditionally-Supported Behavior
 
 @cite{Each implementation shall include documentation that identifies
 all conditionally-supported constructs that it does not support (C++0x
@@ -49,7 +49,7 @@ arguments of such types.
 @end itemize
 
 @node Exception handling
-@section Exception handling
+@section Exception Handling
 
 @itemize @bullet
 @item

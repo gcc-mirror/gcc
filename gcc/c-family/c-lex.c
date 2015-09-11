@@ -21,19 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "stor-layout.h"
-#include "input.h"
 #include "c-common.h"
 #include "flags.h"
 #include "timevar.h"
@@ -43,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "debug.h"
 #include "target.h"
-#include "wide-int.h"
 
 #include "attribs.h"
 
@@ -201,7 +191,7 @@ cb_line_change (cpp_reader * ARG_UNUSED (pfile), const cpp_token *token,
 }
 
 void
-fe_file_change (const struct line_map *new_map)
+fe_file_change (const line_map_ordinary *new_map)
 {
   if (new_map == NULL)
     return;
@@ -281,7 +271,7 @@ static void
 cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);
-  (*debug_hooks->define) (SOURCE_LINE (map, loc),
+  (*debug_hooks->define) (SOURCE_LINE (linemap_check_ordinary (map), loc),
 			  (const char *) cpp_macro_definition (pfile, node));
 }
 
@@ -291,7 +281,7 @@ cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
 	  cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);
-  (*debug_hooks->undef) (SOURCE_LINE (map, loc),
+  (*debug_hooks->undef) (SOURCE_LINE (linemap_check_ordinary (map), loc),
 			 (const char *) NODE_NAME (node));
 }
 
@@ -533,11 +523,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	cppchar_t c = tok->val.str.text[0];
 
 	if (c == '"' || c == '\'')
-	  error ("missing terminating %c character", (int) c);
+	  error_at (*loc, "missing terminating %c character", (int) c);
 	else if (ISGRAPH (c))
-	  error ("stray %qc in program", (int) c);
+	  error_at (*loc, "stray %qc in program", (int) c);
 	else
-	  error ("stray %<\\%o%> in program", (int) c);
+	  error_at (*loc, "stray %<\\%o%> in program", (int) c);
       }
       goto retry;
 
@@ -545,6 +535,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
     case CPP_WCHAR_USERDEF:
     case CPP_CHAR16_USERDEF:
     case CPP_CHAR32_USERDEF:
+    case CPP_UTF8CHAR_USERDEF:
       {
 	tree literal;
 	cpp_token temp_tok = *tok;
@@ -562,6 +553,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
     case CPP_WCHAR:
     case CPP_CHAR16:
     case CPP_CHAR32:
+    case CPP_UTF8CHAR:
       *value = lex_charconst (tok);
       break;
 
@@ -781,7 +773,7 @@ interpret_integer (const cpp_token *token, unsigned int flags,
 }
 
 /* Interpret TOKEN, a floating point number with FLAGS as classified
-   by cpplib.  For C++0X SUFFIX may contain a user-defined literal suffix.  */
+   by cpplib.  For C++11 SUFFIX may contain a user-defined literal suffix.  */
 static tree
 interpret_float (const cpp_token *token, unsigned int flags,
 		 const char *suffix, enum overflow_type *overflow)
@@ -1259,6 +1251,8 @@ lex_charconst (const cpp_token *token)
     type = char32_type_node;
   else if (token->type == CPP_CHAR16)
     type = char16_type_node;
+  else if (token->type == CPP_UTF8CHAR)
+    type = char_type_node;
   /* In C, a character constant has type 'int'.
      In C++ 'char', but multi-char charconsts have type 'int'.  */
   else if (!c_dialect_cxx () || chars_seen > 1)

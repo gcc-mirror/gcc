@@ -17,4 +17,3 @@ foo (void)
       }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

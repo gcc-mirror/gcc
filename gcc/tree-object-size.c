@@ -21,43 +21,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "tree-object-size.h"
 #include "diagnostic-core.h"
 #include "gimple-pretty-print.h"
-#include "bitmap.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
 #include "builtins.h"
 
 struct object_size_info
@@ -1268,25 +1246,60 @@ pass_object_sizes::execute (function *fun)
 	    continue;
 
 	  init_object_sizes ();
+
+	  /* In the first pass instance, only attempt to fold
+	     __builtin_object_size (x, 1) and __builtin_object_size (x, 3),
+	     and rather than folding the builtin to the constant if any,
+	     create a MIN_EXPR or MAX_EXPR of the __builtin_object_size
+	     call result and the computed constant.  */
+	  if (first_pass_instance)
+	    {
+	      tree ost = gimple_call_arg (call, 1);
+	      if (tree_fits_uhwi_p (ost))
+		{
+		  unsigned HOST_WIDE_INT object_size_type = tree_to_uhwi (ost);
+		  tree ptr = gimple_call_arg (call, 0);
+		  tree lhs = gimple_call_lhs (call);
+		  if ((object_size_type == 1 || object_size_type == 3)
+		      && (TREE_CODE (ptr) == ADDR_EXPR
+			  || TREE_CODE (ptr) == SSA_NAME)
+		      && lhs)
+		    {
+		      tree type = TREE_TYPE (lhs);
+		      unsigned HOST_WIDE_INT bytes
+			= compute_builtin_object_size (ptr, object_size_type);
+		      if (bytes != (unsigned HOST_WIDE_INT) (object_size_type == 1
+							     ? -1 : 0)
+			  && wi::fits_to_tree_p (bytes, type))
+			{
+			  tree tem = make_ssa_name (type);
+			  gimple_call_set_lhs (call, tem);
+			  enum tree_code code
+			    = object_size_type == 1 ? MIN_EXPR : MAX_EXPR;
+			  tree cst = build_int_cstu (type, bytes);
+			  gimple g = gimple_build_assign (lhs, code, tem, cst);
+			  gsi_insert_after (&i, g, GSI_NEW_STMT);
+			  update_stmt (call);
+			}
+		    }
+		}
+	      continue;
+	    }
+
 	  result = fold_call_stmt (as_a <gcall *> (call), false);
 	  if (!result)
 	    {
-	      if (gimple_call_num_args (call) == 2
-		  && POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, 0))))
+	      tree ost = gimple_call_arg (call, 1);
+
+	      if (tree_fits_uhwi_p (ost))
 		{
-		  tree ost = gimple_call_arg (call, 1);
+		  unsigned HOST_WIDE_INT object_size_type = tree_to_uhwi (ost);
 
-		  if (tree_fits_uhwi_p (ost))
-		    {
-		      unsigned HOST_WIDE_INT object_size_type
-			= tree_to_uhwi (ost);
-
-		      if (object_size_type < 2)
-			result = fold_convert (size_type_node,
-					       integer_minus_one_node);
-		      else if (object_size_type < 4)
-			result = build_zero_cst (size_type_node);
-		    }
+		  if (object_size_type < 2)
+		    result = fold_convert (size_type_node,
+					   integer_minus_one_node);
+		  else if (object_size_type < 4)
+		    result = build_zero_cst (size_type_node);
 		}
 
 	      if (!result)

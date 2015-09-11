@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SUBTARGET_SPEC VXWORKS_ADDITIONAL_CPP_SPEC
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{fpic|fPIC|fpie|fPIE:-K PIC} %(asm_cpu)"
+#define ASM_SPEC "%{" FPIE_OR_FPIC_SPEC ":-K PIC} %(asm_cpu)"
 
 #undef LIB_SPEC
 #define LIB_SPEC VXWORKS_LIB_SPEC

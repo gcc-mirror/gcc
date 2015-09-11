@@ -197,20 +197,17 @@
 (define_predicate "call_operation"
   (match_code "parallel")
 {
-  unsigned i;
+  int arg_end = XVECLEN (op, 0);
 
-  for (i = 1; i < XVECLEN (op, 0); i++)
+  for (int i = 1; i < arg_end; i++)
     {
       rtx elt = XVECEXP (op, 0, i);
-      enum machine_mode mode;
-      unsigned regno;
 
       if (GET_CODE (elt) != USE
           || GET_CODE (XEXP (elt, 0)) != REG
           || XEXP (elt, 0) == frame_pointer_rtx
           || XEXP (elt, 0) == arg_pointer_rtx
           || XEXP (elt, 0) == stack_pointer_rtx)
-
         return false;
     }
   return true;
@@ -786,7 +783,7 @@
 	   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
 	    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
-  "%.\\tsetp%c1 %0,%2,%3;")
+  "%.\\tsetp%c1\\t%0, %2, %3;")
 
 (define_insn "*cmp<mode>"
   [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
@@ -794,7 +791,7 @@
 	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
 	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
-  "%.\\tsetp%c1 %0,%2,%3;")
+  "%.\\tsetp%c1\\t%0, %2, %3;")
 
 (define_insn "jump"
   [(set (pc)
@@ -869,37 +866,73 @@
   ""
   "%.\\tselp%t0 %0,-1,0,%1;")
 
+(define_insn "sel_true<mode>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+        (if_then_else:HSDIM
+	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
+	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tselp%t0\\t%0, %2, %3, %1;")
+
+(define_insn "sel_true<mode>"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+        (if_then_else:SDFM
+	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
+	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
+  ""
+  "%.\\tselp%t0\\t%0, %2, %3, %1;")
+
+(define_insn "sel_false<mode>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+        (if_then_else:HSDIM
+	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
+	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tselp%t0\\t%0, %3, %2, %1;")
+
+(define_insn "sel_false<mode>"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+        (if_then_else:SDFM
+	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
+	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
+	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
+  ""
+  "%.\\tselp%t0\\t%0, %3, %2, %1;")
+
 (define_insn "setcc_int<mode>"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(match_operator:SI 1 "nvptx_comparison_operator"
-			   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
-			    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
+	  [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
+	   (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_int<mode>"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(match_operator:SI 1 "nvptx_float_comparison_operator"
-			   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
-			    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
+	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
+	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
 	(match_operator:SF 1 "nvptx_comparison_operator"
-			   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
-			    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
+	   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
+	    (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
 	(match_operator:SF 1 "nvptx_float_comparison_operator"
-			   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
-			    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
+	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
+	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
-  "%.\\tset%t0%c1 %0,%2,%3;")
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_expand "cstorebi4"
   [(set (match_operand:SI 0 "nvptx_register_operand")
@@ -1203,10 +1236,28 @@
   sorry ("target cannot support nonlocal goto.");
 })
 
-(define_insn "allocate_stack"
-  [(set (match_operand 0 "nvptx_register_operand" "=R")
-	(unspec [(match_operand 1 "nvptx_register_operand" "R")]
-		  UNSPEC_ALLOCA))]
+(define_expand "allocate_stack"
+  [(match_operand 0 "nvptx_register_operand")
+   (match_operand 1 "nvptx_register_operand")]
+  ""
+{
+  /* The ptx documentation specifies an alloca intrinsic (for 32 bit
+     only)  but notes it is not implemented.  The assembler emits a
+     confused error message.  Issue a blunt one now instead.  */
+  sorry ("target cannot support alloca.");
+  emit_insn (gen_nop ());
+  DONE;
+  if (TARGET_ABI64)
+    emit_insn (gen_allocate_stack_di (operands[0], operands[1]));
+  else
+    emit_insn (gen_allocate_stack_si (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "allocate_stack_<mode>"
+  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
+        (unspec:P [(match_operand:P 1 "nvptx_register_operand" "R")]
+                   UNSPEC_ALLOCA))]
   ""
   "%.\\tcall (%0), %%alloca, (%1);")
 
@@ -1300,14 +1351,12 @@
    (match_operand:SI 7 "const_int_operand")]		;; failure model
   ""
 {
-  emit_insn (gen_atomic_compare_and_swap<mode>_1 (operands[1], operands[2], operands[3],
-					          operands[4], operands[6]));
+  emit_insn (gen_atomic_compare_and_swap<mode>_1
+    (operands[1], operands[2], operands[3], operands[4], operands[6]));
 
-  rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
-  emit_insn (gen_cstore<mode>4 (tmp,
-				gen_rtx_EQ (SImode, operands[1], operands[3]),
-				operands[1], operands[3]));
-  emit_insn (gen_andsi3 (operands[0], tmp, GEN_INT (1)));
+  rtx cond = gen_reg_rtx (BImode);
+  emit_move_insn (cond, gen_rtx_EQ (BImode, operands[1], operands[3]));
+  emit_insn (gen_sel_truesi (operands[0], cond, GEN_INT (1), GEN_INT (0)));
   DONE;
 })
 

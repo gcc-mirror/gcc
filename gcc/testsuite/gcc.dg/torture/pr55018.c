@@ -20,4 +20,3 @@ lab:
 }
 
 /* { dg-final { scan-tree-dump "printf" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

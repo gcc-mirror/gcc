@@ -88,5 +88,4 @@ end program prog
 ! take the realloc path after the first assignment, so don't count as a malloc.
 ! { dg-final { scan-tree-dump-times "__builtin_free" 7 "original" } }
 !
-! { dg-final { cleanup-tree-dump "original" } }
 

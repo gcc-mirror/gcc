@@ -13,4 +13,3 @@ int f(void)
 /* There should be a reference to conststaticvariable since it may
    may be overriden at run time.  */
 /* { dg-final { scan-tree-dump-times "conststaticvariable" 1 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

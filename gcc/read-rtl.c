@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "obstack.h"
-#include "hashtab.h"
 #include "read-md.h"
 #include "gensupport.h"
 
@@ -81,9 +80,6 @@ struct iterator_use {
   void *ptr;
 };
 
-/* Vector definitions for the above.  */
-typedef struct iterator_use iterator_use;
-
 /* Records one use of an attribute (the "<[iterator:]attribute>" syntax)
    in a non-string rtx field.  */
 struct attribute_use {
@@ -96,9 +92,6 @@ struct attribute_use {
   /* The location of the use, as passed to GROUP's apply_iterator callback.  */
   void *ptr;
 };
-
-/* Vector definitions for the above.  */
-typedef struct attribute_use attribute_use;
 
 /* This struct is used to link subst_attr named ATTR_NAME with
    corresponding define_subst named ITER_NAME.  */
@@ -507,7 +500,7 @@ add_current_iterators (void **slot, void *data ATTRIBUTE_UNUSED)
    Build a list of expanded rtxes in the EXPR_LIST pointed to by QUEUE.  */
 
 static void
-apply_iterators (rtx original, rtx *queue)
+apply_iterators (rtx original, vec<rtx> *queue)
 {
   unsigned int i;
   const char *condition;
@@ -520,8 +513,7 @@ apply_iterators (rtx original, rtx *queue)
     {
       /* Raise an error if any attributes were used.  */
       apply_attribute_uses ();
-      XEXP (*queue, 0) = original;
-      XEXP (*queue, 1) = NULL_RTX;
+      queue->safe_push (original);
       return;
     }
 
@@ -573,8 +565,7 @@ apply_iterators (rtx original, rtx *queue)
 	    }
 	}
       /* Add the new rtx to the end of the queue.  */
-      XEXP (*queue, 0) = x;
-      XEXP (*queue, 1) = NULL_RTX;
+      queue->safe_push (x);
 
       /* Lexicographically increment the iterator value sequence.
 	 That is, cycle through iterator values, starting from the right,
@@ -591,10 +582,6 @@ apply_iterators (rtx original, rtx *queue)
 	    break;
 	  iterator->current_value = iterator->values;
 	}
-
-      /* At least one more rtx to go.  Allocate room for it.  */
-      XEXP (*queue, 1) = rtx_alloc (EXPR_LIST);
-      queue = &XEXP (*queue, 1);
     }
 }
 
@@ -704,7 +691,7 @@ initialize_iterators (void)
 
 /* Provide a version of a function to read a long long if the system does
    not provide one.  */
-#if HOST_BITS_PER_WIDE_INT > HOST_BITS_PER_LONG && !defined(HAVE_ATOLL) && !defined(HAVE_ATOQ)
+#if HOST_BITS_PER_WIDE_INT > HOST_BITS_PER_LONG && !HAVE_DECL_ATOLL && !defined(HAVE_ATOQ)
 HOST_WIDE_INT atoll (const char *);
 
 HOST_WIDE_INT
@@ -946,7 +933,7 @@ read_mapping (struct iterator_group *group, htab_t table)
    define_subst ATTR_NAME should be applied.  This attribute is set and
    defined implicitly and automatically.  */
 static void
-add_define_attr_for_define_subst (const char *attr_name, rtx *queue)
+add_define_attr_for_define_subst (const char *attr_name, vec<rtx> *queue)
 {
   rtx const_str, return_rtx;
 
@@ -961,14 +948,13 @@ add_define_attr_for_define_subst (const char *attr_name, rtx *queue)
   XSTR (return_rtx, 1) = xstrdup ("no,yes");
   XEXP (return_rtx, 2) = const_str;
 
-  XEXP (*queue, 0) = return_rtx;
-  XEXP (*queue, 1) = NULL_RTX;
+  queue->safe_push (return_rtx);
 }
 
 /* This routine generates DEFINE_SUBST_ATTR expression with operands
    ATTR_OPERANDS and places it to QUEUE.  */
 static void
-add_define_subst_attr (const char **attr_operands, rtx *queue)
+add_define_subst_attr (const char **attr_operands, vec<rtx> *queue)
 {
   rtx return_rtx;
   int i;
@@ -979,8 +965,7 @@ add_define_subst_attr (const char **attr_operands, rtx *queue)
   for (i = 0; i < 4; i++)
     XSTR (return_rtx, i) = xstrdup (attr_operands[i]);
 
-  XEXP (*queue, 0) = return_rtx;
-  XEXP (*queue, 1) = NULL_RTX;
+  queue->safe_push (return_rtx);
 }
 
 /* Read define_subst_attribute construction.  It has next form:
@@ -993,18 +978,17 @@ add_define_subst_attr (const char **attr_operands, rtx *queue)
 
 static void
 read_subst_mapping (htab_t subst_iters_table, htab_t subst_attrs_table,
-		    rtx *queue)
+		    vec<rtx> *queue)
 {
   struct mapping *m;
   struct map_value **end_ptr;
   const char *attr_operands[4];
-  rtx * queue_elem = queue;
   int i;
 
   for (i = 0; i < 4; i++)
     attr_operands[i] = read_string (false);
 
-  add_define_subst_attr (attr_operands, queue_elem);
+  add_define_subst_attr (attr_operands, queue);
 
   bind_subst_iter_and_attr (attr_operands[1], attr_operands[0]);
 
@@ -1016,11 +1000,7 @@ read_subst_mapping (htab_t subst_iters_table, htab_t subst_attrs_table,
       end_ptr = add_map_value (end_ptr, 1, "");
       end_ptr = add_map_value (end_ptr, 2, "");
 
-      /* Add element to the queue.  */
-      XEXP (*queue, 1) = rtx_alloc (EXPR_LIST);
-      queue_elem = &XEXP (*queue, 1);
-
-      add_define_attr_for_define_subst (attr_operands[1], queue_elem);
+      add_define_attr_for_define_subst (attr_operands[1], queue);
     }
 
   m = add_mapping (&substs, subst_attrs_table, attr_operands[0]);
@@ -1051,15 +1031,15 @@ check_code_iterator (struct mapping *iterator)
    store the list of rtxes as an EXPR_LIST in *X.  */
 
 bool
-read_rtx (const char *rtx_name, rtx *x)
+read_rtx (const char *rtx_name, vec<rtx> *rtxen)
 {
-  static rtx queue_head;
+  static bool initialized = false;
 
   /* Do one-time initialization.  */
-  if (queue_head == 0)
+  if (!initialized)
     {
       initialize_iterators ();
-      queue_head = rtx_alloc (EXPR_LIST);
+      initialized = true;
     }
 
   /* Handle various rtx-related declarations that aren't themselves
@@ -1101,19 +1081,17 @@ read_rtx (const char *rtx_name, rtx *x)
     }
   if (strcmp (rtx_name, "define_subst_attr") == 0)
     {
-      read_subst_mapping (substs.iterators, substs.attrs, &queue_head);
-      *x = queue_head;
+      read_subst_mapping (substs.iterators, substs.attrs, rtxen);
 
       /* READ_SUBST_MAPPING could generate a new DEFINE_ATTR.  Return
 	 TRUE to process it.  */
       return true;
     }
 
-  apply_iterators (read_rtx_code (rtx_name), &queue_head);
+  apply_iterators (read_rtx_code (rtx_name), rtxen);
   iterator_uses.truncate (0);
   attribute_uses.truncate (0);
 
-  *x = queue_head;
   return true;
 }
 
@@ -1328,7 +1306,7 @@ read_rtx_code (const char *code_name)
 #else
 	/* Prefer atoll over atoq, since the former is in the ISO C99 standard.
 	   But prefer not to use our hand-rolled function above either.  */
-#if defined(HAVE_ATOLL) || !defined(HAVE_ATOQ)
+#if HAVE_DECL_ATOLL || !defined(HAVE_ATOQ)
 	tmp_wide = atoll (name.string);
 #else
 	tmp_wide = atoq (name.string);
@@ -1344,6 +1322,13 @@ read_rtx_code (const char *code_name)
 	read_name (&name);
 	record_potential_iterator_use (&ints, &XINT (return_rtx, i),
 				       name.string);
+	break;
+
+      case 'r':
+	read_name (&name);
+	validate_const_int (name.string);
+	set_regno_raw (return_rtx, atoi (name.string), 1);
+	REG_ATTRS (return_rtx) = NULL;
 	break;
 
       default:

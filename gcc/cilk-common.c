@@ -23,30 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
 #include "tree.h"
+#include "options.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "langhooks.h"
-#include "hashtab.h"
 #include "tm.h"
-#include "hard-reg-set.h"
-#include "function.h"
 #include "rtl.h"
+#include "function.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -375,7 +362,7 @@ expand_builtin_cilk_pop_frame (tree exp)
 void
 expand_builtin_cilk_detach (tree exp)
 {
-  rtx insn;
+  rtx_insn *insn;
   tree fptr = get_frame_arg (exp);
 
   if (fptr == NULL_TREE)

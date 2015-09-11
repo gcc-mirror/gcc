@@ -53,4 +53,3 @@ f4 (void)
 // { dg-final { scan-tree-dump-not "strrchr" "optimized" } }
 // { dg-final { scan-tree-dump-not "strpbrk" "optimized" } }
 // { dg-final { scan-tree-dump-not "strstr" "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

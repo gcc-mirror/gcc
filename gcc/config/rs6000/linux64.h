@@ -71,11 +71,7 @@ extern int dot_symbols;
 #undef  PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_POWER7
 #undef  PROCESSOR_DEFAULT64
-#ifdef LINUX64_DEFAULT_ABI_ELFv2
 #define PROCESSOR_DEFAULT64 PROCESSOR_POWER8
-#else
-#define PROCESSOR_DEFAULT64 PROCESSOR_POWER7
-#endif
 
 /* We don't need to generate entries in .fixup, except when
    -mrelocatable or -mrelocatable-lib is given.  */
@@ -101,7 +97,7 @@ extern int dot_symbols;
     {								\
       if (!global_options_set.x_rs6000_alignment_flags)		\
 	rs6000_alignment_flags = MASK_ALIGN_NATURAL;		\
-      if (TARGET_64BIT)						\
+      if (rs6000_isa_flags & OPTION_MASK_64BIT)			\
 	{							\
 	  if (DEFAULT_ABI != ABI_AIX)				\
 	    {							\
@@ -196,7 +192,7 @@ extern int dot_symbols;
 #endif
 
 #define ASM_SPEC32 "-a32 \
-%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
+%{mrelocatable} %{mrelocatable-lib} %{" FPIE_OR_FPIC_SPEC ":-K PIC} \
 %{memb|msdata=eabi: -memb}"
 
 #define ASM_SPEC64 "-a64"
@@ -211,7 +207,36 @@ extern int dot_symbols;
   { "asm_spec32",		ASM_SPEC32 },				\
   { "asm_spec64",		ASM_SPEC64 },				\
   { "link_os_linux_spec32",	LINK_OS_LINUX_SPEC32 },			\
-  { "link_os_linux_spec64",	LINK_OS_LINUX_SPEC64 },
+  { "link_os_linux_spec64",	LINK_OS_LINUX_SPEC64 },			\
+  { "link_os_extra_spec32",	LINK_OS_EXTRA_SPEC32 },			\
+  { "link_os_extra_spec64",	LINK_OS_EXTRA_SPEC64 },			\
+  { "link_os_new_dtags",	LINK_OS_NEW_DTAGS_SPEC },		\
+  { "include_extra",		INCLUDE_EXTRA_SPEC },			\
+  { "dynamic_linker_prefix",	DYNAMIC_LINKER_PREFIX },
+
+/* Optional specs used for overriding the system include directory, default
+   -rpath links, and prefix for the dynamic linker.  Normally, there are not
+   defined, but if the user configure with the --with-advance-toolchain=<xxx>
+   option, the advance-toolchain.h file will override these.  */
+#ifndef INCLUDE_EXTRA_SPEC
+#define INCLUDE_EXTRA_SPEC	""
+#endif
+
+#ifndef LINK_OS_EXTRA_SPEC32
+#define LINK_OS_EXTRA_SPEC32	""
+#endif
+
+#ifndef LINK_OS_EXTRA_SPEC64
+#define LINK_OS_EXTRA_SPEC64	""
+#endif
+
+#ifndef LINK_OS_NEW_DTAGS_SPEC
+#define LINK_OS_NEW_DTAGS_SPEC	""
+#endif
+
+#ifndef DYNAMIC_LINKER_PREFIX
+#define DYNAMIC_LINKER_PREFIX	""
+#endif
 
 #undef	MULTILIB_DEFAULTS
 #if DEFAULT_ARCH64_P
@@ -303,10 +328,14 @@ extern int dot_symbols;
 #define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
 #define OPTION_UCLIBC (DEFAULT_LIBC == LIBC_UCLIBC)
 #define OPTION_BIONIC (DEFAULT_LIBC == LIBC_BIONIC)
+#undef OPTION_MUSL
+#define OPTION_MUSL   (DEFAULT_LIBC == LIBC_MUSL)
 #else
 #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
 #define OPTION_UCLIBC (linux_libc == LIBC_UCLIBC)
 #define OPTION_BIONIC (linux_libc == LIBC_BIONIC)
+#undef OPTION_MUSL
+#define OPTION_MUSL   (linux_libc == LIBC_MUSL)
 #endif
 
 /* Determine what functions are present at the runtime;
@@ -341,7 +370,7 @@ extern int dot_symbols;
   while (0)
 
 #undef  CPP_OS_DEFAULT_SPEC
-#define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
+#define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux) %(include_extra)"
 
 #undef  LINK_SHLIB_SPEC
 #define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}}"
@@ -361,12 +390,18 @@ extern int dot_symbols;
 #undef	LINK_OS_DEFAULT_SPEC
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
-#define GLIBC_DYNAMIC_LINKER32 "/lib/ld.so.1"
+#define GLIBC_DYNAMIC_LINKER32 "%(dynamic_linker_prefix)/lib/ld.so.1"
+
 #ifdef LINUX64_DEFAULT_ABI_ELFv2
-#define GLIBC_DYNAMIC_LINKER64 "%{mabi=elfv1:/lib64/ld64.so.1;:/lib64/ld64.so.2}"
+#define GLIBC_DYNAMIC_LINKER64 \
+"%{mabi=elfv1:%(dynamic_linker_prefix)/lib64/ld64.so.1;" \
+":%(dynamic_linker_prefix)/lib64/ld64.so.2}"
 #else
-#define GLIBC_DYNAMIC_LINKER64 "%{mabi=elfv2:/lib64/ld64.so.2;:/lib64/ld64.so.1}"
+#define GLIBC_DYNAMIC_LINKER64 \
+"%{mabi=elfv2:%(dynamic_linker_prefix)/lib64/ld64.so.2;" \
+":%(dynamic_linker_prefix)/lib64/ld64.so.1}"
 #endif
+
 #define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
 #define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
 #if DEFAULT_LIBC == LIBC_UCLIBC
@@ -402,11 +437,13 @@ extern int dot_symbols;
 
 #define LINK_OS_LINUX_SPEC32 LINK_OS_LINUX_EMUL32 " %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  -dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "}}"
+  -dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "}} \
+  %(link_os_extra_spec32)"
 
 #define LINK_OS_LINUX_SPEC64 LINK_OS_LINUX_EMUL64 " %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}"
+  -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}} \
+  %(link_os_extra_spec64)"
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP \

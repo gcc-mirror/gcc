@@ -28,4 +28,3 @@ func_18 ( int t )
 /* There should be a single if left.  */
 
 /* { dg-final { scan-tree-dump-times "if" 1 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

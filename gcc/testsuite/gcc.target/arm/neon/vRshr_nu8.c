@@ -17,4 +17,3 @@ void test_vRshr_nu8 (void)
 }
 
 /* { dg-final { scan-assembler "vrshr\.u8\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

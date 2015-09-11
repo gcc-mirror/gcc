@@ -49,6 +49,4 @@ entry (int c)
 }
 /* { dg-final { scan-ipa-dump-times "Clone of bar" 1 "cp" } } */
 /* { dg-final { scan-ipa-dump-times "Clone of foo" 1 "cp" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
 /* { dg-final { scan-tree-dump-not "->c;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

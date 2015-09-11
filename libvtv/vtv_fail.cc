@@ -1,5 +1,4 @@
-/* Copyright (C) 2012-2013
- Free Software Foundation
+/* Copyright (C) 2012-2015 Free Software Foundation, Inc.
 
  This file is part of GCC.
 
@@ -46,7 +45,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#if !defined (__CYGWIN__) && !defined (__MINGW32__)
 #include <execinfo.h>
+#endif
+
 #include <unistd.h>
 
 #include "vtv_utils.h"
@@ -102,8 +105,10 @@ log_error_message (const char *log_msg, bool generate_backtrace)
     {
 #define STACK_DEPTH 20
       void *callers[STACK_DEPTH];
+#if !defined (__CYGWIN__) && !defined (__MINGW32__)
       int actual_depth = backtrace (callers, STACK_DEPTH);
       backtrace_symbols_fd (callers, actual_depth, vtv_failures_log_fd);
+#endif
     }
 }
 

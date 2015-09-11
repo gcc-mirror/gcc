@@ -24,4 +24,3 @@ main (void)
 }
 
 /* { dg-final { scan-assembler "faddp\[ \t\]+\[dD\]\[0-9\]+, v\[0-9\].2d+\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

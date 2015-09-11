@@ -51,6 +51,7 @@ go-warn = $(STRICT_WARN)
 GO_OBJS = \
 	go/ast-dump.o \
 	go/dataflow.o \
+	go/escape.o \
 	go/export.o \
 	go/expressions.o \
 	go/go-backend.o \
@@ -197,6 +198,7 @@ go.uninstall:
 go.mostlyclean:
 	-rm -f go/*$(objext)
 	-rm -f go/*$(coverageexts)
+	-rm -f gccgo$(exeext) gccgo-cross$(exeext) go1$(exeext)
 go.clean:
 go.distclean:
 go.maintainer-clean:

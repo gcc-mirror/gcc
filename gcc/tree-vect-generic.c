@@ -20,39 +20,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "options.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "tm.h"
 #include "langhooks.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
 #include "flags.h"
@@ -60,11 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
-#include "hashtab.h"
-#include "rtl.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -1417,6 +1394,57 @@ count_type_subparts (tree type)
   return VECTOR_TYPE_P (type) ? TYPE_VECTOR_SUBPARTS (type) : 1;
 }
 
+static tree
+do_cond (gimple_stmt_iterator *gsi, tree inner_type, tree a, tree b,
+	 tree bitpos, tree bitsize, enum tree_code code)
+{
+  if (TREE_CODE (TREE_TYPE (a)) == VECTOR_TYPE)
+    a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
+  if (TREE_CODE (TREE_TYPE (b)) == VECTOR_TYPE)
+    b = tree_vec_extract (gsi, inner_type, b, bitsize, bitpos);
+  tree cond = gimple_assign_rhs1 (gsi_stmt (*gsi));
+  return gimplify_build3 (gsi, code, inner_type, cond, a, b);
+}
+
+/* Expand a vector COND_EXPR to scalars, piecewise.  */
+static void
+expand_vector_scalar_condition (gimple_stmt_iterator *gsi)
+{
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
+  tree type = gimple_expr_type (stmt);
+  tree compute_type = get_compute_type (COND_EXPR, mov_optab, type);
+  machine_mode compute_mode = TYPE_MODE (compute_type);
+  gcc_assert (compute_mode != BLKmode);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree rhs2 = gimple_assign_rhs2 (stmt);
+  tree rhs3 = gimple_assign_rhs3 (stmt);
+  tree new_rhs;
+
+  /* If the compute mode is not a vector mode (hence we are not decomposing
+     a BLKmode vector to smaller, hardware-supported vectors), we may want
+     to expand the operations in parallel.  */
+  if (GET_MODE_CLASS (compute_mode) != MODE_VECTOR_INT
+      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_FLOAT
+      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_FRACT
+      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_UFRACT
+      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_ACCUM
+      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_UACCUM)
+    new_rhs = expand_vector_parallel (gsi, do_cond, type, rhs2, rhs3,
+				      COND_EXPR);
+  else
+    new_rhs = expand_vector_piecewise (gsi, do_cond, type, compute_type,
+				       rhs2, rhs3, COND_EXPR);
+  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (new_rhs)))
+    new_rhs = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, TREE_TYPE (lhs),
+			       new_rhs);
+
+  /* NOTE:  We should avoid using gimple_assign_set_rhs_from_tree. One
+     way to do it is change expand_vector_operation and its callees to
+     return a tree_code, RHS1 and RHS2 instead of a tree. */
+  gimple_assign_set_rhs_from_tree (gsi, new_rhs);
+  update_stmt (gsi_stmt (*gsi));
+}
+
 /* Process one statement.  If we identify a vector operation, expand it.  */
 
 static void
@@ -1446,6 +1474,14 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (code == VEC_COND_EXPR)
     {
       expand_vector_condition (gsi);
+      return;
+    }
+
+  if (code == COND_EXPR
+      && TREE_CODE (TREE_TYPE (gimple_assign_lhs (stmt))) == VECTOR_TYPE
+      && TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt))) == BLKmode)
+    {
+      expand_vector_scalar_condition (gsi);
       return;
     }
 
@@ -1681,8 +1717,7 @@ const pass_data pass_data_lower_vector =
   PROP_gimple_lvec, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa
-    | TODO_cleanup_cfg ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_lower_vector : public gimple_opt_pass

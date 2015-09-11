@@ -15,4 +15,3 @@ end do
 end
 ! { dg-final { scan-tree-dump "VolatileNotOptimizedAway" "optimized" } } */
 ! { dg-final { scan-tree-dump-not "NonVolatileNotOptimizedAway" "optimized" } } */
-! { dg-final { cleanup-tree-dump "optimized" } } */

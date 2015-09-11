@@ -19,4 +19,3 @@ f (int *p, unsigned int n)
 /* { dg-final { scan-tree-dump-times "\\+ 32|\\, 32>" 1 "optimized" { target { int16 } } } } */
 /* { dg-final { scan-tree-dump-times "\\+ 192|\\, 192>" 1 "optimized" { target { int32 } } } } */
 /* { dg-final { scan-tree-dump-times "\\+ 96|\\, 96>" 1 "optimized" { target { int16 } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

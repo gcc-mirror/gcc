@@ -25,4 +25,6 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: \[\h+,\+0\]->\[\h+,\+0\] is a bad map" } */
+/* { dg-output "\\\[\[0-9a-fA-FxX\]+,\\\+0\\\]->\\\[\[0-9a-fA-FxX\]+,\\\+0\\\] is a bad map" { target openacc_nvidia_accel_selected } } */
+/* { dg-output "cannot map data on shared-memory system" { target openacc_host_selected } } */
+/* { dg-shouldfail "" } */

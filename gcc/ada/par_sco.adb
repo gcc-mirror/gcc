@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -495,6 +495,32 @@ package body Par_SCO is
       --  table. We use it for backing out a simple decision in an expression
       --  context that contains only NOT operators.
 
+      Mark_Hash : Nat;
+      --  Likewise for the putative SCO_Raw_Hash_Table entries: see below
+
+      type Hash_Entry is record
+         Sloc      : Source_Ptr;
+         SCO_Index : Nat;
+      end record;
+      --  We must register all conditions/pragmas in SCO_Raw_Hash_Table.
+      --  However we cannot register them in the same time we are adding the
+      --  corresponding SCO entries to the raw table since we may discard them
+      --  later on. So instead we put all putative conditions into Hash_Entries
+      --  (see below) and register them once we are sure we keep them.
+      --
+      --  This data structure holds the conditions/pragmas to register in
+      --  SCO_Raw_Hash_Table.
+
+      package Hash_Entries is new Table.Table (
+        Table_Component_Type => Hash_Entry,
+        Table_Index_Type     => Nat,
+        Table_Low_Bound      => 1,
+        Table_Initial        => 10,
+        Table_Increment      => 10,
+        Table_Name           => "Hash_Entries");
+      --  Hold temporarily (i.e. free'd before returning) the Hash_Entry before
+      --  they are registered in SCO_Raw_Hash_Table.
+
       X_Not_Decision : Boolean;
       --  This flag keeps track of whether a decision sequence in the SCO table
       --  contains only NOT operators, and is for an expression context (T=X).
@@ -581,7 +607,7 @@ package body Par_SCO is
                To   => No_Location,
                Last => False);
 
-            SCO_Raw_Hash_Table.Set (Sloc (N), SCO_Raw_Table.Last);
+            Hash_Entries.Append ((Sloc (N), SCO_Raw_Table.Last));
 
             Output_Decision_Operand (L);
             Output_Decision_Operand (Right_Opnd (N));
@@ -608,7 +634,7 @@ package body Par_SCO is
             From => FSloc,
             To   => LSloc,
             Last => False);
-         SCO_Raw_Hash_Table.Set (FSloc, SCO_Raw_Table.Last);
+         Hash_Entries.Append ((FSloc, SCO_Raw_Table.Last));
       end Output_Element;
 
       -------------------
@@ -684,7 +710,7 @@ package body Par_SCO is
          --  pragma, enter a hash table entry now.
 
          if T = 'a' then
-            SCO_Raw_Hash_Table.Set (Loc, SCO_Raw_Table.Last);
+            Hash_Entries.Append ((Loc, SCO_Raw_Table.Last));
          end if;
       end Output_Header;
 
@@ -736,6 +762,7 @@ package body Par_SCO is
 
                   X_Not_Decision := T = 'X' and then Nkind (N) = N_Op_Not;
                   Mark := SCO_Raw_Table.Last;
+                  Mark_Hash := Hash_Entries.Last;
                   Output_Header (T);
 
                   --  Output the decision
@@ -748,6 +775,7 @@ package body Par_SCO is
 
                   if X_Not_Decision then
                      SCO_Raw_Table.Set_Last (Mark);
+                     Hash_Entries.Set_Last (Mark_Hash);
 
                   --  Otherwise, set Last in last table entry to mark end
 
@@ -800,6 +828,8 @@ package body Par_SCO is
          return;
       end if;
 
+      Hash_Entries.Init;
+
       --  See if we have simple decision at outer level and if so then
       --  generate the decision entry for this simple decision. A simple
       --  decision is a boolean expression (which is not a logical operator
@@ -817,6 +847,16 @@ package body Par_SCO is
       end if;
 
       Traverse (N);
+
+      --  Now we have the definitive set of SCO entries, register them in the
+      --  corresponding hash table.
+
+      for I in 1 .. Hash_Entries.Last loop
+         SCO_Raw_Hash_Table.Set
+           (Hash_Entries.Table (I).Sloc,
+            Hash_Entries.Table (I).SCO_Index);
+      end loop;
+      Hash_Entries.Free;
    end Process_Decisions;
 
    -----------

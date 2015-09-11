@@ -1,7 +1,5 @@
 /* Test the `vextu64' ARM Neon intrinsic.  */
 
-/* { dg-do run } */
-/* { dg-require-effective-target arm_neon_ok } */
 /* { dg-options "-save-temps -O3 -fno-inline" } */
 /* { dg-add-options arm_neon } */
 
@@ -24,4 +22,3 @@ main (int argc, char **argv)
 }
 
 /* Don't scan assembler for vext - it can be optimized into a move from r0.  */
-/* { dg-final { cleanup-saved-temps } } */

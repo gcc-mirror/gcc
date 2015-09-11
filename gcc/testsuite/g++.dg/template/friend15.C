@@ -10,10 +10,11 @@ template <typename> class X {
     struct Inner;
 
     template <typename R>
-    friend typename X<R>::Inner * foo () { return 0; }
+    friend typename X<R>::Inner * foo (X<R>*) { return 0; }
 };
 template class X<void>;
+X<void>* p;
 
 struct U {
-    void bar () { foo<void> (); }
+  void bar () { foo (p); }
 };

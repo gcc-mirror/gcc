@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -541,7 +541,7 @@ package body System.Storage_Pools.Subpools is
          --  Perform the following actions:
 
          --    1) Finalize all objects chained on the subpool's master
-         --    2) Remove the the subpool from the owner's list of subpools
+         --    2) Remove the subpool from the owner's list of subpools
          --    3) Deallocate the doubly linked list node associated with the
          --       subpool.
          --    4) Call Deallocate_Subpool

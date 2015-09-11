@@ -43,7 +43,7 @@
     operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
     operands[2] = adjust_address (operands[2], DImode, 0);
     /* Emit [(set (match_dup 0) (match_dup 2))] */
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[2]));
+    emit_insn (gen_rtx_SET (operands[0], operands[2]));
     DONE;
   }
   else if (TARGET_THUMB2)
@@ -51,8 +51,8 @@
     /* Emit the pattern:
        [(parallel [(set (match_dup 0) (match_dup 2))
                    (set (match_dup 1) (match_dup 3))])] */
-    rtx t1 = gen_rtx_SET (VOIDmode, operands[0], operands[2]);
-    rtx t2 = gen_rtx_SET (VOIDmode, operands[1], operands[3]);
+    rtx t1 = gen_rtx_SET (operands[0], operands[2]);
+    rtx t2 = gen_rtx_SET (operands[1], operands[3]);
     emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
     DONE;
   }
@@ -77,7 +77,7 @@
     operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
     operands[2] = adjust_address (operands[2], DImode, 0);
     /* Emit [(set (match_dup 2) (match_dup 0))]  */
-    emit_insn (gen_rtx_SET (VOIDmode, operands[2], operands[0]));
+    emit_insn (gen_rtx_SET (operands[2], operands[0]));
     DONE;
   }
   else if (TARGET_THUMB2)
@@ -85,8 +85,8 @@
     /* Emit the pattern:
        [(parallel [(set (match_dup 2) (match_dup 0))
                    (set (match_dup 3) (match_dup 1))])]  */
-    rtx t1 = gen_rtx_SET (VOIDmode, operands[2], operands[0]);
-    rtx t2 = gen_rtx_SET (VOIDmode, operands[3], operands[1]);
+    rtx t1 = gen_rtx_SET (operands[2], operands[0]);
+    rtx t2 = gen_rtx_SET (operands[3], operands[1]);
     emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
     DONE;
   }
@@ -117,9 +117,9 @@
       [(set (match_dup 0) (match_dup 4))
       (set (match_dup 1) (match_dup 5))
       (set (match_dup 2) tmp)]  */
-   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[4]));
-   emit_insn (gen_rtx_SET (VOIDmode, operands[1], operands[5]));
-   emit_insn (gen_rtx_SET (VOIDmode, operands[2], tmp));
+   emit_insn (gen_rtx_SET (operands[0], operands[4]));
+   emit_insn (gen_rtx_SET (operands[1], operands[5]));
+   emit_insn (gen_rtx_SET (operands[2], tmp));
    DONE;
   }
   else if (TARGET_THUMB2)
@@ -129,10 +129,10 @@
         (set (match_dup 1) (match_dup 5))
         (parallel [(set (match_dup 2) (match_dup 0))
                    (set (match_dup 3) (match_dup 1))])]  */
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[4]));
-    emit_insn (gen_rtx_SET (VOIDmode, operands[1], operands[5]));
-    rtx t1 = gen_rtx_SET (VOIDmode, operands[2], operands[0]);
-    rtx t2 = gen_rtx_SET (VOIDmode, operands[3], operands[1]);
+    emit_insn (gen_rtx_SET (operands[0], operands[4]));
+    emit_insn (gen_rtx_SET (operands[1], operands[5]));
+    rtx t1 = gen_rtx_SET (operands[2], operands[0]);
+    rtx t2 = gen_rtx_SET (operands[3], operands[1]);
     emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
     DONE;
   }
@@ -162,9 +162,9 @@
       [(set (match_dup 0) (match_dup 4))
        (set (match_dup 1) (match_dup 5))
        (set (match_dup 2) tmp)]  */
-   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[4]));
-   emit_insn (gen_rtx_SET (VOIDmode, operands[1], operands[5]));
-   emit_insn (gen_rtx_SET (VOIDmode, operands[2], tmp));
+   emit_insn (gen_rtx_SET (operands[0], operands[4]));
+   emit_insn (gen_rtx_SET (operands[1], operands[5]));
+   emit_insn (gen_rtx_SET (operands[2], tmp));
    DONE;
   }
   else if (TARGET_THUMB2)
@@ -174,10 +174,10 @@
          (set (match_dup 1) (match_dup 5))
          (parallel [(set (match_dup 2) (match_dup 0))
                     (set (match_dup 3) (match_dup 1))])]  */
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[4]));
-    emit_insn (gen_rtx_SET (VOIDmode, operands[1], operands[5]));
-    rtx t1 = gen_rtx_SET (VOIDmode, operands[2], operands[0]);
-    rtx t2 = gen_rtx_SET (VOIDmode, operands[3], operands[1]);
+    emit_insn (gen_rtx_SET (operands[0], operands[4]));
+    emit_insn (gen_rtx_SET (operands[1], operands[5]));
+    rtx t1 = gen_rtx_SET (operands[2], operands[0]);
+    rtx t2 = gen_rtx_SET (operands[3], operands[1]);
     emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
     DONE;
   }

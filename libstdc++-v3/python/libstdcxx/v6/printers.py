@@ -128,6 +128,22 @@ class UniquePointerPrinter:
         return ('std::unique_ptr<%s> containing %s' % (str(v.type.target()),
                                                        str(v)))
 
+def get_value_from_list_node(node):
+    """Returns the value held in an _List_node<_Val>"""
+    try:
+        member = node.type.fields()[1].name
+        if member == '_M_data':
+            # C++03 implementation, node contains the value as a member
+            return node['_M_data']
+        elif member == '_M_storage':
+            # C++11 implementation, node stores value in __aligned_membuf
+            p = node['_M_storage']['_M_storage'].address
+            p = p.cast(node.type.template_argument(0).pointer())
+            return p.dereference()
+    except:
+        pass
+    raise ValueError("Unsupported implementation for %s" % str(node.type))
+
 class StdListPrinter:
     "Print a std::list"
 
@@ -148,7 +164,8 @@ class StdListPrinter:
             self.base = elt['_M_next']
             count = self.count
             self.count = self.count + 1
-            return ('[%d]' % count, elt['_M_data'])
+            val = get_value_from_list_node(elt)
+            return ('[%d]' % count, val)
 
     def __init__(self, typename, val):
         self.typename = typename
@@ -174,7 +191,8 @@ class StdListIteratorPrinter:
     def to_string(self):
         nodetype = find_type(self.val.type, '_Node')
         nodetype = nodetype.strip_typedefs().pointer()
-        return self.val['_M_node'].cast(nodetype).dereference()['_M_data']
+        node = self.val['_M_node'].cast(nodetype).dereference()
+        return get_value_from_list_node(node)
 
 class StdSlistPrinter:
     "Print a __gnu_cxx::slist"
@@ -327,22 +345,35 @@ class StdTuplePrinter:
             return self
 
         def __next__ (self):
-            nodes = self.head.type.fields ()
             # Check for further recursions in the inheritance tree.
+            # For a GCC 5+ tuple self.head is None after visiting all nodes:
+            if not self.head:
+                raise StopIteration
+            nodes = self.head.type.fields ()
+            # For a GCC 4.x tuple there is a final node with no fields:
             if len (nodes) == 0:
                 raise StopIteration
             # Check that this iteration has an expected structure.
-            if len (nodes) != 2:
+            if len (nodes) > 2:
                 raise ValueError("Cannot parse more than 2 nodes in a tuple tree.")
 
-            # - Left node is the next recursion parent.
-            # - Right node is the actual class contained in the tuple.
+            if len (nodes) == 1:
+                # This is the last node of a GCC 5+ std::tuple.
+                impl = self.head.cast (nodes[0].type)
+                self.head = None
+            else:
+                # Either a node before the last node, or the last node of
+                # a GCC 4.x tuple (which has an empty parent).
 
-            # Process right node.
-            impl = self.head.cast (nodes[1].type)
+                # - Left node is the next recursion parent.
+                # - Right node is the actual class contained in the tuple.
 
-            # Process left node and set it as head.
-            self.head  = self.head.cast (nodes[0].type)
+                # Process right node.
+                impl = self.head.cast (nodes[1].type)
+
+                # Process left node and set it as head.
+                self.head  = self.head.cast (nodes[0].type)
+
             self.count = self.count + 1
 
             # Finally, check the implementation.  If it is
@@ -427,7 +458,7 @@ def get_value_from_Rb_tree_node(node):
             # C++03 implementation, node contains the value as a member
             return node['_M_value_field']
         elif member == '_M_storage':
-            # C++11 implementation, node stores value in __aligned_buffer
+            # C++11 implementation, node stores value in __aligned_membuf
             p = node['_M_storage']['_M_storage'].address
             p = p.cast(node.type.template_argument(0).pointer())
             return p.dereference()
@@ -443,11 +474,12 @@ class StdRbtreeIteratorPrinter:
 
     def __init__ (self, typename, val):
         self.val = val
+        valtype = self.val.type.template_argument(0).strip_typedefs()
+        nodetype = gdb.lookup_type('std::_Rb_tree_node<' + str(valtype) + '>')
+        self.link_type = nodetype.strip_typedefs().pointer()
 
     def to_string (self):
-        typename = str(self.val.type.strip_typedefs()) + '::_Link_type'
-        nodetype = gdb.lookup_type(typename).strip_typedefs()
-        node = self.val.cast(nodetype).dereference()
+        node = self.val['_M_node'].cast(self.link_type).dereference()
         return get_value_from_Rb_tree_node(node)
 
 class StdDebugIteratorPrinter:
@@ -966,6 +998,57 @@ class StdExpStringViewPrinter:
     def display_hint (self):
         return 'string'
 
+class StdExpPathPrinter:
+    "Print a std::experimental::filesystem::path"
+
+    def __init__ (self, typename, val):
+        self.val = val
+        start = self.val['_M_cmpts']['_M_impl']['_M_start']
+        finish = self.val['_M_cmpts']['_M_impl']['_M_finish']
+        self.num_cmpts = int (finish - start)
+
+    def _path_type(self):
+        t = str(self.val['_M_type'])
+        if t[-9:] == '_Root_dir':
+            return "root-directory"
+        if t[-10:] == '_Root_name':
+            return "root-name"
+        return None
+
+    def to_string (self):
+        path = "%s" % self.val ['_M_pathname']
+        if self.num_cmpts == 0:
+            t = self._path_type()
+            if t:
+                path = '%s [%s]' % (path, t)
+        return "filesystem::path %s" % path
+
+    class _iterator(Iterator):
+        def __init__(self, cmpts):
+            self.item = cmpts['_M_impl']['_M_start']
+            self.finish = cmpts['_M_impl']['_M_finish']
+            self.count = 0
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if self.item == self.finish:
+                raise StopIteration
+            item = self.item.dereference()
+            count = self.count
+            self.count = self.count + 1
+            self.item = self.item + 1
+            path = item['_M_pathname']
+            t = StdExpPathPrinter(item.type.name, item)._path_type()
+            if not t:
+                t = count
+            return ('[%s]' % t, path)
+
+    def children(self):
+        return self._iterator(self.val['_M_cmpts'])
+
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -1351,6 +1434,11 @@ def build_libstdcxx_dictionary ():
                                   'optional', StdExpOptionalPrinter)
     libstdcxx_printer.add_version('std::experimental::fundamentals_v1::',
                                   'basic_string_view', StdExpStringViewPrinter)
+    # Filesystem TS components
+    libstdcxx_printer.add_version('std::experimental::filesystem::v1::',
+                                  'path', StdExpPathPrinter)
+    libstdcxx_printer.add_version('std::experimental::filesystem::v1::__cxx11::',
+                                  'path', StdExpPathPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)

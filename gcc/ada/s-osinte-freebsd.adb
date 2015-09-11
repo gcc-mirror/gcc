@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---          Copyright (C) 1991-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package body System.OS_Interface is
       type int_ptr is access all int;
 
       function internal_errno return int_ptr;
-      pragma Import (C, internal_errno, "__error");
+      pragma Import (C, internal_errno, "__get_errno");
 
    begin
       return (internal_errno.all);
@@ -57,7 +57,7 @@ package body System.OS_Interface is
    function Get_Stack_Base (thread : pthread_t) return Address is
       pragma Unreferenced (thread);
    begin
-      return (0);
+      return Null_Address;
    end Get_Stack_Base;
 
    ------------------

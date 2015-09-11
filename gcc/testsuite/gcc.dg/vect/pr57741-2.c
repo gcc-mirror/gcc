@@ -41,4 +41,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loop" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

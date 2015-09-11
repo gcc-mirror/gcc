@@ -105,7 +105,7 @@ toolexeclib_LTLIBRARIES = libgo-llgo.la
 toolexeclib_LIBRARIES = libgobegin-llgo.a
 else
 toolexeclib_LTLIBRARIES = libgo.la
-toolexeclib_LIBRARIES = libgobegin.a
+toolexeclib_LIBRARIES = libgobegin.a libgolibbegin.a libnetgo.a
 endif
 
 toolexeclibgo_DATA = \
@@ -774,9 +774,7 @@ endif
 endif
 endif
 
-go_net_files = \
-	go/net/cgo_unix.go \
-	$(go_net_cgo_file) \
+go_net_common_files = \
 	$(go_net_cloexec_file) \
 	go/net/dial.go \
 	go/net/dnsclient.go \
@@ -819,6 +817,15 @@ go_net_files = \
 	go/net/udpsock_posix.go \
 	go/net/unixsock.go \
 	go/net/unixsock_posix.go
+
+go_net_files = \
+	go/net/cgo_unix.go \
+	$(go_net_cgo_file) \
+	$(go_net_common_files)
+
+go_netgo_files = \
+	go/net/cgo_stub.go \
+	$(go_net_common_files)
 
 if LIBGO_IS_SOLARIS
 if LIBGO_IS_386
@@ -873,7 +880,11 @@ endif
 endif
 
 if LIBGO_IS_SOLARIS
+if HAVE_STAT_TIMESPEC
+go_os_stat_file = go/os/stat_atim.go
+else
 go_os_stat_file = go/os/stat_solaris.go
+endif
 else
 if LIBGO_IS_LINUX
 go_os_stat_file = go/os/stat_atim.go
@@ -938,44 +949,10 @@ go_path_files = \
 	go/path/match.go \
 	go/path/path.go
 
-if LIBGO_IS_X86_64
-go_reflect_makefunc_file = \
-	go/reflect/makefuncgo_amd64.go
-go_reflect_makefunc_s_file = \
-	go/reflect/makefunc_amd64.S
-else
-if LIBGO_IS_386
-go_reflect_makefunc_file = \
-	go/reflect/makefuncgo_386.go
-go_reflect_makefunc_s_file = \
-	go/reflect/makefunc_386.S
-else
-if LIBGO_IS_S390
-go_reflect_makefunc_file = \
-	go/reflect/makefuncgo_s390.go
-go_reflect_makefunc_s_file = \
-	go/reflect/makefunc_s390.c
-else
-if LIBGO_IS_S390X
-go_reflect_makefunc_file = \
-	go/reflect/makefuncgo_s390x.go \
-	go/reflect/makefuncgo_s390.go
-go_reflect_makefunc_s_file = \
-	go/reflect/makefunc_s390.c
-else
-go_reflect_makefunc_file =
-go_reflect_makefunc_s_file = \
-	go/reflect/makefunc_dummy.c
-endif
-endif
-endif
-endif
-
 go_reflect_files = \
 	go/reflect/deepequal.go \
 	go/reflect/makefunc.go \
 	go/reflect/makefunc_ffi.go \
-	$(go_reflect_makefunc_file) \
 	go/reflect/type.go \
 	go/reflect/value.go
 go_reflect_makefunc_c_file = \
@@ -1005,11 +982,25 @@ s-version: Makefile
 	rm -f version.go.tmp
 	echo "package runtime" > version.go.tmp
 	echo 'const defaultGoroot = "$(prefix)"' >> version.go.tmp
-	echo 'const theVersion = "'`$(GOC) --version | sed 1q`'"' >> version.go.tmp
+	echo 'const theVersion = "'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'"' >> version.go.tmp
 	echo 'const theGoarch = "'$(GOARCH)'"' >> version.go.tmp
 	echo 'const theGoos = "'$(GOOS)'"' >> version.go.tmp
 	echo 'const theGccgoToolDir = "$(libexecsubdir)"' >> version.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
+	$(STAMP) $@
+
+noinst_DATA = zstdpkglist.go
+
+# Generate the list of go std packages that were included in libgo
+zstdpkglist.go: s-zstdpkglist; @true
+s-zstdpkglist: Makefile
+	rm -f zstdpkglist.go.tmp
+	echo 'package main' > zstdpkglist.go.tmp
+	echo "" >> zstdpkglist.go.tmp
+	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
+	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's/\.lo /\": true,\n/g' | sed 's/\.lo/\": true,/' | sed 's/-go//' | grep -v _c | sed 's/^/\t\"/' | sort | uniq >> zstdpkglist.go.tmp
+	echo '}' >> zstdpkglist.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh zstdpkglist.go.tmp zstdpkglist.go
 	$(STAMP) $@
 
 go_sort_files = \
@@ -1689,7 +1680,17 @@ endif # !LIBGO_IS_LINUX
 # Define socket sizes and types.
 if LIBGO_IS_LINUX
 syscall_socket_file = go/syscall/socket_linux.go epoll.go
+if LIBGO_IS_PPC64LE
+syscall_socket_type_file = go/syscall/socket_linux_ppc64x_type.go
 else
+if LIBGO_IS_PPC64
+syscall_socket_type_file = go/syscall/socket_linux_ppc64x_type.go
+else
+syscall_socket_type_file = go/syscall/socket_linux_type.go
+endif
+endif
+else
+syscall_socket_type_file =
 if LIBGO_IS_SOLARIS
 syscall_socket_file = go/syscall/socket_solaris.go
 else
@@ -1775,6 +1776,7 @@ go_base_syscall_files = \
 	$(syscall_size_file) \
 	$(syscall_socket_file) \
 	$(syscall_socket_os_file) \
+	$(syscall_socket_type_file) \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
 	$(syscall_lsf_file) \
@@ -1897,7 +1899,6 @@ libgo_go_objs = \
 	os.lo \
 	path.lo \
 	reflect-go.lo \
-	reflect/makefunc.lo \
 	reflect/makefunc_ffi_c.lo \
 	regexp.lo \
 	runtime-go.lo \
@@ -2046,6 +2047,18 @@ libgobegin_a_SOURCES = \
 libgobegin_llgo_a_SOURCES = \
 	runtime/go-main.c
 
+# Use -fPIC for libgobegin so that it can be put in a PIE.
+libgobegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
+libgobegin_llgo_a_CFLAGS = $(AM_CFLAGS) -fPIC
+
+libgolibbegin_a_SOURCES = \
+	runtime/go-libmain.c
+
+libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
+
+libnetgo_a_SOURCES = $(go_netgo_files)
+libnetgo_a_LIBADD = netgo.o
+
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
 GOCFLAGS = $(CFLAGS)
@@ -2069,6 +2082,12 @@ BUILDPACKAGE = \
 	$(MKDIR_P) $(@D); \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
 	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//' -e 's/-go$$//'` -o $@ $$files
+
+# Build netgo.o.
+BUILDNETGO = \
+	$(MKDIR_P) $(@D); \
+	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
+	$(GOCOMPILE) -I . -c -fPIC -fgo-pkgpath=net -o $@ $$files
 
 GOTESTFLAGS =
 GOBENCH = 
@@ -2291,6 +2310,12 @@ net/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: net/check
 
+@go_include@ netgo.o.dep
+netgo.o.dep: $(go_netgo_files)
+	$(BUILDDEPS)
+netgo.o: $(go_netgo_files)
+	$(BUILDNETGO)
+
 @go_include@ os.lo.dep
 os.lo.dep: $(go_os_files)
 	$(BUILDDEPS)
@@ -2316,9 +2341,6 @@ reflect-go.lo: $(go_reflect_files)
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
-reflect/makefunc.lo: $(go_reflect_makefunc_s_file)
-	@$(MKDIR_P) reflect
-	$(LTCOMPILE) -c -o $@ $<
 reflect/makefunc_ffi_c.lo: $(go_reflect_makefunc_c_file)
 	@$(MKDIR_P) reflect
 	$(LTCOMPILE) -c -o $@ $<

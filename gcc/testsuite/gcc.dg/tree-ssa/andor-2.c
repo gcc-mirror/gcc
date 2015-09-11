@@ -49,4 +49,3 @@ int test8(int o, int p)
 /* { dg-final { scan-tree-dump-times "return k;" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "return m;" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "return o;" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

@@ -81,4 +81,3 @@ end
 
 ! { dg-final { scan-tree-dump-times "  static integer\\\(kind=4\\\) a = 0;" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "  b = 0;" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

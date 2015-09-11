@@ -14,4 +14,3 @@ foo(unsigned int a, unsigned int b, unsigned int c, unsigned int d,
 }
 
 /* { dg-final { scan-tree-dump-times "= 20" 1 "reassoc1"} } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

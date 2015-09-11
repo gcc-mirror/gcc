@@ -176,16 +176,8 @@ make_calc_discriminant (struct quadratic_test *testcase)
 	  gcc_jit_param_as_rvalue (param_q),
 	  NULL, testcase->c));
 
-  gcc_jit_block_add_assignment (
-    blk, NULL,
-
-    /* q->discriminant =...  */
-    gcc_jit_rvalue_dereference_field (
-      gcc_jit_param_as_rvalue (param_q),
-      NULL,
-      testcase->discriminant),
-
-    /* (q->b * q->b) - (4 * q->a * q->c) */
+  /* (q->b * q->b) - (4 * q->a * q->c) */
+  gcc_jit_rvalue *rhs =
     gcc_jit_context_new_binary_op (
       testcase->ctxt, NULL,
       GCC_JIT_BINARY_OP_MINUS,
@@ -213,7 +205,21 @@ make_calc_discriminant (struct quadratic_test *testcase)
 	  testcase->ctxt, NULL,
 	  GCC_JIT_BINARY_OP_MULT,
 	  testcase->numeric_type,
-	  q_a, q_c)))); /* end of gcc_jit_function_add_assignment call.  */
+	  q_a, q_c)));
+
+  CHECK_STRING_VALUE (
+     gcc_jit_object_get_debug_string (gcc_jit_rvalue_as_object (rhs)),
+     "q->b * q->b - (double)4 * q->a * q->c");
+
+  gcc_jit_block_add_assignment (
+    blk, NULL,
+
+    /* q->discriminant =...  */
+    gcc_jit_rvalue_dereference_field (
+      gcc_jit_param_as_rvalue (param_q),
+      NULL,
+      testcase->discriminant),
+    rhs);
 
   gcc_jit_block_end_with_void_return (blk, NULL);
 }

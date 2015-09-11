@@ -11,5 +11,4 @@ int main(void) {
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

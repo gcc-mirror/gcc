@@ -19,6 +19,8 @@
 
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
+// { dg-options "-std=c++98" }
+
 #include <tr1/memory>
 #include <testsuite_hooks.h>
 

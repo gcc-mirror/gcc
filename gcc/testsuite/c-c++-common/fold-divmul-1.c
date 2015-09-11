@@ -8,4 +8,3 @@ fx (int *b, int *e)
 }
 
 /* { dg-final { scan-tree-dump-not "/\\\[ex\\\]" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

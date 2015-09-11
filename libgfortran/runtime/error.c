@@ -74,15 +74,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    2.3.5 also explains how co-images synchronize during termination.
 
-   In libgfortran we have two ways of ending a program. exit(code) is
-   a normal exit; calling exit() also causes open units to be
-   closed. No backtrace or core dump is needed here. When something
-   goes wrong, we have sys_abort() which tries to print the backtrace
-   if -fbacktrace is enabled, and then dumps core; whether a core file
-   is generated is system dependent. When aborting, we don't flush and
-   close open units, as program memory might be corrupted and we'd
-   rather risk losing dirty data in the buffers rather than corrupting
-   files on disk.
+   In libgfortran we have three ways of ending a program. exit(code)
+   is a normal exit; calling exit() also causes open units to be
+   closed. No backtrace or core dump is needed here.  For error
+   termination, we have exit_error(status), which prints a backtrace
+   if backtracing is enabled, then exits.  Finally, when something
+   goes terribly wrong, we have sys_abort() which tries to print the
+   backtrace if -fbacktrace is enabled, and then dumps core; whether a
+   core file is generated is system dependent. When aborting, we don't
+   flush and close open units, as program memory might be corrupted
+   and we'd rather risk losing dirty data in the buffers rather than
+   corrupting files on disk.
 
 */
 
@@ -173,12 +175,29 @@ sys_abort (void)
       || (options.backtrace == -1 && compile_options.backtrace == 1))
     {
       estr_write ("\nProgram aborted. Backtrace:\n");
-      backtrace ();
+      show_backtrace (false);
       signal (SIGABRT, SIG_DFL);
     }
 
   abort();
 }
+
+
+/* Exit in case of error termination. If backtracing is enabled, print
+   backtrace, then exit.  */
+
+void
+exit_error (int status)
+{
+  if (options.backtrace == 1
+      || (options.backtrace == -1 && compile_options.backtrace == 1))
+    {
+      estr_write ("\nError termination. Backtrace:\n");
+      show_backtrace (false);
+    }
+  exit (status);
+}
+
 
 
 /* gfc_xtoa()-- Integer to hexadecimal conversion.  */
@@ -221,8 +240,16 @@ gf_strerror (int errnum,
 #ifdef HAVE_STRERROR_L
   locale_t myloc = newlocale (LC_CTYPE_MASK | LC_MESSAGES_MASK, "",
 			      (locale_t) 0);
-  char *p = strerror_l (errnum, myloc);
-  freelocale (myloc);
+  char *p;
+  if (myloc)
+    {
+      p = strerror_l (errnum, myloc);
+      freelocale (myloc);
+    }
+  else
+    /* newlocale might fail e.g. due to running out of memory, fall
+       back to the simpler strerror.  */
+    p = strerror (errnum);
   return p;
 #elif defined(HAVE_STRERROR_R)
 #ifdef HAVE_USELOCALE
@@ -318,7 +345,7 @@ os_error (const char *message)
   estr_write ("\n");
   estr_write (message);
   estr_write ("\n");
-  exit (1);
+  exit_error (1);
 }
 iexport(os_error);
 
@@ -337,7 +364,7 @@ runtime_error (const char *message, ...)
   st_vprintf (message, ap);
   va_end (ap);
   estr_write ("\n");
-  exit (2);
+  exit_error (2);
 }
 iexport(runtime_error);
 
@@ -356,7 +383,7 @@ runtime_error_at (const char *where, const char *message, ...)
   st_vprintf (message, ap);
   va_end (ap);
   estr_write ("\n");
-  exit (2);
+  exit_error (2);
 }
 iexport(runtime_error_at);
 
@@ -394,7 +421,7 @@ internal_error (st_parameter_common *cmp, const char *message)
      because hopefully it doesn't happen too often).  */
   stupid_function_name_for_static_linking();
 
-  exit (3);
+ exit_error (3);
 }
 
 
@@ -566,7 +593,7 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
   estr_write ("Fortran runtime error: ");
   estr_write (message);
   estr_write ("\n");
-  exit (2);
+  exit_error (2);
 }
 iexport(generate_error);
 
@@ -628,7 +655,7 @@ notify_std (st_parameter_common *cmp, int std, const char * message)
       estr_write ("Fortran runtime error: ");
       estr_write (message);
       estr_write ("\n");
-      exit (2);
+      exit_error (2);
     }
   else
     {

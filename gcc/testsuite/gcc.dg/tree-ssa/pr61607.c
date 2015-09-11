@@ -25,5 +25,4 @@ void f2(int dst[3], int R)
    the second conditional after the loop.  */
 /* { dg-final { scan-tree-dump-times "if" 2 "dom1"} } */
 
-/* { dg-final { cleanup-tree-dump "dom1" } } */
 

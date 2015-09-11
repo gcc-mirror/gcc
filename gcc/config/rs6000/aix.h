@@ -79,7 +79,7 @@
 #if HAVE_AS_REF
 /* Issue assembly directives that create a reference to the given DWARF table
    identifier label from the current function section.  This is defined to
-   ensure we drag frame frame tables associated with needed function bodies in
+   ensure we drag frame tables associated with needed function bodies in
    a link with garbage collection activated.  */
 #define ASM_OUTPUT_DWARF_TABLE_REF rs6000_aix_asm_output_dwarf_table_ref
 #endif

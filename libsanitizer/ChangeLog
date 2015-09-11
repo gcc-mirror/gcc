@@ -1,3 +1,144 @@
+2015-09-09  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR sanitizer/67258
+	* ubsan/ubsan_type_hash.cc: Cherry pick upstream r244101.
+
+2015-07-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR sanitizer/63927
+	* sanitizer_common/sanitizer_stacktrace.h: Use fast unwinder
+	for PowerPC.
+
+2015-07-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR sanitizer/63927
+	* sanitizer_common/sanitizer_stacktrace.cc
+	(BufferedStackTrace::FastUnwindStack): Fix code for PowerPC to
+	find the link register at an offset of 16 from the base of the
+	caller's stack frame.
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* asan/Makefile.in: Likewise.
+	* configure: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
+2015-04-13  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/64839
+	* sanitizer_common/sanitizer_platform.h: Cherry pick
+	upstream r234470.
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Ditto.
+	* configure.ac (RPC_DEFS): Check for precense of RPC headers.
+	* sanitizer_common/Makefile.am (DEFS): Pass info to compiler.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
+
+2015-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR sanitizer/59009
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Cherry pick
+	upstream r230324.
+	* sanitizer_common/sanitizer_platform.h: Likewise.
+	* sanitizer_common/sanitizer_common_syscalls.inc: Likewise.
+
+2015-03-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tsan/tsan_rtl_report.cc (ScopedReport::AddThread): Cherry pick
+	upstream 224508 and 224755.
+
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/63958
+	Reapply:
+	2014-10-14  David S. Miller  <davem@davemloft.net>
+
+	* sanitizer_common/sanitizer_platform_limits_linux.cc (time_t):
+	Define at __kernel_time_t, as needed for sparc.
+	(struct __old_kernel_stat): Don't check if __sparc__ is defined.
+	* libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer): Define struct___old_kernel_stat_sz,
+	struct_kernel_stat_sz, and struct_kernel_stat64_sz for sparc.
+	(__sanitizer_ipc_perm): Adjust for sparc targets.
+	(__sanitizer_shmid_ds): Likewsie.
+	(__sanitizer_sigaction): Likewise.
+	(IOC_SIZE): Likewsie.
+
+2015-02-27  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* configure.tgt: Enable build on powerpc*le-*-linux.
+
+2015-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/63888
+	* asan/asan_globals.cc (RegisterGlobal): Disable detect_odr_violation
+	support until it is rewritten upstream.
+
+2015-01-26  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
+	* configure: Regenerate.
+
+2015-01-25  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+
+	* configure.ac (TSAN_TARGET_DEPENDENT_OBJECTS): Undefine.
+	* configure: Regenerate.
+	* configure.tgt (TSAN_TARGET_DEPENDENT_OBJECTS): Define.
+
+2015-01-25  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+
+	* configure.ac (TSAN_TARGET_DEPENDENT_OBJECTS): Define.
+	* configure: Regenerate.
+	* tsan/Makefile.am (EXTRA_libtsan_la_SOURCES): Define.
+	(libtsan_la_DEPENDENCIES): Likewise.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
+2015-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan/tsan_rtl.h: Cherry pick upstream r226829.
+
+2015-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64435
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Cherry pick
+	upstream r226637.
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Likewise.
+	* sanitizer_common/sanitizer_posix.cc: Cherry pick upstream r226639.
+
+2015-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64632
+	* ubsan/ubsan_type_hash.cc: Cherry pick upstream r224972.
+
+2015-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64435
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Cherry pick
+	upstream r223925.
+
 2015-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/sanitizer_deadlock_detector.h: Cherry pick

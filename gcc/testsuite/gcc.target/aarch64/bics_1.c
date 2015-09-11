@@ -12,7 +12,7 @@ bics_si_test1 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int
@@ -24,7 +24,7 @@ bics_si_test2 (int a, int b, int c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 typedef long long s64;
@@ -38,7 +38,7 @@ bics_di_test1 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 s64
@@ -50,7 +50,7 @@ bics_di_test2 (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return d;
 }
 
 int
@@ -60,7 +60,7 @@ main ()
   s64 y;
 
   x = bics_si_test1 (29, ~4, 5);
-  if (x != ((29 & 4) + ~4 + 5))
+  if (x != (29 & 4))
     abort ();
 
   x = bics_si_test1 (5, ~2, 20);
@@ -68,7 +68,7 @@ main ()
     abort ();
 
   x = bics_si_test2 (35, ~4, 5);
-  if (x != ((35 & ~(~4 << 3)) + ~4 + 5))
+  if (x != (35 & ~(~4 << 3)))
     abort ();
 
   x = bics_si_test2 (96, ~2, 20);
@@ -79,7 +79,7 @@ main ()
                      ~0x320000004ll,
                      0x505050505ll);
 
-  if (y != ((0x130000029ll & 0x320000004ll) + ~0x320000004ll + 0x505050505ll))
+  if (y != (0x130000029ll & 0x320000004ll))
     abort ();
 
   y = bics_di_test1 (0x5000500050005ll,
@@ -91,8 +91,7 @@ main ()
   y = bics_di_test2 (0x130000029ll,
                      ~0x064000008ll,
                      0x505050505ll);
-  if (y != ((0x130000029ll & ~(~0x064000008ll << 3))
-	    + ~0x064000008ll + 0x505050505ll))
+  if (y != (0x130000029ll & ~(~0x064000008ll << 3)))
     abort ();
 
   y = bics_di_test2 (0x130002900ll,
@@ -103,5 +102,3 @@ main ()
 
   return 0;
 }
-
-/* { dg-final { cleanup-saved-temps } } */

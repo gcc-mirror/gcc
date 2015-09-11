@@ -12,4 +12,3 @@ foo (char *buf, unsigned long len)
 }
 
 /* { dg-final { scan-tree-dump-not "cstore\." "cselim" } } */
-/* { dg-final { cleanup-tree-dump "cselim" } } */

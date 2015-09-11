@@ -18,4 +18,3 @@ test (void)
    constant folded.  There should be no loads from b left.  */
 /* { dg-final { scan-tree-dump-times "__complex__ \\\(1.0e\\\+0, 0.0\\\)" 2 "dce2" } } */
 /* { dg-final { scan-tree-dump-times "= b" 0 "dce2" } } */
-/* { dg-final { cleanup-tree-dump "dce2" } } */

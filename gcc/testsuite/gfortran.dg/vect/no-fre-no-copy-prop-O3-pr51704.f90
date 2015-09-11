@@ -53,5 +53,4 @@ contains
   end subroutine tes
 end
 
-! { dg-final { cleanup-tree-dump "vect" } }
 

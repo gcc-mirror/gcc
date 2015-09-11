@@ -77,9 +77,11 @@ along with GCC; see the file COPYING3.	If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hard-reg-set.h"
+#include "backend.h"
+#include "predict.h"
+#include "tree.h"
 #include "rtl.h"
+#include "df.h"
 #include "rtl-error.h"
 #include "tm_p.h"
 #include "target.h"
@@ -87,22 +89,8 @@ along with GCC; see the file COPYING3.	If not see
 #include "recog.h"
 #include "output.h"
 #include "regs.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
-#include "machmode.h"
-#include "input.h"
-#include "function.h"
-#include "symtab.h"
 #include "flags.h"
-#include "statistics.h"
-#include "double-int.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "alias.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "tree.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -111,15 +99,13 @@ along with GCC; see the file COPYING3.	If not see
 #include "varasm.h"
 #include "stmt.h"
 #include "expr.h"
-#include "predict.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "except.h"
-#include "df.h"
 #include "ira.h"
 #include "sparseset.h"
 #include "params.h"
+#include "lra.h"
+#include "insn-attr.h"
+#include "insn-codes.h"
 #include "lra-int.h"
 
 /* Current iteration number of the pass and current iteration number
@@ -268,6 +254,13 @@ pseudo_compare_func (const void *v1p, const void *v2p)
 {
   int r1 = *(const int *) v1p, r2 = *(const int *) v2p;
   int diff;
+
+  /* Assign hard reg to static chain pointer first pseudo when
+     non-local goto is used.  */
+  if (non_spilled_static_chain_regno_p (r1))
+    return -1;
+  else if (non_spilled_static_chain_regno_p (r2))
+    return 1;
 
   /* Prefer to assign more frequently used registers first.  */
   if ((diff = lra_reg_info[r2].freq - lra_reg_info[r1].freq) != 0)
@@ -491,10 +484,13 @@ adjust_hard_regno_cost (int hard_regno, int incr)
    pseudos in complicated situations where pseudo sizes are different.
 
    If TRY_ONLY_HARD_REGNO >= 0, consider only that hard register,
-   otherwise consider all hard registers in REGNO's class.  */
+   otherwise consider all hard registers in REGNO's class.
+
+   If REGNO_SET is not empty, only hard registers from the set are
+   considered.  */
 static int
-find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
-		     bool first_p)
+find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
+		       bool first_p, HARD_REG_SET regno_set)
 {
   HARD_REG_SET conflict_set;
   int best_cost = INT_MAX, best_priority = INT_MIN, best_usage = INT_MAX;
@@ -509,7 +505,13 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
   bool *rclass_intersect_p;
   HARD_REG_SET impossible_start_hard_regs, available_regs;
 
-  COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+  if (hard_reg_set_empty_p (regno_set))
+    COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+  else
+    {
+      COMPL_HARD_REG_SET (conflict_set, regno_set);
+      IOR_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+    }
   rclass = regno_allocno_class_array[regno];
   rclass_intersect_p = ira_reg_classes_intersect_p[rclass];
   curr_hard_regno_costs_check++;
@@ -678,6 +680,33 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
   if (best_hard_regno >= 0)
     *cost = best_cost - lra_reg_info[regno].freq;
   return best_hard_regno;
+}
+
+/* A wrapper for find_hard_regno_for_1 (see comments for that function
+   description).  This function tries to find a hard register for
+   preferred class first if it is worth.  */
+static int
+find_hard_regno_for (int regno, int *cost, int try_only_hard_regno, bool first_p)
+{
+  int hard_regno;
+  HARD_REG_SET regno_set;
+
+  /* Only original pseudos can have a different preferred class.  */
+  if (try_only_hard_regno < 0 && regno < lra_new_regno_start)
+    {
+      enum reg_class pref_class = reg_preferred_class (regno);
+      
+      if (regno_allocno_class_array[regno] != pref_class)
+	{
+	  hard_regno = find_hard_regno_for_1 (regno, cost, -1, first_p,
+					      reg_class_contents[pref_class]);
+	  if (hard_regno >= 0)
+	    return hard_regno;
+	}
+    }
+  CLEAR_HARD_REG_SET (regno_set);
+  return find_hard_regno_for_1 (regno, cost, try_only_hard_regno, first_p,
+				regno_set);
 }
 
 /* Current value used for checking elements in
@@ -870,10 +899,12 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 {
   int i, j, n, p, hard_regno, best_hard_regno, cost, best_cost, rclass_size;
   int reload_hard_regno, reload_cost;
+  bool static_p, best_static_p;
   machine_mode mode;
   enum reg_class rclass;
   unsigned int spill_regno, reload_regno, uid;
   int insn_pseudos_num, best_insn_pseudos_num;
+  int bad_spills_num, smallest_bad_spills_num;
   lra_live_range_t r;
   bitmap_iterator bi;
 
@@ -891,7 +922,9 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
     }
   best_hard_regno = -1;
   best_cost = INT_MAX;
+  best_static_p = TRUE;
   best_insn_pseudos_num = INT_MAX;
+  smallest_bad_spills_num = INT_MAX;
   rclass_size = ira_class_hard_regs_num[rclass];
   mode = PSEUDO_REGNO_MODE (regno);
   /* Invalidate try_hard_reg_pseudos elements.  */
@@ -912,6 +945,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 			   &try_hard_reg_pseudos[hard_regno + j]);
 	}
       /* Spill pseudos.	 */
+      static_p = false;
       EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
 	if ((pic_offset_table_rtx != NULL
 	     && spill_regno == REGNO (pic_offset_table_rtx))
@@ -921,7 +955,10 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 		&& ! bitmap_bit_p (&lra_subreg_reload_pseudos, spill_regno)
 		&& ! bitmap_bit_p (&lra_optional_reload_pseudos, spill_regno)))
 	  goto fail;
+	else if (non_spilled_static_chain_regno_p (spill_regno))
+	  static_p = true;
       insn_pseudos_num = 0;
+      bad_spills_num = 0;
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "	 Trying %d:", hard_regno);
       sparseset_clear (live_range_reload_inheritance_pseudos);
@@ -929,6 +966,8 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	{
 	  if (bitmap_bit_p (&insn_conflict_pseudos, spill_regno))
 	    insn_pseudos_num++;
+	  if (spill_regno >= (unsigned int) lra_bad_spill_regno_start)
+	    bad_spills_num++;
 	  for (r = lra_reg_info[spill_regno].live_ranges;
 	       r != NULL;
 	       r = r->next)
@@ -997,17 +1036,26 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 		     x = x->next ())
 		  cost -= REG_FREQ_FROM_BB (BLOCK_FOR_INSN (x->insn ()));
 	    }
-	  if (best_insn_pseudos_num > insn_pseudos_num
-	      || (best_insn_pseudos_num == insn_pseudos_num
-		  && best_cost > cost))
+	  /* Avoid spilling static chain pointer pseudo when non-local
+	     goto is used.  */
+	  if ((! static_p && best_static_p)
+	      || (static_p == best_static_p
+		  && (best_insn_pseudos_num > insn_pseudos_num
+		      || (best_insn_pseudos_num == insn_pseudos_num
+			  && (bad_spills_num < smallest_bad_spills_num
+			      || (bad_spills_num == smallest_bad_spills_num
+				  && best_cost > cost))))))
 	    {
 	      best_insn_pseudos_num = insn_pseudos_num;
+	      smallest_bad_spills_num = bad_spills_num;
+	      best_static_p = static_p;
 	      best_cost = cost;
 	      best_hard_regno = hard_regno;
 	      bitmap_copy (&best_spill_pseudos_bitmap, &spill_pseudos_bitmap);
 	      if (lra_dump_file != NULL)
-		fprintf (lra_dump_file, "	 Now best %d(cost=%d)\n",
-			 hard_regno, cost);
+		fprintf (lra_dump_file,
+			 "	 Now best %d(cost=%d, bad_spills=%d, insn_pseudos=%d)\n",
+			 hard_regno, cost, bad_spills_num, insn_pseudos_num);
 	    }
 	  assign_temporarily (regno, -1);
 	  for (j = 0; j < n; j++)

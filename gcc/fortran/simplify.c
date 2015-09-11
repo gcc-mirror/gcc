@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "intrinsic.h"
@@ -2352,9 +2351,7 @@ gfc_simplify_floor (gfc_expr *e, gfc_expr *k)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  gfc_set_model_kind (kind);
-
-  mpfr_init (floor);
+  mpfr_init2 (floor, mpfr_get_prec (e->value.real));
   mpfr_floor (floor, e->value.real);
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &e->where);
@@ -3338,31 +3335,45 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
   result = gfc_get_constant_expr (BT_INTEGER, k, &array->where);
 
   /* Then, we need to know the extent of the given dimension.  */
-  if (coarray || ref->u.ar.type == AR_FULL)
+  if (coarray || (ref->u.ar.type == AR_FULL && !ref->next))
     {
+      gfc_expr *declared_bound;
+      int empty_bound;
+      bool constant_lbound, constant_ubound;
+
       l = as->lower[d-1];
       u = as->upper[d-1];
 
-      if (l->expr_type != EXPR_CONSTANT || u == NULL
-	  || u->expr_type != EXPR_CONSTANT)
+      gcc_assert (l != NULL);
+
+      constant_lbound = l->expr_type == EXPR_CONSTANT;
+      constant_ubound = u && u->expr_type == EXPR_CONSTANT;
+
+      empty_bound = upper ? 0 : 1;
+      declared_bound = upper ? u : l;
+
+      if ((!upper && !constant_lbound)
+	  || (upper && !constant_ubound))
 	goto returnNull;
 
-      if (mpz_cmp (l->value.integer, u->value.integer) > 0)
+      if (!coarray)
 	{
-	  /* Zero extent.  */
-	  if (upper)
-	    mpz_set_si (result->value.integer, 0);
+	  /* For {L,U}BOUND, the value depends on whether the array
+	     is empty.  We can nevertheless simplify if the declared bound
+	     has the same value as that of an empty array, in which case
+	     the result isn't dependent on the array emptyness.  */
+	  if (mpz_cmp_si (declared_bound->value.integer, empty_bound) == 0)
+	    mpz_set_si (result->value.integer, empty_bound);
+	  else if (!constant_lbound || !constant_ubound)
+	    /* Array emptyness can't be determined, we can't simplify.  */
+	    goto returnNull;
+	  else if (mpz_cmp (l->value.integer, u->value.integer) > 0)
+	    mpz_set_si (result->value.integer, empty_bound);
 	  else
-	    mpz_set_si (result->value.integer, 1);
+	    mpz_set (result->value.integer, declared_bound->value.integer);
 	}
       else
-	{
-	  /* Nonzero extent.  */
-	  if (upper)
-	    mpz_set (result->value.integer, u->value.integer);
-	  else
-	    mpz_set (result->value.integer, l->value.integer);
-	}
+	mpz_set (result->value.integer, declared_bound->value.integer);
     }
   else
     {
@@ -3417,10 +3428,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	    case AR_FULL:
 	      /* We're done because 'as' has already been set in the
 		 previous iteration.  */
-	      if (!ref->next)
-		goto done;
-
-	    /* Fall through.  */
+	      goto done;
 
 	    case AR_UNKNOWN:
 	      return NULL;
@@ -3445,9 +3453,15 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
  done:
 
-  if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE
-	     || as->type == AS_ASSUMED_RANK))
+  if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_RANK
+	     || (as->type == AS_ASSUMED_SHAPE && upper)))
     return NULL;
+
+  gcc_assert (!as
+	      || (as->type != AS_DEFERRED
+		  && array->expr_type == EXPR_VARIABLE
+		  && !gfc_expr_attr (array).allocatable
+		  && !gfc_expr_attr (array).pointer));
 
   if (dim == NULL)
     {
@@ -3556,10 +3570,7 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	    case AR_FULL:
 	      /* We're done because 'as' has already been set in the
 		 previous iteration.  */
-	      if (!ref->next)
-	        goto done;
-
-	    /* Fall through.  */
+	      goto done;
 
 	    case AR_UNKNOWN:
 	      return NULL;
@@ -3713,6 +3724,14 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
       mpz_set (result->value.integer, e->ts.u.cl->length->value.integer);
       return range_check (result, "LEN");
     }
+  else if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
+	   && e->symtree->n.sym
+	   && e->symtree->n.sym->assoc && e->symtree->n.sym->assoc->target
+	   && e->symtree->n.sym->assoc->target->ts.type == BT_DERIVED)
+    /* The expression in assoc->target points to a ref to the _data component
+       of the unlimited polymorphic entity.  To get the _len component the last
+       _data ref needs to be stripped and a ref to the _len component added.  */
+    return gfc_get_len_component (e->symtree->n.sym->assoc->target);
   else
     return NULL;
 }
@@ -4421,18 +4440,6 @@ gfc_simplify_modulo (gfc_expr *a, gfc_expr *p)
     }
 
   return range_check (result, "MODULO");
-}
-
-
-/* Exists for the sole purpose of consistency with other intrinsics.  */
-gfc_expr *
-gfc_simplify_mvbits (gfc_expr *f  ATTRIBUTE_UNUSED,
-		     gfc_expr *fp ATTRIBUTE_UNUSED,
-		     gfc_expr *l  ATTRIBUTE_UNUSED,
-		     gfc_expr *to ATTRIBUTE_UNUSED,
-		     gfc_expr *tp ATTRIBUTE_UNUSED)
-{
-  return NULL;
 }
 
 
@@ -5166,8 +5173,11 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 	e = gfc_constructor_lookup_expr (source->value.constructor, j);
       else
 	{
-	  gcc_assert (npad > 0);
-
+	  if (npad <= 0)
+	    {
+	      mpz_clear (index);
+	      return NULL;
+	    }
 	  j = j - nsource;
 	  j = j % npad;
 	  e = gfc_constructor_lookup_expr (pad->value.constructor, j);
@@ -5527,87 +5537,6 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
     }
 
   return gfc_get_int_expr (gfc_default_integer_kind, loc, kind);
-}
-
-
-gfc_expr *
-gfc_simplify_ieee_selected_real_kind (gfc_expr *expr)
-{
-  gfc_actual_arglist *arg = expr->value.function.actual;
-  gfc_expr *p = arg->expr, *r = arg->next->expr,
-	   *rad = arg->next->next->expr;
-  int precision, range, radix, res;
-  int found_precision, found_range, found_radix, i;
-
-  if (p)
-  {
-    if (p->expr_type != EXPR_CONSTANT
-	|| gfc_extract_int (p, &precision) != NULL)
-      return NULL;
-  }
-  else
-    precision = 0;
-
-  if (r)
-  {
-    if (r->expr_type != EXPR_CONSTANT
-	|| gfc_extract_int (r, &range) != NULL)
-      return NULL;
-  }
-  else
-    range = 0;
-
-  if (rad)
-  {
-    if (rad->expr_type != EXPR_CONSTANT
-	|| gfc_extract_int (rad, &radix) != NULL)
-      return NULL;
-  }
-  else
-    radix = 0;
-
-  res = INT_MAX;
-  found_precision = 0;
-  found_range = 0;
-  found_radix = 0;
-
-  for (i = 0; gfc_real_kinds[i].kind != 0; i++)
-    {
-      /* We only support the target's float and double types.  */
-      if (!gfc_real_kinds[i].c_float && !gfc_real_kinds[i].c_double)
-	continue;
-
-      if (gfc_real_kinds[i].precision >= precision)
-	found_precision = 1;
-
-      if (gfc_real_kinds[i].range >= range)
-	found_range = 1;
-
-      if (radix == 0 || gfc_real_kinds[i].radix == radix)
-	found_radix = 1;
-
-      if (gfc_real_kinds[i].precision >= precision
-	  && gfc_real_kinds[i].range >= range
-	  && (radix == 0 || gfc_real_kinds[i].radix == radix)
-	  && gfc_real_kinds[i].kind < res)
-	res = gfc_real_kinds[i].kind;
-    }
-
-  if (res == INT_MAX)
-    {
-      if (found_radix && found_range && !found_precision)
-	res = -1;
-      else if (found_radix && found_precision && !found_range)
-	res = -2;
-      else if (found_radix && !found_precision && !found_range)
-	res = -3;
-      else if (found_radix)
-	res = -4;
-      else
-	res = -5;
-    }
-
-  return gfc_get_int_expr (gfc_default_integer_kind, &expr->where, res);
 }
 
 
@@ -6999,4 +6928,63 @@ gfc_simplify_compiler_version (void)
   snprintf (buffer, len + 1, "GCC version %s", version_string);
   return gfc_get_character_expr (gfc_default_character_kind,
                                 &gfc_current_locus, buffer, len);
+}
+
+/* Simplification routines for intrinsics of IEEE modules.  */
+
+gfc_expr *
+simplify_ieee_selected_real_kind (gfc_expr *expr)
+{
+  gfc_actual_arglist *arg = expr->value.function.actual;
+  gfc_expr *p = arg->expr, *q = arg->next->expr,
+	   *rdx = arg->next->next->expr;
+
+  /* Currently, if IEEE is supported and this module is built, it means
+     all our floating-point types conform to IEEE. Hence, we simply handle
+     IEEE_SELECTED_REAL_KIND like SELECTED_REAL_KIND.  */
+  return gfc_simplify_selected_real_kind (p, q, rdx);
+}
+
+gfc_expr *
+simplify_ieee_support (gfc_expr *expr)
+{
+  /* We consider that if the IEEE modules are loaded, we have full support
+     for flags, halting and rounding, which are the three functions
+     (IEEE_SUPPORT_{FLAG,HALTING,ROUNDING}) allowed in constant
+     expressions. One day, we will need libgfortran to detect support and
+     communicate it back to us, allowing for partial support.  */
+
+  return gfc_get_logical_expr (gfc_default_logical_kind, &expr->where,
+			       true);
+}
+
+bool
+matches_ieee_function_name (gfc_symbol *sym, const char *name)
+{
+  int n = strlen(name);
+
+  if (!strncmp(sym->name, name, n))
+    return true;
+
+  /* If a generic was used and renamed, we need more work to find out.
+     Compare the specific name.  */
+  if (sym->generic && !strncmp(sym->generic->sym->name, name, n))
+    return true;
+
+  return false;
+}
+
+gfc_expr *
+gfc_simplify_ieee_functions (gfc_expr *expr)
+{
+  gfc_symbol* sym = expr->symtree->n.sym;
+
+  if (matches_ieee_function_name(sym, "ieee_selected_real_kind"))
+    return simplify_ieee_selected_real_kind (expr);
+  else if (matches_ieee_function_name(sym, "ieee_support_flag")
+	   || matches_ieee_function_name(sym, "ieee_support_halting")
+	   || matches_ieee_function_name(sym, "ieee_support_rounding"))
+    return simplify_ieee_support (expr);
+  else
+    return NULL;
 }

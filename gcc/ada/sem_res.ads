@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package Sem_Res is
    --  Since in practice a lot of semantic analysis has to be postponed until
    --  types are known (e.g. static folding, setting of suppress flags), the
    --  Resolve routines also complete the semantic analysis, and call the
-   --  expander for possibly expansion of the completely type resolved node.
+   --  expander for possible expansion of the completely type resolved node.
 
    procedure Resolve (N : Node_Id; Typ : Entity_Id);
    procedure Resolve (N : Node_Id; Typ : Entity_Id; Suppress : Check_Id);

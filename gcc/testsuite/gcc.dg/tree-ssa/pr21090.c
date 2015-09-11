@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdelete-null-pointer-checks" } */
 
 int g, h;
 
@@ -20,4 +20,3 @@ foo (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

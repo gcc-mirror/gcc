@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,7 +302,7 @@ package Lib is
    --      No_Name for the main unit.
 
    --    Fatal_Error
-   --      A flag that is initialized to False, and gets set to True if a fatal
+   --      A flag that is initialized to None and gets set to Errorif a fatal
    --      error occurs during the processing of a unit. A fatal error is one
    --      defined as serious enough to stop the next phase of the compiler
    --      from running (i.e. fatal error during parsing stops semantics,
@@ -310,6 +310,7 @@ package Lib is
    --      currently, errors of any kind cause Fatal_Error to be set, but
    --      eventually perhaps only errors labeled as fatal errors should be
    --      this severe if we decide to try Sem on sources with minor errors.
+   --      There are three settings (see declaration of Fatal_Type).
 
    --    Generate_Code
    --      This flag is set True for all units in the current file for which
@@ -401,13 +402,29 @@ package Lib is
    Default_Main_CPU : constant Int := -1;
    --  Value used in Main_CPU field to indicate default main affinity
 
+   --  The following defines settings for the Fatal_Error field
+
+   type Fatal_Type is (
+      None,
+      --  No error detected for this unit
+
+      Error_Detected,
+      --  Fatal error detected that prevents moving to the next phase. For
+      --  example, a fatal error during parsing inhibits semantic analysis.
+
+      Error_Ignored);
+      --  A fatal error was detected, but we are in Try_Semantics mode (as set
+      --  by -gnatq or -gnatQ). This does not stop the compiler from proceding,
+      --  but tools can use this status (e.g. ASIS looking at the generated
+      --  tree) to know that a fatal error was detected.
+
    function Cunit             (U : Unit_Number_Type) return Node_Id;
    function Cunit_Entity      (U : Unit_Number_Type) return Entity_Id;
    function Dependency_Num    (U : Unit_Number_Type) return Nat;
    function Dynamic_Elab      (U : Unit_Number_Type) return Boolean;
    function Error_Location    (U : Unit_Number_Type) return Source_Ptr;
    function Expected_Unit     (U : Unit_Number_Type) return Unit_Name_Type;
-   function Fatal_Error       (U : Unit_Number_Type) return Boolean;
+   function Fatal_Error       (U : Unit_Number_Type) return Fatal_Type;
    function Generate_Code     (U : Unit_Number_Type) return Boolean;
    function Ident_String      (U : Unit_Number_Type) return Node_Id;
    function Has_RACW          (U : Unit_Number_Type) return Boolean;
@@ -422,20 +439,20 @@ package Lib is
    function Unit_Name         (U : Unit_Number_Type) return Unit_Name_Type;
    --  Get value of named field from given units table entry
 
-   procedure Set_Cunit             (U : Unit_Number_Type; N : Node_Id);
-   procedure Set_Cunit_Entity      (U : Unit_Number_Type; E : Entity_Id);
-   procedure Set_Dynamic_Elab      (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Error_Location    (U : Unit_Number_Type; W : Source_Ptr);
-   procedure Set_Fatal_Error       (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Generate_Code     (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Has_RACW          (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Ident_String      (U : Unit_Number_Type; N : Node_Id);
-   procedure Set_Loading           (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Main_CPU          (U : Unit_Number_Type; P : Int);
-   procedure Set_No_Elab_Code_All  (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Main_Priority     (U : Unit_Number_Type; P : Int);
-   procedure Set_OA_Setting        (U : Unit_Number_Type; C : Character);
-   procedure Set_Unit_Name         (U : Unit_Number_Type; N : Unit_Name_Type);
+   procedure Set_Cunit            (U : Unit_Number_Type; N : Node_Id);
+   procedure Set_Cunit_Entity     (U : Unit_Number_Type; E : Entity_Id);
+   procedure Set_Dynamic_Elab     (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Error_Location   (U : Unit_Number_Type; W : Source_Ptr);
+   procedure Set_Fatal_Error      (U : Unit_Number_Type; V : Fatal_Type);
+   procedure Set_Generate_Code    (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Has_RACW         (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Ident_String     (U : Unit_Number_Type; N : Node_Id);
+   procedure Set_Loading          (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Main_CPU         (U : Unit_Number_Type; P : Int);
+   procedure Set_No_Elab_Code_All (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Main_Priority    (U : Unit_Number_Type; P : Int);
+   procedure Set_OA_Setting       (U : Unit_Number_Type; C : Character);
+   procedure Set_Unit_Name        (U : Unit_Number_Type; N : Unit_Name_Type);
    --  Set value of named field for given units table entry. Note that we
    --  do not have an entry for each possible field, since some of the fields
    --  can only be set by specialized interfaces (defined below).
@@ -606,7 +623,7 @@ package Lib is
    function Is_Loaded (Uname : Unit_Name_Type) return Boolean;
    --  Determines if unit with given name is already loaded, i.e. there is
    --  already an entry in the file table with this unit name for which the
-   --  corresponding file was found and parsed. Note that the Fatal_Error flag
+   --  corresponding file was found and parsed. Note that the Fatal_Error value
    --  of this entry must be checked before proceeding with further processing.
 
    function Last_Unit return Unit_Number_Type;
@@ -767,7 +784,7 @@ private
       Serial_Number     : Nat;
       Version           : Word;
       Error_Location    : Source_Ptr;
-      Fatal_Error       : Boolean;
+      Fatal_Error       : Fatal_Type;
       Generate_Code     : Boolean;
       Has_RACW          : Boolean;
       Dynamic_Elab      : Boolean;

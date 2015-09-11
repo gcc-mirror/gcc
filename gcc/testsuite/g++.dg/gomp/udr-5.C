@@ -5,9 +5,9 @@ struct S
   int s;
   S () : s (0) {}
 private:
-  #pragma omp declare reduction (+:S:omp_out.s += omp_in.s)	// { dg-error "is private" }
+  #pragma omp declare reduction (+:S:omp_out.s += omp_in.s)	// { dg-message "private" }
 protected:
-  #pragma omp declare reduction (-:S:omp_out.s += omp_in.s)	// { dg-error "is protected" }
+  #pragma omp declare reduction (-:S:omp_out.s += omp_in.s)	// { dg-message "protected" }
 };
 
 struct T : public S

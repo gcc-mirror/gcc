@@ -15,4 +15,3 @@ foo (void *p)
 }
 
 /* { dg-final { scan-tree-dump "memcpy" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

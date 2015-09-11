@@ -70,4 +70,3 @@ program main
   if (b%bar /= 4) call abort ()
 end program main
 
-! { dg-final { cleanup-tree-dump "foo_module bar_module" } }

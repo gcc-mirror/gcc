@@ -24,26 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "diagnostic-core.h"
 #include "rtl.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "real.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "except.h"
-#include "hard-reg-set.h"
 #include "function.h"
-#include "hashtab.h"
-#include "statistics.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -56,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "optabs.h"
 #include "libfuncs.h"
-#include "ggc.h"
 #include "recog.h"
 #include "langhooks.h"
 #include "target.h"
@@ -132,7 +118,9 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
 	{
 	  tem = plus_constant (mode, get_pool_constant (XEXP (x, 0)), c);
 	  tem = force_const_mem (GET_MODE (x), tem);
-	  if (memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
+	  /* Targets may disallow some constants in the constant pool, thus
+	     force_const_mem may return NULL_RTX.  */
+	  if (tem && memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
 	    return tem;
 	}
       break;
@@ -854,6 +842,35 @@ promote_decl_mode (const_tree decl, int *punsignedp)
   return pmode;
 }
 
+/* Return the promoted mode for name.  If it is a named SSA_NAME, it
+   is the same as promote_decl_mode.  Otherwise, it is the promoted
+   mode of a temp decl of same type as the SSA_NAME, if we had created
+   one.  */
+
+machine_mode
+promote_ssa_mode (const_tree name, int *punsignedp)
+{
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+
+  /* Partitions holding parms and results must be promoted as expected
+     by function.c.  */
+  if (SSA_NAME_VAR (name)
+      && (TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
+	  || TREE_CODE (SSA_NAME_VAR (name)) == RESULT_DECL))
+    return promote_decl_mode (SSA_NAME_VAR (name), punsignedp);
+
+  tree type = TREE_TYPE (name);
+  int unsignedp = TYPE_UNSIGNED (type);
+  machine_mode mode = TYPE_MODE (type);
+
+  machine_mode pmode = promote_mode (type, mode, &unsignedp);
+  if (punsignedp)
+    *punsignedp = unsignedp;
+
+  return pmode;
+}
+
+
 
 /* Controls the behaviour of {anti_,}adjust_stack.  */
 static bool suppress_reg_args_size;
@@ -866,10 +883,9 @@ adjust_stack_1 (rtx adjust, bool anti_p)
   rtx temp;
   rtx_insn *insn;
 
-#ifndef STACK_GROWS_DOWNWARD
   /* Hereafter anti_p means subtract_p.  */
-  anti_p = !anti_p;
-#endif
+  if (!STACK_GROWS_DOWNWARD)
+    anti_p = !anti_p;
 
   temp = expand_binop (Pmode,
 		       anti_p ? sub_optab : add_optab,
@@ -984,30 +1000,24 @@ emit_stack_save (enum save_level save_level, rtx *psave)
 {
   rtx sa = *psave;
   /* The default is that we use a move insn and save in a Pmode object.  */
-  rtx (*fcn) (rtx, rtx) = gen_move_insn;
+  rtx_insn *(*fcn) (rtx, rtx) = gen_move_insn;
   machine_mode mode = STACK_SAVEAREA_MODE (save_level);
 
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
     {
-#ifdef HAVE_save_stack_block
     case SAVE_BLOCK:
-      if (HAVE_save_stack_block)
-	fcn = gen_save_stack_block;
+      if (targetm.have_save_stack_block ())
+	fcn = targetm.gen_save_stack_block;
       break;
-#endif
-#ifdef HAVE_save_stack_function
     case SAVE_FUNCTION:
-      if (HAVE_save_stack_function)
-	fcn = gen_save_stack_function;
+      if (targetm.have_save_stack_function ())
+	fcn = targetm.gen_save_stack_function;
       break;
-#endif
-#ifdef HAVE_save_stack_nonlocal
     case SAVE_NONLOCAL:
-      if (HAVE_save_stack_nonlocal)
-	fcn = gen_save_stack_nonlocal;
+      if (targetm.have_save_stack_nonlocal ())
+	fcn = targetm.gen_save_stack_nonlocal;
       break;
-#endif
     default:
       break;
     }
@@ -1039,7 +1049,7 @@ void
 emit_stack_restore (enum save_level save_level, rtx sa)
 {
   /* The default is that we use a move insn.  */
-  rtx (*fcn) (rtx, rtx) = gen_move_insn;
+  rtx_insn *(*fcn) (rtx, rtx) = gen_move_insn;
 
   /* If stack_realign_drap, the x86 backend emits a prologue that aligns both
      STACK_POINTER and HARD_FRAME_POINTER.
@@ -1058,24 +1068,18 @@ emit_stack_restore (enum save_level save_level, rtx sa)
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
     {
-#ifdef HAVE_restore_stack_block
     case SAVE_BLOCK:
-      if (HAVE_restore_stack_block)
-	fcn = gen_restore_stack_block;
+      if (targetm.have_restore_stack_block ())
+	fcn = targetm.gen_restore_stack_block;
       break;
-#endif
-#ifdef HAVE_restore_stack_function
     case SAVE_FUNCTION:
-      if (HAVE_restore_stack_function)
-	fcn = gen_restore_stack_function;
+      if (targetm.have_restore_stack_function ())
+	fcn = targetm.gen_restore_stack_function;
       break;
-#endif
-#ifdef HAVE_restore_stack_nonlocal
     case SAVE_NONLOCAL:
-      if (HAVE_restore_stack_nonlocal)
-	fcn = gen_restore_stack_nonlocal;
+      if (targetm.have_restore_stack_nonlocal ())
+	fcn = targetm.gen_restore_stack_nonlocal;
       break;
-#endif
     default:
       break;
     }
@@ -1096,8 +1100,8 @@ emit_stack_restore (enum save_level save_level, rtx sa)
 }
 
 /* Invoke emit_stack_save on the nonlocal_goto_save_area for the current
-   function.  This function should be called whenever we allocate or
-   deallocate dynamic stack space.  */
+   function.  This should be called whenever we allocate or deallocate
+   dynamic stack space.  */
 
 void
 update_nonlocal_goto_save_area (void)
@@ -1116,6 +1120,21 @@ update_nonlocal_goto_save_area (void)
   r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
   emit_stack_save (SAVE_NONLOCAL, &r_save);
+}
+
+/* Record a new stack level for the current function.  This should be called
+   whenever we allocate or deallocate dynamic stack space.  */
+
+void
+record_new_stack_level (void)
+{
+  /* Record the new stack level for nonlocal gotos.  */
+  if (cfun->nonlocal_goto_save_area)
+    update_nonlocal_goto_save_area ();
+ 
+  /* Record the new stack level for SJLJ exceptions.  */
+  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+    update_sjlj_context ();
 }
 
 /* Return an rtx representing the address of an area of memory dynamically
@@ -1316,16 +1335,15 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
       available_label = NULL;
 
-#ifdef HAVE_split_stack_space_check
-      if (HAVE_split_stack_space_check)
+      if (targetm.have_split_stack_space_check ())
 	{
 	  available_label = gen_label_rtx ();
 
 	  /* This instruction will branch to AVAILABLE_LABEL if there
 	     are SIZE bytes available on the stack.  */
-	  emit_insn (gen_split_stack_space_check (size, available_label));
+	  emit_insn (targetm.gen_split_stack_space_check
+		     (size, available_label));
 	}
-#endif
 
       /* The __morestack_allocate_stack_space function will allocate
 	 memory using malloc.  If the alignment of the memory returned
@@ -1383,8 +1401,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
      stack pointer, such as acquiring the space by calling malloc().  */
-#ifdef HAVE_allocate_stack
-  if (HAVE_allocate_stack)
+  if (targetm.have_allocate_stack ())
     {
       struct expand_operand ops[2];
       /* We don't have to check against the predicate for operand 0 since
@@ -1392,38 +1409,34 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 be valid for the operand.  */
       create_fixed_operand (&ops[0], target);
       create_convert_operand_to (&ops[1], size, STACK_SIZE_MODE, true);
-      expand_insn (CODE_FOR_allocate_stack, 2, ops);
+      expand_insn (targetm.code_for_allocate_stack, 2, ops);
     }
   else
-#endif
     {
       int saved_stack_pointer_delta;
 
-#ifndef STACK_GROWS_DOWNWARD
-      emit_move_insn (target, virtual_stack_dynamic_rtx);
-#endif
+      if (!STACK_GROWS_DOWNWARD)
+	emit_move_insn (target, virtual_stack_dynamic_rtx);
 
       /* Check stack bounds if necessary.  */
       if (crtl->limit_stack)
 	{
 	  rtx available;
 	  rtx_code_label *space_available = gen_label_rtx ();
-#ifdef STACK_GROWS_DOWNWARD
-	  available = expand_binop (Pmode, sub_optab,
-				    stack_pointer_rtx, stack_limit_rtx,
-				    NULL_RTX, 1, OPTAB_WIDEN);
-#else
-	  available = expand_binop (Pmode, sub_optab,
-				    stack_limit_rtx, stack_pointer_rtx,
-				    NULL_RTX, 1, OPTAB_WIDEN);
-#endif
+	  if (STACK_GROWS_DOWNWARD)
+	    available = expand_binop (Pmode, sub_optab,
+				      stack_pointer_rtx, stack_limit_rtx,
+				      NULL_RTX, 1, OPTAB_WIDEN);
+	  else
+	    available = expand_binop (Pmode, sub_optab,
+				      stack_limit_rtx, stack_pointer_rtx,
+				      NULL_RTX, 1, OPTAB_WIDEN);
+
 	  emit_cmp_and_jump_insns (available, size, GEU, NULL_RTX, Pmode, 1,
 				   space_available);
-#ifdef HAVE_trap
-	  if (HAVE_trap)
-	    emit_insn (gen_trap ());
+	  if (targetm.have_trap ())
+	    emit_insn (targetm.gen_trap ());
 	  else
-#endif
 	    error ("stack limits not supported on this target");
 	  emit_barrier ();
 	  emit_label (space_available);
@@ -1441,9 +1454,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 crtl->preferred_stack_boundary alignment.  */
       stack_pointer_delta = saved_stack_pointer_delta;
 
-#ifdef STACK_GROWS_DOWNWARD
-      emit_move_insn (target, virtual_stack_dynamic_rtx);
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	emit_move_insn (target, virtual_stack_dynamic_rtx);
     }
 
   suppress_reg_args_size = false;
@@ -1479,9 +1491,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   /* Now that we've committed to a return value, mark its alignment.  */
   mark_reg_pointer (target, required_align);
 
-  /* Record the new stack level for nonlocal gotos.  */
-  if (cfun->nonlocal_goto_save_area != 0)
-    update_nonlocal_goto_save_area ();
+  /* Record the new stack level.  */
+  record_new_stack_level ();
 
   return target;
 }
@@ -1504,22 +1515,18 @@ set_stack_check_libfunc (const char *libfunc_name)
 void
 emit_stack_probe (rtx address)
 {
-#ifdef HAVE_probe_stack_address
-  if (HAVE_probe_stack_address)
-    emit_insn (gen_probe_stack_address (address));
+  if (targetm.have_probe_stack_address ())
+    emit_insn (targetm.gen_probe_stack_address (address));
   else
-#endif
     {
       rtx memref = gen_rtx_MEM (word_mode, address);
 
       MEM_VOLATILE_P (memref) = 1;
 
       /* See if we have an insn to probe the stack.  */
-#ifdef HAVE_probe_stack
-      if (HAVE_probe_stack)
-        emit_insn (gen_probe_stack (memref));
+      if (targetm.have_probe_stack ())
+        emit_insn (targetm.gen_probe_stack (memref));
       else
-#endif
         emit_move_insn (memref, const0_rtx);
     }
 }
@@ -1531,7 +1538,7 @@ emit_stack_probe (rtx address)
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
 
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 #define STACK_GROW_OP MINUS
 #define STACK_GROW_OPTAB sub_optab
 #define STACK_GROW_OFF(off) -(off)
@@ -1561,8 +1568,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
     }
 
   /* Next see if we have an insn to check the stack.  */
-#ifdef HAVE_check_stack
-  else if (HAVE_check_stack)
+  else if (targetm.have_check_stack ())
     {
       struct expand_operand ops[1];
       rtx addr = memory_address (Pmode,
@@ -1572,10 +1578,9 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 								size, first)));
       bool success;
       create_input_operand (&ops[0], addr, Pmode);
-      success = maybe_expand_insn (CODE_FOR_check_stack, 1, ops);
+      success = maybe_expand_insn (targetm.code_for_check_stack, 1, ops);
       gcc_assert (success);
     }
-#endif
 
   /* Otherwise we have to generate explicit probes.  If we have a constant
      small number of them to generate, that's the easy case.  */

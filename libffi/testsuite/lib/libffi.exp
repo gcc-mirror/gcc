@@ -23,6 +23,7 @@ proc load_gcc_lib { filename } {
 
 load_lib dg.exp
 load_lib libgloss.exp
+load_gcc_lib target-supports.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
 
@@ -152,6 +153,7 @@ proc libffi-init { args } {
     if { $libffi_dir != "" } {
 	set libffi_dir [file dirname ${libffi_dir}]
 	set libffi_link_flags "-L${libffi_dir}/.libs"
+	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
     }
 
     set_ld_library_path_env_vars
@@ -218,10 +220,6 @@ proc libffi_target_compile { source dest type options } {
 	lappend options "libs= -lpthread"
     }
 
-    if { [string match "*.cc" $source] } {
-	lappend options "c++"
-    }
-
     verbose "options: $options"
     return [target_compile $source $dest $type $options]
 }
@@ -240,7 +238,7 @@ proc libffi_feature_test { test } {
     set lines [libffi_target_compile $src "" "preprocess" ""]
     file delete $src
 
-    set last [lindex $lines end]
+    set last [lindex [split $lines] end]
     return [regexp -- "xyzzy" $last]
 }
 
@@ -311,7 +309,8 @@ proc run-many-tests { testcases extra_flags } {
 
     set targetabis { "" }
     if [string match $compiler_vendor "gnu"] {
-        if [istarget "i?86-*-*"] {
+        if { ([istarget "i?86-*-*"] || [istarget "x86_64-*-*"])
+	     && [is-effective-target ia32] && ![istarget "*-*-darwin*"] } {
             set targetabis {
                 ""
                 "-DABI_NUM=FFI_STDCALL -DABI_ATTR=__STDCALL__"

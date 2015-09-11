@@ -17,17 +17,28 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This target is a multilib target, specify the sysroot paths.  */
+/* This target is a multilib target, specify the sysroot paths.
+   MIPS_SYSVERSION_SPEC defaults to 'r2' (mips32r2 or mips64r2) unless
+   'r1' or 'r6' are specifically given so that mips32r3, mips32r5,
+   mips64r3, and mips64r5 will all default to 'r2'.  See MULTILIB_MATCHES
+   definition in t-mti-linux.  */
+
+#define MIPS_SYSVERSION_SPEC \
+    "%{mips32|mips64:r1;mips32r6|mips64r6:r6;:r2}%{mips16:-mips16}"
+
 #undef SYSROOT_SUFFIX_SPEC
-#if MIPS_ISA_DEFAULT == 33 /* mips32r2 is the default */
-#define SYSROOT_SUFFIX_SPEC \
-    "%{mips32:/mips32}%{mips64:/mips64}%{mips64r2:/mips64r2}%{mips32r6:/mips32r6}%{mips64r6:/mips64r6}%{mips16:/mips16}%{mmicromips:/micromips}%{mabi=64:/64}%{mel|EL:/el}%{msoft-float:/sof}%{!mips32r6:%{!mips64r6:%{mnan=2008:/nan2008}}}"
-#elif MIPS_ISA_DEFAULT == 37 /* mips32r6 is the default */
-#define SYSROOT_SUFFIX_SPEC \
-    "%{mips32:/mips32}%{mips64:/mips64}%{mips32r2:/mips32r2}%{mips64r2:/mips64r2}%{mips64r6:/mips64r6}%{mips16:/mips16}%{mmicromips:/micromips}%{mabi=64:/64}%{mel|EL:/el}%{msoft-float:/sof}%{!mips32r6:%{!mips64r6:%{mnan=2008:/nan2008}}}"
-#else /* Unexpected default ISA.  */
-#error No SYSROOT_SUFFIX_SPEC exists for this default ISA
-#endif
+#define SYSROOT_SUFFIX_SPEC						\
+    "/%{mmicromips:micro}mips%{mel|EL:el}-"MIPS_SYSVERSION_SPEC		\
+    "%{msoft-float:-soft;:-hard}"					\
+    "%{!mips32r6:%{!mips64r6:%{mnan=2008:-nan2008}}}%{muclibc:-uclibc}"
+
+#define SYSROOT_HEADERS_SUFFIX_SPEC SYSROOT_SUFFIX_SPEC
+
+#undef STARTFILE_PREFIX_SPEC
+#define STARTFILE_PREFIX_SPEC                          \
+  "%{mabi=32: /usr/local/lib/ /lib/ /usr/lib/}         \
+   %{mabi=n32: /usr/local/lib32/ /lib32/ /usr/lib32/}  \
+   %{mabi=64: /usr/local/lib64/ /lib64/ /usr/lib64/}"
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS						\

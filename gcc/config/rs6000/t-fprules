@@ -18,9 +18,3 @@
 
 SOFT_FLOAT_CPUS = e300c2 401 403 405 440 464 476 ec603e 801 821 823 860
 MULTILIB_MATCHES_FLOAT = $(foreach cpu, $(SOFT_FLOAT_CPUS), msoft-float=mcpu?$(cpu))
-
-# Build the libraries for both hard and soft floating point by default
-
-MULTILIB_OPTIONS = msoft-float
-MULTILIB_DIRNAMES = soft-float
-MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}

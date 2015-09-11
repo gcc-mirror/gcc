@@ -2,6 +2,13 @@
 	.global myfunc
 	.type dumpregs,%function
 	.type myfunc,%function
+
+#ifdef __LP64__
+#define PTR_REG(n)      x##n
+#else
+#define PTR_REG(n)      w##n
+#endif
+
 dumpregs:
 myfunc:
       mov	x16, sp
@@ -48,7 +55,7 @@ myfunc:
 LABEL_TEST_FUNC_RETURN:
       adrp	x9, testfunc_ptr
       add	x9, x9, :lo12:testfunc_ptr
-      ldr	x9, [x9, #0]
+      ldr      PTR_REG(9), [x9, #0]
       blr	x9				// function return value test
       adrp	x9, saved_return_address
       add	x9, x9, :lo12:saved_return_address

@@ -1520,4 +1520,3 @@ void func_encode(void)
 }
 
 /* { dg-final { scan-tree-dump-times " xxxinfo = {}" 1 "dse1"} } */
-/* { dg-final { cleanup-tree-dump "dse1" } } */

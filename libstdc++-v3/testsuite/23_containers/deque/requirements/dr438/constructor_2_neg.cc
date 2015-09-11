@@ -18,12 +18,12 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1814 }
+// { dg-prune-output 1812 }
 
 #include <deque>
 #include <utility>
 
 void f()
 {
-  std::deque<std::deque<std::pair<char, char> > > d('a', 'b');
+  std::deque<std::deque<std::pair<char, char> > > d('a', 'b'); // { dg-error "here|no match" }
 }

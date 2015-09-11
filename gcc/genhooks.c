@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 #include "bconfig.h"
 #include "system.h"
-#include "hashtab.h"
 #include "errors.h"
 
 struct hook_desc { const char *doc, *type, *name, *param, *init, *docname; };

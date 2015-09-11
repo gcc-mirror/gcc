@@ -18,4 +18,3 @@ int f()
 }
 
 /* { dg-final { scan-tree-dump-times "logging: lala.x\\\[i_4\\\]" 1 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

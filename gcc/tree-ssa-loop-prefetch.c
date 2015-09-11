@@ -20,32 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "predict.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "tm_p.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
 #include "tree-pretty-print.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
@@ -65,16 +50,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "tree-data-ref.h"
+#include "target.h"
 
 
 /* FIXME: Needed for optabs, but this should all be moved to a TBD interface
    between the GIMPLE and RTL worlds.  */
-#include "hashtab.h"
-#include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -228,10 +209,6 @@ along with GCC; see the file COPYING3.  If not see
 #define ACCEPTABLE_MISS_RATE 50
 #endif
 
-#ifndef HAVE_prefetch
-#define HAVE_prefetch 0
-#endif
-
 #define L1_CACHE_SIZE_BYTES ((unsigned) (L1_CACHE_SIZE * 1024))
 #define L2_CACHE_SIZE_BYTES ((unsigned) (L2_CACHE_SIZE * 1024))
 
@@ -368,8 +345,8 @@ find_or_create_group (struct mem_ref_group **groups, tree base, tree step)
 
       /* If step is an integer constant, keep the list of groups sorted
          by decreasing step.  */
-        if (cst_and_fits_in_hwi ((*groups)->step) && cst_and_fits_in_hwi (step)
-            && int_cst_value ((*groups)->step) < int_cst_value (step))
+      if (cst_and_fits_in_hwi ((*groups)->step) && cst_and_fits_in_hwi (step)
+	  && int_cst_value ((*groups)->step) < int_cst_value (step))
 	break;
     }
 
@@ -1966,11 +1943,11 @@ tree_ssa_prefetch_arrays (void)
   bool unrolled = false;
   int todo_flags = 0;
 
-  if (!HAVE_prefetch
+  if (!targetm.have_prefetch ()
       /* It is possible to ask compiler for say -mtune=i486 -march=pentium4.
 	 -mtune=i486 causes us having PREFETCH_BLOCK 0, since this is part
 	 of processor costs and i486 does not have prefetch, but
-	 -march=pentium4 causes HAVE_prefetch to be true.  Ugh.  */
+	 -march=pentium4 causes targetm.have_prefetch to be true.  Ugh.  */
       || PREFETCH_BLOCK == 0)
     return 0;
 

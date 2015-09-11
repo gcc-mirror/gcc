@@ -22,4 +22,3 @@ subroutine test
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister .&yy._data.token, &stat.., &errmsg, 200.;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister .&yy._data.token, 0B, 0B, 0.;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister .&xx._data.token, 0B, 0B, 0.;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -34,4 +34,3 @@ main ()
   return 0;
 }
 
-/* { dg-final { cleanup-rtl-dump "sms" } } */

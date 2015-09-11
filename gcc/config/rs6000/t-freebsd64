@@ -21,11 +21,9 @@
 # On FreeBSD the 32-bit libraries are found under /usr/lib32.
 # Set MULTILIB_OSDIRNAMES according to this.
 
-MULTILIB_OPTIONS        = m32 msoft-float
-MULTILIB_DIRNAMES       = 32 nof
+MULTILIB_OPTIONS        = m32
+MULTILIB_DIRNAMES       = 32
 MULTILIB_EXTRA_OPTS     = fPIC mstrict-align
 MULTILIB_EXCEPTIONS     =
-MULTILIB_EXCLUSIONS     = !m32/msoft-float 
 MULTILIB_OSDIRNAMES	= ../lib32
-#MULTILIB_MATCHES        = $(MULTILIB_MATCHES_FLOAT)
 

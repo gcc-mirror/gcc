@@ -1,6 +1,7 @@
 /* Origin: PR c++/44108 */
 /* { dg-options "-Wunused" } */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 
 int
 foo ()

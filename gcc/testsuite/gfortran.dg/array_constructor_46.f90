@@ -12,4 +12,3 @@ program main
   if (abs (product([[11._dp, thirteen], a]) - 30030._dp) > 1e-8) call abort
 end program main
 ! { dg-final { scan-tree-dump-times "while" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

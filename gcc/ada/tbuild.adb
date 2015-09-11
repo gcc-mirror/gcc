@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Aspects;  use Aspects;
 with Csets;    use Csets;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -779,13 +780,56 @@ package body Tbuild is
    end OK_Convert_To;
 
    -------------
-   -- Set_RND --
+   -- Set_NOD --
    -------------
 
-   procedure Set_RND (Unit : Node_Id) is
+   procedure Set_NOD (Unit : Node_Id) is
    begin
       Set_Restriction_No_Dependence (Unit, Warn => False);
-   end Set_RND;
+   end Set_NOD;
+
+   -------------
+   -- Set_NSA --
+   -------------
+
+   procedure Set_NSA (Asp : Name_Id; OK : out Boolean) is
+      Asp_Id : constant Aspect_Id := Get_Aspect_Id (Asp);
+   begin
+      if Asp_Id = No_Aspect then
+         OK := False;
+      else
+         OK := True;
+         Set_Restriction_No_Specification_Of_Aspect (Asp_Id);
+      end if;
+   end Set_NSA;
+
+   -------------
+   -- Set_NUA --
+   -------------
+
+   procedure Set_NUA (Attr : Name_Id; OK : out Boolean) is
+   begin
+      if Is_Attribute_Name (Attr) then
+         OK := True;
+         Set_Restriction_No_Use_Of_Attribute (Get_Attribute_Id (Attr));
+      else
+         OK := False;
+      end if;
+   end Set_NUA;
+
+   -------------
+   -- Set_NUP --
+   -------------
+
+   procedure Set_NUP (Prag : Name_Id; OK : out Boolean) is
+   begin
+      if Is_Pragma_Name (Prag) then
+         OK := True;
+         Set_Restriction_No_Use_Of_Pragma (Get_Pragma_Id (Prag));
+      else
+         OK := False;
+      end if;
+   end Set_NUP;
 
    --------------------------
    -- Unchecked_Convert_To --

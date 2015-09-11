@@ -12,4 +12,3 @@ foo (double *a, double *b, double *c, double d, double e, int n)
 
 /* { dg-final { scan-tree-dump-times "Before commoning:" 1 "pcom" } } */
 /* { dg-final { scan-tree-dump-times "Unrolling 2 times" 1 "pcom" } } */
-/* { dg-final { cleanup-tree-dump "pcom" } } */

@@ -14,4 +14,3 @@ void test_vdupq_nu32 (void)
 }
 
 /* { dg-final { scan-assembler "vmov\.i32\[ 	\]+\[qQ\]\[0-9\]+, #301989888\(\[ \]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

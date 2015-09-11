@@ -103,4 +103,3 @@ contains
 end module foo
 
 ! { dg-final { scan-tree-dump-times "struct\[^\\n\]*atmp" 4 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

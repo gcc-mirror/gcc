@@ -4,7 +4,6 @@
 /* Rotates should be recognized only in functions with | instead of + or ^,
    or in functions that have constant shift counts (unused attribute on y).  */
 /* { dg-final { scan-tree-dump-times "r\[<>]\[<>]" 48 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 
 unsigned int
 f1 (unsigned int x, unsigned int y)

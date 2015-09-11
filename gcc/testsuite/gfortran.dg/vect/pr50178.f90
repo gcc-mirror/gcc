@@ -26,4 +26,3 @@ subroutine suedyn
 
 end subroutine suedyn
 
-! { dg-final { cleanup-tree-dump "vect" } }

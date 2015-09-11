@@ -1,6 +1,6 @@
 /* PR middle-end/37870 */
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mlong-double-80" } */
 
 unsigned int
 foo (long double x)

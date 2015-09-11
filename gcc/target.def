@@ -1801,6 +1801,18 @@ loads.",
  (const_tree mem_vectype, const_tree index_type, int scale),
  NULL)
 
+/* Target builtin that implements vector scatter operation.  */
+DEFHOOK
+(builtin_scatter,
+"Target builtin that implements vector scatter operation.  @var{vectype}\n\
+is the vector type of the store and @var{index_type} is scalar type of\n\
+the index, scaled by @var{scale}.\n\
+The default is @code{NULL_TREE} which means to not vectorize scatter\n\
+stores.",
+ tree,
+ (const_tree vectype, const_tree index_type, int scale),
+ NULL)
+
 /* Target function to initialize the cost model for a loop or block.  */
 DEFHOOK
 (init_cost,
@@ -1867,6 +1879,13 @@ sections are available.  It is called once for each symbol that must be\n\
 recorded in the offload function and variable table.",
  void, (tree),
  hook_void_tree)
+
+DEFHOOKPOD
+(absolute_biggest_alignment,
+ "If defined, this target hook specifies the absolute biggest alignment\n\
+that a type or variable can have on this machine, otherwise,\n\
+@code{BIGGEST_ALIGNMENT} is used.",
+ HOST_WIDE_INT, BIGGEST_ALIGNMENT)
 
 /* Allow target specific overriding of option settings after options have
   been changed by an attribute or pragma or when it is reset at the
@@ -1968,7 +1987,7 @@ merging.",
 DEFHOOKPOD
 (attribute_table,
  "If defined, this target hook points to an array of @samp{struct\n\
-attribute_spec} (defined in @file{tree.h}) specifying the machine\n\
+attribute_spec} (defined in @file{tree-core.h}) specifying the machine\n\
 specific attributes for this target and some of the restrictions on the\n\
 entities to which these attributes are applied and the arguments they\n\
 take.",
@@ -3383,7 +3402,7 @@ DEFHOOKPOD
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
-/* Note that CODE and OUTER_CODE ought to be RTX_CODE, but that's
+/* Note that OUTER_CODE ought to be RTX_CODE, but that's
    not necessarily defined at this point.  */
 DEFHOOK
 (rtx_costs,
@@ -3397,8 +3416,8 @@ that @samp{GET_CODE (@var{y}) == @var{outer_code}} and such that\n\
 either (a) @samp{XEXP (@var{y}, @var{opno}) == @var{x}} or\n\
 (b) @samp{XVEC (@var{y}, @var{opno})} contains @var{x}.\n\
 \n\
-@var{code} is @var{x}'s expression code---redundant, since it can be\n\
-obtained with @code{GET_CODE (@var{x})}.\n\
+@var{mode} is @var{x}'s machine mode, or for cases like @code{const_int} that\n\
+do not have a mode, the mode in which @var{x} is used.\n\
 \n\
 In implementing this hook, you can use the construct\n\
 @code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast\n\
@@ -3416,8 +3435,8 @@ size cost of an expression, again relative to @code{COSTS_N_INSNS}.\n\
 \n\
 The hook returns true when all subexpressions of @var{x} have been\n\
 processed, and false when @code{rtx_cost} should recurse.",
- bool, (rtx x, int code, int outer_code, int opno, int *total, bool speed),
- hook_bool_rtx_int_int_int_intp_bool_false)
+ bool, (rtx x, machine_mode mode, int outer_code, int opno, int *total, bool speed),
+ hook_bool_rtx_mode_int_int_intp_bool_false)
 
 /* Compute the cost of X, used as an address.  Never called with
    invalid addresses.  */
@@ -3735,20 +3754,22 @@ machines.  One reason you may need to define this target hook is if\n\
  rtx, (void),
  default_builtin_setjmp_frame_value)
 
-/* This target hook should add STRING_CST trees for any hard regs
-   the port wishes to automatically clobber for an asm.  */
+/* This target hook should manipulate the outputs, inputs, constraints,
+   and clobbers the port wishes for pre-processing the asm.  */
 DEFHOOK
-(md_asm_clobbers,
- "This target hook should add to @var{clobbers} @code{STRING_CST} trees for\n\
-any hard regs the port wishes to automatically clobber for an asm.\n\
-It should return the result of the last @code{tree_cons} used to add a\n\
-clobber.  The @var{outputs}, @var{inputs} and @var{clobber} lists are the\n\
-corresponding parameters to the asm and may be inspected to avoid\n\
-clobbering a register that is an input or output of the asm.  You can use\n\
-@code{tree_overlaps_hard_reg_set}, declared in @file{tree.h}, to test\n\
-for overlap with regards to asm-declared registers.",
- tree, (tree outputs, tree inputs, tree clobbers),
- hook_tree_tree_tree_tree_3rd_identity)
+(md_asm_adjust,
+ "This target hook may add @dfn{clobbers} to @var{clobbers} and\n\
+@var{clobbered_regs} for any hard regs the port wishes to automatically\n\
+clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
+to avoid clobbering a register that is already used by the asm.\n\
+\n\
+It may modify the @var{outputs}, @var{inputs}, and @var{constraints}\n\
+as necessary for other pre-processing.  In this case the return value is\n\
+a sequence of insns to emit after the asm.",
+ rtx_insn *,
+ (vec<rtx>& outputs, vec<rtx>& inputs, vec<const char *>& constraints,
+  vec<rtx>& clobbers, HARD_REG_SET& clobbered_regs),
+ NULL)
 
 /* This target hook allows the backend to specify a calling convention
    in the debug information.  This function actually returns an
@@ -4754,6 +4775,16 @@ This is currently used only by the C and C++ front ends.",
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
 
+/* Change pseudo allocno class calculated by IRA.  */
+DEFHOOK
+(ira_change_pseudo_allocno_class,
+ "A target hook which can change allocno class for given pseudo from\n\
+  allocno class calculated by IRA.\n\
+  \n\
+  The default version of this target hook always returns given class.",
+ reg_class_t, (int, reg_class_t),
+ default_ira_change_pseudo_allocno_class)
+
 /* Return true if we use LRA instead of reload.  */
 DEFHOOK
 (lra_p,
@@ -5494,6 +5525,15 @@ information in the @code{struct cl_target_option} structure for\n\
 function-specific options to the @code{struct gcc_options} structure.",
  void, (struct gcc_options *opts, struct cl_target_option *ptr), NULL)
 
+/* Function to update target-specific option information after being
+   streamed in.  */
+DEFHOOK
+(post_stream_in,
+ "This hook is called to update target-specific information in the\n\
+@code{struct cl_target_option} structure after it is streamed in from\n\
+LTO bytecode.",
+ void, (struct cl_target_option *ptr), NULL)
+
 /* Function to print any extra target state from the target options
    structure.  */
 DEFHOOK
@@ -5757,19 +5797,6 @@ for the primary source file, immediately after printing\n\
 this to be done.  The default is false.",
  bool, false)
 
-/* True if the target is allowed to reorder memory accesses unless
-   synchronization is explicitly requested.  */
-DEFHOOKPOD
-(relaxed_ordering,
- "If set to @code{true}, means that the target's memory model does not\n\
-guarantee that loads which do not depend on one another will access\n\
-main memory in the order of the instruction stream; if ordering is\n\
-important, an explicit memory barrier must be used.  This is true of\n\
-many recent processors which implement a policy of ``relaxed,''\n\
-``weak,'' or ``release'' memory consistency, such as Alpha, PowerPC,\n\
-and ia64.  The default is @code{false}.",
- bool, false)
-
 /* Returns true if we should generate exception tables for use with the
    ARM EABI.  The effects the encoding of function exception specifications.  */
 DEFHOOKPOD
@@ -5848,6 +5875,24 @@ DEFHOOK
  int, (int entity, int n), NULL)
 
 HOOK_VECTOR_END (mode_switching)
+
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_"
+
+#define DEF_TARGET_INSN(NAME, PROTO) \
+  DEFHOOK_UNDOC (have_##NAME, "", bool, (void), false)
+#include "target-insns.def"
+#undef DEF_TARGET_INSN
+
+#define DEF_TARGET_INSN(NAME, PROTO) \
+  DEFHOOK_UNDOC (gen_##NAME, "", rtx_insn *, PROTO, NULL)
+#include "target-insns.def"
+#undef DEF_TARGET_INSN
+
+#define DEF_TARGET_INSN(NAME, PROTO) \
+  DEFHOOKPOD (code_for_##NAME, "*", enum insn_code, CODE_FOR_nothing)
+#include "target-insns.def"
+#undef DEF_TARGET_INSN
 
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

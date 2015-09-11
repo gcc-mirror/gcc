@@ -18,11 +18,11 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1252 }
+// { dg-prune-output 1251 }
 
 #include <vector>
 
 void f()
 {
-  std::vector<std::vector<int> > v(10, 1);
+  std::vector<std::vector<int> > v(10, 1); // { dg-error "here|no match" }
 }

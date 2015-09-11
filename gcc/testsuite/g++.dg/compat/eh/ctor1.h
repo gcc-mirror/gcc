@@ -5,6 +5,6 @@ struct Foo
 
 struct Bar
 {
-  ~Bar ();
+  ~Bar () throw(int);
   Foo f;
 };

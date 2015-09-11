@@ -48,3 +48,11 @@ test_csneg64_condasn2(long long x0,
   x4 = (x0 == x1) ? x3 : -x2;
   return x4;
 }
+
+int test_csneg_cmp(int x)
+{
+  /* { dg-final { scan-assembler "csneg\tw\[0-9\]" } } */
+  if (x > 3)
+    x = -x;
+  return x;
+}

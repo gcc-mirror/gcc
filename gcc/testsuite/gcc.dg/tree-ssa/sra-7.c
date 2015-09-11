@@ -10,4 +10,3 @@ void a(s *s1, s *s2)
 
 /* Struct copies should not be split into members.  */
 /* { dg-final { scan-tree-dump "\\\*s1_.\\\(D\\\) = \\\*s2"  "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

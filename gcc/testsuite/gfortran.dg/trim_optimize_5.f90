@@ -17,4 +17,3 @@ program main
   if (line /= 'abY       ') call abort
 end program main
 ! { dg-final { scan-tree-dump-times "string_len_trim" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

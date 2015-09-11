@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Random number that should be large enough for all purposes.  Also define
    a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
    bit giving an invalid value that can be used to mean "uninitialized".  */
-#define MAX_RECOG_ALTERNATIVES 30
-typedef unsigned int alternative_mask;
+#define MAX_RECOG_ALTERNATIVES 35
+typedef uint64_t alternative_mask;
 
 /* A mask of all alternatives.  */
 #define ALL_ALTERNATIVES ((alternative_mask) -1)
@@ -88,7 +88,7 @@ extern int check_asm_operands (rtx);
 extern int asm_operand_ok (rtx, const char *, const char **);
 extern bool validate_change (rtx, rtx *, rtx, bool);
 extern bool validate_unshare_change (rtx, rtx *, rtx, bool);
-extern bool canonicalize_change_group (rtx insn, rtx x);
+extern bool canonicalize_change_group (rtx_insn *insn, rtx x);
 extern int insn_invalid_p (rtx_insn *, bool);
 extern int verify_changes (int);
 extern void confirm_change_group (void);
@@ -104,17 +104,15 @@ extern int strict_memory_address_addr_space_p (machine_mode, rtx,
 					       addr_space_t);
 #define strict_memory_address_p(mode,addr) \
 	strict_memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
-extern int validate_replace_rtx_subexp (rtx, rtx, rtx, rtx *);
-extern int validate_replace_rtx (rtx, rtx, rtx);
-extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx);
-extern int validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx);
-extern void validate_replace_rtx_group (rtx, rtx, rtx);
-extern void validate_replace_src_group (rtx, rtx, rtx);
-extern bool validate_simplify_insn (rtx insn);
+extern int validate_replace_rtx_subexp (rtx, rtx, rtx_insn *, rtx *);
+extern int validate_replace_rtx (rtx, rtx, rtx_insn *);
+extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx_insn *);
+extern int validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx_insn *);
+extern void validate_replace_rtx_group (rtx, rtx, rtx_insn *);
+extern void validate_replace_src_group (rtx, rtx, rtx_insn *);
+extern bool validate_simplify_insn (rtx_insn *insn);
 extern int num_changes_pending (void);
-#ifdef HAVE_cc0
-extern int next_insn_tests_no_inequality (rtx);
-#endif
+extern int next_insn_tests_no_inequality (rtx_insn *);
 extern bool reg_fits_class_p (const_rtx, reg_class_t, int, machine_mode);
 
 extern int offsettable_memref_p (rtx);
@@ -139,16 +137,16 @@ extern void extract_constrain_insn_cached (rtx_insn *);
 extern void extract_insn_cached (rtx_insn *);
 extern void preprocess_constraints (int, int, const char **,
 				    operand_alternative *);
-extern const operand_alternative *preprocess_insn_constraints (int);
-extern void preprocess_constraints (rtx);
-extern rtx peep2_next_insn (int);
+extern const operand_alternative *preprocess_insn_constraints (unsigned int);
+extern void preprocess_constraints (rtx_insn *);
+extern rtx_insn *peep2_next_insn (int);
 extern int peep2_regno_dead_p (int, int);
 extern int peep2_reg_dead_p (int, rtx);
 #ifdef CLEAR_HARD_REG_SET
 extern rtx peep2_find_free_register (int, int, const char *,
 				     machine_mode, HARD_REG_SET *);
 #endif
-extern rtx peephole2_insns (rtx, rtx, int *);
+extern rtx_insn *peephole2_insns (rtx, rtx_insn *, int *);
 
 extern int store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int if_test_bypass_p (rtx_insn *, rtx_insn *);
@@ -251,7 +249,7 @@ struct recog_data_d
   bool is_asm;
 
   /* In case we are caching, hold insn data was generated for.  */
-  rtx insn;
+  rtx_insn *insn;
 };
 
 extern struct recog_data_d recog_data;
@@ -278,43 +276,43 @@ typedef const char * (*insn_output_fn) (rtx *, rtx_insn *);
 
 struct insn_gen_fn
 {
-  typedef rtx (*f0) (void);
-  typedef rtx (*f1) (rtx);
-  typedef rtx (*f2) (rtx, rtx);
-  typedef rtx (*f3) (rtx, rtx, rtx);
-  typedef rtx (*f4) (rtx, rtx, rtx, rtx);
-  typedef rtx (*f5) (rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f6) (rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f7) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f8) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f9) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f10) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f11) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f12) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f13) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f14) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f15) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  typedef rtx (*f16) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f0) (void);
+  typedef rtx_insn * (*f1) (rtx);
+  typedef rtx_insn * (*f2) (rtx, rtx);
+  typedef rtx_insn * (*f3) (rtx, rtx, rtx);
+  typedef rtx_insn * (*f4) (rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f5) (rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f6) (rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f7) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f8) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f9) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f10) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f11) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f12) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f13) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f14) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f15) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  typedef rtx_insn * (*f16) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
 
   typedef f0 stored_funcptr;
 
-  rtx operator () (void) const { return ((f0)func) (); }
-  rtx operator () (rtx a0) const { return ((f1)func) (a0); }
-  rtx operator () (rtx a0, rtx a1) const { return ((f2)func) (a0, a1); }
-  rtx operator () (rtx a0, rtx a1, rtx a2) const { return ((f3)func) (a0, a1, a2); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3) const { return ((f4)func) (a0, a1, a2, a3); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4) const { return ((f5)func) (a0, a1, a2, a3, a4); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5) const { return ((f6)func) (a0, a1, a2, a3, a4, a5); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6) const { return ((f7)func) (a0, a1, a2, a3, a4, a5, a6); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7) const { return ((f8)func) (a0, a1, a2, a3, a4, a5, a6, a7); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8) const { return ((f9)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9) const { return ((f10)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10) const { return ((f11)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11) const { return ((f12)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12) const { return ((f13)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13) const { return ((f14)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13, rtx a14) const { return ((f15)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14); }
-  rtx operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13, rtx a14, rtx a15) const { return ((f16)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15); }
+  rtx_insn * operator () (void) const { return ((f0)func) (); }
+  rtx_insn * operator () (rtx a0) const { return ((f1)func) (a0); }
+  rtx_insn * operator () (rtx a0, rtx a1) const { return ((f2)func) (a0, a1); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2) const { return ((f3)func) (a0, a1, a2); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3) const { return ((f4)func) (a0, a1, a2, a3); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4) const { return ((f5)func) (a0, a1, a2, a3, a4); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5) const { return ((f6)func) (a0, a1, a2, a3, a4, a5); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6) const { return ((f7)func) (a0, a1, a2, a3, a4, a5, a6); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7) const { return ((f8)func) (a0, a1, a2, a3, a4, a5, a6, a7); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8) const { return ((f9)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9) const { return ((f10)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10) const { return ((f11)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11) const { return ((f12)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12) const { return ((f13)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13) const { return ((f14)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13, rtx a14) const { return ((f15)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14); }
+  rtx_insn * operator () (rtx a0, rtx a1, rtx a2, rtx a3, rtx a4, rtx a5, rtx a6, rtx a7, rtx a8, rtx a9, rtx a10, rtx a11, rtx a12, rtx a13, rtx a14, rtx a15) const { return ((f16)func) (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15); }
 
   // This is for compatibility of code that invokes functions like
   //   (*funcptr) (arg)
@@ -395,8 +393,8 @@ enum bool_attr {
 /* Target-dependent globals.  */
 struct target_recog {
   bool x_initialized;
-  alternative_mask x_bool_attr_masks[LAST_INSN_CODE][BA_LAST + 1];
-  operand_alternative *x_op_alt[LAST_INSN_CODE];
+  alternative_mask x_bool_attr_masks[NUM_INSN_CODES][BA_LAST + 1];
+  operand_alternative *x_op_alt[NUM_INSN_CODES];
 };
 
 extern struct target_recog default_target_recog;

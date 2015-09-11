@@ -23,6 +23,9 @@
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64%{mbig-endian:_be}%{mabi=ilp32:_ilp32}.so.1"
 
+#undef MUSL_DYNAMIC_LINKER
+#define MUSL_DYNAMIC_LINKER "/lib/ld-musl-aarch64%{mbig-endian:_be}%{mabi=ilp32:_ilp32}.so.1"
+
 #undef  ASAN_CC1_SPEC
 #define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
 
@@ -35,13 +38,14 @@
    %{static:-Bstatic}				\
    %{shared:-shared}				\
    %{symbolic:-Bsymbolic}			\
-   %{rdynamic:-export-dynamic}			\
-   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "	\
+   %{!static:					\
+     %{rdynamic:-export-dynamic}		\
+     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
    -X						\
    %{mbig-endian:-EB} %{mlittle-endian:-EL}     \
    -maarch64linux%{mabi=ilp32:32}%{mbig-endian:b}"
 
-#ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+#if TARGET_FIX_ERR_A53_835769_DEFAULT
 #define CA53_ERR_835769_SPEC \
   " %{!mno-fix-cortex-a53-835769:--fix-cortex-a53-835769}"
 #else
@@ -49,8 +53,17 @@
   " %{mfix-cortex-a53-835769:--fix-cortex-a53-835769}"
 #endif
 
+#ifdef TARGET_FIX_ERR_A53_843419_DEFAULT
+#define CA53_ERR_843419_SPEC \
+  " %{!mno-fix-cortex-a53-843419:--fix-cortex-a53-843419}"
+#else
+#define CA53_ERR_843419_SPEC \
+  " %{mfix-cortex-a53-843419:--fix-cortex-a53-843419}"
+#endif
+
 #define LINK_SPEC LINUX_TARGET_LINK_SPEC \
-                  CA53_ERR_835769_SPEC
+                  CA53_ERR_835769_SPEC \
+                  CA53_ERR_843419_SPEC
 
 #define GNU_USER_TARGET_MATHFILE_SPEC \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
@@ -68,5 +81,11 @@
   while (0)
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
+/* Uninitialized common symbols in non-PIE executables, even with
+   strong definitions in dependent shared libraries, will resolve
+   to COPY relocated symbol in the executable.  See PR65780.  */
+#undef TARGET_BINDS_LOCAL_P
+#define TARGET_BINDS_LOCAL_P default_binds_local_p_2
 
 #endif  /* GCC_AARCH64_LINUX_H */

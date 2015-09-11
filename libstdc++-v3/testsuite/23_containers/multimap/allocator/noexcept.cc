@@ -27,16 +27,10 @@ bool operator<(T l, T r) { return l.i < r.i; }
 
 using Cmp = std::less<T>;
 
-struct U { };
+struct CmpThrow : Cmp { };
+void swap(CmpThrow&, CmpThrow&) noexcept(false) { }
 
-namespace __gnu_test
-{
-  template<typename U>
-    inline void
-    swap(propagating_allocator<U, true>& l, propagating_allocator<U, true>& r)
-    noexcept(false)
-    { }
-}
+struct U { };
 
 using __gnu_test::propagating_allocator;
 
@@ -53,20 +47,20 @@ void test01()
 
 void test02()
 {
+  typedef std::allocator<std::pair<const T, U>> alloc_type;
+  typedef std::multimap<T, U, CmpThrow, alloc_type> test_type;
+  test_type v1;
+  test_type v2;
+  static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
+  static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
+}
+
+void test03()
+{
   typedef propagating_allocator<std::pair<const T, U>, false> alloc_type;
   typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));
   test_type v2(alloc_type(2));
   static_assert( !noexcept( v1 = std::move(v2) ), "Move assign can throw" );
   static_assert( noexcept( v1.swap(v2) ), "Swap cannot throw" );
-}
-
-void test03()
-{
-  typedef propagating_allocator<std::pair<const T, U>, true> alloc_type;
-  typedef std::multimap<T, U, Cmp, alloc_type> test_type;
-  test_type v1(alloc_type(1));
-  test_type v2(alloc_type(2));
-  static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
-  static_assert( !noexcept( v1.swap(v2) ), "Swap can throw" );
 }

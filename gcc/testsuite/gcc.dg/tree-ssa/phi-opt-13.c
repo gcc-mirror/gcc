@@ -8,4 +8,3 @@ long f(long a, long b) {
 }
 
 /* { dg-final { scan-tree-dump-times "goto " 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

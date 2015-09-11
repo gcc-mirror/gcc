@@ -1,3 +1,89 @@
+2015-08-18  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* objc-act.h, objc-next-runtime-abi-02.c, objc-runtime-hooks.h:
+	Remove useless typedefs.
+
+2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-map.h: Fix double word typos.
+
+2015-07-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c: Adjust includes.
+	* objc-encoding.c: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+	* objc-lang.c: Likewise.
+	* objc-map.c: Likewise.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Likewise.
+
+2015-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c: Remove ipa-ref.h and plugin-api.h from include list.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* objc-act.c (objc_string_hasher): Inherit from ggc_ptr_hash
+	rather than ggc_hasher.
+
+2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* objc-act.c (decl_name_hash): Inherit from nofree_ptr_hash rather
+	than typed_noop_remove.  Remove redudant typedefs.
+
+2015-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c: Do not include input.h, line-map.h or is-a.h.
+	* objc-encoding.c: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+	* objc-lang.c: Likewise.
+	* objc-map.c: Likewise.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Likewise.
+
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c : Adjust include files.
+	* objc-encoding.c : Likewise.
+	* objc-gnu-runtime-abi-01.c : Likewise.
+	* objc-lang.c : Likewise.
+	* objc-map.c : Likewise.
+	* objc-next-runtime-abi-01.c : Likewise.
+	* objc-next-runtime-abi-02.c : Likewise.
+	* objc-runtime-shared-support.c : Likewise.
+
+2015-06-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-runtime-shared-support.c (build_module_descriptor): Set
+	TREE_USED on UOBJC_MODULES_decl.
+
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-act.c (objc_write_global_declarations): Adjust comment.
+	* objc-gnu-runtime-abi-01.c (build_selector_table_decl): Set
+	TREE_USED bit.
+
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c: Adjust includes for restructured coretypes.h.
+	* objc-encoding.c: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+	* objc-lang.c: Likewise.
+	* objc-map.c: Likewise.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Likewise.
+
+2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (objc.mostlyclean): Remove cc1obj.
+
+2015-04-18  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* objc-act.c: Adjust for hash_table changes.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* objc-act.c: Include hash-set.h, machmode.h, vec.h, double-int.h,

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2003-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2003-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -37,7 +37,8 @@
 
 #include "gsocket.h"
 
-#if defined(__FreeBSD__)
+#if defined (__FreeBSD__) || defined (__DragonFly__) \
+ || defined (__NetBSD__) || defined (__OpenBSD__)
 typedef unsigned int IOCTL_Req_T;
 #else
 typedef int IOCTL_Req_T;

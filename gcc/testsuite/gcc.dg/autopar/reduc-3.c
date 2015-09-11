@@ -52,6 +52,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "Detected reduction" 1 "parloops" } } */
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 2 "parloops" } } */
-/* { dg-final { cleanup-tree-dump "parloops" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

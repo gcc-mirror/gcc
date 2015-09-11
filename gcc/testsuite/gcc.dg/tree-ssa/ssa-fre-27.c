@@ -22,4 +22,3 @@ int foo(int which_p)
 }
 
 /* { dg-final { scan-tree-dump "Replaced x with 0" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -1490,7 +1490,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       min() _GLIBCXX_USE_NOEXCEPT { return 0; } 				\
  										\
       static _GLIBCXX_CONSTEXPR unsigned TYPE 					\
-      max() _GLIBCXX_USE_NOEXCEPT { return  __glibcxx_max_b (TYPE, BITSIZE); }  \
+      max() _GLIBCXX_USE_NOEXCEPT						\
+      { return  __glibcxx_max_b (unsigned TYPE, BITSIZE); }			\
  										\
       UEXT									\
  										\

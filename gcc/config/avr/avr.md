@@ -371,6 +371,13 @@
 	push __zero_reg__"
   [(set_attr "length" "1,1")])
 
+(define_insn "pushhi1_insn"
+  [(set (mem:HI (post_dec:HI (reg:HI REG_SP)))
+        (match_operand:HI 0 "register_operand" "r"))]
+  ""
+  "push %B0\;push %A0"
+  [(set_attr "length" "2")])
+
 ;; All modes for a multi-byte push.  We must include complex modes here too,
 ;; lest emit_single_push_insn "helpfully" create the auto-inc itself.
 (define_mode_iterator MPUSH
@@ -386,17 +393,42 @@
   [(match_operand:MPUSH 0 "" "")]
   ""
   {
-    int i;
-
-    // Avoid (subreg (mem)) for non-generic address spaces below.  Because
-    // of the poor addressing capabilities of these spaces it's better to
-    // load them in one chunk.  And it avoids PR61443.
-
     if (MEM_P (operands[0])
         && !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (operands[0])))
-      operands[0] = copy_to_mode_reg (<MODE>mode, operands[0]);
+      {
+        // Avoid (subreg (mem)) for non-generic address spaces.  Because
+        // of the poor addressing capabilities of these spaces it's better to
+        // load them in one chunk.  And it avoids PR61443.
 
-    for (i = GET_MODE_SIZE (<MODE>mode) - 1; i >= 0; --i)
+        operands[0] = copy_to_mode_reg (<MODE>mode, operands[0]);
+      }
+    else if (REG_P (operands[0])
+             && IN_RANGE (REGNO (operands[0]), FIRST_VIRTUAL_REGISTER,
+                          LAST_VIRTUAL_REGISTER))
+      {
+        // Byte-wise pushing of virtual regs might result in something like
+        //
+        //     (set (mem:QI (post_dec:HI (reg:HI 32 SP)))
+        //          (subreg:QI (plus:HI (reg:HI 28)
+        //                              (const_int 17)) 0))
+        //
+        // after elimination.  This cannot be handled by reload, cf. PR64452.
+        // Reload virtuals in one chunk.  That way it's possible to reload
+        // above situation and finally
+        //
+        //    (set (reg:HI **)
+        //         (const_int 17))
+        //    (set (reg:HI **)
+        //         (plus:HI (reg:HI **)
+        //                  (reg:HI 28)))
+        //    (set (mem:HI (post_dec:HI (reg:HI 32 SP))
+        //         (reg:HI **)))
+ 
+        emit_insn (gen_pushhi1_insn (operands[0]));
+        DONE;
+      }
+
+    for (int i = GET_MODE_SIZE (<MODE>mode) - 1; i >= 0; --i)
       {
         rtx part = simplify_gen_subreg (QImode, operands[0], <MODE>mode, i);
         if (part != const0_rtx)
@@ -639,32 +671,6 @@
         emit_insn (gen_load<mode>_libgcc (dest, src));
         DONE;
       }
-
-    // AVRTC-579
-    // If the source operand expression is out of range for LDS instruction
-    // copy source operand expression to register.
-    // For tiny core, LDS instruction's memory access range limited to 0x40..0xbf.
-
-    if (!tiny_valid_direct_memory_access_range (src, <MODE>mode))
-      {
-        rtx srcx = XEXP (src, 0);
-        operands[1] = src = replace_equiv_address (src, copy_to_mode_reg (GET_MODE (srcx), srcx));
-        emit_move_insn (dest, src);
-        DONE;
-      }
-
-    // AVRTC-579
-    // If the destination operand expression is out of range for STS instruction
-    // copy destination operand expression to register.
-    // For tiny core, STS instruction's memory access range limited to 0x40..0xbf.
-
-    if (!tiny_valid_direct_memory_access_range (dest, <MODE>mode))
-      {
-        rtx destx = XEXP (dest, 0);
-        operands[0] = dest = replace_equiv_address (dest, copy_to_mode_reg (GET_MODE (destx), destx));
-        emit_move_insn (dest, src);
-        DONE;
-      }
   })
 
 ;;========================================================================
@@ -681,13 +687,8 @@
 (define_insn "mov<mode>_insn"
   [(set (match_operand:ALL1 0 "nonimmediate_operand" "=r    ,d    ,Qm   ,r ,q,r,*r")
         (match_operand:ALL1 1 "nox_general_operand"   "r Y00,n Ynn,r Y00,Qm,r,q,i"))]
-  "(register_operand (operands[0], <MODE>mode)
-    || reg_or_0_operand (operands[1], <MODE>mode))
-   /* Skip if operands are out of lds/sts memory access range(0x40..0xbf)
-      though access range is checked during define_expand, it is required
-      here to avoid merging RTXes during combine pass.  */
-   && tiny_valid_direct_memory_access_range (operands[0], QImode)
-   && tiny_valid_direct_memory_access_range (operands[1], QImode)"
+  "register_operand (operands[0], <MODE>mode)
+    || reg_or_0_operand (operands[1], <MODE>mode)"
   {
     return output_movqi (insn, operands, NULL);
   }
@@ -780,13 +781,8 @@
 (define_insn "*mov<mode>"
   [(set (match_operand:ALL2 0 "nonimmediate_operand" "=r,r  ,r,m    ,d,*r,q,r")
         (match_operand:ALL2 1 "nox_general_operand"   "r,Y00,m,r Y00,i,i ,r,q"))]
-  "(register_operand (operands[0], <MODE>mode)
-    || reg_or_0_operand (operands[1], <MODE>mode))
-   /* Skip if operands are out of lds/sts memory access range(0x40..0xbf)
-      though access range is checked during define_expand, it is required
-      here to avoid merging RTXes during combine pass.  */
-   && tiny_valid_direct_memory_access_range (operands[0], HImode)
-   && tiny_valid_direct_memory_access_range (operands[1], HImode)"
+  "register_operand (operands[0], <MODE>mode)
+   || reg_or_0_operand (operands[1], <MODE>mode)"
   {
     return output_movhi (insn, operands, NULL);
   }
@@ -934,13 +930,8 @@
 (define_insn "*mov<mode>"
   [(set (match_operand:ALL4 0 "nonimmediate_operand" "=r,r  ,r ,Qm   ,!d,r")
         (match_operand:ALL4 1 "nox_general_operand"   "r,Y00,Qm,r Y00,i ,i"))]
-  "(register_operand (operands[0], <MODE>mode)
-    || reg_or_0_operand (operands[1], <MODE>mode))
-   /* Skip if operands are out of lds/sts memory access range(0x40..0xbf)
-      though access range is checked during define_expand, it is required
-      here to avoid merging RTXes during combine pass.  */
-   && tiny_valid_direct_memory_access_range (operands[0], SImode)
-   && tiny_valid_direct_memory_access_range (operands[1], SImode)"
+  "register_operand (operands[0], <MODE>mode)
+   || reg_or_0_operand (operands[1], <MODE>mode)"
   {
     return output_movsisf (insn, operands, NULL);
   }
@@ -954,13 +945,8 @@
 (define_insn "*movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
         (match_operand:SF 1 "nox_general_operand"   "r,G,Qm,rG,F ,F"))]
-  "(register_operand (operands[0], SFmode)
-    || reg_or_0_operand (operands[1], SFmode))
-   /* Skip if operands are out of lds/sts memory access range(0x40..0xbf)
-      though access range is checked during define_expand, it is required
-      here to avoid merging rtls during combine pass.  */
-   && tiny_valid_direct_memory_access_range (operands[0], SFmode)
-   && tiny_valid_direct_memory_access_range (operands[1], SFmode)"
+  "register_operand (operands[0], SFmode)
+   || reg_or_0_operand (operands[1], SFmode)"
   {
     return output_movsisf (insn, operands, NULL);
   }

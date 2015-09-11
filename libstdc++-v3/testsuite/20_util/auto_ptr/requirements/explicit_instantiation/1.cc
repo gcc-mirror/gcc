@@ -20,6 +20,8 @@
 
 // This file tests explicit instantiation of library containers.
 
+// { dg-options "-std=c++98" }
+
 #include <memory>
 
 template class std::auto_ptr<int>;

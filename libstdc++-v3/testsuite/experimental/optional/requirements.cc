@@ -23,6 +23,9 @@
 
 #include <tuple>
 
+using std::experimental::bad_optional_access;
+static_assert( std::is_default_constructible<bad_optional_access>::value, "" );
+
 struct trivially_destructible
 {
   trivially_destructible() = delete;

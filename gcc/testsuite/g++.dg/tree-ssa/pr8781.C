@@ -25,4 +25,3 @@ int x()
 /* We should optimize this to a direct call.  */
 
 /* { dg-final { scan-tree-dump-times "= f \\(\\);" 1 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

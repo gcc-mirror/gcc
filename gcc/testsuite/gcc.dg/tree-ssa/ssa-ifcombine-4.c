@@ -18,4 +18,3 @@ void foo (int x, int a)
 }
 
 /* { dg-final { scan-tree-dump "!=" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -2533,7 +2533,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  return;
 	}
 
-      if (dtp->u.p.current_unit->endfile == AFTER_ENDFILE)
+      if (compile_options.warn_std &&
+	  dtp->u.p.current_unit->endfile == AFTER_ENDFILE)
       	{
 	  generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
 			"Sequential READ or WRITE not allowed after "
@@ -2674,8 +2675,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   if (dtp->u.p.current_unit->delim_status == DELIM_UNSPECIFIED)
     {
       if (ionml && dtp->u.p.current_unit->flags.delim == DELIM_UNSPECIFIED)
-	dtp->u.p.current_unit->delim_status =
-	  compile_options.allow_std & GFC_STD_GNU ? DELIM_QUOTE : DELIM_NONE;
+	dtp->u.p.current_unit->delim_status = DELIM_QUOTE;
       else
 	dtp->u.p.current_unit->delim_status = dtp->u.p.current_unit->flags.delim;
     }
@@ -3711,9 +3711,15 @@ void
 st_read_done (st_parameter_dt *dtp)
 {
   finalize_transfer (dtp);
+  
   if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
-    free_format_data (dtp->u.p.fmt);
+    {
+      free_format_data (dtp->u.p.fmt);
+      free_format (dtp);
+    }
+
   free_ionml (dtp);
+
   if (dtp->u.p.current_unit != NULL)
     unlock_unit (dtp->u.p.current_unit);
 
@@ -3764,8 +3770,13 @@ st_write_done (st_parameter_dt *dtp)
       }
 
   if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
-    free_format_data (dtp->u.p.fmt);
+    {
+      free_format_data (dtp->u.p.fmt);
+      free_format (dtp);
+    }
+
   free_ionml (dtp);
+
   if (dtp->u.p.current_unit != NULL)
     unlock_unit (dtp->u.p.current_unit);
   

@@ -8,4 +8,3 @@ double baz (double foo, double bar)
 
 /* We should re-associate this as (foo * bar)**3.  */
 /* { dg-final { scan-tree-dump-times " \\\* " 3 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

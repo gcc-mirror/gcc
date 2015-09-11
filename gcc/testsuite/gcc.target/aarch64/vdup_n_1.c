@@ -616,4 +616,3 @@ main ()
 /* Asm check for test_vdupq_n_s64, test_vdupq_n_u64.  */
 /* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.2d, x\[0-9\]+" 2 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

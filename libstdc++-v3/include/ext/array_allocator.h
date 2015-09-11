@@ -123,6 +123,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2103. std::allocator propagate_on_container_move_assignment
       typedef std::true_type propagate_on_container_move_assignment;
+
+      typedef std::true_type is_always_equal;
 #endif
 
     private:

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "--param asan-instrumentation-with-call-threshold=1" } */
+/* { dg-options "--param asan-instrumentation-with-call-threshold=1 -ffat-lto-objects" } */
 
 int x;
 

@@ -34,4 +34,3 @@ foo2 (unsigned int x, unsigned int y)
 }
 
 /* { dg-final { scan-tree-dump-not "abort" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

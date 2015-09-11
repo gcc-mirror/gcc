@@ -20,6 +20,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VARASM_H
 #define GCC_VARASM_H
 
+/* The following global holds the "function name" for the code in the
+   cold section of a function, if hot/cold function splitting is enabled
+   and there was actually code that went into the cold section.  A
+   pseudo function name is needed for the cold section of code for some
+   debugging tools that perform symbolization. */
+extern tree cold_function_name;
+
 extern tree tree_output_constant_def (tree);
 extern void make_decl_rtl (tree);
 extern rtx make_decl_rtl_for_debug (tree);

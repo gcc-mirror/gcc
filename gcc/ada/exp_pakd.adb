@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -532,8 +532,16 @@ package body Exp_Pakd is
          Init_Alignment                (PAT);
          Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
-         Set_Is_Packed_Array_Impl_Type      (PAT, True);
+         Set_Is_Packed_Array_Impl_Type (PAT, True);
          Set_Original_Array_Type       (PAT, Typ);
+
+         --  Propagate representation aspects
+
+         Set_Is_Atomic               (PAT, Is_Atomic                (Typ));
+         Set_Is_Independent          (PAT, Is_Independent           (Typ));
+         Set_Is_Volatile             (PAT, Is_Volatile              (Typ));
+         Set_Is_Volatile_Full_Access (PAT, Is_Volatile_Full_Access  (Typ));
+         Set_Treat_As_Volatile       (PAT, Treat_As_Volatile        (Typ));
 
          --  For a non-bit-packed array, propagate reverse storage order
          --  flag from original base type to packed array base type.
@@ -764,7 +772,8 @@ package body Exp_Pakd is
 
       elsif not Is_Constrained (Typ) then
 
-         --  When generating standard DWARF, the ___XP suffix will be stripped
+         --  When generating standard DWARF (i.e when GNAT_Encodings is
+         --  DWARF_GNAT_Encodings_Minimal), the ___XP suffix will be stripped
          --  by the back-end but generate it anyway to ease compiler debugging.
          --  This will help to distinguish implementation types from original
          --  packed arrays.

@@ -21,9 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_IRA_INT_H
 #define GCC_IRA_INT_H
 
-#include "cfgloop.h"
-#include "ira.h"
-#include "alloc-pool.h"
+#include "recog.h"
 
 /* To provide consistency in naming, all IRA external variables,
    functions, common typedefs start with prefix ira_.  */
@@ -1045,6 +1043,8 @@ extern void ira_debug_live_ranges (void);
 extern void ira_create_allocno_live_ranges (void);
 extern void ira_compress_allocno_live_ranges (void);
 extern void ira_finish_allocno_live_ranges (void);
+extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *,
+					       alternative_mask);
 
 /* ira-conflicts.c */
 extern void ira_debug_conflicts (bool);

@@ -108,4 +108,3 @@ end
 
 ! { dg-final { scan-tree-dump-times "abort" 13 "original" } }
 ! { dg-final { scan-tree-dump-times "should_not_exist" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

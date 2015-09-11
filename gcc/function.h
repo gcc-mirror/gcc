@@ -41,19 +41,17 @@ struct GTY(()) emit_status {
   /* Lowest label number in current function.  */
   int x_first_label_num;
 
-  /* The ends of the doubly-linked chain of rtl for the current function.
-     Both are reset to null at the start of rtl generation for the function.
+  /* seq.first and seq.last are the ends of the doubly-linked chain of
+     rtl for the current function.  Both are reset to null at the
+     start of rtl generation for the function. 
 
-     start_sequence saves both of these on `sequence_stack' and then starts
-     a new, nested sequence of insns.  */
-  rtx_insn *x_first_insn;
-  rtx_insn *x_last_insn;
+     start_sequence saves both of these on seq.next and then starts
+     a new, nested sequence of insns.
 
-  /* Stack of pending (incomplete) sequences saved by `start_sequence'.
-     Each element describes one pending sequence.
-     The main insn-chain is saved in the last element of the chain,
-     unless the chain is empty.  */
-  struct sequence_stack *sequence_stack;
+     seq.next is a stack of pending (incomplete) sequences saved by
+     start_sequence.  Each element describes one pending sequence.
+     The main insn-chain is the last element of the chain.  */
+  struct sequence_stack seq;
 
   /* INSN_UID for next insn emitted.
      Reset to 1 for each function compiled.  */
@@ -88,7 +86,6 @@ extern GTY ((length ("crtl->emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
 
 /* For backward compatibility... eventually these should all go away.  */
 #define reg_rtx_no (crtl->emit.x_reg_rtx_no)
-#define seq_stack (crtl->emit.sequence_stack)
 
 #define REGNO_POINTER_ALIGN(REGNO) (crtl->emit.regno_pointer_align[REGNO])
 
@@ -156,14 +153,8 @@ struct GTY(()) rtl_eh {
 #define stack_pointer_delta (crtl->expr.x_stack_pointer_delta)
 
 struct gimple_df;
-struct temp_slot;
-typedef struct temp_slot *temp_slot_p;
 struct call_site_record_d;
 struct dw_fde_node;
-
-class ipa_opt_pass_d;
-typedef ipa_opt_pass_d *ipa_opt_pass;
-
 
 struct GTY(()) varasm_status {
   /* If we're using a per-function constant pool, this is it.  */
@@ -174,34 +165,6 @@ struct GTY(()) varasm_status {
   unsigned int deferred_constants;
 };
 
-/* Information mainlined about RTL representation of incoming arguments.  */
-struct GTY(()) incoming_args {
-  /* Number of bytes of args popped by function being compiled on its return.
-     Zero if no bytes are to be popped.
-     May affect compilation of return insn or of function epilogue.  */
-  int pops_args;
-
-  /* If function's args have a fixed size, this is that size, in bytes.
-     Otherwise, it is -1.
-     May affect compilation of return insn or of function epilogue.  */
-  int size;
-
-  /* # bytes the prologue should push and pretend that the caller pushed them.
-     The prologue must do this, but only if parms can be passed in
-     registers.  */
-  int pretend_args_size;
-
-  /* This is the offset from the arg pointer to the place where the first
-     anonymous arg can be found, if there is one.  */
-  rtx arg_offset_rtx;
-
-  /* Quantities of various kinds of registers
-     used for the current function's args.  */
-  CUMULATIVE_ARGS info;
-
-  /* The arg pointer hard register, or the pseudo into which it was copied.  */
-  rtx internal_arg_pointer;
-};
 
 /* Data for function partitioning.  */
 struct GTY(()) function_subsections {
@@ -225,261 +188,6 @@ struct GTY(()) frame_space
   HOST_WIDE_INT start;
   HOST_WIDE_INT length;
 };
-
-/* Datastructures maintained for currently processed function in RTL form.  */
-struct GTY(()) rtl_data {
-  struct expr_status expr;
-  struct emit_status emit;
-  struct varasm_status varasm;
-  struct incoming_args args;
-  struct function_subsections subsections;
-  struct rtl_eh eh;
-
-  /* For function.c  */
-
-  /* # of bytes of outgoing arguments.  If ACCUMULATE_OUTGOING_ARGS is
-     defined, the needed space is pushed by the prologue.  */
-  int outgoing_args_size;
-
-  /* If nonzero, an RTL expression for the location at which the current
-     function returns its result.  If the current function returns its
-     result in a register, current_function_return_rtx will always be
-     the hard register containing the result.  */
-  rtx return_rtx;
-  /* If nonxero, an RTL expression for the lcoation at which the current
-     function returns bounds for its result.  */
-  rtx return_bnd;
-
-  /* Vector of initial-value pairs.  Each pair consists of a pseudo
-     register of approprite mode that stores the initial value a hard
-     register REGNO, and that hard register itself.  */
-  /* ??? This could be a VEC but there is currently no way to define an
-	 opaque VEC type.  */
-  struct initial_value_struct *hard_reg_initial_vals;
-
-  /* A variable living at the top of the frame that holds a known value.
-     Used for detecting stack clobbers.  */
-  tree stack_protect_guard;
-
-  /* List (chain of INSN_LIST) of labels heading the current handlers for
-     nonlocal gotos.  */
-  rtx_insn_list *x_nonlocal_goto_handler_labels;
-
-  /* Label that will go on function epilogue.
-     Jumping to this label serves as a "return" instruction
-     on machines which require execution of the epilogue on all returns.  */
-  rtx_code_label *x_return_label;
-
-  /* Label that will go on the end of function epilogue.
-     Jumping to this label serves as a "naked return" instruction
-     on machines which require execution of the epilogue on all returns.  */
-  rtx_code_label *x_naked_return_label;
-
-  /* List (chain of EXPR_LISTs) of all stack slots in this function.
-     Made for the sake of unshare_all_rtl.  */
-  rtx_expr_list *x_stack_slot_list;
-
-  /* List of empty areas in the stack frame.  */
-  struct frame_space *frame_space_list;
-
-  /* Place after which to insert the tail_recursion_label if we need one.  */
-  rtx_note *x_stack_check_probe_note;
-
-  /* Location at which to save the argument pointer if it will need to be
-     referenced.  There are two cases where this is done: if nonlocal gotos
-     exist, or if vars stored at an offset from the argument pointer will be
-     needed by inner routines.  */
-  rtx x_arg_pointer_save_area;
-
-  /* Dynamic Realign Argument Pointer used for realigning stack.  */
-  rtx drap_reg;
-
-  /* Offset to end of allocated area of stack frame.
-     If stack grows down, this is the address of the last stack slot allocated.
-     If stack grows up, this is the address for the next slot.  */
-  HOST_WIDE_INT x_frame_offset;
-
-  /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
-  rtx_insn *x_parm_birth_insn;
-
-  /* List of all used temporaries allocated, by level.  */
-  vec<temp_slot_p, va_gc> *x_used_temp_slots;
-
-  /* List of available temp slots.  */
-  struct temp_slot *x_avail_temp_slots;
-
-  /* Current nesting level for temporaries.  */
-  int x_temp_slot_level;
-
-  /* The largest alignment needed on the stack, including requirement
-     for outgoing stack alignment.  */
-  unsigned int stack_alignment_needed;
-
-  /* Preferred alignment of the end of stack frame, which is preferred
-     to call other functions.  */
-  unsigned int preferred_stack_boundary;
-
-  /* The minimum alignment of parameter stack.  */
-  unsigned int parm_stack_boundary;
-
-  /* The largest alignment of slot allocated on the stack.  */
-  unsigned int max_used_stack_slot_alignment;
-
-  /* The stack alignment estimated before reload, with consideration of
-     following factors:
-     1. Alignment of local stack variables (max_used_stack_slot_alignment)
-     2. Alignment requirement to call other functions
-        (preferred_stack_boundary)
-     3. Alignment of non-local stack variables but might be spilled in
-        local stack.  */
-  unsigned int stack_alignment_estimated;
-
-  /* For reorg.  */
-
-  /* Nonzero if function being compiled called builtin_return_addr or
-     builtin_frame_address with nonzero count.  */
-  bool accesses_prior_frames;
-
-  /* Nonzero if the function calls __builtin_eh_return.  */
-  bool calls_eh_return;
-
-  /* Nonzero if function saves all registers, e.g. if it has a nonlocal
-     label that can reach the exit block via non-exceptional paths. */
-  bool saves_all_registers;
-
-  /* Nonzero if function being compiled has nonlocal gotos to parent
-     function.  */
-  bool has_nonlocal_goto;
-
-  /* Nonzero if function being compiled has an asm statement.  */
-  bool has_asm_statement;
-
-  /* This bit is used by the exception handling logic.  It is set if all
-     calls (if any) are sibling calls.  Such functions do not have to
-     have EH tables generated, as they cannot throw.  A call to such a
-     function, however, should be treated as throwing if any of its callees
-     can throw.  */
-  bool all_throwers_are_sibcalls;
-
-  /* Nonzero if stack limit checking should be enabled in the current
-     function.  */
-  bool limit_stack;
-
-  /* Nonzero if profiling code should be generated.  */
-  bool profile;
-
-  /* Nonzero if the current function uses the constant pool.  */
-  bool uses_const_pool;
-
-  /* Nonzero if the current function uses pic_offset_table_rtx.  */
-  bool uses_pic_offset_table;
-
-  /* Nonzero if the current function needs an lsda for exception handling.  */
-  bool uses_eh_lsda;
-
-  /* Set when the tail call has been produced.  */
-  bool tail_call_emit;
-
-  /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
-  bool arg_pointer_save_area_init;
-
-  /* Nonzero if current function must be given a frame pointer.
-     Set in reload1.c or lra-eliminations.c if anything is allocated
-     on the stack there.  */
-  bool frame_pointer_needed;
-
-  /* When set, expand should optimize for speed.  */
-  bool maybe_hot_insn_p;
-
-  /* Nonzero if function stack realignment is needed.  This flag may be
-     set twice: before and after reload.  It is set before reload wrt
-     stack alignment estimation before reload.  It will be changed after
-     reload if by then criteria of stack realignment is different.
-     The value set after reload is the accurate one and is finalized.  */
-  bool stack_realign_needed;
-
-  /* Nonzero if function stack realignment is tried.  This flag is set
-     only once before reload.  It affects register elimination.  This
-     is used to generate DWARF debug info for stack variables.  */
-  bool stack_realign_tried;
-
-  /* Nonzero if function being compiled needs dynamic realigned
-     argument pointer (drap) if stack needs realigning.  */
-  bool need_drap;
-
-  /* Nonzero if function stack realignment estimation is done, namely
-     stack_realign_needed flag has been set before reload wrt estimated
-     stack alignment info.  */
-  bool stack_realign_processed;
-
-  /* Nonzero if function stack realignment has been finalized, namely
-     stack_realign_needed flag has been set and finalized after reload.  */
-  bool stack_realign_finalized;
-
-  /* True if dbr_schedule has already been called for this function.  */
-  bool dbr_scheduled_p;
-
-  /* True if current function can not throw.  Unlike
-     TREE_NOTHROW (current_function_decl) it is set even for overwritable
-     function where currently compiled version of it is nothrow.  */
-  bool nothrow;
-
-  /* True if we performed shrink-wrapping for the current function.  */
-  bool shrink_wrapped;
-
-  /* Nonzero if function being compiled doesn't modify the stack pointer
-     (ignoring the prologue and epilogue).  This is only valid after
-     pass_stack_ptr_mod has run.  */
-  bool sp_is_unchanging;
-
-  /* Nonzero if function being compiled doesn't contain any calls
-     (ignoring the prologue and epilogue).  This is set prior to
-     local register allocation and is valid for the remaining
-     compiler passes.  */
-  bool is_leaf;
-
-  /* Nonzero if the function being compiled is a leaf function which only
-     uses leaf registers.  This is valid after reload (specifically after
-     sched2) and is useful only if the port defines LEAF_REGISTERS.  */
-  bool uses_only_leaf_regs;
-
-  /* Nonzero if the function being compiled has undergone hot/cold partitioning
-     (under flag_reorder_blocks_and_partition) and has at least one cold
-     block.  */
-  bool has_bb_partition;
-
-  /* Nonzero if the function being compiled has completed the bb reordering
-     pass.  */
-  bool bb_reorder_complete;
-
-  /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
-     asm.  Unlike regs_ever_live, elements of this array corresponding
-     to eliminable regs (like the frame pointer) are set if an asm
-     sets them.  */
-  HARD_REG_SET asm_clobbers;
-};
-
-#define return_label (crtl->x_return_label)
-#define naked_return_label (crtl->x_naked_return_label)
-#define stack_slot_list (crtl->x_stack_slot_list)
-#define parm_birth_insn (crtl->x_parm_birth_insn)
-#define frame_offset (crtl->x_frame_offset)
-#define stack_check_probe_note (crtl->x_stack_check_probe_note)
-#define arg_pointer_save_area (crtl->x_arg_pointer_save_area)
-#define used_temp_slots (crtl->x_used_temp_slots)
-#define avail_temp_slots (crtl->x_avail_temp_slots)
-#define temp_slot_level (crtl->x_temp_slot_level)
-#define nonlocal_goto_handler_labels (crtl->x_nonlocal_goto_handler_labels)
-#define frame_pointer_needed (crtl->frame_pointer_needed)
-#define stack_realign_fp (crtl->stack_realign_needed && !crtl->need_drap)
-#define stack_realign_drap (crtl->stack_realign_needed && crtl->need_drap)
-
-extern GTY(()) struct rtl_data x_rtl;
-
-/* Accessor to RTL datastructures.  We keep them statically allocated now since
-   we never keep multiple functions.  For threaded compiler we might however
-   want to do differently.  */
-#define crtl (&x_rtl)
 
 struct GTY(()) stack_usage
 {
@@ -703,7 +411,7 @@ struct GTY((for_user)) types_used_by_vars_entry {
   tree var_decl;
 };
 
-struct used_type_hasher : ggc_hasher<types_used_by_vars_entry *>
+struct used_type_hasher : ggc_ptr_hash<types_used_by_vars_entry>
 {
   static hashval_t hash (types_used_by_vars_entry *);
   static bool equal (types_used_by_vars_entry *, types_used_by_vars_entry *);
@@ -870,10 +578,6 @@ extern bool initial_value_entry (int i, rtx *, rtx *);
 extern void instantiate_decl_rtl (rtx x);
 extern int aggregate_value_p (const_tree, const_tree);
 extern bool use_register_for_decl (const_tree);
-extern bool pass_by_reference (CUMULATIVE_ARGS *, machine_mode,
-			       tree, bool);
-extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
-				     tree, bool);
 extern gimple_seq gimplify_parameters (void);
 extern void locate_and_pad_parm (machine_mode, tree, int, int, int,
 				 tree, struct args_size *,
@@ -899,6 +603,8 @@ extern int get_next_funcdef_no (void);
 extern int get_last_funcdef_no (void);
 extern void allocate_struct_function (tree, bool);
 extern void push_struct_function (tree fndecl);
+extern void push_dummy_function (bool);
+extern void pop_dummy_function (void);
 extern void init_dummy_function_start (void);
 extern void init_function_start (tree);
 extern void stack_protect_epilogue (void);
@@ -906,19 +612,14 @@ extern void expand_function_start (tree);
 extern void expand_dummy_function_end (void);
 
 extern void thread_prologue_and_epilogue_insns (void);
-
-#ifdef RTX_CODE
 extern void diddle_return_value (void (*)(rtx, void*), void*);
 extern void clobber_return_register (void);
-#endif
-
-extern void do_warn_unused_parameter (tree);
 extern void expand_function_end (void);
 extern rtx get_arg_pointer_save_area (void);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
 extern int prologue_epilogue_contains (const_rtx);
 extern void emit_return_into_block (bool simple_p, basic_block bb);
-extern void set_return_jump_label (rtx);
+extern void set_return_jump_label (rtx_insn *);
 extern bool active_insn_between (rtx_insn *head, rtx_insn *tail);
 extern vec<edge> convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 					   vec<edge> unconverted);

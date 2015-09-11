@@ -9,4 +9,3 @@ int a (float x) {
 }
 
 /* { dg-final { scan-tree-dump-times "ABS_EXPR" 0 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

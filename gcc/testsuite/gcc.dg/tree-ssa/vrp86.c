@@ -25,4 +25,3 @@ foo (unsigned T x)
 
 /* { dg-final { scan-tree-dump "fn1call" "vrp1"} } */
 /* { dg-final { scan-tree-dump "fn2call" "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

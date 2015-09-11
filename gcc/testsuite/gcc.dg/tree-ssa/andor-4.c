@@ -21,4 +21,3 @@ int f3(int y, int x)
 
 /* { dg-final { scan-tree-dump-times "~x" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "x_..D. \\\| y_..D." 4 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

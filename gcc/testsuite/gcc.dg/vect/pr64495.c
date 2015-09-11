@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include <assert.h>
 #include "tree-vect.h"
 
@@ -32,4 +30,3 @@ main ()
   return 0;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -21,43 +21,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "flags.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
+#include "gimple.h"
+#include "rtl.h"
+#include "ssa.h"
+#include "flags.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "predict.h"
-#include "hard-reg-set.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfganal.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
-#include "gimple-ssa.h"
 #include "tree-cfg.h"
-#include "tree-phinodes.h"
-#include "ssa-iterators.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
@@ -73,11 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-chrec.h"
 #include "tree-ssa-threadupdate.h"
-#include "hashtab.h"
-#include "rtl.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -88,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
+#include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 
 
@@ -196,10 +173,10 @@ static bool values_propagated;
    node.  */
 static int *vr_phi_edge_counts;
 
-typedef struct {
+struct switch_update {
   gswitch *stmt;
   tree vec;
-} switch_update;
+};
 
 static vec<edge> to_remove_edges;
 static vec<switch_update> to_update_switch_stmts;
@@ -375,57 +352,6 @@ avoid_overflow_infinity (tree val)
       gcc_checking_assert (vrp_val_is_min (val));
       return vrp_val_min (TREE_TYPE (val));
     }
-}
-
-
-/* Return true if ARG is marked with the nonnull attribute in the
-   current function signature.  */
-
-static bool
-nonnull_arg_p (const_tree arg)
-{
-  tree t, attrs, fntype;
-  unsigned HOST_WIDE_INT arg_num;
-
-  gcc_assert (TREE_CODE (arg) == PARM_DECL && POINTER_TYPE_P (TREE_TYPE (arg)));
-
-  /* The static chain decl is always non null.  */
-  if (arg == cfun->static_chain_decl)
-    return true;
-
-  fntype = TREE_TYPE (current_function_decl);
-  for (attrs = TYPE_ATTRIBUTES (fntype); attrs; attrs = TREE_CHAIN (attrs))
-    {
-      attrs = lookup_attribute ("nonnull", attrs);
-
-      /* If "nonnull" wasn't specified, we know nothing about the argument.  */
-      if (attrs == NULL_TREE)
-	return false;
-
-      /* If "nonnull" applies to all the arguments, then ARG is non-null.  */
-      if (TREE_VALUE (attrs) == NULL_TREE)
-	return true;
-
-      /* Get the position number for ARG in the function signature.  */
-      for (arg_num = 1, t = DECL_ARGUMENTS (current_function_decl);
-	   t;
-	   t = DECL_CHAIN (t), arg_num++)
-	{
-	  if (t == arg)
-	    break;
-	}
-
-      gcc_assert (t == arg);
-
-      /* Now see if ARG_NUM is mentioned in the nonnull list.  */
-      for (t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
-	{
-	  if (compare_tree_int (TREE_VALUE (t), arg_num) == 0)
-	    return true;
-	}
-    }
-
-  return false;
 }
 
 
@@ -847,6 +773,23 @@ update_value_range (const_tree var, value_range_t *new_vr)
   value_range_t *old_vr;
   bool is_new;
 
+  /* If there is a value-range on the SSA name from earlier analysis
+     factor that in.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
+    {
+      wide_int min, max;
+      value_range_type rtype = get_range_info (var, &min, &max);
+      if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
+	{
+	  value_range_d nr;
+	  nr.type = rtype;
+	  nr.min = wide_int_to_tree (TREE_TYPE (var), min);
+	  nr.max = wide_int_to_tree (TREE_TYPE (var), max);
+	  nr.equiv = NULL;
+	  vrp_intersect_ranges (new_vr, &nr);
+	}
+    }
+
   /* Update the value range, if necessary.  */
   old_vr = get_value_range (var);
   is_new = old_vr->type != new_vr->type
@@ -857,13 +800,18 @@ update_value_range (const_tree var, value_range_t *new_vr)
   if (is_new)
     {
       /* Do not allow transitions up the lattice.  The following
-         is slightly more awkward than just new_vr->type < old_vr->type
+	 is slightly more awkward than just new_vr->type < old_vr->type
 	 because VR_RANGE and VR_ANTI_RANGE need to be considered
 	 the same.  We may not have is_new when transitioning to
-	 UNDEFINED or from VARYING.  */
-      if (new_vr->type == VR_UNDEFINED
-	  || old_vr->type == VR_VARYING)
-	set_value_range_to_varying (old_vr);
+	 UNDEFINED.  If old_vr->type is VARYING, we shouldn't be
+	 called.  */
+      if (new_vr->type == VR_UNDEFINED)
+	{
+	  BITMAP_FREE (new_vr->equiv);
+	  set_value_range_to_varying (old_vr);
+	  set_value_range_to_varying (new_vr);
+	  return true;
+	}
       else
 	set_value_range (old_vr, new_vr->type, new_vr->min, new_vr->max,
 			 new_vr->equiv);
@@ -1126,7 +1074,7 @@ gimple_call_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
 					strict_overflow_p);
 }
 
-/* Return true if STMT is know to to compute a non-negative value.
+/* Return true if STMT is know to compute a non-negative value.
    If the return value is based on the assumption that signed overflow is
    undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.*/
@@ -1198,6 +1146,10 @@ gimple_stmt_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
 	if (flag_delete_null_pointer_checks && !flag_check_new
 	    && DECL_IS_OPERATOR_NEW (fndecl)
 	    && !TREE_NOTHROW (fndecl))
+	  return true;
+	/* References are always non-NULL.  */
+	if (flag_delete_null_pointer_checks
+	    && TREE_CODE (TREE_TYPE (fndecl)) == REFERENCE_TYPE)
 	  return true;
 	if (flag_delete_null_pointer_checks && 
 	    lookup_attribute ("returns_nonnull",
@@ -2888,33 +2840,17 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	     prod3.  */
 	  /* min0min1 > max0max1 */
 	  if (wi::gts_p (prod0, prod3))
-	    {
-	      vrp_int tmp = prod3;
-	      prod3 = prod0;
-	      prod0 = tmp;
-	    }
+	    std::swap (prod0, prod3);
 
 	  /* min0max1 > max0min1 */
 	  if (wi::gts_p (prod1, prod2))
-	    {
-	      vrp_int tmp = prod2;
-	      prod2 = prod1;
-	      prod1 = tmp;
-	    }
+	    std::swap (prod1, prod2);
 
 	  if (wi::gts_p (prod0, prod1))
-	    {
-	      vrp_int tmp = prod1;
-	      prod1 = prod0;
-	      prod0 = tmp;
-	    }
+	    std::swap (prod0, prod1);
 
 	  if (wi::gts_p (prod2, prod3))
-	    {
-	      vrp_int tmp = prod3;
-	      prod3 = prod2;
-	      prod2 = tmp;
-	    }
+	    std::swap (prod2, prod3);
 
 	  /* diff = max - min.  */
 	  prod2 = prod3 - prod0;
@@ -3123,14 +3059,33 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		 and all numbers from min to 0 for negative min.  */
 	      cmp = compare_values (vr0.max, zero);
 	      if (cmp == -1)
-		max = zero;
+		{
+		  /* When vr0.max < 0, vr1.min != 0 and value
+		     ranges for dividend and divisor are available.  */
+		  if (vr1.type == VR_RANGE
+		      && !symbolic_range_p (&vr0)
+		      && !symbolic_range_p (&vr1)
+		      && !compare_values (vr1.min, zero))
+		    max = int_const_binop (code, vr0.max, vr1.min);
+		  else
+		    max = zero;
+		}
 	      else if (cmp == 0 || cmp == 1)
 		max = vr0.max;
 	      else
 		type = VR_VARYING;
 	      cmp = compare_values (vr0.min, zero);
 	      if (cmp == 1)
-		min = zero;
+		{
+		  /* For unsigned division when value ranges for dividend
+		     and divisor are available.  */
+		  if (vr1.type == VR_RANGE
+		      && !symbolic_range_p (&vr0)
+		      && !symbolic_range_p (&vr1))
+		    min = int_const_binop (code, vr0.min, vr1.max);
+		  else
+		    min = zero;
+		}
 	      else if (cmp == 0 || cmp == -1)
 		min = vr0.min;
 	      else
@@ -3158,26 +3113,60 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
     }
   else if (code == TRUNC_MOD_EXPR)
     {
-      if (vr1.type != VR_RANGE
-	  || range_includes_zero_p (vr1.min, vr1.max) != 0
-	  || vrp_val_is_min (vr1.min))
+      if (range_is_null (&vr1))
 	{
-	  set_value_range_to_varying (vr);
+	  set_value_range_to_undefined (vr);
 	  return;
 	}
+      /* ABS (A % B) < ABS (B) and either
+	 0 <= A % B <= A or A <= A % B <= 0.  */
       type = VR_RANGE;
-      /* Compute MAX <|vr1.min|, |vr1.max|> - 1.  */
-      max = fold_unary_to_constant (ABS_EXPR, expr_type, vr1.min);
-      if (tree_int_cst_lt (max, vr1.max))
-	max = vr1.max;
-      max = int_const_binop (MINUS_EXPR, max, build_int_cst (TREE_TYPE (max), 1));
-      /* If the dividend is non-negative the modulus will be
-	 non-negative as well.  */
-      if (TYPE_UNSIGNED (expr_type)
-	  || value_range_nonnegative_p (&vr0))
-	min = build_int_cst (TREE_TYPE (max), 0);
+      signop sgn = TYPE_SIGN (expr_type);
+      unsigned int prec = TYPE_PRECISION (expr_type);
+      wide_int wmin, wmax, tmp;
+      wide_int zero = wi::zero (prec);
+      wide_int one = wi::one (prec);
+      if (vr1.type == VR_RANGE && !symbolic_range_p (&vr1))
+	{
+	  wmax = wi::sub (vr1.max, one);
+	  if (sgn == SIGNED)
+	    {
+	      tmp = wi::sub (wi::minus_one (prec), vr1.min);
+	      wmax = wi::smax (wmax, tmp);
+	    }
+	}
       else
-	min = fold_unary_to_constant (NEGATE_EXPR, expr_type, max);
+	{
+	  wmax = wi::max_value (prec, sgn);
+	  /* X % INT_MIN may be INT_MAX.  */
+	  if (sgn == UNSIGNED)
+	    wmax = wmax - one;
+	}
+
+      if (sgn == UNSIGNED)
+	wmin = zero;
+      else
+	{
+	  wmin = -wmax;
+	  if (vr0.type == VR_RANGE && TREE_CODE (vr0.min) == INTEGER_CST)
+	    {
+	      tmp = vr0.min;
+	      if (wi::gts_p (tmp, zero))
+		tmp = zero;
+	      wmin = wi::smax (wmin, tmp);
+	    }
+	}
+
+      if (vr0.type == VR_RANGE && TREE_CODE (vr0.max) == INTEGER_CST)
+	{
+	  tmp = vr0.max;
+	  if (sgn == SIGNED && wi::neg_p (tmp))
+	    tmp = zero;
+	  wmax = wi::min (wmax, tmp, sgn);
+	}
+
+      min = wide_int_to_tree (expr_type, wmin);
+      max = wide_int_to_tree (expr_type, wmax);
     }
   else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
     {
@@ -3386,7 +3375,7 @@ extract_range_from_binary_expr (value_range_t *vr,
 
 /* Extract range information from a unary operation CODE based on
    the range of its operand *VR0 with type OP0_TYPE with resulting type TYPE.
-   The The resulting range is stored in *VR.  */
+   The resulting range is stored in *VR.  */
 
 static void
 extract_range_from_unary_expr_1 (value_range_t *vr,
@@ -3663,11 +3652,7 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	{
           /* If the range was reversed, swap MIN and MAX.  */
 	  if (cmp == 1)
-	    {
-	      tree t = min;
-	      min = max;
-	      max = t;
-	    }
+	    std::swap (min, max);
 	}
 
       cmp = compare_values (min, max);
@@ -4484,11 +4469,8 @@ compare_ranges (enum tree_code comp, value_range_t *vr0, value_range_t *vr1,
      operands around and change the comparison code.  */
   if (comp == GT_EXPR || comp == GE_EXPR)
     {
-      value_range_t *tmp;
       comp = (comp == GT_EXPR) ? LT_EXPR : LE_EXPR;
-      tmp = vr0;
-      vr0 = vr1;
-      vr1 = tmp;
+      std::swap (vr0, vr1);
     }
 
   if (comp == EQ_EXPR)
@@ -4894,7 +4876,7 @@ infer_value_range (gimple stmt, tree op, enum tree_code *comp_code_p, tree *val_
 	return false;
     }
 
-  if (infer_nonnull_range (stmt, op, true, true))
+  if (infer_nonnull_range (stmt, op))
     {
       *val_p = build_int_cst (TREE_TYPE (op), 0);
       *comp_code_p = NE_EXPR;
@@ -5303,7 +5285,9 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
   /* In the case of post-in/decrement tests like if (i++) ... and uses
      of the in/decremented value on the edge the extra name we want to
      assert for is not on the def chain of the name compared.  Instead
-     it is in the set of use stmts.  */
+     it is in the set of use stmts.
+     Similar cases happen for conversions that were simplified through
+     fold_{sign_changed,widened}_comparison.  */
   if ((comp_code == NE_EXPR
        || comp_code == EQ_EXPR)
       && TREE_CODE (val) == INTEGER_CST)
@@ -5312,29 +5296,45 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       gimple use_stmt;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
 	{
-	  /* Cut off to use-stmts that are in the predecessor.  */
-	  if (gimple_bb (use_stmt) != e->src)
-	    continue;
-
 	  if (!is_gimple_assign (use_stmt))
 	    continue;
 
-	  enum tree_code code = gimple_assign_rhs_code (use_stmt);
-	  if (code != PLUS_EXPR
-	      && code != MINUS_EXPR)
-	    continue;
-
-	  tree cst = gimple_assign_rhs2 (use_stmt);
-	  if (TREE_CODE (cst) != INTEGER_CST)
+	  /* Cut off to use-stmts that are dominating the predecessor.  */
+	  if (!dominated_by_p (CDI_DOMINATORS, e->src, gimple_bb (use_stmt)))
 	    continue;
 
 	  tree name2 = gimple_assign_lhs (use_stmt);
-	  if (live_on_edge (e, name2))
+	  if (TREE_CODE (name2) != SSA_NAME
+	      || !live_on_edge (e, name2))
+	    continue;
+
+	  enum tree_code code = gimple_assign_rhs_code (use_stmt);
+	  tree cst;
+	  if (code == PLUS_EXPR
+	      || code == MINUS_EXPR)
 	    {
+	      cst = gimple_assign_rhs2 (use_stmt);
+	      if (TREE_CODE (cst) != INTEGER_CST)
+		continue;
 	      cst = int_const_binop (code, val, cst);
-	      register_new_assert_for (name2, name2, comp_code, cst,
-				       NULL, e, bsi);
 	    }
+	  else if (CONVERT_EXPR_CODE_P (code))
+	    {
+	      /* For truncating conversions we cannot record
+		 an inequality.  */
+	      if (comp_code == NE_EXPR
+		  && (TYPE_PRECISION (TREE_TYPE (name2))
+		      < TYPE_PRECISION (TREE_TYPE (name))))
+		continue;
+	      cst = fold_convert (TREE_TYPE (name2), val);
+	    }
+	  else
+	    continue;
+
+	  if (TREE_OVERFLOW_P (cst))
+	    cst = drop_tree_overflow (cst);
+	  register_new_assert_for (name2, name2, comp_code, cst,
+				   NULL, e, bsi);
 	}
     }
  
@@ -6533,6 +6533,14 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
 				 build_int_cst (TREE_TYPE (up_bound), 1));
 
+  /* Empty array.  */
+  if (tree_int_cst_equal (low_bound, up_bound_p1))
+    {
+      warning_at (location, OPT_Warray_bounds,
+		  "array subscript is above array bounds");
+      TREE_NO_WARNING (ref) = 1;
+    }
+
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
       vr = get_value_range (low_sub);
@@ -6546,9 +6554,11 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   if (vr && vr->type == VR_ANTI_RANGE)
     {
       if (TREE_CODE (up_sub) == INTEGER_CST
-          && tree_int_cst_lt (up_bound, up_sub)
+          && (ignore_off_by_one
+	      ? tree_int_cst_lt (up_bound, up_sub)
+	      : tree_int_cst_le (up_bound, up_sub))
           && TREE_CODE (low_sub) == INTEGER_CST
-          && tree_int_cst_lt (low_sub, low_bound))
+          && tree_int_cst_le (low_sub, low_bound))
         {
           warning_at (location, OPT_Warray_bounds,
 		      "array subscript is outside array bounds");
@@ -6557,10 +6567,8 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
     }
   else if (TREE_CODE (up_sub) == INTEGER_CST
 	   && (ignore_off_by_one
-	       ? (tree_int_cst_lt (up_bound, up_sub)
-		  && !tree_int_cst_equal (up_bound_p1, up_sub))
-	       : (tree_int_cst_lt (up_bound, up_sub)
-		  || tree_int_cst_equal (up_bound_p1, up_sub))))
+	       ? !tree_int_cst_le (up_sub, up_bound_p1)
+	       : !tree_int_cst_le (up_sub, up_bound)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -6593,25 +6601,6 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 static void
 search_for_addr_array (tree t, location_t location)
 {
-  while (TREE_CODE (t) == SSA_NAME)
-    {
-      gimple g = SSA_NAME_DEF_STMT (t);
-
-      if (gimple_code (g) != GIMPLE_ASSIGN)
-	return;
-
-      if (get_gimple_rhs_class (gimple_assign_rhs_code (g))
-	  != GIMPLE_SINGLE_RHS)
-	return;
-
-      t = gimple_assign_rhs1 (g);
-    }
-
-
-  /* We are only interested in addresses of ARRAY_REF's.  */
-  if (TREE_CODE (t) != ADDR_EXPR)
-    return;
-
   /* Check each ARRAY_REFs in the reference chain. */
   do
     {
@@ -6701,12 +6690,11 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   if (TREE_CODE (t) == ARRAY_REF)
     check_array_ref (location, t, false /*ignore_off_by_one*/);
 
-  if (TREE_CODE (t) == MEM_REF
-      || (TREE_CODE (t) == RETURN_EXPR && TREE_OPERAND (t, 0)))
-    search_for_addr_array (TREE_OPERAND (t, 0), location);
-
-  if (TREE_CODE (t) == ADDR_EXPR)
-    *walk_subtree = FALSE;
+  else if (TREE_CODE (t) == ADDR_EXPR)
+    {
+      search_for_addr_array (t, location);
+      *walk_subtree = FALSE;
+    }
 
   return NULL_TREE;
 }
@@ -6736,29 +6724,17 @@ check_all_array_refs (void)
 	{
 	  gimple stmt = gsi_stmt (si);
 	  struct walk_stmt_info wi;
-	  if (!gimple_has_location (stmt))
+	  if (!gimple_has_location (stmt)
+	      || is_gimple_debug (stmt))
 	    continue;
 
-	  if (is_gimple_call (stmt))
-	    {
-	      size_t i;
-	      size_t n = gimple_call_num_args (stmt);
-	      for (i = 0; i < n; i++)
-		{
-		  tree arg = gimple_call_arg (stmt, i);
-		  search_for_addr_array (arg, gimple_location (stmt));
-		}
-	    }
-	  else
-	    {
-	      memset (&wi, 0, sizeof (wi));
-	      wi.info = CONST_CAST (void *, (const void *)
-				    gimple_location_ptr (stmt));
+	  memset (&wi, 0, sizeof (wi));
+	  wi.info = CONST_CAST (void *, (const void *)
+				gimple_location_ptr (stmt));
 
-	      walk_gimple_op (gsi_stmt (si),
-			      check_array_bounds,
-			      &wi);
-	    }
+	  walk_gimple_op (gsi_stmt (si),
+			  check_array_bounds,
+			  &wi);
 	}
     }
 }
@@ -7075,15 +7051,16 @@ vrp_valueize_1 (tree name)
 {
   if (TREE_CODE (name) == SSA_NAME)
     {
-      value_range_t *vr = get_value_range (name);
-      if (range_int_cst_singleton_p (vr))
-	return vr->min;
       /* If the definition may be simulated again we cannot follow
          this SSA edge as the SSA propagator does not necessarily
 	 re-visit the use.  */
       gimple def_stmt = SSA_NAME_DEF_STMT (name);
-      if (prop_simulate_again_p (def_stmt))
+      if (!gimple_nop_p (def_stmt)
+	  && prop_simulate_again_p (def_stmt))
 	return NULL_TREE;
+      value_range_t *vr = get_value_range (name);
+      if (range_int_cst_singleton_p (vr))
+	return vr->min;
     }
   return name;
 }
@@ -7427,7 +7404,8 @@ compare_names (enum tree_code comp, tree n1, tree n2,
   return NULL_TREE;
 }
 
-/* Helper function for vrp_evaluate_conditional_warnv.  */
+/* Helper function for vrp_evaluate_conditional_warnv & other
+   optimizers.  */
 
 static tree
 vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code code,
@@ -8872,7 +8850,7 @@ vrp_visit_phi_node (gphi *phi)
 	  && (cmp_min != 0 || cmp_max != 0))
 	goto varying;
 
-      /* If the new minimum is larger than than the previous one
+      /* If the new minimum is larger than the previous one
 	 retain the old value.  If the new minimum value is smaller
 	 than the previous one and not -INF go all the way to -INF + 1.
 	 In the first case, to avoid infinite bouncing between different
@@ -8930,6 +8908,9 @@ update_range:
 	  dump_value_range (dump_file, &vr_result);
 	  fprintf (dump_file, "\n");
 	}
+
+      if (vr_result.type == VR_VARYING)
+	return SSA_PROP_VARYING;
 
       return SSA_PROP_INTERESTING;
     }
@@ -9103,6 +9084,54 @@ simplify_div_or_mod_using_ranges (gimple stmt)
   return false;
 }
 
+/* Simplify a min or max if the ranges of the two operands are
+   disjoint.   Return true if we do simplify.  */
+
+static bool
+simplify_min_or_max_using_ranges (gimple stmt)
+{
+  tree op0 = gimple_assign_rhs1 (stmt);
+  tree op1 = gimple_assign_rhs2 (stmt);
+  bool sop = false;
+  tree val;
+
+  val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
+	 (LE_EXPR, op0, op1, &sop));
+  if (!val)
+    {
+      sop = false;
+      val = (vrp_evaluate_conditional_warnv_with_ops_using_ranges
+	     (LT_EXPR, op0, op1, &sop));
+    }
+
+  if (val)
+    {
+      if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
+	{
+	  location_t location;
+
+	  if (!gimple_has_location (stmt))
+	    location = input_location;
+	  else
+	    location = gimple_location (stmt);
+	  warning_at (location, OPT_Wstrict_overflow,
+		      "assuming signed overflow does not occur when "
+		      "simplifying %<min/max (X,Y)%> to %<X%> or %<Y%>");
+	}
+
+      /* VAL == TRUE -> OP0 < or <= op1
+	 VAL == FALSE -> OP0 > or >= op1.  */
+      tree res = ((gimple_assign_rhs_code (stmt) == MAX_EXPR)
+		  == integer_zerop (val)) ? op0 : op1;
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gimple_assign_set_rhs_from_tree (&gsi, res);
+      update_stmt (stmt);
+      return true;
+    }
+
+  return false;
+}
+
 /* If the operand to an ABS_EXPR is >= 0, then eliminate the
    ABS_EXPR.  If the operand is <= 0, then simplify the
    ABS_EXPR into a NEGATE_EXPR.  */
@@ -9110,37 +9139,25 @@ simplify_div_or_mod_using_ranges (gimple stmt)
 static bool
 simplify_abs_using_ranges (gimple stmt)
 {
-  tree val = NULL;
   tree op = gimple_assign_rhs1 (stmt);
-  tree type = TREE_TYPE (op);
   value_range_t *vr = get_value_range (op);
 
-  if (TYPE_UNSIGNED (type))
+  if (vr)
     {
-      val = integer_zero_node;
-    }
-  else if (vr)
-    {
+      tree val = NULL;
       bool sop = false;
 
       val = compare_range_with_value (LE_EXPR, vr, integer_zero_node, &sop);
       if (!val)
 	{
+	  /* The range is neither <= 0 nor > 0.  Now see if it is
+	     either < 0 or >= 0.  */
 	  sop = false;
-	  val = compare_range_with_value (GE_EXPR, vr, integer_zero_node,
+	  val = compare_range_with_value (LT_EXPR, vr, integer_zero_node,
 					  &sop);
-
-	  if (val)
-	    {
-	      if (integer_zerop (val))
-		val = integer_one_node;
-	      else if (integer_onep (val))
-		val = integer_zero_node;
-	    }
 	}
 
-      if (val
-	  && (integer_onep (val) || integer_zerop (val)))
+      if (val)
 	{
 	  if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
 	    {
@@ -9156,10 +9173,10 @@ simplify_abs_using_ranges (gimple stmt)
 	    }
 
 	  gimple_assign_set_rhs1 (stmt, op);
-	  if (integer_onep (val))
-	    gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
-	  else
+	  if (integer_zerop (val))
 	    gimple_assign_set_rhs_code (stmt, SSA_NAME);
+	  else
+	    gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
 	  update_stmt (stmt);
 	  return true;
 	}
@@ -9957,6 +9974,11 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	    return simplify_float_conversion_using_ranges (gsi, stmt);
 	  break;
 
+	case MIN_EXPR:
+	case MAX_EXPR:
+	  return simplify_min_or_max_using_ranges (stmt);
+	  break;
+
 	default:
 	  break;
 	}
@@ -10045,12 +10067,8 @@ vrp_fold_stmt (gimple_stmt_iterator *si)
   return simplify_stmt_using_ranges (si);
 }
 
-/* Stack of dest,src equivalency pairs that need to be restored after
-   each attempt to thread a block's incoming edge to an outgoing edge.
-
-   A NULL entry is used to mark the end of pairs which need to be
-   restored.  */
-static vec<tree> equiv_stack;
+/* Unwindable const/copy equivalences.  */
+const_and_copies *equiv_stack;
 
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
@@ -10131,7 +10149,7 @@ identify_jump_threads (void)
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
-  equiv_stack.create (20);
+  equiv_stack = new const_and_copies ();
 
   /* To avoid lots of silly node creation, we create a single
      conditional and just modify it in-place when attempting to
@@ -10155,16 +10173,20 @@ identify_jump_threads (void)
       if (! potentially_threadable_block (bb))
 	continue;
 
-      /* We only care about blocks ending in a COND_EXPR.  While there
-	 may be some value in handling SWITCH_EXPR here, I doubt it's
-	 terribly important.  */
-      last = gsi_stmt (gsi_last_bb (bb));
+      last = last_stmt (bb);
 
       /* We're basically looking for a switch or any kind of conditional with
 	 integral or pointer type arguments.  Note the type of the second
 	 argument will be the same as the first argument, so no need to
-	 check it explicitly.  */
-      if (gimple_code (last) == GIMPLE_SWITCH
+	 check it explicitly. 
+
+	 We also handle the case where there are no statements in the
+	 block.  This come up with forwarder blocks that are not
+	 optimized away because they lead to a loop header.  But we do
+	 want to thread through them as we can sometimes thread to the
+	 loop exit which is obviously profitable.  */
+      if (!last
+	  || gimple_code (last) == GIMPLE_SWITCH
 	  || (gimple_code (last) == GIMPLE_COND
       	      && TREE_CODE (gimple_cond_lhs (last)) == SSA_NAME
 	      && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
@@ -10185,7 +10207,7 @@ identify_jump_threads (void)
 	      if (e->flags & (EDGE_DFS_BACK | EDGE_COMPLEX))
 		continue;
 
-	      thread_across_edge (dummy, e, true, &equiv_stack,
+	      thread_across_edge (dummy, e, true, equiv_stack,
 				  simplify_stmt_for_jump_threading);
 	    }
 	}
@@ -10206,7 +10228,7 @@ static void
 finalize_jump_threads (void)
 {
   thread_through_all_blocks (false);
-  equiv_stack.release ();
+  delete equiv_stack;
 }
 
 
@@ -10229,7 +10251,7 @@ vrp_finalize (void)
   substitute_and_fold (op_with_constant_singleton_value_range,
 		       vrp_fold_stmt, false);
 
-  if (warn_array_bounds)
+  if (warn_array_bounds && first_pass_instance)
     check_all_array_refs ();
 
   /* We must identify jump threading opportunities before we release
@@ -10248,12 +10270,12 @@ vrp_finalize (void)
 	  || (vr_value[i]->type == VR_UNDEFINED))
 	continue;
 
-	if ((TREE_CODE (vr_value[i]->min) == INTEGER_CST)
-	    && (TREE_CODE (vr_value[i]->max) == INTEGER_CST)
-	    && (vr_value[i]->type == VR_RANGE
-		|| vr_value[i]->type == VR_ANTI_RANGE))
-	  set_range_info (name, vr_value[i]->type, vr_value[i]->min,
-			  vr_value[i]->max);
+      if ((TREE_CODE (vr_value[i]->min) == INTEGER_CST)
+	  && (TREE_CODE (vr_value[i]->max) == INTEGER_CST)
+	  && (vr_value[i]->type == VR_RANGE
+	      || vr_value[i]->type == VR_ANTI_RANGE))
+	set_range_info (name, vr_value[i]->type, vr_value[i]->min,
+			vr_value[i]->max);
       }
 
   /* Free allocated memory.  */

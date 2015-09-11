@@ -26,4 +26,3 @@ int g(void)
 }
 /* We are allowed to optimize the first two link_error calls.  */
 /* { dg-final { scan-tree-dump-times "link_error" 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

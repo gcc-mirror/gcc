@@ -42,6 +42,8 @@
 						\
       switch (bfin_cpu_type)			\
 	{					\
+	case BFIN_CPU_UNKNOWN:			\
+	  break;				\
 	case BFIN_CPU_BF512:			\
 	  builtin_define ("__ADSPBF512__");	\
 	  builtin_define ("__ADSPBF51x__");	\
@@ -231,7 +233,7 @@ extern const char *bfin_library_id_string;
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define STACK_PUSH_CODE PRE_DEC
 
@@ -980,7 +982,7 @@ typedef struct {
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified. 
-#define WORD_REGISTER_OPERATIONS
+#define WORD_REGISTER_OPERATIONS 1
 */
 
 /* Evaluates to true if A and B are mac flags that can be used

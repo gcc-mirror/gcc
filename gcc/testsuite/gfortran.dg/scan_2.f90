@@ -32,4 +32,3 @@ end program p1
 
 ! { dg-final { scan-tree-dump-times "iscan = _gfortran_string_scan \\(2," 1 "original" } }
 ! { dg-final { scan-tree-dump-times "iverify = _gfortran_string_verify \\(2," 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

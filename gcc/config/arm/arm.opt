@@ -122,6 +122,10 @@ Enum(float_abi_type) String(softfp) Value(ARM_FLOAT_ABI_SOFTFP)
 EnumValue
 Enum(float_abi_type) String(hard) Value(ARM_FLOAT_ABI_HARD)
 
+mflip-thumb
+Target Report Var(TARGET_FLIP_THUMB) Undocumented
+Switch ARM/Thumb modes on alternating functions for compiler testing
+
 mfp16-format=
 Target RejectNegative Joined Enum(arm_fp16_format_type) Var(arm_fp16_format) Init(ARM_FP16_FORMAT_NONE)
 Specify the __fp16 floating-point format
@@ -142,10 +146,6 @@ Enum(arm_fp16_format_type) String(alternative) Value(ARM_FP16_FORMAT_ALTERNATIVE
 mfpu=
 Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
 Specify the name of the target floating point hardware/format
-
-mlra
-Target Report Var(arm_lra_flag) Init(1) Save
-Use LRA instead of reload (transitional)
 
 mhard-float
 Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
@@ -186,7 +186,7 @@ Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFA
 Specify the minimum bit alignment of structures
 
 mthumb
-Target Report RejectNegative Mask(THUMB)
+Target Report RejectNegative Mask(THUMB) Save
 Generate code for Thumb state
 
 mthumb-interwork
@@ -226,6 +226,12 @@ mtune=
 Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
 Tune code for the given processor
 
+mprint-tune-info
+Target Report RejectNegative Var(print_tune_info) Init(0)
+Print CPU tuning information as comment in assembler file.  This is
+an option used only for regression testing of the compiler and not
+intended for ordinary use in compiling code.
+
 ; Other processor_type values are loaded from arm-tables.opt
 ; but that is a generated file and this is an odd-one-out.
 EnumValue
@@ -244,7 +250,7 @@ Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
 Only generate absolute relocations on word sized values.
 
 mrestrict-it
-Target Report Var(arm_restrict_it) Init(2)
+Target Report Var(arm_restrict_it) Init(2) Save
 Generate IT blocks appropriate for ARMv8.
 
 mold-rtx-costs
@@ -273,5 +279,5 @@ Target Report Var(target_slow_flash_data) Init(0)
 Assume loading data from flash is slower than fetching instructions.
 
 masm-syntax-unified
-Target Report Var(inline_asm_unified) Init(0)
+Target Report Var(inline_asm_unified) Init(0) Save
 Assume unified syntax for Thumb inline assembly code.

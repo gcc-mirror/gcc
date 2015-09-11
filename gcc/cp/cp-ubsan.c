@@ -21,22 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
 #include "alias.h"
-#include "symtab.h"
-#include "options.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "predict.h"
+#include "basic-block.h"
 #include "tree.h"
-#include "alloc-pool.h"
+#include "cp-tree.h"
+#include "gimple.h"
+#include "options.h"
 #include "output.h"
 #include "toplev.h"
 #include "ubsan.h"
-#include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"
 #include "asan.h"
@@ -45,14 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "fold-const.h"
 #include "stringpool.h"
-#include "is-a.h"
-#include "predict.h"
-#include "tree-ssa-alias.h"
-#include "basic-block.h"
-#include "gimple-expr.h"
-#include "gimple.h"
-#include "ipa-ref.h"
-#include "lto-streamer.h"
 #include "cgraph.h"
 
 /* Test if we should instrument vptr access.  */
@@ -107,7 +93,6 @@ cp_ubsan_instrument_vptr (location_t loc, tree op, tree type, bool is_addr,
 			fold_build2 (NE_EXPR, boolean_type_node, op,
 				     build_zero_cst (TREE_TYPE (op))),
 			vptr, build_int_cst (uint64_type_node, 0));
-  vptr = build1_loc (loc, SAVE_EXPR, uint64_type_node, vptr);
   tree ti_decl = get_tinfo_decl (type);
   mark_used (ti_decl);
   tree ptype = build_pointer_type (type);
@@ -210,7 +195,7 @@ cp_ubsan_check_member_access_r (tree *stmt_p, int *walk_subtrees, void *data)
     {
     case ADDR_EXPR:
       t = TREE_OPERAND (stmt, 0);
-      while ((TREE_CODE (t) == MEM_REF || TREE_CODE (t) == INDIRECT_REF)
+      while ((TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
 	     && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
 	t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
       if (handled_component_p (t))

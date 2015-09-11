@@ -100,6 +100,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	++_M_iter;
 	return __tmp;
       }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2454. Add raw_storage_iterator::base() member
+      _OutputIterator base() const { return _M_iter; }
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION

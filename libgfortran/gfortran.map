@@ -1276,6 +1276,19 @@ GFORTRAN_1.6 {
     __ieee_exceptions_MOD_ieee_usual;
 } GFORTRAN_1.5; 
 
+GFORTRAN_1.7 {
+  global:
+    __ieee_arithmetic_MOD_ieee_class_10;
+    __ieee_arithmetic_MOD_ieee_class_16;
+    __ieee_arithmetic_MOD_ieee_value_10;
+    __ieee_arithmetic_MOD_ieee_value_16;
+    __ieee_exceptions_MOD_ieee_support_flag_10;
+    __ieee_exceptions_MOD_ieee_support_flag_16;
+    _gfortran_mvbits_i16;
+    _gfortran_shape_1;
+    _gfortran_shape_2;
+} GFORTRAN_1.6; 
+
 F2C_1.0 {
   global:
     _gfortran_f2c_specific__abs_c4;

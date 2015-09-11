@@ -1,6 +1,6 @@
 /* PR tree-optimization/64454 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fno-ipa-icf" } */
 
 unsigned
 f1 (unsigned x)
@@ -40,4 +40,3 @@ f6 (int x)
 
 /* { dg-final { scan-tree-dump-times "% 5" 6 "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "% 6" 0 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

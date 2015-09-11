@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -144,6 +144,9 @@ void __liboffload_error_support(error_types input_tag, ...)
         case c_process_create:
             write_message(stderr, msg_c_process_create, args);
             break;
+        case c_process_set_cache_size:
+            write_message(stderr, msg_c_process_set_cache_size, args);
+            break;
         case c_process_wait_shutdown:
             write_message(stderr, msg_c_process_wait_shutdown, args);
             break;
@@ -216,6 +219,9 @@ void __liboffload_error_support(error_types input_tag, ...)
         case c_zero_or_neg_transfer_size:
             write_message(stderr, msg_c_zero_or_neg_transfer_size, args);
             break;
+        case c_bad_ptr_mem_alloc:
+            write_message(stderr, msg_c_bad_ptr_mem_alloc, args);
+            break;
         case c_bad_ptr_mem_range:
             write_message(stderr, msg_c_bad_ptr_mem_range, args);
             break;
@@ -257,6 +263,39 @@ void __liboffload_error_support(error_types input_tag, ...)
             break;
         case c_report_unknown_trace_node:
             write_message(stderr, msg_c_report_unknown_trace_node, args);
+            break;
+        case c_incorrect_affinity:
+            write_message(stderr, msg_c_incorrect_affinity, args);
+            break;
+        case c_cannot_set_affinity:
+            write_message(stderr, msg_c_cannot_set_affinity, args);
+            break;
+        case c_in_with_preallocated:
+            write_message(stderr, msg_c_in_with_preallocated, args);
+            break;
+        case c_report_no_host_exe:
+            write_message(stderr, msg_c_report_no_host_exe, args);
+            break;
+        case c_report_path_buff_overflow:
+            write_message(stderr, msg_c_report_path_buff_overflow, args);
+            break;
+        case c_create_pipeline_for_stream:
+            write_message(stderr, msg_c_create_pipeline_for_stream, args);
+            break;
+        case c_offload_no_stream:
+            write_message(stderr, msg_c_offload_no_stream, args);
+            break;
+        case c_get_engine_info:
+            write_message(stderr, msg_c_get_engine_info, args);
+            break;
+        case c_clear_cpu_mask:
+            write_message(stderr, msg_c_clear_cpu_mask, args);
+            break;
+        case c_set_cpu_mask:
+            write_message(stderr, msg_c_set_cpu_mask, args);
+            break;
+        case c_unload_library:
+            write_message(stderr, msg_c_unload_library, args);
             break;
     }
     va_end(args);
@@ -374,6 +413,10 @@ char const * report_get_message_str(error_types input_tag)
             return (offload_get_message_str(msg_c_report_unregister));
         case c_report_var:
             return (offload_get_message_str(msg_c_report_var));
+        case c_report_stream:
+            return (offload_get_message_str(msg_c_report_stream));
+        case c_report_state_stream:
+            return (offload_get_message_str(msg_c_report_state_stream));
 
         default:
             LIBOFFLOAD_ERROR(c_report_unknown_trace_node);

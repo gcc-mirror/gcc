@@ -1,3 +1,14 @@
+2015-07-24  Michael Darling  <darlingm@gmail.com>
+
+	PR other/66259
+	* THREADS: Reflects renaming of configure.in to configure.ac
+
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* acinclude.m4 (_LT_ENABLE_LOCK <ld -m flags>): Remove non-canonical

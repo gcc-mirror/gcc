@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-fgnu-tm -O -fdump-tree-tmmark -fdump-tree-tmlower" }
+// { dg-options "-fgnu-tm -O -fdump-tree-tmmark -fdump-tree-tmlower -Wno-terminate" }
 
 int global;
 
@@ -17,5 +17,3 @@ void f2(int x)
 }
 /* { dg-final { scan-tree-dump-times "eh_must_not_throw" 1 "tmlower" } } */
 /* { dg-final { scan-tree-dump-times "ITM_RU" 1 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmlower" } } */

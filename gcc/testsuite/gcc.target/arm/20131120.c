@@ -11,4 +11,3 @@ foo (Arr2 a2, int i)
 }
 
 /* { dg-final { scan-rtl-dump-not "\\\(set \\\(reg:SI \[0-9\]*\\\)\[\n\r\]+\[ \t]*\\\(const_int 4000" "expand" } } */
-/* { dg-final { cleanup-rtl-dump "expand" } } */

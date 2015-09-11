@@ -61,4 +61,3 @@ subroutine boundsTest()
 end subroutine boundsTest
 
 ! { dg-final { scan-tree-dump-times "not_existing" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

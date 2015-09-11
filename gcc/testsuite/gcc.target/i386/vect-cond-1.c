@@ -18,4 +18,3 @@ foo (int *p)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

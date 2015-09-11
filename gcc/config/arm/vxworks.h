@@ -40,7 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       builtin_define ("CPU=ARMARCH5");		\
     else if (arm_arch4)				\
       {						\
-	if (thumb_code)				\
+	if (TARGET_THUMB)			\
 	  builtin_define ("CPU=ARMARCH4_T");	\
 	else					\
 	  builtin_define ("CPU=ARMARCH4");	\

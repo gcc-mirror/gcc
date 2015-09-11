@@ -16,4 +16,3 @@ unsigned char * foo(unsigned char *ReadPtr)
 }
 
 /* { dg-final { scan-tree-dump-times "original biv" 2 "ivopts"} } */
-/* { dg-final { cleanup-tree-dump "ivopts" } } */

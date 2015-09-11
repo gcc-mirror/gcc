@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,7 +106,7 @@ package body Lib is
       return Units.Table (U).Expected_Unit;
    end Expected_Unit;
 
-   function Fatal_Error (U : Unit_Number_Type) return Boolean is
+   function Fatal_Error (U : Unit_Number_Type) return Fatal_Type is
    begin
       return Units.Table (U).Fatal_Error;
    end Fatal_Error;
@@ -196,9 +196,9 @@ package body Lib is
       Units.Table (U).Error_Location := W;
    end Set_Error_Location;
 
-   procedure Set_Fatal_Error (U : Unit_Number_Type; B : Boolean := True) is
+   procedure Set_Fatal_Error (U : Unit_Number_Type; V : Fatal_Type) is
    begin
-      Units.Table (U).Fatal_Error := B;
+      Units.Table (U).Fatal_Error := V;
    end Set_Fatal_Error;
 
    procedure Set_Generate_Code (U : Unit_Number_Type; B : Boolean := True) is

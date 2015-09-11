@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-additional-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 #ifdef __i386__
 #include "cpuid.h"

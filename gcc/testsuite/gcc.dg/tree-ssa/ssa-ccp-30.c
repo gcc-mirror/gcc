@@ -12,4 +12,3 @@ foo (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate b_.* > 300 to 0" 1 "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

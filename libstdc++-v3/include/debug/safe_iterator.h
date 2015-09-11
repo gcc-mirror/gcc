@@ -29,7 +29,7 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_ITERATOR_H
 #define _GLIBCXX_DEBUG_SAFE_ITERATOR_H 1
 
-#include <debug/debug.h>
+#include <debug/assertions.h>
 #include <debug/macros.h>
 #include <debug/functions.h>
 #include <debug/safe_base.h>
@@ -41,7 +41,7 @@ namespace __gnu_debug
   /** Helper struct to deal with sequence offering a before_begin
    *  iterator.
    **/
-  template <typename _Sequence>
+  template<typename _Sequence>
     struct _BeforeBeginHelper
     {
       template<typename _Iterator>
@@ -55,49 +55,16 @@ namespace __gnu_debug
 	{ return __it.base() == __it._M_get_sequence()->_M_base().begin(); }
     };
 
-  /** Iterators that derive from _Safe_iterator_base can be determined singular
-   *  or non-singular.
-   **/
-  inline bool
-  __check_singular_aux(const _Safe_iterator_base* __x)
-  { return __x->_M_singular(); }
-
-  /** The precision to which we can calculate the distance between
-   *  two iterators.
-   */
-  enum _Distance_precision
+  /** Sequence traits giving the size of a container if possible. */
+  template<typename _Sequence>
+    struct _Sequence_traits
     {
-      __dp_equality, //< Can compare iterator equality, only
-      __dp_sign,     //< Can determine equality and ordering
-      __dp_exact     //< Can determine distance precisely
+      typedef _Distance_traits<typename _Sequence::iterator> _DistTraits;
+
+      static typename _DistTraits::__type
+      _S_size(const _Sequence& __seq)
+      { return std::make_pair(__seq.size(), __dp_exact); }
     };
-
-  /** Determine the distance between two iterators with some known
-   *	precision.
-  */
-  template<typename _Iterator>
-    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
-		     _Distance_precision>
-    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs,
-		   std::random_access_iterator_tag)
-    { return std::make_pair(__rhs - __lhs, __dp_exact); }
-
-  template<typename _Iterator>
-    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
-		     _Distance_precision>
-    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs,
-		   std::forward_iterator_tag)
-    { return std::make_pair(__lhs == __rhs? 0 : 1, __dp_equality); }
-
-  template<typename _Iterator>
-    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
-		     _Distance_precision>
-    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs)
-    {
-      typedef typename std::iterator_traits<_Iterator>::iterator_category
-	  _Category;
-      return __get_distance(__lhs, __rhs, _Category());
-    }
 
   /** \brief Safe iterator wrapper.
    *
@@ -487,7 +454,9 @@ namespace __gnu_debug
 
       // Is the iterator range [*this, __rhs) valid?
       bool
-      _M_valid_range(const _Safe_iterator& __rhs) const;
+      _M_valid_range(const _Safe_iterator& __rhs,
+		     std::pair<difference_type, _Distance_precision>& __dist,
+		     bool __check_dereferenceable = true) const;
 
       // The sequence this iterator references.
       typename
@@ -768,6 +737,169 @@ namespace __gnu_debug
     operator+(typename _Safe_iterator<_Iterator,_Sequence>::difference_type __n,
 	      const _Safe_iterator<_Iterator, _Sequence>& __i) _GLIBCXX_NOEXCEPT
     { return __i + __n; }
+
+  /** Safe iterators know if they are dereferenceable. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __check_dereferenceable(const _Safe_iterator<_Iterator, _Sequence>& __x)
+    { return __x._M_dereferenceable(); }
+
+  /** Safe iterators know how to check if they form a valid range. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __valid_range(const _Safe_iterator<_Iterator, _Sequence>& __first,
+		  const _Safe_iterator<_Iterator, _Sequence>& __last,
+		  typename _Distance_traits<_Iterator>::__type& __dist)
+    { return __first._M_valid_range(__last, __dist); }
+
+  /** Safe iterators can help to get better distance knowledge. */
+  template<typename _Iterator, typename _Sequence>
+    inline typename _Distance_traits<_Iterator>::__type
+    __get_distance(const _Safe_iterator<_Iterator, _Sequence>& __first,
+		   const _Safe_iterator<_Iterator, _Sequence>& __last,
+		   std::random_access_iterator_tag)
+    { return std::make_pair(__last.base() - __first.base(), __dp_exact); }
+
+  template<typename _Iterator, typename _Sequence>
+    inline typename _Distance_traits<_Iterator>::__type
+    __get_distance(const _Safe_iterator<_Iterator, _Sequence>& __first,
+		   const _Safe_iterator<_Iterator, _Sequence>& __last,
+		   std::input_iterator_tag)
+    {
+      typedef typename _Distance_traits<_Iterator>::__type _Diff;
+      typedef _Sequence_traits<_Sequence> _SeqTraits;
+
+      if (__first.base() == __last.base())
+	return std::make_pair(0, __dp_exact);
+
+      if (__first._M_is_before_begin())
+	{
+	  if (__last._M_is_begin())
+	    return std::make_pair(1, __dp_exact);
+
+	  return std::make_pair(1, __dp_sign);
+	}
+
+      if (__first._M_is_begin())
+	{
+	  if (__last._M_is_before_begin())
+	    return std::make_pair(-1, __dp_exact);
+
+	  if (__last._M_is_end())
+	    return _SeqTraits::_S_size(*__first._M_get_sequence());
+
+	  return std::make_pair(1, __dp_sign);
+	}
+
+      if (__first._M_is_end())
+	{
+	  if (__last._M_is_before_begin())
+	    return std::make_pair(-1, __dp_exact);
+
+	  if (__last._M_is_begin())
+	    {
+	      _Diff __diff = _SeqTraits::_S_size(*__first._M_get_sequence());
+	      return std::make_pair(-__diff.first, __diff.second);
+	    }
+
+	  return std::make_pair(-1, __dp_sign);
+	}
+
+      if (__last._M_is_before_begin() || __last._M_is_begin())
+	return std::make_pair(-1, __dp_sign);
+
+      if (__last._M_is_end())
+	return std::make_pair(1, __dp_sign);
+
+      return std::make_pair(1, __dp_equality);
+    }
+
+  // Get distance from sequence begin to specified iterator.
+  template<typename _Iterator, typename _Sequence>
+    inline typename _Distance_traits<_Iterator>::__type
+    __get_distance_from_begin(const _Safe_iterator<_Iterator, _Sequence>& __it)
+    {
+      typedef _Sequence_traits<_Sequence> _SeqTraits;
+
+      // No need to consider before_begin as this function is only used in
+      // _M_can_advance which won't be used for forward_list iterators.
+      if (__it._M_is_begin())
+	return std::make_pair(0, __dp_exact);
+
+      if (__it._M_is_end())
+	return _SeqTraits::_S_size(*__it._M_get_sequence());
+
+      typename _Distance_traits<_Iterator>::__type __res
+	= __get_distance(__it._M_get_sequence()->_M_base().begin(), __it.base());
+
+      if (__res.second == __dp_equality)
+	return std::make_pair(1, __dp_sign);
+
+      return __res;
+    }
+
+  // Get distance from specified iterator to sequence end.
+  template<typename _Iterator, typename _Sequence>
+    inline typename _Distance_traits<_Iterator>::__type
+    __get_distance_to_end(const _Safe_iterator<_Iterator, _Sequence>& __it)
+    {
+      typedef _Sequence_traits<_Sequence> _SeqTraits;
+
+      // No need to consider before_begin as this function is only used in
+      // _M_can_advance which won't be used for forward_list iterators.
+      if (__it._M_is_begin())
+	return _SeqTraits::_S_size(*__it._M_get_sequence());
+
+      if (__it._M_is_end())
+	return std::make_pair(0, __dp_exact);
+
+      typename _Distance_traits<_Iterator>::__type __res
+	= __get_distance(__it.base(), __it._M_get_sequence()->_M_base().end());
+
+      if (__res.second == __dp_equality)
+	return std::make_pair(1, __dp_sign);
+
+      return __res;
+    }
+
+#if __cplusplus < 201103L
+  template<typename _Iterator, typename _Sequence>
+    struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >
+    : std::__are_same<std::random_access_iterator_tag,
+                      typename std::iterator_traits<_Iterator>::
+		      iterator_category>
+    { };
+#else
+  template<typename _Iterator, typename _Sequence>
+    _Iterator
+    __base(const _Safe_iterator<_Iterator, _Sequence>& __it,
+	   std::random_access_iterator_tag)
+    { return __it.base(); }
+
+  template<typename _Iterator, typename _Sequence>
+    const _Safe_iterator<_Iterator, _Sequence>&
+    __base(const _Safe_iterator<_Iterator, _Sequence>& __it,
+	   std::input_iterator_tag)
+    { return __it; }
+
+  template<typename _Iterator, typename _Sequence>
+    auto
+    __base(const _Safe_iterator<_Iterator, _Sequence>& __it)
+    -> decltype(__base(__it, std::__iterator_category(__it)))
+    { return __base(__it, std::__iterator_category(__it)); }
+#endif
+
+#if __cplusplus < 201103L
+  template<typename _Iterator, typename _Sequence>
+    struct _Unsafe_type<_Safe_iterator<_Iterator, _Sequence> >
+    { typedef _Iterator _Type; };
+#endif
+
+  template<typename _Iterator, typename _Sequence>
+    inline _Iterator
+    __unsafe(const _Safe_iterator<_Iterator, _Sequence>& __it)
+    { return __it.base(); }
+
 } // namespace __gnu_debug
 
 #include <debug/safe_iterator.tcc>

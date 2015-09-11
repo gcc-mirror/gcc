@@ -2,4 +2,4 @@
 
 template<int> struct A {};
 
-template<typename = class A<0>: > struct B {}; // { dg-error "explicit specialization|expected" }
+template<typename = class A<0>: > struct B {}; // { dg-error "" }

@@ -20,10 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CONDITIONS_H
 #define GCC_CONDITIONS_H
 
-/* None of the things in the files exist if we don't use CC0.  */
-
-#ifdef HAVE_cc0
-
 /* The variable cc_status says how to interpret the condition code.
    It is set by output routines for an instruction that sets the cc's
    and examined by output routines for jump instructions.
@@ -113,10 +109,10 @@ extern CC_STATUS cc_status;
 /* This is how to initialize the variable cc_status.
    final does this at appropriate moments.  */
 
+/* FIXME: We want to get rid of these ifndefs.  */
+#ifndef CC_STATUS_INIT
 #define CC_STATUS_INIT  \
  (cc_status.flags = 0, cc_status.value1 = 0, cc_status.value2 = 0,  \
   CC_STATUS_MDEP_INIT)
-
 #endif
-
 #endif /* GCC_CONDITIONS_H */

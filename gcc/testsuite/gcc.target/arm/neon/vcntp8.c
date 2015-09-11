@@ -17,4 +17,3 @@ void test_vcntp8 (void)
 }
 
 /* { dg-final { scan-assembler "vcnt\.8\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

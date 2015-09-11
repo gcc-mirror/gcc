@@ -1,6 +1,7 @@
 /* PR target/44606 */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-skip-if "requires io" { freestanding } { "*" } { "" } }  */
 
 #include <stdio.h>
 

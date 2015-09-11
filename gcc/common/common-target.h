@@ -22,7 +22,6 @@
 #ifndef GCC_COMMON_TARGET_H
 #define GCC_COMMON_TARGET_H
 
-#include "input.h"
 
 /* Sets of optimization levels at which an option may be enabled by
    default_options_optimization.  */

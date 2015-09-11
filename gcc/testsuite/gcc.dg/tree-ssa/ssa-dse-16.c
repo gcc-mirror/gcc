@@ -15,4 +15,3 @@ void foo (struct X *x, int i)
 }
 
 /* { dg-final { scan-tree-dump "Deleted dead store" "dse1" } } */
-/* { dg-final { cleanup-tree-dump "dse1" } } */

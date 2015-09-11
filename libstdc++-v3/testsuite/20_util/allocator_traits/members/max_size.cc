@@ -57,11 +57,22 @@ void test02()
   typedef std::allocator_traits<unsized_allocator<X>> traits_type;
   traits_type::allocator_type a;
   auto size = std::numeric_limits<traits_type::size_type>::max();
-  VERIFY( traits_type::max_size(a) == size );
+  VERIFY( traits_type::max_size(a) == size / sizeof(X) );
+}
+
+void test03()
+{
+  bool test __attribute__((unused)) = true;
+
+  typedef std::allocator_traits<unsized_allocator<int>> traits_type;
+  traits_type::allocator_type a;
+  auto size = std::numeric_limits<traits_type::size_type>::max();
+  VERIFY( traits_type::max_size(a) == size / sizeof(int) );
 }
 
 int main()
 {
   test01();
   test02();
+  test03();
 }

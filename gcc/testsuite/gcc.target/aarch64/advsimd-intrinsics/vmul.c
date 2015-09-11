@@ -7,15 +7,12 @@ VECT_VAR_DECL(expected,int,8,8) [] = { 0xf0, 0x1, 0x12, 0x23,
 				       0x34, 0x45, 0x56, 0x67 };
 VECT_VAR_DECL(expected,int,16,4) [] = { 0xfde0, 0xfe02, 0xfe24, 0xfe46 };
 VECT_VAR_DECL(expected,int,32,2) [] = { 0xfffffcd0, 0xfffffd03 };
-VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,8) [] = { 0xc0, 0x4, 0x48, 0x8c,
 					0xd0, 0x14, 0x58, 0x9c };
 VECT_VAR_DECL(expected,uint,16,4) [] = { 0xfab0, 0xfb05, 0xfb5a, 0xfbaf };
 VECT_VAR_DECL(expected,uint,32,2) [] = { 0xfffff9a0, 0xfffffa06 };
-VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xc0, 0x84, 0x48, 0xc,
 					0xd0, 0x94, 0x58, 0x1c };
-VECT_VAR_DECL(expected,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc4053333, 0xc3f9c000 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0x90, 0x7, 0x7e, 0xf5,
 					0x6c, 0xe3, 0x5a, 0xd1,
@@ -25,8 +22,6 @@ VECT_VAR_DECL(expected,int,16,8) [] = { 0xf780, 0xf808, 0xf890, 0xf918,
 					0xf9a0, 0xfa28, 0xfab0, 0xfb38 };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0xfffff670, 0xfffff709,
 					0xfffff7a2, 0xfffff83b };
-VECT_VAR_DECL(expected,int,64,2) [] = { 0x3333333333333333,
-					0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,16) [] = { 0x60, 0xa, 0xb4, 0x5e,
 					 0x8, 0xb2, 0x5c, 0x6,
 					 0xb0, 0x5a, 0x4, 0xae,
@@ -35,14 +30,10 @@ VECT_VAR_DECL(expected,uint,16,8) [] = { 0xf450, 0xf50b, 0xf5c6, 0xf681,
 					 0xf73c, 0xf7f7, 0xf8b2, 0xf96d };
 VECT_VAR_DECL(expected,uint,32,4) [] = { 0xfffff340, 0xfffff40c,
 					 0xfffff4d8, 0xfffff5a4 };
-VECT_VAR_DECL(expected,uint,64,2) [] = { 0x3333333333333333,
-					 0x3333333333333333 };
 VECT_VAR_DECL(expected,poly,8,16) [] = { 0x60, 0xca, 0x34, 0x9e,
 					 0xc8, 0x62, 0x9c, 0x36,
 					 0x30, 0x9a, 0x64, 0xce,
 					 0x98, 0x32, 0xcc, 0x66 };
-VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc4c73333, 0xc4bac000,
 					   0xc4ae4ccd, 0xc4a1d999 };
 
@@ -145,7 +136,22 @@ void FNNAME (INSN_NAME) (void)
   TEST_VMUL(INSN_NAME, q, poly, p, 8, 16);
   TEST_VMUL(INSN_NAME, q, float, f, 32, 4);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
+  CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
+  CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected, "");
 }
 
 int main (void)

@@ -35,6 +35,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#include <utility>
 #include <stdexcept>
 #include <bits/stl_algobase.h>
 #include <bits/range_access.h>
@@ -51,6 +52,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static constexpr _Tp&
       _S_ref(const _Type& __t, std::size_t __n) noexcept
       { return const_cast<_Tp&>(__t[__n]); }
+
+      static constexpr _Tp*
+      _S_ptr(const _Type& __t) noexcept
+      { return const_cast<_Tp*>(__t); }
     };
 
  template<typename _Tp>
@@ -61,6 +66,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
      static constexpr _Tp&
      _S_ref(const _Type&, std::size_t) noexcept
      { return *static_cast<_Tp*>(nullptr); }
+
+     static constexpr _Tp*
+     _S_ptr(const _Type&) noexcept
+     { return nullptr; }
    };
 
   /**
@@ -105,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       void
       swap(array& __other)
-      noexcept(noexcept(swap(std::declval<_Tp&>(), std::declval<_Tp&>())))
+      noexcept(__is_nothrow_swappable<_Tp>::value)
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
       // Iterators.
@@ -219,11 +228,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       pointer
       data() noexcept
-      { return std::__addressof(_AT_Type::_S_ref(_M_elems, 0)); }
+      { return _AT_Type::_S_ptr(_M_elems); }
 
       const_pointer
       data() const noexcept
-      { return std::__addressof(_AT_Type::_S_ref(_M_elems, 0)); }
+      { return _AT_Type::_S_ptr(_M_elems); }
     };
 
   // Array comparisons.
@@ -322,6 +331,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(_Int < _Nm, "index is out of bounds");
       typedef _Tp type;
     };
+
+  template<typename _Tp, std::size_t _Nm>
+    struct __is_tuple_like_impl<_GLIBCXX_STD_C::array<_Tp, _Nm>> : true_type
+    { };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

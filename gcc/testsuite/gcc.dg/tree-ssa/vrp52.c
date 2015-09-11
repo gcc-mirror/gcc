@@ -13,4 +13,3 @@ foo (unsigned int i, unsigned int j)
 }
 
 /* { dg-final { scan-tree-dump-times "return 1;" 1 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

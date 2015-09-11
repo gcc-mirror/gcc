@@ -30,4 +30,3 @@ void foo (void)
 /* { dg-final { scan-tree-dump-times "if " 3 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "bar " 2 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -32,4 +32,3 @@ int f()
 }
 
 /* { dg-final { scan-tree-dump-times "ITM_WU" 0 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

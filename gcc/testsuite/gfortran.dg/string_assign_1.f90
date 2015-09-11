@@ -8,4 +8,3 @@ program main
   print *,c
 end program main
 ! { dg-final { scan-tree-dump-times "memcpy" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

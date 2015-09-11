@@ -9,37 +9,37 @@ module m
   implicit none
 
   type t1
-    integer :: i
+    integer :: i = 1
   contains
     final :: fini_elem
   end type t1
 
   type, extends(t1) :: t1e
-    integer :: j
+    integer :: j = 11
   contains
     final :: fini_elem2
   end type t1e
 
   type t2
-    integer :: i
+    integer :: i = 2
   contains
     final :: fini_shape
   end type t2
 
   type, extends(t2) :: t2e
-    integer :: j
+    integer :: j = 22
   contains
     final :: fini_shape2
   end type t2e
 
   type t3
-    integer :: i
+    integer :: i = 3
   contains
     final :: fini_explicit
   end type t3
 
   type, extends(t3) :: t3e
-    integer :: j
+    integer :: j = 33
   contains
     final :: fini_explicit2
   end type t3e
@@ -204,31 +204,31 @@ program test
 
   select type(x)
     type is (t1e)
-      call check_val(x%i, 1)
-      call check_val(x%j, 100)
+      call check_val(x%i, 1, 1)
+      call check_val(x%j, 100, 11)
   end select
 
   select type(y)
     type is (t2e)
-      call check_val(y%i, 1)
-      call check_val(y%j, 100)
+      call check_val(y%i, 1, 2)
+      call check_val(y%j, 100, 22)
   end select
 
   select type(z)
     type is (t3e)
-      call check_val(z%i, 1)
-      call check_val(z%j, 100)
+      call check_val(z%i, 1, 3)
+      call check_val(z%j, 100, 33)
   end select
 
 contains
-  subroutine check_val(x, factor)
+  subroutine check_val(x, factor, val)
     integer :: x(:,:)
-    integer, value :: factor
+    integer, value :: factor, val
     integer :: i, j
     do i = 1, 10
       do j = 1, 10
         if (mod (j-1, 2) == 0 .and. mod (i-1, 3) == 0) then
-          if (x(j,i) /= (j + 100*i)*factor*(-13)) call abort ()
+          if (x(j,i) /= val) call abort ()
         else
           if (x(j,i) /= (j + 100*i)*factor) call abort ()
         end if

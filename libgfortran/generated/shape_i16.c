@@ -31,12 +31,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_INTEGER_16)
 
 extern void shape_16 (gfc_array_i16 * const restrict ret, 
-	const gfc_array_i16 * const restrict array);
+	const array_t * const restrict array);
 export_proto(shape_16);
 
 void
 shape_16 (gfc_array_i16 * const restrict ret, 
-	const gfc_array_i16 * const restrict array)
+	const array_t * const restrict array)
 {
   int n;
   index_type stride;

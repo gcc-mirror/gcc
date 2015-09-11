@@ -19,4 +19,3 @@ int main ()
 /* { dg-final-use { scan-ipa-dump-times "Read tp_first_run: 0" 1 "profile"} } */
 /* { dg-final-use { scan-ipa-dump-times "Read tp_first_run: 1" 1 "profile"} } */
 /* { dg-final-use { scan-ipa-dump-times "Read tp_first_run: 2" 1 "profile"} } */
-/* { dg-final-use { cleanup-ipa-dump "profile" } } */

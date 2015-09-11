@@ -13,4 +13,3 @@ void test(void)
 
 /* Verify that we used 3 temporary variables for the loop.  */
 /* { dg-final { scan-tree-dump-times "Unrolling 3 times." 1 "pcom"} } */
-/* { dg-final { cleanup-tree-dump "pcom" } } */

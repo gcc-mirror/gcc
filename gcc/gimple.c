@@ -22,38 +22,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "target.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
 #include "tree.h"
+#include "gimple.h"
+#include "hard-reg-set.h"
+#include "ssa.h"
+#include "target.h"
+#include "alias.h"
 #include "fold-const.h"
 #include "calls.h"
 #include "stmt.h"
 #include "stor-layout.h"
-#include "hard-reg-set.h"
-#include "predict.h"
-#include "input.h"
-#include "function.h"
-#include "dominance.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
-#include "gimple.h"
 #include "gimplify.h"
 #include "diagnostic.h"
 #include "value-prof.h"
@@ -61,11 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "demangle.h"
 #include "langhooks.h"
-#include "bitmap.h"
-#include "stringpool.h"
-#include "tree-ssanames.h"
-#include "ipa-ref.h"
-#include "lto-streamer.h"
 #include "cgraph.h"
 
 
@@ -110,6 +88,12 @@ static const char * const gimple_alloc_kind_names[] = {
     "conditionals",
     "everything else"
 };
+
+/* Static gimple tuple members.  */
+const enum gimple_code gassign::code_;
+const enum gimple_code gcall::code_;
+const enum gimple_code gcond::code_;
+
 
 /* Gimple tuple constructors.
    Note: Any constructor taking a ``gimple_seq'' as a parameter, can
@@ -1155,20 +1139,6 @@ gimple_build_transaction (gimple_seq body, tree label)
     = as_a <gtransaction *> (gimple_alloc (GIMPLE_TRANSACTION, 0));
   gimple_transaction_set_body (p, body);
   gimple_transaction_set_label (p, label);
-  return p;
-}
-
-/* Build a GIMPLE_PREDICT statement.  PREDICT is one of the predictors from
-   predict.def, OUTCOME is NOT_TAKEN or TAKEN.  */
-
-gimple
-gimple_build_predict (enum br_predictor predictor, enum prediction outcome)
-{
-  gimple p = gimple_alloc (GIMPLE_PREDICT, 0);
-  /* Ensure all the predictors fit into the lower bits of the subcode.  */
-  gcc_assert ((int) END_PREDICTORS <= GF_PREDICT_TAKEN);
-  gimple_predict_set_predictor (p, predictor);
-  gimple_predict_set_outcome (p, outcome);
   return p;
 }
 
@@ -2654,16 +2624,20 @@ check_loadstore (gimple, tree op, tree, void *data)
   return false;
 }
 
-/* If OP can be inferred to be non-NULL after STMT executes, return true.
 
-   DEREFERENCE is TRUE if we can use a pointer dereference to infer a
-   non-NULL range, FALSE otherwise.
-
-   ATTRIBUTE is TRUE if we can use attributes to infer a non-NULL range
-   for function arguments and return values.  FALSE otherwise.  */
-
+/* Return true if OP can be inferred to be non-NULL after STMT executes,
+   either by using a pointer dereference or attributes.  */
 bool
-infer_nonnull_range (gimple stmt, tree op, bool dereference, bool attribute)
+infer_nonnull_range (gimple stmt, tree op)
+{
+  return infer_nonnull_range_by_dereference (stmt, op)
+    || infer_nonnull_range_by_attribute (stmt, op);
+}
+
+/* Return true if OP can be inferred to be non-NULL after STMT
+   executes by using a pointer dereference.  */
+bool
+infer_nonnull_range_by_dereference (gimple stmt, tree op)
 {
   /* We can only assume that a pointer dereference will yield
      non-NULL if -fdelete-null-pointer-checks is enabled.  */
@@ -2672,13 +2646,26 @@ infer_nonnull_range (gimple stmt, tree op, bool dereference, bool attribute)
       || gimple_code (stmt) == GIMPLE_ASM)
     return false;
 
-  if (dereference
-      && walk_stmt_load_store_ops (stmt, (void *)op,
-				   check_loadstore, check_loadstore))
+  if (walk_stmt_load_store_ops (stmt, (void *)op,
+				check_loadstore, check_loadstore))
     return true;
 
-  if (attribute
-      && is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
+  return false;
+}
+
+/* Return true if OP can be inferred to be a non-NULL after STMT
+   executes by using attributes.  */
+bool
+infer_nonnull_range_by_attribute (gimple stmt, tree op)
+{
+  /* We can only assume that a pointer dereference will yield
+     non-NULL if -fdelete-null-pointer-checks is enabled.  */
+  if (!flag_delete_null_pointer_checks
+      || !POINTER_TYPE_P (TREE_TYPE (op))
+      || gimple_code (stmt) == GIMPLE_ASM)
+    return false;
+
+  if (is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
     {
       tree fntype = gimple_call_fntype (stmt);
       tree attrs = TYPE_ATTRIBUTES (fntype);
@@ -2707,23 +2694,25 @@ infer_nonnull_range (gimple stmt, tree op, bool dereference, bool attribute)
 	  /* Now see if op appears in the nonnull list.  */
 	  for (tree t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
 	    {
-	      int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
-	      tree arg = gimple_call_arg (stmt, idx);
-	      if (operand_equal_p (op, arg, 0))
-		return true;
+	      unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (t)) - 1;
+	      if (idx < gimple_call_num_args (stmt))
+		{
+		  tree arg = gimple_call_arg (stmt, idx);
+		  if (operand_equal_p (op, arg, 0))
+		    return true;
+		}
 	    }
 	}
     }
 
   /* If this function is marked as returning non-null, then we can
      infer OP is non-null if it is used in the return statement.  */
-  if (attribute)
-    if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
-      if (gimple_return_retval (return_stmt)
-	  && operand_equal_p (gimple_return_retval (return_stmt), op, 0)
-	  && lookup_attribute ("returns_nonnull",
-			       TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
-	return true;
+  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
+    if (gimple_return_retval (return_stmt)
+	&& operand_equal_p (gimple_return_retval (return_stmt), op, 0)
+	&& lookup_attribute ("returns_nonnull",
+			     TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
+      return true;
 
   return false;
 }
@@ -2948,5 +2937,22 @@ gimple_seq_discard (gimple_seq seq)
       gsi_remove (&gsi, true);
       release_defs (stmt);
       ggc_free (stmt);
+    }
+}
+
+/* See if STMT now calls function that takes no parameters and if so, drop
+   call arguments.  This is used when devirtualization machinery redirects
+   to __builtiln_unreacahble or __cxa_pure_virutal.  */
+
+void
+maybe_remove_unused_call_args (struct function *fn, gimple stmt)
+{
+  tree decl = gimple_call_fndecl (stmt);
+  if (TYPE_ARG_TYPES (TREE_TYPE (decl))
+      && TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl))) == void_type_node
+      && gimple_call_num_args (stmt))
+    {
+      gimple_set_num_ops (stmt, 3);
+      update_stmt_fn (fn, stmt);
     }
 }

@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "--param=sccvn-max-alias-queries-per-access=1" } */
 
 #include "tree-vect.h"
@@ -56,4 +55,3 @@ main (void)
   return 0;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

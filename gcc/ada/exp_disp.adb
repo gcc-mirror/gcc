@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,6 @@ with Stringt;  use Stringt;
 with SCIL_LL;  use SCIL_LL;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
 
 package body Exp_Disp is
 
@@ -1606,38 +1605,15 @@ package body Exp_Disp is
                   --  a duplicate declaration whose designated type is the
                   --  non-limited view.
 
-                  if Ekind (Actual_DDT) = E_Incomplete_Type
-                    and then Present (Non_Limited_View (Actual_DDT))
-                  then
+                  if Has_Non_Limited_View (Actual_DDT) then
                      Anon := New_Copy (Actual_Typ);
 
                      if Is_Itype (Anon) then
                         Set_Scope (Anon, Current_Scope);
                      end if;
 
-                     Set_Directly_Designated_Type (Anon,
-                       Non_Limited_View (Actual_DDT));
-                     Set_Etype (Actual_Dup, Anon);
-
-                  elsif Is_Class_Wide_Type (Actual_DDT)
-                    and then Ekind (Etype (Actual_DDT)) = E_Incomplete_Type
-                    and then Present (Non_Limited_View (Etype (Actual_DDT)))
-                  then
-                     Anon := New_Copy (Actual_Typ);
-
-                     if Is_Itype (Anon) then
-                        Set_Scope (Anon, Current_Scope);
-                     end if;
-
-                     Set_Directly_Designated_Type (Anon,
-                       New_Copy (Actual_DDT));
-                     Set_Class_Wide_Type (Directly_Designated_Type (Anon),
-                       New_Copy (Class_Wide_Type (Actual_DDT)));
-                     Set_Etype (Directly_Designated_Type (Anon),
-                       Non_Limited_View (Etype (Actual_DDT)));
-                     Set_Etype (
-                       Class_Wide_Type (Directly_Designated_Type (Anon)),
-                       Non_Limited_View (Etype (Actual_DDT)));
+                     Set_Directly_Designated_Type
+                       (Anon, Non_Limited_View (Actual_DDT));
                      Set_Etype (Actual_Dup, Anon);
                   end if;
                end if;
@@ -4501,12 +4477,11 @@ package body Exp_Disp is
    begin
       pragma Assert (Is_Frozen (Typ));
 
-      --  The tagged type for which the dispatch table is being build may be
-      --  subject to pragma Ghost with policy Ignore. Set the mode now to
-      --  ensure that any nodes generated during freezing are properly flagged
-      --  as ignored Ghost.
+      --  The tagged type being processed may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during dispatch table creation are properly flagged as ignored Ghost.
 
-      Set_Ghost_Mode_For_Freeze (Typ, Typ);
+      Set_Ghost_Mode (Declaration_Node (Typ), Typ);
 
       --  Handle cases in which there is no need to build the dispatch table
 
@@ -5808,21 +5783,34 @@ package body Exp_Disp is
                   E        := Ultimate_Alias (Prim);
                   Prim_Pos := UI_To_Int (DT_Position (E));
 
-                  --  Do not reference predefined primitives because they are
-                  --  located in a separate dispatch table; skip entities with
-                  --  attribute Interface_Alias because they are only required
-                  --  to build secondary dispatch tables; skip abstract and
-                  --  eliminated primitives; for derivations of CPP types skip
-                  --  primitives located in the C++ part of the dispatch table
-                  --  because their slot is initialized by the IC routine.
+                  --  Skip predefined primitives because they are located in a
+                  --  separate dispatch table.
 
                   if not Is_Predefined_Dispatching_Operation (Prim)
                     and then not Is_Predefined_Dispatching_Operation (E)
+
+                    --  Skip entities with attribute Interface_Alias because
+                    --  those are only required to build secondary dispatch
+                    --  tables.
+
                     and then not Present (Interface_Alias (Prim))
+
+                    --  Skip abstract and eliminated primitives
+
                     and then not Is_Abstract_Subprogram (E)
                     and then not Is_Eliminated (E)
+
+                    --  For derivations of CPP types skip primitives located in
+                    --  the C++ part of the dispatch table because their slots
+                    --  are initialized by the IC routine.
+
                     and then (not Is_CPP_Class (Root_Type (Typ))
                                or else Prim_Pos > CPP_Nb_Prims)
+
+                    --  Skip ignored Ghost subprograms as those will be removed
+                    --  from the executable.
+
+                    and then not Is_Ignored_Ghost_Entity (E)
                   then
                      pragma Assert
                        (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);
@@ -8046,7 +8034,7 @@ package body Exp_Disp is
          --  way we ensure that the final position of all the primitives is
          --  established by the following stages of this algorithm.
 
-         Set_DT_Position (Prim, No_Uint);
+         Set_DT_Position_Value (Prim, No_Uint);
 
          Next_Elmt (Prim_Elmt);
       end loop;
@@ -8104,8 +8092,9 @@ package body Exp_Disp is
                      if Chars (Node (Op_Elmt_2)) = Chars (Parent_Subp)
                        and then Type_Conformant (Prim_Op, Node (Op_Elmt_2))
                      then
-                        Set_DT_Position (Prim_Op, DT_Position (Parent_Subp));
-                        Set_DT_Position (Node (Op_Elmt_2),
+                        Set_DT_Position_Value (Prim_Op,
+                          DT_Position (Parent_Subp));
+                        Set_DT_Position_Value (Node (Op_Elmt_2),
                           DT_Position (Parent_Subp));
                         Set_Fixed_Prim (UI_To_Int (DT_Position (Prim_Op)));
 
@@ -8163,10 +8152,11 @@ package body Exp_Disp is
 
             if In_Predef_Prims_DT (Prim) then
                if Is_Predefined_Dispatching_Operation (Prim) then
-                  Set_DT_Position (Prim, Default_Prim_Op_Position (Prim));
+                  Set_DT_Position_Value (Prim,
+                    Default_Prim_Op_Position (Prim));
 
                else pragma Assert (Present (Alias (Prim)));
-                  Set_DT_Position (Prim,
+                  Set_DT_Position_Value (Prim,
                     Default_Prim_Op_Position (Ultimate_Alias (Prim)));
                end if;
 
@@ -8181,12 +8171,12 @@ package body Exp_Disp is
                  and then Present (DTC_Entity (Interface_Alias (Prim))));
 
                E := Interface_Alias (Prim);
-               Set_DT_Position (Prim, DT_Position (E));
+               Set_DT_Position_Value (Prim, DT_Position (E));
 
                pragma Assert
                  (DT_Position (Alias (Prim)) = No_Uint
                     or else DT_Position (Alias (Prim)) = DT_Position (E));
-               Set_DT_Position (Alias (Prim), DT_Position (E));
+               Set_DT_Position_Value (Alias (Prim), DT_Position (E));
                Set_Fixed_Prim (UI_To_Int (DT_Position (Prim)));
 
             --  Overriding primitives must use the same entry as the
@@ -8202,7 +8192,7 @@ package body Exp_Disp is
               and then Present (DTC_Entity (Alias (Prim)))
             then
                E := Alias (Prim);
-               Set_DT_Position (Prim, DT_Position (E));
+               Set_DT_Position_Value (Prim, DT_Position (E));
 
                if not Is_Predefined_Dispatching_Alias (E) then
                   Set_Fixed_Prim (UI_To_Int (DT_Position (E)));
@@ -8239,7 +8229,7 @@ package body Exp_Disp is
                   exit when not Fixed_Prim (Nb_Prim);
                end loop;
 
-               Set_DT_Position (Prim, UI_From_Int (Nb_Prim));
+               Set_DT_Position_Value (Prim, UI_From_Int (Nb_Prim));
                Set_Fixed_Prim (Nb_Prim);
             end if;
 
@@ -8268,14 +8258,14 @@ package body Exp_Disp is
                   Use_Full_View => True)
             then
                pragma Assert (DT_Position (Alias (Prim)) /= No_Uint);
-               Set_DT_Position (Prim, DT_Position (Alias (Prim)));
+               Set_DT_Position_Value (Prim, DT_Position (Alias (Prim)));
 
             --  Otherwise it will be placed in the secondary DT
 
             else
                pragma Assert
                  (DT_Position (Interface_Alias (Prim)) /= No_Uint);
-               Set_DT_Position (Prim,
+               Set_DT_Position_Value (Prim,
                  DT_Position (Interface_Alias (Prim)));
             end if;
          end if;
@@ -8713,6 +8703,25 @@ package body Exp_Disp is
       end if;
    end Set_CPP_Constructors;
 
+   ---------------------------
+   -- Set_DT_Position_Value --
+   ---------------------------
+
+   procedure Set_DT_Position_Value (Prim : Entity_Id; Value : Uint) is
+   begin
+      Set_DT_Position (Prim, Value);
+
+      --  Propagate the value to the wrapped subprogram (if one is present)
+
+      if Ekind_In (Prim, E_Function, E_Procedure)
+        and then Is_Primitive_Wrapper (Prim)
+        and then Present (Wrapped_Entity (Prim))
+        and then Is_Dispatching_Operation (Wrapped_Entity (Prim))
+      then
+         Set_DT_Position (Wrapped_Entity (Prim), Value);
+      end if;
+   end Set_DT_Position_Value;
+
    --------------------------
    -- Set_DTC_Entity_Value --
    --------------------------
@@ -8733,6 +8742,16 @@ package body Exp_Disp is
       else
          Set_DTC_Entity (Prim,
            First_Tag_Component (Tagged_Type));
+      end if;
+
+      --  Propagate the value to the wrapped subprogram (if one is present)
+
+      if Ekind_In (Prim, E_Function, E_Procedure)
+        and then Is_Primitive_Wrapper (Prim)
+        and then Present (Wrapped_Entity (Prim))
+        and then Is_Dispatching_Operation (Wrapped_Entity (Prim))
+      then
+         Set_DTC_Entity (Wrapped_Entity (Prim), DTC_Entity (Prim));
       end if;
    end Set_DTC_Entity_Value;
 

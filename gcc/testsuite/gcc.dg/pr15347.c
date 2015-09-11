@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-options "-O" } */
 
 extern void link_error (void);
 int

@@ -20,35 +20,23 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
-#include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
+#include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
+#include "rtl.h"
+#include "df.h"
+#include "alias.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "stringpool.h"
 #include "calls.h"
-#include "rtl.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
 #include "dbxout.h"
 #include "insn-attr.h"
 #include "flags.h"
-#include "hashtab.h"
-#include "function.h"
-#include "statistics.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
@@ -57,23 +45,19 @@
 #include "expr.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "ggc.h"
-#include "dominance.h"
-#include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "lcm.h"
 #include "cfgbuild.h"
 #include "cfgcleanup.h"
-#include "predict.h"
-#include "basic-block.h"
-#include "df.h"
 #include "tm_p.h"
 #include "target.h"
-#include "target-def.h"
 #include "tm-constrs.h"
 #include "opts.h"
 #include "builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* Array of valid operand punctuation characters.  */
 static char m32r_punct_chars[256];
@@ -115,7 +99,7 @@ static bool m32r_function_value_regno_p (const unsigned int);
 static void m32r_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
-static bool m32r_rtx_costs (rtx, int, int, int, int *, bool speed);
+static bool m32r_rtx_costs (rtx, machine_mode, int, int, int *, bool speed);
 static int m32r_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool m32r_pass_by_reference (cumulative_args_t, machine_mode,
 				    const_tree, bool);
@@ -129,6 +113,7 @@ static bool m32r_can_eliminate (const int, const int);
 static void m32r_conditional_register_usage (void);
 static void m32r_trampoline_init (rtx, tree, rtx);
 static bool m32r_legitimate_constant_p (machine_mode, rtx);
+static bool m32r_attribute_identifier (const_tree);
 
 /* M32R specific attributes.  */
 
@@ -145,6 +130,8 @@ static const struct attribute_spec m32r_attribute_table[] =
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32r_attribute_table
+#undef  TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
+#define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P m32r_attribute_identifier
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P m32r_legitimate_address_p
@@ -419,6 +406,13 @@ m32r_handle_model_attribute (tree *node ATTRIBUTE_UNUSED, tree name,
     }
 
   return NULL_TREE;
+}
+
+static bool
+m32r_attribute_identifier (const_tree name)
+{
+  return strcmp (IDENTIFIER_POINTER (name), "model") == 0
+    ||   strcmp (IDENTIFIER_POINTER (name), "__model__") == 0;
 }
 
 /* Encode section information of DECL, which is either a VAR_DECL,
@@ -1081,12 +1075,10 @@ gen_split_move_double (rtx operands[])
 	  /* We normally copy the low-numbered register first.  However, if
 	     the first register operand 0 is the same as the second register of
 	     operand 1, we must copy in the opposite order.  */
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, reverse, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, reverse, TRUE, mode),
 				  operand_subword (src,  reverse, TRUE, mode)));
 
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, !reverse, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, !reverse, TRUE, mode),
 				  operand_subword (src,  !reverse, TRUE, mode)));
 	}
 
@@ -1095,12 +1087,10 @@ gen_split_move_double (rtx operands[])
 	{
 	  rtx words[2];
 	  split_double (src, &words[0], &words[1]);
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, 0, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, 0, TRUE, mode),
 				  words[0]));
 
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, 1, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, 1, TRUE, mode),
 				  words[1]));
 	}
 
@@ -1122,13 +1112,11 @@ gen_split_move_double (rtx operands[])
 		ld r1,r3+; ld r2,r3; addi r3,-4
 
 	     which saves 2 bytes and doesn't force longword alignment.  */
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, reverse, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, reverse, TRUE, mode),
 				  adjust_address (src, SImode,
 						  reverse * UNITS_PER_WORD)));
 
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, !reverse, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, !reverse, TRUE, mode),
 				  adjust_address (src, SImode,
 						  !reverse * UNITS_PER_WORD)));
 	}
@@ -1150,12 +1138,10 @@ gen_split_move_double (rtx operands[])
      which saves 2 bytes and doesn't force longword alignment.  */
   else if (MEM_P (dest) && REG_P (src))
     {
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      adjust_address (dest, SImode, 0),
+      emit_insn (gen_rtx_SET (adjust_address (dest, SImode, 0),
 			      operand_subword (src, 0, TRUE, mode)));
 
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      adjust_address (dest, SImode, UNITS_PER_WORD),
+      emit_insn (gen_rtx_SET (adjust_address (dest, SImode, UNITS_PER_WORD),
 			      operand_subword (src, 1, TRUE, mode)));
     }
 
@@ -1386,10 +1372,13 @@ m32r_memory_move_cost (machine_mode mode,
 }
 
 static bool
-m32r_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+m32r_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
+		int outer_code ATTRIBUTE_UNUSED,
 		int opno ATTRIBUTE_UNUSED, int *total,
 		bool speed ATTRIBUTE_UNUSED)
 {
+  int code = GET_CODE (x);
+
   switch (code)
     {
       /* Small integers are as cheap as registers.  4 byte values can be
@@ -1684,6 +1673,9 @@ m32r_expand_prologue (void)
 
   if (! current_frame_info.initialized)
     m32r_compute_frame_size (get_frame_size ());
+
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = current_frame_info.total_size;
 
   gmask = current_frame_info.gmask;
 

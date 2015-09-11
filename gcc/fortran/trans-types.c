@@ -24,32 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"		/* For INTMAX_TYPE, INT8_TYPE, INT16_TYPE, INT32_TYPE,
-			   INT64_TYPE, INT_LEAST8_TYPE, INT_LEAST16_TYPE,
-			   INT_LEAST32_TYPE, INT_LEAST64_TYPE, INT_FAST8_TYPE,
-			   INT_FAST16_TYPE, INT_FAST32_TYPE, INT_FAST64_TYPE,
-			   BOOL_TYPE_SIZE, BITS_PER_UNIT, POINTER_SIZE,
-			   INT_TYPE_SIZE, CHAR_TYPE_SIZE, SHORT_TYPE_SIZE,
-			   LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE,
-			   FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE and
-			   LONG_DOUBLE_TYPE_SIZE.  */
-#include "hash-set.h"
-#include "machmode.h"
-#include "vec.h"
-#include "double-int.h"
-#include "input.h"
+#include "tm.h"
 #include "alias.h"
-#include "symtab.h"
-#include "wide-int.h"
-#include "inchash.h"
-#include "real.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "langhooks.h"	/* For iso-c-bindings.def.  */
 #include "target.h"
-#include "ggc.h"
 #include "gfortran.h"
 #include "diagnostic-core.h"  /* For fatal_error.  */
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
@@ -438,10 +420,10 @@ gfc_init_kinds (void)
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
 	 useless.  */
-	if (!targetm.libgcc_floating_mode_supported_p ((machine_mode)
+      if (!targetm.libgcc_floating_mode_supported_p ((machine_mode)
 						       mode))
-	  continue;
-	if (mode != TYPE_MODE (float_type_node)
+	continue;
+      if (mode != TYPE_MODE (float_type_node)
 	    && (mode != TYPE_MODE (double_type_node))
 	    && (mode != TYPE_MODE (long_double_type_node))
 #if defined(HAVE_TFmode) && defined(ENABLE_LIBQUADMATH_SUPPORT)
@@ -587,7 +569,7 @@ gfc_init_kinds (void)
 	gfc_fatal_error ("REAL(KIND=4) is not available for "
 			 "%<-freal-8-real-4%> option");
 
-	gfc_default_double_kind = 4;
+      gfc_default_double_kind = 4;
     }
   else if (flag_real8_kind == 10 )
     {
@@ -595,7 +577,7 @@ gfc_init_kinds (void)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "
 			 "%<-freal-8-real-10%> option");
 
-	gfc_default_double_kind = 10;
+      gfc_default_double_kind = 10;
     }
   else if (flag_real8_kind == 16 )
     {
@@ -603,7 +585,7 @@ gfc_init_kinds (void)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "
 			 "%<-freal-8-real-16%> option");
 
-	gfc_default_double_kind = 16;
+      gfc_default_double_kind = 16;
     }
   else if (saw_r4 && saw_r8)
     gfc_default_double_kind = 8;
@@ -1112,12 +1094,7 @@ gfc_typenode_for_spec (gfc_typespec * spec)
       break;
 
     case BT_CHARACTER:
-#if 0
-      if (spec->deferred)
-	basetype = gfc_get_character_type (spec->kind, NULL);
-      else
-#endif
-	basetype = gfc_get_character_type (spec->kind, spec->u.cl);
+      basetype = gfc_get_character_type (spec->kind, spec->u.cl);
       break;
 
     case BT_HOLLERITH:
@@ -1177,6 +1154,10 @@ gfc_conv_array_bound (gfc_expr * expr)
   return NULL_TREE;
 }
 
+/* Return the type of an element of the array.  Note that scalar coarrays
+   are special.  In particular, for GFC_ARRAY_TYPE_P, the original argument
+   (with POINTER_TYPE stripped) is returned.  */
+
 tree
 gfc_get_element_type (tree type)
 {
@@ -1289,25 +1270,35 @@ gfc_get_element_type (tree type)
 int
 gfc_is_nodesc_array (gfc_symbol * sym)
 {
-  gcc_assert (sym->attr.dimension || sym->attr.codimension);
+  symbol_attribute *array_attr;
+  gfc_array_spec *as;
+  bool is_classarray = IS_CLASS_ARRAY (sym);
+
+  array_attr = is_classarray ? &CLASS_DATA (sym)->attr : &sym->attr;
+  as = is_classarray ? CLASS_DATA (sym)->as : sym->as;
+
+  gcc_assert (array_attr->dimension || array_attr->codimension);
 
   /* We only want local arrays.  */
-  if (sym->attr.pointer || sym->attr.allocatable)
+  if ((sym->ts.type != BT_CLASS && sym->attr.pointer)
+      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.class_pointer)
+      || array_attr->allocatable)
     return 0;
 
   /* We want a descriptor for associate-name arrays that do not have an
-     explicitly known shape already.  */
-  if (sym->assoc && sym->as->type != AS_EXPLICIT)
+	 explicitly known shape already.  */
+  if (sym->assoc && as->type != AS_EXPLICIT)
     return 0;
 
+  /* The dummy is stored in sym and not in the component.  */
   if (sym->attr.dummy)
-    return sym->as->type != AS_ASSUMED_SHAPE
-	   && sym->as->type != AS_ASSUMED_RANK;
+    return as->type != AS_ASSUMED_SHAPE
+	&& as->type != AS_ASSUMED_RANK;
 
   if (sym->attr.result || sym->attr.function)
     return 0;
 
-  gcc_assert (sym->as->type == AS_EXPLICIT || sym->as->cp_was_assumed);
+  gcc_assert (as->type == AS_EXPLICIT || as->cp_was_assumed);
 
   return 1;
 }
@@ -2163,7 +2154,9 @@ gfc_sym_type (gfc_symbol * sym)
       && ((sym->attr.function && sym->attr.is_bind_c)
 	  || (sym->attr.result
 	      && sym->ns->proc_name
-	      && sym->ns->proc_name->attr.is_bind_c)))
+	      && sym->ns->proc_name->attr.is_bind_c)
+	  || (sym->ts.deferred && (!sym->ts.u.cl
+				   || !sym->ts.u.cl->backend_decl))))
     type = gfc_character1_type_node;
   else
     type = gfc_typenode_for_spec (&sym->ts);
@@ -2375,7 +2368,10 @@ gfc_get_derived_type (gfc_symbol * derived)
   gfc_dt_list *dt;
   gfc_namespace *ns;
 
-  if (derived->attr.unlimited_polymorphic)
+  if (derived->attr.unlimited_polymorphic
+      || (flag_coarray == GFC_FCOARRAY_LIB
+	  && derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	  && derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE))
     return ptr_type_node;
 
   if (derived && derived->attr.flavor == FL_PROCEDURE
@@ -2447,9 +2443,24 @@ gfc_get_derived_type (gfc_symbol * derived)
       /* Its components' backend_decl have been built or we are
 	 seeing recursion through the formal arglist of a procedure
 	 pointer component.  */
-      if (TYPE_FIELDS (derived->backend_decl)
-	    || derived->attr.proc_pointer_comp)
+      if (TYPE_FIELDS (derived->backend_decl))
         return derived->backend_decl;
+      else if (derived->attr.abstract
+	       && derived->attr.proc_pointer_comp)
+	{
+	  /* If an abstract derived type with procedure pointer
+	     components has no other type of component, return the
+	     backend_decl. Otherwise build the components if any of the
+	     non-procedure pointer components have no backend_decl.  */
+	  for (c = derived->components; c; c = c->next)
+	    {
+	      if (!c->attr.proc_pointer && c->backend_decl == NULL)
+		break;
+	      else if (c->next == NULL)
+		return derived->backend_decl;
+	    }
+	  typenode = derived->backend_decl;
+	}
       else
         typenode = derived->backend_decl;
     }
