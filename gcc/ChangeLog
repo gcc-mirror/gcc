@@ -1,5 +1,13 @@
 2015-09-11  Aditya Kumar  <aditya.k7@samsung.com>
 
+        * graphite-optimize-isl.c (disable_tiling): Remove.
+	(get_schedule_for_band): Do not use disable_tiling.
+	(get_prevector_map): Delete function.
+	(enable_polly_vector): Remove.
+        (get_schedule_for_band_list): Remove dead code.
+
+2015-09-11  Aditya Kumar  <aditya.k7@samsung.com>
+
         * graphite-optimize-isl.c (get_tile_map): Refactor.
         (get_schedule_for_band): Same.
         (getScheduleForBand): Same.
