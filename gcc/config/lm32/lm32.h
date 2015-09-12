@@ -302,8 +302,6 @@ enum reg_class
   LM32_NUM_INTS ((MODE) == BLKmode ?                     \
   int_size_in_bytes (TYPE) : GET_MODE_SIZE (MODE))
 
-#define STRUCT_VALUE 0
-
 /*---------------------------*/
 /* Function entry and exit.  */
 /*---------------------------*/

@@ -1075,14 +1075,6 @@ struct visium_args
    If not defined, this defaults to the value 1. */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* `STRUCT_VALUE'
-
-   If the structure value address is not passed in a register, define
-   `STRUCT_VALUE' as an expression returning an RTX for the place
-   where the address is passed.  If it returns 0, the address is
-   passed as an "invisible" first argument. */
-#define STRUCT_VALUE 0
-
 /* Caller-Saves Register Allocation
 
    If you enable it, GNU CC can save registers around function calls.

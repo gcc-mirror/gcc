@@ -1,3 +1,11 @@
+2015-09-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config/arc/arc.h: Remove define of STRUCT_VALUE.
+	* config/lm32/lm32.h: Likewise.
+	* config/mep/mep.h: Likewise.
+	* config/visium/visium.h: Likewise.
+	* system.h: Poison STRUCT_VALUE macro.
+
 2015-09-12  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_move_double): Enhance to handle HIGH

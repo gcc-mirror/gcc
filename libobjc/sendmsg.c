@@ -47,7 +47,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h> /* For assert */
 #include <string.h> /* For strlen */
 
-/* This is how we hack STRUCT_VALUE to be 1 or 0.   */
 #define gen_rtx(args...) 1
 #define gen_rtx_MEM(args...) 1
 #define gen_rtx_REG(args...) 1
@@ -55,11 +54,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef rtx
 #define rtx int
 
-#if ! defined (STRUCT_VALUE) || STRUCT_VALUE == 0
 #define INVISIBLE_STRUCT_RETURN 1
-#else
-#define INVISIBLE_STRUCT_RETURN 0
-#endif
 
 /* The uninstalled dispatch table.  If a class' dispatch table points
    to __objc_uninstalled_dtable then that means it needs its dispatch
