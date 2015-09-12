@@ -896,10 +896,6 @@ arc_return_addr_rtx(COUNT,FRAME)
 /* Tell GCC to use RETURN_IN_MEMORY.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* Register in which address to store a structure value
-   is passed to a function, or 0 to use `invisible' first argument.  */
-#define STRUCT_VALUE 0
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.

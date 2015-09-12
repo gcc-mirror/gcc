@@ -499,8 +499,6 @@ typedef struct
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-#define STRUCT_VALUE 0
-
 #define FUNCTION_OK_FOR_SIBCALL(DECL) mep_function_ok_for_sibcall(DECL)
 
 /* Prologue and epilogues are all handled via RTL.  */
