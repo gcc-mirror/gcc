@@ -1,3 +1,8 @@
+2015-09-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_move_double): Enhance to handle HIGH
+	CONSTANT_P operands.
+
 2015-09-09  Alan Modra  <amodra@gmail.com>
 
 	PR target/67378
