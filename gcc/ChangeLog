@@ -1,3 +1,17 @@
+2015-09-11  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md: Make "U" constraint a real register
+	constraint.
+	* config/sparc/sparc.c (TARGET_LRA_P): Define.
+	(D_MODES, DF_MODES): Add missing cast.
+	(TF_MODES, TF_MODES_NO_S): Include T_MODE.
+	(OF_MODES, OF_MODES_NO_S): Include O_MODE.
+	(sparc_register_move_cost): Decrease Niagara/UltrsSPARC memory
+	cost to 8.
+	* config/sparc/sparc.h (PROMOTE_MODE): Define.
+	* config/sparc/sparc.md (*movsi_lo_sum, *movsi_high): Do not
+	provide these insn when flag_pic.
+
 2015-09-11  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47679
