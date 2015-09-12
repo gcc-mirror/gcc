@@ -1,3 +1,12 @@
+2015-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/67527
+	PR libfortran/67535
+	PR libfortran/67536
+	* io/io.h: Use unsigned values for 31-bit left shifts.
+	* io/unix.c (buf_read): Do not call memcpy() with NULL pointer arg.
+	* io/write.c (nml_write_obj): Likewise.
+
 2015-09-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/53379
