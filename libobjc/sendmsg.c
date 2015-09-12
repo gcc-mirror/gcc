@@ -47,13 +47,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h> /* For assert */
 #include <string.h> /* For strlen */
 
-#define gen_rtx(args...) 1
-#define gen_rtx_MEM(args...) 1
-#define gen_rtx_REG(args...) 1
-/* Already defined in gcc/coretypes.h. So prevent double definition warning.  */
-#undef rtx
-#define rtx int
-
 #define INVISIBLE_STRUCT_RETURN 1
 
 /* The uninstalled dispatch table.  If a class' dispatch table points
