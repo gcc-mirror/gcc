@@ -1467,13 +1467,13 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "immediate_operand" "in")))]
-  ""
+  "! flag_pic"
   "or\t%1, %%lo(%a2), %0")
 
 (define_insn "*movsi_high"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand:SI 1 "immediate_operand" "in")))]
-  ""
+  "! flag_pic"
   "sethi\t%%hi(%a1), %0")
 
 ;; The next two patterns must wrap the SYMBOL_REF in an UNSPEC
