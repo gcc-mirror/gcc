@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    only while debugging the runtime.  */
 /* #define DEBUG 1 */
 
-/* FIXME: This file has no business including tm.h.  */
 /* FIXME: This should be using libffi instead of __builtin_apply
    and friends.  */
 
@@ -34,7 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/error.h"
 #include "tconfig.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "objc/runtime.h"
 #include "objc/message.h"          /* For objc_msg_lookup(), objc_msg_lookup_super().  */
 #include "objc/thr.h"
