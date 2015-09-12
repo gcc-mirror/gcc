@@ -1,3 +1,8 @@
+2015-09-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_move_double): Enhance to handle HIGH
+	CONSTANT_P operands.
+
 2015-09-11  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md: Make "U" constraint a real register
