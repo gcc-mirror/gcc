@@ -1727,3 +1727,19 @@ extern int visium_indent_opcode;
 	visium_indent_opcode = 0;	\
       }					\
   } while (0)
+
+/* Configure-time default values for common options.  */
+#define OPTION_DEFAULT_SPECS { "cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }
+
+/* Values of TARGET_CPU_DEFAULT specified via --with-cpu.  */
+#define TARGET_CPU_gr5	0
+#define TARGET_CPU_gr6	1
+
+/* Default -mcpu multilib for above values.  */
+#if TARGET_CPU_DEFAULT == TARGET_CPU_gr5
+#define MULTILIB_DEFAULTS { "mcpu=gr5" }
+#elif TARGET_CPU_DEFAULT == TARGET_CPU_gr6
+#define MULTILIB_DEFAULTS { "mcpu=gr6" }
+#else
+#error Unrecognized value in TARGET_CPU_DEFAULT
+#endif

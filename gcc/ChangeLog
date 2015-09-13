@@ -1,3 +1,16 @@
+2015-09-13  Olivier Hainque  <hainque@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (visium-*-*): Enable --with-cpu option, accept gr5 and
+	gr6 as possible values, defaulting to gr5.  Set target_cpu_default2.
+	* config/visium/visium.h (OPTION_DEFAULT_SPECS): Define.
+	(TARGET_CPU_gr5): Likewise.
+	(TARGET_CPU_gr6): Likewise.
+	(MULTILIB_DEFAULTS): Likewise.
+	* config/visium/t-visium (MULTILIB_OPTIONS): Request distinct variants
+	for mcpu=gr5 and mcpu=gr6.
+	(MULTILIB_DIRNAMES): Adjust accordingly.
+
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* tree-ssa-loop-im.c (mem_ref_loc_p): Remove typedef.
@@ -158,12 +171,12 @@
 	(get_addr_from_local_cache): Likewise.
 	(drop_overlapping_mem_locs): Likewise.
 	(val_reset): Likewise.
-			(struct variable_union_info): Likewise.
-								(variable_union): Likewise.
-							(find_loc_in_1pdv): Likewise.
-		(insert_into_intersection): Likewise.
-			(intersect_loc_chains): Likewise.
-			(canonicalize_loc_order_check): Likewise.
+	(struct variable_union_info): Likewise.
+	(variable_union): Likewise.
+	(find_loc_in_1pdv): Likewise.
+	(insert_into_intersection): Likewise.
+	(intersect_loc_chains): Likewise.
+	(canonicalize_loc_order_check): Likewise.
 	(canonicalize_values_mark): Likewise.
 	(canonicalize_values_star): Likewise.
 	(canonicalize_vars_star): Likewise.

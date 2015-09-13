@@ -3346,6 +3346,9 @@ if test x$with_cpu = x ; then
 	  ;;
       esac
       ;;
+    visium-*-*)
+      with_cpu=gr5
+      ;;
   esac
 
   # Avoid overriding --with-cpu-32 and --with-cpu-64 values.
@@ -4295,6 +4298,16 @@ case "${target}" in
 			;;
 		esac
 		;;
+	visium-*-*)
+		supported_defaults="cpu"
+		case $with_cpu in
+		  "" | gr5 | gr6)
+			;;
+		  *)    echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
+			exit 1
+			;;
+		esac
+		;;
 esac
 
 # Set some miscellaneous flags for particular targets.
@@ -4448,6 +4461,9 @@ case ${target} in
 			target_cpu_default2="TARGET_CPU_v850e1"
 			;;
 		esac
+		;;
+	visium-*-*)
+		target_cpu_default2="TARGET_CPU_$with_cpu"
 		;;
 esac
 
