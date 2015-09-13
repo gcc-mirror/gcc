@@ -1,3 +1,8 @@
+2015-09-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Downloading the source): Mark up
+	contrib/download_prerequisites properly and drop leading "./".
+
 2015-09-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* config/arc/arc.h: Remove define of STRUCT_VALUE.
