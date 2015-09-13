@@ -1,5 +1,24 @@
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* bt-load.c (struct btr_def_group): Rename from btr_def_group_s.
+	(struct btr_user): Rename from btr_user_s.
+	(struct btr_def): Rename from btr_def_s.
+	(find_btr_def_group): Adjust.
+	(add_btr_def): Likewise.
+	(new_btr_user): Likewise.
+	(note_other_use_this_block): Likewise.
+	(compute_defs_uses_and_gen): Likewise.
+	(link_btr_uses): Likewise.
+	(build_btr_def_use_webs): Likewise.
+	(block_at_edge_of_live_range_p): Likewise.
+	(btr_def_live_range): Likewise.
+	(combine_btr_defs): Likewise.
+	(move_btr_def): Likewise.
+	(migrate_btr_def): Likewise.
+	(migrate_btr_defs): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* var-tracking.c (shared_hash_def): Rename to shared_hash.
 	(shared_hash): Remove typedef.
 	(struct dataflow_set): Adjust.
