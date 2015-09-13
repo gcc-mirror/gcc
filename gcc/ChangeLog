@@ -1,5 +1,9 @@
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* dwarf2cfi.c (dw_trace_info_ref): Remove typedef.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree-vrp.c (struct assert_locus_d): Rename to assert_locus.
 	(dump_asserts_for): Adjust.
 	(register_new_assert_for): Likewise.

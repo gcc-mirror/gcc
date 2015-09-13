@@ -160,9 +160,6 @@ struct dw_trace_info
 };
 
 
-typedef dw_trace_info *dw_trace_info_ref;
-
-
 /* Hashtable helpers.  */
 
 struct trace_info_hasher : nofree_ptr_hash <dw_trace_info>
@@ -186,7 +183,7 @@ trace_info_hasher::equal (const dw_trace_info *a, const dw_trace_info *b)
 
 /* The variables making up the pseudo-cfg, as described above.  */
 static vec<dw_trace_info> trace_info;
-static vec<dw_trace_info_ref> trace_work_list;
+static vec<dw_trace_info *> trace_work_list;
 static hash_table<trace_info_hasher> *trace_index;
 
 /* A vector of call frame insns for the CIE.  */
