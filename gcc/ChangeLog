@@ -1,5 +1,43 @@
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* var-tracking.c (struct location_chain): Rename from
+	location_chain_def.
+	(struct variable_part): Adjust.
+	(variable_htab_free): Likewise.
+	(unshare_variable): Likewise.
+	(get_init_value): Likewise.
+	(get_addr_from_local_cache): Likewise.
+	(drop_overlapping_mem_locs): Likewise.
+	(val_reset): Likewise.
+			(struct variable_union_info): Likewise.
+								(variable_union): Likewise.
+							(find_loc_in_1pdv): Likewise.
+		(insert_into_intersection): Likewise.
+			(intersect_loc_chains): Likewise.
+			(canonicalize_loc_order_check): Likewise.
+	(canonicalize_values_mark): Likewise.
+	(canonicalize_values_star): Likewise.
+	(canonicalize_vars_star): Likewise.
+	(variable_merge_over_cur): Likewise.
+	(remove_duplicate_values): Likewise.
+	(variable_post_merge_new_vals): Likewise.
+	(variable_post_merge_perm_vals): Likewise.
+	(find_mem_expr_in_1pdv): Likewise.
+	(dataflow_set_preserve_mem_locs): Likewise.
+	(dataflow_set_remove_mem_locs): Likewise.
+	(variable_part_different_p): Likewise.
+	(onepart_variable_different_p): Likewise.
+	(find_src_set_src): Likewise.
+	(dump_var): Likewise.
+	(set_slot_part): Likewise.
+	(clobber_slot_part): Likewise.
+	(delete_slot_part): Likewise.
+	(vt_expand_var_loc_chain): Likewise.
+	(emit_note_insn_var_location): Likewise.
+	(vt_finalize): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* dse.c (store_info_t): Remove typedef.
 	(group_info_t): Likewise.
 	(const_group_info_t): Likewise.
