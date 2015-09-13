@@ -1,5 +1,15 @@
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* var-tracking.c (shared_hash_def): Rename to shared_hash.
+	(shared_hash): Remove typedef.
+	(struct dataflow_set): Adjust.
+	(shared_hash_unshare): Likewise.
+	(dataflow_set_merge): Likewise.
+	(vt_initialize): Likewise.
+	(vt_finalize): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* var-tracking.c (struct location_chain): Rename from
 	location_chain_def.
 	(struct variable_part): Adjust.
