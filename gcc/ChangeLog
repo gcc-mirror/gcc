@@ -1,5 +1,60 @@
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* dwarf2out.c (dw_attr_ref): Remove typedef.
+	(dw_line_info_ref): Likewise.
+	(pubname_ref): Likewise.
+	(dw_ranges_ref): Likewise.
+	(dw_ranges_by_label_ref): Likewise.
+	(comdat_type_node_ref): Likewise.
+	(get_AT): Adjust.
+	(get_AT_low_pc): Likewise.
+	(get_AT_hi_pc): Likewise.
+	(get_AT_string): Likewise.
+	(get_AT_flag): Likewise.
+	(get_AT_unsigned): Likewise.
+	(get_AT_ref): Likewise.
+	(get_AT_file): Likewise.
+	(remove_AT): Likewise.
+	(print_die): Likewise.
+	(check_die): Likewise.
+	(die_checksum): Likewise.
+	(attr_checksum_ordered): Likewise.
+	(struct checksum_attributes): Likewise.
+	(collect_checksum_attributes): Likewise.
+	(die_checksum_ordered): Likewise.
+			(same_die_p): Likewise.
+			(is_declaration_die): Likewise.
+	(clone_die): Likewise.
+	(clone_as_declaration): Likewise.
+	(copy_declaration_context): Likewise.
+	(break_out_comdat_types): Likewise.
+	(copy_decls_walk): Likewise.
+	(output_location_lists): Likewise.
+	(external_ref_hasher::hash): Likewise.
+	(optimize_external_refs_1): Likewise.
+	(build_abbrev_table): Likewise.
+	(size_of_die): Likewise.
+	(unmark_all_dies): Likewise.
+	(size_of_pubnames): Likewise.
+	(output_die_abbrevs): Likewise.
+	(output_die): Likewise.
+	(output_pubnames): Likewise.
+	(add_ranges_num): Likewise.
+	(add_ranges_by_labels): Likewise.
+	(add_high_low_attributes): Likewise.
+	(gen_producer_string): Likewise.
+	(dwarf2out_set_name): Likewise.
+	(new_line_info_table): Likewise.
+	(prune_unused_types_walk_attribs): Likewise.
+	(prune_unused_types_update_strings): Likewise.
+	(prune_unused_types): Likewise.
+	(resolve_addr): Likewise.
+	(optimize_location_lists_1): Likewise.
+	(index_location_lists): Likewise.
+	(dwarf2out_finish): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* dwarf2cfi.c (dw_trace_info_ref): Remove typedef.
 
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

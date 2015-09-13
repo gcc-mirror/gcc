@@ -2550,14 +2550,7 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
 
 typedef long int dw_offset;
 
-/* Define typedefs here to avoid circular dependencies.  */
-
-typedef struct dw_attr_struct *dw_attr_ref;
-typedef struct dw_line_info_struct *dw_line_info_ref;
-typedef struct pubname_struct *pubname_ref;
-typedef struct dw_ranges_struct *dw_ranges_ref;
-typedef struct dw_ranges_by_label_struct *dw_ranges_by_label_ref;
-typedef struct comdat_type_struct *comdat_type_node_ref;
+struct comdat_type_node;
 
 /* The entries in the line_info table more-or-less mirror the opcodes
    that are used in the real dwarf line table.  Arrays of these entries
@@ -2596,7 +2589,7 @@ typedef struct GTY(()) dw_line_info_struct {
 } dw_line_info_entry;
 
 
-typedef struct GTY(()) dw_line_info_table_struct {
+struct GTY(()) dw_line_info_table {
   /* The label that marks the end of this section.  */
   const char *end_label;
 
@@ -2610,9 +2603,7 @@ typedef struct GTY(()) dw_line_info_table_struct {
   bool in_use;
 
   vec<dw_line_info_entry, va_gc> *entries;
-} dw_line_info_table;
-
-typedef dw_line_info_table *dw_line_info_table_p;
+};
 
 
 /* Each DIE attribute has a field specifying the attribute kind,
@@ -2634,7 +2625,7 @@ typedef struct GTY((chain_circular ("%h.die_sib"), for_user)) die_struct {
   union die_symbol_or_type_node
     {
       const char * GTY ((tag ("0"))) die_symbol;
-      comdat_type_node_ref GTY ((tag ("1"))) die_type_node;
+      comdat_type_node *GTY ((tag ("1"))) die_type_node;
     }
   GTY ((desc ("%0.comdat_type_p"))) die_id;
   vec<dw_attr_node, va_gc> *die_attr;
@@ -2680,7 +2671,7 @@ typedef struct GTY(()) pubname_struct {
 pubname_entry;
 
 
-struct GTY(()) dw_ranges_struct {
+struct GTY(()) dw_ranges {
   /* If this is positive, it's a block number, otherwise it's a
      bitwise-negated index into dw_ranges_by_label.  */
   int num;
@@ -2696,21 +2687,20 @@ typedef struct GTY(()) macinfo_struct {
 macinfo_entry;
 
 
-struct GTY(()) dw_ranges_by_label_struct {
+struct GTY(()) dw_ranges_by_label {
   const char *begin;
   const char *end;
 };
 
 /* The comdat type node structure.  */
-typedef struct GTY(()) comdat_type_struct
+struct GTY(()) comdat_type_node
 {
   dw_die_ref root_die;
   dw_die_ref type_die;
   dw_die_ref skeleton_die;
   char signature[DWARF_TYPE_SIGNATURE_SIZE];
-  struct comdat_type_struct *next;
-}
-comdat_type_node;
+  comdat_type_node *next;
+};
 
 /* A list of DIEs for which we can't determine ancestry (parent_die
    field) just yet.  Later in dwarf2out_finish we will fill in the
@@ -2985,7 +2975,7 @@ static GTY(()) dw_line_info_table *text_section_line_info;
 static GTY(()) dw_line_info_table *cold_text_section_line_info;
 
 /* The set of all non-default tables of line number info.  */
-static GTY(()) vec<dw_line_info_table_p, va_gc> *separate_line_info;
+static GTY(()) vec<dw_line_info_table *, va_gc> *separate_line_info;
 
 /* A flag to tell pubnames/types export if there is an info section to
    refer to.  */
@@ -3010,7 +3000,7 @@ static GTY (()) vec<macinfo_entry, va_gc> *macinfo_table;
    && !macinfo_table->is_empty ())
 
 /* Array of dies for which we should generate .debug_ranges info.  */
-static GTY ((length ("ranges_table_allocated"))) dw_ranges_ref ranges_table;
+static GTY ((length ("ranges_table_allocated"))) dw_ranges *ranges_table;
 
 /* Number of elements currently allocated for ranges_table.  */
 static GTY(()) unsigned ranges_table_allocated;
@@ -3020,7 +3010,7 @@ static GTY(()) unsigned ranges_table_in_use;
 
 /* Array of pairs of labels referenced in ranges_table.  */
 static GTY ((length ("ranges_by_label_allocated")))
-     dw_ranges_by_label_ref ranges_by_label;
+     dw_ranges_by_label *ranges_by_label;
 
 /* Number of elements currently allocated for ranges_by_label.  */
 static GTY(()) unsigned ranges_by_label_allocated;
@@ -3081,38 +3071,38 @@ static const char *dwarf_attr_name (unsigned);
 static const char *dwarf_form_name (unsigned);
 static tree decl_ultimate_origin (const_tree);
 static tree decl_class_context (tree);
-static void add_dwarf_attr (dw_die_ref, dw_attr_ref);
-static inline enum dw_val_class AT_class (dw_attr_ref);
-static inline unsigned int AT_index (dw_attr_ref);
+static void add_dwarf_attr (dw_die_ref, dw_attr_node *);
+static inline enum dw_val_class AT_class (dw_attr_node *);
+static inline unsigned int AT_index (dw_attr_node *);
 static void add_AT_flag (dw_die_ref, enum dwarf_attribute, unsigned);
-static inline unsigned AT_flag (dw_attr_ref);
+static inline unsigned AT_flag (dw_attr_node *);
 static void add_AT_int (dw_die_ref, enum dwarf_attribute, HOST_WIDE_INT);
-static inline HOST_WIDE_INT AT_int (dw_attr_ref);
+static inline HOST_WIDE_INT AT_int (dw_attr_node *);
 static void add_AT_unsigned (dw_die_ref, enum dwarf_attribute, unsigned HOST_WIDE_INT);
-static inline unsigned HOST_WIDE_INT AT_unsigned (dw_attr_ref);
+static inline unsigned HOST_WIDE_INT AT_unsigned (dw_attr_node *);
 static void add_AT_double (dw_die_ref, enum dwarf_attribute,
 			   HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 static inline void add_AT_vec (dw_die_ref, enum dwarf_attribute, unsigned int,
 			       unsigned int, unsigned char *);
 static void add_AT_data8 (dw_die_ref, enum dwarf_attribute, unsigned char *);
 static void add_AT_string (dw_die_ref, enum dwarf_attribute, const char *);
-static inline const char *AT_string (dw_attr_ref);
-static enum dwarf_form AT_string_form (dw_attr_ref);
+static inline const char *AT_string (dw_attr_node *);
+static enum dwarf_form AT_string_form (dw_attr_node *);
 static void add_AT_die_ref (dw_die_ref, enum dwarf_attribute, dw_die_ref);
 static void add_AT_specification (dw_die_ref, dw_die_ref);
-static inline dw_die_ref AT_ref (dw_attr_ref);
-static inline int AT_ref_external (dw_attr_ref);
-static inline void set_AT_ref_external (dw_attr_ref, int);
+static inline dw_die_ref AT_ref (dw_attr_node *);
+static inline int AT_ref_external (dw_attr_node *);
+static inline void set_AT_ref_external (dw_attr_node *, int);
 static void add_AT_fde_ref (dw_die_ref, enum dwarf_attribute, unsigned);
 static void add_AT_loc (dw_die_ref, enum dwarf_attribute, dw_loc_descr_ref);
-static inline dw_loc_descr_ref AT_loc (dw_attr_ref);
+static inline dw_loc_descr_ref AT_loc (dw_attr_node *);
 static void add_AT_loc_list (dw_die_ref, enum dwarf_attribute,
 			     dw_loc_list_ref);
-static inline dw_loc_list_ref AT_loc_list (dw_attr_ref);
+static inline dw_loc_list_ref AT_loc_list (dw_attr_node *);
 static addr_table_entry *add_addr_table_entry (void *, enum ate_kind);
 static void remove_addr_table_entry (addr_table_entry *);
 static void add_AT_addr (dw_die_ref, enum dwarf_attribute, rtx, bool);
-static inline rtx AT_addr (dw_attr_ref);
+static inline rtx AT_addr (dw_attr_node *);
 static void add_AT_lbl_id (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_lineptr (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_macptr (dw_die_ref, enum dwarf_attribute, const char *);
@@ -3120,8 +3110,8 @@ static void add_AT_offset (dw_die_ref, enum dwarf_attribute,
 			   unsigned HOST_WIDE_INT);
 static void add_AT_range_list (dw_die_ref, enum dwarf_attribute,
                                unsigned long, bool);
-static inline const char *AT_lbl (dw_attr_ref);
-static dw_attr_ref get_AT (dw_die_ref, enum dwarf_attribute);
+static inline const char *AT_lbl (dw_attr_node *);
+static dw_attr_node *get_AT (dw_die_ref, enum dwarf_attribute);
 static const char *get_AT_low_pc (dw_die_ref);
 static const char *get_AT_hi_pc (dw_die_ref);
 static const char *get_AT_string (dw_die_ref, enum dwarf_attribute);
@@ -3148,12 +3138,12 @@ static void print_die (dw_die_ref, FILE *);
 static dw_die_ref push_new_compile_unit (dw_die_ref, dw_die_ref);
 static dw_die_ref pop_compile_unit (dw_die_ref);
 static void loc_checksum (dw_loc_descr_ref, struct md5_ctx *);
-static void attr_checksum (dw_attr_ref, struct md5_ctx *, int *);
+static void attr_checksum (dw_attr_node *, struct md5_ctx *, int *);
 static void die_checksum (dw_die_ref, struct md5_ctx *, int *);
 static void checksum_sleb128 (HOST_WIDE_INT, struct md5_ctx *);
 static void checksum_uleb128 (unsigned HOST_WIDE_INT, struct md5_ctx *);
 static void loc_checksum_ordered (dw_loc_descr_ref, struct md5_ctx *);
-static void attr_checksum_ordered (enum dwarf_tag, dw_attr_ref,
+static void attr_checksum_ordered (enum dwarf_tag, dw_attr_node *,
 				   struct md5_ctx *, int *);
 struct checksum_attributes;
 static void collect_checksum_attributes (struct checksum_attributes *, dw_die_ref);
@@ -3162,7 +3152,7 @@ static void checksum_die_context (dw_die_ref, struct md5_ctx *);
 static void generate_type_signature (dw_die_ref, comdat_type_node *);
 static int same_loc_p (dw_loc_descr_ref, dw_loc_descr_ref, int *);
 static int same_dw_val_p (const dw_val_node *, const dw_val_node *, int *);
-static int same_attr_p (dw_attr_ref, dw_attr_ref, int *);
+static int same_attr_p (dw_attr_node *, dw_attr_node *, int *);
 static int same_die_p (dw_die_ref, dw_die_ref, int *);
 static int same_die_p_wrap (dw_die_ref, dw_die_ref);
 static void compute_section_prefix (dw_die_ref);
@@ -3198,8 +3188,8 @@ static void unmark_dies (dw_die_ref);
 static void unmark_all_dies (dw_die_ref);
 static unsigned long size_of_pubnames (vec<pubname_entry, va_gc> *);
 static unsigned long size_of_aranges (void);
-static enum dwarf_form value_format (dw_attr_ref);
-static void output_value_format (dw_attr_ref);
+static enum dwarf_form value_format (dw_attr_node *);
+static void output_value_format (dw_attr_node *);
 static void output_abbrev_section (void);
 static void output_die_abbrevs (unsigned long, dw_die_ref);
 static void output_die_symbol (dw_die_ref);
@@ -3357,8 +3347,8 @@ static void prune_unused_types_walk_attribs (dw_die_ref);
 static void prune_unused_types_prune (dw_die_ref);
 static void prune_unused_types (void);
 static int maybe_emit_file (struct dwarf_file_data *fd);
-static inline const char *AT_vms_delta1 (dw_attr_ref);
-static inline const char *AT_vms_delta2 (dw_attr_ref);
+static inline const char *AT_vms_delta1 (dw_attr_node *);
+static inline const char *AT_vms_delta2 (dw_attr_node *);
 static inline void add_AT_vms_delta (dw_die_ref, enum dwarf_attribute,
 				     const char *, const char *);
 static void append_entry_to_tmpl_value_parm_die_table (dw_die_ref, tree);
@@ -3800,7 +3790,7 @@ decl_class_context (tree decl)
 /* Add an attribute/value pair to a DIE.  */
 
 static inline void
-add_dwarf_attr (dw_die_ref die, dw_attr_ref attr)
+add_dwarf_attr (dw_die_ref die, dw_attr_node *attr)
 {
   /* Maybe this should be an assert?  */
   if (die == NULL)
@@ -3811,7 +3801,7 @@ add_dwarf_attr (dw_die_ref die, dw_attr_ref attr)
 }
 
 static inline enum dw_val_class
-AT_class (dw_attr_ref a)
+AT_class (dw_attr_node *a)
 {
   return a->dw_attr_val.val_class;
 }
@@ -3822,7 +3812,7 @@ AT_class (dw_attr_ref a)
    pruning.  */
 
 static inline unsigned int
-AT_index (dw_attr_ref a)
+AT_index (dw_attr_node *a)
 {
   if (AT_class (a) == dw_val_class_str)
     return a->dw_attr_val.v.val_str->index;
@@ -3846,7 +3836,7 @@ add_AT_flag (dw_die_ref die, enum dwarf_attribute attr_kind, unsigned int flag)
 }
 
 static inline unsigned
-AT_flag (dw_attr_ref a)
+AT_flag (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_flag);
   return a->dw_attr_val.v.val_flag;
@@ -3867,7 +3857,7 @@ add_AT_int (dw_die_ref die, enum dwarf_attribute attr_kind, HOST_WIDE_INT int_va
 }
 
 static inline HOST_WIDE_INT
-AT_int (dw_attr_ref a)
+AT_int (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_const);
   return a->dw_attr_val.v.val_int;
@@ -3889,7 +3879,7 @@ add_AT_unsigned (dw_die_ref die, enum dwarf_attribute attr_kind,
 }
 
 static inline unsigned HOST_WIDE_INT
-AT_unsigned (dw_attr_ref a)
+AT_unsigned (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_unsigned_const);
   return a->dw_attr_val.v.val_unsigned;
@@ -4064,7 +4054,7 @@ add_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind, const char *str)
 }
 
 static inline const char *
-AT_string (dw_attr_ref a)
+AT_string (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_str);
   return a->dw_attr_val.v.val_str->str;
@@ -4134,7 +4124,7 @@ find_string_form (struct indirect_string_node *node)
    output inline in DIE or out-of-line in .debug_str section.  */
 
 static enum dwarf_form
-AT_string_form (dw_attr_ref a)
+AT_string_form (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_str);
   return find_string_form (a->dw_attr_val.v.val_str);
@@ -4167,7 +4157,7 @@ add_AT_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind, dw_die_ref targ_
 /* Change DIE reference REF to point to NEW_DIE instead.  */
 
 static inline void
-change_AT_die_ref (dw_attr_ref ref, dw_die_ref new_die)
+change_AT_die_ref (dw_attr_node *ref, dw_die_ref new_die)
 {
   gcc_assert (ref->dw_attr_val.val_class == dw_val_class_die_ref);
   ref->dw_attr_val.v.val_die_ref.die = new_die;
@@ -4186,14 +4176,14 @@ add_AT_specification (dw_die_ref die, dw_die_ref targ_die)
 }
 
 static inline dw_die_ref
-AT_ref (dw_attr_ref a)
+AT_ref (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_die_ref);
   return a->dw_attr_val.v.val_die_ref.die;
 }
 
 static inline int
-AT_ref_external (dw_attr_ref a)
+AT_ref_external (dw_attr_node *a)
 {
   if (a && AT_class (a) == dw_val_class_die_ref)
     return a->dw_attr_val.v.val_die_ref.external;
@@ -4202,7 +4192,7 @@ AT_ref_external (dw_attr_ref a)
 }
 
 static inline void
-set_AT_ref_external (dw_attr_ref a, int i)
+set_AT_ref_external (dw_attr_node *a, int i)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_die_ref);
   a->dw_attr_val.v.val_die_ref.external = i;
@@ -4237,7 +4227,7 @@ add_AT_loc (dw_die_ref die, enum dwarf_attribute attr_kind, dw_loc_descr_ref loc
 }
 
 static inline dw_loc_descr_ref
-AT_loc (dw_attr_ref a)
+AT_loc (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_loc);
   return a->dw_attr_val.v.val_loc;
@@ -4257,14 +4247,14 @@ add_AT_loc_list (dw_die_ref die, enum dwarf_attribute attr_kind, dw_loc_list_ref
 }
 
 static inline dw_loc_list_ref
-AT_loc_list (dw_attr_ref a)
+AT_loc_list (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_loc_list);
   return a->dw_attr_val.v.val_loc_list;
 }
 
 static inline dw_loc_list_ref *
-AT_loc_list_ptr (dw_attr_ref a)
+AT_loc_list_ptr (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_loc_list);
   return &a->dw_attr_val.v.val_loc_list;
@@ -4444,7 +4434,7 @@ add_AT_addr (dw_die_ref die, enum dwarf_attribute attr_kind, rtx addr,
 /* Get the RTX from to an address DIE attribute.  */
 
 static inline rtx
-AT_addr (dw_attr_ref a)
+AT_addr (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_addr);
   return a->dw_attr_val.v.val_addr;
@@ -4468,7 +4458,7 @@ add_AT_file (dw_die_ref die, enum dwarf_attribute attr_kind,
 /* Get the dwarf_file_data from a file DIE attribute.  */
 
 static inline struct dwarf_file_data *
-AT_file (dw_attr_ref a)
+AT_file (dw_attr_node *a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_file);
   return a->dw_attr_val.v.val_file;
@@ -4586,7 +4576,7 @@ add_AT_range_list (dw_die_ref die, enum dwarf_attribute attr_kind,
 /* Return the start label of a delta attribute.  */
 
 static inline const char *
-AT_vms_delta1 (dw_attr_ref a)
+AT_vms_delta1 (dw_attr_node *a)
 {
   gcc_assert (a && (AT_class (a) == dw_val_class_vms_delta));
   return a->dw_attr_val.v.val_vms_delta.lbl1;
@@ -4595,14 +4585,14 @@ AT_vms_delta1 (dw_attr_ref a)
 /* Return the end label of a delta attribute.  */
 
 static inline const char *
-AT_vms_delta2 (dw_attr_ref a)
+AT_vms_delta2 (dw_attr_node *a)
 {
   gcc_assert (a && (AT_class (a) == dw_val_class_vms_delta));
   return a->dw_attr_val.v.val_vms_delta.lbl2;
 }
 
 static inline const char *
-AT_lbl (dw_attr_ref a)
+AT_lbl (dw_attr_node *a)
 {
   gcc_assert (a && (AT_class (a) == dw_val_class_lbl_id
 		    || AT_class (a) == dw_val_class_lineptr
@@ -4613,10 +4603,10 @@ AT_lbl (dw_attr_ref a)
 
 /* Get the attribute of type attr_kind.  */
 
-static dw_attr_ref
+static dw_attr_node *
 get_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
   dw_die_ref spec = NULL;
 
@@ -4660,7 +4650,7 @@ get_die_parent (dw_die_ref die)
 static inline const char *
 get_AT_low_pc (dw_die_ref die)
 {
-  dw_attr_ref a = get_AT (die, DW_AT_low_pc);
+  dw_attr_node *a = get_AT (die, DW_AT_low_pc);
 
   return a ? AT_lbl (a) : NULL;
 }
@@ -4672,7 +4662,7 @@ get_AT_low_pc (dw_die_ref die)
 static inline const char *
 get_AT_hi_pc (dw_die_ref die)
 {
-  dw_attr_ref a = get_AT (die, DW_AT_high_pc);
+  dw_attr_node *a = get_AT (die, DW_AT_high_pc);
 
   return a ? AT_lbl (a) : NULL;
 }
@@ -4683,7 +4673,7 @@ get_AT_hi_pc (dw_die_ref die)
 static inline const char *
 get_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind)
 {
-  dw_attr_ref a = get_AT (die, attr_kind);
+  dw_attr_node *a = get_AT (die, attr_kind);
 
   return a ? AT_string (a) : NULL;
 }
@@ -4694,7 +4684,7 @@ get_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind)
 static inline int
 get_AT_flag (dw_die_ref die, enum dwarf_attribute attr_kind)
 {
-  dw_attr_ref a = get_AT (die, attr_kind);
+  dw_attr_node *a = get_AT (die, attr_kind);
 
   return a ? AT_flag (a) : 0;
 }
@@ -4705,7 +4695,7 @@ get_AT_flag (dw_die_ref die, enum dwarf_attribute attr_kind)
 static inline unsigned
 get_AT_unsigned (dw_die_ref die, enum dwarf_attribute attr_kind)
 {
-  dw_attr_ref a = get_AT (die, attr_kind);
+  dw_attr_node *a = get_AT (die, attr_kind);
 
   return a ? AT_unsigned (a) : 0;
 }
@@ -4713,7 +4703,7 @@ get_AT_unsigned (dw_die_ref die, enum dwarf_attribute attr_kind)
 static inline dw_die_ref
 get_AT_ref (dw_die_ref die, enum dwarf_attribute attr_kind)
 {
-  dw_attr_ref a = get_AT (die, attr_kind);
+  dw_attr_node *a = get_AT (die, attr_kind);
 
   return a ? AT_ref (a) : NULL;
 }
@@ -4721,7 +4711,7 @@ get_AT_ref (dw_die_ref die, enum dwarf_attribute attr_kind)
 static inline struct dwarf_file_data *
 get_AT_file (dw_die_ref die, enum dwarf_attribute attr_kind)
 {
-  dw_attr_ref a = get_AT (die, attr_kind);
+  dw_attr_node *a = get_AT (die, attr_kind);
 
   return a ? AT_file (a) : NULL;
 }
@@ -4777,7 +4767,7 @@ is_ada (void)
 static bool
 remove_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   if (! die)
@@ -5588,7 +5578,7 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
 /* Likewise, for a DIE attribute.  */
 
 static void
-print_attribute (dw_attr_ref a, bool recurse, FILE *outfile)
+print_attribute (dw_attr_node *a, bool recurse, FILE *outfile)
 {
   print_dw_val (&a->dw_attr_val, recurse, outfile);
 }
@@ -5635,7 +5625,7 @@ print_loc_descr (dw_loc_descr_ref loc, FILE *outfile)
 static void
 print_die (dw_die_ref die, FILE *outfile)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   dw_die_ref c;
   unsigned ix;
 
@@ -5724,7 +5714,7 @@ static void
 check_die (dw_die_ref die)
 {
   unsigned ix;
-  dw_attr_ref a;
+  dw_attr_node *a;
   bool inline_found = false;
   int n_location = 0, n_low_pc = 0, n_high_pc = 0, n_artificial = 0;
   int n_decl_line = 0, n_decl_file = 0;
@@ -5830,7 +5820,7 @@ loc_checksum (dw_loc_descr_ref loc, struct md5_ctx *ctx)
 /* Calculate the checksum of an attribute.  */
 
 static void
-attr_checksum (dw_attr_ref at, struct md5_ctx *ctx, int *mark)
+attr_checksum (dw_attr_node *at, struct md5_ctx *ctx, int *mark)
 {
   dw_loc_descr_ref loc;
   rtx r;
@@ -5916,7 +5906,7 @@ static void
 die_checksum (dw_die_ref die, struct md5_ctx *ctx, int *mark)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   /* To avoid infinite recursion.  */
@@ -6050,7 +6040,7 @@ loc_checksum_ordered (dw_loc_descr_ref loc, struct md5_ctx *ctx)
 /* Calculate the checksum of an attribute.  */
 
 static void
-attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
+attr_checksum_ordered (enum dwarf_tag tag, dw_attr_node *at,
 		       struct md5_ctx *ctx, int *mark)
 {
   dw_loc_descr_ref loc;
@@ -6073,7 +6063,7 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
 	  || (at->dw_attr == DW_AT_friend
 	      && tag == DW_TAG_friend))
 	{
-	  dw_attr_ref name_attr = get_AT (target_die, DW_AT_name);
+	  dw_attr_node *name_attr = get_AT (target_die, DW_AT_name);
 
 	  if (name_attr != NULL)
 	    {
@@ -6205,53 +6195,53 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
 
 struct checksum_attributes
 {
-  dw_attr_ref at_name;
-  dw_attr_ref at_type;
-  dw_attr_ref at_friend;
-  dw_attr_ref at_accessibility;
-  dw_attr_ref at_address_class;
-  dw_attr_ref at_allocated;
-  dw_attr_ref at_artificial;
-  dw_attr_ref at_associated;
-  dw_attr_ref at_binary_scale;
-  dw_attr_ref at_bit_offset;
-  dw_attr_ref at_bit_size;
-  dw_attr_ref at_bit_stride;
-  dw_attr_ref at_byte_size;
-  dw_attr_ref at_byte_stride;
-  dw_attr_ref at_const_value;
-  dw_attr_ref at_containing_type;
-  dw_attr_ref at_count;
-  dw_attr_ref at_data_location;
-  dw_attr_ref at_data_member_location;
-  dw_attr_ref at_decimal_scale;
-  dw_attr_ref at_decimal_sign;
-  dw_attr_ref at_default_value;
-  dw_attr_ref at_digit_count;
-  dw_attr_ref at_discr;
-  dw_attr_ref at_discr_list;
-  dw_attr_ref at_discr_value;
-  dw_attr_ref at_encoding;
-  dw_attr_ref at_endianity;
-  dw_attr_ref at_explicit;
-  dw_attr_ref at_is_optional;
-  dw_attr_ref at_location;
-  dw_attr_ref at_lower_bound;
-  dw_attr_ref at_mutable;
-  dw_attr_ref at_ordering;
-  dw_attr_ref at_picture_string;
-  dw_attr_ref at_prototyped;
-  dw_attr_ref at_small;
-  dw_attr_ref at_segment;
-  dw_attr_ref at_string_length;
-  dw_attr_ref at_threads_scaled;
-  dw_attr_ref at_upper_bound;
-  dw_attr_ref at_use_location;
-  dw_attr_ref at_use_UTF8;
-  dw_attr_ref at_variable_parameter;
-  dw_attr_ref at_virtuality;
-  dw_attr_ref at_visibility;
-  dw_attr_ref at_vtable_elem_location;
+  dw_attr_node *at_name;
+  dw_attr_node *at_type;
+  dw_attr_node *at_friend;
+  dw_attr_node *at_accessibility;
+  dw_attr_node *at_address_class;
+  dw_attr_node *at_allocated;
+  dw_attr_node *at_artificial;
+  dw_attr_node *at_associated;
+  dw_attr_node *at_binary_scale;
+  dw_attr_node *at_bit_offset;
+  dw_attr_node *at_bit_size;
+  dw_attr_node *at_bit_stride;
+  dw_attr_node *at_byte_size;
+  dw_attr_node *at_byte_stride;
+  dw_attr_node *at_const_value;
+  dw_attr_node *at_containing_type;
+  dw_attr_node *at_count;
+  dw_attr_node *at_data_location;
+  dw_attr_node *at_data_member_location;
+  dw_attr_node *at_decimal_scale;
+  dw_attr_node *at_decimal_sign;
+  dw_attr_node *at_default_value;
+  dw_attr_node *at_digit_count;
+  dw_attr_node *at_discr;
+  dw_attr_node *at_discr_list;
+  dw_attr_node *at_discr_value;
+  dw_attr_node *at_encoding;
+  dw_attr_node *at_endianity;
+  dw_attr_node *at_explicit;
+  dw_attr_node *at_is_optional;
+  dw_attr_node *at_location;
+  dw_attr_node *at_lower_bound;
+  dw_attr_node *at_mutable;
+  dw_attr_node *at_ordering;
+  dw_attr_node *at_picture_string;
+  dw_attr_node *at_prototyped;
+  dw_attr_node *at_small;
+  dw_attr_node *at_segment;
+  dw_attr_node *at_string_length;
+  dw_attr_node *at_threads_scaled;
+  dw_attr_node *at_upper_bound;
+  dw_attr_node *at_use_location;
+  dw_attr_node *at_use_UTF8;
+  dw_attr_node *at_variable_parameter;
+  dw_attr_node *at_virtuality;
+  dw_attr_node *at_visibility;
+  dw_attr_node *at_vtable_elem_location;
 };
 
 /* Collect the attributes that we will want to use for the checksum.  */
@@ -6259,7 +6249,7 @@ struct checksum_attributes
 static void
 collect_checksum_attributes (struct checksum_attributes *attrs, dw_die_ref die)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -6483,7 +6473,7 @@ die_checksum_ordered (dw_die_ref die, struct md5_ctx *ctx, int *mark)
   /* Checksum the child DIEs.  */
   c = die->die_child;
   if (c) do {
-    dw_attr_ref name_attr;
+    dw_attr_node *name_attr;
 
     c = c->die_sib;
     name_attr = get_AT (c, DW_AT_name);
@@ -6686,7 +6676,7 @@ same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
 /* Do the attributes look the same?  */
 
 static int
-same_attr_p (dw_attr_ref at1, dw_attr_ref at2, int *mark)
+same_attr_p (dw_attr_node *at1, dw_attr_node *at2, int *mark)
 {
   if (at1->dw_attr != at2->dw_attr)
     return 0;
@@ -6705,7 +6695,7 @@ static int
 same_die_p (dw_die_ref die1, dw_die_ref die2, int *mark)
 {
   dw_die_ref c1, c2;
-  dw_attr_ref a1;
+  dw_attr_node *a1;
   unsigned ix;
 
   /* To avoid infinite recursion.  */
@@ -7145,7 +7135,7 @@ break_out_includes (dw_die_ref die)
 static int
 is_declaration_die (dw_die_ref die)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -7228,7 +7218,7 @@ static dw_die_ref
 clone_die (dw_die_ref die)
 {
   dw_die_ref clone;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   clone = ggc_cleared_alloc<die_node> ();
@@ -7260,7 +7250,7 @@ clone_as_declaration (dw_die_ref die)
 {
   dw_die_ref clone;
   dw_die_ref decl;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   /* If the DIE is already a declaration, just clone it.  */
@@ -7420,7 +7410,7 @@ copy_declaration_context (dw_die_ref unit, dw_die_ref die)
     {
       unsigned ix;
       dw_die_ref c;
-      dw_attr_ref a;
+      dw_attr_node *a;
 
       /* The original DIE will be changed to a declaration, and must
          be moved to be a child of the original declaration DIE.  */
@@ -7627,7 +7617,7 @@ break_out_comdat_types (dw_die_ref die)
     if (should_move_die_to_comdat (c))
       {
         dw_die_ref replacement;
-	comdat_type_node_ref type_node;
+	comdat_type_node *type_node;
 
         /* Break out nested types into their own type units.  */
         break_out_comdat_types (c);
@@ -7712,7 +7702,7 @@ static void
 copy_decls_walk (dw_die_ref unit, dw_die_ref die, decl_hash_type *decl_table)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -7837,7 +7827,7 @@ static void
 output_location_lists (dw_die_ref die)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -7887,7 +7877,7 @@ external_ref_hasher::hash (const external_ref *r)
     {
       /* We have a type signature; use a subset of the bits as the hash.
 	 The 8-byte signature is at least as large as hashval_t.  */
-      comdat_type_node_ref type_node = die->die_id.die_type_node;
+      comdat_type_node *type_node = die->die_id.die_type_node;
       memcpy (&h, type_node->signature, sizeof (h));
     }
   return h;
@@ -7929,7 +7919,7 @@ static void
 optimize_external_refs_1 (dw_die_ref die, external_ref_hash_type *map)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
   struct external_ref *ref_p;
 
@@ -8017,7 +8007,7 @@ build_abbrev_table (dw_die_ref die, external_ref_hash_type *extern_map)
   unsigned long abbrev_id;
   unsigned int n_alloc;
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   /* Scan the DIE references, and replace any that refer to
@@ -8041,7 +8031,7 @@ build_abbrev_table (dw_die_ref die, external_ref_hash_type *extern_map)
   for (abbrev_id = 1; abbrev_id < abbrev_die_table_in_use; ++abbrev_id)
     {
       dw_die_ref abbrev = abbrev_die_table[abbrev_id];
-      dw_attr_ref die_a, abbrev_a;
+      dw_attr_node *die_a, *abbrev_a;
       unsigned ix;
       bool ok = true;
 
@@ -8113,7 +8103,7 @@ static unsigned long
 size_of_die (dw_die_ref die)
 {
   unsigned long size = 0;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
   enum dwarf_form form;
 
@@ -8352,7 +8342,7 @@ static void
 unmark_all_dies (dw_die_ref die)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   if (!die->die_mark)
@@ -8406,7 +8396,7 @@ size_of_pubnames (vec<pubname_entry, va_gc> *names)
 {
   unsigned long size;
   unsigned i;
-  pubname_ref p;
+  pubname_entry *p;
   int space_for_flags = (debug_generate_pub_sections == 2) ? 1 : 0;
 
   size = DWARF_PUBNAMES_HEADER_SIZE;
@@ -8456,7 +8446,7 @@ size_of_aranges (void)
 /* Select the encoding of an attribute value.  */
 
 static enum dwarf_form
-value_format (dw_attr_ref a)
+value_format (dw_attr_node *a)
 {
   switch (AT_class (a))
     {
@@ -8647,7 +8637,7 @@ value_format (dw_attr_ref a)
 /* Output the encoding of an attribute value.  */
 
 static void
-output_value_format (dw_attr_ref a)
+output_value_format (dw_attr_node *a)
 {
   enum dwarf_form form = value_format (a);
 
@@ -8660,7 +8650,7 @@ static void
 output_die_abbrevs (unsigned long abbrev_id, dw_die_ref abbrev)
 {
   unsigned ix;
-  dw_attr_ref a_attr;
+  dw_attr_node *a_attr;
 
   dw2_asm_output_data_uleb128 (abbrev_id, "(abbrev code)");
   dw2_asm_output_data_uleb128 (abbrev->die_tag, "(TAG: %s)",
@@ -8835,7 +8825,7 @@ output_loc_list (dw_loc_list_ref list_head)
    indirect reference.  */
 
 static void
-output_range_list_offset (dw_attr_ref a)
+output_range_list_offset (dw_attr_node *a)
 {
   const char *name = dwarf_attr_name (a->dw_attr);
 
@@ -8855,7 +8845,7 @@ output_range_list_offset (dw_attr_ref a)
 /* Output the offset into the debug_loc section.  */
 
 static void
-output_loc_list_offset (dw_attr_ref a)
+output_loc_list_offset (dw_attr_node *a)
 {
   char *sym = AT_loc_list (a)->ll_symbol;
 
@@ -8871,7 +8861,7 @@ output_loc_list_offset (dw_attr_ref a)
 /* Output an attribute's index or value appropriately.  */
 
 static void
-output_attr_index_or_value (dw_attr_ref a)
+output_attr_index_or_value (dw_attr_node *a)
 {
   const char *name = dwarf_attr_name (a->dw_attr);
 
@@ -8914,7 +8904,7 @@ output_signature (const char *sig, const char *name)
 static void
 output_die (dw_die_ref die)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   dw_die_ref c;
   unsigned long size;
   unsigned ix;
@@ -9081,7 +9071,7 @@ output_die (dw_die_ref die)
 	    {
 	      if (AT_ref (a)->comdat_type_p)
 	        {
-	          comdat_type_node_ref type_node =
+		  comdat_type_node *type_node =
 	            AT_ref (a)->die_id.die_type_node;
 
 	          gcc_assert (type_node);
@@ -9642,7 +9632,7 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
 {
   unsigned i;
   unsigned long pubnames_length = size_of_pubnames (names);
-  pubname_ref pub;
+  pubname_entry *pub;
 
   if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
     dw2_asm_output_data (4, 0xffffffff,
@@ -9679,7 +9669,7 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
 	     the skeleton DIE (if there is one).  */
 	  if (pub->die->comdat_type_p && names == pubtype_table)
 	    {
-	      comdat_type_node_ref type_node = pub->die->die_id.die_type_node;
+	      comdat_type_node *type_node = pub->die->die_id.die_type_node;
 
 	      if (type_node != NULL)
 	        die_offset = (type_node->skeleton_die != NULL
@@ -9811,10 +9801,10 @@ add_ranges_num (int num)
   if (in_use == ranges_table_allocated)
     {
       ranges_table_allocated += RANGES_TABLE_INCREMENT;
-      ranges_table = GGC_RESIZEVEC (struct dw_ranges_struct, ranges_table,
+      ranges_table = GGC_RESIZEVEC (dw_ranges, ranges_table,
 				    ranges_table_allocated);
       memset (ranges_table + ranges_table_in_use, 0,
-	      RANGES_TABLE_INCREMENT * sizeof (struct dw_ranges_struct));
+	      RANGES_TABLE_INCREMENT * sizeof (dw_ranges));
     }
 
   ranges_table[in_use].num = num;
@@ -9847,12 +9837,10 @@ add_ranges_by_labels (dw_die_ref die, const char *begin, const char *end,
   if (in_use == ranges_by_label_allocated)
     {
       ranges_by_label_allocated += RANGES_TABLE_INCREMENT;
-      ranges_by_label = GGC_RESIZEVEC (struct dw_ranges_by_label_struct,
-				       ranges_by_label,
+      ranges_by_label = GGC_RESIZEVEC (dw_ranges_by_label, ranges_by_label,
 				       ranges_by_label_allocated);
       memset (ranges_by_label + ranges_by_label_in_use, 0,
-	      RANGES_TABLE_INCREMENT
-	      * sizeof (struct dw_ranges_by_label_struct));
+	      RANGES_TABLE_INCREMENT * sizeof (dw_ranges_by_label));
     }
 
   ranges_by_label[in_use].begin = begin;
@@ -19787,7 +19775,7 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
     {
       tree chain, superblock = NULL_TREE;
       dw_die_ref pdie;
-      dw_attr_ref attr = NULL;
+      dw_attr_node *attr = NULL;
 
       if (inlined_function_outer_scope_p (stmt))
 	{
@@ -19805,7 +19793,7 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 	   BLOCK_SAME_RANGE (chain);
 	   chain = BLOCK_SUPERCONTEXT (chain))
 	{
-	  dw_attr_ref new_attr;
+	  dw_attr_node *new_attr;
 
 	  pdie = pdie->die_parent;
 	  if (pdie == NULL)
@@ -20057,8 +20045,6 @@ gen_ptr_to_mbr_type_die (tree type, dw_die_ref context_die)
 		      context_die);
 }
 
-typedef const char *dchar_p; /* For DEF_VEC_P.  */
-
 static char *producer_string;
 
 /* Return a heap allocated producer string including command line options
@@ -20068,7 +20054,7 @@ static char *
 gen_producer_string (void)
 {
   size_t j;
-  auto_vec<dchar_p> switches;
+  auto_vec<const char *> switches;
   const char *language_string = lang_hooks.name;
   char *producer, *tail;
   const char *p;
@@ -22183,7 +22169,7 @@ static void
 dwarf2out_set_name (tree decl, tree name)
 {
   dw_die_ref die;
-  dw_attr_ref attr;
+  dw_attr_node *attr;
   const char *dname;
 
   die = TYPE_SYMTAB_DIE (decl);
@@ -22443,7 +22429,7 @@ new_line_info_table (void)
 {
   dw_line_info_table *table;
 
-  table = ggc_cleared_alloc<dw_line_info_table_struct> ();
+  table = ggc_cleared_alloc<dw_line_info_table> ();
   table->file_num = 1;
   table->line_num = 1;
   table->is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
@@ -23554,7 +23540,7 @@ prune_unmark_dies (dw_die_ref die)
 static void
 prune_unused_types_walk_attribs (dw_die_ref die)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -23761,7 +23747,7 @@ prune_unused_types_walk (dw_die_ref die)
 static void
 prune_unused_types_update_strings (dw_die_ref die)
 {
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -23829,7 +23815,7 @@ prune_unused_types (void)
   unsigned int i;
   limbo_die_node *node;
   comdat_type_node *ctnode;
-  pubname_ref pub;
+  pubname_entry *pub;
   dw_die_ref base_type;
 
 #if ENABLE_ASSERT_CHECKING
@@ -24440,7 +24426,7 @@ static void
 resolve_addr (dw_die_ref die)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   dw_loc_list_ref *curr, *start, loc;
   unsigned ix;
 
@@ -25063,7 +25049,7 @@ static void
 optimize_location_lists_1 (dw_die_ref die, loc_list_hash_type *htab)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
   dw_loc_list_struct **slot;
 
@@ -25092,7 +25078,7 @@ static void
 index_location_lists (dw_die_ref die)
 {
   dw_die_ref c;
-  dw_attr_ref a;
+  dw_attr_node *a;
   unsigned ix;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -25202,7 +25188,7 @@ dwarf2out_finish (const char *filename)
   /* PCH might result in DW_AT_producer string being restored from the
      header compilation, so always fill it with empty string initially
      and overwrite only here.  */
-  dw_attr_ref producer = get_AT (comp_unit_die (), DW_AT_producer);
+  dw_attr_node *producer = get_AT (comp_unit_die (), DW_AT_producer);
   producer_string = gen_producer_string ();
   producer->dw_attr_val.v.val_str->refcount--;
   producer->dw_attr_val.v.val_str = find_AT_string (producer_string);
