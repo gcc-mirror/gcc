@@ -1,5 +1,38 @@
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-ssa-loop-im.c (mem_ref_loc_p): Remove typedef.
+	(mem_ref_p): Likewise.
+	(outermost_indep_loop): Adjust.
+	(mem_ref_in_stmt): Likewise.
+	(determine_max_movement): Likewise.
+	(mem_ref_alloc): Likewise.
+	(record_mem_ref_loc): Likewise.
+	(set_ref_stored_in_loop): Likewise.
+	(mark_ref_stored): Likewise.
+	(gather_mem_refs_stmt): Likewise.
+	(mem_refs_may_alias_p): Likewise.
+	(for_all_locs_in_loop): Likewise.
+	(struct rewrite_mem_ref_loc): Likewise.
+	(rewrite_mem_refs): Likewise.
+	(struct first_mem_ref_loc_1): Likewise.
+	(first_mem_ref_loc): Likewise.
+	(struct sm_set_flag_if_changed): Likewise.
+	(execute_sm_if_changed_flag_set): Likewise.
+	(execute_sm): Likewise.
+	(hoist_memory_references):
+	(struct ref_always_accessed): Likewise.
+	(ref_always_accessed_p): Likewise.
+	(refs_independent_p): Likewise.
+	(record_dep_loop): Likewise.
+	(ref_indep_loop_p_1): Likewise.
+	(ref_indep_loop_p_2): Likewise.
+	(ref_indep_loop_p): Likewise.
+	(can_sm_ref_p): Likewise.
+	(find_refs_for_sm): Likewise.
+	(tree_ssa_lim_finalize): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* dwarf2out.c (dw_attr_ref): Remove typedef.
 	(dw_line_info_ref): Likewise.
 	(pubname_ref): Likewise.
