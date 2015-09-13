@@ -126,7 +126,7 @@ static tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
    SSA name may have more than one assertion associated with it, these
    locations are kept in a linked list attached to the corresponding
    SSA name.  */
-struct assert_locus_d
+struct assert_locus
 {
   /* Basic block where the assertion would be inserted.  */
   basic_block bb;
@@ -148,10 +148,8 @@ struct assert_locus_d
   tree expr;
 
   /* Next node in the linked list.  */
-  struct assert_locus_d *next;
+  assert_locus *next;
 };
-
-typedef struct assert_locus_d *assert_locus_t;
 
 /* If bit I is present, it means that SSA name N_i has a list of
    assertions that should be inserted in the IL.  */
@@ -160,7 +158,7 @@ static bitmap need_assert_for;
 /* Array of locations lists where to insert assertions.  ASSERTS_FOR[I]
    holds a list of ASSERT_LOCUS_T nodes that describe where
    ASSERT_EXPRs for SSA name N_I should be inserted.  */
-static assert_locus_t *asserts_for;
+static assert_locus **asserts_for;
 
 /* Value range array.  After propagation, VR_VALUE[I] holds the range
    of values that SSA name N_I may take.  */
@@ -4897,7 +4895,7 @@ void debug_all_asserts (void);
 void
 dump_asserts_for (FILE *file, tree name)
 {
-  assert_locus_t loc;
+  assert_locus *loc;
 
   fprintf (file, "Assertions to be inserted for ");
   print_generic_expr (file, name, 0);
@@ -4979,7 +4977,7 @@ register_new_assert_for (tree name, tree expr,
 			 edge e,
 			 gimple_stmt_iterator si)
 {
-  assert_locus_t n, loc, last_loc;
+  assert_locus *n, *loc, *last_loc;
   basic_block dest_bb;
 
   gcc_checking_assert (bb == NULL || e == NULL);
@@ -5054,7 +5052,7 @@ register_new_assert_for (tree name, tree expr,
   /* If we didn't find an assertion already registered for
      NAME COMP_CODE VAL, add a new one at the end of the list of
      assertions associated with NAME.  */
-  n = XNEW (struct assert_locus_d);
+  n = XNEW (struct assert_locus);
   n->bb = dest_bb;
   n->e = e;
   n->si = si;
@@ -6333,7 +6331,7 @@ find_assert_locations (void)
    indicated by LOC.  Return true if we made any edge insertions.  */
 
 static bool
-process_assert_insertions_for (tree name, assert_locus_t loc)
+process_assert_insertions_for (tree name, assert_locus *loc)
 {
   /* Build the comparison expression NAME_i COMP_CODE VAL.  */
   gimple stmt;
@@ -6401,12 +6399,12 @@ process_assert_insertions (void)
 
   EXECUTE_IF_SET_IN_BITMAP (need_assert_for, 0, i, bi)
     {
-      assert_locus_t loc = asserts_for[i];
+      assert_locus *loc = asserts_for[i];
       gcc_assert (loc);
 
       while (loc)
 	{
-	  assert_locus_t next = loc->next;
+	  assert_locus *next = loc->next;
 	  update_edges_p |= process_assert_insertions_for (ssa_name (i), loc);
 	  free (loc);
 	  loc = next;
@@ -6458,7 +6456,7 @@ static void
 insert_range_assertions (void)
 {
   need_assert_for = BITMAP_ALLOC (NULL);
-  asserts_for = XCNEWVEC (assert_locus_t, num_ssa_names);
+  asserts_for = XCNEWVEC (assert_locus *, num_ssa_names);
 
   calculate_dominance_info (CDI_DOMINATORS);
 
