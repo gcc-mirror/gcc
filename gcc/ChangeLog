@@ -1,3 +1,14 @@
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* alias.c (alias_set_entry_d): Rename to alias_set_entry.
+	(alias_set_entry): Remove typedef.
+	(alias_set_subset_of): Adjust.
+	(alias_sets_conflict_p): Likewise.
+	(init_alias_set_entry): Likewise.
+	(get_alias_set): Likewise.
+	(new_alias_set): Likewise.
+	(record_alias_subset): Likewise.
+
 2015-09-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Downloading the source): Mark up
