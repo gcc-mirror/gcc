@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-visibility "" }
 !
 ! PR 47565: [4.6 Regression][OOP] Segfault with TBP
 !

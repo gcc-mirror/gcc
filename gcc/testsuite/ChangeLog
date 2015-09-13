@@ -1,3 +1,33 @@
+2015-09-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/private_type_3.f90: Require visibility.
+	* gfortran.dg/module_variable_2.f90: Same.
+	* gfortran.dg/nested_forall_1.f: Same.
+	* gfortran.dg/elemental_dependency_4.f90: Same.
+	* gfortran.dg/bind_c_usage_25.f90: Same.
+	* gfortran.dg/access_spec_1.f90: Same.
+	* gfortran.dg/public_private_module_2.f90: Same.
+	* gfortran.dg/host_assoc_variable_1.f90: Same.
+	* gfortran.dg/public_private_module_6.f90: Same.
+	* gfortran.dg/module_variable_1.f90: Same.
+	* gfortran.dg/pr37286.f90: Same.
+	* gfortran.dg/internal_pack_7.f90: Same.
+	* gfortran.dg/submodule_10.f08: Same.
+	* gfortran.dg/allocatable_function_8.f90: Same.
+	* gfortran.dg/merge_init_expr_2.f90: Same.
+	* gfortran.dg/class_37.f03: Same.
+	* gfortran.dg/vect/fast-math-vect-8.f90: Same.
+	* gfortran.dg/typebound_call_20.f03: Same.
+	* gfortran.dg/proc_ptr_result_3.f90: Same.
+	* gfortran.dg/pr32535.f90: Same.
+	* gfortran.dg/typebound_proc_19.f90: Same.
+	* gfortran.dg/initialization_10.f90: Same.
+	* gfortran.dg/bind_c_usage_8.f03: Same.
+	* gfortran.dg/pr61335.f90: Same.
+	* gfortran.dg/elemental_dependency_5.f90: Same.
+	* gfortran.dg/proc_ptr_3.f90: Same.
+	* gfortran.dg/debug/pr46756.f: XFAIL on AIX.
+
 2015-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/type-generic-1.c: Pass -DUNSAFE for Visium.

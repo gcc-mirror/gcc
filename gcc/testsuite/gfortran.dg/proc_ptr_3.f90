@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-visibility "" }
 !
 ! PROCEDURE POINTERS without the PROCEDURE statement
 !

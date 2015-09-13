@@ -1,8 +1,9 @@
 ! { dg-do compile }
 ! { dg-options "-O2" }
+! { dg-require-visibility "" }
 !
 ! PR fortran/52751 (top, "module mod")
-! PR fortran/40973 (bottom, "module m"
+! PR fortran/40973 (bottom, "module m")
 !
 ! Ensure that (only) those module variables and procedures which are PRIVATE
 ! and have no C-binding label are optimized away.

@@ -1,4 +1,5 @@
-!{ dg-do run }
+! { dg-do run }
+! { dg-require-visibility "" }
 !
 ! PR 36704: Procedure pointer as function result
 !
