@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-rtl-loop2_invariant" } */
+/* { dg-skip-if "unexpected IV" { "visium-*-*" } { "*" } { "" } } */
 
 void
 f (int *a, int *b)
