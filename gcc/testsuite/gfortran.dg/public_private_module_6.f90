@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-O1" }
+! { dg-require-visibility "" }
 !
 ! PR fortran/54221
 !

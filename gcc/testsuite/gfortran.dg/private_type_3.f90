@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-O0" }
+! { dg-require-visibility "" }
 ! Tests the fix for PR24207 and the problems associated
 ! with the fix for PR21986. In two cases, use associated
 ! public symbols were taking on the default private access

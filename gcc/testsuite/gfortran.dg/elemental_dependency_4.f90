@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-options "-fdump-tree-original" }
+! { dg-require-visibility "" }
 !
 ! Tests the fix for PR64952, in which the assignment to 'array' should
 ! have generated a temporary because of the references to the lhs in

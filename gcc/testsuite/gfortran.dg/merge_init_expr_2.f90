@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fdump-tree-original" }
+! { dg-require-visibility "" }
 !
 ! PR fortran/56649
 ! MERGE was not properly compile-time simplified

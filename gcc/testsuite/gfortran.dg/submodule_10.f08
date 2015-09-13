@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-require-visibility "" }
 !
 ! Checks that PRIVATE enities are visible to submodules.
 !
