@@ -525,14 +525,14 @@ struct emit_note_data
 
 /* Structure holding a refcounted hash table.  If refcount > 1,
    it must be first unshared before modified.  */
-typedef struct shared_hash_def
+struct shared_hash
 {
   /* Reference count.  */
   int refcount;
 
   /* Actual hash table.  */
   variable_table_type *htab;
-} *shared_hash;
+};
 
 /* Structure holding the IN or OUT set for a basic block.  */
 struct dataflow_set
@@ -544,10 +544,10 @@ struct dataflow_set
   attrs regs[FIRST_PSEUDO_REGISTER];
 
   /* Variable locations.  */
-  shared_hash vars;
+  shared_hash *vars;
 
   /* Vars that is being traversed.  */
-  shared_hash traversed_vars;
+  shared_hash *traversed_vars;
 };
 
 /* The structure (one for each basic block) containing the information
@@ -593,8 +593,8 @@ static object_allocator<location_chain> location_chain_pool
   ("location_chain pool", 1024);
 
 /* Alloc pool for struct shared_hash_def.  */
-static object_allocator<shared_hash_def> shared_hash_def_pool
-  ("shared_hash_def pool", 256);
+static object_allocator<shared_hash> shared_hash_pool
+  ("shared_hash pool", 256);
 
 /* Alloc pool for struct loc_exp_dep_s for NOT_ONEPART variables.  */
 object_allocator<loc_exp_dep> loc_exp_dep_pool ("loc_exp_dep pool", 64);
@@ -611,7 +611,7 @@ static bool emit_notes;
 static variable_table_type *dropped_values;
 
 /* Empty shared hashtable.  */
-static shared_hash empty_shared_hash;
+static shared_hash *empty_shared_hash;
 
 /* Scratch register bitmap used by cselib_expand_value_rtx.  */
 static bitmap scratch_regs = NULL;
@@ -1571,7 +1571,7 @@ attrs_list_mpdv_union (attrs *dstp, attrs src, attrs src2)
 /* Return true if VARS is shared.  */
 
 static inline bool
-shared_hash_shared (shared_hash vars)
+shared_hash_shared (shared_hash *vars)
 {
   return vars->refcount > 1;
 }
@@ -1579,7 +1579,7 @@ shared_hash_shared (shared_hash vars)
 /* Return the hash table for VARS.  */
 
 static inline variable_table_type *
-shared_hash_htab (shared_hash vars)
+shared_hash_htab (shared_hash *vars)
 {
   return vars->htab;
 }
@@ -1587,7 +1587,7 @@ shared_hash_htab (shared_hash vars)
 /* Return true if VAR is shared, or maybe because VARS is shared.  */
 
 static inline bool
-shared_var_p (variable var, shared_hash vars)
+shared_var_p (variable var, shared_hash *vars)
 {
   /* Don't count an entry in the changed_variables table as a duplicate.  */
   return ((var->refcount > 1 + (int) var->in_changed_variables)
@@ -1596,10 +1596,10 @@ shared_var_p (variable var, shared_hash vars)
 
 /* Copy variables into a new hash table.  */
 
-static shared_hash
-shared_hash_unshare (shared_hash vars)
+static shared_hash *
+shared_hash_unshare (shared_hash *vars)
 {
-  shared_hash new_vars = new shared_hash_def;
+  shared_hash *new_vars = new shared_hash;
   gcc_assert (vars->refcount > 1);
   new_vars->refcount = 1;
   new_vars->htab = new variable_table_type (vars->htab->elements () + 3);
@@ -1610,8 +1610,8 @@ shared_hash_unshare (shared_hash vars)
 
 /* Increment reference counter on VARS and return it.  */
 
-static inline shared_hash
-shared_hash_copy (shared_hash vars)
+static inline shared_hash *
+shared_hash_copy (shared_hash *vars)
 {
   vars->refcount++;
   return vars;
@@ -1621,7 +1621,7 @@ shared_hash_copy (shared_hash vars)
    anymore.  */
 
 static void
-shared_hash_destroy (shared_hash vars)
+shared_hash_destroy (shared_hash *vars)
 {
   gcc_checking_assert (vars->refcount > 0);
   if (--vars->refcount == 0)
@@ -1635,7 +1635,7 @@ shared_hash_destroy (shared_hash vars)
    INSERT, insert it if not already present.  */
 
 static inline variable_def **
-shared_hash_find_slot_unshare_1 (shared_hash *pvars, decl_or_value dv,
+shared_hash_find_slot_unshare_1 (shared_hash **pvars, decl_or_value dv,
 				 hashval_t dvhash, enum insert_option ins)
 {
   if (shared_hash_shared (*pvars))
@@ -1644,7 +1644,7 @@ shared_hash_find_slot_unshare_1 (shared_hash *pvars, decl_or_value dv,
 }
 
 static inline variable_def **
-shared_hash_find_slot_unshare (shared_hash *pvars, decl_or_value dv,
+shared_hash_find_slot_unshare (shared_hash **pvars, decl_or_value dv,
 			       enum insert_option ins)
 {
   return shared_hash_find_slot_unshare_1 (pvars, dv, dv_htab_hash (dv), ins);
@@ -1655,7 +1655,7 @@ shared_hash_find_slot_unshare (shared_hash *pvars, decl_or_value dv,
    return NULL.  */
 
 static inline variable_def **
-shared_hash_find_slot_1 (shared_hash vars, decl_or_value dv, hashval_t dvhash)
+shared_hash_find_slot_1 (shared_hash *vars, decl_or_value dv, hashval_t dvhash)
 {
   return shared_hash_htab (vars)->find_slot_with_hash (dv, dvhash,
 						       shared_hash_shared (vars)
@@ -1663,7 +1663,7 @@ shared_hash_find_slot_1 (shared_hash vars, decl_or_value dv, hashval_t dvhash)
 }
 
 static inline variable_def **
-shared_hash_find_slot (shared_hash vars, decl_or_value dv)
+shared_hash_find_slot (shared_hash *vars, decl_or_value dv)
 {
   return shared_hash_find_slot_1 (vars, dv, dv_htab_hash (dv));
 }
@@ -1671,14 +1671,14 @@ shared_hash_find_slot (shared_hash vars, decl_or_value dv)
 /* Return slot for DV only if it is already present in the hash table.  */
 
 static inline variable_def **
-shared_hash_find_slot_noinsert_1 (shared_hash vars, decl_or_value dv,
+shared_hash_find_slot_noinsert_1 (shared_hash *vars, decl_or_value dv,
 				  hashval_t dvhash)
 {
   return shared_hash_htab (vars)->find_slot_with_hash (dv, dvhash, NO_INSERT);
 }
 
 static inline variable_def **
-shared_hash_find_slot_noinsert (shared_hash vars, decl_or_value dv)
+shared_hash_find_slot_noinsert (shared_hash *vars, decl_or_value dv)
 {
   return shared_hash_find_slot_noinsert_1 (vars, dv, dv_htab_hash (dv));
 }
@@ -1687,13 +1687,13 @@ shared_hash_find_slot_noinsert (shared_hash vars, decl_or_value dv)
    table.  */
 
 static inline variable
-shared_hash_find_1 (shared_hash vars, decl_or_value dv, hashval_t dvhash)
+shared_hash_find_1 (shared_hash *vars, decl_or_value dv, hashval_t dvhash)
 {
   return shared_hash_htab (vars)->find_with_hash (dv, dvhash);
 }
 
 static inline variable
-shared_hash_find (shared_hash vars, decl_or_value dv)
+shared_hash_find (shared_hash *vars, decl_or_value dv)
 {
   return shared_hash_find_1 (vars, dv, dv_htab_hash (dv));
 }
@@ -4226,7 +4226,7 @@ dataflow_set_merge (dataflow_set *dst, dataflow_set *src2)
   dataflow_set_init (dst);
   dst->stack_adjust = cur.stack_adjust;
   shared_hash_destroy (dst->vars);
-  dst->vars = new shared_hash_def;
+  dst->vars = new shared_hash;
   dst->vars->refcount = 1;
   dst->vars->htab = new variable_table_type (MAX (src1_elems, src2_elems));
 
@@ -8946,7 +8946,7 @@ process_changed_values (variable_table_type *htab)
 
 static void
 emit_notes_for_changes (rtx_insn *insn, enum emit_note_where where,
-			shared_hash vars)
+			shared_hash *vars)
 {
   emit_note_data data;
   variable_table_type *htab = shared_hash_htab (vars);
@@ -9859,7 +9859,7 @@ vt_initialize (void)
 
   alloc_aux_for_blocks (sizeof (struct variable_tracking_info_def));
 
-  empty_shared_hash = new shared_hash_def;
+  empty_shared_hash = new shared_hash;
   empty_shared_hash->refcount = 1;
   empty_shared_hash->htab = new variable_table_type (1);
   changed_variables = new variable_table_type (10);
@@ -10220,7 +10220,7 @@ vt_finalize (void)
   attrs_def_pool.release ();
   var_pool.release ();
   location_chain_pool.release ();
-  shared_hash_def_pool.release ();
+  shared_hash_pool.release ();
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
