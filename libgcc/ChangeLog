@@ -1,3 +1,7 @@
+2015-09-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (SIGN_EXTEND): Cast -1 to unsigned.
+
 2015-09-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/gthr-rtems.h (__GTHREADS_CXX0X): New.
