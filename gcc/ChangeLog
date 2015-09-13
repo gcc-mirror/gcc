@@ -1,5 +1,25 @@
 2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-ssa-ter.c (temp_expr_table_d): Rename to temp_expr_table
+	and remove typedef.
+	(new_temp_expr_table): Adjust.
+	(free_temp_expr_table): Likewise.
+	(version_to_be_replaced_p): Likewise.
+	(make_dependent_on_partition): Likewise.
+	(add_to_partition_kill_list): Likewise.
+	(remove_from_partition_kill_list): Likewise.
+	(add_dependence): Likewise.
+	(finished_with_expr): Likewise.
+	(process_replaceable): Likewise.
+	(kill_expr): Likewise.
+	(kill_virtual_exprs): Likewise.
+	(mark_replaceable): Likewise.
+	(find_replaceable_in_bb): Likewise.
+	(find_replaceable_exprs): Likewise.
+	(debug_ter): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bt-load.c (struct btr_def_group): Rename from btr_def_group_s.
 	(struct btr_user): Rename from btr_user_s.
 	(struct btr_def): Rename from btr_def_s.
