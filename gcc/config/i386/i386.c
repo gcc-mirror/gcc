@@ -3345,10 +3345,10 @@ ix86_option_override_internal (bool main_args_p,
 	PTA_IVYBRIDGE},
       {"core-avx-i", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
 	PTA_IVYBRIDGE},
-      {"haswell", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_HASWELL},
-      {"core-avx2", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_HASWELL},
-      {"broadwell", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_BROADWELL},
-      {"skylake", PROCESSOR_HASWELL, CPU_NEHALEM, PTA_SKYLAKE},
+      {"haswell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
+      {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
+      {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
+      {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -51732,7 +51732,7 @@ ix86_reassociation_width (unsigned int, machine_mode mode)
   if (INTEGRAL_MODE_P (mode) && TARGET_REASSOC_INT_TO_PARALLEL)
     return 2;
   else if (FLOAT_MODE_P (mode) && TARGET_REASSOC_FP_TO_PARALLEL)
-    return 2;
+    return ((TARGET_64BIT && ix86_tune == PROCESSOR_HASWELL)? 4 : 2);
   else
     return 1;
 }
