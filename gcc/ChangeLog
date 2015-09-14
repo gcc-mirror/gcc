@@ -1,3 +1,8 @@
+2015-09-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/sparc/predicates.md (const_all_ones_operand): Use
+	CONSTM1_RTX to simplify definition.
+
 2015-09-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/67061

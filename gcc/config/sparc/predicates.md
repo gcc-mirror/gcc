@@ -27,31 +27,9 @@
 ;; Return true if the integer representation of OP is
 ;; all-ones.
 (define_predicate "const_all_ones_operand"
-  (match_code "const_int,const_double,const_vector")
-{
-  if (GET_CODE (op) == CONST_INT && INTVAL (op) == -1)
-    return true;
-#if HOST_BITS_PER_WIDE_INT == 32
-  if (GET_CODE (op) == CONST_DOUBLE
-      && GET_MODE (op) == VOIDmode
-      && CONST_DOUBLE_HIGH (op) == ~(HOST_WIDE_INT)0
-      && CONST_DOUBLE_LOW (op) == ~(HOST_WIDE_INT)0)
-    return true;
-#endif
-  if (GET_CODE (op) == CONST_VECTOR)
-    {
-      int i, num_elem = CONST_VECTOR_NUNITS (op);
-
-      for (i = 0; i < num_elem; i++)
-        {
-          rtx n = CONST_VECTOR_ELT (op, i);
-          if (! const_all_ones_operand (n, mode))
-            return false;
-        }
-      return true;
-    }
-  return false;
-})
+  (and (match_code "const_int,const_double,const_vector")
+       (match_test "INTEGRAL_MODE_P (GET_MODE (op))")
+       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
 ;; Return true if OP is the integer constant 4096.
 (define_predicate "const_4096_operand"
