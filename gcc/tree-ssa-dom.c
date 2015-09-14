@@ -231,7 +231,7 @@ static struct opt_stats_d opt_stats;
 /* Local functions.  */
 static void optimize_stmt (basic_block, gimple_stmt_iterator);
 static tree lookup_avail_expr (gimple, bool);
-static hashval_t avail_expr_hash (const void *);
+static hashval_t avail_expr_hash (struct expr_hash_elt *);
 static void htab_statistics (FILE *,
 			     const hash_table<expr_elt_hasher> &);
 static void record_cond (cond_equivalence *);
@@ -2661,9 +2661,9 @@ lookup_avail_expr (gimple stmt, bool insert)
    its operands.  */
 
 static hashval_t
-avail_expr_hash (const void *p)
+avail_expr_hash (struct expr_hash_elt *p)
 {
-  const struct hashable_expr *expr = &((const struct expr_hash_elt *)p)->expr;
+  const struct hashable_expr *expr = &p->expr;
   inchash::hash hstate;
 
   inchash::add_hashable_expr (expr, hstate);

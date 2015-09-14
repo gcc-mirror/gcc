@@ -1,3 +1,9 @@
+2015-09-14  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/47679
+	* tree-ssa-dom.c (avail_expr_hash): Pass a pointer to a real
+	type rather than void *.
+
 2015-09-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/67460
