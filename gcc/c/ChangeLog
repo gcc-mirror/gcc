@@ -1,3 +1,8 @@
+2015-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (set_nonincremental_init_from_string): Use
+	HOST_WIDE_INT_M1U when shifting a negative value.
+
 2015-09-09  Mark Wielaard  <mjw@redhat.com>
 
 	* c-typeck.c (build_binary_op): Check and warn when nonnull arg

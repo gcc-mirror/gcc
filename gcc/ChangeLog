@@ -1,3 +1,9 @@
+2015-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* rtlanal.c (split_double): Cast to unsigned when shifting a negative
+	value.
+	* sched-int.h (UNKNOWN_DEP_COST): Likewise.
+
 2015-09-11  Mark Wielaard  <mjw@redhat.com>
 
 	PR c/28901

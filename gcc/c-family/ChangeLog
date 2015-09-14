@@ -1,3 +1,8 @@
+2015-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (warn_for_sign_compare): Cast to unsigned when shifting
+	a negative value.
+
 2015-09-11  Mark Wielaard  <mjw@redhat.com>
 
 	PR c/28901
