@@ -227,9 +227,6 @@ extern Node_Id error_gnat_node;
    types with representation information.  */
 extern bool type_annotate_only;
 
-/* Current file name without path.  */
-extern const char *ref_filename;
-
 /* This structure must be kept synchronized with Call_Back_End.  */
 struct File_Info_Type
 {
@@ -288,9 +285,10 @@ extern int gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 extern void process_type (Entity_Id gnat_entity);
 
 /* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a source code
-   location and false if it doesn't.  In the former case, set the Gigi global
-   variable REF_FILENAME to the simple debug file name as given by sinput.  */
-extern bool Sloc_to_locus (Source_Ptr Sloc, location_t *locus);
+   location and false if it doesn't.  If CLEAR_COLUMN is true, set the column
+   information to 0.  */
+extern bool Sloc_to_locus (Source_Ptr Sloc, location_t *locus,
+			   bool clear_column = false);
 
 /* Post an error message.  MSG is the error message, properly annotated.
    NODE is the node at which to post the error and the node to use for the
@@ -874,26 +872,22 @@ extern tree build_compound_expr (tree result_type, tree stmt_operand,
    this doesn't fold the call, hence it will always return a CALL_EXPR.  */
 extern tree build_call_n_expr (tree fndecl, int n, ...);
 
-/* Call a function that raises an exception and pass the line number and file
-   name, if requested.  MSG says which exception function to call.
-
-   GNAT_NODE is the gnat node conveying the source location for which the
-   error should be signaled, or Empty in which case the error is signaled on
-   the current ref_file_name/input_line.
-
-   KIND says which kind of exception this is for
-    (N_Raise_{Constraint,Storage,Program}_Error).  */
+/* Build a call to a function that raises an exception and passes file name
+   and line number, if requested.  MSG says which exception function to call.
+   GNAT_NODE is the node conveying the source location for which the error
+   should be signaled, or Empty in which case the error is signaled for the
+   current location.  KIND says which kind of exception node this is for,
+   among N_Raise_{Constraint,Storage,Program}_Error.  */
 extern tree build_call_raise (int msg, Node_Id gnat_node, char kind);
-
-/* Similar to build_call_raise, for an index or range check exception as
-   determined by MSG, with extra information generated of the form
-   "INDEX out of range FIRST..LAST".  */
-extern tree build_call_raise_range (int msg, Node_Id gnat_node,
-				    tree index, tree first, tree last);
 
 /* Similar to build_call_raise, with extra information about the column
    where the check failed.  */
 extern tree build_call_raise_column (int msg, Node_Id gnat_node);
+
+/* Similar to build_call_raise_column, for an index or range check exception ,
+   with extra information of the form "INDEX out of range FIRST..LAST".  */
+extern tree build_call_raise_range (int msg, Node_Id gnat_node,
+				    tree index, tree first, tree last);
 
 /* Return a CONSTRUCTOR of TYPE whose elements are V.  This is not the
    same as build_constructor in the language-independent tree.c.  */
