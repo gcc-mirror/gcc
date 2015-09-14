@@ -192,18 +192,19 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
   if (!REG_P (reg) || insn == NULL_RTX)
     return result;
 
-  rtx_insn* previnsn = insn;
-
-  for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
-       previnsn = result.insn, result.insn = stepfunc (result.insn))
+  for (rtx_insn* i = stepfunc (insn); i != NULL_RTX; i = stepfunc (i))
     {
-      if (BARRIER_P (result.insn))
+      if (BARRIER_P (i))
 	break;
-      if (!NONJUMP_INSN_P (result.insn))
-	continue;
-      if (reg_set_p (reg, result.insn))
+      if (!INSN_P (i) || DEBUG_INSN_P (i))
+	  continue;
+      if (reg_set_p (reg, i))
 	{
-	  result.set_rtx = set_of (reg, result.insn);
+	  if (CALL_P (i))
+	    break;
+
+	  result.insn = i;
+	  result.set_rtx = set_of (reg, i);
 
 	  if (result.set_rtx == NULL_RTX || GET_CODE (result.set_rtx) != SET)
 	    break;
@@ -225,12 +226,6 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
 	  break;
 	}
     }
-
-  /* If the loop above stopped at the first insn in the list,
-     result.insn will be null.  Use the insn from the previous iteration
-     in this case.  */
-  if (result.insn == NULL)
-    result.insn = previnsn;
 
   if (result.set_src != NULL)
     gcc_assert (result.insn != NULL && result.set_rtx != NULL);
