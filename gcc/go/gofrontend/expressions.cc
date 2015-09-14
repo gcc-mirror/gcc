@@ -5307,6 +5307,14 @@ Binary_expression::do_determine_type(const Type_context* context)
 			|| this->op_ == OPERATOR_GT
 			|| this->op_ == OPERATOR_GE);
 
+  // For constant expressions, the context of the result is not useful in
+  // determining the types of the operands.  It is only legal to use abstract
+  // boolean, numeric, and string constants as operands where it is legal to
+  // use non-abstract boolean, numeric, and string constants, respectively.
+  // Any issues with the operation will be resolved in the check_types pass.
+  bool is_constant_expr = (this->left_->is_constant()
+                           && this->right_->is_constant());
+
   Type_context subcontext(*context);
 
   if (is_comparison)
@@ -5351,7 +5359,8 @@ Binary_expression::do_determine_type(const Type_context* context)
 	subcontext.type = subcontext.type->make_non_abstract_type();
     }
 
-  this->left_->determine_type(&subcontext);
+  if (!is_constant_expr)
+    this->left_->determine_type(&subcontext);
 
   if (is_shift_op)
     {
@@ -5371,7 +5380,8 @@ Binary_expression::do_determine_type(const Type_context* context)
       subcontext.may_be_abstract = false;
     }
 
-  this->right_->determine_type(&subcontext);
+  if (!is_constant_expr)
+    this->right_->determine_type(&subcontext);
 
   if (is_comparison)
     {
@@ -5396,7 +5406,8 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
     {
     case OPERATOR_OROR:
     case OPERATOR_ANDAND:
-      if (!type->is_boolean_type())
+      if (!type->is_boolean_type()
+          || !otype->is_boolean_type())
 	{
 	  error_at(location, "expected boolean type");
 	  return false;
@@ -5431,10 +5442,8 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
 
     case OPERATOR_PLUS:
     case OPERATOR_PLUSEQ:
-      if (type->integer_type() == NULL
-	  && type->float_type() == NULL
-	  && type->complex_type() == NULL
-	  && !type->is_string_type())
+      if ((!type->is_numeric_type() && !type->is_string_type())
+          || (!otype->is_numeric_type() && !otype->is_string_type()))
 	{
 	  error_at(location,
 		   "expected integer, floating, complex, or string type");
@@ -5448,9 +5457,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
     case OPERATOR_MULTEQ:
     case OPERATOR_DIV:
     case OPERATOR_DIVEQ:
-      if (type->integer_type() == NULL
-	  && type->float_type() == NULL
-	  && type->complex_type() == NULL)
+      if (!type->is_numeric_type() || !otype->is_numeric_type())
 	{
 	  error_at(location, "expected integer, floating, or complex type");
 	  return false;
@@ -5467,7 +5474,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
     case OPERATOR_XOREQ:
     case OPERATOR_BITCLEAR:
     case OPERATOR_BITCLEAREQ:
-      if (type->integer_type() == NULL)
+      if (type->integer_type() == NULL || otype->integer_type() == NULL)
 	{
 	  error_at(location, "expected integer type");
 	  return false;
