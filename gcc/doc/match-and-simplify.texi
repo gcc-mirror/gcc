@@ -118,8 +118,8 @@ be a valid GIMPLE operand (so you cannot generate expressions in C code).
 @smallexample
 (simplify
   (trunc_mod integer_zerop@@0 @@1)
-  (if (!integer_zerop (@@1)))
-  @@0)
+  (if (!integer_zerop (@@1))
+   @@0))
 @end smallexample
 
 Here @code{@@0} captures the first operand of the trunc_mod expression
@@ -130,9 +130,11 @@ can be unconstrained or capture expresions or predicates.
 This example introduces an optional operand of simplify,
 the if-expression.  This condition is evaluated after the
 expression matched in the IL and is required to evaluate to true
-to enable the replacement expression.  The expression operand
-of the @code{if} is a standard C expression which may contain references
-to captures.
+to enable the replacement expression in the second operand
+position.  The expression operand of the @code{if} is a standard C
+expression which may contain references to captures.  The @code{if}
+has an optional third operand which may contain the replacement
+expression that is enabled when the condition evaluates to false.
 
 A @code{if} expression can be used to specify a common condition
 for multiple simplify patterns, avoiding the need
@@ -149,7 +151,47 @@ to repeat that multiple times:
     (negate @@1)))
 @end smallexample
 
+Note that @code{if}s in outer position do not have the optional
+else clause but instead have multiple then clauses.
+
 Ifs can be nested.
+
+There exists a @code{switch} expression which can be used to
+chain conditions avoiding nesting @code{if}s too much:
+
+@smallexample
+(simplify
+ (simple_comparison @@0 REAL_CST@@1)
+ (switch
+  /* a CMP (-0) -> a CMP 0  */
+  (if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@@1)))
+   (cmp @@0 @{ build_real (TREE_TYPE (@@1), dconst0); @}))
+  /* x != NaN is always true, other ops are always false.  */
+  (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@@1))
+       && ! HONOR_SNANS (@@1))
+   @{ constant_boolean_node (cmp == NE_EXPR, type); @})))
+@end smallexample
+
+Is equal to
+
+@smallexample
+(simplify
+ (simple_comparison @@0 REAL_CST@@1)
+ (switch
+  /* a CMP (-0) -> a CMP 0  */
+  (if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@@1)))
+   (cmp @@0 @{ build_real (TREE_TYPE (@@1), dconst0); @})
+   /* x != NaN is always true, other ops are always false.  */
+   (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@@1))
+        && ! HONOR_SNANS (@@1))
+    @{ constant_boolean_node (cmp == NE_EXPR, type); @}))))
+@end smallexample
+
+which has the second @code{if} in the else operand of the first.
+The @code{switch} expression takes @code{if} expressions as
+operands (which may not have else clauses) and as a last operand
+a replacement expression which should be enabled by default if
+no other condition evaluated to true.
 
 Captures can also be used for capturing results of sub-expressions.
 
