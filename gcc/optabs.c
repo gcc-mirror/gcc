@@ -7521,9 +7521,10 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   if (libfunc != NULL)
     {
       rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
-      target_oval = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
-					     mode, 3, addr, ptr_mode,
-					     expected, mode, desired, mode);
+      rtx target = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
+					    mode, 3, addr, ptr_mode,
+					    expected, mode, desired, mode);
+      emit_move_insn (target_oval, target);
 
       /* Compute the boolean return value only if requested.  */
       if (ptarget_bool)
