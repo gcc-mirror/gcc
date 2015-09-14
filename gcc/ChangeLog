@@ -1,3 +1,13 @@
+2015-09-11  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* toplev.c (check_global_declaration): Check and use
+	warn_unused_const_variable.
+	* doc/invoke.texi (Warning Options): Add -Wunused-const-variable.
+	(-Wunused-variable): Remove non-constant. For C implies
+	-Wunused-const-variable.
+	(-Wunused-const-variable): New.
+
 2015-09-14  Richard Biener  <rguenther@suse.de>
 
 	* doc/match-and-simplify.texi: Update for changed syntax

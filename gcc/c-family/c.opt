@@ -912,6 +912,14 @@ Wunused-result
 C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
+Wunused-variable
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wunused)
+; documented in common.opt
+
+Wunused-const-variable
+C ObjC C++ ObjC++ Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable)
+Warn when a const variable is unused
+
 Wvariadic-macros
 C ObjC C++ ObjC++ CPP(warn_variadic_macros) CppReason(CPP_W_VARIADIC_MACROS) Var(cpp_warn_variadic_macros) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic || Wtraditional)
 Warn about using variadic macros

@@ -1,3 +1,9 @@
+2015-09-11  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* c.opt (Wunused-variable): Option from common.opt.
+	(Wunused-const-variable): New option.
+
 2015-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53184
