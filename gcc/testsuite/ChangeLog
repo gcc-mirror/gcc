@@ -1,3 +1,8 @@
+2015-09-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gomp/dump-new-function-3.c (dg-final): Also scan for $loopfn.
+	* gcc.dg/gomp/notify-new-function-3.c (dg-final): Ditto.
+
 2015-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51911
