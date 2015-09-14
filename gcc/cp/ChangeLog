@@ -1,3 +1,9 @@
+2015-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51911
+	* parser.c (cp_parser_new_expression): Enforce 5.3.4/2 (as amended
+	per the spirit of DR 1467).
+
 2015-09-11  Mark Wielaard  <mjw@redhat.com>
 
 	PR c/28901
