@@ -1,3 +1,12 @@
+2015-09-14  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/haswell.md: New file describing Haswell pipeline.
+	* config/i386/i386.c (processor_alias_table): Use CPU_HASWELL for
+	haswell-like processors.
+	(ix86_reassociation_width): Increase reassociation width for 64-bit
+	Haswell processor family.
+	* config/i386/i386.md: Introduce haswell cpu and include new md file.
+
 2015-09-14  Richard Biener  <rguenther@suse.de>
 
 	* doc/match-and-simplify.texi: Fixup some formatting issues
