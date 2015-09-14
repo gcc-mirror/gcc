@@ -186,19 +186,35 @@ preprocessor directives.
   (bit_and @@1 @@0))
 @end smallexample
 
-Here we introduce flags on match expressions.  There is currently
-a single flag, @code{c}, which denotes that the expression should
+Here we introduce flags on match expressions.  There used flag
+above, @code{c}, denotes that the expression should
 be also matched commutated.  Thus the above match expression
 is really the following four match expressions:
 
+@smallexample
   (bit_and integral_op_p@@0 (bit_ior (bit_not @@0) @@1))
   (bit_and (bit_ior (bit_not @@0) @@1) integral_op_p@@0)
   (bit_and integral_op_p@@0 (bit_ior @@1 (bit_not @@0)))
   (bit_and (bit_ior @@1 (bit_not @@0)) integral_op_p@@0)
+@end smallexample
 
 Usual canonicalizations you know from GENERIC expressions are
 applied before matching, so for example constant operands always
 come second in commutative expressions.
+
+The second supported flag is @code{s} which tells the code
+generator to fail the pattern if the expression marked with
+@code{s} does have more than one use.  For example in
+
+@smallexample
+(simplify
+  (pointer_plus (pointer_plus:s @@0 @@1) @@3)
+  (pointer_plus @@0 (plus @@1 @@3)))
+@end smallexample
+
+this avoids the association if @code{(pointer_plus @@0 @@1)} is
+used outside of the matched expression and thus it would stay
+live and not trivially removed by dead code elimination.
 
 More features exist to avoid too much repetition.
 
@@ -291,17 +307,17 @@ with a @code{?}:
 
 @smallexample
 (simplify
- (eq (convert@@0 @@1) (convert? @@2))
+ (eq (convert@@0 @@1) (convert@? @@2))
  (eq @@1 (convert @@2)))
 @end smallexample
 
 which will match both @code{(eq (convert @@1) (convert @@2))} and
 @code{(eq (convert @@1) @@2)}.  The optional converts are supposed
 to be all either present or not, thus
-@code{(eq (convert? @@1) (convert? @@2))} will result in two
+@code{(eq (convert@? @@1) (convert@? @@2))} will result in two
 patterns only.  If you want to match all four combinations you
 have access to two additional conditional converts as in
-@code{(eq (convert1? @@1) (convert2? @@2))}.
+@code{(eq (convert1@? @@1) (convert2@? @@2))}.
 
 Predicates available from the GCC middle-end need to be made
 available explicitely via @code{define_predicates}:
