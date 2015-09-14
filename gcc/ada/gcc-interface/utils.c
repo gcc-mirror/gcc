@@ -5278,7 +5278,7 @@ builtin_decl_for (tree name)
    heavily inspired from the "C" family implementation, with chunks copied
    verbatim from there.
 
-   Two obvious TODO candidates are
+   Two obvious improvement candidates are:
    o Use a more efficient name/decl mapping scheme
    o Devise a middle-end infrastructure to avoid having to copy
      pieces between front-ends.  */
@@ -5627,7 +5627,7 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     DECL_PURE_P (*node) = 1;
-  /* ??? TODO: Support types.  */
+  /* TODO: support types.  */
   else
     {
       warning (OPT_Wattributes, "%qs attribute ignored",
