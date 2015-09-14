@@ -4415,6 +4415,32 @@
 ;; -------------------------------------------------------------------
 ;; Reload support
 ;; -------------------------------------------------------------------
+;; Reload Scalar Floating point modes from constant pool.
+;; The AArch64 port doesn't have __int128 constant move support.
+(define_expand "aarch64_reload_movcp<GPF_TF:mode><P:mode>"
+ [(set (match_operand:GPF_TF 0 "register_operand" "=w")
+       (mem:GPF_TF (match_operand 1 "aarch64_constant_pool_symref" "S")))
+  (clobber (match_operand:P 2 "register_operand" "=&r"))]
+ "TARGET_FLOAT && nopcrelative_literal_loads"
+ {
+   aarch64_expand_mov_immediate (operands[2], XEXP (operands[1], 0));
+   emit_move_insn (operands[0], gen_rtx_MEM (<GPF_TF:MODE>mode, operands[2]));
+   DONE;
+ }
+)
+
+;; Reload Vector modes from constant pool.
+(define_expand "aarch64_reload_movcp<VALL:mode><P:mode>"
+ [(set (match_operand:VALL 0 "register_operand" "=w")
+       (mem:VALL (match_operand 1 "aarch64_constant_pool_symref" "S")))
+  (clobber (match_operand:P 2 "register_operand" "=&r"))]
+ "TARGET_FLOAT && nopcrelative_literal_loads"
+ {
+   aarch64_expand_mov_immediate (operands[2], XEXP (operands[1], 0));
+   emit_move_insn (operands[0], gen_rtx_MEM (<VALL:MODE>mode, operands[2]));
+   DONE;
+ }
+)
 
 (define_expand "aarch64_reload_mov<mode>"
   [(set (match_operand:TX 0 "register_operand" "=w")
