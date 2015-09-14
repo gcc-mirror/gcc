@@ -1,3 +1,9 @@
+2015-09-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67061
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Simplfiy for-loop.
+	Handle call insns.
+
 2015-09-14  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* lto-wrapper.c (merge_and_complain): Add OPT_fdiagnostics_show_caret,
