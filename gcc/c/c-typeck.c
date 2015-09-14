@@ -8276,7 +8276,7 @@ set_nonincremental_init_from_string (tree str,
 	    {
 	      if (val[0] & (((HOST_WIDE_INT) 1) << (bitpos - 1)))
 		{
-		  val[0] |= ((HOST_WIDE_INT) -1) << bitpos;
+		  val[0] |= HOST_WIDE_INT_M1U << bitpos;
 		  val[1] = -1;
 		}
 	    }
@@ -8287,8 +8287,7 @@ set_nonincremental_init_from_string (tree str,
 	    }
 	  else if (val[1] & (((HOST_WIDE_INT) 1)
 			     << (bitpos - 1 - HOST_BITS_PER_WIDE_INT)))
-	    val[1] |= ((HOST_WIDE_INT) -1)
-		      << (bitpos - HOST_BITS_PER_WIDE_INT);
+	    val[1] |= HOST_WIDE_INT_M1U << (bitpos - HOST_BITS_PER_WIDE_INT);
 	}
 
       value = wide_int_to_tree (type,

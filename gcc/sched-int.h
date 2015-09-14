@@ -240,7 +240,7 @@ struct _dep
   int cost:20;
 };
 
-#define UNKNOWN_DEP_COST (-1<<19)
+#define UNKNOWN_DEP_COST ((int) ((unsigned int) -1 << 19))
 
 typedef struct _dep dep_def;
 typedef dep_def *dep_t;
