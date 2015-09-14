@@ -44,6 +44,9 @@
 ;; Double vector modes.
 (define_mode_iterator VDF [V2SF V4HF])
 
+;; Iterator for all scalar floating point modes (SF, DF and TF)
+(define_mode_iterator GPF_TF [SF DF TF])
+
 ;; Integer vector modes.
 (define_mode_iterator VDQ_I [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
 

@@ -1,3 +1,22 @@
+2015-09-14  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+    	PR target/63304
+    	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Handle
+    	nopcrelative_literal_loads.
+    	(aarch64_classify_address): Likewise.
+    	(aarch64_constant_pool_reload_icode): Define.
+    	(aarch64_secondary_reload): Handle secondary reloads for
+    	literal pools.
+    	(aarch64_override_options): Handle nopcrelative_literal_loads.
+    	(aarch64_classify_symbol): Handle nopcrelative_literal_loads.
+    	* config/aarch64/aarch64.md (aarch64_reload_movcp<GPF_TF:mode><P:mode>):
+    	Define.
+    	(aarch64_reload_movcp<VALL:mode><P:mode>): Likewise.
+    	* config/aarch64/aarch64.opt (mpc-relative-literal-loads): New option.
+    	* config/aarch64/predicates.md (aarch64_constant_pool_symref): New
+    	predicate.
+    	* doc/invoke.texi (mpc-relative-literal-loads): Document.
+
 2015-09-14  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/67401

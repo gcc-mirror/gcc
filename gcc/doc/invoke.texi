@@ -12449,6 +12449,14 @@ for @var{string} in this option are not guaranteed to be consistent
 across releases.
 
 This option is only intended to be useful when developing GCC.
+
+@item -mpc-relative-literal-loads
+@opindex mpcrelativeliteralloads
+Enable PC relative literal loads. If this option is used, literal
+pools are assumed to have a range of up to 1MiB and an appropriate
+instruction sequence is used. This option has no impact when used
+with @option{-mcmodel=tiny}.
+
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
