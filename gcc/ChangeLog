@@ -1,3 +1,10 @@
+2015-09-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* lto-wrapper.c (merge_and_complain): Add OPT_fdiagnostics_show_caret,
+	OPT_fdiagnostics_show_option, OPT_fdiagnostics_show_location_, and
+	OPT_fshow_column to handled saved option cases.
+	(append_compiler_options): Do not skip the above added options.
+
 2015-09-14  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
     	PR target/63304
