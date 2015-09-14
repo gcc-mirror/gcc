@@ -2807,7 +2807,9 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
       gcc_assert (*init == NULL_TREE);
       *init = TREE_OPERAND (ref, 0);
       /* We expect only the pattern built in Call_to_gnu.  */
-      gcc_assert (DECL_P (TREE_OPERAND (ref, 1)));
+      gcc_assert (DECL_P (TREE_OPERAND (ref, 1))
+		  || (TREE_CODE (TREE_OPERAND (ref, 1)) == COMPONENT_REF
+		      && DECL_P (TREE_OPERAND (TREE_OPERAND (ref, 1), 0))));
       return TREE_OPERAND (ref, 1);
 
     case CALL_EXPR:

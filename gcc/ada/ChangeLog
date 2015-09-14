@@ -1,3 +1,8 @@
+2015-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (gnat_rewrite_reference) <COMPOUND_EXPR>: Add
+	another acceptable pattern for the RHS.
+
 2015-07-24  Micahel Darling  <darlingm@gmail.com>
 
 	PR other/66259
