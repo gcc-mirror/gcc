@@ -1,3 +1,8 @@
+2015-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51911
+	* g++.dg/cpp0x/new-auto1.C: New.
+
 2015-09-11  Mark Wielaard  <mjw@redhat.com>
 
 	PR c/28901
