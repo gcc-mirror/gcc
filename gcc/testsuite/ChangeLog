@@ -175,7 +175,7 @@
 	* gcc.dg/gomp/pr67495.c: New test.
 
 2015-09-09  Aditya Kumar  <hiraditya@msn.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/53852
 	* gcc.dg/graphite/uns-interchange-12.c: Adjust pattern to pass with
@@ -185,7 +185,7 @@
 	* gcc.dg/graphite/uns-interchange-mvt.c: Same.
 
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* gcc.dg/graphite/block-0.c: Modifed test case to match current output.
 	* gcc.dg/graphite/block-1.c: Same.
@@ -440,7 +440,8 @@
 	* lib/ubsan-dg.exp: Likewise.
 
 2015-09-01  Kenneth Zadeck <zadeck@naturalbridge.com>
-        * gcc.c-torture/execute/ieee/20000320-1.c Fixed misplaced test case.
+
+	* gcc.c-torture/execute/ieee/20000320-1.c Fixed misplaced test case.
 
 2015-09-01  Matthew Fortune  <matthew.fortune@imgtec.com>
 	    Andrew Bennett  <andrew.bennett@imgtec.com>
@@ -528,7 +529,7 @@
 
 	* gcc.target/powerpc/swaps-p8-19.c: New test.
 
-2015-08-29 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-08-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/67367
 	* gfortran.dg/read_dir.f90: New test. May fail on some platforms.
@@ -1098,8 +1099,8 @@
 	PR tree-optimization/67221
 	* gcc.dg/torture/pr67221.c: New testcase.
 
-2015-08-17 Mike Stump  <mikestump@comcast.net>
-           Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2015-08-17  Mike Stump  <mikestump@comcast.net>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/memcpy-aligned-1.c: New test.
 
