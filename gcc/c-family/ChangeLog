@@ -1,5 +1,10 @@
 2015-09-14  Marek Polacek  <polacek@redhat.com>
 
+	* c-opts.c (c_common_post_options): Set C++ standard earlier, before
+	setting various warnings.
+
+2015-09-14  Marek Polacek  <polacek@redhat.com>
+
 	* c-common.c (warn_for_sign_compare): Cast to unsigned when shifting
 	a negative value.
 

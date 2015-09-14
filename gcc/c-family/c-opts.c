@@ -800,6 +800,10 @@ c_common_post_options (const char **pfilename)
       && flag_no_builtin)
     flag_tree_loop_distribute_patterns = 0;
 
+  /* Set C++ standard to C++14 if not specified on the command line.  */
+  if (c_dialect_cxx () && cxx_dialect == cxx_unset)
+    set_std_cxx14 (/*ISO*/false);
+
   /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative
      in that standard.  */
@@ -886,10 +890,6 @@ c_common_post_options (const char **pfilename)
      benefit of c_cpp_builtins.  */
   if (flag_abi_version == 0)
     flag_abi_version = 10;
-
-  /* Set C++ standard to C++14 if not specified on the command line.  */
-  if (c_dialect_cxx () && cxx_dialect == cxx_unset)
-    set_std_cxx14 (/*ISO*/false);
 
   if (cxx_dialect >= cxx11)
     {
