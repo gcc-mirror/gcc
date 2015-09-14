@@ -1,3 +1,12 @@
+2015-09-11  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* g++.dg/warn/unused-variable-1.C: New test.
+	* g++.dg/warn/unused-variable-2.C: Likewise.
+	* gcc.dg/unused-4.c: Adjust warning for static const.
+	* gcc.dg/unused-variable-1.c: New test.
+	* gcc.dg/unused-variable-2.c: Likewise.
+
 2015-09-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/private_type_3.f90: Require visibility.

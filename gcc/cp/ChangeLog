@@ -1,3 +1,9 @@
+2015-09-11  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* cp-objcp-common.c (cxx_warn_unused_global_decl): Remove hard-coded
+	VAR_P TREE_READONLY override.
+
 2015-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67318
