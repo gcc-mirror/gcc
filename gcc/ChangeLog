@@ -1,3 +1,8 @@
+2015-09-15  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+        * config/s390/s390.c (s390_const_operand_ok): Add missing
+	brackets.
+
 2015-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR lto/67568
