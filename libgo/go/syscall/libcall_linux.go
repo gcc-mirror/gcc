@@ -408,6 +408,3 @@ func Unlinkat(dirfd int, path string) (err error) {
 
 //sys	Unshare(flags int) (err error)
 //unshare(flags _C_int) _C_int
-
-//sys	Ustat(dev int, ubuf *Ustat_t) (err error)
-//ustat(dev _dev_t, ubuf *Ustat_t) _C_int
