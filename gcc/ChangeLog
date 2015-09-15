@@ -1,3 +1,7 @@
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	* doc/match-and-simplify.texi: Fix wording.
+
 2015-09-15  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (get_shiftadd_cost): Strip
