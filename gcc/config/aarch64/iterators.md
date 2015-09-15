@@ -604,15 +604,6 @@
                               (V4HF "SF") (V8HF "SF")
                               (DF "V2DI")   (V2DF "V2DI")])
 
-;; Similar, for three elements.
-(define_mode_attr V_THREE_ELEM [(V8QI "BLK") (V16QI "BLK")
-                                (V4HI "BLK") (V8HI "BLK")
-                                (V2SI "BLK") (V4SI "BLK")
-                                (DI "EI")    (V2DI "EI")
-                                (V2SF "BLK") (V4SF "BLK")
-                                (V4HF "BLK") (V8HF "BLK")
-                                (DF "EI")    (V2DF "EI")])
-
 ;; Similar, for four elements.
 (define_mode_attr V_FOUR_ELEM [(V8QI "SI")   (V16QI "SI")
                                (V4HI "V4HI") (V8HI "V4HI")

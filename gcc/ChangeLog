@@ -1,3 +1,14 @@
+2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ld3r<mode>):
+	Change operand mode from <V_THREE_ELEM> to BLK.
+	(aarch64_vec_load_lanesci_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesci_lane<mode>): Likewise.
+	(aarch64_ld3r<mode>): Generate MEM rtx with BLKmode, call set_mem_size.
+	(aarch64_ld3_lane<mode>): Likewise.
+	(aarch64_st3_lane<mode>): Likewise.
+	* config/aarch64/iterators.md (V_THREE_ELEM): Remove.
+
 2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md
