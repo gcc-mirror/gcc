@@ -14007,7 +14007,32 @@ CFLAGS=$CFLAGS_hold
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_c_split_stack_supported" >&5
 $as_echo "$libgo_cv_c_split_stack_supported" >&6; }
-if test "$libgo_cv_c_split_stack_supported" = yes; then
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether linker supports split/non-split linked together" >&5
+$as_echo_n "checking whether linker supports split/non-split linked together... " >&6; }
+if test "${libgo_cv_c_linker_split_non_split+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat > conftest1.c << EOF
+extern void f();
+int main() { f(); return 0; }
+EOF
+cat > conftest2.c << EOF
+void f() {}
+EOF
+$CC -c -fsplit-stack $CFLAGS $CPPFLAGS conftest1.c
+$CC -c $CFLAGS $CPPFLAGS conftest2.c
+if $CC -o conftest conftest1.$ac_objext conftest2.$ac_objext; then
+  libgo_cv_c_linker_split_non_split=yes
+else
+  libgo_cv_c_linker_split_non_split=no
+fi
+rm -f conftest1.* conftest2.* conftest
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_c_linker_split_non_split" >&5
+$as_echo "$libgo_cv_c_linker_split_non_split" >&6; }
+
+if test "$libgo_cv_c_split_stack_supported" = yes -a "$libgo_cv_c_linker_split_non_split" = yes; then
   SPLIT_STACK=-fsplit-stack
 
 $as_echo "#define USING_SPLIT_STACK 1" >>confdefs.h
@@ -14016,7 +14041,7 @@ else
   SPLIT_STACK=
 fi
 
- if test "$libgo_cv_c_split_stack_supported" = yes; then
+ if test "$libgo_cv_c_split_stack_supported" = yes -a "$libgo_cv_c_linker_split_non_split" = yes; then
   USING_SPLIT_STACK_TRUE=
   USING_SPLIT_STACK_FALSE='#'
 else
