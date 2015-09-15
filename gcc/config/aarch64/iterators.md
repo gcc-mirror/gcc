@@ -594,8 +594,6 @@
 			(V2SI "V16SI")  (V2SF "V16SF")
 			(DI   "V8DI")  (DF   "V8DF")])
 
-(define_mode_attr VSTRUCT_DREG [(OI "TI") (CI "EI") (XI "OI")])
-
 ;; Mode of pair of elements for each vector mode, to define transfer
 ;; size for structure lane/dup loads and stores.
 (define_mode_attr V_TWO_ELEM [(V8QI "HI")   (V16QI "HI")
