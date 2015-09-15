@@ -6885,11 +6885,6 @@ Builtin_call_expression::do_flatten(Gogo*, Named_object*,
                                     Statement_inserter* inserter)
 {
   Location loc = this->location();
-  if (this->is_erroneous_call())
-    {
-      go_assert(saw_errors());
-      return Expression::make_error(loc);
-    }
 
   switch (this->code_)
     {
@@ -8064,6 +8059,13 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 {
   Gogo* gogo = context->gogo();
   Location location = this->location();
+
+  if (this->is_erroneous_call())
+    {
+      go_assert(saw_errors());
+      return gogo->backend()->error_expression();
+    }
+
   switch (this->code_)
     {
     case BUILTIN_INVALID:
