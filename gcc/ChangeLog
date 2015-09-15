@@ -1,5 +1,12 @@
 2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64.h (AARCH64_VALID_SIMD_DREG_MODE): New.
+
+	* config/aarch64/aarch64.c (aarch64_array_mode_supported_p): Add
+	AARCH64_VALID_SIMD_DREG_MODE.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_ld2r<mode>,
 	aarch64_ld3r<mode>, aarch64_ld4r<mode>): Combine together, making...
 	(aarch64_simd_ld<VSTRUCT:nregs>r<VALLDIF:mode>): ...this.
