@@ -1406,9 +1406,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STACK_OLD_CHECK_PROTECT STACK_CHECK_PROTECT
 #else
 #define STACK_OLD_CHECK_PROTECT						\
- (targetm_common.except_unwind_info (&global_options) == UI_SJLJ	\
+ (!global_options.x_flag_exceptions					\
   ? 75 * UNITS_PER_WORD							\
-  : 8 * 1024)
+  : targetm_common.except_unwind_info (&global_options) == UI_SJLJ	\
+    ? 4 * 1024								\
+    : 8 * 1024)
 #endif
 
 /* Minimum amount of stack required to recover from an anticipated stack
@@ -1416,9 +1418,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    of stack required to propagate an exception.  */
 #ifndef STACK_CHECK_PROTECT
 #define STACK_CHECK_PROTECT						\
- (targetm_common.except_unwind_info (&global_options) == UI_SJLJ	\
-  ? 75 * UNITS_PER_WORD							\
-  : 12 * 1024)
+ (!global_options.x_flag_exceptions					\
+  ? 4 * 1024								\
+  : targetm_common.except_unwind_info (&global_options) == UI_SJLJ	\
+    ? 8 * 1024								\
+    : 12 * 1024)
 #endif
 
 /* Make the maximum frame size be the largest we can and still only need

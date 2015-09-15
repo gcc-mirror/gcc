@@ -3360,10 +3360,10 @@ default value of this macro is zero.
 
 @defmac STACK_CHECK_PROTECT
 The number of bytes of stack needed to recover from a stack overflow, for
-languages where such a recovery is supported.  The default value of 75 words
+languages where such a recovery is supported.  The default value of 4KB/8KB
 with the @code{setjmp}/@code{longjmp}-based exception handling mechanism and
-8192 bytes with other exception handling mechanisms should be adequate for
-most machines.
+8KB/12KB with other exception handling mechanisms should be adequate for most
+architectures and operating systems.
 @end defmac
 
 The following macros are relevant only if neither STACK_CHECK_BUILTIN
