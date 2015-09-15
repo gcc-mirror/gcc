@@ -1,3 +1,10 @@
+2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_call_tls_desc): Use a10 or a2
+	to pass TLS call argument, according to current ABI.
+	* config/xtensa/xtensa.md (tls_call pattern): Use callx8 or
+	callx0 for TLS call, according to current ABI.
+
 2015-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-eh.c (lower_try_finally_dup_block): Clear location information

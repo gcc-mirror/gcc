@@ -1874,23 +1874,23 @@ xtensa_tls_module_base (void)
 static rtx_insn *
 xtensa_call_tls_desc (rtx sym, rtx *retp)
 {
-  rtx fn, arg, a10;
+  rtx fn, arg, a_io;
   rtx_insn *call_insn, *insns;
 
   start_sequence ();
   fn = gen_reg_rtx (Pmode);
   arg = gen_reg_rtx (Pmode);
-  a10 = gen_rtx_REG (Pmode, 10);
+  a_io = gen_rtx_REG (Pmode, WINDOW_SIZE + 2);
 
   emit_insn (gen_tls_func (fn, sym));
   emit_insn (gen_tls_arg (arg, sym));
-  emit_move_insn (a10, arg);
-  call_insn = emit_call_insn (gen_tls_call (a10, fn, sym, const1_rtx));
-  use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), a10);
+  emit_move_insn (a_io, arg);
+  call_insn = emit_call_insn (gen_tls_call (a_io, fn, sym, const1_rtx));
+  use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), a_io);
   insns = get_insns ();
   end_sequence ();
 
-  *retp = a10;
+  *retp = a_io;
   return insns;
 }
 
