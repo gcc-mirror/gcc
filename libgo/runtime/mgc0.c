@@ -2280,7 +2280,7 @@ gc(struct gc_args *args)
 	heap0 = mstats.next_gc*100/(gcpercent+100);
 	// conservatively set next_gc to high value assuming that everything is live
 	// concurrent/lazy sweep will reduce this number while discovering new garbage
-	mstats.next_gc = mstats.heap_alloc+mstats.heap_alloc*gcpercent/100;
+	mstats.next_gc = mstats.heap_alloc+(mstats.heap_alloc-runtime_stacks_sys)*gcpercent/100;
 
 	t4 = runtime_nanotime();
 	mstats.last_gc = runtime_unixnanotime();  // must be Unix time to make sense to user
