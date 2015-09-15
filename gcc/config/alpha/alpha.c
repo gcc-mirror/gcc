@@ -4057,10 +4057,10 @@ alpha_expand_block_clear (rtx operands[])
 	  mem = adjust_address (orig_dst, mode, ofs - inv_alignofs);
 	  set_mem_alias_set (mem, 0);
 
-	  mask = ~(~(HOST_WIDE_INT)0 << (inv_alignofs * 8));
+	  mask = ~(HOST_WIDE_INT_M1U << (inv_alignofs * 8));
 	  if (bytes < alignofs)
 	    {
-	      mask |= ~(HOST_WIDE_INT)0 << ((inv_alignofs + bytes) * 8);
+	      mask |= HOST_WIDE_INT_M1U << ((inv_alignofs + bytes) * 8);
 	      ofs += bytes;
 	      bytes = 0;
 	    }
@@ -4206,7 +4206,7 @@ alpha_expand_block_clear (rtx operands[])
 	  mem = adjust_address (orig_dst, DImode, ofs);
 	  set_mem_alias_set (mem, 0);
 
-	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
+	  mask = HOST_WIDE_INT_M1U << (bytes * 8);
 
 	  tmp = expand_binop (DImode, and_optab, mem, GEN_INT (mask),
 			      NULL_RTX, 1, OPTAB_WIDEN);
@@ -4222,7 +4222,7 @@ alpha_expand_block_clear (rtx operands[])
 	  mem = adjust_address (orig_dst, SImode, ofs);
 	  set_mem_alias_set (mem, 0);
 
-	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
+	  mask = HOST_WIDE_INT_M1U << (bytes * 8);
 
 	  tmp = expand_binop (SImode, and_optab, mem, GEN_INT (mask),
 			      NULL_RTX, 1, OPTAB_WIDEN);

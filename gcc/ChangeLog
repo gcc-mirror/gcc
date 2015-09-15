@@ -1,3 +1,8 @@
+2015-09-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_expand_block_clear): Use
+	HOST_WIDE_INT_M1U instead of ~(HOST_WIDE_INT)0 when shifting.
+
 2015-09-15  Jeff Law  <law@redhat.com>
 
         PR tree-optimization/47679
