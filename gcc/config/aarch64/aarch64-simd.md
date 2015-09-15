@@ -4425,8 +4425,9 @@
 	(subreg:OI
 	  (vec_concat:<VRL2>
 	    (vec_concat:<VDBL>
-	     (unspec:VD [(match_operand:TI 1 "aarch64_simd_struct_operand" "Utv")]
-			UNSPEC_LD2)
+	     (unspec:VD
+		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+		UNSPEC_LD2)
 	     (vec_duplicate:VD (const_int 0)))
 	    (vec_concat:<VDBL>
 	     (unspec:VD [(match_dup 1)]
@@ -4442,8 +4443,9 @@
 	(subreg:OI
 	  (vec_concat:<VRL2>
 	    (vec_concat:<VDBL>
-	     (unspec:DX [(match_operand:TI 1 "aarch64_simd_struct_operand" "Utv")]
-			UNSPEC_LD2)
+	     (unspec:DX
+		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+		UNSPEC_LD2)
 	     (const_int 0))
 	    (vec_concat:<VDBL>
 	     (unspec:DX [(match_dup 1)]
@@ -4460,8 +4462,9 @@
 	 (vec_concat:<VRL3>
 	  (vec_concat:<VRL2>
 	    (vec_concat:<VDBL>
-	     (unspec:VD [(match_operand:EI 1 "aarch64_simd_struct_operand" "Utv")]
-			UNSPEC_LD3)
+	     (unspec:VD
+		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+		UNSPEC_LD3)
 	     (vec_duplicate:VD (const_int 0)))
 	    (vec_concat:<VDBL>
 	     (unspec:VD [(match_dup 1)]
@@ -4482,8 +4485,9 @@
 	 (vec_concat:<VRL3>
 	  (vec_concat:<VRL2>
 	    (vec_concat:<VDBL>
-	     (unspec:DX [(match_operand:EI 1 "aarch64_simd_struct_operand" "Utv")]
-			UNSPEC_LD3)
+	     (unspec:DX
+		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+		UNSPEC_LD3)
 	     (const_int 0))
 	    (vec_concat:<VDBL>
 	     (unspec:DX [(match_dup 1)]
@@ -4504,8 +4508,9 @@
 	 (vec_concat:<VRL4>
 	   (vec_concat:<VRL2>
 	     (vec_concat:<VDBL>
-	       (unspec:VD [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")]
-			  UNSPEC_LD4)
+	       (unspec:VD
+		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+		UNSPEC_LD4)
 	       (vec_duplicate:VD (const_int 0)))
 	      (vec_concat:<VDBL>
 	        (unspec:VD [(match_dup 1)]
@@ -4531,8 +4536,9 @@
 	 (vec_concat:<VRL4>
 	   (vec_concat:<VRL2>
 	     (vec_concat:<VDBL>
-	       (unspec:DX [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")]
-			  UNSPEC_LD4)
+	       (unspec:DX
+		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+		UNSPEC_LD4)
 	       (const_int 0))
 	      (vec_concat:<VDBL>
 	        (unspec:DX [(match_dup 1)]
@@ -4558,8 +4564,8 @@
   (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  machine_mode mode = <VSTRUCT:VSTRUCT_DREG>mode;
-  rtx mem = gen_rtx_MEM (mode, operands[1]);
+  rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
+  set_mem_size (mem, <VSTRUCT:nregs> * 8);
 
   emit_insn (gen_aarch64_ld<VSTRUCT:nregs><VDC:mode>_dreg (operands[0], mem));
   DONE;
@@ -4791,8 +4797,8 @@
 )
 
 (define_insn "aarch64_st2<mode>_dreg"
-  [(set (match_operand:TI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:TI [(match_operand:OI 1 "register_operand" "w")
+  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:BLK [(match_operand:OI 1 "register_operand" "w")
                     (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_ST2))]
   "TARGET_SIMD"
@@ -4801,8 +4807,8 @@
 )
 
 (define_insn "aarch64_st2<mode>_dreg"
-  [(set (match_operand:TI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:TI [(match_operand:OI 1 "register_operand" "w")
+  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:BLK [(match_operand:OI 1 "register_operand" "w")
                     (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_ST2))]
   "TARGET_SIMD"
@@ -4811,8 +4817,8 @@
 )
 
 (define_insn "aarch64_st3<mode>_dreg"
-  [(set (match_operand:EI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:EI [(match_operand:CI 1 "register_operand" "w")
+  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:BLK [(match_operand:CI 1 "register_operand" "w")
                     (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_ST3))]
   "TARGET_SIMD"
@@ -4821,8 +4827,8 @@
 )
 
 (define_insn "aarch64_st3<mode>_dreg"
-  [(set (match_operand:EI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:EI [(match_operand:CI 1 "register_operand" "w")
+  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:BLK [(match_operand:CI 1 "register_operand" "w")
                     (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_ST3))]
   "TARGET_SIMD"
@@ -4831,8 +4837,8 @@
 )
 
 (define_insn "aarch64_st4<mode>_dreg"
-  [(set (match_operand:OI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:OI [(match_operand:XI 1 "register_operand" "w")
+  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:BLK [(match_operand:XI 1 "register_operand" "w")
                     (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_ST4))]
   "TARGET_SIMD"
@@ -4841,8 +4847,8 @@
 )
 
 (define_insn "aarch64_st4<mode>_dreg"
-  [(set (match_operand:OI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:OI [(match_operand:XI 1 "register_operand" "w")
+  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:BLK [(match_operand:XI 1 "register_operand" "w")
                     (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_ST4))]
   "TARGET_SIMD"
@@ -4856,8 +4862,8 @@
   (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_SIMD"
 {
-  machine_mode mode = <VSTRUCT:VSTRUCT_DREG>mode;
-  rtx mem = gen_rtx_MEM (mode, operands[0]);
+  rtx mem = gen_rtx_MEM (BLKmode, operands[0]);
+  set_mem_size (mem, <VSTRUCT:nregs> * 8);
 
   emit_insn (gen_aarch64_st<VSTRUCT:nregs><VDC:mode>_dreg (mem, operands[1]));
   DONE;

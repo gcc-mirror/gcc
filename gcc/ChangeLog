@@ -1,5 +1,21 @@
 2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md
+	(aarch64_ld2<mode>_dreg VD & DX, aarch64_st2<mode>_dreg VD & DX ):
+	Change all TImode operands to BLKmode.
+	(aarch64_ld3<mode>_dreg VD & DX, aarch64_st3<mode>_dreg VD & DX):
+	Change all EImode operands to BLKmode.
+	(aarch64_ld4<mode>_dreg VD & DX, aarch64_st4<mode>_dreg VD & DX):
+	Change all OImode operands to BLKmode.
+
+	(aarch64_ld<VSTRUCT:nregs><VDC:mode>): Generate MEM rtx with BLKmode
+	and call set_mem_size.
+	(aarch64_st<VSTRUCT:nregs><VDC:mode>): Likewise.
+
+	* config/aarch64/iterators.md (VSTRUCT_DREG): Remove.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (vec_store_lanesoi_lane<mode>): Rename
 	to...
 	(aarch64_vec_store_lanesoi_lane<mode>): ...this.
