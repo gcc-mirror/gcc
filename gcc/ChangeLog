@@ -1,3 +1,30 @@
+2015-09-15  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/47679
+	* tree-ssa-dom.c (expr_hash_elt): Now a class with ctors/dtors,
+	methods and private members.
+	(avail_exprs_stack): Similarly.  Change type of global
+	from a pair of expr_hash_elt_t to the new class.
+	(expr_elt_hasher::hash): Corresponding changes.
+	(expr_elt_hasher::equal): Similarly.
+	(avail_expr_hash): Similarly.
+	(pass_dominator::execute): Similarly.
+	(dom_opt_dom_walker::thread_across_edge): Similarly.
+	(record_cond): Similarly.
+	(dom_opt_dom_walker::before_dom_children): Similarly.
+	(dom_opt_dom_walker::after_dom_children): Similarly.
+	(lookup_avail_expr): Likewise.
+	(initialize_hash_element): Now a expr_hash_elt constructor.
+	(initialize_hash_element_from_expr): Similarly.
+	(free_expr_hash_elt_contents): Now a dtor for class expr_hash_elt.
+	(free_expr_hash_elt): Call dtor for the element.
+	(remove_local_expressions_from_table): Now the "pop_to_marker"
+	method in the available_exprs_stack class.
+	(avail_expr_stack::record_expr): Method factored out.
+	(print_expr_hash_elt): Now a method in the expr_hash_elt class.
+	Fix formatting.
+	(hashable_expr_equal_p): Fix formatting.
+
 2015-09-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.h (location_get_source_line): Drop "expanded_location"
