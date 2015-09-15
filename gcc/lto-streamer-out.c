@@ -66,6 +66,7 @@ clear_line_info (struct output_block *ob)
   ob->current_file = NULL;
   ob->current_line = 0;
   ob->current_col = 0;
+  ob->current_sysp = false;
 }
 
 

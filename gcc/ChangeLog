@@ -1,5 +1,12 @@
 2015-09-15  Richard Biener  <rguenther@suse.de>
 
+	PR lto/67568
+	* lto-streamer.h (lto_location_cache::current_sysp): Properly
+	initialize.
+	* lto-streamer-out.c (clear_line_info): Likewise.
+
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
 	* doc/match-and-simplify.texi: Fix wording.
 
 2015-09-15  Bin Cheng  <bin.cheng@arm.com>

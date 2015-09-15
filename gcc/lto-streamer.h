@@ -320,7 +320,7 @@ public:
 		       struct data_in *data_in);
   lto_location_cache ()
      : loc_cache (), accepted_length (0), current_file (NULL), current_line (0),
-       current_col (0), current_loc (UNKNOWN_LOCATION)
+       current_col (0), current_sysp (false), current_loc (UNKNOWN_LOCATION)
   {
     gcc_assert (!current_cache);
     current_cache = this;
