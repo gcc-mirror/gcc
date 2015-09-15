@@ -228,7 +228,7 @@ preprocessor directives.
   (bit_and @@1 @@0))
 @end smallexample
 
-Here we introduce flags on match expressions.  There used flag
+Here we introduce flags on match expressions.  The flag used
 above, @code{c}, denotes that the expression should
 be also matched commutated.  Thus the above match expression
 is really the following four match expressions:
