@@ -604,16 +604,6 @@
                               (V4HF "SF") (V8HF "SF")
                               (DF "V2DI")   (V2DF "V2DI")])
 
-;; Similar, for four elements.
-(define_mode_attr V_FOUR_ELEM [(V8QI "SI")   (V16QI "SI")
-                               (V4HI "V4HI") (V8HI "V4HI")
-                               (V2SI "V4SI") (V4SI "V4SI")
-                               (DI "OI")     (V2DI "OI")
-                               (V2SF "V4SF") (V4SF "V4SF")
-                               (V4HF "V4HF") (V8HF "V4HF")
-                               (DF "OI")     (V2DF "OI")])
-
-
 ;; Mode for atomic operation suffixes
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])
