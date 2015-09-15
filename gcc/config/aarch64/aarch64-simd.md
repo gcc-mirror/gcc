@@ -3981,7 +3981,7 @@
 )
 
 ;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "vec_store_lanesoi_lane<mode>"
+(define_insn "aarch64_vec_store_lanesoi_lane<mode>"
   [(set (match_operand:<V_TWO_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
 	(unspec:<V_TWO_ELEM> [(match_operand:OI 1 "register_operand" "w")
 		    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
@@ -4079,7 +4079,7 @@
 )
 
 ;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "vec_store_lanesci_lane<mode>"
+(define_insn "aarch64_vec_store_lanesci_lane<mode>"
   [(set (match_operand:<V_THREE_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
 	(unspec:<V_THREE_ELEM> [(match_operand:CI 1 "register_operand" "w")
 		    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
@@ -4177,7 +4177,7 @@
 )
 
 ;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "vec_store_lanesxi_lane<mode>"
+(define_insn "aarch64_vec_store_lanesxi_lane<mode>"
   [(set (match_operand:<V_FOUR_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
 	(unspec:<V_FOUR_ELEM> [(match_operand:XI 1 "register_operand" "w")
 		    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
@@ -4886,7 +4886,9 @@
   machine_mode mode = <V_TWO_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
-  emit_insn (gen_vec_store_lanesoi_lane<mode> (mem, operands[1], operands[2]));
+  emit_insn (gen_aarch64_vec_store_lanesoi_lane<mode> (mem,
+						       operands[1],
+						       operands[2]));
   DONE;
 })
 
@@ -4900,7 +4902,9 @@
   machine_mode mode = <V_THREE_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
-  emit_insn (gen_vec_store_lanesci_lane<mode> (mem, operands[1], operands[2]));
+  emit_insn (gen_aarch64_vec_store_lanesci_lane<mode> (mem,
+						       operands[1],
+						       operands[2]));
   DONE;
 })
 
@@ -4914,7 +4918,9 @@
   machine_mode mode = <V_FOUR_ELEM>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
-  emit_insn (gen_vec_store_lanesxi_lane<mode> (mem, operands[1], operands[2]));
+  emit_insn (gen_aarch64_vec_store_lanesxi_lane<mode> (mem,
+						       operands[1],
+						       operands[2]));
   DONE;
 })
 

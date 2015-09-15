@@ -1,3 +1,18 @@
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_store_lanesoi_lane<mode>): Rename
+	to...
+	(aarch64_vec_store_lanesoi_lane<mode>): ...this.
+
+	(vec_store_lanesci_lane<mode>): Rename to...
+	(aarch64_vec_store_lanesci_lane<mode>): ...this.
+
+	(vec_store_lanesxi_lane<mode>): Rename to...
+	(aarch64_vec_store_lanesxi_lane<mode>): ...this.
+
+	(aarch64_st2_lane<mode>, aarch64_st3_lane<mode>,
+	aarch64_st4_lane<mode>): Follow renaming.
+
 2015-09-15  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
         * config/s390/s390.c (s390_const_operand_ok): Add missing
