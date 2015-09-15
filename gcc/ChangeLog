@@ -1,5 +1,18 @@
 2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_ld2r<mode>,
+	aarch64_ld3r<mode>, aarch64_ld4r<mode>): Combine together, making...
+	(aarch64_simd_ld<VSTRUCT:nregs>r<VALLDIF:mode>): ...this.
+	(aarch64_ld2_lane<mode>, aarch64_ld3_lane<mode>,
+	aarch64_ld4_lane<mode>): Combine together, making...
+	(aarch64_ld<VSTRUCT:nregs>_lane<VALLDIF:mode>): ...this.
+	(aarch64_st2_lane<mode>, aarch64_st3_lane<mode>,
+	aarch64_st4_lane<mode>): Combine together, making...
+	(aarch64_st<VSTRUCT:nregs>_lane<VALLDIF:mode>): ...this.
+	* config/aarch64/iterators.md (nregs): Add comment.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_ld2r<mode>):
 	Change operand mode from <V_TWO_ELEM> to BLK.
 	(aarch64_vec_load_lanesoi_lane<mode>): Likewise.
