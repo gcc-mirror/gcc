@@ -1,3 +1,9 @@
+2015-09-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_gen_constant): Use HOST_WIDE_INT_M1U instead
+	of -1 when shifting.  Change type of val to unsigned HOST_WIDE_INT.
+	Update prototype.
+
 2015-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67470
