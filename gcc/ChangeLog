@@ -1,5 +1,16 @@
 2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ld2r<mode>):
+	Change operand mode from <V_TWO_ELEM> to BLK.
+	(aarch64_vec_load_lanesoi_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesoi_lane<mode): Likewise
+	(aarch64_ld2r<mode>): Generate MEM rtx with BLKmode, call set_mem_size.
+	(aarch64_ld2_lane<mode>): Likewise.
+	(aarch64_st2_lane<VQ:mode>): Likewise.
+	* config/aarch64/iterators.md (V_TWO_ELEM): Remove.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_ld4r<mode>):
 	Change operand mode from <V_FOUR_ELEM> to BLK.
 	(aarch64_vec_load_lanesxi_lane<mode>): Likewise.
