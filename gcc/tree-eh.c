@@ -915,7 +915,12 @@ lower_try_finally_dup_block (gimple_seq seq, struct leh_state *outer_state,
   for (gsi = gsi_start (new_seq); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
-      if (LOCATION_LOCUS (gimple_location (stmt)) == UNKNOWN_LOCATION)
+      /* We duplicate __builtin_stack_restore at -O0 in the hope of eliminating
+	 it on the EH paths.  When it is not eliminated, make it transparent in
+	 the debug info.  */
+      if (gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
+	gimple_set_location (stmt, UNKNOWN_LOCATION);
+      else if (LOCATION_LOCUS (gimple_location (stmt)) == UNKNOWN_LOCATION)
 	{
 	  tree block = gimple_block (stmt);
 	  gimple_set_location (stmt, loc);
@@ -1604,8 +1609,12 @@ decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
 
       for (gsi = gsi_start (finally); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
+	  /* Duplicate __builtin_stack_restore in the hope of eliminating it
+	     on the EH paths and, consequently, useless cleanups.  */
 	  gimple stmt = gsi_stmt (gsi);
-	  if (!is_gimple_debug (stmt) && !gimple_clobber_p (stmt))
+	  if (!is_gimple_debug (stmt)
+	      && !gimple_clobber_p (stmt)
+	      && !gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
 	    return false;
 	}
       return true;

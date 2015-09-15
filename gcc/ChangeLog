@@ -1,3 +1,10 @@
+2015-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.c (lower_try_finally_dup_block): Clear location information
+	on stack restore statements.
+	(decide_copy_try_finally): Do not consider a stack restore statement as
+	coming from sources.
+
 2015-09-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_expand_block_clear): Use
