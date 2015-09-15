@@ -132,7 +132,7 @@ location_from_offset (location_t loc, int offset)
 
   expanded_location s = expand_location_to_spelling_point (loc);
   int line_width;
-  const char *line = location_get_source_line (s, &line_width);
+  const char *line = location_get_source_line (s.file, s.line, &line_width);
   if (line == NULL)
     return loc;
   line += s.column - 1 ;

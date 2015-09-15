@@ -38,7 +38,7 @@ extern char builtins_location_check[(BUILTINS_LOCATION
 
 extern bool is_location_from_builtin_token (source_location);
 extern expanded_location expand_location (source_location);
-extern const char *location_get_source_line (expanded_location xloc,
+extern const char *location_get_source_line (const char *file_path, int line,
 					     int *line_size);
 extern expanded_location expand_location_to_spelling_point (source_location);
 extern source_location expansion_point_location_if_in_system_header (source_location);

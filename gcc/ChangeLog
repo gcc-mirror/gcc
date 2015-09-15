@@ -1,3 +1,12 @@
+2015-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.h (location_get_source_line): Drop "expanded_location"
+	param in favor of a file and line number.
+	* input.c (location_get_source_line): Likewise.
+	(dump_location_info): Update for change in signature of
+	location_get_source_line.
+	* diagnostic.c (diagnostic_print_caret_line): Likewise.
+
 2015-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* defaults.h (STACK_OLD_CHECK_PROTECT): Adjust for -fno-exceptions.

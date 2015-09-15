@@ -1,3 +1,10 @@
+2015-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (location_from_offset): Update for change in
+	signature of location_get_source_line.
+	* c-indentation.c (get_visual_column): Likewise.
+	(line_contains_hash_if): Likewise.
+
 2015-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* c-opts.c (c_common_post_options): Set C++ standard earlier, before

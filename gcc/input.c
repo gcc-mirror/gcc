@@ -684,27 +684,27 @@ read_line_num (fcache *c, size_t line_num,
   return read_next_line (c, line, line_len);
 }
 
-/* Return the physical source line that corresponds to xloc in a
+/* Return the physical source line that corresponds to FILE_PATH/LINE in a
    buffer that is statically allocated.  The newline is replaced by
    the null character.  Note that the line can contain several null
    characters, so LINE_LEN, if non-null, points to the actual length
    of the line.  */
 
 const char *
-location_get_source_line (expanded_location xloc,
+location_get_source_line (const char *file_path, int line,
 			  int *line_len)
 {
   static char *buffer;
   static ssize_t len;
 
-  if (xloc.line == 0)
+  if (line == 0)
     return NULL;
 
-  fcache *c = lookup_or_add_file_to_cache_tab (xloc.file);
+  fcache *c = lookup_or_add_file_to_cache_tab (file_path);
   if (c == NULL)
     return NULL;
 
-  bool read = read_line_num (c, xloc.line, &buffer, &len);
+  bool read = read_line_num (c, line, &buffer, &len);
 
   if (read && line_len)
     *line_len = len;
@@ -971,7 +971,9 @@ dump_location_info (FILE *stream)
 	      /* Beginning of a new source line: draw the line.  */
 
 	      int line_size;
-	      const char *line_text = location_get_source_line (exploc, &line_size);
+	      const char *line_text = location_get_source_line (exploc.file,
+								exploc.line,
+								&line_size);
 	      if (!line_text)
 		break;
 	      fprintf (stream,

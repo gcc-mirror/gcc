@@ -377,7 +377,8 @@ diagnostic_print_caret_line (diagnostic_context * context,
   
   int cmax = MAX (xloc1.column, xloc2.column);
   int line_width;
-  const char *line = location_get_source_line (xloc1, &line_width);
+  const char *line = location_get_source_line (xloc1.file, xloc1.line,
+					       &line_width);
   if (line == NULL || cmax > line_width)
     return;
 
