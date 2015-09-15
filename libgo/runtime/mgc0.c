@@ -2110,7 +2110,7 @@ gc(struct gc_args *args)
 		runtime_notesleep(&work.alldone);
 
 	cachestats();
-	mstats.next_gc = mstats.heap_alloc+mstats.heap_alloc*gcpercent/100;
+	mstats.next_gc = mstats.heap_alloc+(mstats.heap_alloc-runtime_stacks_sys)*gcpercent/100;
 
 	t4 = runtime_nanotime();
 	mstats.last_gc = t4;
