@@ -2751,15 +2751,14 @@ arm_option_check_internal (struct gcc_options *opts)
     error ("-mslow-flash-data only supports non-pic code on armv7-m targets");
 }
 
-/* Set params depending on attributes and optimization options.  */
-static void
-arm_option_params_internal (struct gcc_options *opts)
-{
-  int flags = opts->x_target_flags;
+/* Recompute the global settings depending on target attribute options.  */
 
- /* If we are not using the default (ARM mode) section anchor offset
+static void
+arm_option_params_internal (void)
+{
+  /* If we are not using the default (ARM mode) section anchor offset
      ranges, then set the correct ranges now.  */
-  if (TARGET_THUMB1_P (flags))
+  if (TARGET_THUMB1)
     {
       /* Thumb-1 LDR instructions cannot have negative offsets.
          Permissible positive offset ranges are 5-bit (for byte loads),
@@ -2769,7 +2768,7 @@ arm_option_params_internal (struct gcc_options *opts)
       targetm.min_anchor_offset = 0;
       targetm.max_anchor_offset = 127;
     }
-  else if (TARGET_THUMB2_P (flags))
+  else if (TARGET_THUMB2)
     {
       /* The minimum is set such that the total size of the block
          for a particular anchor is 248 + 1 + 4095 bytes, which is
@@ -2790,14 +2789,13 @@ arm_option_params_internal (struct gcc_options *opts)
       max_insns_skipped = 6;
 
       /* For THUMB2, we limit the conditional sequence to one IT block.  */
-      if (TARGET_THUMB2_P (flags))
-        max_insns_skipped = opts->x_arm_restrict_it ? 1 : 4;
+      if (TARGET_THUMB2)
+        max_insns_skipped = arm_restrict_it ? 1 : 4;
     }
   else
     /* When -mrestrict-it is in use tone down the if-conversion.  */
-    max_insns_skipped
-      = (TARGET_THUMB2_P (opts->x_target_flags) && opts->x_arm_restrict_it)
-         ? 1 : current_tune->max_insns_skipped;
+    max_insns_skipped = (TARGET_THUMB2 && arm_restrict_it)
+      ? 1 : current_tune->max_insns_skipped;
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
@@ -3385,7 +3383,7 @@ arm_option_override (void)
 
   arm_option_override_internal (&global_options, &global_options_set);
   arm_option_check_internal (&global_options);
-  arm_option_params_internal (&global_options);
+  arm_option_params_internal ();
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -29482,7 +29480,7 @@ arm_set_current_function (tree fndecl)
 	  = save_target_globals_default_opts ();
     }
 
-  arm_option_params_internal (&global_options);
+  arm_option_params_internal ();
 }
 
 /* Hook to determine if one function can safely inline another.  */
@@ -29501,7 +29499,7 @@ arm_can_inline_p (tree caller ATTRIBUTE_UNUSED, tree callee ATTRIBUTE_UNUSED)
    go over the list.  */
 
 static bool
-arm_valid_target_attribute_rec (tree args,  struct gcc_options *opts)
+arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 {
   if (TREE_CODE (args) == TREE_LIST)
     {

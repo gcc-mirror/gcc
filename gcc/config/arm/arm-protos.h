@@ -340,7 +340,6 @@ extern const char *arm_rewrite_selected_cpu (const char *name);
 extern void arm_lang_object_attributes_init (void);
 extern void arm_register_target_pragmas (void);
 extern void arm_cpu_cpp_builtins (struct cpp_reader *);
-extern void arm_cpu_builtins (struct cpp_reader *, int);
 
 extern bool arm_is_constant_pool_ref (rtx);
 
