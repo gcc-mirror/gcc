@@ -23977,7 +23977,7 @@ foo:	.long	25
 	tls_first_minor=14
 	tls_as_opt="-m64 -Aesame --fatal-warnings"
 	;;
-  sh-*-* | sh[34]-*-*)
+  sh-*-* | sh[123456789lbe]*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
 foo:	.long	25
