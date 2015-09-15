@@ -1,3 +1,8 @@
+2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/linux-unwind.h (xtensa_fallback_frame_state):
+	Add support for call0 ABI.
+
 2015-09-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/fptr.c (SIGN_EXTEND): Cast -1 to unsigned.

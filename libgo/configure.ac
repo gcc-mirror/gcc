@@ -407,6 +407,15 @@ AC_SUBST(SPLIT_STACK)
 AM_CONDITIONAL(USING_SPLIT_STACK,
 	test "$libgo_cv_c_split_stack_supported" = yes -a "$libgo_cv_c_linker_split_non_split" = yes)
 
+dnl If the compiler supports split-stack but the linker does not, then
+dnl we need to explicitly disable split-stack for Go.
+if test "$libgo_cv_c_split_stack_supported" = yes -a "$libgo_cv_c_linker_split_non_split" = no; then
+  GO_SPLIT_STACK=-fno-split-stack
+else
+  GO_SPLIT_STACK=
+fi
+AC_SUBST(GO_SPLIT_STACK)
+
 dnl Check whether the linker does stack munging when calling from
 dnl split-stack into non-split-stack code.  We check this by looking
 dnl at the --help output.  FIXME: This is only half right: it's

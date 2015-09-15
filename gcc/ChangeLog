@@ -1,3 +1,29 @@
+2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.h (DWARF_ALT_FRAME_RETURN_COLUMN): New
+	definition.
+	(DWARF_FRAME_REGISTERS): Reserve space for one extra register in
+	call0 ABI.
+
+2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_call_tls_desc): Use a10 or a2
+	to pass TLS call argument, according to current ABI.
+	* config/xtensa/xtensa.md (tls_call pattern): Use callx8 or
+	callx0 for TLS call, according to current ABI.
+
+2015-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.c (lower_try_finally_dup_block): Clear location information
+	on stack restore statements.
+	(decide_copy_try_finally): Do not consider a stack restore statement as
+	coming from sources.
+
+2015-09-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_expand_block_clear): Use
+	HOST_WIDE_INT_M1U instead of ~(HOST_WIDE_INT)0 when shifting.
+
 2015-09-15  Jeff Law  <law@redhat.com>
 
         PR tree-optimization/47679

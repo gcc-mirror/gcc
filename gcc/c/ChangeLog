@@ -1,5 +1,13 @@
 2015-09-15  Marek Polacek  <polacek@redhat.com>
 
+	PR c/67580
+	* c-decl.c (tag_exists_p): New function.
+	* c-parser.c (c_parser_declaration_or_fndef): Give a hint when
+	struct/union/enum keywords are missing.
+	* c-tree.h (tag_exists_p): Declare.
+
+2015-09-15  Marek Polacek  <polacek@redhat.com>
+
 	* c-decl.c (lookup_label): Return NULL_TREE instead of 0.
 	(lookup_tag): Change the type of THISLEVEL_ONLY to bool.
 	Return NULL_TREE instead of 0.
