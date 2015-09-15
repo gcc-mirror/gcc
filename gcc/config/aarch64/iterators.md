@@ -594,16 +594,6 @@
 			(V2SI "V16SI")  (V2SF "V16SF")
 			(DI   "V8DI")  (DF   "V8DF")])
 
-;; Mode of pair of elements for each vector mode, to define transfer
-;; size for structure lane/dup loads and stores.
-(define_mode_attr V_TWO_ELEM [(V8QI "HI")   (V16QI "HI")
-                              (V4HI "SI")   (V8HI "SI")
-                              (V2SI "V2SI") (V4SI "V2SI")
-                              (DI "V2DI")   (V2DI "V2DI")
-                              (V2SF "V2SF") (V4SF "V2SF")
-                              (V4HF "SF") (V8HF "SF")
-                              (DF "V2DI")   (V2DF "V2DI")])
-
 ;; Mode for atomic operation suffixes
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])
