@@ -121,28 +121,46 @@ struct edge_info
    marker.  */
 typedef struct expr_hash_elt * expr_hash_elt_t;
 
-static vec<std::pair<expr_hash_elt_t, expr_hash_elt_t> > avail_exprs_stack;
 
 /* Structure for entries in the expression hash table.  */
 
-struct expr_hash_elt
+class expr_hash_elt
 {
-  /* The value (lhs) of this expression.  */
-  tree lhs;
+ public:
+  expr_hash_elt (gimple, tree);
+  expr_hash_elt (tree);
+  expr_hash_elt (struct hashable_expr *, tree);
+  expr_hash_elt (class expr_hash_elt &);
+  ~expr_hash_elt ();
+  void print (FILE *);
+  tree vop (void) { return m_vop; }
+  tree lhs (void) { return m_lhs; }
+  struct hashable_expr *expr (void) { return &m_expr; }
+  expr_hash_elt *stamp (void) { return m_stamp; }
+  hashval_t hash (void) { return m_hash; }
 
+ private:
   /* The expression (rhs) we want to record.  */
-  struct hashable_expr expr;
+  struct hashable_expr m_expr;
+
+  /* The value (lhs) of this expression.  */
+  tree m_lhs;
 
   /* The virtual operand associated with the nearest dominating stmt
      loading from or storing to expr.  */
-  tree vop;
+  tree m_vop;
 
   /* The hash value for RHS.  */
-  hashval_t hash;
+  hashval_t m_hash;
 
   /* A unique stamp, typically the address of the hash
      element itself, used in removing entries from the table.  */
-  struct expr_hash_elt *stamp;
+  struct expr_hash_elt *m_stamp;
+
+  /* We should never be making assignments between objects in this class.
+     Though it might allow us to exploit C++11 move semantics if we
+     defined the move constructor and move assignment operator.  */
+  expr_hash_elt& operator=(const expr_hash_elt&);
 };
 
 /* Hashtable helpers.  */
@@ -158,25 +176,56 @@ struct expr_elt_hasher : pointer_hash <expr_hash_elt>
   static inline void remove (value_type &);
 };
 
+/* This class defines a unwindable AVAIL_EXPRs, built on top of the
+   available expression hash table.
+
+   Essentially it's just a stack of available expression value pairs with
+   a special marker (NULL, NULL) to indicate unwind points.   */
+
+class avail_exprs_stack
+{
+ public:
+  /* We need access to the AVAIL_EXPR hash table so that we can
+     remove entries from the hash table when unwinding the stack.  */
+  avail_exprs_stack (hash_table<expr_elt_hasher> *table)
+    { m_stack.create (20); m_avail_exprs = table; }
+  ~avail_exprs_stack (void) { m_stack.release (); }
+
+  /* Push the unwinding marker onto the stack.  */
+  void push_marker (void) { record_expr (NULL, NULL, 'M'); }
+
+  /* Restore the AVAIL_EXPRs table to its state when the last marker
+     was pushed.  */
+  void pop_to_marker ();
+
+  /* Record a single available expression that can be unwound.  */
+  void record_expr (expr_hash_elt_t, expr_hash_elt_t, char);
+
+ private:
+  vec<std::pair<expr_hash_elt_t, expr_hash_elt_t> > m_stack;
+  hash_table<expr_elt_hasher> *m_avail_exprs;
+};
+
+
 inline hashval_t
 expr_elt_hasher::hash (const value_type &p)
 {
-  return p->hash;
+  return p->hash ();
 }
 
 inline bool
 expr_elt_hasher::equal (const value_type &p1, const compare_type &p2)
 {
-  const struct hashable_expr *expr1 = &p1->expr;
-  const struct expr_hash_elt *stamp1 = p1->stamp;
-  const struct hashable_expr *expr2 = &p2->expr;
-  const struct expr_hash_elt *stamp2 = p2->stamp;
+  const struct hashable_expr *expr1 = p1->expr ();
+  const struct expr_hash_elt *stamp1 = p1->stamp ();
+  const struct hashable_expr *expr2 = p2->expr ();
+  const struct expr_hash_elt *stamp2 = p2->stamp ();
 
   /* This case should apply only when removing entries from the table.  */
   if (stamp1 == stamp2)
     return true;
 
-  if (p1->hash != p2->hash)
+  if (p1->hash () != p2->hash ())
     return false;
 
   /* In case of a collision, both RHS have to be identical and have the
@@ -207,6 +256,7 @@ static hash_table<expr_elt_hasher> *avail_exprs;
 
 /* Unwindable const/copy equivalences.  */
 static const_and_copies *const_and_copies;
+static avail_exprs_stack *avail_exprs_stack;
 
 /* Track whether or not we have changed the control flow graph.  */
 static bool cfg_altered;
@@ -231,7 +281,7 @@ static struct opt_stats_d opt_stats;
 /* Local functions.  */
 static void optimize_stmt (basic_block, gimple_stmt_iterator);
 static tree lookup_avail_expr (gimple, bool);
-static hashval_t avail_expr_hash (struct expr_hash_elt *);
+static hashval_t avail_expr_hash (class expr_hash_elt *);
 static void htab_statistics (FILE *,
 			     const hash_table<expr_elt_hasher> &);
 static void record_cond (cond_equivalence *);
@@ -240,19 +290,16 @@ static void record_equivalences_from_phis (basic_block);
 static void record_equivalences_from_incoming_edge (basic_block);
 static void eliminate_redundant_computations (gimple_stmt_iterator *);
 static void record_equivalences_from_stmt (gimple, int);
-static void remove_local_expressions_from_table (void);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 
 
 /* Given a statement STMT, initialize the hash table element pointed to
    by ELEMENT.  */
 
-static void
-initialize_hash_element (gimple stmt, tree lhs,
-                         struct expr_hash_elt *element)
+expr_hash_elt::expr_hash_elt (gimple stmt, tree orig_lhs)
 {
   enum gimple_code code = gimple_code (stmt);
-  struct hashable_expr *expr = &element->expr;
+  struct hashable_expr *expr = this->expr ();
 
   if (code == GIMPLE_ASSIGN)
     {
@@ -342,17 +389,17 @@ initialize_hash_element (gimple stmt, tree lhs,
       expr->kind = EXPR_PHI;
       expr->ops.phi.nargs = nargs;
       expr->ops.phi.args = XCNEWVEC (tree, nargs);
-
       for (i = 0; i < nargs; i++)
         expr->ops.phi.args[i] = gimple_phi_arg_def (stmt, i);
+
     }
   else
     gcc_unreachable ();
 
-  element->lhs = lhs;
-  element->vop = gimple_vuse (stmt);
-  element->hash = avail_expr_hash (element);
-  element->stamp = element;
+  m_lhs = orig_lhs;
+  m_vop = gimple_vuse (stmt);
+  m_hash = avail_expr_hash (this);
+  m_stamp = this;
 }
 
 /* Given a conditional expression COND as a tree, initialize
@@ -385,16 +432,50 @@ initialize_expr_from_cond (tree cond, struct hashable_expr *expr)
 /* Given a hashable_expr expression EXPR and an LHS,
    initialize the hash table element pointed to by ELEMENT.  */
 
-static void
-initialize_hash_element_from_expr (struct hashable_expr *expr,
-                                   tree lhs,
-                                   struct expr_hash_elt *element)
+expr_hash_elt::expr_hash_elt (struct hashable_expr *orig, tree orig_lhs)
 {
-  element->expr = *expr;
-  element->lhs = lhs;
-  element->vop = NULL_TREE;
-  element->hash = avail_expr_hash (element);
-  element->stamp = element;
+  m_expr = *orig;
+  m_lhs = orig_lhs;
+  m_vop = NULL_TREE;
+  m_hash = avail_expr_hash (this);
+  m_stamp = this;
+}
+
+expr_hash_elt::expr_hash_elt (class expr_hash_elt &old_elt)
+{
+  m_expr = old_elt.m_expr;
+  m_lhs = old_elt.m_lhs;
+  m_vop = old_elt.m_vop;
+  m_hash = old_elt.m_hash;
+  m_stamp = this;
+
+  /* Now deep copy the malloc'd space for CALL and PHI args.  */
+  if (old_elt.m_expr.kind == EXPR_CALL)
+    {
+      size_t nargs = old_elt.m_expr.ops.call.nargs;
+      size_t i;
+
+      m_expr.ops.call.args = XCNEWVEC (tree, nargs);
+      for (i = 0; i < nargs; i++)
+        m_expr.ops.call.args[i] = old_elt.m_expr.ops.call.args[i];
+    }
+  else if (old_elt.m_expr.kind == EXPR_PHI)
+    {
+      size_t nargs = old_elt.m_expr.ops.phi.nargs;
+      size_t i;
+
+      m_expr.ops.phi.args = XCNEWVEC (tree, nargs);
+      for (i = 0; i < nargs; i++)
+        m_expr.ops.phi.args[i] = old_elt.m_expr.ops.phi.args[i];
+    }
+}
+
+expr_hash_elt::~expr_hash_elt ()
+{
+  if (m_expr.kind == EXPR_CALL)
+    free (m_expr.ops.call.args);
+  else if (m_expr.kind == EXPR_PHI)
+    free (m_expr.ops.phi.args);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are
@@ -404,7 +485,7 @@ initialize_hash_element_from_expr (struct hashable_expr *expr,
 
 static bool
 hashable_expr_equal_p (const struct hashable_expr *expr0,
-                        const struct hashable_expr *expr1)
+		       const struct hashable_expr *expr1)
 {
   tree type0 = expr0->type;
   tree type1 = expr1->type;
@@ -641,51 +722,51 @@ add_hashable_expr (const struct hashable_expr *expr, hash &hstate)
 
 /* Print a diagnostic dump of an expression hash table entry.  */
 
-static void
-print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
+void
+expr_hash_elt::print (FILE *stream)
 {
   fprintf (stream, "STMT ");
 
-  if (element->lhs)
+  if (m_lhs)
     {
-      print_generic_expr (stream, element->lhs, 0);
+      print_generic_expr (stream, m_lhs, 0);
       fprintf (stream, " = ");
     }
 
-  switch (element->expr.kind)
+  switch (m_expr.kind)
     {
       case EXPR_SINGLE:
-        print_generic_expr (stream, element->expr.ops.single.rhs, 0);
+        print_generic_expr (stream, m_expr.ops.single.rhs, 0);
         break;
 
       case EXPR_UNARY:
-	fprintf (stream, "%s ", get_tree_code_name (element->expr.ops.unary.op));
-        print_generic_expr (stream, element->expr.ops.unary.opnd, 0);
+	fprintf (stream, "%s ", get_tree_code_name (m_expr.ops.unary.op));
+        print_generic_expr (stream, m_expr.ops.unary.opnd, 0);
         break;
 
       case EXPR_BINARY:
-        print_generic_expr (stream, element->expr.ops.binary.opnd0, 0);
-	fprintf (stream, " %s ", get_tree_code_name (element->expr.ops.binary.op));
-        print_generic_expr (stream, element->expr.ops.binary.opnd1, 0);
+        print_generic_expr (stream, m_expr.ops.binary.opnd0, 0);
+	fprintf (stream, " %s ", get_tree_code_name (m_expr.ops.binary.op));
+        print_generic_expr (stream, m_expr.ops.binary.opnd1, 0);
         break;
 
       case EXPR_TERNARY:
-	fprintf (stream, " %s <", get_tree_code_name (element->expr.ops.ternary.op));
-        print_generic_expr (stream, element->expr.ops.ternary.opnd0, 0);
+	fprintf (stream, " %s <", get_tree_code_name (m_expr.ops.ternary.op));
+        print_generic_expr (stream, m_expr.ops.ternary.opnd0, 0);
 	fputs (", ", stream);
-        print_generic_expr (stream, element->expr.ops.ternary.opnd1, 0);
+        print_generic_expr (stream, m_expr.ops.ternary.opnd1, 0);
 	fputs (", ", stream);
-        print_generic_expr (stream, element->expr.ops.ternary.opnd2, 0);
+        print_generic_expr (stream, m_expr.ops.ternary.opnd2, 0);
 	fputs (">", stream);
         break;
 
       case EXPR_CALL:
         {
           size_t i;
-          size_t nargs = element->expr.ops.call.nargs;
+          size_t nargs = m_expr.ops.call.nargs;
           gcall *fn_from;
 
-          fn_from = element->expr.ops.call.fn_from;
+          fn_from = m_expr.ops.call.fn_from;
           if (gimple_call_internal_p (fn_from))
             fputs (internal_fn_name (gimple_call_internal_fn (fn_from)),
                    stream);
@@ -694,7 +775,7 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
           fprintf (stream, " (");
           for (i = 0; i < nargs; i++)
             {
-              print_generic_expr (stream, element->expr.ops.call.args[i], 0);
+              print_generic_expr (stream, m_expr.ops.call.args[i], 0);
               if (i + 1 < nargs)
                 fprintf (stream, ", ");
             }
@@ -705,12 +786,12 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
       case EXPR_PHI:
         {
           size_t i;
-          size_t nargs = element->expr.ops.phi.nargs;
+          size_t nargs = m_expr.ops.phi.nargs;
 
           fprintf (stream, "PHI <");
           for (i = 0; i < nargs; i++)
             {
-              print_generic_expr (stream, element->expr.ops.phi.args[i], 0);
+              print_generic_expr (stream, m_expr.ops.phi.args[i], 0);
               if (i + 1 < nargs)
                 fprintf (stream, ", ");
             }
@@ -719,24 +800,13 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
         break;
     }
 
-  if (element->vop)
+  if (m_vop)
     {
       fprintf (stream, " with ");
-      print_generic_expr (stream, element->vop, 0);
+      print_generic_expr (stream, m_vop, 0);
     }
 
   fprintf (stream, "\n");
-}
-
-/* Delete variable sized pieces of the expr_hash_elt ELEMENT.  */
-
-static void
-free_expr_hash_elt_contents (struct expr_hash_elt *element)
-{
-  if (element->expr.kind == EXPR_CALL)
-    free (element->expr.ops.call.args);
-  else if (element->expr.kind == EXPR_PHI)
-    free (element->expr.ops.phi.args);
 }
 
 /* Delete an expr_hash_elt and reclaim its storage.  */
@@ -744,9 +814,8 @@ free_expr_hash_elt_contents (struct expr_hash_elt *element)
 static void
 free_expr_hash_elt (void *elt)
 {
-  struct expr_hash_elt *element = ((struct expr_hash_elt *)elt);
-  free_expr_hash_elt_contents (element);
-  free (element);
+  class expr_hash_elt *element = ((class expr_hash_elt *)elt);
+  delete element;
 }
 
 /* Allocate an EDGE_INFO for edge E and attach it to E.
@@ -1163,7 +1232,7 @@ pass_dominator::execute (function *fun)
 
   /* Create our hash tables.  */
   avail_exprs = new hash_table<expr_elt_hasher> (1024);
-  avail_exprs_stack.create (20);
+  avail_exprs_stack = new class avail_exprs_stack (avail_exprs);
   const_and_copies = new class const_and_copies ();
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_noreturn_fixup.create (0);
@@ -1286,7 +1355,7 @@ pass_dominator::execute (function *fun)
   /* Free asserted bitmaps and stacks.  */
   BITMAP_FREE (need_eh_cleanup);
   need_noreturn_fixup.release ();
-  avail_exprs_stack.release ();
+  delete avail_exprs_stack;
   delete const_and_copies;
 
   /* Free the value-handle array.  */
@@ -1354,14 +1423,13 @@ canonicalize_comparison (gcond *condstmt)
 /* Remove all the expressions in LOCALS from TABLE, stopping when there are
    LIMIT entries left in LOCALs.  */
 
-static void
-remove_local_expressions_from_table (void)
+void
+avail_exprs_stack::pop_to_marker ()
 {
   /* Remove all the expressions made available in this block.  */
-  while (avail_exprs_stack.length () > 0)
+  while (m_stack.length () > 0)
     {
-      std::pair<expr_hash_elt_t, expr_hash_elt_t> victim
-	= avail_exprs_stack.pop ();
+      std::pair<expr_hash_elt_t, expr_hash_elt_t> victim = m_stack.pop ();
       expr_hash_elt **slot;
 
       if (victim.first == NULL)
@@ -1373,10 +1441,10 @@ remove_local_expressions_from_table (void)
       if (dump_file && (dump_flags & TDF_DETAILS))
         {
           fprintf (dump_file, "<<<< ");
-          print_expr_hash_elt (dump_file, victim.first);
+	  victim.first->print (dump_file);
         }
 
-      slot = avail_exprs->find_slot (victim.first, NO_INSERT);
+      slot = m_avail_exprs->find_slot (victim.first, NO_INSERT);
       gcc_assert (slot && *slot == victim.first);
       if (victim.second != NULL)
 	{
@@ -1384,9 +1452,24 @@ remove_local_expressions_from_table (void)
 	  *slot = victim.second;
 	}
       else
-	avail_exprs->clear_slot (slot);
+	m_avail_exprs->clear_slot (slot);
     }
 }
+
+void
+avail_exprs_stack::record_expr (class expr_hash_elt *elt1,
+				class expr_hash_elt *elt2,
+				char type)
+{
+  if (elt1 && dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "%c>>> ", type);
+      elt1->print (dump_file);
+    }
+
+  m_stack.safe_push (std::pair<expr_hash_elt_t, expr_hash_elt_t> (elt1, elt2));
+}
+
 
 /* A trivial wrapper so that we can present the generic jump
    threading code with a simple API for simplifying statements.  */
@@ -1522,8 +1605,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
 
   /* Push a marker on both stacks so we can unwind the tables back to their
      current state.  */
-  avail_exprs_stack.safe_push
-    (std::pair<expr_hash_elt_t, expr_hash_elt_t> (NULL, NULL));
+  avail_exprs_stack->push_marker ();
   const_and_copies->push_marker ();
 
   /* Traversing E may result in equivalences we can utilize.  */
@@ -1536,12 +1618,12 @@ dom_opt_dom_walker::thread_across_edge (edge e)
 		        simplify_stmt_for_jump_threading);
 
   /* And restore the various tables to their state before
-     we threaded this edge. 
+     we threaded this edge.
 
      XXX The code in tree-ssa-threadedge.c will restore the state of
      the const_and_copies table.  We we just have to restore the expression
      table.  */
-  remove_local_expressions_from_table ();
+  avail_exprs_stack->pop_to_marker ();
 }
 
 /* PHI nodes can create equivalences too.
@@ -1699,24 +1781,15 @@ htab_statistics (FILE *file, const hash_table<expr_elt_hasher> &htab)
 static void
 record_cond (cond_equivalence *p)
 {
-  struct expr_hash_elt *element = XCNEW (struct expr_hash_elt);
+  class expr_hash_elt *element = new expr_hash_elt (&p->cond, p->value);
   expr_hash_elt **slot;
 
-  initialize_hash_element_from_expr (&p->cond, p->value, element);
-
-  slot = avail_exprs->find_slot_with_hash (element, element->hash, INSERT);
+  slot = avail_exprs->find_slot_with_hash (element, element->hash (), INSERT);
   if (*slot == NULL)
     {
       *slot = element;
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-        {
-          fprintf (dump_file, "1>>> ");
-          print_expr_hash_elt (dump_file, element);
-        }
-
-      avail_exprs_stack.safe_push
-	(std::pair<expr_hash_elt_t, expr_hash_elt_t> (element, NULL));
+      avail_exprs_stack->record_expr (element, NULL, '1');
     }
   else
     free_expr_hash_elt (element);
@@ -1941,8 +2014,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
-  avail_exprs_stack.safe_push
-    (std::pair<expr_hash_elt_t, expr_hash_elt_t> (NULL, NULL));
+  avail_exprs_stack->push_marker ();
   const_and_copies->push_marker ();
 
   record_equivalences_from_incoming_edge (bb);
@@ -1953,11 +2025,10 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   /* Create equivalences from redundant PHIs.  PHIs are only truly
      redundant when they exist in the same block, so push another
      marker and unwind right afterwards.  */
-  avail_exprs_stack.safe_push
-    (std::pair<expr_hash_elt_t, expr_hash_elt_t> (NULL, NULL));
+  avail_exprs_stack->push_marker ();
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     eliminate_redundant_computations (&gsi);
-  remove_local_expressions_from_table ();
+  avail_exprs_stack->pop_to_marker ();
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     optimize_stmt (bb, gsi);
@@ -2008,7 +2079,7 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
     }
 
   /* These remove expressions local to BB from the tables.  */
-  remove_local_expressions_from_table ();
+  avail_exprs_stack->pop_to_marker ();
   const_and_copies->pop_to_marker ();
 }
 
@@ -2550,7 +2621,6 @@ lookup_avail_expr (gimple stmt, bool insert)
 {
   expr_hash_elt **slot;
   tree lhs;
-  struct expr_hash_elt element;
 
   /* Get LHS of phi, assignment, or call; else NULL_TREE.  */
   if (gimple_code (stmt) == GIMPLE_PHI)
@@ -2558,52 +2628,42 @@ lookup_avail_expr (gimple stmt, bool insert)
   else
     lhs = gimple_get_lhs (stmt);
 
-  initialize_hash_element (stmt, lhs, &element);
+  class expr_hash_elt element (stmt, lhs);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "LKUP ");
-      print_expr_hash_elt (dump_file, &element);
+      element.print (dump_file);
     }
 
   /* Don't bother remembering constant assignments and copy operations.
      Constants and copy operations are handled by the constant/copy propagator
      in optimize_stmt.  */
-  if (element.expr.kind == EXPR_SINGLE
-      && (TREE_CODE (element.expr.ops.single.rhs) == SSA_NAME
-          || is_gimple_min_invariant (element.expr.ops.single.rhs)))
+  if (element.expr()->kind == EXPR_SINGLE
+      && (TREE_CODE (element.expr()->ops.single.rhs) == SSA_NAME
+          || is_gimple_min_invariant (element.expr()->ops.single.rhs)))
     return NULL_TREE;
 
   /* Finally try to find the expression in the main expression hash table.  */
   slot = avail_exprs->find_slot (&element, (insert ? INSERT : NO_INSERT));
   if (slot == NULL)
     {
-      free_expr_hash_elt_contents (&element);
       return NULL_TREE;
     }
   else if (*slot == NULL)
     {
-      struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
-      *element2 = element;
-      element2->stamp = element2;
+      class expr_hash_elt *element2 = new expr_hash_elt (element);
       *slot = element2;
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-        {
-          fprintf (dump_file, "2>>> ");
-          print_expr_hash_elt (dump_file, element2);
-        }
-
-      avail_exprs_stack.safe_push
-	(std::pair<expr_hash_elt_t, expr_hash_elt_t> (element2, NULL));
+      avail_exprs_stack->record_expr (element2, NULL, '2');
       return NULL_TREE;
     }
 
   /* If we found a redundant memory operation do an alias walk to
      check if we can re-use it.  */
-  if (gimple_vuse (stmt) != (*slot)->vop)
+  if (gimple_vuse (stmt) != (*slot)->vop ())
     {
-      tree vuse1 = (*slot)->vop;
+      tree vuse1 = (*slot)->vop ();
       tree vuse2 = gimple_vuse (stmt);
       /* If we have a load of a register and a candidate in the
 	 hash with vuse1 then try to reach its stmt by walking
@@ -2619,30 +2679,21 @@ lookup_avail_expr (gimple stmt, bool insert)
 	{
 	  if (insert)
 	    {
-	      struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
-	      *element2 = element;
-	      element2->stamp = element2;
+	      class expr_hash_elt *element2 = new expr_hash_elt (element);
 
 	      /* Insert the expr into the hash by replacing the current
 		 entry and recording the value to restore in the
 		 avail_exprs_stack.  */
-	      avail_exprs_stack.safe_push (std::make_pair (element2, *slot));
+	      avail_exprs_stack->record_expr (element2, *slot, '2');
 	      *slot = element2;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "2>>> ");
-		  print_expr_hash_elt (dump_file, *slot);
-		}
 	    }
 	  return NULL_TREE;
 	}
     }
 
-  free_expr_hash_elt_contents (&element);
-
   /* Extract the LHS of the assignment so that it can be used as the current
      definition of another variable.  */
-  lhs = (*slot)->lhs;
+  lhs = (*slot)->lhs ();
 
   lhs = dom_valueize (lhs);
 
@@ -2661,9 +2712,9 @@ lookup_avail_expr (gimple stmt, bool insert)
    its operands.  */
 
 static hashval_t
-avail_expr_hash (struct expr_hash_elt *p)
+avail_expr_hash (class expr_hash_elt *p)
 {
-  const struct hashable_expr *expr = &p->expr;
+  const struct hashable_expr *expr = p->expr ();
   inchash::hash hstate;
 
   inchash::add_hashable_expr (expr, hstate);
