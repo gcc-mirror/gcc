@@ -245,6 +245,7 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
+static void arm_option_print (FILE *, int, struct cl_target_option *);
 static void arm_set_current_function (tree);
 static bool arm_can_inline_p (tree, tree);
 static bool arm_valid_target_attribute_p (tree, tree, tree, int);
@@ -404,6 +405,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE arm_option_override
+
+#undef TARGET_OPTION_PRINT
+#define TARGET_OPTION_PRINT arm_option_print
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
@@ -29481,6 +29485,19 @@ arm_set_current_function (tree fndecl)
     }
 
   arm_option_params_internal ();
+}
+
+/* Implement TARGET_OPTION_PRINT.  */
+
+static void
+arm_option_print (FILE *file, int indent, struct cl_target_option *ptr)
+{
+  int flags = ptr->x_target_flags;
+
+  fprintf (file, "%*sselected arch %s\n", indent, "",
+	   TARGET_THUMB2_P (flags) ? "thumb2" :
+	   TARGET_THUMB_P (flags) ? "thumb1" :
+	   "arm");
 }
 
 /* Hook to determine if one function can safely inline another.  */

@@ -1,5 +1,10 @@
 2015-09-15  Christian Bruel  <christian.bruel@st.com>
 
+	* config/arm/arm.c (TARGET_OPTION_PRINT): Define.
+	(arm_option_print): New function.
+
+2015-09-15  Christian Bruel  <christian.bruel@st.com>
+
 	PR target/52144
 	* config/arm/arm.c (arm_option_params_internal): Remove opts parameter.
 	* config/arm/arm-c.c (arm_cpu_builtins): Declare static.
@@ -7,7 +12,7 @@
 	* config/arm/arm.h (TARGET_32BIT_P, TARGET_ARM_QBIT_P)
 	(TARGET_ARM_SAT_P, TARGET_IDIV_P, TARGET_HAVE_LDREX_P)
 	(TARGET_HAVE_LDREXBH_P, TARGET_HAVE_LDREXD_P, TARGET_DSP_MULTIPLY_P)
-	(TARGET_ARM_FEATURE_LDREX_P, TARGET_INT_SIMD_P): Redefine macros with:
+	(TARGET_ARM_FEATURE_LDREX_P, TARGET_INT_SIMD_P): Redefine macros with...
 	(TARGET_ARM_SAT, TARGET_IDIV, TARGET_HAVE_LDREX)
 	(TARGET_HAVE_LDREXBH, TARGET_HAVE_LDREXD, TARGET_ARM_FEATURE_LDREX)
 	(TARGET_DSP_MULTIPLY, TARGET_INT_SIMD): Redefined macros.
