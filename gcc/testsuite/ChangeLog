@@ -1,3 +1,8 @@
+2015-09-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67580
+	* gcc.dg/pr67580.c: New test.
+
 2015-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67470

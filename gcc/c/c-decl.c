@@ -3856,6 +3856,18 @@ lookup_tag (enum tree_code code, tree name, bool thislevel_only,
   return b->decl;
 }
 
+/* Return true if a definition exists for NAME with code CODE.  */
+
+bool
+tag_exists_p (enum tree_code code, tree name)
+{
+  struct c_binding *b = I_TAG_BINDING (name);
+
+  if (b == NULL || b->decl == NULL_TREE)
+    return false;
+  return TREE_CODE (b->decl) == code;
+}
+
 /* Print an error message now
    for a recent invalid struct, union or enum cross reference.
    We don't print them immediately because they are not invalid
