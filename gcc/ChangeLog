@@ -1,3 +1,10 @@
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67470
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Preserve PHI
+	structure for PHI hoisting by inserting a forwarder block
+	if appropriate.
+
 2015-09-15  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm.c (TARGET_OPTION_PRINT): Define.
