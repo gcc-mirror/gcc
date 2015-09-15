@@ -1,3 +1,8 @@
+2015-09-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_shiftadd_cost): Strip
+	unnecessary type conversion in op1.
+
 2015-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* shrink-wrap.c (requires_stack_frame_p): Fix formatting.
