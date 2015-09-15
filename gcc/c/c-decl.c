@@ -3474,7 +3474,7 @@ lookup_label (tree name)
   if (current_function_scope == 0)
     {
       error ("label %qE referenced outside of any function", name);
-      return 0;
+      return NULL_TREE;
     }
 
   /* Use a label already defined or ref'd with this name, but not if
@@ -3811,14 +3811,14 @@ c_check_switch_jump_warnings (struct c_spot_bindings *switch_bindings,
    If the wrong kind of type is found, an error is reported.  */
 
 static tree
-lookup_tag (enum tree_code code, tree name, int thislevel_only,
+lookup_tag (enum tree_code code, tree name, bool thislevel_only,
 	    location_t *ploc)
 {
   struct c_binding *b = I_TAG_BINDING (name);
-  int thislevel = 0;
+  bool thislevel = false;
 
   if (!b || !b->decl)
-    return 0;
+    return NULL_TREE;
 
   /* We only care about whether it's in this level if
      thislevel_only was set or it might be a type clash.  */
@@ -3830,11 +3830,11 @@ lookup_tag (enum tree_code code, tree name, int thislevel_only,
 	 file scope is created.)  */
       if (B_IN_CURRENT_SCOPE (b)
 	  || (current_scope == file_scope && B_IN_EXTERNAL_SCOPE (b)))
-	thislevel = 1;
+	thislevel = true;
     }
 
   if (thislevel_only && !thislevel)
-    return 0;
+    return NULL_TREE;
 
   if (TREE_CODE (b->decl) != code)
     {
@@ -3885,7 +3885,7 @@ lookup_name (tree name)
       maybe_record_typedef_use (b->decl);
       return b->decl;
     }
-  return 0;
+  return NULL_TREE;
 }
 
 /* Similar to `lookup_name' but look only at the indicated scope.  */
@@ -3898,7 +3898,7 @@ lookup_name_in_scope (tree name, struct c_scope *scope)
   for (b = I_SYMBOL_BINDING (name); b; b = b->shadowed)
     if (B_IN_SCOPE (b, scope))
       return b->decl;
-  return 0;
+  return NULL_TREE;
 }
 
 /* Create the predefined scalar types of C,
@@ -4138,9 +4138,9 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	  else
 	    {
 	      pending_invalid_xref = 0;
-	      t = lookup_tag (code, name, 1, NULL);
+	      t = lookup_tag (code, name, true, NULL);
 
-	      if (t == 0)
+	      if (t == NULL_TREE)
 		{
 		  t = make_node (code);
 		  pushtag (input_location, name, t);
@@ -7082,7 +7082,7 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name)
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
 
-  ref = lookup_tag (code, name, 0, &refloc);
+  ref = lookup_tag (code, name, false, &refloc);
   /* If this is the right type of tag, return what we found.
      (This reference will be shadowed by shadow_tag later if appropriate.)
      If this is the wrong type of tag, do not return it.  If it was the
@@ -7186,7 +7186,7 @@ start_struct (location_t loc, enum tree_code code, tree name,
   location_t refloc = UNKNOWN_LOCATION;
 
   if (name != NULL_TREE)
-    ref = lookup_tag (code, name, 1, &refloc);
+    ref = lookup_tag (code, name, true, &refloc);
   if (ref && TREE_CODE (ref) == code)
     {
       if (TYPE_SIZE (ref))
@@ -7905,9 +7905,9 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
      forward reference.  */
 
   if (name != NULL_TREE)
-    enumtype = lookup_tag (ENUMERAL_TYPE, name, 1, &enumloc);
+    enumtype = lookup_tag (ENUMERAL_TYPE, name, true, &enumloc);
 
-  if (enumtype == 0 || TREE_CODE (enumtype) != ENUMERAL_TYPE)
+  if (enumtype == NULL_TREE || TREE_CODE (enumtype) != ENUMERAL_TYPE)
     {
       enumtype = make_node (ENUMERAL_TYPE);
       pushtag (loc, name, enumtype);
