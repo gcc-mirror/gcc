@@ -577,6 +577,9 @@
 
 (define_mode_attr Vendreg [(OI "T") (CI "U") (XI "V")])
 
+;; This is both the number of Q-Registers needed to hold the corresponding
+;; opaque large integer mode, and the number of elements touched by the
+;; ld..._lane and st..._lane operations.
 (define_mode_attr nregs [(OI "2") (CI "3") (XI "4")])
 
 (define_mode_attr VRL2 [(V8QI "V32QI") (V4HI "V16HI")
