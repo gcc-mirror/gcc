@@ -1,3 +1,12 @@
+2015-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* shrink-wrap.c (requires_stack_frame_p): Fix formatting.
+	(dup_block_and_redirect): Delete function.
+	(can_dup_for_shrink_wrapping): New function.
+	(fix_fake_fallthrough_edge): New function.
+	(try_shrink_wrapping): Rewrite function.
+	(convert_to_simple_return): Call fix_fake_fallthrough_edge.
+
 2015-09-14  Rich Felker  <dalias@libc.org>
 
 	* configure.ac: Change target pattern for sh TLS support
