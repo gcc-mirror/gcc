@@ -54,23 +54,20 @@ arm_lang_object_attributes_init (void)
    #pragma GCC target, we need to adjust the macros dynamically.  */
 
 static void
-def_or_undef_macro(struct cpp_reader* pfile, const char *name, bool def_p) 
+def_or_undef_macro(struct cpp_reader* pfile, const char *name, bool def_p)
 {
   if (def_p)
-    cpp_define (pfile, name); 
-  else  
-    cpp_undef (pfile, name); 
-} 
+    cpp_define (pfile, name);
+  else
+    cpp_undef (pfile, name);
+}
 
-void
-arm_cpu_builtins (struct cpp_reader* pfile, int flags)
+static void
+arm_cpu_builtins (struct cpp_reader* pfile)
 {
-  def_or_undef_macro (pfile, "__ARM_FEATURE_DSP",
-		      TARGET_DSP_MULTIPLY_P (flags));
-  def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT",
-		      TARGET_ARM_QBIT_P (flags)); 
-  def_or_undef_macro (pfile, "__ARM_FEATURE_SAT",
-		      TARGET_ARM_SAT_P (flags));
+  def_or_undef_macro (pfile, "__ARM_FEATURE_DSP", TARGET_DSP_MULTIPLY);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT", TARGET_ARM_QBIT); 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_SAT", TARGET_ARM_SAT);
   if (TARGET_CRYPTO)
     builtin_define ("__ARM_FEATURE_CRYPTO");
   if (unaligned_access)
@@ -78,19 +75,19 @@ arm_cpu_builtins (struct cpp_reader* pfile, int flags)
   if (TARGET_CRC32)
     builtin_define ("__ARM_FEATURE_CRC32");
 
-  def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT_P (flags)); 
+  def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT); 
 
-  if (TARGET_ARM_FEATURE_LDREX_P (flags))
+  if (TARGET_ARM_FEATURE_LDREX)
     builtin_define_with_int_value ("__ARM_FEATURE_LDREX", 
-				   TARGET_ARM_FEATURE_LDREX_P (flags));
+				   TARGET_ARM_FEATURE_LDREX);
   else
     cpp_undef (pfile, "__ARM_FEATURE_LDREX");
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_CLZ",
-		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB_P (flags))
+		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)
 		       || TARGET_ARM_ARCH_ISA_THUMB >=2));
 
-  def_or_undef_macro (pfile, "__ARM_FEATURE_SIMD32", TARGET_INT_SIMD_P (flags));
+  def_or_undef_macro (pfile, "__ARM_FEATURE_SIMD32", TARGET_INT_SIMD);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
 				 flag_short_enums ? 1 : 4);
@@ -108,12 +105,12 @@ arm_cpu_builtins (struct cpp_reader* pfile, int flags)
     builtin_define ("__ARM_ARCH_ISA_ARM");
   builtin_define ("__APCS_32__");
 
-  def_or_undef_macro (pfile, "__thumb__", TARGET_THUMB_P (flags));
-  def_or_undef_macro (pfile, "__thumb2__", TARGET_THUMB2_P (flags));
+  def_or_undef_macro (pfile, "__thumb__", TARGET_THUMB);
+  def_or_undef_macro (pfile, "__thumb2__", TARGET_THUMB2);
   if (TARGET_BIG_END)
-    def_or_undef_macro (pfile, "__THUMBEB__", TARGET_THUMB_P (flags));
+    def_or_undef_macro (pfile, "__THUMBEB__", TARGET_THUMB);
   else
-    def_or_undef_macro (pfile, "__THUMBEL__", TARGET_THUMB_P (flags));
+    def_or_undef_macro (pfile, "__THUMBEL__", TARGET_THUMB);
 
   if (TARGET_ARM_ARCH_ISA_THUMB)
     builtin_define_with_int_value ("__ARM_ARCH_ISA_THUMB",
@@ -181,8 +178,8 @@ arm_cpu_builtins (struct cpp_reader* pfile, int flags)
       builtin_define ("__ARM_EABI__");
     }
 
-  def_or_undef_macro (pfile, "__ARM_ARCH_EXT_IDIV__", TARGET_IDIV_P (flags));
-  def_or_undef_macro (pfile, "__ARM_FEATURE_IDIV", TARGET_IDIV_P (flags));
+  def_or_undef_macro (pfile, "__ARM_ARCH_EXT_IDIV__", TARGET_IDIV);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_IDIV", TARGET_IDIV);
 
   def_or_undef_macro (pfile, "__ARM_ASM_SYNTAX_UNIFIED__", inline_asm_unified);
 }
@@ -193,7 +190,7 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
   builtin_assert ("cpu=arm");
   builtin_assert ("machine=arm");
 
-  arm_cpu_builtins (pfile, target_flags);
+  arm_cpu_builtins (pfile);
 }
 
 /* Hook to validate the current #pragma GCC target and set the arch custom
@@ -245,7 +242,8 @@ arm_pragma_target_parse (tree args, tree pop_target)
       cpp_opts->warn_unused_macros = 0;
 
       /* Update macros.  */
-      arm_cpu_builtins (parse_in, cur_opt->x_target_flags);
+      gcc_assert (cur_opt->x_target_flags == target_flags);
+      arm_cpu_builtins (parse_in);
 
       cpp_opts->warn_unused_macros = saved_warn_unused_macros;
     }
