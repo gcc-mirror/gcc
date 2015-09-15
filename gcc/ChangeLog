@@ -1,3 +1,11 @@
+2015-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* defaults.h (STACK_OLD_CHECK_PROTECT): Adjust for -fno-exceptions.
+	Bump to 4KB for SJLJ exceptions.
+	(STACK_CHECK_PROTECT): Likewise.  Bump to 8KB for SJLJ exceptions.
+	* doc/tm.texi.in (STACK_CHECK_PROTECT): Adjust.
+	* doc/tm.texi: Regenerate.
+
 2015-09-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_gen_constant): Use HOST_WIDE_INT_M1U instead
