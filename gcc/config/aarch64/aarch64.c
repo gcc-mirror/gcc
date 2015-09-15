@@ -677,7 +677,8 @@ aarch64_array_mode_supported_p (machine_mode mode,
 				unsigned HOST_WIDE_INT nelems)
 {
   if (TARGET_SIMD
-      && AARCH64_VALID_SIMD_QREG_MODE (mode)
+      && (AARCH64_VALID_SIMD_QREG_MODE (mode)
+	  || AARCH64_VALID_SIMD_DREG_MODE (mode))
       && (nelems >= 2 && nelems <= 4))
     return true;
 
