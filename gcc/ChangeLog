@@ -1,3 +1,9 @@
+2015-09-14  Rich Felker  <dalias@libc.org>
+
+	* configure.ac: Change target pattern for sh TLS support
+	test from "sh[34]-*-*" to "sh[123456789lbe]*-*-*".
+	* configure: Regenerate.
+
 2015-09-14  Jeff Law  <law@redhat.com>
 
         PR tree-optimization/47679
