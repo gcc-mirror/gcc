@@ -701,6 +701,7 @@ extern tree c_omp_reduction_lookup (tree, tree);
 extern tree c_check_omp_declare_reduction_r (tree *, int *, void *);
 extern void c_pushtag (location_t, tree, tree);
 extern void c_bind (location_t, tree, bool);
+extern bool tag_exists_p (enum tree_code, tree);
 
 /* In c-errors.c */
 extern void pedwarn_c90 (location_t, int opt, const char *, ...)
