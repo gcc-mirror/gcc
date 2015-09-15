@@ -1,3 +1,14 @@
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ld4r<mode>):
+	Change operand mode from <V_FOUR_ELEM> to BLK.
+	(aarch64_vec_load_lanesxi_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesxi_lane<mode): Likewise.
+	(aarch64_ld4r<mode>): Generate MEM rtx with BLKmode, call set_mem_size.
+	(aarch64_ld4_lane<mode>): Likewise.
+	(aarch64_st4_lane<mode>): Likewise.
+	* config/aarch64/iterators.md (V_FOUR_ELEM): Remove.
+
 2015-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67563
