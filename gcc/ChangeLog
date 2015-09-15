@@ -1,4 +1,14 @@
-2015-09-08  Alan Lawrence  <alan.lawrence@arm.com>
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_attr_length_rglist): Update
+	comment.
+	* config/aarch64/aarch64-builtins.c (ei_UP): Remove.
+	(aarch64_simd_intEI_type_node): Likewise.
+	(aarch64_simd_builtin_std_type): Remove EImode case.
+	(aarch64_init_simd_builtin_types): Don't create/add intEI_type_node.
+	* config/aarch64/aarch64-modes.def: Remove EImode.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_simd_ld3r<mode>):
 	Change operand mode from <V_THREE_ELEM> to BLK.

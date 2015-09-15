@@ -75,7 +75,6 @@
 #define v2di_UP  V2DImode
 #define v2df_UP  V2DFmode
 #define ti_UP	 TImode
-#define ei_UP	 EImode
 #define oi_UP	 OImode
 #define ci_UP	 CImode
 #define xi_UP	 XImode
@@ -449,7 +448,6 @@ static struct aarch64_simd_type_info aarch64_simd_types [] = {
 static tree aarch64_fp16_type_node = NULL_TREE;
 
 static tree aarch64_simd_intOI_type_node = NULL_TREE;
-static tree aarch64_simd_intEI_type_node = NULL_TREE;
 static tree aarch64_simd_intCI_type_node = NULL_TREE;
 static tree aarch64_simd_intXI_type_node = NULL_TREE;
 
@@ -523,8 +521,6 @@ aarch64_simd_builtin_std_type (enum machine_mode mode,
       return QUAL_TYPE (TI);
     case OImode:
       return aarch64_simd_intOI_type_node;
-    case EImode:
-      return aarch64_simd_intEI_type_node;
     case CImode:
       return aarch64_simd_intCI_type_node;
     case XImode:
@@ -641,14 +637,10 @@ aarch64_init_simd_builtin_types (void)
 #define AARCH64_BUILD_SIGNED_TYPE(mode)  \
   make_signed_type (GET_MODE_PRECISION (mode));
   aarch64_simd_intOI_type_node = AARCH64_BUILD_SIGNED_TYPE (OImode);
-  aarch64_simd_intEI_type_node = AARCH64_BUILD_SIGNED_TYPE (EImode);
   aarch64_simd_intCI_type_node = AARCH64_BUILD_SIGNED_TYPE (CImode);
   aarch64_simd_intXI_type_node = AARCH64_BUILD_SIGNED_TYPE (XImode);
 #undef AARCH64_BUILD_SIGNED_TYPE
 
-  tdecl = add_builtin_type
-	    ("__builtin_aarch64_simd_ei" , aarch64_simd_intEI_type_node);
-  TYPE_NAME (aarch64_simd_intEI_type_node) = tdecl;
   tdecl = add_builtin_type
 	    ("__builtin_aarch64_simd_oi" , aarch64_simd_intOI_type_node);
   TYPE_NAME (aarch64_simd_intOI_type_node) = tdecl;

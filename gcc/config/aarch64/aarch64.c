@@ -10577,7 +10577,7 @@ aarch64_simd_attr_length_move (rtx_insn *insn)
 }
 
 /* Compute and return the length of aarch64_simd_reglist<mode>, where <mode> is
-   one of VSTRUCT modes: OI, CI, EI, or XI.  */
+   one of VSTRUCT modes: OI, CI, or XI.  */
 int
 aarch64_simd_attr_length_rglist (enum machine_mode mode)
 {
