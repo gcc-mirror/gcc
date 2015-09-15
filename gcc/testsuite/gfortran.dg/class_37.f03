@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-require-visibility "" }
 ! Test fix for PR47082, in which an ICE in the ALLOCATE at line 248.
 !
 ! Contributed by Salvatore Filippone  <salvatore.filippone@uniroma2.it>

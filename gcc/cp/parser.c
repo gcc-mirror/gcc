@@ -7591,8 +7591,9 @@ cp_parser_new_expression (cp_parser* parser)
     type = cp_parser_new_type_id (parser, &nelts);
 
   /* If the next token is a `(' or '{', then we have a new-initializer.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
-      || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  if (token->type == CPP_OPEN_PAREN
+      || token->type == CPP_OPEN_BRACE)
     initializer = cp_parser_new_initializer (parser);
   else
     initializer = NULL;
@@ -7601,6 +7602,21 @@ cp_parser_new_expression (cp_parser* parser)
      expression.  */
   if (cp_parser_non_integral_constant_expression (parser, NIC_NEW))
     ret = error_mark_node;
+  /* 5.3.4/2: "If the auto type-specifier appears in the type-specifier-seq
+     of a new-type-id or type-id of a new-expression, the new-expression shall
+     contain a new-initializer of the form ( assignment-expression )".
+     Additionally, consistently with the spirit of DR 1467, we want to accept
+     'new auto { 2 }' too.  */
+  else if (type_uses_auto (type)
+	   && (vec_safe_length (initializer) != 1
+	       || (BRACE_ENCLOSED_INITIALIZER_P ((*initializer)[0])
+		   && CONSTRUCTOR_NELTS ((*initializer)[0]) != 1)))
+    {
+      error_at (token->location,
+		"initialization of new-expression for type %<auto%> "
+		"requires exactly one element");
+      ret = error_mark_node;
+    }
   else
     {
       /* Create a representation of the new-expression.  */

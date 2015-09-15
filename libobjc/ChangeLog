@@ -1,3 +1,21 @@
+2015-09-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR libobjc/24775
+	* sendmsg.c (tm.h): Remove include.
+
+2015-09-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR libobjc/24775
+	* sendmsg.c (gen_rtx): Remove macro.
+	(gen_rtx_MEM): Likewise.
+	(gen_rtx_REG): Likewise.
+	(rtx): Likewise.
+
+2015-09-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR libobjc/24775
+	* sendmsg.c: Remove check of STRUCT_VALUE macro.
+
 2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Remove manual SJLJ check.

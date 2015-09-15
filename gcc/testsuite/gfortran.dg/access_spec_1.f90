@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-require-visibility "" }
 ! PR fortran/31472
 ! Access specifications: Valid Fortran 2003 code
 module mod

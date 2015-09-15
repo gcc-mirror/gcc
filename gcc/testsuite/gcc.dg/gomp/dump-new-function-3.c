@@ -10,4 +10,4 @@ foo (int *__restrict a, int *__restrict b, int *__restrict c)
 }
 
 /* Check that new function does not end up in gimple dump.  */
-/* { dg-final { scan-tree-dump-not "foo\\._loopfn\\.0" "gimple" } } */
+/* { dg-final { scan-tree-dump-not "foo\\.\[\\\$_\]loopfn\\.0" "gimple" } } */

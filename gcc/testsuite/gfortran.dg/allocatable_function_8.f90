@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-visibility "" }
 ! Test the fix for PR61459 and PR58883.
 !
 ! Contributed by John Wingate  <johnww@tds.net>

@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fdump-tree-original" }
+! { dg-require-visibility "" }
 !
 ! Test the fix for PR43072, in which unnecessary calls to
 ! internal PACK/UNPACK were being generated.

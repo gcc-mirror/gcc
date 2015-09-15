@@ -3889,6 +3889,7 @@ get_shiftadd_cost (tree expr, machine_mode mode, comp_cost cost0,
   if (!(m >= 0 && m < maxm))
     return false;
 
+  STRIP_NOPS (op1);
   mult_in_op1 = operand_equal_p (op1, mult, 0);
 
   as_cost = add_cost (speed, mode) + shift_cost (speed, mode, m);

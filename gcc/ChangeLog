@@ -1,10 +1,622 @@
+2015-09-15  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/47679
+	* tree-ssa-dom.c (expr_hash_elt): Now a class with ctors/dtors,
+	methods and private members.
+	(avail_exprs_stack): Similarly.  Change type of global
+	from a pair of expr_hash_elt_t to the new class.
+	(expr_elt_hasher::hash): Corresponding changes.
+	(expr_elt_hasher::equal): Similarly.
+	(avail_expr_hash): Similarly.
+	(pass_dominator::execute): Similarly.
+	(dom_opt_dom_walker::thread_across_edge): Similarly.
+	(record_cond): Similarly.
+	(dom_opt_dom_walker::before_dom_children): Similarly.
+	(dom_opt_dom_walker::after_dom_children): Similarly.
+	(lookup_avail_expr): Likewise.
+	(initialize_hash_element): Now a expr_hash_elt constructor.
+	(initialize_hash_element_from_expr): Similarly.
+	(free_expr_hash_elt_contents): Now a dtor for class expr_hash_elt.
+	(free_expr_hash_elt): Call dtor for the element.
+	(remove_local_expressions_from_table): Now the "pop_to_marker"
+	method in the available_exprs_stack class.
+	(avail_expr_stack::record_expr): Method factored out.
+	(print_expr_hash_elt): Now a method in the expr_hash_elt class.
+	Fix formatting.
+	(hashable_expr_equal_p): Fix formatting.
+
+2015-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.h (location_get_source_line): Drop "expanded_location"
+	param in favor of a file and line number.
+	* input.c (location_get_source_line): Likewise.
+	(dump_location_info): Update for change in signature of
+	location_get_source_line.
+	* diagnostic.c (diagnostic_print_caret_line): Likewise.
+
+2015-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* defaults.h (STACK_OLD_CHECK_PROTECT): Adjust for -fno-exceptions.
+	Bump to 4KB for SJLJ exceptions.
+	(STACK_CHECK_PROTECT): Likewise.  Bump to 8KB for SJLJ exceptions.
+	* doc/tm.texi.in (STACK_CHECK_PROTECT): Adjust.
+	* doc/tm.texi: Regenerate.
+
+2015-09-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_gen_constant): Use HOST_WIDE_INT_M1U instead
+	of -1 when shifting.  Change type of val to unsigned HOST_WIDE_INT.
+	Update prototype.
+
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67470
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Preserve PHI
+	structure for PHI hoisting by inserting a forwarder block
+	if appropriate.
+
+2015-09-15  Christian Bruel  <christian.bruel@st.com>
+
+	* config/arm/arm.c (TARGET_OPTION_PRINT): Define.
+	(arm_option_print): New function.
+
+2015-09-15  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* config/arm/arm.c (arm_option_params_internal): Remove opts parameter.
+	* config/arm/arm-c.c (arm_cpu_builtins): Declare static.
+	Remove flags parameter.
+	* config/arm/arm.h (TARGET_32BIT_P, TARGET_ARM_QBIT_P)
+	(TARGET_ARM_SAT_P, TARGET_IDIV_P, TARGET_HAVE_LDREX_P)
+	(TARGET_HAVE_LDREXBH_P, TARGET_HAVE_LDREXD_P, TARGET_DSP_MULTIPLY_P)
+	(TARGET_ARM_FEATURE_LDREX_P, TARGET_INT_SIMD_P): Redefine macros with...
+	(TARGET_ARM_SAT, TARGET_IDIV, TARGET_HAVE_LDREX)
+	(TARGET_HAVE_LDREXBH, TARGET_HAVE_LDREXD, TARGET_ARM_FEATURE_LDREX)
+	(TARGET_DSP_MULTIPLY, TARGET_INT_SIMD): Redefined macros.
+	* gcc/config/arm/arm-protos.h (arm_cpu_builtins): Remove declaration.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_VALID_SIMD_DREG_MODE): New.
+
+	* config/aarch64/aarch64.c (aarch64_array_mode_supported_p): Add
+	AARCH64_VALID_SIMD_DREG_MODE.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_ld2r<mode>,
+	aarch64_ld3r<mode>, aarch64_ld4r<mode>): Combine together, making...
+	(aarch64_simd_ld<VSTRUCT:nregs>r<VALLDIF:mode>): ...this.
+	(aarch64_ld2_lane<mode>, aarch64_ld3_lane<mode>,
+	aarch64_ld4_lane<mode>): Combine together, making...
+	(aarch64_ld<VSTRUCT:nregs>_lane<VALLDIF:mode>): ...this.
+	(aarch64_st2_lane<mode>, aarch64_st3_lane<mode>,
+	aarch64_st4_lane<mode>): Combine together, making...
+	(aarch64_st<VSTRUCT:nregs>_lane<VALLDIF:mode>): ...this.
+	* config/aarch64/iterators.md (nregs): Add comment.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ld2r<mode>):
+	Change operand mode from <V_TWO_ELEM> to BLK.
+	(aarch64_vec_load_lanesoi_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesoi_lane<mode): Likewise
+	(aarch64_ld2r<mode>): Generate MEM rtx with BLKmode, call set_mem_size.
+	(aarch64_ld2_lane<mode>): Likewise.
+	(aarch64_st2_lane<VQ:mode>): Likewise.
+	* config/aarch64/iterators.md (V_TWO_ELEM): Remove.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ld4r<mode>):
+	Change operand mode from <V_FOUR_ELEM> to BLK.
+	(aarch64_vec_load_lanesxi_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesxi_lane<mode): Likewise.
+	(aarch64_ld4r<mode>): Generate MEM rtx with BLKmode, call set_mem_size.
+	(aarch64_ld4_lane<mode>): Likewise.
+	(aarch64_st4_lane<mode>): Likewise.
+	* config/aarch64/iterators.md (V_FOUR_ELEM): Remove.
+
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67563
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Do not
+	transfer EH info from old to new stmt.
+	(replace_call_with_value): Likewise.
+	(replace_call_with_call_and_fold): Likewise.
+	(gimple_fold_builtin_memory_op): Likewise.
+	(gimple_fold_builtin_memset): Likewise.
+	(gimple_fold_builtin_stpcpy): Likewise.
+	(gimple_fold_call): Likewise.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_attr_length_rglist): Update
+	comment.
+	* config/aarch64/aarch64-builtins.c (ei_UP): Remove.
+	(aarch64_simd_intEI_type_node): Likewise.
+	(aarch64_simd_builtin_std_type): Remove EImode case.
+	(aarch64_init_simd_builtin_types): Don't create/add intEI_type_node.
+	* config/aarch64/aarch64-modes.def: Remove EImode.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ld3r<mode>):
+	Change operand mode from <V_THREE_ELEM> to BLK.
+	(aarch64_vec_load_lanesci_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesci_lane<mode>): Likewise.
+	(aarch64_ld3r<mode>): Generate MEM rtx with BLKmode, call set_mem_size.
+	(aarch64_ld3_lane<mode>): Likewise.
+	(aarch64_st3_lane<mode>): Likewise.
+	* config/aarch64/iterators.md (V_THREE_ELEM): Remove.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_ld2<mode>_dreg VD & DX, aarch64_st2<mode>_dreg VD & DX ):
+	Change all TImode operands to BLKmode.
+	(aarch64_ld3<mode>_dreg VD & DX, aarch64_st3<mode>_dreg VD & DX):
+	Change all EImode operands to BLKmode.
+	(aarch64_ld4<mode>_dreg VD & DX, aarch64_st4<mode>_dreg VD & DX):
+	Change all OImode operands to BLKmode.
+
+	(aarch64_ld<VSTRUCT:nregs><VDC:mode>): Generate MEM rtx with BLKmode
+	and call set_mem_size.
+	(aarch64_st<VSTRUCT:nregs><VDC:mode>): Likewise.
+
+	* config/aarch64/iterators.md (VSTRUCT_DREG): Remove.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_store_lanesoi_lane<mode>): Rename
+	to...
+	(aarch64_vec_store_lanesoi_lane<mode>): ...this.
+
+	(vec_store_lanesci_lane<mode>): Rename to...
+	(aarch64_vec_store_lanesci_lane<mode>): ...this.
+
+	(vec_store_lanesxi_lane<mode>): Rename to...
+	(aarch64_vec_store_lanesxi_lane<mode>): ...this.
+
+	(aarch64_st2_lane<mode>, aarch64_st3_lane<mode>,
+	aarch64_st4_lane<mode>): Follow renaming.
+
+2015-09-15  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+        * config/s390/s390.c (s390_const_operand_ok): Add missing
+	brackets.
+
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/67568
+	* lto-streamer.h (lto_location_cache::current_sysp): Properly
+	initialize.
+	* lto-streamer-out.c (clear_line_info): Likewise.
+
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	* doc/match-and-simplify.texi: Fix wording.
+
+2015-09-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_shiftadd_cost): Strip
+	unnecessary type conversion in op1.
+
+2015-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* shrink-wrap.c (requires_stack_frame_p): Fix formatting.
+	(dup_block_and_redirect): Delete function.
+	(can_dup_for_shrink_wrapping): New function.
+	(fix_fake_fallthrough_edge): New function.
+	(try_shrink_wrapping): Rewrite function.
+	(convert_to_simple_return): Call fix_fake_fallthrough_edge.
+
+2015-09-14  Rich Felker  <dalias@libc.org>
+
+	* configure.ac: Change target pattern for sh TLS support
+	test from "sh[34]-*-*" to "sh[123456789lbe]*-*-*".
+	* configure: Regenerate.
+
+2015-09-14  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/47679
+	* tree-ssa-dom.c (avail_expr_hash): Pass a pointer to a real
+	type rather than void *.
+
+2015-09-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/67460
+	* diagnostic.c (diagnostic_initialize): Do not set
+	some_warnings_are_errors.
+	(diagnostic_finish): Use DK_WERROR count instead.
+	(diagnostic_report_diagnostic): Do not set
+	some_warnings_are_errors.
+	* diagnostic.h (struct diagnostic_context): Remove
+	some_warnings_are_errors.
+
+2015-09-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/sparc/predicates.md (const_all_ones_operand): Use
+	CONSTM1_RTX to simplify definition.
+
+2015-09-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67061
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Simplfiy for-loop.
+	Handle call insns.
+
+2015-09-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* lto-wrapper.c (merge_and_complain): Add OPT_fdiagnostics_show_caret,
+	OPT_fdiagnostics_show_option, OPT_fdiagnostics_show_location_, and
+	OPT_fshow_column to handled saved option cases.
+	(append_compiler_options): Do not skip the above added options.
+
+2015-09-14  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/63304
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Handle
+	nopcrelative_literal_loads.
+	(aarch64_classify_address): Likewise.
+	(aarch64_constant_pool_reload_icode): Define.
+	(aarch64_secondary_reload): Handle secondary reloads for
+	literal pools.
+	(aarch64_override_options): Handle nopcrelative_literal_loads.
+	(aarch64_classify_symbol): Handle nopcrelative_literal_loads.
+	* config/aarch64/aarch64.md (aarch64_reload_movcp<GPF_TF:mode><P:mode>):
+	Define.
+	(aarch64_reload_movcp<VALL:mode><P:mode>): Likewise.
+	* config/aarch64/aarch64.opt (mpc-relative-literal-loads): New option.
+	* config/aarch64/predicates.md (aarch64_constant_pool_symref): New
+	predicate.
+	* doc/invoke.texi (mpc-relative-literal-loads): Document.
+
+2015-09-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/67401
+	* optabs.c (expand_atomic_compare_and_swap): Move result of emitting
+	sync_compare_and_swap_optab libcall to target_oval.
+
+2015-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* rtlanal.c (split_double): Cast to unsigned when shifting a negative
+	value.
+	* sched-int.h (UNKNOWN_DEP_COST): Likewise.
+
+2015-09-11  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* toplev.c (check_global_declaration): Check and use
+	warn_unused_const_variable.
+	* doc/invoke.texi (Warning Options): Add -Wunused-const-variable.
+	(-Wunused-variable): Remove non-constant. For C implies
+	-Wunused-const-variable.
+	(-Wunused-const-variable): New.
+
+2015-09-14  Richard Biener  <rguenther@suse.de>
+
+	* doc/match-and-simplify.texi: Update for changed syntax
+	of inner ifs and the new switch expression.
+
+2015-09-14  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/haswell.md: New file describing Haswell pipeline.
+	* config/i386/i386.c (processor_alias_table): Use CPU_HASWELL for
+	haswell-like processors.
+	(ix86_reassociation_width): Increase reassociation width for 64-bit
+	Haswell processor family.
+	* config/i386/i386.md: Introduce haswell cpu and include new md file.
+
+2015-09-14  Richard Biener  <rguenther@suse.de>
+
+	* doc/match-and-simplify.texi: Fixup some formatting issues
+	and document the 's' flag.
+
+2015-09-13  Olivier Hainque  <hainque@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (visium-*-*): Enable --with-cpu option, accept gr5 and
+	gr6 as possible values, defaulting to gr5.  Set target_cpu_default2.
+	* config/visium/visium.h (OPTION_DEFAULT_SPECS): Define.
+	(TARGET_CPU_gr5): Likewise.
+	(TARGET_CPU_gr6): Likewise.
+	(MULTILIB_DEFAULTS): Likewise.
+	* config/visium/t-visium (MULTILIB_OPTIONS): Request distinct variants
+	for mcpu=gr5 and mcpu=gr6.
+	(MULTILIB_DIRNAMES): Adjust accordingly.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* tree-ssa-loop-im.c (mem_ref_loc_p): Remove typedef.
+	(mem_ref_p): Likewise.
+	(outermost_indep_loop): Adjust.
+	(mem_ref_in_stmt): Likewise.
+	(determine_max_movement): Likewise.
+	(mem_ref_alloc): Likewise.
+	(record_mem_ref_loc): Likewise.
+	(set_ref_stored_in_loop): Likewise.
+	(mark_ref_stored): Likewise.
+	(gather_mem_refs_stmt): Likewise.
+	(mem_refs_may_alias_p): Likewise.
+	(for_all_locs_in_loop): Likewise.
+	(struct rewrite_mem_ref_loc): Likewise.
+	(rewrite_mem_refs): Likewise.
+	(struct first_mem_ref_loc_1): Likewise.
+	(first_mem_ref_loc): Likewise.
+	(struct sm_set_flag_if_changed): Likewise.
+	(execute_sm_if_changed_flag_set): Likewise.
+	(execute_sm): Likewise.
+	(hoist_memory_references):
+	(struct ref_always_accessed): Likewise.
+	(ref_always_accessed_p): Likewise.
+	(refs_independent_p): Likewise.
+	(record_dep_loop): Likewise.
+	(ref_indep_loop_p_1): Likewise.
+	(ref_indep_loop_p_2): Likewise.
+	(ref_indep_loop_p): Likewise.
+	(can_sm_ref_p): Likewise.
+	(find_refs_for_sm): Likewise.
+	(tree_ssa_lim_finalize): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* dwarf2out.c (dw_attr_ref): Remove typedef.
+	(dw_line_info_ref): Likewise.
+	(pubname_ref): Likewise.
+	(dw_ranges_ref): Likewise.
+	(dw_ranges_by_label_ref): Likewise.
+	(comdat_type_node_ref): Likewise.
+	(get_AT): Adjust.
+	(get_AT_low_pc): Likewise.
+	(get_AT_hi_pc): Likewise.
+	(get_AT_string): Likewise.
+	(get_AT_flag): Likewise.
+	(get_AT_unsigned): Likewise.
+	(get_AT_ref): Likewise.
+	(get_AT_file): Likewise.
+	(remove_AT): Likewise.
+	(print_die): Likewise.
+	(check_die): Likewise.
+	(die_checksum): Likewise.
+	(attr_checksum_ordered): Likewise.
+	(struct checksum_attributes): Likewise.
+	(collect_checksum_attributes): Likewise.
+	(die_checksum_ordered): Likewise.
+	(same_die_p): Likewise.
+	(is_declaration_die): Likewise.
+	(clone_die): Likewise.
+	(clone_as_declaration): Likewise.
+	(copy_declaration_context): Likewise.
+	(break_out_comdat_types): Likewise.
+	(copy_decls_walk): Likewise.
+	(output_location_lists): Likewise.
+	(external_ref_hasher::hash): Likewise.
+	(optimize_external_refs_1): Likewise.
+	(build_abbrev_table): Likewise.
+	(size_of_die): Likewise.
+	(unmark_all_dies): Likewise.
+	(size_of_pubnames): Likewise.
+	(output_die_abbrevs): Likewise.
+	(output_die): Likewise.
+	(output_pubnames): Likewise.
+	(add_ranges_num): Likewise.
+	(add_ranges_by_labels): Likewise.
+	(add_high_low_attributes): Likewise.
+	(gen_producer_string): Likewise.
+	(dwarf2out_set_name): Likewise.
+	(new_line_info_table): Likewise.
+	(prune_unused_types_walk_attribs): Likewise.
+	(prune_unused_types_update_strings): Likewise.
+	(prune_unused_types): Likewise.
+	(resolve_addr): Likewise.
+	(optimize_location_lists_1): Likewise.
+	(index_location_lists): Likewise.
+	(dwarf2out_finish): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* dwarf2cfi.c (dw_trace_info_ref): Remove typedef.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* tree-vrp.c (struct assert_locus_d): Rename to assert_locus.
+	(dump_asserts_for): Adjust.
+	(register_new_assert_for): Likewise.
+	(process_assert_insertions): Likewise.
+	(insert_range_assertions): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* tree-ssa-ter.c (temp_expr_table_d): Rename to temp_expr_table
+	and remove typedef.
+	(new_temp_expr_table): Adjust.
+	(free_temp_expr_table): Likewise.
+	(version_to_be_replaced_p): Likewise.
+	(make_dependent_on_partition): Likewise.
+	(add_to_partition_kill_list): Likewise.
+	(remove_from_partition_kill_list): Likewise.
+	(add_dependence): Likewise.
+	(finished_with_expr): Likewise.
+	(process_replaceable): Likewise.
+	(kill_expr): Likewise.
+	(kill_virtual_exprs): Likewise.
+	(mark_replaceable): Likewise.
+	(find_replaceable_in_bb): Likewise.
+	(find_replaceable_exprs): Likewise.
+	(debug_ter): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bt-load.c (struct btr_def_group): Rename from btr_def_group_s.
+	(struct btr_user): Rename from btr_user_s.
+	(struct btr_def): Rename from btr_def_s.
+	(find_btr_def_group): Adjust.
+	(add_btr_def): Likewise.
+	(new_btr_user): Likewise.
+	(note_other_use_this_block): Likewise.
+	(compute_defs_uses_and_gen): Likewise.
+	(link_btr_uses): Likewise.
+	(build_btr_def_use_webs): Likewise.
+	(block_at_edge_of_live_range_p): Likewise.
+	(btr_def_live_range): Likewise.
+	(combine_btr_defs): Likewise.
+	(move_btr_def): Likewise.
+	(migrate_btr_def): Likewise.
+	(migrate_btr_defs): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* var-tracking.c (shared_hash_def): Rename to shared_hash.
+	(shared_hash): Remove typedef.
+	(struct dataflow_set): Adjust.
+	(shared_hash_unshare): Likewise.
+	(dataflow_set_merge): Likewise.
+	(vt_initialize): Likewise.
+	(vt_finalize): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* var-tracking.c (struct location_chain): Rename from
+	location_chain_def.
+	(struct variable_part): Adjust.
+	(variable_htab_free): Likewise.
+	(unshare_variable): Likewise.
+	(get_init_value): Likewise.
+	(get_addr_from_local_cache): Likewise.
+	(drop_overlapping_mem_locs): Likewise.
+	(val_reset): Likewise.
+	(struct variable_union_info): Likewise.
+	(variable_union): Likewise.
+	(find_loc_in_1pdv): Likewise.
+	(insert_into_intersection): Likewise.
+	(intersect_loc_chains): Likewise.
+	(canonicalize_loc_order_check): Likewise.
+	(canonicalize_values_mark): Likewise.
+	(canonicalize_values_star): Likewise.
+	(canonicalize_vars_star): Likewise.
+	(variable_merge_over_cur): Likewise.
+	(remove_duplicate_values): Likewise.
+	(variable_post_merge_new_vals): Likewise.
+	(variable_post_merge_perm_vals): Likewise.
+	(find_mem_expr_in_1pdv): Likewise.
+	(dataflow_set_preserve_mem_locs): Likewise.
+	(dataflow_set_remove_mem_locs): Likewise.
+	(variable_part_different_p): Likewise.
+	(onepart_variable_different_p): Likewise.
+	(find_src_set_src): Likewise.
+	(dump_var): Likewise.
+	(set_slot_part): Likewise.
+	(clobber_slot_part): Likewise.
+	(delete_slot_part): Likewise.
+	(vt_expand_var_loc_chain): Likewise.
+	(emit_note_insn_var_location): Likewise.
+	(vt_finalize): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* dse.c (store_info_t): Remove typedef.
+	(group_info_t): Likewise.
+	(const_group_info_t): Likewise.
+	(deferred_change_t): Likewise.
+	(get_group_info): Adjust.
+	(free_store_info): Likewise.
+	(canon_address): Likewise.
+	(clear_rhs_from_active_local_stores): Likewise.
+	(record_store): Likewise.
+	(replace_read): Likewise.
+	(check_mem_read_rtx): Likewise.
+	(scan_insn): Likewise.
+	(remove_useless_values): Likewise.
+	(dse_step1): Likewise.
+	(dse_step2_init): Likewise.
+	(dse_step2_nospill): Likewise.
+	(scan_stores_nospill): Likewise.
+	(scan_reads_nospill): Likewise.
+	(dse_step3_exit_block_scan): Likewise.
+	(dse_step3): Likewise.
+	(dse_step5_nospill): Likewise.
+	(dse_step6): Likewise.
+
+2015-09-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* alias.c (alias_set_entry_d): Rename to alias_set_entry.
+	(alias_set_entry): Remove typedef.
+	(alias_set_subset_of): Adjust.
+	(alias_sets_conflict_p): Likewise.
+	(init_alias_set_entry): Likewise.
+	(get_alias_set): Likewise.
+	(new_alias_set): Likewise.
+	(record_alias_subset): Likewise.
+
+2015-09-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Downloading the source): Mark up
+	contrib/download_prerequisites properly and drop leading "./".
+
+2015-09-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config/arc/arc.h: Remove define of STRUCT_VALUE.
+	* config/lm32/lm32.h: Likewise.
+	* config/mep/mep.h: Likewise.
+	* config/visium/visium.h: Likewise.
+	* system.h: Poison STRUCT_VALUE macro.
+
+2015-09-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_move_double): Enhance to handle HIGH
+	CONSTANT_P operands.
+
+2015-09-11  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md: Make "U" constraint a real register
+	constraint.
+	* config/sparc/sparc.c (TARGET_LRA_P): Define.
+	(D_MODES, DF_MODES): Add missing cast.
+	(TF_MODES, TF_MODES_NO_S): Include T_MODE.
+	(OF_MODES, OF_MODES_NO_S): Include O_MODE.
+	(sparc_register_move_cost): Decrease Niagara/UltrsSPARC memory
+	cost to 8.
+	* config/sparc/sparc.h (PROMOTE_MODE): Define.
+	* config/sparc/sparc.md (*movsi_lo_sum, *movsi_high): Do not
+	provide these insn when flag_pic.
+
+2015-09-11  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* tree-ssa-dom.c (struct cond_equivalence): Update comment.
+	* tree-ssa-scopedtables.h (class const_and_copies): Prefix data
+	member with m_.  Update inline member functions as necessary.  Add
+	toplevel comment.
+	* tree-ssa-scopedtables.c: Update const_and_copies's member
+	functions to use m_ prefix to access the stack.
+
+2015-09-11  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-optimize-isl.c (disable_tiling): Remove.
+	(get_schedule_for_band): Do not use disable_tiling.
+	(get_prevector_map): Delete function.
+	(enable_polly_vector): Remove.
+	(get_schedule_for_band_list): Remove dead code.
+
+2015-09-11  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-optimize-isl.c (get_tile_map): Refactor.
+	(get_schedule_for_band): Same.
+	(getScheduleForBand): Same.
+	(get_prevector_map): Same.
+	(get_schedule_for_band_list): Same.
+	(get_schedule_map): Same.
+	(get_single_map): Same.
+	(apply_schedule_map_to_scop): Same.
+	(optimize_isl): Same.
+
 2015-09-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/63304
-        * config/aarch64/aarch.md (mov<mode>:GPF_F16): Use GPF_TF_F16.
-        (movtf): Delete.
-        * config/aarch64/iterators.md (GPF_TF_F16): New.
-        (GPF_F16): Delete.
+	* config/aarch64/aarch.md (mov<mode>:GPF_F16): Use GPF_TF_F16.
+	(movtf): Delete.
+	* config/aarch64/iterators.md (GPF_TF_F16): New.
+	(GPF_F16): Delete.
 
 2015-09-10  Nathan Sidwell  <nathan@acm.org>
 
@@ -198,7 +810,7 @@
 	(compute_deps): Same.
 
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-isl-ast-to-gimple.c (gcc_expression_from_isl_ast_expr_id):
 	Return the parameter if it was saved in corresponding
@@ -9966,7 +10578,7 @@
 
 	* tree-vect-slp.c (vect_build_slp_tree_1): Init vectype.
 
-2015-06-24 Renlin Li <renlin.li@arm.com>
+2015-06-24  Renlin Li <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.h(TARGET_CPU_CPP_BUILTINS): Add
 	__ARM_ALIGN_MAX_PWR, __ARM_ALIGN_MAX_STACK_PWR.

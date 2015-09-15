@@ -134,7 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 
 struct alias_set_hash : int_hash <int, INT_MIN, INT_MIN + 1> {};
 
-struct GTY(()) alias_set_entry_d {
+struct GTY(()) alias_set_entry {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
   alias_set_type alias_set;
 
@@ -158,7 +158,6 @@ struct GTY(()) alias_set_entry_d {
   /* Nonzero if is_pointer or if one of childs have has_pointer set.  */
   bool has_pointer;
 };
-typedef struct alias_set_entry_d *alias_set_entry;
 
 static int rtx_equal_for_memref_p (const_rtx, const_rtx);
 static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
@@ -167,7 +166,7 @@ static int base_alias_check (rtx, rtx, rtx, rtx, machine_mode,
 			     machine_mode);
 static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
-static alias_set_entry get_alias_set_entry (alias_set_type);
+static alias_set_entry *get_alias_set_entry (alias_set_type);
 static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx,
 			       const_rtx, machine_mode, rtx,
@@ -288,7 +287,7 @@ static bool copying_arguments;
 
 
 /* The splay-tree used to store the various alias set entries.  */
-static GTY (()) vec<alias_set_entry, va_gc> *alias_sets;
+static GTY (()) vec<alias_set_entry *, va_gc> *alias_sets;
 
 /* Build a decomposed reference object for querying the alias-oracle
    from the MEM rtx and store it in *REF.
@@ -395,7 +394,7 @@ rtx_refs_may_alias_p (const_rtx x, const_rtx mem, bool tbaa_p)
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
 
-static inline alias_set_entry
+static inline alias_set_entry *
 get_alias_set_entry (alias_set_type alias_set)
 {
   return (*alias_sets)[alias_set];
@@ -417,7 +416,7 @@ mems_in_disjoint_alias_sets_p (const_rtx mem1, const_rtx mem2)
 bool
 alias_set_subset_of (alias_set_type set1, alias_set_type set2)
 {
-  alias_set_entry ase2;
+  alias_set_entry *ase2;
 
   /* Everything is a subset of the "aliases everything" set.  */
   if (set2 == 0)
@@ -453,7 +452,7 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
      get_alias_set for more details.  */
   if (ase2 && ase2->has_pointer)
     {
-      alias_set_entry ase1 = get_alias_set_entry (set1);
+      alias_set_entry *ase1 = get_alias_set_entry (set1);
 
       if (ase1 && ase1->is_pointer)
 	{
@@ -477,8 +476,8 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
 int
 alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 {
-  alias_set_entry ase1;
-  alias_set_entry ase2;
+  alias_set_entry *ase1;
+  alias_set_entry *ase2;
 
   /* The easy case.  */
   if (alias_sets_must_conflict_p (set1, set2))
@@ -808,10 +807,10 @@ alias_ptr_types_compatible_p (tree t1, tree t2)
 
 /* Create emptry alias set entry.  */
 
-alias_set_entry
+alias_set_entry *
 init_alias_set_entry (alias_set_type set)
 {
-  alias_set_entry ase = ggc_alloc<alias_set_entry_d> ();
+  alias_set_entry *ase = ggc_alloc<alias_set_entry> ();
   ase->alias_set = set;
   ase->children = NULL;
   ase->has_zero_child = false;
@@ -1057,7 +1056,7 @@ get_alias_set (tree t)
   /* We treat pointer types specially in alias_set_subset_of.  */
   if (POINTER_TYPE_P (t) && set)
     {
-      alias_set_entry ase = get_alias_set_entry (set);
+      alias_set_entry *ase = get_alias_set_entry (set);
       if (!ase)
 	ase = init_alias_set_entry (set);
       ase->is_pointer = true;
@@ -1075,8 +1074,8 @@ new_alias_set (void)
   if (flag_strict_aliasing)
     {
       if (alias_sets == 0)
-	vec_safe_push (alias_sets, (alias_set_entry) 0);
-      vec_safe_push (alias_sets, (alias_set_entry) 0);
+	vec_safe_push (alias_sets, (alias_set_entry *) NULL);
+      vec_safe_push (alias_sets, (alias_set_entry *) NULL);
       return alias_sets->length () - 1;
     }
   else
@@ -1099,8 +1098,8 @@ new_alias_set (void)
 void
 record_alias_subset (alias_set_type superset, alias_set_type subset)
 {
-  alias_set_entry superset_entry;
-  alias_set_entry subset_entry;
+  alias_set_entry *superset_entry;
+  alias_set_entry *subset_entry;
 
   /* It is possible in complex type situations for both sets to be the same,
      in which case we can ignore this operation.  */

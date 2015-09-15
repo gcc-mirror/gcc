@@ -497,10 +497,9 @@ check_global_declaration (tree decl)
 
   /* Warn about static fns or vars defined but not used.  */
   if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
-       /* We don't warn about "static const" variables because the
-	  "rcs_id" idiom uses that construction.  */
-       || (warn_unused_variable
-	   && TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
+       || (((warn_unused_variable && ! TREE_READONLY (decl))
+	    || (warn_unused_const_variable && TREE_READONLY (decl)))
+	   && TREE_CODE (decl) == VAR_DECL))
       && ! DECL_IN_SYSTEM_HEADER (decl)
       && ! snode->referred_to_p (/*include_self=*/false)
       /* This TREE_USED check is needed in addition to referred_to_p
@@ -527,7 +526,9 @@ check_global_declaration (tree decl)
     warning_at (DECL_SOURCE_LOCATION (decl),
 		(TREE_CODE (decl) == FUNCTION_DECL)
 		? OPT_Wunused_function
-		: OPT_Wunused_variable,
+		: (TREE_READONLY (decl)
+		   ? OPT_Wunused_const_variable
+		   : OPT_Wunused_variable),
 		"%qD defined but not used", decl);
 }
 

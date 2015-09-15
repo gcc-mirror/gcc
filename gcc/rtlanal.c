@@ -5805,9 +5805,9 @@ split_double (rtx value, rtx *first, rtx *second)
       if (BITS_PER_WORD < HOST_BITS_PER_LONG && BITS_PER_WORD == 32)
 	{
 	  if (l[0] & ((long) 1 << 31))
-	    l[0] |= ((long) (-1) << 32);
+	    l[0] |= ((unsigned long) (-1) << 32);
 	  if (l[1] & ((long) 1 << 31))
-	    l[1] |= ((long) (-1) << 32);
+	    l[1] |= ((unsigned long) (-1) << 32);
 	}
 #endif
 

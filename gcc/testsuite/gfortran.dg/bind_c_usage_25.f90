@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-Wno-c-binding-type" }
+! { dg-require-visibility "" }
 !
 ! That's a copy of "bind_c_usage_8.f03", "bind_c_dts_4.f03",
 ! "bind_c_implicit_vars.f03" and "c_kind_tests_2.f03"

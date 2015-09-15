@@ -268,6 +268,13 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (!global_options_set.x_flag_diagnostics_show_caret)
     global_dc->show_caret = false;
 
+  /* Warn only if STABS is not the default: we don't want to emit a warning if
+     the user did not use a -gstabs option.  */
+  if (PREFERRED_DEBUGGING_TYPE != DBX_DEBUG && write_symbols == DBX_DEBUG)
+    warning (0, "STABS debugging information for Ada is obsolete and not "
+		"supported anymore");
+
+  /* Copy global settings to local versions.  */
   optimize = global_options.x_optimize;
   optimize_size = global_options.x_optimize_size;
   flag_compare_debug = global_options.x_flag_compare_debug;
@@ -658,7 +665,7 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
   info->ndimensions = i;
   convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (type);
 
-  /* TODO: For row major ordering, we probably want to emit nothing and
+  /* TODO: for row major ordering, we probably want to emit nothing and
      instead specify it as the default in Dw_TAG_compile_unit.  */
   info->ordering = (convention_fortran_p
 		    ? array_descr_ordering_column_major

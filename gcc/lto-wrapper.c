@@ -232,6 +232,10 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    break;
 
 	  /* Fallthru.  */
+	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_option:
+	case OPT_fdiagnostics_show_location_:
+	case OPT_fshow_column:
 	case OPT_fPIC:
 	case OPT_fpic:
 	case OPT_fPIE:
@@ -479,6 +483,10 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	 on any CL_TARGET flag and a few selected others.  */
       switch (option->opt_index)
 	{
+	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_option:
+	case OPT_fdiagnostics_show_location_:
+	case OPT_fshow_column:
 	case OPT_fPIC:
 	case OPT_fpic:
 	case OPT_fPIE:

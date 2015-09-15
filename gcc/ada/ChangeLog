@@ -1,3 +1,34 @@
+2015-09-14  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/misc.c (gnat_post_options): Issue a warning if
+	generating STABS debugging information when not the default.
+
+2015-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (ref_filename): Delete.
+	(Sloc_to_locus): Add clean_column parameter defaulting to false.
+	(build_call_raise): Adjust comment.
+	(build_call_raise_range): Move around.
+	* gcc-interface/trans.c (ref_filename): Delete.
+	(gigi): Fix formatting.
+	(block_end_locus_sink): Delete.
+	(Sloc_to_locus1): Tidy up and reformat.  Rename into...
+	(Sloc_to_locus): ...this.  Add default for clean_colmun parameter.
+	(set_expr_location_from_node1): Rename into...
+	(set_expr_location_from_node): ...this.
+	(set_end_locus_from_node): Move around.  Adjust for renaming.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(add_cleanup): Likewise.
+	* gcc-interface/utils2.c (expand_sloc): New static function.
+	(build_call_raise): Call it.
+	(build_call_raise_column): Likewise.
+	(build_call_raise_range): Likewise.  Move around.
+
+2015-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (gnat_rewrite_reference) <COMPOUND_EXPR>: Add
+	another acceptable pattern for the RHS.
+
 2015-07-24  Micahel Darling  <darlingm@gmail.com>
 
 	PR other/66259

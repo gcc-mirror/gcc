@@ -1752,7 +1752,9 @@ Lex::skip_cpp_comment()
   // For field tracking analysis: a //go:nointerface comment means
   // that the next interface method should not be stored in the type
   // descriptor.  This permits it to be discarded if it is not needed.
-  if (this->lineoff_ == 2 && memcmp(p, "go:nointerface", 14) == 0)
+  if (this->lineoff_ == 2
+      && pend - p > 14
+      && memcmp(p, "go:nointerface", 14) == 0)
     this->saw_nointerface_ = true;
 
   while (p < pend)

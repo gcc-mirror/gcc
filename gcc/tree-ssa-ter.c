@@ -162,7 +162,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Temporary Expression Replacement (TER) table information.  */
 
-typedef struct temp_expr_table_d
+struct temp_expr_table
 {
   var_map map;
   bitmap *partition_dependencies;	/* Partitions expr is dependent on.  */
@@ -174,7 +174,7 @@ typedef struct temp_expr_table_d
   bitmap new_replaceable_dependencies;	/* Holding place for pending dep's.  */
   int *num_in_part;			/* # of ssa_names in a partition.  */
   int *call_cnt;			/* Call count at definition.  */
-} *temp_expr_table_p;
+};
 
 /* Used to indicate a dependency on VDEFs.  */
 #define VIRTUAL_PARTITION(table)	(table->virtual_partition)
@@ -183,19 +183,18 @@ typedef struct temp_expr_table_d
 static bitmap_obstack ter_bitmap_obstack;
 
 #ifdef ENABLE_CHECKING
-extern void debug_ter (FILE *, temp_expr_table_p);
+extern void debug_ter (FILE *, temp_expr_table *);
 #endif
 
 
 /* Create a new TER table for MAP.  */
 
-static temp_expr_table_p
+static temp_expr_table *
 new_temp_expr_table (var_map map)
 {
-  temp_expr_table_p t;
   unsigned x;
 
-  t = XNEW (struct temp_expr_table_d);
+  temp_expr_table *t = XNEW (struct temp_expr_table);
   t->map = map;
 
   t->partition_dependencies = XCNEWVEC (bitmap, num_ssa_names + 1);
@@ -229,7 +228,7 @@ new_temp_expr_table (var_map map)
    vector.  */
 
 static bitmap
-free_temp_expr_table (temp_expr_table_p t)
+free_temp_expr_table (temp_expr_table *t)
 {
   bitmap ret = NULL;
 
@@ -264,7 +263,7 @@ free_temp_expr_table (temp_expr_table_p t)
 /* Return TRUE if VERSION is to be replaced by an expression in TAB.  */
 
 static inline bool
-version_to_be_replaced_p (temp_expr_table_p tab, int version)
+version_to_be_replaced_p (temp_expr_table *tab, int version)
 {
   if (!tab->replaceable_expressions)
     return false;
@@ -276,7 +275,7 @@ version_to_be_replaced_p (temp_expr_table_p tab, int version)
    the expression table */
 
 static inline void
-make_dependent_on_partition (temp_expr_table_p tab, int version, int p)
+make_dependent_on_partition (temp_expr_table *tab, int version, int p)
 {
   if (!tab->partition_dependencies[version])
     tab->partition_dependencies[version] = BITMAP_ALLOC (&ter_bitmap_obstack);
@@ -288,7 +287,7 @@ make_dependent_on_partition (temp_expr_table_p tab, int version, int p)
 /* Add VER to the kill list for P.  TAB is the expression table */
 
 static inline void
-add_to_partition_kill_list (temp_expr_table_p tab, int p, int ver)
+add_to_partition_kill_list (temp_expr_table *tab, int p, int ver)
 {
   if (!tab->kill_list[p])
     {
@@ -303,7 +302,7 @@ add_to_partition_kill_list (temp_expr_table_p tab, int p, int ver)
    table.  */
 
 static inline void
-remove_from_partition_kill_list (temp_expr_table_p tab, int p, int version)
+remove_from_partition_kill_list (temp_expr_table *tab, int p, int version)
 {
   gcc_checking_assert (tab->kill_list[p]);
   bitmap_clear_bit (tab->kill_list[p], version);
@@ -321,7 +320,7 @@ remove_from_partition_kill_list (temp_expr_table_p tab, int p, int version)
    expression table.  */
 
 static void
-add_dependence (temp_expr_table_p tab, int version, tree var)
+add_dependence (temp_expr_table *tab, int version, tree var)
 {
   int i;
   bitmap_iterator bi;
@@ -372,7 +371,7 @@ add_dependence (temp_expr_table_p tab, int version, tree var)
    expression from consideration as well by freeing the decl uid bitmap.  */
 
 static void
-finished_with_expr (temp_expr_table_p tab, int version, bool free_expr)
+finished_with_expr (temp_expr_table *tab, int version, bool free_expr)
 {
   unsigned i;
   bitmap_iterator bi;
@@ -444,7 +443,7 @@ ter_is_replaceable_p (gimple stmt)
 /* Create an expression entry for a replaceable expression.  */
 
 static void
-process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
+process_replaceable (temp_expr_table *tab, gimple stmt, int call_cnt)
 {
   tree var, def, basevar;
   int version;
@@ -493,7 +492,7 @@ process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
    from consideration, making it not replaceable.  */
 
 static inline void
-kill_expr (temp_expr_table_p tab, int partition)
+kill_expr (temp_expr_table *tab, int partition)
 {
   unsigned version;
 
@@ -513,7 +512,7 @@ kill_expr (temp_expr_table_p tab, int partition)
    partitions.  */
 
 static inline void
-kill_virtual_exprs (temp_expr_table_p tab)
+kill_virtual_exprs (temp_expr_table *tab)
 {
   kill_expr (tab, VIRTUAL_PARTITION (tab));
 }
@@ -524,7 +523,7 @@ kill_virtual_exprs (temp_expr_table_p tab)
    MORE_REPLACING is true, accumulate the pending partition dependencies.  */
 
 static void
-mark_replaceable (temp_expr_table_p tab, tree var, bool more_replacing)
+mark_replaceable (temp_expr_table *tab, tree var, bool more_replacing)
 {
   int version = SSA_NAME_VERSION (var);
 
@@ -572,7 +571,7 @@ find_ssaname_in_store (gimple, tree, tree t, void *data)
    be replaced by their expressions.  Results are stored in the table TAB.  */
 
 static void
-find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
+find_replaceable_in_bb (temp_expr_table *tab, basic_block bb)
 {
   gimple_stmt_iterator bsi;
   gimple stmt;
@@ -712,7 +711,7 @@ bitmap
 find_replaceable_exprs (var_map map)
 {
   basic_block bb;
-  temp_expr_table_p table;
+  temp_expr_table *table;
   bitmap ret;
 
   bitmap_obstack_initialize (&ter_bitmap_obstack);
@@ -755,7 +754,7 @@ dump_replaceable_exprs (FILE *f, bitmap expr)
    table being debugged.  */
 
 DEBUG_FUNCTION void
-debug_ter (FILE *f, temp_expr_table_p t)
+debug_ter (FILE *f, temp_expr_table *t)
 {
   unsigned x, y;
   bitmap_iterator bi;

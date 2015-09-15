@@ -45,7 +45,8 @@ get_visual_column (expanded_location exploc,
 		   unsigned int *first_nws = NULL)
 {
   int line_len;
-  const char *line = location_get_source_line (exploc, &line_len);
+  const char *line = location_get_source_line (exploc.file, exploc.line,
+					       &line_len);
   if (!line)
     return false;
   unsigned int vis_column = 0;
@@ -84,13 +85,8 @@ get_visual_column (expanded_location exploc,
 static bool
 line_contains_hash_if (const char *file, int line_num)
 {
-  expanded_location exploc;
-  exploc.file = file;
-  exploc.line = line_num;
-  exploc.column = 1;
-
   int line_len;
-  const char *line = location_get_source_line (exploc, &line_len);
+  const char *line = location_get_source_line (file, line_num, &line_len);
   if (!line)
     return false;
 

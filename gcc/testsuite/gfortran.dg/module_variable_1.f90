@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-Wall" }
+! { dg-require-visibility "" }
 module foo
   integer, private :: i  ! { dg-warning "Unused PRIVATE" }
   integer, private :: j = 0

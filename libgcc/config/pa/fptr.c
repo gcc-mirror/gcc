@@ -45,7 +45,7 @@ static int fixup_branch_offset[NOFFSETS] = { 32, -4 };
 #define GET_FIELD(X, FROM, TO) \
   ((X) >> (31 - (TO)) & ((1 << ((TO) - (FROM) + 1)) - 1))
 #define SIGN_EXTEND(VAL,BITS) \
-  ((int) ((VAL) >> ((BITS) - 1) ? (-1 << (BITS)) | (VAL) : (VAL)))
+  ((int) ((VAL) >> ((BITS) - 1) ? ((unsigned)(-1) << (BITS)) | (VAL) : (VAL)))
 
 struct link_map;
 typedef int (*fptr_t) (void);

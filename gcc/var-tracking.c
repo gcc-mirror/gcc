@@ -264,10 +264,10 @@ typedef struct attrs_def
 } *attrs;
 
 /* Structure for chaining the locations.  */
-typedef struct location_chain_def
+struct location_chain
 {
   /* Next element in the chain.  */
-  struct location_chain_def *next;
+  location_chain *next;
 
   /* The location (REG, MEM or VALUE).  */
   rtx loc;
@@ -277,7 +277,7 @@ typedef struct location_chain_def
 
   /* Initialized? */
   enum var_init_status init;
-} *location_chain;
+};
 
 /* A vector of loc_exp_dep holds the active dependencies of a one-part
    DV on VALUEs, i.e., the VALUEs expanded so as to form the current
@@ -337,7 +337,7 @@ struct onepart_aux
 struct variable_part
 {
   /* Chain of locations of the part.  */
-  location_chain loc_chain;
+  location_chain *loc_chain;
 
   /* Location which was last emitted to location list.  */
   rtx cur_loc;
@@ -525,14 +525,14 @@ struct emit_note_data
 
 /* Structure holding a refcounted hash table.  If refcount > 1,
    it must be first unshared before modified.  */
-typedef struct shared_hash_def
+struct shared_hash
 {
   /* Reference count.  */
   int refcount;
 
   /* Actual hash table.  */
   variable_table_type *htab;
-} *shared_hash;
+};
 
 /* Structure holding the IN or OUT set for a basic block.  */
 struct dataflow_set
@@ -544,10 +544,10 @@ struct dataflow_set
   attrs regs[FIRST_PSEUDO_REGISTER];
 
   /* Variable locations.  */
-  shared_hash vars;
+  shared_hash *vars;
 
   /* Vars that is being traversed.  */
-  shared_hash traversed_vars;
+  shared_hash *traversed_vars;
 };
 
 /* The structure (one for each basic block) containing the information
@@ -589,12 +589,12 @@ static pool_allocator valvar_pool
   ("small variable_def pool", 256, sizeof (variable_def));
 
 /* Alloc pool for struct location_chain_def.  */
-static object_allocator<location_chain_def> location_chain_def_pool
-  ("location_chain_def pool", 1024);
+static object_allocator<location_chain> location_chain_pool
+  ("location_chain pool", 1024);
 
 /* Alloc pool for struct shared_hash_def.  */
-static object_allocator<shared_hash_def> shared_hash_def_pool
-  ("shared_hash_def pool", 256);
+static object_allocator<shared_hash> shared_hash_pool
+  ("shared_hash pool", 256);
 
 /* Alloc pool for struct loc_exp_dep_s for NOT_ONEPART variables.  */
 object_allocator<loc_exp_dep> loc_exp_dep_pool ("loc_exp_dep pool", 64);
@@ -611,7 +611,7 @@ static bool emit_notes;
 static variable_table_type *dropped_values;
 
 /* Empty shared hashtable.  */
-static shared_hash empty_shared_hash;
+static shared_hash *empty_shared_hash;
 
 /* Scratch register bitmap used by cselib_expand_value_rtx.  */
 static bitmap scratch_regs = NULL;
@@ -663,7 +663,7 @@ static void dataflow_set_clear (dataflow_set *);
 static void dataflow_set_copy (dataflow_set *, dataflow_set *);
 static int variable_union_info_cmp_pos (const void *, const void *);
 static void dataflow_set_union (dataflow_set *, dataflow_set *);
-static location_chain find_loc_in_1pdv (rtx, variable, variable_table_type *);
+static location_chain *find_loc_in_1pdv (rtx, variable, variable_table_type *);
 static bool canon_value_cmp (rtx, rtx);
 static int loc_cmp (rtx, rtx);
 static bool variable_part_different_p (variable_part *, variable_part *);
@@ -1435,7 +1435,7 @@ variable_htab_free (void *elem)
 {
   int i;
   variable var = (variable) elem;
-  location_chain node, next;
+  location_chain *node, *next;
 
   gcc_checking_assert (var->refcount > 0);
 
@@ -1571,7 +1571,7 @@ attrs_list_mpdv_union (attrs *dstp, attrs src, attrs src2)
 /* Return true if VARS is shared.  */
 
 static inline bool
-shared_hash_shared (shared_hash vars)
+shared_hash_shared (shared_hash *vars)
 {
   return vars->refcount > 1;
 }
@@ -1579,7 +1579,7 @@ shared_hash_shared (shared_hash vars)
 /* Return the hash table for VARS.  */
 
 static inline variable_table_type *
-shared_hash_htab (shared_hash vars)
+shared_hash_htab (shared_hash *vars)
 {
   return vars->htab;
 }
@@ -1587,7 +1587,7 @@ shared_hash_htab (shared_hash vars)
 /* Return true if VAR is shared, or maybe because VARS is shared.  */
 
 static inline bool
-shared_var_p (variable var, shared_hash vars)
+shared_var_p (variable var, shared_hash *vars)
 {
   /* Don't count an entry in the changed_variables table as a duplicate.  */
   return ((var->refcount > 1 + (int) var->in_changed_variables)
@@ -1596,10 +1596,10 @@ shared_var_p (variable var, shared_hash vars)
 
 /* Copy variables into a new hash table.  */
 
-static shared_hash
-shared_hash_unshare (shared_hash vars)
+static shared_hash *
+shared_hash_unshare (shared_hash *vars)
 {
-  shared_hash new_vars = new shared_hash_def;
+  shared_hash *new_vars = new shared_hash;
   gcc_assert (vars->refcount > 1);
   new_vars->refcount = 1;
   new_vars->htab = new variable_table_type (vars->htab->elements () + 3);
@@ -1610,8 +1610,8 @@ shared_hash_unshare (shared_hash vars)
 
 /* Increment reference counter on VARS and return it.  */
 
-static inline shared_hash
-shared_hash_copy (shared_hash vars)
+static inline shared_hash *
+shared_hash_copy (shared_hash *vars)
 {
   vars->refcount++;
   return vars;
@@ -1621,7 +1621,7 @@ shared_hash_copy (shared_hash vars)
    anymore.  */
 
 static void
-shared_hash_destroy (shared_hash vars)
+shared_hash_destroy (shared_hash *vars)
 {
   gcc_checking_assert (vars->refcount > 0);
   if (--vars->refcount == 0)
@@ -1635,7 +1635,7 @@ shared_hash_destroy (shared_hash vars)
    INSERT, insert it if not already present.  */
 
 static inline variable_def **
-shared_hash_find_slot_unshare_1 (shared_hash *pvars, decl_or_value dv,
+shared_hash_find_slot_unshare_1 (shared_hash **pvars, decl_or_value dv,
 				 hashval_t dvhash, enum insert_option ins)
 {
   if (shared_hash_shared (*pvars))
@@ -1644,7 +1644,7 @@ shared_hash_find_slot_unshare_1 (shared_hash *pvars, decl_or_value dv,
 }
 
 static inline variable_def **
-shared_hash_find_slot_unshare (shared_hash *pvars, decl_or_value dv,
+shared_hash_find_slot_unshare (shared_hash **pvars, decl_or_value dv,
 			       enum insert_option ins)
 {
   return shared_hash_find_slot_unshare_1 (pvars, dv, dv_htab_hash (dv), ins);
@@ -1655,7 +1655,7 @@ shared_hash_find_slot_unshare (shared_hash *pvars, decl_or_value dv,
    return NULL.  */
 
 static inline variable_def **
-shared_hash_find_slot_1 (shared_hash vars, decl_or_value dv, hashval_t dvhash)
+shared_hash_find_slot_1 (shared_hash *vars, decl_or_value dv, hashval_t dvhash)
 {
   return shared_hash_htab (vars)->find_slot_with_hash (dv, dvhash,
 						       shared_hash_shared (vars)
@@ -1663,7 +1663,7 @@ shared_hash_find_slot_1 (shared_hash vars, decl_or_value dv, hashval_t dvhash)
 }
 
 static inline variable_def **
-shared_hash_find_slot (shared_hash vars, decl_or_value dv)
+shared_hash_find_slot (shared_hash *vars, decl_or_value dv)
 {
   return shared_hash_find_slot_1 (vars, dv, dv_htab_hash (dv));
 }
@@ -1671,14 +1671,14 @@ shared_hash_find_slot (shared_hash vars, decl_or_value dv)
 /* Return slot for DV only if it is already present in the hash table.  */
 
 static inline variable_def **
-shared_hash_find_slot_noinsert_1 (shared_hash vars, decl_or_value dv,
+shared_hash_find_slot_noinsert_1 (shared_hash *vars, decl_or_value dv,
 				  hashval_t dvhash)
 {
   return shared_hash_htab (vars)->find_slot_with_hash (dv, dvhash, NO_INSERT);
 }
 
 static inline variable_def **
-shared_hash_find_slot_noinsert (shared_hash vars, decl_or_value dv)
+shared_hash_find_slot_noinsert (shared_hash *vars, decl_or_value dv)
 {
   return shared_hash_find_slot_noinsert_1 (vars, dv, dv_htab_hash (dv));
 }
@@ -1687,13 +1687,13 @@ shared_hash_find_slot_noinsert (shared_hash vars, decl_or_value dv)
    table.  */
 
 static inline variable
-shared_hash_find_1 (shared_hash vars, decl_or_value dv, hashval_t dvhash)
+shared_hash_find_1 (shared_hash *vars, decl_or_value dv, hashval_t dvhash)
 {
   return shared_hash_htab (vars)->find_with_hash (dv, dvhash);
 }
 
 static inline variable
-shared_hash_find (shared_hash vars, decl_or_value dv)
+shared_hash_find (shared_hash *vars, decl_or_value dv)
 {
   return shared_hash_find_1 (vars, dv, dv_htab_hash (dv));
 }
@@ -1738,8 +1738,8 @@ unshare_variable (dataflow_set *set, variable_def **slot, variable var,
 
   for (i = 0; i < var->n_var_parts; i++)
     {
-      location_chain node;
-      location_chain *nextp;
+      location_chain *node;
+      location_chain **nextp;
 
       if (i == 0 && var->onepart)
 	{
@@ -1756,9 +1756,9 @@ unshare_variable (dataflow_set *set, variable_def **slot, variable var,
       nextp = &new_var->var_part[i].loc_chain;
       for (node = var->var_part[i].loc_chain; node; node = node->next)
 	{
-	  location_chain new_lc;
+	  location_chain *new_lc;
 
-	  new_lc = new location_chain_def;
+	  new_lc = new location_chain;
 	  new_lc->next = NULL;
 	  if (node->init > initialized)
 	    new_lc->init = node->init;
@@ -1882,7 +1882,7 @@ get_init_value (dataflow_set *set, rtx loc, decl_or_value dv)
     {
       for (i = 0; i < var->n_var_parts && ret_val == VAR_INIT_STATUS_UNKNOWN; i++)
 	{
-	  location_chain nextp;
+	  location_chain *nextp;
 	  for (nextp = var->var_part[i].loc_chain; nextp; nextp = nextp->next)
 	    if (rtx_equal_p (nextp->loc, loc))
 	      {
@@ -2069,7 +2069,7 @@ get_addr_from_local_cache (dataflow_set *set, rtx const loc)
   rtx x;
   decl_or_value dv;
   variable var;
-  location_chain l;
+  location_chain *l;
 
   gcc_checking_assert (GET_CODE (loc) == VALUE);
 
@@ -2246,7 +2246,7 @@ drop_overlapping_mem_locs (variable_def **slot, overlapping_mems *coms)
 
   if (var->onepart == ONEPART_VALUE)
     {
-      location_chain loc, *locp;
+      location_chain *loc, **locp;
       bool changed = false;
       rtx cur_loc;
 
@@ -2514,7 +2514,7 @@ static void
 val_reset (dataflow_set *set, decl_or_value dv)
 {
   variable var = shared_hash_find (set->vars, dv) ;
-  location_chain node;
+  location_chain *node;
   rtx cval;
 
   if (!var || !var->n_var_parts)
@@ -2695,7 +2695,7 @@ dataflow_set_copy (dataflow_set *dst, dataflow_set *src)
 struct variable_union_info
 {
   /* Node of the location chain.  */
-  location_chain lc;
+  location_chain *lc;
 
   /* The sum of positions in the input chains.  */
   int pos;
@@ -2765,7 +2765,7 @@ variable_union (variable src, dataflow_set *set)
      entries are in canonical order.  */
   if (src->onepart)
     {
-      location_chain *nodep, dnode, snode;
+      location_chain **nodep, *dnode, *snode;
 
       gcc_assert (src->n_var_parts == 1
 		  && dst->n_var_parts == 1);
@@ -2784,7 +2784,7 @@ variable_union (variable src, dataflow_set *set)
 
 	  if (r > 0)
 	    {
-	      location_chain nnode;
+	      location_chain *nnode;
 
 	      if (shared_var_p (dst, set->vars))
 		{
@@ -2794,7 +2794,7 @@ variable_union (variable src, dataflow_set *set)
 		  goto restart_onepart_unshared;
 		}
 
-	      *nodep = nnode = new location_chain_def;
+	      *nodep = nnode = new location_chain;
 	      nnode->loc = snode->loc;
 	      nnode->init = snode->init;
 	      if (!snode->set_src || MEM_P (snode->set_src))
@@ -2852,7 +2852,7 @@ variable_union (variable src, dataflow_set *set)
 
   for (k--; k >= 0; k--)
     {
-      location_chain node, node2;
+      location_chain *node, *node2;
 
       if (i >= 0 && j >= 0
 	  && VAR_PART_OFFSET (src, i) == VAR_PART_OFFSET (dst, j))
@@ -2901,7 +2901,7 @@ variable_union (variable src, dataflow_set *set)
 	  if (dst_l == 1)
 	    {
 	      /* The most common case, much simpler, no qsort is needed.  */
-	      location_chain dstnode = dst->var_part[j].loc_chain;
+	      location_chain *dstnode = dst->var_part[j].loc_chain;
 	      dst->var_part[k].loc_chain = dstnode;
 	      VAR_PART_OFFSET (dst, k) = VAR_PART_OFFSET (dst, j);
 	      node2 = dstnode;
@@ -2911,10 +2911,10 @@ variable_union (variable src, dataflow_set *set)
 		       && REGNO (dstnode->loc) == REGNO (node->loc))
 		      || rtx_equal_p (dstnode->loc, node->loc)))
 		  {
-		    location_chain new_node;
+		    location_chain *new_node;
 
 		    /* Copy the location from SRC.  */
-		    new_node = new location_chain_def;
+		    new_node = new location_chain;
 		    new_node->loc = node->loc;
 		    new_node->init = node->init;
 		    if (!node->set_src || MEM_P (node->set_src))
@@ -2966,10 +2966,10 @@ variable_union (variable src, dataflow_set *set)
 		    }
 		  if (jj >= dst_l)	/* The location has not been found.  */
 		    {
-		      location_chain new_node;
+		      location_chain *new_node;
 
 		      /* Copy the location from SRC.  */
-		      new_node = new location_chain_def;
+		      new_node = new location_chain;
 		      new_node->loc = node->loc;
 		      new_node->init = node->init;
 		      if (!node->set_src || MEM_P (node->set_src))
@@ -3057,15 +3057,15 @@ variable_union (variable src, dataflow_set *set)
 		&& VAR_PART_OFFSET (src, i) > VAR_PART_OFFSET (dst, j))
 	       || j < 0)
 	{
-	  location_chain *nextp;
+	  location_chain **nextp;
 
 	  /* Copy the chain from SRC.  */
 	  nextp = &dst->var_part[k].loc_chain;
 	  for (node = src->var_part[i].loc_chain; node; node = node->next)
 	    {
-	      location_chain new_lc;
+	      location_chain *new_lc;
 
-	      new_lc = new location_chain_def;
+	      new_lc = new location_chain;
 	      new_lc->next = NULL;
 	      new_lc->init = node->init;
 	      if (!node->set_src || MEM_P (node->set_src))
@@ -3087,7 +3087,7 @@ variable_union (variable src, dataflow_set *set)
   if (flag_var_tracking_uninit)
     for (i = 0; i < src->n_var_parts && i < dst->n_var_parts; i++)
       {
-	location_chain node, node2;
+	location_chain *node, *node2;
 	for (node = src->var_part[i].loc_chain; node; node = node->next)
 	  for (node2 = dst->var_part[i].loc_chain; node2; node2 = node2->next)
 	    if (rtx_equal_p (node->loc, node2->loc))
@@ -3184,10 +3184,10 @@ dv_changed_p (decl_or_value dv)
    any values recursively mentioned in the location lists.  VARS must
    be in star-canonical form.  */
 
-static location_chain
+static location_chain *
 find_loc_in_1pdv (rtx loc, variable var, variable_table_type *vars)
 {
-  location_chain node;
+  location_chain *node;
   enum rtx_code loc_code;
 
   if (!var)
@@ -3268,10 +3268,10 @@ struct dfset_merge
    loc_cmp order, and it is maintained as such.  */
 
 static void
-insert_into_intersection (location_chain *nodep, rtx loc,
+insert_into_intersection (location_chain **nodep, rtx loc,
 			  enum var_init_status status)
 {
-  location_chain node;
+  location_chain *node;
   int r;
 
   for (node = *nodep; node; nodep = &node->next, node = *nodep)
@@ -3283,7 +3283,7 @@ insert_into_intersection (location_chain *nodep, rtx loc,
     else if (r > 0)
       break;
 
-  node = new location_chain_def;
+  node = new location_chain;
 
   node->loc = loc;
   node->set_src = NULL;
@@ -3298,16 +3298,16 @@ insert_into_intersection (location_chain *nodep, rtx loc,
    DSM->dst.  */
 
 static void
-intersect_loc_chains (rtx val, location_chain *dest, struct dfset_merge *dsm,
-		      location_chain s1node, variable s2var)
+intersect_loc_chains (rtx val, location_chain **dest, struct dfset_merge *dsm,
+		      location_chain *s1node, variable s2var)
 {
   dataflow_set *s1set = dsm->cur;
   dataflow_set *s2set = dsm->src;
-  location_chain found;
+  location_chain *found;
 
   if (s2var)
     {
-      location_chain s2node;
+      location_chain *s2node;
 
       gcc_checking_assert (s2var->onepart);
 
@@ -3580,7 +3580,7 @@ canonicalize_loc_order_check (variable_def **slot,
 			      dataflow_set *data ATTRIBUTE_UNUSED)
 {
   variable var = *slot;
-  location_chain node, next;
+  location_chain *node, *next;
 
 #ifdef ENABLE_RTL_CHECKING
   int i;
@@ -3617,7 +3617,7 @@ canonicalize_values_mark (variable_def **slot, dataflow_set *set)
   variable var = *slot;
   decl_or_value dv = var->dv;
   rtx val;
-  location_chain node;
+  location_chain *node;
 
   if (!dv_is_value_p (dv))
     return 1;
@@ -3655,7 +3655,7 @@ canonicalize_values_star (variable_def **slot, dataflow_set *set)
 {
   variable var = *slot;
   decl_or_value dv = var->dv;
-  location_chain node;
+  location_chain *node;
   decl_or_value cdv;
   rtx val, cval;
   variable_def **cslot;
@@ -3876,12 +3876,12 @@ canonicalize_vars_star (variable_def **slot, dataflow_set *set)
 {
   variable var = *slot;
   decl_or_value dv = var->dv;
-  location_chain node;
+  location_chain *node;
   rtx cval;
   decl_or_value cdv;
   variable_def **cslot;
   variable cvar;
-  location_chain cnode;
+  location_chain *cnode;
 
   if (!var->onepart || var->onepart == ONEPART_VALUE)
     return 1;
@@ -3939,7 +3939,7 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
   onepart_enum_t onepart = s1var->onepart;
   rtx val;
   hashval_t dvhash;
-  location_chain node, *nodep;
+  location_chain *node, **nodep;
 
   /* If the incoming onepart variable has an empty location list, then
      the intersection will be just as empty.  For other variables,
@@ -4030,7 +4030,7 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
   nodep = &dvar->var_part[0].loc_chain;
   while ((node = *nodep))
     {
-      location_chain *nextp = &node->next;
+      location_chain **nextp = &node->next;
 
       if (GET_CODE (node->loc) == REG)
 	{
@@ -4226,7 +4226,7 @@ dataflow_set_merge (dataflow_set *dst, dataflow_set *src2)
   dataflow_set_init (dst);
   dst->stack_adjust = cur.stack_adjust;
   shared_hash_destroy (dst->vars);
-  dst->vars = new shared_hash_def;
+  dst->vars = new shared_hash;
   dst->vars->refcount = 1;
   dst->vars->htab = new variable_table_type (MAX (src1_elems, src2_elems));
 
@@ -4338,7 +4338,7 @@ dataflow_set_equiv_regs (dataflow_set *set)
 static void
 remove_duplicate_values (variable var)
 {
-  location_chain node, *nodep;
+  location_chain *node, **nodep;
 
   gcc_assert (var->onepart);
   gcc_assert (var->n_var_parts == 1);
@@ -4388,7 +4388,7 @@ variable_post_merge_new_vals (variable_def **slot, dfset_post_merge *dfpm)
 {
   dataflow_set *set = dfpm->set;
   variable var = *slot;
-  location_chain node;
+  location_chain *node;
 
   if (!var->onepart || !var->n_var_parts)
     return 1;
@@ -4524,7 +4524,7 @@ variable_post_merge_perm_vals (variable_def **pslot, dfset_post_merge *dfpm)
 {
   dataflow_set *set = dfpm->set;
   variable pvar = *pslot, var;
-  location_chain pnode;
+  location_chain *pnode;
   decl_or_value dv;
   attrs att;
 
@@ -4602,13 +4602,13 @@ dataflow_post_merge_adjust (dataflow_set *set, dataflow_set **permp)
    location list of a one-part variable or value VAR, or in that of
    any values recursively mentioned in the location lists.  */
 
-static location_chain
+static location_chain *
 find_mem_expr_in_1pdv (tree expr, rtx val, variable_table_type *vars)
 {
-  location_chain node;
+  location_chain *node;
   decl_or_value dv;
   variable var;
-  location_chain where = NULL;
+  location_chain *where = NULL;
 
   if (!val)
     return NULL;
@@ -4682,7 +4682,7 @@ dataflow_set_preserve_mem_locs (variable_def **slot, dataflow_set *set)
   if (var->onepart == ONEPART_VDECL || var->onepart == ONEPART_DEXPR)
     {
       tree decl = dv_as_decl (var->dv);
-      location_chain loc, *locp;
+      location_chain *loc, **locp;
       bool changed = false;
 
       if (!var->n_var_parts)
@@ -4721,7 +4721,7 @@ dataflow_set_preserve_mem_locs (variable_def **slot, dataflow_set *set)
 	  rtx old_loc = loc->loc;
 	  if (GET_CODE (old_loc) == VALUE)
 	    {
-	      location_chain mem_node
+	      location_chain *mem_node
 		= find_mem_expr_in_1pdv (decl, loc->loc,
 					 shared_hash_htab (set->vars));
 
@@ -4790,7 +4790,7 @@ dataflow_set_remove_mem_locs (variable_def **slot, dataflow_set *set)
 
   if (var->onepart == ONEPART_VALUE)
     {
-      location_chain loc, *locp;
+      location_chain *loc, **locp;
       bool changed = false;
       rtx cur_loc;
 
@@ -4883,7 +4883,7 @@ dataflow_set_clear_at_call (dataflow_set *set, rtx_insn *call_insn)
 static bool
 variable_part_different_p (variable_part *vp1, variable_part *vp2)
 {
-  location_chain lc1, lc2;
+  location_chain *lc1, *lc2;
 
   for (lc1 = vp1->loc_chain; lc1; lc1 = lc1->next)
     {
@@ -4909,7 +4909,7 @@ variable_part_different_p (variable_part *vp1, variable_part *vp2)
 static bool
 onepart_variable_different_p (variable var1, variable var2)
 {
-  location_chain lc1, lc2;
+  location_chain *lc1, *lc2;
 
   if (var1 == var2)
     return false;
@@ -6591,7 +6591,7 @@ find_src_set_src (dataflow_set *set, rtx src)
   tree decl = NULL_TREE;   /* The variable being copied around.          */
   rtx set_src = NULL_RTX;  /* The value for "decl" stored in "src".      */
   variable var;
-  location_chain nextp;
+  location_chain *nextp;
   int i;
   bool found;
 
@@ -7179,7 +7179,7 @@ static void
 dump_var (variable var)
 {
   int i;
-  location_chain node;
+  location_chain *node;
 
   if (dv_is_decl_p (var->dv))
     {
@@ -7499,8 +7499,8 @@ set_slot_part (dataflow_set *set, rtx loc, variable_def **slot,
 	       enum var_init_status initialized, rtx set_src)
 {
   int pos;
-  location_chain node, next;
-  location_chain *nextp;
+  location_chain *node, *next;
+  location_chain **nextp;
   variable var;
   onepart_enum_t onepart;
 
@@ -7727,7 +7727,7 @@ set_slot_part (dataflow_set *set, rtx loc, variable_def **slot,
     }
 
   /* Add the location to the beginning.  */
-  node = new location_chain_def;
+  node = new location_chain;
   node->loc = loc;
   node->init = initialized;
   node->set_src = set_src;
@@ -7780,7 +7780,7 @@ clobber_slot_part (dataflow_set *set, rtx loc, variable_def **slot,
 
   if (pos >= 0)
     {
-      location_chain node, next;
+      location_chain *node, *next;
 
       /* Remove the register locations from the dataflow set.  */
       next = var->var_part[pos].loc_chain;
@@ -7860,8 +7860,8 @@ delete_slot_part (dataflow_set *set, rtx loc, variable_def **slot,
 
   if (pos >= 0)
     {
-      location_chain node, next;
-      location_chain *nextp;
+      location_chain *node, *next;
+      location_chain **nextp;
       bool changed;
       rtx cur_loc;
 
@@ -8220,7 +8220,7 @@ vt_expand_var_loc_chain (variable var, bitmap regs, void *data, bool *pendrecp)
 {
   struct expand_loc_callback_data *elcd
     = (struct expand_loc_callback_data *) data;
-  location_chain loc, next;
+  location_chain *loc, *next;
   rtx result = NULL;
   int first_child, result_first_child, last_child;
   bool pending_recursion;
@@ -8577,7 +8577,7 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
   HOST_WIDE_INT offsets[MAX_VAR_PARTS];
   rtx loc[MAX_VAR_PARTS];
   tree decl;
-  location_chain lc;
+  location_chain *lc;
 
   gcc_checking_assert (var->onepart == NOT_ONEPART
 		       || var->onepart == ONEPART_VDECL);
@@ -8946,7 +8946,7 @@ process_changed_values (variable_table_type *htab)
 
 static void
 emit_notes_for_changes (rtx_insn *insn, enum emit_note_where where,
-			shared_hash vars)
+			shared_hash *vars)
 {
   emit_note_data data;
   variable_table_type *htab = shared_hash_htab (vars);
@@ -9859,7 +9859,7 @@ vt_initialize (void)
 
   alloc_aux_for_blocks (sizeof (struct variable_tracking_info_def));
 
-  empty_shared_hash = new shared_hash_def;
+  empty_shared_hash = new shared_hash;
   empty_shared_hash->refcount = 1;
   empty_shared_hash->htab = new variable_table_type (1);
   changed_variables = new variable_table_type (10);
@@ -10219,8 +10219,8 @@ vt_finalize (void)
   changed_variables = NULL;
   attrs_def_pool.release ();
   var_pool.release ();
-  location_chain_def_pool.release ();
-  shared_hash_def_pool.release ();
+  location_chain_pool.release ();
+  shared_hash_pool.release ();
 
   if (MAY_HAVE_DEBUG_INSNS)
     {

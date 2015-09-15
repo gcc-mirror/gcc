@@ -290,6 +290,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
+-Wunused-const-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
 -Wvla -Wvolatile-register-var  -Wwrite-strings @gol
@@ -4143,9 +4144,20 @@ its return value. The default is @option{-Wunused-result}.
 @item -Wunused-variable
 @opindex Wunused-variable
 @opindex Wno-unused-variable
-Warn whenever a local variable or non-constant static variable is unused
-aside from its declaration.
-This warning is enabled by @option{-Wall}.
+Warn whenever a local or static variable is unused aside from its
+declaration. This option implies @option{-Wunused-const-variable} for C,
+but not for C++. This warning is enabled by @option{-Wall}.
+
+To suppress this warning use the @code{unused} attribute
+(@pxref{Variable Attributes}).
+
+@item -Wunused-const-variable
+@opindex Wunused-const-variable
+@opindex Wno-unused-const-variable
+Warn whenever a constant static variable is unused aside from its declaration.
+This warning is enabled by @option{-Wunused-variable} for C, but not for C++.
+In C++ this is normally not an error since const variables take the place of
+@code{#define}s in C++.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
@@ -12437,6 +12449,14 @@ for @var{string} in this option are not guaranteed to be consistent
 across releases.
 
 This option is only intended to be useful when developing GCC.
+
+@item -mpc-relative-literal-loads
+@opindex mpcrelativeliteralloads
+Enable PC relative literal loads. If this option is used, literal
+pools are assumed to have a range of up to 1MiB and an appropriate
+instruction sequence is used. This option has no impact when used
+with @option{-mcmodel=tiny}.
+
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers

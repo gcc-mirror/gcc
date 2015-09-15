@@ -1833,7 +1833,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		+ strlen (obj->var_name) + obj->var_rank * NML_DIGITS + 1;
 	      ext_name = xmalloc (ext_name_len);
 
-	      memcpy (ext_name, base_name, base_name_len);
+	      if (base_name)
+		memcpy (ext_name, base_name, base_name_len);
 	      clen = strlen (obj->var_name + base_var_name_len);
 	      memcpy (ext_name + base_name_len, 
 		      obj->var_name + base_var_name_len, clen);

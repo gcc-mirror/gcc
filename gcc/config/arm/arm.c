@@ -95,7 +95,7 @@ static int arm_compute_static_chain_stack_bytes (void);
 static arm_stack_offsets *arm_get_frame_offsets (void);
 static void arm_add_gc_roots (void);
 static int arm_gen_constant (enum rtx_code, machine_mode, rtx,
-			     HOST_WIDE_INT, rtx, rtx, int, int);
+			     unsigned HOST_WIDE_INT, rtx, rtx, int, int);
 static unsigned bit_count (unsigned long);
 static unsigned feature_count (const arm_feature_set*);
 static int arm_address_register_rtx_p (rtx, int);
@@ -245,6 +245,7 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
+static void arm_option_print (FILE *, int, struct cl_target_option *);
 static void arm_set_current_function (tree);
 static bool arm_can_inline_p (tree, tree);
 static bool arm_valid_target_attribute_p (tree, tree, tree, int);
@@ -404,6 +405,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE arm_option_override
+
+#undef TARGET_OPTION_PRINT
+#define TARGET_OPTION_PRINT arm_option_print
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
@@ -2751,15 +2755,14 @@ arm_option_check_internal (struct gcc_options *opts)
     error ("-mslow-flash-data only supports non-pic code on armv7-m targets");
 }
 
-/* Set params depending on attributes and optimization options.  */
-static void
-arm_option_params_internal (struct gcc_options *opts)
-{
-  int flags = opts->x_target_flags;
+/* Recompute the global settings depending on target attribute options.  */
 
- /* If we are not using the default (ARM mode) section anchor offset
+static void
+arm_option_params_internal (void)
+{
+  /* If we are not using the default (ARM mode) section anchor offset
      ranges, then set the correct ranges now.  */
-  if (TARGET_THUMB1_P (flags))
+  if (TARGET_THUMB1)
     {
       /* Thumb-1 LDR instructions cannot have negative offsets.
          Permissible positive offset ranges are 5-bit (for byte loads),
@@ -2769,7 +2772,7 @@ arm_option_params_internal (struct gcc_options *opts)
       targetm.min_anchor_offset = 0;
       targetm.max_anchor_offset = 127;
     }
-  else if (TARGET_THUMB2_P (flags))
+  else if (TARGET_THUMB2)
     {
       /* The minimum is set such that the total size of the block
          for a particular anchor is 248 + 1 + 4095 bytes, which is
@@ -2790,14 +2793,13 @@ arm_option_params_internal (struct gcc_options *opts)
       max_insns_skipped = 6;
 
       /* For THUMB2, we limit the conditional sequence to one IT block.  */
-      if (TARGET_THUMB2_P (flags))
-        max_insns_skipped = opts->x_arm_restrict_it ? 1 : 4;
+      if (TARGET_THUMB2)
+        max_insns_skipped = arm_restrict_it ? 1 : 4;
     }
   else
     /* When -mrestrict-it is in use tone down the if-conversion.  */
-    max_insns_skipped
-      = (TARGET_THUMB2_P (opts->x_target_flags) && opts->x_arm_restrict_it)
-         ? 1 : current_tune->max_insns_skipped;
+    max_insns_skipped = (TARGET_THUMB2 && arm_restrict_it)
+      ? 1 : current_tune->max_insns_skipped;
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
@@ -3385,7 +3387,7 @@ arm_option_override (void)
 
   arm_option_override_internal (&global_options, &global_options_set);
   arm_option_check_internal (&global_options);
-  arm_option_params_internal (&global_options);
+  arm_option_params_internal ();
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -4227,8 +4229,8 @@ emit_constant_insn (rtx cond, rtx pattern)
 
 static int
 arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
-		  HOST_WIDE_INT val, rtx target, rtx source, int subtargets,
-		  int generate)
+		  unsigned HOST_WIDE_INT val, rtx target, rtx source,
+		  int subtargets, int generate)
 {
   int can_invert = 0;
   int can_negate = 0;
@@ -4598,7 +4600,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 	  mvn	r0, r0, asl #12
 	  mvn	r0, r0, lsr #12  */
       if (set_sign_bit_copies > 8
-	  && (val & (-1 << (32 - set_sign_bit_copies))) == val)
+	  && (val & (HOST_WIDE_INT_M1U << (32 - set_sign_bit_copies))) == val)
 	{
 	  if (generate)
 	    {
@@ -29482,7 +29484,20 @@ arm_set_current_function (tree fndecl)
 	  = save_target_globals_default_opts ();
     }
 
-  arm_option_params_internal (&global_options);
+  arm_option_params_internal ();
+}
+
+/* Implement TARGET_OPTION_PRINT.  */
+
+static void
+arm_option_print (FILE *file, int indent, struct cl_target_option *ptr)
+{
+  int flags = ptr->x_target_flags;
+
+  fprintf (file, "%*sselected arch %s\n", indent, "",
+	   TARGET_THUMB2_P (flags) ? "thumb2" :
+	   TARGET_THUMB_P (flags) ? "thumb1" :
+	   "arm");
 }
 
 /* Hook to determine if one function can safely inline another.  */
@@ -29501,7 +29516,7 @@ arm_can_inline_p (tree caller ATTRIBUTE_UNUSED, tree callee ATTRIBUTE_UNUSED)
    go over the list.  */
 
 static bool
-arm_valid_target_attribute_rec (tree args,  struct gcc_options *opts)
+arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 {
   if (TREE_CODE (args) == TREE_LIST)
     {

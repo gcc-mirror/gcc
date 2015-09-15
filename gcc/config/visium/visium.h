@@ -1075,14 +1075,6 @@ struct visium_args
    If not defined, this defaults to the value 1. */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* `STRUCT_VALUE'
-
-   If the structure value address is not passed in a register, define
-   `STRUCT_VALUE' as an expression returning an RTX for the place
-   where the address is passed.  If it returns 0, the address is
-   passed as an "invisible" first argument. */
-#define STRUCT_VALUE 0
-
 /* Caller-Saves Register Allocation
 
    If you enable it, GNU CC can save registers around function calls.
@@ -1735,3 +1727,19 @@ extern int visium_indent_opcode;
 	visium_indent_opcode = 0;	\
       }					\
   } while (0)
+
+/* Configure-time default values for common options.  */
+#define OPTION_DEFAULT_SPECS { "cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }
+
+/* Values of TARGET_CPU_DEFAULT specified via --with-cpu.  */
+#define TARGET_CPU_gr5	0
+#define TARGET_CPU_gr6	1
+
+/* Default -mcpu multilib for above values.  */
+#if TARGET_CPU_DEFAULT == TARGET_CPU_gr5
+#define MULTILIB_DEFAULTS { "mcpu=gr5" }
+#elif TARGET_CPU_DEFAULT == TARGET_CPU_gr6
+#define MULTILIB_DEFAULTS { "mcpu=gr6" }
+#else
+#error Unrecognized value in TARGET_CPU_DEFAULT
+#endif

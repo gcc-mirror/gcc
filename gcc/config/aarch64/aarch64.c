@@ -677,7 +677,8 @@ aarch64_array_mode_supported_p (machine_mode mode,
 				unsigned HOST_WIDE_INT nelems)
 {
   if (TARGET_SIMD
-      && AARCH64_VALID_SIMD_QREG_MODE (mode)
+      && (AARCH64_VALID_SIMD_QREG_MODE (mode)
+	  || AARCH64_VALID_SIMD_DREG_MODE (mode))
       && (nelems >= 2 && nelems <= 4))
     return true;
 
@@ -1734,11 +1735,27 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	      aarch64_emit_move (dest, base);
 	      return;
 	    }
+
 	  mem = force_const_mem (ptr_mode, imm);
 	  gcc_assert (mem);
+
+	  /* If we aren't generating PC relative literals, then
+	     we need to expand the literal pool access carefully.
+	     This is something that needs to be done in a number
+	     of places, so could well live as a separate function.  */
+	  if (nopcrelative_literal_loads)
+	    {
+	      gcc_assert (can_create_pseudo_p ());
+	      base = gen_reg_rtx (ptr_mode);
+	      aarch64_expand_mov_immediate (base, XEXP (mem, 0));
+	      mem = gen_rtx_MEM (ptr_mode, base);
+	    }
+
 	  if (mode != ptr_mode)
 	    mem = gen_rtx_ZERO_EXTEND (mode, mem);
+
 	  emit_insn (gen_rtx_SET (dest, mem));
+
 	  return;
 
         case SYMBOL_SMALL_TLSGD:
@@ -3854,9 +3871,10 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  rtx sym, addend;
 
 	  split_const (x, &sym, &addend);
-	  return (GET_CODE (sym) == LABEL_REF
-		  || (GET_CODE (sym) == SYMBOL_REF
-		      && CONSTANT_POOL_ADDRESS_P (sym)));
+	  return ((GET_CODE (sym) == LABEL_REF
+		   || (GET_CODE (sym) == SYMBOL_REF
+		       && CONSTANT_POOL_ADDRESS_P (sym)
+		       && !nopcrelative_literal_loads)));
 	}
       return false;
 
@@ -5039,12 +5057,69 @@ aarch64_legitimize_reload_address (rtx *x_p,
 }
 
 
+/* Return the reload icode required for a constant pool in mode.  */
+static enum insn_code
+aarch64_constant_pool_reload_icode (machine_mode mode)
+{
+  switch (mode)
+    {
+    case SFmode:
+      return CODE_FOR_aarch64_reload_movcpsfdi;
+
+    case DFmode:
+      return CODE_FOR_aarch64_reload_movcpdfdi;
+
+    case TFmode:
+      return CODE_FOR_aarch64_reload_movcptfdi;
+
+    case V8QImode:
+      return CODE_FOR_aarch64_reload_movcpv8qidi;
+
+    case V16QImode:
+      return CODE_FOR_aarch64_reload_movcpv16qidi;
+
+    case V4HImode:
+      return CODE_FOR_aarch64_reload_movcpv4hidi;
+
+    case V8HImode:
+      return CODE_FOR_aarch64_reload_movcpv8hidi;
+
+    case V2SImode:
+      return CODE_FOR_aarch64_reload_movcpv2sidi;
+
+    case V4SImode:
+      return CODE_FOR_aarch64_reload_movcpv4sidi;
+
+    case V2DImode:
+      return CODE_FOR_aarch64_reload_movcpv2didi;
+
+    case V2DFmode:
+      return CODE_FOR_aarch64_reload_movcpv2dfdi;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_unreachable ();
+}
 static reg_class_t
 aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			  reg_class_t rclass,
 			  machine_mode mode,
 			  secondary_reload_info *sri)
 {
+
+  /* If we have to disable direct literal pool loads and stores because the
+     function is too big, then we need a scratch register.  */
+  if (MEM_P (x) && GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x)
+      && (SCALAR_FLOAT_MODE_P (GET_MODE (x))
+	  || targetm.vector_mode_supported_p (GET_MODE (x)))
+      && nopcrelative_literal_loads)
+    {
+      sri->icode = aarch64_constant_pool_reload_icode (mode);
+      return NO_REGS;
+    }
+
   /* Without the TARGET_SIMD instructions we cannot move a Q register
      to a Q register directly.  We need a scratch.  */
   if (REG_P (x) && (mode == TFmode || mode == TImode) && mode == GET_MODE (x)
@@ -7693,6 +7768,24 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
       if (opts->x_align_functions <= 0)
 	opts->x_align_functions = aarch64_tune_params.function_align;
     }
+
+  /* If nopcrelative_literal_loads is set on the command line, this
+     implies that the user asked for PC relative literal loads.  */
+  if (nopcrelative_literal_loads == 1)
+    nopcrelative_literal_loads = 0;
+
+  /* If it is not set on the command line, we default to no
+     pc relative literal loads.  */
+  if (nopcrelative_literal_loads == 2)
+    nopcrelative_literal_loads = 1;
+
+  /* In the tiny memory model it makes no sense
+     to disallow non PC relative literal pool loads
+     as many other things will break anyway.  */
+  if (nopcrelative_literal_loads
+      && (aarch64_cmodel == AARCH64_CMODEL_TINY
+	  || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC))
+    nopcrelative_literal_loads = 0;
 }
 
 /* 'Unpack' up the internal tuning structs and update the options
@@ -8884,7 +8977,16 @@ aarch64_classify_symbol (rtx x, rtx offset,
   if (GET_CODE (x) == SYMBOL_REF)
     {
       if (aarch64_cmodel == AARCH64_CMODEL_LARGE)
-	  return SYMBOL_FORCE_TO_MEM;
+	{
+	  /* This is alright even in PIC code as the constant
+	     pool reference is always PC relative and within
+	     the same translation unit.  */
+	  if (nopcrelative_literal_loads
+	      && CONSTANT_POOL_ADDRESS_P (x))
+	    return SYMBOL_SMALL_ABSOLUTE;
+	  else
+	    return SYMBOL_FORCE_TO_MEM;
+	}
 
       if (aarch64_tls_symbol_p (x))
 	return aarch64_classify_tls_symbol (x);
@@ -10476,7 +10578,7 @@ aarch64_simd_attr_length_move (rtx_insn *insn)
 }
 
 /* Compute and return the length of aarch64_simd_reglist<mode>, where <mode> is
-   one of VSTRUCT modes: OI, CI, EI, or XI.  */
+   one of VSTRUCT modes: OI, CI, or XI.  */
 int
 aarch64_simd_attr_length_rglist (enum machine_mode mode)
 {

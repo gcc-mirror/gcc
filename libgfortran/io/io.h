@@ -311,7 +311,7 @@ st_parameter_filepos;
 #define IOPARM_INQUIRE_HAS_WRITE	(1 << 28)
 #define IOPARM_INQUIRE_HAS_READWRITE	(1 << 29)
 #define IOPARM_INQUIRE_HAS_CONVERT	(1 << 30)
-#define IOPARM_INQUIRE_HAS_FLAGS2	(1 << 31)
+#define IOPARM_INQUIRE_HAS_FLAGS2	(1u << 31)
 
 #define IOPARM_INQUIRE_HAS_ASYNCHRONOUS	(1 << 0)
 #define IOPARM_INQUIRE_HAS_DECIMAL	(1 << 1)
@@ -380,7 +380,7 @@ st_parameter_inquire;
 #define IOPARM_DT_HAS_SIGN			(1 << 24)
 #define IOPARM_DT_HAS_F2003                     (1 << 25)
 /* Internal use bit.  */
-#define IOPARM_DT_IONML_SET			(1 << 31)
+#define IOPARM_DT_IONML_SET			(1u << 31)
 
 
 typedef struct st_parameter_dt

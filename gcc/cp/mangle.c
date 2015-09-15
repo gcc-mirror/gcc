@@ -2196,7 +2196,7 @@ write_CV_qualifiers_for_type (const tree type)
      We don't do this with classes and enums because their attributes
      are part of their definitions, not something added on.  */
 
-  if (abi_version_at_least (10) && !OVERLOAD_TYPE_P (type))
+  if (!OVERLOAD_TYPE_P (type))
     {
       auto_vec<tree> vec;
       for (tree a = TYPE_ATTRIBUTES (type); a; a = TREE_CHAIN (a))
@@ -2207,31 +2207,34 @@ write_CV_qualifiers_for_type (const tree type)
 	      && !is_attribute_p ("abi_tag", name))
 	    vec.safe_push (a);
 	}
-      vec.qsort (attr_strcmp);
-      while (!vec.is_empty())
+      if (abi_version_crosses (10) && !vec.is_empty ())
+	G.need_abi_warning = true;
+      if (abi_version_at_least (10))
 	{
-	  tree a = vec.pop();
-	  const attribute_spec *as
-	    = lookup_attribute_spec (get_attribute_name (a));
-
-	  write_char ('U');
-	  write_unsigned_number (strlen (as->name));
-	  write_string (as->name);
-	  if (TREE_VALUE (a))
+	  vec.qsort (attr_strcmp);
+	  while (!vec.is_empty())
 	    {
-	      write_char ('I');
-	      for (tree args = TREE_VALUE (a); args;
-		   args = TREE_CHAIN (args))
-		{
-		  tree arg = TREE_VALUE (args);
-		  write_template_arg (arg);
-		}
-	      write_char ('E');
-	    }
+	      tree a = vec.pop();
+	      const attribute_spec *as
+		= lookup_attribute_spec (get_attribute_name (a));
 
-	  ++num_qualifiers;
-	  if (abi_version_crosses (10))
-	    G.need_abi_warning = true;
+	      write_char ('U');
+	      write_unsigned_number (strlen (as->name));
+	      write_string (as->name);
+	      if (TREE_VALUE (a))
+		{
+		  write_char ('I');
+		  for (tree args = TREE_VALUE (a); args;
+		       args = TREE_CHAIN (args))
+		    {
+		      tree arg = TREE_VALUE (args);
+		      write_template_arg (arg);
+		    }
+		  write_char ('E');
+		}
+
+	      ++num_qualifiers;
+	    }
 	}
     }
 

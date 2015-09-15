@@ -1,3 +1,82 @@
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67470
+	* gcc.dg/torture/pr67470.c: New testcase.
+
+2015-09-15  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vect_int32x2x4_1.c: New.
+
+2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67563
+	* gcc.dg/pr67563.c: New testcase.
+
+2015-09-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/67460
+	* gfortran.dg/pr67460.f90: New test.
+
+2015-09-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gomp/dump-new-function-3.c (dg-final): Also scan for $loopfn.
+	* gcc.dg/gomp/notify-new-function-3.c (dg-final): Ditto.
+
+2015-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51911
+	* g++.dg/cpp0x/new-auto1.C: New.
+
+2015-09-11  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* g++.dg/warn/unused-variable-1.C: New test.
+	* g++.dg/warn/unused-variable-2.C: Likewise.
+	* gcc.dg/unused-4.c: Adjust warning for static const.
+	* gcc.dg/unused-variable-1.c: New test.
+	* gcc.dg/unused-variable-2.c: Likewise.
+
+2015-09-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/private_type_3.f90: Require visibility.
+	* gfortran.dg/module_variable_2.f90: Same.
+	* gfortran.dg/nested_forall_1.f: Same.
+	* gfortran.dg/elemental_dependency_4.f90: Same.
+	* gfortran.dg/bind_c_usage_25.f90: Same.
+	* gfortran.dg/access_spec_1.f90: Same.
+	* gfortran.dg/public_private_module_2.f90: Same.
+	* gfortran.dg/host_assoc_variable_1.f90: Same.
+	* gfortran.dg/public_private_module_6.f90: Same.
+	* gfortran.dg/module_variable_1.f90: Same.
+	* gfortran.dg/pr37286.f90: Same.
+	* gfortran.dg/internal_pack_7.f90: Same.
+	* gfortran.dg/submodule_10.f08: Same.
+	* gfortran.dg/allocatable_function_8.f90: Same.
+	* gfortran.dg/merge_init_expr_2.f90: Same.
+	* gfortran.dg/class_37.f03: Same.
+	* gfortran.dg/vect/fast-math-vect-8.f90: Same.
+	* gfortran.dg/typebound_call_20.f03: Same.
+	* gfortran.dg/proc_ptr_result_3.f90: Same.
+	* gfortran.dg/pr32535.f90: Same.
+	* gfortran.dg/typebound_proc_19.f90: Same.
+	* gfortran.dg/initialization_10.f90: Same.
+	* gfortran.dg/bind_c_usage_8.f03: Same.
+	* gfortran.dg/pr61335.f90: Same.
+	* gfortran.dg/elemental_dependency_5.f90: Same.
+	* gfortran.dg/proc_ptr_3.f90: Same.
+	* gfortran.dg/debug/pr46756.f: XFAIL on AIX.
+
+2015-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/torture/type-generic-1.c: Pass -DUNSAFE for Visium.
+	* gcc.dg/Wno-frame-address.c: Skip for Visium.
+	* gcc.dg/loop-8.c: Likewise.
+
+2015-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/66965
+	* gnat.dg/specs/addr1.ads: Remove.
+
 2015-09-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/pie-link.c: Add -pie to dg-options.
@@ -115,7 +194,7 @@
 	* gcc.dg/gomp/pr67495.c: New test.
 
 2015-09-09  Aditya Kumar  <hiraditya@msn.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/53852
 	* gcc.dg/graphite/uns-interchange-12.c: Adjust pattern to pass with
@@ -125,7 +204,7 @@
 	* gcc.dg/graphite/uns-interchange-mvt.c: Same.
 
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* gcc.dg/graphite/block-0.c: Modifed test case to match current output.
 	* gcc.dg/graphite/block-1.c: Same.
@@ -380,7 +459,8 @@
 	* lib/ubsan-dg.exp: Likewise.
 
 2015-09-01  Kenneth Zadeck <zadeck@naturalbridge.com>
-        * gcc.c-torture/execute/ieee/20000320-1.c Fixed misplaced test case.
+
+	* gcc.c-torture/execute/ieee/20000320-1.c Fixed misplaced test case.
 
 2015-09-01  Matthew Fortune  <matthew.fortune@imgtec.com>
 	    Andrew Bennett  <andrew.bennett@imgtec.com>
@@ -468,7 +548,7 @@
 
 	* gcc.target/powerpc/swaps-p8-19.c: New test.
 
-2015-08-29 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-08-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/67367
 	* gfortran.dg/read_dir.f90: New test. May fail on some platforms.
@@ -1038,8 +1118,8 @@
 	PR tree-optimization/67221
 	* gcc.dg/torture/pr67221.c: New testcase.
 
-2015-08-17 Mike Stump  <mikestump@comcast.net>
-           Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2015-08-17  Mike Stump  <mikestump@comcast.net>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/memcpy-aligned-1.c: New test.
 

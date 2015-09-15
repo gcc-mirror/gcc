@@ -1754,25 +1754,58 @@ build_call_n_expr (tree fndecl, int n, ...)
   return fn;
 }
 
-/* Call a function that raises an exception and pass the line number and file
-   name, if requested.  MSG says which exception function to call.
+/* Expand the SLOC of GNAT_NODE, if present, into tree location information
+   pointed to by FILENAME, LINE and COL.  Fall back to the current location
+   if GNAT_NODE is absent or has no SLOC.  */
 
-   GNAT_NODE is the gnat node conveying the source location for which the
-   error should be signaled, or Empty in which case the error is signaled on
-   the current ref_file_name/input_line.
+static void
+expand_sloc (Node_Id gnat_node, tree *filename, tree *line, tree *col)
+{
+  const char *str;
+  int line_number, column_number;
 
-   KIND says which kind of exception this is for
-   (N_Raise_{Constraint,Storage,Program}_Error).  */
+  if (Debug_Flag_NN || Exception_Locations_Suppressed)
+    {
+      str = "";
+      line_number = 0;
+      column_number = 0;
+    }
+  else if (Present (gnat_node) && Sloc (gnat_node) != No_Location)
+    {
+      str = Get_Name_String
+	    (Debug_Source_Name (Get_Source_File_Index (Sloc (gnat_node))));
+      line_number = Get_Logical_Line_Number (Sloc (gnat_node));
+      column_number = Get_Column_Number (Sloc (gnat_node));
+    }
+  else
+    {
+      str = lbasename (LOCATION_FILE (input_location));
+      line_number = LOCATION_LINE (input_location);
+      column_number = LOCATION_COLUMN (input_location);
+    }
+
+  const int len = strlen (str);
+  *filename = build_string (len, str);
+  TREE_TYPE (*filename) = build_array_type (unsigned_char_type_node,
+					    build_index_type (size_int (len)));
+  *line = build_int_cst (NULL_TREE, line_number);
+  if (col)
+    *col = build_int_cst (NULL_TREE, column_number);
+}
+
+/* Build a call to a function that raises an exception and passes file name
+   and line number, if requested.  MSG says which exception function to call.
+   GNAT_NODE is the node conveying the source location for which the error
+   should be signaled, or Empty in which case the error is signaled for the
+   current location.  KIND says which kind of exception node this is for,
+   among N_Raise_{Constraint,Storage,Program}_Error.  */
 
 tree
 build_call_raise (int msg, Node_Id gnat_node, char kind)
 {
   tree fndecl = gnat_raise_decls[msg];
   tree label = get_exception_label (kind);
-  tree filename;
-  int line_number;
-  const char *str;
-  int len;
+  tree filename, line;
 
   /* If this is to be done as a goto, handle that case.  */
   if (label)
@@ -1780,8 +1813,7 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
       Entity_Id local_raise = Get_Local_Raise_Call_Entity ();
       tree gnu_result = build1 (GOTO_EXPR, void_type_node, label);
 
-      /* If Local_Raise is present, generate
-	 Local_Raise (exception'Identity);  */
+      /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
       if (Present (local_raise))
 	{
 	  tree gnu_local_raise
@@ -1792,91 +1824,21 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 	    = build_call_n_expr (gnu_local_raise, 1,
 				 build_unary_op (ADDR_EXPR, NULL_TREE,
 						 gnu_exception_entity));
-
-	  gnu_result = build2 (COMPOUND_EXPR, void_type_node,
-			       gnu_call, gnu_result);}
+	  gnu_result
+	    = build2 (COMPOUND_EXPR, void_type_node, gnu_call, gnu_result);
+	}
 
       return gnu_result;
     }
 
-  str
-    = (Debug_Flag_NN || Exception_Locations_Suppressed)
-      ? ""
-      : (gnat_node != Empty && Sloc (gnat_node) != No_Location)
-        ? IDENTIFIER_POINTER
-          (get_identifier (Get_Name_String
-			   (Debug_Source_Name
-			    (Get_Source_File_Index (Sloc (gnat_node))))))
-        : ref_filename;
-
-  len = strlen (str);
-  filename = build_string (len, str);
-  line_number
-    = (gnat_node != Empty && Sloc (gnat_node) != No_Location)
-      ? Get_Logical_Line_Number (Sloc(gnat_node))
-      : LOCATION_LINE (input_location);
-
-  TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
-					   build_index_type (size_int (len)));
+  expand_sloc (gnat_node, &filename, &line, NULL);
 
   return
     build_call_n_expr (fndecl, 2,
 		       build1 (ADDR_EXPR,
 			       build_pointer_type (unsigned_char_type_node),
 			       filename),
-		       build_int_cst (NULL_TREE, line_number));
-}
-
-/* Similar to build_call_raise, for an index or range check exception as
-   determined by MSG, with extra information generated of the form
-   "INDEX out of range FIRST..LAST".  */
-
-tree
-build_call_raise_range (int msg, Node_Id gnat_node,
-			tree index, tree first, tree last)
-{
-  tree fndecl = gnat_raise_decls_ext[msg];
-  tree filename;
-  int line_number, column_number;
-  const char *str;
-  int len;
-
-  str
-    = (Debug_Flag_NN || Exception_Locations_Suppressed)
-      ? ""
-      : (gnat_node != Empty && Sloc (gnat_node) != No_Location)
-        ? IDENTIFIER_POINTER
-          (get_identifier (Get_Name_String
-			   (Debug_Source_Name
-			    (Get_Source_File_Index (Sloc (gnat_node))))))
-        : ref_filename;
-
-  len = strlen (str);
-  filename = build_string (len, str);
-  if (gnat_node != Empty && Sloc (gnat_node) != No_Location)
-    {
-      line_number = Get_Logical_Line_Number (Sloc (gnat_node));
-      column_number = Get_Column_Number (Sloc (gnat_node));
-    }
-  else
-    {
-      line_number = LOCATION_LINE (input_location);
-      column_number = 0;
-    }
-
-  TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
-					   build_index_type (size_int (len)));
-
-  return
-    build_call_n_expr (fndecl, 6,
-		       build1 (ADDR_EXPR,
-			       build_pointer_type (unsigned_char_type_node),
-			       filename),
-		       build_int_cst (NULL_TREE, line_number),
-		       build_int_cst (NULL_TREE, column_number),
-		       convert (integer_type_node, index),
-		       convert (integer_type_node, first),
-		       convert (integer_type_node, last));
+		       line);
 }
 
 /* Similar to build_call_raise, with extra information about the column
@@ -1886,44 +1848,39 @@ tree
 build_call_raise_column (int msg, Node_Id gnat_node)
 {
   tree fndecl = gnat_raise_decls_ext[msg];
-  tree filename;
-  int line_number, column_number;
-  const char *str;
-  int len;
+  tree filename, line, col;
 
-  str
-    = (Debug_Flag_NN || Exception_Locations_Suppressed)
-      ? ""
-      : (gnat_node != Empty && Sloc (gnat_node) != No_Location)
-        ? IDENTIFIER_POINTER
-          (get_identifier (Get_Name_String
-			   (Debug_Source_Name
-			    (Get_Source_File_Index (Sloc (gnat_node))))))
-        : ref_filename;
-
-  len = strlen (str);
-  filename = build_string (len, str);
-  if (gnat_node != Empty && Sloc (gnat_node) != No_Location)
-    {
-      line_number = Get_Logical_Line_Number (Sloc (gnat_node));
-      column_number = Get_Column_Number (Sloc (gnat_node));
-    }
-  else
-    {
-      line_number = LOCATION_LINE (input_location);
-      column_number = 0;
-    }
-
-  TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
-					   build_index_type (size_int (len)));
+  expand_sloc (gnat_node, &filename, &line, &col);
 
   return
     build_call_n_expr (fndecl, 3,
 		       build1 (ADDR_EXPR,
 			       build_pointer_type (unsigned_char_type_node),
 			       filename),
-		       build_int_cst (NULL_TREE, line_number),
-		       build_int_cst (NULL_TREE, column_number));
+		       line, col);
+}
+
+/* Similar to build_call_raise_column, for an index or range check exception ,
+   with extra information of the form "INDEX out of range FIRST..LAST".  */
+
+tree
+build_call_raise_range (int msg, Node_Id gnat_node,
+			tree index, tree first, tree last)
+{
+  tree fndecl = gnat_raise_decls_ext[msg];
+  tree filename, line, col;
+
+  expand_sloc (gnat_node, &filename, &line, &col);
+
+  return
+    build_call_n_expr (fndecl, 6,
+		       build1 (ADDR_EXPR,
+			       build_pointer_type (unsigned_char_type_node),
+			       filename),
+		       line, col,
+		       convert (integer_type_node, index),
+		       convert (integer_type_node, first),
+		       convert (integer_type_node, last));
 }
 
 /* qsort comparer for the bit positions of two constructor elements
@@ -2807,7 +2764,9 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
       gcc_assert (*init == NULL_TREE);
       *init = TREE_OPERAND (ref, 0);
       /* We expect only the pattern built in Call_to_gnu.  */
-      gcc_assert (DECL_P (TREE_OPERAND (ref, 1)));
+      gcc_assert (DECL_P (TREE_OPERAND (ref, 1))
+		  || (TREE_CODE (TREE_OPERAND (ref, 1)) == COMPONENT_REF
+		      && DECL_P (TREE_OPERAND (TREE_OPERAND (ref, 1), 0))));
       return TREE_OPERAND (ref, 1);
 
     case CALL_EXPR:

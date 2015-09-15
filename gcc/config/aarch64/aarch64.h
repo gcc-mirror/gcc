@@ -872,6 +872,12 @@ extern enum aarch64_code_model aarch64_cmodel;
   (aarch64_cmodel == AARCH64_CMODEL_TINY		\
    || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC)
 
+/* Modes valid for AdvSIMD D registers, i.e. that fit in half a Q register.  */
+#define AARCH64_VALID_SIMD_DREG_MODE(MODE) \
+  ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
+   || (MODE) == V2SFmode || (MODE) == V4HFmode || (MODE) == DImode \
+   || (MODE) == DFmode)
+
 /* Modes valid for AdvSIMD Q registers.  */
 #define AARCH64_VALID_SIMD_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \

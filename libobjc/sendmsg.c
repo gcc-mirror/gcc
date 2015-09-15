@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    only while debugging the runtime.  */
 /* #define DEBUG 1 */
 
-/* FIXME: This file has no business including tm.h.  */
 /* FIXME: This should be using libffi instead of __builtin_apply
    and friends.  */
 
@@ -34,7 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/error.h"
 #include "tconfig.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "objc/runtime.h"
 #include "objc/message.h"          /* For objc_msg_lookup(), objc_msg_lookup_super().  */
 #include "objc/thr.h"
@@ -47,19 +45,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h> /* For assert */
 #include <string.h> /* For strlen */
 
-/* This is how we hack STRUCT_VALUE to be 1 or 0.   */
-#define gen_rtx(args...) 1
-#define gen_rtx_MEM(args...) 1
-#define gen_rtx_REG(args...) 1
-/* Already defined in gcc/coretypes.h. So prevent double definition warning.  */
-#undef rtx
-#define rtx int
-
-#if ! defined (STRUCT_VALUE) || STRUCT_VALUE == 0
 #define INVISIBLE_STRUCT_RETURN 1
-#else
-#define INVISIBLE_STRUCT_RETURN 0
-#endif
 
 /* The uninstalled dispatch table.  If a class' dispatch table points
    to __objc_uninstalled_dtable then that means it needs its dispatch

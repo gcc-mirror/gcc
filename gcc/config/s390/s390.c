@@ -728,7 +728,7 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 		HOST_WIDE_INT_PRINT_DEC ".."
 		HOST_WIDE_INT_PRINT_DEC ")",
 		argnum, decl,
-		-(HOST_WIDE_INT)1 << (bitwidth - 1),
+		-((HOST_WIDE_INT)1 << (bitwidth - 1)),
 		((HOST_WIDE_INT)1 << (bitwidth - 1)) - 1);
 	  return false;
 	}

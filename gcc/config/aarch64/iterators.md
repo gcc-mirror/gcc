@@ -44,6 +44,9 @@
 ;; Double vector modes.
 (define_mode_iterator VDF [V2SF V4HF])
 
+;; Iterator for all scalar floating point modes (SF, DF and TF)
+(define_mode_iterator GPF_TF [SF DF TF])
+
 ;; Integer vector modes.
 (define_mode_iterator VDQ_I [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
 
@@ -574,6 +577,9 @@
 
 (define_mode_attr Vendreg [(OI "T") (CI "U") (XI "V")])
 
+;; This is both the number of Q-Registers needed to hold the corresponding
+;; opaque large integer mode, and the number of elements touched by the
+;; ld..._lane and st..._lane operations.
 (define_mode_attr nregs [(OI "2") (CI "3") (XI "4")])
 
 (define_mode_attr VRL2 [(V8QI "V32QI") (V4HI "V16HI")
@@ -590,37 +596,6 @@
 			(V4HF "V32HF")
 			(V2SI "V16SI")  (V2SF "V16SF")
 			(DI   "V8DI")  (DF   "V8DF")])
-
-(define_mode_attr VSTRUCT_DREG [(OI "TI") (CI "EI") (XI "OI")])
-
-;; Mode of pair of elements for each vector mode, to define transfer
-;; size for structure lane/dup loads and stores.
-(define_mode_attr V_TWO_ELEM [(V8QI "HI")   (V16QI "HI")
-                              (V4HI "SI")   (V8HI "SI")
-                              (V2SI "V2SI") (V4SI "V2SI")
-                              (DI "V2DI")   (V2DI "V2DI")
-                              (V2SF "V2SF") (V4SF "V2SF")
-                              (V4HF "SF") (V8HF "SF")
-                              (DF "V2DI")   (V2DF "V2DI")])
-
-;; Similar, for three elements.
-(define_mode_attr V_THREE_ELEM [(V8QI "BLK") (V16QI "BLK")
-                                (V4HI "BLK") (V8HI "BLK")
-                                (V2SI "BLK") (V4SI "BLK")
-                                (DI "EI")    (V2DI "EI")
-                                (V2SF "BLK") (V4SF "BLK")
-                                (V4HF "BLK") (V8HF "BLK")
-                                (DF "EI")    (V2DF "EI")])
-
-;; Similar, for four elements.
-(define_mode_attr V_FOUR_ELEM [(V8QI "SI")   (V16QI "SI")
-                               (V4HI "V4HI") (V8HI "V4HI")
-                               (V2SI "V4SI") (V4SI "V4SI")
-                               (DI "OI")     (V2DI "OI")
-                               (V2SF "V4SF") (V4SF "V4SF")
-                               (V4HF "V4HF") (V8HF "V4HF")
-                               (DF "OI")     (V2DF "OI")])
-
 
 ;; Mode for atomic operation suffixes
 (define_mode_attr atomic_sfx
