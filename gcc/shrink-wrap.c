@@ -91,8 +91,7 @@ requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
       if (!REG_P (dreg))
 	continue;
 
-      add_to_hard_reg_set (&hardregs, GET_MODE (dreg),
-			   REGNO (dreg));
+      add_to_hard_reg_set (&hardregs, GET_MODE (dreg), REGNO (dreg));
     }
   if (hard_reg_set_intersect_p (hardregs, prologue_used))
     return true;
@@ -463,414 +462,469 @@ prepare_shrink_wrap (basic_block entry_block)
       }
 }
 
-/* Create a copy of BB instructions and insert at BEFORE.  Redirect
-   preds of BB to COPY_BB if they don't appear in NEED_PROLOGUE.  */
-static void
-dup_block_and_redirect (basic_block bb, basic_block copy_bb, rtx_insn *before,
-			bitmap_head *need_prologue)
+/* Return whether we can duplicate basic block BB for shrink wrapping.  We
+   cannot if the block cannot be duplicated at all, or if any of its incoming
+   edges are complex and come from a block that does not require a prologue
+   (we cannot redirect such edges), or if the block is too big to copy.
+   PRO is the basic block before which we would put the prologue, MAX_SIZE is
+   the maximum size block we allow to be copied.  */
+
+static bool
+can_dup_for_shrink_wrapping (basic_block bb, basic_block pro, unsigned max_size)
 {
-  edge_iterator ei;
+  if (!can_duplicate_block_p (bb))
+    return false;
+
   edge e;
-  rtx_insn *insn = BB_END (bb);
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_COMPLEX
+	&& !dominated_by_p (CDI_DOMINATORS, e->src, pro))
+      return false;
 
-  /* We know BB has a single successor, so there is no need to copy a
-     simple jump at the end of BB.  */
-  if (simplejump_p (insn))
-    insn = PREV_INSN (insn);
+  unsigned size = 0;
 
-  start_sequence ();
-  duplicate_insn_chain (BB_HEAD (bb), insn);
-  if (dump_file)
-    {
-      unsigned count = 0;
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (active_insn_p (insn))
-	  ++count;
-      fprintf (dump_file, "Duplicating bb %d to bb %d, %u active insns.\n",
-	       bb->index, copy_bb->index, count);
-    }
-  insn = get_insns ();
-  end_sequence ();
-  emit_insn_before (insn, before);
-
-  /* Redirect all the paths that need no prologue into copy_bb.  */
-  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei));)
-    if (!bitmap_bit_p (need_prologue, e->src->index))
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    if (NONDEBUG_INSN_P (insn))
       {
-	int freq = EDGE_FREQUENCY (e);
-	copy_bb->count += e->count;
-	copy_bb->frequency += EDGE_FREQUENCY (e);
-	e->dest->count -= e->count;
-	if (e->dest->count < 0)
-	  e->dest->count = 0;
-	e->dest->frequency -= freq;
-	if (e->dest->frequency < 0)
-	  e->dest->frequency = 0;
-	redirect_edge_and_branch_force (e, copy_bb);
-	continue;
+	size += get_attr_min_length (insn);
+	if (size > max_size)
+	  return false;
       }
-    else
-      ei_next (&ei);
+
+  return true;
 }
 
+/* If the source of edge E has more than one successor, the verifier for
+   branch probabilities gets confused by the fake edges we make where
+   simple_return statements will be inserted later (because those are not
+   marked as fallthrough edges).  Fix this by creating an extra block just
+   for that fallthrough.  */
+
+static edge
+fix_fake_fallthrough_edge (edge e)
+{
+  if (EDGE_COUNT (e->src->succs) <= 1)
+    return e;
+
+  basic_block old_bb = e->src;
+  rtx_insn *end = BB_END (old_bb);
+  rtx_note *note = emit_note_after (NOTE_INSN_DELETED, end);
+  basic_block new_bb = create_basic_block (note, note, old_bb);
+  BB_COPY_PARTITION (new_bb, old_bb);
+  BB_END (old_bb) = end;
+
+  redirect_edge_succ (e, new_bb);
+  e->flags |= EDGE_FALLTHRU;
+  e->flags &= ~EDGE_FAKE;
+
+  return make_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+}
 
 /* Try to perform a kind of shrink-wrapping, making sure the
    prologue/epilogue is emitted only around those parts of the
-   function that require it.  */
+   function that require it.
+
+   There will be exactly one prologue, and it will be executed either
+   zero or one time, on any path.  Depending on where the prologue is
+   placed, some of the basic blocks can be reached via both paths with
+   and without a prologue.  Such blocks will be duplicated here, and the
+   edges changed to match.
+
+   Paths that go to the exit without going through the prologue will use
+   a simple_return instead of the epilogue.  We maximize the number of
+   those, making sure to only duplicate blocks that can be duplicated.
+   If the prologue can then still be placed in multiple locations, we
+   place it as early as possible.
+
+   An example, where we duplicate blocks with control flow (legend:
+   _B_egin, _R_eturn and _S_imple_return; edges without arrowhead should
+   be taken to point down or to the right, to simplify the diagram; here,
+   block 3 needs a prologue, the rest does not):
+
+
+       B                 B
+       |                 |
+       2                 2
+       |\                |\
+       | 3    becomes    | 3
+       |/                |  \
+       4                 7   4
+       |\                |\  |\
+       | 5               | 8 | 5
+       |/                |/  |/
+       6                 9   6
+       |                 |   |
+       R                 S   R
+
+
+   (bb 4 is duplicated to 7, and so on; the prologue is inserted on the
+   edge 2->3).
+
+   Another example, where part of a loop is duplicated (again, bb 3 is
+   the only block that needs a prologue):
+
+
+       B   3<--              B       ->3<--
+       |   |   |             |      |  |   |
+       |   v   |   becomes   |      |  v   |
+       2---4---              2---5--   4---
+           |                     |     |
+           R                     S     R
+
+
+   (bb 4 is duplicated to 5; the prologue is inserted on the edge 5->3).
+
+   ENTRY_EDGE is the edge where the prologue will be placed, possibly
+   changed by this function.  ORIG_ENTRY_EDGE is the edge where it
+   would be placed without shrink-wrapping.  BB_WITH is a bitmap that,
+   if we do shrink-wrap, will on return contain the interesting blocks
+   that run with prologue.  PROLOGUE_SEQ is the prologue we will insert.  */
 
 void
 try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
-		     bitmap_head *bb_flags, rtx_insn *prologue_seq)
+		     bitmap_head *bb_with, rtx_insn *prologue_seq)
 {
-  edge e;
-  edge_iterator ei;
-  bool nonempty_prologue = false;
-  unsigned max_grow_size;
-  rtx_insn *seq;
+  /* If we cannot shrink-wrap, are told not to shrink-wrap, or it makes
+     no sense to shrink-wrap: then do not shrink-wrap!  */
 
-  for (seq = prologue_seq; seq; seq = NEXT_INSN (seq))
-    if (!NOTE_P (seq) || NOTE_KIND (seq) != NOTE_INSN_PROLOGUE_END)
+  if (!SHRINK_WRAPPING_ENABLED)
+    return;
+
+  if (crtl->profile && !targetm.profile_before_prologue ())
+    return;
+
+  if (crtl->calls_eh_return)
+    return;
+
+  bool empty_prologue = true;
+  for (rtx_insn *insn = prologue_seq; insn; insn = NEXT_INSN (insn))
+    if (!(NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_PROLOGUE_END))
       {
-	nonempty_prologue = true;
+	empty_prologue = false;
 	break;
       }
+  if (empty_prologue)
+    return;
 
-  if (SHRINK_WRAPPING_ENABLED
-      && (targetm.profile_before_prologue () || !crtl->profile)
-      && nonempty_prologue && !crtl->calls_eh_return)
+  /* Move some code down to expose more shrink-wrapping opportunities.  */
+
+  basic_block entry = (*entry_edge)->dest;
+  prepare_shrink_wrap (entry);
+
+  if (dump_file)
+    fprintf (dump_file, "Attempting shrink-wrapping optimization.\n");
+
+  /* Compute the registers set and used in the prologue.  */
+
+  HARD_REG_SET prologue_clobbered, prologue_used;
+  CLEAR_HARD_REG_SET (prologue_clobbered);
+  CLEAR_HARD_REG_SET (prologue_used);
+  for (rtx_insn *insn = prologue_seq; insn; insn = NEXT_INSN (insn))
+    if (NONDEBUG_INSN_P (insn))
+      {
+	HARD_REG_SET this_used;
+	CLEAR_HARD_REG_SET (this_used);
+	note_uses (&PATTERN (insn), record_hard_reg_uses, &this_used);
+	AND_COMPL_HARD_REG_SET (this_used, prologue_clobbered);
+	IOR_HARD_REG_SET (prologue_used, this_used);
+	note_stores (PATTERN (insn), record_hard_reg_sets, &prologue_clobbered);
+      }
+
+  /* Find out what registers are set up by the prologue; any use of these
+     cannot happen before the prologue.  */
+
+  struct hard_reg_set_container set_up_by_prologue;
+  CLEAR_HARD_REG_SET (set_up_by_prologue.set);
+  add_to_hard_reg_set (&set_up_by_prologue.set, Pmode, STACK_POINTER_REGNUM);
+  add_to_hard_reg_set (&set_up_by_prologue.set, Pmode, ARG_POINTER_REGNUM);
+  if (frame_pointer_needed)
+    add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
+			 HARD_FRAME_POINTER_REGNUM);
+  if (pic_offset_table_rtx 
+      && (unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
+    add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
+			 PIC_OFFSET_TABLE_REGNUM);
+  if (crtl->drap_reg)
+    add_to_hard_reg_set (&set_up_by_prologue.set,
+			 GET_MODE (crtl->drap_reg),
+			 REGNO (crtl->drap_reg));
+  if (targetm.set_up_by_prologue)
+    targetm.set_up_by_prologue (&set_up_by_prologue);
+
+  /* We will insert the prologue before the basic block PRO.  PRO should
+     dominate all basic blocks that need the prologue to be executed
+     before them.  First, make PRO the "tightest wrap" possible.  */
+
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  basic_block pro = 0;
+
+  basic_block bb;
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_BB_FN (bb, cfun)
     {
-      HARD_REG_SET prologue_clobbered, prologue_used, live_on_edge;
-      struct hard_reg_set_container set_up_by_prologue;
-      rtx_insn *p_insn;
-      vec<basic_block> vec;
-      basic_block bb;
-      bitmap_head bb_antic_flags;
-      bitmap_head bb_on_list;
-      bitmap_head bb_tail;
-
-      if (dump_file)
-	fprintf (dump_file, "Attempting shrink-wrapping optimization.\n");
-
-      /* Compute the registers set and used in the prologue.  */
-      CLEAR_HARD_REG_SET (prologue_clobbered);
-      CLEAR_HARD_REG_SET (prologue_used);
-      for (p_insn = prologue_seq; p_insn; p_insn = NEXT_INSN (p_insn))
-	{
-	  HARD_REG_SET this_used;
-	  if (!NONDEBUG_INSN_P (p_insn))
-	    continue;
-
-	  CLEAR_HARD_REG_SET (this_used);
-	  note_uses (&PATTERN (p_insn), record_hard_reg_uses,
-		     &this_used);
-	  AND_COMPL_HARD_REG_SET (this_used, prologue_clobbered);
-	  IOR_HARD_REG_SET (prologue_used, this_used);
-	  note_stores (PATTERN (p_insn), record_hard_reg_sets,
-		       &prologue_clobbered);
-	}
-
-      prepare_shrink_wrap ((*entry_edge)->dest);
-
-      bitmap_initialize (&bb_antic_flags, &bitmap_default_obstack);
-      bitmap_initialize (&bb_on_list, &bitmap_default_obstack);
-      bitmap_initialize (&bb_tail, &bitmap_default_obstack);
-
-      /* Find the set of basic blocks that require a stack frame,
-	 and blocks that are too big to be duplicated.  */
-
-      vec.create (n_basic_blocks_for_fn (cfun));
-
-      CLEAR_HARD_REG_SET (set_up_by_prologue.set);
-      add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
-			   STACK_POINTER_REGNUM);
-      add_to_hard_reg_set (&set_up_by_prologue.set, Pmode, ARG_POINTER_REGNUM);
-      if (frame_pointer_needed)
-	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
-			     HARD_FRAME_POINTER_REGNUM);
-      if (pic_offset_table_rtx 
-	  && (unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
-			     PIC_OFFSET_TABLE_REGNUM);
-      if (crtl->drap_reg)
-	add_to_hard_reg_set (&set_up_by_prologue.set,
-			     GET_MODE (crtl->drap_reg),
-			     REGNO (crtl->drap_reg));
-      if (targetm.set_up_by_prologue)
-	targetm.set_up_by_prologue (&set_up_by_prologue);
-
-      /* We don't use a different max size depending on
-	 optimize_bb_for_speed_p because increasing shrink-wrapping
-	 opportunities by duplicating tail blocks can actually result
-	 in an overall decrease in code size.  */
-      max_grow_size = get_uncond_jump_length ();
-      max_grow_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
-
-      FOR_EACH_BB_FN (bb, cfun)
-	{
-	  rtx_insn *insn;
-	  unsigned size = 0;
-
-	  FOR_BB_INSNS (bb, insn)
-	    if (NONDEBUG_INSN_P (insn))
-	      {
-		if (requires_stack_frame_p (insn, prologue_used,
-					    set_up_by_prologue.set))
-		  {
-		    if (bb == (*entry_edge)->dest)
-		      goto fail_shrinkwrap;
-		    bitmap_set_bit (bb_flags, bb->index);
-		    vec.quick_push (bb);
-		    break;
-		  }
-		else if (size <= max_grow_size)
-		  {
-		    size += get_attr_min_length (insn);
-		    if (size > max_grow_size)
-		      bitmap_set_bit (&bb_on_list, bb->index);
-		  }
-	      }
-	}
-
-      /* Blocks that really need a prologue, or are too big for tails.  */
-      bitmap_ior_into (&bb_on_list, bb_flags);
-
-      /* For every basic block that needs a prologue, mark all blocks
-	 reachable from it, so as to ensure they are also seen as
-	 requiring a prologue.  */
-      while (!vec.is_empty ())
-	{
-	  basic_block tmp_bb = vec.pop ();
-
-	  FOR_EACH_EDGE (e, ei, tmp_bb->succs)
-	    if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-		&& bitmap_set_bit (bb_flags, e->dest->index))
-	      vec.quick_push (e->dest);
-	}
-
-      /* Find the set of basic blocks that need no prologue, have a
-	 single successor, can be duplicated, meet a max size
-	 requirement, and go to the exit via like blocks.  */
-      vec.quick_push (EXIT_BLOCK_PTR_FOR_FN (cfun));
-      while (!vec.is_empty ())
-	{
-	  basic_block tmp_bb = vec.pop ();
-
-	  FOR_EACH_EDGE (e, ei, tmp_bb->preds)
-	    if (single_succ_p (e->src)
-		&& !bitmap_bit_p (&bb_on_list, e->src->index)
-		&& can_duplicate_block_p (e->src))
-	      {
-		edge pe;
-		edge_iterator pei;
-
-		/* If there is predecessor of e->src which doesn't
-		   need prologue and the edge is complex,
-		   we might not be able to redirect the branch
-		   to a copy of e->src.  */
-		FOR_EACH_EDGE (pe, pei, e->src->preds)
-		  if ((pe->flags & EDGE_COMPLEX) != 0
-		      && !bitmap_bit_p (bb_flags, pe->src->index))
-		    break;
-		if (pe == NULL && bitmap_set_bit (&bb_tail, e->src->index))
-		  vec.quick_push (e->src);
-	      }
-	}
-
-      /* Now walk backwards from every block that is marked as needing
-	 a prologue to compute the bb_antic_flags bitmap.  Exclude
-	 tail blocks; They can be duplicated to be used on paths not
-	 needing a prologue.  */
-      bitmap_clear (&bb_on_list);
-      bitmap_and_compl (&bb_antic_flags, bb_flags, &bb_tail);
-      FOR_EACH_BB_FN (bb, cfun)
-	{
-	  if (!bitmap_bit_p (&bb_antic_flags, bb->index))
-	    continue;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    if (!bitmap_bit_p (&bb_antic_flags, e->src->index)
-		&& bitmap_set_bit (&bb_on_list, e->src->index))
-	      vec.quick_push (e->src);
-	}
-      while (!vec.is_empty ())
-	{
-	  basic_block tmp_bb = vec.pop ();
-	  bool all_set = true;
-
-	  bitmap_clear_bit (&bb_on_list, tmp_bb->index);
-	  FOR_EACH_EDGE (e, ei, tmp_bb->succs)
-	    if (!bitmap_bit_p (&bb_antic_flags, e->dest->index))
-	      {
-		all_set = false;
-		break;
-	      }
-
-	  if (all_set)
-	    {
-	      bitmap_set_bit (&bb_antic_flags, tmp_bb->index);
-	      FOR_EACH_EDGE (e, ei, tmp_bb->preds)
-		if (!bitmap_bit_p (&bb_antic_flags, e->src->index)
-		    && bitmap_set_bit (&bb_on_list, e->src->index))
-		  vec.quick_push (e->src);
-	    }
-	}
-      /* Find exactly one edge that leads to a block in ANTIC from
-	 a block that isn't.  */
-      if (!bitmap_bit_p (&bb_antic_flags, (*entry_edge)->dest->index))
-	FOR_EACH_BB_FN (bb, cfun)
+      rtx_insn *insn;
+      FOR_BB_INSNS (bb, insn)
+	if (NONDEBUG_INSN_P (insn)
+	    && requires_stack_frame_p (insn, prologue_used,
+				       set_up_by_prologue.set))
 	  {
-	    if (!bitmap_bit_p (&bb_antic_flags, bb->index))
-	      continue;
-	    FOR_EACH_EDGE (e, ei, bb->preds)
-	      if (!bitmap_bit_p (&bb_antic_flags, e->src->index))
-		{
-		  if (*entry_edge != orig_entry_edge)
-		    {
-		      *entry_edge = orig_entry_edge;
-		      if (dump_file)
-			fprintf (dump_file, "More than one candidate edge.\n");
-		      goto fail_shrinkwrap;
-		    }
-		  if (dump_file)
-		    fprintf (dump_file, "Found candidate edge for "
-			     "shrink-wrapping, %d->%d.\n", e->src->index,
-			     e->dest->index);
-		  *entry_edge = e;
-		}
+	    if (dump_file)
+	      fprintf (dump_file, "Block %d needs the prologue.\n", bb->index);
+	    pro = nearest_common_dominator (CDI_DOMINATORS, pro, bb);
+	    break;
+	  }
+    }
+
+  /* If nothing needs a prologue, just put it at the start.  This really
+     shouldn't happen, but we cannot fix it here.  */
+
+  if (pro == 0)
+    {
+      if (dump_file)
+	fprintf(dump_file, "Nothing needs a prologue, but it isn't empty; "
+			   "putting it at the start.\n");
+      pro = entry;
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "After wrapping required blocks, PRO is now %d\n",
+	     pro->index);
+
+  /* Now see if we can put the prologue at the start of PRO.  Putting it
+     there might require duplicating a block that cannot be duplicated;
+     if so, try again with the immediate dominator of PRO, and so on.
+
+     The blocks that need duplicating are those reachable from PRO but
+     not dominated by it.  We keep in BB_WITH a bitmap of the blocks
+     reachable from PRO that we already found, and in VEC a stack of
+     those we still need to consider (to find successors).  */
+
+  bitmap_set_bit (bb_with, pro->index);
+
+  vec<basic_block> vec;
+  vec.create (n_basic_blocks_for_fn (cfun));
+  vec.quick_push (pro);
+
+  unsigned max_grow_size = get_uncond_jump_length ();
+  max_grow_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
+
+  while (!vec.is_empty () && pro != entry)
+    {
+      basic_block bb = vec.pop ();
+      if (!can_dup_for_shrink_wrapping (bb, pro, max_grow_size))
+	while (!dominated_by_p (CDI_DOMINATORS, bb, pro))
+	  {
+	    gcc_assert (pro != entry);
+
+	    pro = get_immediate_dominator (CDI_DOMINATORS, pro);
+
+	    bitmap_set_bit (bb_with, pro->index);
+	    vec.quick_push (pro);
 	  }
 
-      if (*entry_edge != orig_entry_edge)
-	{
-	  /* Test whether the prologue is known to clobber any register
-	     (other than FP or SP) which are live on the edge.  */
-	  CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
-	  if (frame_pointer_needed)
-	    CLEAR_HARD_REG_BIT (prologue_clobbered, HARD_FRAME_POINTER_REGNUM);
-	  REG_SET_TO_HARD_REG_SET (live_on_edge,
-				   df_get_live_in ((*entry_edge)->dest));
-	  if (hard_reg_set_intersect_p (live_on_edge, prologue_clobbered))
-	    {
-	      *entry_edge = orig_entry_edge;
-	      if (dump_file)
-		fprintf (dump_file,
-			 "Shrink-wrapping aborted due to clobber.\n");
-	    }
-	}
-      if (*entry_edge != orig_entry_edge)
-	{
-	  crtl->shrink_wrapped = true;
-	  if (dump_file)
-	    fprintf (dump_file, "Performing shrink-wrapping.\n");
-
-	  /* Find tail blocks reachable from both blocks needing a
-	     prologue and blocks not needing a prologue.  */
-	  if (!bitmap_empty_p (&bb_tail))
-	    FOR_EACH_BB_FN (bb, cfun)
-	      {
-		bool some_pro, some_no_pro;
-		if (!bitmap_bit_p (&bb_tail, bb->index))
-		  continue;
-		some_pro = some_no_pro = false;
-		FOR_EACH_EDGE (e, ei, bb->preds)
-		  {
-		    if (bitmap_bit_p (bb_flags, e->src->index))
-		      some_pro = true;
-		    else
-		      some_no_pro = true;
-		  }
-		if (some_pro && some_no_pro)
-		  vec.quick_push (bb);
-		else
-		  bitmap_clear_bit (&bb_tail, bb->index);
-	      }
-	  /* Find the head of each tail.  */
-	  while (!vec.is_empty ())
-	    {
-	      basic_block tbb = vec.pop ();
-
-	      if (!bitmap_bit_p (&bb_tail, tbb->index))
-		continue;
-
-	      while (single_succ_p (tbb))
-		{
-		  tbb = single_succ (tbb);
-		  bitmap_clear_bit (&bb_tail, tbb->index);
-		}
-	    }
-	  /* Now duplicate the tails.  */
-	  if (!bitmap_empty_p (&bb_tail))
-	    FOR_EACH_BB_REVERSE_FN (bb, cfun)
-	      {
-		basic_block copy_bb, tbb;
-		int eflags;
-
-		if (!bitmap_clear_bit (&bb_tail, bb->index))
-		  continue;
-
-		/* Create a copy of BB, instructions and all, for
-		   use on paths that don't need a prologue.
-		   Ideal placement of the copy is on a fall-thru edge
-		   or after a block that would jump to the copy.  */
-		FOR_EACH_EDGE (e, ei, bb->preds)
-		  if (!bitmap_bit_p (bb_flags, e->src->index)
-		      && single_succ_p (e->src))
-		    break;
-		if (e)
-		  {
-                    /* Make sure we insert after any barriers.  */
-                    rtx_insn *end = get_last_bb_insn (e->src);
-                    copy_bb = create_basic_block (NEXT_INSN (end),
-                                                  NULL_RTX, e->src);
-		    BB_COPY_PARTITION (copy_bb, e->src);
-		  }
-		else
-		  {
-		    /* Otherwise put the copy at the end of the function.  */
-		    copy_bb = create_basic_block (NULL_RTX, NULL_RTX,
-						  EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
-		    BB_COPY_PARTITION (copy_bb, bb);
-		  }
-
-		rtx_note *insert_point = emit_note_after (NOTE_INSN_DELETED,
-							  BB_END (copy_bb));
-		emit_barrier_after (BB_END (copy_bb));
-
-		tbb = bb;
-		while (1)
-		  {
-		    dup_block_and_redirect (tbb, copy_bb, insert_point,
-					    bb_flags);
-		    tbb = single_succ (tbb);
-		    if (tbb == EXIT_BLOCK_PTR_FOR_FN (cfun))
-		      break;
-		    e = split_block (copy_bb, PREV_INSN (insert_point));
-		    copy_bb = e->dest;
-		  }
-
-		/* Quiet verify_flow_info by (ab)using EDGE_FAKE.
-		   We have yet to add a simple_return to the tails,
-		   as we'd like to first convert_jumps_to_returns in
-		   case the block is no longer used after that.  */
-		eflags = EDGE_FAKE;
-		if (CALL_P (PREV_INSN (insert_point))
-		    && SIBLING_CALL_P (PREV_INSN (insert_point)))
-		  eflags = EDGE_SIBCALL | EDGE_ABNORMAL;
-		make_single_succ_edge (copy_bb, EXIT_BLOCK_PTR_FOR_FN (cfun),
-				       eflags);
-
-		/* verify_flow_info doesn't like a note after a
-		   sibling call.  */
-		delete_insn (insert_point);
-		if (bitmap_empty_p (&bb_tail))
-		  break;
-	      }
-	}
-
-    fail_shrinkwrap:
-      bitmap_clear (&bb_tail);
-      bitmap_clear (&bb_antic_flags);
-      bitmap_clear (&bb_on_list);
-      vec.release ();
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	    && bitmap_set_bit (bb_with, e->dest->index))
+	  vec.quick_push (e->dest);
     }
+
+  vec.release ();
+
+  if (dump_file)
+    fprintf (dump_file, "Avoiding non-duplicatable blocks, PRO is now %d\n",
+	     pro->index);
+
+  /* If we can move PRO back without having to duplicate more blocks, do so.
+     We can move back to a block PRE if every path from PRE will eventually
+     need a prologue, that is, PRO is a post-dominator of PRE.  */
+
+  if (pro != entry)
+    {
+      calculate_dominance_info (CDI_POST_DOMINATORS);
+
+      while (pro != entry)
+	{
+	  basic_block pre = get_immediate_dominator (CDI_DOMINATORS, pro);
+	  if (dominated_by_p (CDI_POST_DOMINATORS, pre, pro))
+	    pro = pre;
+	  else
+	    break;
+	}
+
+      free_dominance_info (CDI_POST_DOMINATORS);
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "Bumping back to anticipatable blocks, PRO is now %d\n",
+	     pro->index);
+
+  /* If there is more than one predecessor of PRO not dominated by PRO, fail.
+     Also find that single edge that leads to PRO.  */
+
+  bool multi = false;
+  edge the_edge = 0;
+  FOR_EACH_EDGE (e, ei, pro->preds)
+    if (!dominated_by_p (CDI_DOMINATORS, e->src, pro))
+      {
+	if (the_edge)
+	  multi = true;
+	else
+	  the_edge = e;
+      }
+
+  if (multi)
+    {
+      the_edge = orig_entry_edge;
+
+      if (dump_file)
+	fprintf (dump_file, "More than one candidate edge.\n");
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "Found candidate edge for shrink-wrapping, %d->%d.\n",
+	     the_edge->src->index, the_edge->dest->index);
+
+  *entry_edge = the_edge;
+
+  /* Compute what fraction of the frequency and count of the blocks that run
+     both with and without prologue are for running with prologue.  This gives
+     the correct answer for reducible flow graphs; for irreducible flow graphs
+     our profile is messed up beyond repair anyway.  */
+
+  int num = (*entry_edge)->probability;
+  int den = REG_BR_PROB_BASE;
+
+  if (*entry_edge == orig_entry_edge)
+    goto out;
+
+  /* Test whether the prologue is known to clobber any register
+     (other than FP or SP) which are live on the edge.  */
+
+  HARD_REG_SET live_on_edge;
+  CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
+  if (frame_pointer_needed)
+    CLEAR_HARD_REG_BIT (prologue_clobbered, HARD_FRAME_POINTER_REGNUM);
+  REG_SET_TO_HARD_REG_SET (live_on_edge,
+			   df_get_live_in ((*entry_edge)->dest));
+  if (hard_reg_set_intersect_p (live_on_edge, prologue_clobbered))
+    {
+      *entry_edge = orig_entry_edge;
+      if (dump_file)
+	fprintf (dump_file,
+		 "Shrink-wrapping aborted due to clobber.\n");
+      goto out;
+    }
+
+  /* All is okay, so do it.  */
+
+  crtl->shrink_wrapped = true;
+  if (dump_file)
+    fprintf (dump_file, "Performing shrink-wrapping.\n");
+
+  /* Copy the blocks that can run both with and without prologue.  The
+     originals run with prologue, the copies without.  Store a pointer to
+     the copy in the ->aux field of the original.  */
+
+  FOR_EACH_BB_FN (bb, cfun)
+    if (bitmap_bit_p (bb_with, bb->index)
+	&& !dominated_by_p (CDI_DOMINATORS, bb, pro))
+      {
+	basic_block dup = duplicate_block (bb, 0, 0);
+
+	bb->aux = dup;
+
+	if (JUMP_P (BB_END (dup)) && !any_condjump_p (BB_END (dup)))
+	  emit_barrier_after_bb (dup);
+
+	if (EDGE_COUNT (dup->succs) == 0)
+	  emit_barrier_after_bb (dup);
+
+	if (dump_file)
+	  fprintf (dump_file, "Duplicated %d to %d\n", bb->index, dup->index);
+
+	bb->frequency = RDIV (num * bb->frequency, den);
+	dup->frequency -= bb->frequency;
+	bb->count = RDIV (num * bb->count, den);
+	dup->count -= bb->count;
+      }
+
+  /* Change ENTRY_EDGE, if its src is duplicated.  Do this first, before
+     the redirects have had a chance to create new blocks on the edge we
+     want to use for the prologue, which makes us not find it.  */
+
+  gcc_assert (!dominated_by_p (CDI_DOMINATORS, (*entry_edge)->src, pro));
+
+  if (bitmap_bit_p (bb_with, (*entry_edge)->src->index))
+    {
+      basic_block src = (basic_block) (*entry_edge)->src->aux;
+      FOR_EACH_EDGE (e, ei, src->succs)
+	if (e->dest == pro)
+	  *entry_edge = e;
+    }
+
+  /* Now change the edges to point to the copies, where appropriate.  */
+
+  FOR_EACH_BB_FN (bb, cfun)
+    if (!dominated_by_p (CDI_DOMINATORS, bb, pro))
+      {
+	basic_block src = bb;
+	if (bitmap_bit_p (bb_with, bb->index))
+	  src = (basic_block) bb->aux;
+
+	FOR_EACH_EDGE (e, ei, src->succs)
+	  {
+	    if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+	      continue;
+
+	    if (bitmap_bit_p (bb_with, e->dest->index)
+		&& !dominated_by_p (CDI_DOMINATORS, e->dest, pro))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Redirecting edge %d->%d to %d\n",
+			   e->src->index, e->dest->index,
+			   ((basic_block) e->dest->aux)->index);
+		redirect_edge_and_branch_force (e, (basic_block) e->dest->aux);
+	      }
+	    else if (e->flags & EDGE_FALLTHRU
+		     && bitmap_bit_p (bb_with, bb->index))
+	      force_nonfallthru (e);
+	  }
+      }
+
+  /* Also redirect the function entry edge if necessary.  */
+
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
+    if (bitmap_bit_p (bb_with, e->dest->index)
+	&& !dominated_by_p (CDI_DOMINATORS, e->dest, pro))
+      {
+	basic_block split_bb = split_edge (e);
+	e = single_succ_edge (split_bb);
+	redirect_edge_and_branch_force (e, (basic_block) e->dest->aux);
+      }
+
+  /* Change all the exits that should get a simple_return to FAKE.
+     They will be converted later.  */
+
+  FOR_EACH_BB_FN (bb, cfun)
+    if (!bitmap_bit_p (bb_with, bb->index))
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+	  {
+	    e = fix_fake_fallthrough_edge (e);
+
+	    e->flags &= ~EDGE_FALLTHRU;
+	    if (!(e->flags & EDGE_SIBCALL))
+	      e->flags |= EDGE_FAKE;
+
+	    emit_barrier_after_bb (e->src);
+	  }
+
+out:
+  free_dominance_info (CDI_DOMINATORS);
 }
 
 /* If we're allowed to generate a simple return instruction, then by
@@ -1018,6 +1072,8 @@ convert_to_simple_return (edge entry_edge, edge orig_entry_edge,
 	    && (e->flags & EDGE_FAKE) != 0
 	    && !bitmap_bit_p (&bb_flags, e->src->index))
 	  {
+	    e = fix_fake_fallthrough_edge (e);
+
 	    emit_return_into_block (true, e->src);
 	    e->flags &= ~(EDGE_FALLTHRU | EDGE_FAKE);
 	  }
