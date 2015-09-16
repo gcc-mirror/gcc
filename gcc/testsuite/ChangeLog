@@ -1,3 +1,8 @@
+2015-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67442
+	* gcc.dg/torture/pr67442.c: New testcase.
+
 2015-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array24.adb: New test.
