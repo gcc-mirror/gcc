@@ -1,3 +1,8 @@
+2015-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67271
+	* fold-const.c (native_encode_expr): Bail out on bogus offsets.
+
 2015-09-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Use offset_int for
