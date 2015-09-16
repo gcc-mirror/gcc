@@ -1,3 +1,8 @@
+2015-09-16  David S. Miller  <davem@davemloft.net>
+
+	* lra-constraints.c (simplify_operand_subreg): Do not assume that
+	lowpart of a SUBREG has offset zero.
+
 2015-09-16  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47679
