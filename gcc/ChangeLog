@@ -1,5 +1,11 @@
 2015-09-16  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/67253
+	* cfgexpand.c (expand_gimple_stmt_1): Do not clobber
+	location of possibly shared trees.
+
+2015-09-16  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/67271
 	* fold-const.c (native_encode_expr): Bail out on bogus offsets.
 
