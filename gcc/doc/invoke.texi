@@ -4942,8 +4942,15 @@ be useful to facilitate the conversion to @code{nullptr} in C++11.
 @opindex Wsubobject-linkage
 @opindex Wno-subobject-linkage
 Warn if a class type has a base or a field whose type uses the anonymous
-namespace or depends on a type with no linkage.  This warning is
-enabled by default.
+namespace or depends on a type with no linkage.  If a type A depends on
+a type B with no or internal linkage, defining it in multiple
+translation units would be an ODR violation because the meaning of B
+is different in each translation unit.  If A only appears in a single
+translation unit, the best way to silence the warning is to give it
+internal linkage by putting it in an anonymous namespace as well.  The
+compiler doesn't give this warning for types defined in the main .C
+file, as those are unlikely to have multiple definitions.
+@option{-Wsubobject-linkage} is enabled by default.
 
 @item -Wdate-time
 @opindex Wdate-time
