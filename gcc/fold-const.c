@@ -6166,8 +6166,12 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	      && ((sign == UNSIGNED && tcode != MULT_EXPR) || sign == SIGNED))
 	    overflow_p = true;
 	  if (!overflow_p)
-	    return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
-				wide_int_to_tree (ctype, mul));
+	    {
+	      mul = wide_int::from (mul, TYPE_PRECISION (ctype),
+				    TYPE_SIGN (TREE_TYPE (op1)));
+	      return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
+				  wide_int_to_tree (ctype, mul));
+	    }
 	}
 
       /* If these operations "cancel" each other, we have the main
