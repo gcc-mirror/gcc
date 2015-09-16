@@ -1,3 +1,46 @@
+2015-09-16  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* Makefile.in: Add memory-block.cc
+	(pool_allocator::initialize): Use fixed block size.
+	(pool_allocator::release): Use memory_block_pool.
+	(pool_allocator::allocate): Likewise.
+	* asan.c (asan_mem_ref_pool): Adjust to use common block size in all
+	object pools.
+	* cfg.c (initialize_original_copy_tables): Likewise.
+	* cselib.c (elt_list_pool, elt_loc_list_pool,
+	cselib_val_pool): Likewise.
+	* df-problems.c (df_chain_alloc): Likewise.
+	* df-scan.c (df_scan_alloc): Likewise.
+	* dse.c (cse_store_info_pool, rtx_store_info_pool,
+	read_info_type_pool, insn_info_type_pool, bb_info_pool,
+	group_info_pool, deferred_change_pool): Likewise.
+	* et-forest.c (et_nodes, et_occurrences): Likewise.
+	* ipa-cp.c (ipcp_cst_values_pool, ipcp_sources_pool,
+	ipcp_agg_lattice_pool): Likewise.
+	* ipa-inline-analysis.c (edge_predicate_pool): Likewise.
+	* ipa-profile.c (histogram_pool): Likewise.
+	* ipa-prop.c (ipa_refdesc_pool): Likewise.
+	* ira-build.c (live_range_pool, allocno_pool, object_pool,
+	initiate_cost_vectors, pref_pool, copy_pool): Likewise.
+	* ira-color.c (update_cost_record_pool): Likewise.
+	* lra-lives.c (lra_live_range_pool): Likewise.
+	* lra.c (lra_insn_reg_pool, lra_copy_pool): Likewise.
+	* memory-block.cc: New file.
+	* memory-block.h: New file.
+	* regcprop.c (queued_debug_insn_change_pool): Use common block size.
+	* sched-deps.c (sched_deps_init): Likewise.
+	* sel-sched-ir.c (sched_lists_pool): Likewise.
+	* stmt.c (expand_case, expand_sjlj_dispatch_table): Likewise.
+	* tree-sra.c (access_pool): Likewise.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals::execute): Likewise.
+	* tree-ssa-pre.c (pre_expr_pool, bitmap_set_pool): Likewise.
+	* tree-ssa-reassoc.c (operand_entry_pool): Likewise.
+	* tree-ssa-sccvn.c (allocate_vn_table): Likewise.
+	* tree-ssa-strlen.c (strinfo_pool): Likewise.
+	* tree-ssa-structalias.c (variable_info_pool): Likewise.
+	* var-tracking.c (attrs_def_pool, var_pool, valvar_pool,
+	location_chain_pool, shared_hash_pool, loc_exp_dep_pool): Likewise.
+
 2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.h (DWARF_ALT_FRAME_RETURN_COLUMN): New

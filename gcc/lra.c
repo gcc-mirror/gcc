@@ -533,7 +533,7 @@ lra_update_dups (lra_insn_recog_data_t id, signed char *nops)
    insns.  */
 
 /* Pools for insn reg info.  */
-object_allocator<lra_insn_reg> lra_insn_reg_pool ("insn regs", 100);
+object_allocator<lra_insn_reg> lra_insn_reg_pool ("insn regs");
 
 /* Create LRA insn related info about a reference to REGNO in INSN with
    TYPE (in/out/inout), biggest reference mode MODE, flag that it is
@@ -744,7 +744,7 @@ free_insn_recog_data (lra_insn_recog_data_t data)
 }
 
 /* Pools for copies.  */
-static object_allocator<lra_copy> lra_copy_pool ("lra copies", 100);
+static object_allocator<lra_copy> lra_copy_pool ("lra copies");
 
 /* Finish LRA data about all insns.  */
 static void

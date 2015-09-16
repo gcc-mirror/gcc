@@ -350,7 +350,7 @@ struct asan_mem_ref
   HOST_WIDE_INT access_size;
 };
 
-object_allocator <asan_mem_ref> asan_mem_ref_pool ("asan_mem_ref", 10);
+object_allocator <asan_mem_ref> asan_mem_ref_pool ("asan_mem_ref");
 
 /* Initializes an instance of asan_mem_ref.  */
 

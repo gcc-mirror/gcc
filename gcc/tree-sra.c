@@ -277,7 +277,7 @@ typedef struct access *access_p;
 
 
 /* Alloc pool for allocating access structures.  */
-static object_allocator<struct access> access_pool ("SRA accesses", 16);
+static object_allocator<struct access> access_pool ("SRA accesses");
 
 /* A structure linking lhs and rhs accesses from an aggregate assignment.  They
    are used to propagate subaccesses from rhs to lhs as long as they don't
@@ -289,7 +289,7 @@ struct assign_link
 };
 
 /* Alloc pool for allocating assign link structures.  */
-static object_allocator<assign_link> assign_link_pool ("SRA links", 16);
+static object_allocator<assign_link> assign_link_pool ("SRA links");
 
 /* Base (tree) -> Vector (vec<access_p> *) map.  */
 static hash_map<tree, auto_vec<access_p> > *base_access_vec;

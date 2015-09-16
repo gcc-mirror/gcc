@@ -420,9 +420,9 @@ rebuild_regno_allocno_maps (void)
 
 
 /* Pools for allocnos, allocno live ranges and objects.  */
-static object_allocator<live_range> live_range_pool ("live ranges", 100);
-static object_allocator<ira_allocno> allocno_pool ("allocnos", 100);
-static object_allocator<ira_object> object_pool ("objects", 100);
+static object_allocator<live_range> live_range_pool ("live ranges");
+static object_allocator<ira_allocno> allocno_pool ("allocnos");
+static object_allocator<ira_object> object_pool ("objects");
 
 /* Vec containing references to all created allocnos.  It is a
    container of array allocnos.  */
@@ -1170,7 +1170,7 @@ finish_allocnos (void)
 
 
 /* Pools for allocno preferences.  */
-static object_allocator <ira_allocno_pref> pref_pool ("prefs", 100);
+static object_allocator <ira_allocno_pref> pref_pool ("prefs");
 
 /* Vec containing references to all created preferences.  It is a
    container of array ira_prefs.  */
@@ -1357,7 +1357,7 @@ finish_prefs (void)
 
 
 /* Pools for copies.  */
-static object_allocator<ira_allocno_copy> copy_pool ("copies", 100);
+static object_allocator<ira_allocno_copy> copy_pool ("copies");
 
 /* Vec containing references to all created copies.  It is a
    container of array ira_copies.  */
@@ -1630,8 +1630,7 @@ initiate_cost_vectors (void)
     {
       aclass = ira_allocno_classes[i];
       cost_vector_pool[aclass] = new pool_allocator
-	("cost vectors", 100,
-	 sizeof (int) * (ira_class_hard_regs_num[aclass]));
+	("cost vectors", sizeof (int) * (ira_class_hard_regs_num[aclass]));
     }
 }
 

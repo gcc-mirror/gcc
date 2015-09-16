@@ -143,7 +143,7 @@ vec<inline_edge_summary_t> inline_edge_summary_vec;
 vec<edge_growth_cache_entry> edge_growth_cache;
 
 /* Edge predicates goes here.  */
-static object_allocator<predicate> edge_predicate_pool ("edge predicates", 10);
+static object_allocator<predicate> edge_predicate_pool ("edge predicates");
 
 /* Return true predicate (tautology).
    We represent it by empty list of clauses.  */

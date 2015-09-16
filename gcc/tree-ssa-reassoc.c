@@ -209,8 +209,8 @@ typedef struct operand_entry
   unsigned int count;
 } *operand_entry_t;
 
-static object_allocator<operand_entry> operand_entry_pool ("operand entry pool",
-							 30);
+static object_allocator<operand_entry> operand_entry_pool
+  ("operand entry pool");
 
 /* This is used to assign a unique ID to each struct operand_entry
    so that qsort results are identical on different hosts.  */

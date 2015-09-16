@@ -246,11 +246,11 @@ static unsigned int cfa_base_preserved_regno = INVALID_REGNUM;
    each time memory is invalidated.  */
 static cselib_val *first_containing_mem = &dummy_val;
 
-static object_allocator<elt_list> elt_list_pool ("elt_list", 10);
-static object_allocator<elt_loc_list> elt_loc_list_pool ("elt_loc_list", 10);
-static object_allocator<cselib_val> cselib_val_pool ("cselib_val_list", 10);
+static object_allocator<elt_list> elt_list_pool ("elt_list");
+static object_allocator<elt_loc_list> elt_loc_list_pool ("elt_loc_list");
+static object_allocator<cselib_val> cselib_val_pool ("cselib_val_list");
 
-static pool_allocator value_pool ("value", 100, RTX_CODE_SIZE (VALUE));
+static pool_allocator value_pool ("value", RTX_CODE_SIZE (VALUE));
 
 /* If nonnull, cselib will call this function before freeing useless
    VALUEs.  A VALUE is deemed useless if its "locs" field is null.  */

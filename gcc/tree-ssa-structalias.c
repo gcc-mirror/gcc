@@ -323,7 +323,7 @@ static inline bool type_can_have_subvars (const_tree);
 
 /* Pool of variable info structures.  */
 static object_allocator<variable_info> variable_info_pool
-  ("Variable info pool", 30);
+  ("Variable info pool");
 
 /* Map varinfo to final pt_solution.  */
 static hash_map<varinfo_t, pt_solution *> *final_solutions;
@@ -523,7 +523,7 @@ struct constraint
 /* List of constraints that we use to build the constraint graph from.  */
 
 static vec<constraint_t> constraints;
-static object_allocator<constraint> constraint_pool ("Constraint pool", 30);
+static object_allocator<constraint> constraint_pool ("Constraint pool");
 
 /* The constraint graph is represented as an array of bitmaps
    containing successor nodes.  */

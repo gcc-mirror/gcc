@@ -576,28 +576,27 @@ typedef struct variable_tracking_info_def
 } *variable_tracking_info;
 
 /* Alloc pool for struct attrs_def.  */
-object_allocator<attrs_def> attrs_def_pool ("attrs_def pool", 1024);
+object_allocator<attrs_def> attrs_def_pool ("attrs_def pool");
 
 /* Alloc pool for struct variable_def with MAX_VAR_PARTS entries.  */
 
 static pool_allocator var_pool
-  ("variable_def pool", 64, sizeof (variable_def) +
+  ("variable_def pool", sizeof (variable_def) +
    (MAX_VAR_PARTS - 1) * sizeof (((variable)NULL)->var_part[0]));
 
 /* Alloc pool for struct variable_def with a single var_part entry.  */
 static pool_allocator valvar_pool
-  ("small variable_def pool", 256, sizeof (variable_def));
+  ("small variable_def pool", sizeof (variable_def));
 
-/* Alloc pool for struct location_chain_def.  */
+/* Alloc pool for struct location_chain.  */
 static object_allocator<location_chain> location_chain_pool
-  ("location_chain pool", 1024);
+  ("location_chain pool");
 
-/* Alloc pool for struct shared_hash_def.  */
-static object_allocator<shared_hash> shared_hash_pool
-  ("shared_hash pool", 256);
+/* Alloc pool for struct shared_hash.  */
+static object_allocator<shared_hash> shared_hash_pool ("shared_hash pool");
 
 /* Alloc pool for struct loc_exp_dep_s for NOT_ONEPART variables.  */
-object_allocator<loc_exp_dep> loc_exp_dep_pool ("loc_exp_dep pool", 64);
+object_allocator<loc_exp_dep> loc_exp_dep_pool ("loc_exp_dep pool");
 
 /* Changed variables, notes will be emitted for them.  */
 static variable_table_type *changed_variables;
