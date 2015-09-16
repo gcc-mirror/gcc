@@ -1,3 +1,23 @@
+2015-09-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* tree-ssa-dom.c (enum expr_kind): Moved from here to
+	tree-ssa-scopedtables.h.
+	(struct hashable_expr, class expr_hash_elt): Likewise.
+	(struct expr_elt_hasher, class avail_exprs_stack): Likewise.
+	Move associated methods into tree-ssa-scopedtables.c.
+	(avail_expr_hash, initialize_expr_from_cond): Similarly.
+	(hashable_expr_equal_p, add_expr_commutative): Likewise.
+	(add_hashable_expr): Likewise.
+	(record_cond): Delete element directly.
+	* tree-ssa-scopedtables.h (avail_expr_stack, const_and_copies): Add
+	private copy ctor and assignment operator methods.
+	(expr_elt_hasher): Inline trivial methods.
+	(initialize_expr_from_cond): Prototype.
+	* tree-ssa-scopedtables.c: Add necessary includes, functions and
+	methods that were previously in tree-ssa-dom.c.  Improve various
+	comments.
+
 2015-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/invoke.texi ([Wsubobject-linkage]): Extend documentation.
