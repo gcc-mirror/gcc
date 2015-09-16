@@ -1,3 +1,7 @@
+2015-09-16  John Marino  <gnugcc@marino.st>
+
+	* gfortran.dg/read_dir.f90: XFAIL this testcase on DragonFly.
+
 2015-09-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67253
