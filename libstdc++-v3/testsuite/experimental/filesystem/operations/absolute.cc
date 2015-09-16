@@ -29,6 +29,8 @@ using std::experimental::filesystem::path;
 void
 test01()
 {
+  bool test __attribute__((unused)) = false;
+
   for (const path& p : __gnu_test::test_paths)
     VERIFY( absolute(p).is_absolute() );
 }
@@ -36,6 +38,8 @@ test01()
 void
 test02()
 {
+  bool test __attribute__((unused)) = false;
+
   path p1("/");
   VERIFY( absolute(p1) == p1 );
   VERIFY( absolute(p1, "/bar") == p1 );

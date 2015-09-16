@@ -79178,11 +79178,22 @@ else
       if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdlib.h>
+
+       #include <stdlib.h>
+       #include <unistd.h>
+
 int
 main ()
 {
-char *tmp = realpath((const char*)NULL, (char*)NULL);
+
+       #if _XOPEN_VERSION < 500
+       #error
+       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+       char *tmp = realpath((const char*)NULL, (char*)NULL);
+       #else
+       #error
+       #endif
+
   ;
   return 0;
 }
@@ -79199,11 +79210,22 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdlib.h>
+
+       #include <stdlib.h>
+       #include <unistd.h>
+
 int
 main ()
 {
-char *tmp = realpath((const char*)NULL, (char*)NULL);
+
+       #if _XOPEN_VERSION < 500
+       #error
+       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+       char *tmp = realpath((const char*)NULL, (char*)NULL);
+       #else
+       #error
+       #endif
+
   ;
   return 0;
 }
