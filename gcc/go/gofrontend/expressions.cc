@@ -3472,6 +3472,15 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
 
   Type* t = this->type_;
   Type* et = this->expr_->type();
+
+  if (t->is_error_type()
+      || this->expr_->is_error_expression()
+      || et->is_error_type())
+    {
+      go_assert(saw_errors());
+      return context->backend()->error_expression();
+    }
+
   if (t->array_type() != NULL)
     go_assert(et->array_type() != NULL
               && t->is_slice_type() == et->is_slice_type());
