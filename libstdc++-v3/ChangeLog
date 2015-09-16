@@ -1,3 +1,25 @@
+2015-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67173
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check _XOPEN_VERSION
+	and PATH_MAX for _GLIBCXX_USE_REALPATH.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/filesystem/ops.cc: (canonical) [!_GLIBCXX_USE_REALPATH]: Add
+	alternative implementation.
+	* testsuite/experimental/filesystem/operations/canonical.cc: New.
+	* testsuite/experimental/filesystem/operations/exists.cc: Add more
+	tests.
+	* testsuite/experimental/filesystem/operations/absolute.cc: Add test
+	variables.
+	* testsuite/experimental/filesystem/operations/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/current_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/file_size.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/status.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+
 2015-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/67173

@@ -96,23 +96,98 @@ namespace
 fs::path
 fs::canonical(const path& p, const path& base, error_code& ec)
 {
-  path can;
+  const path pa = absolute(p, base);
+  path result;
 #ifdef _GLIBCXX_USE_REALPATH
-  char* buffer = nullptr;
-#if defined(__SunOS_5_10) && defined(PATH_MAX)
-  buffer = (char*)::malloc(PATH_MAX);
-#endif
-  if (char_ptr rp = char_ptr{::realpath(absolute(p, base).c_str(), buffer)})
+  char_ptr buf{ nullptr };
+# if _XOPEN_VERSION < 700
+  // Not safe to call realpath(path, NULL)
+  buf.reset( (char*)::malloc(PATH_MAX) );
+# endif
+  if (char* rp = ::realpath(pa.c_str(), buf.get()))
     {
-      can.assign(rp.get());
+      if (buf == nullptr)
+	buf.reset(rp);
+      result.assign(rp);
       ec.clear();
+      return result;
     }
-  else
-    ec.assign(errno, std::generic_category());
-#else
-  ec = std::make_error_code(std::errc::not_supported);
+  if (errno != ENAMETOOLONG)
+    {
+      ec.assign(errno, std::generic_category());
+      return result;
+    }
 #endif
-  return can;
+
+  auto fail = [&ec, &result](int e) mutable {
+      if (!ec.value())
+	ec.assign(e, std::generic_category());
+      result.clear();
+  };
+
+  if (!exists(pa, ec))
+    {
+      fail(ENOENT);
+      return result;
+    }
+  // else we can assume no unresolvable symlink loops
+
+  result = pa.root_path();
+
+  deque<path> cmpts;
+  for (auto& f : pa.relative_path())
+    cmpts.push_back(f);
+
+  while (!cmpts.empty())
+    {
+      path f = std::move(cmpts.front());
+      cmpts.pop_front();
+
+      if (f.compare(".") == 0)
+	{
+	  if (!is_directory(result, ec))
+	    {
+	      fail(ENOTDIR);
+	      break;
+	    }
+	}
+      else if (f.compare("..") == 0)
+	{
+	  auto parent = result.parent_path();
+	  if (parent.empty())
+	    result = pa.root_path();
+	  else
+	    result.swap(parent);
+	}
+      else
+	{
+	  result /= f;
+
+	  if (is_symlink(result, ec))
+	    {
+	      path link = read_symlink(result, ec);
+	      if (!ec.value())
+		{
+		  if (link.is_absolute())
+		    {
+		      result = link.root_path();
+		      link = link.relative_path();
+		    }
+		  else
+		    result.remove_filename();
+
+		  cmpts.insert(cmpts.begin(), link.begin(), link.end());
+		}
+	    }
+
+	  if (ec.value() || !exists(result, ec))
+	    {
+	      fail(ENOENT);
+	      break;
+	    }
+	}
+    }
+  return result;
 }
 
 fs::path

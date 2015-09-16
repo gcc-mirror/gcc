@@ -883,7 +883,7 @@
    of TR1 (Chapter 5.1). */
 #undef _GLIBCXX_USE_RANDOM_TR1
 
-/* Define if realpath is available in <stdlib.h>. */
+/* Define if usable realpath is available in <stdlib.h>. */
 #undef _GLIBCXX_USE_REALPATH
 
 /* Defined if sched_yield is available. */
