@@ -1,3 +1,10 @@
+2015-09-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* toplev.h (check_global_declaration): Remove declaration.
+	* toplev.c (check_global_declaration): Move to ...
+	* cgraphunit.c: ... here. Make it static and pass a symtab_node *.
+	(analyze_functions): Update call.
+
 2015-09-16  David S. Miller  <davem@davemloft.net>
 
 	* lra-constraints.c (simplify_operand_subreg): Do not assume that
