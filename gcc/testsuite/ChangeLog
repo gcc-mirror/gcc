@@ -1,5 +1,10 @@
 2015-09-16  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/67253
+	* gcc.dg/torture/pr67253.c: New testcase.
+
+2015-09-16  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/67271
 	* gcc.dg/pr67271.c: New testcase.
 

@@ -3587,7 +3587,9 @@ expand_gimple_stmt_1 (gimple stmt)
 	    tree rhs = gimple_assign_rhs1 (assign_stmt);
 	    gcc_assert (get_gimple_rhs_class (gimple_expr_code (stmt))
 			== GIMPLE_SINGLE_RHS);
-	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs))
+	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs)
+		/* Do not put locations on possibly shared trees.  */
+		&& !is_gimple_min_invariant (rhs))
 	      SET_EXPR_LOCATION (rhs, gimple_location (stmt));
 	    if (TREE_CLOBBER_P (rhs))
 	      /* This is a clobber to mark the going out of scope for
