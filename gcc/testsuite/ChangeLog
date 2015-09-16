@@ -1,3 +1,7 @@
+2015-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt49.adb: New test.
+
 2015-09-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67442
