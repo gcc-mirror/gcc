@@ -1,3 +1,9 @@
+2015-09-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/67587
+	* function.c (rest_of_handle_thread_prologue_and_epilogue): Call
+	fixup_partitions.
+
 2015-09-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67253
