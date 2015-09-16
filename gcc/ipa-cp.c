@@ -276,16 +276,16 @@ public:
 /* Allocation pools for values and their sources in ipa-cp.  */
 
 object_allocator<ipcp_value<tree> > ipcp_cst_values_pool
-  ("IPA-CP constant values", 32);
+  ("IPA-CP constant values");
 
 object_allocator<ipcp_value<ipa_polymorphic_call_context> >
-  ipcp_poly_ctx_values_pool ("IPA-CP polymorphic contexts", 32);
+  ipcp_poly_ctx_values_pool ("IPA-CP polymorphic contexts");
 
 object_allocator<ipcp_value_source<tree> > ipcp_sources_pool
-  ("IPA-CP value sources", 64);
+  ("IPA-CP value sources");
 
 object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
-  ("IPA_CP aggregate lattices", 32);
+  ("IPA_CP aggregate lattices");
 
 /* Maximal count found in program.  */
 

@@ -307,11 +307,9 @@ lowpart_bitmask (int n)
   return mask >> (HOST_BITS_PER_WIDE_INT - n);
 }
 
-static object_allocator<store_info> cse_store_info_pool ("cse_store_info_pool",
-						       100);
+static object_allocator<store_info> cse_store_info_pool ("cse_store_info_pool");
 
-static object_allocator<store_info> rtx_store_info_pool ("rtx_store_info_pool",
-						       100);
+static object_allocator<store_info> rtx_store_info_pool ("rtx_store_info_pool");
 
 /* This structure holds information about a load.  These are only
    built for rtx bases.  */
@@ -336,8 +334,7 @@ struct read_info_type
 };
 typedef struct read_info_type *read_info_t;
 
-static object_allocator<read_info_type> read_info_type_pool
-  ("read_info_pool", 100);
+static object_allocator<read_info_type> read_info_type_pool ("read_info_pool");
 
 /* One of these records is created for each insn.  */
 
@@ -426,8 +423,7 @@ struct insn_info_type
 };
 typedef struct insn_info_type *insn_info_t;
 
-static object_allocator<insn_info_type> insn_info_type_pool
-  ("insn_info_pool", 100);
+static object_allocator<insn_info_type> insn_info_type_pool ("insn_info_pool");
 
 /* The linked list of stores that are under consideration in this
    basic block.  */
@@ -494,7 +490,7 @@ struct dse_bb_info_type
 typedef struct dse_bb_info_type *bb_info_t;
 
 static object_allocator<dse_bb_info_type> dse_bb_info_type_pool
-  ("bb_info_pool", 100);
+  ("bb_info_pool");
 
 /* Table to hold all bb_infos.  */
 static bb_info_t *bb_table;
@@ -564,8 +560,7 @@ struct group_info
   int offset_map_size_n, offset_map_size_p;
 };
 
-static object_allocator<group_info> group_info_pool
-  ("rtx_group_info_pool", 100);
+static object_allocator<group_info> group_info_pool ("rtx_group_info_pool");
 
 /* Index into the rtx_group_vec.  */
 static int rtx_group_next_id;
@@ -589,7 +584,7 @@ struct deferred_change
 };
 
 static object_allocator<deferred_change> deferred_change_pool
-  ("deferred_change_pool", 10);
+  ("deferred_change_pool");
 
 static deferred_change *deferred_change_list = NULL;
 

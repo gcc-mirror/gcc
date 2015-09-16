@@ -75,7 +75,7 @@ struct value_data
 };
 
 static object_allocator<queued_debug_insn_change> queued_debug_insn_change_pool
-  ("debug insn changes pool", 256);
+  ("debug insn changes pool");
 
 static bool skip_debug_insn_p;
 

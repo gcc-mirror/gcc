@@ -1687,8 +1687,7 @@ check_format_arg (void *ctx, tree format_tree,
      will decrement it if it finds there are extra arguments, but this way
      need not adjust it for every return.  */
   res->number_other++;
-  object_allocator <format_wanted_type> fwt_pool ("format_wanted_type pool",
-						  10);
+  object_allocator <format_wanted_type> fwt_pool ("format_wanted_type pool");
   check_format_info_main (res, info, format_chars, format_length,
 			  params, arg_num, fwt_pool);
 }

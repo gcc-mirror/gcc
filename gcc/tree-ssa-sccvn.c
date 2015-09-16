@@ -4146,9 +4146,9 @@ allocate_vn_table (vn_tables_t table)
   table->references = new vn_reference_table_type (23);
 
   gcc_obstack_init (&table->nary_obstack);
-  table->phis_pool = new object_allocator<vn_phi_s> ("VN phis", 30);
+  table->phis_pool = new object_allocator<vn_phi_s> ("VN phis");
   table->references_pool = new object_allocator<vn_reference_s>
-    ("VN references", 30);
+    ("VN references");
 }
 
 /* Free a value number table.  */

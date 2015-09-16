@@ -1,3 +1,8 @@
+2015-09-16  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* c-format.c (check_format_arg): Adjust to use common block size in all
+	object pools.
+
 2015-09-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (location_from_offset): Update for change in

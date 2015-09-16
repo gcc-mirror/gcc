@@ -547,8 +547,7 @@ pass_cse_reciprocals::execute (function *fun)
   basic_block bb;
   tree arg;
 
-  occ_pool = new object_allocator<occurrence>
-    ("dominators for recip", n_basic_blocks_for_fn (fun) / 3 + 1);
+  occ_pool = new object_allocator<occurrence> ("dominators for recip");
 
   memset (&reciprocal_stats, 0, sizeof (reciprocal_stats));
   calculate_dominance_info (CDI_DOMINATORS);

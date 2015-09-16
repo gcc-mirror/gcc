@@ -54,8 +54,8 @@ struct et_occ
 				   depth.  */
 };
 
-static object_allocator<et_node> et_nodes ("et_nodes pool", 300);
-static object_allocator<et_occ> et_occurrences ("et_occ pool", 300);
+static object_allocator<et_node> et_nodes ("et_nodes pool");
+static object_allocator<et_occ> et_occurrences ("et_occ pool");
 
 /* Changes depth of OCC to D.  */
 

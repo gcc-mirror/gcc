@@ -1052,7 +1052,7 @@ void
 initialize_original_copy_tables (void)
 {
   original_copy_bb_pool = new object_allocator<htab_bb_copy_original_entry>
-    ("original_copy", 10);
+    ("original_copy");
   bb_original = new hash_table<bb_copy_hasher> (10);
   bb_copy = new hash_table<bb_copy_hasher> (10);
   loop_copy = new hash_table<bb_copy_hasher> (10);

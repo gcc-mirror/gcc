@@ -1138,7 +1138,7 @@ expand_case (gswitch *stmt)
   struct case_node *case_list = 0;
 
   /* A pool for case nodes.  */
-  object_allocator<case_node> case_node_pool ("struct case_node pool", 100);
+  object_allocator<case_node> case_node_pool ("struct case_node pool");
 
   /* An ERROR_MARK occurs for various reasons including invalid data type.
      ??? Can this still happen, with GIMPLE and all?  */
@@ -1314,8 +1314,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
     {
       /* Similar to expand_case, but much simpler.  */
       struct case_node *case_list = 0;
-      object_allocator<case_node> case_node_pool ("struct sjlj_case pool",
-						ncases);
+      object_allocator<case_node> case_node_pool ("struct sjlj_case pool");
       tree index_expr = make_tree (index_type, dispatch_index);
       tree minval = build_int_cst (index_type, 0);
       tree maxval = CASE_LOW (dispatch_table.last ());
