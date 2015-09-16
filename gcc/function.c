@@ -6668,6 +6668,10 @@ rest_of_handle_thread_prologue_and_epilogue (void)
      scheduling to operate in the epilogue.  */
   thread_prologue_and_epilogue_insns ();
 
+  /* Some non-cold blocks may now be only reachable from cold blocks.
+     Fix that up.  */
+  fixup_partitions ();
+
   /* Shrink-wrapping can result in unreachable edges in the epilogue,
      see PR57320.  */
   cleanup_cfg (0);
