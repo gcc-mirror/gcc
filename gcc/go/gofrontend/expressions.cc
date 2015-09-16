@@ -1904,6 +1904,13 @@ Integer_expression::do_check_types(Gogo*)
 Bexpression*
 Integer_expression::do_get_backend(Translate_context* context)
 {
+  if (this->is_error_expression()
+      || (this->type_ != NULL && this->type_->is_error_type()))
+    {
+      go_assert(saw_errors());
+      return context->gogo()->backend()->error_expression();
+    }
+
   Type* resolved_type = NULL;
   if (this->type_ != NULL && !this->type_->is_abstract())
     resolved_type = this->type_;
@@ -2266,6 +2273,13 @@ Float_expression::do_check_types(Gogo*)
 Bexpression*
 Float_expression::do_get_backend(Translate_context* context)
 {
+  if (this->is_error_expression()
+      || (this->type_ != NULL && this->type_->is_error_type()))
+    {
+      go_assert(saw_errors());
+      return context->gogo()->backend()->error_expression();
+    }
+
   Type* resolved_type;
   if (this->type_ != NULL && !this->type_->is_abstract())
     resolved_type = this->type_;
@@ -2448,6 +2462,13 @@ Complex_expression::do_check_types(Gogo*)
 Bexpression*
 Complex_expression::do_get_backend(Translate_context* context)
 {
+  if (this->is_error_expression()
+      || (this->type_ != NULL && this->type_->is_error_type()))
+    {
+      go_assert(saw_errors());
+      return context->gogo()->backend()->error_expression();
+    }
+
   Type* resolved_type;
   if (this->type_ != NULL && !this->type_->is_abstract())
     resolved_type = this->type_;
@@ -2826,8 +2847,12 @@ Const_expression::do_check_types(Gogo*)
 Bexpression*
 Const_expression::do_get_backend(Translate_context* context)
 {
-  if (this->type_ != NULL && this->type_->is_error())
-    return context->backend()->error_expression();
+  if (this->is_error_expression()
+      || (this->type_ != NULL && this->type_->is_error()))
+    {
+      go_assert(saw_errors());
+      return context->backend()->error_expression();
+    }
 
   // If the type has been set for this expression, but the underlying
   // object is an abstract int or float, we try to get the abstract
