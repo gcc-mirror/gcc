@@ -1,5 +1,10 @@
 2015-09-17  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (parser::parse_expr): Improve error message
+	for mis-placed flags.
+
+2015-09-17  Richard Biener  <rguenther@suse.de>
+
 	* passes.c (rest_of_decl_compilation): Always call early_global_decl
 	debug hook when we created a varpool node.
 	* dwarf2out.c (dwarf2out_late_global_decl): When in LTO call

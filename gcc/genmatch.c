@@ -3857,6 +3857,9 @@ parser::parse_expr ()
 	  e->expr_type = expr_type;
 	  return op;
 	}
+      else if (!(token->flags & PREV_WHITE))
+	fatal_at (token, "expected expression operand");
+
       e->append_op (parse_op ());
     }
   while (1);
