@@ -1,3 +1,7 @@
+2015-09-16  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/ft32.c Fix the memory address space predicate.
+
 2015-09-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/67573
