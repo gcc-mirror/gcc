@@ -1,5 +1,8 @@
 2015-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/filesystem/operations/canonical.cc: Remove
+	non-deterministic part of the test.
+
 	PR libstdc++/65142
 	* src/c++11/random.cc (random_device::_M_getval()): Retry after short
 	reads.

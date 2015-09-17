@@ -57,17 +57,6 @@ test01()
   p = canonical( p, ec );
   VERIFY( p == "/" );
   VERIFY( !ec );
-
-  p = "/dev/stdin";
-  if (exists(p))
-    {
-      auto p2 = canonical(p);
-      if (is_symlink(p))
-        VERIFY( p != p2 );
-      else
-        VERIFY( p == p2 );
-      VERIFY( canonical(p2) == p2 );
-    }
 }
 
 int
