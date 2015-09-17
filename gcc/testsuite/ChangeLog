@@ -1,3 +1,7 @@
+2015-09-17  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/arm/attr_thumb-static2.c: New test.
+
 2015-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/overflow_sum3.adb: New test.
