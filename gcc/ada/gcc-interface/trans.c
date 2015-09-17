@@ -8798,29 +8798,32 @@ emit_index_check (tree gnu_array_object, tree gnu_expr, tree gnu_low,
      gnu_expr, CE_Index_Check_Failed, gnat_node);
 }
 
-/* GNU_COND contains the condition corresponding to an access, discriminant or
-   range check of value GNU_EXPR.  Build a COND_EXPR that returns GNU_EXPR if
-   GNU_COND is false and raises a CONSTRAINT_ERROR if GNU_COND is true.
-   REASON is the code that says why the exception was raised.  GNAT_NODE is
-   the GNAT node conveying the source location for which the error should be
-   signaled.  */
+/* GNU_COND contains the condition corresponding to an index, overflow or
+   range check of value GNU_EXPR.  Build a COND_EXPR that returns GNU_EXPR
+   if GNU_COND is false and raises a CONSTRAINT_ERROR if GNU_COND is true.
+   REASON is the code that says why the exception is raised.  GNAT_NODE is
+   the node conveying the source location for which the error should be
+   signaled.
+
+   We used to propagate TREE_SIDE_EFFECTS from GNU_EXPR to the COND_EXPR,
+   overwriting the setting inherited from the call statement, on the ground
+   that the expression need not be evaluated just for the check.  However
+   that's incorrect because, in the GCC type system, its value is presumed
+   to be valid so its comparison against the type bounds always yields true
+   and, therefore, could be done without evaluating it; given that it can
+   be a computation that overflows the bounds, the language may require the
+   check to fail and thus the expression to be evaluated in this case.  */
 
 static tree
 emit_check (tree gnu_cond, tree gnu_expr, int reason, Node_Id gnat_node)
 {
   tree gnu_call
     = build_call_raise (reason, gnat_node, N_Raise_Constraint_Error);
-  tree gnu_result
-    = fold_build3 (COND_EXPR, TREE_TYPE (gnu_expr), gnu_cond,
-		   build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr), gnu_call,
-			   convert (TREE_TYPE (gnu_expr), integer_zero_node)),
-		   gnu_expr);
-
-  /* GNU_RESULT has side effects if and only if GNU_EXPR has:
-     we don't need to evaluate it just for the check.  */
-  TREE_SIDE_EFFECTS (gnu_result) = TREE_SIDE_EFFECTS (gnu_expr);
-
-  return gnu_result;
+  return
+    fold_build3 (COND_EXPR, TREE_TYPE (gnu_expr), gnu_cond,
+		 build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr), gnu_call,
+			 convert (TREE_TYPE (gnu_expr), integer_zero_node)),
+		 gnu_expr);
 }
 
 /* Return an expression that converts GNU_EXPR to GNAT_TYPE, doing overflow
