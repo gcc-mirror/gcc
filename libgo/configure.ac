@@ -695,6 +695,12 @@ AC_CACHE_CHECK([epoll_event data.fd offset],
 STRUCT_EPOLL_EVENT_FD_OFFSET=${libgo_cv_c_epoll_event_fd_offset}
 AC_SUBST(STRUCT_EPOLL_EVENT_FD_OFFSET)
 
+dnl Check if <sys/stat.h> uses timespec_t for st_?tim members.  Introduced
+dnl in Solaris 12 for XPG7 compatibility.
+AC_EGREP_HEADER([timespec_t.*st_atim], [sys/stat.h],
+		[have_stat_timespec=yes], [have_stat_timespec=no])
+AM_CONDITIONAL(HAVE_STAT_TIMESPEC, test $have_stat_timespec = yes)
+
 dnl See if struct exception is defined in <math.h>.
 AC_CHECK_TYPE([struct exception],
 [libgo_has_struct_exception=yes],
