@@ -13502,9 +13502,14 @@ Expression::make_heap_expression(Expression* expr, Location location)
 Type*
 Receive_expression::do_type()
 {
+  if (this->is_error_expression())
+    return Type::make_error_type();
   Channel_type* channel_type = this->channel_->type()->channel_type();
   if (channel_type == NULL)
-    return Type::make_error_type();
+    {
+      this->report_error(_("expected channel"));
+      return Type::make_error_type();
+    }
   return channel_type->element_type();
 }
 
@@ -13516,6 +13521,7 @@ Receive_expression::do_check_types(Gogo*)
   Type* type = this->channel_->type();
   if (type->is_error())
     {
+      go_assert(saw_errors());
       this->set_is_error();
       return;
     }
