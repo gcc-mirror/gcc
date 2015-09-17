@@ -1,3 +1,12 @@
+2015-09-17  Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (note_decl_for_pch): Remove.
+	* class.c (build_clone): Do not call note_decl_for_pch.
+	* semantics.c (finish_member_declaration): Likewise.
+	(note_decl_for_pch): Remove.
+	* decl2.c (c_parse_final_cleanups): Mangle all globals before
+	writing the PCH.
+
 2015-09-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44282

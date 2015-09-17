@@ -4511,6 +4511,12 @@ c_parse_final_cleanups (void)
      In that case we do not want to do anything else.  */
   if (pch_file)
     {
+      /* Mangle all symbols at PCH creation time.  */
+      symtab_node *node;
+      FOR_EACH_SYMBOL (node)
+	if (! is_a <varpool_node *> (node)
+	    || ! DECL_HARD_REGISTER (node->decl))
+	  DECL_ASSEMBLER_NAME (node->decl);
       c_common_write_pch ();
       dump_tu ();
       return;

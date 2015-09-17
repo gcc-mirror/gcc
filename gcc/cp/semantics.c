@@ -2951,26 +2951,6 @@ finish_member_declaration (tree decl)
       maybe_add_class_template_decl_list (current_class_type, decl,
 					  /*friend_p=*/0);
     }
-
-  if (pch_file)
-    note_decl_for_pch (decl);
-}
-
-/* DECL has been declared while we are building a PCH file.  Perform
-   actions that we might normally undertake lazily, but which can be
-   performed now so that they do not have to be performed in
-   translation units which include the PCH file.  */
-
-void
-note_decl_for_pch (tree decl)
-{
-  gcc_assert (pch_file);
-
-  /* There's a good chance that we'll have to mangle names at some
-     point, even if only for emission in debugging information.  */
-  if (VAR_OR_FUNCTION_DECL_P (decl)
-      && !processing_template_decl)
-    mangle_decl (decl);
 }
 
 /* Finish processing a complete template declaration.  The PARMS are
