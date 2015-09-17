@@ -3234,8 +3234,10 @@ bool
 simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
 	   affine_iv *iv, bool allow_nonconstant_step)
 {
-  tree type, ev;
-  bool folded_casts;
+  enum tree_code code;
+  tree type, ev, base, e, stop;
+  wide_int extreme;
+  bool folded_casts, overflow;
 
   iv->base = NULL_TREE;
   iv->step = NULL_TREE;
@@ -3276,6 +3278,82 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
   iv->no_overflow = (!folded_casts && ANY_INTEGRAL_TYPE_P (type)
 		     && TYPE_OVERFLOW_UNDEFINED (type));
 
+  /* Try to simplify iv base:
+
+       (signed T) ((unsigned T)base + step) ;; TREE_TYPE (base) == signed T
+	 == (signed T)(unsigned T)base + step
+	 == base + step
+
+     If we can prove operation (base + step) doesn't overflow or underflow.
+     Specifically, we try to prove below conditions are satisfied:
+
+	     base <= UPPER_BOUND (type) - step  ;;step > 0
+	     base >= LOWER_BOUND (type) - step  ;;step < 0
+
+     This is done by proving the reverse conditions are false using loop's
+     initial conditions.
+
+     The is necessary to make loop niter, or iv overflow analysis easier
+     for below example:
+
+       int foo (int *a, signed char s, signed char l)
+	 {
+	   signed char i;
+	   for (i = s; i < l; i++)
+	     a[i] = 0;
+	   return 0;
+	  }
+
+     Note variable I is firstly converted to type unsigned char, incremented,
+     then converted back to type signed char.  */
+
+  if (wrto_loop->num != use_loop->num)
+    return true;
+
+  if (!CONVERT_EXPR_P (iv->base) || TREE_CODE (iv->step) != INTEGER_CST)
+    return true;
+
+  type = TREE_TYPE (iv->base);
+  e = TREE_OPERAND (iv->base, 0);
+  if (TREE_CODE (e) != PLUS_EXPR
+      || TREE_CODE (TREE_OPERAND (e, 1)) != INTEGER_CST
+      || !tree_int_cst_equal (iv->step,
+			      fold_convert (type, TREE_OPERAND (e, 1))))
+    return true;
+  e = TREE_OPERAND (e, 0);
+  if (!CONVERT_EXPR_P (e))
+    return true;
+  base = TREE_OPERAND (e, 0);
+  if (!useless_type_conversion_p (type, TREE_TYPE (base)))
+    return true;
+
+  if (tree_int_cst_sign_bit (iv->step))
+    {
+      code = LT_EXPR;
+      extreme = wi::min_value (type);
+    }
+  else
+    {
+      code = GT_EXPR;
+      extreme = wi::max_value (type);
+    }
+  overflow = false;
+  extreme = wi::sub (extreme, iv->step, TYPE_SIGN (type), &overflow);
+  if (overflow)
+    return true;
+  e = fold_build2 (code, boolean_type_node, base,
+		   wide_int_to_tree (type, extreme));
+  stop = (TREE_CODE (base) == SSA_NAME) ? base : NULL;
+  e = simplify_using_initial_conditions (use_loop, e, stop);
+  if (!integer_zerop (e))
+    return true;
+
+  if (POINTER_TYPE_P (TREE_TYPE (base)))
+    code = POINTER_PLUS_EXPR;
+  else
+    code = PLUS_EXPR;
+
+  iv->base = fold_build2 (code, TREE_TYPE (base), base, iv->step);
   return true;
 }
 

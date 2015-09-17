@@ -1,3 +1,17 @@
+2015-09-17  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-niter.c (tree_simplify_using_condition_1): New
+	parameter.
+	(tree_simplify_using_condition): Ditto.
+	(simplify_using_initial_conditions): Ditto.
+	(loop_exits_before_overflow): Pass new argument to function
+	simplify_using_initial_conditions.  Remove case for type conversions
+	simplification.
+	* tree-ssa-loop-niter.h (simplify_using_initial_conditions): New
+	parameter.
+	* tree-scalar-evolution.c (simple_iv): Simplify type conversions
+	in iv base using loop initial conditions.
+
 2015-09-16  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47679
