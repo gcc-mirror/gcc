@@ -43,15 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "flags.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-iterator.h"
@@ -65,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimplify.h"
 #include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-tree.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less

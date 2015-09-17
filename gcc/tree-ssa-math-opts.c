@@ -103,15 +103,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "stor-layout.h"
 #include "tree-cfg.h"
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-pass.h"
@@ -120,11 +111,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "builtins.h"
 #include "params.h"
-
-/* FIXME: RTL headers have to be included here for optabs.  */
-#include "expr.h"		/* Because optabs.h wants sepops.  */
 #include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-tree.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a

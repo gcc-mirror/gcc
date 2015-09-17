@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cgraph.h"
 #include "generic-match.h"
-#include "optabs.h"
+#include "optabs-query.h"
 
 #ifndef LOAD_EXTEND_OP
 #define LOAD_EXTEND_OP(M) UNKNOWN

@@ -87,7 +87,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-query.h"
+#include "optabs-libfuncs.h"
 #include "tree-chkp.h"
 #include "omp-low.h"
 

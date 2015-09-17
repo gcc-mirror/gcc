@@ -377,6 +377,9 @@ main (int argc, char **argv)
      purging of the X patterns above.  */
   qsort (optabs, n, sizeof (optab_def), optab_kind_cmp);
 
+  fprintf (h_file, "#ifndef GCC_INSN_OPINIT_H\n");
+  fprintf (h_file, "#define GCC_INSN_OPINIT_H 1\n");
+
   /* Emit the optab enumeration for the header file.  */
   fprintf (h_file, "enum optab_tag {\n");
   for (i = j = 0; i < n; ++i)
@@ -426,6 +429,7 @@ main (int argc, char **argv)
 	   "   the body of that kind of insn.  */\n"
 	   "#define GEN_FCN(CODE) (insn_data[CODE].genfun)\n"
 	   "\n"
+	   "#ifdef NUM_RTX_CODE\n"
 	   "/* Contains the optab used for each rtx code, and vice-versa.  */\n"
 	   "extern const optab code_to_optab_[NUM_RTX_CODE];\n"
 	   "extern const enum rtx_code optab_to_code_[NUM_OPTABS];\n"
@@ -441,6 +445,7 @@ main (int argc, char **argv)
 	   "{\n"
 	   "  return optab_to_code_[op];\n"
 	   "}\n"
+	   "#endif\n"
 	   "\n"
 	   "extern const struct convert_optab_libcall_d convlib_def[NUM_CONVLIB_OPTABS];\n"
 	   "extern const struct optab_libcall_d normlib_def[NUM_NORMLIB_OPTABS];\n"
@@ -594,6 +599,7 @@ main (int argc, char **argv)
     }
   fprintf (s_file, "};\n\n");
 
+  fprintf (h_file, "#endif\n");
   return (fclose (h_file) == 0 && fclose (s_file) == 0
 	  ? SUCCESS_EXIT_CODE : FATAL_EXIT_CODE);
 }
