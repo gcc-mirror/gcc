@@ -1,3 +1,7 @@
+2015-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (emit_check): Do not touch TREE_SIDE_EFFECTS.
+
 2015-09-14  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/misc.c (gnat_post_options): Issue a warning if
