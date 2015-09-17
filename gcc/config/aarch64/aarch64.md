@@ -4412,6 +4412,52 @@
   [(set_attr "type" "f_minmax<s>")]
 )
 
+;; For copysign (x, y), we want to generate:
+;;
+;;   LDR d2, #(1 << 63)
+;;   BSL v2.8b, [y], [x]
+;;
+;; or another, equivalent, sequence using one of BSL/BIT/BIF.
+;; aarch64_simd_bsldf will select the best suited of these instructions
+;; to generate based on register allocation, and knows how to partially
+;; constant fold based on the values of X and Y, so expand through that.
+
+(define_expand "copysigndf3"
+  [(match_operand:DF 0 "register_operand")
+   (match_operand:DF 1 "register_operand")
+   (match_operand:DF 2 "register_operand")]
+  "TARGET_FLOAT && TARGET_SIMD"
+{
+  rtx mask = gen_reg_rtx (DImode);
+  emit_move_insn (mask, GEN_INT (HOST_WIDE_INT_1U << 63));
+  emit_insn (gen_aarch64_simd_bsldf (operands[0], mask,
+				     operands[2], operands[1]));
+  DONE;
+}
+)
+
+;; As above, but we must first get to a 64-bit value if we wish to use
+;; aarch64_simd_bslv2sf.
+
+(define_expand "copysignsf3"
+  [(match_operand:SF 0 "register_operand")
+   (match_operand:SF 1 "register_operand")
+   (match_operand:SF 2 "register_operand")]
+  "TARGET_FLOAT && TARGET_SIMD"
+{
+  rtx mask = gen_reg_rtx (DImode);
+
+  /* Juggle modes to get us in to a vector mode for BSL.  */
+  rtx op1 = lowpart_subreg (V2SFmode, operands[1], SFmode);
+  rtx op2 = lowpart_subreg (V2SFmode, operands[2], SFmode);
+  rtx tmp = gen_reg_rtx (V2SFmode);
+  emit_move_insn (mask, GEN_INT (HOST_WIDE_INT_1U << 31));
+  emit_insn (gen_aarch64_simd_bslv2sf (tmp, mask, op2, op1));
+  emit_move_insn (operands[0], lowpart_subreg (SFmode, tmp, V2SFmode));
+  DONE;
+}
+)
+
 ;; -------------------------------------------------------------------
 ;; Reload support
 ;; -------------------------------------------------------------------

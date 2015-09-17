@@ -1,3 +1,8 @@
+2015-09-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (copysigndf3): New.
+	(copysignsf3): Likewise.
+
 2015-09-17  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc-protos.h (sparc_secondary_memory_needed):
