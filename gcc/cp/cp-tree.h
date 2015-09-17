@@ -80,6 +80,7 @@ c-common.h, not after.
       COMPOUND_REQ_NOEXCEPT_P (in COMPOUND_REQ)
       WILDCARD_PACK_P (in WILDCARD_DECL)
       BLOCK_OUTER_CURLY_BRACE_P (in BLOCK)
+      FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -3248,6 +3249,37 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define ARGUMENT_PACK_SELECT_ARG(NODE)					\
   TREE_VEC_ELT (ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (NODE)), \
 	        ARGUMENT_PACK_SELECT_INDEX (NODE))
+
+#define FOLD_EXPR_CHECK(NODE)						\
+  TREE_CHECK4 (NODE, UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR,	\
+	       BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)
+
+#define BINARY_FOLD_EXPR_CHECK(NODE) \
+  TREE_CHECK2 (NODE, BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)
+
+/* True if NODE is UNARY_FOLD_EXPR or a BINARY_FOLD_EXPR */
+#define FOLD_EXPR_P(NODE) \
+  TREE_CODE (NODE) == UNARY_LEFT_FOLD_EXPR \
+    || TREE_CODE (NODE) == UNARY_RIGHT_FOLD_EXPR \
+    || TREE_CODE (NODE) == BINARY_LEFT_FOLD_EXPR \
+    || TREE_CODE (NODE) == BINARY_RIGHT_FOLD_EXPR
+
+/* True when NODE is a fold over a compound assignment operator. */
+#define FOLD_EXPR_MODIFY_P(NODE) \
+  TREE_LANG_FLAG_0 (FOLD_EXPR_CHECK (NODE))
+
+/* An INTEGER_CST containing the tree code of the folded operator. */
+#define FOLD_EXPR_OP(NODE) \
+  TREE_OPERAND (FOLD_EXPR_CHECK (NODE), 0)
+
+/* The expression containing an unexpanded parameter pack. */
+#define FOLD_EXPR_PACK(NODE) \
+  TREE_OPERAND (FOLD_EXPR_CHECK (NODE), 1)
+
+/* In a binary fold expression, the argument with no unexpanded
+   parameter packs. */
+#define FOLD_EXPR_INIT(NODE) \
+  TREE_OPERAND (BINARY_FOLD_EXPR_CHECK (NODE), 2)
 
 /* In a FUNCTION_DECL, the saved language-specific per-function data.  */
 #define DECL_SAVED_FUNCTION_DATA(NODE)			\
@@ -6566,6 +6598,10 @@ extern bool check_raw_literal_operator		(const_tree decl);
 extern bool check_literal_operator_args		(const_tree, bool *, bool *);
 extern void maybe_warn_about_useless_cast       (tree, tree, tsubst_flags_t);
 extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
+
+extern tree finish_left_unary_fold_expr      (tree, int);
+extern tree finish_right_unary_fold_expr     (tree, int);
+extern tree finish_binary_fold_expr          (tree, tree, int);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
