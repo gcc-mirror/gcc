@@ -12283,6 +12283,26 @@ sparc_expand_vector_init (rtx target, rtx vals)
   emit_move_insn (target, mem);
 }
 
+bool sparc_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
+				    machine_mode mode)
+{
+  if (FP_REG_CLASS_P (class1) != FP_REG_CLASS_P (class2))
+    {
+      if (! TARGET_VIS3
+	  || GET_MODE_SIZE (mode) > 8
+	  || GET_MODE_SIZE (mode) < 4)
+	return true;
+      return false;
+    }
+
+  if (GET_MODE_SIZE (mode) == 4
+      && ((class1 == FP_REGS && class2 == EXTRA_FP_REGS)
+	  || (class1 == EXTRA_FP_REGS && class2 == FP_REGS)))
+    return true;
+
+  return false;
+}
+
 /* Implement TARGET_SECONDARY_RELOAD.  */
 
 static reg_class_t
