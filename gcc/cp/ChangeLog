@@ -1,3 +1,28 @@
+2015-09-17  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Implement N4295 fold-expressions.
+	* cp-tree.def: Add UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR,
+	BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR.
+	* cp-objcp-common.c (cp_common_init_ts): Handle them.
+	* cp-tree.h (FOLD_EXPR_CHECK, BINARY_FOLD_EXPR_CHECK, FOLD_EXPR_P)
+	(FOLD_EXPR_MODIFY_P, FOLD_EXPR_OP, FOLD_EXPR_PACK, FOLD_EXPR_INIT): New.
+	* parser.c (cp_parser_skip_to_closing_parenthesis): Split out...
+	(cp_parser_skip_to_closing_parenthesis_1): This function.  Change
+	or_comma parameter to or_ttype.
+	(cp_parser_fold_operator, cp_parser_fold_expr_p)
+	(cp_parser_fold_expression): New.
+	(cp_parser_primary_expression): Use them.
+	* pt.c (expand_empty_fold, fold_expression, tsubst_fold_expr_pack)
+	(tsubst_fold_expr_init, expand_left_fold, tsubst_unary_left_fold)
+	(tsubst_binary_left_fold, expand_right_fold)
+	(tsubst_unary_right_fold, tsubst_binary_right_fold): New.
+	(tsubst_copy): Use them.
+	(type_dependent_expression_p): Handle fold-expressions.
+	* semantics.c (finish_unary_fold_expr)
+	(finish_left_unary_fold_expr, finish_right_unary_fold_expr)
+	(finish_binary_fold_expr): New.
+
 2015-09-17  Richard Biener  <rguenther@suse.de>
 
 	* cp-tree.h (note_decl_for_pch): Remove.

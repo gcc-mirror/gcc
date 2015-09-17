@@ -3175,26 +3175,31 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 
 /* Consume tokens up to, and including, the next non-nested closing `)'.
    Returns 1 iff we found a closing `)'.  RECOVERING is true, if we
-   are doing error recovery. Returns -1 if OR_COMMA is true and we
-   found an unnested comma.  */
+   are doing error recovery. Returns -1 if OR_TTYPE is not CPP_EOF and we
+   found an unnested token of that type.  */
 
 static int
-cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
-				       bool recovering,
-				       bool or_comma,
-				       bool consume_paren)
+cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
+					 bool recovering,
+					 cpp_ttype or_ttype,
+					 bool consume_paren)
 {
   unsigned paren_depth = 0;
   unsigned brace_depth = 0;
   unsigned square_depth = 0;
 
-  if (recovering && !or_comma
+  if (recovering && or_ttype == CPP_EOF
       && cp_parser_uncommitted_to_tentative_parse_p (parser))
     return 0;
 
   while (true)
     {
       cp_token * token = cp_lexer_peek_token (parser->lexer);
+
+      /* Have we found what we're looking for before the closing paren?  */
+      if (token->type == or_ttype && or_ttype != CPP_EOF
+	  && !brace_depth && !paren_depth && !square_depth)
+	return -1;
 
       switch (token->type)
 	{
@@ -3226,12 +3231,6 @@ cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
 	    return 0;
 	  break;
 
-	case CPP_COMMA:
-	  if (recovering && or_comma && !brace_depth && !paren_depth
-	      && !square_depth)
-	    return -1;
-	  break;
-
 	case CPP_OPEN_PAREN:
 	  if (!brace_depth)
 	    ++paren_depth;
@@ -3253,6 +3252,22 @@ cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
     }
+}
+
+/* Consume tokens up to, and including, the next non-nested closing `)'.
+   Returns 1 iff we found a closing `)'.  RECOVERING is true, if we
+   are doing error recovery. Returns -1 if OR_COMMA is true and we
+   found an unnested token of that type.  */
+
+static int
+cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
+				       bool recovering,
+				       bool or_comma,
+				       bool consume_paren)
+{
+  cpp_ttype ttype = or_comma ? CPP_COMMA : CPP_EOF;
+  return cp_parser_skip_to_closing_parenthesis_1 (parser, recovering,
+						  ttype, consume_paren);
 }
 
 /* Consume tokens until we reach the end of the current statement.
@@ -4260,6 +4275,186 @@ cp_parser_statement_expr (cp_parser *parser)
 
 /* Expressions [gram.expr] */
 
+/* Parse a fold-operator.
+
+    fold-operator:
+        -  *  /  %  ^  &  |  =  <  >  <<  >>
+      =  -=  *=  /=  %=  ^=  &=  |=  <<=  >>=
+      ==  !=  <=  >=  &&  ||  ,  .*  ->*
+
+   This returns the tree code corresponding to the matched operator
+   as an int. When the current token matches a compound assignment
+   opertor, the resulting tree code is the negative value of the
+   non-assignment operator. */
+
+static int
+cp_parser_fold_operator (cp_token *token)
+{
+  switch (token->type)
+    {
+    case CPP_PLUS: return PLUS_EXPR;
+    case CPP_MINUS: return MINUS_EXPR;
+    case CPP_MULT: return MULT_EXPR;
+    case CPP_DIV: return TRUNC_DIV_EXPR;
+    case CPP_MOD: return TRUNC_MOD_EXPR;
+    case CPP_XOR: return BIT_XOR_EXPR;
+    case CPP_AND: return BIT_AND_EXPR;
+    case CPP_OR: return BIT_IOR_EXPR;
+    case CPP_LSHIFT: return LSHIFT_EXPR;
+    case CPP_RSHIFT: return RSHIFT_EXPR;
+
+    case CPP_EQ: return -NOP_EXPR;
+    case CPP_PLUS_EQ: return -PLUS_EXPR;
+    case CPP_MINUS_EQ: return -MINUS_EXPR;
+    case CPP_MULT_EQ: return -MULT_EXPR;
+    case CPP_DIV_EQ: return -TRUNC_DIV_EXPR;
+    case CPP_MOD_EQ: return -TRUNC_MOD_EXPR;
+    case CPP_XOR_EQ: return -BIT_XOR_EXPR;
+    case CPP_AND_EQ: return -BIT_AND_EXPR;
+    case CPP_OR_EQ: return -BIT_IOR_EXPR;
+    case CPP_LSHIFT_EQ: return -LSHIFT_EXPR;
+    case CPP_RSHIFT_EQ: return -RSHIFT_EXPR;
+
+    case CPP_EQ_EQ: return EQ_EXPR;
+    case CPP_NOT_EQ: return NE_EXPR;
+    case CPP_LESS: return LT_EXPR;
+    case CPP_GREATER: return GT_EXPR;
+    case CPP_LESS_EQ: return LE_EXPR;
+    case CPP_GREATER_EQ: return GE_EXPR;
+
+    case CPP_AND_AND: return TRUTH_ANDIF_EXPR;
+    case CPP_OR_OR: return TRUTH_ORIF_EXPR;
+
+    case CPP_COMMA: return COMPOUND_EXPR;
+
+    case CPP_DOT_STAR: return DOTSTAR_EXPR;
+    case CPP_DEREF_STAR: return MEMBER_REF;
+
+    default: return ERROR_MARK;
+    }
+}
+
+/* If the next token is a suitable fold operator, consume it and return as
+   the function above.  */
+
+static int
+cp_parser_fold_operator (cp_parser *parser)
+{
+  cp_token* token = cp_lexer_peek_token (parser->lexer);
+  int code = cp_parser_fold_operator (token);
+  if (code != ERROR_MARK)
+    cp_lexer_consume_token (parser->lexer);
+  return code;
+}
+
+/* Returns true iff we're at the beginning of an N4191 fold-expression, after
+   the left parenthesis.  Rather than do tentative parsing, we scan the tokens
+   up to the matching right paren for an ellipsis next to a binary
+   operator.  */
+
+static bool
+cp_parser_fold_expr_p (cp_parser *parser)
+{
+  /* An ellipsis right after the left paren always indicates a
+     fold-expression.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+    {
+      /* But if there isn't a fold operator after the ellipsis,
+         give a different error.  */
+      cp_token *token = cp_lexer_peek_nth_token (parser->lexer, 2);
+      return (cp_parser_fold_operator (token) != ERROR_MARK);
+    }
+
+  /* Otherwise, look for an ellipsis.  */
+  cp_lexer_save_tokens (parser->lexer);
+  int ret = cp_parser_skip_to_closing_parenthesis_1 (parser, false,
+						     CPP_ELLIPSIS, false);
+  bool found = (ret == -1);
+  if (found)
+    {
+      /* We found an ellipsis, is the previous token an operator?  */
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      --token;
+      if (cp_parser_fold_operator (token) == ERROR_MARK)
+	found = false;
+    }
+  cp_lexer_rollback_tokens (parser->lexer);
+  return found;
+}
+
+/* Parse a fold-expression.
+
+     fold-expression:
+       ( ... folding-operator cast-expression)
+       ( cast-expression folding-operator ... )
+       ( cast-expression folding operator ... folding-operator cast-expression)
+
+   Note that the '(' and ')' are matched in primary expression. */
+
+static tree
+cp_parser_fold_expression (cp_parser *parser)
+{
+  cp_id_kind pidk;
+
+  if (cxx_dialect < cxx1z && !in_system_header_at (input_location))
+    pedwarn (input_location, 0, "fold-expressions only available with "
+	     "-std=c++1z or -std=gnu++1z");
+
+  // Left fold.
+  if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      int op = cp_parser_fold_operator (parser);
+      if (op == ERROR_MARK)
+        {
+          cp_parser_error (parser, "expected binary operator");
+          return error_mark_node;
+        }
+
+      tree expr = cp_parser_cast_expression (parser, false, false,
+					     false, &pidk);
+      if (expr == error_mark_node)
+        return error_mark_node;
+      return finish_left_unary_fold_expr (expr, op);
+    }
+
+  tree expr1 = cp_parser_cast_expression (parser, false, false, false, &pidk);
+  if (expr1 == error_mark_node)
+    return error_mark_node;
+
+  const cp_token* token = cp_lexer_peek_token (parser->lexer);
+  int op = cp_parser_fold_operator (parser);
+  if (op == ERROR_MARK)
+    {
+      cp_parser_error (parser, "expected binary operator");
+      return error_mark_node;
+    }
+
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_ELLIPSIS))
+    {
+      cp_parser_error (parser, "expected ...");
+      return error_mark_node;
+    }
+  cp_lexer_consume_token (parser->lexer);
+
+  // Right fold.
+  if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+    return finish_right_unary_fold_expr (expr1, op);
+
+  if (cp_lexer_next_token_is_not (parser->lexer, token->type))
+    {
+      cp_parser_error (parser, "mismatched operator in fold-expression");
+      return error_mark_node;
+    }
+  cp_lexer_consume_token (parser->lexer);
+
+  // Binary left or right fold.
+  tree expr2 = cp_parser_cast_expression (parser, false, false, false, &pidk);
+  if (expr2 == error_mark_node)
+    return error_mark_node;
+  return finish_binary_fold_expr (expr1, expr2, op);
+}
+
 /* Parse a primary-expression.
 
    primary-expression:
@@ -4467,6 +4662,14 @@ cp_parser_primary_expression (cp_parser *parser,
 	saved_greater_than_is_operator_p
 	  = parser->greater_than_is_operator_p;
 	parser->greater_than_is_operator_p = true;
+
+	// Handle a fold-expression.
+	if (cp_parser_fold_expr_p (parser))
+	  {
+	    tree fold = cp_parser_fold_expression (parser);
+	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	    return fold;
+	  }
 
 	/* Parse the parenthesized expression.  */
 	expr = cp_parser_expression (parser, idk, cast_p, decltype_p);
