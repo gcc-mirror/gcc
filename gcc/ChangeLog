@@ -1,3 +1,17 @@
+2015-09-17  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc-protos.h (sparc_secondary_memory_needed):
+	Declare.
+	* config/sparc/sparc.c (sparc_secondary_memory_needed): New
+	function.
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED): Use it.
+	(HARD_REGNO_CALLER_SAVE_MODE): Define.
+	* config/sparc/sparc.md (sethi_di_medlow, losum_di_medlow, seth44)
+	(setm44, setl44, sethh, setlm, sethm, setlo, embmedany_sethi)
+	(embmedany_losum, embmedany_brsum, embmedany_textuhi)
+	(embmedany_texthi, embmedany_textulo, embmedany_textlo): Do not
+	provide when flag_pic.
+
 2015-09-17  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (label_ref_list_d_pool): Adjust to
