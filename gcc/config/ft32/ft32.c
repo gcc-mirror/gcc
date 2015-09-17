@@ -745,12 +745,8 @@ ft32_arg_partial_bytes (cumulative_args_t cum_v,
 int
 ft32_is_mem_pm (rtx o)
 {
-  if (GET_CODE (o) != MEM)
-    return false;
-  if (MEM_EXPR (o))
-    return TYPE_ADDR_SPACE (TREE_TYPE (MEM_EXPR (o))) == ADDR_SPACE_PM;
-  else
-    return MEM_ADDR_SPACE (o) == ADDR_SPACE_PM;
+  return (MEM_P (o)
+          && !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (o)));
 }
 
 /* The Global `targetm' Variable.  */
