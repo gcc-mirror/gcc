@@ -3856,7 +3856,10 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   if (this->val_ != NULL
       && (this->val_->is_error_expression()
 	  || this->val_->type()->is_error()))
-    return Statement::make_error_statement(loc);
+    {
+      go_assert(saw_errors());
+      return Statement::make_error_statement(loc);
+    }
 
   if (this->val_ != NULL
       && this->val_->type()->integer_type() != NULL
