@@ -1,3 +1,7 @@
+2015-09-17  Ian Lance Taylor  <iant@google.com>
+
+	* posix.c (backtrace_open): Cast second argument of open() to int.
+
 2015-09-11  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.am (backtrace.lo): Depend on internal.h.
