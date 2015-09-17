@@ -1,5 +1,12 @@
 2015-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/65913
+	* include/bits/atomic_base.h (__atomic_base<_TTp>::is_lock_free(),
+	__atomic_base<_PTp*>::is_lock_free()): Call the built-in with the
+	immediate pointer value, not a variable.
+	* include/std/atomic (atomic<T>::is_lock_free()): Likewise.
+	* testsuite/29_atomics/atomic/65913.cc: New.
+
 	* testsuite/experimental/filesystem/operations/canonical.cc: Remove
 	non-deterministic part of the test.
 
