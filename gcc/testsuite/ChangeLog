@@ -1,3 +1,9 @@
+2015-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52846
+	* gfortran.dg/public_private_module_5.f90: Add module procedure
+	trigger_smod to ensure that the smod file is written.
+
 2015-09-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/copysign_1.c: New.

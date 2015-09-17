@@ -1,3 +1,16 @@
+2015-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52846
+	PR fortran/67588
+	* module.c : Add static no_module_procedures.
+	(gfc_match_submodule): Correct memory leakage caused during the
+	freeing of use_lists.
+	(mio_symbol_attribute): Reset above if module procedure is
+	encountered.
+	(gfc_dump_module): Set above and exit without writing smod file
+	if it reset.
+	* gfortran.texi : Add section on submodule support.
+
 2015-09-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67526
