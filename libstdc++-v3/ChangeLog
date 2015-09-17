@@ -1,3 +1,19 @@
+2015-09-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h
+	(_Error_formatter::_Parameter::_M_print_field): Deprecate.
+	(_Error_formatter::_Parameter::_M_print_description): Likewise.
+	(_Error_formatter::_M_format_word): Likewise.
+	(_Error_formatter::_M_print_word): Likewise.
+	(_Error_formatter::_M_print_string): Likewise.
+	(_Error_formatter::_M_get_max_length): Likewise.
+	(_Error_formatter::_M_max_length): Delete.
+	(_Error_formatter::_M_indent): Likewise.
+	(_Error_formatter::_M_column): Likewise.
+	(_Error_formatter::_M_first_line): Likewise.
+	(_Error_formatter::_M_wordwrap): Likewise.
+	* src/c++11/debug.cc: Adapt.
+
 2015-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65913
