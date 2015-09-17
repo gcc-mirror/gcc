@@ -31,6 +31,7 @@
 # include <cpuid.h>
 #endif
 
+#include <cerrno>
 #include <cstdio>
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
