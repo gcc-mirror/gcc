@@ -1,3 +1,8 @@
+2015-09-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/copysign_1.c: New.
+	* gcc.target/aarch64/copysign_2.c: New.
+
 2015-09-17  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/loop-bound-2.c: New test.
