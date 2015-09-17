@@ -1323,22 +1323,23 @@ df_lr_verify_transfer_functions (void)
 
 
 /*----------------------------------------------------------------------------
-   LIVE AND MUST-INITIALIZED REGISTERS.
+   LIVE AND MAY-INITIALIZED REGISTERS.
 
    This problem first computes the IN and OUT bitvectors for the
-   must-initialized registers problems, which is a forward problem.
-   It gives the set of registers for which we MUST have an available
-   definition on any path from the entry block to the entry/exit of
-   a basic block.  Sets generate a definition, while clobbers kill
+   may-initialized registers problems, which is a forward problem.
+   It gives the set of registers for which we MAY have an available
+   definition, i.e. for which there is an available definition on
+   at least one path from the entry block to the entry/exit of a
+   basic block.  Sets generate a definition, while clobbers kill
    a definition.
 
    In and out bitvectors are built for each basic block and are indexed by
    regnum (see df.h for details).  In and out bitvectors in struct
-   df_live_bb_info actually refers to the must-initialized problem;
+   df_live_bb_info actually refers to the may-initialized problem;
 
    Then, the in and out sets for the LIVE problem itself are computed.
    These are the logical AND of the IN and OUT sets from the LR problem
-   and the must-initialized problem.
+   and the may-initialized problem.
 ----------------------------------------------------------------------------*/
 
 /* Private data used to verify the solution for this problem.  */
@@ -1545,7 +1546,7 @@ df_live_confluence_n (edge e)
 }
 
 
-/* Transfer function for the forwards must-initialized problem.  */
+/* Transfer function for the forwards may-initialized problem.  */
 
 static bool
 df_live_transfer_function (int bb_index)
@@ -1569,7 +1570,7 @@ df_live_transfer_function (int bb_index)
 }
 
 
-/* And the LR info with the must-initialized registers, to produce the LIVE info.  */
+/* And the LR info with the may-initialized registers to produce the LIVE info.  */
 
 static void
 df_live_finalize (bitmap all_blocks)
