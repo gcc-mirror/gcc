@@ -1,5 +1,9 @@
 2015-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/65142
+	* src/c++11/random.cc (random_device::_M_getval()): Retry after short
+	reads.
+
 	* include/std/system_error (error_code::operator bool(),
 	error_condition::operator bool()): Remove redundant conditional
 	expression.
