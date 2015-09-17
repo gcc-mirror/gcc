@@ -1,3 +1,7 @@
+2015-09-17  Christian Bruel  <christian.bruel@st.com>
+
+	* config/arm/arm.md (*call_value_symbol): Fix operand for interworking.
+
 2015-09-17  Richard Henderson  <rth@redhat.com>
 
 	PR libstdc++/65913
