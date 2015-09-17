@@ -4659,7 +4659,7 @@ typedef struct label_ref_list_d
 } *label_ref_list_t;
 
 static object_allocator<label_ref_list_d> label_ref_list_d_pool
-  ("label references list", 30);
+  ("label references list");
 
 /* The SH cannot load a large constant into a register, constants have to
    come from a pc relative load.  The reference of a pc relative load

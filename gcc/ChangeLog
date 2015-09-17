@@ -1,3 +1,8 @@
+2015-09-17  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (label_ref_list_d_pool): Adjust to
+	object_allocator change.
+
 2015-09-17  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/66388
