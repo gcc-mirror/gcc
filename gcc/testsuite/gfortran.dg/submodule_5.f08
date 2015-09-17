@@ -10,6 +10,14 @@ module foo_interface
   type foo
     character(len=16), private :: byebye = "adieu, world!   "
   end type foo
+
+! This interface is required to trigger the output of an .smod file.
+! See http://j3-fortran.org/doc/meeting/207/15-209.txt
+  interface
+    integer module function trigger_smod ()
+    end function
+  end interface
+
 end module
 
 module foo_interface_brother

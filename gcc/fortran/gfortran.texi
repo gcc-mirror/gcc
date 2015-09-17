@@ -1047,6 +1047,14 @@ of @code{ISO_FORTRAN_ENV}.
 and experimental support for multiple images with the @option{-fcoarray=lib}
 flag.
 
+@item Submodules are supported. It should noted that @code{MODULEs} do not
+produce the smod file needed by the descendent @code{SUBMODULEs} unless they
+contain at least one @code{MODULE PROCEDURE} interface. The reason for this is
+that @code{SUBMODULEs} are useless without @code{MODULE PROCEDUREs}. See
+http://j3-fortran.org/doc/meeting/207/15-209.txt for a discussion and a draft
+interpretation. Adopting this interpretation has the advantage that code that
+does not use submodules does not generate smod files.
+
 @item The @code{DO CONCURRENT} construct is supported.
 
 @item The @code{BLOCK} construct is supported.
