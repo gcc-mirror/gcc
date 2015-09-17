@@ -61,6 +61,7 @@
 #include "tm_p.h"
 #include "target.h"
 #include "sched-int.h"
+#include "common/common-target.h"
 #include "debug.h"
 #include "langhooks.h"
 #include "intl.h"
@@ -3669,7 +3670,11 @@ use_return_insn (int iscond, rtx sibling)
       /* Or if there is a stack adjustment.  However, if the stack pointer
 	 is saved on the stack, we can use a pre-incrementing stack load.  */
       || !(stack_adjust == 0 || (TARGET_APCS_FRAME && frame_pointer_needed
-				 && stack_adjust == 4)))
+				 && stack_adjust == 4))
+      /* Or if the static chain register was saved above the frame, under the
+	 assumption that the stack pointer isn't saved on the stack.  */
+      || (!(TARGET_APCS_FRAME && frame_pointer_needed)
+          && arm_compute_static_chain_stack_bytes() != 0))
     return 0;
 
   saved_int_regs = offsets->saved_regs_mask;
@@ -19174,8 +19179,10 @@ static int
 arm_compute_static_chain_stack_bytes (void)
 {
   /* See the defining assertion in arm_expand_prologue.  */
-  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM
-      && IS_NESTED (arm_current_func_type ())
+  if (IS_NESTED (arm_current_func_type ())
+      && ((TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
+	  || (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	      && !df_regs_ever_live_p (LR_REGNUM)))
       && arm_r3_live_at_start_p ()
       && crtl->args.pretend_args_size == 0)
     return 4;
@@ -19269,7 +19276,6 @@ arm_compute_save_reg_mask (void)
 
   return save_reg_mask;
 }
-
 
 /* Compute a bit mask of which registers need to be
    saved on the stack for the current function.  */
@@ -21098,6 +21104,240 @@ thumb_set_frame_pointer (arm_stack_offsets *offsets)
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
+struct scratch_reg {
+  rtx reg;
+  bool saved;
+};
+
+/* Return a short-lived scratch register for use as a 2nd scratch register on
+   function entry after the registers are saved in the prologue.  This register
+   must be released by means of release_scratch_register_on_entry.  IP is not
+   considered since it is always used as the 1st scratch register if available.
+
+   REGNO1 is the index number of the 1st scratch register and LIVE_REGS is the
+   mask of live registers.  */
+
+static void
+get_scratch_register_on_entry (struct scratch_reg *sr, unsigned int regno1,
+			       unsigned long live_regs)
+{
+  int regno = -1;
+
+  sr->saved = false;
+
+  if (regno1 != LR_REGNUM && (live_regs & (1 << LR_REGNUM)) != 0)
+    regno = LR_REGNUM;
+  else
+    {
+      unsigned int i;
+
+      for (i = 4; i < 11; i++)
+	if (regno1 != i && (live_regs & (1 << i)) != 0)
+	  {
+	    regno = i;
+	    break;
+	  }
+
+      if (regno < 0)
+	{
+	  /* If IP is used as the 1st scratch register for a nested function,
+	     then either r3 wasn't available or is used to preserve IP.  */
+	  if (regno1 == IP_REGNUM && IS_NESTED (arm_current_func_type ()))
+	    regno1 = 3;
+	  regno = (regno1 == 3 ? 2 : 3);
+	  sr->saved
+	    = REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+			       regno);
+	}
+    }
+
+  sr->reg = gen_rtx_REG (SImode, regno);
+  if (sr->saved)
+    {
+      rtx addr = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
+      rtx insn = emit_set_insn (gen_frame_mem (SImode, addr), sr->reg);
+      rtx x = gen_rtx_SET (stack_pointer_rtx,
+		           plus_constant (Pmode, stack_pointer_rtx, -4));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
+    }
+}
+
+/* Release a scratch register obtained from the preceding function.  */
+
+static void
+release_scratch_register_on_entry (struct scratch_reg *sr)
+{
+  if (sr->saved)
+    {
+      rtx addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+      rtx insn = emit_set_insn (sr->reg, gen_frame_mem (SImode, addr));
+      rtx x = gen_rtx_SET (stack_pointer_rtx,
+			   plus_constant (Pmode, stack_pointer_rtx, 4));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
+    }
+}
+
+#define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
+
+#if PROBE_INTERVAL > 4096
+#error Cannot use indexed addressing mode for stack probing
+#endif
+
+/* Emit code to probe a range of stack addresses from FIRST to FIRST+SIZE,
+   inclusive.  These are offsets from the current stack pointer.  REGNO1
+   is the index number of the 1st scratch register and LIVE_REGS is the
+   mask of live registers.  */
+
+static void
+arm_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
+			    unsigned int regno1, unsigned long live_regs)
+{
+  rtx reg1 = gen_rtx_REG (Pmode, regno1);
+
+  /* See if we have a constant small number of probes to generate.  If so,
+     that's the easy case.  */
+  if (size <= PROBE_INTERVAL)
+    {
+      emit_move_insn (reg1, GEN_INT (first + PROBE_INTERVAL));
+      emit_set_insn (reg1, gen_rtx_MINUS (Pmode, stack_pointer_rtx, reg1));
+      emit_stack_probe (plus_constant (Pmode, reg1, PROBE_INTERVAL - size));
+    }
+
+  /* The run-time loop is made up of 10 insns in the generic case while the
+     compile-time loop is made up of 4+2*(n-2) insns for n # of intervals.  */
+  else if (size <= 5 * PROBE_INTERVAL)
+    {
+      HOST_WIDE_INT i, rem;
+
+      emit_move_insn (reg1, GEN_INT (first + PROBE_INTERVAL));
+      emit_set_insn (reg1, gen_rtx_MINUS (Pmode, stack_pointer_rtx, reg1));
+      emit_stack_probe (reg1);
+
+      /* Probe at FIRST + N * PROBE_INTERVAL for values of N from 2 until
+	 it exceeds SIZE.  If only two probes are needed, this will not
+	 generate any code.  Then probe at FIRST + SIZE.  */
+      for (i = 2 * PROBE_INTERVAL; i < size; i += PROBE_INTERVAL)
+	{
+	  emit_set_insn (reg1, plus_constant (Pmode, reg1, -PROBE_INTERVAL));
+	  emit_stack_probe (reg1);
+	}
+
+      rem = size - (i - PROBE_INTERVAL);
+      if (rem > 4095 || (TARGET_THUMB2 && rem > 255))
+	{
+	  emit_set_insn (reg1, plus_constant (Pmode, reg1, -PROBE_INTERVAL));
+	  emit_stack_probe (plus_constant (Pmode, reg1, PROBE_INTERVAL - rem));
+	}
+      else
+	emit_stack_probe (plus_constant (Pmode, reg1, -rem));
+    }
+
+  /* Otherwise, do the same as above, but in a loop.  Note that we must be
+     extra careful with variables wrapping around because we might be at
+     the very top (or the very bottom) of the address space and we have
+     to be able to handle this case properly; in particular, we use an
+     equality test for the loop condition.  */
+  else
+    {
+      HOST_WIDE_INT rounded_size;
+      struct scratch_reg sr;
+
+      get_scratch_register_on_entry (&sr, regno1, live_regs);
+
+      emit_move_insn (reg1, GEN_INT (first));
+
+
+      /* Step 1: round SIZE to the previous multiple of the interval.  */
+
+      rounded_size = size & -PROBE_INTERVAL;
+      emit_move_insn (sr.reg, GEN_INT (rounded_size));
+
+
+      /* Step 2: compute initial and final value of the loop counter.  */
+
+      /* TEST_ADDR = SP + FIRST.  */
+      emit_set_insn (reg1, gen_rtx_MINUS (Pmode, stack_pointer_rtx, reg1));
+
+      /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
+      emit_set_insn (sr.reg, gen_rtx_MINUS (Pmode, reg1, sr.reg));
+
+
+      /* Step 3: the loop
+
+	 while (TEST_ADDR != LAST_ADDR)
+	   {
+	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
+	     probe at TEST_ADDR
+	   }
+
+	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
+	 until it is equal to ROUNDED_SIZE.  */
+
+      emit_insn (gen_probe_stack_range (reg1, reg1, sr.reg));
+
+
+      /* Step 4: probe at FIRST + SIZE if we cannot assert at compile-time
+	 that SIZE is equal to ROUNDED_SIZE.  */
+
+      if (size != rounded_size)
+	{
+	  HOST_WIDE_INT rem = size - rounded_size;
+
+	  if (rem > 4095 || (TARGET_THUMB2 && rem > 255))
+	    {
+	      emit_set_insn (sr.reg,
+			     plus_constant (Pmode, sr.reg, -PROBE_INTERVAL));
+	      emit_stack_probe (plus_constant (Pmode, sr.reg,
+					       PROBE_INTERVAL - rem));
+	    }
+	  else
+	    emit_stack_probe (plus_constant (Pmode, sr.reg, -rem));
+	}
+
+      release_scratch_register_on_entry (&sr);
+    }
+
+  /* Make sure nothing is scheduled before we are done.  */
+  emit_insn (gen_blockage ());
+}
+
+/* Probe a range of stack addresses from REG1 to REG2 inclusive.  These are
+   absolute addresses.  */
+
+const char *
+output_probe_stack_range (rtx reg1, rtx reg2)
+{
+  static int labelno = 0;
+  char loop_lab[32];
+  rtx xops[2];
+
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
+
+   /* Test if TEST_ADDR == LAST_ADDR.  */
+  xops[0] = reg1;
+  xops[1] = reg2;
+  output_asm_insn ("cmp\t%0, %1", xops);
+
+  if (TARGET_THUMB2)
+    fputs ("\tittt\tne\n", asm_out_file);
+
+  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
+  xops[1] = GEN_INT (PROBE_INTERVAL);
+  output_asm_insn ("subne\t%0, %0, %1", xops);
+
+  /* Probe at TEST_ADDR and branch.  */
+  output_asm_insn ("strne\tr0, [%0, #0]", xops);
+  fputs ("\tbne\t", asm_out_file);
+  assemble_name_raw (asm_out_file, loop_lab);
+  fputc ('\n', asm_out_file);
+
+  return "";
+}
+
 /* Generate the prologue instructions for entry into an ARM or Thumb-2
    function.  */
 void
@@ -21112,7 +21352,9 @@ arm_expand_prologue (void)
   int saved_pretend_args = 0;
   int saved_regs = 0;
   unsigned HOST_WIDE_INT args_to_push;
+  HOST_WIDE_INT size;
   arm_stack_offsets *offsets;
+  bool clobber_ip;
 
   func_type = arm_current_func_type ();
 
@@ -21163,9 +21405,88 @@ arm_expand_prologue (void)
       emit_insn (gen_movsi (stack_pointer_rtx, r1));
     }
 
-  /* For APCS frames, if IP register is clobbered
-     when creating frame, save that register in a special
-     way.  */
+  /* The static chain register is the same as the IP register.  If it is
+     clobbered when creating the frame, we need to save and restore it.  */
+  clobber_ip = IS_NESTED (func_type)
+	       && ((TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
+		   || (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+		       && !df_regs_ever_live_p (LR_REGNUM)
+		       && arm_r3_live_at_start_p ()));
+
+  /* Find somewhere to store IP whilst the frame is being created.
+     We try the following places in order:
+
+       1. The last argument register r3 if it is available.
+       2. A slot on the stack above the frame if there are no
+	  arguments to push onto the stack.
+       3. Register r3 again, after pushing the argument registers
+	  onto the stack, if this is a varargs function.
+       4. The last slot on the stack created for the arguments to
+	  push, if this isn't a varargs function.
+
+     Note - we only need to tell the dwarf2 backend about the SP
+     adjustment in the second variant; the static chain register
+     doesn't need to be unwound, as it doesn't contain a value
+     inherited from the caller.  */
+  if (clobber_ip)
+    {
+      if (!arm_r3_live_at_start_p ())
+	insn = emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
+      else if (args_to_push == 0)
+	{
+	  rtx addr, dwarf;
+
+	  gcc_assert(arm_compute_static_chain_stack_bytes() == 4);
+	  saved_regs += 4;
+
+	  addr = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
+	  insn = emit_set_insn (gen_frame_mem (SImode, addr), ip_rtx);
+	  fp_offset = 4;
+
+	  /* Just tell the dwarf backend that we adjusted SP.  */
+	  dwarf = gen_rtx_SET (stack_pointer_rtx,
+			       plus_constant (Pmode, stack_pointer_rtx,
+					      -fp_offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+	}
+      else
+	{
+	  /* Store the args on the stack.  */
+	  if (cfun->machine->uses_anonymous_args)
+	    {
+	      insn = emit_multi_reg_push ((0xf0 >> (args_to_push / 4)) & 0xf,
+					  (0xf0 >> (args_to_push / 4)) & 0xf);
+	      emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
+	      saved_pretend_args = 1;
+	    }
+	  else
+	    {
+	      rtx addr, dwarf;
+
+	      if (args_to_push == 4)
+		addr = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
+	      else
+		addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
+							  -args_to_push));
+
+	      insn = emit_set_insn (gen_frame_mem (SImode, addr), ip_rtx);
+
+	      /* Just tell the dwarf backend that we adjusted SP.  */
+	      dwarf = gen_rtx_SET (stack_pointer_rtx,
+				   plus_constant (Pmode, stack_pointer_rtx,
+						  -args_to_push));
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+	    }
+
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  fp_offset = args_to_push;
+	  args_to_push = 0;
+	}
+    }
+
   if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
     {
       if (IS_INTERRUPT (func_type))
@@ -21186,86 +21507,6 @@ arm_expand_prologue (void)
 
 	     Anyway this instruction is not really part of the stack
 	     frame creation although it is part of the prologue.  */
-	}
-      else if (IS_NESTED (func_type))
-	{
-	  /* The static chain register is the same as the IP register
-	     used as a scratch register during stack frame creation.
-	     To get around this need to find somewhere to store IP
-	     whilst the frame is being created.  We try the following
-	     places in order:
-
-	       1. The last argument register r3 if it is available.
-	       2. A slot on the stack above the frame if there are no
-		  arguments to push onto the stack.
-	       3. Register r3 again, after pushing the argument registers
-	          onto the stack, if this is a varargs function.
-	       4. The last slot on the stack created for the arguments to
-		  push, if this isn't a varargs function.
-
-	     Note - we only need to tell the dwarf2 backend about the SP
-	     adjustment in the second variant; the static chain register
-	     doesn't need to be unwound, as it doesn't contain a value
-	     inherited from the caller.  */
-
-	  if (!arm_r3_live_at_start_p ())
-	    insn = emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
-	  else if (args_to_push == 0)
-	    {
-	      rtx addr, dwarf;
-
-	      gcc_assert(arm_compute_static_chain_stack_bytes() == 4);
-	      saved_regs += 4;
-
-	      addr = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
-	      insn = emit_set_insn (gen_frame_mem (SImode, addr), ip_rtx);
-	      fp_offset = 4;
-
-	      /* Just tell the dwarf backend that we adjusted SP.  */
-	      dwarf = gen_rtx_SET (stack_pointer_rtx,
-				   plus_constant (Pmode, stack_pointer_rtx,
-						  -fp_offset));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
-	    }
-	  else
-	    {
-	      /* Store the args on the stack.  */
-	      if (cfun->machine->uses_anonymous_args)
-		{
-		  insn
-		    = emit_multi_reg_push ((0xf0 >> (args_to_push / 4)) & 0xf,
-					   (0xf0 >> (args_to_push / 4)) & 0xf);
-		  emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
-		  saved_pretend_args = 1;
-		}
-	      else
-		{
-		  rtx addr, dwarf;
-
-		  if (args_to_push == 4)
-		    addr = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
-		  else
-		    addr
-		      = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx,
-					    plus_constant (Pmode,
-							   stack_pointer_rtx,
-							   -args_to_push));
-
-		  insn = emit_set_insn (gen_frame_mem (SImode, addr), ip_rtx);
-
-		  /* Just tell the dwarf backend that we adjusted SP.  */
-		  dwarf
-		    = gen_rtx_SET (stack_pointer_rtx,
-				   plus_constant (Pmode, stack_pointer_rtx,
-						  -args_to_push));
-		  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
-		}
-
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      fp_offset = args_to_push;
-	      args_to_push = 0;
-	    }
 	}
 
       insn = emit_set_insn (ip_rtx,
@@ -21364,34 +21605,60 @@ arm_expand_prologue (void)
 	  insn = GEN_INT (-(4 + args_to_push + fp_offset));
 	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx, ip_rtx, insn));
 	  RTX_FRAME_RELATED_P (insn) = 1;
-
-	  if (IS_NESTED (func_type))
-	    {
-	      /* Recover the static chain register.  */
-	      if (!arm_r3_live_at_start_p () || saved_pretend_args)
-		insn = gen_rtx_REG (SImode, 3);
-	      else
-		{
-		  insn = plus_constant (Pmode, hard_frame_pointer_rtx, 4);
-		  insn = gen_frame_mem (SImode, insn);
-		}
-	      emit_set_insn (ip_rtx, insn);
-	      /* Add a USE to stop propagate_one_insn() from barfing.  */
-	      emit_insn (gen_force_register_use (ip_rtx));
-	    }
 	}
       else
 	{
-	  insn = GEN_INT (saved_regs - 4);
+	  insn = GEN_INT (saved_regs - (4 + fp_offset));
 	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
 					stack_pointer_rtx, insn));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
 
+  size = offsets->outgoing_args - offsets->saved_args;
   if (flag_stack_usage_info)
-    current_function_static_stack_size
-      = offsets->outgoing_args - offsets->saved_args;
+    current_function_static_stack_size = size;
+
+  /* If this isn't an interrupt service routine and we have a frame, then do
+     stack checking.  We use IP as the first scratch register, except for the
+     non-APCS nested functions if LR or r3 are available (see clobber_ip).  */
+  if (!IS_INTERRUPT (func_type)
+      && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+    {
+      unsigned int regno;
+
+      if (!IS_NESTED (func_type) || clobber_ip)
+	regno = IP_REGNUM;
+      else if (df_regs_ever_live_p (LR_REGNUM))
+	regno = LR_REGNUM;
+      else
+	regno = 3;
+
+      if (crtl->is_leaf && !cfun->calls_alloca)
+	{
+	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
+	    arm_emit_probe_stack_range (STACK_CHECK_PROTECT,
+					size - STACK_CHECK_PROTECT,
+					regno, live_regs_mask);
+	}
+      else if (size > 0)
+	arm_emit_probe_stack_range (STACK_CHECK_PROTECT, size,
+				    regno, live_regs_mask);
+    }
+
+  /* Recover the static chain register.  */
+  if (clobber_ip)
+    {
+      if (!arm_r3_live_at_start_p () || saved_pretend_args)
+	insn = gen_rtx_REG (SImode, 3);
+      else
+	{
+	  insn = plus_constant (Pmode, hard_frame_pointer_rtx, 4);
+	  insn = gen_frame_mem (SImode, insn);
+	}
+      emit_set_insn (ip_rtx, insn);
+      emit_insn (gen_force_register_use (ip_rtx));
+    }
 
   if (offsets->outgoing_args != offsets->saved_args + saved_regs)
     {
@@ -24370,6 +24637,7 @@ thumb1_expand_prologue (void)
   rtx_insn *insn;
 
   HOST_WIDE_INT amount;
+  HOST_WIDE_INT size;
   arm_stack_offsets *offsets;
   unsigned long func_type;
   int regno;
@@ -24604,9 +24872,13 @@ thumb1_expand_prologue (void)
     emit_move_insn (gen_rtx_REG (Pmode, ARM_HARD_FRAME_POINTER_REGNUM),
 		    stack_pointer_rtx);
 
+  size = offsets->outgoing_args - offsets->saved_args;
   if (flag_stack_usage_info)
-    current_function_static_stack_size
-      = offsets->outgoing_args - offsets->saved_args;
+    current_function_static_stack_size = size;
+
+  /* If we have a frame, then do stack checking.  FIXME: not implemented.  */
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && size)
+    sorry ("-fstack-check=specific for THUMB1");
 
   amount = offsets->outgoing_args - offsets->saved_regs;
   amount -= 4 * thumb1_extra_regs_pushed (offsets, true);
@@ -25177,14 +25449,16 @@ arm_expand_epilogue (bool really_return)
         return;
     }
 
-  if (crtl->args.pretend_args_size)
+  amount
+    = crtl->args.pretend_args_size + arm_compute_static_chain_stack_bytes();
+  if (amount)
     {
       int i, j;
       rtx dwarf = NULL_RTX;
       rtx_insn *tmp =
 	emit_insn (gen_addsi3 (stack_pointer_rtx,
 			       stack_pointer_rtx,
-			       GEN_INT (crtl->args.pretend_args_size)));
+			       GEN_INT (amount)));
 
       RTX_FRAME_RELATED_P (tmp) = 1;
 
@@ -25203,7 +25477,7 @@ arm_expand_epilogue (bool really_return)
 	      }
 	  REG_NOTES (tmp) = dwarf;
 	}
-      arm_add_cfa_adjust_cfa_note (tmp, crtl->args.pretend_args_size,
+      arm_add_cfa_adjust_cfa_note (tmp, amount,
 				   stack_pointer_rtx, stack_pointer_rtx);
     }
 
@@ -27212,9 +27486,45 @@ arm_order_regs_for_local_alloc (void)
 bool
 arm_frame_pointer_required (void)
 {
-  return (cfun->has_nonlocal_label
-          || SUBTARGET_FRAME_POINTER_REQUIRED
-          || (TARGET_ARM && TARGET_APCS_FRAME && ! leaf_function_p ()));
+  if (SUBTARGET_FRAME_POINTER_REQUIRED)
+    return true;
+
+  /* If the function receives nonlocal gotos, it needs to save the frame
+     pointer in the nonlocal_goto_save_area object.  */
+  if (cfun->has_nonlocal_label)
+    return true;
+
+  /* The frame pointer is required for non-leaf APCS frames.  */
+  if (TARGET_ARM && TARGET_APCS_FRAME && !leaf_function_p ())
+    return true;
+
+  /* If we are probing the stack in the prologue, we will have a faulting
+     instruction prior to the stack adjustment and this requires a frame
+     pointer if we want to catch the exception using the EABI unwinder.  */
+  if (!IS_INTERRUPT (arm_current_func_type ())
+      && flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      && arm_except_unwind_info (&global_options) == UI_TARGET
+      && cfun->can_throw_non_call_exceptions)
+    {
+      HOST_WIDE_INT size = get_frame_size ();
+
+      /* That's irrelevant if there is no stack adjustment.  */
+      if (size <= 0)
+	return false;
+
+      /* That's relevant only if there is a stack probe.  */
+      if (crtl->is_leaf && !cfun->calls_alloca)
+	{
+	  /* We don't have the final size of the frame so adjust.  */
+	  size += 32 * UNITS_PER_WORD;
+	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
+	    return true;
+	}
+      else
+	return true;
+    }
+
+  return false;
 }
 
 /* Only thumb1 can't support conditional execution, so return true if
