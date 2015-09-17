@@ -1,3 +1,7 @@
+2015-09-17  Catherine Moore  <clm@codesourcery.com>
+
+	* src/c++11/debug.cc: Include <cstdio>.
+
 2015-09-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* src/c++11/random.cc: Include <cerrno>.

@@ -32,6 +32,7 @@
 #include <debug/safe_local_iterator.h>
 
 #include <cassert>
+#include <cstdio>
 
 #include <algorithm> // for std::min
 #include <functional> // for _Hash_impl
