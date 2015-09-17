@@ -1,3 +1,39 @@
+2015-09-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (OBJS): Add optabs-libfuncs.o, optabs-query.o
+	and optabs-tree.o.
+	(GTFILES): Replace optabs.c with optabs-libfunc.c.
+	* genopinit.c (main): Add an include guard to insn-opinit.h.
+	Protect the rtx_code parts with NUM_RTX_CODE.
+	* optabs.h: Split parts out to...
+	* optabs-libfuncs.h, optabs-query.h, optabs-tree.h: ...these
+	new files.
+	* optabs.c: Split parts out to...
+	* optabs-libfuncs.c, optabs-query.c, optabs-tree.c: ...these
+	new files.
+	* cilk-common.c: Include optabs-query.h rather than optabs.h.
+	* fold-const.c: Likewise.
+	* target-globals.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-math-opts.c: Include optabs-tree.h rather than
+	optabs.h.  Remove unncessary include files.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* toplev.c: Include optabs-query.h and optabs-libfuncs.h
+	rather than optabs.h.
+	* expr.c: Include optabs-tree.h.
+	* function.c: Likewise.
+
 2015-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/65958

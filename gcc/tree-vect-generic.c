@@ -40,19 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic.h"
 #include "target.h"
-
-/* Need to include rtl.h, expr.h, etc. for optabs.  */
-#include "insn-config.h"
 #include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "varasm.h"
-#include "stmt.h"
-#include "expr.h"
 #include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-tree.h"
 
 
 static void expand_vector_operations_1 (gimple_stmt_iterator *);

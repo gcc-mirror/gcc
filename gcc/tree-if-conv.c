@@ -120,7 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-query.h"
 #include "tree-hash-traits.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */

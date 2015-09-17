@@ -52,17 +52,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    type in the GIMPLE type system that is language-independent?  */
 #include "langhooks.h"
 
-/* Need to include expr.h and optabs.h for lshift_cheap_p.  */
-#include "insn-config.h"
-#include "expmed.h"
-#include "dojump.h"
-#include "explow.h"
-#include "calls.h"
-#include "emit-rtl.h"
-#include "stmt.h"
-#include "expr.h"
 #include "insn-codes.h"
-#include "optabs.h"
+#include "optabs-tree.h"
 
 /* Maximum number of case bit tests.
    FIXME: This should be derived from PARAM_CASE_VALUES_THRESHOLD and

@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
 #include "insn-codes.h"
+#include "optabs-tree.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"

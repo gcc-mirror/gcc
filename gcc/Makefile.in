@@ -1350,6 +1350,9 @@ OBJS = \
 	modulo-sched.o \
 	omp-low.o \
 	optabs.o \
+	optabs-libfuncs.o \
+	optabs-query.o \
+	optabs-tree.o \
 	options-save.o \
 	opts-global.o \
 	passes.o \
@@ -2330,7 +2333,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/expr.h \
   $(srcdir)/function.c $(srcdir)/except.c \
   $(srcdir)/gcse.c $(srcdir)/godump.c \
-  $(srcdir)/lists.c $(srcdir)/optabs.c \
+  $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \
   $(srcdir)/reg-stack.c $(srcdir)/cfgrtl.c \
   $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
