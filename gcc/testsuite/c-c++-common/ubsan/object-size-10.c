@@ -2,8 +2,8 @@
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O2" } } */
 /* { dg-options "-fsanitize=undefined" } */
 
-static char a[128];
-static int b[128];
+static char a[128] __attribute__ ((aligned(4096)));
+static int b[128] __attribute__ ((aligned(4096)));
 
 __attribute__ ((noinline, noclone)) int
 fn1 (int i)

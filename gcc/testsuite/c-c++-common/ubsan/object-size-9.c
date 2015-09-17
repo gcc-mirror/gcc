@@ -11,7 +11,7 @@ struct C { C () : d("abcdefg"), e(1) {} C (const C &x) { __builtin_memcpy (d, x.
 #endif
 struct U { int a : 5; int b : 19; int c : 8; };
 struct S { struct U d[10]; };
-struct S s;
+struct S s __attribute__ ((aligned(4096)));
 
 int
 f1 (struct T x, int i)
@@ -27,7 +27,7 @@ f1 (struct T x, int i)
 /* { dg-output "\[^\n\r]*\\^\[^\n\r]*(\n|\r\n|\r)" } */
 
 #ifdef __cplusplus
-struct C
+static struct C
 f2 (int i)
 {
   struct C x;
@@ -41,7 +41,7 @@ f2 (int i)
 /* { dg-output "\[^\n\r]*\[^\n\r]*(\n|\r\n|\r)" { target { c++ } } } */
 /* { dg-output "\[^\n\r]*\\^\[^\n\r]*(\n|\r\n|\r)" { target { c++ } } } */
 
-struct C
+static struct C
 f3 (int i)
 {
   struct C x;
