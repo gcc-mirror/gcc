@@ -132,6 +132,20 @@ static void eliminate_redundant_computations (gimple_stmt_iterator *);
 static void record_equivalences_from_stmt (gimple, int);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 
+/* Free the edge_info data attached to E, if it exists.  */
+
+static void
+free_edge_info (edge e)
+{
+  struct edge_info *edge_info = (struct edge_info *)e->aux;
+
+  if (edge_info)
+    {
+      edge_info->cond_equivalences.release ();
+      free (edge_info);
+    }
+}
+
 /* Allocate an EDGE_INFO for edge E and attach it to E.
    Return the new EDGE_INFO structure.  */
 
@@ -139,6 +153,9 @@ static struct edge_info *
 allocate_edge_info (edge e)
 {
   struct edge_info *edge_info;
+
+  /* Free the old one, if it exists.  */
+  free_edge_info (e);
 
   edge_info = XCNEW (struct edge_info);
 
@@ -163,14 +180,8 @@ free_all_edge_infos (void)
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
         {
-	 struct edge_info *edge_info = (struct edge_info *) e->aux;
-
-	  if (edge_info)
-	    {
-	      edge_info->cond_equivalences.release ();
-	      free (edge_info);
-	      e->aux = NULL;
-	    }
+	  free_edge_info (e);
+	  e->aux = NULL;
 	}
     }
 }
@@ -574,6 +585,16 @@ pass_dominator::execute (function *fun)
      a single loop.  */
   mark_dfs_back_edges ();
 
+  /* We want to create the edge info structures before the dominator walk
+     so that they'll be in place for the jump threader, particularly when
+     threading through a join block.
+
+     The conditions will be lazily updated with global equivalences as
+     we reach them during the dominator walk.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    record_edge_info (bb);
+
   /* Recursively walk the dominator tree optimizing statements.  */
   dom_opt_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
 
@@ -873,7 +894,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
   ::thread_across_edge (m_dummy_cond, e, false,
-		        const_and_copies,
+		        const_and_copies, avail_exprs_stack,
 		        simplify_stmt_for_jump_threading);
 
   /* And restore the various tables to their state before
