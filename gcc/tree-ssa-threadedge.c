@@ -1358,6 +1358,7 @@ thread_across_edge (gcond *dummy_cond,
 		    edge e,
 		    bool handle_dominating_asserts,
 		    const_and_copies *const_and_copies,
+		    avail_exprs_stack *avail_exprs_stack,
 		    tree (*simplify) (gimple, gimple))
 {
   bitmap visited = BITMAP_ALLOC (NULL);
@@ -1442,6 +1443,8 @@ thread_across_edge (gcond *dummy_cond,
 	/* Push a fresh marker so we can unwind the equivalences created
 	   for each of E->dest's successors.  */
 	const_and_copies->push_marker ();
+	if (avail_exprs_stack)
+	  avail_exprs_stack->push_marker ();
      
 	/* Avoid threading to any block we have already visited.  */
 	bitmap_clear (visited);
@@ -1493,6 +1496,8 @@ thread_across_edge (gcond *dummy_cond,
 	  }
 
 	/* And unwind the equivalence table.  */
+	if (avail_exprs_stack)
+	  avail_exprs_stack->pop_to_marker ();
 	const_and_copies->pop_to_marker ();
       }
     BITMAP_FREE (visited);

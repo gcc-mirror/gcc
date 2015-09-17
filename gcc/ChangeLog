@@ -1,3 +1,18 @@
+2015-09-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* tree-ssa-dom.c (free_edge_info): Factored out of free_all_edge_infos.
+	(free_all_edge_infos): Use it.
+	(allocate_edge_info): Free preexisting edge info data.
+	(pass_dominator::execute): Set up initial edge info structures.
+	(dom_opt_dom_walker::thread_across_edge): Pass avail_expr_stack to
+	thread_across_edge.
+	* tree-ssa-threadedge.c (thread_across_edge): Accept new argument.  If
+	non-null, then push/pop markers appropriately.
+	* tree-ssa-threadedge.h (thread_across_edge): Update prototype.
+	* tree-vrp.c (identify_jump_threads): Pass NULL for new argument to
+	thread-across_edge.
+
 2015-09-16  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/ft32.c Fix the memory address space predicate.
