@@ -1,3 +1,7 @@
+2015-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/arm/stack-checking.c: New test.
+
 2015-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52846

@@ -8259,6 +8259,30 @@
    (set_attr "type" "block")]
 )
 
+(define_insn "probe_stack"
+  [(set (match_operand 0 "memory_operand" "=m")
+        (unspec [(const_int 0)] UNSPEC_PROBE_STACK))]
+  "TARGET_32BIT"
+{
+  return "str%?\\tr0, %0";
+}
+  [(set_attr "type" "store1")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "probe_stack_range"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "0")
+			     (match_operand:SI 2 "register_operand" "r")]
+			     UNSPEC_PROBE_STACK_RANGE))]
+  "TARGET_32BIT"
+{
+  return output_probe_stack_range (operands[0], operands[2]);
+}
+  [(set_attr "type" "multiple")
+   (set_attr "conds" "clob")]
+)
+
 (define_expand "casesi"
   [(match_operand:SI 0 "s_register_operand" "")	; index to jump on
    (match_operand:SI 1 "const_int_operand" "")	; lower bound

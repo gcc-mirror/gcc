@@ -1,3 +1,32 @@
+2015-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/65958
+	* config/arm/linux-elf.h (STACK_CHECK_STATIC_BUILTIN): Define.
+	* config/arm/arm-protos.h (output_probe_stack_range): Declare.
+	* config/arm/arm.c: Include common/common-target.h.
+	(use_return_insn): Return 0 if the static chain register was saved
+	above a non-APCS frame.
+	(arm_compute_static_chain_stack_bytes): Adjust for stack checking.
+	(struct scratch_reg): New.
+	(get_scratch_register_on_entry): New function.
+	(release_scratch_register_on_entry): Likewise.
+	(arm_emit_probe_stack_range): Likewise.
+	(output_probe_stack_range): Likewise.
+	(arm_expand_prologue): Factor out code dealing with the IP register
+	for nested function and adjust it for stack checking.
+	Invoke arm_emit_probe_stack_range if static builtin stack checking
+	is enabled.
+	(thumb1_expand_prologue): Sorry out if static builtin stack checking
+	is enabled.
+	(arm_expand_epilogue): Add the saved static chain register, if any, to
+	the amount of pre-pushed registers to pop.
+	(arm_frame_pointer_required): Return true if static stack checking is
+	enabled and we want to catch the exception with the EABI unwinder.
+	* config/arm/unspecs.md (UNSPEC_PROBE_STACK): New constant.
+	(UNSPEC_PROBE_STACK_RANGE): Likewise.
+	* config/arm/arm.md (probe_stack): New insn.
+	(probe_stack_range): Likewise.
+
 2015-09-17  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (parser::parse_expr): Improve error message
