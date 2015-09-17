@@ -1,3 +1,9 @@
+2015-09-17  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/loop-bound-2.c: New test.
+	* gcc.dg/tree-ssa/loop-bound-4.c: New test.
+	* gcc.dg/tree-ssa/loop-bound-6.c: New test.
+
 2015-09-16  John Marino  <gnugcc@marino.st>
 
 	* gfortran.dg/read_dir.f90: XFAIL this testcase on DragonFly.

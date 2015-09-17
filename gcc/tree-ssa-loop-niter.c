@@ -1926,7 +1926,7 @@ expand_simple_operations (tree expr, tree stop)
    expression (or EXPR unchanged, if no simplification was possible).  */
 
 static tree
-tree_simplify_using_condition_1 (tree cond, tree expr)
+tree_simplify_using_condition_1 (tree cond, tree expr, tree stop)
 {
   bool changed;
   tree e, te, e0, e1, e2, notcond;
@@ -1941,17 +1941,17 @@ tree_simplify_using_condition_1 (tree cond, tree expr)
     {
       changed = false;
 
-      e0 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 0));
+      e0 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 0), stop);
       if (TREE_OPERAND (expr, 0) != e0)
 	changed = true;
 
-      e1 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 1));
+      e1 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 1), stop);
       if (TREE_OPERAND (expr, 1) != e1)
 	changed = true;
 
       if (code == COND_EXPR)
 	{
-	  e2 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 2));
+	  e2 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 2), stop);
 	  if (TREE_OPERAND (expr, 2) != e2)
 	    changed = true;
 	}
@@ -2014,7 +2014,7 @@ tree_simplify_using_condition_1 (tree cond, tree expr)
 	return boolean_true_node;
     }
 
-  te = expand_simple_operations (expr);
+  te = expand_simple_operations (expr, stop);
 
   /* Check whether COND ==> EXPR.  */
   notcond = invert_truthvalue (cond);
@@ -2038,19 +2038,19 @@ tree_simplify_using_condition_1 (tree cond, tree expr)
    the loop do not cause us to fail.  */
 
 static tree
-tree_simplify_using_condition (tree cond, tree expr)
+tree_simplify_using_condition (tree cond, tree expr, tree stop)
 {
-  cond = expand_simple_operations (cond);
+  cond = expand_simple_operations (cond, stop);
 
-  return tree_simplify_using_condition_1 (cond, expr);
+  return tree_simplify_using_condition_1 (cond, expr, stop);
 }
 
 /* Tries to simplify EXPR using the conditions on entry to LOOP.
    Returns the simplified expression (or EXPR unchanged, if no
-   simplification was possible).*/
+   simplification was possible).  */
 
-static tree
-simplify_using_initial_conditions (struct loop *loop, tree expr)
+tree
+simplify_using_initial_conditions (struct loop *loop, tree expr, tree stop)
 {
   edge e;
   basic_block bb;
@@ -2082,7 +2082,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
 			  gimple_cond_rhs (stmt));
       if (e->flags & EDGE_FALSE_VALUE)
 	cond = invert_truthvalue (cond);
-      expr = tree_simplify_using_condition (cond, expr);
+      expr = tree_simplify_using_condition (cond, expr, stop);
       /* Break if EXPR is simplified to const values.  */
       if (expr && (integer_zerop (expr) || integer_nonzerop (expr)))
 	break;
@@ -4114,137 +4114,68 @@ loop_exits_before_overflow (tree base, tree step,
      help of analyzed loop control IV.  This is done only for IVs with
      constant step because otherwise we don't have the information.  */
   if (TREE_CODE (step) == INTEGER_CST)
-    for (civ = loop->control_ivs; civ; civ = civ->next)
-      {
-	enum tree_code code;
-	tree stepped, extreme, civ_type = TREE_TYPE (civ->step);
+    {
+      tree stop = (TREE_CODE (base) == SSA_NAME) ? base : NULL;
 
-	/* Have to consider type difference because operand_equal_p ignores
-	   that for constants.  */
-	if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (civ_type)
-	    || element_precision (type) != element_precision (civ_type))
-	  continue;
+      for (civ = loop->control_ivs; civ; civ = civ->next)
+	{
+	  enum tree_code code;
+	  tree stepped, extreme, civ_type = TREE_TYPE (civ->step);
 
-	/* Only consider control IV with same step.  */
-	if (!operand_equal_p (step, civ->step, 0))
-	  continue;
-
-	/* Done proving if this is a no-overflow control IV.  */
-	if (operand_equal_p (base, civ->base, 0))
-	  return true;
-
-	/* If this is a before stepping control IV, in other words, we have
-
-	     {civ_base, step} = {base + step, step}
-
-	   Because civ {base + step, step} doesn't overflow during loop
-	   iterations, {base, step} will not overflow if we can prove the
-	   operation "base + step" does not overflow.  Specifically, we try
-	   to prove below conditions are satisfied:
-
-	     base <= UPPER_BOUND (type) - step  ;;step > 0
-	     base >= LOWER_BOUND (type) - step  ;;step < 0
-
-	   by proving the reverse conditions are false using loop's initial
-	   condition.  */
-	if (POINTER_TYPE_P (TREE_TYPE (base)))
-	  code = POINTER_PLUS_EXPR;
-	else
-	  code = PLUS_EXPR;
-
-	stepped = fold_build2 (code, TREE_TYPE (base), base, step);
-	if (operand_equal_p (stepped, civ->base, 0))
-	  {
-	    if (tree_int_cst_sign_bit (step))
-	      {
-		code = LT_EXPR;
-		extreme = lower_bound_in_type (type, type);
-	      }
-	    else
-	      {
-		code = GT_EXPR;
-		extreme = upper_bound_in_type (type, type);
-	      }
-	    extreme = fold_build2 (MINUS_EXPR, type, extreme, step);
-	    e = fold_build2 (code, boolean_type_node, base, extreme);
-	    e = simplify_using_initial_conditions (loop, e);
-	    if (integer_zerop (e))
-	      return true;
-
+	  /* Have to consider type difference because operand_equal_p ignores
+	     that for constants.  */
+	  if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (civ_type)
+	      || element_precision (type) != element_precision (civ_type))
 	    continue;
-	  }
 
-	/* Similar to above, only in this case we have:
+	  /* Only consider control IV with same step.  */
+	  if (!operand_equal_p (step, civ->step, 0))
+	    continue;
 
-	     {civ_base, step} = {(signed T)((unsigned T)base + step), step}
-	     && TREE_TYPE (civ_base) = signed T.
+	  /* Done proving if this is a no-overflow control IV.  */
+	  if (operand_equal_p (base, civ->base, 0))
+	    return true;
 
-	   We prove that below condition is satisfied:
+	  /* If this is a before stepping control IV, in other words, we have
 
-	     (signed T)((unsigned T)base + step)
-	       == (signed T)(unsigned T)base + step
-	       == base + step
+	       {civ_base, step} = {base + step, step}
 
-	   because of exact the same reason as above.  This also proves
-	   there is no overflow in the operation "base + step", thus the
-	   induction variable {base, step} during loop iterations.
+	     Because civ {base + step, step} doesn't overflow during loop
+	     iterations, {base, step} will not overflow if we can prove the
+	     operation "base + step" does not overflow.  Specifically, we try
+	     to prove below conditions are satisfied:
 
-	   This is necessary to handle cases as below:
+	       base <= UPPER_BOUND (type) - step  ;;step > 0
+	       base >= LOWER_BOUND (type) - step  ;;step < 0
 
-	     int foo (int *a, signed char s, signed char l)
-	       {
-		 signed char i;
-		 for (i = s; i < l; i++)
-		   a[i] = 0;
-		 return 0;
-	       }
+	     by proving the reverse conditions are false using loop's initial
+	     condition.  */
+	  if (POINTER_TYPE_P (TREE_TYPE (base)))
+	    code = POINTER_PLUS_EXPR;
+	  else
+	    code = PLUS_EXPR;
 
-	   The variable I is firstly converted to type unsigned char,
-	   incremented, then converted back to type signed char.  */
-	if (!CONVERT_EXPR_P (civ->base) || TREE_TYPE (civ->base) != type)
-	  continue;
-	e = TREE_OPERAND (civ->base, 0);
-	if (TREE_CODE (e) != PLUS_EXPR
-	    || TREE_CODE (TREE_OPERAND (e, 1)) != INTEGER_CST
-	    || !operand_equal_p (step,
-				 fold_convert (type,
-					       TREE_OPERAND (e, 1)), 0))
-	  continue;
-	e = TREE_OPERAND (e, 0);
-	if (!CONVERT_EXPR_P (e) || !operand_equal_p (e, unsigned_base, 0))
-	  continue;
-	e = TREE_OPERAND (e, 0);
-	/* It may still be possible to prove no overflow even if condition
-	   "operand_equal_p (e, base, 0)" isn't satisfied here, like below
-	   example:
-
-	     e             : ssa_var                 ; unsigned long type
-	     base          : (int) ssa_var
-	     unsigned_base : (unsigned int) ssa_var
-
-	   Unfortunately this is a rare case observed during GCC profiled
-	   bootstrap.  See PR66638 for more information.
-
-	   For now, we just skip the possibility.  */
-	if (!operand_equal_p (e, base, 0))
-	  continue;
-
-	if (tree_int_cst_sign_bit (step))
-	  {
-	    code = LT_EXPR;
-	    extreme = lower_bound_in_type (type, type);
-	  }
-	else
-	  {
-	    code = GT_EXPR;
-	    extreme = upper_bound_in_type (type, type);
-	  }
-	extreme = fold_build2 (MINUS_EXPR, type, extreme, step);
-	e = fold_build2 (code, boolean_type_node, base, extreme);
-	e = simplify_using_initial_conditions (loop, e);
-	if (integer_zerop (e))
-	  return true;
-      }
+	  stepped = fold_build2 (code, TREE_TYPE (base), base, step);
+	  if (operand_equal_p (stepped, civ->base, 0))
+	    {
+	      if (tree_int_cst_sign_bit (step))
+		{
+		  code = LT_EXPR;
+		  extreme = lower_bound_in_type (type, type);
+		}
+	      else
+		{
+		  code = GT_EXPR;
+		  extreme = upper_bound_in_type (type, type);
+		}
+	      extreme = fold_build2 (MINUS_EXPR, type, extreme, step);
+	      e = fold_build2 (code, boolean_type_node, base, extreme);
+	      e = simplify_using_initial_conditions (loop, e, stop);
+	      if (integer_zerop (e))
+		return true;
+	    }
+        }
+    }
 
   return false;
 }
