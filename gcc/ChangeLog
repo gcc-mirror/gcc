@@ -1,3 +1,16 @@
+2015-09-17  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline:
+	2015-08-18  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67222
+	* gimple-low.c (lower_stmt): Don't lower BUILT_IN_POSIX_MEMALIGN
+	if the call isn't valid.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Check builtins using
+	gimple_call_builtin_p.
+	(call_may_clobber_ref_p_1): Likewise.
+	(stmt_kills_ref_p): Likewise.
+
 2015-09-12  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_move_double): Enhance to handle HIGH

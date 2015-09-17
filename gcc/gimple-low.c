@@ -361,7 +361,8 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 		return;
 	      }
 	    else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_POSIX_MEMALIGN
-		     && flag_tree_bit_ccp)
+		     && flag_tree_bit_ccp
+		     && gimple_builtin_call_types_compatible_p (stmt, decl))
 	      {
 		lower_builtin_posix_memalign (gsi);
 		return;

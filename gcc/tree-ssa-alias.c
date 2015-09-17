@@ -1570,7 +1570,7 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref)
      escape points.  See tree-ssa-structalias.c:find_func_aliases
      for the list of builtins we might need to handle here.  */
   if (callee != NULL_TREE
-      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (callee))
       {
 	/* All the following functions read memory pointed to by
@@ -1976,7 +1976,7 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
      escape points.  See tree-ssa-structalias.c:find_func_aliases
      for the list of builtins we might need to handle here.  */
   if (callee != NULL_TREE
-      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (callee))
       {
 	/* All the following functions clobber memory pointed to by
@@ -2376,7 +2376,7 @@ stmt_kills_ref_p (gimple stmt, ao_ref *ref)
     {
       tree callee = gimple_call_fndecl (stmt);
       if (callee != NULL_TREE
-	  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+	  && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
 	  case BUILT_IN_FREE:

@@ -1,3 +1,11 @@
+2015-09-17  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline:
+	2015-08-18  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/67222
+	* gcc.dg/torture/pr67222.c: New test.
+
 2015-09-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/pie-link.c: Add -pie to dg-options.
