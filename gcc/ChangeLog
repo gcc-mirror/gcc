@@ -1,3 +1,11 @@
+2015-09-17  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (rest_of_decl_compilation): Always call early_global_decl
+	debug hook when we created a varpool node.
+	* dwarf2out.c (dwarf2out_late_global_decl): When in LTO call
+	dwarf2out_early_global_decl, when not just add location or
+	value attributes to existing DIEs.
+
 2015-09-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md (copysigndf3): New.

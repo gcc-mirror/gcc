@@ -21626,14 +21626,20 @@ dwarf2out_early_global_decl (tree decl)
 static void
 dwarf2out_late_global_decl (tree decl)
 {
-  /* Output any global decls we missed or fill-in any location
-     information we were unable to determine on the first pass.
+  /* We have to generate early debug late for LTO.  */
+  if (in_lto_p)
+    dwarf2out_early_global_decl (decl);
 
-     Skip over functions because they were handled by the
-     debug_hooks->function_decl() call in rest_of_handle_final.  */
-  if ((TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
+    /* Fill-in any location information we were unable to determine
+       on the first pass.  */
+  if (TREE_CODE (decl) == VAR_DECL
       && !POINTER_BOUNDS_P (decl))
-    dwarf2out_decl (decl);
+    {
+      dw_die_ref die = lookup_decl_die (decl);
+      if (die)
+	add_location_or_const_value_attribute (die, decl, false,
+					       DW_AT_location);
+    }
 }
 
 /* Output debug information for type decl DECL.  Called from toplev.c

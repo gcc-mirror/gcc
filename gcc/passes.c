@@ -318,7 +318,17 @@ rest_of_decl_compilation (tree decl,
       && !decl_function_context (decl)
       && !current_function_decl
       && DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
-      && !decl_type_context (decl)
+      && (!decl_type_context (decl)
+	  /* If we created a varpool node for the decl make sure to
+	     call early_global_decl.  Otherwise we miss changes
+	     introduced by member definitions like
+		struct A { static int staticdatamember; };
+		int A::staticdatamember;
+	     and thus have incomplete early debug and late debug
+	     called from varpool node removal fails to handle it
+	     properly.  */
+	  || (TREE_CODE (decl) == VAR_DECL
+	      && TREE_STATIC (decl) && !DECL_EXTERNAL (decl)))
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
       && !seen_error ())
