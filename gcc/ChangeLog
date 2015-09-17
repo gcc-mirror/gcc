@@ -1,5 +1,21 @@
 2015-09-17  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/66388
+	* tree-ssa-loop-ivopts.c (struct iv, iv_cand, ivopts_data): New
+	fields.
+	(dump_iv): Dump no_overflow information.
+	(alloc_iv): Initialize new field for struct iv.
+	(mark_bivs): Count number of no_overflow bivs.
+	(find_deriving_biv_for_expr, record_biv_for_address_use): New
+	functions.
+	(idx_find_step): Call new functions above.
+	(add_candidate_1, add_candidate): New paramter.
+	(add_iv_candidate_for_biv): Add sizetype cand for BIV.
+	(get_computation_aff): Simplify convertion of cand for BIV.
+	(get_computation_cost_at): Step cand's base if necessary.
+
+2015-09-17  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-niter.c (tree_simplify_using_condition_1): New
 	parameter.
 	(tree_simplify_using_condition): Ditto.
