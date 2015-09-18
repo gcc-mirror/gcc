@@ -1,3 +1,8 @@
+2015-09-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* dwarf2out.c (switch_to_eh_frame_section): Add ATTRIBUTE_UNUSED to
+	"back" parameter. Declare label in #if block.
+
 2015-09-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/67619

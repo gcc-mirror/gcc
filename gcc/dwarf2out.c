@@ -434,10 +434,8 @@ stripattributes (const char *s)
    for collect2 the first time around.  */
 
 static void
-switch_to_eh_frame_section (bool back)
+switch_to_eh_frame_section (bool back ATTRIBUTE_UNUSED)
 {
-  tree label;
-
   if (eh_frame_section == 0)
     {
       int flags;
@@ -481,7 +479,7 @@ switch_to_eh_frame_section (bool back)
      collect2.  */
   if (!back)
     {
-      label = get_file_function_name ("F");
+      tree label = get_file_function_name ("F");
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
       targetm.asm_out.globalize_label (asm_out_file,
 					IDENTIFIER_POINTER (label));
