@@ -2838,24 +2838,24 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
     s = exception_section;
   else
     {
+      int flags;
+
+      if (EH_TABLES_CAN_BE_READ_ONLY)
+	{
+	  int tt_format =
+	    ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
+	  flags = ((! flag_pic
+		    || ((tt_format & 0x70) != DW_EH_PE_absptr
+			&& (tt_format & 0x70) != DW_EH_PE_aligned))
+		   ? 0 : SECTION_WRITE);
+	}
+      else
+	flags = SECTION_WRITE;
+
       /* Compute the section and cache it into exception_section,
 	 unless it depends on the function name.  */
       if (targetm_common.have_named_sections)
 	{
-	  int flags;
-
-	  if (EH_TABLES_CAN_BE_READ_ONLY)
-	    {
-	      int tt_format =
-		ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
-	      flags = ((! flag_pic
-			|| ((tt_format & 0x70) != DW_EH_PE_absptr
-			    && (tt_format & 0x70) != DW_EH_PE_aligned))
-		       ? 0 : SECTION_WRITE);
-	    }
-	  else
-	    flags = SECTION_WRITE;
-
 #ifdef HAVE_LD_EH_GC_SECTIONS
 	  if (flag_function_sections
 	      || (DECL_COMDAT_GROUP (current_function_decl) && HAVE_COMDAT_GROUP))
@@ -2876,7 +2876,7 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 	}
       else
 	exception_section
-	  = s = flag_pic ? data_section : readonly_data_section;
+	  = s = flags == SECTION_WRITE ? data_section : readonly_data_section;
     }
 
   switch_to_section (s);

@@ -1,3 +1,10 @@
+2015-09-18  Andrew Dixie  <andrewd@gentrack.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.host (powerpc-ibm-aix*): Add crtdbase.o to extra_parts.
+	* config/rs6000/crtdbase.S: New file.
+	* config/rs6000/t-aix-cxa: Build crtdbase.o.
+
 2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/linux-unwind.h (xtensa_fallback_frame_state):

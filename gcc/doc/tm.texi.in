@@ -6477,14 +6477,15 @@ You should define this symbol if your target supports DWARF 2 frame
 unwind information and the default definition does not work.
 @end defmac
 
-@defmac EH_FRAME_IN_DATA_SECTION
-If defined, DWARF 2 frame unwind information will be placed in the
-data section even though the target supports named sections.  This
-might be necessary, for instance, if the system linker does garbage
-collection and sections cannot be marked as not to be collected.
+@defmac EH_FRAME_THROUGH_COLLECT2
+If defined, DWARF 2 frame unwind information will identified by
+specially named labels.  The collect2 process will locate these
+labels and generate code to register the frames.
 
-Do not define this macro unless @code{TARGET_ASM_NAMED_SECTION} is
-also defined.
+This might be necessary, for instance, if the system linker will not
+place the eh_frames in-between the sentinals from @file{crtstuff.c},
+or if the system linker does garbage collection and sections cannot
+be marked as not to be collected.
 @end defmac
 
 @defmac EH_TABLES_CAN_BE_READ_ONLY
@@ -7031,6 +7032,11 @@ given @var{size}.  The label is known to be defined in the given @var{section}.
 @defmac ASM_OUTPUT_DWARF_PCREL (@var{stream}, @var{size}, @var{label})
 A C statement to issue assembly directives that create a self-relative
 reference to the given @var{label}, using an integer of the given @var{size}.
+@end defmac
+
+@defmac ASM_OUTPUT_DWARF_DATAREL (@var{stream}, @var{size}, @var{label})
+A C statement to issue assembly directives that create a reference to the
+given @var{label} relative to the dbase, using an integer of the given @var{size}.
 @end defmac
 
 @defmac ASM_OUTPUT_DWARF_TABLE_REF (@var{label})

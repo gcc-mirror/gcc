@@ -351,7 +351,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* If we have named sections, and we're using crtstuff to run ctors,
    use them for registering eh frame information.  */
 #if defined (TARGET_ASM_NAMED_SECTION) && DWARF2_UNWIND_INFO \
-    && !defined (EH_FRAME_IN_DATA_SECTION)
+    && !defined (EH_FRAME_THROUGH_COLLECT2)
 #ifndef EH_FRAME_SECTION_NAME
 #define EH_FRAME_SECTION_NAME ".eh_frame"
 #endif

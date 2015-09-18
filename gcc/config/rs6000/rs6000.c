@@ -30790,7 +30790,6 @@ rs6000_xcoff_asm_init_sections (void)
     = get_unnamed_section (0, rs6000_xcoff_output_toc_section_asm_op, NULL);
 
   readonly_data_section = read_only_data_section;
-  exception_section = data_section;
 }
 
 static int
@@ -31157,6 +31156,31 @@ rs6000_xcoff_declare_object_name (FILE *file, const char *name, tree decl)
   RS6000_OUTPUT_BASENAME (file, name);
   fputs (":\n", file);
   symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias, &data, true);
+}
+
+/* Overide the default 'SYMBOL-.' syntax with AIX compatible 'SYMBOL-$'. */
+
+void
+rs6000_asm_output_dwarf_pcrel (FILE *file, int size, const char *label)
+{
+  fputs (integer_asm_op (size, FALSE), file);
+  assemble_name (file, label);
+  fputs ("-$", file);
+}
+
+/* Output a symbol offset relative to the dbase for the current object.
+   We use __gcc_unwind_dbase as an arbitrary base for dbase and assume
+   signed offsets.
+
+   __gcc_unwind_dbase is embedded in all executables/libraries through
+   libgcc/config/rs6000/crtdbase.S.  */
+
+void
+rs6000_asm_output_dwarf_datarel (FILE *file, int size, const char *label)
+{
+  fputs (integer_asm_op (size, FALSE), file);
+  assemble_name (file, label);
+  fputs("-__gcc_unwind_dbase", file);
 }
 
 #ifdef HAVE_AS_TLS

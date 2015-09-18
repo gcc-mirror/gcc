@@ -984,6 +984,13 @@ dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr, bool is_public,
 	  dw2_assemble_integer (size, addr);
 	  break;
 
+#ifdef ASM_OUTPUT_DWARF_DATAREL
+	case DW_EH_PE_datarel:
+	  gcc_assert (GET_CODE (addr) == SYMBOL_REF);
+	  ASM_OUTPUT_DWARF_DATAREL (asm_out_file, size, XSTR (addr, 0));
+	  break;
+#endif
+
 	case DW_EH_PE_pcrel:
 	  gcc_assert (GET_CODE (addr) == SYMBOL_REF);
 #ifdef ASM_OUTPUT_DWARF_PCREL

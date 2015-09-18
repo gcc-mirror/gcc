@@ -2108,12 +2108,23 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
       fprintf (stream, "  struct object *next;\n");
       fprintf (stream, "};\n");
 
+      fprintf (stream, "extern void __register_frame_info_table_bases (void *, struct object *, void *tbase, void *dbase);\n");
       fprintf (stream, "extern void __register_frame_info_table (void *, struct object *);\n");
       fprintf (stream, "extern void *__deregister_frame_info (void *);\n");
+#ifdef TARGET_AIX_VERSION
+      fprintf (stream, "extern void *__gcc_unwind_dbase;\n");
+#endif
 
       fprintf (stream, "static void reg_frame () {\n");
       fprintf (stream, "\tstatic struct object ob;\n");
+#ifdef TARGET_AIX_VERSION
+      /* Use __gcc_unwind_dbase as the base address for data on AIX.
+	 This might not be the start of the segment, signed offsets assumed.
+       */
+      fprintf (stream, "\t__register_frame_info_table_bases (frame_table, &ob, (void *)0, &__gcc_unwind_dbase);\n");
+#else
       fprintf (stream, "\t__register_frame_info_table (frame_table, &ob);\n");
+#endif
       fprintf (stream, "\t}\n");
 
       fprintf (stream, "static void dereg_frame () {\n");
@@ -2878,7 +2889,16 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 			     provides an explicit export list.  */
 			  if (shared_obj && !is_shared
 			      && which_pass == PASS_OBJ && !export_flag)
-			    add_to_list (&exports, name);
+			    {
+			      /* Do not auto-export __dso_handle or
+				 __gcc_unwind_dbase.  They are required
+				 to be local to each module.  */
+			      if (strcmp(name, "__dso_handle") != 0
+				  && strcmp(name, "__gcc_unwind_dbase") != 0)
+				{
+				  add_to_list (&exports, name);
+				}
+			    }
 #endif
 			  continue;
 			}

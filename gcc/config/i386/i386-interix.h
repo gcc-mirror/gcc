@@ -153,8 +153,6 @@ do {									\
 #define drectve_section()  /* nothing */
 
 
-#define EH_FRAME_IN_DATA_SECTION
-
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rdata,\"r\""
 
 /* Define this macro if references to a symbol must be treated
@@ -326,7 +324,8 @@ while (0)
  : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (int) (n)+8 \
  : (int) (-1))
 
-#define EH_FRAME_IN_DATA_SECTION
+#define EH_FRAME_THROUGH_COLLECT2
+#define EH_TABLES_CAN_BE_READ_ONLY 0
 
 /* the following are OSF linker (not gld) specific... we don't want them */
 #undef HAS_INIT_SECTION
