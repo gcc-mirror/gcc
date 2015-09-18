@@ -46,7 +46,6 @@
 #endif
 #include <ext/concurrence.h>
 #include <ext/debug_allocator.h>
-#include <ext/enc_filebuf.h>
 #include <ext/extptr_allocator.h>
 #include <ext/functional>
 #include <ext/iterator>
