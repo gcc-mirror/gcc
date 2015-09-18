@@ -22100,6 +22100,8 @@ append_entry_to_tmpl_value_parm_die_table (dw_die_ref die, tree arg)
   if (!die || !arg)
     return;
 
+  gcc_assert (early_dwarf);
+
   if (!tmpl_value_parm_die_table)
     vec_alloc (tmpl_value_parm_die_table, 32);
 
@@ -22129,6 +22131,8 @@ schedule_generic_params_dies_gen (tree t)
   if (!generic_type_p (t))
     return;
 
+  gcc_assert (early_dwarf);
+
   if (!generic_type_instances)
     vec_alloc (generic_type_instances, 256);
 
@@ -22144,11 +22148,21 @@ gen_remaining_tmpl_value_param_die_attribute (void)
 {
   if (tmpl_value_parm_die_table)
     {
-      unsigned i;
+      unsigned i, j;
       die_arg_entry *e;
 
+      /* We do this in two phases - first get the cases we can
+	 handle during early-finish, preserving those we cannot
+	 (containing symbolic constants where we don't yet know
+	 whether we are going to output the referenced symbols).
+	 For those we try again at late-finish.  */
+      j = 0;
       FOR_EACH_VEC_ELT (*tmpl_value_parm_die_table, i, e)
-	tree_add_const_value_attribute (e->die, e->arg);
+	{
+	  if (!tree_add_const_value_attribute (e->die, e->arg))
+	    (*tmpl_value_parm_die_table)[j++] = *e;
+	}
+      tmpl_value_parm_die_table->truncate (j);
     }
 }
 
@@ -22166,9 +22180,15 @@ gen_scheduled_generic_parms_dies (void)
   if (!generic_type_instances)
     return;
   
+  /* We end up "recursing" into schedule_generic_params_dies_gen, so
+     pretend this generation is part of "early dwarf" as well.  */
+  set_early_dwarf s;
+
   FOR_EACH_VEC_ELT (*generic_type_instances, i, t)
     if (COMPLETE_TYPE_P (t))
       gen_generic_params_dies (t);
+
+  generic_type_instances = NULL;
 }
 
 
@@ -25202,7 +25222,6 @@ dwarf2out_finish (const char *filename)
   producer->dw_attr_val.v.val_str->refcount--;
   producer->dw_attr_val.v.val_str = find_AT_string (producer_string);
 
-  gen_scheduled_generic_parms_dies ();
   gen_remaining_tmpl_value_param_die_attribute ();
 
   /* Add the name for the main input file now.  We delayed this from
@@ -25559,6 +25578,9 @@ dwarf2out_early_finish (void)
   /* The point here is to flush out the limbo list so that it is empty
      and we don't need to stream it for LTO.  */
   flush_limbo_die_list ();
+
+  gen_scheduled_generic_parms_dies ();
+  gen_remaining_tmpl_value_param_die_attribute ();
 }
 
 /* Reset all state within dwarf2out.c so that we can rerun the compiler
