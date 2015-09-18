@@ -1,3 +1,21 @@
+2015-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66142
+	* fold-const.c (operand_equal_p): When OEP_ADDRESS_OF
+	treat MEM[&x] and x the same.
+	* tree-ssa-sccvn.h (vn_reference_fold_indirect): Remove.
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Return true
+	when we simplified sth.
+	(vn_reference_maybe_forwprop_address): Likewise.
+	(valueize_refs_1): When we simplified through
+	vn_reference_fold_indirect or vn_reference_maybe_forwprop_address
+	set valueized_anything to true.
+	(vn_reference_lookup_3): Use stmt_kills_ref_p to see whether
+	one ref kills the other instead of just a offset-based test.
+	* tree-ssa-alias.c (stmt_kills_ref_p): Use OEP_ADDRESS_OF
+	for the operand_equal_p test to compare bases and also compare
+	sizes.
+
 2015-09-17  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm.md (*call_value_symbol): Fix operand for interworking.

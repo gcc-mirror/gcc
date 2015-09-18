@@ -2752,10 +2752,33 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 				   TREE_OPERAND (arg1, 0), flags);
     }
 
-  if (TREE_CODE (arg0) != TREE_CODE (arg1)
+  if (TREE_CODE (arg0) != TREE_CODE (arg1))
+    {
       /* NOP_EXPR and CONVERT_EXPR are considered equal.  */
-      && !(CONVERT_EXPR_P (arg0) && CONVERT_EXPR_P (arg1)))
-    return 0;
+      if (CONVERT_EXPR_P (arg0) && CONVERT_EXPR_P (arg1))
+	;
+      else if (flags & OEP_ADDRESS_OF)
+	{
+	  /* If we are interested in comparing addresses ignore
+	     MEM_REF wrappings of the base that can appear just for
+	     TBAA reasons.  */
+	  if (TREE_CODE (arg0) == MEM_REF
+	      && DECL_P (arg1)
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ADDR_EXPR
+	      && TREE_OPERAND (TREE_OPERAND (arg0, 0), 0) == arg1
+	      && integer_zerop (TREE_OPERAND (arg0, 1)))
+	    return 1;
+	  else if (TREE_CODE (arg1) == MEM_REF
+		   && DECL_P (arg0)
+		   && TREE_CODE (TREE_OPERAND (arg1, 0)) == ADDR_EXPR
+		   && TREE_OPERAND (TREE_OPERAND (arg1, 0), 0) == arg0
+		   && integer_zerop (TREE_OPERAND (arg1, 1)))
+	    return 1;
+	  return 0;
+	}
+      else
+	return 0;
+    }
 
   /* This is needed for conversions and for COMPONENT_REF.
      Might as well play it safe and always test this.  */
