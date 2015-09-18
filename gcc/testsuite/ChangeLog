@@ -1,3 +1,9 @@
+2015-09-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/67283
+	* gcc.dg/tree-ssa/sra-15.c: New.
+	* gcc.dg/tree-ssa/sra-16.c: New.
+
 2015-09-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR sanitizer/64078

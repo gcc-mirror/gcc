@@ -915,73 +915,142 @@ create_access (tree expr, gimple stmt, bool write)
 }
 
 
-/* Return true iff TYPE is a RECORD_TYPE with fields that are either of gimple
-   register types or (recursively) records with only these two kinds of fields.
-   It also returns false if any of these records contains a bit-field.  */
+/* Return true iff TYPE is scalarizable - i.e. a RECORD_TYPE or fixed-length
+   ARRAY_TYPE with fields that are either of gimple register types (excluding
+   bit-fields) or (recursively) scalarizable types.  */
 
 static bool
-type_consists_of_records_p (tree type)
+scalarizable_type_p (tree type)
 {
-  tree fld;
+  gcc_assert (!is_gimple_reg_type (type));
 
-  if (TREE_CODE (type) != RECORD_TYPE)
+  switch (TREE_CODE (type))
+  {
+  case RECORD_TYPE:
+    for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
+      if (TREE_CODE (fld) == FIELD_DECL)
+	{
+	  tree ft = TREE_TYPE (fld);
+
+	  if (DECL_BIT_FIELD (fld))
+	    return false;
+
+	  if (!is_gimple_reg_type (ft)
+	      && !scalarizable_type_p (ft))
+	    return false;
+	}
+
+    return true;
+
+  case ARRAY_TYPE:
+    {
+      if (TYPE_DOMAIN (type) == NULL_TREE
+	  || !tree_fits_shwi_p (TYPE_SIZE (type))
+	  || !tree_fits_shwi_p (TYPE_SIZE (TREE_TYPE (type)))
+	  || (tree_to_shwi (TYPE_SIZE (TREE_TYPE (type))) <= 0)
+	  || !tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
+	return false;
+      if (tree_to_shwi (TYPE_SIZE (type)) == 0
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE)
+	/* Zero-element array, should not prevent scalarization.  */
+	;
+      else if ((tree_to_shwi (TYPE_SIZE (type)) <= 0)
+	       || !tree_fits_shwi_p (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	return false;
+
+      tree elem = TREE_TYPE (type);
+      if (!is_gimple_reg_type (elem)
+	 && !scalarizable_type_p (elem))
+	return false;
+      return true;
+    }
+  default:
     return false;
-
-  for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
-    if (TREE_CODE (fld) == FIELD_DECL)
-      {
-	tree ft = TREE_TYPE (fld);
-
-	if (DECL_BIT_FIELD (fld))
-	  return false;
-
-	if (!is_gimple_reg_type (ft)
-	    && !type_consists_of_records_p (ft))
-	  return false;
-      }
-
-  return true;
+  }
 }
 
-/* Create total_scalarization accesses for all scalar type fields in DECL that
-   must be of a RECORD_TYPE conforming to type_consists_of_records_p.  BASE
-   must be the top-most VAR_DECL representing the variable, OFFSET must be the
-   offset of DECL within BASE.  REF must be the memory reference expression for
-   the given decl.  */
+static void scalarize_elem (tree, HOST_WIDE_INT, HOST_WIDE_INT, tree, tree);
+
+/* Create total_scalarization accesses for all scalar fields of a member
+   of type DECL_TYPE conforming to scalarizable_type_p.  BASE
+   must be the top-most VAR_DECL representing the variable; within that,
+   OFFSET locates the member and REF must be the memory reference expression for
+   the member.  */
 
 static void
-completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
-			     tree ref)
+completely_scalarize (tree base, tree decl_type, HOST_WIDE_INT offset, tree ref)
 {
-  tree fld, decl_type = TREE_TYPE (decl);
-
-  for (fld = TYPE_FIELDS (decl_type); fld; fld = DECL_CHAIN (fld))
-    if (TREE_CODE (fld) == FIELD_DECL)
-      {
-	HOST_WIDE_INT pos = offset + int_bit_position (fld);
-	tree ft = TREE_TYPE (fld);
-	tree nref = build3 (COMPONENT_REF, TREE_TYPE (fld), ref, fld,
-			    NULL_TREE);
-
-	if (is_gimple_reg_type (ft))
+  switch (TREE_CODE (decl_type))
+    {
+    case RECORD_TYPE:
+      for (tree fld = TYPE_FIELDS (decl_type); fld; fld = DECL_CHAIN (fld))
+	if (TREE_CODE (fld) == FIELD_DECL)
 	  {
-	    struct access *access;
-	    HOST_WIDE_INT size;
+	    HOST_WIDE_INT pos = offset + int_bit_position (fld);
+	    tree ft = TREE_TYPE (fld);
+	    tree nref = build3 (COMPONENT_REF, ft, ref, fld, NULL_TREE);
 
-	    size = tree_to_uhwi (DECL_SIZE (fld));
-	    access = create_access_1 (base, pos, size);
-	    access->expr = nref;
-	    access->type = ft;
-	    access->grp_total_scalarization = 1;
-	    /* Accesses for intraprocedural SRA can have their stmt NULL.  */
+	    scalarize_elem (base, pos, tree_to_uhwi (DECL_SIZE (fld)), nref,
+			    ft);
 	  }
-	else
-	  completely_scalarize_record (base, fld, pos, nref);
+      break;
+    case ARRAY_TYPE:
+      {
+	tree elemtype = TREE_TYPE (decl_type);
+	tree elem_size = TYPE_SIZE (elemtype);
+	gcc_assert (elem_size && tree_fits_shwi_p (elem_size));
+	HOST_WIDE_INT el_size = tree_to_shwi (elem_size);
+	gcc_assert (el_size > 0);
+
+	tree minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (decl_type));
+	gcc_assert (TREE_CODE (minidx) == INTEGER_CST);
+	tree maxidx = TYPE_MAX_VALUE (TYPE_DOMAIN (decl_type));
+	if (maxidx)
+	  {
+	    gcc_assert (TREE_CODE (maxidx) == INTEGER_CST);
+	    /* MINIDX and MAXIDX are inclusive.  Try to avoid overflow.  */
+	    unsigned HOST_WIDE_INT lenp1 = tree_to_shwi (maxidx)
+					- tree_to_shwi (minidx);
+	    unsigned HOST_WIDE_INT idx = 0;
+	    do
+	      {
+		tree nref = build4 (ARRAY_REF, elemtype, ref, size_int (idx),
+				    NULL_TREE, NULL_TREE);
+		int el_off = offset + idx * el_size;
+		scalarize_elem (base, el_off, el_size, nref, elemtype);
+	      }
+	    while (++idx <= lenp1);
+	  }
       }
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Create total_scalarization accesses for a member of type TYPE, which must
+   satisfy either is_gimple_reg_type or scalarizable_type_p.  BASE must be the
+   top-most VAR_DECL representing the variable; within that, POS and SIZE locate
+   the member and REF must be the reference expression for it.  */
+
+static void
+scalarize_elem (tree base, HOST_WIDE_INT pos, HOST_WIDE_INT size,
+		 tree ref, tree type)
+{
+  if (is_gimple_reg_type (type))
+  {
+    struct access *access = create_access_1 (base, pos, size);
+    access->expr = ref;
+    access->type = type;
+    access->grp_total_scalarization = 1;
+    /* Accesses for intraprocedural SRA can have their stmt NULL.  */
+  }
+  else
+    completely_scalarize (base, type, pos, ref);
 }
 
 /* Create a total_scalarization access for VAR as a whole.  VAR must be of a
-   RECORD_TYPE conforming to type_consists_of_records_p.  */
+   RECORD_TYPE or ARRAY_TYPE conforming to scalarizable_type_p.  */
 
 static void
 create_total_scalarization_access (tree var)
@@ -2521,13 +2590,13 @@ analyze_all_variable_accesses (void)
 	tree var = candidate (i);
 
 	if (TREE_CODE (var) == VAR_DECL
-	    && type_consists_of_records_p (TREE_TYPE (var)))
+	    && scalarizable_type_p (TREE_TYPE (var)))
 	  {
 	    if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
 		<= max_scalarization_size)
 	      {
 		create_total_scalarization_access (var);
-		completely_scalarize_record (var, var, 0, var);
+		completely_scalarize (var, TREE_TYPE (var), 0, var);
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  {
 		    fprintf (dump_file, "Will attempt to totally scalarize ");
