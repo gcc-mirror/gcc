@@ -712,8 +712,8 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
       warning_at (loc, OPT_Wpragmas,
 		  "missing [error|warning|ignored|push|pop]"
 		  " after %<#pragma GCC diagnostic%>");
+      return;
     }
-  return;
 
   diagnostic_t kind;
   const char *kind_string = IDENTIFIER_POINTER (x);

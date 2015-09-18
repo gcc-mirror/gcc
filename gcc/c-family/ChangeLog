@@ -1,5 +1,9 @@
 2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* c-pragma.c (handle_pragma_diagnostic): Fix wrong return.
+
+2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* c-pragma.c (handle_pragma_diagnostic): Use explicit location
 	when warning.
 	* c-pragma.h (pragma_lex): Add optional loc argument.
