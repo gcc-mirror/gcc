@@ -9846,12 +9846,15 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
 /* The interface the pragma parsers have to the lexer.  */
 
 enum cpp_ttype
-pragma_lex (tree *value)
+pragma_lex (tree *value, location_t *loc)
 {
   c_token *tok = c_parser_peek_token (the_parser);
   enum cpp_ttype ret = tok->type;
 
   *value = tok->value;
+  if (loc)
+    *loc = tok->location;
+
   if (ret == CPP_PRAGMA_EOL || ret == CPP_EOF)
     ret = CPP_EOF;
   else

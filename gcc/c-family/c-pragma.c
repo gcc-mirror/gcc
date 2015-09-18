@@ -704,17 +704,19 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
 static void
 handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
 {
-  const char *kind_string, *option_string;
-  unsigned int option_index;
-  enum cpp_ttype token;
-  diagnostic_t kind;
   tree x;
-  struct cl_option_handlers handlers;
-
-  token = pragma_lex (&x);
+  location_t loc;
+  enum cpp_ttype token = pragma_lex (&x, &loc);
   if (token != CPP_NAME)
-    GCC_BAD ("missing [error|warning|ignored] after %<#pragma GCC diagnostic%>");
-  kind_string = IDENTIFIER_POINTER (x);
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "missing [error|warning|ignored|push|pop]"
+		  " after %<#pragma GCC diagnostic%>");
+    }
+  return;
+
+  diagnostic_t kind;
+  const char *kind_string = IDENTIFIER_POINTER (x);
   if (strcmp (kind_string, "error") == 0)
     kind = DK_ERROR;
   else if (strcmp (kind_string, "warning") == 0)
@@ -732,13 +734,26 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
       return;
     }
   else
-    GCC_BAD ("expected [error|warning|ignored|push|pop] after %<#pragma GCC diagnostic%>");
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "expected [error|warning|ignored|push|pop]"
+		  " after %<#pragma GCC diagnostic%>");
+      return;
+    }
 
-  token = pragma_lex (&x);
+  token = pragma_lex (&x, &loc);
   if (token != CPP_STRING)
-    GCC_BAD ("missing option after %<#pragma GCC diagnostic%> kind");
-  option_string = TREE_STRING_POINTER (x);
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "missing option after %<#pragma GCC diagnostic%> kind");
+      return;
+    }
+
+  struct cl_option_handlers handlers;
   set_default_handlers (&handlers);
+
+  unsigned int option_index;
+  const char *option_string = TREE_STRING_POINTER (x);
   for (option_index = 0; option_index < cl_options_count; option_index++)
     if (strcmp (cl_options[option_index].opt_text, option_string) == 0)
       {
@@ -748,7 +763,8 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
 				global_dc);
 	return;
       }
-  GCC_BAD ("unknown option after %<#pragma GCC diagnostic%> kind");
+  warning_at (loc, OPT_Wpragmas,
+	      "unknown option after %<#pragma GCC diagnostic%> kind");
 }
 
 /*  Parse #pragma GCC target (xxx) to set target specific options.  */

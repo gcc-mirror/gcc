@@ -1,3 +1,7 @@
+2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-parser.c (pragma_lex): Add loc argument.
+
 2015-09-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67580

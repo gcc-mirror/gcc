@@ -1,3 +1,8 @@
+2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* parser.c (pragma_lex): Add loc argument. Rearrange the code to
+	make it more similar to the C version.
+
 2015-09-17  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 
