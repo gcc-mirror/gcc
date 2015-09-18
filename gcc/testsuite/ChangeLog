@@ -1,3 +1,7 @@
+2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/pragma-diag-5.c: New test.
+
 2015-09-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/67619
