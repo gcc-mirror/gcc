@@ -1,3 +1,9 @@
+2015-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/precompiled/extc++.h: Fix bootstrap error due to
+	unconditional inclusion of <ext/enc_filebuf.h>.
+	* include/ext/random: Check for definition of UINT32_C.
+
 2015-09-17  Catherine Moore  <clm@codesourcery.com>
 
 	* src/c++11/debug.cc: Include <cstdio>.
