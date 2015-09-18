@@ -1,3 +1,18 @@
+2015-09-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* Makefile.in (OBJS): Add tree-ssa-phionlycprop.o
+	* tree-ssa-dom.c: Remove unnecessary header includes.
+	(remove_stmt_or_phi): Moved from here into tree-ssa-phionlycprop.c
+	(get_rhs_or_phi_arg, get_lhs_or_phi_result): Likewise.
+	(propagate_rhs_into_lhs, eliminate_const_or_copy): Likewise.
+	(eliminate_degenerate_phis_1, pass_phi_only_cprop): Likewise.
+	(pass_phi_only_cprop::execute): Likewise.
+	(make_pass_phi_only_cprop): Likewise.
+	* tree-ssa-phionlycprop.c: New file with moved code.  Eliminate
+	uses of file scoped statics by passing the required objects
+	as parameters wherever needed.
+
 2015-09-18  Andrew Dixie  <andrewd@gentrack.com>
 	    David Edelsohn  <dje.gcc@gmail.com>
 
