@@ -1,3 +1,11 @@
+2015-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostic-show-locus.o.
+	* diagnostic.c (adjust_line): Move to diagnostic-show-locus.c.
+	(diagnostic_show_locus): Likewise.
+	(diagnostic_print_caret_line): Likewise.
+	* diagnostic-show-locus.c: New file.
+
 2015-09-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* dwarf2out.c (switch_to_eh_frame_section): Add ATTRIBUTE_UNUSED to
