@@ -5035,7 +5035,7 @@
 	(plus:SI (match_operand:SI 1 "register_operand" "")
 		 (match_operand:SI 2 "const_int_operand" "")))
    (clobber (match_operand:SI 4 "register_operand" ""))]
-  "! pa_cint_ok_for_move (INTVAL (operands[2]))
+  "! pa_cint_ok_for_move (UINTVAL (operands[2]))
    && VAL_14_BITS_P (INTVAL (operands[2]) >> 1)"
   [(set (match_dup 4) (plus:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (plus:SI (match_dup 4) (match_dup 3)))]
@@ -5054,13 +5054,13 @@
 	(plus:SI (match_operand:SI 1 "register_operand" "")
 		 (match_operand:SI 2 "const_int_operand" "")))
    (clobber (match_operand:SI 4 "register_operand" ""))]
-  "! pa_cint_ok_for_move (INTVAL (operands[2]))"
+  "! pa_cint_ok_for_move (UINTVAL (operands[2]))"
   [(set (match_dup 4) (match_dup 2))
    (set (match_dup 0) (plus:SI (ashift:SI (match_dup 4) (match_dup 3))
 			       (match_dup 1)))]
   "
 {
-  HOST_WIDE_INT intval = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT intval = UINTVAL (operands[2]);
 
   /* Try dividing the constant by 2, then 4, and finally 8 to see
      if we can get a constant which can be loaded into a register
