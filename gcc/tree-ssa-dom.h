@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_DOM_H
 #define GCC_TREE_SSA_DOM_H
 
-extern void dump_dominator_optimization_stats (FILE *);
-extern void debug_dominator_optimization_stats (void);
 extern bool simple_iv_increment_p (gimple);
 
 #endif /* GCC_TREE_SSA_DOM_H */

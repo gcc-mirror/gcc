@@ -1,3 +1,27 @@
+2015-09-18  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* tree-ssa-dom.c (avail_exprs): No longer file scoped.  Bury
+	it into the avail_exprs_stack class.
+	(pass_dominator::execute): Corresponding changes to declaration
+	and initialization of avail_exprs.  Pass avail_exprs to
+	dump_dominator_optimization_stats.
+	(record_cond): Extract avail_exprs from avail_exprs_stack.
+	(lookup_avail_expr): Similarly.
+	(htab_staticstics): Remove unnecessary prototype.  Move to earlier
+	position in file.
+	(dump_dominator_optimization_stats): Make static and prototype.
+	Add argument for the hash table to dump.
+	(debug_dominator_optimization_stats): Remove.
+	* tree-ssa-dom.h (dump_dominator_optimization_stats): Remove
+	prototype.
+	(debug_dominator_optimization_stats): Similarly.
+	* tree-ssa-scopedtables.h (class avail_exprs_stack): Add missing
+	"void" in prototype for pop_to_marker method.  Add accessor method
+	for the underlying avail_exprs table.
+	
+	* tree-ssa-threadedge.c: Remove trailing whitespace.
+
 2014-09-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-protos.h (pa_cint_ok_for_move): Change argument type to

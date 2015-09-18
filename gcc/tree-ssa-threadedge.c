@@ -94,12 +94,12 @@ potentially_threadable_block (basic_block bb)
   /* Special case.  We can get blocks that are forwarders, but are
      not optimized away because they forward from outside a loop
      to the loop header.   We want to thread through them as we can
-     sometimes thread to the loop exit, which is obviously profitable. 
+     sometimes thread to the loop exit, which is obviously profitable.
      the interesting case here is when the block has PHIs.  */
   if (gsi_end_p (gsi_start_nondebug_bb (bb))
       && !gsi_end_p (gsi_start_phis (bb)))
     return true;
-  
+
   /* If BB has a single successor or a single predecessor, then
      there is no threading opportunity.  */
   if (single_succ_p (bb) || single_pred_p (bb))
@@ -148,7 +148,7 @@ lhs_of_dominating_assert (tree op, basic_block bb, gimple stmt)
    edge E.  Record unwind information for the equivalences onto STACK.
 
    If a PHI which prevents threading is encountered, then return FALSE
-   indicating we should not thread this edge, else return TRUE. 
+   indicating we should not thread this edge, else return TRUE.
 
    If SRC_MAP/DST_MAP exist, then mark the source and destination SSA_NAMEs
    of any equivalences recorded.  We use this to make invalidation after
@@ -423,10 +423,10 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	}
 
       /* Record the context sensitive equivalence if we were able
-	 to simplify this statement. 
+	 to simplify this statement.
 
 	 If we have traversed a backedge at some point during threading,
-	 then always enter something here.  Either a real equivalence, 
+	 then always enter something here.  Either a real equivalence,
 	 or a NULL_TREE equivalence which is effectively invalidation of
 	 prior equivalences.  */
       if (cached_lhs
@@ -1238,7 +1238,7 @@ thread_through_normal_block (edge e,
       /* Second case.  */
       return -1;
     }
-  
+
   /* If we stopped at a COND_EXPR or SWITCH_EXPR, see if we know which arm
      will be taken.  */
   if (gimple_code (stmt) == GIMPLE_COND
@@ -1285,7 +1285,7 @@ thread_through_normal_block (edge e,
 
 	  /* See if we can thread through DEST as well, this helps capture
 	     secondary effects of threading without having to re-run DOM or
-	     VRP. 
+	     VRP.
 
 	     We don't want to thread back to a block we have already
  	     visited.  This may be overly conservative.  */
@@ -1445,7 +1445,7 @@ thread_across_edge (gcond *dummy_cond,
 	const_and_copies->push_marker ();
 	if (avail_exprs_stack)
 	  avail_exprs_stack->push_marker ();
-     
+
 	/* Avoid threading to any block we have already visited.  */
 	bitmap_clear (visited);
 	bitmap_set_bit (visited, e->src->index);

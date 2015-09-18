@@ -122,10 +122,15 @@ class avail_exprs_stack
 
   /* Restore the AVAIL_EXPRs table to its state when the last marker
      was pushed.  */
-  void pop_to_marker ();
+  void pop_to_marker (void);
 
   /* Record a single available expression that can be unwound.  */
   void record_expr (expr_hash_elt_t, expr_hash_elt_t, char);
+
+  /* Get the underlying hash table.  Would this be better as
+     class inheritance?  */
+  hash_table<expr_elt_hasher> *avail_exprs (void)
+    { return m_avail_exprs; }
 
  private:
   vec<std::pair<expr_hash_elt_t, expr_hash_elt_t> > m_stack;
