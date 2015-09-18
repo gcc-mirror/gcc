@@ -1184,7 +1184,7 @@ copy_reference_ops_from_call (gcall *call,
 
 /* Fold *& at position *I_P in a vn_reference_op_s vector *OPS.  Updates
    *I_P to point to the last element of the replacement.  */
-void
+static bool
 vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
 			    unsigned int *i_p)
 {
@@ -1210,12 +1210,14 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
 	mem_op->off = tree_to_shwi (mem_op->op0);
       else
 	mem_op->off = -1;
+      return true;
     }
+  return false;
 }
 
 /* Fold *& at position *I_P in a vn_reference_op_s vector *OPS.  Updates
    *I_P to point to the last element of the replacement.  */
-static void
+static bool
 vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 				     unsigned int *i_p)
 {
@@ -1228,12 +1230,12 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 
   def_stmt = SSA_NAME_DEF_STMT (op->op0);
   if (!is_gimple_assign (def_stmt))
-    return;
+    return false;
 
   code = gimple_assign_rhs_code (def_stmt);
   if (code != ADDR_EXPR
       && code != POINTER_PLUS_EXPR)
-    return;
+    return false;
 
   off = offset_int::from (mem_op->op0, SIGNED);
 
@@ -1265,11 +1267,11 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  ops->pop ();
 	  ops->safe_splice (tem);
 	  --*i_p;
-	  return;
+	  return true;
 	}
       if (!addr_base
 	  || TREE_CODE (addr_base) != MEM_REF)
-	return;
+	return false;
 
       off += addr_offset;
       off += mem_ref_offset (addr_base);
@@ -1282,7 +1284,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       ptroff = gimple_assign_rhs2 (def_stmt);
       if (TREE_CODE (ptr) != SSA_NAME
 	  || TREE_CODE (ptroff) != INTEGER_CST)
-	return;
+	return false;
 
       off += wi::to_offset (ptroff);
       op->op0 = ptr;
@@ -1303,6 +1305,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
     vn_reference_maybe_forwprop_address (ops, i_p);
   else if (TREE_CODE (op->op0) == ADDR_EXPR)
     vn_reference_fold_indirect (ops, i_p);
+  return true;
 }
 
 /* Optimize the reference REF to a constant if possible or return
@@ -1475,11 +1478,17 @@ valueize_refs_1 (vec<vn_reference_op_s> orig, bool *valueized_anything)
 	  && vro->op0
 	  && TREE_CODE (vro->op0) == ADDR_EXPR
 	  && orig[i - 1].opcode == MEM_REF)
-	vn_reference_fold_indirect (&orig, &i);
+	{
+	  if (vn_reference_fold_indirect (&orig, &i))
+	    *valueized_anything = true;
+	}
       else if (i > 0
 	       && vro->opcode == SSA_NAME
 	       && orig[i - 1].opcode == MEM_REF)
-	vn_reference_maybe_forwprop_address (&orig, &i);
+	{
+	  if (vn_reference_maybe_forwprop_address (&orig, &i))
+	    *valueized_anything = true;
+	}
       /* If it transforms a non-constant ARRAY_REF into a constant
 	 one, adjust the constant offset.  */
       else if (vro->opcode == ARRAY_REF
@@ -1880,7 +1889,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
     {
       tree base2;
-      HOST_WIDE_INT offset2, size2, maxsize2;
+      HOST_WIDE_INT maxsize2;
       int i, j;
       auto_vec<vn_reference_op_s> rhs;
       vn_reference_op_t vro;
@@ -1891,8 +1900,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 
       /* See if the assignment kills REF.  */
       base2 = ao_ref_base (&lhs_ref);
-      offset2 = lhs_ref.offset;
-      size2 = lhs_ref.size;
       maxsize2 = lhs_ref.max_size;
       if (maxsize2 == -1
 	  || (base != base2
@@ -1901,8 +1908,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 		  || TREE_OPERAND (base, 0) != TREE_OPERAND (base2, 0)
 		  || !tree_int_cst_equal (TREE_OPERAND (base, 1),
 					  TREE_OPERAND (base2, 1))))
-	  || offset2 > offset
-	  || offset2 + size2 < offset + maxsize)
+	  || !stmt_kills_ref_p (def_stmt, ref))
 	return (void *)-1;
 
       /* Find the common base of ref and the lhs.  lhs_ops already

@@ -2282,9 +2282,16 @@ stmt_kills_ref_p (gimple stmt, ao_ref *ref)
 	      if (saved_lhs0)
 		TREE_OPERAND (lhs, 0) = saved_lhs0;
 	    }
-	  /* Finally check if lhs is equal or equal to the base candidate
-	     of the access.  */
-	  if (operand_equal_p (lhs, base, 0))
+	  /* Finally check if the lhs has the same address and size as the
+	     base candidate of the access.  */
+	  if (lhs == base
+	      || (((TYPE_SIZE (TREE_TYPE (lhs))
+		    == TYPE_SIZE (TREE_TYPE (base)))
+		   || (TYPE_SIZE (TREE_TYPE (lhs))
+		       && TYPE_SIZE (TREE_TYPE (base))
+		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (lhs)),
+					   TYPE_SIZE (TREE_TYPE (base)), 0)))
+		  && operand_equal_p (lhs, base, OEP_ADDRESS_OF)))
 	    return true;
 	}
 
