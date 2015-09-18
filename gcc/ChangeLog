@@ -1,3 +1,16 @@
+2015-09-18  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (append_entry_to_tmpl_value_parm_die_table): Assert
+	we're in early phase.
+	(schedule_generic_params_dies_gen): Likewise.
+	(gen_remaining_tmpl_value_param_die_attribute): Do only as much
+	work as possible, retaining unhandled cases.
+	(gen_scheduled_generic_parms_dies): Set early-dwarf flag and
+	clear out generic_type_instances at the end.
+	(dwarf2out_finish): Move call to gen_scheduled_generic_parms_dies...
+	(dwarf2out_early_finish): ... here.  Do most of
+	gen_remaining_tmpl_value_param_die_attribute here.
+
 2015-09-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/67283
