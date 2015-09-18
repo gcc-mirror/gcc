@@ -1,4 +1,10 @@
-2015-09-16  Jeff Law  <law@redhat.com>
+2015-09-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/67619
+	* except.c (expand_builtin_eh_return): Use copy_addr_to_reg to copy
+	the address to a register.
+
+2015-09-18  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47679
 	* Makefile.in (OBJS): Add tree-ssa-phionlycprop.o

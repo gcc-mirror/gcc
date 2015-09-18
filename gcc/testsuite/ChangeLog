@@ -1,3 +1,8 @@
+2015-09-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/67619
+	* gcc.dg/torture/pr67619.c: New test.
+
 2015-09-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/67283
