@@ -78,15 +78,6 @@ struct edge_info
   vec<cond_equivalence> cond_equivalences;
 };
 
-/* Hash table with expressions made available during the renaming process.
-   When an assignment of the form X_i = EXPR is found, the statement is
-   stored in this table.  If the same expression EXPR is later found on the
-   RHS of another statement, it is replaced with X_i (thus performing
-   global redundancy elimination).  Similarly as we pass through conditionals
-   we record the conditional itself as having either a true or false value
-   in this table.  */
-static hash_table<expr_elt_hasher> *avail_exprs;
-
 /* Unwindable equivalences, both const/copy and expression varieties.  */
 static const_and_copies *const_and_copies;
 static avail_exprs_stack *avail_exprs_stack;
@@ -114,8 +105,6 @@ static struct opt_stats_d opt_stats;
 /* Local functions.  */
 static void optimize_stmt (basic_block, gimple_stmt_iterator);
 static tree lookup_avail_expr (gimple, bool);
-static void htab_statistics (FILE *,
-			     const hash_table<expr_elt_hasher> &);
 static void record_cond (cond_equivalence *);
 static void record_equality (tree, tree);
 static void record_equivalences_from_phis (basic_block);
@@ -123,6 +112,9 @@ static void record_equivalences_from_incoming_edge (basic_block);
 static void eliminate_redundant_computations (gimple_stmt_iterator *);
 static void record_equivalences_from_stmt (gimple, int);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
+static void dump_dominator_optimization_stats (FILE *file,
+					       hash_table<expr_elt_hasher> *);
+
 
 /* Free the edge_info data attached to E, if it exists.  */
 
@@ -548,7 +540,8 @@ pass_dominator::execute (function *fun)
   memset (&opt_stats, 0, sizeof (opt_stats));
 
   /* Create our hash tables.  */
-  avail_exprs = new hash_table<expr_elt_hasher> (1024);
+  hash_table<expr_elt_hasher> *avail_exprs
+    = new hash_table<expr_elt_hasher> (1024);
   avail_exprs_stack = new class avail_exprs_stack (avail_exprs);
   const_and_copies = new class const_and_copies ();
   need_eh_cleanup = BITMAP_ALLOC (NULL);
@@ -671,7 +664,7 @@ pass_dominator::execute (function *fun)
 
   /* Debugging dumps.  */
   if (dump_file && (dump_flags & TDF_STATS))
-    dump_dominator_optimization_stats (dump_file);
+    dump_dominator_optimization_stats (dump_file, avail_exprs);
 
   loop_optimizer_finalize ();
 
@@ -1008,10 +1001,22 @@ record_equivalences_from_incoming_edge (basic_block bb)
     record_temporary_equivalences (e);
 }
 
+/* Dump statistics for the hash table HTAB.  */
+
+static void
+htab_statistics (FILE *file, const hash_table<expr_elt_hasher> &htab)
+{
+  fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
+	   (long) htab.size (),
+	   (long) htab.elements (),
+	   htab.collisions ());
+}
+
 /* Dump SSA statistics on FILE.  */
 
-void
-dump_dominator_optimization_stats (FILE *file)
+static void
+dump_dominator_optimization_stats (FILE *file,
+				   hash_table<expr_elt_hasher> *avail_exprs)
 {
   fprintf (file, "Total number of statements:                   %6ld\n\n",
 	   opt_stats.num_stmts);
@@ -1025,27 +1030,6 @@ dump_dominator_optimization_stats (FILE *file)
 }
 
 
-/* Dump SSA statistics on stderr.  */
-
-DEBUG_FUNCTION void
-debug_dominator_optimization_stats (void)
-{
-  dump_dominator_optimization_stats (stderr);
-}
-
-
-/* Dump statistics for the hash table HTAB.  */
-
-static void
-htab_statistics (FILE *file, const hash_table<expr_elt_hasher> &htab)
-{
-  fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-	   (long) htab.size (),
-	   (long) htab.elements (),
-	   htab.collisions ());
-}
-
-
 /* Enter condition equivalence into the expression hash table.
    This indicates that a conditional expression has a known
    boolean value.  */
@@ -1056,6 +1040,7 @@ record_cond (cond_equivalence *p)
   class expr_hash_elt *element = new expr_hash_elt (&p->cond, p->value);
   expr_hash_elt **slot;
 
+  hash_table<expr_elt_hasher> *avail_exprs = avail_exprs_stack->avail_exprs ();
   slot = avail_exprs->find_slot_with_hash (element, element->hash (), INSERT);
   if (*slot == NULL)
     {
@@ -1917,6 +1902,7 @@ lookup_avail_expr (gimple stmt, bool insert)
     return NULL_TREE;
 
   /* Finally try to find the expression in the main expression hash table.  */
+  hash_table<expr_elt_hasher> *avail_exprs = avail_exprs_stack->avail_exprs ();
   slot = avail_exprs->find_slot (&element, (insert ? INSERT : NO_INSERT));
   if (slot == NULL)
     {
