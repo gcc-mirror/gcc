@@ -79,7 +79,6 @@ struct edge_info
 };
 
 /* Unwindable equivalences, both const/copy and expression varieties.  */
-static const_and_copies *const_and_copies;
 static avail_exprs_stack *avail_exprs_stack;
 
 /* Track whether or not we have changed the control flow graph.  */
@@ -103,13 +102,16 @@ struct opt_stats_d
 static struct opt_stats_d opt_stats;
 
 /* Local functions.  */
-static void optimize_stmt (basic_block, gimple_stmt_iterator);
+static void optimize_stmt (basic_block, gimple_stmt_iterator,
+			   class const_and_copies *);
 static tree lookup_avail_expr (gimple, bool);
 static void record_cond (cond_equivalence *);
-static void record_equality (tree, tree);
+static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
-static void record_equivalences_from_incoming_edge (basic_block);
-static void eliminate_redundant_computations (gimple_stmt_iterator *);
+static void record_equivalences_from_incoming_edge (basic_block,
+						    class const_and_copies *);
+static void eliminate_redundant_computations (gimple_stmt_iterator *,
+					      class const_and_copies *);
 static void record_equivalences_from_stmt (gimple, int);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 static void dump_dominator_optimization_stats (FILE *file,
@@ -487,14 +489,20 @@ record_edge_info (basic_block bb)
 class dom_opt_dom_walker : public dom_walker
 {
 public:
-  dom_opt_dom_walker (cdi_direction direction)
-    : dom_walker (direction), m_dummy_cond (NULL) {}
+  dom_opt_dom_walker (cdi_direction direction,
+		      class const_and_copies *const_and_copies)
+    : dom_walker (direction),
+      m_const_and_copies (const_and_copies),
+      m_dummy_cond (NULL) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
   void thread_across_edge (edge);
+
+  /* Unwindable equivalences, both const/copy and expression varieties.  */
+  class const_and_copies *m_const_and_copies;
 
   gcond *m_dummy_cond;
 };
@@ -543,7 +551,7 @@ pass_dominator::execute (function *fun)
   hash_table<expr_elt_hasher> *avail_exprs
     = new hash_table<expr_elt_hasher> (1024);
   avail_exprs_stack = new class avail_exprs_stack (avail_exprs);
-  const_and_copies = new class const_and_copies ();
+  class const_and_copies *const_and_copies = new class const_and_copies ();
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_noreturn_fixup.create (0);
 
@@ -581,7 +589,8 @@ pass_dominator::execute (function *fun)
     record_edge_info (bb);
 
   /* Recursively walk the dominator tree optimizing statements.  */
-  dom_opt_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
+  dom_opt_dom_walker walker (CDI_DOMINATORS, const_and_copies);
+  walker.walk (fun->cfg->x_entry_block_ptr);
 
   {
     gimple_stmt_iterator gsi;
@@ -764,7 +773,8 @@ dom_valueize (tree t)
 
    Callers are responsible for managing the unwinding markers.  */
 static void
-record_temporary_equivalences (edge e)
+record_temporary_equivalences (edge e,
+			       class const_and_copies *const_and_copies)
 {
   int i;
   struct edge_info *edge_info = (struct edge_info *) e->aux;
@@ -779,7 +789,7 @@ record_temporary_equivalences (edge e)
 
       /* If we have a simple NAME = VALUE equivalence, record it.  */
       if (lhs)
-	record_equality (lhs, rhs);
+	record_equality (lhs, rhs, const_and_copies);
 
       /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
 	 set via a widening type conversion, then we may be able to record
@@ -808,7 +818,7 @@ record_temporary_equivalences (edge e)
 		  && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
 		{
 		  tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
-		  record_equality (old_rhs, newval);
+		  record_equality (old_rhs, newval, const_and_copies);
 		}
 	    }
 	}
@@ -843,7 +853,7 @@ record_temporary_equivalences (edge e)
 		  if (res
 		      && (TREE_CODE (res) == SSA_NAME
 			  || is_gimple_min_invariant (res)))
-		    record_equality (lhs2, res);
+		    record_equality (lhs2, res, const_and_copies);
 		}
 	    }
 	}
@@ -871,15 +881,15 @@ dom_opt_dom_walker::thread_across_edge (edge e)
   /* Push a marker on both stacks so we can unwind the tables back to their
      current state.  */
   avail_exprs_stack->push_marker ();
-  const_and_copies->push_marker ();
+  m_const_and_copies->push_marker ();
 
   /* Traversing E may result in equivalences we can utilize.  */
-  record_temporary_equivalences (e);
+  record_temporary_equivalences (e, m_const_and_copies);
 
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
   ::thread_across_edge (m_dummy_cond, e, false,
-		        const_and_copies, avail_exprs_stack,
+		        m_const_and_copies, avail_exprs_stack,
 		        simplify_stmt_for_jump_threading);
 
   /* And restore the various tables to their state before
@@ -983,7 +993,8 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
    has more than one incoming edge, then no equivalence is created.  */
 
 static void
-record_equivalences_from_incoming_edge (basic_block bb)
+record_equivalences_from_incoming_edge (basic_block bb,
+    class const_and_copies *const_and_copies)
 {
   edge e;
   basic_block parent;
@@ -998,7 +1009,7 @@ record_equivalences_from_incoming_edge (basic_block bb)
   /* If we had a single incoming edge from our parent block, then enter
      any data associated with the edge into our tables.  */
   if (e && e->src == parent)
-    record_temporary_equivalences (e);
+    record_temporary_equivalences (e, const_and_copies);
 }
 
 /* Dump statistics for the hash table HTAB.  */
@@ -1083,7 +1094,7 @@ loop_depth_of_name (tree x)
    This constrains the cases in which we may treat this as assignment.  */
 
 static void
-record_equality (tree x, tree y)
+record_equality (tree x, tree y, class const_and_copies *const_and_copies)
 {
   tree prev_x = NULL, prev_y = NULL;
 
@@ -1183,14 +1194,12 @@ simple_iv_increment_p (gimple stmt)
   return false;
 }
 
-/* CONST_AND_COPIES is a table which maps an SSA_NAME to the current
-   known value for that SSA_NAME (or NULL if no value is known).
-
-   Propagate values from CONST_AND_COPIES into the PHI nodes of the
+/* Propagate know values from SSA_NAME_VALUE into the PHI nodes of the
    successors of BB.  */
 
 static void
-cprop_into_successor_phis (basic_block bb)
+cprop_into_successor_phis (basic_block bb,
+			   class const_and_copies *const_and_copies)
 {
   edge e;
   edge_iterator ei;
@@ -1272,9 +1281,9 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
   avail_exprs_stack->push_marker ();
-  const_and_copies->push_marker ();
+  m_const_and_copies->push_marker ();
 
-  record_equivalences_from_incoming_edge (bb);
+  record_equivalences_from_incoming_edge (bb, m_const_and_copies);
 
   /* PHI nodes can create equivalences too.  */
   record_equivalences_from_phis (bb);
@@ -1284,15 +1293,15 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
      marker and unwind right afterwards.  */
   avail_exprs_stack->push_marker ();
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    eliminate_redundant_computations (&gsi);
+    eliminate_redundant_computations (&gsi, m_const_and_copies);
   avail_exprs_stack->pop_to_marker ();
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    optimize_stmt (bb, gsi);
+    optimize_stmt (bb, gsi, m_const_and_copies);
 
   /* Now prepare to process dominated blocks.  */
   record_edge_info (bb);
-  cprop_into_successor_phis (bb);
+  cprop_into_successor_phis (bb, m_const_and_copies);
 }
 
 /* We have finished processing the dominator children of BB, perform
@@ -1337,7 +1346,7 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
 
   /* These remove expressions local to BB from the tables.  */
   avail_exprs_stack->pop_to_marker ();
-  const_and_copies->pop_to_marker ();
+  m_const_and_copies->pop_to_marker ();
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
@@ -1347,7 +1356,8 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
    table.  */
 
 static void
-eliminate_redundant_computations (gimple_stmt_iterator* gsi)
+eliminate_redundant_computations (gimple_stmt_iterator* gsi,
+				  class const_and_copies *const_and_copies)
 {
   tree expr_type;
   tree cached_lhs;
@@ -1655,7 +1665,8 @@ cprop_into_stmt (gimple stmt)
       the variable in the LHS in the CONST_AND_COPIES table.  */
 
 static void
-optimize_stmt (basic_block bb, gimple_stmt_iterator si)
+optimize_stmt (basic_block bb, gimple_stmt_iterator si,
+	       class const_and_copies *const_and_copies)
 {
   gimple stmt, old_stmt;
   bool may_optimize_p;
@@ -1745,7 +1756,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	}
 
       update_stmt_if_modified (stmt);
-      eliminate_redundant_computations (&si);
+      eliminate_redundant_computations (&si, const_and_copies);
       stmt = gsi_stmt (si);
 
       /* Perform simple redundant store elimination.  */

@@ -1,6 +1,25 @@
 2015-09-18  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47679
+	* tree-ssa-dom.c (const_and_copies): No longer file scoped.  Move
+	it here ...
+	(dom_opt_dom_walker): New private member holding the const_and_copies
+	object.  Update constructor.
+	(pass_dominator::execute): Corresponding changes to declaration
+	and initialization of const_and_copies.  Update constructor call
+	for the dom_opt_dom_walker object.
+	(record_temporary_equivalences): Accept const_and_copies argument
+	pass it down to children as needed.
+	(record_equality): Likewise.
+	(record_equivalences_from_incoming_edge): Likewise.
+	(cprop_into_successor_phis, optimize_stmt): Likewise.
+	(eliminate_redundant_computations): Likewise.
+	(dom_opt_dom_walker::thread_across_edge): Update access to
+	const_and_copies object and pass it to children as needed.
+	(dom_opt_dom_walker::before_dom_children): Similarly.
+	(dom_opt_dom_walker::after_dom_children): Similarly.
+
+	PR tree-optimization/47679
 	* tree-ssa-dom.c (avail_exprs): No longer file scoped.  Bury
 	it into the avail_exprs_stack class.
 	(pass_dominator::execute): Corresponding changes to declaration
