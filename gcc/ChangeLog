@@ -20,6 +20,10 @@
 	(ASM_OUTPUT_DWARF_DATAREL): Define.
 	(EH_FRAME_THROUGH_COLLECT2): Define.
 	(EH_FRAME_IN_DATA_SECTION): Delete.
+	* config/rs6000/aix61.h (STARTFILE_SPEC): Add crtdbase.o.
+	* config/rs6000/rs6000-protos.h (rs6000_asm_output_dwarf_pcrel):
+	Declare.
+	(rs6000_asm_output_dwarf_datarel): Declare.
 	* config/rs6000/rs6000.c (rs6000_aix_asm_output_dwarf_pcrel): New.
 	(rs6000_aix_asm_output_dwarf_datarel): New.
 	(rs6000_xcoff_asm_init_sections): Don't	set exception_section.
