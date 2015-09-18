@@ -1,3 +1,13 @@
+2014-09-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-protos.h (pa_cint_ok_for_move): Change argument type to
+	unsigned.
+	(pa_ldil_cint_p): Likewise.
+	* config/pa/pa.c (pa_cint_ok_for_move): likewise.
+	(pa_ldil_cint_p): Likewise. Change signed casts to unsigned.
+	Update callers.
+	* config/pa/pa.md: Likewise.
+
 2015-09-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS-libcommon): Add diagnostic-show-locus.o.
