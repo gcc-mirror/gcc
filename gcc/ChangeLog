@@ -1,3 +1,38 @@
+2015-09-18  Andrew Dixie  <andrewd@gentrack.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* defaults.h (EH_FRAME_SECTION_NAME): Depend on
+	EH_FRAME_THROUGH_COLLECT2.
+	* dwarf2asm.c (dw2_asm_output_encoded_addr_rtx): Add case for
+	DW_EH_PE_datarel.
+	* dwarf2out.c (switch_to_eh_frame_section): Use a read-only section
+	even if EH_FRAME_SECTION_NAME is undefined.  Restrict special
+	collect2 labels to EH_FRAME_THROUGH_COLLECT2.
+	* except.c (switch_to_exception_section): Use a read-only section
+	even if EH_FRAME_SECTION_NAME is undefined.
+	* system.h (EH_FRAME_IN_DATA_SECTION): Poison.
+	* collect2.c (write_c_file_stat): Provide dbase on AIX.
+	(scan_prog_file): Don't export __dso_handle nor
+	__gcc_unwind_dbase.
+	* config/rs6000/aix.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	(EH_TABLES_CAN_BE_READ_ONLY): Define.
+	(ASM_OUTPUT_DWARF_PCREL): Define.
+	(ASM_OUTPUT_DWARF_DATAREL): Define.
+	(EH_FRAME_THROUGH_COLLECT2): Define.
+	(EH_FRAME_IN_DATA_SECTION): Delete.
+	* config/rs6000/rs6000.c (rs6000_aix_asm_output_dwarf_pcrel): New.
+	(rs6000_aix_asm_output_dwarf_datarel): New.
+	(rs6000_xcoff_asm_init_sections): Don't	set exception_section.
+	* config/spu/spu-elf.h (EH_FRAME_IN_DATA_SECTION): Delete.
+	(EH_FRAME_THROUGH_COLLECT2): Define.
+	* config/i386/i386-interix.h (EH_FRAME_IN_DATA_SECTION): Delete.
+	(EH_FRAME_THROUGH_COLLECT2): Define.
+	(EH_TABLES_CAN_BE_READ_ONLY): Define.
+	* doc/tm.texi.in (EH_FRAME_IN_DATA_SECTION): Delete.
+	(EH_FRAME_THROUGH_COLLECT2): New.
+	(ASM_OUTPUT_DWARF_DATAREL): New.
+	* doc/tm.texi: Regenerate.
+
 2015-09-18  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (append_entry_to_tmpl_value_parm_die_table): Assert

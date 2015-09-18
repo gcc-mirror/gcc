@@ -5,6 +5,9 @@ LIB2ADD_ST += $(srcdir)/config/rs6000/aixinitfini.c
 
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-aix-cxa.ver
 
+crtdbase.o: $(srcdir)/config/rs6000/crtdbase.S
+	$(crt_compile) -c $<
+
 crtcxa.o: $(srcdir)/config/rs6000/crtcxa.c
 	$(crt_compile) -c $<
 

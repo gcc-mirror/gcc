@@ -438,7 +438,6 @@ switch_to_eh_frame_section (bool back)
 {
   tree label;
 
-#ifdef EH_FRAME_SECTION_NAME
   if (eh_frame_section == 0)
     {
       int flags;
@@ -466,27 +465,29 @@ switch_to_eh_frame_section (bool back)
 	}
       else
 	flags = SECTION_WRITE;
+
+#ifdef EH_FRAME_SECTION_NAME
       eh_frame_section = get_section (EH_FRAME_SECTION_NAME, flags, NULL);
-    }
+#else
+      eh_frame_section = ((flags == SECTION_WRITE)
+			  ? data_section : readonly_data_section);
 #endif /* EH_FRAME_SECTION_NAME */
-
-  if (eh_frame_section)
-    switch_to_section (eh_frame_section);
-  else
-    {
-      /* We have no special eh_frame section.  Put the information in
-	 the data section and emit special labels to guide collect2.  */
-      switch_to_section (data_section);
-
-      if (!back)
-	{
-	  label = get_file_function_name ("F");
-	  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
-	  targetm.asm_out.globalize_label (asm_out_file,
-					   IDENTIFIER_POINTER (label));
-	  ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
-	}
     }
+
+  switch_to_section (eh_frame_section);
+
+#ifdef EH_FRAME_THROUGH_COLLECT2
+  /* We have no special eh_frame section.  Emit special labels to guide
+     collect2.  */
+  if (!back)
+    {
+      label = get_file_function_name ("F");
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+      targetm.asm_out.globalize_label (asm_out_file,
+					IDENTIFIER_POINTER (label));
+      ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+    }
+#endif
 }
 
 /* Switch [BACK] to the eh or debug frame table section, depending on
