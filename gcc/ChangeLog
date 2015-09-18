@@ -1,5 +1,10 @@
 2015-09-18  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (add_location_or_const_value_attribute): Do nothing
+	in early-dwarf.
+
+2015-09-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66142
 	* fold-const.c (operand_equal_p): When OEP_ADDRESS_OF
 	treat MEM[&x] and x the same.

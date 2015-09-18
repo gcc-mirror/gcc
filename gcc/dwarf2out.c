@@ -16145,6 +16145,9 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
   var_loc_list *loc_list;
   cached_dw_loc_list *cache;
 
+  if (early_dwarf)
+    return false;
+
   if (TREE_CODE (decl) == ERROR_MARK)
     return false;
 
