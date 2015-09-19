@@ -1,3 +1,12 @@
+2015-09-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement nested namespace definitions.
+	* g++.dg/cpp1z/nested-namespace-def1.C: New.
+	* g++.dg/cpp1z/nested-namespace-def2.C: Likewise.
+	* g++.dg/cpp1z/nested-namespace-def3.C: Likewise.
+	* g++.dg/lookup/name-clash5.C: Adjust.
+	* g++.dg/lookup/name-clash6.C: Likewise.
+
 2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* gcc.dg/pragma-diag-5.c: New test.
