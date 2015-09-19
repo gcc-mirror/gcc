@@ -1,3 +1,16 @@
+2015-09-19  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/67361
+	* include/bits/regex_error.h: Add __throw_regex_error that
+	supports string.
+	* include/bits/regex_automaton.h: Add more specific exception
+	messages.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_compiler.h: Likewise.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_scanner.h: Likewise.
+	* include/bits/regex_scanner.tcc: Likewise.
+
 2015-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/precompiled/extc++.h: Fix bootstrap error due to
