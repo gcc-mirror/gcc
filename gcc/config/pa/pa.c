@@ -8510,14 +8510,6 @@ pa_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   if (TARGET_PORTABLE_RUNTIME)
     return false;
 
-  /* Sibcalls are ok for TARGET_ELF32 as along as the linker is used in
-     single subspace mode and the call is not indirect.  As far as I know,
-     there is no operating system support for the multiple subspace mode.
-     It might be possible to support indirect calls if we didn't use
-     $$dyncall (see the indirect sequence generated in pa_output_call).  */
-  if (TARGET_ELF32)
-    return (decl != NULL_TREE);
-
   /* Sibcalls are not ok because the arg pointer register is not a fixed
      register.  This prevents the sibcall optimization from occurring.  In
      addition, there are problems with stub placement using GNU ld.  This
