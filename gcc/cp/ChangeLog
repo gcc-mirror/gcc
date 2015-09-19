@@ -1,3 +1,9 @@
+2015-09-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement nested namespace definitions.
+	* parser.c (cp_parser_namespace_definition): Grok nested namespace
+	definitions.
+
 2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* parser.c (pragma_lex): Add loc argument. Rearrange the code to

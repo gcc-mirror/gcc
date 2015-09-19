@@ -16953,6 +16953,8 @@ cp_parser_namespace_definition (cp_parser* parser)
   tree identifier, attribs;
   bool has_visibility;
   bool is_inline;
+  cp_token* token;
+  int nested_definition_count = 0;
 
   cp_ensure_no_omp_declare_simd (parser);
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_INLINE))
@@ -16965,7 +16967,7 @@ cp_parser_namespace_definition (cp_parser* parser)
     is_inline = false;
 
   /* Look for the `namespace' keyword.  */
-  cp_parser_require_keyword (parser, RID_NAMESPACE, RT_NAMESPACE);
+  token = cp_parser_require_keyword (parser, RID_NAMESPACE, RT_NAMESPACE);
 
   /* Get the name of the namespace.  We do not attempt to distinguish
      between an original-namespace-definition and an
@@ -16979,10 +16981,37 @@ cp_parser_namespace_definition (cp_parser* parser)
   /* Parse any specified attributes.  */
   attribs = cp_parser_attributes_opt (parser);
 
-  /* Look for the `{' to start the namespace.  */
-  cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
   /* Start the namespace.  */
   push_namespace (identifier);
+
+  /* Parse any nested namespace definition. */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
+    {
+      if (attribs)
+        error_at (token->location, "a nested namespace definition cannot have attributes");
+      if (cxx_dialect < cxx1z)
+        pedwarn (input_location, OPT_Wpedantic,
+                 "nested namespace definitions only available with "
+                 "-std=c++1z or -std=gnu++1z");
+      if (is_inline)
+        error_at (token->location, "a nested namespace definition cannot be inline");
+      while (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
+        {
+          cp_lexer_consume_token (parser->lexer);
+          if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+            identifier = cp_parser_identifier (parser);
+          else
+            {
+              cp_parser_error (parser, "nested identifier required");
+              break;
+            }
+          ++nested_definition_count;
+          push_namespace (identifier);
+        }
+    }
+
+  /* Look for the `{' to validate starting the namespace.  */
+  cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
 
   /* "inline namespace" is equivalent to a stub namespace definition
      followed by a strong using directive.  */
@@ -17006,6 +17035,10 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   if (has_visibility)
     pop_visibility (1);
+
+  /* Finish the nested namespace definitions.  */
+  while (nested_definition_count--)
+    pop_namespace ();
 
   /* Finish the namespace.  */
   pop_namespace ();

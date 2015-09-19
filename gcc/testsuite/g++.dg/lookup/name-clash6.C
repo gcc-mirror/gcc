@@ -8,6 +8,6 @@
 
 class N; // { dg-message "previous declaration" }
 
-namespace N
-{ // { dg-error "redeclared" }
+namespace N // { dg-error "redeclared" }
+{
 }
