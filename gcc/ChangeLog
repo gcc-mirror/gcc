@@ -1,3 +1,13 @@
+2015-09-19  Andrew Dixie  <andrewd@gentrack.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/xcoff.h (EH_FRAME_IN_DATA_SECTION): Delete.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	(EH_FRAME_THROUGH_COLLECT2): Define.
+	(EH_TABLES_CAN_BE_READ_ONLY): Define.
+	(ASM_OUTPUT_DWARF_PCREL): Define.
+	(ASM_OUTPUT_DWARF_DATAREL): Define.
+
 2015-09-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_function_ok_for_sibcall): Remove special treatment
