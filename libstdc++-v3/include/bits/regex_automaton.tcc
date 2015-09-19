@@ -149,7 +149,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _NFA<_TraitsT>::_M_insert_backref(size_t __index)
     {
       if (this->_M_flags & regex_constants::__polynomial)
-	__throw_regex_error(regex_constants::error_complexity);
+	__throw_regex_error(regex_constants::error_complexity,
+			    "Unexpected back-reference in polynomial mode.");
       // To figure out whether a backref is valid, a stack is used to store
       // unfinished sub-expressions. For example, when parsing
       // "(a(b)(c\\1(d)))" at '\\1', _M_subexpr_count is 3, indicating that 3
@@ -158,10 +159,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _M_paren_stack is {1, 3}, for incomplete "(a.." and "(c..". At this
       // time, "\\2" is valid, but "\\1" and "\\3" are not.
       if (__index >= _M_subexpr_count)
-	__throw_regex_error(regex_constants::error_backref);
+	__throw_regex_error(
+	  regex_constants::error_backref,
+	  "Back-reference index exceeds current sub-expression count.");
       for (auto __it : this->_M_paren_stack)
 	if (__index == __it)
-	  __throw_regex_error(regex_constants::error_backref);
+	  __throw_regex_error(
+	    regex_constants::error_backref,
+	    "Back-reference referred to an opened sub-expression.");
       this->_M_has_backref = true;
       _StateT __tmp(_S_opcode_backref);
       __tmp._M_backref_index = __index;
