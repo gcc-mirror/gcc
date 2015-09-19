@@ -1,6 +1,37 @@
 2015-09-18  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47679
+	* tree-ssa-dom.c (avail_exprs_stack): No longer file scoped.  Move
+	it here ...
+	(dom_opt_dom_walker): New private member holding the avail_exprs_stack
+	object.  Update constructor.
+	(pass_dominator::execute):  Corresponding chagnes to declaration
+	and initialization of avail_exprs_stack.  Update constructor call
+	for dom_opt_dom_walker object.
+	(lookup_avail_expr, record_cond): Accept additional argument.  Pass
+	it down to children as needed.
+	(record_equivalences_from_incoming_edge): Likewise.
+	(eliminate_redundant_computations): Likewise.
+	(record_equivalences_from_stmt): Likewise.
+	(simplify_stmt_for_jump_threading): Likewise.
+	(record_temporary_equivalences): Likewise.
+	(optimize_stmt): Likewise.
+	(dom_opt_dom_walker::thread_across_edge): Update access to
+	avail_exprs_stack object and pass it to children as needed.
+	(dom_opt_dom_walker::before_dom_children): Similarly.
+	(dom_opt_dom_walker::after_dom_children): Similarly.
+	* tree-ssa-threadedge.c (pfn_simplify): New typedef.
+	(record_temporary_equivalences_from_stmts_at_dest): Use new typedef.
+	Add avail_expr_stack argument.  Pass it to children as needed.
+	(dummy_simplify): Likewise.
+	(simplify_control_stmt_condition): Likewise.
+	(thread_around_empty_blocks): Likewise.
+	(thread_through_normal_block): Likewise.
+	(thread_across_edge): Likewise.
+	* tree-ssa-threadedge.h (thread_across_edge): Update prototype.
+	* tree-vrp.c (simplify_stmt_for_jump_threading): Update.
+
+	PR tree-optimization/47679
 	* tree-ssa-dom.c (const_and_copies): No longer file scoped.  Move
 	it here ...
 	(dom_opt_dom_walker): New private member holding the const_and_copies
