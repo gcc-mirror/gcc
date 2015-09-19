@@ -78,9 +78,6 @@ struct edge_info
   vec<cond_equivalence> cond_equivalences;
 };
 
-/* Unwindable equivalences, both const/copy and expression varieties.  */
-static avail_exprs_stack *avail_exprs_stack;
-
 /* Track whether or not we have changed the control flow graph.  */
 static bool cfg_altered;
 
@@ -103,16 +100,20 @@ static struct opt_stats_d opt_stats;
 
 /* Local functions.  */
 static void optimize_stmt (basic_block, gimple_stmt_iterator,
-			   class const_and_copies *);
-static tree lookup_avail_expr (gimple, bool);
-static void record_cond (cond_equivalence *);
+			   class const_and_copies *,
+			   class avail_exprs_stack *);
+static tree lookup_avail_expr (gimple, bool, class avail_exprs_stack *);
+static void record_cond (cond_equivalence *, class avail_exprs_stack *);
 static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
 static void record_equivalences_from_incoming_edge (basic_block,
-						    class const_and_copies *);
+						    class const_and_copies *,
+						    class avail_exprs_stack *);
 static void eliminate_redundant_computations (gimple_stmt_iterator *,
-					      class const_and_copies *);
-static void record_equivalences_from_stmt (gimple, int);
+					      class const_and_copies *,
+					      class avail_exprs_stack *);
+static void record_equivalences_from_stmt (gimple, int,
+					   class avail_exprs_stack *);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 static void dump_dominator_optimization_stats (FILE *file,
 					       hash_table<expr_elt_hasher> *);
@@ -490,9 +491,11 @@ class dom_opt_dom_walker : public dom_walker
 {
 public:
   dom_opt_dom_walker (cdi_direction direction,
-		      class const_and_copies *const_and_copies)
+		      class const_and_copies *const_and_copies,
+		      class avail_exprs_stack *avail_exprs_stack)
     : dom_walker (direction),
       m_const_and_copies (const_and_copies),
+      m_avail_exprs_stack (avail_exprs_stack),
       m_dummy_cond (NULL) {}
 
   virtual void before_dom_children (basic_block);
@@ -503,6 +506,7 @@ private:
 
   /* Unwindable equivalences, both const/copy and expression varieties.  */
   class const_and_copies *m_const_and_copies;
+  class avail_exprs_stack *m_avail_exprs_stack;
 
   gcond *m_dummy_cond;
 };
@@ -550,7 +554,8 @@ pass_dominator::execute (function *fun)
   /* Create our hash tables.  */
   hash_table<expr_elt_hasher> *avail_exprs
     = new hash_table<expr_elt_hasher> (1024);
-  avail_exprs_stack = new class avail_exprs_stack (avail_exprs);
+  class avail_exprs_stack *avail_exprs_stack
+    = new class avail_exprs_stack (avail_exprs);
   class const_and_copies *const_and_copies = new class const_and_copies ();
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_noreturn_fixup.create (0);
@@ -589,7 +594,9 @@ pass_dominator::execute (function *fun)
     record_edge_info (bb);
 
   /* Recursively walk the dominator tree optimizing statements.  */
-  dom_opt_dom_walker walker (CDI_DOMINATORS, const_and_copies);
+  dom_opt_dom_walker walker (CDI_DOMINATORS,
+			     const_and_copies,
+			     avail_exprs_stack);
   walker.walk (fun->cfg->x_entry_block_ptr);
 
   {
@@ -749,9 +756,10 @@ canonicalize_comparison (gcond *condstmt)
    threading code with a simple API for simplifying statements.  */
 static tree
 simplify_stmt_for_jump_threading (gimple stmt,
-				  gimple within_stmt ATTRIBUTE_UNUSED)
+				  gimple within_stmt ATTRIBUTE_UNUSED,
+				  class avail_exprs_stack *avail_exprs_stack)
 {
-  return lookup_avail_expr (stmt, false);
+  return lookup_avail_expr (stmt, false, avail_exprs_stack);
 }
 
 /* Valueize hook for gimple_fold_stmt_to_constant_1.  */
@@ -768,13 +776,14 @@ dom_valueize (tree t)
   return t;
 }
 
-/* Record into the equivalence tables any equivalences implied by
-   traversing edge E (which are cached in E->aux).
+/* Record into CONST_AND_COPIES and AVAIL_EXPRS_STACK any equivalences implied
+   by traversing edge E (which are cached in E->aux).
 
    Callers are responsible for managing the unwinding markers.  */
 static void
 record_temporary_equivalences (edge e,
-			       class const_and_copies *const_and_copies)
+			       class const_and_copies *const_and_copies,
+			       class avail_exprs_stack *avail_exprs_stack)
 {
   int i;
   struct edge_info *edge_info = (struct edge_info *) e->aux;
@@ -861,7 +870,7 @@ record_temporary_equivalences (edge e,
       /* If we have 0 = COND or 1 = COND equivalences, record them
 	 into our expression hash tables.  */
       for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-	record_cond (eq);
+	record_cond (eq, avail_exprs_stack);
     }
 }
 
@@ -880,16 +889,16 @@ dom_opt_dom_walker::thread_across_edge (edge e)
 
   /* Push a marker on both stacks so we can unwind the tables back to their
      current state.  */
-  avail_exprs_stack->push_marker ();
+  m_avail_exprs_stack->push_marker ();
   m_const_and_copies->push_marker ();
 
   /* Traversing E may result in equivalences we can utilize.  */
-  record_temporary_equivalences (e, m_const_and_copies);
+  record_temporary_equivalences (e, m_const_and_copies, m_avail_exprs_stack);
 
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
   ::thread_across_edge (m_dummy_cond, e, false,
-		        m_const_and_copies, avail_exprs_stack,
+		        m_const_and_copies, m_avail_exprs_stack,
 		        simplify_stmt_for_jump_threading);
 
   /* And restore the various tables to their state before
@@ -898,7 +907,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
      XXX The code in tree-ssa-threadedge.c will restore the state of
      the const_and_copies table.  We we just have to restore the expression
      table.  */
-  avail_exprs_stack->pop_to_marker ();
+  m_avail_exprs_stack->pop_to_marker ();
 }
 
 /* PHI nodes can create equivalences too.
@@ -989,12 +998,14 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
   return retval;
 }
 
-/* Record any equivalences created by the incoming edge to BB.  If BB
-   has more than one incoming edge, then no equivalence is created.  */
+/* Record any equivalences created by the incoming edge to BB into
+   CONST_AND_COPIES and AVAIL_EXPRS_STACK.  If BB has more than one
+   incoming edge, then no equivalence is created.  */
 
 static void
 record_equivalences_from_incoming_edge (basic_block bb,
-    class const_and_copies *const_and_copies)
+    class const_and_copies *const_and_copies,
+    class avail_exprs_stack *avail_exprs_stack)
 {
   edge e;
   basic_block parent;
@@ -1009,7 +1020,7 @@ record_equivalences_from_incoming_edge (basic_block bb,
   /* If we had a single incoming edge from our parent block, then enter
      any data associated with the edge into our tables.  */
   if (e && e->src == parent)
-    record_temporary_equivalences (e, const_and_copies);
+    record_temporary_equivalences (e, const_and_copies, avail_exprs_stack);
 }
 
 /* Dump statistics for the hash table HTAB.  */
@@ -1041,12 +1052,14 @@ dump_dominator_optimization_stats (FILE *file,
 }
 
 
-/* Enter condition equivalence into the expression hash table.
+/* Enter condition equivalence P into AVAIL_EXPRS_HASH.
+
    This indicates that a conditional expression has a known
    boolean value.  */
 
 static void
-record_cond (cond_equivalence *p)
+record_cond (cond_equivalence *p,
+	     class avail_exprs_stack *avail_exprs_stack)
 {
   class expr_hash_elt *element = new expr_hash_elt (&p->cond, p->value);
   expr_hash_elt **slot;
@@ -1056,7 +1069,6 @@ record_cond (cond_equivalence *p)
   if (*slot == NULL)
     {
       *slot = element;
-
       avail_exprs_stack->record_expr (element, NULL, '1');
     }
   else
@@ -1280,10 +1292,11 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
-  avail_exprs_stack->push_marker ();
+  m_avail_exprs_stack->push_marker ();
   m_const_and_copies->push_marker ();
 
-  record_equivalences_from_incoming_edge (bb, m_const_and_copies);
+  record_equivalences_from_incoming_edge (bb, m_const_and_copies,
+					  m_avail_exprs_stack);
 
   /* PHI nodes can create equivalences too.  */
   record_equivalences_from_phis (bb);
@@ -1291,13 +1304,14 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   /* Create equivalences from redundant PHIs.  PHIs are only truly
      redundant when they exist in the same block, so push another
      marker and unwind right afterwards.  */
-  avail_exprs_stack->push_marker ();
+  m_avail_exprs_stack->push_marker ();
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    eliminate_redundant_computations (&gsi, m_const_and_copies);
-  avail_exprs_stack->pop_to_marker ();
+    eliminate_redundant_computations (&gsi, m_const_and_copies,
+				      m_avail_exprs_stack);
+  m_avail_exprs_stack->pop_to_marker ();
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    optimize_stmt (bb, gsi, m_const_and_copies);
+    optimize_stmt (bb, gsi, m_const_and_copies, m_avail_exprs_stack);
 
   /* Now prepare to process dominated blocks.  */
   record_edge_info (bb);
@@ -1345,19 +1359,20 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
     }
 
   /* These remove expressions local to BB from the tables.  */
-  avail_exprs_stack->pop_to_marker ();
+  m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
    replace them with the variable holding the result of the computation.
 
-   If safe, record this expression into the available expression hash
-   table.  */
+   If safe, record this expression into AVAIL_EXPRS_STACK and
+   CONST_AND_COPIES.  */
 
 static void
 eliminate_redundant_computations (gimple_stmt_iterator* gsi,
-				  class const_and_copies *const_and_copies)
+				  class const_and_copies *const_and_copies,
+				  class avail_exprs_stack *avail_exprs_stack)
 {
   tree expr_type;
   tree cached_lhs;
@@ -1384,7 +1399,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
     insert = false;
 
   /* Check if the expression has been computed before.  */
-  cached_lhs = lookup_avail_expr (stmt, insert);
+  cached_lhs = lookup_avail_expr (stmt, insert, avail_exprs_stack);
 
   opt_stats.num_exprs_considered++;
 
@@ -1459,12 +1474,14 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
 
 /* STMT, a GIMPLE_ASSIGN, may create certain equivalences, in either
    the available expressions table or the const_and_copies table.
-   Detect and record those equivalences.  */
-/* We handle only very simple copy equivalences here.  The heavy
+   Detect and record those equivalences into AVAIL_EXPRS_STACK. 
+
+   We handle only very simple copy equivalences here.  The heavy
    lifing is done by eliminate_redundant_computations.  */
 
 static void
-record_equivalences_from_stmt (gimple stmt, int may_optimize_p)
+record_equivalences_from_stmt (gimple stmt, int may_optimize_p,
+			       class avail_exprs_stack *avail_exprs_stack)
 {
   tree lhs;
   enum tree_code lhs_code;
@@ -1567,7 +1584,7 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p)
 
       /* Finally enter the statement into the available expression
 	 table.  */
-      lookup_avail_expr (new_stmt, true);
+      lookup_avail_expr (new_stmt, true, avail_exprs_stack);
     }
 }
 
@@ -1649,7 +1666,8 @@ cprop_into_stmt (gimple stmt)
     cprop_operand (stmt, op_p);
 }
 
-/* Optimize the statement pointed to by iterator SI.
+/* Optimize the statement in block BB pointed to by iterator SI
+   using equivalences from CONST_AND_COPIES and AVAIL_EXPRS_STACK.
 
    We try to perform some simplistic global redundancy elimination and
    constant propagation:
@@ -1666,7 +1684,8 @@ cprop_into_stmt (gimple stmt)
 
 static void
 optimize_stmt (basic_block bb, gimple_stmt_iterator si,
-	       class const_and_copies *const_and_copies)
+	       class const_and_copies *const_and_copies,
+	       class avail_exprs_stack *avail_exprs_stack)
 {
   gimple stmt, old_stmt;
   bool may_optimize_p;
@@ -1756,7 +1775,8 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	}
 
       update_stmt_if_modified (stmt);
-      eliminate_redundant_computations (&si, const_and_copies);
+      eliminate_redundant_computations (&si, const_and_copies,
+					avail_exprs_stack);
       stmt = gsi_stmt (si);
 
       /* Perform simple redundant store elimination.  */
@@ -1778,7 +1798,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	  else
 	    new_stmt = gimple_build_assign (rhs, lhs);
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-	  cached_lhs = lookup_avail_expr (new_stmt, false);
+	  cached_lhs = lookup_avail_expr (new_stmt, false, avail_exprs_stack);
 	  if (cached_lhs
 	      && rhs == cached_lhs)
 	    {
@@ -1798,7 +1818,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 
   /* Record any additional equivalences created by this statement.  */
   if (is_gimple_assign (stmt))
-    record_equivalences_from_stmt (stmt, may_optimize_p);
+    record_equivalences_from_stmt (stmt, may_optimize_p, avail_exprs_stack);
 
   /* If STMT is a COND_EXPR and it was modified, then we may know
      where it goes.  If that is the case, then mark the CFG as altered.
@@ -1876,7 +1896,7 @@ vuse_eq (ao_ref *, tree vuse1, unsigned int cnt, void *data)
   return NULL;
 }
 
-/* Search for an existing instance of STMT in the AVAIL_EXPRS table.
+/* Search for an existing instance of STMT in the AVAIL_EXPRS_STACK table.
    If found, return its LHS. Otherwise insert STMT in the table and
    return NULL_TREE.
 
@@ -1885,7 +1905,8 @@ vuse_eq (ao_ref *, tree vuse1, unsigned int cnt, void *data)
    we finish processing this block and its children.  */
 
 static tree
-lookup_avail_expr (gimple stmt, bool insert)
+lookup_avail_expr (gimple stmt, bool insert,
+		   class avail_exprs_stack *avail_exprs_stack)
 {
   expr_hash_elt **slot;
   tree lhs;

@@ -10066,7 +10066,8 @@ const_and_copies *equiv_stack;
    for any overflow warnings.  */
 
 static tree
-simplify_stmt_for_jump_threading (gimple stmt, gimple within_stmt)
+simplify_stmt_for_jump_threading (gimple stmt, gimple within_stmt,
+    class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED)
 {
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     return vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
