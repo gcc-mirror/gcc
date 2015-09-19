@@ -1,3 +1,8 @@
+2015-09-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_function_ok_for_sibcall): Remove special treatment
+	of TARGET_ELF32.
+
 2015-09-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/67401
