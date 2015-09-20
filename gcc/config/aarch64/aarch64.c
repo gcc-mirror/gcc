@@ -1437,8 +1437,6 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   int i;
   bool first;
   unsigned HOST_WIDE_INT val, val2;
-  bool subtargets;
-  rtx subtarget;
   int one_match, zero_match, first_not_ffff_match;
   int num_insns = 0;
 
@@ -1468,7 +1466,6 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   /* Remaining cases are all for DImode.  */
 
   val = INTVAL (imm);
-  subtargets = optimize && can_create_pseudo_p ();
 
   one_match = 0;
   zero_match = 0;
@@ -1505,63 +1502,6 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 
   if (zero_match == 2)
     goto simple_sequence;
-
-  mask = 0x0ffff0000UL;
-  for (i = 16; i < 64; i += 16, mask <<= 16)
-    {
-      HOST_WIDE_INT comp = mask & ~(mask - 1);
-
-      if (aarch64_uimm12_shift (val - (val & mask)))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget, GEN_INT (val & mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - (val & mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-      else if (aarch64_uimm12_shift (-(val - ((val + comp) & mask))))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget,
-				      GEN_INT ((val + comp) & mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - ((val + comp) & mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-      else if (aarch64_uimm12_shift (val - ((val - comp) | ~mask)))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget,
-				      GEN_INT ((val - comp) | ~mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - ((val - comp) | ~mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-      else if (aarch64_uimm12_shift (-(val - (val | ~mask))))
-	{
-	  if (generate)
-	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget, GEN_INT (val | ~mask)));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - (val | ~mask))));
-	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-    }
 
   if (zero_match != 2 && one_match != 2)
     {
