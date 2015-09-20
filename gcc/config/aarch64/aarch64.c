@@ -563,12 +563,6 @@ static const struct aarch64_option_extension all_extensions[] =
    increment address.  */
 static machine_mode aarch64_memory_reference_mode;
 
-/* A table of valid AArch64 "bitmask immediate" values for
-   logical instructions.  */
-
-#define AARCH64_NUM_BITMASKS  5334
-static unsigned HOST_WIDE_INT aarch64_bitmasks[AARCH64_NUM_BITMASKS];
-
 typedef enum aarch64_cond_code
 {
   AARCH64_EQ = 0, AARCH64_NE, AARCH64_CS, AARCH64_CC, AARCH64_MI, AARCH64_PL,
@@ -3260,67 +3254,6 @@ aarch64_tls_referenced_p (rtx x)
 	iter.skip_subrtxes ();
     }
   return false;
-}
-
-
-static int
-aarch64_bitmasks_cmp (const void *i1, const void *i2)
-{
-  const unsigned HOST_WIDE_INT *imm1 = (const unsigned HOST_WIDE_INT *) i1;
-  const unsigned HOST_WIDE_INT *imm2 = (const unsigned HOST_WIDE_INT *) i2;
-
-  if (*imm1 < *imm2)
-    return -1;
-  if (*imm1 > *imm2)
-    return +1;
-  return 0;
-}
-
-
-static void
-aarch64_build_bitmask_table (void)
-{
-  unsigned HOST_WIDE_INT mask, imm;
-  unsigned int log_e, e, s, r;
-  unsigned int nimms = 0;
-
-  for (log_e = 1; log_e <= 6; log_e++)
-    {
-      e = 1 << log_e;
-      if (e == 64)
-	mask = ~(HOST_WIDE_INT) 0;
-      else
-	mask = ((HOST_WIDE_INT) 1 << e) - 1;
-      for (s = 1; s < e; s++)
-	{
-	  for (r = 0; r < e; r++)
-	    {
-	      /* set s consecutive bits to 1 (s < 64) */
-	      imm = ((unsigned HOST_WIDE_INT)1 << s) - 1;
-	      /* rotate right by r */
-	      if (r != 0)
-		imm = ((imm >> r) | (imm << (e - r))) & mask;
-	      /* replicate the constant depending on SIMD size */
-	      switch (log_e) {
-	      case 1: imm |= (imm <<  2);
-	      case 2: imm |= (imm <<  4);
-	      case 3: imm |= (imm <<  8);
-	      case 4: imm |= (imm << 16);
-	      case 5: imm |= (imm << 32);
-	      case 6:
-		break;
-	      default:
-		gcc_unreachable ();
-	      }
-	      gcc_assert (nimms < AARCH64_NUM_BITMASKS);
-	      aarch64_bitmasks[nimms++] = imm;
-	    }
-	}
-    }
-
-  gcc_assert (nimms == AARCH64_NUM_BITMASKS);
-  qsort (aarch64_bitmasks, nimms, sizeof (aarch64_bitmasks[0]),
-	 aarch64_bitmasks_cmp);
 }
 
 
@@ -8058,8 +7991,6 @@ aarch64_override_options (void)
   if ((aarch64_cpu_string && valid_cpu)
        || (aarch64_arch_string && valid_arch))
     gcc_assert (explicit_arch != aarch64_no_arch);
-
-  aarch64_build_bitmask_table ();
 
   aarch64_override_options_internal (&global_options);
 
