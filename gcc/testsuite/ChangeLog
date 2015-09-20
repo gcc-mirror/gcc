@@ -1,5 +1,10 @@
 2015-09-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* gcc.target/sh/pr43417.c: Move target independent test to ...
+	* gcc.c-torture/compile/pr43417.c: ... here.
+
+2015-09-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* gcc.target/sh/sh.exp (check_effective_target_sh4a,
 	check_effective_target_big_endian, check_effective_target_little_endian,
 	check_effective_target_any_fpu, check_effective_target_double_fpu,
