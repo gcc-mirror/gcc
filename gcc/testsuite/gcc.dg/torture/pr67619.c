@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target builtin_eh_return } */
 
 void
 foo ()
