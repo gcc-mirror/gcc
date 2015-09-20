@@ -264,7 +264,7 @@ get_range_pos_neg (tree arg)
   wide_int arg_min, arg_max;
   while (get_range_info (arg, &arg_min, &arg_max) != VR_RANGE)
     {
-      gimple g = SSA_NAME_DEF_STMT (arg);
+      gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
 	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (g)))
 	{
@@ -346,7 +346,7 @@ get_min_precision (tree arg, signop sign)
   wide_int arg_min, arg_max;
   while (get_range_info (arg, &arg_min, &arg_max) != VR_RANGE)
     {
-      gimple g = SSA_NAME_DEF_STMT (arg);
+      gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
 	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (g)))
 	{
@@ -1661,7 +1661,7 @@ expand_UBSAN_CHECK_MUL (gcall *stmt)
 /* Helper function for {ADD,SUB,MUL}_OVERFLOW call stmt expansion.  */
 
 static void
-expand_arith_overflow (enum tree_code code, gimple stmt)
+expand_arith_overflow (enum tree_code code, gimple *stmt)
 {
   tree lhs = gimple_call_lhs (stmt);
   if (lhs == NULL_TREE)

@@ -5850,10 +5850,10 @@ alpha_build_builtin_va_list (void)
 /* Helper function for alpha_stdarg_optimize_hook.  Skip over casts
    and constant additions.  */
 
-static gimple
+static gimple *
 va_list_skip_additions (tree lhs)
 {
-  gimple stmt;
+  gimple  *stmt;
 
   for (;;)
     {
@@ -5900,11 +5900,11 @@ va_list_skip_additions (tree lhs)
    current statement.  */
 
 static bool
-alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
+alpha_stdarg_optimize_hook (struct stdarg_info *si, const gimple *stmt)
 {
   tree base, offset, rhs;
   int offset_arg = 1;
-  gimple base_stmt;
+  gimple *base_stmt;
 
   if (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
       != GIMPLE_SINGLE_RHS)
@@ -5961,13 +5961,13 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
   offset = gimple_op (stmt, 1 + offset_arg);
   if (TREE_CODE (offset) == SSA_NAME)
     {
-      gimple offset_stmt = va_list_skip_additions (offset);
+      gimple *offset_stmt = va_list_skip_additions (offset);
 
       if (offset_stmt
 	  && gimple_code (offset_stmt) == GIMPLE_PHI)
 	{
 	  HOST_WIDE_INT sub;
-	  gimple arg1_stmt, arg2_stmt;
+	  gimple *arg1_stmt, *arg2_stmt;
 	  tree arg1, arg2;
 	  enum tree_code code1, code2;
 
@@ -5992,7 +5992,7 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
 	  else if (code2 == COMPONENT_REF
 		   && (code1 == MINUS_EXPR || code1 == PLUS_EXPR))
 	    {
-	      gimple tem = arg1_stmt;
+	      gimple *tem = arg1_stmt;
 	      code2 = code1;
 	      arg1_stmt = arg2_stmt;
 	      arg2_stmt = tem;
@@ -7088,9 +7088,9 @@ bool
 alpha_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
   bool changed = false;
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   tree call = gimple_call_fn (stmt);
-  gimple new_stmt = NULL;
+  gimple *new_stmt = NULL;
 
   if (call)
     {

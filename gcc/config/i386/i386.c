@@ -34456,11 +34456,11 @@ static basic_block
 add_condition_to_bb (tree function_decl, tree version_decl,
 		     tree predicate_chain, basic_block new_bb)
 {
-  gimple return_stmt;
+  gimple *return_stmt;
   tree convert_expr, result_var;
-  gimple convert_stmt;
-  gimple call_cond_stmt;
-  gimple if_else_stmt;
+  gimple *convert_stmt;
+  gimple *call_cond_stmt;
+  gimple *if_else_stmt;
 
   basic_block bb1, bb2, bb3;
   edge e12, e23;
@@ -34511,7 +34511,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
         and_expr_var = cond_var;
       else
 	{
-	  gimple assign_stmt;
+	  gimple *assign_stmt;
 	  /* Use MIN_EXPR to check if any integer is zero?.
 	     and_expr_var = min_expr <cond_var, and_expr_var>  */
 	  assign_stmt = gimple_build_assign (and_expr_var,
@@ -34878,7 +34878,7 @@ dispatch_function_versions (tree dispatch_decl,
 			    basic_block *empty_bb)
 {
   tree default_decl;
-  gimple ifunc_cpu_init_stmt;
+  gimple *ifunc_cpu_init_stmt;
   gimple_seq gseq;
   int ix;
   tree ele;
@@ -40074,7 +40074,7 @@ rdseed_step:
 		 as that is a cheaper way to load all ones into
 		 a register than having to load a constant from
 		 memory.  */
-	      gimple def_stmt = SSA_NAME_DEF_STMT (arg3);
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (arg3);
 	      if (is_gimple_call (def_stmt))
 		{
 		  tree fndecl = gimple_call_fndecl (def_stmt);

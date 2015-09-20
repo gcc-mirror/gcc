@@ -33,6 +33,7 @@ extern void propagate_threaded_block_debug_into (basic_block, basic_block);
 extern void thread_across_edge (gcond *, edge, bool,
 				const_and_copies *,
 				avail_exprs_stack *,
-				tree (*) (gimple, gimple, avail_exprs_stack *));
+				tree (*) (gimple *, gimple *,
+					  avail_exprs_stack *));
 
 #endif /* GCC_TREE_SSA_THREADEDGE_H */

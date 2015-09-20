@@ -637,7 +637,7 @@ void ipa_analyze_node (struct cgraph_node *);
 tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *, HOST_WIDE_INT,
 				 bool);
 bool ipa_load_from_parm_agg (struct ipa_func_body_info *,
-			     vec<ipa_param_descriptor>, gimple, tree, int *,
+			     vec<ipa_param_descriptor>, gimple *, tree, int *,
 			     HOST_WIDE_INT *, HOST_WIDE_INT *, bool *);
 
 /* Debugging interface.  */

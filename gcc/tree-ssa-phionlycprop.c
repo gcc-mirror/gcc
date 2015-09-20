@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
    remove it from the IL.  */
 
 static void
-remove_stmt_or_phi (gimple stmt)
+remove_stmt_or_phi (gimple *stmt)
 {
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 
@@ -61,7 +61,7 @@ remove_stmt_or_phi (gimple stmt)
    phi, NULL is returned.  */
 
 static tree
-get_rhs_or_phi_arg (gimple stmt)
+get_rhs_or_phi_arg (gimple *stmt)
 {
   if (gimple_code (stmt) == GIMPLE_PHI)
     return degenerate_phi_result (as_a <gphi *> (stmt));
@@ -76,7 +76,7 @@ get_rhs_or_phi_arg (gimple stmt)
    return the "lhs" of the node.  */
 
 static tree
-get_lhs_or_phi_result (gimple stmt)
+get_lhs_or_phi_result (gimple *stmt)
 {
   if (gimple_code (stmt) == GIMPLE_PHI)
     return gimple_phi_result (stmt);
@@ -101,7 +101,7 @@ get_lhs_or_phi_result (gimple stmt)
    cleaned up after changing EH information on a statement.  */
 
 static bool
-propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs,
+propagate_rhs_into_lhs (gimple *stmt, tree lhs, tree rhs,
 			bitmap interesting_names, bitmap need_eh_cleanup)
 {
   bool cfg_altered = false;
@@ -111,7 +111,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs,
     {
       use_operand_p use_p;
       imm_use_iterator iter;
-      gimple use_stmt;
+      gimple *use_stmt;
       bool all = true;
 
       /* Dump details.  */
@@ -345,7 +345,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs,
    not set or queried here, but passed along to children.  */
 
 static bool
-eliminate_const_or_copy (gimple stmt, bitmap interesting_names,
+eliminate_const_or_copy (gimple *stmt, bitmap interesting_names,
 			 bitmap need_eh_cleanup)
 {
   tree lhs = get_lhs_or_phi_result (stmt);
@@ -379,7 +379,7 @@ eliminate_const_or_copy (gimple stmt, bitmap interesting_names,
 					  interesting_names, need_eh_cleanup);
   else
     {
-      gimple use_stmt;
+      gimple *use_stmt;
       imm_use_iterator iter;
       use_operand_p use_p;
       /* For virtual operands we have to propagate into all uses as

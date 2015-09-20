@@ -2320,7 +2320,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 static bool
 bb_ends_with_multiway_branch (basic_block bb ATTRIBUTE_UNUSED)
 {
-  gimple stmt = last_stmt (bb);
+  gimple *stmt = last_stmt (bb);
   if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
     return true;
   if (stmt && gimple_code (stmt) == GIMPLE_GOTO

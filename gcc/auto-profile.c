@@ -125,7 +125,7 @@ typedef std::map<unsigned, gcov_type> icall_target_map;
 
 /* Set of gimple stmts. Used to track if the stmt has already been promoted
    to direct call.  */
-typedef std::set<gimple> stmt_set;
+typedef std::set<gimple *> stmt_set;
 
 /* Represent count info of an inline stack.  */
 struct count_info
@@ -291,7 +291,7 @@ public:
 
   /* Find count_info for a given gimple STMT. If found, store the count_info
      in INFO and return true; otherwise return false.  */
-  bool get_count_info (gimple stmt, count_info *info) const;
+  bool get_count_info (gimple *stmt, count_info *info) const;
 
   /* Find total count of the callee of EDGE.  */
   gcov_type get_callsite_total_count (struct cgraph_edge *edge) const;
@@ -413,7 +413,7 @@ get_inline_stack (location_t locus, inline_stack *stack)
    of DECL, The lower 16 bits stores the discriminator.  */
 
 static unsigned
-get_relative_location_for_stmt (gimple stmt)
+get_relative_location_for_stmt (gimple *stmt)
 {
   location_t locus = gimple_location (stmt);
   if (LOCATION_LOCUS (locus) == UNKNOWN_LOCATION)
@@ -436,7 +436,7 @@ has_indirect_call (basic_block bb)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       if (gimple_code (stmt) == GIMPLE_CALL && !gimple_call_internal_p (stmt)
           && (gimple_call_fn (stmt) == NULL
               || TREE_CODE (gimple_call_fn (stmt)) != FUNCTION_DECL))
@@ -722,7 +722,7 @@ autofdo_source_profile::get_function_instance_by_decl (tree decl) const
    in INFO and return true; otherwise return false.  */
 
 bool
-autofdo_source_profile::get_count_info (gimple stmt, count_info *info) const
+autofdo_source_profile::get_count_info (gimple *stmt, count_info *info) const
 {
   if (LOCATION_LOCUS (gimple_location (stmt)) == cfun->function_end_locus)
     return false;
@@ -950,7 +950,7 @@ static void
 afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
                     bool transform)
 {
-  gimple gs = gsi_stmt (*gsi);
+  gimple *gs = gsi_stmt (*gsi);
   tree callee;
 
   if (map.size () == 0)
@@ -1055,7 +1055,7 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       count_info info;
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       if (gimple_clobber_p (stmt) || is_gimple_debug (stmt))
         continue;
       if (afdo_source_profile->get_count_info (stmt, &info))
@@ -1236,9 +1236,9 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
   {
-    gimple def_stmt;
+    gimple *def_stmt;
     tree cmp_rhs, cmp_lhs;
-    gimple cmp_stmt = last_stmt (bb);
+    gimple *cmp_stmt = last_stmt (bb);
     edge e;
     edge_iterator ei;
 
@@ -1418,7 +1418,7 @@ afdo_vpt_for_early_inline (stmt_set *promoted_stmts)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
         count_info info;
-        gimple stmt = gsi_stmt (gsi);
+	gimple *stmt = gsi_stmt (gsi);
         if (afdo_source_profile->get_count_info (stmt, &info))
           bb_count = MAX (bb_count, info.count);
       }

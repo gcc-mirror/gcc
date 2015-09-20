@@ -676,7 +676,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
 	  return false;
 
-	gimple def_stmt = SSA_NAME_DEF_STMT (op0);
+	gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
 	enum tree_code subcode;
 
 	if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
@@ -767,7 +767,7 @@ canonicalize_base_object_address (tree addr)
 bool
 dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
 {
-  gimple stmt = DR_STMT (dr);
+  gimple *stmt = DR_STMT (dr);
   struct loop *loop = loop_containing_stmt (stmt);
   tree ref = DR_REF (dr);
   HOST_WIDE_INT pbitsize, pbitpos;
@@ -1064,7 +1064,7 @@ free_data_ref (data_reference_p dr)
    which the data reference should be analyzed.  */
 
 struct data_reference *
-create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
+create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
 		 bool is_read)
 {
   struct data_reference *dr;
@@ -3812,7 +3812,7 @@ struct data_ref_loc
    true if STMT clobbers memory, false otherwise.  */
 
 static bool
-get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
+get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 {
   bool clobbers_memory = false;
   data_ref_loc ref;
@@ -3944,7 +3944,7 @@ loop_nest_has_data_refs (loop_p loop)
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  get_references_in_stmt (stmt, &references);
 	  if (references.length ())
 	    {
@@ -3975,7 +3975,7 @@ loop_nest_has_data_refs (loop_p loop)
    loop of the loop nest in which the references should be analyzed.  */
 
 bool
-find_data_references_in_stmt (struct loop *nest, gimple stmt,
+find_data_references_in_stmt (struct loop *nest, gimple *stmt,
 			      vec<data_reference_p> *datarefs)
 {
   unsigned i;
@@ -4005,7 +4005,7 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
    should be analyzed.  */
 
 bool
-graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple stmt,
+graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple *stmt,
 				       vec<data_reference_p> *datarefs)
 {
   unsigned i;
@@ -4040,7 +4040,7 @@ find_data_references_in_bb (struct loop *loop, basic_block bb,
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      gimple stmt = gsi_stmt (bsi);
+      gimple *stmt = gsi_stmt (bsi);
 
       if (!find_data_references_in_stmt (loop, stmt, datarefs))
         {

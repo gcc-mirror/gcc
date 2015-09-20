@@ -67,7 +67,7 @@ struct copy_body_data
   tree retbnd;
 
   /* Assign statements that need bounds copy.  */
-  vec<gimple> assign_stmts;
+  vec<gimple *> assign_stmts;
 
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
@@ -81,7 +81,7 @@ struct copy_body_data
 
   /* GIMPLE_CALL if va arg parameter packs should be expanded or NULL
      is not.  */
-  gimple call_stmt;
+  gimple *call_stmt;
 
   /* Exception landing pad the inlined call lies in.  */
   int eh_lp_nr;
@@ -123,7 +123,7 @@ struct copy_body_data
   void (*transform_lang_insert_block) (tree);
 
   /* Statements that might be possibly folded.  */
-  hash_set<gimple> *statements_to_fold;
+  hash_set<gimple *> *statements_to_fold;
 
   /* Entry basic block to currently copied body.  */
   basic_block entry_bb;
@@ -205,7 +205,7 @@ bool tree_inlinable_function_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 tree copy_decl_no_change (tree decl, copy_body_data *id);
 int estimate_move_cost (tree type, bool);
-int estimate_num_insns (gimple, eni_weights *);
+int estimate_num_insns (gimple *, eni_weights *);
 int estimate_num_insns_fn (tree, eni_weights *);
 int count_insns_seq (gimple_seq, eni_weights *);
 bool tree_versionable_function_p (tree);

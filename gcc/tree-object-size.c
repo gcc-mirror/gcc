@@ -770,7 +770,7 @@ merge_object_sizes (struct object_size_info *osi, tree dest, tree orig,
    need reexamination  later.  */
 
 static bool
-plus_stmt_object_size (struct object_size_info *osi, tree var, gimple stmt)
+plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 {
   int object_size_type = osi->object_size_type;
   unsigned int varno = SSA_NAME_VERSION (var);
@@ -842,7 +842,7 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple stmt)
    later.  */
 
 static bool
-cond_expr_object_size (struct object_size_info *osi, tree var, gimple stmt)
+cond_expr_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 {
   tree then_, else_;
   int object_size_type = osi->object_size_type;
@@ -895,7 +895,7 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
 {
   int object_size_type = osi->object_size_type;
   unsigned int varno = SSA_NAME_VERSION (var);
-  gimple stmt;
+  gimple *stmt;
   bool reexamine;
 
   if (bitmap_bit_p (computed[object_size_type], varno))
@@ -1039,7 +1039,7 @@ static void
 check_for_plus_in_loops_1 (struct object_size_info *osi, tree var,
 			   unsigned int depth)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (var);
+  gimple *stmt = SSA_NAME_DEF_STMT (var);
   unsigned int varno = SSA_NAME_VERSION (var);
 
   if (osi->depths[varno])
@@ -1139,7 +1139,7 @@ check_for_plus_in_loops_1 (struct object_size_info *osi, tree var,
 static void
 check_for_plus_in_loops (struct object_size_info *osi, tree var)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (var);
+  gimple *stmt = SSA_NAME_DEF_STMT (var);
 
   /* NOTE: In the pre-tuples code, we handled a CALL_EXPR here,
      and looked for a POINTER_PLUS_EXPR in the pass-through
@@ -1241,7 +1241,7 @@ pass_object_sizes::execute (function *fun)
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
 	{
 	  tree result;
-	  gimple call = gsi_stmt (i);
+	  gimple *call = gsi_stmt (i);
 	  if (!gimple_call_builtin_p (call, BUILT_IN_OBJECT_SIZE))
 	    continue;
 
@@ -1277,7 +1277,8 @@ pass_object_sizes::execute (function *fun)
 			  enum tree_code code
 			    = object_size_type == 1 ? MIN_EXPR : MAX_EXPR;
 			  tree cst = build_int_cstu (type, bytes);
-			  gimple g = gimple_build_assign (lhs, code, tem, cst);
+			  gimple *g
+			    = gimple_build_assign (lhs, code, tem, cst);
 			  gsi_insert_after (&i, g, GSI_NEW_STMT);
 			  update_stmt (call);
 			}
@@ -1322,7 +1323,7 @@ pass_object_sizes::execute (function *fun)
 	    continue;
 
 	  /* Propagate into all uses and fold those stmts.  */
-	  gimple use_stmt;
+	  gimple *use_stmt;
 	  imm_use_iterator iter;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
 	    {

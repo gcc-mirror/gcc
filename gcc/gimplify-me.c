@@ -155,12 +155,12 @@ force_gimple_operand_gsi (gimple_stmt_iterator *gsi, tree expr,
    GIMPLE statements are inserted before *GSI_P.  */
 
 void
-gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
+gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 {
   size_t i, num_ops;
   tree lhs;
   gimple_seq pre = NULL;
-  gimple post_stmt = NULL;
+  gimple *post_stmt = NULL;
 
   push_gimplify_context (gimple_in_ssa_p (cfun));
 

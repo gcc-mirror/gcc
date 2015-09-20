@@ -160,7 +160,7 @@ struct access
   tree type;
 
   /* The statement this access belongs to.  */
-  gimple stmt;
+  gimple *stmt;
 
   /* Next group representative for this aggregate. */
   struct access *next_grp;
@@ -801,7 +801,7 @@ get_ssa_base_param (tree t)
    final.  */
 
 static void
-mark_parm_dereference (tree base, HOST_WIDE_INT dist, gimple stmt)
+mark_parm_dereference (tree base, HOST_WIDE_INT dist, gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
   int idx, parm_index = 0;
@@ -845,7 +845,7 @@ create_access_1 (tree base, HOST_WIDE_INT offset, HOST_WIDE_INT size)
    not possible.  */
 
 static struct access *
-create_access (tree expr, gimple stmt, bool write)
+create_access (tree expr, gimple *stmt, bool write)
 {
   struct access *access;
   HOST_WIDE_INT offset, size, max_size;
@@ -1099,7 +1099,7 @@ disqualify_base_of_expr (tree t, const char *reason)
    created.  */
 
 static struct access *
-build_access_from_expr_1 (tree expr, gimple stmt, bool write)
+build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
 {
   struct access *ret = NULL;
   bool partial_ref;
@@ -1165,7 +1165,7 @@ build_access_from_expr_1 (tree expr, gimple stmt, bool write)
    true if the expression is a store and false otherwise. */
 
 static bool
-build_access_from_expr (tree expr, gimple stmt, bool write)
+build_access_from_expr (tree expr, gimple *stmt, bool write)
 {
   struct access *access;
 
@@ -1209,7 +1209,7 @@ single_non_eh_succ (basic_block bb)
    NULL, in that case ignore it.  */
 
 static bool
-disqualify_if_bad_bb_terminating_stmt (gimple stmt, tree lhs, tree rhs)
+disqualify_if_bad_bb_terminating_stmt (gimple *stmt, tree lhs, tree rhs)
 {
   if ((sra_mode == SRA_MODE_EARLY_INTRA || sra_mode == SRA_MODE_INTRA)
       && stmt_ends_bb_p (stmt))
@@ -1231,7 +1231,7 @@ disqualify_if_bad_bb_terminating_stmt (gimple stmt, tree lhs, tree rhs)
    true if any access has been inserted.  */
 
 static bool
-build_accesses_from_assign (gimple stmt)
+build_accesses_from_assign (gimple *stmt)
 {
   tree lhs, rhs;
   struct access *lacc, *racc;
@@ -1287,7 +1287,7 @@ build_accesses_from_assign (gimple stmt)
    GIMPLE_ASM operands with memory constrains which cannot be scalarized.  */
 
 static bool
-asm_visit_addr (gimple, tree op, tree, void *)
+asm_visit_addr (gimple *, tree op, tree, void *)
 {
   op = get_base_address (op);
   if (op
@@ -1302,7 +1302,7 @@ asm_visit_addr (gimple, tree op, tree, void *)
    that their types match.  */
 
 static inline bool
-callsite_arguments_match_p (gimple call)
+callsite_arguments_match_p (gimple *call)
 {
   if (gimple_call_num_args (call) < (unsigned) func_param_count)
     return false;
@@ -1334,7 +1334,7 @@ scan_function (void)
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree t;
 	  unsigned i;
 
@@ -2809,7 +2809,7 @@ clobber_subtree (struct access *access, gimple_stmt_iterator *gsi,
       tree rep = get_access_replacement (access);
       tree clobber = build_constructor (access->type, NULL);
       TREE_THIS_VOLATILE (clobber) = 1;
-      gimple stmt = gimple_build_assign (rep, clobber);
+      gimple *stmt = gimple_build_assign (rep, clobber);
 
       if (insert_after)
 	gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
@@ -3132,7 +3132,7 @@ enum assignment_mod_result { SRA_AM_NONE,       /* nothing done for the stmt */
    the same values as sra_modify_assign.  */
 
 static enum assignment_mod_result
-sra_modify_constructor_assign (gimple stmt, gimple_stmt_iterator *gsi)
+sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs = gimple_assign_lhs (stmt);
   struct access *acc = get_access_for_expr (lhs);
@@ -3220,7 +3220,7 @@ contains_vce_or_bfcref_p (const_tree ref)
    copying.  */
 
 static enum assignment_mod_result
-sra_modify_assign (gimple stmt, gimple_stmt_iterator *gsi)
+sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 {
   struct access *lacc, *racc;
   tree lhs, rhs;
@@ -3486,7 +3486,7 @@ sra_modify_function_body (void)
       gimple_stmt_iterator gsi = gsi_start_bb (bb);
       while (!gsi_end_p (gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  enum assignment_mod_result assign_result;
 	  bool modified = false, deleted = false;
 	  tree *t;
@@ -3751,7 +3751,7 @@ static bool
 ptr_parm_has_direct_uses (tree parm)
 {
   imm_use_iterator ui;
-  gimple stmt;
+  gimple *stmt;
   tree name = ssa_default_def (cfun, parm);
   bool ret = false;
 
@@ -4618,7 +4618,7 @@ get_adjustment_for_base (ipa_parm_adjustment_vec adjustments, tree base)
    ADJUSTMENTS is a pointer to an adjustments vector.  */
 
 static bool
-replace_removed_params_ssa_names (gimple stmt,
+replace_removed_params_ssa_names (gimple *stmt,
 				  ipa_parm_adjustment_vec adjustments)
 {
   struct ipa_parm_adjustment *adj;
@@ -4675,7 +4675,7 @@ replace_removed_params_ssa_names (gimple stmt,
    point to the statement).  Return true iff the statement was modified.  */
 
 static bool
-sra_ipa_modify_assign (gimple stmt, gimple_stmt_iterator *gsi,
+sra_ipa_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 		       ipa_parm_adjustment_vec adjustments)
 {
   tree *lhs_p, *rhs_p;
@@ -4750,7 +4750,7 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
       gsi = gsi_start_bb (bb);
       while (!gsi_end_p (gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  bool modified = false;
 	  tree *t;
 	  unsigned i;
@@ -4838,7 +4838,7 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
     {
       struct ipa_parm_adjustment *adj;
       imm_use_iterator ui;
-      gimple stmt;
+      gimple *stmt;
       gdebug *def_temp;
       tree name, vexpr, copy = NULL_TREE;
       use_operand_p use_p;
@@ -5086,7 +5086,7 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	  iscc->has_thunk = true;
 	  return true;
 	}
-      gimple call_stmt = cs->call_stmt;
+      gimple *call_stmt = cs->call_stmt;
       unsigned count = gimple_call_num_args (call_stmt);
       for (unsigned i = 0; i < count; i++)
 	{

@@ -95,7 +95,7 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 {
   edge taken_edge;
   bool retval = false;
-  gimple stmt = gsi_stmt (gsi);
+  gimple *stmt = gsi_stmt (gsi);
   tree val;
 
   if (!single_succ_p (bb))
@@ -170,7 +170,7 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
    to updated gimple_call_flags.  */
 
 static void
-cleanup_call_ctrl_altering_flag (gimple bb_end)
+cleanup_call_ctrl_altering_flag (gimple *bb_end)
 {
   if (!is_gimple_call (bb_end)
       || !gimple_call_ctrl_altering_p (bb_end))
@@ -191,7 +191,7 @@ cleanup_control_flow_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   bool retval = false;
-  gimple stmt;
+  gimple *stmt;
 
   /* If the last statement of the block could throw and now cannot,
      we need to prune cfg.  */
@@ -308,7 +308,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
      anything else means this is not a forwarder block.  */
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
 
       switch (gimple_code (stmt))
 	{
@@ -396,7 +396,7 @@ remove_forwarder_block (basic_block bb)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
-  gimple label;
+  gimple *label;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
   bool can_move_debug_stmts;
@@ -515,7 +515,7 @@ remove_forwarder_block (basic_block bb)
       gsi_to = gsi_after_labels (dest);
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
 	{
-	  gimple debug = gsi_stmt (gsi);
+	  gimple *debug = gsi_stmt (gsi);
 	  if (!is_gimple_debug (debug))
 	    break;
 	  gsi_remove (&gsi, false);
@@ -560,7 +560,7 @@ remove_forwarder_block (basic_block bb)
    Return true if cleanup-cfg needs to run.  */
 
 bool
-fixup_noreturn_call (gimple stmt)
+fixup_noreturn_call (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
   bool changed = false;
@@ -802,7 +802,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 {
   edge succ = single_succ_edge (bb);
   basic_block dest = succ->dest;
-  gimple label;
+  gimple *label;
   basic_block dombb, domdest, dom;
 
   /* We check for infinite loops already in tree_forwarder_block_p.
@@ -1023,7 +1023,7 @@ pass_merge_phi::execute (function *fun)
 	      gphi *phi = gsi.phi ();
 	      tree result = gimple_phi_result (phi);
 	      use_operand_p imm_use;
-	      gimple use_stmt;
+	      gimple *use_stmt;
 
 	      /* If the PHI's result is never used, then we can just
 		 ignore it.  */

@@ -1268,7 +1268,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 			      basic_block phiblock,
 			      basic_block block, bool *same_valid)
 {
-  gimple phi = SSA_NAME_DEF_STMT (vuse);
+  gimple *phi = SSA_NAME_DEF_STMT (vuse);
   ao_ref ref;
   edge e = NULL;
   bool use_oracle;
@@ -1702,7 +1702,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
     case NAME:
       {
 	tree name = PRE_EXPR_NAME (expr);
-	gimple def_stmt = SSA_NAME_DEF_STMT (name);
+	gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 	/* If the SSA name is defined by a PHI node in this block,
 	   translate it.  */
 	if (gimple_code (def_stmt) == GIMPLE_PHI
@@ -1867,7 +1867,7 @@ value_dies_in_block_x (pre_expr expr, basic_block block)
 {
   tree vuse = PRE_EXPR_REFERENCE (expr)->vuse;
   vn_reference_t refx = PRE_EXPR_REFERENCE (expr);
-  gimple def;
+  gimple *def;
   gimple_stmt_iterator gsi;
   unsigned id = get_expression_id (expr);
   bool res = false;
@@ -2053,7 +2053,7 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 	  vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
 	  if (ref->vuse)
 	    {
-	      gimple def_stmt = SSA_NAME_DEF_STMT (ref->vuse);
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (ref->vuse);
 	      if (!gimple_nop_p (def_stmt)
 		  && ((gimple_bb (def_stmt) != block
 		       && !dominated_by_p (CDI_DOMINATORS,
@@ -2884,7 +2884,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
       gsi = gsi_start (forced_stmts);
       for (; !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree forcedname = gimple_get_lhs (stmt);
 	  pre_expr nameexpr;
 
@@ -3040,7 +3040,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 			  gsi = gsi_start (stmts);
 			  for (; !gsi_end_p (gsi); gsi_next (&gsi))
 			    {
-			      gimple stmt = gsi_stmt (gsi);
+			      gimple *stmt = gsi_stmt (gsi);
 			      tree lhs = gimple_get_lhs (stmt);
 			      if (TREE_CODE (lhs) == SSA_NAME)
 				bitmap_set_bit (inserted_exprs,
@@ -3086,7 +3086,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 		  gsi = gsi_start (stmts);
 		  for (; !gsi_end_p (gsi); gsi_next (&gsi))
 		    {
-		      gimple stmt = gsi_stmt (gsi);
+		      gimple *stmt = gsi_stmt (gsi);
 		      tree lhs = gimple_get_lhs (stmt);
 		      if (TREE_CODE (lhs) == SSA_NAME)
 			bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
@@ -3646,7 +3646,7 @@ compute_avail (void)
   /* Loop until the worklist is empty.  */
   while (sp)
     {
-      gimple stmt;
+      gimple *stmt;
       basic_block dom;
 
       /* Pick a block from the worklist.  */
@@ -3823,7 +3823,7 @@ compute_avail (void)
 			 to EXP_GEN.  */
 		      if (gimple_vuse (stmt))
 			{
-			  gimple def_stmt;
+			  gimple *def_stmt;
 			  bool ok = true;
 			  def_stmt = SSA_NAME_DEF_STMT (gimple_vuse (stmt));
 			  while (!gimple_nop_p (def_stmt)
@@ -3889,8 +3889,8 @@ compute_avail (void)
 
 
 /* Local state for the eliminate domwalk.  */
-static vec<gimple> el_to_remove;
-static vec<gimple> el_to_fixup;
+static vec<gimple *> el_to_remove;
+static vec<gimple *> el_to_fixup;
 static unsigned int el_todo;
 static vec<tree> el_avail;
 static vec<tree> el_avail_stack;
@@ -4042,7 +4042,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 
 	  if (!useless_type_conversion_p (TREE_TYPE (res), TREE_TYPE (sprime)))
 	    sprime = fold_convert (TREE_TYPE (res), sprime);
-	  gimple stmt = gimple_build_assign (res, sprime);
+	  gimple *stmt = gimple_build_assign (res, sprime);
 	  /* ???  It cannot yet be necessary (DOM walk).  */
 	  gimple_set_plf (stmt, NECESSARY, gimple_plf (phi, NECESSARY));
 
@@ -4060,7 +4060,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
        gsi_next (&gsi))
     {
       tree sprime = NULL_TREE;
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && TREE_CODE (lhs) == SSA_NAME
 	  && !gimple_has_volatile_ops (stmt)
@@ -4132,7 +4132,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (sprime))
 	      && gimple_assign_load_p (stmt))
 	    {
-	      gimple def_stmt = SSA_NAME_DEF_STMT (sprime);
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (sprime);
 	      basic_block def_bb = gimple_bb (def_stmt);
 	      if (gimple_code (def_stmt) == GIMPLE_PHI
 		  && b->loop_father->header == def_bb)
@@ -4227,7 +4227,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 				NECESSARY, true);
 
 	      pre_stats.eliminations++;
-	      gimple orig_stmt = stmt;
+	      gimple *orig_stmt = stmt;
 	      if (!useless_type_conversion_p (TREE_TYPE (lhs),
 					      TREE_TYPE (sprime)))
 		sprime = fold_convert (TREE_TYPE (lhs), sprime);
@@ -4412,7 +4412,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	  if (gimple_assign_single_p (stmt)
 	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
 	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
-	  gimple old_stmt = stmt;
+	  gimple *old_stmt = stmt;
 	  if (is_gimple_call (stmt))
 	    {
 	      /* ???  Only fold calls inplace for now, this may create new
@@ -4516,7 +4516,7 @@ static unsigned int
 eliminate (bool do_pre)
 {
   gimple_stmt_iterator gsi;
-  gimple stmt;
+  gimple *stmt;
 
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_ab_cleanup = BITMAP_ALLOC (NULL);
@@ -4626,10 +4626,10 @@ fini_eliminate (void)
    mark that statement necessary. Return the stmt, if it is newly
    necessary.  */
 
-static inline gimple
+static inline gimple *
 mark_operand_necessary (tree op)
 {
-  gimple stmt;
+  gimple *stmt;
 
   gcc_assert (op);
 
@@ -4658,7 +4658,7 @@ remove_dead_inserted_code (void)
   bitmap worklist;
   unsigned i;
   bitmap_iterator bi;
-  gimple t;
+  gimple *t;
 
   worklist = BITMAP_ALLOC (NULL);
   EXECUTE_IF_SET_IN_BITMAP (inserted_exprs, 0, i, bi)
@@ -4685,7 +4685,7 @@ remove_dead_inserted_code (void)
 	      tree arg = PHI_ARG_DEF (t, k);
 	      if (TREE_CODE (arg) == SSA_NAME)
 		{
-		  gimple n = mark_operand_necessary (arg);
+		  gimple *n = mark_operand_necessary (arg);
 		  if (n)
 		    bitmap_set_bit (worklist, SSA_NAME_VERSION (arg));
 		}
@@ -4706,7 +4706,7 @@ remove_dead_inserted_code (void)
 
 	  FOR_EACH_SSA_TREE_OPERAND (use, t, iter, SSA_OP_ALL_USES)
 	    {
-	      gimple n = mark_operand_necessary (use);
+	      gimple *n = mark_operand_necessary (use);
 	      if (n)
 		bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
 	    }

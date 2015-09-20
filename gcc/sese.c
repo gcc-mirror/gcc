@@ -171,7 +171,7 @@ sese_build_liveouts_bb (sese region, bitmap liveouts, basic_block bb)
   for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
        gsi_next (&bsi))
     {
-      gimple stmt = gsi_stmt (bsi);
+      gimple *stmt = gsi_stmt (bsi);
 
       if (is_gimple_debug (stmt))
 	continue;
@@ -223,7 +223,7 @@ sese_reset_debug_liveouts_bb (sese region, bitmap liveouts, basic_block bb)
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      gimple stmt = gsi_stmt (bsi);
+      gimple *stmt = gsi_stmt (bsi);
 
       if (!is_gimple_debug (stmt))
 	continue;
@@ -400,7 +400,7 @@ set_rename (rename_map_type *rename_map, tree old_name, tree expr, sese region)
    is set when the code generation cannot continue.  */
 
 static bool
-rename_uses (gimple copy, rename_map_type *rename_map,
+rename_uses (gimple *copy, rename_map_type *rename_map,
 	     gimple_stmt_iterator *gsi_tgt,
 	     sese region, loop_p loop, vec<tree> iv_map,
 	     bool *gloog_error)
@@ -519,8 +519,8 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
     {
       def_operand_p def_p;
       ssa_op_iter op_iter;
-      gimple stmt = gsi_stmt (gsi);
-      gimple copy;
+      gimple *stmt = gsi_stmt (gsi);
+      gimple *copy;
       tree lhs;
 
       /* Do not copy labels or conditions.  */
@@ -745,7 +745,7 @@ set_ifsese_condition (ifsese if_region, tree condition)
   sese region = if_region->region;
   edge entry = region->entry;
   basic_block bb = entry->dest;
-  gimple last = last_stmt (bb);
+  gimple *last = last_stmt (bb);
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gcond *cond_stmt;
 
@@ -770,7 +770,7 @@ invariant_in_sese_p_rec (tree t, sese region)
   if (!defined_in_sese_p (t, region))
     return true;
 
-  gimple stmt = SSA_NAME_DEF_STMT (t);
+  gimple *stmt = SSA_NAME_DEF_STMT (t);
 
   if (gimple_code (stmt) == GIMPLE_PHI
       || gimple_code (stmt) == GIMPLE_CALL)
@@ -795,7 +795,7 @@ invariant_in_sese_p_rec (tree t, sese region)
 tree
 scalar_evolution_in_region (sese region, loop_p loop, tree t)
 {
-  gimple def;
+  gimple *def;
   struct loop *def_loop;
   basic_block before = block_before_sese (region);
 

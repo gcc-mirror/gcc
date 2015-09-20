@@ -4676,7 +4676,7 @@ rs6000_density_test (rs6000_cost_data *data)
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
@@ -11480,7 +11480,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   int align;
   tree ptrtype = build_pointer_type_for_mode (type, ptr_mode, true);
   int regalign = 0;
-  gimple stmt;
+  gimple *stmt;
 
   if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
     {

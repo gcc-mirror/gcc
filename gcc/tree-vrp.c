@@ -316,7 +316,7 @@ is_overflow_infinity (const_tree val)
 /* Return whether STMT has a constant rhs that is_overflow_infinity. */
 
 static inline bool
-stmt_overflow_infinity (gimple stmt)
+stmt_overflow_infinity (gimple *stmt)
 {
   if (is_gimple_assign (stmt)
       && get_gimple_rhs_class (gimple_assign_rhs_code (stmt)) ==
@@ -1016,7 +1016,7 @@ usable_range_p (value_range_t *vr, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.*/
 
 static bool
-gimple_assign_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
+gimple_assign_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
   switch (get_gimple_rhs_class (code))
@@ -1050,7 +1050,7 @@ gimple_assign_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.*/
 
 static bool
-gimple_call_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
+gimple_call_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p)
 {
   tree arg0 = gimple_call_num_args (stmt) > 0 ?
     gimple_call_arg (stmt, 0) : NULL_TREE;
@@ -1070,7 +1070,7 @@ gimple_call_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.*/
 
 static bool
-gimple_stmt_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
+gimple_stmt_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p)
 {
   switch (gimple_code (stmt))
     {
@@ -1089,7 +1089,7 @@ gimple_stmt_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.*/
 
 static bool
-gimple_assign_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
+gimple_assign_nonzero_warnv_p (gimple *stmt, bool *strict_overflow_p)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
   switch (get_gimple_rhs_class (code))
@@ -1123,7 +1123,7 @@ gimple_assign_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.*/
 
 static bool
-gimple_stmt_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
+gimple_stmt_nonzero_warnv_p (gimple *stmt, bool *strict_overflow_p)
 {
   switch (gimple_code (stmt))
     {
@@ -1156,7 +1156,7 @@ gimple_stmt_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
    obtained so far.  */
 
 static bool
-vrp_stmt_computes_nonzero (gimple stmt, bool *strict_overflow_p)
+vrp_stmt_computes_nonzero (gimple *stmt, bool *strict_overflow_p)
 {
   if (gimple_stmt_nonzero_warnv_p (stmt, strict_overflow_p))
     return true;
@@ -3867,7 +3867,7 @@ check_for_binary_op_overflow (enum tree_code subcode, tree type,
    Store the result in *VR */
 
 static void
-extract_range_basic (value_range_t *vr, gimple stmt)
+extract_range_basic (value_range_t *vr, gimple *stmt)
 {
   bool sop = false;
   tree type = gimple_expr_type (stmt);
@@ -4103,7 +4103,7 @@ extract_range_basic (value_range_t *vr, gimple stmt)
       tree op = gimple_assign_rhs1 (stmt);
       if (TREE_CODE (op) == code && TREE_CODE (TREE_OPERAND (op, 0)) == SSA_NAME)
 	{
-	  gimple g = SSA_NAME_DEF_STMT (TREE_OPERAND (op, 0));
+	  gimple *g = SSA_NAME_DEF_STMT (TREE_OPERAND (op, 0));
 	  if (is_gimple_call (g) && gimple_call_internal_p (g))
 	    {
 	      enum tree_code subcode = ERROR_MARK;
@@ -4225,7 +4225,7 @@ extract_range_from_assignment (value_range_t *vr, gassign *stmt)
 
 static void
 adjust_range_with_scev (value_range_t *vr, struct loop *loop,
-			gimple stmt, tree var)
+			gimple *stmt, tree var)
 {
   tree init, step, chrec, tmin, tmax, min, max, type, tem;
   enum ev_direction dir;
@@ -4796,7 +4796,7 @@ debug_all_value_ranges (void)
    create a new SSA name N and return the assertion assignment
    'N = ASSERT_EXPR <V, V OP W>'.  */
 
-static gimple
+static gimple *
 build_assert_expr_for (tree cond, tree v)
 {
   tree a;
@@ -4822,7 +4822,7 @@ build_assert_expr_for (tree cond, tree v)
    point values.  */
 
 static inline bool
-fp_predicate (gimple stmt)
+fp_predicate (gimple *stmt)
 {
   GIMPLE_CHECK (stmt, GIMPLE_COND);
 
@@ -4835,7 +4835,7 @@ fp_predicate (gimple stmt)
    inferred.  */
 
 static bool
-infer_value_range (gimple stmt, tree op, enum tree_code *comp_code_p, tree *val_p)
+infer_value_range (gimple *stmt, tree op, tree_code *comp_code_p, tree *val_p)
 {
   *val_p = NULL_TREE;
   *comp_code_p = ERROR_MARK;
@@ -5190,7 +5190,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       && TREE_CODE (val) == INTEGER_CST
       && TYPE_UNSIGNED (TREE_TYPE (val)))
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
       tree cst2 = NULL_TREE, name2 = NULL_TREE, name3 = NULL_TREE;
 
       /* Extract CST2 from the (optional) addition.  */
@@ -5283,7 +5283,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       && TREE_CODE (val) == INTEGER_CST)
     {
       imm_use_iterator ui;
-      gimple use_stmt;
+      gimple *use_stmt;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
 	{
 	  if (!is_gimple_assign (use_stmt))
@@ -5331,7 +5331,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
   if (TREE_CODE_CLASS (comp_code) == tcc_comparison
       && TREE_CODE (val) == INTEGER_CST)
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
       tree name2 = NULL_TREE, names[2], cst2 = NULL_TREE;
       tree val2 = NULL_TREE;
       unsigned int prec = TYPE_PRECISION (TREE_TYPE (val));
@@ -5501,7 +5501,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      && (nprec > 1
 		  || TYPE_UNSIGNED (TREE_TYPE (val))))
 	    {
-	      gimple def_stmt2 = SSA_NAME_DEF_STMT (name2);
+	      gimple *def_stmt2 = SSA_NAME_DEF_STMT (name2);
 	      if (gimple_assign_cast_p (def_stmt2))
 		{
 		  names[1] = gimple_assign_rhs1 (def_stmt2);
@@ -5725,7 +5725,7 @@ static void
 register_edge_assert_for_1 (tree op, enum tree_code code,
 			    edge e, gimple_stmt_iterator bsi)
 {
-  gimple op_def;
+  gimple *op_def;
   tree val;
   enum tree_code rhs_code;
 
@@ -5840,7 +5840,7 @@ register_edge_assert_for (tree name, edge e, gimple_stmt_iterator si,
   if (((comp_code == EQ_EXPR && integer_onep (val))
        || (comp_code == NE_EXPR && integer_zerop (val))))
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
       if (is_gimple_assign (def_stmt)
 	  && gimple_assign_rhs_code (def_stmt) == BIT_AND_EXPR)
@@ -5858,7 +5858,7 @@ register_edge_assert_for (tree name, edge e, gimple_stmt_iterator si,
   if (((comp_code == EQ_EXPR && integer_zerop (val))
        || (comp_code == NE_EXPR && integer_onep (val))))
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
       /* For BIT_IOR_EXPR only if NAME == 0 both operands have
 	 necessarily zero value, or if type-precision is one.  */
@@ -6095,7 +6095,7 @@ find_switch_asserts (basic_block bb, gswitch *last)
 static void
 find_assert_locations_1 (basic_block bb, sbitmap live)
 {
-  gimple last;
+  gimple *last;
 
   last = last_stmt (bb);
 
@@ -6119,7 +6119,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
   for (gimple_stmt_iterator si = gsi_last_bb (bb); !gsi_end_p (si);
        gsi_prev (&si))
     {
-      gimple stmt;
+      gimple *stmt;
       tree op;
       ssa_op_iter i;
 
@@ -6153,7 +6153,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 	      if (comp_code == NE_EXPR && integer_zerop (value))
 		{
 		  tree t = op;
-		  gimple def_stmt = SSA_NAME_DEF_STMT (t);
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (t);
 
 		  while (is_gimple_assign (def_stmt)
 			 && CONVERT_EXPR_CODE_P
@@ -6326,9 +6326,9 @@ static bool
 process_assert_insertions_for (tree name, assert_locus *loc)
 {
   /* Build the comparison expression NAME_i COMP_CODE VAL.  */
-  gimple stmt;
+  gimple *stmt;
   tree cond;
-  gimple assert_stmt;
+  gimple *assert_stmt;
   edge_iterator ei;
   edge e;
 
@@ -6712,7 +6712,7 @@ check_all_array_refs (void)
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
 	  struct walk_stmt_info wi;
 	  if (!gimple_has_location (stmt)
 	      || is_gimple_debug (stmt))
@@ -6734,7 +6734,7 @@ check_all_array_refs (void)
    in basic block COND_BB.  */
 
 static bool
-all_imm_uses_in_stmt_or_feed_cond (tree var, gimple stmt, basic_block cond_bb)
+all_imm_uses_in_stmt_or_feed_cond (tree var, gimple *stmt, basic_block cond_bb)
 {
   use_operand_p use_p, use2_p;
   imm_use_iterator iter;
@@ -6742,7 +6742,7 @@ all_imm_uses_in_stmt_or_feed_cond (tree var, gimple stmt, basic_block cond_bb)
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     if (USE_STMT (use_p) != stmt)
       {
-	gimple use_stmt = USE_STMT (use_p), use_stmt2;
+	gimple *use_stmt = USE_STMT (use_p), *use_stmt2;
 	if (is_gimple_debug (use_stmt))
 	  continue;
 	while (is_gimple_assign (use_stmt)
@@ -6776,7 +6776,7 @@ maybe_set_nonzero_bits (basic_block bb, tree var)
 {
   edge e = single_pred_edge (bb);
   basic_block cond_bb = e->src;
-  gimple stmt = last_stmt (cond_bb);
+  gimple *stmt = last_stmt (cond_bb);
   tree cst;
 
   if (stmt == NULL
@@ -6794,7 +6794,7 @@ maybe_set_nonzero_bits (basic_block bb, tree var)
     return;
   if (gimple_assign_rhs1 (stmt) != var)
     {
-      gimple stmt2;
+      gimple *stmt2;
 
       if (TREE_CODE (gimple_assign_rhs1 (stmt)) != SSA_NAME)
 	return;
@@ -6850,8 +6850,8 @@ remove_range_assertions (void)
   FOR_EACH_BB_FN (bb, cfun)
     for (si = gsi_after_labels (bb), is_unreachable = -1; !gsi_end_p (si);)
       {
-	gimple stmt = gsi_stmt (si);
-	gimple use_stmt;
+	gimple *stmt = gsi_stmt (si);
+	gimple *use_stmt;
 
 	if (is_gimple_assign (stmt)
 	    && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
@@ -6920,7 +6920,7 @@ remove_range_assertions (void)
 /* Return true if STMT is interesting for VRP.  */
 
 static bool
-stmt_interesting_for_vrp (gimple stmt)
+stmt_interesting_for_vrp (gimple *stmt)
 {
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
@@ -6996,7 +6996,7 @@ vrp_initialize (void)
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
         {
-	  gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
 
  	  /* If the statement is a control insn, then we do not
  	     want to avoid simulating the statement once.  Failure
@@ -7044,7 +7044,7 @@ vrp_valueize_1 (tree name)
       /* If the definition may be simulated again we cannot follow
          this SSA edge as the SSA propagator does not necessarily
 	 re-visit the use.  */
-      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
       if (!gimple_nop_p (def_stmt)
 	  && prop_simulate_again_p (def_stmt))
 	return NULL_TREE;
@@ -7059,7 +7059,7 @@ vrp_valueize_1 (tree name)
    the SSA name in *OUTPUT_P.  */
 
 static enum ssa_prop_result
-vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
+vrp_visit_assignment_or_call (gimple *stmt, tree *output_p)
 {
   tree def, lhs;
   ssa_op_iter iter;
@@ -7128,7 +7128,7 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
 
 	    FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
 	      {
-		gimple use_stmt = USE_STMT (use_p);
+		gimple *use_stmt = USE_STMT (use_p);
 		if (!is_gimple_assign (use_stmt))
 		  continue;
 		enum tree_code rhs_code = gimple_assign_rhs_code (use_stmt);
@@ -7463,7 +7463,7 @@ vrp_evaluate_conditional_warnv_with_ops (enum tree_code code, tree op0,
    appropriate.  */
 
 static tree
-vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
+vrp_evaluate_conditional (tree_code code, tree op0, tree op1, gimple *stmt)
 {
   bool sop;
   tree ret;
@@ -7952,7 +7952,7 @@ vrp_visit_switch_stmt (gswitch *stmt, edge *taken_edge_p)
    If STMT produces a varying value, return SSA_PROP_VARYING.  */
 
 static enum ssa_prop_result
-vrp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
+vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   tree def;
   ssa_op_iter iter;
@@ -8917,7 +8917,7 @@ varying:
 /* Simplify boolean operations if the source is known
    to be already a boolean.  */
 static bool
-simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
+simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree lhs, op0, op1;
@@ -8987,7 +8987,7 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
    modulo.  */
 
 static bool
-simplify_div_or_mod_using_ranges (gimple stmt)
+simplify_div_or_mod_using_ranges (gimple *stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree val = NULL;
@@ -9078,7 +9078,7 @@ simplify_div_or_mod_using_ranges (gimple stmt)
    disjoint.   Return true if we do simplify.  */
 
 static bool
-simplify_min_or_max_using_ranges (gimple stmt)
+simplify_min_or_max_using_ranges (gimple *stmt)
 {
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
@@ -9127,7 +9127,7 @@ simplify_min_or_max_using_ranges (gimple stmt)
    ABS_EXPR into a NEGATE_EXPR.  */
 
 static bool
-simplify_abs_using_ranges (gimple stmt)
+simplify_abs_using_ranges (gimple *stmt)
 {
   tree op = gimple_assign_rhs1 (stmt);
   value_range_t *vr = get_value_range (op);
@@ -9182,7 +9182,7 @@ simplify_abs_using_ranges (gimple stmt)
    operation is redundant.  */
 
 static bool
-simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
+simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 {
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
@@ -9505,7 +9505,7 @@ simplify_cond_using_ranges (gcond *stmt)
   if (TREE_CODE (op0) == SSA_NAME
       && TREE_CODE (op1) == INTEGER_CST)
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (op0);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
       tree innerop;
 
       if (!is_gimple_assign (def_stmt)
@@ -9663,10 +9663,10 @@ simplify_switch_using_ranges (gswitch *stmt)
 /* Simplify an integral conversion from an SSA name in STMT.  */
 
 static bool
-simplify_conversion_using_ranges (gimple stmt)
+simplify_conversion_using_ranges (gimple *stmt)
 {
   tree innerop, middleop, finaltype;
-  gimple def_stmt;
+  gimple *def_stmt;
   value_range_t *innervr;
   signop inner_sgn, middle_sgn, final_sgn;
   unsigned inner_prec, middle_prec, final_prec;
@@ -9742,7 +9742,8 @@ simplify_conversion_using_ranges (gimple stmt)
 /* Simplify a conversion from integral SSA name to float in STMT.  */
 
 static bool
-simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
+simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
+					gimple *stmt)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   value_range_t *vr = get_value_range (rhs1);
@@ -9807,7 +9808,7 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 /* Simplify an internal fn call using ranges if possible.  */
 
 static bool
-simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
+simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 {
   enum tree_code subcode;
   bool is_ubsan = false;
@@ -9852,7 +9853,7 @@ simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
       || (is_ubsan && ovf))
     return false;
 
-  gimple g;
+  gimple *g;
   location_t loc = gimple_location (stmt);
   if (is_ubsan)
     g = gimple_build_assign (gimple_call_lhs (stmt), subcode, op0, op1);
@@ -9906,7 +9907,7 @@ simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 static bool
 simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   if (is_gimple_assign (stmt))
     {
       enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
@@ -9993,7 +9994,7 @@ fold_predicate_in (gimple_stmt_iterator *si)
 {
   bool assignment_p = false;
   tree val;
-  gimple stmt = gsi_stmt (*si);
+  gimple *stmt = gsi_stmt (*si);
 
   if (is_gimple_assign (stmt)
       && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
@@ -10066,7 +10067,7 @@ const_and_copies *equiv_stack;
    for any overflow warnings.  */
 
 static tree
-simplify_stmt_for_jump_threading (gimple stmt, gimple within_stmt,
+simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
     class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED)
 {
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
@@ -10157,7 +10158,7 @@ identify_jump_threads (void)
      point in compilation.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple last;
+      gimple *last;
 
       /* If the generic jump threading code does not find this block
 	 interesting, then there is nothing to do.  */

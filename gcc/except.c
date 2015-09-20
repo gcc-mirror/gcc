@@ -3138,12 +3138,12 @@ output_function_exception_table (const char *fnname)
 }
 
 void
-set_eh_throw_stmt_table (function *fun, hash_map<gimple, int> *table)
+set_eh_throw_stmt_table (function *fun, hash_map<gimple *, int> *table)
 {
   fun->eh->throw_stmt_table = table;
 }
 
-hash_map<gimple, int> *
+hash_map<gimple *, int> *
 get_eh_throw_stmt_table (struct function *fun)
 {
   return fun->eh->throw_stmt_table;

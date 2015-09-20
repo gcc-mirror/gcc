@@ -479,7 +479,7 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
 	     new assignment statement, and substitute yet another SSA_NAME.  */
 	  if (wi->changed)
 	    {
-	      gimple x;
+	      gimple *x;
 
 	      addr = create_tmp_var (TREE_TYPE (t));
 	      x = gimple_build_assign (addr, t);
@@ -539,7 +539,7 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
 /* Lower all of the operands of STMT.  */
 
 static void
-lower_emutls_stmt (gimple stmt, struct lower_emutls_data *d)
+lower_emutls_stmt (gimple *stmt, struct lower_emutls_data *d)
 {
   struct walk_stmt_info wi;
 

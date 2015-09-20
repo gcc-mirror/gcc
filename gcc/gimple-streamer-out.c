@@ -61,7 +61,7 @@ output_phi (struct output_block *ob, gphi *phi)
 /* Emit statement STMT on the main stream of output block OB.  */
 
 static void
-output_gimple_stmt (struct output_block *ob, gimple stmt)
+output_gimple_stmt (struct output_block *ob, gimple *stmt)
 {
   unsigned i;
   enum gimple_code code;
@@ -223,7 +223,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  int region;
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 
 	  output_gimple_stmt (ob, stmt);
 

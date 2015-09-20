@@ -1371,10 +1371,10 @@ bool
 aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
   bool changed = false;
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   tree call = gimple_call_fn (stmt);
   tree fndecl;
-  gimple new_stmt = NULL;
+  gimple *new_stmt = NULL;
 
   if (call)
     {

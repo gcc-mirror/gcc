@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
    gimple statement GS.  */
 
 static void
-do_niy (pretty_printer *buffer, gimple gs)
+do_niy (pretty_printer *buffer, gimple *gs)
 {
   pp_printf (buffer, "<<< Unknown GIMPLE statement: %s >>>\n",
 	     gimple_code_name[(int) gimple_code (gs)]);
@@ -70,7 +70,7 @@ newline_and_indent (pretty_printer *buffer, int spc)
 /* Print the GIMPLE statement GS on stderr.  */
 
 DEBUG_FUNCTION void
-debug_gimple_stmt (gimple gs)
+debug_gimple_stmt (gimple *gs)
 {
   print_gimple_stmt (stderr, gs, 0, TDF_VOPS|TDF_MEMSYMS);
 }
@@ -80,7 +80,7 @@ debug_gimple_stmt (gimple gs)
    FLAGS as in pp_gimple_stmt_1.  */
 
 void
-print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
+print_gimple_stmt (FILE *file, gimple *g, int spc, int flags)
 {
   pretty_printer buffer;
   pp_needs_newline (&buffer) = true;
@@ -90,13 +90,13 @@ print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
 }
 
 DEBUG_FUNCTION void
-debug (gimple_statement_base &ref)
+debug (gimple &ref)
 {
   print_gimple_stmt (stderr, &ref, 0, 0);
 }
 
 DEBUG_FUNCTION void
-debug (gimple_statement_base *ptr)
+debug (gimple *ptr)
 {
   if (ptr)
     debug (*ptr);
@@ -110,7 +110,7 @@ debug (gimple_statement_base *ptr)
    of the statement.  */
 
 void
-print_gimple_expr (FILE *file, gimple g, int spc, int flags)
+print_gimple_expr (FILE *file, gimple *g, int spc, int flags)
 {
   flags |= TDF_RHS_ONLY;
   pretty_printer buffer;
@@ -133,7 +133,7 @@ dump_gimple_seq (pretty_printer *buffer, gimple_seq seq, int spc, int flags)
 
   for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
     {
-      gimple gs = gsi_stmt (i);
+      gimple *gs = gsi_stmt (i);
       INDENT (spc);
       pp_gimple_stmt_1 (buffer, gs, spc, flags);
       if (!gsi_one_before_end_p (i))
@@ -192,11 +192,11 @@ dump_gimple_fmt (pretty_printer *buffer, int spc, int flags,
         {
           gimple_seq seq;
           tree t;
-          gimple g;
+	  gimple *g;
           switch (*++c)
             {
               case 'G':
-                g = va_arg (args, gimple);
+		g = va_arg (args, gimple *);
                 tmp = gimple_code_name[gimple_code (g)];
                 pp_string (buffer, tmp);
                 break;
@@ -1462,7 +1462,7 @@ dump_gimple_omp_sections (pretty_printer *buffer, gomp_sections *gs,
    pretty_printer BUFFER.  */
 
 static void
-dump_gimple_omp_block (pretty_printer *buffer, gimple gs, int spc, int flags)
+dump_gimple_omp_block (pretty_printer *buffer, gimple *gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S> >", gs,
@@ -1532,7 +1532,7 @@ dump_gimple_omp_critical (pretty_printer *buffer, gomp_critical *gs,
 /* Dump a GIMPLE_OMP_RETURN tuple on the pretty_printer BUFFER.  */
 
 static void
-dump_gimple_omp_return (pretty_printer *buffer, gimple gs, int spc, int flags)
+dump_gimple_omp_return (pretty_printer *buffer, gimple *gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     {
@@ -2068,7 +2068,7 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer,
    FLAGS are as in pp_gimple_stmt_1.  */
 
 static void
-dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
+dump_gimple_mem_ops (pretty_printer *buffer, gimple *gs, int spc, int flags)
 {
   tree vdef = gimple_vdef (gs);
   tree vuse = gimple_vuse (gs);
@@ -2098,7 +2098,7 @@ dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
    pp_flush on BUFFER to finalize the pretty printer.  */
 
 void
-pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
+pp_gimple_stmt_1 (pretty_printer *buffer, gimple *gs, int spc, int flags)
 {
   if (!gs)
     return;
@@ -2327,7 +2327,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
     }
   else
     {
-      gimple stmt = first_stmt (bb);
+      gimple *stmt = first_stmt (bb);
       if (!stmt || gimple_code (stmt) != GIMPLE_LABEL)
 	fprintf (outf, "%*s<bb %d>:\n", indent, "", bb->index);
     }
@@ -2375,7 +2375,7 @@ dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
 static void
 pp_cfg_jump (pretty_printer *buffer, basic_block bb)
 {
-  gimple stmt;
+  gimple *stmt;
 
   stmt = first_stmt (bb);
 
@@ -2404,7 +2404,7 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
 		     int flags)
 {
   edge e;
-  gimple stmt;
+  gimple *stmt;
 
   stmt = last_stmt (bb);
 
@@ -2455,7 +2455,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
 		     int flags)
 {
   gimple_stmt_iterator gsi;
-  gimple stmt;
+  gimple *stmt;
   int label_indent = indent - 2;
 
   if (label_indent < 0)
@@ -2531,7 +2531,7 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       pp_bar (pp);
       pp_write_text_to_stream (pp);
       pp_gimple_stmt_1 (pp, stmt, 0, dump_flags);

@@ -402,7 +402,7 @@ new_var_info (tree t, const char *name)
 
 /* A map mapping call statements to per-stmt variables for uses
    and clobbers specific to the call.  */
-static hash_map<gimple, varinfo_t> *call_stmt_vars;
+static hash_map<gimple *, varinfo_t> *call_stmt_vars;
 
 /* Lookup or create the variable for the call statement CALL.  */
 
@@ -4617,9 +4617,9 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
    when building alias sets and computing alias grouping heuristics.  */
 
 static void
-find_func_aliases (struct function *fn, gimple origt)
+find_func_aliases (struct function *fn, gimple *origt)
 {
-  gimple t = origt;
+  gimple *t = origt;
   auto_vec<ce_s, 16> lhsc;
   auto_vec<ce_s, 16> rhsc;
   struct constraint_expr *c;
@@ -4846,9 +4846,9 @@ process_ipa_clobber (varinfo_t fi, tree ptr)
    IPA constraint builder.  */
 
 static void
-find_func_clobbers (struct function *fn, gimple origt)
+find_func_clobbers (struct function *fn, gimple *origt)
 {
-  gimple t = origt;
+  gimple *t = origt;
   auto_vec<ce_s, 16> lhsc;
   auto_vec<ce_s, 16> rhsc;
   varinfo_t fi;
@@ -6646,7 +6646,7 @@ init_alias_vars (void)
   constraints.create (8);
   varmap.create (8);
   vi_for_tree = new hash_map<tree, varinfo_t>;
-  call_stmt_vars = new hash_map<gimple, varinfo_t>;
+  call_stmt_vars = new hash_map<gimple *, varinfo_t>;
 
   memset (&stats, 0, sizeof (stats));
   shared_bitmap_table = new hash_table<shared_bitmap_hasher> (511);
@@ -6798,7 +6798,7 @@ compute_points_to_sets (void)
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 
 	  find_func_aliases (cfun, stmt);
 	}
@@ -6935,7 +6935,7 @@ delete_points_to_sets (void)
    base zero.  */
 
 static bool
-visit_loadstore (gimple, tree base, tree ref, void *clique_)
+visit_loadstore (gimple *, tree base, tree ref, void *clique_)
 {
   unsigned short clique = (uintptr_t)clique_;
   if (TREE_CODE (base) == MEM_REF
@@ -7077,7 +7077,7 @@ compute_dependence_clique (void)
 	{
 	  /* Now look at possible dereferences of ptr.  */
 	  imm_use_iterator ui;
-	  gimple use_stmt;
+	  gimple *use_stmt;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
 	    {
 	      /* ???  Calls and asms.  */
@@ -7106,7 +7106,7 @@ compute_dependence_clique (void)
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	gimple stmt = gsi_stmt (gsi);
+	gimple *stmt = gsi_stmt (gsi);
 	walk_stmt_load_store_ops (stmt, (void *)(uintptr_t)clique,
 				  visit_loadstore, visit_loadstore);
       }
@@ -7372,7 +7372,7 @@ ipa_pta_execute (void)
 	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 
 	      find_func_aliases (func, stmt);
 	      find_func_clobbers (func, stmt);

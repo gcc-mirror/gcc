@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct rdg_vertex
 {
   /* The statement represented by this vertex.  */
-  gimple stmt;
+  gimple *stmt;
 
   /* Vector of data-references in this statement.  */
   vec<data_reference_p> datarefs;
@@ -243,7 +243,7 @@ dot_rdg (struct graph *rdg)
 /* Returns the index of STMT in RDG.  */
 
 static int
-rdg_vertex_for_stmt (struct graph *rdg ATTRIBUTE_UNUSED, gimple stmt)
+rdg_vertex_for_stmt (struct graph *rdg ATTRIBUTE_UNUSED, gimple *stmt)
 {
   int index = gimple_uid (stmt);
   gcc_checking_assert (index == -1 || RDG_STMT (rdg, index) == stmt);
@@ -285,7 +285,7 @@ create_edge_for_control_dependence (struct graph *rdg, basic_block bb,
 			    0, edge_n, bi)
     {
       basic_block cond_bb = cd->get_edge (edge_n)->src;
-      gimple stmt = last_stmt (cond_bb);
+      gimple *stmt = last_stmt (cond_bb);
       if (stmt && is_ctrl_stmt (stmt))
 	{
 	  struct graph_edge *e;
@@ -324,7 +324,7 @@ create_rdg_cd_edges (struct graph *rdg, control_dependences *cd)
 
   for (i = 0; i < rdg->n_vertices; i++)
     {
-      gimple stmt = RDG_STMT (rdg, i);
+      gimple *stmt = RDG_STMT (rdg, i);
       if (gimple_code (stmt) == GIMPLE_PHI)
 	{
 	  edge_iterator ei;
@@ -341,11 +341,11 @@ create_rdg_cd_edges (struct graph *rdg, control_dependences *cd)
    if that failed.  */
 
 static bool
-create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop,
+create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop,
 		     vec<data_reference_p> *datarefs)
 {
   int i;
-  gimple stmt;
+  gimple *stmt;
 
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
@@ -384,7 +384,7 @@ create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop,
    identifying statements in loop copies.  */
 
 static void
-stmts_from_loop (struct loop *loop, vec<gimple> *stmts)
+stmts_from_loop (struct loop *loop, vec<gimple *> *stmts)
 {
   unsigned int i;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
@@ -401,7 +401,7 @@ stmts_from_loop (struct loop *loop, vec<gimple> *stmts)
       for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
 	   gsi_next (&bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  if (gimple_code (stmt) != GIMPLE_LABEL && !is_gimple_debug (stmt))
 	    stmts->safe_push (stmt);
 	}
@@ -447,7 +447,7 @@ build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
   vec<data_reference_p> datarefs;
 
   /* Create the RDG vertices from the stmts of the loop nest.  */
-  auto_vec<gimple, 10> stmts;
+  auto_vec<gimple *, 10> stmts;
   stmts_from_loop (loop_nest[0], &stmts);
   rdg = new_graph (stmts.length ());
   datarefs.create (10);
@@ -550,7 +550,7 @@ ssa_name_has_uses_outside_loop_p (tree def, loop_p loop)
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
     {
-      gimple use_stmt = USE_STMT (use_p);
+      gimple *use_stmt = USE_STMT (use_p);
       if (!is_gimple_debug (use_stmt)
 	  && loop != loop_containing_stmt (use_stmt))
 	return true;
@@ -563,7 +563,7 @@ ssa_name_has_uses_outside_loop_p (tree def, loop_p loop)
    loop LOOP.  */
 
 static bool
-stmt_has_scalar_dependences_outside_loop (loop_p loop, gimple stmt)
+stmt_has_scalar_dependences_outside_loop (loop_p loop, gimple *stmt)
 {
   def_operand_p def_p;
   ssa_op_iter op_iter;
@@ -648,7 +648,7 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
 
 	for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	  {
-	    gimple stmt = gsi_stmt (bsi);
+	    gimple *stmt = gsi_stmt (bsi);
 	    if (gimple_code (stmt) != GIMPLE_LABEL
 		&& !is_gimple_debug (stmt)
 		&& !bitmap_bit_p (partition->stmts, gimple_uid (stmt)))
@@ -672,7 +672,7 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
 
       for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);)
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  if (gimple_code (stmt) != GIMPLE_LABEL
 	      && !is_gimple_debug (stmt)
 	      && !bitmap_bit_p (partition->stmts, gimple_uid (stmt)))
@@ -779,7 +779,7 @@ static void
 generate_memset_builtin (struct loop *loop, partition_t partition)
 {
   gimple_stmt_iterator gsi;
-  gimple stmt, fn_call;
+  gimple *stmt, *fn_call;
   tree mem, fn, nb_bytes;
   location_t loc;
   tree val;
@@ -810,7 +810,7 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
   else if (!useless_type_conversion_p (integer_type_node, TREE_TYPE (val)))
     {
       tree tem = make_ssa_name (integer_type_node);
-      gimple cstmt = gimple_build_assign (tem, NOP_EXPR, val);
+      gimple *cstmt = gimple_build_assign (tem, NOP_EXPR, val);
       gsi_insert_after (&gsi, cstmt, GSI_CONTINUE_LINKING);
       val = tem;
     }
@@ -835,7 +835,7 @@ static void
 generate_memcpy_builtin (struct loop *loop, partition_t partition)
 {
   gimple_stmt_iterator gsi;
-  gimple stmt, fn_call;
+  gimple *stmt, *fn_call;
   tree dest, src, fn, nb_bytes;
   location_t loc;
   enum built_in_function kind;
@@ -910,7 +910,7 @@ destroy_loop (struct loop *loop)
       for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree vdef = gimple_vdef (stmt);
 	  if (vdef && TREE_CODE (vdef) == SSA_NAME)
 	    mark_virtual_operand_for_renaming (vdef);
@@ -1001,7 +1001,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 
   EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
     {
-      gimple stmt = RDG_STMT (rdg, i);
+      gimple *stmt = RDG_STMT (rdg, i);
 
       if (gimple_has_volatile_ops (stmt))
 	volatiles_p = true;
@@ -1024,7 +1024,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
   single_store = NULL;
   EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
     {
-      gimple stmt = RDG_STMT (rdg, i);
+      gimple *stmt = RDG_STMT (rdg, i);
       data_reference_p dr;
       unsigned j;
 
@@ -1069,7 +1069,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 
   if (single_store && !single_load)
     {
-      gimple stmt = DR_STMT (single_store);
+      gimple *stmt = DR_STMT (single_store);
       tree rhs = gimple_assign_rhs1 (stmt);
       if (const_with_all_bytes_same (rhs) == -1
 	  && (!INTEGRAL_TYPE_P (TREE_TYPE (rhs))
@@ -1091,8 +1091,8 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
     }
   else if (single_store && single_load)
     {
-      gimple store = DR_STMT (single_store);
-      gimple load = DR_STMT (single_load);
+      gimple *store = DR_STMT (single_store);
+      gimple *load = DR_STMT (single_load);
       /* Direct aggregate copy or via an SSA name temporary.  */
       if (load != store
 	  && gimple_assign_lhs (load) != gimple_assign_rhs1 (store))
@@ -1209,12 +1209,12 @@ similar_memory_accesses (struct graph *rdg, partition_t partition1,
 
 static void
 rdg_build_partitions (struct graph *rdg,
-		      vec<gimple> starting_stmts,
+		      vec<gimple *> starting_stmts,
 		      vec<partition_t> *partitions)
 {
   bitmap processed = BITMAP_ALLOC (NULL);
   int i;
-  gimple stmt;
+  gimple *stmt;
 
   FOR_EACH_VEC_ELT (starting_stmts, i, stmt)
     {
@@ -1406,7 +1406,7 @@ pgcmp (const void *v1_, const void *v2_)
    Returns the number of distributed loops.  */
 
 static int
-distribute_loop (struct loop *loop, vec<gimple> stmts,
+distribute_loop (struct loop *loop, vec<gimple *> stmts,
 		 control_dependences *cd, int *nb_calls)
 {
   struct graph *rdg;
@@ -1722,7 +1722,7 @@ pass_loop_distribution::execute (function *fun)
      walking to innermost loops.  */
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
-      auto_vec<gimple> work_list;
+      auto_vec<gimple *> work_list;
       basic_block *bbs;
       int num = loop->num;
       unsigned int i;
@@ -1757,7 +1757,7 @@ pass_loop_distribution::execute (function *fun)
 	       !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 
 	      /* If there is a stmt with side-effects bail out - we
 		 cannot and should not distribute this loop.  */

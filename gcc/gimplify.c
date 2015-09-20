@@ -164,7 +164,7 @@ static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
    only.  */
 
 static inline void
-gimplify_seq_add_stmt (gimple_seq *seq_p, gimple gs)
+gimplify_seq_add_stmt (gimple_seq *seq_p, gimple *gs)
 {
   gimple_seq_add_stmt_without_update (seq_p, gs);
 }
@@ -253,7 +253,7 @@ push_gimplify_context (bool in_ssa, bool rhs_cond_ok)
    BODY is not a sequence, but the first tuple in a sequence.  */
 
 void
-pop_gimplify_context (gimple body)
+pop_gimplify_context (gimple *body)
 {
   struct gimplify_ctx *c = gimplify_ctxp;
 
@@ -402,7 +402,7 @@ gimplify_and_add (tree t, gimple_seq *seq_p)
    tuple in the sequence of generated tuples for this statement.
    Return NULL if gimplifying T produced no tuples.  */
 
-static gimple
+static gimple *
 gimplify_and_return_first (tree t, gimple_seq *seq_p)
 {
   gimple_stmt_iterator last = gsi_last (*seq_p);
@@ -577,7 +577,7 @@ get_initialized_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p)
    generate debug info for them; otherwise don't.  */
 
 void
-declare_vars (tree vars, gimple gs, bool debug_info)
+declare_vars (tree vars, gimple *gs, bool debug_info)
 {
   tree last = vars;
   if (last)
@@ -1155,7 +1155,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  && flag_stack_reuse != SR_NONE)
 	{
 	  tree clobber = build_constructor (TREE_TYPE (t), NULL);
-	  gimple clobber_stmt;
+	  gimple *clobber_stmt;
 	  TREE_THIS_VOLATILE (clobber) = 1;
 	  clobber_stmt = gimple_build_assign (t, clobber);
 	  gimple_set_location (clobber_stmt, end_locus);
@@ -2297,7 +2297,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 			EXPR_LOCATION (*expr_p));
 	  vargs.quick_push (CALL_EXPR_ARG (*expr_p, i));
 	}
-      gimple call = gimple_build_call_internal_vec (ifn, vargs);
+      gimple *call = gimple_build_call_internal_vec (ifn, vargs);
       gimplify_seq_add_stmt (pre_p, call);
       return GS_ALL_DONE;
     }
@@ -3167,7 +3167,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	      && TREE_OPERAND (expr, 2) != NULL_TREE
 	      && gimple_seq_may_fallthru (seq))
 	    {
-	      gimple g;
+	      gimple *g;
 	      label_cont = create_artificial_label (UNKNOWN_LOCATION);
 
 	      g = gimple_build_goto (label_cont);
@@ -4547,7 +4547,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   tree *from_p = &TREE_OPERAND (*expr_p, 1);
   tree *to_p = &TREE_OPERAND (*expr_p, 0);
   enum gimplify_status ret = GS_UNHANDLED;
-  gimple assign;
+  gimple *assign;
   location_t loc = EXPR_LOCATION (*expr_p);
   gimple_stmt_iterator gsi;
 
@@ -5307,7 +5307,7 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 
   for (iter = gsi_start (body_sequence); !gsi_end_p (iter); )
     {
-      gimple wce = gsi_stmt (iter);
+      gimple *wce = gsi_stmt (iter);
 
       if (gimple_code (wce) == GIMPLE_WITH_CLEANUP_EXPR)
 	{
@@ -5365,7 +5365,7 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 static void
 gimple_push_cleanup (tree var, tree cleanup, bool eh_only, gimple_seq *pre_p)
 {
-  gimple wce;
+  gimple *wce;
   gimple_seq cleanup_stmts = NULL;
 
   /* Errors can result in improperly nested cleanups.  Which results in
@@ -6907,7 +6907,7 @@ static void
 gimplify_omp_parallel (tree *expr_p, gimple_seq *pre_p)
 {
   tree expr = *expr_p;
-  gimple g;
+  gimple *g;
   gimple_seq body = NULL;
 
   gimplify_scan_omp_clauses (&OMP_PARALLEL_CLAUSES (expr), pre_p,
@@ -6943,7 +6943,7 @@ static void
 gimplify_omp_task (tree *expr_p, gimple_seq *pre_p)
 {
   tree expr = *expr_p;
-  gimple g;
+  gimple *g;
   gimple_seq body = NULL;
 
   gimplify_scan_omp_clauses (&OMP_TASK_CLAUSES (expr), pre_p,
@@ -7501,7 +7501,7 @@ static void
 gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 {
   tree expr = *expr_p;
-  gimple stmt;
+  gimple *stmt;
   gimple_seq body = NULL;
   enum omp_region_type ort;
 
@@ -7530,7 +7530,7 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   if (ort == ORT_TARGET || ort == ORT_TARGET_DATA)
     {
       push_gimplify_context ();
-      gimple g = gimplify_and_return_first (OMP_BODY (expr), &body);
+      gimple *g = gimplify_and_return_first (OMP_BODY (expr), &body);
       if (gimple_code (g) == GIMPLE_BIND)
 	pop_gimplify_context (g);
       else
@@ -7805,7 +7805,7 @@ static enum gimplify_status
 gimplify_transaction (tree *expr_p, gimple_seq *pre_p)
 {
   tree expr = *expr_p, temp, tbody = TRANSACTION_EXPR_BODY (expr);
-  gimple body_stmt;
+  gimple *body_stmt;
   gtransaction *trans_stmt;
   gimple_seq body = NULL;
   int subcode = 0;
@@ -8485,7 +8485,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case CATCH_EXPR:
 	  {
-	    gimple c;
+	    gimple *c;
 	    gimple_seq handler = NULL;
 	    gimplify_and_add (CATCH_BODY (*expr_p), &handler);
 	    c = gimple_build_catch (CATCH_TYPES (*expr_p), handler);
@@ -8496,7 +8496,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case EH_FILTER_EXPR:
 	  {
-	    gimple ehf;
+	    gimple *ehf;
 	    gimple_seq failure = NULL;
 
 	    gimplify_and_add (EH_FILTER_FAILURE (*expr_p), &failure);
@@ -8630,7 +8630,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_CRITICAL:
 	  {
 	    gimple_seq body = NULL;
-	    gimple g;
+	    gimple *g;
 
 	    gimplify_and_add (OMP_BODY (*expr_p), &body);
 	    switch (TREE_CODE (*expr_p))
@@ -9207,7 +9207,7 @@ gimplify_body (tree fndecl, bool do_parms)
 {
   location_t saved_location = input_location;
   gimple_seq parm_stmts, seq;
-  gimple outer_stmt;
+  gimple *outer_stmt;
   gbind *outer_bind;
   struct cgraph_node *cgn;
 
@@ -9423,7 +9423,7 @@ gimplify_function_tree (tree fndecl)
     {
       tree x;
       gbind *new_bind;
-      gimple tf;
+      gimple *tf;
       gimple_seq cleanup = NULL, body = NULL;
       tree tmp_var;
       gcall *call;
@@ -9468,7 +9468,7 @@ gimplify_function_tree (tree fndecl)
       && !lookup_attribute ("no_sanitize_thread", DECL_ATTRIBUTES (fndecl)))
     {
       gcall *call = gimple_build_call_internal (IFN_TSAN_FUNC_EXIT, 0);
-      gimple tf = gimple_build_try (seq, call, GIMPLE_TRY_FINALLY);
+      gimple *tf = gimple_build_try (seq, call, GIMPLE_TRY_FINALLY);
       gbind *new_bind = gimple_build_bind (NULL, tf, gimple_bind_block (bind));
       /* Clear the block for BIND, since it is no longer directly inside
 	 the function, but within a try block.  */
@@ -9579,7 +9579,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
 
    This function returns the newly created GIMPLE_ASSIGN tuple.  */
 
-gimple
+gimple *
 gimplify_assign (tree dst, tree src, gimple_seq *seq_p)
 {
   tree t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);

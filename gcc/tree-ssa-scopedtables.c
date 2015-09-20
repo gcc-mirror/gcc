@@ -355,7 +355,7 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
 
 /* Given a statement STMT, construct a hash table element.  */
 
-expr_hash_elt::expr_hash_elt (gimple stmt, tree orig_lhs)
+expr_hash_elt::expr_hash_elt (gimple *stmt, tree orig_lhs)
 {
   enum gimple_code code = gimple_code (stmt);
   struct hashable_expr *expr = this->expr ();

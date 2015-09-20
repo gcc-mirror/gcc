@@ -48,7 +48,7 @@ enum iv_extend_code
 
 struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
   /* The statement STMT is executed at most ...  */
-  gimple stmt;
+  gimple *stmt;
 
   /* ... BOUND + 1 times (BOUND must be an unsigned constant).
      The + 1 is added for the following reasons:

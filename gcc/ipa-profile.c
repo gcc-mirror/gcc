@@ -191,7 +191,7 @@ ipa_profile_generate_summary (void)
 	int size = 0;
         for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  {
-	    gimple stmt = gsi_stmt (gsi);
+	    gimple *stmt = gsi_stmt (gsi);
 	    if (gimple_code (stmt) == GIMPLE_CALL
 		&& !gimple_call_fndecl (stmt))
 	      {

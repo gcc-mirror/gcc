@@ -327,8 +327,8 @@ static void
 dump_gbb_cases (FILE *file, gimple_bb_p gbb)
 {
   int i;
-  gimple stmt;
-  vec<gimple> cases;
+  gimple *stmt;
+  vec<gimple *> cases;
 
   if (!gbb)
     return;
@@ -354,8 +354,8 @@ static void
 dump_gbb_conditions (FILE *file, gimple_bb_p gbb)
 {
   int i;
-  gimple stmt;
-  vec<gimple> conditions;
+  gimple *stmt;
+  vec<gimple *> conditions;
 
   if (!gbb)
     return;

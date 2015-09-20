@@ -298,7 +298,7 @@ marked_for_renaming (tree sym)
    decided in mark_def_sites.  */
 
 static inline bool
-rewrite_uses_p (gimple stmt)
+rewrite_uses_p (gimple *stmt)
 {
   return gimple_visited_p (stmt);
 }
@@ -307,7 +307,7 @@ rewrite_uses_p (gimple stmt)
 /* Set the rewrite marker on STMT to the value given by REWRITE_P.  */
 
 static inline void
-set_rewrite_uses (gimple stmt, bool rewrite_p)
+set_rewrite_uses (gimple *stmt, bool rewrite_p)
 {
   gimple_set_visited (stmt, rewrite_p);
 }
@@ -322,7 +322,7 @@ set_rewrite_uses (gimple stmt, bool rewrite_p)
    registered, but they don't need to have their uses renamed.  */
 
 static inline bool
-register_defs_p (gimple stmt)
+register_defs_p (gimple *stmt)
 {
   return gimple_plf (stmt, GF_PLF_1) != 0;
 }
@@ -331,7 +331,7 @@ register_defs_p (gimple stmt)
 /* If REGISTER_DEFS_P is true, mark STMT to have its DEFs registered.  */
 
 static inline void
-set_register_defs (gimple stmt, bool register_defs_p)
+set_register_defs (gimple *stmt, bool register_defs_p)
 {
   gimple_set_plf (stmt, GF_PLF_1, register_defs_p);
 }
@@ -442,12 +442,12 @@ set_current_def (tree var, tree def)
 static void
 initialize_flags_in_bb (basic_block bb)
 {
-  gimple stmt;
+  gimple *stmt;
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple phi = gsi_stmt (gsi);
+      gimple *phi = gsi_stmt (gsi);
       set_rewrite_uses (phi, false);
       set_register_defs (phi, false);
     }
@@ -663,7 +663,7 @@ add_new_name_mapping (tree new_tree, tree old)
    we create.  */
 
 static void
-mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
+mark_def_sites (basic_block bb, gimple *stmt, bitmap kills)
 {
   tree def;
   use_operand_p use_p;
@@ -1049,8 +1049,8 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	  tracked_var = target_for_debug_bind (var);
 	  if (tracked_var)
 	    {
-	      gimple note = gimple_build_debug_bind (tracked_var,
-						     PHI_RESULT (phi),
+	      gimple *note = gimple_build_debug_bind (tracked_var,
+						      PHI_RESULT (phi),
 						     phi);
 	      gimple_stmt_iterator si = gsi_after_labels (bb);
 	      gsi_insert_before (&si, note, GSI_SAME_STMT);
@@ -1206,7 +1206,7 @@ get_reaching_def (tree var)
 /* Helper function for rewrite_stmt.  Rewrite uses in a debug stmt.  */
 
 static void
-rewrite_debug_stmt_uses (gimple stmt)
+rewrite_debug_stmt_uses (gimple *stmt)
 {
   use_operand_p use_p;
   ssa_op_iter iter;
@@ -1233,7 +1233,7 @@ rewrite_debug_stmt_uses (gimple stmt)
 		   !gsi_end_p (gsi) && lim > 0;
 		   gsi_next (&gsi), lim--)
 		{
-		  gimple gstmt = gsi_stmt (gsi);
+		  gimple *gstmt = gsi_stmt (gsi);
 		  if (!gimple_debug_source_bind_p (gstmt))
 		    break;
 		  if (gimple_debug_source_bind_get_value (gstmt) == var)
@@ -1248,7 +1248,7 @@ rewrite_debug_stmt_uses (gimple stmt)
 	      /* If not, add a new source bind stmt.  */
 	      if (def == NULL_TREE)
 		{
-		  gimple def_temp;
+		  gimple *def_temp;
 		  def = make_node (DEBUG_EXPR_DECL);
 		  def_temp = gimple_build_debug_source_bind (def, var, NULL);
 		  DECL_ARTIFICIAL (def) = 1;
@@ -1315,7 +1315,7 @@ rewrite_stmt (gimple_stmt_iterator *si)
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
-  gimple stmt = gsi_stmt (*si);
+  gimple *stmt = gsi_stmt (*si);
 
   /* If mark_def_sites decided that we don't need to rewrite this
      statement, ignore it.  */
@@ -1373,7 +1373,7 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	tracked_var = target_for_debug_bind (var);
 	if (tracked_var)
 	  {
-	    gimple note = gimple_build_debug_bind (tracked_var, name, stmt);
+	    gimple *note = gimple_build_debug_bind (tracked_var, name, stmt);
 	    gsi_insert_after (si, note, GSI_SAME_STMT);
 	  }
       }
@@ -1824,7 +1824,7 @@ maybe_replace_use_in_debug_stmt (use_operand_p use_p)
    DEF_P.  Returns whether the statement should be removed.  */
 
 static inline bool
-maybe_register_def (def_operand_p def_p, gimple stmt,
+maybe_register_def (def_operand_p def_p, gimple *stmt,
 		    gimple_stmt_iterator gsi)
 {
   tree def = DEF_FROM_PTR (def_p);
@@ -1854,7 +1854,7 @@ maybe_register_def (def_operand_p def_p, gimple stmt,
 	  tree tracked_var = target_for_debug_bind (sym);
 	  if (tracked_var)
 	    {
-	      gimple note = gimple_build_debug_bind (tracked_var, def, stmt);
+	      gimple *note = gimple_build_debug_bind (tracked_var, def, stmt);
 	      /* If stmt ends the bb, insert the debug stmt on the single
 		 non-EH edge from the stmt.  */
 	      if (gsi_one_before_end_p (gsi) && stmt_ends_bb_p (stmt))
@@ -1922,7 +1922,7 @@ maybe_register_def (def_operand_p def_p, gimple stmt,
    in OLD_SSA_NAMES.  Returns whether STMT should be removed.  */
 
 static bool
-rewrite_update_stmt (gimple stmt, gimple_stmt_iterator gsi)
+rewrite_update_stmt (gimple *stmt, gimple_stmt_iterator gsi)
 {
   use_operand_p use_p;
   def_operand_p def_p;
@@ -2057,7 +2057,7 @@ rewrite_update_phi_arguments (basic_block bb)
 		locus = UNKNOWN_LOCATION;
 	      else
 		{
-		  gimple stmt = SSA_NAME_DEF_STMT (reaching_def);
+		  gimple *stmt = SSA_NAME_DEF_STMT (reaching_def);
 		  gphi *other_phi = dyn_cast <gphi *> (stmt);
 
 		  /* Single element PHI nodes  behave like copies, so get the
@@ -2430,7 +2430,8 @@ make_pass_build_ssa (gcc::context *ctxt)
    renamer.  BLOCKS is the set of blocks that need updating.  */
 
 static void
-mark_def_interesting (tree var, gimple stmt, basic_block bb, bool insert_phi_p)
+mark_def_interesting (tree var, gimple *stmt, basic_block bb,
+		      bool insert_phi_p)
 {
   gcc_checking_assert (bitmap_bit_p (blocks_to_update, bb->index));
   set_register_defs (stmt, true);
@@ -2461,7 +2462,8 @@ mark_def_interesting (tree var, gimple stmt, basic_block bb, bool insert_phi_p)
    nodes.  */
 
 static inline void
-mark_use_interesting (tree var, gimple stmt, basic_block bb, bool insert_phi_p)
+mark_use_interesting (tree var, gimple *stmt, basic_block bb,
+		      bool insert_phi_p)
 {
   basic_block def_bb = gimple_bb (stmt);
 
@@ -2548,7 +2550,7 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
   for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
        gsi_next (&si))
     {
-      gimple stmt;
+      gimple *stmt;
       ssa_op_iter i;
       use_operand_p use_p;
       def_operand_p def_p;
@@ -2612,7 +2614,7 @@ prepare_use_sites_for (tree name, bool insert_phi_p)
 
   FOR_EACH_IMM_USE_FAST (use_p, iter, name)
     {
-      gimple stmt = USE_STMT (use_p);
+      gimple *stmt = USE_STMT (use_p);
       basic_block bb = gimple_bb (stmt);
 
       if (gimple_code (stmt) == GIMPLE_PHI)
@@ -2638,7 +2640,7 @@ prepare_use_sites_for (tree name, bool insert_phi_p)
 static void
 prepare_def_site_for (tree name, bool insert_phi_p)
 {
-  gimple stmt;
+  gimple *stmt;
   basic_block bb;
 
   gcc_checking_assert (names_to_release == NULL
@@ -2849,7 +2851,7 @@ delete_update_ssa (void)
    update_ssa's tables.  */
 
 tree
-create_new_def_for (tree old_name, gimple stmt, def_operand_p def)
+create_new_def_for (tree old_name, gimple *stmt, def_operand_p def)
 {
   tree new_name;
 
@@ -2907,7 +2909,7 @@ mark_virtual_operand_for_renaming (tree name)
   bool used = false;
   imm_use_iterator iter;
   use_operand_p use_p;
-  gimple stmt;
+  gimple *stmt;
 
   gcc_assert (VAR_DECL_IS_VIRTUAL_OPERAND (name_var));
   FOR_EACH_IMM_USE_STMT (stmt, iter, name)
@@ -3189,7 +3191,7 @@ update_ssa (unsigned update_flags)
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 
 	  ssa_op_iter i;
 	  use_operand_p use_p;

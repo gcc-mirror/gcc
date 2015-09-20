@@ -54,7 +54,7 @@ typedef class expr_hash_elt * expr_hash_elt_t;
 class expr_hash_elt
 {
  public:
-  expr_hash_elt (gimple, tree);
+  expr_hash_elt (gimple *, tree);
   expr_hash_elt (tree);
   expr_hash_elt (struct hashable_expr *, tree);
   expr_hash_elt (class expr_hash_elt &);

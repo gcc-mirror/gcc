@@ -82,9 +82,8 @@ typedef const struct hwivec_def *const_hwivec;
 union tree_node;
 typedef union tree_node *tree;
 typedef const union tree_node *const_tree;
-typedef struct gimple_statement_base *gimple;
-typedef const struct gimple_statement_base *const_gimple;
-typedef gimple gimple_seq;
+struct gimple;
+typedef gimple *gimple_seq;
 struct gimple_stmt_iterator;
 
 /* Forward decls for leaf gimple subclasses (for individual gimple codes).

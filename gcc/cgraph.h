@@ -128,14 +128,14 @@ public:
      REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
      of the use and STMT the statement (if it exists).  */
   ipa_ref *create_reference (symtab_node *referred_node,
-			     enum ipa_ref_use use_type, gimple stmt);
+			     enum ipa_ref_use use_type, gimple *stmt);
 
   /* If VAL is a reference to a function or a variable, add a reference from
      this symtab_node to the corresponding symbol table node.  USE_TYPE specify
      type of the use and STMT the statement (if it exists).  Return the new
      reference or NULL if none was created.  */
   ipa_ref *maybe_create_reference (tree val, enum ipa_ref_use use_type,
-				   gimple stmt);
+				   gimple *stmt);
 
   /* Clone all references from symtab NODE to this symtab_node.  */
   void clone_references (symtab_node *node);
@@ -147,15 +147,15 @@ public:
   void clone_referring (symtab_node *node);
 
   /* Clone reference REF to this symtab_node and set its stmt to STMT.  */
-  ipa_ref *clone_reference (ipa_ref *ref, gimple stmt);
+  ipa_ref *clone_reference (ipa_ref *ref, gimple *stmt);
 
   /* Find the structure describing a reference to REFERRED_NODE
      and associated with statement STMT.  */
-  ipa_ref *find_reference (symtab_node *referred_node, gimple stmt,
+  ipa_ref *find_reference (symtab_node *referred_node, gimple *stmt,
 			   unsigned int lto_stmt_uid);
 
   /* Remove all references that are associated with statement STMT.  */
-  void remove_stmt_references (gimple stmt);
+  void remove_stmt_references (gimple *stmt);
 
   /* Remove all stmt references in non-speculative references.
      Those are not maintained during inlining & clonning.
@@ -774,11 +774,11 @@ struct cgraph_edge;
 
 struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 {
-  typedef gimple compare_type;
+  typedef gimple *compare_type;
 
   static hashval_t hash (cgraph_edge *);
-  static hashval_t hash (gimple);
-  static bool equal (cgraph_edge *, gimple);
+  static hashval_t hash (gimple *);
+  static bool equal (cgraph_edge *, gimple *);
 };
 
 /* The cgraph data structure.
@@ -794,14 +794,14 @@ public:
 
   /* Record all references from cgraph_node that are taken
      in statement STMT.  */
-  void record_stmt_references (gimple stmt);
+  void record_stmt_references (gimple *stmt);
 
   /* Like cgraph_set_call_stmt but walk the clone tree and update all
      clones sharing the same function body.
      When WHOLE_SPECULATIVE_EDGES is true, all three components of
      speculative edge gets updated.  Otherwise we update only direct
      call.  */
-  void set_call_stmt_including_clones (gimple old_stmt, gcall *new_stmt,
+  void set_call_stmt_including_clones (gimple *old_stmt, gcall *new_stmt,
 				       bool update_speculative = true);
 
   /* Walk the alias chain to return the function cgraph_node is alias of.
@@ -1007,14 +1007,14 @@ public:
    same function body.  If clones already have edge for OLD_STMT; only
    update the edge same way as cgraph_set_call_stmt_including_clones does.  */
   void create_edge_including_clones (cgraph_node *callee,
-				     gimple old_stmt, gcall *stmt,
+				     gimple *old_stmt, gcall *stmt,
 				     gcov_type count,
 				     int freq,
 				     cgraph_inline_failed_t reason);
 
   /* Return the callgraph edge representing the GIMPLE_CALL statement
      CALL_STMT.  */
-  cgraph_edge *get_edge (gimple call_stmt);
+  cgraph_edge *get_edge (gimple *call_stmt);
 
   /* Collect all callers of cgraph_node and its aliases that are known to lead
      to NODE (i.e. are not overwritable).  */
@@ -1391,12 +1391,12 @@ public:
   /* Build context for pointer REF contained in FNDECL at statement STMT.
      if INSTANCE is non-NULL, return pointer to the object described by
      the context.  */
-  ipa_polymorphic_call_context (tree fndecl, tree ref, gimple stmt,
+  ipa_polymorphic_call_context (tree fndecl, tree ref, gimple *stmt,
 				tree *instance = NULL);
 
   /* Look for vtable stores or constructor calls to work out dynamic type
      of memory location.  */
-  bool get_dynamic_type (tree, tree, tree, gimple);
+  bool get_dynamic_type (tree, tree, tree, gimple *);
 
   /* Make context non-speculative.  */
   void clear_speculation ();
@@ -1537,7 +1537,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 
   /* If necessary, change the function declaration in the call statement
      associated with the edge so that it corresponds to the edge callee.  */
-  gimple redirect_call_stmt_to_callee (void);
+  gimple *redirect_call_stmt_to_callee (void);
 
   /* Create clone of edge in the node N represented
      by CALL_EXPR the callgraph.  */
@@ -2177,13 +2177,13 @@ void cgraph_c_finalize (void);
 void release_function_body (tree);
 cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 
-void cgraph_update_edges_for_call_stmt (gimple, tree, gimple);
+void cgraph_update_edges_for_call_stmt (gimple *, tree, gimple *);
 bool cgraph_function_possibly_inlined_p (tree);
 
 const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
 cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
-extern bool gimple_check_call_matching_types (gimple, tree, bool);
+extern bool gimple_check_call_matching_types (gimple *, tree, bool);
 
 /* In cgraphunit.c  */
 void cgraphunit_c_finalize (void);

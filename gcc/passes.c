@@ -2756,7 +2756,7 @@ execute_ipa_pass_list (opt_pass *pass)
 
 static void
 execute_ipa_stmt_fixups (opt_pass *pass,
-			 struct cgraph_node *node, gimple *stmts)
+			 struct cgraph_node *node, gimple **stmts)
 {
   while (pass)
     {
@@ -2791,7 +2791,7 @@ execute_ipa_stmt_fixups (opt_pass *pass,
 /* Execute stmt fixup hooks of all IPA passes for NODE and STMTS.  */
 
 void
-execute_all_ipa_stmt_fixups (struct cgraph_node *node, gimple *stmts)
+execute_all_ipa_stmt_fixups (struct cgraph_node *node, gimple **stmts)
 {
   pass_manager *passes = g->get_passes ();
   execute_ipa_stmt_fixups (passes->all_regular_ipa_passes, node, stmts);

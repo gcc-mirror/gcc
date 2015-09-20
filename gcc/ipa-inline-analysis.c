@@ -1524,7 +1524,7 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
    parameter.  */
 
 static tree
-unmodified_parm_1 (gimple stmt, tree op)
+unmodified_parm_1 (gimple *stmt, tree op)
 {
   /* SSA_NAME referring to parm default def?  */
   if (TREE_CODE (op) == SSA_NAME
@@ -1550,7 +1550,7 @@ unmodified_parm_1 (gimple stmt, tree op)
    parameter.  Also traverse chains of SSA register assignments.  */
 
 static tree
-unmodified_parm (gimple stmt, tree op)
+unmodified_parm (gimple *stmt, tree op)
 {
   tree res = unmodified_parm_1 (stmt, op);
   if (res)
@@ -1573,7 +1573,7 @@ unmodified_parm (gimple stmt, tree op)
 
 static bool
 unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
-				  gimple stmt, tree op, int *index_p,
+				  gimple *stmt, tree op, int *index_p,
 				  struct agg_position_info *aggpos)
 {
   tree res = unmodified_parm_1 (stmt, op);
@@ -1615,7 +1615,7 @@ unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
    penalty wrappers.  */
 
 static int
-eliminated_by_inlining_prob (gimple stmt)
+eliminated_by_inlining_prob (gimple *stmt)
 {
   enum gimple_code code = gimple_code (stmt);
   enum tree_code rhs_code;
@@ -1747,14 +1747,14 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				   struct inline_summary *summary,
 				   basic_block bb)
 {
-  gimple last;
+  gimple *last;
   tree op;
   int index;
   struct agg_position_info aggpos;
   enum tree_code code, inverted_code;
   edge e;
   edge_iterator ei;
-  gimple set_stmt;
+  gimple *set_stmt;
   tree op2;
 
   last = last_stmt (bb);
@@ -1829,7 +1829,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				     struct inline_summary *summary,
 				     basic_block bb)
 {
-  gimple lastg;
+  gimple *lastg;
   tree op;
   int index;
   struct agg_position_info aggpos;
@@ -2031,7 +2031,7 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
 static struct predicate
 will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 			       struct inline_summary *summary,
-			       gimple stmt,
+			       gimple *stmt,
 			       vec<predicate_t> nonconstant_names)
 {
   struct predicate p = true_predicate ();
@@ -2119,7 +2119,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 struct record_modified_bb_info
 {
   bitmap bb_set;
-  gimple stmt;
+  gimple *stmt;
 };
 
 /* Callback of walk_aliased_vdefs.  Records basic blocks where the value may be
@@ -2147,7 +2147,7 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
    ought to be REG_BR_PROB_BASE / estimated_iters.  */
 
 static int
-param_change_prob (gimple stmt, int i)
+param_change_prob (gimple *stmt, int i)
 {
   tree op = gimple_call_arg (stmt, i);
   basic_block bb = gimple_bb (stmt);
@@ -2240,7 +2240,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
   edge e;
   edge_iterator ei;
   basic_block first_bb = NULL;
-  gimple stmt;
+  gimple *stmt;
 
   if (single_pred_p (bb))
     {
@@ -2355,14 +2355,14 @@ array_index_predicate (inline_summary *info,
    an impact on the earlier inlining.
    Here find this pattern and fix it up later.  */
 
-static gimple
+static gimple *
 find_foldable_builtin_expect (basic_block bb)
 {
   gimple_stmt_iterator bsi;
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      gimple stmt = gsi_stmt (bsi);
+      gimple *stmt = gsi_stmt (bsi);
       if (gimple_call_builtin_p (stmt, BUILT_IN_EXPECT)
 	  || (is_gimple_call (stmt)
 	      && gimple_call_internal_p (stmt)
@@ -2371,7 +2371,7 @@ find_foldable_builtin_expect (basic_block bb)
           tree var = gimple_call_lhs (stmt);
           tree arg = gimple_call_arg (stmt, 0);
           use_operand_p use_p;
-          gimple use_stmt;
+	  gimple *use_stmt;
           bool match = false;
           bool done = false;
 
@@ -2381,7 +2381,7 @@ find_foldable_builtin_expect (basic_block bb)
 
           while (TREE_CODE (arg) == SSA_NAME)
             {
-              gimple stmt_tmp = SSA_NAME_DEF_STMT (arg);
+	      gimple *stmt_tmp = SSA_NAME_DEF_STMT (arg);
               if (!is_gimple_assign (stmt_tmp))
                 break;
               switch (gimple_assign_rhs_code (stmt_tmp))
@@ -2443,7 +2443,7 @@ clobber_only_eh_bb_p (basic_block bb, bool need_eh = true)
 
   for (; !gsi_end_p (gsi); gsi_prev (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       if (is_gimple_debug (stmt))
 	continue;
       if (gimple_clobber_p (stmt))
@@ -2484,7 +2484,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   int nblocks, n;
   int *order;
   predicate array_index = true_predicate ();
-  gimple fix_builtin_expect_stmt;
+  gimple *fix_builtin_expect_stmt;
 
   gcc_assert (my_function && my_function->cfg);
   gcc_assert (cfun == my_function);
@@ -2597,7 +2597,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
 	   gsi_next (&bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
 	  int prob;
@@ -2795,7 +2795,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		{
-		  gimple stmt = gsi_stmt (gsi);
+		  gimple *stmt = gsi_stmt (gsi);
 		  affine_iv iv;
 		  ssa_op_iter iter;
 		  tree use;

@@ -122,7 +122,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 		      bool gpr_p)
 {
   tree lhs, orig_lhs;
-  gimple stmt;
+  gimple *stmt;
   unsigned HOST_WIDE_INT ret = 0, val, counter_val;
   unsigned int max_size;
 
@@ -568,7 +568,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
       for (gimple_stmt_iterator i = gsi_start_bb (bb); !gsi_end_p (i);
 	   gsi_next (&i))
 	{
-	  gimple stmt = gsi_stmt (i);
+	  gimple *stmt = gsi_stmt (i);
 	  tree use;
 	  ssa_op_iter iter;
 
@@ -692,7 +692,7 @@ optimize_va_list_gpr_fpr_size (function *fun)
 
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
 	{
-	  gimple stmt = gsi_stmt (i);
+	  gimple *stmt = gsi_stmt (i);
 	  tree callee, ap;
 
 	  if (!is_gimple_call (stmt))
@@ -865,7 +865,7 @@ optimize_va_list_gpr_fpr_size (function *fun)
 	   !gsi_end_p (i) && !va_list_escapes;
 	   gsi_next (&i))
 	{
-	  gimple stmt = gsi_stmt (i);
+	  gimple *stmt = gsi_stmt (i);
 
 	  /* Don't look at __builtin_va_{start,end}, they are ok.  */
 	  if (is_gimple_call (stmt))
@@ -999,7 +999,7 @@ finish:
 /* Return true if STMT is IFN_VA_ARG.  */
 
 static bool
-gimple_call_ifn_va_arg_p (gimple stmt)
+gimple_call_ifn_va_arg_p (gimple *stmt)
 {
   return (is_gimple_call (stmt)
 	  && gimple_call_internal_p (stmt)
@@ -1019,7 +1019,7 @@ expand_ifn_va_arg_1 (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
       {
-	gimple stmt = gsi_stmt (i);
+	gimple *stmt = gsi_stmt (i);
 	tree ap, expr, lhs, type;
 	gimple_seq pre = NULL, post = NULL;
 

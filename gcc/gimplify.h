@@ -52,13 +52,13 @@ enum gimplify_status {
 extern void free_gimplify_stack (void);
 extern void push_gimplify_context (bool in_ssa = false,
 				   bool rhs_cond_ok = false);
-extern void pop_gimplify_context (gimple);
+extern void pop_gimplify_context (gimple *);
 extern gbind *gimple_current_bind_expr (void);
 extern vec<gbind *> gimple_bind_expr_stack (void);
 extern void gimplify_and_add (tree, gimple_seq *);
 extern tree get_formal_tmp_var (tree, gimple_seq *);
 extern tree get_initialized_tmp_var (tree, gimple_seq *, gimple_seq *);
-extern void declare_vars (tree, gimple, bool);
+extern void declare_vars (tree, gimple *, bool);
 extern void gimple_add_tmp_var (tree);
 extern void gimple_add_tmp_var_fn (struct function *, tree);
 extern tree unshare_expr (tree);
@@ -81,7 +81,7 @@ extern enum gimplify_status gimplify_arg (tree *, gimple_seq *, location_t);
 extern void gimplify_function_tree (tree);
 extern enum gimplify_status gimplify_va_arg_expr (tree *, gimple_seq *,
 						  gimple_seq *);
-gimple gimplify_assign (tree, tree, gimple_seq *);
+gimple *gimplify_assign (tree, tree, gimple_seq *);
 
 /* Return true if gimplify_one_sizepos doesn't need to gimplify
    expr (when in TYPE_SIZE{,_UNIT} and similar type/decl size/bitsize

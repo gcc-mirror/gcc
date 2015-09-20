@@ -1425,7 +1425,7 @@ sem_function::init (void)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	     gsi_next (&gsi))
 	  {
-	    gimple stmt = gsi_stmt (gsi);
+	    gimple *stmt = gsi_stmt (gsi);
 
 	    if (gimple_code (stmt) != GIMPLE_DEBUG
 		&& gimple_code (stmt) != GIMPLE_PREDICT)
@@ -1615,7 +1615,7 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */
 
 void
-sem_function::hash_stmt (gimple stmt, inchash::hash &hstate)
+sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
 {
   enum gimple_code code = gimple_code (stmt);
 

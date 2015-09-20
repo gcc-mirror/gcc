@@ -438,7 +438,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 	{
 	  edge e;
 	  tree c0, c1;
-	  gimple cond;
+	  gimple *cond;
 	  enum tree_code cmp;
 
 	  if (!single_pred_p (bb))
@@ -725,7 +725,7 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
   edge e;
   basic_block bb;
   tree c0, c1;
-  gimple cond;
+  gimple *cond;
   enum tree_code cmp;
 
   /* Get rid of unnecessary casts, but preserve the value of
@@ -1815,7 +1815,7 @@ expand_simple_operations (tree expr, tree stop)
   unsigned i, n;
   tree ret = NULL_TREE, e, ee, e1;
   enum tree_code code;
-  gimple stmt;
+  gimple *stmt;
 
   if (expr == NULL_TREE)
     return expr;
@@ -2054,7 +2054,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr, tree stop)
 {
   edge e;
   basic_block bb;
-  gimple stmt;
+  gimple *stmt;
   tree cond;
   int cnt = 0;
 
@@ -2156,7 +2156,7 @@ loop_only_exit_p (const struct loop *loop, const_edge exit)
   basic_block *body;
   gimple_stmt_iterator bsi;
   unsigned i;
-  gimple call;
+  gimple *call;
 
   if (exit != single_exit (loop))
     return false;
@@ -2198,7 +2198,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 			   struct tree_niter_desc *niter,
 			   bool warn, bool every_iteration)
 {
-  gimple last;
+  gimple *last;
   gcond *stmt;
   tree type;
   tree op0, op1;
@@ -2441,7 +2441,7 @@ finite_loop_p (struct loop *loop)
 static gphi *
 chain_of_csts_start (struct loop *loop, tree x)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (x);
+  gimple *stmt = SSA_NAME_DEF_STMT (x);
   tree use;
   basic_block bb = gimple_bb (stmt);
   enum tree_code code;
@@ -2525,7 +2525,7 @@ get_base_for (struct loop *loop, tree x)
 static tree
 get_val_for (tree x, tree base)
 {
-  gimple stmt;
+  gimple *stmt;
 
   gcc_checking_assert (is_gimple_min_invariant (base));
 
@@ -2581,7 +2581,7 @@ loop_niter_by_eval (struct loop *loop, edge exit)
   tree acnd;
   tree op[2], val[2], next[2], aval[2];
   gphi *phi;
-  gimple cond;
+  gimple *cond;
   unsigned i, j;
   enum tree_code cmp;
 
@@ -2721,7 +2721,7 @@ static widest_int derive_constant_upper_bound_ops (tree, tree,
    an assignment statement STMT.  */
 
 static widest_int
-derive_constant_upper_bound_assign (gimple stmt)
+derive_constant_upper_bound_assign (gimple *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree op0 = gimple_assign_rhs1 (stmt);
@@ -2755,7 +2755,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 {
   tree subtype, maxt;
   widest_int bnd, max, mmax, cst;
-  gimple stmt;
+  gimple *stmt;
 
   if (INTEGRAL_TYPE_P (type))
     maxt = TYPE_MAX_VALUE (type);
@@ -2888,7 +2888,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 
 static void
 do_warn_aggressive_loop_optimizations (struct loop *loop,
-				       widest_int i_bound, gimple stmt)
+				       widest_int i_bound, gimple *stmt)
 {
   /* Don't warn if the loop doesn't have known constant bound.  */
   if (!loop->nb_iterations
@@ -2910,7 +2910,7 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
   if (e == NULL)
     return;
 
-  gimple estmt = last_stmt (e->src);
+  gimple *estmt = last_stmt (e->src);
   if (warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
 		  "iteration %E invokes undefined behavior",
 		  wide_int_to_tree (TREE_TYPE (loop->nb_iterations),
@@ -2928,7 +2928,7 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
 
 static void
 record_estimate (struct loop *loop, tree bound, const widest_int &i_bound,
-		 gimple at_stmt, bool is_exit, bool realistic, bool upper)
+		 gimple *at_stmt, bool is_exit, bool realistic, bool upper)
 {
   widest_int delta;
 
@@ -3024,7 +3024,7 @@ record_control_iv (struct loop *loop, struct tree_niter_desc *niter)
    UPPER is true if we are sure the induction variable does not wrap.  */
 
 static void
-record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
+record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
 		       tree low, tree high, bool realistic, bool upper)
 {
   tree niter_bound, extreme, delta;
@@ -3096,7 +3096,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
 struct ilb_data
 {
   struct loop *loop;
-  gimple stmt;
+  gimple *stmt;
 };
 
 static bool
@@ -3195,7 +3195,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
    STMT is guaranteed to be executed in every iteration of LOOP.*/
 
 static void
-infer_loop_bounds_from_ref (struct loop *loop, gimple stmt, tree ref)
+infer_loop_bounds_from_ref (struct loop *loop, gimple *stmt, tree ref)
 {
   struct ilb_data data;
 
@@ -3209,7 +3209,7 @@ infer_loop_bounds_from_ref (struct loop *loop, gimple stmt, tree ref)
    executed in every iteration of LOOP.  */
 
 static void
-infer_loop_bounds_from_array (struct loop *loop, gimple stmt)
+infer_loop_bounds_from_array (struct loop *loop, gimple *stmt)
 {
   if (is_gimple_assign (stmt))
     {
@@ -3246,7 +3246,7 @@ infer_loop_bounds_from_array (struct loop *loop, gimple stmt)
    that pointer arithmetics in STMT does not overflow.  */
 
 static void
-infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple stmt)
+infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple *stmt)
 {
   tree def, base, step, scev, type, low, high;
   tree var, ptr;
@@ -3304,7 +3304,7 @@ infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple stmt)
    that signed arithmetics in STMT does not overflow.  */
 
 static void
-infer_loop_bounds_from_signedness (struct loop *loop, gimple stmt)
+infer_loop_bounds_from_signedness (struct loop *loop, gimple *stmt)
 {
   tree def, base, step, scev, type, low, high;
 
@@ -3372,7 +3372,7 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  gimple stmt = gsi_stmt (bsi);
+	  gimple *stmt = gsi_stmt (bsi);
 
 	  infer_loop_bounds_from_array (loop, stmt);
 
@@ -3598,7 +3598,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 static void
 maybe_lower_iteration_bound (struct loop *loop)
 {
-  hash_set<gimple> *not_executed_last_iteration = NULL;
+  hash_set<gimple *> *not_executed_last_iteration = NULL;
   struct nb_iter_bound *elt;
   bool found_exit = false;
   vec<basic_block> queue = vNULL;
@@ -3617,7 +3617,7 @@ maybe_lower_iteration_bound (struct loop *loop)
 	  && wi::ltu_p (elt->bound, loop->nb_iterations_upper_bound))
 	{
 	  if (!not_executed_last_iteration)
-	    not_executed_last_iteration = new hash_set<gimple>;
+	    not_executed_last_iteration = new hash_set<gimple *>;
 	  not_executed_last_iteration->add (elt->stmt);
 	}
     }
@@ -3643,7 +3643,7 @@ maybe_lower_iteration_bound (struct loop *loop)
       /* Loop for possible exits and statements bounding the execution.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  if (not_executed_last_iteration->contains (stmt))
 	    {
 	      stmt_found = true;
@@ -3922,7 +3922,7 @@ estimate_numbers_of_iterations (void)
 /* Returns true if statement S1 dominates statement S2.  */
 
 bool
-stmt_dominates_stmt_p (gimple s1, gimple s2)
+stmt_dominates_stmt_p (gimple *s1, gimple *s2)
 {
   basic_block bb1 = gimple_bb (s1), bb2 = gimple_bb (s2);
 
@@ -3964,7 +3964,7 @@ stmt_dominates_stmt_p (gimple s1, gimple s2)
    bounds computed by discover_iteration_bound_by_body_walk.  */
 
 static bool
-n_of_executions_at_most (gimple stmt,
+n_of_executions_at_most (gimple *stmt,
 			 struct nb_iter_bound *niter_bound,
 			 tree niter)
 {
@@ -4052,7 +4052,7 @@ nowrap_type_p (tree type)
 
 static bool
 loop_exits_before_overflow (tree base, tree step,
-			    gimple at_stmt, struct loop *loop)
+			    gimple *at_stmt, struct loop *loop)
 {
   widest_int niter;
   struct control_iv *civ;
@@ -4192,7 +4192,7 @@ loop_exits_before_overflow (tree base, tree step,
 
 bool
 scev_probably_wraps_p (tree base, tree step,
-		       gimple at_stmt, struct loop *loop,
+		       gimple *at_stmt, struct loop *loop,
 		       bool use_overflow_semantics)
 {
   /* FIXME: We really need something like

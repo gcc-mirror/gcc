@@ -533,7 +533,7 @@ split_block_1 (basic_block bb, void *i)
 }
 
 edge
-split_block (basic_block bb, gimple i)
+split_block (basic_block bb, gimple *i)
 {
   return split_block_1 (bb, i);
 }

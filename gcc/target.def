@@ -3814,7 +3814,7 @@ DEFHOOK_UNDOC
 "Perform architecture specific checking of statements gimplified\
  from @code{VA_ARG_EXPR}.  @var{stmt} is the statement.  Returns true if\
  the statement doesn't need to be checked for @code{va_list} references.",
- bool, (struct stdarg_info *ai, const_gimple stmt), NULL)
+ bool, (struct stdarg_info *ai, const gimple *stmt), NULL)
 
 /* This target hook allows the operating system to override the DECL
    that represents the external variable that contains the stack

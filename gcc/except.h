@@ -201,7 +201,7 @@ struct GTY(()) eh_status
 
   /* At the gimple level, a mapping from gimple statement to landing pad
      or must-not-throw region.  See record_stmt_eh_region.  */
-  hash_map<gimple, int> *GTY(()) throw_stmt_table;
+  hash_map<gimple *, int> *GTY(()) throw_stmt_table;
 
   /* All of the runtime type data used by the function.  These objects
      are emitted to the lang-specific-data-area for the function.  */
@@ -285,12 +285,12 @@ extern eh_landing_pad get_eh_landing_pad_from_rtx (const_rtx);
 extern void finish_eh_generation (void);
 
 struct GTY(()) throw_stmt_node {
-  gimple stmt;
+  gimple *stmt;
   int lp_nr;
 };
 
-extern hash_map<gimple, int> *get_eh_throw_stmt_table (struct function *);
-extern void set_eh_throw_stmt_table (function *, hash_map<gimple, int> *);
+extern hash_map<gimple *, int> *get_eh_throw_stmt_table (struct function *);
+extern void set_eh_throw_stmt_table (function *, hash_map<gimple *, int> *);
 
 enum eh_personality_kind {
   eh_personality_none,

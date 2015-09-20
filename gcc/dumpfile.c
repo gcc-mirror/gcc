@@ -343,7 +343,7 @@ dump_loc (int dump_kind, FILE *dfile, source_location loc)
    EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.  */
 
 void
-dump_gimple_stmt (int dump_kind, int extra_dump_flags, gimple gs, int spc)
+dump_gimple_stmt (int dump_kind, int extra_dump_flags, gimple *gs, int spc)
 {
   if (dump_file && (dump_kind & pflags))
     print_gimple_stmt (dump_file, gs, spc, dump_flags | extra_dump_flags);
@@ -356,7 +356,7 @@ dump_gimple_stmt (int dump_kind, int extra_dump_flags, gimple gs, int spc)
 
 void
 dump_gimple_stmt_loc (int dump_kind, source_location loc, int extra_dump_flags,
-                      gimple gs, int spc)
+		      gimple *gs, int spc)
 {
   if (dump_file && (dump_kind & pflags))
     {

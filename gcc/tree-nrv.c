@@ -173,7 +173,7 @@ pass_nrv::execute (function *fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree ret_val;
 
 	  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
@@ -266,7 +266,7 @@ pass_nrv::execute (function *fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  /* If this is a copy from VAR to RESULT, remove it.  */
 	  if (gimple_assign_copy_p (stmt)
 	      && gimple_assign_lhs (stmt) == result
