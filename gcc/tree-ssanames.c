@@ -120,7 +120,7 @@ ssanames_print_statistics (void)
    used without a preceding definition).  */
 
 tree
-make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
+make_ssa_name_fn (struct function *fn, tree var, gimple *stmt)
 {
   tree t;
   use_operand_p imm;
@@ -437,7 +437,7 @@ get_ptr_info (tree t)
    statement STMT in function FN.  */
 
 tree
-copy_ssa_name_fn (struct function *fn, tree name, gimple stmt)
+copy_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
 {
   tree new_name;
 
@@ -505,7 +505,7 @@ duplicate_ssa_name_range_info (tree name, enum value_range_type range_type,
    in function FN.  */
 
 tree
-duplicate_ssa_name_fn (struct function *fn, tree name, gimple stmt)
+duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
 {
   tree new_name = copy_ssa_name_fn (fn, name, stmt);
   if (POINTER_TYPE_P (TREE_TYPE (name)))
@@ -548,7 +548,7 @@ reset_flow_sensitive_info (tree name)
 /* Release all the SSA_NAMEs created by STMT.  */
 
 void
-release_defs (gimple stmt)
+release_defs (gimple *stmt)
 {
   tree def;
   ssa_op_iter iter;

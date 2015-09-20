@@ -2604,7 +2604,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
       fprintf_indent (f, indent,
 		      "    {\n");
       fprintf_indent (f, indent,
-		      "      gimple def_stmt = SSA_NAME_DEF_STMT (%s);\n",
+		      "      gimple *def_stmt = SSA_NAME_DEF_STMT (%s);\n",
 		      kid_opname);
 
       indent += 6;

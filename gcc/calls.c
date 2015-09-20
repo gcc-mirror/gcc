@@ -626,7 +626,7 @@ setjmp_call_p (const_tree fndecl)
 /* Return true if STMT is an alloca call.  */
 
 bool
-gimple_alloca_call_p (const_gimple stmt)
+gimple_alloca_call_p (const gimple *stmt)
 {
   tree fndecl;
 

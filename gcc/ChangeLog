@@ -1,3 +1,11 @@
+2015-09-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* coretypes.h (gimple): Change typedef to be a forward
+	declaration.
+	* gimple.h (gimple_statement_base): rename to gimple.
+	* (all functions and types using gimple): Adjust.
+	* *.[ch]: Likewise.
+
 2015-09-19  Andrew Dixie  <andrewd@gentrack.com>
 	    David Edelsohn  <dje.gcc@gmail.com>
 

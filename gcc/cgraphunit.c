@@ -1764,7 +1764,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      {
 		tmp = create_tmp_reg (TYPE_MAIN_VARIANT
 				      (TREE_TYPE (arg)), "arg");
-		gimple stmt = gimple_build_assign (tmp, arg);
+		gimple *stmt = gimple_build_assign (tmp, arg);
 		gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 	      }
 	    vargs.quick_push (tmp);
@@ -1808,7 +1808,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 
 	      if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
 		{
-		  gimple stmt;
+		  gimple *stmt;
 		  edge e;
 		  /* If the return type is a pointer, we need to
 		     protect against NULL.  We know there will be an
@@ -1854,7 +1854,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 				     fixed_offset, virtual_offset);
 	      if (true_label)
 		{
-		  gimple stmt;
+		  gimple *stmt;
 		  bsi = gsi_last_bb (else_bb);
 		  stmt = gimple_build_assign (restmp,
 					      build_zero_cst (TREE_TYPE (restmp)));

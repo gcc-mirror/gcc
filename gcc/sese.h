@@ -119,7 +119,7 @@ bb_in_sese_p (basic_block bb, sese region)
 /* Returns true when STMT is defined in REGION.  */
 
 static inline bool
-stmt_in_sese_p (gimple stmt, sese region)
+stmt_in_sese_p (gimple *stmt, sese region)
 {
   basic_block bb = gimple_bb (stmt);
   return bb && bb_in_sese_p (bb, region);
@@ -130,7 +130,7 @@ stmt_in_sese_p (gimple stmt, sese region)
 static inline bool
 defined_in_sese_p (tree name, sese region)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (name);
+  gimple *stmt = SSA_NAME_DEF_STMT (name);
   return stmt_in_sese_p (stmt, region);
 }
 
@@ -289,8 +289,8 @@ typedef struct gimple_bb
      corresponding element in CONDITION_CASES is not NULL_TREE.  For a
      SWITCH_EXPR the corresponding element in CONDITION_CASES is a
      CASE_LABEL_EXPR.  */
-  vec<gimple> conditions;
-  vec<gimple> condition_cases;
+  vec<gimple *> conditions;
+  vec<gimple *> condition_cases;
   vec<data_reference_p> data_refs;
 } *gimple_bb_p;
 

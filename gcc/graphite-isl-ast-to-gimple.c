@@ -1074,7 +1074,7 @@ scop_to_isl_ast (scop_p scop, ivs_params &ip)
    DEF_STMT. GSI points to entry basic block of the TO_REGION.  */
 
 static void
-copy_def(tree tr, gimple def_stmt, sese region, sese to_region, gimple_stmt_iterator *gsi)
+copy_def(tree tr, gimple *def_stmt, sese region, sese to_region, gimple_stmt_iterator *gsi)
 {
   if (!defined_in_sese_p (tr, region))
     return;
@@ -1090,14 +1090,14 @@ copy_def(tree tr, gimple def_stmt, sese region, sese to_region, gimple_stmt_iter
       if (region->parameter_rename_map->get(use_tr))
 	continue;
 
-      gimple def_of_use = SSA_NAME_DEF_STMT (use_tr);
+      gimple *def_of_use = SSA_NAME_DEF_STMT (use_tr);
       if (!def_of_use)
 	continue;
 
       copy_def (use_tr, def_of_use, region, to_region, gsi);
     }
 
-  gimple copy = gimple_copy (def_stmt);
+  gimple *copy = gimple_copy (def_stmt);
   gsi_insert_after (gsi, copy, GSI_NEW_STMT);
 
   /* Create new names for all the definitions created by COPY and
@@ -1127,7 +1127,7 @@ copy_internal_parameters(sese region, sese to_region)
   FOR_EACH_VEC_ELT (region->params, i, tr)
     {
       // If def is not in region.
-      gimple def_stmt = SSA_NAME_DEF_STMT (tr);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (tr);
       if (def_stmt)
 	copy_def (tr, def_stmt, region, to_region, &gsi);
     }

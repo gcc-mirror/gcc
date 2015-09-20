@@ -84,7 +84,7 @@ static bool cfg_altered;
 /* Bitmap of blocks that have had EH statements cleaned.  We should
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
-static vec<gimple> need_noreturn_fixup;
+static vec<gimple *> need_noreturn_fixup;
 
 /* Statistics for dominator optimizations.  */
 struct opt_stats_d
@@ -102,7 +102,7 @@ static struct opt_stats_d opt_stats;
 static void optimize_stmt (basic_block, gimple_stmt_iterator,
 			   class const_and_copies *,
 			   class avail_exprs_stack *);
-static tree lookup_avail_expr (gimple, bool, class avail_exprs_stack *);
+static tree lookup_avail_expr (gimple *, bool, class avail_exprs_stack *);
 static void record_cond (cond_equivalence *, class avail_exprs_stack *);
 static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
@@ -112,7 +112,7 @@ static void record_equivalences_from_incoming_edge (basic_block,
 static void eliminate_redundant_computations (gimple_stmt_iterator *,
 					      class const_and_copies *,
 					      class avail_exprs_stack *);
-static void record_equivalences_from_stmt (gimple, int,
+static void record_equivalences_from_stmt (gimple *, int,
 					   class avail_exprs_stack *);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 static void dump_dominator_optimization_stats (FILE *file,
@@ -326,7 +326,7 @@ record_edge_info (basic_block bb)
 
   if (! gsi_end_p (gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       location_t loc = gimple_location (stmt);
 
       if (gimple_code (stmt) == GIMPLE_SWITCH)
@@ -661,7 +661,7 @@ pass_dominator::execute (function *fun)
      now noreturn call first.  */
   while (!need_noreturn_fixup.is_empty ())
     {
-      gimple stmt = need_noreturn_fixup.pop ();
+      gimple *stmt = need_noreturn_fixup.pop ();
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
@@ -755,8 +755,8 @@ canonicalize_comparison (gcond *condstmt)
 /* A trivial wrapper so that we can present the generic jump
    threading code with a simple API for simplifying statements.  */
 static tree
-simplify_stmt_for_jump_threading (gimple stmt,
-				  gimple within_stmt ATTRIBUTE_UNUSED,
+simplify_stmt_for_jump_threading (gimple *stmt,
+				  gimple *within_stmt ATTRIBUTE_UNUSED,
 				  class avail_exprs_stack *avail_exprs_stack)
 {
   return lookup_avail_expr (stmt, false, avail_exprs_stack);
@@ -807,7 +807,7 @@ record_temporary_equivalences (edge e,
 	  && TREE_CODE (lhs) == SSA_NAME
 	  && TREE_CODE (rhs) == INTEGER_CST)
 	{
-	  gimple defstmt = SSA_NAME_DEF_STMT (lhs);
+	  gimple *defstmt = SSA_NAME_DEF_STMT (lhs);
 
 	  if (defstmt
 	      && is_gimple_assign (defstmt)
@@ -841,7 +841,7 @@ record_temporary_equivalences (edge e,
 	  imm_use_iterator iter;
 	  FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
 	    {
-	      gimple use_stmt = USE_STMT (use_p);
+	      gimple *use_stmt = USE_STMT (use_p);
 
 	      /* Only bother to record more equivalences for lhs that
 	         can be directly used by e->dest.
@@ -1084,7 +1084,7 @@ record_cond (cond_equivalence *p,
 static int
 loop_depth_of_name (tree x)
 {
-  gimple defstmt;
+  gimple *defstmt;
   basic_block defbb;
 
   /* If it's not an SSA_NAME, we have no clue where the definition is.  */
@@ -1171,11 +1171,11 @@ record_equality (tree x, tree y, class const_and_copies *const_and_copies)
    i_2 = i_1 +/- ...  */
 
 bool
-simple_iv_increment_p (gimple stmt)
+simple_iv_increment_p (gimple *stmt)
 {
   enum tree_code code;
   tree lhs, preinc;
-  gimple phi;
+  gimple *phi;
   size_t i;
 
   if (gimple_code (stmt) != GIMPLE_ASSIGN)
@@ -1325,7 +1325,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
-  gimple last;
+  gimple *last;
 
   /* If we have an outgoing edge to a block with multiple incoming and
      outgoing edges, then we may be able to thread the edge, i.e., we
@@ -1380,7 +1380,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
   bool insert = true;
   bool assigns_var_p = false;
 
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     def = gimple_phi_result (stmt);
@@ -1480,7 +1480,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
    lifing is done by eliminate_redundant_computations.  */
 
 static void
-record_equivalences_from_stmt (gimple stmt, int may_optimize_p,
+record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
 			       class avail_exprs_stack *avail_exprs_stack)
 {
   tree lhs;
@@ -1573,7 +1573,7 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p,
              generate here may in fact be ill-formed, but it is simply
              used as an internal device in this pass, and never becomes
              part of the CFG.  */
-          gimple defstmt = SSA_NAME_DEF_STMT (rhs);
+	  gimple *defstmt = SSA_NAME_DEF_STMT (rhs);
           new_stmt = gimple_build_assign (rhs, lhs);
           SSA_NAME_DEF_STMT (rhs) = defstmt;
         }
@@ -1592,7 +1592,7 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p,
    CONST_AND_COPIES.  */
 
 static void
-cprop_operand (gimple stmt, use_operand_p op_p)
+cprop_operand (gimple *stmt, use_operand_p op_p)
 {
   tree val;
   tree op = USE_FROM_PTR (op_p);
@@ -1619,7 +1619,7 @@ cprop_operand (gimple stmt, use_operand_p op_p)
 	 number of iteration analysis.  */
       if (TREE_CODE (val) != INTEGER_CST)
 	{
-	  gimple def = SSA_NAME_DEF_STMT (op);
+	  gimple *def = SSA_NAME_DEF_STMT (op);
 	  if (gimple_code (def) == GIMPLE_PHI
 	      && gimple_bb (def)->loop_father->header == gimple_bb (def))
 	    return;
@@ -1657,7 +1657,7 @@ cprop_operand (gimple stmt, use_operand_p op_p)
    vdef_ops of STMT.  */
 
 static void
-cprop_into_stmt (gimple stmt)
+cprop_into_stmt (gimple *stmt)
 {
   use_operand_p op_p;
   ssa_op_iter iter;
@@ -1687,7 +1687,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	       class const_and_copies *const_and_copies,
 	       class avail_exprs_stack *avail_exprs_stack)
 {
-  gimple stmt, old_stmt;
+  gimple *stmt, *old_stmt;
   bool may_optimize_p;
   bool modified_p = false;
   bool was_noreturn;
@@ -1791,7 +1791,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	  /* Build a new statement with the RHS and LHS exchanged.  */
 	  if (TREE_CODE (rhs) == SSA_NAME)
 	    {
-	      gimple defstmt = SSA_NAME_DEF_STMT (rhs);
+	      gimple *defstmt = SSA_NAME_DEF_STMT (rhs);
 	      new_stmt = gimple_build_assign (rhs, lhs);
 	      SSA_NAME_DEF_STMT (rhs) = defstmt;
 	    }
@@ -1905,7 +1905,7 @@ vuse_eq (ao_ref *, tree vuse1, unsigned int cnt, void *data)
    we finish processing this block and its children.  */
 
 static tree
-lookup_avail_expr (gimple stmt, bool insert,
+lookup_avail_expr (gimple *stmt, bool insert,
 		   class avail_exprs_stack *avail_exprs_stack)
 {
   expr_hash_elt **slot;

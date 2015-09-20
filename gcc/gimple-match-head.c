@@ -326,7 +326,7 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
       if (!res)
 	res = make_ssa_name (type);
       maybe_build_generic_op (rcode, type, &ops[0], ops[1], ops[2]);
-      gimple new_stmt = gimple_build_assign (res, rcode,
+      gimple *new_stmt = gimple_build_assign (res, rcode,
 					     ops[0], ops[1], ops[2]);
       gimple_seq_add_stmt_without_update (seq, new_stmt);
       return res;
@@ -355,7 +355,7 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
       gcc_assert (nargs != 0);
       if (!res)
 	res = make_ssa_name (type);
-      gimple new_stmt = gimple_build_call (decl, nargs, ops[0], ops[1], ops[2]);
+      gimple *new_stmt = gimple_build_call (decl, nargs, ops[0], ops[1], ops[2]);
       gimple_call_set_lhs (new_stmt, res);
       gimple_seq_add_stmt_without_update (seq, new_stmt);
       return res;
@@ -587,7 +587,7 @@ do_valueize (tree op, tree (*valueize)(tree), bool &valueized)
    and the fold_stmt_to_constant APIs.  */
 
 bool
-gimple_simplify (gimple stmt,
+gimple_simplify (gimple *stmt,
 		 code_helper *rcode, tree *ops,
 		 gimple_seq *seq,
 		 tree (*valueize)(tree), tree (*top_valueize)(tree))

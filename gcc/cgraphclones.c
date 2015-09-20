@@ -724,7 +724,7 @@ cgraph_node::find_replacement (void)
    call.  */
 
 void
-cgraph_node::set_call_stmt_including_clones (gimple old_stmt,
+cgraph_node::set_call_stmt_including_clones (gimple *old_stmt,
 					     gcall *new_stmt,
 					     bool update_speculative)
 {
@@ -780,7 +780,7 @@ cgraph_node::set_call_stmt_including_clones (gimple old_stmt,
 
 void
 cgraph_node::create_edge_including_clones (cgraph_node *callee,
-					   gimple old_stmt, gcall *stmt,
+					   gimple *old_stmt, gcall *stmt,
 					   gcov_type count,
 					   int freq,
 					   cgraph_inline_failed_t reason)

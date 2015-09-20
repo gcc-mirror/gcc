@@ -93,7 +93,7 @@ bb_seen_p (basic_block bb)
 static bool
 ignore_bb_p (const_basic_block bb)
 {
-  gimple g;
+  gimple *g;
 
   if (bb->index < NUM_FIXED_BLOCKS)
     return true;
@@ -115,7 +115,7 @@ static int
 count_insns (basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  gimple stmt;
+  gimple *stmt;
   int n = 0;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

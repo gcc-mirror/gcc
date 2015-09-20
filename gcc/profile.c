@@ -912,7 +912,7 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
   for (i = 0; i < values.length (); i++)
     {
       histogram_value hist = values[i];
-      gimple stmt = hist->hvalue.stmt;
+      gimple *stmt = hist->hvalue.stmt;
 
       t = (int) hist->type;
 
@@ -1052,7 +1052,7 @@ branch_prob (void)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  gimple_stmt_iterator gsi;
-	  gimple last = NULL;
+	  gimple *last = NULL;
 
 	  /* It may happen that there are compiler generated statements
 	     without a locus at all.  Go through the basic block from the
@@ -1118,7 +1118,7 @@ branch_prob (void)
 	  if (have_exit_edge || need_exit_edge)
 	    {
 	      gimple_stmt_iterator gsi;
-	      gimple first;
+	      gimple *first;
 
 	      gsi = gsi_start_nondebug_after_labels_bb (bb);
 	      gcc_checking_assert (!gsi_end_p (gsi));
@@ -1281,7 +1281,7 @@ branch_prob (void)
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 	      if (gimple_has_location (stmt))
 		output_location (gimple_filename (stmt), gimple_lineno (stmt),
 				 &offset, bb);

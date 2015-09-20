@@ -367,7 +367,7 @@ ref_may_alias_global_p (tree ref)
 /* Return true whether STMT may clobber global memory.  */
 
 bool
-stmt_may_clobber_global_p (gimple stmt)
+stmt_may_clobber_global_p (gimple *stmt)
 {
   tree lhs;
 
@@ -604,7 +604,7 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
   ref->ref = NULL_TREE;
   if (TREE_CODE (ptr) == SSA_NAME)
     {
-      gimple stmt = SSA_NAME_DEF_STMT (ptr);
+      gimple *stmt = SSA_NAME_DEF_STMT (ptr);
       if (gimple_assign_single_p (stmt)
 	  && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
 	ptr = gimple_assign_rhs1 (stmt);
@@ -1830,7 +1830,7 @@ ref_maybe_used_by_call_p (gcall *call, ao_ref *ref)
    true, otherwise return false.  */
 
 bool
-ref_maybe_used_by_stmt_p (gimple stmt, ao_ref *ref)
+ref_maybe_used_by_stmt_p (gimple *stmt, ao_ref *ref)
 {
   if (is_gimple_assign (stmt))
     {
@@ -1874,7 +1874,7 @@ ref_maybe_used_by_stmt_p (gimple stmt, ao_ref *ref)
 }
 
 bool
-ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
+ref_maybe_used_by_stmt_p (gimple *stmt, tree ref)
 {
   ao_ref r;
   ao_ref_init (&r, ref);
@@ -2192,7 +2192,7 @@ call_may_clobber_ref_p (gcall *call, tree ref)
    otherwise return false.  */
 
 bool
-stmt_may_clobber_ref_p_1 (gimple stmt, ao_ref *ref)
+stmt_may_clobber_ref_p_1 (gimple *stmt, ao_ref *ref)
 {
   if (is_gimple_call (stmt))
     {
@@ -2225,7 +2225,7 @@ stmt_may_clobber_ref_p_1 (gimple stmt, ao_ref *ref)
 }
 
 bool
-stmt_may_clobber_ref_p (gimple stmt, tree ref)
+stmt_may_clobber_ref_p (gimple *stmt, tree ref)
 {
   ao_ref r;
   ao_ref_init (&r, ref);
@@ -2236,7 +2236,7 @@ stmt_may_clobber_ref_p (gimple stmt, tree ref)
    return false.  */
 
 bool
-stmt_kills_ref_p (gimple stmt, ao_ref *ref)
+stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 {
   if (!ao_ref_base (ref))
     return false;
@@ -2426,7 +2426,7 @@ stmt_kills_ref_p (gimple stmt, ao_ref *ref)
 }
 
 bool
-stmt_kills_ref_p (gimple stmt, tree ref)
+stmt_kills_ref_p (gimple *stmt, tree ref)
 {
   ao_ref r;
   ao_ref_init (&r, ref);
@@ -2439,7 +2439,7 @@ stmt_kills_ref_p (gimple stmt, tree ref)
    case false is returned.  The walk starts with VUSE, one argument of PHI.  */
 
 static bool
-maybe_skip_until (gimple phi, tree target, ao_ref *ref,
+maybe_skip_until (gimple *phi, tree target, ao_ref *ref,
 		  tree vuse, unsigned int *cnt, bitmap *visited,
 		  bool abort_on_visited,
 		  void *(*translate)(ao_ref *, tree, void *, bool),
@@ -2455,7 +2455,7 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
   /* Walk until we hit the target.  */
   while (vuse != target)
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (vuse);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (vuse);
       /* Recurse for PHI nodes.  */
       if (gimple_code (def_stmt) == GIMPLE_PHI)
 	{
@@ -2502,14 +2502,14 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
    Return that, or NULL_TREE if there is no such definition.  */
 
 static tree
-get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
+get_continuation_for_phi_1 (gimple *phi, tree arg0, tree arg1,
 			    ao_ref *ref, unsigned int *cnt,
 			    bitmap *visited, bool abort_on_visited,
 			    void *(*translate)(ao_ref *, tree, void *, bool),
 			    void *data)
 {
-  gimple def0 = SSA_NAME_DEF_STMT (arg0);
-  gimple def1 = SSA_NAME_DEF_STMT (arg1);
+  gimple *def0 = SSA_NAME_DEF_STMT (arg0);
+  gimple *def1 = SSA_NAME_DEF_STMT (arg1);
   tree common_vuse;
 
   if (arg0 == arg1)
@@ -2568,7 +2568,7 @@ get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
    Returns NULL_TREE if no suitable virtual operand can be found.  */
 
 tree
-get_continuation_for_phi (gimple phi, ao_ref *ref,
+get_continuation_for_phi (gimple *phi, ao_ref *ref,
 			  unsigned int *cnt, bitmap *visited,
 			  bool abort_on_visited,
 			  void *(*translate)(ao_ref *, tree, void *, bool),
@@ -2661,7 +2661,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 
   do
     {
-      gimple def_stmt;
+      gimple *def_stmt;
 
       /* ???  Do we want to account this to TV_ALIAS_STMT_WALK?  */
       res = (*walker) (ref, vuse, cnt, data);
@@ -2741,7 +2741,7 @@ walk_aliased_vdefs_1 (ao_ref *ref, tree vdef,
 {
   do
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
 
       if (*visited
 	  && !bitmap_set_bit (*visited, SSA_NAME_VERSION (vdef)))

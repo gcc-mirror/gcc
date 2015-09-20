@@ -123,7 +123,7 @@ typedef struct vn_constant_s
 } *vn_constant_t;
 
 enum vn_kind { VN_NONE, VN_CONSTANT, VN_NARY, VN_REFERENCE, VN_PHI };
-enum vn_kind vn_get_stmt_kind (gimple);
+enum vn_kind vn_get_stmt_kind (gimple *);
 
 /* Hash the type TYPE using bits that distinguishes it in the
    types_compatible_p sense.  */
@@ -197,7 +197,7 @@ tree vn_get_expr_for (tree);
 bool run_scc_vn (vn_lookup_kind);
 void free_scc_vn (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);
-tree vn_nary_op_lookup_stmt (gimple, vn_nary_op_t *);
+tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree *, vn_nary_op_t *);
 vn_nary_op_t vn_nary_op_insert (tree, tree);

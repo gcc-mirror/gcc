@@ -70,7 +70,7 @@ extern unsigned tree_num_loop_insns (struct loop *, struct eni_weights *);
 /* Returns the loop of the statement STMT.  */
 
 static inline struct loop *
-loop_containing_stmt (gimple stmt)
+loop_containing_stmt (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
   if (!bb)

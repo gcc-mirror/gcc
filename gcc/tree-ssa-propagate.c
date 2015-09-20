@@ -149,7 +149,7 @@ static sbitmap bb_in_list;
    definition has changed.  SSA edges are def-use edges in the SSA
    web.  For each D-U edge, we store the target statement or PHI node
    U.  */
-static vec<gimple> interesting_ssa_edges;
+static vec<gimple *> interesting_ssa_edges;
 
 /* Identical to INTERESTING_SSA_EDGES.  For performance reasons, the
    list of SSA edges is split into two.  One contains all SSA edges
@@ -165,7 +165,7 @@ static vec<gimple> interesting_ssa_edges;
    don't use a separate worklist for VARYING edges, we end up with
    situations where lattice values move from
    UNDEFINED->INTERESTING->VARYING instead of UNDEFINED->VARYING.  */
-static vec<gimple> varying_ssa_edges;
+static vec<gimple *> varying_ssa_edges;
 
 
 /* Return true if the block worklist empty.  */
@@ -260,7 +260,7 @@ add_ssa_edge (tree var, bool is_varying)
 
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
-      gimple use_stmt = USE_STMT (use_p);
+      gimple *use_stmt = USE_STMT (use_p);
 
       if (prop_simulate_again_p (use_stmt)
 	  && !gimple_plf (use_stmt, STMT_IN_SSA_EDGE_WORKLIST))
@@ -319,7 +319,7 @@ add_control_edge (edge e)
 /* Simulate the execution of STMT and update the work lists accordingly.  */
 
 static void
-simulate_stmt (gimple stmt)
+simulate_stmt (gimple *stmt)
 {
   enum ssa_prop_result val = SSA_PROP_NOT_INTERESTING;
   edge taken_edge = NULL;
@@ -396,7 +396,7 @@ simulate_stmt (gimple stmt)
   else
     FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
       {
-	gimple def_stmt = SSA_NAME_DEF_STMT (USE_FROM_PTR (use_p));
+	gimple *def_stmt = SSA_NAME_DEF_STMT (USE_FROM_PTR (use_p));
 	if (!gimple_nop_p (def_stmt)
 	    && prop_simulate_again_p (def_stmt))
 	  {
@@ -420,7 +420,7 @@ simulate_stmt (gimple stmt)
    was simulated.  */
 
 static bool 
-process_ssa_edge_worklist (vec<gimple> *worklist, const char *edge_list_name)
+process_ssa_edge_worklist (vec<gimple *> *worklist, const char *edge_list_name)
 {
   /* Process the next entry from the worklist.  */
   while (worklist->length () > 0)
@@ -428,7 +428,7 @@ process_ssa_edge_worklist (vec<gimple> *worklist, const char *edge_list_name)
       basic_block bb;
 
       /* Pull the statement to simulate off the worklist.  */
-      gimple stmt = worklist->pop ();
+      gimple *stmt = worklist->pop ();
 
       /* If this statement was already visited by simulate_block, then
 	 we don't need to visit it again here.  */
@@ -504,7 +504,7 @@ simulate_block (basic_block block)
 
       for (j = gsi_start_bb (block); !gsi_end_p (j); gsi_next (&j))
 	{
-	  gimple stmt = gsi_stmt (j);
+	  gimple *stmt = gsi_stmt (j);
 
 	  /* If this statement is already in the worklist then
 	     "cancel" it.  The reevaluation implied by the worklist
@@ -760,7 +760,7 @@ valid_gimple_call_p (tree expr)
    as their defining statement.  */
 
 void
-move_ssa_defining_stmt_for_defs (gimple new_stmt, gimple old_stmt)
+move_ssa_defining_stmt_for_defs (gimple *new_stmt, gimple *old_stmt)
 {
   tree var;
   ssa_op_iter iter;
@@ -781,8 +781,8 @@ move_ssa_defining_stmt_for_defs (gimple new_stmt, gimple old_stmt)
    A GIMPLE_CALL STMT is being replaced with GIMPLE_CALL NEW_STMT.  */
 
 static void
-finish_update_gimple_call (gimple_stmt_iterator *si_p, gimple new_stmt,
-			   gimple stmt)
+finish_update_gimple_call (gimple_stmt_iterator *si_p, gimple *new_stmt,
+			   gimple *stmt)
 {
   gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
   move_ssa_defining_stmt_for_defs (new_stmt, stmt);
@@ -827,7 +827,7 @@ update_gimple_call (gimple_stmt_iterator *si_p, tree fn, int nargs, ...)
 bool
 update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 {
-  gimple stmt = gsi_stmt (*si_p);
+  gimple *stmt = gsi_stmt (*si_p);
 
   if (valid_gimple_call_p (expr))
     {
@@ -856,7 +856,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   else if (valid_gimple_rhs_p (expr))
     {
       tree lhs = gimple_call_lhs (stmt);
-      gimple new_stmt;
+      gimple *new_stmt;
 
       /* The call has simplified to an expression
          that cannot be represented as a GIMPLE_CALL. */
@@ -955,7 +955,7 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
    because they are not interesting for the optimizers.  */
 
 bool
-stmt_makes_single_store (gimple stmt)
+stmt_makes_single_store (gimple *stmt)
 {
   tree lhs;
 
@@ -993,7 +993,7 @@ static struct prop_stats_d prop_stats;
    PROP_VALUE. Return true if at least one reference was replaced.  */
 
 static bool
-replace_uses_in (gimple stmt, ssa_prop_get_value_fn get_value)
+replace_uses_in (gimple *stmt, ssa_prop_get_value_fn get_value)
 {
   bool replaced = false;
   use_operand_p use;
@@ -1138,8 +1138,8 @@ public:
     ssa_prop_fold_stmt_fn fold_fn;
     bool do_dce;
     bool something_changed;
-    vec<gimple> stmts_to_remove;
-    vec<gimple> stmts_to_fixup;
+    vec<gimple *> stmts_to_remove;
+    vec<gimple *> stmts_to_fixup;
     bitmap need_eh_cleanup;
 };
 
@@ -1177,7 +1177,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
        gsi_next (&i))
     {
       bool did_replace;
-      gimple stmt = gsi_stmt (i);
+      gimple *stmt = gsi_stmt (i);
       enum gimple_code code = gimple_code (stmt);
 
       /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
@@ -1215,7 +1215,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
 
-      gimple old_stmt = stmt;
+      gimple *old_stmt = stmt;
       bool was_noreturn = (is_gimple_call (stmt)
 			   && gimple_call_noreturn_p (stmt));
 
@@ -1343,7 +1343,7 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
      Remove stmts in reverse order to make debug stmt creation possible.  */
   while (!walker.stmts_to_remove.is_empty ())
     {
-      gimple stmt = walker.stmts_to_remove.pop ();
+      gimple *stmt = walker.stmts_to_remove.pop ();
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
@@ -1371,7 +1371,7 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
      fixup by visiting a dominating now noreturn call first.  */
   while (!walker.stmts_to_fixup.is_empty ())
     {
-      gimple stmt = walker.stmts_to_fixup.pop ();
+      gimple *stmt = walker.stmts_to_fixup.pop ();
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
@@ -1441,7 +1441,7 @@ may_propagate_copy (tree dest, tree orig)
    gimple tuples representation.  */
 
 bool
-may_propagate_copy_into_stmt (gimple dest, tree orig)
+may_propagate_copy_into_stmt (gimple *dest, tree orig)
 {
   tree type_d;
   tree type_o;
@@ -1572,7 +1572,7 @@ propagate_tree_value (tree *op_p, tree val)
 void
 propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   if (is_gimple_assign (stmt))
     {

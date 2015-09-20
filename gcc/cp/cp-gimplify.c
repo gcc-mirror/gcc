@@ -518,7 +518,7 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
   tree body = TREE_OPERAND (stmt, 0);
   gimple_seq try_ = NULL;
   gimple_seq catch_ = NULL;
-  gimple mnt;
+  gimple *mnt;
 
   gimplify_and_add (body, &try_);
   mnt = gimple_build_eh_must_not_throw (terminate_node);

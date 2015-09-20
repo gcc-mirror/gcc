@@ -58,7 +58,7 @@ public:
 
   symtab_node *referring;
   symtab_node *referred;
-  gimple stmt;
+  gimple *stmt;
   unsigned int lto_stmt_uid;
   unsigned int referred_index;
   ENUM_BITFIELD (ipa_ref_use) use:3;

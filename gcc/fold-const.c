@@ -238,7 +238,7 @@ fold_defer_overflow_warnings (void)
    deferred code.  */
 
 void
-fold_undefer_overflow_warnings (bool issue, const_gimple stmt, int code)
+fold_undefer_overflow_warnings (bool issue, const gimple *stmt, int code)
 {
   const char *warnmsg;
   location_t locus;

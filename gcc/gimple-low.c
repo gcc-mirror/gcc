@@ -94,8 +94,8 @@ lower_function_body (void)
   gimple_seq body = gimple_body (current_function_decl);
   gimple_seq lowered_body;
   gimple_stmt_iterator i;
-  gimple bind;
-  gimple x;
+  gimple *bind;
+  gimple *x;
 
   /* The gimplifier should've left a body of exactly one statement,
      namely a GIMPLE_BIND.  */
@@ -219,7 +219,7 @@ lower_sequence (gimple_seq *seq, struct lower_data *data)
 static void
 lower_omp_directive (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
-  gimple stmt;
+  gimple *stmt;
 
   stmt = gsi_stmt (*gsi);
 
@@ -240,7 +240,7 @@ lower_omp_directive (gimple_stmt_iterator *gsi, struct lower_data *data)
 static void
 lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   gimple_set_block (stmt, data->block);
 
@@ -446,7 +446,7 @@ static void
 lower_try_catch (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
   bool cannot_fallthru;
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   gimple_stmt_iterator i;
 
   /* We don't handle GIMPLE_TRY_FINALLY.  */
@@ -564,7 +564,7 @@ gimple_try_catch_may_fallthru (gtry *stmt)
    we'll just delete the extra code later.  */
 
 bool
-gimple_stmt_may_fallthru (gimple stmt)
+gimple_stmt_may_fallthru (gimple *stmt)
 {
   if (!stmt)
     return true;
@@ -641,7 +641,7 @@ static void
 lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
   greturn *stmt = as_a <greturn *> (gsi_stmt (*gsi));
-  gimple t;
+  gimple *t;
   int i;
   return_statements_t tmp_rs;
 
@@ -731,12 +731,12 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
 static void
 lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   location_t loc = gimple_location (stmt);
   tree cont_label = create_artificial_label (loc);
   tree next_label = create_artificial_label (loc);
   tree dest, t, arg;
-  gimple g;
+  gimple *g;
 
   /* __builtin_setjmp_{setup,receiver} aren't ECF_RETURNS_TWICE and for RTL
      these builtins are modelled as non-local label jumps to the label
@@ -816,7 +816,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 static void
 lower_builtin_posix_memalign (gimple_stmt_iterator *gsi)
 {
-  gimple stmt, call = gsi_stmt (*gsi);
+  gimple *stmt, *call = gsi_stmt (*gsi);
   tree pptr = gimple_call_arg (call, 0);
   tree align = gimple_call_arg (call, 1);
   tree res = gimple_call_lhs (call);
@@ -839,7 +839,7 @@ lower_builtin_posix_memalign (gimple_stmt_iterator *gsi)
     }
   tree align_label = create_artificial_label (UNKNOWN_LOCATION);
   tree noalign_label = create_artificial_label (UNKNOWN_LOCATION);
-  gimple cond = gimple_build_cond (EQ_EXPR, res, integer_zero_node,
+  gimple *cond = gimple_build_cond (EQ_EXPR, res, integer_zero_node,
 				   align_label, noalign_label);
   gsi_insert_after (gsi, cond, GSI_NEW_STMT);
   gsi_insert_after (gsi, gimple_build_label (align_label), GSI_NEW_STMT);

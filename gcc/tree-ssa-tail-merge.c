@@ -300,7 +300,7 @@ struct aux_bb_info
    used SSA_NAMEs.  */
 
 static bool
-stmt_local_def (gimple stmt)
+stmt_local_def (gimple *stmt)
 {
   basic_block bb, def_bb;
   imm_use_iterator iter;
@@ -347,7 +347,7 @@ stmt_local_def (gimple stmt)
 static void
 gsi_advance_fw_nondebug_nonlocal (gimple_stmt_iterator *gsi)
 {
-  gimple stmt;
+  gimple *stmt;
 
   while (true)
     {
@@ -433,7 +433,7 @@ update_dep_bb (basic_block use_bb, tree val)
 /* Update BB_DEP_BB, given the dependencies in STMT.  */
 
 static void
-stmt_update_dep_bb (gimple stmt)
+stmt_update_dep_bb (gimple *stmt)
 {
   ssa_op_iter iter;
   use_operand_p use;
@@ -453,7 +453,7 @@ same_succ_hash (const_same_succ e)
   unsigned int first = bitmap_first_set_bit (e->bbs);
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, first);
   int size = 0;
-  gimple stmt;
+  gimple *stmt;
   tree arg;
   unsigned int s;
   bitmap_iterator bs;
@@ -549,7 +549,7 @@ same_succ_def::equal (const same_succ_def *e1, const same_succ_def *e2)
 {
   unsigned int i, first1, first2;
   gimple_stmt_iterator gsi1, gsi2;
-  gimple s1, s2;
+  gimple *s1, *s2;
   basic_block bb1, bb2;
 
   if (e1->hashval != e2->hashval)
@@ -845,7 +845,7 @@ release_last_vdef (basic_block bb)
   for (gimple_stmt_iterator i = gsi_last_bb (bb); !gsi_end_p (i);
        gsi_prev_nondebug (&i))
     {
-      gimple stmt = gsi_stmt (i);
+      gimple *stmt = gsi_stmt (i);
       if (gimple_vdef (stmt) == NULL_TREE)
 	continue;
 
@@ -1105,7 +1105,7 @@ gimple_operand_equal_value_p (tree t1, tree t2)
    gimple_bb (s2) are members of SAME_SUCC.  */
 
 static bool
-gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
+gimple_equal_p (same_succ same_succ, gimple *s1, gimple *s2)
 {
   unsigned int i;
   tree lhs1, lhs2;
@@ -1198,7 +1198,7 @@ static void
 gsi_advance_bw_nondebug_nonlocal (gimple_stmt_iterator *gsi, tree *vuse,
 				  bool *vuse_escaped)
 {
-  gimple stmt;
+  gimple *stmt;
   tree lvuse;
 
   while (true)
@@ -1237,8 +1237,8 @@ find_duplicate (same_succ same_succ, basic_block bb1, basic_block bb2)
 
   while (!gsi_end_p (gsi1) && !gsi_end_p (gsi2))
     {
-      gimple stmt1 = gsi_stmt (gsi1);
-      gimple stmt2 = gsi_stmt (gsi2);
+      gimple *stmt1 = gsi_stmt (gsi1);
+      gimple *stmt2 = gsi_stmt (gsi2);
 
       /* What could be better than this here is to blacklist the bb
 	 containing the stmt, when encountering the stmt f.i. in
@@ -1338,7 +1338,7 @@ static bool
 bb_has_non_vop_phi (basic_block bb)
 {
   gimple_seq phis = phi_nodes (bb);
-  gimple phi;
+  gimple *phi;
 
   if (phis == NULL)
     return false;
@@ -1584,7 +1584,7 @@ apply_clusters (void)
    defs.  */
 
 static void
-update_debug_stmt (gimple stmt)
+update_debug_stmt (gimple *stmt)
 {
   use_operand_p use_p;
   ssa_op_iter oi;
@@ -1597,7 +1597,7 @@ update_debug_stmt (gimple stmt)
   FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, oi, SSA_OP_USE)
     {
       tree name = USE_FROM_PTR (use_p);
-      gimple def_stmt = SSA_NAME_DEF_STMT (name);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
       basic_block bbdef = gimple_bb (def_stmt);
       if (bbdef == NULL || bbuse == bbdef
 	  || dominated_by_p (CDI_DOMINATORS, bbuse, bbdef))
@@ -1621,7 +1621,7 @@ update_debug_stmts (void)
 
   EXECUTE_IF_SET_IN_BITMAP (update_bbs, 0, i, bi)
     {
-      gimple stmt;
+      gimple *stmt;
       gimple_stmt_iterator gsi;
 
       bb = BASIC_BLOCK_FOR_FN (cfun, i);

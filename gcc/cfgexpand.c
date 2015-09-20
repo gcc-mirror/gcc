@@ -93,7 +93,7 @@ struct ssaexpand SA;
 
 /* This variable holds the currently expanded gimple statement for purposes
    of comminucating the profile info to the builtin expanders.  */
-gimple currently_expanding_gimple_stmt;
+gimple *currently_expanding_gimple_stmt;
 
 static rtx expand_debug_expr (tree);
 
@@ -103,7 +103,7 @@ static bool defer_stack_allocation (tree, bool);
    statement STMT.  */
 
 tree
-gimple_assign_rhs_to_tree (gimple stmt)
+gimple_assign_rhs_to_tree (gimple *stmt)
 {
   tree t;
   enum gimple_rhs_class grhs_class;
@@ -522,7 +522,7 @@ stack_var_conflict_p (size_t x, size_t y)
    enter its partition number into bitmap DATA.  */
 
 static bool
-visit_op (gimple, tree op, tree, void *data)
+visit_op (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
@@ -542,7 +542,7 @@ visit_op (gimple, tree op, tree, void *data)
    from bitmap DATA.  */
 
 static bool
-visit_conflict (gimple, tree op, tree, void *data)
+visit_conflict (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
@@ -585,12 +585,12 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       walk_stmt_load_store_addr_ops (stmt, work, NULL, NULL, visit);
     }
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
 
       if (gimple_clobber_p (stmt))
 	{
@@ -1996,7 +1996,7 @@ stack_protect_return_slot_p ()
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	gimple stmt = gsi_stmt (gsi);
+	gimple *stmt = gsi_stmt (gsi);
 	/* This assumes that calls to internal-only functions never
 	   use a return slot.  */
 	if (is_gimple_call (stmt)
@@ -2280,7 +2280,7 @@ expand_used_vars (void)
    generated for STMT should have been appended.  */
 
 static void
-maybe_dump_rtl_for_gimple_stmt (gimple stmt, rtx_insn *since)
+maybe_dump_rtl_for_gimple_stmt (gimple *stmt, rtx_insn *since)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2423,7 +2423,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 	      && integer_onep (op1)))
       && bitmap_bit_p (SA.values, SSA_NAME_VERSION (op0)))
     {
-      gimple second = SSA_NAME_DEF_STMT (op0);
+      gimple *second = SSA_NAME_DEF_STMT (op0);
       if (gimple_code (second) == GIMPLE_ASSIGN)
 	{
 	  enum tree_code code2 = gimple_assign_rhs_code (second);
@@ -2531,7 +2531,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 /* Mark all calls that can have a transaction restart.  */
 
 static void
-mark_transaction_restart_calls (gimple stmt)
+mark_transaction_restart_calls (gimple *stmt)
 {
   struct tm_restart_node dummy;
   tm_restart_node **slot;
@@ -2595,7 +2595,7 @@ expand_call_stmt (gcall *stmt)
   for (i = 0; i < gimple_call_num_args (stmt); i++)
     {
       tree arg = gimple_call_arg (stmt, i);
-      gimple def;
+      gimple *def;
       /* TER addresses into arguments of builtin functions so we have a
 	 chance to infer more correct alignment information.  See PR39954.  */
       if (builtin_p
@@ -3503,7 +3503,7 @@ expand_return (tree retval, tree bounds)
    is no tailcalls and no GIMPLE_COND.  */
 
 static void
-expand_gimple_stmt_1 (gimple stmt)
+expand_gimple_stmt_1 (gimple *stmt)
 {
   tree op0;
 
@@ -3679,7 +3679,7 @@ expand_gimple_stmt_1 (gimple stmt)
    location for diagnostics.  */
 
 static rtx_insn *
-expand_gimple_stmt (gimple stmt)
+expand_gimple_stmt (gimple *stmt)
 {
   location_t saved_location = input_location;
   rtx_insn *last = get_last_insn ();
@@ -3989,7 +3989,7 @@ static hash_map<tree, tree> *deep_ter_debug_map;
 /* Split too deep TER chains for debug stmts using debug temporaries.  */
 
 static void
-avoid_deep_ter_for_debug (gimple stmt, int depth)
+avoid_deep_ter_for_debug (gimple *stmt, int depth)
 {
   use_operand_p use_p;
   ssa_op_iter iter;
@@ -3998,7 +3998,7 @@ avoid_deep_ter_for_debug (gimple stmt, int depth)
       tree use = USE_FROM_PTR (use_p);
       if (TREE_CODE (use) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (use))
 	continue;
-      gimple g = get_gimple_for_ssa_name (use);
+      gimple *g = get_gimple_for_ssa_name (use);
       if (g == NULL)
 	continue;
       if (depth > 6 && !stmt_ends_bb_p (g))
@@ -4010,7 +4010,7 @@ avoid_deep_ter_for_debug (gimple stmt, int depth)
 	  if (vexpr != NULL)
 	    continue;
 	  vexpr = make_node (DEBUG_EXPR_DECL);
-	  gimple def_temp = gimple_build_debug_bind (vexpr, use, g);
+	  gimple *def_temp = gimple_build_debug_bind (vexpr, use, g);
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (use);
 	  DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (use));
@@ -4929,7 +4929,7 @@ expand_debug_expr (tree exp)
 
     case SSA_NAME:
       {
-	gimple g = get_gimple_for_ssa_name (exp);
+	gimple *g = get_gimple_for_ssa_name (exp);
 	if (g)
 	  {
 	    tree t = NULL_TREE;
@@ -5303,12 +5303,12 @@ reorder_operands (basic_block bb)
   unsigned int i = 0, n = 0;
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
-  gimple stmt;
+  gimple *stmt;
   bool swap;
   tree op0, op1;
   ssa_op_iter iter;
   use_operand_p use_p;
-  gimple def0, def1;
+  gimple *def0, *def1;
 
   /* Compute cost of each statement using estimate_num_insns.  */
   stmts = bb_seq (bb);
@@ -5330,7 +5330,7 @@ reorder_operands (basic_block bb)
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	{
 	  tree use = USE_FROM_PTR (use_p);
-	  gimple def_stmt;
+	  gimple *def_stmt;
 	  if (TREE_CODE (use) != SSA_NAME)
 	    continue;
 	  def_stmt = get_gimple_for_ssa_name (use);
@@ -5379,7 +5379,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 {
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
-  gimple stmt = NULL;
+  gimple *stmt = NULL;
   rtx_note *note;
   rtx_insn *last;
   edge e;
@@ -5494,7 +5494,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	{
 	  ssa_op_iter iter;
 	  tree op;
-	  gimple def;
+	  gimple *def;
 
 	  location_t sloc = curr_insn_location ();
 
@@ -5523,7 +5523,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		       instructions.  Generate a debug temporary, and
 		       replace all uses of OP in debug insns with that
 		       temporary.  */
-		    gimple debugstmt;
+		    gimple *debugstmt;
 		    tree value = gimple_assign_rhs_to_tree (def);
 		    tree vexpr = make_node (DEBUG_EXPR_DECL);
 		    rtx val;
@@ -5946,7 +5946,7 @@ discover_nonconstant_array_refs (void)
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	gimple stmt = gsi_stmt (gsi);
+	gimple *stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt))
 	  walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
       }

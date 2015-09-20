@@ -634,7 +634,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
   unsigned i;
   aff_tree to_add, current, curre;
   tree e, rhs;
-  gimple def;
+  gimple *def;
   widest_int scale;
   struct name_expansion *exp;
 

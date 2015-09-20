@@ -268,7 +268,7 @@ is_tm_safe (const_tree x)
 /* Return true if CALL is const, or tm_pure.  */
 
 static bool
-is_tm_pure_call (gimple call)
+is_tm_pure_call (gimple *call)
 {
   tree fn = gimple_call_fn (call);
 
@@ -336,7 +336,7 @@ is_tm_ending_fndecl (tree fndecl)
    transaction.  */
 
 bool
-is_tm_ending (gimple stmt)
+is_tm_ending (gimple *stmt)
 {
   tree fndecl;
 
@@ -351,7 +351,7 @@ is_tm_ending (gimple stmt)
 /* Return true if STMT is a TM load.  */
 
 static bool
-is_tm_load (gimple stmt)
+is_tm_load (gimple *stmt)
 {
   tree fndecl;
 
@@ -367,7 +367,7 @@ is_tm_load (gimple stmt)
    after-write, after-read, etc optimized variants.  */
 
 static bool
-is_tm_simple_load (gimple stmt)
+is_tm_simple_load (gimple *stmt)
 {
   tree fndecl;
 
@@ -395,7 +395,7 @@ is_tm_simple_load (gimple stmt)
 /* Return true if STMT is a TM store.  */
 
 static bool
-is_tm_store (gimple stmt)
+is_tm_store (gimple *stmt)
 {
   tree fndecl;
 
@@ -411,7 +411,7 @@ is_tm_store (gimple stmt)
    after-write, after-read, etc optimized variants.  */
 
 static bool
-is_tm_simple_store (gimple stmt)
+is_tm_simple_store (gimple *stmt)
 {
   tree fndecl;
 
@@ -591,7 +591,7 @@ struct diagnose_tm
   unsigned int block_flags : 8;
   unsigned int func_flags : 8;
   unsigned int saw_volatile : 1;
-  gimple stmt;
+  gimple *stmt;
 };
 
 /* Return true if T is a volatile variable of some kind.  */
@@ -635,7 +635,7 @@ static tree
 diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		    struct walk_stmt_info *wi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   struct diagnose_tm *d = (struct diagnose_tm *) wi->info;
 
   /* Save stmt for use in leaf analysis.  */
@@ -934,7 +934,7 @@ typedef struct tm_log_entry
   /* Entry block for the transaction this address occurs in.  */
   basic_block entry_block;
   /* Dominating statements the store occurs in.  */
-  vec<gimple> stmts;
+  vec<gimple *> stmts;
   /* Initially, while we are building the log, we place a nonzero
      value here to mean that this address *will* be saved with a
      save/restore sequence.  Later, when generating the save sequence
@@ -1095,7 +1095,7 @@ transaction_invariant_address_p (const_tree mem, basic_block region_entry_block)
    If known, ENTRY_BLOCK is the entry block for the region, otherwise
    NULL.  */
 static void
-tm_log_add (basic_block entry_block, tree addr, gimple stmt)
+tm_log_add (basic_block entry_block, tree addr, gimple *stmt)
 {
   tm_log_entry **slot;
   struct tm_log_entry l, *lp;
@@ -1140,7 +1140,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
   else
     {
       size_t i;
-      gimple oldstmt;
+      gimple *oldstmt;
 
       lp = *slot;
 
@@ -1184,12 +1184,12 @@ gimplify_addr (gimple_stmt_iterator *gsi, tree x)
    ADDR is the address to save.
    STMT is the statement before which to place it.  */
 static void
-tm_log_emit_stmt (tree addr, gimple stmt)
+tm_log_emit_stmt (tree addr, gimple *stmt)
 {
   tree type = TREE_TYPE (addr);
   tree size = TYPE_SIZE_UNIT (type);
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  gimple log;
+  gimple *log;
   enum built_in_function code = BUILT_IN_TM_LOG;
 
   if (type == float_type_node)
@@ -1250,7 +1250,7 @@ tm_log_emit (void)
   FOR_EACH_HASH_TABLE_ELEMENT (*tm_log, lp, tm_log_entry_t, hi)
     {
       size_t i;
-      gimple stmt;
+      gimple *stmt;
 
       if (dump_file)
 	{
@@ -1283,7 +1283,7 @@ tm_log_emit_saves (basic_block entry_block, basic_block bb)
 {
   size_t i;
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
-  gimple stmt;
+  gimple *stmt;
   struct tm_log_entry l, *lp;
 
   for (i = 0; i < tm_log_save_addresses.length (); ++i)
@@ -1320,7 +1320,7 @@ tm_log_emit_restores (basic_block entry_block, basic_block bb)
   int i;
   struct tm_log_entry l, *lp;
   gimple_stmt_iterator gsi;
-  gimple stmt;
+  gimple *stmt;
 
   for (i = tm_log_save_addresses.length () - 1; i >= 0; i--)
     {
@@ -1360,7 +1360,7 @@ static tree lower_sequence_no_tm (gimple_stmt_iterator *, bool *,
 static enum thread_memory_type
 thread_private_new_memory (basic_block entry_block, tree x)
 {
-  gimple stmt = NULL;
+  gimple *stmt = NULL;
   enum tree_code code;
   tm_new_mem_map_t **slot;
   tm_new_mem_map_t elt, *elt_p;
@@ -1492,7 +1492,7 @@ thread_private_new_memory (basic_block entry_block, tree x)
    private memory instrumentation.  If no TPM instrumentation is
    desired, STMT should be null.  */
 static bool
-requires_barrier (basic_block entry_block, tree x, gimple stmt)
+requires_barrier (basic_block entry_block, tree x, gimple *stmt)
 {
   tree orig = x;
   while (handled_component_p (x))
@@ -1577,7 +1577,7 @@ requires_barrier (basic_block entry_block, tree x, gimple stmt)
 static void
 examine_assign_tm (unsigned *state, gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   if (requires_barrier (/*entry_block=*/NULL, gimple_assign_rhs1 (stmt), NULL))
     *state |= GTMA_HAVE_LOAD;
@@ -1590,7 +1590,7 @@ examine_assign_tm (unsigned *state, gimple_stmt_iterator *gsi)
 static void
 examine_call_tm (unsigned *state, gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   tree fn;
 
   if (is_tm_pure_call (stmt))
@@ -1610,7 +1610,7 @@ examine_call_tm (unsigned *state, gimple_stmt_iterator *gsi)
 static void
 lower_transaction (gimple_stmt_iterator *gsi, struct walk_stmt_info *wi)
 {
-  gimple g;
+  gimple *g;
   gtransaction *stmt = as_a <gtransaction *> (gsi_stmt (*gsi));
   unsigned int *outer_state = (unsigned int *) wi->info;
   unsigned int this_state = 0;
@@ -1694,7 +1694,7 @@ lower_sequence_tm (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		   struct walk_stmt_info *wi)
 {
   unsigned int *state = (unsigned int *) wi->info;
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   *handled_ops_p = true;
   switch (gimple_code (stmt))
@@ -1732,7 +1732,7 @@ static tree
 lower_sequence_no_tm (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		      struct walk_stmt_info * wi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   if (gimple_code (stmt) == GIMPLE_TRANSACTION)
     {
@@ -1836,7 +1836,7 @@ public:
      After TM_MARK, this gets replaced by a call to
      BUILT_IN_TM_START.
      Hence this will be either a gtransaction *or a gcall *.  */
-  gimple transaction_stmt;
+  gimple *transaction_stmt;
 
   /* After TM_MARK expands the GIMPLE_TRANSACTION into a call to
      BUILT_IN_TM_START, this field is true if the transaction is an
@@ -1923,7 +1923,7 @@ static struct tm_region *
 tm_region_init_1 (struct tm_region *region, basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  gimple g;
+  gimple *g;
 
   if (!region
       || (!region->irr_blocks && !region->exit_blocks))
@@ -1963,7 +1963,7 @@ tm_region_init_1 (struct tm_region *region, basic_block bb)
 static void
 tm_region_init (struct tm_region *region)
 {
-  gimple g;
+  gimple *g;
   edge_iterator ei;
   edge e;
   basic_block bb;
@@ -2171,7 +2171,7 @@ build_tm_load (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
     }
   else
     {
-      gimple g;
+      gimple *g;
       tree temp;
 
       temp = create_tmp_reg (t);
@@ -2249,7 +2249,7 @@ build_tm_store (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
     }
   else if (!useless_type_conversion_p (simple_type, type))
     {
-      gimple g;
+      gimple *g;
       tree temp;
 
       temp = create_tmp_reg (simple_type);
@@ -2275,13 +2275,13 @@ build_tm_store (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
 static void
 expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   location_t loc = gimple_location (stmt);
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
   bool store_p = requires_barrier (region->entry_block, lhs, NULL);
   bool load_p = requires_barrier (region->entry_block, rhs, NULL);
-  gimple gcall = NULL;
+  gimple *gcall = NULL;
 
   if (!load_p && !store_p)
     {
@@ -2504,7 +2504,7 @@ expand_block_tm (struct tm_region *region, basic_block bb)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_ASSIGN:
@@ -2786,7 +2786,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
 
       tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_RESTORELIVEVARIABLES);
-      gimple stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
+      gimple *stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
       gimple_stmt_iterator gsi = gsi_last_bb (test_bb);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
@@ -2826,7 +2826,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
 
       tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_ABORTTRANSACTION);
-      gimple stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
+      gimple *stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
       gimple_stmt_iterator gsi = gsi_last_bb (test_bb);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
@@ -2868,7 +2868,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       tree t1 = create_tmp_reg (tm_state_type);
       tree t2 = build_int_cst (tm_state_type, A_RUNUNINSTRUMENTEDCODE);
 
-      gimple stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
+      gimple *stmt = gimple_build_assign (t1, BIT_AND_EXPR, tm_state, t2);
       gimple_stmt_iterator gsi = gsi_last_bb (test_bb);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
@@ -3072,7 +3072,7 @@ make_pass_tm_mark (gcc::context *ctxt)
    as necessary.  Adjust *PNEXT as needed for the split block.  */
 
 static inline void
-split_bb_make_tm_edge (gimple stmt, basic_block dest_bb,
+split_bb_make_tm_edge (gimple *stmt, basic_block dest_bb,
                        gimple_stmt_iterator iter, gimple_stmt_iterator *pnext)
 {
   basic_block bb = gimple_bb (stmt);
@@ -3119,7 +3119,7 @@ expand_block_edges (struct tm_region *const region, basic_block bb)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi = next_gsi)
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       gcall *call_stmt;
 
       next_gsi = gsi;
@@ -3401,7 +3401,7 @@ static hash_table<tm_memop_hasher> *tm_memopt_value_numbers;
    it accesses.  */
 
 static unsigned int
-tm_memopt_value_number (gimple stmt, enum insert_option op)
+tm_memopt_value_number (gimple *stmt, enum insert_option op)
 {
   struct tm_memop tmpmem, *mem;
   tm_memop **slot;
@@ -3432,7 +3432,7 @@ tm_memopt_accumulate_memops (basic_block bb)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       bitmap bits;
       unsigned int loc;
 
@@ -3773,7 +3773,7 @@ tm_memopt_compute_antic (struct tm_region *region,
 /* Inform about a load/store optimization.  */
 
 static void
-dump_tm_memopt_transform (gimple stmt)
+dump_tm_memopt_transform (gimple *stmt)
 {
   if (dump_file)
     {
@@ -3817,7 +3817,7 @@ tm_memopt_transform_blocks (vec<basic_block> blocks)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  bitmap read_avail = READ_AVAIL_IN (bb);
 	  bitmap store_avail = STORE_AVAIL_IN (bb);
 	  bitmap store_antic = STORE_ANTIC_OUT (bb);
@@ -4123,7 +4123,7 @@ static void
 ipa_uninstrument_transaction (struct tm_region *region,
 			      vec<basic_block> queue)
 {
-  gimple transaction = region->transaction_stmt;
+  gimple *transaction = region->transaction_stmt;
   basic_block transaction_bb = gimple_bb (transaction);
   int n = queue.length ();
   basic_block *new_bbs = XNEWVEC (basic_block, n);
@@ -4152,7 +4152,7 @@ ipa_tm_scan_calls_block (cgraph_node_queue *callees_p,
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       if (is_gimple_call (stmt) && !is_tm_pure_call (stmt))
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
@@ -4292,7 +4292,7 @@ ipa_tm_scan_irr_block (basic_block bb)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_ASSIGN:
@@ -4492,7 +4492,7 @@ ipa_tm_decrement_clone_counts (basic_block bb, bool for_clone)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       if (is_gimple_call (stmt) && !is_tm_pure_call (stmt))
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
@@ -4723,7 +4723,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
 	for (i = 0; bbs.iterate (i, &bb); ++i)
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 	      tree fndecl;
 
 	      if (gimple_code (stmt) == GIMPLE_ASM)
@@ -5201,7 +5201,7 @@ ipa_tm_transform_calls_1 (struct cgraph_node *node, struct tm_region *region,
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
 
       if (!is_gimple_call (stmt))
 	continue;

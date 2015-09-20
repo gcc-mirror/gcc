@@ -634,7 +634,7 @@ check_call (funct_state local, gcall *call, bool ipa)
 /* Wrapper around check_decl for loads in local more.  */
 
 static bool
-check_load (gimple, tree op, tree, void *data)
+check_load (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, false, false);
@@ -646,7 +646,7 @@ check_load (gimple, tree op, tree, void *data)
 /* Wrapper around check_decl for stores in local more.  */
 
 static bool
-check_store (gimple, tree op, tree, void *data)
+check_store (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, true, false);
@@ -658,7 +658,7 @@ check_store (gimple, tree op, tree, void *data)
 /* Wrapper around check_decl for loads in ipa mode.  */
 
 static bool
-check_ipa_load (gimple, tree op, tree, void *data)
+check_ipa_load (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, false, true);
@@ -670,7 +670,7 @@ check_ipa_load (gimple, tree op, tree, void *data)
 /* Wrapper around check_decl for stores in ipa mode.  */
 
 static bool
-check_ipa_store (gimple, tree op, tree, void *data)
+check_ipa_store (gimple *, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, true, true);
@@ -684,7 +684,7 @@ check_ipa_store (gimple, tree op, tree, void *data)
 static void
 check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 {
-  gimple stmt = gsi_stmt (*gsip);
+  gimple *stmt = gsi_stmt (*gsip);
 
   if (is_gimple_debug (stmt))
     return;

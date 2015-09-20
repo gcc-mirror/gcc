@@ -40,7 +40,7 @@ private:
   int rep;
 };
 
-bool gimple_simplify (gimple, code_helper *, tree *, gimple_seq *,
+bool gimple_simplify (gimple *, code_helper *, tree *, gimple_seq *,
 		      tree (*)(tree), tree (*)(tree));
 tree maybe_push_res_to_seq (code_helper, tree, tree *,
 			    gimple_seq *, tree res = NULL_TREE);

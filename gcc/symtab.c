@@ -478,7 +478,7 @@ symtab_node::create_reference (symtab_node *referred_node,
 
 ipa_ref *
 symtab_node::create_reference (symtab_node *referred_node,
-			       enum ipa_ref_use use_type, gimple stmt)
+			       enum ipa_ref_use use_type, gimple *stmt)
 {
   ipa_ref *ref = NULL, *ref2 = NULL;
   ipa_ref_list *list, *list2;
@@ -533,7 +533,7 @@ symtab_node::create_reference (symtab_node *referred_node,
 
 ipa_ref *
 symtab_node::maybe_create_reference (tree val, enum ipa_ref_use use_type,
-				     gimple stmt)
+				     gimple *stmt)
 {
   STRIP_NOPS (val);
   if (TREE_CODE (val) != ADDR_EXPR)
@@ -588,7 +588,7 @@ symtab_node::clone_referring (symtab_node *node)
 /* Clone reference REF to this symtab_node and set its stmt to STMT.  */
 
 ipa_ref *
-symtab_node::clone_reference (ipa_ref *ref, gimple stmt)
+symtab_node::clone_reference (ipa_ref *ref, gimple *stmt)
 {
   bool speculative = ref->speculative;
   unsigned int stmt_uid = ref->lto_stmt_uid;
@@ -605,7 +605,7 @@ symtab_node::clone_reference (ipa_ref *ref, gimple stmt)
 
 ipa_ref *
 symtab_node::find_reference (symtab_node *referred_node,
-			     gimple stmt, unsigned int lto_stmt_uid)
+			     gimple *stmt, unsigned int lto_stmt_uid)
 {
   ipa_ref *r = NULL;
   int i;
@@ -623,7 +623,7 @@ symtab_node::find_reference (symtab_node *referred_node,
 /* Remove all references that are associated with statement STMT.  */
 
 void
-symtab_node::remove_stmt_references (gimple stmt)
+symtab_node::remove_stmt_references (gimple *stmt)
 {
   ipa_ref *r = NULL;
   int i = 0;

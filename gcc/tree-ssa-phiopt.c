@@ -56,16 +56,16 @@ static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gphi *, tree, tree);
 static bool factor_out_conditional_conversion (edge, edge, gphi *, tree, tree);
 static int value_replacement (basic_block, basic_block,
-			      edge, edge, gimple, tree, tree);
+			      edge, edge, gimple *, tree, tree);
 static bool minmax_replacement (basic_block, basic_block,
-				edge, edge, gimple, tree, tree);
+				edge, edge, gimple *, tree, tree);
 static bool abs_replacement (basic_block, basic_block,
-			     edge, edge, gimple, tree, tree);
+			     edge, edge, gimple *, tree, tree);
 static bool cond_store_replacement (basic_block, basic_block, edge, edge,
 				    hash_set<tree> *);
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
 static hash_set<tree> * get_non_trapping ();
-static void replace_phi_edge_with_variable (basic_block, edge, gimple, tree);
+static void replace_phi_edge_with_variable (basic_block, edge, gimple *, tree);
 static void hoist_adjacent_loads (basic_block, basic_block,
 				  basic_block, basic_block);
 static bool gate_hoist_loads (void);
@@ -184,7 +184,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 
   for (i = 0; i < n; i++)
     {
-      gimple cond_stmt;
+      gimple *cond_stmt;
       gphi *phi;
       basic_block bb1, bb2;
       edge e1, e2;
@@ -363,7 +363,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 
 static void
 replace_phi_edge_with_variable (basic_block cond_block,
-				edge e, gimple phi, tree new_tree)
+				edge e, gimple *phi, tree new_tree)
 {
   basic_block bb = gimple_bb (phi);
   basic_block block_to_remove;
@@ -413,7 +413,7 @@ static bool
 factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 				   tree arg0, tree arg1)
 {
-  gimple arg0_def_stmt = NULL, arg1_def_stmt = NULL, new_stmt;
+  gimple *arg0_def_stmt = NULL, *arg1_def_stmt = NULL, *new_stmt;
   tree new_arg0 = NULL_TREE, new_arg1 = NULL_TREE;
   tree temp, result;
   gphi *newphi;
@@ -545,7 +545,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 			 tree arg0, tree arg1)
 {
   tree result;
-  gimple stmt;
+  gimple *stmt;
   gassign *new_stmt;
   tree cond;
   gimple_stmt_iterator gsi;
@@ -656,7 +656,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
    statement is made dead by that rewriting.  */
 
 static bool
-jump_function_from_stmt (tree *arg, gimple stmt)
+jump_function_from_stmt (tree *arg, gimple *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
   if (code == ADDR_EXPR)
@@ -697,7 +697,7 @@ rhs_is_fed_for_value_replacement (const_tree arg0, const_tree arg1,
      statement.  */
   if (TREE_CODE (rhs) == SSA_NAME)
     {
-      gimple def1 = SSA_NAME_DEF_STMT (rhs);
+      gimple *def1 = SSA_NAME_DEF_STMT (rhs);
 
       /* Verify the defining statement has an EQ_EXPR on the RHS.  */
       if (is_gimple_assign (def1) && gimple_assign_rhs_code (def1) == EQ_EXPR)
@@ -729,9 +729,9 @@ rhs_is_fed_for_value_replacement (const_tree arg0, const_tree arg1,
 
 static bool
 operand_equal_for_value_replacement (const_tree arg0, const_tree arg1,
-				     enum tree_code *code, gimple cond)
+				     enum tree_code *code, gimple *cond)
 {
-  gimple def;
+  gimple *def;
   tree lhs = gimple_cond_lhs (cond);
   tree rhs = gimple_cond_rhs (cond);
 
@@ -834,11 +834,11 @@ absorbing_element_p (tree_code code, tree arg)
 
 static int
 value_replacement (basic_block cond_bb, basic_block middle_bb,
-		   edge e0, edge e1, gimple phi,
+		   edge e0, edge e1, gimple *phi,
 		   tree arg0, tree arg1)
 {
   gimple_stmt_iterator gsi;
-  gimple cond;
+  gimple *cond;
   edge true_edge, false_edge;
   enum tree_code code;
   bool emtpy_or_with_defined_p = true;
@@ -853,7 +853,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   gsi = gsi_start_nondebug_after_labels_bb (middle_bb);
   while (!gsi_end_p (gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       tree lhs;
       gsi_next_nondebug (&gsi);
       if (!is_gimple_assign (stmt))
@@ -950,7 +950,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   /* Now optimize (x != 0) ? x + y : y to just y.
      The following condition is too restrictive, there can easily be another
      stmt in middle_bb, for instance a CONVERT_EXPR for the second argument.  */
-  gimple assign = last_and_only_stmt (middle_bb);
+  gimple *assign = last_and_only_stmt (middle_bb);
   if (!assign || gimple_code (assign) != GIMPLE_ASSIGN
       || gimple_assign_rhs_class (assign) != GIMPLE_BINARY_RHS
       || (!INTEGRAL_TYPE_P (TREE_TYPE (arg0))
@@ -1039,7 +1039,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 
 static bool
 minmax_replacement (basic_block cond_bb, basic_block middle_bb,
-		    edge e0, edge e1, gimple phi,
+		    edge e0, edge e1, gimple *phi,
 		    tree arg0, tree arg1)
 {
   tree result, type;
@@ -1130,7 +1130,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	 b = MAX (a, d);
 	 x = MIN (b, u);  */
 
-      gimple assign = last_and_only_stmt (middle_bb);
+      gimple *assign = last_and_only_stmt (middle_bb);
       tree lhs, op0, op1, bound;
 
       if (!assign
@@ -1296,14 +1296,14 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 static bool
 abs_replacement (basic_block cond_bb, basic_block middle_bb,
 		 edge e0 ATTRIBUTE_UNUSED, edge e1,
-		 gimple phi, tree arg0, tree arg1)
+		 gimple *phi, tree arg0, tree arg1)
 {
   tree result;
   gassign *new_stmt;
-  gimple cond;
+  gimple *cond;
   gimple_stmt_iterator gsi;
   edge true_edge, false_edge;
-  gimple assign;
+  gimple *assign;
   edge e;
   tree rhs, lhs;
   bool negate;
@@ -1516,7 +1516,7 @@ nontrapping_dom_walker::before_dom_children (basic_block bb)
   /* And walk the statements in order.  */
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
 
       if (is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
 	nt_call_phase++;
@@ -1640,7 +1640,7 @@ static bool
 cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 			edge e0, edge e1, hash_set<tree> *nontrap)
 {
-  gimple assign = last_and_only_stmt (middle_bb);
+  gimple *assign = last_and_only_stmt (middle_bb);
   tree lhs, rhs, name, name2;
   gphi *newphi;
   gassign *new_stmt;
@@ -1710,8 +1710,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 
 static bool
 cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
-				  basic_block join_bb, gimple then_assign,
-				  gimple else_assign)
+				  basic_block join_bb, gimple *then_assign,
+				  gimple *else_assign)
 {
   tree lhs_base, lhs, then_rhs, else_rhs, name;
   source_location then_locus, else_locus;
@@ -1805,11 +1805,11 @@ static bool
 cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
                                 basic_block join_bb)
 {
-  gimple then_assign = last_and_only_stmt (then_bb);
-  gimple else_assign = last_and_only_stmt (else_bb);
+  gimple *then_assign = last_and_only_stmt (then_bb);
+  gimple *else_assign = last_and_only_stmt (else_bb);
   vec<data_reference_p> then_datarefs, else_datarefs;
   vec<ddr_p> then_ddrs, else_ddrs;
-  gimple then_store, else_store;
+  gimple *then_store, *else_store;
   bool found, ok = false, res;
   struct data_dependence_relation *ddr;
   data_reference_p then_dr, else_dr;
@@ -1841,7 +1841,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
     }
 
   /* Find pairs of stores with equal LHS.  */
-  auto_vec<gimple, 1> then_stores, else_stores;
+  auto_vec<gimple *, 1> then_stores, else_stores;
   FOR_EACH_VEC_ELT (then_datarefs, i, then_dr)
     {
       if (DR_IS_READ (then_dr))
@@ -1969,10 +1969,10 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 /* Return TRUE if STMT has a VUSE whose corresponding VDEF is in BB.  */
 
 static bool
-local_mem_dependence (gimple stmt, basic_block bb)
+local_mem_dependence (gimple *stmt, basic_block bb)
 {
   tree vuse = gimple_vuse (stmt);
-  gimple def;
+  gimple *def;
 
   if (!vuse)
     return false;
@@ -2019,7 +2019,7 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
   for (gsi = gsi_start_phis (bb3); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi_stmt = gsi.phi ();
-      gimple def1, def2;
+      gimple *def1, *def2;
       tree arg1, arg2, ref1, ref2, field1, field2;
       tree tree_offset1, tree_offset2, tree_size2, next;
       int offset1, offset2, size2;

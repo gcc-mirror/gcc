@@ -288,7 +288,7 @@ graphite_can_represent_expr (basic_block scop_entry, loop_p loop,
 
 static bool
 stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
-			     gimple stmt)
+			     gimple *stmt)
 {
   data_reference_p dr;
   int j;
@@ -338,7 +338,7 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
 
 static bool
 stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
-			gimple stmt, basic_block bb)
+			gimple *stmt, basic_block bb)
 {
   loop_p loop = bb->loop_father;
 
@@ -450,7 +450,7 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
    scop should end before this statement.  The evaluation is limited using
    OUTERMOST_LOOP as outermost loop that may change.  */
 
-static gimple
+static gimple *
 harmful_stmt_in_bb (basic_block scop_entry, loop_p outer_loop, basic_block bb)
 {
   gimple_stmt_iterator gsi;
@@ -523,7 +523,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 {
   loop_p loop = bb->loop_father;
   struct scopdet_info result;
-  gimple stmt;
+  gimple *stmt;
 
   /* XXX: ENTRY_BLOCK_PTR could be optimized in later steps.  */
   basic_block entry_block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
@@ -1208,7 +1208,7 @@ same_close_phi_node (gphi *p1, gphi *p2)
 static void
 remove_duplicate_close_phi (gphi *phi, gphi_iterator *gsi)
 {
-  gimple use_stmt;
+  gimple *use_stmt;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
   tree res = gimple_phi_result (phi);

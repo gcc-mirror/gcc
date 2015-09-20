@@ -540,7 +540,7 @@ inlined_polymorphic_ctor_dtor_block_p (tree block, bool check_clones)
 
 bool
 decl_maybe_in_construction_p (tree base, tree outer_type,
-			      gimple call, tree function)
+			      gimple *call, tree function)
 {
   if (outer_type)
     outer_type = TYPE_MAIN_VARIANT (outer_type);
@@ -827,7 +827,7 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 	 undefined anyway.  */
       if (gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI)
 	{
-	  gimple phi = SSA_NAME_DEF_STMT (op);
+	  gimple *phi = SSA_NAME_DEF_STMT (op);
 
 	  if (gimple_phi_num_args (phi) > 2)
 	    goto done;
@@ -873,7 +873,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree cst,
 
 ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 							    tree ref,
-							    gimple stmt,
+							    gimple *stmt,
 							    tree *instance)
 {
   tree otr_type = NULL;
@@ -1119,7 +1119,7 @@ struct type_change_info
    and destructor functions.  */
 
 static bool
-noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
+noncall_stmt_may_be_vtbl_ptr_store (gimple *stmt)
 {
   if (is_gimple_assign (stmt))
     {
@@ -1165,7 +1165,7 @@ noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
    in unknown way or ERROR_MARK_NODE if type is unchanged.  */
 
 static tree
-extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
+extr_type_from_vtbl_ptr_store (gimple *stmt, struct type_change_info *tci,
 			       HOST_WIDE_INT *type_offset)
 {
   HOST_WIDE_INT offset, size, max_size;
@@ -1355,7 +1355,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
 static bool
 check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (vdef);
+  gimple *stmt = SSA_NAME_DEF_STMT (vdef);
   struct type_change_info *tci = (struct type_change_info *) data;
   tree fn;
 
@@ -1486,13 +1486,13 @@ bool
 ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 						tree otr_object,
 						tree otr_type,
-						gimple call)
+						gimple *call)
 {
   struct type_change_info tci;
   ao_ref ao;
   bool function_entry_reached = false;
   tree instance_ref = NULL;
-  gimple stmt = call;
+  gimple *stmt = call;
   /* Remember OFFSET before it is modified by restrict_to_inner_class.
      This is because we do not update INSTANCE when walking inwards.  */
   HOST_WIDE_INT instance_offset = offset;

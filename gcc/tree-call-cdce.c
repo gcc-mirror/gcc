@@ -211,7 +211,7 @@ check_pow (gcall *pow_call)
   else if (bc == SSA_NAME)
     {
       tree base_val0, type;
-      gimple base_def;
+      gimple *base_def;
       int bit_sz;
 
       /* Only handles cases where base value is converted
@@ -325,7 +325,7 @@ gen_one_condition (tree arg, int lbub,
                    enum tree_code tcode,
                    const char *temp_name1,
 		   const char *temp_name2,
-                   vec<gimple> conds,
+		   vec<gimple *> conds,
                    unsigned *nconds)
 {
   tree lbub_real_cst, lbub_cst, float_type;
@@ -369,7 +369,7 @@ gen_one_condition (tree arg, int lbub,
 
 static void
 gen_conditions_for_domain (tree arg, inp_domain domain,
-                           vec<gimple> conds,
+			   vec<gimple *> conds,
                            unsigned *nconds)
 {
   if (domain.has_lb)
@@ -412,7 +412,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
 
 static void
 gen_conditions_for_pow_cst_base (tree base, tree expn,
-                                 vec<gimple> conds,
+				 vec<gimple *> conds,
                                  unsigned *nconds)
 {
   inp_domain exp_domain;
@@ -448,15 +448,15 @@ gen_conditions_for_pow_cst_base (tree base, tree expn,
 
 static void
 gen_conditions_for_pow_int_base (tree base, tree expn,
-                                 vec<gimple> conds,
+				 vec<gimple *> conds,
                                  unsigned *nconds)
 {
-  gimple base_def;
+  gimple *base_def;
   tree base_val0;
   tree int_type;
   tree temp, tempn;
   tree cst0;
-  gimple stmt1, stmt2;
+  gimple *stmt1, *stmt2;
   int bit_sz, max_exp;
   inp_domain exp_domain;
 
@@ -537,7 +537,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
    and *NCONDS is the number of logical conditions.  */
 
 static void
-gen_conditions_for_pow (gcall *pow_call, vec<gimple> conds,
+gen_conditions_for_pow (gcall *pow_call, vec<gimple *> conds,
                         unsigned *nconds)
 {
   tree base, expn;
@@ -673,7 +673,7 @@ get_no_error_domain (enum built_in_function fnc)
    condition are separated by NULL tree in the vector.  */
 
 static void
-gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple> conds,
+gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
                             unsigned int *nconds)
 {
   gcall *call;
@@ -722,12 +722,12 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   edge bi_call_in_edge0, guard_bb_in_edge;
   unsigned tn_cond_stmts, nconds;
   unsigned ci;
-  gimple cond_expr = NULL;
-  gimple cond_expr_start;
+  gimple *cond_expr = NULL;
+  gimple *cond_expr_start;
   tree bi_call_label_decl;
-  gimple bi_call_label;
+  gimple *bi_call_label;
 
-  auto_vec<gimple, 12> conds;
+  auto_vec<gimple *, 12> conds;
   gen_shrink_wrap_conditions (bi_call, conds, &nconds);
 
   /* This can happen if the condition generator decides
@@ -763,7 +763,7 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
   cond_expr_start = conds[0];
   for (ci = 0; ci < tn_cond_stmts; ci++)
     {
-      gimple c = conds[ci];
+      gimple *c = conds[ci];
       gcc_assert (c || ci != 0);
       if (!c)
         break;
@@ -807,7 +807,7 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
       cond_expr_start = conds[ci0];
       for (; ci < tn_cond_stmts; ci++)
         {
-          gimple c = conds[ci];
+	  gimple *c = conds[ci];
           gcc_assert (c || ci != ci0);
           if (!c)
             break;

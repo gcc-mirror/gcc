@@ -395,14 +395,14 @@ finished_with_expr (temp_expr_table *tab, int version, bool free_expr)
    is available.  */
 
 static inline bool
-ter_is_replaceable_p (gimple stmt)
+ter_is_replaceable_p (gimple *stmt)
 {
 
   if (ssa_is_replaceable_p (stmt))
     {
       use_operand_p use_p;
       tree def;
-      gimple use_stmt;
+      gimple *use_stmt;
       location_t locus1, locus2;
       tree block1, block2;
 
@@ -443,7 +443,7 @@ ter_is_replaceable_p (gimple stmt)
 /* Create an expression entry for a replaceable expression.  */
 
 static void
-process_replaceable (temp_expr_table *tab, gimple stmt, int call_cnt)
+process_replaceable (temp_expr_table *tab, gimple *stmt, int call_cnt)
 {
   tree var, def, basevar;
   int version;
@@ -562,7 +562,7 @@ find_ssaname (tree *tp, int *walk_subtrees, void *data)
    walk_stmt_load_store_addr_ops.  */
 
 static bool
-find_ssaname_in_store (gimple, tree, tree t, void *data)
+find_ssaname_in_store (gimple *, tree, tree t, void *data)
 {
   return walk_tree (&t, find_ssaname, data, NULL) != NULL_TREE;
 }
@@ -574,7 +574,7 @@ static void
 find_replaceable_in_bb (temp_expr_table *tab, basic_block bb)
 {
   gimple_stmt_iterator bsi;
-  gimple stmt;
+  gimple *stmt;
   tree def, use, fndecl;
   int partition;
   var_map map = tab->map;
@@ -622,7 +622,7 @@ find_replaceable_in_bb (temp_expr_table *tab, basic_block bb)
 		 assignments which we cannot expand correctly.  */
 	      if (gimple_vdef (stmt))
 		{
-		  gimple def_stmt = SSA_NAME_DEF_STMT (use);
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (use);
 		  while (is_gimple_assign (def_stmt)
 			 && gimple_assign_rhs_code (def_stmt) == SSA_NAME)
 		    def_stmt

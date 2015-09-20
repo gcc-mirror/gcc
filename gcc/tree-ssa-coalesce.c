@@ -833,7 +833,7 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 	   gsi_prev (&gsi))
         {
 	  tree var;
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 
 	  /* A copy between 2 partitions does not introduce an interference
 	     by itself.  If they did, you would never be able to coalesce
@@ -947,7 +947,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
   gimple_stmt_iterator gsi;
   basic_block bb;
   tree var;
-  gimple stmt;
+  gimple *stmt;
   tree first;
   var_map map;
   ssa_op_iter iter;

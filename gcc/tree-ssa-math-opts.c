@@ -127,7 +127,7 @@ struct occurrence {
 
   /* If non-NULL, the GIMPLE_ASSIGN for a reciprocal computation that
      was inserted in BB.  */
-  gimple recip_def_stmt;
+  gimple *recip_def_stmt;
 
   /* Pointer to a list of "struct occurrence"s for blocks dominated
      by BB.  */
@@ -324,7 +324,7 @@ compute_merit (struct occurrence *occ)
 
 /* Return whether USE_STMT is a floating-point division by DEF.  */
 static inline bool
-is_division_by (gimple use_stmt, tree def)
+is_division_by (gimple *use_stmt, tree def)
 {
   return is_gimple_assign (use_stmt)
 	 && gimple_assign_rhs_code (use_stmt) == RDIV_EXPR
@@ -404,7 +404,7 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
 static inline void
 replace_reciprocal (use_operand_p use_p)
 {
-  gimple use_stmt = USE_STMT (use_p);
+  gimple *use_stmt = USE_STMT (use_p);
   basic_block bb = gimple_bb (use_stmt);
   struct occurrence *occ = (struct occurrence *) bb->aux;
 
@@ -464,7 +464,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 
   FOR_EACH_IMM_USE_FAST (use_p, use_iter, def)
     {
-      gimple use_stmt = USE_STMT (use_p);
+      gimple *use_stmt = USE_STMT (use_p);
       if (is_division_by (use_stmt, def))
 	{
 	  register_division_in (gimple_bb (use_stmt));
@@ -476,7 +476,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
   threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
   if (count >= threshold)
     {
-      gimple use_stmt;
+      gimple *use_stmt;
       for (occ = occ_head; occ; occ = occ->next)
 	{
 	  compute_merit (occ);
@@ -572,7 +572,7 @@ pass_cse_reciprocals::execute (function *fun)
       for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
         {
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 
 	  if (gimple_has_lhs (stmt)
 	      && (def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF)) != NULL
@@ -588,14 +588,14 @@ pass_cse_reciprocals::execute (function *fun)
       for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
         {
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree fndecl;
 
 	  if (is_gimple_assign (stmt)
 	      && gimple_assign_rhs_code (stmt) == RDIV_EXPR)
 	    {
 	      tree arg1 = gimple_assign_rhs2 (stmt);
-	      gimple stmt1;
+	      gimple *stmt1;
 
 	      if (TREE_CODE (arg1) != SSA_NAME)
 		continue;
@@ -626,7 +626,7 @@ pass_cse_reciprocals::execute (function *fun)
 		  fail = false;
 		  FOR_EACH_IMM_USE_FAST (use_p, ui, arg1)
 		    {
-		      gimple stmt2 = USE_STMT (use_p);
+		      gimple *stmt2 = USE_STMT (use_p);
 		      if (is_gimple_debug (stmt2))
 			continue;
 		      if (!is_gimple_assign (stmt2)
@@ -684,8 +684,8 @@ make_pass_cse_reciprocals (gcc::context *ctxt)
    statements in the vector.  */
 
 static bool
-maybe_record_sincos (vec<gimple> *stmts,
-		     basic_block *top_bb, gimple use_stmt)
+maybe_record_sincos (vec<gimple *> *stmts,
+		     basic_block *top_bb, gimple *use_stmt)
 {
   basic_block use_bb = gimple_bb (use_stmt);
   if (*top_bb
@@ -718,9 +718,9 @@ execute_cse_sincos_1 (tree name)
   gimple_stmt_iterator gsi;
   imm_use_iterator use_iter;
   tree fndecl, res, type;
-  gimple def_stmt, use_stmt, stmt;
+  gimple *def_stmt, *use_stmt, *stmt;
   int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
-  auto_vec<gimple> stmts;
+  auto_vec<gimple *> stmts;
   basic_block top_bb = NULL;
   int i;
   bool cfg_changed = false;
@@ -1090,7 +1090,7 @@ build_and_insert_ref (gimple_stmt_iterator *gsi, location_t loc, tree type,
 		      const char *name, enum tree_code code, tree arg0)
 {
   tree result = make_temp_ssa_name (type, NULL, name);
-  gimple stmt = gimple_build_assign (result, build1 (code, type, arg0));
+  gimple *stmt = gimple_build_assign (result, build1 (code, type, arg0));
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1730,7 +1730,7 @@ pass_cse_sincos::execute (function *fun)
 
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         {
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree fndecl;
 
 	  /* Only the last stmt in a bb could throw, no need to call
@@ -1975,7 +1975,7 @@ do_shift_rotate (enum tree_code code,
    statement STMT.  */
 
 static inline bool
-verify_symbolic_number_p (struct symbolic_number *n, gimple stmt)
+verify_symbolic_number_p (struct symbolic_number *n, gimple *stmt)
 {
   tree lhs_type;
 
@@ -2024,7 +2024,7 @@ init_symbolic_number (struct symbolic_number *n, tree src)
    accessed and the offset of the access from that base are recorded in N.  */
 
 bool
-find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
+find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
 {
   /* Leaf node is an array or component ref. Memorize its base and
      offset from base to compare to other such leaf node.  */
@@ -2095,14 +2095,14 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
    symbolic number N1 and N2 whose source statements are respectively
    SOURCE_STMT1 and SOURCE_STMT2.  */
 
-static gimple
-perform_symbolic_merge (gimple source_stmt1, struct symbolic_number *n1,
-			gimple source_stmt2, struct symbolic_number *n2,
+static gimple *
+perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
+			gimple *source_stmt2, struct symbolic_number *n2,
 			struct symbolic_number *n)
 {
   int i, size;
   uint64_t mask;
-  gimple source_stmt;
+  gimple *source_stmt;
   struct symbolic_number *n_start;
 
   /* Sources are different, cancel bswap if they are not memory location with
@@ -2214,12 +2214,12 @@ perform_symbolic_merge (gimple source_stmt1, struct symbolic_number *n1,
    rhs's first tree is the expression of the source operand and NULL
    otherwise.  */
 
-static gimple
-find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
+static gimple *
+find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 {
   enum tree_code code;
   tree rhs1, rhs2 = NULL;
-  gimple rhs1_stmt, rhs2_stmt, source_stmt1;
+  gimple *rhs1_stmt, *rhs2_stmt, *source_stmt1;
   enum gimple_rhs_class rhs_class;
 
   if (!limit || !is_gimple_assign (stmt))
@@ -2335,7 +2335,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
   if (rhs_class == GIMPLE_BINARY_RHS)
     {
       struct symbolic_number n1, n2;
-      gimple source_stmt, source_stmt2;
+      gimple *source_stmt, *source_stmt2;
 
       if (code != BIT_IOR_EXPR)
 	return NULL;
@@ -2391,8 +2391,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
    function returns a stmt whose rhs's first tree is the source
    expression.  */
 
-static gimple
-find_bswap_or_nop (gimple stmt, struct symbolic_number *n, bool *bswap)
+static gimple *
+find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
 {
 /* The number which the find_bswap_or_nop_1 result should match in order
    to have a full byte swap.  The number is shifted to the right
@@ -2400,7 +2400,7 @@ find_bswap_or_nop (gimple stmt, struct symbolic_number *n, bool *bswap)
   uint64_t cmpxchg = CMPXCHG;
   uint64_t cmpnop = CMPNOP;
 
-  gimple source_stmt;
+  gimple *source_stmt;
   int limit;
 
   /* The last parameter determines the depth search limit.  It usually
@@ -2499,12 +2499,13 @@ public:
    changing of basic block.  */
 
 static bool
-bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
-	       tree load_type, struct symbolic_number *n, bool bswap)
+bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
+	       tree bswap_type, tree load_type, struct symbolic_number *n,
+	       bool bswap)
 {
   gimple_stmt_iterator gsi;
   tree src, tmp, tgt;
-  gimple bswap_stmt;
+  gimple *bswap_stmt;
 
   gsi = gsi_for_stmt (cur_stmt);
   src = gimple_assign_rhs1 (src_stmt);
@@ -2516,7 +2517,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
       gimple_stmt_iterator gsi_ins = gsi_for_stmt (src_stmt);
       tree addr_expr, addr_tmp, val_expr, val_tmp;
       tree load_offset_ptr, aligned_load_type;
-      gimple addr_stmt, load_stmt;
+      gimple *addr_stmt, *load_stmt;
       unsigned align;
       HOST_WIDE_INT load_offset = 0;
 
@@ -2637,7 +2638,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
   /* Convert the src expression if necessary.  */
   if (!useless_type_conversion_p (TREE_TYPE (tmp), bswap_type))
     {
-      gimple convert_stmt;
+      gimple *convert_stmt;
 
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
       convert_stmt = gimple_build_assign (tmp, NOP_EXPR, src);
@@ -2662,7 +2663,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
   /* Convert the result if necessary.  */
   if (!useless_type_conversion_p (TREE_TYPE (tgt), bswap_type))
     {
-      gimple convert_stmt;
+      gimple *convert_stmt;
 
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
       convert_stmt = gimple_build_assign (tgt, NOP_EXPR, tmp);
@@ -2732,7 +2733,7 @@ pass_optimize_bswap::execute (function *fun)
 	 variant wouldn't be detected.  */
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
         {
-	  gimple src_stmt, cur_stmt = gsi_stmt (gsi);
+	  gimple *src_stmt, *cur_stmt = gsi_stmt (gsi);
 	  tree fndecl = NULL_TREE, bswap_type = NULL_TREE, load_type;
 	  enum tree_code code;
 	  struct symbolic_number n;
@@ -2834,7 +2835,7 @@ make_pass_optimize_bswap (gcc::context *ctxt)
 /* Return true if stmt is a type conversion operation that can be stripped
    when used in a widening multiply operation.  */
 static bool
-widening_mult_conversion_strippable_p (tree result_type, gimple stmt)
+widening_mult_conversion_strippable_p (tree result_type, gimple *stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
 
@@ -2886,7 +2887,7 @@ static bool
 is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 			tree *new_rhs_out)
 {
-  gimple stmt;
+  gimple *stmt;
   tree type1, rhs1;
 
   if (TREE_CODE (rhs) == SSA_NAME)
@@ -2939,7 +2940,7 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
    and *TYPE2_OUT would give the operands of the multiplication.  */
 
 static bool
-is_widening_mult_p (gimple stmt,
+is_widening_mult_p (gimple *stmt,
 		    tree *type1_out, tree *rhs1_out,
 		    tree *type2_out, tree *rhs2_out)
 {
@@ -2986,7 +2987,7 @@ is_widening_mult_p (gimple stmt,
    value is true iff we converted the statement.  */
 
 static bool
-convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
+convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs, rhs1, rhs2, type, type1, type2;
   enum insn_code handler;
@@ -3087,11 +3088,11 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
    is true iff we converted the statement.  */
 
 static bool
-convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
+convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
 			    enum tree_code code)
 {
-  gimple rhs1_stmt = NULL, rhs2_stmt = NULL;
-  gimple conv1_stmt = NULL, conv2_stmt = NULL, conv_stmt;
+  gimple *rhs1_stmt = NULL, *rhs2_stmt = NULL;
+  gimple *conv1_stmt = NULL, *conv2_stmt = NULL, *conv_stmt;
   tree type, type1, type2, optype;
   tree lhs, rhs1, rhs2, mult_rhs1, mult_rhs2, add_rhs;
   enum tree_code rhs1_code = ERROR_MARK, rhs2_code = ERROR_MARK;
@@ -3298,11 +3299,11 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
    operations.  Returns true if successful and MUL_STMT should be removed.  */
 
 static bool
-convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
+convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
   tree type = TREE_TYPE (mul_result);
-  gimple use_stmt, neguse_stmt;
+  gimple *use_stmt, *neguse_stmt;
   gassign *fma_stmt;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
@@ -3417,7 +3418,7 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 
 	  if (TREE_CODE (rhs2) == SSA_NAME)
 	    {
-	      gimple stmt2 = SSA_NAME_DEF_STMT (rhs2);
+	      gimple *stmt2 = SSA_NAME_DEF_STMT (rhs2);
 	      if (has_single_use (rhs2)
 		  && is_gimple_assign (stmt2)
 		  && gimple_assign_rhs_code (stmt2) == MULT_EXPR)
@@ -3548,7 +3549,7 @@ pass_optimize_widening_mul::execute (function *fun)
 
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
         {
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  enum tree_code code;
 
 	  if (is_gimple_assign (stmt))

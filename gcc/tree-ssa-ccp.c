@@ -269,7 +269,7 @@ static ccp_prop_value_t
 get_default_value (tree var)
 {
   ccp_prop_value_t val = { UNINITIALIZED, NULL_TREE, 0 };
-  gimple stmt;
+  gimple *stmt;
 
   stmt = SSA_NAME_DEF_STMT (var);
 
@@ -644,7 +644,7 @@ get_value_for_expr (tree expr, bool for_bits_p)
    Else return VARYING.  */
 
 static ccp_lattice_t
-likely_value (gimple stmt)
+likely_value (gimple *stmt)
 {
   bool has_constant_operand, has_undefined_operand, all_undefined_operands;
   bool has_nsa_operand;
@@ -771,7 +771,7 @@ likely_value (gimple stmt)
 /* Returns true if STMT cannot be constant.  */
 
 static bool
-surely_varying_stmt_p (gimple stmt)
+surely_varying_stmt_p (gimple *stmt)
 {
   /* If the statement has operands that we cannot handle, it cannot be
      constant.  */
@@ -826,7 +826,7 @@ ccp_initialize (void)
 
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
         {
-	  gimple stmt = gsi_stmt (i);
+	  gimple *stmt = gsi_stmt (i);
 	  bool is_varying;
 
 	  /* If the statement is a control insn, then we do not
@@ -1171,7 +1171,7 @@ valueize_op_1 (tree op)
       /* If the definition may be simulated again we cannot follow
          this SSA edge as the SSA propagator does not necessarily
 	 re-visit the use.  */
-      gimple def_stmt = SSA_NAME_DEF_STMT (op);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op);
       if (!gimple_nop_p (def_stmt)
 	  && prop_simulate_again_p (def_stmt))
 	return NULL_TREE;
@@ -1192,7 +1192,7 @@ valueize_op_1 (tree op)
    otherwise return the original RHS or NULL_TREE.  */
 
 static tree
-ccp_fold (gimple stmt)
+ccp_fold (gimple *stmt)
 {
   location_t loc = gimple_location (stmt);
   switch (gimple_code (stmt))
@@ -1600,7 +1600,7 @@ bit_value_binop (enum tree_code code, tree type, tree rhs1, tree rhs2)
    ALLOC_ALIGNED is true.  */
 
 static ccp_prop_value_t
-bit_value_assume_aligned (gimple stmt, tree attr, ccp_prop_value_t ptrval,
+bit_value_assume_aligned (gimple *stmt, tree attr, ccp_prop_value_t ptrval,
 			  bool alloc_aligned)
 {
   tree align, misalign = NULL_TREE, type;
@@ -1700,7 +1700,7 @@ bit_value_assume_aligned (gimple stmt, tree attr, ccp_prop_value_t ptrval,
    Valid only for assignments, calls, conditionals, and switches. */
 
 static ccp_prop_value_t
-evaluate_stmt (gimple stmt)
+evaluate_stmt (gimple *stmt)
 {
   ccp_prop_value_t val;
   tree simplified = NULL_TREE;
@@ -1977,7 +1977,7 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
-typedef hash_table<nofree_ptr_hash<gimple_statement_base> > gimple_htab;
+typedef hash_table<nofree_ptr_hash<gimple> > gimple_htab;
 
 /* Given a BUILT_IN_STACK_SAVE value SAVED_VAL, insert a clobber of VAR before
    each matching BUILT_IN_STACK_RESTORE.  Mark visited phis in VISITED.  */
@@ -1986,12 +1986,12 @@ static void
 insert_clobber_before_stack_restore (tree saved_val, tree var,
 				     gimple_htab **visited)
 {
-  gimple stmt;
+  gimple *stmt;
   gassign *clobber_stmt;
   tree clobber;
   imm_use_iterator iter;
   gimple_stmt_iterator i;
-  gimple *slot;
+  gimple **slot;
 
   FOR_EACH_IMM_USE_STMT (stmt, iter, saved_val)
     if (gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
@@ -2055,7 +2055,7 @@ gsi_prev_dom_bb_nondebug (gimple_stmt_iterator *i)
 static void
 insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
 {
-  gimple stmt;
+  gimple *stmt;
   tree saved_val;
   gimple_htab *visited = NULL;
 
@@ -2082,7 +2082,7 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
    NULL_TREE.  */
 
 static tree
-fold_builtin_alloca_with_align (gimple stmt)
+fold_builtin_alloca_with_align (gimple *stmt)
 {
   unsigned HOST_WIDE_INT size, threshold, n_elem;
   tree lhs, arg, block, var, elem_type, array_type;
@@ -2141,7 +2141,7 @@ fold_builtin_alloca_with_align (gimple stmt)
 static bool
 ccp_fold_stmt (gimple_stmt_iterator *gsi)
 {
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
 
   switch (gimple_code (stmt))
     {
@@ -2281,7 +2281,7 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
    are handled here.  */
 
 static enum ssa_prop_result
-visit_assignment (gimple stmt, tree *output_p)
+visit_assignment (gimple *stmt, tree *output_p)
 {
   ccp_prop_value_t val;
   enum ssa_prop_result retval = SSA_PROP_NOT_INTERESTING;
@@ -2314,7 +2314,7 @@ visit_assignment (gimple stmt, tree *output_p)
    SSA_PROP_VARYING.  */
 
 static enum ssa_prop_result
-visit_cond_stmt (gimple stmt, edge *taken_edge_p)
+visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
 {
   ccp_prop_value_t val;
   basic_block block;
@@ -2347,7 +2347,7 @@ visit_cond_stmt (gimple stmt, edge *taken_edge_p)
    value, return SSA_PROP_VARYING.  */
 
 static enum ssa_prop_result
-ccp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
+ccp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   tree def;
   ssa_op_iter iter;
@@ -2464,10 +2464,10 @@ static tree
 optimize_stack_restore (gimple_stmt_iterator i)
 {
   tree callee;
-  gimple stmt;
+  gimple *stmt;
 
   basic_block bb = gsi_bb (i);
-  gimple call = gsi_stmt (i);
+  gimple *call = gsi_stmt (i);
 
   if (gimple_code (call) != GIMPLE_CALL
       || gimple_call_num_args (call) != 1
@@ -2518,7 +2518,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
      or not is irrelevant to removing the call to __builtin_stack_restore.  */
   if (has_single_use (gimple_call_arg (call, 0)))
     {
-      gimple stack_save = SSA_NAME_DEF_STMT (gimple_call_arg (call, 0));
+      gimple *stack_save = SSA_NAME_DEF_STMT (gimple_call_arg (call, 0));
       if (is_gimple_call (stack_save))
 	{
 	  callee = gimple_call_fndecl (stack_save);
@@ -2546,7 +2546,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
    pointer assignment.  */
 
 static tree
-optimize_stdarg_builtin (gimple call)
+optimize_stdarg_builtin (gimple *call)
 {
   tree callee, lhs, rhs, cfun_va_list;
   bool va_list_simple_ptr;
@@ -2624,7 +2624,7 @@ optimize_unreachable (gimple_stmt_iterator i)
 {
   basic_block bb = gsi_bb (i);
   gimple_stmt_iterator gsi;
-  gimple stmt;
+  gimple *stmt;
   edge_iterator ei;
   edge e;
   bool ret;
@@ -2728,7 +2728,7 @@ pass_fold_builtins::execute (function *fun)
       gimple_stmt_iterator i;
       for (i = gsi_start_bb (bb); !gsi_end_p (i); )
 	{
-          gimple stmt, old_stmt;
+	  gimple *stmt, *old_stmt;
 	  tree callee;
 	  enum built_in_function fcode;
 

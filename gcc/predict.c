@@ -1142,7 +1142,7 @@ is_comparison_with_loop_invariant_p (gcond *stmt, struct loop *loop,
 static bool
 expr_coherent_p (tree t1, tree t2)
 {
-  gimple stmt;
+  gimple *stmt;
   tree ssa_name_1 = NULL;
   tree ssa_name_2 = NULL;
 
@@ -1205,7 +1205,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
 		       enum tree_code loop_bound_code,
 		       int loop_bound_step)
 {
-  gimple stmt;
+  gimple *stmt;
   tree compare_var, compare_base;
   enum tree_code compare_code;
   tree compare_step_var;
@@ -1394,10 +1394,10 @@ predict_extra_loop_exits (edge exit_edge)
 {
   unsigned i;
   bool check_value_one;
-  gimple lhs_def_stmt;
+  gimple *lhs_def_stmt;
   gphi *phi_stmt;
   tree cmp_rhs, cmp_lhs;
-  gimple last;
+  gimple *last;
   gcond *cmp_stmt;
 
   last = last_stmt (exit_edge->src);
@@ -1740,7 +1740,7 @@ static tree
 expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		       tree op1, bitmap visited, enum br_predictor *predictor)
 {
-  gimple def;
+  gimple *def;
 
   if (predictor)
     *predictor = PRED_UNCONDITIONAL;
@@ -1935,7 +1935,7 @@ expr_expected_value (tree expr, bitmap visited,
 static void
 tree_predict_by_opcode (basic_block bb)
 {
-  gimple stmt = last_stmt (bb);
+  gimple *stmt = last_stmt (bb);
   edge then_edge;
   tree op0, op1;
   tree type;
@@ -2114,7 +2114,7 @@ apply_return_prediction (void)
 
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      gimple last = last_stmt (e->src);
+      gimple *last = last_stmt (e->src);
       if (last
 	  && gimple_code (last) == GIMPLE_RETURN)
 	{
@@ -2178,7 +2178,7 @@ tree_bb_level_predictions (void)
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  tree decl;
 
 	  if (is_gimple_call (stmt))
@@ -2226,7 +2226,7 @@ tree_estimate_probability_bb (basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  gimple last;
+  gimple *last;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -2308,7 +2308,7 @@ tree_estimate_probability_bb (basic_block bb)
 	  for (bi = gsi_start_bb (e->dest); !gsi_end_p (bi);
 	       gsi_next (&bi))
 	    {
-	      gimple stmt = gsi_stmt (bi);
+	      gimple *stmt = gsi_stmt (bi);
 	      if (is_gimple_call (stmt)
 		  /* Constant and pure calls are hardly used to signalize
 		     something exceptional.  */
@@ -3094,7 +3094,7 @@ unsigned int
 pass_strip_predict_hints::execute (function *fun)
 {
   basic_block bb;
-  gimple ass_stmt;
+  gimple *ass_stmt;
   tree var;
 
   FOR_EACH_BB_FN (bb, fun)
@@ -3102,7 +3102,7 @@ pass_strip_predict_hints::execute (function *fun)
       gimple_stmt_iterator bi;
       for (bi = gsi_start_bb (bb); !gsi_end_p (bi);)
 	{
-	  gimple stmt = gsi_stmt (bi);
+	  gimple *stmt = gsi_stmt (bi);
 
 	  if (gimple_code (stmt) == GIMPLE_PREDICT)
 	    {

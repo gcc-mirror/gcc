@@ -479,7 +479,7 @@ find_or_create_vtbl_map_node (tree base_class_type)
    call).  */
 
 static bool
-is_vtable_assignment_stmt (gimple stmt)
+is_vtable_assignment_stmt (gimple *stmt)
 {
 
   if (gimple_code (stmt) != GIMPLE_ASSIGN)
@@ -582,7 +582,7 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth,
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
     {
-      gimple stmt2 = USE_STMT (use_p);
+      gimple *stmt2 = USE_STMT (use_p);
 
       if (is_gimple_call (stmt2))
         {
@@ -648,7 +648,7 @@ static void
 verify_bb_vtables (basic_block bb)
 {
   gimple_seq stmts;
-  gimple stmt = NULL;
+  gimple *stmt = NULL;
   gimple_stmt_iterator gsi_vtbl_assign;
   gimple_stmt_iterator gsi_virtual_call;
 
@@ -770,7 +770,7 @@ verify_bb_vtables (basic_block bb)
                   /* Replace all uses of lhs with tmp0. */
                   found = false;
                   imm_use_iterator iterator;
-                  gimple use_stmt;
+		  gimple *use_stmt;
                   FOR_EACH_IMM_USE_STMT (use_stmt, iterator, lhs)
                     {
                       use_operand_p use_p;

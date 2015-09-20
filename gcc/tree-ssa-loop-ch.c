@@ -54,7 +54,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 				int *limit)
 {
   gimple_stmt_iterator bsi;
-  gimple last;
+  gimple *last;
 
   /* Do not copy one block more than once (we do not really want to do
      loop peeling here).  */
@@ -112,7 +112,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 static bool
 do_while_loop_p (struct loop *loop)
 {
-  gimple stmt = last_stmt (loop->latch);
+  gimple *stmt = last_stmt (loop->latch);
 
   /* If the latch of the loop is not empty, it is not a do-while loop.  */
   if (stmt
@@ -313,7 +313,7 @@ ch_base::copy_headers (function *fun)
 		   !gsi_end_p (bsi);
 		   gsi_next (&bsi))
 		{
-		  gimple stmt = gsi_stmt (bsi);
+		  gimple *stmt = gsi_stmt (bsi);
 		  if (gimple_code (stmt) == GIMPLE_COND)
 		    gimple_set_no_warning (stmt, true);
 		  else if (is_gimple_assign (stmt))

@@ -115,7 +115,7 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
    types.  */
 
 tree
-vect_get_smallest_scalar_type (gimple stmt, HOST_WIDE_INT *lhs_size_unit,
+vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
                                HOST_WIDE_INT *rhs_size_unit)
 {
   tree scalar_type = gimple_expr_type (stmt);
@@ -379,7 +379,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  if (STMT_VINFO_GROUPED_ACCESS (stmtinfo_a)
 	      || STMT_VINFO_GROUPED_ACCESS (stmtinfo_b))
 	    {
-	      gimple earlier_stmt;
+	      gimple *earlier_stmt;
 	      earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
 	      if (DR_IS_WRITE
 		    (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
@@ -548,7 +548,7 @@ vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
      corresponding scalar load, and vector store can be only after its
      corresponding scalar store.  So the order of the acceses is preserved in
      case the load is before the store.  */
-  gimple earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
+  gimple *earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
   if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
     {
       /* That only holds for load-store pairs taking part in vectorization.  */
@@ -605,7 +605,7 @@ vect_slp_analyze_data_ref_dependences (bb_vec_info bb_vinfo)
 static bool
 vect_compute_data_ref_alignment (struct data_reference *dr)
 {
-  gimple stmt = DR_STMT (dr);
+  gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
@@ -893,7 +893,7 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      gimple stmt = DR_STMT (dr);
+      gimple *stmt = DR_STMT (dr);
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
       if (!STMT_VINFO_RELEVANT_P (stmt_info))
@@ -959,7 +959,7 @@ not_size_aligned (tree exp)
 static bool
 vector_alignment_reachable_p (struct data_reference *dr)
 {
-  gimple stmt = DR_STMT (dr);
+  gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -1030,7 +1030,7 @@ vect_get_data_access_cost (struct data_reference *dr,
                            unsigned int *outside_cost,
 			   stmt_vector_for_cost *body_cost_vec)
 {
-  gimple stmt = DR_STMT (dr);
+  gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   int nunits = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -1113,7 +1113,7 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
   vect_peel_info elem = *slot;
   int save_misalignment, dummy;
   unsigned int inside_cost = 0, outside_cost = 0, i;
-  gimple stmt = DR_STMT (elem->dr);
+  gimple *stmt = DR_STMT (elem->dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
@@ -1309,7 +1309,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool do_peeling = false;
   bool do_versioning = false;
   bool stat;
-  gimple stmt;
+  gimple *stmt;
   stmt_vec_info stmt_info;
   unsigned int npeel = 0;
   bool all_misalignments_unknown = true;
@@ -1699,7 +1699,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               unsigned max_peel = npeel;
               if (max_peel == 0)
                 {
-                  gimple dr_stmt = DR_STMT (dr0);
+		  gimple *dr_stmt = DR_STMT (dr0);
                   stmt_vec_info vinfo = vinfo_for_stmt (dr_stmt);
                   tree vtype = STMT_VINFO_VECTYPE (vinfo);
                   max_peel = TYPE_VECTOR_SUBPARTS (vtype) - 1;
@@ -1807,7 +1807,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
           if (!supportable_dr_alignment)
             {
-              gimple stmt;
+	      gimple *stmt;
               int mask;
               tree vectype;
 
@@ -1851,9 +1851,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   if (do_versioning)
     {
-      vec<gimple> may_misalign_stmts
+      vec<gimple *> may_misalign_stmts
         = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
-      gimple stmt;
+      gimple *stmt;
 
       /* It can now be assumed that the data references in the statements
          in LOOP_VINFO_MAY_MISALIGN_STMTS will be aligned in the version
@@ -2011,7 +2011,7 @@ vect_analyze_group_access_1 (struct data_reference *dr)
   tree step = DR_STEP (dr);
   tree scalar_type = TREE_TYPE (DR_REF (dr));
   HOST_WIDE_INT type_size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
-  gimple stmt = DR_STMT (dr);
+  gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
@@ -2100,11 +2100,11 @@ vect_analyze_group_access_1 (struct data_reference *dr)
   if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt)
     {
       /* First stmt in the interleaving chain. Check the chain.  */
-      gimple next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmt));
+      gimple *next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmt));
       struct data_reference *data_ref = dr;
       unsigned int count = 1;
       tree prev_init = DR_INIT (data_ref);
-      gimple prev = stmt;
+      gimple *prev = stmt;
       HOST_WIDE_INT diff, gaps = 0;
 
       while (next)
@@ -2264,7 +2264,8 @@ vect_analyze_group_access (struct data_reference *dr)
   if (!vect_analyze_group_access_1 (dr))
     {
       /* Dissolve the group if present.  */
-      gimple next, stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (DR_STMT (dr)));
+      gimple *next;
+      gimple *stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (DR_STMT (dr)));
       while (stmt)
 	{
 	  stmt_vec_info vinfo = vinfo_for_stmt (stmt);
@@ -2287,7 +2288,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 {
   tree step = DR_STEP (dr);
   tree scalar_type = TREE_TYPE (DR_REF (dr));
-  gimple stmt = DR_STMT (dr);
+  gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
@@ -2826,9 +2827,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   FOR_EACH_VEC_ELT (may_alias_ddrs, i, ddr)
     {
       struct data_reference *dr_a, *dr_b;
-      gimple dr_group_first_a, dr_group_first_b;
+      gimple *dr_group_first_a, *dr_group_first_b;
       tree segment_length_a, segment_length_b;
-      gimple stmt_a, stmt_b;
+      gimple *stmt_a, *stmt_b;
 
       dr_a = DDR_A (ddr);
       stmt_a = DR_STMT (DDR_A (ddr));
@@ -2988,7 +2989,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
    or scatter store and if so, return a builtin decl for that operation.  */
 
 tree
-vect_check_gather_scatter (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
+vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo, tree *basep,
 			   tree *offp, int *scalep)
 {
   HOST_WIDE_INT scale = 1, pbitpos, pbitsize;
@@ -3012,7 +3013,7 @@ vect_check_gather_scatter (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
       && integer_zerop (TREE_OPERAND (base, 1))
       && !expr_invariant_in_loop_p (loop, TREE_OPERAND (base, 0)))
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (base, 0));
+      gimple *def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (base, 0));
       if (is_gimple_assign (def_stmt)
 	  && gimple_assign_rhs_code (def_stmt) == ADDR_EXPR)
 	base = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
@@ -3086,7 +3087,7 @@ vect_check_gather_scatter (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 
       if (TREE_CODE (off) == SSA_NAME)
 	{
-	  gimple def_stmt = SSA_NAME_DEF_STMT (off);
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (off);
 
 	  if (expr_invariant_in_loop_p (loop, off))
 	    return NULL_TREE;
@@ -3252,7 +3253,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
 	  for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 	      if (is_gimple_debug (stmt))
 		continue;
 	      ++*n_stmts;
@@ -3308,7 +3309,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       bb = BB_VINFO_BB (bb_vinfo);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  if (is_gimple_debug (stmt))
 	    continue;
 	  ++*n_stmts;
@@ -3333,7 +3334,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      gimple stmt;
+      gimple *stmt;
       stmt_vec_info stmt_info;
       tree base, offset, init;
       enum { SG_NONE, GATHER, SCATTER } gatherscatter = SG_NONE;
@@ -3416,7 +3417,7 @@ again:
 			    off = TREE_OPERAND (off, 0);
 			  if (TREE_CODE (off) == SSA_NAME)
 			    {
-			      gimple def = SSA_NAME_DEF_STMT (off);
+			      gimple *def = SSA_NAME_DEF_STMT (off);
 			      tree reft = TREE_TYPE (DR_REF (newdr));
 			      if (is_gimple_call (def)
 				  && gimple_call_internal_p (def)
@@ -3917,7 +3918,7 @@ vect_duplicate_ssa_name_ptr_info (tree name, data_reference *dr,
    FORNOW: We are only handling array accesses with step 1.  */
 
 tree
-vect_create_addr_base_for_vector_ref (gimple stmt,
+vect_create_addr_base_for_vector_ref (gimple *stmt,
 				      gimple_seq *new_stmt_list,
 				      tree offset,
 				      struct loop *loop,
@@ -4070,9 +4071,9 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
    4. Return the pointer.  */
 
 tree
-vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
+vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 			  tree offset, tree *initial_address,
-			  gimple_stmt_iterator *gsi, gimple *ptr_incr,
+			  gimple_stmt_iterator *gsi, gimple **ptr_incr,
 			  bool only_init, bool *inv_p, tree byte_offset)
 {
   const char *base_name;
@@ -4093,7 +4094,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
   tree indx_before_incr, indx_after_incr;
-  gimple incr;
+  gimple *incr;
   tree step;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
 
@@ -4161,7 +4162,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
   /* Likewise for any of the data references in the stmt group.  */
   else if (STMT_VINFO_GROUP_SIZE (stmt_info) > 1)
     {
-      gimple orig_stmt = STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_info);
+      gimple *orig_stmt = STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_info);
       do
 	{
 	  stmt_vec_info sinfo = vinfo_for_stmt (orig_stmt);
@@ -4341,8 +4342,8 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
 */
 
 tree
-bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
-		 gimple stmt, tree bump)
+bump_vector_ptr (tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
+		 gimple *stmt, tree bump)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
@@ -4594,12 +4595,12 @@ vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
 void
 vect_permute_store_chain (vec<tree> dr_chain,
 			  unsigned int length,
-			  gimple stmt,
+			  gimple *stmt,
 			  gimple_stmt_iterator *gsi,
 			  vec<tree> *result_chain)
 {
   tree vect1, vect2, high, low;
-  gimple perm_stmt;
+  gimple *perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   tree perm_mask_low, perm_mask_high;
   tree data_ref;
@@ -4769,7 +4770,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
    Return value - the result of the loop-header phi node.  */
 
 tree
-vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
+vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
                         tree *realignment_token,
 			enum dr_alignment_support alignment_support_scheme,
 			tree init_addr,
@@ -4783,7 +4784,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   edge pe = NULL;
   tree scalar_dest = gimple_assign_lhs (stmt);
   tree vec_dest;
-  gimple inc;
+  gimple *inc;
   tree ptr;
   tree data_ref;
   basic_block new_bb;
@@ -5160,14 +5161,14 @@ vect_load_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
 static void
 vect_permute_load_chain (vec<tree> dr_chain,
 			 unsigned int length,
-			 gimple stmt,
+			 gimple *stmt,
 			 gimple_stmt_iterator *gsi,
 			 vec<tree> *result_chain)
 {
   tree data_ref, first_vect, second_vect;
   tree perm_mask_even, perm_mask_odd;
   tree perm3_mask_low, perm3_mask_high;
-  gimple perm_stmt;
+  gimple *perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   unsigned int i, j, log_length = exact_log2 (length);
   unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
@@ -5353,14 +5354,14 @@ vect_permute_load_chain (vec<tree> dr_chain,
 static bool
 vect_shift_permute_load_chain (vec<tree> dr_chain,
 			       unsigned int length,
-			       gimple stmt,
+			       gimple *stmt,
 			       gimple_stmt_iterator *gsi,
 			       vec<tree> *result_chain)
 {
   tree vect[3], vect_shift[3], data_ref, first_vect, second_vect;
   tree perm2_mask1, perm2_mask2, perm3_mask;
   tree select_mask, shift1_mask, shift2_mask, shift3_mask, shift4_mask;
-  gimple perm_stmt;
+  gimple *perm_stmt;
 
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   unsigned int i;
@@ -5605,7 +5606,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 */
 
 void
-vect_transform_grouped_load (gimple stmt, vec<tree> dr_chain, int size,
+vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
   machine_mode mode;
@@ -5634,10 +5635,10 @@ vect_transform_grouped_load (gimple stmt, vec<tree> dr_chain, int size,
    for each vector to the associated scalar statement.  */
 
 void
-vect_record_grouped_load_vectors (gimple stmt, vec<tree> result_chain)
+vect_record_grouped_load_vectors (gimple *stmt, vec<tree> result_chain)
 {
-  gimple first_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
-  gimple next_stmt, new_stmt;
+  gimple *first_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
+  gimple *next_stmt, *new_stmt;
   unsigned int i, gap_count;
   tree tmp_data_ref;
 
@@ -5676,9 +5677,9 @@ vect_record_grouped_load_vectors (gimple stmt, vec<tree> result_chain)
             {
               if (!GROUP_SAME_DR_STMT (vinfo_for_stmt (next_stmt)))
                 {
- 	          gimple prev_stmt =
+		  gimple *prev_stmt =
 		    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
-	          gimple rel_stmt =
+		  gimple *rel_stmt =
 		    STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt));
 	          while (rel_stmt)
 		    {
@@ -5735,7 +5736,7 @@ enum dr_alignment_support
 vect_supportable_dr_alignment (struct data_reference *dr,
                                bool check_aligned_accesses)
 {
-  gimple stmt = DR_STMT (dr);
+  gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   machine_mode mode = TYPE_MODE (vectype);

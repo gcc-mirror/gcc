@@ -136,7 +136,7 @@ tree_ssa_unswitch_loops (void)
 static tree
 tree_may_unswitch_on (basic_block bb, struct loop *loop)
 {
-  gimple last, def;
+  gimple *last, *def;
   gcond *stmt;
   tree cond, use;
   basic_block def_bb;
@@ -178,7 +178,7 @@ static tree
 simplify_using_entry_checks (struct loop *loop, tree cond)
 {
   edge e = loop_preheader_edge (loop);
-  gimple stmt;
+  gimple *stmt;
 
   while (1)
     {
@@ -214,7 +214,7 @@ tree_unswitch_single_loop (struct loop *loop, int num)
   struct loop *nloop;
   unsigned i, found;
   tree cond = NULL_TREE;
-  gimple stmt;
+  gimple *stmt;
   bool changed = false;
 
   i = 0;
@@ -314,7 +314,7 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 
 	  if (EDGE_COUNT (b->succs) == 2)
 	    {
-	      gimple stmt = last_stmt (b);
+	      gimple *stmt = last_stmt (b);
 	      if (stmt
 		  && gimple_code (stmt) == GIMPLE_COND)
 		{

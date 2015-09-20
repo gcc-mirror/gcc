@@ -218,7 +218,7 @@ flush_pending_stmts (edge e)
    copying and removing.  */
 
 void
-gimple_replace_ssa_lhs (gimple stmt, tree nlhs)
+gimple_replace_ssa_lhs (gimple *stmt, tree nlhs)
 {
   if (MAY_HAVE_DEBUG_STMTS)
     {
@@ -303,8 +303,8 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 {
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  gimple stmt;
-  gimple def_stmt = NULL;
+  gimple *stmt;
+  gimple *def_stmt = NULL;
   int usecount = 0;
   tree value = NULL;
 
@@ -492,7 +492,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 void
 insert_debug_temps_for_defs (gimple_stmt_iterator *gsi)
 {
-  gimple stmt;
+  gimple *stmt;
   ssa_op_iter op_iter;
   def_operand_p def_p;
 
@@ -515,12 +515,12 @@ insert_debug_temps_for_defs (gimple_stmt_iterator *gsi)
 /* Reset all debug stmts that use SSA_NAME(s) defined in STMT.  */
 
 void
-reset_debug_uses (gimple stmt)
+reset_debug_uses (gimple *stmt)
 {
   ssa_op_iter op_iter;
   def_operand_p def_p;
   imm_use_iterator imm_iter;
-  gimple use_stmt;
+  gimple *use_stmt;
 
   if (!MAY_HAVE_DEBUG_STMTS)
     return;
@@ -561,7 +561,7 @@ release_defs_bitset (bitmap toremove)
       {
 	bool remove_now = true;
 	tree var = ssa_name (j);
-	gimple stmt;
+	gimple *stmt;
 	imm_use_iterator uit;
 
 	FOR_EACH_IMM_USE_STMT (stmt, uit, var)
@@ -595,7 +595,7 @@ release_defs_bitset (bitmap toremove)
 
 	if (remove_now)
 	  {
-	    gimple def = SSA_NAME_DEF_STMT (var);
+	    gimple *def = SSA_NAME_DEF_STMT (var);
 	    gimple_stmt_iterator gsi = gsi_for_stmt (def);
 
 	    if (gimple_code (def) == GIMPLE_PHI)
@@ -680,7 +680,7 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
 
 static bool
 verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
-	    gimple stmt, bool is_virtual)
+	    gimple *stmt, bool is_virtual)
 {
   if (verify_ssa_name (ssa_name, is_virtual))
     goto err;
@@ -740,7 +740,7 @@ err:
 
 static bool
 verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
-	    gimple stmt, bool check_abnormal, bitmap names_defined_in_bb)
+	    gimple *stmt, bool check_abnormal, bitmap names_defined_in_bb)
 {
   bool err = false;
   tree ssa_name = USE_FROM_PTR (use_p);
@@ -931,7 +931,7 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
       tree name = ssa_name (i);
       if (name)
 	{
-	  gimple stmt;
+	  gimple *stmt;
 	  TREE_VISITED (name) = 0;
 
 	  verify_ssa_name (name, virtual_operand_p (name));
@@ -982,7 +982,7 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  use_operand_p use_p;
 
 	  if (check_modified_stmt && gimple_modified_p (stmt))
@@ -1178,7 +1178,7 @@ tree_ssa_strip_useless_type_conversions (tree exp)
 bool
 ssa_undefined_value_p (tree t, bool partial)
 {
-  gimple def_stmt;
+  gimple *def_stmt;
   tree var = SSA_NAME_VAR (t);
 
   if (!var)
@@ -1413,7 +1413,7 @@ execute_update_addresses_taken (void)
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  enum gimple_code code = gimple_code (stmt);
 	  tree decl;
 
@@ -1516,7 +1516,7 @@ execute_update_addresses_taken (void)
       FOR_EACH_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	  {
-	    gimple stmt = gsi_stmt (gsi);
+	    gimple *stmt = gsi_stmt (gsi);
 
 	    /* Re-write TARGET_MEM_REFs of symbols we want to
 	       rewrite into SSA form.  */
@@ -1539,7 +1539,7 @@ execute_update_addresses_taken (void)
 					? REALPART_EXPR : IMAGPART_EXPR,
 					TREE_TYPE (other),
 					TREE_OPERAND (lhs, 0));
-		    gimple load = gimple_build_assign (other, lrhs);
+		    gimple *load = gimple_build_assign (other, lrhs);
 		    location_t loc = gimple_location (stmt);
 		    gimple_set_location (load, loc);
 		    gimple_set_vuse (load, gimple_vuse (stmt));

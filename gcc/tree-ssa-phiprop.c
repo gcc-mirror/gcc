@@ -108,7 +108,7 @@ static bool
 phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
 {
   tree vuse = phivn[SSA_NAME_VERSION (name)].vuse;
-  gimple use_stmt;
+  gimple *use_stmt;
   imm_use_iterator ui2;
   bool ok = true;
 
@@ -134,7 +134,7 @@ phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
    BB with the virtual operands from USE_STMT.  */
 
 static tree
-phiprop_insert_phi (basic_block bb, gphi *phi, gimple use_stmt,
+phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 		    struct phiprop_d *phivn, size_t n)
 {
   tree res;
@@ -170,7 +170,7 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple use_stmt,
 	     && (SSA_NAME_VERSION (old_arg) >= n
 	         || phivn[SSA_NAME_VERSION (old_arg)].value == NULL_TREE))
 	{
-	  gimple def_stmt = SSA_NAME_DEF_STMT (old_arg);
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (old_arg);
 	  old_arg = gimple_assign_rhs1 (def_stmt);
 	  locus = gimple_location (def_stmt);
 	}
@@ -246,7 +246,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 		    size_t n)
 {
   tree ptr = PHI_RESULT (phi);
-  gimple use_stmt;
+  gimple *use_stmt;
   tree res = NULL_TREE;
   gimple_stmt_iterator gsi;
   imm_use_iterator ui;
@@ -271,7 +271,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	     && (SSA_NAME_VERSION (arg) >= n
 	         || phivn[SSA_NAME_VERSION (arg)].value == NULL_TREE))
 	{
-	  gimple def_stmt = SSA_NAME_DEF_STMT (arg);
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (arg);
 	  if (!gimple_assign_single_p (def_stmt))
 	    return false;
 	  arg = gimple_assign_rhs1 (def_stmt);
@@ -301,7 +301,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
   phi_inserted = false;
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
     {
-      gimple def_stmt;
+      gimple *def_stmt;
       tree vuse;
 
       /* Only replace loads in blocks that post-dominate the PHI node.  That

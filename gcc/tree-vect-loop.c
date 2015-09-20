@@ -192,7 +192,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   stmt_vec_info stmt_info;
   int i;
   HOST_WIDE_INT dummy;
-  gimple stmt, pattern_stmt = NULL;
+  gimple *stmt, *pattern_stmt = NULL;
   gimple_seq pattern_def_seq = NULL;
   gimple_stmt_iterator pattern_def_si = gsi_none ();
   bool analyze_pattern_stmt = false;
@@ -334,7 +334,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		gsi_next (&pattern_def_si);
 	      if (pattern_def_seq != NULL)
 		{
-		  gimple pattern_def_stmt = NULL;
+		  gimple *pattern_def_stmt = NULL;
 		  stmt_vec_info pattern_def_stmt_info = NULL;
 
 		  while (!gsi_end_p (pattern_def_si))
@@ -619,7 +619,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 {
   basic_block bb = loop->header;
   tree init, step;
-  auto_vec<gimple, 64> worklist;
+  auto_vec<gimple *, 64> worklist;
   gphi_iterator gsi;
   bool double_reduc;
 
@@ -687,10 +687,10 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
   /* Second - identify all reductions and nested cycles.  */
   while (worklist.length () > 0)
     {
-      gimple phi = worklist.pop ();
+      gimple *phi = worklist.pop ();
       tree def = PHI_RESULT (phi);
       stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
-      gimple reduc_stmt;
+      gimple *reduc_stmt;
       bool nested_cycle;
 
       if (dump_enabled_p ())
@@ -797,10 +797,10 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 /* Transfer group and reduction information from STMT to its pattern stmt.  */
 
 static void
-vect_fixup_reduc_chain (gimple stmt)
+vect_fixup_reduc_chain (gimple *stmt)
 {
-  gimple firstp = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt));
-  gimple stmtp;
+  gimple *firstp = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt));
+  gimple *stmtp;
   gcc_assert (!GROUP_FIRST_ELEMENT (vinfo_for_stmt (firstp))
 	      && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)));
   GROUP_SIZE (vinfo_for_stmt (firstp)) = GROUP_SIZE (vinfo_for_stmt (stmt));
@@ -822,7 +822,7 @@ vect_fixup_reduc_chain (gimple stmt)
 static void
 vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
 {
-  gimple first;
+  gimple *first;
   unsigned i;
 
   FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo), i, first)
@@ -919,7 +919,7 @@ new_loop_vec_info (struct loop *loop)
           gcc_assert (loop->inner && bb->loop_father == loop->inner);
           for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
             {
-              gimple phi = gsi_stmt (si);
+	      gimple *phi = gsi_stmt (si);
               stmt_vec_info stmt_info = vinfo_for_stmt (phi);
               loop_vec_info inner_loop_vinfo =
                 STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -928,7 +928,7 @@ new_loop_vec_info (struct loop *loop)
             }
           for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
            {
-              gimple stmt = gsi_stmt (si);
+	     gimple *stmt = gsi_stmt (si);
               stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
               loop_vec_info inner_loop_vinfo =
                  STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -941,14 +941,14 @@ new_loop_vec_info (struct loop *loop)
           /* bb in current nest.  */
           for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
             {
-              gimple phi = gsi_stmt (si);
+	      gimple *phi = gsi_stmt (si);
               gimple_set_uid (phi, 0);
               set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res, NULL));
             }
 
           for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
             {
-              gimple stmt = gsi_stmt (si);
+	      gimple *stmt = gsi_stmt (si);
               gimple_set_uid (stmt, 0);
               set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res, NULL));
             }
@@ -1031,7 +1031,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); )
         {
-          gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
 
 	  /* We may have broken canonical form by moving a constant
 	     into RHS1 of a commutative op.  Fix such occurrences.  */
@@ -1114,7 +1114,7 @@ vect_get_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
-          gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
           stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
           if (!is_gimple_assign (stmt) && !is_gimple_call (stmt))
@@ -1461,7 +1461,7 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
-	  gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info)
 	      && STMT_VINFO_RELATED_STMT (stmt_info))
@@ -1560,7 +1560,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               if (STMT_VINFO_RELEVANT_P (stmt_info))
                 {
                   tree phi_op;
-                  gimple op_def_stmt;
+		  gimple *op_def_stmt;
 
                   if (gimple_phi_num_args (phi) != 1)
                     return false;
@@ -1630,7 +1630,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
         {
-          gimple stmt = gsi_stmt (si);
+	  gimple *stmt = gsi_stmt (si);
 	  if (!gimple_clobber_p (stmt)
 	      && !vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
 	    return false;
@@ -2082,7 +2082,7 @@ reduction_code_for_scalar_code (enum tree_code code,
    STMT is printed with a message MSG. */
 
 static void
-report_vect_op (int msg_type, gimple stmt, const char *msg)
+report_vect_op (int msg_type, gimple *stmt, const char *msg)
 {
   dump_printf_loc (msg_type, vect_location, "%s", msg);
   dump_gimple_stmt (msg_type, TDF_SLIM, stmt, 0);
@@ -2107,12 +2107,13 @@ report_vect_op (int msg_type, gimple stmt, const char *msg)
    Return TRUE if a reduction chain was detected.  */
 
 static bool
-vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
+vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
+		       gimple *first_stmt)
 {
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   enum tree_code code;
-  gimple current_stmt = NULL, loop_use_stmt = NULL, first, next_stmt;
+  gimple *current_stmt = NULL, *loop_use_stmt = NULL, *first, *next_stmt;
   stmt_vec_info use_stmt_info, current_stmt_info;
   tree lhs;
   imm_use_iterator imm_iter;
@@ -2131,7 +2132,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
       n_out_of_loop_uses = 0;
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
         {
-	  gimple use_stmt = USE_STMT (use_p);
+	  gimple *use_stmt = USE_STMT (use_p);
 	  if (is_gimple_debug (use_stmt))
 	    continue;
 
@@ -2202,7 +2203,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
       if (gimple_assign_rhs2 (next_stmt) == lhs)
 	{
 	  tree op = gimple_assign_rhs1 (next_stmt);
-          gimple def_stmt = NULL;
+	  gimple *def_stmt = NULL;
 
           if (TREE_CODE (op) == SSA_NAME)
             def_stmt = SSA_NAME_DEF_STMT (op);
@@ -2232,7 +2233,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
       else
 	{
           tree op = gimple_assign_rhs2 (next_stmt);
-          gimple def_stmt = NULL;
+	  gimple *def_stmt = NULL;
 
           if (TREE_CODE (op) == SSA_NAME)
             def_stmt = SSA_NAME_DEF_STMT (op);
@@ -2326,8 +2327,8 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
    "res -= RHS" into "rhs += -RHS" when it seems worthwhile.
 */
 
-static gimple
-vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
+static gimple *
+vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple *phi,
 			    bool check_reduction, bool *double_reduc,
 			    bool modify, bool need_wrapping_integral_overflow)
 {
@@ -2335,7 +2336,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   edge latch_e = loop_latch_edge (loop);
   tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
-  gimple def_stmt, def1 = NULL, def2 = NULL;
+  gimple *def_stmt, *def1 = NULL, *def2 = NULL;
   enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
@@ -2362,7 +2363,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
   nloop_uses = 0;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
     {
-      gimple use_stmt = USE_STMT (use_p);
+      gimple *use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	continue;
 
@@ -2430,7 +2431,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
   nloop_uses = 0;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
     {
-      gimple use_stmt = USE_STMT (use_p);
+      gimple *use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	continue;
       if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
@@ -2642,7 +2643,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
     {
       tree rhs = gimple_assign_rhs2 (def_stmt);
       tree negrhs = make_ssa_name (TREE_TYPE (rhs));
-      gimple negate_stmt = gimple_build_assign (negrhs, NEGATE_EXPR, rhs);
+      gimple *negate_stmt = gimple_build_assign (negrhs, NEGATE_EXPR, rhs);
       gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
       set_vinfo_for_stmt (negate_stmt, new_stmt_vec_info (negate_stmt, 
 							  loop_info, NULL));
@@ -2751,8 +2752,8 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
 /* Wrapper around vect_is_simple_reduction_1, that won't modify code
    in-place.  Arguments as there.  */
 
-static gimple
-vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
+static gimple *
+vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 			  bool check_reduction, bool *double_reduc,
 			  bool need_wrapping_integral_overflow)
 {
@@ -2765,8 +2766,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
    in-place if it enables detection of more reductions.  Arguments
    as there.  */
 
-gimple
-vect_force_simple_reduction (loop_vec_info loop_info, gimple phi,
+gimple *
+vect_force_simple_reduction (loop_vec_info loop_info, gimple *phi,
 			     bool check_reduction, bool *double_reduc,
 			     bool need_wrapping_integral_overflow)
 {
@@ -3225,7 +3226,7 @@ have_whole_vector_shift (enum machine_mode mode)
 /* Return the reduction operand (with index REDUC_INDEX) of STMT.  */
 
 static tree
-get_reduction_op (gimple stmt, int reduc_index)
+get_reduction_op (gimple *stmt, int reduc_index)
 {
   switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
     {
@@ -3262,7 +3263,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   enum tree_code code;
   optab optab;
   tree vectype;
-  gimple stmt, orig_stmt;
+  gimple *stmt, *orig_stmt;
   tree reduction_op;
   machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -3408,7 +3409,7 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
    [X, X + S, X + 2*S, X + 3*S].  */
 
 static tree
-get_initial_def_for_induction (gimple iv_phi)
+get_initial_def_for_induction (gimple *iv_phi)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (iv_phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
@@ -3421,7 +3422,7 @@ get_initial_def_for_induction (gimple iv_phi)
   tree new_vec, vec_init, vec_step, t;
   tree new_var;
   tree new_name;
-  gimple init_stmt, new_stmt;
+  gimple *init_stmt, *new_stmt;
   gphi *induction_phi;
   tree induc_def, vec_def, vec_dest;
   tree init_expr, step_expr;
@@ -3434,7 +3435,7 @@ get_initial_def_for_induction (gimple iv_phi)
   gimple_seq stmts = NULL;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  gimple exit_phi;
+  gimple *exit_phi;
   edge latch_e;
   tree loop_arg;
   gimple_stmt_iterator si;
@@ -3696,7 +3697,7 @@ get_initial_def_for_induction (gimple iv_phi)
       exit_phi = NULL;
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
         {
-	  gimple use_stmt = USE_STMT (use_p);
+	  gimple *use_stmt = USE_STMT (use_p);
 	  if (is_gimple_debug (use_stmt))
 	    continue;
 
@@ -3804,7 +3805,7 @@ get_initial_def_for_induction (gimple iv_phi)
    A cost model should help decide between these two schemes.  */
 
 tree
-get_initial_def_for_reduction (gimple stmt, tree init_val,
+get_initial_def_for_reduction (gimple *stmt, tree init_val,
                                tree *adjustment_def)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
@@ -3822,7 +3823,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
   tree init_value;
   REAL_VALUE_TYPE real_init_val = dconst0;
   int int_init_val = 0;
-  gimple def_stmt = NULL;
+  gimple *def_stmt = NULL;
 
   gcc_assert (vectype);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -4008,9 +4009,9 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
 */
 
 static void
-vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
+vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 				  int ncopies, enum tree_code reduc_code,
-				  vec<gimple> reduction_phis,
+				  vec<gimple *> reduction_phis,
                                   int reduc_index, bool double_reduc, 
                                   slp_tree slp_node)
 {
@@ -4023,13 +4024,13 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   basic_block exit_bb;
   tree scalar_dest;
   tree scalar_type;
-  gimple new_phi = NULL, phi;
+  gimple *new_phi = NULL, *phi;
   gimple_stmt_iterator exit_gsi;
   tree vec_dest;
   tree new_temp = NULL_TREE, new_dest, new_name, new_scalar_dest;
-  gimple epilog_stmt = NULL;
+  gimple *epilog_stmt = NULL;
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  gimple exit_phi;
+  gimple *exit_phi;
   tree bitsize;
   tree adjustment_def = NULL;
   tree vec_initial_def = NULL;
@@ -4037,19 +4038,19 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   tree orig_name, scalar_result;
   imm_use_iterator imm_iter, phi_imm_iter;
   use_operand_p use_p, phi_use_p;
-  gimple use_stmt, orig_stmt, reduction_phi = NULL;
+  gimple *use_stmt, *orig_stmt, *reduction_phi = NULL;
   bool nested_in_vect_loop = false;
-  auto_vec<gimple> new_phis;
-  auto_vec<gimple> inner_phis;
+  auto_vec<gimple *> new_phis;
+  auto_vec<gimple *> inner_phis;
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
   auto_vec<tree> scalar_results;
   unsigned int group_size = 1, k, ratio;
   auto_vec<tree> vec_initial_defs;
-  auto_vec<gimple> phis;
+  auto_vec<gimple *> phis;
   bool slp_reduc = false;
   tree new_phi_result;
-  gimple inner_phi = NULL;
+  gimple *inner_phi = NULL;
 
   if (slp_node)
     group_size = SLP_TREE_SCALAR_STMTS (slp_node).length (); 
@@ -4292,7 +4293,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       for (k = 1; k < new_phis.length (); k++)
         {
-          gimple next_phi = new_phis[k];
+	  gimple *next_phi = new_phis[k];
           tree second_vect = PHI_RESULT (next_phi);
 
           tmp = build2 (code, vectype,  first_vect, second_vect);
@@ -4501,7 +4502,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
           if (slp_reduc)
             {
               tree res, first_res, new_res;
-              gimple new_stmt;
+	      gimple *new_stmt;
             
               /* Reduce multiple scalar results in case of SLP unrolling.  */
               for (j = group_size; scalar_results.iterate (j, &res);
@@ -4605,7 +4606,7 @@ vect_finalize_reduction:
      exit phi node.  */
   if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
     {
-      gimple dest_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
+      gimple *dest_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
       /* Handle reduction patterns.  */
       if (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (dest_stmt)))
 	dest_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (dest_stmt));
@@ -4640,7 +4641,7 @@ vect_finalize_reduction:
 
       if (slp_reduc)
         {
-          gimple current_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[k];
+	  gimple *current_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[k];
 
           orig_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (current_stmt));
           /* SLP statements can't participate in patterns.  */
@@ -4704,7 +4705,7 @@ vect_finalize_reduction:
                   stmt_vec_info new_phi_vinfo;
                   tree vect_phi_init, preheader_arg, vect_phi_res, init_def;
                   basic_block bb = gimple_bb (use_stmt);
-                  gimple use;
+		  gimple *use;
 
                   /* Check that USE_STMT is really double reduction phi
                      node.  */
@@ -4864,8 +4865,8 @@ vect_finalize_reduction:
    does *NOT* necessarily hold for reduction patterns.  */
 
 bool
-vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
-			gimple *vec_stmt, slp_tree slp_node)
+vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
+			gimple **vec_stmt, slp_tree slp_node)
 {
   tree vec_dest;
   tree scalar_dest;
@@ -4881,12 +4882,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   optab optab, reduc_optab;
   tree new_temp = NULL_TREE;
   tree def;
-  gimple def_stmt;
+  gimple *def_stmt;
   enum vect_def_type dt;
   gphi *new_phi = NULL;
   tree scalar_type;
   bool is_simple_use;
-  gimple orig_stmt;
+  gimple *orig_stmt;
   stmt_vec_info orig_stmt_info;
   tree expr = NULL_TREE;
   int i;
@@ -4895,20 +4896,20 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info prev_stmt_info, prev_phi_info;
   bool single_defuse_cycle = false;
   tree reduc_def = NULL_TREE;
-  gimple new_stmt = NULL;
+  gimple *new_stmt = NULL;
   int j;
   tree ops[3];
   bool nested_cycle = false, found_nested_cycle_def = false;
-  gimple reduc_def_stmt = NULL;
+  gimple *reduc_def_stmt = NULL;
   bool double_reduc = false, dummy;
   basic_block def_bb;
   struct loop * def_stmt_loop, *outer_loop = NULL;
   tree def_arg;
-  gimple def_arg_stmt;
+  gimple *def_arg_stmt;
   auto_vec<tree> vec_oprnds0;
   auto_vec<tree> vec_oprnds1;
   auto_vec<tree> vect_defs;
-  auto_vec<gimple> phis;
+  auto_vec<gimple *> phis;
   int vec_num;
   tree def0, def1, tem, op0, op1 = NULL_TREE;
   bool first_p = true;
@@ -5081,8 +5082,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
-  gimple tmp = vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
-					 !nested_cycle, &dummy, false);
+  gimple *tmp = vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
+					  !nested_cycle, &dummy, false);
   if (orig_stmt)
     gcc_assert (tmp == orig_stmt
 		|| GROUP_FIRST_ELEMENT (vinfo_for_stmt (tmp)) == orig_stmt);
@@ -5436,7 +5437,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
           if (!slp_node)
             {
               enum vect_def_type dt;
-              gimple dummy_stmt;
+	      gimple *dummy_stmt;
               tree dummy;
 
               vect_is_simple_use (ops[!reduc_index], stmt, loop_vinfo, NULL,
@@ -5568,8 +5569,9 @@ vect_min_worthwhile_factor (enum tree_code code)
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
 
 bool
-vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
-			gimple *vec_stmt)
+vectorizable_induction (gimple *phi,
+			gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
+			gimple **vec_stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (phi);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -5585,7 +5587,7 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
     {
       imm_use_iterator imm_iter;
       use_operand_p use_p;
-      gimple exit_phi;
+      gimple *exit_phi;
       edge latch_e;
       tree loop_arg;
 
@@ -5602,7 +5604,7 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
       loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
 	{
-	  gimple use_stmt = USE_STMT (use_p);
+	  gimple *use_stmt = USE_STMT (use_p);
 	  if (is_gimple_debug (use_stmt))
 	    continue;
 
@@ -5665,9 +5667,9 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
    it can be supported.  */
 
 bool
-vectorizable_live_operation (gimple stmt,
+vectorizable_live_operation (gimple *stmt,
 			     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
-			     gimple *vec_stmt)
+			     gimple **vec_stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -5676,7 +5678,7 @@ vectorizable_live_operation (gimple stmt,
   int op_type;
   tree op;
   tree def;
-  gimple def_stmt;
+  gimple *def_stmt;
   enum vect_def_type dt;
   enum tree_code code;
   enum gimple_rhs_class rhs_class;
@@ -5704,7 +5706,7 @@ vectorizable_live_operation (gimple stmt,
 
 	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
 	    {
-	      gimple use_stmt = USE_STMT (use_p);
+	      gimple *use_stmt = USE_STMT (use_p);
 	      if (gimple_code (use_stmt) == GIMPLE_PHI
 		  && gimple_bb (use_stmt) == merge_bb)
 		{
@@ -5767,12 +5769,12 @@ vectorizable_live_operation (gimple stmt,
 /* Kill any debug uses outside LOOP of SSA names defined in STMT.  */
 
 static void
-vect_loop_kill_debug_uses (struct loop *loop, gimple stmt)
+vect_loop_kill_debug_uses (struct loop *loop, gimple *stmt)
 {
   ssa_op_iter op_iter;
   imm_use_iterator imm_iter;
   def_operand_p def_p;
-  gimple ustmt;
+  gimple *ustmt;
 
   FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)
     {
@@ -5864,7 +5866,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
       if (!is_gimple_val (ni_minus_gap_name))
 	{
 	  var = create_tmp_var (TREE_TYPE (ni_name), "ni_gap");
-          gimple stmts = NULL;
+	  gimple *stmts = NULL;
           ni_minus_gap_name = force_gimple_operand (ni_minus_gap_name, &stmts,
 						    true, var);
 	  gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -5890,7 +5892,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   if (!is_gimple_val (ratio_name))
     {
       var = create_tmp_var (TREE_TYPE (ni_name), "bnd");
-      gimple stmts = NULL;
+      gimple *stmts = NULL;
       ratio_name = force_gimple_operand (ratio_name, &stmts, true, var);
       gsi_insert_seq_on_edge_immediate (pe, stmts);
     }
@@ -5905,7 +5907,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
       if (!is_gimple_val (ratio_mult_vf_name))
 	{
 	  var = create_tmp_var (TREE_TYPE (ni_name), "ratio_mult_vf");
-	  gimple stmts = NULL;
+	  gimple *stmts = NULL;
 	  ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmts,
 						     true, var);
 	  gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -5934,7 +5936,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   bool grouped_store;
   bool slp_scheduled = false;
-  gimple stmt, pattern_stmt;
+  gimple *stmt, *pattern_stmt;
   gimple_seq pattern_def_seq = NULL;
   gimple_stmt_iterator pattern_def_si = gsi_none ();
   bool transform_pattern_stmt = false;
@@ -6152,7 +6154,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		gsi_next (&pattern_def_si);
 	      if (pattern_def_seq != NULL)
 		{
-		  gimple pattern_def_stmt = NULL;
+		  gimple *pattern_def_stmt = NULL;
 		  stmt_vec_info pattern_def_stmt_info = NULL;
 
 		  while (!gsi_end_p (pattern_def_si))
@@ -6250,7 +6252,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      else
 		{
 		  /* Free the attached stmt_vec_info and remove the stmt.  */
-		  gimple store = gsi_stmt (si);
+		  gimple *store = gsi_stmt (si);
 		  free_stmt_vec_info (store);
 		  unlink_stmt_vdef (store);
 		  gsi_remove (&si, true);

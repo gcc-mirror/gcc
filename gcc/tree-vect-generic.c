@@ -616,7 +616,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      && expand_vec_cond_expr_p (type, type))
 	    {
 	      tree zero, cst, cond;
-	      gimple stmt;
+	      gimple *stmt;
 
 	      zero = build_zero_cst (type);
 	      cond = build2 (LT_EXPR, type, op0, zero);
@@ -1009,7 +1009,7 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
   bool all_same = true;
   constructor_elt *elt;
   tree *cst;
-  gimple g;
+  gimple *g;
   tree base = NULL_TREE;
   optab op;
 
@@ -1123,7 +1123,7 @@ static tree
 vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 {
   tree vect_type, vect_elt_type;
-  gimple asgn;
+  gimple *asgn;
   tree tmpvec;
   tree arraytype;
   bool need_asgn = true;
@@ -1150,7 +1150,7 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
          simplification by looking through intermediate vector results.  */
       if (TREE_CODE (vect) == SSA_NAME)
 	{
-	  gimple def_stmt = SSA_NAME_DEF_STMT (vect);
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (vect);
 	  if (is_gimple_assign (def_stmt)
 	      && (gimple_assign_rhs_code (def_stmt) == VECTOR_CST
 		  || gimple_assign_rhs_code (def_stmt) == CONSTRUCTOR))
@@ -1234,7 +1234,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 
   if (TREE_CODE (mask) == SSA_NAME)
     {
-      gimple def_stmt = SSA_NAME_DEF_STMT (mask);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (mask);
       if (is_gimple_assign (def_stmt)
 	  && gimple_assign_rhs_code (def_stmt) == VECTOR_CST)
 	mask = gimple_assign_rhs1 (def_stmt);
@@ -1539,7 +1539,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (rhs2)))
         {
           tree first;
-          gimple def_stmt;
+	  gimple *def_stmt;
 
           if ((TREE_CODE (rhs2) == VECTOR_CST
 	       && (first = uniform_vector_p (rhs2)) != NULL_TREE)

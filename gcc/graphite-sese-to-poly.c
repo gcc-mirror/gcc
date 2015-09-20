@@ -314,7 +314,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       loop_p loop;
 
       if (is_gimple_debug (stmt))
@@ -903,7 +903,7 @@ find_params_in_bb (sese region, gimple_bb_p gbb)
   int i;
   unsigned j;
   data_reference_p dr;
-  gimple stmt;
+  gimple *stmt;
   loop_p loop = GBB_BB (gbb)->loop_father;
 
   /* Find parameters in the access functions of data references.  */
@@ -1154,7 +1154,7 @@ static void
 add_conditions_to_domain (poly_bb_p pbb)
 {
   unsigned int i;
-  gimple stmt;
+  gimple *stmt;
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
 
   if (GBB_CONDITIONS (gbb).is_empty ())
@@ -1213,7 +1213,7 @@ single_pred_cond_non_loop_exit (basic_block bb)
     {
       edge e = single_pred_edge (bb);
       basic_block pred = e->src;
-      gimple stmt;
+      gimple *stmt;
 
       if (loop_depth (pred->loop_father) > loop_depth (bb->loop_father))
 	return NULL;
@@ -1236,7 +1236,7 @@ public:
   virtual void after_dom_children (basic_block);
 
 private:
-  auto_vec<gimple, 3> m_conditions, m_cases;
+  auto_vec<gimple *, 3> m_conditions, m_cases;
   sese m_region;
 };
 
@@ -1935,11 +1935,11 @@ gsi_for_phi_node (gphi *stmt)
    GBB_DATA_REFS vector of BB.  */
 
 static void
-analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple> stmts)
+analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple *> stmts)
 {
   loop_p nest;
   gimple_bb_p gbb;
-  gimple stmt;
+  gimple *stmt;
   int i;
   sese region = SCOP_REGION (scop);
 
@@ -1970,11 +1970,11 @@ analyze_drs_in_stmts (scop_p scop, basic_block bb, vec<gimple> stmts)
    on STMTS.  */
 
 static void
-insert_stmts (scop_p scop, gimple stmt, gimple_seq stmts,
+insert_stmts (scop_p scop, gimple *stmt, gimple_seq stmts,
 	      gimple_stmt_iterator insert_gsi)
 {
   gimple_stmt_iterator gsi;
-  auto_vec<gimple, 3> x;
+  auto_vec<gimple *, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1987,13 +1987,13 @@ insert_stmts (scop_p scop, gimple stmt, gimple_seq stmts,
 /* Insert the assignment "RES := EXPR" just after AFTER_STMT.  */
 
 static void
-insert_out_of_ssa_copy (scop_p scop, tree res, tree expr, gimple after_stmt)
+insert_out_of_ssa_copy (scop_p scop, tree res, tree expr, gimple *after_stmt)
 {
   gimple_seq stmts;
   gimple_stmt_iterator gsi;
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
   gassign *stmt = gimple_build_assign (unshare_expr (res), var);
-  auto_vec<gimple, 3> x;
+  auto_vec<gimple *, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2048,9 +2048,9 @@ insert_out_of_ssa_copy_on_edge (scop_p scop, edge e, tree res, tree expr)
   gimple_stmt_iterator gsi;
   gimple_seq stmts = NULL;
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
-  gimple stmt = gimple_build_assign (unshare_expr (res), var);
+  gimple *stmt = gimple_build_assign (unshare_expr (res), var);
   basic_block bb;
-  auto_vec<gimple, 3> x;
+  auto_vec<gimple *, 3> x;
 
   gimple_seq_add_stmt (&stmts, stmt);
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2086,7 +2086,7 @@ create_zero_dim_array (tree var, const char *base_name)
 /* Returns true when PHI is a loop close phi node.  */
 
 static bool
-scalar_close_phi_node_p (gimple phi)
+scalar_close_phi_node_p (gimple *phi)
 {
   if (gimple_code (phi) != GIMPLE_PHI
       || virtual_operand_p (gimple_phi_result (phi)))
@@ -2105,7 +2105,7 @@ static void
 propagate_expr_outside_region (tree def, tree expr, sese region)
 {
   imm_use_iterator imm_iter;
-  gimple use_stmt;
+  gimple *use_stmt;
   gimple_seq stmts;
   bool replaced_once = false;
 
@@ -2143,12 +2143,12 @@ static void
 rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
 {
   sese region = SCOP_REGION (scop);
-  gimple phi = gsi_stmt (*psi);
+  gimple *phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
   basic_block bb = gimple_bb (phi);
   gimple_stmt_iterator gsi = gsi_after_labels (bb);
   tree arg = gimple_phi_arg_def (phi, 0);
-  gimple stmt;
+  gimple *stmt;
 
   /* Note that loop close phi nodes should have a single argument
      because we translated the representation into a canonical form
@@ -2228,7 +2228,7 @@ rewrite_phi_out_of_ssa (scop_p scop, gphi_iterator *psi)
   basic_block bb = gimple_bb (phi);
   tree res = gimple_phi_result (phi);
   tree zero_dim_array = create_zero_dim_array (res, "phi_out_of_ssa");
-  gimple stmt;
+  gimple *stmt;
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -2258,7 +2258,7 @@ static void
 rewrite_degenerate_phi (gphi_iterator *psi)
 {
   tree rhs;
-  gimple stmt;
+  gimple *stmt;
   gimple_stmt_iterator gsi;
   gphi *phi = psi->phi ();
   tree res = gimple_phi_result (phi);
@@ -2318,9 +2318,9 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 
 static void
 rewrite_cross_bb_scalar_dependence (scop_p scop, tree zero_dim_array,
-				    tree def, gimple use_stmt)
+				    tree def, gimple *use_stmt)
 {
-  gimple name_stmt;
+  gimple *name_stmt;
   tree name;
   ssa_op_iter iter;
   use_operand_p use_p;
@@ -2345,14 +2345,14 @@ rewrite_cross_bb_scalar_dependence (scop_p scop, tree zero_dim_array,
    SCOP.  */
 
 static void
-handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple stmt)
+handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple *stmt)
 {
   tree var = create_tmp_reg (TREE_TYPE (def));
   tree new_name = make_ssa_name (var, stmt);
   bool needs_copy = false;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
-  gimple use_stmt;
+  gimple *use_stmt;
   sese region = SCOP_REGION (scop);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
@@ -2373,7 +2373,7 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple stmt)
      arrays everywhere else.  */
   if (needs_copy)
     {
-      gimple assign = gimple_build_assign (new_name, def);
+      gimple *assign = gimple_build_assign (new_name, def);
       gimple_stmt_iterator psi = gsi_after_labels (SESE_EXIT (region)->dest);
 
       update_stmt (assign);
@@ -2389,12 +2389,12 @@ static bool
 rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 {
   sese region = SCOP_REGION (scop);
-  gimple stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   imm_use_iterator imm_iter;
   tree def;
   basic_block def_bb;
   tree zero_dim_array = NULL_TREE;
-  gimple use_stmt;
+  gimple *use_stmt;
   bool res = false;
 
   switch (gimple_code (stmt))
@@ -2529,7 +2529,7 @@ nb_data_writes_in_bb (basic_block bb)
    polyhedral form.  */
 
 static edge
-split_pbb (scop_p scop, poly_bb_p pbb, basic_block bb, gimple stmt)
+split_pbb (scop_p scop, poly_bb_p pbb, basic_block bb, gimple *stmt)
 {
   edge e1 = split_block (bb, stmt);
   new_pbb_from_pbb (scop, pbb, e1->dest);
@@ -2540,7 +2540,7 @@ split_pbb (scop_p scop, poly_bb_p pbb, basic_block bb, gimple stmt)
    statements for which we want to ignore data dependences.  */
 
 static basic_block
-split_reduction_stmt (scop_p scop, gimple stmt)
+split_reduction_stmt (scop_p scop, gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
   poly_bb_p pbb = pbb_from_bb (bb);
@@ -2589,7 +2589,7 @@ split_reduction_stmt (scop_p scop, gimple stmt)
 /* Return true when stmt is a reduction operation.  */
 
 static inline bool
-is_reduction_operation_p (gimple stmt)
+is_reduction_operation_p (gimple *stmt)
 {
   enum tree_code code;
 
@@ -2631,7 +2631,7 @@ phi_contains_arg (gphi *phi, tree arg)
 static gphi *
 follow_ssa_with_commutative_ops (tree arg, tree lhs)
 {
-  gimple stmt;
+  gimple *stmt;
 
   if (TREE_CODE (arg) != SSA_NAME)
     return NULL;
@@ -2671,9 +2671,9 @@ follow_ssa_with_commutative_ops (tree arg, tree lhs)
    the STMT.  Return the phi node of the reduction cycle, or NULL.  */
 
 static gphi *
-detect_commutative_reduction_arg (tree lhs, gimple stmt, tree arg,
-				  vec<gimple> *in,
-				  vec<gimple> *out)
+detect_commutative_reduction_arg (tree lhs, gimple *stmt, tree arg,
+				  vec<gimple *> *in,
+				  vec<gimple *> *out)
 {
   gphi *phi = follow_ssa_with_commutative_ops (arg, lhs);
 
@@ -2689,8 +2689,8 @@ detect_commutative_reduction_arg (tree lhs, gimple stmt, tree arg,
    STMT.  Return the phi node of the reduction cycle, or NULL.  */
 
 static gphi *
-detect_commutative_reduction_assign (gimple stmt, vec<gimple> *in,
-				     vec<gimple> *out)
+detect_commutative_reduction_assign (gimple *stmt, vec<gimple *> *in,
+				     vec<gimple *> *out)
 {
   tree lhs = gimple_assign_lhs (stmt);
 
@@ -2718,7 +2718,7 @@ detect_commutative_reduction_assign (gimple stmt, vec<gimple> *in,
 static gphi *
 follow_inital_value_to_phi (tree arg, tree lhs)
 {
-  gimple stmt;
+  gimple *stmt;
 
   if (!arg || TREE_CODE (arg) != SSA_NAME)
     return NULL;
@@ -2777,7 +2777,7 @@ initial_value_for_loop_phi (gphi *phi)
    LOOP_PHI.  */
 
 static bool
-used_outside_reduction (tree def, gimple loop_phi)
+used_outside_reduction (tree def, gimple *loop_phi)
 {
   use_operand_p use_p;
   imm_use_iterator imm_iter;
@@ -2786,7 +2786,7 @@ used_outside_reduction (tree def, gimple loop_phi)
   /* In LOOP, DEF should be used only in LOOP_PHI.  */
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
     {
-      gimple stmt = USE_STMT (use_p);
+      gimple *stmt = USE_STMT (use_p);
 
       if (stmt != loop_phi
 	  && !is_gimple_debug (stmt)
@@ -2802,12 +2802,12 @@ used_outside_reduction (tree def, gimple loop_phi)
    node of the reduction cycle, or NULL.  */
 
 static gphi *
-detect_commutative_reduction (scop_p scop, gimple stmt, vec<gimple> *in,
-			      vec<gimple> *out)
+detect_commutative_reduction (scop_p scop, gimple *stmt, vec<gimple *> *in,
+			      vec<gimple *> *out)
 {
   if (scalar_close_phi_node_p (stmt))
     {
-      gimple def;
+      gimple *def;
       gphi *loop_phi, *phi, *close_phi = as_a <gphi *> (stmt);
       tree init, lhs, arg = gimple_phi_arg_def (close_phi, 0);
 
@@ -2848,7 +2848,7 @@ detect_commutative_reduction (scop_p scop, gimple stmt, vec<gimple> *in,
 
 static void
 translate_scalar_reduction_to_array_for_stmt (scop_p scop, tree red,
-					      gimple stmt, gphi *loop_phi)
+					      gimple *stmt, gphi *loop_phi)
 {
   tree res = gimple_phi_result (loop_phi);
   gassign *assign = gimple_build_assign (res, unshare_expr (red));
@@ -2872,9 +2872,9 @@ remove_phi (gphi *phi)
   tree def;
   use_operand_p use_p;
   gimple_stmt_iterator gsi;
-  auto_vec<gimple, 3> update;
+  auto_vec<gimple *, 3> update;
   unsigned int i;
-  gimple stmt;
+  gimple *stmt;
 
   def = PHI_RESULT (phi);
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
@@ -2904,7 +2904,7 @@ dr_indices_valid_in_loop (tree ref ATTRIBUTE_UNUSED, tree *index, void *data)
 {
   loop_p loop;
   basic_block header, def_bb;
-  gimple stmt;
+  gimple *stmt;
 
   if (TREE_CODE (*index) != SSA_NAME)
     return true;
@@ -2933,7 +2933,7 @@ close_phi_written_to_memory (gphi *close_phi)
 {
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  gimple stmt;
+  gimple *stmt;
   tree res, def = gimple_phi_result (close_phi);
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
@@ -2981,16 +2981,16 @@ close_phi_written_to_memory (gphi *close_phi)
 
 static void
 translate_scalar_reduction_to_array (scop_p scop,
-				     vec<gimple> in,
-				     vec<gimple> out)
+				     vec<gimple *> in,
+				     vec<gimple *> out)
 {
-  gimple loop_stmt;
+  gimple *loop_stmt;
   unsigned int i = out.length () - 1;
   tree red = close_phi_written_to_memory (as_a <gphi *> (out[i]));
 
   FOR_EACH_VEC_ELT (in, i, loop_stmt)
     {
-      gimple close_stmt = out[i];
+      gimple *close_stmt = out[i];
 
       if (i == 0)
 	{
@@ -3033,8 +3033,8 @@ rewrite_commutative_reductions_out_of_ssa_close_phi (scop_p scop,
 						     gphi *close_phi)
 {
   bool res;
-  auto_vec<gimple, 10> in;
-  auto_vec<gimple, 10> out;
+  auto_vec<gimple *, 10> in;
+  auto_vec<gimple *, 10> out;
 
   detect_commutative_reduction (scop, close_phi, &in, &out);
   res = in.length () > 1;

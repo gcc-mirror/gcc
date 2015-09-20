@@ -285,7 +285,7 @@ prepare_instrumented_value (gimple_stmt_iterator *gsi, histogram_value value)
 void
 gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  gimple stmt = value->hvalue.stmt;
+  gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
   gcall *call;
@@ -311,7 +311,7 @@ gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base
 void
 gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  gimple stmt = value->hvalue.stmt;
+  gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
   gcall *call;
@@ -331,7 +331,7 @@ gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 void
 gimple_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  gimple stmt = value->hvalue.stmt;
+  gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
   gcall *call;
@@ -356,7 +356,7 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   tree tmp1;
   gassign *stmt1, *stmt2, *stmt3;
-  gimple stmt = value->hvalue.stmt;
+  gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
 
@@ -475,7 +475,7 @@ gimple_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
 void
 gimple_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  gimple stmt = value->hvalue.stmt;
+  gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
   gcall *call;
@@ -496,7 +496,7 @@ gimple_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
 void
 gimple_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  gimple stmt = value->hvalue.stmt;
+  gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
   gcall *call;
@@ -600,7 +600,7 @@ tree_profiling (void)
 	  gimple_stmt_iterator gsi;
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      gimple stmt = gsi_stmt (gsi);
+	      gimple *stmt = gsi_stmt (gsi);
 	      if (is_gimple_call (stmt))
 		update_stmt (stmt);
 	    }

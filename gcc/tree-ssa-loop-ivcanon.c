@@ -161,7 +161,7 @@ struct loop_size
 /* Return true if OP in STMT will be constant after peeling LOOP.  */
 
 static bool
-constant_after_peeling (tree op, gimple stmt, struct loop *loop)
+constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
 {
   affine_iv iv;
 
@@ -246,7 +246,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 
       for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  int num = estimate_num_insns (stmt, &eni_size_weights);
 	  bool likely_eliminated = false;
 	  bool likely_eliminated_last = false;
@@ -338,7 +338,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
       basic_block bb = path.pop ();
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple stmt = gsi_stmt (gsi);
+	  gimple *stmt = gsi_stmt (gsi);
 	  if (gimple_code (stmt) == GIMPLE_CALL)
 	    {
 	      int flags = gimple_call_flags (stmt);
@@ -1176,7 +1176,7 @@ static void
 propagate_into_all_uses (tree ssa_name, tree val)
 {
   imm_use_iterator iter;
-  gimple use_stmt;
+  gimple *use_stmt;
 
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, ssa_name)
     {
@@ -1227,7 +1227,7 @@ propagate_constants_for_unrolling (basic_block bb)
   /* Look for assignments to SSA names with constant RHS.  */
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      gimple stmt = gsi_stmt (gsi);
+      gimple *stmt = gsi_stmt (gsi);
       tree lhs;
 
       if (is_gimple_assign (stmt)

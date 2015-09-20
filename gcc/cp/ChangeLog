@@ -1,3 +1,7 @@
+2015-09-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cp-gimplify.c (gimplify_must_not_throw_expr): Adjust.
+
 2015-09-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement nested namespace definitions.

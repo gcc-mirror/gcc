@@ -163,7 +163,7 @@ public:
 
   /* Hook to convert gimple stmt uids into true gimple statements.  The second
      parameter is an array of statements indexed by their uid. */
-  void (*stmt_fixup) (struct cgraph_node *, gimple *);
+  void (*stmt_fixup) (struct cgraph_node *, gimple **);
 
   /* Results of interprocedural propagation of an IPA pass is applied to
      function body via this hook.  */
@@ -178,7 +178,7 @@ protected:
 		  void (*read_summary) (void),
 		  void (*write_optimization_summary) (void),
 		  void (*read_optimization_summary) (void),
-		  void (*stmt_fixup) (struct cgraph_node *, gimple *),
+		  void (*stmt_fixup) (struct cgraph_node *, gimple **),
 		  unsigned int function_transform_todo_flags_start,
 		  unsigned int (*function_transform) (struct cgraph_node *),
 		  void (*variable_transform) (varpool_node *))
@@ -603,7 +603,7 @@ extern void execute_pass_list (function *, opt_pass *);
 extern void execute_ipa_pass_list (opt_pass *);
 extern void execute_ipa_summary_passes (ipa_opt_pass_d *);
 extern void execute_all_ipa_transforms (void);
-extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple *);
+extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple **);
 extern bool pass_init_dump_file (opt_pass *);
 extern void pass_fini_dump_file (opt_pass *);
 
