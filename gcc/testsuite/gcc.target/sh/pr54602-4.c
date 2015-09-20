@@ -1,9 +1,8 @@
 /* Verify that the delay slot is stuffed with register pop insns on SH3* and
    SH4* targets, where the stack pointer is not used by the rte insn.  If
    everything works out, we won't see a nop insn.  */
-/* { dg-do compile }  */
+/* { dg-do compile { target { banked_r0r7_isr } } }  */
 /* { dg-options "-O1" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m3*" "-m4*" } }  */
 /* { dg-final { scan-assembler-not "rte\n\tnop" } } */
 
 int test00 (int a, int b);

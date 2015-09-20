@@ -1,15 +1,19 @@
 /* Check that the SH specific sh_treg_combine RTL optimization pass works as
-   expected.  On SH2A the expected insns are slightly different, see
-   pr51244-20-sh2a.c.  */
+   expected.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m5*" "-m2a*" } { "" } } */
-/* { dg-final { scan-assembler-times "tst" 7 } } */
-/* { dg-final { scan-assembler-times "movt" 2 } } */
+
+/* { dg-final { scan-assembler-not "not\t" } } */
 /* { dg-final { scan-assembler-times "cmp/eq" 2 } } */
 /* { dg-final { scan-assembler-times "cmp/hi" 4 } } */
 /* { dg-final { scan-assembler-times "cmp/gt" 2 } } */
-/* { dg-final { scan-assembler-not "not\t" } } */
+
+/* { dg-final { scan-assembler-times "tst" 7 { target { ! sh2a } } } } */
+/* { dg-final { scan-assembler-times "movt" 2 { target { ! sh2a } } } } */
+
+/* { dg-final { scan-assembler-times "tst" 6 { target { sh2a } } } } */
+/* { dg-final { scan-assembler-not "movt" { target { sh2a } } } } */
+/* { dg-final { scan-assembler-times "nott" 2 { target { sh2a } } } } */
 
 
 /* non-SH2A: 2x tst, 1x movt, 2x cmp/eq, 1x cmp/hi

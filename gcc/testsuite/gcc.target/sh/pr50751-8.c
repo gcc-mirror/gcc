@@ -1,9 +1,8 @@
 /* Check that on SH2A the 4 byte movu.b and movu.w displacement insns are
    generated.  This has to be checked with -O2 because some of the patterns
    rely on peepholes.  */
-/* { dg-do compile }  */
+/* { dg-do compile { target { sh2a } } }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" } } */
 /* { dg-final { scan-assembler-times "movu.b" 4 } } */
 /* { dg-final { scan-assembler-times "movu.w" 3 } } */
 
