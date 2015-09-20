@@ -1433,75 +1433,42 @@ static int
 aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 				machine_mode mode)
 {
-  unsigned HOST_WIDE_INT mask;
   int i;
-  bool first;
-  unsigned HOST_WIDE_INT val, val2;
-  int one_match, zero_match, first_not_ffff_match;
-  int num_insns = 0;
+  unsigned HOST_WIDE_INT val, val2, mask;
+  int one_match, zero_match;
+  int num_insns;
 
-  if (CONST_INT_P (imm) && aarch64_move_imm (INTVAL (imm), mode))
+  val = INTVAL (imm);
+
+  if (aarch64_move_imm (val, mode))
     {
       if (generate)
 	emit_insn (gen_rtx_SET (dest, imm));
-      num_insns++;
-      return num_insns;
+      return 1;
     }
 
-  if (mode == SImode)
+  if ((val >> 32) == 0 || mode == SImode)
     {
-      /* We know we can't do this in 1 insn, and we must be able to do it
-	 in two; so don't mess around looking for sequences that don't buy
-	 us anything.  */
       if (generate)
 	{
-	  emit_insn (gen_rtx_SET (dest, GEN_INT (INTVAL (imm) & 0xffff)));
-	  emit_insn (gen_insv_immsi (dest, GEN_INT (16),
-				     GEN_INT ((INTVAL (imm) >> 16) & 0xffff)));
+	  emit_insn (gen_rtx_SET (dest, GEN_INT (val & 0xffff)));
+	  if (mode == SImode)
+	    emit_insn (gen_insv_immsi (dest, GEN_INT (16),
+				       GEN_INT ((val >> 16) & 0xffff)));
+	  else
+	    emit_insn (gen_insv_immdi (dest, GEN_INT (16),
+				       GEN_INT ((val >> 16) & 0xffff)));
 	}
-      num_insns += 2;
-      return num_insns;
+      return 2;
     }
 
   /* Remaining cases are all for DImode.  */
 
-  val = INTVAL (imm);
-
-  one_match = 0;
-  zero_match = 0;
   mask = 0xffff;
-  first_not_ffff_match = -1;
-
-  for (i = 0; i < 64; i += 16, mask <<= 16)
-    {
-      if ((val & mask) == mask)
-	one_match++;
-      else
-	{
-	  if (first_not_ffff_match < 0)
-	    first_not_ffff_match = i;
-	  if ((val & mask) == 0)
-	    zero_match++;
-	}
-    }
-
-  if (one_match == 2)
-    {
-      /* Set one of the quarters and then insert back into result.  */
-      mask = 0xffffll << first_not_ffff_match;
-      if (generate)
-	{
-	  emit_insn (gen_rtx_SET (dest, GEN_INT (val | mask)));
-	  emit_insn (gen_insv_immdi (dest, GEN_INT (first_not_ffff_match),
-				     GEN_INT ((val >> first_not_ffff_match)
-					      & 0xffff)));
-	}
-      num_insns += 2;
-      return num_insns;
-    }
-
-  if (zero_match == 2)
-    goto simple_sequence;
+  zero_match = ((val & mask) == 0) + ((val & (mask << 16)) == 0) +
+    ((val & (mask << 32)) == 0) + ((val & (mask << 48)) == 0);
+  one_match = ((~val & mask) == 0) + ((~val & (mask << 16)) == 0) +
+    ((~val & (mask << 32)) == 0) + ((~val & (mask << 48)) == 0);
 
   if (zero_match != 2 && one_match != 2)
     {
@@ -1529,58 +1496,32 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	    {
 	      emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
 	      emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-			 GEN_INT ((val >> i) & 0xffff)));
+					 GEN_INT ((val >> i) & 0xffff)));
 	    }
-	  return 2;
 	}
     }
 
-  if (one_match > zero_match)
-    {
-      /* Set either first three quarters or all but the third.	 */
-      mask = 0xffffll << (16 - first_not_ffff_match);
-      if (generate)
-	emit_insn (gen_rtx_SET (dest,
-				GEN_INT (val | mask | 0xffffffff00000000ull)));
-      num_insns ++;
+  /* Generate 2-4 instructions, skipping 16 bits of all zeroes or ones which
+     are emitted by the initial mov.  If one_match > zero_match, skip set bits,
+     otherwise skip zero bits.  */
 
-      /* Now insert other two quarters.	 */
-      for (i = first_not_ffff_match + 16, mask <<= (first_not_ffff_match << 1);
-	   i < 64; i += 16, mask <<= 16)
-	{
-	  if ((val & mask) != mask)
-	    {
-	      if (generate)
-		emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-					   GEN_INT ((val >> i) & 0xffff)));
-	      num_insns ++;
-	    }
-	}
-      return num_insns;
-    }
-
- simple_sequence:
-  first = true;
+  num_insns = 1;
   mask = 0xffff;
-  for (i = 0; i < 64; i += 16, mask <<= 16)
+  val2 = one_match > zero_match ? ~val : val;
+  i = (val2 & mask) != 0 ? 0 : (val2 & (mask << 16)) != 0 ? 16 : 32;
+
+  if (generate)
+    emit_insn (gen_rtx_SET (dest, GEN_INT (one_match > zero_match
+					   ? (val | ~(mask << i))
+					   : (val & (mask << i)))));
+  for (i += 16; i < 64; i += 16)
     {
-      if ((val & mask) != 0)
-	{
-	  if (first)
-	    {
-	      if (generate)
-		emit_insn (gen_rtx_SET (dest, GEN_INT (val & mask)));
-	      num_insns ++;
-	      first = false;
-	    }
-	  else
-	    {
-	      if (generate)
-		emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-					   GEN_INT ((val >> i) & 0xffff)));
-	      num_insns ++;
-	    }
-	}
+      if ((val2 & (mask << i)) == 0)
+	continue;
+      if (generate)
+	emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+				   GEN_INT ((val >> i) & 0xffff)));
+      num_insns ++;
     }
 
   return num_insns;
