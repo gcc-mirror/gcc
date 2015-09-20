@@ -1442,7 +1442,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   unsigned HOST_WIDE_INT mask;
   int i;
   bool first;
-  unsigned HOST_WIDE_INT val;
+  unsigned HOST_WIDE_INT val, val2;
   bool subtargets;
   rtx subtarget;
   int one_match, zero_match, first_not_ffff_match;
@@ -1569,85 +1569,35 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	}
     }
 
-  /* See if we can do it by arithmetically combining two
-     immediates.  */
-  for (i = 0; i < AARCH64_NUM_BITMASKS; i++)
+  if (zero_match != 2 && one_match != 2)
     {
-      int j;
-      mask = 0xffff;
+      /* Try emitting a bitmask immediate with a movk replacing 16 bits.
+	 For a 64-bit bitmask try whether changing 16 bits to all ones or
+	 zeroes creates a valid bitmask.  To check any repeated bitmask,
+	 try using 16 bits from the other 32-bit half of val.  */
 
-      if (aarch64_uimm12_shift (val - aarch64_bitmasks[i])
-	  || aarch64_uimm12_shift (-val + aarch64_bitmasks[i]))
+      for (i = 0; i < 64; i += 16, mask <<= 16)
+	{
+	  val2 = val & ~mask;
+	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+	    break;
+	  val2 = val | mask;
+	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+	    break;
+	  val2 = val2 & ~mask;
+	  val2 = val2 | (((val2 >> 32) | (val2 << 32)) & mask);
+	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+	    break;
+	}
+      if (i != 64)
 	{
 	  if (generate)
 	    {
-	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (subtarget,
-				      GEN_INT (aarch64_bitmasks[i])));
-	      emit_insn (gen_adddi3 (dest, subtarget,
-				     GEN_INT (val - aarch64_bitmasks[i])));
+	      emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+	      emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+			 GEN_INT ((val >> i) & 0xffff)));
 	    }
-	  num_insns += 2;
-	  return num_insns;
-	}
-
-      for (j = 0; j < 64; j += 16, mask <<= 16)
-	{
-	  if ((aarch64_bitmasks[i] & ~mask) == (val & ~mask))
-	    {
-	      if (generate)
-		{
-		  emit_insn (gen_rtx_SET (dest,
-					  GEN_INT (aarch64_bitmasks[i])));
-		  emit_insn (gen_insv_immdi (dest, GEN_INT (j),
-					     GEN_INT ((val >> j) & 0xffff)));
-		}
-	      num_insns += 2;
-	      return num_insns;
-	    }
-	}
-    }
-
-  /* See if we can do it by logically combining two immediates.  */
-  for (i = 0; i < AARCH64_NUM_BITMASKS; i++)
-    {
-      if ((aarch64_bitmasks[i] & val) == aarch64_bitmasks[i])
-	{
-	  int j;
-
-	  for (j = i + 1; j < AARCH64_NUM_BITMASKS; j++)
-	    if (val == (aarch64_bitmasks[i] | aarch64_bitmasks[j]))
-	      {
-		if (generate)
-		  {
-		    subtarget = subtargets ? gen_reg_rtx (mode) : dest;
-		    emit_insn (gen_rtx_SET (subtarget,
-					    GEN_INT (aarch64_bitmasks[i])));
-		    emit_insn (gen_iordi3 (dest, subtarget,
-					   GEN_INT (aarch64_bitmasks[j])));
-		  }
-		num_insns += 2;
-		return num_insns;
-	      }
-	}
-      else if ((val & aarch64_bitmasks[i]) == val)
-	{
-	  int j;
-
-	  for (j = i + 1; j < AARCH64_NUM_BITMASKS; j++)
-	    if (val == (aarch64_bitmasks[j] & aarch64_bitmasks[i]))
-	      {
-		if (generate)
-		  {
-		    subtarget = subtargets ? gen_reg_rtx (mode) : dest;
-		    emit_insn (gen_rtx_SET (subtarget,
-					    GEN_INT (aarch64_bitmasks[j])));
-		    emit_insn (gen_anddi3 (dest, subtarget,
-					   GEN_INT (aarch64_bitmasks[i])));
-		  }
-		num_insns += 2;
-		return num_insns;
-	      }
+	  return 2;
 	}
     }
 
