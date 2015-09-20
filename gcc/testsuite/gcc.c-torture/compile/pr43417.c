@@ -1,6 +1,3 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -m4" } */
-
 int pid_count = 0;
 
 unsigned int getopt (int, const char**, const char*);
@@ -40,4 +37,3 @@ main (int argc, const char *argv[])
     }
   kill (pid_list[i], 9);
 }
-
