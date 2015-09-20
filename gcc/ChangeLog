@@ -1,5 +1,10 @@
 2015-09-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_internal_mov_immediate): Remove
+	redundant immediate generation code.
+
+2015-09-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_bitmasks): Remove.
 	(AARCH64_NUM_BITMASKS): Remove.
 	(aarch64_bitmasks_cmp): Remove.
