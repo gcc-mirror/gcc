@@ -1,9 +1,8 @@
 /* Verify that for SH2A smax/smin -> cbranch conversion is done properly
    if the clips insn is not used and the expected comparison insns are
    generated.  */
-/* { dg-do compile }  */
+/* { dg-do compile { target { sh2a } } }  */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m2a*" } } */
 /* { dg-final { scan-assembler-times "cmp/pl" 4 } } */
 
 int

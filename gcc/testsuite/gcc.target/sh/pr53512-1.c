@@ -1,8 +1,7 @@
 /* Verify that the fsca insn is used when specifying -mfsca and
   -funsafe-math-optimizations.  */
-/* { dg-do compile }  */
+/* { dg-do compile { target { has_fsca } } }  */
 /* { dg-options "-O1 -mfsca -funsafe-math-optimizations" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m1" "-m2*" "-m3*" "-m4al" "*nofpu" "-m4-340*" "-m4-400*" "-m4-500*" "-m5*" } { "" } }  */
 /* { dg-final { scan-assembler-times "fsca" 3 } } */
 
 #include <math.h>

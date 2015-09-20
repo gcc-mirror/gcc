@@ -1,8 +1,8 @@
 /* Check that the XF registers are not clobbered by an integer division
    that is done using double precision FPU division.  */
-/* { dg-do run }  */
+
+/* { dg-do run { target { default_single_fpu && has_xf_regs } } } */
 /* { dg-options "-O1 -mdiv=call-fp" }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m4*-single" "-m4*-single-only" } }  */
 
 #include <assert.h>
 #include <stdlib.h>

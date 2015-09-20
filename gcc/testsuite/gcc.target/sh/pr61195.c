@@ -1,8 +1,6 @@
 /* Verify that we don't switch mode for single moves.  */
-/* { dg-do compile }  */
-/* { dg-require-effective-target hard_float } */
-/* { dg-skip-if "" { *-*-* }  { "mfmovd" } { "" } } */
-/* { dg-final { scan-assembler-not "fpscr" } } */
+/* { dg-do compile { target { any_fpu && { ! fmovd_enabled } } } }  */
+/* { dg-final { scan-assembler-not "fpscr|fpchg" } } */
 
 float *g;
 

@@ -1,9 +1,8 @@
 /* Verify that the fsca input value is not converted to float and then back
    to int.  Notice that we can't count just "lds" insns because mode switches
    use "lds.l".  */
-/* { dg-do compile }  */
+/* { dg-do compile { target { has_fsca } } }  */
 /* { dg-options "-O2 -mfsca -funsafe-math-optimizations -fno-ipa-icf" }  */
-/* { dg-skip-if "" { "sh*-*-*" } { "-m1" "-m2*" "-m3*" "-m4al" "*nofpu" "-m4-340*" "-m4-400*" "-m4-500*" "-m5*" } { "" } }  */
 /* { dg-final { scan-assembler-times "fsca" 7 } } */
 /* { dg-final { scan-assembler-times "shad" 1 } } */
 /* { dg-final { scan-assembler-times "lds\tr\[0-9\],fpul" 6 } } */

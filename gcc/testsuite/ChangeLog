@@ -1,6 +1,102 @@
+2015-09-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/sh.exp (check_effective_target_sh4a,
+	check_effective_target_big_endian, check_effective_target_little_endian,
+	check_effective_target_any_fpu, check_effective_target_double_fpu,
+	check_effective_target_use_single_only_fpu,
+	check_effective_target_default_single_fpu,
+	check_effective_target_no_fpu, check_effective_target_has_xf_regs,
+	check_effective_target_has_fsca, check_effective_target_has_fsrra,
+	check_effective_target_has_fpchg, check_effective_target_has_dyn_shift,
+	check_effective_target_fmovd_enabled,
+	check_effective_target_has_privileged, check_effective_target_has_pref,
+	check_effective_target_banked_r0r7_isr,
+	check_effective_target_stack_save_isr): New effective target checks.
+	* gcc.target/sh/pr51244-16.c: Merge into pr51244-15.c.
+	* gcc.target/sh/pr51244-20-sh2a.c: Merge into pr51244-20.c.
+	* gcc.target/sh/pr51244-3.c: Merge into pr51244-2.c
+	* gcc.target/sh/pr54089-5.c: Merge into pr54089-4.c.
+	* gcc.target/sh/20080410-1.c: Use new effective target checks.
+	* gcc.target/sh/attr-isr-nosave_low_regs.c: Likewise.
+	* gcc.target/sh/attr-isr.c: Likewise.
+	* gcc.target/sh/fpul-usage-1.c: Likewise.
+	* gcc.target/sh/hiconst.c: Likewise.
+	* gcc.target/sh/mfmovd.c: Likewise.
+	* gcc.target/sh/pr21255-3.c: Likewise.
+	* gcc.target/sh/pr33135-1.c: Likewise.
+	* gcc.target/sh/pr33135-2.c: Likewise.
+	* gcc.target/sh/pr33135-3.c: Likewise.
+	* gcc.target/sh/pr33135-4.c: Likewise.
+	* gcc.target/sh/pr39423-2.c: Likewise.
+	* gcc.target/sh/pr49880-4.c: Likewise.
+	* gcc.target/sh/pr49880-5.c: Likewise.
+	* gcc.target/sh/pr50749-sf-postinc-1.c: Likewise.
+	* gcc.target/sh/pr50749-sf-postinc-2.c: Likewise.
+	* gcc.target/sh/pr50749-sf-postinc-3.c: Likewise.
+	* gcc.target/sh/pr50749-sf-postinc-4.c: Likewise.
+	* gcc.target/sh/pr50749-sf-predec-1.c: Likewise.
+	* gcc.target/sh/pr50749-sf-predec-2.c: Likewise.
+	* gcc.target/sh/pr50749-sf-predec-3.c: Likewise.
+	* gcc.target/sh/pr50749-sf-predec-4.c: Likewise.
+	* gcc.target/sh/pr50751-2.c: Likewise.
+	* gcc.target/sh/pr50751-3.c: Likewise.
+	* gcc.target/sh/pr50751-5.c: Likewise.
+	* gcc.target/sh/pr50751-6.c: Likewise.
+	* gcc.target/sh/pr50751-8.c: Likewise.
+	* gcc.target/sh/pr51244-15.c: Likewise.
+	* gcc.target/sh/pr51244-2.c: Likewise.
+	* gcc.target/sh/pr51244-20.c: Likewise.
+	* gcc.target/sh/pr51244-6.c: Likewise.
+	* gcc.target/sh/pr52483-4.c: Likewise.
+	* gcc.target/sh/pr53511-1.c: Likewise.
+	* gcc.target/sh/pr53512-1.c: Likewise.
+	* gcc.target/sh/pr53512-2.c: Likewise.
+	* gcc.target/sh/pr53512-3.c: Likewise.
+	* gcc.target/sh/pr53512-4.c: Likewise.
+	* gcc.target/sh/pr53513-1.c: Likewise.
+	* gcc.target/sh/pr54089-2.c: Likewise.
+	* gcc.target/sh/pr54089-3.c: Likewise.
+	* gcc.target/sh/pr54089-4.c: Likewise.
+	* gcc.target/sh/pr54602-2.c: Likewise.
+	* gcc.target/sh/pr54602-3.c: Likewise.
+	* gcc.target/sh/pr54602-4.c: Likewise.
+	* gcc.target/sh/pr54680.c: Likewise.
+	* gcc.target/sh/pr55303-1.c: Likewise.
+	* gcc.target/sh/pr55303-2.c: Likewise.
+	* gcc.target/sh/pr55303-3.c: Likewise.
+	* gcc.target/sh/pr56547-1.c: Likewise.
+	* gcc.target/sh/pr56547-2.c: Likewise.
+	* gcc.target/sh/pr61195.c: Likewise.
+	* gcc.target/sh/pr61996.c: Likewise.
+	* gcc.target/sh/pr6526.c: Likewise.
+	* gcc.target/sh/pragma-isr-nosave_low_regs.c: Likewise.
+	* gcc.target/sh/pragma-isr-trapa2.c: Likewise.
+	* gcc.target/sh/prefetch.c: Likewise.
+	* gcc.target/sh/rte-delay-slot.c: Likewise.
+	* gcc.target/sh/sh2a-band.c: Likewise.
+	* gcc.target/sh/sh2a-bclr.c: Likewise.
+	* gcc.target/sh/sh2a-bclrmem.c: Likewise.
+	* gcc.target/sh/sh2a-bld.c: Likewise.
+	* gcc.target/sh/sh2a-bor.c: Likewise.
+	* gcc.target/sh/sh2a-bset.c: Likewise.
+	* gcc.target/sh/sh2a-bsetmem.c: Likewise.
+	* gcc.target/sh/sh2a-bxor.c: Likewise.
+	* gcc.target/sh/sh2a-jsrn.c: Likewise.
+	* gcc.target/sh/sh2a-movi20s.c: Likewise.
+	* gcc.target/sh/sh2a-movrt.c: Likewise.
+	* gcc.target/sh/sh2a-resbank.c: Likewise.
+	* gcc.target/sh/sh2a-rtsn.c: Likewise.
+	* gcc.target/sh/sh2a-tbr-jump.c: Likewise.
+	* gcc.target/sh/sh4a-bitmovua.c: Likewise.
+	* gcc.target/sh/sh4a-cosf.c: Likewise.
+	* gcc.target/sh/sh4a-fsrra.c: Likewise.
+	* gcc.target/sh/sh4a-memmovua.c: Likewise.
+	* gcc.target/sh/sh4a-sincosf.c: Likewise.
+	* gcc.target/sh/sh4a-sinf.c: Likewise.
+
 2015-09-20  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/47679
+	PR tree-optimization/47679
 	* g++.dg/warn/Wuninitialized-6.C: New test.
 
 2015-09-18  Ville Voutilainen  <ville.voutilainen@gmail.com>

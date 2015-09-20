@@ -1,8 +1,7 @@
 /* Testcase to check generation of a SH2A specific instruction for
    "BXOR.B #imm3, @(disp12, Rn)".  */
-/* { dg-do assemble }  */
+/* { dg-do compile { target { sh2a } } }  */
 /* { dg-options "-O1 -mbitops" }  */
-/* { dg-skip-if "" { "sh*-*-*" } "*" "-m2a -m2a-nofpu -m2a-single -m2a-single-only" }  */
 /* { dg-final { scan-assembler "bxor.b"} }  */
 
 volatile struct
