@@ -6449,3 +6449,13 @@ proc check_effective_target_comdat_group {} {
 	int (*fn) () = foo;
     }]
 }
+
+# Return 1 if target supports __builtin_eh_return
+proc check_effective_target_builtin_eh_return { } {
+    return [check_no_compiler_messages builtin_eh_return object {
+	void test (long l, void *p)
+	{
+	    __builtin_eh_return (l, p);
+	}
+    } "" ]
+}
