@@ -1,3 +1,8 @@
+2015-09-20  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/47679
+	* g++.dg/warn/Wuninitialized-6.C: New test.
+
 2015-09-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement nested namespace definitions.
