@@ -9422,7 +9422,7 @@ label:
    (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
-   (clobber (match_scratch:SI 2 "=r"))]
+   (clobber (match_scratch:SI 2 "=&r"))]
   "TARGET_SH2"
   "#"
   "reload_completed"
@@ -9556,7 +9556,7 @@ label:
    (use (reg:SI FPSCR_MODES_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
-   (clobber (match_scratch:SI 3 "=r"))]
+   (clobber (match_scratch:SI 3 "=&r"))]
   "TARGET_SH2"
   "#"
   "reload_completed"
@@ -9957,7 +9957,7 @@ label:
   [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" ""))
 	 (match_operand 1 "" ""))
    (use (reg:SI FPSCR_MODES_REG))
-   (clobber (match_scratch:SI 2 "=k"))
+   (clobber (match_scratch:SI 2 "=&k"))
    (return)]
   "TARGET_SH2"
   "#"
@@ -10149,7 +10149,7 @@ label:
 	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
 	      (match_operand 2 "" "")))
    (use (reg:SI FPSCR_MODES_REG))
-   (clobber (match_scratch:SI 3 "=k"))
+   (clobber (match_scratch:SI 3 "=&k"))
    (return)]
   "TARGET_SH2"
   "#"
