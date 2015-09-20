@@ -3405,19 +3405,63 @@ aarch64_movw_imm (HOST_WIDE_INT val, machine_mode mode)
 	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
 }
 
+/* Multipliers for repeating bitmasks of width 32, 16, 8, 4, and 2.  */
+
+static const unsigned HOST_WIDE_INT bitmask_imm_mul[] =
+  {
+    0x0000000100000001ull,
+    0x0001000100010001ull,
+    0x0101010101010101ull,
+    0x1111111111111111ull,
+    0x5555555555555555ull,
+  };
+
 
 /* Return true if val is a valid bitmask immediate.  */
+
 bool
-aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode mode)
+aarch64_bitmask_imm (HOST_WIDE_INT val_in, machine_mode mode)
 {
-  if (GET_MODE_SIZE (mode) < 8)
-    {
-      /* Replicate bit pattern.  */
-      val &= (HOST_WIDE_INT) 0xffffffff;
-      val |= val << 32;
-    }
-  return bsearch (&val, aarch64_bitmasks, AARCH64_NUM_BITMASKS,
-		  sizeof (aarch64_bitmasks[0]), aarch64_bitmasks_cmp) != NULL;
+  unsigned HOST_WIDE_INT val, tmp, mask, first_one, next_one;
+  int bits;
+
+  /* Check for a single sequence of one bits and return quickly if so.
+     The special cases of all ones and all zeroes returns false.  */
+  val = (unsigned HOST_WIDE_INT) val_in;
+  tmp = val + (val & -val);
+
+  if (tmp == (tmp & -tmp))
+    return (val + 1) > 1;
+
+  /* Replicate 32-bit immediates so we can treat them as 64-bit.  */
+  if (mode == SImode)
+    val = (val << 32) | (val & 0xffffffff);
+
+  /* Invert if the immediate doesn't start with a zero bit - this means we
+     only need to search for sequences of one bits.  */
+  if (val & 1)
+    val = ~val;
+
+  /* Find the first set bit and set tmp to val with the first sequence of one
+     bits removed.  Return success if there is a single sequence of ones.  */
+  first_one = val & -val;
+  tmp = val & (val + first_one);
+
+  if (tmp == 0)
+    return true;
+
+  /* Find the next set bit and compute the difference in bit position.  */
+  next_one = tmp & -tmp;
+  bits = clz_hwi (first_one) - clz_hwi (next_one);
+  mask = val ^ tmp;
+
+  /* Check the bit position difference is a power of 2, and that the first
+     sequence of one bits fits within 'bits' bits.  */
+  if ((mask >> bits) != 0 || bits != (bits & -bits))
+    return false;
+
+  /* Check the sequence of one bits is repeated 64/bits times.  */
+  return val == mask * bitmask_imm_mul[__builtin_clz (bits) - 26];
 }
 
 
