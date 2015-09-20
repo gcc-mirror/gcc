@@ -1,3 +1,8 @@
+2015-09-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_bitmask_imm): Reimplement using
+	faster algorithm.
+
 2015-09-20  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47679
