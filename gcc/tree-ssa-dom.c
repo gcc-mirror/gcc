@@ -780,7 +780,7 @@ dom_valueize (tree t)
    by traversing edge E (which are cached in E->aux).
 
    Callers are responsible for managing the unwinding markers.  */
-static void
+void
 record_temporary_equivalences (edge e,
 			       class const_and_copies *const_and_copies,
 			       class avail_exprs_stack *avail_exprs_stack)

@@ -1,3 +1,11 @@
+2015-09-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* tree-ssa-dom.c (record_temporary_equivalences): No longer static.
+	* tree-ssa-dom.h (record_temporary_equivalences): Add prototype.
+	* tree-ssa-threadedge.c: Include tree-ssa-dom.h.
+	(thread_through_normal_block): Use record_temporary_equivalences.
+
 2015-09-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* coretypes.h (gimple): Change typedef to be a forward

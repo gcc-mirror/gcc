@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-loop.h"
+#include "tree-ssa-dom.h"
 #include "builtins.h"
 #include "cfganal.h"
 
@@ -1212,6 +1213,10 @@ thread_through_normal_block (edge e,
      SIMPLIFY callback, which we replace if we can no longer use it.  */
   if (*backedge_seen_p)
     simplify = dummy_simplify;
+
+  /* We want to record any equivalences created by traversing E.  */
+  if (!handle_dominating_asserts)
+    record_temporary_equivalences (e, const_and_copies, avail_exprs_stack);
 
   /* PHIs create temporary equivalences.
      Note that if we found a PHI that made the block non-threadable, then
