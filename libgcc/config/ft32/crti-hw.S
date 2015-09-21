@@ -1,11 +1,8 @@
-.equ SYS_REGMSC0CFG_B3  , 0x1001b
-.equ SYS_REGIRQCTL_B3   , 0x100e3
-
 .global _start
 _start:
 # START Interrupt Vector Table [[
-        jmp     0x3fffc         # RESET Vector
-        jmp     _watchdog_isr   # WATCHDOG Vector # TODO: Change me to reset the chip proper
+        jmp     __PMSIZE-4
+        jmp     watchdog_init
         jmp     interrupt_0
         jmp     interrupt_1
         jmp     interrupt_2
@@ -38,63 +35,65 @@ _start:
         jmp     interrupt_29
         jmp     interrupt_30
         jmp     interrupt_31
-        jmp     0x3fff8
+        jmp     __PMSIZE-8
 # ]] END Interrupt Vector Table
 
 codestart:
         jmp    init
-
         
 .global _exithook
 _exithook:               # Debugger uses '_exithook' at 0x90 to catch program exit
         return
         
+watchdog_init:
+        ldk	$r0,1
 init:
+        ldk     $sp,__RAMSIZE
         # Disable all interrupts
-        ldk     $r0,0x80
-        sta.b   0x100e3,$r0
-        
-        # Reset all peripherals
-        # lda.l   $r0, 0x10018
-        # bins.l  $r0, $r0, 0x23F  # Set bit 31
-        # sta.l   0x10018, $r0
+        ldk     $r4,0x80
+        sta.b   0x100e3,$r4
         
         # Initialize DATA by copying from program memory
-        ldk.l   $r0,__data_load_start
+        ldk.l   $r4,__data_load_start
         ldk.l   $r1,__data_load_end
         ldk.l   $r2,0   # Will use __data after binutils patch
 
         jmp     .dscopy
 .dsloop:
-        # Copy PM[$r0] to RAM $r2
-        lpmi.l  $r3,$r0,0
+        # Copy PM[$r4] to RAM $r2
+        lpmi.l  $r3,$r4,0
         sti.l   $r2,0,$r3
-        add.l   $r0,$r0,4
+        add.l   $r4,$r4,4
         add.l   $r2,$r2,4
 .dscopy:
-        cmp.l   $r0,$r1
+        cmp.l   $r4,$r1
         jmpc    lt,.dsloop
 
         # Zero BSS
-        ldk.l   $r0,_bss_start
+        ldk.l   $r4,_bss_start
         ldk.l   $r2,_end
-        sub.l   $r2,$r2,$r0
+        sub.l   $r2,$r2,$r4
         ldk.l   $r1,0
-        memset.l  $r0,$r1,$r2
+        ldk    $r3,32764
+1:
+        cmp    $r2,$r3
+        jmpc   lt,2f
+        memset $r4,$r1,$r3
+        add    $r4,$r4,$r3
+        sub    $r2,$r2,$r3
+        jmp    1b
+2:
+        memset $r4,$r1,$r2
 
         sub.l   $sp,$sp,24  # Space for the caller argument frame
         call    main
 
-.equ EXITEXIT    , 0x1fffc
+.equ EXITEXIT,0x1fffc
 
 .global _exit
 _exit:
         sta.l   EXITEXIT,$r0    # simulator end of test
         jmp     _exithook
-
-_watchdog_isr:
-        ldk.l   $sp, 0x80FFFF   # Reset the stack pointer so it doesn't grow to a huge size
-        jmp     0
 
 # Macro to construct the interrupt stub code.
 # it just saves r0, loads r0 with the int vector
