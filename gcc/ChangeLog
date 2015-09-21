@@ -1,5 +1,9 @@
 2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* doc/invoke.texi (SH Options): Undocument SH5/SH64 related options.
+
+2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/67126
 	* config/sh/sh.md (*reg_lsb_t): Emit bld insn on SH2A.
 	(*mov_t_msb_neg): Rewrite negc pattern.

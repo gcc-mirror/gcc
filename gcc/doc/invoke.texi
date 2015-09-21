@@ -983,16 +983,12 @@ See RS/6000 and PowerPC Options.
 -m3  -m3e @gol
 -m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
 -m4a-nofpu -m4a-single-only -m4a-single -m4a -m4al @gol
--m5-64media  -m5-64media-nofpu @gol
--m5-32media  -m5-32media-nofpu @gol
--m5-compact  -m5-compact-nofpu @gol
 -mb  -ml  -mdalign  -mrelax @gol
--mbigtable -mfmovd -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
+-mbigtable -mfmovd -mrenesas -mno-renesas -mnomacsave @gol
 -mieee -mno-ieee -mbitops  -misize  -minline-ic_invalidate -mpadstruct @gol
 -mspace -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
--mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
--maccumulate-outgoing-args -minvalid-symbols @gol
+-maccumulate-outgoing-args @gol
 -matomic-model=@var{atomic-model} @gol
 -mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch @gol
 -mcbranch-force-delay-slot @gol
@@ -20805,33 +20801,6 @@ Same as @option{-m4a-nofpu}, except that it implicitly passes
 @option{-dsp} to the assembler.  GCC doesn't generate any DSP
 instructions at the moment.
 
-@item -m5-32media
-@opindex m5-32media
-Generate 32-bit code for SHmedia.
-
-@item -m5-32media-nofpu
-@opindex m5-32media-nofpu
-Generate 32-bit code for SHmedia in such a way that the
-floating-point unit is not used.
-
-@item -m5-64media
-@opindex m5-64media
-Generate 64-bit code for SHmedia.
-
-@item -m5-64media-nofpu
-@opindex m5-64media-nofpu
-Generate 64-bit code for SHmedia in such a way that the
-floating-point unit is not used.
-
-@item -m5-compact
-@opindex m5-compact
-Generate code for SHcompact.
-
-@item -m5-compact-nofpu
-@opindex m5-compact-nofpu
-Generate code for SHcompact in such a way that the
-floating-point unit is not used.
-
 @item -mb
 @opindex mb
 Compile code for the processor in big-endian mode.
@@ -21006,65 +20975,7 @@ Set the cost to assume for a multiply insn.
 @item -mdiv=@var{strategy}
 @opindex mdiv=@var{strategy}
 Set the division strategy to be used for integer division operations.
-For SHmedia @var{strategy} can be one of: 
-
-@table @samp
-
-@item fp 
-Performs the operation in floating point.  This has a very high latency,
-but needs only a few instructions, so it might be a good choice if
-your code has enough easily-exploitable ILP to allow the compiler to
-schedule the floating-point instructions together with other instructions.
-Division by zero causes a floating-point exception.
-
-@item inv
-Uses integer operations to calculate the inverse of the divisor,
-and then multiplies the dividend with the inverse.  This strategy allows
-CSE and hoisting of the inverse calculation.  Division by zero calculates
-an unspecified result, but does not trap.
-
-@item inv:minlat
-A variant of @samp{inv} where, if no CSE or hoisting opportunities
-have been found, or if the entire operation has been hoisted to the same
-place, the last stages of the inverse calculation are intertwined with the
-final multiply to reduce the overall latency, at the expense of using a few
-more instructions, and thus offering fewer scheduling opportunities with
-other code.
-
-@item call
-Calls a library function that usually implements the @samp{inv:minlat}
-strategy.
-This gives high code density for @code{m5-*media-nofpu} compilations.
-
-@item call2
-Uses a different entry point of the same library function, where it
-assumes that a pointer to a lookup table has already been set up, which
-exposes the pointer load to CSE and code hoisting optimizations.
-
-@item inv:call
-@itemx inv:call2
-@itemx inv:fp
-Use the @samp{inv} algorithm for initial
-code generation, but if the code stays unoptimized, revert to the @samp{call},
-@samp{call2}, or @samp{fp} strategies, respectively.  Note that the
-potentially-trapping side effect of division by zero is carried by a
-separate instruction, so it is possible that all the integer instructions
-are hoisted out, but the marker for the side effect stays where it is.
-A recombination to floating-point operations or a call is not possible
-in that case.
-
-@item inv20u
-@itemx inv20l
-Variants of the @samp{inv:minlat} strategy.  In the case
-that the inverse calculation is not separated from the multiply, they speed
-up division where the dividend fits into 20 bits (plus sign where applicable)
-by inserting a test to skip a number of operations in this case; this test
-slows down the case of larger dividends.  @samp{inv20u} assumes the case of a such
-a small dividend to be unlikely, and @samp{inv20l} assumes it to be likely.
-
-@end table
-
-For targets other than SHmedia @var{strategy} can be one of:
+@var{strategy} can be one of: 
 
 @table @samp
 
@@ -21104,9 +21015,9 @@ needed for unwinding to avoid changing the stack frame around conditional code.
 @opindex mdivsi3_libfunc=@var{name}
 Set the name of the library function used for 32-bit signed division to
 @var{name}.
-This only affects the name used in the @samp{call} and @samp{inv:call}
-division strategies, and the compiler still expects the same
-sets of input/output/clobbered registers as if this option were not present.
+This only affects the name used in the @samp{call} division strategies, and
+the compiler still expects the same sets of input/output/clobbered registers as
+if this option were not present.
 
 @item -mfixed-range=@var{register-range}
 @opindex mfixed-range
@@ -21115,57 +21026,6 @@ A fixed register is one that the register allocator can not use.  This is
 useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
-
-@item -mindexed-addressing
-@opindex mindexed-addressing
-Enable the use of the indexed addressing mode for SHmedia32/SHcompact.
-This is only safe if the hardware and/or OS implement 32-bit wrap-around
-semantics for the indexed addressing mode.  The architecture allows the
-implementation of processors with 64-bit MMU, which the OS could use to
-get 32-bit addressing, but since no current hardware implementation supports
-this or any other way to make the indexed addressing mode safe to use in
-the 32-bit ABI, the default is @option{-mno-indexed-addressing}.
-
-@item -mgettrcost=@var{number}
-@opindex mgettrcost=@var{number}
-Set the cost assumed for the @code{gettr} instruction to @var{number}.
-The default is 2 if @option{-mpt-fixed} is in effect, 100 otherwise.
-
-@item -mpt-fixed
-@opindex mpt-fixed
-Assume @code{pt*} instructions won't trap.  This generally generates
-better-scheduled code, but is unsafe on current hardware.
-The current architecture
-definition says that @code{ptabs} and @code{ptrel} trap when the target 
-anded with 3 is 3.
-This has the unintentional effect of making it unsafe to schedule these
-instructions before a branch, or hoist them out of a loop.  For example,
-@code{__do_global_ctors}, a part of @file{libgcc}
-that runs constructors at program
-startup, calls functions in a list which is delimited by @minus{}1.  With the
-@option{-mpt-fixed} option, the @code{ptabs} is done before testing against @minus{}1.
-That means that all the constructors run a bit more quickly, but when
-the loop comes to the end of the list, the program crashes because @code{ptabs}
-loads @minus{}1 into a target register.  
-
-Since this option is unsafe for any
-hardware implementing the current architecture specification, the default
-is @option{-mno-pt-fixed}.  Unless specified explicitly with 
-@option{-mgettrcost}, @option{-mno-pt-fixed} also implies @option{-mgettrcost=100};
-this deters register allocation from using target registers for storing
-ordinary integers.
-
-@item -minvalid-symbols
-@opindex minvalid-symbols
-Assume symbols might be invalid.  Ordinary function symbols generated by
-the compiler are always valid to load with
-@code{movi}/@code{shori}/@code{ptabs} or
-@code{movi}/@code{shori}/@code{ptrel},
-but with assembler and/or linker tricks it is possible
-to generate symbols that cause @code{ptabs} or @code{ptrel} to trap.
-This option is only meaningful when @option{-mno-pt-fixed} is in effect.
-It prevents cross-basic-block CSE, hoisting and most scheduling
-of symbol loads.  The default is @option{-mno-invalid-symbols}.
 
 @item -mbranch-cost=@var{num}
 @opindex mbranch-cost=@var{num}
