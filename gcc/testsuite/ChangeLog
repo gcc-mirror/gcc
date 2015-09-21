@@ -1,3 +1,9 @@
+2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67126
+	* gcc.target/sh/pr51244-12.c: Adjust testcase.
+	* gcc.target/sh/pr54236-2.c: Likewise.
+
 2015-09-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/pr43417.c: Move target independent test to ...
