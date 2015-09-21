@@ -1,3 +1,12 @@
+2015-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR debug/67664
+	* dwarf2out.c (add_location_or_const_value_attribute): Remove
+	attribute parameter.  Early exit if either DW_AT_const_value
+	or DW_AT_location are present already.
+	(gen_variable_die): Adjust caller.
+	(dwarf2out_late_global_decl): Likewise.
+
 2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/67657
