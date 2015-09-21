@@ -2911,11 +2911,12 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
     return;
 
   gimple *estmt = last_stmt (e->src);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  print_dec (i_bound, buf, TYPE_UNSIGNED (TREE_TYPE (loop->nb_iterations))
+	     ? UNSIGNED : SIGNED);
   if (warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
-		  "iteration %E invokes undefined behavior",
-		  wide_int_to_tree (TREE_TYPE (loop->nb_iterations),
-				    i_bound)))
-    inform (gimple_location (estmt), "containing loop");
+		  "iteration %s invokes undefined behavior", buf))
+    inform (gimple_location (estmt), "within this loop");
   loop->warned_aggressive_loop_optimizations = true;
 }
 

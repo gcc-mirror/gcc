@@ -1,3 +1,9 @@
+2015-09-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR middle-end/60832
+	* tree-ssa-loop-niter.c (do_warn_aggressive_loop_optimizations):
+	Print i_bound without converting it to a tree.
+
 2015-09-21  Bilyan Borisov  <bilyan.borisov@arm.com>
 
 	* config/arm/arm.c (thumb_output_move_mem_multiple): Replaced
