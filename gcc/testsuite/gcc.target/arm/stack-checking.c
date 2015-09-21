@@ -1,5 +1,6 @@
 /* { dg-do run { target { *-*-linux* } } } */
 /* { dg-options "-fstack-check" } */
+/* { dg-skip-if "" { arm_thumb1 } } */
 
 int main(void)
 {
