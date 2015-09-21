@@ -1,3 +1,10 @@
+2015-09-21  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/crti-hw.S: Use __PMSIZE to allow configurable
+	memory layout. Deal correctly with BSS region larger than 32K.
+	Handle a watchdog reset like a power-on reset. Clean up unused
+	code.
+
 2015-09-18  Andrew Dixie  <andrewd@gentrack.com>
 	    David Edelsohn  <dje.gcc@gmail.com>
 
