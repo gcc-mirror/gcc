@@ -12,8 +12,8 @@ fn1 (void)
   unsigned int a[128];
   int i;
 
-  for (i = 0; i < 128; ++i)	/* { dg-message "note: containing loop" } */
-    a[i] = i * 0x02000001;	/* { dg-warning "invokes undefined behavior" } */
+  for (i = 0; i < 128; ++i)	/* { dg-message "note: within this loop" } */
+    a[i] = i * 0x02000001;	/* { dg-warning "64 invokes undefined behavior" } */
   bar (a);
 }
 
@@ -23,8 +23,8 @@ fn2 (void)
   unsigned long long a[128];
   int i;
 
-  for (i = 0; i < 128; i++)			/* { dg-message "note: containing loop" } */
-    a[i] = (i + 1LL) * 0x0123456789ABCDEFLL;	/* { dg-warning "invokes undefined behavior" } */
+  for (i = 0; i < 128; i++)			/* { dg-message "note: within this loop" } */
+    a[i] = (i + 1LL) * 0x0123456789ABCDEFLL;	/* { dg-warning "112 invokes undefined behavior" } */
   bar (a);
 }
 
@@ -35,9 +35,9 @@ fn3 (void)
   int i;
 
   bar (b);
-  for (i = 0; i < (int) (sizeof (a) / sizeof (a[0])); i++)	/* { dg-message "note: containing loop" } */
+  for (i = 0; i < (int) (sizeof (a) / sizeof (a[0])); i++)	/* { dg-message "note: within this loop" } */
     {
-      c[i + 8] = b[i];	/* { dg-warning "invokes undefined behavior" } */
+      c[i + 8] = b[i];	/* { dg-warning "8 invokes undefined behavior" } */
       a[i + 8] = b[i + 8];
     }
   bar (a);
@@ -50,9 +50,9 @@ fn4 (void)
   unsigned int *a[32], *o, i;
 
   bar (a);
-  for (i = 0; i <= sizeof (a) / sizeof (a[0]); i++)	/* { dg-message "note: containing loop" "" } */
+  for (i = 0; i <= sizeof (a) / sizeof (a[0]); i++)	/* { dg-message "note: within this loop" "" } */
     {
-      o = a[i];	/* { dg-warning "invokes undefined behavior" "" } */
+      o = a[i];	/* { dg-warning "32 invokes undefined behavior" "" } */
       bar (o);
     }
 }
@@ -65,8 +65,8 @@ fn5 (void)
   int j;
 
   bar (b);
-  for (j = 0; j < 1140; j++)	/* { dg-message "note: containing loop" } */
-    a[23940 + j - 950] = b[j];	/* { dg-warning "invokes undefined behavior" } */
+  for (j = 0; j < 1140; j++)	/* { dg-message "note: within this loop" } */
+    a[23940 + j - 950] = b[j];	/* { dg-warning "950 invokes undefined behavior" } */
   bar (a);
 }
 
@@ -76,8 +76,8 @@ fn6 (void)
   double a[4][3], b[12];
   int i;
   bar (b);
-  for (i = 0; i < 12; i++)	/* { dg-message "note: containing loop" } */
-    a[0][i] = b[i] / 10000.0;	/* { dg-warning "invokes undefined behavior" } */
+  for (i = 0; i < 12; i++)	/* { dg-message "note: within this loop" } */
+    a[0][i] = b[i] / 10000.0;	/* { dg-warning "3 invokes undefined behavior" } */
   bar (a);
 }
 
@@ -86,11 +86,11 @@ fn7 (void)
 {
   int a[16], b, c;
   bar (a);
-  for (b = a[c = 0]; c < 16; b = a[++c])	/* { dg-warning "invokes undefined behavior" "" } */
+  for (b = a[c = 0]; c < 16; b = a[++c])	/* { dg-warning "15 invokes undefined behavior" "" } */
     baz (b);
 }
 
-/* { dg-message "note: containing loop" "" { target *-*-* } 89 } */
+/* { dg-message "note: within this loop" "" { target *-*-* } 89 } */
 
 const void *va, *vb, *vc, *vd, *ve;
 const void *vf[4];
@@ -134,8 +134,8 @@ void
 fn10 (void)
 {
   int i;
-  for (i = 16; i < 32; i++)	/* { dg-message "note: containing loop" } */
-    xa[i] = 26;			/* { dg-warning "invokes undefined behavior" } */
+  for (i = 16; i < 32; i++)	/* { dg-message "note: within this loop" } */
+    xa[i] = 26;			/* { dg-warning "2 invokes undefined behavior" } */
 }
 
 __attribute__((noinline)) static void
