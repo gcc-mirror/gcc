@@ -1,3 +1,9 @@
+2015-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/67619
+	* except.c (expand_builtin_eh_return): Use copy_addr_to_reg to copy
+	the address to a register.
+
 2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline

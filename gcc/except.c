@@ -2235,7 +2235,7 @@ expand_builtin_eh_return (tree stackadj_tree ATTRIBUTE_UNUSED,
 		     VOIDmode, EXPAND_NORMAL);
   tmp = convert_memory_address (Pmode, tmp);
   if (!crtl->eh.ehr_stackadj)
-    crtl->eh.ehr_stackadj = copy_to_reg (tmp);
+    crtl->eh.ehr_stackadj = copy_addr_to_reg (tmp);
   else if (tmp != crtl->eh.ehr_stackadj)
     emit_move_insn (crtl->eh.ehr_stackadj, tmp);
 #endif
@@ -2244,7 +2244,7 @@ expand_builtin_eh_return (tree stackadj_tree ATTRIBUTE_UNUSED,
 		     VOIDmode, EXPAND_NORMAL);
   tmp = convert_memory_address (Pmode, tmp);
   if (!crtl->eh.ehr_handler)
-    crtl->eh.ehr_handler = copy_to_reg (tmp);
+    crtl->eh.ehr_handler = copy_addr_to_reg (tmp);
   else if (tmp != crtl->eh.ehr_handler)
     emit_move_insn (crtl->eh.ehr_handler, tmp);
 
