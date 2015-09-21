@@ -3253,8 +3253,7 @@ static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
 static void insert_wide_int (const wide_int &, unsigned char *, int);
 static void insert_float (const_rtx, unsigned char *);
 static rtx rtl_for_decl_location (tree);
-static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool,
-						   enum dwarf_attribute);
+static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool);
 static bool tree_add_const_value_attribute (dw_die_ref, tree);
 static bool tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
@@ -16136,8 +16135,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
    since we will need to refer to them each time the function is inlined.  */
 
 static bool
-add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
-				       enum dwarf_attribute attr)
+add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
 {
   rtx rtl;
   dw_loc_list_ref list;
@@ -16150,7 +16148,8 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
   if (TREE_CODE (decl) == ERROR_MARK)
     return false;
 
-  if (get_AT (die, attr))
+  if (get_AT (die, DW_AT_location)
+      || get_AT (die, DW_AT_const_value))
     return true;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL
@@ -16216,7 +16215,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
     }
   if (list)
     {
-      add_AT_location_description (die, attr, list);
+      add_AT_location_description (die, DW_AT_location, list);
       return true;
     }
   /* None of that worked, so it must not really have a location;
@@ -18116,7 +18115,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
         equate_decl_number_to_die (node, parm_die);
       if (! DECL_ABSTRACT_P (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
-					       node == NULL, DW_AT_location);
+					       node == NULL);
 
       break;
 
@@ -19662,7 +19661,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	add_pubname (decl_or_origin, var_die);
       else
 	add_location_or_const_value_attribute (var_die, decl_or_origin,
-					       decl == NULL, DW_AT_location);
+					       decl == NULL);
     }
   else
     tree_add_const_value_attribute_for_decl (var_die, decl_or_origin);
@@ -21639,8 +21638,7 @@ dwarf2out_late_global_decl (tree decl)
     {
       dw_die_ref die = lookup_decl_die (decl);
       if (die)
-	add_location_or_const_value_attribute (die, decl, false,
-					       DW_AT_location);
+	add_location_or_const_value_attribute (die, decl, false);
     }
 }
 

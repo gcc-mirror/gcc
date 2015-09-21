@@ -1,3 +1,8 @@
+2015-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR debug/67664
+	* g++.dg/debug/dwarf2/pr67764.C: New testcase.
+
 2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64345
