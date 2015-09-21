@@ -723,7 +723,7 @@ nonzero_address_p (const_rtx x)
   switch (code)
     {
     case SYMBOL_REF:
-      return !SYMBOL_REF_WEAK (x);
+      return flag_delete_null_pointer_checks && !SYMBOL_REF_WEAK (x);
 
     case LABEL_REF:
       return true;

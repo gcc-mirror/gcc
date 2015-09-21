@@ -1,3 +1,9 @@
+2015-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67651
+	* rtlanal.c (nonzero_address_p): SYMBOL_REFs may have zero
+	address with -fno-delete-null-pointer-checks.
+
 2015-09-21  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/rs6000/altivec.md (reduc_splus_<mode>): Rename to...
