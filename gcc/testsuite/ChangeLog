@@ -1,5 +1,9 @@
 2015-09-21  Richard Biener  <rguenther@suse.de>
 
+	* g++.dg/ext/attr-alias-3.C: Add -g.
+
+2015-09-21  Richard Biener  <rguenther@suse.de>
+
 	PR debug/67664
 	* g++.dg/debug/dwarf2/pr67764.C: New testcase.
 

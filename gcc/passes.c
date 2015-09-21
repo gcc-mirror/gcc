@@ -327,7 +327,8 @@ rest_of_decl_compilation (tree decl,
 	     and thus have incomplete early debug and late debug
 	     called from varpool node removal fails to handle it
 	     properly.  */
-	  || (TREE_CODE (decl) == VAR_DECL
+	  || (finalize
+	      && TREE_CODE (decl) == VAR_DECL
 	      && TREE_STATIC (decl) && !DECL_EXTERNAL (decl)))
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
