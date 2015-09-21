@@ -3291,8 +3291,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	      { reserve(0); }
 	    catch(...)
 	      { }
-#endif
 	  }
+#endif
       }
 #endif
 
