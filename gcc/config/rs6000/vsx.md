@@ -2289,7 +2289,7 @@
 
 ;; Vector reduction insns and splitters
 
-(define_insn_and_split "*vsx_reduc_<VEC_reduc_name>_v2df"
+(define_insn_and_split "vsx_reduc_<VEC_reduc_name>_v2df"
   [(set (match_operand:V2DF 0 "vfloat_operand" "=&wd,&?wa,wd,?wa")
 	(VEC_reduc:V2DF
 	 (vec_concat:V2DF
@@ -2317,7 +2317,7 @@
   [(set_attr "length" "8")
    (set_attr "type" "veccomplex")])
 
-(define_insn_and_split "*vsx_reduc_<VEC_reduc_name>_v4sf"
+(define_insn_and_split "vsx_reduc_<VEC_reduc_name>_v4sf"
   [(set (match_operand:V4SF 0 "vfloat_operand" "=wf,?wa")
 	(VEC_reduc:V4SF
 	 (unspec:V4SF [(const_int 0)] UNSPEC_REDUC)

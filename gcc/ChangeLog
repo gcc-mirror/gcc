@@ -1,3 +1,18 @@
+2015-09-21  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/rs6000/altivec.md (reduc_splus_<mode>): Rename to...
+	(reduc_plus_scal_<mode>): ...this, add rs6000_expand_vector_extract.
+	(reduc_uplus_v16qi): Remove.
+
+	* config/rs6000/vector.md (VEC_reduc_name): Change "splus" to "plus".
+	(reduc_<VEC_reduc_name>_v2df): Remove.
+	(reduc_<VEC_reduc_name>_v4sf): Remove.
+	(reduc_<VEC_reduc:VEC_reduc_name>_scal_<VEC_F:name>): New.
+
+	* config/rs6000/vsx.md (vsx_reduc_<VEC_reduc_name>_v2df): Declare
+	gen_ function by removing * prefix.
+	(vsx_reduc_<VEC_reduc_name>_v4sf): Likewise.
+
 2015-09-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR middle-end/60832
