@@ -1,3 +1,9 @@
+2015-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67647
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::shrink_to_fit): Fix #endif placement.
+
 2015-09-19  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/67361
