@@ -1,5 +1,10 @@
 2015-09-21  Richard Biener  <rguenther@suse.de>
 
+	* passes.c (rest_of_decl_compilation): Do not call
+	dwarf2out_early_global_decl for aliases.
+
+2015-09-21  Richard Biener  <rguenther@suse.de>
+
 	PR debug/67664
 	* dwarf2out.c (add_location_or_const_value_attribute): Remove
 	attribute parameter.  Early exit if either DW_AT_const_value
