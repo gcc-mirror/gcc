@@ -1,3 +1,8 @@
+2015-09-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/66415
+	* gcc.dg/cpp/pr66415-1.c: Test column number.
+
 2015-09-21  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/ext/attr-alias-3.C: Add -g.
