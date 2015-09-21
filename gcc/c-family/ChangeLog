@@ -1,3 +1,9 @@
+2015-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Complete the implementation of N4230, Nested namespace definition.
+	* c-cppbuiltin.c: Add __cpp_namespace_attributes and
+	__cpp_nested_namespace_definitions.
+
 2015-09-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-pragma.c (handle_pragma_diagnostic): Fix wrong return.

@@ -1,3 +1,15 @@
+2015-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Complete the implementation of N4230, Nested namespace definition.
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Add tests for C++17 namespace
+	attributes and nested namespace definitions.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+	* g++.dg/cpp1y/feat-cxx14-neg.C: New.
+	* g++.dg/cpp1z/namespace-attribs.C: Likewise.
+	* g++.dg/cpp1z/nested-namespace-def1.C: Add tests for attributes
+	appearing before the namespace identifier.
+
 2015-09-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/66415
