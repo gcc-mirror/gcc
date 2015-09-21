@@ -1,3 +1,9 @@
+2015-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Complete the implementation of N4230, Nested namespace definition.
+	* parser.c (cp_parser_namespace_definition): Support namespace
+	attributes both before and after the namespace identifier.
+
 2015-09-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* cp-gimplify.c (gimplify_must_not_throw_expr): Adjust.

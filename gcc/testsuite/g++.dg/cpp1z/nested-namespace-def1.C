@@ -17,3 +17,7 @@ namespace G __attribute ((visibility ("default"))) ::H {} // { dg-error "cannot 
 
 namespace H [[deprecated]] ::I {} // { dg-error "cannot have attributes|ignored" }
 
+namespace __attribute ((visibility ("default"))) I::J {} // { dg-error "cannot have attributes" }
+
+namespace [[deprecated]] J::K {} // { dg-error "cannot have attributes|ignored" }
+

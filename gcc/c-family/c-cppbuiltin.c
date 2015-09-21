@@ -870,6 +870,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  /* Set feature test macros for C++1z.  */
 	  cpp_define (pfile, "__cpp_static_assert=201411");
+	  cpp_define (pfile, "__cpp_namespace_attributes=201411");
+	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411");
 	}
       if (flag_concepts)
 	/* Use a value smaller than the 201507 specified in
