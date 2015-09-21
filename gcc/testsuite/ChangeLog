@@ -1,3 +1,10 @@
+2015-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/67619
+	* gcc.dg/torture/pr67619.c: New test.
+	* lib/target-supports.exp (check_effective_target_builtin_eh_return):
+	New procedure.
+
 2015-08-27  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline:

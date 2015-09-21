@@ -1,3 +1,9 @@
+2015-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/67619
+	* except.c (expand_builtin_eh_return): Use copy_addr_to_reg to copy
+	the address to a register.
+
 2015-09-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_function_ok_for_sibcall): Remove special treatment
