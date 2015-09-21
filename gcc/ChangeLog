@@ -1,3 +1,15 @@
+2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67657
+	* config/sh/sh.c (sh_remove_overlapping_post_inc,
+	sh_peephole_emit_move_insn): Add new functions.
+	* config/sh/sh-protos.h (sh_remove_overlapping_post_inc,
+	sh_peephole_emit_move_insn): Declere them.
+	* config/sh/sh.md: Use them in various peephole2 patterns.
+
 2015-09-21  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
