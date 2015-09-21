@@ -1,3 +1,8 @@
+2015-09-21  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (andsi3_ashift_n_lower): Avoid undefined
+	behavior. 
+
 2015-09-21  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_expand_insv): Avoid undefined behavior.
