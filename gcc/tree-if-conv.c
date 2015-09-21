@@ -2266,9 +2266,11 @@ combine_blocks (struct loop *loop, bool any_mask_load_store)
   /* Merge basic blocks: first remove all the edges in the loop,
      except for those from the exit block.  */
   exit_bb = NULL;
+  bool *predicated = XNEWVEC (bool, orig_loop_num_nodes);
   for (i = 0; i < orig_loop_num_nodes; i++)
     {
       bb = ifc_bbs[i];
+      predicated[i] = !is_true_predicate (bb_predicate (bb));
       free_bb_predicate (bb);
       if (bb_with_exit_edge_p (loop, bb))
 	{
@@ -2326,9 +2328,21 @@ combine_blocks (struct loop *loop, bool any_mask_load_store)
       if (bb == exit_bb || bb == loop->latch)
 	continue;
 
-      /* Make stmts member of loop->header.  */
+      /* Make stmts member of loop->header and clear range info from all stmts
+	 in BB which is now no longer executed conditional on a predicate we
+	 could have derived it from.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	gimple_set_bb (gsi_stmt (gsi), merge_target_bb);
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple_set_bb (stmt, merge_target_bb);
+	  if (predicated[i])
+	    {
+	      ssa_op_iter i;
+	      tree op;
+	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
+		reset_flow_sensitive_info (op);
+	    }
+	}
 
       /* Update stmt list.  */
       last = gsi_last_bb (merge_target_bb);
@@ -2348,6 +2362,7 @@ combine_blocks (struct loop *loop, bool any_mask_load_store)
 
   free (ifc_bbs);
   ifc_bbs = NULL;
+  free (predicated);
 }
 
 /* Version LOOP before if-converting it, the original loop

@@ -1862,6 +1862,23 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
 
   if (loop_has_only_one_exit)
     ex = split_block_after_labels (ex->dest);
+  else
+    {
+      for (gphi_iterator gpi = gsi_start_phis (ex->dest);
+	   !gsi_end_p (gpi); gsi_next (&gpi))
+	{
+	  gphi *phi = gpi.phi ();
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
+
+	  /* When the destination has a non-virtual PHI node with multiple
+	     predecessors make sure we preserve the PHI structure by
+	     forcing a forwarder block so that hoisting of that PHI will
+	     still work.  */
+	  split_edge (ex);
+	  break;
+	}
+    }
 
   old_dest = ex->dest;
   new_bb = split_edge (ex);

@@ -125,7 +125,14 @@ insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p, tree op)
   if (walk_stmt_load_store_ops (stmt, (void *)op,
 			        check_loadstore,
 				check_loadstore))
-    gsi_insert_after (si_p, seq, GSI_NEW_STMT);
+    {
+      gsi_insert_after (si_p, seq, GSI_NEW_STMT);
+      if (stmt_ends_bb_p (stmt))
+	{
+	  split_block (gimple_bb (stmt), stmt);
+	  return;
+	}
+    }
   else
     gsi_insert_before (si_p, seq, GSI_NEW_STMT);
 

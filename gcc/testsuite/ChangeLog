@@ -1,3 +1,36 @@
+2015-09-21  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66793
+	* gcc.dg/torture/pr66793.c: New testcase.
+
+	2015-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67055
+	* g++.dg/torture/pr67055.C: New testcase.
+
+	2015-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67121
+	* gcc.dg/torture/pr67121.c: New testcase.
+
+	2015-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67271
+	* gcc.dg/pr67271.c: New testcase.
+
+	2015-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66952
+	* gcc.dg/torture/pr66952.c: New testcase.
+
+	2015-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67470
+	* gcc.dg/torture/pr67470.c: New testcase.
+
 2015-09-17  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline:
