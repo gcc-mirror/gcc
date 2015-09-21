@@ -1,3 +1,16 @@
+2015-09-21  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* config/arm/arm.c (thumb_output_move_mem_multiple): Replaced
+	operands[4] operands[5] swap with std::swap, removed tmp variable.
+	(arm_evpc_neon_vzip): Replaced in0/in1 and
+	out0/out1 swaps with std::swap, removed x variable.
+	(arm_evpc_neon_vtrn): Replaced in0/int1 and
+	out0/out1 swaos with std::swap, removed x variable.
+	(arm_expand_vec_perm_const_1): Replaced
+	d->op0/d->op1 swap with std::swap, removed x variable.
+	(arm_evpc_neon_vuzp): Replaced in0/in1 and
+	out0/out1 swaps with std::swap, removed x variable.
+
 2015-09-21  Jonathan Yong  <10walls@gmail.com>
 
 	* config/i386/cygwin.h (STARTFILE_SPEC): Explicitly search
