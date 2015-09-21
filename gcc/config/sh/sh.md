@@ -4204,7 +4204,7 @@ label:
 ;; Let combine see that we can get the MSB and LSB into the T bit
 ;; via shll and shlr.  This allows it to plug it into insns that can have
 ;; the T bit as an input (e.g. addc).
-;; FIXME: On SH2A use bld #0,Rn instead of shlr to avoid mutating the input.
+;; On SH2A use bld #0,Rn instead of shlr to avoid mutating the input.
 (define_insn_and_split "*reg_lsb_t"
   [(set (reg:SI T_REG)
 	(and:SI (match_operand:SI 0 "arith_reg_operand")
@@ -4214,7 +4214,8 @@ label:
   "&& 1"
   [(const_int 0)]
 {
-  emit_insn (gen_shlr (gen_reg_rtx (SImode), operands[0]));
+  emit_insn (TARGET_SH2A ? gen_bldsi_reg (operands[0], const0_rtx)
+			 : gen_shlr (gen_reg_rtx (SImode), operands[0]));
 })
 
 (define_insn_and_split "*reg_msb_t"
@@ -11979,41 +11980,31 @@ label:
   [(set (match_dup 0) (reg:SI T_REG))
    (set (match_dup 0) (xor:SI (match_dup 0) (const_int 1)))])
 
-;; Use negc to store the T bit in a MSB of a reg in the following way:
-;;	T = 0: 0x80000000 -> reg
-;;	T = 1: 0x7FFFFFFF -> reg
-;; This works because 0 - 0x80000000 = 0x80000000.
-(define_insn_and_split "*mov_t_msb_neg"
-  [(set (match_operand:SI 0 "arith_reg_dest")
-	(minus:SI (const_int -2147483648)  ;; 0x80000000
-		  (match_operand 1 "treg_set_expr")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-{
-  if (negt_reg_operand (operands[1], VOIDmode))
-    {
-      emit_insn (gen_addc (operands[0],
-			   force_reg (SImode, const0_rtx),
-			   force_reg (SImode, GEN_INT (2147483647))));
-      DONE;
-    }
-
-  sh_treg_insns ti = sh_split_treg_set_expr (operands[1], curr_insn);
-  if (ti.remove_trailing_nott ())
-    emit_insn (gen_addc (operands[0],
-			 force_reg (SImode, const0_rtx),
-			 force_reg (SImode, GEN_INT (2147483647))));
-  else
-    emit_insn (gen_negc (operands[0],
-			 force_reg (SImode, GEN_INT (-2147483648LL))));
-  DONE;
-})
-
 ;; 0x7fffffff + T
 ;; 0x7fffffff + (1-T) = 0 - 0x80000000 - T
+;;
+;; Notice that 0 - 0x80000000 = 0x80000000.
+
+;; Single bit tests are usually done with zero_extract.  On non-SH2A this
+;; will use a tst-negc sequence.  On SH2A it will use a bld-addc sequence.
+;; The zeroth bit requires a special pattern, otherwise we get a shlr-addc.
+;; This is a special case of the generic treg_set_expr pattern and thus has
+;; to come first or it will never match.
+(define_insn_and_split "*mov_t_msb_neg"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (and:SI (match_operand:SI 1 "arith_reg_operand")
+			 (const_int 1))
+		 (const_int 2147483647)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (zero_extract:SI (match_dup 1)
+					     (const_int 1) (const_int 0))
+			    (const_int 2147483647)))
+	      (clobber (reg:SI T_REG))])])
+
 (define_insn_and_split "*mov_t_msb_neg"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(plus:SI (match_operand 1 "treg_set_expr")

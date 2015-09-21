@@ -1,3 +1,9 @@
+2015-09-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67126
+	* config/sh/sh.md (*reg_lsb_t): Emit bld insn on SH2A.
+	(*mov_t_msb_neg): Rewrite negc pattern.
+
 2015-09-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_internal_mov_immediate): Cleanup
