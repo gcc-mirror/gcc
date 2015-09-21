@@ -1,3 +1,8 @@
+2015-09-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67615
+	* gfortran.dg/pr67615.f90: new test.
+
 2015-09-21  Jeff Law  <law@redhat.com>
 
 	* gcc.target/h8300/andsi3_ashift_n_lower.c: New test.
