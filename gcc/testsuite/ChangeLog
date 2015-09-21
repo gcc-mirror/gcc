@@ -1,5 +1,9 @@
 2015-09-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* gcc.dg/pragma-diag-5.c: Fix excess warning.
+
+2015-09-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR middle-end/60832
 	* gcc.dg/pr53265.c: Update.
 
