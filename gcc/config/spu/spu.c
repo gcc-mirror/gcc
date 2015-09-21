@@ -472,7 +472,7 @@ spu_expand_insv (rtx ops[])
 {
   HOST_WIDE_INT width = INTVAL (ops[1]);
   HOST_WIDE_INT start = INTVAL (ops[2]);
-  HOST_WIDE_INT maskbits;
+  unsigned HOST_WIDE_INT maskbits;
   machine_mode dst_mode;
   rtx dst = ops[0], src = ops[3];
   int dst_size;
@@ -527,15 +527,15 @@ spu_expand_insv (rtx ops[])
   switch (dst_size)
     {
     case 32:
-      maskbits = (-1ll << (32 - width - start));
+      maskbits = (~(unsigned HOST_WIDE_INT)0 << (32 - width - start));
       if (start)
-	maskbits += (1ll << (32 - start));
+	maskbits += ((unsigned HOST_WIDE_INT)1 << (32 - start));
       emit_move_insn (mask, GEN_INT (maskbits));
       break;
     case 64:
-      maskbits = (-1ll << (64 - width - start));
+      maskbits = (~(unsigned HOST_WIDE_INT)0 << (64 - width - start));
       if (start)
-	maskbits += (1ll << (64 - start));
+	maskbits += ((unsigned HOST_WIDE_INT)1 << (64 - start));
       emit_move_insn (mask, GEN_INT (maskbits));
       break;
     case 128:
