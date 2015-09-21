@@ -14681,7 +14681,7 @@ label:
   [(const_int 0)]
 {
   emit_insn (gen_addsi3 (operands[1], operands[1], operands[2]));
-  sh_check_add_incdec_notes (emit_move_insn (operands[3], operands[1]));
+  sh_peephole_emit_move_insn (operands[3], operands[1]);
 })
 
 ;;	mov.l	@(r0,r9),r1
@@ -14694,7 +14694,7 @@ label:
   "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
   [(const_int 0)]
 {
-  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[1]));
+  sh_peephole_emit_move_insn (operands[2], operands[1]);
 })
 
 (define_peephole2
@@ -14705,7 +14705,7 @@ label:
   "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
   [(const_int 0)]
 {
-  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[1]));
+  sh_peephole_emit_move_insn (operands[2], operands[1]);
 })
 
 (define_peephole2
@@ -14717,7 +14717,7 @@ label:
   [(const_int 0)]
 {
   sh_check_add_incdec_notes (emit_insn (gen_extend<mode>si2 (operands[2],
-							     operands[1])));
+		   sh_remove_overlapping_post_inc (operands[2], operands[1]))));
 })
 
 ;;	mov.w	@(18,r1),r0 (r0 = HImode)
@@ -14747,8 +14747,9 @@ label:
 
   // We don't know what the new set insn will be in detail.  Just make sure
   // that it still can be recognized and the constraints are satisfied.
-  rtx_insn* i = emit_insn (gen_rtx_SET (operands[2], operands[3]));
-						     
+  rtx_insn* i = emit_insn (gen_rtx_SET (operands[2],
+		    sh_remove_overlapping_post_inc (operands[2], operands[3])));
+
   recog_data_d prev_recog_data = recog_data;
   bool i_invalid = insn_invalid_p (i, false); 
   recog_data = prev_recog_data;
@@ -14786,7 +14787,8 @@ label:
 {
   // We don't know what the new set insn will be in detail.  Just make sure
   // that it still can be recognized and the constraints are satisfied.
-  rtx_insn* i = emit_insn (gen_rtx_SET (operands[2], operands[3]));
+  rtx_insn* i = emit_insn (gen_rtx_SET (operands[2],
+		    sh_remove_overlapping_post_inc (operands[2], operands[3])));
 
   recog_data_d prev_recog_data = recog_data;
   bool i_invalid = insn_invalid_p (i, false); 
