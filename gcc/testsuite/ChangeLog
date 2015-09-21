@@ -1,3 +1,7 @@
+2015-09-21  Jeff Law  <law@redhat.com>
+
+	* gcc.target/h8300/andsi3_ashift_n_lower.c: New test.
+
 2015-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Complete the implementation of N4230, Nested namespace definition.
