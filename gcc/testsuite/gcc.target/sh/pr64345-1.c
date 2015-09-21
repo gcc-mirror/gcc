@@ -10,10 +10,10 @@
 /* { dg-final { scan-assembler-times "shlr\t" 8 { target { ! sh2a } } } }  */
 
 /* { dg-final { scan-assembler-times "tst" 442 { target { sh2a } } } }  */
-/* { dg-final { scan-assembler-times "bld" 276 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "bld" 285 { target { sh2a } } } }  */
 /* { dg-final { scan-assembler-times "cmp/pz" 6 { target { sh2a } } } }  */
-/* { dg-final { scan-assembler-times "shll\t" 4 { target { sh2a } } } }  */
-/* { dg-final { scan-assembler-times "shlr\t" 8 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "shll\t" 3 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "shlr\t" 0 { target { sh2a } } } }  */
 
 /* { dg-final { scan-assembler-times "and\t#1" 32 } }  */
 
