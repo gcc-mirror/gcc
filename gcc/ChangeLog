@@ -1,3 +1,13 @@
+2015-09-22  Alexander Fomin <alexander.fomin@intel.com>
+
+	PR target/67480
+	* config/i386/sse.md (define_mode_iterator VI48_AVX_AVX512F): New.
+	(define_mode_iterator VI12_AVX_AVX512F): New.
+	(define_insn "<mask_codefor><code><mode>3<mask_name>"): Change
+	all iterators to VI48_AVX_AVX512F. Extract remaining modes ...
+	(define_insn "*<code><mode>3"): ... Into new pattern using
+	VI12_AVX_AVX512F iterators without masking.
+
 2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
 
 	* config.gcc: Support "skylake-avx512".
