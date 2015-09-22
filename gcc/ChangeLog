@@ -1,3 +1,8 @@
+2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+
+	* gcc/config/i386/i386.md (define_split not/xor SWI1248x): Use
+	iterator instead of fixed modes.
+
 2015-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/67619
