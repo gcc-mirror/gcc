@@ -814,7 +814,8 @@ extern int may_call_alloca;
    this range are forced to the constant pool prior to reload.  */
 
 #define MAX_LEGIT_64BIT_CONST_INT ((HOST_WIDE_INT) 32 << 31)
-#define MIN_LEGIT_64BIT_CONST_INT ((HOST_WIDE_INT) -32 << 31)
+#define MIN_LEGIT_64BIT_CONST_INT \
+  ((HOST_WIDE_INT)((unsigned HOST_WIDE_INT) -32 << 31))
 #define LEGITIMATE_64BIT_CONST_INT_P(X) \
   ((X) >= MIN_LEGIT_64BIT_CONST_INT && (X) < MAX_LEGIT_64BIT_CONST_INT)
 
