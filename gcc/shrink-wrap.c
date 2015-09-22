@@ -462,6 +462,30 @@ prepare_shrink_wrap (basic_block entry_block)
       }
 }
 
+/* Return whether basic block PRO can get the prologue.  It can not if it
+   has incoming complex edges that need a prologue inserted (we make a new
+   block for the prologue, so those edges would need to be redirected, which
+   does not work).  It also can not if there exist registers live on entry
+   to PRO that are clobbered by the prologue.  */
+
+static bool
+can_get_prologue (basic_block pro, HARD_REG_SET prologue_clobbered)
+{
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, pro->preds)
+    if (e->flags & (EDGE_COMPLEX | EDGE_CROSSING)
+	&& !dominated_by_p (CDI_DOMINATORS, e->src, pro))
+      return false;
+
+  HARD_REG_SET live;
+  REG_SET_TO_HARD_REG_SET (live, df_get_live_in (pro));
+  if (hard_reg_set_intersect_p (live, prologue_clobbered))
+    return false;
+
+  return true;
+}
+
 /* Return whether we can duplicate basic block BB for shrink wrapping.  We
    cannot if the block cannot be duplicated at all, or if any of its incoming
    edges are complex and come from a block that does not require a prologue
@@ -478,7 +502,7 @@ can_dup_for_shrink_wrapping (basic_block bb, basic_block pro, unsigned max_size)
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e->flags & EDGE_COMPLEX
+    if (e->flags & (EDGE_COMPLEX | EDGE_CROSSING)
 	&& !dominated_by_p (CDI_DOMINATORS, e->src, pro))
       return false;
 
@@ -577,14 +601,13 @@ fix_fake_fallthrough_edge (edge e)
    (bb 4 is duplicated to 5; the prologue is inserted on the edge 5->3).
 
    ENTRY_EDGE is the edge where the prologue will be placed, possibly
-   changed by this function.  ORIG_ENTRY_EDGE is the edge where it
-   would be placed without shrink-wrapping.  BB_WITH is a bitmap that,
-   if we do shrink-wrap, will on return contain the interesting blocks
-   that run with prologue.  PROLOGUE_SEQ is the prologue we will insert.  */
+   changed by this function.  BB_WITH is a bitmap that, if we do shrink-
+   wrap, will on return contain the interesting blocks that run with
+   prologue.  PROLOGUE_SEQ is the prologue we will insert.  */
 
 void
-try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
-		     bitmap_head *bb_with, rtx_insn *prologue_seq)
+try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
+		     rtx_insn *prologue_seq)
 {
   /* If we cannot shrink-wrap, are told not to shrink-wrap, or it makes
      no sense to shrink-wrap: then do not shrink-wrap!  */
@@ -631,6 +654,9 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 	IOR_HARD_REG_SET (prologue_used, this_used);
 	note_stores (PATTERN (insn), record_hard_reg_sets, &prologue_clobbered);
       }
+  CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
+  if (frame_pointer_needed)
+    CLEAR_HARD_REG_BIT (prologue_clobbered, HARD_FRAME_POINTER_REGNUM);
 
   /* Find out what registers are set up by the prologue; any use of these
      cannot happen before the prologue.  */
@@ -695,8 +721,9 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 	     pro->index);
 
   /* Now see if we can put the prologue at the start of PRO.  Putting it
-     there might require duplicating a block that cannot be duplicated;
-     if so, try again with the immediate dominator of PRO, and so on.
+     there might require duplicating a block that cannot be duplicated,
+     or in some cases we cannot insert the prologue there at all.  If PRO
+     wont't do, try again with the immediate dominator of PRO, and so on.
 
      The blocks that need duplicating are those reachable from PRO but
      not dominated by it.  We keep in BB_WITH a bitmap of the blocks
@@ -714,6 +741,14 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 
   while (!vec.is_empty () && pro != entry)
     {
+      while (pro != entry && !can_get_prologue (pro, prologue_clobbered))
+	{
+	  pro = get_immediate_dominator (CDI_DOMINATORS, pro);
+
+	  bitmap_set_bit (bb_with, pro->index);
+	  vec.quick_push (pro);
+	}
+
       basic_block bb = vec.pop ();
       if (!can_dup_for_shrink_wrapping (bb, pro, max_grow_size))
 	while (!dominated_by_p (CDI_DOMINATORS, bb, pro))
@@ -746,14 +781,18 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
     {
       calculate_dominance_info (CDI_POST_DOMINATORS);
 
+      basic_block last_ok = pro;
       while (pro != entry)
 	{
 	  basic_block pre = get_immediate_dominator (CDI_DOMINATORS, pro);
-	  if (dominated_by_p (CDI_POST_DOMINATORS, pre, pro))
-	    pro = pre;
-	  else
+	  if (!dominated_by_p (CDI_POST_DOMINATORS, pre, pro))
 	    break;
+
+	  pro = pre;
+	  if (can_get_prologue (pro, prologue_clobbered))
+	    last_ok = pro;
 	}
+      pro = last_ok;
 
       free_dominance_info (CDI_POST_DOMINATORS);
     }
@@ -762,62 +801,29 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
     fprintf (dump_file, "Bumping back to anticipatable blocks, PRO is now %d\n",
 	     pro->index);
 
-  /* If there is more than one predecessor of PRO not dominated by PRO, fail.
-     Also find that single edge that leads to PRO.  */
-
-  bool multi = false;
-  edge the_edge = 0;
-  FOR_EACH_EDGE (e, ei, pro->preds)
-    if (!dominated_by_p (CDI_DOMINATORS, e->src, pro))
-      {
-	if (the_edge)
-	  multi = true;
-	else
-	  the_edge = e;
-      }
-
-  if (multi)
+  if (pro == entry)
     {
-      the_edge = orig_entry_edge;
-
-      if (dump_file)
-	fprintf (dump_file, "More than one candidate edge.\n");
+      free_dominance_info (CDI_DOMINATORS);
+      return;
     }
-
-  if (dump_file)
-    fprintf (dump_file, "Found candidate edge for shrink-wrapping, %d->%d.\n",
-	     the_edge->src->index, the_edge->dest->index);
-
-  *entry_edge = the_edge;
 
   /* Compute what fraction of the frequency and count of the blocks that run
      both with and without prologue are for running with prologue.  This gives
      the correct answer for reducible flow graphs; for irreducible flow graphs
      our profile is messed up beyond repair anyway.  */
 
-  int num = (*entry_edge)->probability;
-  int den = REG_BR_PROB_BASE;
+  gcov_type num = 0;
+  gcov_type den = 0;
 
-  if (*entry_edge == orig_entry_edge)
-    goto out;
+  FOR_EACH_EDGE (e, ei, pro->preds)
+    if (!dominated_by_p (CDI_DOMINATORS, e->src, pro))
+      {
+	num += EDGE_FREQUENCY (e);
+	den += e->src->frequency;
+      }
 
-  /* Test whether the prologue is known to clobber any register
-     (other than FP or SP) which are live on the edge.  */
-
-  HARD_REG_SET live_on_edge;
-  CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
-  if (frame_pointer_needed)
-    CLEAR_HARD_REG_BIT (prologue_clobbered, HARD_FRAME_POINTER_REGNUM);
-  REG_SET_TO_HARD_REG_SET (live_on_edge,
-			   df_get_live_in ((*entry_edge)->dest));
-  if (hard_reg_set_intersect_p (live_on_edge, prologue_clobbered))
-    {
-      *entry_edge = orig_entry_edge;
-      if (dump_file)
-	fprintf (dump_file,
-		 "Shrink-wrapping aborted due to clobber.\n");
-      goto out;
-    }
+  if (den == 0)
+    den = 1;
 
   /* All is okay, so do it.  */
 
@@ -851,20 +857,6 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 	bb->count = RDIV (num * bb->count, den);
 	dup->count -= bb->count;
       }
-
-  /* Change ENTRY_EDGE, if its src is duplicated.  Do this first, before
-     the redirects have had a chance to create new blocks on the edge we
-     want to use for the prologue, which makes us not find it.  */
-
-  gcc_assert (!dominated_by_p (CDI_DOMINATORS, (*entry_edge)->src, pro));
-
-  if (bitmap_bit_p (bb_with, (*entry_edge)->src->index))
-    {
-      basic_block src = (basic_block) (*entry_edge)->src->aux;
-      FOR_EACH_EDGE (e, ei, src->succs)
-	if (e->dest == pro)
-	  *entry_edge = e;
-    }
 
   /* Now change the edges to point to the copies, where appropriate.  */
 
@@ -923,7 +915,37 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 	    emit_barrier_after_bb (e->src);
 	  }
 
-out:
+  /* Finally, we want a single edge to put the prologue on.  Make a new
+     block before the PRO block; the edge beteen them is the edge we want.
+     Then redirect those edges into PRO that come from blocks without the
+     prologue, to point to the new block instead.  The new prologue block
+     is put at the end of the insn chain.  */
+
+  basic_block new_bb = create_empty_bb (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
+  BB_COPY_PARTITION (new_bb, pro);
+  if (dump_file)
+    fprintf (dump_file, "Made prologue block %d\n", new_bb->index);
+
+  for (ei = ei_start (pro->preds); (e = ei_safe_edge (ei)); )
+    {
+      if (bitmap_bit_p (bb_with, e->src->index)
+	  || dominated_by_p (CDI_DOMINATORS, e->src, pro))
+	{
+	  ei_next (&ei);
+	  continue;
+	}
+
+      new_bb->count += RDIV (e->src->count * e->probability, REG_BR_PROB_BASE);
+      new_bb->frequency += EDGE_FREQUENCY (e);
+
+      redirect_edge_and_branch_force (e, new_bb);
+      if (dump_file)
+	fprintf (dump_file, "Redirected edge from %d\n", e->src->index);
+    }
+
+  *entry_edge = make_single_succ_edge (new_bb, pro, EDGE_FALLTHRU);
+  force_nonfallthru (*entry_edge);
+
   free_dominance_info (CDI_DOMINATORS);
 }
 
