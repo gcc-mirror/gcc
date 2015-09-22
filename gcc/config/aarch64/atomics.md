@@ -29,7 +29,24 @@
     UNSPECV_ATOMIC_CAS			; Represent an atomic CAS.
     UNSPECV_ATOMIC_SWP			; Represent an atomic SWP.
     UNSPECV_ATOMIC_OP			; Represent an atomic operation.
+    UNSPECV_ATOMIC_LDOP			; Represent an atomic load-operation
+    UNSPECV_ATOMIC_LDOP_OR		; Represent an atomic load-or
+    UNSPECV_ATOMIC_LDOP_BIC		; Represent an atomic load-bic
+    UNSPECV_ATOMIC_LDOP_XOR		; Represent an atomic load-xor
+    UNSPECV_ATOMIC_LDOP_PLUS		; Represent an atomic load-add
 ])
+
+;; Iterators for load-operate instructions.
+
+(define_int_iterator ATOMIC_LDOP
+ [UNSPECV_ATOMIC_LDOP_OR UNSPECV_ATOMIC_LDOP_BIC
+  UNSPECV_ATOMIC_LDOP_XOR UNSPECV_ATOMIC_LDOP_PLUS])
+
+(define_int_attr atomic_ldop
+ [(UNSPECV_ATOMIC_LDOP_OR "set") (UNSPECV_ATOMIC_LDOP_BIC "clr")
+  (UNSPECV_ATOMIC_LDOP_XOR "eor") (UNSPECV_ATOMIC_LDOP_PLUS "add")])
+
+;; Instruction patterns.
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")			;; bool out
@@ -536,3 +553,27 @@
     else
       return "casal<atomic_sfx>\t%<w>0, %<w>2, %1";
 })
+
+;; Atomic load-op: Load data, operate, store result, keep data.
+
+(define_insn "aarch64_atomic_load<atomic_ldop><mode>"
+ [(set (match_operand:ALLI 0 "register_operand" "=r")
+   (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
+  (set (match_dup 1)
+   (unspec_volatile:ALLI
+    [(match_dup 1)
+     (match_operand:ALLI 2 "register_operand")
+     (match_operand:SI 3 "const_int_operand")]
+    ATOMIC_LDOP))]
+ "TARGET_LSE && reload_completed"
+ {
+   enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+   if (is_mm_relaxed (model))
+     return "ld<atomic_ldop><atomic_sfx>\t%<w>2, %<w>0, %1";
+   else if (is_mm_acquire (model) || is_mm_consume (model))
+     return "ld<atomic_ldop>a<atomic_sfx>\t%<w>2, %<w>0, %1";
+   else if (is_mm_release (model))
+     return "ld<atomic_ldop>l<atomic_sfx>\t%<w>2, %<w>0, %1";
+   else
+     return "ld<atomic_ldop>al<atomic_sfx>\t%<w>2, %<w>0, %1";
+ })
