@@ -1,3 +1,11 @@
+2015-09-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66952
+	* gcc.dg/torture/pr66952.c: Use signed char.
+
 2015-09-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67615
