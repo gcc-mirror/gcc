@@ -1,3 +1,11 @@
+2015-09-22  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* c-indentation.c (should_warn_for_misleading_indentation):
+	Float out and consolidate the calls to get_visual_column that
+	are passed guard_exploc as an argument.  Compare
+	next_stmt_vis_column with guard_line_first_nws instead of with
+	body_line_first_nws.
+
 2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c.opt (Wmultiple-inheritance, Wvirtual-inheritance, Wtemplates,
