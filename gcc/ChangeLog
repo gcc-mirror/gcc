@@ -1,3 +1,12 @@
+2015-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline
+	2015-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_legitimize_address): When handling
+	'reg + reloc' cases, allow first operand to be non-REG, and use
+	force_reg() to enforce address pattern.
+
 2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
 
 	* gcc/config/i386/i386.md (define_insn "kunpckhi"): Fix

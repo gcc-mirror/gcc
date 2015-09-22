@@ -1894,15 +1894,15 @@ nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
      Which will be output as '%tls_le(var+48)(r23)' in assembly.  */
   if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST)
     {
-      rtx unspec, offset, reg = XEXP (x, 0);
+      rtx unspec, offset;
       split_const (XEXP (x, 1), &unspec, &offset);
       if (GET_CODE (unspec) == UNSPEC
 	  && !nios2_large_offset_p (XINT (unspec, 1))
 	  && offset != const0_rtx)
 	{
+	  rtx reg = force_reg (Pmode, XEXP (x, 0));
 	  unspec = copy_rtx (unspec);
 	  XVECEXP (unspec, 0, 0)
 	    = plus_constant (Pmode, XVECEXP (unspec, 0, 0), INTVAL (offset));
