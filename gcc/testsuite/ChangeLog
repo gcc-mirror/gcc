@@ -1,5 +1,10 @@
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/aarch64/atomic-inst-ldadd.c: New.
+	* gcc.target/aarch64/atomic-inst-ldlogic.c: New.
+
+2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* gcc.target/aarch64/atomic-inst-ops.inc: (TEST_MODEL): New.
 	(TEST_ONE): New.
         * gcc.target/aarch64/atomic-inst-swap.c: New.

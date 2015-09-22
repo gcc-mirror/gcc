@@ -225,16 +225,37 @@
   }
 )
 
-(define_insn_and_split "atomic_<atomic_optab><mode>"
-  [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "+Q")
-    (unspec_volatile:ALLI
-      [(atomic_op:ALLI (match_dup 0)
-	(match_operand:ALLI 1 "<atomic_op_operand>" "r<const_atomic>"))
-       (match_operand:SI 2 "const_int_operand")]		;; model
-      UNSPECV_ATOMIC_OP))
-       (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:ALLI 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
+(define_expand "atomic_<atomic_optab><mode>"
+ [(match_operand:ALLI 0 "aarch64_sync_memory_operand" "")
+  (atomic_op:ALLI
+   (match_operand:ALLI 1 "<atomic_op_operand>" "")
+   (match_operand:SI 2 "const_int_operand"))]
+  ""
+  {
+    rtx (*gen) (rtx, rtx, rtx);
+
+    /* Use an atomic load-operate instruction when possible.  */
+    if (aarch64_atomic_ldop_supported_p (<CODE>))
+      gen = gen_aarch64_atomic_<atomic_optab><mode>_lse;
+    else
+      gen = gen_aarch64_atomic_<atomic_optab><mode>;
+
+    emit_insn (gen (operands[0], operands[1], operands[2]));
+
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_atomic_<atomic_optab><mode>"
+ [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "+Q")
+   (unspec_volatile:ALLI
+    [(atomic_op:ALLI (match_dup 0)
+      (match_operand:ALLI 1 "<atomic_op_operand>" "r<const_atomic>"))
+     (match_operand:SI 2 "const_int_operand")]
+    UNSPECV_ATOMIC_OP))
+  (clobber (reg:CC CC_REGNUM))
+  (clobber (match_scratch:ALLI 3 "=&r"))
+  (clobber (match_scratch:SI 4 "=&r"))]
   ""
   "#"
   "&& reload_completed"
@@ -242,6 +263,25 @@
   {
     aarch64_split_atomic_op (<CODE>, NULL, operands[3], operands[0],
 			     operands[1], operands[2], operands[4]);
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_atomic_<atomic_optab><mode>_lse"
+  [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "+Q")
+    (unspec_volatile:ALLI
+      [(atomic_op:ALLI (match_dup 0)
+	(match_operand:ALLI 1 "<atomic_op_operand>" "r<const_atomic>"))
+       (match_operand:SI 2 "const_int_operand")]
+      UNSPECV_ATOMIC_OP))
+   (clobber (match_scratch:ALLI 3 "=&r"))]
+  "TARGET_LSE"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_gen_atomic_ldop (<CODE>, operands[3], operands[0],
+			     operands[1], operands[2]);
     DONE;
   }
 )
@@ -268,7 +308,30 @@
   }
 )
 
-(define_insn_and_split "atomic_fetch_<atomic_optab><mode>"
+;; Load-operate-store, returning the updated memory data.
+
+(define_expand "atomic_fetch_<atomic_optab><mode>"
+ [(match_operand:ALLI 0 "register_operand" "")
+  (match_operand:ALLI 1 "aarch64_sync_memory_operand" "")
+  (atomic_op:ALLI
+   (match_operand:ALLI 2 "<atomic_op_operand>" "")
+   (match_operand:SI 3 "const_int_operand"))]
+ ""
+{
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+
+  /* Use an atomic load-operate instruction when possible.  */
+  if (aarch64_atomic_ldop_supported_p (<CODE>))
+    gen = gen_aarch64_atomic_fetch_<atomic_optab><mode>_lse;
+  else
+    gen = gen_aarch64_atomic_fetch_<atomic_optab><mode>;
+
+  emit_insn (gen (operands[0], operands[1], operands[2], operands[3]));
+
+  DONE;
+})
+
+(define_insn_and_split "aarch64_atomic_fetch_<atomic_optab><mode>"
   [(set (match_operand:ALLI 0 "register_operand" "=&r")
     (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
    (set (match_dup 1)
@@ -287,6 +350,26 @@
   {
     aarch64_split_atomic_op (<CODE>, operands[0], operands[4], operands[1],
 			     operands[2], operands[3], operands[5]);
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_atomic_fetch_<atomic_optab><mode>_lse"
+  [(set (match_operand:ALLI 0 "register_operand" "=&r")
+    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
+   (set (match_dup 1)
+    (unspec_volatile:ALLI
+      [(atomic_op:ALLI (match_dup 1)
+	(match_operand:ALLI 2 "<atomic_op_operand>" "r<const_atomic>"))
+       (match_operand:SI 3 "const_int_operand")]
+      UNSPECV_ATOMIC_LDOP))]
+  "TARGET_LSE"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_gen_atomic_ldop (<CODE>, operands[0], operands[1],
+			     operands[2], operands[3]);
     DONE;
   }
 )
