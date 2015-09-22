@@ -1,3 +1,18 @@
+2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_gen_atomic_ldop):
+	Declare.
+	* config/aarch64/aarch64.c (aarch64_emit_atomic_swap): New.
+	(aarch64_gen_atomic_ldop): New.
+	(aarch64_split_atomic_op): Fix whitespace and add a comment.
+	* config/aarch64/atomics.md (UNSPECV_ATOMIC_SWP): New.
+	(aarch64_compare_and_swap<mode>_lse): Fix some whitespace.
+	(atomic_exchange<mode>): Replace with an expander.
+	(aarch64_atomic_exchange<mode>): New.
+	(aarch64_atomic_exchange<mode>_lse): New.
+	(aarch64_atomic_<atomic_optab><mode>): Fix some whitespace.
+	(aarch64_atomic_swp<mode>): New.
+
 2015-09-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-inline.c (expand_call_inline): Use inform for extra note.

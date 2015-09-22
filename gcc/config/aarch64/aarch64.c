@@ -10992,11 +10992,54 @@ aarch64_split_compare_and_swap (rtx operands[])
     aarch64_emit_post_barrier (model);
 }
 
+/* Emit an atomic swap.  */
+
+static void
+aarch64_emit_atomic_swap (machine_mode mode, rtx dst, rtx value,
+			  rtx mem, rtx model)
+{
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case QImode: gen = gen_aarch64_atomic_swpqi; break;
+    case HImode: gen = gen_aarch64_atomic_swphi; break;
+    case SImode: gen = gen_aarch64_atomic_swpsi; break;
+    case DImode: gen = gen_aarch64_atomic_swpdi; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (dst, mem, value, model));
+}
+
+/* Emit an atomic operation where the architecture supports it.  */
+
+void
+aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data,
+			 rtx mem, rtx value, rtx model_rtx)
+{
+  machine_mode mode = GET_MODE (mem);
+
+  out_data = gen_lowpart (mode, out_data);
+
+  switch (code)
+    {
+    case SET:
+      aarch64_emit_atomic_swap (mode, out_data, value, mem, model_rtx);
+      return;
+
+    default:
+      /* The operation can't be done with atomic instructions.  */
+      gcc_unreachable ();
+    }
+}
+
 /* Split an atomic operation.  */
 
 void
 aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
-		     rtx value, rtx model_rtx, rtx cond)
+			 rtx value, rtx model_rtx, rtx cond)
 {
   machine_mode mode = GET_MODE (mem);
   machine_mode wmode = (mode == DImode ? DImode : SImode);
@@ -11005,6 +11048,7 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   rtx_code_label *label;
   rtx x;
 
+  /* Split the atomic operation into a sequence.  */
   label = gen_label_rtx ();
   emit_label (label);
 
