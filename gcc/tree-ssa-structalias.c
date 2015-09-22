@@ -5675,7 +5675,7 @@ create_variable_info_for_1 (tree decl, const char *name)
 
   /* If we didn't end up collecting sub-variables create a full
      variable for the decl.  */
-  if (fieldstack.length () <= 1
+  if (fieldstack.length () == 0
       || fieldstack.length () > MAX_FIELDS_FOR_FIELD_SENSITIVE)
     {
       vi = new_var_info (decl, name);
@@ -5694,19 +5694,26 @@ create_variable_info_for_1 (tree decl, const char *name)
        fieldstack.iterate (i, &fo);
        ++i, newvi = vi_next (newvi))
     {
-      const char *newname = "NULL";
+      const char *newname = NULL;
       char *tempname;
 
       if (dump_file)
 	{
-	  tempname
-	    = xasprintf ("%s." HOST_WIDE_INT_PRINT_DEC
-			 "+" HOST_WIDE_INT_PRINT_DEC, name,
-			 fo->offset, fo->size);
-	  newname = ggc_strdup (tempname);
-	  free (tempname);
+	  if (fieldstack.length () != 1)
+	    {
+	      tempname
+		= xasprintf ("%s." HOST_WIDE_INT_PRINT_DEC
+			     "+" HOST_WIDE_INT_PRINT_DEC, name,
+			     fo->offset, fo->size);
+	      newname = ggc_strdup (tempname);
+	      free (tempname);
+	    }
 	}
-      newvi->name = newname;
+      else
+	newname = "NULL";
+
+      if (newname)
+	  newvi->name = newname;
       newvi->offset = fo->offset;
       newvi->size = fo->size;
       newvi->fullsize = vi->fullsize;
