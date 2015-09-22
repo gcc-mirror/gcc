@@ -22,5 +22,5 @@ t()
   if (a)
     aa();
   if (b)
-    bb(); 			/* { dg-warning "called from here" "" } */
+    bb(); 			/* { dg-message "called from here" } */
 }

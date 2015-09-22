@@ -11,7 +11,7 @@ inline void f (x)	/* { dg-warning "inlining .* mismatched arg" "" } */
 
 void g (struct s x)
 {
-  f (x); 		/* { dg-warning "called from here" "" } */
+  f (x); 		/* { dg-message "called from here" } */
 }
 
 void f (int x);		/* { dg-warning "follows non-prototype definition" } */
