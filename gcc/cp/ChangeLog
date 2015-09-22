@@ -1,3 +1,9 @@
+2015-09-22  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (abi_warn_or_compat_version_crosses): New.
+	Use it instead of abi_version_crosses.
+	(mangle_decl): Deal with -fabi-compat-version and -Wabi separately.
+
 2015-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Complete the implementation of N4230, Nested namespace definition.
