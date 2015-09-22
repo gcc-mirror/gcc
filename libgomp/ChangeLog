@@ -1,3 +1,10 @@
+2015-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR libgomp/67141
+	* oacc-int.h (goacc_host_init): Add declaration.
+	* oacc-host.c (goacc_host_init): Remove static and constructor attribute.
+	* oacc-init.c (goacc_runtime_initialize): Call goacc_host_init() at end.
+
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
             Sebastian Pop  <s.pop@samsung.com>
 

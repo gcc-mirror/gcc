@@ -256,7 +256,7 @@ static struct gomp_device_descr host_dispatch =
   };
 
 /* Initialize and register this device type.  */
-static __attribute__ ((constructor)) void
+void
 goacc_host_init (void)
 {
   gomp_mutex_init (&host_dispatch.lock);
