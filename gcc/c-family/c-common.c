@@ -239,6 +239,9 @@ const char *constant_string_class_name;
 
 /* C++ language option variables.  */
 
+/* The reference version of the ABI for -Wabi.  */
+
+int warn_abi_version = -1;
 
 /* Nonzero means generate separate instantiation control files and
    juggle them at link time.  */
