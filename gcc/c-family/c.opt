@@ -573,6 +573,14 @@ Wmissing-field-initializers
 C ObjC C++ ObjC++ Var(warn_missing_field_initializers) Warning EnabledBy(Wextra)
 Warn about missing fields in struct initializers
 
+Wmultiple-inheritance
+C++ ObjC++ Var(warn_multiple_inheritance) Warning
+Warn on direct multiple inheritance
+
+Wnamespaces
+C++ ObjC++ Var(warn_namespaces) Warning
+Warn on namespace definition
+
 Wsized-deallocation
 C++ ObjC++ Var(warn_sized_deallocation) Warning EnabledBy(Wextra)
 Warn about missing sized deallocation functions
@@ -609,6 +617,10 @@ Warn about all enumerated switches missing a specific case
 Wswitch-bool
 C ObjC C++ ObjC++ Var(warn_switch_bool) Warning Init(1)
 Warn about switches with boolean controlling expression
+
+Wtemplates
+C++ ObjC++ Var(warn_templates) Warning
+Warn on primary template declaration
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
@@ -935,6 +947,10 @@ Warn if a variable length array is used
 Wvolatile-register-var
 C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when a register variable is declared volatile
+
+Wvirtual-inheritance
+C++ ObjC++ Var(warn_virtual_inheritance) Warning
+Warn on direct virtual inheritance
 
 Wvirtual-move-assign
 C++ ObjC++ Var(warn_virtual_move_assign) Warning Init(1)
