@@ -416,6 +416,14 @@
   [(V16SI "TARGET_AVX512F") V8SI V4SI
    (V8DI "TARGET_AVX512F") V4DI V2DI])
 
+(define_mode_iterator VI48_AVX_AVX512F
+  [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") V2DI])
+
+(define_mode_iterator VI12_AVX_AVX512F
+  [ (V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI
+    (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI])
+
 (define_mode_iterator V48_AVX2
   [V4SF V2DF
    V8SF V4DF
@@ -11077,10 +11085,10 @@
 })
 
 (define_insn "<mask_codefor><code><mode>3<mask_name>"
-  [(set (match_operand:VI 0 "register_operand" "=x,v")
-	(any_logic:VI
-	  (match_operand:VI 1 "nonimmediate_operand" "%0,v")
-	  (match_operand:VI 2 "nonimmediate_operand" "xm,vm")))]
+  [(set (match_operand:VI48_AVX_AVX512F 0 "register_operand" "=x,v")
+	(any_logic:VI48_AVX_AVX512F
+	  (match_operand:VI48_AVX_AVX512F 1 "nonimmediate_operand" "%0,v")
+	  (match_operand:VI48_AVX_AVX512F 2 "nonimmediate_operand" "xm,vm")))]
   "TARGET_SSE && <mask_mode512bit_condition>
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
 {
@@ -11109,23 +11117,18 @@
         case V4DImode:
         case V4SImode:
         case V2DImode:
-          if (TARGET_AVX512VL)
-          {
-            tmp = "p<logic><ssemodesuffix>";
-            break;
-          }
+          tmp = TARGET_AVX512VL ? "p<logic><ssemodesuffix>" : "p<logic>";
+          break;
         default:
-          tmp = TARGET_AVX512VL ? "p<logic>q" : "p<logic>";
+          gcc_unreachable ();
       }
       break;
 
-   case MODE_V16SF:
-      gcc_assert (TARGET_AVX512F);
    case MODE_V8SF:
       gcc_assert (TARGET_AVX);
    case MODE_V4SF:
       gcc_assert (TARGET_SSE);
-
+      gcc_assert (!<mask_applied>);
       tmp = "<logic>ps";
       break;
 
@@ -11136,7 +11139,10 @@
   switch (which_alternative)
     {
     case 0:
-      ops = "%s\t{%%2, %%0|%%0, %%2}";
+      if (<mask_applied>)
+        ops = "v%s\t{%%2, %%0, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%0, %%2}";
+      else
+        ops = "%s\t{%%2, %%0|%%0, %%2}";
       break;
     case 1:
       ops = "v%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}";
@@ -11146,6 +11152,105 @@
     }
 
   snprintf (buf, sizeof (buf), ops, tmp);
+  return buf;
+}
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (and (eq_attr "alternative" "0")
+	    (eq_attr "mode" "TI"))
+       (const_string "1")
+       (const_string "*")))
+   (set_attr "prefix" "<mask_prefix3>")
+   (set (attr "mode")
+	(cond [(and (match_test "<MODE_SIZE> == 16")
+		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
+		 (const_string "<ssePSmode>")
+	       (match_test "TARGET_AVX2")
+		 (const_string "<sseinsnmode>")
+	       (match_test "TARGET_AVX")
+		 (if_then_else
+		   (match_test "<MODE_SIZE> > 16")
+		   (const_string "V8SF")
+		   (const_string "<sseinsnmode>"))
+	       (ior (not (match_test "TARGET_SSE2"))
+		    (match_test "optimize_function_for_size_p (cfun)"))
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<sseinsnmode>")))])
+
+(define_insn "*<code><mode>3"
+  [(set (match_operand:VI12_AVX_AVX512F 0 "register_operand" "=x,v")
+	(any_logic: VI12_AVX_AVX512F
+	  (match_operand:VI12_AVX_AVX512F 1 "nonimmediate_operand" "%0,v")
+	  (match_operand:VI12_AVX_AVX512F 2 "nonimmediate_operand" "xm,vm")))]
+  "TARGET_SSE && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+{
+  static char buf[64];
+  const char *ops;
+  const char *tmp;
+  const char *ssesuffix;
+
+  switch (get_attr_mode (insn))
+    {
+    case MODE_XI:
+      gcc_assert (TARGET_AVX512F);
+    case MODE_OI:
+      gcc_assert (TARGET_AVX2 || TARGET_AVX512VL);
+    case MODE_TI:
+      gcc_assert (TARGET_SSE2 || TARGET_AVX512VL);
+      switch (<MODE>mode)
+        {
+        case V64QImode:
+        case V32HImode:
+          if (TARGET_AVX512F)
+          {
+            tmp = "p<logic>";
+            ssesuffix = "q";
+            break;
+          }
+        case V32QImode:
+        case V16HImode:
+        case V16QImode:
+        case V8HImode:
+          if (TARGET_AVX512VL || TARGET_AVX2 || TARGET_SSE2)
+          {
+            tmp = "p<logic>";
+            ssesuffix = TARGET_AVX512VL ? "q" : "";
+            break;
+          }
+        default:
+          gcc_unreachable ();
+      }
+      break;
+
+   case MODE_V8SF:
+      gcc_assert (TARGET_AVX);
+   case MODE_V4SF:
+      gcc_assert (TARGET_SSE);
+      tmp = "<logic>ps";
+      ssesuffix = "";
+      break;
+
+   default:
+      gcc_unreachable ();
+   }
+
+  switch (which_alternative)
+    {
+    case 0:
+      ops = "%s\t{%%2, %%0|%%0, %%2}";
+      snprintf (buf, sizeof (buf), ops, tmp);
+      break;
+    case 1:
+      ops = "v%s%s\t{%%2, %%1, %%0|%%0, %%1, %%2}";
+      snprintf (buf, sizeof (buf), ops, tmp, ssesuffix);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   return buf;
 }
   [(set_attr "isa" "noavx,avx")

@@ -1,3 +1,8 @@
+2015-09-22  Alexander Fomin <alexander.fomin@intel.com>
+
+	PR target/67480
+	* gcc.target/i386/pr67480.c: New test.
+
 2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
 
         * gcc.target/i386/funcspec-5.c: Test avx512vl, avx512bw,
