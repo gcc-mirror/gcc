@@ -81,7 +81,7 @@ enum processor_subtypes
   CPU_SUBTYPE_MAX
 };
 
-/* ISA Features supported. */
+/* ISA Features supported. New features have to be inserted at the end.  */
 
 enum processor_features
 {
@@ -104,7 +104,13 @@ enum processor_features
   FEATURE_BMI,
   FEATURE_BMI2,
   FEATURE_AES,
-  FEATURE_PCLMUL
+  FEATURE_PCLMUL,
+  FEATURE_AVX512VL,
+  FEATURE_AVX512BW,
+  FEATURE_AVX512DQ,
+  FEATURE_AVX512CD,
+  FEATURE_AVX512ER,
+  FEATURE_AVX512PF
 };
 
 struct __processor_model
@@ -318,6 +324,18 @@ get_available_features (unsigned int ecx, unsigned int edx,
         features |= (1 << FEATURE_BMI2);
       if (ebx & bit_AVX512F)
 	features |= (1 << FEATURE_AVX512F);
+      if (ebx & bit_AVX512VL)
+	features |= (1 << FEATURE_AVX512VL);
+      if (ebx & bit_AVX512BW)
+	features |= (1 << FEATURE_AVX512BW);
+      if (ebx & bit_AVX512DQ)
+	features |= (1 << FEATURE_AVX512DQ);
+      if (ebx & bit_AVX512CD)
+	features |= (1 << FEATURE_AVX512CD);
+      if (ebx & bit_AVX512PF)
+	features |= (1 << FEATURE_AVX512PF);
+      if (ebx & bit_AVX512ER)
+	features |= (1 << FEATURE_AVX512ER);
     }
 
   unsigned int ext_level;

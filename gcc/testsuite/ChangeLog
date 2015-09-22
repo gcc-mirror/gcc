@@ -1,3 +1,10 @@
+2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/funcspec-5.c: Test avx512vl, avx512bw,
+	avx512dq, avx512cd, avx512er, avx512pf and skylake-avx512.
+	* gcc.target/i386/builtin_target.c: Test  avx512vl, avx512bw,
+	avx512dq, avx512cd, avx512er and avx512pf.
+
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/aarch64/atomic-inst-ldadd.c: Add tests for

@@ -1,3 +1,10 @@
+2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+
+	* libgcc/config/i386/cpuinfo.c (enum processor_features): Add
+	FEATURE_AVX512VL, FEATURE_AVX512BW, FEATURE_AVX512DQ,
+	FEATURE_AVX512CD, FEATURE_AVX512ER, FEATURE_AVX512PF.
+	(get_available_features): Habdle new features.
+
 2015-09-21  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/crti-hw.S: Use __PMSIZE to allow configurable
