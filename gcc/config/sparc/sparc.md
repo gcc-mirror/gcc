@@ -1467,13 +1467,13 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "immediate_operand" "in")))]
-  "! flag_pic"
+  ""
   "or\t%1, %%lo(%a2), %0")
 
 (define_insn "*movsi_high"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand:SI 1 "immediate_operand" "in")))]
-  "! flag_pic"
+  ""
   "sethi\t%%hi(%a1), %0")
 
 ;; The next two patterns must wrap the SYMBOL_REF in an UNSPEC
@@ -1745,105 +1745,105 @@
 (define_insn "*sethi_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (match_operand:DI 1 "symbolic_operand" "")))]
-  "TARGET_CM_MEDLOW && !flag_pic"
+  "TARGET_CM_MEDLOW && check_pic (1)"
   "sethi\t%%hi(%a1), %0")
 
 (define_insn "*losum_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (match_operand:DI 2 "symbolic_operand" "")))]
-  "TARGET_CM_MEDLOW && !flag_pic"
+  "TARGET_CM_MEDLOW"
   "or\t%1, %%lo(%a2), %0")
 
 (define_insn "seth44"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")] UNSPEC_SETH44)))]
-  "TARGET_CM_MEDMID && !flag_pic"
+  "TARGET_CM_MEDMID"
   "sethi\t%%h44(%a1), %0")
 
 (define_insn "setm44"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")] UNSPEC_SETM44)))]
-  "TARGET_CM_MEDMID && !flag_pic"
+  "TARGET_CM_MEDMID"
   "or\t%1, %%m44(%a2), %0")
 
 (define_insn "setl44"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (match_operand:DI 2 "symbolic_operand" "")))]
-  "TARGET_CM_MEDMID && !flag_pic"
+  "TARGET_CM_MEDMID"
   "or\t%1, %%l44(%a2), %0")
 
 (define_insn "sethh"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")] UNSPEC_SETHH)))]
-  "TARGET_CM_MEDANY && !flag_pic"
+  "TARGET_CM_MEDANY"
   "sethi\t%%hh(%a1), %0")
 
 (define_insn "setlm"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")] UNSPEC_SETLM)))]
-  "TARGET_CM_MEDANY && !flag_pic"
+  "TARGET_CM_MEDANY"
   "sethi\t%%lm(%a1), %0")
 
 (define_insn "sethm"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")] UNSPEC_EMB_SETHM)))]
-  "TARGET_CM_MEDANY && !flag_pic"
+  "TARGET_CM_MEDANY"
   "or\t%1, %%hm(%a2), %0")
 
 (define_insn "setlo"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (match_operand:DI 2 "symbolic_operand" "")))]
-  "TARGET_CM_MEDANY && !flag_pic"
+  "TARGET_CM_MEDANY"
   "or\t%1, %%lo(%a2), %0")
 
 (define_insn "embmedany_sethi"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "data_segment_operand" "")] UNSPEC_EMB_HISUM)))]
-  "TARGET_CM_EMBMEDANY && !flag_pic"
+  "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi\t%%hi(%a1), %0")
 
 (define_insn "embmedany_losum"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (match_operand:DI 2 "data_segment_operand" "")))]
-  "TARGET_CM_EMBMEDANY && !flag_pic"
+  "TARGET_CM_EMBMEDANY"
   "add\t%1, %%lo(%a2), %0")
 
 (define_insn "embmedany_brsum"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(match_operand:DI 1 "register_operand" "r")] UNSPEC_EMB_HISUM))]
-  "TARGET_CM_EMBMEDANY && !flag_pic"
+  "TARGET_CM_EMBMEDANY"
   "add\t%1, %_, %0")
 
 (define_insn "embmedany_textuhi"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "text_segment_operand" "")] UNSPEC_EMB_TEXTUHI)))]
-  "TARGET_CM_EMBMEDANY && !flag_pic"
+  "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi\t%%uhi(%a1), %0")
 
 (define_insn "embmedany_texthi"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "text_segment_operand" "")] UNSPEC_EMB_TEXTHI)))]
-  "TARGET_CM_EMBMEDANY && !flag_pic"
+  "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi\t%%hi(%a1), %0")
 
 (define_insn "embmedany_textulo"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (unspec:DI [(match_operand:DI 2 "text_segment_operand" "")] UNSPEC_EMB_TEXTULO)))]
-  "TARGET_CM_EMBMEDANY && !flag_pic"
+  "TARGET_CM_EMBMEDANY"
   "or\t%1, %%ulo(%a2), %0")
 
 (define_insn "embmedany_textlo"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (match_operand:DI 2 "text_segment_operand" "")))]
-  "TARGET_CM_EMBMEDANY && !flag_pic"
+  "TARGET_CM_EMBMEDANY"
   "or\t%1, %%lo(%a2), %0")
 
 ;; Now some patterns to help reload out a bit.

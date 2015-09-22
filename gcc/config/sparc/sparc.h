@@ -452,17 +452,6 @@ extern enum cmodel sparc_cmodel;
 
 /* target machine storage layout */
 
-/* Define this macro if it is advisable to hold scalars in registers
-   in a wider mode than that declared by the program.  In such cases,
-   the value is constrained to be within the bounds of the declared
-   type, but kept valid in the wider mode.  The signedness of the
-   extension may differ from that of the type.  */
-
-#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)	\
-  if (GET_MODE_CLASS (MODE) == MODE_INT		\
-      && GET_MODE_SIZE (MODE) < (TARGET_ARCH64 ? 8 : 4)) \
-    (MODE) = TARGET_ARCH64 ? DImode : SImode;
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN 1
@@ -746,12 +735,6 @@ extern int sparc_mode_class[];
    register TO.  We cannot rename %g1 as it may be used before the save
    register window instruction in the prologue.  */
 #define HARD_REGNO_RENAME_OK(FROM, TO) ((FROM) != 1)
-
-/* Select a register mode required for caller save of hard regno REGNO.  */
-#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
-    (((MODE) == VOIDmode) ? \
-     choose_hard_reg_mode ((REGNO), (NREGS), false) : \
-     (MODE))
 
 #define MODES_TIEABLE_P(MODE1, MODE2) sparc_modes_tieable_p (MODE1, MODE2)
 
@@ -1050,10 +1033,12 @@ extern char leaf_reg_remap[];
   (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
 
 /* On SPARC when not VIS3 it is not possible to directly move data
-   between GENERAL_REGS and FP_REGS.  We also cannot move 4-byte values
-   between FP_REGS and EXTRA_FP_REGS.  */
+   between GENERAL_REGS and FP_REGS.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  sparc_secondary_memory_needed (CLASS1, CLASS2, MODE)
+  ((FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)) \
+   && (! TARGET_VIS3 \
+       || GET_MODE_SIZE (MODE) > 8 \
+       || GET_MODE_SIZE (MODE) < 4))
 
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.

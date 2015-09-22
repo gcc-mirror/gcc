@@ -62,8 +62,6 @@ extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern rtx sparc_legitimize_reload_address (rtx, machine_mode, int, int,
 					    int, int *win);
-extern bool sparc_secondary_memory_needed (enum reg_class, enum reg_class,
-					   machine_mode);
 extern void load_got_register (void);
 extern void sparc_emit_call_insn (rtx, rtx);
 extern void sparc_defer_case_vector (rtx, rtx, int);

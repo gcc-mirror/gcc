@@ -808,9 +808,6 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE sparc_can_eliminate
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_true
-
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS sparc_preferred_reload_class
 
@@ -4694,7 +4691,7 @@ enum sparc_mode_class {
   ((1 << (int) H_MODE) | (1 << (int) S_MODE) | (1 << (int) SF_MODE))
 
 /* Modes for double-word and smaller quantities.  */
-#define D_MODES (S_MODES | (1 << (int) D_MODE) | (1 << (int) DF_MODE))
+#define D_MODES (S_MODES | (1 << (int) D_MODE) | (1 << DF_MODE))
 
 /* Modes for quad-word and smaller quantities.  */
 #define T_MODES (D_MODES | (1 << (int) T_MODE) | (1 << (int) TF_MODE))
@@ -4706,24 +4703,22 @@ enum sparc_mode_class {
 #define SF_MODES ((1 << (int) S_MODE) | (1 << (int) SF_MODE))
 
 /* Modes for double-float and smaller quantities.  */
-#define DF_MODES (SF_MODES | (1 << (int) D_MODE) | (1 << (int) DF_MODE))
+#define DF_MODES (SF_MODES | (1 << (int) D_MODE) | (1 << DF_MODE))
 
 /* Modes for quad-float and smaller quantities.  */
-#define TF_MODES (DF_MODES | (1 << (int) T_MODE) | (1 << (int) TF_MODE))
+#define TF_MODES (DF_MODES | (1 << (int) TF_MODE))
 
 /* Modes for quad-float pairs and smaller quantities.  */
-#define OF_MODES (TF_MODES | (1 << (int) O_MODE) | (1 << (int) OF_MODE))
+#define OF_MODES (TF_MODES | (1 << (int) OF_MODE))
 
 /* Modes for double-float only quantities.  */
 #define DF_MODES_NO_S ((1 << (int) D_MODE) | (1 << (int) DF_MODE))
 
 /* Modes for quad-float and double-float only quantities.  */
-#define TF_MODES_NO_S \
-  (DF_MODES_NO_S | (1 << (int) T_MODE) | (1 << (int) TF_MODE))
+#define TF_MODES_NO_S (DF_MODES_NO_S | (1 << (int) TF_MODE))
 
 /* Modes for quad-float pairs and double-float only quantities.  */
-#define OF_MODES_NO_S \
-  (TF_MODES_NO_S | (1 << (int) O_MODE) | (1 << (int) OF_MODE))
+#define OF_MODES_NO_S (TF_MODES_NO_S | (1 << (int) OF_MODE))
 
 /* Modes for condition codes.  */
 #define CC_MODES (1 << (int) CC_MODE)
@@ -11193,7 +11188,7 @@ sparc_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	  || sparc_cpu == PROCESSOR_NIAGARA2
 	  || sparc_cpu == PROCESSOR_NIAGARA3
 	  || sparc_cpu == PROCESSOR_NIAGARA4)
-	return 8;
+	return 12;
 
       return 6;
     }
@@ -12281,26 +12276,6 @@ sparc_expand_vector_init (rtx target, rtx vals)
 				       i * GET_MODE_SIZE (inner_mode)),
 		    XVECEXP (vals, 0, i));
   emit_move_insn (target, mem);
-}
-
-bool sparc_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-				    machine_mode mode)
-{
-  if (FP_REG_CLASS_P (class1) != FP_REG_CLASS_P (class2))
-    {
-      if (! TARGET_VIS3
-	  || GET_MODE_SIZE (mode) > 8
-	  || GET_MODE_SIZE (mode) < 4)
-	return true;
-      return false;
-    }
-
-  if (GET_MODE_SIZE (mode) == 4
-      && ((class1 == FP_REGS && class2 == EXTRA_FP_REGS)
-	  || (class1 == EXTRA_FP_REGS && class2 == FP_REGS)))
-    return true;
-
-  return false;
 }
 
 /* Implement TARGET_SECONDARY_RELOAD.  */
