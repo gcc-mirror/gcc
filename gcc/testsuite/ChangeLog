@@ -1,3 +1,21 @@
+2015-09-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.target/i386/inline_error.c (int bar): Use dg-message for note.
+	* gcc.target/i386/pr57756.c (static __inline int caller): Likewise.
+	* gcc.target/i386/pr59789.c (f1): Likewise.
+	* gcc.target/i386/intrinsics_5.c (__m128i foo): Likewise.
+	* gcc.target/i386/intrinsics_6.c: Likewise.
+	* gcc.dg/winline-5.c (int t): Likewise.
+	* gcc.dg/winline-9.c (t): Likewise.
+	* gcc.dg/always_inline2.c (q): Likewise.
+	* gcc.dg/winline-2.c (inline int t): Likewise.
+	* gcc.dg/winline-6.c: Likewise.
+	* gcc.dg/winline-10.c (void g): Likewise.
+	* gcc.dg/pr49243.c (void parse): Likewise.
+	* gcc.dg/always_inline3.c (q2): Likewise.
+	* gcc.dg/winline-3.c: Likewise.
+	* gcc.dg/winline-7.c (inline void *t): Likewise.
+
 2015-09-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/67666

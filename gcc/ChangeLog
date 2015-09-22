@@ -1,3 +1,10 @@
+2015-09-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree-inline.c (expand_call_inline): Use inform for extra note.
+	Do not give a note with UNKNOWN_LOCATION.
+	Replace input_location with gimple_location (stmt).
+	Use true/false instead of TRUE/FALSE.
+
 2015-09-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/67666

@@ -17,5 +17,5 @@ inline int q(void) /* { dg-warning "inline-unit-growth" } */
 }
 int t (void)
 {
-	return q ();		 /* { dg-warning "called from here" } */
+	return q ();		 /* { dg-message "called from here" } */
 }

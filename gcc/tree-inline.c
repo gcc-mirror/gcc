@@ -4384,21 +4384,19 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   tree return_slot;
   tree modify_dest;
   tree return_bounds = NULL;
-  location_t saved_location;
   struct cgraph_edge *cg_edge;
   cgraph_inline_failed_t reason;
   basic_block return_block;
   edge e;
   gimple_stmt_iterator gsi, stmt_gsi;
-  bool successfully_inlined = FALSE;
+  bool successfully_inlined = false;
   bool purge_dead_abnormal_edges;
   gcall *call_stmt;
   unsigned int i;
 
-  /* Set input_location here so we get the right instantiation context
-     if we call instantiate_decl from inlinable_function_p.  */
-  /* FIXME: instantiate_decl isn't called by inlinable_function_p.  */
-  saved_location = input_location;
+  /* The gimplifier uses input_location in too many places, such as
+     internal_get_tmp_var ().  */
+  location_t saved_location = input_location;
   input_location = gimple_location (stmt);
 
   /* From here on, we're only interested in CALL_EXPRs.  */
@@ -4454,7 +4452,11 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	{
 	  error ("inlining failed in call to always_inline %q+F: %s", fn,
 		 cgraph_inline_failed_string (reason));
-	  error ("called from here");
+	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
+	    inform (gimple_location (stmt), "called from here");
+	  else if (DECL_SOURCE_LOCATION (cfun->decl) != UNKNOWN_LOCATION)
+	    inform (DECL_SOURCE_LOCATION (cfun->decl),
+                   "called from this function");
 	}
       else if (warn_inline
 	       && DECL_DECLARED_INLINE_P (fn)
@@ -4467,9 +4469,15 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	       /* Avoid warnings during early inline pass. */
 	       && symtab->global_info_ready)
 	{
-	  warning (OPT_Winline, "inlining failed in call to %q+F: %s",
-		   fn, _(cgraph_inline_failed_string (reason)));
-	  warning (OPT_Winline, "called from here");
+	  if (warning (OPT_Winline, "inlining failed in call to %q+F: %s",
+		       fn, _(cgraph_inline_failed_string (reason))))
+	    {
+	      if (gimple_location (stmt) != UNKNOWN_LOCATION)
+		inform (gimple_location (stmt), "called from here");
+	      else if (DECL_SOURCE_LOCATION (cfun->decl) != UNKNOWN_LOCATION)
+		inform (DECL_SOURCE_LOCATION (cfun->decl),
+                       "called from this function");
+	    }
 	}
       goto egress;
     }
@@ -4534,7 +4542,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     {
       id->block = make_node (BLOCK);
       BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
-      BLOCK_SOURCE_LOCATION (id->block) = LOCATION_LOCUS (input_location);
+      BLOCK_SOURCE_LOCATION (id->block) 
+	= LOCATION_LOCUS (gimple_location (stmt));
       prepend_lexical_block (gimple_block (stmt), id->block);
     }
 
@@ -4799,7 +4808,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   cg_edge->callee->remove ();
 
   id->block = NULL_TREE;
-  successfully_inlined = TRUE;
+  successfully_inlined = true;
 
  egress:
   input_location = saved_location;
