@@ -1,5 +1,11 @@
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/aarch64/atomic-inst-ldadd.c: Add tests for
+	update-fetch operations.
+	* gcc.target/aarch64/atomic-inst-ldlogic.c: Likewise.
+
+2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* gcc.target/aarch64/atomic-inst-ldadd.c: New.
 	* gcc.target/aarch64/atomic-inst-ldlogic.c: New.
 

@@ -219,7 +219,7 @@
   "&& reload_completed"
   [(const_int 0)]
   {
-    aarch64_gen_atomic_ldop (SET, operands[0], operands[1],
+    aarch64_gen_atomic_ldop (SET, operands[0], NULL, operands[1],
 			     operands[2], operands[3]);
     DONE;
   }
@@ -280,7 +280,7 @@
   "&& reload_completed"
   [(const_int 0)]
   {
-    aarch64_gen_atomic_ldop (<CODE>, operands[3], operands[0],
+    aarch64_gen_atomic_ldop (<CODE>, operands[3], NULL, operands[0],
 			     operands[1], operands[2]);
     DONE;
   }
@@ -368,7 +368,7 @@
   "&& reload_completed"
   [(const_int 0)]
   {
-    aarch64_gen_atomic_ldop (<CODE>, operands[0], operands[1],
+    aarch64_gen_atomic_ldop (<CODE>, operands[0], NULL, operands[1],
 			     operands[2], operands[3]);
     DONE;
   }
@@ -398,7 +398,31 @@
   }
 )
 
-(define_insn_and_split "atomic_<atomic_optab>_fetch<mode>"
+;; Load-operate-store, returning the original memory data.
+
+(define_expand "atomic_<atomic_optab>_fetch<mode>"
+ [(match_operand:ALLI 0 "register_operand" "")
+  (atomic_op:ALLI
+   (match_operand:ALLI 1 "aarch64_sync_memory_operand" "")
+   (match_operand:ALLI 2 "<atomic_op_operand>" ""))
+  (match_operand:SI 3 "const_int_operand")]
+ ""
+{
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+  rtx value = operands[2];
+
+  /* Use an atomic load-operate instruction when possible.  */
+  if (aarch64_atomic_ldop_supported_p (<CODE>))
+    gen = gen_aarch64_atomic_<atomic_optab>_fetch<mode>_lse;
+  else
+    gen = gen_aarch64_atomic_<atomic_optab>_fetch<mode>;
+
+  emit_insn (gen (operands[0], operands[1], value, operands[3]));
+
+  DONE;
+})
+
+(define_insn_and_split "aarch64_atomic_<atomic_optab>_fetch<mode>"
   [(set (match_operand:ALLI 0 "register_operand" "=&r")
     (atomic_op:ALLI
       (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q")
@@ -417,6 +441,29 @@
   {
     aarch64_split_atomic_op (<CODE>, NULL, operands[0], operands[1],
 			     operands[2], operands[3], operands[4]);
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_atomic_<atomic_optab>_fetch<mode>_lse"
+  [(set (match_operand:ALLI 0 "register_operand" "=&r")
+    (atomic_op:ALLI
+     (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q")
+     (match_operand:ALLI 2 "<atomic_op_operand>" "r<const_atomic>")))
+   (set (match_dup 1)
+    (unspec_volatile:ALLI
+      [(match_dup 1)
+       (match_dup 2)
+       (match_operand:SI 3 "const_int_operand")]
+      UNSPECV_ATOMIC_LDOP))
+     (clobber (match_scratch:ALLI 4 "=r"))]
+  "TARGET_LSE"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_gen_atomic_ldop (<CODE>, operands[4], operands[0], operands[1],
+			     operands[2], operands[3]);
     DONE;
   }
 )
