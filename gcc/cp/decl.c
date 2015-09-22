@@ -12729,6 +12729,7 @@ xref_basetypes (tree ref, tree base_list)
   tree binfo, base_binfo;
   unsigned max_vbases = 0; /* Maximum direct & indirect virtual bases.  */
   unsigned max_bases = 0;  /* Maximum direct bases.  */
+  unsigned max_dvbases = 0; /* Maximum direct virtual bases.  */
   int i;
   tree default_access;
   tree igo_prev; /* Track Inheritance Graph Order.  */
@@ -12766,12 +12767,13 @@ xref_basetypes (tree ref, tree base_list)
 	{
 	  max_bases++;
 	  if (TREE_TYPE (*basep))
-	    max_vbases++;
+	    max_dvbases++;
 	  if (CLASS_TYPE_P (basetype))
 	    max_vbases += vec_safe_length (CLASSTYPE_VBASECLASSES (basetype));
 	  basep = &TREE_CHAIN (*basep);
 	}
     }
+  max_vbases += max_dvbases;
 
   TYPE_MARKED_P (ref) = 1;
 
@@ -12814,6 +12816,9 @@ xref_basetypes (tree ref, tree base_list)
 	  error ("Java class %qT cannot have multiple bases", ref);
           return false;
         }
+      else
+	warning (OPT_Wmultiple_inheritance,
+		 "%qT defined with multiple direct bases", ref);
     }
 
   if (max_vbases)
@@ -12825,6 +12830,9 @@ xref_basetypes (tree ref, tree base_list)
 	  error ("Java class %qT cannot have virtual bases", ref);
           return false;
         }
+      else if (max_dvbases)
+	warning (OPT_Wvirtual_inheritance,
+		 "%qT defined with direct virtual base", ref);
     }
 
   for (igo_prev = binfo; base_list; base_list = TREE_CHAIN (base_list))

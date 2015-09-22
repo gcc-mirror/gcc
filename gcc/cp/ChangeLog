@@ -1,3 +1,11 @@
+2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (xref_basetypes): Check virtual and/or multiple
+	inheritance warning.
+	* parser.c (cp_parser_namespace_definition): Check namespaces
+	warning.
+	* pt.c (push_template_decl_real): Check templates warning.
+
 2015-09-22  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (abi_warn_or_compat_version_crosses): New.

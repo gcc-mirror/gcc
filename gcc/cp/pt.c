@@ -5088,6 +5088,8 @@ push_template_decl_real (tree decl, bool is_friend)
 
   if (is_primary)
     {
+      warning (OPT_Wtemplates, "template %qD declared", decl);
+      
       if (DECL_CLASS_SCOPE_P (decl))
 	member_template_p = true;
       if (TREE_CODE (decl) == TYPE_DECL

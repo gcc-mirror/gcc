@@ -1,3 +1,8 @@
+2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi  (-Wmultiple-inheritance, -Wvirtual-inheritance,
+	-Wtemplates, -Wnamespaces): Document.
+
 2015-09-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/67671

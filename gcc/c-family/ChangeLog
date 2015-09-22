@@ -1,3 +1,8 @@
+2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c.opt (Wmultiple-inheritance, Wvirtual-inheritance, Wtemplates,
+	Wnamespaces): New C++ warnings.
+
 2015-09-22  Jason Merrill  <jason@redhat.com>
 
 	* c-common.h (abi_compat_version_crosses): New.
