@@ -1,3 +1,9 @@
+2015-09-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67671
+	* tree-ssa-structalias.c (create_variable_info_for_1): Handle restrict
+	pointer references as restrict.
+
 2015-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/nios2/nios2.c (nios2_legitimize_address): When handling
