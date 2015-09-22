@@ -27,6 +27,7 @@
     UNSPECV_ATOMIC_CMPSW		; Represent an atomic compare swap.
     UNSPECV_ATOMIC_EXCHG		; Represent an atomic exchange.
     UNSPECV_ATOMIC_CAS			; Represent an atomic CAS.
+    UNSPECV_ATOMIC_SWP			; Represent an atomic SWP.
     UNSPECV_ATOMIC_OP			; Represent an atomic operation.
 ])
 
@@ -134,7 +135,7 @@
        (match_operand:SI 5 "const_int_operand")			;; mod_s
        (match_operand:SI 6 "const_int_operand")]		;; mod_f
       UNSPECV_ATOMIC_CMPSW))]
-  "TARGET_LSE "
+  "TARGET_LSE"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -146,7 +147,28 @@
   }
 )
 
-(define_insn_and_split "atomic_exchange<mode>"
+(define_expand "atomic_exchange<mode>"
+ [(match_operand:ALLI 0 "register_operand" "")
+  (match_operand:ALLI 1 "aarch64_sync_memory_operand" "")
+  (match_operand:ALLI 2 "register_operand" "")
+  (match_operand:SI 3 "const_int_operand" "")]
+  ""
+  {
+    rtx (*gen) (rtx, rtx, rtx, rtx);
+
+    /* Use an atomic SWP when available.  */
+    if (TARGET_LSE)
+      gen = gen_aarch64_atomic_exchange<mode>_lse;
+    else
+      gen = gen_aarch64_atomic_exchange<mode>;
+
+    emit_insn (gen (operands[0], operands[1], operands[2], operands[3]));
+
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_atomic_exchange<mode>"
   [(set (match_operand:ALLI 0 "register_operand" "=&r")		;; output
     (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q")) ;; memory
    (set (match_dup 1)
@@ -162,7 +184,26 @@
   [(const_int 0)]
   {
     aarch64_split_atomic_op (SET, operands[0], NULL, operands[1],
-			    operands[2], operands[3], operands[4]);
+			     operands[2], operands[3], operands[4]);
+    DONE;
+  }
+)
+
+(define_insn_and_split "aarch64_atomic_exchange<mode>_lse"
+  [(set (match_operand:ALLI 0 "register_operand" "=&r")
+    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
+   (set (match_dup 1)
+    (unspec_volatile:ALLI
+      [(match_operand:ALLI 2 "register_operand" "r")
+       (match_operand:SI 3 "const_int_operand" "")]
+      UNSPECV_ATOMIC_EXCHG))]
+  "TARGET_LSE"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_gen_atomic_ldop (SET, operands[0], operands[1],
+			     operands[2], operands[3]);
     DONE;
   }
 )
@@ -183,7 +224,7 @@
   [(const_int 0)]
   {
     aarch64_split_atomic_op (<CODE>, NULL, operands[3], operands[0],
-			    operands[1], operands[2], operands[4]);
+			     operands[1], operands[2], operands[4]);
     DONE;
   }
 )
@@ -424,6 +465,28 @@
 )
 
 ;; ARMv8.1 LSE instructions.
+
+;; Atomic swap with memory.
+(define_insn "aarch64_atomic_swp<mode>"
+ [(set (match_operand:ALLI 0 "register_operand" "+&r")
+   (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
+  (set (match_dup 1)
+   (unspec_volatile:ALLI
+    [(match_operand:ALLI 2 "register_operand" "r")
+     (match_operand:SI 3 "const_int_operand" "")]
+    UNSPECV_ATOMIC_SWP))]
+  "TARGET_LSE && reload_completed"
+  {
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model))
+      return "swp<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else if (is_mm_acquire (model) || is_mm_consume (model))
+      return "swpa<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else if (is_mm_release (model))
+      return "swpl<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else
+      return "swpal<atomic_sfx>\t%<w>2, %<w>0, %1";
+  })
 
 ;; Atomic compare-and-swap: HI and smaller modes.
 
