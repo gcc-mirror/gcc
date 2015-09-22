@@ -3392,7 +3392,7 @@
   [(set_attr "type" "logics_reg")]
 )
 
-(define_insn "*<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3"
+(define_insn "<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(LOGICAL:GPI (not:GPI
 		      (SHIFT:GPI
