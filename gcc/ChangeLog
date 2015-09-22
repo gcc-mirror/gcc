@@ -1,5 +1,16 @@
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/aarch64/aarch64/atomics.md (UNSPECV_ATOMIC_LDOP): New.
+	(UNSPECV_ATOMIC_LDOP_OR): New.
+	(UNSPECV_ATOMIC_LDOP_BIC): New.
+	(UNSPECV_ATOMIC_LDOP_XOR): New.
+	(UNSPECV_ATOMIC_LDOP_PLUS): New.
+	(ATOMIC_LDOP): New.
+	(atomic_ldop): New.
+	(aarch64_atomic_load<atomic_ldop><mode>): New.
+
+2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/aarch64/aarch64.md
 	(<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3): Make a named
 	pattern.
