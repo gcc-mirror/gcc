@@ -1,3 +1,8 @@
+2015-09-22  Jeff Law  <law@redhat.com>
+
+	* config/pa/pa.h (MIN_LEGIT_64BIT_CONST_INT: Avoid undefined
+	behavior.
+
 2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi  (-Wmultiple-inheritance, -Wvirtual-inheritance,
