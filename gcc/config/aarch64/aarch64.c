@@ -11018,6 +11018,25 @@ aarch64_split_compare_and_swap (rtx operands[])
     aarch64_emit_post_barrier (model);
 }
 
+/* Emit a BIC instruction.  */
+
+static void
+aarch64_emit_bic (machine_mode mode, rtx dst, rtx s1, rtx s2, int shift)
+{
+  rtx shift_rtx = GEN_INT (shift);
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case SImode: gen = gen_and_one_cmpl_lshrsi3; break;
+    case DImode: gen = gen_and_one_cmpl_lshrdi3; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (dst, s2, shift_rtx, s1));
+}
+
 /* Emit an atomic swap.  */
 
 static void
@@ -11112,13 +11131,14 @@ aarch64_emit_atomic_load_op (enum aarch64_atomic_load_op_code code,
 }
 
 /* Emit an atomic load+operate.  CODE is the operation.  OUT_DATA is the
-   location to store the data read from memory.  MEM is the memory location to
-   read and modify.  MODEL_RTX is the memory ordering to use.  VALUE is the
-   second operand for the operation.  Either OUT_DATA or OUT_RESULT, but not
-   both, can be NULL.  */
+   location to store the data read from memory.  OUT_RESULT is the location to
+   store the result of the operation.  MEM is the memory location to read and
+   modify.  MODEL_RTX is the memory ordering to use.  VALUE is the second
+   operand for the operation.  Either OUT_DATA or OUT_RESULT, but not both, can
+   be NULL.  */
 
 void
-aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data,
+aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
 			 rtx mem, rtx value, rtx model_rtx)
 {
   machine_mode mode = GET_MODE (mem);
@@ -11131,12 +11151,15 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data,
   if (out_data)
     out_data = gen_lowpart (mode, out_data);
 
+  if (out_result)
+    out_result = gen_lowpart (mode, out_result);
+
   /* Make sure the value is in a register, putting it into a destination
      register if it needs to be manipulated.  */
   if (!register_operand (value, mode)
       || code == AND || code == MINUS)
     {
-      src = out_data;
+      src = out_result ? out_result : out_data;
       emit_move_insn (src, gen_lowpart (mode, value));
     }
   else
@@ -11202,6 +11225,43 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data,
     }
 
   aarch64_emit_atomic_load_op (ldop_code, mode, out_data, src, mem, model_rtx);
+
+  /* If necessary, calculate the data in memory after the update by redoing the
+     operation from values in registers.  */
+  if (!out_result)
+    return;
+
+  if (short_mode)
+    {
+      src = gen_lowpart (wmode, src);
+      out_data = gen_lowpart (wmode, out_data);
+      out_result = gen_lowpart (wmode, out_result);
+    }
+
+  x = NULL_RTX;
+
+  switch (code)
+    {
+    case MINUS:
+    case PLUS:
+      x = gen_rtx_PLUS (wmode, out_data, src);
+      break;
+    case IOR:
+      x = gen_rtx_IOR (wmode, out_data, src);
+      break;
+    case XOR:
+      x = gen_rtx_XOR (wmode, out_data, src);
+      break;
+    case AND:
+      aarch64_emit_bic (wmode, out_result, out_data, src, 0);
+      return;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_set_insn (out_result, x);
+
+  return;
 }
 
 /* Split an atomic operation.  */

@@ -1,5 +1,20 @@
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_gen_atomic_ldop):
+	Adjust declaration.
+	* config/aarch64/aarch64.c (aarch64_emit_bic): New.
+	(aarch64_gen_atomic_ldop): Adjust comment.  Add parameter
+	out_result.  Update to support update-fetch operations.
+	* config/aarch64/atomics.md (aarch64_atomic_exchange<mode>_lse):
+	Adjust for change to aarch64_gen_atomic_ldop.
+	(aarch64_atomic_<atomic_optab><mode>_lse): Likewise.
+	(aarch64_atomic_fetch_<atomic_optab><mode>_lse): Likewise.
+	(atomic_<atomic_optab>_fetch<mode>): Change to an expander.
+	(aarch64_atomic_<atomic_optab>_fetch<mode>): New.
+	(aarch64_atomic_<atomic_optab>_fetch<mode>_lse): New.
+
+2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/aarch64/aarch64-protos.h
 	(aarch64_atomic_ldop_supported_p): Declare.
 	* config/aarch64/aarch64.c (aarch64_atomic_ldop_supported_p): New.
