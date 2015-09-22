@@ -6145,7 +6145,7 @@ thread_prologue_and_epilogue_insns (void)
      prologue/epilogue is emitted only around those parts of the
      function that require it.  */
 
-  try_shrink_wrapping (&entry_edge, orig_entry_edge, &bb_flags, prologue_seq);
+  try_shrink_wrapping (&entry_edge, &bb_flags, prologue_seq);
 
   if (split_prologue_seq != NULL_RTX)
     {

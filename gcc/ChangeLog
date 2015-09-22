@@ -1,3 +1,17 @@
+2015-09-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* function.c (thread_prologue_and_epilogue_insns): Delete
+	orig_entry_edge argument to try_shrink_wrapping.
+	* shrink-wrap.c (can_get_prologue): New function.
+	(can_dup_for_shrink_wrapping): Also handle EDGE_CROSSING.
+	(try_shrink_wrapping): Delete orig_entry_edge argument.  Use
+	can_get_prologue where needed.  Remove code that finds a single
+	edge for the prologue.  Remove code that tests if any reg clobbered
+	by the prologue is live on the prologue edge.  Remove code that finds
+	the new prologue edge after duplicating blocks.  Make a new prologue
+	block and edge.
+	* shrink-wrap.h (try_shrink_wrapping): Delete orig_entry_edge argument.
+
 2015-09-22  Jeff Law  <law@redhat.com>
 
 	* config/pa/pa.h (MIN_LEGIT_64BIT_CONST_INT: Avoid undefined
