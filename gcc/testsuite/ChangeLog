@@ -1,3 +1,8 @@
+2015-09-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67671
+	* g++.dg/pr67671.C: New test.
+
 2015-09-22  Alexander Fomin <alexander.fomin@intel.com>
 
 	PR target/67480
