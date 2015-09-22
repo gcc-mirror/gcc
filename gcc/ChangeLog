@@ -1,5 +1,22 @@
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/aarch64/aarch64-protos.h
+	(aarch64_atomic_ldop_supported_p): Declare.
+	* config/aarch64/aarch64.c (aarch64_atomic_ldop_supported_p): New.
+	(enum aarch64_atomic_load_op_code): New.
+	(aarch64_emit_atomic_load_op): New.
+	(aarch64_gen_atomic_ldop): Update to support load-operate
+	patterns.
+	* config/aarch64/atomics.md (atomic_<atomic_optab><mode>): Change
+	to an expander.
+	(aarch64_atomic_<atomic_optab><mode>): New.
+	(aarch64_atomic_<atomic_optab><mode>_lse): New.
+	(atomic_fetch_<atomic_optab><mode>): Change to an expander.
+	(aarch64_atomic_fetch_<atomic_optab><mode>): New.
+	(aarch64_atomic_fetch_<atomic_optab><mode>_lse): New.
+
+2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/aarch64/aarch64/atomics.md (UNSPECV_ATOMIC_LDOP): New.
 	(UNSPECV_ATOMIC_LDOP_OR): New.
 	(UNSPECV_ATOMIC_LDOP_BIC): New.
