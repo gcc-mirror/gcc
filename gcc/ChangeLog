@@ -1,5 +1,11 @@
 2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/aarch64/aarch64.md
+	(<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3): Make a named
+	pattern.
+
+2015-09-22  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_gen_atomic_ldop):
 	Declare.
 	* config/aarch64/aarch64.c (aarch64_emit_atomic_swap): New.
