@@ -1,3 +1,10 @@
+2015-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops.cc (is_dot, is_dotdot): Define new helpers.
+	(create_directories): Fix error handling.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	New.
+
 2015-09-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/67647
