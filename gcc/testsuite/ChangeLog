@@ -1,3 +1,8 @@
+2015-09-23   Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67662
+	* gcc.dg/ubsan/pr67662.c: New testcase.
+
 2015-09-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/49655
