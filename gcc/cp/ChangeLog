@@ -1,3 +1,9 @@
+2015-09-23  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix small typos in the coding rule enforcement warnings.
+	* parser.c (cp_parser_namespace_definition): Replace 'namepace'
+	with 'namespace'.
+
 2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (xref_basetypes): Check virtual and/or multiple

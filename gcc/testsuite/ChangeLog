@@ -1,3 +1,9 @@
+2015-09-23  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix small typos in the coding rule enforcement warnings.
+	* g++.dg/diagnostic/disable.C: Replace 'namepace'
+	with 'namespace'.
+
 2015-09-23   Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67662
