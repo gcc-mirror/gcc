@@ -2129,11 +2129,6 @@
 {
   if (TARGET_SHMEDIA)
     operands[1] = force_reg (SImode, operands[1]);
-  else if (! arith_operand (operands[2], SImode))
-    {
-      if (reg_overlap_mentioned_p (operands[0], operands[1]))
-	FAIL;
-    }
 })
 
 (define_insn "addsi3_media"
@@ -2172,10 +2167,7 @@
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,&u")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rI08,rn")))]
-  "TARGET_SH1
-   && ((rtx_equal_p (operands[0], operands[1])
-        && arith_operand (operands[2], SImode))
-       || ! reg_overlap_mentioned_p (operands[0], operands[1]))"
+  "TARGET_SH1"
   "@
 	add	%2,%0
 	#"
