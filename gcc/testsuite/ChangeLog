@@ -1,3 +1,15 @@
+2015-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	Backport from mainline
+	2015-08-14  Matthew Wahab  <matthew.wahab@arm.com>
+		    Matthias Klose  <doko@debian.org>
+
+	PR target/67143
+	* gcc.c-torture/compile/pr67143.c: New
+	* gcc.target/aarch64/atomic-op-imm.c
+	(atomic_fetch_add_negative_RELAXED): New.
+	(atomic_fetch_sub_negative_ACQUIRE): New.
+
 2015-09-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
