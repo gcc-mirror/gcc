@@ -9493,25 +9493,32 @@ fold_binary_loc (location_t loc,
 		{
 		  tree tmp0 = var0;
 		  tree tmp1 = var1;
+		  bool one_neg = false;
 
 		  if (TREE_CODE (tmp0) == NEGATE_EXPR)
-		    tmp0 = TREE_OPERAND (tmp0, 0);
+		    {
+		      tmp0 = TREE_OPERAND (tmp0, 0);
+		      one_neg = !one_neg;
+		    }
 		  if (CONVERT_EXPR_P (tmp0)
 		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp0, 0)))
 		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (tmp0, 0)))
 			  <= TYPE_PRECISION (atype)))
 		    tmp0 = TREE_OPERAND (tmp0, 0);
 		  if (TREE_CODE (tmp1) == NEGATE_EXPR)
-		    tmp1 = TREE_OPERAND (tmp1, 0);
+		    {
+		      tmp1 = TREE_OPERAND (tmp1, 0);
+		      one_neg = !one_neg;
+		    }
 		  if (CONVERT_EXPR_P (tmp1)
 		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp1, 0)))
 		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (tmp1, 0)))
 			  <= TYPE_PRECISION (atype)))
 		    tmp1 = TREE_OPERAND (tmp1, 0);
 		  /* The only case we can still associate with two variables
-		     is if they are the same, modulo negation and bit-pattern
-		     preserving conversions.  */
-		  if (!operand_equal_p (tmp0, tmp1, 0))
+		     is if they cancel out.  */
+		  if (!one_neg
+		      || !operand_equal_p (tmp0, tmp1, 0))
 		    ok = false;
 		}
 	    }

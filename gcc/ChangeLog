@@ -1,3 +1,9 @@
+2015-09-23   Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67662
+	* fold-const.c (fold_binary_loc): Do not reassociate two vars with
+	undefined overflow unless they will cancel out.
+
 2015-09-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.md (define_insn "*<mshift><mode>3"): Fix
