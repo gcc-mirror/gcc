@@ -17043,7 +17043,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   has_visibility = handle_namespace_attrs (current_namespace, attribs);
 
-  warning  (OPT_Wnamespaces, "namepace %qD entered", current_namespace);
+  warning  (OPT_Wnamespaces, "namespace %qD entered", current_namespace);
 
   /* Parse the body of the namespace.  */
   cp_parser_namespace_body (parser);

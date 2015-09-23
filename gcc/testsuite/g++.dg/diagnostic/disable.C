@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 
-namespace foo { } // { dg-warning "namepace" }
+namespace foo { } // { dg-warning "namespace" }
 
 template <typename X> X Foo (); // { dg-warning "template" }
 
