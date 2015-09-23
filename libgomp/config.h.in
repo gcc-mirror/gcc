@@ -95,7 +95,7 @@
    */
 #undef LT_OBJDIR
 
-/* Define to hold the list of target names suitable for offloading. */
+/* Define to offload targets, separated by commas. */
 #undef OFFLOAD_TARGETS
 
 /* Name of package */

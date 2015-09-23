@@ -941,11 +941,11 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   if test x"$offload_targets" = x; then
     offload_targets=$tgt
   else
-    offload_targets="$offload_targets:$tgt"
+    offload_targets="$offload_targets,$tgt"
   fi
 done
 AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
-  [Define to hold the list of target names suitable for offloading.])
+  [Define to offload targets, separated by commas.])
 if test x"$offload_targets" != x; then
   AC_DEFINE(ENABLE_OFFLOADING, 1,
     [Define this to enable support for offloading.])

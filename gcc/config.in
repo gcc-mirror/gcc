@@ -1913,7 +1913,7 @@
 #endif
 
 
-/* Define to hold the list of target names suitable for offloading. */
+/* Define to offload targets, separated by commas. */
 #ifndef USED_FOR_TARGET
 #undef OFFLOAD_TARGETS
 #endif
