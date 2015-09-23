@@ -1,3 +1,10 @@
+2015-09-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/49654
+	PR c/49655
+	* c-pragma.c (handle_pragma_diagnostic): Detect non-warning
+	options and options not valid for the current language.
+
 2015-09-22  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-indentation.c (should_warn_for_misleading_indentation):

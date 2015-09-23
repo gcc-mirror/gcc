@@ -1,3 +1,8 @@
+2015-09-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/49655
+	* gcc.dg/pragma-diag-6.c: New test.
+
 2015-09-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vcvt_high_1.c: New.

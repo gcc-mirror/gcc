@@ -54,7 +54,7 @@ unsigned num_in_fnames;
 
 /* Return a malloced slash-separated list of languages in MASK.  */
 
-static char *
+char *
 write_langs (unsigned int mask)
 {
   unsigned int n = 0, len = 0;

@@ -749,22 +749,40 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
       return;
     }
 
+  const char *option_string = TREE_STRING_POINTER (x);
+  unsigned int lang_mask = c_common_option_lang_mask () | CL_COMMON;
+  /* option_string + 1 to skip the initial '-' */
+  unsigned int option_index = find_opt (option_string + 1, lang_mask);
+  if (option_index == OPT_SPECIAL_unknown)
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "unknown option after %<#pragma GCC diagnostic%> kind");
+      return;
+    }
+  else if (!(cl_options[option_index].flags & CL_WARNING))
+    {
+      warning_at (loc, OPT_Wpragmas,
+		  "%qs is not an option that controls warnings", option_string);
+      return;
+    }
+  else if (!(cl_options[option_index].flags & lang_mask))
+    {
+      char *ok_langs = write_langs (cl_options[option_index].flags);
+      char *bad_lang = write_langs (c_common_option_lang_mask ());
+      warning_at (loc, OPT_Wpragmas,
+		  "option %qs is valid for %s but not for %s",
+		  option_string, ok_langs, bad_lang);
+      free (ok_langs);
+      free (bad_lang);
+      return;
+    }
+
   struct cl_option_handlers handlers;
   set_default_handlers (&handlers);
-
-  unsigned int option_index;
-  const char *option_string = TREE_STRING_POINTER (x);
-  for (option_index = 0; option_index < cl_options_count; option_index++)
-    if (strcmp (cl_options[option_index].opt_text, option_string) == 0)
-      {
-	control_warning_option (option_index, (int) kind, kind != DK_IGNORED,
-				input_location, c_family_lang_mask, &handlers,
-				&global_options, &global_options_set,
-				global_dc);
-	return;
-      }
-  warning_at (loc, OPT_Wpragmas,
-	      "unknown option after %<#pragma GCC diagnostic%> kind");
+  control_warning_option (option_index, (int) kind, kind != DK_IGNORED,
+			  loc, lang_mask, &handlers,
+			  &global_options, &global_options_set,
+			  global_dc);
 }
 
 /*  Parse #pragma GCC target (xxx) to set target specific options.  */
