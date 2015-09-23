@@ -201,14 +201,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       return __tmp;
     }
 
-    friend bool
-    operator==(const directory_iterator& __lhs,
-               const directory_iterator& __rhs)
-    { return __lhs._M_dir == __rhs._M_dir; }
-
   private:
     directory_iterator(const path&, directory_options, error_code*);
-    directory_iterator(std::shared_ptr<_Dir>, error_code*);
+
+    friend bool
+    operator==(const directory_iterator& __lhs,
+               const directory_iterator& __rhs);
 
     friend class recursive_directory_iterator;
 
@@ -220,6 +218,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline directory_iterator
   end(directory_iterator) { return directory_iterator(); }
+
+  inline bool
+  operator==(const directory_iterator& __lhs, const directory_iterator& __rhs)
+  {
+    return !__rhs._M_dir.owner_before(__lhs._M_dir)
+      && !__lhs._M_dir.owner_before(__rhs._M_dir);
+  }
 
   inline bool
   operator!=(const directory_iterator& __lhs, const directory_iterator& __rhs)
@@ -287,13 +292,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     void disable_recursion_pending() { _M_pending = false; }
 
-    friend bool
-    operator==(const recursive_directory_iterator& __lhs,
-               const recursive_directory_iterator& __rhs)
-    { return __lhs._M_dirs == __rhs._M_dirs; }
-
   private:
     recursive_directory_iterator(const path&, directory_options, error_code*);
+
+    friend bool
+    operator==(const recursive_directory_iterator& __lhs,
+               const recursive_directory_iterator& __rhs);
 
     struct _Dir_stack;
     std::shared_ptr<_Dir_stack> _M_dirs;
@@ -306,6 +310,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline recursive_directory_iterator
   end(recursive_directory_iterator) { return recursive_directory_iterator(); }
+
+  inline bool
+  operator==(const recursive_directory_iterator& __lhs,
+             const recursive_directory_iterator& __rhs)
+  {
+    return !__rhs._M_dirs.owner_before(__lhs._M_dirs)
+      && !__lhs._M_dirs.owner_before(__rhs._M_dirs);
+  }
 
   inline bool
   operator!=(const recursive_directory_iterator& __lhs,

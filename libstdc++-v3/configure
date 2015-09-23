@@ -79165,7 +79165,7 @@ fi
 
   if test $glibcxx_cv_dirent_d_type = yes; then
 
-$as_echo "#define _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
+$as_echo "#define HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
 
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
