@@ -5857,12 +5857,12 @@ intra_create_variable_infos (struct function *fn)
     {
       varinfo_t p = get_vi_for_tree (t);
 
-      /* For restrict qualified pointers to objects passed by
-         reference build a real representative for the pointed-to object.
-	 Treat restrict qualified references the same.  */
-      if (TYPE_RESTRICT (TREE_TYPE (t))
-	  && ((DECL_BY_REFERENCE (t) && POINTER_TYPE_P (TREE_TYPE (t)))
-	      || TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+      /* For restrict qualified pointers build a representative for
+	 the pointed-to object.  Note that this ends up handling
+	 out-of-bound references conservatively by aggregating them
+	 in the first/last subfield of the object.  */
+      if (POINTER_TYPE_P (TREE_TYPE (t))
+	  && TYPE_RESTRICT (TREE_TYPE (t))
 	  && !type_contains_placeholder_p (TREE_TYPE (TREE_TYPE (t))))
 	{
 	  struct constraint_expr lhsc, rhsc;
