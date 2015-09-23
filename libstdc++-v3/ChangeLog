@@ -1,5 +1,10 @@
 2015-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/ops.cc (canonical): Simplify error handling and
+	limit number of symlinks that can be resolved.
+
+2015-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
 	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Remove _GLIBCXX_
 	prefix from HAVE_STRUCT_DIRENT_D_TYPE.
 	* config.h.in: Regenerate.
