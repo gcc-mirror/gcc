@@ -85,6 +85,24 @@ fs::absolute(const path& p, const path& base)
 
 namespace
 {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  inline bool is_dot(wchar_t c) { return c == L'.'; }
+#else
+  inline bool is_dot(char c) { return c == '.'; }
+#endif
+
+  inline bool is_dot(const fs::path& path)
+  {
+    const auto& filename = path.native();
+    return filename.size() == 1 && is_dot(filename[0]);
+  }
+
+  inline bool is_dotdot(const fs::path& path)
+  {
+    const auto& filename = path.native();
+    return filename.size() == 2 && is_dot(filename[0]) && is_dot(filename[1]);
+  }
+
   struct free_as_in_malloc
   {
     void operator()(void* p) const { ::free(p); }
@@ -576,19 +594,36 @@ fs::create_directories(const path& p)
 bool
 fs::create_directories(const path& p, error_code& ec) noexcept
 {
+  if (p.empty())
+    {
+      ec = std::make_error_code(errc::invalid_argument);
+      return false;
+    }
   std::stack<path> missing;
   path pp = p;
-  ec.clear();
-  while (!p.empty() && !exists(pp, ec) && !ec.value())
+
+  while (!pp.empty() && status(pp, ec).type() == file_type::not_found)
     {
-      missing.push(pp);
-      pp = pp.parent_path();
+      ec.clear();
+      const auto& filename = pp.filename();
+      if (!is_dot(filename) && !is_dotdot(filename))
+	missing.push(pp);
+      pp.remove_filename();
     }
-  while (!missing.empty() && !ec.value())
+
+  if (ec || missing.empty())
+    return false;
+
+  do
     {
-      create_directory(missing.top(), ec);
+      const path& top = missing.top();
+      create_directory(top, ec);
+      if (ec && is_directory(top))
+	ec.clear();
       missing.pop();
     }
+  while (!missing.empty() && !ec);
+
   return missing.empty();
 }
 
