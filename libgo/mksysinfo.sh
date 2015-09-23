@@ -531,7 +531,7 @@ upcase_fields () {
 # GNU/Linux specific; it should do no harm if there is no
 # _user_regs_struct.
 regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go || true`
-if test "$regs" == ""; then
+if test "$regs" = ""; then
   # s390
   regs=`grep '^type __user_regs_struct struct' gen-sysinfo.go || true`
   if test "$regs" != ""; then
