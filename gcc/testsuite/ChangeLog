@@ -1,3 +1,7 @@
+2015-09-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vcvt_high_1.c: New.
+
 2015-09-23  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/tree-ssa/restrict2.C: Un-XFAIL testcase.
