@@ -1,5 +1,8 @@
 2015-09-23  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gcc.c (handle_foffload_option): Don't lose the trailing NUL
+	character when appending to offload_targets.
+
 	* configure.ac (offload_targets, OFFLOAD_TARGETS): Separate
 	offload targets by commas, not colons.
 	* config.in: Regenerate.

@@ -3657,10 +3657,9 @@ handle_foffload_option (const char *arg)
 	      size_t offload_targets_len = strlen (offload_targets);
 	      offload_targets
 		= XRESIZEVEC (char, offload_targets,
-			      offload_targets_len + next - cur + 2);
-	      if (offload_targets_len)
-		offload_targets[offload_targets_len++] = ':';
-	      memcpy (offload_targets + offload_targets_len, target, next - cur);
+			      offload_targets_len + 1 + next - cur + 1);
+	      offload_targets[offload_targets_len++] = ':';
+	      memcpy (offload_targets + offload_targets_len, target, next - cur + 1);
 	    }
 	}
 
