@@ -594,6 +594,8 @@ append_offload_options (obstack *argv_obstack, const char *target,
       else
 	{
 	  opts = strchr (option->arg, '=');
+	  /* If there are offload targets specified, but no actual options,
+	     there is nothing to do here.  */
 	  if (!opts)
 	    continue;
 
@@ -606,10 +608,12 @@ append_offload_options (obstack *argv_obstack, const char *target,
 		next = opts;
 	      next = (next > opts) ? opts : next;
 
+	      /* Are we looking for this offload target?  */
 	      if (strlen (target) == (size_t) (next - cur)
 		  && strncmp (target, cur, next - cur) == 0)
 		break;
 
+	      /* Skip the comma or equal sign.  */
 	      cur = next + 1;
 	    }
 

@@ -7696,7 +7696,7 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   if test x"$offload_targets" = x; then
     offload_targets=$tgt
   else
-    offload_targets="$offload_targets:$tgt"
+    offload_targets="$offload_targets,$tgt"
   fi
 done
 
