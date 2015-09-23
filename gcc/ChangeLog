@@ -1,3 +1,9 @@
+2015-09-23  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR middle-end/67649
+	* memory-block.h (memory_block_pool::allocate): Use valgrind API to
+	mark the block as accessible.
+
 2015-09-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* function.c (thread_prologue_and_epilogue_insns): Delete
