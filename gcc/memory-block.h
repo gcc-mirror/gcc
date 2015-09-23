@@ -57,6 +57,7 @@ memory_block_pool::allocate ()
 
   void *result = instance.m_blocks;
   instance.m_blocks = instance.m_blocks->m_next;
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (result, block_size));
   return result;
 }
 
