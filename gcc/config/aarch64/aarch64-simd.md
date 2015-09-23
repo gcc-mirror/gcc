@@ -1703,6 +1703,15 @@
   [(set_attr "type" "neon_fp_cvt_widen_s")]
 )
 
+;; ??? Note that the vectorizer usage of the vec_unpacks_[lo/hi] patterns
+;; is inconsistent with vector ordering elsewhere in the compiler, in that
+;; the meaning of HI and LO changes depending on the target endianness.
+;; While elsewhere we map the higher numbered elements of a vector to
+;; the lower architectural lanes of the vector, for these patterns we want
+;; to always treat "hi" as referring to the higher architectural lanes.
+;; Consequently, while the patterns below look inconsistent with our
+;; other big-endian patterns their behaviour is as required.
+
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand" "")
    (match_operand:VQ_HSF 1 "register_operand" "")]
@@ -1757,15 +1766,40 @@
   [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
 )
 
-(define_insn "aarch64_float_truncate_hi_<Vdbl>"
+(define_insn "aarch64_float_truncate_hi_<Vdbl>_le"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w")
     (vec_concat:<VDBL>
       (match_operand:VDF 1 "register_operand" "0")
       (float_truncate:VDF
 	(match_operand:<VWIDE> 2 "register_operand" "w"))))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "fcvtn2\\t%0.<Vdtype>, %2<Vmwtype>"
   [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
+)
+
+(define_insn "aarch64_float_truncate_hi_<Vdbl>_be"
+  [(set (match_operand:<VDBL> 0 "register_operand" "=w")
+    (vec_concat:<VDBL>
+      (float_truncate:VDF
+	(match_operand:<VWIDE> 2 "register_operand" "w"))
+      (match_operand:VDF 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "fcvtn2\\t%0.<Vdtype>, %2<Vmwtype>"
+  [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
+)
+
+(define_expand "aarch64_float_truncate_hi_<Vdbl>"
+  [(match_operand:<VDBL> 0 "register_operand" "=w")
+   (match_operand:VDF 1 "register_operand" "0")
+   (match_operand:<VWIDE> 2 "register_operand" "w")]
+  "TARGET_SIMD"
+{
+  rtx (*gen) (rtx, rtx, rtx) = BYTES_BIG_ENDIAN
+			     ? gen_aarch64_float_truncate_hi_<Vdbl>_be
+			     : gen_aarch64_float_truncate_hi_<Vdbl>_le;
+  emit_insn (gen (operands[0], operands[1], operands[2]));
+  DONE;
+}
 )
 
 (define_expand "vec_pack_trunc_v2df"
