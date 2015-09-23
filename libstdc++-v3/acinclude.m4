@@ -3940,7 +3940,7 @@ dnl
       [glibcxx_cv_dirent_d_type=no])
   ])
   if test $glibcxx_cv_dirent_d_type = yes; then
-    AC_DEFINE(_GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
+    AC_DEFINE(HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
   fi
   AC_MSG_RESULT($glibcxx_cv_dirent_d_type)
 dnl

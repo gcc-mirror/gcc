@@ -1,5 +1,33 @@
 2015-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Remove _GLIBCXX_
+	prefix from HAVE_STRUCT_DIRENT_D_TYPE.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/experimental/fs_dir.h (operator==, operator==):
+	Use owner_before instead of pointer equality.
+	(directory_iterator(std::shared_ptr<_Dir>, error_code*)): Remove.
+	* src/filesystem/dir.cc (ErrorCode): Remove.
+	(_Dir::advance): Change ErrorCode parameter to error_code*, add
+	directory_options parameter and check it on error.
+	(opendir): Rename to open_dir to avoid clashing with macro. Change
+	ErrorCode parameter to error_code*.
+	(make_shared_dir): Remove.
+	(native_readdir) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Don't set errno.
+	(directory_iterator(std::shared_ptr<_Dir>, error_code*)): Remove.
+	(directory_iterator(const path&, directory_options, error_code*)):
+	Pass options to _Dir::advance and create non-end iterator on error.
+	(recursive_directory_iterator(const path&, directory_options,
+	error_code*)): Clear error_code on ignored error, create non-end
+	iterator otherwise.
+	(recursive_directory_iterator::increment): Pass _M_options to
+	_Dir::advance.
+	(recursive_directory_iterator::pop): Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	New.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: New.
+
 	* src/filesystem/ops.cc (is_dot, is_dotdot): Define new helpers.
 	(create_directories): Fix error handling.
 	* testsuite/experimental/filesystem/operations/create_directories.cc:
