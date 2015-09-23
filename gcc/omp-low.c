@@ -3372,13 +3372,12 @@ maybe_lookup_decl_in_outer_ctx (tree decl, omp_context *ctx)
 }
 
 
-/* Construct the initialization value for reduction CLAUSE.  */
+/* Construct the initialization value for reduction operation OP.  */
 
 tree
-omp_reduction_init (tree clause, tree type)
+omp_reduction_init_op (location_t loc, enum tree_code op, tree type)
 {
-  location_t loc = OMP_CLAUSE_LOCATION (clause);
-  switch (OMP_CLAUSE_REDUCTION_CODE (clause))
+  switch (op)
     {
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -3449,6 +3448,15 @@ omp_reduction_init (tree clause, tree type)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Construct the initialization value for reduction CLAUSE.  */
+
+tree
+omp_reduction_init (tree clause, tree type)
+{
+  return omp_reduction_init_op (OMP_CLAUSE_LOCATION (clause),
+				OMP_CLAUSE_REDUCTION_CODE (clause), type);
 }
 
 /* Return alignment to be assumed for var in CLAUSE, which should be
