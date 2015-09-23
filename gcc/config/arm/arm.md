@@ -6508,7 +6508,7 @@
 (define_insn "*arm32_movhf"
   [(set (match_operand:HF 0 "nonimmediate_operand" "=r,m,r,r")
 	(match_operand:HF 1 "general_operand"	   " m,r,r,F"))]
-  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_FP16) && !arm_restrict_it
+  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_FP16)
    && (	  s_register_operand (operands[0], HFmode)
        || s_register_operand (operands[1], HFmode))"
   "*
@@ -6546,7 +6546,8 @@
   [(set_attr "conds" "unconditional")
    (set_attr "type" "load1,store1,mov_reg,multiple")
    (set_attr "length" "4,4,4,8")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "movsf"
