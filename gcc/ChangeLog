@@ -1,3 +1,8 @@
+2015-09-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (intra_create_variable_infos): Build
+	representatives for all restrict qualified pointer destinations.
+
 2015-09-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.md (define_code_attr mshift): New.

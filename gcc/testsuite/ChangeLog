@@ -1,3 +1,7 @@
+2015-09-23  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/restrict2.C: Un-XFAIL testcase.
+
 2015-09-22  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-c++-common/Wmisleading-indentation.c: Augment test.
