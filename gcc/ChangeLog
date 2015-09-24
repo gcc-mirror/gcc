@@ -44,8 +44,8 @@
 2015-09-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/67391
-	* config/sh/sh.md (addsi3, *addsi3_compact): Don't check for overlapping
-	regs when matching the pattern.
+	* config/sh/sh.md (addsi3, *addsi3_compact): Don't check for
+	overlapping regs when matching the pattern.
 
 2015-09-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
@@ -90,7 +90,7 @@
 
 2015-09-22  Jeff Law  <law@redhat.com>
 
-	* config/pa/pa.h (MIN_LEGIT_64BIT_CONST_INT: Avoid undefined
+	* config/pa/pa.h (MIN_LEGIT_64BIT_CONST_INT): Avoid undefined
 	behavior.
 
 2015-09-22  Nathan Sidwell  <nathan@codesourcery.com>
@@ -123,16 +123,16 @@
 2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
 
 	* config.gcc: Support "skylake-avx512".
-        * config/i386/i386-c.c (ix86_target_macros_internal): Handle
-        PROCESSOR_SKYLAKE_AVX512.
-        * config/i386/i386.c (m_SKYLAKE_AVX512): Define.
-        (processor_target_table): Add "skylake-avx512".
-        (PTA_SKYLAKE_AVX512): Define.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_SKYLAKE_AVX512.
+	* config/i386/i386.c (m_SKYLAKE_AVX512): Define.
+	(processor_target_table): Add "skylake-avx512".
+	(PTA_SKYLAKE_AVX512): Define.
 	(ix86_option_override_internal): Add "skylake_avx512".
-        (fold_builtin_cpu): Handle "skylake_avx512", add F_AVX512VL
+	(fold_builtin_cpu): Handle "skylake_avx512", add F_AVX512VL
 	F_AVX512BW, F_AVX512DQ, F_AVX512ER, F_AVX512PF, F_AVX512CD.
-        * config/i386/i386.h (TARGET_SKYLAKE_AVX512): Define.
-        (processor_type): Add PROCESSOR_SKYLAKE_AVX512.
+	* config/i386/i386.h (TARGET_SKYLAKE_AVX512): Define.
+	(processor_type): Add PROCESSOR_SKYLAKE_AVX512.
 	* doc/invoke.texi (skylake-avx512): New.
 
 2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
@@ -230,36 +230,36 @@
 	Revert:
 	2015-09-11  David S. Miller  <davem@davemloft.net>
 
-		* config/sparc/constraints.md: Make "U" constraint a real register
-		constraint.
-		* config/sparc/sparc.c (TARGET_LRA_P): Define.
-		(D_MODES, DF_MODES): Add missing cast.
-		(TF_MODES, TF_MODES_NO_S): Include T_MODE.
-		(OF_MODES, OF_MODES_NO_S): Include O_MODE.
-		(sparc_register_move_cost): Decrease Niagara/UltrsSPARC memory
-		cost to 8.
-		* config/sparc/sparc.h (PROMOTE_MODE): Define.
-		* config/sparc/sparc.md (*movsi_lo_sum, *movsi_high): Do not
-		provide these insn when flag_pic.
+	* config/sparc/constraints.md: Make "U" constraint a real register
+	constraint.
+	* config/sparc/sparc.c (TARGET_LRA_P): Define.
+	(D_MODES, DF_MODES): Add missing cast.
+	(TF_MODES, TF_MODES_NO_S): Include T_MODE.
+	(OF_MODES, OF_MODES_NO_S): Include O_MODE.
+	(sparc_register_move_cost): Decrease Niagara/UltrsSPARC memory
+	cost to 8.
+	* config/sparc/sparc.h (PROMOTE_MODE): Define.
+	* config/sparc/sparc.md (*movsi_lo_sum, *movsi_high): Do not
+	provide these insn when flag_pic.
 
 	2015-09-17  David S. Miller  <davem@davemloft.net>
 
-		* config/sparc/sparc-protos.h (sparc_secondary_memory_needed):
-		Declare.
-		* config/sparc/sparc.c (sparc_secondary_memory_needed): New
-		function.
-		* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED): Use it.
-		(HARD_REGNO_CALLER_SAVE_MODE): Define.
-		* config/sparc/sparc.md (sethi_di_medlow, losum_di_medlow, seth44)
-		(setm44, setl44, sethh, setlm, sethm, setlo, embmedany_sethi)
-		(embmedany_losum, embmedany_brsum, embmedany_textuhi)
-		(embmedany_texthi, embmedany_textulo, embmedany_textlo): Do not
-		provide when flag_pic.
+	* config/sparc/sparc-protos.h (sparc_secondary_memory_needed):
+	Declare.
+	* config/sparc/sparc.c (sparc_secondary_memory_needed): New
+	function.
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED): Use it.
+	(HARD_REGNO_CALLER_SAVE_MODE): Define.
+	* config/sparc/sparc.md (sethi_di_medlow, losum_di_medlow, seth44)
+	(setm44, setl44, sethh, setlm, sethm, setlo, embmedany_sethi)
+	(embmedany_losum, embmedany_brsum, embmedany_textuhi)
+	(embmedany_texthi, embmedany_textulo, embmedany_textlo): Do not
+	provide when flag_pic.
 
 2015-09-21  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (andsi3_ashift_n_lower): Avoid undefined
-	behavior. 
+	behavior.
 
 2015-09-21  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -381,8 +381,7 @@
 
 2015-09-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
-	* coretypes.h (gimple): Change typedef to be a forward
-	declaration.
+	* coretypes.h (gimple): Change typedef to be a forward declaration.
 	* gimple.h (gimple_statement_base): rename to gimple.
 	* (all functions and types using gimple): Adjust.
 	* *.[ch]: Likewise.
@@ -473,7 +472,7 @@
 	* tree-ssa-scopedtables.h (class avail_exprs_stack): Add missing
 	"void" in prototype for pop_to_marker method.  Add accessor method
 	for the underlying avail_exprs table.
-	
+
 	* tree-ssa-threadedge.c: Remove trailing whitespace.
 
 2014-09-18  John David Anglin  <danglin@gcc.gnu.org>
@@ -628,19 +627,17 @@
 	* genopinit.c (main): Add an include guard to insn-opinit.h.
 	Protect the rtx_code parts with NUM_RTX_CODE.
 	* optabs.h: Split parts out to...
-	* optabs-libfuncs.h, optabs-query.h, optabs-tree.h: ...these
-	new files.
+	* optabs-libfuncs.h, optabs-query.h, optabs-tree.h: ...these new files.
 	* optabs.c: Split parts out to...
-	* optabs-libfuncs.c, optabs-query.c, optabs-tree.c: ...these
-	new files.
+	* optabs-libfuncs.c, optabs-query.c, optabs-tree.c: ...these new files.
 	* cilk-common.c: Include optabs-query.h rather than optabs.h.
 	* fold-const.c: Likewise.
 	* target-globals.c: Likewise.
 	* tree-if-conv.c: Likewise.
 	* tree-ssa-forwprop.c: Likewise.
 	* tree-ssa-loop-prefetch.c: Likewise.
-	* tree-ssa-math-opts.c: Include optabs-tree.h rather than
-	optabs.h.  Remove unncessary include files.
+	* tree-ssa-math-opts.c: Include optabs-tree.h rather than optabs.h.
+	Remove unncessary include files.
 	* tree-ssa-phiopt.c: Likewise.
 	* tree-ssa-reassoc.c: Likewise.
 	* tree-switch-conversion.c: Likewise.
@@ -705,10 +702,8 @@
 
 2015-09-17  David S. Miller  <davem@davemloft.net>
 
-	* config/sparc/sparc-protos.h (sparc_secondary_memory_needed):
-	Declare.
-	* config/sparc/sparc.c (sparc_secondary_memory_needed): New
-	function.
+	* config/sparc/sparc-protos.h (sparc_secondary_memory_needed): Declare.
+	* config/sparc/sparc.c (sparc_secondary_memory_needed): New function.
 	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED): Use it.
 	(HARD_REGNO_CALLER_SAVE_MODE): Define.
 	* config/sparc/sparc.md (sethi_di_medlow, losum_di_medlow, seth44)
@@ -725,8 +720,7 @@
 2015-09-17  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/66388
-	* tree-ssa-loop-ivopts.c (struct iv, iv_cand, ivopts_data): New
-	fields.
+	* tree-ssa-loop-ivopts.c (struct iv, iv_cand, ivopts_data): New fields.
 	(dump_iv): Dump no_overflow information.
 	(alloc_iv): Initialize new field for struct iv.
 	(mark_bivs): Count number of no_overflow bivs.
@@ -761,21 +755,20 @@
 	(pass_dominator::execute): Set up initial edge info structures.
 	(dom_opt_dom_walker::thread_across_edge): Pass avail_expr_stack to
 	thread_across_edge.
-	* tree-ssa-threadedge.c (thread_across_edge): Accept new argument.  If
-	non-null, then push/pop markers appropriately.
+	* tree-ssa-threadedge.c (thread_across_edge): Accept new argument.
+	If non-null, then push/pop markers appropriately.
 	* tree-ssa-threadedge.h (thread_across_edge): Update prototype.
 	* tree-vrp.c (identify_jump_threads): Pass NULL for new argument to
 	thread-across_edge.
 
 2015-09-16  James Bowman  <james.bowman@ftdichip.com>
 
-	* config/ft32/ft32.c Fix the memory address space predicate.
+	* config/ft32/ft32.c: Fix the memory address space predicate.
 
 2015-09-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/67573
-	* config/sh/sh.md (call_pcrel): Add early clobber to scratch
-	operand.
+	* config/sh/sh.md (call_pcrel): Add early clobber to scratch operand.
 	(call_value_pcrel, sibcall_pcrel, sibcall_value_pcrel): Likewise.
 
 2015-09-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
@@ -913,7 +906,7 @@
 
 2015-09-15  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/47679
+	PR tree-optimization/47679
 	* tree-ssa-dom.c (expr_hash_elt): Now a class with ctors/dtors,
 	methods and private members.
 	(avail_exprs_stack): Similarly.  Change type of global
@@ -1096,7 +1089,7 @@
 
 2015-09-15  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
-        * config/s390/s390.c (s390_const_operand_ok): Add missing
+	* config/s390/s390.c (s390_const_operand_ok): Add missing
 	brackets.
 
 2015-09-15  Richard Biener  <rguenther@suse.de>
@@ -1132,7 +1125,7 @@
 
 2015-09-14  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/47679
+	PR tree-optimization/47679
 	* tree-ssa-dom.c (avail_expr_hash): Pass a pointer to a real
 	type rather than void *.
 
@@ -2081,16 +2074,18 @@
 	* target.def: Add scatter builtin.
 	* tree-vectorizer.h: Rename gather_p to gather_scatter_p and use it
 	for loads/stores in case of gather/scatter accordingly.
-	(STMT_VINFO_GATHER_SCATTER_P(S)): Use it instead of STMT_VINFO_GATHER_P(S).
+	(STMT_VINFO_GATHER_SCATTER_P(S)): Use it instead of
+	STMT_VINFO_GATHER_P(S).
 	(vect_check_gather): Rename to ...
 	(vect_check_gather_scatter): this.
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Use
 	STMT_VINFO_GATHER_SCATTER_P instead of STMT_VINFO_SCATTER_P.
 	(vect_check_gather_scatter): Use it instead of vect_check_gather.
-	(vect_analyze_data_refs): Add gatherscatter enum and maybe_scatter variable
-	and new checkings for it accordingly.
+	(vect_analyze_data_refs): Add gatherscatter enum and maybe_scatter
+	variable and new checkings for it accordingly.
 	* tree-vect-stmts.c
-	(STMT_VINFO_GATHER_SCATTER_P(S)): Use it instead of STMT_VINFO_GATHER_P(S).
+	(STMT_VINFO_GATHER_SCATTER_P(S)): Use it instead of
+	STMT_VINFO_GATHER_P(S).
 	(vect_check_gather_scatter): Use it instead of vect_check_gather.
 	(vectorizable_store): Add checkings for STMT_VINFO_GATHER_SCATTER_P.
 
@@ -2126,8 +2121,8 @@
 2015-09-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65637
-	* omp-low.c (expand_omp_for_static_chunk): Handle case that fin_bb has 2
-	predecessors.
+	* omp-low.c (expand_omp_for_static_chunk): Handle case that
+	fin_bb has 2 predecessors.
 
 2015-09-03  Tom de Vries  <tom@codesourcery.com>
 
@@ -2156,7 +2151,7 @@
 2015-09-03  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	PR middle-end/67351
-	* fold-const.c (fold_binary_loc) : Move 
+	* fold-const.c (fold_binary_loc) : Move
 	Transform (x >> c) << c into x & (-1<<c) or
 	transform (x << c) >> c into x & ((unsigned)-1 >> c) for unsigned
 	types using simplify and match.
@@ -2305,10 +2300,8 @@
 2015-09-01  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
 
 	* ifcvt.c (struct noce_if_info): Add then_simple, else_simple,
-	then_cost, else_cost fields.  Change branch_cost field to unsigned
-	int.
-	(end_ifcvt_sequence): Call set_used_flags on each insn in the
-	sequence.
+	then_cost, else_cost fields.  Change branch_cost field to unsigned int.
+	(end_ifcvt_sequence): Call set_used_flags on each insn in the sequence.
 	Include rtl-iter.h.
 	(noce_simple_bbs): New function.
 	(noce_try_move): Bail if basic blocks are not simple.
@@ -2475,14 +2468,15 @@
 
 	Revert:
 	2015-08-27  Alan Lawrence  <alan.lawrence@arm.com>
-		PR tree-optimization/67283
-		* tree-sra.c (type_consists_of_records_p): Rename to...
-		(scalarizable_type_p): ...this, add case for ARRAY_TYPE.
 
-		(completely_scalarize_record): Rename to...
-		(completely_scalarize): ...this, add ARRAY_TYPE case, move some
-		 code to:
-		(scalarize_elem): New.
+	PR tree-optimization/67283
+	* tree-sra.c (type_consists_of_records_p): Rename to...
+	(scalarizable_type_p): ...this, add case for ARRAY_TYPE.
+
+	(completely_scalarize_record): Rename to...
+	(completely_scalarize): ...this, add ARRAY_TYPE case, move some
+	code to:
+	(scalarize_elem): New.
 
 2015-08-28  Jiong Wang  <jiong.wang@arm.com>
 
@@ -2985,7 +2979,7 @@
 
 2015-08-26  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
-	* fold-const.c (fold_binary_loc) : Move Optimize 
+	* fold-const.c (fold_binary_loc) : Move Optimize
 	root(x)*root(y)	as root(x*y) to match.pd.
 	Move Optimize expN(x)*expN(y) as expN(x+y) to match.pd.
 	Move Optimize pow(x,y)*pow(x,z) as pow(x,y+z) to match.pd.
@@ -3247,9 +3241,10 @@
 
 	* config/aarch64/aarch64-tuning-flags.def: Remove all index to
 	AARCH64_EXTRA_TUNING_OPTION.
-	* config/aarch64/aarch64-protos.h (aarch64_extra_tuning_flags_index): New enum.
-	(aarch64_extra_tuning_flags): Base the shifted value on the index instead
-	of the argument to AARCH64_EXTRA_TUNING_OPTION.
+	* config/aarch64/aarch64-protos.h (aarch64_extra_tuning_flags_index):
+	New enum.
+	(aarch64_extra_tuning_flags): Base the shifted value on the index
+	instead of the argument to AARCH64_EXTRA_TUNING_OPTION.
 	* config/aarch64/aarch64.c: Remove the last argument to
 	AARCH64_EXTRA_TUNING_OPTION.
 
@@ -3303,7 +3298,7 @@
 	(calculate_dominance_info): Adjust to use dom_info class.
 	(verify_dominators): Likewise.
 
-2015-08-21  Alexandre Oliva <aoliva@redhat.com>
+2015-08-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	* print-rtl.c (print_rtx): Check the correct range for
 	flag_dump_unnumbered_links to behave as documented.
@@ -3362,11 +3357,11 @@
 2014-08-21  Felix Yang  <felix.yang@huawei.com>
 	    Jiji Jiang  <jiangjiji@huawei.com>
 
-	* value-prof.c (interesting_stringop_to_profile_p): Removed FNDECL argument
-	and get builtin function code directly from CALL.
+	* value-prof.c (interesting_stringop_to_profile_p): Removed FNDECL
+	argument and get builtin function code directly from CALL.
 	(gimple_stringop_fixed_value): Modified accordingly.
-	(gimple_stringops_transform, gimple_stringops_values_to_profile): Modified
-	accordingly and only accept BUILT_IN_NORMAL string operations.
+	(gimple_stringops_transform, gimple_stringops_values_to_profile):
+	Modified accordingly and only accept BUILT_IN_NORMAL string operations.
 
 2015-08-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
@@ -3560,7 +3555,7 @@
 	* config.in: Regenerated.
 	* configure: Likewise.
 
-2015-08-19  Alexandre Oliva <aoliva@redhat.com>
+2015-08-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	* cfgexpand.c (parm_maybe_byref_p): Renamed to...
@@ -3768,7 +3763,7 @@
 	PR middle-end/16107
 	* match.pd (div (coss (op @0) : New simplifier.
 
-2015-08-14  Alexandre Oliva <aoliva@redhat.com>
+2015-08-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	PR bootstrap/66978
@@ -4302,8 +4297,7 @@
 2015-08-10  Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
 
-	* lto-streamer-in.c (lto_input_mode_table): Correctly advance
-	iterator.
+	* lto-streamer-in.c (lto_input_mode_table): Correctly advance iterator.
 
 2015-08-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
@@ -4330,7 +4324,7 @@
 2015-08-07  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.c (rx_mode_dependent_address_p): Remove unneeded asserts.
-	
+
 2015-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/67029
@@ -6173,7 +6167,7 @@
 2015-07-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	Revert:
-	2015-07-23  Alexandre Oliva <aoliva@redhat.com>
+	2015-07-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	* Makefile.in (OBJS): Drop tree-ssa-copyrename.o.
@@ -6513,7 +6507,7 @@
 
 	* tree-pass.h (get_current_pass_name): Removed.
 
-2015-07-23  Alexandre Oliva <aoliva@redhat.com>
+2015-07-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	* Makefile.in (OBJS): Drop tree-ssa-copyrename.o.
@@ -12874,10 +12868,10 @@
 	* doc/extend.texi: Document ARM/Thumb target attribute.
 	* doc/invoke.texi: Likewise.
 
-2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+2015-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	Revert:
-	2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+	2015-06-09  Alexandre Oliva  <aoliva@redhat.com>
 	PR rtl-optimization/64164
 	* Makefile.in (OBJS): Drop tree-ssa-copyrename.o.
 	* tree-ssa-copyrename.c: Removed.
@@ -13056,7 +13050,7 @@
 	* gimple-iterator.h (gimple_seq_nondebug_singleton_p): Don't
 	always return false.
 
-2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+2015-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	* Makefile.in (OBJS): Drop tree-ssa-copyrename.o.
@@ -13147,7 +13141,7 @@
 	* tree-ssa-loop-niter.c (loop_exits_before_overflow): Don't
 	fail assert on conversion between unsigned types.
 
-2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+2015-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/58315
 	* tree-inline.c (reset_debug_binding): New.
@@ -25293,7 +25287,7 @@
 	BEGIN_CHKP_BUILTINS and END_CHKP_BUILTINS only define enum values
 	for builtins that use DEF_BUILTIN_CHKP macro.
 
-2015-02-04  Alexandre Oliva <aoliva@redhat.com>
+2015-02-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/64817
 	* cfgexpand.c (expand_debug_expr): Compute unsignedp from
