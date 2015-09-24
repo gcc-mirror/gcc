@@ -797,6 +797,15 @@ fn_37 (void)
        i++);
     foo (i); /* { dg-warning "statement is indented as if" } */
 
+  if (flagA)
+  {
+    foo (1);
+  }
+  else if (flagB); /* { dg-message "8: ...this 'if' clause" } */
+  { /* { dg-warning "statement is indented as if" } */
+    foo (2);
+  }
+
 #undef EMPTY
 #undef FOR_EACH
 }
