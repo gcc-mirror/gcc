@@ -1621,7 +1621,7 @@ decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
     }
 
   /* Finally estimate N times, plus N gotos.  */
-  f_estimate = count_insns_seq (finally, &eni_size_weights);
+  f_estimate = estimate_num_insns_seq (finally, &eni_size_weights);
   f_estimate = (f_estimate + 1) * ndests;
 
   /* Switch statement (cost 10), N variable assignments, N gotos.  */
