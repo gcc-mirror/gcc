@@ -1,5 +1,16 @@
 2015-09-24  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.h (vn_reference_op_struct): Add clique and base
+	members.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Record clique
+	and base for MEM_REF and TARGET_MEM_REF.  Handle BIT_FIELD_REF
+	offset.
+	(ao_ref_init_from_vn_reference): Record clique and base in the
+	built base.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Likewise
+
+2015-09-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/48885
 	* tree-ssa-structalias.c (visit_loadstore): Handle default defs
 	as not including any restrict tags from other pointers.

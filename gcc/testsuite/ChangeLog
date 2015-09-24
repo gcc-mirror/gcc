@@ -1,5 +1,9 @@
 2015-09-24  Richard Biener  <rguenther@suse.de>
 
+	* g++.dg/tree-ssa/restrict3.C: New testcase.
+
+2015-09-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/48885
 	* gcc.dg/tree-ssa/restrict-6.c: New testcase.
 
