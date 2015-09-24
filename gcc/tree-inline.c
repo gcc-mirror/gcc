@@ -3972,8 +3972,8 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
    the statements in the statement sequence STMTS.
    WEIGHTS contains weights attributed to various constructs.  */
 
-static
-int estimate_num_insns_seq (gimple_seq stmts, eni_weights *weights)
+int
+estimate_num_insns_seq (gimple_seq stmts, eni_weights *weights)
 {
   int cost;
   gimple_stmt_iterator gsi;
@@ -4260,19 +4260,6 @@ init_inline_once (void)
   eni_time_weights.tm_cost = 40;
   eni_time_weights.time_based = true;
   eni_time_weights.return_cost = 2;
-}
-
-/* Estimate the number of instructions in a gimple_seq. */
-
-int
-count_insns_seq (gimple_seq seq, eni_weights *weights)
-{
-  gimple_stmt_iterator gsi;
-  int n = 0;
-  for (gsi = gsi_start (seq); !gsi_end_p (gsi); gsi_next (&gsi))
-    n += estimate_num_insns (gsi_stmt (gsi), weights);
-
-  return n;
 }
 
 

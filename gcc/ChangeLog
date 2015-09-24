@@ -1,3 +1,12 @@
+2015-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* tree-inline.h (count_insns_seq): Delete prototype.
+	(estimate_num_insns_seq): Define prototype.
+	* tree-inline.c (count_insns_seq): Delete.
+	(estimate_num_insns_seq): Remove static qualifier.
+	* tree-eh.c (decide_copy_try_finally): Replace use of count_insns_seq
+	with estimate_num_insns_seq.
+
 2015-09-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (vn_reference_op_struct): Add clique and base

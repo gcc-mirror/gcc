@@ -207,7 +207,7 @@ tree copy_decl_no_change (tree decl, copy_body_data *id);
 int estimate_move_cost (tree type, bool);
 int estimate_num_insns (gimple *, eni_weights *);
 int estimate_num_insns_fn (tree, eni_weights *);
-int count_insns_seq (gimple_seq, eni_weights *);
+int estimate_num_insns_seq (gimple_seq, eni_weights *);
 bool tree_versionable_function_p (tree);
 extern tree remap_decl (tree decl, copy_body_data *id);
 extern tree remap_type (tree type, copy_body_data *id);
