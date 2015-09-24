@@ -1,3 +1,11 @@
+2015-09-24  Alan Modra  <amodra@gmail.com>
+
+	Apply from mainline
+	2015-09-02  Alan Modra  <amodra@gmail.com>
+	* config/rs6000/sysv4le.h (LINK_TARGET_SPEC): Don't define.
+	* config/rs6000/sysv4.h (LINK_TARGET_SPEC): Likewise.
+	(LINK_SPEC, SUBTARGET_EXTRA_SPECS): Delete link_target.
+
 2015-09-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline

@@ -574,7 +574,6 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 %{R*} \
 %(link_shlib) \
 %{!T*: %(link_start) } \
-%(link_target) \
 %(link_os)"
 
 /* Shared libraries are not default.  */
@@ -583,10 +582,6 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 %{static: } \
 %{shared:-G -dy -z text } \
 %{symbolic:-Bsymbolic -G -dy -z text }"
-
-/* Override the default target of the linker.  */
-#define	LINK_TARGET_SPEC \
-  ENDIAN_SELECT("", " --oformat elf32-powerpcle", "")
 
 /* Any specific OS flags.  */
 #define LINK_OS_SPEC "\
@@ -873,7 +868,6 @@ ncrtn.o%s"
   { "endfile_openbsd",		ENDFILE_OPENBSD_SPEC },			\
   { "endfile_default",		ENDFILE_DEFAULT_SPEC },			\
   { "link_shlib",		LINK_SHLIB_SPEC },			\
-  { "link_target",		LINK_TARGET_SPEC },			\
   { "link_start",		LINK_START_SPEC },			\
   { "link_start_ads",		LINK_START_ADS_SPEC },			\
   { "link_start_yellowknife",	LINK_START_YELLOWKNIFE_SPEC },		\
