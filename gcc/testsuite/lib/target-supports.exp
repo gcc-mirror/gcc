@@ -1046,6 +1046,13 @@ proc check_effective_target_pie { } {
 	 || [istarget *-*-gnu*] } {
 	return 1;
     }
+    if { [istarget *-*-solaris2.1\[1-9\]*] } {
+	# Full PIE support was added in Solaris 11.x and Solaris 12, but gcc
+	# errors out if missing, so check for that.
+	return [check_no_compiler_messages pie executable {
+	    int main (void) { return 0; }
+	} "-pie -fpie"]
+    }
     return 0
 }
 

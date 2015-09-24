@@ -909,7 +909,9 @@ proper position among the other output files.  */
 
 #ifndef LINK_PIE_SPEC
 #ifdef HAVE_LD_PIE
+#ifndef LD_PIE_SPEC
 #define LD_PIE_SPEC "-pie"
+#endif
 #else
 #define LD_PIE_SPEC ""
 #endif
