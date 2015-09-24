@@ -1,3 +1,8 @@
+2015-09-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (debug_stack_info): Invert the test
+	for info->spe_gp_size.
+
 2015-09-24  Richard Biener  <rguenther@suse.de>
 
 	PR lto/67699
