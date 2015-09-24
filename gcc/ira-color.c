@@ -1311,10 +1311,12 @@ get_next_update_cost (ira_allocno_t *allocno, ira_allocno_t *from, int *divisor)
   return true;
 }
 
-/* Increase costs of HARD_REGNO by UPDATE_COST for ALLOCNO.  Return
-   true if we really modified the cost.  */
+/* Increase costs of HARD_REGNO by UPDATE_COST and conflict cost by
+   UPDATE_CONFLICT_COST for ALLOCNO.  Return true if we really
+   modified the cost.  */
 static bool
-update_allocno_cost (ira_allocno_t allocno, int hard_regno, int update_cost)
+update_allocno_cost (ira_allocno_t allocno, int hard_regno,
+		     int update_cost, int update_conflict_cost)
 {
   int i;
   enum reg_class aclass = ALLOCNO_CLASS (allocno);
@@ -1330,7 +1332,7 @@ update_allocno_cost (ira_allocno_t allocno, int hard_regno, int update_cost)
     (&ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (allocno),
      aclass, 0, ALLOCNO_CONFLICT_HARD_REG_COSTS (allocno));
   ALLOCNO_UPDATED_HARD_REG_COSTS (allocno)[i] += update_cost;
-  ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (allocno)[i] += update_cost;
+  ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (allocno)[i] += update_conflict_cost;
   return true;
 }
 
@@ -1342,7 +1344,7 @@ static void
 update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 			   int divisor, bool decr_p, bool record_p)
 {
-  int cost, update_cost;
+  int cost, update_cost, update_conflict_cost;
   machine_mode mode;
   enum reg_class rclass, aclass;
   ira_allocno_t another_allocno, from = NULL;
@@ -1383,11 +1385,20 @@ update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 	  if (decr_p)
 	    cost = -cost;
 
-	  update_cost = cp->freq * cost / divisor;
+	  update_conflict_cost = update_cost = cp->freq * cost / divisor;
+
+	  if (ALLOCNO_COLOR_DATA (another_allocno) != NULL
+	      && (ALLOCNO_COLOR_DATA (allocno)->first_thread_allocno
+		  != ALLOCNO_COLOR_DATA (another_allocno)->first_thread_allocno))
+	    /* Decrease conflict cost of ANOTHER_ALLOCNO if it is not
+	       in the same allocation thread.  */
+	    update_conflict_cost /= COST_HOP_DIVISOR;
+
 	  if (update_cost == 0)
 	    continue;
 
-	  if (! update_allocno_cost (another_allocno, hard_regno, update_cost))
+	  if (! update_allocno_cost (another_allocno, hard_regno,
+				     update_cost, update_conflict_cost))
 	    continue;
 	  queue_update_cost (another_allocno, allocno, divisor * COST_HOP_DIVISOR);
 	  if (record_p && ALLOCNO_COLOR_DATA (another_allocno) != NULL)

@@ -1,3 +1,10 @@
+2015-09-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/61578
+	* ira-color.c (update_allocno_cost): Add parameter.
+	(update_costs_from_allocno): Decrease conflict cost.  Pass the new
+	parameter.
+
 2015-09-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR driver/67640
