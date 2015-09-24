@@ -22703,7 +22703,7 @@ debug_stack_info (rs6000_stack_t *info)
     fprintf (stderr, "\taltivec_save_offset = %5d\n",
 	     info->altivec_save_offset);
 
-  if (info->spe_gp_size == 0)
+  if (info->spe_gp_size)
     fprintf (stderr, "\tspe_gp_save_offset  = %5d\n",
 	     info->spe_gp_save_offset);
 
