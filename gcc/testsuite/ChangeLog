@@ -1,3 +1,8 @@
+2015-09-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR driver/67640
+	* gcc.dg/Werror-13.c: New test.
+
 2015-09-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gcc.target/aarch64/target_attr_10.c (foo): Use dg-message for note.
