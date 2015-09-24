@@ -399,20 +399,31 @@ read_name (struct md_name *name)
 {
   int c;
   size_t i;
+  int angle_bracket_depth;
 
   c = read_skip_spaces ();
 
   i = 0;
+  angle_bracket_depth = 0;
   while (1)
     {
+      if (c == '<')
+	angle_bracket_depth++;
+
+      if ((c == '>') && (angle_bracket_depth > 0))
+	  angle_bracket_depth--;
+
       if (c == ' ' || c == '\n' || c == '\t' || c == '\f' || c == '\r'
 	  || c == EOF)
 	break;
-      if (c == ':' || c == ')' || c == ']' || c == '"' || c == '/'
-	  || c == '(' || c == '[')
+      if (angle_bracket_depth == 0)
 	{
-	  unread_char (c);
-	  break;
+	  if (c == ':' || c == ')' || c == ']'
+	      || c == '"' || c == '/' || c == '(' || c == '[')
+	    {
+	      unread_char (c);
+	      break;
+	    }
 	}
 
       if (i == sizeof (name->buffer) - 1)
