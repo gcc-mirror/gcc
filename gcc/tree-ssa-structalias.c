@@ -6952,10 +6952,11 @@ visit_loadstore (gimple *, tree base, tree ref, void *clique_)
       || TREE_CODE (base) == TARGET_MEM_REF)
     {
       tree ptr = TREE_OPERAND (base, 0);
-      if (TREE_CODE (ptr) == SSA_NAME)
+      if (TREE_CODE (ptr) == SSA_NAME
+	  && ! SSA_NAME_IS_DEFAULT_DEF (ptr))
 	{
 	  /* ???  We need to make sure 'ptr' doesn't include any of
-	     the restrict tags in its points-to set.  */
+	     the restrict tags we added bases for in its points-to set.  */
 	  return false;
 	}
 

@@ -1,3 +1,8 @@
+2015-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/48885
+	* gcc.dg/tree-ssa/restrict-6.c: New testcase.
+
 2015-09-24  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-c++-common/Wmisleading-indentation.c: Augment test.
