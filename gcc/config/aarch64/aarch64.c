@@ -4377,6 +4377,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_address (XEXP (x, 0));
 	  break;
 
+	case CONST:
 	case LABEL_REF:
 	case SYMBOL_REF:
 	  output_addr_const (asm_out_file, x);
