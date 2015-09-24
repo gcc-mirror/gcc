@@ -1,3 +1,9 @@
+2015-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR lto/67699
+	* lto-cgraph.c (compute_ltrans_boundary): Do not stream
+	abstract origins.
+
 2015-09-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree-object-size.c (plus_stmt_object_size)
