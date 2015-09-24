@@ -8,7 +8,7 @@
 	* g++.dg/diagnostic/disable.C: Replace 'namepace'
 	with 'namespace'.
 
-2015-09-23   Richard Biener  <rguenther@suse.de>
+2015-09-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67662
 	* gcc.dg/ubsan/pr67662.c: New testcase.
@@ -46,7 +46,7 @@
 
 2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
 
-        * gcc.target/i386/funcspec-5.c: Test avx512vl, avx512bw,
+	* gcc.target/i386/funcspec-5.c: Test avx512vl, avx512bw,
 	avx512dq, avx512cd, avx512er, avx512pf and skylake-avx512.
 	* gcc.target/i386/builtin_target.c: Test  avx512vl, avx512bw,
 	avx512dq, avx512cd, avx512er and avx512pf.
@@ -66,7 +66,7 @@
 
 	* gcc.target/aarch64/atomic-inst-ops.inc: (TEST_MODEL): New.
 	(TEST_ONE): New.
-        * gcc.target/aarch64/atomic-inst-swap.c: New.
+	* gcc.target/aarch64/atomic-inst-swap.c: New.
 
 2015-09-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
@@ -1488,7 +1488,7 @@
 	* gfortran.dg/norm2_4.f90: this.
 	* gfortran.dg/norm2_5.f90: New test.
 
-2015-08-14  Alexandre Oliva <aoliva@redhat.com>
+2015-08-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/guality/pr54200.c: Add -fno-tree-coalesce-vars.
 	* gcc.dg/ssp-1.c: Make counter a register.
@@ -2110,7 +2110,7 @@
 2015-07-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	Revert:
-	2015-07-23  Alexandre Oliva <aoliva@redhat.com>
+	2015-07-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	* gcc.dg/guality/pr54200.c: Add -fno-tree-coalesce-vars.
@@ -2202,7 +2202,7 @@
 	PR c++/66572
 	* g++.dg/warn/Wlogical-op-2.C: New test.
 
-2015-07-23  Alexandre Oliva <aoliva@redhat.com>
+2015-07-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	* gcc.dg/guality/pr54200.c: Add -fno-tree-coalesce-vars.
@@ -4200,10 +4200,10 @@
 	* gcc.target/arm/pr65710.c: Do not override -mfloat-abi directives
 	passed by the testsuite driver.
 
-2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+2015-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	Revert:
-	2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+	2015-06-09  Alexandre Oliva  <aoliva@redhat.com>
 	* gcc.dg/guality/pr54200.c: Add -fno-tree-coalesce-vars.
 	* gcc.dg/ssp-1.c: Make counter a register.
 	* gcc.dg/ssp-2.c: Likewise.
@@ -4250,7 +4250,7 @@
 	PR middle-end/66413
 	* gcc.dg/torture/pr66413.c: New testcase.
 
-2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+2015-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/guality/pr54200.c: Add -fno-tree-coalesce-vars.
 	* gcc.dg/ssp-1.c: Make counter a register.
@@ -9251,7 +9251,7 @@
 	* gcc.dg/guality/pr41447-1.c: Remove xfail.
 	* gcc.dg/guality/pr41616-1.c: Ditto.
 
-2015-02-04  Alexandre Oliva <aoliva@redhat.com>
+2015-02-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/64817
 	* gcc.dg/pr64817-3.c: New.
