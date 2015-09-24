@@ -1,3 +1,8 @@
+2015-09-24  Kirill Yukhin <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx512vbmi-check.h (main): Fix register
+	name while checking for AVX-512VBMI presence.
+
 2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_effective_target_pie): Check for
