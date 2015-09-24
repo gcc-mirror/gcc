@@ -1,3 +1,9 @@
+2015-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/48885
+	* tree-ssa-structalias.c (visit_loadstore): Handle default defs
+	as not including any restrict tags from other pointers.
+
 2015-09-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.c (handle_foffload_option): Don't lose the trailing NUL
