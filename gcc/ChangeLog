@@ -1,3 +1,12 @@
+2015-09-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR driver/67640
+	* opts-common.c (prune_options): Discard all -fdiagnostics-color
+	but the last one, which is moved to the front to be processed
+	first.
+	* opts.c (enable_warning_as_error): Reject options that do not
+	control warnings.
+
 2015-09-24  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Add "CONST" support.

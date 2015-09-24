@@ -2359,9 +2359,10 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   strcpy (new_option + 1, arg);
   option_index = find_opt (new_option, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
-    {
-      error_at (loc, "-Werror=%s: no option -%s", arg, new_option);
-    }
+    error_at (loc, "-Werror=%s: no option -%s", arg, new_option);
+  else if (!(cl_options[option_index].flags & CL_WARNING))
+    error_at (loc, "-Werror=%s: -%s is not an option that controls warnings",
+	      arg, new_option);
   else
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
