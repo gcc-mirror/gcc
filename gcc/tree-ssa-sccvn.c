@@ -2684,7 +2684,7 @@ vn_nary_op_insert (tree op, tree result)
 /* Insert the rhs of STMT into the current hash table with a value number of
    RESULT.  */
 
-vn_nary_op_t
+static vn_nary_op_t
 vn_nary_op_insert_stmt (gimple *stmt, tree result)
 {
   vn_nary_op_t vno1

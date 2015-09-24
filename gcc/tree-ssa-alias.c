@@ -76,12 +76,12 @@ along with GCC; see the file COPYING3.  If not see
 
    The main alias-oracle entry-points are
 
-   bool stmt_may_clobber_ref_p (gimple, tree)
+   bool stmt_may_clobber_ref_p (gimple *, tree)
 
      This function queries if a statement may invalidate (parts of)
      the memory designated by the reference tree argument.
 
-   bool ref_maybe_used_by_stmt_p (gimple, tree)
+   bool ref_maybe_used_by_stmt_p (gimple *, tree)
 
      This function queries if a statement may need (parts of) the
      memory designated by the reference tree argument.
