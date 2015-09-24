@@ -1,3 +1,9 @@
+2015-09-24  Michael Collison  <michael.collison@linaro.org>
+
+	PR other/57195
+	* read-md.c (read_name): Allow mode iterators inside angle
+	brackets in rtl expressions.
+
 2015-09-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/61578
