@@ -464,7 +464,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 	      {
 		if (next_stmt_vis_column > guard_line_first_nws
 		    || (next_tok_type == CPP_OPEN_BRACE
-			&& next_stmt_vis_column == guard_vis_column))
+			&& next_stmt_vis_column == guard_line_first_nws))
 		  return true;
 	      }
 	  }

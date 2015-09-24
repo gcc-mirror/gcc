@@ -1,3 +1,7 @@
+2015-09-24  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* c-c++-common/Wmisleading-indentation.c: Augment test.
+
 2015-09-23  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix small typos in the coding rule enforcement warnings.
