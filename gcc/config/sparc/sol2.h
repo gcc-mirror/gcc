@@ -280,6 +280,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define SUBTARGET_CPU_EXTRA_SPECS
 
+#define ENDFILE_ARCH_SPEC ""
+
 
 
 /* Register the Solaris-specific #pragma directives.  */
