@@ -1,3 +1,11 @@
+2015-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67707
+	* include/bits/stl_deque.h (_Deque_base::_M_move_impl): Initialize
+	empty object.
+	* testsuite/23_containers/deque/allocator/move.cc: Check moved-from
+	deque.
+
 2015-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/ops.cc (canonical): Simplify error handling and
