@@ -29,7 +29,6 @@ static inline LFNode* lfUnpack(uint64 val) {
 // So we use 17msb of pointers as ABA counter.
 #   define PTR_BITS 47
 #  endif
-# endif
 # define CNT_BITS (64 - PTR_BITS + 3)
 static inline uint64 lfPack(LFNode *node, uintptr cnt) {
 	return ((uint64)(node)<<(64-PTR_BITS)) | (cnt&(((1<<CNT_BITS)-1)));
@@ -37,6 +36,7 @@ static inline uint64 lfPack(LFNode *node, uintptr cnt) {
 static inline LFNode* lfUnpack(uint64 val) {
 	return (LFNode*)((val >> CNT_BITS) << 3);
 }
+# endif
 #else
 static inline uint64 lfPack(LFNode *node, uintptr cnt) {
 	return ((uint64)(uintptr)(node)<<32) | cnt;
