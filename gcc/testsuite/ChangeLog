@@ -1,3 +1,8 @@
+2015-09-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR libgcc/67624
+	* gcc.target/arm/fp16-inf.c: New test.
+
 2015-09-24  Kirill Yukhin <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx512vbmi-check.h (main): Fix register

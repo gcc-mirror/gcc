@@ -1,3 +1,8 @@
+2015-09-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR libgcc/67624
+	* config/arm/fp16.c (__gnu_f2h_internal): Handle infinity correctly.
+
 2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (*-*-solaris2*): Add t-crtstuff-pic to tmake_file.
