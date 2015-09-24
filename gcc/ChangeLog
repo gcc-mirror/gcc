@@ -1,5 +1,9 @@
 2015-09-24  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_print_operand): Add "CONST" support.
+
+2015-09-24  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_symbol_context): Delete.
 	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Likewise.
 	(aarch64_cannot_force_const_mem): Likewise.
