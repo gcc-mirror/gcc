@@ -1,3 +1,16 @@
+2015-09-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_symbol_context): Delete.
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Likewise.
+	(aarch64_cannot_force_const_mem): Likewise.
+	(aarch64_classify_address): Likewise.
+	(aarch64_classify_symbolic_expression): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_classify_symbol): Likewise.
+	(aarch64_mov_operand_p): Likewise.
+	* config/aarch64/predicates.md (aarch64_valid_symref): Likewise.
+	(aarch64_mov_operand): Likewise.
+
 2015-09-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (debug_stack_info): Invert the test

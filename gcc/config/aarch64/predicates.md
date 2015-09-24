@@ -165,7 +165,7 @@
 (define_predicate "aarch64_valid_symref"
   (match_code "const, symbol_ref, label_ref")
 {
-  return (aarch64_classify_symbolic_expression (op, SYMBOL_CONTEXT_ADR)
+  return (aarch64_classify_symbolic_expression (op)
 	  != SYMBOL_FORCE_TO_MEM);
 })
 
@@ -215,7 +215,7 @@
   (and (match_code "reg,subreg,mem,const,const_int,symbol_ref,label_ref,high")
        (ior (match_operand 0 "register_operand")
 	    (ior (match_operand 0 "memory_operand")
-		 (match_test "aarch64_mov_operand_p (op, SYMBOL_CONTEXT_ADR, mode)")))))
+		 (match_test "aarch64_mov_operand_p (op, mode)")))))
 
 (define_predicate "aarch64_movti_operand"
   (and (match_code "reg,subreg,mem,const_int")

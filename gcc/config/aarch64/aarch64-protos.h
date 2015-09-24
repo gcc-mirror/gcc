@@ -24,18 +24,6 @@
 
 #include "input.h"
 
-/*
-  SYMBOL_CONTEXT_ADR
-  The symbol is used in a load-address operation.
-  SYMBOL_CONTEXT_MEM
-  The symbol is used as the address in a MEM.
- */
-enum aarch64_symbol_context
-{
-  SYMBOL_CONTEXT_MEM,
-  SYMBOL_CONTEXT_ADR
-};
-
 /* SYMBOL_SMALL_ABSOLUTE: Generate symbol accesses through
    high and lo relocs that calculate the base address using a PC
    relative reloc.
@@ -258,8 +246,7 @@ HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
 int aarch64_branch_cost (bool, bool);
-enum aarch64_symbol_type
-aarch64_classify_symbolic_expression (rtx, enum aarch64_symbol_context);
+enum aarch64_symbol_type aarch64_classify_symbolic_expression (rtx);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
 bool aarch64_constant_address_p (rtx);
 bool aarch64_expand_movmem (rtx *);
@@ -278,8 +265,7 @@ bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_modes_tieable_p (machine_mode mode1,
 			      machine_mode mode2);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
-bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
-			    machine_mode);
+bool aarch64_mov_operand_p (rtx, machine_mode);
 int aarch64_simd_attr_length_rglist (enum machine_mode);
 rtx aarch64_reverse_mask (enum machine_mode);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
@@ -304,8 +290,7 @@ const char *aarch64_mangle_builtin_type (const_tree);
 const char *aarch64_output_casesi (rtx *);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 
-enum aarch64_symbol_type aarch64_classify_symbol (rtx, rtx,
-						  enum aarch64_symbol_context);
+enum aarch64_symbol_type aarch64_classify_symbol (rtx, rtx);
 enum aarch64_symbol_type aarch64_classify_tls_symbol (rtx);
 enum reg_class aarch64_regno_regclass (unsigned);
 int aarch64_asm_preferred_eh_data_format (int, int);

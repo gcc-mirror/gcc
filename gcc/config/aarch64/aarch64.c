@@ -1547,7 +1547,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	 before we start classifying the symbol.  */
       split_const (imm, &base, &offset);
 
-      sty = aarch64_classify_symbol (base, offset, SYMBOL_CONTEXT_ADR);
+      sty = aarch64_classify_symbol (base, offset);
       switch (sty)
 	{
 	case SYMBOL_FORCE_TO_MEM:
@@ -3250,7 +3250,7 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   split_const (x, &base, &offset);
   if (GET_CODE (base) == SYMBOL_REF || GET_CODE (base) == LABEL_REF)
     {
-      if (aarch64_classify_symbol (base, offset, SYMBOL_CONTEXT_ADR)
+      if (aarch64_classify_symbol (base, offset)
 	  != SYMBOL_FORCE_TO_MEM)
 	return true;
       else
@@ -3696,8 +3696,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  rtx sym, offs;
 	  split_const (info->offset, &sym, &offs);
 	  if (GET_CODE (sym) == SYMBOL_REF
-	      && (aarch64_classify_symbol (sym, offs, SYMBOL_CONTEXT_MEM)
-		  == SYMBOL_SMALL_ABSOLUTE))
+	      && (aarch64_classify_symbol (sym, offs) == SYMBOL_SMALL_ABSOLUTE))
 	    {
 	      /* The symbol and offset must be aligned to the access size.  */
 	      unsigned int align;
@@ -3743,17 +3742,15 @@ aarch64_symbolic_address_p (rtx x)
   return GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF;
 }
 
-/* Classify the base of symbolic expression X, given that X appears in
-   context CONTEXT.  */
+/* Classify the base of symbolic expression X.  */
 
 enum aarch64_symbol_type
-aarch64_classify_symbolic_expression (rtx x,
-				      enum aarch64_symbol_context context)
+aarch64_classify_symbolic_expression (rtx x)
 {
   rtx offset;
 
   split_const (x, &x, &offset);
-  return aarch64_classify_symbol (x, offset, context);
+  return aarch64_classify_symbol (x, offset);
 }
 
 
@@ -4441,7 +4438,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       if (GET_CODE (x) == HIGH)
 	x = XEXP (x, 0);
 
-      switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
+      switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_SMALL_GOT_4G:
 	  asm_fprintf (asm_out_file, ":got:");
@@ -4474,7 +4471,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       break;
 
     case 'L':
-      switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
+      switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_SMALL_GOT_4G:
 	  asm_fprintf (asm_out_file, ":lo12:");
@@ -4516,7 +4513,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
     case 'G':
 
-      switch (aarch64_classify_symbolic_expression (x, SYMBOL_CONTEXT_ADR))
+      switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_TLSLE24:
 	  asm_fprintf (asm_out_file, ":tprel_hi12:");
@@ -8753,11 +8750,10 @@ aarch64_classify_tls_symbol (rtx x)
 }
 
 /* Return the method that should be used to access SYMBOL_REF or
-   LABEL_REF X in context CONTEXT.  */
+   LABEL_REF X.  */
 
 enum aarch64_symbol_type
-aarch64_classify_symbol (rtx x, rtx offset,
-			 enum aarch64_symbol_context context ATTRIBUTE_UNUSED)
+aarch64_classify_symbol (rtx x, rtx offset)
 {
   if (GET_CODE (x) == LABEL_REF)
     {
@@ -10185,9 +10181,7 @@ aarch64_simd_imm_scalar_p (rtx x, machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 bool
-aarch64_mov_operand_p (rtx x,
-		       enum aarch64_symbol_context context,
-		       machine_mode mode)
+aarch64_mov_operand_p (rtx x, machine_mode mode)
 {
   if (GET_CODE (x) == HIGH
       && aarch64_valid_symref (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
@@ -10199,7 +10193,7 @@ aarch64_mov_operand_p (rtx x,
   if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
-  return aarch64_classify_symbolic_expression (x, context)
+  return aarch64_classify_symbolic_expression (x)
     == SYMBOL_TINY_ABSOLUTE;
 }
 
