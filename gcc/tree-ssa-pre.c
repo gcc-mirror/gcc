@@ -2531,7 +2531,10 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 						     off));
 	    baseop = build_fold_addr_expr (base);
 	  }
-	return fold_build2 (MEM_REF, currop->type, baseop, offset);
+	genop = build2 (MEM_REF, currop->type, baseop, offset);
+	MR_DEPENDENCE_CLIQUE (genop) = currop->clique;
+	MR_DEPENDENCE_BASE (genop) = currop->base;
+	return genop;
       }
 
     case TARGET_MEM_REF:
@@ -2554,8 +2557,12 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	    if (!genop1)
 	      return NULL_TREE;
 	  }
-	return build5 (TARGET_MEM_REF, currop->type,
-		       baseop, currop->op2, genop0, currop->op1, genop1);
+	genop = build5 (TARGET_MEM_REF, currop->type,
+			baseop, currop->op2, genop0, currop->op1, genop1);
+
+	MR_DEPENDENCE_CLIQUE (genop) = currop->clique;
+	MR_DEPENDENCE_BASE (genop) = currop->base;
+	return genop;
       }
 
     case ADDR_EXPR:

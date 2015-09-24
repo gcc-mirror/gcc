@@ -773,6 +773,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
       temp.op1 = TMR_STEP (ref);
       temp.op2 = TMR_OFFSET (ref);
       temp.off = -1;
+      temp.clique = MR_DEPENDENCE_CLIQUE (ref);
+      temp.base = MR_DEPENDENCE_BASE (ref);
       result->quick_push (temp);
 
       memset (&temp, 0, sizeof (temp));
@@ -816,11 +818,19 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  if (tree_fits_shwi_p (TREE_OPERAND (ref, 1)))
 	    temp.off = tree_to_shwi (TREE_OPERAND (ref, 1));
+	  temp.clique = MR_DEPENDENCE_CLIQUE (ref);
+	  temp.base = MR_DEPENDENCE_BASE (ref);
 	  break;
 	case BIT_FIELD_REF:
 	  /* Record bits and position.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  temp.op1 = TREE_OPERAND (ref, 2);
+	  if (tree_fits_shwi_p (TREE_OPERAND (ref, 2)))
+	    {
+	      HOST_WIDE_INT off = tree_to_shwi (TREE_OPERAND (ref, 2));
+	      if (off % BITS_PER_UNIT == 0)
+		temp.off = off / BITS_PER_UNIT;
+	    }
 	  break;
 	case COMPONENT_REF:
 	  /* The field decl is enough to unambiguously specify the field,
@@ -1017,6 +1027,8 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	  base_alias_set = get_deref_alias_set (op->op0);
 	  *op0_p = build2 (MEM_REF, op->type,
 			   NULL_TREE, op->op0);
+	  MR_DEPENDENCE_CLIQUE (*op0_p) = op->clique;
+	  MR_DEPENDENCE_BASE (*op0_p) = op->base;
 	  op0_p = &TREE_OPERAND (*op0_p, 0);
 	  break;
 

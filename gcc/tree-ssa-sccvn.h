@@ -83,6 +83,9 @@ typedef struct vn_reference_op_struct
   ENUM_BITFIELD(tree_code) opcode : 16;
   /* 1 for instrumented calls.  */
   unsigned with_bounds : 1;
+  /* Dependence info, used for [TARGET_]MEM_REF only.  */
+  unsigned short clique;
+  unsigned short base;
   /* Constant offset this op adds or -1 if it is variable.  */
   HOST_WIDE_INT off;
   tree type;
