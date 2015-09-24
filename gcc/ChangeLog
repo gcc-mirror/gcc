@@ -1,3 +1,12 @@
+2015-09-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-object-size.c (plus_stmt_object_size)
+	(cond_expr_object_size): Change the formal parameters from gimple
+	to gimple *.
+	* tree-ssa-sccvn.h (vn_nary_op_insert_stmt): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_insert_stmt): Make it static.
+	* tree-ssa-sccvn.h (vn_nary_op_insert_stmt): Don't declare.
+
 2015-09-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_pie): Check for gld >= 2.26 on Solaris.

@@ -204,7 +204,6 @@ tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree *, vn_nary_op_t *);
 vn_nary_op_t vn_nary_op_insert (tree, tree);
-vn_nary_op_t vn_nary_op_insert_stmt (gimple, tree);
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree *, tree, unsigned int);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, tree,
