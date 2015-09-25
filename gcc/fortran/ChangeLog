@@ -1,3 +1,9 @@
+2015-09-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR pretty-print/67567
+	* resolve.c (resolve_fl_procedure): Work-around when iface->module
+	== NULL.
+
 2015-09-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* resolve.c (nonscalar_typebound_assign): Fix typos in comment.

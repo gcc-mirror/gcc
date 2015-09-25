@@ -11743,7 +11743,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Mismatch in PURE attribute between MODULE "
 		     "PROCEDURE at %L and its interface in %s",
-		     &sym->declared_at, iface->module);
+		     &sym->declared_at, 
+		     /* FIXME: PR fortran/67567: iface->module should
+			not be NULL !  */
+		     iface->module ? iface->module : "");
 	  return false;
 	}
 
@@ -11759,7 +11762,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Mismatch in RECURSIVE attribute between MODULE "
 		     "PROCEDURE at %L and its interface in %s",
-		     &sym->declared_at, iface->module);
+		     &sym->declared_at, 
+		     /* FIXME: PR fortran/67567: iface->module should
+			not be NULL !  */
+		     iface->module ? iface->module : "");
 	  return false;
 	}
 
@@ -11768,7 +11774,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("%s between the MODULE PROCEDURE declaration "
 		     "in module %s and the declaration at %L in "
-		     "SUBMODULE %s", errmsg, iface->module,
+		     "SUBMODULE %s", errmsg, 
+		     /* FIXME: PR fortran/67567: iface->module should
+			not be NULL !  */
+		     iface->module ? iface->module : "",
 		     &sym->declared_at, sym->ns->proc_name->name);
 	  return false;
 	}

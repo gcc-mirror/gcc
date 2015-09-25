@@ -905,7 +905,8 @@ pp_character (pretty_printer *pp, int c)
 void
 pp_string (pretty_printer *pp, const char *str)
 {
-  pp_maybe_wrap_text (pp, str, str + (str ? strlen (str) : 0));
+  gcc_checking_assert (str);
+  pp_maybe_wrap_text (pp, str, str + strlen (str));
 }
 
 /* Maybe print out a whitespace if needed.  */
