@@ -1,3 +1,6 @@
+2015-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fsanitize): Update URLs.
 2015-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/67619
