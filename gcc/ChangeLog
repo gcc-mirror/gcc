@@ -2,7 +2,7 @@
 
 	PR target/61578
 	* lra-constarints.c (match_reload): Check presence of the input pseudo
-	in the output pseudo.
+	in the output operand.
 
 2015-09-25  Tobias Burnus  <burnus@net-b.de>
 
