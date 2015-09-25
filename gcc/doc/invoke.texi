@@ -22219,8 +22219,8 @@ Intel i486 CPU@.  (No scheduling is implemented for this chip.)
 @itemx pentium
 Intel Pentium CPU with no MMX support.
 
-@item lakemount
-Intel Lakemount MCU, based on Intel Pentium CPU.
+@item lakemont
+Intel Lakemont MCU, based on Intel Pentium CPU.
 
 @item pentium-mmx
 Intel Pentium MMX CPU, based on Pentium core with MMX instruction set support.

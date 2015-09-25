@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -fdump-tree-optimized -mtune=lakemount" } */
+/* { dg-options "-O2 -fdump-tree-optimized -mtune=lakemont" } */
 
 void bar (void);
 

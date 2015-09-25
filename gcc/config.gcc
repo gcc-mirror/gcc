@@ -587,7 +587,7 @@ tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3 LIBC_MUSL=4"
 x86_archs="athlon athlon-4 athlon-fx athlon-mp athlon-tbird \
 athlon-xp k6 k6-2 k6-3 geode c3 c3-2 winchip-c6 winchip2 i386 i486 \
 i586 i686 pentium pentium-m pentium-mmx pentium2 pentium3 pentium3m \
-pentium4 pentium4m pentiumpro prescott lakemount"
+pentium4 pentium4m pentiumpro prescott lakemont"
 
 # 64-bit x86 processors supported by --with-arch=.  Each processor
 # MUST be separated by exactly one space.
@@ -3287,7 +3287,7 @@ esac
 if test x$with_cpu = x ; then
   case ${target} in
     i[34567]86-*-elfiamcu)
-      with_cpu=lakemount
+      with_cpu=lakemont
       ;;
     i[34567]86-*-*|x86_64-*-*)
       with_cpu=$cpu
@@ -3385,7 +3385,7 @@ if test x$with_arch = x ; then
       # and TARGET_SUBTARGET64_ISA_DEFAULT in config/i386/darwin.h.
       ;;
     i[34567]86-*-elfiamcu)
-      with_arch=lakemount
+      with_arch=lakemont
       ;;
     i[34567]86-*-*)
       # --with-fpmath sets the default ISA to SSE2, which is the same
