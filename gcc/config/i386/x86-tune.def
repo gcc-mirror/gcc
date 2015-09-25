@@ -40,7 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* X86_TUNE_SCHEDULE: Enable scheduling.  */
 DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
-          m_PENT | m_LAKEMOUNT | m_PPRO | m_CORE_ALL | m_BONNELL | m_SILVERMONT
+          m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	  | m_INTEL | m_KNL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_PARTIAL_REG_DEPENDENCY: Enable more register renaming
@@ -172,21 +172,21 @@ DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory",
 /* X86_TUNE_SINGLE_PUSH: Enable if single push insn is preferred
    over esp subtraction.  */
 DEF_TUNE (X86_TUNE_SINGLE_PUSH, "single_push", m_386 | m_486 | m_PENT
-	  | m_LAKEMOUNT | m_K6_GEODE)
+	  | m_LAKEMONT | m_K6_GEODE)
 
 /* X86_TUNE_DOUBLE_PUSH. Enable if double push insn is preferred
    over esp subtraction.  */
-DEF_TUNE (X86_TUNE_DOUBLE_PUSH, "double_push", m_PENT | m_LAKEMOUNT
+DEF_TUNE (X86_TUNE_DOUBLE_PUSH, "double_push", m_PENT | m_LAKEMONT
 	  | m_K6_GEODE)
 
 /* X86_TUNE_SINGLE_POP: Enable if single pop insn is preferred
    over esp addition.  */
 DEF_TUNE (X86_TUNE_SINGLE_POP, "single_pop", m_386 | m_486 | m_PENT
-	  | m_LAKEMOUNT | m_PPRO)
+	  | m_LAKEMONT | m_PPRO)
 
 /* X86_TUNE_DOUBLE_POP: Enable if double pop insn is preferred
    over esp addition.  */
-DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop", m_PENT | m_LAKEMOUNT)
+DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop", m_PENT | m_LAKEMONT)
 
 /*****************************************************************************/
 /* Branch predictor tuning  		                                     */
@@ -226,7 +226,7 @@ DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall", m_CORE_ALL | m_GENERIC)
 
 /* X86_TUNE_READ_MODIFY: Enable use of read-modify instructions such
    as "add mem, reg".  */
-DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_LAKEMOUNT | m_PPRO))
+DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_LAKEMONT | m_PPRO))
 
 /* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.   */
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
@@ -286,7 +286,7 @@ DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
 
 /* X86_TUNE_USE_CLTD: Controls use of CLTD and CTQO instructions.  */
 DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd",
-	  ~(m_PENT | m_LAKEMOUNT | m_BONNELL | m_SILVERMONT | m_KNL | m_INTEL
+	  ~(m_PENT | m_LAKEMONT | m_BONNELL | m_SILVERMONT | m_KNL | m_INTEL
 	    | m_K6))
 
 /* X86_TUNE_USE_BT: Enable use of BT (bit test) instructions.  */
@@ -307,7 +307,7 @@ DEF_TUNE (X86_TUNE_USE_HIMODE_FIOP, "use_himode_fiop",
 /* X86_TUNE_USE_SIMODE_FIOP: Enables use of x87 instructions with 32bit
    integer operand.  */
 DEF_TUNE (X86_TUNE_USE_SIMODE_FIOP, "use_simode_fiop",
-          ~(m_PENT | m_LAKEMOUNT | m_PPRO | m_CORE_ALL | m_BONNELL
+          ~(m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL
 	    | m_SILVERMONT | m_KNL | m_INTEL | m_AMD_MULTIPLE | m_GENERIC))
 
 /* X86_TUNE_USE_FFREEP: Use freep instruction instead of fstp.  */
@@ -448,7 +448,7 @@ DEF_TUNE (X86_TUNE_SHIFT1, "shift1", ~m_486)
 /* X86_TUNE_ZERO_EXTEND_WITH_AND: Use AND instruction instead
    of mozbl/movwl.  */
 DEF_TUNE (X86_TUNE_ZERO_EXTEND_WITH_AND, "zero_extend_with_and",
-	  m_486 | m_PENT | m_LAKEMOUNT)
+	  m_486 | m_PENT | m_LAKEMONT)
 
 /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
    and SImode multiply, but 386 and 486 do HImode multiply faster.  */
@@ -459,20 +459,20 @@ DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
    into 16bit/8bit when resulting sequence is shorter.  For example
    for "and $-65536, reg" to 16bit store of 0.  */
 DEF_TUNE (X86_TUNE_FAST_PREFIX, "fast_prefix",
-	  ~(m_386 | m_486 | m_PENT | m_LAKEMOUNT))
+	  ~(m_386 | m_486 | m_PENT | m_LAKEMONT))
 
 /* X86_TUNE_READ_MODIFY_WRITE: Enable use of read modify write instructions
    such as "add $1, mem".  */
 DEF_TUNE (X86_TUNE_READ_MODIFY_WRITE, "read_modify_write",
-	  ~(m_PENT | m_LAKEMOUNT))
+	  ~(m_PENT | m_LAKEMONT))
 
 /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
    than a MOV.  */
-DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT | m_LAKEMOUNT)
+DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT | m_LAKEMONT)
 
 /* X86_TUNE_NOT_UNPAIRABLE: NOT is not pairable on Pentium, while XOR is,
    but one byte longer.  */
-DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable", m_PENT | m_LAKEMOUNT)
+DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable", m_PENT | m_LAKEMONT)
 
 /* X86_TUNE_PARTIAL_REG_STALL: Pentium pro, unlike later chips, handled
    use of partial registers by renaming.  This improved performance of 16bit

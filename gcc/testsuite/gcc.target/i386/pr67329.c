@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O3 -fno-tree-fre -fno-tree-pre -fdump-tree-optimized -mtune=lakemount" } */
+/* { dg-options "-O3 -fno-tree-fre -fno-tree-pre -fdump-tree-optimized -mtune=lakemont" } */
 
 int
 foo ()

@@ -1,3 +1,27 @@
+2015-09-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (x86_archs): Replace lakemount with lakemont.
+	(with_cpu): Likewise.
+	(with_arch): Likewise.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Replace
+	PROCESSOR_LAKEMOUNT with PROCESSOR_LAKEMONT.  Replace
+	__tune_lakemount__ with __tune_lakemont__.
+	* config/i386/i386.c (lakemount_cost): Renamed to ...
+	(lakemont_cost): This.
+	(m_LAKEMOUNT): Renamed to ...
+	(m_LAKEMONT): This.
+	(initial_ix86_arch_features): Replace m_LAKEMOUNT with m_LAKEMONT.
+	(processor_target_table): Replace "lakemount" with "lakemont".
+	(processor_alias_table): Likewise.
+	(ix86_issue_rate): Replace PROCESSOR_LAKEMOUNT with
+	PROCESSOR_LAKEMONT.
+	(ix86_adjust_cost): Likewise.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	* config/i386/i386.h (processor_type): Likewise.
+	* config/i386/x86-tune.def: Replace m_LAKEMOUNT with m_LAKEMONT.
+	* doc/invoke.texi: Replace lakemount with lakemont.  Replace
+	Lakemount with Lakemont.
+
 2015-09-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc (x86_archs): Replace iamcu with lakemount.
