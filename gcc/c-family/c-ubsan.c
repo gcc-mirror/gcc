@@ -104,6 +104,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 	}
     }
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
+  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op1), t);
   if (flag_sanitize_undefined_trap_on_error)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
