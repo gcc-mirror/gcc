@@ -1,3 +1,8 @@
+2015-09-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_builtin): Force
+	__builtin_aarch64_fp[sc]r arguments into a register.
+
 2015-09-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc (x86_archs): Replace lakemount with lakemont.
