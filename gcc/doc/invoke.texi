@@ -5630,8 +5630,8 @@ Memory access instructions are instrumented to detect
 out-of-bounds and use-after-free bugs.
 See @uref{https://github.com/google/sanitizers/wiki/AddressSanitizer} for
 more details.  The run-time behavior can be influenced using the
-@env{ASAN_OPTIONS} environment variable. When setting it to @code{help=1},
-the available options are shown at startup of the instrumended program. See
+@env{ASAN_OPTIONS} environment variable.  When set to @code{help=1},
+the available options are shown at startup of the instrumended program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
 
