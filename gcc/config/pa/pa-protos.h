@@ -79,6 +79,7 @@ extern enum direction pa_function_arg_padding (machine_mode, const_tree);
 #endif /* ARGS_SIZE_RTX */
 extern int pa_insn_refs_are_delayed (rtx_insn *);
 extern rtx pa_get_deferred_plabel (rtx);
+extern rtx pa_maybe_emit_compare_and_swap_exchange_loop (rtx, rtx, rtx);
 #endif /* RTX_CODE */
 
 extern int pa_and_mask_p (unsigned HOST_WIDE_INT);

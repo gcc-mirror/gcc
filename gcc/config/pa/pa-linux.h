@@ -140,3 +140,4 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_sync_compare_and_swapqi 1
 #define HAVE_sync_compare_and_swaphi 1
 #define HAVE_sync_compare_and_swapsi 1
+#define HAVE_sync_compare_and_swapdi 1
