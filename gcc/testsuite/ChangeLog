@@ -1,5 +1,10 @@
 2015-09-25  Marek Polacek  <polacek@redhat.com>
 
+	* c-c++-common/ubsan/bounds-11.c: New test.
+	* c-c++-common/ubsan/bounds-12.c: New test.
+
+2015-09-25  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/64906
 	* c-c++-common/ubsan/pr64906.c: New test.
 

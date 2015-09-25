@@ -1,5 +1,10 @@
 2015-09-25  Marek Polacek  <polacek@redhat.com>
 
+	* c-ubsan.c (ubsan_instrument_division): Remove unnecessary code.
+	(ubsan_instrument_shift): Likewise.
+
+2015-09-25  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/64906
 	* c-ubsan.c (ubsan_instrument_division): Also pre-evaluate OP1.
 
