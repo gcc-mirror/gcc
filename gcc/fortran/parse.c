@@ -3092,15 +3092,18 @@ match_deferred_characteristics (gfc_typespec * ts)
 static void
 check_function_result_typed (void)
 {
-  gfc_typespec* ts = &gfc_current_ns->proc_name->result->ts;
+  gfc_typespec ts;
 
   gcc_assert (gfc_current_state () == COMP_FUNCTION);
-  gcc_assert (ts->type != BT_UNKNOWN);
+
+  if (!gfc_current_ns->proc_name->result) return;
+
+  ts = gfc_current_ns->proc_name->result->ts;
 
   /* Check type-parameters, at the moment only CHARACTER lengths possible.  */
   /* TODO:  Extend when KIND type parameters are implemented.  */
-  if (ts->type == BT_CHARACTER && ts->u.cl && ts->u.cl->length)
-    gfc_expr_check_typed (ts->u.cl->length, gfc_current_ns, true);
+  if (ts.type == BT_CHARACTER && ts.u.cl && ts.u.cl->length)
+    gfc_expr_check_typed (ts.u.cl->length, gfc_current_ns, true);
 }
 
 

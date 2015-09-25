@@ -1,3 +1,9 @@
+2015-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67525
+	* parse.c (match_deferred_characteristics): Remove an assert, which
+	allows an invalid SELECT TYPE selector to be detected.
+
 2015-09-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67615
