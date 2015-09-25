@@ -1,3 +1,17 @@
+2015-09-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (HAVE_sync_compare_and_swapdi): Define.
+	* config/pa/pa-protos.h (pa_maybe_emit_compare_and_swap_exchange_loop):
+	Declare.
+	* config/pa/pa.c (pa_init_libfuncs): Init sync libfuncs up to 8 bytes.
+	(pa_expand_compare_and_swap_loop): New.
+	(pa_maybe_emit_compare_and_swap_exchange_loop): New.
+	* config/pa/pa.md (atomic_storeqi, atomic_storehi, atomic_storesi,
+	atomic_storesf, atomic_loaddf, atomic_storedf): New expanders.
+	(atomic_loaddf_1, atomic_storedf_1): New insn patterns.
+	(atomic_loaddi, atomic_loaddi_1, atomic_storedi, atomic_storedi_1):
+	Revise.
+
 2015-09-24  Alan Modra  <amodra@gmail.com>
 
 	Apply from mainline
