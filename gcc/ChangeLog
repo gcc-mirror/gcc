@@ -1,3 +1,11 @@
+2015-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67675
+	* config/sh/sh-mem.cc (sh_expand_cmpstr): Check alignment of addr1 and
+	addr2 individually.  Don't emit logical or insn if one is known to
+	be aligned approriately.
+	(sh_expand_cmpnstr): Likewise.
+
 2015-09-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_expand_builtin): Force

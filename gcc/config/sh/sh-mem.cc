@@ -224,14 +224,25 @@ sh_expand_cmpstr (rtx *operands)
   rtx_code_label *L_loop_long = gen_label_rtx ();
   rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
-  int align = INTVAL (operands[3]);
+  const unsigned int addr1_alignment = MEM_ALIGN (operands[1]) / BITS_PER_UNIT;
+  const unsigned int addr2_alignment = MEM_ALIGN (operands[2]) / BITS_PER_UNIT;
 
-  emit_move_insn (tmp0, const0_rtx);
-
-  if (align < 4)
+  if (addr1_alignment < 4 && addr2_alignment < 4)
     {
       emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
       emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
+      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+    }
+  else if (addr1_alignment < 4 && addr2_alignment >= 4)
+    {
+      emit_insn (gen_tstsi_t (s1_addr, GEN_INT (3)));
+      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+    }
+  else if (addr1_alignment >= 4 && addr2_alignment < 4)
+    {
+      emit_insn (gen_tstsi_t (s2_addr, GEN_INT (3)));
       jump = emit_jump_insn (gen_branch_false (L_loop_byte));
       add_int_reg_note (jump, REG_BR_PROB, prob_likely);
     }
@@ -352,6 +363,9 @@ sh_expand_cmpnstr (rtx *operands)
   rtx len = force_reg (SImode, operands[3]);
   int constp = CONST_INT_P (operands[3]);
 
+  const unsigned int addr1_alignment = MEM_ALIGN (operands[1]) / BITS_PER_UNIT;
+  const unsigned int addr2_alignment = MEM_ALIGN (operands[2]) / BITS_PER_UNIT;
+
   /* Loop on a register count.  */
   if (constp)
     {
@@ -362,7 +376,6 @@ sh_expand_cmpnstr (rtx *operands)
       rtx_code_label *L_loop_long = gen_label_rtx ();
       rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
-      int align = INTVAL (operands[4]);
       int bytes = INTVAL (operands[3]);
       int witers = bytes / 4;
 
@@ -373,10 +386,22 @@ sh_expand_cmpnstr (rtx *operands)
 
 	  emit_move_insn (tmp0, const0_rtx);
 
-	  if (align < 4)
+	  if (addr1_alignment < 4 && addr2_alignment < 4)
 	    {
 	      emit_insn (gen_iorsi3 (tmp1, s1_addr, s2_addr));
 	      emit_insn (gen_tstsi_t (tmp1, GEN_INT (3)));
+	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+	    }
+	  else if (addr1_alignment < 4 && addr2_alignment >= 4)
+	    {
+	      emit_insn (gen_tstsi_t (s1_addr, GEN_INT (3)));
+	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+	    }
+	  else if (addr1_alignment >= 4 && addr2_alignment < 4)
+	    {
+	      emit_insn (gen_tstsi_t (s2_addr, GEN_INT (3)));
 	      jump = emit_jump_insn (gen_branch_false (L_loop_byte));
 	      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
 	    }

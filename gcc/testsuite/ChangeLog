@@ -1,3 +1,8 @@
+2015-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67675
+	* gcc.target/sh/pr67675.c: New.
+
 2015-09-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/fpcr_fpsr_1.c: New file.
