@@ -486,6 +486,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return __and_<is_convertible<_UElements&&, _Elements>...>::value;
     }
+
+    template<typename _SrcTuple>
+    static constexpr bool _NonNestedTuple()
+    {
+      return  __and_<__not_<is_convertible<_SrcTuple, _Elements...>>,
+                     __not_<is_constructible<_Elements..., _SrcTuple>>
+              >::value;
+    }
   };
 
   template<typename... _Elements>
@@ -513,6 +521,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static constexpr bool _ImplicitlyMoveConvertibleTuple()
     {
       return false;
+    }
+
+    template<typename... _UElements>
+    static constexpr bool _NonNestedTuple()
+    {
+      return true;
     }
   };
 
@@ -599,40 +613,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr tuple(tuple&&) = default; 
 
-      template<typename... _UElements, typename
+      // Shortcut for the cases where constructors taking tuples
+      // must avoid creating temporaries.
+      template<typename _Dummy> using _TNTC =
+        _TC<is_same<_Dummy, void>::value && sizeof...(_Elements) == 1,
+            _Elements...>;
+
+      template<typename... _UElements, typename _Dummy = void, typename
         enable_if<_TMC<_UElements...>::template
                     _ConstructibleTuple<_UElements...>()
                   && _TMC<_UElements...>::template
-                    _ImplicitlyConvertibleTuple<_UElements...>(),
+                    _ImplicitlyConvertibleTuple<_UElements...>()
+                  && _TNTC<_Dummy>::template
+                    _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=true>
         constexpr tuple(const tuple<_UElements...>& __in)
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
-      template<typename... _UElements, typename
+      template<typename... _UElements, typename _Dummy = void, typename
         enable_if<_TMC<_UElements...>::template
                     _ConstructibleTuple<_UElements...>()
                   && !_TMC<_UElements...>::template
-                    _ImplicitlyConvertibleTuple<_UElements...>(),
+                    _ImplicitlyConvertibleTuple<_UElements...>()
+                  && _TNTC<_Dummy>::template
+                    _NonNestedTuple<const tuple<_UElements...>&>(),
         bool>::type=false>
         explicit constexpr tuple(const tuple<_UElements...>& __in)
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
 
-      template<typename... _UElements, typename
+      template<typename... _UElements, typename _Dummy = void, typename
         enable_if<_TMC<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
                   && _TMC<_UElements...>::template
-                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>()
+                  && _TNTC<_Dummy>::template
+                    _NonNestedTuple<tuple<_UElements...>&&>(),
         bool>::type=true>
         constexpr tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
-      template<typename... _UElements, typename
+      template<typename... _UElements, typename _Dummy = void, typename
         enable_if<_TMC<_UElements...>::template
                     _MoveConstructibleTuple<_UElements...>()
                   && !_TMC<_UElements...>::template
-                    _ImplicitlyMoveConvertibleTuple<_UElements...>(),
+                    _ImplicitlyMoveConvertibleTuple<_UElements...>()
+                  && _TNTC<_Dummy>::template
+                    _NonNestedTuple<tuple<_UElements...>&&>(),
         bool>::type=false>
         explicit constexpr tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }

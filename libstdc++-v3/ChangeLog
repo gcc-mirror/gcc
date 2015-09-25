@@ -1,3 +1,13 @@
+2015-09-25  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Avoid creating dangling references in case of nested tuples
+	for tuple constructors that construct from other tuples.
+	* include/std/tuple (_TC::_NonNestedTuple): New.
+	* include/std/tuple (tuple::_TNTC): New.
+	* include/std/tuple (tuple(const tuple<_UElements...>&),
+	tuple(tuple<_UElements...>&&): Use _TNTC.
+	* testsuite/20_util/tuple/cons/nested_tuple_construct.cc: New.
+
 2015-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/67707
