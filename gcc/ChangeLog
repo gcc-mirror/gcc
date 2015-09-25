@@ -1,3 +1,7 @@
+2015-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fsanitize): Update URLs.
+
 2015-09-25  Teresa Johnson  <tejohnson@google.com>
 
 	* opts.c (finish_options): Unset -freorder-blocks-and-partition
