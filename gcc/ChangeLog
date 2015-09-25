@@ -1,3 +1,7 @@
+2015-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fsanitize): Update URLs.
+
 2015-09-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-linux.h (HAVE_sync_compare_and_swapdi): Define.
