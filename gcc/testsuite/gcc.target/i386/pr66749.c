@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target nonpic } */
-/* { dg-options "-O2 -miamcu -mtune=iamcu" } */
+/* { dg-options "-O2 -miamcu -mtune=lakemount" } */
 
 char a[10], b[10];
 

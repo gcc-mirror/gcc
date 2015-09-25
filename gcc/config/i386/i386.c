@@ -417,7 +417,7 @@ struct processor_costs pentium_cost = {
 };
 
 static const
-struct processor_costs iamcu_cost = {
+struct processor_costs lakemount_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
   COSTS_N_INSNS (1),			/* variable shift costs */
@@ -2085,7 +2085,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_386 (1<<PROCESSOR_I386)
 #define m_486 (1<<PROCESSOR_I486)
 #define m_PENT (1<<PROCESSOR_PENTIUM)
-#define m_IAMCU (1<<PROCESSOR_IAMCU)
+#define m_LAKEMOUNT (1<<PROCESSOR_LAKEMOUNT)
 #define m_PPRO (1<<PROCESSOR_PENTIUMPRO)
 #define m_PENT4 (1<<PROCESSOR_PENTIUM4)
 #define m_NOCONA (1<<PROCESSOR_NOCONA)
@@ -2146,7 +2146,7 @@ unsigned char ix86_arch_features[X86_ARCH_LAST];
    ix86_arch_features based on the processor mask.  */
 static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
   /* X86_ARCH_CMOV: Conditional move was added for pentiumpro.  */
-  ~(m_386 | m_486 | m_PENT | m_IAMCU | m_K6),
+  ~(m_386 | m_486 | m_PENT | m_LAKEMOUNT | m_K6),
 
   /* X86_ARCH_CMPXCHG: Compare and exchange was added for 80486.  */
   ~m_386,
@@ -2557,7 +2557,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"i386", &i386_cost, 4, 3, 4, 3, 4},
   {"i486", &i486_cost, 16, 15, 16, 15, 16},
   {"pentium", &pentium_cost, 16, 7, 16, 7, 16},
-  {"iamcu", &iamcu_cost, 16, 7, 16, 7, 16},
+  {"lakemount", &lakemount_cost, 16, 7, 16, 7, 16},
   {"pentiumpro", &pentiumpro_cost, 16, 15, 16, 10, 16},
   {"pentium4", &pentium4_cost, 0, 0, 0, 0, 0},
   {"nocona", &nocona_cost, 0, 0, 0, 0, 0},
@@ -3313,7 +3313,7 @@ ix86_option_override_internal (bool main_args_p,
       {"i486", PROCESSOR_I486, CPU_NONE, 0},
       {"i586", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
       {"pentium", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
-      {"iamcu", PROCESSOR_IAMCU, CPU_PENTIUM, 0},
+      {"lakemount", PROCESSOR_LAKEMOUNT, CPU_PENTIUM, 0},
       {"pentium-mmx", PROCESSOR_PENTIUM, CPU_PENTIUM, PTA_MMX},
       {"winchip-c6", PROCESSOR_I486, CPU_NONE, PTA_MMX},
       {"winchip2", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW | PTA_PRFCHW},
@@ -26196,7 +26196,7 @@ ix86_issue_rate (void)
   switch (ix86_tune)
     {
     case PROCESSOR_PENTIUM:
-    case PROCESSOR_IAMCU:
+    case PROCESSOR_LAKEMOUNT:
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
     case PROCESSOR_KNL:
@@ -26383,7 +26383,7 @@ ix86_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
   switch (ix86_tune)
     {
     case PROCESSOR_PENTIUM:
-    case PROCESSOR_IAMCU:
+    case PROCESSOR_LAKEMOUNT:
       /* Address Generation Interlock adds a cycle of latency.  */
       if (insn_type == TYPE_LEA)
 	{
@@ -26593,7 +26593,7 @@ ia32_multipass_dfa_lookahead (void)
   switch (ix86_tune)
     {
     case PROCESSOR_PENTIUM:
-    case PROCESSOR_IAMCU:
+    case PROCESSOR_LAKEMOUNT:
       return 2;
 
     case PROCESSOR_PENTIUMPRO:

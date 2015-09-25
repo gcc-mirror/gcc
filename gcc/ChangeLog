@@ -1,3 +1,26 @@
+2015-09-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (x86_archs): Replace iamcu with lakemount.
+	(with_cpu): Likewise.
+	(with_arch): Likewise.
+	* doc/invoke.texi: Likewise.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Replace
+	PROCESSOR_IAMCU with PROCESSOR_LAKEMOUNT.  Replace
+	__tune_iamcu__ with __tune_lakemount__.
+	* config/i386/i386.c (iamcu_cost): Renamed to ...
+	(lakemount_cost): This.
+	(m_IAMCU): Renamed to ...
+	(m_LAKEMOUNT): This.
+	(initial_ix86_arch_features): Replace m_IAMCU with m_LAKEMOUNT.
+	(processor_target_table): Replace "iamcu" with "lakemount".
+	(processor_alias_table): Likewise.
+	(ix86_issue_rate): Replace PROCESSOR_IAMCU with
+	PROCESSOR_LAKEMOUNT.
+	(ix86_adjust_cost): Likewise.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	* config/i386/i386.h (processor_type): Likewise.
+	* config/i386/x86-tune.def: Replace m_IAMCU with m_LAKEMOUNT.
+
 2015-09-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-linux.h (HAVE_sync_compare_and_swapdi): Define.
