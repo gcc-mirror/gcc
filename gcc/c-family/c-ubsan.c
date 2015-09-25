@@ -121,6 +121,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 	}
     }
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op0, t);
+  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op1, t);
   if (flag_sanitize_undefined_trap_on_error)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else

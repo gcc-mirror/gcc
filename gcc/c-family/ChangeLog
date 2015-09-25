@@ -1,3 +1,8 @@
+2015-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/64906
+	* c-ubsan.c (ubsan_instrument_division): Also pre-evaluate OP1.
+
 2015-08-11  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline

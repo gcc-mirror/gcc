@@ -1,3 +1,8 @@
+2015-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/64906
+	* c-c++-common/ubsan/pr64906.c: New test.
+
 2015-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
