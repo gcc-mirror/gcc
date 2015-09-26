@@ -1,5 +1,8 @@
 2015-09-26  Jeff Law  <law@redhat.com>
 
+	* config/mips/mips.c (mips_compute_frame_info): Fix left shift
+	undefined behaviour.
+
 	* config/cris/cris.md (asrandb): Fix left shift undefined
 	behaviour.
 	(asrandw): Likewise.

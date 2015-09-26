@@ -10572,7 +10572,7 @@ mips_compute_frame_info (void)
       if (mips_save_reg_p (regno))
 	{
 	  frame->num_fp += MAX_FPRS_PER_FMT;
-	  frame->fmask |= ~(~0 << MAX_FPRS_PER_FMT) << (regno - FP_REG_FIRST);
+	  frame->fmask |= ~(~0U << MAX_FPRS_PER_FMT) << (regno - FP_REG_FIRST);
 	}
 
   /* Move above the FPR save area.  */
