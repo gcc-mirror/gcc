@@ -3,8 +3,8 @@
 // { dg-options "-gdwarf-2 -dA -fno-merge-debug-strings -gno-strict-dwarf" }
 
 // Check for the local alias variables that point to the members of the closure.
-// { dg-final { scan-assembler-times "DW_TAG_variable\[^.\]*\.ascii \"j.0\"" 4 } }
-// { dg-final { scan-assembler-times "DW_TAG_variable\[^.\]*\.ascii \"this.0\"" 2 } }
+// { dg-final { scan-assembler-times "DW_TAG_variable\[^.\]*\.ascii \"j.0\"" 4 { xfail { powerpc-ibm-aix* } } } }
+// { dg-final { scan-assembler-times "DW_TAG_variable\[^.\]*\.ascii \"this.0\"" 2 { xfail { powerpc-ibm-aix* } } } }
 
 struct A
 {

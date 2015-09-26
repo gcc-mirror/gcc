@@ -1,3 +1,34 @@
+2015-09-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr64935-1.c: XFAIL on AIX.
+	* gcc.dg/pr64935-2.c: XFAIL on AIX.
+	* gcc.dg/debug/dwarf2/dwarf2-macro2.c: XFAIL Start new file on AIX.
+	* gcc.dg/debug/dwarf2/dwarf2-macro2.c: XFAIL At line number on AIX.
+	* gcc.dg/debug/dwarf2/global-used-types.c: XFAIL ascii on AIX.
+	* gcc.dg/debug/dwarf2/noreturn-function-keyword.c: XFAIL
+	DW_AT_noreturn on AIX.
+	* gcc.dg/debug/dwarf2/noreturn-function-attribute.c: XFAIL
+	DW_AT_noreturn on AIX.
+	* gcc.dg/debug/dwarf2/lang-c89.c: XFAIL DW_AT_language on AIX.
+	* gcc.dg/debug/dwarf2/stacked-qualified-types-3.c: XFAIL DW_TAG on AIX.
+	* g++.dg/debug/dwarf2/deleted-member-function.C: XFAIL
+	DW_AT_GNU_deleted on AIX.
+	* g++.dg/debug/dwarf2/noreturn-function.C: XFAIL DW_AT_noreturn on AIX.
+	* g++.dg/debug/dwarf2/template-params-6.C: XFAIL ascii on AIX.
+	* g++.dg/debug/dwarf2/dwarf4-nested.C: XFAIL ascii on AIX.
+	* g++.dg/debug/dwarf2/pubnames-2.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/pr44641.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/pr46527.C: XFAIL on AIX.
+	* g++.dg/debug/dwarf2/imported-decl-2.C: XFAIL ascii on AIX.
+	* g++.dg/debug/dwarf2/namespace-1.C: XFAIL ascii on AIX.
+	* g++.dg/debug/dwarf2/global-used-types-1.C: XFAIL ascii on AIX.
+	* g++.dg/debug/dwarf2/lambda1.C: XFAIL ascii on AIX.
+	* g++.dg/debug/dwarf2/pubnames-3.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/pr61433.C: XFAIL on AIX.
+	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on AIX.
+	* g++.dg/debug/dwarf2/template-func-params-6.C: XFAIL ascii on AIX.
+	* g++.dg/debug/dwarf2/lineno-simple1.C: XFAIL on AIX.
+
 2015-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67614

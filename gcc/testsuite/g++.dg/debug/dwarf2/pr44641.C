@@ -1,5 +1,6 @@
 // Origin: PR 44641
 // { dg-do compile }
+// { dg-skip-if "" { powerpc-ibm-aix* } { "*" } { "" } }
 // { dg-options "-gdwarf-2 -O0 -dA" }
 
 template <class A> struct MisplacedDbg;

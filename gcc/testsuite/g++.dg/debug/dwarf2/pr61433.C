@@ -1,5 +1,6 @@
 // PR c++/61433
 // { dg-do compile { target c++11 } }
+// { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } }
 // { dg-options "-O -fcompare-debug -fno-inline -fno-ipa-pure-const -fipa-sra" }
 
 template <class T>

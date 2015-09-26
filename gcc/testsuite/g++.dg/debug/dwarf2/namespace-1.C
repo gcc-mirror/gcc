@@ -8,7 +8,7 @@
 // { dg-final { scan-assembler-times "DIE +\\(\[^\n\]*\\) DW_TAG_namespace" 1 } }
 // { dg-final { scan-assembler-times "\"not_emitted.0\"\[^\n\]*DW_AT_name" 1 } }
 // { dg-final { scan-assembler-times "DIE +\\(\[^\n\]*\\) DW_TAG_typedef" 1 } }
-// { dg-final { scan-assembler-times "\.ascii \"T.0\"\[\t \]+\[^\n\]*DW_AT_name" 1 } }
+// { dg-final { scan-assembler-times "\.ascii \"T.0\"\[\t \]+\[^\n\]*DW_AT_name" 1 { xfail { powerpc-ibm-aix* } } } }
 
 struct strukt
 {

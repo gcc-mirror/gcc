@@ -3,7 +3,7 @@
 // { dg-options "-gdwarf-2 -dA -fno-merge-debug-strings" }
 // { dg-final { scan-assembler-times "DW_TAG_GNU_template_template_param" 2 } }
 // { dg-final { scan-assembler-times "\"vector.0\".*?DW_AT_GNU_template_name" 1 } }
-// { dg-final { scan-assembler-times ".ascii \"U.0\".*?DW_AT_name" 1 } }
+// { dg-final { scan-assembler-times ".ascii \"U.0\".*?DW_AT_name" 1 { xfail { powerpc-ibm-aix* } } } }
 
 template <class T>
 struct vector_base

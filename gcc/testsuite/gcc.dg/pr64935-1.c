@@ -1,6 +1,7 @@
 /* PR rtl-optimization/64935 */
 /* { dg-do compile } */
 /* { dg-options "-std=gnu89 -Wno-shift-count-overflow -O2 -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 int a[] = {}, b[] = {}, c[] = {}, d[] = {}, e[] = {}, f[] = {}, h[] = {};
 int g[] = { 0 };
