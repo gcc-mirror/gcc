@@ -1,5 +1,10 @@
 2015-09-26  Jeff Law  <law@redhat.com>
 
+	* config/arc/arc.c (arc_output_addsi): Fix left shift undefined
+	behaviour.
+	* config/arc/constraints.md (Cca, C2a): Fix left shift undefined
+	behaviour.
+
 	* config/sh/sh.h (CONST_OK_FOR_J16): Fix left shift undefined
 	behaviour
 

@@ -7393,7 +7393,7 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
       int range_factor = neg_intval & intval;
       int shift;
 
-      if (intval == -1 << 31)
+      if (intval == (HOST_WIDE_INT) (HOST_WIDE_INT_M1U << 31))
 	ADDSI_OUTPUT1 ("bxor%? %0,%1,31");
 
       /* If we can use a straight add / sub instead of a {add,sub}[123] of
@@ -9320,7 +9320,9 @@ arc_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
       if ((scale-1) & offset)
 	scale = 1;
       shift = scale >> 1;
-      offset_base = (offset + (256 << shift)) & (-512 << shift);
+      offset_base
+	= ((offset + (256 << shift))
+	   & ((HOST_WIDE_INT)(-512U << shift)));
       /* Sometimes the normal form does not suit DImode.  We
 	 could avoid that by using smaller ranges, but that
 	 would give less optimized code when SImode is
