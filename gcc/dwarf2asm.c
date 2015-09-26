@@ -34,6 +34,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2.h"
 #include "tm_p.h"
 
+#ifndef XCOFF_DEBUGGING_INFO
+#define XCOFF_DEBUGGING_INFO 0
+#endif
+
 
 /* Output an unaligned integer with the given value and size.  Prefer not
    to print a newline, since the caller may want to add a comment.  */
@@ -306,7 +310,11 @@ dw2_asm_output_nstring (const char *str, size_t orig_len,
 
   if (flag_debug_asm && comment)
     {
-      fputs ("\t.ascii \"", asm_out_file);
+      if (XCOFF_DEBUGGING_INFO)
+	fputs ("\t.byte \"", asm_out_file);
+      else
+	fputs ("\t.ascii \"", asm_out_file);
+
       for (i = 0; i < len; i++)
 	{
 	  int c = str[i];
