@@ -7204,7 +7204,28 @@ rs6000_output_dwarf_dtprel (FILE *file, int size, rtx x)
       gcc_unreachable ();
     }
   output_addr_const (file, x);
-  fputs ("@dtprel+0x8000", file);
+  if (TARGET_ELF)
+    fputs ("@dtprel+0x8000", file);
+  else if (TARGET_XCOFF && GET_CODE (x) == SYMBOL_REF)
+    {
+      switch (SYMBOL_REF_TLS_MODEL (x))
+	{
+	case 0:
+	  break;
+	case TLS_MODEL_LOCAL_EXEC:
+	  fputs ("@le", file);
+	  break;
+	case TLS_MODEL_INITIAL_EXEC:
+	  fputs ("@ie", file);
+	  break;
+	case TLS_MODEL_GLOBAL_DYNAMIC:
+	case TLS_MODEL_LOCAL_DYNAMIC:
+	  fputs ("@m", file);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
 }
 
 /* Return true if X is a symbol that refers to real (rather than emulated)
@@ -27316,17 +27337,21 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
     output_addr_const (file, x);
 
 #if HAVE_AS_TLS
-  if (TARGET_XCOFF && GET_CODE (base) == SYMBOL_REF
-      && SYMBOL_REF_TLS_MODEL (base) != 0)
+  if (TARGET_XCOFF && GET_CODE (base) == SYMBOL_REF)
     {
-      if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_LOCAL_EXEC)
-	fputs ("@le", file);
-      else if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_INITIAL_EXEC)
-	fputs ("@ie", file);
-      /* Use global-dynamic for local-dynamic.  */
-      else if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_GLOBAL_DYNAMIC
-	       || SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_LOCAL_DYNAMIC)
+      switch (SYMBOL_REF_TLS_MODEL (base))
 	{
+	case 0:
+	  break;
+	case TLS_MODEL_LOCAL_EXEC:
+	  fputs ("@le", file);
+	  break;
+	case TLS_MODEL_INITIAL_EXEC:
+	  fputs ("@ie", file);
+	  break;
+	/* Use global-dynamic for local-dynamic.  */
+	case TLS_MODEL_GLOBAL_DYNAMIC:
+	case TLS_MODEL_LOCAL_DYNAMIC:
 	  putc ('\n', file);
 	  (*targetm.asm_out.internal_label) (file, "LCM", labelno);
 	  fputs ("\t.tc .", file);
@@ -27334,6 +27359,9 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
 	  fputs ("[TC],", file);
 	  output_addr_const (file, x);
 	  fputs ("@m", file);
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
     }
 #endif
@@ -30684,6 +30712,20 @@ rs6000_elf_file_end (void)
 #endif
 
 #if TARGET_XCOFF
+
+#ifndef HAVE_XCOFF_DWARF_EXTRAS
+#define HAVE_XCOFF_DWARF_EXTRAS 0
+#endif
+
+static enum unwind_info_type
+rs6000_xcoff_debug_unwind_info (void)
+{
+  if (HAVE_XCOFF_DWARF_EXTRAS)
+    return UI_DWARF2;
+  else
+    return UI_NONE;
+}
+
 static void
 rs6000_xcoff_asm_output_anchor (rtx symbol)
 {
@@ -30805,6 +30847,11 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
   int smclass;
   static const char * const suffix[4] = { "PR", "RO", "RW", "TL" };
 
+  if (flags & SECTION_DEBUG)
+    {
+      fprintf (asm_out_file, "\t.dwsect %s\n", name);
+      return;
+    }
   if (flags & SECTION_CODE)
     smclass = 0;
   else if (flags & SECTION_TLS)
@@ -31140,8 +31187,16 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
   fputs (":\n", file);
   data.function_descriptor = true;
   symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias, &data, true);
-  if (write_symbols != NO_DEBUG && !DECL_IGNORED_P (decl))
-    xcoffout_declare_function (file, decl, buffer);
+  if (!DECL_IGNORED_P (decl))
+    {
+      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	xcoffout_declare_function (file, decl, buffer);
+      else if (write_symbols == DWARF2_DEBUG)
+	{
+	  name = (*targetm.strip_name_encoding) (name);
+	  fprintf (file, "\t.function .%s,.%s,2,0\n", name, name);
+	}
+    }
   return;
 }
 

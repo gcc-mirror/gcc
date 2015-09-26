@@ -1,3 +1,38 @@
+2015-09-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* dwarf2out.c (XCOFF_DEBUGGING_INFO): Default 0 definition.
+	(HAVE_XCOFF_DWARF_EXTRAS): Default to 0 definition.
+	(output_fde): Don't output length for debug_frame on AIX.
+	(output_call_frame_info): Don't output length for debug_frame on AIX.
+	(have_macinfo): Force to False for XCOFF_DEBUGGING_INFO and not
+	HAVE_XCOFF_DWARF_EXTRAS.
+	(add_AT_loc_list): Return early if XCOFF_DEBUGGING_INFO and not
+	HAVE_XCOFF_DWARF_EXTRAS.
+	(output_compilation_unit_header): Don't output length on AIX.
+	(output_pubnames): Don't output length on AIX.
+	(output_aranges): Delete argument. Compute length locally. Don't
+	output length on AIX.
+	(output_line_info): Don't output length on AIX.
+	(dwarf2out_finish): Don't compute aranges_length.
+	* dwarf2asm.c (XCOFF_DEBUGGING_INFO): Default 0 definition.
+	(dw2_asm_output_nstring): Emit .byte not .ascii on AIX.
+	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): Emit correct
+	symbol decoration for AIX.
+	(rs6000_xcoff_debug_unwind_info): New.
+	(rs6000_xcoff_asm_named_section): Emit .dwsect pseudo-op
+	for SECTION_DEBUG.
+	(rs6000_xcoff_declare_function_name): Emit different
+	.function pseudo-op when DWARF2_DEBUG. Don't call
+	xcoffout_declare_function for DWARF2_DEBUG.
+	* config/rs6000/xcoff.h (TARGET_DEBUG_UNWIND_INFO):
+	Redefine.
+	* config/rs6000/aix71.h: New.
+	* configure.ac (gcc_cv_as_aix_dwloc): Check AIX as for DWARF
+	locations support.
+	* configure: Regenerate.
+	* config.gcc (powerpc-ibm-aix[789]+): New stanza for AIX 7.1+ with
+	DWARF support.
+
 2015-09-26  Jeff Law  <law@redhat.com>
 
 	* config/arc/arc.c (arc_output_addsi): Fix left shift undefined

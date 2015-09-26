@@ -4328,6 +4328,18 @@ LCF0:
     esac
     ;;
 
+    case $target in
+      *-*-aix*)
+	gcc_GAS_CHECK_FEATURE([dwarf location lists section support],
+	  gcc_cv_as_aix_dwloc, [2,21,0],,
+	  [	.dwsect 0xB0000
+	  ],,
+	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
+	    [Define if your assembler supports .dwsect 0xB0000])])
+	;;
+    esac
+    ;;
+
   mips*-*-*)
     gcc_GAS_CHECK_FEATURE([explicit relocation support],
       gcc_cv_as_mips_explicit_relocs, [2,14,0],,
@@ -4336,6 +4348,7 @@ LCF0:
        then target_cpu_default=MASK_EXPLICIT_RELOCS
        else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
        fi])
+
     gcc_GAS_CHECK_FEATURE([-mno-shared support],
       gcc_cv_as_mips_no_shared, [2,16,0], [-mno-shared], [nop],,
       [AC_DEFINE(HAVE_AS_NO_SHARED, 1,

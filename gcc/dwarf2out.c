@@ -108,6 +108,14 @@ static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
 static void dwarf2out_decl (tree);
 
+#ifndef XCOFF_DEBUGGING_INFO
+#define XCOFF_DEBUGGING_INFO 0
+#endif
+
+#ifndef HAVE_XCOFF_DWARF_EXTRAS
+#define HAVE_XCOFF_DWARF_EXTRAS 0
+#endif
+
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
 
@@ -594,11 +602,14 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
 				  for_eh + j);
   ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + j);
   ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + j);
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
-    dw2_asm_output_data (4, 0xffffffff, "Initial length escape value"
-			 " indicating 64-bit DWARF extension");
-  dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
-			"FDE Length");
+  if (!XCOFF_DEBUGGING_INFO || for_eh)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+	dw2_asm_output_data (4, 0xffffffff, "Initial length escape value"
+			     " indicating 64-bit DWARF extension");
+      dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
+			    "FDE Length");
+    }
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   if (for_eh)
@@ -794,11 +805,14 @@ output_call_frame_info (int for_eh)
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
-			"Length of Common Information Entry");
+  if (!XCOFF_DEBUGGING_INFO || for_eh)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
+			    "Length of Common Information Entry");
+    }
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   /* Now that the CIE pointer is PC-relative for EH,
@@ -2995,7 +3009,8 @@ static GTY (()) vec<macinfo_entry, va_gc> *macinfo_table;
 /* True if .debug_macinfo or .debug_macros section is going to be
    emitted.  */
 #define have_macinfo \
-  (debug_info_level >= DINFO_LEVEL_VERBOSE \
+  ((!XCOFF_DEBUGGING_INFO || HAVE_XCOFF_DWARF_EXTRAS) \
+   && debug_info_level >= DINFO_LEVEL_VERBOSE \
    && !macinfo_table->is_empty ())
 
 /* Array of dies for which we should generate .debug_ranges info.  */
@@ -3202,7 +3217,7 @@ static void add_enumerator_pubname (const char *, dw_die_ref);
 static void add_pubname_string (const char *, dw_die_ref);
 static void add_pubtype (tree, dw_die_ref);
 static void output_pubnames (vec<pubname_entry, va_gc> *);
-static void output_aranges (unsigned long);
+static void output_aranges (void);
 static unsigned int add_ranges_num (int);
 static unsigned int add_ranges (const_tree);
 static void add_ranges_by_labels (dw_die_ref, const char *, const char *,
@@ -4235,6 +4250,9 @@ static inline void
 add_AT_loc_list (dw_die_ref die, enum dwarf_attribute attr_kind, dw_loc_list_ref loc_list)
 {
   dw_attr_node attr;
+
+  if (XCOFF_DEBUGGING_INFO && !HAVE_XCOFF_DWARF_EXTRAS)
+    return;
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_loc_list;
@@ -9197,12 +9215,16 @@ output_compilation_unit_header (void)
      DWARFv5 draft DIE tags in DWARFv4 format.  */
   int ver = dwarf_version < 5 ? dwarf_version : 4;
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE,
-		       next_die_offset - DWARF_INITIAL_LENGTH_SIZE,
-		       "Length of Compilation Unit Info");
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_data (DWARF_OFFSET_SIZE,
+			   next_die_offset - DWARF_INITIAL_LENGTH_SIZE,
+			   "Length of Compilation Unit Info");
+    }
+
   dw2_asm_output_data (2, ver, "DWARF version number");
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, abbrev_section_label,
 			 debug_abbrev_section,
@@ -9632,10 +9654,14 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
   unsigned long pubnames_length = size_of_pubnames (names);
   pubname_entry *pub;
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, pubnames_length, "Pub Info Length");
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_data (DWARF_OFFSET_SIZE, pubnames_length,
+			   "Pub Info Length");
+    }
 
   /* Version number for pubnames/pubtypes is independent of dwarf version.  */
   dw2_asm_output_data (2, 2, "DWARF Version");
@@ -9705,15 +9731,20 @@ output_pubtables (void)
    text section generated for this compilation unit.  */
 
 static void
-output_aranges (unsigned long aranges_length)
+output_aranges (void)
 {
   unsigned i;
+  unsigned long aranges_length = size_of_aranges ();
+  
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_data (DWARF_OFFSET_SIZE, aranges_length,
+			   "Length of Address Ranges Info");
+    }
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, aranges_length,
-		       "Length of Address Ranges Info");
   /* Version number for aranges is still 2, even up to DWARF5.  */
   dw2_asm_output_data (2, 2, "DWARF Version");
   if (dwarf_split_debug_info)
@@ -10397,11 +10428,15 @@ output_line_info (bool prologue_only)
   ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, 0);
 
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
-    dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
-  dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
-			"Length of Source Line Info");
+  if (!XCOFF_DEBUGGING_INFO)
+    {
+      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	dw2_asm_output_data (4, 0xffffffff,
+	  "Initial length escape value indicating 64-bit DWARF extension");
+      dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
+			    "Length of Source Line Info");
+    }
+
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   dw2_asm_output_data (2, ver, "DWARF Version");
@@ -22031,7 +22066,7 @@ dwarf_file_hasher::hash (dwarf_file_data *p)
    just a unique number which is associated with only that one filename.  We
    need such numbers for the sake of generating labels (in the .debug_sfnames
    section) and references to those files numbers (in the .debug_srcinfo
-   and.debug_macinfo sections).  If the filename given as an argument is not
+   and .debug_macinfo sections).  If the filename given as an argument is not
    found in our current list, add it to the list and assign it the next
    available unique index number.  */
 
@@ -25502,10 +25537,8 @@ dwarf2out_finish (const char *filename)
      generate a table that would have contained data.  */
   if (info_section_emitted)
     {
-      unsigned long aranges_length = size_of_aranges ();
-
       switch_to_section (debug_aranges_section);
-      output_aranges (aranges_length);
+      output_aranges ();
     }
 
   /* Output ranges section if necessary.  */
