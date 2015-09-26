@@ -1,3 +1,9 @@
+2015-09-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/67721
+	* trans-expr.c (gfc_trans_assignment_1): Remove the non-constantness
+	condition guarding deep copy.
+
 2013-09-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67567
