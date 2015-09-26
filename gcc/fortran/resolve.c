@@ -8635,7 +8635,7 @@ resolve_transfer (gfc_code *code)
 	  return;
 	}
     }
-   
+
   if (exp->expr_type == EXPR_STRUCTURE)
     return;
 
@@ -11733,6 +11733,12 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       && sym->attr.if_source == IFSRC_DECL)
     {
       gfc_symbol *iface;
+      char name[2*GFC_MAX_SYMBOL_LEN + 1];
+      char *module_name;
+      char *submodule_name;
+      strcpy (name, sym->ns->proc_name->name);
+      module_name = strtok (name, ".");
+      submodule_name = strtok (NULL, ".");
 
       /* Stop the dummy characteristics test from using the interface
 	 symbol instead of 'sym'.  */
@@ -11747,10 +11753,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Mismatch in PURE attribute between MODULE "
 		     "PROCEDURE at %L and its interface in %s",
-		     &sym->declared_at, 
-		     /* FIXME: PR fortran/67567: iface->module should
-			not be NULL !  */
-		     iface->module ? iface->module : "");
+		     &sym->declared_at, module_name);
 	  return false;
 	}
 
@@ -11758,7 +11761,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Mismatch in ELEMENTAL attribute between MODULE "
 		     "PROCEDURE at %L and its interface in %s",
-		     &sym->declared_at, iface->module);
+		     &sym->declared_at, module_name);
 	  return false;
 	}
 
@@ -11766,10 +11769,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Mismatch in RECURSIVE attribute between MODULE "
 		     "PROCEDURE at %L and its interface in %s",
-		     &sym->declared_at, 
-		     /* FIXME: PR fortran/67567: iface->module should
-			not be NULL !  */
-		     iface->module ? iface->module : "");
+		     &sym->declared_at, module_name);
 	  return false;
 	}
 
@@ -11778,11 +11778,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("%s between the MODULE PROCEDURE declaration "
 		     "in module %s and the declaration at %L in "
-		     "SUBMODULE %s", errmsg, 
-		     /* FIXME: PR fortran/67567: iface->module should
-			not be NULL !  */
-		     iface->module ? iface->module : "",
-		     &sym->declared_at, sym->ns->proc_name->name);
+		     "SUBMODULE %s", errmsg, module_name,
+		     &sym->declared_at, submodule_name);
 	  return false;
 	}
 
