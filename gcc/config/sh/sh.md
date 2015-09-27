@@ -2122,13 +2122,19 @@
 })
 
 (define_expand "addsi3"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(plus:SI (match_operand:SI 1 "arith_operand" "")
-		 (match_operand:SI 2 "arith_or_int_operand" "")))]
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand")
+		 (match_operand:SI 2 "arith_or_int_operand")))]
   ""
 {
-  if (TARGET_SHMEDIA)
-    operands[1] = force_reg (SImode, operands[1]);
+  if (TARGET_SH1 && !arith_operand (operands[2], SImode))
+    {
+      if (!sh_lra_p () || reg_overlap_mentioned_p (operands[0], operands[1]))
+	{
+	  emit_insn (gen_addsi3_scr (operands[0], operands[1], operands[2]));
+	  DONE;
+	}
+    }
 })
 
 (define_insn "addsi3_media"
@@ -2163,15 +2169,22 @@
 ;; copy or constant load before the actual add insn.
 ;; Use u constraint for that case to avoid the invalid value in the stack
 ;; pointer.
-(define_insn_and_split "*addsi3_compact"
+;; This also results in better code when LRA is not used.  However, we have
+;; to use different sets of patterns and the order of these patterns is
+;; important.
+;; In some cases the constant zero might end up in operands[2] of the
+;; patterns.  We have to accept that and convert it into a reg-reg move.
+(define_insn_and_split "*addsi3_compact_lra"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,&u")
-	(plus:SI (match_operand:SI 1 "arith_operand" "%0,r")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand" "%0,r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rI08,rn")))]
-  "TARGET_SH1"
+  "TARGET_SH1 && sh_lra_p ()
+   && (! reg_overlap_mentioned_p (operands[0], operands[1])
+       || arith_operand (operands[2], SImode))"
   "@
 	add	%2,%0
 	#"
-  "reload_completed
+  "&& reload_completed
    && ! reg_overlap_mentioned_p (operands[0], operands[1])"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
@@ -2179,6 +2192,58 @@
   /* Prefer 'mov r0,r1; add #imm8,r1' over 'mov #imm8,r1; add r0,r1'  */
   if (satisfies_constraint_I08 (operands[2]))
     std::swap (operands[1], operands[2]);
+}
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "addsi3_scr"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,&u,&u")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand" "%0,r,r")
+		 (match_operand:SI 2 "arith_or_int_operand" "rI08,r,n")))
+   (clobber (match_scratch:SI 3 "=X,X,&u"))]
+  "TARGET_SH1"
+  "@
+	add	%2,%0
+	#
+	#"
+  "&& reload_completed"
+  [(set (match_dup 0) (plus:SI (match_dup 0) (match_dup 2)))]
+{
+  if (operands[2] == const0_rtx)
+    {
+      emit_move_insn (operands[0], operands[1]);
+      DONE;
+    }
+
+  if (CONST_INT_P (operands[2]) && !satisfies_constraint_I08 (operands[2]))
+    {
+      if (reg_overlap_mentioned_p (operands[0], operands[1]))
+	{
+	  emit_move_insn (operands[3], operands[2]);
+	  emit_move_insn (operands[0], operands[1]);
+	  operands[2] = operands[3];
+	}
+      else
+	{
+	  emit_move_insn (operands[0], operands[2]);
+	  operands[2] = operands[1];
+	}
+    }
+  else if (!reg_overlap_mentioned_p (operands[0], operands[1]))
+    emit_move_insn (operands[0], operands[1]);
+}
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "*addsi3"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand" "%0,r")
+		 (match_operand:SI 2 "arith_operand" "rI08,Z")))]
+  "TARGET_SH1 && !sh_lra_p ()"
+  "@
+	add	%2,%0
+	#"
+  "&& operands[2] == const0_rtx"
+  [(set (match_dup 0) (match_dup 1))]
+{
 }
   [(set_attr "type" "arith")])
 
