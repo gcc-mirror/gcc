@@ -127,6 +127,12 @@
     (match_operand 0 "nonimmediate_operand")
     (match_operand 0 "register_operand")))
 
+;; Match register operands, include memory operand for TARGET_SSE4_1.
+(define_predicate "register_sse4nonimm_operand"
+  (if_then_else (match_test "TARGET_SSE4_1")
+    (match_operand 0 "nonimmediate_operand")
+    (match_operand 0 "register_operand")))
+
 ;; Return true if VALUE is symbol reference
 (define_predicate "symbol_operand"
   (match_code "symbol_ref"))
