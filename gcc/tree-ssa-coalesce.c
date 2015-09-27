@@ -39,7 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgexpand.h"
 #include "explow.h"
 #include "diagnostic-core.h"
-
+#include "tree-dfa.h"
+#include "tm_p.h"
+#include "stor-layout.h"
 
 /* This set of routines implements a coalesce_list.  This is an object which
    is used to track pairs of ssa_names which are desirable to coalesce
@@ -877,26 +879,30 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 	}
 
       /* Pretend there are defs for params' default defs at the start
-	 of the (post-)entry block.  */
+	 of the (post-)entry block.  This will prevent PARM_DECLs from
+	 coalescing into the same partition.  Although RESULT_DECLs'
+	 default defs don't have a useful initial value, we have to
+	 prevent them from coalescing with PARM_DECLs' default defs
+	 too, otherwise assign_parms would attempt to assign different
+	 RTL to the same partition.  */
       if (bb == entry)
 	{
-	  unsigned base;
-	  bitmap_iterator bi;
-	  EXECUTE_IF_SET_IN_BITMAP (live->live_base_var, 0, base, bi)
+	  unsigned i;
+	  for (i = 1; i < num_ssa_names; i++)
 	    {
-	      bitmap_iterator bi2;
-	      unsigned part;
-	      EXECUTE_IF_SET_IN_BITMAP (live->live_base_partitions[base],
-					0, part, bi2)
-		{
-		  tree var = partition_to_var (map, part);
-		  if (!SSA_NAME_VAR (var)
-		      || (TREE_CODE (SSA_NAME_VAR (var)) != PARM_DECL
-			  && TREE_CODE (SSA_NAME_VAR (var)) != RESULT_DECL)
-		      || !SSA_NAME_IS_DEFAULT_DEF (var))
-		    continue;
-		  live_track_process_def (live, var, graph);
-		}
+	      tree var = ssa_name (i);
+
+	      if (!var
+		  || !SSA_NAME_IS_DEFAULT_DEF (var)
+		  || !SSA_NAME_VAR (var)
+		  || VAR_P (SSA_NAME_VAR (var)))
+		continue;
+
+	      live_track_process_def (live, var, graph);
+	      /* Process a use too, so that it remains live and
+		 conflicts with other parms' default defs, even unused
+		 ones.  */
+	      live_track_process_use (live, var);
 	    }
 	}
 
@@ -937,6 +943,71 @@ fail_abnormal_edge_coalesce (int x, int y)
   internal_error ("SSA corruption");
 }
 
+/* Call CALLBACK for all PARM_DECLs and RESULT_DECLs for which
+   assign_parms may ask for a default partition.  */
+
+static void
+for_all_parms (void (*callback)(tree var, void *arg), void *arg)
+{
+  for (tree var = DECL_ARGUMENTS (current_function_decl); var;
+       var = DECL_CHAIN (var))
+    callback (var, arg);
+  if (!VOID_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
+    callback (DECL_RESULT (current_function_decl), arg);
+  if (cfun->static_chain_decl)
+    callback (cfun->static_chain_decl, arg);
+}
+
+/* Create a default def for VAR.  */
+
+static void
+create_default_def (tree var, void *arg ATTRIBUTE_UNUSED)
+{
+  if (!is_gimple_reg (var))
+    return;
+
+  tree ssa = get_or_create_ssa_default_def (cfun, var);
+  gcc_assert (ssa);
+}
+
+/* Register VAR's default def in MAP.  */
+
+static void
+register_default_def (tree var, void *map_)
+{
+  var_map map = (var_map)map_;
+
+  if (!is_gimple_reg (var))
+    return;
+
+  tree ssa = ssa_default_def (cfun, var);
+  gcc_assert (ssa);
+
+  register_ssa_partition (map, ssa);
+}
+
+/* If VAR is an SSA_NAME associated with a PARM_DECL or a RESULT_DECL,
+   and the DECL's default def is unused (i.e., it was introduced by
+   create_default_def), mark VAR and the default def for
+   coalescing.  */
+
+static void
+coalesce_with_default (tree var, coalesce_list_p cl, bitmap used_in_copy)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (var)
+      || !SSA_NAME_VAR (var)
+      || VAR_P (SSA_NAME_VAR (var)))
+    return;
+
+  tree ssa = ssa_default_def (cfun, SSA_NAME_VAR (var));
+  if (!has_zero_uses (ssa))
+    return;
+
+  add_cost_one_coalesce (cl, SSA_NAME_VERSION (ssa), SSA_NAME_VERSION (var));
+  bitmap_set_bit (used_in_copy, SSA_NAME_VERSION (var));
+  /* Default defs will have their used_in_copy bits set at the end of
+     create_outofssa_var_map.  */
+}
 
 /* This function creates a var_map for the current function as well as creating
    a coalesce list for use later in the out of ssa process.  */
@@ -954,7 +1025,11 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
   int v1, v2, cost;
   unsigned i;
 
+  for_all_parms (create_default_def, NULL);
+
   map = init_var_map (num_ssa_names);
+
+  for_all_parms (register_default_def, map);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1034,6 +1109,30 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 	      }
 	      break;
 
+	    case GIMPLE_RETURN:
+	      {
+		tree res = DECL_RESULT (current_function_decl);
+		if (VOID_TYPE_P (TREE_TYPE (res))
+		    || !is_gimple_reg (res))
+		  break;
+		tree rhs1 = gimple_return_retval (as_a <greturn *> (stmt));
+		if (!rhs1)
+		  break;
+		tree lhs = ssa_default_def (cfun, res);
+		gcc_assert (lhs);
+		if (TREE_CODE (rhs1) == SSA_NAME
+		    && gimple_can_coalesce_p (lhs, rhs1))
+		  {
+		    v1 = SSA_NAME_VERSION (lhs);
+		    v2 = SSA_NAME_VERSION (rhs1);
+		    cost = coalesce_cost_bb (bb);
+		    add_coalesce (cl, v1, v2, cost);
+		    bitmap_set_bit (used_in_copy, v1);
+		    bitmap_set_bit (used_in_copy, v2);
+		  }
+		break;
+	      }
+
 	    case GIMPLE_ASM:
 	      {
 		gasm *asm_stmt = as_a <gasm *> (stmt);
@@ -1100,10 +1199,13 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
       var = ssa_name (i);
       if (var != NULL_TREE && !virtual_operand_p (var))
         {
+	  coalesce_with_default (var, cl, used_in_copy);
+
 	  /* Add coalesces between all the result decls.  */
 	  if (SSA_NAME_VAR (var)
 	      && TREE_CODE (SSA_NAME_VAR (var)) == RESULT_DECL)
 	    {
+	      bitmap_set_bit (used_in_copy, SSA_NAME_VERSION (var));
 	      if (first == NULL_TREE)
 		first = var;
 	      else
@@ -1111,8 +1213,6 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		  gcc_assert (gimple_can_coalesce_p (var, first));
 		  v1 = SSA_NAME_VERSION (first);
 		  v2 = SSA_NAME_VERSION (var);
-		  bitmap_set_bit (used_in_copy, v1);
-		  bitmap_set_bit (used_in_copy, v2);
 		  cost = coalesce_cost_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 		  add_coalesce (cl, v1, v2, cost);
 		}
@@ -1121,7 +1221,9 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 	     since they will have to be coalesced with the base variable.  If
 	     not marked as present, they won't be in the coalesce view. */
 	  if (SSA_NAME_IS_DEFAULT_DEF (var)
-	      && !has_zero_uses (var))
+	      && (!has_zero_uses (var)
+		  || (SSA_NAME_VAR (var)
+		      && !VAR_P (SSA_NAME_VAR (var)))))
 	    bitmap_set_bit (used_in_copy, SSA_NAME_VERSION (var));
 	}
     }
@@ -1367,29 +1469,37 @@ gimple_can_coalesce_p (tree name1, tree name2)
 
       /* We don't want to coalesce two SSA names if one of the base
 	 variables is supposed to be a register while the other is
-	 supposed to be on the stack.  Anonymous SSA names take
-	 registers, but when not optimizing, user variables should go
-	 on the stack, so coalescing them with the anonymous variable
-	 as the partition leader would end up assigning the user
-	 variable to a register.  Don't do that!  */
-      bool reg1 = !var1 || use_register_for_decl (var1);
-      bool reg2 = !var2 || use_register_for_decl (var2);
+	 supposed to be on the stack.  Anonymous SSA names most often
+	 take registers, but when not optimizing, user variables
+	 should go on the stack, so coalescing them with the anonymous
+	 variable as the partition leader would end up assigning the
+	 user variable to a register.  Don't do that!  */
+      bool reg1 = use_register_for_decl (name1);
+      bool reg2 = use_register_for_decl (name2);
       if (reg1 != reg2)
 	return false;
 
-      /* Check that the promoted modes are the same.  We don't want to
-	 coalesce if the promoted modes would be different.  Only
+      /* Check that the promoted modes and unsignedness are the same.
+	 We don't want to coalesce if the promoted modes would be
+	 different, or if they would sign-extend differently.  Only
 	 PARM_DECLs and RESULT_DECLs have different promotion rules,
 	 so skip the test if both are variables, or both are anonymous
-	 SSA_NAMEs.  Now, if a parm or result has BLKmode, do not
-	 coalesce its SSA versions with those of any other variables,
-	 because it may be passed by reference.  */
+	 SSA_NAMEs.  */
+      int unsigned1, unsigned2;
       return ((!var1 || VAR_P (var1)) && (!var2 || VAR_P (var2)))
-	|| (/* The case var1 == var2 is already covered above.  */
-	    !parm_in_stack_slot_p (var1)
-	    && !parm_in_stack_slot_p (var2)
-	    && promote_ssa_mode (name1, NULL) == promote_ssa_mode (name2, NULL));
+	|| ((promote_ssa_mode (name1, &unsigned1)
+	     == promote_ssa_mode (name2, &unsigned2))
+	    && unsigned1 == unsigned2);
     }
+
+  /* If alignment requirements are different, we can't coalesce.  */
+  if (MINIMUM_ALIGNMENT (t1,
+			 var1 ? DECL_MODE (var1) : TYPE_MODE (t1),
+			 var1 ? LOCAL_DECL_ALIGNMENT (var1) : TYPE_ALIGN (t1))
+      != MINIMUM_ALIGNMENT (t2,
+			    var2 ? DECL_MODE (var2) : TYPE_MODE (t2),
+			    var2 ? LOCAL_DECL_ALIGNMENT (var2) : TYPE_ALIGN (t2)))
+    return false;
 
   /* If the types are not the same, check for a canonical type match.  This
      (for example) allows coalescing when the types are fundamentally the
@@ -1639,7 +1749,8 @@ coalesce_ssa_name (void)
 	  if (a
 	      && SSA_NAME_VAR (a)
 	      && !DECL_IGNORED_P (SSA_NAME_VAR (a))
-	      && (!has_zero_uses (a) || !SSA_NAME_IS_DEFAULT_DEF (a)))
+	      && (!has_zero_uses (a) || !SSA_NAME_IS_DEFAULT_DEF (a)
+		  || !VAR_P (SSA_NAME_VAR (a))))
 	    {
 	      tree *slot = ssa_name_hash.find_slot (a, INSERT);
 
@@ -1720,4 +1831,48 @@ coalesce_ssa_name (void)
   ssa_conflicts_delete (graph);
 
   return map;
+}
+
+/* We need to pass two arguments to set_parm_default_def_partition,
+   but for_all_parms only supports one.  Use a pair.  */
+
+typedef std::pair<var_map, bitmap> parm_default_def_partition_arg;
+
+/* Set in ARG's PARTS bitmap the bit corresponding to the partition in
+   ARG's MAP containing VAR's default def.  */
+
+static void
+set_parm_default_def_partition (tree var, void *arg_)
+{
+  parm_default_def_partition_arg *arg = (parm_default_def_partition_arg *)arg_;
+  var_map map = arg->first;
+  bitmap parts = arg->second;
+
+  if (!is_gimple_reg (var))
+    return;
+
+  tree ssa = ssa_default_def (cfun, var);
+  gcc_assert (ssa);
+
+  int version = var_to_partition (map, ssa);
+  gcc_assert (version != NO_PARTITION);
+
+  bool changed = bitmap_set_bit (parts, version);
+  gcc_assert (changed);
+}
+
+/* Allocate and return a bitmap that has a bit set for each partition
+   that contains a default def for a parameter.  */
+
+extern bitmap
+get_parm_default_def_partitions (var_map map)
+{
+  bitmap parm_default_def_parts = BITMAP_ALLOC (NULL);
+
+  parm_default_def_partition_arg
+    arg = std::make_pair (map, parm_default_def_parts);
+
+  for_all_parms (set_parm_default_def_partition, &arg);
+
+  return parm_default_def_parts;
 }

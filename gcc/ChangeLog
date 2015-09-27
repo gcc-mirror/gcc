@@ -1,3 +1,102 @@
+2015-09-27  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/64164
+	PR tree-optimization/67312
+	PR middle-end/67340
+	PR middle-end/67490
+	PR bootstrap/67597
+	* cfgexpand.c (parm_in_stack_slot_p): Remove.
+	(ssa_default_def_partition): Remove.
+	(get_rtl_for_parm_ssa_default_def): Remove.
+	(set_rtl): Check that RTL assignments match expectations.
+	Loop on SUBREGs, CONCATs and PARALLELs subexprs.  Set only the
+	default def location for params and results.  Record SSA names
+	or types in REG and MEM attrs, respectively.
+	(set_parm_rtl): New.
+	(expand_one_ssa_partition): Drop logic that assigned MEMs with
+	unassigned addresses.
+	(adjust_one_expanded_partition_var): Don't accept NULL RTL on
+	deferred stack alloc vars.
+	(expand_used_vars): Skip partitions holding parm default defs.
+	Move adjust_one_expanded_partition_var loop...
+	(pass_expand::execute): ... here.  Drop redundant assert.
+	Adjust comments before the final loop over all ssa names.
+	Require assigned rtl of parms and results to match exactly.
+	Reset its attributes to match them, not any other variables in
+	the same partition.
+	(expand_debug_expr): Use entry value for PARM's default defs
+	only iff they have zero nondebug uses.
+	* cfgexpand.h (parm_in_stack_slot_p): Remove.
+	(get_rtl_for_parm_ssa_default_def): Remove.
+	(set_parm_rtl): Declare.
+	* doc/invoke.texi: Improve wording.
+	* explow.c (promote_decl_mode): Fix promote_function_mode for
+	result decls not by reference.
+	(promote_ssa_mode): Disregard BLKmode from promote_decl, and
+	bypass TYPE_MODE to get the actual vector mode.
+	* function.c: Include tree-dfa.h.  Revert 2015-08-14's and
+	2015-08-19's changes as follows.  Drop include of
+	basic-block.h and df.h.
+	(rtl_for_parm): Remove.
+	(maybe_reset_rtl_for_parm): Remove.
+	(parm_in_unassigned_mem_p): Remove.
+	(use_register_for_decl): Add logic for RESULT_DECLs matching
+	assign_parms' behavior.
+	(split_complex_args): Revert.
+	(assign_parms_augmented_arg_list): Revert.  Add comment
+	referencing the logic above.
+	(assign_parm_adjust_stack_rtl): Revert.
+	(assign_parm_setup_block): Revert.  Use set_parm_rtl instead
+	of SET_DECL_RTL.  Set up a REG if the parm demands so.
+	(assign_parm_setup_reg): Revert.  Consolidated SET_DECL_RTL
+	calls into a single set_parm_rtl.  Set up a temporary RTL
+	temporarily for expand_assignment.
+	(assign_parm_setup_stack): Revert.  Use set_parm_rtl.
+	(assign_parms_unsplit_complex): Revert.  Use set_parm_rtl.
+	(assign_bounds): Revert.
+	(assign_parms): Revert.  Use set_parm_rtl.
+	(allocate_struct_function): Relayout result and parms of
+	non-abstruct functions.
+	(expand_function_start): Revert.  Use set_parm_rtl.  If the
+	result is not a hard reg, create a pseudo from the promoted
+	mode of the default def.  Promote static chain mode.
+	* tree-outof-ssa.c (remove_ssa_form): Drop unused
+	partition_has_default_def.  Set up
+	partitions_for_parm_default_defs.
+	(finish_out_of_ssa): Remove partition_has_default_def.
+	Release partitions_for_parm_default_defs.
+	* tree-outof-ssa.h (struct ssaexpand): Remove
+	partition_has_default_def.  Add
+	partitions_for_parm_default_defs.
+	* tree-ssa-coalesce.c: Include tree-dfa.h, tm_p.h and
+	stor-layout.h.
+	(build_ssa_conflict_graph): Fix conflict-detection of default
+	defs of even unused default defs of params and results.
+	(for_all_parms): New.
+	(create_default_def): New.
+	(register_default_def): New.
+	(coalesce_with_default): New.
+	(create_outofssa_var_map): Create default defs for all parms
+	and results, and register their partitions.  Add GIMPLE_RETURN
+	operands as coalesce candidates with results.  Add default
+	defs of each parm or result as coalesce candidates with its
+	other defs.  Mark each result def, and each default def of
+	parms, as used_in_copy.
+	(gimple_can_coalesce_p): Call it.  Call use_register_for_decl
+	with the ssa names, even anonymous ones.  Drop
+	parm_in_stack_slot_p calls.  Require same signedness and
+	alignment.
+	(coalesce_ssa_name): Add coalesce candidates for all defs of
+	each parm and result, even unused ones.
+	(parm_default_def_partition_arg): New type.
+	(set_parm_default_def_partition): New.
+	(get_parm_default_def_partitions): New.
+	* tree-ssa-coalesce.h (get_parm_default_def_partitions): New.
+	* tree-ssa-live.c (partition_view_init): Regard unused defs of
+	parms and results as used.
+	(verify_live_on_entry): Don't error out just because they're
+	not live.
+
 2015-09-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* dwarf2out.c (XCOFF_DEBUGGING_INFO): Default 0 definition.

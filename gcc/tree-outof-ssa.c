@@ -980,7 +980,6 @@ remove_ssa_form (bool perform_ter, struct ssaexpand *sa)
 {
   bitmap values = NULL;
   var_map map;
-  unsigned i;
 
   map = coalesce_ssa_name ();
 
@@ -1005,17 +1004,7 @@ remove_ssa_form (bool perform_ter, struct ssaexpand *sa)
 
   sa->map = map;
   sa->values = values;
-  sa->partition_has_default_def = BITMAP_ALLOC (NULL);
-  for (i = 1; i < num_ssa_names; i++)
-    {
-      tree t = ssa_name (i);
-      if (t && SSA_NAME_IS_DEFAULT_DEF (t))
-	{
-	  int p = var_to_partition (map, t);
-	  if (p != NO_PARTITION)
-	    bitmap_set_bit (sa->partition_has_default_def, p);
-	}
-    }
+  sa->partitions_for_parm_default_defs = get_parm_default_def_partitions (map);
 }
 
 
@@ -1190,7 +1179,7 @@ finish_out_of_ssa (struct ssaexpand *sa)
   if (sa->values)
     BITMAP_FREE (sa->values);
   delete_var_map (sa->map);
-  BITMAP_FREE (sa->partition_has_default_def);
+  BITMAP_FREE (sa->partitions_for_parm_default_defs);
   memset (sa, 0, sizeof *sa);
 }
 

@@ -39,9 +39,9 @@ struct ssaexpand
      a pseudos REG).  */
   rtx *partition_to_pseudo;
 
-  /* If partition I contains an SSA name that has a default def,
-     bit I will be set in this bitmap.  */
-  bitmap partition_has_default_def;
+  /* If partition I contains an SSA name that has a default def for a
+     parameter, bit I will be set in this bitmap.  */
+  bitmap partitions_for_parm_default_defs;
 };
 
 /* This is the singleton described above.  */

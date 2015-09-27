@@ -200,7 +200,9 @@ partition_view_init (var_map map)
       tmp = partition_find (map->var_partition, x);
       if (ssa_name (tmp) != NULL_TREE && !virtual_operand_p (ssa_name (tmp))
 	  && (!has_zero_uses (ssa_name (tmp))
-	      || !SSA_NAME_IS_DEFAULT_DEF (ssa_name (tmp))))
+	      || !SSA_NAME_IS_DEFAULT_DEF (ssa_name (tmp))
+	      || (SSA_NAME_VAR (ssa_name (tmp))
+		  && !VAR_P (SSA_NAME_VAR (ssa_name (tmp))))))
 	bitmap_set_bit (used, tmp);
     }
 
@@ -1403,6 +1405,12 @@ verify_live_on_entry (tree_live_info_p live)
 			}
 		  }
 		if (ok)
+		  continue;
+		/* Expand adds unused default defs for PARM_DECLs and
+		   RESULT_DECLs.  They're ok.  */
+		if (has_zero_uses (var)
+		    && SSA_NAME_VAR (var)
+		    && !VAR_P (SSA_NAME_VAR (var)))
 		  continue;
 	        num++;
 		print_generic_expr (stderr, var, TDF_SLIM);
