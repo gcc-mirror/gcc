@@ -8867,12 +8867,13 @@ profitable to parallelize the loops.
 
 @item -ftree-coalesce-vars
 @opindex ftree-coalesce-vars
-Tell the compiler to attempt to combine small user-defined variables
-too, instead of just compiler temporaries.  This may severely limit the
-ability to debug an optimized program compiled with
+While transforming the program out of the SSA representation, attempt to
+reduce copying by coalescing versions of different user-defined
+variables, instead of just compiler temporaries.  This may severely
+limit the ability to debug an optimized program compiled with
 @option{-fno-var-tracking-assignments}.  In the negated form, this flag
 prevents SSA coalescing of user variables.  This option is enabled by
-default if optimization is enabled.
+default if optimization is enabled, and it does very little otherwise.
 
 @item -ftree-loop-if-convert
 @opindex ftree-loop-if-convert
