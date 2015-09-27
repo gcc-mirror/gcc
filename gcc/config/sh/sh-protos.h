@@ -93,6 +93,7 @@ extern rtx sh_fsca_sf2int (void);
 extern rtx sh_fsca_int2sf (void);
 
 /* Declare functions defined in sh.c and used in templates.  */
+extern bool sh_lra_p (void);
 
 extern const char *output_branch (int, rtx_insn *, rtx *);
 extern const char *output_ieee_ccmpeq (rtx_insn *, rtx *);
