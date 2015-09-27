@@ -1,3 +1,7 @@
+2015-09-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/pr44641.C: Add one to expected line numbers.
+
 2015-09-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/67721

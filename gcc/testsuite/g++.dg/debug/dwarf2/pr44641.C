@@ -21,20 +21,20 @@ template<typename T> struct Base  {
 
 template <>
 struct MisplacedDbg<Full>  // { dg-function-on-line {_ZN12MisplacedDbgI4FullEC[12]Ev} }
-                           // { dg-function-on-line {_ZN12MisplacedDbgI4FullED0Ev} { target *-*-* } 22 }
+                           // { dg-function-on-line {_ZN12MisplacedDbgI4FullED0Ev} { target *-*-* } 23 }
 
     : public Base<int> {
 };
 
 template <class T>
 struct MisplacedDbg<T*>  // { dg-function-on-line {_ZN12MisplacedDbgIP3ArgEC[12]Ev} }
-                         // { dg-function-on-line {_ZN12MisplacedDbgIP3ArgED0Ev} { target *-*-* } 29 }
+                         // { dg-function-on-line {_ZN12MisplacedDbgIP3ArgED0Ev} { target *-*-* } 30 }
     : public Base<int> {
 };
 
 template <class A>
 struct MisplacedDbg  // { dg-function-on-line {_ZN12MisplacedDbgI3ArgEC[12]Ev} }
-                     // { dg-function-on-line {_ZN12MisplacedDbgI3ArgED0Ev} { target *-*-* } 35 }
+                     // { dg-function-on-line {_ZN12MisplacedDbgI3ArgED0Ev} { target *-*-* } 36 }
     : public Base<int> {
 };
 
