@@ -1,3 +1,8 @@
+2015-09-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/pr44641.C: Revert line number change. Remove
+	skip on AIX.  XFAIL individual line tests.
+
 2015-09-27  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
