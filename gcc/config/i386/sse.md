@@ -12864,23 +12864,21 @@
    (set_attr "prefix" "maybe_vex,maybe_vex,orig,orig,vex")
    (set_attr "mode" "TI,TI,V4SF,SF,SF")])
 
+;; QI and HI modes handled by pextr patterns.
+(define_mode_iterator PEXTR_MODE12
+  [(V16QI "TARGET_SSE4_1") V8HI])
+
 (define_insn "*vec_extract<mode>"
-  [(set (match_operand:<ssescalarmode> 0 "nonimmediate_operand" "=r,m")
+  [(set (match_operand:<ssescalarmode> 0 "register_sse4nonimm_operand" "=r,m")
 	(vec_select:<ssescalarmode>
-	  (match_operand:VI12_128 1 "register_operand" "x,x")
+	  (match_operand:PEXTR_MODE12 1 "register_operand" "x,x")
 	  (parallel
 	    [(match_operand:SI 2 "const_0_to_<ssescalarnummask>_operand")])))]
-  "TARGET_SSE4_1"
-  "@
-   %vpextr<ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}
-   %vpextr<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog1")
-   (set (attr "prefix_data16")
-     (if_then_else
-       (and (eq_attr "alternative" "0")
-	    (eq (const_string "<MODE>mode") (const_string "V8HImode")))
-       (const_string "1")
-       (const_string "*")))
+  "TARGET_SSE2"
+  "%vpextr<ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "isa" "*,sse4")
+   (set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
    (set (attr "prefix_extra")
      (if_then_else
        (and (eq_attr "alternative" "0")
@@ -12891,45 +12889,23 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
-(define_insn "*vec_extractv8hi_sse2"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(vec_select:HI
-	  (match_operand:V8HI 1 "register_operand" "x")
-	  (parallel
-	    [(match_operand:SI 2 "const_0_to_7_operand")])))]
-  "TARGET_SSE2 && !TARGET_SSE4_1"
-  "pextrw\t{%2, %1, %k0|%k0, %1, %2}"
-  [(set_attr "type" "sselog1")
-   (set_attr "prefix_data16" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "mode" "TI")])
-
-(define_insn "*vec_extractv16qi_zext"
+(define_insn "*vec_extract<PEXTR_MODE12:mode>_zext"
   [(set (match_operand:SWI48 0 "register_operand" "=r")
 	(zero_extend:SWI48
-	  (vec_select:QI
-	    (match_operand:V16QI 1 "register_operand" "x")
+	  (vec_select:<PEXTR_MODE12:ssescalarmode>
+	    (match_operand:PEXTR_MODE12 1 "register_operand" "x")
 	    (parallel
-	      [(match_operand:SI 2 "const_0_to_15_operand")]))))]
-  "TARGET_SSE4_1"
-  "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
-  [(set_attr "type" "sselog1")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*vec_extractv8hi_zext"
-  [(set (match_operand:SWI48 0 "register_operand" "=r")
-	(zero_extend:SWI48
-	  (vec_select:HI
-	    (match_operand:V8HI 1 "register_operand" "x")
-	    (parallel
-	      [(match_operand:SI 2 "const_0_to_7_operand")]))))]
+	      [(match_operand:SI 2
+		"const_0_to_<PEXTR_MODE12:ssescalarnummask>_operand")]))))]
   "TARGET_SSE2"
-  "%vpextrw\t{%2, %1, %k0|%k0, %1, %2}"
+  "%vpextr<PEXTR_MODE12:ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_data16" "1")
+   (set (attr "prefix_extra")
+     (if_then_else
+       (eq (const_string "<PEXTR_MODE12:MODE>mode") (const_string "V8HImode"))
+       (const_string "*")
+       (const_string "1")))
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
@@ -18347,8 +18323,7 @@
 			      3 "register_operand")
 			   (match_operand:SI 5 "const1248_operand ")]))
 		      (mem:BLK (scratch))
-		      (match_operand:<VEC_GATHER_SRCDI>
-			4 "register_operand")]
+		      (match_operand:<VEC_GATHER_SRCDI> 4 "register_operand")]
 		     UNSPEC_GATHER))
 	      (clobber (match_scratch:VEC_GATHER_MODE 6))])]
   "TARGET_AVX2"

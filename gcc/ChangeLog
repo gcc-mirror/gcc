@@ -1,3 +1,14 @@
+2015-09-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (register_sse4nonimm_operand): New
+	predicate.
+	* config/i386/sse.md (PEXTR_MODE12): New mode iterator.
+	(*vec_extract<mode>): Use PEXTR_MODE12 instead of VI12_128 mode.
+	Use register_sse4nonimm_operand as operand 0 predicate.
+	(*vec_extractv8hi_sse2): Remove insn pattern.
+	(*vec_extract<PEXTR_MODE12:mode>_zext): Merge insn pattern from
+	*vec_extractv8hi_zext and *vec_extractv16qi_zext patterns.
+
 2015-09-27  Oleg Endo  <olegendo@gcc.gnu.org>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
