@@ -1,3 +1,10 @@
+2015-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/condition_variable (condition_variable::wait): Add
+	noexcept.
+	* src/c++11/condition_variable.cc (condition_variable::wait): Call
+	std::terminate on error (DR 2135).
+
 2015-09-25  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Avoid creating dangling references in case of nested tuples

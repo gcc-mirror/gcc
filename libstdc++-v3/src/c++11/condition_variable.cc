@@ -48,12 +48,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  condition_variable::wait(unique_lock<mutex>& __lock)
+  condition_variable::wait(unique_lock<mutex>& __lock) noexcept
   {
     int __e = __gthread_cond_wait(&_M_cond, __lock.mutex()->native_handle());
 
     if (__e)
-      __throw_system_error(__e);
+      std::terminate();
   }
 
   void
