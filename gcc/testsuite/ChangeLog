@@ -7,6 +7,7 @@
 
 2015-09-28  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/62171
 	* gcc.dg/vect/pr62171.c: New test.
 
 2015-09-27  David Edelsohn  <dje.gcc@gmail.com>
