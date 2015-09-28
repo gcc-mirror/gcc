@@ -1,6 +1,92 @@
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
             Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-optimize-isl.c (optimize_isl): Use ISL_SCHEDULE_FUSE_MAX.
+	* graphite-scop-detection.c (struct sese_l): New type.
+	(get_entry_bb): API for getting entry bb of SESE.
+	(get_exit_bb): API for getting exit bb of SESE.
+	(class debug_printer): New type.  Simple printer in debug mode.
+	(trivially_empty_bb_p): New.  Return true when BB is empty or
+	contains only debug instructions.
+	(graphite_can_represent_expr): Call scalar_evoution_in_region
+	instead of analyze_scalar_evolution.  Pass in scop instead of only
+	the scop entry.
+	(stmt_has_simple_data_refs_p): Pass in scop instead of only the
+	scop entry.
+	(stmt_simple_for_scop_p): Same.
+	(harmful_stmt_in_bb): Same.
+	(graphite_can_represent_loop): Deleted.
+	(struct scopdet_info): Deleted.
+	(scopdet_basic_block_info): Deleted.
+	(build_scops_1): Deleted.
+	(bb_in_sd_region): Deleted.
+	(find_single_entry_edge): Deleted.
+	(find_single_exit_edge): Deleted.
+	(create_single_entry_edge): Deleted.
+	(sd_region_without_exit): Deleted.
+	(create_single_exit_edge): Deleted.
+	(unmark_exit_edges): Deleted.
+	(mark_exit_edges): Deleted.
+	(create_sese_edges): Deleted.
+	(build_graphite_scops): Deleted.
+	(canonicalize_loop_closed_ssa): Recompute all dominators at the
+	end.
+	(build_scops): Use the new scop_builder to build scops.
+	(dot_all_scops_1): Use the new pretty printer.  Print loop father
+	as well.
+	(loop_body_is_valid_scop): New.  Return true if loop body is a
+	valid scop.
+	(class scop_builder): New.  Builds SCoPs for polyhedral
+	optimizations.
+	(scop_builder): New constructor.
+	(static sese_l invalid_sese): sese_l with invalid edges.
+	(get_sese): Get an sese (from a loop) if possible, invalid_sese
+	otherwise.
+	(get_nearest_dom_with_single_entry): Get nearest dominator of a
+	basic_block with single entry.  Return NULL if we get to the
+	beginning of a function.
+	(get_nearest_pdom_with_single_exit): Get nearest post-dominator of
+	a basic_block with single exit.  Return NULL if we get to the
+	beginning of a function.
+	(print_sese): Pretty-print SESE.
+	(merge_sese): Merge two SESEs if possible and return the new SESE.
+	(build_scop_depth): Start building the SCoP within a loop nest.
+	(build_scop_breadth): Start building the SCoP at a single loop
+	depth.  Merge adjacent SESEs if valid.
+	(can_represent_loop_1): Returns true if Graphite can represent
+	loop inside SCoP.  Helper for can_represent_loop.
+	(can_represent_loop): Returns true if Graphite can represent LOOP
+	and all its nested loops in SCoP.
+	(loop_is_valid_scop): Returns true if LOOP and all its nests
+	constitute a valid SCoP.
+	(region_has_one_loop): Returns true of a region has only one loop.
+	(add_scop): Add SCoP to the list of valid scops.  Removes an
+	already existing scop if it intersects with or subsumed by this
+	one.
+	(harmful_stmt_in_region): Returns true if SCoP has any statment
+	which cannot be represented by Graphite.
+	(subsumes): Returns true of SCoP S1 subsumes SCoP S2.
+	(remove_subscops): Remove any SCoP from the list of already found
+	SCoPs, if subsumed by S1.
+	(intersects): Return true if region bounded by SCoPs S1 and S2
+	intersect.
+	(remove_intersecting_scops): Remove any SCoP which intersects with
+	S1.
+	* graphite.c (print_graphite_scop_statistics):
+	(print_graphite_statistics): Print SCoP info while debugging.
+	(graphite_initialize): Early exit in case number of loops in a
+	function is less than PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION or
+	basic blocks are more than PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION.
+	(graphite_finalize):
+	* params.def: Add PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION.
+	* sese.h (sese_loop_depth): Remove unnecessary gcc_assert.
+	(recompute_all_dominators): Recalculate POST_DOMINATORS.
+	* tree-cfg.c (print_loops): Print the function name while printing
+	loops.
+
+2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
 	PR tree-optimization/67700
 	* graphite-sese-to-poly.c (parameter_index_in_region): Call
 	invariant_in_sese_p_rec.
@@ -11,8 +97,8 @@
 
 2015-09-28  David Wohlferd  <dw@LimeGreenSocks.com>
 
-         * doc/extend.texi (Asm Labels): Break out text for data vs
-	 functions.
+        * doc/extend.texi (Asm Labels): Break out text for data vs
+	functions.
 
 2015-09-28  Jiong Wang  <jiong.wang@arm.com>
 

@@ -45,4 +45,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "tiled by" 5 "graphite" } } */
+/* { dg-final { scan-tree-dump "tiled by" "graphite" } } */

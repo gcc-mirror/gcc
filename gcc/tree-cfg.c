@@ -7646,6 +7646,7 @@ print_loops (FILE *file, int verbosity)
   basic_block bb;
 
   bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  fprintf (file, "\nLoops in function: %s\n", current_function_name ());
   if (bb && bb->loop_father)
     print_loop_and_siblings (file, bb->loop_father, 0, verbosity);
 }

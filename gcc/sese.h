@@ -172,11 +172,6 @@ sese_loop_depth (sese region, loop_p loop)
 {
   unsigned int depth = 0;
 
-  gcc_assert ((!loop_in_sese_p (loop, region)
-	       && (SESE_ENTRY_BB (region)->loop_father == loop
-	           || SESE_EXIT (region)->src->loop_father == loop))
-              || loop_in_sese_p (loop, region));
-
   while (loop_in_sese_p (loop, region))
     {
       depth++;
@@ -263,6 +258,9 @@ recompute_all_dominators (void)
   mark_irreducible_loops ();
   free_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
+
+  free_dominance_info (CDI_POST_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 }
 
 typedef struct gimple_bb
