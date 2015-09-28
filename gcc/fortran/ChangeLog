@@ -1,3 +1,30 @@
+2015-09-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40054
+	PR fortran/63921
+	* decl.c (get_proc_name): Return if statement function is
+	found.
+	* expr.c (gfc_check_vardef_context): Add error return for
+	derived type expression lacking the derived type itself.
+	* match.c (gfc_match_ptr_fcn_assign): New function.
+	* match.h : Add prototype for gfc_match_ptr_fcn_assign.
+	* parse.c : Add static flag 'in_specification_block'.
+	(decode_statement): If in specification block match a statement
+	function, then, if no error arising from statement function
+	matching, try to match pointer function assignment.
+	(parse_interface): Set 'in_specification_block' on exiting from
+	parse_spec.
+	(parse_spec): Set and then reset 'in_specification_block'.
+	(gfc_parse_file): Set 'in_specification_block'.
+	* resolve.c (get_temp_from_expr): Extend to include functions
+	and array constructors as rvalues..
+	(resolve_ptr_fcn_assign): New function.
+	(gfc_resolve_code): Call it on finding a pointer function as an
+	lvalue. If valid or on error, go back to start of resolve_code.
+	* symbol.c (gfc_add_procedure): Add a sentence to the error to
+	flag up the ambiguity between a statement function and pointer
+	function assignment at the end of the specification block.
+
 2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* f95-lang.c (DEF_FUNCTION_TYPE_VAR_6): New.

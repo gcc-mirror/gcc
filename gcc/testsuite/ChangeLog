@@ -1,3 +1,22 @@
+2015-09-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40054
+	PR fortran/63921
+	* gfortran.dg/fmt_tab_1.f90: Change from run to compile and set
+	standard as legacy.
+	* gfortran.dg/fmt_tab_2.f90: Add extra tab error.
+	* gfortran.dg/function_types_3.f90: Change error message to
+	"Type inaccessible...."
+	* gfortran.dg/ptr_func_assign_1.f08: New test.
+	* gfortran.dg/ptr_func_assign_2.f08: New test.
+
+2015-09-25  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/40054
+	PR fortran/63921
+	* gfortran.dg/ptr_func_assign_3.f08: New test.
+	* gfortran.dg/ptr_func_assign_4.f08: New test.
+
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
