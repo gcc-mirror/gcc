@@ -1,6 +1,11 @@
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
             Sebastian Pop  <s.pop@samsung.com>
 
+	* sese.c (invariant_in_sese_p_rec): Remove unused variable.
+
+2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-optimize-isl.c (optimize_isl): Use ISL_SCHEDULE_FUSE_MAX.
 	* graphite-scop-detection.c (struct sese_l): New type.
 	(get_entry_bb): API for getting entry bb of SESE.

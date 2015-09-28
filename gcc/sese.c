@@ -778,7 +778,7 @@ invariant_in_sese_p_rec (tree t, sese region)
     return false;
 
   /* VDEF is variant when it is in the region.  */
-  if (tree vdef = gimple_vdef (stmt))
+  if (gimple_vdef (stmt))
     return false;
 
   /* A VUSE may or may not be variant following the VDEFs.  */
