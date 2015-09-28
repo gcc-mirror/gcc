@@ -21057,8 +21057,8 @@ in a performance loss, especially for floating-point code.
 @opindex muser-mode
 @opindex mno-user-mode
 Do not generate code that can only run in supervisor mode.  This is relevant
-only for the @code{casa} instruction emitted for the LEON3 processor.  The
-default is @option{-mno-user-mode}.
+only for the @code{casa} instruction emitted for the LEON3 processor.  This
+is the default.
 
 @item -mno-faster-structs
 @itemx -mfaster-structs
