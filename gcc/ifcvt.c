@@ -1961,6 +1961,11 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   insn_a = if_info->insn_a;
   insn_b = if_info->insn_b;
 
+  machine_mode x_mode = GET_MODE (x);
+
+  if (!can_conditionally_move_p (x_mode))
+    return FALSE;
+
   unsigned int then_cost;
   unsigned int else_cost;
   if (insn_a)
@@ -1997,12 +2002,37 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	}
     }
 
-  if (!a_simple && then_bb && !b_simple && else_bb
+  if (then_bb && else_bb && !a_simple && !b_simple
       && (!bbs_ok_for_cmove_arith (then_bb, else_bb)
 	  || !bbs_ok_for_cmove_arith (else_bb, then_bb)))
     return FALSE;
 
   start_sequence ();
+
+  /* If one of the blocks is empty then the corresponding B or A value
+     came from the test block.  The non-empty complex block that we will
+     emit might clobber the register used by B or A, so move it to a pseudo
+     first.  */
+
+  if (b_simple || !else_bb)
+    {
+      rtx tmp_b = gen_reg_rtx (x_mode);
+      /* Perform the simplest kind of set.  The register allocator
+	 should remove it if it's not actually needed.  If this set is not
+	 a valid insn (can happen on the is_mem path) then end_ifcvt_sequence
+	 will cancel the whole sequence.  Don't try any of the fallback paths
+	 from noce_emit_move_insn since we want this to be the simplest kind
+	 of move.  */
+      emit_insn (gen_rtx_SET (tmp_b, b));
+      b = tmp_b;
+    }
+
+  if (a_simple || !then_bb)
+    {
+      rtx tmp_a = gen_reg_rtx (x_mode);
+      emit_insn (gen_rtx_SET (tmp_a, a));
+      a = tmp_a;
+    }
 
   orig_a = a;
   orig_b = b;
