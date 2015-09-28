@@ -4886,7 +4886,6 @@ match
 gfc_match_st_function (void)
 {
   gfc_error_buffer old_error;
-
   gfc_symbol *sym;
   gfc_expr *expr;
   match m;
@@ -4923,6 +4922,66 @@ gfc_match_st_function (void)
   if (!gfc_notify_std (GFC_STD_F95_OBS, "Statement function at %C"))
     return MATCH_ERROR;
 
+  return MATCH_YES;
+
+undo_error:
+  gfc_pop_error (&old_error);
+  return MATCH_NO;
+}
+
+
+/* Match an assignment to a pointer function (F2008). This could, in
+   general be ambiguous with a statement function. In this implementation
+   it remains so if it is the first statement after the specification
+   block.  */
+
+match
+gfc_match_ptr_fcn_assign (void)
+{
+  gfc_error_buffer old_error;
+  locus old_loc;
+  gfc_symbol *sym;
+  gfc_expr *expr;
+  match m;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+
+  old_loc = gfc_current_locus;
+  m = gfc_match_name (name);
+  if (m != MATCH_YES)
+    return m;
+
+  gfc_find_symbol (name, NULL, 1, &sym);
+  if (sym && sym->attr.flavor != FL_PROCEDURE)
+    return MATCH_NO;
+
+  gfc_push_error (&old_error);
+
+  if (sym && sym->attr.function)
+    goto match_actual_arglist;
+
+  gfc_current_locus = old_loc;
+  m = gfc_match_symbol (&sym, 0);
+  if (m != MATCH_YES)
+    return m;
+
+  if (!gfc_add_procedure (&sym->attr, PROC_UNKNOWN, sym->name, NULL))
+    goto undo_error;
+
+match_actual_arglist:
+  gfc_current_locus = old_loc;
+  m = gfc_match (" %e", &expr);
+  if (m != MATCH_YES)
+    goto undo_error;
+
+  new_st.op = EXEC_ASSIGN;
+  new_st.expr1 = expr;
+  expr = NULL;
+
+  m = gfc_match (" = %e%t", &expr);
+  if (m != MATCH_YES)
+    goto undo_error;
+
+  new_st.expr2 = expr;
   return MATCH_YES;
 
 undo_error:

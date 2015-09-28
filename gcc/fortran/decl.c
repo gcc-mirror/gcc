@@ -901,6 +901,8 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
     return rc;
 
   sym = *result;
+  if (sym->attr.proc == PROC_ST_FUNCTION)
+    return rc;
 
   if (sym->attr.module_procedure
       && sym->attr.if_source == IFSRC_IFBODY)

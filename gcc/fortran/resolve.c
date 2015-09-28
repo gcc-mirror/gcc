@@ -9735,12 +9735,10 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   ref = NULL;
   aref = NULL;
 
-  /* This function could be expanded to support other expression type
-     but this is not needed here.  */
-  gcc_assert (e->expr_type == EXPR_VARIABLE);
-
   /* Obtain the arrayspec for the temporary.  */
-  if (e->rank)
+   if (e->rank && e->expr_type != EXPR_ARRAY
+       && e->expr_type != EXPR_FUNCTION
+       && e->expr_type != EXPR_OP)
     {
       aref = gfc_find_array_ref (e);
       if (e->expr_type == EXPR_VARIABLE
@@ -9771,6 +9769,16 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
 	ref = e->ref;
       if (as->type == AS_DEFERRED)
 	tmp->n.sym->attr.allocatable = 1;
+    }
+  else if (e->rank && (e->expr_type == EXPR_ARRAY
+		       || e->expr_type == EXPR_FUNCTION
+		       || e->expr_type == EXPR_OP))
+    {
+      tmp->n.sym->as = gfc_get_array_spec ();
+      tmp->n.sym->as->type = AS_DEFERRED;
+      tmp->n.sym->as->rank = e->rank;
+      tmp->n.sym->attr.allocatable = 1;
+      tmp->n.sym->attr.dimension = 1;
     }
   else
     tmp->n.sym->attr.dimension = 0;
@@ -10133,6 +10141,66 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 }
 
 
+/* F2008: Pointer function assignments are of the form:
+	ptr_fcn (args) = expr
+   This function breaks these assignments into two statements:
+	temporary_pointer => ptr_fcn(args)
+	temporary_pointer = expr  */
+
+static bool
+resolve_ptr_fcn_assign (gfc_code **code, gfc_namespace *ns)
+{
+  gfc_expr *tmp_ptr_expr;
+  gfc_code *this_code;
+  gfc_component *comp;
+  gfc_symbol *s;
+
+  if ((*code)->expr1->expr_type != EXPR_FUNCTION)
+    return false;
+
+  /* Even if standard does not support this feature, continue to build
+     the two statements to avoid upsetting frontend_passes.c.  */
+  gfc_notify_std (GFC_STD_F2008, "Pointer procedure assignment at "
+		  "%L", &(*code)->loc);
+
+  comp = gfc_get_proc_ptr_comp ((*code)->expr1);
+
+  if (comp)
+    s = comp->ts.interface;
+  else
+    s = (*code)->expr1->symtree->n.sym;
+
+  if (s == NULL || !s->result->attr.pointer)
+    {
+      gfc_error ("The function result on the lhs of the assignment at "
+		 "%L must have the pointer attribute.",
+		 &(*code)->expr1->where);
+      (*code)->op = EXEC_NOP;
+      return false;
+    }
+
+  tmp_ptr_expr = get_temp_from_expr ((*code)->expr2, ns);
+
+  /* get_temp_from_expression is set up for ordinary assignments. To that
+     end, where array bounds are not known, arrays are made allocatable.
+     Change the temporary to a pointer here.  */
+  tmp_ptr_expr->symtree->n.sym->attr.pointer = 1;
+  tmp_ptr_expr->symtree->n.sym->attr.allocatable = 0;
+  tmp_ptr_expr->where = (*code)->loc;
+
+  this_code = build_assignment (EXEC_ASSIGN,
+				tmp_ptr_expr, (*code)->expr2,
+				NULL, NULL, (*code)->loc);
+  this_code->next = (*code)->next;
+  (*code)->next = this_code;
+  (*code)->op = EXEC_POINTER_ASSIGN;
+  (*code)->expr2 = (*code)->expr1;
+  (*code)->expr1 = tmp_ptr_expr;
+
+  return true;
+}
+
+
 /* Given a block of code, recursively resolve everything pointed to by this
    code block.  */
 
@@ -10228,7 +10296,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (omp_workshare_save != -1)
 	    omp_workshare_flag = omp_workshare_save;
 	}
-
+start:
       t = true;
       if (code->op != EXEC_COMPCALL && code->op != EXEC_CALL_PPC)
 	t = gfc_resolve_expr (code->expr1);
@@ -10318,6 +10386,14 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
 	    remove_caf_get_intrinsic (code->expr1);
 
+	  /* If this is a pointer function in an lvalue variable context,
+	     the new code will have to be resolved afresh. This is also the
+	     case with an error, where the code is transformed into NOP to
+	     prevent ICEs downstream.  */
+	  if (resolve_ptr_fcn_assign (&code, ns)
+	      || code->op == EXEC_NOP)
+	    goto start;
+
 	  if (!gfc_check_vardef_context (code->expr1, false, false, false,
 					 _("assignment")))
 	    break;
@@ -10332,6 +10408,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 
 	  /* F03 7.4.1.3 for non-allocatable, non-pointer components.  */
 	  if (code->op != EXEC_CALL && code->expr1->ts.type == BT_DERIVED
+	      && code->expr1->ts.u.derived
 	      && code->expr1->ts.u.derived->attr.defined_assign_comp)
 	    generate_component_assignments (&code, ns);
 
