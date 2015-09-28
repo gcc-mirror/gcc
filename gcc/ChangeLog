@@ -1,3 +1,9 @@
+2015-09-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* doc/gimple.texi: Update references to gimple_statement_base.
+	* gdbhooks.py: Likewise.
+	* gimple.h: Likewise.
+
 2015-09-28  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/driver-sparc.c: map LEON to leon3
