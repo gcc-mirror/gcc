@@ -405,7 +405,6 @@ extern unsigned aarch64_architecture_version;
 enum reg_class
 {
   NO_REGS,
-  FIXED_REG0,
   CALLER_SAVE_REGS,
   GENERAL_REGS,
   STACK_REG,
@@ -421,7 +420,6 @@ enum reg_class
 #define REG_CLASS_NAMES				\
 {						\
   "NO_REGS",					\
-  "FIXED_REG0",					\
   "CALLER_SAVE_REGS",				\
   "GENERAL_REGS",				\
   "STACK_REG",					\
@@ -434,7 +432,6 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0x00000001, 0x00000000, 0x00000000 },	/* FIXED_REG0 */	\
   { 0x0007ffff, 0x00000000, 0x00000000 },	/* CALLER_SAVE_REGS */	\
   { 0x7fffffff, 0x00000000, 0x00000003 },	/* GENERAL_REGS */	\
   { 0x80000000, 0x00000000, 0x00000000 },	/* STACK_REG */		\
