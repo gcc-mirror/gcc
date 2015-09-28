@@ -1,3 +1,11 @@
+2015-09-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67442
+	* gcc.dg/torture/pr67442.c: New testcase.
+
 2015-04-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * gcc.target/i386/avx512vbmi-check.h (main): Fix register

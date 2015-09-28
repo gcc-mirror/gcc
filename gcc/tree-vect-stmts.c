@@ -4951,10 +4951,10 @@ ensure_base_align (stmt_vec_info stmt_info, struct data_reference *dr)
   if (!dr->aux)
     return;
 
-  if (((dataref_aux *)dr->aux)->base_misaligned)
+  if (DR_VECT_AUX (dr)->base_misaligned)
     {
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      tree base_decl = ((dataref_aux *)dr->aux)->base_decl;
+      tree base_decl = DR_VECT_AUX (dr)->base_decl;
 
       if (decl_in_symtab_p (base_decl))
 	symtab_node::get (base_decl)->increase_alignment (TYPE_ALIGN (vectype));
@@ -4963,7 +4963,7 @@ ensure_base_align (stmt_vec_info stmt_info, struct data_reference *dr)
           DECL_ALIGN (base_decl) = TYPE_ALIGN (vectype);
           DECL_USER_ALIGN (base_decl) = 1;
 	}
-      ((dataref_aux *)dr->aux)->base_misaligned = false;
+      DR_VECT_AUX (dr)->base_misaligned = false;
     }
 }
 
@@ -5449,11 +5449,15 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		misalign = 0;
 	      else if (DR_MISALIGNMENT (first_dr) == -1)
 		{
+		  if (DR_VECT_AUX (first_dr)->base_element_aligned)
+		    align = TYPE_ALIGN_UNIT (elem_type);
+		  else
+		    align = get_object_alignment (DR_REF (first_dr))
+			/ BITS_PER_UNIT;
+		  misalign = 0;
 		  TREE_TYPE (data_ref)
 		    = build_aligned_type (TREE_TYPE (data_ref),
-					  TYPE_ALIGN (elem_type));
-		  align = TYPE_ALIGN_UNIT (elem_type);
-		  misalign = 0;
+					  align * BITS_PER_UNIT);
 		}
 	      else
 		{
@@ -6463,11 +6467,15 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		      }
 		    else if (DR_MISALIGNMENT (first_dr) == -1)
 		      {
+			if (DR_VECT_AUX (first_dr)->base_element_aligned)
+			  align = TYPE_ALIGN_UNIT (elem_type);
+			else
+			  align = (get_object_alignment (DR_REF (first_dr))
+				   / BITS_PER_UNIT);
+			misalign = 0;
 			TREE_TYPE (data_ref)
 			  = build_aligned_type (TREE_TYPE (data_ref),
-						TYPE_ALIGN (elem_type));
-			align = TYPE_ALIGN_UNIT (elem_type);
-			misalign = 0;
+						align * BITS_PER_UNIT);
 		      }
 		    else
 		      {
