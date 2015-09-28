@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic two-word fraction declaration and manipulation.
-   Copyright (C) 1997-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -30,7 +30,11 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#define _FP_FRAC_DECL_2(X)	_FP_W_TYPE X##_f0, X##_f1
+#ifndef SOFT_FP_OP_2_H
+#define SOFT_FP_OP_2_H	1
+
+#define _FP_FRAC_DECL_2(X)				\
+  _FP_W_TYPE X##_f0 _FP_ZERO_INIT, X##_f1 _FP_ZERO_INIT
 #define _FP_FRAC_COPY_2(D, S)	(D##_f0 = S##_f0, D##_f1 = S##_f1)
 #define _FP_FRAC_SET_2(X, I)	__FP_FRAC_SET_2 (X, I)
 #define _FP_FRAC_HIGH_2(X)	(X##_f1)
@@ -454,8 +458,8 @@
 				       _p240, _q240, _r240, _s240;	\
       UDItype _t240, _u240, _v240, _w240, _x240, _y240 = 0;		\
 									\
-      if ((wfracbits) < 106 || (wfracbits) > 120)			\
-	abort ();							\
+      _FP_STATIC_ASSERT ((wfracbits) >= 106 && (wfracbits) <= 120,	\
+			 "wfracbits out of range");			\
 									\
       setfetz;								\
 									\
@@ -697,3 +701,5 @@
 #define _FP_FRAC_COPY_2_1(D, S)		((D##_f0 = S##_f), (D##_f1 = 0))
 
 #define _FP_FRAC_COPY_2_2(D, S)		_FP_FRAC_COPY_2 (D, S)
+
+#endif /* !SOFT_FP_OP_2_H */

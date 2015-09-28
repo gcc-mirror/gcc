@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic one-word fraction declaration and manipulation.
-   Copyright (C) 1997-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -30,7 +30,10 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#define _FP_FRAC_DECL_1(X)	_FP_W_TYPE X##_f
+#ifndef SOFT_FP_OP_1_H
+#define SOFT_FP_OP_1_H	1
+
+#define _FP_FRAC_DECL_1(X)	_FP_W_TYPE X##_f _FP_ZERO_INIT
 #define _FP_FRAC_COPY_1(D, S)	(D##_f = S##_f)
 #define _FP_FRAC_SET_1(X, I)	(X##_f = I)
 #define _FP_FRAC_HIGH_1(X)	(X##_f)
@@ -362,3 +365,5 @@
 /* Convert FP values between word sizes.  */
 
 #define _FP_FRAC_COPY_1_1(D, S)		(D##_f = S##_f)
+
+#endif /* !SOFT_FP_OP_1_H */
