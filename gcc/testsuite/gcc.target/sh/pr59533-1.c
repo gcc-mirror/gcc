@@ -9,13 +9,13 @@
 /* { dg-final { scan-assembler-times "and" 3 } }  */
 /* { dg-final { scan-assembler-times "extu.b" 5 } }  */
 
-/* { dg-final { scan-assembler-times "cmp/pz" 22 { target { ! sh2a } } } }  */
-/* { dg-final { scan-assembler-times "addc" 3 { target { ! sh2a } } } }  */
-/* { dg-final { scan-assembler-times "subc" 12 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "cmp/pz" 27 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "addc" 4 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "subc" 16 { target { ! sh2a } } } }  */
 
-/* { dg-final { scan-assembler-times "cmp/pz" 20 { target { sh2a } } } }  */
-/* { dg-final { scan-assembler-times "addc" 5 { target { sh2a } } } }  */
-/* { dg-final { scan-assembler-times "subc" 10 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "cmp/pz" 25 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "addc" 6 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "subc" 14 { target { sh2a } } } }  */
 /* { dg-final { scan-assembler-times "bld" 2 { target { sh2a } } } }  */
 
 int
@@ -182,4 +182,39 @@ test_22 (int x)
 {
   /* 1x cmp/pz, 1x movt  */
   return (x >> 31) + 1;
+}
+
+int
+test_23 (int x)
+{
+  /* 1x cmp/pz, 1x subc */
+  return x < 0 ? x + 1 : x;
+}
+
+unsigned int
+test_24 (unsigned int x)
+{
+  /* 1x cmp/pz, 1x subc */
+  return x & 0x80000000 ? x + 1 : x;
+}
+
+unsigned int
+test_25 (unsigned int x)
+{
+  /* 1x cmp/pz, 1x subc */
+  return x >> 31 ? x + 1 : x;
+}
+
+int
+test_26 (int x)
+{
+  /* 1x cmp/pz, 1x subc  */
+  return x >> 31 ? x + 1 : x;
+}
+
+int
+test_27 (int x, int y, int z)
+{
+  /* 1x cmp/pz, 1x addc  */
+  return 1 - ((x >> 4) < 0) + z;
 }
