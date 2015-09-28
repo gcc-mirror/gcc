@@ -25,7 +25,7 @@ main ()
 
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
-      if ((avx512f_os_support ()) && ((ebx & bit_AVX512VBMI) == bit_AVX512VBMI))
+      if ((avx512f_os_support ()) && ((ecx & bit_AVX512VBMI) == bit_AVX512VBMI))
 	{
 	  do_test ();
 #ifdef DEBUG

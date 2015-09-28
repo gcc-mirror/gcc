@@ -1,3 +1,8 @@
+2015-04-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/avx512vbmi-check.h (main): Fix register
+        name while checking for AVX-512VBMI presence.
+
 2015-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67614
