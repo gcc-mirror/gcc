@@ -236,7 +236,6 @@ static int sh_mode_after (int, int, rtx_insn *);
 static int sh_mode_entry (int);
 static int sh_mode_exit (int);
 static int sh_mode_priority (int entity, int n);
-static bool sh_lra_p (void);
 
 static rtx mark_constant_pool_use (rtx);
 static tree sh_handle_interrupt_handler_attribute (tree *, tree, tree,
@@ -14484,7 +14483,7 @@ sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
 */
 
 /* Return true if we use LRA instead of reload pass.  */
-static bool
+bool
 sh_lra_p (void)
 {
   return sh_lra_flag;

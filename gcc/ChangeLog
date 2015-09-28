@@ -1,3 +1,19 @@
+2015-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-09-27  Oleg Endo  <olegendo@gcc.gnu.org>
+		    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/67391
+	* config/sh/sh-protos.h (sh_lra_p): Declare.
+	* config/sh/sh.c (sh_lra_p): Make non-static.
+	* config/sh/sh.md (addsi3): Use arith_reg_dest for operands[0] and
+	arith_reg_operand for operands[1].  Remove TARGET_SHMEDIA case.
+	Expand into addsi3_scr if operands[2] if needed.
+	(*addsi3_compact): Rename to *addsi3_compact_lra.  Use
+	arith_reg_operand for operands[1].  Allow it only when LRA is enabled.
+	(addsi3_scr, *addsi3): New insn_and_split patterns.
+
 2015-09-28  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
