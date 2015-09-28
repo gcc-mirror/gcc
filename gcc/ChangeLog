@@ -1,3 +1,7 @@
+2015-09-28  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* config/sparc/t-rtems: Remove -muser-mode. Add ut699, at697f and leon.
+
 2015-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
