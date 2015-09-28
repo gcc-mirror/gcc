@@ -760,9 +760,10 @@ set_ifsese_condition (ifsese if_region, tree condition)
   gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
 }
 
-/* Return false if T is completely defined outside REGION.  */
+/* Return true when T is defined outside REGION or when no definitions are
+   variant in REGION.  */
 
-static bool
+bool
 invariant_in_sese_p_rec (tree t, sese region)
 {
   ssa_op_iter iter;
@@ -776,9 +777,18 @@ invariant_in_sese_p_rec (tree t, sese region)
       || gimple_code (stmt) == GIMPLE_CALL)
     return false;
 
+  /* VDEF is variant when it is in the region.  */
+  if (tree vdef = gimple_vdef (stmt))
+    return false;
+
+  /* A VUSE may or may not be variant following the VDEFs.  */
+  if (tree vuse = gimple_vuse (stmt))
+    return invariant_in_sese_p_rec (vuse, region);
+
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
       tree use = USE_FROM_PTR (use_p);
+
       if (!defined_in_sese_p (use, region))
 	continue;
 
