@@ -1,3 +1,8 @@
+2015-09-28  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR other/67652
+	* runtime/offload_engine.cpp (Engine::init_process): Fix sizeof.
+
 2015-09-08  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* Makefile.am (liboffloadmic_host_la_DEPENDENCIES): Remove libcoi_host
