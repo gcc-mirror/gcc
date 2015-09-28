@@ -7395,7 +7395,7 @@ sparc_libcall_value (machine_mode mode,
 static bool
 sparc_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == 8 || regno == 32);
+  return (regno == 8 || (TARGET_FPU && regno == 32));
 }
 
 /* Do what is necessary for `va_start'.  We look at the current function
