@@ -1158,10 +1158,18 @@
 
 ;; A predicate describing the T bit register in any form.
 (define_predicate "t_reg_operand"
-  (match_code "reg,subreg,sign_extend,zero_extend")
+  (match_code "reg,subreg,sign_extend,zero_extend,ne,eq")
 {
   switch (GET_CODE (op))
     {
+      case EQ:
+	return t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))
+	       && XEXP (op, 1) == const1_rtx;
+
+      case NE:
+	return t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))
+	       && XEXP (op, 1) == const0_rtx;
+
       case REG:
 	return REGNO (op) == T_REG;
 
@@ -1183,13 +1191,21 @@
 
 ;; A predicate describing a negated T bit register.
 (define_predicate "negt_reg_operand"
-  (match_code "subreg,xor")
+  (match_code "subreg,xor,ne,eq")
 {
   switch (GET_CODE (op))
     {
+      case EQ:
+	return t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))
+	       && XEXP (op, 1) == const0_rtx;
+
+      case NE:
+	return t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))
+	       && XEXP (op, 1) == const1_rtx;
+
       case XOR:
 	return t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))
-	       && satisfies_constraint_M (XEXP (op, 1));
+	       && XEXP (op, 1) == const1_rtx;
 
       case SUBREG:
 	return negt_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)));
