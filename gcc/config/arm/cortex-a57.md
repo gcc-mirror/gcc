@@ -296,7 +296,7 @@
 			alu_sreg,alus_sreg,logic_reg,logics_reg,\
 			adc_imm,adcs_imm,adc_reg,adcs_reg,\
 			adr,bfm,clz,rbit,rev,alu_dsp_reg,\
-			shift_imm,shift_reg,\
+			rotate_imm,shift_imm,shift_reg,\
 			mov_imm,mov_reg,\
 			mvn_imm,mvn_reg,\
 			mrs,multiple,no_insn"))

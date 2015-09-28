@@ -120,6 +120,7 @@
 ;                    final output, thus having no impact on scheduling.
 ; rbit               reverse bits.
 ; rev                reverse bytes.
+; rotate_imm         rotate by immediate.
 ; sdiv               signed division.
 ; shift_imm          simple shift operation (LSL, LSR, ASR, ROR) with an
 ;                    immediate.
@@ -627,6 +628,7 @@
   nop,\
   rbit,\
   rev,\
+  rotate_imm,\
   sdiv,\
   shift_imm,\
   shift_reg,\
