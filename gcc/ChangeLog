@@ -1,3 +1,11 @@
+2015-09-28  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (sparc_function_value_regno_p): Do not return
+	true on %f0 for a target without FPU.
+	* config/sparc/sparc.md (untyped_call): Do not save %f0 for a target
+	without FPU.
+	(untyped_return): Do not load %f0 for a target without FPU.
+
 2015-09-25  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-fsanitize): Update URLs.
