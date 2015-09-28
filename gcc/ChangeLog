@@ -1,5 +1,13 @@
 2015-09-28  Daniel Cederman  <cederman@gaisler.com>
 
+	* config/sparc/sparc.opt: Rename mask from USER_MODE to SV_MODE
+	  and make it inverse to change default
+	* config/sparc/sync.md: Only use supervisor ASI for CASA when in
+	  supervisor mode
+	* doc/invoke.texi: Document change of default
+
+2015-09-28  Daniel Cederman  <cederman@gaisler.com>
+
 	* config/sparc/sparc.c (sparc_function_value_regno_p): Do not return
 	true on %f0 for a target without FPU.
 	* config/sparc/sparc.md (untyped_call): Do not save %f0 for a target
