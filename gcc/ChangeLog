@@ -1,3 +1,8 @@
+2015-09-28  Andrew Pinski  <apinski@cavium.com>    
+
+	* config/aarch64/aarch64.md (prefetch):
+	Change the predicate of operand 0 to register_operand.
+
 2015-09-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (register_sse4nonimm_operand): New

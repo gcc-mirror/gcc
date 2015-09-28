@@ -466,7 +466,7 @@
 )
 
 (define_insn "prefetch"
-  [(prefetch (match_operand:DI 0 "address_operand" "r")
+  [(prefetch (match_operand:DI 0 "register_operand" "r")
             (match_operand:QI 1 "const_int_operand" "")
             (match_operand:QI 2 "const_int_operand" ""))]
   ""
