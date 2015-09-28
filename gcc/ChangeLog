@@ -1,3 +1,7 @@
+2015-09-28  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* config/sparc/t-rtems: Remove -muser-mode. Add ut699, at697f and leon.
+
 2015-09-28  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/driver-sparc.c: map LEON to leon3
