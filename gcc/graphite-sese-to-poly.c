@@ -758,6 +758,9 @@ parameter_index_in_region (tree name, sese region)
   if (TREE_CODE (TREE_TYPE (name)) != INTEGER_TYPE)
     return -1;
 
+  if (!invariant_in_sese_p_rec (name, region))
+    return -1;
+
   i = parameter_index_in_region_1 (name, region);
   if (i != -1)
     return i;
@@ -813,7 +816,8 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       break;
 
     case SSA_NAME:
-      gcc_assert (-1 != parameter_index_in_region_1 (e, SCOP_REGION (s)));
+      gcc_assert (-1 != parameter_index_in_region_1 (e, s->region)
+		  || !invariant_in_sese_p_rec (e, s->region));
       res = extract_affine_name (s, e, space);
       break;
 
@@ -2461,6 +2465,8 @@ rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 	rewrite_cross_bb_scalar_dependence (scop, unshare_expr (zero_dim_array),
 					    def, use_stmt);
       }
+
+  update_ssa (TODO_update_ssa);
 
   return res;
 }

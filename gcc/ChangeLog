@@ -1,3 +1,14 @@
+2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/67700
+	* graphite-sese-to-poly.c (parameter_index_in_region): Call
+	invariant_in_sese_p_rec.
+	(extract_affine): Same.
+	(rewrite_cross_bb_scalar_deps): Call update_ssa.
+	* sese.c (invariant_in_sese_p_rec): Export.  Handle vdefs and vuses.
+	* sese.h (invariant_in_sese_p_rec): Declare.
+
 2015-09-28  David Wohlferd  <dw@LimeGreenSocks.com>
 
          * doc/extend.texi (Asm Labels): Break out text for data vs
