@@ -8367,7 +8367,13 @@ asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 
 You can specify the name to be used in the assembler code for a C
 function or variable by writing the @code{asm} (or @code{__asm__})
-keyword after the declarator as follows:
+keyword after the declarator.
+It is up to you to make sure that the assembler names you choose do not
+conflict with any other assembler symbols, or reference registers.
+
+@subsubheading Assembler names for data:
+
+This sample shows how to specify the assembler name for data:
 
 @smallexample
 int foo asm ("myfoo") = 2;
@@ -8379,33 +8385,30 @@ the assembler code should be @samp{myfoo} rather than the usual
 @samp{_foo}.
 
 On systems where an underscore is normally prepended to the name of a C
-function or variable, this feature allows you to define names for the
+variable, this feature allows you to define names for the
 linker that do not start with an underscore.
 
-It does not make sense to use this feature with a non-static local
-variable since such variables do not have assembler names.  If you are
-trying to put the variable in a particular register, see @ref{Explicit
-Reg Vars}.  GCC presently accepts such code with a warning, but will
-probably be changed to issue an error, rather than a warning, in the
-future.
+GCC does not support using this feature with a non-static local variable 
+since such variables do not have assembler names.  If you are
+trying to put the variable in a particular register, see 
+@ref{Explicit Reg Vars}.
 
-You cannot use @code{asm} in this way in a function @emph{definition}; but
-you can get the same effect by writing a declaration for the function
-before its definition and putting @code{asm} there, like this:
+@subsubheading Assembler names for functions:
+
+To specify the assembler name for functions, write a declaration for the 
+function before its definition and put @code{asm} there, like this:
 
 @smallexample
-extern func () asm ("FUNC");
-
-func (x, y)
-     int x, y;
-/* @r{@dots{}} */
+int func (int x, int y) asm ("MYFUNC");
+     
+int func (int x, int y)
+@{
+   /* @r{@dots{}} */
 @end smallexample
 
-It is up to you to make sure that the assembler names you choose do not
-conflict with any other assembler symbols.  Also, you must not use a
-register name; that would produce completely invalid assembler code.  GCC
-does not as yet have the ability to store static variables in registers.
-Perhaps that will be added.
+@noindent
+This specifies that the name to be used for the function @code{func} in
+the assembler code should be @code{MYFUNC}.
 
 @node Explicit Reg Vars
 @subsection Variables in Specified Registers
