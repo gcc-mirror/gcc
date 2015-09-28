@@ -123,7 +123,7 @@ enum gimple_rhs_class
 };
 
 /* Specific flags for individual GIMPLE statements.  These flags are
-   always stored in gimple_statement_base.subcode and they may only be
+   always stored in gimple.subcode and they may only be
    defined for statement codes that do not use subcodes.
 
    Values for the masks can overlap as long as the overlapping values
@@ -380,7 +380,7 @@ struct GTY((tag("GSS_BIND")))
   tree vars;
 
   /* [ WORD 8 ]
-     This is different than the BLOCK field in gimple_statement_base,
+     This is different than the BLOCK field in gimple,
      which is analogous to TREE_BLOCK (i.e., the lexical block holding
      this statement).  This field is the equivalent of BIND_EXPR_BLOCK
      in tree land (i.e., the lexical scope defined by this bind).  See
@@ -744,7 +744,7 @@ struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
 
 
 /* GIMPLE_OMP_ATOMIC_LOAD.
-   Note: This is based on gimple_statement_base, not g_s_omp, because g_s_omp
+   Note: This is based on gimple, not g_s_omp, because g_s_omp
    contains a sequence, which we don't need here.  */
 
 struct GTY((tag("GSS_OMP_ATOMIC_LOAD")))
@@ -1813,7 +1813,7 @@ gimple_set_no_warning (gimple *stmt, bool no_warning)
 
    You can learn more about the visited property of the gimple
    statement by reading the comments of the 'visited' data member of
-   struct gimple statement_base.
+   struct gimple.
  */
 
 static inline void
@@ -1832,7 +1832,7 @@ gimple_set_visited (gimple *stmt, bool visited_p)
 
    You can learn more about the visited property of the gimple
    statement by reading the comments of the 'visited' data member of
-   struct gimple statement_base.  */
+   struct gimple.  */
 
 static inline bool
 gimple_visited_p (gimple *stmt)
