@@ -3807,13 +3807,13 @@
 
 ;; Rotate right
 (define_insn "*ror<mode>3_insn"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-        (rotatert:GPI
-          (match_operand:GPI 1 "register_operand" "r")
-          (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "rUs<cmode>")))]
+  [(set (match_operand:GPI 0 "register_operand" "=r,r")
+     (rotatert:GPI
+       (match_operand:GPI 1 "register_operand" "r,r")
+       (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "r,Us<cmode>")))]
   ""
   "ror\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "type" "shift_reg")]
+  [(set_attr "type" "shift_reg, rotate_imm")]
 )
 
 ;; zero_extend version of above
@@ -3902,7 +3902,7 @@
   operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
   return "ror\\t%<w>0, %<w>1, %3";
 }
-  [(set_attr "type" "shift_imm")]
+  [(set_attr "type" "rotate_imm")]
 )
 
 ;; zero_extend version of the above
@@ -3916,7 +3916,7 @@
   operands[3] = GEN_INT (32 - UINTVAL (operands[2]));
   return "ror\\t%w0, %w1, %3";
 }
-  [(set_attr "type" "shift_imm")]
+  [(set_attr "type" "rotate_imm")]
 )
 
 (define_insn "*<ANY_EXTEND:optab><GPI:mode>_ashl<SHORT:mode>"

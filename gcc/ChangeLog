@@ -1,3 +1,13 @@
+2015-09-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/types.md (type): Add rotate_imm.
+	* config/aarch64/aarch64.md (*ror<mode>3_insn): Split out the
+	ROR immediate case.
+	(*rorsi3_insn_uxtw): Likewise.
+	* config/aarch64/thunderx.md (thunderx_shift): Add rotate_imm.
+	* config/arm/cortex-a53.md (cortex_a53_alu_shift): Add rotate_imm.
+	* config/arm/cortex-a57.md (cortex_a53_alu): Add rotate_imm.
+
 2015-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/67481
