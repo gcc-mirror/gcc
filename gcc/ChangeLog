@@ -1,3 +1,8 @@
+2015-09-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_named_section): Place
+	SECTION_EXCLUDE in XO mapping class.
+
 2015-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
