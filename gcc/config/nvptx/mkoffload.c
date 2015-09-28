@@ -842,6 +842,8 @@ process (FILE *in, FILE *out)
 {
   const char *input = read_file (in);
   Token *tok = tokenize (input);
+  const char *comma;
+  id_map const *id;
 
   do
     tok = parse_file (tok);
@@ -853,21 +855,25 @@ process (FILE *in, FILE *out)
   write_stmts (out, rev_stmts (fns));
   fprintf (out, ";\n\n");
 
-  fprintf (out, "static const char *const var_mappings[] = {\n");
-  for (id_map *id = var_ids; id; id = id->next)
-    fprintf (out, "\t\"%s\"%s\n", id->ptx_name, id->next ? "," : "");
-  fprintf (out, "};\n\n");
-  fprintf (out, "static const char *const func_mappings[] = {\n");
-  for (id_map *id = func_ids; id; id = id->next)
-    fprintf (out, "\t\"%s\"%s\n", id->ptx_name, id->next ? "," : "");
-  fprintf (out, "};\n\n");
+  fprintf (out, "static const char *const var_mappings[] = {");
+  for (comma = "", id = var_ids; id; comma = ",", id = id->next)
+    fprintf (out, "%s\n\t%s", comma, id->ptx_name);
+  fprintf (out, "\n};\n\n");
+
+  fprintf (out, "static const struct nvptx_fn {\n"
+	   "  const char *name;\n"
+	   "  unsigned short dim[3];\n"
+	   "} func_mappings[] = {\n");
+  for (comma = "", id = func_ids; id; comma = ",", id = id->next)
+    fprintf (out, "%s\n\t{%s}", comma, id->ptx_name);
+  fprintf (out, "\n};\n\n");
 
   fprintf (out,
 	   "static const struct nvptx_tdata {\n"
 	   "  const char *ptx_src;\n"
 	   "  const char *const *var_names;\n"
 	   "  __SIZE_TYPE__ var_num;\n"
-	   "  const char *const *fn_names;\n"
+	   "  const struct nvptx_fn *fn_names;\n"
 	   "  __SIZE_TYPE__ fn_num;\n"
 	   "} target_data = {\n"
 	   "  ptx_code,\n"

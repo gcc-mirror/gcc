@@ -1,3 +1,7 @@
+2015-09-28  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_6): Define
+
 2015-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (emit_check): Do not touch TREE_SIDE_EFFECTS.

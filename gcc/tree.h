@@ -1,3 +1,4 @@
+
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
    Copyright (C) 1989-2015 Free Software Foundation, Inc.
 
@@ -1369,6 +1370,8 @@ extern void protected_set_expr_location (tree, location_t);
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SCHEDULE), 0)
 
 /* OpenACC clause expressions  */
+#define OMP_CLAUSE_EXPR(NODE, CLAUSE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, CLAUSE), 0)
 #define OMP_CLAUSE_GANG_EXPR(NODE) \
   OMP_CLAUSE_OPERAND ( \
     OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_GANG), 0)
