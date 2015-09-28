@@ -1,3 +1,27 @@
+2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libgomp.h (acc_dispatch_t): Replace separate geometry args with
+	array.
+	* libgomp.map (GOACC_parallel_keyed): New.
+	* oacc-parallel.c (goacc_wait): Take pointer to va_list.  Adjust
+	all callers.
+	(GOACC_parallel_keyed): New interface.  Lose geometry arguments
+	and take keyed varargs list.  Adjust call to exec_func.
+	(GOACC_parallel): Force host fallback.
+	* libgomp_g.h (GOACC_parallel): Remove.
+	(GOACC_parallel_keyed): Declare.
+	* plugin/plugin-nvptx.c (struct targ_fn_launch): New struct.
+	(stuct targ_gn_descriptor): Replace name field with launch field.
+	(nvptx_exec): Lose separate geometry args, take array.  Process
+	dynamic dimensions and adjust.
+	(struct nvptx_tdata): Replace fn_names field with fn_descs.
+	(GOMP_OFFLOAD_load_image): Adjust for change in function table
+	data.
+	(GOMP_OFFLOAD_openacc_parallel): Adjust for change in dimension
+	passing.
+	* oacc-host.c (host_openacc_exec): Adjust for change in dimension
+	passing.
+
 2015-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR libgomp/67141

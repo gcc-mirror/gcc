@@ -1,3 +1,21 @@
+2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c: Include omp-low.h and gomp-constants.h.
+	(nvptx_record_offload_symbol): Record function execution geometry.
+	* config/nvptx/mkoffload.c (process): Include launch geometry in
+	function data.
+	* omp-low.c (oacc_launch_pack): New.
+	(replace_oacc_fn_attrib): New.
+	(set_oacc_fn_attrib): New.
+	(get_oacc_fn_attrib): New.
+	(expand_omp_target): Create keyed varargs for GOACC_parallel call
+	generation.
+	* omp-low.h (get_oacc_fn_attrib): Declare.
+	* builtin-types.def (DEF_FUNCTION_TyPE_VAR_6): New.
+	(DEF_FUNCTION_TYPE_VAR_11): Delete.
+	* tree.h (OMP_CLAUSE_EXPR): New.
+	* omp-builtins.def (BUILT_IN_GOACC_PARALLEL): Change target fn name.
+
 2015-09-28  Aditya Kumar  <aditya.k7@samsung.com>
             Sebastian Pop  <s.pop@samsung.com>
 

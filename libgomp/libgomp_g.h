@@ -222,9 +222,8 @@ extern void GOACC_data_start (int, size_t, void **, size_t *,
 extern void GOACC_data_end (void);
 extern void GOACC_enter_exit_data (int, size_t, void **,
 				   size_t *, unsigned short *, int, int, ...);
-extern void GOACC_parallel (int, void (*) (void *), size_t,
-			    void **, size_t *, unsigned short *, int, int, int,
-			    int, int, ...);
+extern void GOACC_parallel_keyd (int, void (*) (void *), size_t,
+			          void **, size_t *, unsigned short *, ...);
 extern void GOACC_update (int, size_t, void **, size_t *,
 			  unsigned short *, int, int, ...);
 extern void GOACC_wait (int, int, ...);

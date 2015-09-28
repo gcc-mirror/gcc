@@ -332,6 +332,11 @@ GOACC_2.0 {
 	GOACC_get_num_threads;
 };
 
+GOACC_2.0.1 {
+  global:
+	GOACC_parallel_keyed;
+} GOACC_2.0;
+
 GOMP_PLUGIN_1.0 {
   global:
 	GOMP_PLUGIN_malloc;

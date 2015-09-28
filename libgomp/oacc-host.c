@@ -137,10 +137,8 @@ host_openacc_exec (void (*fn) (void *),
 		   void **devaddrs __attribute__ ((unused)),
 		   size_t *sizes __attribute__ ((unused)),
 		   unsigned short *kinds __attribute__ ((unused)),
-		   int num_gangs __attribute__ ((unused)),
-		   int num_workers __attribute__ ((unused)),
-		   int vector_length __attribute__ ((unused)),
 		   int async __attribute__ ((unused)),
+		   unsigned *dims __attribute ((unused)),
 		   void *targ_mem_desc __attribute__ ((unused)))
 {
   fn (hostaddrs);

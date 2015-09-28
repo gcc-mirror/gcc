@@ -282,12 +282,20 @@ map_push (struct ptx_stream *s, int async, size_t size, void **h, void **d)
   return;
 }
 
+/* Target data function launch information.  */
+
+struct targ_fn_launch
+{
+  const char *fn;
+  unsigned short dim[3];
+};
+
 /* Descriptor of a loaded function.  */
 
 struct targ_fn_descriptor
 {
   CUfunction fn;
-  const char *name;
+  const struct targ_fn_launch *launch;
 };
 
 /* A loaded PTX image.  */
@@ -929,8 +937,8 @@ event_add (enum ptx_event_type type, CUevent *e, void *h)
 
 void
 nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
-	  size_t *sizes, unsigned short *kinds, int num_gangs, int num_workers,
-	  int vector_length, int async, void *targ_mem_desc)
+	    size_t *sizes, unsigned short *kinds, int async, unsigned *dims,
+	    void *targ_mem_desc)
 {
   struct targ_fn_descriptor *targ_fn = (struct targ_fn_descriptor *) fn;
   CUfunction function;
@@ -939,7 +947,6 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   struct ptx_stream *dev_str;
   void *kargs[1];
   void *hp, *dp;
-  unsigned int nthreads_in_block;
   struct nvptx_thread *nvthd = nvptx_thread ();
   const char *maybe_abort_msg = "(perhaps abort was called)";
 
@@ -947,6 +954,20 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
   dev_str = select_stream_for_async (async, pthread_self (), false, NULL);
   assert (dev_str == nvthd->current_stream);
+
+  /* Initialize the launch dimensions.  Typically this is constant,
+     provided by the device compiler, but we must permit runtime
+     values.  */
+  for (i = 0; i != 3; i++)
+    if (targ_fn->launch->dim[i])
+      dims[i] = targ_fn->launch->dim[i];
+
+  if (dims[GOMP_DIM_GANG] != 1)
+    GOMP_PLUGIN_fatal ("non-unity num_gangs (%d) not supported",
+		       dims[GOMP_DIM_GANG]);
+  if (dims[GOMP_DIM_WORKER] != 1)
+    GOMP_PLUGIN_fatal ("non-unity num_workers (%d) not supported",
+		       dims[GOMP_DIM_WORKER]);
 
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
      the host and the device. HP is a host pointer to the new chunk, and DP is
@@ -965,35 +986,21 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuMemcpy failed: %s", cuda_error (r));
 
-  GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch\n", __FUNCTION__, targ_fn->name);
+  GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
+		     " gangs=%u, workers=%u, vectors=%u\n",
+		     __FUNCTION__, targ_fn->launch->fn,
+		     dims[0], dims[1], dims[2]);
 
   // OpenACC		CUDA
   //
-  // num_gangs		blocks
-  // num_workers	warps (where a warp is equivalent to 32 threads)
-  // vector length	threads
-  //
-
-  /* The openacc vector_length clause 'determines the vector length to use for
-     vector or SIMD operations'.  The question is how to map this to CUDA.
-
-     In CUDA, the warp size is the vector length of a CUDA device.  However, the
-     CUDA interface abstracts away from that, and only shows us warp size
-     indirectly in maximum number of threads per block, which is a product of
-     warp size and the number of hyperthreads of a multiprocessor.
-
-     We choose to map openacc vector_length directly onto the number of threads
-     in a block, in the x dimension.  This is reflected in gcc code generation
-     that uses ThreadIdx.x to access vector elements.
-
-     Attempting to use an openacc vector_length of more than the maximum number
-     of threads per block will result in a cuda error.  */
-  nthreads_in_block = vector_length;
+  // num_gangs		nctaid.x
+  // num_workers	ntid.y
+  // vector length	ntid.x
 
   kargs[0] = &dp;
   r = cuLaunchKernel (function,
-		      num_gangs, 1, 1,
-		      nthreads_in_block, 1, 1,
+		      dims[GOMP_DIM_GANG], 1, 1,
+		      dims[GOMP_DIM_VECTOR], dims[GOMP_DIM_WORKER], 1,
 		      0, dev_str->stream, kargs, 0);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuLaunchKernel error: %s", cuda_error (r));
@@ -1039,7 +1046,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 #endif
 
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: finished\n", __FUNCTION__,
-		     targ_fn->name);
+		     targ_fn->launch->fn);
 
 #ifndef DISABLE_ASYNC
   if (async < acc_async_noval)
@@ -1567,7 +1574,7 @@ typedef struct nvptx_tdata
   const char *const *var_names;
   size_t var_num;
 
-  const char *const *fn_names;
+  const struct targ_fn_launch *fn_descs;
   size_t fn_num;
 } nvptx_tdata_t;
 
@@ -1588,7 +1595,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			 struct addr_pair **target_table)
 {
   CUmodule module;
-  const char *const *fn_names, *const *var_names;
+  const char *const *var_names;
+  const struct targ_fn_launch *fn_descs;
   unsigned int fn_entries, var_entries, i, j;
   CUresult r;
   struct targ_fn_descriptor *targ_fns;
@@ -1617,7 +1625,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   var_entries = img_header->var_num;
   var_names = img_header->var_names;
   fn_entries = img_header->fn_num;
-  fn_names = img_header->fn_names;
+  fn_descs = img_header->fn_descs;
 
   targ_tbl = GOMP_PLUGIN_malloc (sizeof (struct addr_pair)
 				 * (fn_entries + var_entries));
@@ -1640,12 +1648,12 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
     {
       CUfunction function;
 
-      r = cuModuleGetFunction (&function, module, fn_names[i]);
+      r = cuModuleGetFunction (&function, module, fn_descs[i].fn);
       if (r != CUDA_SUCCESS)
 	GOMP_PLUGIN_fatal ("cuModuleGetFunction error: %s", cuda_error (r));
 
       targ_fns->fn = function;
-      targ_fns->name = (const char *) fn_names[i];
+      targ_fns->launch = &fn_descs[i];
 
       targ_tbl->start = (uintptr_t) targ_fns;
       targ_tbl->end = targ_tbl->start + 1;
@@ -1724,13 +1732,12 @@ void (*device_run) (int n, void *fn_ptr, void *vars) = NULL;
 
 void
 GOMP_OFFLOAD_openacc_parallel (void (*fn) (void *), size_t mapnum,
-			       void **hostaddrs, void **devaddrs, size_t *sizes,
-			       unsigned short *kinds, int num_gangs,
-			       int num_workers, int vector_length, int async,
-			       void *targ_mem_desc)
+			       void **hostaddrs, void **devaddrs,
+			       size_t *sizes, unsigned short *kinds,
+			       int async, unsigned *dims, void *targ_mem_desc)
 {
-  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, sizes, kinds, num_gangs,
-	    num_workers, vector_length, async, targ_mem_desc);
+  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, sizes, kinds,
+	      async, dims, targ_mem_desc);
 }
 
 void

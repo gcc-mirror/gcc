@@ -1,3 +1,8 @@
+2015-09-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_VAR_6): New.
+	(DEF_FUNCTION_TYPE_VAR_11): Delete.
+
 2015-08-31  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (compare_tree_sccs_1): Compare DECL_ABSTRACT_ORIGIN.
