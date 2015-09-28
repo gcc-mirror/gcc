@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Extended Precision.
-   Copyright (C) 1999-2014 Free Software Foundation, Inc.
+   Copyright (C) 1999-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek (jj@ultra.linux.cz).
 
@@ -26,6 +26,9 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
+
+#ifndef SOFT_FP_EXTENDED_H
+#define SOFT_FP_EXTENDED_H	1
 
 #if _FP_W_TYPE_SIZE < 32
 # error "Here's a nickel, kid. Go buy yourself a real computer."
@@ -292,6 +295,8 @@ union _FP_UNION_E
 # define FP_CMP_UNORD_E(r, X, Y, ex)	_FP_CMP_UNORD (E, 4, (r), X, Y, (ex))
 
 # define FP_TO_INT_E(r, X, rsz, rsg)	_FP_TO_INT (E, 4, (r), X, (rsz), (rsg))
+# define FP_TO_INT_ROUND_E(r, X, rsz, rsg)	\
+  _FP_TO_INT_ROUND (E, 4, (r), X, (rsz), (rsg))
 # define FP_FROM_INT_E(X, r, rs, rt)	_FP_FROM_INT (E, 4, X, (r), (rs), rt)
 
 # define _FP_FRAC_HIGH_E(X)	(X##_f[2])
@@ -494,6 +499,8 @@ union _FP_UNION_E
 # define FP_CMP_UNORD_E(r, X, Y, ex)	_FP_CMP_UNORD (E, 2, (r), X, Y, (ex))
 
 # define FP_TO_INT_E(r, X, rsz, rsg)	_FP_TO_INT (E, 2, (r), X, (rsz), (rsg))
+# define FP_TO_INT_ROUND_E(r, X, rsz, rsg)	\
+  _FP_TO_INT_ROUND (E, 2, (r), X, (rsz), (rsg))
 # define FP_FROM_INT_E(X, r, rs, rt)	_FP_FROM_INT (E, 2, X, (r), (rs), rt)
 
 # define _FP_FRAC_HIGH_E(X)	(X##_f1)
@@ -502,3 +509,5 @@ union _FP_UNION_E
 # define _FP_FRAC_HIGH_DW_E(X)	(X##_f[2])
 
 #endif /* not _FP_W_TYPE_SIZE < 64 */
+
+#endif /* !SOFT_FP_EXTENDED_H */
