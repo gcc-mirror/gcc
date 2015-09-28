@@ -1,3 +1,10 @@
+2015-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/67456
+	PR rtl-optimization/67464
+	PR rtl-optimization/67465
+	* gcc.dg/pr67465.c: New test.
+
 2015-09-28  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/vect/pr62171.c: New test.

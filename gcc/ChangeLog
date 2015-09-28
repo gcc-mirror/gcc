@@ -1,3 +1,12 @@
+2015-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/67456
+	PR rtl-optimization/67464
+	PR rtl-optimization/67465
+	* ifcvt.c (noce_try_cmove_arith): Bail out if cannot conditionally
+	move in the mode of x.  Handle combination of complex and simple
+	block pairs as well as the case when one is empty.
+
 2015-09-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* doc/gimple.texi: Update references to gimple_statement_base.
