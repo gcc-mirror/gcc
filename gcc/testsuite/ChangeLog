@@ -1,3 +1,7 @@
+2015-09-28  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/vect/pr62171.c: New test.
+
 2015-09-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/debug/dwarf2/pr44641.C: Revert line number change. Remove
