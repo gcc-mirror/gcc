@@ -1761,6 +1761,19 @@ noce_try_cmove (struct noce_if_info *if_info)
   return FALSE;
 }
 
+/* Return true if X contains a conditional code mode rtx.  */
+
+static bool
+contains_ccmode_rtx_p (rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (GET_MODE_CLASS (GET_MODE (*iter)) == MODE_CC)
+      return true;
+
+  return false;
+}
+
 /* Helper for bb_valid_for_noce_process_p.  Validate that
    the rtx insn INSN is a single set that does not set
    the conditional register CC and is in general valid for
@@ -1779,6 +1792,7 @@ insn_valid_noce_process_p (rtx_insn *insn, rtx cc)
   /* Currently support only simple single sets in test_bb.  */
   if (!sset
       || !noce_operand_ok (SET_DEST (sset))
+      || contains_ccmode_rtx_p (SET_DEST (sset))
       || !noce_operand_ok (SET_SRC (sset)))
     return false;
 

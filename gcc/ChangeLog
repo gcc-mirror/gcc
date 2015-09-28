@@ -1,5 +1,11 @@
 2015-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR rtl-optimization/67481
+	* ifcvt.c (contains_ccmode_rtx_p): New function.
+	(insn_valid_noce_process_p): Use it.
+
+2015-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR rtl-optimization/67456
 	PR rtl-optimization/67464
 	PR rtl-optimization/67465
