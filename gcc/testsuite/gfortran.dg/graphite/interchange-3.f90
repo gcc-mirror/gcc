@@ -24,4 +24,4 @@ Program FOO
 
 end Program FOO
 
-! { dg-final { scan-tree-dump-times "tiled by" 5 "graphite" } }
+! { dg-final { scan-tree-dump "tiled by" "graphite" } }

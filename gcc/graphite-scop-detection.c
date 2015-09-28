@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "cfghooks.h"
+#include "params.h"
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
@@ -53,107 +54,82 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-scop-detection.h"
 #include "gimple-pretty-print.h"
 
+/* Lightweight representation of sese for scop detection.
+   TODO: Make all this as a constant_edge.  */
+struct sese_l
+{
+  sese_l (edge e, edge x)
+  : entry (e), exit (x)
+  { }
+
+  operator bool () const
+  {
+    return entry && exit;
+  }
+
+  edge entry;
+  edge exit;
+};
+
+/* APIs for getting entry/exit of an sese.  */
+static basic_block
+get_entry_bb (edge e)
+{
+  return e->dest;
+}
+
+static basic_block
+get_exit_bb (edge e)
+{
+  return e->src;
+}
+
+class debug_printer
+{
+private:
+  FILE *dump_file;
+public:
+  void set_dump_file (FILE *f)
+  {
+    gcc_assert (f);
+    dump_file = f;
+  }
+
+  friend debug_printer &operator<<(debug_printer &output, int i)
+  {
+    fprintf (output.dump_file, "%d", i);
+    return output;
+  }
+  friend debug_printer &operator<<(debug_printer &output, const char *s)
+  {
+    fprintf (output.dump_file, "%s", s);
+    return output;
+  }
+} dp;
+
+#define DEBUG_PRINT(args) do \
+    {								\
+      if (dump_file && (dump_flags & TDF_DETAILS)) { args; }	\
+    } while (0);
+
+
+/* Return true if BB is empty, contains only DEBUG_INSNs.  */
+
+static bool
+trivially_empty_bb_p (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG)
+      return false;
+
+  return true;
+}
+
+
 /* Forward declarations.  */
 static void make_close_phi_nodes_unique (basic_block);
-
-/* The type of the analyzed basic block.  */
-
-enum gbb_type {
-  GBB_UNKNOWN,
-  GBB_LOOP_SING_EXIT_HEADER,
-  GBB_LOOP_MULT_EXIT_HEADER,
-  GBB_LOOP_EXIT,
-  GBB_COND_HEADER,
-  GBB_SIMPLE,
-  GBB_LAST
-};
-
-/* Detect the type of BB.  Loop headers are only marked, if they are
-   new.  This means their loop_father is different to LAST_LOOP.
-   Otherwise they are treated like any other bb and their type can be
-   any other type.  */
-
-static gbb_type
-get_bb_type (basic_block bb, struct loop *last_loop)
-{
-  vec<basic_block> dom;
-  int nb_dom;
-  struct loop *loop = bb->loop_father;
-
-  /* Check, if we entry into a new loop. */
-  if (loop != last_loop)
-    {
-      if (single_exit (loop) != NULL)
-        return GBB_LOOP_SING_EXIT_HEADER;
-      else if (loop->num != 0)
-        return GBB_LOOP_MULT_EXIT_HEADER;
-      else
-	return GBB_COND_HEADER;
-    }
-
-  dom = get_dominated_by (CDI_DOMINATORS, bb);
-  nb_dom = dom.length ();
-  dom.release ();
-
-  if (nb_dom == 0)
-    return GBB_LAST;
-
-  if (nb_dom == 1 && single_succ_p (bb))
-    return GBB_SIMPLE;
-
-  return GBB_COND_HEADER;
-}
-
-/* A SCoP detection region, defined using bbs as borders.
-
-   All control flow touching this region, comes in passing basic_block
-   ENTRY and leaves passing basic_block EXIT.  By using bbs instead of
-   edges for the borders we are able to represent also regions that do
-   not have a single entry or exit edge.
-
-   But as they have a single entry basic_block and a single exit
-   basic_block, we are able to generate for every sd_region a single
-   entry and exit edge.
-
-   1   2
-    \ /
-     3	<- entry
-     |
-     4
-    / \			This region contains: {3, 4, 5, 6, 7, 8}
-   5   6
-   |   |
-   7   8
-    \ /
-     9	<- exit  */
-
-
-struct sd_region
-{
-  /* The entry bb dominates all bbs in the sd_region.  It is part of
-     the region.  */
-  basic_block entry;
-
-  /* The exit bb postdominates all bbs in the sd_region, but is not
-     part of the region.  */
-  basic_block exit;
-};
-
-
-
-/* Moves the scops from SOURCE to TARGET and clean up SOURCE.  */
-
-static void
-move_sd_regions (vec<sd_region> *source, vec<sd_region> *target)
-{
-  sd_region *s;
-  int i;
-
-  FOR_EACH_VEC_ELT (*source, i, s)
-    target->safe_push (*s);
-
-  source->release ();
-}
 
 /* Something like "n * m" is not allowed.  */
 
@@ -267,36 +243,34 @@ graphite_can_represent_scev (tree scev)
 
 /* Return true when EXPR can be represented in the polyhedral model.
 
-   This means an expression can be represented, if it is linear with
-   respect to the loops and the strides are non parametric.
-   LOOP is the place where the expr will be evaluated.  SCOP_ENTRY defines the
-   entry of the region we analyse.  */
+   This means an expression can be represented, if it is linear with respect to
+   the loops and the strides are non parametric.  LOOP is the place where the
+   expr will be evaluated.  SCOP defines the region we analyse.  */
 
 static bool
-graphite_can_represent_expr (basic_block scop_entry, loop_p loop,
-			     tree expr)
+graphite_can_represent_expr (sese_l scop, loop_p loop, tree expr)
 {
-  tree scev = analyze_scalar_evolution (loop, expr);
-
-  scev = instantiate_scev (scop_entry, loop, scev);
-
+  sese region = new_sese (scop.entry, scop.exit);
+  tree scev = scalar_evolution_in_region (region, loop, expr);
+  free_sese (region);
   return graphite_can_represent_scev (scev);
 }
 
-/* Return true if the data references of STMT can be represented by
-   Graphite.  */
+/* Return true if the data references of STMT can be represented by Graphite.
+   We try to analyze the data references in a loop contained in the SCOP.  */
 
 static bool
-stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
-			     gimple *stmt)
+stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
   data_reference_p dr;
   int j;
   bool res = true;
   vec<data_reference_p> drs = vNULL;
   loop_p outer;
+  loop_p loop_around_scop = get_entry_bb (scop.entry)->loop_father;
 
-  for (outer = loop_containing_stmt (stmt); outer; outer = loop_outer (outer))
+  for (outer = loop_containing_stmt (stmt); outer && outer != loop_around_scop;
+       outer = loop_outer (outer))
     {
       graphite_find_data_references_in_stmt (outer,
 					     loop_containing_stmt (stmt),
@@ -330,19 +304,18 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
   return res;
 }
 
-/* Return true only when STMT is simple enough for being handled by
-   Graphite.  This depends on SCOP_ENTRY, as the parameters are
-   initialized relatively to this basic block, the linear functions
-   are initialized to OUTERMOST_LOOP and BB is the place where we try
-   to evaluate the STMT.  */
+/* Return true only when STMT is simple enough for being handled by Graphite.
+   This depends on SCOP, as the parameters are initialized relatively to
+   this basic block, the linear functions are initialized based on the outermost
+   loop containing STMT inside the SCOP.  BB is the place where we try to
+   evaluate the STMT.  */
 
 static bool
-stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
-			gimple *stmt, basic_block bb)
+stmt_simple_for_scop_p (sese_l scop, gimple *stmt, basic_block bb)
 {
   loop_p loop = bb->loop_father;
 
-  gcc_assert (scop_entry);
+  gcc_assert (scop);
 
   /* GIMPLE_ASM and GIMPLE_CALL may embed arbitrary side effects.
      Calls have side-effects, except those to const or pure
@@ -352,28 +325,20 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 	  && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
       || (gimple_code (stmt) == GIMPLE_ASM))
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "[scop-detection-fail] ");
-	  fprintf (dump_file, "Graphite cannot handle this stmt:\n");
-	  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-	}
-
+      DEBUG_PRINT (dp << "[scop-detection-fail] "
+		      << "Graphite cannot handle this stmt:\n";
+	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS));
       return false;
     }
 
   if (is_gimple_debug (stmt))
     return true;
 
-  if (!stmt_has_simple_data_refs_p (outermost_loop, stmt))
+  if (!stmt_has_simple_data_refs_p (scop, stmt))
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "[scop-detection-fail] ");
-	  fprintf (dump_file, "Graphite cannot handle data-refs in stmt:\n");
-	  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-	}
-
+      DEBUG_PRINT (dp << "[scop-detection-fail] "
+		      << "Graphite cannot handle data-refs in stmt:\n";
+	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS););
       return false;
     }
 
@@ -395,30 +360,22 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 	      || code == EQ_EXPR
 	      || code == NE_EXPR))
           {
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      {
-		fprintf (dump_file, "[scop-detection-fail] ");
-		fprintf (dump_file, "Graphite cannot handle cond stmt:\n");
-		print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-	      }
-
+	    DEBUG_PRINT (dp <<  "[scop-detection-fail] "
+			    << "Graphite cannot handle cond stmt:\n";
+	      print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS));
 	    return false;
 	  }
 
 	for (unsigned i = 0; i < 2; ++i)
 	  {
 	    tree op = gimple_op (stmt, i);
-	    if (!graphite_can_represent_expr (scop_entry, loop, op)
+	    if (!graphite_can_represent_expr (scop, loop, op)
 		/* We can only constrain on integer type.  */
 		|| (TREE_CODE (TREE_TYPE (op)) != INTEGER_TYPE))
 	      {
-		if (dump_file && (dump_flags & TDF_DETAILS))
-		  {
-		    fprintf (dump_file, "[scop-detection-fail] ");
-		    fprintf (dump_file, "Graphite cannot represent stmt:\n");
-		    print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-		  }
-
+		DEBUG_PRINT (dp <<  "[scop-detection-fail] "
+			        << "Graphite cannot represent stmt:\n";
+		  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS));
 		return false;
 	      }
 	  }
@@ -432,764 +389,30 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 
     default:
       /* These nodes cut a new scope.  */
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "[scop-detection-fail] ");
-	  fprintf (dump_file, "Gimple stmt not handled in Graphite:\n");
-	  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-	}
+      DEBUG_PRINT (dp << "[scop-detection-fail] "
+		      << "Gimple stmt not handled in Graphite:\n";
+	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS));
       return false;
     }
 
   return false;
 }
 
-/* Returns the statement of BB that contains a harmful operation: that
+/* Return true when BB contains a harmful operation for a scop: that
    can be a function call with side effects, the induction variables
-   are not linear with respect to SCOP_ENTRY, etc.  The current open
-   scop should end before this statement.  The evaluation is limited using
-   OUTERMOST_LOOP as outermost loop that may change.  */
+   are not linear with respect to SCOP, etc.  The current open
+   scop should end before this statement.  */
 
-static gimple *
-harmful_stmt_in_bb (basic_block scop_entry, loop_p outer_loop, basic_block bb)
+static bool
+harmful_stmt_in_bb (sese_l scop, basic_block bb)
 {
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (!stmt_simple_for_scop_p (scop_entry, outer_loop, gsi_stmt (gsi), bb))
-      return gsi_stmt (gsi);
+    if (!stmt_simple_for_scop_p (scop, gsi_stmt (gsi), bb))
+      return true;
 
-  return NULL;
-}
-
-/* Return true if LOOP can be represented in the polyhedral
-   representation.  This is evaluated taking SCOP_ENTRY and
-   OUTERMOST_LOOP in mind.  */
-
-static bool
-graphite_can_represent_loop (basic_block scop_entry, loop_p loop)
-{
-  tree niter;
-  struct tree_niter_desc niter_desc;
-
-  if (!loop_nest_has_data_refs (loop))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "[scop-detection-fail] ");
-	  fprintf (dump_file, "Loop %d does not have any data reference.\n",
-		   loop->num);
-	}
-      return false;
-    }
-
-  /* FIXME: For the moment, graphite cannot be used on loops that
-     iterate using induction variables that wrap.  */
-
-  return number_of_iterations_exit (loop, single_exit (loop), &niter_desc, false)
-    && niter_desc.control.no_overflow
-    && (niter = number_of_latch_executions (loop))
-    && !chrec_contains_undetermined (niter)
-    && graphite_can_represent_expr (scop_entry, loop, niter);
-}
-
-/* Store information needed by scopdet_* functions.  */
-
-struct scopdet_info
-{
-  /* Exit of the open scop would stop if the current BB is harmful.  */
-  basic_block exit;
-
-  /* Where the next scop would start if the current BB is harmful.  */
-  basic_block next;
-
-  /* The bb or one of its children contains open loop exits.  That means
-     loop exit nodes that are not surrounded by a loop dominated by bb.  */
-  bool exits;
-
-  /* The bb or one of its children contains only structures we can handle.  */
-  bool difficult;
-};
-
-static struct scopdet_info build_scops_1 (basic_block, loop_p,
-					  vec<sd_region> *, loop_p);
-
-/* Calculates BB infos. If bb is difficult we add valid SCoPs dominated by BB
-   to SCOPS.  TYPE is the gbb_type of BB.  */
-
-static struct scopdet_info
-scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
-			  vec<sd_region> *scops, gbb_type type)
-{
-  loop_p loop = bb->loop_father;
-  struct scopdet_info result;
-  gimple *stmt;
-
-  /* XXX: ENTRY_BLOCK_PTR could be optimized in later steps.  */
-  basic_block entry_block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  stmt = harmful_stmt_in_bb (entry_block, outermost_loop, bb);
-  result.difficult = (stmt != NULL);
-  result.exit = NULL;
-
-  switch (type)
-    {
-    case GBB_LAST:
-      result.next = NULL;
-      result.exits = false;
-
-      /* Mark bbs terminating a SESE region difficult, if they start
-	 a condition or if the block it exits to cannot be split
-	 with make_forwarder_block.  */
-      if (!single_succ_p (bb)
-	  || bb_has_abnormal_pred (single_succ (bb)))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "[scop-detection-fail] ");
-	      fprintf (dump_file, "BB %d cannot be part of a scop.\n",
-		       bb->index);
-	    }
-
-	  result.difficult = true;
-	}
-      else
-	result.exit = single_succ (bb);
-
-      break;
-
-    case GBB_SIMPLE:
-      result.next = single_succ (bb);
-      result.exits = false;
-      result.exit = single_succ (bb);
-      break;
-
-    case GBB_LOOP_SING_EXIT_HEADER:
-      {
-	auto_vec<sd_region, 3> regions;
-	struct scopdet_info sinfo;
-	edge exit_e = single_exit (loop);
-
-	sinfo = build_scops_1 (bb, outermost_loop, &regions, loop);
-
-	if (!graphite_can_represent_loop (entry_block, loop))
-	  {
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      {
-		fprintf (dump_file, "[scop-detection-fail] ");
-		fprintf (dump_file, "Graphite cannot represent loop %d.\n",
-			 loop->num);
-	      }
-	    result.difficult = true;
-	  }
-
-	result.difficult |= sinfo.difficult;
-
-	/* Try again with another loop level.  */
-	if (result.difficult
-	    && loop_depth (outermost_loop) + 1 == loop_depth (loop))
-	  {
-	    outermost_loop = loop;
-
-	    regions.release ();
-	    regions.create (3);
-
-	    sinfo = scopdet_basic_block_info (bb, outermost_loop, scops, type);
-
-	    result = sinfo;
-	    result.difficult = true;
-
-	    if (sinfo.difficult)
-	      move_sd_regions (&regions, scops);
-	    else
-	      {
-		sd_region open_scop;
-		open_scop.entry = bb;
-		open_scop.exit = exit_e->dest;
-		scops->safe_push (open_scop);
-		regions.release ();
-	      }
-	  }
-	else
-	  {
-	    result.exit = exit_e->dest;
-	    result.next = exit_e->dest;
-
-	    /* If we do not dominate result.next, remove it.  It's either
-	       the exit block, or another bb dominates it and will
-	       call the scop detection for this bb.  */
-	    if (!dominated_by_p (CDI_DOMINATORS, result.next, bb))
-	      result.next = NULL;
-
-	    if (exit_e->src->loop_father != loop)
-	      result.next = NULL;
-
-	    result.exits = false;
-
-	    if (result.difficult)
-	      move_sd_regions (&regions, scops);
-	    else
-	      regions.release ();
-	  }
-
-	break;
-      }
-
-    case GBB_LOOP_MULT_EXIT_HEADER:
-      {
-        /* XXX: For now we just do not join loops with multiple exits.  If the
-           exits lead to the same bb it may be possible to join the loop.  */
-        auto_vec<sd_region, 3> regions;
-        vec<edge> exits = get_loop_exit_edges (loop);
-        edge e;
-        int i;
-	build_scops_1 (bb, loop, &regions, loop);
-
-	/* Scan the code dominated by this loop.  This means all bbs, that are
-	   are dominated by a bb in this loop, but are not part of this loop.
-
-	   The easiest case:
-	     - The loop exit destination is dominated by the exit sources.
-
-	   TODO: We miss here the more complex cases:
-		  - The exit destinations are dominated by another bb inside
-		    the loop.
-		  - The loop dominates bbs, that are not exit destinations.  */
-        FOR_EACH_VEC_ELT (exits, i, e)
-          if (e->src->loop_father == loop
-	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src))
-	    {
-	      if (loop_outer (outermost_loop))
-		outermost_loop = loop_outer (outermost_loop);
-
-	      /* Pass loop_outer to recognize e->dest as loop header in
-		 build_scops_1.  */
-	      if (e->dest->loop_father->header == e->dest)
-		build_scops_1 (e->dest, outermost_loop, &regions,
-			       loop_outer (e->dest->loop_father));
-	      else
-		build_scops_1 (e->dest, outermost_loop, &regions,
-			       e->dest->loop_father);
-	    }
-
-        result.next = NULL;
-        result.exit = NULL;
-        result.difficult = true;
-        result.exits = false;
-        move_sd_regions (&regions, scops);
-        exits.release ();
-        break;
-      }
-    case GBB_COND_HEADER:
-      {
-	auto_vec<sd_region, 3> regions;
-	struct scopdet_info sinfo;
-	vec<basic_block> dominated;
-	int i;
-	basic_block dom_bb;
-	basic_block last_exit = NULL;
-	edge e;
-	result.exits = false;
-
-	/* First check the successors of BB, and check if it is
-	   possible to join the different branches.  */
-	FOR_EACH_VEC_SAFE_ELT (bb->succs, i, e)
-	  {
-	    /* Ignore loop exits.  They will be handled after the loop
-	       body.  */
-	    if (loop_exits_to_bb_p (loop, e->dest))
-	      {
-		result.exits = true;
-		continue;
-	      }
-
-	    /* Do not follow edges that lead to the end of the
-	       conditions block.  For example, in
-
-               |   0
-	       |  /|\
-	       | 1 2 |
-	       | | | |
-	       | 3 4 |
-	       |  \|/
-               |   6
-
-	       the edge from 0 => 6.  Only check if all paths lead to
-	       the same node 6.  */
-
-	    if (!single_pred_p (e->dest))
-	      {
-		/* Check, if edge leads directly to the end of this
-		   condition.  */
-		if (!last_exit)
-		  last_exit = e->dest;
-
-		if (e->dest != last_exit)
-		  result.difficult = true;
-
-		continue;
-	      }
-
-	    if (!dominated_by_p (CDI_DOMINATORS, e->dest, bb))
-	      {
-		result.difficult = true;
-		continue;
-	      }
-
-	    sinfo = build_scops_1 (e->dest, outermost_loop, &regions, loop);
-
-	    result.exits |= sinfo.exits;
-	    result.difficult |= sinfo.difficult;
-
-	    /* Checks, if all branches end at the same point.
-	       If that is true, the condition stays joinable.
-	       Have a look at the example above.  */
-	    if (sinfo.exit)
-	      {
-		if (!last_exit)
-		  last_exit = sinfo.exit;
-
-		if (sinfo.exit != last_exit)
-		  result.difficult = true;
-	      }
-	    else
-	      result.difficult = true;
-	  }
-
-	if (!last_exit)
-	  result.difficult = true;
-
-	/* Join the branches of the condition if possible.  */
-	if (!result.exits && !result.difficult)
-	  {
-	    /* Only return a next pointer if we dominate this pointer.
-	       Otherwise it will be handled by the bb dominating it.  */
-	    if (dominated_by_p (CDI_DOMINATORS, last_exit, bb)
-		&& last_exit != bb)
-	      result.next = last_exit;
-	    else
-	      result.next = NULL;
-
-	    result.exit = last_exit;
-
-	    regions.release ();
-	    break;
-	  }
-
-	/* Scan remaining bbs dominated by BB.  */
-	dominated = get_dominated_by (CDI_DOMINATORS, bb);
-
-	FOR_EACH_VEC_ELT (dominated, i, dom_bb)
-	  {
-	    /* Ignore loop exits: they will be handled after the loop body.  */
-	    if (loop_depth (find_common_loop (loop, dom_bb->loop_father))
-		< loop_depth (loop))
-	      {
-		result.exits = true;
-		continue;
-	      }
-
-	    /* Ignore the bbs processed above.  */
-	    if (single_pred_p (dom_bb) && single_pred (dom_bb) == bb)
-	      continue;
-
-	    if (loop_depth (loop) > loop_depth (dom_bb->loop_father))
-	      sinfo = build_scops_1 (dom_bb, outermost_loop, &regions,
-				     loop_outer (loop));
-	    else
-	      sinfo = build_scops_1 (dom_bb, outermost_loop, &regions, loop);
-
-	    result.exits |= sinfo.exits;
-	    result.difficult = true;
-	    result.exit = NULL;
-	  }
-
-	dominated.release ();
-
-	result.next = NULL;
-	move_sd_regions (&regions, scops);
-
-	break;
-      }
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return result;
-}
-
-/* Starting from CURRENT we walk the dominance tree and add new sd_regions to
-   SCOPS. The analyse if a sd_region can be handled is based on the value
-   of OUTERMOST_LOOP. Only loops inside OUTERMOST loops may change.  LOOP
-   is the loop in which CURRENT is handled.
-
-   TODO: These functions got a little bit big. They definitely should be cleaned
-	 up.  */
-
-static struct scopdet_info
-build_scops_1 (basic_block current, loop_p outermost_loop,
-	       vec<sd_region> *scops, loop_p loop)
-{
-  bool in_scop = false;
-  sd_region open_scop;
-  struct scopdet_info sinfo;
-
-  /* Initialize result.  */
-  struct scopdet_info result;
-  result.exits = false;
-  result.difficult = false;
-  result.next = NULL;
-  result.exit = NULL;
-  open_scop.entry = NULL;
-  open_scop.exit = NULL;
-  sinfo.exit = NULL;
-
-  /* Loop over the dominance tree.  If we meet a difficult bb, close
-     the current SCoP.  Loop and condition header start a new layer,
-     and can only be added if all bbs in deeper layers are simple.  */
-  while (current != NULL)
-    {
-      sinfo = scopdet_basic_block_info (current, outermost_loop, scops,
-					get_bb_type (current, loop));
-
-      if (!in_scop && !(sinfo.exits || sinfo.difficult))
-        {
-	  open_scop.entry = current;
-	  open_scop.exit = NULL;
-          in_scop = true;
-        }
-      else if (in_scop && (sinfo.exits || sinfo.difficult))
-        {
-	  open_scop.exit = current;
-          scops->safe_push (open_scop);
-          in_scop = false;
-        }
-
-      result.difficult |= sinfo.difficult;
-      result.exits |= sinfo.exits;
-
-      current = sinfo.next;
-    }
-
-  /* Try to close open_scop, if we are still in an open SCoP.  */
-  if (in_scop)
-    {
-      open_scop.exit = sinfo.exit;
-      gcc_assert (open_scop.exit);
-      if (open_scop.entry != open_scop.exit)
-	scops->safe_push (open_scop);
-      else
-	{
-	  sinfo.difficult = true;
-	  sinfo.exits = false;
-	  sinfo.exit = NULL;
-	}
-    }
-
-  result.exit = sinfo.exit;
-  return result;
-}
-
-/* Checks if a bb is contained in REGION.  */
-
-static bool
-bb_in_sd_region (basic_block bb, sd_region *region)
-{
-  return bb_in_region (bb, region->entry, region->exit);
-}
-
-/* Returns the single entry edge of REGION, if it does not exits NULL.  */
-
-static edge
-find_single_entry_edge (sd_region *region)
-{
-  edge e;
-  edge_iterator ei;
-  edge entry = NULL;
-
-  FOR_EACH_EDGE (e, ei, region->entry->preds)
-    if (!bb_in_sd_region (e->src, region))
-      {
-	if (entry)
-	  {
-	    entry = NULL;
-	    break;
-	  }
-
-	else
-	  entry = e;
-      }
-
-  return entry;
-}
-
-/* Returns the single exit edge of REGION, if it does not exits NULL.  */
-
-static edge
-find_single_exit_edge (sd_region *region)
-{
-  edge e;
-  edge_iterator ei;
-  edge exit = NULL;
-
-  FOR_EACH_EDGE (e, ei, region->exit->preds)
-    if (bb_in_sd_region (e->src, region))
-      {
-	if (exit)
-	  {
-	    exit = NULL;
-	    break;
-	  }
-
-	else
-	  exit = e;
-      }
-
-  return exit;
-}
-
-/* Create a single entry edge for REGION.  */
-
-static void
-create_single_entry_edge (sd_region *region)
-{
-  if (find_single_entry_edge (region))
-    return;
-
-  /* There are multiple predecessors for bb_3
-
-  |  1  2
-  |  | /
-  |  |/
-  |  3	<- entry
-  |  |\
-  |  | |
-  |  4 ^
-  |  | |
-  |  |/
-  |  5
-
-  There are two edges (1->3, 2->3), that point from outside into the region,
-  and another one (5->3), a loop latch, lead to bb_3.
-
-  We split bb_3.
-
-  |  1  2
-  |  | /
-  |  |/
-  |3.0
-  |  |\     (3.0 -> 3.1) = single entry edge
-  |3.1 |  	<- entry
-  |  | |
-  |  | |
-  |  4 ^
-  |  | |
-  |  |/
-  |  5
-
-  If the loop is part of the SCoP, we have to redirect the loop latches.
-
-  |  1  2
-  |  | /
-  |  |/
-  |3.0
-  |  |      (3.0 -> 3.1) = entry edge
-  |3.1  	<- entry
-  |  |\
-  |  | |
-  |  4 ^
-  |  | |
-  |  |/
-  |  5  */
-
-  if (region->entry->loop_father->header != region->entry
-      || dominated_by_p (CDI_DOMINATORS,
-			 loop_latch_edge (region->entry->loop_father)->src,
-			 region->exit))
-    {
-      edge forwarder = split_block_after_labels (region->entry);
-      region->entry = forwarder->dest;
-    }
-  else
-    /* This case is never executed, as the loop headers seem always to have a
-       single edge pointing from outside into the loop.  */
-    gcc_unreachable ();
-
-  gcc_checking_assert (find_single_entry_edge (region));
-}
-
-/* Check if the sd_region, mentioned in EDGE, has no exit bb.  */
-
-static bool
-sd_region_without_exit (edge e)
-{
-  sd_region *r = (sd_region *) e->aux;
-
-  if (r)
-    return r->exit == NULL;
-  else
-    return false;
-}
-
-/* Create a single exit edge for REGION.  */
-
-static void
-create_single_exit_edge (sd_region *region)
-{
-  edge e;
-  edge_iterator ei;
-  edge forwarder = NULL;
-  basic_block exit;
-
-  /* We create a forwarder bb (5) for all edges leaving this region
-     (3->5, 4->5).  All other edges leading to the same bb, are moved
-     to a new bb (6).  If these edges where part of another region (2->5)
-     we update the region->exit pointer, of this region.
-
-     To identify which edge belongs to which region we depend on the e->aux
-     pointer in every edge.  It points to the region of the edge or to NULL,
-     if the edge is not part of any region.
-
-     1 2 3 4   	1->5 no region, 		2->5 region->exit = 5,
-      \| |/    	3->5 region->exit = NULL, 	4->5 region->exit = NULL
-        5	<- exit
-
-     changes to
-
-     1 2 3 4   	1->6 no region, 			2->6 region->exit = 6,
-     | | \/	3->5 no region,				4->5 no region,
-     | |  5
-      \| /	5->6 region->exit = 6
-	6
-
-     Now there is only a single exit edge (5->6).  */
-  exit = region->exit;
-  region->exit = NULL;
-  forwarder = make_forwarder_block (exit, &sd_region_without_exit, NULL);
-
-  /* Unmark the edges, that are no longer exit edges.  */
-  FOR_EACH_EDGE (e, ei, forwarder->src->preds)
-    if (e->aux)
-      e->aux = NULL;
-
-  /* Mark the new exit edge.  */
-  single_succ_edge (forwarder->src)->aux = region;
-
-  /* Update the exit bb of all regions, where exit edges lead to
-     forwarder->dest.  */
-  FOR_EACH_EDGE (e, ei, forwarder->dest->preds)
-    if (e->aux)
-      ((sd_region *) e->aux)->exit = forwarder->dest;
-
-  gcc_checking_assert (find_single_exit_edge (region));
-}
-
-/* Unmark the exit edges of all REGIONS.
-   See comment in "create_single_exit_edge". */
-
-static void
-unmark_exit_edges (vec<sd_region> regions)
-{
-  int i;
-  sd_region *s;
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_VEC_ELT (regions, i, s)
-    FOR_EACH_EDGE (e, ei, s->exit->preds)
-      e->aux = NULL;
-}
-
-
-/* Mark the exit edges of all REGIONS.
-   See comment in "create_single_exit_edge". */
-
-static void
-mark_exit_edges (vec<sd_region> regions)
-{
-  int i;
-  sd_region *s;
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_VEC_ELT (regions, i, s)
-    FOR_EACH_EDGE (e, ei, s->exit->preds)
-      if (bb_in_sd_region (e->src, s))
-	e->aux = s;
-}
-
-/* Create for all scop regions a single entry and a single exit edge.  */
-
-static void
-create_sese_edges (vec<sd_region> regions)
-{
-  int i;
-  sd_region *s;
-
-  FOR_EACH_VEC_ELT (regions, i, s)
-    create_single_entry_edge (s);
-
-  mark_exit_edges (regions);
-
-  FOR_EACH_VEC_ELT (regions, i, s)
-    /* Don't handle multiple edges exiting the function.  */
-    if (!find_single_exit_edge (s)
-	&& s->exit != EXIT_BLOCK_PTR_FOR_FN (cfun))
-      create_single_exit_edge (s);
-
-  unmark_exit_edges (regions);
-
-  calculate_dominance_info (CDI_DOMINATORS);
-  fix_loop_structure (NULL);
-
-#ifdef ENABLE_CHECKING
-  verify_loop_structure ();
-  verify_ssa (false, true);
-#endif
-}
-
-/* Create graphite SCoPs from an array of scop detection REGIONS.  */
-
-static void
-build_graphite_scops (vec<sd_region> regions,
-		      vec<scop_p> *scops)
-{
-  int i;
-  sd_region *s;
-
-  FOR_EACH_VEC_ELT (regions, i, s)
-    {
-      edge entry = find_single_entry_edge (s);
-      edge exit = find_single_exit_edge (s);
-      scop_p scop;
-
-      if (!exit)
-	continue;
-
-      sese sese_reg = new_sese (entry, exit);
-      scop = new_scop (sese_reg);
-
-      build_sese_loop_nests (sese_reg);
-
-      /* Scops with one or no loops are not interesting.  */
-      if (SESE_LOOP_NEST (sese_reg).length () > 1)
-	scops->safe_push (scop);
-      else if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Discarded scop: %d loops\n",
-		 SESE_LOOP_NEST (sese_reg).length ());
-
-      /* Are there overlapping SCoPs?  */
-#ifdef ENABLE_CHECKING
-	{
-	  int j;
-	  sd_region *s2;
-
-	  FOR_EACH_VEC_ELT (regions, j, s2)
-	    if (s != s2)
-	      gcc_assert (!bb_in_sd_region (s->entry, s2));
-	}
-#endif
-    }
+  return false;
 }
 
 /* Returns true when P1 and P2 are close phis with the same
@@ -1275,6 +498,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
   if (single_pred_p (bb))
     {
       e = split_block_after_labels (bb);
+      DEBUG_PRINT (dp << "\nSplitting bb_" << bb->index);
       make_close_phi_nodes_unique (e->src);
     }
   else
@@ -1283,6 +507,9 @@ canonicalize_loop_closed_ssa (loop_p loop)
       basic_block close = split_edge (e);
 
       e = single_succ_edge (close);
+      DEBUG_PRINT (dp << "\nSplitting edge ("
+		      << e->src->index << "," << e->dest->index
+		      << ")\n");
 
       for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
 	{
@@ -1316,7 +543,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
 
   /* The code above does not properly handle changes in the post dominance
      information (yet).  */
-  free_dominance_info (CDI_POST_DOMINATORS);
+  recompute_all_dominators ();
 }
 
 /* Converts the current loop closed SSA form to a canonical form
@@ -1358,29 +585,6 @@ canonicalize_loop_closed_ssa_form (void)
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa (true);
 #endif
-}
-
-/* Find Static Control Parts (SCoP) in the current function and pushes
-   them to SCOPS.  */
-
-void
-build_scops (vec<scop_p> *scops)
-{
-  struct loop *loop = current_loops->tree_root;
-  auto_vec<sd_region, 3> regions;
-
-  canonicalize_loop_closed_ssa_form ();
-  build_scops_1 (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
-		 ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father,
-		 &regions, loop);
-  create_sese_edges (regions);
-  build_graphite_scops (regions, scops);
-
-  regions.release ();
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nnumber of SCoPs: %d\n",
-	     scops ? scops->length () : 0);
 }
 
 /* Pretty print to FILE all the SCoPs in DOT format and mark them with
@@ -1500,6 +704,8 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
 	      else
 		fprintf (file, " %d ", bb->index);
 
+	      fprintf (file, "{lp_%d}", bb->loop_father->num);
+
 	      if (!bb_in_sese_p (bb,region))
 		fprintf (file, ")");
 
@@ -1511,7 +717,8 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
       if (!part_of_scop)
 	{
 	  fprintf (file, "    <TR><TD WIDTH=\"50\" BGCOLOR=\"#ffffff\">");
-	  fprintf (file, " %d </TD></TR>\n", bb->index);
+	  fprintf (file, " %d {lp_%d} </TD></TR>\n",
+		   bb->index, bb->loop_father->num);
 	}
       fprintf (file, "  </TABLE>>, shape=box, style=\"setlinewidth(0)\"]\n");
     }
@@ -1574,6 +781,514 @@ dot_scop (scop_p scop)
 #else
   dot_all_scops_1 (stderr, scops);
 #endif
+}
+
+/* Return true when the body of LOOP has statements that can be represented as a
+   valid scop.  */
+
+static bool
+loop_body_is_valid_scop (loop_p loop, sese_l scop)
+{
+  if (!loop_nest_has_data_refs (loop))
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
+		      << loop->num << "does not have any data reference.\n");
+      return false;
+    }
+
+  basic_block *bbs = get_loop_body (loop);
+  for (unsigned i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = bbs[i];
+
+      if (harmful_stmt_in_bb (scop, bb))
+	return false;
+    }
+  free (bbs);
+  return true;
+}
+
+/* Build the maximal scop containing LOOP(s) and add it to SCOPS.  */
+
+class scop_builder
+{
+ public:
+  scop_builder (vec<scop_p> *s)
+    : scops (s)
+  { }
+
+  static sese_l invalid_sese;
+
+  sese_l get_sese (loop_p loop)
+  {
+    if (!loop)
+      return invalid_sese;
+
+    if (!loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
+      return invalid_sese;
+    edge scop_end = single_exit (loop);
+    if (!scop_end)
+      return invalid_sese;
+    edge scop_begin = loop_preheader_edge (loop);
+    sese_l s (scop_begin, scop_end);
+    return s;
+  }
+
+  static edge
+    get_nearest_dom_with_single_entry (basic_block dom)
+  {
+    if (!dom->preds)
+      return NULL;
+    /* If e1->src dominates e2->src then e1->src will also dominate dom.  */
+    if (dom->preds->length () == 2)
+      {
+	edge e1 = (*dom->preds)[0];
+	edge e2 = (*dom->preds)[1];
+	if (dominated_by_p (CDI_DOMINATORS, e2->src, e1->src))
+	  return e1;
+	if (dominated_by_p (CDI_DOMINATORS, e1->src, e2->src))
+	  return e2;
+      }
+
+    while (dom->preds->length () != 1)
+      {
+	if (dom->preds->length () < 1)
+	  return NULL;
+	dom = get_immediate_dominator (CDI_DOMINATORS, dom);
+	if (!dom->preds)
+	  return NULL;
+      }
+    return (*dom->preds)[0];
+  }
+
+  static edge
+    get_nearest_pdom_with_single_exit (basic_block dom)
+  {
+    if (!dom->succs)
+      return NULL;
+    if (dom->succs->length () == 2)
+      {
+	edge e1 = (*dom->succs)[0];
+	edge e2 = (*dom->succs)[1];
+	if (dominated_by_p (CDI_POST_DOMINATORS, e2->dest, e1->dest))
+	  return e1;
+	if (dominated_by_p (CDI_POST_DOMINATORS, e1->dest, e2->dest))
+	  return e2;
+      }
+
+    while (dom->succs->length () != 1)
+      {
+	if (dom->succs->length () < 1)
+	  return NULL;
+	dom = get_immediate_dominator (CDI_POST_DOMINATORS, dom);
+	if (!dom->succs)
+	  return NULL;
+      }
+    return (*dom->succs)[0];
+  }
+
+  /* Print S to FILE.  */
+
+  static void
+    print_sese (FILE *file, sese_l s)
+  {
+    fprintf (file, "(entry_edge (bb_%d, bb_%d), exit_edge (bb_%d, bb_%d))\n",
+	     s.entry->src->index, s.entry->dest->index,
+	     s.exit->src->index, s.exit->dest->index);
+  }
+
+  /* Merge scops at same loop depth and returns the new sese.
+     TODO: Free the already allocated sese's first and second, or reuse.
+     Returns SECOND when first is NULL.  SECOND cannot be NULL.
+     Frees up SECOND and returns a new SESE when merge was successful.
+  */
+
+  static sese_l
+    merge_sese (sese_l first, sese_l second)
+  {
+    /* In the trivial case first/second may be NULL.  */
+    if (!first)
+      return second;
+    if (!second)
+      return first;
+
+    DEBUG_PRINT (dp << "[try-merging-sese] s1: ";
+		 print_sese (dump_file, first);
+		 dp << "[try-merging-sese] s2: ";
+		 print_sese (dump_file, second));
+
+    /* Assumption: Both the sese's should be at the same loop depth or one scop
+       should subsume the other like in case of nested loops.  */
+
+    /* Find the common dominators for entry,
+       and common post-dominators for the exit.  */
+    basic_block dom = nearest_common_dominator (CDI_DOMINATORS,
+						get_entry_bb (first.entry),
+						get_entry_bb (second.entry));
+
+
+    edge entry = get_nearest_dom_with_single_entry (dom);
+    if (!entry)
+      return invalid_sese;
+
+    basic_block pdom = nearest_common_dominator (CDI_POST_DOMINATORS,
+						 get_exit_bb (first.exit),
+						 get_exit_bb (second.exit));
+    pdom = nearest_common_dominator (CDI_POST_DOMINATORS, dom, pdom);
+
+    edge exit = get_nearest_pdom_with_single_exit (pdom);
+    if (!exit)
+      return invalid_sese;
+
+    sese_l combined (entry, exit);
+
+    /* FIXME: We could iterate to find the dom which dominates pdom, and pdom
+       which post-dominates dom, until it stabilizes.  Also, ENTRY->SRC and
+       EXIT->DEST should be in the same loop nest.  */
+    if (!dominated_by_p (CDI_DOMINATORS, pdom, dom)
+	|| loop_depth (entry->src->loop_father)
+	   != loop_depth (exit->dest->loop_father))
+      return invalid_sese;
+
+    /* For now we just want to bail out when exit does not post-dominate entry.
+       TODO: We might just add a basic_block at the exit to make exit
+       post-dominate entry (the entrire region).  */
+    if (!dominated_by_p (CDI_POST_DOMINATORS, get_entry_bb (entry),
+                         get_exit_bb (exit))
+	|| !dominated_by_p (CDI_DOMINATORS, get_exit_bb (exit),
+			    get_entry_bb (entry)))
+      {
+	DEBUG_PRINT (dp <<  "[scop-detection-fail] cannot merge seses.\n");
+	return invalid_sese;
+      }
+
+    /* FIXME: We should remove this piece of code once
+       canonicalize_loop_closed_ssa has been removed, because that function
+       adds a BB with single exit.  */
+    if (!trivially_empty_bb_p (get_exit_bb (combined.exit)))
+      {
+	/* Find the first empty succ (with single exit) of combined.exit.  */
+	basic_block imm_succ = combined.exit->dest;
+	if (single_succ_p (imm_succ) && trivially_empty_bb_p (imm_succ))
+	  combined.exit = single_succ_edge (imm_succ);
+	else
+	  {
+	    DEBUG_PRINT (dp << "\n[scop-detection-fail] Discarding SCoP because "
+			    << "no single exit (empty succ) for sese exit";
+			 print_sese (dump_file, combined));
+	    return invalid_sese;
+	  }
+      }
+
+    /* Analyze all the BBs in new sese.  */
+    if (harmful_stmt_in_region (combined))
+      return invalid_sese;
+
+    DEBUG_PRINT (dp <<  "[merged-sese] s1: ";
+		 print_sese (dump_file, combined));
+
+    return combined;
+  }
+
+  /* Build scop outer->inner if possible.  */
+  sese_l
+    build_scop_depth (sese_l s, loop_p loop)
+  {
+    if (!loop)
+      return s;
+
+    DEBUG_PRINT (dp << "\n[Depth loop_" << loop->num << "]");
+    s = build_scop_depth (s, loop->inner);
+
+    sese_l s2 = merge_sese (s, get_sese (loop));
+    if (!s2)
+      {
+	/* s might be a valid scop, so return it and start analyzing from the
+	   adjacent loop.  */
+	build_scop_depth (invalid_sese, loop->next);
+	return s;
+      }
+
+    if (!loop_is_valid_scop (loop, s2))
+      return build_scop_depth (invalid_sese, loop->next);
+
+    return build_scop_breadth (s2, loop);
+  }
+
+  /* If loop and loop->next are valid scops, try to merge them.  */
+
+  sese_l
+    build_scop_breadth (sese_l s1, loop_p loop)
+  {
+    if (!loop)
+      return s1;
+    DEBUG_PRINT (dp << "\n[Breadth loop_" << loop->num << "]");
+    gcc_assert (s1);
+
+    loop_p l = loop;
+    sese_l s2 = build_scop_depth (invalid_sese, l->next);
+    if (!s2)
+      {
+	if (s1)
+	  add_scop (s1);
+	return s1;
+      }
+
+    sese_l combined = merge_sese (s1, s2);
+
+    if (combined)
+      s1 = combined;
+    else
+      add_scop (s2);
+
+    if (s1)
+      add_scop (s1);
+    return s1;
+  }
+
+  /* Returns true when Graphite can represent LOOP in SCOP.
+     FIXME: For the moment, graphite cannot be used on loops that iterate using
+     induction variables that wrap.  */
+  static bool
+    can_represent_loop_1 (loop_p loop, sese_l scop)
+  {
+    tree niter;
+    struct tree_niter_desc niter_desc;
+
+    return single_exit (loop)
+      && number_of_iterations_exit (loop, single_exit (loop), &niter_desc, false)
+      && niter_desc.control.no_overflow
+      && (niter = number_of_latch_executions (loop))
+      && !chrec_contains_undetermined (niter)
+      && graphite_can_represent_expr (scop, loop, niter);
+  }
+
+  /* Return true when all the loops within LOOP can be represented by
+     Graphite.  */
+
+  static bool
+    can_represent_loop (loop_p loop, sese_l scop)
+  {
+    if (!can_represent_loop_1 (loop, scop))
+      return false;
+    if (loop->inner && !can_represent_loop (loop->inner, scop))
+      return false;
+    if (loop->next && !can_represent_loop (loop->next, scop))
+      return false;
+
+    return true;
+  }
+
+  /* Return true when LOOP is a valid scop, that is a Static Control Part, a
+     region of code that can be represented in the polyhedral model.  SCOP
+     defines the region we analyse.  */
+
+  static bool
+    loop_is_valid_scop (loop_p loop, sese_l scop)
+  {
+    if (!scop)
+      return false;
+
+    if (!can_represent_loop (loop, scop))
+      {
+	DEBUG_PRINT (dp << "[scop-detection-fail] cannot represent loop_"
+		        << loop->num << "\n");
+	return false;
+      }
+
+    if (loop_body_is_valid_scop (loop, scop))
+      {
+	DEBUG_PRINT (dp << "[valid-scop] loop_"
+		        << loop->num << "is a valid scop.\n");
+	return true;
+      }
+    return false;
+  }
+
+  /* Return true when BEGIN is the preheader edge of a loop with a single exit
+     END.  */
+
+  static bool
+    region_has_one_loop (sese_l s)
+  {
+    edge begin = s.entry;
+    edge end = s.exit;
+    /* Check for a single perfectly nested loop.  */
+    if (begin->dest->loop_father->inner)
+      return false;
+
+    /* Otherwise, check whether we have adjacent loops.  */
+    return begin->dest->loop_father == end->src->loop_father;
+  }
+
+  /* Add to SCOPS a scop starting at SCOP_BEGIN and ending at SCOP_END.  */
+
+  void
+    add_scop (sese_l s)
+  {
+    gcc_assert (s);
+    edge scop_begin = s.entry;
+    edge scop_end = s.exit;
+
+    /* Do not add scops with only one loop.  */
+    if (region_has_one_loop (s))
+      {
+	DEBUG_PRINT (dp << "\n[scop-detection-fail] Discarding one loop SCoP";
+		     print_sese (dump_file, s));
+	return;
+      }
+
+    if (get_exit_bb (scop_end) == EXIT_BLOCK_PTR_FOR_FN (cfun))
+      {
+	DEBUG_PRINT (dp << "\n[scop-detection-fail] "
+		        << "Discarding SCoP exiting to return";
+		     print_sese (dump_file, s));
+	return;
+      }
+
+    sese sese_reg = new_sese (scop_begin, scop_end);
+    scop_p newscop = new_scop (sese_reg);
+
+    /* Remove all the scops which are subsumed by s.  */
+    remove_subscops (newscop);
+
+    /* Replace this with split-intersecting scops.  */
+    remove_intersecting_scops (newscop);
+
+    scops->safe_push (newscop);
+    DEBUG_PRINT (dp << "\nAdding SCoP "; print_sese (dump_file, s));
+  }
+
+  /* Return true when a statement in SCOP cannot be represented by Graphite.
+     The assumptions are that L1 dominates L2, and SCOP->entry dominates L1.
+     Limit the number of bbs between adjacent loops to
+     PARAM_SCOP_MAX_NUM_BBS_BETWEEN_LOOPS.  */
+
+  static bool
+    harmful_stmt_in_region (sese_l scop)
+  {
+    basic_block exit_bb = get_exit_bb (scop.exit);
+    basic_block entry_bb = get_entry_bb (scop.entry);
+
+    DEBUG_PRINT (dp << "\n[checking-harmful-bbs] ";
+		 print_sese (dump_file, scop));
+    gcc_assert (dominated_by_p (CDI_DOMINATORS, exit_bb, entry_bb));
+
+    int depth = bb_dom_dfs_in (CDI_DOMINATORS, exit_bb)
+      - bb_dom_dfs_in (CDI_DOMINATORS, entry_bb);
+
+    gcc_assert (depth >0);
+
+    vec<basic_block> dom = get_dominated_to_depth (CDI_DOMINATORS,
+						   entry_bb, depth);
+    int i;
+    basic_block bb;
+    FOR_EACH_VEC_ELT (dom, i, bb)
+      {
+	DEBUG_PRINT (dp << "\nVisiting bb_" << bb->index);
+
+	/* We don't want to analyze any bb outside sese.  */
+	if (!dominated_by_p (CDI_POST_DOMINATORS, bb, exit_bb))
+	  continue;
+
+	if (harmful_stmt_in_bb (scop, bb))
+	  return true;
+      }
+
+    return false;
+  }
+
+  /* Returns true if S1 subsumes/surrounds S2.  */
+  static bool
+    subsumes (scop_p s1, scop_p s2)
+  {
+    if (dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2->region->entry),
+			get_entry_bb (s1->region->entry))
+	&& dominated_by_p (CDI_POST_DOMINATORS, get_entry_bb (s2->region->exit),
+			   get_entry_bb (s1->region->exit)))
+      return true;
+    return false;
+  }
+
+  /* TODO: Maybe vec<scops_p> can be made as vec<sese_l> so that it consumes
+   less memory and later push only the relevant scops to vec <scops_p>.  */
+  void
+    remove_subscops (scop_p s1)
+  {
+    int j;
+    scop_p s2;
+    FOR_EACH_VEC_ELT_REVERSE (*scops, j, s2)
+      {
+	if (subsumes (s1, s2))
+	  {
+	    DEBUG_PRINT (dp << "\nRemoving sub-SCoP";
+		 print_sese (dump_file,
+			     sese_l (s2->region->entry, s2->region->exit)));
+	    scops->unordered_remove (j);
+	  }
+      }
+  }
+
+  /* Returns true if S1 intersects with S2.  Since we already know that S1 does
+     not subsume S2 or vice-versa, we only check for entry bbs.  */
+
+  static bool
+    intersects (scop_p s1, scop_p s2)
+  {
+    if (dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2->region->entry),
+			get_entry_bb (s1->region->entry))
+	&& !dominated_by_p (CDI_DOMINATORS, get_entry_bb (s2->region->entry),
+			    get_exit_bb (s1->region->exit)))
+      return true;
+    if ((s1->region->exit == s2->region->entry)
+	|| (s2->region->exit == s1->region->entry))
+      return true;
+
+    return false;
+  }
+
+  /* Remove one of the scops when it intersects with any other.  */
+
+  void
+    remove_intersecting_scops (scop_p s1)
+  {
+    int j;
+    scop_p s2;
+    FOR_EACH_VEC_ELT_REVERSE (*scops, j, s2)
+      {
+	if (intersects (s1, s2))
+	  {
+	    DEBUG_PRINT (dp << "\nRemoving intersecting SCoP";
+		print_sese (dump_file, sese_l (s2->region->entry,
+					       s2->region->exit));
+		dp << "Intersects with:";
+		print_sese (dump_file, sese_l (s1->region->entry,
+					       s1->region->exit)));
+	    scops->unordered_remove (j);
+	  }
+      }
+  }
+
+ private:
+  vec<scop_p> *scops;
+};
+
+sese_l scop_builder::invalid_sese (NULL, NULL);
+
+/* Find Static Control Parts (SCoP) in the current function and pushes
+   them to SCOPS.  */
+
+void
+build_scops (vec<scop_p> *scops)
+{
+  if (dump_file)
+    dp.set_dump_file (dump_file);
+
+  canonicalize_loop_closed_ssa_form ();
+
+  scop_builder s (scops);
+  s.build_scop_depth (scop_builder::invalid_sese, current_loops->tree_root);
+  DEBUG_PRINT (dp << "number of SCoPs: " << (scops ? scops->length () : 0););
 }
 
 #endif  /* HAVE_isl */

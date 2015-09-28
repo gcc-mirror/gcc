@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "params.h"
+#include "pretty-print.h"
 
 #ifdef HAVE_isl
 #include "cfghooks.h"
@@ -168,6 +169,16 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 	}
     }
 
+  fprintf (file, "\nFunction Name: %s\n", current_function_name ());
+
+  edge scop_begin = scop->region->entry;
+  edge scop_end = scop->region->exit;
+
+  fprintf (file, "\nSCoP (entry_edge (bb_%d, bb_%d), ",
+	   scop_begin->src->index, scop_begin->dest->index);
+  fprintf (file, "exit_edge (bb_%d, bb_%d))",
+	   scop_end->src->index, scop_end->dest->index);
+
   fprintf (file, "\nSCoP statistics (");
   fprintf (file, "BBS:%ld, ", n_bbs);
   fprintf (file, "LOOPS:%ld, ", n_loops);
@@ -191,6 +202,10 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
 
   FOR_EACH_VEC_ELT (scops, i, scop)
     print_graphite_scop_statistics (file, scop);
+
+  /* Print the loop structure.  */
+  print_loops (file, 2);
+  print_loops (file, 3);
 }
 
 /* Initialize graphite: when there are no loops returns false.  */
@@ -198,14 +213,30 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
 static bool
 graphite_initialize (isl_ctx *ctx)
 {
-  if (number_of_loops (cfun) <= 1
+  int min_loops = PARAM_VALUE (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION);
+  int max_bbs = PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION);
+  int nbbs = n_basic_blocks_for_fn (cfun);
+  int nloops = number_of_loops (cfun);
+
+  if (nloops <= min_loops
       /* FIXME: This limit on the number of basic blocks of a function
 	 should be removed when the SCOP detection is faster.  */
-      || (n_basic_blocks_for_fn (cfun) >
-	  PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION)))
+      || (nbbs > max_bbs))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	print_global_statistics (dump_file);
+	{
+	  if (nloops <= min_loops)
+	    fprintf (dump_file, "\nFunction does not have enough loops: "
+		     "PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION = %d.\n",
+		     min_loops);
+
+	  else if (nbbs > max_bbs)
+	    fprintf (dump_file, "\nFunction has too many basic blocks: "
+		     "PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION = %d.\n", max_bbs);
+
+	  fprintf (dump_file, "\nnumber of SCoPs: 0\n");
+	  print_global_statistics (dump_file);
+	}
 
       isl_ctx_free (ctx);
       return false;
@@ -216,7 +247,10 @@ graphite_initialize (isl_ctx *ctx)
   initialize_original_copy_tables ();
 
   if (dump_file && dump_flags)
-    dump_function_to_file (current_function_decl, dump_file, dump_flags);
+    {
+      dump_function_to_file (current_function_decl, dump_file, dump_flags);
+      print_loops (dump_file, 3);
+    }
 
   return true;
 }
@@ -227,8 +261,10 @@ graphite_initialize (isl_ctx *ctx)
 static void
 graphite_finalize (bool need_cfg_cleanup_p)
 {
+  free_dominance_info (CDI_POST_DOMINATORS);
   if (need_cfg_cleanup_p)
     {
+      free_dominance_info (CDI_DOMINATORS);
       scev_reset ();
       cleanup_tree_cfg ();
       profile_status_for_fn (cfun) = PROFILE_ABSENT;
