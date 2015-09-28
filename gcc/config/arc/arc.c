@@ -9322,7 +9322,7 @@ arc_legitimize_reload_address (rtx *p, machine_mode mode, int opnum,
       shift = scale >> 1;
       offset_base
 	= ((offset + (256 << shift))
-	   & ((HOST_WIDE_INT)(-512U << shift)));
+	   & ((HOST_WIDE_INT)((unsigned HOST_WIDE_INT) -512 << shift)));
       /* Sometimes the normal form does not suit DImode.  We
 	 could avoid that by using smaller ranges, but that
 	 would give less optimized code when SImode is
