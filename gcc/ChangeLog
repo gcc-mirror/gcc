@@ -1,5 +1,9 @@
 2015-09-28  Daniel Cederman  <cederman@gaisler.com>
 
+	* config/sparc/driver-sparc.c: map LEON to leon3
+
+2015-09-28  Daniel Cederman  <cederman@gaisler.com>
+
 	* config/sparc/sparc.opt: Rename mask from USER_MODE to SV_MODE
 	  and make it inverse to change default
 	* config/sparc/sync.md: Only use supervisor ASI for CASA when in
